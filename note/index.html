@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=0.45.9-beta">
-  <link rel="stylesheet" href="features.css?v=0.45.32-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.36-beta">
   <link rel="stylesheet" href="event-photo.css?v=0.45.9-beta">
   <link rel="stylesheet" href="effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="support.css">
@@ -65,6 +65,14 @@
 
       <main id="main" class="main">
         <div class="preview-banner" id="connection-status" role="status" aria-live="polite"><span class="preview-dot"></span><span id="connection-message">카드를 불러오는 중</span></div>
+        <details class="note-announcement" id="note-announcement" hidden>
+          <summary class="note-announcement-row">
+            <span class="note-announcement-label">공지</span>
+            <span class="note-announcement-viewport"><span class="note-announcement-moving" aria-hidden="true"></span><span class="note-announcement-copy" id="note-announcement-copy"></span></span>
+            <span class="note-announcement-open" aria-hidden="true">전체 보기</span>
+          </summary>
+          <p class="note-announcement-full" id="note-announcement-full"></p>
+        </details>
 
         <section id="feed" class="screen" aria-labelledby="feed-title">
           <h1 id="feed-title" class="note-visually-hidden">오쭈다노트 카드</h1>
@@ -153,7 +161,8 @@
   <script src="support.js?v=0.45.5-beta" defer></script>
   <script src="drafts.js?v=0.45.18-beta" defer></script>
   <script src="notifications.js?v=0.45.5-beta" defer></script>
-  <script src="preview.js?v=0.45.32-beta" defer></script>
+  <script src="preview.js?v=0.45.36-beta" defer></script>
+  <script src="notice-ticker.js?v=0.45.36-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>

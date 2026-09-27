@@ -95,6 +95,11 @@ textarea.na-input{min-height:95px;resize:vertical}
 .na-card-views{max-width:none!important;display:flex;flex-wrap:nowrap;overflow-x:auto;margin:0 0 14px;padding:4px;scrollbar-width:thin;white-space:nowrap}
 .na-card-views .na-button{flex:0 0 auto;min-height:36px;padding:6px 13px;border:0;background:transparent;color:var(--ink-2,#626894);font-size:13px;white-space:nowrap}
 .na-card-views .na-button.on{background:var(--surface,#fff);color:var(--ink,#23264a);box-shadow:0 1px 3px #23264a24}
+.na-risk-summary{border-color:#f4b4b4;background:#fff1f1}
+.na-risk-summary strong{color:#a32632}
+.na-warning.na-risk-help{border:1px solid #f4b4b4;background:#fff1f1;color:#773438}
+.na-item--risk{border-color:#f08a8a;box-shadow:inset 4px 0 #e0413e}
+.na-badge--risk{background:#fde8e8;color:#a32632}
 .na-count{margin:8px 0 12px;color:var(--ink-2,#626894);font-size:12px}
 .na-archive-section{margin-top:22px}
 .na-archive-section h4{margin:0 0 10px;font-size:16px}

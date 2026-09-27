@@ -28,12 +28,14 @@
   const PHOTO_PAGE_SIZE = 12;
   const photoKeyValid = value => /^\d{2,3}$/.test(String(value)) && Number(value) >= 10 && Number(value) <= 189;
   const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-curated180`;
+  // Match the World's risk_pattern() for badges; the server decides which rows enter the risk list.
+  const RISK_SIGNAL = /(죽고\s*싶|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|끝내고\s*싶|목숨|유서|뛰어내리|맞았|때렸|폭행|협박|학대|성폭|스토킹|죽여\s*버|죽일\s*거)/i;
   const TABS = [
     ['cards', '전체 카드'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['settings', '공지 · 기능'], ['map', '위치 지도'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
   ];
   const NOTE_TABS = Object.freeze(TABS.slice(0, 5));
-  const VIEW_OF_TAB = { cards: 'card', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', event: 'events', archive: 'archive' };
+  const VIEW_OF_TAB = { cards: 'card', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'cards', event: 'events', archive: 'archive' };
   function openTab(id) {   // 탭을 고르면 카드 종류를 맞추고 불러와요
     if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], offset: 0, expiredOffset: 0, query: '', state: 'all' });
     return load(id);
@@ -43,7 +45,7 @@
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
     settings: '공지와 노트 안의 기능을 관리합니다. 변경 사유는 작업 기록에 남습니다.',
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
-    cards: '익명카드·답글·이벤트와 만료 후 보관 자료를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
+    cards: '익명카드·답글과 위험 신호를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
     events: '이벤트 카드를 관리합니다.',
     archive: '삭제되거나 기간이 끝난 카드를 한 달 동안 보관합니다. 기간 전에도 바로 영구 삭제할 수 있어요.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
@@ -592,8 +594,8 @@
   }
   function cardViewBar(view) {
     const bar = el('div', 'seg adm-tabs na-card-views');
-    bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', '노트 콘텐츠 종류');
-    for (const [id, label] of [['card', '전체 카드'], ['event', '이벤트 카드'], ['archive', '삭제·만료 보관']]) {
+    bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', '카드 표시 조건');
+    for (const [id, label] of [['card', '모든 카드'], ['risk', '⚠️ 위험 신호']]) {
       const item = button(label, () => {
         if (filters.cards.view === id) return;
         filters.cards.view = id; filters.cards.offset = 0; filters.cards.expiredOffset = 0; filters.cards.query = '';
@@ -615,15 +617,35 @@
     const filter = filters.cards;
     if (filter.view === 'event') return renderEvents(run);
     if (filter.view === 'archive') return renderArchive(run);
-    main.append(searchForm(filter.query, '글 내용이나 태그 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
-    const rows = await rpc('admin_cards', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset });
+    main.append(cardViewBar(filter.view));
+    if (filter.view === 'risk') {
+      main.append(el('p', 'na-warning na-risk-help', '자살·자해·폭력·협박과 관련된 표현을 자동으로 찾은 카드와 답글입니다. 오탐이 있을 수 있으니 내용을 확인해 주세요. 긴급한 상황은 112·119, 자살예방상담은 109로 연결해 주세요.'));
+    }
+    const riskCount = filter.view === 'card'
+      ? rpc('admin_risk_cards', { p_query: '', p_state: 'all', p_limit: 1, p_offset: 0 }).then(rows => ({ count: Number(rows?.[0]?.total_count || 0) }), () => ({ error: true }))
+      : Promise.resolve(null);
+    const [rows, risk] = await Promise.all([
+      rpc(filter.view === 'risk' ? 'admin_risk_cards' : 'admin_cards', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset }),
+      riskCount
+    ]);
     if (!validRun(run)) return;
+    if (risk?.error) main.append(el('p', 'na-warning', '위험 신호를 불러오지 못했어요. 서버 설정을 확인해 주세요.'));
+    else if (risk?.count) {
+      const alert = el('section', 'box na-box na-risk-summary');
+      alert.append(el('strong', '', `⚠️ 위험 신호가 보이는 카드·답글 ${number(risk.count)}개`),
+        el('p', '', '내용을 확인하고 필요한 조치를 해 주세요.'),
+        button('위험 신호 보기', () => { filters.cards.view = 'risk'; filters.cards.offset = 0; filters.cards.query = ''; filters.cards.state = 'all'; load('cards'); }, 'primary'));
+      main.append(alert);
+    }
+    main.append(searchForm(filter.query, '글 내용이나 태그 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
     if (!rows?.length) { empty(main, filter.offset ? '이 페이지에 콘텐츠가 없어요.' : '조건에 맞는 카드와 답글이 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filters.cards.offset = 0; load('cards'); })); return; }
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}개 · ${filter.offset + 1}–${filter.offset + rows.length}`));
     const list = el('div', 'na-list');
     for (const card of rows) {
-      const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
+      const riskSignal = RISK_SIGNAL.test(String(card.body || ''));
+      const item = el('article', `adm-card na-item${riskSignal ? ' na-item--risk' : ''}`); const header = el('div', 'na-item-header');
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
+      if (riskSignal) meta.prepend(badge('⚠️ 위험 신호', 'risk'));
       if (Array.isArray(card.tags) && card.tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));   // 19금 태그 카드는 성적·거친 표현을 너그럽게 봐요 (불법·혐오·개인정보는 삭제)
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }

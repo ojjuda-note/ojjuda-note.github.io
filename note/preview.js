@@ -140,15 +140,26 @@ function banner(value) {
 }
 function query() { return client.schema('ojjuda_note'); }
 // 익명 카드의 자동 이름: 카드 번호로 정해져서 같은 카드는 늘 같은 이름, 카드마다 다른 이름이에요 (같은 사람인지 알 수 없어요)
+// 기존 카드는 32×32 조합을 유지해 이미 보이던 이름이 바뀌지 않게 해요.
+const ANON_ALIAS_EXPANDED_AT = Date.parse('2026-09-28T03:00:00+09:00');
+const ANON_LEGACY_COUNT = 32;
 const ANON_ADJ = ['수줍은', '졸린', '반짝이는', '포근한', '용감한', '느긋한', '상냥한', '씩씩한', '말랑한', '조용한', '설레는', '엉뚱한',
   '다정한', '새침한', '동글동글한', '꿈꾸는', '산책하는', '노래하는', '배고픈', '웃는', '수다쟁이', '따뜻한', '시원한', '보송보송한',
-  '몽글몽글한', '반가운', '차분한', '궁금한', '행복한', '장난꾸러기', '달콤한', '느릿한'];
+  '몽글몽글한', '반가운', '차분한', '궁금한', '행복한', '장난꾸러기', '달콤한', '느릿한',
+  '맑은', '해맑은', '산뜻한', '싱그러운', '향기로운', '평온한', '즐거운', '명랑한', '활기찬', '신나는', '친절한', '재치 넘치는',
+  '똑똑한', '당당한', '부지런한', '꼼꼼한', '멋진', '귀여운', '깜찍한', '사랑스러운', '빛나는', '소중한', '화사한', '정겨운',
+  '순한', '알록달록한', '폭신한', '푸근한', '사뿐한', '살금살금 걷는', '두근거리는', '한가로운'];
 const ANON_NOUN = ['고래', '고양이', '강아지', '토끼', '수달', '펭귄', '다람쥐', '여우', '판다', '햄스터', '부엉이', '거북이', '오리', '코알라', '고슴도치', '너구리',
-  '사슴', '해파리', '돌고래', '참새', '나비', '무지개', '구름', '별', '달', '새싹', '도토리', '솜사탕', '우산', '연필', '해바라기', '눈사람'];
-function anonAlias(id) {
+  '사슴', '해파리', '돌고래', '참새', '나비', '무지개', '구름', '별', '달', '새싹', '도토리', '솜사탕', '우산', '연필', '해바라기', '눈사람',
+  '기린', '얼룩말', '코끼리', '하마', '사자', '호랑이', '표범', '치타', '알파카', '양', '염소', '병아리', '앵무새', '까치', '비둘기', '개구리',
+  '달팽이', '반딧불이', '잠자리', '매미', '꿀벌', '무당벌레', '문어', '복어', '해마', '불가사리', '조개', '산호', '솔방울', '나뭇잎', '민들레', '별똥별'];
+function anonAlias(id, createdAt) {
   let h = 2166136261; for (const ch of String(id || '')) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } h >>>= 0;
-  const noun = ANON_NOUN[Math.floor(h / ANON_ADJ.length) % ANON_NOUN.length];
-  return { name: `${ANON_ADJ[h % ANON_ADJ.length]} ${noun}`, icon: noun[0] };   // 동그라미엔 한글 한 글자 (고양이 → 고)
+  const expanded = Number.isFinite(Date.parse(createdAt)) && Date.parse(createdAt) >= ANON_ALIAS_EXPANDED_AT;
+  const adjCount = expanded ? ANON_ADJ.length : ANON_LEGACY_COUNT;
+  const nounCount = expanded ? ANON_NOUN.length : ANON_LEGACY_COUNT;
+  const noun = ANON_NOUN[Math.floor(h / adjCount) % nounCount];
+  return { name: `${ANON_ADJ[h % adjCount]} ${noun}`, icon: noun[0] };   // 동그라미엔 한글 한 글자 (고양이 → 고)
 }
 // 이름 앞 동그라미: 카드를 올릴 때 글쓴이가 고른 성별 (남 파랑 · 여 빨강 · 비공개 회색). 카드마다 고정돼요. 서버는 성별만 알려 주고 누가 썼는지는 알려 주지 않아요
 const GENDER_LOOK = { male: ['남', '#4A7BE0'], female: ['여', '#E2525C'], private: ['비', '#A7ABB8'] };
@@ -621,7 +632,7 @@ function noteTagEdit() {   // 직접 쓴 태그를 우선하고, 다섯 자리�
 function shownName(card) {   // 닉네임 카드는 닉네임, 익명 카드는 자동 이름
   const nick = card.identity_mode === 'nickname' && card.display_name && card.display_name !== '익명' ? card.display_name : null;
   if (nick) return { name: nick, icon: [...nick][0] || 'ㅇ' };
-  return card.id ? anonAlias(card.id) : { name: '익명', icon: 'ㅇ' };
+  return card.id ? anonAlias(card.id, card.created_at) : { name: '익명', icon: 'ㅇ' };
 }
 
 function dateLabel(value) {
@@ -1153,7 +1164,11 @@ async function loadNoteState() {
     const data = await noteRpc('get_note_state');
     if (run !== noteStateRun || (session?.user?.id || null) !== userId) return;
     noteState = data;
-    const values = [data.notice, data.is_restricted ? writingMessage() : '',
+    const announcementText = String(data.notice || '').trim();
+    $('#note-announcement-copy').textContent = announcementText;
+    $('#note-announcement-full').textContent = announcementText;
+    $('#note-announcement').hidden = !announcementText;
+    const values = [data.is_restricted ? writingMessage() : '',
       !data.posting_enabled ? '새 카드 등록이 잠시 쉬고 있어요.' : '',
       !data.replies_enabled ? '답글 등록이 잠시 쉬고 있어요.' : ''].filter(Boolean);
     noticeElement.replaceChildren(...values.map(value => node('p', '', value)));
@@ -1161,6 +1176,9 @@ async function loadNoteState() {
   } catch (error) {
     if (run !== noteStateRun) return;
     noteState = null; console.warn('Note state:', error);
+    $('#note-announcement').hidden = true;
+    $('#note-announcement-copy').textContent = '';
+    $('#note-announcement-full').textContent = '';
     noticeElement.replaceChildren(node('p', '', '운영 상태를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.'));
     noticeElement.hidden = false;
   }
@@ -1897,9 +1915,10 @@ async function openComposer(mode, card = null) {
   composerUserId = session?.user?.id || null;
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
   clearEventPhoto(); clearCardPhoto();
+  $('#compose-existing-card-photo')?.remove();
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
-  backgroundKey = editingId ? card.background_key : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
+  backgroundKey = editingId ? (card.photo_key || card.background_key) : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
   $('#note-photo-pick').hidden = !!editingId || kind !== 'memo';
@@ -1948,6 +1967,15 @@ async function openComposer(mode, card = null) {
   requestedDraftContent = draftContent();
   if (draftStatus) draftStatus.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer(); text.focus();
+  if (editingId && (kind === 'memo' || kind === 'comment')) {
+    const existingPhoto = node('button', 'compose-photo-attach has-photo');
+    existingPhoto.type = 'button'; existingPhoto.id = 'compose-existing-card-photo';
+    existingPhoto.dataset.photoCard = card.id; existingPhoto.hidden = true;
+    existingPhoto.setAttribute('aria-label', '카드에 첨부된 사진 크게 보기');
+    existingPhoto.addEventListener('click', () => openPhotoLightbox(existingPhoto.dataset.photoUrl));
+    $('.compose-photo').append(existingPhoto);
+    wantCardPhoto(card.id);
+  }
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
   if (kind === 'event' && !editingId) {
     eventMap?.destroy(); eventMap = null; prepareEventMap();
