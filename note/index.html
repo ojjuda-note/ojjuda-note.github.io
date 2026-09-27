@@ -9,9 +9,10 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=0.44.0-beta">
-  <link rel="stylesheet" href="features.css?v=0.44.1-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.0-beta">
+  <link rel="stylesheet" href="effects.css?v=0.45.0-beta">
   <link rel="stylesheet" href="support.css">
   <link rel="stylesheet" href="notifications.css">
   <link rel="stylesheet" href="map.css?v=0.44.0-beta">
@@ -92,7 +93,43 @@
   <div class="dialog-backdrop" id="composer-backdrop" hidden>
     <section class="composer" role="dialog" aria-modal="true" aria-labelledby="compose-title">
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
-      <div class="composer-body"><p class="compose-context" id="compose-context">마음을 카드에 적어 주세요.</p><div class="compose-photo image-lake"><span class="compose-shade"></span><textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="5"></textarea><div class="compose-tag-display" id="compose-tag-display">#태그는 아래쪽에 보여요</div></div><div class="compose-status"><span>무료 사진은 게시 시 무작위 배정 · 꾸미기 1개월 무료</span><span id="compose-count">0 / 200자</span></div><div class="note-style-controls" id="note-style-controls"><label>글꼴<select id="compose-font"><option value="default">기본</option><option value="round">둥근 글씨</option><option value="serif">차분한 글씨</option></select></label><label>크기<select id="compose-size"><option value="normal">보통</option><option value="large">크게</option><option value="small">작게</option></select></label><label>배경<select id="compose-theme"><option value="plain">기본</option><option value="rose">장미빛</option><option value="night">밤하늘</option></select></label><label>꾸미기 효과<select id="compose-effect"><option value="none">없음</option><option value="sparkle">반짝임</option><option value="frame">테두리</option></select></label></div><fieldset class="note-photo-pick" id="note-photo-pick"><legend>사진 배경</legend><p>기본 배경은 무료예요. 제공 사진을 고르면 게시 후 10쭈가 차감되고 1개월간 보여요.</p><label><input type="radio" name="photo-choice" value="plain" checked> 기본 랜덤 사진</label><label><input type="radio" name="photo-choice" value="10"> 호수 사진 · 10쭈</label><label><input type="radio" name="photo-choice" value="11"> 숲 사진 · 10쭈</label></fieldset><label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label><input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120"><div class="identity-row"><span>표시 이름</span><label><input type="radio" name="identity" value="anonymous" checked>익명</label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div><section class="note-location-consent" id="card-location-consent"><p>정확한 GPS 좌표는 비공개로 저장하고, 다른 사람에게는 근사 거리만 표시해요.</p><button class="button" id="card-location-button" type="button">위치 확인</button><span id="card-location-status" role="status">위치를 확인해야 등록할 수 있어요.</span></section><section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 눌러 이벤트 중심을 정해 주세요. 지정한 중심과 원형 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section></div>
+      <div class="composer-body">
+        <p class="compose-context" id="compose-context">마음을 카드에 적어 주세요.</p>
+        <div class="compose-photo image-lake">
+          <span class="compose-shade"></span><span class="note-color-wash" aria-hidden="true"></span>
+          <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="5"></textarea>
+          <div class="compose-tag-display" id="compose-tag-display"></div>
+        </div>
+        <div class="compose-status"><span id="compose-count">0 / 200자</span></div>
+        <details class="compose-more" id="compose-more">
+          <summary>꾸미기 · 추가 설정</summary>
+          <div class="compose-more-content" id="compose-more-content">
+            <div class="note-style-controls" id="note-style-controls">
+              <input id="compose-theme" type="hidden" value="plain">
+              <label>글꼴<select id="compose-font"><option value="default">고운돋움</option><option value="round">둥근 글씨</option><option value="serif">명조</option><option value="handwriting">손글씨</option><option value="mono">고정폭</option></select></label>
+              <label>글씨 크기<select id="compose-size"><option value="normal">보통</option><option value="large">크게</option><option value="small">작게</option></select></label>
+              <label>꾸미기 효과<select id="compose-effect"><option value="none">없음</option><optgroup label="움직이는 효과"><option value="rain">비 내리기</option><option value="shimmer">빛 스치기</option><option value="rainbow">무지개</option><option value="snow">눈 내리기</option><option value="starlight">별빛</option><option value="fireflies">반딧불이</option><option value="petals">꽃잎</option><option value="bubbles">비눗방울</option><option value="aurora">오로라</option><option value="confetti">색종이</option><option value="sunbeams">햇살</option><option value="mist">안개</option><option value="ocean">물결</option><option value="heartbeat">빛의 파동</option><option value="orbit">궤도</option><option value="glitter">반짝이</option><option value="meteor">별똥별</option><option value="leaves">나뭇잎</option><option value="neon">네온</option><option value="dawn">새벽빛</option></optgroup><optgroup label="고정 효과"><option value="sparkle">반짝임</option><option value="frame">테두리</option></optgroup></select></label>
+            </div>
+            <div class="note-color-fields" aria-label="색 선택">
+              <fieldset class="note-color-field" data-color-field="textColor"><legend>글씨 색</legend><div class="note-color-choices"></div></fieldset>
+              <fieldset class="note-color-field" data-color-field="backgroundColor"><legend>사진 위 배경 색</legend><div class="note-color-choices"></div></fieldset>
+              <fieldset class="note-color-field" data-color-field="boxColor"><legend>네모난 글상자 색</legend><div class="note-color-choices"></div></fieldset>
+            </div>
+            <p class="note-setting-help">꾸미기는 1개월간 적용돼요. 기본 사진은 등록할 때 무작위로 정해집니다.</p>
+            <fieldset class="note-photo-pick" id="note-photo-pick">
+              <legend>사진</legend><p>기본 사진은 무료예요. 원하는 사진을 직접 고르면 10쭈로 1개월간 적용돼요.</p>
+              <label><input type="radio" name="photo-choice" value="plain" checked> 기본 사진 무작위</label>
+              <button class="button" id="photo-gallery-toggle" type="button" aria-expanded="false">사진 직접 고르기</button>
+              <p id="photo-selection" role="status">기본 사진 무작위</p>
+              <div class="note-photo-gallery" id="photo-gallery" hidden><div class="note-photo-grid" id="photo-grid"></div><div class="note-photo-pages"><button class="button" id="photo-prev" type="button">이전</button><span id="photo-page-status"></span><button class="button" id="photo-next" type="button">다음</button></div></div>
+            </fieldset>
+            <label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label><input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120">
+            <div class="identity-row"><span>표시 이름</span><label><input type="radio" name="identity" value="anonymous" checked>익명</label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
+          </div>
+        </details>
+        <section class="note-location-consent" id="card-location-consent"><p>정확한 위치는 비공개로 저장해요.</p><button class="button" id="card-location-button" type="button">위치 확인</button><span id="card-location-status" role="status">위치를 확인해야 등록할 수 있어요.</span></section>
+        <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 눌러 이벤트 중심을 정해 주세요. 지정한 중심과 원형 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section>
+      </div>
       <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
@@ -100,8 +137,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="map.js?v=0.44.0-beta" defer></script>
   <script src="support.js?v=0.44.0-beta" defer></script>
-  <script src="drafts.js" defer></script>
+  <script src="drafts.js?v=0.45.0-beta" defer></script>
   <script src="notifications.js" defer></script>
-  <script src="preview.js?v=0.44.1-beta" defer></script>
+  <script src="preview.js?v=0.45.0-beta" defer></script>
 </body>
 </html>

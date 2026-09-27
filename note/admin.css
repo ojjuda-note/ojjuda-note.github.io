@@ -35,6 +35,9 @@
 .na-action-form{max-width:720px;padding:18px}
 .na-visual-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .na-visual-form .na-empty,.na-visual-form .na-field:last-child{grid-column:1/-1}
+.na-photo-preview{display:flex;align-items:center;gap:12px;min-width:0;padding:8px;border:1px solid var(--line,#daddf0);border-radius:12px;background:var(--surface-2,#f5f6fc)}
+.na-photo-preview img{display:block;width:100px;height:75px;flex:none;border-radius:8px;object-fit:cover}
+.na-photo-preview span{min-width:0;color:var(--ink-2,#626894);font-size:12px;overflow-wrap:anywhere}
 .na-settings-form{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
 .na-settings-group{display:grid;gap:14px;margin:0}
 .na-settings-group h4{margin:0 0 2px}

@@ -35,6 +35,60 @@ let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let notificationController = null;
 let retentionButton = null, retentionRun = 0;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
+const PHOTO_FIRST = 10, PHOTO_LAST = 111, PHOTO_PAGE_SIZE = 12;
+const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
+const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
+  'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
+  'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
+const COLOR_PALETTE = {
+  red: { label: '빨강', solid: '#dc3049', wash: '#dc304963', box: '#b31d37db' },
+  yellow: { label: '노랑', solid: '#e5a800', wash: '#ffd63f70', box: '#ffdf59e8' },
+  green: { label: '초록', solid: '#238d56', wash: '#43ae6c69', box: '#21854ee3' },
+  blue: { label: '파랑', solid: '#3c78d9', wash: '#3e84df69', box: '#2659a8dd' },
+  purple: { label: '보라', solid: '#8855cb', wash: '#8b5bd66e', box: '#6d40addd' },
+  black: { label: '검정', solid: '#151622', wash: '#10132099', box: '#121425e8' },
+  white: { label: '흰색', solid: '#ffffff', wash: '#ffffff75', box: '#fffffff0' }
+};
+let photoPage = 0;
+let selectedPhotoKey = null;
+function photoAssetKey(value) {
+  const key = String(value ?? '');
+  return /^\d{2,3}$/.test(key) && Number(key) >= PHOTO_FIRST && Number(key) <= PHOTO_LAST ? key : null;
+}
+function setPhotoBackground(element, value) {
+  const key = photoAssetKey(value);
+  element.classList.toggle('note-plain', !key);
+  element.classList.remove('image-forest', 'image-lake');
+  element.style.backgroundImage = key ? `url("assets/${key}.jpg")` : '';
+}
+function colorLuminance(hex) {
+  const channels = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255);
+  const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+  return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+}
+function colorContrast(first, second) {
+  const values = [colorLuminance(first), colorLuminance(second)].sort((a, b) => b - a);
+  return (values[0] + .05) / (values[1] + .05);
+}
+function applyVisualStyle(element, style = {}) {
+  for (const cls of [...element.classList]) {
+    if (/^note-(?:theme|font|size|effect)-/.test(cls)) element.classList.remove(cls);
+  }
+  if (['rose', 'night'].includes(style.theme)) element.classList.add(`note-theme-${style.theme}`);
+  if (FONT_CODES.includes(style.font) && style.font !== 'default') element.classList.add(`note-font-${style.font}`);
+  if (['large', 'small'].includes(style.size)) element.classList.add(`note-size-${style.size}`);
+  if (EFFECT_CODES.includes(style.effect) && style.effect !== 'none') element.classList.add(`note-effect-${style.effect}`);
+  const textColor = COLOR_PALETTE[style.textColor];
+  const backgroundColor = COLOR_PALETTE[style.backgroundColor];
+  const boxColor = COLOR_PALETTE[style.boxColor];
+  const textHex = textColor?.solid || '#ffffff';
+  const boxHex = boxColor?.box || '#17203ab8';
+  element.style.setProperty('--note-text-color', textHex);
+  element.style.setProperty('--note-bg-color', backgroundColor?.wash || 'transparent');
+  element.style.setProperty('--note-box-color', boxHex);
+  element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
+  element.style.setProperty('--note-outline', colorLuminance(boxHex) > .25 ? '#101020' : '#ffffff');
+}
 
 
 function node(name, className, value) {
@@ -108,12 +162,9 @@ function cardElement(card, compact = false, expanded = false) {
   if (expanded) { open.disabled = true; delete open.dataset.open; }
   const style = card.style && typeof card.style === 'object' ? card.style : {};
   const visiblePhoto = card.photo_key || card.background_key;
-  const photoClass = visiblePhoto === '11' ? 'image-forest' : visiblePhoto === '10' ? 'image-lake' : 'note-plain';
-  const photo = node('span', `photo ${photoClass}`);
-  if (['rose', 'night'].includes(style.theme)) photo.classList.add(`note-theme-${style.theme}`);
-  if (['round', 'serif'].includes(style.font)) photo.classList.add(`note-font-${style.font}`);
-  if (['large', 'small'].includes(style.size)) photo.classList.add(`note-size-${style.size}`);
-  if (['sparkle', 'frame'].includes(style.effect)) photo.classList.add(`note-effect-${style.effect}`);
+  const photo = node('span', 'photo');
+  setPhotoBackground(photo, visiblePhoto);
+  applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
   const hiddenEvent = card.kind === 'event' && card.body == null;
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
@@ -121,14 +172,14 @@ function cardElement(card, compact = false, expanded = false) {
     if (index) quote.append(document.createElement('br'));
     quote.append(document.createTextNode(line));
   });
-  if (body.length > 120 && !style.size) quote.style.fontSize = compact ? '15px' : '18px';
-  else if (body.length > 70 && !style.size) quote.style.fontSize = compact ? '17px' : '22px';
+  if (body.length > 120 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '15px' : '18px';
+  else if (body.length > 70 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '17px' : '22px';
   quote.style.overflowWrap = 'anywhere';
   const tagRow = node('span', 'card-tags');
   for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
     tagRow.append(node('span', '', `#${tag}`));
   }
-  photo.append(node('span', 'photo-shade'), quote, tagRow);
+  photo.append(node('span', 'photo-shade'), node('span', 'note-color-wash'), quote, tagRow);
   open.append(photo);
   item.append(open);
 
@@ -642,10 +693,9 @@ function installFeatures() {
       writingPosition = null; $('#card-location-status').textContent = '위치를 사용할 수 없어요. 권한을 확인하고 다시 시도해 주세요.';
     } finally { if (run === locationRun) { $('#card-location-button').disabled = false; updateComposer(); } }
   });
-  for (const selector of ['#compose-font', '#compose-size', '#compose-theme', '#compose-effect']) {
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect']) {
     $(selector).addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
   }
-  document.querySelectorAll('input[name="photo-choice"]').forEach(choice => choice.addEventListener('change', applyComposeStyle));
   for (const selector of ['#event-radius', '#event-hours']) $(selector).addEventListener('input', updateEventPrice);
 }
 async function refreshRetentionAlerts() {
@@ -701,22 +751,77 @@ async function showRetentionAlerts() {
   }
 }
 
+function installStyleChoices() {
+  for (const field of document.querySelectorAll('[data-color-field]')) {
+    const group = field.dataset.colorField;
+    const labelText = field.querySelector('legend').textContent;
+    const row = field.querySelector('.note-color-choices');
+    for (const [code, choice] of [['default', { label: '기본' }], ...Object.entries(COLOR_PALETTE)]) {
+      const label = node('label', 'note-color-choice'); label.dataset.color = code;
+      label.title = `${labelText}: ${choice.label}`;
+      if (choice.solid) label.style.setProperty('--swatch', choice.solid);
+      const input = node('input'); input.type = 'radio'; input.name = group; input.value = code;
+      input.checked = code === 'default'; input.setAttribute('aria-label', `${labelText} ${choice.label}`);
+      input.addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
+      label.append(input, node('span'));
+      row.append(label);
+    }
+  }
+  const randomPhoto = $('input[name="photo-choice"][value="plain"]');
+  randomPhoto.addEventListener('change', () => {
+    if (!randomPhoto.checked) return;
+    selectedPhotoKey = null; $('#photo-selection').textContent = '기본 사진 무작위';
+    applyComposeStyle(); recordDraft();
+  });
+  $('#photo-gallery-toggle').addEventListener('click', () => {
+    const gallery = $('#photo-gallery');
+    gallery.hidden = !gallery.hidden;
+    $('#photo-gallery-toggle').setAttribute('aria-expanded', String(!gallery.hidden));
+    if (!gallery.hidden) renderPhotoPage();
+  });
+  $('#photo-prev').addEventListener('click', () => { if (photoPage > 0) { photoPage--; renderPhotoPage(); } });
+  $('#photo-next').addEventListener('click', () => {
+    if (PHOTO_FIRST + (photoPage + 1) * PHOTO_PAGE_SIZE <= PHOTO_LAST) { photoPage++; renderPhotoPage(); }
+  });
+}
+function setColorChoice(group, code) {
+  const choices = document.getElementsByName(group);
+  const chosen = [...choices].find(choice => choice.value === code) || [...choices].find(choice => choice.value === 'default');
+  if (chosen) chosen.checked = true;
+}
+function renderPhotoPage() {
+  const grid = $('#photo-grid'); grid.replaceChildren();
+  const first = PHOTO_FIRST + photoPage * PHOTO_PAGE_SIZE;
+  for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
+    const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
+    const tile = node('label', 'note-photo-tile'); tile.title = `${title} · 10쭈/1개월`;
+    const input = node('input'); input.type = 'radio'; input.name = 'photo-choice'; input.value = key;
+    input.checked = selectedPhotoKey === key; input.setAttribute('aria-label', title);
+    input.addEventListener('change', () => {
+      selectedPhotoKey = key; $('#photo-selection').textContent = `${title} 선택 · 게시 후 10쭈/1개월`;
+      applyComposeStyle(); recordDraft();
+    });
+    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
+    tile.append(input, img, node('small', '', title)); grid.append(tile);
+  }
+  $('#photo-page-status').textContent = `${photoPage + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`;
+  $('#photo-prev').disabled = photoPage === 0;
+  $('#photo-next').disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
+}
+
 function currentStyle() {
   return { font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
-    effect: $('#compose-effect').value };
+    effect: $('#compose-effect').value,
+    textColor: $('input[name="textColor"]:checked')?.value || 'default',
+    backgroundColor: $('input[name="backgroundColor"]:checked')?.value || 'default',
+    boxColor: $('input[name="boxColor"]:checked')?.value || 'default' };
 }
-function chosenPhoto() { return $('input[name="photo-choice"]:checked')?.value || 'plain'; }
+function chosenPhoto() { return selectedPhotoKey || 'plain'; }
 function applyComposeStyle() {
   const preview = $('.compose-photo'), style = currentStyle();
   const photo = $('#note-photo-pick').hidden || chosenPhoto() === 'plain' ? backgroundKey : chosenPhoto();
-  preview.classList.toggle('image-lake', photo === '10');
-  preview.classList.toggle('image-forest', photo === '11');
-  preview.classList.toggle('note-plain', photo !== '10' && photo !== '11');
-  preview.classList.remove('note-theme-rose', 'note-theme-night', 'note-font-round', 'note-font-serif', 'note-size-large', 'note-size-small', 'note-effect-sparkle', 'note-effect-frame');
-  if (style.theme !== 'plain') preview.classList.add(`note-theme-${style.theme}`);
-  if (style.font !== 'default') preview.classList.add(`note-font-${style.font}`);
-  if (style.size !== 'normal') preview.classList.add(`note-size-${style.size}`);
-  if (style.effect !== 'none') preview.classList.add(`note-effect-${style.effect}`);
+  setPhotoBackground(preview, photo);
+  applyVisualStyle(preview, style);
 }
 function updateEventPrice() {
   const radius = Number($('#event-radius').value), hours = Number($('#event-hours').value);
@@ -817,15 +922,27 @@ async function showEventMap() {
 }
 
 function draftContent() {
-  return { body: text.value, tags: tags.value, background_key: backgroundKey, kind, parent_id: parentId };
+  return { body: text.value, tags: tags.value, background_key: backgroundKey, kind, parent_id: parentId,
+    style: currentStyle(), photo_key: kind === 'memo' && chosenPhoto() !== 'plain' ? chosenPhoto() : null };
 }
 function restoreDraft(content) {
   if (!content || backdrop.hidden || editingId || composerUserId !== session?.user?.id) return;
   kind = content.kind; parentId = content.parent_id; backgroundKey = content.background_key;
   text.value = content.body; tags.value = content.tags;
   $('input[name="identity"][value="anonymous"]').checked = true;
-  $('.compose-photo').classList.toggle('image-forest', backgroundKey === '11');
-  $('.compose-photo').classList.toggle('image-lake', backgroundKey === '10');
+  const style = content.style && typeof content.style === 'object' ? content.style : {};
+  $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
+  $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
+  $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
+  $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
+  for (const group of ['textColor', 'backgroundColor', 'boxColor']) setColorChoice(group, style[group]);
+  selectedPhotoKey = kind === 'memo' ? photoAssetKey(content.photo_key) : null;
+  $('input[name="photo-choice"][value="plain"]').checked = !selectedPhotoKey;
+  $('#photo-selection').textContent = selectedPhotoKey
+    ? `사진 ${String(Number(selectedPhotoKey) - PHOTO_FIRST + 1).padStart(3, '0')} 선택 · 게시 후 10쭈/1개월`
+    : '기본 사진 무작위';
+  if (selectedPhotoKey) photoPage = Math.floor((Number(selectedPhotoKey) - PHOTO_FIRST) / PHOTO_PAGE_SIZE);
+  applyComposeStyle();
   $('#compose-title').textContent = kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = kind === 'comment' ? replyContext() : '사진 위에 마음을 적어 주세요.';
   updateComposer();
@@ -838,7 +955,8 @@ function recordDraft() {
 function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
-  for (const selector of ['#compose-font', '#compose-size', '#compose-theme', '#compose-effect', '#event-radius', '#event-hours']) $(selector).disabled = disabled;
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next']) $(selector).disabled = disabled;
+  document.querySelectorAll('.note-color-choice input, input[name="photo-choice"]').forEach(input => { input.disabled = disabled; });
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
   draftTools?.querySelectorAll('button').forEach(button => { button.disabled = disabled; });
 }
@@ -888,7 +1006,7 @@ function installDrafts() {
   const parent = node('button', 'button', '답글 원글 보기'); parent.type = 'button'; parent.id = 'note-draft-parent'; parent.hidden = true;
   parent.addEventListener('click', () => { if (parentId) { closeComposer(); openCard(parentId); } });
   draftConfirm = node('div', 'note-draft-confirm'); draftConfirm.hidden = true;
-  draftTools.append(draftStatus, save, restore, discard, parent, draftConfirm); $('.composer-footer').before(draftTools);
+  draftTools.append(draftStatus, save, restore, discard, parent, draftConfirm); $('#compose-more-content').append(draftTools);
   draftController = window.OjjudaNoteDrafts.create({ rpc: noteRpc, getUserId: () => session?.user?.id || null,
     onStatus: snapshot => { draftStatus.textContent = snapshot.message; } });
 }
@@ -900,8 +1018,13 @@ function parsedTags(raw = tags.value) {
 function updateComposer() {
   const lines = text.value.replace(/\r\n?/g, '\n').split('\n');
   $('#compose-count').textContent = `${text.value.length} / 200자`;
+  const visual = currentStyle();
+  const extra = selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
+    || visual.size !== 'normal' || visual.effect !== 'none'
+    || ['textColor', 'backgroundColor', 'boxColor'].some(key => visual[key] !== 'default');
+  $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
-  $('#compose-tag-display').textContent = values?.length ? values.map(value => `#${value}`).join('  ') : '#태그는 사진 아래쪽에 보여요';
+  $('#compose-tag-display').textContent = values?.length ? values.map(value => `#${value}`).join('  ') : '';
   if (!client || !ready) composeMessage.textContent = '노트 연결 확인 후 등록 가능';
   else if (!authKnown) composeMessage.textContent = '로그인 확인 중';
   else if (!session?.user) {
@@ -937,25 +1060,27 @@ async function openComposer(mode, card = null) {
   composerUserId = session?.user?.id || null;
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
-  backgroundKey = editingId ? card.background_key : Math.random() < .5 ? '10' : '11';
+  backgroundKey = editingId ? card.background_key : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
   $('#note-photo-pick').hidden = !!editingId || kind !== 'memo';
+  $('#compose-more').open = false;
+  $('#photo-gallery').hidden = true; $('#photo-gallery-toggle').setAttribute('aria-expanded', 'false');
+  $('#photo-grid').replaceChildren(); photoPage = 0; selectedPhotoKey = null;
   $('input[name="photo-choice"][value="plain"]').checked = true;
+  $('#photo-selection').textContent = '기본 사진 무작위';
   $('#card-location-consent').hidden = kind === 'event' || !!editingId;
   $('#card-location-status').textContent = '위치를 확인해야 등록할 수 있어요.';
   $('#note-event-fields').hidden = kind !== 'event';
   $('#compose-title').textContent = editingId ? '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = editingId ? '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
   submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100쭈 결제 후 등록' : '등록하기';
-  $('.compose-photo').classList.toggle('image-forest', backgroundKey === '11');
-  $('.compose-photo').classList.toggle('image-lake', backgroundKey === '10');
-  $('.compose-photo').classList.toggle('note-plain', backgroundKey !== '10' && backgroundKey !== '11');
   const style = editingId && card.style && typeof card.style === 'object' ? card.style : {};
-  $('#compose-font').value = ['round', 'serif'].includes(style.font) ? style.font : 'default';
+  $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
-  $('#compose-effect').value = ['sparkle', 'frame'].includes(style.effect) ? style.effect : 'none';
+  $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
+  for (const group of ['textColor', 'backgroundColor', 'boxColor']) setColorChoice(group, style[group]);
   applyComposeStyle(); updateEventPrice();
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : '';
   const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
@@ -1245,19 +1370,32 @@ function showPhotoChoices(card) {
   managementBody.append(node('p', 'management-help', '제공 사진 한 장을 선택하면 10쭈가 차감되고 1개월간 적용돼요. 자동 연장은 하지 않아요.'));
   if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
   const choices = node('div', 'note-photo-choice');
-  for (const [key, title] of [['10', '호수 사진'], ['11', '숲 사진']]) {
-    const button = node('button', 'button'); button.type = 'button';
-    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = title; img.loading = 'lazy';
-    button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
-    button.addEventListener('click', () => {
-      if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
-      const requestId = crypto.randomUUID();
-      managementAction(() => noteRpc('purchase_card_photo', { p_card_id: card.id, p_photo_key: key, p_request_id: requestId }),
-        async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); });
-    });
-    choices.append(button);
-  }
-  managementBody.append(choices); cancelManagement();
+  const pages = node('div', 'note-photo-pages');
+  let page = 0;
+  const render = () => {
+    choices.replaceChildren(); pages.replaceChildren();
+    const first = PHOTO_FIRST + page * PHOTO_PAGE_SIZE;
+    for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
+      const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
+      const button = node('button', 'button'); button.type = 'button';
+      const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
+      button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
+      button.addEventListener('click', () => {
+        if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
+        const requestId = crypto.randomUUID();
+        managementAction(() => noteRpc('purchase_card_photo', { p_card_id: card.id, p_photo_key: key, p_request_id: requestId }),
+          async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); });
+      });
+      choices.append(button);
+    }
+    const prev = node('button', 'button', '이전'); prev.type = 'button'; prev.disabled = page === 0;
+    prev.addEventListener('click', () => { page--; render(); });
+    const next = node('button', 'button', '다음'); next.type = 'button';
+    next.disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
+    next.addEventListener('click', () => { page++; render(); });
+    pages.append(prev, node('span', '', `${page + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`), next);
+  };
+  render(); managementBody.append(choices, pages); cancelManagement();
 }
 function confirmPermanent(card) {
   showManagement('영구보관할까요?');
@@ -1376,7 +1514,7 @@ function installManagement() {
     if (!dialog) return;
     if (event.key === 'Escape' && !management.hidden) { event.preventDefault(); closeManagement(); return; }
     if (event.key !== 'Tab') return;
-    const focusable = [...dialog.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), [tabindex="0"]')]
+    const focusable = [...dialog.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), select:not(:disabled), summary, [tabindex="0"]')]
       .filter(item => !item.hidden && item.getClientRects().length > 0);
     if (!focusable.length) { event.preventDefault(); return; }
     const first = focusable[0], last = focusable.at(-1);
@@ -1497,7 +1635,7 @@ function receiveAuth(current) {
   }, 0);
 }
 
-installManagement(); installFeatures(); installStageAuth(); installDrafts();
+installManagement(); installStyleChoices(); installFeatures(); installStageAuth(); installDrafts();
 window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,

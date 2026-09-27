@@ -2,6 +2,27 @@
 (() => {
   'use strict';
   const PAGE_SIZE = 30;
+  const FONT_CHOICES = [
+    ['default', '고운돋움'], ['round', '둥근 글씨'], ['serif', '명조'],
+    ['handwriting', '손글씨'], ['mono', '고정폭']
+  ];
+  const EFFECT_CHOICES = [
+    ['none', '없음'], ['rain', '비 내리기'], ['shimmer', '빛 스치기'],
+    ['rainbow', '무지개'], ['snow', '눈 내리기'], ['starlight', '별빛'],
+    ['fireflies', '반딧불이'], ['petals', '꽃잎'], ['bubbles', '비눗방울'],
+    ['aurora', '오로라'], ['confetti', '색종이'], ['sunbeams', '햇살'],
+    ['mist', '안개'], ['ocean', '물결'], ['heartbeat', '빛의 파동'],
+    ['orbit', '궤도'], ['glitter', '반짝이'], ['meteor', '별똥별'],
+    ['leaves', '나뭇잎'], ['neon', '네온'], ['dawn', '새벽빛'],
+    ['sparkle', '고정 반짝임'], ['frame', '고정 테두리']
+  ];
+  const COLOR_CHOICES = [
+    ['default', '기본'], ['red', '빨강'], ['yellow', '노랑'],
+    ['green', '초록'], ['blue', '파랑'], ['purple', '보라'],
+    ['black', '검정'], ['white', '흰색']
+  ];
+  const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 102 }, (_, index) =>
+    [String(index + 10), `사진 ${String(index + 1).padStart(3, '0')}`])];
   const TABS = [
     ['cards', '카드 · 답글'], ['settings', '공지 · 기능'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
@@ -236,15 +257,37 @@
         content.replaceChildren();
         if (!visual) { empty(content, '카드의 꾸미기 정보를 찾지 못했어요.'); return; }
         const style = visual.style || {};
-        const font = choiceField('글꼴', [['default', '기본'], ['round', '둥근 글꼴'], ['serif', '명조 글꼴']], style.font);
+        const font = choiceField('글꼴', FONT_CHOICES, style.font);
         const size = choiceField('글자 크기', [['normal', '보통'], ['large', '크게'], ['small', '작게']], style.size);
         const theme = choiceField('색상', [['plain', '기본'], ['rose', '장미'], ['night', '밤']], style.theme);
-        const effect = choiceField('효과', [['none', '없음'], ['sparkle', '반짝임'], ['frame', '액자']], style.effect);
+        const effect = choiceField('꾸미기 효과', EFFECT_CHOICES, style.effect);
+        const textColor = choiceField('글씨 색', COLOR_CHOICES, style.textColor);
+        const backgroundColor = choiceField('사진 위 배경 색', COLOR_CHOICES, style.backgroundColor);
+        const boxColor = choiceField('네모난 글상자 색', COLOR_CHOICES, style.boxColor);
         const styleUntil = field('꾸미기 종료', 'datetime-local', localDateTime(visual.style_until), '비워 두면 꾸미기는 공개 화면에 적용되지 않습니다.');
-        const photo = choiceField('지정 사진', [['', '지정 없음'], ['10', '호수'], ['11', '숲']], visual.photo_key, '처음 배정된 무료 사진: ' + ({ '10': '호수', '11': '숲' }[visual.background_key] || '기본'));
+        const originalPhoto = PHOTO_CHOICES.find(([key]) => key === visual.background_key)?.[1] || '기본';
+        const photo = choiceField('지정 사진', PHOTO_CHOICES, visual.photo_key, `처음 무작위 배정된 무료 사진: ${originalPhoto}`);
+        const photoPreview = el('div', 'na-photo-preview');
+        const photoImage = el('img'); photoImage.alt = '';
+        const photoCaption = el('span'); photoPreview.append(photoImage, photoCaption);
+        const updatePhotoPreview = () => {
+          const key = photo.input.value || visual.background_key;
+          if (!PHOTO_CHOICES.some(([value]) => value === key)) {
+            photoPreview.hidden = true; return;
+          }
+          photoPreview.hidden = false;
+          photoImage.src = `/note/assets/${key}.jpg`;
+          photoCaption.textContent = photo.input.value
+            ? `지정 사진 · ${PHOTO_CHOICES.find(([value]) => value === key)[1]}`
+            : `처음 무작위 배정된 사진 · ${originalPhoto}`;
+        };
+        photo.input.addEventListener('change', updatePhotoPreview);
+        updatePhotoPreview();
         const photoUntil = field('사진 지정 종료', 'datetime-local', localDateTime(visual.photo_until), '사진을 지정했다면 종료 시각을 지정해 주세요.');
         const reason = reasonField();
-        content.append(font.wrap, size.wrap, theme.wrap, effect.wrap, styleUntil.wrap, photo.wrap, photoUntil.wrap, reason.wrap);
+        content.append(font.wrap, size.wrap, theme.wrap, effect.wrap,
+          textColor.wrap, backgroundColor.wrap, boxColor.wrap, styleUntil.wrap,
+          photo.wrap, photoPreview, photoUntil.wrap, reason.wrap);
         const save = button('꾸미기·사진 지정 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
         form.addEventListener('submit', event => {
           event.preventDefault(); if (!validReason(reason.input)) return;
@@ -253,7 +296,10 @@
           const dateValue = (input, original) => input.value ? (input.value === localDateTime(original) ? original : new Date(input.value).toISOString()) : null;
           perform('admin_edit_card_visual', {
             p_card_id: card.id,
-            p_style: { font: font.input.value, size: size.input.value, theme: theme.input.value, effect: effect.input.value },
+            p_style: { ...style, font: font.input.value, size: size.input.value,
+              theme: theme.input.value, effect: effect.input.value,
+              textColor: textColor.input.value, backgroundColor: backgroundColor.input.value,
+              boxColor: boxColor.input.value },
             p_style_until: dateValue(styleUntil.input, visual.style_until),
             p_photo_key: photo.input.value || null,
             p_photo_until: dateValue(photoUntil.input, visual.photo_until),
