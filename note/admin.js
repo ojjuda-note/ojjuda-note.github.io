@@ -3,9 +3,10 @@
   'use strict';
   const PAGE_SIZE = 30;
   const TABS = [
-    ['overview', '운영 현황'], ['settings', '운영 설정'], ['cards', '카드 · 답글'],
+    ['overview', '요약'], ['settings', '운영 설정'], ['cards', '카드 · 답글'],
     ['reports', '신고'], ['inquiries', '문의'], ['users', '이용 제한'], ['actions', '작업 기록']
   ];
+  const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
   const HELP = {
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
     settings: '공지와 노트 안의 기능을 관리합니다. 변경 사유는 작업 기록에 남습니다.',
@@ -24,6 +25,7 @@
   let client = null, onChanged = null, userId = null, subscription = null;
   let instance = 0, pageRun = 0, busy = false, tabId = 'overview', actionReturn = null;
   let previousFocus = null, previousOverflow = '', inertState = [], disabledState = [], embedded = false;
+  let externalNav = false, authorized = false, onTabChange = null;
   let root, panel, nav, main, status, closeButton;
 
   function el(tag, className, value) {
@@ -33,7 +35,7 @@
     return item;
   }
   function button(label, action, variant = '') {
-    const item = el('button', `na-button${variant ? ` na-button--${variant}` : ''}`, label);
+    const item = el('button', `btn na-button${variant === 'primary' ? ' pri na-button--primary' : variant === 'danger' ? ' na-button--danger' : ''}`, label);
     item.type = 'button'; item.addEventListener('click', action); return item;
   }
   function formatDate(value) {
@@ -53,14 +55,14 @@
   function empty(target, message) { target.append(el('p', 'na-empty', message)); }
   function badge(text, variant = '') { return el('span', `na-badge${variant ? ` na-badge--${variant}` : ''}`, text); }
   function sectionTitle(title, help) {
-    const heading = el('h3', 'na-section-title', title); heading.tabIndex = -1;
+    const heading = el('h3', 'h3 na-section-title', title); heading.tabIndex = -1;
     main.replaceChildren(heading);
     if (help) main.append(el('p', 'na-help', help));
     return heading;
   }
   function field(label, type = 'text', value = '', help = '') {
     const wrap = el('label', 'na-field');
-    const input = el(type === 'textarea' ? 'textarea' : 'input', 'na-input');
+    const input = el(type === 'textarea' ? 'textarea' : 'input', 'inp na-input');
     if (type !== 'textarea') input.type = type;
     input.value = value ?? '';
     wrap.append(el('span', '', label), input);
@@ -155,7 +157,7 @@
     if (busy) return;
     pageRun++; actionReturn = tabId; setStatus('');
     const heading = sectionTitle(title, description);
-    const form = el('form', 'na-form');
+    const form = el('form', 'box na-form na-action-form');
     const actions = el('div', 'na-actions');
     actions.append(button('돌아가기', () => load(actionReturn || tabId)));
     build(form, actions);
@@ -225,30 +227,33 @@
   async function renderOverview(run) {
     const [overview, settings] = await Promise.all([rpc('admin_overview'), rpc('get_note_state')]);
     if (!validRun(run)) return;
-    const stats = el('dl', 'na-stats');
+    const stats = el('dl', 'adm-stats na-stats');
     for (const [label, key] of [['사진 카드', 'total_memos'], ['답글', 'total_replies'], ['개별 숨김 콘텐츠', 'hidden_cards'], ['접수된 신고', 'open_reports'], ['이용 제한', 'restricted_users']]) {
-      const stat = el('div', 'na-stat'); stat.append(el('dt', '', label), el('dd', '', number(overview?.[key]))); stats.append(stat);
+      const stat = el('div', 'adm-stat na-stat'); stat.append(el('dt', 'adm-l', label), el('dd', 'adm-n', number(overview?.[key]))); stats.append(stat);
     }
     main.append(stats);
-    const operating = el('section', 'na-box'); operating.append(el('h4', '', '현재 운영 상태'));
+    const operating = el('section', 'box na-box'); operating.append(el('h4', '', '현재 운영 상태'));
     const states = el('p', 'na-meta');
     for (const [label, key] of [['카드 작성', 'posting_enabled'], ['답글 작성', 'replies_enabled'], ['신고 접수', 'reports_enabled']]) states.append(badge(`${label} ${settings?.[key] ? '열림' : '닫힘'}`, settings?.[key] ? 'good' : 'warn'));
     operating.append(states, button('운영 설정 관리', () => load('settings'))); main.append(operating);
-    const notice = el('section', 'na-box na-box--notice'); notice.append(el('h4', '', '현재 공지'), el('p', '', settings?.notice || '등록된 공지가 없어요.')); main.append(notice);
+    const notice = el('section', 'box na-box na-box--notice'); notice.append(el('h4', '', '현재 공지'), el('p', '', settings?.notice || '등록된 공지가 없어요.')); main.append(notice);
   }
   async function renderSettings(run) {
     const settings = await rpc('admin_settings'); if (!validRun(run)) return;
-    const form = el('form', 'na-form');
+    const form = el('form', 'na-form na-settings-form');
+    const controls = el('section', 'box na-box na-settings-group'); controls.append(el('h4', '', '기능과 공지'));
     const notice = field('노트 공지', 'textarea', settings?.notice || '', '모든 이용자에게 표시됩니다. 최대 1,000자이며, 비우면 공지가 내려갑니다.'); notice.input.maxLength = 1000; notice.input.rows = 5;
-    form.append(notice.wrap); const checks = {};
+    controls.append(notice.wrap); const checks = {};
     for (const [key, label, description] of [
       ['posting_enabled', '카드 작성·수정 허용', '사진 카드를 새로 쓰거나 수정할 수 있습니다.'],
       ['replies_enabled', '답글 작성·수정 허용', '답글을 새로 쓰거나 수정할 수 있습니다.'],
       ['reports_enabled', '신고 접수 허용', '새 신고를 접수합니다. 기존 신고는 계속 관리할 수 있습니다.']
     ]) {
       const wrap = el('label', 'na-switch'); const input = el('input'); input.type = 'checkbox'; input.checked = settings?.[key] === true;
-      const copy = el('span', '', label); copy.append(el('small', '', description)); wrap.append(input, copy); form.append(wrap); checks[key] = input;
+      const copy = el('span', '', label); copy.append(el('small', '', description)); wrap.append(input, copy); controls.append(wrap); checks[key] = input;
     }
+    form.append(controls);
+    const documents = el('section', 'box na-box na-settings-group'); documents.append(el('h4', '', '운영 안내'));
     const additional = {};
     for (const [key, label, maxLength, hint] of [
       ['contact_text', '문의 안내', 1000, '문의 방법이나 운영시간을 안내하세요.'],
@@ -258,11 +263,13 @@
     ]) {
       const item = field(label, 'textarea', settings?.[key] || '', `${hint} 최대 ${number(maxLength)}자`);
       item.input.maxLength = maxLength; item.input.rows = key === 'contact_text' ? 3 : 6;
-      additional[key] = item.input; form.append(item.wrap);
+      additional[key] = item.input; documents.append(item.wrap);
     }
+    form.append(documents);
+    const policy = el('section', 'box na-box na-settings-group'); policy.append(el('h4', '', '작성 기준'));
     const blocked = field('작성 금지어', 'textarea', (settings?.blocked_words || []).join('\n'), '줄바꿈으로 구분하세요. 최대 100개, 각 40자 이내입니다. 글과 태그에 금지어가 포함되면 작성을 제한합니다.');
-    blocked.input.maxLength = 4100; blocked.input.rows = 5; form.append(blocked.wrap);
-    const reason = reasonField(); form.append(reason.wrap);
+    blocked.input.maxLength = 4100; blocked.input.rows = 5; policy.append(blocked.wrap);
+    const reason = reasonField(); policy.append(reason.wrap); form.append(policy);
     const actions = el('div', 'na-actions'); const save = button('운영 설정 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save); form.append(actions);
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -276,10 +283,10 @@
     blocked.input.addEventListener('input', () => blocked.input.setCustomValidity(''));
   }
   function searchForm(value, placeholder, submit, states = null, help = '') {
-    const form = el('form', 'na-search'); const query = field('검색', 'search', value, help); query.input.placeholder = placeholder; query.input.maxLength = 200; form.append(query.wrap);
+    const form = el('form', 'box na-search'); const query = field('검색', 'search', value, help); query.input.placeholder = placeholder; query.input.maxLength = 200; form.append(query.wrap);
     let select = null;
     if (states) {
-      const wrap = el('label', 'na-field'); wrap.append(el('span', '', '개별 숨김')); select = el('select', 'na-input');
+      const wrap = el('label', 'na-field'); wrap.append(el('span', '', '개별 숨김')); select = el('select', 'inp na-input');
       for (const [key, label] of [['all', '전체'], ['visible', '숨김 없음'], ['hidden', '숨김']]) {
         const option = el('option', '', label); option.value = key; select.append(option);
       }
@@ -299,7 +306,7 @@
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}개 · ${filter.offset + 1}–${filter.offset + rows.length}`));
     const list = el('div', 'na-list');
     for (const card of rows) {
-      const item = el('article', 'na-item'); const header = el('div', 'na-item-header');
+      const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : '사진 카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
@@ -328,7 +335,7 @@
     main.append(el('p', 'na-count', `총 ${number(rows.length)}건 · 처리 중인 신고와 숨긴 카드를 함께 표시합니다.`));
     const list = el('div', 'na-list');
     for (const report of rows.slice(offset, offset + PAGE_SIZE)) {
-      const item = el('article', 'na-item'); const meta = el('p', 'na-meta');
+      const item = el('article', 'adm-card na-item'); const meta = el('p', 'na-meta');
       meta.append(badge(report.status === 'resolved' ? '처리 완료' : '접수', report.status === 'resolved' ? 'good' : 'warn'), badge(report.hidden ? '개별 숨김' : '개별 숨김 없음'), el('span', '', formatDate(report.created_at)));
       item.append(meta, el('blockquote', 'na-card-body', report.body || '삭제된 카드'), el('p', 'na-reason', `신고 사유: ${report.reason || ''}`));
       const actions = el('div', 'na-actions');
@@ -346,7 +353,7 @@
     if (!rows?.length) { empty(main, '조건에 맞는 노트 이용자가 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filters.users.offset = 0; load('users'); })); return; }
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}명`)); const list = el('div', 'na-list');
     for (const user of rows) {
-      const item = el('article', 'na-item'); const header = el('div', 'na-item-header'); const meta = el('p', 'na-meta');
+      const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header'); const meta = el('p', 'na-meta');
       header.append(el('strong', '', shortUser(user.user_id)));
       if (user.is_moderator) meta.append(badge('관리자', 'good'));
       if (user.user_id === userId) meta.append(badge('나'));
@@ -360,7 +367,7 @@
     main.append(list); pagination(main, filter.offset, total, offset => { filters.users.offset = offset; load('users'); });
   }
   async function renderInquiries(run) {
-    const target = el('section'); main.append(target);
+    const target = el('section', 'na-inquiries'); main.append(target);
     if (!window.OjjudaNoteSupport?.renderAdmin) {
       empty(target, '문의 관리 기능을 불러오지 못했어요. 화면을 새로고침해 주세요.'); return;
     }
@@ -372,7 +379,7 @@
     if (!rows?.length) { empty(main, '아직 남겨진 작업 기록이 없어요.'); if (offset) main.append(button('첫 페이지로', () => { filters.actions.offset = 0; load('actions'); })); return; }
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}건 · 최근 작업부터 표시합니다.`)); const list = el('div', 'na-list');
     for (const action of rows) {
-      const item = el('article', 'na-item'); const header = el('div', 'na-item-header');
+      const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
       header.append(el('strong', '', ACTIONS[action.action] || '운영 작업'), el('span', 'na-meta', formatDate(action.created_at))); item.append(header);
       item.append(el('p', 'na-reason', `처리자: ${shortUser(action.moderator_id)}\n사유: ${action.reason || '기록된 사유 없음'}`));
       item.append(details([['작업 번호', action.action_id], ['운영자 번호', action.moderator_id], ['이용자 번호', action.subject_user_id], ['카드 번호', action.card_id], ['신고 번호', action.report_id]]));
@@ -409,8 +416,11 @@
     tabId = TABS.some(([id]) => id === nextTab) ? nextTab : 'overview'; actionReturn = null;
     const run = ++pageRun; setStatus('');
     for (const item of nav.querySelectorAll('[data-admin-tab]')) {
-      if (item.dataset.adminTab === tabId) item.setAttribute('aria-current', 'page'); else item.removeAttribute('aria-current');
+      const selected = item.dataset.adminTab === tabId;
+      item.classList.toggle('on', selected);
+      if (selected) item.setAttribute('aria-current', 'page'); else item.removeAttribute('aria-current');
     }
+    if (typeof onTabChange === 'function') { try { onTabChange(tabId); } catch { /* Keep Note navigation usable if the host refresh fails. */ } }
     const heading = sectionTitle(TABS.find(([id]) => id === tabId)[1], HELP[tabId]);
     main.scrollTop = 0; heading.focus({ preventScroll: true });
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
@@ -436,7 +446,7 @@
     const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '오쭈다노트 관리자'); h2.id = 'note-admin-title';
     title.append(h2, el('p', '', '노트 콘텐츠와 운영을 관리합니다.'));
     closeButton = button('닫기', () => { if (!busy) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
-    const layout = el('div', 'na-layout'); nav = el('nav', 'na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');
+    const layout = el('div', 'na-layout'); nav = el('nav', 'seg adm-tabs na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');
     for (const [id, label] of TABS) { const item = button(label, () => load(id)); item.dataset.adminTab = id; nav.append(item); }
     main = el('div', 'na-main'); main.id = 'note-admin-content'; main.setAttribute('role', 'region'); main.setAttribute('aria-label', '관리 내용');
     status = el('p', 'na-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
@@ -461,6 +471,7 @@
     inertState = [];
     if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
+    externalNav = false; authorized = false; onTabChange = null;
     filters.cards = { query: '', state: 'all', offset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0;
     if (embedded) {
       embedded = false; root.classList.remove('na-embedded'); root.remove();
@@ -470,6 +481,10 @@
   async function activate(options, container) {
     ensurePanel(); instance++; const run = instance;
     embedded = !!container;
+    externalNav = embedded && options.externalNav === true;
+    authorized = false; onTabChange = options.onTabChange;
+    const requested = options.initialTab || options.tabId;
+    tabId = TABS.some(([id]) => id === requested) ? requested : 'overview';
     client = options.client; onChanged = options.onChanged; userId = null;
     if (embedded) {
       root.classList.add('na-embedded'); panel.setAttribute('role', 'region'); panel.removeAttribute('aria-modal');
@@ -501,8 +516,9 @@
       if (allowed !== true) {
         nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '관리자 계정만 사용할 수 있어요.')); return;
       }
-      nav.hidden = false; filters.cards.offset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0;
-      await load('overview');
+      authorized = true; nav.hidden = externalNav;
+      filters.cards.offset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0;
+      await load(tabId);
     } catch (error) {
       if (!validInstance(run)) return;
       nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '관리자 권한을 확인하지 못했어요.')); setStatus(friendlyError(error), true);
@@ -520,12 +536,26 @@
     if (!(container instanceof HTMLElement) || !options.client?.schema || !options.client?.auth) return;
     if (root && !root.hidden && embedded && client === options.client) {
       if (root.parentElement !== container) container.append(root);
-      onChanged = options.onChanged;
+      onChanged = options.onChanged; onTabChange = options.onTabChange;
+      externalNav = options.externalNav === true; nav.hidden = externalNav || !authorized;
+      const requested = options.initialTab || options.tabId;
+      if (requested && !authorized && TAB_ITEMS.some(tab => tab.id === requested)) tabId = requested;
+      if (requested && requested !== tabId && authorized && !busy) return load(requested);
       return;
     }
     if (root && !root.hidden) close();
     return activate(options, container);
   }
   function unmount() { if (embedded) close(); }
-  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount });
+  function getTabs() { return TAB_ITEMS.map(({ id, label }) => ({ id, label })); }
+  function selectTab(id) {
+    if (!TAB_ITEMS.some(tab => tab.id === id)) return Promise.resolve(false);
+    if (!authorized) {
+      tabId = id;
+      if (typeof onTabChange === 'function') { try { onTabChange(id); } catch {} }
+      return Promise.resolve(false);
+    }
+    return load(id);
+  }
+  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount, getTabs, tabs: TAB_ITEMS, selectTab });
 })();

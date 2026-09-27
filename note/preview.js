@@ -903,10 +903,7 @@ function installManagement() {
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드', () => {
     if (!moderator || !session?.user) return;
-    if (!window.OjjudaNoteAdmin) { message('관리자 모드를 불러오지 못했어요. 새로고침해 주세요.'); return; }
-    window.OjjudaNoteAdmin.open({ client, onChanged: async () => {
-      await loadNoteState(); await loadModerator(session?.user?.id); await refreshCards(stack.length > 0);
-    } });
+    window.location.assign('/world.html?admin=note');
   }); reports.id = 'note-moderation'; reports.hidden = true;
   tools.append(account, blocks, reports); $('#connection-status').after(tools);
   managementClose.addEventListener('click', () => closeManagement());
@@ -1016,7 +1013,6 @@ function receiveAuth(current) {
     worldCoins = null; balanceRun++; moderator = false; moderatorRun++;
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
     composerRun++; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
-    window.OjjudaNoteAdmin?.close?.();
     notificationController?.close?.();
     feedRun++; detailRun++; cache.clear(); stack.length = 0;
     slot.replaceChildren(); replies.replaceChildren(); state(list, '카드를 불러오는 중이에요.');
