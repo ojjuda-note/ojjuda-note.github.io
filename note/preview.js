@@ -5,7 +5,7 @@ const localStage = config?.localStage === true && ['localhost', '127.0.0.1'].inc
   && config.supabaseUrl === 'https://jucuqqbynilwlhqxyzrd.supabase.co';
 const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
   ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null;
-const columns = 'id,kind,parent_id,body,display_name,tags,background_key,created_at,like_count,reply_count,is_mine,is_liked,is_bookmarked,identity_mode';
+const columns = 'id,kind,parent_id,body,display_name,tags,background_key,created_at,like_count,reply_count,is_mine,is_liked,is_bookmarked,identity_mode,style,photo_key,style_until,photo_until,archive_due_at,permanent';
 const feed = $('#feed'), detail = $('#detail'), list = $('#feed-list');
 const slot = $('#detail-card-slot'), replies = $('#reply-list');
 const backdrop = $('#composer-backdrop'), text = $('#compose-text'), tags = $('#compose-tags');
@@ -18,6 +18,14 @@ let stageAuth = null;
 let worldCoins = null, balanceRun = 0;
 let editingId = null, composerUserId = null, moderator = false, moderatorRun = 0;
 let feedMode = 'all', feedSort = 'latest', feedTerm = '', feedSearchKind = 'body';
+let nearbyPosition = null, nearbyOffset = 0, writingPosition = null, eventPosition = null;
+let nearbySnapshot = null;
+let publishRequestId = null, locationRun = 0;
+let replyDueChecking = false, replyDueRun = 0;
+let photoRequestId = null;
+let eventMap = null, publicMap = null;
+let mapFetchRun = 0, composerMapFetchRun = 0, publicMapTimer = null, composerMapTimer = null;
+let publicMapLocate = null;
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 let initialCardId = new URL(location.href).searchParams.get('card');
@@ -25,6 +33,7 @@ const reactionPending = new Set();
 let draftController = null, draftTools = null, draftStatus = null, draftConfirm = null, draftLoading = false;
 let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let notificationController = null;
+let retentionButton = null, retentionRun = 0;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
 
 
@@ -53,24 +62,67 @@ function dateLabel(value) {
     year: 'numeric', month: 'numeric', day: 'numeric'
   }).format(date);
 }
+function archiveDueThisMonth(value) {
+  const due = Date.parse(value);
+  if (!Number.isFinite(due)) return false;
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'numeric' })
+    .formatToParts(new Date());
+  const year = Number(parts.find(part => part.type === 'year')?.value);
+  const month = Number(parts.find(part => part.type === 'month')?.value);
+  // The deadline may be represented as the first UTC day after the Korean month ends.
+  const end = Date.UTC(year, month, 2) - 9 * 3600000;
+  return due >= Date.now() && due < end;
+}
+function parentArchiveDue(card) { return card?.effective_archive_due_at || card?.archive_due_at; }
+function replyContext() {
+  const due = parentArchiveDue(cache.get(parentId));
+  return archiveDueThisMonth(due)
+    ? `상위 카드가 ${dateLabel(due)}에 공개 종료될 예정이에요. 이 답글도 함께 삭제될 수 있습니다.`
+    : '이 카드에 답글을 이어 주세요. 상위 카드가 삭제되면 답글도 함께 삭제돼요.';
+}
+async function refreshReplyArchiveNotice(parent, run) {
+  if (!validCardId(parent) || !client) return;
+  const check = ++replyDueRun;
+  replyDueChecking = true; updateComposer();
+  try {
+    const card = await noteRpc('get_card', { p_id: parent, p_lat: null, p_lon: null });
+    if (run !== composerRun || check !== replyDueRun || backdrop.hidden || kind !== 'comment' || parentId !== parent) return;
+    if (card) cache.set(parent, card);
+    $('#compose-context').textContent = card ? replyContext() : '상위 카드를 찾지 못했어요. 답글을 등록할 수 없을 수 있어요.';
+  } catch {
+    if (run === composerRun && check === replyDueRun && !backdrop.hidden && kind === 'comment')
+      $('#compose-context').textContent = '상위 카드 공개 종료일을 확인하지 못했어요. 등록 전에 다시 확인해 주세요.';
+  } finally {
+    if (run === composerRun && check === replyDueRun) { replyDueChecking = false; updateComposer(); }
+  }
+}
 
 function cardElement(card, compact = false, expanded = false) {
   const item = node('article', compact ? 'reply-card' : 'photo-card');
+  if (card.kind === 'event') item.classList.add('note-event-card');
   item.dataset.cardId = card.id;
   const open = node('button', 'photo-open');
   open.type = 'button';
   open.dataset.open = card.id;
   open.setAttribute('aria-label', '카드 크게 보기');
   if (expanded) { open.disabled = true; delete open.dataset.open; }
-  const photo = node('span', `photo ${card.background_key === '11' ? 'image-forest' : 'image-lake'}`);
+  const style = card.style && typeof card.style === 'object' ? card.style : {};
+  const visiblePhoto = card.photo_key || card.background_key;
+  const photoClass = visiblePhoto === '11' ? 'image-forest' : visiblePhoto === '10' ? 'image-lake' : 'note-plain';
+  const photo = node('span', `photo ${photoClass}`);
+  if (['rose', 'night'].includes(style.theme)) photo.classList.add(`note-theme-${style.theme}`);
+  if (['round', 'serif'].includes(style.font)) photo.classList.add(`note-font-${style.font}`);
+  if (['large', 'small'].includes(style.size)) photo.classList.add(`note-size-${style.size}`);
+  if (['sparkle', 'frame'].includes(style.effect)) photo.classList.add(`note-effect-${style.effect}`);
   const quote = node('span', 'card-quote');
-  const body = typeof card.body === 'string' ? card.body : '';
+  const hiddenEvent = card.kind === 'event' && card.body == null;
+  const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
   body.split('\n').forEach((line, index) => {
     if (index) quote.append(document.createElement('br'));
     quote.append(document.createTextNode(line));
   });
-  if (body.length > 120) quote.style.fontSize = compact ? '15px' : '18px';
-  else if (body.length > 70) quote.style.fontSize = compact ? '17px' : '22px';
+  if (body.length > 120 && !style.size) quote.style.fontSize = compact ? '15px' : '18px';
+  else if (body.length > 70 && !style.size) quote.style.fontSize = compact ? '17px' : '22px';
   quote.style.overflowWrap = 'anywhere';
   const tagRow = node('span', 'card-tags');
   for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
@@ -84,9 +136,16 @@ function cardElement(card, compact = false, expanded = false) {
   const person = node('span');
   person.append(node('strong', '', card.display_name || '익명'));
   person.append(node('small', '', dateLabel(card.created_at)));
-  meta.append(node('span', card.background_key === '11' ? 'avatar avatar-green' : 'avatar', 'ㅇ'), person);
-  if (!compact) meta.append(node('span', 'meta-tail', card.kind === 'comment' ? '답글 카드' : '사진 카드'));
+  meta.append(node('span', visiblePhoto === '11' ? 'avatar avatar-green' : 'avatar', 'ㅇ'), person);
+  if (!compact) {
+    if (typeof card.distance_band === 'string') {
+      const label = card.distance_band === '근처' ? '근처 · 약 1km 이내' : card.distance_band;
+      meta.append(node('span', 'meta-tail', label));
+    } else meta.append(node('span', 'meta-tail', card.kind === 'event' ? '이벤트' : card.kind === 'comment' ? '답글 카드' : '익명카드'));
+  }
   item.append(meta);
+
+  if (hiddenEvent) return item;
 
   const actions = node('div', 'card-actions');
   const reply = node('button');
@@ -103,8 +162,8 @@ function cardElement(card, compact = false, expanded = false) {
   like.setAttribute('aria-pressed', String(!!card.is_liked));
   like.disabled = reactionPending.has(`like:${card.id}`) || !canReact(!!card.is_liked);
   like.append(icon('heart'), document.createTextNode(` ${card.like_count || 0}`));
-  actions.append(reply, like);
-  if (!compact) {
+  if (card.kind !== 'event') actions.append(reply, like);
+  if (!compact && card.kind !== 'event') {
     const save = node('button', 'save');
     save.type = 'button'; save.dataset.reaction = 'bookmark'; save.dataset.cardId = card.id;
     save.setAttribute('aria-label', card.is_bookmarked ? '메모함에서 빼기' : '메모함에 담기');
@@ -161,10 +220,12 @@ function filteredFeed() {
 }
 async function loadFeed(more = false) {
   if (!client || (more && feedLoading)) return;
+  if (nearbyPosition && !positionIsFresh(nearbyPosition)) nearbyPosition = null;
   const version = ++feedRun;
   feedLoading = true;
   if (!more) {
     feedCursor = null; feedSnapshot = new Date().toISOString();
+    nearbyOffset = 0; nearbySnapshot = feedSnapshot;
     if (detail.hidden) cache.clear();
     state(list, '카드를 불러오는 중이에요.'); banner('카드를 불러오는 중');
   } else list.querySelector('[data-more-feed]')?.remove();
@@ -172,14 +233,41 @@ async function loadFeed(more = false) {
     ready = true; feedLoading = false; banner('');
     state(list, '대문에서 로그인하면 메모함과 내 카드를 볼 수 있어요.'); updateComposer(); return;
   }
+  if (feedMode === 'all' && feedSort === 'nearby' && !nearbyPosition) {
+    feedLoading = false; ready = true; banner('');
+    const note = node('p', 'reply-empty', '정확한 GPS 좌표는 비공개로 저장되고, 다른 사람에게는 근사 거리만 표시돼요. 위치를 허용하면 가까운 카드부터 볼 수 있어요.');
+    const button = node('button', 'button primary', '위치 확인'); button.type = 'button';
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try { nearbyPosition = await currentPosition(); if (version === feedRun) loadFeed(); }
+      catch { if (version === feedRun) { button.disabled = false; message('위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 눌러 주세요.'); } }
+    });
+    list.replaceChildren(note, button); return;
+  }
+  // A prior browser grant can be reused without raising a new permission prompt.
+  if (!more && feedMode === 'all' && !feedTerm && feedSort !== 'nearby' && !nearbyPosition) {
+    const grantedPosition = await positionIfAlreadyGranted();
+    if (version !== feedRun) return;
+    if (grantedPosition) nearbyPosition = grantedPosition;
+  }
   let data, error;
-  try { ({ data, error } = await filteredFeed()); } catch (cause) { error = cause; }
+  if (feedMode === 'all' && !feedTerm) {
+    try {
+      data = await noteRpc('list_cards', { p_sort: feedSort === 'latest' ? 'recent' : feedSort,
+        p_lat: nearbyPosition?.latitude ?? null, p_lon: nearbyPosition?.longitude ?? null,
+        p_radius_m: 30000, p_limit: 20,
+        p_cursor: { offset: nearbyOffset, snapshot: nearbySnapshot } });
+    } catch (cause) { error = cause; }
+  } else {
+    try { ({ data, error } = await filteredFeed()); } catch (cause) { error = cause; }
+  }
   if (version !== feedRun) return;
   feedLoading = false;
   if (error) {
     console.warn('Note feed:', error);
-    if (!more) { ready = false; state(list, '카드를 불러오지 못했어요.'); }
-    banner('노트 연결을 확인해 주세요');
+    if (!more) state(list, feedSort === 'nearby' && error?.name === 'GeolocationPositionError'
+      ? '근처 카드를 보려면 위치 사용을 허용해 주세요.' : '카드를 불러오지 못했어요.');
+    banner(feedSort === 'nearby' && error?.name === 'GeolocationPositionError' ? '위치 권한을 확인해 주세요' : '노트 연결을 확인해 주세요');
     const retry = node('button', 'button', '다시 시도');
     retry.type = 'button'; retry.dataset.retryFeed = more ? 'more' : 'first'; list.append(retry);
     updateComposer(); return;
@@ -187,20 +275,77 @@ async function loadFeed(more = false) {
   ready = true; banner('');
   if (!more) list.replaceChildren();
   for (const card of data || []) {
+    if (card.kind === 'event' && card.body == null) continue;
     const exists = list.querySelector(`[data-card-id="${card.id}"]`);
     cache.set(card.id, card);
-    if (!exists) list.append(cardElement(card));
+    if (!exists) {
+      if (card.kind === 'event') {
+        let pinned = list.querySelector('.note-pinned-events');
+        if (!pinned) {
+          pinned = node('section', 'note-pinned-events'); pinned.setAttribute('aria-label', '범위 안의 이벤트');
+          pinned.append(node('h2', '', '지금 볼 수 있는 이벤트')); list.prepend(pinned);
+        }
+        pinned.append(cardElement(card));
+      } else list.append(cardElement(card));
+    }
   }
   if (!more && !data?.length) state(list, feedTerm ? '검색 결과가 없어요.' : feedMode === 'saved'
     ? '저장한 카드가 없어요. 카드의 책갈피를 눌러 담아 보세요.' : feedMode === 'mine'
       ? '아직 작성한 카드가 없어요.' : feedSort === 'popular'
         ? '최근 7일에 올라온 카드가 없어요.' : '아직 카드가 없어요. 첫 카드를 써 보세요.');
+  if (!more && feedMode === 'all' && !feedTerm && !nearbyPosition) {
+    const invitation = node('div', 'note-location-invite');
+    const description = node('span', '', session?.user
+      ? '위치를 켜면 주변 이벤트와 대략적인 거리를 볼 수 있어요.'
+      : '로그인하고 위치를 켜면 주변 이벤트를 볼 수 있어요.');
+    const action = session?.user ? node('button', 'button', '위치 확인') : node('a', 'button', '대문에서 로그인');
+    if (session?.user) {
+      action.type = 'button';
+      action.addEventListener('click', async () => {
+        action.disabled = true; description.textContent = '위치를 확인하는 중이에요.';
+        try {
+          const position = await currentPosition();
+          if (version !== feedRun) return;
+          nearbyPosition = position; loadFeed();
+        } catch {
+          if (version !== feedRun) return;
+          description.textContent = '위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 눌러 주세요.';
+          action.disabled = false;
+        }
+      });
+    } else action.href = '/?next=note';
+    invitation.append(description, action); list.prepend(invitation);
+  }
   if (data?.length) feedCursor = data.at(-1);
+  if (feedMode === 'all' && !feedTerm) nearbyOffset += data?.length || 0;
   if (data?.length === 20) {
     const next = node('button', 'button', '더 보기'); next.type = 'button'; next.dataset.moreFeed = ''; list.append(next);
   }
   updateComposer();
   consumeInitialCard();
+}
+function currentPosition() {
+  return new Promise((resolve, reject) => {
+    const unavailable = message => Object.assign(new Error(message), { name: 'GeolocationPositionError' });
+    if (!navigator.geolocation) { reject(unavailable('Location unavailable')); return; }
+    navigator.geolocation.getCurrentPosition(
+      value => resolve({ latitude: value.coords.latitude, longitude: value.coords.longitude,
+        capturedAt: value.timestamp }),
+      error => reject(unavailable(error.message || 'Location denied')),
+      { enableHighAccuracy: false, maximumAge: 120000, timeout: 12000 }
+    );
+  });
+}
+function positionIsFresh(position) {
+  return Number.isFinite(position?.capturedAt) && Date.now() - position.capturedAt < 120000;
+}
+async function positionIfAlreadyGranted() {
+  if (!navigator.geolocation || !navigator.permissions?.query) return null;
+  try {
+    const permission = await navigator.permissions.query({ name: 'geolocation' });
+    if (permission.state === 'granted') return await currentPosition();
+  } catch { /* No implicit request when browser permissions cannot be inspected. */ }
+  return null;
 }
 function consumeInitialCard() {
   if (!initialCardId || !authKnown || !ready) return;
@@ -261,9 +406,10 @@ async function renderDetail() {
   if (backdrop.hidden && management.hidden) $('.back-button').focus({ preventScroll: true });
   // Always recheck visibility: a saved card may have been blocked or hidden.
   let card, error;
-  try {
-    ({ data: card, error } = await query().from('public_cards').select(columns).eq('id', id).maybeSingle());
-  } catch (cause) { error = cause; }
+  const position = positionIsFresh(nearbyPosition) ? nearbyPosition : null;
+  try { card = await noteRpc('get_card', { p_id: id, p_lat: position?.latitude ?? null,
+    p_lon: position?.longitude ?? null }); }
+  catch (cause) { error = cause; }
   if (version !== detailRun) return;
   if (error) {
     console.warn('Note card:', error);
@@ -274,10 +420,31 @@ async function renderDetail() {
     state(slot, '삭제되었거나 볼 수 없는 카드예요.'); state(replies, ''); return;
   }
   cache.set(id, card);
-  $('#detail [data-compose="reply"]').disabled = !canWrite();
+  const eventCard = card.kind === 'event';
+  $('#detail [data-compose="reply"]').hidden = eventCard;
+  $('#detail [data-compose="reply"]').disabled = eventCard || !canWrite('comment');
   slot.replaceChildren(cardElement(card, false, true));
-  $('#reply-count').textContent = String(card.reply_count || 0);
-  loadReplies(id, version);
+  if (eventCard) {
+    $('#reply-count').textContent = '0';
+    if (card.body == null) {
+      const note = node('p', 'reply-empty', !session?.user ? '이벤트 내용을 보려면 대문에서 로그인해 주세요.'
+        : '이벤트 내용은 표시된 기간·범위 안에서만 보여요. 정확한 GPS 좌표는 비공개로 사용됩니다.');
+      const locate = session?.user ? node('button', 'button', '내 위치에서 다시 확인') : node('a', 'button', '대문에서 로그인');
+      if (session?.user) {
+        locate.type = 'button';
+        locate.addEventListener('click', async () => {
+          locate.disabled = true;
+          try { nearbyPosition = await currentPosition(); await renderDetail(); }
+          catch { locate.disabled = false; note.textContent = '위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 시도해 주세요.'; }
+        });
+      } else locate.href = '/?next=note';
+      slot.append(note, locate);
+    }
+    state(replies, '이벤트 카드에는 답글을 작성할 수 없어요.');
+  } else {
+    $('#reply-count').textContent = String(card.reply_count || 0);
+    loadReplies(id, version);
+  }
 }
 function openCard(id) {
   if (!validCardId(id) || !ready) return;
@@ -388,8 +555,9 @@ function shareCard(cardId) {
 }
 function selectCollection(mode) {
   feedMode = mode; message(''); showFeed();
-  $('#feed-title').textContent = mode === 'all' ? '사진 카드' : '메모함';
+  $('#feed-title').textContent = mode === 'all' ? '익명카드' : '메모함';
   $('#note-collection-tabs').hidden = mode === 'all';
+  $('.feed-sort-tabs').hidden = mode !== 'all';
   document.querySelectorAll('[data-collection]').forEach(button => {
     const selected = button.dataset.collection === mode;
     button.classList.toggle('selected', selected); button.setAttribute('aria-pressed', String(selected));
@@ -410,6 +578,9 @@ function installFeatures() {
   noticeElement = node('aside', 'note-notice'); noticeElement.hidden = true;
   noticeElement.setAttribute('aria-label', '노트 운영 안내');
   $('.note-tools').after(noticeElement, featureMessage);
+  retentionButton = node('button', 'button', '보관 알림'); retentionButton.type = 'button';
+  retentionButton.hidden = true; retentionButton.addEventListener('click', showRetentionAlerts);
+  $('.note-tools').append(retentionButton);
   for (const nav of document.querySelectorAll('.side-nav, .bottomnav')) {
     const saved = nav.querySelector('button:nth-child(2)');
     if (saved) { saved.disabled = false; saved.removeAttribute('title'); saved.dataset.show = 'saved'; }
@@ -421,8 +592,9 @@ function installFeatures() {
     button.setAttribute('aria-pressed', 'false'); button.addEventListener('click', () => selectCollection(mode)); collectionTabs.append(button);
   }
   $('.feed-column').prepend(collectionTabs);
-  const sorts = $('.feed-column > .tabs:not(.note-collection-tabs)'); sorts.replaceChildren();
-  for (const [sort, label] of [['latest', '최근순'], ['popular', '인기있는 · 7일']]) {
+  const sorts = $('.feed-sort-tabs');
+  sorts.classList.add('feed-sort-tabs'); sorts.replaceChildren();
+  for (const [sort, label] of [['latest', '최신'], ['popular', '인기'], ['nearby', '근처']]) {
     const button = node('button', sort === feedSort ? 'selected' : '', label); button.type = 'button';
     button.dataset.sort = sort; button.setAttribute('aria-pressed', String(sort === feedSort));
     button.addEventListener('click', () => {
@@ -456,6 +628,192 @@ function installFeatures() {
     panel.hidden = !panel.hidden; toggle.setAttribute('aria-expanded', String(!panel.hidden));
     if (!panel.hidden) input.focus();
   });
+  $('#event-start').addEventListener('click', () => openComposer('event'));
+  $('#map-toggle').addEventListener('click', showEventMap);
+  $('#card-location-button').addEventListener('click', async event => {
+    const run = ++locationRun;
+    event.currentTarget.disabled = true; $('#card-location-status').textContent = '위치를 확인하는 중이에요.';
+    try {
+      const position = await currentPosition();
+      if (run !== locationRun || backdrop.hidden || kind === 'event') return;
+      writingPosition = position; $('#card-location-status').textContent = '위치를 확인했어요. 정확한 좌표는 카드에 표시되지 않아요.';
+    } catch {
+      if (run !== locationRun || backdrop.hidden) return;
+      writingPosition = null; $('#card-location-status').textContent = '위치를 사용할 수 없어요. 권한을 확인하고 다시 시도해 주세요.';
+    } finally { if (run === locationRun) { $('#card-location-button').disabled = false; updateComposer(); } }
+  });
+  for (const selector of ['#compose-font', '#compose-size', '#compose-theme', '#compose-effect']) {
+    $(selector).addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
+  }
+  document.querySelectorAll('input[name="photo-choice"]').forEach(choice => choice.addEventListener('change', applyComposeStyle));
+  for (const selector of ['#event-radius', '#event-hours']) $(selector).addEventListener('input', updateEventPrice);
+}
+async function refreshRetentionAlerts() {
+  const run = ++retentionRun, userId = session?.user?.id;
+  retentionButton.hidden = !userId;
+  if (!userId) return;
+  try {
+    const rows = await noteRpc('list_retention_alerts');
+    if (run !== retentionRun || session?.user?.id !== userId) return;
+    const unread = (rows || []).filter(row => !row.read_at).length;
+    retentionButton.textContent = unread ? `보관 알림 ${unread}` : '보관 알림';
+  } catch (error) { if (run === retentionRun) console.warn('Note retention:', error); }
+}
+async function showRetentionAlerts() {
+  if (!session?.user) return;
+  const run = showManagement('보관 알림');
+  state(managementBody, '보관 알림을 불러오는 중이에요.');
+  try {
+    const rows = await noteRpc('list_retention_alerts');
+    if (run !== managementRun) return;
+    managementBody.replaceChildren(node('p', 'management-help', '익명카드와 답글 카드는 각각 약 6개월 후 공개가 끝납니다. 답글 영구보관은 상위 카드가 모두 영구보관된 경우에만 가능하고, 카드당 10쭈예요.'));
+    if (!rows?.length) managementBody.append(node('p', 'reply-empty', '새 보관 알림이 없어요.'));
+    for (const item of rows || []) {
+      const row = node('article', 'management-row');
+      const summary = node('span'); summary.append(node('strong', '', (item.body || '익명카드').slice(0, 70)),
+        node('small', '', `${item.parent_due || item.reason === 'parent_due' ? '상위 카드와 함께 종료 예정' : '공개 종료 예정'}: ${dateLabel(item.archive_due_at)}`));
+      row.append(summary);
+      if (validCardId(item.card_id)) {
+        const open = managementButton('카드 보기', () => { closeManagement(); openCard(item.card_id); });
+        row.append(open);
+        const permanent = managementButton('10쭈로 영구보관', () => {
+          const reply = item.kind === 'comment';
+          const prompt = reply
+            ? '상위 카드가 모두 영구보관된 경우에만 답글을 영구보관할 수 있어요. 상위 카드 작성자가 삭제하거나 탈퇴하면 영구보관된 답글도 함께 삭제될 수 있습니다. 10쭈에 진행할까요?'
+            : '이 카드를 10쭈에 영구보관할까요?';
+          if (!window.confirm(prompt)) return;
+          const requestId = crypto.randomUUID();
+          managementAction(() => purchasePermanent(item.card_id, requestId),
+            async () => { await loadWorldBalance(session?.user?.id); await refreshCards(false); await showRetentionAlerts(); });
+        });
+        row.append(permanent);
+      }
+      managementBody.append(row);
+    }
+    const unread = (rows || []).filter(item => !item.read_at && validCardId(item.id));
+    await Promise.allSettled(unread.map(item => noteRpc('mark_retention_alert_read', { p_id: item.id })));
+    if (run === managementRun) await refreshRetentionAlerts();
+  } catch (error) {
+    if (run !== managementRun) return;
+    console.warn('Note retention alerts:', error);
+    state(managementBody, '알림을 불러오지 못했어요.');
+    managementFooter.append(managementButton('다시 시도', showRetentionAlerts));
+  }
+}
+
+function currentStyle() {
+  return { font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
+    effect: $('#compose-effect').value };
+}
+function chosenPhoto() { return $('input[name="photo-choice"]:checked')?.value || 'plain'; }
+function applyComposeStyle() {
+  const preview = $('.compose-photo'), style = currentStyle();
+  const photo = $('#note-photo-pick').hidden || chosenPhoto() === 'plain' ? backgroundKey : chosenPhoto();
+  preview.classList.toggle('image-lake', photo === '10');
+  preview.classList.toggle('image-forest', photo === '11');
+  preview.classList.toggle('note-plain', photo !== '10' && photo !== '11');
+  preview.classList.remove('note-theme-rose', 'note-theme-night', 'note-font-round', 'note-font-serif', 'note-size-large', 'note-size-small', 'note-effect-sparkle', 'note-effect-frame');
+  if (style.theme !== 'plain') preview.classList.add(`note-theme-${style.theme}`);
+  if (style.font !== 'default') preview.classList.add(`note-font-${style.font}`);
+  if (style.size !== 'normal') preview.classList.add(`note-size-${style.size}`);
+  if (style.effect !== 'none') preview.classList.add(`note-effect-${style.effect}`);
+}
+function updateEventPrice() {
+  const radius = Number($('#event-radius').value), hours = Number($('#event-hours').value);
+  const valid = Number.isInteger(radius) && radius >= 1 && radius <= 30 && Number.isInteger(hours) && hours >= 1 && hours <= 24;
+  $('#event-price').textContent = valid ? `${radius}km × ${hours}시간 = ${(100 * radius * hours).toLocaleString('ko-KR')}쭈` : '반경 1~30km, 시간 1~24시간을 정수로 입력해 주세요.';
+  if (kind === 'event') submit.textContent = valid ? `${(100 * radius * hours).toLocaleString('ko-KR')}쭈 결제 후 등록` : '범위와 시간을 확인해 주세요';
+  updateComposer();
+  return valid;
+}
+function eventCircles(rows) {
+  return (rows || []).map(item => ({ id: item.event_id,
+    lat: Number(item.center_lat), lng: Number(item.center_lon), radius_m: Number(item.radius_km) * 1000 }));
+}
+async function refreshComposerMap(center) {
+  if (!center || !eventMap || backdrop.hidden || kind !== 'event') return;
+  const run = ++composerMapFetchRun, editor = composerRun;
+  try {
+    const events = await noteRpc('list_event_map', { p_lat: center.lat, p_lon: center.lng, p_limit: 100 });
+    if (run === composerMapFetchRun && editor === composerRun && !backdrop.hidden) eventMap?.setCircles(eventCircles(events));
+  } catch {
+    if (run === composerMapFetchRun && editor === composerRun && !backdrop.hidden)
+      $('#event-location-status').textContent = '기존 이벤트 범위를 불러오지 못했어요. 새 이벤트 중심은 지도에서 직접 지정해 주세요.';
+  }
+}
+function scheduleComposerMap(center) {
+  clearTimeout(composerMapTimer);
+  composerMapTimer = setTimeout(() => refreshComposerMap(center), 180);
+}
+function prepareEventMap() {
+  if (eventMap) { eventMap.invalidate(); return; }
+  eventMap = window.OjjudaMap?.create($('#event-map'), { center: nearbyPosition
+    ? { lat: nearbyPosition.latitude, lng: nearbyPosition.longitude } : undefined,
+    onMove: scheduleComposerMap,
+    onSelect: point => {
+      eventPosition = { latitude: point.lat, longitude: point.lng };
+      $('#event-location-status').textContent = '지도 중심을 선택했어요. 이 중심과 원형 범위가 다른 사람에게 보여요.';
+      scheduleComposerMap(point); updateComposer();
+    } });
+  if (eventMap) refreshComposerMap(eventMap.getCenter());
+}
+function publicMapStatus(value) {
+  const status = $('#note-map-status');
+  status.replaceChildren(node('span', '', `${value} `));
+  if (publicMapLocate) status.append(publicMapLocate);
+}
+async function refreshPublicMap(center) {
+  if (!center || $('#note-map-section').hidden) return;
+  const run = ++mapFetchRun;
+  try {
+    const events = await noteRpc('list_event_map', { p_lat: center.lat, p_lon: center.lng, p_limit: 100 });
+    if (run !== mapFetchRun || $('#note-map-section').hidden) return;
+    publicMap?.setCircles(eventCircles(events));
+    publicMapStatus(`${events?.length || 0}개의 공개 이벤트 범위를 표시했어요. 원형을 눌러 내용을 확인하세요.`);
+  } catch {
+    if (run === mapFetchRun && !$('#note-map-section').hidden) publicMapStatus('이벤트 범위를 불러오지 못했어요. 지도를 다시 움직이거나 위치를 확인해 주세요.');
+  }
+}
+function schedulePublicMap(center) {
+  clearTimeout(publicMapTimer);
+  publicMapTimer = setTimeout(() => refreshPublicMap(center), 180);
+}
+async function showEventMap() {
+  const section = $('#note-map-section'), button = $('#map-toggle');
+  section.hidden = !section.hidden; button.setAttribute('aria-pressed', String(!section.hidden));
+  if (section.hidden) { mapFetchRun++; clearTimeout(publicMapTimer); return; }
+  if (!publicMapLocate) {
+    publicMapLocate = node('button', 'button', '내 위치에서 보기'); publicMapLocate.type = 'button';
+    publicMapLocate.addEventListener('click', async () => {
+      publicMapLocate.disabled = true; publicMapStatus('정확한 GPS 좌표는 비공개로 사용해요. 위치를 확인하는 중이에요.');
+      try {
+        const position = await currentPosition();
+        if (section.hidden) return;
+        nearbyPosition = position;
+        const center = { lat: position.latitude, lng: position.longitude };
+        publicMap?.setCenter(center);
+        await refreshPublicMap(center);
+        if (feedMode === 'all' && feed.hidden === false) loadFeed();
+      } catch { if (!section.hidden) publicMapStatus('위치를 확인하지 못했어요. 권한을 확인하고 다시 시도해 주세요.'); }
+      finally { publicMapLocate.disabled = false; }
+    });
+  }
+  if (!publicMap) publicMap = window.OjjudaMap?.create($('#note-map'), { center: nearbyPosition
+    ? { lat: nearbyPosition.latitude, lng: nearbyPosition.longitude } : undefined,
+    onMove: schedulePublicMap,
+    onEvent: async event => {
+      if (!session?.user) { publicMapStatus('이벤트 내용을 보려면 대문에서 로그인해 주세요.'); return; }
+      if (!positionIsFresh(nearbyPosition)) { publicMapStatus('범위 안의 내용은 현재 위치를 다시 확인한 뒤 볼 수 있어요.'); return; }
+      publicMapStatus('범위 안의 이벤트인지 확인하는 중이에요.');
+      try {
+        const detail = await noteRpc('get_card', { p_id: event.id,
+          p_lat: nearbyPosition.latitude, p_lon: nearbyPosition.longitude });
+        publicMapStatus(detail?.body || '이벤트 내용은 기간·범위 안에서만 볼 수 있어요.');
+      } catch { publicMapStatus('이벤트 내용을 확인하지 못했어요. 다시 시도해 주세요.'); }
+    } });
+  else publicMap.invalidate();
+  publicMapStatus('원형은 공개 이벤트 범위예요. 지도에서 탐색하거나 내 위치를 확인하세요. 정확한 GPS 좌표는 지도에 표시하지 않아요.');
+  if (publicMap) refreshPublicMap(publicMap.getCenter());
 }
 
 function draftContent() {
@@ -469,16 +827,18 @@ function restoreDraft(content) {
   $('.compose-photo').classList.toggle('image-forest', backgroundKey === '11');
   $('.compose-photo').classList.toggle('image-lake', backgroundKey === '10');
   $('#compose-title').textContent = kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
-  $('#compose-context').textContent = kind === 'comment' ? '보관한 답글은 원래 카드에 등록됩니다.' : '사진 위에 마음을 적어 주세요.';
+  $('#compose-context').textContent = kind === 'comment' ? replyContext() : '사진 위에 마음을 적어 주세요.';
   updateComposer();
+  if (kind === 'comment') void refreshReplyArchiveNotice(parentId, composerRun);
 }
 function recordDraft() {
-  if (!draftController || editingId || backdrop.hidden || draftLoading || !session?.user) return;
+  if (!draftController || editingId || kind === 'event' || backdrop.hidden || draftLoading || !session?.user) return;
   try { draftController.change(draftContent()); } catch (error) { draftStatus.textContent = error.message; }
 }
 function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
+  for (const selector of ['#compose-font', '#compose-size', '#compose-theme', '#compose-effect', '#event-radius', '#event-hours']) $(selector).disabled = disabled;
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
   draftTools?.querySelectorAll('button').forEach(button => { button.disabled = disabled; });
 }
@@ -552,12 +912,22 @@ function updateComposer() {
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
   else if (text.value.length > 200 || lines.length > 8) composeMessage.textContent = '글은 200자·8줄 이내로 작성해 주세요';
   else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
+  else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
+  else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = '위치를 확인한 뒤 등록할 수 있어요.';
+  else if (kind === 'event' && !eventPosition) composeMessage.textContent = '지도에서 이벤트 중심을 정해 주세요.';
+  else if (kind === 'event' && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
   else composeMessage.textContent = busy ? (editingId ? '수정 중' : '등록 중')
-    : $('input[name="identity"]:checked')?.value === 'nickname' ? '월드 닉네임 공개' : '익명 카드';
-  submit.disabled = busy || draftLoading || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
-    || text.value.length > 200 || text.value.split('\n').length > 8 || !values;
-  if (draftTools) draftTools.hidden = !!editingId || !session?.user;
+    : kind === 'event' ? '이벤트 범위와 금액을 확인해 주세요.'
+      : $('input[name="identity"]:checked')?.value === 'nickname' ? '월드 닉네임 공개' : '익명 카드';
+  submit.disabled = busy || draftLoading || replyDueChecking || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
+    || text.value.length > 200 || text.value.split('\n').length > 8 || !values
+    || (kind !== 'event' && !editingId && !writingPosition) || (kind === 'event' && (!eventPosition || !validEventOptions()));
+  if (draftTools) draftTools.hidden = !!editingId || kind === 'event' || !session?.user;
   if ($('#note-draft-parent')) $('#note-draft-parent').hidden = kind !== 'comment' || !parentId;
+}
+function validEventOptions() {
+  const radius = Number($('#event-radius').value), hours = Number($('#event-hours').value);
+  return Number.isInteger(radius) && radius >= 1 && radius <= 30 && Number.isInteger(hours) && hours >= 1 && hours <= 24;
 }
 async function openComposer(mode, card = null) {
   if (busy || draftLoading) return;
@@ -565,21 +935,37 @@ async function openComposer(mode, card = null) {
   focusBefore = document.activeElement;
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
-  kind = editingId ? card.kind : mode === 'reply' && stack.length ? 'comment' : 'memo';
+  kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
   backgroundKey = editingId ? card.background_key : Math.random() < .5 ? '10' : '11';
-  $('#compose-title').textContent = editingId ? '내 카드 수정' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
-  $('#compose-context').textContent = editingId ? '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? '이 카드에 답글을 이어 주세요.' : '사진 위에 마음을 적어 주세요.';
-  submit.textContent = editingId ? '수정하기' : '등록하기';
+  writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
+  replyDueChecking = false; replyDueRun++;
+  $('#note-photo-pick').hidden = !!editingId || kind !== 'memo';
+  $('input[name="photo-choice"][value="plain"]').checked = true;
+  $('#card-location-consent').hidden = kind === 'event' || !!editingId;
+  $('#card-location-status').textContent = '위치를 확인해야 등록할 수 있어요.';
+  $('#note-event-fields').hidden = kind !== 'event';
+  $('#compose-title').textContent = editingId ? '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
+  $('#compose-context').textContent = editingId ? '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
+  submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100쭈 결제 후 등록' : '등록하기';
   $('.compose-photo').classList.toggle('image-forest', backgroundKey === '11');
   $('.compose-photo').classList.toggle('image-lake', backgroundKey === '10');
+  $('.compose-photo').classList.toggle('note-plain', backgroundKey !== '10' && backgroundKey !== '11');
+  const style = editingId && card.style && typeof card.style === 'object' ? card.style : {};
+  $('#compose-font').value = ['round', 'serif'].includes(style.font) ? style.font : 'default';
+  $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
+  $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
+  $('#compose-effect').value = ['sparkle', 'frame'].includes(style.effect) ? style.effect : 'none';
+  applyComposeStyle(); updateEventPrice();
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : '';
   const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   requestedDraftContent = draftContent();
   if (draftConfirm) draftConfirm.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); text.focus();
-  if (!editingId && draftController && composerUserId) {
+  if (kind === 'event') { eventMap?.destroy(); eventMap = null; prepareEventMap(); }
+  if (kind === 'comment' && !editingId) void refreshReplyArchiveNotice(parentId, run);
+  if (!editingId && kind !== 'event' && draftController && composerUserId) {
     draftLoading = true; setComposerInputs(); updateComposer();
     try {
       const restored = await draftController.resume(requestedDraftContent);
@@ -595,8 +981,9 @@ async function openComposer(mode, card = null) {
 function closeComposer(saveDraft = true) {
   if (busy) return;
   if (saveDraft) recordDraft();
-  composerRun++; draftLoading = false; setComposerInputs();
-  backdrop.hidden = true; lockPage(false);
+  composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
+  backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
+  clearTimeout(composerMapTimer); eventMap?.destroy(); eventMap = null; lockPage(false);
   if (focusBefore?.isConnected) focusBefore.focus({ preventScroll: true });
 }
 async function publishCard() {
@@ -605,13 +992,24 @@ async function publishCard() {
   if (!body || body.length > 200 || body.split('\n').length > 8 || !values) return;
   const editId = editingId, actionUserId = composerUserId;
   const identityMode = $('input[name="identity"]:checked')?.value === 'nickname' ? 'nickname' : 'anonymous';
-  let draftToken = null, publishKind = kind, publishParent = parentId, publishBackground = backgroundKey;
+  const selectedPhoto = kind === 'memo' && !editId ? chosenPhoto() : 'plain';
+  const selectedPhotoRequestId = photoRequestId;
+  if (kind === 'comment' && !editId && archiveDueThisMonth(parentArchiveDue(cache.get(parentId)))
+    && !window.confirm(`상위 카드가 ${dateLabel(parentArchiveDue(cache.get(parentId)))}에 공개 종료될 예정이에요. 이 답글도 함께 삭제될 수 있습니다. 등록할까요?`)) return;
+  if (kind === 'event') {
+    const cost = Number($('#event-radius').value) * Number($('#event-hours').value) * 100;
+    if (!validEventOptions() || !eventPosition || !window.confirm(`이벤트 ${cost.toLocaleString('ko-KR')}쭈를 결제하고 등록할까요?`)) return;
+  } else if (!editId && selectedPhoto !== 'plain' && !window.confirm('카드를 등록한 뒤 제공 사진 배경 1개월 이용료 10쭈를 결제할까요?')) {
+    return;
+  }
+  let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
-  if (!editId && draftController) {
+  if (!editId && kind !== 'event' && draftController) {
     try {
       draftToken = await draftController.preparePublish();
       body = draftToken.content.body.replace(/\r\n?/g, '\n').trim(); values = parsedTags(draftToken.content.tags);
-      publishKind = draftToken.content.kind; publishParent = draftToken.content.parent_id; publishBackground = draftToken.content.background_key;
+      publishKind = draftToken.content.kind; publishParent = draftToken.content.parent_id;
+      if (publishKind !== kind || publishParent !== parentId) throw new Error('임시 글의 원글이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
       if (!body || body.length > 200 || body.split('\n').length > 8 || !values) throw new Error('보관된 내용을 확인해 주세요.');
     } catch (error) {
       draftController.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
@@ -633,14 +1031,23 @@ async function publishCard() {
   }
   let data, error;
   try {
-    const request = editId ? query().from('cards').update({ body, tags: values, identity_mode: identityMode }).eq('id', editId)
-      : query().from('cards').insert({
-        author_id: identity.user.id, kind: publishKind, parent_id: publishParent, body, tags: values, background_key: publishBackground, identity_mode: identityMode
-      });
-    ({ data, error } = await request.select('id').maybeSingle());
+    if (editId) {
+      ({ data, error } = await query().from('cards').update({ body, tags: values, identity_mode: identityMode }).eq('id', editId).select('id').maybeSingle());
+    } else if (publishKind === 'event') {
+      data = await noteRpc('publish_event', { p_request_id: publishRequestId, p_body: body, p_tags: values,
+        p_identity_mode: identityMode, p_style: currentStyle(), p_lat: eventPosition.latitude,
+        p_lon: eventPosition.longitude, p_radius_km: Number($('#event-radius').value),
+        p_starts_at: new Date().toISOString(), p_duration_hours: Number($('#event-hours').value) });
+    } else {
+      data = await noteRpc('publish_card', { p_request_id: publishRequestId, p_body: body, p_tags: values,
+        p_identity_mode: identityMode, p_style: currentStyle(), p_lat: writingPosition?.latitude,
+        p_lon: writingPosition?.longitude, p_parent_id: publishParent });
+    }
+    if (data?.ok === false) throw new Error('게시가 완료되지 않았어요.');
   } catch (cause) { error = cause; }
+  const publishedId = data?.id || data?.card_id;
   if (session?.user?.id !== actionUserId) { busy = false; setComposerInputs(); updateComposer(); return; }
-  if (!error && data?.id && draftToken) {
+  if (!error && publishedId && draftToken) {
     try {
       const cleanup = await draftController.published(draftToken);
       if (!cleanup.cleared && session?.user?.id === actionUserId) message('카드는 등록됐어요. 다른 창의 임시 글이 남아 있으니 확인해 주세요.');
@@ -650,13 +1057,41 @@ async function publishCard() {
   } else if (draftToken) draftController.cancelPublish();
   busy = false; setComposerInputs();
   if (session?.user?.id !== actionUserId) { updateComposer(); return; }
-  if (error || !data?.id) {
+  if (error || !publishedId) {
     console.warn('Note publish:', error);
     updateComposer(); composeMessage.textContent = editId ? '수정하지 못했어요. 권한과 연결을 확인해 주세요' : '등록하지 못했어요. 다시 시도해 주세요'; return;
   }
+  if (editId && publishedId) {
+    try { await noteRpc('set_card_style', { p_card_id: publishedId, p_style: currentStyle() }); }
+    catch (styleError) { console.warn('Note style:', styleError); message('글은 저장됐지만 꾸미기는 적용되지 않았어요.'); }
+  }
+  let photoPurchaseFailed = false;
+  if (!editId && selectedPhoto !== 'plain') {
+    try {
+      await noteRpc('purchase_card_photo', { p_card_id: publishedId, p_photo_key: selectedPhoto, p_request_id: selectedPhotoRequestId });
+      void loadWorldBalance(actionUserId);
+    } catch (photoError) { console.warn('Note photo purchase:', photoError); photoPurchaseFailed = true; }
+  }
+  const spent = Number(data?.coins_spent ?? data?.cost_coins);
+  if (publishKind === 'event' && Number.isFinite(spent)) {
+    message(`이벤트를 등록했어요. 서버에서 ${spent.toLocaleString('ko-KR')}쭈를 차감했어요.`);
+    void loadWorldBalance(actionUserId);
+  }
+  if (publishKind === 'comment' && archiveDueThisMonth(data?.effective_archive_due_at))
+    message(`답글이 등록됐어요. 상위 카드와 함께 ${dateLabel(data.effective_archive_due_at)}에 공개 종료될 수 있어요. 보관 알림을 확인해 주세요.`);
   text.value = ''; tags.value = '';
   closeComposer(false);
   await refreshCards(editId || publishKind === 'comment');
+  if (publishKind === 'comment') void refreshRetentionAlerts();
+  if (photoPurchaseFailed) {
+    showManagement('카드는 등록됐어요');
+    managementBody.append(node('p', 'management-help', '사진 배경 결제가 완료되지 않아 기본 배경으로 등록됐어요. 다시 시도하거나 기본 배경으로 계속 이용할 수 있어요.'));
+    managementFooter.append(managementButton('사진 결제 다시 시도', () => managementAction(
+      () => noteRpc('purchase_card_photo', { p_card_id: publishedId, p_photo_key: selectedPhoto, p_request_id: selectedPhotoRequestId }),
+      async () => { closeManagement(); await refreshCards(false); await loadWorldBalance(actionUserId); }
+    ), true));
+    managementFooter.append(managementButton('기본 배경으로 두기', () => closeManagement()));
+  }
 }
 function updateAuth() {
   const accountText = !authKnown ? '계정 확인 중'
@@ -747,6 +1182,11 @@ async function noteRpc(name, parameters = {}) {
   if (error) throw error;
   return data;
 }
+async function purchasePermanent(cardId, requestId) {
+  const result = await noteRpc('make_card_permanent', { p_card_id: cardId, p_request_id: requestId });
+  if (result?.ok === false) throw new Error(result.reason || '영구보관을 처리하지 못했어요.');
+  return result;
+}
 async function managementAction(action, after) {
   if (managementBusy || !session?.user) return;
   const run = managementRun, userId = session.user.id;
@@ -760,7 +1200,12 @@ async function managementAction(action, after) {
   } catch (error) {
     if (run !== managementRun) return;
     console.warn('Note management:', error);
-    managementMessage.textContent = '처리하지 못했어요. 로그인과 권한을 확인한 뒤 다시 시도해 주세요.';
+    const reason = error?.message || '';
+    managementMessage.textContent = /parent_not_permanent/i.test(reason)
+      ? '상위 카드가 모두 영구보관된 후에 답글을 영구보관할 수 있어요.'
+      : reason === 'coins' ? '쭈 잔액이 부족해요. 월드에서 잔액을 확인해 주세요.'
+        : reason === 'card_unavailable' ? '이 카드는 삭제되었거나 현재 영구보관할 수 없어요.'
+          : '처리하지 못했어요. 로그인과 권한을 확인한 뒤 다시 시도해 주세요.';
   } finally {
     if (run === managementRun) {
       managementBusy = false;
@@ -781,21 +1226,58 @@ function manageCard(id) {
   showManagement(card.is_mine ? '내 카드 관리' : '카드 관리');
   managementBody.append(node('p', 'management-help', '노트의 글과 차단 설정을 관리합니다.'));
   if (card.is_mine) {
-    managementBody.append(managementButton('수정하기', () => { closeManagement(); openComposer('edit', card); }));
+    if (card.kind !== 'event') managementBody.append(managementButton('수정하기', () => { closeManagement(); openComposer('edit', card); }));
+    if (card.kind === 'memo') {
+      managementBody.append(managementButton('사진 배경 · 10쭈/1개월', () => showPhotoChoices(card)));
+    }
+    if (['memo', 'comment'].includes(card.kind) && !card.permanent) {
+      managementBody.append(managementButton('영구보관 · 10쭈', () => confirmPermanent(card)));
+    }
     managementBody.append(managementButton('삭제하기', () => confirmDelete(card)));
   } else {
-    managementBody.append(managementButton('신고하기', () => reportCard(card)));
-    managementBody.append(managementButton('작성자 차단', () => confirmBlock(card)));
+    managementBody.append(managementButton('신고하기', () => card.kind === 'event' ? reportEvent(card) : reportCard(card)));
+    if (card.kind !== 'event') managementBody.append(managementButton('작성자 차단', () => confirmBlock(card)));
   }
   cancelManagement();
 }
+function showPhotoChoices(card) {
+  showManagement('사진 배경 선택');
+  managementBody.append(node('p', 'management-help', '제공 사진 한 장을 선택하면 10쭈가 차감되고 1개월간 적용돼요. 자동 연장은 하지 않아요.'));
+  if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
+  const choices = node('div', 'note-photo-choice');
+  for (const [key, title] of [['10', '호수 사진'], ['11', '숲 사진']]) {
+    const button = node('button', 'button'); button.type = 'button';
+    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = title; img.loading = 'lazy';
+    button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
+    button.addEventListener('click', () => {
+      if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
+      const requestId = crypto.randomUUID();
+      managementAction(() => noteRpc('purchase_card_photo', { p_card_id: card.id, p_photo_key: key, p_request_id: requestId }),
+        async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); });
+    });
+    choices.append(button);
+  }
+  managementBody.append(choices); cancelManagement();
+}
+function confirmPermanent(card) {
+  showManagement('영구보관할까요?');
+  managementBody.append(node('p', 'management-help', card.kind === 'comment'
+    ? '상위 카드가 모두 영구보관되어야 답글을 영구보관할 수 있어요. 10쭈가 한 번 차감됩니다. 상위 카드 작성자가 삭제하거나 탈퇴하면 영구보관된 답글도 함께 삭제될 수 있습니다.'
+    : '이 카드를 영구보관하면 10쭈가 차감돼요. 같은 카드에 다시 결제하지 않아요.'));
+  cancelManagement();
+  const requestId = crypto.randomUUID();
+  managementFooter.append(managementButton('10쭈로 영구보관', () => managementAction(
+    () => purchasePermanent(card.id, requestId),
+    async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); }
+  ), true));
+}
 function confirmDelete(card) {
   showManagement('카드를 삭제할까요?');
-  managementBody.append(node('p', 'management-help', '이 카드와 이어진 모든 답글이 함께 삭제됩니다. 삭제한 내용은 되돌릴 수 없어요.'));
+  managementBody.append(node('p', 'management-help', '공개 화면에서 내리고 이어진 답글도 함께 숨겨요. 관리자는 1개월 동안 복구할 수 있고, 이후 영구 삭제됩니다.'));
   cancelManagement();
   managementFooter.append(managementButton('카드와 답글 삭제', () => managementAction(async () => {
-    const { data, error } = await query().from('cards').delete().eq('id', card.id).select('id').maybeSingle();
-    if (error || !data?.id) throw error || new Error('Card is unavailable');
+    const count = await noteRpc('archive_my_card', { p_card_id: card.id });
+    if (count !== 1) throw new Error('삭제할 카드를 찾지 못했어요.');
   }, async () => { closeManagement(); await refreshCards(false); }), true));
 }
 function reportCard(card) {
@@ -811,6 +1293,28 @@ function reportCard(card) {
       managementBody.append(node('p', 'management-help', '노트 관리자가 내용을 확인합니다.'));
       managementFooter.append(managementButton('닫기', () => closeManagement(), true));
     });
+  }, true));
+  reason.focus();
+}
+function reportEvent(card) {
+  if (!noteState?.reports_enabled) { message('신고 접수가 잠시 쉬고 있어요.'); return; }
+  showManagement('이벤트 신고');
+  managementBody.append(node('p', 'management-help', '이벤트 범위 안에 있는지 위치를 다시 확인해요. 정확한 GPS 좌표는 공개되지 않고 신고 확인에만 사용됩니다.'));
+  const reason = reasonField('신고 사유'); cancelManagement();
+  managementFooter.append(managementButton('위치 확인 후 신고', async () => {
+    if (!validReason(reason) || managementBusy) return;
+    const run = managementRun;
+    managementMessage.textContent = '위치를 확인하는 중이에요.';
+    try {
+      const position = await currentPosition();
+      if (run !== managementRun || !session?.user) return;
+      managementAction(() => noteRpc('report_event', { p_card_id: card.id, p_reason: reason.value.trim(),
+        p_lat: position.latitude, p_lon: position.longitude }), () => {
+        showManagement('신고를 접수했어요');
+        managementBody.append(node('p', 'management-help', '관리자가 내용을 확인합니다.'));
+        managementFooter.append(managementButton('닫기', () => closeManagement(), true));
+      });
+    } catch { if (run === managementRun) managementMessage.textContent = '위치를 확인하지 못했어요. 권한을 확인하고 다시 시도해 주세요.'; }
   }, true));
   reason.focus();
 }
@@ -970,6 +1474,7 @@ function receiveAuth(current) {
     identityEpoch++;
     // Remove prior-account content immediately, before asynchronous requests finish.
     worldCoins = null; balanceRun++; moderator = false; moderatorRun++;
+    retentionRun++; nearbyPosition = null; writingPosition = null; eventPosition = null;
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
     composerRun++; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
     notificationController?.close?.();
@@ -985,6 +1490,7 @@ function receiveAuth(current) {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
+    refreshRetentionAlerts();
     notificationController?.refresh?.();
     if (changed) loadFeed();
     else consumeInitialCard();
@@ -1015,7 +1521,7 @@ if (client) {
   loadFeed();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
-    loadWorldBalance(session?.user?.id); loadNoteState();
+    loadWorldBalance(session?.user?.id); loadNoteState(); refreshRetentionAlerts();
     if (backdrop.hidden && management.hidden) refreshCards(stack.length > 0);
   });
 } else {

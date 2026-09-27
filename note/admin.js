@@ -11,7 +11,7 @@
   const HELP = {
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
     settings: '공지와 노트 안의 기능을 관리합니다. 변경 사유는 작업 기록에 남습니다.',
-    cards: '전체 카드와 답글을 관리합니다. 개별 숨김 여부를 표시하며, 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
+    cards: '익명카드·답글·이벤트와 만료 후 보관 자료를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
     inquiries: '이용자가 노트에 남긴 문의를 확인하고 답변합니다.',
     users: '노트에서의 활동만 제한합니다. 오쭈다월드 계정과 쭈에는 영향을 주지 않습니다.',
@@ -19,10 +19,12 @@
   };
   const ACTIONS = {
     hide: '카드 숨김', restore: '카드 복구', resolve_report: '신고 처리 완료', edit: '카드 수정',
+    archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
+    purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
     restrict_user: '이용 제한', release_user: '이용 제한 해제', add_moderator: '운영자 지정',
-    remove_moderator: '운영자 해제', update_settings: '운영 설정 변경', reply_inquiry: '문의 답변'
+    remove_moderator: '운영자 해제', update_settings: '노트 공지·기능 변경', reply_inquiry: '문의 답변'
   };
-  const filters = { cards: { query: '', state: 'all', offset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
+  const filters = { cards: { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
   let client = null, onChanged = null, userId = null, subscription = null;
   let instance = 0, pageRun = 0, busy = false, tabId = 'cards', actionReturn = null;
   let previousFocus = null, previousOverflow = '', inertState = [], disabledState = [], embedded = false;
@@ -70,6 +72,16 @@
     if (help) wrap.append(el('small', '', help));
     return { wrap, input };
   }
+  function choiceField(label, choices, value, help = '') {
+    const wrap = el('label', 'na-field'); const input = el('select', 'inp na-input');
+    wrap.append(el('span', '', label));
+    for (const [code, text] of choices) {
+      const option = el('option', '', text); option.value = code; input.append(option);
+    }
+    input.value = value ?? choices[0][0]; wrap.append(input);
+    if (help) wrap.append(el('small', '', help));
+    return { wrap, input };
+  }
   function reasonField() {
     const item = field('처리 사유', 'textarea', '', '변경 내용을 다른 관리자도 이해할 수 있도록 적어 주세요. 최대 500자');
     item.input.required = true; item.input.maxLength = 500; item.input.rows = 3;
@@ -84,7 +96,7 @@
     const block = el('details', 'na-details'); block.append(el('summary', '', '상세 정보'));
     const list = el('dl');
     for (const [label, value] of values) {
-      if (!value) continue;
+      if (value == null || value === '') continue;
       list.append(el('dt', '', label), el('dd', 'na-id', value));
     }
     block.append(list); return block;
@@ -109,6 +121,8 @@
     if ((message.includes('moderator') || message.includes('administrator')) && message.includes('restrict')) return '관리자는 이용 제한 대상이 될 수 없어요.';
     if (message.includes('world member') || message.includes('onboard') || message.includes('not found')) return '대상을 찾지 못했어요. 현재 목록과 이용자 번호를 확인해 주세요.';
     if (message.includes('card unavailable')) return '카드를 찾지 못했어요. 목록을 새로 불러온 뒤 확인해 주세요.';
+    if (message.includes('recovery period')) return '한 달의 복구 기간이 끝났거나 보관 자료를 찾지 못했어요. 목록을 새로 불러와 주세요.';
+    if (message.includes('expired event') || message.includes('started event start')) return '종료된 이벤트나 이미 시작된 이벤트의 시작 시각은 정정할 수 없어요. 목록을 새로 불러와 주세요.';
     if (message.includes('노트 운영 기준')) return '글이나 태그에 작성 금지어가 포함되어 있어요. 내용을 확인해 주세요.';
     if (error?.code === '42501' || message.includes('permission') || message.includes('moderator required') || message.includes('not authorized')) return '이 작업을 할 권한이 없어요. 관리자 권한을 확인해 주세요.';
     if (error?.code === '23514' || error?.code === '22023') return '입력 내용을 확인해 주세요. 글, 태그, 사유의 허용 범위를 벗어났을 수 있어요.';
@@ -172,13 +186,25 @@
       : '이 카드의 숨김을 해제합니다. 상위 카드나 개별 답글이 숨겨져 있으면 해당 콘텐츠는 계속 숨겨집니다.', (form, actions) => {
       form.append(el('blockquote', 'na-card-body', card.body || '삭제된 카드'));
       const reason = reasonField(); form.append(reason.wrap);
-      const save = button(hide ? '숨김 처리' : '복구', () => {});
-      // Construct the submit button without executing the request until the form is valid.
-      save.textContent = hide ? '숨김 처리' : '복구'; save.type = 'submit';
-      save.className = 'na-button na-button--primary'; actions.append(save);
+      const save = button(hide ? '숨김 처리' : '복구', () => {}, 'primary');
+      save.type = 'submit'; actions.append(save);
       form.addEventListener('submit', event => {
         event.preventDefault(); if (!validReason(reason.input)) return;
         perform('moderate_card', { p_card_id: card.id || card.card_id, p_hidden: hide, p_reason: reason.input.value.trim() }, hide ? '카드를 숨겼어요.' : '카드의 개별 숨김을 해제했어요.');
+      });
+    });
+  }
+  function confirmDeleteCard(card) {
+    const label = card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드';
+    actionScreen(`${label} 삭제`, card.kind === 'comment'
+      ? '이 답글을 공개 화면에서 내리고 한 달 동안 관리자 보관함에 원문을 남깁니다.'
+      : '이 카드와 연결된 답글을 공개 화면에서 내리고 한 달 동안 관리자 보관함에 원문을 남깁니다.', (form, actions) => {
+      form.append(el('blockquote', 'na-card-body', card.body || '원문 없음'));
+      const reason = reasonField(); form.append(reason.wrap);
+      const save = button('삭제 처리', () => {}, 'danger'); save.type = 'submit'; actions.append(save);
+      form.addEventListener('submit', event => {
+        event.preventDefault(); if (!validReason(reason.input)) return;
+        perform('admin_archive_card', { p_card_id: card.id, p_reason: reason.input.value.trim() }, '카드를 관리자 보관함으로 옮겼어요.', 'cards');
       });
     });
   }
@@ -199,6 +225,76 @@
       });
       body.input.addEventListener('input', () => body.input.setCustomValidity(''));
       tags.input.addEventListener('input', () => tags.input.setCustomValidity(''));
+    });
+  }
+  function editCardVisual(card) {
+    actionScreen('카드 꾸미기·사진 지정 정정', '관리자는 꾸미기와 사진 지정 기간을 정정할 수 있습니다. 지정 기간이 끝나면 처음 무작위 배정된 무료 사진으로 돌아갑니다. 이용자에게 쭈가 차감되거나 환불되지 않으며 변경 전후 값과 사유가 기록됩니다.', (form, actions) => {
+      const content = el('div', 'na-visual-form'); content.append(el('p', 'na-empty', '현재 설정을 불러오는 중이에요.')); form.append(content);
+      const run = pageRun;
+      rpc('admin_card_visual', { p_card_id: card.id }).then(visual => {
+        if (!validRun(run)) return;
+        content.replaceChildren();
+        if (!visual) { empty(content, '카드의 꾸미기 정보를 찾지 못했어요.'); return; }
+        const style = visual.style || {};
+        const font = choiceField('글꼴', [['default', '기본'], ['round', '둥근 글꼴'], ['serif', '명조 글꼴']], style.font);
+        const size = choiceField('글자 크기', [['normal', '보통'], ['large', '크게'], ['small', '작게']], style.size);
+        const theme = choiceField('색상', [['plain', '기본'], ['rose', '장미'], ['night', '밤']], style.theme);
+        const effect = choiceField('효과', [['none', '없음'], ['sparkle', '반짝임'], ['frame', '액자']], style.effect);
+        const styleUntil = field('꾸미기 종료', 'datetime-local', localDateTime(visual.style_until), '비워 두면 꾸미기는 공개 화면에 적용되지 않습니다.');
+        const photo = choiceField('지정 사진', [['', '지정 없음'], ['10', '호수'], ['11', '숲']], visual.photo_key, '처음 배정된 무료 사진: ' + ({ '10': '호수', '11': '숲' }[visual.background_key] || '기본'));
+        const photoUntil = field('사진 지정 종료', 'datetime-local', localDateTime(visual.photo_until), '사진을 지정했다면 종료 시각을 지정해 주세요.');
+        const reason = reasonField();
+        content.append(font.wrap, size.wrap, theme.wrap, effect.wrap, styleUntil.wrap, photo.wrap, photoUntil.wrap, reason.wrap);
+        const save = button('꾸미기·사진 지정 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
+        form.addEventListener('submit', event => {
+          event.preventDefault(); if (!validReason(reason.input)) return;
+          photoUntil.input.setCustomValidity(photo.input.value && !photoUntil.input.value ? '사진 종료 시각을 지정해 주세요.' : !photo.input.value && photoUntil.input.value ? '사진을 선택하거나 종료 시각을 비워 주세요.' : '');
+          if (!photoUntil.input.reportValidity()) return;
+          const dateValue = (input, original) => input.value ? (input.value === localDateTime(original) ? original : new Date(input.value).toISOString()) : null;
+          perform('admin_edit_card_visual', {
+            p_card_id: card.id,
+            p_style: { font: font.input.value, size: size.input.value, theme: theme.input.value, effect: effect.input.value },
+            p_style_until: dateValue(styleUntil.input, visual.style_until),
+            p_photo_key: photo.input.value || null,
+            p_photo_until: dateValue(photoUntil.input, visual.photo_until),
+            p_reason: reason.input.value.trim()
+          }, '카드 꾸미기와 사진 지정 기간을 정정했어요.', 'cards');
+        });
+        photo.input.addEventListener('change', () => photoUntil.input.setCustomValidity(''));
+        photoUntil.input.addEventListener('input', () => photoUntil.input.setCustomValidity(''));
+      }).catch(error => { if (validRun(run)) { content.replaceChildren(); empty(content, friendlyError(error)); } });
+    });
+  }
+  function localDateTime(value) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return '';
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
+  function editEvent(event) {
+    actionScreen('이벤트 위치·시간 정정', '운영 정정이며 추가 쭈 차감이나 환불은 없습니다. 변경 전후 값과 사유가 작업 기록에 남습니다.', (form, actions) => {
+      const scheduled = new Date(event.starts_at).getTime() > Date.now();
+      form.append(el('p', 'na-reason', `현재 시작: ${formatDate(event.starts_at)} · 기존 책정: ${number(event.price_coins)}쭈${scheduled ? '' : ' · 시작 기록은 변경할 수 없습니다.'}`));
+      const lat = field('위도', 'number', event.center_lat); lat.input.required = true; lat.input.min = '-90'; lat.input.max = '90'; lat.input.step = 'any';
+      const lng = field('경도', 'number', event.center_lon); lng.input.required = true; lng.input.min = '-180'; lng.input.max = '180'; lng.input.step = 'any';
+      const radius = field('반경 (km)', 'number', event.radius_km, '1~30km 사이 정수'); radius.input.required = true; radius.input.min = '1'; radius.input.max = '30'; radius.input.step = '1';
+      const starts = scheduled ? field('시작 시각', 'datetime-local', localDateTime(event.starts_at), '시작 전 예약 이벤트만 변경할 수 있습니다.') : null;
+      if (starts) starts.input.required = true;
+      const ends = field('종료 시각', 'datetime-local', localDateTime(event.ends_at), '시작보다 늦고 시작 후 24시간 이내여야 합니다.'); ends.input.required = true;
+      const reason = reasonField(); form.append(lat.wrap, lng.wrap, radius.wrap);
+      if (starts) form.append(starts.wrap);
+      form.append(ends.wrap, reason.wrap);
+      const save = button('정정 내용 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
+      form.addEventListener('submit', submit => {
+        submit.preventDefault(); if (!validReason(reason.input)) return;
+        const start = starts && starts.input.value !== localDateTime(event.starts_at) ? new Date(starts.input.value) : new Date(event.starts_at);
+        const end = ends.input.value === localDateTime(event.ends_at) ? new Date(event.ends_at) : new Date(ends.input.value);
+        if (starts) starts.input.setCustomValidity(!Number.isFinite(start.getTime()) || start <= Date.now() ? '시작 시각은 앞으로 지정해 주세요.' : '');
+        ends.input.setCustomValidity(!Number.isFinite(end.getTime()) || end <= Date.now() || end <= start || end - start > 86400000 ? '현재 이후이며 시작 뒤 24시간 이내의 종료 시각을 선택해 주세요.' : '');
+        if (![lat.input, lng.input, radius.input, starts?.input, ends.input].filter(Boolean).every(input => input.reportValidity())) return;
+        perform('admin_edit_event', { p_card_id: event.id, p_lat: Number(lat.input.value), p_lng: Number(lng.input.value), p_radius_km: Number(radius.input.value), p_starts_at: start.toISOString(), p_ends_at: end.toISOString(), p_reason: reason.input.value.trim() }, '이벤트 조건을 정정했어요.', 'cards');
+      });
+      starts?.input.addEventListener('input', () => starts.input.setCustomValidity(''));
+      ends.input.addEventListener('input', () => ends.input.setCustomValidity(''));
     });
   }
   function restrictUser(user) {
@@ -229,14 +325,14 @@
     const [overview, settings] = await Promise.all([rpc('admin_overview'), rpc('get_note_state')]);
     if (!validRun(run)) return;
     const stats = el('dl', 'adm-stats na-stats');
-    for (const [label, key] of [['사진 카드', 'total_memos'], ['답글', 'total_replies'], ['개별 숨김 콘텐츠', 'hidden_cards'], ['접수된 신고', 'open_reports'], ['이용 제한', 'restricted_users']]) {
+    for (const [label, key] of [['익명카드', 'total_memos'], ['답글', 'total_replies'], ['개별 숨김 콘텐츠', 'hidden_cards'], ['접수된 신고', 'open_reports'], ['이용 제한', 'restricted_users']]) {
       const stat = el('div', 'adm-stat na-stat'); stat.append(el('dt', 'adm-l', label), el('dd', 'adm-n', number(overview?.[key]))); stats.append(stat);
     }
     main.append(stats);
     const operating = el('section', 'box na-box'); operating.append(el('h4', '', '현재 운영 상태'));
     const states = el('p', 'na-meta');
     for (const [label, key] of [['카드 작성', 'posting_enabled'], ['답글 작성', 'replies_enabled'], ['신고 접수', 'reports_enabled']]) states.append(badge(`${label} ${settings?.[key] ? '열림' : '닫힘'}`, settings?.[key] ? 'good' : 'warn'));
-    operating.append(states, button('운영 설정 관리', () => load('settings'))); main.append(operating);
+    operating.append(states, button('공지·기능 관리', () => load('settings'))); main.append(operating);
     const notice = el('section', 'box na-box na-box--notice'); notice.append(el('h4', '', '현재 공지'), el('p', '', settings?.notice || '등록된 공지가 없어요.')); main.append(notice);
   }
   async function renderSettings(run) {
@@ -246,7 +342,7 @@
     const notice = field('노트 공지', 'textarea', settings?.notice || '', '모든 이용자에게 표시됩니다. 최대 1,000자이며, 비우면 공지가 내려갑니다.'); notice.input.maxLength = 1000; notice.input.rows = 5;
     controls.append(notice.wrap); const checks = {};
     for (const [key, label, description] of [
-      ['posting_enabled', '카드 작성·수정 허용', '사진 카드를 새로 쓰거나 수정할 수 있습니다.'],
+      ['posting_enabled', '카드 작성·수정 허용', '익명카드를 새로 쓰거나 수정할 수 있습니다.'],
       ['replies_enabled', '답글 작성·수정 허용', '답글을 새로 쓰거나 수정할 수 있습니다.'],
       ['reports_enabled', '신고 접수 허용', '새 신고를 접수합니다. 기존 신고는 계속 관리할 수 있습니다.']
     ]) {
@@ -284,9 +380,26 @@
     form.addEventListener('submit', event => { event.preventDefault(); submit(query.input.value.trim(), select?.value); });
     return form;
   }
+  function cardViewBar(view) {
+    const bar = el('div', 'seg adm-tabs na-card-views');
+    bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', '노트 콘텐츠 종류');
+    for (const [id, label] of [['card', '전체 카드'], ['event', '이벤트 카드'], ['archive', '삭제·만료 보관']]) {
+      const item = button(label, () => {
+        if (filters.cards.view === id) return;
+        filters.cards.view = id; filters.cards.offset = 0; filters.cards.expiredOffset = 0; filters.cards.query = '';
+        filters.cards.state = 'all'; load('cards');
+      });
+      item.classList.toggle('on', id === view);
+      item.setAttribute('aria-pressed', String(id === view)); bar.append(item);
+    }
+    return bar;
+  }
   async function renderCards(run) {
     const filter = filters.cards;
-    main.append(searchForm(filter.query, '글 내용이나 태그 검색', (query, state) => { filters.cards = { query, state, offset: 0 }; load('cards'); }, filter.state));
+    main.append(cardViewBar(filter.view));
+    if (filter.view === 'event') return renderEvents(run);
+    if (filter.view === 'archive') return renderArchive(run);
+    main.append(searchForm(filter.query, '글 내용이나 태그 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
     const rows = await rpc('admin_cards', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset });
     if (!validRun(run)) return;
     if (!rows?.length) { empty(main, filter.offset ? '이 페이지에 콘텐츠가 없어요.' : '조건에 맞는 카드와 답글이 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filters.cards.offset = 0; load('cards'); })); return; }
@@ -294,17 +407,139 @@
     const list = el('div', 'na-list');
     for (const card of rows) {
       const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
-      const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : '사진 카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
+      const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
       if (card.moderation_reason) item.append(el('p', 'na-reason', `공개 상태 처리 사유: ${card.moderation_reason}`));
       item.append(details([['카드 번호', card.id], ['작성자 번호', card.author_id], ['원글 번호', card.parent_id], ['마지막 수정', formatDate(card.edited_at)]]));
-      const actions = el('div', 'na-actions'); actions.append(button('본문 수정', () => editCard(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'));
+      const actions = el('div', 'na-actions'); actions.append(button('본문·태그 수정', () => editCard(card)), button('꾸미기·사진 지정', () => editCardVisual(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'), button('삭제', () => confirmDeleteCard(card), 'danger'));
       if (card.author_id) actions.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
       item.append(actions); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
+  }
+  async function renderEvents(run) {
+    const filter = filters.cards;
+    main.append(searchForm(filter.query, '이벤트 글·카드 번호 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
+    const rows = await rpc('admin_events', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset });
+    if (!validRun(run)) return;
+    if (!rows?.length) { empty(main, '조건에 맞는 이벤트 카드가 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filter.offset = 0; load('cards'); })); return; }
+    const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}개 · 위치·반경·시간 정정은 작업 기록에 남습니다.`));
+    const list = el('div', 'na-list');
+    for (const event of rows) {
+      const item = el('article', 'adm-card na-item');
+      const meta = el('p', 'na-meta'); meta.append(badge('이벤트 카드'), badge(event.hidden ? '숨김' : '공개', event.hidden ? 'warn' : 'good'), el('span', '', formatDate(event.created_at)));
+      item.append(meta, el('blockquote', 'na-card-body', event.body));
+      if (event.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of event.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
+      item.append(el('p', 'na-reason', `작성자: ${shortUser(event.author_id)}`));
+      item.append(details([['카드 번호', event.id], ['작성자 번호', event.author_id], ['시작', formatDate(event.starts_at)], ['종료', formatDate(event.ends_at)], ['반경', event.radius_km != null ? `${number(event.radius_km * 1000)}m` : '없음'], ['위도', event.center_lat], ['경도', event.center_lon], ['책정 쭈', event.price_coins != null ? `${number(event.price_coins)}쭈` : '없음']]));
+      const actions = el('div', 'na-actions');
+      const changeTerms = button('위치·시간 정정', () => editEvent(event));
+      changeTerms.disabled = new Date(event.ends_at).getTime() <= Date.now();
+      if (changeTerms.disabled) changeTerms.title = '종료된 이벤트의 유료 조건은 변경할 수 없습니다.';
+      actions.append(button('본문·태그 수정', () => editCard(event)), button('꾸미기·사진 지정', () => editCardVisual(event)), changeTerms, button(event.hidden ? '복구' : '숨김', () => confirmVisibility(event), event.hidden ? '' : 'danger'), button('삭제', () => confirmDeleteCard({ ...event, kind: 'event' }), 'danger'));
+      if (event.author_id) actions.append(button('작성자 관리', () => { filters.users = { query: event.author_id, offset: 0 }; load('users'); }));
+      item.append(actions); list.append(item);
+    }
+    main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
+  }
+  function viewArchivedThread(archived) {
+    actionScreen('보관된 원문과 답글', '보관 시작부터 한 달 동안 관리자만 원문을 볼 수 있습니다. 이후에는 자동으로 영구 정리됩니다.', (form) => {
+      const content = el('div', 'na-list'); const more = el('div', 'na-pagination');
+      form.append(content, more);
+      const run = pageRun;
+      let offset = 0, fetching = false;
+      async function nextPage() {
+        if (fetching || !validRun(run)) return;
+        fetching = true; more.replaceChildren();
+        if (offset === 0) { content.replaceChildren(); empty(content, '원문과 답글을 불러오는 중이에요.'); }
+        try {
+          const rows = await rpc('admin_archived_thread', { p_root_id: archived.id, p_limit: 100, p_offset: offset });
+          if (!validRun(run)) return;
+          if (offset === 0) content.replaceChildren();
+          if (!rows?.length && offset === 0) { empty(content, '보관 원문을 찾지 못했어요.'); return; }
+          for (const row of rows || []) {
+            const item = el('article', 'adm-card na-item');
+            item.append(badge(row.kind === 'comment' ? '답글' : row.kind === 'event' ? '이벤트 카드' : '익명카드'), el('blockquote', 'na-card-body', row.body || '원문 없음'));
+            if (row.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of row.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
+            item.append(details([['카드 번호', row.id], ['작성자 번호', row.author_id], ['작성', formatDate(row.created_at)], ['보관 시작', formatDate(row.archived_at)]])); content.append(item);
+          }
+          offset += rows?.length || 0;
+          const total = Number(rows?.[0]?.total_count) || offset;
+          if (offset < total && rows?.length) more.append(el('span', '', `${number(offset)} / ${number(total)}`), button('답글 더 보기', nextPage));
+        } catch (error) {
+          if (validRun(run)) { content.replaceChildren(); more.replaceChildren(); empty(content, friendlyError(error)); }
+        } finally { fetching = false; }
+      }
+      nextPage();
+    });
+  }
+  function confirmArchiveRestore(archived) {
+    actionScreen('보관된 카드 복구', '이 카드와 함께 보관된 답글을 다시 공개 상태로 돌립니다. 개별 숨김 설정은 그대로 유지됩니다.', (form, actions) => {
+      form.append(el('blockquote', 'na-card-body', archived.body || '원문 없음'));
+      const reason = reasonField(); form.append(reason.wrap);
+      const save = button('복구하기', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
+      form.addEventListener('submit', event => {
+        event.preventDefault(); if (!validReason(reason.input)) return;
+        perform('restore_archived_card', { p_card_id: archived.id, p_reason: reason.input.value.trim() }, '카드와 답글을 복구했어요.', 'cards');
+      });
+    });
+  }
+  function confirmExpiredPurge(archived) {
+    actionScreen('보관 자료 영구 정리', '한 달의 원문 보관 기간이 끝났습니다. 원문을 다시 열지 않고 이 묶음과 연결된 답글을 영구 삭제합니다.', (form, actions) => {
+      form.append(details([['카드 번호', archived.id], ['보관 시작', formatDate(archived.archived_at)], ['정리 가능', formatDate(archived.purge_after)], ['연결된 답글', number(archived.reply_count)]]));
+      const reason = reasonField(); form.append(reason.wrap);
+      const save = button('영구 정리', () => {}, 'danger'); save.type = 'submit'; actions.append(save);
+      form.addEventListener('submit', event => {
+        event.preventDefault(); if (!validReason(reason.input)) return;
+        perform('admin_purge_archived_card', { p_card_id: archived.id, p_reason: reason.input.value.trim() }, '보관 자료를 영구 정리했어요.', 'cards');
+      });
+    });
+  }
+  async function renderArchive(run) {
+    const filter = filters.cards;
+    main.append(el('p', 'na-warning', '삭제·만료 후 한 달 동안 원문은 관리자만 볼 수 있습니다. 기간이 끝나면 원문 조회와 복구가 닫히고 자동 영구 정리됩니다. 지연된 자료는 아래에서 원문 없이 직접 정리할 수 있습니다.'));
+    const [rows, expired] = await Promise.all([
+      rpc('admin_archived_cards', { p_limit: PAGE_SIZE, p_offset: filter.offset }),
+      rpc('admin_expired_archive_queue', { p_limit: PAGE_SIZE, p_offset: filter.expiredOffset })
+    ]);
+    if (!validRun(run)) return;
+    const activeSection = el('section', 'na-archive-section'); activeSection.append(el('h4', '', '원문 보관 중')); main.append(activeSection);
+    if (!rows?.length) {
+      empty(activeSection, '한 달 보관 중인 카드가 없어요.');
+      if (filter.offset) activeSection.append(button('첫 페이지로', () => { filter.offset = 0; load('cards'); }));
+    } else {
+      const total = rows[0].total_count; activeSection.append(el('p', 'na-count', `보관 중 ${number(total)}개`));
+      const list = el('div', 'na-list');
+      for (const archived of rows) {
+        const item = el('article', 'adm-card na-item');
+        const meta = el('p', 'na-meta'); meta.append(badge(archived.kind === 'event' ? '이벤트 카드' : archived.kind === 'comment' ? '답글' : '익명카드'), badge('관리자 보관', 'warn'));
+        item.append(meta, el('blockquote', 'na-card-body', archived.body || '원문 없음'));
+        if (archived.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of archived.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
+        const archiveSource = { retention: '기간 만료', owner: '작성자 삭제', admin: '관리자 삭제' }[archived.archive_reason] || '기타';
+        item.append(el('p', 'na-reason', `함께 보관된 답글 ${number(archived.reply_count)}개 · 보관 원인: ${archiveSource}`));
+        item.append(details([['카드 번호', archived.id], ['작성자 번호', archived.author_id], ['원글 번호', archived.parent_id], ['작성', formatDate(archived.created_at)], ['보관 시작', formatDate(archived.archived_at)], ['영구 삭제 예정', formatDate(archived.purge_after)], ['영구보관', archived.permanent ? '예' : '아니요']]));
+        const actions = el('div', 'na-actions'); actions.append(button('원문·답글 보기', () => viewArchivedThread(archived)), button('꾸미기·사진 지정', () => editCardVisual(archived)), button('복구', () => confirmArchiveRestore(archived), 'primary'));
+        item.append(actions); list.append(item);
+      }
+      activeSection.append(list); pagination(activeSection, filter.offset, total, offset => { filter.offset = offset; load('cards'); });
+    }
+    const expiredSection = el('section', 'na-archive-section'); expiredSection.append(el('h4', '', '정리 대기')); main.append(expiredSection);
+    if (!expired?.length) {
+      empty(expiredSection, '정리가 지연된 보관 자료가 없어요.');
+      if (filter.expiredOffset) expiredSection.append(button('첫 페이지로', () => { filter.expiredOffset = 0; load('cards'); }));
+      return;
+    }
+    const total = expired[0].total_count; expiredSection.append(el('p', 'na-count', `원문 조회 기간이 끝난 자료 ${number(total)}묶음`));
+    const expiredList = el('div', 'na-list');
+    for (const archived of expired) {
+      const item = el('article', 'adm-card na-item');
+      item.append(badge(archived.kind === 'event' ? '이벤트 카드' : archived.kind === 'comment' ? '답글' : '익명카드'), el('p', 'na-reason', `보관 시작: ${formatDate(archived.archived_at)} · 함께 정리할 답글 ${number(archived.reply_count)}개`));
+      item.append(details([['카드 번호', archived.id], ['정리 가능', formatDate(archived.purge_after)]]));
+      const actions = el('div', 'na-actions'); actions.append(button('영구 정리', () => confirmExpiredPurge(archived), 'danger')); item.append(actions); expiredList.append(item);
+    }
+    expiredSection.append(expiredList); pagination(expiredSection, filter.expiredOffset, total, offset => { filter.expiredOffset = offset; load('cards'); });
   }
   function confirmReport(report) {
     actionScreen('신고 처리 완료', '이 신고의 검토를 완료로 표시합니다. 카드의 공개 상태는 그대로 유지됩니다.', (form, actions) => {
@@ -367,7 +602,10 @@
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}건 · 최근 작업부터 표시합니다.`)); const list = el('div', 'na-list');
     for (const action of rows) {
       const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
-      header.append(el('strong', '', ACTIONS[action.action] || '운영 작업'), el('span', 'na-meta', formatDate(action.created_at))); item.append(header);
+      const detail = action.detail;
+      const actionLabel = detail?.visual_after ? '카드 꾸미기·사진 지정 정정'
+        : detail?.after?.radius_km != null ? '이벤트 위치·시간 정정' : ACTIONS[action.action] || '운영 작업';
+      header.append(el('strong', '', actionLabel), el('span', 'na-meta', formatDate(action.created_at))); item.append(header);
       item.append(el('p', 'na-reason', `처리자: ${shortUser(action.moderator_id)}\n사유: ${action.reason || '기록된 사유 없음'}`));
       item.append(details([['작업 번호', action.action_id], ['운영자 번호', action.moderator_id], ['이용자 번호', action.subject_user_id], ['카드 번호', action.card_id], ['신고 번호', action.report_id]]));
       const changes = auditChanges(action.detail);
@@ -390,10 +628,23 @@
     if (Number.isFinite(Number(detail.notice_length)) && detail.notice_length !== undefined) values.push(['공지 길이', `${number(detail.notice_length)}자`]);
     if (detail.blocked_words_changed === true) values.push(['금지어 설정', '저장']);
     if (detail.operating_documents_changed === true) values.push(['운영 문서', '저장']);
+    if (Number.isSafeInteger(detail.count)) values.push(['처리한 카드', `${number(detail.count)}개`]);
     if (Object.hasOwn(detail, 'restricted_until')) values.push(['제한 종료', detail.restricted_until ? formatDate(detail.restricted_until) : '지정된 종료 시각 없음']);
     if (Array.isArray(detail.fields)) {
       const fields = detail.fields.map(name => ({ body: '글 내용', tags: '태그' }[name])).filter(Boolean);
       if (fields.length) values.push(['수정 항목', fields.join(', ')]);
+    }
+    if (detail.before?.radius_km != null && detail.after?.radius_km != null) {
+      const eventTerms = terms => `위치 ${terms.lat}, ${terms.lng} · 반경 ${number(terms.radius_km)}km · 시작 ${formatDate(terms.starts_at)} · 종료 ${formatDate(terms.ends_at)}`;
+      values.push(['정정 전', eventTerms(detail.before)], ['정정 후', eventTerms(detail.after)]);
+      if (detail.price_coins_unchanged != null) values.push(['기존 책정', `${number(detail.price_coins_unchanged)}쭈 (변동 없음)`]);
+    }
+    if (detail.visual_after) {
+      const visual = value => {
+        const style = value?.style || {};
+        return `글꼴 ${style.font || '기본'}, 크기 ${style.size || '보통'}, 색상 ${style.theme || '기본'}, 효과 ${style.effect || '없음'} · 꾸미기 종료 ${formatDate(value?.style_until)} · 지정 사진 ${value?.photo_key || '없음'} · 사진 지정 종료 ${formatDate(value?.photo_until)}`;
+      };
+      values.push(['정정 전', visual(detail.visual_before)], ['정정 후', visual(detail.visual_after)]);
     }
     if (typeof detail.inquiry_id === 'string') values.push(['문의 번호', detail.inquiry_id]);
     return values;
@@ -459,7 +710,7 @@
     if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
     externalNav = false; authorized = false; onTabChange = null;
-    filters.cards = { query: '', state: 'all', offset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0;
+    filters.cards = { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0;
     if (embedded) {
       embedded = false; root.classList.remove('na-embedded'); root.remove();
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); closeButton.hidden = false;
@@ -504,7 +755,7 @@
         nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '관리자 계정만 사용할 수 있어요.')); return;
       }
       authorized = true; nav.hidden = externalNav;
-      filters.cards.offset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0;
+      filters.cards.offset = 0; filters.cards.expiredOffset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0;
       await load(tabId);
     } catch (error) {
       if (!validInstance(run)) return;

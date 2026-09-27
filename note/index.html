@@ -10,10 +10,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="features.css">
+  <link rel="stylesheet" href="style.css?v=0.44.0-beta">
+  <link rel="stylesheet" href="features.css?v=0.44.0-beta">
   <link rel="stylesheet" href="support.css">
   <link rel="stylesheet" href="notifications.css">
+  <link rel="stylesheet" href="map.css?v=0.44.0-beta">
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -35,11 +36,11 @@
       <a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a>
       <div class="side-section-label">오쭈다월드의 노트</div>
       <nav class="side-nav">
-        <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>사진 카드</button>
+        <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>익명카드</button>
         <button class="nav-button" type="button" disabled title="데이터 연결 후 제공"><svg><use href="#bookmark"/></svg>메모함</button>
       </nav>
       <div class="side-spacer"></div>
-      <a class="world-link" href="/world.html"><svg><use href="#home"/></svg>미니홈피 <span aria-hidden="true">↗</span></a>
+      <a class="world-link" href="/world.html"><svg><use href="#home"/></svg>미니홈피 <span aria-hidden="true">→</span></a>
       <p class="side-caption" id="account-status">계정 확인 중</p>
     </aside>
 
@@ -54,13 +55,21 @@
 
         <section id="feed" class="screen" aria-labelledby="feed-title">
           <div class="page-heading">
-            <div><h1 id="feed-title">사진 카드</h1></div>
-            <button class="icon-button search-button" type="button" aria-label="태그 검색" aria-expanded="false" id="search-toggle" disabled title="다음 단계에서 제공"><svg><use href="#search"/></svg></button>
+            <div class="note-heading-name"><h1 id="feed-title">익명카드</h1><span class="note-dev-badge">개발 중</span></div>
+            <div class="note-top-actions">
+              <button class="icon-button search-button" type="button" aria-label="카드 검색" aria-expanded="false" id="search-toggle" disabled><svg><use href="#search"/></svg></button>
+              <button class="button" type="button" id="map-toggle" aria-pressed="false">지도</button>
+              <button class="button" type="button" id="event-start">이벤트</button>
+            </div>
           </div>
           <div class="search-panel" id="search-panel" hidden><label for="tag-search">태그 검색</label><input id="tag-search" type="search" placeholder="태그 입력" disabled></div>
           <div class="feed-layout">
             <div class="feed-column">
-              <div class="tabs" role="group" aria-label="카드 순서"><button class="selected" type="button" aria-current="true">최근순</button><button type="button" disabled title="다음 단계에서 제공">인기있는</button><button type="button" disabled title="위치 동의 후 제공">가까운순</button></div>
+              <section class="note-map-section" id="note-map-section" aria-label="주변 이벤트 지도" hidden>
+                <div class="note-map" id="note-map"></div>
+                <p class="note-map-status" id="note-map-status" role="status">지도를 불러오는 중이에요.</p>
+              </section>
+              <div class="tabs feed-sort-tabs" role="group" aria-label="카드 순서"></div>
               <div class="feed-list" id="feed-list" aria-live="polite"><p class="reply-empty">카드를 불러오는 중이에요.</p></div>
             </div>
           </div>
@@ -83,15 +92,16 @@
   <div class="dialog-backdrop" id="composer-backdrop" hidden>
     <section class="composer" role="dialog" aria-modal="true" aria-labelledby="compose-title">
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
-      <div class="composer-body"><p class="compose-context" id="compose-context">사진 위에 마음을 적어 주세요.</p><div class="compose-photo image-lake"><span class="compose-shade"></span><textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="5"></textarea><div class="compose-tag-display" id="compose-tag-display">#태그는 사진 아래쪽에 보여요</div></div><div class="compose-status"><span>배경 사진 자동 선택</span><span id="compose-count">0 / 200자</span></div><label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label><input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120"><div class="identity-row"><span>표시 이름</span><label><input type="radio" name="identity" value="anonymous" checked>익명</label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div></div>
+      <div class="composer-body"><p class="compose-context" id="compose-context">마음을 카드에 적어 주세요.</p><div class="compose-photo image-lake"><span class="compose-shade"></span><textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="5"></textarea><div class="compose-tag-display" id="compose-tag-display">#태그는 아래쪽에 보여요</div></div><div class="compose-status"><span>무료 사진은 게시 시 무작위 배정 · 꾸미기 1개월 무료</span><span id="compose-count">0 / 200자</span></div><div class="note-style-controls" id="note-style-controls"><label>글꼴<select id="compose-font"><option value="default">기본</option><option value="round">둥근 글씨</option><option value="serif">차분한 글씨</option></select></label><label>크기<select id="compose-size"><option value="normal">보통</option><option value="large">크게</option><option value="small">작게</option></select></label><label>배경<select id="compose-theme"><option value="plain">기본</option><option value="rose">장미빛</option><option value="night">밤하늘</option></select></label><label>꾸미기 효과<select id="compose-effect"><option value="none">없음</option><option value="sparkle">반짝임</option><option value="frame">테두리</option></select></label></div><fieldset class="note-photo-pick" id="note-photo-pick"><legend>사진 배경</legend><p>기본 배경은 무료예요. 제공 사진을 고르면 게시 후 10쭈가 차감되고 1개월간 보여요.</p><label><input type="radio" name="photo-choice" value="plain" checked> 기본 랜덤 사진</label><label><input type="radio" name="photo-choice" value="10"> 호수 사진 · 10쭈</label><label><input type="radio" name="photo-choice" value="11"> 숲 사진 · 10쭈</label></fieldset><label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label><input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120"><div class="identity-row"><span>표시 이름</span><label><input type="radio" name="identity" value="anonymous" checked>익명</label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div><section class="note-location-consent" id="card-location-consent"><p>정확한 GPS 좌표는 비공개로 저장하고, 다른 사람에게는 근사 거리만 표시해요.</p><button class="button" id="card-location-button" type="button">위치 확인</button><span id="card-location-status" role="status">위치를 확인해야 등록할 수 있어요.</span></section><section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 눌러 이벤트 중심을 정해 주세요. 지정한 중심과 원형 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section></div>
       <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="support.js?v=0.43.7-beta" defer></script>
+  <script src="map.js?v=0.44.0-beta" defer></script>
+  <script src="support.js?v=0.44.0-beta" defer></script>
   <script src="drafts.js" defer></script>
   <script src="notifications.js" defer></script>
-  <script src="preview.js?v=0.43.7-beta" defer></script>
+  <script src="preview.js?v=0.44.0-beta" defer></script>
 </body>
 </html>

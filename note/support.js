@@ -57,6 +57,8 @@
           : '카드와 답글에서 서로를 존중해 주세요. 신고는 카드의 더 보기에서 접수할 수 있어요.'));
         content.append(section);
       }
+      const glass=el('a','스마트 글래스 미리보기','support-document-link');
+      glass.href='/note/glasses.html';content.append(glass);
       content.append(el('h3','내 문의'),el('p','문의는 본인과 노트 관리자만 볼 수 있어요.','support-help'));
       if(!user){const link=el('a','대문에서 로그인','button');link.href='/';content.append(link);return;}
       const form=el('form',undefined,'support-form'),label=el('label','문의 내용'),field=el('textarea');
