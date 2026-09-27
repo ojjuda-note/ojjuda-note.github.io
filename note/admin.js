@@ -2,6 +2,8 @@
 (() => {
   'use strict';
   const PAGE_SIZE = 30;
+  const ADMIN_BASE = (() => { try { return new URL('.', document.currentScript?.src || location.href).href; } catch { return ''; } })();
+  let adminMap = null;
   const FONT_CHOICES = [
     ['default', '고운돋움'], ['round', '둥근 글씨'], ['serif', '명조'],
     ['handwriting', '손글씨'], ['mono', '고정폭']
@@ -27,14 +29,15 @@
   const photoKeyValid = value => /^\d{2,3}$/.test(String(value)) && Number(value) >= 10 && Number(value) <= 189;
   const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-curated180`;
   const TABS = [
-    ['cards', '카드 · 답글'], ['settings', '공지 · 기능'],
+    ['cards', '카드 · 답글'], ['settings', '공지 · 기능'], ['map', '위치 지도'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
   ];
-  const NOTE_TABS = Object.freeze(TABS.slice(0, 2));
+  const NOTE_TABS = Object.freeze(TABS.slice(0, 3));
   const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
   const HELP = {
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
     settings: '공지와 노트 안의 기능을 관리합니다. 변경 사유는 작업 기록에 남습니다.',
+    map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
     cards: '익명카드·답글·이벤트와 만료 후 보관 자료를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
     inquiries: '이용자가 노트에 남긴 문의를 확인하고 답변합니다.',
@@ -46,7 +49,8 @@
     archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
     purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
     restrict_user: '이용 제한', release_user: '이용 제한 해제', add_moderator: '운영자 지정',
-    remove_moderator: '운영자 해제', update_settings: '노트 공지·기능 변경', reply_inquiry: '문의 답변'
+    remove_moderator: '운영자 해제', update_settings: '노트 공지·기능 변경', reply_inquiry: '문의 답변',
+    reset_adult: '출생연도 입력 초기화'
   };
   const filters = { cards: { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
   let client = null, onChanged = null, userId = null, subscription = null;
@@ -576,6 +580,7 @@
     for (const card of rows) {
       const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
+      if (Array.isArray(card.tags) && card.tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
@@ -585,6 +590,7 @@
       actions.append(button('본문·태그 수정', () => editCard(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'));
       const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(card)), button('삭제', () => confirmDeleteCard(card), 'danger'));
       if (card.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
+      if (card.author_id) more.row.append(button('이 작성자의 카드 모두 보기', () => { Object.assign(filters.cards, { view: 'card', query: card.author_id, offset: 0, expiredOffset: 0 }); load('cards'); }));
       item.append(actions, more.more); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
@@ -664,6 +670,7 @@
       const save = button('영구 정리', () => {}, 'danger'); save.type = 'submit'; actions.append(save);
       form.addEventListener('submit', event => {
         event.preventDefault(); if (!validReason(reason.input)) return;
+        if (!window.confirm('영구 정리하면 원문과 답글이 완전히 지워지고 되돌릴 수 없어요. 계속할까요?')) return;
         perform('admin_purge_archived_card', { p_card_id: archived.id, p_reason: reason.input.value.trim() }, '보관 자료를 영구 정리했어요.', 'cards');
       });
     });
@@ -726,10 +733,18 @@
     filters.reports.offset = offset;
     if (!rows.length) { empty(main, '접수되거나 숨김 처리된 신고가 없어요.'); return; }
     main.append(el('p', 'na-count', `총 ${number(rows.length)}건 · 처리 중인 신고와 숨긴 카드를 함께 표시합니다.`));
+    const page = rows.slice(offset, offset + PAGE_SIZE), reportTags = new Map();
+    try {
+      const tagged = await rpc('admin_report_card_tags', { p_card_ids: [...new Set(page.map(row => row.card_id).filter(Boolean))] });
+      if (!validRun(run)) return;
+      for (const row of tagged || []) reportTags.set(row.card_id, row.tags);
+    } catch (error) { console.warn('Note report tags:', error); }
     const list = el('div', 'na-list');
-    for (const report of rows.slice(offset, offset + PAGE_SIZE)) {
+    for (const report of page) {
       const item = el('article', 'adm-card na-item'); const meta = el('p', 'na-meta');
       meta.append(badge(report.status === 'resolved' ? '처리 완료' : '접수', report.status === 'resolved' ? 'good' : 'warn'), badge(report.hidden ? '개별 숨김' : '개별 숨김 없음'), el('span', '', formatDate(report.created_at)));
+      const tags = reportTags.get(report.card_id) || report.tags;
+      if (Array.isArray(tags) && tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));
       item.append(meta, el('blockquote', 'na-card-body', report.body || '삭제된 카드'), el('p', 'na-reason', `신고 사유: ${report.reason || ''}`));
       const actions = el('div', 'na-actions');
       if (report.card_id) actions.append(button(report.hidden ? '카드 복구' : '카드 숨김', () => confirmVisibility(report)));
@@ -738,8 +753,13 @@
     }
     main.append(list); pagination(main, offset, rows.length, next => { filters.reports.offset = next; load('reports'); });
   }
+  function resetAdult(user) {   // 태어난 해를 잘못 적은 이용자의 성인 확인을 지워요 (다시 적을 수 있어요)
+    const reason = window.prompt(`${shortUser(user.user_id)} 님의 성인 확인을 초기화할까요?\n초기화 사유를 적어 주세요.`);
+    if (reason == null || !reason.trim()) return;
+    perform('admin_reset_adult', { p_user_id: user.user_id, p_reason: reason.trim().slice(0, 500) }, '성인 확인을 초기화했어요.', 'users');
+  }
   async function renderUsers(run) {
-    const filter = filters.users;
+    const filter = filters.users; const userSlots = new Map();
     main.append(searchForm(filter.query, '이용자 번호 전체 또는 일부', query => { filters.users = { query, offset: 0 }; load('users'); }, null, '노트에 참여한 이용자와 관리자를 찾습니다. 카드의 작성자 관리 버튼으로도 이동할 수 있어요.'));
     const rows = await rpc('admin_users', { p_query: filter.query, p_limit: PAGE_SIZE, p_offset: filter.offset });
     if (!validRun(run)) return;
@@ -755,9 +775,98 @@
       if (user.is_restricted) item.append(el('p', 'na-reason', `제한 사유: ${user.restriction_reason || ''}\n종료: ${user.restricted_until ? formatDate(user.restricted_until) : '직접 해제할 때까지'}`));
       const actions = el('div', 'na-actions');
       if (!user.is_moderator) actions.append(button(user.is_restricted ? '이용 제한 해제' : '이용 제한', () => restrictUser(user), user.is_restricted ? '' : 'danger'));
-      item.append(actions); list.append(item);
+      item.append(actions); list.append(item); userSlots.set(user.user_id, { meta, actions, user });
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.users.offset = offset; load('users'); });
+    try {   // 성인 확인 상태 (19금 태그용). SQL을 아직 안 돌렸으면 조용히 넘어가요
+      const flags = await rpc('admin_member_flags', { p_user_ids: [...userSlots.keys()] });
+      if (!validRun(run)) return;
+      for (const flag of flags || []) {
+        const slot = userSlots.get(flag.user_id); if (!slot) continue;
+        slot.meta.append(badge(flag.adult === 'adult' ? `성인 확인 · ${flag.birth_year}년생` : flag.adult === 'minor' ? `미성년 · ${flag.birth_year}년생` : '성인 확인 전', flag.adult === 'minor' ? 'warn' : ''));
+        if (flag.adult !== 'unknown') slot.actions.append(button('성인 확인 초기화', () => resetAdult(slot.user)));
+      }
+    } catch (error) { console.warn('Note admin member flags:', error); }
+  }
+  // 위치 지도: 위치가 있는 카드를 최신순으로 50개씩 (대략 좌표, 약 1km 칸)
+  const loadedAssets = new Map();
+  function loadAsset(kind, url) {
+    if (!loadedAssets.has(url)) loadedAssets.set(url, new Promise((resolve, reject) => {
+      const tag = kind === 'css' ? Object.assign(document.createElement('link'), { rel: 'stylesheet', href: url }) : Object.assign(document.createElement('script'), { src: url, async: true });
+      tag.addEventListener('load', () => resolve(true)); tag.addEventListener('error', () => { loadedAssets.delete(url); reject(new Error('load failed')); });
+      document.head.append(tag);
+    }));
+    return loadedAssets.get(url);
+  }
+  async function ensureMapTool() {
+    if (window.OjjudaMap?.create) return true;
+    await Promise.all([loadAsset('css', `${ADMIN_BASE}map.css?v=admin-map-1`), loadAsset('js', `${ADMIN_BASE}map.js?v=admin-map-1`)]);
+    return !!window.OjjudaMap?.create;
+  }
+  const hasAdultTag = tags => Array.isArray(tags) && tags.some(tag => String(tag).replace(/^#+/, '').trim() === '19금');
+  async function renderMap(run) {
+    const filter = filters.map || (filters.map = { offset: 0 });
+    const [rows, mapReady] = await Promise.all([
+      rpc('admin_card_locations', { p_limit: 50, p_offset: filter.offset }),
+      ensureMapTool().catch(() => false)
+    ]);
+    if (!validRun(run)) return;
+    if (!rows?.length) {
+      empty(main, filter.offset ? '이 페이지에는 위치가 있는 카드가 없어요.' : '위치를 켜고 쓴 카드가 아직 없어요.');
+      if (filter.offset) main.append(button('최신 50개로', () => { filters.map.offset = 0; load('map'); }));
+      return;
+    }
+    const total = Number(rows[0].total_count) || rows.length;
+    main.append(el('p', 'na-count', `위치가 있는 카드 총 ${number(total)}개 · ${number(filter.offset + 1)}–${number(filter.offset + rows.length)}번째 (최신순)`));
+    const box = el('div', 'na-map'); main.append(box);
+    const info = el('div', 'na-map-info'); info.append(el('p', 'na-empty', '지도의 점을 누르면 그 자리의 카드가 보여요. 숫자는 같은 자리(약 1km 칸)의 카드 수예요.'));
+    main.append(info);
+    const groups = new Map();
+    for (const row of rows) {
+      if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) continue;
+      const key = `${row.lat.toFixed(4)},${row.lon.toFixed(4)}`;
+      if (!groups.has(key)) groups.set(key, { lat: row.lat, lng: row.lon, rows: [], count: 0, label: '' });
+      const g = groups.get(key); g.rows.push(row); g.count = g.rows.length; g.label = `카드 ${g.count}장 보기`;
+    }
+    const markers = [...groups.values()], items = new Map();
+    const showGroup = entry => {   // 점(또는 합쳐진 점)을 누르면 그 자리의 카드를 보여 줘요
+      const members = entry.members || [entry], here = members.flatMap(m => m.rows || []);
+      for (const m of markers) m.active = members.includes(m);
+      adminMap?.setMarkers(markers);
+      info.replaceChildren(el('p', 'na-count', `이 자리의 카드 ${here.length}장`));
+      for (const row of here) {
+        const card = el('div', 'na-map-card');
+        card.append(el('p', 'na-meta', `${formatDate(row.created_at)}${row.archived ? ' · 보관됨' : ''}${hasAdultTag(row.tags) ? ' · 19금' : ''}`), el('blockquote', 'na-card-body', row.body || '원문 없음'));
+        card.append(button('카드 관리에서 보기', () => { Object.assign(filters.cards, { view: 'card', query: row.id, offset: 0, expiredOffset: 0 }); load('cards'); }));
+        info.append(card);
+      }
+      items.forEach((item, id) => item.classList.toggle('na-map-on', here.some(row => row.id === id)));
+    };
+    if (mapReady) {
+      const map = window.OjjudaMap.create(box, { center: { lat: markers[0]?.lat ?? 37.5665, lng: markers[0]?.lng ?? 126.978 }, zoom: 12, onMarker: showGroup });
+      adminMap = map;
+      requestAnimationFrame(() => { if (adminMap === map) map?.setMarkers(markers, true); });
+    } else box.replaceWith(el('p', 'na-empty', '지도를 불러오지 못했어요. 아래 목록으로 확인해 주세요.'));
+    const list = el('div', 'na-list');
+    for (const row of rows) {
+      const item = el('article', 'adm-card na-item'); const meta = el('p', 'na-meta');
+      meta.append(badge(row.kind === 'comment' ? '답글' : row.kind === 'event' ? '이벤트 카드' : '익명카드'));
+      if (row.archived) meta.append(badge('보관됨', 'warn'));
+      if (hasAdultTag(row.tags)) meta.append(badge('19금', 'warn'));
+      meta.append(el('span', '', formatDate(row.created_at)));
+      item.append(meta, el('blockquote', 'na-card-body', row.body || '원문 없음'));
+      if (row.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of row.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
+      const actions = el('div', 'na-actions');
+      const group = markers.find(g => g.rows.includes(row));
+      if (group && mapReady) actions.append(button('지도에서 보기', () => { adminMap?.focusOn({ lat: group.lat, lng: group.lng }, 14); showGroup(group); box.scrollIntoView({ block: 'nearest' }); }));
+      actions.append(button('카드 관리에서 보기', () => { Object.assign(filters.cards, { view: 'card', query: row.id, offset: 0, expiredOffset: 0 }); load('cards'); }));
+      item.append(actions); items.set(row.id, item); list.append(item);
+    }
+    main.append(list);
+    const pager = el('div', 'na-actions');
+    if (filter.offset > 0) pager.append(button('← 더 최신 50개', () => { filters.map.offset = Math.max(0, filter.offset - 50); load('map'); }));
+    if (filter.offset + rows.length < total) pager.append(button('이전 50개 →', () => { filters.map.offset = filter.offset + 50; load('map'); }));
+    if (pager.childElementCount) main.append(pager);
   }
   async function renderInquiries(run) {
     const target = el('section', 'na-inquiries'); main.append(target);
@@ -825,6 +934,7 @@
     if (busy || !root || root.hidden) return;
     tabId = TABS.some(([id]) => id === nextTab) ? nextTab : 'cards'; actionReturn = null;
     const run = ++pageRun; setStatus('');
+    adminMap?.destroy?.(); adminMap = null;
     for (const item of nav.querySelectorAll('[data-admin-tab]')) {
       const selected = item.dataset.adminTab === tabId;
       item.classList.toggle('on', selected);
@@ -835,7 +945,7 @@
     focusSection(heading);
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
-      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
+      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
       if (validRun(run)) loading.remove();
       return validRun(run);
     } catch (error) {
@@ -876,6 +986,7 @@
     instance++; pageRun++; busy = false; actionReturn = null;
     subscription?.unsubscribe(); subscription = null;
     editPreviewObserver?.disconnect(); editPreviewObserver = null;
+    adminMap?.destroy?.(); adminMap = null;
     if (!root || root.hidden) return;
     lockControls(false); root.hidden = true; main.replaceChildren(); setStatus('');
     for (const [element, prior] of inertState) if (element.isConnected) element.inert = prior;
@@ -883,7 +994,7 @@
     if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
     externalNav = false; authorized = false; onTabChange = null;
-    filters.cards = { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0;
+    filters.cards = { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0; filters.map = { offset: 0 };
     if (embedded) {
       embedded = false; root.classList.remove('na-embedded'); root.remove();
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); closeButton.hidden = false;
@@ -928,7 +1039,7 @@
         nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '관리자 계정만 사용할 수 있어요.')); return;
       }
       authorized = true; nav.hidden = externalNav;
-      filters.cards.offset = 0; filters.cards.expiredOffset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0;
+      filters.cards.offset = 0; filters.cards.expiredOffset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0; filters.map = { offset: 0 };
       await load(tabId);
     } catch (error) {
       if (!validInstance(run)) return;

@@ -136,3 +136,10 @@ textarea.na-input{min-height:95px;resize:vertical}
 @media(max-width:520px){.na-edit-preview:not(.na-edit-preview--reply):not(.na-edit-preview--event):not(.na-edit-size-large):not(.na-edit-size-small):not(.na-edit-font-handwriting) .na-edit-quote{font-size:26px}}
 @media(max-height:420px){.na-panel{height:100dvh;overflow:auto}.na-layout{overflow:visible}}
 @media(prefers-reduced-motion:reduce){.na-panel *{scroll-behavior:auto!important}}
+
+/* 위치 지도 */
+.na-map{position:relative;height:min(58vh,420px);min-height:280px;border-radius:16px;overflow:hidden;margin:8px 0 10px;background:#e8ecf4}
+.na-map .oj-map-stage{position:absolute;inset:0}
+.na-map-info{display:grid;gap:8px;margin-bottom:12px}
+.na-map-card{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #e4e6f2}
+.na-item.na-map-on{outline:2px solid #f0679a;outline-offset:2px}

@@ -14,7 +14,7 @@
     return { lat: Math.atan(Math.sinh(Math.PI * (1 - 2 * y / scale))) / RAD,
       lng: x / scale * 360 - 180 };
   };
-  function create(host, { center = { lat: 37.5665, lng: 126.978 }, zoom = 12, onSelect, onEvent, onMove } = {}) {
+  function create(host, { center = { lat: 37.5665, lng: 126.978 }, zoom = 12, onSelect, onEvent, onMove, onMarker } = {}) {
     if (!(host instanceof HTMLElement)) return null;
     const stage = document.createElement('div'); stage.className = 'oj-map-stage';
     if (onSelect) {
@@ -33,7 +33,7 @@
     credit.href = 'https://www.openstreetmap.org/copyright'; credit.target = '_blank'; credit.rel = 'noopener';
     credit.textContent = '© OpenStreetMap contributors';
     stage.append(tiles, overlay, controls, credit); host.replaceChildren(stage);
-    let current = { lat: center.lat, lng: center.lng }, z = zoom, selected = null, selectionRadius = 0, circles = [];
+    let current = { lat: center.lat, lng: center.lng }, z = zoom, selected = null, selectionRadius = 0, circles = [], markers = [];
     let pointer = null, dragged = false;
     const metresPerPixel = (lat, level) => 156543.03392 * Math.cos(lat * RAD) / 2 ** level;
     function fitSelection() {
@@ -80,6 +80,35 @@
         }
         else circle.style.pointerEvents = 'none';
         overlay.append(circle);
+      }
+      const spots = [];   // 관리자 위치 지도의 점: 화면에서 가까운 점은 하나로 합쳐 장 수를 적어요
+      for (const entry of markers) {
+        if (!Number.isFinite(entry.lat) || !Number.isFinite(entry.lng)) continue;
+        const p = project(entry.lat, entry.lng, z);
+        const x = p.x - c.x + width / 2, y = p.y - c.y + height / 2;
+        if (x < -24 || y < -24 || x > width + 24 || y > height + 24) continue;
+        const near = spots.find(spot => Math.abs(spot.x - x) < 20 && Math.abs(spot.y - y) < 20);
+        if (near) { near.members.push(entry); near.count += entry.count || 1; near.active = near.active || !!entry.active; }
+        else spots.push({ x, y, members: [entry], count: entry.count || 1, active: !!entry.active });
+      }
+      for (const spot of spots) {
+        const dot = document.createElement(onMarker ? 'button' : 'span');
+        dot.className = `oj-map-marker${spot.active ? ' on' : ''}`;
+        dot.style.cssText = `left:${spot.x}px;top:${spot.y}px`;
+        if (spot.count > 1) dot.textContent = String(spot.count);
+        if (onMarker) {
+          dot.type = 'button'; dot.setAttribute('aria-label', spot.members.length > 1 ? `카드 ${spot.count}장 모인 곳 확대하기` : (spot.members[0].label || '카드 위치'));
+          dot.addEventListener('click', event => {
+            event.stopPropagation();
+            if (spot.members.length > 1 && z < 15) {   // 여러 자리가 겹쳐 있으면 먼저 확대해요
+              const lats = spot.members.map(m => m.lat), lngs = spot.members.map(m => m.lng);
+              current = { lat: (Math.min(...lats) + Math.max(...lats)) / 2, lng: (Math.min(...lngs) + Math.max(...lngs)) / 2 };
+              z = clamp(z + 2, 4, 17); draw(); onMove?.({ ...current }); return;
+            }
+            onMarker(spot.members.length === 1 ? spot.members[0] : { lat: spot.members[0].lat, lng: spot.members[0].lng, count: spot.count, members: spot.members });
+          });
+        } else dot.setAttribute('aria-hidden', 'true');
+        overlay.append(dot);
       }
       if (selected) {
         const p = project(selected.lat, selected.lng, z);
@@ -143,6 +172,22 @@
       setSelection(value) { selected = value; if (value) { current = { lat: value.lat, lng: value.lng }; fitSelection(); } draw(); },
       setSelectionRadius(metres) { selectionRadius = Number.isFinite(metres) && metres > 0 ? metres : 0; fitSelection(); draw(); },
       setCircles(value) { circles = Array.isArray(value) ? value : []; draw(); },
+      setMarkers(value, fit = false) {   // 점 찍기. fit이면 모든 점이 보이게 중심과 확대를 맞춰요
+        markers = Array.isArray(value) ? value : [];
+        const points = markers.filter(m => Number.isFinite(m.lat) && Number.isFinite(m.lng));
+        if (fit && points.length && host.clientWidth && host.clientHeight) {
+          const lats = points.map(m => m.lat), lngs = points.map(m => m.lng);
+          current = { lat: (Math.min(...lats) + Math.max(...lats)) / 2, lng: (Math.min(...lngs) + Math.max(...lngs)) / 2 };
+          z = 16;
+          while (z > 4) {
+            const a = project(Math.max(...lats), Math.min(...lngs), z), b = project(Math.min(...lats), Math.max(...lngs), z);
+            if (Math.abs(b.x - a.x) <= host.clientWidth * .8 && Math.abs(b.y - a.y) <= host.clientHeight * .8) break;
+            z--;
+          }
+        }
+        draw();
+      },
+      focusOn(value, level) { if (value && Number.isFinite(value.lat) && Number.isFinite(value.lng)) { current = { lat: value.lat, lng: value.lng }; if (Number.isFinite(level)) z = clamp(level, 4, 17); draw(); } },
       invalidate: draw, destroy() { resize.disconnect(); host.replaceChildren(); } };
   }
   window.OjjudaMap = Object.freeze({ create });
