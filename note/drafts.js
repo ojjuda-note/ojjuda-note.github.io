@@ -8,24 +8,25 @@
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const conflictError = error => error?.code === 'PT409' || error?.code === '40001' || error?.status === 409;
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // Keep older local draft text when the previous 102-photo collection is retired.
+  const photo = key => typeof key === 'string' && /^\d{2,3}$/.test(key)
+    && Number(key) >= 10 && Number(key) <= 111 ? String(10 + (Number(key) - 10) % 8) : null;
 
   function content(value) {
     const style = value?.style ?? null, photoKey = value?.photo_key ?? null;
     if (!value || typeof value.body !== 'string' || typeof value.tags !== 'string'
       || value.body.length > 20000 || value.tags.length > 480
-      || typeof value.background_key !== 'string' || !/^\d{2,3}$/.test(value.background_key)
-      || Number(value.background_key) < 10 || Number(value.background_key) > 111
+      || !photo(value.background_key)
       || !['memo', 'comment'].includes(value.kind)
       || (style !== null && (typeof style !== 'object' || Array.isArray(style)
         || JSON.stringify(style).length > 512))
-      || (photoKey !== null && (typeof photoKey !== 'string' || !/^\d{2,3}$/.test(photoKey)
-        || Number(photoKey) < 10 || Number(photoKey) > 111))
+      || (photoKey !== null && !photo(photoKey))
       || (value.kind === 'memo' ? value.parent_id !== null : !uuid.test(value.parent_id || ''))) {
       throw new Error('임시 글 정보를 확인해 주세요.');
     }
     // Keep a fixed field order so equality does not depend on JSON key ordering.
-    return { body: value.body, tags: value.tags, background_key: value.background_key,
-      kind: value.kind, parent_id: value.parent_id, style, photo_key: photoKey };
+    return { body: value.body, tags: value.tags, background_key: photo(value.background_key),
+      kind: value.kind, parent_id: value.parent_id, style, photo_key: photoKey === null ? null : photo(photoKey) };
   }
   function snapshot(value) {
     const row = Array.isArray(value) ? value[0] : value;

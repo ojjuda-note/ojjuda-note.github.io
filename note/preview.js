@@ -38,7 +38,9 @@ let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
-const PHOTO_FIRST = 10, PHOTO_LAST = 111, PHOTO_PAGE_SIZE = 12;
+const PHOTO_FIRST = 10, PHOTO_LAST = 17, PHOTO_PAGE_SIZE = 12;
+const PHOTO_VERSION = '20260927-new';
+const photoUrl = key => `assets/${key}.jpg?v=${PHOTO_VERSION}`;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
@@ -61,8 +63,8 @@ function photoAssetKey(value) {
 function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
   element.classList.toggle('note-plain', !key);
-  element.classList.remove('image-forest', 'image-lake');
-  element.style.backgroundImage = key ? `url("assets/${key}.jpg")` : '';
+  element.classList.remove('image-featured');
+  element.style.backgroundImage = key ? `url("${photoUrl(key)}")` : '';
 }
 async function loadEventBackground(element, card) {
   const position = positionIsFresh(nearbyPosition) ? nearbyPosition : null;
@@ -853,6 +855,7 @@ function installStyleChoices() {
   });
   const pageJump = $('#photo-page-jump');
   const pageCount = Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE);
+  pageJump.closest('.note-photo-pages').hidden = pageCount <= 1;
   for (let page = 0; page < pageCount; page++) {
     const first = page * PHOTO_PAGE_SIZE + 1;
     const last = Math.min(first + PHOTO_PAGE_SIZE - 1, PHOTO_LAST - PHOTO_FIRST + 1);
@@ -880,7 +883,7 @@ function updateFeaturedPhoto() {
   const selected = photoAssetKey(selectedPhotoKey);
   const name = selected ? `사진 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 사진 무작위';
   const price = selected ? '직접 선택 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
-  $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
+  $('#photo-featured-image').src = photoUrl(selected || backgroundKey);
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
@@ -900,7 +903,7 @@ function renderPhotoPage() {
       selectedPhotoKey = key; updateFeaturedPhoto();
       applyComposeStyle(); recordDraft();
     });
-    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
+    const img = node('img'); img.src = photoUrl(key); img.alt = ''; img.loading = 'lazy';
     const caption = node('span', 'note-photo-tile-caption', title);
     const mark = node('span', 'note-photo-tile-mark', '✓'); mark.setAttribute('aria-hidden', 'true');
     tile.append(input, img, caption, mark); grid.append(tile);
@@ -1704,7 +1707,7 @@ function showPhotoChoices(card) {
     for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
       const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
       const button = node('button', 'button'); button.type = 'button';
-      const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
+      const img = node('img'); img.src = photoUrl(key); img.alt = ''; img.loading = 'lazy';
       button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
       button.addEventListener('click', () => {
         if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
@@ -1720,6 +1723,7 @@ function showPhotoChoices(card) {
     next.disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
     next.addEventListener('click', () => { page++; render(); });
     pages.append(prev, node('span', '', `${page + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`), next);
+    pages.hidden = PHOTO_LAST - PHOTO_FIRST + 1 <= PHOTO_PAGE_SIZE;
   };
   render(); managementBody.append(choices, pages); cancelManagement();
 }

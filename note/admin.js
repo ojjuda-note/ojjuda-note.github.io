@@ -21,9 +21,11 @@
     ['green', '초록'], ['blue', '파랑'], ['purple', '보라'],
     ['black', '검정'], ['white', '흰색']
   ];
-  const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 102 }, (_, index) =>
+  const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 8 }, (_, index) =>
     [String(index + 10), `사진 ${String(index + 1).padStart(3, '0')}`])];
   const PHOTO_PAGE_SIZE = 12;
+  const photoKeyValid = value => /^1[0-7]$/.test(String(value));
+  const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-new`;
   const TABS = [
     ['cards', '카드 · 답글'], ['settings', '공지 · 기능'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
@@ -252,7 +254,7 @@
       if (cardKind === 'comment') preview.classList.add('na-edit-preview--reply');
       if (cardKind === 'event') preview.classList.add('na-edit-preview--event');
       const photo = el('div', 'na-edit-photo');
-      if (/^([1-9][0-9]|10[0-9]|11[01])$/.test(String(card.background_key))) photo.style.backgroundImage = `url("/note/assets/${card.background_key}.jpg")`;
+      if (photoKeyValid(card.background_key)) photo.style.backgroundImage = `url("${photoUrl(card.background_key)}")`;
       const quote = el('span', 'na-edit-quote');
       const photoTags = el('div', 'na-edit-tags');
       photo.append(quote, photoTags);
@@ -293,7 +295,7 @@
         const photoActive = visual.photo_until && new Date(visual.photo_until).getTime() > Date.now();
         activeStyle = styleActive && visual.style && typeof visual.style === 'object' ? visual.style : {};
         const imageKey = photoActive && visual.photo_key ? visual.photo_key : visual.background_key || card.background_key;
-        photo.style.backgroundImage = /^([1-9][0-9]|10[0-9]|11[01])$/.test(String(imageKey)) ? `url("/note/assets/${imageKey}.jpg")` : '';
+        photo.style.backgroundImage = photoKeyValid(imageKey) ? `url("${photoUrl(imageKey)}")` : '';
         for (const code of ['round', 'serif', 'handwriting', 'mono']) preview.classList.toggle(`na-edit-font-${code}`, activeStyle.font === code);
         for (const code of ['large', 'small']) preview.classList.toggle(`na-edit-size-${code}`, activeStyle.size === code);
         visualReady = true;
@@ -353,7 +355,7 @@
             photoPreview.hidden = true; return;
           }
           photoPreview.hidden = false;
-          photoImage.src = `/note/assets/${key}.jpg`;
+          photoImage.src = photoUrl(key);
           photoCaption.textContent = photoKey
             ? `지정 사진 · ${PHOTO_CHOICES.find(([value]) => value === key)[1]}`
             : `처음 무작위 배정된 사진 · ${originalPhoto}`;
@@ -372,6 +374,7 @@
         pageSelect.addEventListener('change', () => { photoPage = Number(pageSelect.value); renderPhotoPage(); });
         pageLabel.append(pageSelect);
         photoPages.append(prev, pageLabel, next);
+        photoPages.hidden = pageCount <= 1;
         photoPanel.append(photoGrid, photoPages);
         const photoUntil = field('사진 지정 종료', 'datetime-local', localDateTime(visual.photo_until), '사진을 지정했다면 종료 시각을 지정해 주세요.');
         function selectPhoto(key) {
@@ -388,7 +391,7 @@
             const [key, name] = PHOTO_CHOICES[index + 1];
             const tile = el('button', 'na-photo-tile'); tile.type = 'button'; tile.dataset.photoKey = key;
             tile.setAttribute('aria-pressed', String(key === photoKey));
-            const image = el('img'); image.src = `/note/assets/${key}.jpg`; image.alt = ''; image.loading = 'lazy';
+            const image = el('img'); image.src = photoUrl(key); image.alt = ''; image.loading = 'lazy';
             tile.append(image, el('small', '', name));
             tile.addEventListener('click', () => selectPhoto(key)); photoGrid.append(tile);
           }
