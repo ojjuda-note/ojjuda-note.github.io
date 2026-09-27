@@ -48,11 +48,11 @@
       for(const [key,title] of [['contact_text','문의처'],['guidelines','이용 안내'],['terms','이용약관'],['privacy','개인정보 처리방침']]) {
         const section=el('details'),summary=el('summary',title),value=typeof settings?.[key]==='string'?settings[key].trim():'';
         section.append(summary);
-        if(value)section.append(el('p',value));
-        else if(key==='terms'||key==='privacy'){
+        if(key==='terms'||key==='privacy'){
           const link=el('a',`${title} 보기`,'support-document-link');
           link.href=key==='terms'?'/terms.html':'/privacy.html';section.append(link);
-        }else section.append(el('p',key==='contact_text'
+        }else if(value)section.append(el('p',value));
+        else section.append(el('p',key==='contact_text'
           ? '노트 문의는 로그인 후 아래 문의함에 남겨 주세요.'
           : '카드와 답글에서 서로를 존중해 주세요. 신고는 카드의 더 보기에서 접수할 수 있어요.'));
         content.append(section);
