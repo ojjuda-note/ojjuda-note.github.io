@@ -5,28 +5,31 @@
   'use strict';
   const MAX_REVISION = Number.MAX_SAFE_INTEGER;
   const copy = value => value == null ? null : JSON.parse(JSON.stringify(value));
-  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  // 서버(데이터베이스)는 꾸미기 설정 같은 안쪽 항목의 순서를 다시 정렬해서 돌려줘요.
+  // 순서만 다르고 내용이 같으면 같은 글로 봐야, 게시한 글이 임시 글로 다시 저장되지 않아요.
+  const ordered = value => Array.isArray(value) ? value.map(ordered)
+    : value && typeof value === 'object' ? Object.keys(value).sort().reduce((out, key) => { out[key] = ordered(value[key]); return out; }, {}) : value;
+  const same = (a, b) => JSON.stringify(ordered(a)) === JSON.stringify(ordered(b));
   const conflictError = error => error?.code === 'PT409' || error?.code === '40001' || error?.status === 409;
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  // Keep draft text and valid photo choices across catalog updates.
-  const photo = key => typeof key === 'string' && /^\d{2,3}$/.test(key)
-    && Number(key) >= 10 && Number(key) <= 189 ? String(Number(key)) : null;
 
   function content(value) {
     const style = value?.style ?? null, photoKey = value?.photo_key ?? null;
     if (!value || typeof value.body !== 'string' || typeof value.tags !== 'string'
       || value.body.length > 20000 || value.tags.length > 480
-      || !photo(value.background_key)
+      || typeof value.background_key !== 'string' || !/^\d{2,3}$/.test(value.background_key)
+      || Number(value.background_key) < 10 || Number(value.background_key) > 111
       || !['memo', 'comment'].includes(value.kind)
       || (style !== null && (typeof style !== 'object' || Array.isArray(style)
         || JSON.stringify(style).length > 512))
-      || (photoKey !== null && !photo(photoKey))
+      || (photoKey !== null && (typeof photoKey !== 'string' || !/^\d{2,3}$/.test(photoKey)
+        || Number(photoKey) < 10 || Number(photoKey) > 111))
       || (value.kind === 'memo' ? value.parent_id !== null : !uuid.test(value.parent_id || ''))) {
       throw new Error('임시 글 정보를 확인해 주세요.');
     }
     // Keep a fixed field order so equality does not depend on JSON key ordering.
-    return { body: value.body, tags: value.tags, background_key: photo(value.background_key),
-      kind: value.kind, parent_id: value.parent_id, style, photo_key: photoKey === null ? null : photo(photoKey) };
+    return { body: value.body, tags: value.tags, background_key: value.background_key,
+      kind: value.kind, parent_id: value.parent_id, style, photo_key: photoKey };
   }
   function snapshot(value) {
     const row = Array.isArray(value) ? value[0] : value;

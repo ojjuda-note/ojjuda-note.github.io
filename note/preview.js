@@ -38,21 +38,21 @@ let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
-const PHOTO_FIRST = 10, PHOTO_LAST = 189, PHOTO_PAGE_SIZE = 12;
-const PHOTO_VERSION = '20260927-curated180';
-const photoUrl = key => `assets/${key}.jpg?v=${PHOTO_VERSION}`;
+const PHOTO_FIRST = 10, PHOTO_LAST = 111, PHOTO_PAGE_SIZE = 12;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
+// 사진 위에서 자연스럽게: 글씨는 부드러운 색, 글상자는 같은 계열의 깊은 색을 반투명 유리처럼 깔아요.
+// 안쪽 이름(red, yellow …)은 예전 그대로라, 이미 올린 카드도 새 색으로 보여요. deep은 색 고르기 단추에 보이는 글상자 색이에요.
 const COLOR_PALETTE = {
-  red: { label: '빨강', solid: '#dc3049', box: '#dc30492e' },
-  yellow: { label: '노랑', solid: '#e5a800', box: '#e5a80033' },
-  green: { label: '초록', solid: '#238d56', box: '#238d5630' },
-  blue: { label: '파랑', solid: '#3c78d9', box: '#3c78d933' },
-  purple: { label: '보라', solid: '#8855cb', box: '#8855cb33' },
-  black: { label: '검정', solid: '#151622', box: '#1516222b' },
-  white: { label: '흰색', solid: '#ffffff', box: '#ffffff33' }
+  white: { label: '흰색', solid: '#FFFDF7', box: '#FFFDF7A8', deep: '#EFE9DF' },
+  black: { label: '먹색', solid: '#2E2B36', box: '#1C1A2466', deep: '#3A3644' },
+  red: { label: '장미', solid: '#FFBFCF', box: '#7A2E4466', deep: '#B85C74' },
+  yellow: { label: '레몬', solid: '#FFDF7E', box: '#6B531566', deep: '#C9A43E' },
+  green: { label: '민트', solid: '#AEEACF', box: '#1F5C4866', deep: '#4E9C80' },
+  blue: { label: '하늘', solid: '#BCD6FF', box: '#26457566', deep: '#5B84C4' },
+  purple: { label: '라벤더', solid: '#D6C4FF', box: '#47327466', deep: '#8A72C4' }
 };
 let photoPage = 0;
 let selectedPhotoKey = null;
@@ -63,8 +63,8 @@ function photoAssetKey(value) {
 function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
   element.classList.toggle('note-plain', !key);
-  element.classList.remove('image-featured');
-  element.style.backgroundImage = key ? `url("${photoUrl(key)}")` : '';
+  element.classList.remove('image-forest', 'image-lake');
+  element.style.backgroundImage = key ? `url("assets/${key}.jpg")` : '';
 }
 async function loadEventBackground(element, card) {
   const position = positionIsFresh(nearbyPosition) ? nearbyPosition : null;
@@ -103,10 +103,12 @@ function applyVisualStyle(element, style = {}) {
   if (EFFECT_CODES.includes(style.effect) && style.effect !== 'none') element.classList.add(`note-effect-${style.effect}`);
   const textColor = COLOR_PALETTE[style.textColor];
   const boxColor = COLOR_PALETTE[style.boxColor];
-  const textHex = textColor?.solid || '#ffffff';
-  const boxHex = boxColor?.box || '#17203a26';
+  const textHex = textColor?.solid || '#FFFDF7';
+  const darkText = colorLuminance(textHex) < .3;   // 어두운 글씨면 기본 글상자를 밝은 유리로
+  const boxHex = boxColor?.box || (darkText ? '#FFFDF7A8' : '#1C1A2447');
   element.style.setProperty('--note-text-color', textHex);
   element.style.setProperty('--note-box-color', boxHex);
+  element.style.setProperty('--note-shadow', darkText ? 'rgba(255,253,247,.55)' : 'rgba(12,12,24,.42)');
   element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
   element.style.setProperty('--note-outline', colorLuminance(textHex) > .25 ? '#101020' : '#ffffff');
 }
@@ -131,6 +133,64 @@ function banner(value) {
   $('#connection-status').hidden = !value;
 }
 function query() { return client.schema('ojjuda_note'); }
+// 익명 카드의 자동 이름: 카드 번호로 정해져서 같은 카드는 늘 같은 이름, 카드마다 다른 이름이에요 (같은 사람인지 알 수 없어요)
+const ANON_ADJ = ['수줍은', '졸린', '반짝이는', '포근한', '용감한', '느긋한', '상냥한', '씩씩한', '말랑한', '조용한', '설레는', '엉뚱한',
+  '다정한', '새침한', '동글동글한', '꿈꾸는', '산책하는', '노래하는', '배고픈', '웃는', '수다쟁이', '따뜻한', '시원한', '보송보송한',
+  '몽글몽글한', '반가운', '차분한', '궁금한', '행복한', '장난꾸러기', '달콤한', '느릿한'];
+const ANON_NOUN = ['고래', '고양이', '강아지', '토끼', '수달', '펭귄', '다람쥐', '여우', '판다', '햄스터', '부엉이', '거북이', '오리', '코알라', '고슴도치', '너구리',
+  '사슴', '해파리', '돌고래', '참새', '나비', '무지개', '구름', '별', '달', '새싹', '도토리', '솜사탕', '우산', '연필', '해바라기', '눈사람'];
+function anonAlias(id) {
+  let h = 2166136261; for (const ch of String(id || '')) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } h >>>= 0;
+  const noun = ANON_NOUN[Math.floor(h / ANON_ADJ.length) % ANON_NOUN.length];
+  return { name: `${ANON_ADJ[h % ANON_ADJ.length]} ${noun}`, icon: noun[0] };   // 동그라미엔 한글 한 글자 (고양이 → 고)
+}
+// 이름 앞 동그라미: 카드를 올릴 때 글쓴이가 고른 성별 (남 파랑 · 여 빨강 · 비공개 회색). 카드마다 고정돼요. 서버는 성별만 알려 주고 누가 썼는지는 알려 주지 않아요
+const GENDER_LOOK = { male: ['남', '#4A7BE0'], female: ['여', '#E2525C'], private: ['비', '#A7ABB8'] };
+const genderCache = new Map(), genderWanted = new Set(); let genderTimer = null, myGender = 'private';
+function paintGender(avatar, gender) {
+  const [label, color] = GENDER_LOOK[gender] || GENDER_LOOK.private;
+  avatar.textContent = label; avatar.style.background = color; avatar.style.color = '#fff';
+  avatar.setAttribute('aria-label', gender === 'male' ? '남성' : gender === 'female' ? '여성' : '성별 비공개'); avatar.title = avatar.getAttribute('aria-label');
+}
+function paintGenderFor(id) { document.querySelectorAll(`[data-gender-card="${id}"]`).forEach(a => paintGender(a, genderCache.get(id) || 'private')); }
+function wantGender(id) {
+  if (!id || genderCache.has(id) || !client) return;
+  genderWanted.add(id); clearTimeout(genderTimer); genderTimer = setTimeout(fetchGenders, 60);
+}
+async function fetchGenders() {
+  const ids = [...genderWanted].slice(0, 100); genderWanted.clear(); if (!ids.length) return;
+  try {
+    const rows = await noteRpc('card_genders', { p_ids: ids });
+    for (const id of ids) genderCache.set(id, 'private');
+    for (const r of rows || []) if (r?.card_id) genderCache.set(r.card_id, r.gender);
+    ids.forEach(paintGenderFor);
+  } catch (error) { console.warn('Note gender:', error); }   // 아직 SQL을 안 돌렸으면 회색(비)으로 둬요
+  if (genderWanted.size) genderTimer = setTimeout(fetchGenders, 60);
+}
+async function loadMyGender(userId) {
+  myGender = 'private'; setGenderInputs();
+  if (!client || !userId) return;
+  try { const g = await noteRpc('get_my_gender', {}); if (session?.user?.id === userId && GENDER_LOOK[g]) { myGender = g; setGenderInputs(); } }
+  catch (error) { console.warn('Note my gender:', error); }
+}
+function setGenderInputs() {
+  document.querySelectorAll('input[name="gender"]').forEach(input => { input.checked = input.value === myGender; input.disabled = !session?.user || busy; });
+}
+async function changeMyGender(value) {
+  if (!GENDER_LOOK[value] || !session?.user || value === myGender) return;
+  const before = myGender, userId = session.user.id; myGender = value; setGenderInputs();
+  try {
+    await noteRpc('set_my_gender', { p_gender: value });
+    if (session?.user?.id !== userId) return;
+    message('성별 표시를 바꿨어요. 앞으로 쓰는 카드부터 반영돼요.');   // 이미 쓴 카드는 올릴 때의 성별 그대로예요
+  } catch (error) { console.warn('Note set gender:', error); myGender = before; setGenderInputs(); message('성별 표시를 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'); }
+}
+function shownName(card) {   // 닉네임 카드는 닉네임, 익명 카드는 자동 이름
+  const nick = card.identity_mode === 'nickname' && card.display_name && card.display_name !== '익명' ? card.display_name : null;
+  if (nick) return { name: nick, icon: [...nick][0] || 'ㅇ' };
+  return card.id ? anonAlias(card.id) : { name: '익명', icon: 'ㅇ' };
+}
+
 function dateLabel(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('ko-KR', {
@@ -224,9 +284,12 @@ function cardElement(card, compact = false, expanded = false) {
 
   const meta = node('div', 'card-meta');
   const person = node('span');
-  person.append(node('strong', '', card.display_name || '익명'));
+  const who = shownName(card);
+  person.append(node('strong', '', who.name));
   person.append(node('small', '', dateLabel(card.created_at)));
-  meta.append(node('span', visiblePhoto === '11' ? 'avatar avatar-green' : 'avatar', 'ㅇ'), person);
+  const avatar = node('span', 'avatar', ''); avatar.dataset.genderCard = card.id || '';
+  paintGender(avatar, genderCache.get(card.id) || 'private'); wantGender(card.id);
+  meta.append(avatar, person);
   if (!compact) {
     if (typeof card.distance_band === 'string' && card.distance_band.trim()) {
       meta.append(node('span', 'meta-tail', card.distance_band));
@@ -340,7 +403,7 @@ function filteredFeed() {
   }
   if (feedSnapshot) request = request.lte('created_at', feedSnapshot);
   if (feedSort === 'popular') {
-    request = request.gte('created_at', new Date(Date.parse(feedSnapshot) - 7 * 86400000).toISOString());
+    request = request.gte('created_at', new Date((feedSnapshot ? Date.parse(feedSnapshot) : Date.now()) - 7 * 86400000).toISOString());
     request = request.order('like_count', { ascending: false });
   }
   const after = cursorFilter(feedCursor, false, feedSort === 'popular');
@@ -359,8 +422,10 @@ async function loadFeed(more = false) {
   const version = ++feedRun;
   feedLoading = true;
   if (!more) {
-    feedCursor = null; feedSnapshot = new Date().toISOString();
-    nearbyOffset = 0; nearbySnapshot = feedSnapshot;
+    // 첫 페이지는 휴대폰 시계를 기준 시각으로 보내지 않아요. 휴대폰 시계가 서버보다 늦으면 방금 올린 카드가 빠지기 때문이에요.
+    // 서버가 자기 시각을 쓰고, 다음 페이지 기준은 받은 카드 중 가장 최근 카드의 시각으로 정해요.
+    feedCursor = null; feedSnapshot = null;
+    nearbyOffset = 0; nearbySnapshot = null;
     if (detail.hidden) cache.clear();
     state(list, '카드를 불러오는 중이에요.'); banner('카드를 불러오는 중');
   } else list.querySelector('[data-more-feed]')?.remove();
@@ -394,7 +459,7 @@ async function loadFeed(more = false) {
       data = await noteRpc('list_cards', { p_sort: feedSort === 'latest' ? 'recent' : feedSort,
         p_lat: nearbyPosition?.latitude ?? null, p_lon: nearbyPosition?.longitude ?? null,
         p_radius_m: 30000, p_limit: 20,
-        p_cursor: { offset: nearbyOffset, snapshot: nearbySnapshot } });
+        p_cursor: nearbySnapshot ? { offset: nearbyOffset, snapshot: nearbySnapshot } : { offset: nearbyOffset } });
     } catch (cause) { error = cause; }
   } else {
     try { ({ data, error } = await filteredFeed()); } catch (cause) { error = cause; }
@@ -411,7 +476,12 @@ async function loadFeed(more = false) {
     updateComposer(); return false;
   }
   ready = true; banner('');
-  if (!more) list.replaceChildren();
+  if (!more) {
+    list.replaceChildren();
+    let newest = null;
+    for (const card of data || []) if (card?.created_at && (!newest || Date.parse(card.created_at) > Date.parse(newest))) newest = card.created_at;
+    feedSnapshot = newest; nearbySnapshot = newest;
+  }
   for (const card of data || []) {
     if (card.kind === 'event' && card.body == null) continue;
     const exists = list.querySelector(`[data-card-id="${card.id}"]`);
@@ -838,7 +908,7 @@ function installStyleChoices() {
     for (const [code, choice] of [['default', { label: '기본' }], ...Object.entries(COLOR_PALETTE)]) {
       const label = node('label', 'note-color-choice'); label.dataset.color = code;
       label.title = `${labelText}: ${choice.label}`;
-      if (choice.solid) label.style.setProperty('--swatch', choice.solid);
+      if (choice.solid) label.style.setProperty('--swatch', group === 'boxColor' ? choice.deep || choice.solid : choice.solid);
       const input = node('input'); input.type = 'radio'; input.name = group; input.value = code;
       input.checked = code === 'default'; input.setAttribute('aria-label', `${labelText} ${choice.label}`);
       input.addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
@@ -855,7 +925,6 @@ function installStyleChoices() {
   });
   const pageJump = $('#photo-page-jump');
   const pageCount = Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE);
-  pageJump.closest('.note-photo-pages').hidden = pageCount <= 1;
   for (let page = 0; page < pageCount; page++) {
     const first = page * PHOTO_PAGE_SIZE + 1;
     const last = Math.min(first + PHOTO_PAGE_SIZE - 1, PHOTO_LAST - PHOTO_FIRST + 1);
@@ -883,7 +952,7 @@ function updateFeaturedPhoto() {
   const selected = photoAssetKey(selectedPhotoKey);
   const name = selected ? `사진 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 사진 무작위';
   const price = selected ? '직접 선택 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
-  $('#photo-featured-image').src = photoUrl(selected || backgroundKey);
+  $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
@@ -903,7 +972,7 @@ function renderPhotoPage() {
       selectedPhotoKey = key; updateFeaturedPhoto();
       applyComposeStyle(); recordDraft();
     });
-    const img = node('img'); img.src = photoUrl(key); img.alt = ''; img.loading = 'lazy';
+    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
     const caption = node('span', 'note-photo-tile-caption', title);
     const mark = node('span', 'note-photo-tile-mark', '✓'); mark.setAttribute('aria-hidden', 'true');
     tile.append(input, img, caption, mark); grid.append(tile);
@@ -1700,7 +1769,6 @@ function showPhotoChoices(card) {
   if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
   const choices = node('div', 'note-photo-choice');
   const pages = node('div', 'note-photo-pages');
-  const pageCount = Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE);
   let page = 0;
   const render = () => {
     choices.replaceChildren(); pages.replaceChildren();
@@ -1708,7 +1776,7 @@ function showPhotoChoices(card) {
     for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
       const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
       const button = node('button', 'button'); button.type = 'button';
-      const img = node('img'); img.src = photoUrl(key); img.alt = ''; img.loading = 'lazy';
+      const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
       button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
       button.addEventListener('click', () => {
         if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
@@ -1723,17 +1791,7 @@ function showPhotoChoices(card) {
     const next = node('button', 'button', '다음'); next.type = 'button';
     next.disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
     next.addEventListener('click', () => { page++; render(); });
-    const pageLabel = node('label', '', '페이지');
-    const pageJump = node('select'); pageJump.setAttribute('aria-label', '사진 페이지 선택');
-    for (let index = 0; index < pageCount; index++) {
-      const option = node('option', '', `${index + 1} / ${pageCount}`);
-      option.value = String(index); pageJump.append(option);
-    }
-    pageJump.value = String(page);
-    pageJump.addEventListener('change', () => { page = Number(pageJump.value); render(); });
-    pageLabel.append(pageJump);
-    pages.append(prev, pageLabel, next);
-    pages.hidden = pageCount <= 1;
+    pages.append(prev, node('span', '', `${page + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`), next);
   };
   render(); managementBody.append(choices, pages); cancelManagement();
 }
@@ -1949,6 +2007,7 @@ window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer()
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 submit.addEventListener('click', publishCard);
 document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => { updateComposer(); recordDraft(); }));
+document.querySelectorAll('input[name="gender"]').forEach(input => input.addEventListener('change', () => { if (input.checked) changeMyGender(input.value); }));
 
 function receiveAuth(current) {
   const changed = session?.user?.id !== current?.user?.id;
@@ -1972,7 +2031,7 @@ function receiveAuth(current) {
   setTimeout(() => {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
-    loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
+    loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState(); loadMyGender(current?.user?.id);
     notificationController?.refresh?.();
     if (changed) loadFeed();
     else consumeInitialCard();

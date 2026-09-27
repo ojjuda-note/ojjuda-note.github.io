@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260927-curated180">
-  <link rel="stylesheet" href="features.css?v=0.45.8-beta">
+  <link rel="stylesheet" href="style.css?v=0.45.9-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.17-beta">
   <link rel="stylesheet" href="event-photo.css?v=0.45.9-beta">
   <link rel="stylesheet" href="effects.css?v=0.45.5-beta">
   <link rel="stylesheet" href="support.css">
@@ -95,7 +95,7 @@
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
       <div class="composer-body">
         <p class="compose-context" id="compose-context">마음을 카드에 적어 주세요.</p>
-        <div class="compose-photo image-featured">
+        <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
           <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="2"></textarea>
           <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
@@ -126,20 +126,21 @@
             <p class="note-setting-help">꾸미기는 1개월간 적용돼요. 기본 사진은 등록할 때 무작위로 정해집니다.</p>
             <fieldset class="note-photo-pick" id="note-photo-pick">
               <legend>사진 배경</legend>
-              <p class="note-photo-intro">엄선한 사진 180장 중 하나를 고르거나 무료로 무작위 배정할 수 있어요.</p>
+              <p class="note-photo-intro">102장의 사진 중 하나를 고르거나 무료로 무작위 배정할 수 있어요.</p>
               <div class="note-photo-modes">
                 <label class="note-photo-random"><input type="radio" name="photo-choice" value="plain" checked><span><strong>기본 사진 무작위</strong><small>무료 · 등록 시 정해져요</small></span></label>
-                <button class="button note-photo-open" id="photo-gallery-toggle" type="button" aria-controls="photo-gallery" aria-expanded="false">사진 180장 둘러보기 <span aria-hidden="true">↗</span></button>
+                <button class="button note-photo-open" id="photo-gallery-toggle" type="button" aria-controls="photo-gallery" aria-expanded="false">사진 102장 둘러보기 <span aria-hidden="true">↗</span></button>
               </div>
               <p class="note-photo-selection" id="photo-selection" role="status" aria-live="polite">기본 사진 무작위 · 무료</p>
               <div class="note-photo-gallery" id="photo-gallery" hidden>
-                <div class="note-photo-featured"><img id="photo-featured-image" src="assets/10.jpg?v=20260927-curated180" alt="선택할 사진 미리보기"><div class="note-photo-featured-caption"><span><strong id="photo-featured-name">기본 사진 미리보기</strong><small id="photo-featured-detail">무작위 · 무료</small></span><span class="note-photo-featured-badge" id="photo-featured-badge">미리보기</span></div></div>
+                <div class="note-photo-featured"><img id="photo-featured-image" src="assets/10.jpg" alt="선택할 사진 미리보기"><div class="note-photo-featured-caption"><span><strong id="photo-featured-name">기본 사진 미리보기</strong><small id="photo-featured-detail">무작위 · 무료</small></span><span class="note-photo-featured-badge" id="photo-featured-badge">미리보기</span></div></div>
                 <div class="note-photo-gallery-heading"><span>마음에 드는 사진을 누르세요</span><span>직접 선택 · 10쭈 / 1개월</span></div>
                 <div class="note-photo-grid" id="photo-grid" role="group" aria-label="사진 배경 목록"></div>
                 <div class="note-photo-pages"><button class="button" id="photo-prev" type="button" aria-label="이전 사진 페이지">‹ 이전</button><label for="photo-page-jump">페이지 <select id="photo-page-jump" aria-label="사진 페이지 선택"></select></label><span id="photo-page-status" aria-live="polite"></span><button class="button" id="photo-next" type="button" aria-label="다음 사진 페이지">다음 ›</button></div>
               </div>
             </fieldset>
-            <div class="identity-row"><span>표시 이름</span><label><input type="radio" name="identity" value="anonymous" checked>익명</label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
+            <div class="identity-row"><span>표시 이름</span><label title="올리면 '수줍은 고래'처럼 이름이 자동으로 붙어요. 카드마다 이름이 달라요."><input type="radio" name="identity" value="anonymous" checked>익명 <small class="anon-auto">· 이름 자동</small></label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
+            <div class="identity-row gender-row" title="카드를 올릴 때의 성별이 그 카드에 남아요. 바꾸면 앞으로 쓰는 카드부터 적용돼요."><span>성별 표시</span><label><input type="radio" name="gender" value="male">남</label><label><input type="radio" name="gender" value="female">여</label><label title="이름 앞 동그라미가 회색으로 보여요"><input type="radio" name="gender" value="private" checked>비공개</label></div>
           </div>
         </details>
         <section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite">카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section>
@@ -152,9 +153,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="map.js?v=0.45.10-beta" defer></script>
   <script src="support.js?v=0.45.5-beta" defer></script>
-  <script src="drafts.js?v=20260927-curated180" defer></script>
+  <script src="drafts.js?v=0.45.18-beta" defer></script>
   <script src="notifications.js?v=0.45.5-beta" defer></script>
-  <script src="preview.js?v=20260927-curated180" defer></script>
+  <script src="preview.js?v=0.45.17-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>
