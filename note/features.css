@@ -60,7 +60,7 @@ select{font:inherit;color:inherit}
 .side-search-panel{margin:3px 0 8px;padding:10px;border-radius:12px}.side-search-panel .note-search-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .side-search-panel .note-search-form label,.side-search-panel .note-search-form select,.side-search-panel .note-search-form input{grid-column:1/-1;width:100%;max-width:none}
 .side-search-panel .note-search-form button{width:100%;min-height:36px;padding:6px 8px;font-size:12px}
-.side-tools .note-tools{display:grid;gap:3px;margin:0;min-height:0}.side-tools .note-tools .mobile-account-status{display:none}
+.side-tools .note-tools{display:grid;grid-template-columns:minmax(0,1fr);justify-content:stretch;width:100%;gap:3px;margin:0;min-height:0}.side-tools .note-tools .mobile-account-status{display:none}
 .side-tools .note-tools .button{display:flex;align-items:center;justify-content:flex-start;width:100%;min-height:42px;padding:8px 12px;border:0;border-radius:12px;background:none;color:var(--ink);text-align:left;font-size:13px;line-height:1.5;white-space:normal}
 .side-tools .note-tools .nn-trigger{min-height:42px}.side-tools .nn-badge{margin-left:auto}
 .note-side-header{display:flex;align-items:center;justify-content:space-between;gap:7px}.side-close{display:none}
