@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=0.45.9-beta">
-  <link rel="stylesheet" href="features.css?v=0.45.17-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.22-beta">
   <link rel="stylesheet" href="event-photo.css?v=0.45.9-beta">
   <link rel="stylesheet" href="effects.css?v=0.45.5-beta">
   <link rel="stylesheet" href="support.css">
@@ -94,20 +94,17 @@
     <section class="composer" role="dialog" aria-modal="true" aria-labelledby="compose-title">
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
       <div class="composer-body">
-        <p class="compose-context" id="compose-context">마음을 카드에 적어 주세요.</p>
+        <p class="compose-context" id="compose-context">마음을 카드에 적어 주세요. 태그는 글에서 자동으로 골라 드려요.</p>
         <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
           <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="2"></textarea>
           <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
+          <input id="compose-tags" type="text" placeholder="#태그 · 쉼표로 나눠요 (최대 5개)" maxlength="120" autocomplete="off" aria-label="카드 태그 (최대 5개, 쉼표로 나눠요)">
         </div>
         <div class="event-photo-choice" id="event-photo-choice" hidden>
           <label class="event-photo-select">내 사진 선택<input id="event-photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="event-photo-status"></label>
           <button class="event-photo-clear" id="event-photo-clear" type="button" hidden>기본 사진으로</button>
           <span id="event-photo-status" role="status" aria-live="polite">JPG·PNG·WebP · 10MB 이하 · 추가 쭈 없음</span>
-        </div>
-        <div class="compose-tag-entry">
-          <label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label>
-          <input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120" autocomplete="off">
         </div>
         <div class="compose-status"><span id="compose-count">0 / 200자</span></div>
         <details class="compose-more" id="compose-more">
@@ -155,7 +152,7 @@
   <script src="support.js?v=0.45.5-beta" defer></script>
   <script src="drafts.js?v=0.45.18-beta" defer></script>
   <script src="notifications.js?v=0.45.5-beta" defer></script>
-  <script src="preview.js?v=0.45.17-beta" defer></script>
+  <script src="preview.js?v=0.45.21-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>

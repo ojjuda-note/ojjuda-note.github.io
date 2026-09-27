@@ -29,6 +29,12 @@ let eventPhotoPreparing = false, eventPhotoError = '', eventPhotoRun = 0;
 let eventHadPhoto = false, eventPhotoRemove = false, eventCurrentPhotoUrl = null;
 let eventMap = null;
 let composerMapFetchRun = 0, composerMapTimer = null;
+let feedPages = 0, backgroundLocating = false;
+function quietLocatedReload(tries = 0) {   // 위치가 오면: 아직 첫 페이지의 최신·인기 목록을 보고 있을 때만 조용히 다시 불러요
+  if (!nearbyPosition || feedMode !== 'all' || feedTerm || feedSort === 'nearby' || feedPages > 1 || !detail.hidden) return;
+  if (feedLoading) { if (tries < 20) setTimeout(() => quietLocatedReload(tries + 1), 300); return; }
+  loadFeed(false, true);
+}
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 let initialCardId = new URL(location.href).searchParams.get('card');
@@ -185,6 +191,27 @@ async function changeMyGender(value) {
     message('성별 표시를 바꿨어요. 앞으로 쓰는 카드부터 반영돼요.');   // 이미 쓴 카드는 올릴 때의 성별 그대로예요
   } catch (error) { console.warn('Note set gender:', error); myGender = before; setGenderInputs(); message('성별 표시를 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'); }
 }
+// 자동 태그: 글에서 중요한 낱말(이름씨)을 골라 태그로 채워요. 태그를 직접 고치면 그때부터는 자동으로 바꾸지 않아요
+const TAG_STOP = new Set(['오늘', '어제', '내일', '정말', '진짜', '너무', '그냥', '우리', '지금', '요즘', '항상', '조금', '많이', '같이', '다시', '아직', '이제',
+  '그래서', '그리고', '하지만', '근데', '그런데', '이런', '그런', '저런', '무슨', '어떤', '모든', '매일', '가끔', '계속', '나는', '내가', '저는', '제가', '너는', '네가',
+  '이거', '그거', '저거', '여기', '거기', '저기', '뭔가', '괜히', '역시', '벌써', '문득', '하루', '마음', '생각', '느낌', '기분', '사람', '시간', '때문']);
+const TAG_SUFFIX = ['하면서', '하며', '하고', '해서', '하는', '했던', '에서는', '으로는', '에서', '으로', '에게', '한테', '께서', '이랑', '까지', '부터', '처럼',
+  '보다', '마다', '조차', '밖에', '이나', '이라', '은', '는', '이', '가', '을', '를', '에', '와', '과', '도', '만', '의', '로', '랑'];
+const TAG_VERB = /(었어요|았어요|였어요|했어요|어요|아요|해요|예요|이에요|에요|네요|군요|죠|습니다|니다|었다|았다|였다|했다|는다|한다|된다|하다|싶다|같다|좋다|있다|없다|었어|았어|했어|해|야|지|네|래|걸|구나|더라|면서|지만|는데|은데|니까|어서|아서|해도|어도|아도|으면|겠|싶|랑|요)$/;
+const TAG_FEEL = [[/(행복|기뻐|기쁘|신나|설레|좋았|좋아)/, '행복'], [/(슬프|슬퍼|우울|눈물|외로|쓸쓸)/, '위로'], [/(피곤|힘들|지쳐|지친|고단)/, '토닥토닥'],
+  [/사랑/, '사랑'], [/(고마|감사)/, '감사'], [/(화나|짜증|속상)/, '속상'], [/(그리워|그립|보고 싶)/, '그리움']];
+function suggestTags(body) {
+  const out = [], seen = new Set(), add = t => { if (t && !seen.has(t) && out.length < 3) { seen.add(t); out.push(t); } };
+  for (const [re, tag] of TAG_FEEL) if (re.test(body)) { add(tag); break; }
+  for (const raw of String(body).split(/[^가-힣A-Za-z0-9]+/)) {
+    let t = raw; if (t.length < 2) continue;
+    for (const s2 of TAG_SUFFIX) if (t.endsWith(s2) && t.length - s2.length >= 2) { t = t.slice(0, -s2.length); break; }
+    if (t.length < 2 || t.length > 12 || TAG_STOP.has(t) || TAG_VERB.test(t) || /^\d+$/.test(t)) continue;
+    add(t);
+  }
+  return out;
+}
+let autoTagMode = true;
 function shownName(card) {   // 닉네임 카드는 닉네임, 익명 카드는 자동 이름
   const nick = card.identity_mode === 'nickname' && card.display_name && card.display_name !== '익명' ? card.display_name : null;
   if (nick) return { name: nick, icon: [...nick][0] || 'ㅇ' };
@@ -410,7 +437,7 @@ function filteredFeed() {
   if (after) request = request.or(after);
   return request.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(20);
 }
-async function loadFeed(more = false) {
+async function loadFeed(more = false, quiet = false) {
   if (!client || (more && feedLoading)) return false;
   const searchContext = $('#feed-search-context');
   if (searchContext) {
@@ -427,7 +454,8 @@ async function loadFeed(more = false) {
     feedCursor = null; feedSnapshot = null;
     nearbyOffset = 0; nearbySnapshot = null;
     if (detail.hidden) cache.clear();
-    state(list, '카드를 불러오는 중이에요.'); banner('카드를 불러오는 중');
+    feedPages = 0;
+    if (!quiet) { state(list, '카드를 불러오는 중이에요.'); banner('카드를 불러오는 중'); }
   } else list.querySelector('[data-more-feed]')?.remove();
   if (feedMode !== 'all' && !session?.user) {
     ready = true; feedLoading = false; banner('');
@@ -445,11 +473,16 @@ async function loadFeed(more = false) {
     });
     list.replaceChildren(note, button); return true;
   }
-  // A prior browser grant can be reused without raising a new permission prompt.
-  if (!more && feedMode === 'all' && !feedTerm && feedSort !== 'nearby' && !nearbyPosition) {
-    const grantedPosition = await positionIfAlreadyGranted();
-    if (version !== feedRun) return false;
-    if (grantedPosition) nearbyPosition = grantedPosition;
+  // 위치를 이미 허용했으면 뒤에서 받아 와요. 카드 목록은 위치를 기다리지 않고 바로 불러와요(휴대폰이 위치를 잡는 데 몇 초씩 걸려요).
+  // 위치가 오면, 아직 첫 페이지를 보고 있을 때만 화면을 깜빡이지 않고 조용히 다시 불러 거리와 범위 안 이벤트를 더해요.
+  if (!more && feedMode === 'all' && !feedTerm && feedSort !== 'nearby' && !nearbyPosition && !quiet && !backgroundLocating) {
+    backgroundLocating = true;
+    positionIfAlreadyGranted().then(grantedPosition => {
+      backgroundLocating = false;
+      if (!grantedPosition || nearbyPosition) return;
+      nearbyPosition = grantedPosition;
+      quietLocatedReload();
+    }).catch(() => { backgroundLocating = false; });
   }
   let data, error;
   if (feedMode === 'events') {
@@ -501,6 +534,7 @@ async function loadFeed(more = false) {
     ? '저장한 카드가 없어요. 카드의 책갈피를 눌러 담아 보세요.' : feedMode === 'mine'
       ? '아직 작성한 카드가 없어요.' : feedSort === 'popular'
         ? '최근 7일에 올라온 카드가 없어요.' : '아직 카드가 없어요. 첫 카드를 써 보세요.');
+  feedPages++;
   if (data?.length) feedCursor = data.at(-1);
   if (feedMode === 'all' && !feedTerm) nearbyOffset += data?.length || 0;
   if (feedMode !== 'events' && data?.length === 20) {
@@ -905,7 +939,7 @@ function installStyleChoices() {
     const group = field.dataset.colorField;
     const labelText = field.querySelector('legend').textContent;
     const row = field.querySelector('.note-color-choices');
-    for (const [code, choice] of [['default', { label: '기본' }], ...Object.entries(COLOR_PALETTE)]) {
+    for (const [code, choice] of [['default', { label: '없음' }], ...Object.entries(COLOR_PALETTE)]) {
       const label = node('label', 'note-color-choice'); label.dataset.color = code;
       label.title = `${labelText}: ${choice.label}`;
       if (choice.solid) label.style.setProperty('--swatch', group === 'boxColor' ? choice.deep || choice.solid : choice.solid);
@@ -972,7 +1006,8 @@ function renderPhotoPage() {
       selectedPhotoKey = key; updateFeaturedPhoto();
       applyComposeStyle(); recordDraft();
     });
-    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
+    const img = node('img'); img.src = `assets/${key}-s.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+    img.addEventListener('error', () => { if (!img.src.endsWith(`/${key}.jpg`)) img.src = `assets/${key}.jpg`; }, { once: true });   // 작은 미리보기가 없으면 원본으로
     const caption = node('span', 'note-photo-tile-caption', title);
     const mark = node('span', 'note-photo-tile-mark', '✓'); mark.setAttribute('aria-hidden', 'true');
     tile.append(input, img, caption, mark); grid.append(tile);
@@ -1179,7 +1214,7 @@ function restoreLocalComposer() {
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
   }
-  text.value = content.body; tags.value = content.tags;
+  text.value = content.body; tags.value = content.tags; autoTagMode = !String(content.tags || '').trim();
   backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
   $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(content.style.size) ? content.style.size : 'normal';
@@ -1212,7 +1247,7 @@ function restoreLocalComposer() {
 function restoreDraft(content) {
   if (!content || backdrop.hidden || editingId || composerUserId !== session?.user?.id) return;
   kind = content.kind; parentId = content.parent_id; backgroundKey = content.background_key;
-  text.value = content.body; tags.value = content.tags;
+  text.value = content.body; tags.value = content.tags; autoTagMode = !String(content.tags || '').trim();
   $('input[name="identity"][value="anonymous"]').checked = true;
   const style = content.style && typeof content.style === 'object' ? content.style : {};
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
@@ -1276,6 +1311,7 @@ function validEventInteger(value, minimum, maximum) {
   return /^\d{1,2}$/.test(raw) && Number(raw) >= minimum && Number(raw) <= maximum;
 }
 function updateComposer() {
+  $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
   if (!backdrop.hidden) resizeComposerText();
   $('#compose-count').textContent = `${text.value.length} / 200자`;
   const visual = currentStyle();
@@ -1321,8 +1357,20 @@ function updateComposer() {
     || (kind === 'event' && (!validEventBody(text.value)
       || (!editingId && (!validEventPosition() || !validEventOptions()))));
 }
+let measureBox = null;
+function fitComposerWidth(photo) {   // 글쓰기 창의 글상자도 글씨 길이에 맞는 너비로
+  if (!photo?.clientWidth) return;
+  if (!measureBox) { measureBox = document.createElement('div'); measureBox.setAttribute('aria-hidden', 'true');
+    Object.assign(measureBox.style, { position: 'absolute', visibility: 'hidden', left: '-9999px', top: '0', whiteSpace: 'pre-wrap', wordBreak: 'keep-all', overflowWrap: 'anywhere', width: 'max-content' }); document.body.append(measureBox); }
+  const cs = getComputedStyle(text);
+  for (const k of ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'lineHeight', 'paddingLeft', 'paddingRight']) measureBox.style[k] = cs[k];
+  const max = photo.clientWidth * 0.84, min = Math.min(max, photo.clientWidth * 0.36);
+  measureBox.style.maxWidth = `${max}px`; measureBox.textContent = (text.value || text.placeholder || ' ') + '\u200b';
+  text.style.width = `${Math.round(Math.min(max, Math.max(min, measureBox.getBoundingClientRect().width + 8)))}px`;
+}
 function resizeComposerText() {
   const photo = $('.compose-photo');
+  fitComposerWidth(photo);
   text.style.height = 'auto';
   const minimum = 88;
   const maximum = Math.max(minimum, photo.clientHeight * .72);
@@ -1395,6 +1443,8 @@ async function openComposer(mode, card = null) {
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : '';
   const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
+  const privateGender = $('input[name="gender"][value="private"]'); if (privateGender) privateGender.checked = true;   // 성별 표시는 쓸 때마다 비공개로 시작
+  autoTagMode = !editingId && !tags.value.trim();
   let restoredLocalComposer = false;
   if (editingId || kind === 'event') {
     localComposerBaseline = JSON.stringify(localComposerContent());
@@ -1426,6 +1476,14 @@ async function openComposer(mode, card = null) {
       if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus(); }
     }
   }
+  if (!editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);   // 위치는 켜짐으로 시작
+}
+function autoWritingLocation(run) {
+  const button = $('#card-location-button');
+  if (!button || run !== composerRun || backdrop.hidden || $('#card-location-consent').hidden) return;
+  if (button.getAttribute('aria-checked') === 'true') return;
+  if (button.disabled) { setTimeout(() => autoWritingLocation(run), 200); return; }
+  button.click();
 }
 
 function closeComposer(saveDraft = true) {
@@ -1510,6 +1568,17 @@ async function publishCard() {
       composeMessage.textContent = editId ? '사진을 올리지 못했어요. 이벤트는 수정되지 않았어요. 다시 시도해 주세요.'
         : '사진을 올리지 못했어요. 이벤트 비용은 차감되지 않았어요. 다시 시도해 주세요.';
       return;
+    }
+  }
+  if (!editId) {   // 이 카드에 남길 성별(글쓰기 창에서 고른 값)을 먼저 맞춰요. 실패하면 등록하지 않아요 (SQL을 아직 안 돌렸으면 그냥 등록해요)
+    const genderChoice = $('input[name="gender"]:checked')?.value || 'private';
+    try { await noteRpc('set_my_gender', { p_gender: GENDER_LOOK[genderChoice] ? genderChoice : 'private' }); }
+    catch (genderError) {
+      console.warn('Note gender:', genderError);
+      if (!/set_my_gender|function|schema cache|PGRST20/i.test(String(genderError?.message || '') + String(genderError?.code || ''))) {
+        draftController?.cancelPublish?.(); busy = false; setComposerInputs(); updateComposer();
+        composeMessage.textContent = '성별 표시를 저장하지 못했어요. 다시 등록해 주세요.'; return;
+      }
     }
   }
   let data, error;
@@ -1776,7 +1845,8 @@ function showPhotoChoices(card) {
     for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
       const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
       const button = node('button', 'button'); button.type = 'button';
-      const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
+      const img = node('img'); img.src = `assets/${key}-s.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+    img.addEventListener('error', () => { if (!img.src.endsWith(`/${key}.jpg`)) img.src = `assets/${key}.jpg`; }, { once: true });   // 작은 미리보기가 없으면 원본으로
       button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
       button.addEventListener('click', () => {
         if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
@@ -2001,13 +2071,14 @@ document.addEventListener('click', event => {
 $('#close-composer').addEventListener('click', closeComposer);
 backdrop.addEventListener('click', event => { if (event.target === backdrop) closeComposer(); });
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !backdrop.hidden) closeComposer(); });
-text.addEventListener('input', () => { updateComposer(); recordDraft(); });
-tags.addEventListener('input', () => { updateComposer(); recordDraft(); });
+text.addEventListener('input', () => { if (autoTagMode) tags.value = suggestTags(text.value).join(', '); updateComposer(); recordDraft(); });
+tags.addEventListener('input', () => { autoTagMode = false; updateComposer(); recordDraft(); });
+tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 submit.addEventListener('click', publishCard);
 document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => { updateComposer(); recordDraft(); }));
-document.querySelectorAll('input[name="gender"]').forEach(input => input.addEventListener('change', () => { if (input.checked) changeMyGender(input.value); }));
+
 
 function receiveAuth(current) {
   const changed = session?.user?.id !== current?.user?.id;
@@ -2031,7 +2102,7 @@ function receiveAuth(current) {
   setTimeout(() => {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
-    loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState(); loadMyGender(current?.user?.id);
+    loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
     notificationController?.refresh?.();
     if (changed) loadFeed();
     else consumeInitialCard();
