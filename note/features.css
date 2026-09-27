@@ -211,3 +211,14 @@ select{font:inherit;color:inherit}
 .compose-photo.tags-chip #compose-tags{color:transparent;background:transparent;border-color:transparent;caret-color:transparent}
 .compose-photo .compose-tag-display{pointer-events:none}
 .compose-photo:not(.tags-chip) .compose-tag-display{visibility:hidden}
+
+/* 태그 탭: 태그로 찾기 + 요즘 많이 쓰는 태그 */
+.note-tag-panel{margin:8px 0 12px;padding:12px;border-radius:18px;background:#fff;box-shadow:0 6px 18px -14px rgba(35,38,74,.35)}
+.note-tag-form{display:flex;gap:8px}
+.note-tag-form input{flex:1;min-width:0;height:42px;box-sizing:border-box;border-radius:14px;border:1px solid #dcdff0;padding:0 14px;font-size:15px;background:#fbfbfe}
+.note-tag-form input:focus{outline:0;border-color:#f0679a;box-shadow:0 0 0 3px #f0679a26}
+.note-tag-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.note-tag-chips-title{width:100%;font-size:12px;color:#6b6f8e;margin-bottom:2px}
+.note-tag-chip{border:0;border-radius:999px;padding:7px 12px;background:#f4f1fb;color:#5a4a86;font-size:13px;cursor:pointer}
+.note-tag-chip:hover{background:#ebe5f9}
+.card-tags span[data-tag]{cursor:pointer}
