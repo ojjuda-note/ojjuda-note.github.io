@@ -143,3 +143,7 @@ textarea.na-input{min-height:95px;resize:vertical}
 .na-map-info{display:grid;gap:8px;margin-bottom:12px}
 .na-map-card{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #e4e6f2}
 .na-item.na-map-on{outline:2px solid #f0679a;outline-offset:2px}
+
+/* 노트 관리 메뉴는 한 줄로 (넘치면 옆으로 밀어서 봐요) — 월드 관리자 모드의 노트 탭 줄에도 적용돼요 */
+.seg.adm-tabs.adm-note-tabs,.na-nav.seg.adm-tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;grid-template-columns:none!important;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.seg.adm-tabs.adm-note-tabs button,.na-nav.seg.adm-tabs button{flex:0 0 auto;min-width:max-content;white-space:nowrap}

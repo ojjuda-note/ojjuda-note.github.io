@@ -29,16 +29,23 @@
   const photoKeyValid = value => /^\d{2,3}$/.test(String(value)) && Number(value) >= 10 && Number(value) <= 189;
   const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-curated180`;
   const TABS = [
-    ['cards', '카드 · 답글'], ['settings', '공지 · 기능'], ['map', '위치 지도'],
+    ['cards', '전체 카드'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['settings', '공지 · 기능'], ['map', '위치 지도'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
   ];
-  const NOTE_TABS = Object.freeze(TABS.slice(0, 3));
+  const NOTE_TABS = Object.freeze(TABS.slice(0, 5));
+  const VIEW_OF_TAB = { cards: 'card', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', event: 'events', archive: 'archive' };
+  function openTab(id) {   // 탭을 고르면 카드 종류를 맞추고 불러와요
+    if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], offset: 0, expiredOffset: 0, query: '', state: 'all' });
+    return load(id);
+  }
   const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
   const HELP = {
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
     settings: '공지와 노트 안의 기능을 관리합니다. 변경 사유는 작업 기록에 남습니다.',
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
     cards: '익명카드·답글·이벤트와 만료 후 보관 자료를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
+    events: '이벤트 카드를 관리합니다.',
+    archive: '삭제되거나 기간이 끝난 카드를 한 달 동안 보관합니다. 기간 전에도 바로 영구 삭제할 수 있어요.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
     inquiries: '이용자가 노트에 남긴 문의를 확인하고 답변합니다.',
     users: '노트에서의 활동만 제한합니다. 오쭈다월드 계정과 쭈에는 영향을 주지 않습니다.',
@@ -59,6 +66,7 @@
   let externalNav = false, authorized = false, onTabChange = null;
   let root, panel, nav, main, status, closeButton;
   let editPreviewObserver = null;
+  let cleanupAutoAttempted = false;
 
   function el(tag, className, value) {
     const item = document.createElement(tag);
@@ -185,7 +193,33 @@
     if (!expected || data?.session?.user?.id !== expected) { close(); return false; }
     return true;
   }
-  async function perform(name, args, success, returnTab = tabId) {
+  async function drainPendingPhotoCleanup(run) {
+    const buckets = new Set(['note-card-photos', 'note-event-photos']);
+    let previousBatch = '';
+    for (let batch = 0; batch < 10; batch++) {
+      if (!validInstance(run)) return { complete: false };
+      const rows = await rpc('admin_pending_photo_cleanup', { p_limit: 100 });
+      if (!Array.isArray(rows)) throw new Error('Invalid photo cleanup queue');
+      if (!rows.length) return { complete: true };
+      const signature = JSON.stringify(rows);
+      if (signature === previousBatch) return { complete: false };
+      previousBatch = signature;
+      const groups = new Map();
+      for (const row of rows) {
+        if (!buckets.has(row.bucket_id) || typeof row.photo_path !== 'string' || !row.photo_path) throw new Error('Invalid photo cleanup path');
+        if (!groups.has(row.bucket_id)) groups.set(row.bucket_id, []);
+        groups.get(row.bucket_id).push(row.photo_path);
+      }
+      for (const [bucket, paths] of groups) {
+        if (!validInstance(run)) return { complete: false };
+        const { error } = await client.storage.from(bucket).remove(paths);
+        if (error) throw error;
+      }
+    }
+    const remaining = await rpc('admin_pending_photo_cleanup', { p_limit: 1 });
+    return { complete: Array.isArray(remaining) && remaining.length === 0 };
+  }
+  async function perform(name, args, success, returnTab = tabId, options = {}) {
     if (busy || root.hidden) return;
     const run = instance;
     lockControls(true); setStatus('변경 내용을 저장하고 있어요.');
@@ -193,6 +227,14 @@
       if (!await currentUserMatches() || !validInstance(run)) return;
       await rpc(name, args);
       if (!validInstance(run) || !await currentUserMatches()) return;
+      let photoCleanup = null;
+      if (options.cleanupPhotos) {
+        cleanupAutoAttempted = true;
+        setStatus('카드를 삭제했어요. 연결된 사진 파일을 정리하고 있어요.');
+        try { photoCleanup = await drainPendingPhotoCleanup(run); }
+        catch (error) { console.warn('Note photo cleanup:', error); photoCleanup = { complete: false }; }
+      }
+      if (!validInstance(run)) return;
       if (typeof onChanged === 'function') {
         try { await onChanged(); }
         catch { /* The saved operation remains successful even if the host refresh fails. */ }
@@ -200,7 +242,10 @@
       if (!validInstance(run)) return;
       lockControls(false);
       const refreshed = await load(returnTab);
-      if (validInstance(run)) setStatus(refreshed ? success : `${success} 목록을 새로 불러오지는 못했어요.`, !refreshed);
+      if (validInstance(run)) {
+        const cleanupMessage = photoCleanup?.complete === false ? ' 사진 파일 일부가 남아 있어요. 보관 화면에서 사진 파일 정리를 다시 시도해 주세요.' : '';
+        setStatus(`${success}${cleanupMessage}${refreshed ? '' : ' 목록을 새로 불러오지는 못했어요.'}`, !refreshed || photoCleanup?.complete === false);
+      }
     } catch (error) {
       if (!validInstance(run)) return;
       setStatus(friendlyError(error), true);
@@ -568,7 +613,6 @@
   }
   async function renderCards(run) {
     const filter = filters.cards;
-    main.append(cardViewBar(filter.view));
     if (filter.view === 'event') return renderEvents(run);
     if (filter.view === 'archive') return renderArchive(run);
     main.append(searchForm(filter.query, '글 내용이나 태그 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
@@ -580,7 +624,7 @@
     for (const card of rows) {
       const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
-      if (Array.isArray(card.tags) && card.tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));
+      if (Array.isArray(card.tags) && card.tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));   // 19금 태그 카드는 성적·거친 표현을 너그럽게 봐요 (불법·혐오·개인정보는 삭제)
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
@@ -671,24 +715,84 @@
       form.addEventListener('submit', event => {
         event.preventDefault(); if (!validReason(reason.input)) return;
         if (!window.confirm('영구 정리하면 원문과 답글이 완전히 지워지고 되돌릴 수 없어요. 계속할까요?')) return;
-        perform('admin_purge_archived_card', { p_card_id: archived.id, p_reason: reason.input.value.trim() }, '보관 자료를 영구 정리했어요.', 'cards');
+        perform('admin_purge_archived_card', { p_card_id: archived.id, p_reason: reason.input.value.trim() }, '보관 자료를 영구 정리했어요.', 'archive', { cleanupPhotos: true });
       });
     });
   }
+  function confirmPurgeNow(list) {   // 원문 보관 중인 카드를 한 달이 지나기 전에 바로 영구 삭제해요
+    const replies = list.reduce((sum, a) => sum + (Number(a.reply_count) || 0), 0);
+    actionScreen(list.length > 1 ? `보관 카드 ${list.length}개 영구 삭제` : '보관 카드 지금 영구 삭제',
+      `원문 보관 기간(한 달)이 끝나기 전에 지금 바로 영구 삭제해요. 카드와 함께 보관된 답글 ${replies}개도 지워지고, 복구할 수 없어요. 아직 보관되지 않은 답글이 딸린 카드는 지우지 않아요.`, (form, actions) => {
+      form.append(details(list.length === 1 ? [['카드 번호', list[0].id], ['보관 시작', formatDate(list[0].archived_at)], ['원래 영구 삭제 예정', formatDate(list[0].purge_after)]] : [['카드 수', number(list.length)], ['함께 지워질 답글', number(replies)]]));
+      const reason = reasonField(); form.append(reason.wrap);
+      const save = button('영구 삭제', () => {}, 'danger'); save.type = 'submit'; actions.append(save);
+      form.addEventListener('submit', event => {
+        event.preventDefault(); if (!validReason(reason.input)) return;
+        if (!window.confirm(`${list.length}개 카드와 답글을 완전히 지워요. 되돌릴 수 없어요. 계속할까요?`)) return;
+        perform('admin_purge_archived_now', { p_card_ids: list.map(a => a.id), p_reason: reason.input.value.trim() }, '보관 카드를 영구 삭제했어요.', 'archive', { cleanupPhotos: true });
+      });
+    });
+  }
+  async function retryPhotoCleanup() {
+    if (busy || root.hidden) return;
+    const run = instance;
+    lockControls(true); setStatus('남은 사진 파일을 정리하고 있어요.');
+    try {
+      if (!await currentUserMatches() || !validInstance(run)) return;
+      cleanupAutoAttempted = true;
+      const result = await drainPendingPhotoCleanup(run);
+      if (!validInstance(run)) return;
+      lockControls(false);
+      const refreshed = await load('archive');
+      if (validInstance(run)) setStatus(
+        `${result.complete ? '사진 파일 정리를 마쳤어요.' : '사진 파일 일부가 남아 있어요. 다시 시도해 주세요.'}${refreshed ? '' : ' 목록을 새로 불러오지는 못했어요.'}`,
+        !result.complete || !refreshed
+      );
+    } catch (error) {
+      if (validInstance(run)) {
+        console.warn('Note photo cleanup:', error);
+        setStatus('사진 파일을 정리하지 못했어요. 삭제한 카드는 복구되지 않아요. 다시 시도해 주세요.', true);
+      }
+    } finally {
+      if (validInstance(run)) lockControls(false);
+    }
+  }
   async function renderArchive(run) {
     const filter = filters.cards;
-    main.append(el('p', 'na-warning', '삭제·만료 후 한 달 동안 원문은 관리자만 볼 수 있습니다. 기간이 끝나면 원문 조회와 복구가 닫히고 자동 영구 정리됩니다. 지연된 자료는 아래에서 원문 없이 직접 정리할 수 있습니다.'));
-    const [rows, expired] = await Promise.all([
+    main.append(el('p', 'na-warning', '삭제·만료 후 한 달 동안 원문은 관리자만 볼 수 있습니다. 기간이 끝나면 원문 조회와 복구가 닫히고 자동 영구 정리됩니다. 기간 전에도 "지금 영구 삭제"로 바로 지울 수 있고, 지연된 자료는 아래에서 원문 없이 직접 정리할 수 있습니다.'));
+    const [rows, expired, pendingPhotos] = await Promise.all([
       rpc('admin_archived_cards', { p_limit: PAGE_SIZE, p_offset: filter.offset }),
-      rpc('admin_expired_archive_queue', { p_limit: PAGE_SIZE, p_offset: filter.expiredOffset })
+      rpc('admin_expired_archive_queue', { p_limit: PAGE_SIZE, p_offset: filter.expiredOffset }),
+      rpc('admin_pending_photo_cleanup', { p_limit: 1 }).catch(error => { console.warn('Note photo cleanup queue:', error); return null; })
     ]);
     if (!validRun(run)) return;
+    let pending = !!pendingPhotos?.length;
+    if (pending && !cleanupAutoAttempted) {
+      cleanupAutoAttempted = true;
+      setStatus('남은 사진 파일을 정리하고 있어요.');
+      try {
+        const result = await drainPendingPhotoCleanup(instance);
+        if (!validRun(run)) return;
+        pending = !result.complete;
+        setStatus(result.complete ? '남은 사진 파일을 정리했어요.' : '사진 파일 일부가 남아 있어요. 다시 시도해 주세요.', pending);
+      } catch (error) {
+        if (!validRun(run)) return;
+        console.warn('Note photo cleanup:', error);
+        setStatus('남은 사진 파일을 정리하지 못했어요. 다시 시도해 주세요.', true);
+      }
+    }
+    if (pending) {
+      const cleanup = el('div', 'na-actions');
+      cleanup.append(el('p', 'na-warning', '삭제된 카드의 사진 파일 정리가 남아 있어요.'), button('사진 파일 정리 다시 시도', retryPhotoCleanup));
+      main.append(cleanup);
+    }
     const activeSection = el('section', 'na-archive-section'); activeSection.append(el('h4', '', '원문 보관 중')); main.append(activeSection);
     if (!rows?.length) {
       empty(activeSection, '한 달 보관 중인 카드가 없어요.');
       if (filter.offset) activeSection.append(button('첫 페이지로', () => { filter.offset = 0; load('cards'); }));
     } else {
       const total = rows[0].total_count; activeSection.append(el('p', 'na-count', `보관 중 ${number(total)}개`));
+      const bulk = el('div', 'na-actions'); bulk.append(button(`이 페이지 ${number(rows.length)}개 모두 영구 삭제`, () => confirmPurgeNow(rows), 'danger')); activeSection.append(bulk);
       const list = el('div', 'na-list');
       for (const archived of rows) {
         const item = el('article', 'adm-card na-item');
@@ -698,7 +802,7 @@
         const archiveSource = { retention: '기간 만료', owner: '작성자 삭제', admin: '관리자 삭제' }[archived.archive_reason] || '기타';
         item.append(el('p', 'na-reason', `함께 보관된 답글 ${number(archived.reply_count)}개 · 보관 원인: ${archiveSource}`));
         item.append(details([['카드 번호', archived.id], ['작성자 번호', archived.author_id], ['원글 번호', archived.parent_id], ['작성', formatDate(archived.created_at)], ['보관 시작', formatDate(archived.archived_at)], ['영구 삭제 예정', formatDate(archived.purge_after)], ['영구보관', archived.permanent ? '예' : '아니요']]));
-        const actions = el('div', 'na-actions'); actions.append(button('원문·답글 보기', () => viewArchivedThread(archived)), button('꾸미기·사진 지정', () => editCardVisual(archived)), button('복구', () => confirmArchiveRestore(archived), 'primary'));
+        const actions = el('div', 'na-actions'); actions.append(button('원문·답글 보기', () => viewArchivedThread(archived)), button('꾸미기·사진 지정', () => editCardVisual(archived)), button('복구', () => confirmArchiveRestore(archived), 'primary'), button('지금 영구 삭제', () => confirmPurgeNow([archived]), 'danger'));
         item.append(actions); list.append(item);
       }
       activeSection.append(list); pagination(activeSection, filter.offset, total, offset => { filter.offset = offset; load('cards'); });
@@ -932,6 +1036,7 @@
   }
   async function load(nextTab = tabId) {
     if (busy || !root || root.hidden) return;
+    if (VIEW_OF_TAB[nextTab]) nextTab = TAB_OF_VIEW[filters.cards.view] || 'cards';
     tabId = TABS.some(([id]) => id === nextTab) ? nextTab : 'cards'; actionReturn = null;
     const run = ++pageRun; setStatus('');
     adminMap?.destroy?.(); adminMap = null;
@@ -945,7 +1050,7 @@
     focusSection(heading);
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
-      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
+      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, events: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
       if (validRun(run)) loading.remove();
       return validRun(run);
     } catch (error) {
@@ -967,7 +1072,7 @@
     title.append(h2, el('p', '', '노트 콘텐츠와 운영을 관리합니다.'));
     closeButton = button('닫기', () => { if (!busy) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
     const layout = el('div', 'na-layout'); nav = el('nav', 'seg adm-tabs na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');
-    for (const [id, label] of NOTE_TABS) { const item = button(label, () => load(id)); item.dataset.adminTab = id; nav.append(item); }
+    for (const [id, label] of NOTE_TABS) { const item = button(label, () => openTab(id)); item.dataset.adminTab = id; nav.append(item); }
     main = el('div', 'na-main'); main.id = 'note-admin-content'; main.setAttribute('role', 'region'); main.setAttribute('aria-label', '관리 내용');
     status = el('p', 'na-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
     layout.append(nav, main); panel.append(header, layout, status); root.append(panel); document.body.append(root);
@@ -994,6 +1099,7 @@
     if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
     externalNav = false; authorized = false; onTabChange = null;
+    cleanupAutoAttempted = false;
     filters.cards = { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0; filters.map = { offset: 0 };
     if (embedded) {
       embedded = false; root.classList.remove('na-embedded'); root.remove();
@@ -1007,6 +1113,7 @@
     authorized = false; onTabChange = options.onTabChange;
     const requested = options.initialTab || options.tabId;
     tabId = TABS.some(([id]) => id === requested) ? requested : 'cards';
+    if (VIEW_OF_TAB[tabId]) Object.assign(filters.cards, { view: VIEW_OF_TAB[tabId], offset: 0, expiredOffset: 0 });
     client = options.client; onChanged = options.onChanged; userId = null;
     if (embedded) {
       root.classList.add('na-embedded'); panel.setAttribute('role', 'region'); panel.removeAttribute('aria-modal');
@@ -1061,8 +1168,8 @@
       onChanged = options.onChanged; onTabChange = options.onTabChange;
       externalNav = options.externalNav === true; nav.hidden = externalNav || !authorized;
       const requested = options.initialTab || options.tabId;
-      if (requested && !authorized && TAB_ITEMS.some(tab => tab.id === requested)) tabId = requested;
-      if (requested && requested !== tabId && authorized && !busy) return load(requested);
+      if (requested && !authorized && TAB_ITEMS.some(tab => tab.id === requested)) { tabId = requested; if (VIEW_OF_TAB[requested]) filters.cards.view = VIEW_OF_TAB[requested]; }
+      if (requested && requested !== tabId && authorized && !busy) return openTab(requested);
       return;
     }
     if (root && !root.hidden) close();
@@ -1073,11 +1180,11 @@
   function selectTab(id) {
     if (!TAB_ITEMS.some(tab => tab.id === id)) return Promise.resolve(false);
     if (!authorized) {
-      tabId = id;
+      tabId = id; if (VIEW_OF_TAB[id]) filters.cards.view = VIEW_OF_TAB[id];
       if (typeof onTabChange === 'function') { try { onTabChange(id); } catch {} }
       return Promise.resolve(false);
     }
-    return load(id);
+    return openTab(id);
   }
   window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount, getTabs, tabs: TAB_ITEMS, selectTab });
 })();
