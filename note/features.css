@@ -225,3 +225,40 @@ select{font:inherit;color:inherit}
 
 /* 19금 태그 안내 */
 .note-adult-notice{margin:0 0 12px;padding:12px 14px;border-radius:16px;background:#fff4f6;color:#7a2e44;font-size:13px;line-height:1.55;border:1px solid #f6c9d4}
+
+/* 글쓰기 창 아래쪽: 이름·성별 빠른 선택 + 등록하기 */
+.composer-footer{flex-wrap:wrap;row-gap:8px}
+.composer-footer #compose-message{flex:1 1 100%;order:0}
+.composer-footer #compose-message:empty{display:none}
+.composer-footer .compose-quick{order:1;display:flex;gap:6px;flex:1 1 auto;min-width:0}
+.composer-footer #publish-card{order:2}
+.compose-quick .quick-choice{display:flex;align-items:center;gap:4px;min-width:0}
+.compose-quick .quick-choice[hidden]{display:none}
+.compose-quick .quick-label{font-size:11px;color:var(--ink-2,#6b6f8e);white-space:nowrap}
+.compose-quick select{height:34px;max-width:100%;border:1px solid #dcdff0;border-radius:12px;background:#fff;color:#23264a;padding:0 8px;font-size:13px}
+.compose-quick select:focus{outline:0;border-color:#f0679a;box-shadow:0 0 0 3px #f0679a26}
+.identity-row[hidden]{display:none!important}
+
+/* 글쓰기 창: 제목줄 없이 사진을 맨 위에, 닫기는 사진 왼쪽 위 작은 동그라미 */
+.composer{position:relative}
+.composer-head{position:absolute;top:20px;left:22px;z-index:30;display:block;padding:0;border:0;background:none}
+.composer-head h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.composer-head>span{display:none}
+.composer-head .icon-button{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:rgba(20,20,35,.42);color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.composer-head .icon-button svg{width:16px;height:16px}
+.composer[data-mode="memo-new"] .compose-context{display:none}
+.composer:not([data-mode="memo-new"]) .compose-context{padding-left:48px;min-height:38px}
+/* 사진은 위에 고정, 추가 설정만 사진 밑으로 올라와요 */
+.composer-body{position:relative}
+.composer-body>.compose-photo{position:sticky;top:0;z-index:6;box-shadow:0 -14px 0 0 var(--surface,#fff),0 12px 20px -16px rgba(20,20,40,.45)}
+.compose-more{position:relative;margin-top:14px;border-radius:20px 20px 16px 16px;box-shadow:0 -8px 20px -14px rgba(20,20,40,.35)}
+.compose-more::before{content:"";position:absolute;top:6px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:#d4d7e8;z-index:1}
+.compose-more>summary{touch-action:none;cursor:grab;padding-top:16px}
+.compose-more[open]>summary{cursor:grabbing}
+
+/* 휴대폰: 글쓰기 창을 화면 맨 위부터 꽉 차게 (사진이 맨 위에 와요) */
+@media (max-width: 640px) {
+  #composer-backdrop{--note-sheet-top:max(8px, env(safe-area-inset-top, 0px));--note-sheet-bottom:max(8px, env(safe-area-inset-bottom, 0px));place-items:start center;align-items:flex-start;padding-top:var(--note-sheet-top);padding-bottom:var(--note-sheet-bottom)}
+  #composer-backdrop .composer{height:calc(100dvh - var(--note-sheet-top) - var(--note-sheet-bottom));max-height:none}
+  #composer-backdrop .composer-body{flex:1 1 auto;min-height:0}
+}

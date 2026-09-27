@@ -180,7 +180,9 @@ async function loadMyGender(userId) {
   catch (error) { console.warn('Note my gender:', error); }
 }
 function setGenderInputs() {
+  if (!backdrop.hidden) { syncQuickChoices(); return; }   // 작성 중 선택은 늦게 도착한 계정 설정으로 덮지 않아요
   document.querySelectorAll('input[name="gender"]').forEach(input => { input.checked = input.value === myGender; input.disabled = !session?.user || busy; });
+  syncQuickChoices();
 }
 async function changeMyGender(value) {
   if (!GENDER_LOOK[value] || !session?.user || value === myGender) return;
@@ -194,7 +196,8 @@ async function changeMyGender(value) {
 // 자동 태그: 태그는 모두 5개까지. 내가 쓴 태그는 그대로 두고, 남은 자리만 글에서 고른 낱말로 채워요. 지운 자동 태그는 다시 붙이지 않아요
 const TAG_STOP = new Set(['오늘', '어제', '내일', '정말', '진짜', '너무', '그냥', '우리', '지금', '요즘', '항상', '조금', '많이', '같이', '다시', '아직', '이제',
   '그래서', '그리고', '하지만', '근데', '그런데', '이런', '그런', '저런', '무슨', '어떤', '모든', '매일', '가끔', '계속', '나는', '내가', '저는', '제가', '너는', '네가',
-  '이거', '그거', '저거', '여기', '거기', '저기', '뭔가', '괜히', '역시', '벌써', '문득', '하루', '마음', '생각', '느낌', '기분', '사람', '시간', '때문']);
+  '이거', '그거', '저거', '여기', '거기', '저기', '뭔가', '괜히', '역시', '벌써', '문득', '하루', '마음', '생각', '느낌', '기분', '사람', '시간', '때문',
+  '좋은', '예쁜', '멋진', '슬픈', '기쁜', '작은', '많은', '적은', '추운', '더운', '맛있는', '즐거운', '행복한', '소중한', '따뜻한', '같은', '다른', '새로운', '이상한', '특별한', '편한', '힘든', '어떤', '모든', '아무']);
 const TAG_SUFFIX = ['하면서', '하며', '하고', '해서', '하는', '했던', '에서는', '으로는', '에서', '으로', '에게', '한테', '께서', '이랑', '까지', '부터', '처럼',
   '보다', '마다', '조차', '밖에', '이나', '이라', '은', '는', '이', '가', '을', '를', '에', '와', '과', '도', '만', '의', '로', '랑'];
 const TAG_VERB = /(었어요|았어요|였어요|했어요|어요|아요|해요|예요|이에요|에요|네요|군요|죠|습니다|니다|었다|았다|였다|했다|는다|한다|된다|하다|싶다|같다|좋다|있다|없다|었어|았어|했어|해|야|지|네|래|걸|구나|더라|면서|지만|는데|은데|니까|어서|아서|해도|어도|아도|으면|겠|싶|랑|요)$/;
@@ -206,7 +209,7 @@ function suggestTags(body, limit = 5) {
   for (const raw of String(body).split(/[^가-힣A-Za-z0-9]+/)) {
     let t = raw; if (t.length < 2) continue;
     for (const s2 of TAG_SUFFIX) if (t.endsWith(s2) && t.length - s2.length >= 2) { t = t.slice(0, -s2.length); break; }
-    if (t.length < 2 || t.length > 12 || TAG_STOP.has(t) || TAG_VERB.test(t) || /^\d+$/.test(t)) continue;
+    if (t.length < 2 || t.length > 12 || TAG_STOP.has(t) || TAG_VERB.test(t) || /^\d+$/.test(t) || /(스러운|로운|다운|스런)$/.test(t)) continue;   // 꾸밈말(사랑스러운, 자유로운…)은 빼요
     add(t);
   }
   return out;
@@ -253,6 +256,22 @@ async function ensureAdult(purpose) {   // 로그인 + 본인이 입력한 출�
 const canSeeAdultCard = card => !!card?.is_mine || adultStatus === 'adult';
 const adultSearchOn = () => feedMode === 'all' && feedSearchKind === 'tag' && isAdultTag(feedTerm);
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
+// 글쓰기 창 아래쪽의 이름·성별 빠른 선택 (꾸미기 · 추가 설정 안의 선택지와 서로 맞춰져요)
+function syncQuickChoices() {
+  const nameBox = $('#quick-identity'), genderBox = $('#quick-gender'); if (!nameBox || !genderBox) return;
+  const identity = $('input[name="identity"]:checked')?.value || 'anonymous', gender = $('input[name="gender"]:checked')?.value || 'private';
+  if (nameBox.value !== identity) nameBox.value = identity;
+  if (genderBox.value !== gender) genderBox.value = gender;
+  const nickname = $('input[name="identity"][value="nickname"]');
+  nameBox.querySelector('option[value="nickname"]').disabled = !nickname || nickname.closest('label')?.classList.contains('disabled-choice');
+  const disabled = busy || draftLoading || !session?.user;
+  nameBox.disabled = disabled; genderBox.disabled = disabled;
+  genderBox.closest('.quick-choice').hidden = !!editingId;   // 성별은 올릴 때 정해져서 수정할 때는 바꿀 수 없어요
+}
+function pickQuickChoice(group, value) {
+  const input = $(`input[name="${group}"][value="${value}"]`); if (!input || input.disabled) { syncQuickChoices(); return; }
+  input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); updateComposer();
+}
 const tagList = raw => String(raw || '').split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean);
 function refreshAutoTags() {   // 내가 쓴 태그 + 남은 자리에 자동 태그 (모두 5개까지)
   const mine = manualTags.slice(0, 5), room = 5 - mine.length;
@@ -1367,6 +1386,8 @@ function restoreLocalComposer() {
 function restoreDraft(content) {
   if (!content || backdrop.hidden || editingId || composerUserId !== session?.user?.id) return;
   kind = content.kind; parentId = content.parent_id; backgroundKey = content.background_key;
+  $('.composer').dataset.mode = kind === 'memo' ? 'memo-new' : kind;
+  $('#note-photo-pick').hidden = kind !== 'memo';
   text.value = content.body; tags.value = content.tags; manualTags = tagList(content.tags); rejectedTags = new Set(); autoTagsNow = [];
   $('input[name="identity"][value="anonymous"]').checked = true;
   const style = content.style && typeof content.style === 'object' ? content.style : {};
@@ -1432,6 +1453,7 @@ function validEventInteger(value, minimum, maximum) {
 }
 function updateComposer() {
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
+  syncQuickChoices();
   if (!backdrop.hidden) resizeComposerText();
   $('#compose-count').textContent = `${text.value.length} / 200자`;
   const visual = currentStyle();
@@ -1470,7 +1492,7 @@ function updateComposer() {
   else if (kind === 'event' && !editingId && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
   else composeMessage.textContent = busy ? (editingId ? '수정 중' : '등록 중')
     : kind === 'event' && !editingId ? '이벤트 범위와 금액을 확인해 주세요.'
-      : $('input[name="identity"]:checked')?.value === 'nickname' ? '월드 닉네임 공개' : '익명 카드';
+      : '';   // 등록할 준비가 됐어요. 이름·성별은 아래쪽 선택 칸에 보여요
   submit.disabled = busy || draftLoading || replyDueChecking || eventPhotoPreparing || !!eventPhotoError || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
     || text.value.length > 200 || !values
     || (kind !== 'event' && !editingId && !writingPosition)
@@ -1548,6 +1570,7 @@ async function openComposer(mode, card = null) {
   $('#note-event-fields').hidden = kind !== 'event' || !!editingId;
   $('#event-radius').value = '1'; $('#event-hours').value = '1';
   $('#event-location-status').textContent = '지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.';
+  $('.composer').dataset.mode = !editingId && kind === 'memo' ? 'memo-new' : editingId ? 'edit' : kind;
   $('#compose-title').textContent = editingId ? kind === 'event' ? '내 이벤트 수정' : '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = editingId ? kind === 'event'
     ? '글·태그·꾸미기·사진을 수정할 수 있어요. 구매한 위치·반경·기간은 그대로 유지돼요.'
@@ -2201,6 +2224,9 @@ window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer()
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 submit.addEventListener('click', publishCard);
 document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => { updateComposer(); recordDraft(); }));
+document.querySelectorAll('input[name="gender"]').forEach(input => input.addEventListener('change', () => syncQuickChoices()));
+$('#quick-identity')?.addEventListener('change', event => pickQuickChoice('identity', event.target.value));
+$('#quick-gender')?.addEventListener('change', event => pickQuickChoice('gender', event.target.value));
 
 
 function receiveAuth(current) {
@@ -2235,7 +2261,27 @@ function receiveAuth(current) {
   }, 0);
 }
 
-installManagement(); installStyleChoices(); installFeatures(); installStageAuth(); installDrafts();
+installManagement(); installStyleChoices(); installFeatures(); installStageAuth(); installDrafts(); installComposerSheet();
+function installComposerSheet() {
+  const more = $('#compose-more'), body = $('.composer-body'), summary = more?.querySelector('summary');
+  if (!more || !body || !summary) return;
+  const settle = () => { const photo = $('.compose-photo'); body.scrollTo({ top: Math.max(0, more.offsetTop - (photo?.offsetHeight || 0) - 10), behavior: 'smooth' }); };
+  more.addEventListener('toggle', () => { if (more.open) requestAnimationFrame(settle); });
+  let drag = null, skipClick = false;
+  summary.addEventListener('pointerdown', event => { drag = { y: event.clientY, top: body.scrollTop, moved: false, id: event.pointerId }; });
+  summary.addEventListener('pointermove', event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const dy = event.clientY - drag.y;
+    if (!drag.moved && Math.abs(dy) > 6) { drag.moved = true; try { summary.setPointerCapture(event.pointerId); } catch {} }
+    if (!drag.moved) return;
+    event.preventDefault();
+    if (!more.open && dy < -12) more.open = true;   // 끌어올리면 열려요
+    body.scrollTop = drag.top - dy;
+  });
+  const end = event => { if (drag?.moved) skipClick = true; drag = null; try { summary.releasePointerCapture(event.pointerId); } catch {} };
+  summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
+  summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
+}
 window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,

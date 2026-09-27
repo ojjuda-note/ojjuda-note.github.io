@@ -1,153 +1,417 @@
-/* Twenty optional card decorations. The same class works on a feed photo and the editor preview. */
-:where(.photo,.compose-photo):where(
-  .note-effect-rain,.note-effect-shimmer,.note-effect-rainbow,.note-effect-snow,
-  .note-effect-starlight,.note-effect-fireflies,.note-effect-petals,.note-effect-bubbles,
-  .note-effect-aurora,.note-effect-confetti,.note-effect-sunbeams,.note-effect-mist,
-  .note-effect-ocean,.note-effect-heartbeat,.note-effect-orbit,.note-effect-glitter,
-  .note-effect-meteor,.note-effect-leaves,.note-effect-neon,.note-effect-dawn
-){isolation:isolate}
-:where(.photo,.compose-photo):where(
-  .note-effect-rain,.note-effect-shimmer,.note-effect-rainbow,.note-effect-snow,
-  .note-effect-starlight,.note-effect-fireflies,.note-effect-petals,.note-effect-bubbles,
-  .note-effect-aurora,.note-effect-confetti,.note-effect-sunbeams,.note-effect-mist,
-  .note-effect-ocean,.note-effect-heartbeat,.note-effect-orbit,.note-effect-glitter,
-  .note-effect-meteor,.note-effect-leaves,.note-effect-neon,.note-effect-dawn
-)::before,
-:where(.photo,.compose-photo):where(
-  .note-effect-rain,.note-effect-shimmer,.note-effect-rainbow,.note-effect-snow,
-  .note-effect-starlight,.note-effect-fireflies,.note-effect-petals,.note-effect-bubbles,
-  .note-effect-aurora,.note-effect-confetti,.note-effect-sunbeams,.note-effect-mist,
-  .note-effect-ocean,.note-effect-heartbeat,.note-effect-orbit,.note-effect-glitter,
-  .note-effect-meteor,.note-effect-leaves,.note-effect-neon,.note-effect-dawn
-)::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none}
-:where(.photo,.compose-photo):where(
-  .note-effect-rain,.note-effect-shimmer,.note-effect-rainbow,.note-effect-snow,
-  .note-effect-starlight,.note-effect-fireflies,.note-effect-petals,.note-effect-bubbles,
-  .note-effect-aurora,.note-effect-confetti,.note-effect-sunbeams,.note-effect-mist,
-  .note-effect-ocean,.note-effect-heartbeat,.note-effect-orbit,.note-effect-glitter,
-  .note-effect-meteor,.note-effect-leaves,.note-effect-neon,.note-effect-dawn
-) :is(.card-quote,.card-tags,textarea,.compose-tag-display){position:relative;z-index:2}
-/* The tag rows retain their anchored placement despite the stacking rule. */
-.photo[class*="note-effect-"] .card-tags,
-.compose-photo[class*="note-effect-"] .compose-tag-display{position:absolute}
+/* =====================================================================
+   오쭈다노트 꾸미기 효과 (세련된 2판)
+   · 카드 사진(.photo)과 글쓰기 미리보기(.compose-photo)에 똑같이 적용돼요.
+   · 사진을 가리지 않게 은은하게: 가는 빛, 부드러운 흐림, 천천히 움직이는 입자.
+   · 효과는 사진과 글 사이(겹 1)에 놓여서 글씨는 늘 위에 또렷하게 보여요.
+   · 휴대폰의 '움직임 줄이기'를 켠 사람에게는 움직임을 멈춰요.
+   ===================================================================== */
 
-/* 01 — Rain: irregular glass-blue streaks with soft ripples at the foot. */
-.note-effect-rain::before{inset:-45% -8%;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27240%27%20height%3D%27240%27%20viewBox%3D%270%200%20240%20240%27%3E%3Cg%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M28%2012l-8%2030%20M84%2048l-6%2024%20M133%209l-9%2037%20M202%2032l-7%2027%20M45%20126l-9%2035%20M105%20145l-5%2019%20M176%20115l-8%2031%20M232%20169l-6%2024%20M65%20210l-5%2018%20M153%20201l-7%2027%27%20stroke%3D%27%23183c70%27%20stroke-width%3D%274%27%20opacity%3D%27.38%27%2F%3E%3Cpath%20d%3D%27M28%2012l-8%2030%20M84%2048l-6%2024%20M133%209l-9%2037%20M202%2032l-7%2027%20M45%20126l-9%2035%20M105%20145l-5%2019%20M176%20115l-8%2031%20M232%20169l-6%2024%20M65%20210l-5%2018%20M153%20201l-7%2027%27%20stroke%3D%27%23b9f3ff%27%20stroke-width%3D%272.5%27%20opacity%3D%27.98%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");background-size:240px 240px;opacity:.95;animation:note-fx-rainfall 1.75s linear infinite}
-.note-effect-rain::after{inset:60% 0 0;background:radial-gradient(ellipse 24px 8px at 16% 75%,transparent 45%,#b5e9faad 49% 55%,transparent 60%),radial-gradient(ellipse 32px 9px at 79% 43%,transparent 45%,#d7faffc9 49% 55%,transparent 60%),radial-gradient(ellipse 18px 7px at 52% 91%,transparent 45%,#d7faff9c 49% 55%,transparent 60%);animation:note-fx-rain-ripple 2.3s ease-out infinite}
-@keyframes note-fx-rainfall{from{transform:translate3d(0,-13%,0)}to{transform:translate3d(0,13%,0)}}
-@keyframes note-fx-rain-ripple{0%,100%{opacity:.25;transform:scale(.93)}55%{opacity:.85;transform:scale(1.04)}}
+/* 공통 틀 */
+:is(.photo, .compose-photo)[class*="note-effect-"] { isolation: isolate; }
+:is(.photo, .compose-photo)[class*="note-effect-"]::before,
+:is(.photo, .compose-photo)[class*="note-effect-"]::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  border-radius: inherit; background-repeat: repeat;
+}
+/* 예전 반짝임 글자(✦ · ✧ · ✦)와 두꺼운 흰 테두리를 지워요 */
+:is(.photo, .compose-photo).note-effect-sparkle::after {
+  content: ""; top: 0; right: 0; font-size: 0; color: transparent; text-shadow: none;
+}
+:is(.photo, .compose-photo).note-effect-frame {
+  box-shadow: inset 0 0 0 1000px var(--note-wash, transparent), inset 0 0 70px rgba(10, 10, 25, .22);
+}
 
-/* 02 — Shimmer: a defined pearly sweep and a small travelling flare. */
-.note-effect-shimmer::before{inset:-25% -85%;background:linear-gradient(105deg,transparent 37%,#b3d7f926 41%,#dceffff0 48%,#fffef5ea 50%,#b5ceffb0 53%,transparent 62%);opacity:.9;animation:note-fx-shimmer 5.2s ease-in-out infinite}
-.note-effect-shimmer::after{inset:-12% -5%;background:radial-gradient(circle at 16% 19%,#fff7dfee 0 3px,#fff9 5px,transparent 35px),radial-gradient(circle at 85% 72%,#edf3ffcc 0 2px,transparent 25px);animation:note-fx-shimmer-glint 5.2s ease-in-out infinite}
-@keyframes note-fx-shimmer{0%{transform:translate3d(-51%,0,0);opacity:.4}46%,54%{opacity:1}100%{transform:translate3d(51%,0,0);opacity:.4}}
-@keyframes note-fx-shimmer-glint{0%,100%{opacity:.25;transform:scale(.94)}50%{opacity:.95;transform:scale(1.05)}}
+/* ---------- 반짝임: 네 갈래로 빛나는 작은 별빛이 번갈아 반짝여요 ---------- */
+:is(.photo, .compose-photo).note-effect-sparkle::before,
+:is(.photo, .compose-photo).note-effect-sparkle::after {
+  background-repeat: no-repeat;
+  animation: oj-twinkle 3.6s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-sparkle::before {
+  background-image:
+    radial-gradient(ellipse 1px 9px at 18% 22%, #fff, transparent 70%),
+    radial-gradient(ellipse 9px 1px at 18% 22%, #fff, transparent 70%),
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, .9) 0 1.5px, transparent 5px),
+    radial-gradient(ellipse 1px 6px at 82% 16%, #fff, transparent 70%),
+    radial-gradient(ellipse 6px 1px at 82% 16%, #fff, transparent 70%),
+    radial-gradient(ellipse 1px 7px at 74% 78%, #fff, transparent 70%),
+    radial-gradient(ellipse 7px 1px at 74% 78%, #fff, transparent 70%);
+  filter: drop-shadow(0 0 3px rgba(255, 245, 220, .8));
+}
+:is(.photo, .compose-photo).note-effect-sparkle::after {
+  background-image:
+    radial-gradient(ellipse 1px 7px at 30% 70%, #fff, transparent 70%),
+    radial-gradient(ellipse 7px 1px at 30% 70%, #fff, transparent 70%),
+    radial-gradient(ellipse 1px 10px at 88% 48%, #fff, transparent 70%),
+    radial-gradient(ellipse 10px 1px at 88% 48%, #fff, transparent 70%),
+    radial-gradient(circle at 88% 48%, rgba(255, 255, 255, .9) 0 1.5px, transparent 5px),
+    radial-gradient(ellipse 1px 5px at 52% 12%, #fff, transparent 70%),
+    radial-gradient(ellipse 5px 1px at 52% 12%, #fff, transparent 70%);
+  filter: drop-shadow(0 0 3px rgba(220, 235, 255, .8));
+  animation-delay: -1.8s;
+}
 
-/* 03 — Rainbow: saturated seven-colour arc rises above a warm glow. */
-.note-effect-rainbow::before{inset:-7% -23% -8%;background:radial-gradient(ellipse 67% 72% at 50% 106%,transparent 56%,#744ecedb 57% 59%,#3f71e1e6 60% 62%,#37b9d6e6 63% 65%,#46bd73e6 66% 68%,#f5d456ed 69% 71%,#f5a747ed 72% 74%,#eb6881e0 75% 77%,transparent 79%);filter:drop-shadow(0 0 6px #fff9);animation:note-fx-rainbow-rise 9s ease-in-out infinite}
-.note-effect-rainbow::after{inset:49% 0 0;background:radial-gradient(ellipse 52% 30% at 50% 92%,#fff4b4a8,transparent 100%);animation:note-fx-rainbow-glow 9s ease-in-out infinite}
-@keyframes note-fx-rainbow-rise{0%,100%{transform:translate3d(0,13%,0);opacity:.72}48%,65%{transform:translate3d(0,-3%,0);opacity:1}}
-@keyframes note-fx-rainbow-glow{0%,100%{opacity:.25}48%,65%{opacity:.72}}
+/* ---------- 테두리: 사진 액자처럼 가는 두 줄 ---------- */
+:is(.photo, .compose-photo).note-effect-frame::before {
+  inset: 10px; border: 1px solid rgba(255, 255, 255, .78); border-radius: 12px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, .18);
+}
+:is(.photo, .compose-photo).note-effect-frame::after {
+  inset: 15px; border: 1px solid rgba(255, 255, 255, .34); border-radius: 9px;
+}
 
-/* 04 — Snow: drawn six-arm flakes fall at two depths. */
-.note-effect-snow::before,.note-effect-snow::after{inset:-38% -18%;background-image:url("data:image/svg+xml,%3Cns0%3Asvg%20xmlns%3Ans0%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22260%22%20height%3D%22230%22%20viewBox%3D%220%200%20260%20230%22%3E%3Cns0%3Ag%20transform%3D%22translate%2838%2030%29%22%3E%3Cns0%3Ag%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cns0%3Apath%20d%3D%22M0-11V11%20M-10%200H10%20M-8-8L8%208%20M-8%208L8-8%22%20stroke%3D%22%2349708f%22%20stroke-width%3D%223.5%22%20opacity%3D%22.58%22%20%2F%3E%3Cns0%3Apath%20d%3D%22M0-11V11%20M-10%200H10%20M-8-8L8%208%20M-8%208L8-8%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28204%2076%29%20rotate%2818%29%22%3E%3Cns0%3Ag%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cns0%3Apath%20d%3D%22M0-11V11%20M-10%200H10%20M-8-8L8%208%20M-8%208L8-8%22%20stroke%3D%22%2349708f%22%20stroke-width%3D%223.5%22%20opacity%3D%22.58%22%20%2F%3E%3Cns0%3Apath%20d%3D%22M0-11V11%20M-10%200H10%20M-8-8L8%208%20M-8%208L8-8%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28112%20170%29%20rotate%28-15%29%22%3E%3Cns0%3Ag%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cns0%3Apath%20d%3D%22M0-11V11%20M-10%200H10%20M-8-8L8%208%20M-8%208L8-8%22%20stroke%3D%22%2349708f%22%20stroke-width%3D%223.5%22%20opacity%3D%22.58%22%20%2F%3E%3Cns0%3Apath%20d%3D%22M0-11V11%20M-10%200H10%20M-8-8L8%208%20M-8%208L8-8%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3C%2Fns0%3Ag%3E%3Cns0%3Acircle%20cx%3D%22173%22%20cy%3D%2219%22%20r%3D%223%22%20fill%3D%22%23fff%22%20%2F%3E%3Cns0%3Acircle%20cx%3D%2255%22%20cy%3D%22116%22%20r%3D%222.5%22%20fill%3D%22%23fff%22%20%2F%3E%3Cns0%3Acircle%20cx%3D%22230%22%20cy%3D%22210%22%20r%3D%223%22%20fill%3D%22%23fff%22%20%2F%3E%3C%2Fns0%3Asvg%3E");background-size:260px 230px}
-.note-effect-snow::before{opacity:.95;animation:note-fx-snow-near 16s linear infinite}
-.note-effect-snow::after{opacity:.58;animation:note-fx-snow-far 24s linear infinite}
-@keyframes note-fx-snow-near{from{transform:translate3d(-2%,-13%,0)}to{transform:translate3d(3%,13%,0)}}
-@keyframes note-fx-snow-far{from{transform:translate3d(4%,-10%,0) scale(.82)}to{transform:translate3d(-3%,11%,0) scale(.82)}}
+/* ---------- 비 내리기: 가늘고 비스듬한 빗줄기와 차분한 푸른 기운 ---------- */
+:is(.photo, .compose-photo).note-effect-rain::before {
+  inset: -40% -20%;
+  background-image:
+    radial-gradient(ellipse .7px 16px at 12% 18%, rgba(225, 238, 255, .7), transparent 70%),
+    radial-gradient(ellipse .6px 12px at 38% 62%, rgba(225, 238, 255, .55), transparent 70%),
+    radial-gradient(ellipse .7px 18px at 64% 30%, rgba(225, 238, 255, .65), transparent 70%),
+    radial-gradient(ellipse .6px 11px at 86% 76%, rgba(225, 238, 255, .5), transparent 70%),
+    radial-gradient(ellipse .7px 14px at 52% 90%, rgba(225, 238, 255, .6), transparent 70%);
+  background-size: 140px 200px;
+  animation: oj-rain .8s linear infinite;
+}
+:is(.photo, .compose-photo).note-effect-rain::after {
+  background: linear-gradient(180deg, rgba(40, 62, 96, .26), rgba(20, 30, 52, .1) 60%, rgba(20, 30, 52, .2));
+}
 
-/* 05 — Starlight: four-point stars brighten in alternating groups. */
-.note-effect-starlight::before,.note-effect-starlight::after{inset:-8%;background-image:url("data:image/svg+xml,%3Cns0%3Asvg%20xmlns%3Ans0%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22280%22%20height%3D%22240%22%20viewBox%3D%220%200%20280%20240%22%3E%3Cns0%3Ag%20transform%3D%22translate%2836%2039%29%22%3E%3Cns0%3Apath%20d%3D%22M0-14L2-3L14%200L2%203L0%2014L-2%203L-14%200L-2-3Z%22%20fill%3D%22%23fff9de%22%20stroke%3D%22%238f73b8%22%20stroke-width%3D%221.1%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28223%2088%29%20rotate%2817%29%20scale%28.7%29%22%3E%3Cns0%3Apath%20d%3D%22M0-14L2-3L14%200L2%203L0%2014L-2%203L-14%200L-2-3Z%22%20fill%3D%22%23fff9de%22%20stroke%3D%22%238f73b8%22%20stroke-width%3D%221.1%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28151%20199%29%20rotate%28-8%29%20scale%28.85%29%22%3E%3Cns0%3Apath%20d%3D%22M0-14L2-3L14%200L2%203L0%2014L-2%203L-14%200L-2-3Z%22%20fill%3D%22%23fff9de%22%20stroke%3D%22%238f73b8%22%20stroke-width%3D%221.1%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Acircle%20cx%3D%2278%22%20cy%3D%22155%22%20r%3D%222%22%20fill%3D%22%23fff%22%20%2F%3E%3Cns0%3Acircle%20cx%3D%22249%22%20cy%3D%22197%22%20r%3D%222%22%20fill%3D%22%23fff%22%20%2F%3E%3C%2Fns0%3Asvg%3E");background-size:280px 240px;filter:drop-shadow(0 0 5px #fff9)}
-.note-effect-starlight::before{animation:note-fx-star 4.5s ease-in-out infinite}
-.note-effect-starlight::after{background-position:132px 86px;opacity:.55;animation:note-fx-star 5.7s ease-in-out infinite reverse}
-@keyframes note-fx-star{0%,100%{opacity:.24;transform:scale(.98)}50%{opacity:1;transform:scale(1.03)}}
+/* ---------- 빛 스치기: 부드러운 빛이 가끔 사선으로 지나가요 ---------- */
+:is(.photo, .compose-photo).note-effect-shimmer::before {
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .06) 44%, rgba(255, 255, 255, .34) 50%, rgba(255, 255, 255, .06) 56%, transparent 62%) no-repeat;
+  background-size: 260% 100%;
+  mix-blend-mode: soft-light;
+  animation: oj-sweep 6.5s ease-in-out infinite;
+}
+:is(.photo, .compose-photo).note-effect-shimmer::after {
+  background: linear-gradient(115deg, transparent 45%, rgba(255, 255, 255, .22) 50%, transparent 55%) no-repeat;
+  background-size: 260% 100%;
+  animation: oj-sweep 6.5s ease-in-out infinite;
+}
 
-/* 06 — Fireflies: warm lights bob at two staggered depths. */
-.note-effect-fireflies::before,.note-effect-fireflies::after{inset:-20%;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27280%27%20height%3D%27250%27%20viewBox%3D%270%200%20280%20250%27%3E%3Cdefs%3E%3CradialGradient%20id%3D%27g%27%3E%3Cstop%20stop-color%3D%27%23fffad1%27%2F%3E%3Cstop%20offset%3D%27.22%27%20stop-color%3D%27%23ffe878%27%2F%3E%3Cstop%20offset%3D%27.48%27%20stop-color%3D%27%23efb52e%27%20stop-opacity%3D%27.65%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23efb52e%27%20stop-opacity%3D%270%27%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%2742%27%20cy%3D%2737%27%20r%3D%2720%27%20fill%3D%27url%28%23g%29%27%2F%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%2776%27%20r%3D%2725%27%20fill%3D%27url%28%23g%29%27%2F%3E%3Ccircle%20cx%3D%2798%27%20cy%3D%27188%27%20r%3D%2719%27%20fill%3D%27url%28%23g%29%27%2F%3E%3Ccircle%20cx%3D%27246%27%20cy%3D%27223%27%20r%3D%2716%27%20fill%3D%27url%28%23g%29%27%2F%3E%3Cg%20fill%3D%27%23fff9dd%27%20stroke%3D%27%23805e29%27%20stroke-opacity%3D%27.5%27%20stroke-width%3D%271%27%3E%3Ccircle%20cx%3D%2742%27%20cy%3D%2737%27%20r%3D%273.3%27%2F%3E%3Ccircle%20cx%3D%27190%27%20cy%3D%2776%27%20r%3D%273.8%27%2F%3E%3Ccircle%20cx%3D%2798%27%20cy%3D%27188%27%20r%3D%273.1%27%2F%3E%3Ccircle%20cx%3D%27246%27%20cy%3D%27223%27%20r%3D%272.6%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");background-size:280px 250px}
-.note-effect-fireflies::before{animation:note-fx-firefly 8s ease-in-out infinite}
-.note-effect-fireflies::after{background-position:125px 90px;opacity:.58;animation:note-fx-firefly 11s ease-in-out infinite reverse}
-@keyframes note-fx-firefly{0%,100%{transform:translate3d(-3%,2%,0);opacity:.6}48%{transform:translate3d(4%,-5%,0);opacity:1}}
+/* ---------- 무지개: 은은한 홀로그램 빛이 천천히 흘러요 ---------- */
+:is(.photo, .compose-photo).note-effect-rainbow::before {
+  background: linear-gradient(125deg, rgba(255, 128, 170, .26), rgba(255, 214, 128, .2) 24%, rgba(140, 232, 196, .2) 48%, rgba(122, 174, 255, .24) 72%, rgba(206, 144, 255, .26));
+  background-size: 320% 320%;
+  mix-blend-mode: screen;   /* 빛을 더하는 방식이라 어두운 사진에서도 은은하게 보여요 */
+  animation: oj-drift 16s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-rainbow::after {
+  background: radial-gradient(120% 70% at 80% 0%, rgba(255, 255, 255, .16), transparent 55%);
+}
 
-/* 07 — Petals: shaped pink petals tumble in separate layers. */
-.note-effect-petals::before,.note-effect-petals::after{inset:-39% -20%;background-image:url("data:image/svg+xml,%3Cns0%3Asvg%20xmlns%3Ans0%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22280%22%20height%3D%22240%22%20viewBox%3D%220%200%20280%20240%22%3E%3Cns0%3Ag%20transform%3D%22translate%2836%2050%29%20rotate%2824%29%22%3E%3Cns0%3Apath%20d%3D%22M0-13C9-9%2010-1%200%2013C-10-1-9-9%200-13Z%22%20fill%3D%22%23ffc5d9%22%20stroke%3D%22%23b8507c%22%20stroke-width%3D%221.4%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28197%2025%29%20rotate%28-43%29%22%3E%3Cns0%3Apath%20d%3D%22M0-13C9-9%2010-1%200%2013C-10-1-9-9%200-13Z%22%20fill%3D%22%23ffc5d9%22%20stroke%3D%22%23b8507c%22%20stroke-width%3D%221.4%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28117%20161%29%20rotate%2862%29%22%3E%3Cns0%3Apath%20d%3D%22M0-13C9-9%2010-1%200%2013C-10-1-9-9%200-13Z%22%20fill%3D%22%23ffc5d9%22%20stroke%3D%22%23b8507c%22%20stroke-width%3D%221.4%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28259%20203%29%20rotate%28-9%29%22%3E%3Cns0%3Apath%20d%3D%22M0-13C9-9%2010-1%200%2013C-10-1-9-9%200-13Z%22%20fill%3D%22%23ffc5d9%22%20stroke%3D%22%23b8507c%22%20stroke-width%3D%221.4%22%20%2F%3E%3C%2Fns0%3Ag%3E%3C%2Fns0%3Asvg%3E");background-size:280px 240px}
-.note-effect-petals::before{opacity:.92;animation:note-fx-petal-fall 14s linear infinite}
-.note-effect-petals::after{background-position:130px 50px;opacity:.65;animation:note-fx-petal-fall 20s linear infinite reverse}
-@keyframes note-fx-petal-fall{from{transform:translate3d(-4%,-15%,0) rotate(-5deg)}to{transform:translate3d(5%,15%,0) rotate(7deg)}}
+/* ---------- 눈 내리기: 작은 눈송이와 흐릿한 큰 눈송이가 다른 빠르기로 ---------- */
+:is(.photo, .compose-photo).note-effect-snow::before {
+  inset: -180px 0 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, .95) 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 34% 64%, rgba(255, 255, 255, .85) 0 1px, transparent 2px),
+    radial-gradient(circle at 58% 30%, rgba(255, 255, 255, .9) 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 80% 78%, rgba(255, 255, 255, .8) 0 1px, transparent 2px),
+    radial-gradient(circle at 92% 12%, rgba(255, 255, 255, .85) 0 1.2px, transparent 2.2px);
+  background-size: 180px 180px;
+  animation: oj-fall-180 13s linear infinite;
+}
+:is(.photo, .compose-photo).note-effect-snow::after {
+  inset: -260px 0 0;
+  background-image:
+    radial-gradient(circle at 22% 40%, rgba(255, 255, 255, .55) 0 2.5px, transparent 6px),
+    radial-gradient(circle at 70% 18%, rgba(255, 255, 255, .45) 0 3px, transparent 7px),
+    radial-gradient(circle at 54% 84%, rgba(255, 255, 255, .4) 0 2px, transparent 5px);
+  background-size: 260px 260px;
+  filter: blur(.6px);
+  animation: oj-fall-260 22s linear infinite;
+}
 
-/* 08 — Bubbles: outlined glass spheres rise past the text. */
-.note-effect-bubbles::before,.note-effect-bubbles::after{inset:-42% -18%;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27280%27%20height%3D%27240%27%20viewBox%3D%270%200%20280%20240%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%232a86ab%27%20stroke-opacity%3D%27.55%27%20stroke-width%3D%273%27%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2737%27%20r%3D%2713%27%2F%3E%3Ccircle%20cx%3D%27192%27%20cy%3D%2764%27%20r%3D%2721%27%2F%3E%3Ccircle%20cx%3D%27110%27%20cy%3D%27176%27%20r%3D%2716%27%2F%3E%3Ccircle%20cx%3D%27252%27%20cy%3D%27216%27%20r%3D%279%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23edffff%27%20stroke-width%3D%272%27%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2737%27%20r%3D%2712%27%2F%3E%3Ccircle%20cx%3D%27192%27%20cy%3D%2764%27%20r%3D%2720%27%2F%3E%3Ccircle%20cx%3D%27110%27%20cy%3D%27176%27%20r%3D%2715%27%2F%3E%3Ccircle%20cx%3D%27252%27%20cy%3D%27216%27%20r%3D%278%27%2F%3E%3C%2Fg%3E%3Cg%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M24%2031l5-4%20M178%2055l8-7%20M99%20168l6-5%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");background-size:280px 240px}
-.note-effect-bubbles::before{opacity:.9;animation:note-fx-bubble-rise 14s linear infinite}
-.note-effect-bubbles::after{background-position:130px 90px;opacity:.55;animation:note-fx-bubble-rise 20s linear infinite reverse}
-@keyframes note-fx-bubble-rise{from{transform:translate3d(-3%,14%,0)}to{transform:translate3d(4%,-14%,0)}}
+/* ---------- 별빛: 깊은 밤 기운 위로 작은 별들이 반짝여요 ---------- */
+:is(.photo, .compose-photo).note-effect-starlight::before {
+  background: radial-gradient(130% 90% at 50% 0%, rgba(18, 22, 64, .18), rgba(8, 10, 36, .46));
+}
+:is(.photo, .compose-photo).note-effect-starlight::after {
+  background-image:
+    radial-gradient(circle at 8% 14%, #fff 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 26% 38%, rgba(255, 255, 255, .8) 0 .7px, transparent 1.4px),
+    radial-gradient(circle at 44% 10%, #fff 0 1px, transparent 2px),
+    radial-gradient(circle at 63% 46%, rgba(255, 255, 255, .7) 0 .7px, transparent 1.4px),
+    radial-gradient(circle at 78% 22%, #fff 0 .9px, transparent 1.8px),
+    radial-gradient(circle at 90% 60%, rgba(255, 255, 255, .8) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 16% 72%, rgba(255, 255, 255, .6) 0 .7px, transparent 1.4px);
+  background-size: 150px 150px;
+  animation: oj-twinkle 4.2s ease-in-out infinite alternate;
+}
 
-/* 09 — Aurora: two shaped colour ribbons sway through the upper sky. */
-.note-effect-aurora::before{inset:-15% -30%;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27640%27%20height%3D%27400%27%20viewBox%3D%270%200%20640%20400%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27a%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%270%27%3E%3Cstop%20stop-color%3D%27%231af9b9%27%20stop-opacity%3D%270%27%2F%3E%3Cstop%20offset%3D%27.25%27%20stop-color%3D%27%2346fac9%27%20stop-opacity%3D%27.9%27%2F%3E%3Cstop%20offset%3D%27.55%27%20stop-color%3D%27%235e8bff%27%20stop-opacity%3D%27.9%27%2F%3E%3Cstop%20offset%3D%27.82%27%20stop-color%3D%27%23d377ff%27%20stop-opacity%3D%27.85%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23fe9bd4%27%20stop-opacity%3D%270%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%27b%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%270%27%3E%3Cstop%20stop-color%3D%27%2339f2dc%27%20stop-opacity%3D%270%27%2F%3E%3Cstop%20offset%3D%27.35%27%20stop-color%3D%27%2389ffe3%27%20stop-opacity%3D%27.7%27%2F%3E%3Cstop%20offset%3D%27.75%27%20stop-color%3D%27%23a77cfe%27%20stop-opacity%3D%27.78%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23ff9fce%27%20stop-opacity%3D%270%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%27M-40%20110%20C110%20-15%20270%20165%20460%2055%20S650%2015%20720%2080%20L720%20260%20C510%20158%20330%20298%20120%20189%20S-50%20232%20-40%20110Z%27%20fill%3D%27url%28%23a%29%27%2F%3E%3Cpath%20d%3D%27M-50%20230%20C120%20104%20270%20308%20460%20174%20S610%20124%20700%20159%20L700%20328%20C500%20259%20314%20388%20120%20285%20S-60%20333%20-50%20230Z%27%20fill%3D%27url%28%23b%29%27%2F%3E%3C%2Fsvg%3E");background-size:100% 100%;filter:blur(10px);opacity:.8;animation:note-fx-aurora-drift 13s ease-in-out infinite}
-.note-effect-aurora::after{inset:-10%;background:radial-gradient(ellipse 58% 28% at 35% 17%,#54ffd793,transparent 100%),radial-gradient(ellipse 55% 25% at 76% 29%,#ae7dff89,transparent 100%);filter:blur(16px);animation:note-fx-aurora-light 15s ease-in-out infinite}
-@keyframes note-fx-aurora-drift{0%,100%{transform:translate3d(-6%,-2%,0) rotate(-3deg);opacity:.58}50%{transform:translate3d(6%,2%,0) rotate(3deg);opacity:.95}}
-@keyframes note-fx-aurora-light{0%,100%{transform:translate3d(4%,0,0);opacity:.4}50%{transform:translate3d(-4%,2%,0);opacity:.8}}
+/* ---------- 반딧불이: 따뜻한 빛 알갱이가 천천히 떠다녀요 ---------- */
+:is(.photo, .compose-photo).note-effect-fireflies::before,
+:is(.photo, .compose-photo).note-effect-fireflies::after {
+  background-repeat: no-repeat;
+}
+:is(.photo, .compose-photo).note-effect-fireflies::before {
+  background-image:
+    radial-gradient(circle at 20% 70%, rgba(255, 238, 150, .95) 0 1.6px, rgba(255, 220, 110, .35) 4px, transparent 10px),
+    radial-gradient(circle at 70% 55%, rgba(255, 238, 150, .9) 0 1.4px, rgba(255, 220, 110, .3) 4px, transparent 9px),
+    radial-gradient(circle at 45% 85%, rgba(255, 238, 150, .85) 0 1.2px, rgba(255, 220, 110, .3) 3.5px, transparent 8px);
+  animation: oj-float-a 9s ease-in-out infinite alternate, oj-glow 2.6s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-fireflies::after {
+  background-image:
+    radial-gradient(circle at 82% 30%, rgba(236, 255, 160, .9) 0 1.4px, rgba(210, 240, 110, .3) 4px, transparent 9px),
+    radial-gradient(circle at 30% 35%, rgba(236, 255, 160, .85) 0 1.2px, rgba(210, 240, 110, .28) 3.5px, transparent 8px),
+    radial-gradient(circle at 60% 20%, rgba(255, 238, 150, .8) 0 1px, rgba(255, 220, 110, .25) 3px, transparent 7px);
+  animation: oj-float-b 11s ease-in-out infinite alternate, oj-glow 3.4s ease-in-out infinite alternate-reverse;
+}
 
-/* 10 — Confetti: vivid cut-paper pieces with varied scale and rotation. */
-.note-effect-confetti::before,.note-effect-confetti::after{inset:-40% -20%;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27320%27%20height%3D%27320%27%20viewBox%3D%270%200%20320%20320%27%3E%3Crect%20x%3D%2722%27%20y%3D%2726%27%20width%3D%2712%27%20height%3D%2718.6%27%20rx%3D%272%27%20transform%3D%27rotate%28-18%2022%2026%29%27%20fill%3D%27%23ff567a%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%2794%27%20y%3D%2748%27%20width%3D%279%27%20height%3D%2714.0%27%20rx%3D%272%27%20transform%3D%27rotate%2820%2094%2048%29%27%20fill%3D%27%23ffd251%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27170%27%20y%3D%2721%27%20width%3D%2711%27%20height%3D%2717.1%27%20rx%3D%272%27%20transform%3D%27rotate%28-8%20170%2021%29%27%20fill%3D%27%2340d49c%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27246%27%20y%3D%2763%27%20width%3D%279%27%20height%3D%2714.0%27%20rx%3D%272%27%20transform%3D%27rotate%2832%20246%2063%29%27%20fill%3D%27%2350a8fb%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%2751%27%20y%3D%27135%27%20width%3D%2710%27%20height%3D%2715.5%27%20rx%3D%272%27%20transform%3D%27rotate%2845%2051%20135%29%27%20fill%3D%27%23b578ed%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27138%27%20y%3D%27116%27%20width%3D%2711%27%20height%3D%2717.1%27%20rx%3D%272%27%20transform%3D%27rotate%28-29%20138%20116%29%27%20fill%3D%27%23ff914d%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27231%27%20y%3D%27145%27%20width%3D%279%27%20height%3D%2714.0%27%20rx%3D%272%27%20transform%3D%27rotate%2815%20231%20145%29%27%20fill%3D%27%2348c4d3%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%2717%27%20y%3D%27229%27%20width%3D%2710%27%20height%3D%2715.5%27%20rx%3D%272%27%20transform%3D%27rotate%28-15%2017%20229%29%27%20fill%3D%27%23f766b0%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%2781%27%20y%3D%27203%27%20width%3D%2711%27%20height%3D%2717.1%27%20rx%3D%272%27%20transform%3D%27rotate%2831%2081%20203%29%27%20fill%3D%27%2392d85c%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27155%27%20y%3D%27246%27%20width%3D%279%27%20height%3D%2714.0%27%20rx%3D%272%27%20transform%3D%27rotate%28-40%20155%20246%29%27%20fill%3D%27%23ffdf75%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27268%27%20y%3D%27222%27%20width%3D%2712%27%20height%3D%2718.6%27%20rx%3D%272%27%20transform%3D%27rotate%2824%20268%20222%29%27%20fill%3D%27%236b8cff%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27292%27%20y%3D%27128%27%20width%3D%279%27%20height%3D%2714.0%27%20rx%3D%272%27%20transform%3D%27rotate%28-10%20292%20128%29%27%20fill%3D%27%23ec7091%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27202%27%20y%3D%27280%27%20width%3D%2710%27%20height%3D%2715.5%27%20rx%3D%272%27%20transform%3D%27rotate%2842%20202%20280%29%27%20fill%3D%27%234bd7ad%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3Crect%20x%3D%27116%27%20y%3D%27292%27%20width%3D%279%27%20height%3D%2714.0%27%20rx%3D%272%27%20transform%3D%27rotate%286%20116%20292%29%27%20fill%3D%27%23d59bff%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.65%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");background-size:320px 320px}
-.note-effect-confetti::before{opacity:.98;animation:note-fx-confetti-fall 15s linear infinite}
-.note-effect-confetti::after{background-position:160px 140px;opacity:.58;animation:note-fx-confetti-fall 21s linear infinite reverse}
-@keyframes note-fx-confetti-fall{from{transform:translate3d(-4%,-13%,0) rotate(-4deg)}to{transform:translate3d(5%,13%,0) rotate(5deg)}}
+/* ---------- 꽃잎: 연분홍 꽃잎이 바람에 비스듬히 날려요 ---------- */
+:is(.photo, .compose-photo).note-effect-petals::before {
+  inset: -240px -60px 0 0;
+  background-image:
+    radial-gradient(ellipse 7px 4px at 14% 20%, rgba(255, 206, 220, .98), rgba(255, 170, 196, .7) 60%, transparent 72%),
+    radial-gradient(ellipse 6px 3.5px at 52% 46%, rgba(255, 220, 230, .95), rgba(255, 180, 204, .65) 60%, transparent 72%),
+    radial-gradient(ellipse 7px 4px at 84% 72%, rgba(255, 206, 220, .95), rgba(255, 170, 196, .65) 60%, transparent 72%),
+    radial-gradient(ellipse 5px 3px at 30% 88%, rgba(255, 226, 236, .9), transparent 72%),
+    radial-gradient(ellipse 6px 3.5px at 70% 10%, rgba(255, 214, 226, .9), transparent 72%);
+  background-size: 200px 200px;
+  animation: oj-drift-fall 15s linear infinite;
+}
+:is(.photo, .compose-photo).note-effect-petals::after {
+  inset: -320px -80px 0 0;
+  background-image:
+    radial-gradient(ellipse 8px 4.5px at 40% 30%, rgba(255, 214, 226, .55), transparent 72%),
+    radial-gradient(ellipse 7px 4px at 78% 64%, rgba(255, 200, 216, .5), transparent 72%);
+  background-size: 320px 320px;
+  filter: blur(.8px);
+  animation: oj-drift-fall-slow 26s linear infinite;
+}
 
-/* 11 — Sunbeams: golden shafts rotate from a steady light source. */
-.note-effect-sunbeams::before{inset:-35%;background:conic-gradient(from 196deg at 26% 23%,transparent 0 8deg,#ffe093a6 11deg,transparent 17deg 37deg,#fff0b0a8 42deg,transparent 49deg 74deg,#ffd2778c 81deg,transparent 89deg 360deg);filter:blur(3px);animation:note-fx-sunbeam-sway 10s ease-in-out infinite}
-.note-effect-sunbeams::after{inset:0;background:radial-gradient(circle at 26% 23%,#ffe9aacf 0 3%,#fff0bd7a 13%,transparent 43%);animation:note-fx-sunbeam-glow 8s ease-in-out infinite}
-@keyframes note-fx-sunbeam-sway{0%,100%{transform:rotate(-5deg);opacity:.58}50%{transform:rotate(5deg);opacity:.94}}
-@keyframes note-fx-sunbeam-glow{0%,100%{opacity:.42}50%{opacity:.85}}
+/* ---------- 비눗방울: 테두리만 빛나는 투명한 방울이 떠올라요 ---------- */
+:is(.photo, .compose-photo).note-effect-bubbles::before {
+  inset: 0 0 -220px;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, .6) 0 1px, transparent 2px),
+    radial-gradient(circle at 22% 32%, rgba(200, 235, 255, .08) 6px, rgba(255, 255, 255, .7) 8px, rgba(190, 230, 255, .3) 9px, transparent 10.5px),
+    radial-gradient(circle at 70% 64%, rgba(255, 255, 255, .6) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 66%, rgba(255, 220, 245, .08) 10px, rgba(255, 255, 255, .65) 12px, rgba(255, 210, 240, .3) 13.5px, transparent 15.5px),
+    radial-gradient(circle at 48% 90%, rgba(210, 240, 255, .08) 4px, rgba(255, 255, 255, .6) 6px, transparent 7.5px),
+    radial-gradient(circle at 86% 18%, rgba(210, 240, 255, .06) 6px, rgba(255, 255, 255, .55) 8px, transparent 9.5px);
+  background-size: 220px 220px;
+  animation: oj-rise-220 16s linear infinite;
+}
 
-/* 12 — Mist: blue-grey cloud banks slide at different speeds. */
-.note-effect-mist::before{inset:10% -45% -20%;background:radial-gradient(ellipse 58% 18% at 22% 72%,#a4c6d6b5,transparent 100%),radial-gradient(ellipse 47% 16% at 70% 44%,#d8ebedbe,transparent 100%);filter:blur(13px);animation:note-fx-mist-bank 15s ease-in-out infinite}
-.note-effect-mist::after{inset:3% -40% -10%;background:radial-gradient(ellipse 63% 15% at 58% 78%,#86a9c0a1,transparent 100%),radial-gradient(ellipse 45% 14% at 30% 33%,#e4f4f3ba,transparent 100%);filter:blur(17px);animation:note-fx-mist-bank 20s ease-in-out infinite reverse}
-@keyframes note-fx-mist-bank{0%,100%{transform:translate3d(-9%,0,0);opacity:.4}50%{transform:translate3d(9%,2%,0);opacity:.8}}
+/* ---------- 오로라: 초록·보라 빛 띠가 하늘에서 너울거려요 ---------- */
+:is(.photo, .compose-photo).note-effect-aurora::before {
+  inset: -10% -20% 30%;
+  background:
+    radial-gradient(50% 60% at 28% 20%, rgba(110, 255, 196, .6), transparent 70%),
+    radial-gradient(45% 55% at 70% 12%, rgba(170, 124, 255, .58), transparent 70%),
+    radial-gradient(40% 45% at 50% 34%, rgba(90, 210, 255, .4), transparent 70%);
+  background-repeat: no-repeat;
+  filter: blur(12px);
+  mix-blend-mode: screen;
+  animation: oj-aurora 14s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-aurora::after {
+  background: linear-gradient(180deg, rgba(10, 14, 40, .3), transparent 55%);
+}
 
-/* 13 — Ocean: drawn wave crests cross a cool lower-edge wash. */
-.note-effect-ocean::before{inset:55% -35% -12%;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27320%27%20height%3D%27120%27%20viewBox%3D%270%200%20320%20120%27%3E%3Cg%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M-5%2030Q35%209%2075%2030T155%2030T235%2030T315%2030T395%2030%27%20stroke%3D%27%23195d96%27%20stroke-opacity%3D%27.55%27%20stroke-width%3D%275%27%2F%3E%3Cpath%20d%3D%27M-5%2030Q35%209%2075%2030T155%2030T235%2030T315%2030T395%2030%27%20stroke%3D%27%23b4efff%27%20stroke-width%3D%272.6%27%2F%3E%3Cpath%20d%3D%27M-25%2091Q15%2071%2055%2091T135%2091T215%2091T295%2091T375%2091%27%20stroke%3D%27%23176aa5%27%20stroke-opacity%3D%27.46%27%20stroke-width%3D%275%27%2F%3E%3Cpath%20d%3D%27M-25%2091Q15%2071%2055%2091T135%2091T215%2091T295%2091T375%2091%27%20stroke%3D%27%23d2faff%27%20stroke-width%3D%272.6%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");background-size:320px 120px;opacity:.92;animation:note-fx-wave 9s ease-in-out infinite}
-.note-effect-ocean::after{inset:66% 0 0;background:linear-gradient(0deg,#338ab77d,transparent);animation:note-fx-wave-glow 8s ease-in-out infinite}
-@keyframes note-fx-wave{0%,100%{transform:translate3d(-3%,2%,0)}50%{transform:translate3d(3%,-2%,0)}}
-@keyframes note-fx-wave-glow{0%,100%{opacity:.34}50%{opacity:.68}}
+/* ---------- 색종이: 작은 파스텔 조각이 천천히 흩날려요 ---------- */
+:is(.photo, .compose-photo).note-effect-confetti::before {
+  inset: -200px 0 0;
+  background-image:
+    radial-gradient(ellipse 2px 4px at 12% 18%, #ffb8c9 70%, transparent 72%),
+    radial-gradient(ellipse 4px 2px at 34% 52%, #ffe08f 70%, transparent 72%),
+    radial-gradient(ellipse 2px 4px at 58% 26%, #9fe3c8 70%, transparent 72%),
+    radial-gradient(ellipse 3.5px 2px at 80% 70%, #a9c7ff 70%, transparent 72%),
+    radial-gradient(ellipse 2px 3.5px at 90% 8%, #d8b8ff 70%, transparent 72%),
+    radial-gradient(ellipse 3px 2px at 46% 88%, #ffc7a8 70%, transparent 72%);
+  background-size: 200px 200px;
+  opacity: .85;
+  animation: oj-sway-fall 12s linear infinite;
+}
 
-/* 14 — Heartbeat: a drawn heart sends a pair of gentle pulses. */
-.note-effect-heartbeat::before,.note-effect-heartbeat::after{inset:12% 21%;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27260%27%20height%3D%27240%27%20viewBox%3D%270%200%20260%20240%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27h%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20stop-color%3D%27%23fff3f6%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23ff7faf%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%27M120%20207C84%20178%2030%20142%2030%2093C30%2053%2058%2033%2091%2035C109%2036%20122%2048%20130%2061C138%2048%20151%2036%20169%2035C202%2033%20230%2053%20230%2093C230%20142%20176%20178%20140%20207L130%20215Z%27%20fill%3D%27%23e3518961%27%20stroke%3D%27%235b244f%27%20stroke-opacity%3D%27.3%27%20stroke-width%3D%279%27%2F%3E%3Cpath%20d%3D%27M120%20207C84%20178%2030%20142%2030%2093C30%2053%2058%2033%2091%2035C109%2036%20122%2048%20130%2061C138%2048%20151%2036%20169%2035C202%2033%20230%2053%20230%2093C230%20142%20176%20178%20140%20207L130%20215Z%27%20fill%3D%27none%27%20stroke%3D%27url%28%23h%29%27%20stroke-width%3D%277%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;filter:drop-shadow(0 0 9px #ff86ae9c);animation:note-fx-heart 4.8s ease-out infinite}
-.note-effect-heartbeat::after{animation-delay:2.4s}
-@keyframes note-fx-heart{0%{transform:scale(.78);opacity:.45}25%{transform:scale(.95);opacity:.75}65%,100%{transform:scale(1.2);opacity:0}}
+/* ---------- 햇살: 모서리에서 따뜻한 빛줄기가 스며들어요 ---------- */
+:is(.photo, .compose-photo).note-effect-sunbeams::before {
+  inset: -30%;
+  background: repeating-conic-gradient(from 195deg at 22% 12%, rgba(255, 238, 200, .2) 0deg 3deg, transparent 3deg 11deg);
+  -webkit-mask-image: radial-gradient(90% 90% at 22% 12%, #000 10%, transparent 62%);
+          mask-image: radial-gradient(90% 90% at 22% 12%, #000 10%, transparent 62%);
+  mix-blend-mode: screen;
+  transform-origin: 22% 12%;
+  animation: oj-rays 12s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-sunbeams::after {
+  background: radial-gradient(60% 50% at 6% 0%, rgba(255, 210, 150, .5), rgba(255, 190, 130, .12) 45%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: oj-breathe 6s ease-in-out infinite alternate;
+}
 
-/* 15 — Orbit: a bright bead travels around a restrained elliptical track. */
-.note-effect-orbit::before{inset:10% 17%;border:2px solid #cfeaf6a6;border-radius:50%;box-shadow:inset 0 0 11px #8bccff61,0 0 8px #85ddff5e}
-.note-effect-orbit::after{inset:10% 17%;border-radius:50%;background:radial-gradient(circle 8px at 50% 0,#fff7c9 20%,#9fddffdb 45%,transparent 90%);filter:drop-shadow(0 0 5px #fff);animation:note-fx-orbit 10s linear infinite}
-@keyframes note-fx-orbit{to{transform:rotate(360deg)}}
+/* ---------- 안개: 부드러운 안개가 아래쪽에서 천천히 흘러가요 ---------- */
+:is(.photo, .compose-photo).note-effect-mist::before,
+:is(.photo, .compose-photo).note-effect-mist::after {
+  inset: 0 -30%;
+  background-repeat: no-repeat;
+  filter: blur(10px);
+}
+:is(.photo, .compose-photo).note-effect-mist::before {
+  background:
+    radial-gradient(40% 32% at 20% 86%, rgba(255, 255, 255, .66), transparent 70%),
+    radial-gradient(45% 34% at 62% 94%, rgba(255, 255, 255, .6), transparent 70%);
+  animation: oj-mist 22s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-mist::after {
+  background:
+    radial-gradient(30% 22% at 80% 70%, rgba(255, 255, 255, .32), transparent 70%),
+    radial-gradient(34% 24% at 36% 64%, rgba(255, 255, 255, .26), transparent 70%);
+  animation: oj-mist 30s ease-in-out infinite alternate-reverse;
+}
 
-/* 16 — Glitter: small diamonds flash in a quick, syncopated rhythm. */
-.note-effect-glitter::before,.note-effect-glitter::after{inset:-5%;background-image:url("data:image/svg+xml,%3Cns0%3Asvg%20xmlns%3Ans0%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22240%22%20viewBox%3D%220%200%20300%20240%22%3E%3Cns0%3Ag%20transform%3D%22translate%2822%2033%29%22%3E%3Cns0%3Apath%20d%3D%22M0-8L1.5-1.5L8%200L1.5%201.5L0%208L-1.5%201.5L-8%200L-1.5-1.5Z%22%20fill%3D%22%23fffbe5%22%20stroke%3D%22%23796abe%22%20stroke-width%3D%22.8%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%2891%20146%29%22%3E%3Cns0%3Apath%20d%3D%22M0-8L1.5-1.5L8%200L1.5%201.5L0%208L-1.5%201.5L-8%200L-1.5-1.5Z%22%20fill%3D%22%23fffbe5%22%20stroke%3D%22%23796abe%22%20stroke-width%3D%22.8%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28206%2063%29%22%3E%3Cns0%3Apath%20d%3D%22M0-8L1.5-1.5L8%200L1.5%201.5L0%208L-1.5%201.5L-8%200L-1.5-1.5Z%22%20fill%3D%22%23fffbe5%22%20stroke%3D%22%23796abe%22%20stroke-width%3D%22.8%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28168%20208%29%22%3E%3Cns0%3Apath%20d%3D%22M0-8L1.5-1.5L8%200L1.5%201.5L0%208L-1.5%201.5L-8%200L-1.5-1.5Z%22%20fill%3D%22%23fffbe5%22%20stroke%3D%22%23796abe%22%20stroke-width%3D%22.8%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28270%20178%29%22%3E%3Cns0%3Apath%20d%3D%22M0-8L1.5-1.5L8%200L1.5%201.5L0%208L-1.5%201.5L-8%200L-1.5-1.5Z%22%20fill%3D%22%23fffbe5%22%20stroke%3D%22%23796abe%22%20stroke-width%3D%22.8%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Acircle%20cx%3D%22131%22%20cy%3D%2222%22%20r%3D%222%22%20fill%3D%22%23fff%22%20%2F%3E%3Cns0%3Acircle%20cx%3D%2245%22%20cy%3D%22218%22%20r%3D%222%22%20fill%3D%22%23fff%22%20%2F%3E%3C%2Fns0%3Asvg%3E");background-size:300px 240px;filter:drop-shadow(0 0 4px #fff)}
-.note-effect-glitter::before{animation:note-fx-glitter-beat 3.2s steps(4,end) infinite}
-.note-effect-glitter::after{background-position:147px 96px;opacity:.5;animation:note-fx-glitter-beat 4.4s steps(4,end) infinite reverse}
-@keyframes note-fx-glitter-beat{0%,100%{opacity:.18}25%{opacity:1}50%{opacity:.39}75%{opacity:.78}}
+/* ---------- 물결: 아래쪽에 물빛이 일렁여요 ---------- */
+:is(.photo, .compose-photo).note-effect-ocean::before {
+  background: linear-gradient(0deg, rgba(34, 140, 190, .46), rgba(34, 140, 190, .12) 40%, transparent 58%);
+}
+:is(.photo, .compose-photo).note-effect-ocean::after {
+  inset: 50% -20% 0;
+  background-image:
+    radial-gradient(ellipse 34px 6px at 20% 40%, rgba(255, 255, 255, .4), transparent 70%),
+    radial-gradient(ellipse 26px 5px at 64% 70%, rgba(255, 255, 255, .34), transparent 70%),
+    radial-gradient(ellipse 30px 5px at 88% 20%, rgba(210, 245, 255, .36), transparent 70%);
+  background-size: 180px 60px;
+  -webkit-mask-image: linear-gradient(0deg, #000 30%, transparent);
+          mask-image: linear-gradient(0deg, #000 30%, transparent);
+  animation: oj-waves 9s linear infinite;
+}
 
-/* 17 — Meteor: a tapered comet occasionally crosses the sky. */
-.note-effect-meteor::before,.note-effect-meteor::after{inset:-35%;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27250%27%20height%3D%27170%27%20viewBox%3D%270%200%20250%20170%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27t%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%270%27%3E%3Cstop%20stop-color%3D%27%238bd9ff%27%20stop-opacity%3D%270%27%2F%3E%3Cstop%20offset%3D%27.63%27%20stop-color%3D%27%238bd9ff%27%20stop-opacity%3D%27.6%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23fff%27%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%27h%27%3E%3Cstop%20stop-color%3D%27%23fff%27%2F%3E%3Cstop%20offset%3D%27.22%27%20stop-color%3D%27%23fff4bf%27%2F%3E%3Cstop%20offset%3D%27.55%27%20stop-color%3D%27%2397dfff%27%20stop-opacity%3D%27.8%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%2397dfff%27%20stop-opacity%3D%270%27%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%27M15%20146Q85%20108%20203%2038%27%20stroke%3D%27%234f79bd%27%20stroke-width%3D%2712%27%20opacity%3D%27.28%27%20fill%3D%27none%27%2F%3E%3Cpath%20d%3D%27M15%20146Q85%20108%20203%2038%27%20stroke%3D%27url%28%23t%29%27%20stroke-width%3D%275%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%2F%3E%3Ccircle%20cx%3D%27203%27%20cy%3D%2738%27%20r%3D%2722%27%20fill%3D%27url%28%23h%29%27%2F%3E%3Ccircle%20cx%3D%27203%27%20cy%3D%2738%27%20r%3D%274%27%20fill%3D%27%23fff%27%2F%3E%3C%2Fsvg%3E") center/250px 170px no-repeat;filter:drop-shadow(0 0 5px #b9eaff);animation:note-fx-comet 8s ease-in-out infinite}
-.note-effect-meteor::after{animation-delay:4s;opacity:.45}
-@keyframes note-fx-comet{0%{transform:translate3d(-30%,-15%,0) rotate(-8deg);opacity:.8}24%{transform:translate3d(25%,18%,0) rotate(-8deg);opacity:.95}42%,100%{transform:translate3d(32%,23%,0) rotate(-8deg);opacity:0}}
+/* ---------- 빛의 파동: 가운데에서 부드러운 빛 고리가 퍼져요 ---------- */
+:is(.photo, .compose-photo).note-effect-heartbeat::before,
+:is(.photo, .compose-photo).note-effect-heartbeat::after {
+  background: radial-gradient(circle, transparent 36%, rgba(255, 236, 244, .42) 39%, rgba(255, 236, 244, .12) 42%, transparent 46%) no-repeat center / 100% 100%;
+  mix-blend-mode: screen;
+  animation: oj-pulse 3.2s ease-out infinite;
+}
+:is(.photo, .compose-photo).note-effect-heartbeat::after { animation-delay: 1.6s; }
 
-/* 18 — Leaves: veined leaf shapes drift and slowly turn. */
-.note-effect-leaves::before,.note-effect-leaves::after{inset:-37% -20%;background-image:url("data:image/svg+xml,%3Cns0%3Asvg%20xmlns%3Ans0%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22270%22%20viewBox%3D%220%200%20300%20270%22%3E%3Cns0%3Ag%20transform%3D%22translate%2842%2036%29%20rotate%2829%29%22%3E%3Cns0%3Apath%20d%3D%22M0%2013C-16%207-18-6%200-14C18-6%2016%207%200%2013Z%22%20fill%3D%22%23a0d98a%22%20stroke%3D%22%232d7a55%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28203%2070%29%20rotate%28-38%29%22%3E%3Cns0%3Apath%20d%3D%22M0%2013C-16%207-18-6%200-14C18-6%2016%207%200%2013Z%22%20fill%3D%22%23a0d98a%22%20stroke%3D%22%232d7a55%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28112%20201%29%20rotate%2864%29%22%3E%3Cns0%3Apath%20d%3D%22M0%2013C-16%207-18-6%200-14C18-6%2016%207%200%2013Z%22%20fill%3D%22%23a0d98a%22%20stroke%3D%22%232d7a55%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Ag%20transform%3D%22translate%28269%20240%29%20rotate%28-8%29%22%3E%3Cns0%3Apath%20d%3D%22M0%2013C-16%207-18-6%200-14C18-6%2016%207%200%2013Z%22%20fill%3D%22%23a0d98a%22%20stroke%3D%22%232d7a55%22%20stroke-width%3D%222%22%20%2F%3E%3C%2Fns0%3Ag%3E%3Cns0%3Apath%20d%3D%22M42%2049V23%20M203%2083V57%20M112%20214V188%20M269%20253V227%22%20stroke%3D%22%23e7f8c3%22%20stroke-width%3D%221.5%22%20opacity%3D%22.85%22%20%2F%3E%3C%2Fns0%3Asvg%3E");background-size:300px 270px}
-.note-effect-leaves::before{opacity:.9;animation:note-fx-leaf-fall 17s linear infinite}
-.note-effect-leaves::after{background-position:145px 102px;opacity:.55;animation:note-fx-leaf-fall 23s linear infinite reverse}
-@keyframes note-fx-leaf-fall{from{transform:translate3d(4%,-14%,0) rotate(-8deg)}to{transform:translate3d(-5%,14%,0) rotate(9deg)}}
+/* ---------- 궤도: 가는 궤도 위로 작은 빛이 돌아요 ---------- */
+:is(.photo, .compose-photo).note-effect-orbit::before,
+:is(.photo, .compose-photo).note-effect-orbit::after {
+  inset: 0; margin: auto; width: 86%; height: auto; aspect-ratio: 1; border-radius: 50%;
+}
+:is(.photo, .compose-photo).note-effect-orbit::before {
+  border: 1.5px solid rgba(255, 255, 255, .55);
+  box-shadow: 0 0 12px rgba(255, 255, 255, .25), inset 0 0 12px rgba(255, 255, 255, .15);
+  transform: rotate(-12deg) scaleY(.36);
+}
+:is(.photo, .compose-photo).note-effect-orbit::after {
+  background: radial-gradient(circle at 50% 0%, #fff 0 3px, rgba(255, 244, 214, .6) 6px, transparent 12px) no-repeat;
+  animation: oj-orbit 9s linear infinite;
+}
 
-/* 19 — Neon: cyan and pink inner frames alternate their glow. */
-.note-effect-neon::before{inset:10px;border:2px solid #79f8ffed;border-radius:13px;box-shadow:inset 0 0 13px #48f3ffab,0 0 17px #46e9ffac;animation:note-fx-neon-breathe 4.6s ease-in-out infinite}
-.note-effect-neon::after{inset:20px;border:1px solid #ff87d3de;border-radius:9px;box-shadow:inset 0 0 8px #ff7cc09c,0 0 13px #ff7cc09c;animation:note-fx-neon-breathe 4.6s ease-in-out infinite reverse}
-@keyframes note-fx-neon-breathe{0%,100%{opacity:.38}50%{opacity:1}}
+/* ---------- 반짝이: 금빛 알갱이가 잘게 반짝여요 ---------- */
+:is(.photo, .compose-photo).note-effect-glitter::before,
+:is(.photo, .compose-photo).note-effect-glitter::after {
+  mix-blend-mode: screen;
+}
+:is(.photo, .compose-photo).note-effect-glitter::before {
+  background-image:
+    radial-gradient(circle at 12% 24%, rgba(255, 226, 150, .95) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 46% 70%, rgba(255, 240, 190, .9) 0 .7px, transparent 1.4px),
+    radial-gradient(circle at 72% 18%, rgba(255, 214, 130, .95) 0 .9px, transparent 1.8px),
+    radial-gradient(circle at 88% 82%, rgba(255, 236, 170, .85) 0 .7px, transparent 1.4px);
+  background-size: 64px 64px;
+  animation: oj-twinkle 1.8s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-glitter::after {
+  background-image:
+    radial-gradient(circle at 30% 50%, rgba(255, 246, 210, .9) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 64% 40%, rgba(255, 222, 140, .9) 0 .7px, transparent 1.4px),
+    radial-gradient(circle at 82% 60%, rgba(255, 232, 160, .85) 0 .9px, transparent 1.8px);
+  background-size: 52px 52px;
+  animation: oj-twinkle 2.3s ease-in-out infinite alternate-reverse;
+}
 
-/* 20 — Dawn: a rising warm disc and amber horizon tint. */
-.note-effect-dawn::before{inset:36% -24% -30%;background:radial-gradient(circle 95px at 50% 95%,#fff2b9de 0 43%,#ffb371b0 63%,transparent 100%);filter:blur(4px);animation:note-fx-sunrise 12s ease-in-out infinite}
-.note-effect-dawn::after{inset:48% 0 0;background:linear-gradient(0deg,#f9937994,#ffd7a152 38%,transparent 100%);animation:note-fx-dawn-warmth 12s ease-in-out infinite}
-@keyframes note-fx-sunrise{0%,100%{transform:translate3d(0,9%,0);opacity:.5}50%{transform:translate3d(0,-8%,0);opacity:.95}}
-@keyframes note-fx-dawn-warmth{0%,100%{opacity:.35}50%{opacity:.8}}
+/* ---------- 별똥별: 가끔 가는 빛줄기가 하늘을 가로질러요 ---------- */
+:is(.photo, .compose-photo).note-effect-meteor::before,
+:is(.photo, .compose-photo).note-effect-meteor::after {
+  inset: auto; top: 14%; left: -30%; width: 34%; height: 1.5px; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .9));
+  box-shadow: 0 0 6px rgba(255, 255, 255, .6);
+  opacity: 0;
+  animation: oj-meteor 5s ease-in infinite;
+}
+:is(.photo, .compose-photo).note-effect-meteor::after {
+  top: 30%; width: 24%; animation-delay: 2.4s; animation-duration: 6s;
+}
 
-@media (prefers-reduced-motion:reduce){
-  :is(.photo,.compose-photo)[class*="note-effect-"]::before,
-  :is(.photo,.compose-photo)[class*="note-effect-"]::after{animation:none!important;transform:none!important}
+/* ---------- 나뭇잎: 따뜻한 빛깔의 잎이 천천히 떨어져요 ---------- */
+:is(.photo, .compose-photo).note-effect-leaves::before {
+  inset: -260px -60px 0 0;
+  background-image:
+    radial-gradient(ellipse 9px 4.5px at 16% 22%, rgba(232, 150, 84, .95), rgba(200, 110, 60, .6) 60%, transparent 72%),
+    radial-gradient(ellipse 8px 4px at 56% 50%, rgba(214, 112, 70, .92), transparent 72%),
+    radial-gradient(ellipse 9px 4.5px at 86% 76%, rgba(240, 190, 110, .92), transparent 72%),
+    radial-gradient(ellipse 7px 3.5px at 36% 90%, rgba(226, 136, 72, .9), transparent 72%);
+  background-size: 260px 260px;
+  animation: oj-drift-fall-260 19s linear infinite;
+}
+:is(.photo, .compose-photo).note-effect-leaves::after {
+  background: linear-gradient(180deg, transparent 50%, rgba(160, 90, 40, .14));
+}
+
+/* ---------- 네온: 가장자리를 따라 분홍·하늘빛 네온이 은은하게 ---------- */
+:is(.photo, .compose-photo).note-effect-neon::before {
+  inset: 10px; border-radius: 12px;
+  border: 1.5px solid rgba(255, 206, 236, .95);
+  box-shadow: 0 0 8px rgba(255, 110, 196, .85), 0 0 18px rgba(255, 110, 196, .45), inset 0 0 8px rgba(255, 110, 196, .5);
+  animation: oj-flicker 6s steps(1) infinite;
+}
+:is(.photo, .compose-photo).note-effect-neon::after {
+  inset: 16px; border-radius: 8px;
+  border: 1px solid rgba(190, 240, 255, .75);
+  box-shadow: 0 0 6px rgba(90, 210, 255, .7), inset 0 0 6px rgba(90, 210, 255, .35);
+}
+
+/* ---------- 새벽빛: 복숭아빛과 라벤더빛이 부드럽게 번져요 ---------- */
+:is(.photo, .compose-photo).note-effect-dawn::before {
+  background:
+    radial-gradient(90% 70% at 0% 100%, rgba(255, 170, 140, .62), transparent 62%),
+    radial-gradient(80% 60% at 100% 0%, rgba(190, 162, 255, .5), transparent 64%);
+  mix-blend-mode: screen;
+  animation: oj-breathe 8s ease-in-out infinite alternate;
+}
+:is(.photo, .compose-photo).note-effect-dawn::after {
+  background: linear-gradient(180deg, rgba(255, 214, 196, .12), transparent 40%, rgba(255, 190, 170, .16));
+}
+
+/* ---------- 움직임 ---------- */
+@keyframes oj-twinkle { 0% { opacity: .35; } 100% { opacity: 1; } }
+@keyframes oj-glow { 0% { opacity: .55; } 100% { opacity: 1; } }
+@keyframes oj-breathe { 0% { opacity: .7; } 100% { opacity: 1; } }
+@keyframes oj-rain { from { transform: rotate(10deg) translateY(-200px); } to { transform: rotate(10deg) translateY(0); } }
+@keyframes oj-sweep { 0% { background-position: 150% 0; } 55%, 100% { background-position: -60% 0; } }
+@keyframes oj-drift { 0% { background-position: 0% 30%; } 100% { background-position: 100% 70%; } }
+@keyframes oj-fall-180 { from { transform: translateY(0); } to { transform: translateY(180px); } }
+@keyframes oj-fall-260 { 0% { transform: translate(0, 0); } 50% { transform: translate(8px, 130px); } 100% { transform: translate(0, 260px); } }
+@keyframes oj-float-a { 0% { transform: translate(0, 0); } 50% { transform: translate(10px, -14px); } 100% { transform: translate(-8px, -4px); } }
+@keyframes oj-float-b { 0% { transform: translate(0, 0); } 50% { transform: translate(-12px, 10px); } 100% { transform: translate(6px, -12px); } }
+@keyframes oj-drift-fall { from { transform: translate(0, 0); } to { transform: translate(60px, 240px); } }
+@keyframes oj-drift-fall-slow { from { transform: translate(0, 0); } to { transform: translate(80px, 320px); } }
+@keyframes oj-drift-fall-260 { 0% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(34px, 130px) rotate(2deg); } 100% { transform: translate(60px, 260px) rotate(0deg); } }
+@keyframes oj-rise-220 { from { transform: translateY(0); } to { transform: translateY(-220px); } }
+@keyframes oj-sway-fall { 0% { transform: translate(0, 0); } 25% { transform: translate(6px, 50px); } 50% { transform: translate(0, 100px); } 75% { transform: translate(-6px, 150px); } 100% { transform: translate(0, 200px); } }
+@keyframes oj-aurora { 0% { transform: translateX(-4%) scaleY(1); opacity: .8; } 100% { transform: translateX(5%) scaleY(1.12); opacity: 1; } }
+@keyframes oj-rays { 0% { transform: rotate(-3deg); opacity: .8; } 100% { transform: rotate(3deg); opacity: 1; } }
+@keyframes oj-mist { 0% { transform: translateX(-6%); } 100% { transform: translateX(6%); } }
+@keyframes oj-waves { from { background-position: 0 0; } to { background-position: 180px 0; } }
+@keyframes oj-pulse { 0% { transform: scale(.55); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
+@keyframes oj-orbit { from { transform: rotate(-12deg) scaleY(.36) rotate(0deg); } to { transform: rotate(-12deg) scaleY(.36) rotate(360deg); } }
+@keyframes oj-meteor {
+  0%, 45% { opacity: 0; transform: translate(0, 0) rotate(18deg); }
+  50% { opacity: 1; }
+  72% { opacity: 0; transform: translate(420%, 150%) rotate(18deg); }
+  100% { opacity: 0; transform: translate(420%, 150%) rotate(18deg); }
+}
+@keyframes oj-flicker { 0%, 100% { opacity: 1; } 42% { opacity: .82; } 44% { opacity: 1; } 71% { opacity: .9; } 72% { opacity: 1; } }
+
+/* 움직임 줄이기를 켠 사람에게는 멈춘 모습으로 보여 줘요 */
+@media (prefers-reduced-motion: reduce) {
+  :is(.photo, .compose-photo)[class*="note-effect-"]::before,
+  :is(.photo, .compose-photo)[class*="note-effect-"]::after { animation: none !important; }
+  :is(.photo, .compose-photo).note-effect-meteor::before { opacity: .8; }
 }

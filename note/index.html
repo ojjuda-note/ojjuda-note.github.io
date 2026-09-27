@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=0.45.9-beta">
-  <link rel="stylesheet" href="features.css?v=0.45.25-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.29-beta">
   <link rel="stylesheet" href="event-photo.css?v=0.45.9-beta">
-  <link rel="stylesheet" href="effects.css?v=0.45.5-beta">
+  <link rel="stylesheet" href="effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="support.css">
   <link rel="stylesheet" href="notifications.css?v=0.45.5-beta">
   <link rel="stylesheet" href="map.css?v=0.45.26-beta">
@@ -136,14 +136,14 @@
                 <div class="note-photo-pages"><button class="button" id="photo-prev" type="button" aria-label="이전 사진 페이지">‹ 이전</button><label for="photo-page-jump">페이지 <select id="photo-page-jump" aria-label="사진 페이지 선택"></select></label><span id="photo-page-status" aria-live="polite"></span><button class="button" id="photo-next" type="button" aria-label="다음 사진 페이지">다음 ›</button></div>
               </div>
             </fieldset>
-            <div class="identity-row"><span>표시 이름</span><label title="올리면 '수줍은 고래'처럼 이름이 자동으로 붙어요. 카드마다 이름이 달라요."><input type="radio" name="identity" value="anonymous" checked>익명 <small class="anon-auto">· 이름 자동</small></label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
-            <div class="identity-row gender-row" title="카드를 올릴 때의 성별이 그 카드에 남아요. 바꾸면 앞으로 쓰는 카드부터 적용돼요."><span>성별 표시</span><label><input type="radio" name="gender" value="male">남</label><label><input type="radio" name="gender" value="female">여</label><label title="이름 앞 동그라미가 회색으로 보여요"><input type="radio" name="gender" value="private" checked>비공개</label></div>
+            <div class="identity-row" hidden><span>표시 이름</span><label title="올리면 '수줍은 고래'처럼 이름이 자동으로 붙어요. 카드마다 이름이 달라요."><input type="radio" name="identity" value="anonymous" checked>익명 <small class="anon-auto">· 이름 자동</small></label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
+            <div class="identity-row gender-row" hidden title="카드를 올릴 때의 성별이 그 카드에 남아요. 바꾸면 앞으로 쓰는 카드부터 적용돼요."><span>성별 표시</span><label><input type="radio" name="gender" value="male">남</label><label><input type="radio" name="gender" value="female">여</label><label title="이름 앞 동그라미가 회색으로 보여요"><input type="radio" name="gender" value="private" checked>비공개</label></div>
           </div>
         </details>
         <section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite">카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section>
         <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><button class="button" id="event-select-center" type="button">현재 지도 중심을 위치로 선택</button><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section>
       </div>
-      <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
+      <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><div class="compose-quick"><label class="quick-choice"><span class="quick-label">이름</span><select id="quick-identity" aria-label="표시 이름"><option value="anonymous">익명</option><option value="nickname">닉네임</option></select></label><label class="quick-choice"><span class="quick-label">성별</span><select id="quick-gender" aria-label="성별 표시"><option value="private">비공개</option><option value="male">남</option><option value="female">여</option></select></label></div><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
   <script src="/config.js"></script>
@@ -152,7 +152,7 @@
   <script src="support.js?v=0.45.5-beta" defer></script>
   <script src="drafts.js?v=0.45.18-beta" defer></script>
   <script src="notifications.js?v=0.45.5-beta" defer></script>
-  <script src="preview.js?v=0.45.25-beta" defer></script>
+  <script src="preview.js?v=0.45.29-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>
