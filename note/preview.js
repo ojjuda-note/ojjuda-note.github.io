@@ -364,7 +364,8 @@ async function loadFeed(more = false) {
   } else list.querySelector('[data-more-feed]')?.remove();
   if (feedMode !== 'all' && !session?.user) {
     ready = true; feedLoading = false; banner('');
-    state(list, '대문에서 로그인하면 메모함과 내 카드를 볼 수 있어요.'); updateComposer(); return true;
+    state(list, feedMode === 'events' ? '대문에서 로그인하면 내 이벤트를 볼 수 있어요.'
+      : '대문에서 로그인하면 메모함과 내 카드를 볼 수 있어요.'); updateComposer(); return true;
   }
   if (feedMode === 'all' && feedSort === 'nearby' && !nearbyPosition) {
     feedLoading = false; ready = true; banner('');
