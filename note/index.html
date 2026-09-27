@@ -16,7 +16,8 @@
   <link rel="stylesheet" href="effects.css?v=0.45.5-beta">
   <link rel="stylesheet" href="support.css">
   <link rel="stylesheet" href="notifications.css?v=0.45.5-beta">
-  <link rel="stylesheet" href="map.css?v=0.45.1-beta">
+  <link rel="stylesheet" href="map.css?v=0.45.10-beta">
+  <link rel="stylesheet" href="pull-refresh.css?v=0.45.10-beta">
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -47,6 +48,7 @@
       </nav>
       <div class="side-section-label side-group-label">작성</div>
       <button class="nav-button side-event-button" type="button" id="event-start"><svg><use href="#plus"/></svg>이벤트 만들기</button>
+      <button class="nav-button" type="button" data-show="events"><svg><use href="#pin"/></svg>내 이벤트</button>
       <div class="side-section-label side-group-label">알림·관리</div>
       <div class="side-tools" id="side-tools"></div>
       <div class="side-spacer"></div>
@@ -148,11 +150,12 @@
   </div>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="map.js?v=0.45.1-beta" defer></script>
+  <script src="map.js?v=0.45.10-beta" defer></script>
   <script src="support.js?v=0.45.5-beta" defer></script>
   <script src="drafts.js?v=0.45.0-beta" defer></script>
   <script src="notifications.js?v=0.45.5-beta" defer></script>
-  <script src="preview.js?v=0.45.9-beta" defer></script>
+  <script src="preview.js?v=0.45.10-beta" defer></script>
+  <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>
 </html>

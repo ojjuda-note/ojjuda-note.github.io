@@ -33,8 +33,15 @@
     credit.href = 'https://www.openstreetmap.org/copyright'; credit.target = '_blank'; credit.rel = 'noopener';
     credit.textContent = '© OpenStreetMap contributors';
     stage.append(tiles, overlay, controls, credit); host.replaceChildren(stage);
-    let current = { lat: center.lat, lng: center.lng }, z = zoom, selected = null, circles = [];
+    let current = { lat: center.lat, lng: center.lng }, z = zoom, selected = null, selectionRadius = 0, circles = [];
     let pointer = null, dragged = false;
+    const metresPerPixel = (lat, level) => 156543.03392 * Math.cos(lat * RAD) / 2 ** level;
+    function fitSelection() {
+      if (!selected || !selectionRadius || !host.clientWidth || !host.clientHeight) return;
+      const limit = Math.min(host.clientWidth, host.clientHeight) * .34;
+      while (z > 4 && selectionRadius / metresPerPixel(selected.lat, z) > limit) z--;
+      while (z < 17 && selectionRadius / metresPerPixel(selected.lat, z + 1) <= limit) z++;
+    }
     function draw() {
       const width = host.clientWidth, height = host.clientHeight;
       if (!width || !height) return;
@@ -61,8 +68,7 @@
         if (!Number.isFinite(entry.lat) || !Number.isFinite(entry.lng) || !Number.isFinite(entry.radius_m)) continue;
         const p = project(entry.lat, entry.lng, z);
         const x = p.x - c.x + width / 2, y = p.y - c.y + height / 2;
-        const metresPerPixel = 156543.03392 * Math.cos(entry.lat * RAD) / 2 ** z;
-        const radius = Math.min(5000, entry.radius_m / metresPerPixel);
+        const radius = Math.min(5000, entry.radius_m / metresPerPixel(entry.lat, z));
         const circle = document.createElement(onEvent ? 'button' : 'span');
         if (onEvent) circle.type = 'button';
         else circle.setAttribute('aria-hidden', 'true');
@@ -76,10 +82,21 @@
         overlay.append(circle);
       }
       if (selected) {
-        const p = project(selected.lat, selected.lng, z), marker = document.createElement('span');
+        const p = project(selected.lat, selected.lng, z);
+        const x = p.x - c.x + width / 2, y = p.y - c.y + height / 2;
+        if (selectionRadius) {
+          const radius = Math.min(5000, selectionRadius / metresPerPixel(selected.lat, z));
+          const range = document.createElement('span'); range.className = 'oj-map-selected-range';
+          range.style.cssText = `left:${x}px;top:${y}px;width:${radius * 2}px;height:${radius * 2}px`;
+          range.setAttribute('aria-hidden', 'true'); overlay.append(range);
+          const label = document.createElement('span'); label.className = 'oj-map-range-label';
+          label.textContent = `선택 범위 · ${selectionRadius / 1000}km`;
+          overlay.append(label);
+        }
+        const marker = document.createElement('span');
         marker.className = 'oj-map-selection';
-        marker.style.left = `${p.x - c.x + width / 2}px`;
-        marker.style.top = `${p.y - c.y + height / 2}px`;
+        marker.style.left = `${x}px`;
+        marker.style.top = `${y}px`;
         marker.setAttribute('aria-hidden', 'true'); overlay.append(marker);
       }
     }
@@ -120,10 +137,11 @@
       draw(); onSelect(selected);
     });
     stage.addEventListener('pointercancel', () => { pointer = null; });
-    const resize = new ResizeObserver(draw); resize.observe(host); draw();
+    const resize = new ResizeObserver(() => { fitSelection(); draw(); }); resize.observe(host); draw();
     return { setCenter(value) { current = { lat: value.lat, lng: value.lng }; draw(); },
       getCenter() { return { ...current }; },
-      setSelection(value) { selected = value; draw(); },
+      setSelection(value) { selected = value; if (value) { current = { lat: value.lat, lng: value.lng }; fitSelection(); } draw(); },
+      setSelectionRadius(metres) { selectionRadius = Number.isFinite(metres) && metres > 0 ? metres : 0; fitSelection(); draw(); },
       setCircles(value) { circles = Array.isArray(value) ? value : []; draw(); },
       invalidate: draw, destroy() { resize.disconnect(); host.replaceChildren(); } };
   }
