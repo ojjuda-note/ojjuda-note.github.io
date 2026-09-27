@@ -17,6 +17,11 @@
   function create(host, { center = { lat: 37.5665, lng: 126.978 }, zoom = 12, onSelect, onEvent, onMove } = {}) {
     if (!(host instanceof HTMLElement)) return null;
     const stage = document.createElement('div'); stage.className = 'oj-map-stage';
+    if (onSelect) {
+      stage.tabIndex = 0;
+      stage.setAttribute('role', 'group');
+      stage.setAttribute('aria-label', '이벤트 위치 지도. 방향키로 지도를 이동하고 아래 버튼으로 중심을 선택하세요.');
+    }
     const tiles = document.createElement('div'); tiles.className = 'oj-map-tiles';
     const overlay = document.createElement('div'); overlay.className = 'oj-map-overlay';
     const controls = document.createElement('div'); controls.className = 'oj-map-controls';
@@ -58,10 +63,15 @@
         const x = p.x - c.x + width / 2, y = p.y - c.y + height / 2;
         const metresPerPixel = 156543.03392 * Math.cos(entry.lat * RAD) / 2 ** z;
         const radius = Math.min(5000, entry.radius_m / metresPerPixel);
-        const circle = document.createElement('button'); circle.type = 'button'; circle.className = 'oj-map-circle';
+        const circle = document.createElement(onEvent ? 'button' : 'span');
+        if (onEvent) circle.type = 'button';
+        else circle.setAttribute('aria-hidden', 'true');
+        circle.className = 'oj-map-circle';
         circle.style.cssText = `left:${x}px;top:${y}px;width:${radius * 2}px;height:${radius * 2}px`;
-        circle.setAttribute('aria-label', entry.in_range ? '이벤트 범위와 내용 보기' : '이벤트 범위 보기');
-        if (onEvent) circle.addEventListener('click', event => { event.stopPropagation(); onEvent(entry); });
+        if (onEvent) {
+          circle.setAttribute('aria-label', entry.in_range ? '이벤트 범위와 내용 보기' : '이벤트 범위 보기');
+          circle.addEventListener('click', event => { event.stopPropagation(); onEvent(entry); });
+        }
         else circle.style.pointerEvents = 'none';
         overlay.append(circle);
       }
@@ -76,6 +86,17 @@
     function zoomTo(delta) { z = clamp(z + delta, 4, 17); draw(); onMove?.({ ...current }); }
     plus.addEventListener('click', () => zoomTo(1)); minus.addEventListener('click', () => zoomTo(-1));
     stage.addEventListener('wheel', event => { event.preventDefault(); zoomTo(event.deltaY < 0 ? 1 : -1); }, { passive: false });
+    stage.addEventListener('keydown', event => {
+      if (event.target !== stage || !onSelect) return;
+      const directions = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+      const direction = directions[event.key];
+      if (!direction) return;
+      event.preventDefault();
+      const center = project(current.lat, current.lng, z), step = event.shiftKey ? 16 : 64;
+      const point = unproject(center.x + direction[0] * step, center.y + direction[1] * step, z);
+      current = { lat: clamp(point.lat, -85, 85), lng: clamp(point.lng, -180, 180) };
+      draw(); onMove?.({ ...current });
+    });
     stage.addEventListener('pointerdown', event => {
       if (event.target.closest('button,a')) return;
       pointer = { x: event.clientX, y: event.clientY, start: project(current.lat, current.lng, z) };

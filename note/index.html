@@ -11,11 +11,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=0.44.0-beta">
-  <link rel="stylesheet" href="features.css?v=0.45.0-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.1-beta">
   <link rel="stylesheet" href="effects.css?v=0.45.0-beta">
   <link rel="stylesheet" href="support.css">
   <link rel="stylesheet" href="notifications.css">
-  <link rel="stylesheet" href="map.css?v=0.44.0-beta">
+  <link rel="stylesheet" href="map.css?v=0.45.1-beta">
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -29,17 +29,27 @@
     <symbol id="arrow" viewBox="0 0 24 24"><path d="m14 5-7 7 7 7M7 12h14"/></symbol>
     <symbol id="close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
     <symbol id="pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0z"/><circle cx="12" cy="10" r="2"/></symbol>
+    <symbol id="menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
   </svg>
 
   <a class="skip" href="#main">본문으로 건너뛰기</a>
+  <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" hidden></div>
   <div class="shell">
-    <aside class="side" aria-label="노트 메뉴">
-      <div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><span class="note-dev-badge">개발 중</span></div>
+    <aside class="side" id="note-sidebar" aria-label="노트 메뉴">
+      <div class="note-side-header"><div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><span class="note-dev-badge">개발 중</span></div><button class="icon-button side-close" id="side-close" type="button" aria-label="메뉴 닫기"><svg><use href="#close"/></svg></button></div>
       <div class="side-section-label">오쭈다월드의 노트</div>
-      <nav class="side-nav">
+      <nav class="side-nav" aria-label="카드 탐색">
         <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>카드</button>
         <button class="nav-button" type="button" disabled title="데이터 연결 후 제공"><svg><use href="#bookmark"/></svg>메모함</button>
+        <div id="side-collection-slot"></div>
+        <div class="side-sort-group"><div class="side-section-label">카드 순서</div><div class="feed-sort-tabs side-sort-list" role="group" aria-label="카드 순서"></div></div>
+        <button class="nav-button" type="button" aria-expanded="false" id="search-toggle" disabled><svg><use href="#search"/></svg>카드 검색</button>
+        <div class="search-panel side-search-panel" id="search-panel" hidden><label for="tag-search">태그 검색</label><input id="tag-search" type="search" placeholder="태그 입력" disabled></div>
       </nav>
+      <div class="side-section-label side-group-label">작성</div>
+      <button class="nav-button side-event-button" type="button" id="event-start"><svg><use href="#plus"/></svg>이벤트 만들기</button>
+      <div class="side-section-label side-group-label">알림·관리</div>
+      <div class="side-tools" id="side-tools"></div>
       <div class="side-spacer"></div>
       <a class="world-link" href="/world.html"><svg><use href="#home"/></svg>미니홈피 <span aria-hidden="true">→</span></a>
       <p class="side-caption" id="account-status">계정 확인 중</p>
@@ -47,6 +57,7 @@
 
     <div class="col">
       <header class="mobile-top">
+        <button class="icon-button mobile-menu-button" id="mobile-menu-toggle" type="button" aria-label="노트 메뉴 열기" aria-controls="note-sidebar" aria-expanded="false"><svg><use href="#menu"/></svg><span class="mobile-menu-badge" id="mobile-menu-badge" hidden></span></button>
         <div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><span class="note-dev-badge">개발 중</span></div>
         <a class="world-small" href="/world.html" aria-label="오쭈다월드로 이동"><svg><use href="#home"/></svg></a>
       </header>
@@ -56,21 +67,8 @@
 
         <section id="feed" class="screen" aria-labelledby="feed-title">
           <h1 id="feed-title" class="note-visually-hidden">오쭈다노트 카드</h1>
-          <div class="page-heading note-feed-heading">
-            <div class="note-top-actions">
-              <button class="icon-button search-button" type="button" aria-label="카드 검색" aria-expanded="false" id="search-toggle" disabled><svg><use href="#search"/></svg></button>
-              <button class="button" type="button" id="map-toggle" aria-pressed="false">지도</button>
-              <button class="button" type="button" id="event-start">이벤트</button>
-            </div>
-          </div>
-          <div class="search-panel" id="search-panel" hidden><label for="tag-search">태그 검색</label><input id="tag-search" type="search" placeholder="태그 입력" disabled></div>
           <div class="feed-layout">
             <div class="feed-column">
-              <section class="note-map-section" id="note-map-section" aria-label="주변 이벤트 지도" hidden>
-                <div class="note-map" id="note-map"></div>
-                <p class="note-map-status" id="note-map-status" role="status">지도를 불러오는 중이에요.</p>
-              </section>
-              <div class="tabs feed-sort-tabs" role="group" aria-label="카드 순서"></div>
               <div class="feed-list" id="feed-list" aria-live="polite"><p class="reply-empty">카드를 불러오는 중이에요.</p></div>
             </div>
           </div>
@@ -128,17 +126,18 @@
           </div>
         </details>
         <section class="note-location-consent" id="card-location-consent"><p>정확한 위치는 비공개로 저장해요.</p><button class="button" id="card-location-button" type="button">위치 확인</button><span id="card-location-status" role="status">위치를 확인해야 등록할 수 있어요.</span></section>
-        <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 눌러 이벤트 중심을 정해 주세요. 지정한 중심과 원형 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section>
+        <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><button class="button" id="event-select-center" type="button">현재 지도 중심을 위치로 선택</button><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section>
       </div>
       <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="map.js?v=0.44.0-beta" defer></script>
+  <script src="map.js?v=0.45.1-beta" defer></script>
   <script src="support.js?v=0.44.0-beta" defer></script>
   <script src="drafts.js?v=0.45.0-beta" defer></script>
   <script src="notifications.js" defer></script>
-  <script src="preview.js?v=0.45.0-beta" defer></script>
+  <script src="preview.js?v=0.45.1-beta" defer></script>
+  <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>
 </html>

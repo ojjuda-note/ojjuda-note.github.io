@@ -23,9 +23,8 @@ let nearbySnapshot = null;
 let publishRequestId = null, locationRun = 0;
 let replyDueChecking = false, replyDueRun = 0;
 let photoRequestId = null;
-let eventMap = null, publicMap = null;
-let mapFetchRun = 0, composerMapFetchRun = 0, publicMapTimer = null, composerMapTimer = null;
-let publicMapLocate = null;
+let eventMap = null;
+let composerMapFetchRun = 0, composerMapTimer = null;
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 let initialCardId = new URL(location.href).searchParams.get('card');
@@ -608,7 +607,7 @@ function selectCollection(mode) {
   feedMode = mode; message(''); showFeed();
   $('#feed-title').textContent = mode === 'all' ? '오쭈다노트 카드' : '메모함';
   $('#note-collection-tabs').hidden = mode === 'all';
-  $('.feed-sort-tabs').hidden = mode !== 'all';
+  $('.side-sort-group').hidden = mode !== 'all';
   document.querySelectorAll('[data-collection]').forEach(button => {
     const selected = button.dataset.collection === mode;
     button.classList.toggle('selected', selected); button.setAttribute('aria-pressed', String(selected));
@@ -628,7 +627,7 @@ function installFeatures() {
   featureMessage.setAttribute('role', 'status'); featureMessage.setAttribute('aria-live', 'polite');
   noticeElement = node('aside', 'note-notice'); noticeElement.hidden = true;
   noticeElement.setAttribute('aria-label', '노트 운영 안내');
-  $('.note-tools').after(noticeElement, featureMessage);
+  $('#connection-status').after(noticeElement, featureMessage);
   retentionButton = node('button', 'button', '보관 알림'); retentionButton.type = 'button';
   retentionButton.hidden = true; retentionButton.addEventListener('click', showRetentionAlerts);
   $('.note-tools').append(retentionButton);
@@ -642,7 +641,7 @@ function installFeatures() {
     const button = node('button', '', label); button.type = 'button'; button.dataset.collection = mode;
     button.setAttribute('aria-pressed', 'false'); button.addEventListener('click', () => selectCollection(mode)); collectionTabs.append(button);
   }
-  $('.feed-column').prepend(collectionTabs);
+  $('#side-collection-slot').append(collectionTabs);
   const sorts = $('.feed-sort-tabs');
   sorts.classList.add('feed-sort-tabs'); sorts.replaceChildren();
   for (const [sort, label] of [['latest', '최신'], ['popular', '인기'], ['nearby', '근처']]) {
@@ -680,7 +679,11 @@ function installFeatures() {
     if (!panel.hidden) input.focus();
   });
   $('#event-start').addEventListener('click', () => openComposer('event'));
-  $('#map-toggle').addEventListener('click', showEventMap);
+  $('#event-select-center').addEventListener('click', () => {
+    const center = eventMap?.getCenter();
+    if (center) selectEventPosition(center);
+    else $('#event-location-status').textContent = '지도를 불러오지 못했어요. 다시 열어 주세요.';
+  });
   $('#card-location-button').addEventListener('click', async event => {
     const run = ++locationRun;
     event.currentTarget.disabled = true; $('#card-location-status').textContent = '위치를 확인하는 중이에요.';
@@ -850,75 +853,21 @@ function scheduleComposerMap(center) {
   clearTimeout(composerMapTimer);
   composerMapTimer = setTimeout(() => refreshComposerMap(center), 180);
 }
+function selectEventPosition(point) {
+  if (!point || backdrop.hidden || kind !== 'event' || busy) return;
+  eventPosition = { latitude: point.lat, longitude: point.lng };
+  eventMap?.setSelection(point);
+  $('#event-location-status').textContent = '이벤트 위치를 선택했어요. 지정한 위치와 원형 범위가 다른 사람에게 보여요.';
+  scheduleComposerMap(point);
+  updateComposer();
+}
 function prepareEventMap() {
   if (eventMap) { eventMap.invalidate(); return; }
   eventMap = window.OjjudaMap?.create($('#event-map'), { center: nearbyPosition
     ? { lat: nearbyPosition.latitude, lng: nearbyPosition.longitude } : undefined,
     onMove: scheduleComposerMap,
-    onSelect: point => {
-      eventPosition = { latitude: point.lat, longitude: point.lng };
-      $('#event-location-status').textContent = '지도 중심을 선택했어요. 이 중심과 원형 범위가 다른 사람에게 보여요.';
-      scheduleComposerMap(point); updateComposer();
-    } });
+    onSelect: selectEventPosition });
   if (eventMap) refreshComposerMap(eventMap.getCenter());
-}
-function publicMapStatus(value) {
-  const status = $('#note-map-status');
-  status.replaceChildren(node('span', '', `${value} `));
-  if (publicMapLocate) status.append(publicMapLocate);
-}
-async function refreshPublicMap(center) {
-  if (!center || $('#note-map-section').hidden) return;
-  const run = ++mapFetchRun;
-  try {
-    const events = await noteRpc('list_event_map', { p_lat: center.lat, p_lon: center.lng, p_limit: 100 });
-    if (run !== mapFetchRun || $('#note-map-section').hidden) return;
-    publicMap?.setCircles(eventCircles(events));
-    publicMapStatus(`${events?.length || 0}개의 공개 이벤트 범위를 표시했어요. 원형을 눌러 내용을 확인하세요.`);
-  } catch {
-    if (run === mapFetchRun && !$('#note-map-section').hidden) publicMapStatus('이벤트 범위를 불러오지 못했어요. 지도를 다시 움직이거나 위치를 확인해 주세요.');
-  }
-}
-function schedulePublicMap(center) {
-  clearTimeout(publicMapTimer);
-  publicMapTimer = setTimeout(() => refreshPublicMap(center), 180);
-}
-async function showEventMap() {
-  const section = $('#note-map-section'), button = $('#map-toggle');
-  section.hidden = !section.hidden; button.setAttribute('aria-pressed', String(!section.hidden));
-  if (section.hidden) { mapFetchRun++; clearTimeout(publicMapTimer); return; }
-  if (!publicMapLocate) {
-    publicMapLocate = node('button', 'button', '내 위치에서 보기'); publicMapLocate.type = 'button';
-    publicMapLocate.addEventListener('click', async () => {
-      publicMapLocate.disabled = true; publicMapStatus('정확한 GPS 좌표는 비공개로 사용해요. 위치를 확인하는 중이에요.');
-      try {
-        const position = await currentPosition();
-        if (section.hidden) return;
-        nearbyPosition = position;
-        const center = { lat: position.latitude, lng: position.longitude };
-        publicMap?.setCenter(center);
-        await refreshPublicMap(center);
-        if (feedMode === 'all' && feed.hidden === false) loadFeed();
-      } catch { if (!section.hidden) publicMapStatus('위치를 확인하지 못했어요. 권한을 확인하고 다시 시도해 주세요.'); }
-      finally { publicMapLocate.disabled = false; }
-    });
-  }
-  if (!publicMap) publicMap = window.OjjudaMap?.create($('#note-map'), { center: nearbyPosition
-    ? { lat: nearbyPosition.latitude, lng: nearbyPosition.longitude } : undefined,
-    onMove: schedulePublicMap,
-    onEvent: async event => {
-      if (!session?.user) { publicMapStatus('이벤트 내용을 보려면 대문에서 로그인해 주세요.'); return; }
-      if (!positionIsFresh(nearbyPosition)) { publicMapStatus('범위 안의 내용은 현재 위치를 다시 확인한 뒤 볼 수 있어요.'); return; }
-      publicMapStatus('범위 안의 이벤트인지 확인하는 중이에요.');
-      try {
-        const detail = await noteRpc('get_card', { p_id: event.id,
-          p_lat: nearbyPosition.latitude, p_lon: nearbyPosition.longitude });
-        publicMapStatus(detail?.body || '이벤트 내용은 기간·범위 안에서만 볼 수 있어요.');
-      } catch { publicMapStatus('이벤트 내용을 확인하지 못했어요. 다시 시도해 주세요.'); }
-    } });
-  else publicMap.invalidate();
-  publicMapStatus('원형은 공개 이벤트 범위예요. 지도에서 탐색하거나 내 위치를 확인하세요. 정확한 GPS 좌표는 지도에 표시하지 않아요.');
-  if (publicMap) refreshPublicMap(publicMap.getCenter());
 }
 
 function draftContent() {
@@ -955,7 +904,7 @@ function recordDraft() {
 function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
-  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next']) $(selector).disabled = disabled;
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next']) $(selector).disabled = disabled;
   document.querySelectorAll('.note-color-choice input, input[name="photo-choice"]').forEach(input => { input.disabled = disabled; });
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
   draftTools?.querySelectorAll('button').forEach(button => { button.disabled = disabled; });
@@ -1072,6 +1021,7 @@ async function openComposer(mode, card = null) {
   $('#card-location-consent').hidden = kind === 'event' || !!editingId;
   $('#card-location-status').textContent = '위치를 확인해야 등록할 수 있어요.';
   $('#note-event-fields').hidden = kind !== 'event';
+  $('#event-location-status').textContent = '지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.';
   $('#compose-title').textContent = editingId ? '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = editingId ? '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
   submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100쭈 결제 후 등록' : '등록하기';
@@ -1499,14 +1449,13 @@ async function loadModerator(userId) {
   } catch (error) { console.warn('Note moderation role:', error); }
 }
 function installManagement() {
-  const account = node('p', 'mobile-account-status'); account.id = 'mobile-account-status';
   const tools = node('div', 'note-tools');
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드', () => {
     if (!moderator || !session?.user) return;
     window.location.assign('/world.html?admin=note');
   }); reports.id = 'note-moderation'; reports.hidden = true;
-  tools.append(account, blocks, reports); $('#connection-status').after(tools);
+  tools.append(blocks, reports); $('#side-tools').append(tools);
   managementClose.addEventListener('click', () => closeManagement());
   management.addEventListener('click', event => { if (event.target === management) closeManagement(); });
   document.addEventListener('keydown', event => {
