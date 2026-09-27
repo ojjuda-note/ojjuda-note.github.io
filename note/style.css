@@ -47,7 +47,7 @@ svg:not(.icons){width:20px;height:20px;fill:none;stroke:currentColor;stroke-line
 .photo-card .photo{aspect-ratio:auto;min-height:370px;min-height:max(370px,69.4cqw);padding:50px 15px}
 .detail-card-slot .photo-card .photo{min-height:430px;min-height:max(430px,76.8cqw)}
 .reply-card .photo{aspect-ratio:auto;min-height:250px;padding:38px 12px}
-.compose-photo textarea:focus-visible{outline:3px solid var(--accent);outline-offset:9px;box-shadow:0 0 0 8px #fff}
+.compose-photo textarea:focus-visible{outline:0;box-shadow:0 0 0 8px var(--note-box-color,#17203a99),0 0 0 10px #f0679acc}
 @media(max-width:520px){.detail-card-slot .photo-card .photo{min-height:400px}}
 /* Keep long names inside the card while leaving the distance badge visible. */
 .card-meta>span:nth-child(2){flex:1;grid-template-columns:minmax(0,1fr)}

@@ -246,7 +246,7 @@ function cardElement(card, compact = false, expanded = false) {
     const manage = node('button', 'card-manage', '더 보기');
     manage.type = 'button'; manage.dataset.manageCard = card.id;
     manage.setAttribute('aria-label', card.is_mine ? '내 카드 수정 또는 삭제' : '카드 신고 또는 작성자 차단');
-    item.append(manage);
+    actions.append(manage);
   }
   return item;
 }

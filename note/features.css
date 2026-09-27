@@ -171,3 +171,8 @@ select{font:inherit;color:inherit}
 .note-full-body{margin:0;padding:0 17px 13px;color:var(--ink);font-size:13px}
 .note-full-body summary{width:max-content;max-width:100%;padding:5px 0;color:var(--accent);cursor:pointer;font-weight:700}
 .note-full-body p{margin:8px 0 0;padding:12px;border-radius:12px;background:var(--surface-2);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}
+.compose-more-content .note-style-controls select{box-sizing:border-box}
+/* Card information and actions share one compact footer on roomy screens. */
+@media(min-width:700px){.photo-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}.photo-card>.photo-open,.photo-card>.note-full-body{grid-column:1/-1}.photo-card>.card-meta{min-width:0;padding:7px 12px 7px 15px}.photo-card>.card-actions{padding:5px 15px 5px 0;gap:10px;flex-wrap:nowrap}.photo-card .card-meta>span:nth-child(2){display:flex;align-items:baseline;gap:7px}.photo-card .card-meta>span:nth-child(2)>small{flex:none}.photo-card .avatar{width:28px;height:28px;border-radius:9px;font-size:14px}}
+.photo-card .card-actions .card-manage{display:inline-flex;min-height:32px;margin:0 0 0 3px;padding:3px 10px;border:1px solid var(--line);border-radius:100px;background:var(--surface);color:var(--ink-2);font-size:11px;white-space:nowrap}.photo-card .card-actions .card-manage:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:699px){.photo-card .card-meta{padding:9px 13px 2px}.photo-card .card-actions{gap:8px;padding:0 13px 7px}.photo-card .card-actions button{min-height:34px}.photo-card .card-actions .card-manage{margin-left:2px}}
