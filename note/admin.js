@@ -259,9 +259,14 @@
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (!validReason(reason.input)) return;
-      const args = { p_notice: notice.input.value.trim(), p_posting_enabled: checks.posting_enabled.checked, p_replies_enabled: checks.replies_enabled.checked, p_reports_enabled: checks.reports_enabled.checked, p_reason: reason.input.value.trim(), p_blocked_words: settings?.blocked_words || [] };
-      for (const key of ['contact_text', 'guidelines', 'terms', 'privacy']) args[`p_${key}`] = settings?.[key] || '';
-      perform('admin_update_settings', args, '공지와 기능을 저장했어요.', 'settings');
+      const args = { p_reason: reason.input.value.trim() };
+      const newNotice = notice.input.value.trim();
+      if (newNotice !== (settings?.notice || '')) args.p_notice = newNotice;
+      for (const key of ['posting_enabled', 'replies_enabled', 'reports_enabled']) {
+        if (checks[key].checked !== (settings?.[key] === true)) args[`p_${key}`] = checks[key].checked;
+      }
+      if (Object.keys(args).length === 1) { setStatus('바뀐 내용이 없어요.'); return; }
+      perform('admin_patch_service_settings', args, '공지와 기능을 저장했어요.', 'settings');
     }); main.append(form);
   }
   function searchForm(value, placeholder, submit, states = null, help = '') {
