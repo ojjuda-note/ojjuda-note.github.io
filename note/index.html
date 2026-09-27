@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=0.44.0-beta">
-  <link rel="stylesheet" href="features.css?v=0.45.2-beta">
-  <link rel="stylesheet" href="effects.css?v=0.45.0-beta">
+  <link rel="stylesheet" href="style.css?v=0.45.5-beta">
+  <link rel="stylesheet" href="features.css?v=0.45.5-beta">
+  <link rel="stylesheet" href="effects.css?v=0.45.5-beta">
   <link rel="stylesheet" href="support.css">
-  <link rel="stylesheet" href="notifications.css">
+  <link rel="stylesheet" href="notifications.css?v=0.45.5-beta">
   <link rel="stylesheet" href="map.css?v=0.45.1-beta">
 </head>
 <body>
@@ -41,8 +41,6 @@
       <nav class="side-nav" aria-label="카드 탐색">
         <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>카드</button>
         <button class="nav-button" type="button" disabled title="데이터 연결 후 제공"><svg><use href="#bookmark"/></svg>메모함</button>
-        <div id="side-collection-slot"></div>
-        <div class="side-sort-group"><div class="side-section-label">카드 순서</div><div class="feed-sort-tabs side-sort-list" role="group" aria-label="카드 순서"></div></div>
         <button class="nav-button" type="button" aria-expanded="false" id="search-toggle" disabled><svg><use href="#search"/></svg>카드 검색</button>
         <div class="search-panel side-search-panel" id="search-panel" hidden><label for="tag-search">태그 검색</label><input id="tag-search" type="search" placeholder="태그 입력" disabled></div>
       </nav>
@@ -69,6 +67,7 @@
           <h1 id="feed-title" class="note-visually-hidden">오쭈다노트 카드</h1>
           <div class="feed-layout">
             <div class="feed-column">
+              <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
               <div class="feed-list" id="feed-list" aria-live="polite"><p class="reply-empty">카드를 불러오는 중이에요.</p></div>
             </div>
           </div>
@@ -94,9 +93,13 @@
       <div class="composer-body">
         <p class="compose-context" id="compose-context">마음을 카드에 적어 주세요.</p>
         <div class="compose-photo image-lake">
-          <span class="compose-shade"></span><span class="note-color-wash" aria-hidden="true"></span>
-          <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="5"></textarea>
-          <div class="compose-tag-display" id="compose-tag-display"></div>
+          <span class="compose-shade"></span>
+          <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="2"></textarea>
+          <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
+        </div>
+        <div class="compose-tag-entry">
+          <label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label>
+          <input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120" autocomplete="off">
         </div>
         <div class="compose-status"><span id="compose-count">0 / 200자</span></div>
         <details class="compose-more" id="compose-more">
@@ -110,22 +113,28 @@
             </div>
             <div class="note-color-fields" aria-label="색 선택">
               <fieldset class="note-color-field" data-color-field="textColor"><legend>글씨 색</legend><div class="note-color-choices"></div></fieldset>
-              <fieldset class="note-color-field" data-color-field="backgroundColor"><legend>사진 위 배경 색</legend><div class="note-color-choices"></div></fieldset>
               <fieldset class="note-color-field" data-color-field="boxColor"><legend>네모난 글상자 색</legend><div class="note-color-choices"></div></fieldset>
             </div>
             <p class="note-setting-help">꾸미기는 1개월간 적용돼요. 기본 사진은 등록할 때 무작위로 정해집니다.</p>
             <fieldset class="note-photo-pick" id="note-photo-pick">
-              <legend>사진</legend><p>기본 사진은 무료예요. 원하는 사진을 직접 고르면 10쭈로 1개월간 적용돼요.</p>
-              <label><input type="radio" name="photo-choice" value="plain" checked> 기본 사진 무작위</label>
-              <button class="button" id="photo-gallery-toggle" type="button" aria-expanded="false">사진 직접 고르기</button>
-              <p id="photo-selection" role="status">기본 사진 무작위</p>
-              <div class="note-photo-gallery" id="photo-gallery" hidden><div class="note-photo-grid" id="photo-grid"></div><div class="note-photo-pages"><button class="button" id="photo-prev" type="button">이전</button><span id="photo-page-status"></span><button class="button" id="photo-next" type="button">다음</button></div></div>
+              <legend>사진 배경</legend>
+              <p class="note-photo-intro">102장의 사진 중 하나를 고르거나 무료로 무작위 배정할 수 있어요.</p>
+              <div class="note-photo-modes">
+                <label class="note-photo-random"><input type="radio" name="photo-choice" value="plain" checked><span><strong>기본 사진 무작위</strong><small>무료 · 등록 시 정해져요</small></span></label>
+                <button class="button note-photo-open" id="photo-gallery-toggle" type="button" aria-controls="photo-gallery" aria-expanded="false">사진 102장 둘러보기 <span aria-hidden="true">↗</span></button>
+              </div>
+              <p class="note-photo-selection" id="photo-selection" role="status" aria-live="polite">기본 사진 무작위 · 무료</p>
+              <div class="note-photo-gallery" id="photo-gallery" hidden>
+                <div class="note-photo-featured"><img id="photo-featured-image" src="assets/10.jpg" alt="선택할 사진 미리보기"><div class="note-photo-featured-caption"><span><strong id="photo-featured-name">기본 사진 미리보기</strong><small id="photo-featured-detail">무작위 · 무료</small></span><span class="note-photo-featured-badge" id="photo-featured-badge">미리보기</span></div></div>
+                <div class="note-photo-gallery-heading"><span>마음에 드는 사진을 누르세요</span><span>직접 선택 · 10쭈 / 1개월</span></div>
+                <div class="note-photo-grid" id="photo-grid" role="group" aria-label="사진 배경 목록"></div>
+                <div class="note-photo-pages"><button class="button" id="photo-prev" type="button" aria-label="이전 사진 페이지">‹ 이전</button><label for="photo-page-jump">페이지 <select id="photo-page-jump" aria-label="사진 페이지 선택"></select></label><span id="photo-page-status" aria-live="polite"></span><button class="button" id="photo-next" type="button" aria-label="다음 사진 페이지">다음 ›</button></div>
+              </div>
             </fieldset>
-            <label class="field-label" for="compose-tags">태그 <small>최대 5개</small></label><input id="compose-tags" type="text" placeholder="쉼표로 나눠 적어 주세요" maxlength="120">
             <div class="identity-row"><span>표시 이름</span><label><input type="radio" name="identity" value="anonymous" checked>익명</label><label class="disabled-choice" title="다음 단계에서 제공"><input type="radio" name="identity" value="nickname" disabled>닉네임</label></div>
           </div>
         </details>
-        <section class="note-location-consent" id="card-location-consent"><p>정확한 위치는 비공개로 저장해요.</p><button class="button" id="card-location-button" type="button">위치 확인</button><span id="card-location-status" role="status">위치를 확인해야 등록할 수 있어요.</span></section>
+        <section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite">카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section>
         <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><button class="button" id="event-select-center" type="button">현재 지도 중심을 위치로 선택</button><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section>
       </div>
       <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
@@ -134,10 +143,10 @@
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="map.js?v=0.45.1-beta" defer></script>
-  <script src="support.js?v=0.44.0-beta" defer></script>
+  <script src="support.js?v=0.45.5-beta" defer></script>
   <script src="drafts.js?v=0.45.0-beta" defer></script>
-  <script src="notifications.js" defer></script>
-  <script src="preview.js?v=0.45.1-beta" defer></script>
+  <script src="notifications.js?v=0.45.5-beta" defer></script>
+  <script src="preview.js?v=0.45.5-beta" defer></script>
   <script src="navigation.js?v=0.45.1-beta" defer></script>
 </body>
 </html>

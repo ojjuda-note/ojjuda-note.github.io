@@ -23,6 +23,7 @@
   ];
   const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 102 }, (_, index) =>
     [String(index + 10), `사진 ${String(index + 1).padStart(3, '0')}`])];
+  const PHOTO_PAGE_SIZE = 12;
   const TABS = [
     ['cards', '카드 · 답글'], ['settings', '공지 · 기능'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
@@ -51,6 +52,7 @@
   let previousFocus = null, previousOverflow = '', inertState = [], disabledState = [], embedded = false;
   let externalNav = false, authorized = false, onTabChange = null;
   let root, panel, nav, main, status, closeButton;
+  let editPreviewObserver = null;
 
   function el(tag, className, value) {
     const item = document.createElement(tag);
@@ -79,10 +81,21 @@
   function empty(target, message) { target.append(el('p', 'na-empty', message)); }
   function badge(text, variant = '') { return el('span', `na-badge${variant ? ` na-badge--${variant}` : ''}`, text); }
   function sectionTitle(title, help) {
+    editPreviewObserver?.disconnect(); editPreviewObserver = null;
     const heading = el('h3', 'h3 na-section-title', title); heading.tabIndex = -1;
     main.replaceChildren(heading);
     if (help) main.append(el('p', 'na-help', help));
     return heading;
+  }
+  function focusSection(heading) {
+    heading.focus({ preventScroll: true });
+    if (embedded) {
+      requestAnimationFrame(() => {
+        if (heading.isConnected && !root.hidden) heading.scrollIntoView({ block: 'start' });
+      });
+    } else {
+      main.parentElement.scrollTop = 0;
+    }
   }
   function field(label, type = 'text', value = '', help = '') {
     const wrap = el('label', 'na-field');
@@ -197,8 +210,8 @@
     const actions = el('div', 'na-actions');
     actions.append(button('돌아가기', () => load(actionReturn || tabId)));
     build(form, actions);
-    form.append(actions); main.append(form); main.scrollTop = 0;
-    heading.focus({ preventScroll: true });
+    form.append(actions); main.append(form);
+    focusSection(heading);
   }
   function confirmVisibility(card) {
     const hide = !card.hidden;
@@ -231,21 +244,80 @@
   }
   function editCard(card) {
     actionScreen('카드 · 답글 수정', '관리자의 수정 이력과 사유는 작업 기록에 남습니다.', (form, actions) => {
-      const body = field('글 내용', 'textarea', card.body, '최대 200자, 8줄'); body.input.required = true; body.input.maxLength = 200; body.input.rows = 6;
+      const body = field('글 내용', 'textarea', card.body, '최대 200자 · 줄바꿈 가능'); body.input.required = true; body.input.maxLength = 200; body.input.rows = 6;
       const tags = field('태그', 'text', (card.tags || []).join(', '), '쉼표로 구분해 최대 5개, 태그마다 20자 이내'); tags.input.maxLength = 120;
-      const reason = reasonField(); form.append(body.wrap, tags.wrap, reason.wrap);
+      const reason = reasonField();
+      const preview = el('section', 'na-edit-preview');
+      const cardKind = card.kind || (card.center_lat != null ? 'event' : 'memo');
+      if (cardKind === 'comment') preview.classList.add('na-edit-preview--reply');
+      if (cardKind === 'event') preview.classList.add('na-edit-preview--event');
+      const photo = el('div', 'na-edit-photo');
+      if (/^([1-9][0-9]|10[0-9]|11[01])$/.test(String(card.background_key))) photo.style.backgroundImage = `url("/note/assets/${card.background_key}.jpg")`;
+      const quote = el('span', 'na-edit-quote');
+      const photoTags = el('div', 'na-edit-tags');
+      photo.append(quote, photoTags);
+      const previewHelp = el('p', 'na-edit-preview-help', '사진과 꾸미기 정보를 불러오는 중이에요.');
+      const overflowWarning = el('p', 'na-edit-overflow', '글이 고정된 사진 영역을 넘어요. 저장할 수는 있지만 공개 화면에서 일부가 잘릴 수 있어요.');
+      overflowWarning.setAttribute('role', 'status'); overflowWarning.hidden = true;
+      preview.append(el('h4', '', '카드 미리보기'), photo, previewHelp, overflowWarning);
+      form.append(body.wrap, tags.wrap, preview, reason.wrap);
+      const selectedTags = () => [...new Set(tags.input.value.split(',').map(value => value.trim().replace(/^#+/, '')).filter(Boolean))];
+      let activeStyle = {}, visualReady = false, pendingMeasure = 0;
+      function measurePreview() {
+        if (!preview.isConnected || !visualReady) return;
+        if (!body.input.value.trim()) { overflowWarning.hidden = true; preview.classList.remove('na-edit-preview--overflow'); return; }
+        const textOverflow = quote.scrollHeight > quote.clientHeight + 1 || quote.scrollWidth > quote.clientWidth + 1;
+        const tagOverlap = photoTags.childElementCount > 0
+          && quote.getBoundingClientRect().bottom > photoTags.getBoundingClientRect().top - 6;
+        overflowWarning.hidden = !(textOverflow || tagOverlap);
+        preview.classList.toggle('na-edit-preview--overflow', textOverflow || tagOverlap);
+      }
+      function updatePreview() {
+        const value = body.input.value.replace(/\r\n?/g, '\n').trim();
+        quote.textContent = value || '글 내용 미리보기';
+        quote.classList.toggle('na-edit-quote--empty', !value);
+        quote.style.fontSize = '';
+        if (!activeStyle.size || activeStyle.size === 'normal') {
+          if (value.length > 120) quote.style.fontSize = cardKind === 'comment' ? '15px' : '18px';
+          else if (value.length > 70) quote.style.fontSize = cardKind === 'comment' ? '17px' : '22px';
+        }
+        photoTags.replaceChildren(...selectedTags().slice(0, 5).map(tag => el('span', '', `#${tag}`)));
+        cancelAnimationFrame(pendingMeasure);
+        pendingMeasure = requestAnimationFrame(measurePreview);
+      }
+      const run = pageRun;
+      rpc('admin_card_visual', { p_card_id: card.id }).then(visual => {
+        if (!validRun(run) || !preview.isConnected) return;
+        if (!visual) { previewHelp.textContent = '꾸미기 정보를 찾지 못해 미리보기 확인이 어려워요.'; return; }
+        const styleActive = visual.style_until && new Date(visual.style_until).getTime() > Date.now();
+        const photoActive = visual.photo_until && new Date(visual.photo_until).getTime() > Date.now();
+        activeStyle = styleActive && visual.style && typeof visual.style === 'object' ? visual.style : {};
+        const imageKey = photoActive && visual.photo_key ? visual.photo_key : visual.background_key || card.background_key;
+        photo.style.backgroundImage = /^([1-9][0-9]|10[0-9]|11[01])$/.test(String(imageKey)) ? `url("/note/assets/${imageKey}.jpg")` : '';
+        for (const code of ['round', 'serif', 'handwriting', 'mono']) preview.classList.toggle(`na-edit-font-${code}`, activeStyle.font === code);
+        for (const code of ['large', 'small']) preview.classList.toggle(`na-edit-size-${code}`, activeStyle.size === code);
+        visualReady = true;
+        previewHelp.textContent = '고정된 사진 크기에서 글과 태그가 보이는 모습입니다.';
+        updatePreview();
+        document.fonts?.ready.then(() => { if (validRun(run) && preview.isConnected) measurePreview(); });
+      }).catch(error => { if (validRun(run) && preview.isConnected) previewHelp.textContent = `${friendlyError(error)} 미리보기 넘침은 확인하지 못했어요.`; });
+      if (typeof ResizeObserver === 'function') {
+        editPreviewObserver = new ResizeObserver(measurePreview);
+        editPreviewObserver.observe(photo);
+      }
+      body.input.addEventListener('input', () => { body.input.setCustomValidity(''); updatePreview(); });
+      tags.input.addEventListener('input', () => { tags.input.setCustomValidity(''); updatePreview(); });
+      updatePreview();
       const save = button('수정 내용 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
       form.addEventListener('submit', event => {
         event.preventDefault();
         const value = body.input.value.replace(/\r\n?/g, '\n').trim();
-        const tagValues = [...new Set(tags.input.value.split(',').map(value => value.trim().replace(/^#+/, '')).filter(Boolean))];
-        body.input.setCustomValidity(!value ? '글 내용을 적어 주세요.' : [...value].length > 200 || value.split('\n').length > 8 ? '글은 200자, 8줄 이내로 적어 주세요.' : '');
+        const tagValues = selectedTags();
+        body.input.setCustomValidity(!value ? '글 내용을 적어 주세요.' : [...value].length > 200 ? '글은 200자 이내로 적어 주세요.' : '');
         tags.input.setCustomValidity(tagValues.length > 5 || tagValues.some(value => [...value].length > 20) ? '태그는 최대 5개이며, 각 20자 이내로 적어 주세요.' : '');
         if (!body.input.reportValidity() || !tags.input.reportValidity() || !validReason(reason.input)) return;
         perform('admin_edit_card', { p_card_id: card.id, p_body: value, p_tags: tagValues, p_reason: reason.input.value.trim() }, '카드를 수정했어요.', 'cards');
       });
-      body.input.addEventListener('input', () => body.input.setCustomValidity(''));
-      tags.input.addEventListener('input', () => tags.input.setCustomValidity(''));
     });
   }
   function editCardVisual(card) {
@@ -262,51 +334,91 @@
         const theme = choiceField('색상', [['plain', '기본'], ['rose', '장미'], ['night', '밤']], style.theme);
         const effect = choiceField('꾸미기 효과', EFFECT_CHOICES, style.effect);
         const textColor = choiceField('글씨 색', COLOR_CHOICES, style.textColor);
-        const backgroundColor = choiceField('사진 위 배경 색', COLOR_CHOICES, style.backgroundColor);
         const boxColor = choiceField('네모난 글상자 색', COLOR_CHOICES, style.boxColor);
         const styleUntil = field('꾸미기 종료', 'datetime-local', localDateTime(visual.style_until), '비워 두면 꾸미기는 공개 화면에 적용되지 않습니다.');
         const originalPhoto = PHOTO_CHOICES.find(([key]) => key === visual.background_key)?.[1] || '기본';
-        const photo = choiceField('지정 사진', PHOTO_CHOICES, visual.photo_key, `처음 무작위 배정된 무료 사진: ${originalPhoto}`);
+        let photoKey = PHOTO_CHOICES.some(([key]) => key === visual.photo_key) ? visual.photo_key : '';
+        let photoPage = photoKey ? Math.floor((Number(photoKey) - 10) / PHOTO_PAGE_SIZE) : 0;
+        const photoPanel = el('section', 'na-photo-selector');
+        photoPanel.append(el('h4', '', '지정 사진'), el('p', 'na-photo-help', `처음 무작위 배정된 무료 사진: ${originalPhoto} · 아래 사진을 고르면 지정 기간 동안 적용됩니다.`));
+        const originalChoice = button('처음 사진 사용', () => selectPhoto(''));
+        originalChoice.classList.add('na-photo-original');
+        photoPanel.append(originalChoice);
         const photoPreview = el('div', 'na-photo-preview');
         const photoImage = el('img'); photoImage.alt = '';
         const photoCaption = el('span'); photoPreview.append(photoImage, photoCaption);
         const updatePhotoPreview = () => {
-          const key = photo.input.value || visual.background_key;
+          const key = photoKey || visual.background_key;
           if (!PHOTO_CHOICES.some(([value]) => value === key)) {
             photoPreview.hidden = true; return;
           }
           photoPreview.hidden = false;
           photoImage.src = `/note/assets/${key}.jpg`;
-          photoCaption.textContent = photo.input.value
+          photoCaption.textContent = photoKey
             ? `지정 사진 · ${PHOTO_CHOICES.find(([value]) => value === key)[1]}`
             : `처음 무작위 배정된 사진 · ${originalPhoto}`;
         };
-        photo.input.addEventListener('change', updatePhotoPreview);
-        updatePhotoPreview();
+        photoPanel.append(photoPreview);
+        const photoGrid = el('div', 'na-photo-grid'); photoGrid.setAttribute('role', 'group'); photoGrid.setAttribute('aria-label', '지정할 사진 목록');
+        const photoPages = el('div', 'na-photo-pages');
+        const prev = button('‹ 이전', () => { photoPage--; renderPhotoPage(); });
+        const next = button('다음 ›', () => { photoPage++; renderPhotoPage(); });
+        const pageLabel = el('label', 'na-photo-page-label'); pageLabel.append(el('span', '', '페이지'));
+        const pageSelect = el('select', 'inp na-input');
+        const pageCount = Math.ceil((PHOTO_CHOICES.length - 1) / PHOTO_PAGE_SIZE);
+        for (let index = 0; index < pageCount; index++) {
+          const option = el('option', '', `${index + 1} / ${pageCount}`); option.value = String(index); pageSelect.append(option);
+        }
+        pageSelect.addEventListener('change', () => { photoPage = Number(pageSelect.value); renderPhotoPage(); });
+        pageLabel.append(pageSelect);
+        photoPages.append(prev, pageLabel, next);
+        photoPanel.append(photoGrid, photoPages);
         const photoUntil = field('사진 지정 종료', 'datetime-local', localDateTime(visual.photo_until), '사진을 지정했다면 종료 시각을 지정해 주세요.');
+        function selectPhoto(key) {
+          photoKey = key;
+          originalChoice.setAttribute('aria-pressed', String(!photoKey));
+          for (const tile of photoGrid.children) tile.setAttribute('aria-pressed', String(tile.dataset.photoKey === photoKey));
+          updatePhotoPreview();
+          photoUntil.input.setCustomValidity('');
+        }
+        function renderPhotoPage() {
+          photoGrid.replaceChildren();
+          const first = photoPage * PHOTO_PAGE_SIZE;
+          for (let index = first; index < Math.min(first + PHOTO_PAGE_SIZE, PHOTO_CHOICES.length - 1); index++) {
+            const [key, name] = PHOTO_CHOICES[index + 1];
+            const tile = el('button', 'na-photo-tile'); tile.type = 'button'; tile.dataset.photoKey = key;
+            tile.setAttribute('aria-pressed', String(key === photoKey));
+            const image = el('img'); image.src = `/note/assets/${key}.jpg`; image.alt = ''; image.loading = 'lazy';
+            tile.append(image, el('small', '', name));
+            tile.addEventListener('click', () => selectPhoto(key)); photoGrid.append(tile);
+          }
+          pageSelect.value = String(photoPage);
+          prev.disabled = photoPage === 0; next.disabled = photoPage === pageCount - 1;
+        }
+        selectPhoto(photoKey); renderPhotoPage();
         const reason = reasonField();
         content.append(font.wrap, size.wrap, theme.wrap, effect.wrap,
-          textColor.wrap, backgroundColor.wrap, boxColor.wrap, styleUntil.wrap,
-          photo.wrap, photoPreview, photoUntil.wrap, reason.wrap);
+          textColor.wrap, boxColor.wrap, styleUntil.wrap,
+          photoPanel, photoUntil.wrap, reason.wrap);
         const save = button('꾸미기·사진 지정 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
         form.addEventListener('submit', event => {
           event.preventDefault(); if (!validReason(reason.input)) return;
-          photoUntil.input.setCustomValidity(photo.input.value && !photoUntil.input.value ? '사진 종료 시각을 지정해 주세요.' : !photo.input.value && photoUntil.input.value ? '사진을 선택하거나 종료 시각을 비워 주세요.' : '');
+          photoUntil.input.setCustomValidity(photoKey && !photoUntil.input.value ? '사진 종료 시각을 지정해 주세요.' : !photoKey && photoUntil.input.value ? '사진을 선택하거나 종료 시각을 비워 주세요.' : '');
           if (!photoUntil.input.reportValidity()) return;
           const dateValue = (input, original) => input.value ? (input.value === localDateTime(original) ? original : new Date(input.value).toISOString()) : null;
+          const nextStyle = { ...style, font: font.input.value, size: size.input.value,
+            theme: theme.input.value, effect: effect.input.value,
+            textColor: textColor.input.value, boxColor: boxColor.input.value };
+          delete nextStyle.backgroundColor;
           perform('admin_edit_card_visual', {
             p_card_id: card.id,
-            p_style: { ...style, font: font.input.value, size: size.input.value,
-              theme: theme.input.value, effect: effect.input.value,
-              textColor: textColor.input.value, backgroundColor: backgroundColor.input.value,
-              boxColor: boxColor.input.value },
+            p_style: nextStyle,
             p_style_until: dateValue(styleUntil.input, visual.style_until),
-            p_photo_key: photo.input.value || null,
+            p_photo_key: photoKey || null,
             p_photo_until: dateValue(photoUntil.input, visual.photo_until),
             p_reason: reason.input.value.trim()
           }, '카드 꾸미기와 사진 지정 기간을 정정했어요.', 'cards');
         });
-        photo.input.addEventListener('change', () => photoUntil.input.setCustomValidity(''));
         photoUntil.input.addEventListener('input', () => photoUntil.input.setCustomValidity(''));
       }).catch(error => { if (validRun(run)) { content.replaceChildren(); empty(content, friendlyError(error)); } });
     });
@@ -440,6 +552,13 @@
     }
     return bar;
   }
+  function moreCardActions(...controls) {
+    const more = el('details', 'na-more-actions');
+    more.append(el('summary', '', '추가 작업'));
+    const row = el('div', 'na-actions na-more-actions-list');
+    row.append(...controls); more.append(row);
+    return { more, row };
+  }
   async function renderCards(run) {
     const filter = filters.cards;
     main.append(cardViewBar(filter.view));
@@ -459,9 +578,11 @@
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
       if (card.moderation_reason) item.append(el('p', 'na-reason', `공개 상태 처리 사유: ${card.moderation_reason}`));
       item.append(details([['카드 번호', card.id], ['작성자 번호', card.author_id], ['원글 번호', card.parent_id], ['마지막 수정', formatDate(card.edited_at)]]));
-      const actions = el('div', 'na-actions'); actions.append(button('본문·태그 수정', () => editCard(card)), button('꾸미기·사진 지정', () => editCardVisual(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'), button('삭제', () => confirmDeleteCard(card), 'danger'));
-      if (card.author_id) actions.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
-      item.append(actions); list.append(item);
+      const actions = el('div', 'na-actions');
+      actions.append(button('본문·태그 수정', () => editCard(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'));
+      const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(card)), button('삭제', () => confirmDeleteCard(card), 'danger'));
+      if (card.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
+      item.append(actions, more.more); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
   }
@@ -484,9 +605,10 @@
       const changeTerms = button('위치·시간 정정', () => editEvent(event));
       changeTerms.disabled = new Date(event.ends_at).getTime() <= Date.now();
       if (changeTerms.disabled) changeTerms.title = '종료된 이벤트의 유료 조건은 변경할 수 없습니다.';
-      actions.append(button('본문·태그 수정', () => editCard(event)), button('꾸미기·사진 지정', () => editCardVisual(event)), changeTerms, button(event.hidden ? '복구' : '숨김', () => confirmVisibility(event), event.hidden ? '' : 'danger'), button('삭제', () => confirmDeleteCard({ ...event, kind: 'event' }), 'danger'));
-      if (event.author_id) actions.append(button('작성자 관리', () => { filters.users = { query: event.author_id, offset: 0 }; load('users'); }));
-      item.append(actions); list.append(item);
+      actions.append(button('본문·태그 수정', () => editCard(event)), button(event.hidden ? '복구' : '숨김', () => confirmVisibility(event), event.hidden ? '' : 'danger'));
+      const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(event)), changeTerms, button('삭제', () => confirmDeleteCard({ ...event, kind: 'event' }), 'danger'));
+      if (event.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: event.author_id, offset: 0 }; load('users'); }));
+      item.append(actions, more.more); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
   }
@@ -688,7 +810,8 @@
     if (detail.visual_after) {
       const visual = value => {
         const style = value?.style || {};
-        return `글꼴 ${style.font || '기본'}, 크기 ${style.size || '보통'}, 색상 ${style.theme || '기본'}, 효과 ${style.effect || '없음'} · 꾸미기 종료 ${formatDate(value?.style_until)} · 지정 사진 ${value?.photo_key || '없음'} · 사진 지정 종료 ${formatDate(value?.photo_until)}`;
+        const color = code => COLOR_CHOICES.find(([key]) => key === code)?.[1] || code || '기본';
+        return `글꼴 ${style.font || '기본'}, 크기 ${style.size || '보통'}, 색상 ${style.theme || '기본'}, 글씨 색 ${color(style.textColor)}, 글상자 색 ${color(style.boxColor)}, 효과 ${style.effect || '없음'} · 꾸미기 종료 ${formatDate(value?.style_until)} · 지정 사진 ${value?.photo_key || '없음'} · 사진 지정 종료 ${formatDate(value?.photo_until)}`;
       };
       values.push(['정정 전', visual(detail.visual_before)], ['정정 후', visual(detail.visual_after)]);
     }
@@ -706,7 +829,7 @@
     }
     if (typeof onTabChange === 'function') { try { onTabChange(tabId); } catch { /* Keep Note navigation usable if the host refresh fails. */ } }
     const heading = sectionTitle(TABS.find(([id]) => id === tabId)[1], HELP[tabId]);
-    main.scrollTop = 0; heading.focus({ preventScroll: true });
+    focusSection(heading);
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
       await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
@@ -749,6 +872,7 @@
   function close() {
     instance++; pageRun++; busy = false; actionReturn = null;
     subscription?.unsubscribe(); subscription = null;
+    editPreviewObserver?.disconnect(); editPreviewObserver = null;
     if (!root || root.hidden) return;
     lockControls(false); root.hidden = true; main.replaceChildren(); setStatus('');
     for (const [element, prior] of inertState) if (element.isConnected) element.inert = prior;

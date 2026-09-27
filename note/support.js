@@ -42,7 +42,8 @@
     const epoch=++run,user=getUserId(),requested=targetInquiry;busy=false;message.textContent='';content.replaceChildren(el('p','불러오는 중이에요.'));
     keepFocus(epoch,user);
     try {
-      const settings=await rpc('get_note_state');
+      // Account inquiries remain usable when the public guidance request fails.
+      const settings=await rpc('get_note_state').catch(()=>null);
       if(!valid(epoch,user))return;
       content.replaceChildren();
       for(const [key,title] of [['contact_text','문의처'],['guidelines','이용 안내'],['terms','이용약관'],['privacy','개인정보 처리방침']]) {

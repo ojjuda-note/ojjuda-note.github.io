@@ -29,10 +29,10 @@ let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 let initialCardId = new URL(location.href).searchParams.get('card');
 const reactionPending = new Set();
-let draftController = null, draftTools = null, draftStatus = null, draftConfirm = null, draftLoading = false;
+let draftController = null, draftStatus = null, draftLoading = false;
 let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
+let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
-let retentionButton = null, retentionRun = 0;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
 const PHOTO_FIRST = 10, PHOTO_LAST = 111, PHOTO_PAGE_SIZE = 12;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
@@ -40,13 +40,13 @@ const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
 const COLOR_PALETTE = {
-  red: { label: '빨강', solid: '#dc3049', wash: '#dc304963', box: '#b31d37db' },
-  yellow: { label: '노랑', solid: '#e5a800', wash: '#ffd63f70', box: '#ffdf59e8' },
-  green: { label: '초록', solid: '#238d56', wash: '#43ae6c69', box: '#21854ee3' },
-  blue: { label: '파랑', solid: '#3c78d9', wash: '#3e84df69', box: '#2659a8dd' },
-  purple: { label: '보라', solid: '#8855cb', wash: '#8b5bd66e', box: '#6d40addd' },
-  black: { label: '검정', solid: '#151622', wash: '#10132099', box: '#121425e8' },
-  white: { label: '흰색', solid: '#ffffff', wash: '#ffffff75', box: '#fffffff0' }
+  red: { label: '빨강', solid: '#dc3049', box: '#b31d37db' },
+  yellow: { label: '노랑', solid: '#e5a800', box: '#ffdf59e8' },
+  green: { label: '초록', solid: '#238d56', box: '#21854ee3' },
+  blue: { label: '파랑', solid: '#3c78d9', box: '#2659a8dd' },
+  purple: { label: '보라', solid: '#8855cb', box: '#6d40addd' },
+  black: { label: '검정', solid: '#151622', box: '#121425e8' },
+  white: { label: '흰색', solid: '#ffffff', box: '#fffffff0' }
 };
 let photoPage = 0;
 let selectedPhotoKey = null;
@@ -78,12 +78,10 @@ function applyVisualStyle(element, style = {}) {
   if (['large', 'small'].includes(style.size)) element.classList.add(`note-size-${style.size}`);
   if (EFFECT_CODES.includes(style.effect) && style.effect !== 'none') element.classList.add(`note-effect-${style.effect}`);
   const textColor = COLOR_PALETTE[style.textColor];
-  const backgroundColor = COLOR_PALETTE[style.backgroundColor];
   const boxColor = COLOR_PALETTE[style.boxColor];
   const textHex = textColor?.solid || '#ffffff';
   const boxHex = boxColor?.box || '#17203ab8';
   element.style.setProperty('--note-text-color', textHex);
-  element.style.setProperty('--note-bg-color', backgroundColor?.wash || 'transparent');
   element.style.setProperty('--note-box-color', boxHex);
   element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
   element.style.setProperty('--note-outline', colorLuminance(boxHex) > .25 ? '#101020' : '#ffffff');
@@ -150,6 +148,21 @@ async function refreshReplyArchiveNotice(parent, run) {
   }
 }
 
+const expandedBodyEntries = new Set();
+function refreshExpandedBodies() {
+  for (const entry of expandedBodyEntries) {
+    if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
+    entry.full.hidden = !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
+  }
+}
+function photoQuoteClipped(photo, quote, tagRow) {
+  const photoBounds = photo.getBoundingClientRect(), quoteBounds = quote.getBoundingClientRect();
+  const tagBounds = tagRow.getBoundingClientRect();
+  return quote.scrollHeight > quote.clientHeight + 1 || quote.scrollWidth > quote.clientWidth + 1
+    || quoteBounds.top < photoBounds.top + 8 || quoteBounds.bottom > photoBounds.bottom - 8
+    || (tagRow.childElementCount > 0
+      && (quoteBounds.bottom + 6 > tagBounds.top || tagRow.scrollWidth > tagRow.clientWidth + 1));
+}
 function cardElement(card, compact = false, expanded = false) {
   const item = node('article', compact ? 'reply-card' : 'photo-card');
   if (card.kind === 'event') item.classList.add('note-event-card');
@@ -167,20 +180,22 @@ function cardElement(card, compact = false, expanded = false) {
   const quote = node('span', 'card-quote');
   const hiddenEvent = card.kind === 'event' && card.body == null;
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
-  body.split('\n').forEach((line, index) => {
-    if (index) quote.append(document.createElement('br'));
-    quote.append(document.createTextNode(line));
-  });
-  if (body.length > 120 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '15px' : '18px';
-  else if (body.length > 70 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '17px' : '22px';
-  quote.style.overflowWrap = 'anywhere';
+  fillCardQuote(quote, body, compact, style);
   const tagRow = node('span', 'card-tags');
   for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
     tagRow.append(node('span', '', `#${tag}`));
   }
-  photo.append(node('span', 'photo-shade'), node('span', 'note-color-wash'), quote, tagRow);
+  photo.append(node('span', 'photo-shade'), quote, tagRow);
   open.append(photo);
   item.append(open);
+  if (expanded && !hiddenEvent) {
+    const full = node('details', 'note-full-body');
+    full.hidden = true;
+    full.append(node('summary', '', '전체 글 보기'), node('p', '', body));
+    item.append(full);
+    expandedBodyEntries.add({ item, photo, quote, tagRow, full });
+    requestAnimationFrame(refreshExpandedBodies);
+  }
 
   const meta = node('div', 'card-meta');
   const person = node('span');
@@ -188,10 +203,11 @@ function cardElement(card, compact = false, expanded = false) {
   person.append(node('small', '', dateLabel(card.created_at)));
   meta.append(node('span', visiblePhoto === '11' ? 'avatar avatar-green' : 'avatar', 'ㅇ'), person);
   if (!compact) {
-    if (typeof card.distance_band === 'string') {
-      const label = card.distance_band === '근처' ? '근처 · 약 1km 이내' : card.distance_band;
-      meta.append(node('span', 'meta-tail', label));
-    } else meta.append(node('span', 'meta-tail', card.kind === 'event' ? '이벤트' : card.kind === 'comment' ? '답글 카드' : '익명카드'));
+    if (typeof card.distance_band === 'string' && card.distance_band.trim()) {
+      meta.append(node('span', 'meta-tail', card.distance_band));
+    } else if (card.kind === 'event' || card.kind === 'comment') {
+      meta.append(node('span', 'meta-tail', card.kind === 'event' ? '이벤트' : '답글 카드'));
+    }
   }
   item.append(meta);
 
@@ -234,6 +250,39 @@ function cardElement(card, compact = false, expanded = false) {
   }
   return item;
 }
+function fillCardQuote(quote, body, compact, style) {
+  body.replace(/\r\n?/g, '\n').split('\n').forEach((line, index) => {
+    if (index) quote.append(document.createElement('br'));
+    quote.append(document.createTextNode(line));
+  });
+  if (body.length > 120 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '15px' : '18px';
+  else if (body.length > 70 && (!style.size || style.size === 'normal')) quote.style.fontSize = compact ? '17px' : '22px';
+  quote.style.overflowWrap = 'anywhere';
+}
+function previewCardWidth(compact) {
+  const area = compact ? $('#reply-list') : $('.feed-layout');
+  let width = area?.getBoundingClientRect().width || 0;
+  if (width < 180) {
+    const main = $('.main'), css = getComputedStyle(main);
+    const available = main.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight);
+    width = compact ? available - 42 : available;
+  }
+  return Math.max(180, Math.min(compact ? 310 : 560, width));
+}
+function cardPhotoOverflows(body, values = []) {
+  if (!body) return false;
+  const compact = kind === 'comment', style = currentStyle();
+  const probe = node('div', compact ? 'reply-card' : kind === 'event' ? 'photo-card note-event-card' : 'photo-card');
+  probe.style.cssText = `position:fixed;left:-10000px;top:0;width:${previewCardWidth(compact)}px;visibility:hidden;pointer-events:none`;
+  const photo = node('span', 'photo'), quote = node('span', 'card-quote'), tagRow = node('span', 'card-tags');
+  applyVisualStyle(photo, style);
+  fillCardQuote(quote, body, compact, style);
+  for (const value of values) tagRow.append(node('span', '', `#${value}`));
+  photo.append(quote, tagRow); probe.append(photo); document.body.append(probe);
+  try {
+    return photoQuoteClipped(photo, quote, tagRow);
+  } finally { probe.remove(); }
+}
 
 function message(value) {
   if (featureMessage) { featureMessage.textContent = value; featureMessage.hidden = !value; }
@@ -270,6 +319,12 @@ function filteredFeed() {
 }
 async function loadFeed(more = false) {
   if (!client || (more && feedLoading)) return;
+  const searchContext = $('#feed-search-context');
+  if (searchContext) {
+    searchContext.hidden = !feedTerm || feedMode !== 'all';
+    searchContext.querySelector('span').textContent = feedTerm
+      ? `${feedSearchKind === 'tag' ? '태그' : '본문'} 검색 · ${feedTerm}` : '';
+  }
   if (nearbyPosition && !positionIsFresh(nearbyPosition)) nearbyPosition = null;
   const version = ++feedRun;
   feedLoading = true;
@@ -343,29 +398,6 @@ async function loadFeed(more = false) {
     ? '저장한 카드가 없어요. 카드의 책갈피를 눌러 담아 보세요.' : feedMode === 'mine'
       ? '아직 작성한 카드가 없어요.' : feedSort === 'popular'
         ? '최근 7일에 올라온 카드가 없어요.' : '아직 카드가 없어요. 첫 카드를 써 보세요.');
-  if (!more && feedMode === 'all' && !feedTerm && !nearbyPosition) {
-    const invitation = node('div', 'note-location-invite');
-    const description = node('span', '', session?.user
-      ? '위치를 켜면 주변 이벤트와 대략적인 거리를 볼 수 있어요.'
-      : '로그인하고 위치를 켜면 주변 이벤트를 볼 수 있어요.');
-    const action = session?.user ? node('button', 'button', '위치 확인') : node('a', 'button', '대문에서 로그인');
-    if (session?.user) {
-      action.type = 'button';
-      action.addEventListener('click', async () => {
-        action.disabled = true; description.textContent = '위치를 확인하는 중이에요.';
-        try {
-          const position = await currentPosition();
-          if (version !== feedRun) return;
-          nearbyPosition = position; loadFeed();
-        } catch {
-          if (version !== feedRun) return;
-          description.textContent = '위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 눌러 주세요.';
-          action.disabled = false;
-        }
-      });
-    } else action.href = '/?next=note';
-    invitation.append(description, action); list.prepend(invitation);
-  }
   if (data?.length) feedCursor = data.at(-1);
   if (feedMode === 'all' && !feedTerm) nearbyOffset += data?.length || 0;
   if (data?.length === 20) {
@@ -402,10 +434,10 @@ function consumeInitialCard() {
   const id = initialCardId; initialCardId = null;
   if (validCardId(id)) openCard(id);
 }
-function updateCardUrl(id = null) {
+function updateCardUrl(id = null, push = false) {
   const url = new URL(location.href);
   if (id) url.searchParams.set('card', id); else url.searchParams.delete('card');
-  history.replaceState(null, '', url);
+  history[push ? 'pushState' : 'replaceState']({ noteNavigation: push }, '', url);
 }
 
 function showFeed(updateUrl = true) {
@@ -450,6 +482,7 @@ async function renderDetail() {
   if (!client || !stack.length) return;
   const id = stack.at(-1), version = ++detailRun;
   feed.hidden = true; detail.hidden = false;
+  $('.replies').hidden = false;
   state(slot, '카드를 불러오는 중이에요.'); state(replies, '답글을 불러오는 중이에요.');
   $('#detail [data-compose="reply"]').disabled = true;
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -471,6 +504,7 @@ async function renderDetail() {
   }
   cache.set(id, card);
   const eventCard = card.kind === 'event';
+  $('.replies').hidden = eventCard;
   $('#detail [data-compose="reply"]').hidden = eventCard;
   $('#detail [data-compose="reply"]').disabled = eventCard || !canWrite('comment');
   slot.replaceChildren(cardElement(card, false, true));
@@ -490,7 +524,7 @@ async function renderDetail() {
       } else locate.href = '/?next=note';
       slot.append(note, locate);
     }
-    state(replies, '이벤트 카드에는 답글을 작성할 수 없어요.');
+    state(replies, '');
   } else {
     $('#reply-count').textContent = String(card.reply_count || 0);
     loadReplies(id, version);
@@ -498,12 +532,21 @@ async function renderDetail() {
 }
 function openCard(id) {
   if (!validCardId(id) || !ready) return;
-  stack.push(id); updateCardUrl(id); renderDetail();
+  const alreadyLinked = new URL(location.href).searchParams.get('card') === id;
+  stack.push(id); updateCardUrl(id, !alreadyLinked); renderDetail();
 }
 function goBack() {
+  if (history.state?.noteNavigation) { history.back(); return; }
   if (stack.length > 1) { stack.pop(); updateCardUrl(stack.at(-1)); renderDetail(); }
   else showFeed();
 }
+window.addEventListener('popstate', () => {
+  const id = new URL(location.href).searchParams.get('card');
+  if (validCardId(id)) {
+    if (!ready) { initialCardId = id; return; }
+    stack.length = 0; stack.push(id); void renderDetail();
+  } else showFeed(false);
+});
 
 function canWrite(cardKind = kind) {
   return !!noteState && !noteState.is_restricted
@@ -607,7 +650,7 @@ function selectCollection(mode) {
   feedMode = mode; message(''); showFeed();
   $('#feed-title').textContent = mode === 'all' ? '오쭈다노트 카드' : '메모함';
   $('#note-collection-tabs').hidden = mode === 'all';
-  $('.side-sort-group').hidden = mode !== 'all';
+  $('.feed-sort-tabs').hidden = mode !== 'all';
   document.querySelectorAll('[data-collection]').forEach(button => {
     const selected = button.dataset.collection === mode;
     button.classList.toggle('selected', selected); button.setAttribute('aria-pressed', String(selected));
@@ -619,6 +662,12 @@ function selectCollection(mode) {
   }
   loadFeed();
 }
+function setCardLocationSwitch(on, status, pending = false) {
+  const button = $('#card-location-button');
+  button.setAttribute('aria-checked', String(on));
+  button.querySelector('.note-switch-state').textContent = pending ? '확인 중' : on ? '켜짐' : '꺼짐';
+  $('#card-location-status').textContent = status;
+}
 function installFeatures() {
   const nickname = $('input[name="identity"][value="nickname"]');
   nickname.disabled = false; nickname.closest('label').classList.remove('disabled-choice');
@@ -628,9 +677,6 @@ function installFeatures() {
   noticeElement = node('aside', 'note-notice'); noticeElement.hidden = true;
   noticeElement.setAttribute('aria-label', '노트 운영 안내');
   $('#connection-status').after(noticeElement, featureMessage);
-  retentionButton = node('button', 'button', '보관 알림'); retentionButton.type = 'button';
-  retentionButton.hidden = true; retentionButton.addEventListener('click', showRetentionAlerts);
-  $('.note-tools').append(retentionButton);
   for (const nav of document.querySelectorAll('.side-nav, .bottomnav')) {
     const saved = nav.querySelector('button:nth-child(2)');
     if (saved) { saved.disabled = false; saved.removeAttribute('title'); saved.dataset.show = 'saved'; }
@@ -641,17 +687,27 @@ function installFeatures() {
     const button = node('button', '', label); button.type = 'button'; button.dataset.collection = mode;
     button.setAttribute('aria-pressed', 'false'); button.addEventListener('click', () => selectCollection(mode)); collectionTabs.append(button);
   }
-  $('#side-collection-slot').append(collectionTabs);
+  $('.feed-column').prepend(collectionTabs);
   const sorts = $('.feed-sort-tabs');
   sorts.classList.add('feed-sort-tabs'); sorts.replaceChildren();
+  const searchContext = node('div', 'feed-search-context'); searchContext.id = 'feed-search-context';
+  searchContext.hidden = true; searchContext.setAttribute('role', 'status');
+  const searchLabel = node('span');
+  const clearSearch = node('button', '', '검색 지우기'); clearSearch.type = 'button';
+  clearSearch.addEventListener('click', () => { feedTerm = ''; input.value = ''; loadFeed(); });
+  searchContext.append(searchLabel, clearSearch); sorts.after(searchContext);
+  const syncSortButtons = () => sorts.querySelectorAll('button').forEach(item => {
+    const selected = item.dataset.sort === feedSort;
+    item.classList.toggle('selected', selected); item.setAttribute('aria-pressed', String(selected));
+  });
   for (const [sort, label] of [['latest', '최신'], ['popular', '인기'], ['nearby', '근처']]) {
     const button = node('button', sort === feedSort ? 'selected' : '', label); button.type = 'button';
     button.dataset.sort = sort; button.setAttribute('aria-pressed', String(sort === feedSort));
     button.addEventListener('click', () => {
-      if (feedSort === sort) return; feedSort = sort;
-      sorts.querySelectorAll('button').forEach(item => {
-        item.classList.toggle('selected', item === button); item.setAttribute('aria-pressed', String(item === button));
-      }); loadFeed();
+      const clearedSearch = sort === 'nearby' && Boolean(feedTerm || input.value);
+      if (sort === 'nearby') { feedTerm = ''; input.value = ''; }
+      if (feedSort === sort && !clearedSearch) return;
+      feedSort = sort; syncSortButtons(); loadFeed();
     }); sorts.append(button);
   }
   const panel = $('#search-panel'), toggle = $('#search-toggle');
@@ -670,6 +726,7 @@ function installFeatures() {
   form.addEventListener('submit', event => {
     event.preventDefault(); feedTerm = input.value.trim(); feedSearchKind = selector.value;
     if (feedTerm.startsWith('#')) { feedTerm = feedTerm.slice(1); feedSearchKind = 'tag'; selector.value = 'tag'; }
+    if (feedTerm && feedSort === 'nearby') { feedSort = 'latest'; syncSortButtons(); }
     loadFeed();
   });
   reset.addEventListener('click', () => { input.value = ''; feedTerm = ''; loadFeed(); input.focus(); });
@@ -684,76 +741,34 @@ function installFeatures() {
     if (center) selectEventPosition(center);
     else $('#event-location-status').textContent = '지도를 불러오지 못했어요. 다시 열어 주세요.';
   });
-  $('#card-location-button').addEventListener('click', async event => {
+  $('#card-location-button').addEventListener('click', async () => {
+    if ($('#card-location-button').getAttribute('aria-checked') === 'true') {
+      locationRun++;
+      writingPosition = null;
+      setCardLocationSwitch(false, '위치를 껐어요. 등록하려면 다시 켜 주세요.');
+      updateComposer();
+      return;
+    }
     const run = ++locationRun;
-    event.currentTarget.disabled = true; $('#card-location-status').textContent = '위치를 확인하는 중이에요.';
+    writingPosition = null;
+    setCardLocationSwitch(true, '위치를 확인하는 중이에요.', true);
+    updateComposer();
     try {
       const position = await currentPosition();
-      if (run !== locationRun || backdrop.hidden || kind === 'event') return;
-      writingPosition = position; $('#card-location-status').textContent = '위치를 확인했어요. 정확한 좌표는 카드에 표시되지 않아요.';
+      if (run !== locationRun || backdrop.hidden || kind === 'event' || editingId) return;
+      writingPosition = position;
+      setCardLocationSwitch(true, '위치를 켰어요. 정확한 좌표는 카드에 표시되지 않아요.');
     } catch {
       if (run !== locationRun || backdrop.hidden) return;
-      writingPosition = null; $('#card-location-status').textContent = '위치를 사용할 수 없어요. 권한을 확인하고 다시 시도해 주세요.';
-    } finally { if (run === locationRun) { $('#card-location-button').disabled = false; updateComposer(); } }
+      writingPosition = null;
+      setCardLocationSwitch(false, '위치를 켤 수 없어요. 권한을 확인하고 다시 시도해 주세요.');
+    } finally { if (run === locationRun) updateComposer(); }
   });
   for (const selector of ['#compose-font', '#compose-size', '#compose-effect']) {
     $(selector).addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
   }
-  for (const selector of ['#event-radius', '#event-hours']) $(selector).addEventListener('input', updateEventPrice);
+  for (const selector of ['#event-radius', '#event-hours']) $(selector).addEventListener('input', () => { updateEventPrice(); recordDraft(); });
 }
-async function refreshRetentionAlerts() {
-  const run = ++retentionRun, userId = session?.user?.id;
-  retentionButton.hidden = !userId;
-  if (!userId) return;
-  try {
-    const rows = await noteRpc('list_retention_alerts');
-    if (run !== retentionRun || session?.user?.id !== userId) return;
-    const unread = (rows || []).filter(row => !row.read_at).length;
-    retentionButton.textContent = unread ? `보관 알림 ${unread}` : '보관 알림';
-  } catch (error) { if (run === retentionRun) console.warn('Note retention:', error); }
-}
-async function showRetentionAlerts() {
-  if (!session?.user) return;
-  const run = showManagement('보관 알림');
-  state(managementBody, '보관 알림을 불러오는 중이에요.');
-  try {
-    const rows = await noteRpc('list_retention_alerts');
-    if (run !== managementRun) return;
-    managementBody.replaceChildren(node('p', 'management-help', '익명카드와 답글 카드는 각각 약 6개월 후 공개가 끝납니다. 답글 영구보관은 상위 카드가 모두 영구보관된 경우에만 가능하고, 카드당 10쭈예요.'));
-    if (!rows?.length) managementBody.append(node('p', 'reply-empty', '새 보관 알림이 없어요.'));
-    for (const item of rows || []) {
-      const row = node('article', 'management-row');
-      const summary = node('span'); summary.append(node('strong', '', (item.body || '익명카드').slice(0, 70)),
-        node('small', '', `${item.parent_due || item.reason === 'parent_due' ? '상위 카드와 함께 종료 예정' : '공개 종료 예정'}: ${dateLabel(item.archive_due_at)}`));
-      row.append(summary);
-      if (validCardId(item.card_id)) {
-        const open = managementButton('카드 보기', () => { closeManagement(); openCard(item.card_id); });
-        row.append(open);
-        const permanent = managementButton('10쭈로 영구보관', () => {
-          const reply = item.kind === 'comment';
-          const prompt = reply
-            ? '상위 카드가 모두 영구보관된 경우에만 답글을 영구보관할 수 있어요. 상위 카드 작성자가 삭제하거나 탈퇴하면 영구보관된 답글도 함께 삭제될 수 있습니다. 10쭈에 진행할까요?'
-            : '이 카드를 10쭈에 영구보관할까요?';
-          if (!window.confirm(prompt)) return;
-          const requestId = crypto.randomUUID();
-          managementAction(() => purchasePermanent(item.card_id, requestId),
-            async () => { await loadWorldBalance(session?.user?.id); await refreshCards(false); await showRetentionAlerts(); });
-        });
-        row.append(permanent);
-      }
-      managementBody.append(row);
-    }
-    const unread = (rows || []).filter(item => !item.read_at && validCardId(item.id));
-    await Promise.allSettled(unread.map(item => noteRpc('mark_retention_alert_read', { p_id: item.id })));
-    if (run === managementRun) await refreshRetentionAlerts();
-  } catch (error) {
-    if (run !== managementRun) return;
-    console.warn('Note retention alerts:', error);
-    state(managementBody, '알림을 불러오지 못했어요.');
-    managementFooter.append(managementButton('다시 시도', showRetentionAlerts));
-  }
-}
-
 function installStyleChoices() {
   for (const field of document.querySelectorAll('[data-color-field]')) {
     const group = field.dataset.colorField;
@@ -773,14 +788,24 @@ function installStyleChoices() {
   const randomPhoto = $('input[name="photo-choice"][value="plain"]');
   randomPhoto.addEventListener('change', () => {
     if (!randomPhoto.checked) return;
-    selectedPhotoKey = null; $('#photo-selection').textContent = '기본 사진 무작위';
+    selectedPhotoKey = null;
+    updateFeaturedPhoto();
     applyComposeStyle(); recordDraft();
   });
+  const pageJump = $('#photo-page-jump');
+  const pageCount = Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE);
+  for (let page = 0; page < pageCount; page++) {
+    const first = page * PHOTO_PAGE_SIZE + 1;
+    const last = Math.min(first + PHOTO_PAGE_SIZE - 1, PHOTO_LAST - PHOTO_FIRST + 1);
+    const option = node('option', '', `${page + 1} · ${String(first).padStart(3, '0')}–${String(last).padStart(3, '0')}`);
+    option.value = String(page); pageJump.append(option);
+  }
+  pageJump.addEventListener('change', () => { photoPage = Number(pageJump.value); renderPhotoPage(); });
   $('#photo-gallery-toggle').addEventListener('click', () => {
     const gallery = $('#photo-gallery');
     gallery.hidden = !gallery.hidden;
     $('#photo-gallery-toggle').setAttribute('aria-expanded', String(!gallery.hidden));
-    if (!gallery.hidden) renderPhotoPage();
+    if (!gallery.hidden) { updateFeaturedPhoto(); renderPhotoPage(); }
   });
   $('#photo-prev').addEventListener('click', () => { if (photoPage > 0) { photoPage--; renderPhotoPage(); } });
   $('#photo-next').addEventListener('click', () => {
@@ -792,22 +817,37 @@ function setColorChoice(group, code) {
   const chosen = [...choices].find(choice => choice.value === code) || [...choices].find(choice => choice.value === 'default');
   if (chosen) chosen.checked = true;
 }
+function updateFeaturedPhoto() {
+  const selected = photoAssetKey(selectedPhotoKey);
+  const name = selected ? `사진 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 사진 무작위';
+  const price = selected ? '직접 선택 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
+  $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
+  $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
+  $('#photo-featured-name').textContent = name;
+  $('#photo-featured-detail').textContent = price;
+  $('#photo-featured-badge').textContent = selected ? '선택됨' : '무료';
+  $('#photo-featured-badge').classList.toggle('is-selected', !!selected);
+  $('#photo-selection').textContent = selected ? `${name} 선택됨 · 게시 후 10쭈 / 1개월` : '기본 사진 무작위 · 무료';
+}
 function renderPhotoPage() {
   const grid = $('#photo-grid'); grid.replaceChildren();
   const first = PHOTO_FIRST + photoPage * PHOTO_PAGE_SIZE;
   for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
     const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
-    const tile = node('label', 'note-photo-tile'); tile.title = `${title} · 10쭈/1개월`;
+    const tile = node('label', 'note-photo-tile'); tile.title = `${title} · 10쭈 / 1개월`;
     const input = node('input'); input.type = 'radio'; input.name = 'photo-choice'; input.value = key;
-    input.checked = selectedPhotoKey === key; input.setAttribute('aria-label', title);
+    input.checked = selectedPhotoKey === key; input.setAttribute('aria-label', `${title}, 10쭈로 1개월`);
     input.addEventListener('change', () => {
-      selectedPhotoKey = key; $('#photo-selection').textContent = `${title} 선택 · 게시 후 10쭈/1개월`;
+      selectedPhotoKey = key; updateFeaturedPhoto();
       applyComposeStyle(); recordDraft();
     });
     const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy';
-    tile.append(input, img, node('small', '', title)); grid.append(tile);
+    const caption = node('span', 'note-photo-tile-caption', title);
+    const mark = node('span', 'note-photo-tile-mark', '✓'); mark.setAttribute('aria-hidden', 'true');
+    tile.append(input, img, caption, mark); grid.append(tile);
   }
   $('#photo-page-status').textContent = `${photoPage + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`;
+  $('#photo-page-jump').value = String(photoPage);
   $('#photo-prev').disabled = photoPage === 0;
   $('#photo-next').disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
 }
@@ -816,7 +856,6 @@ function currentStyle() {
   return { font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
     effect: $('#compose-effect').value,
     textColor: $('input[name="textColor"]:checked')?.value || 'default',
-    backgroundColor: $('input[name="backgroundColor"]:checked')?.value || 'default',
     boxColor: $('input[name="boxColor"]:checked')?.value || 'default' };
 }
 function chosenPhoto() { return selectedPhotoKey || 'plain'; }
@@ -825,12 +864,13 @@ function applyComposeStyle() {
   const photo = $('#note-photo-pick').hidden || chosenPhoto() === 'plain' ? backgroundKey : chosenPhoto();
   setPhotoBackground(preview, photo);
   applyVisualStyle(preview, style);
+  if (!backdrop.hidden) updateComposer();
 }
 function updateEventPrice() {
   const radius = Number($('#event-radius').value), hours = Number($('#event-hours').value);
   const valid = Number.isInteger(radius) && radius >= 1 && radius <= 30 && Number.isInteger(hours) && hours >= 1 && hours <= 24;
   $('#event-price').textContent = valid ? `${radius}km × ${hours}시간 = ${(100 * radius * hours).toLocaleString('ko-KR')}쭈` : '반경 1~30km, 시간 1~24시간을 정수로 입력해 주세요.';
-  if (kind === 'event') submit.textContent = valid ? `${(100 * radius * hours).toLocaleString('ko-KR')}쭈 결제 후 등록` : '범위와 시간을 확인해 주세요';
+  if (kind === 'event' && !editingId) submit.textContent = valid ? `${(100 * radius * hours).toLocaleString('ko-KR')}쭈 결제 후 등록` : '범위와 시간을 확인해 주세요';
   updateComposer();
   return valid;
 }
@@ -859,12 +899,14 @@ function selectEventPosition(point) {
   eventMap?.setSelection(point);
   $('#event-location-status').textContent = '이벤트 위치를 선택했어요. 지정한 위치와 원형 범위가 다른 사람에게 보여요.';
   scheduleComposerMap(point);
+  recordDraft();
   updateComposer();
 }
 function prepareEventMap() {
   if (eventMap) { eventMap.invalidate(); return; }
-  eventMap = window.OjjudaMap?.create($('#event-map'), { center: nearbyPosition
-    ? { lat: nearbyPosition.latitude, lng: nearbyPosition.longitude } : undefined,
+  eventMap = window.OjjudaMap?.create($('#event-map'), { center: eventPosition
+    ? { lat: eventPosition.latitude, lng: eventPosition.longitude }
+    : nearbyPosition ? { lat: nearbyPosition.latitude, lng: nearbyPosition.longitude } : undefined,
     onMove: scheduleComposerMap,
     onSelect: selectEventPosition });
   if (eventMap) refreshComposerMap(eventMap.getCenter());
@@ -873,6 +915,71 @@ function prepareEventMap() {
 function draftContent() {
   return { body: text.value, tags: tags.value, background_key: backgroundKey, kind, parent_id: parentId,
     style: currentStyle(), photo_key: kind === 'memo' && chosenPhoto() !== 'plain' ? chosenPhoto() : null };
+}
+function localComposerKey() {
+  if (!composerUserId || (!editingId && kind !== 'event')) return null;
+  return `ojjuda-note-local-composer-v1:${composerUserId}:${editingId ? `edit:${editingId}` : 'event'}`;
+}
+function localComposerContent() {
+  return { kind, editingId, body: text.value, tags: tags.value, style: currentStyle(),
+    identity: $('input[name="identity"]:checked')?.value || 'anonymous', backgroundKey,
+    eventPosition: kind === 'event' && !editingId ? eventPosition : null,
+    radius: $('#event-radius').value, hours: $('#event-hours').value,
+    requestId: kind === 'event' && !editingId ? publishRequestId : null };
+}
+function clearLocalComposer() {
+  const key = localComposerKey();
+  if (key) { try { sessionStorage.removeItem(key); } catch { /* Session storage may be blocked. */ } }
+  localComposerDirty = false; localComposerStored = false;
+}
+function recordLocalComposer() {
+  const key = localComposerKey();
+  if (!key || backdrop.hidden || !localComposerBaseline) return;
+  const content = localComposerContent();
+  localComposerDirty = JSON.stringify(content) !== localComposerBaseline;
+  if (!localComposerDirty) { clearLocalComposer(); return; }
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), content }));
+    localComposerStored = true;
+  } catch { localComposerStored = false; }
+}
+function restoreLocalComposer() {
+  const key = localComposerKey();
+  if (!key) return false;
+  let saved;
+  try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); }
+  catch { clearLocalComposer(); return false; }
+  const content = saved?.content, age = Date.now() - Number(saved?.savedAt);
+  if (!content || content.kind !== kind || content.editingId !== editingId
+    || !Number.isFinite(age) || age < 0 || age > 7 * 86400000
+    || typeof content.body !== 'string' || content.body.length > 200
+    || typeof content.tags !== 'string' || content.tags.length > 120
+    || !content.style || typeof content.style !== 'object') {
+    clearLocalComposer(); return false;
+  }
+  text.value = content.body; tags.value = content.tags;
+  backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
+  $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
+  $('#compose-size').value = ['large', 'small'].includes(content.style.size) ? content.style.size : 'normal';
+  $('#compose-theme').value = ['rose', 'night'].includes(content.style.theme) ? content.style.theme : 'plain';
+  $('#compose-effect').value = EFFECT_CODES.includes(content.style.effect) ? content.style.effect : 'none';
+  for (const group of ['textColor', 'boxColor']) setColorChoice(group, content.style[group]);
+  $(`input[name="identity"][value="${content.identity === 'nickname' ? 'nickname' : 'anonymous'}"]`).checked = true;
+  if (kind === 'event' && !editingId) {
+    const position = content.eventPosition;
+    eventPosition = position && Number.isFinite(position.latitude) && Number.isFinite(position.longitude)
+      && Math.abs(position.latitude) <= 90 && Math.abs(position.longitude) <= 180
+      ? { latitude: position.latitude, longitude: position.longitude } : null;
+    $('#event-radius').value = /^\d{1,2}$/.test(String(content.radius)) ? String(content.radius) : '1';
+    $('#event-hours').value = /^\d{1,2}$/.test(String(content.hours)) ? String(content.hours) : '1';
+    if (validCardId(content.requestId)) publishRequestId = content.requestId;
+    if (eventPosition) $('#event-location-status').textContent = '이전에 고른 이벤트 위치를 복구했어요.';
+  }
+  applyComposeStyle(); updateEventPrice();
+  localComposerDirty = JSON.stringify(localComposerContent()) !== localComposerBaseline;
+  if (!localComposerDirty) { clearLocalComposer(); return false; }
+  localComposerStored = true;
+  return true;
 }
 function restoreDraft(content) {
   if (!content || backdrop.hidden || editingId || composerUserId !== session?.user?.id) return;
@@ -884,12 +991,10 @@ function restoreDraft(content) {
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
-  for (const group of ['textColor', 'backgroundColor', 'boxColor']) setColorChoice(group, style[group]);
+  for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   selectedPhotoKey = kind === 'memo' ? photoAssetKey(content.photo_key) : null;
   $('input[name="photo-choice"][value="plain"]').checked = !selectedPhotoKey;
-  $('#photo-selection').textContent = selectedPhotoKey
-    ? `사진 ${String(Number(selectedPhotoKey) - PHOTO_FIRST + 1).padStart(3, '0')} 선택 · 게시 후 10쭈/1개월`
-    : '기본 사진 무작위';
+  updateFeaturedPhoto();
   if (selectedPhotoKey) photoPage = Math.floor((Number(selectedPhotoKey) - PHOTO_FIRST) / PHOTO_PAGE_SIZE);
   applyComposeStyle();
   $('#compose-title').textContent = kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
@@ -898,66 +1003,30 @@ function restoreDraft(content) {
   if (kind === 'comment') void refreshReplyArchiveNotice(parentId, composerRun);
 }
 function recordDraft() {
-  if (!draftController || editingId || kind === 'event' || backdrop.hidden || draftLoading || !session?.user) return;
-  try { draftController.change(draftContent()); } catch (error) { draftStatus.textContent = error.message; }
+  if (editingId || kind === 'event') { recordLocalComposer(); return; }
+  if (!draftController || backdrop.hidden || draftLoading || !session?.user) return;
+  try { draftController.change(draftContent()); }
+  catch (error) { draftStatus.textContent = error.message; draftStatus.hidden = false; }
 }
 function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
-  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next']) $(selector).disabled = disabled;
+  $('#card-location-button').disabled = disabled;
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) $(selector).disabled = disabled;
   document.querySelectorAll('.note-color-choice input, input[name="photo-choice"]').forEach(input => { input.disabled = disabled; });
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
-  draftTools?.querySelectorAll('button').forEach(button => { button.disabled = disabled; });
-}
-function confirmDraftAction(action) {
-  draftConfirm.replaceChildren(node('p', '', action === 'reload'
-    ? '지금 입력한 내용을 서버의 임시 글로 바꿀까요?' : '지금 입력과 보관 중인 임시 글을 지울까요?'));
-  const cancel = node('button', 'button', '취소'); cancel.type = 'button';
-  cancel.addEventListener('click', () => { draftConfirm.hidden = true; });
-  const apply = node('button', 'button primary', action === 'reload' ? '서버 글 불러오기' : '임시 글 지우기'); apply.type = 'button';
-  apply.addEventListener('click', async () => {
-    if (draftLoading || busy) return;
-    const userId = composerUserId, run = composerRun, epoch = identityEpoch;
-    draftLoading = true; setComposerInputs(); updateComposer();
-    try {
-      if (action === 'reload') {
-        const restored = await draftController.reloadRemote();
-        if (run === composerRun && epoch === identityEpoch && session?.user?.id === userId) {
-          if (restored) restoreDraft(restored); else { text.value = ''; tags.value = ''; }
-        }
-      } else {
-        await draftController.discard();
-        if (run === composerRun && epoch === identityEpoch && session?.user?.id === userId) {
-          text.value = ''; tags.value = ''; kind = requestedDraftContent.kind; parentId = requestedDraftContent.parent_id;
-          restoreDraft({ ...requestedDraftContent, body: '', tags: '' });
-        }
-      }
-      if (run === composerRun && epoch === identityEpoch) draftConfirm.hidden = true;
-    } catch (error) { if (run === composerRun && epoch === identityEpoch && session?.user?.id === userId) draftStatus.textContent = error.message || '보관 글을 처리하지 못했어요.'; }
-    finally { if (run === composerRun && epoch === identityEpoch) { draftLoading = false; setComposerInputs(); updateComposer(); } }
-  });
-  draftConfirm.append(cancel, apply); draftConfirm.hidden = false; apply.focus();
 }
 function installDrafts() {
   if (!client || !window.OjjudaNoteDrafts) return;
-  draftTools = node('div', 'note-draft-tools'); draftTools.hidden = true;
-  draftStatus = node('p', 'note-draft-status'); draftStatus.setAttribute('role', 'status'); draftStatus.setAttribute('aria-live', 'polite');
-  const save = node('button', 'button', '지금 임시 저장'); save.type = 'button';
-  save.addEventListener('click', async () => {
-    recordDraft(); save.disabled = true;
-    try { await draftController.save(); } catch (error) { draftStatus.textContent = error.message || '저장하지 못했어요.'; }
-    finally { save.disabled = busy || draftLoading; }
-  });
-  const restore = node('button', 'button', '보관 글 불러오기'); restore.type = 'button';
-  restore.addEventListener('click', () => confirmDraftAction('reload'));
-  const discard = node('button', 'button', '임시 글 지우기'); discard.type = 'button';
-  discard.addEventListener('click', () => confirmDraftAction('discard'));
-  const parent = node('button', 'button', '답글 원글 보기'); parent.type = 'button'; parent.id = 'note-draft-parent'; parent.hidden = true;
-  parent.addEventListener('click', () => { if (parentId) { closeComposer(); openCard(parentId); } });
-  draftConfirm = node('div', 'note-draft-confirm'); draftConfirm.hidden = true;
-  draftTools.append(draftStatus, save, restore, discard, parent, draftConfirm); $('#compose-more-content').append(draftTools);
+  draftStatus = node('span', 'note-draft-alert'); draftStatus.hidden = true;
+  draftStatus.setAttribute('role', 'status'); draftStatus.setAttribute('aria-live', 'polite');
+  $('.composer-footer').append(draftStatus);
   draftController = window.OjjudaNoteDrafts.create({ rpc: noteRpc, getUserId: () => session?.user?.id || null,
-    onStatus: snapshot => { draftStatus.textContent = snapshot.message; } });
+    onStatus: snapshot => {
+      const needsAttention = snapshot.state === 'conflict' || snapshot.state === 'error';
+      draftStatus.textContent = needsAttention ? snapshot.message : '';
+      draftStatus.hidden = !needsAttention || backdrop.hidden || editingId || kind === 'event';
+    } });
 }
 
 function parsedTags(raw = tags.value) {
@@ -965,15 +1034,25 @@ function parsedTags(raw = tags.value) {
   return values.length <= 5 && values.every(value => value.length <= 20) && new Set(values).size === values.length ? values : null;
 }
 function updateComposer() {
-  const lines = text.value.replace(/\r\n?/g, '\n').split('\n');
+  if (!backdrop.hidden) resizeComposerText();
   $('#compose-count').textContent = `${text.value.length} / 200자`;
   const visual = currentStyle();
   const extra = selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
     || visual.size !== 'normal' || visual.effect !== 'none'
-    || ['textColor', 'backgroundColor', 'boxColor'].some(key => visual[key] !== 'default');
+    || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
   $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
-  $('#compose-tag-display').textContent = values?.length ? values.map(value => `#${value}`).join('  ') : '';
+  const previewTags = tags.value.split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean).slice(0, 5);
+  $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
+  const overflows = !backdrop.hidden && !!text.value.trim()
+    && (composerPhotoOverflows() || cardPhotoOverflows(text.value, previewTags));
+  let warning = $('#compose-overflow-warning');
+  if (!warning) {
+    warning = node('span', 'compose-overflow-warning'); warning.id = 'compose-overflow-warning';
+    $('#compose-count').before(warning);
+  }
+  warning.textContent = overflows ? '사진에 글이 다 보이지 않아요. 등록할 때 확인할 수 있어요.' : '';
+  warning.hidden = !overflows;
   if (!client || !ready) composeMessage.textContent = '노트 연결 확인 후 등록 가능';
   else if (!authKnown) composeMessage.textContent = '로그인 확인 중';
   else if (!session?.user) {
@@ -982,20 +1061,31 @@ function updateComposer() {
     else link.href = '/';
     composeMessage.replaceChildren(link);
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
-  else if (text.value.length > 200 || lines.length > 8) composeMessage.textContent = '글은 200자·8줄 이내로 작성해 주세요';
+  else if (text.value.length > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
   else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
-  else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = '위치를 확인한 뒤 등록할 수 있어요.';
-  else if (kind === 'event' && !eventPosition) composeMessage.textContent = '지도에서 이벤트 중심을 정해 주세요.';
-  else if (kind === 'event' && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
+  else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = '위치를 켜고 확인한 뒤 등록할 수 있어요.';
+  else if (kind === 'event' && !editingId && !eventPosition) composeMessage.textContent = '지도에서 이벤트 중심을 정해 주세요.';
+  else if (kind === 'event' && !editingId && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
   else composeMessage.textContent = busy ? (editingId ? '수정 중' : '등록 중')
-    : kind === 'event' ? '이벤트 범위와 금액을 확인해 주세요.'
+    : kind === 'event' && !editingId ? '이벤트 범위와 금액을 확인해 주세요.'
       : $('input[name="identity"]:checked')?.value === 'nickname' ? '월드 닉네임 공개' : '익명 카드';
   submit.disabled = busy || draftLoading || replyDueChecking || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
-    || text.value.length > 200 || text.value.split('\n').length > 8 || !values
-    || (kind !== 'event' && !editingId && !writingPosition) || (kind === 'event' && (!eventPosition || !validEventOptions()));
-  if (draftTools) draftTools.hidden = !!editingId || kind === 'event' || !session?.user;
-  if ($('#note-draft-parent')) $('#note-draft-parent').hidden = kind !== 'comment' || !parentId;
+    || text.value.length > 200 || !values
+    || (kind !== 'event' && !editingId && !writingPosition)
+    || (kind === 'event' && !editingId && (!eventPosition || !validEventOptions()));
+}
+function resizeComposerText() {
+  const photo = $('.compose-photo');
+  text.style.height = 'auto';
+  const minimum = 88;
+  const maximum = Math.max(minimum, photo.clientHeight * .72);
+  text.style.height = `${Math.min(maximum, Math.max(minimum, text.scrollHeight))}px`;
+}
+function composerPhotoOverflows() {
+  const tagsRow = $('#compose-tag-display');
+  return text.scrollHeight > text.clientHeight + 1 || (tagsRow.childElementCount > 0
+    && text.getBoundingClientRect().bottom + 6 > tagsRow.getBoundingClientRect().top);
 }
 function validEventOptions() {
   const radius = Number($('#event-radius').value), hours = Number($('#event-hours').value);
@@ -1008,6 +1098,7 @@ async function openComposer(mode, card = null) {
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
+  localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
   backgroundKey = editingId ? card.background_key : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
@@ -1017,10 +1108,11 @@ async function openComposer(mode, card = null) {
   $('#photo-gallery').hidden = true; $('#photo-gallery-toggle').setAttribute('aria-expanded', 'false');
   $('#photo-grid').replaceChildren(); photoPage = 0; selectedPhotoKey = null;
   $('input[name="photo-choice"][value="plain"]').checked = true;
-  $('#photo-selection').textContent = '기본 사진 무작위';
+  updateFeaturedPhoto();
   $('#card-location-consent').hidden = kind === 'event' || !!editingId;
-  $('#card-location-status').textContent = '위치를 확인해야 등록할 수 있어요.';
-  $('#note-event-fields').hidden = kind !== 'event';
+  setCardLocationSwitch(false, '카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.');
+  $('#note-event-fields').hidden = kind !== 'event' || !!editingId;
+  $('#event-radius').value = '1'; $('#event-hours').value = '1';
   $('#event-location-status').textContent = '지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.';
   $('#compose-title').textContent = editingId ? '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = editingId ? '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
@@ -1030,15 +1122,27 @@ async function openComposer(mode, card = null) {
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
-  for (const group of ['textColor', 'backgroundColor', 'boxColor']) setColorChoice(group, style[group]);
+  for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   applyComposeStyle(); updateEventPrice();
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : '';
   const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
+  let restoredLocalComposer = false;
+  if (editingId || kind === 'event') {
+    localComposerBaseline = JSON.stringify(localComposerContent());
+    restoredLocalComposer = restoreLocalComposer();
+  }
+  if (restoredLocalComposer) $('#compose-context').textContent = '이전에 작성하던 내용을 복구했어요.';
   requestedDraftContent = draftContent();
-  if (draftConfirm) draftConfirm.hidden = true;
-  updateComposer(); backdrop.hidden = false; lockPage(true); text.focus();
-  if (kind === 'event') { eventMap?.destroy(); eventMap = null; prepareEventMap(); }
+  if (draftStatus) draftStatus.hidden = true;
+  updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer(); text.focus();
+  if (kind === 'event' && !editingId) {
+    eventMap?.destroy(); eventMap = null; prepareEventMap();
+    if (eventPosition) {
+      const point = { lat: eventPosition.latitude, lng: eventPosition.longitude };
+      eventMap?.setCenter(point); eventMap?.setSelection(point); scheduleComposerMap(point);
+    }
+  }
   if (kind === 'comment' && !editingId) void refreshReplyArchiveNotice(parentId, run);
   if (!editingId && kind !== 'event' && draftController && composerUserId) {
     draftLoading = true; setComposerInputs(); updateComposer();
@@ -1046,7 +1150,9 @@ async function openComposer(mode, card = null) {
       const restored = await draftController.resume(requestedDraftContent);
       if (run === composerRun && epoch === identityEpoch && !backdrop.hidden) restoreDraft(restored);
     }
-    catch (error) { if (run === composerRun) draftStatus.textContent = error.message || '임시 글을 불러오지 못했어요.'; }
+    catch (error) {
+      if (run === composerRun) { draftStatus.textContent = error.message || '임시 글을 불러오지 못했어요.'; draftStatus.hidden = false; }
+    }
     finally {
       if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus(); }
     }
@@ -1055,23 +1161,31 @@ async function openComposer(mode, card = null) {
 
 function closeComposer(saveDraft = true) {
   if (busy) return;
-  if (saveDraft) recordDraft();
+  if (saveDraft) {
+    recordDraft();
+    if (localComposerDirty && !window.confirm(localComposerStored
+      ? '작성 중인 내용이 있어요. 같은 탭에서 다시 열면 복구됩니다. 닫을까요?'
+      : '작성 중인 내용을 보관하지 못했어요. 닫으면 사라집니다. 닫을까요?')) return;
+  } else if (editingId || kind === 'event') clearLocalComposer();
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
   backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
+  setCardLocationSwitch(false, '카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.');
   clearTimeout(composerMapTimer); eventMap?.destroy(); eventMap = null; lockPage(false);
   if (focusBefore?.isConnected) focusBefore.focus({ preventScroll: true });
 }
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
-  if (!body || body.length > 200 || body.split('\n').length > 8 || !values) return;
+  if (!body || body.length > 200 || !values) return;
   const editId = editingId, actionUserId = composerUserId;
   const identityMode = $('input[name="identity"]:checked')?.value === 'nickname' ? 'nickname' : 'anonymous';
   const selectedPhoto = kind === 'memo' && !editId ? chosenPhoto() : 'plain';
   const selectedPhotoRequestId = photoRequestId;
   if (kind === 'comment' && !editId && archiveDueThisMonth(parentArchiveDue(cache.get(parentId)))
     && !window.confirm(`상위 카드가 ${dateLabel(parentArchiveDue(cache.get(parentId)))}에 공개 종료될 예정이에요. 이 답글도 함께 삭제될 수 있습니다. 등록할까요?`)) return;
-  if (kind === 'event') {
+  if ((composerPhotoOverflows() || cardPhotoOverflows(body, values))
+    && !window.confirm('글이나 태그 일부가 사진 안에 다 보이지 않습니다. 카드 크게 보기에서 전체 글을 볼 수 있어요. 그래도 등록할까요?')) return;
+  if (kind === 'event' && !editId) {
     const cost = Number($('#event-radius').value) * Number($('#event-hours').value) * 100;
     if (!validEventOptions() || !eventPosition || !window.confirm(`이벤트 ${cost.toLocaleString('ko-KR')}쭈를 결제하고 등록할까요?`)) return;
   } else if (!editId && selectedPhoto !== 'plain' && !window.confirm('카드를 등록한 뒤 제공 사진 배경 1개월 이용료 10쭈를 결제할까요?')) {
@@ -1085,7 +1199,7 @@ async function publishCard() {
       body = draftToken.content.body.replace(/\r\n?/g, '\n').trim(); values = parsedTags(draftToken.content.tags);
       publishKind = draftToken.content.kind; publishParent = draftToken.content.parent_id;
       if (publishKind !== kind || publishParent !== parentId) throw new Error('임시 글의 원글이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
-      if (!body || body.length > 200 || body.split('\n').length > 8 || !values) throw new Error('보관된 내용을 확인해 주세요.');
+      if (!body || body.length > 200 || !values) throw new Error('보관된 내용을 확인해 주세요.');
     } catch (error) {
       draftController.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
       composeMessage.textContent = error.message || '임시 글 저장을 확인한 뒤 등록해 주세요.'; return;
@@ -1153,11 +1267,11 @@ async function publishCard() {
     void loadWorldBalance(actionUserId);
   }
   if (publishKind === 'comment' && archiveDueThisMonth(data?.effective_archive_due_at))
-    message(`답글이 등록됐어요. 상위 카드와 함께 ${dateLabel(data.effective_archive_due_at)}에 공개 종료될 수 있어요. 보관 알림을 확인해 주세요.`);
+    message(`답글이 등록됐어요. 상위 카드와 함께 ${dateLabel(data.effective_archive_due_at)}에 공개 종료될 수 있어요. 알림을 확인해 주세요.`);
   text.value = ''; tags.value = '';
   closeComposer(false);
   await refreshCards(editId || publishKind === 'comment');
-  if (publishKind === 'comment') void refreshRetentionAlerts();
+  if (publishKind === 'comment') void notificationController?.refresh?.();
   if (photoPurchaseFailed) {
     showManagement('카드는 등록됐어요');
     managementBody.append(node('p', 'management-help', '사진 배경 결제가 완료되지 않아 기본 배경으로 등록됐어요. 다시 시도하거나 기본 배경으로 계속 이용할 수 있어요.'));
@@ -1356,7 +1470,7 @@ function confirmPermanent(card) {
   const requestId = crypto.randomUUID();
   managementFooter.append(managementButton('10쭈로 영구보관', () => managementAction(
     () => purchasePermanent(card.id, requestId),
-    async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); }
+    async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); await notificationController?.refresh?.(); }
   ), true));
 }
 function confirmDelete(card) {
@@ -1551,8 +1665,10 @@ backdrop.addEventListener('click', event => { if (event.target === backdrop) clo
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !backdrop.hidden) closeComposer(); });
 text.addEventListener('input', () => { updateComposer(); recordDraft(); });
 tags.addEventListener('input', () => { updateComposer(); recordDraft(); });
+window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
+document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 submit.addEventListener('click', publishCard);
-document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', updateComposer));
+document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => { updateComposer(); recordDraft(); }));
 
 function receiveAuth(current) {
   const changed = session?.user?.id !== current?.user?.id;
@@ -1561,7 +1677,7 @@ function receiveAuth(current) {
     identityEpoch++;
     // Remove prior-account content immediately, before asynchronous requests finish.
     worldCoins = null; balanceRun++; moderator = false; moderatorRun++;
-    retentionRun++; nearbyPosition = null; writingPosition = null; eventPosition = null;
+    nearbyPosition = null; writingPosition = null; eventPosition = null;
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
     composerRun++; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
     notificationController?.close?.();
@@ -1577,7 +1693,6 @@ function receiveAuth(current) {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
-    refreshRetentionAlerts();
     notificationController?.refresh?.();
     if (changed) loadFeed();
     else consumeInitialCard();
@@ -1589,7 +1704,8 @@ window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id |
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => openCard(id),
-  onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id)
+  onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id),
+  onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
 if (client) {
   client.auth.onAuthStateChange((_event, current) => {
@@ -1608,7 +1724,7 @@ if (client) {
   loadFeed();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
-    loadWorldBalance(session?.user?.id); loadNoteState(); refreshRetentionAlerts();
+    loadWorldBalance(session?.user?.id); loadNoteState(); notificationController?.refresh?.();
     if (backdrop.hidden && management.hidden) refreshCards(stack.length > 0);
   });
 } else {
