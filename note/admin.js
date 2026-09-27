@@ -21,11 +21,11 @@
     ['green', '초록'], ['blue', '파랑'], ['purple', '보라'],
     ['black', '검정'], ['white', '흰색']
   ];
-  const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 8 }, (_, index) =>
+  const PHOTO_CHOICES = [['', '지정 없음'], ...Array.from({ length: 180 }, (_, index) =>
     [String(index + 10), `사진 ${String(index + 1).padStart(3, '0')}`])];
   const PHOTO_PAGE_SIZE = 12;
-  const photoKeyValid = value => /^1[0-7]$/.test(String(value));
-  const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-new`;
+  const photoKeyValid = value => /^\d{2,3}$/.test(String(value)) && Number(value) >= 10 && Number(value) <= 189;
+  const photoUrl = key => `/note/assets/${key}.jpg?v=20260927-curated180`;
   const TABS = [
     ['cards', '카드 · 답글'], ['settings', '공지 · 기능'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']

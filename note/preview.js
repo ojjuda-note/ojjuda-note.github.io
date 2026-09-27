@@ -38,8 +38,8 @@ let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
-const PHOTO_FIRST = 10, PHOTO_LAST = 17, PHOTO_PAGE_SIZE = 12;
-const PHOTO_VERSION = '20260927-new';
+const PHOTO_FIRST = 10, PHOTO_LAST = 189, PHOTO_PAGE_SIZE = 12;
+const PHOTO_VERSION = '20260927-curated180';
 const photoUrl = key => `assets/${key}.jpg?v=${PHOTO_VERSION}`;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
@@ -1700,6 +1700,7 @@ function showPhotoChoices(card) {
   if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
   const choices = node('div', 'note-photo-choice');
   const pages = node('div', 'note-photo-pages');
+  const pageCount = Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE);
   let page = 0;
   const render = () => {
     choices.replaceChildren(); pages.replaceChildren();
@@ -1722,8 +1723,17 @@ function showPhotoChoices(card) {
     const next = node('button', 'button', '다음'); next.type = 'button';
     next.disabled = first + PHOTO_PAGE_SIZE > PHOTO_LAST;
     next.addEventListener('click', () => { page++; render(); });
-    pages.append(prev, node('span', '', `${page + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`), next);
-    pages.hidden = PHOTO_LAST - PHOTO_FIRST + 1 <= PHOTO_PAGE_SIZE;
+    const pageLabel = node('label', '', '페이지');
+    const pageJump = node('select'); pageJump.setAttribute('aria-label', '사진 페이지 선택');
+    for (let index = 0; index < pageCount; index++) {
+      const option = node('option', '', `${index + 1} / ${pageCount}`);
+      option.value = String(index); pageJump.append(option);
+    }
+    pageJump.value = String(page);
+    pageJump.addEventListener('change', () => { page = Number(pageJump.value); render(); });
+    pageLabel.append(pageJump);
+    pages.append(prev, pageLabel, next);
+    pages.hidden = pageCount <= 1;
   };
   render(); managementBody.append(choices, pages); cancelManagement();
 }

@@ -8,9 +8,9 @@
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const conflictError = error => error?.code === 'PT409' || error?.code === '40001' || error?.status === 409;
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  // Keep older local draft text when the previous 102-photo collection is retired.
+  // Keep draft text and valid photo choices across catalog updates.
   const photo = key => typeof key === 'string' && /^\d{2,3}$/.test(key)
-    && Number(key) >= 10 && Number(key) <= 111 ? String(10 + (Number(key) - 10) % 8) : null;
+    && Number(key) >= 10 && Number(key) <= 189 ? String(Number(key)) : null;
 
   function content(value) {
     const style = value?.style ?? null, photoKey = value?.photo_key ?? null;
