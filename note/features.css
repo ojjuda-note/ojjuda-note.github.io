@@ -262,3 +262,28 @@ select{font:inherit;color:inherit}
   #composer-backdrop .composer{height:calc(100dvh - var(--note-sheet-top) - var(--note-sheet-bottom));max-height:none}
   #composer-backdrop .composer-body{flex:1 1 auto;min-height:0}
 }
+
+/* 일반 카드 사진: 오른쪽 위 작은 동그라미, 크게 본 카드에서 누르면 팝업 */
+.photo-card,.reply-card{position:relative}
+.card-photo-thumb{position:absolute;top:12px;right:12px;z-index:4;width:50px;height:50px;padding:0;border-radius:50%;border:2px solid #fff;background:#e8eaf3 center/cover no-repeat;box-shadow:0 4px 14px rgba(15,15,35,.32);cursor:zoom-in}
+.card-photo-thumb[hidden]{display:none}
+.reply-card .card-photo-thumb{width:38px;height:38px;top:9px;right:9px}
+#detail-card-slot .card-photo-thumb{width:66px;height:66px;top:14px;right:14px}
+.note-photo-lightbox{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:24px;background:rgba(10,10,22,.88);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.note-photo-lightbox[hidden]{display:none}
+.note-photo-lightbox img{display:block;max-width:min(100%,960px);max-height:84vh;width:auto;height:auto;justify-self:center;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.55);background:#222}
+.note-photo-lightbox{grid-template-columns:minmax(0,1fr)}
+.note-photo-lightbox-close{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:14px;height:36px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.92);color:#23264a;font-size:14px}
+/* 글쓰기 창: 사진 오른쪽 위 카메라 동그라미 (고르면 그 자리에 작게 보여요) */
+.compose-photo-attach{position:absolute;top:10px;right:10px;z-index:8;width:50px;height:50px;display:grid;place-items:center;border-radius:50%;border:2px dashed rgba(255,255,255,.8);background:rgba(20,20,35,.38) center/cover no-repeat;color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.compose-photo-attach[hidden]{display:none}
+.compose-photo-attach svg{width:22px;height:22px}
+.compose-photo-attach.has-photo{border:2px solid #fff;box-shadow:0 4px 14px rgba(15,15,35,.32)}
+.compose-photo-attach.has-photo svg{display:none}
+.compose-photo-attach.is-busy{opacity:.6}
+.compose-photo-attach:focus-visible,.compose-photo-remove:focus-visible,.card-photo-thumb:focus-visible,.note-photo-lightbox-close:focus-visible{outline:3px solid #f0679a;outline-offset:3px}
+.compose-photo-remove{position:absolute;top:4px;right:4px;z-index:9;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:#23264a;color:#fff;font-size:14px;line-height:22px;cursor:pointer}
+.compose-photo-remove[hidden]{display:none}
+.compose-photo-status{position:absolute;top:66px;right:10px;z-index:8;max-width:min(230px,calc(100% - 20px));padding:5px 9px;border-radius:9px;background:rgba(20,20,35,.76);color:#fff;font-size:11px;line-height:1.4;text-align:right;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.compose-photo-status[hidden]{display:none}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
