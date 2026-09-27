@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=0.44.0-beta">
-  <link rel="stylesheet" href="features.css?v=0.44.0-beta">
+  <link rel="stylesheet" href="features.css?v=0.44.1-beta">
   <link rel="stylesheet" href="support.css">
   <link rel="stylesheet" href="notifications.css">
   <link rel="stylesheet" href="map.css?v=0.44.0-beta">
@@ -33,10 +33,10 @@
   <a class="skip" href="#main">본문으로 건너뛰기</a>
   <div class="shell">
     <aside class="side" aria-label="노트 메뉴">
-      <a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a>
+      <div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><span class="note-dev-badge">개발 중</span></div>
       <div class="side-section-label">오쭈다월드의 노트</div>
       <nav class="side-nav">
-        <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>익명카드</button>
+        <button class="nav-button on" type="button" data-show="feed"><svg><use href="#cards"/></svg>카드</button>
         <button class="nav-button" type="button" disabled title="데이터 연결 후 제공"><svg><use href="#bookmark"/></svg>메모함</button>
       </nav>
       <div class="side-spacer"></div>
@@ -46,7 +46,7 @@
 
     <div class="col">
       <header class="mobile-top">
-        <a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a>
+        <div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><span class="note-dev-badge">개발 중</span></div>
         <a class="world-small" href="/world.html" aria-label="오쭈다월드로 이동"><svg><use href="#home"/></svg></a>
       </header>
 
@@ -54,8 +54,8 @@
         <div class="preview-banner" id="connection-status" role="status" aria-live="polite"><span class="preview-dot"></span><span id="connection-message">카드를 불러오는 중</span></div>
 
         <section id="feed" class="screen" aria-labelledby="feed-title">
-          <div class="page-heading">
-            <div class="note-heading-name"><h1 id="feed-title">익명카드</h1><span class="note-dev-badge">개발 중</span></div>
+          <h1 id="feed-title" class="note-visually-hidden">오쭈다노트 카드</h1>
+          <div class="page-heading note-feed-heading">
             <div class="note-top-actions">
               <button class="icon-button search-button" type="button" aria-label="카드 검색" aria-expanded="false" id="search-toggle" disabled><svg><use href="#search"/></svg></button>
               <button class="button" type="button" id="map-toggle" aria-pressed="false">지도</button>
@@ -102,6 +102,6 @@
   <script src="support.js?v=0.44.0-beta" defer></script>
   <script src="drafts.js" defer></script>
   <script src="notifications.js" defer></script>
-  <script src="preview.js?v=0.44.0-beta" defer></script>
+  <script src="preview.js?v=0.44.1-beta" defer></script>
 </body>
 </html>
