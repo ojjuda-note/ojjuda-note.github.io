@@ -23,6 +23,9 @@ let nearbySnapshot = null;
 let publishRequestId = null, locationRun = 0;
 let replyDueChecking = false, replyDueRun = 0;
 let photoRequestId = null;
+const EVENT_PHOTO_BUCKET = 'note-event-photos';
+let eventPhotoBlob = null, eventPhotoPreviewUrl = null, eventPhotoRequestId = null;
+let eventPhotoPreparing = false, eventPhotoError = '', eventPhotoRun = 0;
 let eventMap = null;
 let composerMapFetchRun = 0, composerMapTimer = null;
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
@@ -40,13 +43,13 @@ const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
   'mist', 'ocean', 'heartbeat', 'orbit', 'glitter', 'meteor', 'leaves', 'neon', 'dawn'];
 const COLOR_PALETTE = {
-  red: { label: '빨강', solid: '#dc3049', box: '#b31d37db' },
-  yellow: { label: '노랑', solid: '#e5a800', box: '#ffdf59e8' },
-  green: { label: '초록', solid: '#238d56', box: '#21854ee3' },
-  blue: { label: '파랑', solid: '#3c78d9', box: '#2659a8dd' },
-  purple: { label: '보라', solid: '#8855cb', box: '#6d40addd' },
-  black: { label: '검정', solid: '#151622', box: '#121425e8' },
-  white: { label: '흰색', solid: '#ffffff', box: '#fffffff0' }
+  red: { label: '빨강', solid: '#dc3049', box: '#dc30492e' },
+  yellow: { label: '노랑', solid: '#e5a800', box: '#e5a80033' },
+  green: { label: '초록', solid: '#238d56', box: '#238d5630' },
+  blue: { label: '파랑', solid: '#3c78d9', box: '#3c78d933' },
+  purple: { label: '보라', solid: '#8855cb', box: '#8855cb33' },
+  black: { label: '검정', solid: '#151622', box: '#1516222b' },
+  white: { label: '흰색', solid: '#ffffff', box: '#ffffff33' }
 };
 let photoPage = 0;
 let selectedPhotoKey = null;
@@ -59,6 +62,22 @@ function setPhotoBackground(element, value) {
   element.classList.toggle('note-plain', !key);
   element.classList.remove('image-forest', 'image-lake');
   element.style.backgroundImage = key ? `url("assets/${key}.jpg")` : '';
+}
+async function loadEventBackground(element, card) {
+  const position = positionIsFresh(nearbyPosition) ? nearbyPosition : null;
+  const userId = session?.user?.id;
+  if (!client || !position || !userId || card.kind !== 'event' || card.body == null) return;
+  try {
+    const path = await noteRpc('get_event_photo_path', {
+      p_card_id: card.id, p_lat: position.latitude, p_lon: position.longitude
+    });
+    if (!path || !/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.jpg$/i.test(path)
+      || !element.isConnected || session?.user?.id !== userId) return;
+    const { data, error } = await client.storage.from(EVENT_PHOTO_BUCKET).createSignedUrl(path, 120);
+    if (error) throw error;
+    if (element.isConnected && session?.user?.id === userId && data?.signedUrl)
+      element.style.backgroundImage = `url("${data.signedUrl.replaceAll('"', '%22')}")`;
+  } catch (error) { console.warn('Note event background:', error); }
 }
 function colorLuminance(hex) {
   const channels = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255);
@@ -80,11 +99,11 @@ function applyVisualStyle(element, style = {}) {
   const textColor = COLOR_PALETTE[style.textColor];
   const boxColor = COLOR_PALETTE[style.boxColor];
   const textHex = textColor?.solid || '#ffffff';
-  const boxHex = boxColor?.box || '#17203ab8';
+  const boxHex = boxColor?.box || '#17203a26';
   element.style.setProperty('--note-text-color', textHex);
   element.style.setProperty('--note-box-color', boxHex);
   element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
-  element.style.setProperty('--note-outline', colorLuminance(boxHex) > .25 ? '#101020' : '#ffffff');
+  element.style.setProperty('--note-outline', colorLuminance(textHex) > .25 ? '#101020' : '#ffffff');
 }
 
 
@@ -175,10 +194,11 @@ function cardElement(card, compact = false, expanded = false) {
   const style = card.style && typeof card.style === 'object' ? card.style : {};
   const visiblePhoto = card.photo_key || card.background_key;
   const photo = node('span', 'photo');
-  setPhotoBackground(photo, visiblePhoto);
+  const hiddenEvent = card.kind === 'event' && card.body == null;
+  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto);
+  if (card.kind === 'event' && !hiddenEvent) void loadEventBackground(photo, card);
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
-  const hiddenEvent = card.kind === 'event' && card.body == null;
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
   fillCardQuote(quote, body, compact, style);
   const tagRow = node('span', 'card-tags');
@@ -216,18 +236,19 @@ function cardElement(card, compact = false, expanded = false) {
   const actions = node('div', 'card-actions');
   const reply = node('button');
   reply.type = 'button';
+  reply.setAttribute('aria-label', `답글 ${card.reply_count || 0}개, 카드 열기`);
   if (expanded) {
     reply.dataset.compose = 'reply';
     reply.style.display = 'inline-flex';
     reply.setAttribute('aria-label', '이 카드에 답글 쓰기');
   } else reply.dataset.open = card.id;
-  reply.append(icon('reply'), document.createTextNode(' 답글 '), node('span', '', card.reply_count || 0));
+  reply.append(icon('reply'), node('span', 'action-label', '답글'), node('span', 'action-count', card.reply_count || 0));
   const like = node('button');
   like.type = 'button'; like.dataset.reaction = 'like'; like.dataset.cardId = card.id;
   like.setAttribute('aria-label', card.is_liked ? '공감 취소' : '공감');
   like.setAttribute('aria-pressed', String(!!card.is_liked));
   like.disabled = reactionPending.has(`like:${card.id}`) || !canReact(!!card.is_liked);
-  like.append(icon('heart'), document.createTextNode(` ${card.like_count || 0}`));
+  like.append(icon('heart'), node('span', 'action-count', card.like_count || 0));
   if (card.kind !== 'event') actions.append(reply, like);
   if (!compact && card.kind !== 'event') {
     const save = node('button', 'save');
@@ -240,6 +261,7 @@ function cardElement(card, compact = false, expanded = false) {
   }
   const share = node('button', 'card-share', '공유');
   share.type = 'button'; share.dataset.shareCard = card.id;
+  share.setAttribute('aria-label', '카드 공유하기');
   actions.append(share);
   item.append(actions);
   if (session?.user) {
@@ -736,6 +758,11 @@ function installFeatures() {
     if (!panel.hidden) input.focus();
   });
   $('#event-start').addEventListener('click', () => openComposer('event'));
+  $('#event-photo-file').addEventListener('change', event => {
+    const file = event.target.files?.[0];
+    if (file) void selectEventPhoto(file);
+  });
+  $('#event-photo-clear').addEventListener('click', () => { clearEventPhoto(); recordDraft(); });
   $('#event-select-center').addEventListener('click', () => {
     const center = eventMap?.getCenter();
     if (center) selectEventPosition(center);
@@ -859,10 +886,73 @@ function currentStyle() {
     boxColor: $('input[name="boxColor"]:checked')?.value || 'default' };
 }
 function chosenPhoto() { return selectedPhotoKey || 'plain'; }
+function clearEventPhoto() {
+  eventPhotoRun++;
+  if (eventPhotoPreviewUrl) URL.revokeObjectURL(eventPhotoPreviewUrl);
+  eventPhotoPreviewUrl = null; eventPhotoBlob = null; eventPhotoRequestId = null;
+  eventPhotoPreparing = false; eventPhotoError = '';
+  $('#event-photo-file').value = '';
+  $('#event-photo-clear').hidden = true;
+  const status = $('#event-photo-status');
+  status.textContent = 'JPG·PNG·WebP · 10MB 이하 · 추가 쭈 없음';
+  status.classList.remove('is-error');
+  if (kind === 'event') { applyComposeStyle(); updateComposer(); }
+}
+async function prepareEventPhoto(file) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024)
+    throw new Error('JPG·PNG·WebP 사진을 10MB 이하로 골라 주세요.');
+  let source, temporaryUrl;
+  try {
+    if (typeof createImageBitmap === 'function') source = await createImageBitmap(file);
+    else {
+      temporaryUrl = URL.createObjectURL(file);
+      source = new Image(); source.src = temporaryUrl;
+      await source.decode();
+    }
+    const width = source.width || source.naturalWidth, height = source.height || source.naturalHeight;
+    if (!width || !height || width * height > 40000000)
+      throw new Error('사진 크기가 너무 커요. 다른 사진을 골라 주세요.');
+    const scale = Math.min(1, 1600 / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
+    let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .84));
+    if (blob?.size > 3 * 1024 * 1024)
+      blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .7));
+    if (!blob || blob.size > 3 * 1024 * 1024) throw new Error('사진을 줄일 수 없어요. 다른 사진을 골라 주세요.');
+    return blob;
+  } finally { source?.close?.(); if (temporaryUrl) URL.revokeObjectURL(temporaryUrl); }
+}
+async function selectEventPhoto(file) {
+  if (!file || kind !== 'event' || busy) return;
+  const run = ++eventPhotoRun;
+  eventPhotoPreparing = true; eventPhotoError = '';
+  $('#event-photo-status').textContent = '사진을 준비하는 중이에요…';
+  $('#event-photo-status').classList.remove('is-error');
+  updateComposer();
+  try {
+    const blob = await prepareEventPhoto(file);
+    if (run !== eventPhotoRun || kind !== 'event' || backdrop.hidden) return;
+    if (eventPhotoPreviewUrl) URL.revokeObjectURL(eventPhotoPreviewUrl);
+    eventPhotoBlob = blob; eventPhotoPreviewUrl = URL.createObjectURL(blob);
+    eventPhotoRequestId = crypto.randomUUID();
+    $('#event-photo-status').textContent = `${file.name.slice(0, 40)} · 내 사진 적용`;
+    $('#event-photo-clear').hidden = false;
+    applyComposeStyle(); recordDraft();
+  } catch (error) {
+    if (run !== eventPhotoRun || backdrop.hidden) return;
+    eventPhotoError = error.message || '사진을 읽지 못했어요. 다시 선택해 주세요.';
+    $('#event-photo-status').textContent = eventPhotoError;
+    $('#event-photo-status').classList.add('is-error');
+  } finally { if (run === eventPhotoRun) { eventPhotoPreparing = false; updateComposer(); } }
+}
 function applyComposeStyle() {
   const preview = $('.compose-photo'), style = currentStyle();
   const photo = $('#note-photo-pick').hidden || chosenPhoto() === 'plain' ? backgroundKey : chosenPhoto();
   setPhotoBackground(preview, photo);
+  if (kind === 'event' && eventPhotoPreviewUrl)
+    preview.style.backgroundImage = `url("${eventPhotoPreviewUrl}")`;
   applyVisualStyle(preview, style);
   if (!backdrop.hidden) updateComposer();
 }
@@ -924,6 +1014,7 @@ function localComposerContent() {
   return { kind, editingId, body: text.value, tags: tags.value, style: currentStyle(),
     identity: $('input[name="identity"]:checked')?.value || 'anonymous', backgroundKey,
     eventPosition: kind === 'event' && !editingId ? eventPosition : null,
+    eventPhotoSelected: kind === 'event' && !editingId ? !!eventPhotoBlob : false,
     radius: $('#event-radius').value, hours: $('#event-hours').value,
     requestId: kind === 'event' && !editingId ? publishRequestId : null };
 }
@@ -974,6 +1065,12 @@ function restoreLocalComposer() {
     $('#event-hours').value = /^\d{1,2}$/.test(String(content.hours)) ? String(content.hours) : '1';
     if (validCardId(content.requestId)) publishRequestId = content.requestId;
     if (eventPosition) $('#event-location-status').textContent = '이전에 고른 이벤트 위치를 복구했어요.';
+    if (content.eventPhotoSelected) {
+      eventPhotoError = '이전 사진은 다시 선택해 주세요. 기본 사진으로 바꿀 수도 있어요.';
+      $('#event-photo-status').textContent = eventPhotoError;
+      $('#event-photo-status').classList.add('is-error');
+      $('#event-photo-clear').hidden = false;
+    }
   }
   applyComposeStyle(); updateEventPrice();
   localComposerDirty = JSON.stringify(localComposerContent()) !== localComposerBaseline;
@@ -1013,6 +1110,8 @@ function setComposerInputs() {
   text.disabled = disabled; tags.disabled = disabled;
   $('#card-location-button').disabled = disabled;
   for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) $(selector).disabled = disabled;
+  $('#event-photo-file').disabled = disabled || eventPhotoPreparing;
+  $('#event-photo-clear').disabled = disabled || eventPhotoPreparing;
   document.querySelectorAll('.note-color-choice input, input[name="photo-choice"]').forEach(input => { input.disabled = disabled; });
   document.querySelectorAll('input[name="identity"]').forEach(input => { input.disabled = disabled; });
 }
@@ -1066,11 +1165,13 @@ function updateComposer() {
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
   else if (kind !== 'event' && !editingId && !writingPosition) composeMessage.textContent = '위치를 켜고 확인한 뒤 등록할 수 있어요.';
   else if (kind === 'event' && !editingId && !eventPosition) composeMessage.textContent = '지도에서 이벤트 중심을 정해 주세요.';
+  else if (kind === 'event' && eventPhotoPreparing) composeMessage.textContent = '사진을 준비하는 중이에요.';
+  else if (kind === 'event' && eventPhotoError) composeMessage.textContent = eventPhotoError;
   else if (kind === 'event' && !editingId && !validEventOptions()) composeMessage.textContent = '반경과 시간을 범위 안의 정수로 입력해 주세요.';
   else composeMessage.textContent = busy ? (editingId ? '수정 중' : '등록 중')
     : kind === 'event' && !editingId ? '이벤트 범위와 금액을 확인해 주세요.'
       : $('input[name="identity"]:checked')?.value === 'nickname' ? '월드 닉네임 공개' : '익명 카드';
-  submit.disabled = busy || draftLoading || replyDueChecking || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
+  submit.disabled = busy || draftLoading || replyDueChecking || eventPhotoPreparing || !!eventPhotoError || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
     || text.value.length > 200 || !values
     || (kind !== 'event' && !editingId && !writingPosition)
     || (kind === 'event' && !editingId && (!eventPosition || !validEventOptions()));
@@ -1098,12 +1199,14 @@ async function openComposer(mode, card = null) {
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
+  clearEventPhoto();
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
   backgroundKey = editingId ? card.background_key : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
   $('#note-photo-pick').hidden = !!editingId || kind !== 'memo';
+  $('#event-photo-choice').hidden = kind !== 'event' || !!editingId;
   $('#compose-more').open = false;
   $('#photo-gallery').hidden = true; $('#photo-gallery-toggle').setAttribute('aria-expanded', 'false');
   $('#photo-grid').replaceChildren(); photoPage = 0; selectedPhotoKey = null;
@@ -1169,6 +1272,7 @@ function closeComposer(saveDraft = true) {
   } else if (editingId || kind === 'event') clearLocalComposer();
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
   backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
+  clearEventPhoto();
   setCardLocationSwitch(false, '카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.');
   clearTimeout(composerMapTimer); eventMap?.destroy(); eventMap = null; lockPage(false);
   if (focusBefore?.isConnected) focusBefore.focus({ preventScroll: true });
@@ -1181,6 +1285,8 @@ async function publishCard() {
   const identityMode = $('input[name="identity"]:checked')?.value === 'nickname' ? 'nickname' : 'anonymous';
   const selectedPhoto = kind === 'memo' && !editId ? chosenPhoto() : 'plain';
   const selectedPhotoRequestId = photoRequestId;
+  const selectedEventPhoto = kind === 'event' && !editId ? eventPhotoBlob : null;
+  const selectedEventPhotoRequestId = eventPhotoRequestId;
   if (kind === 'comment' && !editId && archiveDueThisMonth(parentArchiveDue(cache.get(parentId)))
     && !window.confirm(`상위 카드가 ${dateLabel(parentArchiveDue(cache.get(parentId)))}에 공개 종료될 예정이에요. 이 답글도 함께 삭제될 수 있습니다. 등록할까요?`)) return;
   if ((composerPhotoOverflows() || cardPhotoOverflows(body, values))
@@ -1218,22 +1324,49 @@ async function publishCard() {
   if (identity.user.id !== actionUserId) {
     draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer(); composeMessage.textContent = '계정이 변경됐어요. 작성창을 다시 열어 주세요'; return;
   }
+  let eventPhotoPath = null;
+  if (publishKind === 'event' && selectedEventPhoto) {
+    eventPhotoPath = `${actionUserId}/${selectedEventPhotoRequestId}.jpg`;
+    try {
+      const { error: uploadError } = await client.storage.from(EVENT_PHOTO_BUCKET).upload(
+        eventPhotoPath, selectedEventPhoto, { contentType: 'image/jpeg', upsert: false, cacheControl: '300' });
+      if (uploadError) {
+        // Retrying the same request can encounter the file uploaded just before a lost response.
+        if (String(uploadError.statusCode) !== '409' && !/already exists|duplicate/i.test(uploadError.message || ''))
+          throw uploadError;
+      }
+    } catch (uploadError) {
+      console.warn('Note event photo upload:', uploadError);
+      busy = false; setComposerInputs(); updateComposer();
+      composeMessage.textContent = '사진을 올리지 못했어요. 이벤트 비용은 차감되지 않았어요. 다시 시도해 주세요.';
+      return;
+    }
+  }
   let data, error;
   try {
     if (editId) {
       ({ data, error } = await query().from('cards').update({ body, tags: values, identity_mode: identityMode }).eq('id', editId).select('id').maybeSingle());
     } else if (publishKind === 'event') {
-      data = await noteRpc('publish_event', { p_request_id: publishRequestId, p_body: body, p_tags: values,
+      data = await noteRpc(eventPhotoPath ? 'publish_event_with_photo' : 'publish_event', { p_request_id: publishRequestId, p_body: body, p_tags: values,
         p_identity_mode: identityMode, p_style: currentStyle(), p_lat: eventPosition.latitude,
         p_lon: eventPosition.longitude, p_radius_km: Number($('#event-radius').value),
-        p_starts_at: new Date().toISOString(), p_duration_hours: Number($('#event-hours').value) });
+        p_starts_at: new Date().toISOString(), p_duration_hours: Number($('#event-hours').value),
+        ...(eventPhotoPath ? { p_photo_path: eventPhotoPath } : {}) });
     } else {
       data = await noteRpc('publish_card', { p_request_id: publishRequestId, p_body: body, p_tags: values,
         p_identity_mode: identityMode, p_style: currentStyle(), p_lat: writingPosition?.latitude,
         p_lon: writingPosition?.longitude, p_parent_id: publishParent });
     }
-    if (data?.ok === false) throw new Error('게시가 완료되지 않았어요.');
+    if (data?.ok === false) throw Object.assign(new Error('게시가 완료되지 않았어요.'), { code: 'EVENT_REJECTED' });
   } catch (cause) { error = cause; }
+  if (error && eventPhotoPath && error.code) {
+    // A rejected database transaction leaves the uploaded file unattached.
+    try {
+      const { error: cleanupError } = await client.storage.from(EVENT_PHOTO_BUCKET).remove([eventPhotoPath]);
+      if (cleanupError) throw cleanupError;
+    }
+    catch (cleanupError) { console.warn('Note event photo cleanup:', cleanupError); }
+  }
   const publishedId = data?.id || data?.card_id;
   if (session?.user?.id !== actionUserId) { busy = false; setComposerInputs(); updateComposer(); return; }
   if (!error && publishedId && draftToken) {
@@ -1683,7 +1816,7 @@ function receiveAuth(current) {
     notificationController?.close?.();
     feedRun++; detailRun++; cache.clear(); stack.length = 0;
     slot.replaceChildren(); replies.replaceChildren(); state(list, '카드를 불러오는 중이에요.');
-    closeManagement(true); backdrop.hidden = true; lockPage(false);
+    closeManagement(true); backdrop.hidden = true; clearEventPhoto(); lockPage(false);
     text.value = ''; tags.value = ''; editingId = null; composerUserId = null;
     showFeed(!initialCardId);
   }
