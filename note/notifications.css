@@ -1,0 +1,27 @@
+.note-tools .nn-trigger{min-height:44px;font-size:14px;gap:7px}
+.nn-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;min-height:22px;padding:2px 6px;border-radius:999px;background:var(--accent-soft);color:var(--ink);font-size:12px;font-weight:700;line-height:1.4}
+.nn-backdrop{position:fixed;inset:0;z-index:115;display:grid;place-items:center;padding:16px;background:rgb(25 26 48 / .46);overscroll-behavior:contain}
+.nn-dialog{display:flex;flex-direction:column;width:min(100%,600px);max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 20px 70px rgb(26 27 51 / .18);color:var(--ink);font-family:var(--font-b);font-size:16px;line-height:1.6;overscroll-behavior:contain}
+.nn-dialog .button{min-height:44px;padding:10px 14px;font-size:14px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.nn-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;padding:18px 20px 10px}
+.nn-heading h2{margin:0;font-size:22px;font-weight:700;overflow-wrap:anywhere}
+.nn-heading>.button{flex-shrink:0}
+.nn-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;padding:0 20px 14px;border-bottom:1px solid var(--line)}
+.nn-summary{margin:0;font-size:14px;color:var(--ink-2);overflow-wrap:anywhere}
+.nn-body{flex:1 1 auto;min-height:6rem;overflow:auto;padding:0 20px;overscroll-behavior:contain}
+.nn-list{margin:0;padding:0;list-style:none}
+.nn-item{padding:18px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.nn-copy{margin:0 0 7px;font-size:16px;font-weight:400}
+.nn-unread .nn-copy{font-weight:700}
+.nn-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.nn-meta>span{font-weight:700}
+.nn-unread .nn-meta>span{color:var(--ink)}
+.nn-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.nn-empty{padding:30px 0;margin:0;text-align:center;color:var(--ink-2);font-size:16px;overflow-wrap:anywhere}
+.nn-pagination{display:flex;justify-content:center;padding:14px 0}
+.nn-pagination:empty{display:none}
+.nn-status{flex-shrink:0;min-height:1.6em;margin:0;padding:12px 20px;color:var(--ink-2);font-size:14px;overflow-wrap:anywhere}
+.nn-status:empty{padding-top:5px;padding-bottom:5px;min-height:0}
+.nn-dialog :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:420px){.nn-backdrop{padding:8px}.nn-dialog{max-height:calc(100dvh - 16px);border-radius:18px}.nn-heading{padding:14px 14px 10px}.nn-toolbar{padding:0 14px 12px}.nn-body{padding:0 14px}.nn-status{padding-left:14px;padding-right:14px}}
+@media(max-height:420px){.nn-body{flex:0 0 auto;overflow:visible}.nn-heading{padding-top:10px}.nn-status{padding-top:8px;padding-bottom:8px}}

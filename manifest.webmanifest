@@ -1,0 +1,15 @@
+{
+  "name": "오쭈다월드",
+  "short_name": "오쭈다월드",
+  "description": "나만의 작은 방을 꾸미고 친구 방에 놀러 가는 곳",
+  "lang": "ko",
+  "start_url": "./world.html",
+  "display": "standalone",
+  "background_color": "#EDEFF9",
+  "theme_color": "#F0679A",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

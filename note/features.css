@@ -1,0 +1,20 @@
+/* Restored Note features use the same World font and colour tokens. */
+select{font:inherit;color:inherit}
+.note-feature-message,.note-notice{margin:12px 0;padding:11px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:13px;overflow-wrap:anywhere}
+.note-feature-message{color:var(--accent)}
+.note-notice{border-left:4px solid var(--accent);white-space:pre-wrap}
+.note-notice p{margin:0}.note-notice p+p{margin-top:7px}
+.note-search-form{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.note-search-form label{grid-column:1/-1;margin:0}.note-search-form select{max-width:130px;min-height:43px;padding:8px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+.note-search-form input{min-width:0;color:var(--ink)}.note-search-form button{min-height:43px}
+.note-collection-tabs{background:var(--surface);margin-bottom:9px}
+.card-actions{flex-wrap:wrap}.card-actions button[aria-pressed="true"]{color:var(--accent)}
+.card-actions button[aria-pressed="true"] svg{fill:var(--accent-soft)}
+.card-actions .card-share{font-size:12px}.card-actions .save{margin-left:auto}
+.note-share-url{display:block;width:100%;min-width:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);font-size:13px}
+.note-draft-tools{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:10px 20px;border-top:1px solid var(--line)}
+.note-draft-tools .button{min-height:36px;padding:6px 11px}.note-draft-status{flex-basis:100%;margin:0;color:var(--ink-2);font-size:11px;overflow-wrap:anywhere}
+@media(max-width:520px){.note-search-form{grid-template-columns:110px minmax(0,1fr)}.note-search-form input{grid-column:2}.note-search-form button{width:100%}.note-draft-tools{padding:10px 14px}.card-actions{gap:11px}}
+/* Preserve a usable writing area when the viewport is shortened. */
+.composer-head,.composer-footer,.note-draft-tools{flex-shrink:0}.composer-body{min-height:0}
+@media(max-height:520px){.composer-body{padding-top:8px}.compose-context{display:none}.compose-photo{min-height:140px;aspect-ratio:auto}.compose-photo textarea{height:110px;font-size:20px}.note-draft-tools{gap:4px;padding:8px 14px}.note-draft-tools .button{min-height:32px;padding:5px 7px;font-size:11px}}
