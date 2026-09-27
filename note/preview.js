@@ -856,47 +856,6 @@ async function loadModerator(userId) {
     moderator = data === true; updateAuth();
   } catch (error) { console.warn('Note moderation role:', error); }
 }
-async function showModeration() {
-  if (!session?.user || !moderator) return;
-  const run = showManagement('노트 신고 관리');
-  state(managementBody, '신고를 불러오는 중이에요.');
-  try {
-    const data = await noteRpc('moderation_queue');
-    if (run !== managementRun) return;
-    managementBody.replaceChildren(node('p', 'management-help', '노트의 카드와 답글만 처리합니다. 숨김 처리하면 이어진 답글도 공개 화면에서 숨겨집니다.'));
-    if (!data?.length) managementBody.append(node('p', 'reply-empty', '접수된 신고가 없어요.'));
-    for (const report of data || []) {
-      const row = node('article', 'moderation-item');
-      row.append(node('p', 'moderation-date', `${dateLabel(report.created_at)} · ${report.status === 'resolved' ? '처리 완료' : '접수'} · ${report.hidden ? '숨김' : '공개'}`));
-      row.append(node('blockquote', '', report.body || '삭제된 카드'));
-      row.append(node('p', 'moderation-reason', `신고 사유: ${report.reason || ''}`));
-      const actions = node('div', 'moderation-actions');
-      if (report.card_id) actions.append(managementButton(report.hidden ? '카드 복구' : '카드 숨김', () => confirmModeration(report)));
-      if (report.status !== 'resolved') actions.append(managementButton('처리 완료', () => managementAction(
-        () => noteRpc('resolve_report', { p_report_id: report.report_id }), showModeration
-      )));
-      row.append(actions); managementBody.append(row);
-    }
-  } catch (error) {
-    if (run !== managementRun) return;
-    console.warn('Note moderation queue:', error); state(managementBody, '신고를 불러오지 못했어요. 관리자 권한을 확인해 주세요.');
-    managementFooter.append(managementButton('다시 시도', showModeration));
-  }
-}
-function confirmModeration(report) {
-  const hide = !report.hidden;
-  showManagement(hide ? '카드 숨김 처리' : '카드 복구');
-  managementBody.append(node('p', 'management-help', hide ? '카드와 이어진 답글을 공개 화면에서 숨깁니다.' : '카드와 이어진 답글을 다시 공개합니다. 별도로 숨김 처리된 답글은 유지됩니다.'));
-  const reason = reasonField('처리 사유');
-  managementFooter.append(managementButton('돌아가기', showModeration));
-  managementFooter.append(managementButton(hide ? '숨김 처리' : '복구', () => {
-    if (!validReason(reason)) return;
-    const value = reason.value.trim();
-    managementAction(() => noteRpc('moderate_card', { p_card_id: report.card_id, p_hidden: hide, p_reason: value }),
-      async () => { await refreshCards(false); await showModeration(); });
-  }, true));
-  reason.focus();
-}
 function installManagement() {
   const account = node('p', 'mobile-account-status'); account.id = 'mobile-account-status';
   const tools = node('div', 'note-tools');
