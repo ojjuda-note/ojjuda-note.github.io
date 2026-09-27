@@ -555,7 +555,7 @@ function shareCard(cardId) {
 }
 function selectCollection(mode) {
   feedMode = mode; message(''); showFeed();
-  $('#feed-title').textContent = mode === 'all' ? '익명카드' : '메모함';
+  $('#feed-title').textContent = mode === 'all' ? '오쭈다노트 카드' : '메모함';
   $('#note-collection-tabs').hidden = mode === 'all';
   $('.feed-sort-tabs').hidden = mode !== 'all';
   document.querySelectorAll('[data-collection]').forEach(button => {
