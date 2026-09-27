@@ -397,7 +397,7 @@ function modelHouse(t = 0, minS = 0) {   // 집: 옆(3→)·위(2→)·뒤(1→)
     fr(wall(mid, top), 1, W % 2 ? 0 : -0.1);
     if (W >= 4) { fr(wall(1, top, 0), -1, 0); fr(wall(W - 2, top, 0), -1, 0); } else { fr(wall(0, top, 0), -1, 0.12); fr(wall(W - 1, top, 0), -1, -0.12); }
     const door = face(wall(mid, 0), fz); place(M, rect(add(door, [0, -0.03, 0]), fz, [1, 0, 0], 0.1, 0.15), '#C98A5A', [{ q: add(door, [-0.035, 0.05, 0]), into: wall(mid, 0) }, { q: add(door, [0.035, -0.11, 0]), into: wall(mid, 0) }]);
-    const step = boxE([0.16, 0.03, 0.09], add(door, [0, -GRID / 2 + 0.03, 0.09]), '#B9AFA0'); M.els.push(step); M.rects.push(rect(add(door, [0, -GRID / 2 + 0.03, 0]), fz, [1, 0, 0], 0.16, 0.03)); pin(M, step, wall(mid, 0), add(door, [0, -GRID / 2 + 0.06, 0.09]), Yax);
+    const step = boxE([0.23, 0.03, 0.09], add(door, [0, -GRID / 2 + 0.03, 0.09]), '#B9AFA0'); M.els.push(step); M.rects.push(rect(add(door, [0, -GRID / 2 + 0.03, 0]), fz, [1, 0, 0], 0.23, 0.03)); pin(M, step, wall(mid, 0), add(door, [-0.15, -GRID / 2 + 0.06, 0.09]), Yax);   // 문 나사와 서로 길을 막지 않게
     for (let y = 0; y <= top; y++) for (let x = 0; x < W; x += 2) { if (y === 0 && Math.abs(x - mid) < 1) continue; if (y < top && y > 0 && (x + y) % 4) continue;   // 창문: 층마다
       const w = face(wall(x, y), fz); if (!place(M, rect(w, fz, [1, 0, 0], 0.11, 0.11), '#9FD8F5', [{ q: w, into: wall(x, y) }])) continue;
       const sill = boxE([0.14, 0.022, 0.07], add(w, [0, -0.15, 0.07]), '#FFF6EC'); M.els.push(sill); M.rects.push(rect(add(w, [0, -0.15, 0]), fz, [1, 0, 0], 0.14, 0.03)); pin(M, sill, wall(x, y), add(w, [0, -0.128, 0.07]), Yax); }
@@ -530,10 +530,32 @@ function gridHit(lvl, o, d, len, skip) {
   for (let t = 0.02; t < len; t += GRID * 0.3) { const b = lvl.grid.get(cellKey(add(o, mul(d, t)), lvl.mid)); if (b && b.state === 'on' && !b.dyn && !skip.includes(b)) return b; }
   return null;
 }
-function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이 막고 있나요?
-  const o = add(s.p, mul(s.a, HEAD_H + 0.01));
-  if (Array.isArray(L)) return rayHit(o, s.a, 3, L, [s.thru, s.into]);
-  return gridHit(L, o, s.a, 9, [s.thru, s.into]) || rayHit(o, s.a, 9, L.special, [s.thru, s.into]);
+function screwPose(s) {
+  const E = s.thru;
+  if (!E.hinge) return { p: s.p, a: s.a };
+  const Q = axisRot(E.hinge.a, E.hinge.th);
+  return { p: add(E.hinge.p, mv(Q, sub(s.p, E.hinge.p))), a: mv(Q, s.a) };
+}
+function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 빼는 길을 막나요?
+  const radius2 = (HEAD_R * 2 - 0.002) ** 2, half = HEAD_H / 2 + HEAD_R - 0.002;
+  for (const z of L.screws) {
+    if (z === s || z.state !== 'in' && z.state !== 'out') continue;
+    const q = screwPose(z), rise = z.state === 'out' ? Math.min(1, z.t / 0.34) * 0.22 : 0;
+    const v = sub(o, add(q.p, mul(q.a, HEAD_H / 2 + rise))), along = dot(v, q.a), slope = dot(a, q.a);
+    let lo = 0, hi = len;
+    if (Math.abs(slope) < 1e-9) { if (Math.abs(along) > half) continue; }
+    else { const t0 = (-half - along) / slope, t1 = (half - along) / slope; lo = Math.max(lo, Math.min(t0, t1)); hi = Math.min(hi, Math.max(t0, t1)); if (lo > hi) continue; }
+    const vr = sub(v, mul(q.a, along)), ar = sub(a, mul(q.a, slope)), ar2 = dot(ar, ar);
+    const t = ar2 > 1e-9 ? Math.max(lo, Math.min(hi, -dot(vr, ar) / ar2)) : lo;
+    const d = add(vr, mul(ar, t));
+    if (dot(d, d) < radius2) return z;
+  }
+  return null;
+}
+function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나사가 막고 있나요?
+  const { p, a } = screwPose(s), o = add(p, mul(a, HEAD_H + 0.01));
+  if (Array.isArray(L)) return rayHit(o, a, 3, L, [s.thru, s.into]);
+  return gridHit(L, o, a, 9, [s.thru, s.into]) || rayHit(o, a, 9, L.special, [s.thru, s.into]) || screwHit(s, L, o, a, 9);
 }
 const STAGES = 500;
 const targetScrews = L => (L <= 1 ? 20 : Math.round(50 + 950 * Math.pow((Math.min(L, STAGES) - 2) / (STAGES - 2), 1.6)));   // 1단계 20개, 2단계 50개 → 500단계 1000개
@@ -673,29 +695,118 @@ function missionText(ms) {
 }
 const missionOk = ms => (ms.id === 'find' ? ms.found.size >= ms.need : ms.id === 'time' ? ms.t <= ms.need : ms.id === 'turns' ? ms.turns <= ms.need : !ms.bad);
 const STAGE_KEY = 'ojjuda-screw-stage';
+const PURCHASE_KEY = 'ojjuda-screw-purchases-v1';
 function loadStage() { try { const v = parseInt(localStorage.getItem(STAGE_KEY), 10); return v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
 function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 function screw3d(api) {
   const st = { L: loadStage(), score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
+  let buying = false;
+  let restoreBlocked = false, retryAt = 0;
+  const walletUser = api.getUserId?.() || null;
+  const sameWallet = () => walletUser && api.getUserId?.() === walletUser;
+  const purchaseKey = L => walletUser ? `${PURCHASE_KEY}:${walletUser}:${L}` : null;
+  const uuid = s => typeof s === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(s);
+  function loadPurchases(L) {
+    const empty = { paid: [], pending: {} }, key = purchaseKey(L);
+    if (!key) return empty;
+    try {
+      const raw = JSON.parse(localStorage.getItem(key) || '{}'), seen = new Set();
+      if (Array.isArray(raw.paid)) for (const p of raw.paid) {
+        if ((p.kind !== 'box' && p.kind !== 'buffer') || !uuid(p.id) || seen.has(p.id)) continue;
+        if (empty.paid.filter(q => q.kind === p.kind).length >= (p.kind === 'box' ? BOX_MAX - 2 : BUF_MAX - BUF_N)) continue;
+        empty.paid.push({ kind: p.kind, id: p.id }); seen.add(p.id);
+      }
+      for (const kind of ['box', 'buffer']) if (uuid(raw.pending?.[kind]) && !seen.has(raw.pending[kind])) empty.pending[kind] = raw.pending[kind];
+    } catch (_) { /* 저장 기록이 없으면 빈 상태에서 시작해요 */ }
+    return empty;
+  }
+  function savePurchases() {
+    const key = purchaseKey(st.L);
+    if (!key) return false;
+    try { localStorage.setItem(key, JSON.stringify(st.purchases)); return true; } catch (_) { return false; }
+  }
   if (typeof window !== 'undefined') { window.__ojjScrew3d = st; window.__ojjS3d = { rayHit, pose, F, sepFront, LENS_R }; }   // 시험용
   const newBox = () => (st.qi < st.lvl.queue.length ? { c: st.lvl.queue[st.qi++], n: 0, res: 0, close: 0 } : null);
   function say(m, t) { st.msg = m; st.msgT = t; }
   function start(L) { st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl);
-    let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4); }
+    let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
+    if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
+  }
   const view = () => mm(rx(st.pitch), ry(st.yaw));
   function project(p, V) { const q = mv(V, p), sc = st.sc, k = F / (F - q[2] / sc), s = SC * st.zm / sc; return { x: CX + st.pan[0] + q[0] * s * k, y: CY + st.pan[1] - q[1] * s * k, z: q[2], k }; }
   function zoomAt(f, x, y) { const z1 = Math.max(0.6, Math.min(9, st.zm * f)), vx = (x - CX - st.pan[0]) / st.zm, vy = (y - CY - st.pan[1]) / st.zm; st.pan = [x - CX - vx * z1, y - CY - vy * z1]; st.zm = z1; }
   const BTN = [{ x: 336, y: 406, t: '+', f: () => zoomAt(1.4, CX, CY) }, { x: 336, y: 444, t: '−', f: () => zoomAt(1 / 1.4, CX, CY) }, { x: 336, y: 482, t: '⤢', f: () => { st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; } }];
   const zoomBtn = (x, y) => { const b = BTN.find(q => Math.hypot(x - q.x, y - q.y) < 17); return b && b.f; };
-  function buyBox() {   // 색상 상자 +1 (10포인트, 최대 4개)
-    if (st.boxes.length >= BOX_MAX) return; if (st.score < 10) { say('포인트가 모자라요 (상자 10P)', 1.1); return; }
-    const nb = newBox(); if (!nb) { say('더 나올 색이 없어요', 1.1); return; }
-    st.score -= 10; api.setScore(st.score); st.boxes.push(nb); say('색상 상자 +1 (−10P)', 0.9); pullFromBuffer();
+  const coins = () => { const n = api.getCoins?.(); return Number.isFinite(n) ? n : null; };
+  function grantUpgrade(kind, id) {
+    if (st.appliedPurchaseIds.has(id)) return;
+    st.appliedPurchaseIds.add(id);
+    if (kind === 'box' && st.boxes.length < BOX_MAX) { st.boxes.push(newBox()); pullFromBuffer(); }
+    if (kind === 'buffer' && st.buf.length < BUF_MAX) st.buf.push(null);
   }
-  function buyBuf() {   // 보관 칸 +1 (3포인트, 최대 3칸 더)
-    if (st.buf.length >= BUF_MAX) return; if (st.score < 3) { say('포인트가 모자라요 (보관 칸 3P)', 1.1); return; }
-    st.score -= 3; api.setScore(st.score); st.buf.push(null); say('보관 칸 +1 (−3P)', 0.9);
+  function confirmPurchase(kind, id) {
+    if (!st.purchases.paid.some(p => p.id === id)) st.purchases.paid.push({ kind, id });
+    if (st.purchases.pending[kind] === id) delete st.purchases.pending[kind];
+    savePurchases();
+    grantUpgrade(kind, id);
+  }
+  async function verifyPurchases(settlePending) {
+    if (buying || !api.buyScrew || !sameWallet()) return;
+    buying = true; restoreBlocked = false;
+    const L = st.L, purchases = st.purchases;
+    try {
+      for (const p of [...purchases.paid]) {
+        let r;
+        try { r = await api.buyScrew(p.kind, p.id, L, true); } catch (_) { r = { reason: 'server_error' }; }
+        if (!sameWallet()) { restoreBlocked = true; return; }
+        if (r?.ok && r.stage === L) grantUpgrade(p.kind, p.id);
+        else if (['not_found', 'request_conflict', 'invalid'].includes(r?.reason)) { purchases.paid = purchases.paid.filter(q => q.id !== p.id); savePurchases(); }
+        else restoreBlocked = true;
+      }
+      for (const kind of ['box', 'buffer']) {
+        const id = purchases.pending[kind]; if (!id) continue;
+        let r;
+        try { r = await api.buyScrew(kind, id, L, true); } catch (_) { r = { reason: 'server_error' }; }
+        if (!sameWallet()) { restoreBlocked = true; return; }
+        if (r?.ok && r.stage === L) confirmPurchase(kind, id);
+        else if (r?.reason === 'not_found') { if (settlePending) { delete purchases.pending[kind]; savePurchases(); } }
+        else if (['request_conflict', 'invalid'].includes(r?.reason)) { delete purchases.pending[kind]; savePurchases(); }
+        else restoreBlocked = true;
+      }
+    } finally { buying = false; retryAt = Date.now() + 3000; if (restoreBlocked) say('구매 내역을 확인하는 중이에요', 3); }
+  }
+  async function spend(kind, price) {
+    if (buying || restoreBlocked) return false;
+    const balance = coins();
+    if (!sameWallet() || !api.buyScrew || (balance === null && !st.purchases.pending[kind])) { say('쭈 지갑이 연결되면 구매할 수 있어요', 1.4); return false; }
+    if (balance < price && !st.purchases.pending[kind]) { say(`${price}쭈가 필요해요`, 1.2); return false; }
+    if (!st.purchases.pending[kind]) {
+      st.purchases.pending[kind] = crypto.randomUUID();
+      if (!savePurchases()) { delete st.purchases.pending[kind]; say('구매 기록을 저장할 수 없어요', 1.4); return false; }
+    }
+    buying = true; say('구매 중…', 2);
+    try {
+      const id = st.purchases.pending[kind], r = await api.buyScrew(kind, id, st.L, false);
+      if (!sameWallet()) { say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 2); return false; }
+      if (!r?.ok || r.stage !== st.L) {
+        if (['coins', 'request_conflict', 'invalid'].includes(r?.reason)) { delete st.purchases.pending[kind]; savePurchases(); }
+        say(r?.reason === 'coins' ? `${price}쭈가 필요해요` : '지금은 구매할 수 없어요', 1.4); return false;
+      }
+      confirmPurchase(kind, id);
+      return true;
+    } catch (_) { say('구매를 완료하지 못했어요', 1.4); return false; }
+    finally { buying = false; }
+  }
+  async function buyBox() {   // 색상 상자 +1 (10쭈, 해당 단계만)
+    if (buying || restoreBlocked || st.over || st.next || st.boxes.length >= BOX_MAX) return;
+    if (st.qi >= st.lvl.queue.length) { say('더 나올 색이 없어요', 1.1); return; }
+    if (!await spend('box', 10)) return;
+    say('색상 상자 +1 (10쭈)', 0.9);
+  }
+  async function buyBuf() {   // 보관 칸 +1 (3쭈, 해당 단계만)
+    if (buying || restoreBlocked || st.over || st.next || st.buf.length >= BUF_MAX || !await spend('buffer', 3)) return;
+    say('보관 칸 +1 (3쭈)', 0.9);
   }
   const shopBtn = (x, y) => (st.boxes.length < BOX_MAX && x >= 344 - BUY_W && x <= 344 && y >= BOX_Y && y <= BOX_Y + BOX_H ? buyBox : st.buf.length < BUF_MAX && x >= 336 - BUY_W && x <= 336 && y >= BUF_Y && y <= BUF_Y + 50 ? buyBuf : null);
   function bestBox(color) {   // 같은 색 상자가 여럿이면 더 많이 찬 상자부터 채워요
@@ -730,17 +841,18 @@ function screw3d(api) {
     return best;
   }
   function tap(x, y) {
-    if (st.over || st.next) return;
+    if (buying || restoreBlocked || (walletUser && !sameWallet()) || st.over || st.next) return;
     const s = pick(x, y);
     if (!s || s.state !== 'in') {   // 조각 뒤에 가려진 나사를 누르면 알려만 줘요
       const V = view(), hid = st.lvl.screws.some(z => z.state === 'in' && (() => { const hp = headPoint(z, V); return Math.hypot(hp.x - x, hp.y - y) < 22; })());
       if (hid) { say('물체가 가리고 있어서 뺄 수 없어요', 1.1); if (st.ms.id === 'nomiss') st.ms.bad = true; } return;
     }
-    if (blocked(s, st.lvl)) { st.shake = { s, t: 0.35 }; say('다른 조각이 막고 있어요', 0.9); if (st.ms.id === 'nomiss') st.ms.bad = true; return; }
+    const blocker = blocked(s, st.lvl);
+    if (blocker) { st.shake = { s, t: 0.35 }; say(blocker.p ? '앞의 나사를 먼저 풀어 주세요' : '다른 조각이 막고 있어요', 0.9); if (st.ms.id === 'nomiss') st.ms.bad = true; return; }
     const h = st.heads.get(s) || { x, y };
     if (!send(s, h.x, h.y)) {
-      const canBuf = st.buf.length < BUF_MAX && st.score >= 3, canBox = st.boxes.length < BOX_MAX && st.score >= 10 && st.qi < st.lvl.queue.length;
-      if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (3P)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (10P)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
+      const balance = coins(), canBuf = st.buf.length < BUF_MAX && balance >= 3, canBox = st.boxes.length < BOX_MAX && balance >= 10 && st.qi < st.lvl.queue.length;
+      if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (3쭈)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (10쭈)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
       st.over = 1.3; say('보관 칸이 가득 찼어요', 1.3); return;
     }
     s.state = 'out'; s.t = 0; release(s.thru); release(s.into);
@@ -772,6 +884,9 @@ function screw3d(api) {
     },
     onWheel(dy, x, y) { zoomAt(Math.exp(-dy * 0.0015), x, y); st.touched = true; },
     update(dt) {
+      if (buying) return;
+      if (walletUser && !sameWallet()) { restoreBlocked = true; say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 3); return; }
+      if (restoreBlocked) { if (Date.now() >= retryAt) void verifyPurchases(false); return; }
       st.t += dt; if (st.msgT > 0) st.msgT -= dt; if (st.shake && (st.shake.t -= dt) <= 0) st.shake = null;
       if (st.over) { st.over -= dt; if (st.over <= 0) api.end(st.score); return; }
       if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
@@ -795,24 +910,30 @@ function screw3d(api) {
         const pr = project(E.dyn.c, view()); if (pr.y > H + 140 || pr.x < -220 || pr.x > W + 220 || pr.y < -260 || E.dyn.t > 14) E.state = 'gone';
       }
       for (const s of st.lvl.screws) if (s.state === 'out') { s.t += dt; if (s.t >= 0.34) s.state = 'fly'; }
+      let landedInBuffer = false;
       for (const f of st.fly) {
         if (f.wait > 0) { f.wait -= dt; const h = st.heads.get(f.s); if (h) { f.fx = h.x; f.fy = h.y; } continue; }
         f.t += dt / 0.4; if (f.t < 1) continue;
         const s = f.s;
         if (f.to.kind === 'box') { const b = st.boxes[f.to.bi]; b.n++; b.res--; s.state = 'done'; st.score += 1; api.setScore(st.score); if (b.n === 3) b.close = 0.0001; }
-        else { st.buf[f.to.k] = s; s.state = 'buf'; }
+        else { st.buf[f.to.k] = s; s.state = 'buf'; landedInBuffer = true; }
       }
       st.fly = st.fly.filter(f => f.wait > 0 || f.t < 1);
+      if (landedInBuffer) pullFromBuffer();   // 도착 전 예약 중에 같은 색 상자가 열렸을 수 있어요
       st.boxes.forEach((b, i) => { if (b && b.close) { b.close += dt / 0.45; if (b.close >= 1) { st.boxes[i] = newBox(); pullFromBuffer(); } } });
       if (!st.next) st.ms.t += dt;
       if (!st.next && st.lvl.screws.every(s => s.state === 'done') && !st.fly.length && st.lvl.els.every(e => e.state === 'gone')) {
         const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
         st.next = 2; say(ok ? `다 분해했어요! 미션 성공 +${st.L * 10 + st.ms.bonus}` : `다 분해했어요! +${st.L * 10} (미션은 아쉬워요)`, 2);
       }
-      if (st.next && (st.next -= dt) <= 0) { const nL = Math.min(STAGES, st.L + 1); saveStage(nL); start(nL); if (st.L === STAGES && nL === STAGES) say(`${STAGES}단계 · 마지막 단계예요!`, 1.6); }
+      if (st.next && (st.next -= dt) <= 0) {
+        if (Object.keys(st.purchases.pending).length) { st.next = 0.1; if (Date.now() >= retryAt) void verifyPurchases(true); }
+        else { const nL = Math.min(STAGES, st.L + 1); saveStage(nL); start(nL); if (st.L === STAGES && nL === STAGES) say(`${STAGES}단계 · 마지막 단계예요!`, 1.6); }
+      }
       if (!st.touched) st.yaw += dt * 0.25;   // 처음엔 천천히 돌며 보여 줘요
     },
     draw(c) {
+      st.coins = coins();
       if (!st.bg) { st.bg = c.createLinearGradient(0, 0, 0, H); st.bg.addColorStop(0, '#FBF3EA'); st.bg.addColorStop(0.55, '#F6E9DD'); st.bg.addColorStop(1, '#EFDFD0'); } c.fillStyle = st.bg; c.fillRect(0, 0, W, H);
       c.fillStyle = '#23264A'; c.font = 'bold 16px sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'left'; c.fillText(`${st.L}단계 · ${st.lvl.name}`, 20, 28);
       c.textAlign = 'right'; c.fillStyle = '#626894'; c.font = '13px sans-serif'; c.fillText(`🔩 ${st.lvl.screws.filter(s => s.state === 'in').length}${st.hiddenN ? ` · 숨은 ${st.hiddenN}` : ''}`, 340, 28);
@@ -827,7 +948,7 @@ function screw3d(api) {
       };
       st.heads = new Map();
       const lv = st.lvl, alive = b => b && b.state === 'on' && !b.dyn;
-      const covers = lv.els.filter(o => o.state === 'on' && !o.dyn && !o.cell && (o.kind === 'block' || o.kind === 'wheel')).flatMap(o => obbs(o).map(b => ({ b, o })));   // 칸 블럭은 칸 지도로 바로 찾아요
+      const covers = lv.els.filter(o => o.state === 'on' && (!o.cell || o.dyn) && (o.kind === 'block' || o.kind === 'wheel')).flatMap(o => obbs(o).map(b => ({ b, o })));   // 고정 칸 블럭은 지도, 움직이는 블럭은 현재 위치로 가려요
       const coverOf = (pt, self) => { const res = [], g = lv.grid && lv.grid.get(cellKey(pt, lv.mid)); if (alive(g) && g !== self) { const l = sub(pt, g.c); if (Math.abs(l[0]) < GRID / 2 - 0.003 && Math.abs(l[1]) < GRID / 2 - 0.003 && Math.abs(l[2]) < GRID / 2 - 0.003) res.push(g); }
         for (const { b, o } of covers) { if (o === self) continue; const l = mv(tr(b.R), sub(pt, b.c)); if (Math.abs(l[0]) < b.h[0] - 0.003 && Math.abs(l[1]) < b.h[1] - 0.003 && Math.abs(l[2]) < b.h[2] - 0.003) res.push(o); } return res; };
       const buried = (pt, self) => { const cs = coverOf(pt, self); return cs.length > 0 && !(st.xrayOn && cs.every(o => o === st.xrayOn)); };   // 덮은 블럭을 투시하면 숨은 게 보여요
@@ -938,18 +1059,18 @@ function drawBoxes(c, st) {
     if (b && b.close) { rr(c, x, y, L.w, 14 + ease(b.close) * (BOX_H - 14), 16); c.fillStyle = shade(COLORS[b.c], 0.2); c.fill(); }
     c.restore();
   });
-  if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = 'rgba(255,255,255,0.7)'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 상자 사기 (10포인트)
-    c.fillStyle = '#6B5B4B'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.score >= 10 ? '#1F8F74' : '#B8A99A'; c.fillText('10P', bx + BUY_W / 2, BOX_Y + 54); }
+  if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = 'rgba(255,255,255,0.7)'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 상자 사기 (10쭈)
+    c.fillStyle = '#6B5B4B'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 10 ? '#1F8F74' : '#B8A99A'; c.fillText('10쭈', bx + BUY_W / 2, BOX_Y + 54); }
 }
 function drawBuffer(c, st) {
   const n = st.buf.length, buy = n < BUF_MAX, L = bufLay(n, buy), sc = Math.min(0.92, L.sp / 58 * 1.05), hr = Math.min(15.5, L.sp * 0.3);
   rr(c, 24, BUF_Y, 312, 50, 25); c.fillStyle = '#E7D9CB'; c.fill();
   c.fillStyle = '#A38F7C'; c.font = '11px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillText(`보관 칸 ${n}칸`, 180, BUF_Y - 9);
-  c.textAlign = 'right'; c.fillStyle = '#8A6FB8'; c.font = 'bold 11px sans-serif'; c.fillText(`⭐ ${st.score}P`, 336, BUF_Y - 9);   // 지금 포인트
+  c.textAlign = 'right'; c.fillStyle = '#8A6FB8'; c.font = 'bold 11px sans-serif'; c.fillText(`🪙 ${st.coins === null ? '지갑 연결 필요' : `${st.coins}쭈`}`, 336, BUF_Y - 9);
   const full = st.buf.filter(Boolean).length;
   for (let k = 0; k < n; k++) { const h = bufHole(k, n, buy); circ(c, h.x, h.y, hr); c.fillStyle = full >= n - 1 && !st.buf[k] ? 'rgba(240,103,154,0.28)' : 'rgba(35,38,74,0.14)'; c.fill(); const s = st.buf[k]; if (s && s !== 'res') drawScrew(c, h.x, h.y, COLORS[s.color], 0, sc); }
-  if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = 'rgba(255,255,255,0.75)'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (3포인트)
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#6B5B4B'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.score >= 3 ? '#1F8F74' : '#B8A99A'; c.fillText('3P', bx + BUY_W / 2 - 1, BUF_Y + 32); }
+  if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = 'rgba(255,255,255,0.75)'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (3쭈)
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#6B5B4B'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.coins >= 3 ? '#1F8F74' : '#B8A99A'; c.fillText('3쭈', bx + BUY_W / 2 - 1, BUF_Y + 32); }
   c.textBaseline = 'alphabetic';
 }
 
