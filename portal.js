@@ -253,14 +253,9 @@
       // A stored session is only UI state. Verify identity with Auth before checking roles.
       const { data: identity, error: identityError } = await client.auth.getUser();
       if (identityError || identity?.user?.id !== expectedId || version !== identityVersion) return;
-      const results = await Promise.allSettled([
-        client.from('app_admins').select('user_id').eq('user_id', expectedId).maybeSingle(),
-        client.schema('ojjuda_note').rpc('is_note_moderator')
-      ]);
+      const role = await client.from('app_admins').select('user_id').eq('user_id', expectedId).maybeSingle();
       if (version !== identityVersion || session?.user?.id !== expectedId) return;
-      const world = results[0].status === 'fulfilled' && !results[0].value.error && Boolean(results[0].value.data);
-      const note = results[1].status === 'fulfilled' && !results[1].value.error && results[1].value.data === true;
-      adminLink.hidden = !(world || note);
+      adminLink.hidden = Boolean(role.error) || !role.data;
     } catch (error) {
       console.warn('관리자 권한 확인 실패:', error);
     }

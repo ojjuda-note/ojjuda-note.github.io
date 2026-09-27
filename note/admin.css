@@ -74,3 +74,22 @@ textarea.na-input{min-height:110px;resize:vertical}
 @media(prefers-reduced-motion:reduce){.na-panel *{scroll-behavior:auto!important}}
 /* Let the whole dialog scroll when enlarged text leaves little vertical space. */
 @media(max-height:420px){.na-panel{display:block;overflow:auto;overscroll-behavior:contain}.na-layout{min-height:auto}.na-main{overflow:visible}.na-head,.na-status{position:static}}
+
+/* The same Note controls can live inside the World administrator's panel. */
+.na-backdrop.na-embedded{position:static;display:block;padding:0;background:transparent;isolation:auto}
+.na-backdrop.na-embedded[hidden]{display:none}
+.na-embedded .na-panel{width:100%;height:auto;min-height:0;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--ink,#23264a);font:inherit}
+.na-embedded .na-head{display:none}
+.na-embedded .na-layout{display:block;min-height:0}
+.na-embedded .na-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:4px;margin:0 0 12px;padding:5px;overflow:visible;border:1px solid var(--line,#daddf0);border-radius:18px;background:var(--surface-2,#f5f6fc)}
+.na-embedded .na-nav .na-button{justify-content:center;min-width:0;padding:9px 6px;text-align:center;white-space:normal;word-break:keep-all}
+.na-embedded .na-nav .na-button[aria-current="page"]{border-color:var(--accent,#f0679a);background:var(--accent-soft,#ffebf3);color:var(--ink,#23264a)}
+.na-embedded .na-main{padding:10px 0 22px;overflow:visible;scrollbar-gutter:auto}
+.na-embedded .na-status{padding:9px 0;border-top:1px solid var(--line,#daddf0);background:transparent}
+.na-embedded .na-status:empty::before{content:"노트 운영 변경은 작업 기록에 남습니다."}
+.na-embedded .na-button--primary{border-color:var(--accent,#ab3564);background:var(--accent,#ab3564);color:var(--on-accent,#fff)}
+.na-embedded .na-button--primary:hover:not(:disabled){border-color:var(--accent,#ab3564);background:var(--accent,#ab3564);filter:brightness(.94)}
+.na-embedded :is(.support-filter button,.support-form button){min-height:38px;padding:7px 12px;border:1px solid var(--line,#daddf0);border-radius:10px;background:var(--surface,#fff);color:var(--ink,#23264a);font:inherit;cursor:pointer}
+.na-embedded .support-filter button[aria-pressed="true"]{border-color:var(--accent,#f0679a);background:var(--accent-soft,#ffebf3)}
+.na-embedded .support-form button.primary{border-color:var(--accent,#ab3564);background:var(--accent,#ab3564);color:var(--on-accent,#fff)}
+@media(max-width:760px){.na-embedded .na-nav{grid-template-columns:repeat(auto-fit,minmax(85px,1fr));overflow:visible}.na-embedded .na-main{padding:10px 0 18px}}

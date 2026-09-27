@@ -1,10 +1,10 @@
-/* Independent Note administration. Only ojjuda_note RPCs are used here. */
+/* Note administration. World administrator rights are enforced by ojjuda_note RPCs. */
 (() => {
   'use strict';
   const PAGE_SIZE = 30;
   const TABS = [
     ['overview', '운영 현황'], ['settings', '운영 설정'], ['cards', '카드 · 답글'],
-    ['reports', '신고'], ['inquiries', '문의'], ['users', '이용 제한'], ['moderators', '운영자'], ['actions', '작업 기록']
+    ['reports', '신고'], ['inquiries', '문의'], ['users', '이용 제한'], ['actions', '작업 기록']
   ];
   const HELP = {
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
@@ -13,7 +13,6 @@
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
     inquiries: '이용자가 노트에 남긴 문의를 확인하고 답변합니다.',
     users: '노트에서의 활동만 제한합니다. 오쭈다월드 계정과 쭈에는 영향을 주지 않습니다.',
-    moderators: '노트 운영 권한을 별도로 지정합니다. 월드 관리자 권한은 변경되지 않습니다.',
     actions: '노트에서 이루어진 운영 변경과 처리 사유를 확인하세요.'
   };
   const ACTIONS = {
@@ -22,10 +21,9 @@
     remove_moderator: '운영자 해제', update_settings: '운영 설정 변경', reply_inquiry: '문의 답변'
   };
   const filters = { cards: { query: '', state: 'all', offset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   let client = null, onChanged = null, userId = null, subscription = null;
   let instance = 0, pageRun = 0, busy = false, tabId = 'overview', actionReturn = null;
-  let previousFocus = null, previousOverflow = '', inertState = [], disabledState = [];
+  let previousFocus = null, previousOverflow = '', inertState = [], disabledState = [], embedded = false;
   let root, panel, nav, main, status, closeButton;
 
   function el(tag, className, value) {
@@ -70,7 +68,7 @@
     return { wrap, input };
   }
   function reasonField() {
-    const item = field('처리 사유', 'textarea', '', '변경 내용을 다른 운영자도 이해할 수 있도록 적어 주세요. 최대 500자');
+    const item = field('처리 사유', 'textarea', '', '변경 내용을 다른 관리자도 이해할 수 있도록 적어 주세요. 최대 500자');
     item.input.required = true; item.input.maxLength = 500; item.input.rows = 3;
     item.input.addEventListener('input', () => item.input.setCustomValidity(''));
     return item;
@@ -105,14 +103,11 @@
   }
   function friendlyError(error) {
     const message = String(error?.message || '').toLowerCase();
-    if (message.includes('self') || message.includes('your own note moderator') || message.includes('own moderator')) return '본인의 운영 권한은 여기서 해제할 수 없어요.';
-    if (message.includes('last moderator') || message.includes('at least one note moderator')) return '마지막 운영자는 해제할 수 없어요.';
-    if (message.includes('release the note restriction') || (message.includes('restricted') && message.includes('grant'))) return '이용 제한을 먼저 해제한 뒤 운영자로 지정해 주세요.';
-    if (message.includes('moderator') && message.includes('restrict')) return '운영자는 이용 제한 대상이 될 수 없어요. 다른 운영자가 권한을 먼저 해제해 주세요.';
+    if ((message.includes('moderator') || message.includes('administrator')) && message.includes('restrict')) return '관리자는 이용 제한 대상이 될 수 없어요.';
     if (message.includes('world member') || message.includes('onboard') || message.includes('not found')) return '대상을 찾지 못했어요. 현재 목록과 이용자 번호를 확인해 주세요.';
     if (message.includes('card unavailable')) return '카드를 찾지 못했어요. 목록을 새로 불러온 뒤 확인해 주세요.';
     if (message.includes('노트 운영 기준')) return '글이나 태그에 작성 금지어가 포함되어 있어요. 내용을 확인해 주세요.';
-    if (error?.code === '42501' || message.includes('permission') || message.includes('moderator required') || message.includes('not authorized')) return '이 작업을 할 권한이 없어요. 노트 운영 권한을 확인해 주세요.';
+    if (error?.code === '42501' || message.includes('permission') || message.includes('moderator required') || message.includes('not authorized')) return '이 작업을 할 권한이 없어요. 관리자 권한을 확인해 주세요.';
     if (error?.code === '23514' || error?.code === '22023') return '입력 내용을 확인해 주세요. 글, 태그, 사유의 허용 범위를 벗어났을 수 있어요.';
     return '요청을 완료하지 못했어요. 연결 상태와 현재 권한을 확인한 뒤 다시 시도해 주세요.';
   }
@@ -227,26 +222,11 @@
       until.input.addEventListener('input', () => until.input.setCustomValidity(''));
     });
   }
-  function setModerator(user, enabled) {
-    if (user.user_id === userId && !enabled) return;
-    actionScreen(enabled ? '노트 운영자 지정' : '노트 운영자 해제', shortUser(user.user_id), (form, actions) => {
-      form.append(el('p', 'na-id', user.user_id));
-      form.append(el('p', 'na-warning', enabled
-        ? '이 이용자는 노트의 전체 콘텐츠, 신고, 이용 제한, 운영 설정과 운영자를 관리할 수 있게 됩니다.'
-        : '이 이용자의 노트 관리 권한을 해제합니다. 일반 노트 이용과 월드 계정은 유지됩니다.'));
-      const reason = reasonField(); form.append(reason.wrap);
-      const save = button(enabled ? '운영자로 지정' : '운영 권한 해제', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
-      form.addEventListener('submit', event => {
-        event.preventDefault(); if (!validReason(reason.input)) return;
-        perform('admin_set_moderator', { p_user_id: user.user_id, p_enabled: enabled, p_reason: reason.input.value.trim() }, enabled ? '노트 운영자로 지정했어요.' : '노트 운영 권한을 해제했어요.', 'moderators');
-      });
-    });
-  }
   async function renderOverview(run) {
     const [overview, settings] = await Promise.all([rpc('admin_overview'), rpc('get_note_state')]);
     if (!validRun(run)) return;
     const stats = el('dl', 'na-stats');
-    for (const [label, key] of [['사진 카드', 'total_memos'], ['답글', 'total_replies'], ['개별 숨김 콘텐츠', 'hidden_cards'], ['접수된 신고', 'open_reports'], ['이용 제한', 'restricted_users'], ['운영자', 'moderators']]) {
+    for (const [label, key] of [['사진 카드', 'total_memos'], ['답글', 'total_replies'], ['개별 숨김 콘텐츠', 'hidden_cards'], ['접수된 신고', 'open_reports'], ['이용 제한', 'restricted_users']]) {
       const stat = el('div', 'na-stat'); stat.append(el('dt', '', label), el('dd', '', number(overview?.[key]))); stats.append(stat);
     }
     main.append(stats);
@@ -360,7 +340,7 @@
   }
   async function renderUsers(run) {
     const filter = filters.users;
-    main.append(searchForm(filter.query, '이용자 번호 전체 또는 일부', query => { filters.users = { query, offset: 0 }; load('users'); }, null, '노트에 참여한 이용자와 운영자를 찾습니다. 카드의 작성자 관리 버튼으로도 이동할 수 있어요.'));
+    main.append(searchForm(filter.query, '이용자 번호 전체 또는 일부', query => { filters.users = { query, offset: 0 }; load('users'); }, null, '노트에 참여한 이용자와 관리자를 찾습니다. 카드의 작성자 관리 버튼으로도 이동할 수 있어요.'));
     const rows = await rpc('admin_users', { p_query: filter.query, p_limit: PAGE_SIZE, p_offset: filter.offset });
     if (!validRun(run)) return;
     if (!rows?.length) { empty(main, '조건에 맞는 노트 이용자가 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filters.users.offset = 0; load('users'); })); return; }
@@ -368,15 +348,13 @@
     for (const user of rows) {
       const item = el('article', 'na-item'); const header = el('div', 'na-item-header'); const meta = el('p', 'na-meta');
       header.append(el('strong', '', shortUser(user.user_id)));
-      if (user.is_moderator) meta.append(badge('운영자', 'good'));
+      if (user.is_moderator) meta.append(badge('관리자', 'good'));
       if (user.user_id === userId) meta.append(badge('나'));
       meta.append(badge(user.is_restricted ? '이용 제한 중' : '이용 가능', user.is_restricted ? 'warn' : 'good')); header.append(meta); item.append(header);
       item.append(el('p', 'na-id', user.user_id), el('p', 'na-reason', `작성한 콘텐츠 ${number(user.card_count)}개 · 첫 활동 ${formatDate(user.first_seen)}`));
       if (user.is_restricted) item.append(el('p', 'na-reason', `제한 사유: ${user.restriction_reason || ''}\n종료: ${user.restricted_until ? formatDate(user.restricted_until) : '직접 해제할 때까지'}`));
       const actions = el('div', 'na-actions');
       if (!user.is_moderator) actions.append(button(user.is_restricted ? '이용 제한 해제' : '이용 제한', () => restrictUser(user), user.is_restricted ? '' : 'danger'));
-      if (!user.is_moderator && !user.is_restricted) actions.append(button('운영자로 지정', () => setModerator(user, true)));
-      if (user.is_moderator && user.user_id !== userId) actions.append(button('운영 권한 해제', () => setModerator(user, false)));
       item.append(actions); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.users.offset = offset; load('users'); });
@@ -387,29 +365,6 @@
       empty(target, '문의 관리 기능을 불러오지 못했어요. 화면을 새로고침해 주세요.'); return;
     }
     await window.OjjudaNoteSupport.renderAdmin({ client, container: target, onChanged, isCurrent: () => validRun(run) });
-  }
-  async function renderModerators(run) {
-    const rows = await rpc('admin_moderators'); if (!validRun(run)) return;
-    const list = el('div', 'na-list');
-    for (const user of rows || []) {
-      const item = el('article', 'na-item'); const header = el('div', 'na-item-header'); header.append(el('strong', '', shortUser(user.user_id)));
-      if (user.is_me || user.user_id === userId) header.append(badge('나', 'good'));
-      item.append(header, el('p', 'na-id', user.user_id), el('p', 'na-reason', `지정일: ${formatDate(user.created_at)}`));
-      if (!user.is_me && user.user_id !== userId) { const actions = el('div', 'na-actions'); actions.append(button('운영 권한 해제', () => setModerator(user, false), 'danger')); item.append(actions); }
-      list.append(item);
-    }
-    main.append(list);
-    const box = el('section', 'na-box'); box.append(el('h4', '', '운영자 추가'));
-    box.append(el('p', '', '노트 이용자 목록에서 선택하거나, 월드 가입을 마친 이용자의 번호를 입력하세요. 본인의 운영 권한은 해제할 수 없습니다.'));
-    const form = el('form', 'na-form'); const id = field('이용자 번호', 'text', '', '카드 · 답글의 작성자 상세 정보에서 확인할 수 있어요.'); id.input.required = true; id.input.maxLength = 36; id.input.autocomplete = 'off'; id.input.spellcheck = false;
-    form.append(id.wrap); const actions = el('div', 'na-actions'); actions.append(button('노트 이용자에서 선택', () => { filters.users = { query: '', offset: 0 }; load('users'); }));
-    const next = button('지정 내용 확인', () => {}, 'primary'); next.type = 'submit'; actions.append(next); form.append(actions);
-    form.addEventListener('submit', event => {
-      event.preventDefault(); const value = id.input.value.trim();
-      id.input.setCustomValidity(uuidPattern.test(value) ? '' : '올바른 이용자 번호를 입력해 주세요.'); if (!id.input.reportValidity()) return;
-      setModerator({ user_id: value }, true);
-    }); id.input.addEventListener('input', () => id.input.setCustomValidity(''));
-    box.append(form); main.append(box);
   }
   async function renderActions(run) {
     const offset = filters.actions.offset;
@@ -460,7 +415,7 @@
     main.scrollTop = 0; heading.focus({ preventScroll: true });
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
-      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, reports: renderReports, inquiries: renderInquiries, users: renderUsers, moderators: renderModerators, actions: renderActions }[tabId])(run);
+      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
       if (validRun(run)) loading.remove();
       return validRun(run);
     } catch (error) {
@@ -474,12 +429,12 @@
     return [...panel.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href],summary,[tabindex="0"]')]
       .filter(item => !item.hidden && item.getClientRects().length > 0);
   }
-  function mount() {
+  function ensurePanel() {
     if (root) return;
     root = el('div', 'na-backdrop'); root.id = 'note-admin-backdrop'; root.hidden = true;
     panel = el('section', 'na-panel'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'note-admin-title');
     const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '오쭈다노트 관리자'); h2.id = 'note-admin-title';
-    title.append(h2, el('p', '', '노트 콘텐츠와 운영을 독립적으로 관리합니다.'));
+    title.append(h2, el('p', '', '노트 콘텐츠와 운영을 관리합니다.'));
     closeButton = button('닫기', () => { if (!busy) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
     const layout = el('div', 'na-layout'); nav = el('nav', 'na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');
     for (const [id, label] of TABS) { const item = button(label, () => load(id)); item.dataset.adminTab = id; nav.append(item); }
@@ -488,7 +443,8 @@
     layout.append(nav, main); panel.append(header, layout, status); root.append(panel); document.body.append(root);
     root.addEventListener('keydown', event => {
       if (root.hidden) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (!busy) actionReturn ? load(actionReturn) : close(); return; }
+      if (event.key === 'Escape' && !embedded) { event.preventDefault(); event.stopPropagation(); if (!busy) actionReturn ? load(actionReturn) : close(); return; }
+      if (embedded) return;
       if (event.key !== 'Tab') return;
       const items = focusables(); const first = items[0], last = items.at(-1);
       if (!items.length) { event.preventDefault(); return; }
@@ -502,22 +458,34 @@
     if (!root || root.hidden) return;
     lockControls(false); root.hidden = true; main.replaceChildren(); setStatus('');
     for (const [element, prior] of inertState) if (element.isConnected) element.inert = prior;
-    inertState = []; document.body.style.overflow = previousOverflow;
+    inertState = [];
+    if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
     filters.cards = { query: '', state: 'all', offset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0;
-    if (focus?.isConnected && !focus.closest('[inert]')) focus.focus({ preventScroll: true });
+    if (embedded) {
+      embedded = false; root.classList.remove('na-embedded'); root.remove();
+      panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); closeButton.hidden = false;
+    } else if (focus?.isConnected && !focus.closest('[inert]')) focus.focus({ preventScroll: true });
   }
-  async function open(options = {}) {
-    if (!options.client?.schema || !options.client?.auth) return;
-    if (root && !root.hidden) { closeButton.focus(); return; }
-    mount(); instance++; const run = instance;
+  async function activate(options, container) {
+    ensurePanel(); instance++; const run = instance;
+    embedded = !!container;
     client = options.client; onChanged = options.onChanged; userId = null;
-    previousFocus = document.activeElement; previousOverflow = document.body.style.overflow;
-    inertState = [...document.body.children].filter(item => item !== root && item instanceof HTMLElement).map(item => [item, item.inert]);
-    for (const [item] of inertState) item.inert = true;
-    root.hidden = false; document.body.style.overflow = 'hidden';
+    if (embedded) {
+      root.classList.add('na-embedded'); panel.setAttribute('role', 'region'); panel.removeAttribute('aria-modal');
+      closeButton.hidden = true; container.append(root);
+    } else {
+      root.classList.remove('na-embedded'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true');
+      closeButton.hidden = false; document.body.append(root);
+      previousFocus = document.activeElement; previousOverflow = document.body.style.overflow;
+      inertState = [...document.body.children].filter(item => item !== root && item instanceof HTMLElement).map(item => [item, item.inert]);
+      for (const [item] of inertState) item.inert = true;
+      document.body.style.overflow = 'hidden';
+    }
+    root.hidden = false;
     nav.hidden = true;
-    main.replaceChildren(el('p', 'na-empty', '노트 운영 권한을 확인하고 있어요.')); setStatus(''); closeButton.focus();
+    main.replaceChildren(el('p', 'na-empty', '관리자 권한을 확인하고 있어요.')); setStatus('');
+    if (!embedded) closeButton.focus();
     try {
       const { data, error } = await client.auth.getSession();
       if (!validInstance(run)) return;
@@ -531,14 +499,33 @@
       const allowed = await rpc('is_note_moderator');
       if (!validInstance(run)) return;
       if (allowed !== true) {
-        nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '노트 운영자로 지정된 계정만 사용할 수 있어요.')); return;
+        nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '관리자 계정만 사용할 수 있어요.')); return;
       }
       nav.hidden = false; filters.cards.offset = 0; filters.users.offset = 0; filters.actions.offset = 0; filters.reports.offset = 0;
       await load('overview');
     } catch (error) {
       if (!validInstance(run)) return;
-      nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '노트 운영 권한을 확인하지 못했어요.')); setStatus(friendlyError(error), true);
+      nav.hidden = true; main.replaceChildren(el('p', 'na-empty', '관리자 권한을 확인하지 못했어요.')); setStatus(friendlyError(error), true);
     }
   }
-  window.OjjudaNoteAdmin = Object.freeze({ open, close });
+  async function open(options = {}) {
+    if (!options.client?.schema || !options.client?.auth) return;
+    if (root && !root.hidden) {
+      if (!embedded) { closeButton.focus(); return; }
+      close();
+    }
+    return activate(options, null);
+  }
+  async function mount(container, options = {}) {
+    if (!(container instanceof HTMLElement) || !options.client?.schema || !options.client?.auth) return;
+    if (root && !root.hidden && embedded && client === options.client) {
+      if (root.parentElement !== container) container.append(root);
+      onChanged = options.onChanged;
+      return;
+    }
+    if (root && !root.hidden) close();
+    return activate(options, container);
+  }
+  function unmount() { if (embedded) close(); }
+  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount });
 })();
