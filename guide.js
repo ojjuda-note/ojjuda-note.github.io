@@ -63,16 +63,18 @@
   window.addEventListener('hashchange', () => { if (location.hash) revealTarget(decodeURIComponent(location.hash.slice(1))); });
   if (location.hash) revealTarget(decodeURIComponent(location.hash.slice(1)));
   const chapters = [...document.querySelectorAll('.chapter')];
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(entries => {
-      for (const entry of entries) if (entry.isIntersecting) {
-        document.querySelectorAll('.contents a[href^="#"]').forEach(link => {
-          if (link.hash === '#' + entry.target.id) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
-        });
-      }
-    }, { rootMargin: '-105px 0px -66% 0px', threshold: 0 });
-    chapters.forEach(chapter => observer.observe(chapter));
+  let chapterFrame = false;
+  function updateChapter() {
+    chapterFrame = false;
+    const edge = (document.querySelector('.site-header')?.getBoundingClientRect().bottom || 78) + 48;
+    const current = chapters.filter(chapter => chapter.getBoundingClientRect().top <= edge).pop() || chapters[0];
+    document.querySelectorAll('.contents a[href^="#"]').forEach(link => {
+      if (current && link.hash === '#' + current.id) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
+    });
   }
+  window.addEventListener('scroll', () => { if (!chapterFrame) { chapterFrame = true; requestAnimationFrame(updateChapter); } }, { passive: true });
+  window.addEventListener('resize', updateChapter);
+  updateChapter();
   document.querySelectorAll('[data-faq-toggle]').forEach(button => button.addEventListener('click', () => {
     document.querySelectorAll('.faq').forEach(item => { item.open = button.dataset.faqToggle === 'open'; });
   }));
