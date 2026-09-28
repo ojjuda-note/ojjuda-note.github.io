@@ -267,7 +267,7 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,S.rpc("game_move",{p
   <div class="set"><h3>알림</h3>${i("guestbook","새 방명록")}${i("friend","친구 신청")}${i("comment","댓글")}</div>
   ${D.online?`<div class="set"><h3>차단한 사람</h3>${ce.ready?ce.list.length?ce.list.map(l=>`<div class="line-row"><span>${w(l.nick)}</span><button class="btn sm" data-act="unblock" data-uid="${l.id}">차단 풀기</button></div>`).join(""):'<p class="note" style="margin:0">차단한 사람이 없어요.</p>':'<p class="note" style="margin:0">차단 기능을 쓰려면 supabase/step5_live.sql을 실행해 주세요.</p>'}</div>`:""}
   <div class="set"><h3>저장 공간</h3><p style="margin:0">사진 ${o}장, 영상 ${r}개가 ${D.online&&D.mediaReady?"서버에":"이 기기에"} 저장돼 있어요.</p></div>
-  ${D.online?`<div class="set"><h3>계정</h3><p style="margin:0 0 4px">${w(D.user&&D.user.email||"")}</p><p class="note" style="margin:0 0 12px">방, 다이어리, 사진과 영상, 설정은 모두 서버에 저장돼서 다른 기기에서 로그인해도 그대로 보여요.</p><div class="row"><button class="btn" data-act="logout">로그아웃</button><button class="btn" data-act="pw-open">비밀번호 바꾸기</button><button class="btn ghost danger" data-act="account-delete-open">회원 탈퇴</button></div></div>`:'<div class="set"><h3>체험 모드</h3><p style="margin:0 0 12px">서버에 연결되지 않아서 모든 기록이 이 기기의 브라우저에만 저장돼요. 친구들은 체험용 가상 친구예요.</p><button class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>'}
+  ${D.online?`<div class="set"><h3>계정</h3><p style="margin:0 0 4px">${w(D.user&&D.user.email||"")}</p>${D.accountDeletionPending?'<p class="note" role="status">회원 탈퇴가 아직 끝나지 않았어요. 새 사진 업로드가 제한됩니다. 아래 버튼을 눌러 이어서 처리해 주세요.</p>':'<p class="note" style="margin:0 0 12px">방, 다이어리, 사진과 영상, 설정은 모두 서버에 저장돼서 다른 기기에서 로그인해도 그대로 보여요.</p>'}<div class="row"><button class="btn" data-act="logout">로그아웃</button><button class="btn" data-act="pw-open">비밀번호 바꾸기</button><button class="btn ghost danger" data-act="account-delete-open">${D.accountDeletionPending?"탈퇴 이어하기":"회원 탈퇴"}</button></div></div>`:'<div class="set"><h3>체험 모드</h3><p style="margin:0 0 12px">서버에 연결되지 않아서 모든 기록이 이 기기의 브라우저에만 저장돼요. 친구들은 체험용 가상 친구예요.</p><button class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>'}
   <div class="set"><h3>의견 보내기</h3><p style="margin:0 0 12px">오쭈다월드는 지금 베타예요. 고장 난 곳이나 바라는 기능을 알려주시면 다음 업데이트에 반영할게요.</p><button class="btn pri" data-act="feedback-open">의견 보내기</button></div>
   <div class="set"><h3>약관과 정책</h3><div class="line-row"><a href="terms.html" target="_blank" rel="noopener">이용약관</a></div><div class="line-row"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></div><div class="line-row"><a href="https://github.com/songys/Chatbot_data" target="_blank" rel="noopener">동물 대화 자료: 송영숙 Chatbot_data</a><span class="note">MIT 라이선스</span></div><div class="line-row"><span>앱 버전</span><span class="note">${Go}</span></div></div>`}var Hf='<span class="nl-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5.2 13.6 10.4 18.8 12 13.6 13.6 12 18.8 10.4 13.6 5.2 12 10.4 10.4Z" fill="#fff"/></svg></span>';function Wf(t){let e=Xd(),o="note-link"+(t==="my"?" my":"");return e?`<a class="${o}" href="${w(e)}" aria-label="익명카드 열기">${Hf}<span>익명카드</span><span class="nl-arrow" aria-hidden="true">→</span></a>`:`<button class="${o}" data-act="note-soon">${Hf}<span>익명카드</span><span class="nl-soon">준비 중</span></button>`}function Zg(){let t="";if(g.newVersion&&(t+=`<div class="notice-bar update" role="status"><span>🔄 새 버전(${w(g.newVersion)})이 나왔어요. 눌러서 바로 바꿀 수 있어요.</span><button class="btn sm pri" data-act="app-update">지금 업데이트</button></div>`),D.online&&wt.notice&&(t+=`<button class="notice-bar notice-tk" data-act="notice-open" aria-label="공지: ${w(wt.notice)} (눌러서 전체 보기)"><span class="nb-ico" aria-hidden="true">📢</span><span class="nb-track"><span class="nb-text">${w(wt.notice)}</span></span></button>`),$.bannedUntil&&new Date($.bannedUntil)>new Date){let e=new Date($.bannedUntil);t+=`<div class="notice-bar ban">운영 정책에 따라 ${e.getMonth()+1}월 ${e.getDate()}일 ${e.getHours()}시까지 방명록, 소개글, 댓글, 동네 대화, 친구 신청이 제한돼요.</div>`}return t}function Kg(){let t=D.online?wt.beta_free_charge!==!1:!0,e=D.online?Number(wt.beta_charge_daily_limit||5):5;return g.chargeOpen?`<h3 class="h3">쭈 충전</h3><p class="note" style="margin:-4px 0 12px">${t?`지금은 베타 기간이라 결제 없이 무료로 충전돼요. (하루 ${e}번까지)`:"결제 기능을 준비하고 있어요. 조금만 기다려 주세요."}</p>
   <div class="charge-grid">${xi.map(o=>`<button class="charge" data-act="charge" data-p="${o.id}"${t?"":" disabled"}><span class="ch-coins">${Hr()}${o.coins.toLocaleString()}쭈</span>${o.bonus?`<span class="ch-bonus">보너스 ${o.bonus}</span>`:'<span class="ch-bonus" style="visibility:hidden">-</span>'}<span class="ch-won">${t?`<s>${o.won.toLocaleString()}원</s> <b>무료</b>`:`${o.won.toLocaleString()}원`}</span></button>`).join("")}</div>`:""}function Uf(t){return t==="friends"&&D.online&&P.incoming.length?`<span class="badge">${P.incoming.length}</span>`:""}function Xg(){typeof matchMedia!="function"||!matchMedia("(min-width:1100px)").matches||document.querySelectorAll(".deco-grid .panel .pal, .deco-grid .panel .swgrid, .deco-grid .panel .avgrid").forEach(t=>{let e=t.querySelector("button");if(!e)return;let o=Math.max(...[...t.querySelectorAll(":scope > button")].slice(0,16).map(i=>i.getBoundingClientRect().height));if(!o)return;let r=parseFloat(getComputedStyle(t).rowGap)||8;Math.ceil(t.children.length/Math.max(1,Math.round(t.clientWidth/(e.getBoundingClientRect().width+r))))<=4||(t.style.maxHeight=Math.round(o*4+r*3+4)+"px",t.classList.add("fit4"))})}function Jg(){let t={};return document.querySelectorAll("[data-keep]").forEach(e=>{t[e.dataset.keep]=[e.scrollLeft,e.scrollTop]}),t}function tb(t){for(let e in t){let o=document.querySelector(`[data-keep="${e}"]`);o&&(o.scrollLeft=t[e][0],o.scrollTop=t[e][1])}}var mountedWorldNoteContainer=null;function mountWorldNote(){if(g.tab!=="admin"||!noteAdminActive())return;let n=z("#world-note-admin");if(!n){window.OjjudaNoteAdmin?.unmount?.(),mountedWorldNoteContainer=null;return}if(mountedWorldNoteContainer===n)return;let api=window.OjjudaNoteAdmin;if(!api?.mount){n.innerHTML='<div class="box">'+(document.readyState==="complete"?"노트 관리 화면을 불러오지 못했어요.":"노트 관리 화면을 불러오는 중이에요.")+'</div>';return}if(L.area==="note"&&api.getTabs?.().length&&!document.querySelector("#app .adm-note-tabs")){H();return}mountedWorldNoteContainer=n;try{Promise.resolve(api.mount(n,{client:S,externalNav:!0,initialTab:L.noteTab,onTabChange:id=>{L.noteTab=id;if(L.area==="note"&&["reports","inquiries","users","actions"].includes(id)){L.area="account";if(id==="reports")L.tab="reports",L.reportSource="note";else L.tab="note-"+id;queueMicrotask(()=>H());return}document.querySelectorAll("#app .adm-note-tabs [data-act=adm-note-tab]").forEach(button=>{let on=button.dataset.v===id;button.classList.toggle("on",on),button.setAttribute("aria-pressed",String(on))})}})).catch(a=>{console.error(a),mountedWorldNoteContainer===n&&(mountedWorldNoteContainer=null,n.textContent="노트 관리 화면을 불러오지 못했어요.")})}catch(a){console.error(a),mountedWorldNoteContainer=null,n.textContent="노트 관리 화면을 불러오지 못했어요."}}document.addEventListener("DOMContentLoaded",mountWorldNote,{once:!0}),window.addEventListener("load",mountWorldNote,{once:!0});function H(){let t=Jg();gd();let e=g.tab;if(e!=="admin"||!noteAdminActive())window.OjjudaNoteAdmin?.unmount?.(),mountedWorldNoteContainer=null;e!=="place"&&g.placeT&&(clearInterval(g.placeT),g.placeT=null,g.place&&g.place.live&&Vs(),g.place=null);let o=Zg()+(e==="admin"?y0():e==="place"?Cf():e==="home"?Sg():e==="friends"?jg():e==="deco"?Ig():e==="shop"?Ug():Yg()),r=e==="place"?"friends":e==="admin"?"my":e;z("#app").innerHTML=`<div class="shell">${Dg()}<div class="col"><header class="topbar">${Oo(!0)}<button class="coinpill" data-act="tab" data-tab="shop" aria-label="상점, 보유 쭈 ${$.coins}">${Hr()}${$.coins}</button></header><main class="main">${o}</main></div></div>
@@ -323,39 +323,67 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,S.rpc("game_move",{p
   <div class="field"><label for="np-2">새 비밀번호 확인</label><input class="inp" id="np-2" type="password" autocomplete="new-password"></div>
   <div class="mfoot"><button class="btn" data-act="close">취소</button><button class="btn pri" data-act="pw-save">바꾸기</button></div>`,"비밀번호 바꾸기")}async function ny(t){let e=z("#np-1").value,o=z("#np-2").value;if(e.length<6){M("비밀번호는 6자 이상이에요");return}if(e!==o){M("두 비밀번호가 달라요. 다시 확인해 주세요");return}t.disabled=!0;let{error:r}=await S.auth.updateUser({password:e});if(r){console.error(r),t.disabled=!1,M(/same|different/i.test(r.message||"")?"지금과 다른 비밀번호를 정해주세요":"비밀번호를 바꾸지 못했어요. 잠시 뒤 다시 시도해 주세요");return}dt(),M("비밀번호를 바꿨어요")}function sy(){ct(`<div class="mhead"><h3>회원 탈퇴</h3><button class="btn sm ghost" data-act="close">닫기</button></div>
   <p style="margin:0 0 10px">탈퇴하면 방, 다이어리, 사진과 영상, 친구 관계, 쭈가 모두 지워지고 되돌릴 수 없어요. 친구 방에 남긴 방명록과 댓글은 '탈퇴한 사용자'로 표시돼요.</p>
+  ${D.accountDeletionPending?'<p class="note" role="status">이전에 중단된 탈퇴를 이어서 진행해요. 완료될 때까지 새 사진 업로드가 제한됩니다.</p>':''}
   <div class="field"><label for="del-nick">확인을 위해 닉네임 <b>${w($.me.nick)}</b>을 입력해 주세요</label><input class="inp" id="del-nick" autocomplete="off"></div>
   <div class="mfoot"><button class="btn" data-act="close">취소</button><button class="btn danger-solid" data-act="account-delete">탈퇴하기</button></div>`,"회원 탈퇴")}async function ly(t){
   if(z("#del-nick").value.trim()!==$.me.nick){M("닉네임이 맞지 않아요");return}
   t.disabled=!0;
   M("탈퇴하는 중이에요…");
   let e=D.user.id;
+  let preparedDeletion=false,removedAny=false;
   try{
-    // 월드 사진은 Storage API로 정리한다. 목록/삭제 실패 시 탈퇴 절차를 중단한다.
-    let r=S.storage.from("media"),folders=[e],paths=[];
-    while(folders.length){
-      let folder=folders.pop(),offset=0;
-      for(;;){
-        let {data, error}=await r.list(folder,{limit:100,offset});
+    let {data:identity,error:authError}=await S.auth.getUser();
+    if(authError||identity?.user?.id!==e)throw new Error("계정을 다시 확인해 주세요. 로그인 후 재시도해 주세요");
+    let prepared=await S.rpc("prepare_my_account_deletion");
+    if(prepared.error)throw prepared.error;
+    preparedDeletion=true;D.accountDeletionPending=true;
+    // 이 회원의 파일만 RPC로 찾는다. 노트 Storage.list는 허용되지 않는다.
+    let allowed=new Set(["media","note-card-photos","note-event-photos"]),previous=null,cleared=false;
+    for(let batch=0;batch<10000;batch++){
+      let result=await S.rpc("my_account_deletion_files",{p_limit:100});
+      if(result.error)throw result.error;
+      if(!Array.isArray(result.data))throw new Error("사진 목록을 확인하지 못했어요");
+      let rows=result.data;
+      if(!rows.length){cleared=true;break}
+      let signature=JSON.stringify(rows);
+      if(signature===previous)throw new Error("사진 정리를 확인하지 못했어요. 다시 시도해 주세요");
+      previous=signature;
+      let groups=new Map();
+      for(let row of rows){
+        let bucket=row.bucket_id,path=row.photo_path;
+        if(!allowed.has(bucket)||typeof path!=="string"||path.split("/")[0]!==e
+          ||path.split("/").slice(1).some(part=>!part||part==="."||part===".."||/[\u0000-\u001f\u007f]/.test(part))
+          ||!path.includes("/"))throw new Error("사진 경로를 확인하지 못했어요");
+        if(!groups.has(bucket))groups.set(bucket,[]);
+        groups.get(bucket).push(path);
+      }
+      M("사진과 기록을 정리하는 중이에요…");
+      for(let [bucket,paths] of groups){
+        let {error}=await S.storage.from(bucket).remove(paths);
         if(error)throw error;
-        for(let item of data||[]){
-          let path=folder+"/"+item.name;
-          if(item.id)paths.push(path);
-          else folders.push(path);
-        }
-        if(!data||data.length<100)break;
-        offset+=data.length;
+        removedAny=true;
       }
     }
-    for(let i=0;i<paths.length;i+=100){
-      let {error}=await r.remove(paths.slice(i,i+100));
-      if(error)throw error;
-    }
+    if(!cleared)throw new Error("사진이 많아 정리를 끝내지 못했어요. 다시 시도해 주세요");
+    ({data:identity,error:authError}=await S.auth.getUser());
+    if(authError||identity?.user?.id!==e)throw new Error("계정을 다시 확인해 주세요. 로그인 후 재시도해 주세요");
     let o=await S.rpc("delete_my_account");
     if(o.error)throw o.error;
   }catch(error){
     console.error("Account deletion failed",error);
     t.disabled=!1;
-    M(fm(error)||"탈퇴하지 못했어요. 잠시 뒤 다시 시도해 주세요");
+    if(preparedDeletion)H();
+    let reason=String(error?.message||"");
+    M(reason.includes("managed_account_requires_admin")
+      ?"운영 계정은 관리자 확인 후 탈퇴할 수 있어요. 고객지원에 문의해 주세요"
+      :reason.includes("account_storage_manual_review")
+        ?"계정은 남아 있고 새 사진 업로드는 제한돼요. 일부 사진의 소유 정보나 경로를 확인해야 하니 고객지원에 문의해 주세요"
+        :reason.includes("account_storage_remaining")
+          ?"계정은 남아 있고 사진 정리가 끝나지 않았어요. 탈퇴하기를 다시 눌러 이어서 처리해 주세요"
+          :preparedDeletion
+            ?(removedAny?"사진 일부를 정리했지만 계정은 남아 있어요. ":"계정은 남아 있어요. ")
+              +"새 사진 업로드가 제한됩니다. 탈퇴하기를 다시 눌러 이어서 처리해 주세요"
+            :fm(error)||"탈퇴하지 못했어요. 잠시 뒤 다시 시도해 주세요");
     return
   }
   D.leaving=!0;
@@ -364,7 +392,7 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,S.rpc("game_move",{p
   dt();
   document.getElementById("app").innerHTML=`<main class="auth"><div class="auth-loading" style="text-align:center;max-width:340px">${Oo(!1,"span")}<p>탈퇴가 끝났어요. 그동안 함께해 줘서 고마워요.</p><button class="btn pri" onclick="location.reload()">처음 화면으로</button></div></main>`
 }
-var mm={"feedback-open"(){ry()},"fb-send"(t,e){ay(e)},"pw-open"(){iy()},"pw-save"(t,e){ny(e)},"account-delete-open"(){sy()},"account-delete"(t,e){ly(e)}};var dy=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());async function gm(t){if(dy()){document.documentElement.classList.add("native"),document.addEventListener("click",e=>{let o=e.target.closest&&e.target.closest('a[target="_blank"]');if(!o)return;let r=o.getAttribute("href")||"";/^https?:/i.test(r)||(e.preventDefault(),location.href=r)});try{let{App:e}=await Promise.resolve().then(()=>(hm(),um));e.addListener("backButton",({canGoBack:o})=>{if(document.getElementById("modal-root").innerHTML){dt();return}if(o&&!document.getElementById("app")){history.back();return}if(g.tab!=="home"||g.visiting){t();return}e.exitApp()})}catch(e){console.error("앱 기능을 불러오지 못했어요",e)}}}Object.assign(sr,Ln,im,Pf,yf,mm,$0,Gd,r0,Qp,G0,fp);h0(H);H1();Tf(H);uf(H);function py(){let t=Xt();if($.visits.day!==t){if(!D.online){let e=3+Math.floor(Math.random()*8);$.visits.today=e,$.visits.total+=e}$.visits.day=t,$.friends.forEach(e=>{let o=2+Math.floor(Math.random()*15);e.visits.today=o,e.visits.total+=o}),I()}}function wc(){let t=document.activeElement,e=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA");return(g.tab==="home"||g.tab==="friends"||g.tab==="my")&&!g.drag&&!e&&!z("#modal-root").innerHTML}async function kc(){if(!(!D.online||document.hidden))try{await Wn();let t=await _d(),e=wt.notice;await Ls().catch(()=>!1);let o=e!==wt.notice;K1();let a=await wd()!==P.incoming.length;a&&await ke(),(t||a||o)&&wc()&&H()}catch(t){console.error("새 소식 확인 실패",t)}}function fy(){let t=D.user.id,e=(o,r)=>{if(o==="guestbook"){if(Le(r.author_id))return;$.settings.notify.guestbook&&M(`${r.author_nick||"누군가"}님이 방명록을 남겼어요`),kc()}else o==="request"&&$.settings.notify.friend&&M("새 친구 신청이 왔어요"),o==="accepted"&&r.status==="accepted"&&$.settings.notify.friend&&M("친구 신청이 수락됐어요!"),ke().then(()=>{wc()&&H()}).catch(()=>{})};S.channel("notify:"+t).on("postgres_changes",{event:"INSERT",schema:"public",table:"guestbook",filter:`owner_id=eq.${t}`},o=>e("guestbook",o.new)).on("postgres_changes",{event:"INSERT",schema:"public",table:"friendships",filter:`addressee=eq.${t}`},o=>e("request",o.new)).on("postgres_changes",{event:"UPDATE",schema:"public",table:"friendships",filter:`requester=eq.${t}`},o=>e("accepted",o.new)).subscribe()}var bm=null;function my(){py(),H(),m1(),x1().then(()=>{g.sec==="album"&&st()}).catch(t=>console.error(t)),!bm&&(bm=setInterval(()=>{!g.drag&&z("#room-svg")&&ut()},3e4),D.online&&(Promise.all([ke(),Ji(),D.walletReady?Zi():null,Gc(),Ls().catch(()=>!1),Jd().catch(()=>!1)]).then(t=>{let e=new URL(location.href),o=e.searchParams.get("admin");if(t[t.length-1]===!0&&(o==="note"||Object.values(adminTabsByArea).some(r=>r.some(([a])=>a===o)))){g.tab="admin",L.area=o==="note"?"note":adminAreaForTab(o),o!=="note"&&(L.tab=o),e.searchParams.delete("admin");try{history.replaceState(null,"",e.pathname+e.search+e.hash)}catch{}H()}else wc()&&H()}).catch(t=>console.error(t)),on({onLobby:jf}),Qs(),fy(),setInterval(kc,9e4),setTimeout(qs,8e3),setTimeout(()=>Q0().catch(t=>console.error(t)),3e3),document.addEventListener("visibilitychange",()=>{document.hidden||(kc(),qs())})))}j1(()=>H());gm(()=>{g.tab="home",g.visiting=null,g.visitData=null,H(),window.scrollTo(0,0)});om(my,H);setTimeout(()=>k0(!1),1200);
+var mm={"feedback-open"(){ry()},"fb-send"(t,e){ay(e)},"pw-open"(){iy()},"pw-save"(t,e){ny(e)},"account-delete-open"(){sy()},"account-delete"(t,e){ly(e)}};var dy=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());async function gm(t){if(dy()){document.documentElement.classList.add("native"),document.addEventListener("click",e=>{let o=e.target.closest&&e.target.closest('a[target="_blank"]');if(!o)return;let r=o.getAttribute("href")||"";/^https?:/i.test(r)||(e.preventDefault(),location.href=r)});try{let{App:e}=await Promise.resolve().then(()=>(hm(),um));e.addListener("backButton",({canGoBack:o})=>{if(document.getElementById("modal-root").innerHTML){dt();return}if(o&&!document.getElementById("app")){history.back();return}if(g.tab!=="home"||g.visiting){t();return}e.exitApp()})}catch(e){console.error("앱 기능을 불러오지 못했어요",e)}}}Object.assign(sr,Ln,im,Pf,yf,mm,$0,Gd,r0,Qp,G0,fp);h0(H);H1();Tf(H);uf(H);function py(){let t=Xt();if($.visits.day!==t){if(!D.online){let e=3+Math.floor(Math.random()*8);$.visits.today=e,$.visits.total+=e}$.visits.day=t,$.friends.forEach(e=>{let o=2+Math.floor(Math.random()*15);e.visits.today=o,e.visits.total+=o}),I()}}function wc(){let t=document.activeElement,e=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA");return(g.tab==="home"||g.tab==="friends"||g.tab==="my")&&!g.drag&&!e&&!z("#modal-root").innerHTML}async function kc(){if(!(!D.online||document.hidden))try{await Wn();let t=await _d(),e=wt.notice;await Ls().catch(()=>!1);let o=e!==wt.notice;K1();let a=await wd()!==P.incoming.length;a&&await ke(),(t||a||o)&&wc()&&H()}catch(t){console.error("새 소식 확인 실패",t)}}function fy(){let t=D.user.id,e=(o,r)=>{if(o==="guestbook"){if(Le(r.author_id))return;$.settings.notify.guestbook&&M(`${r.author_nick||"누군가"}님이 방명록을 남겼어요`),kc()}else o==="request"&&$.settings.notify.friend&&M("새 친구 신청이 왔어요"),o==="accepted"&&r.status==="accepted"&&$.settings.notify.friend&&M("친구 신청이 수락됐어요!"),ke().then(()=>{wc()&&H()}).catch(()=>{})};S.channel("notify:"+t).on("postgres_changes",{event:"INSERT",schema:"public",table:"guestbook",filter:`owner_id=eq.${t}`},o=>e("guestbook",o.new)).on("postgres_changes",{event:"INSERT",schema:"public",table:"friendships",filter:`addressee=eq.${t}`},o=>e("request",o.new)).on("postgres_changes",{event:"UPDATE",schema:"public",table:"friendships",filter:`requester=eq.${t}`},o=>e("accepted",o.new)).subscribe()}var bm=null;function refreshAccountDeletionPending(){let userId=D.user?.id;if(!D.online||!userId)return;S.rpc("account_deletion_pending").then(({data,error})=>{if(error||D.user?.id!==userId)return;let changed=D.accountDeletionPending!==!!data;D.accountDeletionPending=!!data;if(changed)H();if(data)M("회원 탈퇴가 아직 끝나지 않았어요. 마이 > 계정에서 이어서 처리해 주세요")}).catch(error=>console.warn("Account deletion status:",error))}function my(){py(),H(),refreshAccountDeletionPending(),m1(),x1().then(()=>{g.sec==="album"&&st()}).catch(t=>console.error(t)),!bm&&(bm=setInterval(()=>{!g.drag&&z("#room-svg")&&ut()},3e4),D.online&&(Promise.all([ke(),Ji(),D.walletReady?Zi():null,Gc(),Ls().catch(()=>!1),Jd().catch(()=>!1)]).then(t=>{let e=new URL(location.href),o=e.searchParams.get("admin");if(t[t.length-1]===!0&&(o==="note"||Object.values(adminTabsByArea).some(r=>r.some(([a])=>a===o)))){g.tab="admin",L.area=o==="note"?"note":adminAreaForTab(o),o!=="note"&&(L.tab=o),e.searchParams.delete("admin");try{history.replaceState(null,"",e.pathname+e.search+e.hash)}catch{}H()}else wc()&&H()}).catch(t=>console.error(t)),on({onLobby:jf}),Qs(),fy(),setInterval(kc,9e4),setTimeout(qs,8e3),setTimeout(()=>Q0().catch(t=>console.error(t)),3e3),document.addEventListener("visibilitychange",()=>{document.hidden||(kc(),qs())})))}j1(()=>H());gm(()=>{g.tab="home",g.visiting=null,g.visitData=null,H(),window.scrollTo(0,0)});om(my,H);setTimeout(()=>k0(!1),1200);
 </script>
 </body>
 </html>
