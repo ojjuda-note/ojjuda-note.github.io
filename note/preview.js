@@ -745,7 +745,7 @@ function cardElement(card, compact = false, expanded = false) {
   const open = node('button', 'photo-open');
   open.type = 'button';
   open.dataset.open = card.id;
-  open.setAttribute('aria-label', '카드 크게 보기');
+  open.setAttribute('aria-label', card.kind === 'event' ? '이벤트/광고 카드 크게 보기' : '카드 크게 보기');
   if (expanded) { open.disabled = true; delete open.dataset.open; }
   const style = card.style && typeof card.style === 'object' ? card.style : {};
   const visiblePhoto = card.photo_key || card.background_key;
@@ -770,6 +770,7 @@ function cardElement(card, compact = false, expanded = false) {
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
   open.append(photo); frame.append(open);
+  if (card.kind === 'event') frame.append(node('span', 'note-event-badge', '이벤트/광고'));
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
     thumb.dataset.photoCard = card.id;
@@ -2841,7 +2842,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.49-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
