@@ -2213,6 +2213,7 @@ function updateAuth() {
   if ($('#mobile-account-status')) $('#mobile-account-status').textContent = accountText;
   if ($('#note-blocks')) $('#note-blocks').hidden = !session?.user;
   if ($('#note-moderation')) $('#note-moderation').hidden = !session?.user || !moderator;
+  if ($('#note-admin-entry')) $('#note-admin-entry').hidden = !session?.user || !moderator;
   if (stageAuth) {
     stageAuth.toggle.textContent = session?.user ? '테스트 로그아웃' : '테스트 로그인';
     if (session?.user) stageAuth.form.hidden = true;
@@ -2487,11 +2488,12 @@ async function loadModerator(userId) {
 function installManagement() {
   const tools = node('div', 'note-tools');
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
-  const reports = managementButton('관리자 모드', () => {
+  const reports = managementButton('관리자 모드 열기', () => {
     if (!moderator || !session?.user) return;
     window.location.assign('/world.html?admin=note');
-  }); reports.id = 'note-moderation'; reports.hidden = true;
-  tools.append(blocks, reports); $('#side-tools').append(tools);
+  }); reports.id = 'note-moderation'; reports.className = 'btn pri'; reports.hidden = true;
+  $('#note-admin-entry').append(reports);
+  tools.append(blocks); $('#side-tools').append(tools);
   managementClose.addEventListener('click', () => closeManagement());
   management.addEventListener('click', event => { if (event.target === management) closeManagement(); });
   document.addEventListener('keydown', event => {
@@ -2712,4 +2714,3 @@ if (client) {
   authKnown = true; banner('노트 연결 설정을 확인해 주세요');
   state(list, '카드를 불러올 수 없어요.'); updateAuth();
 }
-
