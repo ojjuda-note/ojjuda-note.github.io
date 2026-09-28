@@ -1,6 +1,15 @@
 # 오쭈다 월드·노트 재해 복구
 
-현재 GitHub 저장소의 전체 이력, 운영 Supabase DB(계정 포함), Storage 사진 원본을 매일 한국 시간 00:00에 하나의 암호화 파일로 외부 비공개 S3 버킷에 올리도록 준비한 절차다. **이 파일을 저장소에 추가하는 것만으로 백업이 시작되지는 않는다.** 아래 비밀값을 설정하고 첫 수동 실행·격리 복구 테스트가 성공해야 운영 중이라고 표시한다.
+현재 GitHub 저장소의 전체 이력, 운영 Supabase DB(계정 포함), Storage 사진 원본을 매일 한국 시간 03:00에 점검을 시작한 뒤 하나의 암호화 파일로 외부 비공개 S3 버킷에 올리도록 준비한 절차다. **이 파일을 저장소에 추가하는 것만으로 백업이 시작되지는 않는다.** 아래 비밀값을 설정하고 첫 수동 실행·격리 복구 테스트가 성공해야 운영 중이라고 표시한다.
+
+## 매일 03:00 오류·보안 점검 (2026-09-29 적용)
+
+- 기존 00:00 예약을 03:00 `Asia/Seoul`로 변경한다. 중복 백업 예약을 추가하지 않는다.
+- 먼저 추적 중인 JavaScript/Python 문법, 기존 가입·로그인·격리 DB 회귀검사, 잠금 파일 기준 npm 의존성 취약점과 포털·월드·노트 HTTPS 응답을 검사한다.
+- 연결된 일일 점검 작업은 Supabase 상태·보안 권고·최근 24시간 오류 및 cron 실패를 읽고, GitHub 검사와 마지막 외부 백업 결과를 한국어로 보고한다. 이 검사로 모든 취약점이나 실제 침해 여부가 판정되는 것은 아니다.
+- 검사 실패도 기록하고 백업은 시도한다. 검사에 문제가 있다는 이유로 복구용 스냅샷을 건너뛰지 않는다.
+- workflow 파일 변경 시에는 검사만 실행하고 실제 백업은 예약 또는 수동 실행에서만 수행한다.
+- **2026-09-29 00:17 KST 실행은 실패했다.** 로그에서 DB 연결 URL, 운영 Storage 읽기 키, 외부 보관소 연결값과 공개 암호화 수신자가 미설정된 것을 확인했다. 이 상태는 예약 준비 상태이며, 외부 백업 운영 완료가 아니다. 비밀값 설정 뒤 첫 암호화 업로드·다운로드 해시 검증 및 별도 복원 시험이 남아 있다.
 
 ## 설치와 최초 확인
 
@@ -20,7 +29,7 @@
 | `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 외부 보관소의 전용 키 |
 | `BACKUP_AGE_RECIPIENT` | 공개 `age1...` 수신자 값 |
 
-6. `.github/workflows/nightly-backup.yml`과 `ops/` 파일을 저장소 기본 브랜치에 올린 뒤 **Actions > Encrypted offsite disaster recovery backup > Run workflow**로 첫 실행한다. 성공 로그의 `Encrypted offsite backup verified`와 외부 버킷의 `ojjuda-disaster-recovery/v1/daily/YYYY-MM-DD/backup-...tar.gz.age` 파일을 함께 확인한다. 마지막으로 아래 복구 검증을 별도 프로젝트에서 해 본다.
+6. `.github/workflows/nightly-backup.yml`과 `ops/` 파일을 저장소 기본 브랜치에 올린 뒤 **Actions > Daily checks and encrypted offsite backup > Run workflow**로 첫 실행한다. 성공 로그의 `Encrypted offsite backup verified`와 외부 버킷의 `ojjuda-disaster-recovery/v1/daily/YYYY-MM-DD/backup-...tar.gz.age` 파일을 함께 확인한다. 마지막으로 아래 복구 검증을 별도 프로젝트에서 해 본다.
 
 GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될 수 있고 공개 저장소가 60일 동안 활동이 없으면 예약이 중지될 수 있다. 작업 실패 알림을 켜고 **최근 성공 백업이 26시간 이내인지 매일 확인**한다. 복구 목표가 더 엄격하면 GitHub Actions와 독립된 실행기·모니터링이 필요하다.
 
@@ -45,7 +54,7 @@ GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될
 6. 새 프로젝트의 Storage S3 접근 키를 만들고 `RESTORE_SUPABASE_PROJECT_REF`, `RESTORE_SUPABASE_REGION`, `RESTORE_SUPABASE_S3_ACCESS_KEY`, `RESTORE_SUPABASE_S3_SECRET_KEY`, 새 프로젝트의 postgres session pooler URL인 `RESTORE_SUPABASE_DB_URL`을 **관리자 PC 환경변수**로 설정한다. `python ops/restore-storage.py snapshot --apply`로 실제 파일을 업로드·검증한다. 이 절차는 S3 업로드로 바뀌는 사진의 MIME·캐시 설정을 유지하고, 업로드 후 DB의 원래 파일 소유자·사용자 메타데이터를 새 프로젝트에서 복원한다. 실제 Storage 파일 버전·ETag는 새로 올라간 바이트에 맞는 값을 남긴다. **Supabase는 평소 Storage 테이블을 SQL에서 읽기 전용으로 취급하라고 권장한다. 이 소유자 재설정은 격리 복구 중에만 시행하고, 적용 실패·검증 불일치 시 서비스를 공개하지 않는다.** 스크립트는 원본 프로젝트 ref와 동일한 대상, 대상 ref와 다른 DB URL을 거부한다. 버킷 목록이 빠지면 DB 복원부터 재확인한다.
 7. `cron_jobs.jsonl` 중 우리 서비스 예약 작업만 **새 프로젝트에서 SQL로 재생성**한다. 작업 명령에 이전 프로젝트 URL·토큰이 들어 있다면 새 키로 바꾼다. `managed_schema_triggers.jsonl`과 `managed_schema_policies.jsonl`의 사용자 정의 항목(특히 `auth.users` 가입·탈퇴 트리거)을 새 프로젝트와 비교하고 중복 없이 재설치한다. `migration_history.jsonl`과 실제 스키마를 맞춘다. 이 검토 과정은 현재 자동화되어 있지 않다.
 8. Git mirror를 `tar -xzf snapshot/source-git-mirror.tar.gz`로 풀어 `git -C repo.git fsck --full` 검증하고, 새 저장소/Pages에 코드와 정적 사진을 복구한다. 새 Supabase URL·공개 키를 `config.js`에 연결하고 관리자 로그인을 검증한다.
-9. 격리 상태에서 DB 회원·노트·월드 카드 수, 3개 Storage 버킷/파일 수와 해시, 사진 MIME·소유권, 로그인·사진 열기·관리자 기능·cron을 점검한다. **자정 백업 이후에 탈퇴한 계정/삭제한 게시물의 독립 최신 기록을 확인해 복원본에서 재삭제한 뒤** 서비스를 연다. 독립 기록이 없으면 탈퇴 데이터가 되살아날 수 있어 공개를 보류하고 조사한다.
+9. 격리 상태에서 DB 회원·노트·월드 카드 수, 3개 Storage 버킷/파일 수와 해시, 사진 MIME·소유권, 로그인·사진 열기·관리자 기능·cron을 점검한다. **마지막 성공 백업 이후에 탈퇴한 계정/삭제한 게시물의 독립 최신 기록을 확인해 복원본에서 재삭제한 뒤** 서비스를 연다. 독립 기록이 없으면 탈퇴 데이터가 되살아날 수 있어 공개를 보류하고 조사한다.
 
 매일 한 번의 스냅샷은 마지막 성공 백업 이후 **최대 약 24시간의 자료 손실**을 허용하며, 새 프로젝트와 도메인 재연결에는 시간이 든다. 자동 즉시 전환이나 탈퇴 사건의 실시간 독립 기록은 이 구성에 포함되어 있지 않다.
 
