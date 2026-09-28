@@ -79,10 +79,6 @@
 textarea.na-input{min-height:95px;resize:vertical}
 .na-input:disabled{background:var(--surface-2,#f5f6fc);opacity:.65}
 .na-field small{color:var(--ink-2,#626894);font-size:12px;line-height:1.5}
-.na-switch{display:flex;align-items:center;gap:10px;padding:12px;border-top:1px solid var(--line,#daddf0);cursor:pointer}
-.na-switch input{width:20px;height:20px;margin:0;accent-color:var(--accent,#f0679a);flex:none}
-.na-switch span{display:grid;gap:2px;font-size:14px}
-.na-switch small{color:var(--ink-2,#626894);font-weight:400;font-size:12px}
 .na-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:12px}
 .na-actions--start{justify-content:flex-start}
 .na-more-actions{margin-top:8px}

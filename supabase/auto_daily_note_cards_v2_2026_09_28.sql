@@ -109,9 +109,6 @@ BEGIN
     SELECT 1 FROM public.profiles p
     JOIN public.user_private up ON up.user_id=p.id WHERE p.id=v_author
   ) THEN RAISE EXCEPTION 'Dedicated system bot Auth user and membership are required'; END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM ojjuda_note_internal.settings s WHERE s.singleton AND s.posting_enabled
-  ) THEN RETURN 0; END IF;
   PERFORM pg_catalog.pg_advisory_xact_lock(284726,(v_day-date '2000-01-01')::integer);
   IF ojjuda_note_internal.plan_auto_cards(v_day)<>10 THEN RETURN 0; END IF;
   v_old_claim := pg_catalog.current_setting('request.jwt.claim.sub',true);
@@ -124,18 +121,23 @@ BEGIN
     WHERE q.local_day=v_day AND q.posted_at IS NULL AND q.planned_at<=v_now
     ORDER BY q.slot FOR UPDATE OF q
   LOOP
-    v_result := ojjuda_note.publish_card(
-      v_item.request_id,v_item.body,ARRAY[]::text[],
-      'anonymous','{}'::jsonb,v_item.lat,v_item.lon,NULL::uuid);
-    v_card_id := (v_result->>'card_id')::uuid;
-    IF v_card_id IS NULL THEN RAISE EXCEPTION 'Card was not published'; END IF;
-    UPDATE ojjuda_note_internal.card_gender SET gender=v_item.gender
-    WHERE card_id=v_card_id;
-    IF NOT FOUND THEN RAISE EXCEPTION 'Card gender marker missing'; END IF;
-    UPDATE ojjuda_note_internal.auto_card_schedule
-      SET card_id=v_card_id,posted_at=v_now
-      WHERE local_day=v_item.local_day AND slot=v_item.slot AND posted_at IS NULL;
-    v_posted := v_posted+1;
+    BEGIN
+      v_result := ojjuda_note.publish_card(
+        v_item.request_id,v_item.body,ARRAY[]::text[],
+        'anonymous','{}'::jsonb,v_item.lat,v_item.lon,NULL::uuid);
+      v_card_id := (v_result->>'card_id')::uuid;
+      IF v_card_id IS NULL THEN RAISE EXCEPTION 'Card was not published'; END IF;
+      UPDATE ojjuda_note_internal.card_gender SET gender=v_item.gender
+      WHERE card_id=v_card_id;
+      IF NOT FOUND THEN RAISE EXCEPTION 'Card gender marker missing'; END IF;
+      UPDATE ojjuda_note_internal.auto_card_schedule
+        SET card_id=v_card_id,posted_at=v_now
+        WHERE local_day=v_item.local_day AND slot=v_item.slot AND posted_at IS NULL;
+      v_posted := v_posted+1;
+    EXCEPTION WHEN SQLSTATE 'PNS01' OR SQLSTATE 'PNS02' THEN
+      -- Keep completed cards and retry remaining scheduled cards next run.
+      EXIT;
+    END;
   END LOOP;
   PERFORM pg_catalog.set_config('request.jwt.claim.sub',coalesce(v_old_claim,''),true);
   RETURN v_posted;
