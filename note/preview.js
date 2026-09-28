@@ -2087,7 +2087,7 @@ async function openComposer(mode, card = null) {
   const run = ++composerRun, epoch = identityEpoch;
   if (session?.user && !card?.is_mine) {
     const userId = session.user.id;
-    try { if (!myIdentityReady) await loadMyGender(userId); }
+    try { await loadMyGender(userId); }
     catch { message('회원정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
     if (run !== composerRun || epoch !== identityEpoch || session?.user?.id !== userId) return;
     if (!myIdentity) { showMemberInfo(() => openComposer(mode, card)); return; }
