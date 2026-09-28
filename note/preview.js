@@ -225,8 +225,9 @@ function suggestTags(body, limit = 5) {
   }
   return out;
 }
-// 19금 태그: 추천·인기 태그와 최신·인기·근처, 다른 태그 검색에서는 빼고, #19금을 직접 찾는 성인에게만 보여요
+// 검증된 연령 인증 전에는 19금 태그의 게시와 열람을 보류합니다.
 const ADULT_TAG = '19금';
+const ADULT_ACCESS_READY = false;   // 검증된 연령 인증 수단 연결 전에는 읽기와 게시를 막아요.
 const isAdultTag = t => String(t || '').trim().replace(/^#+/, '').trim() === ADULT_TAG;
 const isAdultCard = card => Array.isArray(card?.tags) && card.tags.some(isAdultTag);
 let adultStatus = 'guest', adultStatusRun = 0, adultStatusPromise = null;   // guest · unknown · adult · minor
@@ -244,27 +245,11 @@ async function loadAdultStatus(userId) {
   await task;
   if (adultStatusPromise === task) adultStatusPromise = null;
 }
-async function ensureAdult(purpose) {   // 로그인 + 본인이 입력한 출생연도 (신원 인증은 아님)
-  const userId = session?.user?.id;
-  if (userId && adultStatus === 'unknown') await (adultStatusPromise || loadAdultStatus(userId));
-  if (session?.user?.id !== userId) return false;
-  if (adultStatus === 'adult') return true;
-  if (!session?.user) { message('19금 태그는 로그인한 성인만 이용할 수 있어요.'); return false; }
-  if (adultStatus === 'minor') { message('19금 태그는 19세가 되는 해부터 이용할 수 있어요.'); return false; }
-  const raw = window.prompt(`19금 태그는 출생연도 기준을 충족한 회원만 ${purpose} 있어요.\n태어난 해를 숫자 4자리로 적어 주세요. (예: 1995)\n본인이 입력하는 방식이며 신원 인증은 아닙니다. 한 번 정하면 직접 바꿀 수 없어요.`);
-  if (raw == null) return false;
-  const year = Number(String(raw).trim());
-  if (!Number.isInteger(year) || year < 1900 || year > new Date().getFullYear()) { message('태어난 해를 숫자 4자리로 적어 주세요.'); return false; }
-  try {
-    const status = await noteRpc('confirm_adult', { p_birth_year: year });
-    if (session?.user?.id !== userId) return false;
-    adultStatus = status;
-  }
-  catch (error) { console.warn('Note confirm adult:', error); message('성인 확인을 하지 못했어요. 잠시 뒤 다시 해 주세요.'); return false; }
-  if (adultStatus !== 'adult') { message('19금 태그는 19세가 되는 해부터 이용할 수 있어요.'); return false; }
-  return true;
+async function ensureAdult() {
+  message('19금 기능은 연령 인증을 준비하는 동안 이용할 수 없어요.');
+  return false;
 }
-const canSeeAdultCard = card => !!card?.is_mine || adultStatus === 'adult';
+const canSeeAdultCard = card => ADULT_ACCESS_READY && (!!card?.is_mine || adultStatus === 'adult');
 const adultSearchOn = () => feedMode === 'all' && feedSearchKind === 'tag' && isAdultTag(feedTerm);
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
@@ -962,7 +947,7 @@ async function loadFeed(more = false, quiet = false) {
   let shown = 0;
   for (const card of data || []) {
     if (card.kind === 'event' && card.body == null) continue;
-    if (isAdultCard(card) && !(adultSearchOn() ? adultStatus === 'adult' : feedMode === 'mine' && card.is_mine)) continue;
+    if (isAdultCard(card) && (!ADULT_ACCESS_READY || !(adultSearchOn() ? adultStatus === 'adult' : feedMode === 'mine' && card.is_mine))) continue;
     shown++;
     const exists = list.querySelector(`[data-card-id="${card.id}"]`);
     cache.set(card.id, card);
@@ -1057,7 +1042,7 @@ async function loadReplies(id, version, more = false) {
   }
   if (!more) replies.replaceChildren();
   for (const card of data || []) {
-    if (isAdultCard(card) && adultStatus !== 'adult') continue;
+    if (isAdultCard(card) && (!ADULT_ACCESS_READY || adultStatus !== 'adult')) continue;
     cache.set(card.id, card); replies.append(cardElement(card, true));
   }
   if (!more && !data?.length) state(replies, '아직 답글이 없어요.');
@@ -1094,7 +1079,7 @@ async function renderDetail() {
     console.warn('Note card:', error);
     state(slot, '카드를 불러오지 못했어요.'); state(replies, '잠시 후 다시 열어 주세요.'); return;
   }
-  if (!card) {
+  if (!card || (isAdultCard(card) && !ADULT_ACCESS_READY)) {
     cache.delete(id); $('#reply-count').textContent = '0';
     state(slot, '삭제되었거나 볼 수 없는 카드예요.'); state(replies, ''); return;
   }
