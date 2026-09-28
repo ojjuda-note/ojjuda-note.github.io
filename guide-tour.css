@@ -1,5 +1,4 @@
 /* The tour uses screenshots and renderers from Ojjuda itself. */
-.world-screen-crop.rendered-room{aspect-ratio:400/380;background:#e9f0fd}.world-screen-crop.rendered-room img{position:static;display:block;width:100%;max-width:100%;height:auto;transform:none}
 .brand b{font-size:11px;letter-spacing:0;font-weight:500;margin-left:10px;color:#858097}
 .visual-tour{padding-bottom:64px}
 .visual-story{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);grid-template-areas:'copy art' 'actions art';column-gap:64px;align-items:center;padding:42px 0 66px;min-height:560px}

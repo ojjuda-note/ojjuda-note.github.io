@@ -1,20 +1,17 @@
 {
-  "source": [
-    "world.html",
-    "world-art/avatar.js",
-    "world-art/pets.js"
-  ],
+  "source": "world.html",
+  "commit": "1a36417e8e424c9a016f9dfe71355bf445ae99b2",
   "date": "2026-09-28",
-  "method": "Production Od scene using the same upgraded Ue and Ba renderers and enhanceCareScene as World. Exported with pure rendering dependencies and an example avatar; no application initialization, authentication, network or account state.",
+  "method": "The unmodified production Od scene with Ue avatar and Ba pet SVG renderers, exported in a VM containing only their pure rendering dependencies. No app initialization, authentication, network or account state is executed.",
   "avatar": {
     "skin": 0,
     "hair": "bob",
     "hairColor": 1,
     "face": "smile",
-    "top": "cardigan",
+    "top": "tee",
     "topColor": "#F3A6BE",
-    "bottom": "jeans",
-    "bottomColor": "#7991C4",
+    "bottom": "pants",
+    "bottomColor": "#6E7BEA",
     "shoes": "sneakers",
     "acc": "ribbon"
   },
@@ -46,6 +43,5 @@
     "resetAfterMs": 2800
   },
   "usage": "Inline pet-care.svg inside an element with class petscene and load pet-care.css. Toggle a-feed / a-pat / a-play on the container; remove all action classes and force layout before replay. .ps-gain is intentionally empty: this is a preview, no account stats or rewards change.",
-  "distinction": "This is a source-rendered interactive preview, not a video recording of a user session.",
-  "artVersion": "2026-09-28.1"
+  "distinction": "This is a source-rendered interactive preview, not a video recording of a user session."
 }
