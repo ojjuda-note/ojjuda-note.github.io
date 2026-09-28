@@ -31,10 +31,10 @@
   // Match the World's risk_pattern() for badges; the server decides which rows enter the risk list.
   const RISK_SIGNAL = /(죽고\s*싶|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|끝내고\s*싶|목숨|유서|뛰어내리|맞았|때렸|폭행|협박|학대|성폭|스토킹|죽여\s*버|죽일\s*거)/i;
   const TABS = [
-    ['cards', '전체 카드'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['settings', '공지 · 기능'], ['map', '위치 지도'],
+    ['cards', '전체 카드'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['settings', '공지'], ['spam', '도배 방지'], ['map', '위치 지도'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
   ];
-  const NOTE_TABS = Object.freeze(TABS.slice(0, 5));
+  const NOTE_TABS = Object.freeze(TABS.slice(0, 6));
   const VIEW_OF_TAB = { cards: 'card', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'cards', event: 'events', archive: 'archive' };
   function openTab(id) {   // 탭을 고르면 카드 종류를 맞추고 불러와요
     if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], offset: 0, expiredOffset: 0, query: '', state: 'all' });
@@ -43,7 +43,8 @@
   const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
   const HELP = {
     overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
-    settings: '공지와 노트 안의 기능을 관리합니다. 변경 사유는 작업 기록에 남습니다.',
+    settings: '노트 공지를 관리합니다. 변경 사유는 작업 기록에 남습니다.',
+    spam: '회원 한 명이 작성하는 카드·답글을 합산합니다. 새 글부터 적용되며, 글을 삭제해도 횟수는 초기화되지 않습니다.',
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
     cards: '익명카드·답글과 위험 신호를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
     events: '이벤트 카드를 관리합니다.',
@@ -58,7 +59,7 @@
     archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
     purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
     restrict_user: '이용 제한', release_user: '이용 제한 해제', add_moderator: '운영자 지정',
-    remove_moderator: '운영자 해제', update_settings: '노트 공지·기능 변경', reply_inquiry: '문의 답변'
+    remove_moderator: '운영자 해제', update_settings: '노트 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변'
   };
   const filters = { cards: { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
   let client = null, onChanged = null, userId = null, subscription = null;
@@ -540,41 +541,55 @@
       const stat = el('div', 'adm-stat na-stat'); stat.append(el('dt', 'adm-l', label), el('dd', 'adm-n', number(overview?.[key]))); stats.append(stat);
     }
     main.append(stats);
-    const operating = el('section', 'box na-box'); operating.append(el('h4', '', '현재 운영 상태'));
-    const states = el('p', 'na-meta');
-    for (const [label, key] of [['카드 작성', 'posting_enabled'], ['답글 작성', 'replies_enabled'], ['신고 접수', 'reports_enabled']]) states.append(badge(`${label} ${settings?.[key] ? '열림' : '닫힘'}`, settings?.[key] ? 'good' : 'warn'));
-    operating.append(states, button('공지·기능 관리', () => load('settings'))); main.append(operating);
-    const notice = el('section', 'box na-box na-box--notice'); notice.append(el('h4', '', '현재 공지'), el('p', '', settings?.notice || '등록된 공지가 없어요.')); main.append(notice);
+    const notice = el('section', 'box na-box na-box--notice'); notice.append(el('h4', '', '현재 공지'), el('p', '', settings?.notice || '등록된 공지가 없어요.'), button('공지 관리', () => load('settings'))); main.append(notice);
   }
   async function renderSettings(run) {
     const settings = await rpc('admin_settings'); if (!validRun(run)) return;
     const form = el('form', 'na-form na-settings-form');
-    const controls = el('section', 'box na-box na-settings-group'); controls.append(el('h4', '', '기능과 공지'));
+    const controls = el('section', 'box na-box na-settings-group'); controls.append(el('h4', '', '공지 내용'));
     const notice = field('노트 공지', 'textarea', settings?.notice || '', '모든 이용자에게 표시됩니다. 최대 1,000자이며, 비우면 공지가 내려갑니다.'); notice.input.maxLength = 1000; notice.input.rows = 5;
-    controls.append(notice.wrap); const checks = {};
-    for (const [key, label, description] of [
-      ['posting_enabled', '카드 작성·수정 허용', '익명카드를 새로 쓰거나 수정할 수 있습니다.'],
-      ['replies_enabled', '답글 작성·수정 허용', '답글을 새로 쓰거나 수정할 수 있습니다.'],
-      ['reports_enabled', '신고 접수 허용', '새 신고를 접수합니다. 기존 신고는 계속 관리할 수 있습니다.']
-    ]) {
-      const wrap = el('label', 'na-switch'); const input = el('input'); input.type = 'checkbox'; input.checked = settings?.[key] === true;
-      const copy = el('span', '', label); copy.append(el('small', '', description)); wrap.append(input, copy); controls.append(wrap); checks[key] = input;
-    }
+    controls.append(notice.wrap);
     form.append(controls);
     const reason = reasonField(); form.append(reason.wrap);
-    const actions = el('div', 'na-actions'); const save = button('공지 · 기능 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save); form.append(actions);
+    const actions = el('div', 'na-actions'); const save = button('공지 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save); form.append(actions);
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (!validReason(reason.input)) return;
       const args = { p_reason: reason.input.value.trim() };
       const newNotice = notice.input.value.trim();
       if (newNotice !== (settings?.notice || '')) args.p_notice = newNotice;
-      for (const key of ['posting_enabled', 'replies_enabled', 'reports_enabled']) {
-        if (checks[key].checked !== (settings?.[key] === true)) args[`p_${key}`] = checks[key].checked;
-      }
       if (Object.keys(args).length === 1) { setStatus('바뀐 내용이 없어요.'); return; }
-      perform('admin_patch_service_settings', args, '공지와 기능을 저장했어요.', 'settings');
+      perform('admin_patch_service_settings', args, '공지를 저장했어요.', 'settings');
     }); main.append(form);
+  }
+  async function renderSpamSettings(run) {
+    const settings = await rpc('admin_spam_settings'); if (!validRun(run)) return;
+    const form = el('form', 'na-form na-settings-form');
+    const group = el('section', 'box na-box na-settings-group');
+    group.append(el('h4', '', '도배 방지 기준'));
+    const duplicate = field('같은 글 연속 허용 횟수', 'number', settings.max_consecutive, '기본 2회: 같은 글은 연속 3번째부터 막습니다. 띄어쓰기·줄바꿈만 바꾼 글도 같습니다.');
+    const seconds = field('작성 횟수를 세는 시간 (초)', 'number', settings.window_seconds, '기본 60초: 최근 1분을 기준으로 계산합니다.');
+    const limit = field('이 시간 안에 작성할 수 있는 글 수', 'number', settings.max_posts, '기본 2개: 1분 안에는 3번째 글부터 막습니다.');
+    for (const [item, max] of [[duplicate, 10], [seconds, 3600], [limit, 100]]) {
+      item.input.min = '1'; item.input.max = String(max); item.input.step = '1'; item.input.required = true;
+      group.append(item.wrap);
+    }
+    const summary = el('p', 'na-help');
+    const refreshSummary = () => {
+      summary.textContent = `같은 글 연속 ${Number(duplicate.input.value) + 1}번째부터 · 최근 ${Number(seconds.input.value)}초 동안 ${Number(limit.input.value) + 1}번째 글부터 차단`;
+    };
+    for (const item of [duplicate, seconds, limit]) item.input.addEventListener('input', refreshSummary);
+    refreshSummary(); group.append(summary); form.append(group);
+    const reason = reasonField(); form.append(reason.wrap);
+    const actions = el('div', 'na-actions'); const save = button('도배 방지 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save); form.append(actions);
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (![duplicate.input, seconds.input, limit.input].every(input => input.reportValidity()) || !validReason(reason.input)) return;
+      const values = { max_consecutive: Number(duplicate.input.value), window_seconds: Number(seconds.input.value), max_posts: Number(limit.input.value) };
+      if (Object.keys(values).every(key => values[key] === settings[key])) { setStatus('바뀐 내용이 없어요.'); return; }
+      perform('admin_update_spam_settings', { p_max_consecutive: values.max_consecutive, p_window_seconds: values.window_seconds, p_max_posts: values.max_posts, p_reason: reason.input.value.trim() }, '도배 방지 설정을 저장했어요.', 'spam');
+    });
+    main.append(form);
   }
   function searchForm(value, placeholder, submit, states = null, help = '') {
     const form = el('form', 'box na-search'); const query = field('검색', 'search', value, help); query.input.placeholder = placeholder; query.input.maxLength = 200; form.append(query.wrap);
@@ -992,7 +1007,8 @@
     for (const action of rows) {
       const item = el('article', 'adm-card na-item'); const header = el('div', 'na-item-header');
       const detail = action.detail;
-      const actionLabel = detail?.visual_after ? '카드 꾸미기·사진 지정 정정'
+      const actionLabel = detail?.spam_after ? '도배 방지 설정 변경'
+        : detail?.visual_after ? '카드 꾸미기·사진 지정 정정'
         : detail?.after?.radius_km != null ? '이벤트 위치·시간 정정' : ACTIONS[action.action] || '운영 작업';
       header.append(el('strong', '', actionLabel), el('span', 'na-meta', formatDate(action.created_at))); item.append(header);
       item.append(el('p', 'na-reason', `처리자: ${shortUser(action.moderator_id)}\n사유: ${action.reason || '기록된 사유 없음'}`));
@@ -1011,6 +1027,10 @@
   function auditChanges(detail) {
     if (!detail || typeof detail !== 'object') return [];
     const values = [];
+    if (detail.spam_before && detail.spam_after) {
+      const describe = value => `같은 글 연속 ${value.max_consecutive}회 · ${value.window_seconds}초에 ${value.max_posts}개 허용`;
+      values.push(['변경 전 도배 방지', describe(detail.spam_before)], ['변경 후 도배 방지', describe(detail.spam_after)]);
+    }
     for (const [key, label] of [['posting_enabled', '카드 작성'], ['replies_enabled', '답글 작성'], ['reports_enabled', '신고 접수']]) {
       if (typeof detail[key] === 'boolean') values.push([label, detail[key] ? '허용' : '중지']);
     }
@@ -1055,7 +1075,7 @@
     focusSection(heading);
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
-      await ({ overview: renderOverview, settings: renderSettings, cards: renderCards, events: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
+      await ({ overview: renderOverview, settings: renderSettings, spam: renderSpamSettings, cards: renderCards, events: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
       if (validRun(run)) loading.remove();
       return validRun(run);
     } catch (error) {

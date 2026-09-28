@@ -1340,18 +1340,15 @@ window.addEventListener('popstate', () => {
   } else showFeed(false);
 });
 
-function canWrite(cardKind = kind) {
-  return !!noteState && !noteState.is_restricted
-    && (cardKind === 'comment' ? noteState.replies_enabled : noteState.posting_enabled);
+function canWrite() {
+  return !!noteState && !noteState.is_restricted;
 }
 function canReact(alreadySelected = false) {
   return alreadySelected || (!!noteState && !noteState.is_restricted);
 }
-function writingMessage(cardKind = kind) {
+function writingMessage() {
   if (!noteState) return '노트 운영 상태를 확인하는 중이에요';
   if (noteState.is_restricted) return `노트 이용이 제한되어 있어요${noteState.restriction_reason ? `: ${noteState.restriction_reason}` : ''}`;
-  if (cardKind === 'comment' && !noteState.replies_enabled) return '답글 등록이 잠시 쉬고 있어요';
-  if (cardKind !== 'comment' && !noteState.posting_enabled) return '새 카드 등록이 잠시 쉬고 있어요';
   return '';
 }
 async function loadNoteState() {
@@ -1364,9 +1361,7 @@ async function loadNoteState() {
     $('#note-announcement-copy').textContent = announcementText;
     $('#note-announcement-full').textContent = announcementText;
     $('#note-announcement').hidden = !announcementText;
-    const values = [data.is_restricted ? writingMessage() : '',
-      !data.posting_enabled ? '새 카드 등록이 잠시 쉬고 있어요.' : '',
-      !data.replies_enabled ? '답글 등록이 잠시 쉬고 있어요.' : ''].filter(Boolean);
+    const values = [data.is_restricted ? writingMessage() : ''].filter(Boolean);
     noticeElement.replaceChildren(...values.map(value => node('p', '', value)));
     noticeElement.hidden = !values.length;
   } catch (error) {
@@ -2391,10 +2386,10 @@ async function publishCard() {
     busy = false; setComposerInputs();
     console.warn('Note publish:', error);
     updateComposer();
-    composeMessage.textContent = /Invalid event (?:input|edit)/i.test(error?.message || '')
+    composeMessage.textContent = noteSpamMessage(error) || (/Invalid event (?:input|edit)/i.test(error?.message || '')
       ? editId ? '이벤트 글·태그·사진을 확인해 주세요.' : '이벤트 글·태그·위치·반경·시간을 확인해 주세요.'
       : error?.code === 'EVENT_REJECTED' ? error.message
-        : editId ? '수정하지 못했어요. 권한과 연결을 확인해 주세요' : '등록하지 못했어요. 다시 시도해 주세요';
+        : editId ? '수정하지 못했어요. 권한과 연결을 확인해 주세요' : '등록하지 못했어요. 다시 시도해 주세요');
     return;
   }
   if (editId && publishedId && publishKind !== 'event') {
@@ -2601,6 +2596,16 @@ function validReason(field) {
   managementMessage.textContent = '공백을 제외하고 사유를 2자 이상 적어 주세요.';
   field.focus(); return false;
 }
+function noteSpamMessage(error) {
+  if (!['PNS01', 'PNS02'].includes(error?.code)) return '';
+  let details = {};
+  try { details = JSON.parse(error.details || '{}'); } catch { /* Use safe defaults below. */ }
+  const amount = (value, fallback) => Number.isSafeInteger(value) && value > 0 ? value : fallback;
+  if (error.code === 'PNS01') return `같은 글은 연속 ${amount(details.max_consecutive, 2)}회까지만 쓸 수 있어요. 내용을 바꿔 주세요.`;
+  const seconds = amount(details.window_seconds, 60);
+  const windowText = seconds % 60 === 0 ? `${seconds / 60}분` : `${seconds}초`;
+  return `${windowText}에 ${amount(details.max_posts, 2)}개까지만 쓸 수 있어요. ${amount(details.retry_after_seconds, 1)}초 뒤 다시 시도해 주세요.`;
+}
 async function noteRpc(name, parameters = {}) {
   const { data, error } = await query().rpc(name, parameters);
   if (error) throw error;
@@ -2757,15 +2762,13 @@ function confirmDelete(card) {
   }, async () => { closeManagement(); await refreshCards(false); }), true));
 }
 function reportCard(card) {
-  if (!noteState?.reports_enabled) { message('신고 접수가 잠시 쉬고 있어요.'); return; }
   closeManagement();
   window.OjjudaNoteSupport?.report({ content: card.body, onSubmit: async ({ reasonText, isCurrent }) => {
-    if (!isCurrent() || !session?.user || !noteState?.reports_enabled) throw new Error('Report unavailable');
+    if (!isCurrent() || !session?.user) throw new Error('Report unavailable');
     await noteRpc('report_card', { p_card_id: card.id, p_reason: reasonText });
   }});
 }
 function reportEvent(card) {
-  if (!noteState?.reports_enabled) { message('신고 접수가 잠시 쉬고 있어요.'); return; }
   closeManagement();
   window.OjjudaNoteSupport?.report({ content: card.body,
     help: '이벤트 범위 안에 있는지 위치를 다시 확인해요. 정확한 GPS 좌표는 공개되지 않고 신고 확인에만 사용됩니다.',
@@ -2774,7 +2777,7 @@ function reportEvent(card) {
       let position;
       try { position = await currentPosition(); }
       catch { throw { userMessage: '위치를 확인하지 못했어요. 권한을 확인하고 다시 시도해 주세요.' }; }
-      if (!isCurrent() || !session?.user || !noteState?.reports_enabled) throw new Error('Report unavailable');
+      if (!isCurrent() || !session?.user) throw new Error('Report unavailable');
       await noteRpc('report_event', { p_card_id: card.id, p_reason: reasonText,
         p_lat: position.latitude, p_lon: position.longitude });
     }
