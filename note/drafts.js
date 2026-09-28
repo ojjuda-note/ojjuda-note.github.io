@@ -18,12 +18,12 @@
     if (!value || typeof value.body !== 'string' || typeof value.tags !== 'string'
       || value.body.length > 20000 || value.tags.length > 480
       || typeof value.background_key !== 'string' || !/^\d{2,3}$/.test(value.background_key)
-      || Number(value.background_key) < 10 || Number(value.background_key) > 111
+      || Number(value.background_key) < 10 || Number(value.background_key) > 189
       || !['memo', 'comment'].includes(value.kind)
       || (style !== null && (typeof style !== 'object' || Array.isArray(style)
         || JSON.stringify(style).length > 512))
       || (photoKey !== null && (typeof photoKey !== 'string' || !/^\d{2,3}$/.test(photoKey)
-        || Number(photoKey) < 10 || Number(photoKey) > 111))
+        || Number(photoKey) < 10 || Number(photoKey) > 189))
       || (value.kind === 'memo' ? value.parent_id !== null : !uuid.test(value.parent_id || ''))) {
       throw new Error('임시 글 정보를 확인해 주세요.');
     }

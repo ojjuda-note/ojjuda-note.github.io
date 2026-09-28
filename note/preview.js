@@ -44,7 +44,7 @@ let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
-const PHOTO_FIRST = 10, PHOTO_LAST = 111, PHOTO_PAGE_SIZE = 12;
+const PHOTO_FIRST = 10, PHOTO_LAST = 189, PHOTO_PAGE_SIZE = 12;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
   'starlight', 'fireflies', 'petals', 'bubbles', 'aurora', 'confetti', 'sunbeams',
@@ -1250,6 +1250,15 @@ function shareCard(cardId) {
   }));
 }
 function selectCollection(mode, preserveMessage = false) {
+  // Collection tabs do not show the search field. Drop a prior tag/body filter
+  // so saved and own cards do not appear empty without an explanation.
+  if (mode !== 'all') {
+    if (feedTerm) {
+      feedTerm = ''; feedSearchKind = 'body';
+      const input = $('#tag-search'); if (input) input.value = '';
+    }
+    tagTabReset?.();
+  }
   feedMode = mode; if (!preserveMessage) message(''); showFeed();
   $('#feed-title').textContent = mode === 'all' ? '오쭈다노트 카드' : mode === 'events' ? '내 이벤트' : '메모함';
   $('#note-collection-tabs').hidden = mode === 'all' || mode === 'events';
@@ -1304,7 +1313,9 @@ function installFeatures() {
   searchContext.hidden = true; searchContext.setAttribute('role', 'status');
   const searchLabel = node('span');
   const clearSearch = node('button', '', '검색 지우기'); clearSearch.type = 'button';
-  clearSearch.addEventListener('click', () => { feedTerm = ''; input.value = ''; loadFeed(); });
+  clearSearch.addEventListener('click', () => {
+    feedTerm = ''; feedSearchKind = 'body'; input.value = ''; tagInput.value = ''; loadFeed();
+  });
   searchContext.append(searchLabel, clearSearch); sorts.after(searchContext);
   let tagTabOn = false;
   const syncSortButtons = () => sorts.querySelectorAll('button').forEach(item => {

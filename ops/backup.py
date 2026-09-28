@@ -154,15 +154,40 @@ def check_db_dump(root, cfg):
     for name in ("roles.sql", "schema.sql", "data.sql"):
         if not (root / name).is_file() or (root / name).stat().st_size < 10:
             raise RuntimeError(f"Database {name} is missing or empty")
-    data = (root / "data.sql").read_text(encoding="utf-8")
     auth_count = int((root / "auth_count.txt").read_text().strip())
     objects_count = len(json_lines(root / "objects.jsonl"))
-    for label, count, table in (("auth users", auth_count, "users"),
-                                ("Storage metadata", objects_count, "objects")):
-        schema = "auth" if table == "users" else "storage"
-        if count and not (f"{schema}.{table}" in data or f'"{schema}"."{table}"' in data):
-            # In particular, a public-only dump is not a valid recovery backup.
-            raise RuntimeError(f"Database dump omitted {label}; inspect Supabase CLI schema flags")
+    expected = {"auth.users": auth_count, "storage.objects": objects_count}
+    actual = {table: 0 for table in expected}
+    seen = set()
+    current = None
+    in_copy = False
+    # A literal table name elsewhere in the SQL (e.g. a function body) does not
+    # prove that its rows were dumped. Stream the file: it can be many gigabytes.
+    with (root / "data.sql").open(encoding="utf-8") as data:
+        for line in data:
+            if in_copy:
+                if line.rstrip("\r\n") == r"\.":
+                    in_copy = False
+                    current = None
+                elif current:
+                    actual[current] += 1
+                continue
+            if not line.startswith("COPY "):
+                continue
+            in_copy = True
+            match = re.match(r'^COPY ((?:"?auth"?\."?users"?)|(?:"?storage"?\."?objects"?)) '
+                             r'\([^)]*\) FROM stdin;\s*$', line)
+            if match:
+                current = match.group(1).replace('"', '')
+                if current in seen:
+                    raise RuntimeError(f"Duplicate {current} data in database dump")
+                seen.add(current)
+    if in_copy:
+        raise RuntimeError("Database dump ended in the middle of a COPY block")
+    for table, count in expected.items():
+        if table not in seen or actual[table] != count:
+            raise RuntimeError(f"Database dump {table} row count differs from inventory "
+                               f"(expected {count}, found {actual[table]})")
 
 
 def copy_storage(root, cfg, client):

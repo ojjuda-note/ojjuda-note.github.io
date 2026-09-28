@@ -15,11 +15,15 @@
   }
 
   function destination() {
-    const allowed = new Set(['overview', 'users', 'reports', 'posts', 'chats', 'feedback', 'errors', 'quiz', 'shop', 'words', 'settings', 'note']);
-    const aliases = { account: 'users', payment: 'settings', world: 'overview', note: 'note' };
-    const requested = new URLSearchParams(location.search).get('admin');
-    const fromHash = aliases[decodeURIComponent(location.hash.slice(1))];
-    const tab = allowed.has(requested) ? requested : (fromHash || 'overview');
+    const allowed = new Set([
+      'overview', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
+      'shop', 'settings', 'posts', 'chats', 'archive', 'quiz', 'note'
+    ]);
+    const aliases = { account: 'overview', payment: 'shop', world: 'posts' };
+    const resolve = value => allowed.has(value) ? value : aliases[value];
+    let hash = location.hash.slice(1);
+    try { hash = decodeURIComponent(hash); } catch { hash = ''; }
+    const tab = resolve(new URLSearchParams(location.search).get('admin')) || resolve(hash) || 'overview';
     const url = new URL('/world.html', location.href);
     url.searchParams.set('admin', tab);
     return url.href;

@@ -930,6 +930,14 @@
     return !!window.OjjudaMap?.create;
   }
   const hasAdultTag = tags => Array.isArray(tags) && tags.some(tag => String(tag).replace(/^#+/, '').trim() === '19금');
+  function openMappedCard(row) {
+    if (row.archived) {
+      filters.cards.view = 'archive'; filters.cards.offset = 0; filters.cards.expiredOffset = 0;
+      return load('archive');
+    }
+    Object.assign(filters.cards, { view: 'card', query: row.id, offset: 0, expiredOffset: 0 });
+    return load('cards');
+  }
   async function renderMap(run) {
     const filter = filters.map || (filters.map = { offset: 0 });
     const [rows, mapReady] = await Promise.all([
@@ -963,7 +971,7 @@
       for (const row of here) {
         const card = el('div', 'na-map-card');
         card.append(el('p', 'na-meta', `${formatDate(row.created_at)}${row.archived ? ' · 보관됨' : ''}${hasAdultTag(row.tags) ? ' · 19금' : ''}`), el('blockquote', 'na-card-body', row.body || '원문 없음'));
-        card.append(button('카드 관리에서 보기', () => { Object.assign(filters.cards, { view: 'card', query: row.id, offset: 0, expiredOffset: 0 }); load('cards'); }));
+        card.append(button(row.archived ? '보관함으로 가기' : '카드 관리에서 보기', () => openMappedCard(row)));
         info.append(card);
       }
       items.forEach((item, id) => item.classList.toggle('na-map-on', here.some(row => row.id === id)));
@@ -985,7 +993,7 @@
       const actions = el('div', 'na-actions');
       const group = markers.find(g => g.rows.includes(row));
       if (group && mapReady) actions.append(button('지도에서 보기', () => { adminMap?.focusOn({ lat: group.lat, lng: group.lng }, 14); showGroup(group); box.scrollIntoView({ block: 'nearest' }); }));
-      actions.append(button('카드 관리에서 보기', () => { Object.assign(filters.cards, { view: 'card', query: row.id, offset: 0, expiredOffset: 0 }); load('cards'); }));
+      actions.append(button(row.archived ? '보관함으로 가기' : '카드 관리에서 보기', () => openMappedCard(row)));
       item.append(actions); items.set(row.id, item); list.append(item);
     }
     main.append(list);

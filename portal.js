@@ -187,14 +187,17 @@
       return;
     }
     enteringNote = true;
+    const expectedUserId = session.user.id;
+    const expectedIdentityVersion = identityVersion;
     const noteButton = document.querySelector('[data-destination="note"]');
     noteButton.disabled = true;
     const release = () => { noteButton.disabled = false; enteringNote = false; };
+    const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion;
     try {
       const { data: identity, error: identityError } = await client.auth.getUser();
+      if (accountChanged()) return;
       if (identityError || !identity?.user || identity.user.id !== session.user.id) {
         applySession(null);
-        release();
         openAuth('login', 'note');
         feedback.textContent = '로그인을 다시 확인해 주세요.';
         return;
@@ -203,15 +206,14 @@
         ? String(identity.user.user_metadata?.nickname || '').trim()
         : String(overrideNickname).trim();
       const { data, error } = await client.rpc('ensure_member_for_note', { p_nickname: candidate });
+      if (accountChanged()) return;
       if (error) {
-        release();
         showNicknameSetup(candidate, nicknameIssue(error)
           ? '사용할 수 없는 닉네임이에요. 다른 이름을 입력해 주세요.'
           : '노트 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
         return;
       }
       if (data !== true) {
-        release();
         showNicknameSetup(candidate, '노트 연결을 확인하지 못했어요. 다시 시도해 주세요.');
         return;
       }
@@ -219,7 +221,7 @@
       location.assign(destinations.note);
     } catch (error) {
       console.warn('노트 회원 준비 실패:', error);
-      release();
+      if (accountChanged()) return;
       showNicknameSetup(overrideNickname || String(session.user.user_metadata?.nickname || ''),
         '노트 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
