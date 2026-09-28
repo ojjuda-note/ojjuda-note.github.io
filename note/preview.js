@@ -1688,7 +1688,7 @@ function updateFeaturedPhoto() {
   const selected = photoAssetKey(selectedPhotoKey);
   const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
   const ownedUntil = selected && activePhotoEntitlement(selected);
-  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
+  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10쭈 / 1개월' : '무료 · 이 사진으로 등록';
   $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
@@ -2267,6 +2267,7 @@ async function publishCard() {
   if (!body || body.length > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
   const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch, actionComposerRun = composerRun;
+  const previewBackgroundKey = backgroundKey;
   const selectedCardPhoto = (!editId || cardPhotoEditPath) && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
   const selectedCardPhotoExpectedPath = cardPhotoEditPath;
   const selectedCardPhotoId = cardPhotoRequestId;
@@ -2309,6 +2310,7 @@ async function publishCard() {
       body = draftToken.content.body.replace(/\r\n?/g, '\n').trim(); values = parsedTags(draftToken.content.tags);
       publishKind = draftToken.content.kind; publishParent = draftToken.content.parent_id;
       if (publishKind !== kind || publishParent !== parentId) throw new Error('임시 글의 원글이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
+      if (draftToken.content.background_key !== previewBackgroundKey) throw new Error('임시 글의 사진이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
       if (!body || body.length > 200 || !values) throw new Error('보관된 내용을 확인해 주세요.');
     } catch (error) {
       draftController.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
@@ -2377,12 +2379,14 @@ async function publishCard() {
       ({ data, error } = await query().from('cards').update({ body, tags: values, identity_mode: identityMode }).eq('id', editId).select('id').maybeSingle());
     } else if (publishKind === 'event') {
       data = await noteRpc(eventPhotoPath ? 'publish_event_with_photo' : 'publish_event', { p_request_id: publishRequestId, p_body: body, p_tags: values,
+        p_background_key: previewBackgroundKey,
         p_identity_mode: identityMode, p_style: currentStyle(), p_lat: eventPosition.latitude,
         p_lon: eventPosition.longitude, p_radius_km: Number($('#event-radius').value),
         p_starts_at: new Date().toISOString(), p_duration_hours: Number($('#event-hours').value),
         ...(eventPhotoPath ? { p_photo_path: eventPhotoPath } : {}) });
     } else {
       data = await noteRpc(cardPhotoUploadPath ? 'publish_card_with_photo' : 'publish_card', { p_request_id: publishRequestId, p_body: body, p_tags: values,
+        p_background_key: previewBackgroundKey,
         p_identity_mode: identityMode, p_style: currentStyle(), p_lat: writingPosition?.latitude,
         p_lon: writingPosition?.longitude, p_parent_id: publishParent,
         ...(cardPhotoUploadPath ? { p_photo_path: cardPhotoUploadPath } : {}) });
