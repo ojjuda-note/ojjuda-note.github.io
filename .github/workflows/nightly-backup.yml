@@ -1,10 +1,14 @@
-name: Encrypted offsite disaster recovery backup
+name: Daily checks and encrypted offsite backup
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 3 * * *'
       timezone: Asia/Seoul
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nightly-backup.yml'
 
 permissions:
   contents: read
@@ -14,7 +18,72 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  checks:
+    name: Error and dependency security checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check tracked JavaScript and Python syntax
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import subprocess
+          import sys
+
+          paths = subprocess.check_output(
+              ["git", "ls-files", "-z"], text=True
+          ).split("\0")
+          failed = []
+          checked = 0
+          for name in paths:
+              if not name:
+                  continue
+              path = pathlib.Path(name)
+              if path.suffix in (".js", ".cjs", ".mjs"):
+                  checked += 1
+                  if subprocess.run(["node", "--check", name]).returncode:
+                      failed.append(name)
+              elif path.suffix == ".py":
+                  checked += 1
+                  try:
+                      compile(path.read_text(encoding="utf-8"), name, "exec")
+                  except SyntaxError:
+                      failed.append(name)
+          print(f"Syntax checked: {checked} files; failures: {len(failed)}")
+          for name in failed:
+              print(f"Syntax error: {name}", file=sys.stderr)
+          sys.exit(bool(failed))
+          PY
+      - name: Install locked regression test dependencies
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Run existing signup, login and isolated database regression tests
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests test
+      - name: Audit locked dependency vulnerabilities
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests audit --audit-level=high
+      - name: Check public portal, world and note HTTPS responses
+        if: ${{ !cancelled() }}
+        run: |
+          failed=0
+          for url in https://ojjuda.kr/ https://ojjuda.kr/world.html https://ojjuda.kr/note/; do
+            if ! curl --fail --silent --show-error --location --retry 2 --max-time 30 --output /dev/null "$url"; then
+              failed=1
+            fi
+          done
+          exit "$failed"
+
   backup:
+    needs: checks
+    # Preserve recovery snapshots even when a check detects a problem.
+    if: ${{ always() && !cancelled() && github.event_name != 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
