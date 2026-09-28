@@ -30,8 +30,8 @@ let eventHadPhoto = false, eventPhotoRemove = false, eventCurrentPhotoUrl = null
 let eventMap = null;
 let composerMapFetchRun = 0, composerMapTimer = null;
 let feedPages = 0, backgroundLocating = false;
-function quietLocatedReload(tries = 0) {   // 위치가 오면: 아직 첫 페이지의 최신·인기 목록을 보고 있을 때만 조용히 다시 불러요
-  if (!nearbyPosition || feedMode !== 'all' || feedTerm || feedSort === 'nearby' || feedPages > 1 || !detail.hidden) return;
+function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착해도 현재 첫 페이지를 갱신해요(근처 포함)
+  if (!nearbyPosition || feedMode !== 'all' || feedTerm || feedPages > 1 || !detail.hidden) return;
   if (feedLoading) { if (tries < 20) setTimeout(() => quietLocatedReload(tries + 1), 300); return; }
   loadFeed(false, true);
 }
@@ -865,13 +865,9 @@ async function loadFeed(more = false, quiet = false) {
   }
   if (feedMode === 'all' && feedSort === 'nearby' && !nearbyPosition) {
     feedLoading = false; ready = true; banner('');
-    const note = node('p', 'reply-empty', '정확한 GPS 좌표는 비공개로 저장되고, 다른 사람에게는 근사 거리만 표시돼요. 위치를 허용하면 가까운 카드부터 볼 수 있어요.');
+    const note = node('p', 'reply-empty', '위치를 확인하면 반경 30km 안의 카드를 가까운 순서로 볼 수 있어요.');
     const button = node('button', 'button primary', '위치 확인'); button.type = 'button';
-    button.addEventListener('click', async () => {
-      button.disabled = true;
-      try { nearbyPosition = await currentPosition(); if (version === feedRun) loadFeed(); }
-      catch { if (version === feedRun) { button.disabled = false; message('위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 눌러 주세요.'); } }
-    });
+    button.addEventListener('click', () => refreshNearbyPosition(button, version));
     list.replaceChildren(note, button); return true;
   }
   // 위치를 이미 허용했으면 뒤에서 받아 와요. 카드 목록은 위치를 기다리지 않고 바로 불러와요(휴대폰이 위치를 잡는 데 몇 초씩 걸려요).
@@ -909,7 +905,7 @@ async function loadFeed(more = false, quiet = false) {
     retry.type = 'button'; retry.dataset.retryFeed = more ? 'more' : 'first'; list.append(retry);
     updateComposer(); return false;
   }
-  ready = true; banner('');
+  ready = true; banner(feedMode === 'all' && feedSort === 'nearby' ? '현재 위치 기준 · 반경 30km' : '');
   if (!more) {
     list.replaceChildren();
     let newest = null;
@@ -936,7 +932,13 @@ async function loadFeed(more = false, quiet = false) {
   if (!more && !shown) state(list, feedMode === 'events' ? '아직 만든 이벤트가 없어요.' : feedTerm ? '검색 결과가 없어요.' : feedMode === 'saved'
     ? '저장한 카드가 없어요. 카드의 책갈피를 눌러 담아 보세요.' : feedMode === 'mine'
       ? '아직 작성한 카드가 없어요.' : feedSort === 'popular'
-        ? '최근 7일에 올라온 카드가 없어요.' : '아직 카드가 없어요. 첫 카드를 써 보세요.');
+        ? '최근 7일에 올라온 카드가 없어요.' : feedSort === 'nearby'
+          ? '현재 위치에서 30km 안에 공개된 카드가 없어요.' : '아직 카드가 없어요. 첫 카드를 써 보세요.');
+  if (!more && !shown && feedMode === 'all' && feedSort === 'nearby') {
+    const locate = node('button', 'button', '위치 다시 확인'); locate.type = 'button';
+    locate.addEventListener('click', () => refreshNearbyPosition(locate, version));
+    list.append(locate);
+  }
   feedPages++;
   if (data?.length) feedCursor = data.at(-1);
   if (feedMode === 'all' && !feedTerm) nearbyOffset += data?.length || 0;
@@ -947,15 +949,35 @@ async function loadFeed(more = false, quiet = false) {
   consumeInitialCard();
   return true;
 }
-function currentPosition() {
+function locationErrorText(error) {
+  if (error?.code === 1) return '위치 권한을 허용한 뒤 다시 눌러 주세요.';
+  if (error?.code === 2) return '휴대폰 위치를 켜고 다시 시도해 주세요.';
+  if (error?.code === 3) return '위치 확인 시간이 지났어요. 다시 시도해 주세요.';
+  return '위치를 확인하지 못했어요. 다시 시도해 주세요.';
+}
+async function refreshNearbyPosition(button, version) {
+  const epoch = identityEpoch, label = button.textContent;
+  button.disabled = true; button.textContent = '위치 확인 중…'; message('');
+  try {
+    const position = await currentPosition(true);
+    if (version !== feedRun || epoch !== identityEpoch || feedMode !== 'all' || feedSort !== 'nearby') return;
+    nearbyPosition = position;
+    await loadFeed();
+  } catch (error) {
+    if (version === feedRun && epoch === identityEpoch) message(locationErrorText(error));
+  } finally {
+    if (button.isConnected) { button.disabled = false; button.textContent = label; }
+  }
+}
+function currentPosition(fresh = false) {
   return new Promise((resolve, reject) => {
-    const unavailable = message => Object.assign(new Error(message), { name: 'GeolocationPositionError' });
+    const unavailable = (message, code = 2) => Object.assign(new Error(message), { name: 'GeolocationPositionError', code });
     if (!navigator.geolocation) { reject(unavailable('Location unavailable')); return; }
     navigator.geolocation.getCurrentPosition(
       value => resolve({ latitude: value.coords.latitude, longitude: value.coords.longitude,
         capturedAt: value.timestamp }),
-      error => reject(unavailable(error.message || 'Location denied')),
-      { enableHighAccuracy: false, maximumAge: 120000, timeout: 12000 }
+      error => reject(unavailable(error.message || 'Location unavailable', error.code)),
+      { enableHighAccuracy: fresh, maximumAge: fresh ? 0 : 60000, timeout: 15000 }
     );
   });
 }
@@ -1236,11 +1258,15 @@ function selectCollection(mode, preserveMessage = false) {
   }
   return loadFeed();
 }
-function setCardLocationSwitch(on, status, pending = false) {
+function setCardLocationSwitch(on, status, pending = false, failed = false) {
   const button = $('#card-location-button');
   button.setAttribute('aria-checked', String(on));
   button.querySelector('.note-switch-state').textContent = pending ? '확인 중' : on ? '켜짐' : '꺼짐';
-  $('#card-location-status').textContent = status;
+  const statusElement = $('#card-location-status');
+  statusElement.textContent = status;
+  statusElement.hidden = !failed;
+  button.title = status;
+  button.setAttribute('aria-busy', String(pending));
 }
 function installFeatures() {
   const nickname = $('input[name="identity"][value="nickname"]');
@@ -1358,12 +1384,12 @@ function installFeatures() {
     try {
       const position = await currentPosition();
       if (run !== locationRun || backdrop.hidden || kind === 'event' || editingId) return;
-      writingPosition = position;
+      writingPosition = position; nearbyPosition = position;
       setCardLocationSwitch(true, '위치를 켰어요. 정확한 좌표는 카드에 표시되지 않아요.');
-    } catch {
+    } catch (error) {
       if (run !== locationRun || backdrop.hidden) return;
       writingPosition = null;
-      setCardLocationSwitch(false, '위치를 켤 수 없어요. 권한을 확인하고 다시 시도해 주세요.');
+      setCardLocationSwitch(false, locationErrorText(error), false, true);
     } finally { if (run === locationRun) updateComposer(); }
   });
   for (const selector of ['#compose-font', '#compose-size', '#compose-effect']) {
@@ -2690,7 +2716,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.45-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.46-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
