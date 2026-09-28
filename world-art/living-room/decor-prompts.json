@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "referenceImage": "/workspace/scratch/e662faf15a71/generated_images/exec-c38c2177-d924-4a7b-a719-7d85309916a7.png",
+  "method": "Built-in image_gen; transparent RGBA; original PNG preserved; WebP encoded by Sharp with quality 92, alphaQuality 100, effort 6. No manual content edits.",
+  "outputDirectory": "world-art/living-room",
+  "assets": [
+    {
+      "name": "owl-perch",
+      "originalGeneratedPNG": "/workspace/scratch/e662faf15a71/generated_images/exec-58eed221-73ed-4766-b1c3-30899194b032.png",
+      "finalPNG": "/workspace/scratch/e662faf15a71/ojjuda-guide/world-art/living-room/owl-perch.png",
+      "finalWebP": "/workspace/scratch/e662faf15a71/ojjuda-guide/world-art/living-room/owl-perch.webp",
+      "width": 1312,
+      "height": 1199,
+      "hasAlpha": true,
+      "alphaBoundsOver8": {
+        "x": 474,
+        "y": 97,
+        "width": 368,
+        "height": 1015
+      },
+      "transparentFraction": 0.8566094204520027,
+      "pngBytes": 460233,
+      "webpBytes": 77554,
+      "prompt": "Use case: background-extraction. Asset type: transparent 2.5D room game sprite.\nInput image 1 is the exact approved visual reference and object design to preserve.\nPrimary request: isolate and faithfully recreate ONLY the small brown ear-tufted owl standing on its tall single wooden pedestal/perch in the back corner of the reference room. Include the entire owl plus its little circular top platform, one long slim vertical warm wood column, and round wooden bottom base as one complete object. Preserve the reference's proportions, cream eye rings, large friendly round eyes, small tan beak, subtle overlapping brown feathers, two small pointed ear tufts, and compact smooth wing shapes. Preserve the softly textured honey-brown wood and visible circular grain. Do not turn it into a fluffy dog or realistic wild bird.\nStyle and materials: exactly the approved softly rendered 3D/2.5D storybook game art, delicate real material textures, soft volume, warm muted colors; no vector or flat SVG appearance, no outline.\nCamera: same fixed elevated three-quarter orthographic room camera as the reference, vertical pole stays vertical, ground-plane axes slope +0.5 and -0.5; circular platform and base show matching flattened ellipses. Owl looks forward in the same pose.\nComposition: ONE isolated complete object centered, full silhouette including all ear tips and base visible, approximately 8 percent clear transparent margin on every side.\nBackground: genuinely transparent RGBA. Preserve only intrinsic object shading and tiny attached contact shading. No room, no walls, no floor, no furniture, no lamp, no rectangle or backdrop, no sunbeam, no baked window-light pattern, no text, no label, no watermark. This is the original reference object extracted into a reusable sprite, not a new scene."
+    },
+    {
+      "name": "plant",
+      "originalGeneratedPNG": "/workspace/scratch/e662faf15a71/generated_images/exec-ad71b9e5-f49f-44bf-aa5a-3afe6fd6b6d3.png",
+      "finalPNG": "/workspace/scratch/e662faf15a71/ojjuda-guide/world-art/living-room/plant.png",
+      "finalWebP": "/workspace/scratch/e662faf15a71/ojjuda-guide/world-art/living-room/plant.webp",
+      "width": 1296,
+      "height": 1214,
+      "hasAlpha": true,
+      "alphaBoundsOver8": {
+        "x": 243,
+        "y": 73,
+        "width": 891,
+        "height": 1075
+      },
+      "transparentFraction": 0.6277184137734659,
+      "pngBytes": 1060132,
+      "webpBytes": 204936,
+      "prompt": "Use case: background-extraction. Asset type: transparent 2.5D room game sprite.\nInput image 1 is the exact approved visual reference and object design to preserve.\nPrimary request: isolate and faithfully recreate ONLY the monstera plant in the ivory square planter at the lower right of the approved room. Preserve the original natural cluster of glossy but softly textured green split monstera leaves, visible thin green stems, asymmetric organic leaf directions, and warm ivory slightly tapered angular square planter. Its leaves have real distinctive monstera cuts and holes; avoid generic oval leaves or stiff plastic symmetry. Keep the same leaf arrangement, plant silhouette, leaf-to-pot scale and warm ivory planter design as closely as possible.\nStyle and materials: exactly the reference's softly rendered 3D/2.5D storybook game art with delicate leaf veins, muted green tones, subtly matte ceramic planter, light surface texture, warm soft volume; not vector, flat SVG, or photoreal photography.\nCamera: same fixed elevated three-quarter orthographic room camera as the reference; planter vertical edges are vertical and ground-plane axes slope +0.5 and -0.5. Show the two front-facing pot sides and a little top opening in the same orientation.\nComposition: ONE isolated complete object centered, full silhouette including every leaf tip, stem and pot bottom visible, about 8 percent clear transparent margin on every side.\nBackground: genuinely transparent RGBA. Intrinsic object shading only, no detached floor shadow. No room, no walls, no floor, no rug, no furniture, no other plants, no rectangle or backdrop, no sunlight/window grid baked into the object, no text, no label, no watermark. Preserve the approved reference object instead of redesigning it."
+    },
+    {
+      "name": "floor-lamp",
+      "originalGeneratedPNG": "/workspace/scratch/e662faf15a71/generated_images/exec-1522cc9f-e1e7-4de5-8faf-39cbd1dec4ec.png",
+      "finalPNG": "/workspace/scratch/e662faf15a71/ojjuda-guide/world-art/living-room/floor-lamp.png",
+      "finalWebP": "/workspace/scratch/e662faf15a71/ojjuda-guide/world-art/living-room/floor-lamp.webp",
+      "width": 1024,
+      "height": 1536,
+      "hasAlpha": true,
+      "alphaBoundsOver8": {
+        "x": 272,
+        "y": 131,
+        "width": 477,
+        "height": 1270
+      },
+      "transparentFraction": 0.8220856984456381,
+      "pngBytes": 1326545,
+      "webpBytes": 78270,
+      "prompt": "Use case: background-extraction. Asset type: transparent 2.5D room game sprite.\nInput image 1 is the exact approved visual reference and object design to preserve.\nPrimary request: isolate and faithfully recreate ONLY the warm yellow floor lamp standing beside the owl and sofa in the reference room. Include its full gently tapered pale-yellow fabric lampshade, slim straight cream/light wood vertical pole, and small circular warm cream/wood base. Preserve the original elegant simple proportions and design: wider bottom of shade, narrow open elliptical top rim, fine woven fabric texture, subtle seams, warm soft light inside the shade, long thin pole and understated round base. Reconstruct the small hidden portion behind the sofa consistently, without adding ornaments.\nStyle and materials: exactly the approved soft 3D/2.5D storybook room art, fine fabric texture, pale warm yellow and ivory, delicate wood/ceramic material, soft volume; not vector or flat SVG.\nCamera: same elevated three-quarter orthographic room camera as the reference, vertical pole vertical, ground-plane axes slope +0.5 and -0.5, shade top and circular base flattened ellipses viewed from above at the same angle.\nComposition: ONE isolated complete object centered, entire lampshade and base visible, about 8 percent clear transparent margin on every side.\nBackground: genuinely transparent RGBA. Keep intrinsic shading and soft illumination confined to the lampshade. No room, no walls, no floor, no owl, no sofa, no glow cloud outside the object, no detached cast shadow, no sunbeam, no baked window pattern, no text, no label, no watermark. Preserve the actual approved reference lamp design."
+    }
+  ],
+  "revisionAttempts": [
+    {
+      "name": "floor-lamp",
+      "prompt": "Use case: background-extraction. Edit target: this isolated yellow floor lamp image.\nChange exactly one thing: remove ALL external glow, bloom, haze, light clouds, and shadow haze around the lamp. Every pixel outside the precise physical lamp silhouette must be fully transparent, including the clear space around the pole and below/around the base. The current light aura is not wanted.\nKeep the lamp itself unchanged: exact lampshade shape, woven pale yellow fabric, warm internal lamp light, fine seams, cream slim pole, warm wooden circular base, object proportions, three-quarter elevated camera angle, material details, color palette and crisp shape. The lamp remains lit inside its shade but casts no visible glow into the transparent background.\nOutput a clean reusable transparent RGBA sprite, full silhouette with margin. No backdrop, no floor, no text, no scene, no decorations. Do not add, redesign, crop, or reframe the lamp. Transparent cutout with NO halo is mandatory.",
+      "generatedPNG": "/workspace/scratch/e662faf15a71/generated_images/exec-3fdf4f9a-b9eb-4a41-bde9-73c65043c46d.png",
+      "selected": false,
+      "reason": "The original already has fully transparent pixels outside the physical lamp; bright aura appeared only in hidden RGB of alpha-zero pixels. Original is selected because it preserves the requested approximately 8% top and bottom margin; revision has less margin."
+    }
+  ],
+  "verification": "All three output WebP files have alpha. All three final WebP assets were composited on a light lavender background for inspection; full silhouettes and clean transparency verified, with no lamp glow halo. Original PNGs unchanged."
+}

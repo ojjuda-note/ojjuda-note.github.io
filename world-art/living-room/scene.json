@@ -1,0 +1,420 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 1254,
+    "height": 1254,
+    "viewBox": [
+      30,
+      165,
+      1194,
+      1045
+    ]
+  },
+  "geometry": {
+    "floor": {
+      "back": [
+        626,
+        535
+      ],
+      "left": [
+        92,
+        821
+      ],
+      "right": [
+        1168,
+        828
+      ],
+      "front": [
+        611,
+        1148
+      ]
+    },
+    "wallHeight": 310,
+    "bounds": {
+      "minX": 0.05,
+      "maxX": 0.95,
+      "minY": 0.05,
+      "maxY": 0.95
+    }
+  },
+  "shell": {
+    "src": "empty-room.webp",
+    "source": {
+      "width": 1254,
+      "height": 1254
+    },
+    "x": 0,
+    "y": 0,
+    "width": 1254,
+    "height": 1254,
+    "clip": [
+      [
+        628,
+        192
+      ],
+      [
+        1195,
+        505
+      ],
+      [
+        1202,
+        851
+      ],
+      [
+        611,
+        1188
+      ],
+      [
+        51,
+        850
+      ],
+      [
+        60,
+        504
+      ]
+    ]
+  },
+  "lighting": {
+    "enabled": true,
+    "windowItem": "window",
+    "wallGlow": {
+      "opacity": 0.13,
+      "width": 334.73,
+      "height": 383.71
+    },
+    "floorPatch": {
+      "points": [
+        [
+          0.61,
+          0.08
+        ],
+        [
+          0.92,
+          0.24
+        ],
+        [
+          0.46,
+          0.82
+        ],
+        [
+          0.14,
+          0.64
+        ]
+      ],
+      "opacity": 0.25,
+      "crossbarOpacity": 0.065,
+      "crossbarWidth": 0.035
+    }
+  },
+  "items": [
+    {
+      "id": "window",
+      "name": "창문",
+      "src": "window.webp",
+      "source": {
+        "width": 1254,
+        "height": 1254
+      },
+      "layer": "wall",
+      "wall": {
+        "side": "right",
+        "u": 0.65,
+        "elevation": 195
+      },
+      "width": 275,
+      "footAnchor": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "frame",
+      "name": "액자",
+      "src": "frame.webp",
+      "source": {
+        "width": 1214,
+        "height": 1295
+      },
+      "layer": "wall",
+      "wall": {
+        "side": "left",
+        "u": 0.3,
+        "elevation": 214
+      },
+      "width": 150,
+      "footAnchor": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "clock",
+      "name": "시계",
+      "src": "clock.webp",
+      "source": {
+        "width": 1293,
+        "height": 1217
+      },
+      "layer": "wall",
+      "wall": {
+        "side": "right",
+        "u": 0.23,
+        "elevation": 224
+      },
+      "width": 95,
+      "footAnchor": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "rug",
+      "name": "러그",
+      "src": "rug.webp",
+      "source": {
+        "width": 1254,
+        "height": 1254
+      },
+      "layer": "rug",
+      "gx": 0.53,
+      "gy": 0.55,
+      "width": 546.99,
+      "footAnchor": [
+        0.5,
+        0.5
+      ],
+      "movable": false,
+      "shadow": false
+    },
+    {
+      "id": "sofa",
+      "name": "소파",
+      "src": "../raster-study/sofa.webp",
+      "source": {
+        "width": 1536,
+        "height": 1024
+      },
+      "layer": "floor",
+      "gx": 0.49,
+      "gy": 0.18,
+      "width": 346.97,
+      "footAnchor": [
+        0.5,
+        0.965
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 175,
+        "height": 24.49,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "armchair",
+      "name": "안락의자",
+      "src": "armchair.webp",
+      "source": {
+        "width": 1295,
+        "height": 1215
+      },
+      "layer": "floor",
+      "gx": 0.78,
+      "gy": 0.36,
+      "width": 233.49,
+      "footAnchor": [
+        0.5,
+        0.9
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 106,
+        "height": 17.96,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "bookshelf",
+      "name": "책장",
+      "src": "bookshelf.webp",
+      "source": {
+        "width": 1334,
+        "height": 1179
+      },
+      "layer": "floor",
+      "gx": 0.14,
+      "gy": 0.9,
+      "width": 330,
+      "footAnchor": [
+        0.5,
+        0.94
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 170,
+        "height": 23,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "tv-console",
+      "name": "텔레비전 수납장",
+      "src": "tv-console.webp",
+      "source": {
+        "width": 1448,
+        "height": 1086
+      },
+      "layer": "floor",
+      "gx": 0.14,
+      "gy": 0.42,
+      "width": 365,
+      "footAnchor": [
+        0.51,
+        0.915
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 168,
+        "height": 20,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "coffee-table",
+      "name": "작은 테이블",
+      "src": "coffee-table.webp",
+      "source": {
+        "width": 1536,
+        "height": 1024
+      },
+      "layer": "floor",
+      "gx": 0.49,
+      "gy": 0.39,
+      "width": 213,
+      "footAnchor": [
+        0.5,
+        0.873
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 62.05,
+        "height": 15.51,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "plant",
+      "name": "화분",
+      "src": "plant.webp",
+      "source": {
+        "width": 1296,
+        "height": 1214
+      },
+      "layer": "floor",
+      "gx": 0.88,
+      "gy": 0.12,
+      "width": 240,
+      "footAnchor": [
+        0.53,
+        0.943
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 43,
+        "height": 12,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "floor-lamp",
+      "name": "스탠드",
+      "src": "floor-lamp.webp",
+      "source": {
+        "width": 1024,
+        "height": 1536
+      },
+      "layer": "floor",
+      "gx": 0.24,
+      "gy": 0.11,
+      "width": 145,
+      "footAnchor": [
+        0.5,
+        0.911
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 40,
+        "height": 11,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "owl-perch",
+      "name": "부엉이 횃대",
+      "src": "owl-perch.webp",
+      "source": {
+        "width": 1312,
+        "height": 1199
+      },
+      "layer": "floor",
+      "gx": 0.1,
+      "gy": 0.16,
+      "width": 270,
+      "footAnchor": [
+        0.5,
+        0.926
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 39,
+        "height": 11,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "avatar",
+      "name": "캐릭터",
+      "src": "../raster-study/avatar.webp",
+      "source": {
+        "width": 1024,
+        "height": 1536
+      },
+      "layer": "floor",
+      "gx": 0.43,
+      "gy": 0.56,
+      "width": 142.05,
+      "footAnchor": [
+        0.5,
+        0.969
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 44,
+        "height": 10.61,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "dachshund",
+      "name": "강아지",
+      "src": "../raster-study/dachshund.webp",
+      "source": {
+        "width": 1536,
+        "height": 1024
+      },
+      "layer": "floor",
+      "gx": 0.63,
+      "gy": 0.66,
+      "width": 156.75,
+      "footAnchor": [
+        0.5,
+        0.95
+      ],
+      "movable": true,
+      "shadow": {
+        "width": 80,
+        "height": 14.7,
+        "opacity": 0.32
+      }
+    }
+  ]
+}

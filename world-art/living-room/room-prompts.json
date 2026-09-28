@@ -1,0 +1,139 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "exec-c38c2177-d924-4a7b-a719-7d85309916a7.png",
+  "referenceRole": "User-approved warm 2.5D Ojjuda room style and material guide.",
+  "transparentBackground": true,
+  "processing": "Original generated PNG copied unchanged. WebP encoded with sharp, quality 92, alphaQuality 100, effort 6. No image retouching or texture synthesis outside image_gen.",
+  "assets": [
+    {
+      "id": "empty-room",
+      "sourceFile": "exec-4b94dc8e-ae6f-4e46-92a6-35c9bc652f67.png",
+      "png": "empty-room.png",
+      "webp": "empty-room.webp",
+      "prompt": "Use case: stylized-concept. Asset type: production 2.5D mobile game empty room environment with genuine alpha transparency. Input image is ONLY a style and materials reference, never copy its logo/layout/people.\nCreate ONE EMPTY dollhouse room matching the reference's beautiful soft cream plaster walls and finely grained light oak plank floor. No furniture at all. Exact orthographic dimetric game camera: symmetric left and right, floor is a diamond, both axes have image slopes +0.5 and -0.5, vertical walls stay vertical, no perspective convergence. The back corner is centered horizontally. Two vertical cream walls, 3D wall thickness with cream top caps and subtle baseboard skirting. Square floor with oak boards, fine detailed wood grain, a small solid wood floor thickness visible on the two front edges. Make the top plaster wall corner around (768,180), the floor back corner (768,660), left floor corner (90,999), right floor corner (1446,999), front floor corner (768,1338) in a 1536x1536 composition; approximate these with symmetric geometry. Full room silhouette must fit with generous 5% transparent margin. Warm high-quality handcrafted cozy 3D game art, polished physically believable materials, same gentle cream and honey oak palette as reference. Soft even ambient studio illumination and natural contact shadows at wall/floor joints, no large dramatic shadows. NO window, NO doors, NO furniture, NO lamps, NO plants, NO pictures, NO clocks, NO animals, NO humans, NO text or watermark. Very important: NO window-shaped sunlight, NO sun shafts, NO fixed bright sun patches on floor or walls; those will be separate game layers. Everything outside the room silhouette is truly transparent alpha, not white, not checkerboard, not lavender. Output a square 1536x1536-quality transparent PNG.",
+      "geometryRefinement": {
+        "sourceFile": "exec-286553a7-d920-404d-82b8-853d7224f5ec.png",
+        "prompt": "Use case: precise-object-edit. Edit this isolated empty room asset only to correct its game projection geometry. Preserve the exact beautiful cream plaster, oak wood grain, baseboards, thickness, soft ambient light, and true transparent alpha. This must be an orthographic dimetric game room, not perspective. In the 1254x1254 output, set the four INNER floor corners approximately to BACK=(627,510), LEFT=(67,790), RIGHT=(1187,790), FRONT=(627,1070). The four floor edges must be parallel in opposite pairs, each diagonal edge slope exactly +0.5 or -0.5. Left/right corners must be at the SAME image y, and front/back corners at the SAME image x. ALL wood plank lines must align with those parallel axes, never converge. The vertical walls rise 380 pixels above those floor corners: TOP BACK=(627,130), TOP LEFT=(67,410), TOP RIGHT=(1187,410); keep vertical wall corners perfectly vertical. Wall top thickness and front floor thickness can extend a little outside those inner target corners. Keep the entire asset in the canvas with transparent margin. Do not add anything. No furniture/windows/doors/characters/text. Do not add sunlight patches. In particular shorten the overly tall floor diamond from the previous image: horizontal floor diagonal is 1120px and vertical floor diagonal is 560px, a precise 2:1 diamond. Straight-on symmetrical room corner, whole room centered. Preserve actual alpha transparency outside silhouette."
+      },
+      "anchors": {
+        "coordinateSpace": "native PNG pixels; visually observed, approximate",
+        "floorInner": {
+          "back": [
+            626,
+            535
+          ],
+          "left": [
+            92,
+            821
+          ],
+          "right": [
+            1168,
+            828
+          ],
+          "front": [
+            611,
+            1148
+          ]
+        },
+        "wallTopInner": {
+          "back": [
+            627,
+            225
+          ],
+          "left": [
+            89,
+            521
+          ],
+          "right": [
+            1166,
+            520
+          ]
+        },
+        "wallTopOuter": {
+          "back": [
+            628,
+            194
+          ],
+          "left": [
+            63,
+            507
+          ],
+          "right": [
+            1193,
+            507
+          ]
+        }
+      },
+      "output": {
+        "width": 1254,
+        "height": 1254,
+        "hasAlpha": true,
+        "pngBytes": 1175726,
+        "webpBytes": 118634
+      }
+    },
+    {
+      "id": "window",
+      "sourceFile": "exec-340eef4f-6a7e-499d-9d33-b579f380f8a7.png",
+      "png": "window.png",
+      "webp": "window.webp",
+      "prompt": "Use case: stylized-concept. Asset type: production standalone window sprite for a cozy 2.5D mobile game. Input image is a STYLE reference only.\nCreate a single front-on rectangular window matching the reference room's polished soft warm 3D game art: an ivory-white frame with 2 columns and 3 rows of glass panes, a slim honey oak wooden top trim and small matching wooden bottom sill, delicate bevels and realistic warm matte materials. See a beautiful soft blue sky, fluffy white clouds, and soft green tree foliage through the lower panes. Gentle ambient daylight inside the window, no sun shafts or exterior glow. Camera strictly straight-on orthographic, no isometric angle, no slant, no perspective convergence, entire rectangular frame exactly upright and fully visible. This will be perspective-transformed by code onto an isometric wall. The window alone centered with 10% transparent margin on all sides. No surrounding wall, no room, no floor, no objects, no curtains, no text, no logo, no frame beyond the window. True transparent alpha outside the window's trim; visible sky behind the glass remains opaque painted art. Clean crisp edges, detailed dimensional frame surfaces. Square 1024x1024 PNG.",
+      "anchors": {
+        "coordinateSpace": "native PNG pixels; visually observed, approximate",
+        "opaqueBounds": {
+          "left": 135,
+          "top": 110,
+          "right": 1118,
+          "bottom": 1144
+        },
+        "orientation": "front-on upright rectangular; 2 columns x 3 rows"
+      },
+      "output": {
+        "width": 1254,
+        "height": 1254,
+        "hasAlpha": true,
+        "pngBytes": 1081760,
+        "webpBytes": 116958
+      }
+    },
+    {
+      "id": "rug",
+      "sourceFile": "exec-141fd9f8-e7f5-4597-a29c-732c520976b6.png",
+      "png": "rug.png",
+      "webp": "rug.webp",
+      "prompt": "Use case: stylized-concept. Asset type: production separate floor rug sprite for a cozy 2.5D mobile game. Input image is ONLY a style/material reference.\nCreate ONE mint green woven fabric rug like the reference, isolated on genuine transparent alpha. The rug is a flat square seen in precisely symmetric orthographic dimetric view, appearing as a diamond with ground plane edge slopes +0.5 and -0.5. Back and front diamond corners vertically aligned; left and right corners horizontally aligned. Soft pale mint fabric with rich fine woven threads, subtle light/dark yarn variation, gently rounded small corners and a stitched binding edge. A charming evenly spaced ivory-white dashed dot border runs around all four sides a short way inward, exactly like the reference mint rug. Very thin fabric thickness, not a cushion. The entire diamond is visible centered with roughly 8% margins left/right and ample transparent space top/bottom. Soft even ambient lighting, no cast shadow outside the rug, no light rays. NO floor, no room, no feet, no characters, no pets, no furniture, no text, no UI, no decorative extra symbols. Crisp premium soft 3D game render matching the reference textile fidelity. Output square 1024x1024 PNG with actual alpha transparency outside the rug.",
+      "geometryRefinement": {
+        "sourceFile": "exec-6b2de3ee-e055-451f-b2c7-4b58f142d7cf.png",
+        "prompt": "Use case: precise-object-edit. Edit only this rug sprite's projection geometry. Preserve its mint woven fabric material and ivory-white dashed stitched border exactly, preserve true transparent alpha. The square rug must lie flat on an orthographic dimetric game floor, forming a DIAMOND WITH 2:1 width to height. In a 1254x1254 image put approximate rug corners BACK=(627,350), RIGHT=(1187,630), FRONT=(627,910), LEFT=(67,630). Thus the horizontal diagonal is1120px and vertical diagonal560px, all edges slope +0.5 or -0.5. Opposite edges parallel, no perspective convergence. Make it significantly flatter vertically than current image. Keep soft small rounded corners and thin fabric edge, no pillow thickness. Do not add cast shadows, background, floor, text or anything else. Output only isolated rug on actual transparent background."
+      },
+      "anchors": {
+        "coordinateSpace": "native PNG pixels; visually observed, approximate",
+        "corners": {
+          "back": [
+            627,
+            402
+          ],
+          "left": [
+            34,
+            712
+          ],
+          "right": [
+            1219,
+            712
+          ],
+          "front": [
+            627,
+            1044
+          ]
+        }
+      },
+      "output": {
+        "width": 1254,
+        "height": 1254,
+        "hasAlpha": true,
+        "pngBytes": 919120,
+        "webpBytes": 157736
+      }
+    }
+  ]
+}
