@@ -104,6 +104,7 @@
     }
   }
 
+  window.OjjudaNoteNavigation=Object.freeze({leaveMy(){history.replaceState({...history.state,noteMy:false},'',location.href);showMy(false);}});
   main.tabIndex = -1;
   desktop.addEventListener('change', placeAccountMenu);
   if (tools) new MutationObserver(syncBadge).observe(tools, {

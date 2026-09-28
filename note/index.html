@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="event-photo.css?v=0.45.9-beta">
   <link rel="stylesheet" href="effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="support.css?v=0.45.42-beta">
-  <link rel="stylesheet" href="notifications.css?v=0.45.5-beta">
+  <link rel="stylesheet" href="notifications.css?v=0.45.44-beta">
   <link rel="stylesheet" href="map.css?v=0.45.26-beta">
   <link rel="stylesheet" href="pull-refresh.css?v=0.45.10-beta">
   <link rel="stylesheet" href="world-navigation.css?v=0.45.43-beta">
@@ -51,13 +51,13 @@
             <button class="nav-button" type="button" data-show="events"><svg><use href="#pin"/></svg>내 이벤트</button>
           </section>
           <section class="note-menu-section" aria-labelledby="note-tools-title">
-            <h2 id="note-tools-title" class="side-section-label side-group-label">알림·관리</h2>
+            <h2 id="note-tools-title" class="side-section-label side-group-label">이용 관리</h2>
             <div class="side-tools" id="side-tools"></div>
           </section>
           <p class="side-caption" id="account-status" role="status">계정 확인 중</p>
         </div>
       </div>
-      <button class="nav-button" type="button" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이<span class="note-my-badge" data-note-my-badge hidden aria-hidden="true"></span></button>
+      <button class="nav-button" type="button" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이<span class="note-my-badge" data-note-my-badge data-notification-badge hidden aria-hidden="true"></span></button>
       <a class="world-link" href="/world.html" aria-label="미니홈피 열기"><span class="nl-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5.2 13.6 10.4 18.8 12 13.6 13.6 12 18.8 10.4 13.6 5.2 12 10.4 10.4Z" fill="#fff"/></svg></span><span>미니홈피</span><span class="nl-arrow" aria-hidden="true">→</span></a>
       <div class="side-spacer"></div>
     </aside>
@@ -65,7 +65,7 @@
     <div class="col">
       <header class="mobile-top">
         <div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><button class="note-dev-badge" type="button" data-note-feedback title="의견 보내기">베타</button></div>
-        <a class="note-coinpill" href="/world.html?tab=shop" aria-label="상점 열기"><span class="note-cz" aria-hidden="true"><i>쭈</i></span><span id="note-top-balance" data-note-balance>상점</span></a>
+        <div class="nn-top-actions"><button class="nn-bell" type="button" data-notifications-open aria-label="알림" aria-haspopup="dialog" aria-controls="note-notification-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="nn-badge" data-notification-badge hidden aria-hidden="true"></span></button><a class="note-coinpill" href="/world.html?tab=shop" aria-label="상점 열기"><span class="note-cz" aria-hidden="true"><i>쭈</i></span><span id="note-top-balance" data-note-balance>상점</span></a></div>
       </header>
 
       <main id="main" class="main">
@@ -103,12 +103,13 @@
             <h3>관리자</h3>
             <p>계정, 결제·쭈, 월드와 노트를 관리해요.</p>
           </div>
+          <div class="set nn-entry"><h3>알림</h3><p>미니홈피와 익명카드의 새 소식을 함께 확인해요.</p><div data-notifications-slot></div></div>
           <div id="note-my-tools-slot"></div>
         </section>
       </main>
 
       <button class="write-fab" type="button" data-compose="new" aria-label="새 카드 쓰기"><svg><use href="#plus"/></svg><span>카드 쓰기</span></button>
-      <nav class="bottomnav" aria-label="모바일 메뉴"><button type="button" class="on" data-show="feed"><svg><use href="#cards"/></svg>카드</button><button type="button" disabled><svg><use href="#bookmark"/></svg>메모함</button><button type="button" id="note-my-toggle" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이<span class="note-my-badge" data-note-my-badge hidden aria-hidden="true"></span></button></nav>
+      <nav class="bottomnav" aria-label="모바일 메뉴"><button type="button" class="on" data-show="feed"><svg><use href="#cards"/></svg>카드</button><button type="button" disabled><svg><use href="#bookmark"/></svg>메모함</button><button type="button" id="note-my-toggle" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이<span class="note-my-badge" data-note-my-badge data-notification-badge hidden aria-hidden="true"></span></button></nav>
     </div>
   </div>
 
@@ -174,10 +175,10 @@
   <script src="map.js?v=0.45.26-beta" defer></script>
   <script src="support.js?v=0.45.42-beta" defer></script>
   <script src="drafts.js?v=0.45.19-beta" defer></script>
-  <script src="notifications.js?v=0.45.5-beta" defer></script>
-  <script src="preview.js?v=0.45.43-beta" defer></script>
+  <script src="notifications.js?v=0.45.44-beta" defer></script>
+  <script src="preview.js?v=0.45.44-beta" defer></script>
   <script src="notice-ticker.js?v=0.45.36-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
-  <script src="navigation.js?v=0.45.42-beta" defer></script>
+  <script src="navigation.js?v=0.45.44-beta" defer></script>
 </body>
 </html>

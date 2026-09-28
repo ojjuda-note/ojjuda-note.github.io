@@ -38,6 +38,7 @@ function quietLocatedReload(tries = 0) {   // 위치가 오면: 아직 첫 페�
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
 let initialCardId = new URL(location.href).searchParams.get('card');
+let initialKeepId = ['memo','comment'].includes(new URL(location.href).searchParams.get('keep')) ? initialCardId : null;
 const reactionPending = new Set();
 let draftController = null, draftStatus = null, draftLoading = false;
 let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
@@ -1050,6 +1051,10 @@ async function renderDetail() {
     state(slot, '삭제되었거나 볼 수 없는 카드예요.'); state(replies, ''); return;
   }
   cache.set(id, card);
+  if(initialKeepId===id){
+    initialKeepId=null;const url=new URL(location.href);url.searchParams.delete('keep');history.replaceState(history.state,'',url);
+    if(card.is_mine&&!card.permanent&&['memo','comment'].includes(card.kind))confirmPermanent(card);
+  }
   const eventCard = card.kind === 'event';
   $('.replies').hidden = eventCard;
   $('#detail [data-compose="reply"]').hidden = eventCard;
@@ -2683,10 +2688,11 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.42-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.44-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
-  onOpenCard: id => openCard(id),
+  onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
+  onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);location.assign(url.href);},
   onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id),
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
