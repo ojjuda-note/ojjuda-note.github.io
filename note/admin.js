@@ -1191,5 +1191,11 @@
     }
     return openTab(id);
   }
-  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount, getTabs, tabs: TAB_ITEMS, selectTab });
+  async function openReportedCard(options = {}) {
+    const report = options.report;
+    if (!report || !/^[0-9a-f-]{36}$/i.test(report.card_id || '')) return;
+    await open({ client: options.client, initialTab: 'reports', onChanged: options.onChanged });
+    if (authorized && root && !root.hidden && !embedded) confirmVisibility(report);
+  }
+  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount, getTabs, tabs: TAB_ITEMS, selectTab, openReportedCard });
 })();

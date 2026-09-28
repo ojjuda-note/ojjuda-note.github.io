@@ -2206,6 +2206,10 @@ function updateAuth() {
     : session?.user ? (localStage ? '테스트 계정 연결됨' : `오쭈다 계정 연결됨${worldCoins === null ? '' : ` · ${worldCoins.toLocaleString('ko-KR')}쭈`}`)
       : (localStage ? '테스트 로그인 필요' : '대문에서 로그인해 주세요');
   $('#account-status').textContent = accountText;
+  for (const balance of document.querySelectorAll('[data-note-balance]')) {
+    balance.textContent = worldCoins === null ? '상점' : worldCoins.toLocaleString('ko-KR');
+    balance.closest('a')?.setAttribute('aria-label', worldCoins === null ? '상점' : `상점, 보유 쭈 ${worldCoins.toLocaleString('ko-KR')}`);
+  }
   if ($('#mobile-account-status')) $('#mobile-account-status').textContent = accountText;
   if ($('#note-blocks')) $('#note-blocks').hidden = !session?.user;
   if ($('#note-moderation')) $('#note-moderation').hidden = !session?.user || !moderator;
@@ -2416,41 +2420,27 @@ function confirmDelete(card) {
 }
 function reportCard(card) {
   if (!noteState?.reports_enabled) { message('신고 접수가 잠시 쉬고 있어요.'); return; }
-  showManagement('카드 신고');
-  managementBody.append(node('p', 'management-help', '신고 사유를 적어 주세요. 노트 관리자가 확인합니다.'));
-  const reason = reasonField('신고 사유'); cancelManagement();
-  managementFooter.append(managementButton('신고 보내기', () => {
-    if (!validReason(reason)) return;
-    const value = reason.value.trim();
-    managementAction(() => noteRpc('report_card', { p_card_id: card.id, p_reason: value }), () => {
-      showManagement('신고를 접수했어요');
-      managementBody.append(node('p', 'management-help', '노트 관리자가 내용을 확인합니다.'));
-      managementFooter.append(managementButton('닫기', () => closeManagement(), true));
-    });
-  }, true));
-  reason.focus();
+  closeManagement();
+  window.OjjudaNoteSupport?.report({ content: card.body, onSubmit: async ({ reasonText, isCurrent }) => {
+    if (!isCurrent() || !session?.user || !noteState?.reports_enabled) throw new Error('Report unavailable');
+    await noteRpc('report_card', { p_card_id: card.id, p_reason: reasonText });
+  }});
 }
 function reportEvent(card) {
   if (!noteState?.reports_enabled) { message('신고 접수가 잠시 쉬고 있어요.'); return; }
-  showManagement('이벤트 신고');
-  managementBody.append(node('p', 'management-help', '이벤트 범위 안에 있는지 위치를 다시 확인해요. 정확한 GPS 좌표는 공개되지 않고 신고 확인에만 사용됩니다.'));
-  const reason = reasonField('신고 사유'); cancelManagement();
-  managementFooter.append(managementButton('위치 확인 후 신고', async () => {
-    if (!validReason(reason) || managementBusy) return;
-    const run = managementRun;
-    managementMessage.textContent = '위치를 확인하는 중이에요.';
-    try {
-      const position = await currentPosition();
-      if (run !== managementRun || !session?.user) return;
-      managementAction(() => noteRpc('report_event', { p_card_id: card.id, p_reason: reason.value.trim(),
-        p_lat: position.latitude, p_lon: position.longitude }), () => {
-        showManagement('신고를 접수했어요');
-        managementBody.append(node('p', 'management-help', '관리자가 내용을 확인합니다.'));
-        managementFooter.append(managementButton('닫기', () => closeManagement(), true));
-      });
-    } catch { if (run === managementRun) managementMessage.textContent = '위치를 확인하지 못했어요. 권한을 확인하고 다시 시도해 주세요.'; }
-  }, true));
-  reason.focus();
+  closeManagement();
+  window.OjjudaNoteSupport?.report({ content: card.body,
+    help: '이벤트 범위 안에 있는지 위치를 다시 확인해요. 정확한 GPS 좌표는 공개되지 않고 신고 확인에만 사용됩니다.',
+    submitLabel: '위치 확인 후 신고',
+    onSubmit: async ({ reasonText, isCurrent }) => {
+      let position;
+      try { position = await currentPosition(); }
+      catch { throw { userMessage: '위치를 확인하지 못했어요. 권한을 확인하고 다시 시도해 주세요.' }; }
+      if (!isCurrent() || !session?.user || !noteState?.reports_enabled) throw new Error('Report unavailable');
+      await noteRpc('report_event', { p_card_id: card.id, p_reason: reasonText,
+        p_lat: position.latitude, p_lon: position.longitude });
+    }
+  });
 }
 function confirmBlock(card) {
   showManagement('작성자를 차단할까요?');
@@ -2691,7 +2681,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.42-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => openCard(id),
@@ -2722,3 +2712,4 @@ if (client) {
   authKnown = true; banner('노트 연결 설정을 확인해 주세요');
   state(list, '카드를 불러올 수 없어요.'); updateAuth();
 }
+
