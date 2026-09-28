@@ -17,7 +17,7 @@ let feedCursor = null, replyCursor = null, feedRun = 0, detailRun = 0;
 let stageAuth = null;
 let worldCoins = null, balanceRun = 0;
 let editingId = null, composerUserId = null, moderator = false, moderatorRun = 0;
-let feedMode = 'all', feedSort = 'latest', feedTerm = '', feedSearchKind = 'body';
+let feedMode = 'all', feedSort = 'latest', feedTerm = '';
 let nearbyPosition = null, nearbyOffset = 0, writingPosition = null, eventPosition = null;
 let nearbySnapshot = null;
 let publishRequestId = null, locationRun = 0;
@@ -250,7 +250,7 @@ async function ensureAdult() {
   return false;
 }
 const canSeeAdultCard = card => ADULT_ACCESS_READY && (!!card?.is_mine || adultStatus === 'adult');
-const adultSearchOn = () => feedMode === 'all' && feedSearchKind === 'tag' && isAdultTag(feedTerm);
+const adultSearchOn = () => feedMode === 'all' && isAdultTag(feedTerm);
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
 const CARD_PHOTO_BUCKET = 'note-card-photos';
@@ -853,10 +853,7 @@ function filteredFeed() {
   if (feedMode === 'all') request = request.eq('kind', 'memo');
   if (feedMode === 'saved') request = request.eq('is_bookmarked', true);
   if (feedMode === 'mine') request = request.eq('is_mine', true);
-  if (feedTerm) {
-    if (feedSearchKind === 'tag') request = request.contains('tags', [feedTerm.replace(/^#/, '')]);
-    else request = request.ilike('body', `%${feedTerm.replace(/[\\%_]/g, '\\$&')}%`);
-  }
+  if (feedTerm) request = request.contains('tags', [feedTerm]);
   if (feedSnapshot) request = request.lte('created_at', feedSnapshot);
   if (feedSort === 'popular') {
     request = request.gte('created_at', new Date((feedSnapshot ? Date.parse(feedSnapshot) : Date.now()) - 7 * 86400000).toISOString());
@@ -871,8 +868,7 @@ async function loadFeed(more = false, quiet = false) {
   const searchContext = $('#feed-search-context');
   if (searchContext) {
     searchContext.hidden = !feedTerm || feedMode !== 'all';
-    searchContext.querySelector('span').textContent = feedTerm
-      ? `${feedSearchKind === 'tag' ? '태그' : '본문'} 검색 · ${feedTerm}` : '';
+    searchContext.querySelector('span').textContent = feedTerm ? `태그 검색 · ${feedTerm}` : '';
   }
   if (nearbyPosition && !positionIsFresh(nearbyPosition)) nearbyPosition = null;
   const version = ++feedRun;
@@ -1235,13 +1231,10 @@ function shareCard(cardId) {
   }));
 }
 function selectCollection(mode, preserveMessage = false) {
-  // Collection tabs do not show the search field. Drop a prior tag/body filter
+  // Collection tabs do not show the tag field. Clear the tag filter
   // so saved and own cards do not appear empty without an explanation.
   if (mode !== 'all') {
-    if (feedTerm) {
-      feedTerm = ''; feedSearchKind = 'body';
-      const input = $('#tag-search'); if (input) input.value = '';
-    }
+    feedTerm = '';
     tagTabReset?.();
   }
   feedMode = mode; if (!preserveMessage) message(''); showFeed();
@@ -1299,7 +1292,7 @@ function installFeatures() {
   const searchLabel = node('span');
   const clearSearch = node('button', '', '검색 지우기'); clearSearch.type = 'button';
   clearSearch.addEventListener('click', () => {
-    feedTerm = ''; feedSearchKind = 'body'; input.value = ''; tagInput.value = ''; loadFeed();
+    feedTerm = ''; tagInput.value = ''; loadFeed();
   });
   searchContext.append(searchLabel, clearSearch); sorts.after(searchContext);
   let tagTabOn = false;
@@ -1334,49 +1327,27 @@ function installFeatures() {
   const searchTag = async tag => {
     const t = String(tag || '').trim().replace(/^#/, '').trim(); if (!t) return;
     if (isAdultTag(t) && !(await ensureAdult('볼 수'))) return;
-    tagInput.value = t; input.value = `#${t}`; selector.value = 'tag';
-    feedTerm = t; feedSearchKind = 'tag'; if (feedSort === 'nearby') feedSort = 'latest';
+    tagInput.value = t;
+    feedTerm = t; if (feedSort === 'nearby') feedSort = 'latest';
     openTagTab();
     if (feedMode !== 'all' || !detail.hidden) selectCollection('all'); else loadFeed();
   };
   searchTagFn = searchTag;
   tagTabReset = () => { closeTagTab(); syncSortButtons(); };
   tagForm.addEventListener('submit', event => { event.preventDefault(); searchTag(tagInput.value); });
-  tagInput.addEventListener('search', () => { if (!tagInput.value && feedTerm) { feedTerm = ''; input.value = ''; loadFeed(); } });
+  tagInput.addEventListener('search', () => { if (!tagInput.value && feedTerm) { feedTerm = ''; loadFeed(); } });
   for (const [sort, label] of [['latest', '최신'], ['popular', '인기'], ['nearby', '근처'], ['tag', '태그']]) {
     const button = node('button', sort === feedSort ? 'selected' : '', label); button.type = 'button';
     button.dataset.sort = sort; button.setAttribute('aria-pressed', String(sort === feedSort));
     button.addEventListener('click', () => {
       if (sort === 'tag') { if (!tagTabOn) openTagTab(); tagInput.focus(); return; }
       const wasTag = tagTabOn; closeTagTab();
-      const clearedSearch = (sort === 'nearby' || wasTag) && Boolean(feedTerm || input.value);
-      if (sort === 'nearby' || wasTag) { feedTerm = ''; input.value = ''; }
+      const clearedSearch = (sort === 'nearby' || wasTag) && Boolean(feedTerm);
+      if (sort === 'nearby' || wasTag) feedTerm = '';
       if (feedSort === sort && !clearedSearch && !wasTag) return;
       feedSort = sort; syncSortButtons(); loadFeed();
     }); sorts.append(button);
   }
-  const panel = $('#search-panel');
-  const form = node('form', 'note-search-form');
-  const label = node('label', '', '카드 검색'); label.htmlFor = 'tag-search';
-  const selector = node('select'); selector.id = 'note-search-kind'; selector.setAttribute('aria-label', '검색 범위');
-  for (const [value, title] of [['body', '본문'], ['tag', '태그 일치']]) {
-    const option = node('option', '', title); option.value = value; selector.append(option);
-  }
-  const input = node('input'); input.id = 'tag-search'; input.type = 'search'; input.maxLength = 100;
-  input.placeholder = '검색어를 입력하세요';
-  const search = node('button', 'button primary', '검색'); search.type = 'submit';
-  const reset = node('button', 'button', '초기화'); reset.type = 'button';
-  form.append(label, selector, input, search, reset); panel.replaceChildren(form);
-  form.addEventListener('submit', async event => {
-    event.preventDefault(); let term = input.value.trim(), searchKind = selector.value;
-    if (term.startsWith('#')) { term = term.slice(1); searchKind = 'tag'; selector.value = 'tag'; }
-    if (searchKind === 'tag' && isAdultTag(term) && !(await ensureAdult('볼 수'))) return;
-    feedTerm = term; feedSearchKind = searchKind;
-    if (feedTerm && feedSort === 'nearby') { feedSort = 'latest'; syncSortButtons(); }
-    loadFeed();
-  });
-  reset.addEventListener('click', () => { input.value = ''; feedTerm = ''; loadFeed(); input.focus(); });
-  input.addEventListener('search', () => { if (!input.value && feedTerm) { feedTerm = ''; loadFeed(); } });
   $('#event-start').addEventListener('click', () => openComposer('event'));
   $('#event-photo-file').addEventListener('change', event => {
     const file = event.target.files?.[0]; event.target.value = '';
@@ -2210,10 +2181,8 @@ async function publishCard() {
   text.value = ''; tags.value = '';
   closeComposer(false);
   if (!editId && publishKind !== 'comment') {
-    // A new card can be hidden by an older search, saved-only view, or popular sort.
+    // A new card can be hidden by an older tag search, saved-only view, or popular sort.
     feedSort = 'latest'; feedTerm = ''; tagTabReset?.();
-    const searchInput = $('#tag-search');
-    if (searchInput) searchInput.value = '';
     document.querySelectorAll('.feed-sort-tabs [data-sort]').forEach(button => {
       const selected = button.dataset.sort === feedSort;
       button.classList.toggle('selected', selected);

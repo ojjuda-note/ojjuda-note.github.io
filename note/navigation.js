@@ -62,16 +62,11 @@
   sidebar.addEventListener('click', event => {
     if (!sidebar.classList.contains('is-open')) return;
     const action = event.target.closest('button,a[href]');
-    if (!action || action === closeButton || action.id === 'search-toggle' || action.closest('#search-panel')) return;
+    if (!action || action === closeButton) return;
     if (!action.matches('[data-show], [data-sort], [data-collection], #event-start, .note-tools button, a[href]')) return;
     const feedAction = action.matches('[data-show], [data-sort], [data-collection]');
     closeMenu(false);
     (feedAction ? main : toggle).focus({ preventScroll: true });
-  }, true);
-  sidebar.addEventListener('submit', event => {
-    if (!event.target.closest('#search-panel') || !sidebar.classList.contains('is-open')) return;
-    closeMenu(false);
-    main.focus({ preventScroll: true });
   }, true);
   sidebar.addEventListener('keydown', event => {
     if (!sidebar.classList.contains('is-open')) return;
