@@ -1,6 +1,6 @@
 /* Standalone room study: individual image layers, local drag state only. */
 const SVG_NS='http://www.w3.org/2000/svg';
-const CONFIG_URL=new URL('./scene.json?v=2',import.meta.url);
+const CONFIG_URL=new URL('./scene.json?v=3',import.meta.url);
 const copy=value=>JSON.parse(JSON.stringify(value));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const bounded=(v,min,max)=>Math.min(max,Math.max(min,v));
@@ -27,13 +27,30 @@ export function unprojectPoint(x,y,geometry){
 }
 const cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
 const subtract=(a,b)=>[a[0]-b[0],a[1]-b[1]];
-export function footprintOffsets(item){
+export function groundTransform(item,geometry,gx=item.gx,gy=item.gy){
+  if(!item.angleFeet||!geometry)return [1,0,0,1,0,0];
+  const {left,front,right}=item.angleFeet,box=imageBox(item);
+  const pixelRatio=(box.height/item.source.height)/(box.width/item.source.width);
+  const sourceX=(front[1]-left[1])/(front[0]-left[0])*pixelRatio;
+  const sourceY=(right[1]-front[1])/(right[0]-front[0])*pixelRatio;
+  const x=bounded(number(gx,.5),0,1),y=bounded(number(gy,.5),0,1),floor=geometry.floor;
+  const axisX=[0,1].map(k=>(1-y)*(floor.right[k]-floor.back[k])+y*(floor.front[k]-floor.left[k]));
+  const axisY=[0,1].map(k=>(1-x)*(floor.left[k]-floor.back[k])+x*(floor.front[k]-floor.right[k]));
+  const targetX=axisX[1]/axisX[0],targetY=axisY[1]/axisY[0];
+  const d=(targetX-targetY)/(sourceX-sourceY),b=targetX-d*sourceX;
+  if(!Number.isFinite(b)||!Number.isFinite(d)||d<=0)throw new Error('Invalid ground calibration');
+  // Keep verticals upright and the sprite area stable while matching both axes.
+  const scale=1/Math.sqrt(d);
+  return [scale,b*scale,0,d*scale,0,0];
+}
+export function footprintOffsets(item,geometry,gx=item.gx,gy=item.gy){
   const box=imageBox(item);
-  return (item.footprint||[[.5,.96]]).map(([x,y])=>[box.x+x*box.width,box.y+y*box.height]);
+  const [a,b,c,d]=groundTransform(item,geometry,gx,gy);
+  return (item.footprint||[[.5,.96]]).map(([x,y])=>{const px=box.x+x*box.width,py=box.y+y*box.height;return[a*px+c*py,b*px+d*py];});
 }
 export function floorFootprint(item,geometry,gx=item.gx,gy=item.gy){
   const point=projectPoint(gx,gy,geometry);
-  return footprintOffsets(item).map(([x,y])=>[x+point[0],y+point[1]]);
+  return footprintOffsets(item,geometry,gx,gy).map(([x,y])=>[x+point[0],y+point[1]]);
 }
 function clipRegion(polygon,distance){
   const output=[];
@@ -44,10 +61,10 @@ function clipRegion(polygon,distance){
   }
   return output;
 }
-export function placementRegion(item,geometry){
+export function placementRegion(item,geometry,gx=item.gx,gy=item.gy){
   const limit={minX:0,maxX:1,minY:0,maxY:1,...geometry.bounds,...item.bounds};
   let region=[[limit.minX,limit.minY],[limit.maxX,limit.minY],[limit.maxX,limit.maxY],[limit.minX,limit.maxY]].map(p=>projectPoint(...p,geometry));
-  const {back,right,front,left}=geometry.floor,floor=[back,right,front,left],offsets=footprintOffsets(item);
+  const {back,right,front,left}=geometry.floor,floor=[back,right,front,left],offsets=footprintOffsets(item,geometry,gx,gy);
   for(let i=0;i<floor.length;i++){
     const a=floor[i],edge=subtract(floor[(i+1)%floor.length],a);
     const inset=number(item.floorClearance,3)*Math.hypot(...edge)-Math.min(...offsets.map(offset=>cross(edge,offset)));
@@ -56,10 +73,20 @@ export function placementRegion(item,geometry){
   return region;
 }
 export function clampPlacement(gx,gy,item,geometry){
-  const region=placementRegion(item,geometry),point=projectPoint(gx,gy,geometry);
+  const point=projectPoint(gx,gy,geometry);let candidate=[gx,gy];
+  for(let pass=0;pass<12;pass++){
+    const region=placementRegion(item,geometry,...candidate),nearest=nearestInRegion(point,region);
+    const next=unprojectPoint(...nearest,geometry);
+    if(Math.hypot(next[0]-candidate[0],next[1]-candidate[1])<1e-10)return next;
+    candidate=next;
+    if(!item.angleFeet)return candidate;
+  }
+  return candidate;
+}
+function nearestInRegion(point,region){
   if(!region.length)throw new Error('Item does not fit on this floor');
   const inside=region.every((a,i)=>cross(subtract(region[(i+1)%region.length],a),subtract(point,a))>=-1e-7);
-  if(inside)return [gx,gy];
+  if(inside)return point;
   let nearest=region[0],distance=Infinity;
   for(let i=0;i<region.length;i++){
     const a=region[i],edge=subtract(region[(i+1)%region.length],a),length=edge[0]**2+edge[1]**2;
@@ -67,7 +94,7 @@ export function clampPlacement(gx,gy,item,geometry){
     const p=[a[0]+edge[0]*t,a[1]+edge[1]*t],d=(p[0]-point[0])**2+(p[1]-point[1])**2;
     if(d<distance){nearest=p;distance=d;}
   }
-  return unprojectPoint(...nearest,geometry);
+  return nearest;
 }
 export function groundCenter(item,geometry){
   const vertices=floorFootprint(item,geometry);
@@ -142,7 +169,7 @@ export async function startRoom(){
     if(retry){const button=document.createElement('button');button.type='button';button.textContent='다시 불러오기';button.addEventListener('click',load);status.append(button);}
   };
   function select(id){selected=id;for(const [key,record]of nodes)record.group.dataset.selected=String(key===id);}
-  function position(item){const record=nodes.get(item.id);if(!record)return;const point=projectPoint(item.gx,item.gy,config.geometry);record.group.setAttribute('transform',`translate(${point[0]} ${point[1]})`);record.group.dataset.gx=item.gx.toFixed(5);record.group.dataset.gy=item.gy.toFixed(5);}
+  function position(item){const record=nodes.get(item.id);if(!record)return;const point=projectPoint(item.gx,item.gy,config.geometry);record.group.setAttribute('transform',`translate(${point[0]} ${point[1]})`);record.art.setAttribute('transform',`matrix(${groundTransform(item,config.geometry).join(' ')})`);record.group.dataset.gx=item.gx.toFixed(5);record.group.dataset.gy=item.gy.toFixed(5);}
   function sortFurniture(){if(!floorLayer)return;for(const item of config.items.filter(item=>item.layer==='floor').sort((a,b)=>groundCenter(a,config.geometry)[1]-groundCenter(b,config.geometry)[1]))if(nodes.has(item.id))floorLayer.append(nodes.get(item.id).group);}
   function setEditing(value){editing=Boolean(value);panel.classList.toggle('is-editing',editing);editButton.setAttribute('aria-pressed',String(editing));for(const item of config.items){const record=nodes.get(item.id);if(!record||!item.movable||item.layer!=='floor')continue;record.group.setAttribute('tabindex',editing?'0':'-1');record.group.setAttribute('aria-label',item.name+(editing?', 방향키로 옮기기':''));}if(!editing)select(null);}
   function updatePlacement(item,x,y){[item.gx,item.gy]=clampPlacement(...unprojectPoint(x,y,config.geometry),item,config.geometry);position(item);}
@@ -189,10 +216,17 @@ export async function startRoom(){
       if(!loaded.has(item.src))continue;
       const group=svgElement('g',{'data-item-id':item.id,class:'item'+(item.movable&&item.layer==='floor'?' movable':''),role:item.movable&&item.layer==='floor'?'button':'img','aria-label':item.name});
       const title=svgElement('title');title.textContent=item.name;group.append(title);
-      if(item.layer==='floor'&&item.shadow!==false){const sh=item.shadow||{},foot=footprintOffsets(item),center=[0,1].map(k=>foot.reduce((sum,p)=>sum+p[k],0)/foot.length);group.append(svgElement('ellipse',{cx:center[0],cy:center[1],rx:number(sh.width,item.width*.42)/2,ry:number(sh.height,item.width*.08)/2,fill:'url(#living-contact-shadow)',opacity:number(sh.opacity,.32),filter:'url(#living-contact-soften)','pointer-events':'none'}));}
-      if(item.movable&&item.layer==='floor')group.append(svgElement('polygon',{class:'selection-ring',points:shapePoints(footprintOffsets(item))}));
-      const box=imageBox(item,loaded.get(item.src));group.append(svgElement('image',{href:imageUrl(item.src),...box,preserveAspectRatio:'xMidYMid meet','data-art-source':item.src}));
-      nodes.set(item.id,{group});
+      const art=svgElement('g',{'data-ground-transform':item.id});group.append(art);
+      if(item.layer==='floor'&&item.shadow!==false){const sh=item.shadow||{},foot=footprintOffsets(item),center=[0,1].map(k=>foot.reduce((sum,p)=>sum+p[k],0)/foot.length);
+        if(item.angleFeet){
+          art.append(svgElement('polygon',{points:shapePoints(foot),fill:'#49382d',opacity:.19,filter:'url(#living-contact-soften)','pointer-events':'none'}));
+          const box=imageBox(item);
+          for(const point of Object.values(item.angleFeet)){const cx=box.x+point[0]/item.source.width*box.width,cy=box.y+point[1]/item.source.height*box.height;art.append(svgElement('ellipse',{cx,cy,rx:9,ry:4,fill:'url(#living-contact-shadow)',opacity:.65,'pointer-events':'none'}));}
+        }else art.append(svgElement('ellipse',{cx:center[0],cy:center[1],rx:number(sh.width,item.width*.42)/2,ry:number(sh.height,item.width*.08)/2,fill:'url(#living-contact-shadow)',opacity:number(sh.opacity,.32),filter:'url(#living-contact-soften)','pointer-events':'none'}));
+      }
+      if(item.movable&&item.layer==='floor')art.append(svgElement('polygon',{class:'selection-ring',points:shapePoints(footprintOffsets(item))}));
+      const box=imageBox(item,loaded.get(item.src));art.append(svgElement('image',{href:imageUrl(item.src),...box,preserveAspectRatio:'xMidYMid meet','data-art-source':item.src}));
+      nodes.set(item.id,{group,art});
       if(item.layer==='wall'){group.setAttribute('transform',`matrix(${wallTransform(item,config.geometry).join(' ')})`);walls.append(group);}
       else{position(item);(item.layer==='rug'?rug:floorLayer).append(group);}
     }
