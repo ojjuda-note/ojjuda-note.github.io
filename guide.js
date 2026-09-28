@@ -76,8 +76,11 @@
   document.querySelectorAll('[data-faq-toggle]').forEach(button => button.addEventListener('click', () => {
     document.querySelectorAll('.faq').forEach(item => { item.open = button.dataset.faqToggle === 'open'; });
   }));
+  document.querySelectorAll('[data-guide-toggle]').forEach(button => button.addEventListener('click', () => {
+    document.querySelectorAll('.topic-detail').forEach(item => { item.open = button.dataset.guideToggle === 'open'; });
+  }));
   let printState = [];
-  window.addEventListener('beforeprint', () => { printState = [...document.querySelectorAll('.faq')].map(item => [item, item.open]); printState.forEach(([item]) => { item.open = true; }); });
+  window.addEventListener('beforeprint', () => { printState = [...document.querySelectorAll('.topic-detail, .faq')].map(item => [item, item.open]); printState.forEach(([item]) => { item.open = true; }); });
   window.addEventListener('afterprint', () => { printState.forEach(([item, open]) => { item.open = open; }); });
   document.getElementById('print-guide').addEventListener('click', () => window.print());
 })();
