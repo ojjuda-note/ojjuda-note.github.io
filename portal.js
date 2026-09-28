@@ -37,8 +37,10 @@
     || /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash);
   let recoveryEventSeen = false;
   const postConfirmKey = 'ojjuda_post_confirm_destination';
-  let returnQueryDestination = destinationPath(new URLSearchParams(location.search).get('next'))
-    ? new URLSearchParams(location.search).get('next') : null;
+  const authQuery = new URLSearchParams(location.search);
+  let returnQueryDestination = destinationPath(authQuery.get('next')) ? authQuery.get('next') : null;
+  let requestedAuthMode = ['login', 'signup'].includes(authQuery.get('auth'))
+    ? authQuery.get('auth') : returnQueryDestination ? 'login' : null;
 
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
@@ -83,7 +85,7 @@
     forgot.textContent = isForgot ? '로그인으로 돌아가기' : '비밀번호를 잊었어요';
     $('password-label').textContent = isReset ? '새 비밀번호' : '비밀번호';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
-    $('auth-title').textContent = isSignup ? '반가워요, 처음이죠?' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '다시 만나서 반가워요';
+    $('auth-title').textContent = isSignup ? '오쭈다 월드/노트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드/노트';
     $('auth-intro').textContent = isSignup ? '한 번 가입하면 두 공간을 자유롭게 오갈 수 있어요.'
       : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요.'
         : isReset ? '새로 사용할 비밀번호를 입력해 주세요.'
@@ -230,6 +232,19 @@
     } finally {
       release();
     }
+  }
+
+  function resolveAuthEntry(user) {
+    if (requestedAuthMode) {
+      const mode = requestedAuthMode;
+      requestedAuthMode = null;
+      const url = new URL(location.href);
+      url.searchParams.delete('auth');
+      history.replaceState(null, '', url.pathname + url.search + url.hash);
+      // Existing sessions resume the chosen space; recovery links take priority.
+      if (!user && !recoveryPending) openAuth(mode, returnQueryDestination);
+    }
+    resumeAfterConfirmation(user);
   }
 
   function resumeAfterConfirmation(user) {
@@ -452,6 +467,7 @@
   if (!client) {
     authReady = true;
     renderAccount();
+    resolveAuthEntry(null);
     console.error('오쭈다 계정 연결 정보를 확인해 주세요.');
   } else {
     client.auth.onAuthStateChange((event, current) => {
@@ -464,7 +480,7 @@
           recoveryPending = true;
           openAuth('reset');
         } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          resumeAfterConfirmation(current?.user);
+          resolveAuthEntry(current?.user);
         }
       }, 0);
     });
@@ -472,7 +488,7 @@
     client.auth.getSession().then(({ data, error }) => {
       if (authEventVersion === initialVersion) {
         applySession(error ? null : data?.session);
-        resumeAfterConfirmation(error ? null : data?.session?.user);
+        resolveAuthEntry(error ? null : data?.session?.user);
       }
       if (recoveryPending && !recoveryEventSeen) {
         setTimeout(() => {
@@ -487,6 +503,7 @@
     }).catch(error => {
       console.warn('세션 확인 실패:', error);
       applySession(null);
+      resolveAuthEntry(null);
       if (recoveryPending) {
         openAuth('forgot');
         feedback.textContent = '링크를 확인하지 못했어요. 새 링크를 요청해 주세요.';
