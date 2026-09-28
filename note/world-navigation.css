@@ -1,0 +1,52 @@
+/* Reciprocal navigation follows World's .note-link and My-screen layout. */
+.world-link,
+.side .world-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 0;
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  color: #e0457e;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+.world-link:hover,
+.side .world-link:hover { background: #f0679a12; border-color: var(--line); }
+.world-link span,
+.side .world-link span { margin-left: 0; color: inherit; }
+.world-link .nl-logo,
+.side .world-link .nl-logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff9ebb, #f0679a);
+}
+.world-link .nl-logo svg { display: block; width: 22px; height: 22px; stroke: none; }
+.world-link .nl-arrow,
+.side .world-link .nl-arrow { margin-left: auto; font-size: 14px; }
+.world-link.my { margin: 0; border: 0; border-radius: 14px; background: none; padding: 12px 14px; }
+.world-link.my:hover { background: #f0679a12; }
+.note-my-screen > h1 { margin: 4px 0 16px; font-family: var(--font-d); font-size: 26px; font-weight: 400; letter-spacing: -.01em; line-height: 1.3; }
+.note-my-link-card { max-width: 680px; margin-bottom: 14px; padding: 4px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.note-my-open .main > :not(.note-my-screen),
+.note-my-open .write-fab { display: none !important; }
+body:not(.note-my-open) .note-my-screen { display: none; }
+.mobile-top-placeholder { width: 42px; height: 42px; }
+@media (max-width: 899px) {
+  /* World puts the cross-service shortcut in My, not the mobile drawer. */
+  .side .world-link { display: none; }
+  .note-my-open .main { padding: 12px 14px 110px; }
+}

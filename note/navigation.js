@@ -13,6 +13,80 @@
   let previousInert = false;
   const notificationBadge = document.getElementById('note-notification-badge');
   const menuBadge = document.getElementById('mobile-menu-badge');
+  const myScreen = document.getElementById('note-my-screen');
+  const myTitle = document.getElementById('note-my-title');
+  const navigationButtons = () => [...document.querySelectorAll('.side .nav-button, .bottomnav button')];
+  let previousNavigation = [];
+  let previousScroll = 0;
+
+  function syncMyNavigation() {
+    if (!document.body.classList.contains('note-my-open')) return;
+    for (const button of navigationButtons()) {
+      const selected = button.hasAttribute('data-note-my');
+      button.classList.toggle('on', selected);
+      if (selected && button.getAttribute('aria-current') !== 'page') button.setAttribute('aria-current', 'page');
+      else if (!selected && button.hasAttribute('aria-current')) button.removeAttribute('aria-current');
+    }
+  }
+
+  function showMy(open, focus = false) {
+    if (!myScreen || !myTitle) return;
+    const wasOpen = document.body.classList.contains('note-my-open');
+    if (open && !wasOpen) {
+      previousScroll = window.scrollY;
+      previousNavigation = navigationButtons().map(button => ({ button,
+        selected: button.classList.contains('on'), current: button.getAttribute('aria-current') }));
+    }
+    // Keep the card viewer's hidden state and asynchronous loading untouched.
+    // The view class only changes which content is presented.
+    document.body.classList.toggle('note-my-open', open);
+    myScreen.hidden = !open;
+    if (open) {
+      closeMenu(false);
+      syncMyNavigation();
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (focus) myTitle.focus({ preventScroll: true });
+    } else if (wasOpen) {
+      for (const { button, selected, current } of previousNavigation) {
+        button.classList.toggle('on', selected);
+        if (current === null) button.removeAttribute('aria-current'); else button.setAttribute('aria-current', current);
+      }
+      if (focus) main.focus({ preventScroll: true });
+    }
+  }
+
+  document.addEventListener('click', event => {
+    const myButton = event.target.closest('[data-note-my]');
+    if (myButton) {
+      event.preventDefault();
+      if (!document.body.classList.contains('note-my-open')) {
+        history.pushState({ ...history.state, noteMy: true }, '', location.href);
+      }
+      showMy(true, true);
+      return;
+    }
+    if (!document.body.classList.contains('note-my-open')) return;
+    const cardAction = event.target.closest('[data-show], [data-sort], [data-collection], [data-open], [data-compose], #event-start');
+    if (!cardAction || cardAction.disabled) return;
+    // Existing card handlers will perform the selected navigation after capture.
+    history.replaceState({ ...history.state, noteMy: false }, '', location.href);
+    showMy(false);
+  }, true);
+
+  window.addEventListener('popstate', event => {
+    const wasOpen = document.body.classList.contains('note-my-open');
+    const open = event.state?.noteMy === true;
+    showMy(open, open);
+    if (wasOpen && !open) requestAnimationFrame(() => {
+      window.scrollTo({ top: previousScroll, behavior: 'auto' });
+      main.focus({ preventScroll: true });
+    });
+  });
+
+  const navigationObserver = new MutationObserver(syncMyNavigation);
+  for (const navigation of [sidebar, document.querySelector('.bottomnav')].filter(Boolean)) {
+    navigationObserver.observe(navigation, { attributes: true, attributeFilter: ['class', 'aria-current'], subtree: true });
+  }
 
   function syncBadge() {
     const unread = notificationBadge && !notificationBadge.hidden ? notificationBadge.textContent.trim() : '';
@@ -87,4 +161,5 @@
     new MutationObserver(syncBadge).observe(notificationBadge, { attributes: true, attributeFilter: ['hidden'], childList: true, characterData: true, subtree: true });
   }
   syncBadge();
+  if (history.state?.noteMy) showMy(true);
 })();

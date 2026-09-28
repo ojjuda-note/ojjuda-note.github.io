@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="notifications.css?v=0.45.5-beta">
   <link rel="stylesheet" href="map.css?v=0.45.26-beta">
   <link rel="stylesheet" href="pull-refresh.css?v=0.45.10-beta">
+  <link rel="stylesheet" href="world-navigation.css?v=0.45.41-beta">
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -31,6 +32,7 @@
     <symbol id="close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
     <symbol id="pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0z"/><circle cx="12" cy="10" r="2"/></symbol>
     <symbol id="menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
   </svg>
 
   <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -48,8 +50,9 @@
       <button class="nav-button" type="button" data-show="events"><svg><use href="#pin"/></svg>내 이벤트</button>
       <div class="side-section-label side-group-label">알림·관리</div>
       <div class="side-tools" id="side-tools"></div>
+      <button class="nav-button" type="button" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이</button>
+      <a class="world-link" href="/world.html" aria-label="미니홈피 열기"><span class="nl-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5.2 13.6 10.4 18.8 12 13.6 13.6 12 18.8 10.4 13.6 5.2 12 10.4 10.4Z" fill="#fff"/></svg></span><span>미니홈피</span><span class="nl-arrow" aria-hidden="true">→</span></a>
       <div class="side-spacer"></div>
-      <a class="world-link" href="/world.html"><svg><use href="#home"/></svg>미니홈피 <span aria-hidden="true">→</span></a>
       <p class="side-caption" id="account-status">계정 확인 중</p>
     </aside>
 
@@ -57,7 +60,7 @@
       <header class="mobile-top">
         <button class="icon-button mobile-menu-button" id="mobile-menu-toggle" type="button" aria-label="노트 메뉴 열기" aria-controls="note-sidebar" aria-expanded="false"><svg><use href="#menu"/></svg><span class="mobile-menu-badge" id="mobile-menu-badge" hidden></span></button>
         <div class="note-brand-row"><a class="brand" href="./" aria-label="오쭈다노트 홈"><img class="brand-icon" src="/favicon.svg" alt=""><span>오쭈다<b>노트</b></span></a><span class="note-dev-badge">개발 중</span></div>
-        <a class="world-small" href="/world.html" aria-label="오쭈다월드로 이동"><svg><use href="#home"/></svg></a>
+        <span class="mobile-top-placeholder" aria-hidden="true"></span>
       </header>
 
       <main id="main" class="main">
@@ -88,10 +91,14 @@
             <div class="replies"><div class="reply-heading"><div><p class="eyebrow">이야기가 이어져요</p><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" aria-live="polite"></div></div>
           </div>
         </section>
+        <section id="note-my-screen" class="note-my-screen" aria-labelledby="note-my-title" hidden>
+          <h1 id="note-my-title" tabindex="-1">마이</h1>
+          <div class="note-my-link-card"><a class="world-link my" href="/world.html" aria-label="미니홈피 열기"><span class="nl-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5.2 13.6 10.4 18.8 12 13.6 13.6 12 18.8 10.4 13.6 5.2 12 10.4 10.4Z" fill="#fff"/></svg></span><span>미니홈피</span><span class="nl-arrow" aria-hidden="true">→</span></a></div>
+        </section>
       </main>
 
       <button class="write-fab" type="button" data-compose="new" aria-label="새 카드 쓰기"><svg><use href="#plus"/></svg><span>카드 쓰기</span></button>
-      <nav class="bottomnav" aria-label="모바일 메뉴"><button type="button" class="on" data-show="feed"><svg><use href="#cards"/></svg>카드</button><button type="button" disabled><svg><use href="#bookmark"/></svg>메모함</button><a href="/world.html"><svg><use href="#home"/></svg>미니홈피</a></nav>
+      <nav class="bottomnav" aria-label="모바일 메뉴"><button type="button" class="on" data-show="feed"><svg><use href="#cards"/></svg>카드</button><button type="button" disabled><svg><use href="#bookmark"/></svg>메모함</button><button type="button" id="note-my-toggle" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이</button></nav>
     </div>
   </div>
 
@@ -161,6 +168,6 @@
   <script src="preview.js?v=0.45.40-beta" defer></script>
   <script src="notice-ticker.js?v=0.45.36-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
-  <script src="navigation.js?v=0.45.2-beta" defer></script>
+  <script src="navigation.js?v=0.45.41-beta" defer></script>
 </body>
 </html>
