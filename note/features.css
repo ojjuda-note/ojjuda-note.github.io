@@ -257,11 +257,9 @@ select{font:inherit;color:inherit}
 .composer-head .icon-button svg{width:16px;height:16px}
 .composer[data-mode="memo-new"] .compose-context{display:none}
 .composer:not([data-mode="memo-new"]) .compose-context{padding-left:48px;min-height:38px}
-/* 사진은 위에 고정, 추가 설정만 사진 밑으로 올라와요 */
+/* 사진은 절반까지 올라간 뒤 고정돼 아래 꾸미기·추가 설정을 넓게 볼 수 있어요. */
 .composer-body{position:relative}
-.composer-body>.compose-photo{position:sticky;top:0;z-index:6;box-shadow:0 -14px 0 0 var(--surface,#fff),0 12px 20px -16px rgba(20,20,40,.45)}
-/* 이벤트 사진은 절반까지 올라간 뒤 고정돼 아래 설정을 넓게 볼 수 있어요. */
-.composer[data-kind="event"] .composer-body>.compose-photo{top:calc(var(--compose-photo-height) * -.5)}
+.composer-body>.compose-photo{position:sticky;top:calc(var(--compose-photo-height) * -.5);z-index:6;box-shadow:0 -14px 0 0 var(--surface,#fff),0 12px 20px -16px rgba(20,20,40,.45)}
 .compose-more{position:relative;margin-top:14px;border-radius:20px 20px 16px 16px;box-shadow:0 -8px 20px -14px rgba(20,20,40,.35)}
 .compose-more::before{content:"";position:absolute;top:6px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:#d4d7e8;z-index:1}
 .compose-more>summary{touch-action:none;cursor:grab;padding-top:16px}
