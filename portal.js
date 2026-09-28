@@ -3,7 +3,7 @@
 
   const $ = id => document.getElementById(id);
   const destinations = { note: '/note/', world: '/world.html' };
-  const termsVersion = '2026-09-27';
+  const termsVersion = '2026-09-29';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey)
@@ -18,6 +18,7 @@
   const passwordConfirm = $('password-confirm');
   const nickname = $('nickname');
   const submit = $('auth-submit');
+  $('signup-identity-slot').innerHTML = window.OjjudaIdentity.fields('signup');
   const forgot = $('forgot-trigger');
   const accountActions = $('account-actions');
   const signedInActions = $('signed-in-actions');
@@ -286,6 +287,11 @@
     feedback.textContent = '';
     const address = email.value.trim();
     const secret = password.value;
+    let signupIdentity = null;
+    if (authMode === 'signup') {
+      try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); }
+      catch (error) { feedback.textContent = error.message; return; }
+    }
     if (authMode !== 'reset' && authMode !== 'nickname' && !validEmail(address)) {
       feedback.textContent = '이메일 주소를 확인해 주세요.';
       email.focus();
@@ -304,7 +310,7 @@
         return;
       }
       if (authMode === 'signup' && !$('age-check').checked) {
-        feedback.textContent = '만 14세 이상만 가입할 수 있어요.';
+        feedback.textContent = '만 15~69세이며 입력한 정보가 정확한지 확인해 주세요.';
         return;
       }
       if (authMode === 'signup' && !$('policy-check').checked) {
@@ -342,12 +348,17 @@
               nickname: name,
               terms_version: termsVersion,
               agreed_at: new Date().toISOString(),
-              age_14_plus: true
+              birth_yymmdd: signupIdentity.birthSix,
+              gender_code: signupIdentity.genderCode,
+              phone_number: signupIdentity.phone,
+              age_15_to_69: true
             },
             emailRedirectTo: confirmationUrl.href
           }
         });
         if (error) throw error;
+        for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
+        $('signup-result').textContent = '';
         if (data?.session?.user) {
           applySession(data.session);
           const destination = pendingDestination;
@@ -406,6 +417,7 @@
     if (dialog.open) return;
     form.reset();
     feedback.textContent = '';
+    $('signup-result').textContent = '';
     pendingDestination = null;
   });
   forgot.addEventListener('click', () => setAuthMode(authMode === 'forgot' ? 'login' : 'forgot'));
