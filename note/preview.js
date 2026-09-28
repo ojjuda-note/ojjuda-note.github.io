@@ -1026,6 +1026,12 @@ function flashMessage(value, ms = 2500) {   // 짧게 보여 주고 저절로 �
   flashTimer = setTimeout(() => { if (featureMessage?.textContent === value) message(''); }, ms);
 }
 let tagTabReset = null, searchTagFn = null;
+function filterSearchOnlyTags(request, searchTag = '') {
+  return searchTag === '19금' ? request : request.not('tags', 'cs', '{19금}');
+}
+function canDisplayTaggedCard(card) {
+  return feedTerm === '19금' || !card?.tags?.includes('19금');
+}
 function cursorFilter(cursor, ascending = false, popular = false) {
   if (!cursor || !validCardId(cursor.id) || !Number.isFinite(Date.parse(cursor.created_at))) return null;
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(cursor.created_at)) return null;
@@ -1040,7 +1046,7 @@ function cursorFilter(cursor, ascending = false, popular = false) {
 function filteredFeed() {
   // 인기의 최근 7일 조건은 전체 피드에만 적용해요. 메모함은 모든 보이는 카드를 최신순으로 보여요.
   const popular = feedMode === 'all' && feedSort === 'popular';
-  let request = query().from('public_cards').select(columns);
+  let request = filterSearchOnlyTags(query().from('public_cards').select(columns), feedTerm);
   // Saved and own collections include replies as well as root cards.
   if (feedMode === 'all') request = request.eq('kind', 'memo');
   if (feedMode === 'saved') request = request.eq('is_bookmarked', true);
@@ -1130,6 +1136,7 @@ async function loadFeed(more = false, quiet = false) {
   }
   let shown = 0;
   for (const card of data || []) {
+    if (!canDisplayTaggedCard(card)) continue;
     if (card.kind === 'event' && card.body == null) continue;
     shown++;
     const exists = list.querySelector(`[data-card-id="${card.id}"]`);
@@ -1232,8 +1239,8 @@ async function loadReplies(id, version, more = false) {
   else replies.querySelector('[data-more-replies]')?.remove();
   let data, error;
   try {
-    let request = query().from('public_cards').select(columns)
-      .eq('kind', 'comment').eq('parent_id', id);
+    let request = filterSearchOnlyTags(query().from('public_cards').select(columns)
+      .eq('kind', 'comment').eq('parent_id', id), feedTerm);
     const after = cursorFilter(replyCursor, true);
     if (after) request = request.or(after);
     ({ data, error } = await request.order('created_at', { ascending: true })
@@ -1289,6 +1296,13 @@ async function renderDetail() {
   if (!card) {
     cache.delete(id); $('#reply-count').textContent = '0';
     state(slot, '삭제되었거나 볼 수 없는 카드예요.'); state(replies, ''); return;
+  }
+  if (!canDisplayTaggedCard(card)) {
+    cache.delete(id); $('#reply-count').textContent = '0';
+    state(slot, '이 카드는 ‘19금’ 태그를 검색했을 때만 볼 수 있어요.'); state(replies, '');
+    const search = node('button', 'button', '19금 태그 검색'); search.type = 'button';
+    search.addEventListener('click', () => searchTagFn?.('19금')); slot.append(search);
+    return;
   }
   cache.set(id, card);
   if(initialKeepId===id){
@@ -1383,6 +1397,14 @@ function updateReactionButtons() {
   });
 }
 function replaceVisibleCard(card) {
+  if (!canDisplayTaggedCard(card)) {
+    cache.delete(card.id);
+    for (const item of document.querySelectorAll('article[data-card-id]')) {
+      if (item.dataset.cardId === card.id) item.remove();
+    }
+    if (stack.at(-1) === card.id) void renderDetail();
+    return;
+  }
   cache.set(card.id, card);
   for (const item of document.querySelectorAll('article[data-card-id]')) {
     if (item.dataset.cardId !== card.id) continue;
@@ -1526,7 +1548,8 @@ function installFeatures() {
   const loadPopularTags = async () => {
     if (Date.now() - popularTagsAt < 300000 && tagChips.childElementCount) return;
     try {
-      const { data, error } = await query().from('public_cards').select('tags').eq('kind', 'memo').order('created_at', { ascending: false }).limit(200);
+      const { data, error } = await filterSearchOnlyTags(query().from('public_cards').select('tags').eq('kind', 'memo'))
+        .order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
       const count = new Map();
       for (const row of data || []) for (const t of Array.isArray(row.tags) ? row.tags : []) count.set(t, (count.get(t) || 0) + 1);
@@ -2449,7 +2472,7 @@ async function publishCard() {
     const refreshed = await selectCollection(publishKind === 'event' ? 'events' : 'all', true);
     if (publishKind === 'memo') {
       if (cardPhotoFailed) message('카드는 올렸지만 사진을 붙이지 못했어요. 다시 시도해 주세요.');
-      else if (refreshed) flashMessage('카드를 올렸어요', 3500);
+      else if (refreshed) flashMessage(values.includes('19금') ? '카드를 올렸어요. ‘19금’ 태그 검색에서 볼 수 있어요.' : '카드를 올렸어요', 3500);
       else message('카드는 올렸어요. 목록을 불러오지 못했어요. 새로고침해 주세요.');
     }
   } else {
