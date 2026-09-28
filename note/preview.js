@@ -63,9 +63,39 @@ const COLOR_PALETTE = {
 };
 let photoPage = 0;
 let selectedPhotoKey = null;
+let photoEntitlements = new Map(), photoEntitlementRun = 0;
 function photoAssetKey(value) {
   const key = String(value ?? '');
   return /^\d{2,3}$/.test(key) && Number(key) >= PHOTO_FIRST && Number(key) <= PHOTO_LAST ? key : null;
+}
+function activePhotoEntitlement(key, entitlements = photoEntitlements) {
+  const expiry = entitlements.get(key);
+  return expiry && Date.parse(expiry) > Date.now() ? expiry : null;
+}
+async function loadPhotoEntitlements(userId) {
+  if (!userId || session?.user?.id !== userId) throw new Error('계정이 변경됐어요.');
+  const run = ++photoEntitlementRun;
+  const rows = await noteRpc('list_my_card_photo_entitlements');
+  if (session?.user?.id !== userId) throw new Error('계정이 변경됐어요.');
+  if (!Array.isArray(rows)) throw new Error('구매 내역을 확인할 수 없어요.');
+  const entitlements = new Map();
+  for (const row of rows) {
+    const key = photoAssetKey(row?.photo_key);
+    if (key && Date.parse(row?.expires_at) > Date.now()) entitlements.set(key, row.expires_at);
+  }
+  if (run === photoEntitlementRun) {
+    photoEntitlements = entitlements;
+    if (!backdrop.hidden) updateFeaturedPhoto();
+    if (!$('#photo-gallery').hidden) renderPhotoPage();
+  }
+  return entitlements;
+}
+async function photoActionFor(key, userId) {
+  const entitlements = await loadPhotoEntitlements(userId);
+  if (activePhotoEntitlement(key, entitlements)) return 'apply_owned_card_photo';
+  const title = `사진 ${String(Number(key) - PHOTO_FIRST + 1).padStart(3, '0')}`;
+  return window.confirm(`${title}을 10쭈에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
+    ? 'purchase_card_photo' : null;
 }
 function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
@@ -1538,23 +1568,27 @@ function setColorChoice(group, code) {
 function updateFeaturedPhoto() {
   const selected = photoAssetKey(selectedPhotoKey);
   const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
-  const price = selected ? '제공 배경 선택 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
+  const ownedUntil = selected && activePhotoEntitlement(selected);
+  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
   $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
-  $('#photo-featured-badge').textContent = selected ? '선택됨' : '무료';
+  $('#photo-featured-badge').textContent = selected ? ownedUntil ? '사용 중' : '선택됨' : '무료';
   $('#photo-featured-badge').classList.toggle('is-selected', !!selected);
-  $('#photo-selection').textContent = selected ? `${name} 선택됨 · 게시 후 10쭈 / 1개월` : '기본 배경 무작위 · 무료';
+  $('#photo-selection').textContent = selected ? ownedUntil ? `${name} 사용 중 · ${dateLabel(ownedUntil)}까지 추가 결제 없이 사용` : `${name} 선택됨 · 10쭈 / 1개월` : '기본 배경 무작위 · 무료';
 }
 function renderPhotoPage() {
   const grid = $('#photo-grid'); grid.replaceChildren();
   const first = PHOTO_FIRST + photoPage * PHOTO_PAGE_SIZE;
   for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
     const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
-    const tile = node('label', 'note-photo-tile'); tile.title = `${title} · 10쭈 / 1개월`;
+    const ownedUntil = activePhotoEntitlement(key);
+    const accessLabel = ownedUntil ? `구매함 · ${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 · 10쭈 / 1개월';
+    const tile = node('label', 'note-photo-tile'); tile.title = `${title} · ${accessLabel}`;
     const input = node('input'); input.type = 'radio'; input.name = 'photo-choice'; input.value = key;
-    input.checked = selectedPhotoKey === key; input.setAttribute('aria-label', `${title}, 10쭈로 1개월`);
+    input.disabled = busy || draftLoading;
+    input.checked = selectedPhotoKey === key; input.setAttribute('aria-label', `${title}, ${accessLabel}`);
     input.addEventListener('change', () => {
       selectedPhotoKey = key; updateFeaturedPhoto();
       applyComposeStyle(); recordDraft();
@@ -2116,6 +2150,7 @@ async function publishCard() {
   const identityMode = $('input[name="identity"]:checked')?.value === 'nickname' ? 'nickname' : 'anonymous';
   const selectedPhoto = kind === 'memo' && !editId ? chosenPhoto() : 'plain';
   const selectedPhotoRequestId = photoRequestId;
+  let selectedPhotoAction = null;
   const selectedEventPhoto = kind === 'event' ? eventPhotoBlob : null;
   const selectedEventPhotoRequestId = eventPhotoRequestId;
   const removeEventPhoto = kind === 'event' && !!editId && eventPhotoRemove;
@@ -2126,8 +2161,19 @@ async function publishCard() {
   if (kind === 'event' && !editId) {
     const cost = Number($('#event-radius').value) * Number($('#event-hours').value) * 100;
     if (!window.confirm(`이벤트 ${cost.toLocaleString('ko-KR')}쭈를 결제하고 등록할까요?`)) return;
-  } else if (!editId && selectedPhoto !== 'plain' && !window.confirm('카드를 등록한 뒤 선택한 제공 배경의 1개월 이용료 10쭈를 결제할까요? 내 사진 첨부는 무료예요.')) {
-    return;
+  } else if (!editId && selectedPhoto !== 'plain') {
+    busy = true; setComposerInputs(); updateComposer();
+    try { selectedPhotoAction = await photoActionFor(selectedPhoto, actionUserId); }
+    catch (entitlementError) {
+      console.warn('Note photo entitlement:', entitlementError);
+      busy = false; setComposerInputs(); updateComposer();
+      composeMessage.textContent = '구매 내역을 확인하지 못했어요. 잠시 뒤 다시 등록해 주세요.';
+      return;
+    }
+    if (session?.user?.id !== actionUserId || actionEpoch !== identityEpoch || actionComposerRun !== composerRun || backdrop.hidden || !selectedPhotoAction) {
+      busy = false; setComposerInputs(); updateComposer(); return;
+    }
+    busy = false; setComposerInputs(); updateComposer();
   }
   let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
@@ -2277,8 +2323,9 @@ async function publishCard() {
   let photoPurchaseFailed = false;
   if (!editId && selectedPhoto !== 'plain') {
     try {
-      await noteRpc('purchase_card_photo', { p_card_id: publishedId, p_photo_key: selectedPhoto, p_request_id: selectedPhotoRequestId });
-      void loadWorldBalance(actionUserId);
+      await noteRpc(selectedPhotoAction, { p_card_id: publishedId, p_photo_key: selectedPhoto, p_request_id: selectedPhotoRequestId });
+      void loadPhotoEntitlements(actionUserId).catch(error => console.warn('Note photo entitlement:', error));
+      if (selectedPhotoAction === 'purchase_card_photo') void loadWorldBalance(actionUserId);
     } catch (photoError) { console.warn('Note photo purchase:', photoError); photoPurchaseFailed = true; }
   }
   if (session?.user?.id !== actionUserId) return;
@@ -2316,9 +2363,8 @@ async function publishCard() {
   if (photoPurchaseFailed || cardPhotoFailed) {
     showManagement(editId ? '글은 수정됐어요' : '카드는 등록됐어요');
     if (photoPurchaseFailed) {
-      managementBody.append(node('p', 'management-help', '사진 배경 결제가 완료되지 않아 기본 배경으로 등록됐어요. 다시 시도하거나 기본 배경으로 계속 이용할 수 있어요.'));
-      const retryBackground = managementButton('사진 배경 결제 다시 시도', () => managementAction(
-        () => noteRpc('purchase_card_photo', { p_card_id: publishedId, p_photo_key: selectedPhoto, p_request_id: selectedPhotoRequestId }),
+      managementBody.append(node('p', 'management-help', '사진 배경 적용이 완료되지 않아 기본 배경으로 등록됐어요. 구매 내역을 확인한 뒤 다시 시도하거나 기본 배경으로 계속 이용할 수 있어요.'));
+      const retryBackground = managementButton('사진 배경 적용 다시 시도', () => managementPhotoAction(publishedId, selectedPhoto, selectedPhotoRequestId,
         async () => {
           photoPurchaseFailed = false; retryBackground.remove(); keepBackground.remove();
           await refreshCards(false); await loadWorldBalance(actionUserId);
@@ -2488,6 +2534,34 @@ async function managementAction(action, after) {
     }
   }
 }
+async function managementPhotoAction(cardId, key, requestId, after) {
+  if (managementBusy || !session?.user) return;
+  const run = managementRun, userId = session.user.id;
+  managementBusy = true; managementMessage.textContent = '구매 내역을 확인하는 중이에요.';
+  managementPanel.querySelectorAll('button').forEach(item => { item.disabled = true; });
+  let action;
+  try { action = await photoActionFor(key, userId); }
+  catch (error) {
+    console.warn('Note photo entitlement:', error);
+    if (run === managementRun) managementMessage.textContent = '구매 내역을 확인하지 못했어요. 다시 시도해 주세요.';
+  } finally {
+    if (run === managementRun) {
+      managementBusy = false;
+      managementPanel.querySelectorAll('button').forEach(item => { item.disabled = false; });
+    }
+  }
+  if (!action || run !== managementRun || session?.user?.id !== userId) {
+    if (run === managementRun && action === null) managementMessage.textContent = '';
+    return;
+  }
+  managementMessage.textContent = '';
+  await managementAction(async () => {
+    const result = await noteRpc(action, { p_card_id: cardId, p_photo_key: key,
+      p_request_id: action === 'apply_owned_card_photo' ? crypto.randomUUID() : requestId });
+    void loadPhotoEntitlements(userId).catch(error => console.warn('Note photo entitlement:', error));
+    return result;
+  }, after);
+}
 async function refreshCards(keepDetail = false) {
   feedRun++; detailRun++; cache.clear();
   slot.replaceChildren(); replies.replaceChildren(); $('#reply-count').textContent = '0';
@@ -2506,7 +2580,7 @@ function manageCard(id) {
     if (eventEnded) managementBody.append(node('p', 'management-help', '종료된 이벤트는 수정할 수 없지만 삭제할 수 있어요.'));
     else managementBody.append(managementButton(card.kind === 'event' ? '이벤트 수정' : '수정하기', () => { closeManagement(); openComposer('edit', card); }));
     if (card.kind === 'memo') {
-      managementBody.append(managementButton('제공 배경 선택 · 10쭈/1개월', () => showPhotoChoices(card)));
+      managementBody.append(managementButton('제공 배경 선택 · 구매한 사진은 기간 내 무료', () => showPhotoChoices(card)));
     }
     if (['memo', 'comment'].includes(card.kind) && !card.permanent) {
       managementBody.append(managementButton('영구보관 · 10쭈', () => confirmPermanent(card)));
@@ -2519,8 +2593,8 @@ function manageCard(id) {
   cancelManagement();
 }
 function showPhotoChoices(card) {
-  showManagement('사진 배경 선택');
-  managementBody.append(node('p', 'management-help', '제공 사진 한 장을 선택하면 10쭈가 차감되고 1개월간 적용돼요. 자동 연장은 하지 않아요.'));
+  const run = showManagement('사진 배경 선택'), userId = session?.user?.id;
+  managementBody.append(node('p', 'management-help', '사진별로 10쭈를 내면 1개월 동안 다른 카드에도 추가 결제 없이 적용할 수 있어요. 기간이 끝나면 다시 구매할 수 있으며 자동 연장은 하지 않아요.'));
   if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
   const choices = node('div', 'note-photo-choice');
   const pages = node('div', 'note-photo-pages');
@@ -2532,11 +2606,11 @@ function showPhotoChoices(card) {
       const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
       const button = node('button', 'button'); button.type = 'button';
       const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
-      button.append(img, node('strong', '', title), node('small', '', '10쭈 · 1개월'));
+      const ownedUntil = activePhotoEntitlement(key);
+      button.append(img, node('strong', '', title), node('small', '', ownedUntil ? `${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 10쭈 · 1개월'));
       button.addEventListener('click', () => {
-        if (!window.confirm(`${title}을 10쭈에 1개월 동안 적용할까요?`)) return;
         const requestId = crypto.randomUUID();
-        managementAction(() => noteRpc('purchase_card_photo', { p_card_id: card.id, p_photo_key: key, p_request_id: requestId }),
+        managementPhotoAction(card.id, key, requestId,
           async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); });
       });
       choices.append(button);
@@ -2549,6 +2623,12 @@ function showPhotoChoices(card) {
     pages.append(prev, node('span', '', `${page + 1} / ${Math.ceil((PHOTO_LAST - PHOTO_FIRST + 1) / PHOTO_PAGE_SIZE)}`), next);
   };
   render(); managementBody.append(choices, pages); cancelManagement();
+  if (userId) void loadPhotoEntitlements(userId).then(() => {
+    if (run === managementRun && session?.user?.id === userId && !managementBusy) render();
+  }).catch(error => {
+    console.warn('Note photo entitlement:', error);
+    if (run === managementRun) managementMessage.textContent = '구매 내역은 배경을 누르면 다시 확인할 수 있어요.';
+  });
 }
 function confirmPermanent(card) {
   showManagement('영구보관할까요?');
@@ -2794,6 +2874,7 @@ function receiveAuth(current) {
     clearTimeout(cardPhotoTimer); clearTimeout(cardPhotoRefreshTimer);
     cardPhotoTimer = null; cardPhotoRefreshTimer = null;
     photoLightboxFocus = null; closePhotoLightbox();
+    photoEntitlements = new Map(); photoEntitlementRun++;
     worldCoins = null; balanceRun++; moderator = false; moderatorRun++;
     nearbyPosition = null; writingPosition = null; eventPosition = null;
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
@@ -2811,6 +2892,7 @@ function receiveAuth(current) {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
+    if (current?.user?.id) void loadPhotoEntitlements(current.user.id).catch(error => console.warn('Note photo entitlement:', error));
     notificationController?.refresh?.();
     if (changed) loadFeed(); else consumeInitialCard();
   }, 0);
