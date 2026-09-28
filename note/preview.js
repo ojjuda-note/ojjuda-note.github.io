@@ -254,8 +254,37 @@ async function showMemberInfo(afterSave = null) {
     managementBody.replaceChildren();
     if (myIdentity) {
       const info = node('dl', 'member-identity-summary');
-      for (const [label, value] of [['생년월일', myIdentity.birth_date], ['현재 나이', `만 ${myIdentity.age}세`], ['가입 당시 나이', `만 ${myIdentity.age_at_signup}세`], ['성별', myIdentity.gender === 'male' ? '남성' : '여성'], ['전화번호', myIdentity.phone_number]]) info.append(node('dt', '', label), node('dd', '', value));
+      for (const [label, value] of [['생년월일', myIdentity.birth_date], ['현재 나이', `만 ${myIdentity.age}세`], ['가입 당시 나이', `만 ${myIdentity.age_at_signup}세`], ['성별', myIdentity.gender === 'male' ? '남성' : '여성']]) info.append(node('dt', '', label), node('dd', '', value));
       managementBody.append(info, node('p', 'management-help', '생년월일·나이·전화번호는 다른 회원에게 공개되지 않아요. 생년월일·성별은 직접 수정할 수 없으며, 잘못 입력한 정보는 고객지원으로 정정을 요청해 주세요.'));
+      const form = node('form', 'member-identity-fields');
+      const label = node('label', '', '전화번호'); label.htmlFor = 'member-phone-edit';
+      const phone = node('input'); phone.id = 'member-phone-edit'; phone.type = 'tel'; phone.inputMode = 'tel';
+      phone.autocomplete = 'tel'; phone.maxLength = 20; phone.required = true;
+      phone.placeholder = '010-0000-0000'; phone.value = myIdentity.phone_number;
+      form.append(label, phone, node('p', 'identity-hint', '전화번호는 수정할 수 있어요.'));
+      managementBody.append(form);
+      const save = managementButton('전화번호 저장', () => form.requestSubmit(), true);
+      managementFooter.append(save);
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (managementBusy || run !== managementRun || session?.user?.id !== userId) return;
+        let nextPhone;
+        try { nextPhone = window.OjjudaIdentity.normalizePhone(phone.value); }
+        catch (error) { managementMessage.textContent = error.message; return; }
+        managementMessage.textContent = '';
+        managementBusy = true; save.disabled = true; phone.disabled = true; managementClose.disabled = true;
+        try {
+          const { data, error } = await client.rpc('update_my_phone_number', { p_phone: nextPhone });
+          if (error) throw error;
+          if (run !== managementRun || session?.user?.id !== userId) return;
+          myIdentity = data; phone.value = data.phone_number;
+          managementMessage.textContent = '전화번호를 저장했어요.';
+        } catch (error) {
+          if (run === managementRun && session?.user?.id === userId) managementMessage.textContent = /invalid_phone_number/.test(error.message || '') ? '전화번호를 확인해 주세요.' : '전화번호를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
+        } finally {
+          if (run === managementRun) { managementBusy = false; save.disabled = false; phone.disabled = false; managementClose.disabled = false; }
+        }
+      });
       return;
     }
     managementBody.append(node('p', 'management-help', '카드에 표시할 성별을 위해 기존 회원은 생년월일·성별·전화번호를 한 번 등록해 주세요. 저장 후 생년월일과 성별은 직접 바꿀 수 없어요.'));
