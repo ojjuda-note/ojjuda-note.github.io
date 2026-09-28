@@ -58,8 +58,7 @@
     archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
     purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
     restrict_user: '이용 제한', release_user: '이용 제한 해제', add_moderator: '운영자 지정',
-    remove_moderator: '운영자 해제', update_settings: '노트 공지·기능 변경', reply_inquiry: '문의 답변',
-    reset_adult: '출생연도 입력 초기화'
+    remove_moderator: '운영자 해제', update_settings: '노트 공지·기능 변경', reply_inquiry: '문의 답변'
   };
   const filters = { cards: { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
   let client = null, onChanged = null, userId = null, subscription = null;
@@ -646,7 +645,6 @@
       const item = el('article', `adm-card na-item${riskSignal ? ' na-item--risk' : ''}`); const header = el('div', 'na-item-header');
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
       if (riskSignal) meta.prepend(badge('⚠️ 위험 신호', 'risk'));
-      if (Array.isArray(card.tags) && card.tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));   // 19금 태그 카드는 성적·거친 표현을 너그럽게 봐요 (불법·혐오·개인정보는 삭제)
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
@@ -859,18 +857,11 @@
     filters.reports.offset = offset;
     if (!rows.length) { empty(main, '접수되거나 숨김 처리된 신고가 없어요.'); return; }
     main.append(el('p', 'na-count', `총 ${number(rows.length)}건 · 처리 중인 신고와 숨긴 카드를 함께 표시합니다.`));
-    const page = rows.slice(offset, offset + PAGE_SIZE), reportTags = new Map();
-    try {
-      const tagged = await rpc('admin_report_card_tags', { p_card_ids: [...new Set(page.map(row => row.card_id).filter(Boolean))] });
-      if (!validRun(run)) return;
-      for (const row of tagged || []) reportTags.set(row.card_id, row.tags);
-    } catch (error) { console.warn('Note report tags:', error); }
+    const page = rows.slice(offset, offset + PAGE_SIZE);
     const list = el('div', 'na-list');
     for (const report of page) {
       const item = el('article', 'adm-card na-item'); const meta = el('p', 'na-meta');
       meta.append(badge(report.status === 'resolved' ? '처리 완료' : '접수', report.status === 'resolved' ? 'good' : 'warn'), badge(report.hidden ? '개별 숨김' : '개별 숨김 없음'), el('span', '', formatDate(report.created_at)));
-      const tags = reportTags.get(report.card_id) || report.tags;
-      if (Array.isArray(tags) && tags.some(x => String(x).replace(/^#+/, '').trim() === '19금')) meta.append(badge('19금 · 너그럽게 검토', 'warn'));
       item.append(meta, el('blockquote', 'na-card-body', report.body || '삭제된 카드'), el('p', 'na-reason', `신고 사유: ${report.reason || ''}`));
       const actions = el('div', 'na-actions');
       if (report.card_id) actions.append(button(report.hidden ? '카드 복구' : '카드 숨김', () => confirmVisibility(report)));
@@ -879,13 +870,8 @@
     }
     main.append(list); pagination(main, offset, rows.length, next => { filters.reports.offset = next; load('reports'); });
   }
-  function resetAdult(user) {   // 태어난 해를 잘못 적은 이용자의 성인 확인을 지워요 (다시 적을 수 있어요)
-    const reason = window.prompt(`${shortUser(user.user_id)} 님의 성인 확인을 초기화할까요?\n초기화 사유를 적어 주세요.`);
-    if (reason == null || !reason.trim()) return;
-    perform('admin_reset_adult', { p_user_id: user.user_id, p_reason: reason.trim().slice(0, 500) }, '성인 확인을 초기화했어요.', 'users');
-  }
   async function renderUsers(run) {
-    const filter = filters.users; const userSlots = new Map();
+    const filter = filters.users;
     main.append(searchForm(filter.query, '이용자 번호 전체 또는 일부', query => { filters.users = { query, offset: 0 }; load('users'); }, null, '노트에 참여한 이용자와 관리자를 찾습니다. 카드의 작성자 관리 버튼으로도 이동할 수 있어요.'));
     const rows = await rpc('admin_users', { p_query: filter.query, p_limit: PAGE_SIZE, p_offset: filter.offset });
     if (!validRun(run)) return;
@@ -901,18 +887,9 @@
       if (user.is_restricted) item.append(el('p', 'na-reason', `제한 사유: ${user.restriction_reason || ''}\n종료: ${user.restricted_until ? formatDate(user.restricted_until) : '직접 해제할 때까지'}`));
       const actions = el('div', 'na-actions');
       if (!user.is_moderator) actions.append(button(user.is_restricted ? '이용 제한 해제' : '이용 제한', () => restrictUser(user), user.is_restricted ? '' : 'danger'));
-      item.append(actions); list.append(item); userSlots.set(user.user_id, { meta, actions, user });
+      item.append(actions); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.users.offset = offset; load('users'); });
-    try {   // 성인 확인 상태 (19금 태그용). SQL을 아직 안 돌렸으면 조용히 넘어가요
-      const flags = await rpc('admin_member_flags', { p_user_ids: [...userSlots.keys()] });
-      if (!validRun(run)) return;
-      for (const flag of flags || []) {
-        const slot = userSlots.get(flag.user_id); if (!slot) continue;
-        slot.meta.append(badge(flag.adult === 'adult' ? `성인 확인 · ${flag.birth_year}년생` : flag.adult === 'minor' ? `미성년 · ${flag.birth_year}년생` : '성인 확인 전', flag.adult === 'minor' ? 'warn' : ''));
-        if (flag.adult !== 'unknown') slot.actions.append(button('성인 확인 초기화', () => resetAdult(slot.user)));
-      }
-    } catch (error) { console.warn('Note admin member flags:', error); }
   }
   // 위치 지도: 위치가 있는 카드를 최신순으로 50개씩 (대략 좌표, 약 1km 칸)
   const loadedAssets = new Map();
@@ -929,7 +906,6 @@
     await Promise.all([loadAsset('css', `${ADMIN_BASE}map.css?v=admin-map-1`), loadAsset('js', `${ADMIN_BASE}map.js?v=admin-map-1`)]);
     return !!window.OjjudaMap?.create;
   }
-  const hasAdultTag = tags => Array.isArray(tags) && tags.some(tag => String(tag).replace(/^#+/, '').trim() === '19금');
   function openMappedCard(row) {
     if (row.archived) {
       filters.cards.view = 'archive'; filters.cards.offset = 0; filters.cards.expiredOffset = 0;
@@ -970,7 +946,7 @@
       info.replaceChildren(el('p', 'na-count', `이 자리의 카드 ${here.length}장`));
       for (const row of here) {
         const card = el('div', 'na-map-card');
-        card.append(el('p', 'na-meta', `${formatDate(row.created_at)}${row.archived ? ' · 보관됨' : ''}${hasAdultTag(row.tags) ? ' · 19금' : ''}`), el('blockquote', 'na-card-body', row.body || '원문 없음'));
+        card.append(el('p', 'na-meta', `${formatDate(row.created_at)}${row.archived ? ' · 보관됨' : ''}`), el('blockquote', 'na-card-body', row.body || '원문 없음'));
         card.append(button(row.archived ? '보관함으로 가기' : '카드 관리에서 보기', () => openMappedCard(row)));
         info.append(card);
       }
@@ -986,7 +962,6 @@
       const item = el('article', 'adm-card na-item'); const meta = el('p', 'na-meta');
       meta.append(badge(row.kind === 'comment' ? '답글' : row.kind === 'event' ? '이벤트 카드' : '익명카드'));
       if (row.archived) meta.append(badge('보관됨', 'warn'));
-      if (hasAdultTag(row.tags)) meta.append(badge('19금', 'warn'));
       meta.append(el('span', '', formatDate(row.created_at)));
       item.append(meta, el('blockquote', 'na-card-body', row.body || '원문 없음'));
       if (row.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of row.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }

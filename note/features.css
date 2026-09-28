@@ -235,9 +235,6 @@ select{font:inherit;color:inherit}
 .note-tag-chip:hover{background:#ebe5f9}
 .card-tags span[data-tag]{cursor:pointer}
 
-/* 19금 태그 안내 */
-.note-adult-notice{margin:0 0 12px;padding:12px 14px;border-radius:16px;background:#fff4f6;color:#7a2e44;font-size:13px;line-height:1.55;border:1px solid #f6c9d4}
-
 /* 글쓰기 창 아래쪽: 이름·성별 빠른 선택 + 등록하기 */
 .composer-footer{flex-wrap:wrap;row-gap:8px}
 .composer-footer #compose-message{flex:1 1 100%;order:0}

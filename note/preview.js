@@ -215,7 +215,7 @@ const TAG_VERB = /(었어요|았어요|였어요|했어요|어요|아요|해요|
 const TAG_FEEL = [[/(행복|기뻐|기쁘|신나|설레|좋았|좋아)/, '행복'], [/(슬프|슬퍼|우울|눈물|외로|쓸쓸)/, '위로'], [/(피곤|힘들|지쳐|지친|고단)/, '토닥토닥'],
   [/사랑/, '사랑'], [/(고마|감사)/, '감사'], [/(화나|짜증|속상)/, '속상'], [/(그리워|그립|보고 싶)/, '그리움']];
 function suggestTags(body, limit = 5) {
-  const out = [], seen = new Set(), add = t => { if (t && !seen.has(t) && !isAdultTag(t) && out.length < limit) { seen.add(t); out.push(t); } };
+  const out = [], seen = new Set(), add = t => { if (t && !seen.has(t) && out.length < limit) { seen.add(t); out.push(t); } };
   for (const [re, tag] of TAG_FEEL) if (re.test(body)) { add(tag); break; }
   for (const raw of String(body).split(/[^가-힣A-Za-z0-9]+/)) {
     let t = raw; if (t.length < 2) continue;
@@ -225,32 +225,6 @@ function suggestTags(body, limit = 5) {
   }
   return out;
 }
-// 검증된 연령 인증 전에는 19금 태그의 게시와 열람을 보류합니다.
-const ADULT_TAG = '19금';
-const ADULT_ACCESS_READY = false;   // 검증된 연령 인증 수단 연결 전에는 읽기와 게시를 막아요.
-const isAdultTag = t => String(t || '').trim().replace(/^#+/, '').trim() === ADULT_TAG;
-const isAdultCard = card => Array.isArray(card?.tags) && card.tags.some(isAdultTag);
-let adultStatus = 'guest', adultStatusRun = 0, adultStatusPromise = null;   // guest · unknown · adult · minor
-async function loadAdultStatus(userId) {
-  const run = ++adultStatusRun;
-  adultStatus = userId ? 'unknown' : 'guest';
-  if (!client || !userId) return;
-  const task = (async () => {
-    try {
-      const status = await noteRpc('get_adult_status', {});
-      if (run === adultStatusRun && session?.user?.id === userId && ['adult', 'minor', 'unknown'].includes(status)) adultStatus = status;
-    } catch (error) { console.warn('Note adult status:', error); }
-  })();
-  adultStatusPromise = task;
-  await task;
-  if (adultStatusPromise === task) adultStatusPromise = null;
-}
-async function ensureAdult() {
-  message('19금 기능은 연령 인증을 준비하는 동안 이용할 수 없어요.');
-  return false;
-}
-const canSeeAdultCard = card => ADULT_ACCESS_READY && (!!card?.is_mine || adultStatus === 'adult');
-const adultSearchOn = () => feedMode === 'all' && isAdultTag(feedTerm);
 let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow = [];
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
 const CARD_PHOTO_BUCKET = 'note-card-photos';
@@ -689,15 +663,14 @@ function cardElement(card, compact = false, expanded = false) {
   const visiblePhoto = card.photo_key || card.background_key;
   const photo = node('span', 'photo');
   const hiddenEvent = card.kind === 'event' && card.body == null;
-  const adultCover = isAdultCard(card) && !canSeeAdultCard(card);   // 성인 확인 전에는 19금 카드 내용을 가려요
-  setPhotoBackground(photo, hiddenEvent || adultCover ? null : visiblePhoto);
+  setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto);
   if (card.kind === 'event' && !hiddenEvent) void loadEventBackground(photo, card);
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
-  const body = adultCover ? '19금 카드예요. 출생연도 기준을 충족한 회원만 볼 수 있어요.' : hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
+  const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
   fillCardQuote(quote, body, compact, style);
   const tagRow = node('span', 'card-tags');
-  for (const tag of !adultCover && Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
+  for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
     const chip = node('span', '', `#${tag}`); chip.dataset.tag = tag; chip.setAttribute('role', 'button'); chip.title = `#${tag} 태그로 찾기`;
     chip.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); searchTagFn?.(tag); });
     chip.tabIndex = 0;
@@ -708,7 +681,7 @@ function cardElement(card, compact = false, expanded = false) {
     tagRow.append(chip);
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
-  if ((card.kind === 'memo' || card.kind === 'comment') && !adultCover && card.id) {
+  if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
     thumb.dataset.photoCard = card.id;
     thumb.setAttribute('aria-label', expanded ? '사진 크게 보기' : '카드 크게 보기');
@@ -723,7 +696,7 @@ function cardElement(card, compact = false, expanded = false) {
   }
   open.append(photo);
   item.append(open);
-  if (expanded && !hiddenEvent && !adultCover) {
+  if (expanded && !hiddenEvent) {
     const full = node('details', 'note-full-body');
     full.hidden = true;
     full.append(node('summary', '', '전체 글 보기'), node('p', '', body));
@@ -943,7 +916,6 @@ async function loadFeed(more = false, quiet = false) {
   let shown = 0;
   for (const card of data || []) {
     if (card.kind === 'event' && card.body == null) continue;
-    if (isAdultCard(card) && (!ADULT_ACCESS_READY || !(adultSearchOn() ? adultStatus === 'adult' : feedMode === 'mine' && card.is_mine))) continue;
     shown++;
     const exists = list.querySelector(`[data-card-id="${card.id}"]`);
     cache.set(card.id, card);
@@ -958,12 +930,11 @@ async function loadFeed(more = false, quiet = false) {
       } else list.append(cardElement(card));
     }
   }
-  if (!more && !shown) state(list, adultSearchOn() ? '아직 #19금 카드가 없어요.' : feedMode === 'events' ? '아직 만든 이벤트가 없어요.' : feedTerm ? '검색 결과가 없어요.' : feedMode === 'saved'
+  if (!more && !shown) state(list, feedMode === 'events' ? '아직 만든 이벤트가 없어요.' : feedTerm ? '검색 결과가 없어요.' : feedMode === 'saved'
     ? '저장한 카드가 없어요. 카드의 책갈피를 눌러 담아 보세요.' : feedMode === 'mine'
       ? '아직 작성한 카드가 없어요.' : feedSort === 'popular'
         ? '최근 7일에 올라온 카드가 없어요.' : '아직 카드가 없어요. 첫 카드를 써 보세요.');
   feedPages++;
-  if (!more && shown && adultSearchOn() && adultStatus === 'adult') list.prepend(node('p', 'note-adult-notice', '19금 태그예요. 출생연도 기준을 충족한 회원만 볼 수 있고, 최신·인기·근처와 다른 태그 검색에는 나오지 않아요. 성적인 이야기나 거친 표현은 너그럽게 보지만, 불법 촬영물·성착취·미성년자 관련·혐오·폭력 조장·개인정보는 삭제돼요.'));
   if (data?.length) feedCursor = data.at(-1);
   if (feedMode === 'all' && !feedTerm) nearbyOffset += data?.length || 0;
   if (feedMode !== 'events' && data?.length === 20) {
@@ -1038,7 +1009,6 @@ async function loadReplies(id, version, more = false) {
   }
   if (!more) replies.replaceChildren();
   for (const card of data || []) {
-    if (isAdultCard(card) && (!ADULT_ACCESS_READY || adultStatus !== 'adult')) continue;
     cache.set(card.id, card); replies.append(cardElement(card, true));
   }
   if (!more && !data?.length) state(replies, '아직 답글이 없어요.');
@@ -1075,7 +1045,7 @@ async function renderDetail() {
     console.warn('Note card:', error);
     state(slot, '카드를 불러오지 못했어요.'); state(replies, '잠시 후 다시 열어 주세요.'); return;
   }
-  if (!card || (isAdultCard(card) && !ADULT_ACCESS_READY)) {
+  if (!card) {
     cache.delete(id); $('#reply-count').textContent = '0';
     state(slot, '삭제되었거나 볼 수 없는 카드예요.'); state(replies, ''); return;
   }
@@ -1315,7 +1285,7 @@ function installFeatures() {
       const { data, error } = await query().from('public_cards').select('tags').eq('kind', 'memo').order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
       const count = new Map();
-      for (const row of data || []) for (const t of Array.isArray(row.tags) ? row.tags : []) if (!isAdultTag(t)) count.set(t, (count.get(t) || 0) + 1);
+      for (const row of data || []) for (const t of Array.isArray(row.tags) ? row.tags : []) count.set(t, (count.get(t) || 0) + 1);
       const top = [...count].sort((a, b) => b[1] - a[1]).slice(0, 12);
       tagChips.replaceChildren(node('span', 'note-tag-chips-title', top.length ? '요즘 많이 쓰는 태그' : '아직 태그가 달린 카드가 없어요'),
         ...top.map(([t]) => { const chip = node('button', 'note-tag-chip', `#${t}`); chip.type = 'button'; chip.addEventListener('click', () => searchTag(t)); return chip; }));
@@ -1324,9 +1294,8 @@ function installFeatures() {
   };
   const openTagTab = () => { tagTabOn = true; tagPanel.hidden = false; syncSortButtons(); void loadPopularTags(); };
   const closeTagTab = () => { tagTabOn = false; tagPanel.hidden = true; tagInput.value = ''; };
-  const searchTag = async tag => {
+  const searchTag = tag => {
     const t = String(tag || '').trim().replace(/^#/, '').trim(); if (!t) return;
-    if (isAdultTag(t) && !(await ensureAdult('볼 수'))) return;
     tagInput.value = t;
     feedTerm = t; if (feedSort === 'nearby') feedSort = 'latest';
     openTagTab();
@@ -1765,7 +1734,8 @@ function installDrafts() {
 
 function parsedTags(raw = tags.value) {
   const values = raw.split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean);
-  return values.length <= 5 && values.every(value => value.length <= 20) && new Set(values).size === values.length ? values : null;
+  return values.length <= 5 && values.every(value => value.length <= 20)
+    && new Set(values).size === values.length ? values : null;
 }
 function validEventBody(value) {
   return value.length <= 200
@@ -2004,11 +1974,6 @@ async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || body.length > 200 || !values) return;
-  if (values.some(isAdultTag) && kind !== 'memo') {
-    composeMessage.textContent = '19금 태그는 일반 카드에만 달 수 있어요.';
-    return;
-  }
-  if (values.some(isAdultTag) && !(await ensureAdult('쓸 수'))) { updateComposer(); return; }
   if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
   const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch;
   const selectedCardPhoto = !editId && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
@@ -2191,7 +2156,7 @@ async function publishCard() {
     const refreshed = await selectCollection(publishKind === 'event' ? 'events' : 'all', true);
     if (publishKind === 'memo') {
       if (cardPhotoFailed) message('카드는 올렸지만 사진을 붙이지 못했어요. 다시 시도해 주세요.');
-      else if (refreshed) flashMessage(values?.some?.(isAdultTag) ? '카드를 올렸어요. 19금 카드는 #19금 태그에서만 보여요' : '카드를 올렸어요', 3500);
+      else if (refreshed) flashMessage('카드를 올렸어요', 3500);
       else message('카드는 올렸어요. 목록을 불러오지 못했어요. 새로고침해 주세요.');
     }
   } else {
@@ -2683,7 +2648,7 @@ function receiveAuth(current) {
     clearTimeout(cardPhotoTimer); clearTimeout(cardPhotoRefreshTimer);
     cardPhotoTimer = null; cardPhotoRefreshTimer = null;
     photoLightboxFocus = null; closePhotoLightbox();
-    worldCoins = null; balanceRun++; moderator = false; moderatorRun++; adultStatusRun++; adultStatus = current?.user ? 'unknown' : 'guest';
+    worldCoins = null; balanceRun++; moderator = false; moderatorRun++;
     nearbyPosition = null; writingPosition = null; eventPosition = null;
     noteState = null; noteStateRun++; reactionPending.clear(); message('');
     composerRun++; draftLoading = false; draftController?.setUser(current?.user?.id); setComposerInputs();
@@ -2701,11 +2666,7 @@ function receiveAuth(current) {
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
     notificationController?.refresh?.();
-    const epoch = identityEpoch, userId = current?.user?.id;
-    void loadAdultStatus(userId).then(() => {
-      if (epoch !== identityEpoch || session?.user?.id !== userId) return;
-      if (changed) loadFeed(); else consumeInitialCard();
-    });
+    if (changed) loadFeed(); else consumeInitialCard();
   }, 0);
 }
 
