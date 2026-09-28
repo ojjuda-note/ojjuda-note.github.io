@@ -43,46 +43,110 @@
   });
   clear.addEventListener('click', () => { search.value = ''; renderSearch(); search.focus(); });
   document.addEventListener('click', event => { if (!event.target.closest('.find-box')) closeSearch(); });
-  function revealTarget(id, focus = false) {
+  const groups = [...document.querySelectorAll('.guide-group')];
+  const groupTabs = [...document.querySelectorAll('[role="tab"][data-guide-group]')];
+  const defaultGroup = groups.find(group => group.id === 'guide-start') || groups[0];
+  let activeGroup = defaultGroup;
+  let revealFrame = 0;
+  function targetFromHash(hash = location.hash) {
+    if (!hash || hash === '#') return null;
+    try { return document.getElementById(decodeURIComponent(hash.slice(1))); }
+    catch { return null; }
+  }
+  function selectGroup(group = defaultGroup) {
+    if (!group || !groups.includes(group)) return;
+    activeGroup = group;
+    for (const panel of groups) {
+      panel.hidden = panel !== group;
+      panel.tabIndex = 0;
+    }
+    for (const tab of groupTabs) {
+      const selected = tab.dataset.guideGroup === group.id;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    }
+  }
+  function revealTarget(id, focus = false, tabFocus = null) {
     const target = document.getElementById(id); if (!target) return;
+    selectGroup(target.closest('.guide-group') || defaultGroup);
     if (target.matches('details')) target.open = true;
-    for (let parent = target.parentElement; parent; parent = parent.parentElement) if (parent.matches('details')) parent.open = true;
-    document.querySelector('.mobile-contents')?.removeAttribute('open');
+    for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+      if (parent.matches('details')) parent.open = true;
+    }
     closeSearch();
-    requestAnimationFrame(() => {
+    cancelAnimationFrame(revealFrame);
+    revealFrame = requestAnimationFrame(() => {
       target.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-      if (focus) { target.tabIndex = -1; target.focus({ preventScroll: true }); }
-      target.classList.remove('search-target'); void target.offsetWidth; target.classList.add('search-target');
+      if (tabFocus) tabFocus.focus({ preventScroll: true });
+      else if (focus) {
+        if (!target.matches('.guide-group')) target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+      }
+      if (target.matches('.topic-detail, .faq')) {
+        target.classList.remove('search-target'); void target.offsetWidth; target.classList.add('search-target');
+      }
     });
   }
-  document.addEventListener('click', event => {
-    const link = event.target.closest('a[href^="#"]'); if (!link || link.getAttribute('href') === '#top') return;
-    const id = decodeURIComponent(link.hash.slice(1)); if (!document.getElementById(id)) return;
-    event.preventDefault(); history.pushState(null, '', '#' + encodeURIComponent(id)); revealTarget(id, true);
+  function navigateTo(target, tabFocus = null) {
+    const hash = '#' + encodeURIComponent(target.id);
+    if (location.hash !== hash) history.pushState(null, '', hash);
+    revealTarget(target.id, !tabFocus, tabFocus);
+  }
+  groupTabs.forEach(tab => {
+    tab.addEventListener('keydown', event => {
+      const index = groupTabs.indexOf(tab);
+      let next;
+      if (event.key === 'ArrowRight') next = (index + 1) % groupTabs.length;
+      else if (event.key === 'ArrowLeft') next = (index - 1 + groupTabs.length) % groupTabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = groupTabs.length - 1;
+      else if (event.key === ' ') next = index;
+      else return;
+      event.preventDefault();
+      const nextTab = groupTabs[next], group = document.getElementById(nextTab.dataset.guideGroup);
+      if (group) navigateTo(group, nextTab);
+    });
   });
-  window.addEventListener('hashchange', () => { if (location.hash) revealTarget(decodeURIComponent(location.hash.slice(1))); });
-  if (location.hash) revealTarget(decodeURIComponent(location.hash.slice(1)));
-  const chapters = [...document.querySelectorAll('.chapter')];
-  let chapterFrame = false;
-  function updateChapter() {
-    chapterFrame = false;
-    const edge = (document.querySelector('.site-header')?.getBoundingClientRect().bottom || 78) + 48;
-    const current = chapters.filter(chapter => chapter.getBoundingClientRect().top <= edge).pop() || chapters[0];
-    document.querySelectorAll('.contents a[href^="#"]').forEach(link => {
-      if (current && link.hash === '#' + current.id) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
-    });
+  document.addEventListener('click', event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest('a[href^="#"]'); if (!link) return;
+    const target = targetFromHash(link.hash); if (!target) return;
+    event.preventDefault();
+    navigateTo(target, link.matches('[role="tab"][data-guide-group]') ? link : null);
+  });
+  function restoreLocation() {
+    const target = targetFromHash();
+    if (target) revealTarget(target.id);
+    else {
+      cancelAnimationFrame(revealFrame);
+      selectGroup();
+      closeSearch();
+    }
   }
-  window.addEventListener('scroll', () => { if (!chapterFrame) { chapterFrame = true; requestAnimationFrame(updateChapter); } }, { passive: true });
-  window.addEventListener('resize', updateChapter);
-  updateChapter();
+  window.addEventListener('hashchange', restoreLocation);
+  window.addEventListener('popstate', restoreLocation);
+  restoreLocation();
   document.querySelectorAll('[data-faq-toggle]').forEach(button => button.addEventListener('click', () => {
     document.querySelectorAll('.faq').forEach(item => { item.open = button.dataset.faqToggle === 'open'; });
   }));
   document.querySelectorAll('[data-guide-toggle]').forEach(button => button.addEventListener('click', () => {
-    document.querySelectorAll('.topic-detail').forEach(item => { item.open = button.dataset.guideToggle === 'open'; });
+    (activeGroup || document).querySelectorAll('.topic-detail').forEach(item => { item.open = button.dataset.guideToggle === 'open'; });
   }));
-  let printState = [];
-  window.addEventListener('beforeprint', () => { printState = [...document.querySelectorAll('.topic-detail, .faq')].map(item => [item, item.open]); printState.forEach(([item]) => { item.open = true; }); });
-  window.addEventListener('afterprint', () => { printState.forEach(([item, open]) => { item.open = open; }); });
-  document.getElementById('print-guide').addEventListener('click', () => window.print());
+  let printState = null;
+  window.addEventListener('beforeprint', () => {
+    if (printState) return;
+    printState = {
+      details: [...document.querySelectorAll('.topic-detail, .faq')].map(item => [item, item.open]),
+      groups: groups.map(group => [group, group.hidden])
+    };
+    printState.details.forEach(([item]) => { item.open = true; });
+    groups.forEach(group => { group.hidden = false; });
+  });
+  window.addEventListener('afterprint', () => {
+    if (!printState) return;
+    printState.details.forEach(([item, open]) => { item.open = open; });
+    printState.groups.forEach(([group, hidden]) => { group.hidden = hidden; });
+    printState = null;
+  });
+  document.getElementById('print-guide')?.addEventListener('click', () => window.print());
 })();
