@@ -1359,8 +1359,7 @@ function installFeatures() {
       feedSort = sort; syncSortButtons(); loadFeed();
     }); sorts.append(button);
   }
-  const panel = $('#search-panel'), toggle = $('#search-toggle');
-  toggle.disabled = false; toggle.removeAttribute('title'); toggle.setAttribute('aria-label', '카드 검색');
+  const panel = $('#search-panel');
   const form = node('form', 'note-search-form');
   const label = node('label', '', '카드 검색'); label.htmlFor = 'tag-search';
   const selector = node('select'); selector.id = 'note-search-kind'; selector.setAttribute('aria-label', '검색 범위');
@@ -1382,10 +1381,6 @@ function installFeatures() {
   });
   reset.addEventListener('click', () => { input.value = ''; feedTerm = ''; loadFeed(); input.focus(); });
   input.addEventListener('search', () => { if (!input.value && feedTerm) { feedTerm = ''; loadFeed(); } });
-  toggle.addEventListener('click', () => {
-    panel.hidden = !panel.hidden; toggle.setAttribute('aria-expanded', String(!panel.hidden));
-    if (!panel.hidden) input.focus();
-  });
   $('#event-start').addEventListener('click', () => openComposer('event'));
   $('#event-photo-file').addEventListener('change', event => {
     const file = event.target.files?.[0]; event.target.value = '';
