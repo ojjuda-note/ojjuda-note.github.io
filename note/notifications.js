@@ -34,6 +34,7 @@
     let channel;
     try { channel=new BroadcastChannel('ojjuda-notifications'); } catch { /* Focus and polling remain available. */ }
     function syncBadges() {
+      for (const item of document.querySelectorAll('[data-notification-dot]')) item.hidden = unread === 0;
       for(const item of document.querySelectorAll('[data-notification-badge]')) { item.hidden=!unread;item.textContent=unread>99?'99+':String(unread); }
       for(const item of document.querySelectorAll('[data-note-my],[data-tab="my"]')) item.setAttribute('aria-label',unread?`마이, 읽지 않은 알림 ${unread}개`:'마이');
       for(const item of document.querySelectorAll('[data-notifications-open]')) item.setAttribute('aria-label',unread?`알림, 읽지 않은 알림 ${unread}개`:'알림');

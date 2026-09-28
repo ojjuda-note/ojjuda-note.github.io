@@ -28,11 +28,11 @@
 @media(max-height:420px){.nn-body{flex:0 0 auto;overflow:visible}.nn-heading{padding-top:10px}.nn-status{padding-top:8px;padding-bottom:8px}}
 
 /* One inbox, using the World's controls and settings-card geometry. */
-.nn-backdrop[hidden],.nn-badge[hidden],[data-notification-badge][hidden]{display:none!important}
+.nn-backdrop[hidden],.nn-badge[hidden],[data-notification-badge][hidden],[data-notification-dot][hidden]{display:none!important}
 .nn-top-actions{display:flex;align-items:center;gap:8px;flex:none}
 .nn-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer}
 .nn-bell svg{width:20px;height:20px}
-.nn-bell .nn-badge{position:absolute;top:-5px;right:-6px;min-width:16px;min-height:16px;padding:1px 4px;font-size:9px;background:var(--accent);color:var(--on-accent,#fff)}
+.nn-bell .nn-dot{position:absolute;top:1px;right:1px;width:9px;height:9px;border:2px solid var(--surface,#fff);border-radius:50%;background:#e53935;box-sizing:content-box;pointer-events:none}
 .nn-entry{max-width:680px;margin-bottom:14px;padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
 .nn-entry h3{margin:0 0 12px;font-family:var(--font-d);font-weight:400;font-size:19px}
 .nn-entry p{margin:0 0 12px;color:var(--ink-2);font-size:14px}

@@ -822,6 +822,8 @@ function cursorFilter(cursor, ascending = false, popular = false) {
   return `like_count.lt.${count},and(like_count.eq.${count},or(${tie}))`;
 }
 function filteredFeed() {
+  // 인기의 최근 7일 조건은 전체 피드에만 적용해요. 메모함은 모든 보이는 카드를 최신순으로 보여요.
+  const popular = feedMode === 'all' && feedSort === 'popular';
   let request = query().from('public_cards').select(columns);
   // Saved and own collections include replies as well as root cards.
   if (feedMode === 'all') request = request.eq('kind', 'memo');
@@ -829,11 +831,11 @@ function filteredFeed() {
   if (feedMode === 'mine') request = request.eq('is_mine', true);
   if (feedTerm) request = request.contains('tags', [feedTerm]);
   if (feedSnapshot) request = request.lte('created_at', feedSnapshot);
-  if (feedSort === 'popular') {
+  if (popular) {
     request = request.gte('created_at', new Date((feedSnapshot ? Date.parse(feedSnapshot) : Date.now()) - 7 * 86400000).toISOString());
     request = request.order('like_count', { ascending: false });
   }
-  const after = cursorFilter(feedCursor, false, feedSort === 'popular');
+  const after = cursorFilter(feedCursor, false, popular);
   if (after) request = request.or(after);
   return request.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(20);
 }
@@ -2688,7 +2690,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.44-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.45-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
