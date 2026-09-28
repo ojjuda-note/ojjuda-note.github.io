@@ -42,6 +42,8 @@
 
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
+    if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
+    if (authMode === 'signup' && text.includes('database error')) return '가입 정보를 확인해 주세요. 탈퇴 후 3일(72시간) 동안은 같은 이메일이나 전화번호로 다시 가입할 수 없어요.';
     if (text.includes('invalid login credentials')) return '이메일이나 비밀번호를 확인해 주세요.';
     if (text.includes('email not confirmed')) return '메일 인증을 마친 뒤 로그인해 주세요.';
     if (text.includes('already registered') || text.includes('already exists')) return '이미 가입된 이메일이에요. 로그인해 주세요.';

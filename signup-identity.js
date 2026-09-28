@@ -33,11 +33,11 @@
   function fields(prefix) {
     return `<div class="member-identity-fields" data-identity-prefix="${prefix}">
       <div class="field"><label for="${prefix}-birth">생년월일 6자리 · 성별 숫자 1자리</label>
-      <div class="identity-digits"><input class="inp" id="${prefix}-birth" type="text" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="생년월일 6자리" aria-describedby="${prefix}-hint" required><span aria-hidden="true">−</span><input class="inp identity-code" id="${prefix}-code" type="text" inputmode="numeric" maxlength="1" autocomplete="off" placeholder="1" aria-label="성별 숫자 1자리" aria-describedby="${prefix}-hint" required></div>
+      <div class="identity-digits"><input class="inp identity-birth" id="${prefix}-birth" type="text" inputmode="numeric" maxlength="6" size="8" autocomplete="off" placeholder="YYMMDD" aria-describedby="${prefix}-hint" required><span aria-hidden="true">−</span><input class="inp identity-code" id="${prefix}-code" type="text" inputmode="numeric" maxlength="1" autocomplete="off" placeholder="1" aria-label="성별 숫자 1자리" aria-describedby="${prefix}-hint" required><span class="identity-mask" aria-hidden="true">******</span></div>
       <p class="identity-hint" id="${prefix}-hint">1·3 남성 / 2·4 여성 · 뒤의 나머지 숫자는 입력하지 마세요.</p>
       <p class="identity-result" id="${prefix}-result" role="status" aria-live="polite"></p></div>
       <div class="field"><label for="${prefix}-phone">전화번호</label><input class="inp" id="${prefix}-phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="010-0000-0000" required></div>
-      <p class="identity-hint">생년월일·만 나이·성별·전화번호를 비공개로 관리해요. 생년월일과 성별은 저장 후 직접 수정할 수 없어요. 입력 정보만으로 본인인증이 되지는 않아요.</p>
+      <p class="identity-hint">회원정보는 비공개로 관리해요. 전화번호는 수정할 수 있고, 생년월일과 성별은 저장 후 직접 수정할 수 없어요. 입력 정보만으로 본인인증이 되지는 않아요.</p>
     </div>`;
   }
   function read(form, prefix, enforceAge = true) {
