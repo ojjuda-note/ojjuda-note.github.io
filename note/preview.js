@@ -1313,7 +1313,7 @@ async function renderDetail() {
           try { nearbyPosition = await currentPosition(); await renderDetail(); }
           catch { locate.disabled = false; note.textContent = '위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 시도해 주세요.'; }
         });
-      } else locate.href = '/?next=note';
+      } else locate.href = '/?auth=login&next=note';
       slot.append(note, locate);
     }
     state(replies, '');
@@ -2031,7 +2031,7 @@ function updateComposer() {
   else if (!session?.user) {
     const link = node(localStage ? 'button' : 'a', '', localStage ? '테스트 로그인' : '대문에서 로그인');
     if (localStage) { link.type = 'button'; link.dataset.stageLogin = ''; }
-    else link.href = '/';
+    else link.href = '/?auth=login&next=note';
     composeMessage.replaceChildren(link);
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
   else if (text.value.length > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
