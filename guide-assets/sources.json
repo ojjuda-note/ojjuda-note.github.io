@@ -1,11 +1,13 @@
 {
   "date": "2026-09-28",
-  "worldRoom": "User-supplied actual World screenshot 01-1000035319.jpg; room area displayed with CSS crop.",
+  "worldRoom": "world-room-art.svg: rendered with the same World art version 2026-09-28.1 used by the live application, using an example room layout. Not a user-session screenshot. Original uploaded screenshot is retained as world-room.jpg.",
   "noteFeed": "Captured from the public production Note UI on 2026-09-28.",
   "pets": {
-    "source": "world.html",
-    "commit": "1a36417e8e424c9a016f9dfe71355bf445ae99b2",
-    "method": "Unmodified production Ba, xs, Li, Ne, He, Jo and Me SVG renderers and catalog colors.",
+    "source": [
+      "world.html",
+      "world-art/pets.js"
+    ],
+    "method": "World Ba thumbnail renderer with the installed OjjudaPetArt module and original catalog colors.",
     "items": {
       "dg_dachshund": {
         "name": "닥스훈트",
@@ -88,6 +90,7 @@
           "bedroom"
         ]
       }
-    }
+    },
+    "artVersion": "2026-09-28.1"
   }
 }
