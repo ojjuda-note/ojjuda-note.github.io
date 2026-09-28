@@ -298,7 +298,7 @@
   function editCard(card) {
     actionScreen('카드 · 답글 수정', '관리자의 수정 이력과 사유는 작업 기록에 남습니다.', (form, actions) => {
       const body = field('글 내용', 'textarea', card.body, '최대 200자 · 줄바꿈 가능'); body.input.required = true; body.input.maxLength = 200; body.input.rows = 6;
-      const tags = field('태그', 'text', (card.tags || []).join(', '), '쉼표로 구분해 최대 5개, 태그마다 20자 이내'); tags.input.maxLength = 120;
+      const tags = field('태그', 'text', (card.tags || []).join(', '), '공백이나 쉼표로 구분해 최대 5개, 태그마다 20자 이내'); tags.input.maxLength = 120;
       const reason = reasonField();
       const preview = el('section', 'na-edit-preview');
       const cardKind = card.kind || (card.center_lat != null ? 'event' : 'memo');
@@ -314,7 +314,7 @@
       overflowWarning.setAttribute('role', 'status'); overflowWarning.hidden = true;
       preview.append(el('h4', '', '카드 미리보기'), photo, previewHelp, overflowWarning);
       form.append(body.wrap, tags.wrap, preview, reason.wrap);
-      const selectedTags = () => [...new Set(tags.input.value.split(',').map(value => value.trim().replace(/^#+/, '')).filter(Boolean))];
+      const selectedTags = () => [...new Set(tags.input.value.split(/[\s,]+/u).map(value => value.replace(/^#+/, '')).filter(Boolean))];
       let activeStyle = {}, visualReady = false, pendingMeasure = 0;
       function measurePreview() {
         if (!preview.isConnected || !visualReady) return;

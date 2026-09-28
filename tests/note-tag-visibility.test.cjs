@@ -36,6 +36,9 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   `);
   await db.exec(read('supabase/migrations/20260928071915_fix_note_public_card_visual_projection.sql'));
   await db.exec(read('supabase/migrations/20260928171304_allow_note_age_label_tag.sql'));
+  const wordMigration = fs.readdirSync(path.join(root,'supabase/migrations')).find(name => name.endsWith('_note_single_word_tags.sql'));
+  assert.ok(wordMigration);
+  await db.exec(read(`supabase/migrations/${wordMigration}`));
   const migrationName = fs.readdirSync(path.join(root,'supabase/migrations')).find(name => name.endsWith('_note_tag_search_visibility.sql'));
   assert.ok(migrationName);
   await db.exec(read(`supabase/migrations/${migrationName}`));
@@ -43,7 +46,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
     insert into ojjuda_note.cards(author_id,tags,kind,parent_id,archived_at)
     values($1,$2,$3,$4,$5) returning id`,
     [extra.author||author,tags,extra.kind||'memo',extra.parent||null,extra.archived||null])).rows[0].id;
-  const normal = await add(['일상'],{author:viewer});
+  const normal = await add(['일상','산책'],{author:viewer});
   const only = await add(['19금'],{author:viewer});
   const mixed = await add(['일상','19금']);
   await db.query("insert into ojjuda_note.reactions values($1,$3,'bookmark'),($2,$3,'bookmark')",[normal,only,viewer]);
@@ -100,11 +103,52 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   }
   const source=read('note/preview.js');
   const context=vm.createContext({query:()=>({from:()=>new Query()}),columns:'id,tags,kind,created_at',
-    feedMode:'all',feedSort:'latest',feedTerm:'',feedSnapshot:null,feedCursor:null});
+    feedMode:'all',feedSort:'latest',feedTerm:'',feedSnapshot:null,feedCursor:null,editingId:null,kind:'memo',
+    tags:{value:''},text:{value:'산책하며 찍은 사진'},manualTags:[],autoTagsNow:[],rejectedTags:new Set(),
+    suggestTags:()=>['산책','일상','사진','휴식','운동']});
+  vm.runInContext(source.slice(source.indexOf('const tagList ='),source.indexOf('function shownName(')),context);
+  vm.runInContext(source.slice(source.indexOf('function parsedTags('),source.indexOf('function validEventBody(')),context);
+  const parsed = raw => { context.raw=raw; const values=vm.runInContext('parsedTags(raw)',context); return values && Array.from(values); };
+  for (const input of ['일상 산책 19금','  #일상   #산책, ##19금  ','일상\t산책\n19금','일상\u00a0산책\u300019금']) {
+    assert.deepEqual(parsed(input),['일상','산책','19금']);
+  }
+  assert.equal(parsed('a b c d e f'),null);
+  assert.equal(parsed('일상 일상'),null);
+  assert.equal(parsed('a'.repeat(21)),null);
+  assert.deepEqual(parsed(' , #  '),[]);
+  const adminSource=read('note/admin.js');
+  const adminContext=vm.createContext({tags:{input:{value:' #일상\t산책,  19금 '}}});
+  vm.runInContext(adminSource.match(/const selectedTags = [^\n]+;/)[0],adminContext);
+  assert.deepEqual(Array.from(vm.runInContext('selectedTags()',adminContext)),['일상','산책','19금']);
+
+  for (const term of ['19금','#19금','일상 19금']) {
+    context.feedTerm=term;
+    assert.equal(vm.runInContext('initialComposerTags()',context),'19금');
+    assert.equal(vm.runInContext("initialComposerTags('산책')",context),'19금, 산책');
+    assert.equal(vm.runInContext("initialComposerTags('19금 산책')",context),'19금, 산책');
+  }
+  context.editingId=normal;
+  assert.equal(vm.runInContext("initialComposerTags('산책')",context),'산책','editing must retain the existing classification');
+  context.editingId=null; context.feedTerm='일상';
+  assert.equal(vm.runInContext('initialComposerTags()',context),'');
+  context.feedTerm='19금'; context.kind='comment';
+  assert.equal(vm.runInContext('initialComposerTags()',context),'19금');
+  context.kind='event';
+  assert.equal(vm.runInContext('initialComposerTags()',context),'');
+  context.kind='memo';
+  vm.runInContext('tags.value=initialComposerTags(); manualTags=tagList(tags.value); refreshAutoTags()',context);
+  assert.deepEqual(parsed(context.tags.value),['19금','산책','일상','사진','휴식']);
+  assert.equal(vm.runInContext("tagList(initialComposerTags('a b c d e')).length",context),6,'restoring a full draft must not discard its tags');
+  vm.runInContext("tags.value=initialComposerTags('a b c d e'); manualTags=tagList(tags.value); refreshAutoTags()",context);
+  assert.equal(context.tags.value,'19금, a, b, c, d, e');
+  assert.equal(parsed(context.tags.value),null, 'the five-tag limit is enforced without silently dropping draft tags');
+  context.feedTerm='';
   vm.runInContext(source.slice(source.indexOf('function filterSearchOnlyTags('),source.indexOf('async function loadFeed(')),context);
   const search = async tag => { context.feedTerm=tag; return await vm.runInContext('filteredFeed()',context).rows(); };
   assert.ok((await search('')).every(row=>!row.tags.includes('19금')));
   assert.deepEqual(ids(await search('일상')),[normal], 'a shared ordinary tag must not reveal mixed-tag cards');
+  assert.deepEqual(ids(await search('일상 산책')),[normal], 'space-separated search terms are individual tags');
+  assert.deepEqual(ids(await search('19금 일상')),[mixed], 'multi-tag search may show 19금 only when explicitly included');
   assert.deepEqual(new Set(ids(await search('19금'))),new Set([only,mixed]), 'explicit tag search reveals tagged cards and preserves moderation');
   assert.ok(!ids(await search('19금')).some(id=>[hidden,blockedCard,archived].includes(id)));
   for (const mode of ['saved','mine']) {
@@ -125,5 +169,5 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const suggested = await vm.runInContext('filterSearchOnlyTags(request)',context).rows();
   assert.ok(suggested.every(row=>!row.tags.includes('19금')));
   await db.close();
-  console.log('PASS: 19금 tag acceptance, mixed tags, explicit search, recent/popular/nearby pagination, replies, suggestions, event discovery and moderation');
+  console.log('PASS: single-word tags, whitespace parsing, search-driven composer defaults, mixed tags, explicit search, pagination and existing moderation');
 })().catch(error=>{console.error(error);process.exitCode=1;});

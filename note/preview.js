@@ -760,9 +760,14 @@ function pickQuickChoice(group, value) {
   const input = $(`input[name="${group}"][value="${value}"]`); if (!input || input.disabled || (group === 'gender' && value !== myGender && value !== 'private')) { syncQuickChoices(); return; }
   input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); updateComposer();
 }
-const tagList = raw => String(raw || '').split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean);
+const tagList = raw => String(raw || '').split(/[\s,]+/u).map(value => value.replace(/^#+/, '')).filter(Boolean);
+function initialComposerTags(raw = '') {
+  const values = tagList(raw);
+  if (!editingId && kind !== 'event' && tagList(feedTerm).includes('19금') && !values.includes('19금')) values.unshift('19금');
+  return values.join(', ');
+}
 function refreshAutoTags() {   // 내가 쓴 태그 + 남은 자리에 자동 태그 (모두 5개까지)
-  const mine = manualTags.slice(0, 5), room = 5 - mine.length;
+  const mine = manualTags, room = Math.max(0, 5 - mine.length);
   autoTagsNow = room > 0 ? suggestTags(text.value, 12).filter(t => !mine.includes(t) && !rejectedTags.has(t)).slice(0, room) : [];
   tags.value = [...mine, ...autoTagsNow].join(', ');
 }
@@ -1027,10 +1032,10 @@ function flashMessage(value, ms = 2500) {   // 짧게 보여 주고 저절로 �
 }
 let tagTabReset = null, searchTagFn = null;
 function filterSearchOnlyTags(request, searchTag = '') {
-  return searchTag === '19금' ? request : request.not('tags', 'cs', '{19금}');
+  return tagList(searchTag).includes('19금') ? request : request.not('tags', 'cs', '{19금}');
 }
 function canDisplayTaggedCard(card) {
-  return feedTerm === '19금' || !card?.tags?.includes('19금');
+  return tagList(feedTerm).includes('19금') || !card?.tags?.includes('19금');
 }
 function cursorFilter(cursor, ascending = false, popular = false) {
   if (!cursor || !validCardId(cursor.id) || !Number.isFinite(Date.parse(cursor.created_at))) return null;
@@ -1051,7 +1056,7 @@ function filteredFeed() {
   if (feedMode === 'all') request = request.eq('kind', 'memo');
   if (feedMode === 'saved') request = request.eq('is_bookmarked', true);
   if (feedMode === 'mine') request = request.eq('is_mine', true);
-  if (feedTerm) request = request.contains('tags', [feedTerm]);
+  if (feedTerm) request = request.contains('tags', tagList(feedTerm));
   if (feedSnapshot) request = request.lte('created_at', feedSnapshot);
   if (popular) {
     request = request.gte('created_at', new Date((feedSnapshot ? Date.parse(feedSnapshot) : Date.now()) - 7 * 86400000).toISOString());
@@ -1539,7 +1544,7 @@ function installFeatures() {
   // 태그 탭: 태그로 카드 찾기 + 요즘 많이 쓰는 태그
   const tagPanel = node('div', 'note-tag-panel'); tagPanel.id = 'note-tag-panel'; tagPanel.hidden = true;
   const tagForm = node('form', 'note-tag-form');
-  const tagInput = node('input'); tagInput.type = 'search'; tagInput.maxLength = 30; tagInput.placeholder = '#태그로 찾기 (예: 산책)'; tagInput.setAttribute('aria-label', '태그로 찾기');
+  const tagInput = node('input'); tagInput.type = 'search'; tagInput.maxLength = 120; tagInput.placeholder = '#태그로 찾기 (공백·쉼표로 구분)'; tagInput.setAttribute('aria-label', '태그로 찾기, 공백이나 쉼표로 구분');
   const tagGo = node('button', 'button primary', '찾기'); tagGo.type = 'submit';
   tagForm.append(tagInput, tagGo);
   const tagChips = node('div', 'note-tag-chips'); tagChips.setAttribute('aria-label', '요즘 많이 쓰는 태그');
@@ -1562,7 +1567,7 @@ function installFeatures() {
   const openTagTab = () => { tagTabOn = true; tagPanel.hidden = false; syncSortButtons(); void loadPopularTags(); };
   const closeTagTab = () => { tagTabOn = false; tagPanel.hidden = true; tagInput.value = ''; };
   const searchTag = tag => {
-    const t = String(tag || '').trim().replace(/^#/, '').trim(); if (!t) return;
+    const t = tagList(tag).join(' '); if (!t) return;
     tagInput.value = t;
     feedTerm = t; if (feedSort === 'nearby') feedSort = 'latest';
     openTagTab();
@@ -1918,7 +1923,7 @@ function restoreLocalComposer() {
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
   }
-  text.value = content.body; tags.value = content.tags; manualTags = tagList(content.tags); rejectedTags = new Set(); autoTagsNow = [];
+  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
   $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(content.style.size) ? content.style.size : 'normal';
@@ -1953,7 +1958,7 @@ function restoreDraft(content) {
   kind = content.kind; parentId = content.parent_id; backgroundKey = content.background_key;
   $('.composer').dataset.mode = kind === 'memo' ? 'memo-new' : kind;
   $('#note-photo-pick').hidden = kind !== 'memo';
-  text.value = content.body; tags.value = content.tags; manualTags = tagList(content.tags); rejectedTags = new Set(); autoTagsNow = [];
+  text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   $('input[name="identity"][value="anonymous"]').checked = true;
   const style = content.style && typeof content.style === 'object' ? content.style : {};
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
@@ -2004,7 +2009,7 @@ function installDrafts() {
 }
 
 function parsedTags(raw = tags.value) {
-  const values = raw.split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean);
+  const values = tagList(raw);
   return values.length <= 5 && values.every(value => value.length <= 20)
     && new Set(values).size === values.length ? values : null;
 }
@@ -2032,7 +2037,7 @@ function updateComposer() {
     || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
   $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
   const values = parsedTags();
-  const previewTags = tags.value.split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean).slice(0, 5);
+  const previewTags = tagList(tags.value).slice(0, 5);
   $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
   fitTagRow($('#compose-tag-display'));
   const overflows = !backdrop.hidden && !!text.value.trim()
@@ -2166,7 +2171,7 @@ async function openComposer(mode, card = null) {
   $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   applyComposeStyle(); updateEventPrice();
-  text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : '';
+  text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : initialComposerTags();
   const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);   // 새 카드는 가입 때 등록한 성별을 기본으로 표시해요
