@@ -253,27 +253,66 @@ async function fetchCardPhotos() {
     let byPath = new Map();
     const paths = (rows || []).map(row => row.photo_path).filter(Boolean);
     if (paths.length) {
-      const { data, error } = await client.storage.from(CARD_PHOTO_BUCKET).createSignedUrls(paths, 600);
-      if (error) throw error;
+      let data, error;
+      try { ({ data, error } = await client.storage.from(CARD_PHOTO_BUCKET).createSignedUrls(paths, 600)); }
+      catch (cause) { error = cause; }
       if (epoch !== identityEpoch || session?.user?.id !== userId) return;
-      byPath = new Map((data || []).map(item => [item.path, item.signedUrl]));
+      // A linked attachment that cannot be signed is an error, not an empty photo.
+      if (error) console.warn('Note card photo signing:', error);
+      byPath = new Map((data || []).filter(item => !item.error && item.signedUrl).map(item => [item.path, item.signedUrl]));
     }
-    const urls = new Map((rows || []).map(row => [row.card_id, byPath.get(row.photo_path) || null]));
-    for (const id of ids) cardPhotoCache.set(id, { url: urls.get(id) || null, at: Date.now() });
+    const linked = new Map((rows || []).map(row => [row.card_id, row.photo_path]));
+    for (const id of ids) {
+      const path = linked.get(id), url = byPath.get(path) || null;
+      cardPhotoCache.set(id, { url, failed: !!path && !url, at: Date.now() });
+    }
     ids.forEach(paintCardPhoto);
     scheduleCardPhotoRefresh();
-  } catch (error) { console.warn('Note card photos:', error); }
+  } catch (error) {
+    console.warn('Note card photos:', error);
+    if (epoch === identityEpoch && session?.user?.id === userId)
+      ids.filter(id => cardPhotoCache.get(id)?.failed).forEach(paintCardPhoto);
+  }
   if (cardPhotoWanted.size && epoch === identityEpoch && session?.user?.id === userId)
     cardPhotoTimer = setTimeout(fetchCardPhotos, 80);
 }
-function applyCardPhoto(thumb, url) {
-  thumb.hidden = !url;
-  thumb.style.backgroundImage = url ? `url("${url.replaceAll('"', '%22')}")` : '';
+function applyCardPhoto(thumb, url, failed = false) {
+  const shown = !!url || failed;
+  thumb.hidden = !shown;
+  thumb.classList.toggle('photo-load-failed', failed);
+  thumb.style.backgroundImage = '';
+  if (!thumb.dataset.photoLabel) thumb.dataset.photoLabel = thumb.getAttribute('aria-label') || '사진 크게 보기';
+  thumb.setAttribute('aria-label', failed ? '첨부 사진을 불러오지 못했어요. 다시 불러오기' : thumb.dataset.photoLabel);
+  thumb.title = failed ? '사진 다시 불러오기' : '첨부 사진 크게 보기';
   if (url) thumb.dataset.photoUrl = url; else delete thumb.dataset.photoUrl;
+  thumb.dataset.photoState = failed ? 'error' : url ? 'ready' : 'empty';
+  thumb.replaceChildren();
+  if (url) {
+    const img = node('img'); img.alt = ''; img.decoding = 'async';
+    const epoch = identityEpoch;
+    img.addEventListener('error', () => {
+      if (epoch !== identityEpoch || !thumb.isConnected || thumb.dataset.photoUrl !== url) return;
+      const id = thumb.dataset.photoCard;
+      cardPhotoCache.set(id, { url: null, failed: true, at: Date.now() }); paintCardPhoto(id);
+    }, { once: true });
+    img.src = url; thumb.append(img);
+  } else if (failed) thumb.textContent = '사진\n재시도';
+  const frame = thumb.closest('.card-photo-frame, .compose-photo');
+  frame?.classList.toggle('has-card-photo', shown);
+  requestTagFit();
 }
 function paintCardPhoto(id) {
-  const url = cardPhotoCache.get(id)?.url;
-  document.querySelectorAll(`[data-photo-card="${id}"]`).forEach(thumb => applyCardPhoto(thumb, url));
+  const hit = cardPhotoCache.get(id);
+  document.querySelectorAll(`[data-photo-card="${id}"]`).forEach(thumb => applyCardPhoto(thumb, hit?.url, !!hit?.failed));
+}
+function activateCardPhoto(thumb) {
+  if (thumb.dataset.photoState === 'error') {
+    cardPhotoCache.set(thumb.dataset.photoCard, { url: null, failed: true, at: 0 });
+    thumb.textContent = '불러오는 중';
+    wantCardPhoto(thumb.dataset.photoCard);
+    return;
+  }
+  openPhotoLightbox(thumb.dataset.photoUrl);
 }
 function scheduleCardPhotoRefresh() {
   clearTimeout(cardPhotoRefreshTimer); cardPhotoRefreshTimer = null;
@@ -547,13 +586,14 @@ function syncCardPhotoAttach() {
   attach.setAttribute('aria-expanded', String(sourceMenu?.anchor === attach));
   attach.classList.toggle('has-photo', !!cardPhotoUrl);
   attach.style.backgroundImage = cardPhotoUrl ? `url("${cardPhotoUrl}")` : '';
-  attach.title = cardPhotoUrl ? '다른 사진으로 바꾸기' : '내 사진 넣기 · 카드 오른쪽 위 동그라미에 작게 보여요';
+  attach.title = cardPhotoUrl ? '첨부 사진 바꾸기 · 무료' : '내 사진 첨부 · 무료 · 카드 오른쪽 아래에 보여요';
+  attach.closest('.compose-photo')?.classList.toggle('has-card-photo-attach', allowed);
   attach.classList.toggle('is-busy', cardPhotoPreparing);
   attach.setAttribute('aria-disabled', String(disabled));
   const status = $('#card-photo-status');
   if (status) {
     status.hidden = !cardPhotoUrl;
-    status.textContent = cardPhotoUrl ? '사진을 골랐어요. 사진은 임시 글에 저장되지 않아 나중에 다시 골라야 해요.' : '';
+    status.textContent = cardPhotoUrl ? '내 사진 첨부 · 무료. 오른쪽 아래에 보여요. 임시 글에는 사진이 저장되지 않아요.' : '';
   }
 }
 // 글쓰기 창 아래쪽의 이름·성별 빠른 선택 (꾸미기 · 추가 설정 안의 선택지와 서로 맞춰져요)
@@ -636,8 +676,29 @@ async function refreshReplyArchiveNotice(parent, run) {
   }
 }
 
+// Shrink the chips together before wrapping; never cut off a tag to fit the row.
+function fitTagRow(row) {
+  if (!row?.clientWidth || !row.childElementCount) return;
+  row.classList.remove('tags-wrap');
+  for (let step = 0; step <= 5; step++) {
+    row.style.setProperty('--tag-font', `${11 - step * .5}px`);
+    row.style.setProperty('--tag-pad', `${10 - step * 1.4}px`);
+    row.style.setProperty('--tag-gap', `${6 - step * .6}px`);
+    if (row.scrollWidth <= row.clientWidth + 1) return;
+  }
+  row.classList.add('tags-wrap');
+}
+let tagFitFrame = null;
+function refreshTagRows() {
+  tagFitFrame = null;
+  document.querySelectorAll('.card-tags, .compose-tag-display').forEach(fitTagRow);
+}
+function requestTagFit() {
+  if (tagFitFrame === null) tagFitFrame = requestAnimationFrame(refreshExpandedBodies);
+}
 const expandedBodyEntries = new Set();
 function refreshExpandedBodies() {
+  refreshTagRows();
   for (const entry of expandedBodyEntries) {
     if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
     entry.full.hidden = !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
@@ -655,6 +716,7 @@ function cardElement(card, compact = false, expanded = false) {
   const item = node('article', compact ? 'reply-card' : 'photo-card');
   if (card.kind === 'event') item.classList.add('note-event-card');
   item.dataset.cardId = card.id;
+  const frame = node('div', 'card-photo-frame');
   const open = node('button', 'photo-open');
   open.type = 'button';
   open.dataset.open = card.id;
@@ -682,21 +744,22 @@ function cardElement(card, compact = false, expanded = false) {
     tagRow.append(chip);
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
+  open.append(photo); frame.append(open);
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
     thumb.dataset.photoCard = card.id;
-    thumb.setAttribute('aria-label', expanded ? '사진 크게 보기' : '카드 크게 보기');
+    thumb.setAttribute('aria-label', '첨부 사진 크게 보기');
     thumb.addEventListener('click', event => {
       event.preventDefault(); event.stopPropagation();
-      if (expanded) openPhotoLightbox(thumb.dataset.photoUrl); else openCard(card.id);
+      activateCardPhoto(thumb);
     });
-    item.append(thumb);
+    frame.append(thumb);
     const known = cardPhotoCache.get(card.id);
-    if (known?.url) applyCardPhoto(thumb, known.url);
+    if (known) applyCardPhoto(thumb, known.url, !!known.failed);
     wantCardPhoto(card.id);
   }
-  open.append(photo);
-  item.append(open);
+  item.append(frame);
+  requestTagFit();
   if (expanded && !hiddenEvent) {
     const full = node('details', 'note-full-body');
     full.hidden = true;
@@ -796,7 +859,9 @@ function cardPhotoOverflows(body, values = []) {
   fillCardQuote(quote, body, compact, style);
   for (const value of values) tagRow.append(node('span', '', `#${value}`));
   photo.append(quote, tagRow); probe.append(photo); document.body.append(probe);
+  if (cardPhotoBlob && kind !== 'event') photo.classList.add('has-card-photo');
   try {
+    fitTagRow(tagRow);
     return photoQuoteClipped(photo, quote, tagRow);
   } finally { probe.remove(); }
 }
@@ -1447,15 +1512,15 @@ function setColorChoice(group, code) {
 }
 function updateFeaturedPhoto() {
   const selected = photoAssetKey(selectedPhotoKey);
-  const name = selected ? `사진 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 사진 무작위';
-  const price = selected ? '직접 선택 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
+  const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
+  const price = selected ? '제공 배경 선택 · 10쭈 / 1개월' : '무료 · 게시 전 미리보기';
   $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
   $('#photo-featured-badge').textContent = selected ? '선택됨' : '무료';
   $('#photo-featured-badge').classList.toggle('is-selected', !!selected);
-  $('#photo-selection').textContent = selected ? `${name} 선택됨 · 게시 후 10쭈 / 1개월` : '기본 사진 무작위 · 무료';
+  $('#photo-selection').textContent = selected ? `${name} 선택됨 · 게시 후 10쭈 / 1개월` : '기본 배경 무작위 · 무료';
 }
 function renderPhotoPage() {
   const grid = $('#photo-grid'); grid.replaceChildren();
@@ -1796,6 +1861,7 @@ function updateComposer() {
   const values = parsedTags();
   const previewTags = tags.value.split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean).slice(0, 5);
   $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
+  fitTagRow($('#compose-tag-display'));
   const overflows = !backdrop.hidden && !!text.value.trim()
     && (composerPhotoOverflows() || cardPhotoOverflows(text.value, previewTags));
   let warning = $('#compose-overflow-warning');
@@ -1881,6 +1947,7 @@ async function openComposer(mode, card = null) {
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
   clearEventPhoto(); clearCardPhoto();
   $('#compose-existing-card-photo')?.remove();
+  $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
   backgroundKey = editingId ? (card.photo_key || card.background_key) : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
@@ -1937,7 +2004,7 @@ async function openComposer(mode, card = null) {
     existingPhoto.type = 'button'; existingPhoto.id = 'compose-existing-card-photo';
     existingPhoto.dataset.photoCard = card.id; existingPhoto.hidden = true;
     existingPhoto.setAttribute('aria-label', '카드에 첨부된 사진 크게 보기');
-    existingPhoto.addEventListener('click', () => openPhotoLightbox(existingPhoto.dataset.photoUrl));
+    existingPhoto.addEventListener('click', () => activateCardPhoto(existingPhoto));
     $('.compose-photo').append(existingPhoto);
     wantCardPhoto(card.id);
   }
@@ -2027,7 +2094,7 @@ async function publishCard() {
   if (kind === 'event' && !editId) {
     const cost = Number($('#event-radius').value) * Number($('#event-hours').value) * 100;
     if (!window.confirm(`이벤트 ${cost.toLocaleString('ko-KR')}쭈를 결제하고 등록할까요?`)) return;
-  } else if (!editId && selectedPhoto !== 'plain' && !window.confirm('카드를 등록한 뒤 제공 사진 배경 1개월 이용료 10쭈를 결제할까요?')) {
+  } else if (!editId && selectedPhoto !== 'plain' && !window.confirm('카드를 등록한 뒤 선택한 제공 배경의 1개월 이용료 10쭈를 결제할까요? 내 사진 첨부는 무료예요.')) {
     return;
   }
   let draftToken = null, publishKind = kind, publishParent = parentId;
@@ -2385,7 +2452,7 @@ function manageCard(id) {
     if (eventEnded) managementBody.append(node('p', 'management-help', '종료된 이벤트는 수정할 수 없지만 삭제할 수 있어요.'));
     else managementBody.append(managementButton(card.kind === 'event' ? '이벤트 수정' : '수정하기', () => { closeManagement(); openComposer('edit', card); }));
     if (card.kind === 'memo') {
-      managementBody.append(managementButton('사진 배경 · 10쭈/1개월', () => showPhotoChoices(card)));
+      managementBody.append(managementButton('제공 배경 선택 · 10쭈/1개월', () => showPhotoChoices(card)));
     }
     if (['memo', 'comment'].includes(card.kind) && !card.permanent) {
       managementBody.append(managementButton('영구보관 · 10쭈', () => confirmPermanent(card)));
@@ -2716,7 +2783,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.46-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.47-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
