@@ -1,0 +1,6 @@
+{
+  "name": "ojjuda-member-identity-tests",
+  "private": true,
+  "scripts": { "test": "node member-identity.test.cjs && node member-identity-db.test.cjs" },
+  "devDependencies": { "@electric-sql/pglite": "0.5.8" }
+}

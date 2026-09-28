@@ -195,6 +195,7 @@ function anonAlias(id, createdAt) {
 // 이름 앞 동그라미: 카드를 올릴 때 글쓴이가 고른 성별 (남 파랑 · 여 빨강 · 비공개 회색). 카드마다 고정돼요. 서버는 성별만 알려 주고 누가 썼는지는 알려 주지 않아요
 const GENDER_LOOK = { male: ['남', '#4A7BE0'], female: ['여', '#E2525C'], private: ['비', '#A7ABB8'] };
 const genderCache = new Map(), genderWanted = new Set(); let genderTimer = null, myGender = 'private';
+let myIdentity = null, myIdentityReady = false, myIdentityPromise = null;
 function paintGender(avatar, gender) {
   const [label, color] = GENDER_LOOK[gender] || GENDER_LOOK.private;
   avatar.textContent = label; avatar.style.background = color; avatar.style.color = '#fff';
@@ -216,24 +217,79 @@ async function fetchGenders() {
   if (genderWanted.size) genderTimer = setTimeout(fetchGenders, 60);
 }
 async function loadMyGender(userId) {
-  myGender = 'private'; setGenderInputs();
-  if (!client || !userId) return;
-  try { const g = await noteRpc('get_my_gender', {}); if (session?.user?.id === userId && GENDER_LOOK[g]) { myGender = g; setGenderInputs(); } }
-  catch (error) { console.warn('Note my gender:', error); }
+  if (!client || !userId) return null;
+  if (myIdentityPromise) return myIdentityPromise;
+  const pending = (async () => {
+    const { data, error } = await client.rpc('get_my_member_identity');
+    if (session?.user?.id !== userId) return null;
+    if (error) throw error;
+    myIdentity = data || null; myIdentityReady = true;
+    myGender = ['male', 'female'].includes(data?.gender) ? data.gender : 'private';
+    setGenderInputs();
+    return myIdentity;
+  })();
+  myIdentityPromise = pending;
+  try { return await pending; }
+  finally { if (myIdentityPromise === pending) myIdentityPromise = null; }
 }
-function setGenderInputs() {
-  if (!backdrop.hidden) { syncQuickChoices(); return; }   // 작성 중 선택은 늦게 도착한 계정 설정으로 덮지 않아요
-  document.querySelectorAll('input[name="gender"]').forEach(input => { input.checked = input.value === myGender; input.disabled = !session?.user || busy; });
+function setGenderInputs(reset = false) {
+  const chosen = $('input[name="gender"]:checked')?.value;
+  const value = !reset && !backdrop.hidden && (chosen === myGender || chosen === 'private') ? chosen : myGender;
+  document.querySelectorAll('input[name="gender"]').forEach(input => {
+    const allowed = input.value === 'private' || input.value === myGender;
+    input.closest('label').hidden = !allowed;
+    input.disabled = !allowed || !session?.user || busy || draftLoading;
+    input.checked = input.value === value;
+  });
   syncQuickChoices();
 }
-async function changeMyGender(value) {
-  if (!GENDER_LOOK[value] || !session?.user || value === myGender) return;
-  const before = myGender, userId = session.user.id; myGender = value; setGenderInputs();
+async function showMemberInfo(afterSave = null) {
+  const userId = session?.user?.id;
+  if (!userId) return;
+  const run = showManagement('내 회원정보');
+  state(managementBody, '회원정보를 확인하고 있어요.');
   try {
-    await noteRpc('set_my_gender', { p_gender: value });
-    if (session?.user?.id !== userId) return;
-    message('성별 표시를 바꿨어요. 앞으로 쓰는 카드부터 반영돼요.');   // 이미 쓴 카드는 올릴 때의 성별 그대로예요
-  } catch (error) { console.warn('Note set gender:', error); myGender = before; setGenderInputs(); message('성별 표시를 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'); }
+    await loadMyGender(userId);
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    managementBody.replaceChildren();
+    if (myIdentity) {
+      const info = node('dl', 'member-identity-summary');
+      for (const [label, value] of [['생년월일', myIdentity.birth_date], ['현재 나이', `만 ${myIdentity.age}세`], ['가입 당시 나이', `만 ${myIdentity.age_at_signup}세`], ['성별', myIdentity.gender === 'male' ? '남성' : '여성'], ['전화번호', myIdentity.phone_number]]) info.append(node('dt', '', label), node('dd', '', value));
+      managementBody.append(info, node('p', 'management-help', '생년월일·나이·전화번호는 다른 회원에게 공개되지 않아요. 생년월일·성별은 직접 수정할 수 없으며, 잘못 입력한 정보는 고객지원으로 정정을 요청해 주세요.'));
+      return;
+    }
+    managementBody.append(node('p', 'management-help', '카드에 표시할 성별을 위해 기존 회원은 생년월일·성별·전화번호를 한 번 등록해 주세요. 저장 후 생년월일과 성별은 직접 바꿀 수 없어요.'));
+    const form = node('form');
+    form.innerHTML = window.OjjudaIdentity.fields('member');
+    form.querySelector('[data-identity-prefix]').dataset.existingMember = 'true';
+    const consentLabel = node('label', 'identity-consent');
+    const consent = node('input'); consent.type = 'checkbox'; consent.required = true;
+    consentLabel.append(consent, node('span', '', '입력한 정보가 정확하며 생년월일·성별·전화번호의 비공개 저장과 회원정보 관리 목적의 이용에 동의해요.'));
+    const policy = node('a', '', '개인정보처리방침 보기'); policy.href = '/privacy.html'; policy.target = '_blank'; policy.rel = 'noopener';
+    form.append(consentLabel, policy); managementBody.append(form);
+    const save = managementButton('회원정보 저장', () => form.requestSubmit(), true);
+    managementFooter.append(save);
+    form.addEventListener('submit', async event => {
+      event.preventDefault(); if (managementBusy || !consent.checked) return;
+      let identity;
+      try { identity = window.OjjudaIdentity.read(form, 'member', false); }
+      catch (error) { managementMessage.textContent = error.message; return; }
+      managementBusy = true; save.disabled = true; managementClose.disabled = true;
+      try {
+        const { error } = await client.rpc('complete_my_member_identity', { p_birth_six: identity.birthSix, p_gender_code: identity.genderCode, p_phone: identity.phone, p_consent: true });
+        if (error) throw error;
+        if (run !== managementRun || session?.user?.id !== userId) return;
+        myIdentityReady = false; await loadMyGender(userId);
+        if (run !== managementRun || session?.user?.id !== userId) return;
+        closeManagement(true);
+        if (afterSave) afterSave(); else showMemberInfo();
+      } catch (error) {
+        if (run === managementRun) managementMessage.textContent = /identity_locked/.test(error.message || '') ? '이미 등록한 회원정보는 직접 수정할 수 없어요.' : '회원정보를 저장하지 못했어요. 입력 정보를 확인하고 다시 시도해 주세요.';
+      } finally { if (run === managementRun) { managementBusy = false; save.disabled = false; managementClose.disabled = false; } }
+    });
+  } catch (error) {
+    if (run === managementRun) state(managementBody, '회원정보를 불러오지 못했어요. 잠시 후 다시 열어 주세요.');
+  }
 }
 // 자동 태그: 태그는 모두 5개까지. 내가 쓴 태그는 그대로 두고, 남은 자리만 글에서 고른 낱말로 채워요. 지운 자동 태그는 다시 붙이지 않아요
 const TAG_STOP = new Set(['오늘', '어제', '내일', '정말', '진짜', '너무', '그냥', '우리', '지금', '요즘', '항상', '조금', '많이', '같이', '다시', '아직', '이제',
@@ -651,7 +707,18 @@ async function prepareCardPhotoEdit(cardId, run) {
 // 글쓰기 창 아래쪽의 이름·성별 빠른 선택 (꾸미기 · 추가 설정 안의 선택지와 서로 맞춰져요)
 function syncQuickChoices() {
   const nameBox = $('#quick-identity'), genderBox = $('#quick-gender'); if (!nameBox || !genderBox) return;
-  const identity = $('input[name="identity"]:checked')?.value || 'anonymous', gender = $('input[name="gender"]:checked')?.value || 'private';
+  const identity = $('input[name="identity"]:checked')?.value || 'anonymous';
+  const selected = $('input[name="gender"]:checked')?.value;
+  const gender = selected === 'private' || selected === myGender ? selected : myGender;
+  const choices = myGender === 'private' ? ['private'] : [myGender, 'private'];
+  if ([...genderBox.options].map(option => option.value).join(',') !== choices.join(',')) {
+    genderBox.replaceChildren(...choices.map(value => new Option(value === 'private' ? '비공개' : value === 'male' ? '남' : '여', value)));
+  }
+  document.querySelectorAll('input[name="gender"]').forEach(input => {
+    input.checked = input.value === gender;
+    input.disabled = !choices.includes(input.value) || busy || draftLoading || !session?.user;
+    input.closest('label').hidden = !choices.includes(input.value);
+  });
   if (nameBox.value !== identity) nameBox.value = identity;
   if (genderBox.value !== gender) genderBox.value = gender;
   const nickname = $('input[name="identity"][value="nickname"]');
@@ -661,7 +728,7 @@ function syncQuickChoices() {
   genderBox.closest('.quick-choice').hidden = !!editingId;   // 성별은 올릴 때 정해져서 수정할 때는 바꿀 수 없어요
 }
 function pickQuickChoice(group, value) {
-  const input = $(`input[name="${group}"][value="${value}"]`); if (!input || input.disabled) { syncQuickChoices(); return; }
+  const input = $(`input[name="${group}"][value="${value}"]`); if (!input || input.disabled || (group === 'gender' && value !== myGender && value !== 'private')) { syncQuickChoices(); return; }
   input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); updateComposer();
 }
 const tagList = raw => String(raw || '').split(',').map(value => value.trim().replace(/^#/, '').trim()).filter(Boolean);
@@ -1989,6 +2056,13 @@ async function openComposer(mode, card = null) {
   if (busy || draftLoading) return;
   closePhotoSourceMenu(); closeWorldPicker(null, false);
   const run = ++composerRun, epoch = identityEpoch;
+  if (session?.user && !card?.is_mine) {
+    const userId = session.user.id;
+    try { if (!myIdentityReady) await loadMyGender(userId); }
+    catch { message('회원정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
+    if (run !== composerRun || epoch !== identityEpoch || session?.user?.id !== userId) return;
+    if (!myIdentity) { showMemberInfo(() => openComposer(mode, card)); return; }
+  }
   if (card?.kind === 'event' && card.is_mine) {
     try {
       const latest = await noteRpc('get_my_event', { p_card_id: card.id });
@@ -2048,7 +2122,7 @@ async function openComposer(mode, card = null) {
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : '';
   const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
-  const privateGender = $('input[name="gender"][value="private"]'); if (privateGender) privateGender.checked = true;   // 성별 표시는 쓸 때마다 비공개로 시작
+  setGenderInputs(true);   // 새 카드는 가입 때 등록한 성별을 기본으로 표시해요
   autoTagMode = !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   let restoredLocalComposer = false;
   if (editingId || kind === 'event') {
@@ -2231,15 +2305,14 @@ async function publishCard() {
       return;
     }
   }
-  if (!editId) {   // 이 카드에 남길 성별(글쓰기 창에서 고른 값)을 먼저 맞춰요. 실패하면 등록하지 않아요 (SQL을 아직 안 돌렸으면 그냥 등록해요)
-    const genderChoice = $('input[name="gender"]:checked')?.value || 'private';
-    try { await noteRpc('set_my_gender', { p_gender: GENDER_LOOK[genderChoice] ? genderChoice : 'private' }); }
-    catch (genderError) {
-      console.warn('Note gender:', genderError);
-      if (!/set_my_gender|function|schema cache|PGRST20/i.test(String(genderError?.message || '') + String(genderError?.code || ''))) {
-        draftController?.cancelPublish?.(); busy = false; setComposerInputs(); updateComposer();
-        composeMessage.textContent = '성별 표시를 저장하지 못했어요. 다시 등록해 주세요.'; return;
-      }
+  if (!editId) {
+    const genderChoice = $('input[name="gender"]:checked')?.value;
+    try {
+      if (!myIdentity || ![myGender, 'private'].includes(genderChoice)) throw new Error('invalid_gender');
+      await noteRpc('set_my_gender', { p_gender: genderChoice });
+    } catch (genderError) {
+      draftController?.cancelPublish?.(); busy = false; setComposerInputs(); updateComposer();
+      composeMessage.textContent = '회원정보와 성별 표시를 확인하지 못했어요. 다시 등록해 주세요.'; return;
     }
   }
   let data, error;
@@ -2412,6 +2485,7 @@ function updateAuth() {
   }
   if ($('#mobile-account-status')) $('#mobile-account-status').textContent = accountText;
   if ($('#note-blocks')) $('#note-blocks').hidden = !session?.user;
+  if ($('#note-member-info')) $('#note-member-info').hidden = !session?.user;
   if ($('#note-moderation')) $('#note-moderation').hidden = !session?.user || !moderator;
   if ($('#note-admin-entry')) $('#note-admin-entry').hidden = !session?.user || !moderator;
   if (stageAuth) {
@@ -2727,7 +2801,8 @@ function installManagement() {
     window.location.assign('/world.html?admin=note');
   }); reports.id = 'note-moderation'; reports.className = 'btn pri'; reports.hidden = true;
   $('#note-admin-entry').append(reports);
-  tools.append(blocks); $('#side-tools').append(tools);
+  const memberInfo = managementButton('내 회원정보', () => showMemberInfo()); memberInfo.id = 'note-member-info'; memberInfo.hidden = true;
+  tools.append(memberInfo, blocks); $('#side-tools').append(tools);
   managementClose.addEventListener('click', () => closeManagement());
   management.addEventListener('click', event => { if (event.target === management) closeManagement(); });
   document.addEventListener('keydown', event => {
@@ -2868,6 +2943,7 @@ function receiveAuth(current) {
   session = current; authKnown = true;
   if (changed) {
     identityEpoch++;
+    myIdentity = null; myIdentityReady = false; myIdentityPromise = null; myGender = 'private'; setGenderInputs(true);
     closePhotoSourceMenu(); closeWorldPicker(null, false);
     // Remove prior-account content immediately, before asynchronous requests finish.
     cardPhotoCache.clear(); cardPhotoWanted.clear();
@@ -2892,6 +2968,7 @@ function receiveAuth(current) {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
+    if (current?.user?.id && !myIdentityReady) void loadMyGender(current.user.id).catch(() => {});
     if (current?.user?.id) void loadPhotoEntitlements(current.user.id).catch(error => console.warn('Note photo entitlement:', error));
     notificationController?.refresh?.();
     if (changed) loadFeed(); else consumeInitialCard();
