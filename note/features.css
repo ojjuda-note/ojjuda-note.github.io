@@ -178,7 +178,7 @@ select{font:inherit;color:inherit}
 .reply-card .photo{height:250px;min-height:0;aspect-ratio:auto}
 .photo-card.note-event-card .photo{height:210px;height:max(210px,34.7cqw);min-height:0;aspect-ratio:auto}
 .photo .card-quote{max-height:calc(100% - 44px);overflow:hidden;overflow-wrap:anywhere}
-.compose-photo{height:clamp(310px,calc((100vw - 90px)/1.1),500px);min-height:0;aspect-ratio:auto}
+.compose-photo{--compose-photo-height:clamp(310px,calc((100vw - 90px)/1.1),500px);height:var(--compose-photo-height);min-height:0;aspect-ratio:auto}
 .compose-overflow-warning{color:#b53350;font-size:11px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}.compose-status:has(.compose-overflow-warning:not([hidden])){justify-content:space-between}
 .note-full-body{margin:0;padding:0 17px 13px;color:var(--ink);font-size:13px}
 .note-full-body summary{width:max-content;max-width:100%;padding:5px 0;color:var(--accent);cursor:pointer;font-weight:700}
@@ -260,6 +260,8 @@ select{font:inherit;color:inherit}
 /* 사진은 위에 고정, 추가 설정만 사진 밑으로 올라와요 */
 .composer-body{position:relative}
 .composer-body>.compose-photo{position:sticky;top:0;z-index:6;box-shadow:0 -14px 0 0 var(--surface,#fff),0 12px 20px -16px rgba(20,20,40,.45)}
+/* 이벤트 사진은 절반까지 올라간 뒤 고정돼 아래 설정을 넓게 볼 수 있어요. */
+.composer[data-kind="event"] .composer-body>.compose-photo{top:calc(var(--compose-photo-height) * -.5)}
 .compose-more{position:relative;margin-top:14px;border-radius:20px 20px 16px 16px;box-shadow:0 -8px 20px -14px rgba(20,20,40,.35)}
 .compose-more::before{content:"";position:absolute;top:6px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:#d4d7e8;z-index:1}
 .compose-more>summary{touch-action:none;cursor:grab;padding-top:16px}

@@ -1997,6 +1997,7 @@ async function openComposer(mode, card = null) {
   $('#event-radius').value = '1'; $('#event-hours').value = '1';
   $('#event-location-status').textContent = '지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.';
   $('.composer').dataset.mode = !editingId && kind === 'memo' ? 'memo-new' : editingId ? 'edit' : kind;
+  $('.composer').dataset.kind = kind;
   $('#compose-title').textContent = editingId ? kind === 'event' ? '내 이벤트 수정' : '내 카드 수정' : kind === 'event' ? '이벤트 카드 쓰기' : kind === 'comment' ? '답글 카드 쓰기' : '새 카드 쓰기';
   $('#compose-context').textContent = editingId ? kind === 'event'
     ? '글·태그·꾸미기·사진을 수정할 수 있어요. 구매한 위치·반경·기간은 그대로 유지돼요.'
@@ -2022,7 +2023,9 @@ async function openComposer(mode, card = null) {
   if (restoredLocalComposer) $('#compose-context').textContent = '이전에 작성하던 내용을 복구했어요.';
   requestedDraftContent = draftContent();
   if (draftStatus) draftStatus.hidden = true;
-  updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer(); text.focus();
+  updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
+  if (kind === 'event') $('.composer-body').scrollTop = 0;
+  text.focus();
   if (editingId && (kind === 'memo' || kind === 'comment')) void prepareCardPhotoEdit(editingId, run);
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
   if (kind === 'event' && !editingId) {
@@ -2816,7 +2819,12 @@ installManagement(); installStyleChoices(); installFeatures(); installStageAuth(
 function installComposerSheet() {
   const more = $('#compose-more'), body = $('.composer-body'), summary = more?.querySelector('summary');
   if (!more || !body || !summary) return;
-  const settle = () => { const photo = $('.compose-photo'); body.scrollTo({ top: Math.max(0, more.offsetTop - (photo?.offsetHeight || 0) - 10), behavior: 'smooth' }); };
+  const settle = () => {
+    const photo = $('.compose-photo');
+    const stickyTop = photo ? parseFloat(getComputedStyle(photo).top) || 0 : 0;
+    const visiblePhotoHeight = Math.max(0, (photo?.offsetHeight || 0) + stickyTop);
+    body.scrollTo({ top: Math.max(0, more.offsetTop - visiblePhotoHeight - 10), behavior: 'smooth' });
+  };
   more.addEventListener('toggle', () => { if (more.open) requestAnimationFrame(settle); });
   let drag = null, skipClick = false;
   summary.addEventListener('pointerdown', event => { drag = { y: event.clientY, top: body.scrollTop, moved: false, id: event.pointerId }; });
@@ -2833,7 +2841,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.48-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.49-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
