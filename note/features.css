@@ -275,7 +275,7 @@ select{font:inherit;color:inherit}
 /* 일반 카드의 첨부 사진은 배경과 분리해 오른쪽 아래에서 크게 볼 수 있어요. */
 .photo-card,.reply-card{position:relative}
 .card-photo-frame{position:relative;min-width:0;--card-thumb-size:56px}
-.card-photo-thumb{position:absolute;bottom:12px;right:12px;z-index:4;width:var(--card-thumb-size);height:var(--card-thumb-size);padding:0;border-radius:10px;overflow:hidden;border:2px solid #fff;background:#e8eaf3 center/cover no-repeat;box-shadow:0 4px 14px rgba(15,15,35,.32);cursor:zoom-in}
+.card-photo-thumb{position:absolute;bottom:calc(var(--card-tags-height,24px) + 28px);right:12px;z-index:4;width:var(--card-thumb-size);height:var(--card-thumb-size);padding:0;border-radius:50%;overflow:hidden;border:2px solid #fff;background:#e8eaf3 center/cover no-repeat;box-shadow:0 4px 14px rgba(15,15,35,.32);cursor:zoom-in}
 .card-photo-thumb[hidden]{display:none}
 .reply-card .card-photo-frame{--card-thumb-size:44px}
 #detail-card-slot .card-photo-frame{--card-thumb-size:64px}
@@ -285,16 +285,16 @@ select{font:inherit;color:inherit}
 .note-photo-lightbox{grid-template-columns:minmax(0,1fr)}
 .note-photo-lightbox-close{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:14px;height:36px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.92);color:#23264a;font-size:14px}
 /* 일반 카드 작성 중에도 오른쪽 아래에 첨부 사진을 미리 보여요. */
-.compose-photo-attach{position:absolute;bottom:12px;right:12px;z-index:8;width:56px;height:56px;display:grid;place-items:center;border-radius:10px;overflow:hidden;border:2px dashed rgba(255,255,255,.8);background:rgba(20,20,35,.38) center/cover no-repeat;color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.compose-photo-attach{position:absolute;bottom:calc(var(--card-tags-height,24px) + 26px);right:12px;z-index:8;width:56px;height:56px;display:grid;place-items:center;border-radius:50%;overflow:hidden;border:2px dashed rgba(255,255,255,.8);background:rgba(20,20,35,.38) center/cover no-repeat;color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .compose-photo-attach[hidden]{display:none}
 .compose-photo-attach svg{width:22px;height:22px}
 .compose-photo-attach.has-photo{border:2px solid #fff;box-shadow:0 4px 14px rgba(15,15,35,.32)}
 .compose-photo-attach.has-photo svg{display:none}
 .compose-photo-attach.is-busy{opacity:.6}
 .compose-photo-attach:focus-visible,.compose-photo-remove:focus-visible,.card-photo-thumb:focus-visible,.note-photo-lightbox-close:focus-visible{outline:3px solid #f0679a;outline-offset:3px}
-.compose-photo-remove{position:absolute;bottom:57px;right:5px;z-index:9;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:#23264a;color:#fff;font-size:14px;line-height:22px;cursor:pointer}
+.compose-photo-remove{position:absolute;bottom:calc(var(--card-tags-height,24px) + 71px);right:5px;z-index:9;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:#23264a;color:#fff;font-size:14px;line-height:22px;cursor:pointer}
 .compose-photo-remove[hidden]{display:none}
-.compose-photo-status{position:absolute;bottom:79px;right:12px;z-index:8;max-width:min(230px,calc(100% - 20px));padding:5px 9px;border-radius:9px;background:rgba(20,20,35,.76);color:#fff;font-size:11px;line-height:1.4;text-align:right;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.compose-photo-status{position:absolute;bottom:calc(var(--card-tags-height,24px) + 93px);right:12px;z-index:8;max-width:min(230px,calc(100% - 20px));padding:5px 9px;border-radius:9px;background:rgba(20,20,35,.76);color:#fff;font-size:11px;line-height:1.4;text-align:right;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .compose-photo-status[hidden]{display:none}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
@@ -321,8 +321,7 @@ select{font:inherit;color:inherit}
 .photo .card-tags>span,.compose-photo .compose-tag-display>span{flex:0 0 auto;min-width:0;max-width:none;padding:3px var(--tag-pad,10px);font-size:var(--tag-font,11px);line-height:1.3;white-space:nowrap;overflow:visible;text-overflow:clip}
 .photo .card-tags.tags-wrap,.compose-photo .compose-tag-display.tags-wrap{flex-wrap:wrap}
 .photo .card-tags.tags-wrap>span,.compose-photo .compose-tag-display.tags-wrap>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}
-.has-card-photo .card-tags,.photo.has-card-photo .card-tags{right:calc(var(--card-thumb-size,56px) + 22px)}
-.compose-photo.has-card-photo-attach .compose-tag-display,.compose-photo.has-card-photo .compose-tag-display,.compose-photo.has-card-photo-attach #compose-tags,.compose-photo.has-card-photo #compose-tags{right:78px;width:auto}
+.compose-photo #compose-tags{width:auto}
 .photo .card-quote,.compose-photo textarea{top:-10px}
 .card-photo-thumb img,.compose-photo-attach img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .photo-load-failed{white-space:pre-line;text-align:center;font:700 10px/1.4 var(--font-b);color:var(--ink);background:var(--surface);cursor:pointer}

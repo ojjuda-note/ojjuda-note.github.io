@@ -230,6 +230,7 @@ let autoTagMode = true, manualTags = [], rejectedTags = new Set(), autoTagsNow =
 // 일반 카드의 첨부 사진은 비공개 저장소에서 읽을 때마다 서명합니다.
 const CARD_PHOTO_BUCKET = 'note-card-photos';
 let cardPhotoBlob = null, cardPhotoUrl = null, cardPhotoRequestId = null, cardPhotoPreparing = false, cardPhotoRun = 0;
+let cardPhotoEditPath = null;
 const cardPhotoCache = new Map(), cardPhotoWanted = new Set();
 let cardPhotoTimer = null, cardPhotoRefreshTimer = null, photoLightbox = null, photoLightboxFocus = null;
 function wantCardPhoto(id) {
@@ -304,6 +305,7 @@ function applyCardPhoto(thumb, url, failed = false) {
 function paintCardPhoto(id) {
   const hit = cardPhotoCache.get(id);
   document.querySelectorAll(`[data-photo-card="${id}"]`).forEach(thumb => applyCardPhoto(thumb, hit?.url, !!hit?.failed));
+  if (editingId === id && !backdrop.hidden && cardPhotoEditPath) syncCardPhotoAttach();
 }
 function activateCardPhoto(thumb) {
   if (thumb.dataset.photoState === 'error') {
@@ -549,13 +551,13 @@ function openPhotoLightbox(url) {
   photoLightbox.querySelector('button').focus({ preventScroll: true });
 }
 async function selectCardPhoto(file, fromWorld = false) {
-  if (!file || busy || !(kind === 'memo' || kind === 'comment') || editingId) return;
+  if (!file || busy || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
   const run = ++cardPhotoRun, composer = composerRun, epoch = identityEpoch;
   cardPhotoPreparing = true; updateComposer();
   try {
     const blob = await prepareEventPhoto(file, fromWorld ? 20 * 1024 * 1024 : 10 * 1024 * 1024);   // JPG로 재생성하여 위치 정보를 지워요.
     if (run !== cardPhotoRun || composer !== composerRun || epoch !== identityEpoch
-      || backdrop.hidden || editingId || !(kind === 'memo' || kind === 'comment')) return;
+      || backdrop.hidden || (editingId && !cardPhotoEditPath) || !(kind === 'memo' || kind === 'comment')) return;
     if (cardPhotoUrl) URL.revokeObjectURL(cardPhotoUrl);
     cardPhotoBlob = blob; cardPhotoUrl = URL.createObjectURL(blob); cardPhotoRequestId = crypto.randomUUID();
     photoFromWorld.card = fromWorld;
@@ -576,7 +578,8 @@ function clearCardPhoto() {
 function syncCardPhotoAttach() {
   const attach = $('#card-photo-attach'), remove = $('#card-photo-remove');
   if (!attach || !remove) return;
-  const allowed = !editingId && (kind === 'memo' || kind === 'comment');
+  const allowed = (!editingId || !!cardPhotoEditPath) && (kind === 'memo' || kind === 'comment');
+  const previewUrl = cardPhotoUrl || (editingId && cardPhotoEditPath ? cardPhotoCache.get(editingId)?.url : null);
   const disabled = !allowed || busy || draftLoading || cardPhotoPreparing;
   $('#card-photo-file').disabled = disabled;
   remove.disabled = disabled;
@@ -584,16 +587,35 @@ function syncCardPhotoAttach() {
   attach.tabIndex = allowed ? 0 : -1;
   attach.setAttribute('aria-haspopup', 'true');
   attach.setAttribute('aria-expanded', String(sourceMenu?.anchor === attach));
-  attach.classList.toggle('has-photo', !!cardPhotoUrl);
-  attach.style.backgroundImage = cardPhotoUrl ? `url("${cardPhotoUrl}")` : '';
-  attach.title = cardPhotoUrl ? '첨부 사진 바꾸기 · 무료' : '내 사진 첨부 · 무료 · 카드 오른쪽 아래에 보여요';
+  attach.classList.toggle('has-photo', !!previewUrl);
+  attach.style.backgroundImage = previewUrl ? `url("${previewUrl.replaceAll('"', '%22')}")` : '';
+  attach.title = editingId || cardPhotoUrl ? '첨부 사진 바꾸기 · 무료' : '내 사진 첨부 · 무료 · 태그 위 동그라미에 보여요';
+  attach.setAttribute('aria-label', editingId ? '첨부 사진 바꾸기 · 무료' : '내 사진 첨부 · 무료');
+  remove.setAttribute('aria-label', editingId ? '사진 교체 취소' : '사진 빼기');
   attach.closest('.compose-photo')?.classList.toggle('has-card-photo-attach', allowed);
   attach.classList.toggle('is-busy', cardPhotoPreparing);
   attach.setAttribute('aria-disabled', String(disabled));
   const status = $('#card-photo-status');
   if (status) {
     status.hidden = !cardPhotoUrl;
-    status.textContent = cardPhotoUrl ? '내 사진 첨부 · 무료. 오른쪽 아래에 보여요. 임시 글에는 사진이 저장되지 않아요.' : '';
+    status.textContent = cardPhotoUrl ? '내 사진 첨부 · 무료. 태그 위 동그라미에 보여요. 임시 글에는 사진이 저장되지 않아요.' : '';
+  }
+}
+async function prepareCardPhotoEdit(cardId, run) {
+  const epoch = identityEpoch;
+  try {
+    const rows = await noteRpc('card_photo_paths', { p_ids: [cardId] });
+    if (epoch !== identityEpoch || run !== composerRun || backdrop.hidden || editingId !== cardId) return;
+    cardPhotoEditPath = rows?.find(row => row.card_id === cardId)?.photo_path || null;
+    $('#compose-context').textContent = cardPhotoEditPath
+      ? '글·태그와 첨부한 사진을 바꿀 수 있어요.'
+      : '글과 태그를 수정할 수 있어요. 사진은 처음 작성할 때만 첨부할 수 있어요.';
+    if (cardPhotoEditPath) { cardPhotoCache.delete(cardId); wantCardPhoto(cardId); }
+    syncCardPhotoAttach();
+  } catch (error) {
+    if (epoch !== identityEpoch || run !== composerRun || backdrop.hidden || editingId !== cardId) return;
+    console.warn('Note editable photo:', error);
+    $('#compose-context').textContent = '글과 태그를 수정할 수 있어요. 사진 정보를 확인하려면 작성창을 다시 열어 주세요.';
   }
 }
 // 글쓰기 창 아래쪽의 이름·성별 빠른 선택 (꾸미기 · 추가 설정 안의 선택지와 서로 맞춰져요)
@@ -678,15 +700,18 @@ async function refreshReplyArchiveNotice(parent, run) {
 
 // Shrink the chips together before wrapping; never cut off a tag to fit the row.
 function fitTagRow(row) {
-  if (!row?.clientWidth || !row.childElementCount) return;
+  if (!row?.clientWidth) return;
   row.classList.remove('tags-wrap');
+  let fits = false;
   for (let step = 0; step <= 5; step++) {
     row.style.setProperty('--tag-font', `${11 - step * .5}px`);
     row.style.setProperty('--tag-pad', `${10 - step * 1.4}px`);
     row.style.setProperty('--tag-gap', `${6 - step * .6}px`);
-    if (row.scrollWidth <= row.clientWidth + 1) return;
+    if (row.scrollWidth <= row.clientWidth + 1) { fits = true; break; }
   }
-  row.classList.add('tags-wrap');
+  row.classList.toggle('tags-wrap', !fits);
+  const frame = row.closest('.card-photo-frame, .compose-photo') || row.closest('.photo');
+  frame?.style.setProperty('--card-tags-height', `${row.childElementCount ? row.offsetHeight : 0}px`);
 }
 let tagFitFrame = null;
 function refreshTagRows() {
@@ -859,7 +884,6 @@ function cardPhotoOverflows(body, values = []) {
   fillCardQuote(quote, body, compact, style);
   for (const value of values) tagRow.append(node('span', '', `#${value}`));
   photo.append(quote, tagRow); probe.append(photo); document.body.append(probe);
-  if (cardPhotoBlob && kind !== 'event') photo.classList.add('has-card-photo');
   try {
     fitTagRow(tagRow);
     return photoQuoteClipped(photo, quote, tagRow);
@@ -1945,8 +1969,8 @@ async function openComposer(mode, card = null) {
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
   kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
+  cardPhotoEditPath = null;
   clearEventPhoto(); clearCardPhoto();
-  $('#compose-existing-card-photo')?.remove();
   $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
   parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
@@ -1999,15 +2023,7 @@ async function openComposer(mode, card = null) {
   requestedDraftContent = draftContent();
   if (draftStatus) draftStatus.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer(); text.focus();
-  if (editingId && (kind === 'memo' || kind === 'comment')) {
-    const existingPhoto = node('button', 'compose-photo-attach has-photo');
-    existingPhoto.type = 'button'; existingPhoto.id = 'compose-existing-card-photo';
-    existingPhoto.dataset.photoCard = card.id; existingPhoto.hidden = true;
-    existingPhoto.setAttribute('aria-label', '카드에 첨부된 사진 크게 보기');
-    existingPhoto.addEventListener('click', () => activateCardPhoto(existingPhoto));
-    $('.compose-photo').append(existingPhoto);
-    wantCardPhoto(card.id);
-  }
+  if (editingId && (kind === 'memo' || kind === 'comment')) void prepareCardPhotoEdit(editingId, run);
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
   if (kind === 'event' && !editingId) {
     eventMap?.destroy(); eventMap = null; prepareEventMap();
@@ -2052,31 +2068,43 @@ function closeComposer(saveDraft = true) {
   closePhotoSourceMenu(); closeWorldPicker(null, false);
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
   backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
+  cardPhotoEditPath = null;
   clearEventPhoto(); clearCardPhoto();
   setCardLocationSwitch(false, '카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.');
   clearTimeout(composerMapTimer); eventMap?.destroy(); eventMap = null; lockPage(false);
   if (focusBefore?.isConnected) focusBefore.focus({ preventScroll: true });
 }
-async function attachPublishedCardPhoto(cardId, userId, blob, requestId) {
-  if (session?.user?.id !== userId || !validCardId(cardId) || !validCardId(requestId))
-    throw new Error('계정이나 카드 정보를 다시 확인해 주세요.');
-  const photoPath = `${userId}/${requestId}.jpg`;
-  const { error: uploadError } = await client.storage.from(CARD_PHOTO_BUCKET).upload(
-    photoPath, blob, { contentType: 'image/jpeg', upsert: false, cacheControl: '600' });
-  // 응답이 끊긴 뒤 같은 사진을 다시 올리면 이미 존재할 수 있습니다.
-  if (uploadError && String(uploadError.statusCode) !== '409'
-    && !/already exists|duplicate/i.test(uploadError.message || '')) throw uploadError;
+async function uploadCardPhotoFile(userId, blob, requestId) {
+  if (session?.user?.id !== userId || !validCardId(requestId))
+    throw new Error('계정이나 사진 정보를 다시 확인해 주세요.');
+  const path = `${userId}/${requestId}.jpg`;
+  const { error } = await client.storage.from(CARD_PHOTO_BUCKET).upload(
+    path, blob, { contentType: 'image/jpeg', upsert: false, cacheControl: '600' });
+  if (error && String(error.statusCode) !== '409' && !/already exists|duplicate/i.test(error.message || '')) throw error;
   if (session?.user?.id !== userId) throw new Error('계정이 변경됐어요.');
-  await noteRpc('attach_card_photo', { p_card_id: cardId, p_path: photoPath });
-  if (session?.user?.id === userId) cardPhotoCache.delete(cardId);
+  return path;
+}
+async function replacePublishedCardPhoto(cardId, userId, path, expectedPath) {
+  if (session?.user?.id !== userId || !validCardId(cardId) || !expectedPath)
+    throw new Error('기존 사진이 있는 카드만 사진을 바꿀 수 있어요.');
+  const result = await noteRpc('replace_card_photo', { p_card_id: cardId, p_path: path, p_expected_path: expectedPath });
+  if (session?.user?.id !== userId) return;
+  cardPhotoCache.delete(cardId);
+  if (result?.previous_path && result.previous_path !== path) {
+    try {
+      const { error } = await client.storage.from(CARD_PHOTO_BUCKET).remove([result.previous_path]);
+      if (error) console.warn('Note previous photo cleanup:', error);
+    } catch (error) { console.warn('Note previous photo cleanup:', error); }
+  }
 }
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
   if (!body || body.length > 200 || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
-  const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch;
-  const selectedCardPhoto = !editId && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
+  const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch, actionComposerRun = composerRun;
+  const selectedCardPhoto = (!editId || cardPhotoEditPath) && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
+  const selectedCardPhotoExpectedPath = cardPhotoEditPath;
   const selectedCardPhotoId = cardPhotoRequestId;
   const selectedFromWorld = photoFromWorld.card, selectedEventFromWorld = photoFromWorld.event;
   if (kind === 'event' && (!validEventBody(body) || eventPhotoPreparing || eventPhotoError
@@ -2124,6 +2152,16 @@ async function publishCard() {
   if (identity.user.id !== actionUserId) {
     draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer(); composeMessage.textContent = '계정이 변경됐어요. 작성창을 다시 열어 주세요'; return;
   }
+  let cardPhotoUploadPath = null;
+  if (selectedCardPhoto) {
+    try { cardPhotoUploadPath = await uploadCardPhotoFile(actionUserId, selectedCardPhoto, selectedCardPhotoId); }
+    catch (photoError) {
+      console.warn('Note card photo upload:', photoError);
+      draftController?.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
+      composeMessage.textContent = '사진을 올리지 못했어요. 사진과 글을 그대로 두었으니 다시 시도해 주세요.';
+      return;
+    }
+  }
   let eventPhotoPath = null;
   if (publishKind === 'event' && selectedEventPhoto) {
     eventPhotoPath = `${actionUserId}/${selectedEventPhotoRequestId}.jpg`;
@@ -2169,9 +2207,10 @@ async function publishCard() {
         p_starts_at: new Date().toISOString(), p_duration_hours: Number($('#event-hours').value),
         ...(eventPhotoPath ? { p_photo_path: eventPhotoPath } : {}) });
     } else {
-      data = await noteRpc('publish_card', { p_request_id: publishRequestId, p_body: body, p_tags: values,
+      data = await noteRpc(cardPhotoUploadPath ? 'publish_card_with_photo' : 'publish_card', { p_request_id: publishRequestId, p_body: body, p_tags: values,
         p_identity_mode: identityMode, p_style: currentStyle(), p_lat: writingPosition?.latitude,
-        p_lon: writingPosition?.longitude, p_parent_id: publishParent });
+        p_lon: writingPosition?.longitude, p_parent_id: publishParent,
+        ...(cardPhotoUploadPath ? { p_photo_path: cardPhotoUploadPath } : {}) });
     }
     if (data?.ok === false) throw Object.assign(new Error(data.reason === 'coins'
       ? `쭈 잔액이 부족해요. ${Number(data.required || 0).toLocaleString('ko-KR')}쭈가 필요해요.`
@@ -2195,9 +2234,9 @@ async function publishCard() {
       if (session?.user?.id === actionUserId) message('카드는 등록됐어요. 임시 글의 정리 상태를 확인해 주세요.');
     }
   } else if (draftToken) draftController.cancelPublish();
-  busy = false; setComposerInputs();
-  if (session?.user?.id !== actionUserId) { updateComposer(); return; }
+  if (session?.user?.id !== actionUserId || actionEpoch !== identityEpoch || actionComposerRun !== composerRun) return;
   if (error || !publishedId) {
+    busy = false; setComposerInputs();
     console.warn('Note publish:', error);
     updateComposer();
     composeMessage.textContent = /Invalid event (?:input|edit)/i.test(error?.message || '')
@@ -2218,13 +2257,17 @@ async function publishCard() {
     cardPhotoSavedToWorld = true;
     keepInWorldAlbum(selectedCardPhoto, actionUserId, actionEpoch);
   };
-  let cardPhotoFailed = false;
-  if (selectedCardPhoto && selectedCardPhotoId && !editId) {
+  let cardPhotoFailed = false, cardPhotoConflict = false;
+  if (selectedCardPhoto && cardPhotoUploadPath) {
     try {
-      await attachPublishedCardPhoto(publishedId, actionUserId, selectedCardPhoto, selectedCardPhotoId);
+      if (editId) await replacePublishedCardPhoto(publishedId, actionUserId, cardPhotoUploadPath, selectedCardPhotoExpectedPath);
+      else cardPhotoCache.delete(publishedId);
       saveDeviceCardPhoto();
     }
-    catch (photoError) { console.warn('Note card photo:', photoError); cardPhotoFailed = true; }
+    catch (photoError) {
+      console.warn('Note card photo:', photoError); cardPhotoFailed = true;
+      cardPhotoConflict = photoError?.code === '40001';
+    }
   }
   if (session?.user?.id !== actionUserId) return;
   let photoPurchaseFailed = false;
@@ -2243,6 +2286,8 @@ async function publishCard() {
   if (publishKind === 'event' && editId) message('이벤트를 수정했어요.');
   if (publishKind === 'comment' && archiveDueThisMonth(data?.effective_archive_due_at))
     message(`답글이 등록됐어요. 상위 카드와 함께 ${dateLabel(data.effective_archive_due_at)}에 공개 종료될 수 있어요. 알림을 확인해 주세요.`);
+  if (session?.user?.id !== actionUserId || actionEpoch !== identityEpoch || actionComposerRun !== composerRun) return;
+  busy = false; setComposerInputs();
   text.value = ''; tags.value = '';
   closeComposer(false);
   if (!editId && publishKind !== 'comment') {
@@ -2265,7 +2310,7 @@ async function publishCard() {
   if (session?.user?.id !== actionUserId) return;
   if (publishKind === 'comment') void notificationController?.refresh?.();
   if (photoPurchaseFailed || cardPhotoFailed) {
-    showManagement('카드는 등록됐어요');
+    showManagement(editId ? '글은 수정됐어요' : '카드는 등록됐어요');
     if (photoPurchaseFailed) {
       managementBody.append(node('p', 'management-help', '사진 배경 결제가 완료되지 않아 기본 배경으로 등록됐어요. 다시 시도하거나 기본 배경으로 계속 이용할 수 있어요.'));
       const retryBackground = managementButton('사진 배경 결제 다시 시도', () => managementAction(
@@ -2286,14 +2331,19 @@ async function publishCard() {
     }
     if (cardPhotoFailed) {
       pendingCardPhotoCleanup = { userId: actionUserId, path: `${actionUserId}/${selectedCardPhotoId}.jpg` };
-      managementBody.append(node('p', 'management-help', '카드는 등록됐지만 내 사진 첨부는 완료되지 않았어요. 아래에서 같은 사진을 다시 붙일 수 있어요.'));
-      const retryCardPhoto = managementButton('카드 사진 첨부 다시 시도', () => managementAction(
-        () => attachPublishedCardPhoto(publishedId, actionUserId, selectedCardPhoto, selectedCardPhotoId),
+      if (cardPhotoConflict) {
+        managementBody.append(node('p', 'management-help', '다른 화면에서 사진이 먼저 바뀌었어요. 카드를 다시 열어 현재 사진을 확인한 뒤 교체해 주세요.'));
+        managementFooter.append(managementButton('카드 다시 열기', () => { closeManagement(); openCard(publishedId); }, true));
+        return;
+      }
+      managementBody.append(node('p', 'management-help', '글은 수정됐지만 사진 교체는 완료되지 않았어요. 기존 사진은 그대로이고, 아래에서 다시 바꿀 수 있어요.'));
+      const retryCardPhoto = managementButton('사진 교체 다시 시도', () => managementAction(
+        () => replacePublishedCardPhoto(publishedId, actionUserId, cardPhotoUploadPath, selectedCardPhotoExpectedPath),
         async () => {
           cardPhotoFailed = false; pendingCardPhotoCleanup = null; retryCardPhoto.remove();
           saveDeviceCardPhoto();
           await refreshCards(false);
-          if (photoPurchaseFailed) managementMessage.textContent = '카드 사진을 붙였어요. 사진 배경 결제는 다시 시도해 주세요.';
+          if (photoPurchaseFailed) managementMessage.textContent = '첨부 사진을 바꿨어요. 제공 배경 결제는 다시 시도해 주세요.';
           else closeManagement();
         }
       ), true);
@@ -2783,7 +2833,7 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
-window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.47-beta' });
+window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.48-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
