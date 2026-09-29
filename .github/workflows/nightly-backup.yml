@@ -5,6 +5,11 @@ on:
     - cron: '0 3 * * *'
       timezone: Asia/Seoul
   workflow_dispatch:
+    inputs:
+      backup_only:
+        description: 'Run backup only for a manual retry'
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -20,6 +25,7 @@ concurrency:
 jobs:
   checks:
     name: Error and dependency security checks
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.backup_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

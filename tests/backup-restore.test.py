@@ -31,6 +31,29 @@ def private_acl():
          "Permission": "FULL_CONTROL"}]}
 
 class RecoveryTest(unittest.TestCase):
+    def test_psql_receives_explicit_connection_and_private_password(self):
+        password = " private:@/?#%[]'\\ +한글\t\n "
+        host = "aws-0-ap-northeast-2.pooler.supabase.com"
+        cfg = {"SUPABASE_DB_URL":
+               f"postgresql://postgres.{'a'*20}:{backup.quote(password, safe='')}@{host}:5432/postgres?sslmode=require"}
+        result = subprocess.CompletedProcess(["psql"], 0, stdout=b"1\n", stderr=b"")
+        with tempfile.TemporaryDirectory() as temp, patch.object(
+                backup.subprocess, "run", return_value=result) as run:
+            dest = Path(temp) / "result.txt"
+            backup.pg_query("Database connection", "SELECT 1", dest, cfg)
+            args = run.call_args.args[0]
+            params = conninfo_to_dict(args[args.index("--dbname") + 1])
+            self.assertEqual(params["host"], host)
+            self.assertEqual(params["user"], "postgres." + "a" * 20)
+            self.assertEqual(params["dbname"], "postgres")
+            self.assertEqual(params["port"], "5432")
+            self.assertEqual(params["sslmode"], "require")
+            self.assertNotIn("password", params)
+            self.assertEqual(run.call_args.kwargs["env"]["PGPASSWORD"], password)
+            self.assertNotIn("PGDATABASE", run.call_args.kwargs["env"])
+            self.assertNotIn(password, str(args))
+            self.assertEqual(dest.read_bytes(), b"1\n")
+
     def test_command_errors_identify_failures_without_revealing_secrets(self):
         secret = "synthetic-private-marker"
         cases = [

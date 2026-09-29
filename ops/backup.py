@@ -22,6 +22,7 @@ from urllib.parse import quote, urlparse
 
 import boto3
 from botocore.client import Config
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 
 NAVER_ENDPOINT = "https://kr.object.ncloudstorage.com"
@@ -127,8 +128,14 @@ def safe_run(label, args, *, env=None, output=None):
 
 
 def pg_query(label, sql, dest, cfg):
-    env = dict(os.environ, PGDATABASE=cfg["SUPABASE_DB_URL"], PGCONNECT_TIMEOUT="20", LC_ALL="C")
-    safe_run(label, ["psql", "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql],
+    # libpq does not expand a connection URL supplied through PGDATABASE.
+    # Pass explicit connection parameters to psql, with the password only in env.
+    params = conninfo_to_dict(cfg["SUPABASE_DB_URL"])
+    password = params.pop("password")
+    env = dict(os.environ, PGPASSWORD=password, PGCONNECT_TIMEOUT="20", LC_ALL="C")
+    env.pop("PGDATABASE", None)
+    safe_run(label, ["psql", "--dbname", make_conninfo(**params),
+                    "-X", "-w", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql],
              env=env, output=dest)
 
 
