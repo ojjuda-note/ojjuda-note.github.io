@@ -34,33 +34,37 @@
     credit.textContent = '© OpenStreetMap contributors';
     stage.append(tiles, overlay, controls, credit); host.replaceChildren(stage);
     let current = { lat: center.lat, lng: center.lng }, z = zoom, selected = null, selectionRadius = 0, circles = [], markers = [];
-    let pointer = null, dragged = false;
+    const pointers = new Map();
+    let gesture = null, dragged = false, tapTarget = null, frame = 0;
     const metresPerPixel = (lat, level) => 156543.03392 * Math.cos(lat * RAD) / 2 ** level;
     function fitSelection() {
       if (!selected || !selectionRadius || !host.clientWidth || !host.clientHeight) return;
       const limit = Math.min(host.clientWidth, host.clientHeight) * .34;
-      while (z > 4 && selectionRadius / metresPerPixel(selected.lat, z) > limit) z--;
-      while (z < 17 && selectionRadius / metresPerPixel(selected.lat, z + 1) <= limit) z++;
+      while (z > 4 && selectionRadius / metresPerPixel(selected.lat, z) > limit) z = Math.max(4, z - 1);
+      while (z + 1 <= 17 && selectionRadius / metresPerPixel(selected.lat, z + 1) <= limit) z++;
     }
     function draw() {
       const width = host.clientWidth, height = host.clientHeight;
       if (!width || !height) return;
-      const c = project(current.lat, current.lng, z), n = 2 ** z;
-      const startX = Math.floor((c.x - width / 2) / TILE), endX = Math.floor((c.x + width / 2) / TILE);
-      const startY = Math.max(0, Math.floor((c.y - height / 2) / TILE));
-      const endY = Math.min(n - 1, Math.floor((c.y + height / 2) / TILE));
+      const level = Math.floor(z), size = TILE * 2 ** (z - level);
+      const c = project(current.lat, current.lng, z), n = 2 ** level;
+      const startX = Math.floor((c.x - width / 2) / size), endX = Math.floor((c.x + width / 2) / size);
+      const startY = Math.max(0, Math.floor((c.y - height / 2) / size));
+      const endY = Math.min(n - 1, Math.floor((c.y + height / 2) / size));
       const existing = new Map([...tiles.children].map(img => [img.dataset.key, img]));
       const live = new Set();
       for (let y = startY; y <= endY; y++) for (let x = startX; x <= endX; x++) {
-        const tx = ((x % n) + n) % n, key = `${z}/${tx}/${y}`; live.add(key);
+        const tx = ((x % n) + n) % n, key = `${level}/${tx}/${y}`; live.add(key);
         let img = existing.get(key);
         if (!img) {
           img = document.createElement('img'); img.alt = ''; img.decoding = 'async'; img.dataset.key = key;
           img.src = `https://tile.openstreetmap.org/${key}.png`;
           tiles.append(img);
         }
-        img.style.left = `${Math.round(x * TILE - c.x + width / 2)}px`;
-        img.style.top = `${Math.round(y * TILE - c.y + height / 2)}px`;
+        const left = Math.round(x * size - c.x + width / 2), top = Math.round(y * size - c.y + height / 2);
+        img.style.left = `${left}px`; img.style.top = `${top}px`;
+        img.style.width = `${Math.round((x + 1) * size - c.x + width / 2) - left}px`;
+        img.style.height = `${Math.round((y + 1) * size - c.y + height / 2) - top}px`;
       }
       for (const [key, img] of existing) if (!live.has(key)) img.remove();
       overlay.replaceChildren();
@@ -143,32 +147,80 @@
       current = { lat: clamp(point.lat, -85, 85), lng: clamp(point.lng, -180, 180) };
       draw(); onMove?.({ ...current });
     });
+    const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    const distance = (a, b) => Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
+    function restartGesture() {
+      const [a, b] = pointers.values();
+      if (!a) { gesture = null; return; }
+      const c = project(current.lat, current.lng, z);
+      if (!b) { gesture = { start: a, center: c }; return; }
+      const mid = midpoint(a, b), bounds = host.getBoundingClientRect();
+      gesture = { zoom: z, distance: distance(a, b),
+        anchor: unproject(c.x + mid.x - bounds.left - bounds.width / 2,
+          c.y + mid.y - bounds.top - bounds.height / 2, z) };
+    }
+    function queueDraw() {
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; draw(); });
+    }
     stage.addEventListener('pointerdown', event => {
-      if (event.target.closest('button,a')) return;
-      pointer = { x: event.clientX, y: event.clientY, start: project(current.lat, current.lng, z) };
-      dragged = false; stage.setPointerCapture(event.pointerId);
+      if (event.target.closest('.oj-map-controls,a') || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      if (!pointers.size) {
+        dragged = false;
+        tapTarget = event.target.closest('.oj-map-marker,.oj-map-circle');
+      }
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      stage.setPointerCapture(event.pointerId);
+      if (pointers.size > 1) { dragged = true; tapTarget = null; }
+      restartGesture();
     });
     stage.addEventListener('pointermove', event => {
-      if (!pointer) return;
-      const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
-      if (Math.abs(dx) + Math.abs(dy) > 5) dragged = true;
-      const point = unproject(pointer.start.x - dx, pointer.start.y - dy, z);
-      current = { lat: clamp(point.lat, -85, 85), lng: clamp(point.lng, -180, 180) }; draw();
+      if (!pointers.has(event.pointerId) || !gesture) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      const [a, b] = pointers.values();
+      let point;
+      if (b) {
+        const mid = midpoint(a, b), bounds = host.getBoundingClientRect();
+        z = clamp(gesture.zoom + Math.log2(distance(a, b) / gesture.distance), 4, 17);
+        const anchor = project(gesture.anchor.lat, gesture.anchor.lng, z);
+        point = unproject(anchor.x - (mid.x - bounds.left - bounds.width / 2),
+          anchor.y - (mid.y - bounds.top - bounds.height / 2), z);
+        dragged = true;
+      } else {
+        const dx = a.x - gesture.start.x, dy = a.y - gesture.start.y;
+        if (Math.abs(dx) + Math.abs(dy) > 5) dragged = true;
+        if (!dragged) return;
+        point = unproject(gesture.center.x - dx, gesture.center.y - dy, z);
+      }
+      current = { lat: clamp(point.lat, -85, 85), lng: clamp(point.lng, -180, 180) };
+      queueDraw();
     });
-    stage.addEventListener('pointerup', event => {
-      if (!pointer) return;
-      const wasDragged = dragged; pointer = null;
-      if (wasDragged) { onMove?.({ ...current }); return; }
+    function endPointer(event) {
+      if (!pointers.delete(event.pointerId)) return;
+      if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+      restartGesture();
+      if (pointers.size) return;
+      if (dragged) { onMove?.({ ...current }); return; }
+      if (event.type !== 'pointerup') return;
+      // Capture keeps gestures alive when tiles/markers redraw. Forward a simple tap to its original marker.
+      if (tapTarget) { if (tapTarget.isConnected) tapTarget.click(); return; }
       if (!onSelect) return;
       const bounds = host.getBoundingClientRect(), c = project(current.lat, current.lng, z);
       selected = unproject(c.x + event.clientX - bounds.left - bounds.width / 2,
         c.y + event.clientY - bounds.top - bounds.height / 2, z);
       draw(); onSelect(selected);
-    });
-    stage.addEventListener('pointercancel', () => { pointer = null; });
+    }
+    stage.addEventListener('pointerup', endPointer);
+    stage.addEventListener('pointercancel', endPointer);
+    stage.addEventListener('lostpointercapture', endPointer);
+    stage.addEventListener('click', event => {
+      if ((dragged || tapTarget) && event.detail && event.target.closest('.oj-map-marker,.oj-map-circle')) {
+        event.preventDefault(); event.stopImmediatePropagation();
+      }
+    }, true);
     const resize = new ResizeObserver(() => { fitSelection(); draw(); }); resize.observe(host); draw();
     return { setCenter(value) { current = { lat: value.lat, lng: value.lng }; draw(); },
       getCenter() { return { ...current }; },
+      getZoom() { return z; },
       setSelection(value) { selected = value; if (value) { current = { lat: value.lat, lng: value.lng }; fitSelection(); } draw(); },
       setSelectionRadius(metres) { selectionRadius = Number.isFinite(metres) && metres > 0 ? metres : 0; fitSelection(); draw(); },
       setCircles(value) { circles = Array.isArray(value) ? value : []; draw(); },
@@ -188,7 +240,7 @@
         draw();
       },
       focusOn(value, level) { if (value && Number.isFinite(value.lat) && Number.isFinite(value.lng)) { current = { lat: value.lat, lng: value.lng }; if (Number.isFinite(level)) z = clamp(level, 4, 17); draw(); } },
-      invalidate: draw, destroy() { resize.disconnect(); host.replaceChildren(); } };
+      invalidate: draw, destroy() { cancelAnimationFrame(frame); pointers.clear(); gesture = null; resize.disconnect(); host.replaceChildren(); } };
   }
   window.OjjudaMap = Object.freeze({ create });
 })();
