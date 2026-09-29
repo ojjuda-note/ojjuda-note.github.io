@@ -196,6 +196,32 @@ function anonAlias(id, createdAt) {
 const GENDER_LOOK = { male: ['남', '#4A7BE0'], female: ['여', '#E2525C'], private: ['비', '#A7ABB8'] };
 const genderCache = new Map(), genderWanted = new Set(); let genderTimer = null, myGender = 'private';
 let myIdentity = null, myIdentityReady = false, myIdentityPromise = null;
+// 새 카드의 표시 선택만 계정별로 기억해요. 위치 좌표나 임시 글은 저장하지 않아요.
+const composerSettingsFallback = new Map();
+function readComposerSettings(userId = session?.user?.id) {
+  let saved = userId ? composerSettingsFallback.get(userId) : null;
+  if (userId && !saved) {
+    try { saved = JSON.parse(localStorage.getItem(`ojjuda-note-composer-settings-v1:${userId}`) || 'null'); }
+    catch { /* Storage may be blocked or contain an older, invalid value. */ }
+  }
+  return {
+    identity: saved?.identity === 'nickname' ? 'nickname' : 'anonymous',
+    gender: saved?.gender === 'private' ? 'private' : 'profile',
+    locationEnabled: typeof saved?.locationEnabled === 'boolean' ? saved.locationEnabled : true
+  };
+}
+function rememberComposerSetting(name, value) {
+  const userId = session?.user?.id;
+  if (!userId || composerUserId !== userId || backdrop.hidden || editingId || busy || draftLoading) return;
+  if (!(name === 'identity' && ['anonymous', 'nickname'].includes(value))
+    && !(name === 'gender' && ['private', 'profile'].includes(value))
+    && !(name === 'locationEnabled' && typeof value === 'boolean')) return;
+  const settings = { ...readComposerSettings(userId), [name]: value };
+  try {
+    localStorage.setItem(`ojjuda-note-composer-settings-v1:${userId}`, JSON.stringify(settings));
+    composerSettingsFallback.delete(userId);
+  } catch { composerSettingsFallback.set(userId, settings); }
+}
 function paintGender(avatar, gender) {
   const [label, color] = GENDER_LOOK[gender] || GENDER_LOOK.private;
   avatar.textContent = label; avatar.style.background = color; avatar.style.color = '#fff';
@@ -234,7 +260,8 @@ async function loadMyGender(userId) {
 }
 function setGenderInputs(reset = false) {
   const chosen = $('input[name="gender"]:checked')?.value;
-  const value = !reset && !backdrop.hidden && (chosen === myGender || chosen === 'private') ? chosen : myGender;
+  const preferred = readComposerSettings().gender === 'private' ? 'private' : myGender;
+  const value = !reset && !backdrop.hidden && (chosen === myGender || chosen === 'private') ? chosen : preferred;
   document.querySelectorAll('input[name="gender"]').forEach(input => {
     const allowed = input.value === 'private' || input.value === myGender;
     input.closest('label').hidden = !allowed;
@@ -1611,13 +1638,16 @@ function installFeatures() {
     else $('#event-location-status').textContent = '지도를 불러오지 못했어요. 다시 열어 주세요.';
   });
   $('#card-location-button').addEventListener('click', async () => {
+    if (busy || draftLoading || backdrop.hidden || editingId || kind === 'event' || composerUserId !== session?.user?.id) return;
     if ($('#card-location-button').getAttribute('aria-checked') === 'true') {
+      rememberComposerSetting('locationEnabled', false);
       locationRun++;
       writingPosition = null;
       setCardLocationSwitch(false, '위치를 껐어요. 등록하려면 다시 켜 주세요.');
       updateComposer();
       return;
     }
+    rememberComposerSetting('locationEnabled', true);
     const run = ++locationRun;
     writingPosition = null;
     setCardLocationSwitch(true, '위치를 확인하는 중이에요.', true);
@@ -1932,7 +1962,7 @@ function restoreLocalComposer() {
   $('#compose-theme').value = ['rose', 'night'].includes(content.style.theme) ? content.style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(content.style.effect) ? content.style.effect : 'none';
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, content.style[group]);
-  $(`input[name="identity"][value="${content.identity === 'nickname' ? 'nickname' : 'anonymous'}"]`).checked = true;
+  if (editingId) $(`input[name="identity"][value="${content.identity === 'nickname' ? 'nickname' : 'anonymous'}"]`).checked = true;
   if (kind === 'event' && !editingId) {
     const position = content.eventPosition;
     eventPosition = position && Number.isFinite(position.latitude) && Number.isFinite(position.longitude)
@@ -1961,7 +1991,6 @@ function restoreDraft(content) {
   $('.composer').dataset.mode = kind === 'memo' ? 'memo-new' : kind;
   $('#note-photo-pick').hidden = kind !== 'memo';
   text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
-  $('input[name="identity"][value="anonymous"]').checked = true;
   const style = content.style && typeof content.style === 'object' ? content.style : {};
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
@@ -2176,9 +2205,9 @@ async function openComposer(mode, card = null, replyTo = null) {
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
   applyComposeStyle(); updateEventPrice();
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : initialComposerTags();
-  const identityMode = editingId && card.identity_mode === 'nickname' ? 'nickname' : 'anonymous';
+  const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
-  setGenderInputs(true);   // 새 카드는 가입 때 등록한 성별을 기본으로 표시해요
+  setGenderInputs(true);
   autoTagMode = !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   let restoredLocalComposer = false;
   if (editingId || kind === 'event') {
@@ -2214,11 +2243,12 @@ async function openComposer(mode, card = null, replyTo = null) {
       if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus(); }
     }
   }
-  if (!editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);   // 위치는 켜짐으로 시작
+  if (!editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
 }
 function autoWritingLocation(run) {
   const button = $('#card-location-button');
   if (!button || run !== composerRun || backdrop.hidden || $('#card-location-consent').hidden) return;
+  if (!readComposerSettings().locationEnabled) return;
   if (button.getAttribute('aria-checked') === 'true') return;
   if (button.disabled) { setTimeout(() => autoWritingLocation(run), 200); return; }
   button.click();
@@ -2975,8 +3005,13 @@ tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('b
 window.addEventListener('resize', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 document.fonts?.addEventListener?.('loadingdone', () => { if (!backdrop.hidden) updateComposer(); refreshExpandedBodies(); });
 submit.addEventListener('click', publishCard);
-document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => { updateComposer(); recordDraft(); }));
-document.querySelectorAll('input[name="gender"]').forEach(input => input.addEventListener('change', () => syncQuickChoices()));
+document.querySelectorAll('input[name="identity"]').forEach(input => input.addEventListener('change', () => {
+  rememberComposerSetting('identity', input.value); updateComposer(); recordDraft();
+}));
+document.querySelectorAll('input[name="gender"]').forEach(input => input.addEventListener('change', () => {
+  if (input.value === 'private' || input.value === myGender) rememberComposerSetting('gender', input.value === 'private' ? 'private' : 'profile');
+  syncQuickChoices();
+}));
 $('#quick-identity')?.addEventListener('change', event => pickQuickChoice('identity', event.target.value));
 $('#card-photo-file')?.addEventListener('change', event => {
   const file = event.target.files?.[0]; event.target.value = '';
