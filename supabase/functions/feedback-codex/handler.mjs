@@ -4,6 +4,12 @@ export const WORKER_REPOSITORY_ID = '1394775639';
 export const WORKFLOW_REF = `${WORKER_REPOSITORY}/.github/workflows/codex-feedback.yml@refs/heads/main`;
 export const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 export const MAX_BODY_BYTES = 100 * 1024;
+export const SOURCE_REPOSITORY = 'ojjuda-note/ojjuda-note.github.io';
+const COMMIT = /^[a-f0-9]{40}$/;
+export const RELEASE_REASONS = new Set(['deployed', 'token_missing', 'verification_invalid', 'runtime_identity_invalid',
+  'source_changed', 'baseline_mismatch', 'github_rejected', 'ci_failed', 'ci_timeout', 'branch_update_rejected',
+  'branch_update_unconfirmed', 'deployment_failed', 'deployment_timeout', 'public_content_mismatch', 'api_failure',
+  'callback_verification_unavailable']);
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const DIGITS = /^[1-9][0-9]{0,19}$/;
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status,
@@ -65,14 +71,117 @@ export function authorizedClaims(claims, { audience, repositoryId, runId, nowSec
     && claims.exp > claims.iat && claims.exp - claims.iat <= 600;
 }
 
+export function validRelease(value, base) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || Object.keys(value).some(key => !['version', 'run_id', 'feedback_id', 'outcome', 'source_commit',
+      'candidate_commit', 'reason', 'ci_run_id', 'deployment_run_id', 'verified_files'].includes(key))
+    || value.version !== 1 || value.run_id !== base.run_id || !validId(value.feedback_id)
+    || String(value.feedback_id) !== String(base.feedback_id) || typeof value.source_commit !== 'string' || !COMMIT.test(value.source_commit)
+    || !['deployed', 'published_pending', 'needs_review', 'blocked'].includes(value.outcome)
+    || !RELEASE_REASONS.has(value.reason)) return false;
+  if (value.candidate_commit !== undefined && (typeof value.candidate_commit !== 'string' || !COMMIT.test(value.candidate_commit)
+    || value.candidate_commit === value.source_commit)) return false;
+  for (const key of ['ci_run_id', 'deployment_run_id']) {
+    if (value[key] !== undefined && (typeof value[key] !== 'string' || !validId(value[key]))) return false;
+  }
+  if (value.verified_files !== undefined && (!Array.isArray(value.verified_files)
+    || value.verified_files.length < 1 || value.verified_files.length > 12
+    || new Set(value.verified_files).size !== value.verified_files.length
+    || value.verified_files.some(file => typeof file !== 'string' || file.length > 200
+      || !/^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.(?:js|css|html)$/.test(file)))) return false;
+  if (value.outcome === 'deployed') return value.reason === 'deployed' && !!value.candidate_commit
+    && !!value.ci_run_id && !!value.deployment_run_id && value.ci_run_id !== value.deployment_run_id
+    && Array.isArray(value.verified_files);
+  if (value.reason === 'deployed') return false;
+  return value.outcome !== 'published_pending' || !!value.candidate_commit;
+}
+
 function completionPayload(body, base) {
-  if (!validUuid(body.lease_token) || !['needs_review', 'blocked'].includes(body.status)
+  if (!validUuid(body.lease_token) || !['needs_review', 'blocked', 'resolved'].includes(body.status)
     || !['low', 'normal', 'high'].includes(body.priority)
     || typeof body.summary !== 'string' || !body.summary.trim() || [...body.summary].length > 1200
     || typeof body.result !== 'string' || !body.result.trim() || [...body.result].length > 12000) return null;
-  return { ...base, lease_token: body.lease_token, status: body.status, summary: body.summary,
+  if (body.release !== undefined && !validRelease(body.release, base)) return null;
+  const release = body.release;
+  if ((body.status === 'resolved') !== (release?.outcome === 'deployed')) return null;
+  if (release && body.status !== ({ deployed: 'resolved', published_pending: 'needs_review',
+    needs_review: 'needs_review', blocked: 'blocked' })[release.outcome]) return null;
+  const payload = { ...base, lease_token: body.lease_token, status: body.status, summary: body.summary,
     result: body.result, priority: body.priority,
     evidence_url: `https://github.com/${WORKER_REPOSITORY}/actions/runs/${base.run_id}` };
+  // Only the trusted completion job can submit release metadata. Model prose
+  // cannot supply evidence or assert that a change is live.
+  if (release?.outcome === 'deployed' || release?.outcome === 'published_pending') {
+    payload.evidence_url = `https://github.com/${SOURCE_REPOSITORY}/commit/${release.candidate_commit}`;
+    payload.summary = release.outcome === 'deployed' ? '자동 수정과 배포 확인을 완료했어요.' : '자동 수정 반영·배포 확인이 필요해요.';
+    payload.result = release.outcome === 'deployed'
+      ? '독립 검사와 회귀 검사를 통과한 수정 커밋 및 해당 커밋의 Pages 배포 성공을 확인했어요.'
+      : '자동 수정 커밋 정보가 도착했지만 운영 반영·배포 검증을 완료하지 못했어요. 수정 완료로 표시하지 않았으며 관리자 확인이 필요해요.';
+  }
+  return payload;
+}
+
+async function boundedJson(response) {
+  const limit = 2 * 1024 * 1024;
+  if (Number(response.headers.get('content-length')) > limit || !response.body) throw new Error('proof_unavailable');
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let text = '', size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > limit) throw new Error('proof_unavailable');
+      text += decoder.decode(value, { stream: true });
+    }
+    return JSON.parse(text + decoder.decode());
+  } finally { await reader.cancel().catch(() => {}); }
+}
+
+async function verifyDeployedRelease(release, githubToken, fetchImpl) {
+  if (typeof githubToken !== 'string' || !githubToken) throw new Error('proof_unavailable');
+  const get = async (repository, path, privateRequest = false) => {
+    let response;
+    try {
+      response = await fetchImpl(`https://api.github.com/repos/${repository}${path}`, {
+        method: 'GET', redirect: 'error', signal: AbortSignal.timeout(6000),
+        headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2026-03-10',
+          'User-Agent': 'ojjuda-feedback-codex', ...(privateRequest ? { Authorization: `Bearer ${githubToken}` } : {}) }
+      });
+    } catch { throw new Error('proof_unavailable'); }
+    if (!response.ok) throw new Error([401, 403, 429].includes(response.status) || response.status >= 500
+      ? 'proof_unavailable' : 'proof_not_verified');
+    try { return await boundedJson(response); } catch { throw new Error('proof_unavailable'); }
+  };
+  const [jobs, commit, ci, deployment] = await Promise.all([
+    get(WORKER_REPOSITORY, `/actions/runs/${release.run_id}/attempts/1/jobs?per_page=100`, true),
+    get(SOURCE_REPOSITORY, `/commits/${release.candidate_commit}`),
+    get(SOURCE_REPOSITORY, `/actions/runs/${release.ci_run_id}`),
+    get(SOURCE_REPOSITORY, `/actions/runs/${release.deployment_run_id}`),
+  ]);
+  const successfulRun = (run, id, path, name, event, branch) => !!run
+    && String(run.id) === id && run.path === path && run.name === name && run.event === event
+    && run.repository?.full_name === SOURCE_REPOSITORY && run.head_repository?.full_name === SOURCE_REPOSITORY
+    && run.head_sha === release.candidate_commit && run.head_branch === branch && run.run_attempt === 1
+    && run.status === 'completed' && run.conclusion === 'success'
+    && run.html_url === `https://github.com/${SOURCE_REPOSITORY}/actions/runs/${id}`;
+  if (!Array.isArray(jobs?.jobs) || !Number.isInteger(jobs.total_count) || jobs.total_count > 100
+    || jobs.total_count !== jobs.jobs.length || !['verify', 'publish'].every(name => {
+      const matches = jobs.jobs.filter(job => job.name === name);
+      return matches.length === 1 && String(matches[0].run_id) === release.run_id
+        && matches[0].status === 'completed' && matches[0].conclusion === 'success';
+    }) || commit?.sha !== release.candidate_commit
+    || commit.html_url !== `https://github.com/${SOURCE_REPOSITORY}/commit/${release.candidate_commit}`
+    || !Array.isArray(commit.parents) || commit.parents.length !== 1 || commit.parents[0].sha !== release.source_commit
+    || !Array.isArray(commit.files) || commit.files.length < 1 || commit.files.length > 12
+    || !release.verified_files.every(file => commit.files.some(change => change.filename === file))
+    || !successfulRun(ci, release.ci_run_id, '.github/workflows/regression.yml', 'Application regression checks',
+      'pull_request', `codex/feedback-fix-${release.run_id}`)
+    || !Array.isArray(ci.pull_requests) || !ci.pull_requests.some(pr => pr.head?.sha === release.candidate_commit
+      && pr.base?.ref === 'main')
+    || !successfulRun(deployment, release.deployment_run_id, 'dynamic/pages/pages-build-deployment',
+      'pages build and deployment', 'dynamic', 'main')) throw new Error('proof_not_verified');
 }
 
 export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => Date.now(),
@@ -175,6 +284,11 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
       }
       const payload = completionPayload(body, base);
       if (!payload) return json({ error: 'invalid_request' }, 400);
+      if (body.release?.outcome === 'deployed') {
+        try { await verifyDeployedRelease(body.release, githubToken, fetchImpl); }
+        catch (error) { return json({ error: error.message === 'proof_not_verified' ? 'release_not_verified' : 'verification_unavailable' },
+          error.message === 'proof_not_verified' ? 409 : 503); }
+      }
       const result = await rpc('worker_finish', payload);
       if (!result) return json({ error: 'job_unavailable' }, 409);
       if (String(result.feedback_id) !== base.feedback_id || result.status !== body.status) throw new Error('invalid_result');

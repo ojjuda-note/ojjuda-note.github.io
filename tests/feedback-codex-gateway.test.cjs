@@ -35,7 +35,7 @@ async function fixture({ jwt = claims(), env = {}, rpc, github, verifier, produc
     warn: (...args) => warnings.push(args),
     verifyOidc: verifier || (async () => jwt),
     fetchImpl: async (url, options) => {
-      const body = JSON.parse(options.body);
+      const body = options.body === undefined ? undefined : JSON.parse(options.body);
       calls.push({ url, options, body });
       if (url.startsWith(`${URL}/rest/`)) {
         const value = rpc ? await rpc(body.p_action, body.p_payload) : null;
@@ -257,4 +257,126 @@ test('database faults are not reflected to callers', async () => {
   const response = await f.handler(workerRequest({ action: 'claim', ...worker }));
   assert.equal(response.status, 503);
   assert.deepEqual(await response.json(), { error: 'worker_unavailable' });
+});
+
+const SOURCE_REPO = 'ojjuda-note/ojjuda-note.github.io';
+const releaseProof = () => ({ version: 1, run_id: RUN, feedback_id: '42', outcome: 'deployed',
+  source_commit: 'a'.repeat(40), candidate_commit: 'b'.repeat(40), reason: 'deployed',
+  ci_run_id: '200', deployment_run_id: '300', verified_files: ['note/layout.css'] });
+function releaseCompletion(release = releaseProof()) {
+  return { action: 'complete', ...worker, lease_token: LEASE,
+    status: release.outcome === 'deployed' ? 'resolved' : 'needs_review', priority: 'normal',
+    summary: 'untrusted model summary', result: '운영에는 적용하지 않았어요.', release };
+}
+function githubProofResponses(release = releaseProof()) {
+  const run = (id, path, name, event, head_branch) => ({ id: Number(id), path, name, event, head_branch,
+    head_sha: release.candidate_commit, run_attempt: 1, repository: { full_name: SOURCE_REPO },
+    head_repository: { full_name: SOURCE_REPO }, status: 'completed', conclusion: 'success',
+    html_url: `https://github.com/${SOURCE_REPO}/actions/runs/${id}` });
+  return {
+    [`https://api.github.com/repos/${REPO}/actions/runs/${RUN}/attempts/1/jobs?per_page=100`]: {
+      total_count: 3, jobs: ['verify', 'publish', 'complete'].map(name => ({ name, run_id: Number(RUN),
+        status: name === 'complete' ? 'in_progress' : 'completed', conclusion: name === 'complete' ? null : 'success' })) },
+    [`https://api.github.com/repos/${SOURCE_REPO}/commits/${release.candidate_commit}`]: {
+      sha: release.candidate_commit, html_url: `https://github.com/${SOURCE_REPO}/commit/${release.candidate_commit}`,
+      parents: [{ sha: release.source_commit }], files: [{ filename: 'note/layout.css' }, { filename: 'tests/feedback-layout.test.cjs' }] },
+    [`https://api.github.com/repos/${SOURCE_REPO}/actions/runs/200`]: {
+      ...run('200', '.github/workflows/regression.yml', 'Application regression checks', 'pull_request', `codex/feedback-fix-${RUN}`),
+      pull_requests: [{ head: { sha: release.candidate_commit }, base: { ref: 'main', sha: 'c'.repeat(40) } }] },
+    [`https://api.github.com/repos/${SOURCE_REPO}/actions/runs/300`]:
+      run('300', 'dynamic/pages/pages-build-deployment', 'pages build and deployment', 'dynamic', 'main'),
+  };
+}
+
+test('resolved requires independently verified same-run jobs, candidate commit, CI and Pages proof', async () => {
+  const documents = githubProofResponses();
+  const f = await fixture({ github: (url, options) => {
+    assert.ok(Object.hasOwn(documents, url), url);
+    assert.equal(options.method, 'GET'); assert.equal(options.redirect, 'error');
+    assert.equal(options.headers.Authorization, url.includes(`/${REPO}/`) ? 'Bearer TEST_DISPATCH_CREDENTIAL' : undefined);
+    return Response.json(documents[url]);
+  }, rpc: (action, payload) => {
+    assert.equal(action, 'worker_finish'); assert.equal(payload.status, 'resolved');
+    assert.equal(payload.evidence_url, `https://github.com/${SOURCE_REPO}/commit/${'b'.repeat(40)}`);
+    assert.ok(!payload.result.includes('운영에는 적용하지 않았어요'));
+    assert.ok(!payload.summary.includes('untrusted')); assert.equal(payload.release, undefined);
+    return { feedback_id: '42', status: 'resolved' };
+  } });
+  assert.deepEqual(await (await f.handler(workerRequest(releaseCompletion()))).json(), { ok: true });
+  assert.equal(f.calls.length, 5);
+});
+
+test('release payload rejects cross-run data, missing deployment proof, unsafe paths and arbitrary fields', async () => {
+  const f = await fixture();
+  for (const changes of [{ run_id: '999' }, { feedback_id: '43' }, { version: 2 },
+    { source_commit: ['a'.repeat(40)] }, { candidate_commit: ['b'.repeat(40)] },
+    { candidate_commit: 'a'.repeat(40) }, { candidate_commit: undefined }, { ci_run_id: undefined },
+    { ci_run_id: 200 }, { deployment_run_id: '200' }, { deployment_run_id: undefined },
+    { reason: 'invented-success' }, { reason: 'api_failure' }, { verified_files: [] },
+    { verified_files: ['../outside.css'] }, { verified_files: ['note/layout.css', 'note/layout.css'] },
+    { evidence_url: 'https://attacker.example' }]) {
+    const body = releaseCompletion({ ...releaseProof(), ...changes });
+    assert.equal((await f.handler(workerRequest(body))).status, 400, JSON.stringify(changes));
+  }
+  assert.equal((await f.handler(workerRequest({ ...releaseCompletion(), status: 'needs_review' }))).status, 400);
+  assert.equal(f.calls.length, 0);
+});
+
+test('mismatched or failed GitHub proof never resolves or finishes a job', async () => {
+  const mutations = [
+    docs => { Object.values(docs)[0].jobs[0].run_id = 999; },
+    docs => { Object.values(docs)[0].jobs[0].conclusion = 'failure'; },
+    docs => { Object.values(docs)[0].jobs[1].status = 'in_progress'; },
+    docs => { Object.values(docs)[0].jobs.push(Object.values(docs)[0].jobs[1]); Object.values(docs)[0].total_count++; },
+    docs => { Object.values(docs)[0].total_count = 101; },
+    docs => { Object.values(docs)[1].parents[0].sha = 'c'.repeat(40); },
+    docs => { Object.values(docs)[1].files = []; },
+    docs => { Object.values(docs)[2].head_sha = 'c'.repeat(40); },
+    docs => { Object.values(docs)[2].head_branch = 'main'; },
+    docs => { Object.values(docs)[2].path = '.github/workflows/other.yml'; },
+    docs => { Object.values(docs)[2].event = 'push'; },
+    docs => { Object.values(docs)[2].pull_requests = []; },
+    docs => { Object.values(docs)[3].conclusion = 'failure'; },
+    docs => { Object.values(docs)[3].run_attempt = 2; },
+    docs => { Object.values(docs)[3].repository.full_name = 'other/repo'; },
+    docs => { Object.values(docs)[3].html_url = 'https://attacker.example'; },
+  ];
+  for (const mutate of mutations) {
+    const documents = githubProofResponses(); mutate(documents);
+    const f = await fixture({ github: url => Response.json(documents[url]), rpc: () => assert.fail('must not finish') });
+    const response = await f.handler(workerRequest(releaseCompletion()));
+    assert.equal(response.status, 409); assert.deepEqual(await response.json(), { error: 'release_not_verified' });
+  }
+});
+
+test('verification outages are distinct, bounded and reveal no upstream text', async () => {
+  for (const github of [() => new Response('private error TEST_DISPATCH_CREDENTIAL', { status: 429 }),
+    () => new Response('private error', { status: 503 }), () => { throw new Error('network secret'); },
+    () => new Response('not JSON'), () => new Response('x'.repeat(2 * 1024 * 1024 + 1))]) {
+    const f = await fixture({ github, rpc: () => assert.fail('must not finish') });
+    const response = await f.handler(workerRequest(releaseCompletion()));
+    assert.equal(response.status, 503); assert.deepEqual(await response.json(), { error: 'verification_unavailable' });
+    assert.equal(f.calls.length, 4); assert.deepEqual(f.warnings, []);
+  }
+  const missing = await fixture({ env: { FEEDBACK_GITHUB_TOKEN: undefined } });
+  assert.equal((await missing.handler(workerRequest(releaseCompletion()))).status, 503);
+  assert.equal(missing.calls.length, 0);
+  const notFound = await fixture({ github: () => new Response('', { status: 404 }) });
+  assert.equal((await notFound.handler(workerRequest(releaseCompletion()))).status, 409);
+});
+
+test('publication pending stays truthful and lease-bound without repeating unavailable public verification', async () => {
+  const proof = { ...releaseProof(), outcome: 'published_pending', reason: 'callback_verification_unavailable' };
+  const f = await fixture({ github: () => assert.fail('no public retry'), rpc: (action, payload) => {
+    assert.equal(action, 'worker_finish'); assert.equal(payload.status, 'needs_review');
+    assert.equal(payload.evidence_url, `https://github.com/${SOURCE_REPO}/commit/${proof.candidate_commit}`);
+    assert.match(payload.result, /검증을 완료하지 못했어요/);
+    assert.doesNotMatch(payload.result, /운영에는 적용하지 않았어요|배포 성공을 확인/);
+    return { feedback_id: '42', status: 'needs_review' };
+  } });
+  assert.equal((await f.handler(workerRequest(releaseCompletion(proof)))).status, 200);
+  assert.equal(f.calls.length, 1);
+  const finished = await fixture();
+  assert.equal((await finished.handler(workerRequest(releaseCompletion(proof)))).status, 409);
+  assert.equal((await finished.handler(workerRequest({ ...releaseCompletion(proof), status: 'resolved' }))).status, 400);
 });
