@@ -1698,12 +1698,6 @@ function installFeatures() {
     setBoxTransparency(event.target.value); applyComposeStyle(); recordDraft();
   });
   const transparencyNumber = $('#compose-box-transparency-value');
-  transparencyNumber?.addEventListener('input', event => {
-    if (event.target.value === '' || !Number.isInteger(Number(event.target.value))) return;
-    const level = Math.max(0, Math.min(100, Number(event.target.value)));
-    $('#compose-box-transparency').value = String(level);
-    applyComposeStyle(); recordDraft();
-  });
   transparencyNumber?.addEventListener('change', event => {
     setBoxTransparency(Math.max(0, Math.min(100, Number(event.target.value))));
     applyComposeStyle(); recordDraft();
