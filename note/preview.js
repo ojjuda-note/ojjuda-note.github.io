@@ -954,6 +954,7 @@ function cardElement(card, compact = false, expanded = false) {
   reply.setAttribute('aria-label', `답글 ${card.reply_count || 0}개, 카드 열기`);
   if (expanded) {
     reply.dataset.compose = 'reply';
+    reply.dataset.replyTo = card.id;
     reply.style.display = 'inline-flex';
     reply.setAttribute('aria-label', '이 카드에 답글 쓰기');
   } else reply.dataset.open = card.id;
@@ -1318,6 +1319,7 @@ async function renderDetail() {
   $('.replies').hidden = eventCard;
   $('#detail [data-compose="reply"]').hidden = eventCard;
   $('#detail [data-compose="reply"]').disabled = eventCard || !canWrite('comment');
+  $('#detail [data-compose="reply"]').dataset.replyTo = card.id;
   slot.replaceChildren(cardElement(card, false, true));
   if (eventCard) {
     $('#reply-count').textContent = '0';
@@ -2104,8 +2106,10 @@ function validEventOptions() {
   return validEventInteger($('#event-radius').value, 1, 30)
     && validEventInteger($('#event-hours').value, 1, 24);
 }
-async function openComposer(mode, card = null) {
+async function openComposer(mode, card = null, replyTo = null) {
   if (busy || draftLoading) return;
+  const replyTarget = mode === 'reply' ? (validCardId(replyTo) ? replyTo : stack.at(-1)) : null;
+  if (mode === 'reply' && !validCardId(replyTarget)) { message('답글을 달 카드를 다시 열어 주세요.'); return; }
   closePhotoSourceMenu(); closeWorldPicker(null, false);
   const run = ++composerRun, epoch = identityEpoch;
   if (session?.user && !card?.is_mine) {
@@ -2113,7 +2117,7 @@ async function openComposer(mode, card = null) {
     try { await loadMyGender(userId); }
     catch { message('회원정보를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
     if (run !== composerRun || epoch !== identityEpoch || session?.user?.id !== userId) return;
-    if (!myIdentity) { showMemberInfo(() => openComposer(mode, card)); return; }
+    if (!myIdentity) { showMemberInfo(() => openComposer(mode, card, replyTarget)); return; }
   }
   if (card?.kind === 'event' && card.is_mine) {
     try {
@@ -2129,12 +2133,12 @@ async function openComposer(mode, card = null) {
   focusBefore = document.activeElement;
   editingId = card?.is_mine ? card.id : null;
   composerUserId = session?.user?.id || null;
-  kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' && stack.length ? 'comment' : 'memo';
+  kind = editingId ? card.kind : mode === 'event' ? 'event' : mode === 'reply' ? 'comment' : 'memo';
   cardPhotoEditPath = null;
   clearEventPhoto(); clearCardPhoto();
   $('.compose-photo')?.classList.remove('has-card-photo');
   localComposerBaseline = null; localComposerDirty = false; localComposerStored = false;
-  parentId = editingId ? card.parent_id : kind === 'comment' ? stack.at(-1) : null;
+  parentId = editingId ? card.parent_id : kind === 'comment' ? replyTarget : null;
   backgroundKey = editingId ? (card.photo_key || card.background_key) : String(PHOTO_FIRST + Math.floor(Math.random() * (PHOTO_LAST - PHOTO_FIRST + 1)));
   writingPosition = null; eventPosition = null; publishRequestId = crypto.randomUUID(); photoRequestId = crypto.randomUUID(); locationRun++;
   replyDueChecking = false; replyDueRun++;
@@ -2301,6 +2305,9 @@ async function publishCard() {
       busy = false; setComposerInputs(); updateComposer(); return;
     }
     busy = false; setComposerInputs(); updateComposer();
+  }
+  if (kind === 'comment' && !editId && !validCardId(parentId)) {
+    composeMessage.textContent = '답글을 달 카드를 다시 열어 주세요.'; return;
   }
   let draftToken = null, publishKind = kind, publishParent = parentId;
   recordDraft(); busy = true; setComposerInputs(); updateComposer();
@@ -2949,7 +2956,7 @@ document.addEventListener('click', event => {
   const open = event.target.closest('[data-open]');
   if (open && !open.disabled) { openCard(open.dataset.open); return; }
   const compose = event.target.closest('[data-compose]');
-  if (compose) { openComposer(compose.dataset.compose); return; }
+  if (compose) { openComposer(compose.dataset.compose, null, compose.dataset.replyTo); return; }
   const show = event.target.closest('[data-show="feed"]');
   if (show) { show.classList.contains('back-button') ? goBack() : selectCollection('all'); return; }
   if (event.target.closest('[data-more-feed]')) { loadFeed(true); return; }
