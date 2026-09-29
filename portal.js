@@ -39,13 +39,17 @@
   const postConfirmKey = 'ojjuda_post_confirm_destination';
   const authQuery = new URLSearchParams(location.search);
   let returnQueryDestination = destinationPath(authQuery.get('next')) ? authQuery.get('next') : null;
-  let requestedAuthMode = ['login', 'signup'].includes(authQuery.get('auth'))
+  let requestedAuthMode = ['login', 'signup', 'forgot'].includes(authQuery.get('auth'))
     ? authQuery.get('auth') : returnQueryDestination ? 'login' : null;
 
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
     if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
-    if (authMode === 'signup' && text.includes('database error')) return '가입 정보를 확인해 주세요. 탈퇴 후 3일(72시간) 동안은 같은 이메일이나 전화번호로 다시 가입할 수 없어요.';
+    if (text.includes('phone_already_registered') || text.includes('member_identity_phone_number_key')) return '이미 가입된 전화번호예요. 기존 계정으로 로그인해 주세요.';
+    if (authMode === 'signup' && text.includes('database error')) return '이미 가입된 전화번호인지 확인해 주세요. 탈퇴 후 3일(72시간) 동안도 같은 이메일이나 전화번호로 다시 가입할 수 없어요.';
+    if (text.includes('recovery_rate_limited')) return '확인 요청이 많아요. 15분 뒤 다시 시도해 주세요.';
+    if (text.includes('recovery_mail_failed') || text.includes('recovery_unavailable')) return '재설정 메일을 보내지 못했어요. 잠시 후 다시 시도하거나 고객지원에 문의해 주세요.';
+    if (text.includes('invalid_recovery_details')) return '이메일·전화번호·생년월일·성별을 모두 확인해 주세요.';
     if (text.includes('invalid login credentials')) return '이메일이나 비밀번호를 확인해 주세요.';
     if (text.includes('email not confirmed')) return '메일 인증을 마친 뒤 로그인해 주세요.';
     if (text.includes('already registered') || text.includes('already exists')) return '이미 가입된 이메일이에요. 로그인해 주세요.';
@@ -77,6 +81,8 @@
       button.setAttribute('aria-selected', String(button.dataset.authMode === mode));
     });
     dialog.querySelectorAll('.signup-only').forEach(field => { field.hidden = !isSignup; });
+    $('recovery-identity-slot').hidden = !isForgot;
+    $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
     nickname.closest('.field').hidden = !(isSignup || isNickname);
     dialog.querySelector('.email-field').hidden = isReset || isNickname;
     dialog.querySelector('.password-field').hidden = isForgot || isNickname;
@@ -87,7 +93,7 @@
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
     $('auth-title').textContent = isSignup ? '오쭈다 월드/노트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드/노트';
     $('auth-intro').textContent = isSignup ? '한 번 가입하면 두 공간을 자유롭게 오갈 수 있어요.'
-      : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요.'
+      : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 확인한 뒤 가입 이메일로 재설정 링크를 보내드려요.'
         : isReset ? '새로 사용할 비밀번호를 입력해 주세요.'
           : isNickname ? '노트에서 사용할 닉네임을 정해 주세요.'
           : '하나의 계정으로 두 공간을 즐겨요.';
@@ -242,7 +248,7 @@
       url.searchParams.delete('auth');
       history.replaceState(null, '', url.pathname + url.search + url.hash);
       // Existing sessions resume the chosen space; recovery links take priority.
-      if (!user && !recoveryPending) openAuth(mode, returnQueryDestination);
+      if ((!user || mode === 'forgot') && !recoveryPending) openAuth(mode, returnQueryDestination);
     }
     resumeAfterConfirmation(user);
   }
@@ -304,10 +310,21 @@
     feedback.textContent = '';
     const address = email.value.trim();
     const secret = password.value;
-    let signupIdentity = null;
+    let signupIdentity = null, recoveryDetails = null;
     if (authMode === 'signup') {
       try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); }
       catch (error) { feedback.textContent = error.message; return; }
+    }
+    if (authMode === 'forgot') {
+      try {
+        const birth = $('recovery-birth').value, gender = $('recovery-gender').value;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(birth) || !['male', 'female'].includes(gender)
+          || Number(birth.slice(0, 4)) < 1900 || Number(birth.slice(0, 4)) > 2099) throw new Error('생년월일과 성별을 확인해 주세요.');
+        const code = String((Number(birth.slice(0, 4)) < 2000 ? 1 : 3) + (gender === 'female' ? 1 : 0));
+        window.OjjudaIdentity.parseBirth(birth.slice(2).replaceAll('-', ''), code, undefined, false);
+        recoveryDetails = { email: address, birth_date: birth, gender,
+          phone: window.OjjudaIdentity.normalizePhone($('recovery-phone').value) };
+      } catch (error) { feedback.textContent = error.message; return; }
     }
     if (authMode !== 'reset' && authMode !== 'nickname' && !validEmail(address)) {
       feedback.textContent = '이메일 주소를 확인해 주세요.';
@@ -391,10 +408,15 @@
       } else if (authMode === 'nickname') {
         await enterNote(nickname.value.trim());
       } else if (authMode === 'forgot') {
-        const redirectTo = new URL('/?reset=1', location.href).href;
-        const { error } = await client.auth.resetPasswordForEmail(address, { redirectTo });
-        if (error) throw error;
-        showState('메일을 보냈어요', '가입한 이메일이라면 재설정 링크가 도착해요. 메일함을 확인해 주세요.');
+        const { data, error } = await client.functions.invoke('member-recovery', { body: recoveryDetails });
+        if (error) {
+          let code = 'recovery_unavailable';
+          try { code = (await error.context.json()).error || code; } catch {}
+          throw new Error(code);
+        }
+        if (!data?.accepted) throw new Error('recovery_unavailable');
+        for (const id of ['recovery-phone', 'recovery-birth', 'recovery-gender']) $(id).value = '';
+        showState('재설정 요청을 확인했어요', '네 가지 정보가 등록된 회원정보와 모두 일치하면 가입 이메일로 링크가 도착해요. 스팸함도 확인해 주세요.');
       } else if (authMode === 'reset') {
         const { data, error } = await client.auth.updateUser({ password: secret });
         if (error) throw error;

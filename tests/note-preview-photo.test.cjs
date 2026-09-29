@@ -51,6 +51,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 
   // Exercise the real browser publish handler against the migrated PostgreSQL RPCs.
   const source = read('note/preview.js');
+  const validCardIdSource = source.match(/^const validCardId = .*;$/m)[0];
   const publishSource = source.slice(source.indexOf('async function publishCard()'),source.indexOf('\nfunction updateAuth()'));
   const publishFromPreview = async ({background='42',kind='memo',parent=null,attachment=false,draftBackground=background,withDraft=true}={}) => {
     const requestId=randomUUID(), photoId=randomUUID(), attachmentPath=`${member}/${photoId}.jpg`;
@@ -77,7 +78,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       c.identityEpoch++; // Stop after the real publication succeeds, before unrelated feed rendering.
       return result;
     };
-    vm.createContext(c);vm.runInContext(publishSource,c);await vm.runInContext('publishCard()',c);
+    vm.createContext(c);vm.runInContext(validCardIdSource+'\n'+publishSource,c);await vm.runInContext('publishCard()',c);
     return {calls,message:c.composeMessage.textContent,result:await value('select result as value from ojjuda_note_internal.spend_requests where request_id=$1',[requestId])};
   };
   for(const key of ['10','42','73','189']){
