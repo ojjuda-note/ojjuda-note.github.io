@@ -4,7 +4,7 @@
   window.OjjudaWorldNavigation = {
     install(options) {
       let initialized = false, returning = false, handling = false;
-      let gesture = null, suppressClickUntil = 0;
+      let gesture = null, suppressClickUntil = 0, edgeReturn = null;
       const state = page => ({...(history.state || {}), ojjudaWorld: page});
       const pushMenu = () => history.pushState(state('menu'), '', location.href);
       const back = () => {
@@ -36,6 +36,8 @@
         else history.replaceState(state('main'), '', location.href);
       });
       const reset = () => {
+        edgeReturn?.cancel();
+        edgeReturn = null;
         if (gesture?.surface) gesture.surface.style.transform = '';
         gesture = null;
       };
@@ -77,7 +79,7 @@
         }
         if (event.cancelable) event.preventDefault();
         if (dx < 0 && currentIndex() === options.tabs.length - 1) {
-          if (g.surface) g.surface.style.transform = '';
+          if (g.surface) g.surface.style.transform = `translateX(${Math.max(-32, dx * .18)}px)`;
           return;
         }
         if (g.surface) g.surface.style.transform = `translateX(${Math.max(-100, Math.min(100, dx * .55))}px)`;
@@ -86,13 +88,21 @@
         const g = gesture;
         if (!g) return;
         const dx = point.clientX - g.x, dy = point.clientY - g.y;
+        const draggedTransform = g.surface?.style.transform;
         reset();
         if (!g.horizontal) return;
         suppressClickUntil = performance.now() + 400;
-        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || performance.now() - g.time > 1200) return;
         const tabs = options.tabs, index = currentIndex();
-        // The final World menu is the left-swipe boundary, not a loop to Main.
-        if (dx < 0 && index === tabs.length - 1) return;
+        // Give the final menu a little resistance, then return without changing tabs.
+        if (dx < 0 && index === tabs.length - 1) {
+          if (draggedTransform && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            edgeReturn = g.surface.animate(
+              [{transform: draggedTransform}, {transform: 'translateX(0)'}],
+              {duration: 180, easing: 'ease-out'});
+          }
+          return;
+        }
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || performance.now() - g.time > 1200) return;
         if (!options.canLeave()) return;
         if (dx > 0 && options.isMain() && options.openNote) { options.openNote(); return; }
         if (index < 0) return;
