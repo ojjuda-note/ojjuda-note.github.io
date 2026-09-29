@@ -23,6 +23,11 @@ def module(name, file):
 backup = module("backup", "ops/backup.py")
 restore = module("restore", "ops/restore-storage.py")
 
+def private_acl():
+    return {"Owner": {"ID": "ncp-synthetic-0"}, "Grants": [
+        {"Grantee": {"Type": "CanonicalUser", "ID": "ncp-synthetic-0"},
+         "Permission": "FULL_CONTROL"}]}
+
 class RecoveryTest(unittest.TestCase):
     def test_encrypted_roundtrip_and_tamper_rejection(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -69,12 +74,120 @@ class RecoveryTest(unittest.TestCase):
 
     def test_offsite_download_must_match(self):
         class FakeS3:
+            def get_bucket_acl(self, **kwargs): return private_acl()
+            def get_object_acl(self, **kwargs): return private_acl()
             def upload_file(self,*args,**kwargs): pass
             def get_object(self,**kwargs):return {"Body":io.BytesIO(b"corrupt"),"ContentLength":7}
         with tempfile.NamedTemporaryFile() as file:
             file.write(b"encrypted-backup");file.flush()
             with self.assertRaisesRegex(RuntimeError,"upload verification failed"):
                 backup.upload_and_verify(FakeS3(),{"BACKUP_S3_BUCKET":"test"},Path(file.name),"test.age")
+
+    def test_public_or_shared_acl_is_rejected(self):
+        backup.require_private_acl(private_acl(), "bucket")
+        grants = [
+            {"Type": "Group", "URI": "http://acs.amazonaws.com/groups/global/AllUsers"},
+            {"Type": "Group", "URI": "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"},
+            {"Type": "CanonicalUser", "ID": "another-account"},
+        ]
+        for grantee in grants:
+            acl = private_acl()
+            acl["Grants"].append({"Grantee": grantee, "Permission": "READ"})
+            with self.subTest(grantee=grantee), self.assertRaisesRegex(RuntimeError, "is shared"):
+                backup.require_private_acl(acl, "bucket")
+        for acl in [{}, {"Owner": {"ID": "owner"}, "Grants": []}]:
+            with self.assertRaisesRegex(RuntimeError, "Cannot verify"):
+                backup.require_private_acl(acl, "bucket")
+
+    def test_upload_checks_bucket_before_and_object_after(self):
+        events = []
+        shared = private_acl()
+        shared["Grants"].append({"Grantee": {"Type": "Group", "URI": "public"}, "Permission": "READ"})
+        class FakeS3:
+            bucket_acl = private_acl()
+            object_acl = private_acl()
+            def get_bucket_acl(self, **kwargs):
+                events.append("bucket")
+                return self.bucket_acl
+            def get_object_acl(self, **kwargs):
+                events.append("object")
+                return self.object_acl
+            def upload_file(self, filename, bucket, key, **kwargs):
+                events.append("upload")
+                self.upload_args = kwargs["ExtraArgs"]
+                self.data = Path(filename).read_bytes()
+            def get_object(self, **kwargs):
+                events.append("download")
+                return {"Body": io.BytesIO(self.data), "ContentLength": len(self.data)}
+        with tempfile.NamedTemporaryFile() as file:
+            file.write(b"synthetic-ciphertext"); file.flush()
+            client = FakeS3()
+            client.bucket_acl = shared
+            with self.assertRaisesRegex(RuntimeError, "is shared"):
+                backup.upload_and_verify(client, {"BACKUP_S3_BUCKET": "test"}, Path(file.name), "test.age")
+            self.assertEqual(events, ["bucket"], "shared bucket must prevent any upload")
+            events.clear()
+            client.bucket_acl = private_acl()
+            client.object_acl = shared
+            with self.assertRaisesRegex(RuntimeError, "is shared"):
+                backup.upload_and_verify(client, {"BACKUP_S3_BUCKET": "test"}, Path(file.name), "test.age")
+            self.assertEqual(events, ["bucket", "upload", "bucket", "object"])
+            events.clear()
+            client.object_acl = private_acl()
+            backup.upload_and_verify(client, {"BACKUP_S3_BUCKET": "test"}, Path(file.name), "test.age")
+            self.assertEqual(events, ["bucket", "upload", "bucket", "object", "download"])
+            self.assertEqual(client.upload_args["ACL"], "private")
+            self.assertEqual(client.upload_args["Metadata"]["sha256"], hashlib.sha256(client.data).hexdigest())
+
+    def test_naver_destination_cannot_drift(self):
+        ref = "a" * 20
+        env = {key: "synthetic" for key in backup.NEEDED}
+        env.update(SUPABASE_PROJECT_REF=ref,
+                   SUPABASE_DB_URL=f"postgresql://postgres:synthetic@db.{ref}.supabase.co/postgres",
+                   BACKUP_AGE_RECIPIENT="age1" + "q" * 58,
+                   BACKUP_S3_ENDPOINT=backup.NAVER_ENDPOINT,
+                   BACKUP_S3_REGION=backup.NAVER_REGION,
+                   BACKUP_S3_BUCKET="synthetic-backup", GITHUB_REPOSITORY="test/test")
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(backup.required_config()["BACKUP_S3_REGION"], "kr-standard")
+            for endpoint in ["https://sg.object.ncloudstorage.com", "https://example.invalid",
+                             backup.NAVER_ENDPOINT + "/other", backup.NAVER_ENDPOINT + "?redirect=other"]:
+                with patch.dict(os.environ, {"BACKUP_S3_ENDPOINT": endpoint}):
+                    with self.assertRaisesRegex(RuntimeError, "NAVER Cloud"):
+                        backup.required_config()
+            with patch.dict(os.environ, {"BACKUP_S3_REGION": "us-standard"}):
+                with self.assertRaisesRegex(RuntimeError, "NAVER Cloud"):
+                    backup.required_config()
+
+    def test_sdk_uploads_do_not_require_aws_checksum_trailers(self):
+        class CapturedRequest(Exception): pass
+        requests = []
+        def capture(request, **kwargs):
+            requests.append(request)
+            raise CapturedRequest()
+        client = backup.s3_client(backup.NAVER_ENDPOINT, backup.NAVER_REGION,
+                                  "synthetic-access", "synthetic-secret")
+        client.meta.events.register("before-send.s3", capture)
+        try:
+            # Capture the real SDK's signed wire requests; no network request is sent.
+            with self.assertRaises(CapturedRequest):
+                client.put_object(Bucket="synthetic-backup", Key="snapshot.age",
+                                  Body=io.BytesIO(b"ciphertext"), ACL="private")
+            with self.assertRaises(CapturedRequest):
+                client.upload_part(Bucket="synthetic-backup", Key="snapshot.age",
+                                   UploadId="synthetic", PartNumber=1, Body=io.BytesIO(b"ciphertext"))
+            for request in requests:
+                headers = {key.lower(): value for key, value in request.headers.items()}
+                self.assertTrue(request.url.startswith(backup.NAVER_ENDPOINT + "/synthetic-backup/"))
+                self.assertEqual(headers["content-length"], "10")
+                self.assertNotIn("x-amz-trailer", headers)
+                self.assertNotIn("content-encoding", headers)
+                self.assertNotIn("x-amz-sdk-checksum-algorithm", headers)
+                self.assertIn(b"/kr-standard/s3/aws4_request", headers["authorization"])
+            self.assertEqual(len(requests), 2)
+            self.assertEqual(requests[0].headers["x-amz-acl"], b"private")
+        finally:
+            client.close()
 
     def test_restore_cannot_target_production_or_another_database(self):
         with self.assertRaises(RuntimeError):restore.target_db_url(restore.PRODUCTION_PROJECT_REF,"x"*20)

@@ -24,6 +24,9 @@ import boto3
 from botocore.client import Config
 
 
+NAVER_ENDPOINT = "https://kr.object.ncloudstorage.com"
+NAVER_REGION = "kr-standard"
+
 NEEDED = (
     "SUPABASE_PROJECT_REF", "SUPABASE_REGION", "SUPABASE_DB_URL",
     "SUPABASE_S3_ACCESS_KEY", "SUPABASE_S3_SECRET_KEY",
@@ -55,6 +58,9 @@ def required_config():
     endpoint = urlparse(cfg["BACKUP_S3_ENDPOINT"])
     if endpoint.scheme != "https" or not endpoint.hostname:
         raise RuntimeError("Offsite S3 endpoint must use HTTPS")
+    if (cfg["BACKUP_S3_ENDPOINT"].rstrip("/") != NAVER_ENDPOINT
+            or cfg["BACKUP_S3_REGION"] != NAVER_REGION):
+        raise RuntimeError("Offsite backup must use NAVER Cloud Object Storage in Korea")
     if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.-]{1,61}[a-zA-Z0-9]", cfg["BACKUP_S3_BUCKET"]):
         raise RuntimeError("Invalid offsite bucket name")
     retention = int(os.environ.get("BACKUP_RETENTION_DAYS", "30"))
@@ -103,6 +109,10 @@ def s3_client(endpoint, region, access, secret):
         "s3", endpoint_url=endpoint, region_name=region,
         aws_access_key_id=access, aws_secret_access_key=secret,
         config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
+                      # Avoid optional AWS streaming checksum trailers on
+                      # S3-compatible endpoints. Full SHA-256 is checked below.
+                      request_checksum_calculation="when_required",
+                      response_checksum_validation="when_required",
                       retries={"max_attempts": 5, "mode": "standard"}),
     )
 
@@ -117,6 +127,28 @@ def source_s3(cfg):
 def destination_s3(cfg):
     return s3_client(cfg["BACKUP_S3_ENDPOINT"], cfg["BACKUP_S3_REGION"],
                      cfg["BACKUP_S3_ACCESS_KEY"], cfg["BACKUP_S3_SECRET_KEY"])
+
+
+def require_private_acl(acl, label):
+    owner = acl.get("Owner", {}).get("ID")
+    grants = acl.get("Grants", [])
+    if not owner or not grants:
+        raise RuntimeError(f"Cannot verify private {label} ACL")
+    for grant in grants:
+        grantee = grant.get("Grantee", {})
+        if (grantee.get("Type") != "CanonicalUser" or grantee.get("ID") != owner
+                or grant.get("Permission") not in
+                {"FULL_CONTROL", "READ", "WRITE", "READ_ACP", "WRITE_ACP"}):
+            raise RuntimeError(f"Offsite {label} is shared; use an owner-only private backup bucket")
+    if not any(grant.get("Permission") == "FULL_CONTROL" for grant in grants):
+        raise RuntimeError(f"Cannot verify private {label} owner permissions")
+
+
+def verify_private_destination(client, cfg, key=None):
+    bucket = cfg["BACKUP_S3_BUCKET"]
+    require_private_acl(client.get_bucket_acl(Bucket=bucket), "bucket")
+    if key is not None:
+        require_private_acl(client.get_object_acl(Bucket=bucket, Key=key), "object")
 
 
 BUCKETS_SQL = "SELECT row_to_json(b)::text FROM storage.buckets b ORDER BY b.id"
@@ -277,10 +309,12 @@ def verify_archive(path):
 
 def upload_and_verify(client, cfg, file, key):
     bucket = cfg["BACKUP_S3_BUCKET"]
+    verify_private_destination(client, cfg)
     sha = digest_file(file)
     client.upload_file(str(file), bucket, key,
-                       ExtraArgs={"Metadata": {"sha256": sha},
+                       ExtraArgs={"ACL": "private", "Metadata": {"sha256": sha},
                                   "ContentType": "application/octet-stream"})
+    verify_private_destination(client, cfg, key)
     response = client.get_object(Bucket=bucket, Key=key)
     hasher = hashlib.sha256()
     try:
@@ -320,6 +354,7 @@ def main():
             raise RuntimeError(f"Required executable unavailable: {command}")
     source, offsite = source_s3(cfg), destination_s3(cfg)
     offsite.head_bucket(Bucket=cfg["BACKUP_S3_BUCKET"])
+    verify_private_destination(offsite, cfg)
     pg_query("Database connection", "SELECT 1", Path(os.devnull), cfg)
     started = dt.datetime.now(dt.timezone.utc)
     kst = started.astimezone(dt.timezone(dt.timedelta(hours=9)))

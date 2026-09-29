@@ -1,6 +1,6 @@
 # 오쭈다 월드·노트 재해 복구
 
-현재 GitHub 저장소의 전체 이력, 운영 Supabase DB(계정 포함), Storage 사진 원본을 매일 한국 시간 03:00에 점검을 시작한 뒤 하나의 암호화 파일로 외부 비공개 S3 버킷에 올리도록 준비한 절차다. **이 파일을 저장소에 추가하는 것만으로 백업이 시작되지는 않는다.** 아래 비밀값을 설정하고 첫 수동 실행·격리 복구 테스트가 성공해야 운영 중이라고 표시한다.
+현재 GitHub 저장소의 전체 이력, 운영 Supabase DB(계정 포함), Storage 사진 원본을 매일 한국 시간 03:00에 점검을 시작한 뒤 하나의 암호화 파일로 **네이버 클라우드 Object Storage 한국 리전의 비공개 버킷**에 올리도록 준비한 절차다. 2026-09-29 사용자가 백업 보관소로 네이버 클라우드를 선택했다. **이 파일을 저장소에 추가하는 것만으로 백업이 시작되지는 않는다.** 아래 비밀값을 설정하고 첫 수동 실행·격리 복구 테스트가 성공해야 운영 중이라고 표시한다.
 
 ## 매일 03:00 오류·보안 점검 (2026-09-29 적용)
 
@@ -20,10 +20,10 @@
 
 ## 설치와 최초 확인
 
-1. Supabase **Database > Connect**에서 `postgres` 권한의 *session pooler* 연결 URL을 확인한다. 비밀번호가 URL에 들어가므로 GitHub 저장소 코드나 대화에 붙여 넣지 않는다.
+1. Supabase **Database > Connect**에서 `postgres` 권한의 *session pooler* 연결 URL을 확인한다. 기존 비밀번호를 사용하며 이 작업 때문에 비밀번호를 재설정하지 않는다. 비밀번호가 URL에 들어가므로 GitHub 저장소 코드나 대화에 붙여 넣지 않는다.
 2. Supabase **Storage > Configuration > S3**에서 S3 프로토콜을 켜고 전용 액세스 키를 만든다. 운영 버킷 `media`, `note-event-photos`, `note-card-photos`를 모두 읽을 수 있어야 한다. 새 버킷이 생겨도 SQL 목록으로 자동 발견한다.
-3. Supabase와 분리된 계정에 **비공개 S3 호환 버킷**을 만든다(예: Cloudflare R2 표준 버킷). 버킷의 전용 읽기·쓰기·삭제 키를 만든다. 다른 서비스의 데이터와 섞지 않는다.
-   첫 운영 백업 전에 실제 보관업체·국가·보유기간과 탈퇴 전 백업의 처리 방식을 개인정보처리방침에 반영하고, 방침에 적힌 변경 사전 공지 절차를 마친다. 업체가 확정되기 전에는 실제 회원 데이터를 외부로 전송하지 않는다.
+3. 네이버 클라우드 콘솔에서 **한국 리전 > Storage > Object Storage > Bucket Management**에 백업 전용 버킷을 만든다. 권한은 **공개 안함**, 다른 계정 권한은 비워 둔다. API 키에는 해당 버킷의 목록 조회·파일 읽기·업로드·삭제와 버킷/파일 ACL 조회가 필요하다. 다른 서비스의 데이터와 섞지 않는다. 공개 웹 호스팅·공개 파일 링크를 켜지 않는다.
+   첫 운영 백업 전에 보관업체(네이버클라우드)·국가(한국)·보유기간(30일)과 탈퇴 전 백업의 처리 방식을 개인정보처리방침에 반영하고, 방침에 적힌 변경 사전 공지 절차를 마친다.
 4. 관리자 PC에서 `age-keygen`으로 암호화 키쌍을 만든다. `age1...` 공개 수신자만 GitHub Secret에 넣고, `AGE-SECRET-KEY-...` 개인 키는 GitHub·운영 서버와 별개로 **오프라인 두 곳**에 보관한다. 개인 키를 잃으면 어떤 백업도 열 수 없다.
 5. GitHub 저장소 **Settings > Secrets and variables > Actions**에 다음 Repository Secrets를 넣는다.
 
@@ -31,14 +31,22 @@
 | --- | --- |
 | `BACKUP_SUPABASE_DB_URL` | 위 Postgres session pooler 연결 URL |
 | `BACKUP_SUPABASE_S3_ACCESS_KEY`, `BACKUP_SUPABASE_S3_SECRET_KEY` | 운영 Storage S3 전용 키 |
-| `BACKUP_S3_ENDPOINT` | 외부 보관소 HTTPS S3 엔드포인트 (`https://<account-id>.r2.cloudflarestorage.com` 등) |
-| `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET` | 외부 보관소의 리전과 **비공개** 버킷 이름 (R2는 보통 `auto`) |
-| `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 외부 보관소의 전용 키 |
+| `BACKUP_S3_BUCKET` | 네이버 클라우드 한국 리전에 만든 **비공개** 백업 버킷 이름 |
+| `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 네이버 클라우드 백업 전용 API 인증키의 Access Key ID / Secret Key |
 | `BACKUP_AGE_RECIPIENT` | 공개 `age1...` 수신자 값 |
+
+   엔드포인트 `https://kr.object.ncloudstorage.com`과 리전 `kr-standard`는 workflow에 고정한다. 두 값은 Secret으로 등록할 필요가 없다. 로컬 실행에는 같은 값을 환경변수 `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`으로 설정한다. 스크립트는 다른 업체·해외 리전으로의 잘못된 백업 설정을 거부한다. API 인증키는 네이버 클라우드 **My Account > 계정 및 보안 관리 > 보안 관리 > 접근 관리 > API 인증키**에서 관리한다. 키와 DB 연결 URL은 대화나 소스에 남기지 않는다.
 
 6. `.github/workflows/nightly-backup.yml`과 `ops/` 파일을 저장소 기본 브랜치에 올린 뒤 **Actions > Daily checks and encrypted offsite backup > Run workflow**로 첫 실행한다. 성공 로그의 `Encrypted offsite backup verified`와 외부 버킷의 `ojjuda-disaster-recovery/v1/daily/YYYY-MM-DD/backup-...tar.gz.age` 파일을 함께 확인한다. 마지막으로 아래 복구 검증을 별도 프로젝트에서 해 본다.
 
 GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될 수 있고 공개 저장소가 60일 동안 활동이 없으면 예약이 중지될 수 있다. 작업 실패 알림을 켜고 **최근 성공 백업이 26시간 이내인지 매일 확인**한다. 복구 목표가 더 엄격하면 GitHub Actions와 독립된 실행기·모니터링이 필요하다.
+
+## 네이버 클라우드 연결 검증
+
+- HTTPS, Signature V4와 path 방식으로 접속한다. AWS 전용 선택적 스트리밍 체크섬은 요청하지 않고, 업로드한 암호문을 전부 다시 읽어 자체 SHA-256과 크기를 대조한다. 작은 파일과 멀티파트의 실제 SDK 요청 형식을 가상 키로 검사한다.
+- 데이터 수집 전과 업로드 직전에 버킷 ACL을 조회한다. 소유자 외 계정·전체 사용자·인증된 모든 사용자에게 권한이 있거나 ACL을 확인할 수 없으면 실패한다. 기존 버킷 권한을 임의로 바꾸지 않는다.
+- 파일 업로드에 `ACL=private`를 명시하고, 완료 후 버킷과 파일 양쪽의 소유자 전용 ACL을 다시 확인한다. 비공개 확인·다운로드 해시 검증이 모두 성공해야 이전 백업의 보존기간 정리를 시작한다.
+- `python tests/backup-restore.test.py`는 암호화 복원, 파일 변조, 공유된 버킷·파일 차단, 잘못된 목적지, SDK 요청, 보존기간을 가상 자료로 검사한다. 이 검사 통과는 네이버 클라우드 계정 연결이나 실제 업로드 성공을 의미하지 않는다.
 
 ## 백업 안에 있는 것
 
@@ -65,4 +73,4 @@ GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될
 
 매일 한 번의 스냅샷은 마지막 성공 백업 이후 **최대 약 24시간의 자료 손실**을 허용하며, 새 프로젝트와 도메인 재연결에는 시간이 든다. 자동 즉시 전환이나 탈퇴 사건의 실시간 독립 기록은 이 구성에 포함되어 있지 않다.
 
-공식 문서: [Supabase 백업](https://supabase.com/docs/guides/platform/backups), [CLI 덤프·복구](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore), [Vault 키 이동](https://supabase.com/docs/guides/database/vault), [Storage 파일 복사](https://supabase.com/docs/guides/storage/management/download-objects), [GitHub 예약 실행](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
+공식 문서: [네이버 클라우드 Object Storage API·한국 리전](https://api.ncloud-docs.com/docs/common-objectstorageapi-objectstorageapi), [버킷 권한 관리](https://guide.ncloud-docs.com/docs/objectstorage-use-bucket), [Object Storage ACL](https://api.ncloud-docs.com/docs/storage-objectstorage), [SDK 체크섬 설정](https://docs.aws.amazon.com/botocore/latest/reference/config.html), [Supabase 백업](https://supabase.com/docs/guides/platform/backups), [CLI 덤프·복구](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore), [Vault 키 이동](https://supabase.com/docs/guides/database/vault), [Storage 파일 복사](https://supabase.com/docs/guides/storage/management/download-objects), [GitHub 예약 실행](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
