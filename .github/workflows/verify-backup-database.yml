@@ -1,0 +1,24 @@
+name: Verify backup database password
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  password-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install database client
+        run: |
+          python3 -m venv /tmp/ojjuda-db-check
+          /tmp/ojjuda-db-check/bin/pip install --disable-pip-version-check 'psycopg[binary]==3.2.10'
+      - name: Verify existing password with one read-only connection
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.BACKUP_SUPABASE_DB_PASSWORD }}
+        run: /tmp/ojjuda-db-check/bin/python ops/check-backup-database.py
