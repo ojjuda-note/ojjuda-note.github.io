@@ -31,15 +31,20 @@
 | --- | --- |
 | `BACKUP_SUPABASE_DB_URL` | 위 Postgres session pooler 연결 URL |
 | `BACKUP_SUPABASE_S3_ACCESS_KEY`, `BACKUP_SUPABASE_S3_SECRET_KEY` | 운영 Storage S3 전용 키 |
-| `BACKUP_S3_BUCKET` | 네이버 클라우드 한국 리전에 만든 **비공개** 백업 버킷 이름 |
 | `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 네이버 클라우드 백업 전용 API 인증키의 Access Key ID / Secret Key |
 | `BACKUP_AGE_RECIPIENT` | 공개 `age1...` 수신자 값 |
 
-   엔드포인트 `https://kr.object.ncloudstorage.com`과 리전 `kr-standard`는 workflow에 고정한다. 두 값은 Secret으로 등록할 필요가 없다. 로컬 실행에는 같은 값을 환경변수 `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`으로 설정한다. 스크립트는 다른 업체·해외 리전으로의 잘못된 백업 설정을 거부한다. API 인증키는 네이버 클라우드 **My Account > 계정 및 보안 관리 > 보안 관리 > 접근 관리 > API 인증키**에서 관리한다. 키와 DB 연결 URL은 대화나 소스에 남기지 않는다.
+   엔드포인트 `https://kr.object.ncloudstorage.com`, 리전 `kr-standard`, 버킷 `ojjuda-backup-ziezbdjofcugznowiuda`는 workflow에 고정한다. 이 세 값은 Secret으로 등록할 필요가 없다. 로컬 실행에는 같은 값을 환경변수 `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`으로 설정한다. 스크립트는 다른 업체·해외 리전으로의 잘못된 백업 설정을 거부한다. API 인증키는 네이버 클라우드 **My Account > 계정 및 보안 관리 > 보안 관리 > 접근 관리 > API 인증키**에서 관리한다. 키와 DB 연결 URL은 대화나 소스에 남기지 않는다.
 
 6. `.github/workflows/nightly-backup.yml`과 `ops/` 파일을 저장소 기본 브랜치에 올린 뒤 **Actions > Daily checks and encrypted offsite backup > Run workflow**로 첫 실행한다. 성공 로그의 `Encrypted offsite backup verified`와 외부 버킷의 `ojjuda-disaster-recovery/v1/daily/YYYY-MM-DD/backup-...tar.gz.age` 파일을 함께 확인한다. 마지막으로 아래 복구 검증을 별도 프로젝트에서 해 본다.
 
 GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될 수 있고 공개 저장소가 60일 동안 활동이 없으면 예약이 중지될 수 있다. 작업 실패 알림을 켜고 **최근 성공 백업이 26시간 이내인지 매일 확인**한다. 복구 목표가 더 엄격하면 GitHub Actions와 독립된 실행기·모니터링이 필요하다.
+
+## 네이버 클라우드 저장소 준비 상태 (2026-09-29)
+
+- 한국 VPC 콘솔에서 Object Storage 이용 중 상태와 `ojjuda-backup-ziezbdjofcugznowiuda` 버킷 생성을 확인했다. 버킷은 공개 안함, 외부 계정 ACL 추가 없음으로 생성했다.
+- 자동 백업용 계정은 콘솔 접근 없이 사용하도록 준비한다. `OjjudaBackupStorage` 정책은 `View/getBucketList`와 전용 버킷에 한정한 `View/getObjectList`, `View/getMultipartUploadList`, `Change/writeObject`만 포함한다. 버킷 생성·삭제, 공개 설정·웹 호스팅·이용 해지 권한은 포함하지 않는다.
+- API 키와 원본 DB·Storage 접속정보, age 공개 수신자 연결, 첫 실제 백업 및 격리 복원은 별도 완료 확인이 필요하다. 버킷이 생긴 것만으로 운영 백업이 성공한 것은 아니다.
 
 ## 네이버 클라우드 연결 검증
 
