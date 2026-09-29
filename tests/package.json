@@ -1,6 +1,12 @@
 {
   "name": "ojjuda-member-identity-tests",
   "private": true,
-  "scripts": { "test": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs" },
-  "devDependencies": { "@electric-sql/pglite": "0.5.8" }
+  "scripts": {
+    "test": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs",
+    "test:ui": "node admin-ui.test.cjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "playwright": "1.62.1"
+  }
 }
