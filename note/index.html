@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="account.css?v=20260929-account1">
 <link rel="stylesheet" href="/guide-entry.css?v=20260928-guide1">
 <link rel="stylesheet" href="/photo-protection.css?v=20260929-1">
+<link rel="stylesheet" href="/my-menu.css?v=20260929-my1">
 <script src="/photo-protection.js?v=20260929-1" defer></script>
 </head>
 <body>
@@ -61,32 +62,46 @@
       </nav>
       <div id="note-sidebar-menu-slot">
         <div class="note-account-menu" id="note-account-menu">
-          <section class="note-menu-section note-account-section" id="note-account-section" aria-labelledby="note-account-title" hidden>
-            <h2 id="note-account-title" class="side-section-label side-group-label">계정</h2>
-            <p class="note-account-name" id="note-account-name"></p>
-            <p class="note-account-email" id="note-account-email"></p>
-            <p class="note-account-hint">월드와 노트가 함께 쓰는 계정이에요.</p>
-            <div class="note-account-actions">
-              <button class="nav-button" type="button" id="note-change-nickname">닉네임 변경</button>
-              <button class="nav-button" type="button" id="note-change-password">비밀번호 변경</button>
-              <button class="nav-button" type="button" id="note-logout">로그아웃</button>
-              <button class="nav-button note-account-danger" type="button" id="note-delete-account">회원 탈퇴</button>
+          <details class="my-menu-group">
+            <summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true"><svg><use href="#cards"/></svg></span><span class="my-menu-copy"><span class="my-menu-title" id="note-events-title">내 활동</span><span class="my-menu-caption">내 이벤트 · 이벤트 만들기</span></span></summary>
+            <div class="my-menu-body">
+              <button class="nav-button" type="button" data-show="events"><svg><use href="#pin"/></svg>내 이벤트</button>
+              <button class="nav-button side-event-button" type="button" id="event-start"><svg><use href="#plus"/></svg>이벤트 만들기</button>
             </div>
+          </details>
+          <details class="my-menu-group">
+            <summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true"><svg><use href="#user"/></svg></span><span class="my-menu-copy"><span class="my-menu-title" id="note-tools-title">내 정보·차단</span><span class="my-menu-caption">회원정보 · 차단 목록</span></span></summary>
+            <div class="my-menu-body">
+              <div class="side-tools" id="side-tools"></div>
+            </div>
+          </details>
+          <section class="note-account-section" id="note-account-section" aria-labelledby="note-account-title" hidden>
+            <details class="my-menu-group">
+              <summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true"><svg><use href="#user"/></svg></span><span class="my-menu-copy"><span class="my-menu-title" id="note-account-title">계정 관리</span><span class="my-menu-caption">닉네임 · 계정 설정</span></span></summary>
+              <div class="my-menu-body">
+                <p class="note-account-name" id="note-account-name"></p>
+                <p class="note-account-email" id="note-account-email"></p>
+                <p class="note-account-hint">월드와 노트가 함께 쓰는 계정이에요.</p>
+                <div class="note-account-actions">
+                  <button class="nav-button" type="button" id="note-change-nickname">닉네임 변경</button>
+                  <button class="nav-button" type="button" id="note-change-password">비밀번호 변경</button>
+                  <button class="nav-button" type="button" id="note-logout">로그아웃</button>
+                  <button class="nav-button note-account-danger" type="button" id="note-delete-account">회원 탈퇴</button>
+                </div>
+              </div>
+            </details>
           </section>
-          <section class="note-menu-section" aria-labelledby="note-events-title">
-            <h2 id="note-events-title" class="side-section-label side-group-label">내 이벤트</h2>
-            <button class="nav-button side-event-button" type="button" id="event-start"><svg><use href="#plus"/></svg>이벤트 만들기</button>
-            <button class="nav-button" type="button" data-show="events"><svg><use href="#pin"/></svg>내 이벤트</button>
-          </section>
-          <section class="note-menu-section" aria-labelledby="note-tools-title">
-            <h2 id="note-tools-title" class="side-section-label side-group-label">이용 관리</h2>
-            <div class="side-tools" id="side-tools"></div>
-          </section>
-          <section class="ojjuda-guide-entry" aria-label="오쭈다 사용 안내"><h3>오쭈다 사용 안내</h3><p>처음 시작부터 사진·이벤트·쭈까지 자세히 알아보세요.</p><a href="/guide.html">장점과 사용법 보기 <span aria-hidden="true">→</span></a></section>
+          <details class="my-menu-group">
+            <summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true"><svg><use href="#reply"/></svg></span><span class="my-menu-copy"><span class="my-menu-title">도움말</span><span class="my-menu-caption">문의·의견 · 사용 안내</span></span></summary>
+            <div class="my-menu-body">
+              <div id="note-help-actions"></div>
+              <a class="my-menu-link" href="/guide.html">오쭈다 사용 안내 <span aria-hidden="true">→</span></a>
+            </div>
+          </details>
           <p class="side-caption" id="account-status" role="status">계정 확인 중</p>
         </div>
       </div>
-      <button class="nav-button" type="button" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이<span class="note-my-badge" data-note-my-badge data-notification-badge hidden aria-hidden="true"></span></button>
+      <button class="nav-button" type="button" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>메뉴<span class="note-my-badge" data-note-my-badge data-notification-badge hidden aria-hidden="true"></span></button>
       <a class="world-link" href="/world.html" aria-label="미니홈피 열기"><span class="nl-logo" aria-hidden="true"><img src="/favicon.svg?v=20260929-logo1" alt="" width="26" height="26"></span><span>미니홈피</span><span class="nl-arrow" aria-hidden="true">→</span></a>
       <div class="side-spacer"></div>
     </aside>
@@ -125,20 +140,22 @@
             <div class="replies"><div class="reply-heading"><div><p class="eyebrow">이야기가 이어져요</p><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" aria-live="polite"></div></div>
           </div>
         </section>
-        <section id="note-my-screen" class="note-my-screen" aria-labelledby="note-my-title" hidden>
-          <h1 id="note-my-title" tabindex="-1">마이</h1>
-          <div class="note-my-link-card"><a class="world-link my" href="/world.html" aria-label="미니홈피 열기"><span class="nl-logo" aria-hidden="true"><img src="/favicon.svg?v=20260929-logo1" alt="" width="26" height="26"></span><span>미니홈피</span><span class="nl-arrow" aria-hidden="true">→</span></a></div>
-          <div class="set admin-entry" id="note-admin-entry" hidden>
-            <h3>관리자</h3>
-            <p>계정, 결제·쭈, 월드와 노트를 관리해요.</p>
+        <section id="note-my-screen" class="note-my-screen my-hub" aria-labelledby="note-my-title" hidden>
+          <header class="my-hub-header"><h1 id="note-my-title" tabindex="-1">메뉴</h1><p>내 활동과 설정을 한곳에서 관리해요.</p></header>
+          <div class="my-shortcuts">
+            <div class="nn-entry my-shortcut"><div data-notifications-slot></div></div>
+            <div class="note-my-link-card my-shortcut"><a class="world-link my" href="/world.html" aria-label="미니홈피 열기"><span class="nl-logo" aria-hidden="true"><img src="/favicon.svg?v=20260929-logo1" alt="" width="26" height="26"></span><span>미니홈피</span><span class="nl-arrow" aria-hidden="true">→</span></a></div>
           </div>
-          <div class="set nn-entry"><h3>알림</h3><p>미니홈피와 익명카드의 새 소식을 함께 확인해요.</p><div data-notifications-slot></div></div>
           <div id="note-my-tools-slot"></div>
+          <details class="my-menu-group my-admin-group" id="note-admin-entry" hidden>
+            <summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true"><svg><use href="#bookmark"/></svg></span><span class="my-menu-copy"><span class="my-menu-title">관리자</span><span class="my-menu-caption">운영 메뉴</span></span></summary>
+            <p class="my-menu-body">계정, 결제·쭈, 월드와 노트를 관리해요.</p>
+          </details>
         </section>
       </main>
 
       <button class="write-fab" type="button" data-compose="new" aria-label="새 카드 쓰기"><svg><use href="#plus"/></svg><span>카드 쓰기</span></button>
-      <nav class="bottomnav" aria-label="모바일 메뉴"><button type="button" class="on" data-show="feed"><svg><use href="#cards"/></svg>카드</button><button type="button" disabled><svg><use href="#bookmark"/></svg>메모함</button><button type="button" id="note-my-toggle" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>마이<span class="note-my-badge" data-note-my-badge data-notification-badge hidden aria-hidden="true"></span></button></nav>
+      <nav class="bottomnav" aria-label="모바일 메뉴"><button type="button" class="on" data-show="feed"><svg><use href="#cards"/></svg>카드</button><button type="button" disabled><svg><use href="#bookmark"/></svg>메모함</button><button type="button" id="note-my-toggle" data-note-my aria-controls="note-my-screen"><svg><use href="#user"/></svg>메뉴<span class="note-my-badge" data-note-my-badge data-notification-badge hidden aria-hidden="true"></span></button></nav>
     </div>
   </div>
 
@@ -203,13 +220,13 @@
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="map.js?v=20260929-pinch" defer></script>
-  <script src="support.js?v=0.45.42-beta" defer></script>
+  <script src="support.js?v=20260929-my1" defer></script>
   <script src="drafts.js?v=0.45.19-beta" defer></script>
   <script src="notifications.js?v=0.45.45-beta" defer></script>
   <script src="feed-swipe.js?v=20260929-swipe1" defer></script>
   <script src="preview.js?v=20260929-swipe1" defer></script>
   <script src="notice-ticker.js?v=0.45.36-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
-  <script src="navigation.js?v=0.45.44-beta" defer></script>
+  <script src="navigation.js?v=20260929-my1" defer></script>
 </body>
 </html>

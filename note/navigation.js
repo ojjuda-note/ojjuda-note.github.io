@@ -100,7 +100,7 @@
     for (const button of document.querySelectorAll('[data-note-my]')) {
       const badge = button.querySelector('[data-note-my-badge]');
       if (badge) { badge.hidden = !unread; badge.textContent = unread; }
-      button.setAttribute('aria-label', unread ? `마이, 읽지 않은 알림 ${unread}개` : '마이');
+      button.setAttribute('aria-label', unread ? `메뉴, 읽지 않은 알림 ${unread}개` : '메뉴');
     }
   }
 
