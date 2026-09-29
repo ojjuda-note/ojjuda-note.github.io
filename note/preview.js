@@ -157,6 +157,8 @@ function applyVisualStyle(element, style = {}) {
   const boxHex = boxColor?.box || (darkText ? '#FFFDF7A8' : '#1C1A2447');
   element.style.setProperty('--note-text-color', textHex);
   element.style.setProperty('--note-box-color', boxTransparencyColor(boxHex, style.boxTransparency));
+  const boxLevel = Number(style.boxTransparency);
+  element.style.setProperty('--note-box-blur', `${(6 * (Number.isFinite(boxLevel) ? Math.max(0, Math.min(100, boxLevel)) : 80) / 100).toFixed(2)}px`);
   element.classList.toggle('note-box-transparent', Number(style.boxTransparency) === 0);
   element.style.setProperty('--note-shadow', darkText ? 'rgba(255,253,247,.55)' : 'rgba(12,12,24,.42)');
   element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
