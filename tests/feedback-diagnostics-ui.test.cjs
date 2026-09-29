@@ -76,6 +76,17 @@ async function verifyCollector() {
   assert.equal(snapshot().events.length, previous, 'authentication and non-allowlisted paths are excluded');
   assert.doesNotMatch(JSON.stringify(snapshot()), /private|password|@|token|Authorization|Bearer|uploads|https?:|\?/i);
   assert.equal(calls.length, 14, 'collector makes no extra network calls');
+  // These are the unified endpoints used by the real notifications module.
+  for (const operation of ['list_app_notifications', 'app_notification_unread_count', 'mark_app_notifications_read']) {
+    const path = '/rest/v1/rpc/' + operation;
+    const before = snapshot().events.length;
+    nextFetch = () => Promise.resolve(new Response('private response', { status: 503 }));
+    await context.fetch(api + path + '?private=private-token');
+    assert.equal(snapshot().events.length, before + 1, `${operation} failures accompany a bug report`);
+    assert.equal(snapshot().events.at(-1).path, path);
+    assert.equal(snapshot().events.at(-1).status, 503);
+    assert.doesNotMatch(JSON.stringify(snapshot()), /private|token|\?/i);
+  }
   assert.equal(context.localStorage, undefined);
   assert.equal(context.sessionStorage, undefined);
   assert.equal(context.setInterval, undefined, 'collector requires no polling or timers');
