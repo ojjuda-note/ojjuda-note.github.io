@@ -112,10 +112,13 @@
     nickname.closest('.field').hidden = !(isSignup || isNickname);
     dialog.querySelector('.email-field').hidden = isReset || isNickname;
     dialog.querySelector('.password-field').hidden = isForgot || isNickname;
-    dialog.querySelector('.reset-only').hidden = !isReset;
+    dialog.querySelector('.password-confirm-field').hidden = !(isSignup || isReset);
+    passwordConfirm.required = isSignup || isReset;
+    passwordConfirm.disabled = !(isSignup || isReset);
     forgot.hidden = isSignup || isReset || isNickname;
     forgot.textContent = isForgot ? '로그인으로 돌아가기' : '비밀번호를 잊었어요';
     $('password-label').textContent = isReset ? '새 비밀번호' : '비밀번호';
+    $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
     $('auth-title').textContent = isSignup ? '오쭈다 월드/노트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드/노트';
     $('auth-intro').textContent = isSignup ? '한 번 가입하면 두 공간을 자유롭게 오갈 수 있어요.'
@@ -384,8 +387,8 @@
         return;
       }
     }
-    if (isPasswordReset && secret !== passwordConfirm.value) {
-      feedback.textContent = '두 비밀번호가 달라요. 다시 확인해 주세요.';
+    if ((authMode === 'signup' || isPasswordReset) && secret !== passwordConfirm.value) {
+      feedback.textContent = passwordConfirm.value ? '두 비밀번호가 달라요. 다시 확인해 주세요.' : '비밀번호 확인을 입력해 주세요.';
       passwordConfirm.focus();
       return;
     }

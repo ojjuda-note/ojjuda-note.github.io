@@ -56,7 +56,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
   const emit = async (event, session) => { authListener(event, session); await flush(); };
   const submit = async () => { await element('auth-form').listeners.submit({ preventDefault() {} }); await flush(); };
   const fill = () => {
-    for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-test@example.invalid', password: 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-1234-5678' })) element(key).value = value;
+    for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-test@example.invalid', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-1234-5678' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
   return { element, flush, emit, submit, fill, navigations, signups, recoveries, storage, location, advance: ms => { clock += ms; } };
@@ -76,6 +76,10 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
     assert.equal(app.element('auth-title').textContent, '오쭈다 월드/노트');
+    assert.equal(app.element('.password-confirm-field').hidden, false);
+    assert.equal(app.element('password-confirm-label').textContent, '비밀번호 확인');
+    assert.equal(app.element('password-confirm').required, true);
+    assert.equal(app.element('password-confirm').disabled, false);
     assert.equal(app.location.searchParams.get('auth'), null);
     app.fill(); await app.submit();
     assert.equal(app.signups.length, 1);
@@ -87,12 +91,32 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     assert.equal(JSON.parse(app.storage.get('ojjuda_post_confirm_destination')).destination, destination);
     assert.equal(app.element('auth-title').textContent, '이메일을 확인해 주세요');
   }
-  for (const missing of ['nickname', 'email', 'password', 'signup-birth', 'signup-code', 'signup-phone', 'age-check', 'policy-check']) {
+  for (const missing of ['nickname', 'email', 'password', 'password-confirm', 'signup-birth', 'signup-code', 'signup-phone', 'age-check', 'policy-check']) {
     const app = setup('?auth=signup&next=world'); await app.flush(); app.fill();
     if (missing.endsWith('check')) app.element(missing).checked = false;
     else app.element(missing).value = '';
     await app.submit(); assert.equal(app.signups.length, 0, `${missing} must be required`);
+    if (missing === 'password-confirm') assert.match(app.element('auth-feedback').textContent, /비밀번호 확인을 입력/);
   }
+  for (const destination of ['world', 'note']) {
+    const app = setup(`?auth=signup&next=${destination}`); await app.flush(); app.fill();
+    for (const value of ['different-password', 'test-password ']) {
+      app.element('password-confirm').value = value;
+      await app.submit();
+      assert.equal(app.signups.length, 0, 'mismatched passwords must not reach Auth');
+      assert.match(app.element('auth-feedback').textContent, /두 비밀번호가 달라요/);
+    }
+    app.element('password-confirm').value = 'test-password'; await app.submit();
+    assert.equal(app.signups.length, 1, 'correcting the confirmation permits signup');
+    assert.equal(app.element('password').value, '');
+    assert.equal(app.element('password-confirm').value, '');
+  }
+  const switched = setup('?auth=signup'); await switched.flush(); switched.fill();
+  switched.element('login-tab').listeners.click();
+  assert.equal(switched.element('.password-confirm-field').hidden, true);
+  assert.equal(switched.element('password-confirm').required, false);
+  assert.equal(switched.element('password-confirm').disabled, true);
+  assert.equal(switched.element('password-confirm').value, '');
   const existing = setup('?auth=signup&next=world', { user: { id: 'existing', email: 'member@example.invalid' } });
   await existing.flush();
   assert.deepEqual(existing.navigations, ['/world.html']);
@@ -126,6 +150,9 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     assert.equal(app.element('recovery-reset-button').hidden, false);
     app.element('recovery-reset-button').listeners.click();
     assert.equal(app.element('auth-title').textContent, '새 비밀번호 설정');
+    assert.equal(app.element('.password-confirm-field').hidden, false);
+    assert.equal(app.element('password-confirm-label').textContent, '새 비밀번호 확인');
+    assert.equal(app.element('password-confirm').disabled, false);
     app.element('password').value = 'new-password'; app.element('password-confirm').value = 'different';
     await app.submit(); assert.equal(app.recoveries.length, 1); assert.match(app.element('auth-feedback').textContent, /두 비밀번호가 달라요/);
     app.element('password-confirm').value = 'new-password'; await app.submit();
@@ -165,5 +192,5 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
   closed.element('auth-dialog').close(); closed.element('auth-dialog').listeners.close();
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
-  console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation return destinations, existing sessions, recovery priority, redirect allowlist');
+  console.log('PASS: verified recovery, unified signup entry, required inputs, password confirmation and mode switching, confirmation return destinations, existing sessions, recovery priority, redirect allowlist');
 })().catch(error => { console.error(error); process.exitCode = 1; });
