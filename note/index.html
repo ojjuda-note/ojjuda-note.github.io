@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20260929-logo1">
-  <link rel="stylesheet" href="features.css?v=20260929-compose-half">
+  <link rel="stylesheet" href="features.css?v=20260929-fit-opacity">
   <link rel="stylesheet" href="event-photo.css?v=0.45.9-beta">
   <link rel="stylesheet" href="effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="support.css?v=0.45.42-beta">
@@ -156,6 +156,7 @@
             <div class="note-color-fields" aria-label="색 선택">
               <fieldset class="note-color-field" data-color-field="textColor"><legend>글씨 색</legend><div class="note-color-choices"></div></fieldset>
               <fieldset class="note-color-field" data-color-field="boxColor"><legend>네모난 글상자 색</legend><div class="note-color-choices"></div></fieldset>
+              <label class="note-opacity-control" for="compose-box-transparency">글상자 투명도 <input id="compose-box-transparency" type="range" min="0" max="100" step="1" value="80"><output id="compose-box-transparency-value" for="compose-box-transparency">80</output></label>
             </div>
             <p class="note-setting-help">글씨 꾸미기는 카드에 1개월간 적용돼요. 기본 배경은 미리보기 사진으로 등록돼요.</p>
             <fieldset class="note-photo-pick" id="note-photo-pick">
@@ -189,7 +190,7 @@
   <script src="support.js?v=0.45.42-beta" defer></script>
   <script src="drafts.js?v=0.45.19-beta" defer></script>
   <script src="notifications.js?v=0.45.45-beta" defer></script>
-  <script src="preview.js?v=20260929-phone-unique" defer></script>
+  <script src="preview.js?v=20260929-fit-opacity" defer></script>
   <script src="notice-ticker.js?v=0.45.36-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.44-beta" defer></script>
