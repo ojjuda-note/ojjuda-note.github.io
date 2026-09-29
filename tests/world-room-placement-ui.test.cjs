@@ -41,7 +41,7 @@ g.tab="deco";H();` + world.slice(world.indexOf('</script>', boot));
         {id: 'desk-test', type: 'desk', gx: 2, gy: 2, r: 0},
         {id: 'wall-test', type: 'window', wall: 'L', t: 4, z: 90}
       ]};
-      m.room = m.rooms[0]; m.petBank = {}; m.coins = 500;
+      m.room = m.rooms[0]; m.petBank = {}; m.coins = 10000;
       g.roomPlacement = null; g.sel = null; g.drag = null; g.tryOn = null; g.zoom = null;
       g.tab = 'deco'; g.decoMode = 'room'; t.auth.user = null;
       t.render(); window.scrollTo(0, 0);
