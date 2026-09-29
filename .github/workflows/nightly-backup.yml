@@ -101,7 +101,7 @@ jobs:
       BACKUP_S3_BUCKET: ojjuda-backup-ziezbdjofcugznowiuda
       BACKUP_S3_ACCESS_KEY: ${{ secrets.BACKUP_S3_ACCESS_KEY }}
       BACKUP_S3_SECRET_KEY: ${{ secrets.BACKUP_S3_SECRET_KEY }}
-      BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+      BACKUP_AGE_RECIPIENT: age18j7evc6kwmzau3373zpc7zq0eapmqnw2q5jetzeh4czvdlut0ekqn0yr5z
       BACKUP_RETENTION_DAYS: '30'
       BACKUP_KEY_PREFIX: ojjuda-disaster-recovery/v1
     steps:

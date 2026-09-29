@@ -21,10 +21,10 @@
 ## 설치와 최초 확인
 
 1. Supabase **Database > Connect**에서 `postgres` 권한의 *session pooler* 연결 URL을 확인한다. 기존 비밀번호를 사용하며 이 작업 때문에 비밀번호를 재설정하지 않는다. 비밀번호가 URL에 들어가므로 GitHub 저장소 코드나 대화에 붙여 넣지 않는다.
-2. Supabase **Storage > Configuration > S3**에서 S3 프로토콜을 켜고 전용 액세스 키를 만든다. 운영 버킷 `media`, `note-event-photos`, `note-card-photos`를 모두 읽을 수 있어야 한다. 새 버킷이 생겨도 SQL 목록으로 자동 발견한다.
+2. Supabase **Storage > Configuration > S3**에서 S3 프로토콜을 켜고 전용 액세스 키를 만든다. 운영 버킷 `media`, `note-event-photos`, `note-card-photos`를 모두 읽을 수 있어야 한다. 새 버킷이 생겨도 SQL 목록으로 자동 발견한다. 이 서비스의 S3 키는 모든 버킷의 전체 S3 작업 권한을 가지며 RLS를 우회한다. 백업 스크립트는 원본에서 읽기만 하지만, 키 자체가 읽기 전용인 것은 아니다. 키 생성 전에 이 권한 범위를 관리자에게 확인받는다.
 3. 네이버 클라우드 콘솔에서 **한국 리전 > Storage > Object Storage > Bucket Management**에 백업 전용 버킷을 만든다. 권한은 **공개 안함**, 다른 계정 권한은 비워 둔다. API 키에는 해당 버킷의 목록 조회·파일 읽기·업로드·삭제와 버킷/파일 ACL 조회가 필요하다. 다른 서비스의 데이터와 섞지 않는다. 공개 웹 호스팅·공개 파일 링크를 켜지 않는다.
    첫 운영 백업 전에 보관업체(네이버클라우드)·국가(한국)·보유기간(30일)과 탈퇴 전 백업의 처리 방식을 개인정보처리방침에 반영하고, 방침에 적힌 변경 사전 공지 절차를 마친다.
-4. 관리자 PC에서 `age-keygen`으로 암호화 키쌍을 만든다. `age1...` 공개 수신자만 GitHub Secret에 넣고, `AGE-SECRET-KEY-...` 개인 키는 GitHub·운영 서버와 별개로 **오프라인 두 곳**에 보관한다. 개인 키를 잃으면 어떤 백업도 열 수 없다.
+4. 2026-09-29 생성하고 암호화·복호화 시험을 통과한 키쌍의 **공개 수신자만 workflow에 등록**했다. 별도로 보관한 `ojjuda-backup-recovery-key-2026-09-29.txt` 개인 키를 관리자가 내려받아 GitHub·운영 서버와 별개로 **오프라인 두 곳**에 보관한다. 개인 키를 잃으면 어떤 백업도 열 수 없다. 개인 키는 이 저장소에 포함되지 않는다.
 5. GitHub 저장소 **Settings > Secrets and variables > Actions**에 다음 Repository Secrets를 넣는다.
 
 | Secret | 값 |
@@ -32,9 +32,8 @@
 | `BACKUP_SUPABASE_DB_URL` | 위 Postgres session pooler 연결 URL |
 | `BACKUP_SUPABASE_S3_ACCESS_KEY`, `BACKUP_SUPABASE_S3_SECRET_KEY` | 운영 Storage S3 전용 키 |
 | `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 네이버 클라우드 백업 전용 API 인증키의 Access Key ID / Secret Key |
-| `BACKUP_AGE_RECIPIENT` | 공개 `age1...` 수신자 값 |
 
-   엔드포인트 `https://kr.object.ncloudstorage.com`, 리전 `kr-standard`, 버킷 `ojjuda-backup-ziezbdjofcugznowiuda`는 workflow에 고정한다. 이 세 값은 Secret으로 등록할 필요가 없다. 로컬 실행에는 같은 값을 환경변수 `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`으로 설정한다. 스크립트는 다른 업체·해외 리전으로의 잘못된 백업 설정을 거부한다. API 인증키는 네이버 클라우드 **My Account > 계정 및 보안 관리 > 보안 관리 > 접근 관리 > API 인증키**에서 관리한다. 키와 DB 연결 URL은 대화나 소스에 남기지 않는다.
+   엔드포인트 `https://kr.object.ncloudstorage.com`, 리전 `kr-standard`, 버킷 `ojjuda-backup-ziezbdjofcugznowiuda`는 workflow에 고정한다. 이 세 값과 공개 암호화 수신자는 Secret으로 등록할 필요가 없다. 로컬 실행에는 같은 값을 환경변수 `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`으로 설정한다. 스크립트는 다른 업체·해외 리전으로의 잘못된 백업 설정을 거부한다. API 인증키는 네이버 클라우드 **My Account > 계정 및 보안 관리 > 보안 관리 > 접근 관리 > API 인증키**에서 관리한다. 키와 DB 연결 URL은 대화나 소스에 남기지 않는다.
 
 6. `.github/workflows/nightly-backup.yml`과 `ops/` 파일을 저장소 기본 브랜치에 올린 뒤 **Actions > Daily checks and encrypted offsite backup > Run workflow**로 첫 실행한다. 성공 로그의 `Encrypted offsite backup verified`와 외부 버킷의 `ojjuda-disaster-recovery/v1/daily/YYYY-MM-DD/backup-...tar.gz.age` 파일을 함께 확인한다. 마지막으로 아래 복구 검증을 별도 프로젝트에서 해 본다.
 
@@ -44,7 +43,7 @@ GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될
 
 - 한국 VPC 콘솔에서 Object Storage 이용 중 상태와 `ojjuda-backup-ziezbdjofcugznowiuda` 버킷 생성을 확인했다. 버킷은 공개 안함, 외부 계정 ACL 추가 없음으로 생성했다.
 - 자동 백업용 계정은 콘솔 접근 없이 사용하도록 준비한다. `OjjudaBackupStorage` 정책은 `View/getBucketList`와 전용 버킷에 한정한 `View/getObjectList`, `View/getMultipartUploadList`, `Change/writeObject`만 포함한다. 버킷 생성·삭제, 공개 설정·웹 호스팅·이용 해지 권한은 포함하지 않는다.
-- API 키와 원본 DB·Storage 접속정보, age 공개 수신자 연결, 첫 실제 백업 및 격리 복원은 별도 완료 확인이 필요하다. 버킷이 생긴 것만으로 운영 백업이 성공한 것은 아니다.
+- API 키와 원본 DB·Storage 접속정보 연결, 첫 실제 백업 및 격리 복원은 별도 완료 확인이 필요하다. 버킷이 생긴 것만으로 운영 백업이 성공한 것은 아니다.
 
 ## 네이버 클라우드 연결 검증
 
