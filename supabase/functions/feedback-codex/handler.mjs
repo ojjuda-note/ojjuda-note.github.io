@@ -79,7 +79,10 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
   warn = (...args) => console.warn(...args) }) {
   const url = env('SUPABASE_URL');
   const serverKey = env('SUPABASE_SERVICE_ROLE_KEY');
-  const githubToken = env('FEEDBACK_GITHUB_TOKEN');
+  const configuredGithubToken = env('FEEDBACK_GITHUB_TOKEN');
+  const githubToken = typeof configuredGithubToken === 'string' ? configuredGithubToken.trim() : configuredGithubToken;
+  const githubTokenKind = /^github_pat_[A-Za-z0-9_]+$/.test(githubToken || '') ? 'fine_grained'
+    : /^ghp_[A-Za-z0-9]+$/.test(githubToken || '') ? 'classic' : 'unrecognized';
   const repositoryId = env('FEEDBACK_WORKER_REPOSITORY_ID');
   const audience = `${url}/functions/v1/feedback-codex`;
   const configured = /^https:\/\/[a-z0-9]+\.supabase\.co$/.test(url || '')
@@ -123,8 +126,9 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
               body: JSON.stringify({ ref: 'main',
                 inputs: { feedback_id: base.feedback_id, dispatch_nonce: base.dispatch_nonce } })
             });
-            // Only the fixed label and HTTP status are safe for operational diagnostics.
-            if (response.status >= 400) warn('feedback_codex_github_rejected', response.status);
+            // Only fixed labels, HTTP status, and format class are safe for diagnostics.
+            // A recognized format does not imply that the credential is valid.
+            if (response.status >= 400) warn('feedback_codex_github_rejected', response.status, githubTokenKind);
             if (response.status === 200) {
               const details = await response.json();
               if (validId(details?.workflow_run_id)) {

@@ -74,6 +74,34 @@ test('duplicate events and wrong nonces reveal nothing and do not dispatch', asy
   }
 });
 
+test('dispatch trims surrounding credential whitespace before authenticating', async () => {
+  const f = await fixture({ env: { FEEDBACK_GITHUB_TOKEN: ' \tgithub_pat_synthetic_credential\r\n ' },
+    rpc: action => action === 'dispatch_claim' ? base : { feedback_id: '42', dispatch_status: 'dispatched' } });
+  const response = await f.handler(request({ action: 'dispatch', ...base }));
+  assert.deepEqual(await response.json(), { accepted: true });
+  assert.equal(f.calls[1].options.headers.Authorization, 'Bearer github_pat_synthetic_credential');
+  assert.deepEqual(f.warnings, []);
+});
+
+test('rejected credentials log only their format class and never their value or upstream body', async () => {
+  for (const [token, kind] of [['github_pat_synthetic_credential', 'fine_grained'],
+    ['ghp_SyntheticCredential', 'classic'], ['not-a-github-credential', 'unrecognized']]) {
+    const upstreamBody = `${token} private feedback ${NONCE}`;
+    const f = await fixture({ env: { FEEDBACK_GITHUB_TOKEN: token },
+      rpc: action => action === 'dispatch_claim' ? base : { feedback_id: '42', dispatch_status: 'failed' },
+      github: () => new Response(upstreamBody, { status: 401 }) });
+    const response = await f.handler(request({ action: 'dispatch', ...base }));
+    const responseBody = await response.json();
+    assert.deepEqual(responseBody, { accepted: true });
+    assert.deepEqual(f.warnings, [['feedback_codex_github_rejected', 401, kind]]);
+    assert.equal(f.calls[2].body.p_payload.error_code, 'github_unauthorized');
+    const diagnosticOutput = JSON.stringify({ responseBody, warnings: f.warnings });
+    assert.equal(diagnosticOutput.includes(token), false);
+    assert.equal(diagnosticOutput.includes('private feedback'), false);
+    assert.equal(diagnosticOutput.includes(NONCE), false);
+  }
+});
+
 test('dispatch timeout is not retried and stores only a fixed error code', async () => {
   const f = await fixture({ rpc: action => action === 'dispatch_claim' ? base : { feedback_id: '42', dispatch_status: 'failed' },
     github: () => { throw new Error('TEST_DISPATCH_CREDENTIAL raw provider error'); } });
@@ -101,7 +129,7 @@ test('upstream errors and missing credentials are sanitized', async () => {
     const response = await f.handler(request({ action: 'dispatch', ...base }));
     assert.deepEqual(await response.json(), { accepted: true });
     assert.equal(f.calls[2].body.p_payload.error_code, code);
-    assert.deepEqual(f.warnings, [['feedback_codex_github_rejected', status]]);
+    assert.deepEqual(f.warnings, [['feedback_codex_github_rejected', status, 'unrecognized']]);
   }
   const f = await fixture({ env: { FEEDBACK_GITHUB_TOKEN: undefined },
     rpc: action => action === 'dispatch_claim' ? base : { feedback_id: '42', dispatch_status: 'failed' } });
