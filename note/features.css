@@ -326,3 +326,10 @@ select{font:inherit;color:inherit}
 .photo .card-quote,.compose-photo textarea{top:-10px}
 .card-photo-thumb img,.compose-photo-attach img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .photo-load-failed{white-space:pre-line;text-align:center;font:700 10px/1.4 var(--font-b);color:var(--ink);background:var(--surface);cursor:pointer}
+
+/* Keep the full quote inside its photograph while the box follows the text. */
+.photo .card-quote{width:fit-content;max-width:92%;max-height:none;overflow:visible}
+.compose-photo textarea{max-height:calc(100% - 70px);overflow-y:hidden}
+.note-opacity-control{display:flex;align-items:center;gap:12px;margin:10px 2px 0;color:var(--ink);font-size:13px;font-weight:700}
+.note-opacity-control input{flex:1;min-width:0;accent-color:var(--accent)}
+.note-opacity-control output{min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
