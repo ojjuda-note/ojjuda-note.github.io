@@ -6,6 +6,8 @@
   const WORLD_KINDS = { guestbook: '방명록', chat: '동네 대화', user: '사람', media_comment: '사진 댓글', diary: '다이어리', intro: '소개글' };
   const REASONS = { abuse: '욕설·비방', sexual: '음란·불쾌', spam: '스팸·광고', impersonation: '사칭', other: '기타' };
   const FEEDBACK_KINDS = { bug: '고장', idea: '아이디어', other: '기타' };
+  const FEEDBACK_AI_STATES = { queued: 'Codex 확인 대기', running: '검토 중', needs_review: '검토 필요', blocked: '처리 보류', resolved: '수정 확인' };
+  const FEEDBACK_AI_PRIORITIES = { low: '낮음', normal: '보통', high: '높음' };
   const STATUS_LABELS = Object.fromEntries(REPORT_STATES);
   const el = (tag, value, className = '') => {
     const node = document.createElement(tag);
@@ -96,6 +98,31 @@
   function lock(root, busy) {
     root.setAttribute('aria-busy', String(busy));
     for (const control of root.querySelectorAll('button')) control.disabled = busy;
+  }
+
+  function feedbackAi(value) {
+    const box = el('section', undefined, 'ops-feedback-ai');
+    box.setAttribute('aria-label', 'Codex 처리 내역');
+    const ai = value && typeof value === 'object' ? value : null;
+    const meta = el('div', undefined, 'ops-meta');
+    const stateLabel = ai ? (Object.hasOwn(FEEDBACK_AI_STATES, ai.status) ? FEEDBACK_AI_STATES[ai.status] : '처리 상태 확인 필요') : '자동 확인 대기';
+    meta.append(el('strong', 'Codex'), badge(stateLabel));
+    if (ai && Object.hasOwn(FEEDBACK_AI_PRIORITIES, ai.priority)) meta.append(el('span', `우선순위 ${FEEDBACK_AI_PRIORITIES[ai.priority]}`));
+    box.append(meta);
+    if (ai?.summary) box.append(el('p', ai.summary, 'ops-content'));
+    if (ai?.result) box.append(el('p', ai.result, 'ops-content'));
+    const evidence = typeof ai?.evidence_url === 'string' ? ai.evidence_url : '';
+    // Keep model-provided links inside this repository and outside arbitrary URL schemes.
+    if (/^https:\/\/github\.com\/ojjuda-note\/ojjuda-note\.github\.io\/(?:commit\/[0-9a-f]{40}|pull\/[1-9]\d*|actions\/runs\/[1-9]\d*)$/.test(evidence)) {
+      const link = el('a', '처리 근거 보기', 'ops-ai-evidence');
+      link.href = evidence; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.setAttribute('aria-label', 'GitHub에서 처리 근거 보기 (새 창)'); box.append(link);
+    }
+    if (ai?.updated_at && Number.isFinite(Date.parse(ai.updated_at))) {
+      const time = el('time', `최근 기록: ${date(ai.updated_at)}`, 'ops-ai-updated');
+      time.dateTime = new Date(ai.updated_at).toISOString(); box.append(time);
+    }
+    return box;
   }
 
   async function renderReports(options = {}) {
@@ -216,7 +243,7 @@
     heading.append(el('h3', '의견'), button('새로고침', () => void load()));
     const filters = el('div'), warnings = el('div'), summary = el('p', '', 'ops-summary'), list = el('div', undefined, 'ops-list'), message = el('p', '', 'ops-message');
     message.setAttribute('role', 'status'); message.setAttribute('aria-live', 'polite');
-    feedback.append(heading, el('p', '고장 제보와 제안을 상태별 최근 100건씩 확인해요. 이전 접수 내용도 유지돼요.', 'ops-help'), filters, warnings, summary, list, message);
+    feedback.append(heading, el('p', '고장 제보와 제안을 상태별 최근 100건씩 확인해요. 확인함은 읽음 표시이며, 수정 여부는 Codex 처리 내역에서 확인해요.', 'ops-help'), filters, warnings, summary, list, message);
     container.replaceChildren(inquiries, feedback);
 
     async function loadInquiries() {
@@ -248,6 +275,7 @@
         if (value.user_agent) {
           const details = el('details', undefined, 'ops-device'); details.append(el('summary', '기기 정보'), el('p', value.user_agent, 'ops-help')); item.append(details);
         }
+        item.append(feedbackAi(value.ai));
         const actions = el('div', undefined, 'ops-actions'), next = value.status === 'done' ? 'open' : 'done';
         actions.append(button(next === 'done' ? '확인함' : '다시 열기', () => void update(value.id, next)));
         item.append(actions); list.append(item);
