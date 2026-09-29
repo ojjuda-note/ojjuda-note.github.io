@@ -1655,17 +1655,34 @@ function installFeatures() {
   tagTabReset = () => { closeTagTab(); syncSortButtons(); };
   tagForm.addEventListener('submit', event => { event.preventDefault(); searchTag(tagInput.value); });
   tagInput.addEventListener('search', () => { if (!tagInput.value && feedTerm) { feedTerm = ''; loadFeed(); } });
+  const selectSort = (sort, { focusTag = false } = {}) => {
+    if (sort === 'tag') {
+      if (!tagTabOn) openTagTab();
+      if (focusTag) tagInput.focus({ preventScroll: true });
+      return;
+    }
+    const wasTag = tagTabOn; closeTagTab();
+    const clearedSearch = (sort === 'nearby' || wasTag) && Boolean(feedTerm);
+    if (sort === 'nearby' || wasTag) feedTerm = '';
+    if (feedSort === sort && !clearedSearch && !wasTag) return;
+    feedSort = sort; syncSortButtons(); loadFeed();
+  };
+  let feedSwipe = null;
   for (const [sort, label] of [['latest', '최신'], ['popular', '인기'], ['nearby', '근처'], ['tag', '태그']]) {
     const button = node('button', sort === feedSort ? 'selected' : '', label); button.type = 'button';
     button.dataset.sort = sort; button.setAttribute('aria-pressed', String(sort === feedSort));
     button.addEventListener('click', () => {
-      if (sort === 'tag') { if (!tagTabOn) openTagTab(); tagInput.focus(); return; }
-      const wasTag = tagTabOn; closeTagTab();
-      const clearedSearch = (sort === 'nearby' || wasTag) && Boolean(feedTerm);
-      if (sort === 'nearby' || wasTag) feedTerm = '';
-      if (feedSort === sort && !clearedSearch && !wasTag) return;
-      feedSort = sort; syncSortButtons(); loadFeed();
+      if (feedSwipe) feedSwipe.goTo(sort, { focusTag: true });
+      else selectSort(sort, { focusTag: true });
     }); sorts.append(button);
+  }
+  if (window.OjjudaFeedSwipe) {
+    const viewport = node('div', 'note-feed-viewport');
+    const page = node('div', 'note-feed-page');
+    sorts.after(viewport); viewport.append(page); page.append(tagPanel, searchContext, list);
+    feedSwipe = window.OjjudaFeedSwipe.create({ root: feed, tabs: sorts, viewport, page,
+      getActive: () => tagTabOn ? 'tag' : feedSort, select: selectSort,
+      enabled: () => feedMode === 'all' });
   }
   $('#event-start').addEventListener('click', () => openComposer('event'));
   $('#event-photo-file').addEventListener('change', event => {
