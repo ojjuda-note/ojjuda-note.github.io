@@ -75,7 +75,8 @@ function completionPayload(body, base) {
     evidence_url: `https://github.com/${WORKER_REPOSITORY}/actions/runs/${base.run_id}` };
 }
 
-export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => Date.now() }) {
+export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => Date.now(),
+  warn = (...args) => console.warn(...args) }) {
   const url = env('SUPABASE_URL');
   const serverKey = env('SUPABASE_SERVICE_ROLE_KEY');
   const githubToken = env('FEEDBACK_GITHUB_TOKEN');
@@ -116,11 +117,14 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
           try {
             const response = await fetchImpl(`https://api.github.com/repos/${WORKER_REPOSITORY}/actions/workflows/codex-feedback.yml/dispatches`, {
               method: 'POST', headers: { Authorization: `Bearer ${githubToken}`, Accept: 'application/vnd.github+json',
-                'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2026-03-10' },
+                'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2026-03-10',
+                'User-Agent': 'ojjuda-feedback-codex' },
               signal: AbortSignal.timeout(10000), redirect: 'error',
               body: JSON.stringify({ ref: 'main',
                 inputs: { feedback_id: base.feedback_id, dispatch_nonce: base.dispatch_nonce } })
             });
+            // Only the fixed label and HTTP status are safe for operational diagnostics.
+            if (response.status >= 400) warn('feedback_codex_github_rejected', response.status);
             if (response.status === 200) {
               const details = await response.json();
               if (validId(details?.workflow_run_id)) {

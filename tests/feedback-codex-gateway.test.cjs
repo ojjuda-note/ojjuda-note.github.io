@@ -28,10 +28,11 @@ function request(body, headers = {}) {
 }
 function workerRequest(body) { return request(body, { authorization: 'Bearer test.payload.signature' }); }
 async function fixture({ jwt = claims(), env = {}, rpc, github, verifier, production = false } = {}) {
-  const calls = [];
+  const calls = [], warnings = [];
   const { createHandler, pinnedWorkerEnv } = await modulePromise;
   const readEnv = name => ({ ...ENV, ...env })[name];
   const handler = createHandler({ env: production ? pinnedWorkerEnv(readEnv) : readEnv, now: () => NOW,
+    warn: (...args) => warnings.push(args),
     verifyOidc: verifier || (async () => jwt),
     fetchImpl: async (url, options) => {
       const body = JSON.parse(options.body);
@@ -45,7 +46,7 @@ async function fixture({ jwt = claims(), env = {}, rpc, github, verifier, produc
         run_url: `https://api.github.com/repos/${REPO}/actions/runs/${RUN}`,
         html_url: `https://github.com/${REPO}/actions/runs/${RUN}` });
     } });
-  return { handler, calls };
+  return { handler, calls, warnings };
 }
 
 test('dispatch binds the returned run ID and sends only opaque job inputs', async () => {
@@ -57,7 +58,9 @@ test('dispatch binds the returned run ID and sends only opaque job inputs', asyn
   assert.equal(dispatch.url, `https://api.github.com/repos/${REPO}/actions/workflows/codex-feedback.yml/dispatches`);
   assert.deepEqual(dispatch.body, { ref: 'main', inputs: base });
   assert.equal(dispatch.options.headers['X-GitHub-Api-Version'], '2026-03-10');
+  assert.equal(dispatch.options.headers['User-Agent'], 'ojjuda-feedback-codex');
   assert.equal(dispatch.options.redirect, 'error');
+  assert.deepEqual(f.warnings, []);
   assert.deepEqual(f.calls[2].body, { p_action: 'dispatch_finish', p_payload: { ...base, status: 'dispatched', run_id: RUN } });
 });
 
@@ -78,6 +81,7 @@ test('dispatch timeout is not retried and stores only a fixed error code', async
   assert.deepEqual(await response.json(), { accepted: true });
   assert.equal(f.calls.length, 3);
   assert.deepEqual(f.calls[2].body.p_payload, { ...base, status: 'failed', error_code: 'github_unavailable' });
+  assert.deepEqual(f.warnings, []);
 });
 
 test('unexpected GitHub success response cannot authorize an unbound run', async () => {
@@ -91,12 +95,13 @@ test('unexpected GitHub success response cannot authorize an unbound run', async
 });
 
 test('upstream errors and missing credentials are sanitized', async () => {
-  for (const [status, code] of [[401, 'github_unauthorized'], [429, 'github_rate_limited'], [422, 'github_rejected'], [500, 'github_unavailable']]) {
+  for (const [status, code] of [[401, 'github_unauthorized'], [403, 'github_unauthorized'], [429, 'github_rate_limited'], [422, 'github_rejected'], [500, 'github_unavailable']]) {
     const f = await fixture({ rpc: action => action === 'dispatch_claim' ? base : { feedback_id: '42', dispatch_status: 'failed' },
       github: () => new Response('TEST_DISPATCH_CREDENTIAL private feedback', { status }) });
     const response = await f.handler(request({ action: 'dispatch', ...base }));
     assert.deepEqual(await response.json(), { accepted: true });
     assert.equal(f.calls[2].body.p_payload.error_code, code);
+    assert.deepEqual(f.warnings, [['feedback_codex_github_rejected', status]]);
   }
   const f = await fixture({ env: { FEEDBACK_GITHUB_TOKEN: undefined },
     rpc: action => action === 'dispatch_claim' ? base : { feedback_id: '42', dispatch_status: 'failed' } });
