@@ -18,6 +18,22 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     location: $('#card-location-button').getAttribute('aria-checked') === 'true'
   })`)));
   const stored = id => JSON.parse(window.localStorage.getItem(key(id)));
+  const styleChoices = () => ({
+    font: document.getElementById('compose-font').value,
+    size: document.getElementById('compose-size').value,
+    boxTransparency: Number(document.getElementById('compose-box-transparency').value)
+  });
+  function chooseStyle(font, size, transparency, useNumber = false) {
+    for (const [id, value] of [['compose-font', font], ['compose-size', size]]) {
+      const select = document.getElementById(id);
+      assert.equal(select.disabled, false); select.value = value;
+      select.dispatchEvent(new window.Event('change', { bubbles: true }));
+    }
+    const input = document.getElementById(useNumber ? 'compose-box-transparency-value' : 'compose-box-transparency');
+    input.value = String(transparency); input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    assert.equal(Number(document.getElementById('compose-box-transparency-value').value), transparency);
+    assert.equal(styleChoices().boxTransparency, transparency);
+  }
   const open = async () => { await run("openComposer('memo')"); await settle(); };
   const close = () => run('closeComposer(false)');
   function choose(identity, gender) {
@@ -56,32 +72,42 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
         if (window.deferGeo) return new Promise(resolve => { window.resolveGeo = resolve; });
         return { latitude: 37 + window.geoCalls / 1000, longitude: 127 };
       };
-      draftStatus = document.createElement('span');
-      draftController = { resume: async () => window.restorePayload,
-        change: value => { window.restorePayload = value; }, setUser() {} };
+      draftController = null; // Unfinished text is no longer saved in production.
       prepareCardPhotoEdit = async () => {};`);
   }
   try {
     boot(); await open();
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'male', location: true });
+    assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
     choose('nickname', 'private'); await locationClick();
-    assert.deepEqual(stored('account-a'), { identity: 'nickname', gender: 'private', locationEnabled: false });
+    assert.deepEqual(stored('account-a'), { identity: 'nickname', gender: 'private', locationEnabled: false,
+      font: 'default', size: 'normal', boxTransparency: 25 });
+    chooseStyle('serif', 'large', 0);
     document.getElementById('compose-text').value = '다시 열어도 설정 유지';
     document.getElementById('compose-text').dispatchEvent(new window.Event('input'));
     document.getElementById('close-composer').click(); await open();
     assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false });
-    assert.equal(document.getElementById('compose-text').value, '다시 열어도 설정 유지');
+    assert.equal(document.getElementById('compose-text').value, '', 'remember choices without saving unfinished text');
+    assert.deepEqual(styleChoices(), { font: 'serif', size: 'large', boxTransparency: 0 });
     assert.equal(window.geoCalls, 1, 'restored location-off must not request GPS');
 
     boot(); await open();
     assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false });
+    assert.deepEqual(styleChoices(), { font: 'serif', size: 'large', boxTransparency: 0 }, 'zero remains fully transparent after reload');
     assert.equal(window.geoCalls, 0, 'a fresh page with saved preferences keeps location off');
+    chooseStyle('mono', 'small', 37, true);
+    assert.equal(stored('account-a').boxTransparency, 37, 'number input is remembered immediately, before blur');
+    close(); await open();
+    assert.deepEqual(styleChoices(), { font: 'mono', size: 'small', boxTransparency: 37 });
+    chooseStyle('round', 'normal', 100);
+    close(); await open();
+    assert.deepEqual(styleChoices(), { font: 'round', size: 'normal', boxTransparency: 100 });
     choose('anonymous', 'male'); await locationClick();
     const firstLat = run('writingPosition.latitude');
     close(); await open();
     assert.notEqual(run('writingPosition.latitude'), firstLat, 'location-on requests current coordinates for every new card');
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'male', location: true });
-    assert.deepEqual(Object.keys(stored('account-a')).sort(), ['gender', 'identity', 'locationEnabled'], 'never persist coordinates');
+    assert.deepEqual(Object.keys(stored('account-a')).sort(), ['boxTransparency', 'font', 'gender', 'identity', 'locationEnabled', 'size'], 'never persist coordinates or unfinished text');
 
     await locationClick(); window.deferGeo = true;
     await locationClick(); await locationClick();
@@ -93,15 +119,21 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
 
     close();
     await run(`openComposer('edit', { id: '00000000-0000-4000-8000-000000000001', is_mine: true,
-      kind: 'memo', parent_id: null, body: '기존 카드', tags: [], background_key: '42', identity_mode: 'anonymous' })`);
+      kind: 'memo', parent_id: null, body: '기존 카드', tags: [], background_key: '42', identity_mode: 'anonymous',
+      style: { font: 'handwriting', size: 'large', boxTransparency: 64 } })`);
+    assert.deepEqual(styleChoices(), { font: 'handwriting', size: 'large', boxTransparency: 64 }, 'editing uses the existing card style');
     choose('nickname', 'male');
+    chooseStyle('serif', 'small', 12, true);
     assert.equal(stored('account-a').identity, 'anonymous', 'existing-card edits do not change new-card preferences');
     close(); await open(); assert.equal(choices().identity, 'anonymous');
+    assert.deepEqual(styleChoices(), { font: 'round', size: 'normal', boxTransparency: 100 }, 'editing never overwrites new-card style choices');
 
     choose('nickname', 'private'); signIn('account-b', 'female'); await open();
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'female', location: true }, 'each account has independent choices');
+    assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
     signIn('account-a', 'male'); await open();
     assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false });
+    assert.deepEqual(styleChoices(), { font: 'round', size: 'normal', boxTransparency: 100 });
 
     close();
     window.sessionStorage.setItem('ojjuda-note-local-composer-v1:account-a:event', JSON.stringify({
@@ -110,18 +142,28 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     }));
     await run("openComposer('event')");
     assert.equal(choices().identity, 'nickname', 'old event drafts cannot overwrite the latest choice');
-    assert.equal(document.getElementById('compose-text').value, '이전 이벤트 글');
+    assert.equal(document.getElementById('compose-text').value, '', 'old event text is not restored');
+    assert.deepEqual(styleChoices(), { font: 'round', size: 'normal', boxTransparency: 100 });
+
+    signIn('legacy-settings', 'male');
+    window.localStorage.setItem(key('legacy-settings'), JSON.stringify({ identity: 'nickname', gender: 'private', locationEnabled: false }));
+    await open();
+    assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false }, 'existing saved choices survive the upgrade');
+    assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
 
     signIn('corrupt-account', 'female');
     window.localStorage.setItem(key('corrupt-account'), '{broken'); await open();
     assert.deepEqual(choices(), { identity: 'anonymous', gender: 'female', location: true });
+    assert.deepEqual(styleChoices(), { font: 'default', size: 'normal', boxTransparency: 25 });
 
     signIn('blocked-storage', 'male');
     window.Storage.prototype.getItem = () => { throw new Error('blocked'); };
     window.Storage.prototype.setItem = () => { throw new Error('blocked'); };
-    await open(); choose('nickname', 'private'); await locationClick(); close(); await open();
+    await open(); choose('nickname', 'private'); await locationClick();
+    chooseStyle('handwriting', 'small', 17); close(); await open();
     assert.deepEqual(choices(), { identity: 'nickname', gender: 'private', location: false }, 'storage errors retain choices in the current session');
+    assert.deepEqual(styleChoices(), { font: 'handwriting', size: 'small', boxTransparency: 17 });
     assert.deepEqual(errors, []);
-    console.log('PASS: real composer DOM handlers retain name, gender and location through close, draft restore, fresh-page load and publish cleanup; account separation, fresh/cancelled GPS, edits, event drafts and storage errors.');
+    console.log('PASS: composer name, gender, location, font, size and 0-100 transparency persist through close and reload; number/slider input, legacy settings, account separation, edits and blocked storage; unfinished text stays unsaved.');
   } finally { dom?.window.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

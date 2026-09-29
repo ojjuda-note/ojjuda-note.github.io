@@ -222,7 +222,11 @@ function readComposerSettings(userId = session?.user?.id) {
   return {
     identity: saved?.identity === 'nickname' ? 'nickname' : 'anonymous',
     gender: saved?.gender === 'private' ? 'private' : 'profile',
-    locationEnabled: typeof saved?.locationEnabled === 'boolean' ? saved.locationEnabled : true
+    locationEnabled: typeof saved?.locationEnabled === 'boolean' ? saved.locationEnabled : true,
+    font: FONT_CODES.includes(saved?.font) ? saved.font : 'default',
+    size: ['normal', 'large', 'small'].includes(saved?.size) ? saved.size : 'normal',
+    boxTransparency: Number.isInteger(saved?.boxTransparency) && saved.boxTransparency >= 0 && saved.boxTransparency <= 100
+      ? saved.boxTransparency : 25
   };
 }
 function rememberComposerSetting(name, value) {
@@ -230,7 +234,10 @@ function rememberComposerSetting(name, value) {
   if (!userId || composerUserId !== userId || backdrop.hidden || editingId || busy || draftLoading) return;
   if (!(name === 'identity' && ['anonymous', 'nickname'].includes(value))
     && !(name === 'gender' && ['private', 'profile'].includes(value))
-    && !(name === 'locationEnabled' && typeof value === 'boolean')) return;
+    && !(name === 'locationEnabled' && typeof value === 'boolean')
+    && !(name === 'font' && FONT_CODES.includes(value))
+    && !(name === 'size' && ['normal', 'large', 'small'].includes(value))
+    && !(name === 'boxTransparency' && Number.isInteger(value) && value >= 0 && value <= 100)) return;
   const settings = { ...readComposerSettings(userId), [name]: value };
   try {
     localStorage.setItem(`ojjuda-note-composer-settings-v1:${userId}`, JSON.stringify(settings));
@@ -1697,15 +1704,27 @@ function installFeatures() {
     } finally { if (run === locationRun) updateComposer(); }
   });
   $('#compose-box-transparency')?.addEventListener('input', event => {
-    setBoxTransparency(event.target.value); applyComposeStyle(); recordDraft();
-  });
-  const transparencyNumber = $('#compose-box-transparency-value');
-  transparencyNumber?.addEventListener('change', event => {
-    setBoxTransparency(Math.max(0, Math.min(100, Number(event.target.value))));
+    setBoxTransparency(event.target.value);
+    rememberComposerSetting('boxTransparency', Number(event.target.value));
     applyComposeStyle(); recordDraft();
   });
-  for (const selector of ['#compose-font', '#compose-size', '#compose-effect']) {
-    $(selector).addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
+  const transparencyNumber = $('#compose-box-transparency-value');
+  transparencyNumber?.addEventListener('input', event => {
+    const value = event.target.valueAsNumber;
+    if (!Number.isInteger(value) || value < 0 || value > 100) return;
+    setBoxTransparency(value); rememberComposerSetting('boxTransparency', value);
+    applyComposeStyle(); recordDraft();
+  });
+  transparencyNumber?.addEventListener('change', event => {
+    setBoxTransparency(Math.max(0, Math.min(100, Number(event.target.value))));
+    rememberComposerSetting('boxTransparency', Number(event.target.value));
+    applyComposeStyle(); recordDraft();
+  });
+  for (const [selector, setting] of [['#compose-font', 'font'], ['#compose-size', 'size'], ['#compose-effect', null]]) {
+    $(selector).addEventListener('change', event => {
+      if (setting) rememberComposerSetting(setting, event.target.value);
+      applyComposeStyle(); recordDraft();
+    });
   }
   for (const selector of ['#event-radius', '#event-hours']) $(selector).addEventListener('input', () => { updateEventPrice(); recordDraft(); });
 }
@@ -2241,13 +2260,13 @@ async function openComposer(mode, card = null, replyTo = null) {
     ? '글·태그·꾸미기·사진을 수정할 수 있어요. 구매한 위치·반경·기간은 그대로 유지돼요.'
     : '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
   submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100쭈 결제 후 등록' : '등록하기';
-  const style = editingId && card.style && typeof card.style === 'object' ? card.style : {};
+  const style = editingId ? (card.style && typeof card.style === 'object' ? card.style : {}) : readComposerSettings();
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
-  setBoxTransparency(editingId ? (style.boxTransparency ?? 80) : 25);
+  setBoxTransparency(editingId ? (style.boxTransparency ?? 80) : style.boxTransparency);
   applyComposeStyle(); updateEventPrice();
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : initialComposerTags();
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
