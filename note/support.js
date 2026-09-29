@@ -6,6 +6,11 @@
   let client, getUserId=()=>null, panel, layer, content, message, focus, run=0, busy=false;
   let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,appVersion='',tabs,title,view='inquiries';
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  function bugDiagnostics(kind) {
+    if(kind!=='bug')return {};
+    try { const diagnostics=window.OjjudaDiagnostics?.snapshot(source);return diagnostics?{diagnostics}:{}; }
+    catch { return {}; }
+  }
   async function rpc(name, args={}) { const {data,error}=await client.schema('ojjuda_note').rpc(name,args);if(error)throw error;return data; }
   function valid(epoch,user) {return epoch===run && user===getUserId() && !layer.hidden;}
   function keepFocus(epoch,user) {
@@ -113,13 +118,16 @@
     }
     const label=el('label','의견 내용'),field=el('textarea');field.id='support-feedback-body';label.htmlFor=field.id;field.maxLength=2000;field.required=true;field.rows=5;
     field.placeholder='어느 화면에서 무엇을 했을 때 어떻게 됐는지 적어 주세요.';
-    const send=el('button','보내기','btn button pri primary');send.type='submit';form.append(choices,label,field,el('small','2,000자 이내 · 답변이 필요하면 문의·답변을 이용해 주세요.'),send);content.append(form);
+    const diagnosticNotice=el('p','고장 신고에는 최근 5분의 오류 기록이 함께 전달돼요. 비밀번호와 입력 내용은 포함하지 않아요.','support-help');
+    diagnosticNotice.id='support-diagnostics-notice';
+    choices.addEventListener('change',()=>{diagnosticNotice.hidden=choices.querySelector('input:checked')?.value!=='bug';});
+    const send=el('button','보내기','btn button pri primary');send.type='submit';form.append(choices,diagnosticNotice,label,field,el('small','2,000자 이내 · 답변이 필요하면 문의·답변을 이용해 주세요.'),send);content.append(form);
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy||!valid(epoch,user)||!field.value.trim())return;
       const kind=choices.querySelector('input:checked')?.value||'other';
       busy=true;send.disabled=true;field.disabled=true;choices.disabled=true;message.textContent='의견을 보내는 중이에요.';keepFocus(epoch,user);
       try{
-        const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:appVersion,user_agent:navigator.userAgent.slice(0,400)});
+        const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:appVersion,user_agent:navigator.userAgent.slice(0,400),...bugDiagnostics(kind)});
         if(error)throw error;if(!valid(epoch,user))return;
         content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='운영팀이 월드와 노트 의견을 함께 확인합니다.';keepFocus(epoch,user);
       }catch{if(valid(epoch,user))message.textContent='보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';}
@@ -155,6 +163,7 @@
   function install(options) {
     if(layer||!options.client)return;
     client=options.client;getUserId=options.getUserId;source=options.source==='world'?'world':'note';getScreen=options.getScreen||(()=>source);appVersion=options.appVersion||'';
+    try { window.OjjudaDiagnostics?.bindAuth(client,getUserId); } catch { /* Reporting remains available without diagnostics. */ }
     layer=el('div',undefined,'dialog-backdrop note-support-layer');layer.hidden=true;
     panel=el('section',undefined,'management-dialog');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','note-support-title');
     const head=el('header',undefined,'management-head');title=el('h2','문의·의견');title.id='note-support-title';

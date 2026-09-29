@@ -212,7 +212,40 @@ test('authenticated claim returns only this job and never identities or server k
   const response = await f.handler(workerRequest({ action: 'claim', ...worker }));
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { ok: true, lease_token: LEASE,
-    feedback: { id: '42', kind: 'bug', body: '화면이 겹쳐요', screen: 'note:main', app_version: 'test', user_agent: 'test browser' } });
+    feedback: { id: '42', kind: 'bug', body: '화면이 겹쳐요', screen: 'note:main', app_version: 'test', user_agent: 'test browser', diagnostics: null } });
+});
+
+test('authenticated bug claim exposes only bounded fixed diagnostic fields', async () => {
+  const diagnostics = { version: 1, window_ms: 300000,
+    context: { source: 'world', online: false, width: 360, height: 780, email: 'PRIVATE_EMAIL' },
+    events: [{ type: 'error', age_ms: 0, name: 'TypeError', code: 'NOT_A_FUNCTION', path: '/world.html', line: 99,
+      message: 'PRIVATE_MESSAGE', stack: 'PRIVATE_STACK', headers: { Authorization: 'PRIVATE_TOKEN' } },
+    { type: 'http', age_ms: 2000, path: '/rest/v1/rpc/list_cards?token=PRIVATE_TOKEN', status: 503 }],
+    cookies: 'PRIVATE_COOKIE' };
+  const f = await fixture({ rpc: () => ({ ...worker, lease_token: LEASE, kind: 'bug', body: '사진이 열리지 않아요', diagnostics }) });
+  const response = await f.handler(workerRequest({ action: 'claim', ...worker }));
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.deepEqual(body.feedback.diagnostics, { version: 1, window_ms: 300000,
+    context: { source: 'world', online: false, width: 360, height: 780 },
+    events: [{ type: 'error', age_ms: 0, name: 'TypeError', code: 'NOT_A_FUNCTION', path: '/world.html', line: 99 },
+      { type: 'http', age_ms: 2000, status: 503 }] });
+  assert.doesNotMatch(JSON.stringify(body), /PRIVATE_/);
+  assert.equal(f.calls.length, 1);
+});
+
+test('missing or malformed diagnostics do not block claims and ideas cannot attach logs', async () => {
+  const valid = { version: 1, window_ms: 300000, events: [],
+    context: { source: 'note', online: true, width: 360, height: 780 } };
+  for (const [kind, diagnostics] of [['bug', undefined], ['bug', { ...valid, version: 2 }],
+    ['bug', { ...valid, raw: '한'.repeat(6000) }], ['idea', valid], ['other', valid]]) {
+    const f = await fixture({ rpc: () => ({ ...worker, lease_token: LEASE, kind, body: '접수 내용', diagnostics }) });
+    const response = await f.handler(workerRequest({ action: 'claim', ...worker }));
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.feedback.diagnostics, null);
+    assert.equal(body.feedback.body, '접수 내용');
+  }
 });
 
 test('claim replay and wrong job binding fail without returning private data', async () => {
