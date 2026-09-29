@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="map.css?v=0.45.26-beta">
   <link rel="stylesheet" href="pull-refresh.css?v=0.45.10-beta">
   <link rel="stylesheet" href="world-navigation.css?v=20260929-logo1">
+  <link rel="stylesheet" href="account.css?v=20260929-account1">
 <link rel="stylesheet" href="/guide-entry.css?v=20260928-guide1">
 </head>
 <body>
@@ -57,6 +58,18 @@
       </nav>
       <div id="note-sidebar-menu-slot">
         <div class="note-account-menu" id="note-account-menu">
+          <section class="note-menu-section note-account-section" id="note-account-section" aria-labelledby="note-account-title" hidden>
+            <h2 id="note-account-title" class="side-section-label side-group-label">계정</h2>
+            <p class="note-account-name" id="note-account-name"></p>
+            <p class="note-account-email" id="note-account-email"></p>
+            <p class="note-account-hint">월드와 노트가 함께 쓰는 계정이에요.</p>
+            <div class="note-account-actions">
+              <button class="nav-button" type="button" id="note-change-nickname">닉네임 변경</button>
+              <button class="nav-button" type="button" id="note-change-password">비밀번호 변경</button>
+              <button class="nav-button" type="button" id="note-logout">로그아웃</button>
+              <button class="nav-button note-account-danger" type="button" id="note-delete-account">회원 탈퇴</button>
+            </div>
+          </section>
           <section class="note-menu-section" aria-labelledby="note-events-title">
             <h2 id="note-events-title" class="side-section-label side-group-label">내 이벤트</h2>
             <button class="nav-button side-event-button" type="button" id="event-start"><svg><use href="#plus"/></svg>이벤트 만들기</button>
@@ -190,10 +203,9 @@
   <script src="support.js?v=0.45.42-beta" defer></script>
   <script src="drafts.js?v=0.45.19-beta" defer></script>
   <script src="notifications.js?v=0.45.45-beta" defer></script>
-  <script src="preview.js?v=20260929-style-settings" defer></script>
+  <script src="preview.js?v=20260929-account1" defer></script>
   <script src="notice-ticker.js?v=0.45.36-beta" defer></script>
   <script src="pull-refresh.js?v=0.45.10-beta" defer></script>
   <script src="navigation.js?v=0.45.44-beta" defer></script>
 </body>
 </html>
-

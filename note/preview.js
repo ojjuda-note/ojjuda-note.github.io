@@ -16,6 +16,7 @@ let focusBefore = null, kind = 'memo', parentId = null, backgroundKey = '10';
 let feedCursor = null, replyCursor = null, feedRun = 0, detailRun = 0;
 let stageAuth = null;
 let worldCoins = null, balanceRun = 0;
+let accountNickname = null, accountProfileRun = 0;
 let editingId = null, composerUserId = null, moderator = false, moderatorRun = 0;
 let feedMode = 'all', feedSort = 'latest', feedTerm = '';
 let nearbyPosition = null, nearbyOffset = 0, writingPosition = null, eventPosition = null;
@@ -2625,6 +2626,9 @@ function updateAuth() {
     : session?.user ? (localStage ? '테스트 계정 연결됨' : `오쭈다 계정 연결됨${worldCoins === null ? '' : ` · ${worldCoins.toLocaleString('ko-KR')}쭈`}`)
       : (localStage ? '테스트 로그인 필요' : '대문에서 로그인해 주세요');
   $('#account-status').textContent = accountText;
+  $('#note-account-section').hidden = !session?.user;
+  $('#note-account-email').textContent = session?.user?.email || '';
+  $('#note-account-name').textContent = session?.user ? accountNickname || '내 계정' : '';
   for (const balance of document.querySelectorAll('[data-note-balance]')) {
     balance.textContent = worldCoins === null ? '상점' : worldCoins.toLocaleString('ko-KR');
     balance.closest('a')?.setAttribute('aria-label', worldCoins === null ? '상점' : `상점, 보유 쭈 ${worldCoins.toLocaleString('ko-KR')}`);
@@ -2653,7 +2657,212 @@ async function loadWorldBalance(userId) {
   updateAuth();
 }
 
-// Note management uses Note RPCs only. World identity and coin rows are never mutated.
+async function fetchAccountNickname(userId) {
+  const { data, error } = await client.from('profiles').select('nickname').eq('id', userId).maybeSingle();
+  if (error) throw error;
+  if (!data?.nickname) throw new Error('profile_unavailable');
+  return data.nickname;
+}
+async function loadAccountProfile(userId) {
+  const run = ++accountProfileRun;
+  if (!userId || !client) return;
+  try {
+    const nickname = await fetchAccountNickname(userId);
+    if (run !== accountProfileRun || session?.user?.id !== userId) return;
+    accountNickname = nickname; updateAuth();
+  } catch { /* Keep account actions available so a failed read can be retried. */ }
+}
+function accountErrorMessage(error) {
+  const code = error?.code || '', reason = error?.message || '';
+  if (error?.userMessage) return error.userMessage;
+  if (code === '23505') return '이미 쓰고 있는 닉네임이에요. 다른 닉네임을 적어 주세요.';
+  if (/banned_word/i.test(reason)) return '닉네임에 사용할 수 없는 표현이 있어요.';
+  if (code === '23514') return '닉네임은 1자부터 12자까지 적어 주세요.';
+  if (code === '42501' || code === 'PGRST116') return '지금은 닉네임을 변경할 수 없어요. 문의·의견에서 도움을 요청해 주세요.';
+  if (code === 'same_password' || /same password|different.*password/i.test(reason)) return '지금과 다른 비밀번호를 정해 주세요.';
+  if (code === 'weak_password') return '더 안전한 비밀번호를 정해 주세요. 영문·숫자·기호를 섞어 보세요.';
+  if (/reauthentication|session|jwt|not_signed_in|account_changed/i.test(code + ' ' + reason)) return '로그인 상태가 바뀌었어요. 다시 로그인한 뒤 시도해 주세요.';
+  return '처리하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';
+}
+async function accountAction(action, after) {
+  if (managementBusy || !session?.user) return;
+  const run = managementRun, userId = session.user.id;
+  managementBusy = true; managementMessage.textContent = '처리 중이에요.';
+  managementPanel.querySelectorAll('button, input').forEach(item => { item.disabled = true; });
+  try {
+    const result = await action(userId, run);
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    managementBusy = false;
+    after?.(result);
+  } catch (error) {
+    if (run === managementRun && session?.user?.id === userId) managementMessage.textContent = accountErrorMessage(error);
+  } finally {
+    if (run === managementRun) {
+      managementBusy = false;
+      managementPanel.querySelectorAll('button, input').forEach(item => { item.disabled = false; });
+    }
+  }
+}
+function accountField(form, id, label, type = 'text') {
+  const caption = node('label', '', label); caption.htmlFor = id;
+  const input = node('input', 'note-account-input'); input.id = id; input.type = type; input.required = true;
+  input.autocomplete = type === 'password' ? 'new-password' : 'off';
+  form.append(caption, input); return input;
+}
+function accountFormFooter(form, label, danger = false) {
+  cancelManagement();
+  form.id = 'note-account-form';
+  const save = node('button', danger ? 'button' : 'button primary', label);
+  save.type = 'submit'; save.setAttribute('form', form.id);
+  if (danger) save.classList.add('note-account-danger');
+  managementFooter.append(save);
+}
+function accountSuccess(messageText) {
+  managementBody.replaceChildren(node('p', 'management-help', messageText));
+  managementMessage.textContent = ''; managementFooter.replaceChildren(managementButton('확인', () => closeManagement(), true));
+  managementFooter.firstElementChild.focus();
+}
+async function showNicknameChange() {
+  const userId = session?.user?.id; if (!userId) return;
+  const run = showManagement('닉네임 변경'); state(managementBody, '닉네임을 확인하고 있어요.');
+  try {
+    const nickname = await fetchAccountNickname(userId);
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    const form = node('form', 'note-account-form'); form.noValidate = true;
+    managementBody.replaceChildren(node('p', 'management-help', '월드와 노트에서 함께 쓰는 닉네임이에요.'), form);
+    const input = accountField(form, 'note-new-nickname', '닉네임'); input.maxLength = 12; input.value = nickname;
+    accountFormFooter(form, '저장'); input.focus();
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (run !== managementRun || session?.user?.id !== userId) return;
+      const value = input.value.trim();
+      if (!value || [...value].length > 12) { managementMessage.textContent = '닉네임은 1자부터 12자까지 적어 주세요.'; input.focus(); return; }
+      void accountAction(async () => {
+        const { data, error } = await client.from('profiles').update({ nickname: value, updated_at: new Date().toISOString() }).eq('id', userId).select('nickname').single();
+        if (error) throw error;
+        if (!data?.nickname) throw new Error('profile_unavailable');
+        return data.nickname;
+      }, saved => { accountProfileRun++; accountNickname = saved; updateAuth(); accountSuccess('닉네임을 저장했어요. 월드에서도 같은 닉네임을 써요.'); });
+    });
+  } catch {
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    state(managementBody, '닉네임을 불러오지 못했어요.');
+    managementFooter.append(managementButton('다시 시도', showNicknameChange));
+  }
+}
+function showPasswordChange() {
+  const userId = session?.user?.id; if (!userId) return;
+  const run = showManagement('비밀번호 변경');
+  const form = node('form', 'note-account-form'); form.noValidate = true;
+  managementBody.append(node('p', 'management-help', '월드와 노트에 로그인할 때 쓰는 비밀번호가 함께 바뀌어요.'), form);
+  const password = accountField(form, 'note-new-password', '새 비밀번호', 'password'); password.minLength = 6;
+  password.placeholder = '6자 이상';
+  const confirmation = accountField(form, 'note-confirm-password', '새 비밀번호 확인', 'password');
+  accountFormFooter(form, '변경'); password.focus();
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    if (password.value.length < 6) { managementMessage.textContent = '비밀번호는 6자 이상 적어 주세요.'; password.focus(); return; }
+    if (password.value !== confirmation.value) { managementMessage.textContent = '두 비밀번호가 달라요. 다시 확인해 주세요.'; confirmation.focus(); return; }
+    void accountAction(async () => {
+      const { error } = await client.auth.updateUser({ password: password.value });
+      if (error) throw error;
+    }, () => { password.value = ''; confirmation.value = ''; accountSuccess('비밀번호를 바꿨어요. 다음 로그인부터 새 비밀번호를 써 주세요.'); });
+  });
+}
+function leaveNoteAccount() { location.assign('/'); }
+function showAccountLogout() {
+  if (!session?.user) return;
+  showManagement('로그아웃');
+  managementBody.append(node('p', 'management-help', '이 브라우저에서 월드와 노트가 함께 로그아웃돼요. 로그아웃할까요?'));
+  cancelManagement();
+  managementFooter.append(managementButton('로그아웃', () => accountAction(async userId => {
+    const { error } = await client.auth.signOut({ scope: 'local' });
+    if (error) throw error;
+    if (!session?.user || session.user.id === userId) { if (session?.user) receiveAuth(null); leaveNoteAccount(); }
+  }), true));
+}
+async function deleteNoteAccount(userId, run) {
+  const current = () => {
+    if (run !== managementRun || session?.user?.id !== userId) throw new Error('account_changed');
+  };
+  const { data, error } = await client.auth.getSession(); current();
+  if (error) throw error;
+  const deletionSession = data?.session;
+  if (deletionSession?.user?.id !== userId || !deletionSession.access_token) throw new Error('account_changed');
+  const verified = await client.auth.getUser(deletionSession.access_token); current();
+  if (verified.error) throw verified.error;
+  if (verified.data?.user?.id !== userId) throw new Error('account_changed');
+  // Bind every destructive request to the account that confirmed this dialog.
+  // A later login in another tab must never retarget the parameterless deletion RPC.
+  const owner = window.supabase.createClient(config.supabaseUrl, config.supabaseKey, {
+    global: { headers: { Authorization: `Bearer ${deletionSession.access_token}` } },
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: `ojjuda-delete-${userId}-${run}` }
+  });
+  const media = owner.storage.from('media'), folders = [userId], paths = [];
+  let removing = false;
+  try {
+    while (folders.length) {
+      const folder = folders.pop();
+      for (let offset = 0;; offset += 100) {
+        current();
+        const { data: items, error: listError } = await media.list(folder, { limit: 100, offset }); current();
+        if (listError) throw listError;
+        for (const item of items || []) {
+          const path = `${folder}/${item.name}`;
+          if (item.id) paths.push(path); else folders.push(path);
+        }
+        if (!items || items.length < 100) break;
+      }
+    }
+    for (let offset = 0; offset < paths.length; offset += 100) {
+      current(); removing = true;
+      const { error: removeError } = await media.remove(paths.slice(offset, offset + 100)); current();
+      if (removeError) throw removeError;
+    }
+    current();
+    const { error: deleteError } = await owner.rpc('delete_my_account');
+    if (deleteError) throw deleteError;
+  } catch (error) {
+    if (removing && error?.message !== 'account_changed') throw { userMessage: '탈퇴를 마치지 못했어요. 일부 사진이 삭제됐을 수 있으니 다시 시도해 주세요.' };
+    throw error;
+  }
+  try { localStorage.removeItem(`ojjuda-note-composer-settings-v1:${userId}`); } catch {}
+  composerSettingsFallback.delete(userId);
+  if (session?.user?.id !== userId) return;
+  try { localStorage.removeItem('ojjuda-world-v1'); } catch {}
+  try { await client.auth.signOut({ scope: 'local' }); } catch {}
+  if (!session?.user || session.user.id === userId) { if (session?.user) receiveAuth(null); leaveNoteAccount(); }
+}
+async function showAccountDeletion() {
+  const userId = session?.user?.id; if (!userId) return;
+  const run = showManagement('회원 탈퇴'); state(managementBody, '계정을 확인하고 있어요.');
+  try {
+    const nickname = await fetchAccountNickname(userId);
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    const form = node('form', 'note-account-form'); form.noValidate = true;
+    managementBody.replaceChildren(
+      node('p', 'management-help note-account-warning', '탈퇴하면 월드와 노트 계정이 함께 삭제돼요. 방·다이어리·사진·영상·친구·쭈와 노트의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
+      node('p', 'management-help', '계정정보는 1개월간 비공개 보관 후 삭제해요. 같은 이메일이나 전화번호로 3일(72시간) 동안 재가입할 수 없어요. 다른 사람의 방명록·댓글은 ‘탈퇴한 사용자’로 남아요.'), form);
+    const input = accountField(form, 'note-delete-nickname', `확인을 위해 닉네임 ‘${nickname}’을 입력해 주세요`);
+    const consentLabel = node('label', 'note-account-consent'), consent = node('input'); consent.type = 'checkbox';
+    consentLabel.append(consent, node('span', '', '월드와 노트가 함께 탈퇴되는 것을 확인했어요.')); form.append(consentLabel);
+    accountFormFooter(form, '탈퇴하기', true); input.focus();
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (run !== managementRun || session?.user?.id !== userId) return;
+      if (input.value.trim() !== nickname) { managementMessage.textContent = '닉네임이 맞지 않아요.'; input.focus(); return; }
+      if (!consent.checked) { managementMessage.textContent = '월드와 노트의 함께 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
+      void accountAction(deleteNoteAccount);
+    });
+  } catch {
+    if (run !== managementRun || session?.user?.id !== userId) return;
+    state(managementBody, '계정을 불러오지 못했어요.');
+    managementFooter.append(managementButton('다시 시도', showAccountDeletion));
+  }
+}
+
+// Card moderation stays in Note RPCs; shared account actions use the World account above.
 const management = node('div', 'dialog-backdrop');
 management.id = 'management-backdrop'; management.hidden = true;
 const managementPanel = node('section', 'management-dialog');
@@ -2948,6 +3157,10 @@ async function loadModerator(userId) {
   } catch (error) { console.warn('Note moderation role:', error); }
 }
 function installManagement() {
+  $('#note-change-nickname').addEventListener('click', showNicknameChange);
+  $('#note-change-password').addEventListener('click', showPasswordChange);
+  $('#note-logout').addEventListener('click', showAccountLogout);
+  $('#note-delete-account').addEventListener('click', showAccountDeletion);
   const tools = node('div', 'note-tools');
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드 열기', () => {
@@ -3101,6 +3314,7 @@ function receiveAuth(current) {
   const changed = session?.user?.id !== current?.user?.id;
   session = current; authKnown = true;
   if (changed) {
+    accountNickname = null; accountProfileRun++;
     identityEpoch++;
     myIdentity = null; myIdentityReady = false; myIdentityPromise = null; myGender = 'private'; setGenderInputs(true);
     closePhotoSourceMenu(); closeWorldPicker(null, false);
@@ -3127,6 +3341,7 @@ function receiveAuth(current) {
     if (session?.user?.id !== current?.user?.id) return;
     draftController?.setUser(current?.user?.id);
     loadWorldBalance(current?.user?.id); loadModerator(current?.user?.id); loadNoteState();
+    if (changed || accountNickname === null) void loadAccountProfile(current?.user?.id);
     if (current?.user?.id && !myIdentityReady) void loadMyGender(current.user.id).catch(() => {});
     if (current?.user?.id) void loadPhotoEntitlements(current.user.id).catch(error => console.warn('Note photo entitlement:', error));
     notificationController?.refresh?.();
@@ -3186,6 +3401,7 @@ if (client) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     loadWorldBalance(session?.user?.id); loadNoteState(); notificationController?.refresh?.();
+    void loadAccountProfile(session?.user?.id);
     if (backdrop.hidden && management.hidden) refreshCards(stack.length > 0);
   });
 } else {
