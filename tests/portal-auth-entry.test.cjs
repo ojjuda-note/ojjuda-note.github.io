@@ -122,6 +122,18 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
   assert.deepEqual(existing.navigations, ['/world.html']);
   assert.equal(existing.element('auth-dialog').open, false);
 
+  const cardId = '00000000-0000-4000-8000-000000000010';
+  const reader = { id: 'reader', email: 'reader@example.invalid' };
+  const returnToCard = setup(`?auth=login&next=note&card=${cardId}`, { user: reader });
+  await returnToCard.flush();
+  assert.deepEqual(returnToCard.navigations, [`/note/?card=${cardId}`], 'sign-in returns to the card being read');
+  const invalidCard = setup('?auth=login&next=note&card=https://example.invalid', { user: reader });
+  await invalidCard.flush();
+  assert.deepEqual(invalidCard.navigations, ['/note/'], 'only card UUIDs can be carried through login');
+  const cardSignup = setup(`?auth=signup&next=note&card=${cardId}`);
+  await cardSignup.flush(); cardSignup.fill(); await cardSignup.submit();
+  assert.equal(cardSignup.signups[0].options.emailRedirectTo, `https://ojjuda.kr/?next=note&card=${cardId}`);
+
   const note = setup('?next=note'); await note.flush();
   assert.equal(note.element('login-tab').attributes['aria-selected'], 'true');
   assert.equal(note.element('auth-dialog').open, true);

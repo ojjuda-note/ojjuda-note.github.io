@@ -46,6 +46,9 @@ let requestedDraftContent = null, composerRun = 0, identityEpoch = 0;
 let localComposerBaseline = null, localComposerDirty = false, localComposerStored = false;
 let notificationController = null;
 const validCardId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
+function noteLoginHref(cardId = parentId || (!detail.hidden ? stack.at(-1) : null)) {
+  return '/?auth=login&next=note' + (validCardId(cardId) ? `&card=${encodeURIComponent(cardId)}` : '');
+}
 const PHOTO_FIRST = 10, PHOTO_LAST = 189, PHOTO_PAGE_SIZE = 12;
 const FONT_CODES = ['default', 'round', 'serif', 'handwriting', 'mono'];
 const EFFECT_CODES = ['none', 'sparkle', 'frame', 'rain', 'shimmer', 'rainbow', 'snow',
@@ -1402,7 +1405,7 @@ async function renderDetail() {
           try { nearbyPosition = await currentPosition(); await renderDetail(); }
           catch { locate.disabled = false; note.textContent = '위치를 확인하지 못했어요. 권한을 확인한 뒤 다시 시도해 주세요.'; }
         });
-      } else locate.href = '/?auth=login&next=note';
+      } else locate.href = noteLoginHref(card.id);
       slot.append(note, locate);
     }
     state(replies, '');
@@ -2144,7 +2147,7 @@ function updateComposer() {
   else if (!session?.user) {
     const link = node(localStage ? 'button' : 'a', '', localStage ? '테스트 로그인' : '대문에서 로그인');
     if (localStage) { link.type = 'button'; link.dataset.stageLogin = ''; }
-    else link.href = '/?auth=login&next=note';
+    else link.href = noteLoginHref();
     composeMessage.replaceChildren(link);
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
   else if (text.value.length > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';

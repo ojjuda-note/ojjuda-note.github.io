@@ -39,6 +39,9 @@
   let recoveryEventSeen = false;
   const postConfirmKey = 'ojjuda_post_confirm_destination';
   const authQuery = new URLSearchParams(location.search);
+  const validReturnCard = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
+  let returnCard = authQuery.get('next') === 'note' && validReturnCard(authQuery.get('card'))
+    ? authQuery.get('card') : null;
   let returnQueryDestination = destinationPath(authQuery.get('next')) ? authQuery.get('next') : null;
   let requestedAuthMode = ['login', 'signup', 'forgot'].includes(authQuery.get('auth'))
     ? authQuery.get('auth') : returnQueryDestination ? 'login' : null;
@@ -170,7 +173,8 @@
     if (!destinationPath(destination)) return;
     try {
       sessionStorage.setItem(postConfirmKey, JSON.stringify({
-        destination, email: address.toLowerCase(), expiresAt: Date.now() + 2 * 60 * 60 * 1000
+        destination, card: destination === 'note' ? returnCard : null,
+        email: address.toLowerCase(), expiresAt: Date.now() + 2 * 60 * 60 * 1000
       }));
     } catch { /* The redirect query still carries the chosen destination. */ }
   }
@@ -179,7 +183,10 @@
     try {
       const stored = JSON.parse(sessionStorage.getItem(postConfirmKey) || 'null');
       if (stored?.expiresAt > Date.now() && stored.email === String(user?.email || '').toLowerCase()
-          && destinationPath(stored.destination)) return stored.destination;
+          && destinationPath(stored.destination)) {
+        if (!returnCard && stored.destination === 'note' && validReturnCard(stored.card)) returnCard = stored.card;
+        return stored.destination;
+      }
     } catch { /* The session store can be unavailable or empty. */ }
     return null;
   }
@@ -190,10 +197,12 @@
 
   function clearReturnDestination() {
     returnQueryDestination = null;
+    returnCard = null;
     try { sessionStorage.removeItem(postConfirmKey); } catch { /* Ignore unavailable storage. */ }
     const url = new URL(location.href);
     if (url.searchParams.has('next')) {
       url.searchParams.delete('next');
+      url.searchParams.delete('card');
       history.replaceState(null, '', url.pathname + url.search + url.hash);
     }
   }
@@ -259,8 +268,9 @@
         showNicknameSetup(candidate, '노트 연결을 확인하지 못했어요. 다시 시도해 주세요.');
         return;
       }
+      const notePath = destinations.note + (returnCard ? `?card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
-      location.assign(destinations.note);
+      location.assign(notePath);
     } catch (error) {
       console.warn('노트 회원 준비 실패:', error);
       if (accountChanged()) return;
@@ -409,6 +419,7 @@
         const name = nickname.value.trim();
         const confirmationUrl = new URL('/', location.href);
         if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
+        if (pendingDestination === 'note' && returnCard) confirmationUrl.searchParams.set('card', returnCard);
         const { data, error } = await client.auth.signUp({
           email: address,
           password: secret,
