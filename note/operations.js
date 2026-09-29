@@ -7,6 +7,7 @@
   const REASONS = { abuse: '욕설·비방', sexual: '음란·불쾌', spam: '스팸·광고', impersonation: '사칭', other: '기타' };
   const FEEDBACK_KINDS = { bug: '고장', idea: '아이디어', other: '기타' };
   const FEEDBACK_AI_STATES = { queued: 'Codex 확인 대기', running: '검토 중', needs_review: '검토 필요', blocked: '처리 보류', resolved: '수정 확인' };
+  const FEEDBACK_AI_DISPATCH_STATES = { pending: '실행 요청 대기', dispatching: '실행 요청 중', dispatched: '실행 요청 완료', failed: '실행 요청 실패' };
   const FEEDBACK_AI_PRIORITIES = { low: '낮음', normal: '보통', high: '높음' };
   const STATUS_LABELS = Object.fromEntries(REPORT_STATES);
   const el = (tag, value, className = '') => {
@@ -105,15 +106,33 @@
     box.setAttribute('aria-label', 'Codex 처리 내역');
     const ai = value && typeof value === 'object' ? value : null;
     const meta = el('div', undefined, 'ops-meta');
-    const stateLabel = ai ? (Object.hasOwn(FEEDBACK_AI_STATES, ai.status) ? FEEDBACK_AI_STATES[ai.status] : '처리 상태 확인 필요') : '자동 확인 대기';
+    const dispatchFailed = ai?.dispatch_status === 'failed';
+    // Evaluate freshness only when the administrator loads this record; never poll or mutate jobs.
+    const updatedAt = Date.parse(ai?.updated_at);
+    const age = Number.isFinite(updatedAt) ? Date.now() - updatedAt : 0;
+    const staleRunning = ai?.status === 'running' && age > 2 * 60 * 60 * 1000;
+    const staleDispatch = ai?.status === 'queued'
+      && ['pending', 'dispatching', 'dispatched'].includes(ai.dispatch_status) && age > 5 * 60 * 1000;
+    const stateLabel = dispatchFailed && ai.status === 'queued' ? FEEDBACK_AI_DISPATCH_STATES.failed
+      : staleRunning ? '처리 시간 초과' : staleDispatch ? '실행 시작 확인 필요'
+      : ai ? (Object.hasOwn(FEEDBACK_AI_STATES, ai.status) ? FEEDBACK_AI_STATES[ai.status] : '처리 상태 확인 필요') : '자동 확인 대기';
     meta.append(el('strong', 'Codex'), badge(stateLabel));
+    if (ai?.dispatch_status && !(dispatchFailed && ai.status === 'queued')) {
+      meta.append(badge(Object.hasOwn(FEEDBACK_AI_DISPATCH_STATES, ai.dispatch_status)
+        ? FEEDBACK_AI_DISPATCH_STATES[ai.dispatch_status] : '실행 요청 상태 확인 필요', 'ops-ai-dispatch'));
+    }
     if (ai && Object.hasOwn(FEEDBACK_AI_PRIORITIES, ai.priority)) meta.append(el('span', `우선순위 ${FEEDBACK_AI_PRIORITIES[ai.priority]}`));
     box.append(meta);
+    if (ai?.dispatch_error || dispatchFailed) box.append(el('p', ai.dispatch_error
+      || '자동 처리 실행 요청을 완료하지 못했습니다. 관리자 확인이 필요합니다.', 'ops-content ops-ai-dispatch-error'));
+    if (staleRunning || staleDispatch) box.append(el('p', staleRunning
+      ? '2시간 이상 처리 기록이 갱신되지 않았습니다. 관리자 확인이 필요합니다.'
+      : '5분 이상 실행 시작이 확인되지 않았습니다. 관리자 확인이 필요합니다.', 'ops-content ops-ai-stale'));
     if (ai?.summary) box.append(el('p', ai.summary, 'ops-content'));
     if (ai?.result) box.append(el('p', ai.result, 'ops-content'));
     const evidence = typeof ai?.evidence_url === 'string' ? ai.evidence_url : '';
-    // Keep model-provided links inside this repository and outside arbitrary URL schemes.
-    if (/^https:\/\/github\.com\/ojjuda-note\/ojjuda-note\.github\.io\/(?:commit\/[0-9a-f]{40}|pull\/[1-9]\d*|actions\/runs\/[1-9]\d*)$/.test(evidence)) {
+    // Only source-repository evidence and the private worker's Actions runs are allowed.
+    if (/^https:\/\/github\.com\/ojjuda-note\/(?:ojjuda-note\.github\.io\/(?:commit\/[0-9a-f]{40}|pull\/[1-9]\d*|actions\/runs\/[1-9]\d*)|ojjuda-codex-worker\/actions\/runs\/[1-9]\d*)$/.test(evidence)) {
       const link = el('a', '처리 근거 보기', 'ops-ai-evidence');
       link.href = evidence; link.target = '_blank'; link.rel = 'noopener noreferrer';
       link.setAttribute('aria-label', 'GitHub에서 처리 근거 보기 (새 창)'); box.append(link);
