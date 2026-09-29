@@ -39,6 +39,12 @@
         if (gesture?.surface) gesture.surface.style.transform = '';
         gesture = null;
       };
+      const currentIndex = () => {
+        const index = options.tabs.indexOf(options.currentTab());
+        return index < 0
+          ? options.tabs.indexOf(document.querySelector('.bottomnav [aria-current="page"]')?.dataset.tab)
+          : index;
+      };
       const swipeZone = target => {
         const zone = target.closest?.('.main, .topbar, .bottomnav');
         if (!zone || [...document.querySelectorAll('#modal-root:not(:empty), [role="dialog"], .gaming')]
@@ -70,6 +76,10 @@
           g.horizontal = true;
         }
         if (event.cancelable) event.preventDefault();
+        if (dx < 0 && currentIndex() === options.tabs.length - 1) {
+          if (g.surface) g.surface.style.transform = '';
+          return;
+        }
         if (g.surface) g.surface.style.transform = `translateX(${Math.max(-100, Math.min(100, dx * .55))}px)`;
       };
       const finish = point => {
@@ -80,11 +90,11 @@
         if (!g.horizontal) return;
         suppressClickUntil = performance.now() + 400;
         if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || performance.now() - g.time > 1200) return;
+        const tabs = options.tabs, index = currentIndex();
+        // The final World menu is the left-swipe boundary, not a loop to Main.
+        if (dx < 0 && index === tabs.length - 1) return;
         if (!options.canLeave()) return;
         if (dx > 0 && options.isMain() && options.openNote) { options.openNote(); return; }
-        const tabs = options.tabs;
-        let index = tabs.indexOf(options.currentTab());
-        if (index < 0) index=tabs.indexOf(document.querySelector('.bottomnav [aria-current="page"]')?.dataset.tab);
         if (index < 0) return;
         options.changeTab(tabs[(index + (dx < 0 ? 1 : -1) + tabs.length) % tabs.length]);
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
