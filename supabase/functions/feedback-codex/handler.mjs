@@ -18,6 +18,54 @@ const validUuid = value => typeof value === 'string' && UUID.test(value);
 const validId = value => (typeof value === 'string' || Number.isSafeInteger(value))
   && DIGITS.test(String(value)) && BigInt(value) <= 9223372036854775807n;
 
+// Diagnostic text is never trusted input. The browser, database and worker each
+// independently keep only fixed codes, safe route names and bounded numbers.
+const DIAGNOSTIC_PATHS = new Set([
+  '/world.html', '/note/', '/note/index.html', '/screw3d.js', '/photo-protection.js', '/diagnostics.js',
+  '/note/preview.js', '/note/navigation.js', '/note/support.js', '/note/operations.js', '/note/admin.js',
+  '/note/notifications.js', '/note/drafts.js', '/note/feed-swipe.js', '/note/map.js', '/note/notice-ticker.js',
+  '/note/pull-refresh.js', '/admin/connections.js',
+  ...['get_note_state', 'list_cards', 'get_card', 'publish_card', 'publish_card_with_photo', 'archive_my_card',
+    'replace_card_photo', 'set_card_style', 'list_event_map', 'list_my_events', 'get_my_event', 'publish_event',
+    'publish_event_with_photo', 'update_my_event', 'report_card', 'report_event', 'block_card_author',
+    'unblock_author', 'list_blocks', 'card_genders', 'card_photo_paths', 'get_event_photo_path',
+    'get_my_event_photo_path', 'list_notifications', 'notification_unread_count', 'mark_notifications_read',
+    'list_retention_alerts', 'mark_retention_alert_read', 'game_answer', 'game_cancel', 'game_invite',
+    'game_ranking', 'game_resign', 'game_undo_request', 'game_undo_answer', 'quiz_current', 'record_visit',
+    'touch_last_seen', 'accept_friend'].map(name => '/rest/v1/rpc/' + name)
+]);
+const DIAGNOSTIC_NAMES = new Set(['Error', 'TypeError', 'ReferenceError', 'RangeError', 'SyntaxError',
+  'URIError', 'EvalError', 'AggregateError', 'DOMException']);
+const DIAGNOSTIC_CODES = new Set(['JS_ERROR', 'PROMISE_REJECTION', 'HTTP_FAILURE', 'NETWORK_FAILURE',
+  'RESOURCE_FAILURE', 'UNDEFINED_PROPERTY', 'NULL_PROPERTY', 'NOT_A_FUNCTION', 'NOT_DEFINED', 'TIMEOUT']);
+const diagnosticObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const diagnosticInt = (value, max, min = 0) => Number.isInteger(value) && value >= min && value <= max;
+export function sanitizeFeedbackDiagnostics(value, kind = 'bug') {
+  try {
+    if (kind !== 'bug' || !diagnosticObject(value)
+      || new TextEncoder().encode(JSON.stringify(value)).byteLength > 16384
+      || value.version !== 1 || value.window_ms !== 300000 || !Array.isArray(value.events)
+      || !diagnosticObject(value.context) || !['world', 'note'].includes(value.context.source)
+      || typeof value.context.online !== 'boolean' || !diagnosticInt(value.context.width, 10000, 1)
+      || !diagnosticInt(value.context.height, 10000, 1)) return null;
+    const events = [];
+    for (const event of value.events.slice(0, 40)) {
+      if (!diagnosticObject(event) || !['error', 'rejection', 'http', 'network', 'resource'].includes(event.type)
+        || !diagnosticInt(event.age_ms, 300000)) continue;
+      const safe = { type: event.type, age_ms: event.age_ms };
+      if (DIAGNOSTIC_NAMES.has(event.name)) safe.name = event.name;
+      if (DIAGNOSTIC_CODES.has(event.code)) safe.code = event.code;
+      if (DIAGNOSTIC_PATHS.has(event.path)) safe.path = event.path;
+      for (const key of ['line', 'column']) if (diagnosticInt(event[key], 1000000)) safe[key] = event[key];
+      if (diagnosticInt(event.status, 599)) safe.status = event.status;
+      events.push(safe);
+    }
+    return { version: 1, window_ms: 300000, events, context: {
+      source: value.context.source, online: value.context.online, width: value.context.width, height: value.context.height
+    } };
+  } catch { return null; }
+}
+
 // Repository IDs are public, immutable identity, not a deploy-time credential.
 // Keep the deployed trust pin fixed even if an obsolete environment value exists.
 export const pinnedWorkerEnv = readEnv => name => name === 'FEEDBACK_WORKER_REPOSITORY_ID'
@@ -279,7 +327,8 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
           || !['bug', 'idea', 'other'].includes(result.kind)) throw new Error('invalid_job');
         return json({ ok: true, lease_token: result.lease_token, feedback: {
           id: result.feedback_id, kind: result.kind, body: result.body,
-          screen: result.screen ?? null, app_version: result.app_version ?? null, user_agent: result.user_agent ?? null
+          screen: result.screen ?? null, app_version: result.app_version ?? null, user_agent: result.user_agent ?? null,
+          diagnostics: sanitizeFeedbackDiagnostics(result.diagnostics, result.kind)
         } });
       }
       const payload = completionPayload(body, base);
