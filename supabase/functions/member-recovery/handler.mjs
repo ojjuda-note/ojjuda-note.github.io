@@ -1,8 +1,7 @@
-// Anonymous recovery entrypoint. Matching details authorize only an email request,
-// never a password change: Supabase's single-use email link proves mailbox access.
+// Temporary recovery policy explicitly requested until phone verification is added.
+// All four private identity fields must match before a 5-minute, single-use grant is issued.
 const ORIGINS = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const SITE_KEY = 'sb_publishable_iUpPUBr2HlJr9LhDRVtB0Q_toJUMazo'; // Public browser key, not a secret.
-const accepted = { accepted: true };
 const apiHeaders = key => ({ apikey: key, 'Content-Type': 'application/json',
   ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}) });
 function keySet(value) {
@@ -27,7 +26,6 @@ export function createHandler({ env, fetchImpl = fetch, cryptoImpl = crypto, del
   const url = env('SUPABASE_URL');
   const serverKey = keySet(env('SUPABASE_SECRET_KEYS'))[0] || env('SUPABASE_SERVICE_ROLE_KEY');
   const browserKeys = [...keySet(env('SUPABASE_PUBLISHABLE_KEYS')), env('SUPABASE_ANON_KEY'), SITE_KEY].filter(Boolean);
-  const mailKey = browserKeys[0];
   return async request => {
     const origin = request.headers.get('Origin');
     const cors = { 'Access-Control-Allow-Origin': origin && ORIGINS.has(origin) ? origin : 'https://ojjuda.kr',
@@ -40,10 +38,41 @@ export function createHandler({ env, fetchImpl = fetch, cryptoImpl = crypto, del
     if (request.method !== 'POST') return respond({ error: 'method_not_allowed' }, 405);
     // Custom API-key validation is required because the caller has forgotten their password.
     if (!browserKeys.includes(request.headers.get('apikey'))) return respond({ error: 'invalid_api_key' }, 401);
-    if (!url || !serverKey || !mailKey) return respond({ error: 'recovery_unavailable' }, 503);
+    if (!url || !serverKey) return respond({ error: 'recovery_unavailable' }, 503);
     let body;
     try { body = await readBody(request); } catch { return respond({ error: 'invalid_recovery_details' }, 400); }
-    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const hex = bytes => [...new Uint8Array(bytes)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    const hash = async text => hex(await cryptoImpl.subtle.digest('SHA-256', new TextEncoder().encode(text)));
+    const rpc = async (name, args) => {
+      const response = await fetchImpl(`${url}/rest/v1/rpc/${name}`, {
+        method: 'POST', headers: apiHeaders(serverKey), signal: AbortSignal.timeout(10000), body: JSON.stringify(args)
+      });
+      if (!response.ok) throw new Error('database_unavailable');
+      return response.json();
+    };
+    if (body?.action === 'reset') {
+      if (typeof body.token !== 'string' || !/^[a-f0-9]{64}$/.test(body.token)) return respond({ error: 'recovery_expired' }, 410);
+      if (typeof body.password !== 'string' || body.password.length < 6 || new TextEncoder().encode(body.password).length > 72)
+        return respond({ error: 'invalid_recovery_password' }, 400);
+      if (body.password !== body.password_confirmation) return respond({ error: 'recovery_password_mismatch' }, 400);
+      let claimed = false;
+      try {
+        const userId = await rpc('consume_member_password_recovery', { p_token_hash: await hash(body.token) });
+        if (!userId) return respond({ error: 'recovery_expired' }, 410);
+        if (typeof userId !== 'string' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(userId)) throw new Error('invalid_grant');
+        claimed = true;
+        // Only the server-derived user ID is used. Never accept a target ID from the browser.
+        // Auth's admin password update also revokes the user's refresh sessions.
+        const updated = await fetchImpl(`${url}/auth/v1/admin/users/${userId}`, {
+          method: 'PUT', headers: apiHeaders(serverKey), signal: AbortSignal.timeout(10000),
+          body: JSON.stringify({ password: body.password })
+        });
+        if (!updated.ok) return respond({ error: 'recovery_restart_required' }, 503);
+        return respond({ reset: true });
+      } catch { return respond({ error: claimed ? 'recovery_restart_required' : 'recovery_unavailable' }, 503); }
+    }
+    if (body?.action !== 'check') return respond({ error: 'invalid_recovery_details' }, 400);
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254
       || typeof body.phone !== 'string' || body.phone.length > 30
       || typeof body.birth_date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(body.birth_date)
@@ -52,27 +81,18 @@ export function createHandler({ env, fetchImpl = fetch, cryptoImpl = crypto, del
     try {
       const secret = await cryptoImpl.subtle.importKey('raw', new TextEncoder().encode(serverKey),
         { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-      const digest = async value => [...new Uint8Array(await cryptoImpl.subtle.sign('HMAC', secret,
-        new TextEncoder().encode(value)))].map(byte => byte.toString(16).padStart(2, '0')).join('');
+      const digest = async value => hex(await cryptoImpl.subtle.sign('HMAC', secret, new TextEncoder().encode(value)));
       const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() || 'unknown';
-      const checked = await fetchImpl(`${url}/rest/v1/rpc/check_member_recovery`, {
-        method: 'POST', headers: apiHeaders(serverKey), signal: AbortSignal.timeout(10000),
-        body: JSON.stringify({ p_email: email, p_phone: body.phone, p_birth_date: body.birth_date, p_gender: body.gender,
-          p_ip_hash: await digest(`ip:${ip}`), p_email_hash: await digest(`email:${email}`) })
+      const token = hex(cryptoImpl.getRandomValues(new Uint8Array(32)));
+      const result = await rpc('begin_member_password_recovery', {
+        p_email: email, p_phone: body.phone, p_birth_date: body.birth_date, p_gender: body.gender,
+        p_ip_hash: await digest(`ip:${ip}`), p_email_hash: await digest(`email:${email}`), p_token_hash: await hash(token)
       });
-      if (!checked.ok) return respond({ error: 'recovery_unavailable' }, 503);
-      const status = await checked.json();
-      if (status === 'limited') return respond({ error: 'recovery_rate_limited' }, 429);
-      if (status !== 'matched' && status !== 'unmatched') return respond({ error: 'recovery_unavailable' }, 503);
-      if (status === 'matched') {
-        const sent = await fetchImpl(`${url}/auth/v1/recover?redirect_to=${encodeURIComponent('https://ojjuda.kr/?reset=1')}`, {
-          method: 'POST', headers: apiHeaders(mailKey), signal: AbortSignal.timeout(10000), body: JSON.stringify({ email })
-        });
-        if (!sent.ok) return respond({ error: sent.status === 429 ? 'recovery_rate_limited' : 'recovery_mail_failed' }, sent.status === 429 ? 429 : 503);
-      }
-      // Do not disclose which identity field matched or whether an account exists.
+      if (result?.status === 'limited') return respond({ error: 'recovery_rate_limited' }, 429);
+      if (!['matched', 'unmatched'].includes(result?.status)) return respond({ error: 'recovery_unavailable' }, 503);
       await delay(Math.max(0, 700 - (Date.now() - started)));
-      return respond(accepted, 202);
+      // No field-by-field hints, user ID, auth session or profile data leave the server.
+      return respond(result.status === 'matched' ? { verified: true, reset_token: token, expires_in: 300 } : { verified: false });
     } catch { return respond({ error: 'recovery_unavailable' }, 503); }
   };
 }

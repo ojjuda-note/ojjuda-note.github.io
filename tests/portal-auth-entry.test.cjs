@@ -6,7 +6,8 @@ const identity = require('../signup-identity.js');
 const source = fs.readFileSync(path.join(__dirname, '../portal.js'), 'utf8');
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, recoveryError = null } = {}) {
+function setup(query, { user = null, confirmed = false, sessionError = false, recoveryError = null, recoveryVerified = true, resetError = null } = {}) {
+  let clock = Date.now();
   const elements = new Map(), tasks = [], navigations = [], signups = [], recoveries = [], storage = new Map();
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
@@ -37,13 +38,14 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
         return { data: { session: confirmed ? { user: { id: 'new-member', email: args.email } } : null } };
       }
     },
-    functions: { async invoke(name, args) { recoveries.push({ name, ...args }); return recoveryError ? { error: { context: { json: async () => ({ error: recoveryError }) } } } : { data: { accepted: true } }; } },
+    functions: { async invoke(name, args) { recoveries.push({ name, ...args }); const error = args.body.action === 'reset' ? resetError : recoveryError; return error ? { error: { context: { json: async () => ({ error }) } } } : { data: args.body.action === 'reset' ? { reset: true } : { verified: recoveryVerified, reset_token: 'a'.repeat(64), expires_in: 300 } }; } },
     from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
     async rpc() { return { data: true }; }
   };
   const context = {
     window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity },
     document: { getElementById: element, querySelector: element, querySelectorAll: () => [] },
+    Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
     history: { replaceState(_state, _title, url) { location.href = new URL(url, location).href; } },
     sessionStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
@@ -57,7 +59,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-test@example.invalid', password: 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-1234-5678' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, submit, fill, navigations, signups, recoveries, storage, location };
+  return { element, flush, emit, submit, fill, navigations, signups, recoveries, storage, location, advance: ms => { clock += ms; } };
 }
 
 (async () => {
@@ -119,17 +121,49 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     fillRecovery(app); await app.submit();
     assert.equal(app.recoveries.length, 1);
     assert.equal(app.recoveries[0].name, 'member-recovery');
-    assert.deepEqual(JSON.parse(JSON.stringify(app.recoveries[0].body)), { email: recoveryValues.email, phone: '01012345678', birth_date: '2000-02-29', gender: 'male' });
+    assert.deepEqual(JSON.parse(JSON.stringify(app.recoveries[0].body)), { action: 'check', email: recoveryValues.email, phone: '01012345678', birth_date: '2000-02-29', gender: 'male' });
     assert.equal(app.element('recovery-phone').value, '');
-    assert.match(app.element('auth-state-message').textContent, /모두 일치하면/);
+    assert.equal(app.element('recovery-reset-button').hidden, false);
+    app.element('recovery-reset-button').listeners.click();
+    assert.equal(app.element('auth-title').textContent, '새 비밀번호 설정');
+    app.element('password').value = 'new-password'; app.element('password-confirm').value = 'different';
+    await app.submit(); assert.equal(app.recoveries.length, 1); assert.match(app.element('auth-feedback').textContent, /두 비밀번호가 달라요/);
+    app.element('password-confirm').value = 'new-password'; await app.submit();
+    assert.equal(app.recoveries.length, 2);
+    assert.deepEqual(JSON.parse(JSON.stringify(app.recoveries[1].body)), { action: 'reset', token: 'a'.repeat(64), password: 'new-password', password_confirmation: 'new-password' });
+    assert.equal(app.element('auth-title').textContent, '비밀번호가 바뀌었어요');
+    assert.equal(app.element('recovery-reset-button').hidden, true);
+    assert.equal(app.element('password').value, ''); assert.equal(app.element('password-confirm').value, '');
+    app.element('back-to-login').listeners.click();
+    assert.equal(app.element('login-tab').attributes['aria-selected'], 'true');
   }
   for (const field of Object.keys(recoveryValues)) {
     const app = setup('?auth=forgot'); await app.flush(); fillRecovery(app); app.element(field).value = '';
     await app.submit(); assert.equal(app.recoveries.length, 0, `${field} must be required for recovery`);
   }
-  const sendFailure = setup('?auth=forgot', { recoveryError: 'recovery_mail_failed' });
-  await sendFailure.flush(); fillRecovery(sendFailure); await sendFailure.submit();
-  assert.match(sendFailure.element('auth-feedback').textContent, /보내지 못했어요/);
-  assert.equal(sendFailure.element('auth-state').hidden, true);
+  const mismatch = setup('?auth=forgot', { recoveryVerified: false });
+  await mismatch.flush(); fillRecovery(mismatch); await mismatch.submit();
+  assert.equal(mismatch.element('recovery-reset-button').hidden, true);
+  assert.match(mismatch.element('auth-feedback').textContent, /일치하지 않아요/);
+  const limited = setup('?auth=forgot', { recoveryError: 'recovery_rate_limited' });
+  await limited.flush(); fillRecovery(limited); await limited.submit();
+  assert.match(limited.element('auth-feedback').textContent, /15분/);
+  assert.equal(limited.element('recovery-reset-button').hidden, true);
+  const expired = setup('?auth=forgot'); await expired.flush(); fillRecovery(expired); await expired.submit();
+  expired.advance(300001); expired.element('recovery-reset-button').listeners.click();
+  assert.equal(expired.element('recovery-reset-button').hidden, true);
+  assert.match(expired.element('auth-feedback').textContent, /확인 시간이 지났/);
+  const failedReset = setup('?auth=forgot', { resetError: 'recovery_restart_required' });
+  await failedReset.flush(); fillRecovery(failedReset); await failedReset.submit();
+  failedReset.element('recovery-reset-button').listeners.click();
+  failedReset.element('password').value = failedReset.element('password-confirm').value = 'new-password';
+  await failedReset.submit();
+  assert.equal(failedReset.element('recovery-identity-slot').hidden, false);
+  assert.match(failedReset.element('auth-feedback').textContent, /확인부터 다시/);
+  assert.equal(failedReset.element('recovery-reset-button').hidden, true);
+  const closed = setup('?auth=forgot'); await closed.flush(); fillRecovery(closed); await closed.submit();
+  closed.element('auth-dialog').close(); closed.element('auth-dialog').listeners.close();
+  closed.element('recovery-reset-button').listeners.click();
+  assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation return destinations, existing sessions, recovery priority, redirect allowlist');
 })().catch(error => { console.error(error); process.exitCode = 1; });
