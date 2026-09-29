@@ -943,11 +943,13 @@ function cardElement(card, compact = false, expanded = false) {
   if (card.kind === 'event') item.classList.add('note-event-card');
   item.dataset.cardId = card.id;
   const frame = node('div', 'card-photo-frame');
-  const open = node('button', 'photo-open');
-  open.type = 'button';
-  open.dataset.open = card.id;
-  open.setAttribute('aria-label', card.kind === 'event' ? '이벤트/광고 카드 크게 보기' : '카드 크게 보기');
-  if (expanded) { open.disabled = true; delete open.dataset.open; }
+  const open = node(expanded ? 'div' : 'button', 'photo-open');
+  if (expanded) open.style.cursor = 'default';
+  else {
+    open.type = 'button';
+    open.dataset.open = card.id;
+    open.setAttribute('aria-label', card.kind === 'event' ? '이벤트/광고 카드 크게 보기' : '카드 크게 보기');
+  }
   const style = card.style && typeof card.style === 'object' ? card.style : {};
   const visiblePhoto = card.photo_key || card.background_key;
   const photo = node('span', 'photo');
