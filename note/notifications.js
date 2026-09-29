@@ -12,7 +12,7 @@
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
     let notificationUnread = 0, retentionUnread = 0, unread = 0, loading = false, saving = false, loadError = '';
     let countRequest = null, lastRefresh = 0, priorFocus = null, priorOverflow = '', inertState = [];
-    const trigger = button('알림함 열기', () => open(), 'btn nn-trigger'); trigger.id = 'note-notifications';
+    const trigger = button('알림', () => open(), 'btn nn-trigger'); trigger.id = 'note-notifications';
     const badge = el('span', '', 'nn-badge'); badge.id = 'note-notification-badge'; badge.hidden = true; badge.setAttribute('aria-hidden', 'true'); trigger.append(badge);
     trigger.setAttribute('aria-haspopup', 'dialog'); trigger.setAttribute('aria-controls', 'note-notification-dialog');
     const layer = el('div', undefined, 'nn-backdrop'); layer.id = 'note-notification-backdrop'; layer.hidden = true;
@@ -36,7 +36,7 @@
     function syncBadges() {
       for (const item of document.querySelectorAll('[data-notification-dot]')) item.hidden = unread === 0;
       for(const item of document.querySelectorAll('[data-notification-badge]')) { item.hidden=!unread;item.textContent=unread>99?'99+':String(unread); }
-      for(const item of document.querySelectorAll('[data-note-my],[data-tab="my"]')) item.setAttribute('aria-label',unread?`마이, 읽지 않은 알림 ${unread}개`:'마이');
+      for(const item of document.querySelectorAll('[data-note-my],[data-tab="my"]')) item.setAttribute('aria-label',unread?`메뉴, 읽지 않은 알림 ${unread}개`:'메뉴');
       for(const item of document.querySelectorAll('[data-notifications-open]')) item.setAttribute('aria-label',unread?`알림, 읽지 않은 알림 ${unread}개`:'알림');
     }
     function attach() {
@@ -310,4 +310,3 @@
   }
   window.OjjudaNotifications = window.OjjudaNoteNotifications = Object.freeze({ install });
 })();
-
