@@ -63,7 +63,11 @@ jobs:
       - name: Install locked regression test dependencies
         if: ${{ !cancelled() }}
         run: npm --prefix tests ci --ignore-scripts
-      - name: Run existing signup, login and isolated database regression tests
+      - name: Install Chromium for real interface checks
+        if: ${{ !cancelled() }}
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Run signup, login, database and browser regression tests
         if: ${{ !cancelled() }}
         run: npm --prefix tests test
       - name: Audit locked dependency vulnerabilities
@@ -197,4 +201,3 @@ jobs:
                           manifest["commit"] + "^{commit}"], check=True)
           print("Source-only backup saved, downloaded and restore-verified; live DB and user uploads are NOT included.")
           PY
-

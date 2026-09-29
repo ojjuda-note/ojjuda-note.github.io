@@ -2,7 +2,8 @@
   "name": "ojjuda-member-identity-tests",
   "private": true,
   "scripts": {
-    "test": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs",
+    "test": "npm run test:unit && npm run test:ui",
+    "test:unit": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs",
     "test:ui": "node admin-ui.test.cjs"
   },
   "devDependencies": {
