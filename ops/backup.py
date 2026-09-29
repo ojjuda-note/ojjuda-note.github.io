@@ -18,7 +18,7 @@ import sys
 import tarfile
 import tempfile
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import boto3
 from botocore.client import Config
@@ -28,7 +28,7 @@ NAVER_ENDPOINT = "https://kr.object.ncloudstorage.com"
 NAVER_REGION = "kr-standard"
 
 NEEDED = (
-    "SUPABASE_PROJECT_REF", "SUPABASE_REGION", "SUPABASE_DB_URL",
+    "SUPABASE_PROJECT_REF", "SUPABASE_REGION",
     "SUPABASE_S3_ACCESS_KEY", "SUPABASE_S3_SECRET_KEY",
     "BACKUP_S3_ENDPOINT", "BACKUP_S3_REGION", "BACKUP_S3_BUCKET",
     "BACKUP_S3_ACCESS_KEY", "BACKUP_S3_SECRET_KEY",
@@ -41,12 +41,26 @@ def required_config():
     if missing:
         raise RuntimeError("Missing backup configuration: " + ", ".join(missing))
     cfg = {key: os.environ[key].strip() for key in NEEDED}
-    db = urlparse(cfg["SUPABASE_DB_URL"])
-    if db.scheme not in ("postgres", "postgresql") or not db.hostname or not db.password:
-        raise RuntimeError("SUPABASE_DB_URL must be a complete Postgres connection URL")
     if not re.fullmatch(r"[a-z0-9]{20}", cfg["SUPABASE_PROJECT_REF"]):
         raise RuntimeError("Invalid Supabase project reference")
     ref = cfg["SUPABASE_PROJECT_REF"]
+    cfg["SUPABASE_DB_URL"] = os.environ.get("SUPABASE_DB_URL", "").strip()
+    if not cfg["SUPABASE_DB_URL"]:
+        # Preserve the password exactly; reserved characters must be URL-encoded.
+        password = os.environ.get("SUPABASE_DB_PASSWORD", "")
+        if not password:
+            raise RuntimeError("Missing backup configuration: SUPABASE_DB_PASSWORD or SUPABASE_DB_URL")
+        host = os.environ.get("SUPABASE_DB_POOLER_HOST", "").strip()
+        expected_host = r"aws-\d+-" + re.escape(cfg["SUPABASE_REGION"]) + r"\.pooler\.supabase\.com"
+        if not re.fullmatch(expected_host, host):
+            raise RuntimeError("SUPABASE_DB_POOLER_HOST must be the project's regional Supabase session pooler")
+        # The host is copied from Dashboard > Connect, never inferred from region.
+        cfg["SUPABASE_DB_URL"] = (
+            f"postgresql://postgres.{ref}:{quote(password, safe='')}@{host}:5432/postgres?sslmode=require"
+        )
+    db = urlparse(cfg["SUPABASE_DB_URL"])
+    if db.scheme not in ("postgres", "postgresql") or not db.hostname or not db.password:
+        raise RuntimeError("SUPABASE_DB_URL must be a complete Postgres connection URL")
     direct = db.hostname == f"db.{ref}.supabase.co" and db.username == "postgres"
     pooler = db.hostname.endswith(".pooler.supabase.com") and db.username == f"postgres.{ref}"
     if not (direct or pooler):

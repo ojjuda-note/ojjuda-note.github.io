@@ -20,7 +20,7 @@
 
 ## 설치와 최초 확인
 
-1. Supabase **Database > Connect**에서 `postgres` 권한의 *session pooler* 연결 URL을 확인한다. 기존 비밀번호를 사용하며 이 작업 때문에 비밀번호를 재설정하지 않는다. 비밀번호가 URL에 들어가므로 GitHub 저장소 코드나 대화에 붙여 넣지 않는다.
+1. 기존 **DB 비밀번호**를 GitHub Secret `BACKUP_SUPABASE_DB_PASSWORD`에 그대로 입력한다. Supabase **Connect > Session pooler**에서 확인한 호스트 `aws-0-ap-northeast-2.pooler.supabase.com`와 포트 `5432`는 workflow에 등록했다. 실행 중 접속 주소를 만들면서 비밀번호의 특수문자를 자동으로 인코딩하므로 주소를 직접 편집할 필요가 없다. 비밀번호를 재설정하거나 대화·저장소 코드에 남기지 않는다. 기존 `BACKUP_SUPABASE_DB_URL` 방식도 지원하며, URL이 설정돼 있으면 그 값을 우선 사용한다.
 2. Supabase **Storage > Configuration > S3**에서 S3 프로토콜을 켜고 전용 액세스 키를 만든다. 운영 버킷 `media`, `note-event-photos`, `note-card-photos`를 모두 읽을 수 있어야 한다. 새 버킷이 생겨도 SQL 목록으로 자동 발견한다. 이 서비스의 S3 키는 모든 버킷의 전체 S3 작업 권한을 가지며 RLS를 우회한다. 백업 스크립트는 원본에서 읽기만 하지만, 키 자체가 읽기 전용인 것은 아니다. 키 생성 전에 이 권한 범위를 관리자에게 확인받는다.
 3. 네이버 클라우드 콘솔에서 **한국 리전 > Storage > Object Storage > Bucket Management**에 백업 전용 버킷을 만든다. 권한은 **공개 안함**, 다른 계정 권한은 비워 둔다. API 키에는 해당 버킷의 목록 조회·파일 읽기·업로드·삭제와 버킷/파일 ACL 조회가 필요하다. 다른 서비스의 데이터와 섞지 않는다. 공개 웹 호스팅·공개 파일 링크를 켜지 않는다.
    첫 운영 백업 전에 보관업체(네이버클라우드)·국가(한국)·보유기간(30일)과 탈퇴 전 백업의 처리 방식을 개인정보처리방침에 반영하고, 방침에 적힌 변경 사전 공지 절차를 마친다.
@@ -29,7 +29,7 @@
 
 | Secret | 값 |
 | --- | --- |
-| `BACKUP_SUPABASE_DB_URL` | 위 Postgres session pooler 연결 URL |
+| `BACKUP_SUPABASE_DB_PASSWORD` | 프로젝트의 기존 DB 비밀번호. 접속 주소나 다른 키를 넣지 않는다. |
 | `BACKUP_SUPABASE_S3_ACCESS_KEY`, `BACKUP_SUPABASE_S3_SECRET_KEY` | 운영 Storage S3 전용 키 |
 | `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | 네이버 클라우드 백업 전용 API 인증키의 Access Key ID / Secret Key |
 
@@ -42,8 +42,8 @@ GitHub Actions의 예약 실행은 정각에 지연되거나 드물게 누락될
 ## 네이버 클라우드 저장소 준비 상태 (2026-09-29)
 
 - 한국 VPC 콘솔에서 Object Storage 이용 중 상태와 `ojjuda-backup-ziezbdjofcugznowiuda` 버킷 생성을 확인했다. 버킷은 공개 안함, 외부 계정 ACL 추가 없음으로 생성했다.
-- 자동 백업용 계정은 콘솔 접근 없이 사용하도록 준비한다. `OjjudaBackupStorage` 정책은 `View/getBucketList`와 전용 버킷에 한정한 `View/getObjectList`, `View/getMultipartUploadList`, `Change/writeObject`만 포함한다. 버킷 생성·삭제, 공개 설정·웹 호스팅·이용 해지 권한은 포함하지 않는다.
-- API 키와 원본 DB·Storage 접속정보 연결, 첫 실제 백업 및 격리 복원은 별도 완료 확인이 필요하다. 버킷이 생긴 것만으로 운영 백업이 성공한 것은 아니다.
+- 자동 백업용 `ojjuda-backup` 계정은 콘솔 접근 없이 생성됐고, `OjjudaBackupStorage` 정책 적용을 확인했다. 이 정책은 `View/getBucketList`와 전용 버킷에 한정한 `View/getObjectList`, `View/getMultipartUploadList`, `Change/writeObject`만 포함한다. 버킷 생성·삭제, 공개 설정·웹 호스팅·이용 해지 권한은 포함하지 않는다.
+- 운영 Storage 키 2개와 네이버 키 2개가 GitHub Secrets에 등록된 것을 확인했다. 값은 읽거나 기록하지 않았다. 기존 DB 비밀번호 등록, 첫 실제 백업 및 격리 복원은 아직 완료되지 않았다. 키가 등록된 것만으로 실제 접속이나 백업 성공을 판단하지 않는다.
 
 ## 네이버 클라우드 연결 검증
 

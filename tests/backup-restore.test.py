@@ -12,6 +12,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from psycopg.conninfo import conninfo_to_dict
+
 ROOT = Path(__file__).resolve().parents[1]
 
 def module(name, file):
@@ -158,6 +160,33 @@ class RecoveryTest(unittest.TestCase):
             with patch.dict(os.environ, {"BACKUP_S3_REGION": "us-standard"}):
                 with self.assertRaisesRegex(RuntimeError, "NAVER Cloud"):
                     backup.required_config()
+
+    def test_database_password_survives_libpq_connection_parsing(self):
+        ref = "a" * 20
+        host = "aws-0-ap-northeast-2.pooler.supabase.com"
+        env = {key: "synthetic" for key in backup.NEEDED}
+        env.update(SUPABASE_PROJECT_REF=ref, SUPABASE_REGION="ap-northeast-2",
+                   SUPABASE_DB_POOLER_HOST=host, BACKUP_AGE_RECIPIENT="age1" + "q" * 58,
+                   BACKUP_S3_ENDPOINT=backup.NAVER_ENDPOINT, BACKUP_S3_REGION=backup.NAVER_REGION,
+                   BACKUP_S3_BUCKET="synthetic-backup", GITHUB_REPOSITORY="test/test")
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "SUPABASE_DB_PASSWORD"):
+                backup.required_config()
+            for password in ["synthetic", " qa:@/?#%[]'\\ +한글\t\n ", "  "]:
+                with patch.dict(os.environ, {"SUPABASE_DB_PASSWORD": password}):
+                    parsed = conninfo_to_dict(backup.required_config()["SUPABASE_DB_URL"])
+                    self.assertEqual(parsed["password"], password)
+                    self.assertEqual(parsed["host"], host)
+                    self.assertEqual(parsed["user"], "postgres." + ref)
+                    self.assertEqual(parsed["port"], "5432")
+                    self.assertEqual(parsed["dbname"], "postgres")
+                    self.assertEqual(parsed["sslmode"], "require")
+            for bad_host in ["", "example.invalid", host + ".example.invalid",
+                             host + ":6543", "aws-0-us-east-1.pooler.supabase.com"]:
+                with patch.dict(os.environ, {"SUPABASE_DB_PASSWORD": "synthetic",
+                                             "SUPABASE_DB_POOLER_HOST": bad_host}):
+                    with self.assertRaisesRegex(RuntimeError, "SUPABASE_DB_POOLER_HOST"):
+                        backup.required_config()
 
     def test_sdk_uploads_do_not_require_aws_checksum_trailers(self):
         class CapturedRequest(Exception): pass
