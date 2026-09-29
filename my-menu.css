@@ -23,16 +23,16 @@
 .my-hub .my-shortcuts p { margin: 0 0 8px; font-size: 12px; line-height: 1.5; color: var(--ink-2, #726b77); }
 .my-hub .my-shortcuts .note-link,
 .my-hub .my-shortcuts .world-link,
-.my-hub .my-shortcuts .nn-trigger { box-sizing: border-box; display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; min-height: 86px; height: 100%; margin: 0; padding: 14px 16px; border: 0; border-radius: 15px; background: none; color: var(--accent, #c83d77); font-family: var(--font-b, sans-serif); font-size: 14px; font-weight: 600; line-height: 1.5; text-align: left; text-decoration: none; }
+.my-hub .my-shortcuts .nn-trigger { box-sizing: border-box; display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; min-height: 86px; height: 100%; margin: 0; padding: 14px 16px; border: 0; border-radius: 15px; background: none; color: var(--ink, #23264a); font-family: var(--font-b, sans-serif); font-size: 14px; font-weight: 600; line-height: 1.5; text-align: left; text-decoration: none; }
 .my-hub .my-shortcuts [data-notifications-slot] { height: 100%; }
-.my-hub .my-shortcuts .nn-trigger::before { content: ''; flex: none; width: 26px; height: 26px; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat; }
-.my-hub .my-shortcuts .nn-trigger::after { content: '→'; flex: none; margin-left: auto; }
+.my-hub .my-shortcuts .nn-trigger::before { color: var(--accent, #c83d77); content: ''; flex: none; width: 26px; height: 26px; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat; }
+.my-hub .my-shortcuts .nn-trigger::after { color: var(--accent, #c83d77); content: '→'; flex: none; margin-left: auto; }
 .my-hub .my-shortcuts .nn-badge { flex: none; min-width: 20px; min-height: 20px; padding: 2px 5px; font-size: 11px; }
 .my-hub .my-shortcuts .note-link:hover,
 .my-hub .my-shortcuts .world-link:hover,
 .my-hub .my-shortcuts .nn-trigger:hover { background: var(--surface-2, #f8f5f8); }
 .my-hub .my-shortcuts :is(.note-link, .world-link, .nn-trigger):focus-visible { outline: 2px solid var(--accent, #c83d77); outline-offset: -3px; }
-.my-hub .my-shortcuts .nl-arrow { margin-left: auto; }
+.my-hub .my-shortcuts .nl-arrow { margin-left: auto; color: var(--accent, #c83d77); }
 .my-hub .my-shortcuts .nl-logo img { display: block; width: 26px; height: 26px; }
 .my-menu-group {
   display: block; margin: 0 0 10px; padding: 0;
