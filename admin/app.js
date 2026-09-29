@@ -16,7 +16,7 @@
 
   function destination() {
     const allowed = new Set([
-      'overview', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
+      'overview', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
       'shop', 'settings', 'posts', 'chats', 'archive', 'quiz', 'note'
     ]);
     const aliases = { account: 'overview', payment: 'shop', world: 'posts' };
