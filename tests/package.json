@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "test": "npm run test:unit && npm run test:ui",
-    "test:unit": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node account-recovery-db.test.cjs && node account-recovery-edge.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs && node note-composer-settings.test.cjs && node note-account.test.cjs && node world-rpc-security.test.cjs",
-    "test:ui": "node admin-ui.test.cjs && node note-tag-ui.test.cjs"
+    "test:unit": "node inline-scripts.test.cjs && node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node account-recovery-db.test.cjs && node account-recovery-edge.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs && node note-composer-settings.test.cjs && node note-account.test.cjs && node world-rpc-security.test.cjs && node game-verification.test.cjs",
+    "test:ui": "node admin-ui.test.cjs && node note-tag-ui.test.cjs && node photo-protection-ui.test.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

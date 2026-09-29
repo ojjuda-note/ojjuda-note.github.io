@@ -482,7 +482,7 @@ function activateCardPhoto(thumb) {
     wantCardPhoto(thumb.dataset.photoCard);
     return;
   }
-  openPhotoLightbox(thumb.dataset.photoUrl);
+  openPhotoLightbox(thumb.dataset.photoUrl, thumb.dataset.protectPhoto === 'true');
 }
 function scheduleCardPhotoRefresh() {
   clearTimeout(cardPhotoRefreshTimer); cardPhotoRefreshTimer = null;
@@ -696,7 +696,7 @@ function closePhotoLightbox() {
   if (photoLightboxFocus?.isConnected) photoLightboxFocus.focus({ preventScroll: true });
   photoLightboxFocus = null;
 }
-function openPhotoLightbox(url) {
+function openPhotoLightbox(url, protect = false) {
   if (!url || !session?.user) return;
   if (!photoLightbox) {
     photoLightbox = node('div', 'note-photo-lightbox');
@@ -714,6 +714,7 @@ function openPhotoLightbox(url) {
     });
   }
   photoLightboxFocus = document.activeElement;
+  photoLightbox.querySelector('img').dataset.protectPhoto = String(protect);
   photoLightbox.querySelector('img').src = url;
   photoLightbox.hidden = false;
   photoLightbox.querySelector('button').focus({ preventScroll: true });
@@ -953,6 +954,7 @@ function cardElement(card, compact = false, expanded = false) {
   const style = card.style && typeof card.style === 'object' ? card.style : {};
   const visiblePhoto = card.photo_key || card.background_key;
   const photo = node('span', 'photo');
+  if (card.kind === 'event') photo.dataset.protectPhoto = String(!card.is_mine);
   const hiddenEvent = card.kind === 'event' && card.body == null;
   setPhotoBackground(photo, hiddenEvent ? null : visiblePhoto);
   if (card.kind === 'event' && !hiddenEvent) void loadEventBackground(photo, card);
@@ -978,6 +980,7 @@ function cardElement(card, compact = false, expanded = false) {
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
     thumb.dataset.photoCard = card.id;
+    thumb.dataset.protectPhoto = String(!card.is_mine);
     thumb.setAttribute('aria-label', '첨부 사진 크게 보기');
     thumb.addEventListener('click', event => {
       event.preventDefault(); event.stopPropagation();
