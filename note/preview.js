@@ -758,17 +758,12 @@ function syncCardPhotoAttach() {
   attach.setAttribute('aria-expanded', String(sourceMenu?.anchor === attach));
   attach.classList.toggle('has-photo', !!previewUrl);
   attach.style.backgroundImage = previewUrl ? `url("${previewUrl.replaceAll('"', '%22')}")` : '';
-  attach.title = editingId || cardPhotoUrl ? '첨부 사진 바꾸기 · 무료' : '내 사진 첨부 · 무료 · 태그 위 동그라미에 보여요';
-  attach.setAttribute('aria-label', editingId ? '첨부 사진 바꾸기 · 무료' : '내 사진 첨부 · 무료');
+  attach.title = editingId || cardPhotoUrl ? '첨부 사진 바꾸기' : '사진 첨부';
+  attach.setAttribute('aria-label', editingId ? '첨부 사진 바꾸기' : '사진 첨부');
   remove.setAttribute('aria-label', editingId ? '사진 교체 취소' : '사진 빼기');
   attach.closest('.compose-photo')?.classList.toggle('has-card-photo-attach', allowed);
   attach.classList.toggle('is-busy', cardPhotoPreparing);
   attach.setAttribute('aria-disabled', String(disabled));
-  const status = $('#card-photo-status');
-  if (status) {
-    status.hidden = !cardPhotoUrl;
-    status.textContent = cardPhotoUrl ? '내 사진 첨부 · 무료. 태그 위 동그라미에 보여요. 임시 글에는 사진이 저장되지 않아요.' : '';
-  }
 }
 async function prepareCardPhotoEdit(cardId, run) {
   const epoch = identityEpoch;
