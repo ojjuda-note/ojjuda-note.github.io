@@ -37,7 +37,7 @@ const { PGlite } = require('@electric-sql/pglite');
   `);
   for (const name of ['20260928151422_member_identity_and_card_gender.sql', '20260928154555_member_phone_edit.sql',
     '20260928154916_member_admin_identity_edit.sql', '20260928155858_retain_withdrawn_member_accounts_one_month.sql',
-    '20260929025624_unique_phone_and_verified_recovery.sql']) {
+    '20260929025624_unique_phone_and_verified_recovery.sql', '20260929032535_direct_member_password_recovery.sql']) {
     await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations', name), 'utf8'));
   }
   const value = async (query, params = []) => (await db.query(query, params)).rows[0]?.value;
@@ -105,6 +105,46 @@ const { PGlite } = require('@electric-sql/pglite');
   await db.exec("update ojjuda_account_internal.recovery_attempts set window_started=clock_timestamp()-interval '2 days'");
   assert.equal(await check(), 'matched');
   assert.equal(await value('select count(*)::int as value from ojjuda_account_internal.recovery_attempts'), 3, 'expired hashes are purged');
+  await clear();
+  const begin = async (token, details = matching) => value('select public.begin_member_password_recovery($1,$2,$3,$4,$5,$6,$7) as value', [...details, hash('ip'), hash(details[0]), hash(token)]);
+  const consume = token => value('select public.consume_member_password_recovery($1) as value', [hash(token)]);
+  for (const role of ['anon', 'authenticated']) {
+    for (const fn of ['public.begin_member_password_recovery(text,text,text,text,text,text,text)', 'public.consume_member_password_recovery(text)']) {
+      assert.equal(await value("select has_function_privilege($1,$2,'execute') as value", [role, fn]), false);
+    }
+    assert.equal(await value("select has_table_privilege($1,'ojjuda_account_internal.password_recovery_grants','select') as value", [role]), false);
+  }
+  assert.equal((await begin('grant-1')).status, 'matched');
+  assert.equal(await consume('forged-grant'), null);
+  const winners = await Promise.all([consume('grant-1'), consume('grant-1')]);
+  assert.equal(winners.filter(id => id === first).length, 1, 'only one racing caller may consume a grant');
+  assert.equal(winners.filter(id => id === null).length, 1);
+  assert.equal(await consume('grant-1'), null, 'a used grant cannot be replayed');
+  assert.equal((await begin('old-grant')).status, 'matched');
+  assert.equal((await begin('new-grant')).status, 'matched');
+  assert.equal(await consume('old-grant'), null, 'a newer check invalidates previous grants');
+  await db.exec("update ojjuda_account_internal.password_recovery_grants set expires_at=clock_timestamp()-interval '1 second'");
+  assert.equal(await consume('new-grant'), null, 'expired grants cannot reset passwords');
+  await clear(); await begin('changed-password');
+  await db.query('update auth.users set encrypted_password=$1 where id=$2', ['different-synthetic-hash', first]);
+  assert.equal(await consume('changed-password'), null, 'password changes invalidate pending recovery');
+  await begin('changed-phone');
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [first]);
+  await value("select public.update_my_phone_number('01034567890') as value");
+  assert.equal(await consume('changed-phone'), null, 'identity edits invalidate pending recovery');
+  await value("select public.update_my_phone_number('01012345678') as value");
+  await clear();
+  const wrong = [...matching]; wrong[3] = 'female';
+  assert.equal((await begin('wrong-details', wrong)).status, 'unmatched');
+  assert.equal(await consume('wrong-details'), null);
+  await begin('banned-after-check');
+  await db.query("update auth.users set banned_until=now()+interval '1 day' where id=$1", [first]);
+  assert.equal(await consume('banned-after-check'), null);
+  await db.query('update auth.users set banned_until=null where id=$1', [first]);
+  await clear(); await db.exec('set role service_role');
+  assert.equal((await begin('server-role')).status, 'matched');
+  assert.equal(await consume('server-role'), first);
+  await db.exec('reset role');
   await db.close();
   console.log('PASS: normalized phone uniqueness on signup/self/admin/legacy paths, private identity comparison, permissions, rate limits and expiry');
 })().catch(error => { console.error(error); process.exitCode = 1; });

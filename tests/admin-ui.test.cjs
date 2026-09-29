@@ -159,7 +159,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       window.OJJUDA_CONFIG = { supabaseUrl: 'https://example.invalid', supabaseKey: 'test' };
       window.supabase = { createClient: () => ({
         auth: { onAuthStateChange() {}, async getSession() { return { data: { session: null } }; } },
-        functions: { async invoke(name, options) { recoveryCalls.push({ name, ...options }); return { data: { accepted: true } }; } }
+        functions: { async invoke(name, options) { recoveryCalls.push({ name, ...options }); return { data: options.body.action === 'reset' ? { reset: true } : { verified: true, reset_token: 'a'.repeat(64), expires_in: 300 } }; } }
       }) };
     });
     for (const file of ['signup-identity.js', 'portal.js']) await recoveryPage.addScriptTag({ content: read(file) });
@@ -171,10 +171,22 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     await recoveryPage.locator('#recovery-gender').selectOption('male');
     assert.equal(await recoveryPage.locator('.dialog-shell').evaluate(el => el.scrollWidth <= el.clientWidth), true, 'recovery form must fit a mobile screen');
     await recoveryPage.locator('#auth-submit').click();
-    await recoveryPage.waitForFunction(() => document.getElementById('auth-title').textContent === '재설정 요청을 확인했어요');
+    await recoveryPage.getByRole('button', { name: '초기화', exact: true }).waitFor({ state: 'visible' });
     assert.deepEqual(await recoveryPage.evaluate(() => recoveryCalls), [{ name: 'member-recovery', body: {
-      email: 'member@example.invalid', phone: '01012345678', birth_date: '2000-02-29', gender: 'male'
+      action: 'check', email: 'member@example.invalid', phone: '01012345678', birth_date: '2000-02-29', gender: 'male'
     } }]);
+    await recoveryPage.getByRole('button', { name: '초기화', exact: true }).click();
+    await recoveryPage.locator('#password').fill('new-password');
+    await recoveryPage.locator('#password-confirm').fill('different');
+    await recoveryPage.locator('#auth-submit').click();
+    assert.match(await recoveryPage.locator('#auth-feedback').textContent(), /두 비밀번호가 달라요/);
+    assert.equal(await recoveryPage.evaluate(() => recoveryCalls.length), 1);
+    await recoveryPage.locator('#password-confirm').fill('new-password');
+    await recoveryPage.locator('#auth-submit').click();
+    await recoveryPage.waitForFunction(() => document.getElementById('auth-title').textContent === '비밀번호가 바뀌었어요');
+    assert.deepEqual(await recoveryPage.evaluate(() => recoveryCalls[1].body), {
+      action: 'reset', token: 'a'.repeat(64), password: 'new-password', password_confirmation: 'new-password'
+    });
     assert.deepEqual(errors, []);
     console.log('PASS: World admin identity open/save, unregistered members, masked phone, native two-finger zoom, fixed pinch anchor, marker taps, pan continuation, controls, zoom limits and cancellation');
   } finally { await browser.close(); }
