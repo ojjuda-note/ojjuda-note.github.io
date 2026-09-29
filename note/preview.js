@@ -130,6 +130,17 @@ function colorContrast(first, second) {
   const values = [colorLuminance(first), colorLuminance(second)].sort((a, b) => b - a);
   return (values[0] + .05) / (values[1] + .05);
 }
+function boxTransparencyColor(hex, value = 80) {
+  const raw = Number(value), level = Number.isInteger(raw) && raw >= 0 && raw <= 100 ? raw : 80;
+  const base = parseInt(hex.slice(7, 9), 16) / 255;
+  const opacity = level <= 80 ? 1 - (1 - base) * level / 80 : base * (100 - level) / 20;
+  return `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${opacity.toFixed(3)})`;
+}
+function setBoxTransparency(value) {
+  const level = Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 100 ? Number(value) : 80;
+  $('#compose-box-transparency').value = String(level);
+  $('#compose-box-transparency-value').textContent = `${level}`;
+}
 function applyVisualStyle(element, style = {}) {
   for (const cls of [...element.classList]) {
     if (/^note-(?:theme|font|size|effect)-/.test(cls)) element.classList.remove(cls);
@@ -144,7 +155,7 @@ function applyVisualStyle(element, style = {}) {
   const darkText = colorLuminance(textHex) < .3;   // 어두운 글씨면 기본 글상자를 밝은 유리로
   const boxHex = boxColor?.box || (darkText ? '#FFFDF7A8' : '#1C1A2447');
   element.style.setProperty('--note-text-color', textHex);
-  element.style.setProperty('--note-box-color', boxHex);
+  element.style.setProperty('--note-box-color', boxTransparencyColor(boxHex, style.boxTransparency));
   element.style.setProperty('--note-shadow', darkText ? 'rgba(255,253,247,.55)' : 'rgba(12,12,24,.42)');
   element.classList.toggle('note-low-contrast', colorContrast(textHex, boxHex) < 4.5);
   element.style.setProperty('--note-outline', colorLuminance(textHex) > .25 ? '#101020' : '#ffffff');
@@ -879,8 +890,25 @@ function refreshTagRows() {
 function requestTagFit() {
   if (tagFitFrame === null) tagFitFrame = requestAnimationFrame(refreshExpandedBodies);
 }
-const expandedBodyEntries = new Set();
+const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
+function fitPhotoQuote(photo, quote, tagRow) {
+  if (!photo.isConnected) return;
+  photo.style.height = '';
+  if (!quote.dataset.baseFontSize) quote.dataset.baseFontSize = String(parseFloat(getComputedStyle(quote).fontSize));
+  const base = Number(quote.dataset.baseFontSize);
+  for (let size = base; size >= 12; size -= 1) {
+    quote.style.fontSize = `${size}px`;
+    if (!photoQuoteClipped(photo, quote, tagRow)) return;
+  }
+  if (photoQuoteClipped(photo, quote, tagRow)) {
+    photo.style.height = `${Math.ceil(quote.scrollHeight + (tagRow.childElementCount ? tagRow.offsetHeight + 80 : 70))}px`;
+  }
+}
 function refreshExpandedBodies() {
+  for (const entry of quoteFitEntries) {
+    if (!entry.photo.isConnected) { quoteFitEntries.delete(entry); continue; }
+    fitPhotoQuote(entry.photo, entry.quote, entry.tagRow);
+  }
   refreshTagRows();
   for (const entry of expandedBodyEntries) {
     if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
@@ -928,6 +956,7 @@ function cardElement(card, compact = false, expanded = false) {
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
   open.append(photo); frame.append(open);
+  quoteFitEntries.add({ photo, quote, tagRow });
   if (card.kind === 'event') frame.append(node('span', 'note-event-badge', '이벤트/광고'));
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
@@ -1663,6 +1692,9 @@ function installFeatures() {
       setCardLocationSwitch(false, locationErrorText(error), false, true);
     } finally { if (run === locationRun) updateComposer(); }
   });
+  $('#compose-box-transparency').addEventListener('input', event => {
+    setBoxTransparency(event.target.value); applyComposeStyle(); recordDraft();
+  });
   for (const selector of ['#compose-font', '#compose-size', '#compose-effect']) {
     $(selector).addEventListener('change', () => { applyComposeStyle(); recordDraft(); });
   }
@@ -1761,7 +1793,8 @@ function currentStyle() {
   return { font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
     effect: $('#compose-effect').value,
     textColor: $('input[name="textColor"]:checked')?.value || 'default',
-    boxColor: $('input[name="boxColor"]:checked')?.value || 'default' };
+    boxColor: $('input[name="boxColor"]:checked')?.value || 'default',
+    boxTransparency: Number($('#compose-box-transparency').value) };
 }
 function chosenPhoto() { return selectedPhotoKey || 'plain'; }
 function clearEventPhoto() {
@@ -1962,6 +1995,7 @@ function restoreLocalComposer() {
   $('#compose-theme').value = ['rose', 'night'].includes(content.style.theme) ? content.style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(content.style.effect) ? content.style.effect : 'none';
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, content.style[group]);
+  setBoxTransparency(content.style.boxTransparency);
   if (editingId) $(`input[name="identity"][value="${content.identity === 'nickname' ? 'nickname' : 'anonymous'}"]`).checked = true;
   if (kind === 'event' && !editingId) {
     const position = content.eventPosition;
@@ -1997,6 +2031,7 @@ function restoreDraft(content) {
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
+  setBoxTransparency(style.boxTransparency);
   selectedPhotoKey = kind === 'memo' ? photoAssetKey(content.photo_key) : null;
   $('input[name="photo-choice"][value="plain"]').checked = !selectedPhotoKey;
   updateFeaturedPhoto();
@@ -2017,7 +2052,7 @@ function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
   $('#card-location-button').disabled = disabled;
-  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) $(selector).disabled = disabled;
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#compose-box-transparency', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) $(selector).disabled = disabled;
   $('#event-photo-file').disabled = disabled || eventPhotoPreparing;
   $('#event-world-photo').disabled = disabled || eventPhotoPreparing;
   $('#event-photo-clear').disabled = disabled || eventPhotoPreparing;
@@ -2063,7 +2098,7 @@ function updateComposer() {
   if (!backdrop.hidden) resizeComposerText();
   $('#compose-count').textContent = `${text.value.length} / 200자`;
   const visual = currentStyle();
-  const extra = selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
+  const extra = visual.boxTransparency !== 80 || selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
     || visual.size !== 'normal' || visual.effect !== 'none'
     || ['textColor', 'boxColor'].some(key => visual[key] !== 'default');
   $('#compose-more>summary').textContent = extra ? '꾸미기 · 추가 설정 (선택됨)' : '꾸미기 · 추가 설정';
@@ -2123,7 +2158,12 @@ function resizeComposerText() {
   fitComposerWidth(photo);
   text.style.height = 'auto';
   const minimum = 88;
-  const maximum = Math.max(minimum, photo.clientHeight * .72);
+  const maximum = Math.max(minimum, photo.clientHeight - 70);
+  text.style.fontSize = '';
+  let size = parseFloat(getComputedStyle(text).fontSize);
+  while (text.scrollHeight > maximum && size > 12) {
+    size -= 1; text.style.fontSize = `${size}px`;
+  }
   text.style.height = `${Math.min(maximum, Math.max(minimum, text.scrollHeight))}px`;
 }
 function composerPhotoOverflows() {
@@ -2203,6 +2243,7 @@ async function openComposer(mode, card = null, replyTo = null) {
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
   $('#compose-effect').value = EFFECT_CODES.includes(style.effect) ? style.effect : 'none';
   for (const group of ['textColor', 'boxColor']) setColorChoice(group, style[group]);
+  setBoxTransparency(style.boxTransparency);
   applyComposeStyle(); updateEventPrice();
   text.value = editingId ? card.body : ''; tags.value = editingId ? card.tags.join(', ') : initialComposerTags();
   const identityMode = editingId ? (card.identity_mode === 'nickname' ? 'nickname' : 'anonymous') : readComposerSettings().identity;
