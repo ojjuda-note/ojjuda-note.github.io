@@ -97,8 +97,12 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await swipe(-30);assert.equal(await current(),'friends');
     await swipe(-150,0,{cancel:true});assert.equal(await current(),'friends');
     await swipe(-80,0,{second:true});assert.equal(await current(),'friends');
+    // The full main scene must extend below the viewport to test scrolling;
+    // installed fallback fonts differ between local Chromium and CI.
+    await page.setViewportSize({width:390,height:650});
     await swipe(4,-150);assert.equal(await current(),'friends');
-    assert.ok(await page.evaluate(()=>scrollY>20),'vertical scrolling remains native');
+    await page.waitForFunction(()=>scrollY>20);
+    await page.setViewportSize({width:390,height:844});
     await page.evaluate(()=>scrollTo(0,0));
     await page.locator('.world-destination[data-id="cafe"]').click();
     assert.equal(await current(),'place','a normal building tap still enters it');await back();
