@@ -133,7 +133,7 @@ function colorContrast(first, second) {
 function boxTransparencyColor(hex, value = 80) {
   const raw = Number(value), level = Number.isInteger(raw) && raw >= 0 && raw <= 100 ? raw : 80;
   const base = parseInt(hex.slice(7, 9), 16) / 255;
-  const opacity = level <= 80 ? 1 - (1 - base) * level / 80 : base * (100 - level) / 20;
+  const opacity = level <= 80 ? base * level / 80 : base + (1 - base) * (level - 80) / 20;
   return `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${opacity.toFixed(3)})`;
 }
 function setBoxTransparency(value) {
