@@ -138,8 +138,9 @@ function boxTransparencyColor(hex, value = 80) {
 }
 function setBoxTransparency(value) {
   const level = Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 100 ? Number(value) : 80;
-  $('#compose-box-transparency').value = String(level);
-  $('#compose-box-transparency-value').textContent = `${level}`;
+  const input = $('#compose-box-transparency'), output = $('#compose-box-transparency-value');
+  if (input) input.value = String(level);
+  if (output) output.textContent = `${level}`;
 }
 function applyVisualStyle(element, style = {}) {
   for (const cls of [...element.classList]) {
@@ -1692,7 +1693,7 @@ function installFeatures() {
       setCardLocationSwitch(false, locationErrorText(error), false, true);
     } finally { if (run === locationRun) updateComposer(); }
   });
-  $('#compose-box-transparency').addEventListener('input', event => {
+  $('#compose-box-transparency')?.addEventListener('input', event => {
     setBoxTransparency(event.target.value); applyComposeStyle(); recordDraft();
   });
   for (const selector of ['#compose-font', '#compose-size', '#compose-effect']) {
@@ -1794,7 +1795,7 @@ function currentStyle() {
     effect: $('#compose-effect').value,
     textColor: $('input[name="textColor"]:checked')?.value || 'default',
     boxColor: $('input[name="boxColor"]:checked')?.value || 'default',
-    boxTransparency: Number($('#compose-box-transparency').value) };
+    boxTransparency: Number($('#compose-box-transparency')?.value ?? 80) };
 }
 function chosenPhoto() { return selectedPhotoKey || 'plain'; }
 function clearEventPhoto() {
@@ -2042,17 +2043,12 @@ function restoreDraft(content) {
   updateComposer();
   if (kind === 'comment') void refreshReplyArchiveNotice(parentId, composerRun);
 }
-function recordDraft() {
-  if (editingId || kind === 'event') { recordLocalComposer(); return; }
-  if (!draftController || backdrop.hidden || draftLoading || !session?.user) return;
-  try { draftController.change(draftContent()); }
-  catch (error) { draftStatus.textContent = error.message; draftStatus.hidden = false; }
-}
+function recordDraft() { /* 작성 중인 글은 저장하지 않아요. */ }
 function setComposerInputs() {
   const disabled = busy || draftLoading;
   text.disabled = disabled; tags.disabled = disabled;
   $('#card-location-button').disabled = disabled;
-  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#compose-box-transparency', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) $(selector).disabled = disabled;
+  for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#compose-box-transparency', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) { const input = $(selector); if (input) input.disabled = disabled; }
   $('#event-photo-file').disabled = disabled || eventPhotoPreparing;
   $('#event-world-photo').disabled = disabled || eventPhotoPreparing;
   $('#event-photo-clear').disabled = disabled || eventPhotoPreparing;
@@ -2250,12 +2246,7 @@ async function openComposer(mode, card = null, replyTo = null) {
   $(`input[name="identity"][value="${identityMode}"]`).checked = true;
   setGenderInputs(true);
   autoTagMode = !editingId; manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
-  let restoredLocalComposer = false;
-  if (editingId || kind === 'event') {
-    localComposerBaseline = JSON.stringify(localComposerContent());
-    restoredLocalComposer = restoreLocalComposer();
-  }
-  if (restoredLocalComposer) $('#compose-context').textContent = '이전에 작성하던 내용을 복구했어요.';
+  clearLocalComposer();
   requestedDraftContent = draftContent();
   if (draftStatus) draftStatus.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
@@ -2297,13 +2288,7 @@ function autoWritingLocation(run) {
 
 function closeComposer(saveDraft = true) {
   if (busy) return;
-  if (saveDraft) {
-    if ((cardPhotoBlob || cardPhotoPreparing) && !window.confirm('글은 임시 글에 저장되지만 사진은 저장되지 않아요. 다음에 열면 사진을 다시 골라야 해요. 닫을까요?')) return;
-    recordDraft();
-    if (localComposerDirty && !window.confirm(localComposerStored
-      ? '작성 중인 내용이 있어요. 같은 탭에서 다시 열면 복구됩니다. 닫을까요?'
-      : '작성 중인 내용을 보관하지 못했어요. 닫으면 사라집니다. 닫을까요?')) return;
-  } else if (editingId || kind === 'event') clearLocalComposer();
+  clearLocalComposer();
   closePhotoSourceMenu(); closeWorldPicker(null, false);
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
   backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
@@ -3122,7 +3107,7 @@ function receiveAuth(current) {
   }, 0);
 }
 
-installManagement(); installStyleChoices(); installFeatures(); installStageAuth(); installDrafts(); installComposerSheet();
+installManagement(); installStyleChoices(); installFeatures(); installStageAuth(); installComposerSheet();
 function installComposerSheet() {
   const more = $('#compose-more'), body = $('.composer-body'), summary = more?.querySelector('summary');
   if (!more || !body || !summary) return;
