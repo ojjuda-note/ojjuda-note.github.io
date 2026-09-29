@@ -162,7 +162,7 @@
     tabs=el('nav',undefined,'support-tabs');tabs.setAttribute('aria-label','문의·의견 메뉴');
     for(const [key,label] of [['feedback','의견 보내기'],['inquiries','문의·답변']]) {const tab=button(label,()=>{if(!busy){view=key;void renderView();}});tab.dataset.supportView=key;tabs.append(tab);}
     panel.append(head,tabs,content,message);layer.append(panel);document.body.append(layer);
-    const entry=button('문의·의견',()=>show());entry.classList.add('support-entry');document.querySelector('.note-tools')?.append(entry);
+    const entry=button('문의·의견',()=>show());entry.classList.add('support-entry');(document.querySelector('#note-help-actions')||document.querySelector('.note-tools'))?.append(entry);
     document.addEventListener('click',event=>{if(event.target.closest('[data-note-feedback]')){event.preventDefault();show(null,'feedback');}});
     layer.addEventListener('click',event=>{if(event.target===layer&&!busy)close();});
     layer.addEventListener('keydown',event=>{
@@ -219,4 +219,3 @@
   }
   window.OjjudaNoteSupport={install,renderAdmin,open:id=>{if(layer)show(id);},openFeedback:()=>{if(layer)show(null,'feedback');},report:options=>{if(layer)showReport(options);},isOpen:()=>!!layer&&!layer.hidden,close:()=>{if(layer&&!layer.hidden)close();}};
 })();
-
