@@ -88,20 +88,46 @@ def required_config():
     return cfg
 
 
+def command_failure_reason(stderr):
+    # Return only fixed descriptions. Raw tool diagnostics can contain passwords,
+    # connection URLs or database contents and must never enter public CI logs.
+    message = stderr.decode("utf-8", errors="replace").lower()
+    reasons = (
+        (("password authentication failed", "too many authentication errors",
+          "wrong password"), "database authentication rejected; verify the existing database password"),
+        (("tenant or user not found",), "database pooler tenant or user not found; verify connection settings"),
+        (("could not translate host name", "name or service not known",
+          "temporary failure in name resolution"), "database hostname resolution failed"),
+        (("timeout expired", "connection timed out"), "database connection timed out"),
+        (("network is unreachable", "no route to host", "connection refused"),
+         "database network connection unavailable"),
+        (("certificate verify failed", "ssl certificate verification failed"),
+         "database TLS certificate verification failed"),
+        (("permission denied",), "database permission denied"),
+        (("too many clients", "remaining connection slots", "max client connections"),
+         "database connection limit reached"),
+    )
+    for patterns, reason in reasons:
+        if any(pattern in message for pattern in patterns):
+            return reason
+    return "unclassified command error; check configuration or connectivity"
+
+
 def safe_run(label, args, *, env=None, output=None):
     result = subprocess.run(args, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, check=False)
     if result.returncode:
         # The Supabase CLI can include the DB URL in diagnostic output.
         # Neither arguments nor command output are emitted into CI logs.
-        raise RuntimeError(f"{label} failed (exit {result.returncode}); check credentials/connectivity")
+        reason = command_failure_reason(result.stderr)
+        raise RuntimeError(f"{label} failed (exit {result.returncode}); {reason}")
     if output:
         output.write_bytes(result.stdout)
     return result.stdout
 
 
 def pg_query(label, sql, dest, cfg):
-    env = dict(os.environ, PGDATABASE=cfg["SUPABASE_DB_URL"], PGCONNECT_TIMEOUT="20")
+    env = dict(os.environ, PGDATABASE=cfg["SUPABASE_DB_URL"], PGCONNECT_TIMEOUT="20", LC_ALL="C")
     safe_run(label, ["psql", "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql],
              env=env, output=dest)
 

@@ -31,6 +31,34 @@ def private_acl():
          "Permission": "FULL_CONTROL"}]}
 
 class RecoveryTest(unittest.TestCase):
+    def test_command_errors_identify_failures_without_revealing_secrets(self):
+        secret = "synthetic-private-marker"
+        cases = [
+            ("FATAL: password authentication failed for user", "authentication rejected"),
+            ("FATAL: Circuit breaker open: Too many authentication errors", "authentication rejected"),
+            ("FATAL: Tenant or user not found", "tenant or user not found"),
+            ('could not translate host name "private" to address', "hostname resolution failed"),
+            ("connection to server failed: timeout expired", "connection timed out"),
+            ("connection to server failed: Network is unreachable", "network connection unavailable"),
+            ("SSL certificate verification failed", "TLS certificate verification failed"),
+            ("ERROR: permission denied for table", "permission denied"),
+            ("FATAL: remaining connection slots are reserved", "connection limit reached"),
+            ("unknown private server response", "unclassified command error"),
+        ]
+        for diagnostic, expected in cases:
+            with self.subTest(expected=expected):
+                result = subprocess.CompletedProcess(
+                    ["psql"], 2, stdout=secret.encode(),
+                    stderr=f"{diagnostic}\npostgresql://postgres:{secret}@private.invalid/db".encode())
+                with patch.object(backup.subprocess, "run", return_value=result):
+                    with self.assertRaises(RuntimeError) as raised:
+                        backup.safe_run("Database connection", ["psql", secret])
+                message = str(raised.exception)
+                self.assertIn(expected, message)
+                self.assertNotIn(secret, message)
+                self.assertNotIn("postgresql://", message)
+                self.assertNotIn("private.invalid", message)
+
     def test_encrypted_roundtrip_and_tamper_rejection(self):
         with tempfile.TemporaryDirectory() as temp:
             temp = Path(temp)
