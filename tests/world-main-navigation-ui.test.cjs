@@ -24,6 +24,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
       if (url.hostname !== 'fixture.test') return route.abort();
+      if (url.pathname === '/note/') return route.fulfill({contentType:'text/html',body:'<!doctype html><title>Note destination</title><main>오쭈다 노트</main>'});
       if (url.pathname === '/world.html') return route.fulfill({contentType:'text/html',body:world});
       const file = path.join(root,url.pathname);
       if (!file.startsWith(root+path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.abort();
@@ -34,6 +35,11 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.goto('https://fixture.test/world.html');
     await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
     const current=()=>page.evaluate(()=>worldTest.state.tab);
+    const noteAndBack=async()=>{
+      await page.waitForURL('https://fixture.test/note/');
+      await page.goBack();
+      await page.waitForFunction(()=>window.worldTest && worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
+    };
     const main=async()=>{
       await page.evaluate(()=>worldTest.actions.tab({tab:'friends'}));
       await page.waitForFunction(()=>history.state?.ojjudaWorld==='main' && worldTest.state.tab==='friends');
@@ -93,7 +99,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await touch(cancel?'touchCancel':'touchEnd',[]);
     };
     await swipe(-150,0,{hold:true});assert.equal(await current(),'home');await back();
-    await swipe(150);assert.equal(await current(),'my');await back();
+    await swipe(150);await noteAndBack();
     await swipe(-30);assert.equal(await current(),'friends');
     await swipe(-150,0,{cancel:true});assert.equal(await current(),'friends');
     await swipe(-80,0,{second:true});assert.equal(await current(),'friends');
@@ -106,6 +112,48 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.evaluate(()=>scrollTo(0,0));
     await page.locator('.world-destination[data-id="cafe"]').click();
     assert.equal(await current(),'place','a normal building tap still enters it');await back();
+    const navigate=async tab=>{
+      await page.evaluate(tab=>worldTest.actions.tab({tab}),tab);
+      if(tab==='friends')await page.waitForFunction(()=>history.state?.ojjudaWorld==='main');
+      await page.evaluate(()=>scrollTo(0,0));
+    };
+    const touchDrag=async(selector,dx)=>{
+      const target=page.locator(selector).first();await target.scrollIntoViewIfNeeded();
+      const box=await target.boundingBox();
+      const x=box.x+box.width*(dx<0?.8:.2),y=Math.max(5,box.y)+20;
+      await touch('touchStart',[[x,y]]);
+      for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y]]);
+      await touch('touchEnd',[]);
+    };
+    const tabs=['friends','home','deco','shop','my'];
+    for(let i=0;i<tabs.length;i++){
+      for(const dx of [-150,150]){
+        await navigate(tabs[i]);
+        // Start in ordinary page content, away from the bottom navigation.
+        const box=await page.locator('.main').boundingBox();
+        const x=box.x+box.width*(dx<0?.8:.2),y=box.y+20;
+        await touch('touchStart',[[x,y]]);
+        for(let j=1;j<=6;j++)await touch('touchMove',[[x+dx*j/6,y]]);
+        await touch('touchEnd',[]);
+        if(i===0 && dx>0)await noteAndBack();
+        else assert.equal(await current(),tabs[(i+(dx<0?1:-1)+tabs.length)%tabs.length],`${tabs[i]} content supports ${dx<0?'left':'right'} swipe`);
+      }
+    }
+    await navigate('friends');
+    await page.locator('.world-destination[data-id="cafe"]').click();
+    await touchDrag('.visit-banner',-150);
+    assert.equal(await current(),'home','place headers use the active neighborhood tab');
+    const roomBefore=await page.evaluate(()=>worldTest.model.roomIdx);
+    await touchDrag('#room-svg',-150);
+    assert.equal(await current(),'home','room gestures never switch top-level menus');
+    assert.notEqual(await page.evaluate(()=>worldTest.model.roomIdx),roomBefore,'existing room-to-room gesture still works');
+    await navigate('deco');
+    const scroller=await page.evaluate(()=>[...document.querySelectorAll('.main .pal.strip, .main .swgrid.strip, .main .avgrid.strip')].find(el=>el.scrollWidth>el.clientWidth+30)?.getAttribute('data-keep'));
+    assert.ok(scroller,'production furniture palette has a horizontal scroller');
+    await touchDrag(`[data-keep="${scroller}"]`,-150);
+    assert.equal(await current(),'deco','palette gestures never leave furniture editing');
+    await page.waitForFunction(key=>document.querySelector(`[data-keep="${key}"]`).scrollLeft>20,scroller);
+    await main();
     // Desktop uses the same gesture through actual mouse events.
     await page.setViewportSize({width:1280,height:900});
     let box=await page.locator('.world-scene').boundingBox();
@@ -132,6 +180,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser and native menu back, four destinations, history reuse, modal/draft protection, touch/mouse swipe, vertical scroll, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, four destinations, modal/draft protection, swipes across all tabs and into Note, room and palette gestures, touch/mouse input, vertical scrolling, cancellation and normal taps.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

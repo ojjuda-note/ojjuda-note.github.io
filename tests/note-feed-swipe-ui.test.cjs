@@ -17,8 +17,11 @@ assert.ok(bootAt > 0);
       const context = await browser.newContext({ viewport: { width: mobile ? 390 : 1280, height: 844 },
         isMobile: mobile, hasTouch: mobile });
       const html = read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, '');
-      await context.route('**/*', route => route.request().url() === 'https://ojjuda.test/note/'
-        ? route.fulfill({ contentType: 'text/html', body: html }) : route.abort());
+      await context.route('**/*', route => {
+        if (route.request().url() === 'https://ojjuda.test/world.html') return route.fulfill({contentType:'text/html',body:'<!doctype html><title>동네</title>'});
+        return route.request().url() === 'https://ojjuda.test/note/'
+          ? route.fulfill({ contentType: 'text/html', body: html }) : route.abort();
+      });
       const page = await context.newPage();
       const errors = []; page.on('pageerror', error => errors.push(error.message));
       await page.goto('https://ojjuda.test/note/');
@@ -38,6 +41,7 @@ assert.ok(bootAt > 0);
       await page.addScriptTag({ content: read('note/feed-swipe.js') });
       await page.addScriptTag({ content: source.slice(0, bootAt) });
       await page.addScriptTag({ content: read('note/pull-refresh.js') });
+      await page.addScriptTag({ content: read('note/world-swipe.js') });
       await page.addScriptTag({ content: read('photo-protection.js') });
       await page.evaluate(async () => {
         window.cardOpens = 0; window.refreshes = 0; window.requests = []; window.delayRecent = 0;
@@ -101,7 +105,8 @@ assert.ok(bootAt > 0);
       assert.equal(await page.locator('#note-tag-panel').isVisible(), true);
       assert.equal(await page.locator('#note-tag-panel input').evaluate(el => el === document.activeElement), false,
         'swiping to tags never opens the keyboard');
-      await drag(-1); assert.equal(await active(), 'tag', 'the final tab has a boundary');
+      await drag(-1, { distance: 18 }); assert.equal(await active(), 'tag', 'a short drag cannot leave Note');
+      if (mobile) { await drag(-1, { cancel: true }); assert.equal(await active(), 'tag', 'cancelled touch cannot leave Note'); }
       await drag(1); assert.equal(await active(), 'nearby');
       await drag(1); assert.equal(await active(), 'popular');
       await drag(1); assert.equal(await active(), 'latest');
@@ -157,7 +162,38 @@ assert.ok(bootAt > 0);
       await page.locator('[data-sort="latest"]').focus(); await page.keyboard.press('Enter');
       assert.equal(await active(), 'latest', 'keyboard tab selection still works');
       assert.deepEqual(errors, []);
-      console.log(`PASS: ${mobile ? 'touch' : 'mouse'} feed swipe, animation, tab order, boundaries, scroll, search, clicks and reduced motion`);
+      await page.locator('[data-sort="tag"]').click();
+      await drag(-1, { hold: true });
+      assert.equal(await page.locator('.note-feed-peek').textContent(), '동네');
+      if (mobile) await touch('touchEnd', []); else await page.mouse.up();
+      await page.waitForURL('https://ojjuda.test/world.html');
+
+      // App navigation is available outside the feed, without overriding its
+      // filter swipes or allowing a swipe to discard an open composer.
+      await page.goto('https://ojjuda.test/note/');
+      for (const file of ['style.css', 'features.css', 'world-navigation.css']) await page.addStyleTag({content:read(`note/${file}`)});
+      await page.addScriptTag({content:read('note/world-swipe.js')});
+      const chromeDrag=async(selector,distance=150)=>{
+        const box=await page.locator(selector).boundingBox();
+        const x=box.x+box.width*.85,y=box.y+box.height/2;
+        if(mobile)await touch('touchStart',[[x,y]]);
+        else{await page.mouse.move(x,y);await page.mouse.down()}
+        for(let i=1;i<=6;i++){
+          if(mobile)await touch('touchMove',[[x-distance*i/6,y]]);
+          else await page.mouse.move(x-distance*i/6,y);
+        }
+        if(mobile)await touch('touchEnd',[]);else await page.mouse.up();
+      };
+      const chrome=mobile?'.mobile-top':'.note-side-header';
+      await chromeDrag(chrome,20);assert.equal(page.url(),'https://ojjuda.test/note/');
+      await chromeDrag(chrome,-100);assert.equal(page.url(),'https://ojjuda.test/note/');
+      await page.evaluate(()=>document.getElementById('composer-backdrop').hidden=false);
+      await chromeDrag(chrome);assert.equal(page.url(),'https://ojjuda.test/note/','an open composer prevents app navigation');
+      await page.evaluate(()=>document.getElementById('composer-backdrop').hidden=true);
+      await chromeDrag(mobile?'.bottomnav':chrome);
+      await page.waitForURL('https://ojjuda.test/world.html');
+      assert.deepEqual(errors,[]);
+      console.log(`PASS: ${mobile ? 'touch' : 'mouse'} feed filters, animation, scroll/search, refresh, composer protection and Note-to-World swipes`);
       await context.close();
     }
   } finally { await browser.close(); }
