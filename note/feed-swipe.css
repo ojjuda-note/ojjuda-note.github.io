@@ -1,0 +1,33 @@
+.note-feed-swipe { touch-action: pan-y pinch-zoom; }
+.note-feed-viewport {
+  position: relative;
+  overflow: hidden;
+  overflow: clip;
+  margin: -8px -12px -32px;
+  padding: 8px 12px 32px;
+  isolation: isolate;
+}
+.note-feed-page { min-width: 0; min-height: min(60dvh, 520px); }
+.note-feed-dragging, .note-feed-dragging * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
+.note-feed-dragging .note-feed-page, .note-feed-settling .note-feed-page { will-change: transform; }
+.note-feed-ghost, .note-feed-peek {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  right: 12px;
+  pointer-events: none;
+}
+.note-feed-ghost { z-index: 1; }
+.note-feed-peek {
+  display: grid;
+  place-items: center;
+  min-height: min(45dvh, 360px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-feed-dragging .note-feed-page, .note-feed-settling .note-feed-page { will-change: auto; }
+}
