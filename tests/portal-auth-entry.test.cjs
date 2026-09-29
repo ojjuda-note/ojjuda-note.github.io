@@ -6,8 +6,8 @@ const identity = require('../signup-identity.js');
 const source = fs.readFileSync(path.join(__dirname, '../portal.js'), 'utf8');
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false } = {}) {
-  const elements = new Map(), tasks = [], navigations = [], signups = [], storage = new Map();
+function setup(query, { user = null, confirmed = false, sessionError = false, recoveryError = null } = {}) {
+  const elements = new Map(), tasks = [], navigations = [], signups = [], recoveries = [], storage = new Map();
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
       hidden: false, disabled: false, value: '', checked: false, textContent: '',
@@ -37,6 +37,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false } =
         return { data: { session: confirmed ? { user: { id: 'new-member', email: args.email } } : null } };
       }
     },
+    functions: { async invoke(name, args) { recoveries.push({ name, ...args }); return recoveryError ? { error: { context: { json: async () => ({ error: recoveryError }) } } } : { data: { accepted: true } }; } },
     from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
     async rpc() { return { data: true }; }
   };
@@ -56,18 +57,18 @@ function setup(query, { user = null, confirmed = false, sessionError = false } =
     for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-test@example.invalid', password: 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-1234-5678' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, submit, fill, navigations, signups, storage, location };
+  return { element, flush, emit, submit, fill, navigations, signups, recoveries, storage, location };
 }
 
 (async () => {
   const world = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
   const renderer = world.slice(world.indexOf('function nr('), world.indexOf('function J1('));
   const worldRoutes = [];
-  vm.runInNewContext(`${renderer}; nr('signup');`, {
+  vm.runInNewContext(`${renderer}; nr('signup'); nr('forgot');`, {
     ha: 'login', location: { assign: url => worldRoutes.push(url) },
     qr() { throw new Error('World must use the common signup form'); }
   });
-  assert.deepEqual(worldRoutes, ['/?auth=signup&next=world']);
+  assert.deepEqual(worldRoutes, ['/?auth=signup&next=world', '/?auth=forgot&next=world']);
   for (const destination of ['world', 'note']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     assert.equal(app.element('auth-dialog').open, true);
@@ -109,5 +110,26 @@ function setup(query, { user = null, confirmed = false, sessionError = false } =
   assert.deepEqual(invalid.navigations, []);
   const failedSession = setup('?auth=signup&next=world', { sessionError: true }); await failedSession.flush();
   assert.equal(failedSession.element('signup-tab').attributes['aria-selected'], 'true');
-  console.log('PASS: unified signup entry, required inputs, confirmation return destinations, existing sessions, recovery priority, redirect allowlist');
+  const recoveryValues = { email: 'recovery@example.invalid', 'recovery-phone': '+82 10-1234-5678', 'recovery-birth': '2000-02-29', 'recovery-gender': 'male' };
+  const fillRecovery = app => { for (const [key, value] of Object.entries(recoveryValues)) app.element(key).value = value; };
+  for (const user of [null, { id: 'existing' }]) {
+    const app = setup('?auth=forgot&next=world', { user }); await app.flush();
+    assert.equal(app.element('auth-dialog').open, true);
+    assert.equal(app.element('recovery-identity-slot').hidden, false);
+    fillRecovery(app); await app.submit();
+    assert.equal(app.recoveries.length, 1);
+    assert.equal(app.recoveries[0].name, 'member-recovery');
+    assert.deepEqual(JSON.parse(JSON.stringify(app.recoveries[0].body)), { email: recoveryValues.email, phone: '01012345678', birth_date: '2000-02-29', gender: 'male' });
+    assert.equal(app.element('recovery-phone').value, '');
+    assert.match(app.element('auth-state-message').textContent, /모두 일치하면/);
+  }
+  for (const field of Object.keys(recoveryValues)) {
+    const app = setup('?auth=forgot'); await app.flush(); fillRecovery(app); app.element(field).value = '';
+    await app.submit(); assert.equal(app.recoveries.length, 0, `${field} must be required for recovery`);
+  }
+  const sendFailure = setup('?auth=forgot', { recoveryError: 'recovery_mail_failed' });
+  await sendFailure.flush(); fillRecovery(sendFailure); await sendFailure.submit();
+  assert.match(sendFailure.element('auth-feedback').textContent, /보내지 못했어요/);
+  assert.equal(sendFailure.element('auth-state').hidden, true);
+  console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation return destinations, existing sessions, recovery priority, redirect allowlist');
 })().catch(error => { console.error(error); process.exitCode = 1; });

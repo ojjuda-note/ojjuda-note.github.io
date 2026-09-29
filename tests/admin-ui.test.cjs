@@ -147,6 +147,34 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     await tap(160, 380);
     assert.equal(await page.evaluate(() => selections.length), 2, 'cancelled gestures release their pointers');
     assert.equal(await page.evaluate(() => [...document.querySelectorAll('.oj-map-tiles img')].every(img => /^\d+\/\d+\/\d+$/.test(img.dataset.key))), true);
+    const recoveryPage = await context.newPage();
+    recoveryPage.on('pageerror', error => errors.push(error.message));
+    await recoveryPage.route('https://ojjuda.kr/?auth=forgot', route => route.fulfill({
+      contentType: 'text/html', body: read('index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '')
+    }));
+    await recoveryPage.goto('https://ojjuda.kr/?auth=forgot');
+    for (const file of ['signup-identity.css', 'portal.css']) await recoveryPage.addStyleTag({ content: read(file) });
+    await recoveryPage.evaluate(() => {
+      window.recoveryCalls = [];
+      window.OJJUDA_CONFIG = { supabaseUrl: 'https://example.invalid', supabaseKey: 'test' };
+      window.supabase = { createClient: () => ({
+        auth: { onAuthStateChange() {}, async getSession() { return { data: { session: null } }; } },
+        functions: { async invoke(name, options) { recoveryCalls.push({ name, ...options }); return { data: { accepted: true } }; } }
+      }) };
+    });
+    for (const file of ['signup-identity.js', 'portal.js']) await recoveryPage.addScriptTag({ content: read(file) });
+    await recoveryPage.locator('#recovery-phone').waitFor({ state: 'visible' });
+    assert.equal(await recoveryPage.locator('#password').isVisible(), false);
+    await recoveryPage.locator('#email').fill('member@example.invalid');
+    await recoveryPage.locator('#recovery-phone').fill('010-1234-5678');
+    await recoveryPage.locator('#recovery-birth').fill('2000-02-29');
+    await recoveryPage.locator('#recovery-gender').selectOption('male');
+    assert.equal(await recoveryPage.locator('.dialog-shell').evaluate(el => el.scrollWidth <= el.clientWidth), true, 'recovery form must fit a mobile screen');
+    await recoveryPage.locator('#auth-submit').click();
+    await recoveryPage.waitForFunction(() => document.getElementById('auth-title').textContent === '재설정 요청을 확인했어요');
+    assert.deepEqual(await recoveryPage.evaluate(() => recoveryCalls), [{ name: 'member-recovery', body: {
+      email: 'member@example.invalid', phone: '01012345678', birth_date: '2000-02-29', gender: 'male'
+    } }]);
     assert.deepEqual(errors, []);
     console.log('PASS: World admin identity open/save, unregistered members, masked phone, native two-finger zoom, fixed pinch anchor, marker taps, pan continuation, controls, zoom limits and cancellation');
   } finally { await browser.close(); }

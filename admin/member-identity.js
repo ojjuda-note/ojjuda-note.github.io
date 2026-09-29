@@ -12,6 +12,7 @@
     const message = String(error?.message || '');
     if (/not_admin|not_signed_in|permission denied/.test(message)) return '관리자 권한을 확인해 주세요.';
     if (/invalid_phone_number/.test(message)) return '전화번호를 확인해 주세요.';
+    if (/phone_already_registered|member_identity_phone_number_key/.test(message)) return '다른 회원이 이미 사용 중인 전화번호예요.';
     if (/invalid_birth_date/.test(message)) return '생년월일을 확인해 주세요. 가입일 이후의 생일은 저장할 수 없어요.';
     if (/invalid_gender/.test(message)) return '성별을 선택해 주세요.';
     if (/emergency_reason_required/.test(message)) return '긴급 사유를 5~200자로 입력해 주세요.';

@@ -307,7 +307,7 @@ async function showMemberInfo(afterSave = null) {
           myIdentity = data; phone.value = data.phone_number;
           managementMessage.textContent = '전화번호를 저장했어요.';
         } catch (error) {
-          if (run === managementRun && session?.user?.id === userId) managementMessage.textContent = /invalid_phone_number/.test(error.message || '') ? '전화번호를 확인해 주세요.' : '전화번호를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
+          if (run === managementRun && session?.user?.id === userId) managementMessage.textContent = /phone_already_registered|member_identity_phone_number_key/.test(error.message || '') ? '이미 가입된 전화번호예요. 다른 번호를 입력해 주세요.' : /invalid_phone_number/.test(error.message || '') ? '전화번호를 확인해 주세요.' : '전화번호를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
         } finally {
           if (run === managementRun) { managementBusy = false; save.disabled = false; phone.disabled = false; managementClose.disabled = false; }
         }
@@ -340,7 +340,7 @@ async function showMemberInfo(afterSave = null) {
         closeManagement(true);
         if (afterSave) afterSave(); else showMemberInfo();
       } catch (error) {
-        if (run === managementRun) managementMessage.textContent = /identity_locked/.test(error.message || '') ? '이미 등록한 회원정보는 직접 수정할 수 없어요.' : '회원정보를 저장하지 못했어요. 입력 정보를 확인하고 다시 시도해 주세요.';
+        if (run === managementRun) managementMessage.textContent = /phone_already_registered|member_identity_phone_number_key/.test(error.message || '') ? '이미 가입된 전화번호예요. 다른 번호를 입력해 주세요.' : /identity_locked/.test(error.message || '') ? '이미 등록한 회원정보는 직접 수정할 수 없어요.' : '회원정보를 저장하지 못했어요. 입력 정보를 확인하고 다시 시도해 주세요.';
       } finally { if (run === managementRun) { managementBusy = false; save.disabled = false; managementClose.disabled = false; } }
     });
   } catch (error) {

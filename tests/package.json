@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "npm run test:unit && npm run test:ui",
-    "test:unit": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs && node note-composer-settings.test.cjs",
+    "test:unit": "node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node account-recovery-db.test.cjs && node account-recovery-edge.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs && node note-composer-settings.test.cjs",
     "test:ui": "node admin-ui.test.cjs"
   },
   "devDependencies": {
