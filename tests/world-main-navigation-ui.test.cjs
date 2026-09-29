@@ -134,8 +134,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
         const x=box.x+box.width*(dx<0?.8:.2),y=box.y+20;
         await touch('touchStart',[[x,y]]);
         for(let j=1;j<=6;j++)await touch('touchMove',[[x+dx*j/6,y]]);
+        if(i===tabs.length-1 && dx<0)assert.equal(await page.locator('.main').evaluate(el=>el.style.transform),'','the last menu stays still during a left drag');
         await touch('touchEnd',[]);
         if(i===0 && dx>0)await noteAndBack();
+        else if(i===tabs.length-1 && dx<0)assert.equal(await current(),tabs[i],'left swipe stops at the last World menu');
         else assert.equal(await current(),tabs[(i+(dx<0?1:-1)+tabs.length)%tabs.length],`${tabs[i]} content supports ${dx<0?'left':'right'} swipe`);
       }
     }
