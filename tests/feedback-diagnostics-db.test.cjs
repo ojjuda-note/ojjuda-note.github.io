@@ -56,6 +56,7 @@ const { PGlite } = require('@electric-sql/pglite');
   const migration = read('20260929123326_feedback_recent_diagnostics.sql');
   assert.doesNotMatch(migration, /cron\.|schedule\(|http_post|create policy|grant .*on (?:table )?public\.feedback\b/i);
   await db.exec(migration);
+  await db.exec(read('20260929144128_feedback_app_notification_diagnostics.sql'));
   assert.deepEqual(await boundary(), before);
   assert.equal(await value('select count(*)::int as value from net.http_request_queue'), 0);
   assert.equal(await value('select count(*)::int as value from public.feedback_ai_jobs'), 0);
@@ -70,6 +71,12 @@ const { PGlite } = require('@electric-sql/pglite');
       path: '/note/navigation.js', line: 230, column: 17 },
     { type: 'http', age_ms: 300000, code: 'HTTP_FAILURE', path: '/rest/v1/rpc/list_cards', status: 503 }] });
   assert.deepEqual(await normalize(sample()), sample());
+  for (const operation of ['list_app_notifications', 'app_notification_unread_count', 'mark_app_notifications_read']) {
+    const input = sample();
+    input.events = [{ type: 'http', age_ms: 0, code: 'HTTP_FAILURE', path: '/rest/v1/rpc/' + operation, status: 503 }];
+    assert.deepEqual(await normalize(input), input, `${operation} survives database normalization`);
+    assert.deepEqual(sanitizeFeedbackDiagnostics(input), input, `${operation} survives the gateway`);
+  }
   for (const kind of ['idea', 'other', null]) assert.equal(await normalize(sample(), kind), null);
   const invalid = [null, [], '', false, 42, {}, { ...sample(), version: 2 }, { ...sample(), window_ms: 300001 },
     { ...sample(), events: {} }, { ...sample(), context: null }, { ...sample(), secret: '가'.repeat(5500) },

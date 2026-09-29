@@ -10,6 +10,7 @@
     '/note/notice-ticker.js', '/note/pull-refresh.js', '/admin/connections.js'
   ]);
   const operations = new Set([
+    'list_app_notifications', 'app_notification_unread_count', 'mark_app_notifications_read',
     'get_note_state', 'list_cards', 'get_card', 'publish_card', 'publish_card_with_photo', 'archive_my_card',
     'replace_card_photo', 'set_card_style', 'list_event_map', 'list_my_events', 'get_my_event', 'publish_event',
     'publish_event_with_photo', 'update_my_event', 'report_card', 'report_event', 'block_card_author',
