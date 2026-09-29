@@ -37,7 +37,7 @@ const { PGlite } = require('@electric-sql/pglite');
   `);
   for (const name of ['20260928151422_member_identity_and_card_gender.sql', '20260928154555_member_phone_edit.sql',
     '20260928154916_member_admin_identity_edit.sql', '20260928155858_retain_withdrawn_member_accounts_one_month.sql',
-    '20260929024351_unique_phone_and_verified_recovery.sql']) {
+    '20260929025624_unique_phone_and_verified_recovery.sql']) {
     await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations', name), 'utf8'));
   }
   const value = async (query, params = []) => (await db.query(query, params)).rows[0]?.value;
