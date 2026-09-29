@@ -3,7 +3,7 @@
 
   const $ = id => document.getElementById(id);
   const destinations = { note: '/note/', world: '/world.html' };
-  const termsVersion = '2026-09-29';
+  const termsVersion = '2026-09-29-age14';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey)
@@ -389,7 +389,7 @@
         return;
       }
       if (authMode === 'signup' && !$('age-check').checked) {
-        feedback.textContent = '만 15~69세이며 입력한 정보가 정확한지 확인해 주세요.';
+        feedback.textContent = '만 14세 이상인지 확인해 주세요.';
         return;
       }
       if (authMode === 'signup' && !$('policy-check').checked) {
@@ -431,7 +431,7 @@
               birth_yymmdd: signupIdentity.birthSix,
               gender_code: signupIdentity.genderCode,
               phone_number: signupIdentity.phone,
-              age_15_to_69: true
+              age_14_or_older: true
             },
             emailRedirectTo: confirmationUrl.href
           }

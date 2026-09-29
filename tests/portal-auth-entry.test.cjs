@@ -88,6 +88,8 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     assert.equal(sent.options.data.phone_number, '01012345678');
     assert.equal(sent.options.data.birth_yymmdd, '000101');
     assert.equal(sent.options.data.gender_code, '3');
+    assert.equal(sent.options.data.age_14_or_older, true);
+    assert.equal('age_15_to_69' in sent.options.data, false);
     assert.equal(JSON.parse(app.storage.get('ojjuda_post_confirm_destination')).destination, destination);
     assert.equal(app.element('auth-title').textContent, '이메일을 확인해 주세요');
   }
@@ -96,6 +98,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     if (missing.endsWith('check')) app.element(missing).checked = false;
     else app.element(missing).value = '';
     await app.submit(); assert.equal(app.signups.length, 0, `${missing} must be required`);
+    if (missing === 'age-check') assert.equal(app.element('auth-feedback').textContent, '만 14세 이상인지 확인해 주세요.');
     if (missing === 'password-confirm') assert.match(app.element('auth-feedback').textContent, /비밀번호 확인을 입력/);
   }
   for (const destination of ['world', 'note']) {

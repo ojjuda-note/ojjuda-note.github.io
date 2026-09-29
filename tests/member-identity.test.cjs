@@ -2,14 +2,16 @@ const assert = require('node:assert/strict');
 const identity = require('../signup-identity.js');
 const today = '2026-09-29';
 for (const [birth, code, gender, age] of [
-  ['110929', '3', 'male', 15], ['110929', '4', 'female', 15],
-  ['560930', '1', 'male', 69], ['560930', '2', 'female', 69], ['000229', '3', 'male', 26]
+  ['120929', '3', 'male', 14], ['120929', '4', 'female', 14],
+  ['110930', '3', 'male', 14], ['110929', '3', 'male', 15],
+  ['560930', '1', 'male', 69], ['560929', '2', 'female', 70],
+  ['000101', '1', 'male', 126], ['000229', '3', 'male', 26]
 ]) {
   const result = identity.parseBirth(birth, code, today);
   assert.equal(result.gender, gender); assert.equal(result.age, age);
 }
 for (const [birth, code] of [
-  ['110930', '3'], ['560929', '1'], ['990229', '1'], ['001300', '3'],
+  ['120930', '3'], ['130929', '4'], ['990229', '1'], ['001300', '3'],
   ['000230', '3'], ['270101', '3'], ['110929', '5'], ['110929', '0'], ['110929123', '1']
 ]) assert.throws(() => identity.parseBirth(birth, code, today));
 assert.equal(identity.ageAt('2000-02-29', '2025-02-28'), 24);

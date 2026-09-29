@@ -37,13 +37,14 @@ const { PGlite } = require('@electric-sql/pglite');
   `);
   for (const name of ['20260928151422_member_identity_and_card_gender.sql', '20260928154555_member_phone_edit.sql',
     '20260928154916_member_admin_identity_edit.sql', '20260928155858_retain_withdrawn_member_accounts_one_month.sql',
-    '20260929025624_unique_phone_and_verified_recovery.sql', '20260929032535_direct_member_password_recovery.sql']) {
+    '20260929025624_unique_phone_and_verified_recovery.sql', '20260929032535_direct_member_password_recovery.sql',
+    '20260929145656_signup_age_14_plus.sql']) {
     await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations', name), 'utf8'));
   }
   const value = async (query, params = []) => (await db.query(query, params)).rows[0]?.value;
   const first = '00000000-0000-4000-8000-000000000001', second = '00000000-0000-4000-8000-000000000002';
   const existing = '00000000-0000-4000-8000-000000000003';
-  const meta = { birth_yymmdd: '000229', gender_code: '3', phone_number: '010-1234-5678', age_15_to_69: true, terms_version: '2026-09-29' };
+  const meta = { birth_yymmdd: '000229', gender_code: '3', phone_number: '010-1234-5678', age_14_or_older: true, terms_version: '2026-09-29-age14' };
   const signup = (id, phone) => db.query('insert into auth.users(id,email,encrypted_password,raw_user_meta_data) values($1,$2,$3,$4)',
     [id, `${id}@example.invalid`, 'synthetic-non-login-hash', { ...meta, phone_number: phone }]);
   await signup(first, meta.phone_number);

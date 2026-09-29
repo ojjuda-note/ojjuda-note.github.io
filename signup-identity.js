@@ -1,6 +1,6 @@
 (function (root) {
   'use strict';
-  const MIN_AGE = 15, MAX_AGE = 69;
+  const MIN_AGE = 14;
   function todayKorea(now = new Date()) {
     const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
     const get = type => parts.find(part => part.type === type).value;
@@ -19,7 +19,7 @@
     const birthDate = `${year}-${birthSix.slice(2, 4)}-${birthSix.slice(4, 6)}`;
     if (birthDate > today) throw new Error('미래의 생년월일은 입력할 수 없어요.');
     const age = ageAt(birthDate, today);
-    if (enforceAge && (age < MIN_AGE || age > MAX_AGE)) throw new Error('만 15~69세만 가입할 수 있어요.');
+    if (enforceAge && age < MIN_AGE) throw new Error('만 14세 이상만 가입할 수 있어요.');
     return { birthDate, gender: ['1', '3'].includes(genderCode) ? 'male' : 'female', age };
   }
   function normalizePhone(value) {
@@ -47,7 +47,7 @@
     const phone = normalizePhone(form.querySelector(`#${prefix}-phone`).value);
     return { ...parsed, birthSix, genderCode, phone };
   }
-  const api = { MIN_AGE, MAX_AGE, todayKorea, ageAt, parseBirth, normalizePhone, fields, read };
+  const api = { MIN_AGE, todayKorea, ageAt, parseBirth, normalizePhone, fields, read };
   root.OjjudaIdentity = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document !== 'undefined') document.addEventListener('input', event => {
