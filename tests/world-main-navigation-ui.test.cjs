@@ -49,7 +49,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await page.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(page.url(),'https://fixture.test/world.html');
     };
-    for(const tab of ['home','deco','shop','my']) {
+    for(const tab of ['home','shop','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
       assert.equal(await current(),tab);
       await back();
@@ -125,7 +125,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y]]);
       await touch('touchEnd',[]);
     };
-    const tabs=['friends','home','deco','shop','my'];
+    const tabs=['friends','home','shop','my'];
     for(let i=0;i<tabs.length;i++){
       for(const dx of [-150,150]){
         await navigate(tabs[i]);
