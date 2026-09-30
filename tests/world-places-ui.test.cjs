@@ -43,6 +43,10 @@ world=world.slice(0,boot)+`
    await page.screenshot({path:'/tmp/ojjuda-place-'+id+'-verified.png',fullPage:true});
    statistics.push({id,calls:state.place.calls,geometries:state.geometries});
  }
+ // Realtime assigns a channel after initial mount. New taps must remain usable,
+ // while callbacks captured for the previous channel cannot act on this one.
+ await page.evaluate(()=>{const old=document.querySelector('.place3d-frame').contentWindow.Ojjuda3D.hooks.onPlaceTap;placeTest.state.place.ch=2;placeTest.sync();old({x:0,z:0});});
+ assert.equal(await page.evaluate(()=>placeTest.state.place.me.target),null,'old channel callbacks are ignored');
  await tap('item','p3_0');await page.waitForSelector('#gov');
  assert.match(await page.locator('#gov').getAttribute('aria-label'),/두더지/);
  await page.locator('[data-g="close"]').click();assert.equal(await page.locator('#gov').count(),0);

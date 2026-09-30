@@ -47,6 +47,10 @@ world=world.slice(0,boot)+`
  await page.evaluate(()=>{const t=roomTest;t.model.room.items.push({id:'pet-test',type:'cat',gx:6,gy:6,r:0,pet:{name:'콩이',love:73,full:40,joy:40,at:Date.now()}});t.refresh();t.petOpen('pet-test');});
  await page.waitForSelector('#petscene[data-character-ready]');
  await pet().evaluate(()=>window.rendererMarker='same-pet');
+ await page.waitForTimeout(100);
+ const coveredBefore=await room().evaluate(()=>Ojjuda3D.inspect().renderFrame);
+ await page.evaluate(()=>{for(let i=0;i<4;i++)roomTest.refresh();});
+ assert.equal(await room().evaluate(()=>Ojjuda3D.inspect().renderFrame),coveredBefore,'room snapshots do not draw behind pet care');
  const petBefore=await page.evaluate(()=>({...roomTest.model.room.items.find(x=>x.id==='pet-test').pet}));
  await page.locator('[data-act="pet-pat"]').click();
  assert.equal(await pet().evaluate(()=>window.rendererMarker),'same-pet','pet care keeps the scene instead of rebuilding its iframe');

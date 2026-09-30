@@ -981,7 +981,7 @@ function applyRoom(data) {
   if(hostKey!==nextHost){hostKey=nextHost;if(host)disposeGroup(host);host=null;if(data.host){host=makeAvatar(data.host.avatar);host.position.set(data.host.pos.x,0,data.host.pos.z);host.rotation.y=Math.PI/4;room.add(host);nameTag(host,data.host.nick);}}
   if(changedRoom||!av.target&&av.pose==='stand'){av.pos.set(data.pos.x,data.pos.z);me.position.set(data.pos.x,0,data.pos.z);}
   document.documentElement.dataset.editing=String(editMode);
-  renderer.shadowMap.needsUpdate=true;renderer.render(scene,camera);updateOverlay();
+  renderer.shadowMap.needsUpdate=true;if(active&&!document.hidden){renderer.render(scene,camera);updateOverlay();}
 }
 
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),floorPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
