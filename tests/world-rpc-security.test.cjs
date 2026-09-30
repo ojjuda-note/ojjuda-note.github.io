@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { PGlite } = require('@electric-sql/pglite');
 const sql = fs.readFileSync(path.join(__dirname, '../supabase/migrations/20260929042447_world_rpc_security_boundaries.sql'), 'utf8');
-const helperSql = fs.readFileSync(path.join(__dirname, '../supabase/migrations/20260930230517_scope_world_privacy_helpers.sql'), 'utf8');
+const helperSql = fs.readFileSync(path.join(__dirname, '../supabase/migrations/20260930231544_scope_world_privacy_helpers.sql'), 'utf8');
 
 (async () => {
   const db = new PGlite();
