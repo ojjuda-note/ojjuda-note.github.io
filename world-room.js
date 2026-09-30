@@ -69,7 +69,7 @@
         stage = next; owner = app.identity(); stage.classList.add('room3d-stage');
         frame = document.createElement('iframe');
         frame.className = 'room3d-frame'; frame.title = '우리집 입체 방';
-        frame.src = '/room3d/index.html?v=20260930-2';
+        frame.src = '/room3d/index.html?v=20260930-3';
         const status = document.createElement('span'); status.className = 'room3d-status';
         status.setAttribute('role', 'status'); status.textContent = '우리집을 준비하고 있어요…';
         const controls = document.createElement('div'); controls.className = 'room3d-tools';
