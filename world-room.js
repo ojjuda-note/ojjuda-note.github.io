@@ -5,6 +5,13 @@
     install(app) {
       let frame = null, stage = null, engine = null, timer = null, observer = null, owner = null;
       const current = () => frame?.isConnected && stage?.isConnected && app.identity() === owner;
+      const visible = () => {
+        const rect = stage?.getBoundingClientRect();
+        return current() && !frame.hidden && !document.hidden &&
+          !document.querySelector('#gov, #modal-root .modal') &&
+          rect.bottom >= -80 && rect.top <= innerHeight + 80;
+      };
+      const refreshActive = () => engine?.setActive(!!visible());
       const dispose = () => {
         clearTimeout(timer); observer?.disconnect();
         try { engine?.dispose(); } catch (_) {}
@@ -24,6 +31,7 @@
         owner = app.identity();
         try {
           const data = app.snapshot();
+          refreshActive();
           engine.applyRoom(data);
           const select = stage.querySelector('.room3d-item-select');
           if (select) {
@@ -53,7 +61,7 @@
         clearTimeout(timer); stage.classList.add('room3d-ready');
         stage.querySelector('#room-svg')?.setAttribute('aria-hidden', 'true');
         stage.querySelector('.room3d-status').textContent = '';
-        observer = new IntersectionObserver(entries => engine?.setActive(entries[0].isIntersecting), {rootMargin:'100px'});
+        observer = new IntersectionObserver(refreshActive, {rootMargin:'80px'});
         observer.observe(stage);
       };
       window.addEventListener('message', event => {
@@ -69,7 +77,7 @@
         stage = next; owner = app.identity(); stage.classList.add('room3d-stage');
         frame = document.createElement('iframe');
         frame.className = 'room3d-frame'; frame.title = '우리집 입체 방';
-        frame.src = '/room3d/index.html?v=20260930-2';
+        frame.src = '/room3d/index.html?v=20260930-3';
         const status = document.createElement('span'); status.className = 'room3d-status';
         status.setAttribute('role', 'status'); status.textContent = '우리집을 준비하고 있어요…';
         const controls = document.createElement('div'); controls.className = 'room3d-tools';
@@ -92,6 +100,7 @@
         frame.addEventListener('load', () => { if (frame?.contentWindow.Ojjuda3D) ready(); });
         timer = setTimeout(fallback, 20000);
       };
+      document.addEventListener('visibilitychange', refreshActive);
       window.addEventListener('pagehide', dispose);
       window.addEventListener('pageshow', () => { if (!frame) mount(); });
       return {mount,sync,dispose};

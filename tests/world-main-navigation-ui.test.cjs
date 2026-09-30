@@ -117,12 +117,16 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       if(tab==='friends')await page.waitForFunction(()=>history.state?.ojjudaWorld==='main');
       await page.evaluate(()=>scrollTo(0,0));
     };
-    const touchDrag=async(selector,dx)=>{
-      const target=page.locator(selector).first();await target.scrollIntoViewIfNeeded();
+    const touchDrag=async(selector,dx,dy=0)=>{
+      const target=page.locator(selector).first();
+      // Native scrollIntoViewIfNeeded can leave the palette behind the fixed
+      // bottom navigation, so center the surface before sending real touches.
+      await target.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
       const box=await target.boundingBox();
-      const x=box.x+box.width*(dx<0?.8:.2),y=Math.max(5,box.y)+20;
+      const x=box.x+box.width*(dx<0?.8:.2),y=dy?box.y+box.height*.8:Math.max(5,box.y)+20;
+      assert.ok(await target.evaluate((el,{x,y})=>el.contains(document.elementFromPoint(x,y)),{x,y}),'the gesture starts on its intended surface');
       await touch('touchStart',[[x,y]]);
-      for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y]]);
+      for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);
       await touch('touchEnd',[]);
     };
     const tabs=['friends','home','shop','my'];
@@ -153,8 +157,15 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.equal(await current(),'home','room gestures never switch top-level menus');
     assert.notEqual(await page.evaluate(()=>worldTest.model.roomIdx),roomBefore,'existing room-to-room gesture still works');
     await navigate('deco');
+    const palette='.room-deco-grid .pal.strip';
+    assert.ok(await page.locator(palette).evaluate(el=>el.scrollHeight>el.clientHeight+30&&el.scrollWidth<=el.clientWidth+2),'furniture uses a bounded vertical grid');
+    await touchDrag(palette,-150);assert.equal(await current(),'deco','horizontal item drags never leave furniture editing');
+    await touchDrag(palette,0,-150);assert.equal(await current(),'deco','vertical furniture scrolling stays in editing');
+    await page.waitForFunction(selector=>document.querySelector(selector).scrollTop>20,palette);
+    await page.locator('[data-mode="avatar"]').click();
+    await page.locator('[data-act="av-tab"][data-v="hair"]').click();
     const scroller=await page.evaluate(()=>[...document.querySelectorAll('.main .pal.strip, .main .swgrid.strip, .main .avgrid.strip')].find(el=>el.scrollWidth>el.clientWidth+30)?.getAttribute('data-keep'));
-    assert.ok(scroller,'production furniture palette has a horizontal scroller');
+    assert.ok(scroller,'the avatar palette retains its horizontal scroller');
     await touchDrag(`[data-keep="${scroller}"]`,-150);
     assert.equal(await current(),'deco','palette gestures never leave furniture editing');
     await page.waitForFunction(key=>document.querySelector(`[data-keep="${key}"]`).scrollLeft>20,scroller);
