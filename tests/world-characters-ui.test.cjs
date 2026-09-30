@@ -37,8 +37,10 @@ world=world.slice(0,boot)+`
  const before=await page.evaluate(()=>JSON.stringify(roomTest.model.avatar));
  await page.locator('[data-act="av"][data-k="top"][data-v="hanbok"]').click();
  assert.equal(await page.evaluate(()=>JSON.stringify(roomTest.model.avatar)),before,'trying unowned clothes does not change the saved avatar');
+ await page.waitForFunction(()=>document.querySelector('#av-preview iframe').contentWindow.Ojjuda3D.inspect().character.avatar.top==='hanbok');
  assert.equal(await actor().evaluate(()=>Ojjuda3D.inspect().character.avatar.top),'hanbok');
  await page.locator('[data-act="try-cancel"]').click();
+ await page.waitForFunction(top=>document.querySelector('#av-preview iframe').contentWindow.Ojjuda3D.inspect().character.avatar.top===top,JSON.parse(before).top);
  assert.equal(await actor().evaluate(()=>Ojjuda3D.inspect().character.avatar.top),JSON.parse(before).top);
  await page.locator('[data-mode="home"]').click();await page.waitForSelector('.room3d-ready');
  assert.equal(await room().evaluate(()=>Ojjuda3D.inspect().avatar.hair),'ponytail');
@@ -73,6 +75,7 @@ world=world.slice(0,boot)+`
  },options);
  assert.equal(coverage.count,85);assert.deepEqual(coverage.duplicates,[],'every avatar choice has its own visible model');
  await actor().evaluate(()=>document.querySelector('canvas').dispatchEvent(new Event('webglcontextlost',{cancelable:true})));
+ await page.waitForSelector('#av-preview[data-character-ready]',{state:'detached'});
  assert.equal(await page.locator('#av-preview[data-character-ready]').count(),0);assert.equal(await page.locator('#av-preview>svg').isVisible(),true);
  assert.deepEqual(errors,[]);console.log('PASS: avatar/room parity, correct shoulders, preserved paid previews, pet care/chat, stable renderers, idle rendering and responsive layouts');
  }finally{await browser.close();}
