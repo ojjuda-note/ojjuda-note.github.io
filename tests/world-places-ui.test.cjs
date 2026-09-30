@@ -30,6 +30,7 @@ world=world.slice(0,boot)+`
  for(const prefix of ['pot_','mat_','curtain_']){const group=fingerprints.filter(x=>x.key.startsWith(prefix));assert.equal(new Set(group.map(x=>x.image)).size,group.length,prefix+' choices retain distinct visible models/patterns');}
  const frame=()=>page.frames().find(f=>f.url().includes('view=place'));
  async function enter(id){await page.evaluate(id=>{placeTest.enter(id,1);placeTest.freeze();},id);await page.waitForSelector('.place3d-ready');await frame().waitForFunction(id=>Ojjuda3D.inspect().place?.id===id&&Ojjuda3D.inspect().renderFrame>0,id);}
+ async function changePeople(change){const before=await frame().evaluate(()=>Ojjuda3D.inspect().renderFrame);await page.evaluate(change);await frame().waitForFunction(before=>Ojjuda3D.inspect().renderFrame>before,before);}
  async function tap(kind,id){await page.locator('.place3d-frame').scrollIntoViewIfNeeded();const point=await frame().evaluate(({kind,id})=>Ojjuda3D.projectPlaceTarget(kind,id),{kind,id});assert.ok(point,'projected '+kind);const box=await page.locator('.place3d-frame').boundingBox();await page.mouse.click(box.x+point.x,box.y+point.y);}
  const statistics=[];
  for(const id of ['cafe','library','park','arcade']){
@@ -43,6 +44,13 @@ world=world.slice(0,boot)+`
    await page.screenshot({path:'/tmp/ojjuda-place-'+id+'-verified.png',fullPage:true});
    statistics.push({id,calls:state.place.calls,geometries:state.geometries});
  }
+ // Random visitors can stand in front of a table. First verify that such a
+ // foreground person still opens their profile, then keep a known clear layout
+ // for the game tests so the projected table point actually hits the table.
+ await changePeople(()=>{const p=placeTest.state.place;p.npcs=[{...p.npcs[0],avatar:{...placeTest.model.avatar},gx:9,gy:4,seat:0,target:null}];p.bubbles=[];placeTest.sync();});
+ await tap('item','p3_12');await page.waitForSelector('#modal-root .npcp');
+ await page.locator('#modal-root [data-act="close"]').click();
+ await changePeople(()=>{placeTest.state.place.npcs[0].gx=8;placeTest.state.place.npcs[0].gy=8;placeTest.sync();});
  // Realtime assigns a channel after initial mount. New taps must remain usable,
  // while callbacks captured for the previous channel cannot act on this one.
  await page.evaluate(()=>{const old=document.querySelector('.place3d-frame').contentWindow.Ojjuda3D.hooks.onPlaceTap;placeTest.state.place.ch=2;placeTest.sync();old({x:0,z:0});});

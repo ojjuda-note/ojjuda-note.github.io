@@ -44,6 +44,7 @@ world=world.slice(0,boot)+`
  assert.equal(await actor().evaluate(()=>Ojjuda3D.inspect().character.avatar.top),JSON.parse(before).top);
  await page.locator('[data-mode="home"]').click();await page.waitForSelector('.room3d-ready');
  assert.equal(await room().evaluate(()=>Ojjuda3D.inspect().avatar.hair),'ponytail');
+ await room().evaluate(()=>{const original=Ojjuda3D.setActive;window.activeChanges=[];Ojjuda3D.setActive=value=>{activeChanges.push(value);original(value);};});
  await page.evaluate(()=>{const t=roomTest;t.model.room.items.push({id:'pet-test',type:'cat',gx:6,gy:6,r:0,pet:{name:'콩이',love:73,full:40,joy:40,at:Date.now()}});t.refresh();t.petOpen('pet-test');});
  await page.waitForSelector('#petscene[data-character-ready]');
  await pet().evaluate(()=>window.rendererMarker='same-pet');
@@ -51,6 +52,15 @@ world=world.slice(0,boot)+`
  const coveredBefore=await room().evaluate(()=>Ojjuda3D.inspect().renderFrame);
  await page.evaluate(()=>{for(let i=0;i<4;i++)roomTest.refresh();});
  assert.equal(await room().evaluate(()=>Ojjuda3D.inspect().renderFrame),coveredBefore,'room snapshots do not draw behind pet care');
+ // Viewport notifications can arrive after a modal has already paused the room.
+ let activeCount=await room().evaluate(()=>activeChanges.length);
+ await page.locator('#stage').evaluate(stage=>{stage.style.transform='translateY(-200vh)';});
+ await room().waitForFunction(count=>activeChanges.length>count,activeCount);
+ activeCount=await room().evaluate(()=>activeChanges.length);
+ await page.locator('#stage').evaluate(stage=>{stage.style.transform='';});
+ await room().waitForFunction(count=>activeChanges.length>count,activeCount);
+ assert.equal(await room().evaluate(()=>activeChanges.at(-1)),false,'a viewport callback cannot resume a covered room');
+ assert.equal(await room().evaluate(()=>Ojjuda3D.inspect().renderFrame),coveredBefore,'viewport changes keep the room paused behind pet care');
  const petBefore=await page.evaluate(()=>({...roomTest.model.room.items.find(x=>x.id==='pet-test').pet}));
  await page.locator('[data-act="pet-pat"]').click();
  assert.equal(await pet().evaluate(()=>window.rendererMarker),'same-pet','pet care keeps the scene instead of rebuilding its iframe');
@@ -62,6 +72,10 @@ world=world.slice(0,boot)+`
  await page.waitForFunction(()=>document.querySelector('#talk-log').textContent.includes('반가워 콩이'));
  await page.screenshot({path:'/tmp/ojjuda-pet-talk-after.png',fullPage:true});
  await page.locator('#modal-root [data-act="close"]').click();
+ await room().waitForFunction(()=>activeChanges.at(-1)===true);
+ const resumedBefore=await room().evaluate(()=>Ojjuda3D.inspect().renderFrame);
+ await room().evaluate(()=>Ojjuda3D.zoom(.15));
+ await room().waitForFunction(before=>Ojjuda3D.inspect().renderFrame>before,resumedBefore);
  await page.evaluate(()=>{roomTest.model.room.items=[];roomTest.refresh();});
  await page.waitForTimeout(350);
  const first=await room().evaluate(()=>Ojjuda3D.inspect().renderFrame);await page.waitForTimeout(750);const last=await room().evaluate(()=>Ojjuda3D.inspect().renderFrame);

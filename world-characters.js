@@ -24,7 +24,7 @@
         for(const node of observed)if(!node.isConnected){visible.unobserve(node);pending.delete(node);observed.delete(node);}
         for(const node of document.querySelectorAll('[data-avatar-self]')){const key=JSON.stringify(app.savedAvatar());if(node.dataset.avatarPortrait!==key){node.dataset.avatarPortrait=key;delete node.dataset.portraitReady;observed.delete(node);}}
         for(const node of document.querySelectorAll('[data-avatar-portrait]:not([data-portrait-ready]),[data-item-preview]:not([data-portrait-ready])'))if(!observed.has(node)){observed.add(node);visible.observe(node);}
-        const roomFrame=document.querySelector('#stage .room3d-frame, #pstage .place3d-frame'),room=roomFrame?.contentWindow?.Ojjuda3D,rect=roomFrame?.getBoundingClientRect();room?.setActive(!document.hidden&&!document.querySelector('#gov, #modal-root .modal')&&rect.bottom>=-80&&rect.top<=innerHeight+80);
+        const roomFrame=document.querySelector('#stage .room3d-frame, #pstage .place3d-frame'),room=roomFrame?.contentWindow?.Ojjuda3D,rect=roomFrame?.getBoundingClientRect();room?.setActive(!roomFrame.hidden&&!document.hidden&&!document.querySelector('#gov, #modal-root .modal')&&rect.bottom>=-80&&rect.top<=innerHeight+80);
         pump();
       }
       function schedule(){if(!scheduled&&!suspended)scheduled=requestAnimationFrame(scan);}
