@@ -1,0 +1,42 @@
+/* A single house destination, with the garden framing a full-width working room. */
+.house-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 16px;flex-wrap:wrap}
+.house-heading h2{font-size:22px;margin:0;color:#534a67}
+.house-heading .seg{width:auto;flex:none;gap:3px;padding:4px;background:#efebf5;border:1px solid #e3dbea;border-radius:15px}
+.house-heading .seg button{padding:9px 13px;font-size:13px;white-space:nowrap;border-radius:11px}
+.house-heading .seg button.on{background:#fffaf6;color:#655184;box-shadow:0 2px 7px #75638616}
+.home,.room-deco-grid{gap:18px}
+.stage-bar{background:#fffaf6;border:1px solid #e6dce7;border-radius:17px 17px 0 0;padding:10px 12px;margin-bottom:0;min-height:48px}
+.stage-bar .room-name{font-weight:700;color:#655777}
+.stage-bar .chip{background:#f5eef5;border-color:#e5d9e6;font-size:11px}
+#stage.room3d-stage{position:relative;width:100%;height:auto;min-height:0;max-height:none;aspect-ratio:1.16;overflow:hidden;border:1px solid #e6dce7;border-top:0;border-radius:0 0 22px 22px;background:#e9ead7;isolation:isolate}
+.room3d-frame{display:block;position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;pointer-events:none;z-index:1}
+.room3d-ready .room3d-frame{opacity:1;pointer-events:auto}
+.room3d-ready #room-svg{visibility:hidden;pointer-events:none}
+.room3d-stage .room-nav,.room3d-stage .surf-btn{z-index:3}
+.room3d-stage .zoom-reset{display:none!important}
+.room3d-status{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;max-width:90%;width:max-content;padding:6px 10px;background:#fffaf3e8;border-radius:9px;font-size:11px;color:#71647e;pointer-events:none}
+.room3d-status:empty{display:none}
+.room3d-tools{display:none;position:absolute;right:12px;bottom:12px;z-index:3;gap:1px;padding:3px;border-radius:12px;border:1px solid #fff9;background:#fffaf1ed;box-shadow:0 4px 14px #79618226}
+.room3d-ready .room3d-tools{display:flex}
+.room3d-tools button{border:0;background:transparent;min-width:32px;height:32px;color:#655477;font:inherit;font-size:14px;cursor:pointer;border-radius:9px;touch-action:manipulation}
+.room3d-tools button:hover{background:#eee7f6}
+.room3d-item-select{display:none;position:absolute;left:12px;bottom:12px;z-index:3;max-width:calc(100% - 145px);height:38px;border:1px solid #e2d5e7;background:#fffaf3ee;color:#655477;border-radius:11px;padding:0 9px;font:inherit;font-size:12px}
+.room3d-ready .room3d-item-select{display:block}
+.room-deco-grid .panel{border-radius:20px;border:1px solid #e8dfea;background:#fffcf9;overflow:hidden}
+.room-deco-grid .panel .seg{border:0;border-radius:0;background:#f5eff6;padding:6px}
+.room-deco-grid .panel .panel-body{padding:12px}
+.room-deco-grid .pal.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-height:330px;overflow:auto;gap:7px;scrollbar-width:thin}
+.room-deco-grid .pal.strip>button{width:auto;min-width:0;border-radius:13px;background:#f8f3f2;border:1px solid #ece4eb;font-size:11px;white-space:normal;padding:7px 4px;line-height:1.4}
+.room-deco-grid .pal.strip>button svg{width:100%;max-width:68px;height:60px}
+.room-deco-grid .pal-note{font-size:11px;line-height:1.65}
+.room-deco-grid .chips.more,.room-deco-grid .chip.more{display:none}
+.room-deco-grid .selbar{margin-top:10px;border:1px solid #e7deec;background:#fffaf7;border-radius:15px;padding:10px;gap:6px}
+.room-deco-grid .selbar .btn{min-height:36px}
+.room-deco-grid .placement-actions{position:sticky;bottom:70px;z-index:5;background:#f2ebf9;border-radius:11px;padding:9px;width:100%}
+.home .owner-bar{background:#fffaf7;border:1px solid #e8dfea;border-radius:17px;padding:12px;margin-bottom:12px}
+.home .stage-hint{font-size:11px;line-height:1.7;color:#8a7f91;margin:10px 4px 18px}
+.bottomnav{grid-template-columns:repeat(4,1fr)}
+@media(min-width:900px){.room-deco-grid{grid-template-columns:minmax(0,1fr) 310px}.room-deco-grid .panel{align-self:start}.room-deco-grid .pal.strip{grid-template-columns:repeat(3,minmax(0,1fr));max-height:440px}}
+@media(min-width:1200px){.home .owner-bar{display:none}}
+@media(max-width:600px){.house-heading{gap:10px;margin-bottom:12px}.house-heading h2{font-size:20px}.house-heading .seg{gap:0}.house-heading .seg button{font-size:12px;padding:8px 10px}.room-deco-grid .pal.strip{max-height:250px}.room-deco-grid .selbar .lbl{width:100%}.stage-bar{padding:8px}.stage-bar .sb-right{margin-left:auto}.room3d-tools{right:8px;bottom:8px}.room3d-item-select{left:8px;bottom:8px}}
+@media(prefers-reduced-motion:no-preference){.room3d-frame{transition:opacity .3s ease}}
