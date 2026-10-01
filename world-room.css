@@ -36,7 +36,8 @@
 .room-deco-grid .placement-actions{position:sticky;bottom:70px;z-index:5;background:#f2ebf9;border-radius:11px;padding:9px;width:100%}
 .home .owner-bar{background:#fffaf7;border:1px solid #e8dfea;border-radius:17px;padding:12px;margin-bottom:12px}
 .home .stage-hint{font-size:11px;line-height:1.7;color:#8a7f91;margin:10px 4px 18px}
-.bottomnav{grid-template-columns:repeat(4,1fr)}
+/* Every visible menu gets an equal share, without unused columns. */
+.bottomnav{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 @media(min-width:900px){.room-deco-grid{grid-template-columns:minmax(0,1fr) 310px}.room-deco-grid .panel{align-self:start}.room-deco-grid .pal.strip{grid-template-columns:repeat(3,minmax(0,1fr));max-height:440px}}
 @media(min-width:1200px){.home .owner-bar{display:none}}
 @media(max-width:600px){.house-heading{gap:10px;margin-bottom:12px}.house-heading h2{font-size:20px}.house-heading .seg{gap:0}.house-heading .seg button{font-size:12px;padding:8px 10px}.room-deco-grid .pal.strip{max-height:250px}.room-deco-grid .selbar .lbl{width:100%}.stage-bar{padding:8px}.stage-bar .sb-right{margin-left:auto}.room3d-tools{right:8px;bottom:8px}.room3d-item-select{left:8px;bottom:8px}}
