@@ -10,7 +10,7 @@ const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.placeTest={model:$,state:g,enter:xf,sync:Sr,step:Ff,catalog:q,definition:worldItemDefinition,places:Pt,house:H,
    freeze(){clearInterval(g.placeT);g.placeT=null;},snapshot:()=>worldPlace3D&&worldPlace3D.sync()};
- g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
+ D.isAdmin=true;g.houseAdminPreview=true;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
 
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});

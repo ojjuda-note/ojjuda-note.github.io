@@ -49,6 +49,11 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await page.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(page.url(),'https://fixture.test/world.html');
     };
+    assert.equal(await page.locator('[data-tab="shop"]').count(),0,'store entries are removed');
+    await page.evaluate(()=>worldTest.actions.tab({tab:'shop'}));
+    assert.equal(await current(),'friends','old store action returns to the main screen');
+    await page.evaluate(()=>{worldTest.state.tab='shop';worldTest.render();});
+    assert.equal(await current(),'friends','restored store state cannot reopen the store');
     assert.equal(await page.locator('.wd-home').getAttribute('aria-disabled'),'true');
     assert.match(await page.locator('.wd-home').textContent(),/공사 중/);
     await page.evaluate(()=>worldTest.actions['house-construction']());
@@ -68,7 +73,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.evaluate(()=>{worldTest.auth.isAdmin=false;worldTest.render();});
     assert.equal(await page.locator('[data-house-construction]').count(),1,'losing admin access closes the preview');
     await main();
-    for(const tab of ['home','shop','my']) {
+    for(const tab of ['home','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
       assert.equal(await current(),tab);
       await back();
@@ -80,7 +85,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     }
     const length=await page.evaluate(()=>history.length);
     for(let i=0;i<3;i++){
-      await page.evaluate(()=>worldTest.actions.tab({tab:'shop'}));
+      await page.evaluate(()=>worldTest.actions.tab({tab:'my'}));
       await main();
     }
     assert.equal(await page.evaluate(()=>history.length),length,'menu visits do not pile up history entries');
@@ -148,7 +153,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);
       await touch('touchEnd',[]);
     };
-    const tabs=['friends','home','shop','my'];
+    const tabs=['friends','home','my'];
     for(let i=0;i<tabs.length;i++){
       for(const dx of [-150,150]){
         await navigate(tabs[i]);
@@ -210,7 +215,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       ?route.fulfill({contentType:'text/html',body:world}):route.abort());
     const np=await native.newPage();await np.goto('https://fixture.test/world.html');
     await np.waitForFunction(()=>window.nativeBack && window.worldTest);
-    for(const tab of ['home','deco','shop','my']){
+    for(const tab of ['home','deco','my']){
       await np.evaluate(tab=>{worldTest.actions.tab({tab});nativeBack({canGoBack:false})},tab);
       await np.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
