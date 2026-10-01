@@ -31,7 +31,8 @@ world=world.slice(0,boot)+`
  const frame=()=>page.frames().find(f=>f.url().includes('view=place'));
  async function enter(id){await page.evaluate(id=>{placeTest.enter(id,1);placeTest.freeze();},id);await page.waitForSelector('.place3d-ready');await frame().waitForFunction(id=>Ojjuda3D.inspect().place?.id===id&&Ojjuda3D.inspect().renderFrame>0,id);}
  async function changePeople(change){const before=await frame().evaluate(()=>Ojjuda3D.inspect().renderFrame);await page.evaluate(change);await frame().waitForFunction(before=>Ojjuda3D.inspect().renderFrame>before,before);}
- async function tap(kind,id){await page.locator('.place3d-frame').scrollIntoViewIfNeeded();const point=await frame().evaluate(({kind,id})=>Ojjuda3D.projectPlaceTarget(kind,id),{kind,id});assert.ok(point,'projected '+kind);const box=await page.locator('.place3d-frame').boundingBox();await page.mouse.click(box.x+point.x,box.y+point.y);}
+ async function tap(kind,id){const canvas=frame().locator('canvas');await canvas.scrollIntoViewIfNeeded();const point=await frame().evaluate(({kind,id})=>Ojjuda3D.projectPlaceTarget(kind,id),{kind,id});assert.ok(point,'projected '+kind);await canvas.click({position:point});}
+ // Target the canvas itself so iframe scrolling/layout cannot stale a page-space click.
  const statistics=[];
  for(const id of ['cafe','library','park','arcade']){
    await enter(id);const state=await frame().evaluate(()=>Ojjuda3D.inspect());
@@ -65,6 +66,7 @@ world=world.slice(0,boot)+`
  await tap('person',person);await page.waitForSelector('#modal-root .npcp');await page.locator('#modal-root [data-act="close"]').click();
  await page.evaluate(()=>{const p=placeTest.state.place;p.npcs=[];p.staff=null;placeTest.sync();});
  await tap('floor',{x:5.5,z:8.5});
+ await page.waitForFunction(()=>placeTest.state.place.me.target?.gx===5&&placeTest.state.place.me.target?.gy===8);
  assert.deepEqual(await page.evaluate(()=>({gx:placeTest.state.place.me.target?.gx,gy:placeTest.state.place.me.target?.gy})),{gx:5,gy:8});
  await page.evaluate(()=>{const p=placeTest.state.place;for(let i=0;i<4;i++)placeTest.step(p,p.me);placeTest.sync();});
  assert.equal(await page.evaluate(()=>placeTest.state.place.me.gy),8);
@@ -74,6 +76,7 @@ world=world.slice(0,boot)+`
  await enter('cafe');await page.evaluate(()=>{placeTest.state.place.npcs=[];placeTest.state.place.staff=null;placeTest.state.place.bubbles=[];placeTest.sync();window.stalePlaceTap({x:0,z:0});});
  assert.equal(await page.evaluate(()=>placeTest.state.place.me.target),null,'a detached place cannot move the new avatar');
  await tap('item','p0_15');
+ await page.waitForFunction(()=>placeTest.state.place.me.target?.lift>0);
  const target=await page.evaluate(()=>placeTest.state.place.me.target);assert.ok(target?.lift>0,'chair taps preserve the existing sitting target');
  await page.evaluate(()=>{const p=placeTest.state.place;p.me.gx=p.me.target.gx;p.me.gy=p.me.target.gy;placeTest.step(p,p.me);placeTest.sync();});
  assert.ok(await page.evaluate(()=>placeTest.state.place.me.seat>0));

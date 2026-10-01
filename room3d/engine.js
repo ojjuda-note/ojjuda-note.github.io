@@ -2,11 +2,11 @@
 
 import * as THREE from './vendor/three.module.js';
 import { RoundedBoxGeometry } from './vendor/RoundedBoxGeometry.js';
-import { preloadSculptedAvatar, buildSculptedAvatar, disposeSculptedAvatar, avatarAssetStatus } from './sculpted-avatar.js?v=20261001-actors1';
+import { preloadSculptedAvatar, buildSculptedAvatar, disposeSculptedAvatar, avatarAssetStatus } from './sculpted-avatar.js?v=20261001-wardrobe1';
 import { preloadSculptedPets, buildSculptedPet, disposeSculptedPets } from './sculpted-pets.js?v=20261001-catcoats1';
 const [,sculptedPets]=await Promise.all([preloadSculptedAvatar(),preloadSculptedPets()]);
 import { characterViews } from './characters.js?v=20261001-actors1';
-import { placeViews } from './places.js?v=20261001-actors1';
+import { placeViews } from './places.js?v=20261001-wardrobe1';
 import { buildBreed, breedKeys } from './pet-breeds.js?v=20260930-3';
 import { refineFurniture } from './furniture.js?v=20260930-3';
 import { buildVariant } from './variants.js?v=20260930-3';
@@ -642,8 +642,7 @@ function faceCanvas(cfg, mood) {
 }
 function makeAvatar(cfg) {
   cfg={skin:'#FFE3D0',hairColor:'#5A3A2E',topColor:'#9DB7F5',bottomColor:'#3A3F66',hair:'bob',top:'tee',bottom:'pants',face:'calm',acc:'none',...cfg};
-  const sculpted=buildSculptedAvatar(cfg);if(sculpted)return sculpted;
-  avatarMaterial=true;try{return makeAvatarInner(cfg);}finally{avatarMaterial=false;}
+  avatarMaterial=true;try{return buildSculptedAvatar(cfg,{makeAccessories})||makeAvatarInner(cfg);}finally{avatarMaterial=false;}
 }
 function makeAvatarInner(cfg) {
   const g = new THREE.Group(); const skin = cfg.skin, hc = cfg.hairColor, legLen = .42;
@@ -719,7 +718,11 @@ function makeAvatarInner(cfg) {
       }
     }
   }
-  const A = new THREE.Group(); A.name='avatar-accessory';head.add(A); const E = '#3B2F5E';
+  head.add(makeAccessories(cfg,H,upper));
+  g.userData.head = head; g.userData.legLen = legLen; g.traverse(o => { o.userData.avatar = true; }); return g;
+}
+function makeAccessories(cfg,H,upper){
+  const A = new THREE.Group(); A.name='avatar-accessory';const hc=cfg.hairColor; const E = '#3B2F5E';
   switch (cfg.acc) {
     case 'beret':{const hat=at(sph(.47,'#cc99b9',24,16),.04,.43,-.04);hat.scale.set(1.08,.4,1.08);A.add(hat,at(cyl(.025,.025,.07,'#b07f9f',8),.04,.65,-.04));break;}
     case 'beanie':{const hat=at(sph(.49,'#dfb07e',24,16),0,.43,-.035);hat.scale.set(1,.83,1);A.add(hat,at(cyl(.48,.48,.1,'#c99972',24),0,.32,0),at(sph(.1,'#eed2af',14,10),0,.87,-.035));break;}
@@ -752,10 +755,10 @@ function makeAvatarInner(cfg) {
     case 'flower': { A.add(at(sph(.05, '#F2C94C', 8, 6), .33, .33, .36)); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; A.add(at(sph(.055, '#F0679A', 8, 6), .33 + Math.cos(a) * .09, .33 + Math.sin(a) * .09, .36)); } break; }
     case 'ribbon': { for (const x of [-1, 1]) { const w = cone(.1, .22, '#F0467C', 3); w.rotation.z = x * Math.PI / 2; w.position.set(.31 + x * .11, .4, .31); A.add(w); } A.add(at(sph(.05, '#C93A66', 8, 6), .31, .4, .31)); break; }
     case 'scarf': { const sc = new THREE.Mesh(new THREE.TorusGeometry(.26, .09, 10, 24), toon('#E86E6E')); sc.rotation.x = Math.PI / 2; sc.position.set(0, -.42, .05); A.add(sc); A.add(at(box(.14, .3, .08, '#E86E6E', .03), .12, -.6, .24)); break; }
-    case 'backpack': { for(const x of [-.17,.17])upper.add(at(box(.045,.39,.045,'#dc9299',.015),x,.28,.18));const bp = box(.4, .42, .2, '#E86E6E', .08); bp.position.set(0, -.62, -.45); A.add(bp); A.add(at(box(.3, .16, .06, '#C94F5E', .03), 0, -.72, -.59)); break; }
+    case 'backpack': { const straps=new THREE.Group();straps.name='backpack-straps';upper.add(straps);for(const x of [-.17,.17])straps.add(at(box(.045,.39,.045,'#dc9299',.015),x,.28,.18));const bp = box(.4, .42, .2, '#E86E6E', .08); bp.position.set(0, -.62, -.45); A.add(bp); A.add(at(box(.3, .16, .06, '#C94F5E', .03), 0, -.72, -.59)); break; }
   }
   if(['halo','crown','bunnyears','catears','devilhorns'].includes(cfg.acc))A.position.y=({bun:.27,doublebun:.16,spiky:.16,curly:.09,afro:.14})[cfg.hair]||0;
-  g.userData.head = head; g.userData.legLen = legLen; g.traverse(o => { o.userData.avatar = true; }); return g;
+  return A;
 }
 let me = null; const av = { pos: new THREE.Vector2(4.5, 5.5), target: null, walkT: 0, pose: 'stand', then: null, yaw: Math.PI };
 function rebuildAvatar() { const old = me; const yaw = old ? old.rotation.y : Math.PI / 4; if (old) room.remove(old); me = makeAvatar(state.avatar); me.rotation.order = 'YXZ'; me.position.set(av.pos.x, 0, av.pos.y); me.rotation.y = yaw; room.add(me); if (av.pose !== 'stand') { av.pose = 'stand'; } if (window.Ojjuda3D) myTag = nameTag(me, state.nick); }

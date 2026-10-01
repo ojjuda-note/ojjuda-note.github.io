@@ -1,10 +1,10 @@
 import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone as cloneSkeleton } from './vendor/SkeletonUtils.js';
+import { dressAvatar } from './avatar-wardrobe.js?v=20261001-wardrobe1';
 
 export const SCULPTED_STYLE='sculpted-v20';
-const wardrobeDefaults={hair:'bob',face:'calm',top:'tee',bottom:'pants',shoes:'sneakers',acc:'none'};
-export function usesSculptedAvatar(config){return config?.renderStyle===SCULPTED_STYLE&&(!config.sculptedWardrobe||Object.entries(wardrobeDefaults).every(([key,value])=>(config[key]||value)===config.sculptedWardrobe[key]));}
+export function usesSculptedAvatar(){return true;}
 const url=new URL('./assets/models/premium_avatar.glb',import.meta.url);
 let prototype=null,pending=null,controller=null,generation=0,status='unloaded';
 
@@ -34,8 +34,9 @@ export function preloadSculptedAvatar({timeoutMs=5500}={}){
 }
 export function disposeSculptedAvatar(){generation++;controller?.abort();controller=null;release(prototype);prototype=null;pending=null;status='unloaded';}
 
-/** One authored outfit is selected explicitly; saved wardrobe choices remain intact. */
-export function buildSculptedAvatar(config){
+/** Every wardrobe choice uses the same authored face, body and skeleton. */
+export function buildSculptedAvatar(config,options={}){
+  config={skin:'#ffe3d0',hairColor:'#5a3a2e',topColor:'#9db7f5',bottomColor:'#3a3f66',hair:'bob',face:'calm',top:'tee',bottom:'pants',shoes:'sneakers',acc:'none',...config};
   if(!usesSculptedAvatar(config)||!prototype)return null;
   const group=new THREE.Group(),visual=cloneSkeleton(prototype),bones={},rest={},materials=new Map(),geometries=new Map(),skeletons=new Map();
   group.name='SculptedAvatar';group.add(visual);
@@ -54,24 +55,19 @@ export function buildSculptedAvatar(config){
     node.material=Array.isArray(node.material)?copies:copies[0];node.castShadow=node.receiveShadow=true;node.frustumCulled=false;
     if(node.skeleton){const key=node.skeleton.bones.map(b=>b.uuid).join(':');if(skeletons.has(key))node.skeleton=skeletons.get(key);else skeletons.set(key,node.skeleton);const skeleton=node.skeleton;node.geometry.addEventListener('dispose',()=>skeleton.dispose());}
   });
+  const wardrobe=dressAvatar({visual,bones,config,makeAccessories:options.makeAccessories});
   const legs=new THREE.Group(),upper=new THREE.Group(),head=new THREE.Group();
   legs.name='legs';upper.name='upper';upper.position.y=.528;head.position.y=1.285;
   group.add(legs,upper,head);
   // A non-rendering head bound gives the shared portrait camera a stable crop.
-  const headBound=new THREE.Mesh(new THREE.BoxGeometry(.82,.76,.70),new THREE.MeshBasicMaterial());headBound.visible=false;head.add(headBound);
+  const bounds=wardrobe.bounds.clone();bounds.min.y=Math.min(bounds.min.y,1.02);const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+  const headBound=new THREE.Mesh(new THREE.BoxGeometry(size.x,size.y,size.z),new THREE.MeshBasicMaterial());headBound.position.copy(center).sub(head.position);headBound.visible=false;headBound.raycast=()=>{};head.add(headBound);
   function control(parent,x,y){const node=new THREE.Group();node.position.set(x,y,0);parent.add(node);return node;}
   const legControls=[control(legs,-.13,.528),control(legs,.13,.528)];
   const armControls=[control(upper,-.285,.44),control(upper,.285,.44)];
   for(const arm of armControls){const sleeve=new THREE.Group();sleeve.name='sleeve';sleeve.position.y=-.18;arm.add(sleeve);arm.userData.sleeveLength=.36;}
-  const eyes=[];visual.traverse(node=>{if(node.isMesh&&['Warm charcoal','Eye white'].includes(node.material?.name))eyes.push(node);});
-  const lids=new THREE.Group();lids.visible=false;bones.Head.add(lids);
-  for(const side of [-1,1]){
-    const x=side*.102*1.14,y=(1.475-1.22)*1.14,z=.246*1.14;
-    const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(x-.025,y+.006,z),new THREE.Vector3(x,y-.006,z+.005),new THREE.Vector3(x+.025,y+.006,z)]);
-    lids.add(new THREE.Mesh(new THREE.TubeGeometry(curve,10,.004,6,false),new THREE.MeshStandardMaterial({color:'#302b31',roughness:.8})));
-  }
   let pose='stand',phase=0,walking=false;
-  function face(mood){const closed=mood==='sleep';for(const eye of eyes)eye.visible=!closed;lids.visible=closed;}
+  function face(mood){wardrobe.setFace(mood);}
   function syncPose(){
     for(const [name,bone] of Object.entries(bones)){bone.position.copy(rest[name].position);bone.quaternion.copy(rest[name].quaternion);}
     bones.Hips.position.y+=legs.position.y;
@@ -83,7 +79,7 @@ export function buildSculptedAvatar(config){
       bones['Ankle_'+side].rotation.x=pose==='sit'?0:-Math.max(0,leg.rotation.x)*.32;
       bones['Elbow_'+side].rotation.x=pose==='sit'?-.18:-Math.abs(arm.rotation.x)*.22;
     }
-    group.updateMatrixWorld(true);
+    wardrobe.setPose(pose);group.updateMatrixWorld(true);
   }
   function setPose(next,{lift=0}={}){
     pose=next;group.rotation.x=next==='lie'?-Math.PI/2:0;
@@ -91,7 +87,7 @@ export function buildSculptedAvatar(config){
     legs.position.y=next==='sit'?-(.528-.1):0;upper.position.y=next==='sit'?.1:.528;
     for(const leg of legControls)leg.rotation.set(next==='sit'?-Math.PI/2:0,0,0);
     for(const arm of armControls)arm.rotation.set(next==='sit'?-.35:0,0,0);
-    face(next==='lie'?'sleep':'calm');syncPose();
+    face(next==='lie'?'sleep':config.face);syncPose();
   }
   function walk(distance){
     if(pose!=='stand')return false;
@@ -102,6 +98,6 @@ export function buildSculptedAvatar(config){
     }else{for(const limb of [...legControls,...armControls])limb.rotation.x=0;}
     syncPose();return changed;
   }
-  Object.assign(group.userData,{sculptedAvatar:true,legs:legControls,arms:armControls,head,legLen:.528,syncPose,setPose,setFace:face,walk});
+  Object.assign(group.userData,{sculptedAvatar:true,wardrobe:{hair:config.hair,face:config.face,top:config.top,bottom:config.bottom,shoes:config.shoes,acc:config.acc},legs:legControls,arms:armControls,head,legLen:.528,syncPose,setPose,setFace:face,walk});
   group.traverse(node=>{node.userData.avatar=true;});syncPose();return group;
 }

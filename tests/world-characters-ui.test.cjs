@@ -87,7 +87,7 @@ world=world.slice(0,boot)+`
    const api=Ojjuda3D,base=api.inspect().character.avatar,duplicates=[];let count=0;
    for(const [field,choices] of Object.entries(options)){
      const images=new Map();
-     for(const [value] of choices){api.applyCharacter({kind:'avatar',avatar:{...base,[field]:value}});const png=document.querySelector('canvas').toDataURL();if(images.has(png))duplicates.push([field,images.get(png),value]);images.set(png,value);count++;}
+     for(const [value] of choices){api.applyCharacter({kind:'avatar',avatar:{...base,[field]:value}});if(api.inspect().character.avatarModel!=='sculpted-v20')throw new Error(field+':'+value+' lost the authored body');const png=document.querySelector('canvas').toDataURL();if(images.has(png))duplicates.push([field,images.get(png),value]);images.set(png,value);count++;}
    }
    api.applyCharacter({kind:'avatar',avatar:base});return {count,duplicates};
  },options);
