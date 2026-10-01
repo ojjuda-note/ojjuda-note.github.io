@@ -1,5 +1,5 @@
-import {icon} from './icons.js?v=20261001-2';
-import {normalize,roomKey,canAdd,normalizeShelf,shelfSize,floorPoint,floorCell,roomPeriod} from './model.js?v=20261001-2';
+import {icon} from './icons.js?v=20261001-3';
+import {normalize,roomKey,canAdd,normalizeShelf,shelfSize,floorPoint,floorCell,roomPeriod} from './model.js?v=20261001-3';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 const stepX=1294,stepY=1210,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,scale=1,pan={x:0,y:0},actorX=420,dogX=700,follow=false,raf=0,motion=null,timer,saveFailed=false;
@@ -12,7 +12,7 @@ function save(){persist();}
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function title(r){if(!r.x&&!r.y)return '거실';return `${r.y>0?'위 '+r.y+'층':r.y<0?'아래 '+(-r.y)+'층':'시작 층'} · ${r.x<0?'왼쪽 '+(-r.x):r.x>0?'오른쪽 '+r.x:'가운데'}`;}
 function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-6470*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-8470*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;}
-function focusRoom(all=false){const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;if(all){const a=expanding?[{x:-2,y:-3},{x:2,y:3}]:state.rooms;const minX=Math.min(...a.map(x=>bounds(x).x)),maxX=Math.max(...a.map(x=>bounds(x).x))+1254,minY=Math.min(...a.map(x=>bounds(x).y)),maxY=Math.max(...a.map(x=>bounds(x).y))+1180;scale=Math.max(.045,Math.min(w/(maxX-minX+110),(h-80)/(maxY-minY+90),1));pan={x:(w-(maxX-minX)*scale)/2-minX*scale,y:(h-(maxY-minY)*scale)/2-minY*scale-10};}else{scale=Math.max(.08,Math.min(w/1280,(h-75)/1120,1));pan={x:w/2-(b.x+627)*scale,y:(h-75-1120*scale)/2+15-(b.y+65)*scale};}applyCamera();}
+function focusRoom(all=false){const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;if(all){const a=expanding?[{x:-2,y:-3},{x:2,y:3}]:state.rooms;const minX=Math.min(...a.map(x=>bounds(x).x)),maxX=Math.max(...a.map(x=>bounds(x).x))+1254,minY=Math.min(...a.map(x=>bounds(x).y)),maxY=Math.max(...a.map(x=>bounds(x).y))+1180;scale=Math.max(.045,Math.min(w/(maxX-minX+110),(h-80)/(maxY-minY+90),1));pan={x:(w-(maxX-minX)*scale)/2-minX*scale,y:(h-(maxY-minY)*scale)/2-minY*scale-10};}else{scale=Math.max(.08,Math.min(w/1434,(h-75)/1120,1));pan={x:w/2-(b.x+627)*scale,y:(h-75-1120*scale)/2+15-(b.y+65)*scale};}applyCamera();}
 function zoom(factor,point={x:view.clientWidth/2,y:view.clientHeight/2}){const next=Math.min(1.6,Math.max(.045,scale*factor)),ratio=next/scale;pan.x=point.x-(point.x-pan.x)*ratio;pan.y=point.y-(point.y-pan.y)*ratio;scale=next;applyCamera();}
 function element(tag,classes,text){const n=document.createElement(tag);if(classes)n.className=classes;if(text)n.textContent=text;return n;}
 function stopMotion(){cancelAnimationFrame(raf);raf=0;motion=null;timers.forEach(clearTimeout);timers.clear();world.querySelectorAll('.walking,.playing,.loved').forEach(n=>n.classList.remove('walking','playing','loved'));world.querySelectorAll('.heart').forEach(n=>n.remove());world.querySelectorAll('.ball').forEach(n=>n.hidden=true);}
