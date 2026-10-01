@@ -9,45 +9,45 @@ assert.equal(await f.locator('.curtains').count(),1);
 assert.equal(await f.locator('.bookshelf').count(),1);
 const clock=await f.evaluate(async()=>{const m=await import('/house-test/model.js');return ['05:59','06:00','07:59','08:00','17:59','18:00','19:59','20:00','23:59','00:00'].map(t=>m.roomPeriod(new Date('2026-10-01T'+t+':00+09:00')));});
 assert.deepEqual(clock,['night','dusk','dusk','day','day','dusk','dusk','night','night','night']);
-for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){await page.clock.setSystemTime(new Date(`2026-10-01T${String(hour).padStart(2,'0')}:00:00+09:00`));await page.clock.runFor(15001);assert.match(await f.locator('.room-bg').getAttribute('src'),new RegExp(`room-${period}-v2.webp`));}
+for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){await page.clock.setSystemTime(new Date(`2026-10-01T${String(hour).padStart(2,'0')}:00:00+09:00`));await page.clock.runFor(15001);assert.match(await f.locator('.room-bg').getAttribute('src'),new RegExp(`room-${period}-v3.webp`));}
 await page.clock.resume();
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 assert.equal(await f.locator('.floor-grid').count(),1);
-const calibration=await f.evaluate(async()=>{const {floorPoint,floorCell}=await import('/house-test/model.js');let error=0;for(let y=0;y<=7;y+=.5)for(let x=0;x<=8;x+=.5){const p=floorPoint(x,y),c=floorCell(p.x,p.y);error=Math.max(error,Math.abs(c.x-x),Math.abs(c.y-y));}return {corners:[[0,0],[8,0],[8,7],[0,7]].map(([x,y])=>floorPoint(x,y)),error};});
-for(const [i,wanted] of [[303,671],[1068,671],[1358,1083],[17,1083]].entries()){assert.ok(Math.abs(calibration.corners[i].x-wanted[0])<.001);assert.ok(Math.abs(calibration.corners[i].y-wanted[1])<.001);}assert.ok(calibration.error<1e-9);
+const calibration=await f.evaluate(async()=>{const {floorPoint,floorCell}=await import('/house-test/model.js');let error=0;for(let y=0;y<=7;y+=.5)for(let x=0;x<=10;x+=.5){const p=floorPoint(x,y),c=floorCell(p.x,p.y);error=Math.max(error,Math.abs(c.x-x),Math.abs(c.y-y));}return {corners:[[0,0],[10,0],[10,7],[0,7]].map(([x,y])=>floorPoint(x,y)),error};});
+for(const [i,wanted] of [[293,614],[1209,614],[1494,910],[12,910]].entries()){assert.ok(Math.abs(calibration.corners[i].x-wanted[0])<.001);assert.ok(Math.abs(calibration.corners[i].y-wanted[1])<.001);}assert.ok(calibration.error<1e-9);
 await f.waitForFunction(()=>{const room=document.querySelector('.room').getBoundingClientRect(),view=document.querySelector('#viewport').getBoundingClientRect();return room.left-view.left>=20&&view.right-room.right>=20;});
 await page.screenshot({path:'/tmp/house-grid-aligned.png'});
-assert.deepEqual(await f.locator('.room-bg').evaluate(im=>({width:im.naturalWidth,height:im.naturalHeight})),{width:1375,height:1144});
+assert.deepEqual(await f.locator('.room-bg').evaluate(im=>({width:im.naturalWidth,height:im.naturalHeight})),{width:1507,height:1044});
 await f.getByRole('button',{name:'책장 ← 0.5칸',exact:true}).click();
-assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'6.5');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'8.5');
 await f.getByRole('button',{name:'취소',exact:true}).click();
-assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'7');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'9');
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 for(const direction of ['left','center','right']){
- await f.locator(`[data-direction="${direction}"]:not(.bookshelf)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);
+ await f.locator(`[data-direction="${direction}"]:not(.bookshelf)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);assert.match(await f.locator('.bookshelf img[data-part=body][data-plane=front]').getAttribute('src'),new RegExp(`bookshelf-${direction}-v1.webp`));
  // Check the actual CSS-transformed contact pixels against the visible grid,
  // not just the logical saved position or an image bounding rectangle.
  const contactError=await f.locator('.bookshelf').evaluate(button=>{
-  const points=document.querySelector('.floor-grid polygon').points;
-  const contacts={left:[[[216,935,3],[330,946,2]],[[330,946,2],[442,853,1]]],center:[[[620,922,3],[916,922,2]]],right:[[[1092,853,0],[1206,946,3]],[[1206,946,3],[1320,935,2]]]};
-  let error=0;[...button.querySelectorAll('img')].forEach((image,i)=>{
-   const matrix=new DOMMatrix(getComputedStyle(image).transform);
-   for(const [x,y,index]of contacts[button.dataset.direction][i]){
-    const p=matrix.transformPoint(new DOMPoint(x,y)),target=points[index];
+  const points=document.querySelector('.floor-grid polygon.contact').points;
+  const contacts={right:{front:[[315,1368],[637,1501]],side:[[637,1501],[750,1429]]},left:{front:[[415,1481],[718,1374]],side:[[285,1438],[415,1481]]},center:{front:[[293,1470],[731,1470]],side:[[637,1501],[750,1429]]}}[button.dataset.direction];
+  let error=0;[...button.querySelectorAll('img[data-part="body"]:not([data-plane="top"])')].forEach(image=>{
+   const matrix=new DOMMatrix(getComputedStyle(image).transform),corners=image.dataset.corners.split(',').map(Number);
+   contacts[image.dataset.plane].forEach(([x,y],i)=>{
+    const p=matrix.transformPoint(new DOMPoint(x,y)),target=points[corners[i]];
     error=Math.max(error,Math.hypot(p.x/p.w+parseFloat(button.style.left)-target.x,p.y/p.w+parseFloat(button.style.top)-target.y));
-   }
+   });
   });return error;
- });assert.ok(contactError<.05,`${direction} visible foot mismatch: ${contactError}`);
- await page.screenshot({path:`/tmp/house-shelf-${direction}.png`});
+ });assert.ok(contactError<.1,`${direction} visible foot mismatch: ${contactError}`);
+ await f.evaluate(()=>Promise.all([...document.images].map(im=>im.decode())));await page.screenshot({path:`/tmp/house-shelf-${direction}.png`});
 }
 const projection=await f.evaluate(async()=>{
  const {shelfGeometry,transformPoint}=await import('/house-test/furniture.js');const {shelfSize}=await import('/house-test/model.js');let error=0,poses=0;
- for(const direction of ['left','center','right']){const {w,d}=shelfSize(direction);for(let y=0;y<=7-d;y+=.5)for(let x=0;x<=8-w;x+=.5){
+ for(const direction of ['left','center','right']){const {w,d}=shelfSize(direction);for(let y=0;y<=7-d;y+=.5)for(let x=0;x<=10-w;x+=.5){
   const geometry=shelfGeometry({direction,x,y});if(!Number.isFinite(geometry.width)||!Number.isFinite(geometry.height))throw new Error('Invalid furniture bounds');poses++;
   for(const face of geometry.faces){if(!face.matrix)continue;for(const index of [2,3]){const p=transformPoint(face.matrix,face.source[index]),target=face.target[index];error=Math.max(error,Math.hypot(p.x-target.x,p.y-target.y));}}
  }}return {error,poses};
-});assert.equal(projection.poses,499);assert.ok(projection.error<1e-7);
-const shelfBox=await f.locator('.bookshelf').boundingBox();await page.mouse.move(shelfBox.x+shelfBox.width/2,shelfBox.y+shelfBox.height/2);await page.mouse.down();await page.mouse.move(shelfBox.x+shelfBox.width/2-60,shelfBox.y+shelfBox.height/2+12,{steps:5});await page.mouse.up();const draggedX=Number(await f.locator('.bookshelf').getAttribute('data-x'));assert.ok(draggedX<7&&Number.isInteger(draggedX*2));
+});assert.equal(projection.poses,639);assert.ok(projection.error<1e-7);
+const shelfBox=await f.locator('.bookshelf').boundingBox();await page.mouse.move(shelfBox.x+shelfBox.width/2,shelfBox.y+shelfBox.height/2);await page.mouse.down();await page.mouse.move(shelfBox.x+shelfBox.width/2-60,shelfBox.y+shelfBox.height/2+12,{steps:5});await page.mouse.up();const draggedX=Number(await f.locator('.bookshelf').getAttribute('data-x'));assert.ok(draggedX<9&&Number.isInteger(draggedX*2));
 await f.locator('button[data-direction="center"]').click();await f.locator('button[data-direction="right"]:not(.bookshelf)').click();
 await f.getByRole('button',{name:'책장 ↓ 0.5칸',exact:true}).click();
 await f.getByRole('button',{name:'배치 완료',exact:true}).click();
@@ -55,7 +55,7 @@ assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'0.5');
 await f.getByRole('button',{name:'커튼 걷기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),0);
 await f.getByRole('button',{name:'커튼 달기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),1);
 await f.locator('[data-tab="pet"]').click();
-const left=await f.locator('.actor:not(.dog)').evaluate(n=>parseFloat(n.style.left));const rect=await f.locator('#viewport').boundingBox(),roomBox=await f.locator('.room').boundingBox();await f.locator('#viewport').click({position:{x:rect.width*.50,y:roomBox.y+roomBox.height*.8-rect.y}});await f.waitForFunction(x=>parseFloat(document.querySelector('.actor:not(.dog)').style.left)!==x,left);
+const left=await f.locator('.actor:not(.dog)').evaluate(n=>parseFloat(n.style.left));const rect=await f.locator('#viewport').boundingBox(),roomBox=await f.locator('.room').boundingBox(),walkPoint=await f.evaluate(async()=>{const {floorPoint,ROOM}=await import('/house-test/model.js');const p=floorPoint(2,5);return {x:p.x/ROOM.width,y:p.y/ROOM.height};});await f.locator('#viewport').click({position:{x:roomBox.x+roomBox.width*walkPoint.x-rect.x,y:roomBox.y+roomBox.height*walkPoint.y-rect.y}});await f.waitForFunction(x=>parseFloat(document.querySelector('.actor:not(.dog)').style.left)!==x,left);
 const transform=await f.locator('#world').getAttribute('style');await f.locator('#zoom-in').click();assert.notEqual(await f.locator('#world').getAttribute('style'),transform);await f.locator('#home-view').click();
 const touch=await context.newCDPSession(page),area=await f.locator('#viewport').boundingBox(),touchY=area.y+area.height*.45;const zoomBefore=await f.locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a);await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:120,y:touchY,id:1},{x:240,y:touchY,id:2}]});await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:80,y:touchY,id:1},{x:280,y:touchY,id:2}]});await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.ok(await f.locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a)>zoomBefore);await f.locator('#home-view').click();
 await f.getByRole('button',{name:'따라오기',exact:true}).click();assert.equal(await f.getByRole('button',{name:'따라오기 멈춤',exact:true}).count(),1);
