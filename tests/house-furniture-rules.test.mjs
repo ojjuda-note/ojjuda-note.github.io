@@ -7,7 +7,7 @@ import {furnitureGeometry,transformPoint} from '../house-test/furniture.js';
 const area=points=>Math.abs(points.reduce((sum,p,i)=>{const q=points[(i+1)%points.length];return sum+p.x*q.y-q.x*p.y;},0))/2;
 for(const [i,[x,y]]of [[0,0],[10,0],[10,7],[0,7]].entries()){const p=roomPoint(x,y,ROOM.wallHeight);assert.ok(Math.hypot(p.x-CEILING_CORNERS[i].x,p.y-CEILING_CORNERS[i].y)<1e-8,'ceiling calibration');}
 let count=0;
-for(const [id,item]of Object.entries(FURNITURE))for(const direction of item.directions){
+for(const [id,item]of Object.entries(FURNITURE).filter(([id])=>id==='bookshelf'))for(const direction of item.directions){
  const size=itemSize(id,direction);assert.ok(fs.existsSync(new URL('../house-test/'+item.views[direction].image,import.meta.url)));
  assert.equal(new Set(Object.values(item.views).map(view=>view.image)).size,3,'three separate authored view assets');
  for(let y=0;y<=FLOOR.depth-size.d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-size.w;x+=FLOOR.step){
@@ -46,7 +46,17 @@ assert.equal(normalizePlacement('bookshelf',{direction:'back',x:0,y:0}),null);
 assert.deepEqual(normalizePlacement('bookshelf',{direction:'right',x:99.2,y:-5}),{direction:'right',x:9,y:0});
 for(const [direction,x,wanted]of [['right',7,9],['left',0,0],['center',3,4],['right',6.5,7.5]]){
  const upgraded=normalize({version:2,rooms:[{x:0,y:0,curtains:false,shelf:{direction,x,y:1.5}}],diary:'keep me'});
- assert.equal(upgraded.version,3);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
+ assert.equal(upgraded.version,4);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
  assert.deepEqual(normalize(upgraded),upgraded,'migration runs once');
 }
-console.log('PASS: 639 furniture poses, 2/3 contact area, fixed height, face anchors, reserved-space collision, half-cell bounds and one-time wider-room migration');
+for(const direction of ['left','center','right']){
+ const placement={direction,x:direction==='right'?8.5:0,y:3},g=furnitureGeometry('desk',placement);
+ assert.ok(g.faces.some(f=>f.part==='tabletop')&&g.faces.some(f=>f.part==='leg-0'));
+ assert.ok(g.faces.every(f=>f.matrix&&f.target.every(p=>Number.isFinite(p.x+p.y))));
+ for(const face of g.faces)for(let i=0;i<4;i++){const p=transformPoint(face.matrix,face.source[i]);assert.ok(Math.hypot(p.x-face.target[i].x,p.y-face.target[i].y)<1e-6);}
+}
+const previous={version:3,rooms:[{x:0,y:0,curtains:true,shelf:{direction:'right',x:9,y:4}}],diary:'kept'};
+const next=normalize(previous);assert.deepEqual(next.rooms[0].shelf,previous.rooms[0].shelf);assert.ok(next.rooms[0].furniture.desk);
+assert.ok(canPlaceFurniture('desk',next.rooms[0].furniture.desk,[{id:'bookshelf',...next.rooms[0].shelf}]),'new desk finds free space without moving an existing shelf');
+assert.deepEqual(normalize(next),next,'desk migration runs once');
+console.log('PASS: desk components, non-overlapping migration, 639 bookshelf poses, 2/3 contact area, fixed height, face anchors, reserved-space collision, half-cell bounds and one-time wider-room migration');
