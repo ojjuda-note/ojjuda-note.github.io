@@ -1,21 +1,28 @@
-# Pastel apartment playtest
+# 우리집 관리자 테스트
 
-Administrator entry: World → administrator mode → **새 우리집 테스트**. Public houses remain under construction and the World store remains removed.
+World → 관리자 모드 → **새 우리집 테스트**. Public houses remain under construction; the shop stays removed.
 
-This is a 2.5D interaction prototype built from separate generated room/actor/pet art. It is not the final 3D character, rig, furniture editor or clothing system. The default lavender/cream/sage palette follows the approved reference. Native CSS/DOM scene layers animate the avatar and dog independently; the room stays 3:1. Touch drag, two-finger pinch, wheel, camera buttons and keyboard arrows support movement/zoom.
+The approved compact empty room uses its original square camera, cream walls, oak floor and lavender trim. The curtain and three bookshelf directions are independent alpha layers. Default furniture: ivory curtains and one right-wall bookshelf. Other furniture remains future work. Existing prototype avatar/pet interactions appear only on the pet tab.
 
-The centered starter cell is (0,0); columns −2…2 and floors −3…3 give 35 maximum cells. Only cells adjacent to an already owned room can open. Saved state is bounded, normalized, deduplicated and restricted to the connected component containing the start. Room theme, expansion and a private test diary persist per account **on this device only**, under `ojjuda-house-playtest-v1:<owner>`. No profile, wallet, ownership, game or production diary data is written.
+## Time and placement
 
-A new iframe stays locked until its same-origin parent transfers an initialization MessagePort. World checks its existing administrator identity before opening; the host rechecks identity during loading, on messages and every 400ms, closes on account/role loss and never passes access tokens. This is a UI preview gate over public static art, not a replacement for server-side authorization.
+`Asia/Seoul`, checked at entry, every 15 seconds and on visibility return:
+- 06:00–08:00 and 18:00–20:00: the same approved evening background.
+- 08:00–18:00: day.
+- 20:00–06:00: night.
 
-The current pet implements throw/fetch, pet reaction and following. Motion uses one cancellable RAF, stops on hidden/unload, and respects reduced motion. Outfit display is explicitly a preview; wardrobe editing and individual furniture placement remain future work. Room themes can be applied/cleared in the playtest only.
+Floor: 8 × 7 cells, half-cell movement. Bookshelf: 2 × 1 cells front-facing, 1 × 2 cells at side-wall angles. Dragging and arrow controls use the same projected floor and snap/clamp function. Editing is a draft until **배치 완료**; cancellation and leaving the editor discard it. Curtains can be shown/removed independently. **빈방 보기** removes furniture only in the test save; approved room geometry never changes.
 
-## Art provenance
+Starter room is centered (0,0); x −2…2, y −3…3, at most 35 rooms. Add only beside an existing connected room. Expansion, curtains, bookshelf and diary persist per account on this device, under `ojjuda-house-playtest-v1:<owner>`; internal schema is version 2 and upgrades older prototype saves. No production ownership, wallet, profile or diary is changed.
 
-Built-in image generation, 2026-10-01. Reference: approved pastel mockup `exec-3c18395b-bc7a-46f4-a3e4-183a9e32496d.png`. Generated source images are preserved outside the deployment. Converted to WebP with alpha preserved for actors; total delivery under 600 KB.
+## Gate
 
-- Room: panoramic 3:1 cutaway, lavender sofa, cream walls, honey oak, sage plants, blue daylight city, no actors or UI.
-- Avatar: transparent cream-cardigan/sage-trousers character with brown bun, standing three-quarter right.
-- Dog: transparent orange/cream corgi, full body, three-quarter right.
+The iframe remains locked until a same-origin parent passes a MessagePort. World checks its administrator identity first; the host rechecks every 400 ms and on load/messages, and closes on account/role loss. No access tokens enter the frame. This is an administrator UI preview over public static art, not server access control.
 
-Validation: `node tests/house-playtest-ui.test.cjs` and normal inline/admin layout/navigation gates. The browser test covers administrator entry, direct-entry lock, mobile pointer movement/zoom, fetch/follow, connected bounded expansion, persistence, diary and role/account revocation.
+## Art
+
+Built-in image generation, October 1 2026, converted to WebP preserving alpha. Sources: approved empty room `exec-de4ec0d4`, dusk `exec-49222601`, night `exec-2a9eae90`, ivory curtains `exec-88c7321c`. Bookshelf sheet `exec-65e7e116` is a background extraction of approved three-view `exec-1d049926`. CSS viewports select the three sprites, without altering their camera angles. No baked-in UI or whole furnished mockup is used.
+
+Bookshelf extraction prompt: remove background and labels only; preserve all three cabinets, directions, proportions, contents and materials; transparent non-overlapping sheet, no floor or exterior shadows.
+
+Validation: `node tests/house-playtest-ui.test.cjs` covers Korea clock boundaries and live switching, directions, half-cell placement, cancellation/persistence, curtains, expansion, mobile gestures, role/account isolation and responsive layouts. Existing World admin-refresh/navigation gates remain required.
