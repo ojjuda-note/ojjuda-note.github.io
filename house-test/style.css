@@ -12,3 +12,5 @@
 .wall-grid{position:absolute;inset:0;width:var(--room-width);height:var(--room-height);z-index:1;pointer-events:none}.wall-grid path{fill:none;stroke:#947eac;stroke-width:1.5;opacity:.16}.wall-grid path.furniture-height{stroke-width:2;stroke-dasharray:9 6;opacity:.45}
 
 .furniture.placement-invalid{outline:3px dashed #b15b63;outline-offset:4px}.placement-warning{font-size:12px;line-height:1.5;color:#a34854;margin:6px 0}.placement-warning[hidden]{display:none}
+.furniture-actions{max-height:152px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:2px}
+@media(max-height:550px) and (min-width:600px){.furniture-actions{max-height:104px}}
