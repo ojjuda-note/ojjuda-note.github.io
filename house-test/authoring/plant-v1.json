@@ -1,0 +1,17 @@
+{
+  "item": "plant",
+  "mode": "built-in image_gen",
+  "reference": "../references/home-style.png",
+  "rulesReviewed": "FURNITURE_RULES.md 1–9",
+  "dimensions": {
+    "width": 1.5,
+    "depth": 1.5,
+    "height": 2.8,
+    "depthFill": 1
+  },
+  "prompts": {
+    "center": "Use case: stylized-concept. Isolate a single potted broad-leaf houseplant based on the tall plant in the cream cylindrical pot at the front right of the reference living room. This is a standalone game furniture asset: healthy glossy deep green and fresh mid-green leaves, graceful upright slender stems, matte warm ivory tapered cylindrical ceramic pot with a slim matching saucer. Same soft warm daylight and delicate polished storybook 3D style as reference. CENTER FRONT VIEW at low slightly elevated room camera, vertical stem, whole plant visible, 2:3 portrait composition with clear margins. Plant total height about 120cm, leaf spread65cm, pot diameter35cm and pot height34cm. Leaves have recognizable asymmetric natural arrangement. True transparent background. No surrounding room, no floor or ground shadow, no other furniture, no stand, no words, no UI, no people or animals. Bottom of saucer level and fully visible. Produce this center view alone, later left and right views will be independently generated.",
+    "left": "Use case: stylized-concept. Independently render a LEFT-side three-quarter view of the same potted houseplant in image 1. Image 1 defines exact plant type, leaf arrangement, height and matte ivory pot with slim saucer; image 2 defines original cozy room color/light. Camera has orbited 30 degrees toward the plant's LEFT side, slightly above pot rim: natural occlusion and leaves rotate in 3D, not a mirrored front image. Preserve broad glossy green leaves on graceful upright stems, same plant fullness and relative pot size, soft cream daylight, polished storybook 3D art. Whole plant visible in portrait composition with margin; level saucer on an invisible ground plane. Genuine transparent alpha surrounding plant and between leaves/stems. No room, floor, cast ground shadow, stand, objects, words, UI, people, animals.",
+    "right": "Use case: stylized-concept. Independently render the RIGHT-side three-quarter view of the same potted houseplant from image1; image2 is original room art/color reference. Orbit the camera 30 degrees toward the plant's RIGHT, showing different leaf overlaps and side curvature, not a flip or copy. Keep broad glossy deep/mid-green leaves on upright stems and the matte cream ivory tapered round ceramic pot with shallow matching saucer. Maintain same overall proportions and fullness, soft cream daylight, calm polished storybook 3D aesthetic. Whole plant centered in portrait frame with clear margins, bottom saucer entirely visible and level. Genuine transparent alpha outside silhouette and between leaves/stems. No room, floor, external shadow or glow, plant stand, furniture, decoration, text, UI, humans or animals."
+  }
+}

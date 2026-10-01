@@ -89,6 +89,16 @@ const chairParts=[
  {id:'back-rail',u:0,v:0,w:1,d:.14,base:1.7,height:.25,cap:false,views:chairTextures('rail')}
 ];
 export const FURNITURE={
+ plant:{
+  label:'크림 화분',shortLabel:'화분',width:1.5,depth:1.5,height:2.8,depthFill:1,introduced:7,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',surface:'organic',imageSize:{width:1024,height:1536},
+  preferred:{direction:'center',x:2,y:0},clearance:'잎이 퍼지는 공간까지 포함해 다른 가구와 간격을 두어요.',
+  views:{
+   center:{image:'assets/plant-center-v1.webp',planes:{silhouette:plane([[39,26],[1009,26],[1009,1466],[39,1466]])}},
+   left:{image:'assets/plant-left-v1.webp',planes:{silhouette:plane([[68,15],[1012,15],[1012,1496],[68,1496]])}},
+   right:{image:'assets/plant-right-v1.webp',planes:{silhouette:plane([[41,24],[1001,24],[1001,1479],[41,1479]])}}
+  }
+ },
  'side-table':{
   label:'원목 협탁',shortLabel:'협탁',width:1.5,depth:1.5,height:1.35,depthFill:2/3,introduced:6,
   directions:['left','center','right'],anchor:'rear',layer:'standing',imageSize:{width:1254,height:1254},

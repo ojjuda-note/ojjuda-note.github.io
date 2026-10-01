@@ -46,7 +46,7 @@ assert.equal(normalizePlacement('bookshelf',{direction:'back',x:0,y:0}),null);
 assert.deepEqual(normalizePlacement('bookshelf',{direction:'right',x:99.2,y:-5}),{direction:'right',x:9,y:0});
 for(const [direction,x,wanted]of [['right',7,9],['left',0,0],['center',3,4],['right',6.5,7.5]]){
  const upgraded=normalize({version:2,rooms:[{x:0,y:0,curtains:false,shelf:{direction,x,y:1.5}}],diary:'keep me'});
- assert.equal(upgraded.version,6);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
+ assert.equal(upgraded.version,7);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
  assert.deepEqual(normalize(upgraded),upgraded,'migration runs once');
 }
 for(const id of ['desk','chair'])for(const direction of ['left','center','right']){

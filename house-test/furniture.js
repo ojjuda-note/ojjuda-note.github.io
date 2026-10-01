@@ -1,5 +1,5 @@
-import {floorPoint,roomPoint} from './model.js?v=20261001-side-table1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-side-table1';
+import {floorPoint,roomPoint} from './model.js?v=20261001-plant1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-plant1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -34,6 +34,16 @@ export function furnitureGeometry(id,s){
  if(!item||!size||!contact)return null;
  const cells=rectangle(contact),footprint=cells.map(([x,y])=>floorPoint(x,y));
  const reserved=rectangle({...s,...size}).map(([x,y])=>floorPoint(x,y));
+ if(item.surface==='organic'){
+  // Curved pottery and foliage keep their authored silhouette instead of
+  // acquiring a box top/side. Its measured bottom center stays on the floor;
+  // height and width still use the same calibrated room projection.
+  const view=item.views[s.direction],texture=view.planes.silhouette,y=contact.y+contact.d/2;
+  const target=[roomPoint(contact.x,y,item.height),roomPoint(contact.x+contact.w,y,item.height),roomPoint(contact.x+contact.w,y,0),roomPoint(contact.x,y,0)];
+  const matrix=projectiveMap(texture.source,target),outline=texture.clip.map(p=>transformPoint(matrix,p));
+  const left=Math.min(...outline.map(p=>p.x)),right=Math.max(...outline.map(p=>p.x)),top=Math.min(...outline.map(p=>p.y)),bottom=Math.max(...outline.map(p=>p.y));
+  return {footprint,reserved,contact,faces:[{...texture,image:view.image,part:'body',plane:'silhouette',corners:[0,1],target,matrix,outline}],left,top,width:right-left,height:bottom-top};
+ }
  const volumes=item.components?item.components.map(part=>({...part,bounds:componentBounds(part,contact,s.direction),topBounds:part.upper?componentBounds({...part,...part.upper},contact,s.direction):null})):[{id:'body',bounds:contact,base:0,height:item.height,views:item.views}];
  if(item.components)volumes.sort((a,b)=>a.base+a.height-b.base-b.height||Math.max(...rectangle(a.bounds).map(([x,y])=>floorPoint(x,y).y))-Math.max(...rectangle(b.bounds).map(([x,y])=>floorPoint(x,y).y)));
  for(const part of item.attachments||[]){

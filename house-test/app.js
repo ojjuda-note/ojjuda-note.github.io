@@ -1,7 +1,7 @@
-import {icon} from './icons.js?v=20261001-side-table1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-side-table1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-side-table1';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-side-table1';
+import {icon} from './icons.js?v=20261001-plant1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-plant1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-plant1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-plant1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -52,13 +52,13 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    const warning=element('p','placement-warning','다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
    body.append(row,warning,element('p','panel-note',item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));
   }else{
-   const row=element('div','actions');
+   const row=element('div','actions furniture-actions');row.setAttribute('aria-label','가구 목록');
    for(const id of ['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced)]){
     const item=FURNITURE[id],placed=furniturePlacements(current()).some(p=>p.id===id);
     row.append(actionButton((item.shortLabel||item.label)+(placed?' 배치':' 놓기'),()=>startPlacement(id),'▧'));
    }
    row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{current().curtains=!current().curtains;save();renderWorld();renderPanel();},'□'),actionButton('빈방 보기',()=>{current().shelf=null;current().furniture={};current().curtains=false;save();renderWorld();renderPanel();},'□'));
-   body.append(row,element('p','panel-note','가구를 골라 위치와 방향을 바꿔 보세요.'));
+   body.append(row,element('p','panel-note','목록을 위아래로 넘겨 가구를 고르고 위치와 방향을 바꿔 보세요.'));
   }
  }
 
