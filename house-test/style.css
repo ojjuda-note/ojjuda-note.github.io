@@ -51,7 +51,7 @@ nav button span {display: block; font-size: 24px; margin-bottom: 4px;}
 #locked a {color: #78539d;}
 textarea {display: block; width: 100%; min-height: 80px; resize: vertical; max-height: 160px; border: 1px solid #e3d7ec; border-radius: 12px; padding: 10px; color: var(--ink); background: #fffdfa;}
 label {display: block; margin: 4px 0 8px; font-size: 13px;}
-@media (min-width:900px) {#app {max-width: 1500px; margin: auto;}#panel {padding: 13px 25px;}#panel-body .actions {max-width: 650px; margin: auto;}.panel-head {max-width: 650px; margin: 0 auto 10px;}nav {padding-left: 20%; padding-right: 20%;}}
+@media (min-width:900px) {#panel {padding: 13px 25px;}#panel-body .actions {max-width: 650px; margin: auto;}.panel-head {max-width: 650px; margin: 0 auto 10px;}nav {padding-left: 20%; padding-right: 20%;}}
 @media (max-height:550px) and (min-width:600px) {#app {min-height: 300px;}header {padding: 3px 15px;}h1 {font-size: 19px;}.scene-heading {position: absolute; top: 53px; left: 12px; z-index: 4; background: #fffaf0da; border-radius: 14px;}#viewport {min-height: 180px;}#panel {position: absolute; right: 15px; bottom: 76px; width: 320px; max-height: 160px; border-radius: 20px; margin: 0; padding: 10px 12px; background: #fffcf4ed;}.panel-head {margin-bottom: 5px;}.panel-head small {display: none;}h2 {font-size: 16px;}.actions button {min-height: 46px; font-size: 12px; padding: 5px;}.actions .symbol {display: none;}nav {padding: 3px 22%; height: 68px;}nav button span {font-size: 18px; margin: 0;}.camera {left: 12px; right: auto;}.panel-note {display: none;}}
 @media (prefers-reduced-motion:reduce) {* {animation: none !important; transition: none !important;}}
 @media (max-width:350px) {header {padding: 8px;}h1 {font-size: 20px;}header button {padding: 6px;}#panel {padding: 12px;}.actions button {padding: 8px 4px; font-size: 13px;}.camera {gap: 2px; right: 6px;}.camera button {padding: 5px 8px;}}
@@ -75,12 +75,8 @@ nav svg {display: block; margin: auto; width: 25px; height: 25px;}
 .expansion {width: var(--room-width); height: 889px; top: 27px;}
 .directions {display: flex; gap: 6px; margin-bottom: 8px;}
 .directions button {flex: 1; min-height: 38px; padding: 6px; font-size: 13px;}
-.move-controls {display: flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: wrap; margin-bottom: 8px;}
-.move-controls button {min-width: 44px;}
-.position {font-size: 12px; color: #8d7694;}
 .bookshelf-position-controls {display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 8px;}
 .bookshelf-position-control {min-width: 0; margin: 0;}
-.bookshelf-position-control[hidden] {display: none;}
 .bookshelf-control-title {display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px;}
 .bookshelf-control-title output {color: #8d7694; font-variant-numeric: tabular-nums; white-space: nowrap;}
 .bookshelf-position-control input {display: block; width: 100%; min-width: 0; height: 36px; margin: 0; accent-color: #8863b1; touch-action: pan-y;}
@@ -98,8 +94,8 @@ html[data-period=dusk] #viewport {background: #ede3ee;}
 html[data-period=night] #viewport {background: #39384d;}
 html[data-period=night] .curtains,html[data-period=night] .furniture {filter: brightness(.9) saturate(.86);}
 html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepia(.12) brightness(.95);}
-@media (min-width:900px) {#app {max-width: 1050px;}.room-bg {filter: drop-shadow(0 15px 20px #49385320);}}
-@media (max-height:550px) and (min-width:600px) {.directions {margin: 0 0 4px;}.directions button {min-height: 30px; font-size: 11px;}.move-controls {margin: 3px 0;}.move-controls button {min-height: 30px; padding: 3px;}.position {font-size: 10px;}}
+@media (min-width:900px) {.room-bg {filter: drop-shadow(0 15px 20px #49385320);}}
+@media (max-height:550px) and (min-width:600px) {.directions {margin: 0 0 4px;}.directions button {min-height: 30px; font-size: 11px;}}
 .floor-grid polygon.reserved {fill: none; stroke: #ad94bf; stroke-width: 2; stroke-dasharray: 8 6; opacity: .65;}
 .wall-grid {position: absolute; inset: 0; width: var(--room-width); height: var(--room-height); z-index: 1; pointer-events: none;}
 .wall-grid path {fill: none; stroke: #947eac; stroke-width: 1.5; opacity: .16;}

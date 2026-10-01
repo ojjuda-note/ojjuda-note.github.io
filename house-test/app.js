@@ -14,8 +14,38 @@ function save(){persist();}
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function title(r){if(!r.x&&!r.y)return '거실';return `${r.y>0?'위 '+r.y+'층':r.y<0?'아래 '+(-r.y)+'층':'시작 층'} · ${r.x<0?'왼쪽 '+(-r.x):r.x>0?'오른쪽 '+r.x:'가운데'}`;}
 function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-stepX*5*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-stepY*7*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;}
-function focusRoom(all=false){const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;if(all){const a=expanding?[{x:-2,y:-3},{x:2,y:3}]:state.rooms;const minX=Math.min(...a.map(x=>bounds(x).x)),maxX=Math.max(...a.map(x=>bounds(x).x))+ROOM.width,minY=Math.min(...a.map(x=>bounds(x).y)),maxY=Math.max(...a.map(x=>bounds(x).y))+ROOM.bottom;scale=Math.max(.045,Math.min(w/(maxX-minX+110),(h-80)/(maxY-minY+90),1));pan={x:(w-(maxX-minX)*scale)/2-minX*scale,y:(h-(maxY-minY)*scale)/2-minY*scale-10};}else{scale=Math.max(.08,Math.min(w/(ROOM.width+180),(h-75)/(ROOM.bottom-ROOM.top),1));pan={x:w/2-(b.x+ROOM.width/2)*scale,y:(h-75-(ROOM.bottom-ROOM.top)*scale)/2+15-(b.y+ROOM.top)*scale};}applyCamera();}
-function zoom(factor,point={x:view.clientWidth/2,y:view.clientHeight/2}){const next=Math.min(1.6,Math.max(.045,scale*factor)),ratio=next/scale;pan.x=point.x-(point.x-pan.x)*ratio;pan.y=point.y-(point.y-pan.y)*ratio;scale=next;applyCamera();}
+function clampRoomPan(){
+ const b=bounds(current()),w=view.clientWidth,h=view.clientHeight;
+ if((ROOM.width-24)*scale>=w)pan.x=Math.max(w-(b.x+ROOM.width-12)*scale,Math.min(-(b.x+12)*scale,pan.x));
+ if((ROOM.bottom-ROOM.top)*scale>=h)pan.y=Math.max(h-(b.y+ROOM.bottom)*scale,Math.min(-(b.y+ROOM.top)*scale,pan.y));
+}
+function focusRoom(all=false){
+ const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;
+ if(all){
+  const a=expanding?[{x:-2,y:-3},{x:2,y:3}]:state.rooms;
+  const minX=Math.min(...a.map(x=>bounds(x).x)),maxX=Math.max(...a.map(x=>bounds(x).x))+ROOM.width,minY=Math.min(...a.map(x=>bounds(x).y)),maxY=Math.max(...a.map(x=>bounds(x).y))+ROOM.bottom;
+  scale=Math.max(.045,Math.min(w/(maxX-minX+110),(h-80)/(maxY-minY+90),1));
+  pan={x:(w-(maxX-minX)*scale)/2-minX*scale,y:(h-(maxY-minY)*scale)/2-minY*scale-10};
+ }else{
+  // Fill the usable viewport with the painted room, without stretching it.
+  scale=Math.max(w/(ROOM.width-24),h/(ROOM.bottom-ROOM.top));
+  const art=editing&&draft?furnitureGeometry(editingId,draft):r.shelf?furnitureGeometry('bookshelf',r.shelf):null;
+  const cx=art?art.left+art.width/2:ROOM.width/2,cy=art?art.top+art.height/2:(ROOM.top+ROOM.bottom)/2;
+  pan={x:w/2-(b.x+cx)*scale,y:h/2-(b.y+cy)*scale};clampRoomPan();
+ }
+ applyCamera();
+}
+function revealFurniture(){
+ if(!editing||!draft)return;
+ const b=bounds(current()),g=furnitureGeometry(editingId,draft),w=view.clientWidth,h=view.clientHeight;
+ const left=pan.x+(b.x+g.left)*scale,top=pan.y+(b.y+g.top)*scale,right=left+g.width*scale,bottom=top+g.height*scale;
+ if(g.width*scale>w-24)pan.x+=w/2-(left+right)/2;
+ else if(left<12)pan.x+=12-left;else if(right>w-12)pan.x+=w-12-right;
+ if(g.height*scale>h-24)pan.y+=h/2-(top+bottom)/2;
+ else if(top<12)pan.y+=12-top;else if(bottom>h-12)pan.y+=h-12-bottom;
+ clampRoomPan();applyCamera();
+}
+function zoom(factor,point={x:view.clientWidth/2,y:view.clientHeight/2}){const limit=Math.max(1.6,2*view.clientWidth/(ROOM.width-24),2*view.clientHeight/(ROOM.bottom-ROOM.top)),next=Math.min(limit,Math.max(.045,scale*factor)),ratio=next/scale;pan.x=point.x-(point.x-pan.x)*ratio;pan.y=point.y-(point.y-pan.y)*ratio;scale=next;applyCamera();}
 function element(tag,classes,text){const n=document.createElement(tag);if(classes)n.className=classes;if(text)n.textContent=text;return n;}
 
 
@@ -35,21 +65,20 @@ function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;editing=
 function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon({'◉':'ball','♡':'heart','↝':'follow','▧':'room','□':'room','＋':'room'}[symbol]||'room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
 function bookshelfGap(s=draft){const {w}=itemSize('bookshelf',s.direction);return s.direction==='right'?FLOOR.width-w-s.x:s.x;}
 function syncPlacementControls(){
- const status=$('#shelf-position');if(status&&draft)status.textContent=`가로 ${draft.x} · 깊이 ${draft.y}칸`;
  if(editingId!=='bookshelf'||!draft)return;
  const {w,d}=itemSize('bookshelf',draft.direction),depth=$('#bookshelf-depth'),gap=$('#bookshelf-gap');
  if(depth){depth.max=String(FLOOR.depth-d);depth.value=String(draft.y);$('#bookshelf-depth-value').textContent=draft.y+'칸';depth.setAttribute('aria-valuetext',draft.y+'칸');}
- if(gap){const value=bookshelfGap();gap.max=String(FLOOR.width-w);gap.value=String(value);gap.closest('label').hidden=draft.direction==='center';$('#bookshelf-gap-value').textContent=value+'칸';gap.setAttribute('aria-valuetext',value+'칸');}
+ if(gap){const value=bookshelfGap(),center=draft.direction==='center';gap.max=String(FLOOR.width-w);gap.value=String(value);$('#bookshelf-gap-label').textContent=center?'좌우 위치':'벽과 간격';gap.setAttribute('aria-label',center?'책장 좌우 위치':'옆벽과 책장 사이의 간격');$('#bookshelf-gap-value').textContent=value+'칸';gap.setAttribute('aria-valuetext',value+'칸');}
 }
 function makeBookshelfControls(){
  const controls=element('div','bookshelf-position-controls');
  for(const [name,text,description]of [['depth','앞뒤 위치','뒷벽에서 책장까지의 거리'],['gap','벽과 간격','옆벽과 책장 사이의 간격']]){
-  const label=element('label','bookshelf-position-control'),title=element('span','bookshelf-control-title',text),value=element('output'),input=element('input');
+  const label=element('label','bookshelf-position-control'),title=element('span','bookshelf-control-title'),labelText=element('span','',text),value=element('output'),input=element('input');
   input.id='bookshelf-'+name;input.type='range';input.min='0';input.step=String(FLOOR.step);input.setAttribute('aria-label',description);label.htmlFor=input.id;
-  value.id=input.id+'-value';value.setAttribute('for',input.id);title.append(value);label.append(title,input);controls.append(label);
+  labelText.id=input.id+'-label';value.id=input.id+'-value';value.setAttribute('for',input.id);title.append(labelText,value);label.append(title,input);controls.append(label);
   input.oninput=()=>{if(!editing||editingId!=='bookshelf'||!draft)return;const number=Number(input.value);if(!Number.isFinite(number))return;
    const {w}=itemSize('bookshelf',draft.direction),position=name==='depth'?{y:number}:{x:draft.direction==='right'?FLOOR.width-w-number:number};
-   draft=normalizePlacement('bookshelf',{...draft,...position});renderWorld();syncPlacementControls();
+   draft=normalizePlacement('bookshelf',{...draft,...position});renderWorld();syncPlacementControls();revealFurniture();
   };
  }
  return controls;
@@ -58,16 +87,13 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
 
  if(tab==='room'){
   if(editing){
-   const item=FURNITURE[editingId],label=item.shortLabel||item.label,directions=element('div','directions');
+   const item=FURNITURE[editingId],directions=element('div','directions');
    for(const [id,text]of editingId==='bookshelf'?[['left','왼쪽'],['center','정면'],['right','오른쪽']]:[['left','왼쪽 벽'],['center','가운데'],['right','오른쪽 벽']]){
-    const button=actionButton(text,()=>{const size=itemSize(editingId,id);draft=normalizePlacement(editingId,{direction:id,x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:id==='center'?0:draft.y});renderWorld();renderPanel();});
+    const button=actionButton(text,()=>{const size=itemSize(editingId,id);draft=normalizePlacement(editingId,{direction:id,x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:id==='center'?0:draft.y});renderWorld();renderPanel();focusRoom();});
     button.dataset.direction=id;button.setAttribute('aria-pressed',String(draft.direction===id));directions.append(button);
    }
    body.append(directions);
    if(editingId==='bookshelf')body.append(makeBookshelfControls());
-   const arrows=element('div','move-controls');
-   for(const [dx,dy,text]of [[-.5,0,'←'],[0,-.5,'↑'],[0,.5,'↓'],[.5,0,'→']]){const b=actionButton(text,()=>moveFurniture(dx,dy));b.setAttribute('aria-label',`${label} ${text} 0.5칸`);arrows.append(b);}
-   const status=element('span','position');status.id='shelf-position';status.textContent=`가로 ${draft.x} · 깊이 ${draft.y}칸`;arrows.append(status);body.append(arrows);
    const row=element('div','directions'),done=actionButton('배치 완료',()=>finishPlacement(true));done.id='placement-done';done.disabled=!validDraft();
    row.append(actionButton('취소',()=>finishPlacement(false)),actionButton('치우기',removeFurniture),done);
    const warning=element('p','placement-warning','다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
@@ -107,14 +133,13 @@ function validDraft(){return !!draft&&canPlaceFurniture(editingId,draft,otherFur
 function startPlacement(id='bookshelf'){
  editingId=id;const existing=furniturePlacements(current()).find(p=>p.id===id),placed=existing?normalizePlacement(id,existing):findPlacement(id,otherFurniture(),id==='bookshelf'?defaultShelf():undefined);
  if(!placed){toast('가구를 놓을 자리가 부족해요. 먼저 다른 가구를 옮겨 주세요.');return;}
- editing=true;draft={...placed};renderWorld();renderPanel();
+ editing=true;draft={...placed};renderWorld();renderPanel();focusRoom();
 }
 function finishPlacement(commit){
  if(commit){if(!validDraft()){toast('다른 가구와 겹치지 않게 옮겨 주세요.');return;}if(editingId==='bookshelf')current().shelf={...draft};else current().furniture[editingId]={...draft};save();}
  const label=FURNITURE[editingId].shortLabel||FURNITURE[editingId].label;editing=false;draft=null;renderWorld();renderPanel();toast(commit?label+' 배치를 저장했어요.':'이전 배치로 돌아왔어요.');
 }
 function removeFurniture(){if(editingId==='bookshelf')current().shelf=null;else delete current().furniture[editingId];save();editing=false;draft=null;renderWorld();renderPanel();toast('가구를 치웠어요.');}
-function moveFurniture(dx,dy){draft=normalizePlacement(editingId,{...draft,x:draft.x+dx,y:draft.y+dy});renderWorld();renderPanel();}
 function updatePlacementStatus(button){
  const valid=validDraft();button.classList.toggle('placement-invalid',!valid);
  const done=$('#placement-done'),warning=$('#placement-warning');if(done)done.disabled=!valid;if(warning)warning.hidden=valid;
