@@ -39,7 +39,7 @@ export function characterViews({renderer,makeAvatar,registerLegacy,catalog,dispo
     }else{plant(.77,-.25);}
     fit();render();
   }
-  function render(){renderer.shadowMap.needsUpdate=true;renderer.render(scene,camera);dirty=false;}
+  function render(){avatar?.userData.syncPose?.();renderer.shadowMap.needsUpdate=true;renderer.render(scene,camera);dirty=false;}
   function react(name){if(!data)return;action={name,start:performance.now()};dirty=true;}
   function tick(now){
     if(!data)return false;
@@ -88,6 +88,6 @@ export function characterViews({renderer,makeAvatar,registerLegacy,catalog,dispo
     }finally{renderer.setRenderTarget(previous);renderer.shadowMap.enabled=shadows;disposeGroup(model);dirty=true;}
   }
   return {apply,tick,portrait,itemPortrait,react,invalidate(){dirty=true;},active:()=>!!data,rotate(delta){if(data?.kind==='avatar'&&avatar){yaw+=delta;avatar.rotation.y=yaw;dirty=true;}},
-    inspect(){return data?{kind:data.kind,avatar:{...data.avatar},pet:data.pet?.type,action:action?.name||null}:null;},
+    inspect(){return data?{kind:data.kind,avatar:{...data.avatar},avatarModel:avatar?.userData.sculptedAvatar?'sculpted-v20':'wardrobe',pet:data.pet?.type,action:action?.name||null}:null;},
     dispose(){clear();target.dispose();itemTarget.dispose();removeEventListener('resize',fit);}};
 }

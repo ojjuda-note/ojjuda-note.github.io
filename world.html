@@ -102,7 +102,7 @@
 <script src="/photo-protection.js?v=20260929-1" defer></script>
 
 <link rel="stylesheet" href="/world-room.css?v=20260930-3">
-<script src="/world-room.js?v=20260930-3"></script><script src="/world-characters.js?v=20260930-3"></script><script src="/world-places.js?v=20260930-3"></script>
+<script src="/world-room.js?v=20261001-actors1"></script><script src="/world-characters.js?v=20261001-actors1"></script><script src="/world-places.js?v=20261001-actors1"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -650,7 +650,19 @@ sr['house-mode']=function(t){
 
 function worldItemThumbnail(type){return `<span class="world-item-preview" data-item-preview="${type}">${Ba(type)}</span>`;}
 function worldItemDefinition(type){const d=q[type];return {key:type,base:jo(type),name:d.name,kind:d.kind,w:d.w||1,d:d.d||1,color:d.color,variant:d.v,pet:!!d.pet,flat:!!d.flat,svg:Ba(type)};}
-function characterAvatar(avatar){return {...avatar,skin:pe[avatar.skin]||avatar.skin||pe[0],hairColor:ye[avatar.hairColor]||avatar.hairColor||ye[0]};}
+const sculptureWardrobeDefaults={hair:'bob',face:'calm',top:'tee',bottom:'pants',shoes:'sneakers',acc:'none'};
+function usesSculptedStyle(avatar){return avatar?.renderStyle==='sculpted-v20'&&(!avatar.sculptedWardrobe||Object.entries(sculptureWardrobeDefaults).every(([key,value])=>(avatar[key]||value)===avatar.sculptedWardrobe[key]));}
+const saveAppearance=I;I=function(){if($.avatar?.renderStyle==='sculpted-v20'&&!usesSculptedStyle($.avatar)){$.avatar.renderStyle='wardrobe';delete $.avatar.sculptedWardrobe;}return saveAppearance();};
+const wardrobeControls=Og;
+Og=function(){
+  const sculpted=usesSculptedStyle($.avatar);
+  const choose=`<div class="seg" role="group" aria-label="캐릭터 스타일"><button data-act="av-style" data-v="sculpted-v20" class="${sculpted?'on':''}" aria-pressed="${sculpted}">포근한 산책</button><button data-act="av-style" data-v="wardrobe" class="${sculpted?'':'on'}" aria-pressed="${!sculpted}">내 옷장</button></div>`;
+  if(!sculpted)return choose+wardrobeControls();
+  const colors=(label,key,palette,indexed=false)=>`<div class="og"><h4>${label}</h4><div class="sws">${palette.map((color,index)=>`<button class="sw${$.avatar[key]===(indexed?index:color)?' on':''}" style="background:${color}" data-act="av" data-k="${key}" data-v="${indexed?index:color}" aria-label="${label} ${index+1}"></button>`).join('')}</div></div>`;
+  return choose+`<p class="note">포근한 맨투맨과 운동화로 입었어요. 좋아하는 색을 골라 주세요.</p>`+colors('피부','skin',pe,true)+colors('머리색','hairColor',ye,true)+colors('상의 색','topColor',ko)+colors('하의 색','bottomColor',ko);
+};
+sr['av-style']=function(t){if(!['sculpted-v20','wardrobe'].includes(t.v))return;g.tryOn=null;$.avatar.renderStyle=t.v;if(t.v==='sculpted-v20')$.avatar.sculptedWardrobe=Object.fromEntries(Object.entries(sculptureWardrobeDefaults).map(([key,value])=>[key,$.avatar[key]||value]));else delete $.avatar.sculptedWardrobe;I();if(!refreshRoomTools())H();};
+function characterAvatar(avatar){return {...avatar,...(avatar.renderStyle==='sculpted-v20'&&!usesSculptedStyle(avatar)?{renderStyle:'wardrobe'}:{}),skin:pe[avatar.skin]||avatar.skin||pe[0],hairColor:ye[avatar.hairColor]||avatar.hairColor||ye[0]};}
 var worldCharacters=window.OjjudaCharacters?.install({
   itemDefinition:worldItemDefinition,
   savedAvatar(){return characterAvatar($.avatar);},
