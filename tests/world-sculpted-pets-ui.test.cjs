@@ -66,7 +66,7 @@ async function checkModels(browser){
       };
       const dispose=model=>{model.traverse(object=>{object.geometry?.dispose();for(const material of(Array.isArray(object.material)?object.material:[object.material]))material?.dispose();});model.removeFromParent();};
       const summary=[];
-      for(const key of ['dog','dg_corgi','cat','ct_mackerel']){
+      for(const key of ['dog','dg_corgi','cat','ct_mackerel','ct_cheese','ct_tuxedo','ct_calico','ct_blackcat']){
         const model=pets.buildSculptedPet(key,'#9aa0b5');
         check(!!model,key+': supported World key builds a model');
         const resources=collect(model),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
@@ -83,6 +83,29 @@ async function checkModels(browser){
         summary.push({key,skins:after.skins.length,bones:after.bones.size,height:size.y});dispose(compact);
       }
       for(const key of ['dg_poodle','ct_siamese','bunny','fox','unknown'])check(pets.buildSculptedPet(key,'#ffffff')===null,key+': unsupported breed keeps its original factory');
+
+      const catPrints=new Set();
+      for(const key of ['ct_cheese','ct_tuxedo','ct_calico','ct_blackcat']){
+        const model=pets.buildSculptedPet(key);
+        const fur=collect(model).skins.find(mesh=>mesh.material.name==='Silver tabby fur');
+        const colors=fur.geometry.getAttribute('color'),positions=fur.geometry.getAttribute('position');
+        let brightPaws=0,darkBody=0,warmPatches=0,brightBody=0;
+        for(let i=0;i<colors.count;i++){
+          const r=colors.getX(i),g=colors.getY(i),b=colors.getZ(i),y=positions.getY(i);
+          if(y<.075&&r>.65&&g>.65&&b>.65)brightPaws++;
+          if(y>.2&&r<.08&&g<.08&&b<.08)darkBody++;
+          if(y>.2&&r>g*1.7&&g>b*1.5&&r>.2)warmPatches++;
+          if(y>.2&&r>.7&&g>.7&&b>.7)brightBody++;
+        }
+        if(key==='ct_blackcat')check(brightPaws===0&&darkBody>100,'black cat has no inherited white socks or tabby stripes');
+        if(key==='ct_tuxedo')check(brightPaws>100&&darkBody>100,'tuxedo retains both white socks and dark coat');
+        if(key==='ct_calico')check(brightPaws>100&&darkBody>100&&warmPatches>100&&brightBody>100,'calico has light paws and three distinct coat colors');
+        catPrints.add(JSON.stringify(Array.from(colors.array)));dispose(model);
+      }
+      check(catPrints.size===4,'four cat coats remain visually distinct');
+      const painted=pets.buildSculptedPet('ct_calico'),original=fingerprints(painted);
+      const otherPaint=pets.buildSculptedPet('ct_blackcat','#7f6888');dispose(otherPaint);
+      check(fingerprints(painted).every((value,i)=>value===original[i]),'painting and disposing another coat does not mutate calico');dispose(painted);
 
       const a=pets.buildSculptedPet('dog','#c47948'),b=pets.buildSculptedPet('dog','#748aa8');
       const ra=collect(a),rb=collect(b);
@@ -132,14 +155,14 @@ async function checkWorld(browser,failModels){
     const room=()=>page.frames().find(frame=>frame.url().includes('/room3d/index.html')&&!frame.url().includes('view='));
     const status=await room().evaluate(()=>Ojjuda3D.inspect().sculptedPets);
     assert.equal(status.dog,failModels?'failed':'ready');assert.equal(status.cat,failModels?'failed':'ready');
-    const types=['dog','dg_corgi','cat','ct_mackerel','dg_poodle','ct_siamese','bunny'];
+    const types=['dog','dg_corgi','cat','ct_mackerel','ct_cheese','ct_tuxedo','ct_calico','ct_blackcat','dg_poodle','ct_siamese','bunny'];
     await page.evaluate(types=>{
       roomTest.model.room.items=types.map((type,i)=>({id:'sculpted-'+type,type,gx:1+i%4*2,gy:1+Math.floor(i/4)*3,r:0,color:i%2?'#748aa8':'#c47948',pet:{name:type,love:73,full:40,joy:40,at:Date.now()}}));roomTest.refresh();
     },types);
     await room().waitForFunction(count=>Ojjuda3D.inspect().items.length===count,types.length);
     assert.deepEqual(await room().evaluate(()=>Ojjuda3D.inspect().items.map(item=>item.type)),types,'new art retains every saved pet type');
     const petArt=await room().evaluate(()=>Ojjuda3D.inspect().petArt);
-    assert.deepEqual(petArt,Object.fromEntries(types.map((type,i)=>['sculpted-'+type,!failModels&&i<4?type:'legacy'])),'only the four approved pets use sculpted art; all other breeds and load failures retain legacy models');
+    assert.deepEqual(petArt,Object.fromEntries(types.map((type,i)=>['sculpted-'+type,!failModels&&i<8?type:'legacy'])),'only the eight approved pets use sculpted art; all other breeds and load failures retain legacy models');
     // Fox is retained in the engine catalog but not currently listed by World’s
     // saved-item catalog. Exercise its real factory through an explicit frame
     // snapshot, then restore the adapter’s snapshot before checking account state.
@@ -152,12 +175,12 @@ async function checkWorld(browser,failModels){
     await page.evaluate(()=>roomTest.refresh());
     await room().waitForFunction(count=>Ojjuda3D.inspect().items.length===count,types.length);
     const savedBefore=await page.evaluate(()=>JSON.stringify(roomTest.model.room.items));
-    for(const type of ['dog','cat']){
+    for(const type of ['dog','cat','ct_cheese','ct_tuxedo','ct_calico','ct_blackcat']){
       await page.evaluate(type=>roomTest.petOpen('sculpted-'+type),type);
       await page.waitForSelector('#petscene[data-character-ready]',{timeout:30000});
       const pet=page.frames().find(frame=>frame.url().includes('view=pet'));
       assert.equal(await pet.evaluate(()=>Ojjuda3D.inspect().character.pet),type);
-      assert.equal((await pet.evaluate(()=>Ojjuda3D.inspect().sculptedPets))[type],failModels?'failed':'ready');
+      assert.equal((await pet.evaluate(()=>Ojjuda3D.inspect().sculptedPets))[type==='dog'?'dog':'cat'],failModels?'failed':'ready');
       await page.locator('[data-act="pet-pat"]').click();
       assert.equal(await pet.evaluate(()=>Ojjuda3D.inspect().character.action),'pat','existing pet care remains interactive');
       if(!failModels){await page.setViewportSize({width:450,height:900});await page.screenshot({path:'/tmp/ojjuda-sculpted-'+type+'-care.png',fullPage:true});}

@@ -3,7 +3,7 @@
 import * as THREE from './vendor/three.module.js';
 import { RoundedBoxGeometry } from './vendor/RoundedBoxGeometry.js';
 import { preloadSculptedAvatar, buildSculptedAvatar, disposeSculptedAvatar, avatarAssetStatus } from './sculpted-avatar.js?v=20261001-actors1';
-import { preloadSculptedPets, buildSculptedPet, disposeSculptedPets } from './sculpted-pets.js?v=20261001-actors1';
+import { preloadSculptedPets, buildSculptedPet, disposeSculptedPets } from './sculpted-pets.js?v=20261001-catcoats1';
 const [,sculptedPets]=await Promise.all([preloadSculptedAvatar(),preloadSculptedPets()]);
 import { characterViews } from './characters.js?v=20261001-actors1';
 import { placeViews } from './places.js?v=20261001-actors1';

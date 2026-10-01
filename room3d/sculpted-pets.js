@@ -4,7 +4,8 @@ import { clone as cloneSkeleton } from './vendor/SkeletonUtils.js';
 
 // These authored rigs are shared with the installed World client. Deliberately
 // limit substitutions to matching silhouettes; saved breed IDs never change.
-const SPECIES = Object.freeze({dog:'dog', dg_corgi:'dog', cat:'cat', ct_mackerel:'cat'});
+const SPECIES = Object.freeze({dog:'dog', dg_corgi:'dog', cat:'cat', ct_mackerel:'cat', ct_cheese:'cat', ct_tuxedo:'cat', ct_calico:'cat', ct_blackcat:'cat'});
+const CAT_COATS=Object.freeze({ct_cheese:'#F2B36B',ct_tuxedo:'#2E2E38',ct_calico:'#F1F1F4',ct_blackcat:'#2E2E38'});
 const MODELS = Object.freeze({
   dog: {url:new URL('./assets/models/premium_dog.glb', import.meta.url), height:.98, base:[.63,.32,.115]},
   cat: {url:new URL('./assets/models/premium_cat.glb', import.meta.url), height:.94, base:[.27,.38,.40]}
@@ -90,11 +91,54 @@ function recolorCoat(geometry, material, species, target) {
   }
 }
 
+// Paint the authored continuous surface in its rest pose. Positions are local
+// glTF metres (Y up, Z forward), so markings follow the existing skin and rig.
+function paintCatCoat(geometry,material,key,target){
+  if(!CAT_COATS[key]||!['Silver tabby fur','Lid fur'].includes(material.name))return false;
+  if(key==='ct_cheese')return false; // Keep the authored tabby bands and cream toes.
+  const positions=geometry.getAttribute('position'),colors=geometry.getAttribute('color');
+  if(!positions||!colors)return false;
+  const coat=target||new THREE.Color(CAT_COATS[key]),white=new THREE.Color('#f2eadf');
+  const orange=new THREE.Color('#cf8545'),black=new THREE.Color('#34313b');
+  const smooth=(a,b,v)=>THREE.MathUtils.smoothstep(v,a,b);
+  const patches=[
+    [-.105,.590,.385,.110,.145,.125,orange],
+    [.115,.605,.355,.110,.150,.115,black],
+    [-.130,.370,-.095,.120,.155,.190,orange],
+    [.135,.380,.025,.120,.170,.160,black],
+    [.070,.435,-.250,.145,.130,.155,orange],
+    [.045,.525,-.435,.100,.135,.130,black],
+    [.065,.740,-.365,.100,.100,.145,orange]
+  ];
+  const result=new THREE.Color();
+  for(let i=0;i<positions.count;i++){
+    const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);
+    result.copy(coat);
+    if(key==='ct_tuxedo'){
+      const socks=1-smooth(.080,.125,y);
+      const bib=smooth(.10,.235,z)*(1-smooth(.36,.46,y));
+      const muzzle=smooth(.365,.435,z)*(1-smooth(.535,.565,y));
+      const blaze=(1-smooth(.012,.058,Math.abs(x)))*smooth(.395,.440,z)*smooth(.53,.60,y);
+      result.lerp(white,Math.max(socks,bib,muzzle,blaze));
+    }else if(key==='ct_calico'){
+      // Asymmetric warm and charcoal patches, with a clear light chest and paws.
+      for(const [cx,cy,cz,rx,ry,rz,color] of patches){
+        const distance=Math.hypot((x-cx)/rx,(y-cy)/ry,(z-cz)/rz);
+        const edge=distance+.045*Math.sin(x*89+y*51+z*37);
+        result.lerp(color,(1-smooth(.83,1.03,edge))*smooth(.12,.18,y));
+      }
+    }
+    colors.setXYZ(i,result.r,result.g,result.b);
+  }
+  colors.needsUpdate=true;material.vertexColors=true;material.color.set(0xffffff);
+  return true;
+}
+
 /** Synchronous after preload. Unsupported or unavailable breeds use the old factory. */
 export function buildSculptedPet(key,color) {
   const species=SPECIES[key],prototype=cache.get(species);
   if(!prototype)return null;
-  const visual=cloneSkeleton(prototype), group=new THREE.Group(), tint=selectedColor(color);
+  const visual=cloneSkeleton(prototype), group=new THREE.Group(), tint=selectedColor(color)|| (CAT_COATS[key]?new THREE.Color(CAT_COATS[key]):null);
   const geometries=new Map(),materials=new Map(),skeletons=new Map();
   group.name='SculptedPet_'+key;group.add(visual);
   visual.traverse(node=>{
@@ -106,7 +150,7 @@ export function buildSculptedPet(key,color) {
       if(!materials.has(original)){
         const material=original.clone();material.vertexColors=!!node.geometry.getAttribute('color');
         material.roughness=Math.max(.55,material.roughness??.8);material.metalness=0;
-        recolorCoat(node.geometry,material,species,tint);materials.set(original,material);
+        if(!paintCatCoat(node.geometry,material,key,tint))recolorCoat(node.geometry,material,species,tint);materials.set(original,material);
       }
       return materials.get(original);
     });
