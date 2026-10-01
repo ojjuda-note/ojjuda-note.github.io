@@ -4,6 +4,7 @@ export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.
 export function canAdd(rooms,cell){return validCell(cell)&&rooms.length<35&&!rooms.some(r=>roomKey(r)===roomKey(cell))&&neighbors(cell).some(n=>rooms.some(r=>roomKey(r)===roomKey(n)));}
 export function normalize(data){const rooms=[{x:0,y:0,decor:true,curtains:true,shelf:{x:7,y:1.5,direction:'right'}}],pending=new Map();if(Array.isArray(data?.rooms))for(const r of data.rooms.slice(0,100)){if(validCell(r))pending.set(roomKey(r),{x:r.x,y:r.y,decor:r.decor===true,curtains:r.curtains!==false,shelf:data.version===2?normalizeShelf(r.shelf):(!r.x&&!r.y?{x:7,y:1.5,direction:'right'}:null)});}if(pending.has('0:0'))rooms[0]=pending.get('0:0');pending.delete('0:0');let progress=true;while(progress&&rooms.length<35){progress=false;for(const [key,r]of pending)if(canAdd(rooms,r)){rooms.push(r);pending.delete(key);progress=true;}}return {version:2,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};}
 
+export const ROOM={width:1375,height:1144,top:29,bottom:1111};
 export const FLOOR={width:8,depth:7,step:.5};
 export const shelfSize=direction=>direction==='center'?{w:2,d:1}:{w:1,d:2};
 export function normalizeShelf(s){
@@ -12,8 +13,8 @@ export function normalizeShelf(s){
  return {direction:s.direction,x:Math.max(0,Math.min(8-w,Math.round(s.x*2)/2)),y:Math.max(0,Math.min(7-d,Math.round(s.y*2)/2))};
 }
 // Calibrated to the inside corners where the skirting meets the floor.
-// The foreground apron is outside the 8 × 7 furniture grid.
-export const FLOOR_CORNERS=[{x:262,y:709},{x:1014,y:718},{x:1215,y:919},{x:40,y:919}];
+// The full-depth 8 × 7 grid reaches the front corners of the extended walls.
+export const FLOOR_CORNERS=[{x:303,y:671},{x:1068,y:671},{x:1358,y:1083},{x:17,y:1083}];
 const [p0,p1,p2,p3]=FLOOR_CORNERS;
 const dx1=p1.x-p2.x,dx2=p3.x-p2.x,dx3=p0.x-p1.x+p2.x-p3.x;
 const dy1=p1.y-p2.y,dy2=p3.y-p2.y,dy3=p0.y-p1.y+p2.y-p3.y;

@@ -9,14 +9,15 @@ assert.equal(await f.locator('.curtains').count(),1);
 assert.equal(await f.locator('.bookshelf').count(),1);
 const clock=await f.evaluate(async()=>{const m=await import('/house-test/model.js');return ['05:59','06:00','07:59','08:00','17:59','18:00','19:59','20:00','23:59','00:00'].map(t=>m.roomPeriod(new Date('2026-10-01T'+t+':00+09:00')));});
 assert.deepEqual(clock,['night','dusk','dusk','day','day','dusk','dusk','night','night','night']);
-for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){await page.clock.setSystemTime(new Date(`2026-10-01T${String(hour).padStart(2,'0')}:00:00+09:00`));await page.clock.runFor(15001);assert.match(await f.locator('.room-bg').getAttribute('src'),new RegExp(`room-${period}.webp`));}
+for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){await page.clock.setSystemTime(new Date(`2026-10-01T${String(hour).padStart(2,'0')}:00:00+09:00`));await page.clock.runFor(15001);assert.match(await f.locator('.room-bg').getAttribute('src'),new RegExp(`room-${period}-v2.webp`));}
 await page.clock.resume();
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 assert.equal(await f.locator('.floor-grid').count(),1);
 const calibration=await f.evaluate(async()=>{const {floorPoint,floorCell}=await import('/house-test/model.js');let error=0;for(let y=0;y<=7;y+=.5)for(let x=0;x<=8;x+=.5){const p=floorPoint(x,y),c=floorCell(p.x,p.y);error=Math.max(error,Math.abs(c.x-x),Math.abs(c.y-y));}return {corners:[[0,0],[8,0],[8,7],[0,7]].map(([x,y])=>floorPoint(x,y)),error};});
-for(const [i,wanted] of [[262,709],[1014,718],[1215,919],[40,919]].entries()){assert.ok(Math.abs(calibration.corners[i].x-wanted[0])<.001);assert.ok(Math.abs(calibration.corners[i].y-wanted[1])<.001);}assert.ok(calibration.error<1e-9);
+for(const [i,wanted] of [[303,671],[1068,671],[1358,1083],[17,1083]].entries()){assert.ok(Math.abs(calibration.corners[i].x-wanted[0])<.001);assert.ok(Math.abs(calibration.corners[i].y-wanted[1])<.001);}assert.ok(calibration.error<1e-9);
 await f.waitForFunction(()=>{const room=document.querySelector('.room').getBoundingClientRect(),view=document.querySelector('#viewport').getBoundingClientRect();return room.left-view.left>=20&&view.right-room.right>=20;});
 await page.screenshot({path:'/tmp/house-grid-aligned.png'});
+assert.deepEqual(await f.locator('.room-bg').evaluate(im=>({width:im.naturalWidth,height:im.naturalHeight})),{width:1375,height:1144});
 await f.getByRole('button',{name:'책장 ← 0.5칸',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'6.5');
 await f.getByRole('button',{name:'취소',exact:true}).click();
