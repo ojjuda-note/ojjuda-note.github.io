@@ -89,7 +89,7 @@ export function placeViews({renderer,makeAvatar,registerLegacy,catalog,disposeGr
     }
     if(dirty||moving){renderer.render(scene,camera);overlay();dirty=false;}return true;
   }
-  function hit(event){pointer.set(event.clientX/innerWidth*2-1,1-event.clientY/innerHeight*2);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObjects([...actors.values()].map(a=>a.model).concat(building.children),true).find(h=>h.object.userData.placePerson||h.object.userData.placeItem||h.object.userData.placeFloor);}
+  function hit(event){pointer.set(event.clientX/innerWidth*2-1,1-event.clientY/innerHeight*2);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObjects([...actors.values()].map(a=>a.model).concat(building.children),true).find(h=>{for(let node=h.object;node;node=node.parent)if(!node.visible)return false;return h.object.userData.placePerson||h.object.userData.placeItem||h.object.userData.placeFloor;});}
   const canvas=renderer.domElement;
   function intercept(event){if(!data)return false;event.stopImmediatePropagation();if(event.cancelable)event.preventDefault();return true;}
   canvas.addEventListener('pointerdown',event=>{if(!intercept(event))return;pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});canvas.setPointerCapture(event.pointerId);down={id:event.pointerId,x:event.clientX,y:event.clientY};if(pointers.size===2){const [a,b]=[...pointers.values()];pinch={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom};down=null;}},{capture:true});
