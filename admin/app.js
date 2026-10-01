@@ -17,9 +17,9 @@
   function destination() {
     const allowed = new Set([
       'overview', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
-      'shop', 'settings', 'posts', 'chats', 'archive', 'quiz', 'note'
+      'settings', 'posts', 'chats', 'archive', 'quiz', 'note'
     ]);
-    const aliases = { account: 'overview', payment: 'shop', world: 'posts' };
+    const aliases = { account: 'overview', payment: 'settings', world: 'posts' };
     const resolve = value => allowed.has(value) ? value : aliases[value];
     let hash = location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { hash = ''; }

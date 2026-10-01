@@ -11,8 +11,8 @@ world = world.replace('<script type="module">', `<script>${helper}</script><scri
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct,draft:roomPlacementDraft};
-gm(()=>{if(!canLeaveRoomPlacement())return;g.tab="friends";g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
+window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct};
+gm(()=>{g.tab="friends";g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
 g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
 
 (async () => {
@@ -34,6 +34,9 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('https://fixture.test/world.html');
     await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
+    await page.evaluate(()=>{const model=worldTest.model;Object.assign(model,{coins:321,avatar:{hair:'bob'},room:{items:[{type:'cat'}]},rooms:[{items:[{type:'sofa'}]}],friends:[{id:'f1',room:{items:[]}}],petBank:{cat:[{}]},themeBackup:{room:{items:[]}},diary:[{id:'saved-note',title:'내 기록',body:'보존',vis:'all',at:Date.now()}]});localStorage.setItem('ojjuda-world-v1',JSON.stringify(model));localStorage.setItem('ojjuda-pet-talk','old');localStorage.setItem('ojjuda-pet-mem','old');});
+    await page.reload();await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
+    assert.deepEqual(await page.evaluate(()=>{const m=worldTest.model;return [m.coins,m.diary[0].id,m.room.items,m.avatar,m.friends,m.petBank||null,m.themeBackup||null,localStorage.getItem('ojjuda-pet-talk'),localStorage.getItem('ojjuda-pet-mem')]}),[321,'saved-note',[],{},[],null,null,null,null],'reload clears retired assets while preserving balance and writing');
     const current=()=>page.evaluate(()=>worldTest.state.tab);
     const noteAndBack=async()=>{
       await page.waitForURL('https://fixture.test/note/');
@@ -86,16 +89,8 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.waitForFunction(()=>!document.querySelector('#modal-root').innerHTML);
     assert.equal(await current(),'my','back closes the top dialog before leaving its menu');
     await back();
-    await page.evaluate(()=>{
-      const t=worldTest;t.auth.isAdmin=true;t.actions['house-admin-preview']();t.actions.tab({tab:'deco'});
-      t.model.room.items=[{id:'draft-desk',type:'desk',gx:2,gy:2,r:0}];
-      t.state.sel='draft-desk';t.render();t.actions.mv({dx:1,dy:0});
-    });
-    await page.evaluate(()=>history.back());
-    await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
-    assert.equal(await current(),'deco');
-    assert.ok(await page.evaluate(()=>worldTest.draft()),'back cannot discard unconfirmed furniture');
-    await page.evaluate(()=>worldTest.actions['placement-cancel']());
+    assert.deepEqual(await page.evaluate(()=>Object.keys(worldTest.actions).filter(key=>/^(pet-|npc-|adm-item|adm-price|adm-sync|set-buy|try-|placement-|add-item$|mv$)/.test(key))),[],'retired controls cannot be invoked');
+    await page.evaluate(()=>{const t=worldTest;t.auth.isAdmin=true;t.actions.tab({tab:'deco'});});
     await back();
 
     const cdp=await context.newCDPSession(page);
@@ -195,6 +190,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, four destinations, modal/draft protection, swipes across all tabs and into Note, touch/mouse input, vertical scrolling, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, four destinations, modal protection and retired-state cleanup, swipes across all tabs and into Note, touch/mouse input, vertical scrolling, cancellation and normal taps.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

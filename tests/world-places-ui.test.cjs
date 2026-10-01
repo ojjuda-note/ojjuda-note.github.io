@@ -8,9 +8,9 @@ let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
 world=world.replace('<script type="module">',`<script>${['world-places.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
- window.placeTest={model:$,state:g,enter:xf,sync:Sr,step:Ff,catalog:q,places:Pt,house:H,
+ window.placeTest={model:$,state:g,enter:xf,sync:Sr,tick:pg,places:Pt,house:H,
    freeze(){clearInterval(g.placeT);g.placeT=null;},snapshot:()=>worldPlaceArt&&worldPlaceArt.sync()};
- D.isAdmin=true;g.houseAdminPreview=true;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
+ D.isAdmin=true;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
 
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
@@ -31,6 +31,7 @@ world=world.slice(0,boot)+`
    assert.deepEqual(await picture.evaluate(img=>[img.naturalWidth,img.naturalHeight]),[1536,1024]);
    assert.equal(await page.locator('#pstage iframe, #pstage svg, #pstage canvas, #pstage [data-npc], #pstage [data-item]').count(),0,'old actors and furniture are removed');
    assert.ok(await page.locator('#pmsg').count());
+   assert.equal(await page.evaluate(()=>{const random=Math.random;Math.random=()=>0;try{for(let i=0;i<100;i++)placeTest.tick();return placeTest.state.place.npcs.length}finally{Math.random=random}}),0,'offline ticks never regenerate background characters');
    if(id==='library')assert.ok(await page.locator('#quizcard').isVisible());
    await picture.evaluate(img=>img.dataset.retained='yes');
    await page.evaluate(()=>{placeTest.state.place.ch=2;for(let i=0;i<20;i++)placeTest.sync();});

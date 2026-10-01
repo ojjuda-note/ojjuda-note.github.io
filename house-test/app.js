@@ -1,4 +1,4 @@
-import {icon} from './icons.js?v=20261002-bookshelf-v2';
+import {icon} from './icons.js?v=20261002-residuals1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261002-bookshelf-v2';
 import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261002-bookshelf-v2';
 import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261002-bookshelf-v2';
@@ -62,7 +62,7 @@ function renderWorld(){world.replaceChildren();for(const r of state.rooms){const
  $('#room-name').textContent=title(current());$('#room-count').textContent=state.rooms.length+' / 35개 방';}
 function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}});selected=roomKey(cell);save();renderWorld();renderPanel();toast('새 방이 연결됐어요.');}
 function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;editing=false;draft=null;selected=id;renderWorld();renderPanel();if(!expanding)focusRoom();}
-function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon({'◉':'ball','♡':'heart','↝':'follow','▧':'room','□':'room','＋':'room'}[symbol]||'room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
+function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon('room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
 function bookshelfGap(s=draft){const {w}=itemSize('bookshelf',s.direction);return s.direction==='right'?FLOOR.width-w-s.x:s.x;}
 function syncPlacementControls(){
  if(editingId!=='bookshelf'||!draft)return;
