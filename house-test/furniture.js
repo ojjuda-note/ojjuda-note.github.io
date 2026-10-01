@@ -1,5 +1,5 @@
-import {floorPoint,roomPoint} from './model.js?v=20261001-desk1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-desk1';
+import {floorPoint,roomPoint} from './model.js?v=20261001-chair1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-chair1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -14,7 +14,11 @@ export function projectiveMap(source,target){
   for(let j=col;j<=8;j++)rows[col][j]/=divisor;
   for(let row=0;row<8;row++)if(row!==col){const factor=rows[row][col];for(let j=col;j<=8;j++)rows[row][j]-=factor*rows[col][j];}
  }
- return [...rows.map(row=>row[8]),1];
+ const matrix=[...rows.map(row=>row[8]),1];
+ // Homographies are scale invariant, but CSS clips negative homogeneous w.
+ // Keep the visible source quad in front of the CSS projection plane.
+ const cx=source.reduce((sum,p)=>sum+p[0],0)/4,cy=source.reduce((sum,p)=>sum+p[1],0)/4;
+ return matrix[6]*cx+matrix[7]*cy+matrix[8]<0?matrix.map(n=>-n):matrix;
 }
 export function transformPoint(m,[x,y]){const w=m[6]*x+m[7]*y+m[8];return {x:(m[0]*x+m[1]*y+m[2])/w,y:(m[3]*x+m[4]*y+m[5])/w};}
 export function cssMatrix(m){return `matrix3d(${[m[0],m[3],0,m[6],m[1],m[4],0,m[7],0,0,1,0,m[2],m[5],0,m[8]].join(',')})`;}
@@ -30,7 +34,7 @@ export function furnitureGeometry(id,s){
  if(!item||!size||!contact)return null;
  const cells=rectangle(contact),footprint=cells.map(([x,y])=>floorPoint(x,y));
  const reserved=rectangle({...s,...size}).map(([x,y])=>floorPoint(x,y));
- const volumes=item.components?item.components.map(part=>({...part,bounds:componentBounds(part,contact,s.direction)})):[{id:'body',bounds:contact,base:0,height:item.height,views:item.views}];
+ const volumes=item.components?item.components.map(part=>({...part,bounds:componentBounds(part,contact,s.direction),topBounds:part.upper?componentBounds({...part,...part.upper},contact,s.direction):null})):[{id:'body',bounds:contact,base:0,height:item.height,views:item.views}];
  if(item.components)volumes.sort((a,b)=>a.base+a.height-b.base-b.height||Math.max(...rectangle(a.bounds).map(([x,y])=>floorPoint(x,y).y))-Math.max(...rectangle(b.bounds).map(([x,y])=>floorPoint(x,y).y)));
  for(const part of item.attachments||[]){
   const widthFraction=s.direction==='center'?part.widthFraction:part.depthFraction,depthFraction=s.direction==='center'?part.depthFraction:part.widthFraction;
@@ -39,20 +43,21 @@ export function furnitureGeometry(id,s){
  }
  const frontEdge={left:'2:1',center:'3:2',right:'0:3'}[s.direction],faces=[];
  for(const volume of volumes){
-  const points=rectangle(volume.bounds),ground=points.map(([x,y])=>roomPoint(x,y,volume.base)),top=points.map(([x,y])=>roomPoint(x,y,volume.base+volume.height));
+  const points=rectangle(volume.bounds),ground=points.map(([x,y])=>roomPoint(x,y,volume.base)),top=rectangle(volume.topBounds||volume.bounds).map(([x,y])=>roomPoint(x,y,volume.base+volume.height));
   const edges=[[3,2]];
   if(ground[2].x<ground[1].x-.01)edges.unshift([2,1]);
   if(ground[3].x>ground[0].x+.01)edges.unshift([0,3]);
   const wood=[[662,220],[728,220],[728,400],[662,400]],view=volume.views[s.direction];
   // A wooden top closes each volume without baking extra decorative objects
   // into a front plane. The top box keeps its own width, depth and height.
-  if(top[2].y>top[1].y){
+  if(volume.cap!==false&&top[2].y>top[1].y){
    const texture=view.planes.top||{source:wood,clip:wood},target=s.direction==='left'?[top[3],top[0],top[1],top[2]]:s.direction==='right'?[top[1],top[2],top[3],top[0]]:top;
    const matrix=projectiveMap(texture.source,target);
    faces.push({...texture,image:view.planes.top?view.image:item.views.right.image,part:volume.id,plane:'top',corners:[0,1,2,3],target,matrix,outline:top});
   }
   for(const corners of edges){
-   const plane=corners.join(':')===frontEdge?'front':'side',sourceView=view.planes[plane]?view:volume.views.right,face=sourceView.planes[plane];
+   const edge=corners.join(':'),backEdge={left:'0:3',center:'1:0',right:'2:1'}[s.direction];
+   const plane=edge===frontEdge?'front':edge===backEdge&&view.planes.back?'back':'side',sourceView=view.planes[plane]?view:volume.views.right,face=sourceView.planes[plane];
    const [a,b]=corners,target=[top[a],top[b],ground[b],ground[a]],matrix=projectiveMap(face.source,target);
    faces.push({...face,image:sourceView.image,part:volume.id,plane,corners,target,matrix,outline:matrix?face.clip.map(p=>transformPoint(matrix,p)):[]});
   }

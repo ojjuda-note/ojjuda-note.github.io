@@ -44,9 +44,59 @@ const deskParts=[
  ...[0,.95].map((u,i)=>({id:'end-apron-'+i,u,v:.12,w:.05,d:.76,base:1.25,height:.25,views:deskTextures('apron')})),
  {id:'tabletop',u:0,v:0,w:1,d:1,base:1.5,height:.1,views:deskTextures('top')}
 ];
+const chairSources={
+ center:{
+  seatTop:[[250,657],[775,657],[870,805],[153,805]],seatEdge:[[152,779],[872,779],[872,872],[152,872]],
+  sideEdge:[[152,779],[872,779],[872,872],[152,872]],
+  rail:[[150,73],[877,73],[877,261],[150,261]],
+  post:[[215,235],[268,242],[312,663],[247,670]],
+  slat:[[491,260],[533,260],[535,659],[490,659]],
+  leg:[[203,862],[268,866],[200,1458],[148,1456]],
+  stretcher:[[251,1020],[771,1020],[771,1055],[251,1055]]
+ },
+ left:{
+  seatTop:[[205,682],[689,617],[934,729],[413,819]],seatEdge:[[413,819],[934,729],[944,792],[411,874]],
+  sideEdge:[[198,684],[413,819],[411,874],[190,748]],
+  rail:[[125,44],[741,44],[741,245],[125,245]],
+  post:[[172,224],[229,233],[281,673],[215,676]],
+  slat:[[391,243],[433,238],[469,626],[428,632]],
+  leg:[[366,881],[438,870],[391,1490],[335,1486]],
+  stretcher:[[433,1014],[857,954],[861,987],[436,1054]]
+ },
+ right:{
+  seatTop:[[382,646],[865,704],[656,865],[105,760]],seatEdge:[[105,760],[656,865],[661,923],[93,826]],
+  sideEdge:[[656,865],[865,704],[885,760],[661,923]],
+  rail:[[302,64],[966,64],[966,274],[302,274]],
+  post:[[853,273],[911,265],[853,702],[786,688]],
+  slat:[[625,266],[666,269],[641,662],[597,654]],
+  leg:[[578,920],[637,922],[699,1475],[642,1479]],
+  stretcher:[[203,1000],[597,1072],[599,1107],[201,1035]]
+ }
+};
+const chairTextures=kind=>Object.fromEntries(Object.entries(chairSources).map(([direction,s])=>[direction,{
+ image:`assets/chair-${direction}-v1.webp`,planes:{
+  front:plane(s[kind==='seat'?'seatEdge':kind]),back:plane(s[kind==='seat'?'seatEdge':kind]),
+  side:plane(s[kind==='seat'?'sideEdge':kind]),...(kind==='seat'?{top:plane(s.seatTop)}:{})
+ }
+}]));
+const chairParts=[
+ ...[[0,0,.05,.04],[.88,0,.83,.04],[0,.88,.05,.82],[.88,.88,.83,.82]].map(([u,v,tu,tv],i)=>({id:'leg-'+i,u,v,w:.12,d:.12,upper:{u:tu,v:tv},base:0,height:.86,cap:false,views:chairTextures('leg')})),
+ ...[.07,.87].map((u,i)=>({id:'side-stretcher-'+i,u,v:.14,w:.06,d:.7,base:.35,height:.06,cap:false,views:chairTextures('stretcher')})),
+ {id:'front-stretcher',u:.1,v:.84,w:.8,d:.06,base:.35,height:.06,cap:false,views:chairTextures('stretcher')},
+ {id:'seat',u:0,v:0,w:1,d:1,base:.84,height:.12,views:chairTextures('seat')},
+ ...[[.06,.03],[.83,.86]].map(([u,tu],i)=>({id:'back-post-'+i,u,v:.04,w:.11,d:.12,upper:{u:tu,v:0},base:.92,height:.94,cap:false,views:chairTextures('post')})),
+ ...[.235,.465,.695].map((u,i)=>({id:'back-slat-'+i,u,v:.06,w:.065,d:.06,upper:{v:0},base:.96,height:.81,cap:false,views:chairTextures('slat')})),
+ {id:'back-rail',u:0,v:0,w:1,d:.14,base:1.7,height:.25,cap:false,views:chairTextures('rail')}
+];
 export const FURNITURE={
+ chair:{
+  label:'원목 의자',shortLabel:'의자',width:1,depth:1,height:1.95,depthFill:1,introduced:5,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',
+  imageSize:{width:1024,height:1536},views:chairTextures('seat'),components:chairParts,
+  preferred:{direction:'left',x:7.5,y:5},clearance:'책상 앞 여유 공간을 남기고 의자를 놓아 주세요.'
+ },
  desk:{
-  label:'원목 책상',shortLabel:'책상',width:3,depth:1.5,height:1.6,depthFill:2/3,
+  label:'원목 책상',shortLabel:'책상',width:3,depth:1.5,height:1.6,depthFill:2/3,introduced:4,
   directions:['left','center','right'],anchor:'rear',layer:'standing',
   imageSize:{width:1536,height:1024},views:deskTextures('top'),components:deskParts,
   preferred:{direction:'right',x:8.5,y:4},clearance:'책상 앞 0.5칸을 비워 의자와 다리를 둘 여유를 남겨요.'

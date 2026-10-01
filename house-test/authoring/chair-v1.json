@@ -1,0 +1,37 @@
+{
+  "item": "chair",
+  "label": "원목 의자",
+  "mode": "built-in image_gen",
+  "reference": "references/home-style.png",
+  "assets": {
+    "left": "assets/chair-left-v1.webp",
+    "center": "assets/chair-center-v1.webp",
+    "right": "assets/chair-right-v1.webp"
+  },
+  "dimensions": {
+    "reserved": [
+      1,
+      1
+    ],
+    "actual": [
+      1,
+      1
+    ],
+    "height": 1.95,
+    "seatHeight": 0.9
+  },
+  "prompts": [
+    {
+      "direction": "center",
+      "prompt": "Use case: background-extraction. Asset type: a single transparent furniture sprite for the Ojjuda illustrated apartment. Image 1 is the exact object and approved style reference; Image 2 is the completed matching desk and supplies a secondary material/color check. Extract and reconstruct ONLY the wooden CHAIR in front of the writing desk on the RIGHT side of Image 1. Complete the parts hidden by the desk naturally. FRONT/CENTER view looking squarely at the front of its seat and backrest, no horizontal yaw, slightly elevated so the seat top is visible. The same warm honey-oak chair as in the room: a gently curved broad top back rail, three slim vertical wooden back slats, two outer rear posts, a softly rounded solid wood seat, four slender gently tapered wooden legs, and modest low side stretchers. No armrests, no upholstery, no cushion. Do not add decorative carving. Overall proportions width 1 unit, depth 1 unit, total height 1.95 units, seat height .9 units, suitable for the matching 1.6-unit-high desk. Four feet sit on one level floor plane, both front feet at exactly the same height; upright back, no floating or skewed base. Preserve the original warm oak, subtle wood grain, soft cream daylight and gentle painterly 3D shading. One complete chair centered in a 1024x1536 portrait canvas with clear margins; no cropped parts. True alpha transparency around the chair, between back slats and between legs. No wall, floor, room fragment, cast shadow, backdrop, glow, text, UI, desk, books, lamp, plant, human, animal or other furniture. One standalone chair and one viewpoint, not a contact sheet."
+    },
+    {
+      "direction": "left",
+      "prompt": "Use case: background-extraction. Produce a separate LEFT three-quarter view of the exact wooden chair in Image 1. Image 2 is the approved apartment reference. Independently rotate the camera to show the chair's FRONT seating side and LEFT side; do not flip or mirror any picture. Keep the same gently curved broad top back rail, exactly three narrow vertical inner back slats plus the two outer posts, rounded solid oak seat, four slightly splayed slender wooden legs, and the same low stretcher construction. No upholstery, cushion or armrest. Preserve identical shape and proportions: width 1, depth 1, height 1.95, seat height .9. Match the same honey-oak wood color, cream highlights, fine grain and soft daylight as Image 1. All four feet contact one common level ground plane; chair upright and soundly constructed. Slightly elevated view shows the seat top. One complete chair centered in a 1024x1536 portrait canvas, clear transparent margins, no cropped legs. True alpha transparency around it and through all gaps between slats and legs. No floor patch, background, wall, external shadow, backdrop, glow, text, UI, other furniture or objects. This is one separately rendered view, not a collage."
+    },
+    {
+      "direction": "right",
+      "prompt": "Use case: background-extraction. Produce a separate RIGHT three-quarter view of the exact oak chair in Image 1, using Image 2 only as the original apartment style reference. Show the chair's FRONT seating side and its RIGHT side; right side on the right of the composition. This is an independently rendered viewpoint, never a flipped or mirrored image. Preserve identical construction: curved broad upper back rail, exactly three slim vertical inner back slats plus two outer posts, rounded solid wood seat, four slender slightly splayed legs, and matching low stretchers. No armrests, cushion or upholstery. Dimensions stay width 1, depth 1, total height 1.95, seat height .9. Keep the honey-oak color, fine natural grain, warm cream daylight and soft painterly 3D shading unchanged. All four feet rest on the same level floor plane; no tilted or floating base. Slightly elevated camera reveals the seat top. Center the whole single chair in a 1024x1536 portrait image with empty margins, no cropped feet. Actual alpha transparency around it and between back slats and legs. No background, brown backdrop, glow, floor fragment, cast shadow, UI, lettering, desk, lamp, plant, person, pet or other object. One chair and one viewpoint only, not a sheet of views."
+    }
+  ]
+}

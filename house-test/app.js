@@ -1,7 +1,7 @@
-import {icon} from './icons.js?v=20261001-desk1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-desk1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-desk1';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-desk1';
+import {icon} from './icons.js?v=20261001-chair1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-chair1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-chair1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-chair1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -53,7 +53,7 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    body.append(row,warning,element('p','panel-note',item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));
   }else{
    const row=element('div','actions');
-   for(const id of ['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf')]){
+   for(const id of ['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced)]){
     const item=FURNITURE[id],placed=furniturePlacements(current()).some(p=>p.id===id);
     row.append(actionButton((item.shortLabel||item.label)+(placed?' 배치':' 놓기'),()=>startPlacement(id),'▧'));
    }

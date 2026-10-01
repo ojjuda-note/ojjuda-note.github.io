@@ -1,4 +1,4 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-desk1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-chair1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -21,24 +21,29 @@ export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
  }
  return null;
 }
-function roomFurniture(raw,shelf,addDesk){
+function roomFurniture(raw,shelf,version,addNew){
  const result={},others=shelf?[{id:'bookshelf',...shelf}]:[];
- if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const id of Object.keys(FURNITURE)){
-  if(id==='bookshelf')continue;const placed=normalizePlacement(id,raw[id]);
+ const ids=Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced);
+ if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const id of ids){
+  const placed=normalizePlacement(id,raw[id]);
   if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
  }
- if(addDesk&&!result.desk){const desk=findPlacement('desk',others);if(desk)result.desk=desk;}
+ if(addNew)for(const id of ids)if(!result[id]&&FURNITURE[id].introduced>version){
+  let preferred=FURNITURE[id].preferred;
+  if(id==='chair'&&result.desk){const desk=result.desk;if(desk.direction==='right')preferred={direction:'left',x:desk.x-1,y:desk.y+1};else if(desk.direction==='left')preferred={direction:'right',x:desk.x+itemSize('desk','left').w,y:desk.y+1};}
+  const placed=findPlacement(id,others,preferred);if(placed){result[id]=placed;others.push({id,...placed});}
+ }
  return result;
 }
 export function normalize(data){
- const initialShelf=defaultShelf(),rooms=[{x:0,y:0,decor:true,curtains:true,shelf:initialShelf,furniture:roomFurniture(null,initialShelf,true)}],pending=new Map();
+ const initialShelf=defaultShelf(),rooms=[{x:0,y:0,decor:true,curtains:true,shelf:initialShelf,furniture:roomFurniture(null,initialShelf,0,true)}],pending=new Map();
  if(Array.isArray(data?.rooms))for(const r of data.rooms.slice(0,100))if(validCell(r)){
   const shelf=data.version>=2?migrateShelf(r.shelf,data.version):(!r.x&&!r.y?defaultShelf():null);
-  pending.set(roomKey(r),{x:r.x,y:r.y,decor:r.decor===true,curtains:r.curtains!==false,shelf,furniture:roomFurniture(r.furniture,shelf,!(data.version>=4)&&!r.x&&!r.y)});
+  pending.set(roomKey(r),{x:r.x,y:r.y,decor:r.decor===true,curtains:r.curtains!==false,shelf,furniture:roomFurniture(r.furniture,shelf,Number(data.version)||0,!r.x&&!r.y)});
  }
  if(pending.has('0:0'))rooms[0]=pending.get('0:0');pending.delete('0:0');
  let progress=true;while(progress&&rooms.length<35){progress=false;for(const [key,r]of pending)if(canAdd(rooms,r)){rooms.push(r);pending.delete(key);progress=true;}}
- return {version:4,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
+ return {version:5,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
 }
 
 export const ROOM={width:1507,height:1044,top:27,bottom:916,clip:'inset(27px 12px 128px 12px)',assetVersion:3,wallHeight:4.5};
