@@ -17,7 +17,7 @@ Settled rooms and character previews stop drawing; explicit pet reactions and wa
 
 `places.js` and `world-places.js` render the existing café, library, park and arcade state. Furniture IDs, people, presence, seat targets, chat, quiz and game actions still come from World. Raycast hits invoke those existing actions; the iframe never creates replacement game or social data. Static model geometry is batched by material; a settled scene stops drawing and covered/offscreen scenes pause. Chair directions follow their layout and public shelves face inward.
 
-`pet-breeds.js` provides different silhouettes, ears, muzzles, coats and tails for the 24 named dog/cat breeds, plus the two base pets. All surfaces use the same factories. Full hats suppress incompatible high hair pieces; accessory positions and portrait framing preserve their visibility.
+`pet-breeds.js` provides different silhouettes, ears, muzzles, coats and tails for the 24 named dog/cat breeds, plus the two base pets. All surfaces use the same factories. Full hats suppress incompatible high hair pieces and tuck the remaining upper hair below the brim. Headphones fit the actual hair width and height while keeping the ear cups at ear level. Accessory positions and portrait framing preserve their visibility.
 
 `furniture.js` repairs solid openings, coplanar window art and hidden interiors in tubs, basins, sinks, fountains, plant leaves, bread racks and vending machines. `variants.js` preserves the catalog's species, rug/mat shape, pattern and illustration hints. The item list renders visible 3D thumbnails on demand, caches them, and shares a renderer. Missing colors use the model's own default, rather than universal brown. Saved item IDs, colors, room dimensions and ownership remain intact.
 
