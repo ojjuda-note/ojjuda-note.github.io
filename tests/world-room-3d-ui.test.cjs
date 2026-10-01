@@ -58,7 +58,7 @@ world=world.slice(0,boot)+`
   assert.ok(!requests.includes(backdrop.url),view+': house art is not fetched');
   await preview.close();
  }
- assert.deepEqual((await page.locator('.bottomnav button > span:first-of-type').allTextContents()),['동네','우리집','상점','메뉴']);
+ assert.deepEqual((await page.locator('.bottomnav button > span:first-of-type').allTextContents()),['동네','우리집','메뉴']);
  assert.equal(await page.locator('[data-act="house-mode"]').count(),3);
  assert.ok((await frame().evaluate(()=>Ojjuda3D.inspect())).items.length>0);
  assert.equal(await frame().evaluate(()=>localStorage.getItem('ojjuda3d')),null,'no account-independent demo room is stored');
