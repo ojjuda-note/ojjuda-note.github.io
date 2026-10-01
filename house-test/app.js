@@ -1,5 +1,6 @@
-import {icon} from './icons.js?v=20261001-4';
-import {normalize,roomKey,canAdd,normalizeShelf,shelfSize,floorPoint,floorCell,roomPeriod,ROOM} from './model.js?v=20261001-4';
+import {icon} from './icons.js?v=20261001-5';
+import {normalize,roomKey,canAdd,normalizeShelf,shelfSize,floorPoint,floorCell,roomPeriod,ROOM} from './model.js?v=20261001-5';
+import {renderShelf} from './furniture.js?v=20261001-5';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 const stepX=ROOM.width+40,stepY=ROOM.height+40,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,scale=1,pan={x:0,y:0},actorX=420,dogX=700,follow=false,raf=0,motion=null,timer,saveFailed=false;
@@ -59,9 +60,8 @@ function updatePeriod(){const next=roomPeriod();document.documentElement.dataset
 function startPlacement(){editing=true;draft={...(current().shelf||{x:7,y:1.5,direction:'right'})};renderWorld();renderPanel();}
 function finishPlacement(commit){if(commit){current().shelf={...draft};save();}editing=false;draft=null;renderWorld();renderPanel();toast(commit?'책장을 배치했어요.':'이전 배치로 돌아왔어요.');}
 function moveShelf(dx,dy){draft=normalizeShelf({...draft,x:draft.x+dx,y:draft.y+dy});renderWorld();renderPanel();}
-const crops={left:{x:210,y:26,w:240,h:928},center:{x:614,y:32,w:308,h:900},right:{x:1084,y:24,w:244,h:932}};
-function shelfStyle(button,s){const {w,d}=shelfSize(s.direction),foot=floorPoint(s.x+w/2,s.y+d),c=crops[s.direction],height=510+((s.y+d)/7)*150,ratio=height/c.h;button.style.left=(foot.x-c.w*ratio/2)+'px';button.style.top=(foot.y-height)+'px';button.style.width=c.w+'px';button.style.height=c.h+'px';button.style.transform=`scale(${ratio})`;button.style.zIndex=String(10+Math.round(foot.y));button.dataset.x=s.x;button.dataset.y=s.y;button.dataset.direction=s.direction;const im=button.querySelector('img');im.style.left=-c.x+'px';im.style.top=-c.y+'px';}
-function makeShelf(s,active){const button=element('button','bookshelf');button.type='button';button.setAttribute('aria-label','책장 배치 변경');button.disabled=!active||expanding;const im=element('img');im.src='assets/bookshelf-views.webp';im.alt='원목 책장';im.draggable=false;button.append(im);shelfStyle(button,s);button.onclick=()=>{if(!editing){setTab('room');startPlacement();}};if(active)button.addEventListener('pointerdown',e=>{if(!editing||e.button>0)return;e.stopPropagation();const start=point(e),original={...draft},b=bounds(current()),{w,d}=shelfSize(draft.direction),anchor=floorPoint(draft.x+w/2,draft.y+d),startCell=floorCell(anchor.x,anchor.y);button.setPointerCapture(e.pointerId);
+const shelfStyle=renderShelf;
+function makeShelf(s,active){const button=element('button','bookshelf');button.type='button';button.setAttribute('aria-label','책장 배치 변경');button.disabled=!active||expanding;shelfStyle(button,s);button.onclick=()=>{if(!editing){setTab('room');startPlacement();}};if(active)button.addEventListener('pointerdown',e=>{if(!editing||e.button>0)return;e.stopPropagation();const start=point(e),original={...draft},b=bounds(current()),{w,d}=shelfSize(draft.direction),anchor=floorPoint(draft.x+w/2,draft.y+d),startCell=floorCell(anchor.x,anchor.y);button.setPointerCapture(e.pointerId);
  const drag=ev=>{const p=point(ev),cell=floorCell(anchor.x+(p.x-start.x)/scale,anchor.y+(p.y-start.y)/scale);draft=normalizeShelf({...original,x:original.x+cell.x-startCell.x,y:original.y+cell.y-startCell.y});shelfStyle(button,draft);const grid=button.parentElement.querySelector('.floor-grid');if(grid)grid.replaceWith(makeGrid(draft));$('#shelf-position').textContent=`가로 ${draft.x} · 깊이 ${draft.y}칸`;};
  const up=ev=>{button.removeEventListener('pointermove',drag);button.removeEventListener('pointerup',up);button.removeEventListener('pointercancel',cancel);if(button.hasPointerCapture(ev.pointerId))button.releasePointerCapture(ev.pointerId);};const cancel=ev=>{draft=original;shelfStyle(button,draft);up(ev);renderWorld();renderPanel();};button.addEventListener('pointermove',drag);button.addEventListener('pointerup',up);button.addEventListener('pointercancel',cancel);
  });return button;}

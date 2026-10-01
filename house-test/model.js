@@ -26,6 +26,11 @@ export function floorPoint(x,y){
  const u=x/FLOOR.width,v=y/FLOOR.depth,w=G*u+H*v+1;
  return {x:(A*u+B*v+C)/w,y:(D*u+E*v+F)/w};
 }
+// Furniture shares the floor camera: height changes only the vertical numerator.
+export function roomPoint(x,y,z=0){
+ const p=floorPoint(x,y),w=G*x/FLOOR.width+H*y/FLOOR.depth+1;
+ return {x:p.x,y:p.y-z*(p1.x-p0.x)/FLOOR.width/w};
+}
 export function floorCell(x,y){
  const a=A-x*G,b=B-x*H,c=x-C,d=D-y*G,e=E-y*H,f=y-F,det=a*e-b*d;
  if(!Number.isFinite(det)||Math.abs(det)<1e-8)return {x:4,y:0};
