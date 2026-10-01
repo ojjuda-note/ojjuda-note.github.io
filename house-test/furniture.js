@@ -1,5 +1,6 @@
-import {floorPoint,roomPoint} from './model.js?v=20261001-plant1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-plant1';
+import {floorPoint,roomPoint} from './model.js?v=20261001-renderfix1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-renderfix1';
+import {paintFurniture} from './furniture-painter.js?v=20261001-renderfix1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -80,16 +81,9 @@ export function renderFurniture(button,id,s){
  const item=FURNITURE[id],geometry=furnitureGeometry(id,s);if(!geometry)return null;
  Object.assign(button.style,{left:`${geometry.left}px`,top:`${geometry.top}px`,width:`${geometry.width}px`,height:`${geometry.height}px`,zIndex:String(10+Math.round(Math.max(...geometry.footprint.map(p=>p.y))))});
  button.dataset.x=s.x;button.dataset.y=s.y;button.dataset.direction=s.direction;button.dataset.furniture=id;
- button.replaceChildren();
- for(const face of geometry.faces){
-  if(!face.matrix)continue;
-  const image=document.createElement('img');image.src=face.image;image.alt='';image.draggable=false;image.className='bookshelf-face';image.dataset.plane=face.plane;image.dataset.part=face.part;image.dataset.corners=face.corners.join(',');
-  image.style.width=item.imageSize.width+'px';image.style.height=item.imageSize.height+'px';
-  const local=face.target.map(p=>({x:p.x-geometry.left,y:p.y-geometry.top}));
-  image.style.transform=cssMatrix(projectiveMap(face.source,local));
-  image.style.clipPath=`polygon(${face.clip.map(([x,y])=>`${x}px ${y}px`).join(',')})`;
-  button.append(image);
- }
+ const canvas=document.createElement('canvas');canvas.className='furniture-paint';canvas.setAttribute('aria-hidden','true');
+ button.dataset.renderState='loading';button.replaceChildren(canvas);
+ paintFurniture(canvas,geometry,transformPoint).catch(error=>{if(canvas.isConnected){button.dataset.renderState='error';button.title='가구 이미지를 다시 불러오려면 눌러 주세요.';}console.error(error);});
  return geometry;
 }
 export const renderShelf=(button,s)=>renderFurniture(button,'bookshelf',s);

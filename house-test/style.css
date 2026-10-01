@@ -13,4 +13,6 @@
 
 .furniture.placement-invalid{outline:3px dashed #b15b63;outline-offset:4px}.placement-warning{font-size:12px;line-height:1.5;color:#a34854;margin:6px 0}.placement-warning[hidden]{display:none}
 .furniture-actions{max-height:152px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:2px}
+.furniture-paint{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.furniture:disabled{pointer-events:none}
 @media(max-height:550px) and (min-width:600px){.furniture-actions{max-height:104px}}

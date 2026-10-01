@@ -1,7 +1,7 @@
-import {icon} from './icons.js?v=20261001-plant1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-plant1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-plant1';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-plant1';
+import {icon} from './icons.js?v=20261001-renderfix1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-renderfix1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-renderfix1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-renderfix1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -98,7 +98,7 @@ function updatePlacementStatus(button){
  const done=$('#placement-done'),warning=$('#placement-warning');if(done)done.disabled=!valid;if(warning)warning.hidden=valid;
 }
 function makeFurniture(id,s,active){
- const button=element('button','furniture '+id),item=FURNITURE[id];button.type='button';button.setAttribute('aria-label',(item.shortLabel||item.label)+' 배치 변경');button.disabled=!active||expanding||(editing&&editingId!==id);
+ const button=element('button','furniture '+id),item=FURNITURE[id];button.type='button';button.setAttribute('aria-label',(item.shortLabel||item.label)+' 배치 변경');button.disabled=!active||expanding||tab!=='room'||(editing&&editingId!==id);
  renderFurniture(button,id,s);if(active&&editing&&editingId===id)updatePlacementStatus(button);
  button.onclick=()=>{if(!editing){setTab('room');startPlacement(id);}};
  if(active)button.addEventListener('pointerdown',e=>{

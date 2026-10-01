@@ -1,4 +1,4 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-plant1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-renderfix1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
