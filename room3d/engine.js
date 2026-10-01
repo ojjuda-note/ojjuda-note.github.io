@@ -706,7 +706,19 @@ function makeAvatarInner(cfg) {
   if(cfg.hair==='bangs')H.add(at(box(.67,.14,.14,hc,.035),0,.27,.34));else if(!['buzz','sidepart','spiky','afro','curly'].includes(cfg.hair))for(const [x,y,angle] of [[-.22,.24,-.4],[0,.29,-.3],[.23,.24,.35]]){const lock=sph(.18,hc,18,12);lock.scale.set(1,.68,.43);lock.position.set(x,y,.335);lock.rotation.z=angle;H.add(lock);}
   H.name='avatar-hair';
   const fullHat=['cap','beret','beanie','strawhat','santahat','witchhat'].includes(cfg.acc);
-  if(fullHat)for(const child of H.children)if(child.position.y>.32)child.visible=false;
+  if(fullHat){
+    // Tuck the upper hair beneath the brim without shortening the lower hair.
+    const ceiling=cfg.acc==='cap'?.28:cfg.acc==='strawhat'?.27:.30;
+    for(const child of H.children){
+      if(child.position.y>.32){child.visible=false;continue;}
+      child.updateMatrix();child.geometry.computeBoundingBox();
+      const bounds=child.geometry.boundingBox.clone().applyMatrix4(child.matrix);
+      if(bounds.max.y>ceiling){
+        const ratio=Math.max(.05,(ceiling-bounds.min.y)/(bounds.max.y-bounds.min.y));
+        child.scale.y*=ratio;child.position.y=bounds.min.y+(child.position.y-bounds.min.y)*ratio;
+      }
+    }
+  }
   const A = new THREE.Group(); A.name='avatar-accessory';head.add(A); const E = '#3B2F5E';
   switch (cfg.acc) {
     case 'beret':{const hat=at(sph(.47,'#cc99b9',24,16),.04,.43,-.04);hat.scale.set(1.08,.4,1.08);A.add(hat,at(cyl(.025,.025,.07,'#b07f9f',8),.04,.65,-.04));break;}
@@ -725,13 +737,24 @@ function makeAvatarInner(cfg) {
     case 'crown': { const c3 = cyl(.3, .3, .22, '#F2C94C', 8); c3.position.y = .5; A.add(c3); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; A.add(at(cone(.06, .16, '#F2C94C', 4), Math.cos(a) * .28, .66, Math.sin(a) * .28)); } A.add(at(sph(.05, '#F0467C', 8, 6), 0, .55, .3)); break; }
     case 'glasses': case 'sunglasses': { const dark = cfg.acc === 'sunglasses'; const gm = dark ? toon('#2B2D4A') : new THREE.MeshBasicMaterial({ color: '#CFE7FA', transparent: true, opacity: .45 }); for (const x of [-.15, .15]) { const l = new THREE.Mesh(new THREE.CylinderGeometry(.13, .13, .03, 20), gm); l.rotation.x = Math.PI / 2; l.position.set(x, -.02, .39); A.add(l); const rim = new THREE.Mesh(new THREE.TorusGeometry(.13, .018, 8, 24), toon(dark ? '#2B2D4A' : E)); rim.position.set(x, -.02, .39); A.add(rim); } A.add(at(box(.08, .02, .02, E, .005), 0, -.02, .4)); break; }
     case 'catears': for (const x of [-.22, .22]) { const e = cone(.1, .22, hc, 4); e.position.set(x, .42, 0); A.add(e); const i2 = cone(.05, .12, '#FFB8C8', 4); i2.position.set(x, .42, .04); A.add(i2); } break;
-    case 'headphones': { const band = new THREE.Mesh(new THREE.TorusGeometry(.44, .03, 8, 24, Math.PI), toon('#F0679A')); band.position.y = .05; A.add(band); for (const x of [-.44, .44]) A.add(rot(at(cyl(.12, .12, .1, '#F0679A', 16), x, .0, 0, 0), 'z', Math.PI / 2)); break; }
+    case 'headphones': {
+      // Fit the band around the actual hair silhouette; ear cups stay at ear height.
+      H.updateMatrixWorld(true);
+      const bounds=new THREE.Box3();
+      for(const child of H.children){if(!child.visible)continue;child.updateMatrix();child.geometry.computeBoundingBox();bounds.union(child.geometry.boundingBox.clone().applyMatrix4(child.matrix));}
+      const radius=Math.max(.46,Math.abs(bounds.min.x),Math.abs(bounds.max.x))+.045;
+      const height=Math.max(.49,bounds.max.y+.055);
+      const band=new THREE.Mesh(new THREE.TorusGeometry(.44,.03,8,24,Math.PI),toon('#F0679A'));
+      band.scale.set(radius/.44,height/.44,1);band.position.z=.10;A.add(band);
+      for(const x of [-radius,radius])A.add(rot(at(cyl(.12,.12,.10,'#F0679A',16),x,0,.10),'z',Math.PI/2));
+      break;
+    }
     case 'flower': { A.add(at(sph(.05, '#F2C94C', 8, 6), .33, .33, .36)); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; A.add(at(sph(.055, '#F0679A', 8, 6), .33 + Math.cos(a) * .09, .33 + Math.sin(a) * .09, .36)); } break; }
     case 'ribbon': { for (const x of [-1, 1]) { const w = cone(.1, .22, '#F0467C', 3); w.rotation.z = x * Math.PI / 2; w.position.set(.31 + x * .11, .4, .31); A.add(w); } A.add(at(sph(.05, '#C93A66', 8, 6), .31, .4, .31)); break; }
     case 'scarf': { const sc = new THREE.Mesh(new THREE.TorusGeometry(.26, .09, 10, 24), toon('#E86E6E')); sc.rotation.x = Math.PI / 2; sc.position.set(0, -.42, .05); A.add(sc); A.add(at(box(.14, .3, .08, '#E86E6E', .03), .12, -.6, .24)); break; }
     case 'backpack': { for(const x of [-.17,.17])upper.add(at(box(.045,.39,.045,'#dc9299',.015),x,.28,.18));const bp = box(.4, .42, .2, '#E86E6E', .08); bp.position.set(0, -.62, -.45); A.add(bp); A.add(at(box(.3, .16, .06, '#C94F5E', .03), 0, -.72, -.59)); break; }
   }
-  if(['halo','crown','bunnyears','catears','devilhorns','headphones'].includes(cfg.acc))A.position.y=({bun:.27,doublebun:.16,spiky:.16,curly:.09,afro:.14})[cfg.hair]||0;
+  if(['halo','crown','bunnyears','catears','devilhorns'].includes(cfg.acc))A.position.y=({bun:.27,doublebun:.16,spiky:.16,curly:.09,afro:.14})[cfg.hair]||0;
   g.userData.head = head; g.userData.legLen = legLen; g.traverse(o => { o.userData.avatar = true; }); return g;
 }
 let me = null; const av = { pos: new THREE.Vector2(4.5, 5.5), target: null, walkT: 0, pose: 'stand', then: null, yaw: Math.PI };
