@@ -23,7 +23,30 @@ assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'6.5');
 await f.getByRole('button',{name:'취소',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'7');
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
-for(const direction of ['left','center','right']){await f.locator(`[data-direction="${direction}"]:not(.bookshelf)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);}
+for(const direction of ['left','center','right']){
+ await f.locator(`[data-direction="${direction}"]:not(.bookshelf)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);
+ // Check the actual CSS-transformed contact pixels against the visible grid,
+ // not just the logical saved position or an image bounding rectangle.
+ const contactError=await f.locator('.bookshelf').evaluate(button=>{
+  const points=document.querySelector('.floor-grid polygon').points;
+  const contacts={left:[[[216,935,3],[330,946,2]],[[330,946,2],[442,853,1]]],center:[[[620,922,3],[916,922,2]]],right:[[[1092,853,0],[1206,946,3]],[[1206,946,3],[1320,935,2]]]};
+  let error=0;[...button.querySelectorAll('img')].forEach((image,i)=>{
+   const matrix=new DOMMatrix(getComputedStyle(image).transform);
+   for(const [x,y,index]of contacts[button.dataset.direction][i]){
+    const p=matrix.transformPoint(new DOMPoint(x,y)),target=points[index];
+    error=Math.max(error,Math.hypot(p.x/p.w+parseFloat(button.style.left)-target.x,p.y/p.w+parseFloat(button.style.top)-target.y));
+   }
+  });return error;
+ });assert.ok(contactError<.05,`${direction} visible foot mismatch: ${contactError}`);
+ await page.screenshot({path:`/tmp/house-shelf-${direction}.png`});
+}
+const projection=await f.evaluate(async()=>{
+ const {shelfGeometry,transformPoint}=await import('/house-test/furniture.js');const {shelfSize}=await import('/house-test/model.js');let error=0,poses=0;
+ for(const direction of ['left','center','right']){const {w,d}=shelfSize(direction);for(let y=0;y<=7-d;y+=.5)for(let x=0;x<=8-w;x+=.5){
+  const geometry=shelfGeometry({direction,x,y});if(!Number.isFinite(geometry.width)||!Number.isFinite(geometry.height))throw new Error('Invalid furniture bounds');poses++;
+  for(const face of geometry.faces){if(!face.matrix)continue;for(const index of [2,3]){const p=transformPoint(face.matrix,face.source[index]),target=face.target[index];error=Math.max(error,Math.hypot(p.x-target.x,p.y-target.y));}}
+ }}return {error,poses};
+});assert.equal(projection.poses,499);assert.ok(projection.error<1e-7);
 const shelfBox=await f.locator('.bookshelf').boundingBox();await page.mouse.move(shelfBox.x+shelfBox.width/2,shelfBox.y+shelfBox.height/2);await page.mouse.down();await page.mouse.move(shelfBox.x+shelfBox.width/2-60,shelfBox.y+shelfBox.height/2+12,{steps:5});await page.mouse.up();const draggedX=Number(await f.locator('.bookshelf').getAttribute('data-x'));assert.ok(draggedX<7&&Number.isInteger(draggedX*2));
 await f.locator('button[data-direction="center"]').click();await f.locator('button[data-direction="right"]:not(.bookshelf)').click();
 await f.getByRole('button',{name:'책장 ↓ 0.5칸',exact:true}).click();
