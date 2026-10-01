@@ -11,7 +11,7 @@ world = world.replace('<script type="module">', `<script>${helper}</script><scri
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.worldTest={state:g,actions:sr,render:H,model:$,modal:ct,draft:roomPlacementDraft};
+window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct,draft:roomPlacementDraft};
 gm(()=>{if(!canLeaveRoomPlacement())return;g.tab="friends";g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
 g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
 
@@ -49,7 +49,31 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await page.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(page.url(),'https://fixture.test/world.html');
     };
-    for(const tab of ['home','shop','my']) {
+    assert.equal(await page.locator('[data-tab="shop"]').count(),0,'store entries are removed');
+    await page.evaluate(()=>worldTest.actions.tab({tab:'shop'}));
+    assert.equal(await current(),'friends','old store action returns to the main screen');
+    await page.evaluate(()=>{worldTest.state.tab='shop';worldTest.render();});
+    assert.equal(await current(),'friends','restored store state cannot reopen the store');
+    assert.equal(await page.locator('.wd-home').getAttribute('aria-disabled'),'true');
+    assert.match(await page.locator('.wd-home').textContent(),/공사 중/);
+    await page.evaluate(()=>worldTest.actions['house-construction']());
+    assert.equal(await current(),'friends');
+    for(const tab of ['home','deco']){
+      await page.evaluate(tab=>worldTest.actions.tab({tab}),tab);
+      assert.equal(await page.locator('[data-house-construction]').count(),1);
+      assert.equal(await page.locator('#stage,#av-preview,.room3d-frame').count(),0);
+      await main();
+    }
+    await page.evaluate(()=>worldTest.actions['house-admin-preview']());
+    assert.equal(await current(),'friends','ordinary users cannot open the admin preview action');
+    await page.evaluate(()=>{worldTest.auth.isAdmin=true;worldTest.actions.tab({tab:'home'});});
+    assert.equal(await page.locator('[data-house-construction]').count(),1,'admin must explicitly enter the preview');
+    await page.evaluate(()=>worldTest.actions['house-admin-preview']());
+    assert.equal(await page.locator('#stage').count(),1);
+    await page.evaluate(()=>{worldTest.auth.isAdmin=false;worldTest.render();});
+    assert.equal(await page.locator('[data-house-construction]').count(),1,'losing admin access closes the preview');
+    await main();
+    for(const tab of ['home','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
       assert.equal(await current(),tab);
       await back();
@@ -61,7 +85,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     }
     const length=await page.evaluate(()=>history.length);
     for(let i=0;i<3;i++){
-      await page.evaluate(()=>worldTest.actions.tab({tab:'shop'}));
+      await page.evaluate(()=>worldTest.actions.tab({tab:'my'}));
       await main();
     }
     assert.equal(await page.evaluate(()=>history.length),length,'menu visits do not pile up history entries');
@@ -71,7 +95,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.equal(await current(),'my','back closes the top dialog before leaving its menu');
     await back();
     await page.evaluate(()=>{
-      const t=worldTest;t.actions.tab({tab:'deco'});
+      const t=worldTest;t.auth.isAdmin=true;t.actions['house-admin-preview']();t.actions.tab({tab:'deco'});
       t.model.room.items=[{id:'draft-desk',type:'desk',gx:2,gy:2,r:0}];
       t.state.sel='draft-desk';t.render();t.actions.mv({dx:1,dy:0});
     });
@@ -129,7 +153,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);
       await touch('touchEnd',[]);
     };
-    const tabs=['friends','home','shop','my'];
+    const tabs=['friends','home','my'];
     for(let i=0;i<tabs.length;i++){
       for(const dx of [-150,150]){
         await navigate(tabs[i]);
@@ -152,6 +176,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.locator('.world-destination[data-id="cafe"]').click();
     await touchDrag('.visit-banner',-150);
     assert.equal(await current(),'home','place headers use the active neighborhood tab');
+    await page.evaluate(()=>{worldTest.auth.isAdmin=true;worldTest.actions['house-admin-preview']();});
     const roomBefore=await page.evaluate(()=>worldTest.model.roomIdx);
     await touchDrag('#room-svg',-150);
     assert.equal(await current(),'home','room gestures never switch top-level menus');
@@ -190,7 +215,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       ?route.fulfill({contentType:'text/html',body:world}):route.abort());
     const np=await native.newPage();await np.goto('https://fixture.test/world.html');
     await np.waitForFunction(()=>window.nativeBack && window.worldTest);
-    for(const tab of ['home','deco','shop','my']){
+    for(const tab of ['home','deco','my']){
       await np.evaluate(tab=>{worldTest.actions.tab({tab});nativeBack({canGoBack:false})},tab);
       await np.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');

@@ -9,7 +9,7 @@ world=world.replace('<script type="module">',`<script>${fs.readFileSync(path.joi
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.roomTest={model:$,state:g,auth:D,actions:sr,render:H,refresh:ut,save:Ti,storageKey:gr,server:()=>mi($),draft:roomPlacementDraft,items:roomPlacementItems,catalog:q,petOpen:Qd,avatarCatalog:{hair:fr,face:mr,top:To,bottom:Ro,shoes:jr,acc:ur}};
- g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
+ D.isAdmin=true;g.houseAdminPreview=true;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
 
 
 

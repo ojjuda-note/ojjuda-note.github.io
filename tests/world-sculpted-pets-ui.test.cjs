@@ -12,7 +12,7 @@ world=world.replace('<script type="module">',`<script>${fs.readFileSync(path.joi
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0,'World fixture boot seam exists');
 world=world.slice(0,boot)+`
   window.roomTest={model:$,state:g,render:H,refresh:ut,save:Ti,storageKey:gr,catalog:q,petOpen:Qd};
-  g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
+  D.isAdmin=true;g.houseAdminPreview=true;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
 
 const moduleFixture=`<!doctype html><html><body style="margin:0"><script type="module">
   import * as THREE from '/room3d/vendor/three.module.js';

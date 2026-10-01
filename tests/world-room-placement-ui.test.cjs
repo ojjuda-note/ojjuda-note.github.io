@@ -14,7 +14,7 @@ world = world.slice(0, boot) + `
 window.roomTest={get model(){return $},get state(){return g},get catalog(){return q},get shop(){return W},get auth(){return D},
  actions:sr,render:H,refresh:ut,save:Ti,storageKey:gr,draft:roomPlacementDraft,items:roomPlacementItems,serverModel:()=>mi($),
  select(id){g.sel=id;ut()},setBuyer(fn){Fc=fn}};
-g.tab="deco";H();` + world.slice(world.indexOf('</script>', boot));
+D.isAdmin=true;g.houseAdminPreview=true;g.tab="deco";H();` + world.slice(world.indexOf('</script>', boot));
 
 (async () => {
   const browser = await chromium.launch({headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
