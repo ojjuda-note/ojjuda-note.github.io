@@ -1,5 +1,7 @@
 # 우리집 관리자 테스트
 
+Furniture workflow: read all nine rules in [FURNITURE_RULES.md](FURNITURE_RULES.md) before generating each item. After authoring, place it in the actual room and check the relevant representative placements against those rules, including overlap, interpenetration and reserved-space collisions with other items, then deploy. Keep verification minimal: add focused checks only for observed problems or changed behavior, and do not repeat the exhaustive placement matrix for every furniture asset. Existing required deployment checks still apply.
+
 World → 관리자 모드 → **새 우리집 테스트**. Public houses remain under construction; the shop stays removed.
 
 The approved empty-room shell is 1507×1044, with both side walls extended all the way to the front floor corners, a rectangular ceiling light, cream walls, oak floor and lavender trim. The curtain and the newly extracted reference bookshelf are independent alpha layers. Furniture rules are documented in [FURNITURE_RULES.md](FURNITURE_RULES.md) and enforced through the shared catalog, model and renderer. Default furniture: ivory curtains and one right-wall bookshelf. Other furniture remains future work. Existing prototype avatar/pet interactions appear only on the pet tab.
