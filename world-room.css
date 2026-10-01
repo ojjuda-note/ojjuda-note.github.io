@@ -1,4 +1,4 @@
-/* A single house destination, with the garden framing a full-width working room. */
+/* A single house destination with a full-width room over a painted backdrop. */
 .house-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 16px;flex-wrap:wrap}
 .house-heading h2{font-size:22px;margin:0;color:#534a67}
 .house-heading .seg{width:auto;flex:none;gap:3px;padding:4px;background:#efebf5;border:1px solid #e3dbea;border-radius:15px}

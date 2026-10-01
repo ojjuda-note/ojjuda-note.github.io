@@ -21,11 +21,60 @@ world=world.slice(0,boot)+`
  await page.goto('https://fixture.test/world.html');
  const ready=()=>page.waitForSelector('.room3d-ready',{timeout:30000});await ready();
  const frame=()=>page.frames().find(f=>f.url().includes('/room3d/index.html'));
+ const framing=[];
+ async function checkFraming(label){
+  const size=await page.locator('.room3d-frame').evaluate(el=>({width:el.clientWidth,height:el.clientHeight}));
+  await frame().waitForFunction(size=>{
+   const view=Ojjuda3D.inspect().framing?.viewport;
+   return view&&Math.abs(view.width-size.width)<=1&&Math.abs(view.height-size.height)<=1;
+  },size);
+  const view=await frame().evaluate(()=>Ojjuda3D.inspect().framing),house=view.house;
+  assert.ok(house&&Object.values(house).every(Number.isFinite),label+': actual house geometry has finite screen bounds');
+  assert.ok(house.width>=.90&&house.width<=.96,label+': the house fills the stage width');
+  assert.ok(house.left>=.01&&house.right<=.99&&house.top>=.025&&house.bottom<=.975,label+': the roof and room base remain inside the frame');
+  assert.equal(view.courtyardMeshCount,0,label+': no three-dimensional yard consumes room space');
+  assert.ok(view.exteriorMeshCount>0,label+': the house still retains its roof and foundation');
+  assert.equal(view.zoom,1,label+': this is the natural fit without manual zoom');
+  framing.push({label,width:house.width,height:house.height,roomSize:view.roomSize});
+  return house;
+ }
+ const backdrop=await frame().evaluate(async()=>{
+  const style=getComputedStyle(document.body),match=style.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+  if(!match)return null;
+  const image=new Image();image.src=match[1];await image.decode();
+  return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,size:style.backgroundSize,repeat:style.backgroundRepeat};
+ });
+ assert.ok(backdrop&&backdrop.width>=512&&backdrop.height>=512,'the home backdrop is a decoded full-size illustration');
+ assert.equal(backdrop.size,'cover','the drawing fills the corners around the room');
+ assert.equal(backdrop.repeat,'no-repeat');
+ // Each non-home frame must choose its own background before its engine loads.
+ // In particular, public rooms and pet/portrait previews must not fetch this art.
+ for(const view of ['avatar','pet','portrait','place']){
+  const preview=await context.newPage(),requests=[];
+  preview.on('request',request=>requests.push(request.url()));
+  await preview.goto('https://fixture.test/room3d/index.html?view='+view);
+  await preview.waitForFunction(view=>document.documentElement.dataset.view===view,view);
+  assert.ok(!(await preview.evaluate(()=>getComputedStyle(document.body).backgroundImage)).includes(new URL(backdrop.url).pathname),view+': house art is absent');
+  assert.ok(!requests.includes(backdrop.url),view+': house art is not fetched');
+  await preview.close();
+ }
  assert.deepEqual((await page.locator('.bottomnav button > span:first-of-type').allTextContents()),['동네','우리집','상점','메뉴']);
  assert.equal(await page.locator('[data-act="house-mode"]').count(),3);
  assert.ok((await frame().evaluate(()=>Ojjuda3D.inspect())).items.length>0);
  assert.equal(await frame().evaluate(()=>localStorage.getItem('ojjuda3d')),null,'no account-independent demo room is stored');
  await page.screenshot({path:'/tmp/ojjuda-room-3d-home.png',fullPage:true});
+ const originalRoom=await page.evaluate(()=>JSON.stringify(roomTest.model.room));
+ for(const [width,height] of [[320,740],[390,844],[660,900],[1280,900]]){
+  await page.setViewportSize({width,height});await checkFraming('home '+width);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),width+': home has no horizontal overflow');
+  if(width===390){
+   await page.locator('#stage').scrollIntoViewIfNeeded();
+   await page.locator('#stage').screenshot({path:'/tmp/ojjuda-room-backdrop-home-390.png'});
+   await page.screenshot({path:'/tmp/ojjuda-room-backdrop-home-full-390.png',fullPage:true});
+  }
+ }
+ assert.equal(await page.evaluate(()=>JSON.stringify(roomTest.model.room)),originalRoom,'framing changes preserve the saved room layout');
+ await page.setViewportSize({width:660,height:900});
  await page.locator('[data-mode="room"]').click();await ready();
  assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'home');
  await frame().evaluate(()=>window.frameMarker='keep-room');
@@ -79,8 +128,17 @@ world=world.slice(0,boot)+`
   await page.setViewportSize({width,height});await page.locator('[data-mode="room"]').click();await ready();
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}: no horizontal overflow`);
   const stage=await page.locator('#stage').boundingBox();if(width===660)assert.ok(stage.width>=550,'large phone uses width');
-  await page.locator('.room3d-tools [aria-label="방 확대"]').click();await page.locator('.room3d-tools [aria-label="원래 크기로"]').click();
+  const fitted=await checkFraming('decorate '+width);
+  await page.locator('.room3d-tools [aria-label="방 확대"]').click();
+  assert.ok((await frame().evaluate(()=>Ojjuda3D.inspect().framing.house.width))>fitted.width+.1,'zoom enlarges the house, not the background');
+  await page.locator('.room3d-tools [aria-label="원래 크기로"]').click();
+  assert.ok(Math.abs((await frame().evaluate(()=>Ojjuda3D.inspect().framing.house.width))-fitted.width)<.001,'fit returns to the same uncropped house');
+  if(width===390){
+   await page.locator('#stage').screenshot({path:'/tmp/ojjuda-room-backdrop-decorate-390.png'});
+   await page.screenshot({path:'/tmp/ojjuda-room-backdrop-decorate-full-390.png',fullPage:true});
+  }
  }
+ assert.equal(new Set(framing.map(view=>view.roomSize)).size,1,'responsive fitting keeps the actual floor dimensions unchanged');
  // The supplied catalog is used for every existing furniture/pet type, including color variants.
  const types=await page.evaluate(()=>Object.keys(roomTest.catalog));
  for(let start=0;start<types.length;start+=12){
@@ -98,6 +156,6 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.room3d-ready').count(),0);
  assert.equal(await page.locator('#room-svg').isVisible(),true);
  assert.deepEqual(errors,[]);
- console.log('PASS: 3D touch, cancel/confirm, model preservation, links, room switching, phone layouts and WebGL fallback');
+ console.log('PASS: illustrated home backdrop, room-first framing, 3D touch, cancel/confirm, model preservation, links, room switching, phone layouts and WebGL fallback',JSON.stringify(framing));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});
