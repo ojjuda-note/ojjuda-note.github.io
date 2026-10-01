@@ -72,8 +72,11 @@ world=world.slice(0,boot)+`
    assert.match(await picture.getAttribute('style'),/translate\(0px,\s*0px\) scale\(1\)/);
    if(width===320)await page.screenshot({path:'/tmp/ojjuda-place-mobile-verified.png',fullPage:true});
  }
+ await enter('cafe');
  rejectPlaceImage=true;
- await page.evaluate(()=>{placeTest.enter('cafe',1);placeTest.freeze();});
+ // A previously decoded image may bypass routing in newer Chromium versions.
+ // Use a new URL to exercise an actual failed request before retrying.
+ await page.evaluate(()=>{document.querySelector('.place-art-image').src+='?test=load-failure';});
  await page.waitForSelector('.place-art-retry:not([hidden])');
  assert.equal(await page.locator('#pstage iframe, #pstage svg').count(),0,'image failures do not restore the old scene');
  rejectPlaceImage=false;await page.locator('.place-art-retry').click();await page.waitForSelector('.place-art-ready');
