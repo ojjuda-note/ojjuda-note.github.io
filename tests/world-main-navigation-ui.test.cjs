@@ -64,14 +64,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await page.locator('#stage,#av-preview,.room3d-frame').count(),0);
       await main();
     }
-    await page.evaluate(()=>worldTest.actions['house-admin-preview']());
-    assert.equal(await current(),'friends','ordinary users cannot open the admin preview action');
-    await page.evaluate(()=>{worldTest.auth.isAdmin=true;worldTest.actions.tab({tab:'home'});});
-    assert.equal(await page.locator('[data-house-construction]').count(),1,'admin must explicitly enter the preview');
-    await page.evaluate(()=>worldTest.actions['house-admin-preview']());
-    assert.equal(await page.locator('#stage').count(),1);
-    await page.evaluate(()=>{worldTest.auth.isAdmin=false;worldTest.render();});
-    assert.equal(await page.locator('[data-house-construction]').count(),1,'losing admin access closes the preview');
     await main();
     for(const tab of ['home','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
@@ -176,24 +168,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.locator('.world-destination[data-id="cafe"]').click();
     await touchDrag('.visit-banner',-150);
     assert.equal(await current(),'home','place headers use the active neighborhood tab');
-    await page.evaluate(()=>{worldTest.auth.isAdmin=true;worldTest.actions['house-admin-preview']();});
-    const roomBefore=await page.evaluate(()=>worldTest.model.roomIdx);
-    await touchDrag('#room-svg',-150);
-    assert.equal(await current(),'home','room gestures never switch top-level menus');
-    assert.notEqual(await page.evaluate(()=>worldTest.model.roomIdx),roomBefore,'existing room-to-room gesture still works');
-    await navigate('deco');
-    const palette='.room-deco-grid .pal.strip';
-    assert.ok(await page.locator(palette).evaluate(el=>el.scrollHeight>el.clientHeight+30&&el.scrollWidth<=el.clientWidth+2),'furniture uses a bounded vertical grid');
-    await touchDrag(palette,-150);assert.equal(await current(),'deco','horizontal item drags never leave furniture editing');
-    await touchDrag(palette,0,-150);assert.equal(await current(),'deco','vertical furniture scrolling stays in editing');
-    await page.waitForFunction(selector=>document.querySelector(selector).scrollTop>20,palette);
-    await page.locator('[data-mode="avatar"]').click();
-    await page.locator('[data-act="av-tab"][data-v="hair"]').click();
-    const scroller=await page.evaluate(()=>[...document.querySelectorAll('.main .pal.strip, .main .swgrid.strip, .main .avgrid.strip')].find(el=>el.scrollWidth>el.clientWidth+30)?.getAttribute('data-keep'));
-    assert.ok(scroller,'the avatar palette retains its horizontal scroller');
-    await touchDrag(`[data-keep="${scroller}"]`,-150);
-    assert.equal(await current(),'deco','palette gestures never leave furniture editing');
-    await page.waitForFunction(key=>document.querySelector(`[data-keep="${key}"]`).scrollLeft>20,scroller);
     await main();
     // Desktop uses the same gesture through actual mouse events.
     await page.setViewportSize({width:1280,height:900});
@@ -221,6 +195,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, four destinations, modal/draft protection, swipes across all tabs and into Note, room and palette gestures, touch/mouse input, vertical scrolling, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, four destinations, modal/draft protection, swipes across all tabs and into Note, touch/mouse input, vertical scrolling, cancellation and normal taps.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

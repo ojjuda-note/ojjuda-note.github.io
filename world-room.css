@@ -1,68 +1,5 @@
-/* A single house destination with a full-width room over a painted backdrop. */
-.house-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 16px;flex-wrap:wrap}
-.house-heading h2{font-size:22px;margin:0;color:#534a67}
-.house-heading .seg{width:auto;flex:none;gap:3px;padding:4px;background:#efebf5;border:1px solid #e3dbea;border-radius:15px}
-.house-heading .seg button{padding:9px 13px;font-size:13px;white-space:nowrap;border-radius:11px}
-.house-heading .seg button.on{background:#fffaf6;color:#655184;box-shadow:0 2px 7px #75638616}
-.home,.room-deco-grid{gap:18px}
-.stage-bar{background:#fffaf6;border:1px solid #e6dce7;border-radius:17px 17px 0 0;padding:10px 12px;margin-bottom:0;min-height:48px}
-.stage-bar .room-name{font-weight:700;color:#655777}
-.stage-bar .chip{background:#f5eef5;border-color:#e5d9e6;font-size:11px}
-#stage.room3d-stage{position:relative;width:100%;height:auto;min-height:0;max-height:none;aspect-ratio:1.16;overflow:hidden;border:1px solid #e6dce7;border-top:0;border-radius:0 0 22px 22px;background:#e9ead7;isolation:isolate}
-.room3d-frame{display:block;position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;pointer-events:none;z-index:1}
-.room3d-ready .room3d-frame{opacity:1;pointer-events:auto}
-.room3d-ready #room-svg{visibility:hidden;pointer-events:none}
-.room3d-stage .room-nav,.room3d-stage .surf-btn{z-index:3}
-.room3d-stage .surf-btn{left:12px;right:auto;bottom:12px}
-.room3d-stage .zoom-reset{display:none!important}
-.room3d-status{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;max-width:90%;width:max-content;padding:6px 10px;background:#fffaf3e8;border-radius:9px;font-size:11px;color:#71647e;pointer-events:none}
-.room3d-status:empty{display:none}
-.room3d-tools{display:none;position:absolute;right:12px;bottom:12px;z-index:3;gap:1px;padding:3px;border-radius:12px;border:1px solid #fff9;background:#fffaf1ed;box-shadow:0 4px 14px #79618226}
-.room3d-ready .room3d-tools{display:flex}
-.room3d-tools button{border:0;background:transparent;min-width:32px;height:32px;color:#655477;font:inherit;font-size:14px;cursor:pointer;border-radius:9px;touch-action:manipulation}
-.room3d-tools button:hover{background:#eee7f6}
-.room3d-item-select{display:none;position:absolute;left:12px;bottom:12px;z-index:3;max-width:calc(100% - 145px);height:38px;border:1px solid #e2d5e7;background:#fffaf3ee;color:#655477;border-radius:11px;padding:0 9px;font:inherit;font-size:12px}
-.room3d-ready .room3d-item-select{display:block}
-.room-deco-grid .panel{border-radius:20px;border:1px solid #e8dfea;background:#fffcf9;overflow:hidden}
-.room-deco-grid .panel .seg{border:0;border-radius:0;background:#f5eff6;padding:6px}
-.room-deco-grid .panel .panel-body{padding:12px}
-.room-deco-grid .pal.strip{display:grid;grid-auto-flow:row;grid-template-rows:none;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));max-height:330px;overflow:auto;gap:7px;scrollbar-width:thin;scroll-snap-type:none}
-.room-deco-grid .pal.strip>button{width:auto;min-width:0;border-radius:13px;background:#f8f3f2;border:1px solid #ece4eb;font-size:11px;white-space:normal;padding:7px 4px;line-height:1.4}
-.room-deco-grid .pal.strip>button svg{width:100%;max-width:68px;height:60px}
-.room-deco-grid .pal-note{font-size:11px;line-height:1.65}
-.room-deco-grid .chips.more,.room-deco-grid .chip.more{display:none}
-.room-deco-grid .selbar{margin-top:10px;border:1px solid #e7deec;background:#fffaf7;border-radius:15px;padding:10px;gap:6px}
-.room-deco-grid .selbar .btn{min-height:36px}
-.room-deco-grid .placement-actions{position:sticky;bottom:70px;z-index:5;background:#f2ebf9;border-radius:11px;padding:9px;width:100%}
-.home .owner-bar{background:#fffaf7;border:1px solid #e8dfea;border-radius:17px;padding:12px;margin-bottom:12px}
-.home .stage-hint{font-size:11px;line-height:1.7;color:#8a7f91;margin:10px 4px 18px}
-/* Every visible menu gets an equal share, without unused columns. */
+/* Current World navigation and illustrated public places. */
 .bottomnav{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
-@media(min-width:900px){.room-deco-grid{grid-template-columns:minmax(0,1fr) 310px}.room-deco-grid .panel{align-self:start}.room-deco-grid .pal.strip{grid-template-columns:repeat(3,minmax(0,1fr));max-height:440px}}
-@media(min-width:1200px){.home .owner-bar{display:none}}
-@media(max-width:600px){.house-heading{gap:10px;margin-bottom:12px}.house-heading h2{font-size:20px}.house-heading .seg{gap:0}.house-heading .seg button{font-size:12px;padding:8px 10px}.room-deco-grid .pal.strip{max-height:250px}.room-deco-grid .selbar .lbl{width:100%}.stage-bar{padding:8px}.stage-bar .sb-right{margin-left:auto}.room3d-tools{right:8px;bottom:8px}.room3d-item-select{left:8px;bottom:8px}}
-@media(prefers-reduced-motion:no-preference){.room3d-frame{transition:opacity .3s ease}}
-.world-avatar{display:block;width:100%;height:100%;overflow:hidden;border-radius:inherit}.world-avatar>img,.world-avatar>svg{display:block;width:100%;height:100%;object-fit:contain}
-.character-service{position:fixed;left:-10000px;top:0;width:144px;height:144px;border:0;pointer-events:none}
-.character-frame{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;pointer-events:none;z-index:1}
-[data-character-ready]>.character-frame{opacity:1;pointer-events:auto}[data-character-ready]>svg{visibility:hidden}
-.character-deco-grid #av-preview{position:relative;min-height:340px;aspect-ratio:1.2;padding:0;overflow:hidden;border:1px solid #e5d9e9;border-radius:24px;background:#f5eef6}
-.character-turn{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:22px;color:#796585;font-size:12px;white-space:nowrap}
-.character-turn .btn{background:#fffaf2dd;border-color:#e8daea;border-radius:50%;width:36px;height:36px;font-size:21px;padding:0}
-.character-deco-grid>.panel{background:#fffcf9;border:1px solid #e8deeb;border-radius:22px;padding:14px}.character-deco-grid .av-tabs{background:#f3edf6;border-radius:13px}.character-deco-grid .avgrid.strip{gap:8px;max-height:260px;overflow:auto}.character-deco-grid .avt{background:#faf5f1;border-color:#e8deeb;border-radius:13px}.character-deco-grid .og h4{color:#746080}.character-deco-grid .chip.more{display:none}
-#modal-root .petbox{gap:12px}#modal-root .modal:has(.petbox){background:#fffaf6;border:1px solid #e8dce9;border-radius:26px}
-#modal-root .petscene{position:relative;min-height:220px;aspect-ratio:1.65;background:#f0e9f4;border:1px solid #e8daec;border-radius:20px;box-shadow:none}
-#modal-root .pet-top{padding:2px 4px}#modal-root .pet-say{background:#f3eaf6;border-radius:15px;color:#765a81;padding:12px;text-align:center}#modal-root .pet-tabs{background:#efe8f3;border-radius:13px;padding:4px}
-#modal-root .pet-acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}#modal-root .pet-acts .btn{background:#f7edf3;border:1px solid #e7d8e7;border-radius:15px;min-height:46px}#modal-root .petbar .track,#modal-root .pet-lv .track{background:#efe7f1}
-#modal-root .talk-stage{display:flex;flex-direction:column;height:auto;max-height:none;background:#fffaf6;border:1px solid #e9deeb;border-radius:20px;overflow:hidden}
-#modal-root .talk-bg{position:relative;inset:auto;min-height:190px;aspect-ratio:1.85;border:0;border-radius:0;opacity:1}
-#modal-root .talk-log{position:relative;inset:auto;height:185px;min-height:140px;overflow:auto;padding:12px;background:#fffcf9;border-top:1px solid #ebe1ee}
-#modal-root .talk-in{margin-top:10px}#modal-root .talk-lockbtn{top:10px;right:10px;z-index:3}
-@media(min-width:900px){.character-deco-grid{grid-template-columns:minmax(0,1fr) 340px}.character-deco-grid #av-preview{position:sticky;top:24px;min-height:440px}.character-deco-grid .avgrid.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-height:360px}.character-deco-grid .avt{width:auto;min-width:0}}
-@media(max-width:480px){.character-deco-grid #av-preview{min-height:300px}.character-deco-grid>.panel{padding:10px}#modal-root .petscene{min-height:190px}#modal-root .pet-acts .btn{font-size:12px;padding:8px 4px}}
-.character-deco-grid>div:first-child{position:static!important;align-self:start}.character-deco-grid #av-preview{position:relative;top:auto;height:clamp(300px,58vw,380px);min-height:0;aspect-ratio:auto}.character-deco-grid .panel{min-width:0}.character-deco-grid .avgrid.strip{scroll-padding:12px;scroll-margin-bottom:90px}
-@media(min-width:900px){.character-deco-grid #av-preview{height:450px;position:sticky;top:24px}}
-
 /* Public places use the approved illustrated scenes without actor or prop overlays. */
 #pstage.place-art-stage{position:relative;aspect-ratio:3/2;min-height:0;max-height:none;overflow:hidden;border:1px solid #e5dce8;border-radius:22px;background:#f3edf3;box-shadow:0 14px 36px -28px #66557966}
 .place-art-viewport{position:absolute;inset:0;overflow:hidden;touch-action:pan-y}.place-art-viewport.is-zoomed{touch-action:none;cursor:grab}.place-art-viewport.is-zoomed:active{cursor:grabbing}
@@ -72,5 +9,3 @@
 .place-art-tools{display:none;position:absolute;right:10px;bottom:10px;gap:2px;padding:3px;z-index:1;border-radius:12px;border:1px solid #e4d9e7;background:#fffaf4ec}.place-art-ready .place-art-tools{display:flex}.place-art-tools button{height:36px;min-width:36px;padding:0 9px;border:0;border-radius:9px;background:transparent;color:#6b5c7b;font:inherit;font-size:13px;touch-action:manipulation}.place-art-tools button:hover{background:#eee7f6}.place-art-tools button:disabled{opacity:.4}
 #ppanel{border:1px solid #e7dce9;border-radius:22px;background:#fffcf8;overflow:hidden}.home:has(#pstage) .visit-banner{background:#fffaf4;border-color:#e8dce8;border-radius:16px}.home:has(#pstage) .stage-hint{font-size:12px;color:#827589;text-align:center;line-height:1.6}
 @media(max-width:620px){.home:has(#pstage) .visit-banner{flex-wrap:wrap;gap:8px}.place-art-tools{right:6px;bottom:6px}}
-
-.world-item-preview{display:block;width:100%;height:84px;max-width:110px;margin:0 auto}.world-item-preview>svg,.world-item-preview>img{display:block;width:100%;height:100%;object-fit:contain}.pal .world-item-preview{height:64px;max-width:90px}

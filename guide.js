@@ -1,39 +1,5 @@
 (() => {
   'use strict';
-  // A local preview of World's original animation. It never changes an account.
-  const petDemo = document.getElementById('pet-demo');
-  const petStatus = document.getElementById('pet-demo-status');
-  const petButtons = [...document.querySelectorAll('[data-pet-action]')];
-  const petMessages = { feed: '냠냠! 밥을 먹어요.', pat: '쓰담쓰담, 더 가까워져요.', play: '통통! 공을 따라 놀아요.' };
-  const petClasses = ['a-feed', 'a-pat', 'a-play'];
-  let petTimer;
-  function previewPet(action) {
-    if (!petDemo || !Object.hasOwn(petMessages, action)) return;
-    clearTimeout(petTimer);
-    petDemo.classList.remove(...petClasses);
-    void petDemo.getBoundingClientRect();
-    petDemo.classList.add('a-' + action);
-    petStatus.textContent = petMessages[action];
-    petButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.petAction === action)));
-    petTimer = setTimeout(() => {
-      petDemo.classList.remove(...petClasses);
-      petButtons.forEach(button => button.setAttribute('aria-pressed', 'false'));
-      petStatus.textContent = '한 번 더 놀아줄까요?';
-    }, 2800);
-  }
-  petButtons.forEach(button => {
-    button.setAttribute('aria-pressed', 'false');
-    button.addEventListener('click', () => previewPet(button.dataset.petAction));
-  });
-  if (petDemo && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const petObserver = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) {
-        petObserver.disconnect();
-        previewPet('pat');
-      }
-    }, { threshold: .7 });
-    petObserver.observe(petDemo);
-  }
   const search = document.getElementById('guide-search');
   const results = document.getElementById('search-results');
   const clear = document.getElementById('search-clear');
