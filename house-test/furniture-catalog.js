@@ -89,6 +89,31 @@ const chairParts=[
  {id:'back-rail',u:0,v:0,w:1,d:.14,base:1.7,height:.25,cap:false,views:chairTextures('rail')}
 ];
 export const FURNITURE={
+ 'side-table':{
+  label:'원목 협탁',shortLabel:'협탁',width:1.5,depth:1.5,height:1.35,depthFill:2/3,introduced:6,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',imageSize:{width:1254,height:1254},
+  preferred:{direction:'left',x:0,y:5.5},clearance:'협탁 앞 0.5칸을 비워 수납칸을 편하게 사용해요.',
+  views:{
+   center:{image:'assets/side-table-center-v1.webp',planes:{
+    front:plane([[154.79,278.23],[1072.76,278.23],[1072.76,1043.37],[154.79,1043.37]]),
+    side:plane([[174.38,341.91],[228.27,341.91],[228.27,1028.67],[174.38,1028.67]]),
+    back:plane([[174.38,341.91],[228.27,341.91],[228.27,1028.67],[174.38,1028.67]]),
+    top:plane([[224.35,188.1],[1000.26,188.1],[1072.76,278.23],[154.79,278.23]])
+   }},
+   left:{image:'assets/side-table-left-v1.webp',planes:{
+    front:plane([[384.04,362.48],[1131.54,276.27],[1119.78,946.38],[383.06,1083.53]]),
+    side:plane([[110.7,239.04],[384.04,362.48],[383.06,1083.53],[119.52,861.15]]),
+    back:plane([[125.4,312.52],[372.28,433.02],[372.28,1058.06],[125.4,851.35]]),
+    top:plane([[110.7,239.04],[778.85,160.67],[1131.54,276.27],[384.04,362.48]])
+   }},
+   right:{image:'assets/side-table-right-v1.webp',planes:{
+    front:plane([[96.01,257.66],[817.06,364.44],[817.06,1132.52],[111.68,916.01]]),
+    side:plane([[817.06,364.44],[1150.15,232.19],[1138.4,906.21],[817.06,1132.52]]),
+    back:plane([[828.82,431.06],[1126.64,311.54],[1126.64,897.39],[828.82,1107.05]]),
+    top:plane([[452.62,143.03],[1150.15,232.19],[817.06,364.44],[96.01,257.66]])
+   }}
+  }
+ },
  chair:{
   label:'원목 의자',shortLabel:'의자',width:1,depth:1,height:1.95,depthFill:1,introduced:5,
   directions:['left','center','right'],anchor:'rear',layer:'standing',

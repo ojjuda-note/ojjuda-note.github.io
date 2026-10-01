@@ -1,5 +1,5 @@
-import {floorPoint,roomPoint} from './model.js?v=20261001-chair1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-chair1';
+import {floorPoint,roomPoint} from './model.js?v=20261001-side-table1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-side-table1';
 
 export function projectiveMap(source,target){
  const rows=[];
