@@ -1,171 +1,43 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
-const deskSources={
- center:{
-  top:[[180,174],[1354,174],[1482,281],[54,281]],
-  edge:[[54,282],[1482,282],[1481,313],[54,313]],
-  end:[[54,282],[1482,282],[1481,313],[54,313]],
-  apron:[[158,318],[1380,318],[1380,383],[158,383]],
-  apronEnd:[[158,318],[1380,318],[1380,383],[158,383]],
-  leg:[[95,318],[153,318],[145,878],[98,878]],
-  legSide:[[95,318],[153,318],[145,878],[98,878]]
- },
- left:{
-  top:[[84,210],[1115,133],[1477,202],[291,294]],
-  edge:[[291,294],[1477,202],[1477,233],[291,325]],
-  end:[[84,210],[291,294],[291,325],[84,243]],
-  apron:[[371,323],[1390,241],[1390,303],[371,393]],
-  apronEnd:[[143,278],[291,332],[291,390],[143,330]],
-  leg:[[313,325],[369,323],[350,915],[313,919]],
-  legSide:[[292,326],[313,325],[313,919],[296,906]]
- },
- right:{
-  top:[[418,121],[1482,206],[1236,335],[54,208]],
-  edge:[[54,208],[1236,335],[1236,365],[54,235]],
-  end:[[1236,335],[1482,206],[1482,232],[1236,365]],
-  apron:[[142,247],[1157,355],[1157,429],[142,302]],
-  apronEnd:[[1245,356],[1424,260],[1424,319],[1245,416]],
-  leg:[[1159,361],[1213,365],[1211,930],[1173,922]],
-  legSide:[[1213,365],[1243,354],[1227,918],[1211,930]]
- }
-};
 const plane=source=>({source,clip:source});
-const deskTextures=kind=>Object.fromEntries(Object.entries(deskSources).map(([direction,s])=>[direction,{
- image:`assets/desk-${direction}-v1.webp`,planes:{
-  front:plane(s[kind==='top'?'edge':kind]),
-  side:plane(s[kind==='top'?'end':kind==='leg'?'legSide':'apronEnd']),
-  top:plane(s.top)
- }
-}]));
-const deskParts=[
- ...[[0,0],[.95,0],[0,.88],[.95,.88]].map(([u,v],i)=>({id:'leg-'+i,u,v,w:.05,d:.12,base:0,height:1.5,views:deskTextures('leg')})),
- ...[0,.92].map((v,i)=>({id:'apron-'+i,u:.05,v,w:.9,d:.08,base:1.25,height:.25,views:deskTextures('apron')})),
- ...[0,.95].map((u,i)=>({id:'end-apron-'+i,u,v:.12,w:.05,d:.76,base:1.25,height:.25,views:deskTextures('apron')})),
- {id:'tabletop',u:0,v:0,w:1,d:1,base:1.5,height:.1,views:deskTextures('top')}
-];
-const chairSources={
- center:{
-  seatTop:[[250,657],[775,657],[870,805],[153,805]],seatEdge:[[152,779],[872,779],[872,872],[152,872]],
-  sideEdge:[[152,779],[872,779],[872,872],[152,872]],
-  rail:[[150,73],[877,73],[877,261],[150,261]],
-  post:[[215,235],[268,242],[312,663],[247,670]],
-  slat:[[491,260],[533,260],[535,659],[490,659]],
-  leg:[[203,862],[268,866],[200,1458],[148,1456]],
-  stretcher:[[251,1020],[771,1020],[771,1055],[251,1055]]
- },
- left:{
-  seatTop:[[205,682],[689,617],[934,729],[413,819]],seatEdge:[[413,819],[934,729],[944,792],[411,874]],
-  sideEdge:[[198,684],[413,819],[411,874],[190,748]],
-  rail:[[125,44],[741,44],[741,245],[125,245]],
-  post:[[172,224],[229,233],[281,673],[215,676]],
-  slat:[[391,243],[433,238],[469,626],[428,632]],
-  leg:[[366,881],[438,870],[391,1490],[335,1486]],
-  stretcher:[[433,1014],[857,954],[861,987],[436,1054]]
- },
- right:{
-  seatTop:[[382,646],[865,704],[656,865],[105,760]],seatEdge:[[105,760],[656,865],[661,923],[93,826]],
-  sideEdge:[[656,865],[865,704],[885,760],[661,923]],
-  rail:[[302,64],[966,64],[966,274],[302,274]],
-  post:[[853,273],[911,265],[853,702],[786,688]],
-  slat:[[625,266],[666,269],[641,662],[597,654]],
-  leg:[[578,920],[637,922],[699,1475],[642,1479]],
-  stretcher:[[203,1000],[597,1072],[599,1107],[201,1035]]
- }
-};
-const chairTextures=kind=>Object.fromEntries(Object.entries(chairSources).map(([direction,s])=>[direction,{
- image:`assets/chair-${direction}-v1.webp`,planes:{
-  front:plane(s[kind==='seat'?'seatEdge':kind]),back:plane(s[kind==='seat'?'seatEdge':kind]),
-  side:plane(s[kind==='seat'?'sideEdge':kind]),...(kind==='seat'?{top:plane(s.seatTop)}:{})
- }
-}]));
-const chairParts=[
- ...[[0,0,.05,.04],[.88,0,.83,.04],[0,.88,.05,.82],[.88,.88,.83,.82]].map(([u,v,tu,tv],i)=>({id:'leg-'+i,u,v,w:.12,d:.12,upper:{u:tu,v:tv},base:0,height:.86,cap:false,views:chairTextures('leg')})),
- ...[.07,.87].map((u,i)=>({id:'side-stretcher-'+i,u,v:.14,w:.06,d:.7,base:.35,height:.06,cap:false,views:chairTextures('stretcher')})),
- {id:'front-stretcher',u:.1,v:.84,w:.8,d:.06,base:.35,height:.06,cap:false,views:chairTextures('stretcher')},
- {id:'seat',u:0,v:0,w:1,d:1,base:.84,height:.12,views:chairTextures('seat')},
- ...[[.06,.03],[.83,.86]].map(([u,tu],i)=>({id:'back-post-'+i,u,v:.04,w:.11,d:.12,upper:{u:tu,v:0},base:.92,height:.94,cap:false,views:chairTextures('post')})),
- ...[.235,.465,.695].map((u,i)=>({id:'back-slat-'+i,u,v:.06,w:.065,d:.06,upper:{v:0},base:.96,height:.81,cap:false,views:chairTextures('slat')})),
- {id:'back-rail',u:0,v:0,w:1,d:.14,base:1.7,height:.25,cap:false,views:chairTextures('rail')}
-];
 export const FURNITURE={
- plant:{
-  label:'크림 화분',shortLabel:'화분',width:1.5,depth:1.5,height:2.8,depthFill:1,introduced:7,
-  directions:['left','center','right'],anchor:'rear',layer:'standing',surface:'organic',imageSize:{width:1024,height:1536},
-  preferred:{direction:'center',x:2,y:0},clearance:'잎이 퍼지는 공간까지 포함해 다른 가구와 간격을 두어요.',
-  views:{
-   center:{image:'assets/plant-center-v1.webp',planes:{silhouette:plane([[39,26],[1009,26],[1009,1466],[39,1466]])}},
-   left:{image:'assets/plant-left-v1.webp',planes:{silhouette:plane([[68,15],[1012,15],[1012,1496],[68,1496]])}},
-   right:{image:'assets/plant-right-v1.webp',planes:{silhouette:plane([[41,24],[1001,24],[1001,1479],[41,1479]])}}
-  }
- },
- 'side-table':{
-  label:'원목 협탁',shortLabel:'협탁',width:1.5,depth:1.5,height:1.35,depthFill:2/3,introduced:6,
-  directions:['left','center','right'],anchor:'rear',layer:'standing',imageSize:{width:1254,height:1254},
-  preferred:{direction:'left',x:0,y:5.5},clearance:'협탁 앞 0.5칸을 비워 수납칸을 편하게 사용해요.',
-  views:{
-   center:{image:'assets/side-table-center-v1.webp',planes:{
-    front:plane([[154.79,278.23],[1072.76,278.23],[1072.76,1043.37],[154.79,1043.37]]),
-    side:plane([[174.38,341.91],[228.27,341.91],[228.27,1028.67],[174.38,1028.67]]),
-    back:plane([[174.38,341.91],[228.27,341.91],[228.27,1028.67],[174.38,1028.67]]),
-    top:plane([[224.35,188.1],[1000.26,188.1],[1072.76,278.23],[154.79,278.23]])
-   }},
-   left:{image:'assets/side-table-left-v1.webp',planes:{
-    front:plane([[384.04,362.48],[1131.54,276.27],[1119.78,946.38],[383.06,1083.53]]),
-    side:plane([[110.7,239.04],[384.04,362.48],[383.06,1083.53],[119.52,861.15]]),
-    back:plane([[125.4,312.52],[372.28,433.02],[372.28,1058.06],[125.4,851.35]]),
-    top:plane([[110.7,239.04],[778.85,160.67],[1131.54,276.27],[384.04,362.48]])
-   }},
-   right:{image:'assets/side-table-right-v1.webp',planes:{
-    front:plane([[96.01,257.66],[817.06,364.44],[817.06,1132.52],[111.68,916.01]]),
-    side:plane([[817.06,364.44],[1150.15,232.19],[1138.4,906.21],[817.06,1132.52]]),
-    back:plane([[828.82,431.06],[1126.64,311.54],[1126.64,897.39],[828.82,1107.05]]),
-    top:plane([[452.62,143.03],[1150.15,232.19],[817.06,364.44],[96.01,257.66]])
-   }}
-  }
- },
- chair:{
-  label:'원목 의자',shortLabel:'의자',width:1,depth:1,height:1.95,depthFill:1,introduced:5,
-  directions:['left','center','right'],anchor:'rear',layer:'standing',
-  imageSize:{width:1024,height:1536},views:chairTextures('seat'),components:chairParts,
-  preferred:{direction:'left',x:7.5,y:5},clearance:'책상 앞 여유 공간을 남기고 의자를 놓아 주세요.'
- },
- desk:{
-  label:'원목 책상',shortLabel:'책상',width:3,depth:1.5,height:1.6,depthFill:2/3,introduced:4,
-  directions:['left','center','right'],anchor:'rear',layer:'standing',
-  imageSize:{width:1536,height:1024},views:deskTextures('top'),components:deskParts,
-  preferred:{direction:'right',x:8.5,y:4},clearance:'책상 앞 0.5칸을 비워 의자와 다리를 둘 여유를 남겨요.'
- },
  bookshelf:{
   label:'원목 책장',shortLabel:'책장',width:2,depth:1,height:3.8,depthFill:2/3,
   directions:['left','center','right'],anchor:'rear',layer:'standing',
   imageSize:{width:1024,height:1536},
+  // Approved source corners share the room grid registration in bookshelf-art.js.
   views:{
-   right:{image:'assets/bookshelf-right-v1.webp',planes:{
-    front:{source:[[309,180],[637,117],[637,1501],[315,1368]],clip:[[300,182],[637,117],[637,1510],[300,1510]]},
-    side:{source:[[637,117],[757,145],[750,1429],[637,1501]],clip:[[637,117],[770,135],[770,1440],[637,1510]]}
+   right:{image:'assets/bookshelf-right-v2.webp',planes:{
+    front:plane([[333.08332421134673,209.5476059525281],[489.7502546251135,161.14094586782153],[489.7502546251135,1472],[333.08332421134673,1284.4558719231256]]),
+    side:plane([[489.7502546251135,161.14094586782153],[690.9166757886528,161.14094586782153],[690.9166757886528,1472],[489.7502546251135,1472]]),
+    back:plane([[489.7502546251135,161.14094586782153],[690.9166757886528,161.14094586782153],[690.9166757886528,1472],[489.7502546251135,1472]])
    }},
-   left:{image:'assets/bookshelf-left-v1.webp',planes:{
-    front:{source:[[416,116],[729,174],[718,1374],[415,1481]],clip:[[416,112],[736,170],[736,1390],[440,1485],[416,1490]]},
-    side:{source:[[277,145],[416,116],[415,1481],[285,1438]],clip:[[270,140],[416,112],[416,1490],[270,1445]]}
+   left:{image:'assets/bookshelf-left-v2.webp',planes:{
+    front:plane([[535.5169354294594,161.14094586782153],[689.6494857340799,209.5476059525281],[689.6494857340799,1284.4558719231256],[535.5169354294594,1472]]),
+    side:plane([[334.3505142659202,161.14094586782153],[535.5169354294594,161.14094586782153],[535.5169354294594,1472],[334.3505142659202,1472]]),
+    back:plane([[334.3505142659202,161.14094586782153],[535.5169354294594,161.14094586782153],[535.5169354294594,1472],[334.3505142659202,1472]])
    }},
-   center:{image:'assets/bookshelf-center-v1.webp',planes:{
-    front:{source:[[289,112],[737,112],[731,1470],[293,1470]],clip:[[285,112],[740,112],[740,1480],[285,1480]]}
+   center:{image:'assets/bookshelf-center-v2.webp',planes:{
+    front:plane([[179.7684855577263,170.6195167657106],[844.2315144422741,170.6195167657106],[844.2315144422741,1472],[179.7684855577263,1472]])
    }}
   },
   attachments:[{
    id:'top-box',widthFraction:.65,depthFraction:.75,height:.32,
    views:{
-    right:{image:'assets/bookshelf-right-v1.webp',planes:{
-     front:{source:[[367,90],[527,54],[527,134],[367,167]],clip:[[367,90],[527,54],[527,134],[367,167]]},
-     side:{source:[[527,54],[651,83],[651,117],[527,134]],clip:[[527,54],[651,83],[651,117],[527,134]]}
+    right:{image:'assets/bookshelf-right-v2.webp',planes:{
+     front:plane([[380.38276907745194,108.27706369657744],[483.91916570399144,64],[483.91916570399144,170.53297384196856],[380.38276907745194,201.92465597280125]]),
+     side:plane([[483.91916570399144,64],[631.3149973925051,64],[631.3149973925051,170.53297384196856],[483.91916570399144,170.53297384196856]]),
+     back:plane([[483.91916570399144,64],[631.3149973925051,64],[631.3149973925051,170.53297384196856],[483.91916570399144,170.53297384196856]])
     }},
-    left:{image:'assets/bookshelf-left-v1.webp',planes:{
-     front:{source:[[493,45],[650,76],[650,156],[493,128]],clip:[[493,45],[650,76],[650,156],[493,128]]},
-     side:{source:[[364,74],[493,45],[493,128],[364,126]],clip:[[364,74],[493,45],[493,128],[364,126]]}
+    left:{image:'assets/bookshelf-left-v2.webp',planes:{
+     front:plane([[540.8562951372751,64],[642.7491481967559,108.27706369657744],[642.7491481967559,201.92465597280125],[540.8562951372751,170.53297384196856]]),
+     side:plane([[393.4604634487616,64],[540.8562951372751,64],[540.8562951372751,170.53297384196856],[393.4604634487616,170.53297384196856]]),
+     back:plane([[393.4604634487616,64],[540.8562951372751,64],[540.8562951372751,170.53297384196856],[393.4604634487616,170.53297384196856]])
     }},
-    center:{image:'assets/bookshelf-center-v1.webp',planes:{
-     front:{source:[[374,25],[651,25],[650,112],[375,112]],clip:[[374,25],[651,25],[650,112],[375,112]]}
+    center:{image:'assets/bookshelf-center-v2.webp',planes:{
+     front:plane([[297.008506567789,64],[726.8812329027187,64],[726.8812329027187,172.72549287902984],[297.008506567789,172.72549287902984]])
     }}
    }
   }]

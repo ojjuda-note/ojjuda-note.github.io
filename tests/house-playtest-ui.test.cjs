@@ -7,6 +7,8 @@ await page.screenshot({path:'/tmp/house-playtest-mobile.png'});
 // Approved assets, clock boundaries, half-cell placement, rollback and curtains.
 assert.equal(await f.locator('.curtains').count(),1);
 assert.equal(await f.locator('.bookshelf').count(),1);
+assert.equal(await f.locator('.furniture').count(),1,'only approved bookshelf art remains');
+assert.equal(await f.locator('.desk,.chair,.plant,.side-table,.sky').count(),0);
 const clock=await f.evaluate(async()=>{const m=await import('/house-test/model.js');return ['05:59','06:00','07:59','08:00','17:59','18:00','19:59','20:00','23:59','00:00'].map(t=>m.roomPeriod(new Date('2026-10-01T'+t+':00+09:00')));});
 assert.deepEqual(clock,['night','dusk','dusk','day','day','dusk','dusk','night','night','night']);
 for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){await page.clock.setSystemTime(new Date(`2026-10-01T${String(hour).padStart(2,'0')}:00:00+09:00`));await page.clock.runFor(15001);assert.match(await f.locator('.room-bg').getAttribute('src'),new RegExp(`room-${period}-v3.webp`));}
@@ -24,7 +26,7 @@ await f.getByRole('button',{name:'취소',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'9');
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 for(const direction of ['left','center','right']){
- await f.locator(`[data-direction="${direction}"]:not(.furniture)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);await f.waitForFunction(()=>document.querySelector('.bookshelf').dataset.renderState==='ready');assert.match(await f.locator('.bookshelf canvas').getAttribute('data-sources'),new RegExp(`bookshelf-${direction}-v1.webp`));
+ await f.locator(`[data-direction="${direction}"]:not(.furniture)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);await f.waitForFunction(()=>document.querySelector('.bookshelf').dataset.renderState==='ready');assert.match(await f.locator('.bookshelf canvas').getAttribute('data-sources'),new RegExp(`bookshelf-${direction}-v2.webp`));
  // Check the actual rasterized foot pixels against the visible grid,
  // not just the logical saved position or an image bounding rectangle.
  const contactPainted=await f.locator('.bookshelf').evaluate(async button=>{
@@ -39,6 +41,37 @@ for(const direction of ['left','center','right']){
  });assert.ok(contactPainted,`${direction} bookshelf lower body must actually be painted at floor contact`);
  await f.evaluate(()=>Promise.all([...document.images].map(im=>im.decode())));await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));await page.screenshot({path:`/tmp/house-shelf-${direction}.png`});
 }
+// Wall spacing and depth are independent controls for the same saved pose.
+const setShelfRange=async(id,value)=>{await f.locator(id).evaluate((input,value)=>{input.value=String(value);input.dispatchEvent(new Event('input',{bubbles:true}));},value);await f.waitForFunction(()=>document.querySelector('.bookshelf').dataset.renderState==='ready');};
+await setShelfRange('#bookshelf-depth',1.5);
+const sliderTouch=await context.newCDPSession(page),gapSlider=await f.locator('#bookshelf-gap').boundingBox();
+const touchRangePoint=fraction=>({x:gapSlider.x+8+(gapSlider.width-16)*fraction,y:gapSlider.y+gapSlider.height/2,id:1});
+await sliderTouch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touchRangePoint(0)]});
+for(const fraction of [.1,.2,.3])await sliderTouch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[touchRangePoint(fraction)]});
+await sliderTouch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+assert.ok(Number(await f.locator('#bookshelf-gap').inputValue())>0,'touch dragging the range moves the shelf away from its wall');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),'right');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'1.5');
+await sliderTouch.detach();
+await setShelfRange('#bookshelf-gap',1);
+assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'8');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'1.5');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),'right');
+assert.equal(await f.locator('#bookshelf-gap-value').textContent(),'1칸');
+await page.screenshot({path:'/tmp/house-shelf-wall-gap-mobile.png'});
+await f.getByRole('button',{name:'책장 ← 0.5칸',exact:true}).click();
+assert.equal(await f.locator('#bookshelf-gap').inputValue(),'1.5','arrow movement updates wall spacing');
+await setShelfRange('#bookshelf-gap',0);
+await setShelfRange('#bookshelf-depth',4);
+assert.equal(await f.locator('#placement-done').isDisabled(),false,'retired furniture no longer blocks a valid picture placement');
+assert.equal(await f.locator('#placement-warning').isVisible(),false);
+await setShelfRange('#bookshelf-depth',1.5);
+await setShelfRange('#bookshelf-gap',4);
+assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),'right');
+assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'1.5');
+await f.locator('button[data-direction="center"]:not(.furniture)').click();
+assert.equal(await f.locator('#bookshelf-gap').isVisible(),false);
+await f.locator('button[data-direction="right"]:not(.furniture)').click();
 const projection=await f.evaluate(async()=>{
  const {shelfGeometry,transformPoint}=await import('/house-test/furniture.js');const {shelfSize}=await import('/house-test/model.js');let error=0,poses=0;
  for(const direction of ['left','center','right']){const {w,d}=shelfSize(direction);for(let y=0;y<=7-d;y+=.5)for(let x=0;x<=10-w;x+=.5){
@@ -53,54 +86,24 @@ await f.getByRole('button',{name:'배치 완료',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'0.5');
 await f.getByRole('button',{name:'커튼 걷기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),0);
 await f.getByRole('button',{name:'커튼 달기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),1);
-// One desk at a time: inspect the three directions and reject a real shelf collision.
-assert.equal(await f.locator('.desk').count(),1);
-await page.clock.setSystemTime(new Date('2026-10-01T12:00:00+09:00'));await page.clock.runFor(15001);await page.clock.resume();
-await page.setViewportSize({width:1050,height:950});
-await f.locator('#home-view').click();await f.evaluate(()=>Promise.all([...document.images].map(im=>im.decode())));await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));
-await page.screenshot({path:'/tmp/house-desk-right.png'});
-await f.getByRole('button',{name:'책상 배치',exact:true}).click();
-for(const direction of ['left','center']){
- await f.locator(`button[data-direction="${direction}"]:not(.furniture)`).click();
- assert.equal(await f.locator('.desk').getAttribute('data-direction'),direction);
- await f.waitForFunction(()=>document.querySelector('.desk').dataset.renderState==='ready');assert.match(await f.locator('.desk canvas').getAttribute('data-sources'),new RegExp(`desk-${direction}-v1.webp`));
- await f.evaluate(()=>Promise.all([...document.images].map(im=>im.decode())));await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));
- await page.screenshot({path:`/tmp/house-desk-${direction}.png`});
-}
-await f.locator('button[data-direction="right"]:not(.furniture)').click();
-assert.ok(await f.locator('#placement-done').isDisabled(),'desk cannot be committed over the shelf');
-assert.ok(await f.locator('#placement-warning').isVisible());
-await f.getByRole('button',{name:'취소',exact:true}).click();
-assert.equal(await f.locator('.desk').getAttribute('data-y'),'4','cancel restores the saved desk');
-await f.getByRole('button',{name:'책상 배치',exact:true}).click();await f.getByRole('button',{name:'책상 ← 0.5칸',exact:true}).click();
-assert.ok(await f.locator('#placement-done').isDisabled(),'desk cannot overlap the new chair');
-await f.getByRole('button',{name:'취소',exact:true}).click();
-await f.getByRole('button',{name:'책상 배치',exact:true}).click();await f.getByRole('button',{name:'책상 ↑ 0.5칸',exact:true}).click();
-await f.getByRole('button',{name:'배치 완료',exact:true}).click();
-assert.equal(await f.locator('.desk').getAttribute('data-y'),'3.5');
-assert.equal(await f.locator('.chair').count(),1);
-await f.getByRole('button',{name:'의자 배치',exact:true}).click();await f.getByRole('button',{name:'의자 → 0.5칸',exact:true}).click();
-assert.ok(await f.locator('#placement-done').isDisabled(),'chair cannot overlap the desk');
-await f.getByRole('button',{name:'취소',exact:true}).click();
-assert.equal(await f.locator('.chair').getAttribute('data-x'),'7.5');
 await page.clock.setSystemTime(new Date('2026-10-01T23:31:00+09:00'));await page.clock.runFor(15001);await page.clock.resume();
 await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));
 const painted=await f.evaluate(async()=>{
  const {furnitureGeometry}=await import('/house-test/furniture.js');
- return [['bookshelf','body','front',.86],['desk','tabletop','top',.5],['chair','seat','top',.5]].map(([id,part,plane,v])=>{
+ return [['bookshelf','body','front',.86]].map(([id,part,plane,v])=>{
   const button=document.querySelector('.'+id),g=furnitureGeometry(id,{x:Number(button.dataset.x),y:Number(button.dataset.y),direction:button.dataset.direction}),face=g.faces.find(f=>f.part===part&&f.plane===plane),c=button.querySelector('canvas'),density=Number(c.dataset.density),ctx=c.getContext('2d');
   const [a,b,d,e]=face.target,p={x:((a.x+b.x)*(1-v)+(d.x+e.x)*v)/2,y:((a.y+b.y)*(1-v)+(d.y+e.y)*v)/2};
   return {id,alpha:ctx.getImageData(Math.round((p.x-g.left)*density),Math.round((p.y-g.top)*density),1,1).data[3]};
  });
 });assert.ok(painted.every(p=>p.alpha>150),JSON.stringify(painted));
 await page.setViewportSize({width:390,height:844});await f.locator('#home-view').click();
-await page.screenshot({path:'/tmp/house-desk-mobile.png'});
+await page.screenshot({path:'/tmp/house-picture-only-mobile.png'});
 assert.equal(await f.locator('.actor,.dog,[data-tab="pet"],[data-tab="closet"]').count(),0);await f.locator('[data-tab="diary"]').click();
 const transform=await f.locator('#world').getAttribute('style');await f.locator('#zoom-in').click();assert.notEqual(await f.locator('#world').getAttribute('style'),transform);await f.locator('#home-view').click();
 const touch=await context.newCDPSession(page),area=await f.locator('#viewport').boundingBox(),touchY=area.y+15;const zoomBefore=await f.locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a);await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:120,y:touchY,id:1},{x:240,y:touchY,id:2}]});await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:80,y:touchY,id:1},{x:280,y:touchY,id:2}]});await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.ok(await f.locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a)>zoomBefore);await f.locator('#home-view').click();
 await f.locator('#expand').click();assert.equal(await f.locator('.expansion').count(),34);assert.equal(await f.locator('.expansion:not(:disabled)').count(),4);await f.getByRole('button',{name:'오른쪽 → 확장',exact:true}).click();await f.getByRole('button',{name:'오른쪽 → 확장',exact:true}).click();assert.equal(await f.getByRole('button',{name:'오른쪽 → 확장',exact:true}).isDisabled(),true);
 const model=await f.evaluate(async()=>{const {normalize,canAdd}=await import('/house-test/model.js');let state=normalize({rooms:[{x:0,y:0},{x:50,y:0},{x:2,y:3},{x:0,y:0}],diary:3});const disconnected=state.rooms.length;for(let i=0;i<8;i++)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++)if(canAdd(state.rooms,{x,y}))state.rooms.push({x,y});return {disconnected,count:state.rooms.length,overflow:canAdd(state.rooms,{x:3,y:0})};});assert.deepEqual(model,{disconnected:1,count:35,overflow:false});
-await page.screenshot({path:'/tmp/house-playtest-expansion.png'});await f.locator('[data-tab="diary"]').click();await f.locator('#diary').fill('파스텔 우리집 테스트 기록');await f.getByRole('button',{name:'기록 저장',exact:true}).click();await f.locator('#exit').click();await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});assert.match(await frame().locator('#room-count').textContent(),/3 \/ 35/);assert.equal(await frame().locator('.bookshelf').getAttribute('data-y'),'0.5');assert.equal(await frame().locator('.desk').getAttribute('data-y'),'3.5');assert.equal(await frame().locator('.chair').getAttribute('data-x'),'7.5');await frame().locator('[data-tab="diary"]').click();assert.equal(await frame().locator('#diary').inputValue(),'파스텔 우리집 테스트 기록');
+await page.screenshot({path:'/tmp/house-playtest-expansion.png'});await f.locator('[data-tab="diary"]').click();await f.locator('#diary').fill('파스텔 우리집 테스트 기록');await f.getByRole('button',{name:'기록 저장',exact:true}).click();await f.locator('#exit').click();await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});assert.match(await frame().locator('#room-count').textContent(),/3 \/ 35/);assert.equal(await frame().locator('.bookshelf').getAttribute('data-y'),'0.5');assert.equal(await frame().locator('.furniture').count(),1);await frame().locator('[data-tab="diary"]').click();assert.equal(await frame().locator('#diary').inputValue(),'파스텔 우리집 테스트 기록');
 await page.evaluate(()=>testAuth.id='admin-b');await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});assert.match(await frame().locator('#room-count').textContent(),/1 \/ 35/);await page.evaluate(()=>testAuth.admin=false);await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();assert.equal(await page.locator('iframe').count(),0);
 await page.evaluate(()=>testAuth.admin=true);await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});for(const size of [{width:320,height:740},{width:844,height:390},{width:1280,height:800}]){await page.setViewportSize(size);await frame().waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);assert.ok(await frame().locator('#viewport').evaluate(n=>n.clientHeight>=180));await frame().locator('[data-tab="room"]').click();}await page.screenshot({path:'/tmp/house-playtest-desktop.png'});
-assert.deepEqual(errors,[]);console.log('PASS: preview gate, role/account isolation, Korea time boundaries, bookshelf and desk directions/half-cell save and cancel, inter-item collision, curtains, movement/zoom, expansion bounds/connectivity, diary persistence and responsive layouts');}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
+assert.deepEqual(errors,[]);console.log('PASS: preview gate, role/account isolation, Korea time boundaries, picture-only scene, bookshelf directions/half-cell save and cancel, curtains, movement/zoom, expansion bounds/connectivity, diary persistence and responsive layouts');}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

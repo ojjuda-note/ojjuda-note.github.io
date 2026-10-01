@@ -1,13 +1,12 @@
-import {icon} from './icons.js?v=20261001-cleanup1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261001-cleanup1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261001-cleanup1';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-cleanup1';
+import {icon} from './icons.js?v=20261002-bookshelf-v2';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261002-bookshelf-v2';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261002-bookshelf-v2';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261002-bookshelf-v2';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
-const stepX=ROOM.width+40,stepY=ROOM.height+40,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stepX=ROOM.width+40,stepY=ROOM.height+40;
 let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
-const timers=new Set();const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn();},ms);timers.add(id);return id;};
 const bounds=r=>({x:(r.x+2)*stepX,y:(3-r.y)*stepY});
 function toast(message){$('#notice').textContent=message;$('#notice').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#notice').classList.remove('show'),2400);}
 function persist(){try{localStorage.setItem(key,JSON.stringify(state));if(saveFailed){saveFailed=false;$('#save-warning').hidden=true;}}catch{saveFailed=true;$('#save-warning').hidden=false;}}
@@ -34,16 +33,38 @@ function renderWorld(){world.replaceChildren();for(const r of state.rooms){const
 function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}});selected=roomKey(cell);save();renderWorld();renderPanel();toast('새 방이 연결됐어요.');}
 function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;editing=false;draft=null;selected=id;renderWorld();renderPanel();if(!expanding)focusRoom();}
 function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon({'◉':'ball','♡':'heart','↝':'follow','▧':'room','□':'room','＋':'room'}[symbol]||'room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
+function bookshelfGap(s=draft){const {w}=itemSize('bookshelf',s.direction);return s.direction==='right'?FLOOR.width-w-s.x:s.x;}
+function syncPlacementControls(){
+ const status=$('#shelf-position');if(status&&draft)status.textContent=`가로 ${draft.x} · 깊이 ${draft.y}칸`;
+ if(editingId!=='bookshelf'||!draft)return;
+ const {w,d}=itemSize('bookshelf',draft.direction),depth=$('#bookshelf-depth'),gap=$('#bookshelf-gap');
+ if(depth){depth.max=String(FLOOR.depth-d);depth.value=String(draft.y);$('#bookshelf-depth-value').textContent=draft.y+'칸';depth.setAttribute('aria-valuetext',draft.y+'칸');}
+ if(gap){const value=bookshelfGap();gap.max=String(FLOOR.width-w);gap.value=String(value);gap.closest('label').hidden=draft.direction==='center';$('#bookshelf-gap-value').textContent=value+'칸';gap.setAttribute('aria-valuetext',value+'칸');}
+}
+function makeBookshelfControls(){
+ const controls=element('div','bookshelf-position-controls');
+ for(const [name,text,description]of [['depth','앞뒤 위치','뒷벽에서 책장까지의 거리'],['gap','벽과 간격','옆벽과 책장 사이의 간격']]){
+  const label=element('label','bookshelf-position-control'),title=element('span','bookshelf-control-title',text),value=element('output'),input=element('input');
+  input.id='bookshelf-'+name;input.type='range';input.min='0';input.step=String(FLOOR.step);input.setAttribute('aria-label',description);label.htmlFor=input.id;
+  value.id=input.id+'-value';value.setAttribute('for',input.id);title.append(value);label.append(title,input);controls.append(label);
+  input.oninput=()=>{if(!editing||editingId!=='bookshelf'||!draft)return;const number=Number(input.value);if(!Number.isFinite(number))return;
+   const {w}=itemSize('bookshelf',draft.direction),position=name==='depth'?{y:number}:{x:draft.direction==='right'?FLOOR.width-w-number:number};
+   draft=normalizePlacement('bookshelf',{...draft,...position});renderWorld();syncPlacementControls();
+  };
+ }
+ return controls;
+}
 function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#panel-title').textContent=expanding?'집 확장':{room:'방 꾸미기',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
 
  if(tab==='room'){
   if(editing){
    const item=FURNITURE[editingId],label=item.shortLabel||item.label,directions=element('div','directions');
-   for(const [id,text]of [['left','왼쪽 벽'],['center','가운데'],['right','오른쪽 벽']]){
+   for(const [id,text]of editingId==='bookshelf'?[['left','왼쪽'],['center','정면'],['right','오른쪽']]:[['left','왼쪽 벽'],['center','가운데'],['right','오른쪽 벽']]){
     const button=actionButton(text,()=>{const size=itemSize(editingId,id);draft=normalizePlacement(editingId,{direction:id,x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:id==='center'?0:draft.y});renderWorld();renderPanel();});
     button.dataset.direction=id;button.setAttribute('aria-pressed',String(draft.direction===id));directions.append(button);
    }
    body.append(directions);
+   if(editingId==='bookshelf')body.append(makeBookshelfControls());
    const arrows=element('div','move-controls');
    for(const [dx,dy,text]of [[-.5,0,'←'],[0,-.5,'↑'],[0,.5,'↓'],[.5,0,'→']]){const b=actionButton(text,()=>moveFurniture(dx,dy));b.setAttribute('aria-label',`${label} ${text} 0.5칸`);arrows.append(b);}
    const status=element('span','position');status.id='shelf-position';status.textContent=`가로 ${draft.x} · 깊이 ${draft.y}칸`;arrows.append(status);body.append(arrows);
@@ -51,6 +72,7 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    row.append(actionButton('취소',()=>finishPlacement(false)),actionButton('치우기',removeFurniture),done);
    const warning=element('p','placement-warning','다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
    body.append(row,warning,element('p','panel-note',item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));
+   syncPlacementControls();
   }else{
    const row=element('div','actions furniture-actions');row.setAttribute('aria-label','가구 목록');
    for(const id of ['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced)]){
@@ -103,7 +125,7 @@ function makeFurniture(id,s,active){
  button.onclick=()=>{if(!editing){setTab('room');startPlacement(id);}};
  if(active)button.addEventListener('pointerdown',e=>{
   if(!editing||editingId!==id||e.button>0)return;e.stopPropagation();const start=point(e),original={...draft},{w,d}=itemSize(id,draft.direction),anchor=floorPoint(draft.x+w/2,draft.y+d),startCell=floorCell(anchor.x,anchor.y);button.setPointerCapture(e.pointerId);
-  const drag=ev=>{const p=point(ev),cell=floorCell(anchor.x+(p.x-start.x)/scale,anchor.y+(p.y-start.y)/scale);draft=normalizePlacement(id,{...original,x:original.x+cell.x-startCell.x,y:original.y+cell.y-startCell.y});renderFurniture(button,id,draft);updatePlacementStatus(button);const grid=button.parentElement.querySelector('.floor-grid');if(grid)grid.replaceWith(makeGrid(draft));$('#shelf-position').textContent=`가로 ${draft.x} · 깊이 ${draft.y}칸`;};
+  const drag=ev=>{const p=point(ev),cell=floorCell(anchor.x+(p.x-start.x)/scale,anchor.y+(p.y-start.y)/scale);draft=normalizePlacement(id,{...original,x:original.x+cell.x-startCell.x,y:original.y+cell.y-startCell.y});renderFurniture(button,id,draft);updatePlacementStatus(button);const grid=button.parentElement.querySelector('.floor-grid');if(grid)grid.replaceWith(makeGrid(draft));syncPlacementControls();};
   const up=ev=>{button.removeEventListener('pointermove',drag);button.removeEventListener('pointerup',up);button.removeEventListener('pointercancel',cancel);if(button.hasPointerCapture(ev.pointerId))button.releasePointerCapture(ev.pointerId);};
   const cancel=ev=>{draft=original;renderFurniture(button,id,draft);up(ev);renderWorld();renderPanel();};button.addEventListener('pointermove',drag);button.addEventListener('pointerup',up);button.addEventListener('pointercancel',cancel);
  });return button;
@@ -113,7 +135,9 @@ function makeGrid(s){
  for(let axis=0;axis<2;axis++)for(let n=0;n<=(axis?FLOOR.depth:FLOOR.width);n+=FLOOR.step){
   const a=axis?floorPoint(0,n):floorPoint(n,0),b=axis?floorPoint(FLOOR.width,n):floorPoint(n,FLOOR.depth),line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d',`M${a.x},${a.y}L${b.x},${b.y}`);line.classList.add(Number.isInteger(n)?'whole':'half');svg.append(line);
  }
- if(s){const geometry=furnitureGeometry(editingId,s);for(const [name,points]of [['contact',geometry.footprint],['reserved',geometry.reserved]]){const polygon=document.createElementNS(svg.namespaceURI,'polygon');polygon.classList.add(name);polygon.setAttribute('points',points.map(p=>`${p.x},${p.y}`).join(' '));svg.append(polygon);}}
+ if(s){const geometry=furnitureGeometry(editingId,s);for(const [name,points]of [['contact',geometry.footprint],['reserved',geometry.reserved]]){const polygon=document.createElementNS(svg.namespaceURI,'polygon');polygon.classList.add(name);polygon.setAttribute('points',points.map(p=>`${p.x},${p.y}`).join(' '));svg.append(polygon);}
+  if(editingId==='bookshelf')for(const p of geometry.footprint){const anchor=document.createElementNS(svg.namespaceURI,'circle');anchor.classList.add('bookshelf-anchor');anchor.setAttribute('cx',p.x);anchor.setAttribute('cy',p.y);anchor.setAttribute('r','7');svg.append(anchor);}
+ }
  return svg;
 }
 

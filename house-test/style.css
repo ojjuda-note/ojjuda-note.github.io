@@ -17,18 +17,13 @@ h1 small {font-size: 11px; font-weight: 400; background: #f0e7f8; border-radius:
 .scene-heading {display: flex; gap: 10px; align-items: center; padding: 8px 20px; background: #fffaf0b5; font-size: 13px;}
 #room-name {font-weight: 700;}
 #room-count {margin-left: auto; color: #8a7b92;}
-#viewport {position: relative; flex: 1; min-height: 230px; overflow: hidden; touch-action: none; user-select: none; background: linear-gradient(#b9d9ff,#e7dafa 62%,#d4e5d4); isolation: isolate;}
-.sky {position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 25% 15%,#fffcfacc,transparent 35%),radial-gradient(ellipse at 85% 35%,#f8efff,transparent 40%);}
-.sky:after {content: ""; position: absolute; bottom: 0; left: -10%; width: 120%; height: 38%; background: repeating-linear-gradient(90deg,#b4b4d933 0 30px,transparent 30px 47px),linear-gradient(transparent,#b3c7d17d); clip-path: polygon(0 40%,10% 40%,10% 10%,18% 10%,18% 32%,28% 32%,28% 0,35% 0,35% 18%,45% 18%,45% 43%,58% 43%,58% 14%,67% 14%,67% 30%,76% 30%,76% 0,88% 0,88% 42%,100% 42%,100% 100%,0 100%);}
+#viewport {position: relative; flex: 1; min-height: 230px; overflow: hidden; touch-action: none; user-select: none; background: #f2edf6; isolation: isolate;}
 #world {position: absolute; left: 0; top: 0; transform-origin: 0 0; width: 6200px; height: 3360px;}
 .room {position: absolute; width: 1200px; height: 400px; outline: 12px solid #b4a8c4; border-radius: 2px; background: #fff4de; box-shadow: 0 20px 35px #4c395733; overflow: hidden;}
 .room.active {outline-color: #a28bbc;}
 .room-bg {position: absolute; width: 100%; height: 100%; inset: 0; object-fit: fill; pointer-events: none;}
 .room-name {position: absolute; top: 18px; left: 20px; padding: 7px 18px; background: #fffaf4e8; border-radius: 14px; font-size: 20px;}
 .room.selected {box-shadow: 0 0 0 20px #dac7ec80,0 20px 40px #51425533;}
-.room.empty {background: linear-gradient(#f5f0fc 0 72%,#ded0bd 72% 74%,#efdfcd 74%);}
-.room.empty:before {content: ""; position: absolute; left: 38%; top: 17%; width: 24%; height: 43%; border: 8px solid #fffaf4; background: linear-gradient(#b9dbff,#e1d8f8);}
-.room.empty:after {content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 24%; background: repeating-linear-gradient(0deg,transparent 0 23px,#c9bda966 24px 25px); pointer-events: none;}
 .room-tag {position: absolute; top: 18px; right: 18px; color: #65506e; background: #fff9; padding: 7px 15px; border-radius: 15px; font-size: 18px;}
 .expansion {position: absolute; width: 1200px; height: 400px; border: 6px dashed #b397cc; background: #fdf8ff99; color: #785a92; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; font-size: 32px; border-radius: 14px;}
 .expansion strong {font-size: 64px;}
@@ -56,7 +51,6 @@ nav button span {display: block; font-size: 24px; margin-bottom: 4px;}
 #locked a {color: #78539d;}
 textarea {display: block; width: 100%; min-height: 80px; resize: vertical; max-height: 160px; border: 1px solid #e3d7ec; border-radius: 12px; padding: 10px; color: var(--ink); background: #fffdfa;}
 label {display: block; margin: 4px 0 8px; font-size: 13px;}
-.sitting {height: 158px; bottom: 74px; transform: rotate(-5deg);}
 @media (min-width:900px) {#app {max-width: 1500px; margin: auto;}#panel {padding: 13px 25px;}#panel-body .actions {max-width: 650px; margin: auto;}.panel-head {max-width: 650px; margin: 0 auto 10px;}nav {padding-left: 20%; padding-right: 20%;}}
 @media (max-height:550px) and (min-width:600px) {#app {min-height: 300px;}header {padding: 3px 15px;}h1 {font-size: 19px;}.scene-heading {position: absolute; top: 53px; left: 12px; z-index: 4; background: #fffaf0da; border-radius: 14px;}#viewport {min-height: 180px;}#panel {position: absolute; right: 15px; bottom: 76px; width: 320px; max-height: 160px; border-radius: 20px; margin: 0; padding: 10px 12px; background: #fffcf4ed;}.panel-head {margin-bottom: 5px;}.panel-head small {display: none;}h2 {font-size: 16px;}.actions button {min-height: 46px; font-size: 12px; padding: 5px;}.actions .symbol {display: none;}nav {padding: 3px 22%; height: 68px;}nav button span {font-size: 18px; margin: 0;}.camera {left: 12px; right: auto;}.panel-note {display: none;}}
 @media (prefers-reduced-motion:reduce) {* {animation: none !important; transition: none !important;}}
@@ -70,10 +64,8 @@ nav svg {display: block; margin: auto; width: 25px; height: 25px;}
 .room {width: var(--room-width); height: var(--room-height); outline: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible;}
 .room.selected {box-shadow: none;}
 .room-bg {object-fit: contain; clip-path: var(--room-clip);}
-.room.empty:before,.room.empty:after {display: none;}
 .curtains {position: absolute; left: 294px; top: 184px; width: 904px; height: 468px; pointer-events: none; z-index: 2;}
 .furniture {position: absolute; overflow: visible; transform-origin: 0 0; border: 0; border-radius: 0; padding: 0; min-height: 0; background: transparent !important; touch-action: none; filter: drop-shadow(0 5px 4px #45322920);}
-.furniture img {position: absolute; left: 0; top: 0; width: 1536px; height: 1024px; max-width: none; pointer-events: none; transform-origin: 0 0;}
 .furniture:disabled {opacity: 1;}
 .furniture:focus-visible {outline: 4px solid #b297c9; outline-offset: 8px;}
 .floor-grid {position: absolute; inset: 0; width: var(--room-width); height: var(--room-height); z-index: 3; pointer-events: none;}
@@ -86,6 +78,14 @@ nav svg {display: block; margin: auto; width: 25px; height: 25px;}
 .move-controls {display: flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: wrap; margin-bottom: 8px;}
 .move-controls button {min-width: 44px;}
 .position {font-size: 12px; color: #8d7694;}
+.bookshelf-position-controls {display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 8px;}
+.bookshelf-position-control {min-width: 0; margin: 0;}
+.bookshelf-position-control[hidden] {display: none;}
+.bookshelf-control-title {display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px;}
+.bookshelf-control-title output {color: #8d7694; font-variant-numeric: tabular-nums; white-space: nowrap;}
+.bookshelf-position-control input {display: block; width: 100%; min-width: 0; height: 36px; margin: 0; accent-color: #8863b1; touch-action: pan-y;}
+.bookshelf-position-control input:focus-visible {outline: 3px solid #8863b1; outline-offset: 2px; border-radius: 8px;}
+.floor-grid .bookshelf-anchor {fill: #8560a8; stroke: #fffaf5; stroke-width: 2;}
 .panel-note {font-size: 11px;}
 #period-name {color: #937b9d; font-size: 11px;}
 .scene-heading {background: #fffaf5;}
@@ -94,8 +94,8 @@ nav svg {display: block; margin: auto; width: 25px; height: 25px;}
 #panel {padding-top: 13px; padding-bottom: 13px;}
 #hint {top: 10px; font-size: 11px;}
 .camera {bottom: 14px;}
-html[data-period=dusk] #viewport {background: linear-gradient(#bba5d3,#f6c5b0 66%,#d0becb);}
-html[data-period=night] #viewport {background: linear-gradient(#30344f,#686087 68%,#494e6a);}
+html[data-period=dusk] #viewport {background: #ede3ee;}
+html[data-period=night] #viewport {background: #39384d;}
 html[data-period=night] .curtains,html[data-period=night] .furniture {filter: brightness(.9) saturate(.86);}
 html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepia(.12) brightness(.95);}
 @media (min-width:900px) {#app {max-width: 1050px;}.room-bg {filter: drop-shadow(0 15px 20px #49385320);}}

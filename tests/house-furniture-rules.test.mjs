@@ -46,22 +46,23 @@ assert.equal(normalizePlacement('bookshelf',{direction:'back',x:0,y:0}),null);
 assert.deepEqual(normalizePlacement('bookshelf',{direction:'right',x:99.2,y:-5}),{direction:'right',x:9,y:0});
 for(const [direction,x,wanted]of [['right',7,9],['left',0,0],['center',3,4],['right',6.5,7.5]]){
  const upgraded=normalize({version:2,rooms:[{x:0,y:0,curtains:false,shelf:{direction,x,y:1.5}}],diary:'keep me'});
- assert.equal(upgraded.version,7);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
+ assert.equal(upgraded.version,8);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
  assert.deepEqual(normalize(upgraded),upgraded,'migration runs once');
 }
-for(const id of ['desk','chair'])for(const direction of ['left','center','right']){
- const placement={direction,x:direction==='right'?8.5:0,y:3},g=furnitureGeometry(id,placement);
- assert.ok(g.faces.some(f=>f.part===(id==='desk'?'tabletop':'seat'))&&g.faces.some(f=>f.part==='leg-0'));
- assert.ok(g.faces.every(f=>f.matrix&&f.target.every(p=>Number.isFinite(p.x+p.y))));
- for(const face of g.faces)for(let i=0;i<4;i++){const [x,y]=face.source[i];assert.ok(face.matrix[6]*x+face.matrix[7]*y+face.matrix[8]>0,'CSS must not clip visible furniture faces behind its projection plane');const p=transformPoint(face.matrix,face.source[i]);assert.ok(Math.hypot(p.x-face.target[i].x,p.y-face.target[i].y)<1e-6);}
-}
-const previous={version:3,rooms:[{x:0,y:0,curtains:true,shelf:{direction:'right',x:9,y:4}}],diary:'kept'};
-const next=normalize(previous);assert.deepEqual(next.rooms[0].shelf,previous.rooms[0].shelf);assert.ok(next.rooms[0].furniture.desk);
-assert.ok(canPlaceFurniture('desk',next.rooms[0].furniture.desk,[{id:'bookshelf',...next.rooms[0].shelf}]),'new desk finds free space without moving an existing shelf');
-assert.deepEqual(normalize(next),next,'desk migration runs once');
-assert.equal(canPlaceFurniture('chair',{direction:'left',x:8,y:5},[{id:'desk',direction:'right',x:8.5,y:4}]),false);
-const chairSave=normalize({version:4,rooms:[{x:0,y:0,shelf:null,furniture:{desk:{direction:'right',x:8,y:3}}}]});
-assert.deepEqual(chairSave.rooms[0].furniture.desk,{direction:'right',x:8,y:3});
-assert.deepEqual(chairSave.rooms[0].furniture.chair,{direction:'left',x:7,y:4});
-assert.deepEqual(normalize(chairSave),chairSave);
-console.log('PASS: desk/chair components, non-overlapping migration, 639 bookshelf poses, 2/3 contact area, fixed height, face anchors, reserved-space collision, half-cell bounds and one-time wider-room migration');
+// A v7 save must discard every retired model without moving the approved art
+// or losing room expansion, curtains or the diary.
+assert.deepEqual(Object.keys(FURNITURE),['bookshelf']);
+const previous={version:7,rooms:[
+ {x:0,y:0,curtains:false,shelf:{direction:'right',x:8,y:1.5},furniture:{
+  desk:{direction:'right',x:8.5,y:4},chair:{direction:'left',x:7.5,y:5},
+  plant:{direction:'center',x:2,y:0},'side-table':{direction:'left',x:0,y:5.5}
+ }},
+ {x:1,y:0,curtains:true,shelf:null,furniture:{desk:{direction:'center',x:4,y:1}}}
+],diary:'kept'};
+const next=normalize(previous);
+assert.equal(next.version,8);
+assert.deepEqual(next.rooms[0].shelf,previous.rooms[0].shelf);
+assert.equal(next.rooms.length,2);assert.equal(next.rooms[0].curtains,false);assert.equal(next.diary,'kept');
+assert.ok(next.rooms.every(room=>Object.keys(room.furniture).length===0),'retired models must not return from saved state');
+assert.deepEqual(normalize(next),next,'cleanup migration runs once');
+console.log('PASS: image-only catalog and v7 save cleanup, 639 bookshelf poses, 2/3 contact area, fixed height, image anchors, collision, half-cell bounds and wider-room migration');
