@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { compactModel } from './compact.js';
+import { compactModel } from './compact.js?v=20261001-actors1';
 
 export function placeViews({renderer,makeAvatar,registerLegacy,catalog,disposeGroup,box,cyl,sph,at,imgTex,hooks}) {
   const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-8,8,7,-7,.1,100);
@@ -51,7 +51,7 @@ export function placeViews({renderer,makeAvatar,registerLegacy,catalog,disposeGr
     }
     fit();dirty=true;
   }
-  function pose(model,seat){if(!seat)return;for(const leg of model.userData.legs)leg.rotation.x=-Math.PI/2;for(const arm of model.userData.arms)arm.rotation.x=-.3;model.getObjectByName('legs').position.y=-(model.userData.legLen-.1);model.getObjectByName('upper').position.y=.1;}
+  function pose(model,seat){if(!seat)return;if(model.userData.sculptedAvatar){model.userData.setPose('sit');return;}for(const leg of model.userData.legs)leg.rotation.x=-Math.PI/2;for(const arm of model.userData.arms)arm.rotation.x=-.3;model.getObjectByName('legs').position.y=-(model.userData.legLen-.1);model.getObjectByName('upper').position.y=.1;}
   function sitting(person){if(!person.seat)return {y:0,yaw:null};const prop=data.props.find(p=>{if(p.definition.kind==='wall')return false;const d=catalog[registerLegacy(p.definition)],[w,h]=p.r%2?[d.d,d.w]:[d.w,d.d];return d.seat&&person.gx>=p.gx&&person.gx<p.gx+w&&person.gy>=p.gy&&person.gy<p.gy+h;});return {y:prop?catalog[registerLegacy(prop.definition)].seat:person.seat/32,yaw:prop?facing(prop):0};}
   function apply(next){
     data=next;document.documentElement.dataset.view='place';
@@ -85,7 +85,7 @@ export function placeViews({renderer,makeAvatar,registerLegacy,catalog,disposeGr
     let moving=false;
     for(const actor of actors.values()){
       const p=actor.model.position,dist=Math.hypot(actor.x-p.x,actor.z-p.z),factor=reduced.matches?1:.26;
-      if(dist>.012||Math.abs(actor.y-p.y)>.012){p.x+=(actor.x-p.x)*factor;p.z+=(actor.z-p.z)*factor;p.y=actor.y;actor.model.rotation.y=actor.yaw;moving=true;}
+      if(dist>.012||Math.abs(actor.y-p.y)>.012){p.x+=(actor.x-p.x)*factor;p.z+=(actor.z-p.z)*factor;p.y=actor.y;actor.model.rotation.y=actor.yaw;actor.model.userData.walk?.(reduced.matches?0:dist*factor);moving=true;}else if(actor.model.userData.sculptedAvatar){if(actor.model.userData.walk(0))moving=true;}
     }
     if(dirty||moving){renderer.render(scene,camera);overlay();dirty=false;}return true;
   }

@@ -2,8 +2,11 @@
 
 import * as THREE from './vendor/three.module.js';
 import { RoundedBoxGeometry } from './vendor/RoundedBoxGeometry.js';
-import { characterViews } from './characters.js?v=20260930-3';
-import { placeViews } from './places.js?v=20260930-3';
+import { preloadSculptedAvatar, buildSculptedAvatar, disposeSculptedAvatar, avatarAssetStatus } from './sculpted-avatar.js?v=20261001-actors1';
+import { preloadSculptedPets, buildSculptedPet, disposeSculptedPets } from './sculpted-pets.js?v=20261001-actors1';
+const [,sculptedPets]=await Promise.all([preloadSculptedAvatar(),preloadSculptedPets()]);
+import { characterViews } from './characters.js?v=20261001-actors1';
+import { placeViews } from './places.js?v=20261001-actors1';
 import { buildBreed, breedKeys } from './pet-breeds.js?v=20260930-3';
 import { refineFurniture } from './furniture.js?v=20260930-3';
 import { buildVariant } from './variants.js?v=20260930-3';
@@ -639,6 +642,7 @@ function faceCanvas(cfg, mood) {
 }
 function makeAvatar(cfg) {
   cfg={skin:'#FFE3D0',hairColor:'#5A3A2E',topColor:'#9DB7F5',bottomColor:'#3A3F66',hair:'bob',top:'tee',bottom:'pants',face:'calm',acc:'none',...cfg};
+  const sculpted=buildSculptedAvatar(cfg);if(sculpted)return sculpted;
   avatarMaterial=true;try{return makeAvatarInner(cfg);}finally{avatarMaterial=false;}
 }
 function makeAvatarInner(cfg) {
@@ -732,8 +736,9 @@ function makeAvatarInner(cfg) {
 }
 let me = null; const av = { pos: new THREE.Vector2(4.5, 5.5), target: null, walkT: 0, pose: 'stand', then: null, yaw: Math.PI };
 function rebuildAvatar() { const old = me; const yaw = old ? old.rotation.y : Math.PI / 4; if (old) room.remove(old); me = makeAvatar(state.avatar); me.rotation.order = 'YXZ'; me.position.set(av.pos.x, 0, av.pos.y); me.rotation.y = yaw; room.add(me); if (av.pose !== 'stand') { av.pose = 'stand'; } if (window.Ojjuda3D) myTag = nameTag(me, state.nick); }
-function setFace(mood) { const t = new THREE.CanvasTexture(faceCanvas(state.avatar, mood)); t.colorSpace = THREE.SRGBColorSpace;t.userData.generatedAvatar=true;me.userData.face.material.map?.dispose();me.userData.face.material.map = t; me.userData.face.material.needsUpdate = true; }
+function setFace(mood) { if(me.userData.sculptedAvatar){me.userData.setFace(mood);return;}const t = new THREE.CanvasTexture(faceCanvas(state.avatar, mood)); t.colorSpace = THREE.SRGBColorSpace;t.userData.generatedAvatar=true;me.userData.face.material.map?.dispose();me.userData.face.material.map = t; me.userData.face.material.needsUpdate = true; }
 function setPose(pose, opts = {}) {
+  if(me.userData.sculptedAvatar){av.pose=pose;me.userData.setPose(pose,opts);return;}
   const [lL, lR] = me.userData.legs, [aL, aR] = me.userData.arms, legs = me.getObjectByName('legs'), upper = me.getObjectByName('upper'), L = me.userData.legLen;
   av.pose = pose; me.rotation.x = 0;
   if (pose === 'sit') { lL.rotation.x = lR.rotation.x = -Math.PI / 2; legs.position.y = -(L - .1); upper.position.y = .1; aL.rotation.x = aR.rotation.x = -.5; me.position.y = opts.lift; setFace(state.avatar.face); }
@@ -761,7 +766,7 @@ const PETS = {
 PETS.bird = { name: '앵무새', emoji: '🦜', colors: ['#5FC46A', '#4B82F0', '#F2C94C', '#F0679A'], perch: true, pg: 'bird', build(col) { const g = new THREE.Group(); g.add(at(cyl(.32, .36, .06, '#8C5A3C', 20), 0, .03, 0), at(cyl(.05, .05, 1.3, '#8C5A3C', 8), 0, .68, 0), rot(at(cyl(.04, .04, .8, '#A87A5A', 8), 0, 1.35, 0), 'z', Math.PI / 2)); const b = new THREE.Group(); b.position.y = 1.4; g.add(b); const body = sph(.16, col, 20, 14); body.scale.set(1, 1.3, 1); body.position.y = .2; b.add(body); b.add(at(sph(.12, shade(col, .35), 16, 12), 0, .16, .1)); const head = new THREE.Group(); head.position.set(0, .45, .04); b.add(head); head.add(sph(.15, col, 20, 14)); head.add(rot(at(cone(.05, .1, '#F2A93B', 8), 0, -.02, .17), 'x', Math.PI / 2)); for (const x of [-.07, .07]) { head.add(at(sph(.035, '#fff', 8, 6), x, .03, .13)); head.add(at(sph(.02, '#1E1A33', 8, 6), x, .03, .155)); } head.add(rot(at(cone(.05, .16, shade(col, -.1), 6), 0, .2, -.02), 'x', -.5)); for (const x of [-.14, .14]) { const w = sph(.08, shade(col, -.12), 12, 8); w.scale.set(.5, 1.4, 1); w.position.set(x, .18, 0); b.add(w); } const tl = box(.08, .3, .04, shade(col, -.15), .02); tl.position.set(0, -.02, -.12); tl.rotation.x = .4; b.add(tl); g.userData.tail = tl; g.userData.stay = true; return g; } };
 PETS.hamster = { name: '햄스터', emoji: '🐹', colors: ['#F2C27A', '#F1F1F4', '#D9A45B'], build(col) { const g = new THREE.Group(); const body = sph(.2, col, 20, 14); body.scale.set(1, .85, 1.2); body.position.y = .18; g.add(body); g.add(at(sph(.14, shade(col, .4), 16, 12), 0, .14, .12)); const head = new THREE.Group(); head.position.set(0, .3, .18); g.add(head); head.add(sph(.17, col, 20, 14)); for (const x of [-.12, .12]) { head.add(at(sph(.06, col, 10, 8), x, .13, -.02)); head.add(at(sph(.035, '#FFB8C8', 8, 6), x, .13, .01)); } head.add(new THREE.Mesh(new THREE.SphereGeometry(.176, 32, 24, Math.PI / 2 - 1, 2, .9, 1.4), new THREE.MeshBasicMaterial({ map: petFace(col, 'bunny'), transparent: true }))); for (const [x, z] of [[-.1, .12], [.1, .12]]) g.add(at(sph(.05, shade(col, .3), 10, 8), x, .04, z)); g.userData.small = true; return g; } };
 PETS.penguin = { name: '펭귄', emoji: '🐧', colors: ['#2E2E38', '#4B5A8C'], build(col) { const g = new THREE.Group(); const body = sph(.28, col, 24, 16); body.scale.set(1, 1.25, .9); body.position.y = .36; g.add(body); const belly = sph(.2, '#FFFFFF', 20, 14); belly.scale.set(1, 1.3, .6); belly.position.set(0, .32, .16); g.add(belly); const head = new THREE.Group(); head.position.set(0, .72, .05); g.add(head); head.add(sph(.22, col, 24, 16)); head.add(at(sph(.12, '#FFFFFF', 16, 12), 0, -.02, .12)); head.add(rot(at(cone(.05, .12, '#F2A93B', 8), 0, -.04, .24), 'x', Math.PI / 2)); for (const x of [-.08, .08]) { head.add(at(sph(.045, '#fff', 8, 6), x, .04, .18)); head.add(at(sph(.025, '#1E1A33', 8, 6), x, .04, .215)); } for (const x of [-1, 1]) { const w = sph(.1, col, 12, 8); w.scale.set(.4, 1.5, .8); w.position.set(x * .28, .38, 0); w.rotation.z = -x * .3; g.add(w); } for (const x of [-.1, .1]) g.add(at(box(.14, .05, .2, '#F2A93B', .02), x, .03, .06)); g.userData.tail = null; g.userData.waddle = true; return g; } };
-PETS.fox = { name: '여우', emoji: '🦊', colors: ['#E8904A', '#F1F1F4', '#D9A45B'], build(col) { const g = PETS.cat.build(col); g.traverse(o => { if (o.geometry && o.geometry.type === 'ConeGeometry' && o.material.color.getHexString() !== 'ffb8c8') { o.scale.set(1.15, 1.35, 1.15); } }); const tail = g.userData.tail; tail.scale.set(1.3, 1.15, 1.25); g.add(at(sph(.09, '#FFFFFF', 10, 8), .1, .9, -.55)); g.add(at(sph(.16, '#FFFFFF', 16, 12), 0, .25, .38)); return g; } };
+PETS.fox = { name: '여우', emoji: '🦊', colors: ['#E8904A', '#F1F1F4', '#D9A45B'], build(col) { const g = buildBreed('cat',col); g.traverse(o => { if (o.geometry && o.geometry.type === 'ConeGeometry' && o.material.color.getHexString() !== 'ffb8c8') { o.scale.set(1.15, 1.35, 1.15); } }); const tail = g.userData.tail; tail.scale.set(1.3, 1.15, 1.25); g.add(at(sph(.09, '#FFFFFF', 10, 8), .1, .9, -.55)); g.add(at(sph(.16, '#FFFFFF', 16, 12), 0, .25, .38)); return g; } };
 PETS.pig = { name: '아기돼지', emoji: '🐷', colors: ['#F7B8C4', '#F1D0D8'], build(col) { const g = new THREE.Group(); const body = sph(.3, col, 24, 16); body.scale.set(1, .85, 1.3); body.position.y = .3; g.add(body); const head = new THREE.Group(); head.position.set(0, .48, .42); g.add(head); head.add(sph(.25, col, 24, 16)); head.add(rot(at(cyl(.09, .1, .1, shade(col, -.1), 16), 0, -.02, .24), 'x', Math.PI / 2)); for (const x of [-.03, .03]) head.add(at(sph(.02, '#C96A80', 6, 5), x, -.02, .3)); for (const x of [-.08, .08]) { head.add(at(sph(.04, '#fff', 8, 6), x, .08, .22)); head.add(at(sph(.022, '#1E1A33', 8, 6), x, .08, .255)); } for (const x of [-.16, .16]) { const e = cone(.08, .16, col, 4); e.position.set(x, .24, -.02); e.rotation.z = -x * 1.2; head.add(e); } for (const [x, z] of [[-.16, .25], [.16, .25], [-.16, -.25], [.16, -.25]]) g.add(at(cyl(.07, .07, .16, shade(col, -.08), 10), x, .08, z)); const cur = new THREE.CatmullRomCurve3([new THREE.Vector3(0, .38, -.4), new THREE.Vector3(.08, .45, -.5), new THREE.Vector3(-.06, .5, -.55)]); const tail = new THREE.Mesh(new THREE.TubeGeometry(cur, 8, .03, 6, false), toon(col)); g.add(tail); g.userData.tail = tail; return g; } };
 
 // ================= 4차: 동물 51종 (뼈대 + 옵션) =================
@@ -892,7 +897,7 @@ function rebuildPets() { petObjs.forEach(p => room.remove(p.g)); petObjs.length 
 
 // Production adapter: transient projection only. World owns every saved field.
 refineFurniture(CATALOG,{box,cyl,sph,at});
-for(const key of breedKeys)if(PETS[key])PETS[key].build=color=>buildBreed(key,color);
+for(const key of breedKeys)if(PETS[key])PETS[key].build=color=>buildSculptedPet(key,color)||buildBreed(key,color);
 const hooks = {};
 let editMode = false, sel = null, active = true, stopped = false, frameId = 0;
 let snapshotKey = '', itemKey = '', avatarKey = '', surfaceKey = '', zoomLevel = 1;
@@ -931,6 +936,7 @@ function updateOverlay() {
   for(let i=bubList.length-1;i>=0;i--){const b=bubList[i];if(performance.now()>b.until||!b.obj.parent){b.el.remove();bubList.splice(i,1);continue;}const p=projectPosition(b.obj.position.clone().add(new THREE.Vector3(0,2.55,0)));b.el.style.left=p.x+'px';b.el.style.top=p.y+'px';}
 }
 function disposeGroup(group) {
+  const rigs=new Set();group.traverse(o=>{if(o.skeleton)rigs.add(o.skeleton);});for(const rig of rigs)rig.dispose();
   group.traverse(object=>{object.geometry?.dispose();for(const material of (Array.isArray(object.material)?object.material:[object.material])){if(material?.map?.userData.generatedAvatar)material.map.dispose();material?.dispose();}});
   group.removeFromParent();
 }
@@ -1079,7 +1085,7 @@ function animate(now){
   if(av.target){const dir=av.target.clone().sub(av.pos),dist=dir.length();av.pos.add(dir.normalize().multiplyScalar(Math.min(dist,2.6*dt)));av.walkT+=dt*9;me.position.set(av.pos.x,Math.abs(Math.sin(av.walkT))*.045,av.pos.y);const dy=av.yaw-me.rotation.y;me.rotation.y+=Math.atan2(Math.sin(dy),Math.cos(dy))*.25;lL.rotation.x=Math.sin(av.walkT)*.65;lR.rotation.x=-lL.rotation.x;aL.rotation.x=-lL.rotation.x*.7;aR.rotation.x=lL.rotation.x*.7;if(dist<.03){nextWaypoint();if(!av.target){lL.rotation.x=lR.rotation.x=aL.rotation.x=aR.rotation.x=0;me.position.y=0;arrive();}}}
   else if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&av.pose==='stand'){me.position.y=Math.sin(time*2)*.008;me.userData.head.rotation.z=Math.sin(time*1.2)*.025;}
   if(!reduced)for(const g of movingParts){const m=g.userData.motion;if(m.fan)m.fan.rotation.z+=dt*6;if(m.disc)m.disc.rotation.y+=dt;if(m.tail)m.tail.rotation.y=Math.sin(time*2)*.16;}
-  if(av.target||drag)renderer.shadowMap.needsUpdate=true;updateOverlay();renderer.render(scene,camera);roomDirty=false;
+  if(av.target||drag)renderer.shadowMap.needsUpdate=true;me.userData.syncPose?.();updateOverlay();renderer.render(scene,camera);roomDirty=false;
 }
 window.Ojjuda3D={version:17,hooks,applyRoom,
   applyPlace(data){placeView.apply(data);},
@@ -1092,8 +1098,8 @@ window.Ojjuda3D={version:17,hooks,applyRoom,
   setActive(value){active=!!value;},
   zoom(delta){if(placeView.active())return placeView.zoom(delta);zoomLevel=delta?clamp(zoomLevel+delta,1,2):1;camera.zoom=zoomLevel;camera.updateProjectionMatrix();roomDirty=true;},
   say(text){if(me)say(me,text);},
-  dispose(){stopped=true;cancelAnimationFrame(frameId);cancelGesture();characterView.dispose();placeView.dispose();scene.traverse(o=>{o.geometry?.dispose();for(const m of(Array.isArray(o.material)?o.material:[o.material]))m?.dispose();});for(const t of Object.values(texCache))t.dispose();for(const t of Object.values(artCache))t.dispose();for(const t of legacySprites.values())t.dispose();for(const t of surfaceTextures.values())t.dispose();renderer.dispose();},
-  inspect(){return {key:snapshotKey,editing:editMode,framing:inspectFraming(),place:placeView.inspect(),character:characterView.inspect(),avatar:{...state.avatar},arms:me?.userData.arms.map(arm=>({shoulder:arm.position.y,sleeve:arm.getObjectByName('sleeve').position.y,length:arm.userData.sleeveLength})),items:state.items.map(({id,sourceType,gx,gy,wall,t,z})=>({id,type:sourceType,gx,gy,wall,t,z})),models:Object.fromEntries(legacySources),calls:renderer.info.render.calls,renderFrame:renderer.info.render.frame,geometries:renderer.info.memory.geometries};},
+  dispose(){stopped=true;cancelAnimationFrame(frameId);cancelGesture();characterView.dispose();placeView.dispose();disposeSculptedAvatar();disposeSculptedPets();const rigs=new Set();scene.traverse(o=>{if(o.skeleton)rigs.add(o.skeleton);});for(const rig of rigs)rig.dispose();scene.traverse(o=>{o.geometry?.dispose();for(const m of(Array.isArray(o.material)?o.material:[o.material]))m?.dispose();});for(const t of Object.values(texCache))t.dispose();for(const t of Object.values(artCache))t.dispose();for(const t of legacySprites.values())t.dispose();for(const t of surfaceTextures.values())t.dispose();renderer.dispose();},
+  inspect(){return {sculptedPets,petArt:Object.fromEntries([...meshes].filter(([,g])=>g.userData.worldPet).map(([id,g])=>[id,g.userData.sculptedPet||'legacy'])),avatarAsset:avatarAssetStatus(),avatarModel:me?.userData.sculptedAvatar?'sculpted-v20':'wardrobe',key:snapshotKey,editing:editMode,framing:inspectFraming(),place:placeView.inspect(),character:characterView.inspect(),avatar:{...state.avatar},arms:me?.userData.arms.map(arm=>({shoulder:arm.position.y,sleeve:arm.getObjectByName('sleeve').position.y,length:arm.userData.sleeveLength})),items:state.items.map(({id,sourceType,gx,gy,wall,t,z})=>({id,type:sourceType,gx,gy,wall,t,z})),models:Object.fromEntries(legacySources),calls:renderer.info.render.calls,renderFrame:renderer.info.render.frame,geometries:renderer.info.memory.geometries};},
   projectItem(id){const g=meshes.get(id);if(!g)return null;return projectPosition(new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()));}
 };
 applyLight();frameId=requestAnimationFrame(animate);

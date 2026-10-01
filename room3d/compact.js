@@ -2,6 +2,7 @@ import * as THREE from './vendor/three.module.js';
 
 // Static display models share one draw call per material, not one per tiny part.
 export function compactModel(model) {
+  let skinned=false;model.traverse(o=>{if(o.isSkinnedMesh)skinned=true;});if(skinned)return model;
   model.updateMatrixWorld(true);
   const buckets=new Map(),materials=new Set(),kept=new Set(),loose=[];
   model.traverse(mesh=>{

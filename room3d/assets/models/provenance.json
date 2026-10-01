@@ -1,0 +1,23 @@
+{
+  "authorship": "Original Ojjuda project meshes authored for the user. No third-party model pack.",
+  "files": [
+    {
+      "file": "premium_avatar.glb",
+      "source_release": "Ojjuda native v20",
+      "sha256": "7976b11e898a3453d767d62b49ffb6c2114894448d39801b8c6b03c94a3de307",
+      "bytes": 1392432
+    },
+    {
+      "file": "premium_cat.glb",
+      "source_release": "Ojjuda native v20",
+      "sha256": "22530a15328026cf5271a3b80898067fcbf01813923bf6540b12a0cd8cabafbf",
+      "bytes": 1653900
+    },
+    {
+      "file": "premium_dog.glb",
+      "source_release": "Ojjuda native v20",
+      "sha256": "30f997f8b8701b7c58b242c21502cbbd55f9720f3596aae1b2aad71b0e118d0c",
+      "bytes": 1760632
+    }
+  ]
+}
