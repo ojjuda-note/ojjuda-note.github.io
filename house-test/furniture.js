@@ -1,5 +1,5 @@
-import {floorPoint,roomPoint} from './model.js?v=20261001-6';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-6';
+import {floorPoint,roomPoint} from './model.js?v=20261001-desk1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261001-desk1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -19,12 +19,19 @@ export function projectiveMap(source,target){
 export function transformPoint(m,[x,y]){const w=m[6]*x+m[7]*y+m[8];return {x:(m[0]*x+m[1]*y+m[2])/w,y:(m[3]*x+m[4]*y+m[5])/w};}
 export function cssMatrix(m){return `matrix3d(${[m[0],m[3],0,m[6],m[1],m[4],0,m[7],0,0,1,0,m[2],m[5],0,m[8]].join(',')})`;}
 const rectangle=b=>[[b.x,b.y],[b.x+b.w,b.y],[b.x+b.w,b.y+b.d],[b.x,b.y+b.d]];
+function componentBounds(part,contact,direction){
+ const {u,v,w,d}=part;
+ if(direction==='left')return {x:contact.x+v*contact.w,y:contact.y+(1-u-w)*contact.d,w:d*contact.w,d:w*contact.d};
+ if(direction==='right')return {x:contact.x+(1-v-d)*contact.w,y:contact.y+u*contact.d,w:d*contact.w,d:w*contact.d};
+ return {x:contact.x+u*contact.w,y:contact.y+v*contact.d,w:w*contact.w,d:d*contact.d};
+}
 export function furnitureGeometry(id,s){
  const item=FURNITURE[id],size=itemSize(id,s.direction),contact=contactBounds(id,s);
  if(!item||!size||!contact)return null;
  const cells=rectangle(contact),footprint=cells.map(([x,y])=>floorPoint(x,y));
  const reserved=rectangle({...s,...size}).map(([x,y])=>floorPoint(x,y));
- const volumes=[{id:'body',bounds:contact,base:0,height:item.height,views:item.views}];
+ const volumes=item.components?item.components.map(part=>({...part,bounds:componentBounds(part,contact,s.direction)})):[{id:'body',bounds:contact,base:0,height:item.height,views:item.views}];
+ if(item.components)volumes.sort((a,b)=>a.base+a.height-b.base-b.height||Math.max(...rectangle(a.bounds).map(([x,y])=>floorPoint(x,y).y))-Math.max(...rectangle(b.bounds).map(([x,y])=>floorPoint(x,y).y)));
  for(const part of item.attachments||[]){
   const widthFraction=s.direction==='center'?part.widthFraction:part.depthFraction,depthFraction=s.direction==='center'?part.depthFraction:part.widthFraction;
   const w=contact.w*widthFraction,d=contact.d*depthFraction;
@@ -39,7 +46,11 @@ export function furnitureGeometry(id,s){
   const wood=[[662,220],[728,220],[728,400],[662,400]],view=volume.views[s.direction];
   // A wooden top closes each volume without baking extra decorative objects
   // into a front plane. The top box keeps its own width, depth and height.
-  if(top[2].y>top[1].y){const matrix=projectiveMap(wood,top);faces.push({source:wood,clip:wood,image:item.views.right.image,part:volume.id,plane:'top',corners:[0,1,2,3],target:top,matrix,outline:top});}
+  if(top[2].y>top[1].y){
+   const texture=view.planes.top||{source:wood,clip:wood},target=s.direction==='left'?[top[3],top[0],top[1],top[2]]:s.direction==='right'?[top[1],top[2],top[3],top[0]]:top;
+   const matrix=projectiveMap(texture.source,target);
+   faces.push({...texture,image:view.planes.top?view.image:item.views.right.image,part:volume.id,plane:'top',corners:[0,1,2,3],target,matrix,outline:top});
+  }
   for(const corners of edges){
    const plane=corners.join(':')===frontEdge?'front':'side',sourceView=view.planes[plane]?view:volume.views.right,face=sourceView.planes[plane];
    const [a,b]=corners,target=[top[a],top[b],ground[b],ground[a]],matrix=projectiveMap(face.source,target);

@@ -1,4 +1,4 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-6';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261001-desk1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -11,7 +11,35 @@ function migrateShelf(s,version){
  // of the wider room, and migrate only once when the v3 save is written.
  return normalizeShelf({...s,x:s.x===0?0:s.x===8-size.w?FLOOR.width-size.w:s.x+1});
 }
-export function normalize(data){const rooms=[{x:0,y:0,decor:true,curtains:true,shelf:defaultShelf()}],pending=new Map();if(Array.isArray(data?.rooms))for(const r of data.rooms.slice(0,100)){if(validCell(r))pending.set(roomKey(r),{x:r.x,y:r.y,decor:r.decor===true,curtains:r.curtains!==false,shelf:data.version>=2?migrateShelf(r.shelf,data.version):(!r.x&&!r.y?defaultShelf():null)});}if(pending.has('0:0'))rooms[0]=pending.get('0:0');pending.delete('0:0');let progress=true;while(progress&&rooms.length<35){progress=false;for(const [key,r]of pending)if(canAdd(rooms,r)){rooms.push(r);pending.delete(key);progress=true;}}return {version:3,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};}
+export function furniturePlacements(room){
+ return [...(room.shelf?[{id:'bookshelf',...room.shelf}]:[]),...Object.entries(room.furniture||{}).filter(([id,p])=>id!=='bookshelf'&&FURNITURE[id]&&p).map(([id,p])=>({id,...p}))];
+}
+export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
+ const candidate=normalizePlacement(id,preferred);if(candidate&&canPlaceFurniture(id,candidate,others))return candidate;
+ for(const direction of FURNITURE[id]?.directions||[]){const {w,d}=itemSize(id,direction);
+  for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step){const s={direction,x,y};if(canPlaceFurniture(id,s,others))return s;}
+ }
+ return null;
+}
+function roomFurniture(raw,shelf,addDesk){
+ const result={},others=shelf?[{id:'bookshelf',...shelf}]:[];
+ if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const id of Object.keys(FURNITURE)){
+  if(id==='bookshelf')continue;const placed=normalizePlacement(id,raw[id]);
+  if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
+ }
+ if(addDesk&&!result.desk){const desk=findPlacement('desk',others);if(desk)result.desk=desk;}
+ return result;
+}
+export function normalize(data){
+ const initialShelf=defaultShelf(),rooms=[{x:0,y:0,decor:true,curtains:true,shelf:initialShelf,furniture:roomFurniture(null,initialShelf,true)}],pending=new Map();
+ if(Array.isArray(data?.rooms))for(const r of data.rooms.slice(0,100))if(validCell(r)){
+  const shelf=data.version>=2?migrateShelf(r.shelf,data.version):(!r.x&&!r.y?defaultShelf():null);
+  pending.set(roomKey(r),{x:r.x,y:r.y,decor:r.decor===true,curtains:r.curtains!==false,shelf,furniture:roomFurniture(r.furniture,shelf,!(data.version>=4)&&!r.x&&!r.y)});
+ }
+ if(pending.has('0:0'))rooms[0]=pending.get('0:0');pending.delete('0:0');
+ let progress=true;while(progress&&rooms.length<35){progress=false;for(const [key,r]of pending)if(canAdd(rooms,r)){rooms.push(r);pending.delete(key);progress=true;}}
+ return {version:4,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
+}
 
 export const ROOM={width:1507,height:1044,top:27,bottom:916,clip:'inset(27px 12px 128px 12px)',assetVersion:3,wallHeight:4.5};
 export const FLOOR={width:10,depth:7,step:.5};
