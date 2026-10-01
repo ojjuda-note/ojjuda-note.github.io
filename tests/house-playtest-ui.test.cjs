@@ -13,6 +13,10 @@ for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){awai
 await page.clock.resume();
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 assert.equal(await f.locator('.floor-grid').count(),1);
+const calibration=await f.evaluate(async()=>{const {floorPoint,floorCell}=await import('/house-test/model.js');let error=0;for(let y=0;y<=7;y+=.5)for(let x=0;x<=8;x+=.5){const p=floorPoint(x,y),c=floorCell(p.x,p.y);error=Math.max(error,Math.abs(c.x-x),Math.abs(c.y-y));}return {corners:[[0,0],[8,0],[8,7],[0,7]].map(([x,y])=>floorPoint(x,y)),error};});
+for(const [i,wanted] of [[262,709],[1014,718],[1215,919],[40,919]].entries()){assert.ok(Math.abs(calibration.corners[i].x-wanted[0])<.001);assert.ok(Math.abs(calibration.corners[i].y-wanted[1])<.001);}assert.ok(calibration.error<1e-9);
+await f.waitForFunction(()=>{const room=document.querySelector('.room').getBoundingClientRect(),view=document.querySelector('#viewport').getBoundingClientRect();return room.left-view.left>=20&&view.right-room.right>=20;});
+await page.screenshot({path:'/tmp/house-grid-aligned.png'});
 await f.getByRole('button',{name:'책장 ← 0.5칸',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'6.5');
 await f.getByRole('button',{name:'취소',exact:true}).click();

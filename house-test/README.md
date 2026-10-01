@@ -11,7 +11,7 @@ The approved compact empty room uses its original square camera, cream walls, oa
 - 08:00–18:00: day.
 - 20:00–06:00: night.
 
-Floor: 8 × 7 cells, half-cell movement. Bookshelf: 2 × 1 cells front-facing, 1 × 2 cells at side-wall angles. Dragging and arrow controls use the same projected floor and snap/clamp function. Editing is a draft until **배치 완료**; cancellation and leaving the editor discard it. Curtains can be shown/removed independently. **빈방 보기** removes furniture only in the test save; approved room geometry never changes.
+Floor: 8 × 7 cells, half-cell movement. Its projective transform is calibrated to the four wall/floor corners; the foreground apron is outside the placement grid. Current-room framing reserves space on both sides. Bookshelf: 2 × 1 cells front-facing, 1 × 2 cells at side-wall angles. Dragging and arrow controls use the same projected floor and snap/clamp function. Editing is a draft until **배치 완료**; cancellation and leaving the editor discard it. Curtains can be shown/removed independently. **빈방 보기** removes furniture only in the test save; approved room geometry never changes.
 
 Starter room is centered (0,0); x −2…2, y −3…3, at most 35 rooms. Add only beside an existing connected room. Expansion, curtains, bookshelf and diary persist per account on this device, under `ojjuda-house-playtest-v1:<owner>`; internal schema is version 2 and upgrades older prototype saves. No production ownership, wallet, profile or diary is changed.
 
