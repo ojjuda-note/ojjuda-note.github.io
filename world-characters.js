@@ -10,7 +10,7 @@
       function engine(){for(const entry of entries.values())if(entry.api&&entry.host.isConnected&&!entry.failed)return entry.api;const room=document.querySelector('#stage .room3d-frame, #pstage .place3d-frame');return room?.contentWindow?.Ojjuda3D||standby?.api;}
       function refreshEntryActive(entry){const rect=entry.host.getBoundingClientRect(),modal=document.querySelector('#gov, #modal-root .modal');entry.api?.setActive(!entry.failed&&!document.hidden&&entry.host.isConnected&&!entry.frame.hidden&&rect.bottom>=-80&&rect.top<=innerHeight+80&&(!modal||modal.contains(entry.host)));}
       function create(host,kind){
-        const frame=document.createElement('iframe');frame.className='character-frame';frame.title=kind==='pet'?'나와 펫의 교감 공간':'내 아바타 입체 미리보기';frame.src='/room3d/index.html?view='+kind+'&v=20261001-accessories1';
+        const frame=document.createElement('iframe');frame.className='character-frame';frame.title=kind==='pet'?'나와 펫의 교감 공간':'내 아바타 입체 미리보기';frame.src='/room3d/index.html?view='+kind+'&v=20261001-catcoats1';
         const entry={host,kind,frame,api:null,key:app.identity(),failed:false};entries.set(host,entry);host.append(frame);entry.observer=new IntersectionObserver(()=>refreshEntryActive(entry),{rootMargin:'80px'});entry.observer.observe(host);
         entry.timeout=setTimeout(()=>fail(entry),18000);
         return entry;
@@ -30,7 +30,7 @@
       }
       function schedule(){if(!scheduled&&!suspended)scheduled=requestAnimationFrame(scan);}
       function draw(node,url,key){if(!node.isConnected)return;const image=document.createElement('img');image.alt='';image.src=url;image.onload=()=>{if(node.isConnected&&(node.dataset.itemPreview?'item:'+node.dataset.itemPreview:node.dataset.avatarPortrait)===key){node.replaceChildren(image);node.dataset.portraitReady='true';}};}
-      function ensureStandby(){if(standby||entries.size||document.querySelector('#stage .room3d-frame, #pstage .place3d-frame'))return;const frame=document.createElement('iframe');frame.className='character-service';frame.tabIndex=-1;frame.setAttribute('aria-hidden','true');frame.src='/room3d/index.html?view=portrait&v=20261001-accessories1';standby={frame,api:null};root.append(frame);}
+      function ensureStandby(){if(standby||entries.size||document.querySelector('#stage .room3d-frame, #pstage .place3d-frame'))return;const frame=document.createElement('iframe');frame.className='character-service';frame.tabIndex=-1;frame.setAttribute('aria-hidden','true');frame.src='/room3d/index.html?view=portrait&v=20261001-catcoats1';standby={frame,api:null};root.append(frame);}
       function pump(){
         if(busy||suspended||!pending.size)return;const api=engine();if(!api?.portrait){if(++retries>32){pending.clear();return;}ensureStandby();clearTimeout(retry);retry=setTimeout(pump,250);return;}retries=0;
         busy=true;const work=()=>{try{const node=pending.values().next().value;pending.delete(node);if(node?.isConnected){const item=node.dataset.itemPreview,key=item?'item:'+item:node.dataset.avatarPortrait;let url=cache.get(key);if(!url){url=item?engine()?.itemPortrait(app.itemDefinition(item)):engine()?.portrait(JSON.parse(key));if(!url){const tries=(attempts.get(node)||0)+1;attempts.set(node,tries);if(tries<12)pending.add(node);return;}cache.set(key,url);if(cache.size>192)cache.delete(cache.keys().next().value);}draw(node,url,key);}}catch(error){console.warn('Portrait unavailable',error);}finally{busy=false;if(pending.size)setTimeout(pump,80);}};
