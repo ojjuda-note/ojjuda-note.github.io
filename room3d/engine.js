@@ -3,7 +3,6 @@
 import * as THREE from './vendor/three.module.js';
 import { RoundedBoxGeometry } from './vendor/RoundedBoxGeometry.js';
 import { characterViews } from './characters.js?v=20260930-3';
-import { buildCourtyard } from './yard.js?v=20260930-3';
 import { placeViews } from './places.js?v=20260930-3';
 import { buildBreed, breedKeys } from './pet-breeds.js?v=20260930-3';
 import { refineFurniture } from './furniture.js?v=20260930-3';
@@ -20,10 +19,32 @@ stage.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = null;
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 100);
 const camAngle = Math.PI / 4, center = new THREE.Vector3(N / 2, 0, N / 2);
-function fitCamera() { roomDirty=true;const w = innerWidth, h = innerHeight, a = w / h, size = Math.max(6.4, 8.85 / a) * (N / 8); camera.left = -size * a; camera.right = size * a; camera.top = size; camera.bottom = -size; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
+const houseViewBounds = new THREE.Box2();
+function fitCamera() {
+  roomDirty=true;
+  const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),aspect=w/h;
+  placeCamera();camera.updateMatrixWorld(true);shell.updateWorldMatrix(true,true);
+  houseViewBounds.makeEmpty();
+  const corner=new THREE.Vector3(),viewTransform=new THREE.Matrix4();
+  // Fit only the cutaway house. Project each mesh separately so the empty front
+  // above the floor is not mistaken for a full-height enclosing box.
+  shell.traverse(mesh=>{
+    if(!mesh.isMesh||!mesh.visible)return;
+    mesh.geometry.computeBoundingBox();
+    const bounds=mesh.geometry.boundingBox;
+    viewTransform.multiplyMatrices(camera.matrixWorldInverse,mesh.matrixWorld);
+    for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+      corner.set(x,y,z).applyMatrix4(viewTransform);houseViewBounds.expandByPoint(corner);
+    }
+  });
+  const extent=houseViewBounds.getSize(new THREE.Vector2()),mid=houseViewBounds.getCenter(new THREE.Vector2());
+  const halfHeight=Math.max(extent.x/(2*aspect*.94),extent.y/(2*.94)),halfWidth=halfHeight*aspect;
+  camera.left=mid.x-halfWidth;camera.right=mid.x+halfWidth;
+  camera.top=mid.y+halfHeight;camera.bottom=mid.y-halfHeight;
+  camera.updateProjectionMatrix();renderer.setSize(w,h);
+}
 function placeCamera() { const r = 26, el = .62; camera.position.set(center.x + Math.cos(camAngle) * r, r * el, center.z + Math.sin(camAngle) * r); camera.lookAt(center.x, 1.45, center.z); }
-addEventListener('resize', () => { fitCamera(); placeCamera(); });
-fitCamera(); placeCamera();
+addEventListener('resize', fitCamera);
 
 const steps = new Uint8Array([105, 150, 205, 250]);
 const gradientMap = new THREE.DataTexture(steps, 4, 1, THREE.RedFormat); gradientMap.minFilter = gradientMap.magFilter = THREE.NearestFilter; gradientMap.needsUpdate = true;
@@ -46,7 +67,7 @@ function cone(r, h, color, seg = 16) { const m = new THREE.Mesh(new THREE.ConeGe
 const ART_IMG = {"frame": "./assets/texture-000.jpg", "landscape": "./assets/texture-001.jpg", "poster": "./assets/texture-002.jpg", "bathposter": "./assets/texture-003.jpg", "calendar": "./assets/texture-004.jpg", "corkboard": "./assets/texture-005.jpg", "chalkmenu": "./assets/texture-006.jpg", "tapestry": "./assets/texture-007.jpg", "polaroid1": "./assets/texture-008.jpg", "polaroid2": "./assets/texture-009.jpg", "polaroid3": "./assets/texture-010.jpg", "polaroid4": "./assets/texture-011.jpg", "rugx1": "./assets/texture-012.jpg", "rugx2": "./assets/texture-013.jpg", "rugx3": "./assets/texture-014.jpg", "rugx4": "./assets/texture-015.jpg", "rugx5": "./assets/texture-016.jpg", "rugx6": "./assets/texture-017.jpg", "xmasrug": "./assets/texture-018.jpg", "hallowrug": "./assets/texture-019.jpg", "curtain": "./assets/texture-020.jpg", "tilesticker": "./assets/texture-021.png", "matx": "./assets/texture-022.jpg", "bathmat": "./assets/texture-023.jpg"}; // 액자·러그 그림 (코드로 그린 24장). ComfyUI 그림으로 바꾸려면 ART_IMG[key]에 URL/dataURL을 넣으면 됨
 const TEX_IMG = {"wp_flower": "./assets/texture-024.jpg", "wp_mint": "./assets/texture-025.jpg", "wp_sky": "./assets/texture-026.jpg", "wp_cream": "./assets/texture-027.jpg", "wp_peach": "./assets/texture-028.jpg", "wp_lavender": "./assets/texture-029.jpg", "fl_wood": "./assets/texture-030.jpg", "fl_dark": "./assets/texture-031.jpg", "fl_tile": "./assets/texture-032.jpg", "fl_carpet": "./assets/texture-033.jpg", "fl_grass": "./assets/texture-034.jpg", "fl_check": "./assets/texture-035.jpg", "win_day": "./assets/texture-036.jpg", "win_night": "./assets/texture-037.jpg", "scr_tv": "./assets/texture-038.jpg", "scr_pc": "./assets/texture-039.jpg", "scr_arcade": "./assets/texture-040.jpg", "pat_stripe": "./assets/texture-041.jpg", "pat_check": "./assets/texture-042.jpg", "pat_dots": "./assets/texture-043.jpg", "pat_flower": "./assets/texture-044.jpg", "m_wood": "./assets/texture-045.jpg", "m_fabric": "./assets/texture-046.jpg", "m_matte": "./assets/texture-047.jpg", "m_fur": "./assets/texture-048.jpg", "m_tabby": "./assets/texture-049.jpg", "m_calico": "./assets/texture-050.jpg", "m_spots": "./assets/texture-051.jpg", "m_brindle": "./assets/texture-052.jpg"};
 Object.assign(TEX_IMG, {"magnets": "./assets/texture-053.png", "dollhouse": "./assets/texture-054.png", "arcadeside": "./assets/texture-055.png", "vendingtop": "./assets/texture-056.png"});
-TEX_IMG.yard_lawn='./assets/yard-lawn.webp';
+TEX_IMG.yard_lawn='./assets/yard-lawn.webp'; // Used only by the public park scene.
 const texCache = {}; texReady = true;
 function decal(key, w, h, x, y, z, ry) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: imgTex(key), transparent: true })); m.position.set(x, y, z); if (ry) m.rotation.y = ry; return m; }
 function imgTex(key, rx = 1, ry = 1) { const id = key + '@' + rx + 'x' + ry; if (!texCache[id]) { const t = new THREE.TextureLoader().load(TEX_IMG[key],()=>{roomDirty=true;invalidateViews();}); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; texCache[id] = t; } return texCache[id]; }
@@ -106,14 +127,15 @@ const wallMat = toon('#FFFFFF'), floorMat = toon('#FFFFFF'), exteriorMat=toon('#
 let floor, wallBack, wallLeft, updateShadowBox = null; const shell = new THREE.Group(); room.add(shell); const trim = toon('#F6E7D4');
 function buildShell(walls = true) {
   while (shell.children.length) shell.remove(shell.children[0]);
-  center.set(N / 2, 0, N / 2 + .35);
+  center.set(N / 2, 0, N / 2);
   floor = new THREE.Mesh(new THREE.BoxGeometry(N, .3, N), floorMat); floor.position.set(N / 2, -.15, N / 2); floor.receiveShadow = true; floor.userData.floor = true; shell.add(floor);
   wallBack = new THREE.Mesh(new THREE.BoxGeometry(N + WALL_T, WALL_H, WALL_T), [exteriorMat,exteriorMat,exteriorMat,exteriorMat,wallMat,exteriorMat]); wallBack.position.set(N / 2 - WALL_T / 2, WALL_H / 2, -WALL_T / 2); wallBack.receiveShadow = true; wallBack.userData.wall = 'B';
   wallLeft = new THREE.Mesh(new THREE.BoxGeometry(WALL_T, WALL_H, N), [wallMat,exteriorMat,exteriorMat,exteriorMat,exteriorMat,exteriorMat]); wallLeft.position.set(-WALL_T / 2, WALL_H / 2, N / 2); wallLeft.receiveShadow = true; wallLeft.userData.wall = 'L';
   if (walls) { shell.add(wallBack, wallLeft); for (const [w, d, x, z] of [[N + WALL_T, .12, N / 2 - WALL_T / 2, .06], [.12, N, .06, N / 2]]) { shell.add(at(new THREE.Mesh(new THREE.BoxGeometry(w, .22, d), trim), x, .11, z)); shell.add(at(new THREE.Mesh(new THREE.BoxGeometry(w, .16, d), trim), x, WALL_H - .08, z)); } }
   else { const ground = new THREE.Mesh(new THREE.BoxGeometry(N + 8, .28, N + 8), toon('#B7DC9A')); ground.position.set(N / 2, -.17, N / 2); ground.receiveShadow = true; shell.add(ground); const path = new THREE.Mesh(new THREE.BoxGeometry(N, .02, 1.2), toon('#E8DDC8')); path.position.set(N / 2, .01, N + .6); shell.add(path); }
   if (walls) {
-    // A cutaway house has real exterior wall faces, pitched eaves and a courtyard aligned to the same camera.
+    // The house keeps its exterior wall faces, pitched eaves and foundation.
+    // Its surroundings are an independent illustration, not extra 3D floor area.
     const exterior=new THREE.Group();exterior.name='house-exterior';shell.add(exterior);
     for(const swap of [false,true]){
       const points=[[-.45,WALL_H+.43,.18],[N+.25,WALL_H+.43,.18],[N+.25,WALL_H-.05,-.86],[-.45,WALL_H-.05,-.86],[-.45,WALL_H+.27,.18],[N+.25,WALL_H+.27,.18],[N+.25,WALL_H-.19,-.86],[-.45,WALL_H-.19,-.86]];
@@ -125,9 +147,8 @@ function buildShell(walls = true) {
     }
     exterior.add(at(box(N+.58,.58,N+.58,'#e8d2be',.055),N/2,-.55,N/2),at(box(N+.7,.105,N+.7,'#f7e8d9',.035),N/2,-.30,N/2));
     for(let row=0;row<2;row++)for(let i=0;i<9;i++){const offset=(row%2)*.45;exterior.add(at(box(.016,.22,.012,'#d7c0ae',.003),i*.94+offset,-.42-row*.24,N+.296),at(box(.012,.22,.016,'#d7c0ae',.003),N+.296,-.42-row*.24,i*.94+offset));}
-    shell.add(buildCourtyard(N,imgTex('yard_lawn')));
   }
-  fitCamera(); placeCamera(); if (updateShadowBox) updateShadowBox();
+  fitCamera(); if (updateShadowBox) updateShadowBox();
 }
 buildShell(true);
 function setWallpaper(k, keep) { wallMat.map = WALLS[k].img ? imgTex(WALLS[k].img, 2, 1) : tex(512, 512, WALLS[k].draw, [2, 1]); wallMat.color.set('#FFFFFF'); wallMat.needsUpdate = true; if (!keep) state.wall = k; }
@@ -894,6 +915,17 @@ function projectPosition(position) {
   const v=position.clone().project(camera);
   return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2};
 }
+function inspectFraming() {
+  const min=new THREE.Vector3(houseViewBounds.min.x,houseViewBounds.min.y,0).applyMatrix4(camera.projectionMatrix);
+  const max=new THREE.Vector3(houseViewBounds.max.x,houseViewBounds.max.y,0).applyMatrix4(camera.projectionMatrix);
+  const left=(min.x+1)/2,right=(max.x+1)/2,top=(1-max.y)/2,bottom=(1-min.y)/2;
+  const meshCount=group=>{let count=0;group?.traverse(object=>{if(object.isMesh)count++;});return count;};
+  return {viewport:{width:innerWidth,height:innerHeight},zoom:camera.zoom,roomSize:N,
+    house:{left,top,right,bottom,width:right-left,height:bottom-top},
+    shellGroups:shell.children.filter(object=>object.isGroup).map(object=>object.name),
+    exteriorMeshCount:meshCount(shell.getObjectByName('house-exterior')),
+    courtyardMeshCount:meshCount(shell.getObjectByName('courtyard'))};
+}
 function updateOverlay() {
   for(let i=nameTags.length-1;i>=0;i--){const n=nameTags[i];if(!n.obj.parent){n.el.remove();nameTags.splice(i,1);continue;}const p=projectPosition(n.obj.position.clone().add(new THREE.Vector3(0,1.95,0)));n.el.style.left=p.x+'px';n.el.style.top=p.y+'px';}
   for(let i=bubList.length-1;i>=0;i--){const b=bubList[i];if(performance.now()>b.until||!b.obj.parent){b.el.remove();bubList.splice(i,1);continue;}const p=projectPosition(b.obj.position.clone().add(new THREE.Vector3(0,2.55,0)));b.el.style.left=p.x+'px';b.el.style.top=p.y+'px';}
@@ -1061,7 +1093,7 @@ window.Ojjuda3D={version:17,hooks,applyRoom,
   zoom(delta){if(placeView.active())return placeView.zoom(delta);zoomLevel=delta?clamp(zoomLevel+delta,1,2):1;camera.zoom=zoomLevel;camera.updateProjectionMatrix();roomDirty=true;},
   say(text){if(me)say(me,text);},
   dispose(){stopped=true;cancelAnimationFrame(frameId);cancelGesture();characterView.dispose();placeView.dispose();scene.traverse(o=>{o.geometry?.dispose();for(const m of(Array.isArray(o.material)?o.material:[o.material]))m?.dispose();});for(const t of Object.values(texCache))t.dispose();for(const t of Object.values(artCache))t.dispose();for(const t of legacySprites.values())t.dispose();for(const t of surfaceTextures.values())t.dispose();renderer.dispose();},
-  inspect(){return {key:snapshotKey,editing:editMode,place:placeView.inspect(),character:characterView.inspect(),avatar:{...state.avatar},arms:me?.userData.arms.map(arm=>({shoulder:arm.position.y,sleeve:arm.getObjectByName('sleeve').position.y,length:arm.userData.sleeveLength})),items:state.items.map(({id,sourceType,gx,gy,wall,t,z})=>({id,type:sourceType,gx,gy,wall,t,z})),models:Object.fromEntries(legacySources),calls:renderer.info.render.calls,renderFrame:renderer.info.render.frame,geometries:renderer.info.memory.geometries};},
+  inspect(){return {key:snapshotKey,editing:editMode,framing:inspectFraming(),place:placeView.inspect(),character:characterView.inspect(),avatar:{...state.avatar},arms:me?.userData.arms.map(arm=>({shoulder:arm.position.y,sleeve:arm.getObjectByName('sleeve').position.y,length:arm.userData.sleeveLength})),items:state.items.map(({id,sourceType,gx,gy,wall,t,z})=>({id,type:sourceType,gx,gy,wall,t,z})),models:Object.fromEntries(legacySources),calls:renderer.info.render.calls,renderFrame:renderer.info.render.frame,geometries:renderer.info.memory.geometries};},
   projectItem(id){const g=meshes.get(id);if(!g)return null;return projectPosition(new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()));}
 };
 applyLight();frameId=requestAnimationFrame(animate);
