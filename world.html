@@ -463,13 +463,13 @@ sr['house-construction']=()=>M('우리집은 공사 중이에요. 준비가 끝�
 sr['furniture-studio']=async function(){
  if(!D.online||D.isAdmin!==true||!D.user?.id)return M('관리자 모드에서 열어 주세요.');
  const owner=D.user.id;
- try{const {openFurnitureStudio}=await import('./house-test/studio-host.js?v=20261003-house-fix1');openFurnitureStudio({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
+ try{const {openFurnitureStudio}=await import('./house-test/studio-host.js?v=20261003-apartment-wall1');openFurnitureStudio({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
  catch(error){console.error(error);M('제작실을 불러오지 못했어요. 잠시 후 다시 열어 주세요.');}
 };
 sr['house-playtest']=async function(){
   if(!D.online||D.isAdmin!==true||!D.user?.id)return M('관리자 모드에서 열어 주세요.');
   const owner=D.user.id;
-  try{const {openHouseTest}=await import('./house-test/host.js?v=20261003-house-fix1');openHouseTest({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
+  try{const {openHouseTest}=await import('./house-test/host.js?v=20261003-apartment-wall1');openHouseTest({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
   catch(error){console.error(error);M('테스트 화면을 불러오지 못했어요. 다시 열어 주세요.');}
 };
 

@@ -17,7 +17,7 @@ h1 small {font-size: 11px; font-weight: 400; background: #f0e7f8; border-radius:
 .scene-heading {display: flex; gap: 10px; align-items: center; padding: 8px 20px; background: #fffaf0b5; font-size: 13px;}
 #room-name {font-weight: 700;}
 #room-count {margin-left: auto; color: #8a7b92;}
-#viewport {position: relative; flex: 1; min-height: 230px; overflow: hidden; touch-action: none; user-select: none; background: #f2edf6; isolation: isolate;}
+#viewport {position: relative; flex: 1; min-height: 230px; overflow: hidden; touch-action: none; user-select: none; --wall-tint: #e6d6ba0a; background: linear-gradient(var(--wall-tint),var(--wall-tint)),url('assets/apartment-wall-v1.webp') center / cover,#ded6c7; isolation: isolate;}
 #world {position: absolute; left: 0; top: 0; transform-origin: 0 0; width: 6200px; height: 3360px;}
 .room {position: absolute; width: 1200px; height: 400px; outline: 12px solid #b4a8c4; border-radius: 2px; background: #fff4de; box-shadow: 0 20px 35px #4c395733; overflow: hidden;}
 .room.active {outline-color: #a28bbc;}
@@ -63,6 +63,10 @@ nav svg {display: block; margin: auto; width: 25px; height: 25px;}
 #world {width: var(--world-width); height: var(--world-height);}
 .room {width: var(--room-width); height: var(--room-height); outline: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible;}
 .room.selected {box-shadow: none;}
+.apartment-neighbor {position: absolute; width: var(--room-width); height: var(--room-height); pointer-events: none;}
+.apartment-neighbor::before {content: ''; position: absolute; left: -6px; right: -6px; top: 9px; bottom: 110px; background: linear-gradient(var(--wall-tint),var(--wall-tint)),url('assets/apartment-neighbor-v1.webp') center / cover,#ded6c7; box-shadow: inset 0 -2px 0 #a99e8959;}
+.room::before {content: ''; position: absolute; left: -6px; right: -6px; top: 9px; bottom: 110px; background: linear-gradient(var(--wall-tint),var(--wall-tint)),url('assets/apartment-wall-v1.webp') center / cover,#ded6c7; border: 2px solid #c0b5a4; box-shadow: inset 0 2px 0 #fff8e7aa,0 6px 14px #30291c45; pointer-events: none;}
+.room::after {content: ''; position: absolute; left: -9px; right: -9px; top: 916px; height: 18px; background: linear-gradient(#e2d6be,#bcb19c); border-top: 2px solid #f6ecd6; box-shadow: 0 5px 6px #30291c35; pointer-events: none;}
 .room-bg {object-fit: contain; clip-path: var(--room-clip);}
 .curtains {position: absolute; left: 294px; top: 184px; width: 904px; height: 468px; pointer-events: none; z-index: 2;}
 .furniture {position: absolute; overflow: visible; transform-origin: 0 0; border: 0; border-radius: 0; padding: 0; min-height: 0; background: transparent !important; touch-action: none; filter: drop-shadow(0 5px 4px #45322920);}
@@ -90,8 +94,10 @@ nav svg {display: block; margin: auto; width: 25px; height: 25px;}
 #panel {padding-top: 13px; padding-bottom: 13px;}
 #hint {top: 10px; font-size: 11px;}
 .camera {bottom: 14px;}
-html[data-period=dusk] #viewport {background: #ede3ee;}
-html[data-period=night] #viewport {background: #39384d;}
+html[data-period=dusk] #viewport {--wall-tint: #7e64752b;}
+html[data-period=night] #viewport {--wall-tint: #19233c8c;}
+html[data-period=dusk] .room::after {filter: sepia(.12) brightness(.95);}
+html[data-period=night] .room::after {filter: brightness(.65) saturate(.7);}
 html[data-period=night] .curtains,html[data-period=night] .furniture {filter: brightness(.9) saturate(.86);}
 html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepia(.12) brightness(.95);}
 @media (min-width:900px) {.room-bg {filter: drop-shadow(0 15px 20px #49385320);}}
