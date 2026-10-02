@@ -1,6 +1,6 @@
 import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261003-house-fix1';
 import {validateRuntime} from './anchor-editor/runtime.js?v=20261003-house-fix1';
-import {openHouseTest} from './host.js?v=20261003-house-zoom1';
+import {openHouseTest} from './host.js?v=20261003-house-camera2';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;

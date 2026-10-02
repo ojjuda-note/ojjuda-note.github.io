@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body><button id="open">제작실</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-house-zoom1';document.querySelector('#open').onclick=()=>openFurnitureStudio({owner:'draft-test',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">제작실</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-house-camera2';document.querySelector('#open').onclick=()=>openFurnitureStudio({owner:'draft-test',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{

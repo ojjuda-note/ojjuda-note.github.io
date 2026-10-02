@@ -134,8 +134,31 @@ await f.getByRole('button',{name:'오른쪽 → 확장',exact:true}).click();awa
 assert.ok(await f.evaluate(()=>{const v=document.querySelector('#viewport').getBoundingClientRect();return [...document.querySelectorAll('.expansion:not(:disabled)')].every(n=>{const r=n.getBoundingClientRect(),x=(r.left+r.right)/2,y=(r.top+r.bottom)/2;return x>=v.left&&x<=v.right&&y>=v.top&&y<=v.bottom;});}),'newly reachable neighbors stay visible after adding rooms');
 
 const model=await f.evaluate(async()=>{const {normalize,canAdd}=await import('/house-test/model.js');let state=normalize({rooms:[{x:0,y:0},{x:50,y:0},{x:2,y:3},{x:0,y:0}],diary:3});const disconnected=state.rooms.length;for(let i=0;i<8;i++)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++)if(canAdd(state.rooms,{x,y}))state.rooms.push({x,y});return {disconnected,count:state.rooms.length,overflow:canAdd(state.rooms,{x:3,y:0})};});assert.deepEqual(model,{disconnected:1,count:35,overflow:false});
+await f.locator('#expand').click();await f.locator('#overview').click();
+for(const key of ['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'])await f.locator('#viewport').evaluate((v,key)=>{for(let i=0;i<30;i++)v.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true}));},key);
+assert.ok(await f.evaluate(()=>{const v=document.querySelector('#viewport'),box=v.getBoundingClientRect();return [...document.querySelectorAll('.room')].every(n=>{const r=n.getBoundingClientRect(),scale=r.width/1507;return r.left+12*scale>=box.left-.5&&r.right-12*scale<=box.left+v.clientWidth+.5&&r.top+27*scale>=box.top-.5&&r.top+916*scale<=box.top+v.clientHeight+.5;});}),'overview dragging keeps all three owned rooms available');
+const firstRoom=await f.locator('.room[data-room="0:0"]').boundingBox();await page.mouse.click(firstRoom.x+firstRoom.width/2,firstRoom.y+firstRoom.width/1507*750);
+assert.equal(await f.locator('.room.selected').getAttribute('data-room'),'0:0','overview still lets us enter another owned room');
+await f.locator('#expand').click();
 await page.screenshot({path:'/tmp/house-playtest-expansion.png'});await f.locator('[data-tab="diary"]').click();await f.locator('#diary').fill('파스텔 우리집 테스트 기록');await f.getByRole('button',{name:'기록 저장',exact:true}).click();await f.locator('#exit').click();await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});assert.match(await frame().locator('#room-count').textContent(),/3 \/ 35/);assert.equal(await frame().locator('.bookshelf').getAttribute('data-y'),'0.5');assert.equal(await frame().locator('.furniture').count(),2);await frame().locator('[data-tab="diary"]').click();assert.equal(await frame().locator('#diary').inputValue(),'파스텔 우리집 테스트 기록');
 await page.evaluate(()=>testAuth.id='admin-b');await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});assert.match(await frame().locator('#room-count').textContent(),/1 \/ 35/);await page.evaluate(()=>testAuth.admin=false);await page.waitForSelector('iframe',{state:'detached'});await page.locator('#open').click();assert.equal(await page.locator('iframe').count(),0);
+const roomWithinCameraBounds=()=>{
+ const v=document.querySelector('#viewport'),box=v.getBoundingClientRect(),room=document.querySelector('.room.selected').getBoundingClientRect(),scale=room.width/1507,inset=Math.min(20,Math.min(v.clientWidth,v.clientHeight)*.028);
+ const axis=(start,end,size)=>end-start<=size-inset*2+.5?start>=inset-.5&&end<=size-inset+.5:start<=inset+.5&&end>=size-inset-.5;
+ return axis(room.left+12*scale-box.left,room.right-12*scale-box.left,v.clientWidth)&&axis(room.top+27*scale-box.top,room.top+916*scale-box.top,v.clientHeight);
+};
+const pushCameraToEdges=async f=>{
+ for(const key of ['ArrowLeft','ArrowUp','ArrowRight','ArrowDown']){
+  await f.locator('#viewport').evaluate((v,key)=>{for(let i=0;i<80;i++)v.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true}));},key);
+  assert.ok(await f.evaluate(roomWithinCameraBounds),'arrow keys stop at room bounds');
+ }
+ const area=await f.locator('#viewport').boundingBox();await page.mouse.move(area.x+2,area.y+area.height/2);await page.mouse.down();await page.mouse.move(area.x+4000,area.y-4000,{steps:3});await page.mouse.up();
+ assert.ok(await f.evaluate(roomWithinCameraBounds),'an extreme captured mouse drag cannot lose the room');
+ await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:area.x+2,y:area.y+area.height/2,id:1}]});
+ await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:area.x+area.width-2,y:area.y+10,id:1}]});
+ await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ assert.ok(await f.evaluate(roomWithinCameraBounds),'touch dragging stops at room bounds');
+};
 const assertMinimumRoomZoom=async f=>{
  for(let i=0;i<30;i++)await f.locator('#zoom-out').evaluate(n=>n.click());
  const minimum=await f.evaluate(()=>{const v=document.querySelector('#viewport'),inset=Math.min(20,Math.min(v.clientWidth,v.clientHeight)*.028);return {scale:new DOMMatrix(getComputedStyle(document.querySelector('#world')).transform).a,expected:.68*Math.min((v.clientWidth-inset*2)/1483,(v.clientHeight-inset*2)/889)};});
@@ -147,7 +170,13 @@ const assertMinimumRoomZoom=async f=>{
  await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:cx-2,y:cy,id:1},{x:cx+2,y:cy,id:2}]});
  await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  assert.ok(Math.abs(await f.locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a)-minimum.scale)<.000001,'wheel and pinch share the same lower zoom limit');
- await f.locator('#zoom-in').click();assert.equal(await f.locator('#zoom-out').isDisabled(),false);
+ await pushCameraToEdges(f);
+ for(const deltaY of [-10000,10000]){
+  await f.locator('#viewport').evaluate((v,deltaY)=>{const r=v.getBoundingClientRect();v.dispatchEvent(new WheelEvent('wheel',{deltaY,clientX:r.right-2,clientY:r.top+2,bubbles:true,cancelable:true}));},deltaY);
+  assert.ok(await f.evaluate(roomWithinCameraBounds),'off-center wheel zoom keeps the room within camera bounds');
+ }
+ await f.locator('#home-view').click();await f.locator('#zoom-in').click();await pushCameraToEdges(f);
+ assert.equal(await f.locator('#zoom-out').isDisabled(),false);
 };
 await page.evaluate(()=>testAuth.admin=true);await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});for(const size of [{width:320,height:740},{width:844,height:390},{width:2560,height:1440},{width:1280,height:800}]){await page.setViewportSize(size);await frame().waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);assert.ok(await frame().locator('#viewport').evaluate(n=>n.clientHeight>=180));await frame().locator('[data-tab="room"]').click();await frame().locator('#home-view').click();await frame().waitForFunction(roomFillsViewport);const before=await frame().locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a);await frame().locator('#zoom-in').click();assert.ok(await frame().locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a)>before,'zoom-in still enlarges a screen-filling room');await assertMinimumRoomZoom(frame());await frame().locator('#home-view').click();}await page.screenshot({path:'/tmp/house-playtest-desktop.png'});
 assert.deepEqual(errors,[]);console.log('PASS: preview gate, role/account isolation, Korea time boundaries, picture-only scene, bookshelf directions/half-cell save and cancel, curtains, movement/zoom, expansion bounds/connectivity, diary persistence and responsive layouts');}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
