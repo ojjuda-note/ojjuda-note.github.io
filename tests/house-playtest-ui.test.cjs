@@ -108,6 +108,7 @@ await f.locator('button[data-direction="center"]:not(.furniture)').click();await
 await setShelfRange('#bookshelf-depth',.5);
 await f.getByRole('button',{name:'배치 완료',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'0.5');
+await f.getByRole('button',{name:'방 설정',exact:true}).click();
 await f.getByRole('button',{name:'커튼 걷기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),0);
 await f.getByRole('button',{name:'커튼 달기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),1);
 await page.clock.setSystemTime(new Date('2026-10-01T23:31:00+09:00'));await page.clock.runFor(15001);await page.clock.resume();

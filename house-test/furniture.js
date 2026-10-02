@@ -1,10 +1,11 @@
-import {floorPoint,roomPoint} from './model.js?v=20261002-blanket-drape-v2';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-blanket-drape-v2';
-import {paintFurniture} from './furniture-painter.js?v=20261002-blanket-drape-v2';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-blanket-drape-v2';
-import {deskArtwork} from './desk-art.js?v=20261002-blanket-drape-v2';
-import {sofaArtwork} from './sofa-art.js?v=20261002-blanket-drape-v2';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261002-blanket-drape-v2';
+import {floorPoint,roomPoint} from './model.js?v=20261002-side-table-v2';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-side-table-v2';
+import {paintFurniture} from './furniture-painter.js?v=20261002-side-table-v2';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-side-table-v2';
+import {sideTableArtwork} from './side-table-art.js?v=20261002-side-table-v2';
+import {deskArtwork} from './desk-art.js?v=20261002-side-table-v2';
+import {sofaArtwork} from './sofa-art.js?v=20261002-side-table-v2';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261002-side-table-v2';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -29,6 +30,7 @@ const rectangle=b=>[[b.x,b.y],[b.x+b.w,b.y],[b.x+b.w,b.y+b.d],[b.x,b.y+b.d]];
 export function furnitureGeometry(id,s){
  const item=FURNITURE[id],size=itemSize(id,s.direction),contact=contactBounds(id,s);
  if(!item||!size||!contact)return null;
+ if(item.picture==='side-table')return sideTableArtwork(item,s,contact,size);
  if(item.picture==='desk')return deskArtwork(item,s,contact,size);
  if(item.picture==='sofa')return sofaArtwork(item,s,contact,size);
  if(id==='blanket-floor')return blanketFloorArtwork(item,s,contact,size);

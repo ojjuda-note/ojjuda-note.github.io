@@ -10,6 +10,9 @@ export const SOFA_ACCESSORIES=[
  {id:'blanket-sofa',label:'분홍 담요 · 소파용'}
 ];
 export const FURNITURE={
+ 'side-table':{label:'원목 오픈 협탁',shortLabel:'협탁',width:1.5,depth:1,height:1.35,depthFill:1,introduced:12,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'side-table',
+  preferred:{direction:'left',x:0,y:4.5},clearance:'0.5칸씩 이동 · 다른 가구와 겹치지 않는 곳에 놓아 주세요.'},
  sofa:{label:'라벤더 패브릭 소파',shortLabel:'소파',width:3.5,depth:1.5,height:1.8,depthFill:1,introduced:11,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'sofa',
   preferred:{direction:'left',x:0,y:3},clearance:'쿠션과 담요는 소파와 함께 움직여요. 방향별 그림이 뒤집히는 위치로는 이동하지 않습니다.'},

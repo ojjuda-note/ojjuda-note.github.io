@@ -1,12 +1,13 @@
 import {icon} from './icons.js?v=20261002-residuals1';
-import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261002-blanket-drape-v2';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261002-blanket-drape-v2';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261002-blanket-drape-v2';
+import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261002-side-table-v2';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261002-side-table-v2';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261002-side-table-v2';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
 let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
+let itemCategory='furniture';
 const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
 const bounds=r=>({x:(r.x+2)*stepX,y:(3-r.y)*stepY});
 function toast(message){$('#notice').textContent=message;$('#notice').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#notice').classList.remove('show'),2400);}
@@ -97,7 +98,41 @@ function makeAccessoryControls(){
  group.append(element('p','panel-note','체크를 해제하면 해당 물건만 치워요. 소파와 함께 이동·회전하며, 배치 완료에서 저장합니다.'));
  return group;
 }
-function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#panel-title').textContent=expanding?'집 확장':{room:'방 꾸미기',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
+function itemCard(label,images,placed,fn){
+ const button=actionButton(label,fn);button.className='item-card';
+ button.replaceChildren();const preview=element('span','item-preview');
+ for(const src of images){const img=element('img');img.src=src;img.alt='';img.draggable=false;preview.append(img);}
+ const caption=element('span','item-caption');caption.append(element('strong','',label.replace(/ (놓기|배치|넣기|치우기)$/,'')),element('span','item-status'+(placed?' is-placed':''),placed?'배치됨 · 변경':'놓기'));
+ button.append(preview,caption);return button;
+}
+function renderItemMenu(body){
+ const tabs=element('div','item-categories');tabs.setAttribute('aria-label','아이템 분류');
+ for(const [id,label]of [['furniture','가구'],['accessories','소품'],['settings','방 설정']]){
+  const b=actionButton(label,()=>{itemCategory=id;renderPanel();$('#panel').scrollTop=0;});b.dataset.category=id;b.setAttribute('aria-pressed',String(itemCategory===id));tabs.append(b);
+ }
+ body.append(tabs);
+ if(itemCategory==='settings'){
+  const row=element('div','actions room-settings');
+  row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{current().curtains=!current().curtains;save();renderWorld();renderPanel();}),actionButton('빈방 보기',()=>{current().shelf=null;current().furniture={};current().curtains=false;save();renderWorld();renderPanel();}));
+  body.append(row,element('p','panel-note','치운 가구와 소품은 아이템 메뉴에서 다시 놓을 수 있어요.'));return;
+ }
+ const placements=furniturePlacements(current()),grid=element('div','item-grid');grid.setAttribute('aria-label',itemCategory==='furniture'?'가구 목록':'소품 목록');
+ const pictures={bookshelf:['assets/bookshelf-center-v2.webp'],desk:['assets/desk-center-v7.webp'],sofa:['assets/sofa-center-body-v1.png','assets/sofa-center-left-arm-v1.png','assets/sofa-center-right-arm-v1.png'],'side-table':['assets/side-table-center-v2.webp'],'blanket-floor':['assets/blanket-floor-center.png']};
+ const ids=itemCategory==='furniture'?['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf'&&FURNITURE[id].layer!=='floor').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced)]:Object.keys(FURNITURE).filter(id=>FURNITURE[id].layer==='floor');
+ for(const id of ids){const item=FURNITURE[id],placed=placements.some(p=>p.id===id),label=(item.shortLabel||item.label)+(placed?' 배치':' 놓기');grid.append(itemCard(label,pictures[id]||[],placed,()=>startPlacement(id)));}
+ if(itemCategory==='accessories'){
+  const sofa=placements.find(p=>p.id==='sofa');
+  for(const {id,label}of SOFA_ACCESSORIES){
+   const placed=!!sofa&&normalizeAccessories(sofa.accessories)[id];
+   const b=itemCard(label+(placed?' 치우기':' 넣기'),['assets/'+id+'-center-v1.png'],placed,()=>{
+    startPlacement('sofa');draft.accessories={...normalizeAccessories(draft.accessories),[id]:!placed};renderWorld();renderPanel();focusRoom();
+   });b.querySelector('strong').textContent={'cream-floral-cushion':'꽃무늬 쿠션','sage-cushion':'세이지 쿠션','peach-cushion':'피치 쿠션','pink-check-cushion':'체크 쿠션','blanket-sofa':'소파 담요'}[id];b.disabled=!sofa;if(!sofa)b.querySelector('.item-status').textContent='소파에 놓는 소품';grid.append(b);
+  }
+  body.append(element('p','item-menu-help',sofa?'쿠션과 소파용 담요는 소파와 함께 움직여요.':'소파를 먼저 놓으면 쿠션과 소파용 담요를 사용할 수 있어요.'));
+ }
+ body.append(grid);
+}
+function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#panel-title').textContent=expanding?'집 확장':{room:editing?FURNITURE[editingId].shortLabel+' 배치':'아이템',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
 
  if(tab==='room'){
   if(editing){
@@ -115,13 +150,7 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    body.append(row,warning,element('p','panel-note',item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));
    syncPlacementControls();
   }else{
-   const row=element('div','actions furniture-actions');row.setAttribute('aria-label','가구 목록');
-   for(const id of ['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced)]){
-    const item=FURNITURE[id],placed=furniturePlacements(current()).some(p=>p.id===id);
-    row.append(actionButton((item.shortLabel||item.label)+(placed?' 배치':' 놓기'),()=>startPlacement(id),'▧'));
-   }
-   row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{current().curtains=!current().curtains;save();renderWorld();renderPanel();},'□'),actionButton('빈방 보기',()=>{current().shelf=null;current().furniture={};current().curtains=false;save();renderWorld();renderPanel();},'□'));
-   body.append(row,element('p','panel-note','소파를 선택하면 쿠션 4종과 소파용 담요를 따로 넣거나 치울 수 있어요. 바닥 담요는 별도로 배치합니다.'),element('p','panel-note bed-accessory-note','침대용 담요 그림은 준비되어 있어요. 침대 본체가 아직 없어 이 방에는 놓을 수 없습니다.'));
+   renderItemMenu(body);$('#panel').scrollTop=0;
   }
  }
 

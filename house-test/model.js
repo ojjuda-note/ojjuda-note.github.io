@@ -1,5 +1,6 @@
-import {sofaPoseValid} from './sofa-art.js?v=20261002-blanket-drape-v2';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261002-blanket-drape-v2';
+import {sideTablePoseValid} from './side-table-art.js?v=20261002-side-table-v2';
+import {sofaPoseValid} from './sofa-art.js?v=20261002-side-table-v2';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261002-side-table-v2';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -59,7 +60,7 @@ export function normalizePlacement(id,s){
  return {direction:s.direction,x:Math.max(0,Math.min(FLOOR.width-w,snap(s.x))),y:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y))),...(id==='sofa'?{accessories:normalizeAccessories(s.accessories)}:{})};
 }
 export const normalizeShelf=s=>normalizePlacement('bookshelf',s);
-export function canDrawFurniture(id,s){return !!s&&(id!=='sofa'||sofaPoseValid(s,FURNITURE.sofa));}
+export function canDrawFurniture(id,s){return !!s&&(id!=='sofa'||sofaPoseValid(s,FURNITURE.sofa))&&(id!=='side-table'||sideTablePoseValid(s));}
 export function canPlaceFurniture(id,s,others=[]){
  const placed=normalizePlacement(id,s);if(!placed||placed.x!==s.x||placed.y!==s.y||!canDrawFurniture(id,placed))return false;
  const size=itemSize(id,s.direction);
