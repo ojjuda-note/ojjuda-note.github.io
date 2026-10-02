@@ -1,9 +1,7 @@
 name: Daily checks and encrypted offsite backup
 
 on:
-  schedule:
-    - cron: '0 3 * * *'
-      timezone: Asia/Seoul
+  # 03:00 KST schedule paused; manual run remains available.
   workflow_dispatch:
     inputs:
       backup_only:
