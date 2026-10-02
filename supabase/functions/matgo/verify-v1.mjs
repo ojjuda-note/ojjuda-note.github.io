@@ -1,4 +1,4 @@
-import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop } from './engine.mjs';
+import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop } from './engine-v1.mjs';
 
 export async function verifyRound(round, actions) {
   if (!Array.isArray(actions) || !actions.length || actions.length > 512) throw Error('invalid_actions');
@@ -19,11 +19,9 @@ export async function verifyRound(round, actions) {
   game.bank = [round.gold, 5000]; game.first = round.first; game.carry = round.carry;
   game.deal();
   for (const action of actions) {
-    if (!action || game.over || ![0, 1].includes(action.p) || (action.type !== 'chongtong' && game.turn !== action.p)) throw Error('invalid_turn');
+    if (!action || game.over || ![0, 1].includes(action.p) || game.turn !== action.p) throw Error('invalid_turn');
     current = action; choice = 0;
-    if (action.type === 'chongtong') {
-      if ((action.p === 1 && action.decision !== 'win') || !await game.declareChongtong(action.p, action.decision)) throw Error('invalid_chongtong');
-    } else if (action.type === 'shake') {
+    if (action.type === 'shake') {
       if (!game.shakeCards(action.p, action.month)) throw Error('invalid_shake');
     } else if (action.type === 'gukjin') {
       if (action.p !== 0 || !game.toggleGukjin(0)) throw Error('invalid_gukjin');

@@ -38,7 +38,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-
 .stack{position:absolute;width:var(--cw,52px);height:var(--ch,78px);transform-origin:50% 60%;transition:left .3s ease,top .3s ease}
 .stack .c{position:absolute;left:0;top:0;width:var(--cw,52px);height:var(--ch,78px);border-radius:6px;box-shadow:0 1px 0 #fff6 inset,1px 4px 8px #00000055,0 0 0 .5px #0002}
 .stack.pick{cursor:pointer}.stack.pick .c:last-child{outline:3px solid var(--gold);outline-offset:2px;animation:glow 1s infinite}
-.stack.ppuk:after{content:"쌌다";position:absolute;right:-10px;top:-10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;box-shadow:0 3px 8px -2px #0008}
+.stack.ppuk:after{content:attr(data-ppuk-label);position:absolute;right:-10px;top:-10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;box-shadow:0 3px 8px -2px #0008}
 @keyframes glow{50%{outline-color:#fff}}
 .deck{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:var(--cw,50px);height:var(--ch,76px);text-align:center}
 .deck .back{position:relative;width:var(--cw,50px);height:var(--ch,76px);border-radius:7px;background:linear-gradient(145deg,#6F5FCB,#4A3E9C);border:2px solid #E9E0FF;box-shadow:2px 2px 0 #3B3280,4px 4px 0 #2B2460,6px 6px 0 #1E1944,8px 12px 18px #0008}
@@ -108,7 +108,10 @@ table.sc{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}
 @media(max-width:380px){.top{padding-left:10px;padding-right:10px;gap:5px}.top h1{font-size:17px}.top .pill{padding-left:9px;padding-right:9px}.top .pill.money{font-size:11px}#sound{width:30px;padding:0}}
 /* Append to the shared game's stylesheet. Heights cannot depend on card count. */
 .top,.zone,.log{flex-shrink:0}
-.who{height:26px;min-height:26px;white-space:nowrap}
+.who{min-height:26px;white-space:nowrap;flex-wrap:wrap;row-gap:4px}
+.ppuk-count{font-size:11px;color:#FFDCAE}
+.chongtong-cards{display:flex;justify-content:center;gap:8px;margin:16px 0}.chongtong-cards svg{width:46px;height:69px;border-radius:3px}
+.card{max-height:calc(100dvh - 36px);overflow:auto}
 .caps{height:50px;min-height:50px}
 .cap{display:block;height:50px;min-height:50px;overflow:hidden}
 .cap .c{position:absolute;left:6px;top:16px;width:20px;height:30px;margin:0;flex:none}
@@ -146,8 +149,8 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
-import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,seededRandom} from "./matgo-engine.mjs?v=20261003-gold1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261003-gold1";
+import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,seededRandom} from "./matgo-engine.mjs?v=20261003-rules2";
+import {createWallet} from "./matgo-wallet.mjs?v=20261003-rules2";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -415,7 +418,7 @@ function ensureSlot(st){
   if(st.slot==null||st.slot>=cap||used.has(st.slot)){ let i=SLOT_ORDER.find(k=>!used.has(k)); if(i==null){ fitFloor(true); return ensureSlot(st); } st.slot=i; }
   if(st.rot==null){ st.rot=rnd(-6,6); st.jx=rnd(-2,2); st.jy=rnd(-2,2); }
   return st; }
-function cardXform(st,i){ const k=CW/52; return {rot:st.rot+i*6, dx:st.jx+i*SPREAD_X*k, dy:st.jy-i*SPREAD_Y*k}; }
+function cardXform(st,i){ const k=CW/52,offset=i*Math.min(1,3/Math.max(1,st.length-1)); return {rot:st.rot+offset*6, dx:st.jx+offset*SPREAD_X*k, dy:st.jy-offset*SPREAD_Y*k}; }
 function cardScreenPos(st,i){ fitFloor(); ensureSlot(st); const p=slotPos(st.slot), t=cardXform(st,i); return {x:p.x+t.dx,y:p.y+t.dy,rot:t.rot}; }
 // ----- 날아가는 카드 -----
 function flyEl(card,x,y,rot=0,w=CW,h=CH,back=false){ const f=document.createElement('div'); f.className='fly'; f.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg)`; f.innerHTML=back?backSVG:cardSVG(card); document.body.appendChild(f); return f; }
@@ -465,6 +468,10 @@ const ui={
     if(type==='take'){ if(d.silent){ render(); return; } await sleep(160); await collect(d.cards,d.p); document.querySelectorAll('.fly.tmp').forEach(e=>e.remove()); render(); return; }
     if(type==='bonusPlay'){ const el=d.p===ME?document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`):null; const r=el?el.getBoundingClientRect():$('.hand.op').getBoundingClientRect(); if(el) el.style.visibility='hidden'; const tgt=document.querySelectorAll(`.zone.${d.p===ME?'me':'op'} .cap`)[3].getBoundingClientRect(); const f=flyEl(d.card,r.left+(el?0:r.width/2-15),r.top,0,el?r.width:30,el?r.height:45); const dx=tgt.left+tgt.width-26-r.left, dy=tgt.top+6-r.top; f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${dx*.45}px,${dy*.45-60}px) scale(1.5) rotate(-10deg)`,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.4) rotate(0)`}],{duration:650,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}); await sleep(650); Sound.play('bonusPlay'); await banner(d.p===ME?'보너스!':'상대 보너스!',`${d.card.pv===2?'쌍피':'쓰리피'} · 한 장 더 받아요`,d.p===ME?'brag':'warn',1000); f.remove(); return; }
     if(type==='flipBonus'){ const dk=$('.deck .back').getBoundingClientRect(); const fb=floorBox(); const to={x:fb.x+fb.w/2-CW/2,y:fb.y+fb.h/2-CH/2,rot:0}; await throwCard(d.card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:500,onCards:false}); Sound.play('flipBonus'); const t=flyEl(d.card,to.x,to.y,0); t.classList.add('tmp'); t.dataset.id=d.card.id; t.animate([{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:400}); await banner(d.p===ME?'보너스!':'상대 보너스!',`${d.card.pv===2?'쌍피':'쓰리피'} · 한 장 더 뒤집어요`,d.p===ME?'brag':'warn',1000); return; }
+    if(type==='ppukBonus'){
+      for(const card of d.cards){const el=document.querySelector(`.fly.tmp[data-id="${card.id}"]`);if(!el)continue;const r=el.getBoundingClientRect();el.remove();await throwCard(card,{x:r.left,y:r.top,w:r.width,h:r.height,rot:0},cardScreenPos(d.stack,d.stack.indexOf(card)),{dur:300,onCards:true});}
+      render();return;
+    }
     if(type==='draw'){ const dk=$('.deck .back').getBoundingClientRect(); const hs=$(d.p===ME?'.hand.me':'.hand.op').getBoundingClientRect(); let x=hs.left+hs.width-60,y=hs.top+10,sx=.9,sy=.9; if(d.p===ME){ render(); const el=$(`#handMe .c[data-id="${d.card.id}"]`); if(el){ const r=el.getBoundingClientRect();x=r.left;y=r.top;sx=r.width/dk.width;sy=r.height/dk.height;el.style.visibility='hidden'; } } const f=flyEl(d.card,dk.left,dk.top,0,dk.width,dk.height,d.p!==ME); f.style.transformOrigin='top left'; f.animate([{transform:'translate(0,0)'},{transform:`translate(${x-dk.left}px,${y-dk.top}px) scale(${sx},${sy})`}],{duration:420,easing:'cubic-bezier(.3,.6,.2,1)',fill:'forwards'}); await sleep(430); f.remove(); render(); return; }
     if(type==='steal'){ const fromSel=`.zone.${d.from===ME?'me':'op'}`, toSel=`.zone.${d.to===ME?'me':'op'}`; const el=document.querySelector(`${fromSel} .cap .c[data-id="${d.card.id}"]`); const fromCap=document.querySelectorAll(`${fromSel} .cap`)[3], toCap=document.querySelectorAll(`${toSel} .cap`)[3];
       if(el&&toCap){ const r=el.getBoundingClientRect(), t=toCap.getBoundingClientRect(); fromCap.classList.add('robbed'); setTimeout(()=>fromCap.classList.remove('robbed'),900);
@@ -474,7 +481,7 @@ const ui={
         toCap.classList.add('gain'); setTimeout(()=>toCap.classList.remove('gain'),700); f.remove(); tag.remove(); try{ navigator.vibrate&&navigator.vibrate(d.to===ME?[20,30,20]:[60]); }catch{} }
       render(); return; }
     const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
-    if(msg){ const mine=d.p===ME; const sub={jjok:'상대 피 한 장 가져오기',ppuk:'세 장이 바닥에 묶였어요',ppukget:d.self?'내가 싼 패를 먹었어요 · 상대 피 두 장 가져오기':'상대가 싼 패를 먹었어요 · 상대 피 한 장 가져오기',ttadak:'네 장 한꺼번에 + 피 한 장',sweep:'바닥을 싹 비웠어요 + 피 한 장',go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
+    if(msg){ const mine=d.p===ME; const sub={jjok:'상대 피 한 장 가져오기',ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · 상대 피 ${d.count}장 가져오기`,ttadak:'네 장 한꺼번에 + 피 한 장',sweep:'바닥을 싹 비웠어요 + 피 한 장',go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
     if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',1500); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',1500); }
     if(type==='state'&&false){}
     if(type==='nagari'||type==='end'){ await finishRound(type,d); return; }
@@ -507,16 +514,16 @@ function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
   app.innerHTML=`<div class="top"><h1>오쭈다 <em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button></div>
-  <div class="zone op"><div class="who"><b>상대 (컴퓨터)</b> <span id="opHand"></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
+  <div class="zone op"><div class="who"><b>상대 (컴퓨터)</b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
   <div class="floor"><div class="fl" id="fl"></div><div class="deck"><div class="back">${backSVG}</div><small id="deckN"></small></div></div>
   <div class="log" id="log"></div>
-  <div class="zone me"><div class="who"><b>나</b> <span class="go" id="meGo" hidden></span><button class="pill" id="gukjin" style="height:24px" hidden></button><span class="pts" id="mePts"></span></div><div class="caps" id="capsMe"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
+  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span><button class="pill" id="gukjin" style="height:24px" hidden></button><span class="pts" id="mePts"></span></div><div class="caps" id="capsMe"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
   $('#money').onclick=()=>showRefill();
   $('#sound').onclick=()=>Sound.toggle(); Sound.sync();
   $('#bombFlip').onclick=onBombFlip;
-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피박·광박·멍박·고박 ×2 · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 피가 부족하면 있는 만큼만 가져와요 · 나가리면 다음 판 ×2<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 폭탄 한 번당 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>1점 = ${game.rate}${UNIT}<br>처음 5,000골드 · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 0일 때 하루 2회 무료로 5,000골드를 리필할 수 있어요. 이후 5쭈로 5,000골드 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
+  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피박·광박·멍박·고박 ×2 · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스 뒤에 뻑이 나면 보너스도 묶이고, 먹을 때 보너스 1장마다 상대 피 1장을 추가로 가져와요(자뻑 + 보너스 1장 = 피 3장). 피가 부족하면 있는 만큼만 가져와요 · 나가리면 다음 판 ×2<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 폭탄 한 번당 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>1점 = ${game.rate}${UNIT}<br>처음 5,000골드 · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 0일 때 하루 2회 무료로 5,000골드를 리필할 수 있어요. 이후 5쭈로 5,000골드 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
   $('#gukjin').onclick=()=>{ if(ui.busy||game.over||game.turn!==ME)return; if(game.toggleGukjin(ME))render(); };
 }
 function syncCards(container, cards, make, after){ // id 기준으로 필요한 것만 추가/제거 (깜박임 없이)
@@ -529,6 +536,7 @@ function render(){
   const my=score(game.caps[ME]), op=score(game.caps[CPU]); const myTurn=game.turn===ME&&!game.over&&!ui.busy;
   $('#money').textContent=game.bank[ME].toLocaleString()+' '+UNIT; $('#opHand').textContent=`손패 ${game.hand[CPU].length}장`; $('#opPts').textContent=op.pts+'점'; $('#mePts').textContent=my.pts+'점';
   for(const [id,n] of [['opGo',game.go[CPU]],['meGo',game.go[ME]]]){ const el=document.getElementById(id); el.hidden=!n; el.textContent=n+'고'; }
+  for(const [id,p] of [['opPpuk',CPU],['mePpuk',ME]]){const el=document.getElementById(id);el.hidden=!game.ppukCount[p];el.textContent=`뻑 ${game.ppukCount[p]}/3`; }
   const gk=$('#gukjin'); const gc=game.caps[ME].find(c=>c.tag==='gukjin'); gk.hidden=!gc; gk.disabled=!myTurn; if(gc) gk.textContent='국진 → '+(gc.asPi?'열끗':'쌍피');
   const bf=$('#bombFlip'),flips=game.bomb[ME];
   bf.hidden=game.over||flips<=0;bf.disabled=!myTurn||!game.canBombFlip(ME);
@@ -542,6 +550,7 @@ function render(){
   fitFloor(); const fl=$('#fl'), frc=$('.floor').getBoundingClientRect(), fb={x:frc.left,y:frc.top}; const live=new Set(game.floor);
   for(const [st,el] of stackEls){ if(!live.has(st)){ el.remove(); stackEls.delete(st); } }
   game.floor.forEach((st,i)=>{ ensureSlot(st); const pos=slotPos(st.slot); let el=stackEls.get(st); if(!el){ el=document.createElement('div'); el.className='stack'; fl.appendChild(el); stackEls.set(st,el); }
+    el.dataset.ppukLabel=st.some(c=>c.k==='bonus')?`뻑 · 보너스 ${st.filter(c=>c.k==='bonus').length}`:'쌌다';
     el.classList.toggle('ppuk',!!st.ppuk); el.classList.toggle('pick',!!ui.chooseStacks&&ui.chooseStacks.has(st)); el.classList.toggle('dimmed',!!ui.chooseStacks&&!ui.chooseStacks.has(st)); el.style.left=(pos.x-fb.x)+'px'; el.style.top=(pos.y-fb.y)+'px';
     syncCards(el,st,c2=>cardEl(c2),(cel,c2)=>{ const t=cardXform(st,st.indexOf(c2)); cel.style.transform=`translate(${t.dx}px,${t.dy}px) rotate(${t.rot}deg)`; });
     el.onclick=()=>{ if(ui.resolveChoose&&el.classList.contains('pick')) ui.resolveChoose(game.floor.indexOf(st)); }; });
@@ -588,17 +597,29 @@ async function shakeAnim(p,cards){ // 같은 월 3장을 꺼내 보여주고 흔
   await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.innerHTML=backSVG; },200); return f.animate([{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`},{transform:`translate(0,0) scale(${r.width/w}) rotate(0deg)`}],{duration:420,delay:i*60,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'}).finished; }));
   flies.forEach(f=>f.remove()); src.forEach(x=>{ if(x.el) x.el.style.visibility=''; });
 }
+async function resolveChongtong(){
+  for(let pending;access.allowed()&&(pending=game.pendingChongtong());){
+    const {p,months}=pending;let decision='win';
+    if(p===ME){
+      Sound.play('prompt');
+      decision=await new Promise(res=>modal(`<h2>총통!</h2><p>${months.join('월 · ')}월 네 장이 모두 모였어요.<br>7점으로 이기거나 게임을 계속할 수 있어요.</p><div class="chongtong-cards">${game.hand[p].filter(c=>c.m===months[0]).map(cardSVG).join('')}</div><div class="row"><button class="btn gold" id="chongtong-win">7점으로 승리</button><button class="btn g" id="chongtong-continue">계속하기</button></div>`,{'chongtong-win':()=>res('win'),'chongtong-continue':()=>res('continue')}));
+    }else await banner('상대 총통!',`${months[0]}월 네 장 · 7점 승리`,'warn',1300);
+    if(!access.allowed()||game.over)return;
+    await game.declareChongtong(p,decision);render();
+  }
+}
 async function doTurn(card,bomb){
   if(!access.allowed())return;
   ui.busy=true;render();
-  try{await game.play(ME,card,bomb);if(!game.over)await cpuTurn();}
+  try{await game.play(ME,card,bomb);await resolveChongtong();if(!game.over)await cpuTurn();}
   finally{ui.busy=false;render();}
 }
 async function cpuTurn(){
   if(ui.autoRunning)return;ui.autoRunning=true;ui.busy=true;render();
   try{
     // 내 폭탄 뒤집기는 손패가 없어도 사용자가 버튼으로 선택한다.
-    while(access.allowed()&&!game.over&&game.turn===CPU){
+    while(access.allowed()&&!game.over){
+      await resolveChongtong();if(game.over||game.turn!==CPU)break;
       const p=game.turn;
       if(!game.canMove(p)){await game.endTurn(p);continue;}
       await sleep(p===CPU?650:180);
@@ -655,7 +676,7 @@ async function startRound(){
   currentRound=state.round.id;game.bank=[state.gold,5000];game.first=state.round.first;game.carry=state.round.carry;game.random=seededRandom(state.round.seed);
   Sound.cancel();ui.chooseStacks=null;ui.resolveChoose=null;ui.holdRect=null;ui.lastHandRect=null;ui.dealing=true;ui.busy=true;ui.warned={};LAYOUT_N=-1;game.deal();stackEls.forEach(el=>el.remove());stackEls=new Map();
   if($('#fl'))document.querySelectorAll('#capsOp .cap .c,#capsMe .cap .c,#handMe .c,#handOp .c').forEach(e=>e.remove());
-  render();await dealAnim();ui.dealing=false;ui.busy=false;render();if(game.turn===CPU)await cpuTurn();return true;
+  render();await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
 }
 async function dealAnim(){ // 패 돌리기: 바닥 카드가 덱에서 하나씩 날아와 깔림
   const dk=$('.deck .back').getBoundingClientRect(); stackEls.forEach(el=>el.style.visibility='hidden');
