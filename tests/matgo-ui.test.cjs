@@ -100,12 +100,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.waitForSelector('.sc');assert.equal(f.state.gold,4300);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const [seed,card,delta] of [[11,40,300],[2,37,-300]]){
-    const f=await fixture({seed});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy);
+    const f=await fixture({seed});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       window.firstPpukEvents=[];
       new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1&&node.classList.contains('banner')&&node.textContent.includes('첫뻑'))firstPpukEvents.push(node.textContent);}).observe(document.body,{childList:true});
     });
-    await f.page.locator(`#handMe .c[data-id="${card}"]`).click();
+    // Cards are visible while dealing, but onPick ignores them until .ok.
+    await f.page.locator(`#handMe .c.ok[data-id="${card}"]`).click();
     for(let i=0;i<300;i++){
       const ready=await f.page.evaluate(()=>{
         const {ui,game:g}=matgoTest;
@@ -120,7 +121,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.match((await f.page.evaluate(()=>firstPpukEvents)).join(' '),/첫뻑!.*300골드.*판 종료 시 정산/);
     assert.match(await f.page.locator('#money').textContent(),/5,000 골드/);assert.equal(f.state.gold,5000);
     assert.equal(f.state.requests.some(r=>r.action==='settle'),false,'opening event never sends a payout');
-    await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy);
+    await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(await f.page.locator('#goldPending').isHidden(),true);assert.equal(f.state.gold,5000);
     assert.equal(f.state.requests.some(r=>r.action==='settle'),false,'leaving an unfinished round does not pay');
     assert.deepEqual(f.errors,[]);await f.context.close();
@@ -159,7 +160,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy);
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c}]));
       const take=id=>{const c=pool.get(id);pool.delete(id);return c;};
