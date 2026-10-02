@@ -22,10 +22,11 @@ function saveChange(change){
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function title(r){if(!r.x&&!r.y)return '거실';return `${r.y>0?'위 '+r.y+'층':r.y<0?'아래 '+(-r.y)+'층':'시작 층'} · ${r.x<0?'왼쪽 '+(-r.x):r.x>0?'오른쪽 '+r.x:'가운데'}`;}
 function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-stepX*5*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-stepY*7*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;}
+const roomInset=()=>Math.min(20,Math.min(view.clientWidth,view.clientHeight)*.028);
 function clampRoomPan(){
- const b=bounds(current()),w=view.clientWidth,h=view.clientHeight;
- if((ROOM.width-24)*scale>=w)pan.x=Math.max(w-(b.x+ROOM.width-12)*scale,Math.min(-(b.x+12)*scale,pan.x));
- if((ROOM.bottom-ROOM.top)*scale>=h)pan.y=Math.max(h-(b.y+ROOM.bottom)*scale,Math.min(-(b.y+ROOM.top)*scale,pan.y));
+ const b=bounds(current()),w=view.clientWidth,h=view.clientHeight,inset=roomInset();
+ if((ROOM.width-24)*scale>=w-inset*2-.01)pan.x=Math.max(w-inset-(b.x+ROOM.width-12)*scale,Math.min(inset-(b.x+12)*scale,pan.x));
+ if((ROOM.bottom-ROOM.top)*scale>=h-inset*2-.01)pan.y=Math.max(h-inset-(b.y+ROOM.bottom)*scale,Math.min(inset-(b.y+ROOM.top)*scale,pan.y));
 }
 function focusRoom(all=false){
  const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;
@@ -35,8 +36,9 @@ function focusRoom(all=false){
   scale=Math.max(.045,Math.min(w/(maxX-minX+110),(h-80)/(maxY-minY+90),1));
   pan={x:(w-(maxX-minX)*scale)/2-minX*scale,y:(h-(maxY-minY)*scale)/2-minY*scale-10};
  }else{
-  // Fill the usable viewport with the painted room, without stretching it.
-  scale=Math.max(w/(ROOM.width-24),h/(ROOM.bottom-ROOM.top));
+  // Keep the room large, with only a narrow glimpse of its apartment wall.
+  const inset=roomInset();
+  scale=Math.max((w-inset*2)/(ROOM.width-24),(h-inset*2)/(ROOM.bottom-ROOM.top));
   const art=editing&&draft?furnitureGeometry(editingId,draft):r.shelf?furnitureGeometry('bookshelf',r.shelf):null;
   const cx=art?art.left+art.width/2:ROOM.width/2,cy=art?art.top+art.height/2:(ROOM.top+ROOM.bottom)/2;
   pan={x:w/2-(b.x+cx)*scale,y:h/2-(b.y+cy)*scale};clampRoomPan();
@@ -58,7 +60,12 @@ function element(tag,classes,text){const n=document.createElement(tag);if(classe
 
 
 
-function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.direction==='right');world.replaceChildren();for(const r of state.rooms){const b=bounds(r),active=roomKey(r)===selected,room=element('div','room'+(active?' selected':''));room.dataset.room=roomKey(r);room.style.left=b.x+'px';room.style.top=b.y+'px';
+function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.direction==='right');world.replaceChildren();
+ for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++){
+  if(state.rooms.some(r=>r.x===x&&r.y===y))continue;
+  const b=bounds({x,y}),facade=element('div','apartment-neighbor');facade.setAttribute('aria-hidden','true');facade.style.left=b.x+'px';facade.style.top=b.y+'px';world.append(facade);
+ }
+ for(const r of state.rooms){const b=bounds(r),active=roomKey(r)===selected,room=element('div','room'+(active?' selected':''));room.dataset.room=roomKey(r);room.style.left=b.x+'px';room.style.top=b.y+'px';
  const image=element('img','room-bg');image.src=`assets/room-${period}-v${ROOM.assetVersion}.webp`;image.alt='파스텔 아파트 빈방';image.draggable=false;room.append(image);
  if(r.curtains!==false){const curtain=element('img','curtains');curtain.src='assets/curtains.webp';curtain.alt='아이보리 커튼';curtain.draggable=false;room.append(curtain);}
  const placed=furniturePlacements(r).filter(p=>!(active&&editing&&p.id===editingId));
