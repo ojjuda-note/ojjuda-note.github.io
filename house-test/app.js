@@ -1,8 +1,8 @@
-import {loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261003-studio-v1';
-import {icon} from './icons.js?v=20261003-studio-v1';
-import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261003-studio-v1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261003-studio-v1';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-studio-v1';
+import {loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261003-house-fix1';
+import {icon} from './icons.js?v=20261003-house-fix1';
+import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261003-house-fix1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261003-house-fix1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-house-fix1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
@@ -12,8 +12,13 @@ let itemCategory='furniture',previewMode=false,connecting=false,disposed=false;
 const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
 const bounds=r=>({x:(r.x+2)*stepX,y:(3-r.y)*stepY});
 function toast(message){$('#notice').textContent=message;$('#notice').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#notice').classList.remove('show'),2400);}
-function persist(){if(previewMode||!initialized||disposed)return;try{localStorage.setItem(key,JSON.stringify(state));if(saveFailed){saveFailed=false;$('#save-warning').hidden=true;}}catch{saveFailed=true;$('#save-warning').hidden=false;}}
-function save(){persist();}
+function persist(){if(previewMode||!initialized||disposed)return false;try{localStorage.setItem(key,JSON.stringify(state));if(saveFailed){saveFailed=false;$('#save-warning').hidden=true;}return true;}catch{saveFailed=true;$('#save-warning').hidden=false;return false;}}
+function save(){return persist();}
+function saveChange(change){
+ const before=state;state=structuredClone(state);change();
+ if(save())return true;
+ state=before;toast('저장하지 못했어요. 저장 공간을 확인한 뒤 다시 시도해 주세요.');return false;
+}
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function title(r){if(!r.x&&!r.y)return '거실';return `${r.y>0?'위 '+r.y+'층':r.y<0?'아래 '+(-r.y)+'층':'시작 층'} · ${r.x<0?'왼쪽 '+(-r.x):r.x>0?'오른쪽 '+r.x:'가운데'}`;}
 function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-stepX*5*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-stepY*7*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;}
@@ -63,7 +68,7 @@ function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.dir
 
  if(expanding)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++){if(state.rooms.some(r=>r.x===x&&r.y===y))continue;const cell={x,y},b=bounds(cell),button=element('button','expansion');button.type='button';button.dataset.cell=roomKey(cell);button.disabled=!canAdd(state.rooms,cell);button.append(element('strong','',button.disabled?'·':'＋'),element('span','',title(cell)));button.setAttribute('aria-label',title(cell)+(button.disabled?' · 먼저 옆방을 연결해 주세요':' 확장'));button.style.left=b.x+'px';button.style.top=b.y+'px';button.onclick=()=>addRoom(cell);world.append(button);}
  $('#room-name').textContent=title(current());$('#room-count').textContent=state.rooms.length+' / 35개 방';}
-function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}});selected=roomKey(cell);save();renderWorld();renderPanel();toast('새 방이 연결됐어요.');}
+function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}if(!saveChange(()=>state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}})))return;selected=roomKey(cell);renderWorld();renderPanel();toast('새 방이 연결됐어요.');}
 function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;editing=false;draft=null;selected=id;renderWorld();renderPanel();if(!expanding)focusRoom();}
 function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon('room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
 function furnitureGap(s=draft){const {w}=itemSize(editingId,s.direction);return s.direction==='right'?FLOOR.width-w-s.x:s.x;}
@@ -115,7 +120,7 @@ function renderItemMenu(body){
  body.append(tabs);
  if(itemCategory==='settings'){
   const row=element('div','actions room-settings');
-  row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{current().curtains=!current().curtains;save();renderWorld();renderPanel();}),actionButton('빈방 보기',()=>{current().shelf=null;current().furniture={};current().curtains=false;save();renderWorld();renderPanel();}));
+  row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{if(!saveChange(()=>{current().curtains=!current().curtains;}))return;renderWorld();renderPanel();}),actionButton('빈방 보기',()=>{if(!saveChange(()=>{current().shelf=null;current().furniture={};current().curtains=false;}))return;renderWorld();renderPanel();}));
   row.append(actionButton('가구 제작실',()=>port.postMessage({type:'studio'})));
   body.append(row,element('p','panel-note','치운 가구와 소품은 아이템 메뉴에서 다시 놓을 수 있어요.'));return;
  }
@@ -202,10 +207,10 @@ function startPlacement(id='bookshelf'){
 }
 function finishPlacement(commit){
  if(previewMode){port.postMessage({type:'close'});return;}
- if(commit){if(!validDraft()){toast('다른 가구와 겹치지 않게 옮겨 주세요.');return;}if(editingId==='bookshelf')current().shelf=clonePlacement(draft);else current().furniture[editingId]=clonePlacement(draft);save();}
+ if(commit){if(!validDraft()){toast('다른 가구와 겹치지 않게 옮겨 주세요.');return;}if(!saveChange(()=>{if(editingId==='bookshelf')current().shelf=clonePlacement(draft);else current().furniture[editingId]=clonePlacement(draft);}))return;}
  const label=FURNITURE[editingId].shortLabel||FURNITURE[editingId].label;editing=false;draft=null;renderWorld();renderPanel();toast(commit?label+' 배치를 저장했어요.':'이전 배치로 돌아왔어요.');
 }
-function removeFurniture(){if(editingId==='bookshelf')current().shelf=null;else delete current().furniture[editingId];save();editing=false;draft=null;renderWorld();renderPanel();toast('가구를 치웠어요.');}
+function removeFurniture(){if(!saveChange(()=>{if(editingId==='bookshelf')current().shelf=null;else delete current().furniture[editingId];}))return;editing=false;draft=null;renderWorld();renderPanel();toast('가구를 치웠어요.');}
 function updatePlacementStatus(button){
  const valid=validDraft();button.classList.toggle('placement-invalid',!valid);
  const done=$('#placement-done'),warning=$('#placement-warning');if(done)done.disabled=!valid;if(warning)warning.hidden=valid;

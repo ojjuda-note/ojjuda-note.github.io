@@ -1,5 +1,5 @@
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261003-studio-v1';
-import {SOFA_CUSHION_SEATS,sofaCushionOrder} from '../sofa-cushion-placement.js?v=20261003-studio-v1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261003-house-fix1';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from '../sofa-cushion-placement.js?v=20261003-house-fix1';
 // Original-pixel furniture partitions and ordered 2D accessory insertion.
 // Polygon edges assign whole source pixels; antialiasing never divides a pixel
 // between parts, so putting those parts back together cannot create alpha seams.

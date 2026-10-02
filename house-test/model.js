@@ -1,7 +1,7 @@
-import {madePoseValid} from './custom-furniture.js?v=20261003-studio-v1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261003-studio-v1';
-import {sofaPoseValid} from './sofa-art.js?v=20261003-studio-v1';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-studio-v1';
+import {madePoseValid} from './custom-furniture.js?v=20261003-house-fix1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261003-house-fix1';
+import {sofaPoseValid} from './sofa-art.js?v=20261003-house-fix1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-house-fix1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -28,8 +28,9 @@ function roomFurniture(raw,shelf,version,addNew){
  const result={},others=shelf?[{id:'bookshelf',...shelf}]:[];
  const ids=Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced);
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const id of ids){
-  // Earlier desks were retired; do not reuse their incompatible saved poses.
-  if(version<8&&id==='desk')continue;
+  // These IDs were reused for new artwork after the old models were retired.
+  // Their pre-v8 poses must not restore the replacement furniture.
+  if(version<8&&(id==='desk'||id==='side-table'))continue;
   const placed=normalizePlacement(id,raw[id]);
   if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
  }

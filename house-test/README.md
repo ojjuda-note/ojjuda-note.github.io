@@ -59,3 +59,10 @@ User instruction: install the existing maker within Ojjuda. World → 관리자 
 - No AI provider key, server, or paid generation endpoint is installed. The installed UI explains that automatic AI drawing is unconnected. Image import, editing, preview, and local application work without that service. Parent-attached cushions/blankets must be composed into a floor-standing furniture set before application.
 
 Focused verification: `node tests/furniture-studio-ui.test.cjs` imports the shipped completed side table, checks locked direct entry, no writes during preview, persistence/reopen, owner isolation and mobile overflow. Existing regression checks still apply.
+
+## 우리집 충돌·중복 수정 — 2026-10-03
+
+- 제작실에서 연 우리집의 **가구 제작실** 메뉴는 원래 작업창으로 돌아간다. 새 편집창을 만들거나 저장하지 못한 작업을 버리지 않는다. 월드에서 우리집을 직접 연 경우에는 제작실을 새로 연다.
+- 가구 배치·치우기, 커튼, 빈방 보기, 방 확장은 기기 저장에 성공해야 확정된다. 실패하면 기존 방 상태와 편집 중 배치를 유지하고 다시 시도할 수 있다.
+- v8 이전 저장의 폐기된 협탁은 새 협탁으로 복원하지 않는다. 현재 협탁·책상 배치와 사용자가 비운 방은 유지한다.
+- 기존 가구 규칙 검사를 현재 카탈로그와 v11 저장 형식에 맞추고 CI에 연결했다. 저장 실패와 제작실 왕복은 두 개의 집중 UI 검사로 확인한다.
