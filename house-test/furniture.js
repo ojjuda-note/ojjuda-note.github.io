@@ -1,10 +1,10 @@
-import {floorPoint,roomPoint} from './model.js?v=20261002-sofa-accessories-v1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-sofa-accessories-v1';
-import {paintFurniture} from './furniture-painter.js?v=20261002-sofa-accessories-v1';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-sofa-accessories-v1';
-import {deskArtwork} from './desk-art.js?v=20261002-sofa-accessories-v1';
-import {sofaArtwork} from './sofa-art.js?v=20261002-sofa-accessories-v1';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261002-sofa-accessories-v1';
+import {floorPoint,roomPoint} from './model.js?v=20261002-blanket-drape-v2';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-blanket-drape-v2';
+import {paintFurniture} from './furniture-painter.js?v=20261002-blanket-drape-v2';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-blanket-drape-v2';
+import {deskArtwork} from './desk-art.js?v=20261002-blanket-drape-v2';
+import {sofaArtwork} from './sofa-art.js?v=20261002-blanket-drape-v2';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261002-blanket-drape-v2';
 
 export function projectiveMap(source,target){
  const rows=[];

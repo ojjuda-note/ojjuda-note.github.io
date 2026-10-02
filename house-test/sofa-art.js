@@ -1,19 +1,12 @@
-import {floorPoint,roomPoint} from './model.js?v=20261002-sofa-accessories-v1';
-import {SOFA_V1,SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261002-sofa-accessories-v1';
-import {projectMesh,validateMesh} from './picture-mesh.js?v=20261002-sofa-accessories-v1';
+import {floorPoint,roomPoint} from './model.js?v=20261002-blanket-drape-v2';
+import {SOFA_V1,SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261002-blanket-drape-v2';
+import {projectMesh,validateMesh} from './picture-mesh.js?v=20261002-blanket-drape-v2';
+import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261002-blanket-drape-v2';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261002-blanket-drape-v2';
+export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261002-blanket-drape-v2';
 
-// Rectangles are authored positions on each original sofa canvas, not measured
-// physical contacts. The same parent picture transform moves every layer.
-export const SOFA_BLANKET_RECTS={left:[320,448,370,574],center:[45,427,274,531],right:[75,312,255,389]};
-const accessoryOrder=['peach-cushion','cream-floral-cushion','sage-cushion','pink-check-cushion'];
 // Cushion support points are authored placements on the seat. A cushion has
 // one unbroken picture plane rather than inheriting the sofa's seat/back seam.
-export const SOFA_CUSHION_SEATS={
- 'peach-cushion':{u:.63,v:.30,width:.68,height:.69,bottom:.89},
- 'cream-floral-cushion':{u:.66,v:.58,width:.78,height:.74,bottom:.81},
- 'sage-cushion':{u:1.79,v:.48,width:.76,height:.72,bottom:.81},
- 'pink-check-cushion':{u:2.91,v:.49,width:.74,height:.72,bottom:.81}
-};
 function cushionLayer(id,direction,placement){
  const asset=SOFA_ACCESSORY_IMAGES[id][direction],seat=SOFA_CUSHION_SEATS[id],n=4,triangles=[];
  const [sx,sy,sw,sh]=asset.sourceRect;
@@ -42,15 +35,21 @@ export function sofaArtwork(item,placement,contact,size){
  const footprint=[[contact.x,contact.y],[contact.x+contact.w,contact.y],[contact.x+contact.w,contact.y+contact.d],[contact.x,contact.y+contact.d]].map(p=>floorPoint(...p));
  const reserved=[[placement.x,placement.y],[placement.x+size.w,placement.y],[placement.x+size.w,placement.y+size.d],[placement.x,placement.y+size.d]].map(p=>floorPoint(...p));
  const layers=[],enabled=id=>placement.accessories?.[id]!==false;
- const accessory=id=>({id,...SOFA_ACCESSORY_IMAGES[id][placement.direction],...(id==='blanket-sofa'?{rect:SOFA_BLANKET_RECTS[placement.direction]}:{})});
+ const accessory=id=>({id,...SOFA_ACCESSORY_IMAGES[id][placement.direction]});
+ const blanket=enabled('blanket-sofa')?projectSofaBlanketDrape(getSofaBlanketDrape(placement.direction),placement.direction,pose,roomPoint):null;
+ const blanketLayer=part=>({id:part==='surface'?'blanket-sofa':'blanket-sofa-front',image:SOFA_ACCESSORY_IMAGES['blanket-sofa'][placement.direction].image,triangles:blanket[part]});
  for(const id of registration.order){
-  if(id==='slot:surface')layers.push(...accessoryOrder.filter(enabled).map(accessory));
-  else if(id==='slot:front'){if(enabled('blanket-sofa'))layers.push(accessory('blanket-sofa'));}
+  if(id==='slot:surface'){
+   if(blanket)layers.push(blanketLayer('surface'));
+   layers.push(...sofaCushionOrder(Object.keys(SOFA_CUSHION_SEATS).filter(enabled),placement.direction).map(accessory));
+  }
+  else if(id==='slot:front'){if(blanket)layers.push(blanketLayer('front'));}
   else layers.push({id,image:registration.parts[id],rect:[0,0,...registration.canvas]});
  }
  const sofaTriangles=projected.triangles.map(t=>({source:t.source.map(p=>[p.x,p.y]),target:t.target}));
  const drawLayers=layers.map(layer=>{
   if(SOFA_CUSHION_SEATS[layer.id])return cushionLayer(layer.id,placement.direction,placement);
+  if(layer.triangles)return layer;
   return {...layer,triangles:sofaTriangles};
  });
  points.push(...drawLayers.flatMap(layer=>layer.triangles.flatMap(triangle=>triangle.target)));

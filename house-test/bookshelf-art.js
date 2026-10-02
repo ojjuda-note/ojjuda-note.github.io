@@ -1,4 +1,4 @@
-import {roomPoint} from './model.js?v=20261002-sofa-accessories-v1';
+import {roomPoint} from './model.js?v=20261002-blanket-drape-v2';
 
 // The approved PNGs were drawn against these measured room placements.
 // Keep the authored camera registration; positions are always world coordinates.
