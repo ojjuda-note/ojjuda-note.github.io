@@ -16,7 +16,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='status')return{data:snapshot()};
     if(body.action==='start'){
       if(!state.gold)return{data:{error:'gold_empty'}};
-      state.round ||= {id:'00000000-0000-4000-9000-000000000001',seed:9,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+      state.round ||= {id:'00000000-0000-4000-9000-000000000001',seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
       if(state.freeUsed<2)state.freeUsed++;else{if(!body.paid)return{data:{error:'paid_confirmation_required'}};if(state.coins<5)return{data:{error:'insufficient_zzu'}};state.coins-=5;}
@@ -48,7 +48,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/games/matgo.html'){
-      let html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoTest={game,ui,pick:onPick};\nstartRound();\n})();');
+      let html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoTest={game,ui,pick:onPick,render,CARDS};\nstartRound();\n})();');
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:''});
@@ -80,6 +80,56 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.waitForTimeout(20);
   }
   assert.equal(f.state.settled,true,'a real UI round settles against the server replay engine');assert.ok(f.state.gold>=0);assert.deepEqual(f.errors,[]);await f.context.close();
+  for(const decision of ['win','continue']){
+    const f=await fixture({seed:9});await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForSelector('#chongtong-win');assert.match(await f.page.locator('.modal').textContent(),/총통/);
+    assert.equal(await f.page.locator('.chongtong-cards svg').count(),4);
+    await f.page.setViewportSize({width:320,height:660});assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await f.page.locator('#chongtong-'+decision).click();
+    if(decision==='win'){
+      await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,2);
+    }else{
+      await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
+      assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
+    }
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  {
+    const f=await fixture({seed:77});await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForSelector('.sc');assert.equal(f.state.gold,4300);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  {
+    const f=await fixture({seed:468});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
+    for(let i=0;i<1500&&!f.state.settled;i++){
+      await f.page.evaluate(()=>{
+        const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#y')||modal.querySelector('button'))?.click();return;}
+        const {game:g,ui,pick}=matgoTest;
+        if(ui.resolveChoose){const value=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1;const ids=g.floor.map((s,i)=>[s,i]).filter(([s])=>ui.chooseStacks.has(s)).map(([,i])=>i);ui.resolveChoose(ids.reduce((a,b)=>value(g.floor[a][0])>=value(g.floor[b][0])?a:b));return;}
+        if(!ui.busy&&!g.over&&g.turn===0){if(g.hand[0][0])void pick(g.hand[0][0].id);else document.querySelector('#bombFlip')?.click();}
+      });
+      await f.page.waitForTimeout(20);
+    }
+    assert.equal(f.state.settled,true,'triple ppuk with gobak settles after a complete legal game');
+    assert.equal(f.state.gold,3600);assert.match(await f.page.locator('.sc').textContent(),/뻑 3회7점고박×2/);
+    await f.page.screenshot({path:'/tmp/matgo-triple-ppuk-gobak.png'});
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  {
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy);
+    await f.page.evaluate(()=>{
+      const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c}]));
+      const take=id=>{const c=pool.get(id);pool.delete(id);return c;};
+      g.hand=[[1,3,16].map(take),[44].map(take)];g.floor=[0,4].map(id=>[take(id)]);g.caps=[[],[6,7,10,11].map(take)];
+      g.deck=[48,2,20].map(take).concat([...pool.values()]);g.ppukCount=[0,0];g.turn=0;g.endTurn=async()=>{};render();
+    });
+    await f.page.locator('#handMe .c[data-id="1"]').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
+    assert.equal(await f.page.locator('.stack.ppuk .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),0);
+    assert.match(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),/보너스 1/);assert.equal(await f.page.locator('#mePpuk').textContent(),'뻑 1/3');
+    await f.page.locator('#handMe .c[data-id="3"]').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
+    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsOp .c').count(),1,'self ppuk plus tied bonus steals 3 cards');
+    assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
+  }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){
     const f=await fixture(options);await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForSelector('#refill-gold');
     assert.match(await f.page.locator('#refill-gold').textContent(),options.freeUsed<2?/무료/:/5쭈/);await f.page.locator('#refill-gold').click();
@@ -99,6 +149,6 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     }
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  console.log('PASS: direct-link denial, hidden minor button, adult arcade entry, mobile layout, real game settlement, free/paid refill UI, insufficient 쭈 and logout');
+  console.log('PASS: age gate, mobile layout, full-round settlement, chongtong win/continue, bonus-bound self ppuk stealing 3 pi, triple ppuk gobak 14 points, refills and logout');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

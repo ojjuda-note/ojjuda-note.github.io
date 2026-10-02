@@ -72,6 +72,7 @@ function fixture(p, mode, owner, opponents = [6, 7, 10, 11], bonusSweep = false)
     g.deal();
     for (let moves = 0; !g.over; moves++) {
       assert.ok(moves < 120, 'round terminates'); conserved(g);
+      for (let pending; (pending = g.pendingChongtong());) await g.declareChongtong(pending.p, 'continue');
       const p = g.turn, card = aiChooseCard(g, p);
       if (!g.canMove(p)) { await g.endTurn(p); continue; }
       const same = card ? g.hand[p].filter(c => c.m === card.m) : [];

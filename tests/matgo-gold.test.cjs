@@ -10,6 +10,8 @@ const {PGlite}=require('@electric-sql/pglite');
     game=new Game({event:async()=>{},choose:async(p,ids)=>aiChoose(game,p,ids),goStop:async(p,s)=>p===1?aiGoStop(game,p,s):'stop'});
     game.random=seededRandom(seed);game.first=round.first;game.bank=[5000,5000];game.deal();
     while(!game.over){
+      const pending=game.pendingChongtong();
+      if(pending){await game.declareChongtong(pending.p,pending.p===1?'win':'continue');continue;}
       const p=game.turn,card=p===1?aiChooseCard(game,p):game.hand[p][0]||null;
       let bomb=null;
       if(card){const same=game.hand[p].filter(c=>c.m===card.m),matches=game.matches(card.m);
