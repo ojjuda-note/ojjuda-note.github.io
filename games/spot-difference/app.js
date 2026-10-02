@@ -146,10 +146,16 @@
       if(im.complete&&im.naturalWidth)loadedSide(side);
     }
     if(p.contrast){
-      const mask=p.contrast.regions.map(region=>`radial-gradient(ellipse ${region.rx}% ${region.ry}% at ${region.x}% ${region.y}%, #000 84%, transparent 100%)`).join(',');
+      const clips=p.contrast.regions.map(region=>{
+        if(region.shape!=='rect')return {image:`radial-gradient(ellipse ${region.rx}% ${region.ry}% at ${region.x}% ${region.y}%, #000 94%, transparent 100%)`,size:'100% 100%',position:'0% 0%'};
+        const left=Math.max(0,region.x-region.rx),top=Math.max(0,region.y-region.ry),width=Math.min(100,region.x+region.rx)-left,height=Math.min(100,region.y+region.ry)-top;
+        return {image:'linear-gradient(#000,#000)',size:`${width}% ${height}%`,position:`${width===100?0:left/(100-width)*100}% ${height===100?0:top/(100-height)*100}%`};
+      });
+      const mask=clips.map(clip=>clip.image).join(','),maskSize=clips.map(clip=>clip.size).join(','),maskPosition=clips.map(clip=>clip.position).join(',');
       for(const surface of surfaces.filter(surface=>surface.dataset.side==='difference')){
         const image=document.createElement('img');image.className='contrast-overlay';image.alt='';image.setAttribute('aria-hidden','true');image.draggable=false;
         image.style.maskImage=mask;image.style.webkitMaskImage=mask;
+        image.style.maskSize=maskSize;image.style.webkitMaskSize=maskSize;image.style.maskPosition=maskPosition;image.style.webkitMaskPosition=maskPosition;
         const main=!surface.classList.contains('zoom-picture');
         if(main){image.onload=()=>loadedSide('contrast');image.onerror=()=>{if(token!==loadToken)return;imagesReady=false;$('load-error').hidden=false;refreshControls();};}
         surface.insertBefore(image,surface.querySelector('.marks'));image.src=p.contrast.image;
