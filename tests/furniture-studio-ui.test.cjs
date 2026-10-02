@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body><button id="open">제작실</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-apartment-wall1';window.auth={admin:true,id:'admin-a'};document.querySelector('#open').onclick=()=>{const owner=auth.id;openFurnitureStudio({owner,authorized:()=>auth.admin&&auth.id===owner});};</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">제작실</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-house-zoom1';window.auth={admin:true,id:'admin-a'};document.querySelector('#open').onclick=()=>{const owner=auth.id;openFurnitureStudio({owner,authorized:()=>auth.admin&&auth.id===owner});};</script></body></html>`;
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});try{
 const context=await browser.newContext({viewport:{width:1440,height:1050}}),errors=[],missing=[];
 await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(process.env.STUDIO_FONT_DIR&&u.pathname.startsWith('/_fonts/'))return route.fulfill({path:path.join(process.env.STUDIO_FONT_DIR,u.pathname.slice(8))});if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:parent});const f=path.join(root,u.pathname);if(!f.startsWith(root+'/')||!fs.existsSync(f)||!fs.statSync(f).isFile()){missing.push(u.pathname);return route.abort();}return route.fulfill({path:f});});
