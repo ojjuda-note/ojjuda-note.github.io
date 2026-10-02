@@ -21,8 +21,23 @@ function saveChange(change){
 }
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function title(r){if(!r.x&&!r.y)return '거실';return `${r.y>0?'위 '+r.y+'층':r.y<0?'아래 '+(-r.y)+'층':'시작 층'} · ${r.x<0?'왼쪽 '+(-r.x):r.x>0?'오른쪽 '+r.x:'가운데'}`;}
-function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-stepX*5*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-stepY*7*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;}
+function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-stepX*5*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-stepY*7*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;$('#zoom-out').disabled=scale<=minimumZoom()+.000001;}
 const roomInset=()=>Math.min(20,Math.min(view.clientWidth,view.clientHeight)*.028);
+function cameraRooms(){
+ const rooms=[...state.rooms];
+ if(expanding)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++)if(canAdd(state.rooms,{x,y}))rooms.push({x,y});
+ return rooms;
+}
+function cameraBounds(rooms){
+ const positions=rooms.map(bounds),left=Math.min(...positions.map(b=>b.x))+12,top=Math.min(...positions.map(b=>b.y))+ROOM.top;
+ return {left,top,width:Math.max(...positions.map(b=>b.x))+ROOM.width-12-left,height:Math.max(...positions.map(b=>b.y))+ROOM.bottom-top};
+}
+function fitScale(area){const inset=roomInset();return Math.min((view.clientWidth-inset*2)/area.width,(view.clientHeight-inset*2)/area.height);}
+function minimumZoom(){
+ // Decorative neighboring apartments must never make our rooms tiny.
+ const single=fitScale({width:ROOM.width-24,height:ROOM.bottom-ROOM.top});
+ return Math.min(single*.68,fitScale(cameraBounds(cameraRooms())));
+}
 function clampRoomPan(){
  const b=bounds(current()),w=view.clientWidth,h=view.clientHeight,inset=roomInset();
  if((ROOM.width-24)*scale>=w-inset*2-.01)pan.x=Math.max(w-inset-(b.x+ROOM.width-12)*scale,Math.min(inset-(b.x+12)*scale,pan.x));
@@ -31,10 +46,8 @@ function clampRoomPan(){
 function focusRoom(all=false){
  const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;
  if(all){
-  const a=expanding?[{x:-2,y:-3},{x:2,y:3}]:state.rooms;
-  const minX=Math.min(...a.map(x=>bounds(x).x)),maxX=Math.max(...a.map(x=>bounds(x).x))+ROOM.width,minY=Math.min(...a.map(x=>bounds(x).y)),maxY=Math.max(...a.map(x=>bounds(x).y))+ROOM.bottom;
-  scale=Math.max(.045,Math.min(w/(maxX-minX+110),(h-80)/(maxY-minY+90),1));
-  pan={x:(w-(maxX-minX)*scale)/2-minX*scale,y:(h-(maxY-minY)*scale)/2-minY*scale-10};
+  const area=cameraBounds(cameraRooms());scale=fitScale(area);
+  pan={x:(w-area.width*scale)/2-area.left*scale,y:(h-area.height*scale)/2-area.top*scale};
  }else{
   // Keep the room large, with only a narrow glimpse of its apartment wall.
   const inset=roomInset();
@@ -55,7 +68,7 @@ function revealFurniture(){
  else if(top<12)pan.y+=12-top;else if(bottom>h-12)pan.y+=h-12-bottom;
  clampRoomPan();applyCamera();
 }
-function zoom(factor,point={x:view.clientWidth/2,y:view.clientHeight/2}){const limit=Math.max(1.6,2*view.clientWidth/(ROOM.width-24),2*view.clientHeight/(ROOM.bottom-ROOM.top)),next=Math.min(limit,Math.max(.045,scale*factor)),ratio=next/scale;pan.x=point.x-(point.x-pan.x)*ratio;pan.y=point.y-(point.y-pan.y)*ratio;scale=next;applyCamera();}
+function zoom(factor,point={x:view.clientWidth/2,y:view.clientHeight/2}){const limit=Math.max(1.6,2*view.clientWidth/(ROOM.width-24),2*view.clientHeight/(ROOM.bottom-ROOM.top)),next=Math.min(limit,Math.max(minimumZoom(),scale*factor)),ratio=next/scale;pan.x=point.x-(point.x-pan.x)*ratio;pan.y=point.y-(point.y-pan.y)*ratio;scale=next;applyCamera();}
 function element(tag,classes,text){const n=document.createElement(tag);if(classes)n.className=classes;if(text)n.textContent=text;return n;}
 
 
@@ -75,7 +88,7 @@ function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.dir
 
  if(expanding)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++){if(state.rooms.some(r=>r.x===x&&r.y===y))continue;const cell={x,y},b=bounds(cell),button=element('button','expansion');button.type='button';button.dataset.cell=roomKey(cell);button.disabled=!canAdd(state.rooms,cell);button.append(element('strong','',button.disabled?'·':'＋'),element('span','',title(cell)));button.setAttribute('aria-label',title(cell)+(button.disabled?' · 먼저 옆방을 연결해 주세요':' 확장'));button.style.left=b.x+'px';button.style.top=b.y+'px';button.onclick=()=>addRoom(cell);world.append(button);}
  $('#room-name').textContent=title(current());$('#room-count').textContent=state.rooms.length+' / 35개 방';}
-function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}if(!saveChange(()=>state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}})))return;selected=roomKey(cell);renderWorld();renderPanel();toast('새 방이 연결됐어요.');}
+function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}if(!saveChange(()=>state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}})))return;selected=roomKey(cell);renderWorld();renderPanel();if(expanding)focusRoom(true);toast('새 방이 연결됐어요.');}
 function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;editing=false;draft=null;selected=id;renderWorld();renderPanel();if(!expanding)focusRoom();}
 function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon('room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
 function furnitureGap(s=draft){const {w}=itemSize(editingId,s.direction);return s.direction==='right'?FLOOR.width-w-s.x:s.x;}
