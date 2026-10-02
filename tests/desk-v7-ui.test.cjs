@@ -5,6 +5,8 @@ const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES ? proces
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const workspace=process.env.QA_WORKSPACE||path.resolve(__dirname,'../..');
 const repo=path.resolve(process.env.ROOT_DIR||path.join(__dirname,'..'));
+const previewFont=path.join(workspace,'preview-tools/node_modules/@fontsource/noto-sans-kr');
+const hasPreviewFont=fs.existsSync(path.join(previewFont,'400.css'));
 const output=path.resolve(process.env.QA_OUTPUT_DIR||path.join(repo,'house-test/authoring/desk-handles-v7/actual-room'));
 const origin='https://fixture.test',version='20261002-desk-v7',args=new Set(process.argv.slice(2));
 const directions=['right','left','center'];
@@ -31,7 +33,7 @@ async function main(){
     if(url.pathname==='/qa')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><button id="open">열기</button><script type="module">import {openHouseTest} from "/house-test/host.js";document.querySelector("#open").onclick=()=>openHouseTest({owner:"local-three-desk-v7-review",authorized:()=>true});</script></html>'});
     if(url.pathname==='/favicon.ico')return route.fulfill({status:204});
     const font=url.pathname.startsWith('/qa-font/');
-    const root=font?path.join(workspace,'preview-tools/node_modules/@fontsource/noto-sans-kr'):repo;
+    const root=font?previewFont:repo;
     const local=path.resolve(root,'.'+decodeURIComponent(font?url.pathname.slice('/qa-font'.length):url.pathname));
     return local.startsWith(root+path.sep)&&fs.existsSync(local)&&fs.statSync(local).isFile()?route.fulfill({path:local}):route.abort();
    });
@@ -39,7 +41,7 @@ async function main(){
    const open=async()=>{
     await page.locator('#open').click();const frame=page.frameLocator('iframe[title="새 우리집 플레이 테스트"]');
     await frame.locator('#app').waitFor({state:'visible'});await frame.locator('.desk[data-render-state="ready"]').waitFor();
-    await frame.locator('body').evaluate(async()=>{const link=document.createElement('link');link.rel='stylesheet';link.href='/qa-font/400.css';const loaded=new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=reject;});document.head.append(link);await loaded;const style=document.createElement('style');style.textContent='body,button,input,output{font-family:"Noto Sans KR",sans-serif!important}';document.head.append(style);await document.fonts.load('16px "Noto Sans KR"','책상 의자 우리집');});return frame;
+    if(hasPreviewFont)await frame.locator('body').evaluate(async()=>{const link=document.createElement('link');link.rel='stylesheet';link.href='/qa-font/400.css';const loaded=new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=reject;});document.head.append(link);await loaded;const style=document.createElement('style');style.textContent='body,button,input,output{font-family:"Noto Sans KR",sans-serif!important}';document.head.append(style);await document.fonts.load('16px "Noto Sans KR"','책상 의자 우리집');});return frame;
    };
    let frame=await open();
    const position=locator=>locator.evaluate(node=>({direction:node.dataset.direction,x:Number(node.dataset.x),y:Number(node.dataset.y)}));
