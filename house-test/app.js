@@ -6,7 +6,7 @@ import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=2026
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
-let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
+let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,overview=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
 let itemCategory='furniture',previewMode=false,connecting=false,disposed=false;
 const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
@@ -21,10 +21,15 @@ function saveChange(change){
 }
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function title(r){if(!r.x&&!r.y)return '거실';return `${r.y>0?'위 '+r.y+'층':r.y<0?'아래 '+(-r.y)+'층':'시작 층'} · ${r.x<0?'왼쪽 '+(-r.x):r.x>0?'오른쪽 '+r.x:'가운데'}`;}
-function applyCamera(){const w=view.clientWidth,h=view.clientHeight;pan.x=Math.max(-stepX*5*scale+w*.1,Math.min(w*.9,pan.x));pan.y=Math.max(-stepY*7*scale+h*.1,Math.min(h*.9,pan.y));world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;$('#zoom-out').disabled=scale<=minimumZoom()+.000001;}
+function applyCamera(){
+ const area=cameraBounds(cameraRooms()),inset=roomInset();
+ const clampAxis=(position,start,length,size)=>{const a=inset-start*scale,b=size-inset-(start+length)*scale;return Math.max(Math.min(a,b),Math.min(Math.max(a,b),position));};
+ pan.x=clampAxis(pan.x,area.left,area.width,view.clientWidth);pan.y=clampAxis(pan.y,area.top,area.height,view.clientHeight);
+ world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;$('#zoom-out').disabled=scale<=minimumZoom()+.000001;
+}
 const roomInset=()=>Math.min(20,Math.min(view.clientWidth,view.clientHeight)*.028);
 function cameraRooms(){
- const rooms=[...state.rooms];
+ const rooms=overview||expanding?[...state.rooms]:[current()];
  if(expanding)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++)if(canAdd(state.rooms,{x,y}))rooms.push({x,y});
  return rooms;
 }
@@ -38,12 +43,8 @@ function minimumZoom(){
  const single=fitScale({width:ROOM.width-24,height:ROOM.bottom-ROOM.top});
  return Math.min(single*.68,fitScale(cameraBounds(cameraRooms())));
 }
-function clampRoomPan(){
- const b=bounds(current()),w=view.clientWidth,h=view.clientHeight,inset=roomInset();
- if((ROOM.width-24)*scale>=w-inset*2-.01)pan.x=Math.max(w-inset-(b.x+ROOM.width-12)*scale,Math.min(inset-(b.x+12)*scale,pan.x));
- if((ROOM.bottom-ROOM.top)*scale>=h-inset*2-.01)pan.y=Math.max(h-inset-(b.y+ROOM.bottom)*scale,Math.min(inset-(b.y+ROOM.top)*scale,pan.y));
-}
 function focusRoom(all=false){
+ overview=all;
  const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;
  if(all){
   const area=cameraBounds(cameraRooms());scale=fitScale(area);
@@ -54,7 +55,7 @@ function focusRoom(all=false){
   scale=Math.max((w-inset*2)/(ROOM.width-24),(h-inset*2)/(ROOM.bottom-ROOM.top));
   const art=editing&&draft?furnitureGeometry(editingId,draft):r.shelf?furnitureGeometry('bookshelf',r.shelf):null;
   const cx=art?art.left+art.width/2:ROOM.width/2,cy=art?art.top+art.height/2:(ROOM.top+ROOM.bottom)/2;
-  pan={x:w/2-(b.x+cx)*scale,y:h/2-(b.y+cy)*scale};clampRoomPan();
+  pan={x:w/2-(b.x+cx)*scale,y:h/2-(b.y+cy)*scale};
  }
  applyCamera();
 }
@@ -66,7 +67,7 @@ function revealFurniture(){
  else if(left<12)pan.x+=12-left;else if(right>w-12)pan.x+=w-12-right;
  if(g.height*scale>h-24)pan.y+=h/2-(top+bottom)/2;
  else if(top<12)pan.y+=12-top;else if(bottom>h-12)pan.y+=h-12-bottom;
- clampRoomPan();applyCamera();
+ applyCamera();
 }
 function zoom(factor,point={x:view.clientWidth/2,y:view.clientHeight/2}){const limit=Math.max(1.6,2*view.clientWidth/(ROOM.width-24),2*view.clientHeight/(ROOM.bottom-ROOM.top)),next=Math.min(limit,Math.max(minimumZoom(),scale*factor)),ratio=next/scale;pan.x=point.x-(point.x-pan.x)*ratio;pan.y=point.y-(point.y-pan.y)*ratio;scale=next;applyCamera();}
 function element(tag,classes,text){const n=document.createElement(tag);if(classes)n.className=classes;if(text)n.textContent=text;return n;}
@@ -195,7 +196,7 @@ view.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId)||!gesture)
 function end(e,canceled=false){if(!pointers.has(e.pointerId))return;const p=point(e),tap=!canceled&&gesture&&!gesture.moved&&!gesture.multi;pointers.delete(e.pointerId);if(view.hasPointerCapture(e.pointerId))view.releasePointerCapture(e.pointerId);if(tap){const wx=(p.x-pan.x)/scale,wy=(p.y-pan.y)/scale,r=state.rooms.find(r=>{const b=bounds(r);const cell=floorCell(wx-b.x,wy-b.y);return cell.x>=0&&cell.x<=FLOOR.width&&cell.y>=0&&cell.y<=FLOOR.depth;});if(r){if(roomKey(r)!==selected)selectRoom(roomKey(r));else {}}}if(!pointers.size)gesture=null;}
 view.addEventListener('pointerup',e=>end(e));view.addEventListener('pointercancel',e=>end(e,true));view.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(-e.deltaY*.001),point(e));},{passive:false});view.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.2);}else if(e.key==='-'){e.preventDefault();zoom(1/1.2);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();pan.x+=e.key==='ArrowLeft'?65:e.key==='ArrowRight'?-65:0;pan.y+=e.key==='ArrowUp'?65:e.key==='ArrowDown'?-65:0;applyCamera();}});
 $('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#overview').onclick=()=>focusRoom(true);$('#home-view').onclick=()=>focusRoom();$('#expand').onclick=()=>toggleExpansion();$('#exit').onclick=()=>{if(initialized)persist();port?.postMessage({type:'close'});};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#exit').click();});document.querySelectorAll('[data-tab]').forEach(b=>{b.querySelector('span').innerHTML=icon(b.dataset.tab);b.onclick=()=>setTab(b.dataset.tab);});
-new ResizeObserver(()=>{if(initialized)focusRoom(expanding);}).observe(view);
+new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);}).observe(view);
 window.addEventListener('message',async e=>{
  if(connecting||initialized||window.parent===window||e.source!==window.parent||e.origin!==location.origin||e.data?.type!=='ojjuda-house-test-init'||!e.ports[0]||typeof e.data.owner!=='string'||!e.data.owner||e.data.owner.length>180)return;
  connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;
