@@ -5,7 +5,7 @@ const {spawnSync}=require('node:child_process');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ojjuda-syntax-'));
 try{
  let count=0;
- for(const file of ['index.html','world.html','note/index.html']){
+ for(const file of ['index.html','world.html','note/index.html','games/matgo.html']){
   const html=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
   for(const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
    if(/\bsrc\s*=/.test(match[1])||!match[2].trim()||/application\/(?:ld\+)?json/.test(match[1]))continue;
