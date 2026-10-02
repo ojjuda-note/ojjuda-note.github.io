@@ -45,3 +45,17 @@ The desk has a shallow upper drawer, a lower drawer pedestal and a solid end pan
 방 꾸미기에서 **소파 놓기**를 선택하면 좌측·정면·우측 그림을 바꾸고 0.5칸 단위로 이동할 수 있다. 소파 편집에서 쿠션 네 종류와 소파용 니트 담요를 각각 켜거나 치운다. 소품은 소파 부위 순서에 따라 겹친다. 쿠션은 소파 좌판의 지지 위치에 한 장의 그림 면으로 놓아 형태가 꺾이지 않도록 하고, 소파와 같은 부모 위치·방향을 따라 방 격자에 투영한다. **배치 완료**는 소파와 소품을 함께 저장하고 **취소**는 이전 상태를 유지한다.
 
 **바닥 담요 놓기**는 독립된 바닥 개체이며 가구 아래에 놓을 수 있다. 침대용 담요는 침대 본체를 추가한 뒤 연결할 대상이며 현재 소파·바닥용으로 대체하지 않는다. 새 항목은 목록에서 직접 놓도록 하여 기존 빈방과 가구 배치를 보존한다. 우리집은 기존의 World 관리자 진입 경로를 유지한다.
+
+
+## Installed furniture studio — 2026-10-03
+
+User instruction: install the existing maker within Ojjuda. World → 관리자 모드 → **가구 제작실** opens the browser editor. 방 꾸미기 → 방 설정 also links to it. The earlier release exclusions of the maker apply only to those earlier releases.
+
+- **만들어 둔 협탁 불러오기** opens the previously completed three-view side table, including its original source pixels and editable grid bindings. Import, cutout/parts editing, original project/PNG/ZIP exports, and account-scoped draft recovery remain available.
+- **우리집에서 미리보기** renders the current complete set in the actual room, through the editor's own Canvas 2D routines and shared projection. Preview never writes room placement or registers an item.
+- **새 아이템으로 적용** commits the complete set and editable project to IndexedDB, then opens placement in our home. **배치 완료** saves its placement. Identical repeated applies reuse the item ID; edited versions create a new item. Built-in catalog entries remain separate.
+- Catalog loading and image decoding finish before room normalization. Missing/corrupt custom records block loading and preserve the original room save. Registered projects can be reopened from the studio. There are at most 20 registered custom versions per account on this browser; export projects for safekeeping.
+- Drafts and items are keyed to the administrator account on this device. They do not sync to other devices or publish into all users' homes. Clearing browser storage removes them. The same parent MessagePort/admin gate and role-loss closure protect the UI; static assets remain public.
+- No AI provider key, server, or paid generation endpoint is installed. The installed UI explains that automatic AI drawing is unconnected. Image import, editing, preview, and local application work without that service. Parent-attached cushions/blankets must be composed into a floor-standing furniture set before application.
+
+Focused verification: `node tests/furniture-studio-ui.test.cjs` imports the shipped completed side table, checks locked direct entry, no writes during preview, persistence/reopen, owner isolation and mobile overflow. Existing regression checks still apply.
