@@ -1,0 +1,1840 @@
+{
+  "startedAt": "2026-10-02T09:19:37.611Z",
+  "version": "20261002-sofa-accessories-v1",
+  "scope": "Focused actual UI and raster verification; isolated local storage only, no deployment.",
+  "checks": [
+    "New sofas are explicitly added; each of four cushions and the sofa blanket uses its real PNG, independently changes pixels and restores exactly",
+    "Sofa accessory state and pose save/reopen together; cancel restores both. All rendered layers move with the parent while source coordinates remain unchanged",
+    "Standing sofa overlap with the existing desk/bookshelf is blocked; cancelling keeps the existing furniture",
+    "Floor blanket registers actual cloth corners through roomPoint, permits intended overlap below standing furniture, and moves/cancels independently",
+    "Three independent directional PNG sets reach the actual room painter; rotating keeps all accessory states and the final sofa/floor poses survive reopening",
+    "375px mobile checkbox interaction and cancel work without overflow; removing sofa/floor persists, and cancelling a new placement does not re-add either"
+  ],
+  "paint": [
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": false,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": false,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": false,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": false,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 88856,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": false
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0.5,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        312,
+        392
+      ],
+      "painted": 85537,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 134.48393889030189,
+          "y": 869.78414057833
+        },
+        {
+          "x": 296.0705257492326,
+          "y": 869.78414057833
+        },
+        {
+          "x": 392.1904179907113,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 134.48393889030189,
+          "y": 869.78414057833
+        },
+        {
+          "x": 296.0705257492326,
+          "y": 869.78414057833
+        },
+        {
+          "x": 392.1904179907113,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 264.0091232780656,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 264.0091232780656,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 186.05248510414665,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 224.96107184783665,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 256.0811273858172,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 294.6378616685754,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 264.0091232780656,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 264.0091232780656,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "blanket-floor",
+      "placement": {
+        "direction": "center",
+        "x": 0,
+        "y": 3
+      },
+      "sources": [
+        "assets/blanket-floor-center.png"
+      ],
+      "layerIds": [],
+      "canvas": [
+        257,
+        65
+      ],
+      "painted": 11721,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 213.20858599050874,
+          "y": 716.2392673001946
+        },
+        {
+          "x": 397.74821699714914,
+          "y": 716.2392673001946
+        },
+        {
+          "x": 369.9939620873663,
+          "y": 762.3314062474652
+        },
+        {
+          "x": 170.8213597393286,
+          "y": 762.3314062474652
+        }
+      ],
+      "svg": [
+        {
+          "x": 213.20858599050874,
+          "y": 716.2392673001946
+        },
+        {
+          "x": 397.74821699714914,
+          "y": 716.2392673001946
+        },
+        {
+          "x": 369.9939620873663,
+          "y": 762.3314062474652
+        },
+        {
+          "x": 170.8213597393286,
+          "y": 762.3314062474652
+        }
+      ],
+      "layers": [],
+      "zIndex": 4
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "left",
+        "x": 0,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-left-right-arm-v1.png",
+        "assets/sofa-left-body-v1.png",
+        "assets/peach-cushion-left-v1.png",
+        "assets/cream-floral-cushion-left-v1.png",
+        "assets/sage-cushion-left-v1.png",
+        "assets/pink-check-cushion-left-v1.png",
+        "assets/sofa-left-left-arm-v1.png",
+        "assets/blanket-sofa-left-v1.png"
+      ],
+      "layerIds": [
+        "right-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        328,
+        392
+      ],
+      "painted": 89619,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "svg": [
+        {
+          "x": 64.22890112554937,
+          "y": 869.78414057833
+        },
+        {
+          "x": 225.81548798448011,
+          "y": 869.78414057833
+        },
+        {
+          "x": 336.8856025421657,
+          "y": 713.4143241261305
+        }
+      ],
+      "layers": [
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-left-right-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-left-body-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-left-v1.png",
+          "center": {
+            "x": 118.65454434735355,
+            "y": 633.8674743824054
+          },
+          "sourceTriangleSha256": "981d238b1f714653fc84c0d12f383eec2bba6c5816480e677370b6ca452ef6e6"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "center": {
+            "x": 157.7192171355243,
+            "y": 642.0359604652949
+          },
+          "sourceTriangleSha256": "e281364d037be98f5238d465547c93cb8bfbe42ff0a06c53814e5544c9b4cd53"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-left-v1.png",
+          "center": {
+            "x": 194.42319141324933,
+            "y": 607.9293629151775
+          },
+          "sourceTriangleSha256": "503183acec2d56a5e644dc73e7f52229a375b5e33c3bf9d83e2f61043a841a89"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "center": {
+            "x": 237.66853503546884,
+            "y": 577.8933606588521
+          },
+          "sourceTriangleSha256": "b803838afe0c3cfe5a988ae6fea705b1411e72bb0f5a372a58be9c7b964e98dd"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-left-left-arm-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-left-v1.png",
+          "center": {
+            "x": 200.77961547173544,
+            "y": 670.3791635234408
+          },
+          "sourceTriangleSha256": "661fd1851c0a9729d7ee68cc35411f451d318e130be3a3aec31dd600bd5f2274"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "blanket-floor",
+      "placement": {
+        "direction": "left",
+        "x": 4,
+        "y": 4.5
+      },
+      "sources": [
+        "assets/blanket-floor-left.png"
+      ],
+      "layerIds": [],
+      "canvas": [
+        197,
+        110
+      ],
+      "painted": 15990,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 648.521582058178,
+          "y": 867.5257341623915
+        },
+        {
+          "x": 660.2971252954675,
+          "y": 780.6031111976678
+        },
+        {
+          "x": 781.7894147332196,
+          "y": 780.6031111976678
+        },
+        {
+          "x": 786.3703489053862,
+          "y": 867.5257341623915
+        }
+      ],
+      "svg": [
+        {
+          "x": 648.521582058178,
+          "y": 867.5257341623915
+        },
+        {
+          "x": 660.2971252954675,
+          "y": 780.6031111976678
+        },
+        {
+          "x": 781.7894147332196,
+          "y": 780.6031111976678
+        },
+        {
+          "x": 786.3703489053862,
+          "y": 867.5257341623915
+        }
+      ],
+      "layers": [],
+      "zIndex": 4
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "center",
+        "x": 3,
+        "y": 0,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-center-body-v1.png",
+        "assets/peach-cushion-center-v1.png",
+        "assets/cream-floral-cushion-center-v1.png",
+        "assets/sage-cushion-center-v1.png",
+        "assets/pink-check-cushion-center-v1.png",
+        "assets/sofa-center-left-arm-v1.png",
+        "assets/sofa-center-right-arm-v1.png",
+        "assets/blanket-sofa-center-v1.png"
+      ],
+      "layerIds": [
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "left-arm",
+        "right-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        356,
+        207
+      ],
+      "painted": 63607,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 569.3739678270315,
+          "y": 649.0612941602442
+        },
+        {
+          "x": 883.9476894429214,
+          "y": 649.0612941602442
+        }
+      ],
+      "svg": [
+        {
+          "x": 569.3739678270315,
+          "y": 649.0612941602442
+        },
+        {
+          "x": 883.9476894429214,
+          "y": 649.0612941602442
+        }
+      ],
+      "layers": [
+        {
+          "id": "body",
+          "image": "assets/sofa-center-body-v1.png",
+          "center": {
+            "x": 729.5478092764932,
+            "y": 546.489970969989
+          },
+          "sourceTriangleSha256": "6d6aac4d65f1aeb6e52ff78b086db8e3fccc5eecb9ab4667664b2b4c1a4388ba"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-center-v1.png",
+          "center": {
+            "x": 623.4736473216917,
+            "y": 505.09195742929376
+          },
+          "sourceTriangleSha256": "7a966cf96df96c4cd1fb20f88394539981ae4200b0197b4ad446f6d427849519"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-center-v1.png",
+          "center": {
+            "x": 624.3506711315857,
+            "y": 514.9785558028696
+          },
+          "sourceTriangleSha256": "39075a10850030f311db14f75bcfb405fdea6d2e22c2a4f92a82e497cc5ea139"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-center-v1.png",
+          "center": {
+            "x": 731.3337348252677,
+            "y": 514.2524020621001
+          },
+          "sourceTriangleSha256": "e9b6d4ab77ba1f99081d69a8b9459fd720efe43da20438287d3cc48440aee197"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-center-v1.png",
+          "center": {
+            "x": 836.7345720267891,
+            "y": 514.4213436126399
+          },
+          "sourceTriangleSha256": "00732020429a2d64e406c4dcdc9537c64e654a12d827043a21e39e620ee383ca"
+        },
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-center-left-arm-v1.png",
+          "center": {
+            "x": 729.5478092764932,
+            "y": 546.489970969989
+          },
+          "sourceTriangleSha256": "6d6aac4d65f1aeb6e52ff78b086db8e3fccc5eecb9ab4667664b2b4c1a4388ba"
+        },
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-center-right-arm-v1.png",
+          "center": {
+            "x": 729.5478092764932,
+            "y": 546.489970969989
+          },
+          "sourceTriangleSha256": "6d6aac4d65f1aeb6e52ff78b086db8e3fccc5eecb9ab4667664b2b4c1a4388ba"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-center-v1.png",
+          "center": {
+            "x": 729.5478092764932,
+            "y": 546.489970969989
+          },
+          "sourceTriangleSha256": "6d6aac4d65f1aeb6e52ff78b086db8e3fccc5eecb9ab4667664b2b4c1a4388ba"
+        }
+      ],
+      "zIndex": 667
+    },
+    {
+      "id": "blanket-floor",
+      "placement": {
+        "direction": "center",
+        "x": 4,
+        "y": 4.5
+      },
+      "sources": [
+        "assets/blanket-floor-center.png"
+      ],
+      "layerIds": [],
+      "canvas": [
+        258,
+        80
+      ],
+      "painted": 16206,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 647.8897943276395,
+          "y": 780.3279449545327
+        },
+        {
+          "x": 852.7757968597328,
+          "y": 780.3279449545327
+        },
+        {
+          "x": 862.1023304167197,
+          "y": 837.6452416009216
+        },
+        {
+          "x": 639.0196813772367,
+          "y": 837.6452416009216
+        }
+      ],
+      "svg": [
+        {
+          "x": 647.8897943276395,
+          "y": 780.3279449545327
+        },
+        {
+          "x": 852.7757968597328,
+          "y": 780.3279449545327
+        },
+        {
+          "x": 862.1023304167197,
+          "y": 837.6452416009216
+        },
+        {
+          "x": 639.0196813772367,
+          "y": 837.6452416009216
+        }
+      ],
+      "layers": [],
+      "zIndex": 4
+    },
+    {
+      "id": "sofa",
+      "placement": {
+        "direction": "right",
+        "x": 7.5,
+        "y": 3,
+        "accessories": {
+          "cream-floral-cushion": true,
+          "sage-cushion": true,
+          "peach-cushion": true,
+          "pink-check-cushion": true,
+          "blanket-sofa": true
+        }
+      },
+      "sources": [
+        "assets/sofa-right-left-arm-v1.png",
+        "assets/sofa-right-body-v1.png",
+        "assets/peach-cushion-right-v1.png",
+        "assets/cream-floral-cushion-right-v1.png",
+        "assets/sage-cushion-right-v1.png",
+        "assets/pink-check-cushion-right-v1.png",
+        "assets/sofa-right-right-arm-v1.png",
+        "assets/blanket-sofa-right-v1.png"
+      ],
+      "layerIds": [
+        "left-arm",
+        "body",
+        "peach-cushion",
+        "cream-floral-cushion",
+        "sage-cushion",
+        "pink-check-cushion",
+        "right-arm",
+        "blanket-sofa"
+      ],
+      "canvas": [
+        317,
+        389
+      ],
+      "painted": 84482,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 1055.8482033732585,
+          "y": 713.4143241261305
+        },
+        {
+          "x": 1138.1508134338264,
+          "y": 867.943804480892
+        },
+        {
+          "x": 1295.1279676691397,
+          "y": 867.943804480892
+        }
+      ],
+      "svg": [
+        {
+          "x": 1055.8482033732585,
+          "y": 713.4143241261305
+        },
+        {
+          "x": 1138.1508134338264,
+          "y": 867.943804480892
+        },
+        {
+          "x": 1295.1279676691397,
+          "y": 867.943804480892
+        }
+      ],
+      "layers": [
+        {
+          "id": "left-arm",
+          "image": "assets/sofa-right-left-arm-v1.png",
+          "center": {
+            "x": 1175.1676754918144,
+            "y": 664.7579011213933
+          },
+          "sourceTriangleSha256": "52017d779589790c37e5832767f4266e7b850dc7bdabaf7d27b5df4a0227021b"
+        },
+        {
+          "id": "body",
+          "image": "assets/sofa-right-body-v1.png",
+          "center": {
+            "x": 1175.1676754918144,
+            "y": 664.7579011213933
+          },
+          "sourceTriangleSha256": "52017d779589790c37e5832767f4266e7b850dc7bdabaf7d27b5df4a0227021b"
+        },
+        {
+          "id": "peach-cushion",
+          "image": "assets/peach-cushion-right-v1.png",
+          "center": {
+            "x": 1174.743218060214,
+            "y": 570.4152425102545
+          },
+          "sourceTriangleSha256": "3c1f4f7475000ad447201d8404edbc2333f0ed3806cb00618b9a3ac4d8602c81"
+        },
+        {
+          "id": "cream-floral-cushion",
+          "image": "assets/cream-floral-cushion-right-v1.png",
+          "center": {
+            "x": 1143.6237038611878,
+            "y": 578.4074980771034
+          },
+          "sourceTriangleSha256": "fbcf10b87d8ae0ca3bb18fdf9e5b5ae29c88861037ccbd95576e3bbc934afa52"
+        },
+        {
+          "id": "sage-cushion",
+          "image": "assets/sage-cushion-right-v1.png",
+          "center": {
+            "x": 1189.0982304698286,
+            "y": 610.355274603252
+          },
+          "sourceTriangleSha256": "186ef59cb06091c2ce0c72e1cc28949d1280966dc2e3b1d6b7b1662fa677b508"
+        },
+        {
+          "id": "pink-check-cushion",
+          "image": "assets/pink-check-cushion-right-v1.png",
+          "center": {
+            "x": 1227.5876638972877,
+            "y": 646.2213572122986
+          },
+          "sourceTriangleSha256": "3f4af653e4b1012b26385cca34e7768f4260d5963a593aa2c3c11c9bf31566fd"
+        },
+        {
+          "id": "right-arm",
+          "image": "assets/sofa-right-right-arm-v1.png",
+          "center": {
+            "x": 1175.1676754918144,
+            "y": 664.7579011213933
+          },
+          "sourceTriangleSha256": "52017d779589790c37e5832767f4266e7b850dc7bdabaf7d27b5df4a0227021b"
+        },
+        {
+          "id": "blanket-sofa",
+          "image": "assets/blanket-sofa-right-v1.png",
+          "center": {
+            "x": 1175.1676754918144,
+            "y": 664.7579011213933
+          },
+          "sourceTriangleSha256": "52017d779589790c37e5832767f4266e7b850dc7bdabaf7d27b5df4a0227021b"
+        }
+      ],
+      "zIndex": 887
+    },
+    {
+      "id": "blanket-floor",
+      "placement": {
+        "direction": "right",
+        "x": 4,
+        "y": 4.5
+      },
+      "sources": [
+        "assets/blanket-floor-right.png"
+      ],
+      "layerIds": [],
+      "canvas": [
+        200,
+        110
+      ],
+      "painted": 16367,
+      "anchorError": 0,
+      "anchors": [
+        {
+          "x": 772.7562047117841,
+          "y": 780.836929751516
+        },
+        {
+          "x": 775.937345974121,
+          "y": 863.0449860173486
+        },
+        {
+          "x": 640.4954783282654,
+          "y": 863.0449860173486
+        },
+        {
+          "x": 652.6070984635426,
+          "y": 780.836929751516
+        }
+      ],
+      "svg": [
+        {
+          "x": 772.7562047117841,
+          "y": 780.836929751516
+        },
+        {
+          "x": 775.937345974121,
+          "y": 863.0449860173486
+        },
+        {
+          "x": 640.4954783282654,
+          "y": 863.0449860173486
+        },
+        {
+          "x": 652.6070984635426,
+          "y": 780.836929751516
+        }
+      ],
+      "layers": [],
+      "zIndex": 4
+    }
+  ],
+  "screenshots": [
+    "desktop-all-items.png",
+    "desktop-left.png",
+    "desktop-center.png",
+    "desktop-right.png",
+    "mobile-room.png",
+    "mobile-accessory-controls.png"
+  ],
+  "errors": [],
+  "failedRequests": [],
+  "visualReview": "Final left/center/right desktop and mobile captures inspected: painted sofa, distinct cushions/throw and independent floor blanket are present. Existing desk/bookshelf retained. Final design approval belongs to the release review.",
+  "mobile": {
+    "width": 375,
+    "scroll": 375
+  },
+  "finalState": {
+    "version": 11,
+    "roomCount": 1,
+    "shelf": {
+      "direction": "right",
+      "x": 9,
+      "y": 1.5
+    },
+    "furniture": {
+      "desk": {
+        "direction": "right",
+        "x": 9,
+        "y": 3.5
+      }
+    }
+  },
+  "originalFurniture": {
+    "bookshelf": {
+      "direction": "right",
+      "x": 9,
+      "y": 1.5
+    },
+    "desk": {
+      "direction": "right",
+      "x": 9,
+      "y": 3.5
+    },
+    "bookshelfPixels": "063911d1a9a5b09e840d5a4849f0759e0d8f0d0d316cae0958cad74623ea1f9e",
+    "deskPixels": "3ac9f6cd8b095ffe3bca7616132a8b2b4b4c316e7697150b985adaaed2618ea9"
+  },
+  "requestedSources": [
+    "/house-test/assets/blanket-floor-center.png",
+    "/house-test/assets/blanket-floor-left.png",
+    "/house-test/assets/blanket-floor-right.png",
+    "/house-test/assets/blanket-sofa-center-v1.png",
+    "/house-test/assets/blanket-sofa-left-v1.png",
+    "/house-test/assets/blanket-sofa-right-v1.png",
+    "/house-test/assets/cream-floral-cushion-center-v1.png",
+    "/house-test/assets/cream-floral-cushion-left-v1.png",
+    "/house-test/assets/cream-floral-cushion-right-v1.png",
+    "/house-test/assets/peach-cushion-center-v1.png",
+    "/house-test/assets/peach-cushion-left-v1.png",
+    "/house-test/assets/peach-cushion-right-v1.png",
+    "/house-test/assets/pink-check-cushion-center-v1.png",
+    "/house-test/assets/pink-check-cushion-left-v1.png",
+    "/house-test/assets/pink-check-cushion-right-v1.png",
+    "/house-test/assets/sage-cushion-center-v1.png",
+    "/house-test/assets/sage-cushion-left-v1.png",
+    "/house-test/assets/sage-cushion-right-v1.png",
+    "/house-test/assets/sofa-center-body-v1.png",
+    "/house-test/assets/sofa-center-left-arm-v1.png",
+    "/house-test/assets/sofa-center-right-arm-v1.png",
+    "/house-test/assets/sofa-left-body-v1.png",
+    "/house-test/assets/sofa-left-left-arm-v1.png",
+    "/house-test/assets/sofa-left-right-arm-v1.png",
+    "/house-test/assets/sofa-right-body-v1.png",
+    "/house-test/assets/sofa-right-left-arm-v1.png",
+    "/house-test/assets/sofa-right-right-arm-v1.png"
+  ],
+  "status": "passed",
+  "qaNotes": [
+    "Optional local Korean font used for screenshots; no app source changes.",
+    "sourceTriangleSha256 hashes source coordinates, not source image bytes.",
+    "Two earlier harness mismatches (floor PNG suffix and locator.evaluate argument position) were fixed; final complete execution exited successfully."
+  ]
+}

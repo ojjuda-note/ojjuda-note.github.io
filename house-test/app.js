@@ -1,12 +1,13 @@
 import {icon} from './icons.js?v=20261002-residuals1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261002-desk-v7';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261002-desk-v7';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261002-desk-v7';
+import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261002-sofa-accessories-v1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261002-sofa-accessories-v1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261002-sofa-accessories-v1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
 let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
+const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
 const bounds=r=>({x:(r.x+2)*stepX,y:(3-r.y)*stepY});
 function toast(message){$('#notice').textContent=message;$('#notice').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#notice').classList.remove('show'),2400);}
 function persist(){try{localStorage.setItem(key,JSON.stringify(state));if(saveFailed){saveFailed=false;$('#save-warning').hidden=true;}}catch{saveFailed=true;$('#save-warning').hidden=false;}}
@@ -79,10 +80,22 @@ function makeFurnitureControls(){
   labelText.id=input.id+'-label';value.id=input.id+'-value';value.setAttribute('for',input.id);title.append(labelText,value);label.append(title,input);controls.append(label);
   input.oninput=()=>{if(!editing||!draft)return;const number=Number(input.value);if(!Number.isFinite(number))return;
    const {w}=itemSize(editingId,draft.direction),position=name==='depth'?{y:number}:{x:draft.direction==='right'?FLOOR.width-w-number:number};
-   draft=normalizePlacement(editingId,{...draft,...position});renderWorld();syncPlacementControls();revealFurniture();
+   const next=normalizePlacement(editingId,{...draft,...position});if(!canDrawFurniture(editingId,next)){toast('이 방향의 그림으로 놓을 수 있는 범위를 벗어났어요. 다른 방향을 골라 주세요.');syncPlacementControls();return;}draft=next;renderWorld();syncPlacementControls();revealFurniture();
   };
  }
  return controls;
+}
+function makeAccessoryControls(){
+ const group=element('fieldset','sofa-accessories');group.append(element('legend','','소파 위 소품'));
+ const values=normalizeAccessories(draft.accessories);
+ for(const {id,label:text}of SOFA_ACCESSORIES){
+  const label=element('label'),input=element('input'),name=element('span','',text);
+  input.type='checkbox';input.dataset.accessory=id;input.checked=values[id];input.setAttribute('aria-label',text+' 보이기');
+  input.onchange=()=>{if(!editing||editingId!=='sofa')return;draft={...draft,accessories:{...normalizeAccessories(draft.accessories),[id]:input.checked}};renderWorld();};
+  label.append(input,name);group.append(label);
+ }
+ group.append(element('p','panel-note','체크를 해제하면 해당 물건만 치워요. 소파와 함께 이동·회전하며, 배치 완료에서 저장합니다.'));
+ return group;
 }
 function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#panel-title').textContent=expanding?'집 확장':{room:'방 꾸미기',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
 
@@ -91,11 +104,11 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    const item=FURNITURE[editingId],directions=element('div','directions');
    for(const [id,text]of [['left','왼쪽'],['center','정면'],['right','오른쪽']]){
     if(!item.directions.includes(id))continue;
-    const button=actionButton(text,()=>{const size=itemSize(editingId,id);draft=normalizePlacement(editingId,{direction:id,x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:id==='center'?0:draft.y});renderWorld();renderPanel();focusRoom();});
+    const button=actionButton(text,()=>{const size=itemSize(editingId,id);const next=normalizePlacement(editingId,{...draft,direction:id,x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:id==='center'?0:draft.y});if(!canDrawFurniture(editingId,next)){toast('이 위치에서는 해당 방향의 그림을 놓을 수 없어요. 앞뒤 위치를 먼저 조절해 주세요.');return;}draft=next;renderWorld();renderPanel();focusRoom();});
     button.dataset.direction=id;button.setAttribute('aria-pressed',String(draft.direction===id));directions.append(button);
    }
    body.append(directions);
-   body.append(makeFurnitureControls());
+   body.append(makeFurnitureControls());if(editingId==='sofa')body.append(makeAccessoryControls());
    const row=element('div','directions'),done=actionButton('배치 완료',()=>finishPlacement(true));done.id='placement-done';done.disabled=!validDraft();
    row.append(actionButton('취소',()=>finishPlacement(false)),actionButton('치우기',removeFurniture),done);
    const warning=element('p','placement-warning','다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
@@ -108,7 +121,7 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
     row.append(actionButton((item.shortLabel||item.label)+(placed?' 배치':' 놓기'),()=>startPlacement(id),'▧'));
    }
    row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{current().curtains=!current().curtains;save();renderWorld();renderPanel();},'□'),actionButton('빈방 보기',()=>{current().shelf=null;current().furniture={};current().curtains=false;save();renderWorld();renderPanel();},'□'));
-   body.append(row,element('p','panel-note','목록을 위아래로 넘겨 가구를 고르고 위치와 방향을 바꿔 보세요.'));
+   body.append(row,element('p','panel-note','소파를 선택하면 쿠션 4종과 소파용 담요를 따로 넣거나 치울 수 있어요. 바닥 담요는 별도로 배치합니다.'),element('p','panel-note bed-accessory-note','침대용 담요 그림은 준비되어 있어요. 침대 본체가 아직 없어 이 방에는 놓을 수 없습니다.'));
   }
  }
 
@@ -135,10 +148,10 @@ function validDraft(){return !!draft&&canPlaceFurniture(editingId,draft,otherFur
 function startPlacement(id='bookshelf'){
  editingId=id;const existing=furniturePlacements(current()).find(p=>p.id===id),placed=existing?normalizePlacement(id,existing):findPlacement(id,otherFurniture(),id==='bookshelf'?defaultShelf():undefined);
  if(!placed){toast('가구를 놓을 자리가 부족해요. 먼저 다른 가구를 옮겨 주세요.');return;}
- editing=true;draft={...placed};renderWorld();renderPanel();focusRoom();
+ editing=true;draft=clonePlacement(placed);renderWorld();renderPanel();focusRoom();
 }
 function finishPlacement(commit){
- if(commit){if(!validDraft()){toast('다른 가구와 겹치지 않게 옮겨 주세요.');return;}if(editingId==='bookshelf')current().shelf={...draft};else current().furniture[editingId]={...draft};save();}
+ if(commit){if(!validDraft()){toast('다른 가구와 겹치지 않게 옮겨 주세요.');return;}if(editingId==='bookshelf')current().shelf=clonePlacement(draft);else current().furniture[editingId]=clonePlacement(draft);save();}
  const label=FURNITURE[editingId].shortLabel||FURNITURE[editingId].label;editing=false;draft=null;renderWorld();renderPanel();toast(commit?label+' 배치를 저장했어요.':'이전 배치로 돌아왔어요.');
 }
 function removeFurniture(){if(editingId==='bookshelf')current().shelf=null;else delete current().furniture[editingId];save();editing=false;draft=null;renderWorld();renderPanel();toast('가구를 치웠어요.');}
@@ -151,8 +164,8 @@ function makeFurniture(id,s,active){
  renderFurniture(button,id,s);if(active&&editing&&editingId===id)updatePlacementStatus(button);
  button.onclick=()=>{if(!editing){setTab('room');startPlacement(id);}};
  if(active)button.addEventListener('pointerdown',e=>{
-  if(!editing||editingId!==id||e.button>0)return;e.stopPropagation();const start=point(e),original={...draft},{w,d}=itemSize(id,draft.direction),anchor=floorPoint(draft.x+w/2,draft.y+d),startCell=floorCell(anchor.x,anchor.y);button.setPointerCapture(e.pointerId);
-  const drag=ev=>{const p=point(ev),cell=floorCell(anchor.x+(p.x-start.x)/scale,anchor.y+(p.y-start.y)/scale);draft=normalizePlacement(id,{...original,x:original.x+cell.x-startCell.x,y:original.y+cell.y-startCell.y});renderFurniture(button,id,draft);updatePlacementStatus(button);const grid=button.parentElement.querySelector('.floor-grid');if(grid)grid.replaceWith(makeGrid(draft));syncPlacementControls();};
+  if(!editing||editingId!==id||e.button>0)return;e.stopPropagation();const start=point(e),original=clonePlacement(draft),{w,d}=itemSize(id,draft.direction),anchor=floorPoint(draft.x+w/2,draft.y+d),startCell=floorCell(anchor.x,anchor.y);button.setPointerCapture(e.pointerId);
+  const drag=ev=>{const p=point(ev),cell=floorCell(anchor.x+(p.x-start.x)/scale,anchor.y+(p.y-start.y)/scale);const next=normalizePlacement(id,{...original,x:original.x+cell.x-startCell.x,y:original.y+cell.y-startCell.y});if(!canDrawFurniture(id,next)){toast('이 방향의 그림으로 놓을 수 있는 범위를 벗어났어요. 다른 방향을 골라 주세요.');return;}draft=next;renderFurniture(button,id,draft);updatePlacementStatus(button);const grid=button.parentElement.querySelector('.floor-grid');if(grid)grid.replaceWith(makeGrid(draft));syncPlacementControls();};
   const up=ev=>{button.removeEventListener('pointermove',drag);button.removeEventListener('pointerup',up);button.removeEventListener('pointercancel',cancel);if(button.hasPointerCapture(ev.pointerId))button.releasePointerCapture(ev.pointerId);};
   const cancel=ev=>{draft=original;renderFurniture(button,id,draft);up(ev);renderWorld();renderPanel();};button.addEventListener('pointermove',drag);button.addEventListener('pointerup',up);button.addEventListener('pointercancel',cancel);
  });return button;

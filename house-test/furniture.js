@@ -1,8 +1,10 @@
-import {floorPoint,roomPoint} from './model.js?v=20261002-desk-v7';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-desk-v7';
-import {paintFurniture} from './furniture-painter.js?v=20261002-desk-v7';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-desk-v7';
-import {deskArtwork} from './desk-art.js?v=20261002-desk-v7';
+import {floorPoint,roomPoint} from './model.js?v=20261002-sofa-accessories-v1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-sofa-accessories-v1';
+import {paintFurniture} from './furniture-painter.js?v=20261002-sofa-accessories-v1';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-sofa-accessories-v1';
+import {deskArtwork} from './desk-art.js?v=20261002-sofa-accessories-v1';
+import {sofaArtwork} from './sofa-art.js?v=20261002-sofa-accessories-v1';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261002-sofa-accessories-v1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -28,6 +30,8 @@ export function furnitureGeometry(id,s){
  const item=FURNITURE[id],size=itemSize(id,s.direction),contact=contactBounds(id,s);
  if(!item||!size||!contact)return null;
  if(item.picture==='desk')return deskArtwork(item,s,contact,size);
+ if(item.picture==='sofa')return sofaArtwork(item,s,contact,size);
+ if(id==='blanket-floor')return blanketFloorArtwork(item,s,contact,size);
  const cells=rectangle(contact),footprint=cells.map(([x,y])=>floorPoint(x,y));
  const reserved=rectangle({...s,...size}).map(([x,y])=>floorPoint(x,y));
  // Only registered picture corners are projected; there are no assembled parts.
@@ -58,7 +62,7 @@ export function furnitureGeometry(id,s){
 export const shelfGeometry=s=>furnitureGeometry('bookshelf',s);
 export function renderFurniture(button,id,s){
  const item=FURNITURE[id],geometry=furnitureGeometry(id,s);if(!geometry)return null;
- Object.assign(button.style,{left:`${geometry.left}px`,top:`${geometry.top}px`,width:`${geometry.width}px`,height:`${geometry.height}px`,zIndex:String(10+Math.round(Math.max(...geometry.footprint.map(p=>p.y))))});
+ Object.assign(button.style,{left:`${geometry.left}px`,top:`${geometry.top}px`,width:`${geometry.width}px`,height:`${geometry.height}px`,zIndex:String(item.layer==='floor'?4:10+Math.round(Math.max(...geometry.footprint.map(p=>p.y))))});
  button.dataset.x=s.x;button.dataset.y=s.y;button.dataset.direction=s.direction;button.dataset.furniture=id;
  const canvas=document.createElement('canvas');canvas.className='furniture-paint';canvas.setAttribute('aria-hidden','true');
  button.dataset.renderState='loading';button.replaceChildren(canvas);

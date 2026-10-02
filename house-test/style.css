@@ -110,3 +110,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .furniture:disabled{pointer-events:none}
 
 #viewport.editing-right .camera{left:10px;right:auto}
+
+.sofa-accessories{border:1px solid #dfd1e8;border-radius:12px;margin:12px 0;padding:8px 12px 10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;min-width:0}
+.sofa-accessories legend{font-size:13px;color:#705780;padding:0 6px}.sofa-accessories label{display:flex;align-items:center;gap:8px;min-height:38px;font-size:12px;cursor:pointer;min-width:0}.sofa-accessories input{width:18px;height:18px;accent-color:#9270b4;flex:none}.sofa-accessories .panel-note{grid-column:1/-1;margin:5px 0 0}.bed-accessory-note{color:#92774d}
+@media(max-width:380px){.sofa-accessories{gap:3px 8px;padding-inline:9px}.sofa-accessories label{font-size:11px;line-height:1.5}}

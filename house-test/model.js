@@ -1,4 +1,5 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261002-desk-v7';
+import {sofaPoseValid} from './sofa-art.js?v=20261002-sofa-accessories-v1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261002-sofa-accessories-v1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -17,7 +18,7 @@ export function furniturePlacements(room){
 export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
  const candidate=normalizePlacement(id,preferred);if(candidate&&canPlaceFurniture(id,candidate,others))return candidate;
  for(const direction of FURNITURE[id]?.directions||[]){const {w,d}=itemSize(id,direction);
-  for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step){const s={direction,x,y};if(canPlaceFurniture(id,s,others))return s;}
+  for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step){const s={direction,x,y};if(canPlaceFurniture(id,s,others))return normalizePlacement(id,s);}
  }
  return null;
 }
@@ -30,7 +31,7 @@ function roomFurniture(raw,shelf,version,addNew){
   const placed=normalizePlacement(id,raw[id]);
   if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
  }
- if(addNew)for(const id of ids)if(!result[id]&&FURNITURE[id].introduced>version){
+ if(addNew)for(const id of ids)if(!result[id]&&FURNITURE[id].autoPlace!==false&&FURNITURE[id].introduced>version){
   const placed=findPlacement(id,others,FURNITURE[id].preferred);if(placed){result[id]=placed;others.push({id,...placed});}
  }
  return result;
@@ -43,22 +44,24 @@ export function normalize(data){
  }
  if(pending.has('0:0'))rooms[0]=pending.get('0:0');pending.delete('0:0');
  let progress=true;while(progress&&rooms.length<35){progress=false;for(const [key,r]of pending)if(canAdd(rooms,r)){rooms.push(r);pending.delete(key);progress=true;}}
- return {version:9,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
+ return {version:11,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
 }
 
 export const ROOM={width:1507,height:1044,top:27,bottom:916,clip:'inset(27px 12px 128px 12px)',assetVersion:3,wallHeight:4.5};
 export const FLOOR={width:10,depth:7,step:.5};
 export const shelfSize=direction=>itemSize('bookshelf',direction);
+export function normalizeAccessories(value){return Object.fromEntries(SOFA_ACCESSORIES.map(({id})=>[id,value?.[id]!==false]));}
 export function normalizePlacement(id,s){
  if(!s||!Number.isFinite(s.x)||!Number.isFinite(s.y))return null;
  const size=itemSize(id,s.direction);if(!size)return null;const {w,d}=size;
  if(w>FLOOR.width||d>FLOOR.depth)return null;
  const snap=value=>Math.round(value/FLOOR.step)*FLOOR.step;
- return {direction:s.direction,x:Math.max(0,Math.min(FLOOR.width-w,snap(s.x))),y:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y)))};
+ return {direction:s.direction,x:Math.max(0,Math.min(FLOOR.width-w,snap(s.x))),y:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y))),...(id==='sofa'?{accessories:normalizeAccessories(s.accessories)}:{})};
 }
 export const normalizeShelf=s=>normalizePlacement('bookshelf',s);
+export function canDrawFurniture(id,s){return !!s&&(id!=='sofa'||sofaPoseValid(s,FURNITURE.sofa));}
 export function canPlaceFurniture(id,s,others=[]){
- const placed=normalizePlacement(id,s);if(!placed||placed.x!==s.x||placed.y!==s.y)return false;
+ const placed=normalizePlacement(id,s);if(!placed||placed.x!==s.x||placed.y!==s.y||!canDrawFurniture(id,placed))return false;
  const size=itemSize(id,s.direction);
  return others.every(other=>{const otherSize=itemSize(other.id,other.direction);return otherSize&&(!(FURNITURE[id].layer===FURNITURE[other.id].layer)||s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y);});
 }

@@ -2,7 +2,20 @@
 // three real view images, and a single approved color/material reference.
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
+export const SOFA_ACCESSORIES=[
+ {id:'cream-floral-cushion',label:'크림 꽃무늬 쿠션'},
+ {id:'sage-cushion',label:'세이지 쿠션'},
+ {id:'peach-cushion',label:'피치 쿠션'},
+ {id:'pink-check-cushion',label:'분홍 체크 쿠션'},
+ {id:'blanket-sofa',label:'분홍 담요 · 소파용'}
+];
 export const FURNITURE={
+ sofa:{label:'라벤더 패브릭 소파',shortLabel:'소파',width:3.5,depth:1.5,height:1.8,depthFill:1,introduced:11,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'sofa',
+  preferred:{direction:'left',x:0,y:3},clearance:'쿠션과 담요는 소파와 함께 움직여요. 방향별 그림이 뒤집히는 위치로는 이동하지 않습니다.'},
+ 'blanket-floor':{label:'분홍 니트 담요 · 바닥용',shortLabel:'바닥 담요',width:2,depth:1.5,height:.05,depthFill:1,introduced:11,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'floor',picture:'accessory',
+  preferred:{direction:'center',x:3.5,y:4.5},clearance:'바닥용 그림이에요. 0.5칸씩 따로 옮길 수 있고 가구 아래에 놓을 수 있어요.'},
  desk:{label:'원목 서랍 책상',shortLabel:'책상',width:3,depth:1,height:1.4,depthFill:1,introduced:9,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'desk',
   preferred:{direction:'right',x:9,y:3.5},clearance:'0.5칸씩 이동 · 서랍장과 옆판을 포함한 책상 배치 공간은 다른 가구와 겹칠 수 없어요.'},
