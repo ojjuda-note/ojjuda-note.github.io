@@ -1,8 +1,8 @@
 // Draw approved picture pixels on a 2D canvas; the grid only warps their anchors.
-import {expandBookshelfTriangle} from './bookshelf-art.js?v=20261002-side-table-v2';
+import {expandBookshelfTriangle} from './bookshelf-art.js?v=20261003-studio-v1';
 const imageCache=new Map();
 const compositeCache=new Map();
-const assetVersion=new URL(import.meta.url).searchParams.get('v')||'20261002-side-table-v2';
+const assetVersion=new URL(import.meta.url).searchParams.get('v')||'20261003-studio-v1';
 function loadImage(path){
  if(!imageCache.has(path))imageCache.set(path,new Promise((resolve,reject)=>{
   const image=new Image();
@@ -26,6 +26,9 @@ function triangle(ctx,image,source,target,pad){
  ctx.restore();
 }
 export async function paintFurniture(canvas,geometry){
+ if(geometry.art.kind==='made'){
+  const source=geometry.art.canvas;canvas.width=source.width;canvas.height=source.height;canvas.getContext('2d').drawImage(source,0,0);canvas.dataset.sources='made-item';canvas.dataset.density='2';canvas.parentElement.dataset.renderState='ready';return;
+ }
  const composition=geometry.art.composite;
  const sourceImages=geometry.art.layers?geometry.art.layers.map(layer=>layer.image):composition?composition.layers.map(layer=>layer.image):geometry.art.sprite?[geometry.art.sprite.image]:geometry.art.triangles.map(t=>t.image);
  const paths=[...new Set(sourceImages)],loaded=await Promise.all(paths.map(loadImage));

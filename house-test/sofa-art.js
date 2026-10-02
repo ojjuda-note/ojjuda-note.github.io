@@ -1,9 +1,9 @@
-import {floorPoint,roomPoint} from './model.js?v=20261002-side-table-v2';
-import {SOFA_V1,SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261002-side-table-v2';
-import {projectMesh,validateMesh} from './picture-mesh.js?v=20261002-side-table-v2';
-import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261002-side-table-v2';
-import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261002-side-table-v2';
-export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261002-side-table-v2';
+import {floorPoint,roomPoint} from './model.js?v=20261003-studio-v1';
+import {SOFA_V1,SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261003-studio-v1';
+import {projectMesh,validateMesh} from './picture-mesh.js?v=20261003-studio-v1';
+import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261003-studio-v1';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261003-studio-v1';
+export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261003-studio-v1';
 
 // Cushion support points are authored placements on the seat. A cushion has
 // one unbroken picture plane rather than inheriting the sofa's seat/back seam.
