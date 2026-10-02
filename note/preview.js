@@ -2650,8 +2650,8 @@ function updateAuth() {
   $('#note-account-email').textContent = session?.user?.email || '';
   $('#note-account-name').textContent = session?.user ? accountNickname || '내 계정' : '';
   for (const balance of document.querySelectorAll('[data-note-balance]')) {
-    balance.textContent = worldCoins === null ? '상점' : worldCoins.toLocaleString('ko-KR');
-    balance.closest('a')?.setAttribute('aria-label', worldCoins === null ? '상점' : `상점, 보유 쭈 ${worldCoins.toLocaleString('ko-KR')}`);
+    balance.textContent = worldCoins === null ? '충전' : worldCoins.toLocaleString('ko-KR');
+    balance.closest('a')?.setAttribute('aria-label', worldCoins === null ? '충전' : `충전, 보유 쭈 ${worldCoins.toLocaleString('ko-KR')}`);
   }
   if ($('#mobile-account-status')) $('#mobile-account-status').textContent = accountText;
   if ($('#note-blocks')) $('#note-blocks').hidden = !session?.user;
@@ -3395,6 +3395,8 @@ function installComposerSheet() {
   summary.addEventListener('pointerup', end); summary.addEventListener('pointercancel', end);
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
+window.OjjudaCharge?.install({ client, getUserId: () => session?.user?.id || null, source: 'note',
+  onBalance: (coins, userId) => { if (session?.user?.id === userId) { balanceRun++; worldCoins = coins; updateAuth(); } } });
 window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
