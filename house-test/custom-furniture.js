@@ -1,7 +1,7 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261003-studio-v1';
-import {floorPoint} from './model.js?v=20261003-studio-v1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261003-studio-v1';
-import {listMadeItems} from './custom-store.js?v=20261003-studio-v1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261003-house-fix1';
+import {floorPoint} from './model.js?v=20261003-house-fix1';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261003-house-fix1';
+import {listMadeItems} from './custom-store.js?v=20261003-house-fix1';
 const items=new Map();
 export async function registerMadeItem(record){
  if(!/^made-[a-f0-9]{24}$/.test(record?.id))throw new Error('제작 아이템 번호를 확인해 주세요.');

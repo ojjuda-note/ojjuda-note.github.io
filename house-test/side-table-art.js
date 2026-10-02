@@ -1,6 +1,6 @@
-import {roomPoint} from './model.js?v=20261003-studio-v1';
-import {SIDE_TABLE_V2} from './side-table-registration.js?v=20261003-studio-v1';
-import {registeredArtwork} from './registered-artwork.js?v=20261003-studio-v1';
+import {roomPoint} from './model.js?v=20261003-house-fix1';
+import {SIDE_TABLE_V2} from './side-table-registration.js?v=20261003-house-fix1';
+import {registeredArtwork} from './registered-artwork.js?v=20261003-house-fix1';
 
 const area=points=>points.reduce((sum,p,i)=>{const q=points[(i+1)%points.length];return sum+p.x*q.y-p.y*q.x;},0)/2;
 // Keep each independently drawn face visible; never mirror it across the room.
