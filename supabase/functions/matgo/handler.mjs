@@ -1,5 +1,6 @@
 import { verifyRound } from './verify.mjs';
 import { verifyRound as verifyLegacyRound } from './verify-v1.mjs';
+import { verifyRound as verifyV2Round } from './verify-v2.mjs';
 const origins = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const publicErrors = new Set(['adult_required', 'member_identity_required', 'not_signed_in', 'banned', 'no_account', 'gold_not_empty', 'gold_empty', 'insufficient_zzu', 'paid_confirmation_required', 'round_mismatch']);
@@ -26,7 +27,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
       body = JSON.parse(new TextDecoder().decode(bytes));
       if (!['status', 'start', 'refill', 'settle'].includes(body.action)) throw Error();
-      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2].includes(body.rules_version ?? 1))) throw Error();
+      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3].includes(body.rules_version ?? 1))) throw Error();
       if (body.action === 'refill' && (!uuid.test(body.request_id) || typeof body.paid !== 'boolean')) throw Error();
     } catch { return reply({ error: 'bad_request' }, 400); }
     const get = (path, options) => fetchImpl(url + path, { signal: AbortSignal.timeout(10000), ...options });
@@ -47,7 +48,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
         const snapshot = await rpc('round', { p_round: body.round_id });
         if (snapshot.settled) return reply(snapshot);
         let verified;
-        try { verified = await (body.rules_version === 2 ? verifyRound : verifyLegacyRound)(snapshot.round, body.actions); }
+        try { verified = await (body.rules_version === 3 ? verifyRound : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
         catch { return reply({ error: 'invalid_round' }, 409); }
         return reply(await rpc('settle', { p_round: body.round_id, p_gold: verified.gold, p_first: verified.first, p_carry: verified.carry }));
       }

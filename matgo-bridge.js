@@ -51,7 +51,7 @@
       close.onclick = closeMatgo;
       bar.append(label, close);
       frame = document.createElement('iframe');
-      frame.src = 'games/matgo.html?v=20261003-rules2';
+      frame.src = 'games/matgo.html?v=20261003-rules3';
       frame.title = '오쭈다 맞고';
       frame.style.cssText = 'flex:1;min-height:0;width:100%;border:0';
       overlay.append(bar, frame);

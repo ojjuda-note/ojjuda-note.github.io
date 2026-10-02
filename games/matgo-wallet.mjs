@@ -16,7 +16,7 @@ export function createWallet(access) {
   }
   return {
     request,status:()=>request({action:'status'}),start:()=>request({action:'start'}),
-    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:2}),
+    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:3}),
     refill(paid){
       // Retain the request ID through network failures so retries cannot charge twice.
       if(!pendingRefill||pendingRefill.paid!==paid)pendingRefill={action:'refill',request_id:crypto.randomUUID(),paid};

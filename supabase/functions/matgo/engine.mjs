@@ -46,7 +46,7 @@ class Game {
     for(const cards of Object.values(by)){if(cards.length===3)this.floor.push(cards);else cards.forEach(c=>this.floor.push([c]));}
     this.caps=[[],[]];this.dealBonus=bonus;this.actions=[];
     this.hand=[this.deck.splice(0,10),this.deck.splice(0,10)];this.go=[0,0];this.lastPts=[0,0];this.mult=[1,1];this.shake=[0,0];this.bomb=[0,0];this.turn=this.first;this.over=false;this.log=[];
-    this.ppukCount=[0,0];this.chongtongDeclined=[new Set(),new Set()];
+    this.ppukCount=[0,0];this.normalPlays=[0,0];this.firstPpukGold=[0,0];this.chongtongDeclined=[new Set(),new Set()];
     this.caps[this.first].push(...bonus);return true;
   }
   pendingChongtong(){
@@ -95,6 +95,7 @@ class Game {
     const hand=this.hand[p]; let stole=0, swept=false, ppukGot=false;
     // ----- 0) 보너스패: 바로 먹고 더미에서 한 장 받은 뒤 다시 내 차례 -----
     if(card && card.k==='bonus'){ hand.splice(hand.indexOf(card),1); await this.ui.event('bonusPlay',{p,card}); await this.take(p,[card],true); await this.stealPi(1-p,p,'bonus'); const d=this.deck.shift(); if(d){ hand.push(d); await this.ui.event('draw',{p,card:d}); } await this.ui.event('state'); if(!this.canMove(p))await this.endTurn(p); return; }
+    this.normalPlays[p]++; // 보너스 교환은 첫 차례를 소모하지 않는다.
     // ----- 1) 손패 내기 -----
     let playedStackIdx=-1, handCardStack=null;
     if(bombCards){ // 폭탄: 같은 월 3장 + 바닥 1장
@@ -128,7 +129,10 @@ class Game {
           } else { // 뻑
           handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); handCardStack.ppuk=true; handCardStack.ppukOwner=p; delete handCardStack.pending;
           if(flipBonuses.length){handCardStack.push(...flipBonuses);await this.ui.event('ppukBonus',{p,cards:flipBonuses,stack:handCardStack});}
-          this.ppukCount[p]++;await this.ui.event('ppuk',{p,count:this.ppukCount[p],bonusCount:flipBonuses.length});handCardStack=null; }
+          this.ppukCount[p]++;
+          const firstPpuk=this.normalPlays[p]===1;
+          if(firstPpuk){this.firstPpukGold[p]+=300;this.firstPpukGold[1-p]-=300;}
+          await this.ui.event('ppuk',{p,count:this.ppukCount[p],bonusCount:flipBonuses.length,firstPpuk,money:firstPpuk?300:0});handCardStack=null; }
         } else if(handCardStack.length===3){ // 따닥 (바닥2+손1+뒤집기1)
           handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
         }
@@ -181,10 +185,17 @@ class Game {
     else if(this.canMove(p))this.turn=p;
     else await this.finish(-1);
   }
+  settleGold(winner,money=0){
+    const delta=[...this.firstPpukGold];
+    if(winner>=0){delta[winner]+=money;delta[1-winner]-=money;}
+    const before=[...this.bank];
+    this.bank=this.bank.map((gold,p)=>Math.max(0,gold+delta[p]));
+    return {firstPpukGold:[...this.firstPpukGold],goldDelta:delta,balanceDelta:this.bank.map((gold,p)=>gold-before[p])};
+  }
   async finish(winner,special=null){
     if(this.over)return;
     this.over=true;
-    if(winner<0){ this.carry=Math.min(1024,this.carry*2); this.first=1-this.first; return this.ui.event('nagari'); }
+    if(winner<0){ const settlement=this.settleGold(-1);this.carry=Math.min(1024,this.carry*2);this.first=1-this.first;return this.ui.event('nagari',settlement); }
     const l=1-winner, sw=score(this.caps[winner]), sl=score(this.caps[l]); let pts=sw.pts; const det=[...sw.det]; let mult=1;
     if(special){
       pts=7;det.splice(0,det.length,[special==='chongtong'?'총통':'뻑 3회',7]);
@@ -199,8 +210,8 @@ class Game {
     if(this.mult[winner]>1){ mult*=this.mult[winner]; det.push([this.bomb[winner]||this.shake[winner]?'흔들기·폭탄':'배',`×${this.mult[winner]}`]); }
     if(this.carry>1){ mult*=this.carry; det.push(['나가리 이월',`×${this.carry}`]); }
     }
-    const total=pts*mult, money=total*this.rate; this.bank[winner]+=money; this.bank[l]=Math.max(0,this.bank[l]-money); this.carry=1; this.first=winner;
-    return this.ui.event('end',{winner,pts,mult,total,money,det,special});
+    const total=pts*mult, money=total*this.rate,settlement=this.settleGold(winner,money);this.carry=1;this.first=winner;
+    return this.ui.event('end',{winner,pts,mult,total,money,det,special,...settlement});
   }
 }
 // ================= AI =================
