@@ -1,7 +1,8 @@
-import {floorPoint,roomPoint} from './model.js?v=20261002-bookshelf-v2';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-bookshelf-v2';
-import {paintFurniture} from './furniture-painter.js?v=20261002-bookshelf-v2';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-bookshelf-v2';
+import {floorPoint,roomPoint} from './model.js?v=20261002-desk-v7';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261002-desk-v7';
+import {paintFurniture} from './furniture-painter.js?v=20261002-desk-v7';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261002-desk-v7';
+import {deskArtwork} from './desk-art.js?v=20261002-desk-v7';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -26,6 +27,7 @@ const rectangle=b=>[[b.x,b.y],[b.x+b.w,b.y],[b.x+b.w,b.y+b.d],[b.x,b.y+b.d]];
 export function furnitureGeometry(id,s){
  const item=FURNITURE[id],size=itemSize(id,s.direction),contact=contactBounds(id,s);
  if(!item||!size||!contact)return null;
+ if(item.picture==='desk')return deskArtwork(item,s,contact,size);
  const cells=rectangle(contact),footprint=cells.map(([x,y])=>floorPoint(x,y));
  const reserved=rectangle({...s,...size}).map(([x,y])=>floorPoint(x,y));
  // Only registered picture corners are projected; there are no assembled parts.

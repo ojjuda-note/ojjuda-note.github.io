@@ -3,6 +3,9 @@
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const FURNITURE={
+ desk:{label:'원목 서랍 책상',shortLabel:'책상',width:3,depth:1,height:1.4,depthFill:1,introduced:9,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'desk',
+  preferred:{direction:'right',x:9,y:3.5},clearance:'0.5칸씩 이동 · 서랍장과 옆판을 포함한 책상 배치 공간은 다른 가구와 겹칠 수 없어요.'},
  bookshelf:{
   label:'원목 책장',shortLabel:'책장',width:2,depth:1,height:3.8,depthFill:2/3,
   directions:['left','center','right'],anchor:'rear',layer:'standing',

@@ -1,4 +1,4 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261002-bookshelf-v2';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261002-desk-v7';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -25,6 +25,8 @@ function roomFurniture(raw,shelf,version,addNew){
  const result={},others=shelf?[{id:'bookshelf',...shelf}]:[];
  const ids=Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced);
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const id of ids){
+  // Earlier desks were retired; do not reuse their incompatible saved poses.
+  if(version<8&&id==='desk')continue;
   const placed=normalizePlacement(id,raw[id]);
   if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
  }
@@ -41,7 +43,7 @@ export function normalize(data){
  }
  if(pending.has('0:0'))rooms[0]=pending.get('0:0');pending.delete('0:0');
  let progress=true;while(progress&&rooms.length<35){progress=false;for(const [key,r]of pending)if(canAdd(rooms,r)){rooms.push(r);pending.delete(key);progress=true;}}
- return {version:8,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
+ return {version:9,rooms,diary:typeof data?.diary==='string'?data.diary.slice(0,4000):''};
 }
 
 export const ROOM={width:1507,height:1044,top:27,bottom:916,clip:'inset(27px 12px 128px 12px)',assetVersion:3,wallHeight:4.5};
