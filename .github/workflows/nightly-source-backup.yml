@@ -1,7 +1,9 @@
 name: Checked temporary source backup
 
 on:
-  # 03:00 KST schedule paused; manual run remains available.
+  schedule:
+    - cron: '0 3 * * *'
+      timezone: Asia/Seoul
   workflow_dispatch:
   push:
     branches: [main]
