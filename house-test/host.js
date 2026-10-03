@@ -10,7 +10,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  Object.assign(overlay.style,{position:'fixed',inset:'var(--app-viewport-top,0px) 0 auto',height:'var(--app-viewport-height,100dvh)',paddingBottom:'var(--app-safe-bottom,env(safe-area-inset-bottom,0px))',boxSizing:'border-box',zIndex:'10000',background:'#f8f2fc',display:'flex',flexDirection:'column'});
  const status=document.createElement('div');status.textContent='우리집을 준비하고 있어요…';Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 110px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:12px;padding:6px 10px;min-height:36px;cursor:pointer';
- const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261003-actions2',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261003-cushions3',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  overlay.append(status,close,frame);document.body.append(overlay);document.body.style.overflow='hidden';close.focus();
  let channel=null,closed=false,navigation=null,navigationFrame=0;
  const navigationObserver=preserveWorldNavigation&&!studioOnly&&window.ResizeObserver?new ResizeObserver(scheduleNavigationSpace):null;

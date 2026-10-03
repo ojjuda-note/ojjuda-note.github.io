@@ -1,19 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalize,normalizePlacement,normalizeAccessories,findPlacement,canPlaceFurniture,canDrawFurniture} from '../house-test/model.js?v=20261002-sofa-accessories-v1';
-import {FURNITURE,SOFA_ACCESSORIES} from '../house-test/furniture-catalog.js?v=20261002-sofa-accessories-v1';
+import {normalize,normalizePlacement,normalizeAccessories,findPlacement,canPlaceFurniture,canDrawFurniture} from '../house-test/model.js?v=20261003-cushions3';
+import {FURNITURE,SOFA_ACCESSORIES} from '../house-test/furniture-catalog.js?v=20261003-cushions3';
 
 test('existing rooms and deliberately empty rooms receive no new furniture',()=>{
  const old={version:9,diary:'보존할 기록',rooms:[{x:0,y:0,decor:true,curtains:false,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5}}},{x:1,y:0,decor:false,curtains:false,shelf:null,furniture:{}}]};
- const next=normalize(old);assert.equal(next.version,11);assert.equal(next.diary,old.diary);
+ const next=normalize(old);assert.equal(next.version,12);assert.equal(next.diary,old.diary);
  for(let i=0;i<old.rooms.length;i++){assert.deepEqual(next.rooms[i].furniture,old.rooms[i].furniture);assert.deepEqual(next.rooms[i].shelf,old.rooms[i].shelf);assert.equal(next.rooms[i].curtains,false);}
  for(const version of [9,10,11]){const empty=normalize({version,rooms:[{x:0,y:0,shelf:null,furniture:{},curtains:false}]});assert.deepEqual(empty.rooms[0].furniture,{});assert.equal(empty.rooms[0].shelf,null);}
  assert.deepEqual(Object.keys(normalize({version:8,rooms:[{x:0,y:0,shelf:null,furniture:{}}]}).rooms[0].furniture),['desk']);
  assert.deepEqual(Object.keys(normalize(null).rooms[0].furniture),['desk']);assert.equal(FURNITURE.chair.autoPlace,false,'approved chair is available without adding it to existing or new rooms');
 });
 
-test('sofa accessory visibility has independent IDs and survives normalization, rotation and reload',()=>{
- const sofa=findPlacement('sofa');assert.equal(Object.keys(sofa.accessories).length,5);assert.ok(Object.values(sofa.accessories).every(Boolean));
+test('attached blanket visibility survives normalization, rotation and reload',()=>{
+ const sofa=findPlacement('sofa');assert.equal(Object.keys(sofa.accessories).length,5);assert.equal(sofa.accessories['blanket-sofa'],true);assert(SOFA_ACCESSORIES.filter(v=>v.id!=='blanket-sofa').every(v=>sofa.accessories[v.id]===false));
  sofa.accessories['sage-cushion']=false;sofa.accessories['blanket-sofa']=false;
  const moved=normalizePlacement('sofa',{...sofa,x:.5}),rotated=normalizePlacement('sofa',{...moved,direction:'center',x:3.5,y:0});
  assert.deepEqual(rotated.accessories,sofa.accessories);assert.notEqual(rotated.accessories,sofa.accessories);

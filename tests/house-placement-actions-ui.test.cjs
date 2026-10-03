@@ -6,7 +6,7 @@ const output=path.resolve(process.env.QA_OUTPUT_DIR||path.join(workspace,'house-
 const font=process.env.SOFA_PROOF_FONT||path.join(workspace,'carpet-studio/NotoSansCJKkr-Regular.otf');
 const owner='local-placement-actions-review',key='ojjuda-house-playtest-v1:'+owner,id='side-table';
 const fixture='<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><button id="open">우리집 열기</button><script type="module">import{openHouseTest}from"/house-test/host.js";document.querySelector("#open").onclick=()=>openHouseTest({owner:"'+owner+'",authorized:()=>true});</script></html>';
-const baseline={version:11,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{[id]:{direction:'center',x:3,y:3}}}],diary:'카메라 이동은 저장한 배치를 바꾸지 않아요.'};
+const baseline={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{[id]:{direction:'center',x:3,y:3}}}],diary:'카메라 이동은 저장한 배치를 바꾸지 않아요.'};
 (async()=>{
  fs.mkdirSync(output,{recursive:true});const report={checks:[],quadrants:[],errors:[],screenshots:[]};
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -70,7 +70,7 @@ const baseline={version:11,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,f
   report.checks.push('Floating Install commits the changed pose and Recall removes the selected item');
   // A collision warning must not resize the viewport underneath an active drag.
   await frame.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));await page.setViewportSize({width:1100,height:960});
-  const linked={version:11,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},chair:{direction:'left',x:8.3,y:4.825,attachedTo:'desk'}}}],diary:'충돌 경고가 카메라를 움직이면 안 돼요.'};
+  const linked={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},chair:{direction:'left',x:8.3,y:4.825,attachedTo:'desk'}}}],diary:'충돌 경고가 카메라를 움직이면 안 돼요.'};
   await page.evaluate(({key,linked})=>localStorage.setItem(key,JSON.stringify(linked)),{key,linked});await page.locator('#open').click();await frame.locator('#app').waitFor({state:'visible'});await frame.getByRole('button',{name:'의자 배치',exact:true}).click();await frame.locator('[data-furniture="chair"][data-render-state="ready"]').waitFor();await frame.locator('#overview').click();
   const settle=()=>viewport.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const layout=()=>viewport.evaluate(v=>({viewportHeight:v.getBoundingClientRect().height,panelHeight:document.querySelector('#panel').getBoundingClientRect().height,transform:document.querySelector('#world').style.transform,warningVisible:!document.querySelector('#placement-warning').hidden,directionsWidth:document.querySelector('.placement-panel .directions')?.getBoundingClientRect().width,rangeWidths:[...document.querySelectorAll('.placement-panel input[type="range"]')].map(n=>n.getBoundingClientRect().width)}));
