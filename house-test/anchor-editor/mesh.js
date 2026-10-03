@@ -1,4 +1,4 @@
-import {roomPoint} from './room-guide.js?v=20261003-lamp1';
+import {roomPoint} from './room-guide.js?v=20261004-chairlegs1';
 
 // A mesh deforms the supplied illustration. It never paints replacement shapes,
 // guesses hidden geometry, or treats an image margin as a physical contact.
@@ -7,8 +7,8 @@ const finite=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y);
 const kinds=new Set(['physical','contour','support']);
 const normalizedCache=new WeakMap(),coverageCache=new WeakMap(),buffers=new WeakMap();
 const fail=message=>{throw new RangeError(message);};
-const signature=mesh=>JSON.stringify([mesh?.anchors,mesh?.indices,mesh?.referenceDimensions,mesh?.id,mesh?.label]);
-const copyMesh=mesh=>({...mesh,anchors:mesh.anchors.map(a=>({...a,source:{...a.source},world:{...a.world}})),indices:mesh.indices.map(ids=>[...ids]),...(mesh.referenceDimensions?{referenceDimensions:{...mesh.referenceDimensions}}:{})});
+const signature=mesh=>JSON.stringify([mesh?.anchors,mesh?.indices,mesh?.referenceDimensions,mesh?.id,mesh?.label,mesh?.straightRegions]);
+const copyMesh=mesh=>({...mesh,anchors:mesh.anchors.map(a=>({...a,source:{...a.source},world:{...a.world}})),indices:mesh.indices.map(ids=>[...ids]),...(mesh.referenceDimensions?{referenceDimensions:{...mesh.referenceDimensions}}:{}),...(mesh.straightRegions?{straightRegions:mesh.straightRegions.map(r=>({...r,start:{...r.start},end:{...r.end}}))}:{})});
 function tolerance(points){
  const extent=Math.max(1,Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x)),Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y)));
  return extent*extent*1e-10;
@@ -106,7 +106,15 @@ export function normalizeMesh(mesh){
   if(!d||![d.width,d.depth,d.height].every(v=>Number.isFinite(v)&&v>0))fail('기준 가구의 폭·깊이·높이가 올바르지 않습니다.');
   referenceDimensions={width:d.width,depth:d.depth,height:d.height};
  }
- const result={anchors,indices,...(referenceDimensions?{referenceDimensions}:{}),...(typeof mesh.id==='string'?{id:mesh.id}:{}),...(typeof mesh.label==='string'?{label:mesh.label}:{})};
+ let straightRegions;
+ if(mesh.straightRegions!==undefined){
+  if(!Array.isArray(mesh.straightRegions)||mesh.straightRegions.length>32)fail('직선 부위 정보를 확인하세요.');
+  straightRegions=mesh.straightRegions.map(r=>{
+   if(!finite(r?.start)||!finite(r?.end)||Math.hypot(r.end.x-r.start.x,r.end.y-r.start.y)<1||![r.radius,r.feather].every(n=>Number.isFinite(n)&&n>0&&n<=2000))fail('직선 부위의 끝점과 폭을 확인하세요.');
+   return {start:{...r.start},end:{...r.end},radius:r.radius,feather:r.feather};
+  });
+ }
+ const result={anchors,indices,...(referenceDimensions?{referenceDimensions}:{}),...(straightRegions?{straightRegions}:{}),...(typeof mesh.id==='string'?{id:mesh.id}:{}),...(typeof mesh.label==='string'?{label:mesh.label}:{})};
  normalizedCache.set(mesh,{key,result});return copyMesh(result);
 }
 
@@ -147,6 +155,66 @@ export function projectMesh(mesh,placement={x:0,y:0}){
 export function validateMesh(mesh,placement){
  try{if(placement)projectMesh(mesh,placement);else normalizeMesh(mesh);return {ok:true,error:null};}
  catch(error){return {ok:false,error:error.message};}
+}
+
+const applyMatrix=(m,p)=>({x:m[0]*p.x+m[2]*p.y+m[4],y:m[1]*p.x+m[3]*p.y+m[5]});
+function mappedPoint(projected,p){
+ const tri=projected.triangles.find(t=>t.source.every((a,i)=>cross(a,t.source[(i+1)%3],p)>=-1e-6));
+ return tri?applyMatrix(tri.matrix,p):null;
+}
+
+/** Rendering-only correction: a straight piece of wood must not acquire a
+ * hinge when it crosses the original coarse triangle edges. Move the existing
+ * pixels continuously across a shared subdivision, never paste separate legs.
+ * The original geometry remains the authority for placement and contact feet.
+ */
+export function straightenProjectedMesh(projected){
+ if(!projected.straightRegions?.length)return projected;
+ const regions=projected.straightRegions.map(r=>{
+  const a=mappedPoint(projected,r.start),b=mappedPoint(projected,r.end);
+  const dx=r.end.x-r.start.x,dy=r.end.y-r.start.y,length=Math.hypot(dx,dy);
+  return {...r,a,b,dx,dy,length};
+ }).filter(r=>r.a&&r.b);
+ if(!regions.length)return projected;
+ const points=[],lookup=new Map(),indices=[];
+ const vertex=(source,matrix)=>{
+  const key=source.x.toFixed(7)+':'+source.y.toFixed(7);
+  if(lookup.has(key))return lookup.get(key);
+  const target=applyMatrix(matrix,source);let dx=0,dy=0,weight=0;
+  for(const r of regions){
+   const t=((source.x-r.start.x)*r.dx+(source.y-r.start.y)*r.dy)/(r.length*r.length);
+   if(t<=0||t>=1)continue;
+   const distance=Math.abs((source.x-r.start.x)*r.dy-(source.y-r.start.y)*r.dx)/r.length;
+   if(distance>=r.radius+r.feather)continue;
+   const u=Math.max(0,(distance-r.radius)/r.feather),w=1-u*u*(3-2*u);
+   const c={x:r.start.x+t*r.dx,y:r.start.y+t*r.dy},old=mappedPoint(projected,c);
+   if(!old)continue;
+   dx+=w*(r.a.x+t*(r.b.x-r.a.x)-old.x);dy+=w*(r.a.y+t*(r.b.y-r.a.y)-old.y);weight+=w;
+  }
+  // Registered physical/support anchors keep their exact original targets.
+  const anchor=projected.points.some(p=>Math.hypot(p.source.x-source.x,p.source.y-source.y)<1e-6);
+  const delta=anchor?{x:0,y:0}:{x:dx/Math.max(1,weight),y:dy/Math.max(1,weight)};
+  const id=points.length;points.push({source,target,delta});lookup.set(key,id);return id;
+ };
+ const split=(s,m,depth)=>{
+  if(!depth){indices.push(s.map(p=>vertex(p,m)));return;}
+  const mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2}),[a,b,c]=s,ab=mid(a,b),bc=mid(b,c),ca=mid(c,a);
+  for(const sub of [[a,ab,ca],[ab,b,bc],[ca,bc,c],[ab,bc,ca]])split(sub,m,depth-1);
+ };
+ for(const t of projected.triangles)split(t.source,t.matrix,4);
+ // If a formerly valid pose is near a fold, reduce only the visual correction.
+ // Never reject a stored placement or remove its furniture to straighten it.
+ let strength=1,targets;
+ for(;;){
+  targets=points.map(p=>({x:p.target.x+strength*p.delta.x,y:p.target.y+strength*p.delta.y}));
+  if(indices.every(ids=>cross(...ids.map(i=>targets[i]))>1e-10))break;
+  strength/=2;if(strength<1/128)return projected;
+ }
+ const triangles=indices.map(ids=>{
+  const source=ids.map(i=>points[i].source),target=ids.map(i=>targets[i]);
+  return {indices:ids,source,target,matrix:triangleTransform(source,target)};
+ });
+ return {...projected,triangles,renderPoints:targets,straightStrength:strength};
 }
 
 function imagePixels(image){
@@ -225,7 +293,8 @@ export function drawMesh(ctx,image,mesh,placement,options={}){
   projected=projectMesh(mesh,placement);
   if(options.requireCoverage!==false&&!meshCoverage(image,mesh).ok)return false;
  }catch{return false;}
- const buffer=isolatedBuffer(ctx,projected.points.map(p=>p.target));if(!buffer)return false;
+ projected=straightenProjectedMesh(projected);
+ const buffer=isolatedBuffer(ctx,projected.renderPoints||projected.points.map(p=>p.target));if(!buffer)return false;
  const painter=buffer.painter;
  try{
   for(const triangle of projected.triangles){
