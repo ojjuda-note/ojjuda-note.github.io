@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/admin/connections.css?v=20260929-1">
 <script src="/admin/connections.js?v=20260929-1" defer></script>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#FF765F">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
@@ -92,7 +92,9 @@
 <script src="/world-spot-game.js?v=20261003-mobile2"></script>
 <style>body.matgo-open{overflow:hidden}</style>
 <script src="/matgo-access.js?v=20261003-adult1"></script>
-<script src="/matgo-bridge.js?v=20261003-online1"></script>
+<script src="/matgo-bridge.js?v=20261003-safe1"></script>
+<link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe1">
+<script src="/mobile-viewport.js?v=20261003-safe1" defer></script>
 </head>
 <body>
 <div id="app"></div>
@@ -472,13 +474,13 @@ sr['house-construction']=()=>M('우리집은 공사 중이에요. 준비가 끝�
 sr['furniture-studio']=async function(){
  if(!D.online||D.isAdmin!==true||!D.user?.id)return M('관리자 모드에서 열어 주세요.');
  const owner=D.user.id;
- try{const {openFurnitureStudio}=await import('./house-test/studio-host.js?v=20261003-chairdesk1');openFurnitureStudio({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
+ try{const {openFurnitureStudio}=await import('./house-test/studio-host.js?v=20261003-safe1');openFurnitureStudio({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
  catch(error){console.error(error);M('제작실을 불러오지 못했어요. 잠시 후 다시 열어 주세요.');}
 };
 sr['house-playtest']=async function(){
   if(!D.online||D.isAdmin!==true||!D.user?.id)return M('관리자 모드에서 열어 주세요.');
   const owner=D.user.id;
-  try{const {openHouseTest}=await import('./house-test/host.js?v=20261003-chairdesk1');openHouseTest({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
+  try{const {openHouseTest}=await import('./house-test/host.js?v=20261003-safe1');openHouseTest({owner,authorized:()=>D.online&&D.isAdmin===true&&D.user?.id===owner});}
   catch(error){console.error(error);M('테스트 화면을 불러오지 못했어요. 다시 열어 주세요.');}
 };
 

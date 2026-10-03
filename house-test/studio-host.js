@@ -1,13 +1,13 @@
 import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261003-chairdesk1';
 import {validateRuntime} from './anchor-editor/runtime.js?v=20261003-chairdesk1';
-import {openHouseTest} from './host.js?v=20261003-chairdesk1';
+import {openHouseTest} from './host.js?v=20261003-safe1';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
  activeClose?.();const oldOverflow=document.body.style.overflow,lastFocus=document.activeElement;
  const overlay=document.createElement('div');overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','가구 제작실');
- overlay.style.cssText='position:fixed;inset:0;z-index:10000;background:#fffaf4;display:flex;flex-direction:column';
- const top=document.createElement('div');top.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 12px;background:#fffaf4;color:#65526f;font-size:12px';
+ overlay.style.cssText='position:fixed;inset:var(--app-viewport-top,0px) 0 auto;height:var(--app-viewport-height,100dvh);padding-bottom:var(--app-safe-bottom,env(safe-area-inset-bottom,0px));box-sizing:border-box;z-index:10000;background:#fffaf4;display:flex;flex-direction:column';
+ const top=document.createElement('div');top.style.cssText='display:flex;gap:10px;align-items:center;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;flex-shrink:0;background:#fffaf4;color:#65526f;font-size:12px';
  const status=document.createElement('span');status.textContent='가구 제작실을 준비하고 있어요…';status.style.flex='1';
  const close=document.createElement('button');close.textContent='제작실 닫기';close.style.cssText='min-height:36px;border:1px solid #dbcee5;border-radius:10px;padding:6px 10px;background:#fffaf4;color:#65526f;cursor:pointer';
  const frame=document.createElement('iframe');frame.title='관리자 가구 제작실';frame.src=new URL('./anchor-editor/index.html?v=20261003-chairdesk1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
