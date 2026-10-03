@@ -88,7 +88,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   // Park the bottom screws back on the empty board, then swing the middle plate onto one.
   const bottom=await page.evaluate(()=>screwWorld.current().game.state.level.screws.slice(4).map(s=>s.startHole));
   const touchMove=async(id,to)=>{
-   const points=await page.evaluate(({id,to})=>{const level=screwWorld.current().game.state.level;return[OjjudaScrewGames.screwPoint(level.screws[id]),level.holes[to]];},{id,to});
+   const points=await page.evaluate(({id,to})=>{const level=screwWorld.current().game.state.level;const game=screwWorld.current().game;return[game.screenPoint(level.screws[id].hole),game.screenPoint(level.holes[to])];},{id,to});
    for(const q of points)await touch(q);
    await page.evaluate(()=>{const r=screwWorld.current();for(let n=0;n<180;n++)r.game.update(.05);r.game.draw(r.ctx);});
    assert.equal(await page.evaluate(id=>screwWorld.current().game.state.level.screws[id].hole.id,id),to);
@@ -167,7 +167,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    }
   }
   assert.equal(new Set(outlines).size,7,'seven different outer metal shapes render on mobile');
-  for(const [stage,width,pieces] of [[501,320,16],[1000,390,18]]){
+  for(const [stage,width,pieces] of [[501,320,28],[1000,390,50]]){
    await page.setViewportSize({width,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
    await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
@@ -183,6 +183,17 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),1,'small advanced pieces can be selected and released by phone taps');
    await touch({x:297,y:514});
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),0,'retry starts the advanced stage again');
+   if(stage===1000){
+    await touch({x:240,y:26});assert.ok(await page.evaluate(()=>screwWorld.current().game.state.view.zoom>2),'dense puzzles can enlarge the screws');
+    const beforePan=await page.evaluate(()=>{const s=screwWorld.current().game.state;return{...s.view,moves:s.moves};}),box=await canvas.boundingBox();
+    await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down();await page.mouse.move(box.x+box.width*.3,box.y+box.height*.45,{steps:8});await page.mouse.up();
+    const afterPan=await page.evaluate(()=>{const s=screwWorld.current().game.state;return{...s.view,moves:s.moves};});
+    assert.notEqual(afterPan.x,beforePan.x);assert.notEqual(afterPan.y,beforePan.y);assert.equal(afterPan.moves,beforePan.moves,'panning never spends a move');
+    const visible=await page.evaluate(()=>{const g=screwWorld.current().game;return g.state.level.screws.find(s=>{const q=g.screenPoint(s.hole);return q.x>50&&q.x<310&&q.y>180&&q.y<460&&OjjudaScrewGames.canUnscrew(g.state.level,s);}).id;});
+    await touchMove(visible,0);assert.equal(await page.evaluate(()=>screwWorld.current().game.state.moves),1,'an enlarged screw relocates through real phone taps');
+    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-stage-1000-zoom.png')});
+    await touch({x:240,y:26});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.view.zoom),1);
+   }
   }
   if(qa){
    await page.evaluate(()=>{const r=screwWorld.current();r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'34');r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.draw(r.ctx);});
@@ -247,6 +258,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    for(const q of [s.hole,h]){g.onDown(q.x,q.y);g.onUp(q.x,q.y);}for(let i=0;i<20;i++)g.update(.05);return g.state.moves;
   }),1,'image failure leaves the game playable');await broken.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, seven outlines, 18-piece phone input, stage persistence, screw collisions, retry, removed undo and preserved box progress.');
+  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, seven outlines, 100-screw phone input and zoom/pan, stage persistence, screw collisions, retry, removed undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
