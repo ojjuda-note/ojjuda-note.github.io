@@ -5,7 +5,7 @@
 <body><section id="locked"><h1>우리집</h1><p>월드에 로그인한 뒤 우리집을 열어 주세요.</p><a href="/world.html">월드로 돌아가기</a></section>
 <main id="app" hidden>
 <header><button id="exit" aria-label="우리집 닫기">‹ <span>월드</span></button><h1>우리집 <small hidden>미리보기</small></h1><button id="expand" aria-pressed="false">＋ 집 확장</button></header>
-<div class="scene-heading"><span id="room-name">거실</span><span id="period-name">낮</span><span id="room-count">1 / 35개 방</span></div>
+<div class="scene-heading"><span id="room-name">거실</span><span id="period-name">낮</span><span id="room-count">1 / 35개 방</span><button id="empty-room-toggle" type="button" aria-pressed="false" aria-controls="world" hidden>빈방 보기</button></div>
 <section id="viewport" aria-label="아파트 단면, 드래그로 이동하고 두 손가락으로 확대" tabindex="0"><div id="world"></div><div class="help" id="hint">방을 끌어 둘러보세요</div><div id="placement-actions" class="placement-actions" role="group" aria-label="선택한 아이템" hidden><button id="placement-recall" type="button">회수</button><button id="placement-done" type="button">설치</button></div></section>
 <div class="camera"><button id="zoom-out" aria-label="축소">−</button><button id="zoom-in" aria-label="확대">＋</button><button id="home-view">현재 방</button><button id="overview">전체 보기</button></div>
 <section id="panel" aria-label="선택한 기능"><div class="panel-head"><nav id="panel-tabs" class="panel-tabs" aria-label="우리집 메뉴"><button data-tab="diary" aria-pressed="true"><span aria-hidden="true">▤</span>내 기록</button><button data-tab="room" aria-pressed="false"><span aria-hidden="true">▧</span>방 꾸미기</button></nav><h2 id="panel-title" hidden>오늘의 기록</h2></div><div id="panel-body"></div></section>
