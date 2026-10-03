@@ -191,3 +191,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
  #panel,#panel.placement-panel {grid-column:2;grid-row:2/5;position:static;width:auto;height:auto;max-height:none;margin:0;border-radius:18px 0 0 0;padding:10px 12px;}
  .item-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
 }
+
+/* Empty-room inspection only hides artwork; saved placements stay intact. */
+#empty-room-toggle {flex:none;min-height:28px;padding:3px 7px;border-radius:8px;font-size:11px;line-height:20px;white-space:nowrap;}
+.empty-room-preview .room.selected > .furniture,.empty-room-preview .room.selected > .curtains {visibility:hidden;pointer-events:none;}
