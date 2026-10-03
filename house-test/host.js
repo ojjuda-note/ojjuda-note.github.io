@@ -11,7 +11,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  Object.assign(overlay.style,{position:'fixed',inset:'var(--app-viewport-top,0px) 0 auto',height:'var(--app-viewport-height,100dvh)',paddingBottom:'var(--app-safe-bottom,env(safe-area-inset-bottom,0px))',boxSizing:'border-box',zIndex:'10000',background:'#f8f2fc',display:'flex',flexDirection:'column'});
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
- const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261004-chairleg2',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261004-chairfront1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  const loading=createHouseEntryLoading();frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  overlay.append(status,frame,loading,close);document.body.append(overlay);document.body.style.overflow='hidden';close.focus();
  let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{};
@@ -52,7 +52,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-studioperf2').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-chairfront1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   frame.contentWindow.postMessage({type:'ojjuda-house-test-init',owner,preview,studioItem,canUseStudio},location.origin,[channel.port2]);

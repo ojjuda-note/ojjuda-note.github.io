@@ -47,7 +47,9 @@ test('ordinary furniture is unchanged; straight-region metadata validates and co
 
 test('left near rear leg follows its own seat-to-foot edge at the reported pose and while moving',async()=>{
  const {recoverKnownChairProject}=await import('../house-test/chair-straight-regions.js');
- const v=fixed.views.left,previous=structuredClone(v.mesh),added=[[3,7,6],[3,8,7]];
+ // Isolate the earlier rear-leg change from the later front-foot fade.
+ const v=structuredClone(fixed.views.left);delete v.mesh.straightRegions[3].endFade;
+ const previous=structuredClone(v.mesh),added=[[3,7,6],[3,8,7]];
  previous.indices=previous.indices.filter(t=>!added.some(q=>q.every(i=>t.includes(i))));
  previous.indices.push([6,3,8],[7,6,8]);
  const r=v.mesh.straightRegions[1];
@@ -68,8 +70,31 @@ test('left near rear leg follows its own seat-to-foot edge at the reported pose 
  const area=m=>projectMesh(m,pose).triangles.reduce((sum,t)=>sum+cross(...t.source)/2,0);
  assert(Math.abs(area(previous)-area(v.mesh))<1e-6,'the same source picture is fully covered');
  const oldSaved={name:'등받이 수정 후 저장한 의자',source:{data:v.drawings[0].data},placement:pose,mesh:previous};
- assert.deepEqual((await recoverKnownChairProject(oldSaved)).mesh,v.mesh,'previously saved backrest correction also receives the one-leg correction');
+ assert.deepEqual((await recoverKnownChairProject(oldSaved)).mesh,fixed.views.left.mesh,'previously saved backrest correction receives the current chair corrections');
  console.log('one rear leg:',{positions,before:bend(before,r),after:bend(after,r)});
+});
+
+test('left near front leg blends into its fixed foot without weakening the whole shaft',()=>{
+ const v=fixed.views.left,previous=structuredClone(v.mesh);delete previous.straightRegions[3].endFade;
+ const pose={...v.placement,x:4.5,y:5.5},r=v.mesh.straightRegions[3];
+ const before=straightenProjectedMesh(projectMesh(previous,pose)),after=straightenProjectedMesh(projectMesh(v.mesh,pose));
+ assert.equal(before.straightStrength,.5);assert.equal(after.straightStrength,1);
+ assert(bend(before,r)>2.9);assert(bend(after,r)<.5,'reported front shaft loses its visible middle kink');
+ let positions=0;
+ for(let x=0;x<=8.5;x+=.5)for(let y=0;y<=5.5;y+=.5){
+  const p={...v.placement,x,y};let old;
+  try{old=projectMesh(previous,p);}catch{continue;}
+  const a=straightenProjectedMesh(old),b=straightenProjectedMesh(projectMesh(v.mesh,p));positions++;
+  assert.deepEqual(b.points,a.points,'every registered point and foot stays on its room point');
+  assert(b.triangles.every(t=>cross(...t.target)>0),'the original fold guard remains active');
+  assert(bend(b,r)<=bend(a,r)+.1,'no previous moving position acquires a worse shaft bend');
+  for(const i of [0,1,2])assert(Math.abs(bend(a,v.mesh.straightRegions[i])-bend(b,v.mesh.straightRegions[i]))<1e-7,'other three shafts keep their correction');
+ }
+ assert.equal(positions,108);
+ const copy=normalizeMesh(v.mesh);assert.equal(copy.straightRegions[3].endFade,120);
+ copy.straightRegions[3].endFade=0;assert.throws(()=>normalizeMesh(copy),'invalid saved fade cannot enter the renderer');
+ assert.equal(normalizeMesh(v.mesh).straightRegions[3].endFade,120,'normalization copies the metadata');
+ console.log('one front leg:',{positions,before:bend(before,r),after:bend(after,r)});
 });
 
 test('back posts use the back panel at the reported placement, with unchanged feet and source coverage',()=>{
