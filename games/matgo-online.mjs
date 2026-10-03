@@ -12,7 +12,7 @@ function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clear
 function closeDialog(){dialog?.remove();dialog=null;dialogKey='';}
 function modal(html,handlers={},key='manual'){
   if(dialogKey===key)return;
-  closeDialog();dialog=document.createElement('div');dialog.className='dialog';dialog.role='dialog';dialog.setAttribute('aria-modal','true');dialog.innerHTML='<section>'+html+'</section>';dialogKey=key;document.body.appendChild(dialog);
+  closeDialog();dialog=document.createElement('div');dialog.className='dialog';dialog.role='dialog';dialog.setAttribute('aria-modal','true');dialog.innerHTML='<section'+(key.startsWith('result:')?' class="result-card"':'')+'>'+html+'</section>';dialogKey=key;document.body.appendChild(dialog);
   for(const [id,handler] of Object.entries(handlers)){const el=dialog.querySelector('#'+id);if(el)el.onclick=()=>{if((key.startsWith('turn:')||key==='pick')&&(busy||pendingMove))return;closeDialog();handler();};}
   dialog.querySelector('button,input')?.focus({preventScroll:true});
 }
@@ -47,7 +47,7 @@ function showNextEvent(){
 }
 function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;location.replace('./matgo.html?v=20261003-text1');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;location.replace('./matgo.html?v=20261003-exit1');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const changed=room?.id!==next.id||room?.round!==next.round;
   if(changed){cursor=0;promptKey='';closeDialog();clearEvents();}
@@ -94,7 +94,7 @@ function showLobby(){
   $('#content').innerHTML=`<section class="lobby"><div class="fan" aria-hidden="true">${[CARDS[0],CARDS[8],CARDS[28]].map(cardSVG).join('')}</div><div class="eyebrow">MEMBER MATCH</div><h2>함께 치는 맞고</h2><p>다른 회원과 한 판 어때요?<br>친구와는 방 코드를 나눠 입장하세요.</p><div class="actions"><button id="quick" class="btn gold"><span>빠른 대결</span><small>상대가 없으면 컴퓨터 대결 →</small></button><button id="create" class="btn ghost"><span>방 만들기</span><small>친구와 둘이서 →</small></button></div><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" pattern="[A-Fa-f0-9]{8}" required><button class="btn" id="join">입장</button></form><button id="solo" class="text-button">컴퓨터와 대결하기</button><p class="fine">만 19세 이상 · 1점 = 100골드<br>차례마다 15초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></section>`;
   $('#quick').onclick=()=>enter('quick');$('#create').onclick=()=>enter('create');
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=$('#room-code').value.trim().toUpperCase();if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261003-text1');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261003-exit1');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -170,9 +170,10 @@ function pick(id){
 function showResult(){
   const me=room.seat,r=room.result,key='result:'+room.id+':'+room.version;
   if(dialogKey===key)return;
+  clearTimeout(toast.timer);$('#toast').hidden=true;
   const delta=r.paidDelta[me],draw=r.type==='nagari',won=r.winner===me;
   const canRematch=!room.departed.some(Boolean)&&room.gold.every(g=>g>0);
-  modal(`<h2>${draw?'나가리':won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big${delta<0?' negative':''}"><span class="gold-amount">${signed(delta)}</span><small class="gold-unit">골드</small></div>${r.det?'<table class="sc">'+r.det.map(([label,value])=>'<tr><td>'+escape(label)+'</td><td>'+escape(value)+(typeof value==='number'?'점':'')+'</td></tr>').join('')+'<tr><td><b>합계</b></td><td><b>'+r.total+'점</b></td></tr></table>':''}${draw?'<p>다음 판은 점수 ×'+r.nextCarry+'</p>':''}${r.firstPpukGold[me]?'<div class="gold-breakdown"><div><span>첫뻑 정산</span> <strong>'+signed(r.firstPpukGold[me])+'골드</strong></div></div>':''}<p class="result-balance">내 골드 <strong>${number(room.gold[me])}</strong></p>${room.departed[me]?'<p class="result-note">중간에 나간 사람은 보상을 받지 않아요.</p>':''}<p class="result-note">정산은 상대의 보유 골드 한도 안에서 이뤄져요.</p><div class="row">${canRematch?'<button class="btn gold" id="rematch" '+(room.ready[me]?'disabled':'')+'>'+(room.ready[me]?'상대 준비 기다리는 중':room.ready[1-me]?'상대 준비 완료 · 다음 판':'한 판 더')+'</button>':''}<button class="btn ghost" id="result-lobby">대기방으로</button></div>`,{rematch:()=>ready(),'result-lobby':()=>leave(false)},key);
+  modal(`<div class="result-details"><h2>${draw?'나가리':won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big${delta<0?' negative':''}"><span class="gold-amount">${signed(delta)}</span><small class="gold-unit">골드</small></div>${r.det?'<table class="sc">'+r.det.map(([label,value])=>'<tr><td>'+escape(label)+'</td><td>'+escape(value)+(typeof value==='number'?'점':'')+'</td></tr>').join('')+'<tr><td><b>합계</b></td><td><b>'+r.total+'점</b></td></tr></table>':''}${draw?'<p>다음 판은 점수 ×'+r.nextCarry+'</p>':''}${r.firstPpukGold[me]?'<div class="gold-breakdown"><div><span>첫뻑 정산</span> <strong>'+signed(r.firstPpukGold[me])+'골드</strong></div></div>':''}<p class="result-balance">내 골드 <strong>${number(room.gold[me])}</strong></p>${room.departed[me]?'<p class="result-note">중간에 나간 사람은 보상을 받지 않아요.</p>':''}<p class="result-note">정산은 상대의 보유 골드 한도 안에서 이뤄져요.</p></div><div class="row result-actions">${canRematch?'<button class="btn gold" id="rematch" '+(room.ready[me]?'disabled':'')+'>'+(room.ready[me]?'상대 준비 기다리는 중':room.ready[1-me]?'상대 준비 완료 · 다음 판':'한 판 더')+'</button>':''}<button class="btn ghost" id="result-lobby">대기방으로</button><button class="btn ghost" id="result-exit">나가기</button></div>`,{rematch:()=>ready(),'result-lobby':()=>leave(false),'result-exit':()=>leave(true)},key);
 }
 async function ready(){if(busy)return;busy=true;try{accept((await rpc({action:'online_ready',room_id:room.id,cursor:0})).room);}catch(e){toast(e.message);}finally{busy=false;updateEnabled();}}
 async function leave(close){

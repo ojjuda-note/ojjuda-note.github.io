@@ -61,3 +61,8 @@ body{overflow-y:auto;overflow-x:hidden}
 .gold-breakdown span{word-break:keep-all}.gold-breakdown strong{font-weight:400;white-space:nowrap;text-align:right}
 .result-balance strong{display:inline-block;white-space:nowrap;color:var(--ink)}
 .modal .result-note,.dialog .result-note{font-size:12px;line-height:1.6}
+
+/* Keep completed-game actions visible while long settlement details scroll. */
+:root .modal>.card.result-card,:root .dialog>section.result-card{display:flex;flex-direction:column;overflow:hidden}
+.result-details{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.result-actions{flex-shrink:0;margin-top:10px;padding-top:12px;border-top:1px solid #e6def2}

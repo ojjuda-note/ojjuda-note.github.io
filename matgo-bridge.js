@@ -60,7 +60,7 @@
       close.onclick = requestClose;
       bar.append(close);
       frame = document.createElement('iframe');
-      frame.src = 'games/matgo-online.html?v=20261003-text1';
+      frame.src = 'games/matgo-online.html?v=20261003-exit1';
       frame.title = '오쭈다 맞고';
       frame.style.cssText = 'flex:1;min-height:0;width:100%;border:0';
       overlay.append(bar, frame);
