@@ -1,4 +1,4 @@
-import {floorPoint,roomPoint} from './model.js?v=20261003-blanket4';
+import {floorPoint,roomPoint} from './model.js?v=20261003-loading5';
 
 const mix=(a,b,t)=>a.map((value,i)=>value+(b[i]-value)*t);
 const quad=(points,u,v)=>mix(mix(points[0],points[1],u),mix(points[3],points[2],u),v);

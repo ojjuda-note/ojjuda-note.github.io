@@ -1,15 +1,15 @@
-import {madeArtwork} from './custom-furniture.js?v=20261003-blanket4';
-import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261003-blanket4';
-import {FURNITURE,itemSize,itemLayer,itemHeight,contactBounds} from './furniture-catalog.js?v=20261003-blanket4';
-import {paintFurniture} from './furniture-painter.js?v=20261003-blanket4';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-blanket4';
-import {sideTableArtwork} from './side-table-art.js?v=20261003-blanket4';
-import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261003-blanket4';
-import {sofaArtwork,sofaForegroundLayers} from './sofa-art.js?v=20261003-blanket4';
-import {sofaAccessoryArtwork,sofaAccessoryLayers} from './sofa-accessory-art.js?v=20261003-blanket4';
-import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261003-blanket4';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261003-blanket4';
-import {isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261003-blanket4';
+import {madeArtwork} from './custom-furniture.js?v=20261003-loading5';
+import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261003-loading5';
+import {FURNITURE,itemSize,itemLayer,itemHeight,contactBounds} from './furniture-catalog.js?v=20261003-loading5';
+import {paintFurniture} from './furniture-painter.js?v=20261003-loading5';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-loading5';
+import {sideTableArtwork} from './side-table-art.js?v=20261003-loading5';
+import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261003-loading5';
+import {sofaArtwork,sofaForegroundLayers} from './sofa-art.js?v=20261003-loading5';
+import {sofaAccessoryArtwork,sofaAccessoryLayers} from './sofa-accessory-art.js?v=20261003-loading5';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261003-loading5';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261003-loading5';
+import {isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261003-loading5';
 
 export function projectiveMap(source,target){
  const rows=[];

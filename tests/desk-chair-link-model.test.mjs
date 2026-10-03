@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,canPlaceFurniture,canDrawFurniture,normalizePlacement,normalize} from '../house-test/model.js?v=20261003-blanket4';
-import {loadBuiltInItems} from '../house-test/custom-furniture.js?v=20261003-blanket4';
-import {itemSize} from '../house-test/furniture-catalog.js?v=20261003-blanket4';
+import {chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,canPlaceFurniture,canDrawFurniture,normalizePlacement,normalize} from '../house-test/model.js?v=20261003-loading5';
+import {loadBuiltInItems} from '../house-test/custom-furniture.js?v=20261003-loading5';
+import {itemSize} from '../house-test/furniture-catalog.js?v=20261003-loading5';
 
 // Geometry tests use the real approved meshes. Image decoding alone is stubbed;
 // painting and actual bitmap decoding remain covered by the built-in UI tests.

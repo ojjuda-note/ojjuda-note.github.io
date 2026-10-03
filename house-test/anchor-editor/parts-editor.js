@@ -1,9 +1,9 @@
-import {createParts,getPartCanvases} from './parts.js?v=20261003-blanket4';
-import {PICTURE_LIBRARY} from './accessory-library.js?v=20261003-blanket4';
-import {validatePolygon} from './cutout.js?v=20261003-blanket4';
-import {nextEmptyPart,suggestObjectRect} from './automation.js?v=20261003-blanket4';
-import {getSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261003-blanket4';
-import {SOFA_CUSHION_SEATS} from '../sofa-cushion-placement.js?v=20261003-blanket4';
+import {createParts,getPartCanvases} from './parts.js?v=20261003-loading5';
+import {PICTURE_LIBRARY} from './accessory-library.js?v=20261003-loading5';
+import {validatePolygon} from './cutout.js?v=20261003-loading5';
+import {nextEmptyPart,suggestObjectRect} from './automation.js?v=20261003-loading5';
+import {getSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261003-loading5';
+import {SOFA_CUSHION_SEATS} from '../sofa-cushion-placement.js?v=20261003-loading5';
 
 const $=id=>document.getElementById(id),clone=value=>JSON.parse(JSON.stringify(value));
 const SLOT_NAMES={surface:'윗면·좌판 위 물건',under:'상판 아래 물건',front:'가구 전체 앞 물건'};
