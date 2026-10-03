@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const M=typeof module!=='undefined'&&module.exports?require('./vendor/matter-0.20.0.min.js'):window.Matter;
-  const BOARD={x:24,y:143,w:312,h:346},STEP=1000/120;
+  const BOARD={x:24,y:143,w:312,h:346},STEP=1000/120,SCREW_RADIUS=13;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const seeded=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
   function worldPoint(p,v){const co=Math.cos(p.angle),si=Math.sin(p.angle);return{x:p.x+v.x*co-v.y*si,y:p.y+v.x*si+v.y*co};}
@@ -69,6 +69,7 @@
     }
     const plates=[],holes=[],screws=[];
     for(const x of L<=3?[90,180,270]:[126,234])holes.push({id:holes.length,x,y:100,owner:null,screw:null});
+    for(const y of [187,237,287])for(const x of [59,301])holes.push({id:holes.length,x,y,owner:null,screw:null,side:true});
     bands.forEach((band,row)=>{
       const left=Math.min(...band.map(v=>v.x)),right=Math.max(...band.map(v=>v.x));
       const midY=(Math.min(...band.map(v=>v.y))+Math.max(...band.map(v=>v.y)))/2;
@@ -94,7 +95,20 @@
   function createPhysics(level){
     const engine=M.Engine.create({positionIterations:12,velocityIterations:8,constraintIterations:8,enableSleeping:false});
     engine.gravity.y=1;engine.gravity.scale=.001;
-    const bodies=new Map(),joints=new Map();let accumulator=0,dead=false;
+    const bodies=new Map(),joints=new Map(),screwBodies=new Map();let accumulator=0,dead=false;
+    const category=p=>1<<(p.id+1),allPlates=level.plates.reduce((mask,p)=>mask|category(p),0);
+    function refreshScrews(){
+      for(const s of level.screws){
+        let body=screwBodies.get(s.id);
+        if(!body){
+          body=M.Bodies.circle(s.hole.x,s.hole.y,SCREW_RADIUS,{label:'screw-'+s.id,isStatic:true,friction:.5,frictionStatic:.8,restitution:.02,slop:.025,collisionFilter:{category:1,mask:allPlates}});
+          screwBodies.set(s.id,body);M.Composite.add(engine.world,body);
+        }
+        M.Body.setPosition(body,{x:s.hole.x,y:s.hole.y});
+        // A screw passes through its own drilled mount, but stops every other plate.
+        body.collisionFilter.mask=level.plates.reduce((mask,p)=>p.pins.some(pin=>pin.hole===s.hole.id)?mask&~category(p):mask,allPlates);
+      }
+    }
     function sync(p){const b=bodies.get(p.id);p.x=b.position.x;p.y=b.position.y;p.angle=b.angle;p.vx=M.Body.getVelocity(b).x;p.vy=M.Body.getVelocity(b).y;p.spin=M.Body.getAngularVelocity(b);}
     function refreshPins(p){
       const b=bodies.get(p.id);if(!b)return;
@@ -109,10 +123,11 @@
       }
     }
     for(const p of level.plates)if(p.state!=='gone'){
-      const b=M.Bodies.fromVertices(p.x,p.y,[p.vertices],{label:'metal-'+p.id,friction:.45,frictionStatic:.7,frictionAir:.012,restitution:.04,density:.002,slop:.025});
+      const b=M.Bodies.fromVertices(p.x,p.y,[p.vertices],{label:'metal-'+p.id,friction:.45,frictionStatic:.7,frictionAir:.012,restitution:.04,density:.002,slop:.025,collisionFilter:{category:category(p),mask:allPlates|1}});
       M.Body.setAngle(b,p.angle);M.Body.setVelocity(b,{x:p.vx||0,y:p.vy||0});M.Body.setAngularVelocity(b,p.spin||0);
       bodies.set(p.id,b);M.Composite.add(engine.world,b);refreshPins(p);
     }
+    refreshScrews();
     function move(screw,to){
       if(dead||to.screw!==null||!canUnscrew(level,screw)||!canAccessHole(level,to))return false;
       const from=screw.hole,changed=new Set();
@@ -122,6 +137,7 @@
       }
       from.screw=null;to.screw=screw.id;screw.hole=to;
       for(const p of changed)refreshPins(p);
+      refreshScrews();
       return true;
     }
     function step(seconds){
@@ -138,10 +154,10 @@
       }
       return gone;
     }
-    function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();}
-    return{step,move,destroy,engine,bodies};
+    function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();screwBodies.clear();}
+    return{step,move,destroy,engine,bodies,screwBodies};
   }
-  const api={BOARD,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,worldPoint,alignedMount,polygonDistance};
+  const api={BOARD,SCREW_RADIUS,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,worldPoint,alignedMount,polygonDistance};
   if(typeof window!=='undefined')window.OjjudaFlatPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

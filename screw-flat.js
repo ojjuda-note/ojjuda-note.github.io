@@ -181,7 +181,7 @@
       c.fillText(st.complete?'그림을 모두 찾았어요!':st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51);
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
-      c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';c.fillText('나사 하나는 회전축 · 판끼리 부딪히고 걸려요',26,133);
+      c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';c.fillText('나사를 축으로 회전 · 판과 나사에 걸려요',26,133);
       c.textAlign='right';c.fillText(`철판 ${st.level.plates.filter(p=>p.state!=='gone').length}장`,333,133);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();drawPicture(c,st.level.theme);
       c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();

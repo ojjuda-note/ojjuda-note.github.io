@@ -14,13 +14,33 @@ const invariant=level=>{
   assert.ok(Math.hypot(q.x-hole.x,q.y-hole.y)<1.5,'a remaining screw stays at its board anchor');
  }
 };
-const relocate=(game,id,target)=>{
+const relocate=(game,id,target,canBeBlocked=false)=>{
  const st=game.state,s=st.level.screws[id];
  const to=target||st.level.holes.find(h=>h.screw===null&&G.bareHole(st.level,h));
  assert.ok(to,`stage ${st.L} has a bare destination for screw ${id}`);assert.ok(G.canUnscrew(st.level,s));
+ game.onKey('Escape');
  const before=s.hole;press(game,before);assert.equal(st.selected,id);assert.equal(s.hole,before,'selection alone does not unscrew');
- press(game,to);assert.ok(st.pending);tick(game);assert.equal(s.hole,to);invariant(st.level);
+ press(game,to);assert.ok(st.pending);tick(game);invariant(st.level);
+ if(canBeBlocked&&s.hole!==to){assert.equal(s.hole,before,'a newly covered destination cancels the move');return false;}
+ assert.equal(s.hole,to);return true;
 };
+// Move a loose plate's supporting screws to accessible holes, just as a player can.
+function clearSupports(game){
+ const st=game.state;
+ for(let attempt=0;attempt<100&&!st.complete;attempt++){
+  const targets=st.level.holes.filter(h=>h.screw===null&&G.bareHole(st.level,h)).sort((a,b)=>a.y-b.y),choices=[];
+  for(const pair of st.physics.engine.pairs.list.filter(pair=>pair.isActive)){
+   let a=pair.bodyA.parent,b=pair.bodyB.parent;if(a.label.startsWith('metal-'))[a,b]=[b,a];
+   if(!a.label.startsWith('screw-')||!b.label.startsWith('metal-'))continue;
+   const screw=st.level.screws[+a.label.slice(6)],plate=st.level.plates[+b.label.slice(6)];
+   if(plate.state!=='loose'||!G.canUnscrew(st.level,screw))continue;
+   for(const target of targets)choices.push({screw,target,rank:target.y<screw.hole.y-20?target.y:1000-target.y});
+  }
+  choices.sort((a,b)=>a.rank-b.rank||b.screw.hole.y-a.screw.hole.y);
+  if(!choices.length)return;
+  relocate(game,choices[0].screw.id,choices[0].target,true);
+ }
+}
 let purchases=0,ends=0;const api={setScore(){},end(){ends++;},buyScrew(){purchases++;}};
 storage.set('ojjuda-screw-stage','37');
 let last=0;
@@ -28,18 +48,24 @@ let last=0;
 for(let stage=1;stage<=500;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
  assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
- assert.equal(st.level.holes.length-st.level.screws.length,stage<=3?3:2);
+ assert.equal(st.level.holes.length-st.level.screws.length,stage<=3?9:8);
+ assert.equal(st.level.holes.filter(h=>h.side).length,6,'side holes leave room to move supporting screws');
+ for(const h of st.level.holes.filter(h=>h.owner===null))assert.ok(G.bareHole(st.level,h),'spare holes start accessible');
  assert.equal(st.level.screws.length,st.level.plates.length*2);
  for(const p of st.level.plates){assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=4,'plates are polygon pieces');}
  assert.deepEqual(st.level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');
  for(let i=0;i<st.level.order.length;i+=2){
-  // Reuse bare holes below the cleared pieces to keep the top two holes free.
-  for(const spare of st.level.holes.filter(h=>h.owner===null).slice(0,2))if(spare.screw!==null){
-   const target=st.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(st.level,h));
+  clearSupports(game);
+  // Park screws at the sides or below cleared pieces; parked screws remain obstacles.
+  for(const spare of st.level.holes.filter(h=>h.owner===null&&!h.side).slice(0,2))if(spare.screw!==null){
+   const parking=()=>st.level.holes.filter(h=>(h.owner!==null||h.side)&&h.screw===null&&G.bareHole(st.level,h)).sort((a,b)=>(a.side?0:1)-(b.side?0:1)||b.y-a.y)[0];
+   let target=parking();if(!target){clearSupports(game);target=parking();}
    assert.ok(target,`stage ${stage} can free its spare holes`);relocate(game,spare.screw,target);
   }
   relocate(game,st.level.order[i],st.level.holes[0]);relocate(game,st.level.order[i+1],st.level.holes[1]);
+  clearSupports(game);
  }
+ for(let wait=0;wait<6&&!st.complete;wait++){tick(game);clearSupports(game);}
  assert.equal(st.complete,true,`stage ${stage} clears under actual gravity and plate collisions`);
  assert.equal(st.physics.bodies.size,0,'only plates that actually left the board are removed');
  assert.equal(st.score,st.level.plates.length*10+stage*10);
@@ -67,6 +93,24 @@ assert.equal(lower.state,'fixed');assert.ok(Math.abs((upper.y+15)-(lower.y-20))<
 assert.ok(sim.engine.pairs.list.some(pair=>pair.isActive),'the two plates have a real collision contact');
 assert.ok(sim.move(level.screws[2],level.holes[2]));assert.ok(sim.move(level.screws[3],level.holes[3]));
 step(sim,4);assert.equal(upper.state,'gone');assert.equal(lower.state,'gone','removing the support releases both plates');sim.destroy();
+
+// The lower metal has gone, but its relocated screws still physically support metal.
+level=fixture();level.plates[1].state='gone';sim=P.createPhysics(level);upper=level.plates[0];
+const parked=[150,210].map(x=>{const h={id:level.holes.length,x,y:300,owner:null,screw:null};level.holes.push(h);return h;});
+for(let i=0;i<2;i++)assert.ok(sim.move(level.screws[2+i],parked[i]));
+assert.equal(sim.bodies.size,1,'there is no lower metal plate in this fixture');
+assert.ok(sim.move(level.screws[0],level.holes[0]));assert.ok(sim.move(level.screws[1],level.holes[1]));
+step(sim,8,.05);
+assert.equal(upper.state,'loose','parked screws support a released plate indefinitely');
+assert.ok(Math.abs(upper.y+15-(300-P.SCREW_RADIUS))<1,'the plate rests on the screw heads');
+for(const s of level.screws.slice(2)){
+ assert.ok(P.canUnscrew(level,s),'a supporting screw remains accessible');
+ assert.ok(sim.engine.pairs.list.some(pair=>pair.isActive&&[pair.bodyA.label,pair.bodyB.label].includes('screw-'+s.id)),'both screw heads have physical contacts');
+ assert.deepEqual(sim.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y});
+}
+assert.ok(sim.move(level.screws[2],level.holes[2]));assert.ok(sim.move(level.screws[3],level.holes[3]));
+step(sim,4,.05);assert.equal(upper.state,'gone','moving the supporting screws removes their old collisions and releases the plate');
+sim.destroy();assert.equal(sim.screwBodies.size,0);assert.equal(sim.engine.world.bodies.length,0);
 
 level=fixture(250);sim=P.createPhysics(level);upper=level.plates[0];
 assert.ok(sim.move(level.screws[0],level.holes[0]));step(sim,3);
@@ -101,10 +145,12 @@ relocate(game,second);assert.equal(plate.state,'gone');assert.equal(st.score,10)
 press(game,{x:82,y:514});assert.equal(plate.state,'hinged');assert.equal(st.score,0);
 assert.deepEqual({x:plate.x,y:plate.y,angle:plate.angle,vx:plate.vx,vy:plate.vy,spin:plate.spin},before,'undo restores position, rotation and velocity');
 invariant(st.level);assert.equal(st.physics.engine.world.constraints.length,1);
+for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y},'undo restores each screw obstacle');
 press(game,st.level.screws[second].hole);press(game,st.level.holes.find(h=>h.screw===null&&G.bareHole(st.level,h)));assert.ok(st.pending);
 press(game,{x:82,y:514});assert.equal(st.pending,null);invariant(st.level);
 press(game,{x:297,y:514});assert.equal(st.score,0);assert.equal(st.moves,0);assert.ok(st.level.plates.every(p=>p.pins.length===2));
+for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y},'retry restores each screw obstacle');
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: all 500 stages finish with real collision physics; fixed screws, hinges, gravity, contact support, blocked rotation, cascading falls, aligned reinsertion, frame-rate stability, physical undo, input safety and independent progress.');
+console.log('PASS: all 500 stages finish with plate and screw collisions; movable support screws, hinges, gravity, cascading falls, aligned reinsertion, frame-rate stability, obstacle undo/retry, input safety and independent progress.');
