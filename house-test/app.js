@@ -1,4 +1,5 @@
-import {createRecordPanel} from './record-panel.js?v=20261004-records1';
+import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
+import {createRecordPanel} from './record-panel.js?v=20261004-album1';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261004-chairfarrear1';
 import {icon} from './icons.js?v=20261004-chairfarrear1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261004-chairfarrear1';
@@ -258,8 +259,9 @@ $('#placement-recall').onclick=()=>{if(editing&&!previewMode)removeFurniture();}
 window.addEventListener('message',async e=>{
  if(connecting||initialized||window.parent===window||e.source!==window.parent||e.origin!==location.origin||e.data?.type!=='ojjuda-house-test-init'||!e.ports[0]||typeof e.data.owner!=='string'||!e.data.owner||e.data.owner.length>180)return;
  connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;canUseStudio=e.data.canUseStudio===true;
+ const recordRPC=e.data.hasRecords===true?createRecordRPC(port):null;
  port.onmessage=event=>{
-  if(event.data?.type==='dispose'){clearPlacement();persist();disposed=true;recordsPanel?.dispose();clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}
+  if(event.data?.type==='dispose'){clearPlacement();persist();disposed=true;recordsPanel?.dispose();recordRPC?.dispose();clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}
   else if(event.data?.type==='studio-access'){canUseStudio=event.data.canUseStudio===true;if(initialized&&!previewMode)renderPanel();}
  };
  try{
@@ -282,7 +284,7 @@ window.addEventListener('message',async e=>{
   // Never normalize a saved room until its owner-specific catalog is ready.
   const missing=stored?.rooms?.some(r=>Object.keys(r.furniture||{}).some(id=>id.startsWith('made-')&&!FURNITURE[id]));
   if(missing)throw new Error('저장한 제작 아이템을 찾지 못했어요. 이 기기의 제작실에서 작업을 다시 적용해 주세요. 기존 배치는 보존됩니다.');
-  state=normalize(stored);recordsPanel=createRecordPanel({owner:e.data.owner,getText:()=>state.diary,changeText:value=>{state.diary=value;save();},saveText:value=>{state.diary=value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');},notify:toast});tab=previewMode||e.data.studioItem?'room':'diary';initialized=true;$('#locked').hidden=true;$('#app').hidden=false;
+  state=normalize(stored);recordsPanel=createRecordPanel({owner:e.data.owner,request:recordRPC?.request,getText:()=>state.diary,changeText:value=>{state.diary=value;save();},saveText:value=>{state.diary=value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');},notify:toast});tab=previewMode||e.data.studioItem?'room':'diary';initialized=true;$('#locked').hidden=true;$('#app').hidden=false;
   if(previewMode){$('#expand').hidden=true;$('nav').hidden=true;$('header h1 small').hidden=false;$('#hint').textContent='미리보기 · 기존 배치는 바뀌지 않아요';}
   renderWorld();renderPanel();focusRoom();updatePeriod();periodTimer=setInterval(updatePeriod,15000);
   const item=previewMode?e.data.preview.id:e.data.studioItem;

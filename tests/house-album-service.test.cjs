@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const fixture=require('./fixtures/house-album.cjs'),root=path.resolve(__dirname,'..');
+(async()=>{
+ const {createWorldRecords}=await import('data:text/javascript;base64,'+fs.readFileSync(path.join(root,'house-test/world-records.js')).toString('base64'));
+ const f=fixture();let owner=f.owner,changes=[];
+ const api=createWorldRecords({client:f.client,owner:f.owner,authorized:()=>owner===f.owner,getFriends:()=>[{id:'friend-a',nick:'친구'}],prepareMedia:async file=>({body:file,thumb:file,kind:'image',mime:'image/jpeg'}),onChange:change=>changes.push(change)});
+ const first=await api('list',{kind:'photo'});assert.deepEqual(first.records.map(x=>x.id),['old-photo','note-photo']);assert.equal(first.records[1].visibility,'me');assert(first.records.every(row=>!('path'in row)&&!('thumb_path'in row)));
+ assert.deepEqual(f.calls.find(x=>x.signed).signed,['member-a/thumb.jpg','member-a/note-thumb.jpg']);
+ assert.equal((await api('list',{kind:'video'})).records[0].id,'old-video');assert.equal((await api('list',{kind:'photo',folder:'note-folder'})).records[0].id,'note-photo');
+ await assert.rejects(api('open',{id:'other-photo'}));await api('open',{id:'old-photo'});assert.deepEqual(f.calls.at(-1).signed,['member-a/photo.jpg']);
+ const folder=await api('save-folder',{name:'여행',visibility:'chosen',allowed:['friend-a']});assert.equal(folder.visibility,'chosen');assert.deepEqual(folder.allowed,['friend-a']);
+ await assert.rejects(api('save-folder',{name:'실수',visibility:'chosen',allowed:['stranger']}));
+ await api('save-media',{id:'old-photo',caption:'가족 사진',visibility:'me',folder_id:folder.id});assert.equal(f.db.media[0].folder_id,folder.id);
+ await assert.rejects(api('save-media',{id:'other-photo',caption:'bad',visibility:'all',folder_id:null}));assert.equal(f.db.media.at(-1).visibility,'me');
+ await assert.rejects(api('save-media',{id:'old-photo',visibility:'all',folder_id:'someone-elses-folder'}));
+ const photo=new Blob(['photo'],{type:'image/jpeg'});await api('upload',{file:photo,kind:'photo',folder_id:'note-folder'});const added=f.db.media.at(-1);assert.equal(added.user_id,f.owner);assert.equal(added.visibility,'me');assert.equal(added.folder_id,'note-folder');assert(f.files.has(added.path));assert(f.files.has(added.thumb_path));
+ const count=f.db.media.length,fileCount=f.files.size;f.state.fail='thumb';await assert.rejects(api('upload',{file:photo,kind:'photo'}));assert.equal(f.db.media.length,count);assert.equal(f.files.size,fileCount,'thumbnail failure removes only the new original');
+ f.state.fail='insert';await assert.rejects(api('upload',{file:photo,kind:'photo'}));assert.equal(f.files.size,fileCount,'confirmed insert failure rolls back new files');f.state.fail=null;
+ for(const call of f.calls.filter(x=>x.table&&x.operation!=='insert'))assert(call.filters.some(([key,value])=>key==='user_id'&&value===f.owner),'every read/update is owner scoped');
+ for(const call of f.calls.filter(x=>x.operation==='insert'))assert.equal(call.values.user_id,f.owner);
+ let release;f.state.pause=new Promise(resolve=>release=resolve);const delayed=api('list',{kind:'photo'});await Promise.resolve();owner='member-b';release();await assert.rejects(delayed);await assert.rejects(api('save-folder',{name:'blocked',visibility:'all'}));assert.equal(f.db.media.find(x=>x.id==='other-photo').caption,'다른 계정 사진');
+ console.log('PASS: restored server album, owner scoping, chosen privacy, folder moves, upload rollback, account revocation');
+})().catch(error=>{console.error(error);process.exitCode=1;});
