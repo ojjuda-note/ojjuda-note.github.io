@@ -12,7 +12,7 @@ await page.goto('https://fixture.test/fixture');await page.evaluate(()=>auth.adm
 const studio=()=>page.frames().find(f=>f.url().includes('/anchor-editor/index.html'));const home=()=>page.frames().find(f=>/house-test\/index.html/.test(f.url()));
 await page.frameLocator('iframe').locator('#studio-editor').waitFor({state:'visible'});let f=studio();console.log('studio open');assert(await f.locator('#studio-apply').isDisabled());await f.locator('#studio-side-table').click();await f.waitForFunction(()=>!document.querySelector('#studio-apply').disabled,{},{timeout:30000});console.log('project ready');
 await f.evaluate(()=>document.fonts.ready);await page.screenshot({path:'/tmp/studio-desktop.png'});
-const bundle=await f.evaluate(async()=>{const a=await import('./app.js?v=20261004-chairback1');return a.studioBundle()});
+const bundle=await f.evaluate(async()=>{const a=await import((await(await fetch('./entry.js')).text()).match(/import\('(.\/app\.js[^']*)'\)/)[1]);return a.studioBundle()});
 assert.equal(bundle.project.complete,true);
 await f.evaluate(async runtime=>{const {validateRuntime}=await import('./runtime.js?v=20261004-chairback1');runtime.views.left.drawings[0].data='https://example.test/not-a-png';let rejected=false;try{validateRuntime(runtime);}catch{rejected=true;}if(!rejected)throw new Error('External image URL must be rejected');},structuredClone(bundle.runtime));
 const before=await page.evaluate(()=>JSON.stringify({...localStorage}));await f.locator('#studio-preview').click();

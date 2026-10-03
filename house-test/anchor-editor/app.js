@@ -17,7 +17,9 @@ import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from
 import {mountSimpleEditor} from './simple-editor.js?v=20261004-chairback1';
 
 const $=id=>document.getElementById(id);
-const clone=value=>JSON.parse(JSON.stringify(value));
+// Editable state is a tree of JSON values. Copy its mutable containers while
+// reusing immutable strings, so every undo step does not duplicate image data.
+const clone=value=>Array.isArray(value)?value.map(clone):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([key,item])=>[key,clone(item)])):value;
 const freshLayer=(n=1)=>({id:crypto.randomUUID?.()||String(Date.now()+n),name:`그림 영역 ${n}`,source:[],target:[],binding:null});
 const DIRECTIONS=['left','center','right'];
 const LABELS={left:'좌측',center:'정면',right:'우측'};

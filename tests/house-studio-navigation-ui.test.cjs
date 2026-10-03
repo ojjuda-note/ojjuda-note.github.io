@@ -15,7 +15,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await page.frameLocator('iframe').locator('#studio-editor').waitFor({state:'visible'});
   const original=studio();await original.locator('#studio-side-table').click();await original.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
   await original.evaluate(async()=>{
-   await(await import('./app.js?v=20261004-chairback1')).studioFlush();
+   await(await import((await(await fetch('./entry.js')).text()).match(/import\('(.\/app\.js[^']*)'\)/)[1])).studioFlush();
    window.originalPut=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(){throw new DOMException('Simulated full disk','QuotaExceededError');};
    const input=document.querySelector('#furniture-name');input.value='아직 저장하지 못한 최신 작업';input.dispatchEvent(new Event('change',{bubbles:true}));
   });
@@ -44,7 +44,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await studio().locator('#draft-resume').click();
   await studio().waitForFunction(()=>document.querySelector('#furniture-name').value==='아직 저장하지 못한 최신 작업');
   assert.deepEqual([...new Set(entryRequests.map(r=>r.path))].sort(),[...entries].sort(),'both navigation directions use the actual house and studio entries');
-  assert(entryRequests.every(r=>r.version===(r.path.endsWith('/anchor-editor/index.html')?'20261004-chairback1':'20261004-records1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
+  assert(entryRequests.every(r=>r.version===(r.path==='/house-test/anchor-editor/index.html'?'20261004-studioperf1':'20261004-records1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('HOUSE STUDIO NAVIGATION PASS');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
