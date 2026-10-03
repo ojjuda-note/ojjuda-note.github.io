@@ -1,8 +1,8 @@
-# 우리집 관리자 테스트
+# 우리집
 
 Furniture workflow: read all nine rules in [FURNITURE_RULES.md](FURNITURE_RULES.md) before generating each item. Before every item, crop and enlarge its actual area in the approved reference and inspect its shape, proportions, thickness, leg/handle/underside construction, color and grain. Use that enlarged reference directly; never substitute a generic furniture design. Compare the new artwork with the enlarged original before registering anchors in the studio. Keep books and cups as separate editable assets. After authoring, place it in the actual room and check the relevant representative placements against those rules, including overlap, interpenetration and reserved-space collisions with other items, show the result and deploy after user approval. Keep verification minimal: add focused checks only for observed problems or changed behavior, and do not repeat the exhaustive placement matrix for every furniture asset. Existing required deployment checks still apply.
 
-World → 관리자 모드 → **새 우리집 테스트**. Public houses remain under construction; the shop stays removed.
+World → **우리집** opens the signed-in member’s own rooms. Furniture creation remains under World → 관리자 모드 → **가구 제작실**; the shop stays removed.
 
 The approved empty-room shell is 1507×1044, with both side walls extended all the way to the front floor corners, a rectangular ceiling light, cream walls, oak floor and lavender trim. The curtain and the newly extracted reference bookshelf are independent alpha layers. Furniture rules are documented in [FURNITURE_RULES.md](FURNITURE_RULES.md) and enforced through the shared catalog, model and renderer. Default furniture: ivory curtains, one right-wall bookshelf and the approved three-view drawer desk. Other furniture remains future work. Retired avatar and pet prototypes have been removed. The preview contains the approved room, independently placed furniture, and diary.
 
@@ -19,7 +19,7 @@ Starter room is centered (0,0); x −2…2, y −3…3, at most 35 rooms. Add on
 
 ## Gate
 
-The iframe remains locked until a same-origin parent passes a MessagePort. World checks its administrator identity first; the host rechecks every 400 ms and on load/messages, and closes on account/role loss. No access tokens enter the frame. This is an administrator UI preview over public static art, not server access control.
+The iframe remains locked until a same-origin parent passes a MessagePort. World checks the signed-in owner first; the host rechecks every 400 ms and on load/messages, and closes on logout/account change. The ordinary house never grants furniture-studio access. Studio entry checks administrator identity separately, including preview, return navigation and role loss. No access tokens enter the frame. These are UI gates over account-scoped local data and public static art, not server access control.
 
 ## Art
 
@@ -44,12 +44,12 @@ The desk has a shallow upper drawer, a lower drawer pedestal and a solid end pan
 
 방 꾸미기에서 **소파 놓기**를 선택하면 좌측·정면·우측 그림을 바꾸고 0.5칸 단위로 이동할 수 있다. 소파 편집에서 쿠션 네 종류와 소파용 니트 담요를 각각 켜거나 치운다. 소품은 소파 부위 순서에 따라 겹친다. 쿠션은 소파 좌판의 지지 위치에 한 장의 그림 면으로 놓아 형태가 꺾이지 않도록 하고, 소파와 같은 부모 위치·방향을 따라 방 격자에 투영한다. **배치 완료**는 소파와 소품을 함께 저장하고 **취소**는 이전 상태를 유지한다.
 
-**바닥 담요 놓기**는 독립된 바닥 개체이며 가구 아래에 놓을 수 있다. 침대용 담요는 침대 본체를 추가한 뒤 연결할 대상이며 현재 소파·바닥용으로 대체하지 않는다. 새 항목은 목록에서 직접 놓도록 하여 기존 빈방과 가구 배치를 보존한다. 우리집은 기존의 World 관리자 진입 경로를 유지한다.
+**바닥 담요 놓기**는 독립된 바닥 개체이며 가구 아래에 놓을 수 있다. 침대용 담요는 침대 본체를 추가한 뒤 연결할 대상이며 현재 소파·바닥용으로 대체하지 않는다. 새 항목은 목록에서 직접 놓도록 하여 기존 빈방과 가구 배치를 보존한다. 우리집은 World의 일반 회원 진입 경로로 열린다.
 
 
 ## Installed furniture studio — 2026-10-03
 
-User instruction: install the existing maker within Ojjuda. World → 관리자 모드 → **가구 제작실** opens the browser editor. 방 꾸미기 → 방 설정 also links to it. The earlier release exclusions of the maker apply only to those earlier releases.
+User instruction: install the existing maker within Ojjuda. World → 관리자 모드 → **가구 제작실** opens the browser editor. Only houses opened from the administrator studio also show a return link in 방 꾸미기 → 방 설정. The earlier release exclusions of the maker apply only to those earlier releases.
 
 - **만들어 둔 협탁 불러오기** opens the previously completed three-view side table, including its original source pixels and editable grid bindings. Import, cutout/parts editing, original project/PNG/ZIP exports, and account-scoped draft recovery remain available.
 - **우리집에서 미리보기** renders the current complete set in the actual room, through the editor's own Canvas 2D routines and shared projection. Preview never writes room placement or registers an item.
@@ -62,7 +62,7 @@ Focused verification: `node tests/furniture-studio-ui.test.cjs` imports the ship
 
 ## 우리집 충돌·중복 수정 — 2026-10-03
 
-- 제작실에서 연 우리집의 **가구 제작실** 메뉴는 원래 작업창으로 돌아간다. 새 편집창을 만들거나 저장하지 못한 작업을 버리지 않는다. 월드에서 우리집을 직접 연 경우에는 제작실을 새로 연다.
+- 제작실에서 연 우리집의 **가구 제작실** 메뉴는 원래 작업창으로 돌아간다. 새 편집창을 만들거나 저장하지 못한 작업을 버리지 않는다. 일반 우리집에서는 제작실 메뉴를 표시하지 않는다.
 - 가구 배치·치우기, 커튼, 빈방 보기, 방 확장은 기기 저장에 성공해야 확정된다. 실패하면 기존 방 상태와 편집 중 배치를 유지하고 다시 시도할 수 있다.
 - v8 이전 저장의 폐기된 협탁은 새 협탁으로 복원하지 않는다. 현재 협탁·책상 배치와 사용자가 비운 방은 유지한다.
 - 기존 가구 규칙 검사를 현재 카탈로그와 v11 저장 형식에 맞추고 CI에 연결했다. 저장 실패와 제작실 왕복은 두 개의 집중 UI 검사로 확인한다.
@@ -86,3 +86,7 @@ PC에서도 고정 배율 0.045까지 줄어들던 문제를 수정했다. 방 �
 기준 확대 사진과 비교해 협탁을 기존 크기의 ⅔인 **1 × ⅔ × 0.9**로 교정했다. 기존 그림과 면의 원본 기준점을 보존하고 제작실에서 세 방향을 다시 내보냈다. 협탁 상판은 소파 팔걸이(1.08)의 약 83% 높이다. 내장 협탁과 기본 제작실 작업을 함께 수정하며 사용자의 별도 편집 아이템은 건드리지 않는다.
 
 승인된 **거실 테이블**은 제작실의 등록 runtime을 그대로 사용하는 내장 가구다. 방 꾸미기에서 직접 선택해 놓으며 크기는 **2 × 1.5 × 0.6**이다. 초기 로딩 때 그림 준비를 마친 뒤 저장된 방을 읽어, 자료를 불러오지 못했을 때 기존 테이블 배치를 삭제하지 않는다. 기존 방에 자동 추가하지 않고 사용자 제작 아이템 슬롯을 쓰지 않는다. 책과 컵은 별도로 제작한 그림이며 상판에는 합치지 않았다.
+
+## 우리집 회원 공개 — 2026-10-03
+
+로그인한 회원은 월드의 우리집 건물과 우리집 메뉴에서 자신의 방을 열 수 있다. 가구 제작실은 관리자 모드에서만 연다. 일반 우리집은 제작 권한을 받지 않으며, 메뉴 숨김과 함께 제작실 전환 메시지도 거부한다. 관리자 제작실의 우리집 미리보기와 작업창 복귀는 유지한다. 기존 계정별 기기 저장키와 가구·의자/책상 연결 배치는 그대로 사용한다.

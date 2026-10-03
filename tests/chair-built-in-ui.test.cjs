@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CHAIR_PROOF_DIR||path.resolve(root,'../chair-deploy-proof'),proofFont=process.env.CHAIR_PROOF_FONT;
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/chair-v1.runtime.json')));
 const owner='chair-built-in',key='ojjuda-house-playtest-v1:'+owner;
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-chairdesk1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-housepublic1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{

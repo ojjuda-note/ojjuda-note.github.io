@@ -138,7 +138,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
             const {openHouseTest} = await import('/house-test/host.js');
             window.closeHouse = openHouseTest({owner:'viewport-test',authorized:()=>true});
           });
-          const house = page.frameLocator('iframe[title="새 우리집 플레이 테스트"]');
+          const house = page.frameLocator('iframe[title="우리집"]');
           await house.locator('#app').waitFor({state:'visible'});
           await assertInside(page, house.locator('nav button').last(), area, 'house navigation');
           await snapshot(page, `house-${viewport.width}`);

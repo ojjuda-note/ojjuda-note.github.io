@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body style="overflow:auto"><button id="studio">제작실</button><button id="house">우리집</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-chairdesk1';import{openHouseTest}from'/house-test/host.js?v=20261003-chairdesk1';const options={owner:'navigation-test',authorized:()=>true};document.querySelector('#studio').onclick=()=>openFurnitureStudio(options);document.querySelector('#house').onclick=()=>openHouseTest(options);</script></body></html>`;
+const parent=`<!doctype html><html><body style="overflow:auto"><button id="studio">제작실</button><button id="house">우리집</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-housepublic1';import{openHouseTest}from'/house-test/host.js?v=20261003-housepublic1';const options={owner:'navigation-test',authorized:()=>true,studioAuthorized:()=>true};document.querySelector('#studio').onclick=()=>openFurnitureStudio(options);document.querySelector('#house').onclick=()=>openHouseTest(options);</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -21,7 +21,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   // Returning through the house menu must keep this live editor, even if its
   // latest edits cannot be recovered from IndexedDB.
   for(let i=0;i<2;i++){
-   await original.locator('#studio-home').click();await page.frameLocator('iframe[title="새 우리집 플레이 테스트"]').locator('#app').waitFor({state:'visible'});
+   await original.locator('#studio-home').click();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});
    await house().locator('button[data-category="settings"]').click();await house().getByRole('button',{name:'가구 제작실',exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll('iframe').length===1);
    assert.equal(studio(),original,'house must return to the existing studio frame');

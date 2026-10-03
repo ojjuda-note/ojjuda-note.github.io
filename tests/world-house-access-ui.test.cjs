@@ -1,0 +1,42 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
+const proof=process.env.HOUSE_PUBLIC_PROOF_DIR||path.resolve(root,'../house-public-proof'),proofFont=process.env.HOUSE_PUBLIC_PROOF_FONT;
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+world=world.replace('<script type="module">',`<script>${fs.readFileSync(path.join(root,'world-navigation.js'),'utf8')}</script><script type="module">`);
+const boot=world.indexOf('j1(()=>H());gm(');assert(boot>0);
+world=world.slice(0,boot)+`
+window.houseWorldTest={state:g,auth:D,actions:sr,render:H};
+U.cleanupMedia=async()=>({});U.overview=async()=>({});U.contentFeed=async()=>[];U.chatFeed=async()=>[];
+S={auth:{signOut:async()=>{sessionStorage.setItem('fixture-logged-out','yes');D.user=null;D.online=false;D.isAdmin=false;H();}}};
+gm(()=>{g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
+D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'world-member-a'}:null;D.isAdmin=false;g.tab='friends';H();
+`+world.slice(world.indexOf('</script>',boot));
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
+ try{
+  fs.mkdirSync(proof,{recursive:true});const context=await browser.newContext({viewport:{width:1280,height:900}}),errors=[];
+  await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(proofFont&&u.pathname==='/_proof-font/NotoSansCJKkr-Regular.otf')return route.fulfill({contentType:'font/otf',path:proofFont});if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});const file=path.resolve(root,'.'+u.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();});
+  if(proofFont)await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='@font-face{font-family:HouseProof;src:url("/_proof-font/NotoSansCJKkr-Regular.otf") format("opentype");font-display:block}html,body,button,input,textarea,select{font-family:HouseProof,sans-serif!important}';document.head.append(style);},{once:true}));
+  const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR:',e.message);});await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.houseWorldTest&&history.state?.ojjudaWorld==='main');
+  const home=()=>page.frames().find(f=>/\/house-test\/index\.html/.test(f.url()));
+  const ready=async()=>{await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});await home().evaluate(()=>document.fonts.ready);return home();};
+  const noFrames=()=>page.waitForFunction(()=>document.querySelectorAll('iframe').length===0);
+  const main=()=>page.waitForFunction(()=>houseWorldTest.state.tab==='friends'&&history.state?.ojjudaWorld==='main');
+  assert.equal(await page.locator('.wd-home').getAttribute('aria-label'),'우리집 들어가기');await page.locator('.wd-home').click();let f=await ready();assert.equal(await page.evaluate(()=>houseWorldTest.state.tab),'home');
+  await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0);await f.locator('[data-tab="diary"]').click();await f.locator('#diary').fill('실제 월드 회원의 개인 집');await f.getByRole('button',{name:'기록 저장',exact:true}).click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:world-member-a')).diary),'실제 월드 회원의 개인 집');
+  await f.locator('[data-tab="room"]').click();await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'world-member-house-desktop.png')});await f.locator('#exit').click();await noFrames();await main();
+  await page.setViewportSize({width:390,height:844});await page.locator('.bottomnav [data-tab="home"]').click();f=await ready();await f.locator('[data-tab="diary"]').click();assert.equal(await f.locator('#diary').inputValue(),'실제 월드 회원의 개인 집');await page.evaluate(()=>history.back());await noFrames();await main();
+  await page.locator('.wd-home').click();await ready();await page.evaluate(()=>houseWorldTest.actions.tab({tab:'my'}));await noFrames();assert.equal(await page.evaluate(()=>houseWorldTest.state.tab),'my','switching menus closes home without overwriting the requested destination');
+  await page.evaluate(()=>houseWorldTest.actions.tab({tab:'home'}));await ready();await page.evaluate(()=>{houseWorldTest.auth.user={id:'world-member-b'};houseWorldTest.render();});await noFrames();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:world-member-a')).diary),'실제 월드 회원의 개인 집');
+  await page.evaluate(()=>houseWorldTest.actions.tab({tab:'home'}));f=await ready();await f.locator('[data-tab="diary"]').click();assert.equal(await f.locator('#diary').inputValue(),'');
+  await page.evaluate(()=>houseWorldTest.actions.logout());await page.locator('[data-act="confirm-ok"]').evaluate(el=>el.click());await page.waitForFunction(()=>window.houseWorldTest&&!houseWorldTest.auth.online&&sessionStorage.getItem('fixture-logged-out')==='yes');await noFrames();
+  await page.evaluate(()=>houseWorldTest.actions.tab({tab:'home'}));assert.equal(await page.locator('[data-house-entry]').count(),1);assert.equal(await page.locator('iframe').count(),0);assert.match(await page.locator('[data-house-entry]').textContent(),/로그인/);
+  await page.evaluate(async()=>{houseWorldTest.auth.online=true;houseWorldTest.auth.user={id:'admin-a'};houseWorldTest.auth.isAdmin=true;houseWorldTest.actions.tab({tab:'friends'});await houseWorldTest.actions['furniture-studio']();});assert.equal(await page.locator('iframe[title="관리자 가구 제작실"]').count(),0,'an admin must enter admin mode before opening the studio');
+  await page.locator('.wd-home').click();f=await ready();await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0,'ordinary house settings remain free of creation tools even for an admin');await f.locator('#exit').click();await noFrames();
+  await page.evaluate(()=>{houseWorldTest.auth.isAdmin=false;houseWorldTest.state.tab='admin';return houseWorldTest.actions['furniture-studio']();});assert.equal(await page.locator('iframe').count(),0,'forging an admin tab does not grant a member studio access');
+  await page.evaluate(()=>{houseWorldTest.auth.isAdmin=true;houseWorldTest.actions.tab({tab:'admin'});return houseWorldTest.actions['furniture-studio']();});await page.frameLocator('iframe[title="관리자 가구 제작실"]').locator('#studio-editor').waitFor({state:'visible'});await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(proof,'world-admin-studio-mobile.png')});
+  await page.evaluate(()=>houseWorldTest.auth.isAdmin=false);await noFrames();assert.deepEqual(errors,[]);
+  fs.writeFileSync(path.join(proof,'world-house-access-verification.json'),JSON.stringify({ordinaryMemberBuildingAndBottomNavigation:true,ownOwnerSave:true,houseCloseReturnsToNeighborhood:true,browserBackClosesHouse:true,menuSwitchPreservesDestination:true,accountChangeClosesAndIsolates:true,realLogoutHandlerClosesHouse:true,signedOutShowsLogin:true,ordinaryHomeHasNoStudioForAnyRole:true,studioRequiresAdminRoleAndAdminMode:true,studioClosesOnRevocation:true,errors},null,2));
+  console.log('WORLD HOUSE ACCESS PASS: member building/nav ownership, close/back/menu/account/logout behavior, signed-out login and admin-mode-only studio');
+ }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});
