@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame=window.ScrewBoxFixture;');
-world=world.replace('<script type="module">','<script src="/fixture-box.js"></script><script src="/vendor/matter-0.20.0.min.js"></script><script src="/screw-flat-physics.js"></script><script src="/screw-flat.js"></script><script src="/world-navigation.js"></script><script type="module">');
+world=world.replace('<script type="module">','<script src="/fixture-box.js"></script><script src="/vendor/matter-0.20.0.min.js"></script><script src="/screw-flat-physics.js"></script><script src="/screw-flat-pictures.js"></script><script src="/screw-flat.js"></script><script src="/world-navigation.js"></script><script type="module">');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
 const box='(function(){'+read('screw3d.js').replace(/export \{[^}]*\};/,'')+'window.ScrewBoxFixture=screw3d;})();';
@@ -26,7 +26,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.screwWorld);
   if(font)await page.evaluate(()=>document.fonts.ready);
-  await page.evaluate(()=>{localStorage.setItem('ojjuda-screw-stage','5');localStorage.removeItem(OjjudaScrewGames.STAGE_KEY)});
+  await page.evaluate(()=>{localStorage.setItem('ojjuda-screw-stage','5');localStorage.removeItem(OjjudaScrewGames.STAGE_KEY);localStorage.removeItem(OjjudaFlatPictures.COLLECTION_KEY)});
   for(const size of [{width:320,height:568},{width:390,height:844},{width:1280,height:900}]){
    await page.setViewportSize(size);await page.evaluate(()=>screwWorld.open('screw'));
    assert.equal(await page.locator('[data-g=screw-start]').count(),2,'the existing game opens exactly two version choices');
@@ -41,6 +41,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    if(qa&&size.width===390)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
    await page.locator('[data-mode=flat]').click();
    await page.waitForFunction(()=>screwWorld.current()?.game?.state);
+   await page.waitForFunction(()=>{const img=OjjudaFlatPictures.preload(screwWorld.current().game.state.level.picture).img;return img.complete&&img.naturalWidth>0;});
    assert.deepEqual(await page.evaluate(()=>screwWorld.current().game.state.level.holes.filter(h=>h.owner===null).map(h=>h.y)),[100,100,100],'only the three top spare holes appear; none flank the picture');
    assert.equal(await page.locator('#gov').getAttribute('data-screw-mode'),'flat');
    assert.match(await page.locator('.ghead .gt').innerText(),/평면형/);
@@ -111,9 +112,19 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   }
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.complete),true,'touch relocation removes every plate and reveals the picture');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-revealed.png')});
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(OjjudaFlatPictures.COLLECTION_KEY))),['window-cat'],'a real puzzle completion earns its picture');
+  await touch({x:311,y:26});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),true);
+  await touch({x:240,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null,'locked pictures cannot be previewed');
+  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-first.png')});
+  await touch({x:90,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),0);
+  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-picture.png')});
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#gov').count(),1,'Escape returns from artwork without closing the game');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null);
+  await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),false);
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2);
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2,'reopening continues the flat version independently');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.has('window-cat')),true,'the earned artwork survives reopening');
   const outlines=[];
   for(let stage=5;stage<=10;stage++){
    await page.setViewportSize({width:390,height:844});
@@ -134,7 +145,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
     return{stage:st.L,pieces:st.level.plates.length,spares:st.level.holes.filter(h=>h.owner===null).length,titleWidth,order:st.level.order.slice(0,2)};
    });
    assert.equal(advanced.stage,stage);assert.equal(advanced.pieces,18);assert.equal(advanced.spares,3);
-   assert.ok(advanced.titleWidth<251,'the full stage counter fits beside the mode badge');
+   assert.ok(advanced.titleWidth<251,'the full stage counter fits beside the album button');
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-stage-${stage}.png`)});
    for(const [index,id] of advanced.order.entries())await touchMove(id,index);
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),1,'small advanced pieces can be selected and released by phone taps');
@@ -142,15 +153,35 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),0,'advanced-piece undo restores the plate');
   }
   if(qa){
-   await page.evaluate(()=>{const r=screwWorld.current();cancelAnimationFrame(r.raf);r.running=false;r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'34');r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.draw(r.ctx);});
+   await page.evaluate(()=>{const r=screwWorld.current();r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'34');r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.draw(r.ctx);});
    await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-mosaic.png')});
   }
-  // Every picture renderer executes, including later stages outside the tutorial.
-  for(let stage=1;stage<=6;stage++)await page.evaluate(stage=>{
-   localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage));
-   const game=OjjudaScrewGames.flat({setScore(){},end(){}});game.state.level.plates.forEach(p=>p.state='gone');game.draw(screwWorld.current().ctx);game.destroy();
-  },stage);
+  // Decode and display every shipped artwork, then exercise the small-phone album.
+  for(let stage=1;stage<=5;stage++){
+   await page.evaluate(stage=>{
+    const r=screwWorld.current();r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage));
+    r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.state.level.plates.forEach(p=>p.state='gone');r.game.update(.05);
+   },stage);
+   await page.waitForFunction(()=>{const img=OjjudaFlatPictures.preload(screwWorld.current().game.state.level.picture).img;return img.complete&&img.naturalWidth>0;});
+   await page.evaluate(()=>{const r=screwWorld.current();r.game.draw(r.ctx);});
+   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-picture-${stage}.png`)});
+  }
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.size),5);
+  await page.setViewportSize({width:320,height:568});await touch({x:311,y:26});
+  await page.evaluate(()=>{const r=screwWorld.current();r.game.draw(r.ctx);});
+  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-320.png')});
+  await touch({x:90,y:410});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),4,'the final album row is reachable on a small phone');
+  await touch({x:180,y:511});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),false);
+  // Missing artwork must never block screw input or scoring.
+  const broken=await context.newPage();await broken.route('**/assets/screw-flat/*.webp',route=>route.abort());
+  await broken.goto('https://fixture.test/world.html');await broken.waitForFunction(()=>window.screwWorld);
+  await broken.evaluate(()=>{localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'1');screwWorld.open('screw');});await broken.locator('[data-mode=flat]').click();
+  await broken.waitForFunction(()=>OjjudaFlatPictures.preload(0).failed);
+  assert.equal(await broken.evaluate(()=>{
+   const g=screwWorld.current().game,s=g.state.level.screws[g.state.level.order[0]],h=g.state.level.holes[0];
+   for(const q of [s.hole,h]){g.onDown(q.x,q.y);g.onUp(q.x,q.y);}for(let i=0;i<20;i++)g.update(.05);return g.state.moves;
+  }),1,'image failure leaves the game playable');await broken.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: six metal outlines on mobile, both versions at 320/390/1280px, 501/1000-stage continuation, 18-piece phone input, title fit, three spare holes, screw collisions, touch undo and preserved box progress.');
+  console.log('PASS: five decoded illustrations, earned album and 320px controls, image failure fallback, six outlines, 18-piece phone input, stage persistence, screw collisions, undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -4,11 +4,8 @@
   const WIDTH = 360, HEIGHT = 540;
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
   const SCREW_COLOR = '#A3B6C7';
-  const THEMES = [
-    ['낮잠 고양이', '#FCE9D7', '#FAF3E9'], ['바다 고래', '#D6EDF2', '#F0FAFA'],
-    ['달토끼', '#E5E1F6', '#F6F2FD'], ['작은 꽃다발', '#E1EDDD', '#F6F7E9'],
-    ['별빛 로켓', '#DDE5F6', '#F2EAF8'], ['숲속 여우', '#F4DDCC', '#F7F1DE']
-  ];
+  const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
+  const {PICTURES}=Pictures;
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
   const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -18,7 +15,7 @@
   }
   function saveStage(n) { try { localStorage.setItem(STAGE_KEY, String(n)); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   function makeFlatLevel(stage) {
-    const level=Physics.makeFlatLevel(stage);level.name=THEMES[level.theme][0];return level;
+    const level=Physics.makeFlatLevel(stage);level.picture=(level.stage-1)%PICTURES.length;level.name=PICTURES[level.picture].name;return level;
   }
   function round(c, x, y, w, h, r) {
     r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y);
@@ -26,72 +23,7 @@
     c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
   }
   function oval(c, x, y, rx, ry, color) { c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); c.fillStyle = color; c.fill(); }
-  function path(c, points, color) { c.beginPath(); points.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fillStyle = color; c.fill(); }
   function line(c, points, color, width = 3) { c.beginPath(); points.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.strokeStyle = color; c.lineWidth = width; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke(); }
-  function star(c, x, y, r, color) {
-    path(c, Array.from({ length: 10 }, (_, i) => { const a = i * Math.PI / 5 - Math.PI / 2, k = i % 2 ? r * 0.43 : r; return [x + Math.cos(a) * k, y + Math.sin(a) * k]; }), color);
-  }
-  function eyes(c, y, space, dark = '#554D62') {
-    oval(c, -space, y, 3.4, 4.5, dark); oval(c, space, y, 3.4, 4.5, dark);
-    oval(c, -space - 10, y + 13, 8, 4, '#EFA8AD'); oval(c, space + 10, y + 13, 8, 4, '#EFA8AD');
-  }
-  function drawPicture(c, theme) {
-    const colors = THEMES[theme];
-    const top=BOARD.y+8, height=BOARD.h-16;
-    c.save(); round(c, 32, top, 296, height, 25); c.clip();
-    const bg = c.createLinearGradient(0, top, 0, top+height); bg.addColorStop(0, colors[1]); bg.addColorStop(1, colors[2]);
-    c.fillStyle = bg; c.fillRect(32, top, 296, height);
-    oval(c, 181, top+height-12, 155, 44, '#FFFFFF6B');
-    for (const [x, y, r] of [[67,.13,5],[294,.22,7],[64,.75,6],[286,.85,5],[116,.06,3],[298,.57,3]]) star(c, x, top+y*height, r, '#FFFFFFD9');
-    c.translate(180, top+height*.51);
-    if (theme === 0 || theme === 5) {
-      const fur = theme === 0 ? '#D2A27F' : '#E89358', pale = '#FFF3DE';
-      oval(c, 0, 46, 66, 59, fur); oval(c, 0, 56, 42, 41, pale);
-      path(c, [[-55,-35],[-54,-94],[-12,-59]], fur); path(c, [[55,-35],[54,-94],[12,-59]], fur);
-      path(c, [[-46,-51],[-46,-79],[-24,-59]], '#E8B0A1'); path(c, [[46,-51],[46,-79],[24,-59]], '#E8B0A1');
-      oval(c, 0, -23, 65, 54, fur);
-      if (theme === 5) { path(c, [[-62,-25],[-37,29],[0,26],[-6,-6]], pale); path(c, [[62,-25],[37,29],[0,26],[6,-6]], pale); }
-      else { oval(c, -18, -6, 23, 18, pale); oval(c, 18, -6, 23, 18, pale); }
-      eyes(c, -30, 24); path(c, [[-6,-12],[6,-12],[0,-6]], '#775C59');
-      line(c, [[0,-5],[0,1],[-7,5]], '#775C59', 2); line(c, [[0,1],[7,5]], '#775C59', 2);
-      if (theme === 0) for (const side of [-1,1]) for (const y of [-7,3]) line(c, [[side*35,y],[side*74,y-5]], '#AB7D68', 2);
-      oval(c, -39, 91, 21, 12, fur); oval(c, 39, 91, 21, 12, fur);
-      star(c, 0, 49, 13, '#EBB857');
-    } else if (theme === 1) {
-      path(c, [[60,28],[111,-5],[112,37],[137,15],[126,62],[69,56]], '#74BACD');
-      oval(c, -9, 28, 86, 62, '#78C1D1'); oval(c, -18, 53, 70, 33, '#C5E8E9');
-      oval(c, -43, 18, 4, 5, '#425E73'); oval(c, -56, 30, 11, 5, '#E8B9BC');
-      c.beginPath(); c.arc(-29, 27, 13, 0.1, 1.3); c.strokeStyle = '#425E73'; c.lineWidth = 3; c.stroke();
-      oval(c, 14, 58, 21, 10, '#60A8C0');
-      line(c, [[-30,-37],[-30,-76],[-46,-85]], '#8BBECF', 5); line(c, [[-30,-67],[-14,-83]], '#8BBECF', 5);
-      oval(c,-48,-85,5,7,'#8BBECF'); oval(c,-12,-85,5,7,'#8BBECF');
-      for (let i = 0; i < 4; i++) line(c, [[-102+i*57,104],[-83+i*57,109],[-65+i*57,104]], '#ABD8DC', 3);
-    } else if (theme === 2) {
-      oval(c, 62, -61, 38, 38, '#F5D989'); oval(c, 76, -70, 32, 34, colors[1]);
-      oval(c, 0, 49, 57, 55, '#FFF8F0');
-      oval(c, -26, -69, 19, 56, '#FFF8F0'); oval(c, 26, -69, 19, 56, '#FFF8F0');
-      oval(c, -26, -73, 9, 39, '#EEC4CD'); oval(c, 26, -73, 9, 39, '#EEC4CD');
-      oval(c, 0, -10, 56, 49, '#FFF8F0'); eyes(c, -15, 20);
-      oval(c, 0, -2, 4, 3, '#BD8697'); line(c, [[0,1],[0,6],[-5,10]], '#BD8697', 2); line(c, [[0,6],[5,10]], '#BD8697', 2);
-      oval(c,-31,91,22,12,'#FFF8F0'); oval(c,31,91,22,12,'#FFF8F0'); star(c,0,52,22,'#EBC779');
-    } else if (theme === 3) {
-      const flowers = [[-49,-37,'#E89BB0'],[0,-66,'#F0C16B'],[49,-34,'#B5A2D3'],[-20,9,'#EDB08B'],[31,16,'#F0C16B']];
-      for (const [x,y] of flowers) line(c, [[x,y],[0,97]], '#7EAD81', 6);
-      oval(c,-31,38,22,10,'#91B18B'); oval(c,29,64,24,10,'#91B18B');
-      for (const [x,y,color] of flowers) { for (let k=0;k<6;k++) oval(c,x+Math.cos(k*Math.PI/3)*18,y+Math.sin(k*Math.PI/3)*18,14,14,color); oval(c,x,y,12,12,'#FFF1C2'); }
-      path(c,[[-57,34],[57,34],[21,107],[-21,107]],'#D1DABC');
-      path(c,[[-6,77],[-42,63],[-31,91]],'#CC8F9D'); path(c,[[6,77],[42,63],[31,91]],'#CC8F9D'); oval(c,0,78,9,8,'#B9768B');
-    } else {
-      for (const [x,y,r] of [[-77,-68,10],[76,-15,7],[-83,68,6]]) star(c,x,y,r,'#E9BF69');
-      path(c,[[-23,57],[0,116],[23,57]],'#F2BF70'); path(c,[[-13,57],[0,94],[13,57]],'#FBE5A8');
-      path(c,[[-28,14],[-62,70],[-23,59]],'#D68A9E'); path(c,[[28,14],[62,70],[23,59]],'#D68A9E');
-      c.beginPath(); c.moveTo(0,-111); c.bezierCurveTo(48,-76,47,20,29,65); c.lineTo(-29,65); c.bezierCurveTo(-47,20,-48,-76,0,-111); c.fillStyle='#FFF8EC'; c.fill();
-      c.beginPath(); c.moveTo(0,-111); c.quadraticCurveTo(25,-91,32,-62); c.quadraticCurveTo(0,-49,-32,-62); c.quadraticCurveTo(-25,-91,0,-111); c.fillStyle='#DA91A4'; c.fill();
-      oval(c,0,-17,25,25,'#D8AD7E'); oval(c,0,-17,18,18,'#8AAFD0'); oval(c,-6,-24,6,6,'#CFE4ED');
-      round(c,-23,49,46,18,5); c.fillStyle='#93ADB9'; c.fill();
-    }
-    c.restore();
-  }
   function drawScrew(c, x, y, color, rotation = 0, scale = 1) {
     c.save(); c.translate(x,y); c.scale(scale,scale);
     oval(c,0,2,14,14,'#44505B32'); oval(c,0,0,13,13,'#6B798D'); oval(c,0,-1,11.5,11.5,color);
@@ -113,11 +45,26 @@
     c.restore();
   }
   function flat(api) {
-    const st={L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,history:[],message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null};
+    const st={L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,history:[],message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
+      albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection()};
     const tell=text=>{st.message=text;st.messageTime=1.7;};
     function start(L) {
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;st.history=[];
       st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
+      st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
+    }
+    function openAlbum(){
+      st.collection=new Set([...st.collection,...Pictures.readCollection()]);
+      st.albumOpen=true;st.albumPicture=null;st.albumFocus=null;st.selected=null;st.focus=null;
+      PICTURES.forEach((p,i)=>{if(st.collection.has(p.id))Pictures.preload(i,true);});
+    }
+    function albumTap(x,y){
+      if((x>=282&&y<56)||y>=493){st.albumOpen=false;return;}
+      if(st.albumPicture!==null){if(x<116&&y<56)st.albumPicture=null;return;}
+      PICTURES.forEach((p,i)=>{
+        const left=24+(i%2)*162,top=88+Math.floor(i/2)*134;
+        if(x>=left&&x<=left+150&&y>=top&&y<=top+126&&st.collection.has(p.id))st.albumPicture=i;
+      });
     }
     function snapshot() {
       return {holes:st.level.holes.map(h=>h.screw),screws:st.level.screws.map(s=>s.hole.id),
@@ -132,6 +79,8 @@
     }
     function tap(x,y) {
       if(st.destroyed||st.ended)return;
+      if(st.albumOpen){albumTap(x,y);return;}
+      if(y>=5&&y<=48&&x>=278&&x<=348){openAlbum();return;}
       if(st.complete) { if(y>=491&&x>=197) { if(st.L===LAST_STAGE){st.ended=true;api.end(st.score);}else start(st.L+1); }return; }
       if(y>=491&&x>=258){st.score=st.stageScore;api.setScore(st.score);start(st.L);tell('이 그림을 처음부터 다시 풀어요');return;}
       if(y>=491&&x>=24&&x<=140){undo();return;}
@@ -152,7 +101,7 @@
       st.pending={screw:screw.id,from:screw.hole.id,to:h.id,time:0};st.selected=null;st.focus=null;
     }
     function update(dt) {
-      if(st.destroyed||st.ended)return;
+      if(st.destroyed||st.ended||st.albumOpen)return;
       dt=clamp(dt,0,.05);st.t+=dt;st.messageTime=Math.max(0,st.messageTime-dt);
       if(st.complete)return;
       const fallen=st.physics.step(dt);
@@ -168,40 +117,67 @@
       }
       if(!st.pending&&st.level.plates.every(p=>p.state==='gone')) {
         st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));
+        st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
       }
     }
     function drawHole(c,h) {
       oval(c,h.x,h.y+1,13.5,13.5,'#B8AC9E');oval(c,h.x,h.y,10,10,'#766F6B');oval(c,h.x,h.y+2,7,7,'#A3998C');
     }
+    function drawAlbum(c){
+      c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
+      c.font='700 20px "Noto Sans KR",sans-serif';c.fillStyle='#514859';
+      c.fillText(st.albumPicture===null?'완성 그림 앨범':'← 목록',24,31);
+      round(c,288,12,48,38,14);c.fillStyle='#EAE1D7';c.fill();c.textAlign='center';c.font='700 12px "Noto Sans KR",sans-serif';c.fillStyle='#75695E';c.fillText('닫기',312,31);
+      c.font='12px "Noto Sans KR",sans-serif';c.fillStyle='#8E7B69';
+      if(st.albumPicture!==null){
+        const picture=PICTURES[st.albumPicture];c.font='700 17px "Noto Sans KR",sans-serif';c.fillStyle='#514859';c.fillText(picture.name,180,78);
+        Pictures.draw(c,st.albumPicture,24,109,312,346,true);
+        c.font='11px "Noto Sans KR",sans-serif';c.fillStyle='#8E7B69';c.fillText('철판을 걷어내고 찾은 작은 풍경',180,474);
+      }else{
+        c.fillText(`${st.collection.size}/${PICTURES.length}장 · 완성한 그림을 눌러 크게 봐요`,180,64);
+        PICTURES.forEach((p,i)=>{
+          const x=24+(i%2)*162,y=88+Math.floor(i/2)*134,unlocked=st.collection.has(p.id);
+          round(c,x,y,150,126,16);c.fillStyle=unlocked?'#FFFCF7':'#EAE3DA';c.fill();
+          if(st.albumFocus===i){c.strokeStyle='#8B729C';c.lineWidth=2.5;c.stroke();}
+          if(unlocked)Pictures.draw(c,i,x+5,y+5,140,96,true);
+          else{c.font='700 28px "Noto Sans KR",sans-serif';c.fillStyle='#B7AA9B';c.fillText('?',x+75,y+43);c.font='10px "Noto Sans KR",sans-serif';c.fillText('철판을 모두 떼면 열려요',x+75,y+78);}
+          c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle=unlocked?'#655448':'#A19384';c.fillText(p.name,x+75,y+113);
+        });
+      }
+      round(c,24,494,312,34,13);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.font='700 12px "Noto Sans KR",sans-serif';c.fillText('게임으로 돌아가기',180,511);
+    }
     function draw(c) {
+      if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
-      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.level.name}`,22,26);
-      round(c,285,13,53,26,13);c.fillStyle='#E4DDD1';c.fill();c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle='#716757';c.textAlign='center';c.fillText('평면형',311.5,26);
+      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.level.name}`,22,26,250);
+      round(c,280,8,62,36,13);c.fillStyle='#E2EADF';c.fill();c.font='700 10px "Noto Sans KR",sans-serif';c.fillStyle='#5D7760';c.textAlign='center';c.fillText(`앨범 ${st.collection.size}/${PICTURES.length}`,311,26);
       c.font='12px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'그림을 모두 찾았어요!':st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51);
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51);
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';c.fillText('나사를 축으로 회전 · 판과 나사에 걸려요',26,133);
       c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
-      round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();drawPicture(c,st.level.theme);
-      c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
-      for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h);
-      for(const p of st.level.plates)if(p.state!=='gone')drawPlate(c,p);
-      c.restore();
-      for(const h of st.level.holes)if(canAccessHole(st.level,h)) {
-        if(h.owner===null)drawHole(c,h);
-        if(h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,h.x,h.y,SCREW_COLOR);
-        const target=st.selected!==null&&h.screw===null;
-        const selected=h.screw!==null&&st.selected===h.screw;
-        if(target||selected||st.focus===h.id) {
-          c.beginPath();c.arc(h.x,h.y,target?17+Math.sin(st.t*5)*1.5:18,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();
-          if(target){c.fillStyle='#7BAF8C28';c.fill();}
+      round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();Pictures.draw(c,st.level.picture,32,BOARD.y+8,296,BOARD.h-16,st.complete);
+      if(!st.complete){
+        c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
+        for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h);
+        for(const p of st.level.plates)if(p.state!=='gone')drawPlate(c,p);
+        c.restore();
+        for(const h of st.level.holes)if(canAccessHole(st.level,h)) {
+          if(h.owner===null)drawHole(c,h);
+          if(h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,h.x,h.y,SCREW_COLOR);
+          const target=st.selected!==null&&h.screw===null;
+          const selected=h.screw!==null&&st.selected===h.screw;
+          if(target||selected||st.focus===h.id) {
+            c.beginPath();c.arc(h.x,h.y,target?17+Math.sin(st.t*5)*1.5:18,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();
+            if(target){c.fillStyle='#7BAF8C28';c.fill();}
+          }
         }
-      }
-      if(st.pending) {
-        const move=st.pending,from=st.level.holes[move.from],to=st.level.holes[move.to],t=clamp(move.time/.5,0,1);
-        const flight=clamp((t-.2)/.6,0,1),eased=flight*flight*(3-2*flight);
-        drawScrew(c,from.x+(to.x-from.x)*eased,from.y+(to.y-from.y)*eased-Math.sin(t*Math.PI)*24,SCREW_COLOR,t*Math.PI*6,1+Math.sin(t*Math.PI)*.2);
+        if(st.pending) {
+          const move=st.pending,from=st.level.holes[move.from],to=st.level.holes[move.to],t=clamp(move.time/.5,0,1);
+          const flight=clamp((t-.2)/.6,0,1),eased=flight*flight*(3-2*flight);
+          drawScrew(c,from.x+(to.x-from.x)*eased,from.y+(to.y-from.y)*eased-Math.sin(t*Math.PI)*24,SCREW_COLOR,t*Math.PI*6,1+Math.sin(t*Math.PI)*.2);
+        }
       }
       if(st.complete) {
         c.fillStyle='#87715F';c.font='700 13px "Noto Sans KR",sans-serif';c.textAlign='left';c.fillText(`완성! +${st.L*10}점`,24,515);
@@ -225,6 +201,17 @@
       onUp(x,y,id=0){st.pointers.delete(id);const down=st.down;st.down=null;if(down&&down.id===id&&!down.moved&&!st.pointers.size&&Math.hypot(x-down.x,y-down.y)<=10)tap(x,y);},
       onCancel(id=0){st.pointers.delete(id);st.down=null;},
       onKey(key){
+        if(st.destroyed||st.ended)return false;
+        if(key==='a'||key==='A'||key==='ㅁ'){if(st.albumOpen)st.albumOpen=false;else openAlbum();return true;}
+        if(st.albumOpen){
+          if(key==='Escape'||key==='Backspace'){if(st.albumPicture!==null)st.albumPicture=null;else st.albumOpen=false;return true;}
+          if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
+            if(st.albumPicture===null){const delta=key==='ArrowLeft'?-1:key==='ArrowUp'?-2:key==='ArrowDown'?2:1;st.albumFocus=st.albumFocus===null?0:(st.albumFocus+delta+PICTURES.length)%PICTURES.length;}
+            return true;
+          }
+          if(key==='Enter'||key===' '){if(st.albumPicture===null&&st.albumFocus!==null&&st.collection.has(PICTURES[st.albumFocus].id))st.albumPicture=st.albumFocus;return true;}
+          return false;
+        }
         if(key==='Escape'){st.selected=null;st.focus=null;return true;}
         if(key==='Backspace'||key==='z'||key==='Z'){if(!st.complete&&!st.destroyed&&!st.ended)undo();return true;}
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
