@@ -124,6 +124,11 @@ function restoreWorldAdminView(requestedTab){
   if(requestedTab!=="note")L.tab=requestedTab;
   return true;
  }
+ // Resume administrator navigation only when refreshing this World document.
+ // Ordinary links from Note, the portal or a new tab must open the main screen.
+ if(performance.getEntriesByType?.("navigation")[0]?.type!=="reload"){
+  clearWorldAdminView();return false;
+ }
  let saved;try{saved=JSON.parse(sessionStorage.getItem(worldAdminViewKey)||"null")}catch{}
  if(!saved||saved.userId!==D.user.id||!adminAreas.some(([id])=>id===saved.area)||
    (saved.area!=="note"&&!adminTabsByArea[saved.area]?.some(([id])=>id===saved.tab))){clearWorldAdminView();return false}
