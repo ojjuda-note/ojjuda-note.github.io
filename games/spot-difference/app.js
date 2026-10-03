@@ -265,12 +265,18 @@
   $('wallet-login').onclick=openAuth;$('close-auth').onclick=()=>authDialog.close();
   $('login-form').onsubmit=async e=>{e.preventDefault();$('login-submit').disabled=true;$('auth-error').textContent='';try{await wallet.signIn($('email').value.trim(),$('password').value);$('password').value='';authDialog.close();speak('오쭈다 계정으로 연결했어요.');}catch(error){$('auth-error').textContent=error.message;}finally{$('password').value='';$('login-submit').disabled=false;}};
   authDialog.addEventListener('close',()=>{$('password').value='';});
-  $('wallet-refresh').onclick=()=>wallet.refresh().catch(()=>speak('인터넷 연결을 확인해 주세요.'));
-  $('wallet-logout').onclick=async()=>{if(paymentBusy)return;try{await wallet.signOut();speak('로그아웃했어요.');}catch{speak('로그아웃하지 못했어요. 다시 시도해 주세요.');}};
+  const walletMenu=$('wallet-menu');
+  function closeWalletMenu(){walletMenu.removeAttribute('open');}
+  document.addEventListener('click',event=>{if(!walletMenu.contains(event.target))closeWalletMenu();});
+  walletMenu.addEventListener('keydown',event=>{if(event.key==='Escape'&&walletMenu.hasAttribute('open')){event.preventDefault();event.stopPropagation();closeWalletMenu();walletMenu.querySelector('summary').focus();}});
+  walletMenu.addEventListener('focusout',event=>{if(!walletMenu.contains(event.relatedTarget))closeWalletMenu();});
+  $('wallet-refresh').onclick=()=>{closeWalletMenu();walletMenu.querySelector('summary').focus();return wallet.refresh().catch(()=>speak('인터넷 연결을 확인해 주세요.'));};
+  $('wallet-logout').onclick=async()=>{if(paymentBusy)return;closeWalletMenu();walletMenu.querySelector('summary').focus();try{await wallet.signOut();$('wallet-login').focus();speak('로그아웃했어요.');}catch{speak('로그아웃하지 못했어요. 다시 시도해 주세요.');}};
   wallet.subscribe(w=>{
     if(w.canViewAnswers!==true&&answerReview)closeAnswers();
     $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()}쭈`):'오쭈다 쭈로 이용하기';
     $('wallet-login').hidden=!!w.userId;$('wallet-refresh').hidden=!w.userId;$('wallet-logout').hidden=!w.userId;
+    walletMenu.hidden=!w.userId;if(!w.userId)closeWalletMenu();
     $('wallet-note').textContent=w.error||`힌트 1개 1쭈 · 1분 연장 3쭈${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
     $('wallet-note').classList.toggle('error-note',!!w.error);refreshControls();
   });

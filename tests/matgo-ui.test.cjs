@@ -242,6 +242,10 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     else{
       await f.page.locator('[data-act="matgo-open"]').click();await f.page.waitForSelector('#matgo-overlay iframe');
       await f.page.frameLocator('#matgo-overlay iframe').locator('#money').waitFor();
+      await f.page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}'});
+      const embedded=await f.page.locator('#matgo-overlay iframe').boundingBox();
+      assert.ok(embedded.y>=24&&embedded.y+embedded.height<=820-47,'Matgo shares the app system-navigation safe area');
+      assert.equal(await f.page.locator('#matgo-loading-bar').count(),0,'no duplicate game header after loading');
       await f.page.evaluate(()=>authCallback('SIGNED_OUT',null));assert.equal(await f.page.locator('#matgo-overlay').count(),0);assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),0);
     }
     assert.deepEqual(f.errors,[]);await f.context.close();

@@ -8,7 +8,7 @@ button:focus-visible,a:focus-visible {outline: 3px solid #8863b1; outline-offset
 button[aria-pressed=true] {background: #eee3fa; color: #78539d; border-color: #d4bfe9;}
 button:disabled {opacity: .45; cursor: default;}
 button span {pointer-events: none;}
-#app {height: 100dvh; min-height: 540px; display: flex; flex-direction: column; overflow: hidden;}
+#app {height: 100dvh; min-height: 0; display: flex; flex-direction: column; overflow: hidden;}
 #app[hidden] {display: none;}
 header {display: flex; align-items: center; justify-content: space-between; background: var(--cream); padding: 10px 16px; gap: 8px; z-index: 3;}
 header button {border: 0; padding: 8px 10px;}
@@ -133,3 +133,9 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 @media(max-width:380px){.sofa-accessories{gap:3px 8px;padding-inline:9px}.sofa-accessories label{font-size:11px;line-height:1.5}}
 
 #app [hidden]{display:none!important}
+
+/* Let the room and its scrollable tools share short screens without hiding navigation. */
+#app {min-height: 0;}
+#app > header, #app > nav, .scene-heading {flex-shrink: 0;}
+#viewport {min-height: min(230px,35dvh);}
+#panel {min-height: 0; overscroll-behavior: contain;}
