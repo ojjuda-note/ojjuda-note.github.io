@@ -1,4 +1,4 @@
-import {floorPoint,roomPoint} from './model.js?v=20261003-chair1';
+import {floorPoint,roomPoint} from './model.js?v=20261003-chairdesk1';
 
 const mix=(a,b,t)=>a.map((value,i)=>value+(b[i]-value)*t);
 const quad=(points,u,v)=>mix(mix(points[0],points[1],u),mix(points[3],points[2],u),v);
@@ -66,13 +66,13 @@ function sourceMeshesFor(registration){
 
 // Source correspondence order stays unchanged; only clipping cutters are
 // normalized clockwise, including the oppositely facing center inside panel.
-export function registeredArtwork(registration,s,contact,size){
+export function registeredArtwork(registration,s,contact,size,parts=null){
  const ref=registration.placement,dx=s.x-ref.x,dy=s.y-ref.y;
  const project=([x,y,z])=>roomPoint(x+dx,y+dy,z);
  const footprint=[[s.x,s.y],[s.x+size.w,s.y],[s.x+size.w,s.y+size.d],[s.x,s.y+size.d]].map(p=>floorPoint(...p));
  const anchors=registration.anchors.map(project);
  const base={footprint,reserved:footprint,anchors,contact,faces:[]};
- if(Math.abs(dx)<1e-9&&Math.abs(dy)<1e-9){
+ if(!parts&&Math.abs(dx)<1e-9&&Math.abs(dy)<1e-9){
   const {origin,offset,scale,canvas,image}=registration;
   const x=origin.x-offset.x/scale,y=origin.y-offset.y/scale,width=canvas[0]/scale,height=canvas[1]/scale;
   const points=registration.layers.flatMap(layer=>layer.world.map(project));
@@ -82,6 +82,7 @@ export function registeredArtwork(registration,s,contact,size){
  }
  const triangles=[],sourceMeshes=sourceMeshesFor(registration);
  registration.layers.forEach((layer,index)=>{
+  if(parts&&!parts.includes(layer.id))return;
   const map=projectiveMap(layer.target,layer.world.map(project));
   if(!map)return;
   for(const source of sourceMeshes[index])triangles.push({image:registration.image,part:layer.id,source,target:source.map(map)});

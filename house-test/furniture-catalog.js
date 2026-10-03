@@ -13,7 +13,7 @@ export const FURNITURE={
  chair:{label:'원목 책상 의자',shortLabel:'의자',width:1.2,depth:1.2,height:1.65,depthFill:1,introduced:15,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/chair-center-preview-v1.png',
   preferred:{direction:'left',x:7.5,y:4.5},preferredViews:{left:{direction:'left',x:7.5,y:4.5},center:{direction:'center',x:4.5,y:4.5},right:{direction:'right',x:4,y:4.5}},
-  clearance:'방향을 바꾸면 기준 위치로 이동해요. 다른 가구와 겹치지 않게 놓아 주세요.'},
+  clearance:'책상과 연결하면 무릎 공간으로 0.5칸 들어가 함께 움직여요. 연결을 끄면 따로 배치할 수 있어요.'},
  carpet:{label:'크림 샤기 카펫',shortLabel:'카펫',width:5.5,depth:3.5,height:.1,depthFill:1,introduced:14,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'floor',picture:'made',preview:'assets/carpet-center-preview-v1.png',
   preferred:{direction:'center',x:1,y:3},clearance:'바닥에 까는 보송한 카펫이에요. 가구 아래에 놓을 수 있고, 다른 바닥 소품과는 겹치지 않게 놓아 주세요.'},
@@ -31,7 +31,7 @@ export const FURNITURE={
   preferred:{direction:'center',x:3.5,y:4.5},clearance:'바닥용 그림이에요. 0.5칸씩 따로 옮길 수 있고 가구 아래에 놓을 수 있어요.'},
  desk:{label:'원목 서랍 책상',shortLabel:'책상',width:3,depth:1,height:1.4,depthFill:1,introduced:9,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'desk',
-  preferred:{direction:'right',x:9,y:3.5},clearance:'0.5칸씩 이동 · 서랍장과 옆판을 포함한 책상 배치 공간은 다른 가구와 겹칠 수 없어요.'},
+  preferred:{direction:'right',x:9,y:3.5},clearance:'0.5칸씩 이동 · 연결한 의자는 책상 아래에 0.5칸 들어가 함께 움직여요. 다른 가구와는 겹칠 수 없어요.'},
  bookshelf:{
   label:'원목 책장',shortLabel:'책장',width:2,depth:1,height:3.8,depthFill:2/3,
   directions:['left','center','right'],anchor:'rear',layer:'standing',

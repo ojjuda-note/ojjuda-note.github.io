@@ -1,12 +1,12 @@
-import {madeArtwork} from './custom-furniture.js?v=20261003-chair1';
-import {floorPoint,roomPoint} from './model.js?v=20261003-chair1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261003-chair1';
-import {paintFurniture} from './furniture-painter.js?v=20261003-chair1';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-chair1';
-import {sideTableArtwork} from './side-table-art.js?v=20261003-chair1';
-import {deskArtwork} from './desk-art.js?v=20261003-chair1';
-import {sofaArtwork} from './sofa-art.js?v=20261003-chair1';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261003-chair1';
+import {madeArtwork} from './custom-furniture.js?v=20261003-chairdesk1';
+import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261003-chairdesk1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261003-chairdesk1';
+import {paintFurniture} from './furniture-painter.js?v=20261003-chairdesk1';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-chairdesk1';
+import {sideTableArtwork} from './side-table-art.js?v=20261003-chairdesk1';
+import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261003-chairdesk1';
+import {sofaArtwork} from './sofa-art.js?v=20261003-chairdesk1';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261003-chairdesk1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -64,13 +64,25 @@ export function furnitureGeometry(id,s){
  return id==='bookshelf'?bookshelfArtwork(geometry,s,item):geometry;
 }
 export const shelfGeometry=s=>furnitureGeometry('bookshelf',s);
-export function renderFurniture(button,id,s){
+export function renderFurniture(button,id,s,desk=null){
  const item=FURNITURE[id],geometry=furnitureGeometry(id,s);if(!geometry)return null;
  Object.assign(button.style,{left:`${geometry.left}px`,top:`${geometry.top}px`,width:`${geometry.width}px`,height:`${geometry.height}px`,zIndex:String(item.layer==='floor'?4:10+Math.round(Math.max(...geometry.footprint.map(p=>p.y))))});
  button.dataset.x=s.x;button.dataset.y=s.y;button.dataset.direction=s.direction;button.dataset.furniture=id;
  const canvas=document.createElement('canvas');canvas.className='furniture-paint';canvas.setAttribute('aria-hidden','true');
  button.dataset.renderState='loading';button.replaceChildren(canvas);
- paintFurniture(canvas,geometry).catch(error=>{if(canvas.isConnected){button.dataset.renderState='error';button.title='가구 이미지를 다시 불러오려면 눌러 주세요.';}console.error(error);});
+ const paints=[paintFurniture(canvas,geometry)];
+ if(id==='chair'&&isDeskChairPair(desk,s)){
+  const deskGeometry=furnitureGeometry('desk',desk);
+  button.style.zIndex=String(12+Math.round(Math.max(...deskGeometry.footprint.map(p=>p.y),...geometry.footprint.map(p=>p.y))));
+  const foreground=deskChairForeground(desk,contactBounds('desk',desk),itemSize('desk',desk.direction));
+  if(foreground){
+   const overlay=document.createElement('canvas');overlay.className='desk-chair-foreground';overlay.setAttribute('aria-hidden','true');
+   Object.assign(overlay.style,{position:'absolute',pointerEvents:'none',left:(foreground.left-geometry.left)+'px',top:(foreground.top-geometry.top)+'px',width:foreground.width+'px',height:foreground.height+'px'});
+   button.append(overlay);paints.push(paintFurniture(overlay,foreground));
+  }
+ }
+ button.dataset.renderState='loading';
+ Promise.all(paints).then(()=>{if(canvas.isConnected)button.dataset.renderState='ready';}).catch(error=>{if(canvas.isConnected){button.dataset.renderState='error';button.title='가구 이미지를 다시 불러오려면 눌러 주세요.';}console.error(error);});
  return geometry;
 }
 export const renderShelf=(button,s)=>renderFurniture(button,'bookshelf',s);
