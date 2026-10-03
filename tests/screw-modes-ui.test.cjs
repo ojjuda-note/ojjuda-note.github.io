@@ -114,6 +114,16 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2);
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2,'reopening continues the flat version independently');
+  const outlines=[];
+  for(let stage=5;stage<=10;stage++){
+   await page.setViewportSize({width:390,height:844});
+   await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
+   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
+   outlines.push(await page.evaluate(()=>screwWorld.current().game.state.level.shape));
+   await page.evaluate(()=>new Promise(requestAnimationFrame));
+   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-shape-${stage}.png`)});
+  }
+  assert.equal(new Set(outlines).size,6,'six different outer metal shapes render on mobile');
   for(const [stage,width] of [[501,320],[1000,390]]){
    await page.setViewportSize({width,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
@@ -141,6 +151,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    const game=OjjudaScrewGames.flat({setScore(){},end(){}});game.state.level.plates.forEach(p=>p.state='gone');game.draw(screwWorld.current().ctx);game.destroy();
   },stage);
   assert.deepEqual(errors,[]);
-  console.log('PASS: both versions at 320/390/1280px, 501/1000-stage continuation, 18-piece phone input, title fit, three spare holes, screw collisions, touch undo and preserved box progress.');
+  console.log('PASS: six metal outlines on mobile, both versions at 320/390/1280px, 501/1000-stage continuation, 18-piece phone input, title fit, three spare holes, screw collisions, touch undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
