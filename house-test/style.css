@@ -139,7 +139,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 #app > header, .scene-heading {flex-shrink: 0;}
 #viewport {min-height: min(230px,35dvh);}
 /* Keep both tabs at the diary panel's height; longer furniture lists scroll inside. */
-#panel {height: 278px; flex: 0 1 278px; min-height: 0; overscroll-behavior: contain;}
+#panel {height: 238px; flex: 0 1 238px; min-height: 0; overscroll-behavior: contain;}
 
 .placement-actions {position:absolute;z-index:7;display:flex;gap:6px;max-width:calc(100% - 16px);padding:4px;border:1px solid #d8c6e5;border-radius:16px;background:#fffcf6f5;box-shadow:0 4px 16px #51425525;}
 .placement-actions button {min-width:56px;min-height:44px;padding:8px 12px;font-size:13px;border-radius:11px;white-space:nowrap;}
