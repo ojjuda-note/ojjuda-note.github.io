@@ -1,9 +1,9 @@
-import {floorPoint,roomPoint} from './model.js?v=20261003-chairdesk1';
-import {SOFA_V1,SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261003-chairdesk1';
-import {projectMesh,validateMesh} from './picture-mesh.js?v=20261003-chairdesk1';
-import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261003-chairdesk1';
-import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261003-chairdesk1';
-export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261003-chairdesk1';
+import {floorPoint,roomPoint} from './model.js?v=20261003-cushions3';
+import {SOFA_V1,SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261003-cushions3';
+import {projectMesh,validateMesh} from './picture-mesh.js?v=20261003-cushions3';
+import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261003-cushions3';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261003-cushions3';
+export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261003-cushions3';
 
 // Cushion support points are authored placements on the seat. A cushion has
 // one unbroken picture plane rather than inheriting the sofa's seat/back seam.
@@ -56,4 +56,9 @@ export function sofaArtwork(item,placement,contact,size){
  const left=Math.min(...points.map(p=>p.x))-2,top=Math.min(...points.map(p=>p.y))-2,right=Math.max(...points.map(p=>p.x))+2,bottom=Math.max(...points.map(p=>p.y))+2;
  return {footprint,reserved,anchors:projected.points.filter(p=>p.kind==='physical'&&Math.abs(p.world.z)<1e-8).map(p=>p.target),contact,faces:[],left,top,width:right-left,height:bottom-top,
   art:{kind:'sofa',canvas:registration.canvas,layers:drawLayers,mesh:{definition:registration.mesh,placement:pose},triangles:sofaTriangles}};
+}
+
+export function sofaForegroundLayers(geometry,direction){
+ const order=SOFA_V1[direction].order,near=order.slice(order.indexOf('slot:surface')+1).flatMap(id=>id==='slot:front'?['blanket-sofa-front']:id.startsWith('slot:')?[]:[id]);
+ return geometry.art.layers.filter(layer=>near.includes(layer.id));
 }

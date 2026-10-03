@@ -1,4 +1,4 @@
-import {roomPoint} from './model.js?v=20261003-chairdesk1';
+import {roomPoint} from './model.js?v=20261003-cushions3';
 
 // A mesh deforms the supplied illustration. It never paints replacement shapes,
 // guesses hidden geometry, or treats an image margin as a physical contact.

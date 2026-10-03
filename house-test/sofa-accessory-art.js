@@ -1,0 +1,30 @@
+import {floorPoint,roomPoint} from './model.js?v=20261003-cushions3';
+import {SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261003-cushions3';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261003-cushions3';
+import {sofaAccessorySpec,sofaAccessoryOrigin} from './sofa-accessory-placement.js?v=20261003-cushions3';
+
+// Keep the authored cushion image planes unchanged. Independent
+// coordinates translate their support origin; elevation moves only room z.
+export function sofaAccessoryLayers(id,placement){
+ const spec=sofaAccessorySpec(id),origin=sofaAccessoryOrigin(id,placement),direction=placement.direction;
+ if(!spec||!origin)throw new RangeError('소품의 방향 또는 위치가 올바르지 않습니다.');
+ const elevation=placement.elevation??0,project=(x,y,z)=>roomPoint(x,y,z-spec.baseElevation+elevation);
+ const asset=SOFA_ACCESSORY_IMAGES[id][direction];
+ const seat=SOFA_CUSHION_SEATS[id],n=4,triangles=[],[sx,sy,sw,sh]=asset.sourceRect;
+ const point=(s,t)=>{
+  const u=seat.u+(s-.5)*seat.width,v=seat.v+(direction==='left'?.48:direction==='right'?-.48:0)*(s-.5);
+  const x=direction==='center'?u:direction==='left'?v:1.5-v,y=direction==='center'?v:direction==='left'?3.5-u:u;
+  return project(origin.x+x,origin.y+y,seat.bottom+(1-t)*seat.height);
+ };
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+  const corners=[[x/n,y/n],[(x+1)/n,y/n],[(x+1)/n,(y+1)/n],[x/n,(y+1)/n]];
+  for(const indices of [[0,1,2],[0,2,3]])triangles.push({source:indices.map(i=>[sx+corners[i][0]*sw,sy+corners[i][1]*sh]),target:indices.map(i=>point(...corners[i]))});
+ }
+ return [{id,image:asset.image,triangles,sofaSurface:true}];
+}
+export function sofaAccessoryArtwork(item,placement,contact,size){
+ const layers=sofaAccessoryLayers(item.accessoryId,placement),points=layers.flatMap(layer=>layer.triangles.flatMap(triangle=>triangle.target));
+ const left=Math.min(...points.map(p=>p.x))-2,top=Math.min(...points.map(p=>p.y))-2,right=Math.max(...points.map(p=>p.x))+2,bottom=Math.max(...points.map(p=>p.y))+2;
+ const footprint=[[placement.x,placement.y],[placement.x+size.w,placement.y],[placement.x+size.w,placement.y+size.d],[placement.x,placement.y+size.d]].map(p=>floorPoint(...p));
+ return {footprint,reserved:footprint,anchors:footprint,contact,faces:[],left,top,width:right-left,height:bottom-top,art:{kind:'sofa-accessory',layers}};
+}
