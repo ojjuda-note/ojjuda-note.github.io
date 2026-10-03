@@ -75,7 +75,8 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.score),0,'a supported plate never clears on a timer');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.physics.engine.pairs.list.some(pair=>pair.isActive)),true);
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-supported.png')});
-  await touch({x:82,y:514});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'hinged','touch undo restores its pivot joint');
+  assert.equal((await drawnText()).includes('되돌리기'),false,'the flat game has no undo button');
+  await touch({x:82,y:514});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'loose','the former undo area cannot restore its pivot');
   await touch({x:297,y:514});
   // Park the bottom screws back on the empty board, then swing the middle plate onto one.
   const bottom=await page.evaluate(()=>screwWorld.current().game.state.level.screws.slice(4).map(s=>s.startHole));
@@ -96,8 +97,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await touchMove(4,2);
   assert.ok(await page.evaluate(()=>Math.abs(screwWorld.current().game.state.level.plates[1].angle)>.8),'moving the supporting screw lets the plate swing down');
   await touch({x:82,y:514});
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws[4].hole.id),bottom[0]);
-  assert.ok(await page.evaluate(()=>Math.abs(screwWorld.current().game.state.level.plates[1].angle)<.2),'undo restores the stopped plate and its screw obstacle');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws[4].hole.id),2,'a removed undo control cannot move a screw back');
   await touch({x:297,y:514});
   const order=await page.evaluate(()=>screwWorld.current().game.state.level.order.slice());
   for(const [index,id] of order.entries()){
@@ -174,8 +174,8 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-stage-${stage}.png`)});
    for(const [index,id] of advanced.order.entries())await touchMove(id,index);
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),1,'small advanced pieces can be selected and released by phone taps');
-   await touch({x:82,y:514});
-   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),0,'advanced-piece undo restores the plate');
+   await touch({x:297,y:514});
+   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),0,'retry starts the advanced stage again');
   }
   if(qa){
    await page.evaluate(()=>{const r=screwWorld.current();r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'34');r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.draw(r.ctx);});
@@ -207,6 +207,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    for(const q of [s.hole,h]){g.onDown(q.x,q.y);g.onUp(q.x,q.y);}for(let i=0;i<20;i++)g.update(.05);return g.state.moves;
   }),1,'image failure leaves the game playable');await broken.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, seven outlines, 18-piece phone input, stage persistence, screw collisions, undo and preserved box progress.');
+  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, seven outlines, 18-piece phone input, stage persistence, screw collisions, retry, removed undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

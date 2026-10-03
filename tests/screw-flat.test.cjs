@@ -187,14 +187,12 @@ game.onDown(initial.x,initial.y,1);game.onCancel(1);game.onUp(initial.x,initial.
 game.onDown(initial.x,initial.y,1);game.onDown(initial.x+10,initial.y,2);game.onUp(initial.x,initial.y,1);game.onUp(initial.x+10,initial.y,2);assert.equal(st.selected,null);
 game.onDown(initial.x,initial.y,1);game.onMove(initial.x+30,initial.y,1);game.onUp(initial.x,initial.y,1);assert.equal(st.selected,null);
 relocate(game,first);const plate=st.level.plates[initial.owner];assert.equal(plate.state,'hinged');assert.equal(st.score,0);
-const before={x:plate.x,y:plate.y,angle:plate.angle,vx:plate.vx,vy:plate.vy,spin:plate.spin};
 relocate(game,second);assert.equal(plate.state,'gone');assert.equal(st.score,10);
-press(game,{x:82,y:514});assert.equal(plate.state,'hinged');assert.equal(st.score,0);
-assert.deepEqual({x:plate.x,y:plate.y,angle:plate.angle,vx:plate.vx,vy:plate.vy,spin:plate.spin},before,'undo restores position, rotation and velocity');
-invariant(st.level);assert.equal(st.physics.engine.world.constraints.length,1);
-for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y},'undo restores each screw obstacle');
+press(game,{x:82,y:514});for(const key of ['z','Z','Backspace'])assert.equal(game.onKey(key),false);
+assert.equal(plate.state,'gone','the former undo area and shortcuts cannot restore a plate');assert.equal(st.score,10);assert.equal(st.moves,2);
+invariant(st.level);
 press(game,st.level.screws[second].hole);press(game,st.level.holes.find(h=>h.screw===null&&G.bareHole(st.level,h)));assert.ok(st.pending);
-press(game,{x:82,y:514});assert.equal(st.pending,null);invariant(st.level);
+press(game,{x:82,y:514});assert.ok(st.pending,'the former undo area does not cancel a pending move');invariant(st.level);
 press(game,{x:297,y:514});assert.equal(st.score,0);assert.equal(st.moves,0);assert.ok(st.level.plates.every(p=>p.pins.length===2));
 for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y},'retry restores each screw obstacle');
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);

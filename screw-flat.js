@@ -45,11 +45,11 @@
     c.restore();
   }
   function flat(api) {
-    const st={L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,history:[],message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
+    const st={L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection()};
     const tell=text=>{st.message=text;st.messageTime=1.7;};
     function start(L) {
-      st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;st.history=[];
+      st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;
       st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
     }
@@ -66,24 +66,12 @@
         if(x>=left&&x<=left+150&&y>=top&&y<=top+126&&st.collection.has(p.id))st.albumPicture=i;
       });
     }
-    function snapshot() {
-      return {holes:st.level.holes.map(h=>h.screw),screws:st.level.screws.map(s=>s.hole.id),
-        plates:st.level.plates.map(p=>({x:p.x,y:p.y,angle:p.angle,state:p.state,vx:p.vx,vy:p.vy,spin:p.spin,pins:p.pins.map(pin=>({...pin}))})),score:st.score,moves:st.moves};
-    }
-    function undo() {
-      const previous=st.history.pop();if(!previous){tell('아직 옮긴 나사가 없어요');return;}
-      st.level.holes.forEach((h,i)=>h.screw=previous.holes[i]);
-      st.level.screws.forEach((s,i)=>s.hole=st.level.holes[previous.screws[i]]);
-      st.physics.destroy();st.level.plates.forEach((p,i)=>Object.assign(p,previous.plates[i]));st.physics=createPhysics(st.level);
-      st.score=previous.score;st.moves=previous.moves;st.pending=null;st.selected=null;st.focus=null;api.setScore(st.score);tell('한 번 전으로 되돌렸어요');
-    }
     function tap(x,y) {
       if(st.destroyed||st.ended)return;
       if(st.albumOpen){albumTap(x,y);return;}
       if(y>=5&&y<=48&&x>=278&&x<=348){openAlbum();return;}
       if(st.complete) { if(y>=491&&x>=197) { if(st.L===LAST_STAGE){st.ended=true;api.end(st.score);}else start(st.L+1); }return; }
       if(y>=491&&x>=258){st.score=st.stageScore;api.setScore(st.score);start(st.L);tell('이 그림을 처음부터 다시 풀어요');return;}
-      if(y>=491&&x>=24&&x<=140){undo();return;}
       if(st.pending)return;
       const hits=st.level.holes.map(h=>({h,d:Math.hypot(h.x-x,h.y-y)})).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
       const hit=hits.find(({h})=>canAccessHole(st.level,h));
@@ -91,13 +79,12 @@
       const h=hit.h;
       if(h.screw!==null) {
         st.selected=st.selected===h.screw?null:h.screw;st.focus=null;
-        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell('빈 구멍이 없어요. 되돌리기로 순서를 바꿔요');
+        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell('빈 구멍이 없어요. 다시 시작해 순서를 바꿔요');
         return;
       }
       if(st.selected===null){tell('옮길 나사를 먼저 눌러 주세요');return;}
       const screw=st.level.screws[st.selected];
       if(!canUnscrew(st.level,screw)){st.selected=null;tell('철판이 내려간 뒤 다시 골라 주세요');return;}
-      st.history.push(snapshot());if(st.history.length>100)st.history.shift();
       st.pending={screw:screw.id,from:screw.hole.id,to:h.id,time:0};st.selected=null;st.focus=null;
     }
     function update(dt) {
@@ -111,7 +98,7 @@
         if(move.time>=.5) {
           const to=st.level.holes[move.to],screw=st.level.screws[move.screw];
           if(st.physics.move(screw,to))st.moves++;
-          else{st.history.pop();tell('움직인 철판이 가렸어요. 빈 구멍을 다시 골라요');}
+          else tell('움직인 철판이 가렸어요. 빈 구멍을 다시 골라요');
           st.pending=null;
         }
       }
@@ -190,9 +177,7 @@
         c.fillStyle='#87715F';c.font='700 13px "Noto Sans KR",sans-serif';c.textAlign='left';c.fillText(`완성! +${st.L*10}점`,24,515);
         round(c,198,493,138,42,17);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.fillText(st.L===LAST_STAGE?'기록 보기':'다음 그림 →',267,514);
       }else{
-        round(c,24,493,116,42,16);c.fillStyle=st.history.length?'#E4DCEC':'#EBE5DE';c.fill();
-        c.textAlign='center';c.font='700 12px "Noto Sans KR",sans-serif';c.fillStyle=st.history.length?'#765F8D':'#A99B8D';c.fillText('↶ 되돌리기',82,514);
-        c.font='11px "Noto Sans KR",sans-serif';c.fillStyle='#998A7C';c.fillText(`${st.moves}번 이동`,199,514);
+        c.textAlign='left';c.font='11px "Noto Sans KR",sans-serif';c.fillStyle='#998A7C';c.fillText(`${st.moves}번 이동`,24,514);c.textAlign='center';
         round(c,258,493,78,42,16);c.fillStyle='#E7DDD1';c.fill();c.fillStyle='#78695E';c.font='700 12px "Noto Sans KR",sans-serif';c.fillText('↻ 다시',297,514);
       }
       if(st.messageTime>0) {
@@ -220,7 +205,6 @@
           return false;
         }
         if(key==='Escape'){st.selected=null;st.focus=null;return true;}
-        if(key==='Backspace'||key==='z'||key==='Z'){if(!st.complete&&!st.destroyed&&!st.ended)undo();return true;}
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
           if(st.pending)return true;
           const visible=st.level.holes.filter(h=>canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null));if(!visible.length)return true;
