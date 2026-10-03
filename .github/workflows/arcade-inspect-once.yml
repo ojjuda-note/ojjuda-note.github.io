@@ -1,0 +1,30 @@
+name: Arcade source inspection (temporary)
+
+on:
+  push:
+    branches: [codex/arcade-exit-confirm-20261004]
+    paths: [.github/workflows/arcade-inspect-once.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Collect public source for focused local regression tests
+        run: |
+          mkdir -p /tmp/arcade-source
+          git archive --format=tar HEAD | gzip > /tmp/arcade-source/source.tar.gz
+          git rev-parse HEAD > /tmp/arcade-source/commit.txt
+          git rev-parse HEAD^{tree} > /tmp/arcade-source/tree.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arcade-source-inspection
+          path: /tmp/arcade-source/
+          retention-days: 1
+          if-no-files-found: error
