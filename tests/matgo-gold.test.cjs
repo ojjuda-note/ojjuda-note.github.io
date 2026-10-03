@@ -4,7 +4,7 @@ const {PGlite}=require('@electric-sql/pglite');
   const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop}=await import('../games/matgo-engine.mjs');
   const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
   assert.equal(fs.readFileSync(path.join(__dirname,'../games/matgo-engine.mjs'),'utf8'),fs.readFileSync(path.join(__dirname,'../supabase/functions/matgo/engine.mjs'),'utf8'));
-  let losses=0,zeroes=0,transcript,round;
+  let losses=0,zeroes=0,twoBombs=0,transcript,round;
   for(let seed=1;seed<=100;seed++){
     round={seed,gold:5000,first:seed%2,carry:1};let game;
     game=new Game({event:async()=>{},choose:async(p,ids)=>aiChoose(game,p,ids),goStop:async(p,s)=>p===1?aiGoStop(game,p,s):'stop'});
@@ -13,9 +13,10 @@ const {PGlite}=require('@electric-sql/pglite');
       const pending=game.pendingChongtong();
       if(pending){await game.declareChongtong(pending.p,pending.p===1?'win':'continue');continue;}
       const p=game.turn,card=p===1?aiChooseCard(game,p):game.hand[p][0]||null;
-      let bomb=null;
+      let bomb=p===0?game.bombOption(p,card):null;
       if(card){const same=game.hand[p].filter(c=>c.m===card.m),matches=game.matches(card.m);
         if(same.length>=3){if(matches.length===1&&matches[0][0].length===1)bomb=same.filter(c=>c!==card).slice(0,2);else if(!game.shake[p])game.shakeCards(p,card.m);}}
+      if(bomb?.length===1)twoBombs++;
       await game.play(p,card,bomb);
     }
     transcript=JSON.parse(JSON.stringify(game.actions));
@@ -23,6 +24,7 @@ const {PGlite}=require('@electric-sql/pglite');
     assert.equal(checked.gold,game.bank[0]);assert.ok(checked.gold>=0);assert.ok(game.bank[1]>=0);
     if(checked.gold<5000)losses++;if(checked.gold===0)zeroes++;
   }
+  assert.ok(twoBombs>0,'server replay exercises two-card bombs');
   await assert.rejects(verifyRound(round,transcript.slice(0,-1)),/unfinished/);
   const forged=structuredClone(transcript);forged.find(a=>a.type==='play').card=999;
   await assert.rejects(verifyRound(round,forged),/invalid/);

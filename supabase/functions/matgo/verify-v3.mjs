@@ -1,4 +1,4 @@
-import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop, aiChooseGukjin } from './engine.mjs';
+import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop } from './engine-v3.mjs';
 
 export async function verifyRound(round, actions) {
   if (!Array.isArray(actions) || !actions.length || actions.length > 512) throw Error('invalid_actions');
@@ -9,10 +9,6 @@ export async function verifyRound(round, actions) {
       const value = current.choices[choice++];
       if (!indices.includes(value) || (p === 1 && value !== aiChoose(game, p, indices))) throw Error('invalid_choice');
       return value;
-    },
-    chooseGukjin: async p => {
-      if (!['yul', 'pi'].includes(current.gukjin) || (p === 1 && current.gukjin !== aiChooseGukjin(game, p))) throw Error('invalid_gukjin');
-      return current.gukjin;
     },
     goStop: async (p, points) => {
       if (!['go', 'stop'].includes(current.decision) || (p === 1 && current.decision !== aiGoStop(game, p, points))) throw Error('invalid_decision');
@@ -37,7 +33,7 @@ export async function verifyRound(round, actions) {
       if (action.card !== null && !card) throw Error('invalid_card');
       let bomb = null;
       if (action.bomb !== null) {
-        if (!Array.isArray(action.bomb) || ![1, 2].includes(action.bomb.length)) throw Error('invalid_bomb');
+        if (!Array.isArray(action.bomb) || action.bomb.length !== 2) throw Error('invalid_bomb');
         bomb = action.bomb.map(id => game.hand[action.p].find(c => c.id === id));
         if (bomb.some(c => !c)) throw Error('invalid_bomb');
       }
@@ -54,7 +50,6 @@ export async function verifyRound(round, actions) {
       const played = await game.play(action.p, card, bomb);
       if (played === false || game.actions.length !== before + 1 || choice !== action.choices.length) throw Error('invalid_play');
       const recorded = game.actions.at(-1);
-      if (recorded.gukjin !== action.gukjin) throw Error('invalid_gukjin');
       if (recorded.decision !== action.decision) throw Error('invalid_decision');
     } else throw Error('invalid_action');
   }

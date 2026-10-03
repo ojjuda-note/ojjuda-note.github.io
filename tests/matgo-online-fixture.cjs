@@ -10,7 +10,7 @@ async function fixture(fixtureOptions={}){
     create function public.is_banned(uuid) returns boolean language sql as $$select false$$;
     create function ojjuda_account_internal.age_on(p_birth date,p_today date) returns integer language sql as $$select extract(year from age(p_today,p_birth))::integer$$;
     grant usage on schema public to anon,authenticated,service_role;`);
-  for(const suffix of ['_matgo_gold_wallet.sql','_matgo_online_matches.sql']){
+  for(const suffix of ['_matgo_gold_wallet.sql','_matgo_online_matches.sql','_matgo_quick_cpu_fallback.sql']){
     const dir=path.join(__dirname,'../supabase/migrations'),file=fs.readdirSync(dir).find(n=>n.endsWith(suffix));
     await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
   }
@@ -30,7 +30,8 @@ async function fixture(fixtureOptions={}){
     const p=JSON.parse(options.body);if(p.p_seed)p.p_seed=fixtureOptions.seed||'11'.repeat(32);calls.push(p);
     try{
       let result;
-      if(url.endsWith('/matgo_online_service'))result=await db.query('select public.matgo_online_service($1,$2,$3,$4,$5,$6,$7,$8) value',[p.p_actor,p.p_action,p.p_room??null,p.p_code??null,p.p_seed??null,p.p_expected??null,p.p_request??null,p.p_next??null]);
+      if(url.endsWith('/matgo_online_fallback'))result=await db.query('select public.matgo_online_fallback($1,$2) value',[p.p_actor,p.p_room]);
+      else if(url.endsWith('/matgo_online_service'))result=await db.query('select public.matgo_online_service($1,$2,$3,$4,$5,$6,$7,$8) value',[p.p_actor,p.p_action,p.p_room??null,p.p_code??null,p.p_seed??null,p.p_expected??null,p.p_request??null,p.p_next??null]);
       else if(url.endsWith('/matgo_wallet_service'))result=await db.query('select public.matgo_wallet_service($1,$2,$3,$4,$5,$6,$7::smallint,$8) value',[p.p_actor,p.p_action,p.p_request??null,p.p_paid??false,p.p_round??null,p.p_gold??null,p.p_first??null,p.p_carry??null]);
       else throw Error('unexpected RPC');
       return new Response(JSON.stringify(result.rows[0].value));

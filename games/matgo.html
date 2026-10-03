@@ -140,6 +140,8 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 #matgo-gate[hidden]{display:none}#matgo-gate h1{font-size:24px;margin:0}#matgo-gate p{max-width:360px;line-height:1.7;margin:0}
 #matgo-gate a,#matgo-gate button{display:inline-block;color:#2e2748;background:#f2c14e;padding:12px 20px;border-radius:999px;text-decoration:none;font:inherit}
 </style>
+<link rel="stylesheet" href="./matgo-viewport.css?v=20261003-gukjin1">
+<script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
 </head>
 <body class="matgo-locked">
 <section id="matgo-gate" aria-labelledby="matgo-gate-title">
@@ -151,8 +153,9 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
-import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,seededRandom} from "./matgo-engine.mjs?v=20261003-rules3";
-import {createWallet} from "./matgo-wallet.mjs?v=20261003-online1";
+import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261003-rules4";
+import {heldPairMonths} from "./matgo-view.mjs?v=20261003-gukjin1";
+import {createWallet} from "./matgo-wallet.mjs?v=20261003-gukjin1";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -449,6 +452,11 @@ function banner(text,sub,kind='brag',ms=1300){ const b=document.createElement('d
 function confetti(n=26){ const cols=['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#7CC27C','#fff']; const cx=innerWidth/2, cy=innerHeight*.38; for(let i=0;i<n;i++){ const c=document.createElement('div'); c.className='confetti'; c.style.background=cols[i%cols.length]; c.style.left=cx+'px'; c.style.top=cy+'px'; document.body.appendChild(c); const a=Math.random()*Math.PI*2, v=120+Math.random()*220, dx=Math.cos(a)*v, dy=Math.sin(a)*v-120; c.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx}px,${dy+260}px) rotate(${Math.random()*720-360}deg)`,opacity:0}],{duration:1100+Math.random()*500,easing:'cubic-bezier(.2,.7,.4,1)',fill:'forwards'}); setTimeout(()=>c.remove(),1700); } }
 const ui={
   busy:false, resolveChoose:null, warned:{},
+  async chooseGukjin(p,card){
+    if(p===CPU)return aiChooseGukjin(game,p);
+    render();Sound.play('prompt');
+    return new Promise(resolve=>modal(`<h2>구쌍피를 먹었어요</h2><p>어느 쪽으로 사용할까요?</p><div class="chongtong-cards">${cardSVG(card)}</div><div class="row"><button class="btn g" id="gukjin-yul">그림(열끗)</button><button class="btn gold" id="gukjin-pi">쌍피(피 2장)</button></div>`,{'gukjin-yul':()=>resolve('yul'),'gukjin-pi':()=>resolve('pi')}));
+  },
   async choose(p,idxs,card,from){ if(p===CPU) return aiChoose(game,p,idxs);
     Sound.play('prompt');
     render(); const cand=new Set(idxs.map(i=>game.floor[i])); ui.chooseStacks=cand; stackEls.forEach((el,st)=>{ el.classList.toggle('pick',cand.has(st)); el.classList.toggle('dimmed',!cand.has(st)); });
@@ -462,9 +470,10 @@ const ui={
     return new Promise(res=>{ ui.resolveChoose=(i)=>{ ui.resolveChoose=null; ui.chooseStacks=null; const r=hc.getBoundingClientRect(); ui.holdRect={x:r.left,y:r.top,w:r.width,h:r.height}; hold.remove(); stackEls.forEach(el=>el.classList.remove('pick','dimmed')); res(i); }; }); },
   async goStop(p,s){ if(p===CPU){ const d=aiGoStop(game,p,s); if(d==='stop')Sound.play('stop'); toast(d==='go'?`상대: 고! (${s}점)`:`상대: 스톱 (${s}점)`,1400); await sleep(900); return d; } render(); Sound.play('prompt'); return new Promise(res=>{ modal(`<h2>${s}점!</h2><p>고를 하면 점수가 올라가지만, 상대가 먼저 나면 고박이에요.<br>상대 ${game.pts(CPU)}점 · 남은 패 ${game.deck.length}장</p><div class="row"><button class="btn gold" id="go">고!</button><button class="btn g" id="stop">스톱</button></div>`,{go:()=>res('go'),stop:()=>{Sound.play('stop');res('stop');}}); }); },
   async event(type,d={}){ if(!['played','flip','take','bonusPlay','flipBonus'].includes(type))Sound.play(type==='ppuk'&&d.firstPpuk?'bonusPlay':type,d); const who=p=>p===ME?'나':'상대';
+    if(type==='gukjin'){render();if(d.p===CPU)toast('상대 구쌍피 → '+(d.choice==='pi'?'쌍피':'그림(열끗)'),1400);return;}
     if(type==='state'){ render(); const my=score(game.caps[ME]), op=score(game.caps[CPU]); if(!ui.warned.pibak&&op.pv>=8&&my.pv<=4){ ui.warned.pibak=1; Sound.play('warning'); await banner('피박 위험!','피를 모아야 해요','warn',1300); } if(!ui.warned.gwang&&op.g>=2&&my.g===0&&game.deck.length<10){ ui.warned.gwang=1; Sound.play('warning'); await banner('광박 위험!','광을 하나는 먹어야 해요','warn',1300); } if(!ui.warned.seven&&op.pts>=5&&op.pts<7){ ui.warned.seven=1; Sound.play('warning'); await banner('상대 '+op.pts+'점','곧 날 수 있어요','warn',1100); } return; }
     if(type==='played'&&d.card){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); let from; if(ui.holdRect&&d.p===ME){ from={...ui.holdRect,rot:0}; ui.holdRect=null; } else if(d.p===ME){ const el=document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`); const r=el?el.getBoundingClientRect():$('.hand.me').getBoundingClientRect(); from={x:r.left,y:r.top,w:r.width,h:r.height,rot:0}; if(el) el.style.visibility='hidden'; } else { const hs=$('.hand.op'); const r=hs.getBoundingClientRect(); from={x:r.left+r.width/2-15,y:r.top,w:30,h:45,rot:0}; } await throwCard(d.card,from,to,{spin:d.p===ME?-25:25,dur:d.quick?330:420,onCards:i>0}); render(); landFx(st); await sleep(d.quick?40:120); return; }
-    if(type==='bomb'){ await banner(d.p===ME?'폭탄!':'상대 폭탄!',d.p===ME?'점수 ×2 · 내 패 옆에 뒤집기 2회 추가':'세 장 한꺼번에 · 점수 ×2',d.p===ME?'brag':'warn',1400); render(); return; }
+    if(type==='bomb'){ await banner((d.p===ME?'':'상대 ')+(d.handCount===2?'두 장 폭탄!':'폭탄!'),d.p===ME?'점수 ×2 · 내 패 옆에 뒤집기 '+d.flips+'회 추가':d.handCount+'장 한꺼번에 · 점수 ×2',d.p===ME?'brag':'warn',1400); render(); return; }
     if(type==='played'&&!d.card){ render(); toast(d.p===ME?`폭탄 뒤집기 · ${game.bomb[ME]}회 남음`:'상대 폭탄 뒤집기'); return; }
     if(type==='flip'){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); const dk=$('.deck .back').getBoundingClientRect(); if(ui.holdRect&&d.p===ME){ const hr=ui.holdRect; ui.holdRect=null; await throwCard(d.card,{x:hr.x,y:hr.y,w:hr.w,h:hr.h,rot:0},to,{dur:380,onCards:i>0}); } else await throwCard(d.card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:520,onCards:i>0}); render(); landFx(st); await sleep(140); return; }
     if(type==='take'){ if(d.silent){ render(); return; } await sleep(160); await collect(d.cards,d.p); document.querySelectorAll('.fly.tmp').forEach(e=>e.remove()); render(); return; }
@@ -516,25 +525,27 @@ function modal(html,handlers){ const m=document.createElement('div'); m.classNam
 function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c '+cls; d.innerHTML=c?cardSVG(c):backSVG; d.dataset.id=c?c.id:''; return d; }
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
-  app.innerHTML=`<div class="top"><h1>오쭈다 <em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button></div>
-  <div class="gold-pending" id="goldPending" aria-live="polite" hidden></div>
-  <div class="zone op"><div class="who"><button class="pill" id="online" style="height:24px;padding:0 8px">회원 대결</button><b>상대 (컴퓨터)</b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
+  app.innerHTML=`<div class="top"><h1><em>맞고</em></h1><span class="sp"></span><span class="my-score" id="mePts" aria-label="내 점수"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary class="pill" id="menu" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><div class="gold-pending" id="goldPending" aria-live="polite" hidden></div><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button><button class="pill" id="online">회원 대결</button><button class="pill" id="gukjin" hidden></button></div></details><button class="pill" id="exit">나가기</button></div>
+  <div class="zone op"><div class="who"><b>상대 (컴퓨터)</b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
   <div class="floor"><div class="fl" id="fl"></div><div class="deck"><div class="back">${backSVG}</div><small id="deckN"></small></div></div>
   <div class="log" id="log"></div>
-  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span><button class="pill" id="gukjin" style="height:24px" hidden></button><span class="pts" id="mePts"></span></div><div class="caps" id="capsMe"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
+  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261003-online1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261003-gukjin1');};
+  $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
+  document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
   $('#sound').onclick=()=>Sound.toggle(); Sound.sync();
   $('#bombFlip').onclick=onBombFlip;
-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피박·광박·멍박·고박 ×2 · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스 뒤에 뻑이 나면 보너스도 묶이고, 먹을 때 보너스 1장마다 상대 피 1장을 추가로 가져와요(자뻑 + 보너스 1장 = 피 3장). 피가 부족하면 있는 만큼만 가져와요 · 나가리면 다음 판 ×2<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300골드를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 폭탄 한 번당 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>1점 = ${game.rate}${UNIT}<br>처음 5,000골드 · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 0일 때 하루 2회 무료로 5,000골드를 리필할 수 있어요. 이후 5쭈로 5,000골드 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
+  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피박·광박·멍박·고박 ×2 · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스 뒤에 뻑이 나면 보너스도 묶이고, 먹을 때 보너스 1장마다 상대 피 1장을 추가로 가져와요(자뻑 + 보너스 1장 = 피 3장). 피가 부족하면 있는 만큼만 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300골드를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>1점 = ${game.rate}${UNIT}<br>처음 5,000골드 · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 0일 때 하루 2회 무료로 5,000골드를 리필할 수 있어요. 이후 5쭈로 5,000골드 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
   $('#gukjin').onclick=()=>{ if(ui.busy||game.over||game.turn!==ME)return; if(game.toggleGukjin(ME))render(); };
 }
 function syncCards(container, cards, make, after){ // id 기준으로 필요한 것만 추가/제거 (깜박임 없이)
   const want=new Set(cards.map(c=>String(c.id))); container.querySelectorAll(':scope > .c').forEach(el=>{ if(!want.has(el.dataset.id)) el.remove(); });
   cards.forEach(c=>{ let el=container.querySelector(`:scope > .c[data-id="${c.id}"]`); if(!el){ el=make(c); container.appendChild(el); } else el.style.visibility=''; after&&after(el,c); });
 }
+function showCaptured(name,cards){if(ui.busy||!cards.length)return;modal(`<h2>내가 먹은 패</h2><div class="captured-expanded">${cards.map(cardSVG).join('')}</div><button class="btn" id="captured-close">닫기</button>`,{'captured-close':()=>{}});}
 function hot(m,on){ for(const [st,el] of stackEls) if(st[0].m===m) el.classList.toggle('hot2',on); }
 function render(){
   if(!$('#fl')) mount();
@@ -543,7 +554,7 @@ function render(){
   for(const [id,n] of [['opGo',game.go[CPU]],['meGo',game.go[ME]]]){ const el=document.getElementById(id); el.hidden=!n; el.textContent=n+'고'; }
   for(const [id,p] of [['opPpuk',CPU],['mePpuk',ME]]){const el=document.getElementById(id);el.hidden=!game.ppukCount[p];el.textContent=`뻑 ${game.ppukCount[p]}/3`; }
   const pendingGold=game.firstPpukGold[ME],pendingEl=$('#goldPending');pendingEl.hidden=game.over||!pendingGold;pendingEl.textContent=`첫뻑 ${pendingGold>0?'+':''}${pendingGold}골드 · 판 종료 시 정산`;
-  const gk=$('#gukjin'); const gc=game.caps[ME].find(c=>c.tag==='gukjin'); gk.hidden=!gc; gk.disabled=!myTurn; if(gc) gk.textContent='국진 → '+(gc.asPi?'열끗':'쌍피');
+  const gk=$('#gukjin'); const gc=game.caps[ME].find(c=>c.tag==='gukjin'); gk.hidden=!gc; gk.disabled=!myTurn; if(gc) gk.textContent='구쌍피 → '+(gc.asPi?'열끗':'쌍피');
   const bf=$('#bombFlip'),flips=game.bomb[ME];
   bf.hidden=game.over||flips<=0;bf.disabled=!myTurn||!game.canBombFlip(ME);
   $('#bombFlipCount').textContent=`${flips}회 남음`;
@@ -551,7 +562,7 @@ function render(){
   bf.title='내 차례에 손패 대신 사용해요. 한 번 누르면 1회가 줄어들어요.';
   $('#deckN').textContent=game.deck.length+'장'; if(logEl&&!logEl.dataset.hold) logEl.textContent=myTurn?(game.canBombFlip(ME)?(game.hand[ME].length?'내 차례 · 패 내기 / 폭탄 뒤집기':'내 차례 · 오른쪽 폭탄 뒤집기를 누르세요.'):'내 차례예요. 낼 패를 고르세요.'):(game.over?'':'상대 차례…');
   // 먹은 패
-  for(const [p,id] of [[CPU,'capsOp'],[ME,'capsMe']]){ const c=game.caps[p]; const groups={'광':c.filter(x=>x.k==='gwang'),'열끗':c.filter(x=>x.k==='yul'&&!x.asPi),'띠':c.filter(x=>x.k==='tti'),'피':c.filter(isPi)}; document.querySelectorAll(`#${id} .cap`).forEach(cap=>{ const g=cap.dataset.g, arr=groups[g]; cap.querySelector('.lb').textContent=`${g} ${g==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}`; const step=arr.length>1?Math.max(0,Math.min(10,(cap.clientWidth-32)/(arr.length-1))):0; syncCards(cap,arr,c2=>cardEl(c2),(el,c2)=>{el.style.left=(6+arr.indexOf(c2)*step)+'px';}); }); }
+  for(const [p,id] of [[CPU,'capsOp'],[ME,'capsMe']]){ const c=game.caps[p]; const groups={'광':c.filter(x=>x.k==='gwang'),'열끗':c.filter(x=>x.k==='yul'&&!x.asPi),'띠':c.filter(x=>x.k==='tti'),'피':c.filter(isPi)}; document.querySelectorAll(`#${id} .cap`).forEach(cap=>{ const g=cap.dataset.g, arr=groups[g]; cap.querySelector('.lb').textContent=`${g} ${g==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}`; cap.setAttribute('aria-label',g+' '+(g==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length)+'장 크게 보기');if(p===ME){cap.tabIndex=0;cap.setAttribute('role','button');cap.onclick=()=>showCaptured(g,arr);cap.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showCaptured(g,arr);}};}const step=arr.length>1?Math.max(0,Math.min(p===ME?18:10,(cap.clientWidth-(p===ME?44:32))/(arr.length-1))):0; syncCards(cap,arr,c2=>cardEl(c2),(el,c2)=>{el.style.left=(6+arr.indexOf(c2)*step)+'px';}); }); }
   // 바닥
   fitFloor(); const fl=$('#fl'), frc=$('.floor').getBoundingClientRect(), fb={x:frc.left,y:frc.top}; const live=new Set(game.floor);
   for(const [st,el] of stackEls){ if(!live.has(st)){ el.remove(); stackEls.delete(st); } }
@@ -562,8 +573,9 @@ function render(){
     el.onclick=()=>{ if(ui.resolveChoose&&el.classList.contains('pick')) ui.resolveChoose(game.floor.indexOf(st)); }; });
   // 손패
   const floorMonths=new Set(game.floor.map(st=>st[0].m));
+  const pairs=heldPairMonths(game.hand[ME],game.caps);
   const sortedHand=[...game.hand[ME]].sort((a,b)=>a.m-b.m||a.id-b.id);
-  const hm=$('#handMe'); syncCards(hm,sortedHand,c2=>{ const el=cardEl(c2); el.onclick=()=>onPick(c2.id); el.onpointerenter=()=>hot(c2.m,true); el.onpointerleave=()=>hot(c2.m,false); return el; },(el,c2)=>{ el.classList.toggle('ok',myTurn); el.classList.toggle('dim',!myTurn); el.classList.toggle('match',myTurn&&floorMonths.has(c2.m)); });
+  const hm=$('#handMe'); syncCards(hm,sortedHand,c2=>{ const el=cardEl(c2); el.onclick=()=>onPick(c2.id); el.onpointerenter=()=>hot(c2.m,true); el.onpointerleave=()=>hot(c2.m,false); return el; },(el,c2)=>{ el.classList.toggle('ok',myTurn); el.classList.toggle('dim',!myTurn); el.classList.toggle('match',myTurn&&floorMonths.has(c2.m));let badge=el.querySelector('.pair-mark');if(!badge){badge=document.createElement('span');badge.className='pair-mark';badge.textContent='짝';el.appendChild(badge);}badge.hidden=!pairs.has(c2.m);el.title=pairs.has(c2.m)?c2.m+'월 짝패 · 나머지 두 장은 이미 먹은 패예요':''; });
   sortedHand.forEach((c,i)=>{ const el=hm.querySelector(`.c[data-id="${c.id}"]`); if(hm.children[i]!==el)hm.insertBefore(el,hm.children[i]||null); });
   const handMonths=new Set(game.hand[ME].map(c=>c.m)); for(const [st,el] of stackEls) el.classList.toggle('hot',myTurn&&handMonths.has(st[0].m));
   const ho=$('#handOp'); while(ho.children.length>game.hand[CPU].length) ho.lastChild.remove(); while(ho.children.length<game.hand[CPU].length) ho.appendChild(cardEl(null));
@@ -581,9 +593,10 @@ async function onPick(id){
   try{ { const el=document.querySelector(`.hand.me .c[data-id="${id}"]`); if(el){ const r=el.getBoundingClientRect(); ui.lastHandRect={left:r.left,top:r.top,width:r.width,height:r.height}; } }
   render();
   const same=game.hand[ME].filter(c=>c.m===card.m);
-  if(same.length>=3){ const ms=game.matches(card.m);
-    if(ms.length>=1){ const yes=await new Promise(res=>modal(`<h2>폭탄!</h2><p>${card.m}월 패 3장을 한꺼번에 내서 바닥 패까지 다 가져오고, 점수 ×2가 돼요.<br>이후 내 차례에 손패 대신 쓸 수 있는 ‘폭탄 뒤집기’ 2회를 받아요.</p><div class="row"><button class="btn gold" id="y">폭탄 던지기</button><button class="btn g" id="n">한 장만 내기</button></div>`,{y:()=>res(true),n:()=>res(false)})); if(yes){ await doTurn(card, same.filter(c=>c!==card).slice(0,2)); return; } }
-    else if(!game.shake[ME]){ const yes=await new Promise(res=>modal(`<h2>흔들기?</h2><p>${card.m}월 패가 3장 있어요. 흔들면 이겼을 때 점수 ×2가 되지만, 상대에게 패를 보여줘요.</p><div class="row"><button class="btn gold" id="y">흔들기</button><button class="btn g" id="n">그냥 내기</button></div>`,{y:()=>res(true),n:()=>res(false)})); if(yes){ game.shakeCards(ME,card.m); ui.busy=true; render(); await shakeAnim(ME,same.slice(0,3)); render(); } }
+  const bomb=game.bombOption(ME,card);
+  if(bomb){const count=bomb.length+1,yes=await new Promise(res=>modal(`<h2>${count===2?'두 장 폭탄!':'폭탄!'}</h2><p>${card.m}월 손패 ${count}장과 바닥 ${4-count}장을 함께 먹고 점수 ×2가 돼요.<br>이후 내 차례에 ‘폭탄 뒤집기’ ${bomb.length}회를 쓸 수 있어요.</p><div class="row"><button class="btn gold" id="y">폭탄 던지기</button><button class="btn g" id="n">한 장만 내기</button></div>`,{y:()=>res(true),n:()=>res(false)}));if(yes){await doTurn(card,bomb);return;}}
+  else if(same.length>=3){
+    if(!game.shake[ME]){ const yes=await new Promise(res=>modal(`<h2>흔들기?</h2><p>${card.m}월 패가 3장 있어요. 흔들면 이겼을 때 점수 ×2가 되지만, 상대에게 패를 보여줘요.</p><div class="row"><button class="btn gold" id="y">흔들기</button><button class="btn g" id="n">그냥 내기</button></div>`,{y:()=>res(true),n:()=>res(false)})); if(yes){ game.shakeCards(ME,card.m); ui.busy=true; render(); await shakeAnim(ME,same.slice(0,3)); render(); } }
   }
   await doTurn(card);
   }finally{ui.busy=false;render();}
