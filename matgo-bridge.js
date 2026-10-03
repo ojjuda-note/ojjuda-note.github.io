@@ -42,7 +42,7 @@
       overlay.setAttribute('role', 'dialog');
       overlay.setAttribute('aria-modal', 'true');
       overlay.setAttribute('aria-label', '맞고 · 만 19세 이상');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#1c1730;display:flex;flex-direction:column';
+      overlay.style.cssText = 'position:fixed;inset:var(--app-viewport-top,0px) 0 auto;height:var(--app-viewport-height,100dvh);padding-bottom:var(--app-safe-bottom,env(safe-area-inset-bottom,0px));box-sizing:border-box;z-index:99999;background:#1c1730;display:flex;flex-direction:column';
       const bar = document.createElement('div');
       bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px';
       const label = document.createElement('span');
