@@ -57,13 +57,16 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.equal(await current(),'friends','old store action returns to the main screen');
     await page.evaluate(()=>{worldTest.state.tab='shop';worldTest.render();});
     assert.equal(await current(),'friends','restored store state cannot reopen the store');
-    assert.equal(await page.locator('.wd-home').getAttribute('aria-disabled'),'true');
-    assert.match(await page.locator('.wd-home').textContent(),/공사 중/);
-    await page.evaluate(()=>worldTest.actions['house-construction']());
-    assert.equal(await current(),'friends');
+    assert.notEqual(await page.locator('.wd-home').getAttribute('aria-disabled'),'true');
+    assert.equal(await page.locator('.wd-home').getAttribute('aria-label'),'우리집 들어가기');
+    await page.locator('.wd-home').click();
+    assert.equal(await current(),'home');
+    assert.equal(await page.locator('[data-house-entry]').count(),1,'signed-out members get the house entry panel');
+    assert.equal(await page.locator('iframe').count(),0,'signed-out navigation does not open an ownerless room');
+    await main();
     for(const tab of ['home','deco']){
       await page.evaluate(tab=>worldTest.actions.tab({tab}),tab);
-      assert.equal(await page.locator('[data-house-construction]').count(),1);
+      assert.equal(await page.locator('[data-house-entry]').count(),1);
       assert.equal(await page.locator('#stage,#av-preview,.room3d-frame').count(),0);
       await main();
     }

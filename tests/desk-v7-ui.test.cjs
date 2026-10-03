@@ -39,7 +39,7 @@ async function main(){
    });
    await page.goto(origin+'/qa');
    const open=async()=>{
-    await page.locator('#open').click();const frame=page.frameLocator('iframe[title="새 우리집 플레이 테스트"]');
+    await page.locator('#open').click();const frame=page.frameLocator('iframe[title="우리집"]');
     await frame.locator('#app').waitFor({state:'visible'});await frame.locator('.desk[data-render-state="ready"]').waitFor();
     if(hasPreviewFont)await frame.locator('body').evaluate(async()=>{const link=document.createElement('link');link.rel='stylesheet';link.href='/qa-font/400.css';const loaded=new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=reject;});document.head.append(link);await loaded;const style=document.createElement('style');style.textContent='body,button,input,output{font-family:"Noto Sans KR",sans-serif!important}';document.head.append(style);await document.fonts.load('16px "Noto Sans KR"','책상 의자 우리집');});return frame;
    };
@@ -81,7 +81,7 @@ async function main(){
    const capture=async(direction,suffix)=>{
     await page.clock.runFor(5800);await frame.locator('#notice:not(.show)').waitFor({state:'attached'});await page.waitForTimeout(200);
     const name='desk-'+direction+'-'+viewport.name+'-'+suffix+'.png',file=path.join(output,name);
-    if(!args.has('--verify-only'))await frame.locator('#app').screenshot({path:file,style:'div[role="dialog"][aria-label="새 우리집 테스트"] > button{visibility:hidden!important}'});return name;
+    if(!args.has('--verify-only'))await frame.locator('#app').screenshot({path:file,style:'div[role="dialog"][aria-label="우리집"] > button{visibility:hidden!important}'});return name;
    };
    for(const direction of directions){
     const entry={direction,screenshots:[]};record.views.push(entry);
@@ -102,18 +102,18 @@ async function main(){
     const dy=cameraBox.y+cameraBox.height*.54-(deskBox.y+deskBox.height*.5),start={x:cameraBox.x+cameraBox.width*.5,y:cameraBox.y+cameraBox.height*.75};
     await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(start.x+dx,start.y+dy,{steps:8});await page.mouse.up();
     entry.screenshots.push(await capture(direction,'reference-normal'));
-    await page.getByRole('button',{name:'테스트 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),entry.reference,'Reference save/reopen failed');
+    await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),entry.reference,'Reference save/reopen failed');
     await frame.getByRole('button',{name:'책상 배치',exact:true}).click();
     await frame.locator('#bookshelf-gap').focus();await frame.locator('#bookshelf-gap').press('ArrowRight');await frame.locator('.desk[data-render-state="ready"]').waitFor();
     const moved={...entry.reference,x:entry.reference.x+(direction==='right'?-.5:.5)};
     assert.deepEqual(await deskPosition(),moved);assert.equal(await frame.locator('#placement-done').isDisabled(),false);
     entry.halfCell=moved;entry.movedPaint=await inspectPaint(direction);entry.screenshots.push(await capture(direction,'half-cell-grid'));
-    await frame.getByRole('button',{name:'배치 완료',exact:true}).click();await page.getByRole('button',{name:'테스트 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),moved,'Half-cell save/reopen failed');
+    await frame.getByRole('button',{name:'배치 완료',exact:true}).click();await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),moved,'Half-cell save/reopen failed');
     await frame.getByRole('button',{name:'책상 배치',exact:true}).click();
     await frame.locator('#bookshelf-depth').focus();await frame.locator('#bookshelf-depth').press('ArrowRight');await frame.locator('.desk[data-render-state="ready"]').waitFor();
     assert.deepEqual(await deskPosition(),{...moved,y:moved.y+.5},'Depth slider must move by .5 cell');
     await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await deskPosition(),moved,'Cancel must restore saved pose');
-    await page.getByRole('button',{name:'테스트 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),moved,'Canceled draft must not persist');
+    await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),moved,'Canceled draft must not persist');
     assert.deepEqual(await position(frame.locator('.bookshelf')),bookshelfBefore);assert.equal(await frame.locator('.chair').count(),0);entry.saveReopenCancel='passed';
     await frame.getByRole('button',{name:'책상 배치',exact:true}).click();
    }

@@ -4,7 +4,7 @@ const proof=process.env.CHAIR_LINK_PROOF_DIR||path.resolve(root,'../chair-desk-l
 const owner='chair-desk-link',key='ojjuda-house-playtest-v1:'+owner;
 const modelURL='/house-test/model.js?v=20261003-chairdesk1',catalogURL='/house-test/furniture-catalog.js?v=20261003-chairdesk1';
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/chair-v1.runtime.json')));
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-chairdesk1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-housepublic1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
 const plain=p=>({direction:p.direction,x:p.x,y:p.y});
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
