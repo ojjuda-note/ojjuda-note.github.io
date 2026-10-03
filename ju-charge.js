@@ -6,12 +6,13 @@
   const packages = Object.freeze([
     { id: 'p1000', won: 1000, coins: 10 },
     { id: 'p3000', won: 3000, coins: 30 },
-    { id: 'p5000', won: 5000, coins: 50 },
-    { id: 'p10000', won: 10000, coins: 100 },
-    { id: 'p30000', won: 30000, coins: 300 },
-    { id: 'p50000', won: 50000, coins: 500 }
+    { id: 'p5000', won: 5000, coins: 50, bonus: 5 },
+    { id: 'p10000', won: 10000, coins: 100, bonus: 10 },
+    { id: 'p30000', won: 30000, coins: 300, bonus: 35 },
+    { id: 'p50000', won: 50000, coins: 500, bonus: 50 }
   ].map(Object.freeze));
   const number = value => value.toLocaleString('ko-KR');
+  const total = pack => pack.coins + (pack.bonus || 0);
   let options = {}, dialog, opener, selected = packages[0], balanceRun = 0;
   let installedClient = null, subscription = null, state = null, busy = false;
 
@@ -20,7 +21,8 @@
     for (const button of dialog.querySelectorAll('[data-ju-pack]')) {
       button.setAttribute('aria-pressed', String(button.dataset.juPack === pack.id));
     }
-    dialog.querySelector('[data-ju-selected]').textContent = `${number(pack.coins)}쭈`;
+    dialog.querySelector('[data-ju-selected]').textContent = `${number(pack.coins)}쭈${pack.bonus ? ` + 보너스 ${number(pack.bonus)}쭈` : ''}`;
+    dialog.querySelector('[data-ju-total]').textContent = `총 ${number(total(pack))}쭈`;
     dialog.querySelector('[data-ju-price]').textContent = state?.enabled ? '0원 (베타 무료)' : `${number(pack.won)}원`;
     updateButton();
   }
@@ -32,7 +34,7 @@
     button.textContent = busy ? '충전 중…' : !options.getUserId?.() ? '로그인 후 무료 충전'
       : !state ? '충전 정보 확인 중' : !state.ok ? '충전 정보를 다시 확인해 주세요'
       : !state.enabled ? '결제 준비 중' : state.left < 1 ? '오늘 무료 충전을 모두 받았어요'
-      : `${number(selected.coins)}쭈 무료 충전`;
+      : `${number(total(selected))}쭈 무료 충전`;
     for (const pack of dialog.querySelectorAll('[data-ju-pack]')) pack.disabled = busy;
   }
 
@@ -94,7 +96,7 @@
       if (error || !data) throw new Error('charge_unavailable');
       if (data.ok) {
         callback?.(data.coins, userId);
-        message.textContent = `${number(data.added)}쭈를 무료로 받았어요!`;
+        message.textContent = `${number(data.added)}쭈를 무료로 받았어요!${data.bonus ? ` (보너스 ${number(data.bonus)}쭈 포함)` : ''}`;
       } else {
         message.textContent = data.reason === 'limit' ? '오늘 무료 충전을 모두 받았어요. 내일 다시 이용해 주세요.'
           : data.reason === 'closed' ? '지금은 무료 충전을 이용할 수 없어요.'
@@ -119,17 +121,19 @@
     dialog.setAttribute('aria-labelledby', 'ju-charge-title');
     dialog.setAttribute('aria-describedby', 'ju-charge-description');
     dialog.innerHTML = `
-      <header class="ju-charge-heading"><div><p class="ju-charge-eyebrow">오쭈다 노트 · 월드</p><h2 id="ju-charge-title">쭈 충전</h2></div><button class="ju-charge-close" type="button" aria-label="충전창 닫기" autofocus>×</button></header>
+      <header class="ju-charge-heading"><h2 id="ju-charge-title">쭈 충전</h2><button class="ju-charge-close" type="button" aria-label="충전창 닫기" autofocus>닫기</button></header>
       <div class="ju-charge-content">
         <div class="ju-charge-wallet"><span>보유 쭈</span><strong data-ju-balance role="status">확인 중</strong></div>
         <div class="ju-charge-benefit"><strong data-ju-beta-title>베타 기간 · 하루 5회 무료</strong><span data-ju-remaining role="status">남은 횟수 확인 중</span></div>
         <p id="ju-charge-description">원하는 충전 금액을 골라 주세요.<br>쭈는 노트와 월드에서 함께 사용할 수 있어요.</p>
         <div class="ju-charge-grid" role="group" aria-label="충전 상품 6종">${packages.map(pack => `
           <button class="ju-charge-pack" type="button" data-ju-pack="${pack.id}" aria-pressed="${pack.id === selected.id}">
-            <span class="ju-charge-coin" aria-hidden="true">쭈</span><strong>${number(pack.coins)}<small>쭈</small></strong><span class="ju-charge-won">${number(pack.won)}원</span>
+            <span class="ju-charge-coin" aria-hidden="true"><i>쭈</i></span><strong>${number(pack.coins)}<small>쭈</small></strong>
+            ${pack.bonus ? `<span class="ju-charge-bonus">+${number(pack.bonus)}쭈 보너스</span>` : '<span class="ju-charge-bonus-space" aria-hidden="true"></span>'}
+            <span class="ju-charge-pack-total">총 ${number(total(pack))}쭈</span><span class="ju-charge-won">${number(pack.won)}원</span>
           </button>`).join('')}
         </div>
-        <div class="ju-charge-total" aria-live="polite" aria-atomic="true"><span>선택한 상품 <b data-ju-selected>10쭈</b></span><span>결제 금액 <strong data-ju-price>1,000원</strong></span></div>
+        <div class="ju-charge-total" aria-live="polite" aria-atomic="true"><span>선택한 상품 <b data-ju-selected>10쭈</b></span><span class="ju-charge-receive">받을 쭈 <strong data-ju-total>총 10쭈</strong></span><span>결제 금액 <strong data-ju-price>1,000원</strong></span></div>
         <p class="ju-charge-notice" id="ju-charge-payment-status">노트와 월드의 무료 횟수는 함께 계산돼요. 매일 밤 12시(한국 시간)에 다시 받을 수 있어요.</p>
         <a class="ju-charge-login" data-ju-login href="/?auth=login&next=world" hidden>로그인하고 보유 쭈 확인하기 →</a>
         <p class="ju-charge-result" data-ju-result role="status" aria-live="polite"></p>

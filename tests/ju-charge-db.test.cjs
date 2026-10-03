@@ -4,6 +4,7 @@ const path = require('node:path');
 const { PGlite } = require('@electric-sql/pglite');
 const folder = path.join(__dirname, '../supabase/migrations');
 const sql = fs.readFileSync(path.join(folder, fs.readdirSync(folder).find(name => name.endsWith('_shared_ju_charge_catalog.sql'))), 'utf8');
+const bonusSql = fs.readFileSync(path.join(folder, fs.readdirSync(folder).find(name => name.endsWith('_ju_charge_bonus_packages.sql'))), 'utf8');
 const alice = '00000000-0000-4000-8000-000000000001';
 const bob = '00000000-0000-4000-8000-000000000002';
 (async () => {
@@ -31,15 +32,18 @@ const bob = '00000000-0000-4000-8000-000000000002';
       insert into app_config values('beta_free_charge','true'),('beta_charge_daily_limit','5');
       insert into user_private values('${alice}',7),('${bob}',11);`);
     await db.exec(sql);
+    await db.exec(bonusSql);
     for (const signature of ['beta_charge(text)', 'beta_charge_status()']) {
       assert.equal(await value('select has_function_privilege($1,$2,$3) as value', ['anon', signature, 'execute']), false);
       assert.equal(await value('select has_function_privilege($1,$2,$3) as value', ['authenticated', signature, 'execute']), true);
     }
-    for (const [won, coins] of [[1000,10],[3000,30],[5000,50],[10000,100],[30000,300],[50000,500]]) {
+    for (const [won, base, bonus] of [[1000,10,0],[3000,30,0],[5000,50,5],[10000,100,10],[30000,300,35],[50000,500,50]]) {
+      const coins = base + bonus;
       await db.exec('reset role; truncate coin_charges');
       await login(alice);
       const before = await value('select beta_charge_status() as value');
       const result = await value('select beta_charge($1) as value', ['p' + won]);
+      assert.deepEqual([result.base, result.bonus], [base, bonus]);
       assert.deepEqual([result.ok, result.added, result.coins, result.left], [true, coins, before.coins + coins, 4]);
       const row = (await db.query('select * from coin_charges')).rows[0];
       assert.deepEqual([row.coins, row.won, row.free], [coins, won, true]);
