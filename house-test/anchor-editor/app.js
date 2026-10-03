@@ -29,7 +29,7 @@ let shared={name:'새 가구',width:3,depth:1,height:1.4,...objectMetadata()},ac
 const fresh=(direction='right')=>({format:'ojjuda-furniture',version:1,name:shared.name,...objectMetadata(shared),source:null,cutout:{polygon:[],strokes:[]},layers:[freshLayer()],placement:{direction,x:direction==='left'?0:direction==='center'?(FLOOR.width-shared.width)/2:FLOOR.width-shared.depth,y:direction==='center'?0:Math.min(3.5,FLOOR.depth-shared.width),width:shared.width,depth:shared.depth,height:shared.height}});
 const freshSlot=direction=>({state:fresh(direction),selected:0,meshSelected:0,sourceImage:null,baseCutout:null,cutout:null,history:[],polygonDraft:[],tool:'points',camera:{source:{zoom:1,pan:{x:0,y:0}},room:{zoom:1,pan:{x:0,y:0}}},preview:null});
 const slots=Object.fromEntries(DIRECTIONS.map(d=>[d,freshSlot(d)]));
-let state=fresh(),selected=0,meshSelected=0,tool='points',sourceImage=null,baseCutout=null,cutout=null,background=null,history=[],polygonDraft=[],gesture=null,dirty=false,renderPending=false,loading=false,noticeTimer;
+let state=fresh(),selected=0,meshSelected=0,tool='points',sourceImage=null,baseCutout=null,cutout=null,background=null,history=[],polygonDraft=[],gesture=null,dirty=false,renderPending=false,cutPending=false,loading=false,noticeTimer;
 const views={source:{zoom:1,pan:{x:0,y:0}},room:{zoom:1,pan:{x:0,y:0}}};
 const cvs={source:$('source-canvas'),room:$('room-canvas')};
 const readyFor=(l,p)=>l.source.length===4&&validQuad(l.source)&&validQuad(targetFor(l,p));
@@ -147,8 +147,10 @@ function syncSet(){
 function clampPlacement(p){const sw=p.direction==='center'?p.width:p.depth,sd=p.direction==='center'?p.depth:p.width;p.x=Math.max(0,Math.min(FLOOR.width-sw,p.x));p.y=Math.max(0,Math.min(FLOOR.depth-sd,p.y));}
 
 function checkpoint(){history.push(clone(state));if(history.length>40)history.shift();$('undo').disabled=false;mark();}
-function cut(){if(sourceImage){baseCutout=createCutout(sourceImage,state.cutout.polygon,state.cutout.strokes);cutout=state.parts?renderParts(baseCutout,state.parts,partsImages(state.parts)):baseCutout;}}
-function redraw(){if(!renderPending){renderPending=true;requestAnimationFrame(()=>{renderPending=false;draw('source');draw('room');});}}
+function cut(){cutPending=false;if(sourceImage){baseCutout=createCutout(sourceImage,state.cutout.polygon,state.cutout.strokes);cutout=state.parts?renderParts(baseCutout,state.parts,partsImages(state.parts)):baseCutout;}}
+// Keep every brush point, but rebuild the native-resolution image only once per
+// displayed frame. Gesture completion flushes it before previews or saves run.
+function redraw(){if(!renderPending){renderPending=true;requestAnimationFrame(()=>{renderPending=false;if(cutPending)cut();draw('source');draw('room');});}}
 function dimensions(kind){return kind==='room'?{width:ROOM.width,height:ROOM.height}:{width:sourceImage?.naturalWidth||900,height:sourceImage?.naturalHeight||700};}
 function camera(kind){const c=cvs[kind],r=c.getBoundingClientRect(),d=dimensions(kind),v=views[kind],s=Math.min((r.width-32)/d.width,(r.height-32)/d.height)*v.zoom;return {s,x:(r.width-d.width*s)/2+v.pan.x,y:(r.height-d.height*s)/2+v.pan.y,w:r.width,h:r.height};}
 function pointAt(kind,e){const r=cvs[kind].getBoundingClientRect(),v=camera(kind);return {x:(e.clientX-r.left-v.x)/v.s,y:(e.clientY-r.top-v.y)/v.s};}
@@ -235,7 +237,7 @@ for(const kind of ['source','room']){
   if(gesture.type==='pan'){views[kind].pan={x:gesture.pan.x+e.clientX-gesture.client.x,y:gesture.pan.y+e.clientY-gesture.client.y};redraw();return;}
   let p=pointAt(kind,e);if(kind==='source'&&!(gesture.type==='mesh-anchor'&&state.mesh?.anchors[gesture.index]?.kind==='support'))p=sourceClamp(p);
   if(gesture.type==='object'){gesture.latest=p;if(!gesture.frame)gesture.frame=requestAnimationFrame(()=>{const g=gesture;if(g?.type==='object'){g.frame=null;partsUI.drag(g.rect,g.latest.x-g.point.x,g.latest.y-g.point.y);}});return;}
-  if(gesture.type==='brush'){const pts=gesture.stroke.points,last=pts.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>1){pts.push(p);cut();redraw();}return;}
+  if(gesture.type==='brush'){const pts=gesture.stroke.points,last=pts.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>1){pts.push(p);cutPending=true;redraw();}return;}
   if(kind==='room'){
    p={x:Math.max(0,Math.min(ROOM.width,p.x)),y:Math.max(0,Math.min(ROOM.height,p.y))};
    if($('snap-grid').checked){const node=nearestGridPoint(p);if(node.distance*camera(kind).s<12)p=node.screen;}
@@ -258,7 +260,7 @@ for(const kind of ['source','room']){
   }else (kind==='source'?layer().source:layer().target)[gesture.index]=p;
   redraw();
  });
- const end=e=>{if(gesture?.id===e.pointerId){if(gesture.type==='object'){if(gesture.frame)cancelAnimationFrame(gesture.frame);const p=gesture.latest||gesture.point;partsUI.drag(gesture.rect,p.x-gesture.point.x,p.y-gesture.point.y);}const changed=gesture.type!=='pan';gesture=null;if(changed)mark();sync();}};c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+ const end=e=>{if(gesture?.id===e.pointerId){if(gesture.type==='object'){if(gesture.frame)cancelAnimationFrame(gesture.frame);const p=gesture.latest||gesture.point;partsUI.drag(gesture.rect,p.x-gesture.point.x,p.y-gesture.point.y);}if(cutPending)cut();const changed=gesture.type!=='pan';gesture=null;if(changed)mark();sync();}};c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
  c.addEventListener('dblclick',()=>{if(kind!=='source'||polygonDraft.length<3)return;if(tool==='outline')finishOutline();else if(tool==='part-outline')guarded(()=>partsUI.finish());});
  c.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();views[kind].zoom=Math.max(1,Math.min(4,views[kind].zoom*(e.deltaY>0?.9:1.1)));$(kind+'-zoom').value=views[kind].zoom*100;redraw();},{passive:false});
 }
@@ -625,7 +627,7 @@ for(const type of ['click','change','input'])document.addEventListener(type,e=>{
 },true);
 
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
-window.addEventListener('keydown',e=>{if(loading)return;if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('undo').click();}if(e.key==='Escape'){polygonDraft=[];gesture=null;simpleUI?.schedule();sync();}});
+window.addEventListener('keydown',e=>{if(loading)return;if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('undo').click();}if(e.key==='Escape'){if(cutPending)cut();polygonDraft=[];gesture=null;simpleUI?.schedule();sync();}});
 new ResizeObserver(redraw).observe(document.querySelector('main'));
 partsUI=mountPartsEditor({get:()=>({parts:state.parts,frame:{width:sourceImage?.naturalWidth||0,height:sourceImage?.naturalHeight||0},direction:activeView,baseImage:baseCutout,imageMap:partsImages(state.parts),draft:polygonDraft,tool}),commit:commitParts,run:guarded,loadImage:loadPartImage,readFile,message,redraw,startOutline:()=>useTool('part-outline'),clearDraft:()=>useTool(document.body.dataset.mode==='simple'?'inspect':'points'),setTool:useTool,checkpoint,preview:parts=>commitParts(parts,{record:false,intermediate:true}),finish:()=>{mark();sync();}});
 function rawSnapshot(){storeActive();return {format:'ojjuda-furniture-set',version:1,name:shared.name,...objectMetadata(shared),dimensions:{width:shared.width,depth:shared.depth,height:shared.height},generationNotes:$('ai-notes').value,activeView,views:Object.fromEntries(DIRECTIONS.map(d=>[d,slots[d].state.source?clone(slots[d].state):null]))};}
