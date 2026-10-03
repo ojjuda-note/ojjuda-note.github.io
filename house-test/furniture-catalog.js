@@ -10,6 +10,10 @@ export const SOFA_ACCESSORIES=[
  {id:'blanket-sofa',label:'분홍 담요 · 소파용'}
 ];
 export const FURNITURE={
+ chair:{label:'원목 책상 의자',shortLabel:'의자',width:1.2,depth:1.2,height:1.65,depthFill:1,introduced:15,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/chair-center-preview-v1.png',
+  preferred:{direction:'left',x:7.5,y:4.5},preferredViews:{left:{direction:'left',x:7.5,y:4.5},center:{direction:'center',x:4.5,y:4.5},right:{direction:'right',x:4,y:4.5}},
+  clearance:'방향을 바꾸면 기준 위치로 이동해요. 다른 가구와 겹치지 않게 놓아 주세요.'},
  carpet:{label:'크림 샤기 카펫',shortLabel:'카펫',width:5.5,depth:3.5,height:.1,depthFill:1,introduced:14,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'floor',picture:'made',preview:'assets/carpet-center-preview-v1.png',
   preferred:{direction:'center',x:1,y:3},clearance:'바닥에 까는 보송한 카펫이에요. 가구 아래에 놓을 수 있고, 다른 바닥 소품과는 겹치지 않게 놓아 주세요.'},
