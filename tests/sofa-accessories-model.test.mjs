@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalize,normalizePlacement,normalizeAccessories,findPlacement,canPlaceFurniture,canDrawFurniture} from '../house-test/model.js?v=20261003-loading5';
-import {FURNITURE,SOFA_ACCESSORIES} from '../house-test/furniture-catalog.js?v=20261003-loading5';
+import {normalize,normalizePlacement,normalizeAccessories,findPlacement,canPlaceFurniture,canDrawFurniture} from '../house-test/model.js?v=20261003-lamp1';
+import {FURNITURE,SOFA_ACCESSORIES} from '../house-test/furniture-catalog.js?v=20261003-lamp1';
 
 test('existing rooms and deliberately empty rooms receive no new furniture',()=>{
  const old={version:9,diary:'보존할 기록',rooms:[{x:0,y:0,decor:true,curtains:false,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5}}},{x:1,y:0,decor:false,curtains:false,shelf:null,furniture:{}}]};
