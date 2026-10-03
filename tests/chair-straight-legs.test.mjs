@@ -19,7 +19,7 @@ const bend=(mesh,r)=>{
 };
 test('rendering correction preserves approved PNGs, native geometry and all four contact feet',()=>{
  for(const [d,v]of Object.entries(fixed.views)){
-  const stripped=structuredClone(v);delete stripped.mesh.straightRegions;assert.deepEqual(stripped,original.views[d]);
+  const stripped=structuredClone(v);delete stripped.mesh.straightRegions;stripped.mesh.indices=original.views[d].mesh.indices;assert.deepEqual(stripped,original.views[d]);
   for(const pose of [v.placement,{...v.placement,x:v.placement.x+.5}]){
    const p=projectMesh(v.mesh,pose),s=straightenProjectedMesh(p);
    assert.deepEqual(s.points,p.points);
@@ -43,4 +43,30 @@ test('ordinary furniture is unchanged; straight-region metadata validates and co
  const normalized=normalizeMesh(fixed.views.left.mesh);normalized.straightRegions[0].start.x=0;
  assert.notEqual(normalizeMesh(fixed.views.left.mesh).straightRegions[0].start.x,0);
  assert.throws(()=>normalizeMesh({...v.mesh,straightRegions:[{start:{x:0,y:0},end:{x:1,y:1},radius:-1,feather:1}]}));
+});
+
+test('back posts use the back panel at the reported placement, with unchanged feet and source coverage',()=>{
+ const axes={left:[[[151,350],[250,793]],[[215,369],[293,823]],[[251,383],[329,843]],[[288,401],[375,866]],[[318,267],[454,889]]],right:[[[806,350],[708,790]],[[598,272],[493,877]],[[635,390],[575,846]],[[676,375],[613,833]],[[719,357],[654,816]]]};
+ for(const d of ['left','right']){
+  const pose={...fixed.views[d].placement,x:d==='left'?4.5:5.5,y:5.5},before=projectMesh(original.views[d].mesh,pose),after=projectMesh(fixed.views[d].mesh,pose),rendered=straightenProjectedMesh(after);
+  const rods=axes[d].map(([a,b])=>({start:{x:a[0],y:a[1]},end:{x:b[0],y:b[1]}}));
+  const previous=Math.max(...rods.map(r=>bend(before,r))),current=Math.max(...rods.map(r=>bend(rendered,r)));
+  assert(previous>10);assert(current<1.6);assert(current<previous*.12,'seat-front points no longer introduce a hinge in the back');
+  assert.deepEqual(after.points,before.points,'every physical and support anchor stays on its original room point');
+  const area=m=>m.triangles.reduce((sum,t)=>sum+cross(...t.source)/2,0);
+  assert(Math.abs(area(before)-area(after))<1e-6,'source triangle union still covers the same picture');
+  assert(rendered.triangles.every(t=>cross(...t.target)>0));
+ }
+ const again=straightenChairLegs(structuredClone(fixed));assert.deepEqual(again.views.left.mesh,fixed.views.left.mesh,'reopen cannot append duplicate triangles');
+});
+
+test('studio recovery requires both the exact chair PNG and unchanged geometry',async()=>{
+ const {recoverKnownChairProject}=await import('../house-test/chair-straight-regions.js');
+ for(const d of ['left','center','right']){
+  const v=original.views[d],p={name:'내 의자',source:{data:v.drawings[0].data},placement:{...v.placement,x:4.5},mesh:structuredClone(v.mesh)},snapshot=JSON.stringify(p);
+  const recovered=await recoverKnownChairProject(p);assert.deepEqual(recovered.mesh,fixed.views[d].mesh);assert.deepEqual(recovered.placement,p.placement);assert.equal(JSON.stringify(p),snapshot,'input project is not mutated');
+  assert.deepEqual(await recoverKnownChairProject(recovered),recovered,'save/reopen is idempotent');
+  const edited=structuredClone(p);edited.mesh.anchors[0].world.x+=.01;assert.equal(await recoverKnownChairProject(edited),edited,'own edited geometry is preserved');
+  const other=structuredClone(p);other.source.data='data:image/png;base64,AAAA';assert.equal(await recoverKnownChairProject(other),other,'a filename or similar chair is not sufficient');
+ }
 });

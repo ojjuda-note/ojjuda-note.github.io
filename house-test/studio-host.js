@@ -1,5 +1,5 @@
-import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261004-roomcache1';
-import {validateRuntime} from './anchor-editor/runtime.js?v=20261004-roomcache1';
+import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261004-chairback1';
+import {validateRuntime} from './anchor-editor/runtime.js?v=20261004-chairback1';
 import {openHouseTest} from './host.js?v=20261004-studioperf1';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){

@@ -1,19 +1,20 @@
-import {validQuad,homography,project,drawWarp} from './warp.js?v=20261004-roomcache1';
-import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261004-roomcache1';
-import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261004-roomcache1';
-import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261004-roomcache1';
-import {makeZip} from './zip.js?v=20261004-roomcache1';
-import {generationGuide} from './ai-guide.js?v=20261004-roomcache1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261004-roomcache1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261004-roomcache1';
-import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261004-roomcache1';
-import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261004-roomcache1';
-import {PICTURE_LIBRARY} from './accessory-library.js?v=20261004-roomcache1';
-import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261004-roomcache1';
-import {mountPartsEditor} from './parts-editor.js?v=20261004-roomcache1';
-import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261004-roomcache1';
-import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261004-roomcache1';
-import {mountSimpleEditor} from './simple-editor.js?v=20261004-roomcache1';
+import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261004-chairback1';
+import {validQuad,homography,project,drawWarp} from './warp.js?v=20261004-chairback1';
+import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261004-chairback1';
+import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261004-chairback1';
+import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261004-chairback1';
+import {makeZip} from './zip.js?v=20261004-chairback1';
+import {generationGuide} from './ai-guide.js?v=20261004-chairback1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261004-chairback1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261004-chairback1';
+import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261004-chairback1';
+import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261004-chairback1';
+import {PICTURE_LIBRARY} from './accessory-library.js?v=20261004-chairback1';
+import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261004-chairback1';
+import {mountPartsEditor} from './parts-editor.js?v=20261004-chairback1';
+import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261004-chairback1';
+import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261004-chairback1';
+import {mountSimpleEditor} from './simple-editor.js?v=20261004-chairback1';
 
 const $=id=>document.getElementById(id);
 // Editable state is a tree of JSON values. Copy its mutable containers while
@@ -448,6 +449,7 @@ function validateProject(p){
 function hasAnySource(){storeActive();return DIRECTIONS.some(d=>!!slots[d].sourceImage);}
 function validateDimensions(d){if(!d||!['width','depth','height'].every(k=>Number.isFinite(d[k])&&d[k]>=.1&&d[k]<=(k==='height'?ROOM.wallHeight:7)))throw new Error('세트의 공통 크기가 올바르지 않아요.');}
 async function prepareProject(p){
+ p=await recoverKnownChairProject(p);
  ({project:p}=await recoverKnownPictureProject(p,COFFEE_TABLE_V1));
  validateProject(p);const img=await imageFrom(p.source.data),masked=createCutout(img,p.cutout.polygon,p.cutout.strokes),slot=freshSlot(p.placement.direction);
  slot.state={format:p.format,version:p.version,name:p.name.slice(0,80),...objectMetadata(p),source:{...p.source,width:img.naturalWidth,height:img.naturalHeight},cutout:clone(p.cutout),layers:clone(p.layers),placement:clone(p.placement)};
