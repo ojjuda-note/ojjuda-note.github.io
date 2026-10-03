@@ -1,15 +1,15 @@
-import {madeArtwork} from './custom-furniture.js?v=20261004-chairfront1';
-import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261004-chairfront1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,contactBounds} from './furniture-catalog.js?v=20261004-chairfront1';
-import {paintFurniture} from './furniture-painter.js?v=20261004-chairfront1';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261004-chairfront1';
-import {sideTableArtwork} from './side-table-art.js?v=20261004-chairfront1';
-import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261004-chairfront1';
-import {sofaArtwork,sofaForegroundLayers} from './sofa-art.js?v=20261004-chairfront1';
-import {sofaAccessoryArtwork,sofaAccessoryLayers} from './sofa-accessory-art.js?v=20261004-chairfront1';
-import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261004-chairfront1';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261004-chairfront1';
-import {isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261004-chairfront1';
+import {madeArtwork} from './custom-furniture.js?v=20261004-chairrightrear1';
+import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261004-chairrightrear1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,contactBounds} from './furniture-catalog.js?v=20261004-chairrightrear1';
+import {paintFurniture} from './furniture-painter.js?v=20261004-chairrightrear1';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261004-chairrightrear1';
+import {sideTableArtwork} from './side-table-art.js?v=20261004-chairrightrear1';
+import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261004-chairrightrear1';
+import {sofaArtwork,sofaForegroundLayers} from './sofa-art.js?v=20261004-chairrightrear1';
+import {sofaAccessoryArtwork,sofaAccessoryLayers} from './sofa-accessory-art.js?v=20261004-chairrightrear1';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261004-chairrightrear1';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261004-chairrightrear1';
+import {isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261004-chairrightrear1';
 
 export function projectiveMap(source,target){
  const rows=[];
