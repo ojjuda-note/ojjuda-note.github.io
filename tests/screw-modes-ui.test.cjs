@@ -167,6 +167,16 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    }
   }
   assert.equal(new Set(outlines).size,7,'seven different outer metal shapes render on mobile');
+  for(const [stage,name] of [[80,'별'],[140,'나비'],[220,'구름'],[320,'초승달'],[450,'로켓'],[650,'십자']]){
+   await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
+   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
+   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.shape),name);
+   await page.evaluate(()=>new Promise(requestAnimationFrame));
+   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-new-shape-${stage}.png`)});
+   const first=await page.evaluate(()=>screwWorld.current().game.state.level.order.slice(0,2));
+   for(const [index,id] of first.entries())await touchMove(id,index);
+   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),1,'each new outline releases a real metal piece');
+  }
   for(const [stage,width,pieces] of [[501,320,28],[1000,390,50]]){
    await page.setViewportSize({width,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
@@ -258,6 +268,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    for(const q of [s.hole,h]){g.onDown(q.x,q.y);g.onUp(q.x,q.y);}for(let i=0;i<20;i++)g.update(.05);return g.state.moves;
   }),1,'image failure leaves the game playable');await broken.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, seven outlines, 100-screw phone input and zoom/pan, stage persistence, screw collisions, retry, removed undo and preserved box progress.');
+  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, thirteen outlines, 100-screw phone input and zoom/pan, stage persistence, screw collisions, retry, removed undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
