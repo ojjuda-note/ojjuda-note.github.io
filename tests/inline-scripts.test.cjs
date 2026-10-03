@@ -4,6 +4,9 @@ const os=require('node:os');
 const {spawnSync}=require('node:child_process');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ojjuda-syntax-'));
 try{
+ const world=fs.readFileSync(path.join(__dirname,'..','world.html'),'utf8');
+ const current=world.match(/\bGo="([^"]+)"/)?.[1],published=JSON.parse(fs.readFileSync(path.join(__dirname,'..','version.json'),'utf8')).version;
+ if(!current||current!==published)throw new Error(`World version ${current} must match version.json ${published}; otherwise the update notice repeats after reloading`);
  let count=0;
  for(const file of ['index.html','world.html','note/index.html','games/matgo.html']){
   const html=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
