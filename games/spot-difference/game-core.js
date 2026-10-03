@@ -7,7 +7,7 @@
     const hit=candidates[0];
     return {index:hit.i,alreadyFound:found.includes(hit.i)};
   }
-  const ROUND_MS=30000, HEARTS=3;
+  const ROUND_MS=60000, EXTEND_MS=60000, HEARTS=3;
   const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value);
   function freshRound(){return {status:'ready',hearts:HEARTS,remainingMs:ROUND_MS,totalMs:ROUND_MS,deadline:null,paid:[],hintIndex:null,pending:null};}
   function ids(value){return Array.isArray(value)?[...new Set(value.filter(i=>Number.isInteger(i)&&i>=0&&i<6))]:[];}
@@ -27,9 +27,10 @@
       const found=ids(raw.found?.[puzzle.id]);result.found[puzzle.id]=found;
       const round=freshRound(),r=raw.version===2&&raw.rounds?.[puzzle.id];
       if(r){
+        const unopened=r.status==='ready'&&r.totalMs===30000&&r.remainingMs===30000&&!found.length&&!r.paid?.length&&!r.pending;
         if(Number.isInteger(r.hearts)&&r.hearts>=0&&r.hearts<=HEARTS)round.hearts=r.hearts;
-        if(Number.isFinite(r.totalMs)&&r.totalMs>=ROUND_MS)round.totalMs=r.totalMs;
-        if(Number.isFinite(r.remainingMs))round.remainingMs=Math.max(0,Math.min(round.totalMs,r.remainingMs));
+        if(!unopened&&Number.isFinite(r.totalMs)&&r.totalMs>=30000)round.totalMs=r.totalMs;
+        if(!unopened&&Number.isFinite(r.remainingMs))round.remainingMs=Math.max(0,Math.min(round.totalMs,r.remainingMs));
         round.paid=ids(r.paid);
         if(round.paid.includes(r.hintIndex))round.hintIndex=r.hintIndex;
         if(['ready','playing','lost','payment'].includes(r.status))round.status=r.status;
@@ -50,7 +51,7 @@
     return round.status==='playing'?Math.max(0,Math.min(round.totalMs,round.deadline-now)):round.remainingMs;
   }
   function normalizedPoint(rect,clientX,clientY){return {x:(clientX-rect.left)/rect.width*100,y:(clientY-rect.top)/rect.height*100};}
-  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,ROUND_MS,HEARTS};
+  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,ROUND_MS,EXTEND_MS,HEARTS};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JjudaGame=api;
 })(typeof window!=='undefined'?window:globalThis);

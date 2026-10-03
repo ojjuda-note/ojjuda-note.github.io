@@ -48,9 +48,9 @@
     const r=round(),playing=r.status==='playing',won=r.status==='won',lost=r.status==='lost',pending=r.status==='payment';
     $('board-shell').classList.toggle('covered',!playing&&!won&&!answerReview);$('board-curtain').hidden=playing||won||!!answerReview;
     $('board-shell').classList.toggle('reviewing',!!answerReview);
-    $('gate-eyebrow').textContent=pending?'쭈 사용 확인':lost?'이번 도전 종료':'30초 도전';
+    $('gate-eyebrow').textContent=pending?'쭈 사용 확인':lost?'이번 도전 종료':'1분 도전';
     $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'준비됐나요?';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':'하단에서 3쭈로 30초를 연장하거나 다시 풀 수 있어요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':'하단에서 3쭈로 1분을 연장하거나 다시 풀 수 있어요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
     $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?'다시 풀기':'시작하기';
     $('start').disabled=!imagesReady||paymentBusy||!!answerReview;
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
@@ -73,7 +73,7 @@
       $('review-answers').replaceChildren(...answerOrder().map((i,index)=>{const li=document.createElement('li');li.value=index+1;li.textContent=puzzle().spots[i].text;return li;}));
       $('found-details').hidden=true;
     }
-    if(lost){$('complete-icon').textContent='↻';$('complete-title').textContent=r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요';$('complete-copy').textContent=`${found().length} / 6곳을 찾았어요. ${r.hearts>0?'30초를 연장해서 이어갈 수 있어요.':'다시 도전해 보세요.'}`;}
+    if(lost){$('complete-icon').textContent='↻';$('complete-title').textContent=r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요';$('complete-copy').textContent=`${found().length} / 6곳을 찾았어요. ${r.hearts>0?'1분을 연장해서 이어갈 수 있어요.':'다시 도전해 보세요.'}`;}
     renderHearts();renderTime();
   }
   function refresh(){
@@ -119,7 +119,7 @@
     const r=round();r.remainingMs=core.timeLeft(r);r.deadline=null;r.status=reason==='won'?'won':'lost';
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
-    speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 3쭈로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
+    speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 3쭈로 1분을 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
   }
   function tick(){if(round().status==='playing'&&core.timeLeft(round())<=0)finish('time');else renderTime();}
   function start(){
@@ -167,7 +167,7 @@
   }
   function reset(){
     if(paymentBusy||round().pending||answerReview)return;
-    if(round().status==='playing'&&found().length&&!confirm('찾은 표시를 지우고 하트 3개, 30초로 다시 풀까요?'))return;
+    if(round().status==='playing'&&found().length&&!confirm('찾은 표시를 지우고 하트 3개, 1분으로 다시 풀까요?'))return;
     state.found[puzzle().id]=[];state.rounds[puzzle().id]=core.freshRound();show(state.current);
   }
   function guess(x,y,surface){
@@ -204,12 +204,12 @@
       const result=await wallet.buy(request,p.id);
       if(result.ok){
         if(result.kind!==request.kind||result.stage!==p.id||result.spot!==request.spot||result.price!==(request.kind==='hint'?1:3))throw new Error('구매 결과를 다시 확인해 주세요.');
-        if(request.kind==='time'){r.remainingMs+=30000;r.totalMs+=30000;}
+        if(request.kind==='time'){r.remainingMs+=core.EXTEND_MS;r.totalMs+=core.EXTEND_MS;}
         else{if(!r.paid.includes(request.spot))r.paid.push(request.spot);r.hintIndex=request.spot;}
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
         if(request.kind==='hint'){showHint();speak(`1쭈를 사용했어요. 힌트: ${p.spots[request.spot].text}`);}
-        else speak('3쭈를 사용하고 30초를 더 받았어요!',true);
+        else speak('3쭈를 사용하고 1분을 더 받았어요!',true);
       }else{
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
@@ -262,7 +262,7 @@
     if(w.canViewAnswers!==true&&answerReview)closeAnswers();
     $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()}쭈`):'오쭈다 쭈로 이용하기';
     $('wallet-login').hidden=!!w.userId;$('wallet-refresh').hidden=!w.userId;$('wallet-logout').hidden=!w.userId;
-    $('wallet-note').textContent=w.error||`힌트 1개 1쭈 · 30초 연장 3쭈${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
+    $('wallet-note').textContent=w.error||`힌트 1개 1쭈 · 1분 연장 3쭈${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
     $('wallet-note').classList.toggle('error-note',!!w.error);refreshControls();
   });
   show(state.current);setInterval(tick,200);window.addEventListener('pageshow',tick);document.addEventListener('visibilitychange',tick);
