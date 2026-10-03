@@ -1,0 +1,24 @@
+/* One embossed coin emblem for the shared currency. */
+html .cz, html .note-cz, .ju-coin-icon {
+  display: inline-block;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 0;
+  background: url('/ju-coins/coin.svg?v=20261003-coins1') center / contain no-repeat;
+  transform: none;
+  vertical-align: -.2em;
+}
+html .cz i, html .note-cz i { opacity: 0; transform: none; }
+.topbar .coinpill .cz, .mobile-top .note-coinpill .note-cz { width: 20px; height: 20px; border-radius: 0; }
+.ju-charge-heading h2, .ju-charge-wallet > span { display: inline-flex; align-items: center; gap: 7px; }
+.ju-charge-heading .ju-coin-icon { width: 28px; height: 28px; }
+#wallet-balance { display: inline-flex; align-items: center; gap: 4px; }
+#wallet-balance::before {
+  content: '';
+  flex: none;
+  width: 20px;
+  height: 20px;
+  background: url('/ju-coins/coin.svg?v=20261003-coins1') center / contain no-repeat;
+}

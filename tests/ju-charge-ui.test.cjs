@@ -14,10 +14,16 @@ async function fixture(context, source, rpc) {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.route('**/*', route => route.abort());
+  await page.route('**/*', route => {
+    const url = new URL(route.request().url());
+    if (url.hostname === 'fixture.test' && /^\/ju-coins\/(coin|10|30|50|100|300|500)\.svg$/.test(url.pathname)) {
+      return route.fulfill({ path: path.join(root, url.pathname), contentType: 'image/svg+xml' });
+    }
+    return route.abort();
+  });
   await page.exposeFunction('chargeRpc', rpc);
   if (source === 'world') {
-    await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
+    await page.setContent('<base href="https://fixture.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><main class="main" id="world-my"></main>');
     for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) await page.addStyleTag({ content: match[1] });
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
@@ -27,12 +33,12 @@ async function fixture(context, source, rpc) {
     await page.addScriptTag({ content: menu });
     await page.evaluate(() => { document.querySelector('#world-my').innerHTML = Yg(); });
   } else {
-    await page.setContent(read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, ''));
+    await page.setContent('<base href="https://fixture.test/">' + read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, ''));
     for (const file of ['note/style.css','note/features.css','note/world-navigation.css','note/account.css']) await page.addStyleTag({ content: read(file) });
     await page.addScriptTag({ content: read('note/navigation.js') });
     await page.locator('[data-note-my]:visible').first().click();
   }
-  await page.addStyleTag({ content: read('my-menu.css') + read('ju-charge.css') });
+  await page.addStyleTag({ content: read('my-menu.css') + read('ju-charge.css') + read('ju-coins.css') });
   if (process.env.JU_CHARGE_FONT) {
     const font = fs.readFileSync(process.env.JU_CHARGE_FONT).toString('base64');
     await page.addStyleTag({ content: `@font-face{font-family:ChargeQA;src:url(data:font/otf;base64,${font})}:root{--font-b:ChargeQA,sans-serif;--font-d:ChargeQA,sans-serif}body,.ju-charge-dialog{font-family:ChargeQA,sans-serif}` });

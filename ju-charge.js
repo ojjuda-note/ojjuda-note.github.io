@@ -121,14 +121,14 @@
     dialog.setAttribute('aria-labelledby', 'ju-charge-title');
     dialog.setAttribute('aria-describedby', 'ju-charge-description');
     dialog.innerHTML = `
-      <header class="ju-charge-heading"><h2 id="ju-charge-title">쭈 충전</h2><button class="ju-charge-close" type="button" aria-label="충전창 닫기" autofocus>닫기</button></header>
+      <header class="ju-charge-heading"><h2 id="ju-charge-title"><span class="ju-coin-icon" aria-hidden="true"></span>쭈 충전</h2><button class="ju-charge-close" type="button" aria-label="충전창 닫기" autofocus>닫기</button></header>
       <div class="ju-charge-content">
-        <div class="ju-charge-wallet"><span>보유 쭈</span><strong data-ju-balance role="status">확인 중</strong></div>
+        <div class="ju-charge-wallet"><span><span class="ju-coin-icon" aria-hidden="true"></span>보유 쭈</span><strong data-ju-balance role="status">확인 중</strong></div>
         <div class="ju-charge-benefit"><strong data-ju-beta-title>베타 기간 · 하루 5회 무료</strong><span data-ju-remaining role="status">남은 횟수 확인 중</span></div>
         <p id="ju-charge-description">원하는 충전 금액을 골라 주세요.<br>쭈는 노트와 월드에서 함께 사용할 수 있어요.</p>
         <div class="ju-charge-grid" role="group" aria-label="충전 상품 6종">${packages.map(pack => `
           <button class="ju-charge-pack" type="button" data-ju-pack="${pack.id}" aria-pressed="${pack.id === selected.id}">
-            <span class="ju-charge-coin" aria-hidden="true"><i>쭈</i></span><strong>${number(pack.coins)}<small>쭈</small></strong>
+            <img class="ju-charge-art" src="/ju-coins/${pack.coins}.svg?v=20261003-coins1" alt="" width="120" height="84" aria-hidden="true" decoding="async"><strong>${number(pack.coins)}<small>쭈</small></strong>
             ${pack.bonus ? `<span class="ju-charge-bonus">+${number(pack.bonus)}쭈 보너스</span>` : '<span class="ju-charge-bonus-space" aria-hidden="true"></span>'}
             <span class="ju-charge-pack-total">총 ${number(total(pack))}쭈</span><span class="ju-charge-won">${number(pack.won)}원</span>
           </button>`).join('')}
