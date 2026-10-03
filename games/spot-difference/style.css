@@ -37,33 +37,41 @@ body.embedded .topbar{display:none}body.embedded main{padding-top:18px}
 
 /* Keep account actions available without reserving a second wallet row. */
 .wallet-menu{position:relative;flex-shrink:0}
-.wallet-menu summary{display:grid;place-items:center;list-style:none;width:44px;min-height:44px;border-radius:9px;font-size:25px;line-height:1;color:var(--muted)}
-.wallet-menu summary::-webkit-details-marker{display:none}
-.wallet-menu summary:hover,.wallet-menu[open] summary{background:#edf0ff}
-.wallet-menu-panel{position:absolute;z-index:8;right:0;top:calc(100% + 3px);min-width:140px;padding:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 25px #15224426}
+.wallet-menu>summary{display:grid;place-items:center;list-style:none;width:44px;min-height:44px;border-radius:9px;font-size:25px;line-height:1;color:var(--muted)}
+.wallet-menu>summary::-webkit-details-marker{display:none}
+.wallet-menu>summary:hover,.wallet-menu[open]>summary{background:#edf0ff}
+.wallet-menu-panel{position:absolute;z-index:8;right:0;top:calc(100% + 3px);width:min(340px,calc(100vw - 24px));max-height:65dvh;overflow:auto;padding:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 25px #15224426}
 .wallet-menu-panel .text-button{display:block;width:100%;min-height:44px;text-align:left;padding:10px 14px;white-space:nowrap;font-size:14px}
+.wallet-menu-panel .stage-nav{margin:6px 0;padding:6px 0;border-block:1px solid var(--line)}
+.wallet-menu-panel .stage-select{width:100%;gap:2px}
+.wallet-menu-panel .stage-select select{width:100%;min-width:0;flex:1;font-size:13px;padding-left:6px}
+.wallet-menu-panel .found-list{padding:8px;margin:0;border:0;font-size:13px}
+.wallet-menu-panel .found-list summary{padding:8px 0;line-height:1.5}
+.wallet-menu-panel .found-list ol{padding-left:24px}
+.menu-note{font-size:12px;line-height:1.6;color:var(--muted);margin:8px}
+.wallet #hint{flex-shrink:0;margin-left:8px}
 
-/* On phones the scene picker and live status take just two rows. */
+/* Keep only live status, balance, hint and the optional menu above the pictures. */
 @media(max-width:900px),(max-width:1100px) and (max-height:600px){
   .topbar{height:44px;padding:0 max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left));gap:8px}
   .brand{font-size:14px;gap:6px}.brand-icon{width:26px;height:26px;border-radius:8px;font-size:23px}.brand b{margin-left:3px}.collection{font-size:11px;padding:5px 8px}
   main,body.embedded main{padding:4px max(8px,env(safe-area-inset-right)) 12px max(8px,env(safe-area-inset-left))}
-  .game-heading{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:10px;align-items:center;margin-bottom:4px}
+  .game-heading{display:grid;grid-template-columns:auto auto minmax(0,1fr);column-gap:6px;align-items:center;margin-bottom:4px}
   .game-heading .game-top,.game-heading .round-status{display:contents}
   .game-heading .scene-info{position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden;white-space:nowrap}
-  .game-heading .stage-nav{grid-column:1/-1;grid-row:1;gap:0;margin:0}
   .game-heading .stage-select{width:100%;gap:4px}
   .game-heading .stage-select select{flex:1;width:100%;min-width:0;max-width:none;min-height:44px;font-size:14px;padding:0 24px 0 8px;border-radius:9px}
   .game-heading .stage-select .icon-button{border-color:transparent;background:transparent}
   .game-heading .difficulty,.game-heading .rule-copy{display:none}
-  .game-heading .score{grid-column:2;grid-row:2;min-width:0;max-width:none;gap:3px;flex-wrap:nowrap;justify-content:flex-start;white-space:nowrap}
+  .game-heading .score{grid-column:2;grid-row:1;min-width:0;max-width:none;gap:3px;flex-wrap:nowrap;justify-content:flex-start;white-space:nowrap}
   .game-heading .score>strong{font-size:20px;line-height:24px;letter-spacing:0}
   .game-heading .score>span{font-size:14px}
   .game-heading .score small,.game-heading .dots{display:none}
-  .game-heading #hearts{grid-column:1;grid-row:2;font-size:18px;letter-spacing:1px}
-  .game-heading .wallet{grid-column:3;grid-row:2;min-width:0;width:auto;margin:0;padding:0;border:0;gap:4px;justify-content:flex-end;flex-wrap:nowrap}
+  .game-heading #hearts{grid-column:1;grid-row:1;font-size:18px;letter-spacing:1px}
+  .game-heading .wallet{grid-column:3;grid-row:1;min-width:0;width:auto;margin:0;padding:0;border:0;gap:4px;justify-content:flex-end;flex-wrap:nowrap}
   .game-heading #wallet-balance{min-width:0;margin:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .game-heading #wallet-login{flex-shrink:0;min-height:44px;padding:6px;font-size:13px}
+  .game-heading #hint{min-height:44px;margin:0;padding:5px 7px;font-size:12px;white-space:nowrap;border-radius:9px}
   .game-heading .wallet-note{display:none}
   .game-heading .wallet-note.error-note{display:block;grid-column:1/-1;grid-row:3;margin:0 0 6px;font-size:12px}
 }
@@ -117,3 +125,31 @@ body.embedded .topbar{display:none}body.embedded main{padding-top:18px}
   #zoom-dialog .zoom-pair{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
   #zoom-dialog .zoom-toolbar{grid-template-columns:80px minmax(64px,120px) minmax(100px,160px) 44px 44px;justify-content:center}
 }
+
+/* The clock follows the remaining bar; the elapsed space becomes the extension target. */
+body{padding-bottom:env(safe-area-inset-bottom)}
+.picture-timer.time-dock,#zoom-dialog .zoom-picture-timer{--clock-width:80px;--time-ratio:1;display:block;position:relative;flex-shrink:0;width:100%;height:48px;min-height:48px;margin:4px 0 0;padding:0;border:0;background:#f1f4fb}
+#zoom-dialog .zoom-picture-timer{margin:0;background:#fff}
+.picture-timer.time-dock .time-progress,#zoom-dialog .zoom-picture-timer .time-progress{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:8px;min-width:0;border:0;border-radius:8px;background:#e0e5f2}
+.picture-timer.time-dock .clock{position:absolute;left:calc((100% - var(--clock-width)) * var(--time-ratio));top:50%;transform:translateY(-50%);width:var(--clock-width);min-width:0;gap:2px;justify-content:center;padding:3px 2px;border-radius:8px;background:inherit;transition:left .2s linear}
+.picture-timer.time-dock .clock-icon{width:26px;height:26px;font-size:24px}
+.picture-timer.time-dock .clock strong{min-width:20px;font-size:18px;line-height:24px}
+.picture-timer.time-dock .clock small{font-size:11px}
+.picture-timer.time-dock .extend-button{position:absolute;left:calc((100% - var(--clock-width)) * var(--time-ratio) + var(--clock-width) + 8px);right:4px;top:2px;bottom:2px;width:auto;min-width:0;max-width:220px;min-height:44px;margin:0 0 0 auto;padding:3px 6px;gap:1px;border-radius:9px;box-shadow:none;white-space:nowrap}
+.picture-timer.time-dock .extend-title{position:static;width:auto;height:auto;clip:auto;overflow:visible;font-size:14px;line-height:18px}
+.picture-timer.time-dock .extend-button small{font-size:12px;line-height:16px}
+.picture-timer.time-dock.urgent,.picture-timer.time-dock.expired{background:#fff5f7}
+#zoom-dialog .zoom-toolbar{padding:6px 22px;background:#fff}
+.playbar{padding:4px 0;gap:10px;flex-wrap:nowrap;align-items:center}
+.playbar .message{flex:1;width:auto;min-width:0;font-size:13px;line-height:1.5}
+.playbar .actions{width:auto;flex-shrink:0;flex-wrap:nowrap}
+.playbar .actions .soft-button{flex:none;font-size:13px;padding:6px 10px}
+@media(max-width:900px),(max-width:1100px) and (max-height:600px){
+  #zoom-dialog .zoom-toolbar{grid-template-columns:58px minmax(80px,1fr) 44px 44px;gap:4px;padding:0 max(4px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left))}
+  #zoom-dialog .zoom-vitals .hearts{font-size:18px;line-height:22px}
+  #zoom-dialog #zoom-status{bottom:calc(100% + 56px)}
+}
+@media(orientation:landscape) and (max-width:1100px) and (max-height:600px){
+  #zoom-dialog .zoom-toolbar{grid-template-columns:64px minmax(100px,180px) 44px 44px;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){.picture-timer.time-dock .clock{transition:none}}

@@ -36,11 +36,13 @@
     }));
   }
   function renderTime(){
-    const r=round(),ms=core.timeLeft(r),seconds=Math.ceil(ms/1000),urgent=r.status==='playing'&&seconds>0&&seconds<=10;
+    const r=round(),ms=core.timeLeft(r),seconds=Math.ceil(ms/1000),urgent=r.status==='playing'&&seconds>0&&seconds<=10,expired=r.status==='lost'&&r.hearts>0&&seconds===0,ratio=Math.max(0,Math.min(1,ms/r.totalMs));
     for(const id of ['time-left','zoom-time-left'])$(id).textContent=seconds;
-    document.querySelectorAll('.time-dock,.picture-timer').forEach(el=>{el.classList.toggle('urgent',urgent);el.classList.toggle('expired',r.status==='lost'&&r.hearts>0&&seconds===0);});
+    document.querySelectorAll('.picture-timer').forEach(el=>{el.classList.toggle('urgent',urgent);el.classList.toggle('expired',expired);el.style.setProperty('--time-ratio',String(ratio));});
     document.querySelectorAll('.time-progress').forEach(el=>{el.setAttribute('aria-valuenow',seconds);el.setAttribute('aria-valuemax',Math.ceil(r.totalMs/1000));el.setAttribute('aria-valuetext',`남은 시간 ${seconds}초`);});
-    document.querySelectorAll('.time-fill').forEach(el=>el.style.width=`${Math.max(0,Math.min(100,ms/r.totalMs*100))}%`);
+    document.querySelectorAll('.time-fill').forEach(el=>el.style.width=`${ratio*100}%`);
+    const showExtension=!answerReview&&r.hearts>0&&(urgent||expired||(r.status==='payment'&&ms<=10000));
+    for(const id of ['extend','zoom-extend'])$(id).hidden=!showExtension;
   }
   function renderHearts(){
     for(const id of ['hearts','zoom-hearts']){
@@ -60,13 +62,13 @@
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
     const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1쭈':'힌트 · 1쭈';
-    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=id==='zoom-hint'?(showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1쭈'):hintLabel;$(id).setAttribute('aria-label',hintLabel);}
+    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1쭈';$(id).setAttribute('aria-label',hintLabel);}
     const extendable=(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
-    $('prev').disabled=position()===0||paymentBusy;$('next').disabled=position()===47||paymentBusy;
-    $('stage-picker').disabled=paymentBusy;$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
-    $('complete').hidden=(!won&&!lost)||!!answerReview;$('complete').classList.toggle('lost',lost);
+    $('prev').disabled=position()===0||paymentBusy||pending;$('next').disabled=position()===47||paymentBusy||pending;
+    $('stage-picker').disabled=paymentBusy||pending;$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
+    $('continue').disabled=paymentBusy||pending||!!answerReview;
     const canViewAnswers=wallet.getState().canViewAnswers===true;
     for(const id of ['reveal-answers','zoom-reveal-answers']){
       $(id).hidden=!canViewAnswers;$(id).disabled=!imagesReady||paymentBusy||pending;
@@ -77,7 +79,6 @@
       $('review-answers').replaceChildren(...answerOrder().map((i,index)=>{const li=document.createElement('li');li.value=index+1;li.textContent=puzzle().spots[i].text;return li;}));
       $('found-details').hidden=true;
     }
-    if(lost){$('complete-icon').textContent='↻';$('complete-title').textContent=r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요';$('complete-copy').textContent=`${found().length} / 6곳을 찾았어요. ${r.hearts>0?'1분을 연장해서 이어갈 수 있어요.':'다시 도전해 보세요.'}`;}
     renderHearts();renderTime();
   }
   function refresh(){
@@ -87,8 +88,6 @@
     for(const option of $('stage-picker').options){const p=puzzles[Number(option.value)];option.textContent=`${String(state.order.indexOf(Number(option.value))+1).padStart(2,'0')}. ${p.title}${(state.found[p.id]||[]).length===6?' ✓':''}`;}
     $('found-details').hidden=ids.length===0;$('found-summary').textContent=`${ids.length} / 6`;
     $('answers').replaceChildren(...ids.map((i,order)=>{const li=document.createElement('li');li.value=order+1;li.textContent=puzzle().spots[i].text;return li;}));
-    $('complete-icon').textContent='✓';$('complete-title').textContent=solved===48?'48개 장면을 모두 완성했어요!':'여섯 곳을 모두 찾았어요!';
-    $('complete-copy').textContent=solved===48?'쭈다와 함께 288개의 다른 곳을 찾았어요.':'다음 장면도 찾아볼까요?';
     $('continue').textContent=position()===47?'아직 안 푼 문제':'다음 문제';$('continue').hidden=solved===48;
     $('zoom-status').textContent=answerReview?'정답 확인 중 · 시간 정지 · 쭈 차감 없음':`${ids.length} / 6 찾았어요`;
     refreshControls();save();
@@ -248,7 +247,7 @@
     });
   }
   for(const i of state.order){const option=document.createElement('option');option.value=i;option.textContent=puzzles[i].title;$('stage-picker').append(option);}
-  $('stage-picker').onchange=e=>show(Number(e.target.value));$('prev').onclick=()=>show(state.order[position()-1]);$('next').onclick=()=>show(state.order[position()+1]);
+  $('stage-picker').onchange=e=>{show(Number(e.target.value));closeWalletMenu();walletMenu.querySelector('summary').focus();};$('prev').onclick=()=>show(state.order[position()-1]);$('next').onclick=()=>show(state.order[position()+1]);
   $('retry').onclick=()=>show(state.current);$('hint').onclick=hint;$('zoom-hint').onclick=hint;$('hide-hint').onclick=()=>hideHint();$('hint-location').onclick=locateHint;
   $('start').onclick=start;$('reset').onclick=reset;$('extend').onclick=()=>purchase('time');$('zoom-extend').onclick=()=>purchase('time');
   $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=()=>{toggleAnswers();closeZoomSettings();};$('close-answers').onclick=()=>closeAnswers(true);
@@ -267,6 +266,7 @@
   authDialog.addEventListener('close',()=>{$('password').value='';});
   const walletMenu=$('wallet-menu');
   function closeWalletMenu(){walletMenu.removeAttribute('open');}
+  walletMenu.addEventListener('click',event=>{const button=event.target.closest('button');if(button&&!button.disabled){closeWalletMenu();if(walletMenu.contains(document.activeElement))walletMenu.querySelector('summary').focus();}});
   document.addEventListener('click',event=>{if(!walletMenu.contains(event.target))closeWalletMenu();});
   walletMenu.addEventListener('keydown',event=>{if(event.key==='Escape'&&walletMenu.hasAttribute('open')){event.preventDefault();event.stopPropagation();closeWalletMenu();walletMenu.querySelector('summary').focus();}});
   walletMenu.addEventListener('focusout',event=>{if(!walletMenu.contains(event.relatedTarget))closeWalletMenu();});
@@ -274,9 +274,8 @@
   $('wallet-logout').onclick=async()=>{if(paymentBusy)return;closeWalletMenu();walletMenu.querySelector('summary').focus();try{await wallet.signOut();$('wallet-login').focus();speak('로그아웃했어요.');}catch{speak('로그아웃하지 못했어요. 다시 시도해 주세요.');}};
   wallet.subscribe(w=>{
     if(w.canViewAnswers!==true&&answerReview)closeAnswers();
-    $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()}쭈`):'오쭈다 쭈로 이용하기';
+    $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()}쭈`):'로그인 필요';
     $('wallet-login').hidden=!!w.userId;$('wallet-refresh').hidden=!w.userId;$('wallet-logout').hidden=!w.userId;
-    walletMenu.hidden=!w.userId;if(!w.userId)closeWalletMenu();
     $('wallet-note').textContent=w.error||`힌트 1개 1쭈 · 1분 연장 3쭈${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
     $('wallet-note').classList.toggle('error-note',!!w.error);refreshControls();
   });
