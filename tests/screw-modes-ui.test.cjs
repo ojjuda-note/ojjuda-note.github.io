@@ -114,6 +114,23 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2);
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2,'reopening continues the flat version independently');
+  for(const [stage,width] of [[501,320],[1000,390]]){
+   await page.setViewportSize({width,height:844});
+   await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
+   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
+   const advanced=await page.evaluate(()=>{
+    const r=screwWorld.current(),st=r.game.state;r.ctx.save();r.ctx.font='700 16px "Noto Sans KR",sans-serif';
+    const titleWidth=r.ctx.measureText(`${st.L}/${OjjudaScrewGames.LAST_STAGE}단계 · ${st.level.name}`).width;r.ctx.restore();
+    return{stage:st.L,pieces:st.level.plates.length,spares:st.level.holes.filter(h=>h.owner===null).length,titleWidth,order:st.level.order.slice(0,2)};
+   });
+   assert.equal(advanced.stage,stage);assert.equal(advanced.pieces,18);assert.equal(advanced.spares,3);
+   assert.ok(advanced.titleWidth<251,'the full stage counter fits beside the mode badge');
+   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-stage-${stage}.png`)});
+   for(const [index,id] of advanced.order.entries())await touchMove(id,index);
+   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),1,'small advanced pieces can be selected and released by phone taps');
+   await touch({x:82,y:514});
+   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),0,'advanced-piece undo restores the plate');
+  }
   if(qa){
    await page.evaluate(()=>{const r=screwWorld.current();cancelAnimationFrame(r.raf);r.running=false;r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'34');r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.draw(r.ctx);});
    await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-mosaic.png')});
@@ -124,6 +141,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    const game=OjjudaScrewGames.flat({setScore(){},end(){}});game.state.level.plates.forEach(p=>p.state='gone');game.draw(screwWorld.current().ctx);game.destroy();
   },stage);
   assert.deepEqual(errors,[]);
-  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, two-tap relocation, metal caught by lower screws, moving support screws, touch undo, revealed artwork and independent flat continuation.');
+  console.log('PASS: both versions at 320/390/1280px, 501/1000-stage continuation, 18-piece phone input, title fit, three spare holes, screw collisions, touch undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
