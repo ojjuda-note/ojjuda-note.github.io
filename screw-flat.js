@@ -141,7 +141,7 @@
           if(st.albumFocus===i){c.strokeStyle='#8B729C';c.lineWidth=2.5;c.stroke();}
           if(unlocked)Pictures.draw(c,i,x+5,y+5,140,96,true);
           else{c.font='700 28px "Noto Sans KR",sans-serif';c.fillStyle='#B7AA9B';c.fillText('?',x+75,y+43);c.font='10px "Noto Sans KR",sans-serif';c.fillText('철판을 모두 떼면 열려요',x+75,y+78);}
-          c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle=unlocked?'#655448':'#A19384';c.fillText(p.name,x+75,y+113);
+          c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle=unlocked?'#655448':'#A19384';c.fillText(unlocked?p.name:'아직 찾지 못했어요',x+75,y+113);
         });
       }
       round(c,24,494,312,34,13);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.font='700 12px "Noto Sans KR",sans-serif';c.fillText('게임으로 돌아가기',180,511);
@@ -149,7 +149,7 @@
     function draw(c) {
       if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
-      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.level.name}`,22,26,250);
+      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,250);
       round(c,280,8,62,36,13);c.fillStyle='#E2EADF';c.fill();c.font='700 10px "Noto Sans KR",sans-serif';c.fillStyle='#5D7760';c.textAlign='center';c.fillText(`앨범 ${st.collection.size}/${PICTURES.length}`,311,26);
       c.font='12px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
       c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51);
@@ -157,7 +157,14 @@
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';c.fillText('나사를 축으로 회전 · 판과 나사에 걸려요',26,133);
       c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
-      round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();Pictures.draw(c,st.level.picture,32,BOARD.y+8,296,BOARD.h-16,st.complete);
+      round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();
+      c.save();
+      if(!st.complete){
+        c.beginPath();
+        for(const poly of st.level.silhouette){poly.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();}
+        c.clip();
+      }
+      Pictures.draw(c,st.level.picture,32,BOARD.y+8,296,BOARD.h-16,st.complete);c.restore();
       if(!st.complete){
         c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
         for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h);

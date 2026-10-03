@@ -1,6 +1,16 @@
 # 평면 나사게임 배경 그림
 
-게임용 원본 그림 5종. 내장 이미지 생성 도구로 제작했으며, 생성 원본의 내용을 바꾸지 않고 웹용 720×720 WebP로 최적화했습니다. 게임의 현재 그림과 완성한 앨범 그림만 불러옵니다.
+게임용 원본 그림 6종. 내장 이미지 생성 도구로 제작했으며, 생성 원본의 내용을 바꾸지 않고 웹용 WebP로 최적화했습니다. 기존 동화풍 5장은 720×720, 새 사진풍 판타지 장면은 840×840입니다. 현재 그림과 완성한 앨범 그림을 불러오고, 완료 시 다음 그림을 미리 준비합니다.
+
+## sky-whale
+
+파일: `sky-whale-v1.webp`
+
+사진풍 판타지 장면 ‘별바다 고래’. 첫 꽃 철판은 5단계에서 이 그림을 가립니다. 7종 철판과 6종 그림이 독립적으로 순환하므로 같은 꽃 실루엣도 매번 같은 대상을 가리키지는 않습니다. 완성 전에는 실루엣 바깥 그림과 그림 제목을 감춥니다.
+
+제작 프롬프트:
+
+Use case: stylized-concept. Asset type: one finished premium fantasy photo-art background for a mobile hidden-picture screw puzzle. Primary request: an unexpectedly beautiful whale swimming through a starry night sky, discovered beneath a flower-shaped metal silhouette. Create a deeply considered, exquisite cinematic fine-art fantasy photograph, not a flat cartoon or clipart. A magnificent gentle humpback whale floats diagonally through luminous layers of moonlit clouds; the whale's entire expressive head, pectoral fins and graceful tail are clearly readable and contained inside the central 78% of the square composition. A small, lovingly crafted village of warm amber-lit houses on a distant cloud island below gives scale, with tiny paths, windows and subtle reflections. Realistic whale skin and delicate water-like highlights, physically coherent soft rim lighting, voluminous clouds, extraordinary depth, restrained stars and a slim crescent moon in the upper background. Rich midnight blue, dusty indigo and luminous teal balanced by quiet golden window light. Wonder, calm and discovery, not darkness or menace. Main whale large and distinct so its silhouette reads at 300px; secondary details reward a closer look without clutter. Square full-bleed image, tasteful photographic composition, no collage, no borders, no text, no typography, no logos, no watermark, no UI, no screws or metal, no flowers.
 
 ## window-cat
 
@@ -41,4 +51,3 @@ Use case: illustration-story. Asset type: finished full-bleed background illustr
 제작 프롬프트:
 
 Use case: illustration-story. Asset type: finished full-bleed background illustration for a small mobile screw puzzle, revealed under metal pieces. A warm, polished children's picture-book painting with soft gouache and colored-pencil texture, rounded cute forms, gentle expressive character, luminous pastel colors. Square canvas, centered simple composition, main subject large inside central 75% so it reads at 300px and tolerates a slight crop at left and right. Richly finished illustration with a quiet uncluttered background and a few thoughtful details. No words, no letters, no logo, no watermark, no frame, no UI, no screws, no metal. An inviting tiny cozy room, with a large rounded cream sofa and peach cushions at the center, a small round wooden coffee table holding an open book and a warm cup, a leafy plant and a softly glowing floor lamp. Window with late-afternoon light and linen curtain. Simplified spacious arrangement, central large furniture, warm cream, peach, sage, honey wood. A peaceful home that feels lived in. No characters.
-

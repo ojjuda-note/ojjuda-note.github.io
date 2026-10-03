@@ -60,6 +60,11 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>screwWorld.open('screw'));await page.locator('[data-mode=flat]').click();
   const canvas=page.locator('#gcv');
   const touch=async q=>{const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+q.x*b.width/360,b.y+q.y*b.height/540);};
+  const drawnText=()=>page.evaluate(()=>{
+   const r=screwWorld.current(),original=r.ctx.fillText,labels=[];
+   r.ctx.fillText=function(text,...args){labels.push(String(text));return original.call(this,text,...args);};
+   try{r.game.draw(r.ctx);}finally{r.ctx.fillText=original;}return labels.join(' ');
+  });
   // Releasing the upper piece first leaves it resting on the lower piece.
   for(const [id,to] of [[0,0],[1,1]]){
    const points=await page.evaluate(({id,to})=>{const level=screwWorld.current().game.state.level;return[OjjudaScrewGames.screwPoint(level.screws[id]),{x:level.holes[to].x,y:level.holes[to].y}];},{id,to});
@@ -114,6 +119,8 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-revealed.png')});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(OjjudaFlatPictures.COLLECTION_KEY))),['window-cat'],'a real puzzle completion earns its picture');
   await touch({x:311,y:26});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),true);
+  const lockedNames=await page.evaluate(()=>OjjudaFlatPictures.PICTURES.filter(p=>!screwWorld.current().game.state.collection.has(p.id)).map(p=>p.name));
+  const albumLabels=await drawnText();for(const name of lockedNames)assert.equal(albumLabels.includes(name),false,'the locked album does not spoil picture subjects');
   await touch({x:240,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null,'locked pictures cannot be previewed');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-first.png')});
   await touch({x:90,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),0);
@@ -126,15 +133,33 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2,'reopening continues the flat version independently');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.has('window-cat')),true,'the earned artwork survives reopening');
   const outlines=[];
-  for(let stage=5;stage<=10;stage++){
+  for(let stage=5;stage<=11;stage++){
    await page.setViewportSize({width:390,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
    await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
    outlines.push(await page.evaluate(()=>screwWorld.current().game.state.level.shape));
    await page.evaluate(()=>new Promise(requestAnimationFrame));
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-shape-${stage}.png`)});
+   if(stage===5){
+    await page.waitForFunction(()=>{const img=OjjudaFlatPictures.preload(screwWorld.current().game.state.level.picture).img;return img.complete&&img.naturalWidth>0;});
+    const title=await drawnText();assert.ok(title.includes('숨은 그림'));assert.equal(title.includes('별바다 고래'),false,'the stage title keeps the surprise');
+    const masking=await page.evaluate(()=>{
+     const r=screwWorld.current(),st=r.game.state,P=OjjudaFlatPhysics;
+     let point;
+     for(let y=174;y<450&&!point;y+=9)for(let x=55;x<305;x+=9)if(st.level.silhouette.every(poly=>P.polygonDistance(poly,x,y)>18)){point={x,y};break;}
+     if(!point)throw Error('No outside sample');
+     const pixel=()=>{const t=r.ctx.getTransform();return [...r.ctx.getImageData(Math.round(t.a*point.x+t.c*point.y+t.e),Math.round(t.b*point.x+t.d*point.y+t.f),1,1).data];};
+     r.game.draw(r.ctx);const before=pixel();st.complete=true;r.game.draw(r.ctx);const after=pixel();st.complete=false;r.game.draw(r.ctx);
+     return{before,after,order:st.level.order.slice(0,2)};
+    });
+    assert.deepEqual(masking.before,[222,211,199,255],'picture pixels never leak outside the covered silhouette');
+    assert.notDeepEqual(masking.after,masking.before,'finishing reveals the full picture outside the silhouette too');
+    for(const [index,id] of masking.order.entries())await touchMove(id,index);
+    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates.filter(p=>p.state==='gone').length),1,'a flower petal drops using real phone taps');
+    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-flower-partly-revealed.png')});
+   }
   }
-  assert.equal(new Set(outlines).size,6,'six different outer metal shapes render on mobile');
+  assert.equal(new Set(outlines).size,7,'seven different outer metal shapes render on mobile');
   for(const [stage,width] of [[501,320],[1000,390]]){
    await page.setViewportSize({width,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
@@ -157,7 +182,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-mosaic.png')});
   }
   // Decode and display every shipped artwork, then exercise the small-phone album.
-  for(let stage=1;stage<=5;stage++){
+  for(let stage=1;stage<=6;stage++){
    await page.evaluate(stage=>{
     const r=screwWorld.current();r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage));
     r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.state.level.plates.forEach(p=>p.state='gone');r.game.update(.05);
@@ -166,7 +191,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    await page.evaluate(()=>{const r=screwWorld.current();r.game.draw(r.ctx);});
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-picture-${stage}.png`)});
   }
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.size),5);
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.size),6);
   await page.setViewportSize({width:320,height:568});await touch({x:311,y:26});
   await page.evaluate(()=>{const r=screwWorld.current();r.game.draw(r.ctx);});
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-320.png')});
@@ -182,6 +207,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    for(const q of [s.hole,h]){g.onDown(q.x,q.y);g.onUp(q.x,q.y);}for(let i=0;i<20;i++)g.update(.05);return g.state.moves;
   }),1,'image failure leaves the game playable');await broken.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: five decoded illustrations, earned album and 320px controls, image failure fallback, six outlines, 18-piece phone input, stage persistence, screw collisions, undo and preserved box progress.');
+  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, seven outlines, 18-piece phone input, stage persistence, screw collisions, undo and preserved box progress.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
