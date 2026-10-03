@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame=window.ScrewBoxFixture;');
-world=world.replace('<script type="module">','<script src="/fixture-box.js"></script><script src="/screw-flat.js"></script><script src="/world-navigation.js"></script><script type="module">');
+world=world.replace('<script type="module">','<script src="/fixture-box.js"></script><script src="/vendor/matter-0.20.0.min.js"></script><script src="/screw-flat-physics.js"></script><script src="/screw-flat.js"></script><script src="/world-navigation.js"></script><script type="module">');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
 const box='(function(){'+read('screw3d.js').replace(/export \{[^}]*\};/,'')+'window.ScrewBoxFixture=screw3d;})();';
@@ -56,29 +56,51 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    await page.locator('[data-g=close]').click();assert.equal(await page.locator('#gov').count(),0);
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>screwWorld.open('screw'));await page.locator('[data-mode=flat]').click();
-  const moves=await page.evaluate(()=>screwWorld.current().game.state.level.solution.slice());
   const canvas=page.locator('#gcv');
-  for(const [index,move] of moves.entries()){
-   const q=await page.evaluate(move=>{const level=screwWorld.current().game.state.level,s=level.screws[move.screw];if(!OjjudaScrewGames.canUnscrew(level,s))throw Error('Blocked solution screw');return OjjudaScrewGames.screwPoint(s)},move);
-   const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+q.x*b.width/360,b.y+q.y*b.height/540);
+  const touch=async q=>{const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+q.x*b.width/360,b.y+q.y*b.height/540);};
+  // Releasing the upper piece first leaves it resting on the lower piece.
+  for(const [id,to] of [[0,0],[1,1]]){
+   const points=await page.evaluate(({id,to})=>{const level=screwWorld.current().game.state.level;return[OjjudaScrewGames.screwPoint(level.screws[id]),{x:level.holes[to].x,y:level.holes[to].y}];},{id,to});
+   for(const q of points)await touch(q);
+   await page.evaluate(()=>{const r=screwWorld.current();for(let n=0;n<180;n++)r.game.update(.05);r.game.draw(r.ctx);});
+  }
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'loose','the released top plate remains supported by another metal plate');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.score),0,'a supported plate never clears on a timer');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.physics.engine.pairs.list.some(pair=>pair.isActive)),true);
+  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-supported.png')});
+  await touch({x:82,y:514});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'hinged','touch undo restores its pivot joint');
+  await touch({x:297,y:514});
+  const order=await page.evaluate(()=>screwWorld.current().game.state.level.order.slice());
+  for(const [index,id] of order.entries()){
+   const move=await page.evaluate(id=>{
+    const level=screwWorld.current().game.state.level,s=level.screws[id];
+    if(!OjjudaScrewGames.canUnscrew(level,s))throw Error('Blocked solution screw');
+    const to=level.holes.find(h=>h.screw===null&&OjjudaScrewGames.bareHole(level,h));
+    if(!to)throw Error('No free board hole');return{screw:id,to:to.id,q:OjjudaScrewGames.screwPoint(s),target:{x:to.x,y:to.y}};
+   },id);
+   const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+move.q.x*b.width/360,b.y+move.q.y*b.height/540);
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.selected),move.screw,'the first phone tap selects a screw');
    if(qa&&index===0)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-selected.png')});
-   const target=await page.evaluate(move=>{const h=screwWorld.current().game.state.level.holes[move.to];return{x:h.x,y:h.y}},move);
-   await page.touchscreen.tap(b.x+target.x*b.width/360,b.y+target.y*b.height/540);
-   await page.evaluate(()=>{const r=screwWorld.current();for(let n=0;n<36;n++)r.game.update(.05);r.game.draw(r.ctx)});
+   await page.touchscreen.tap(b.x+move.target.x*b.width/360,b.y+move.target.y*b.height/540);
+   await page.evaluate(()=>{const r=screwWorld.current();for(let n=0;n<60;n++)r.game.update(.05);r.game.draw(r.ctx)});
    assert.equal(await page.evaluate(move=>screwWorld.current().game.state.level.screws[move.screw].hole.id,move),move.to,'the second tap inserts the screw into the empty hole');
+   if(qa&&index===0)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-hinged.png')});
   }
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.complete),true,'touch relocation removes every plate and reveals the picture');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-revealed.png')});
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2);
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2,'reopening continues the flat version independently');
+  if(qa){
+   await page.evaluate(()=>{const r=screwWorld.current();cancelAnimationFrame(r.raf);r.running=false;r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'34');r.game=OjjudaScrewGames.flat({setScore(){},end(){}});r.game.draw(r.ctx);});
+   await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-mosaic.png')});
+  }
   // Every picture renderer executes, including later stages outside the tutorial.
   for(let stage=1;stage<=6;stage++)await page.evaluate(stage=>{
    localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage));
    const game=OjjudaScrewGames.flat({setScore(){},end(){}});game.state.level.plates.forEach(p=>p.state='gone');game.draw(screwWorld.current().ctx);game.destroy();
   },stage);
   assert.deepEqual(errors,[]);
-  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, actual two-tap relocation, revealed artwork, all six pictures and independent flat continuation.');
+  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, actual two-tap relocation, supported metal and touch undo, revealed artwork, all six pictures and independent flat continuation.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
