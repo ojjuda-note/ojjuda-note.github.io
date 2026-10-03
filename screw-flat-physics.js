@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const M=typeof module!=='undefined'&&module.exports?require('./vendor/matter-0.20.0.min.js'):window.Matter;
-  const BOARD={x:24,y:143,w:312,h:346},STEP=1000/120,SCREW_RADIUS=13;
+  const BOARD={x:24,y:143,w:312,h:346},STEP=1000/120,SCREW_RADIUS=13,LAST_STAGE=1000;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const seeded=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
   function worldPoint(p,v){const co=Math.cos(p.angle),si=Math.sin(p.angle);return{x:p.x+v.x*co-v.y*si,y:p.y+v.x*si+v.y*co};}
@@ -35,11 +35,11 @@
     }
     return result;
   }
-  function mountPair(vertices){
+  function mountPair(vertices,inset=17){
     const xs=vertices.map(v=>v.x),ys=vertices.map(v=>v.y),candidates=[];
-    for(let y=Math.ceil(Math.min(...ys)+17);y<Math.max(...ys)-16;y+=3)
-      for(let x=Math.ceil(Math.min(...xs)+17);x<Math.max(...xs)-16;x+=3)
-        if(polygonDistance(vertices,x,y)<=-17)candidates.push({x,y});
+    for(let y=Math.ceil(Math.min(...ys)+inset);y<Math.max(...ys)-inset+1;y+=3)
+      for(let x=Math.ceil(Math.min(...xs)+inset);x<Math.max(...xs)-inset+1;x+=3)
+        if(polygonDistance(vertices,x,y)<=-inset)candidates.push({x,y});
     if(candidates.length<2)throw Error('Metal piece has no room for screws');
     const extremes=[];
     for(let i=0;i<12;i++){const co=Math.cos(i*Math.PI/6),si=Math.sin(i*Math.PI/6);extremes.push(candidates.reduce((best,p)=>p.x*co+p.y*si>best.x*co+best.y*si?p:best));}
@@ -49,7 +49,7 @@
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
   function makeFlatLevel(stage){
-    const L=clamp(Math.trunc(stage)||1,1,500),random=seeded(431+L*7919);
+    const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),random=seeded(431+L*7919);
     const top=[[153,157],[207,157],[232,169],[247,192],[251,270],[109,270],[113,192],[128,169]].map(([x,y])=>({x,y}));
     let bands,counts;
     if(L<=3){
@@ -57,7 +57,7 @@
         [[109,266],[251,266],[307,372],[53,372]],[[53,372],[307,372],[318,475],[42,475]]].map(poly=>poly.map(([x,y])=>({x,y})));
       counts=L===1?[1,1,1]:L===2?[1,2,1]:[1,2,2];
     }else{
-      const rows=[[270,109,251],[323,74,286],[374,52,308],[424,43,317],[475,42,318]];
+      const rows=[[270,109,251],[L>=400?330:323,74,286],[374,52,308],[424,43,317],[475,42,318]];
       bands=[top];
       for(let i=0;i<rows.length-1;i++){
         const [y0,l0,r0]=rows[i],[y1,l1,r1]=rows[i+1];
@@ -66,6 +66,15 @@
       }
       const extra=Math.min(7,1+Math.floor((L-4)/5));counts=[2,1,1,1,1];
       for(let i=0;i<extra;i++)counts[[4,3,2,1,4,3,2][i]]++;
+      if(L>=50)counts[3]++;
+      if(L>=100)counts[4]++;
+      if(L>=175){
+        const y=215,left=113-(y-192)*4/78,right=360-left;
+        bands.splice(0,1,[...top.slice(0,4),{x:right,y},{x:left,y},...top.slice(6)],
+          [{x:left,y},{x:right,y},{x:251,y:270},{x:109,y:270}]);
+        counts.splice(0,1,L<275?1:2,2);
+        if(L>=400)counts[2]++;
+      }
     }
     const plates=[],holes=[],screws=[];
     for(const x of [90,180,270])holes.push({id:holes.length,x,y:100,owner:null,screw:null});
@@ -78,7 +87,7 @@
         let poly=clipLine(clipLine(band,cuts[col],midY,false),cuts[col+1],midY,true);
         const centre=M.Vertices.centre(poly);
         poly=poly.map(v=>({x:centre.x+(v.x-centre.x)*.978,y:centre.y+(v.y-centre.y)*.965}));
-        const mounts=mountPair(poly),vertices=poly.map(v=>({x:v.x-centre.x,y:v.y-centre.y}));
+        const mounts=mountPair(poly,L>=50?15:17),vertices=poly.map(v=>({x:v.x-centre.x,y:v.y-centre.y}));
         const p={id:plates.length,z:plates.length,row,col,releaseFrom:rowSlope>=0?1:-1,x:centre.x,y:centre.y,angle:0,vertices,mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
         p.w=Math.max(...vertices.map(v=>v.x))-Math.min(...vertices.map(v=>v.x));p.h=Math.max(...vertices.map(v=>v.y))-Math.min(...vertices.map(v=>v.y));
         plates.push(p);
@@ -156,7 +165,7 @@
     function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();screwBodies.clear();}
     return{step,move,destroy,engine,bodies,screwBodies};
   }
-  const api={BOARD,SCREW_RADIUS,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,worldPoint,alignedMount,polygonDistance};
+  const api={BOARD,SCREW_RADIUS,LAST_STAGE,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,worldPoint,alignedMount,polygonDistance};
   if(typeof window!=='undefined')window.OjjudaFlatPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

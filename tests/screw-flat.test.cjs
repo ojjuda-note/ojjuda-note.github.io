@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const G=require('../screw-flat.js'),P=require('../screw-flat-physics.js'),M=require('../vendor/matter-0.20.0.min.js');
-const {STAGE_KEY}=G,storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value))};
+const {STAGE_KEY,LAST_STAGE}=G,storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value))};
 const press=(game,h)=>{game.onDown(h.x,h.y,1);game.onUp(h.x,h.y,1);};
 const tick=(game,seconds=3)=>{for(let n=0;n<Math.round(seconds/.05);n++)game.update(.05);};
 const step=(sim,seconds,dt=1/60)=>{for(let n=0;n<Math.round(seconds/dt);n++)sim.step(dt);};
@@ -44,8 +44,9 @@ function clearSupports(game){
 let purchases=0,ends=0;const api={setScore(){},end(){ends++;},buyScrew(){purchases++;}};
 storage.set('ojjuda-screw-stage','37');
 let last=0;
+assert.equal(LAST_STAGE,1000);assert.equal(P.LAST_STAGE,LAST_STAGE);
 // All layouts use only three spare holes above the picture, never beside it.
-for(let stage=1;stage<=500;stage++){
+for(let stage=1;stage<=LAST_STAGE;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
  assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
  assert.equal(st.level.holes.length-st.level.screws.length,3);
@@ -54,9 +55,25 @@ for(let stage=1;stage<=500;stage++){
   assert.ok(G.bareHole(st.level,h),'the three top holes start accessible');
  }
  assert.equal(st.level.screws.length,st.level.plates.length*2);
- for(const p of st.level.plates){assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=4,'plates are polygon pieces');}
+ for(const p of st.level.plates){
+  assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=4,'plates are polygon pieces');
+  for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-P.SCREW_RADIUS-1.9,'every screw fits inside its metal piece');
+  assert.ok(Math.hypot(p.mounts[0].x-p.mounts[1].x,p.mounts[0].y-p.mounts[1].y)>=32,'smaller pieces retain separate screw heads');
+ }
+ for(let i=0;i<st.level.screws.length;i++)for(let j=i+1;j<st.level.screws.length;j++){
+  const a=st.level.screws[i].hole,b=st.level.screws[j].hole;
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>P.SCREW_RADIUS*2,'neighbouring pieces do not overlap screw heads');
+ }
  assert.deepEqual(st.level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');
  invariant(st.level);game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
+}
+for(const [stage,pieces] of [[49,13],[50,14],[100,15],[175,16],[275,17],[400,18],[501,18],[1000,18]]){
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
+ assert.equal(st.L,stage,'saved advanced progress remains available');assert.equal(st.level.plates.length,pieces);
+ const [a,b]=st.level.order,plate=st.level.plates[st.level.screws[a].hole.owner];
+ relocate(game,a,st.level.holes[0]);assert.equal(plate.state,'hinged');
+ relocate(game,b,st.level.holes[1]);assert.equal(plate.state,'gone','advanced pieces release through real input and collision physics');
+ game.destroy();
 }
 // With side parking removed, replay the tutorials and a constrained puzzle solution.
 const constrainedSolution=[[12,0],[13,1],[11,2],[10,14],[7,13],[8,10],[9,16],[10,15],[7,12],[6,13],[8,9],[4,11],[5,14],[0,8],[2,10],[1,3],[5,4],[3,5],[10,6]];
@@ -81,13 +98,17 @@ for(const stage of [1,2,3,4]){
  assert.equal(st.complete,true,`stage ${stage} clears under actual gravity and plate collisions`);
  assert.equal(st.physics.bodies.size,0,'only plates that actually left the board are removed');
  assert.equal(st.score,st.level.plates.length*10+stage*10);
- assert.equal(storage.get(STAGE_KEY),String(Math.min(500,stage+1)));assert.equal(storage.get('ojjuda-screw-stage'),'37');
+ assert.equal(storage.get(STAGE_KEY),String(Math.min(LAST_STAGE,stage+1)));assert.equal(storage.get('ojjuda-screw-stage'),'37');
  if(stage===1){press(game,{x:267,y:514});assert.equal(st.L,2);}
  game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
-// Completion at the final stage saves 500 and exits only once.
-storage.set(STAGE_KEY,'500');const finalGame=G.flat(api);finalGame.state.level.plates.forEach(p=>p.state='gone');finalGame.update(.05);
-assert.equal(storage.get(STAGE_KEY),'500');press(finalGame,{x:267,y:514});press(finalGame,{x:267,y:514});assert.equal(ends,1);finalGame.destroy();
+// The previous final stage now continues; the new final stage exits only once.
+for(const stage of [500,999]){
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api);game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
+ assert.equal(storage.get(STAGE_KEY),String(stage+1));press(game,{x:267,y:514});assert.equal(game.state.L,stage+1);assert.equal(ends,0);game.destroy();
+}
+storage.set(STAGE_KEY,'1000');const finalGame=G.flat(api);finalGame.state.level.plates.forEach(p=>p.state='gone');finalGame.update(.05);
+assert.equal(storage.get(STAGE_KEY),'1000');press(finalGame,{x:267,y:514});press(finalGame,{x:267,y:514});assert.equal(ends,1);finalGame.destroy();
 assert.equal(purchases,0);
 // A physical fixture with spare holes and two independent metal rectangles.
 function fixture(lowerY=330){
@@ -168,4 +189,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 500 layouts have only three spare holes above the artwork; tutorial and constrained solution playthroughs, screw support, hinges, gravity, reinsertion, frame-rate stability, undo/retry, input safety and progress boundaries.');
+console.log('PASS: 1000 layouts, 13-to-18-piece progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, tutorial playthroughs and existing physics/input regressions.');

@@ -1,7 +1,7 @@
 /* Flat screw puzzles: relocate screws to release colliding, gravity-driven metal pieces. */
 (function () {
   'use strict';
-  const WIDTH = 360, HEIGHT = 540, LAST_STAGE = 500;
+  const WIDTH = 360, HEIGHT = 540;
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
   const SCREW_COLOR = '#A3B6C7';
   const THEMES = [
@@ -10,7 +10,7 @@
     ['별빛 로켓', '#DDE5F6', '#F2EAF8'], ['숲속 여우', '#F4DDCC', '#F7F1DE']
   ];
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
-  const {BOARD,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint}=Physics;
+  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   function readStage() {
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
@@ -175,7 +175,7 @@
     }
     function draw(c) {
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
-      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}단계 · ${st.level.name}`,22,26);
+      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.level.name}`,22,26);
       round(c,285,13,53,26,13);c.fillStyle='#E4DDD1';c.fill();c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle='#716757';c.textAlign='center';c.fillText('평면형',311.5,26);
       c.font='12px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
       c.fillText(st.complete?'그림을 모두 찾았어요!':st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51);
@@ -245,7 +245,7 @@
     const picture=`<svg viewBox="0 0 110 110" aria-hidden="true"><rect x="6" y="7" width="98" height="96" rx="15" fill="#F4E7D6"/><path d="M47 15L62 15L73 28L75 47H35L37 28Z" fill="#CFDAE4" stroke="#8A9EAF"/><path d="M35 49H75L87 72H24Z" fill="#BABFD4" stroke="#8A9EAF"/><path d="M24 74H87L91 97H20Z" fill="#B6CABF" stroke="#8A9EAF"/>${screw(46,31,'#A3B6C7')}${screw(64,40,'#A3B6C7')}${screw(42,60,'#A3B6C7')}${screw(70,64,'#A3B6C7')}${screw(33,85,'#A3B6C7')}${screw(79,85,'#A3B6C7')}</svg>`;
     return `<div class="gcard screw-choice-card"><span class="screw-choice-kicker">작은 나사, 두 가지 재미</span><h3>어떤 나사를 풀까요?</h3><p class="screw-choice-intro">마음에 드는 게임을 눌러 시작해요.</p><div class="screw-choices"><button type="button" class="screw-choice" data-g="screw-start" data-mode="box"><span class="screw-choice-art">${box}</span><span class="screw-choice-copy"><strong>박스형 나사게임</strong><span>물건을 돌려 보며<br>나사를 풀고 분해해요.</span><b>박스형 시작 →</b></span></button><button type="button" class="screw-choice screw-choice-flat" data-g="screw-start" data-mode="flat"><span class="screw-choice-art">${picture}</span><span class="screw-choice-copy"><strong>평면형 나사게임</strong><span>빈 구멍에 나사를 옮겨<br>철판 아래 그림을 찾아요.</span><b>평면형 시작 →</b></span></button></div><p class="screw-choice-foot">진행 단계는 각각 따로 이어져요.</p></div>`;
   }
-  const api={flat,menuHTML,makeFlatLevel,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,STAGE_KEY};
+  const api={flat,menuHTML,makeFlatLevel,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,STAGE_KEY,LAST_STAGE};
   if(typeof window!=='undefined')window.OjjudaScrewGames=api;
   if(typeof module!=='undefined' && module.exports)module.exports=api;
 })();
