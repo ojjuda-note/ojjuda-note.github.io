@@ -43,12 +43,13 @@ function clearSupports(game){
 }
 let purchases=0,ends=0;const api={setScore(){},end(){ends++;},buyScrew(){purchases++;}};
 storage.set('ojjuda-screw-stage','37');
-let last=0;
+let last=0;const shapes=new Set(),cornerCounts=new Set();
 assert.equal(LAST_STAGE,1000);assert.equal(P.LAST_STAGE,LAST_STAGE);
 // All layouts use only three spare holes above the picture, never beside it.
 for(let stage=1;stage<=LAST_STAGE;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
  assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
+ if(stage>=5){assert.ok(P.SHAPE_NAMES.includes(st.level.shape));shapes.add(st.level.shape);}
  assert.equal(st.level.holes.length-st.level.screws.length,3);
  for(const h of st.level.holes.filter(h=>h.owner===null)){
   assert.ok(h.y<P.BOARD.y,'no extra empty holes are created inside the picture');
@@ -56,7 +57,8 @@ for(let stage=1;stage<=LAST_STAGE;stage++){
  }
  assert.equal(st.level.screws.length,st.level.plates.length*2);
  for(const p of st.level.plates){
-  assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=4,'plates are polygon pieces');
+  assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=3,'plates are polygon pieces');
+  if(stage>=5)cornerCounts.add(p.vertices.length);
   for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-P.SCREW_RADIUS-1.9,'every screw fits inside its metal piece');
   assert.ok(Math.hypot(p.mounts[0].x-p.mounts[1].x,p.mounts[0].y-p.mounts[1].y)>=32,'smaller pieces retain separate screw heads');
  }
@@ -67,6 +69,8 @@ for(let stage=1;stage<=LAST_STAGE;stage++){
  assert.deepEqual(st.level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');
  invariant(st.level);game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
+assert.equal(shapes.size,6,'all six metal outlines appear');
+assert.ok(cornerCounts.has(4)&&cornerCounts.has(5)&&cornerCounts.has(6),'cuts create different polygon pieces');
 for(const [stage,pieces] of [[49,13],[50,14],[100,15],[175,16],[275,17],[400,18],[501,18],[1000,18]]){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
  assert.equal(st.L,stage,'saved advanced progress remains available');assert.equal(st.level.plates.length,pieces);
@@ -189,4 +193,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 layouts, 13-to-18-piece progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, tutorial playthroughs and existing physics/input regressions.');
+console.log('PASS: 1000 layouts with six metal outlines and varied polygons, 13-to-18-piece progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, tutorial playthroughs and existing physics/input regressions.');

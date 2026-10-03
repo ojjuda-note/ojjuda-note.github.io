@@ -182,7 +182,7 @@
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';c.fillText('나사를 축으로 회전 · 판과 나사에 걸려요',26,133);
-      c.textAlign='right';c.fillText(`철판 ${st.level.plates.filter(p=>p.state!=='gone').length}장`,333,133);
+      c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();drawPicture(c,st.level.theme);
       c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
       for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h);
