@@ -73,7 +73,14 @@ const root=path.join(__dirname,'..');
   if(last.get(A).status!=='finished'){console.log('DEBUG',JSON.stringify({a:{version:last.get(A).version,prompt:last.get(A).game.prompt},b:{version:last.get(B).version,prompt:last.get(B).game.prompt},failures,dom:await a.page.locator('#content').innerText(),dialogs:await Promise.all([a.page.locator('.dialog').allTextContents(),b.page.locator('.dialog').allTextContents()])}));await a.page.screenshot({path:'/tmp/matgo-online-stuck.png'});}
   assert.equal(last.get(A).status,'finished');assert.equal(last.get(B).status,'finished');
   assert.deepEqual(last.get(A).gold,last.get(B).gold);assert.equal(last.get(A).gold.reduce((x,y)=>x+y,0),10000);
-  await a.page.locator('#rematch').waitFor();await a.page.screenshot({path:'/tmp/matgo-online-result.png'});
+  await a.page.locator('#rematch').waitFor();
+  await a.page.locator('.result-details').evaluate(el=>{el.insertAdjacentHTML('beforeend','<p>추가 정산 내역</p>'.repeat(15));});
+  for(const [width,height] of [[320,568],[568,320]]){
+    await a.page.setViewportSize({width,height});await a.page.waitForTimeout(40);
+    const box=await a.page.locator('#result-exit').boundingBox();assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width&&box.y+box.height<=height-34,'online result exit stays above phone navigation');
+    assert.equal(await a.page.locator('#result-exit').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'online result exit stays clickable with long settlement details');
+  }
+  await a.page.screenshot({path:'/tmp/matgo-online-result.png'});
   await a.page.locator('#rematch').click();await b.page.locator('#rematch').click();
   for(let i=0;i<200&&last.get(A).round!==2;i++)await a.page.waitForTimeout(20);
   assert.equal(last.get(A).round,2);await a.page.waitForSelector('.dialog',{state:'detached'});
@@ -86,7 +93,9 @@ const root=path.join(__dirname,'..');
   assert.equal(last.get(B).bots[0],true);assert.match(await b.page.locator('#op-name').textContent(),/PC 대행/);
   for(let i=0;i<800&&last.get(B).status!=='finished';i++){await clickTurn(b.page);await b.page.waitForTimeout(15);}
   assert.equal(last.get(B).status,'finished');assert.ok(last.get(B).result.paidDelta[0]<=0);
-  await b.page.screenshot({path:'/tmp/matgo-online-pc-result.png'});
+  await b.page.locator('#result-exit').waitFor();await b.page.screenshot({path:'/tmp/matgo-online-pc-result.png'});
+  await b.page.route('**/world.html',r=>r.fulfill({body:'<p>오락실</p>',contentType:'text/html'}));
+  await b.page.locator('#result-exit').click();await b.page.waitForURL('**/world.html');
   assert.deepEqual(errors,[]);await a.context.close();await b.context.close();
   console.log('PASS: two browser members join by code, private hands, mobile layouts, 15-second automatic play, synchronized result, rematch and PC takeover after exit');
  }finally{await browser.close();await f.close();}

@@ -140,7 +140,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 #matgo-gate[hidden]{display:none}#matgo-gate h1{font-size:24px;margin:0}#matgo-gate p{max-width:360px;line-height:1.7;margin:0}
 #matgo-gate a,#matgo-gate button{display:inline-block;color:#2e2748;background:#f2c14e;padding:12px 20px;border-radius:999px;text-decoration:none;font:inherit}
 </style>
-<link rel="stylesheet" href="./matgo-viewport.css?v=20261003-text1">
+<link rel="stylesheet" href="./matgo-viewport.css?v=20261003-exit1">
 <script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
@@ -523,7 +523,7 @@ window.OjjudaMatgo={ onResult:null, getGold:()=>game.bank[ME], newRound:()=>star
 window.addEventListener('message',e=>{ if(!access.allowed()||e.origin!==location.origin||window.parent===window||e.source!==window.parent)return; const d=e.data||{}; if(d.type==='ojjuda:matgo:newRound') startRound(); });
 // Gold and refill limits are stored on the server; URL parameters cannot change them.
 if(!Bridge.standalone) try{ window.parent.postMessage({type:'ojjuda:matgo:ready'},location.origin); }catch{}
-function modal(html,handlers){ const m=document.createElement('div'); m.className='modal'; m.innerHTML=`<div class="card">${html}</div>`; document.body.appendChild(m); for(const k in handlers){ const b=m.querySelector('#'+k); if(b) b.onclick=()=>{ m.remove(); handlers[k](); }; } }
+function modal(html,handlers,result=false){ const m=document.createElement('div'); m.className='modal'; m.innerHTML=`<div class="card${result?' result-card':''}">${html}</div>`; document.body.appendChild(m); for(const k in handlers){ const b=m.querySelector('#'+k); if(b) b.onclick=()=>{ m.remove(); handlers[k](); }; } }
 function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c '+cls; d.innerHTML=c?cardSVG(c):backSVG; d.dataset.id=c?c.id:''; return d; }
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
@@ -534,7 +534,7 @@ function mount(){
   <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261003-text1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261003-exit1');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -676,11 +676,11 @@ async function finishRound(type,d){
   if(settling)return;settling=true;pendingResult={type,d};
   try{
     const state=await wallet.settle(currentRound,game.actions);game.bank[ME]=state.gold;currentRound=null;pendingResult=null;render();
-    if(type==='nagari'){const bonus=d.firstPpukGold?.[ME]||0;modal(`<h2>나가리</h2><p>아무도 7점을 못 냈어요. 다음 판은 점수 ×${game.carry}!</p>${bonus?`<div class="big ${bonus>0?'win':'lose'}"><span class="gold-amount">${bonus>0?'+':''}${bonus.toLocaleString()}</span><small class="gold-unit">골드</small></div><p>첫뻑 정산</p>`:''}<p class="result-balance">내 골드 <strong>${state.gold.toLocaleString()}</strong></p><div class="row"><button class="btn" id="next">다음 판</button></div>`,{next:()=>startRound()});}
+    if(type==='nagari'){const bonus=d.firstPpukGold?.[ME]||0;modal(`<div class="result-details"><h2>나가리</h2><p>아무도 7점을 못 냈어요. 다음 판은 점수 ×${game.carry}!</p>${bonus?`<div class="big ${bonus>0?'win':'lose'}"><span class="gold-amount">${bonus>0?'+':''}${bonus.toLocaleString()}</span><small class="gold-unit">골드</small></div><p>첫뻑 정산</p>`:''}<p class="result-balance">내 골드 <strong>${state.gold.toLocaleString()}</strong></p></div><div class="row result-actions"><button class="btn" id="next">다음 판</button><button class="btn g" id="result-exit">나가기</button></div>`,{next:()=>startRound(),'result-exit':()=>$('#exit').click()},true);}
     else{
       const won=d.winner===ME,bonus=d.firstPpukGold?.[ME]||0,net=d.goldDelta?.[ME]??(won?d.money:-d.money);
       Bridge.result({win:won,delta:net,points:d.total,detail:d.det});
-      modal(`<h2>${won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big ${won?'win':'lose'}"><span class="gold-amount">${net>=0?'+':''}${net.toLocaleString()}</span><small class="gold-unit">골드</small></div><table class="sc">${d.det.map(x=>`<tr><td>${x[0]}</td><td>${typeof x[1]==='number'?x[1]+'점':x[1]}</td></tr>`).join('')}<tr><td><b>합계</b></td><td><b>${d.total}점</b><small class="score-formula">${d.pts}점 × ${d.mult}</small></td></tr></table>${bonus?`<div class="gold-breakdown"><div><span>승패 정산</span> <strong>${won?'+':'-'}${d.money.toLocaleString()}골드</strong></div><div><span>첫뻑 정산</span> <strong>${bonus>0?'+':''}${bonus.toLocaleString()}골드</strong></div></div>`:''}<p class="result-balance">내 골드 <strong>${state.gold.toLocaleString()}</strong></p>${state.gold===0?'<p class="result-note">골드를 충전하면 다시 할 수 있어요.</p>':''}<div class="row"><button class="btn" id="next">${state.gold===0?'골드 충전':'다음 판'}</button></div>`,{next:()=>startRound()});
+      modal(`<div class="result-details"><h2>${won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big ${won?'win':'lose'}"><span class="gold-amount">${net>=0?'+':''}${net.toLocaleString()}</span><small class="gold-unit">골드</small></div><table class="sc">${d.det.map(x=>`<tr><td>${x[0]}</td><td>${typeof x[1]==='number'?x[1]+'점':x[1]}</td></tr>`).join('')}<tr><td><b>합계</b></td><td><b>${d.total}점</b><small class="score-formula">${d.pts}점 × ${d.mult}</small></td></tr></table>${bonus?`<div class="gold-breakdown"><div><span>승패 정산</span> <strong>${won?'+':'-'}${d.money.toLocaleString()}골드</strong></div><div><span>첫뻑 정산</span> <strong>${bonus>0?'+':''}${bonus.toLocaleString()}골드</strong></div></div>`:''}<p class="result-balance">내 골드 <strong>${state.gold.toLocaleString()}</strong></p>${state.gold===0?'<p class="result-note">골드를 충전하면 다시 할 수 있어요.</p>':''}</div><div class="row result-actions"><button class="btn" id="next">${state.gold===0?'골드 충전':'다음 판'}</button><button class="btn g" id="result-exit">나가기</button></div>`,{next:()=>startRound(),'result-exit':()=>$('#exit').click()},true);
     }
   }catch(error){modal('<h2>결과 저장</h2><p id="save-error"></p><div class="row"><button class="btn" id="retry-save">다시 저장</button></div>',{'retry-save':()=>finishRound(type,d)});document.getElementById('save-error').textContent=error.message;}
   finally{settling=false;}

@@ -79,7 +79,19 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     });
     await f.page.waitForTimeout(20);
   }
-  assert.equal(f.state.settled,true,'a real UI round settles against the server replay engine');assert.ok(f.state.gold>=0);assert.deepEqual(f.errors,[]);await f.context.close();
+  assert.equal(f.state.settled,true,'a real UI round settles against the server replay engine');assert.ok(f.state.gold>=0);
+  await f.page.locator('.result-card #result-exit').waitFor();
+  await f.page.locator('.result-details').evaluate(el=>{el.insertAdjacentHTML('beforeend','<p>추가 정산 내역</p>'.repeat(15));});
+  for(const [width,height] of [[320,568],[568,320]]){
+    await f.page.setViewportSize({width,height});await f.page.evaluate(()=>document.documentElement.style.setProperty('--matgo-safe-bottom','34px'));await f.page.waitForTimeout(40);
+    const box=await f.page.locator('#result-exit').boundingBox();assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width&&box.y+box.height<=height-34,'result exit stays above phone navigation');
+    assert.equal(await f.page.locator('#result-exit').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'result exit is immediately clickable without scrolling');
+  }
+  await f.page.screenshot({path:'/tmp/matgo-result-exit-solo.png'});
+  await f.page.route('**/world.html',r=>r.fulfill({body:'<p>오락실</p>',contentType:'text/html'}));
+  await f.page.locator('#result-exit').click();await f.page.waitForURL('**/world.html');
+  assert.equal(f.state.requests.filter(r=>r.action==='settle').length,1,'leaving a completed game does not settle twice');
+  assert.deepEqual(f.errors,[]);await f.context.close();
   {
     const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
