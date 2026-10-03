@@ -45,6 +45,33 @@ test('ordinary furniture is unchanged; straight-region metadata validates and co
  assert.throws(()=>normalizeMesh({...v.mesh,straightRegions:[{start:{x:0,y:0},end:{x:1,y:1},radius:-1,feather:1}]}));
 });
 
+test('left near rear leg follows its own seat-to-foot edge at the reported pose and while moving',async()=>{
+ const {recoverKnownChairProject}=await import('../house-test/chair-straight-regions.js');
+ const v=fixed.views.left,previous=structuredClone(v.mesh),added=[[3,7,6],[3,8,7]];
+ previous.indices=previous.indices.filter(t=>!added.some(q=>q.every(i=>t.includes(i))));
+ previous.indices.push([6,3,8],[7,6,8]);
+ const r=v.mesh.straightRegions[1];
+ let positions=0;
+ for(let x=0;x<=8.5;x+=.5)for(let y=0;y<=5.5;y+=.5){
+  const pose={...v.placement,x,y};let before;
+  try{before=projectMesh(previous,pose);}catch{continue;}
+  const after=projectMesh(v.mesh,pose),rendered=straightenProjectedMesh(after);
+  positions++;
+  assert.deepEqual(after.points,before.points,'registered anchors and all four feet stay fixed');
+  assert(rendered.triangles.every(t=>cross(...t.target)>0),'the valid old placement stays unfolded');
+  assert(bend(rendered,r)<.01,'the selected shaft has no middle hinge during movement');
+ }
+ assert(positions>100);
+ const pose={...v.placement,x:4.5,y:5.5},before=straightenProjectedMesh(projectMesh(previous,pose)),after=straightenProjectedMesh(projectMesh(v.mesh,pose));
+ assert(bend(before,r)>10);assert(bend(after,r)<.01);
+ for(const i of [0,2,3])assert(Math.abs(bend(before,v.mesh.straightRegions[i])-bend(after,v.mesh.straightRegions[i]))<1e-7,'the other three shafts retain their current correction');
+ const area=m=>projectMesh(m,pose).triangles.reduce((sum,t)=>sum+cross(...t.source)/2,0);
+ assert(Math.abs(area(previous)-area(v.mesh))<1e-6,'the same source picture is fully covered');
+ const oldSaved={name:'등받이 수정 후 저장한 의자',source:{data:v.drawings[0].data},placement:pose,mesh:previous};
+ assert.deepEqual((await recoverKnownChairProject(oldSaved)).mesh,v.mesh,'previously saved backrest correction also receives the one-leg correction');
+ console.log('one rear leg:',{positions,before:bend(before,r),after:bend(after,r)});
+});
+
 test('back posts use the back panel at the reported placement, with unchanged feet and source coverage',()=>{
  const axes={left:[[[151,350],[250,793]],[[215,369],[293,823]],[[251,383],[329,843]],[[288,401],[375,866]],[[318,267],[454,889]]],right:[[[806,350],[708,790]],[[598,272],[493,877]],[[635,390],[575,846]],[[676,375],[613,833]],[[719,357],[654,816]]]};
  for(const d of ['left','right']){
