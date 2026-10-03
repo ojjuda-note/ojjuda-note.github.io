@@ -1,5 +1,5 @@
-import {roomPoint} from './model.js?v=20261004-chairback1';
-import {FLOOR_BLANKET_REGISTRATION} from './floor-blanket-registration.js?v=20261004-chairback1';
+import {roomPoint} from './model.js?v=20261004-chairleg2';
+import {FLOOR_BLANKET_REGISTRATION} from './floor-blanket-registration.js?v=20261004-chairleg2';
 
 // A single flat illustration registered by measured cloth corners. Only those
 // picture pixels are sampled; no material, shape or hidden cloth is generated.

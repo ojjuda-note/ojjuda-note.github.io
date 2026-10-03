@@ -197,6 +197,31 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-320.png')});
   await touch({x:90,y:410});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),4,'the final album row is reachable on a small phone');
   await touch({x:180,y:511});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),false);
+  // Exercise the paid-hole control with a test wallet on a small phone.
+  await page.evaluate(()=>{
+   const r=screwWorld.current();r.game.destroy();localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'5');
+   const wallet=window.flatHoleWallet={coins:3,buys:0,count:0};
+   r.game=OjjudaScrewGames.flat({setScore(){},end(){},getUserId:()=> 'flat-ui-fixture',getCoins:()=>wallet.coins,buyScrew:async(kind,id,stage,verify)=>{
+    if(kind!=='flat_hole')throw Error('Wrong upgrade kind');
+    if(!verify){wallet.buys++;wallet.coins--;wallet.count++;}
+    return{ok:true,stage,count:wallet.count,coins:wallet.coins,price:1};
+   }});
+  });
+  await page.waitForFunction(()=>screwWorld.current().game.state.shopReady);
+  assert.ok((await drawnText()).includes('1쭈'),'the purchase price is visible before tapping');
+  for(let count=1;count<=3;count++){
+   await touch({x:106,y:514});await page.waitForFunction(n=>screwWorld.current().game.state.extraHoles===n,count);
+   assert.equal(await page.evaluate(()=>flatHoleWallet.coins),3-count);
+  }
+  await touch({x:106,y:514});assert.equal(await page.evaluate(()=>flatHoleWallet.buys),3,'the fourth phone tap cannot make another payment');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.holes.filter(h=>h.owner===null).length),6);
+  await page.evaluate(()=>{const r=screwWorld.current();r.game.draw(r.ctx);});
+  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-extra-holes-320.png')});
+  const paidMove=await page.evaluate(()=>{const l=screwWorld.current().game.state.level;return{id:l.order[0],to:l.holes.find(h=>h.extra).id};});
+  await touchMove(paidMove.id,paidMove.to);
+  await touch({x:297,y:514});await page.waitForFunction(()=>screwWorld.current().game.state.shopReady);
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.extraHoles),3,'retry retains the paid holes');
+  assert.equal(await page.evaluate(()=>flatHoleWallet.buys),3,'restoring holes never charges');
   // Missing artwork must never block screw input or scoring.
   const broken=await context.newPage();await broken.route('**/assets/screw-flat/*.webp',route=>route.abort());
   await broken.goto('https://fixture.test/world.html');await broken.waitForFunction(()=>window.screwWorld);
