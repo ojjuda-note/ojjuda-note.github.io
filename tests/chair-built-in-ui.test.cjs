@@ -31,6 +31,8 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   let f=await open();
   assert.equal(await f.locator('[data-furniture="chair"]').count(),0,'approved chair is not automatically added to existing rooms');
   assert.deepEqual(await readSave(),saved);
+  // Migration validation needs the runtime loaded through the real item menu.
+  await f.getByRole('button',{name:'의자 놓기',exact:true}).click();await ready(f);await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await readSave(),saved);
   const catalogue=await f.evaluate(async()=>{
    const {FURNITURE}=await import('/house-test/furniture-catalog.js?v=20261003-loading5'),{listMadeItems}=await import('/house-test/custom-store.js?v=20261003-loading5'),{normalize,canPlaceFurniture}=await import('/house-test/model.js?v=20261003-loading5');
    const legacyPose={direction:'left',x:7.5,y:4.5},legacy=normalize({version:7,rooms:[{x:0,y:0,shelf:null,furniture:{chair:legacyPose}}],diary:'legacy-chair-diary'});
