@@ -66,7 +66,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
   await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
   assert.match(await f.page.locator('#money').textContent(),/5,000 골드/);
-  await f.page.locator('#rules').click();assert.match(await f.page.locator('.modal').textContent(),/자뻑.*피 2장/);assert.match(await f.page.locator('.modal').textContent(),/5쭈/);
+  await f.page.locator('#menu').click();await f.page.locator('#rules').click();assert.match(await f.page.locator('.modal').textContent(),/자뻑.*피 2장/);assert.match(await f.page.locator('.modal').textContent(),/5쭈/);
   await f.page.locator('.modal button').last().click();
   for(const width of [320,390,768]){await f.page.setViewportSize({width,height:820});assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
   await f.page.setViewportSize({width:390,height:820});
@@ -80,6 +80,59 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.waitForTimeout(20);
   }
   assert.equal(f.state.settled,true,'a real UI round settles against the server replay engine');assert.ok(f.state.gold>=0);assert.deepEqual(f.errors,[]);await f.context.close();
+  {
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.evaluate(()=>{
+      const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c}])),take=id=>{const c=pool.get(id);pool.delete(id);return c;};
+      g.hand=[[0,1,16].map(take),[40,41].map(take)];g.floor=[2,3,8].map(id=>[take(id)]);g.caps=[[],[10,11].map(take)];
+      g.deck=[take(4),take(20),...pool.values()];g.turn=0;g.endTurn=async()=>{};render();
+    });
+    await f.page.locator('#handMe .c.ok[data-id="0"]').click();await f.page.locator('.modal #y').waitFor();
+    assert.match(await f.page.locator('.modal').textContent(),/두 장 폭탄.*뒤집기.*1회/);
+    await f.page.locator('.modal #y').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
+    assert.equal(await f.page.evaluate(()=>matgoTest.game.bomb[0]),1);assert.match(await f.page.locator('#bombFlipCount').textContent(),/1회/);
+    await f.page.locator('#bombFlip').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
+    assert.equal(await f.page.evaluate(()=>matgoTest.game.bomb[0]),0);assert.equal(await f.page.locator('#bombFlip').isVisible(),false);
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  for(const choice of ['yul','pi']){
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.evaluate(()=>{
+      const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c,asPi:false}]));
+      const take=id=>{const c=pool.get(id);pool.delete(id);return c;};
+      g.hand=[[32,20].map(take),[40,41].map(take)];g.floor=[33,24].map(id=>[take(id)]);
+      g.caps=[[0,8,28,1,5,9,2,3,6,7,10,11,14,15].map(take),[]];g.deck=[take(4),...pool.values()];
+      g.turn=0;g.endTurn=async()=>{};render();
+    });
+    await f.page.locator('#handMe .c.ok[data-id="32"]').click();await f.page.locator('#gukjin-'+choice).waitFor();
+    assert.match(await f.page.locator('.modal').textContent(),/그림\(열끗\).*쌍피\(피 2장\)/);
+    if(choice==='pi')await f.page.screenshot({path:'/tmp/matgo-gukjin-choice.png'});
+    await f.page.locator('#gukjin-'+choice).click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
+    assert.equal(await f.page.evaluate(()=>matgoTest.game.caps[0].find(c=>c.id===32).asPi),choice==='pi');
+    const group=choice==='pi'?'피':'열끗';assert.equal(await f.page.locator('#capsMe [data-g="'+group+'"] .c[data-id="32"]').count(),1);
+    assert.equal(await f.page.locator('#capsMe .lb').first().isVisible(),false);
+    assert.equal(await f.page.locator('.zone.me .who').isVisible(),false);
+    assert.equal(await f.page.locator('#log').isVisible(),false);
+    for(const [width,height] of [[320,568],[360,640],[390,560],[390,844],[768,720]]){
+      await f.page.setViewportSize({width,height});
+      await f.page.evaluate(()=>document.documentElement.style.setProperty('--matgo-safe-bottom','34px'));
+      await f.page.waitForTimeout(30);
+      const box=await f.page.locator('#handMe').boundingBox();assert.ok(box.y+box.height<=height-33,JSON.stringify({width,height,box}));
+      assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+      const cap=await f.page.locator('#capsMe .c').first().boundingBox();assert.ok(cap.width>=32&&cap.height>=48);
+      assert.ok((await f.page.locator('.top').boundingBox()).height<=42);
+    }
+    await f.page.setViewportSize({width:390,height:640});await f.page.screenshot({path:'/tmp/matgo-captured-mobile.png'});
+    await f.page.locator('#capsMe .cap').first().click();assert.equal(await f.page.locator('.captured-expanded svg').count(),3);
+    await f.page.locator('#captured-close').click();
+    await f.page.evaluate(()=>{const {game:g,CARDS,render}=matgoTest;g.hand[0]=[12,13].map(i=>({...CARDS[i]}));g.turn=0;render();});
+    assert.equal(await f.page.locator('#handMe .pair-mark:not([hidden])').count(),2);
+    await f.page.screenshot({path:'/tmp/matgo-held-pair.png'});
+    await f.page.evaluate(()=>{matgoTest.game.hand[0].pop();matgoTest.render();});
+    assert.equal(await f.page.locator('#handMe .pair-mark:not([hidden])').count(),0);
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
   for(const decision of ['win','continue']){
     const f=await fixture({seed:9});await f.page.goto('https://fixture.test/games/matgo.html');
     await f.page.waitForSelector('#chongtong-win');assert.match(await f.page.locator('.modal').textContent(),/총통/);
@@ -88,7 +141,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,3);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,4);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -146,7 +199,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     const f=await fixture({seed:468});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
     for(let i=0;i<1500&&!f.state.settled;i++){
       await f.page.evaluate(()=>{
-        const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#y')||modal.querySelector('button'))?.click();return;}
+        const modal=document.querySelector('.modal');if(modal){(modal.textContent.includes('두 장 폭탄')?modal.querySelector('#n'):(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#y')||modal.querySelector('button')))?.click();return;}
         const {game:g,ui,pick}=matgoTest;
         if(ui.resolveChoose){const value=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1;const ids=g.floor.map((s,i)=>[s,i]).filter(([s])=>ui.chooseStacks.has(s)).map(([,i])=>i);ui.resolveChoose(ids.reduce((a,b)=>value(g.floor[a][0])>=value(g.floor[b][0])?a:b));return;}
         if(!ui.busy&&!g.over&&g.turn===0){if(g.hand[0][0])void pick(g.hand[0][0].id);else document.querySelector('#bombFlip')?.click();}
