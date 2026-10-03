@@ -6,7 +6,7 @@ let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-world=world.slice(0,boot)+`window.billiardTest={open:kind=>ep(kind,'local',{}),close:mn,state:()=>k,angle:()=>Math.atan2(k.aim.dy,k.aim.dx)*180/Math.PI};D.isAdmin=false;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
+world=world.slice(0,boot)+`window.billiardTest={open:(kind,mode='local',options={})=>ep(kind,mode,options),render:bo,close:mn,state:()=>k,angle:()=>Math.atan2(k.aim.dy,k.aim.dx)*180/Math.PI};D.isAdmin=false;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
 const distance=(a,b)=>((b-a+540)%360)-180;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -114,6 +114,45 @@ const distance=(a,b)=>((b-a+540)%360)-180;
    await page.screenshot({path:'/tmp/ojjuda-billiards-'+kind+'-mobile.png',fullPage:true});
    console.log('PASS',kind,'two-finger pinch, long press/release, drag, zoom menu, 150/200%, pan, reset, escape, toolbar, mouse, touch, keyboard, long press, turn and spin guards');
   }
+  // Pool ownership stays with this player during the opponent's turn.
+  await page.evaluate(()=>billiardTest.open('pool8','ai'));
+  assert.equal(await page.locator('.bl-chips').count(),0,'pool removes the duplicated player row');
+  assert.equal(await page.locator('.bl-grp.mine').count(),0,'open table has no assigned target');
+  await page.evaluate(()=>{const s=billiardTest.state();s.st.groups={p1:'solid',p2:'stripe'};billiardTest.render();});
+  const target=()=>page.locator('.bl-grp.mine').getAttribute('data-pool-group');
+  assert.equal(await target(),'solid');
+  const ring=await page.locator('.bl-grp.mine').evaluate(el=>getComputedStyle(el).boxShadow);
+  assert.ok(ring.includes('234, 196, 95'),'my group has a gold border');
+  await page.evaluate(()=>{billiardTest.state().st.turn='p2';billiardTest.render();});
+  assert.equal(await target(),'solid','opponent turn never moves my border');
+  await page.evaluate(()=>{const s=billiardTest.state();s.mode='online';s.me='p2';s.names={p1:'친구',p2:'나'};billiardTest.render();});
+  assert.equal(await target(),'stripe','online second player sees their own group');
+  await page.screenshot({path:'/tmp/billiards-fullscreen-my-balls.png'});
+  await page.evaluate(()=>{const s=billiardTest.state();s.st.balls.filter(b=>b.id>=9).forEach(b=>b.on=false);billiardTest.render();});
+  assert.equal(await target(),'eight','clearing my group points to the 8 ball');
+  await page.evaluate(()=>{const s=billiardTest.state();s.mode='local';s.st.turn='p1';billiardTest.render();});
+  assert.equal(await target(),'solid','shared phone follows the player at the table');
+  await page.evaluate(()=>billiardTest.open('pool8','ai'));
+  assert.equal(await page.locator('.bl-grp.mine').count(),0,'new game resets group indication');
+  for(const kind of ['pool8','carom4']){
+   await page.evaluate(kind=>billiardTest.open(kind,'ai'),kind);
+   for(const [width,height] of [[320,568],[390,844],[412,915],[568,320],[844,390],[1280,900]]){
+    await page.setViewportSize({width,height});await page.waitForTimeout(80);
+    const screen=await page.locator('.bl-box').boundingBox();
+    assert.deepEqual(screen,{x:0,y:0,width,height},kind+': game fills viewport '+width+'x'+height);
+    for(const selector of ['.ghead','.bl-hud','.bl-can','.bl-power','.bl-msg','.bl-aim','.bl-ctrl']){
+     const box=await page.locator(selector).boundingBox();
+     assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width+.5&&box.y+box.height<=height+.5,kind+' '+selector+' fits '+width+'x'+height);
+    }
+    assert.equal(await page.locator('.bl-box').evaluate(el=>el.scrollHeight>el.clientHeight),false,'full game fits without page scrolling');
+    assert.equal(await page.locator('.bl-chips').count(),kind==='pool8'?0:1,'carom keeps its score row');
+    if(kind==='pool8'){
+     assert.equal(await page.locator('.bl-tray').evaluate(el=>el.scrollWidth>el.clientWidth),false,'ball lists fit');
+     if(width===320||width===568)await page.screenshot({path:'/tmp/billiards-fullscreen-'+width+'.png'});
+    }
+   }
+  }
+  console.log('PASS full-screen portrait/landscape layout, pool row removed, assigned player gold border, 8-ball target, new game reset');
   await page.evaluate(()=>billiardTest.open('carom4'));
   for(const [width,height] of [[320,640],[390,844],[1280,900]]){
    await page.setViewportSize({width,height});
