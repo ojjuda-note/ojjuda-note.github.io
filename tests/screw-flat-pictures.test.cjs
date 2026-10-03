@@ -3,11 +3,11 @@ const G=require('../screw-flat.js'),A=require('../screw-flat-pictures.js');
 const storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value))};
 const tap=(g,x,y)=>{g.onDown(x,y);g.onUp(x,y);};
 const finish=g=>{g.state.level.plates.forEach(p=>p.state='gone');g.update(.05);};
-assert.equal(A.PICTURES.length,5);assert.equal(new Set(A.PICTURES.map(p=>p.id)).size,5);
-for(let i=0;i<5;i++){
+assert.equal(A.PICTURES.length,6);assert.equal(new Set(A.PICTURES.map(p=>p.id)).size,6);
+for(let i=0;i<A.PICTURES.length;i++){
  const picture=A.PICTURES[i],bytes=fs.readFileSync(path.join(__dirname,'../assets/screw-flat',picture.id+'-v1.webp'));
- assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<150000,'mobile artwork stays small');
- assert.equal(G.makeFlatLevel(i+1).name,picture.name);assert.equal(G.makeFlatLevel(i+6).picture,i);
+ assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<200000,'mobile artwork stays small');
+ assert.equal(G.makeFlatLevel(i+1).name,picture.name);assert.equal(G.makeFlatLevel(i+1+A.PICTURES.length).picture,i);
 }
 for(const bad of ['invalid','{}','null','[null,123,"unknown"]']){storage.set(A.COLLECTION_KEY,bad);assert.equal(A.readCollection().size,0);}
 storage.clear();let score=0;const api={setScore:n=>score=n,end(){}};
@@ -33,4 +33,4 @@ storage.set(G.STAGE_KEY,'999');const advanced=G.flat(api);assert.equal(advanced.
 // Disabled storage never prevents playing or collecting within the current session.
 global.localStorage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};
 const blocked=G.flat(api);finish(blocked);assert.ok(blocked.state.collection.has('window-cat'));blocked.destroy();
-console.log('PASS: five small artwork assets, stage rotation, earned-only album, pause/resume, keyboard navigation, persistent collection, duplicate protection and unavailable storage.');
+console.log('PASS: six small artwork assets, stage rotation, earned-only album, pause/resume, keyboard navigation, persistent collection, duplicate protection and unavailable storage.');

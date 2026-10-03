@@ -56,7 +56,9 @@ for(let stage=1;stage<=LAST_STAGE;stage++){
   assert.ok(G.bareHole(st.level,h),'the three top holes start accessible');
  }
  assert.equal(st.level.screws.length,st.level.plates.length*2);
+ assert.ok(st.level.silhouette.length>0,'every stage has an immutable picture silhouette');
  for(const p of st.level.plates){
+  assert.ok(st.level.silhouette.some(poly=>P.polygonDistance(poly,p.x,p.y)<0),'metal pieces fit the picture silhouette');
   assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=3,'plates are polygon pieces');
   if(stage>=5)cornerCounts.add(p.vertices.length);
   for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-P.SCREW_RADIUS-1.9,'every screw fits inside its metal piece');
@@ -69,9 +71,12 @@ for(let stage=1;stage<=LAST_STAGE;stage++){
  assert.deepEqual(st.level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');
  invariant(st.level);game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
-assert.equal(shapes.size,6,'all six metal outlines appear');
+assert.equal(shapes.size,7,'all seven metal outlines appear');
+assert.equal(G.makeFlatLevel(5).shape,'꽃');
+assert.equal(G.makeFlatLevel(5).name,'별바다 고래','the first flower conceals a different subject');
+assert.equal(new Set([5,12,19,26,33,40].map(n=>G.makeFlatLevel(n).picture)).size,6,'the same flower silhouette can hide every picture');
 assert.ok(cornerCounts.has(4)&&cornerCounts.has(5)&&cornerCounts.has(6),'cuts create different polygon pieces');
-for(const [stage,pieces] of [[49,13],[50,14],[100,15],[175,16],[275,17],[400,18],[501,18],[1000,18]]){
+for(const [stage,pieces] of [[49,13],[50,14],[54,14],[100,15],[175,16],[275,17],[400,18],[404,18],[501,18],[1000,18]]){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
  assert.equal(st.L,stage,'saved advanced progress remains available');assert.equal(st.level.plates.length,pieces);
  const [a,b]=st.level.order,plate=st.level.plates[st.level.screws[a].hole.owner];
@@ -81,10 +86,12 @@ for(const [stage,pieces] of [[49,13],[50,14],[100,15],[175,16],[275,17],[400,18]
 }
 // With side parking removed, replay the tutorials and a constrained puzzle solution.
 const constrainedSolution=[[12,0],[13,1],[11,2],[10,14],[7,13],[8,10],[9,16],[10,15],[7,12],[6,13],[8,9],[4,11],[5,14],[0,8],[2,10],[1,3],[5,4],[3,5],[10,6]];
-for(const stage of [1,2,3,4]){
+// Clear the petals, then move the screws that physically support the remaining centre and top petal.
+const flowerSolution=[[0,0],[1,1],[0,3],[1,4],[2,0],[3,1],[2,6],[3,5],[4,0],[5,1],[4,7],[5,8],[6,0],[7,1],[8,2],[9,9],[0,12],[11,11],[10,10],[3,3],[11,13],[2,5],[13,11],[12,14],[0,6],[11,15],[4,16],[1,13]];
+for(const stage of [1,2,3,4,5]){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
- if(stage===4){
-  for(const [id,target] of constrainedSolution)relocate(game,id,st.level.holes[target]);
+ if(stage===4||stage===5){
+  for(const [id,target] of stage===4?constrainedSolution:flowerSolution)relocate(game,id,st.level.holes[target]);
  }else{
  for(let i=0;i<st.level.order.length;i+=2){
   clearSupports(game);
@@ -193,4 +200,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 layouts with six metal outlines and varied polygons, 13-to-18-piece progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, tutorial playthroughs and existing physics/input regressions.');
+console.log('PASS: 1000 layouts with seven metal outlines and a flower playthrough and varied polygons, 13-to-18-piece progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, tutorial playthroughs and existing physics/input regressions.');

@@ -7,6 +7,7 @@
     {id:'rabbit-tea',name:'토끼의 찻시간',colors:['#F4DDD9','#FFF4E9']},
     {id:'bear-picnic',name:'곰의 소풍',colors:['#DCECCF','#FFF2D5']},
     {id:'puppy-beach',name:'강아지의 바다',colors:['#D4EBEF','#FFF0D7']},
+    {id:'sky-whale',name:'별바다 고래',colors:['#DCE5EF','#EAE4DC']},
     {id:'cozy-room',name:'포근한 우리집',colors:['#EFDBC1','#FFF0DF']}
   ];
   const images=new Map();

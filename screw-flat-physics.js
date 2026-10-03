@@ -48,9 +48,30 @@
     if(dist<32)throw Error('Metal piece screw heads overlap');
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
-  const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판'];
-  function shapeOutline(index){
+  const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃'];
+  function flowerOutline(first=false){
+    // A convex centre and five circular caps form one concave flower without overlapping bodies.
+    const radius=first?70:110,offset=first?100:80,half=Math.PI/5,edgeX=radius*Math.cos(half)-offset,edgeY=radius*Math.sin(half);
+    const capRadius=Math.hypot(edgeX,edgeY),arc=Math.atan2(edgeY,edgeX),centre=[],petals=[];
+    for(let i=0;i<5;i++){
+      const a=-Math.PI/2+i*2*Math.PI/5,co=Math.cos(a),si=Math.sin(a);
+      centre.push({x:radius*Math.cos(a-half),y:radius*Math.sin(a-half)});
+      const steps=first?24:16,cap=Array.from({length:steps+1},(_,j)=>{
+        const t=-arc+2*arc*j/steps,x=offset+capRadius*Math.cos(t),y=capRadius*Math.sin(t);
+        return{x:x*co-y*si,y:x*si+y*co};
+      });
+      const petal=first?clipPlane(clipPlane(cap,-Math.sin(a-half),Math.cos(a-half),0,false),-Math.sin(a+half),Math.cos(a+half),0,true):cap;
+      petals.push(petal.filter((p,j)=>Math.hypot(p.x-petal[(j+1)%petal.length].x,p.y-petal[(j+1)%petal.length].y)>1e-6));
+    }
+    const roots=[centre,...petals],points=roots.flat(),xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+    const minX=Math.min(...xs),minY=Math.min(...ys),width=Math.max(...xs)-minX,height=Math.max(...ys)-minY;
+    const outline=roots.map(poly=>poly.map(p=>({x:32+(p.x-minX)*296/width,y:151+(p.y-minY)*330/height})));
+    const outside=outline.slice(1).sort((a,b)=>M.Vertices.centre(b).y-M.Vertices.centre(a).y);
+    return[...outside.slice(0,4),outline[0],outside[4]];
+  }
+  function shapeOutline(index,firstFlower=false){
     const points=rows=>rows.map(([x,y])=>({x,y}));
+    if(index===6)return flowerOutline(firstFlower);
     if(index===0)return[points([[95,157],[265,157],[322,225],[310,380],[180,477],[50,380],[38,225]])];
     if(index===1)return[points([[55,157],[305,157],[318,335],[285,404],[180,477],[75,404],[42,335]])];
     if(index===2){
@@ -93,10 +114,16 @@
   }
   function makeShapedLevel(L){
     const count=Math.min(13,7+Math.floor((L-4)/5))+[50,100,175,275,400].filter(n=>L>=n).length;
-    const shape=(L-5)%SHAPE_NAMES.length;let leaves,roots;
+    const shape=(L-5+6)%SHAPE_NAMES.length;let leaves,roots;
     for(let attempt=0;attempt<12;attempt++){
       const random=seeded(9041+L*7919+attempt*104729);
-      roots=shapeOutline(shape).map(fitFragment);if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
+      roots=shapeOutline(shape,L===5).map(fitFragment);if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
+      if(L===5){
+        // Keep the first flower's centre small and its top mounts high enough to reopen as it falls.
+        const centre=roots[4],halves=[false,true].map(low=>fitFragment(clipPlane(centre.raw,1,0,181,low)));
+        centre.children=halves;leaves.splice(4,1,...halves);
+        roots[5].mounts=[{x:160,y:174},{x:200,y:174}];
+      }
       while(leaves.length<count){
         const candidates=leaves.filter(p=>!p.unsplittable).sort((a,b)=>b.area-a.area);let changed=false;
         for(const p of candidates){
@@ -120,7 +147,7 @@
       }
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
-    return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
+    return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
   }
   function makeFlatLevel(stage){
     const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),random=seeded(431+L*7919);
@@ -163,7 +190,7 @@
         }
       }
     });
-    return{stage:L,theme:(L-1)%6,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
+    return{stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
   }
   function createPhysics(level){
     const engine=M.Engine.create({positionIterations:12,velocityIterations:8,constraintIterations:8,enableSleeping:false});
