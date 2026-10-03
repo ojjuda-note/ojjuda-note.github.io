@@ -2650,8 +2650,10 @@ function updateAuth() {
   $('#note-account-email').textContent = session?.user?.email || '';
   $('#note-account-name').textContent = session?.user ? accountNickname || '내 계정' : '';
   for (const balance of document.querySelectorAll('[data-note-balance]')) {
-    balance.textContent = worldCoins === null ? '충전' : worldCoins.toLocaleString('ko-KR');
-    balance.closest('a')?.setAttribute('aria-label', worldCoins === null ? '충전' : `충전, 보유 쭈 ${worldCoins.toLocaleString('ko-KR')}`);
+    balance.textContent = worldCoins === null ? '—' : worldCoins.toLocaleString('ko-KR');
+    const label = worldCoins === null ? '보유 쭈 확인, 충전 열기' : `보유 ${worldCoins.toLocaleString('ko-KR')}쭈, 충전 열기`;
+    balance.closest('a')?.setAttribute('aria-label', label);
+    balance.closest('a')?.setAttribute('title', label);
   }
   if ($('#mobile-account-status')) $('#mobile-account-status').textContent = accountText;
   if ($('#note-blocks')) $('#note-blocks').hidden = !session?.user;
