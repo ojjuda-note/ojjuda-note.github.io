@@ -6,7 +6,7 @@
   try{stored=JSON.parse(localStorage.getItem(storageKey));}catch{storageWorks=false;}
   const state=core.cleanProgress(stored,puzzles);
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
-  let hintTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
+  let hintTimer=null,zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
   const found=()=>state.found[puzzle().id]||(state.found[puzzle().id]=[]);
   const round=()=>state.rounds[puzzle().id]||(state.rounds[puzzle().id]=core.freshRound());
@@ -16,7 +16,11 @@
     $('storage-note').textContent=storageWorks?'진행 상황과 문제 순서는 이 기기에 저장돼요.':'기록 저장이 안 돼요. 쭈를 쓰려면 브라우저 저장을 허용해 주세요.';
     return storageWorks;
   }
-  function speak(message,good=false){$('message').textContent=message;$('message').classList.toggle('good',good);$('zoom-status').textContent=`${found().length} / 6 · ${message}`;}
+  function speak(message,good=false){
+    $('message').textContent=message;$('message').classList.toggle('good',good);$('zoom-status').textContent=`${found().length} / 6 · ${message}`;
+    clearTimeout(zoomNoticeTimer);
+    if(zoomDialog.open){$('zoom-tools').classList.add('has-message');zoomNoticeTimer=setTimeout(()=>$('zoom-tools').classList.remove('has-message'),6500);}
+  }
   function makeMark(spot,number,isHint=false){
     const mark=document.createElement('div');mark.className='mark'+(isHint?' hint-mark':'');
     Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${spot.rx*2}%`,height:`${spot.ry*2}%`});
@@ -56,7 +60,7 @@
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
     const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1쭈':'힌트 · 1쭈';
-    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=hintLabel;}
+    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=id==='zoom-hint'?(showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1쭈'):hintLabel;$(id).setAttribute('aria-label',hintLabel);}
     const extendable=(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
@@ -247,14 +251,17 @@
   $('stage-picker').onchange=e=>show(Number(e.target.value));$('prev').onclick=()=>show(state.order[position()-1]);$('next').onclick=()=>show(state.order[position()+1]);
   $('retry').onclick=()=>show(state.current);$('hint').onclick=hint;$('zoom-hint').onclick=hint;$('hide-hint').onclick=()=>hideHint();$('hint-location').onclick=locateHint;
   $('start').onclick=start;$('reset').onclick=reset;$('extend').onclick=()=>purchase('time');$('zoom-extend').onclick=()=>purchase('time');
-  $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=toggleAnswers;$('close-answers').onclick=()=>closeAnswers(true);
+  $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=()=>{toggleAnswers();closeZoomSettings();};$('close-answers').onclick=()=>closeAnswers(true);
   $('continue').onclick=()=>{const pos=position(),index=pos<47?state.order[pos+1]:state.order.find(i=>(state.found[puzzles[i].id]||[]).length<6);if(index!==undefined)show(index);window.scrollTo({top:0,behavior:'smooth'});};
   const scrollA=$('zoom-scroll-a'),scrollB=$('zoom-scroll-b');let syncing=false;
   function syncScroll(from,to){if(syncing)return;const x=from.scrollLeft/(from.scrollWidth-from.clientWidth||1),y=from.scrollTop/(from.scrollHeight-from.clientHeight||1),nextX=x*(to.scrollWidth-to.clientWidth),nextY=y*(to.scrollHeight-to.clientHeight);if(Math.abs(to.scrollLeft-nextX)<1&&Math.abs(to.scrollTop-nextY)<1)return;syncing=true;to.scrollLeft=nextX;to.scrollTop=nextY;requestAnimationFrame(()=>{syncing=false;});}
   scrollA.addEventListener('scroll',()=>syncScroll(scrollA,scrollB),{passive:true});scrollB.addEventListener('scroll',()=>syncScroll(scrollB,scrollA),{passive:true});
   function resizeZoom(){const x=(scrollA.scrollLeft+scrollA.clientWidth/2)/(scrollA.scrollWidth||1),y=(scrollA.scrollTop+scrollA.clientHeight/2)/(scrollA.scrollHeight||1);for(const surface of document.querySelectorAll('.zoom-picture'))surface.style.width=`${Math.max(850,surface.parentElement.clientWidth)*Number($('zoom-level').value)}px`;for(const pane of [scrollA,scrollB]){pane.scrollLeft=x*pane.scrollWidth-pane.clientWidth/2;pane.scrollTop=y*pane.scrollHeight-pane.clientHeight/2;}}
-  $('zoom').onclick=()=>{if($('zoom').disabled)return;zoomDialog.showModal();document.body.style.overflow='hidden';$('zoom-level').value='1';resizeZoom();for(const pane of [scrollA,scrollB]){pane.scrollLeft=0;pane.scrollTop=0;}refresh();};
-  $('close-zoom').onclick=()=>zoomDialog.close();zoomDialog.addEventListener('close',()=>{document.body.style.overflow='';$('zoom').focus();});$('zoom-level').onchange=resizeZoom;window.addEventListener('resize',()=>{if(zoomDialog.open)resizeZoom();});
+  function notifyZoom(open){if(window.self!==window.top)window.parent.postMessage({type:'ojjuda:spot-zoom',open},window.location.origin);}
+  function closeZoomSettings(){zoomDialog.classList.remove('settings-open');$('zoom-more').setAttribute('aria-expanded','false');}
+  $('zoom-more').onclick=()=>{const open=zoomDialog.classList.toggle('settings-open');$('zoom-more').setAttribute('aria-expanded',String(open));if(open)$('zoom-level').focus();};
+  $('zoom').onclick=()=>{if($('zoom').disabled)return;closeZoomSettings();$('zoom-tools').classList.remove('has-message');zoomDialog.showModal();document.body.style.overflow='hidden';notifyZoom(true);$('zoom-level').value='1';resizeZoom();for(const pane of [scrollA,scrollB]){pane.scrollLeft=0;pane.scrollTop=0;}refresh();};
+  $('close-zoom').onclick=()=>zoomDialog.close();zoomDialog.addEventListener('close',()=>{clearTimeout(zoomNoticeTimer);$('zoom-tools').classList.remove('has-message');closeZoomSettings();notifyZoom(false);document.body.style.overflow='';$('zoom').focus();});$('zoom-level').onchange=()=>{resizeZoom();closeZoomSettings();};window.addEventListener('resize',()=>{if(zoomDialog.open)resizeZoom();});
   $('wallet-login').onclick=openAuth;$('close-auth').onclick=()=>authDialog.close();
   $('login-form').onsubmit=async e=>{e.preventDefault();$('login-submit').disabled=true;$('auth-error').textContent='';try{await wallet.signIn($('email').value.trim(),$('password').value);$('password').value='';authDialog.close();speak('오쭈다 계정으로 연결했어요.');}catch(error){$('auth-error').textContent=error.message;}finally{$('password').value='';$('login-submit').disabled=false;}};
   authDialog.addEventListener('close',()=>{$('password').value='';});

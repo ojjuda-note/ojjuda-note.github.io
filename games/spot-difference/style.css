@@ -34,3 +34,53 @@ body{padding-bottom:112px}.clock{min-width:110px;gap:7px}.clock-icon{font-size:3
 .picture img.contrast-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:transparent;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat}.mark:not(.hint-mark),.mark.answer-mark{background:transparent}.mark span{left:calc(100% + 2px);top:-12px}.mark.label-left span{left:auto;right:calc(100% + 2px)}.mark.label-below span{top:auto;bottom:-12px}
 
 body.embedded .topbar{display:none}body.embedded main{padding-top:18px}
+
+/* Keep the enlarged pictures as the main phone surface. */
+#zoom-dialog .zoom-header{padding-right:390px}
+.zoom-tools{flex-shrink:0}
+#zoom-status{padding:0 22px 8px;font-size:14px;line-height:1.5;color:var(--muted)}
+#zoom-dialog .zoom-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.zoom-vitals{display:flex;align-items:center;gap:18px;margin-right:auto}
+#zoom-dialog .zoom-vitals .hearts{font-size:19px}
+#zoom-settings{position:absolute;right:78px;top:18px;z-index:4;font-size:14px}
+#zoom-settings label{white-space:nowrap}
+#zoom-dialog #close-zoom{position:absolute;right:22px;top:18px}
+#zoom-more,.zoom-extend-short{display:none}
+
+@media(max-width:900px),(max-width:1100px) and (max-height:600px){
+  #zoom-dialog{inset:0;margin:0;width:100%;height:100dvh;max-width:none;max-height:none;border:0;border-radius:0;padding:env(safe-area-inset-top) 0 0}
+  #zoom-dialog .zoom-header{display:none}
+  #zoom-dialog .zoom-tools{position:relative}
+  #zoom-dialog .zoom-pair{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr));padding:0;gap:2px}
+  #zoom-dialog .zoom-column{position:relative;border:0;border-radius:0}
+  #zoom-dialog .zoom-column h3{position:absolute;z-index:2;top:5px;left:5px;padding:3px 7px;border-radius:6px;background:#ffffffde;font-size:14px;line-height:18px;pointer-events:none}
+  #zoom-dialog .zoom-picture-name{display:none}
+  #zoom-dialog .zoom-scroll{scrollbar-width:none}
+  #zoom-dialog .zoom-scroll::-webkit-scrollbar{display:none}
+  #zoom-dialog .zoom-picture-timer{margin:0;width:100%;height:4px}
+  #zoom-dialog .zoom-picture-timer .time-progress{height:4px;border:0;border-radius:0}
+  #zoom-dialog .zoom-toolbar{display:grid;grid-template-columns:64px minmax(54px,.9fr) minmax(80px,1.2fr) 44px 44px;gap:4px;padding:4px max(4px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));border-top:0}
+  #zoom-dialog .zoom-vitals{display:flex;flex-direction:column;justify-content:center;gap:2px;margin:0;min-width:0}
+  #zoom-dialog .zoom-vitals .hearts{font-size:14px;line-height:16px;letter-spacing:1px}
+  #zoom-dialog .zoom-vitals .clock{min-width:0;gap:3px;line-height:20px}
+  #zoom-dialog .zoom-vitals .clock-icon{width:21px;height:21px;font-size:20px}
+  #zoom-dialog .zoom-vitals .clock strong{font-size:18px;min-width:21px;line-height:21px}
+  #zoom-dialog .zoom-vitals .clock small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  #zoom-dialog .zoom-toolbar button{min-width:0;min-height:44px;margin:0;padding:4px;border-radius:9px;font-size:14px;line-height:17px}
+  #zoom-dialog #zoom-hint{white-space:normal;word-break:keep-all}
+  #zoom-dialog .zoom-toolbar .extend-button{grid-column:auto;grid-row:auto;min-width:0;min-height:44px;padding:3px 4px;gap:1px;box-shadow:none}
+  #zoom-dialog .zoom-toolbar .extend-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  #zoom-dialog .zoom-extend-short{display:block;font-size:14px;font-weight:800;line-height:18px}
+  #zoom-dialog .extend-button small{font-size:12px;line-height:16px}
+  #zoom-dialog #zoom-more,#zoom-dialog #close-zoom{display:block;position:static;width:44px;min-width:44px;height:44px;font-size:24px}
+  #zoom-dialog #zoom-settings{display:none;top:auto;right:max(8px,env(safe-area-inset-right));bottom:calc(60px + env(safe-area-inset-bottom));max-width:calc(100% - 16px);padding:12px;gap:8px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 6px 25px #15224430}
+  #zoom-dialog.settings-open #zoom-settings{display:flex}
+  #zoom-dialog #zoom-settings select{max-width:none;font-size:14px;min-height:44px}
+  #zoom-dialog #zoom-settings .soft-button{font-size:14px}
+  #zoom-dialog #zoom-status{position:absolute;left:8px;right:8px;bottom:calc(100% + 9px);z-index:3;margin:0;padding:9px 12px;border-radius:10px;background:#fffef5f5;color:var(--navy);font-size:14px;line-height:1.5;max-height:28dvh;overflow:auto;box-shadow:0 2px 16px #15224426}
+  #zoom-dialog .zoom-tools:not(.has-message) #zoom-status{clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden;padding:0}
+}
+@media(orientation:landscape) and (max-width:1100px) and (max-height:600px){
+  #zoom-dialog .zoom-pair{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
+  #zoom-dialog .zoom-toolbar{grid-template-columns:80px minmax(64px,120px) minmax(100px,160px) 44px 44px;justify-content:center}
+}

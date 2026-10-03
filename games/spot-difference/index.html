@@ -2,17 +2,17 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#425bea">
   <meta name="description" content="쭈다의 48가지 일상 속에서 다른 곳 여섯 개를 찾아보세요. 두 그림을 누르고, 확대하고, 힌트를 보며 즐기는 틀린그림 찾기.">
   <title>쭈다 틀린그림 찾기</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23425bea'/%3E%3Ccircle cx='28' cy='27' r='15' fill='none' stroke='white' stroke-width='6'/%3E%3Cpath d='M39 39L52 52' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261003-mix1">
-  <script src="puzzles.js?v=20261003-mix1" defer></script>
-  <script src="game-core.js?v=20261003-mix1" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261003-mobile1">
+  <script src="puzzles.js?v=20261003-mobile1" defer></script>
+  <script src="game-core.js?v=20261003-mobile1" defer></script>
   <script src="vendor/supabase.js" defer></script>
   <script src="wallet.js" defer></script>
-  <script src="app.js?v=20261003-mix1" defer></script>
+  <script src="app.js?v=20261003-mobile1" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -48,11 +48,20 @@
     <footer><span>48가지 장면 · 총 288개의 다른 곳</span><span id="storage-note">진행 상황은 이 기기에 저장돼요.</span></footer>
   </main>
   <dialog id="zoom-dialog" aria-labelledby="zoom-title">
-    <div class="zoom-header"><div><h2 id="zoom-title">크게 비교하기</h2><p>그림을 밀어서 이동하고, 다른 곳을 눌러주세요.</p></div><div class="zoom-controls"><label for="zoom-level" class="sr-only">확대 배율</label><select id="zoom-level"><option value="1">확대 1단계</option><option value="1.5">확대 2단계</option><option value="2">확대 3단계</option></select><button id="close-zoom" class="icon-button" aria-label="확대 닫기">×</button></div></div>
-    <div class="zoom-pair"><section class="zoom-column"><h3>A · 첫 번째 그림</h3><div class="zoom-scroll" id="zoom-scroll-a"><div class="picture zoom-picture" data-side="original" tabindex="0" role="application" aria-label="확대한 첫 번째 그림"><img id="zoom-original" width="1536" height="1024" alt="확대한 첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section><section class="zoom-column"><h3>B · 두 번째 그림</h3><div class="zoom-scroll" id="zoom-scroll-b"><div class="picture zoom-picture" data-side="difference" tabindex="0" role="application" aria-label="확대한 두 번째 그림"><img id="zoom-difference" width="1536" height="1024" alt="확대한 두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section></div>
+    <div class="zoom-header"><div><h2 id="zoom-title">크게 비교하기</h2><p>그림을 밀어서 이동하고, 다른 곳을 눌러주세요.</p></div></div>
+    <div class="zoom-pair"><section class="zoom-column"><h3>A<span class="zoom-picture-name"> · 첫 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-a"><div class="picture zoom-picture" data-side="original" tabindex="0" role="application" aria-label="확대한 첫 번째 그림"><img id="zoom-original" width="1536" height="1024" alt="확대한 첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section><section class="zoom-column"><h3>B<span class="zoom-picture-name"> · 두 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-b"><div class="picture zoom-picture" data-side="difference" tabindex="0" role="application" aria-label="확대한 두 번째 그림"><img id="zoom-difference" width="1536" height="1024" alt="확대한 두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section></div>
     <div class="picture-timer zoom-picture-timer" aria-label="확대 그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div></div>
-    <div class="zoom-footer"><span id="zoom-status" role="status" aria-live="polite">0 / 6 찾았어요</span><span class="hearts" id="zoom-hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</span><button id="zoom-hint" class="soft-button">힌트 · 1쭈</button><button id="zoom-reveal-answers" class="soft-button admin-button" aria-pressed="false" hidden>정답 보기</button></div>
-    <div class="time-dock zoom-time-dock"><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="zoom-time-left">60</strong><small>초</small></div><button id="zoom-extend" class="soft-button extend-button"><span class="extend-title">시간 연장하기</span><small>+1분 · 3쭈</small></button></div>
+    <div class="zoom-tools" id="zoom-tools">
+      <div id="zoom-status" role="status" aria-live="polite">0 / 6 찾았어요</div>
+      <div class="time-dock zoom-time-dock zoom-toolbar">
+        <div class="zoom-vitals"><span class="hearts" id="zoom-hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</span><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="zoom-time-left">60</strong><small>초</small></div></div>
+        <button id="zoom-hint" class="soft-button">힌트 · 1쭈</button>
+        <button id="zoom-extend" class="soft-button extend-button"><span class="extend-title">시간 연장하기</span><span class="zoom-extend-short" aria-hidden="true">연장</span><small>+1분 · 3쭈</small></button>
+        <button id="zoom-more" class="icon-button" aria-label="확대 설정" aria-expanded="false" aria-controls="zoom-settings">⋯</button>
+        <button id="close-zoom" class="icon-button" aria-label="확대 닫기">×</button>
+      </div>
+    </div>
+    <div id="zoom-settings" class="zoom-controls"><label for="zoom-level">확대 배율</label><select id="zoom-level"><option value="1">1단계</option><option value="1.5">2단계</option><option value="2">3단계</option></select><button id="zoom-reveal-answers" class="soft-button admin-button" aria-pressed="false" hidden>정답 보기</button></div>
   </dialog>
   <aside class="time-dock main-time-dock" aria-label="남은 시간"><div class="time-dock-inner"><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="time-left">60</strong><small>초</small></div><button id="extend" class="soft-button extend-button"><span class="extend-title">시간 연장하기</span><small>+1분 · 3쭈</small></button></div></aside>
   <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title"><div class="auth-heading"><h2 id="auth-title">오쭈다 로그인</h2><button id="close-auth" class="icon-button" aria-label="로그인 닫기">×</button></div><p>기존 오쭈다 계정의 쭈로 힌트와 시간 연장을 이용해요.</p><form id="login-form"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" required><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required><p id="auth-error" role="alert"></p><button class="primary-button" id="login-submit" type="submit">로그인</button></form><p class="auth-foot">로그인 없이도 기본 게임을 즐길 수 있어요.</p></dialog>
