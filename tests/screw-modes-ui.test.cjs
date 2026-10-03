@@ -70,6 +70,28 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-supported.png')});
   await touch({x:82,y:514});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'hinged','touch undo restores its pivot joint');
   await touch({x:297,y:514});
+  // Park the bottom screws back on the empty board, then swing the middle plate onto one.
+  const bottom=await page.evaluate(()=>screwWorld.current().game.state.level.screws.slice(4).map(s=>s.startHole));
+  const touchMove=async(id,to)=>{
+   const points=await page.evaluate(({id,to})=>{const level=screwWorld.current().game.state.level;return[OjjudaScrewGames.screwPoint(level.screws[id]),level.holes[to]];},{id,to});
+   for(const q of points)await touch(q);
+   await page.evaluate(()=>{const r=screwWorld.current();for(let n=0;n<180;n++)r.game.update(.05);r.game.draw(r.ctx);});
+   assert.equal(await page.evaluate(id=>screwWorld.current().game.state.level.screws[id].hole.id,id),to);
+  };
+  for(const [id,to] of [[4,0],[5,1],[4,bottom[0]],[5,bottom[1]],[2,0]])await touchMove(id,to);
+  const caught=await page.evaluate(()=>{
+   const st=screwWorld.current().game.state,p=st.level.plates[1];
+   return{angle:p.angle,state:p.state,contact:st.physics.engine.pairs.list.some(pair=>pair.isActive&&[pair.bodyA.label,pair.bodyB.label].includes('screw-4'))};
+  });
+  assert.equal(caught.state,'hinged');assert.ok(caught.contact,'the middle plate hits a screw below, even after its original plate has gone');
+  assert.ok(Math.abs(caught.angle)<.2,'a parked screw blocks the swinging plate');
+  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-caught-by-screw.png')});
+  await touchMove(4,3);
+  assert.ok(await page.evaluate(()=>Math.abs(screwWorld.current().game.state.level.plates[1].angle)>.8),'moving the supporting screw lets the plate swing down');
+  await touch({x:82,y:514});
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws[4].hole.id),bottom[0]);
+  assert.ok(await page.evaluate(()=>Math.abs(screwWorld.current().game.state.level.plates[1].angle)<.2),'undo restores the stopped plate and its screw obstacle');
+  await touch({x:297,y:514});
   const order=await page.evaluate(()=>screwWorld.current().game.state.level.order.slice());
   for(const [index,id] of order.entries()){
    const move=await page.evaluate(id=>{
@@ -101,6 +123,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    const game=OjjudaScrewGames.flat({setScore(){},end(){}});game.state.level.plates.forEach(p=>p.state='gone');game.draw(screwWorld.current().ctx);game.destroy();
   },stage);
   assert.deepEqual(errors,[]);
-  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, actual two-tap relocation, supported metal and touch undo, revealed artwork, all six pictures and independent flat continuation.');
+  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, two-tap relocation, metal caught by lower screws, moving support screws, touch undo, revealed artwork and independent flat continuation.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
