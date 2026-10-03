@@ -7,7 +7,7 @@
       const previous=document.activeElement;
       const dialog=document.createElement('dialog');
       dialog.className='spot-game-dialog';dialog.setAttribute('aria-label','틀린그림찾기');
-      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">닫기</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261003-mobile1" allow="fullscreen"></iframe>';
+      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">닫기</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261003-mobile2" allow="fullscreen"></iframe>';
       const frame=dialog.querySelector('iframe');
       function onZoom(event){if(event.origin!==window.location.origin||event.source!==frame.contentWindow||event.data?.type!=='ojjuda:spot-zoom'||typeof event.data.open!=='boolean')return;dialog.classList.toggle('spot-game-zooming',event.data.open);}
       active=dialog;document.body.append(dialog);document.body.classList.add('gaming');window.addEventListener('message',onZoom);
