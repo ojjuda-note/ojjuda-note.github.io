@@ -1,5 +1,5 @@
 let activeClose=null;
-export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,onClose,onStudio}){
+export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
  // Opening a member's home does not grant furniture authoring permission.
  const hasStudioAccess=()=>{try{return !!authorized()&&typeof studioAuthorized==='function'&&studioAuthorized()===true;}catch{return false;}};
@@ -10,13 +10,29 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  Object.assign(overlay.style,{position:'fixed',inset:'var(--app-viewport-top,0px) 0 auto',height:'var(--app-viewport-height,100dvh)',paddingBottom:'var(--app-safe-bottom,env(safe-area-inset-bottom,0px))',boxSizing:'border-box',zIndex:'10000',background:'#f8f2fc',display:'flex',flexDirection:'column'});
  const status=document.createElement('div');status.textContent='우리집을 준비하고 있어요…';Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 110px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:12px;padding:6px 10px;min-height:36px;cursor:pointer';
- const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261003-safe2',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261003-menunav1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  overlay.append(status,close,frame);document.body.append(overlay);document.body.style.overflow='hidden';close.focus();
- let channel=null,closed=false;
- function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus();if(activeClose===cleanup)activeClose=null;onClose?.();}
+ let channel=null,closed=false,navigation=null,navigationFrame=0;
+ const navigationObserver=preserveWorldNavigation&&!studioOnly&&window.ResizeObserver?new ResizeObserver(scheduleNavigationSpace):null;
+ function updateNavigationSpace(){
+  navigationFrame=0;if(closed||!preserveWorldNavigation||studioOnly)return;
+  const viewport=window.visualViewport;if(viewport&&Math.abs(viewport.scale-1)>.02)return;
+  const next=document.querySelector('.bottomnav');
+  if(next!==navigation){if(navigation)navigationObserver?.unobserve(navigation);navigation=next;if(navigation)navigationObserver?.observe(navigation);}
+  const rect=navigation?.getBoundingClientRect(),style=navigation&&getComputedStyle(navigation),top=Math.max(0,viewport?.offsetTop||0),height=viewport?.height||window.innerHeight;
+  const visible=rect&&rect.width>0&&rect.height>0&&rect.top>=top&&rect.top<top+height&&style.display!=='none'&&style.visibility!=='hidden';
+  const inset=visible?Math.max(0,top+height-rect.top):0;
+  overlay.style.height=inset?`calc(var(--app-viewport-height,100dvh) - ${inset}px)`:'var(--app-viewport-height,100dvh)';
+  overlay.style.paddingBottom=inset?'0px':'var(--app-safe-bottom,env(safe-area-inset-bottom,0px))';
+  overlay.setAttribute('aria-modal',String(!inset));
+ }
+ function scheduleNavigationSpace(){if(!closed&&!navigationFrame)navigationFrame=requestAnimationFrame(updateNavigationSpace);}
+ if(preserveWorldNavigation&&!studioOnly){updateNavigationSpace();window.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('scroll',scheduleNavigationSpace);}
+ function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus();if(activeClose===cleanup)activeClose=null;onClose?.();}
  const escape=e=>{if(e.key==='Escape'){e.preventDefault();cleanup();}};window.addEventListener('keydown',escape,true);close.onclick=cleanup;activeClose=cleanup;
  const watcher=setInterval(()=>{
   if(!authorized()||!overlay.isConnected){cleanup();return;}
+  if(preserveWorldNavigation&&!studioOnly)scheduleNavigationSpace();
   const allowed=hasStudioAccess();if(studioOnly&&!allowed){cleanup();return;}
   if(allowed!==canUseStudio){canUseStudio=allowed;channel?.port1.postMessage({type:'studio-access',canUseStudio});}
  },400);
