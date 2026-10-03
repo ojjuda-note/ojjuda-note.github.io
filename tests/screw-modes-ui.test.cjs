@@ -56,15 +56,19 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    await page.locator('[data-g=close]').click();assert.equal(await page.locator('#gov').count(),0);
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>screwWorld.open('screw'));await page.locator('[data-mode=flat]').click();
-  const ids=await page.evaluate(()=>screwWorld.current().game.state.level.solution.slice());
+  const moves=await page.evaluate(()=>screwWorld.current().game.state.level.solution.slice());
   const canvas=page.locator('#gcv');
-  for(const id of ids){
-   const q=await page.evaluate(id=>{const level=screwWorld.current().game.state.level,s=level.screws[id];if(!OjjudaScrewGames.canUnscrew(level,s))throw Error('Blocked solution screw');return OjjudaScrewGames.screwPoint(s)},id);
+  for(const [index,move] of moves.entries()){
+   const q=await page.evaluate(move=>{const level=screwWorld.current().game.state.level,s=level.screws[move.screw];if(!OjjudaScrewGames.canUnscrew(level,s))throw Error('Blocked solution screw');return OjjudaScrewGames.screwPoint(s)},move);
    const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+q.x*b.width/360,b.y+q.y*b.height/540);
-   assert.notEqual(await page.evaluate(id=>screwWorld.current().game.state.level.screws[id].state,id),'in','a real phone touch removes the visible screw');
+   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.selected),move.screw,'the first phone tap selects a screw');
+   if(qa&&index===0)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-selected.png')});
+   const target=await page.evaluate(move=>{const h=screwWorld.current().game.state.level.holes[move.to];return{x:h.x,y:h.y}},move);
+   await page.touchscreen.tap(b.x+target.x*b.width/360,b.y+target.y*b.height/540);
    await page.evaluate(()=>{const r=screwWorld.current();for(let n=0;n<36;n++)r.game.update(.05);r.game.draw(r.ctx)});
+   assert.equal(await page.evaluate(move=>screwWorld.current().game.state.level.screws[move.screw].hole.id,move),move.to,'the second tap inserts the screw into the empty hole');
   }
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.complete),true,'touch play removes every plate and reveals the picture');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.complete),true,'touch relocation removes every plate and reveals the picture');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-revealed.png')});
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2);
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
@@ -75,6 +79,6 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    const game=OjjudaScrewGames.flat({setScore(){},end(){}});game.state.level.plates.forEach(p=>p.state='gone');game.draw(screwWorld.current().ctx);game.destroy();
   },stage);
   assert.deepEqual(errors,[]);
-  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, actual touch completion, revealed artwork, all six pictures and independent flat continuation.');
+  console.log('PASS: existing game chooser, both versions at 320/390/1280px, preserved box progress, actual two-tap relocation, revealed artwork, all six pictures and independent flat continuation.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
