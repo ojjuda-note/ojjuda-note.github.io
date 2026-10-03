@@ -43,15 +43,19 @@
     c.save();metalPath(c,p);c.clip();c.strokeStyle='#FFFFFF2B';c.lineWidth=.7;
     for(let y=top+5;y<bottom;y+=6){c.beginPath();c.moveTo(-p.w,y);c.lineTo(p.w,y-7);c.stroke();}
     c.restore();
-    for(const v of p.mounts){oval(c,v.x,v.y,13,13,'#718397');oval(c,v.x,v.y,10,10,'#506176');oval(c,v.x,v.y+2,7,7,'#65798B');}
+    for(const v of p.mounts){const r=(p.screwRadius||13)/13;c.save();c.translate(v.x,v.y);c.scale(r,r);oval(c,0,0,13,13,'#718397');oval(c,0,0,10,10,'#506176');oval(c,0,2,7,7,'#65798B');c.restore();}
     c.restore();
   }
   function flat(api) {
-    const st={L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
+    const st={view:{zoom:1,x:180,y:316},L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
     const tell=text=>{st.message=text;st.messageTime=1.7;};
     const purchaseKey=(L,kind)=>`${PURCHASE_KEYS[kind]}:${walletUser}:${L}`;
+    const inBoard=(x,y)=>x>=BOARD.x&&x<=BOARD.x+BOARD.w&&y>=BOARD.y&&y<=BOARD.y+BOARD.h;
+    const screenPoint=h=>h.owner===null?{x:h.x,y:h.y}:{x:180+(h.x-st.view.x)*st.view.zoom,y:316+(h.y-st.view.y)*st.view.zoom};
+    const visibleHole=h=>h.owner===null||inBoard(screenPoint(h).x,screenPoint(h).y);
+    const resetView=()=>{st.view={zoom:1,x:180,y:316};};
     const movesLeft=()=>Math.max(0,st.moveLimit+st.extraMoves-st.moves);
     function pendingPurchase(L,kind){try{const id=localStorage.getItem(purchaseKey(L,kind));return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id||'')?id:null;}catch(_){return null;}}
     function savePurchase(L,kind,id){try{if(id)localStorage.setItem(purchaseKey(L,kind),id);else localStorage.removeItem(purchaseKey(L,kind));return true;}catch(_){return false;}}
@@ -102,7 +106,7 @@
       const keep=L===st.L&&sameWallet(),paid=keep?st.extraHoles:0,extraMoves=keep?st.extraMoves:0;st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=extraMoves;
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;
       addHoles(paid);
-      st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
+      resetView();st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
       if(sameWallet()&&api.buyScrew)void readUpgrades();
     }
@@ -122,6 +126,7 @@
     function tap(x,y) {
       if(st.destroyed||st.ended)return;
       if(st.albumOpen){albumTap(x,y);return;}
+      if(st.level.plates.length>18&&y>=5&&y<=48&&x>=208&&x<=272){if(st.view.zoom>1)resetView();else{st.view.zoom=Math.max(1.8,13/st.level.screwRadius);tell('확대한 철판을 밀어서 이동해요');}return;}
       if(y>=5&&y<=48&&x>=278&&x<=348){openAlbum();return;}
       if(st.complete) { if(y>=491&&x>=197) { if(st.L===LAST_STAGE){st.ended=true;api.end(st.score);}else start(st.L+1); }return; }
       if(st.shopBusy==='buying')return;
@@ -130,7 +135,7 @@
       if(y>=491&&x>=148&&x<=264){void buyUpgrade('flat_moves');return;}
       if(st.pending)return;
       if(movesLeft()===0){tell('이동을 모두 썼어요. 1쭈로 3회 추가해요');return;}
-      const hits=st.level.holes.map(h=>({h,d:Math.hypot(h.x-x,h.y-y)})).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
+      const hits=st.level.holes.filter(visibleHole).map(h=>{const q=screenPoint(h);return{h,d:Math.hypot(q.x-x,q.y-y)};}).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
       const hit=hits.find(({h})=>canAccessHole(st.level,h));
       if(!hit){if(hits.length)tell('앞의 철판이 가리고 있어요');return;}
       const h=hit.h;
@@ -160,12 +165,13 @@
         }
       }
       if(!st.pending&&st.level.plates.every(p=>p.state==='gone')) {
-        st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));
+        resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));
         st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
       }
     }
-    function drawHole(c,h) {
-      oval(c,h.x,h.y+1,13.5,13.5,'#B8AC9E');oval(c,h.x,h.y,10,10,'#766F6B');oval(c,h.x,h.y+2,7,7,'#A3998C');
+    function drawHole(c,h,scale=1) {
+      c.save();c.translate(h.x,h.y);c.scale(scale,scale);h={x:0,y:0};
+      oval(c,h.x,h.y+1,13.5,13.5,'#B8AC9E');oval(c,h.x,h.y,10,10,'#766F6B');oval(c,h.x,h.y+2,7,7,'#A3998C');c.restore();
     }
     function drawAlbum(c){
       c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
@@ -194,7 +200,8 @@
       if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
       const remaining=movesLeft(),blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h));
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
-      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,250);
+      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,st.level.plates.length>18?178:250);
+      if(st.level.plates.length>18){round(c,208,8,64,36,13);c.fillStyle='#E5E4EF';c.fill();c.font='700 12px "Noto Sans KR",sans-serif';c.fillStyle='#625778';c.textAlign='center';c.fillText(st.view.zoom>1?'전체 보기':'＋ 확대',240,26);}
       round(c,280,8,62,36,13);c.fillStyle='#E2EADF';c.fill();c.font='700 10px "Noto Sans KR",sans-serif';c.fillStyle='#5D7760';c.textAlign='center';c.fillText(`앨범 ${st.collection.size}/${PICTURES.length}`,311,26);
       const lowMoves=!st.complete&&remaining<=3;
       round(c,74,39,212,29,14);c.fillStyle=lowMoves?'#B74736':'#426E53';c.fill();
@@ -202,10 +209,13 @@
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':remaining===0?'아래에서 1쭈로 이동 3회를 추가해요':blocked?(st.extraHoles<3?'아래에서 1쭈로 구멍을 추가해요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',26,133,226);
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':remaining===0?'아래에서 1쭈로 이동 3회를 추가해요':blocked?(st.extraHoles<3?'아래에서 1쭈로 구멍을 추가해요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 선택':st.level.plates.length>18?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 누른 뒤 빈 구멍에 끼워요',26,133,226);
       c.fillStyle='#8E8178';
       c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();
+      const size=(st.level.screwRadius||13)/13;
+      c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
+      c.translate(180,316);c.scale(st.view.zoom,st.view.zoom);c.translate(-st.view.x,-st.view.y);
       c.save();
       if(!st.complete){
         c.beginPath();
@@ -214,22 +224,25 @@
       }
       Pictures.draw(c,st.level.picture,32,BOARD.y+8,296,BOARD.h-16,st.complete);c.restore();
       if(!st.complete){
-        c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
-        for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h);
+        for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h,size);
         for(const p of st.level.plates)if(p.state!=='gone')drawPlate(c,p);
-        c.restore();
-        for(const h of st.level.holes)if(canAccessHole(st.level,h)) {
-          if(h.owner===null)drawHole(c,h);
-          if(h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,h.x,h.y,SCREW_COLOR);
-          const target=st.selected!==null&&h.screw===null;
-          const selected=h.screw!==null&&st.selected===h.screw;
+      }
+      c.restore();
+      if(!st.complete){
+        for(const h of st.level.holes)if(visibleHole(h)&&canAccessHole(st.level,h)) {
+          const q=screenPoint(h),scale=h.owner===null?1:size*st.view.zoom;
+          c.save();if(h.owner!==null){round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();}
+          if(h.owner===null)drawHole(c,q);
+          if(h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,q.x,q.y,SCREW_COLOR,0,scale);
+          const target=st.selected!==null&&h.screw===null,selected=h.screw!==null&&st.selected===h.screw;
           if(target||selected||st.focus===h.id) {
-            c.beginPath();c.arc(h.x,h.y,target?17+Math.sin(st.t*5)*1.5:18,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();
+            c.beginPath();c.arc(q.x,q.y,(target?17+Math.sin(st.t*5)*1.5:18)*scale,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();
             if(target){c.fillStyle='#7BAF8C28';c.fill();}
           }
+          c.restore();
         }
         if(st.pending) {
-          const move=st.pending,from=st.level.holes[move.from],to=st.level.holes[move.to],t=clamp(move.time/.5,0,1);
+          const move=st.pending,from=screenPoint(st.level.holes[move.from]),to=screenPoint(st.level.holes[move.to]),t=clamp(move.time/.5,0,1);
           const flight=clamp((t-.2)/.6,0,1),eased=flight*flight*(3-2*flight);
           drawScrew(c,from.x+(to.x-from.x)*eased,from.y+(to.y-from.y)*eased-Math.sin(t*Math.PI)*24,SCREW_COLOR,t*Math.PI*6,1+Math.sin(t*Math.PI)*.2);
         }
@@ -253,9 +266,12 @@
       c.restore();
     }
     start(st.L);
-    return {state:st,update,draw,
-      onDown(x,y,id=0){st.pointers.add(id);if(st.pointers.size!==1){st.down=null;return;}st.down={x,y,id,moved:false};},
-      onMove(x,y,id=0){if(st.down?.id===id&&Math.hypot(x-st.down.x,y-st.down.y)>10)st.down.moved=true;},
+    return {state:st,update,draw,screenPoint,
+      onDown(x,y,id=0){st.pointers.add(id);if(st.pointers.size!==1){st.down=null;return;}st.down={x,y,id,moved:false,pan:st.view.zoom>1&&inBoard(x,y),view:{...st.view}};},
+      onMove(x,y,id=0){
+        const down=st.down;if(down?.id!==id||Math.hypot(x-down.x,y-down.y)<=10)return;down.moved=true;
+        if(down.pan&&!st.albumOpen&&!st.complete){const {zoom}=down.view;st.view.x=clamp(down.view.x-(x-down.x)/zoom,BOARD.x+BOARD.w/(2*zoom),BOARD.x+BOARD.w-BOARD.w/(2*zoom));st.view.y=clamp(down.view.y-(y-down.y)/zoom,BOARD.y+BOARD.h/(2*zoom),BOARD.y+BOARD.h-BOARD.h/(2*zoom));}
+      },
       onUp(x,y,id=0){st.pointers.delete(id);const down=st.down;st.down=null;if(down&&down.id===id&&!down.moved&&!st.pointers.size&&Math.hypot(x-down.x,y-down.y)<=10)tap(x,y);},
       onCancel(id=0){st.pointers.delete(id);st.down=null;},
       onKey(key){
@@ -274,11 +290,11 @@
         if(key==='Escape'){st.selected=null;st.focus=null;return true;}
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
           if(st.pending)return true;
-          const visible=st.level.holes.filter(h=>canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null));if(!visible.length)return true;
+          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null));if(!visible.length)return true;
           const i=visible.findIndex(h=>h.id===st.focus),delta=key==='ArrowLeft'||key==='ArrowUp'?-1:1;
           st.focus=visible[i<0?(delta>0?0:visible.length-1):(i+delta+visible.length)%visible.length].id;return true;
         }
-        if(key==='Enter'||key===' '){if(st.complete)tap(267,514);else{const h=st.level.holes.find(h=>h.id===st.focus);if(h)tap(h.x,h.y);}return true;}
+        if(key==='Enter'||key===' '){if(st.complete)tap(267,514);else{const h=st.level.holes.find(h=>h.id===st.focus);if(h){const q=screenPoint(h);tap(q.x,q.y);}}return true;}
         return false;
       },
       destroy(){st.destroyed=true;st.down=null;st.pointers.clear();st.physics.destroy();}

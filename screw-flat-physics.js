@@ -4,6 +4,13 @@
   const M=typeof module!=='undefined'&&module.exports?require('./vendor/matter-0.20.0.min.js'):window.Matter;
   const BOARD={x:24,y:143,w:312,h:346},STEP=1000/120,SCREW_RADIUS=13,LAST_STAGE=1000;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const BODY_ID=Symbol.for('ojjuda.flat.body'),PINNED_BODIES=Symbol.for('ojjuda.flat.pinnedBodies');
+  // A per-body exclusion avoids the 32-category bitmask limit at fifty plates.
+  if(!M.Detector.canCollide.ojjudaFlat){
+    const canCollide=M.Detector.canCollide;
+    const filter=(a,b)=>canCollide(a,b)&&!a[PINNED_BODIES]?.has(b[BODY_ID])&&!b[PINNED_BODIES]?.has(a[BODY_ID]);
+    filter.ojjudaFlat=true;M.Detector.canCollide=filter;
+  }
   const seeded=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
   function worldPoint(p,v){const co=Math.cos(p.angle),si=Math.sin(p.angle);return{x:p.x+v.x*co-v.y*si,y:p.y+v.x*si+v.y*co};}
   function localPoint(p,x,y){const co=Math.cos(p.angle),si=Math.sin(p.angle),dx=x-p.x,dy=y-p.y;return{x:dx*co+dy*si,y:-dx*si+dy*co};}
@@ -20,10 +27,10 @@
   function plateCovers(p,x,y,radius=0){if(p.state==='gone')return false;const q=localPoint(p,x,y);return polygonDistance(p.vertices,q.x,q.y)<radius;}
   function alignedMount(p,hole){return p.mounts.findIndex(v=>{const q=worldPoint(p,v);return Math.hypot(q.x-hole.x,q.y-hole.y)<=2.8;});}
   function canAccessHole(level,hole){
-    return !level.plates.some(p=>p.state!=='gone'&&plateCovers(p,hole.x,hole.y,12)&&
+    return !level.plates.some(p=>p.state!=='gone'&&plateCovers(p,hole.x,hole.y,12*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS)&&
       !p.pins.some(pin=>pin.hole===hole.id)&&alignedMount(p,hole)<0);
   }
-  function bareHole(level,hole){return !level.plates.some(p=>plateCovers(p,hole.x,hole.y,15));}
+  function bareHole(level,hole){return !level.plates.some(p=>plateCovers(p,hole.x,hole.y,15*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS));}
   function canUnscrew(level,s){return s.hole.screw===s.id&&canAccessHole(level,s.hole);}
   function screwPoint(s){return{x:s.hole.x,y:s.hole.y};}
   function clipLine(poly,cut,midY,keepLeft){
@@ -35,7 +42,7 @@
     }
     return result;
   }
-  function mountPair(vertices,inset=17){
+  function mountPair(vertices,inset=17,separation=32){
     const xs=vertices.map(v=>v.x),ys=vertices.map(v=>v.y),candidates=[];
     for(let y=Math.ceil(Math.min(...ys)+inset);y<Math.max(...ys)-inset+1;y+=3)
       for(let x=Math.ceil(Math.min(...xs)+inset);x<Math.max(...xs)-inset+1;x+=3)
@@ -45,12 +52,12 @@
     for(let i=0;i<12;i++){const co=Math.cos(i*Math.PI/6),si=Math.sin(i*Math.PI/6);extremes.push(candidates.reduce((best,p)=>p.x*co+p.y*si>best.x*co+best.y*si?p:best));}
     let pair=null,dist=0;
     for(const a of extremes)for(const b of extremes){const d=Math.hypot(a.x-b.x,a.y-b.y);if(d>dist){dist=d;pair=[a,b];}}
-    if(dist<32)throw Error('Metal piece screw heads overlap');
+    if(dist<separation)throw Error('Metal piece screw heads overlap');
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
   const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃'];
-  const FIRST_SHAPED_STAGE=11,PIECE_INCREASES=[20,35,55,80,115,160,220,310,430,600,800];
-  const pieceCount=L=>L<FIRST_SHAPED_STAGE?1+Math.floor(L/2):7+PIECE_INCREASES.filter(n=>L>=n).length;
+  const FIRST_SHAPED_STAGE=11,PIECE_INCREASES=[20,35,55,80,115];
+  const pieceCount=L=>L<FIRST_SHAPED_STAGE?1+Math.floor(L/2):L<160?7+PIECE_INCREASES.filter(n=>L>=n).length:13+Math.floor((L-160)*37/(LAST_STAGE-160));
   function flowerOutline(first=false){
     // A convex centre and five circular caps form one concave flower without overlapping bodies.
     const radius=first?70:110,offset=first?100:80,half=Math.PI/5,edgeX=radius*Math.cos(half)-offset,edgeY=radius*Math.sin(half);
@@ -94,20 +101,20 @@
     }
     return result;
   }
-  function fitFragment(raw){
+  function fitFragment(raw,radius=SCREW_RADIUS){
     if(raw.length<3||!M.Vertices.isConvex(raw))return null;
     const centre=M.Vertices.centre(raw),poly=raw.map(v=>({x:centre.x+(v.x-centre.x)*.982,y:centre.y+(v.y-centre.y)*.982}));
-    try{return{raw,poly,centre,mounts:mountPair(poly,15),area:M.Vertices.area(raw)};}catch(_){return null;}
+    try{return{raw,poly,centre,mounts:mountPair(poly,radius+2,32*radius/SCREW_RADIUS),area:M.Vertices.area(raw)};}catch(_){return null;}
   }
-  function splitFragment(fragment,random){
+  function splitFragment(fragment,random,radius){
     const xs=fragment.raw.map(p=>p.x),ys=fragment.raw.map(p=>p.y);
     const main=Math.max(...xs)-Math.min(...xs)>Math.max(...ys)-Math.min(...ys)?0:Math.PI/2;
     const angles=[main+(random()-.5)*.65,main+Math.PI/2+(random()-.5)*.65,main,main+Math.PI/2,Math.PI/4,-Math.PI/4];
     for(const angle of angles){
       const nx=Math.cos(angle),ny=Math.sin(angle),dots=fragment.raw.map(p=>p.x*nx+p.y*ny),min=Math.min(...dots),span=Math.max(...dots)-min;
       for(const fraction of [.5,.43,.57,.36,.64]){
-        const cut=min+span*fraction,a=fitFragment(clipPlane(fragment.raw,nx,ny,cut,true));if(!a)continue;
-        const b=fitFragment(clipPlane(fragment.raw,nx,ny,cut,false));if(!b)continue;
+        const cut=min+span*fraction,a=fitFragment(clipPlane(fragment.raw,nx,ny,cut,true),radius);if(!a)continue;
+        const b=fitFragment(clipPlane(fragment.raw,nx,ny,cut,false),radius);if(!b)continue;
         // Visit the side gravity can pull away from the shared cut first.
         fragment.children=ny>=0?[b,a]:[a,b];return fragment.children;
       }
@@ -115,11 +122,11 @@
     return null;
   }
   function makeShapedLevel(L){
-    const count=pieceCount(L);
+    const count=pieceCount(L),radius=SCREW_RADIUS/(1+Math.max(0,count-18)*.04);
     const shape=(L-FIRST_SHAPED_STAGE+6)%SHAPE_NAMES.length;let leaves,roots;
     for(let attempt=0;attempt<12;attempt++){
       const random=seeded(9041+L*7919+attempt*104729);
-      roots=shapeOutline(shape,L===FIRST_SHAPED_STAGE).map(fitFragment);if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
+      roots=shapeOutline(shape,L===FIRST_SHAPED_STAGE).map(raw=>fitFragment(raw,radius));if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
       if(L===FIRST_SHAPED_STAGE){
         // Keep the first flower's centre small and its top mounts high enough to reopen as it falls.
         const centre=roots[4],halves=[false,true].map(low=>fitFragment(clipPlane(centre.raw,1,0,181,low)));
@@ -129,7 +136,7 @@
       while(leaves.length<count){
         const candidates=leaves.filter(p=>!p.unsplittable).sort((a,b)=>b.area-a.area);let changed=false;
         for(const p of candidates){
-          const children=splitFragment(p,random);
+          const children=splitFragment(p,random,radius);
           if(children){leaves.splice(leaves.indexOf(p),1,...children);changed=true;break;}p.unsplittable=true;
         }
         if(!changed)break;
@@ -140,7 +147,7 @@
     const plates=[],holes=[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),screws=[];
     for(const f of leaves){
       const p={id:plates.length,z:plates.length,row:0,col:plates.length,releaseFrom:1,x:f.centre.x,y:f.centre.y,angle:0,
-        vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
+        screwRadius:radius,vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
       p.w=Math.max(...p.vertices.map(v=>v.x))-Math.min(...p.vertices.map(v=>v.x));p.h=Math.max(...p.vertices.map(v=>v.y))-Math.min(...p.vertices.map(v=>v.y));
       plates.push(p);f.id=p.id;
       for(const q of f.mounts){
@@ -149,7 +156,7 @@
       }
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
-    return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
+    return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
   }
   function makeFlatLevel(stage){
     const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),count=pieceCount(L),random=seeded(431+Math.max(1,count-2)*7919);
@@ -193,17 +200,17 @@
     const engine=M.Engine.create({positionIterations:12,velocityIterations:8,constraintIterations:8,enableSleeping:false});
     engine.gravity.y=1;engine.gravity.scale=.001;
     const bodies=new Map(),joints=new Map(),screwBodies=new Map();let accumulator=0,dead=false;
-    const category=p=>1<<(p.id+1),allPlates=level.plates.reduce((mask,p)=>mask|category(p),0);
+    const radius=level.screwRadius||SCREW_RADIUS;
     function refreshScrews(){
       for(const s of level.screws){
         let body=screwBodies.get(s.id);
         if(!body){
-          body=M.Bodies.circle(s.hole.x,s.hole.y,SCREW_RADIUS,{label:'screw-'+s.id,isStatic:true,friction:.5,frictionStatic:.8,restitution:.02,slop:.025,collisionFilter:{category:1,mask:allPlates}});
+          body=M.Bodies.circle(s.hole.x,s.hole.y,radius,{label:'screw-'+s.id,isStatic:true,friction:.5,frictionStatic:.8,restitution:.02,slop:.025,collisionFilter:{category:1,mask:2}});
           screwBodies.set(s.id,body);M.Composite.add(engine.world,body);
         }
         M.Body.setPosition(body,{x:s.hole.x,y:s.hole.y});
         // A screw passes through its own drilled mount, but stops every other plate.
-        body.collisionFilter.mask=level.plates.reduce((mask,p)=>p.pins.some(pin=>pin.hole===s.hole.id)?mask&~category(p):mask,allPlates);
+        body.collisionFilter[PINNED_BODIES]=new Set(level.plates.filter(p=>p.pins.some(pin=>pin.hole===s.hole.id)).map(p=>bodies.get(p.id)?.id).filter(id=>id!==undefined));
       }
     }
     function sync(p){const b=bodies.get(p.id);p.x=b.position.x;p.y=b.position.y;p.angle=b.angle;p.vx=M.Body.getVelocity(b).x;p.vy=M.Body.getVelocity(b).y;p.spin=M.Body.getAngularVelocity(b);}
@@ -220,9 +227,9 @@
       }
     }
     for(const p of level.plates)if(p.state!=='gone'){
-      const b=M.Bodies.fromVertices(p.x,p.y,[p.vertices],{label:'metal-'+p.id,friction:.45,frictionStatic:.7,frictionAir:.012,restitution:.04,density:.002,slop:.025,collisionFilter:{category:category(p),mask:allPlates|1}});
+      const b=M.Bodies.fromVertices(p.x,p.y,[p.vertices],{label:'metal-'+p.id,friction:.45,frictionStatic:.7,frictionAir:.012,restitution:.04,density:.002,slop:.025,collisionFilter:{category:2,mask:3}});
       M.Body.setAngle(b,p.angle);M.Body.setVelocity(b,{x:p.vx||0,y:p.vy||0});M.Body.setAngularVelocity(b,p.spin||0);
-      bodies.set(p.id,b);M.Composite.add(engine.world,b);refreshPins(p);
+      b.collisionFilter[BODY_ID]=b.id;bodies.set(p.id,b);M.Composite.add(engine.world,b);refreshPins(p);
     }
     refreshScrews();
     function move(screw,to){

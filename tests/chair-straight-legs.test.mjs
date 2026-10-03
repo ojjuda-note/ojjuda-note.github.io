@@ -74,6 +74,32 @@ test('left near rear leg follows its own seat-to-foot edge at the reported pose 
  console.log('one rear leg:',{positions,before:bend(before,r),after:bend(after,r)});
 });
 
+test('right near rear leg follows its own seat-to-foot edge while moving and after reopening',async()=>{
+ const {recoverKnownChairProject}=await import('../house-test/chair-straight-regions.js');
+ const v=fixed.views.right,previous=structuredClone(v.mesh),added=[[5,9,6],[5,8,9]];
+ previous.indices=previous.indices.filter(t=>!added.some(q=>q.every(i=>t.includes(i))));
+ previous.indices.push([6,5,8],[6,8,9]);
+ const r=v.mesh.straightRegions[3];let positions=0;
+ for(let x=0;x<=8.5;x+=.5)for(let y=0;y<=5.5;y+=.5){
+  const pose={...v.placement,x,y};let old;
+  try{old=projectMesh(previous,pose);}catch{continue;}
+  const before=straightenProjectedMesh(old),after=straightenProjectedMesh(projectMesh(v.mesh,pose));positions++;
+  assert.deepEqual(after.points,before.points,'all registered points and four feet stay fixed');
+  assert(after.triangles.every(t=>cross(...t.target)>0),'every old valid placement remains unfolded');
+  assert(bend(after,r)<.01,'the selected rear shaft has no middle hinge during movement');
+  for(const i of [0,1,2])assert(bend(after,v.mesh.straightRegions[i])<=bend(before,v.mesh.straightRegions[i])+.01,'adjacent shafts acquire no worse bend');
+ }
+ assert.equal(positions,81);
+ const pose={...v.placement,x:5.5,y:5.5},before=straightenProjectedMesh(projectMesh(previous,pose)),after=straightenProjectedMesh(projectMesh(v.mesh,pose));
+ assert(bend(before,r)>12);assert(bend(after,r)<.01);
+ const area=m=>projectMesh(m,pose).triangles.reduce((sum,t)=>sum+cross(...t.source)/2,0);
+ assert(Math.abs(area(previous)-area(v.mesh))<1e-6,'source coverage stays the same');
+ const saved={name:'오른쪽 등받이 수정 후 저장한 의자',source:{data:v.drawings[0].data},placement:pose,mesh:previous};
+ assert.deepEqual((await recoverKnownChairProject(saved)).mesh,v.mesh,'old saved backrest correction receives the same rear-leg fix');
+ assert.deepEqual(straightenChairLegs(structuredClone(fixed)).views.right.mesh,v.mesh,'reopening does not append duplicate triangles');
+ console.log('right rear leg:',{positions,before:bend(before,r),after:bend(after,r)});
+});
+
 test('left near front leg blends into its fixed foot without weakening the whole shaft',()=>{
  const v=fixed.views.left,previous=structuredClone(v.mesh);delete previous.straightRegions[3].endFade;
  const pose={...v.placement,x:4.5,y:5.5},r=v.mesh.straightRegions[3];

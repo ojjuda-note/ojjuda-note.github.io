@@ -1,20 +1,20 @@
-import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261004-chairfront1';
-import {validQuad,homography,project,drawWarp} from './warp.js?v=20261004-chairfront1';
-import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261004-chairfront1';
-import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261004-chairfront1';
-import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261004-chairfront1';
-import {makeZip} from './zip.js?v=20261004-chairfront1';
-import {generationGuide} from './ai-guide.js?v=20261004-chairfront1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261004-chairfront1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261004-chairfront1';
-import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261004-chairfront1';
-import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261004-chairfront1';
-import {PICTURE_LIBRARY} from './accessory-library.js?v=20261004-chairfront1';
-import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261004-chairfront1';
-import {mountPartsEditor} from './parts-editor.js?v=20261004-chairfront1';
-import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261004-chairfront1';
-import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261004-chairfront1';
-import {mountSimpleEditor} from './simple-editor.js?v=20261004-chairfront1';
+import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261004-chairrightrear1';
+import {validQuad,homography,project,drawWarp} from './warp.js?v=20261004-chairrightrear1';
+import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261004-chairrightrear1';
+import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261004-chairrightrear1';
+import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261004-chairrightrear1';
+import {makeZip} from './zip.js?v=20261004-chairrightrear1';
+import {generationGuide} from './ai-guide.js?v=20261004-chairrightrear1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261004-chairrightrear1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261004-chairrightrear1';
+import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261004-chairrightrear1';
+import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261004-chairrightrear1';
+import {PICTURE_LIBRARY} from './accessory-library.js?v=20261004-chairrightrear1';
+import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261004-chairrightrear1';
+import {mountPartsEditor} from './parts-editor.js?v=20261004-chairrightrear1';
+import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261004-chairrightrear1';
+import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261004-chairrightrear1';
+import {mountSimpleEditor} from './simple-editor.js?v=20261004-chairrightrear1';
 
 const $=id=>document.getElementById(id);
 // Editable state is a tree of JSON values. Copy its mutable containers while
