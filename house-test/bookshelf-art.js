@@ -1,4 +1,4 @@
-import {roomPoint} from './model.js?v=20261004-chairback1';
+import {roomPoint} from './model.js?v=20261004-chairleg2';
 
 // The approved PNGs were drawn against these measured room placements.
 // Keep the authored camera registration; positions are always world coordinates.

@@ -3,6 +3,7 @@
   'use strict';
   const WIDTH = 360, HEIGHT = 540;
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
+  const EXTRA_HOLE_X=[45,315,135],HOLE_PURCHASE_KEY='ojjuda-screw-flat-hole-pending-v1';
   const SCREW_COLOR = '#A3B6C7';
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;
@@ -46,12 +47,55 @@
   }
   function flat(api) {
     const st={L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
-      albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection()};
+      albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,shopBusy:'',shopReady:false,shopRun:0};
+    const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
     const tell=text=>{st.message=text;st.messageTime=1.7;};
+    const purchaseKey=L=>`${HOLE_PURCHASE_KEY}:${walletUser}:${L}`;
+    function pendingPurchase(L){try{const id=localStorage.getItem(purchaseKey(L));return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id||'')?id:null;}catch(_){return null;}}
+    function savePurchase(L,id){try{if(id)localStorage.setItem(purchaseKey(L),id);else localStorage.removeItem(purchaseKey(L));return true;}catch(_){return false;}}
+    function addHoles(count){
+      while(st.extraHoles<count){const h={id:st.level.holes.length,x:EXTRA_HOLE_X[st.extraHoles],y:100,owner:null,screw:null,extra:true};st.level.holes.push(h);st.extraHoles++;}
+    }
+    const validCount=(r,L)=>r?.stage===L&&Number.isInteger(r.count)&&r.count>=0&&r.count<=EXTRA_HOLE_X.length;
+    const currentShop=(L,run)=>!st.destroyed&&st.L===L&&st.shopRun===run&&sameWallet();
+    async function readHoles(){
+      if(st.shopBusy||!sameWallet()||!api.buyScrew)return;
+      const L=st.L,run=st.shopRun,id=pendingPurchase(L);st.shopBusy='checking';
+      try{
+        const r=await api.buyScrew('flat_hole',id,L,true);if(!currentShop(L,run))return;
+        if(validCount(r,L)&&(r.ok||r.reason==='not_found')){addHoles(r.count);st.shopReady=true;if(r.ok&&id)savePurchase(L,null);}
+        else{st.shopReady=false;if(['request_conflict','invalid'].includes(r?.reason))savePurchase(L,null);tell('추가 구멍 내역을 다시 확인해 주세요');}
+      }catch(_){if(currentShop(L,run)){st.shopReady=false;tell('추가 구멍 내역을 다시 확인해 주세요');}}
+      finally{if(st.shopRun===run)st.shopBusy='';}
+    }
+    async function buyHole(){
+      if(st.shopBusy||st.pending||st.complete||st.destroyed||st.level.plates.every(p=>p.state==='gone'))return;
+      if(!sameWallet()||!api.buyScrew){tell('로그인 후 구멍을 추가할 수 있어요');return;}
+      if(!st.shopReady){await readHoles();return;}
+      if(st.extraHoles>=EXTRA_HOLE_X.length){tell('이 판에는 최대 3개까지 추가해요');return;}
+      const L=st.L,run=st.shopRun,before=st.extraHoles;let id=pendingPurchase(L);
+      const coins=api.getCoins?.();if(!id&&(!Number.isFinite(coins)||coins<1)){tell(Number.isFinite(coins)?'1쭈가 필요해요':'쭈 지갑을 확인해 주세요');return;}
+      if(!id){id=crypto.randomUUID();if(!savePurchase(L,id)){tell('구매 기록을 저장할 수 없어요');return;}}
+      st.shopBusy='buying';st.selected=null;st.focus=null;
+      try{
+        const r=await api.buyScrew('flat_hole',id,L,false);if(!currentShop(L,run))return;
+        if(validCount(r,L)&&(r.ok||r.reason==='limit')){
+          addHoles(r.count);savePurchase(L,null);tell(r.reason==='limit'?'이 판에는 최대 3개까지 추가해요':r.count>before?'구멍 1개를 추가했어요':'추가한 구멍을 확인했어요');
+        }else{
+          if(['coins','request_conflict','invalid','banned'].includes(r?.reason))savePurchase(L,null);
+          else st.shopReady=false;
+          tell(r?.reason==='coins'?'1쭈가 필요해요':'구매 내역을 확인한 뒤 다시 시도해 주세요');
+        }
+      }catch(_){if(currentShop(L,run)){st.shopReady=false;tell('구매 내역을 확인한 뒤 다시 시도해 주세요');}}
+      finally{if(st.shopRun===run)st.shopBusy='';}
+    }
     function start(L) {
+      const paid=L===st.L&&sameWallet()?st.extraHoles:0;st.shopRun++;st.shopBusy='';st.shopReady=false;st.extraHoles=0;
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;
+      addHoles(paid);
       st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
+      if(sameWallet()&&api.buyScrew)void readHoles();
     }
     function openAlbum(){
       st.collection=new Set([...st.collection,...Pictures.readCollection()]);
@@ -71,7 +115,9 @@
       if(st.albumOpen){albumTap(x,y);return;}
       if(y>=5&&y<=48&&x>=278&&x<=348){openAlbum();return;}
       if(st.complete) { if(y>=491&&x>=197) { if(st.L===LAST_STAGE){st.ended=true;api.end(st.score);}else start(st.L+1); }return; }
+      if(st.shopBusy==='buying')return;
       if(y>=491&&x>=258){st.score=st.stageScore;api.setScore(st.score);start(st.L);tell('이 그림을 처음부터 다시 풀어요');return;}
+      if(y>=491&&x>=24&&x<=188){void buyHole();return;}
       if(st.pending)return;
       const hits=st.level.holes.map(h=>({h,d:Math.hypot(h.x-x,h.y-y)})).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
       const hit=hits.find(({h})=>canAccessHole(st.level,h));
@@ -79,7 +125,7 @@
       const h=hit.h;
       if(h.screw!==null) {
         st.selected=st.selected===h.screw?null:h.screw;st.focus=null;
-        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell('빈 구멍이 없어요. 다시 시작해 순서를 바꿔요');
+        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell(st.extraHoles<3?'구멍을 추가하거나 다시 시작할 수 있어요':'빈 구멍이 없어요. 다시 시작해 순서를 바꿔요');
         return;
       }
       if(st.selected===null){tell('옮길 나사를 먼저 눌러 주세요');return;}
@@ -88,7 +134,7 @@
       st.pending={screw:screw.id,from:screw.hole.id,to:h.id,time:0};st.selected=null;st.focus=null;
     }
     function update(dt) {
-      if(st.destroyed||st.ended||st.albumOpen)return;
+      if(st.destroyed||st.ended||st.albumOpen||st.shopBusy==='buying')return;
       dt=clamp(dt,0,.05);st.t+=dt;st.messageTime=Math.max(0,st.messageTime-dt);
       if(st.complete)return;
       const fallen=st.physics.step(dt);
@@ -177,7 +223,11 @@
         c.fillStyle='#87715F';c.font='700 13px "Noto Sans KR",sans-serif';c.textAlign='left';c.fillText(`완성! +${st.L*10}점`,24,515);
         round(c,198,493,138,42,17);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.fillText(st.L===LAST_STAGE?'기록 보기':'다음 그림 →',267,514);
       }else{
-        c.textAlign='left';c.font='11px "Noto Sans KR",sans-serif';c.fillStyle='#998A7C';c.fillText(`${st.moves}번 이동`,24,514);c.textAlign='center';
+        const full=st.extraHoles>=EXTRA_HOLE_X.length,ready=sameWallet()&&!full&&!st.shopBusy;
+        round(c,24,493,164,42,16);c.fillStyle=ready?'#DDE8DD':'#EAE4DC';c.fill();c.textAlign='center';c.fillStyle=ready?'#506E57':'#9B8C7D';c.font='700 12px "Noto Sans KR",sans-serif';
+        c.fillText(st.shopBusy==='buying'?'구매 중…':st.shopBusy==='checking'?'구매 내역 확인 중…':full?'구멍 추가 완료':'+ 구멍 1개 · 1쭈',106,507);
+        c.font='9px "Noto Sans KR",sans-serif';c.fillText(`현재 판 · ${st.extraHoles}/3개 추가`,106,523);
+        c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#998A7C';c.fillText(`${st.moves}번 이동`,220,514);
         round(c,258,493,78,42,16);c.fillStyle='#E7DDD1';c.fill();c.fillStyle='#78695E';c.font='700 12px "Noto Sans KR",sans-serif';c.fillText('↻ 다시',297,514);
       }
       if(st.messageTime>0) {
@@ -194,6 +244,7 @@
       onCancel(id=0){st.pointers.delete(id);st.down=null;},
       onKey(key){
         if(st.destroyed||st.ended)return false;
+        if(st.shopBusy==='buying')return true;
         if(key==='a'||key==='A'||key==='ㅁ'){if(st.albumOpen)st.albumOpen=false;else openAlbum();return true;}
         if(st.albumOpen){
           if(key==='Escape'||key==='Backspace'){if(st.albumPicture!==null)st.albumPicture=null;else st.albumOpen=false;return true;}

@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CUSHION_SNAP_PROOF_DIR||path.resolve(root,'../house-opening-proof/cushion-snap'),font=process.env.CHAIR_PROOF_FONT;
-const owner='local-cushion-snap',key='ojjuda-house-playtest-v1:'+owner,version='20261004-chairback1';
+const owner='local-cushion-snap',key='ojjuda-house-playtest-v1:'+owner,version='20261004-chairleg2';
 // Authored seat dimensions, deliberately independent of the snap helper.
 const seats={'cream-floral-cushion':{u:.66,v:.58,width:.78,bottom:.81},'sage-cushion':{u:1.79,v:.48,width:.76,bottom:.81},'peach-cushion':{u:.63,v:.30,width:.68,bottom:.89},'pink-check-cushion':{u:2.91,v:.49,width:.74,bottom:.81}};
 const labels={'cream-floral-cushion':'크림 꽃무늬 쿠션','sage-cushion':'세이지 쿠션','peach-cushion':'피치 쿠션','pink-check-cushion':'분홍 체크 쿠션'},ids=Object.keys(seats);

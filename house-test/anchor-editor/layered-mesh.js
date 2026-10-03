@@ -1,5 +1,5 @@
-import {normalizeMesh,projectMesh,drawMesh} from './mesh.js?v=20261004-chairback1';
-import {roomPoint} from './room-guide.js?v=20261004-chairback1';
+import {normalizeMesh,projectMesh,drawMesh} from './mesh.js?v=20261004-chairleg2';
+import {roomPoint} from './room-guide.js?v=20261004-chairleg2';
 
 // Each layer owns triangles from the original picture. Destination overlap is
 // intentional (for example, a rear leg behind the rim), but folds/overlap inside
