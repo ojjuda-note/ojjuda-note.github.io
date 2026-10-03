@@ -140,3 +140,27 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 #viewport {min-height: min(230px,35dvh);}
 /* Keep both tabs at the diary panel's height; longer furniture lists scroll inside. */
 #panel {height: 238px; flex: 0 1 238px; min-height: 0; overscroll-behavior: contain;}
+
+.placement-actions {position:absolute;z-index:7;display:flex;gap:6px;max-width:calc(100% - 16px);padding:4px;border:1px solid #d8c6e5;border-radius:16px;background:#fffcf6f5;box-shadow:0 4px 16px #51425525;}
+.placement-actions button {min-width:56px;min-height:44px;padding:8px 12px;font-size:13px;border-radius:11px;white-space:nowrap;}
+.placement-actions #placement-done {background:#9272b8;color:#fff;border-color:#9272b8;}
+.placement-actions #placement-done:hover {background:#8060a6;}
+#panel.placement-panel {height:auto;flex:0 1 auto;padding:9px 16px;}
+.placement-panel .panel-head {max-width:560px;margin:0 auto 5px;}
+.placement-panel h2 {font-size:16px;}
+.placement-toolbar {display:flex;align-items:center;justify-content:center;gap:8px;max-width:400px;margin:0 auto 4px;}
+.placement-directions {flex:1;min-width:0;max-width:320px;margin:0;gap:4px;}
+.placement-toolbar button {min-height:44px;padding:4px 8px;font-size:12px;border-radius:12px;}
+.placement-toolbar > button {min-width:52px;}
+.placement-panel .bookshelf-position-controls {max-width:560px;margin:0 auto 2px;gap:12px;}
+.placement-panel .bookshelf-control-title {font-size:11px;}
+.placement-panel .bookshelf-position-control input {height:44px;margin:0;}
+.placement-panel #panel-body > .bookshelf-position-control {max-width:280px;margin:2px auto;}
+.placement-panel .sofa-accessories {max-width:560px;margin:4px auto;padding:4px 8px;gap:0 8px;}
+.placement-panel .sofa-accessories label {min-height:44px;}
+.placement-panel .panel-note,.placement-panel .placement-warning {max-width:560px;margin:4px auto 0;font-size:11px;}
+/* Reserve the larger feedback message so collision changes cannot move the camera. */
+.placement-feedback {display:grid;max-width:560px;margin:4px auto 0;}
+.placement-panel .placement-feedback > p {grid-area:1/1;margin:0;line-height:1.5;}
+.placement-feedback #placement-warning[hidden] {display:block!important;visibility:hidden;}
+.placement-feedback:has(#placement-warning:not([hidden])) .panel-note {visibility:hidden;}

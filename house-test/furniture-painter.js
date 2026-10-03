@@ -1,8 +1,8 @@
 // Draw approved picture pixels on a 2D canvas; the grid only warps their anchors.
-import {expandBookshelfTriangle} from './bookshelf-art.js?v=20261003-chairdesk1';
+import {expandBookshelfTriangle} from './bookshelf-art.js?v=20261003-houseopen2';
 const imageCache=new Map();
 const compositeCache=new Map();
-const assetVersion=new URL(import.meta.url).searchParams.get('v')||'20261003-chairdesk1';
+const assetVersion=new URL(import.meta.url).searchParams.get('v')||'20261003-houseopen2';
 function loadImage(path){
  if(!imageCache.has(path))imageCache.set(path,new Promise((resolve,reject)=>{
   const image=new Image();
@@ -30,7 +30,7 @@ export async function paintFurniture(canvas,geometry){
   const source=geometry.art.canvas;canvas.width=source.width;canvas.height=source.height;canvas.getContext('2d').drawImage(source,0,0);canvas.dataset.sources='made-item';canvas.dataset.density='2';canvas.parentElement.dataset.renderState='ready';return;
  }
  const composition=geometry.art.composite;
- const sourceImages=geometry.art.layers?geometry.art.layers.map(layer=>layer.image):composition?composition.layers.map(layer=>layer.image):geometry.art.sprite?[geometry.art.sprite.image]:geometry.art.triangles.map(t=>t.image);
+ const sourceImages=geometry.art.layers?geometry.art.layers.flatMap(layer=>[layer.image,...(layer.eraseWith||[]).map(mask=>mask.image)]):composition?composition.layers.map(layer=>layer.image):geometry.art.sprite?[geometry.art.sprite.image]:geometry.art.triangles.map(t=>t.image);
  const paths=[...new Set(sourceImages)],loaded=await Promise.all(paths.map(loadImage));
  if(!canvas.isConnected)return;
  const images=new Map(paths.map((path,i)=>[path,loaded[i]])),density=Math.min(2,devicePixelRatio||1);
@@ -53,7 +53,7 @@ export async function paintFurniture(canvas,geometry){
  canvas.width=Math.max(1,Math.ceil(geometry.width*density));canvas.height=Math.max(1,Math.ceil(geometry.height*density));
  const ctx=canvas.getContext('2d');ctx.scale(density,density);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
  if(geometry.art?.layers){
-  for(const layer of geometry.art.layers){
+  const paintLayer=(targetContext,layer)=>{
    let picture=images.get(layer.image);
    if(layer.rect&&layer.sourceRect){
     const key=JSON.stringify([layer.image,layer.rect,layer.sourceRect,geometry.art.canvas]);
@@ -67,9 +67,19 @@ export async function paintFurniture(canvas,geometry){
     picture=framed;
    }
    for(const piece of layer.triangles){
-    const target=piece.target.map(p=>({x:p.x-geometry.left,y:p.y-geometry.top}));
-    triangle(ctx,picture,piece.source,target,.42/density);
+    const points=piece.target.map(p=>({x:p.x-geometry.left,y:p.y-geometry.top}));
+    triangle(targetContext,picture,piece.source,points,.42/density);
    }
+  };
+  for(const layer of geometry.art.layers){
+   if(!layer.eraseWith?.length){paintLayer(ctx,layer);continue;}
+   // Each independent item's pixels are hidden by the actual nearby sofa arm;
+   // the sofa itself is never copied into this item's movable canvas.
+   const isolated=document.createElement('canvas');isolated.width=canvas.width;isolated.height=canvas.height;
+   const part=isolated.getContext('2d');part.scale(density,density);part.imageSmoothingEnabled=true;part.imageSmoothingQuality='high';
+   paintLayer(part,layer);part.globalCompositeOperation='destination-out';
+   for(const mask of layer.eraseWith)paintLayer(part,mask);
+   ctx.drawImage(isolated,0,0,canvas.width/density,canvas.height/density);
   }
  }else if(geometry.art?.sprite){
   const sprite=geometry.art.sprite;ctx.drawImage(images.get(sprite.image),sprite.x-geometry.left,sprite.y-geometry.top,sprite.width,sprite.height);

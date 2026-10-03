@@ -1,8 +1,10 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');const root=path.resolve(__dirname,'..');
 const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js';window.testAuth={admin:true,id:'admin-a'};document.querySelector('#open').onclick=()=>{const owner=testAuth.id;openHouseTest({owner,authorized:()=>testAuth.admin&&testAuth.id===owner});};</script></body></html>`;
+const roomFitsViewportWidth=()=>{const room=document.querySelector('.room.selected').getBoundingClientRect(),view=document.querySelector('#viewport').getBoundingClientRect(),scale=room.width/1507,left=room.left+12*scale-view.left,right=view.right-(room.right-12*scale);return left>=-.5&&right>=-.5&&left<=20.5&&right<=20.5&&Math.abs(left-right)<1;};
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});try{const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2.75,hasTouch:true});await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/admin-fixture')return route.fulfill({contentType:'text/html',body:parent});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});const page=await context.newPage(),errors=[];await page.clock.install({time:new Date('2026-10-01T18:30:00+09:00')});page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/house-test/index.html');assert.equal(await page.locator('#app').isVisible(),false);await page.goto('https://fixture.test/admin-fixture');await page.locator('#open').click();const frame=()=>page.frames().find(f=>f.url().includes('/house-test/index.html'));await page.waitForSelector('iframe');await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const f=frame();await f.locator('.room-bg').evaluate(async img=>{if(!img.complete)await new Promise(resolve=>img.onload=resolve);});
 assert.equal(await f.locator('.room').count(),1);assert.equal(await f.locator('.apartment-neighbor[aria-hidden="true"]').count(),34);assert.match(await f.locator('#room-count').textContent(),/1 \/ 35/);
+await f.waitForFunction(roomFitsViewportWidth);
 await page.screenshot({path:'/tmp/house-playtest-mobile.png'});
 // Approved assets, clock boundaries, half-cell placement, rollback and curtains.
 assert.equal(await f.locator('.curtains').count(),1);
@@ -85,7 +87,7 @@ for(const x of [0,8,3.5]){
  assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),'center');
  assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'1.5');
 }
-await f.getByRole('button',{name:'배치 완료',exact:true}).click();
+await f.getByRole('button',{name:'설치',exact:true}).click();
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 assert.equal(await f.locator('#bookshelf-gap').inputValue(),'3.5','frontal lateral position is saved');
 await setShelfRange('#bookshelf-gap',6);
@@ -106,7 +108,7 @@ const projection=await f.evaluate(async()=>{
 const shelfBox=await f.locator('.bookshelf').boundingBox();await page.mouse.move(shelfBox.x+shelfBox.width/2,shelfBox.y+shelfBox.height/2);await page.mouse.down();await page.mouse.move(shelfBox.x+shelfBox.width/2-60,shelfBox.y+shelfBox.height/2+12,{steps:5});await page.mouse.up();const draggedX=Number(await f.locator('.bookshelf').getAttribute('data-x'));assert.ok(draggedX<9&&Number.isInteger(draggedX*2));
 await f.locator('button[data-direction="center"]:not(.furniture)').click();await f.locator('button[data-direction="right"]:not(.furniture)').click();
 await setShelfRange('#bookshelf-depth',.5);
-await f.getByRole('button',{name:'배치 완료',exact:true}).click();
+await f.getByRole('button',{name:'설치',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'0.5');
 await f.getByRole('button',{name:'방 설정',exact:true}).click();
 await f.getByRole('button',{name:'커튼 걷기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),0);
@@ -178,5 +180,5 @@ const assertMinimumRoomZoom=async f=>{
  await f.locator('#home-view').click();await f.locator('#zoom-in').click();await pushCameraToEdges(f);
  assert.equal(await f.locator('#zoom-out').isDisabled(),false);
 };
-await page.evaluate(()=>testAuth.admin=true);await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});for(const size of [{width:320,height:740},{width:844,height:390},{width:2560,height:1440},{width:1280,height:800}]){await page.setViewportSize(size);await frame().waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);assert.ok(await frame().locator('#viewport').evaluate(n=>n.clientHeight>=180));await frame().locator('[data-tab="room"]').click();await frame().locator('#home-view').click();await frame().waitForFunction(roomFillsViewport);const before=await frame().locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a);await frame().locator('#zoom-in').click();assert.ok(await frame().locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a)>before,'zoom-in still enlarges a screen-filling room');await assertMinimumRoomZoom(frame());await frame().locator('#home-view').click();}await page.screenshot({path:'/tmp/house-playtest-desktop.png'});
+await page.evaluate(()=>testAuth.admin=true);await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});for(const size of [{width:320,height:740},{width:844,height:390},{width:2560,height:1440},{width:1280,height:800}]){await page.setViewportSize(size);await frame().waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);assert.ok(await frame().locator('#viewport').evaluate(n=>n.clientHeight>=180));await frame().locator('[data-tab="room"]').click();await frame().locator('#home-view').click();await frame().waitForFunction(roomFitsViewportWidth);const before=await frame().locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a);await frame().locator('#zoom-in').click();assert.ok(await frame().locator('#world').evaluate(n=>new DOMMatrix(getComputedStyle(n).transform).a)>before,'zoom-in still enlarges a screen-filling room');await assertMinimumRoomZoom(frame());await frame().locator('#home-view').click();}await page.screenshot({path:'/tmp/house-playtest-desktop.png'});
 assert.deepEqual(errors,[]);console.log('PASS: preview gate, role/account isolation, Korea time boundaries, picture-only scene, bookshelf directions/half-cell save and cancel, curtains, movement/zoom, expansion bounds/connectivity, diary persistence and responsive layouts');}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
