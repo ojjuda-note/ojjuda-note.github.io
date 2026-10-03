@@ -663,7 +663,7 @@ async function openWorldHouse(){
    albumService ||= import('./house-test/world-records.js?v=20261004-album1').then(({createWorldRecords})=>createWorldRecords({client:S,owner,authorized,getFriends:Uu,prepareMedia:file=>_b(file,true),onChange:change=>{
     if(!authorized())return;
     if(change.media){const item=f1(change.media),index=$.album.findIndex(row=>row.id===item.id);if(index<0)$.album.unshift(item);else $.album[index]={...$.album[index],...item};}
-    if(change.folder){const item=oc(change.folder),index=$.folders.findIndex(row=>row.id===item.id);if(index<0)$.folders.push(item);else $.folders[index]=item;}
+    if(change.folder){if(!Array.isArray($.folders))$.folders=[];const item=oc(change.folder),index=$.folders.findIndex(row=>row.id===item.id);if(index<0)$.folders.push(item);else $.folders[index]=item;}
     I();
    }}));
    return (await albumService)(action,args);
