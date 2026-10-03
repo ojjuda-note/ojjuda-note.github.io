@@ -140,7 +140,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 #matgo-gate[hidden]{display:none}#matgo-gate h1{font-size:24px;margin:0}#matgo-gate p{max-width:360px;line-height:1.7;margin:0}
 #matgo-gate a,#matgo-gate button{display:inline-block;color:#2e2748;background:#f2c14e;padding:12px 20px;border-radius:999px;text-decoration:none;font:inherit}
 </style>
-<link rel="stylesheet" href="./matgo-viewport.css?v=20261003-gukjin1">
+<link rel="stylesheet" href="./matgo-viewport.css?v=20261003-text1">
 <script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
@@ -495,7 +495,7 @@ const ui={
       render(); return; }
     if(type==='ppuk'&&d.firstPpuk){render();await banner(d.p===ME?'첫뻑!':'상대 첫뻑!',(d.p===ME?'+300골드':'-300골드')+' · 판 종료 시 정산'+(d.bonusCount?' · 보너스도 함께 묶였어요':''),d.p===ME?'brag':'warn',1800);return;}
     const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
-    if(msg){ const mine=d.p===ME; const sub={jjok:'상대 피 한 장 가져오기',ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · 상대 피 ${d.count}장 가져오기`,ttadak:'네 장 한꺼번에 + 피 한 장',sweep:'바닥을 싹 비웠어요 + 피 한 장',go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
+    if(msg){ const mine=d.p===ME; const sub={jjok:'상대 피 한 장 가져오기',ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · 상대 피 ${d.count}장 가져오기`:`상대가 쌓인 패와 내 피 ${d.count}장을 가져갔어요`,ttadak:'네 장 한꺼번에 + 피 한 장',sweep:'바닥을 싹 비웠어요 + 피 한 장',go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
     if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',1500); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',1500); }
     if(type==='state'&&false){}
     if(type==='nagari'||type==='end'){ await finishRound(type,d); return; }
@@ -534,7 +534,7 @@ function mount(){
   <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261003-gukjin1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261003-text1');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -676,11 +676,11 @@ async function finishRound(type,d){
   if(settling)return;settling=true;pendingResult={type,d};
   try{
     const state=await wallet.settle(currentRound,game.actions);game.bank[ME]=state.gold;currentRound=null;pendingResult=null;render();
-    if(type==='nagari'){const bonus=d.firstPpukGold?.[ME]||0;modal(`<h2>나가리</h2><p>아무도 7점을 못 냈어요. 다음 판은 점수 ×${game.carry}!</p>${bonus?`<div class="big ${bonus>0?'win':'lose'}">${bonus>0?'+':''}${bonus.toLocaleString()}골드</div><p>첫뻑 정산</p>`:''}<p>내 골드 ${state.gold.toLocaleString()}</p><div class="row"><button class="btn" id="next">다음 판</button></div>`,{next:()=>startRound()});}
+    if(type==='nagari'){const bonus=d.firstPpukGold?.[ME]||0;modal(`<h2>나가리</h2><p>아무도 7점을 못 냈어요. 다음 판은 점수 ×${game.carry}!</p>${bonus?`<div class="big ${bonus>0?'win':'lose'}"><span class="gold-amount">${bonus>0?'+':''}${bonus.toLocaleString()}</span><small class="gold-unit">골드</small></div><p>첫뻑 정산</p>`:''}<p class="result-balance">내 골드 <strong>${state.gold.toLocaleString()}</strong></p><div class="row"><button class="btn" id="next">다음 판</button></div>`,{next:()=>startRound()});}
     else{
       const won=d.winner===ME,bonus=d.firstPpukGold?.[ME]||0,net=d.goldDelta?.[ME]??(won?d.money:-d.money);
       Bridge.result({win:won,delta:net,points:d.total,detail:d.det});
-      modal(`<h2>${won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big ${won?'win':'lose'}">${net>=0?'+':''}${net.toLocaleString()}골드</div><table class="sc">${d.det.map(x=>`<tr><td>${x[0]}</td><td>${typeof x[1]==='number'?x[1]+'점':x[1]}</td></tr>`).join('')}<tr><td><b>합계</b></td><td><b>${d.pts}점 × ${d.mult} = ${d.total}점</b></td></tr></table>${bonus?`<p class="gold-breakdown">승패 정산 ${won?'+':'-'}${d.money.toLocaleString()}골드<br>첫뻑 정산 ${bonus>0?'+':''}${bonus.toLocaleString()}골드</p>`:''}<p>내 골드 ${state.gold.toLocaleString()}${state.gold===0?' · 골드를 충전하면 다시 할 수 있어요.':''}</p><div class="row"><button class="btn" id="next">${state.gold===0?'골드 충전':'다음 판'}</button></div>`,{next:()=>startRound()});
+      modal(`<h2>${won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big ${won?'win':'lose'}"><span class="gold-amount">${net>=0?'+':''}${net.toLocaleString()}</span><small class="gold-unit">골드</small></div><table class="sc">${d.det.map(x=>`<tr><td>${x[0]}</td><td>${typeof x[1]==='number'?x[1]+'점':x[1]}</td></tr>`).join('')}<tr><td><b>합계</b></td><td><b>${d.total}점</b><small class="score-formula">${d.pts}점 × ${d.mult}</small></td></tr></table>${bonus?`<div class="gold-breakdown"><div><span>승패 정산</span> <strong>${won?'+':'-'}${d.money.toLocaleString()}골드</strong></div><div><span>첫뻑 정산</span> <strong>${bonus>0?'+':''}${bonus.toLocaleString()}골드</strong></div></div>`:''}<p class="result-balance">내 골드 <strong>${state.gold.toLocaleString()}</strong></p>${state.gold===0?'<p class="result-note">골드를 충전하면 다시 할 수 있어요.</p>':''}<div class="row"><button class="btn" id="next">${state.gold===0?'골드 충전':'다음 판'}</button></div>`,{next:()=>startRound()});
     }
   }catch(error){modal('<h2>결과 저장</h2><p id="save-error"></p><div class="row"><button class="btn" id="retry-save">다시 저장</button></div>',{'retry-save':()=>finishRound(type,d)});document.getElementById('save-error').textContent=error.message;}
   finally{settling=false;}
