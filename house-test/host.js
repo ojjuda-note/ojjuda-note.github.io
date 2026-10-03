@@ -74,7 +74,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-album1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-cleanup1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   frame.contentWindow.postMessage({type:'ojjuda-house-test-init',owner,preview,studioItem,canUseStudio,hasRecords:!studioOnly&&typeof records==='function'},location.origin,[channel.port2]);

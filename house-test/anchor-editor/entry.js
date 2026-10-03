@@ -20,7 +20,7 @@ window.addEventListener('message',async event=>{
   }
   const p=pending.get(d?.requestId);if(p){clearTimeout(p.timer);pending.delete(d.requestId);d.error?p.reject(new Error(d.error)):p.resolve(d);}};
  try{
-  editor=await import('./app.js?v=20261004-chairfarrear1');if(!alive)return;
+  editor=await import('./app.js?v=20261004-cleanup1');if(!alive)return;
   document.querySelector('#studio-locked').hidden=true;document.querySelector('#studio-editor').hidden=false;window.dispatchEvent(new Event('resize'));
   const operate=async task=>{
    if(operating||!alive)return;operating=true;
