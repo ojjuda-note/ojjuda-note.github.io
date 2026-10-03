@@ -18,6 +18,11 @@ function repairMesh(mesh,direction){
   if(panel&&panel.remove.every(q=>mesh.indices.some(t=>q.every(i=>t.includes(i)))))mesh.indices=[...mesh.indices.filter(t=>!panel.remove.some(q=>q.every(i=>t.includes(i)))),...panel.add.map(t=>[...t])];
  }
  mesh.straightRegions??=regions[direction].map(([a,b,radius])=>({start:{x:a[0],y:a[1]},end:{x:b[0],y:b[1]},radius,feather:radius*1.5}));
+ // Fade the left near-front shaft correction into its fixed foot. An abrupt
+ // end pulled the thin tip triangles across that foot and halved the entire
+ // correction. Preserve any separately authored region or fade setting.
+ const front=mesh.straightRegions[3];
+ if(direction==='left'&&front?.start.x===782&&front.start.y===947&&front.end.x===860&&front.end.y===1532&&front.radius===50&&front.feather===75)front.endFade??=120;
  return mesh;
 }
 export function straightenChairLegs(runtime){

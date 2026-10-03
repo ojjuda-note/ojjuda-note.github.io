@@ -1,4 +1,4 @@
-import {roomPoint} from './room-guide.js?v=20261004-chairleg2';
+import {roomPoint} from './room-guide.js?v=20261004-chairfront1';
 
 // A mesh deforms the supplied illustration. It never paints replacement shapes,
 // guesses hidden geometry, or treats an image margin as a physical contact.
@@ -111,7 +111,8 @@ export function normalizeMesh(mesh){
   if(!Array.isArray(mesh.straightRegions)||mesh.straightRegions.length>32)fail('직선 부위 정보를 확인하세요.');
   straightRegions=mesh.straightRegions.map(r=>{
    if(!finite(r?.start)||!finite(r?.end)||Math.hypot(r.end.x-r.start.x,r.end.y-r.start.y)<1||![r.radius,r.feather].every(n=>Number.isFinite(n)&&n>0&&n<=2000))fail('직선 부위의 끝점과 폭을 확인하세요.');
-   return {start:{...r.start},end:{...r.end},radius:r.radius,feather:r.feather};
+   if(r.endFade!==undefined&&(!Number.isFinite(r.endFade)||r.endFade<=0||r.endFade>Math.hypot(r.end.x-r.start.x,r.end.y-r.start.y)))fail('직선 부위의 끝단 보정 길이를 확인하세요.');
+   return {start:{...r.start},end:{...r.end},radius:r.radius,feather:r.feather,...(r.endFade!==undefined?{endFade:r.endFade}:{})};
   });
  }
  const result={anchors,indices,...(referenceDimensions?{referenceDimensions}:{}),...(straightRegions?{straightRegions}:{}),...(typeof mesh.id==='string'?{id:mesh.id}:{}),...(typeof mesh.label==='string'?{label:mesh.label}:{})};
@@ -186,7 +187,8 @@ export function straightenProjectedMesh(projected){
    if(t<=0||t>=1)continue;
    const distance=Math.abs((source.x-r.start.x)*r.dy-(source.y-r.start.y)*r.dx)/r.length;
    if(distance>=r.radius+r.feather)continue;
-   const u=Math.max(0,(distance-r.radius)/r.feather),w=1-u*u*(3-2*u);
+   const u=Math.max(0,(distance-r.radius)/r.feather),end=r.endFade?Math.min(1,(1-t)*r.length/r.endFade):1;
+   const w=(1-u*u*(3-2*u))*end*end*(3-2*end);
    const c={x:r.start.x+t*r.dx,y:r.start.y+t*r.dy},old=mappedPoint(projected,c);
    if(!old)continue;
    dx+=w*(r.a.x+t*(r.b.x-r.a.x)-old.x);dy+=w*(r.a.y+t*(r.b.y-r.a.y)-old.y);weight+=w;
