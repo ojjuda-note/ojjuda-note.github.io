@@ -210,8 +210,8 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    for(const [id,text]of [['left','왼쪽'],['center','정면'],['right','오른쪽']]){
     if(!controlItem.directions.includes(id))continue;
     const button=actionButton(text,()=>{
-     const pose=placementControlPose(),size=itemSize(controlId,id),preferred=controlItem.preferredViews?.[id];
-     const next=normalizePlacement(controlId,{...pose,direction:id,x:linkedDraft&&id==='left'?3.5:preferred?preferred.x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:linkedDraft&&id==='left'?4:preferred?preferred.y:id==='center'?0:pose.y});
+     const pose=placementControlPose(),size=itemSize(controlId,id),preferred=linkedDraft?{left:{x:3.5,y:4},center:{x:3.5,y:0},right:{x:9,y:3.5}}[id]:controlItem.preferredViews?.[id];
+     const next=normalizePlacement(controlId,{...pose,direction:id,x:preferred?preferred.x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:preferred?preferred.y:id==='center'?0:pose.y});
      if(linkedDraft){const group=findDeskChairPlacement(linkedOthers(),next);if(!group){toast('이 방향으로 책상과 의자를 함께 놓을 자리가 부족해요.');return;}stopFurnitureDrag();setPlacementControlPose(group.desk);if(group.desk.x!==next.x||group.desk.y!==next.y)toast('의자 그림이 자연스럽게 보이는 가까운 자리로 함께 옮겼어요.');}
      else{if(!canDrawDraftPose(next)){toast('이 위치에서는 해당 방향의 그림을 놓을 수 없어요. 앞뒤 위치를 먼저 조절해 주세요.');return;}stopFurnitureDrag();setPlacementControlPose(next);}
      renderWorld();renderPanel();focusRoom();
