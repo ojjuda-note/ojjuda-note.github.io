@@ -41,6 +41,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    if(qa&&size.width===390)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
    await page.locator('[data-mode=flat]').click();
    await page.waitForFunction(()=>screwWorld.current()?.game?.state);
+   assert.deepEqual(await page.evaluate(()=>screwWorld.current().game.state.level.holes.filter(h=>h.owner===null).map(h=>h.y)),[100,100,100],'only the three top spare holes appear; none flank the picture');
    assert.equal(await page.locator('#gov').getAttribute('data-screw-mode'),'flat');
    assert.match(await page.locator('.ghead .gt').innerText(),/평면형/);
    assert.equal(await page.locator('.ghead').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'mode title, score and controls fit the phone header');
@@ -86,7 +87,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.equal(caught.state,'hinged');assert.ok(caught.contact,'the middle plate hits a screw below, even after its original plate has gone');
   assert.ok(Math.abs(caught.angle)<.2,'a parked screw blocks the swinging plate');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-caught-by-screw.png')});
-  await touchMove(4,3);
+  await touchMove(4,2);
   assert.ok(await page.evaluate(()=>Math.abs(screwWorld.current().game.state.level.plates[1].angle)>.8),'moving the supporting screw lets the plate swing down');
   await touch({x:82,y:514});
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws[4].hole.id),bottom[0]);

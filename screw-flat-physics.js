@@ -68,8 +68,7 @@
       for(let i=0;i<extra;i++)counts[[4,3,2,1,4,3,2][i]]++;
     }
     const plates=[],holes=[],screws=[];
-    for(const x of L<=3?[90,180,270]:[126,234])holes.push({id:holes.length,x,y:100,owner:null,screw:null});
-    for(const y of [187,237,287])for(const x of [59,301])holes.push({id:holes.length,x,y,owner:null,screw:null,side:true});
+    for(const x of [90,180,270])holes.push({id:holes.length,x,y:100,owner:null,screw:null});
     bands.forEach((band,row)=>{
       const left=Math.min(...band.map(v=>v.x)),right=Math.max(...band.map(v=>v.x));
       const midY=(Math.min(...band.map(v=>v.y))+Math.max(...band.map(v=>v.y)))/2;
