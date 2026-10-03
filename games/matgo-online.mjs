@@ -29,7 +29,7 @@ function eventText(ev){
   const mine=ev.p===room.seat,who=mine?'':'상대 ';
   if(ev.type==='ppuk'&&ev.firstPpuk)return [who+'첫뻑!',(mine?'+300':'-300')+'골드 · 판 종료 시 정산'];
   if(ev.type==='ppuk')return [who+'쌌다!',`이번 판 ${ev.count}/3회${ev.bonusCount?' · 보너스도 함께 묶였어요':''}`];
-  if(ev.type==='ppukget')return [who+(ev.self?'자뻑 먹기!':'뻑 먹기!'),`상대 피 ${ev.count}장 가져오기`];
+  if(ev.type==='ppukget')return [mine?(ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',mine?`상대 피 ${ev.count}장 가져오기`:`상대가 쌓인 패와 내 피 ${ev.count}장을 가져갔어요`];
   if(ev.type==='shake')return [who+'흔들기!','이기면 점수 ×2',ev.cards];
   if(ev.type==='bomb')return [who+(ev.handCount===2?'두 장 폭탄!':'폭탄!'),'점수 ×2 · 폭탄 뒤집기 '+(ev.flips??2)+'회'];
   if(ev.type==='go')return [who+ev.n+'고!','다음 점수를 기다려요'];
@@ -47,7 +47,7 @@ function showNextEvent(){
 }
 function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;location.replace('./matgo.html?v=20261003-safe2');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;location.replace('./matgo.html?v=20261003-text1');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const changed=room?.id!==next.id||room?.round!==next.round;
   if(changed){cursor=0;promptKey='';closeDialog();clearEvents();}
@@ -94,7 +94,7 @@ function showLobby(){
   $('#content').innerHTML=`<section class="lobby"><div class="fan" aria-hidden="true">${[CARDS[0],CARDS[8],CARDS[28]].map(cardSVG).join('')}</div><div class="eyebrow">MEMBER MATCH</div><h2>함께 치는 맞고</h2><p>다른 회원과 한 판 어때요?<br>친구와는 방 코드를 나눠 입장하세요.</p><div class="actions"><button id="quick" class="btn gold"><span>빠른 대결</span><small>상대가 없으면 컴퓨터 대결 →</small></button><button id="create" class="btn ghost"><span>방 만들기</span><small>친구와 둘이서 →</small></button></div><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" pattern="[A-Fa-f0-9]{8}" required><button class="btn" id="join">입장</button></form><button id="solo" class="text-button">컴퓨터와 대결하기</button><p class="fine">만 19세 이상 · 1점 = 100골드<br>차례마다 15초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></section>`;
   $('#quick').onclick=()=>enter('quick');$('#create').onclick=()=>enter('create');
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=$('#room-code').value.trim().toUpperCase();if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261003-safe2');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261003-text1');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -172,7 +172,7 @@ function showResult(){
   if(dialogKey===key)return;
   const delta=r.paidDelta[me],draw=r.type==='nagari',won=r.winner===me;
   const canRematch=!room.departed.some(Boolean)&&room.gold.every(g=>g>0);
-  modal(`<h2>${draw?'나가리':won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big${delta<0?' negative':''}">${signed(delta)}골드</div>${r.det?'<table class="sc">'+r.det.map(([label,value])=>'<tr><td>'+escape(label)+'</td><td>'+escape(value)+(typeof value==='number'?'점':'')+'</td></tr>').join('')+'<tr><td>합계</td><td>'+r.total+'점</td></tr></table>':''}<p>${draw?'다음 판은 점수 ×'+r.nextCarry+'<br>':''}${r.firstPpukGold[me]?'첫뻑 정산 '+signed(r.firstPpukGold[me])+'골드<br>':''}${room.departed[me]?'중간에 나간 사람은 보상을 받지 않아요.<br>':''}내 골드 ${number(room.gold[me])}<br>정산은 상대의 보유 골드 한도 안에서 이뤄져요.</p><div class="row">${canRematch?'<button class="btn gold" id="rematch" '+(room.ready[me]?'disabled':'')+'>'+(room.ready[me]?'상대 준비 기다리는 중':room.ready[1-me]?'상대 준비 완료 · 다음 판':'한 판 더')+'</button>':''}<button class="btn ghost" id="result-lobby">대기방으로</button></div>`,{rematch:()=>ready(),'result-lobby':()=>leave(false)},key);
+  modal(`<h2>${draw?'나가리':won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big${delta<0?' negative':''}"><span class="gold-amount">${signed(delta)}</span><small class="gold-unit">골드</small></div>${r.det?'<table class="sc">'+r.det.map(([label,value])=>'<tr><td>'+escape(label)+'</td><td>'+escape(value)+(typeof value==='number'?'점':'')+'</td></tr>').join('')+'<tr><td><b>합계</b></td><td><b>'+r.total+'점</b></td></tr></table>':''}${draw?'<p>다음 판은 점수 ×'+r.nextCarry+'</p>':''}${r.firstPpukGold[me]?'<div class="gold-breakdown"><div><span>첫뻑 정산</span> <strong>'+signed(r.firstPpukGold[me])+'골드</strong></div></div>':''}<p class="result-balance">내 골드 <strong>${number(room.gold[me])}</strong></p>${room.departed[me]?'<p class="result-note">중간에 나간 사람은 보상을 받지 않아요.</p>':''}<p class="result-note">정산은 상대의 보유 골드 한도 안에서 이뤄져요.</p><div class="row">${canRematch?'<button class="btn gold" id="rematch" '+(room.ready[me]?'disabled':'')+'>'+(room.ready[me]?'상대 준비 기다리는 중':room.ready[1-me]?'상대 준비 완료 · 다음 판':'한 판 더')+'</button>':''}<button class="btn ghost" id="result-lobby">대기방으로</button></div>`,{rematch:()=>ready(),'result-lobby':()=>leave(false)},key);
 }
 async function ready(){if(busy)return;busy=true;try{accept((await rpc({action:'online_ready',room_id:room.id,cursor:0})).room);}catch(e){toast(e.message);}finally{busy=false;updateEnabled();}}
 async function leave(close){
