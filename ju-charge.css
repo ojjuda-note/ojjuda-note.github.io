@@ -1,4 +1,22 @@
 /* Shared charge entry and responsive catalogue. */
+/* A compact wallet stays in the top-right corner on every app screen. */
+.col > .topbar, .col > .mobile-top { display: flex !important; position: sticky; top: 0; z-index: 21; align-items: center; justify-content: space-between; gap: 8px; height: auto; min-height: 50px; padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border: 0; background: color-mix(in srgb, var(--bg, #edeff9) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.topbar .nn-top-actions, .mobile-top .nn-top-actions { display: flex; align-items: center; flex: none; gap: 6px; margin-left: auto; }
+.topbar .coinpill, .mobile-top .note-coinpill { display: inline-flex; align-items: center; gap: 5px; flex: none; height: 28px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 12px/1 var(--font-b, sans-serif); font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; }
+.topbar .coinpill:hover, .mobile-top .note-coinpill:hover { border-color: var(--accent); }
+.topbar .coinpill .cz, .mobile-top .note-coinpill .note-cz { width: 14px; height: 14px; border-radius: 4px; }
+.topbar .nn-bell, .mobile-top .nn-bell { width: 30px; height: 30px; }
+.topbar .nn-bell svg, .mobile-top .nn-bell svg { width: 17px; height: 17px; }
+@media (min-width: 900px) {
+  .col > .topbar, .col > .mobile-top { min-height: 46px; padding: 8px 20px; justify-content: flex-end; }
+  .topbar > .brand, .mobile-top > .note-brand-row { display: none; }
+}
+@media (max-width: 380px) {
+  .col > .topbar, .col > .mobile-top { padding-left: 12px; padding-right: 12px; gap: 6px; }
+  .topbar .logo-mark, .mobile-top .brand-icon { width: 24px; height: 24px; }
+  .topbar .logo-word, .mobile-top .brand > span { font-size: 20px; }
+  .topbar .brand .beta, .mobile-top .note-dev-badge { display: none; }
+}
 .ju-charge-entry.my-menu-summary { width: 100%; border: 0; background: none; color: inherit; appearance: none; font: inherit; text-align: left; cursor: pointer; }
 .ju-charge-entry.my-menu-summary:hover { background: var(--surface-2, #f8f5f8); }
 .ju-charge-entry.my-menu-summary::after { transform: rotate(-45deg); }
