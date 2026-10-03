@@ -1,7 +1,7 @@
-import {madePoseValid} from './custom-furniture.js?v=20261003-chair1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261003-chair1';
-import {sofaPoseValid} from './sofa-art.js?v=20261003-chair1';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-chair1';
+import {madePoseValid} from './custom-furniture.js?v=20261003-chairdesk1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261003-chairdesk1';
+import {sofaPoseValid} from './sofa-art.js?v=20261003-chairdesk1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-chairdesk1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -24,14 +24,54 @@ export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
  }
  return null;
 }
+const canonical=value=>Number(value.toFixed(6));
+// Chair poses are derived from the desk's open knee space, not its full width.
+// Only the parent snaps to the grid; these offsets reserve exactly half a cell
+// beneath the desktop while preserving the approved 1.2-cell chair footprint.
+export function chairForDesk(desk){
+ if(!desk||!Number.isFinite(desk.x)||!Number.isFinite(desk.y))return null;
+ const poses={
+  right:{direction:'left',x:desk.x-.7,y:desk.y+1.325},
+  left:{direction:'right',x:desk.x+.5,y:desk.y+.535},
+  center:{direction:'center',x:desk.x+1.265,y:desk.y+.5}
+ };
+ const pose=poses[desk.direction];
+ return pose?{...pose,x:canonical(pose.x),y:canonical(pose.y),attachedTo:'desk'}:null;
+}
+export function isDeskChairPair(desk,chair){
+ const expected=chairForDesk(desk);
+ return !!expected&&chair?.attachedTo==='desk'&&chair.direction===expected.direction&&chair.x===expected.x&&chair.y===expected.y;
+}
+export function canPlaceGroup(placements,others=[]){
+ if(!Array.isArray(placements)||!placements.length||!Array.isArray(others))return false;
+ const ids=placements.map(p=>p?.id);
+ if(ids.some(id=>!FURNITURE[id])||new Set(ids).size!==ids.length||others.some(p=>ids.includes(p?.id)))return false;
+ return placements.every((p,index)=>canPlaceFurniture(p.id,p,[...others,...placements.filter((_,i)=>i!==index)]));
+}
+export function findDeskChairPlacement(others=[],preferredDesk=FURNITURE.desk.preferred){
+ const preferred=normalizePlacement('desk',preferredDesk);if(!preferred)return null;
+ const attempt=desk=>{const chair=chairForDesk(desk);return chair&&canPlaceGroup([{id:'desk',...desk},{id:'chair',...chair}],others)?{desk,chair}:null;};
+ const first=attempt(preferred);if(first)return first;
+ const {w,d}=itemSize('desk',preferred.direction),candidates=[];
+ for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step){
+  if(x===preferred.x&&y===preferred.y)continue;
+  candidates.push({direction:preferred.direction,x,y});
+ }
+ candidates.sort((a,b)=>(a.x-preferred.x)**2+(a.y-preferred.y)**2-((b.x-preferred.x)**2+(b.y-preferred.y)**2)||a.y-b.y||a.x-b.x);
+ for(const desk of candidates){const pair=attempt(desk);if(pair)return pair;}
+ return null;
+}
 function roomFurniture(raw,shelf,version,addNew){
  const result={},others=shelf?[{id:'bookshelf',...shelf}]:[];
- const ids=Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced);
+ const ids=Object.keys(FURNITURE).filter(id=>id!=='bookshelf').sort((a,b)=>Number(b==='desk')-Number(a==='desk')||FURNITURE[a].introduced-FURNITURE[b].introduced);
  if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const id of ids){
   // These IDs were reused for new artwork after the old models were retired.
   // Their pre-v8 poses must not restore the replacement furniture.
   if(version<8&&(id==='desk'||id==='side-table'||id==='chair'))continue;
-  const placed=normalizePlacement(id,raw[id]);
+  // Only an existing, explicitly linked child is restored. Its saved offset
+  // cannot override the approved relationship to the restored parent desk.
+  const saved=id==='chair'&&raw[id]?.attachedTo==='desk'?chairForDesk(result.desk):raw[id];
+  const placed=normalizePlacement(id,saved);
   if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
  }
  if(addNew)for(const id of ids)if(!result[id]&&FURNITURE[id].autoPlace!==false&&FURNITURE[id].introduced>version){
@@ -58,6 +98,12 @@ export function normalizePlacement(id,s){
  if(!s||!Number.isFinite(s.x)||!Number.isFinite(s.y))return null;
  const size=itemSize(id,s.direction);if(!size)return null;const {w,d}=size;
  if(w>FLOOR.width||d>FLOOR.depth)return null;
+ if(id==='chair'&&s.attachedTo!==undefined){
+  if(s.attachedTo!=='desk')return null;
+  const x=canonical(s.x),y=canonical(s.y);
+  if(x<0||y<0||x+w>FLOOR.width||y+d>FLOOR.depth)return null;
+  return {direction:s.direction,x,y,attachedTo:'desk'};
+ }
  const snap=value=>Math.round(value/FLOOR.step)*FLOOR.step;
  return {direction:s.direction,x:Math.max(0,Math.min(FLOOR.width-w,snap(s.x))),y:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y))),...(id==='sofa'?{accessories:normalizeAccessories(s.accessories)}:{})};
 }
@@ -65,8 +111,10 @@ export const normalizeShelf=s=>normalizePlacement('bookshelf',s);
 export function canDrawFurniture(id,s){return !!s&&(FURNITURE[id]?.picture!=='made'||madePoseValid(id,s))&&(id!=='sofa'||sofaPoseValid(s,FURNITURE.sofa))&&(id!=='side-table'||sideTablePoseValid(s));}
 export function canPlaceFurniture(id,s,others=[]){
  const placed=normalizePlacement(id,s);if(!placed||placed.x!==s.x||placed.y!==s.y||!canDrawFurniture(id,placed))return false;
+ if(id==='chair'&&placed.attachedTo==='desk'&&!others.some(other=>other.id==='desk'&&isDeskChairPair(other,placed)))return false;
+ if(id==='desk'&&others.some(other=>other.id==='chair'&&other.attachedTo==='desk'&&!isDeskChairPair(placed,other)))return false;
  const size=itemSize(id,s.direction);
- return others.every(other=>{const otherSize=itemSize(other.id,other.direction);return otherSize&&(!(FURNITURE[id].layer===FURNITURE[other.id].layer)||s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y);});
+ return others.every(other=>{const otherSize=itemSize(other.id,other.direction);return otherSize&&((id==='desk'&&other.id==='chair'&&isDeskChairPair(placed,other))||(id==='chair'&&other.id==='desk'&&isDeskChairPair(other,placed))||!(FURNITURE[id].layer===FURNITURE[other.id].layer)||s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y);});
 }
 // Calibrated to the inside corners where the skirting meets the floor.
 // The 10 × 7 grid stops where the side walls meet the front floor corners.
