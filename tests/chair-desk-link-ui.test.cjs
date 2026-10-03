@@ -2,9 +2,9 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CHAIR_LINK_PROOF_DIR||path.resolve(root,'../chair-desk-link-proof'),proofFont=process.env.CHAIR_PROOF_FONT;
 const owner='chair-desk-link',key='ojjuda-house-playtest-v1:'+owner;
-const modelURL='/house-test/model.js?v=20261003-loading5',catalogURL='/house-test/furniture-catalog.js?v=20261003-loading5';
+const modelURL='/house-test/model.js?v=20261003-lamp1',catalogURL='/house-test/furniture-catalog.js?v=20261003-lamp1';
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/chair-v1.runtime.json')));
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-loading5';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-lamp1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
 const plain=p=>({direction:p.direction,x:p.x,y:p.y});
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});

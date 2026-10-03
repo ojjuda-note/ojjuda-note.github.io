@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261003-loading5';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261003-loading5';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261003-lamp1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261003-lamp1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,6 +26,10 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
+ 'floor-lamp':{label:'크림 원목 스탠드 조명',shortLabel:'스탠드 조명',width:1.5,depth:1.5,height:2.8,depthFill:1,introduced:17,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/floor-lamp-center-preview-v1.png',
+  preferred:{direction:'left',x:0,y:1.5},preferredViews:{left:{direction:'left',x:0,y:1.5},center:{direction:'center',x:4,y:2.5},right:{direction:'right',x:7.5,y:1.5}},
+  clearance:'갓 둘레의 여유를 포함한 배치 공간이에요. 다른 가구와 겹치지 않는 곳에 놓아 주세요.'},
  // One selectable product; the former sofa slot remains only to preserve a
  // second blanket already present in an older saved room.
  'blanket-floor':{...unifiedBlanket},
