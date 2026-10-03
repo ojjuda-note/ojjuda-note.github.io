@@ -1,8 +1,8 @@
-import {loadBuiltInItems,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261003-carpet1';
-import {icon} from './icons.js?v=20261003-carpet1';
-import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261003-carpet1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261003-carpet1';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-carpet1';
+import {loadBuiltInItems,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261003-chair1';
+import {icon} from './icons.js?v=20261003-chair1';
+import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261003-chair1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261003-chair1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-chair1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
@@ -168,7 +168,7 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
    const item=FURNITURE[editingId],directions=element('div','directions');
    for(const [id,text]of [['left','왼쪽'],['center','정면'],['right','오른쪽']]){
     if(!item.directions.includes(id))continue;
-    const button=actionButton(text,()=>{const size=itemSize(editingId,id);const next=normalizePlacement(editingId,{...draft,direction:id,x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:id==='center'?0:draft.y});if(!canDrawFurniture(editingId,next)){toast('이 위치에서는 해당 방향의 그림을 놓을 수 없어요. 앞뒤 위치를 먼저 조절해 주세요.');return;}draft=next;renderWorld();renderPanel();focusRoom();});
+    const button=actionButton(text,()=>{const size=itemSize(editingId,id),preferred=item.preferredViews?.[id];const next=normalizePlacement(editingId,{...draft,direction:id,x:preferred?preferred.x:id==='left'?0:id==='right'?FLOOR.width-size.w:(FLOOR.width-size.w)/2,y:preferred?preferred.y:id==='center'?0:draft.y});if(!canDrawFurniture(editingId,next)){toast('이 위치에서는 해당 방향의 그림을 놓을 수 없어요. 앞뒤 위치를 먼저 조절해 주세요.');return;}draft=next;renderWorld();renderPanel();focusRoom();});
     button.dataset.direction=id;button.setAttribute('aria-pressed',String(draft.direction===id));directions.append(button);
    }
    body.append(directions);
