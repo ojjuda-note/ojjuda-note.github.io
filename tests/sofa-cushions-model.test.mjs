@@ -17,7 +17,7 @@ test('bringing each cushion to the sofa matches its approved seat in all three d
   const matched=snapCushionToSofa(id,candidate,sofa);
   assert.deepEqual(matched,sofaAccessoryFromSofa(id,sofa));assert.equal('attachedTo' in matched,false);
   assert.deepEqual({candidate,sofa},before,'snap suggestion must not mutate independent placements');
-  const saved=normalize({version:12,rooms:[room({sofa,[id]:matched})]});
+  const saved=normalize({version:13,rooms:[room({sofa,[id]:matched})]});
   assert.deepEqual(saved.rooms[0].furniture[id],matched);
   delete saved.rooms[0].furniture.sofa;assert.deepEqual(normalize(saved).rooms[0].furniture[id],matched,'removing the sofa does not remove or reposition a snapped cushion');
  }
@@ -49,7 +49,7 @@ test('dragging cushions away sets them on the floor while explicit height edits 
 test('v11 migration preserves approved PNG coordinates and visible positions in every direction',()=>{
  for(const [direction,record]of Object.entries(fixture.views)){
   const state=normalize({version:11,rooms:[room({sofa:record.sofa})]}),furniture=state.rooms[0].furniture;
-  assert.deepEqual(furniture.sofa,normalizePlacement('sofa',record.sofa));assert.equal(state.version,12);
+  assert.deepEqual(furniture.sofa,normalizePlacement('sofa',record.sofa));assert.equal(state.version,13);
   for(const id of ids){
    assert.deepEqual(furniture[id],normalizePlacement(id,sofaAccessoryFromSofa(id,record.sofa)));
    const actual=furnitureGeometry(id,furniture[id]).art.layers,expected=record.accessories[id];assert.equal(actual.length,expected.length);
@@ -80,7 +80,7 @@ test('independent position, height and direction persist with intended surface a
   const high=normalizePlacement(id,{...p,elevation:100});assert(Math.abs(high.elevation-(ROOM.wallHeight-FURNITURE[id].height))<1e-6);assert.equal(canPlaceFurniture(id,{...p,elevation:100}),false);
   assert.equal(normalizePlacement(id,{...p,elevation:-1}).elevation,0);
  }
- assert.deepEqual(normalize({version:12,rooms:[room(furniture)]}).rooms[0].furniture,furniture);
+ assert.deepEqual(normalize({version:13,rooms:[room(furniture)]}).rooms[0].furniture,furniture);
  const right=normalizePlacement('sofa',{direction:'right',x:8.5,y:3});assert(canDrawFurniture('sofa',right));assert.equal(canPlaceFurniture('sofa',right,[{id:'desk',direction:'right',x:9,y:3.5}]),false);
  const floor=normalizePlacement('blanket-floor',{direction:'center',x:0,y:3});assert.equal(FURNITURE['blanket-floor'].layer,'floor');assert(canPlaceFurniture('blanket-floor',floor,[{id:'sofa',...sofa}]));assert(canPlaceFurniture('sofa',sofa,[{id:'blanket-floor',...floor}]));
 });

@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CUSHION_SNAP_PROOF_DIR||path.resolve(root,'../house-opening-proof/cushion-snap'),font=process.env.CHAIR_PROOF_FONT;
-const owner='local-cushion-snap',key='ojjuda-house-playtest-v1:'+owner,version='20261003-cushions3';
+const owner='local-cushion-snap',key='ojjuda-house-playtest-v1:'+owner,version='20261003-blanket4';
 // Authored seat dimensions, deliberately independent of the snap helper.
 const seats={'cream-floral-cushion':{u:.66,v:.58,width:.78,bottom:.81},'sage-cushion':{u:1.79,v:.48,width:.76,bottom:.81},'peach-cushion':{u:.63,v:.30,width:.68,bottom:.89},'pink-check-cushion':{u:2.91,v:.49,width:.74,bottom:.81}};
 const labels={'cream-floral-cushion':'크림 꽃무늬 쿠션','sage-cushion':'세이지 쿠션','peach-cushion':'피치 쿠션','pink-check-cushion':'분홍 체크 쿠션'},ids=Object.keys(seats);
@@ -28,7 +28,7 @@ const expected=(id,sofa)=>{const s=seats[id],offset={left:{x:s.v-.25,y:3.5-s.u-s
    if(cancel)await node(id).evaluate(el=>el.dispatchEvent(new PointerEvent('pointercancel',{pointerId:Number(el.dataset.testPointer),pointerType:'mouse',bubbles:true})));await page.mouse.up();await ready();return pose(id);
   };
   for(const [direction,sofa]of Object.entries(sofas)){
-   const baseline={version:12,rooms:[{x:0,y:0,decor:true,curtains:false,shelf:null,furniture:{sofa:{...sofa,accessories:{'cream-floral-cushion':false,'sage-cushion':false,'peach-cushion':false,'pink-check-cushion':false,'blanket-sofa':true}},...Object.fromEntries(ids.map((id,i)=>[id,{direction:direction==='center'?'right':'center',x:3+i,y:5,elevation:0}]))}}],diary:'쿠션 자동 정렬 후에도 보존할 기록'};
+   const baseline={version:13,rooms:[{x:0,y:0,decor:true,curtains:false,shelf:null,furniture:{sofa:{...sofa},'blanket-sofa':{direction:sofa.direction,x:sofa.x+{left:.38,center:.01,right:.02}[direction],y:sofa.y+{left:1.89,center:.38,right:.01}[direction],elevation:.025,mode:'sofa'},...Object.fromEntries(ids.map((id,i)=>[id,{direction:direction==='center'?'right':'center',x:3+i,y:5,elevation:0}]))}}],diary:'쿠션 자동 정렬 후에도 보존할 기록'};
    await page.evaluate(({key,baseline})=>localStorage.setItem(key,JSON.stringify(baseline)),{key,baseline});await open();
    for(const id of ids){
     const before=await read(),original=await pose(id);await edit(id);assert.equal(await f.locator('input[data-accessory]').count(),0,'obsolete parent accessory checkboxes are absent');const snapped=await dragTo(id,{x:sofa.x+.5,y:sofa.y+.5});assert.deepEqual(snapped,expected(id,sofa),direction+'/'+id+' snaps to the authored seat, direction and height');assert.equal(Number(await f.locator('#accessory-height').inputValue()),seats[id].bottom,'height control follows the snapped seat exactly');assert.equal(await f.locator('#panel-body button[data-direction="'+direction+'"]').getAttribute('aria-pressed'),'true');assert.deepEqual(await pose('sofa'),sofa);assert.deepEqual(await read(),before,'a drag only changes the draft');
