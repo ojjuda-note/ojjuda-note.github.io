@@ -1,4 +1,4 @@
-import {roomPoint} from './room-guide.js?v=20261004-chairrightrear1';
+import {roomPoint} from './room-guide.js?v=20261004-chairfarrear1';
 
 // A mesh deforms the supplied illustration. It never paints replacement shapes,
 // guesses hidden geometry, or treats an image margin as a physical contact.
@@ -8,7 +8,7 @@ const kinds=new Set(['physical','contour','support']);
 const normalizedCache=new WeakMap(),coverageCache=new WeakMap(),buffers=new WeakMap();
 const fail=message=>{throw new RangeError(message);};
 const signature=mesh=>JSON.stringify([mesh?.anchors,mesh?.indices,mesh?.referenceDimensions,mesh?.id,mesh?.label,mesh?.straightRegions]);
-const copyMesh=mesh=>({...mesh,anchors:mesh.anchors.map(a=>({...a,source:{...a.source},world:{...a.world}})),indices:mesh.indices.map(ids=>[...ids]),...(mesh.referenceDimensions?{referenceDimensions:{...mesh.referenceDimensions}}:{}),...(mesh.straightRegions?{straightRegions:mesh.straightRegions.map(r=>({...r,start:{...r.start},end:{...r.end}}))}:{})});
+const copyMesh=mesh=>({...mesh,anchors:mesh.anchors.map(a=>({...a,source:{...a.source},world:{...a.world}})),indices:mesh.indices.map(ids=>[...ids]),...(mesh.referenceDimensions?{referenceDimensions:{...mesh.referenceDimensions}}:{}),...(mesh.straightRegions?{straightRegions:mesh.straightRegions.map(r=>({...r,start:{...r.start},end:{...r.end},...(r.surfaceTriangle?{surfaceTriangle:[...r.surfaceTriangle]}:{})}))}:{})});
 function tolerance(points){
  const extent=Math.max(1,Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x)),Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y)));
  return extent*extent*1e-10;
@@ -112,7 +112,8 @@ export function normalizeMesh(mesh){
   straightRegions=mesh.straightRegions.map(r=>{
    if(!finite(r?.start)||!finite(r?.end)||Math.hypot(r.end.x-r.start.x,r.end.y-r.start.y)<1||![r.radius,r.feather].every(n=>Number.isFinite(n)&&n>0&&n<=2000))fail('직선 부위의 끝점과 폭을 확인하세요.');
    if(r.endFade!==undefined&&(!Number.isFinite(r.endFade)||r.endFade<=0||r.endFade>Math.hypot(r.end.x-r.start.x,r.end.y-r.start.y)))fail('직선 부위의 끝단 보정 길이를 확인하세요.');
-   return {start:{...r.start},end:{...r.end},radius:r.radius,feather:r.feather,...(r.endFade!==undefined?{endFade:r.endFade}:{})};
+   if(r.surfaceTriangle!==undefined&&(!Array.isArray(r.surfaceTriangle)||r.surfaceTriangle.length!==3||new Set(r.surfaceTriangle).size!==3||!indices.some(t=>r.surfaceTriangle.every(i=>t.includes(i)))))fail('부위의 기준 삼각형을 확인하세요.');
+   return {start:{...r.start},end:{...r.end},radius:r.radius,feather:r.feather,...(r.endFade!==undefined?{endFade:r.endFade}:{}),...(r.surfaceTriangle?{surfaceTriangle:[...r.surfaceTriangle]}:{})};
   });
  }
  const result={anchors,indices,...(referenceDimensions?{referenceDimensions}:{}),...(straightRegions?{straightRegions}:{}),...(typeof mesh.id==='string'?{id:mesh.id}:{}),...(typeof mesh.label==='string'?{label:mesh.label}:{})};
@@ -212,11 +213,36 @@ export function straightenProjectedMesh(projected){
   if(indices.every(ids=>cross(...ids.map(i=>targets[i]))>1e-10))break;
   strength/=2;if(strength<1/128)return projected;
  }
+ // An explicitly registered surface also owns the edges of its wooden shaft.
+ // Blend toward that existing triangle's transform in a capsule around the
+ // shaft. Rounded end falloff keeps the foot rim continuous; all anchors stay
+ // pinned. Guard this local pass independently of other legs' corrections.
+ const surfaces=regions.filter(r=>r.surfaceTriangle).map(r=>({...r,matrix:projected.triangles.find(t=>r.surfaceTriangle.every(i=>t.indices.includes(i))).matrix}));
+ let surfaceStrength;
+ if(surfaces.length){
+  const base=targets,delta=points.map((p,i)=>{
+   if(projected.points.some(a=>Math.hypot(a.source.x-p.source.x,a.source.y-p.source.y)<1e-6))return {x:0,y:0};
+   let x=0,y=0,weight=0;
+   for(const r of surfaces){
+    const t=Math.max(0,Math.min(1,((p.source.x-r.start.x)*r.dx+(p.source.y-r.start.y)*r.dy)/(r.length*r.length)));
+    const distance=Math.hypot(p.source.x-r.start.x-t*r.dx,p.source.y-r.start.y-t*r.dy);
+    if(distance>=r.radius+r.feather)continue;
+    const u=Math.max(0,(distance-r.radius)/r.feather),w=1-u*u*(3-2*u),q=applyMatrix(r.matrix,p.source);
+    x+=w*(q.x-base[i].x);y+=w*(q.y-base[i].y);weight+=w;
+   }
+   return {x:x/Math.max(1,weight),y:y/Math.max(1,weight)};
+  });
+  surfaceStrength=0;
+  for(let amount=1;amount>=1/128;amount/=2){
+   const candidate=base.map((p,i)=>({x:p.x+amount*delta[i].x,y:p.y+amount*delta[i].y}));
+   if(indices.every(ids=>cross(...ids.map(i=>candidate[i]))>1e-10)){targets=candidate;surfaceStrength=amount;break;}
+  }
+ }
  const triangles=indices.map(ids=>{
   const source=ids.map(i=>points[i].source),target=ids.map(i=>targets[i]);
   return {indices:ids,source,target,matrix:triangleTransform(source,target)};
  });
- return {...projected,triangles,renderPoints:targets,straightStrength:strength};
+ return {...projected,triangles,renderPoints:targets,straightStrength:strength,...(surfaceStrength!==undefined?{surfaceStrength}:{})};
 }
 
 function imagePixels(image){
