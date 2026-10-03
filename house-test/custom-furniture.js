@@ -1,31 +1,37 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261004-chairlegs1';
-import {floorPoint} from './model.js?v=20261004-chairlegs1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261004-chairlegs1';
-import {listMadeItems} from './custom-store.js?v=20261004-chairlegs1';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261004-chairlegs1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261004-roomcache1';
+import {floorPoint} from './model.js?v=20261004-roomcache1';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261004-roomcache1';
+import {listMadeItems} from './custom-store.js?v=20261004-roomcache1';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261004-roomcache1';
+import {builtInAssets} from './built-in-assets.js?v=20261004-roomcache1';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261004-roomcache1';
 const items=new Map();
 const pendingBuiltIns=new Map();
-const builtInFiles={'coffee-table':'coffee-table-v2.runtime.json',carpet:'carpet-v1.runtime.json',chair:'chair-v1.runtime.json','floor-lamp':'floor-lamp-v1.runtime.json'};
-export const builtInItemReady=id=>!Object.hasOwn(builtInFiles,id)||items.has(id);
+const retryBuiltIns=new Set();
+export const builtInItemReady=id=>!Object.hasOwn(builtInAssets,id)||items.has(id);
 const registeredViews=runtime=>Object.fromEntries(['left','center','right'].map(direction=>[direction,{...runtime.views[direction].placement,direction}]));
 // Approved built-ins use the exact 2D runtimes exported by the studio.
 // They never occupy an owner's made-item slot or add themselves to a saved room.
-export async function loadBuiltInItems(ids=Object.keys(builtInFiles)){
- await Promise.all([...new Set(ids)].filter(id=>Object.hasOwn(builtInFiles,id)).map(id=>{
+export async function loadBuiltInItems(ids=Object.keys(builtInAssets)){
+ await Promise.all([...new Set(ids)].filter(id=>Object.hasOwn(builtInAssets,id)).map(id=>{
   if(items.has(id))return;
   if(pendingBuiltIns.has(id))return pendingBuiltIns.get(id);
   const pending=(async()=>{
-  const file=builtInFiles[id];
+  const {file,revision}=builtInAssets[id];
   const item=FURNITURE[id],url=new URL('./assets/'+file,import.meta.url);
-  url.searchParams.set('v',new URL(import.meta.url).searchParams.get('v')||'20261004-chairlegs1');
-  let response;
-  try{response=await fetch(url);}catch{throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
+  url.searchParams.set('v',revision);
+  let asset;
+  try{asset=await readBuiltInAsset(url,{reload:retryBuiltIns.has(id)});}catch{throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
+  const {response}=asset;
   if(!response.ok)throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');
   let prepared;
-  try{const runtime=await response.json();prepared=await prepareRuntime(id==='chair'?straightenChairLegs(runtime):runtime);}catch{throw new Error(item.shortLabel+' 정보를 확인하지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
-  if(['width','depth','height'].some(key=>prepared.runtime.dimensions[key]!==item[key])||prepared.runtime.layer!==item.layer)throw new Error(item.shortLabel+' 정보를 확인하지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');
-  items.set(id,prepared);if(item.preferredViews)item.preferredViews=registeredViews(prepared.runtime);
-  })().finally(()=>pendingBuiltIns.delete(id));
+  try{
+   const runtime=await response.json();prepared=await prepareRuntime(id==='chair'?straightenChairLegs(runtime):runtime);
+   if(['width','depth','height'].some(key=>prepared.runtime.dimensions[key]!==item[key])||prepared.runtime.layer!==item.layer)throw new Error('catalog mismatch');
+  }catch{await asset.discard();throw new Error(item.shortLabel+' 정보를 확인하지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
+  await asset.keep();
+  items.set(id,prepared);retryBuiltIns.delete(id);if(item.preferredViews)item.preferredViews=registeredViews(prepared.runtime);
+  })().catch(error=>{retryBuiltIns.add(id);throw error;}).finally(()=>pendingBuiltIns.delete(id));
   pendingBuiltIns.set(id,pending);return pending;
  }));
 }
