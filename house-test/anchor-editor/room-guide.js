@@ -1,4 +1,4 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261003-furniture-scale1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261003-carpet1';
 
 export {ROOM,FLOOR,roomPoint};
 

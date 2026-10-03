@@ -1,8 +1,8 @@
-import {loadBuiltInItems,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261003-furniture-scale1';
-import {icon} from './icons.js?v=20261003-furniture-scale1';
-import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261003-furniture-scale1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261003-furniture-scale1';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-furniture-scale1';
+import {loadBuiltInItems,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261003-carpet1';
+import {icon} from './icons.js?v=20261003-carpet1';
+import {normalize,roomKey,canAdd,normalizePlacement,normalizeAccessories,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261003-carpet1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261003-carpet1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-carpet1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;

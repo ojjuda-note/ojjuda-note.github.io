@@ -1,4 +1,4 @@
-import {roomPoint,roomPlaneWorld} from './room-guide.js?v=20261003-furniture-scale1';
+import {roomPoint,roomPlaneWorld} from './room-guide.js?v=20261003-carpet1';
 
 // An exact 2D drawing guide from the existing room projection. These points are
 // proposed composition points, never measured anchors on a generated picture.

@@ -10,6 +10,9 @@ export const SOFA_ACCESSORIES=[
  {id:'blanket-sofa',label:'분홍 담요 · 소파용'}
 ];
 export const FURNITURE={
+ carpet:{label:'크림 샤기 카펫',shortLabel:'카펫',width:5.5,depth:3.5,height:.1,depthFill:1,introduced:14,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'floor',picture:'made',preview:'assets/carpet-center-preview-v1.png',
+  preferred:{direction:'center',x:1,y:3},clearance:'바닥에 까는 보송한 카펫이에요. 가구 아래에 놓을 수 있고, 다른 바닥 소품과는 겹치지 않게 놓아 주세요.'},
  'coffee-table':{label:'원목 낮은 거실 테이블',shortLabel:'거실 테이블',width:2,depth:1.5,height:.6,depthFill:1,introduced:13,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/coffee-table-center-preview-v2.png',
   preferred:{direction:'left',x:2,y:4},clearance:'빈 상판의 낮은 거실 테이블이에요. 0.5칸씩 옮기고 다른 가구와 겹치지 않는 곳에 놓아 주세요.'},
