@@ -110,6 +110,7 @@ for(let stage=1;stage<=11;stage++){
  assert.equal(st.physics.bodies.size,0,'only plates that actually left the board are removed');
  assert.equal(st.score,st.level.plates.length*10+stage*10);
  assert.equal(storage.get(STAGE_KEY),String(Math.min(LAST_STAGE,stage+1)));assert.equal(storage.get('ojjuda-screw-stage'),'37');
+ assert.ok(st.moves<=st.moveLimit,`stage ${stage} has enough base moves`);
  if(stage===1){press(game,{x:267,y:514});assert.equal(st.L,2);}
  game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
