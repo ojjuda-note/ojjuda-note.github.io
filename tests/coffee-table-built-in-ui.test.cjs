@@ -10,7 +10,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   const saved={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5}}}],diary:'기존 기록 보존'};
   await page.evaluate(value=>localStorage.setItem('ojjuda-house-playtest-v1:table-built-in',JSON.stringify(value)),saved);
   const frame=()=>page.frames().find(f=>f.url().includes('/house-test/index.html'));
-  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});return frame();};
+  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});await frame().locator('[data-tab="room"]').click();return frame();};
   let f=await open();assert.equal(await f.locator('[data-furniture="coffee-table"]').count(),0,'new built-in is not added to saved rooms');
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:table-built-in'))),saved);
   const records=await f.evaluate(async()=>{const {listMadeItems}=await import('/house-test/custom-store.js?v=20261003-lamp1');return (await listMadeItems('table-built-in')).length;});assert.equal(records,0,'built-in does not consume a user-created item slot');

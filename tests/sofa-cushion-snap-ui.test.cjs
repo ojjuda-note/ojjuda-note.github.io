@@ -18,7 +18,7 @@ const expected=(id,sofa)=>{const s=seats[id],offset={left:{x:s.v-.25,y:3.5-s.u-s
   const pose=id=>node(id).evaluate(n=>({direction:n.dataset.direction,x:Number(n.dataset.x),y:Number(n.dataset.y),...(n.dataset.elevation===undefined?{}:{elevation:Number(n.dataset.elevation)})}));
   const read=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
   const ready=()=>f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));
-  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});f=page.frames().find(f=>f.url().includes('/house-test/index.html'));await ready();await f.evaluate(()=>document.fonts.ready);};
+  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});f=page.frames().find(f=>f.url().includes('/house-test/index.html'));await ready();await f.evaluate(()=>document.fonts.ready);await f.locator('[data-tab="room"]').click();};
   const close=async()=>{await f.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
   const edit=async id=>{await f.locator('[data-category="accessories"]').click();await f.getByRole('button',{name:labels[id]+' 배치',exact:true}).click();await ready();await f.locator('#overview').click();};
   const dragTo=async(id,target,cancel=false)=>{

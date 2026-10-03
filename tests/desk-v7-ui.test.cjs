@@ -41,7 +41,7 @@ async function main(){
    const open=async()=>{
     await page.locator('#open').click();const frame=page.frameLocator('iframe[title="우리집"]');
     await frame.locator('#app').waitFor({state:'visible'});await frame.locator('.desk[data-render-state="ready"]').waitFor();
-    if(hasPreviewFont)await frame.locator('body').evaluate(async()=>{const link=document.createElement('link');link.rel='stylesheet';link.href='/qa-font/400.css';const loaded=new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=reject;});document.head.append(link);await loaded;const style=document.createElement('style');style.textContent='body,button,input,output{font-family:"Noto Sans KR",sans-serif!important}';document.head.append(style);await document.fonts.load('16px "Noto Sans KR"','책상 의자 우리집');});return frame;
+    if(hasPreviewFont)await frame.locator('body').evaluate(async()=>{const link=document.createElement('link');link.rel='stylesheet';link.href='/qa-font/400.css';const loaded=new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=reject;});document.head.append(link);await loaded;const style=document.createElement('style');style.textContent='body,button,input,output{font-family:"Noto Sans KR",sans-serif!important}';document.head.append(style);await document.fonts.load('16px "Noto Sans KR"','책상 의자 우리집');});await frame.locator('[data-tab="room"]').click();return frame;
    };
    let frame=await open();
    const position=locator=>locator.evaluate(node=>({direction:node.dataset.direction,x:Number(node.dataset.x),y:Number(node.dataset.y)}));

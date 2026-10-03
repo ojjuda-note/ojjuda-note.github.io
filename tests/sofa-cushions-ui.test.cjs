@@ -20,7 +20,7 @@ async function main(){
   if(process.env.SOFA_PROOF_FONT)await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='@font-face{font-family:ProofKorean;src:url(/qa-font.otf)}body,button,input,output{font-family:ProofKorean,sans-serif!important}';document.head.append(style);},{once:true}));
   await page.goto(origin+'/qa');
   const ready=async()=>{await frame.locator('#app').waitFor({state:'visible'});await frame.locator('body').evaluate(async()=>{await Promise.all([...document.querySelectorAll('.room-bg')].map(im=>im.decode()));await document.fonts.ready;await new Promise(resolve=>{const check=()=>[...document.querySelectorAll('.furniture')].some(n=>n.dataset.renderState==='loading')?requestAnimationFrame(check):resolve();check();});});assert.equal(await frame.locator('.furniture[data-render-state="error"]').count(),0);};
-  const open=async()=>{await page.locator('#open').click();frame=page.frameLocator('iframe[title="우리집"]');await ready();};
+  const open=async()=>{await page.locator('#open').click();frame=page.frameLocator('iframe[title="우리집"]');await ready();await frame.locator('[data-tab="room"]').click();};
   const close=async()=>{await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
   const reopen=async()=>{await close();await open();};
   const click=async label=>{await frame.getByRole('button',{name:label,exact:true}).click();await ready();};

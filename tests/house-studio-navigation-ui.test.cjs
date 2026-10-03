@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body style="overflow:auto"><button id="studio">제작실</button><button id="house">우리집</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-lamp1';import{openHouseTest}from'/house-test/host.js?v=20261003-lamp1';const options={owner:'navigation-test',authorized:()=>true,studioAuthorized:()=>true};document.querySelector('#studio').onclick=()=>openFurnitureStudio(options);document.querySelector('#house').onclick=()=>openHouseTest(options);</script></body></html>`;
+const parent=`<!doctype html><html><body style="overflow:auto"><button id="studio">제작실</button><button id="house">우리집</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261003-paneltabs1';import{openHouseTest}from'/house-test/host.js?v=20261003-paneltabs1';const options={owner:'navigation-test',authorized:()=>true,studioAuthorized:()=>true};document.querySelector('#studio').onclick=()=>openFurnitureStudio(options);document.querySelector('#house').onclick=()=>openHouseTest(options);</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -23,7 +23,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   // latest edits cannot be recovered from IndexedDB.
   for(let i=0;i<2;i++){
    await original.locator('#studio-home').click();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});
-   await house().locator('button[data-category="settings"]').click();await house().getByRole('button',{name:'가구 제작실',exact:true}).click();
+   assert.equal(await house().locator('[data-tab="diary"]').getAttribute('aria-pressed'),'true');await house().locator('[data-tab="room"]').click();await house().locator('button[data-category="settings"]').click();await house().getByRole('button',{name:'가구 제작실',exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll('iframe').length===1);
    assert.equal(studio(),original,'house must return to the existing studio frame');
    assert.equal(await original.locator('#furniture-name').inputValue(),'아직 저장하지 못한 최신 작업');
@@ -36,7 +36,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   assert.equal(await page.evaluate(()=>document.body.style.overflow),'auto');
   // A house opened directly still creates a studio and closes its own overlay.
   await page.locator('#house').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});
-  await house().locator('button[data-category="settings"]').click();await house().getByRole('button',{name:'가구 제작실',exact:true}).click();
+  assert.equal(await house().locator('[data-tab="diary"]').getAttribute('aria-pressed'),'true');await house().locator('[data-tab="room"]').click();await house().locator('button[data-category="settings"]').click();await house().getByRole('button',{name:'가구 제작실',exact:true}).click();
   await page.frameLocator('iframe[title="관리자 가구 제작실"]').locator('#studio-editor').waitFor({state:'visible'});
   assert.equal(await page.locator('iframe').count(),1);assert.equal(house(),undefined);
   // The editor becomes visible before its IndexedDB recovery read completes.
@@ -44,7 +44,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await studio().locator('#draft-resume').click();
   await studio().waitForFunction(()=>document.querySelector('#furniture-name').value==='아직 저장하지 못한 최신 작업');
   assert.deepEqual([...new Set(entryRequests.map(r=>r.path))].sort(),[...entries].sort(),'both navigation directions use the actual house and studio entries');
-  assert(entryRequests.every(r=>r.version==='20261003-lamp1'),'house/studio round trips must not reuse stale entry URLs from an earlier release');
+  assert(entryRequests.every(r=>r.version===(r.path==='/house-test/anchor-editor/index.html'?'20261003-lamp1':'20261003-paneltabs1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('HOUSE STUDIO NAVIGATION PASS');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

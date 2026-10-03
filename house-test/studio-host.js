@@ -1,6 +1,6 @@
 import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261003-lamp1';
 import {validateRuntime} from './anchor-editor/runtime.js?v=20261003-lamp1';
-import {openHouseTest} from './host.js?v=20261003-lamp1';
+import {openHouseTest} from './host.js?v=20261003-paneltabs1';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
