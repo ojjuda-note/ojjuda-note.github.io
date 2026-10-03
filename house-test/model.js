@@ -1,7 +1,7 @@
-import {madePoseValid} from './custom-furniture.js?v=20261003-furniture-scale1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261003-furniture-scale1';
-import {sofaPoseValid} from './sofa-art.js?v=20261003-furniture-scale1';
-import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-furniture-scale1';
+import {madePoseValid} from './custom-furniture.js?v=20261003-carpet1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261003-carpet1';
+import {sofaPoseValid} from './sofa-art.js?v=20261003-carpet1';
+import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261003-carpet1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];

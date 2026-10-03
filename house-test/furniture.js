@@ -1,12 +1,12 @@
-import {madeArtwork} from './custom-furniture.js?v=20261003-furniture-scale1';
-import {floorPoint,roomPoint} from './model.js?v=20261003-furniture-scale1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261003-furniture-scale1';
-import {paintFurniture} from './furniture-painter.js?v=20261003-furniture-scale1';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-furniture-scale1';
-import {sideTableArtwork} from './side-table-art.js?v=20261003-furniture-scale1';
-import {deskArtwork} from './desk-art.js?v=20261003-furniture-scale1';
-import {sofaArtwork} from './sofa-art.js?v=20261003-furniture-scale1';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261003-furniture-scale1';
+import {madeArtwork} from './custom-furniture.js?v=20261003-carpet1';
+import {floorPoint,roomPoint} from './model.js?v=20261003-carpet1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261003-carpet1';
+import {paintFurniture} from './furniture-painter.js?v=20261003-carpet1';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-carpet1';
+import {sideTableArtwork} from './side-table-art.js?v=20261003-carpet1';
+import {deskArtwork} from './desk-art.js?v=20261003-carpet1';
+import {sofaArtwork} from './sofa-art.js?v=20261003-carpet1';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261003-carpet1';
 
 export function projectiveMap(source,target){
  const rows=[];
