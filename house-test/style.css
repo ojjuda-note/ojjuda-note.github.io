@@ -139,7 +139,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 #app > header, .scene-heading {flex-shrink: 0;}
 #viewport {min-height: min(230px,35dvh);}
 /* Keep both tabs at the diary panel's height; longer furniture lists scroll inside. */
-#panel {height: 238px; flex: 0 1 238px; min-height: 0; overscroll-behavior: contain;}
+#panel {height: 278px; flex: 0 1 278px; min-height: 0; overscroll-behavior: contain;}
 
 .placement-actions {position:absolute;z-index:7;display:flex;gap:6px;max-width:calc(100% - 16px);padding:4px;border:1px solid #d8c6e5;border-radius:16px;background:#fffcf6f5;box-shadow:0 4px 16px #51425525;}
 .placement-actions button {min-width:56px;min-height:44px;padding:8px 12px;font-size:13px;border-radius:11px;white-space:nowrap;}
@@ -170,6 +170,34 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 #panel .panel-head {flex:none;flex-direction:column;align-items:stretch;gap:6px;width:100%;margin-bottom:8px;}
 #panel-body {min-height:0;overflow-y:auto;overscroll-behavior:contain;}
 #panel-body .item-categories {top:0;}
+
+.record-panel {max-width:650px;margin:0 auto;}
+.record-tabs {position:sticky;top:0;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:0 0 6px;background:var(--cream);}
+.record-tabs button {border:0;border-radius:10px;background:transparent;font-size:13px;min-height:44px;padding:7px 10px;}
+.record-tabs button[aria-selected=true] {background:#eee3fa;color:#78539d;font-weight:700;}
+.record-content > label {margin-top:3px;}
+.record-content > button {margin-top:8px;}
+.record-toolbar {display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.record-toolbar button {background:#9272b8;color:#fff;border-color:#9272b8;}
+.record-toolbar .panel-note {margin:0;}
+.record-status {font-size:12px;line-height:1.5;margin:8px 0;color:#78539d;}
+.record-status:empty {display:none;}
+.record-gallery {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px;}
+.record-gallery.video {grid-template-columns:minmax(0,1fr);}
+.record-empty {grid-column:1/-1;text-align:center;padding:16px 0;margin:0;color:#968698;font-size:13px;}
+.record-card {min-width:0;overflow:hidden;border:1px solid #e6ddec;border-radius:14px;background:#fffdfa;}
+.record-preview {background:#f2edf5;}
+.record-preview img {width:100%;height:150px;object-fit:contain;display:block;}
+.record-preview video {width:100%;max-height:240px;display:block;background:#211a27;}
+.record-preview p {padding:8px;margin:0;}
+.record-filename {margin:8px 10px 0;overflow-wrap:anywhere;font-size:12px;}
+.record-actions {display:flex;justify-content:space-between;align-items:center;gap:4px;padding:2px 6px;}
+.record-actions a {display:inline-flex;align-items:center;min-height:44px;padding:8px 4px;color:#78539d;font-size:12px;}
+.record-actions button {border:0;background:transparent;font-size:12px;padding:8px;}
+.record-confirm {padding:0 8px 8px;font-size:12px;}
+.record-confirm button {padding:6px 8px;font-size:12px;margin-right:4px;}
+.record-confirm p {margin:4px 0 8px;}
+@media(min-width:900px){.record-gallery{grid-template-columns:repeat(3,minmax(0,1fr));}.record-gallery.video{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
 /* Camera controls have their own row and never cover furniture. */
 .camera {position:static;flex:none;justify-content:flex-end;padding:4px 12px 12px;background:var(--cream);}
