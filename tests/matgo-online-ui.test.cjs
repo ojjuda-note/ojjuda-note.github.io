@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const {chromium}=require('playwright'),{fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+const {chromium}=require('playwright'),{fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
  const f=await fixture();
@@ -33,13 +33,17 @@ const root=path.join(__dirname,'..');
  async function clickTurn(page){
   return page.evaluate(()=>{
    const dialog=document.querySelector('.dialog');
-   if(dialog){const b=dialog.querySelector('#stop,#chongtong-continue,#single');if(b){b.click();return true;}return false;}
+   if(dialog){const b=dialog.querySelector('#stop,#chongtong-continue,#single,#gukjin-pi');if(b){b.click();return true;}return false;}
    const b=document.querySelector('.stack.pick:not(:disabled),#hand button:not(:disabled),#flip:not(:disabled)');
    if(b){b.click();return true;}return false;
   });
  }
  try{
   const minor=await screen(MINOR,18);await minor.page.waitForSelector('#retry:not([hidden])');assert.equal(await minor.page.locator('#quick').count(),0);await minor.context.close();
+  const solo=await screen(C);await solo.page.locator('#quick').click();await solo.page.locator('#quick-seconds').waitFor();
+  await solo.page.waitForTimeout(2000);assert.ok(solo.page.url().includes('matgo-online.html'),'quick search waits before switching');
+  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#handMe').waitFor();
+  assert.equal((await f.call(C,{action:'status'})).online_room,null);await solo.context.close();
   const a=await screen(A),b=await screen(B);
   await a.page.locator('#quick').waitFor();await b.page.locator('#quick').waitFor();
   await a.page.screenshot({path:'/tmp/matgo-online-lobby.png'});
@@ -49,6 +53,12 @@ const root=path.join(__dirname,'..');
   assert.match(await a.page.locator('#op-name').textContent(),/별토끼/);assert.match(await b.page.locator('#op-name').textContent(),/봄고래/);
   assert.equal(await a.page.locator('.op-hand svg[aria-label="화투 뒷면"]').count(),10);
   for(const width of [320,390,768]){await a.page.setViewportSize({width,height:820});assert.equal(await a.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
+  for(const [width,height] of [[320,568],[360,640],[390,560]]){
+    await a.page.setViewportSize({width,height});await a.page.evaluate(()=>document.documentElement.style.setProperty('--matgo-safe-bottom','34px'));await a.page.waitForTimeout(40);
+    const box=await a.page.locator('#hand').boundingBox();assert.ok(box.y+box.height<=height-33,JSON.stringify({width,height,box}));
+    assert.ok((await a.page.locator('.top').boundingBox()).height<=42);
+    assert.equal(await a.page.locator('.caps-own .cap>span').first().isVisible(),false);
+  }
   await a.page.setViewportSize({width:390,height:820});await a.page.screenshot({path:'/tmp/matgo-online-board.png'});
   const roomId=last.get(A).id;
   // Verify a real 15-second turn: no premature move, then both browsers advance.

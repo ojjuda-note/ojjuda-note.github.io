@@ -84,7 +84,7 @@ const handler=createHandler({env:k=>({SUPABASE_URL:'https://test.invalid',SUPABA
   if(body.p_action==='round')return new Response(JSON.stringify({ok:true,round,settled,gold:storedGold}));
   assert.equal(body.p_action,'settle');mutations++;storedGold=body.p_gold;settled=true;return new Response(JSON.stringify({ok:true,gold:storedGold}));
 }});
-const request=(actions,version=3)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer test',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-9000-000000000001',rules_version:version,actions,first_ppuk_gold:999999})}));
+const request=(actions,version=4)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer test',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-9000-000000000001',rules_version:version,actions,first_ppuk_gold:999999})}));
 assert.equal((await request(partial)).status,409);assert.equal(mutations,0);assert.equal(storedGold,5000);
 assert.equal((await request(complete)).status,200);assert.equal(mutations,1);
 assert.equal((await request(complete)).status,200);assert.equal(mutations,1,'duplicate final request cannot pay again');

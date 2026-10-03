@@ -11,7 +11,25 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   }
   assert.equal((await call(MINOR,{action:'online_quick'})).error,'adult_required');
   assert.equal((await call('invalid',{action:'online_quick'})).status,401);
+  // Nobody joins: only a quick room falls back, after five seconds, with no gold paid.
+  const quick=await call(A,{action:'online_quick'});assert.equal(quick.room.mode,'quick');
+  assert.equal((await call(A,{action:'online_fallback',room_id:quick.room.id})).room.status,'waiting');
+  assert.equal((await call(B,{action:'online_fallback',room_id:quick.room.id})).error,'room_not_found');
+  assert.equal((await call(MINOR,{action:'online_fallback',room_id:quick.room.id})).error,'adult_required');
+  await db.query("update ojjuda_matgo_internal.rooms set created_at=now()-interval '6 seconds' where id=$1",[quick.room.id]);
+  const solo=await call(A,{action:'online_fallback',room_id:quick.room.id});assert.equal(solo.room.reason,'solo');assert.equal(solo.room.status,'cancelled');
+  assert.equal((await call(A,{action:'online_fallback',room_id:quick.room.id})).room.reason,'solo','fallback is idempotent');
+  assert.equal(await gold(A),5000);assert.equal((await call(A,{action:'start'})).status,200);
+  assert.equal((await call(B,{action:'online_join',code:quick.room.code})).error,'room_unavailable');
+  // If joining wins the lock, fallback reads the joined room without leaving it.
+  const race=await call(A,{action:'online_quick'});
+  await db.query("update ojjuda_matgo_internal.rooms set created_at=now()-interval '6 seconds' where id=$1",[race.room.id]);
+  const joined=await call(B,{action:'online_join',code:race.room.code});assert.equal(joined.room.status,'active');
+  const kept=await call(A,{action:'online_fallback',room_id:race.room.id});assert.equal(kept.room.status,'active');assert.deepEqual(kept.room.departed,[false,false]);
+  await call(A,{action:'online_leave',room_id:race.room.id});await call(B,{action:'online_leave',room_id:race.room.id});
+  for(const role of ['anon','authenticated'])assert.equal((await db.query("select has_function_privilege($1,'public.matgo_online_fallback(uuid,uuid)','execute') f",[role])).rows[0].f,false);
   let a=await call(A,{action:'online_create'});assert.equal(a.status,200);assert.equal(a.room.status,'waiting');
+  assert.equal((await call(A,{action:'online_fallback',room_id:a.room.id})).error,'room_not_found','private rooms keep waiting');
   assert.equal(a.room.game,undefined);assert.equal(a.room.seed,undefined);
   assert.equal((await call(B,{action:'online_join',code:'00000000'})).error,'room_not_found');
   assert.equal((await call(C,{action:'online_read',room_id:a.room.id})).error,'room_not_found');
@@ -43,10 +61,11 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
     let command;
     if(pr.type==='chongtong')command={type:'chongtong',decision:'continue'};
     else if(pr.type==='choose'){sawPrompt=true;command={type:'choose',index:pr.indices[0]};}
+    else if(pr.type==='gukjin')command={type:'gukjin',choice:'pi'};
     else if(pr.type==='gostop'){sawPrompt=true;command={type:'gostop',decision:'stop'};}
     else command={type:'play',card:r.game.hand[0]?.id??null};
     const req=crypto.randomUUID(),res=await move(actor,r,command,req);assert.equal(res.status,200,JSON.stringify(res));
-    if(res.room.status==='active'&&['choose','gostop'].includes(res.room.game.prompt?.type))assert.equal(res.room.deadline,r.deadline,'floor/go choices share the original 15-second turn');
+    if(res.room.status==='active'&&['choose','gostop','gukjin'].includes(res.room.game.prompt?.type))assert.equal(res.room.deadline,r.deadline,'floor/go choices share the original 15-second turn');
     lastRequest=actor;lastBody={action:'online_move',room_id:roomId,version:r.version,command,request_id:req};
     const duplicate=await call(actor,lastBody);assert.equal(duplicate.room.version,res.room.version);
     if(res.room.status==='active'){assert.equal(await gold(A),5000);assert.equal(await gold(B),5000);}

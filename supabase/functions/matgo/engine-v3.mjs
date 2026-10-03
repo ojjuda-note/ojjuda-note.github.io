@@ -78,38 +78,17 @@ class Game {
   canMove(p){return this.hand[p].length>0||this.canBombFlip(p);}
   pts(p){ return score(this.caps[p]).pts; }
   async stealPi(from,to,why){ const c=this.caps[from]; const idx=(()=>{ let i=c.findIndex(x=>x.k==='pi'); if(i<0) i=c.findIndex(x=>x.k==='yul'&&x.asPi); if(i<0) i=c.findIndex(x=>x.k==='ssang'); if(i<0) i=c.findIndex(x=>x.k==='bonus'); return i; })(); if(idx<0) return false; const [card]=c.splice(idx,1); this.caps[to].push(card); await this.ui.event('steal',{from,to,card,why}); return true; }
-  async take(p,cards,silent){
-    if(!cards.length)return;
-    const before=new Set(score(this.caps[p]).det.map(d=>d[0]));
-    this.caps[p].push(...cards);await this.ui.event('take',{p,cards,silent});
-    const gukjin=cards.find(c=>c.tag==='gukjin');
-    if(gukjin){
-      const choice=this.ui.chooseGukjin?await this.ui.chooseGukjin(p,gukjin):aiChooseGukjin(this,p);
-      if(!['yul','pi'].includes(choice))throw Error('invalid_gukjin');
-      gukjin.asPi=choice==='pi';this.currentAction.gukjin=choice;
-      await this.ui.event('gukjin',{p,choice,card:gukjin});
-    }
-    const after=score(this.caps[p]).det.map(d=>d[0]).filter(n=>!before.has(n));
-    const big=after.filter(n=>/광$|고도리|홍단|청단|초단/.test(n));
-    const first=after.filter(n=>/^(열끗|띠|피) /.test(n)&&![...before].some(old=>old.split(' ')[0]===n.split(' ')[0]));
-    if(big.length||first.length)await this.ui.event('combo',{p,names:big,first});
-  }
+  async take(p,cards,silent){ if(!cards.length) return; const before=new Set(score(this.caps[p]).det.map(d=>d[0])); this.caps[p].push(...cards); await this.ui.event('take',{p,cards,silent}); const after=score(this.caps[p]).det.map(d=>d[0]).filter(n=>!before.has(n)); const big=after.filter(n=>/광$|고도리|홍단|청단|초단/.test(n)); const first=after.filter(n=>/^(열끗|띠|피) /.test(n)&&![...before].some(old=>old.split(' ')[0]===n.split(' ')[0])); if(big.length||first.length) await this.ui.event('combo',{p,names:big,first}); }
   matches(m){ return this.floor.map((st,i)=>[st,i]).filter(([st])=>st[0].m===m); }
-  bombOption(p,card){
-    if(!card||card.k==='bonus'||!this.hand[p].includes(card))return null;
-    const same=this.hand[p].filter(c=>c.m===card.m),stacks=this.matches(card.m).map(([st])=>st);
-    if(![2,3].includes(same.length)||stacks.some(st=>st.ppuk)||stacks.flat().length!==4-same.length)return null;
-    return same.filter(c=>c!==card);
-  }
   async play(p, card, bombCards){
     if(this.over||this._playing||this.pendingChongtong()||p!==this.turn||!this.canMove(p))return false;
     if(card&&!this.hand[p].includes(card))return false;
     if(!card&&!this.canBombFlip(p))return false;
     if(bombCards){
-      const expected=this.bombOption(p,card),all=[card,...bombCards];
-      if(!expected||bombCards.length!==expected.length||new Set(all).size!==all.length||bombCards.some(c=>!expected.includes(c)))return false;
+      const all=[card,...bombCards],matches=this.matches(card.m);
+      if(all.length!==3||new Set(all).size!==3||all.some(c=>!this.hand[p].includes(c)||c.m!==card.m)||matches.length!==1||matches[0][0].length!==1)return false;
     }
-    const action={type:"play",p,card:card?card.id:null,bomb:bombCards?bombCards.map(c=>c.id):null,choices:[],gukjin:null,decision:null}; this.actions.push(action); this.currentAction=action;
+    const action={type:"play",p,card:card?card.id:null,bomb:bombCards?bombCards.map(c=>c.id):null,choices:[],decision:null}; this.actions.push(action); this.currentAction=action;
     this._playing=true;
     try{
     if(!card)this.bomb[p]--;
@@ -119,13 +98,10 @@ class Game {
     this.normalPlays[p]++; // 보너스 교환은 첫 차례를 소모하지 않는다.
     // ----- 1) 손패 내기 -----
     let playedStackIdx=-1, handCardStack=null;
-    if(bombCards){ // 손패 2장 + 바닥 2장, 또는 손패 3장 + 바닥 1장
-      const ms=this.matches(card.m),st=ms[0][0],played=[card,...bombCards],flips=played.length-1;
-      for(const [other] of ms.slice(1)){st.push(...other);this.floor.splice(this.floor.indexOf(other),1);}
-      for(const c of played){hand.splice(hand.indexOf(c),1);st.push(c);await this.ui.event('played',{p,card:c,stack:st,quick:true});}
-      this.bomb[p]+=flips;this.mult[p]*=2;
-      await this.ui.event('bomb',{p,m:card.m,cards:[...st],handCount:played.length,flips});
-      this.floor.splice(this.floor.indexOf(st),1);await this.take(p,[...st]);stole++;
+    if(bombCards){ // 폭탄: 같은 월 3장 + 바닥 1장
+      const ms=this.matches(card.m); const st=ms[0][0]; const three=[card,...bombCards.filter(c=>c!==card)].slice(0,3);
+      for(const c of three){ const k=hand.indexOf(c); if(k>=0) hand.splice(k,1); st.push(c); await this.ui.event('played',{p,card:c,stack:st,quick:true}); }
+      this.bomb[p]+=2; this.mult[p]*=2; await this.ui.event('bomb',{p,m:card.m,cards:[...st]}); this.floor.splice(this.floor.indexOf(st),1); await this.take(p,[...st]); stole++;
     } else {
       if(card) hand.splice(hand.indexOf(card),1);
       if(card){ const ms=this.matches(card.m);
@@ -251,11 +227,7 @@ function aiChooseCard(g,p){
   return best;
 }
 function aiGoStop(g,p,s){ const o=g.pts(1-p); const lead=s-o; const risky=o>=5 || g.deck.length<4 || g.hand[p].length<=2; if(s>=12) return 'stop'; if(!risky && lead>=4 && g.go[p]<2) return 'go'; if(g.go[p]===0 && o<=2 && g.deck.length>=8 && s<10) return 'go'; return 'stop'; }
-function aiChooseGukjin(g,p){
-  const points=asPi=>score(g.caps[p].map(c=>c.tag==='gukjin'?{...c,asPi}:c)).pts;
-  return points(true)>points(false)?'pi':'yul';
-}
 function aiChoose(g,p,idxs){ const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1; return idxs.reduce((a,b)=>val(g.floor[a][0])>=val(g.floor[b][0])?a:b); }
 
 export function seededRandom(seed){let value=seed>>>0;return()=>{value=(value+0x6D2B79F5)>>>0;let t=value;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
-export { CARDS, isPi, piVal, score, Game, aiChooseCard, aiGoStop, aiChoose, aiChooseGukjin };
+export { CARDS, isPi, piVal, score, Game, aiChooseCard, aiGoStop, aiChoose };

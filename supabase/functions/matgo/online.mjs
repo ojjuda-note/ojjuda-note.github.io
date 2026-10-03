@@ -1,4 +1,4 @@
-import {Game,aiChooseCard,aiChoose,aiGoStop} from './engine.mjs';
+import {Game,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin} from './engine.mjs';
 
 // A 256-bit server-only secret drives the deal. Neither the secret nor the
 // opponent's hand / future deck is ever included in an API response.
@@ -29,6 +29,13 @@ export async function replayOnline(room) {
       if(!indices.includes(selected))throw Error('invalid_choice');
       return selected;
     },
+    chooseGukjin:async(p,card)=>{
+      // Keep already recorded games from the prior client replayable.
+      if(action.gukjin===undefined)return 'yul';
+      if(action.gukjin===null)throw new InputNeeded({type:'gukjin',p,card:copy(card)});
+      if(!['yul','pi'].includes(action.gukjin))throw Error('invalid_gukjin');
+      return action.gukjin;
+    },
     goStop:async(p,points)=>{
       if(action.decision===null)throw new InputNeeded({type:'gostop',p,points});
       if(!['go','stop'].includes(action.decision))throw Error('invalid_decision');
@@ -54,13 +61,14 @@ export async function replayOnline(room) {
         if(action.card!==null&&!card)throw Error('invalid_card');
         let bomb=null;
         if(action.bomb!==null){
-          if(!Array.isArray(action.bomb)||action.bomb.length!==2)throw Error('invalid_bomb');
+          if(!Array.isArray(action.bomb)||![1,2].includes(action.bomb.length))throw Error('invalid_bomb');
           bomb=action.bomb.map(id=>game.hand[action.p].find(c=>c.id===id));
           if(bomb.some(c=>!c))throw Error('invalid_bomb');
         }
         const n=game.actions.length;
         if(await game.play(action.p,card,bomb)===false||game.actions.length!==n+1)throw Error('invalid_play');
         if(choice!==action.choices.length||game.actions.at(-1).decision!==action.decision)throw Error('invalid_decision');
+        if(action.gukjin!==undefined&&game.actions.at(-1).gukjin!==action.gukjin)throw Error('invalid_gukjin');
       }else throw Error('invalid_action');
     }catch(error){
       if(!(error instanceof InputNeeded)||i!==actions.length-1)throw error;
@@ -85,14 +93,17 @@ export async function advanceOnline(room,p,command) {
   }else if(prompt.type==='gostop'&&command.type==='gostop'){
     if(!['go','stop'].includes(command.decision))throw Error('invalid_decision');
     last.decision=command.decision;
+  }else if(prompt.type==='gukjin'&&command.type==='gukjin'){
+    if(!['yul','pi'].includes(command.choice))throw Error('invalid_gukjin');
+    last.gukjin=command.choice;
   }else if(prompt.type==='chongtong'&&command.type==='chongtong'){
     if(!['win','continue'].includes(command.decision))throw Error('invalid_decision');
     actions.push({type:'chongtong',p,decision:command.decision});
   }else if(prompt.type==='play'&&command.type==='play'){
     if(command.card!==null&&(!Number.isInteger(command.card)||command.card<0||command.card>49))throw Error('invalid_card');
     const bomb=command.bomb??null;
-    if(bomb!==null&&(!Array.isArray(bomb)||bomb.length!==2||bomb.some(id=>!Number.isInteger(id))))throw Error('invalid_bomb');
-    actions.push({type:'play',p,card:command.card,bomb,choices:[],decision:null});
+    if(bomb!==null&&(!Array.isArray(bomb)||![1,2].includes(bomb.length)||bomb.some(id=>!Number.isInteger(id))))throw Error('invalid_bomb');
+    actions.push({type:'play',p,card:command.card,bomb,choices:[],gukjin:null,decision:null});
   }else if(prompt.type==='play'&&command.type==='shake'){
     actions.push({type:'shake',p,month:command.month});
   }else if(prompt.type==='play'&&command.type==='gukjin'){
@@ -100,7 +111,7 @@ export async function advanceOnline(room,p,command) {
   }else throw Error('invalid_move');
   const next=await replayOnline({...room,actions});
   if(next.result&&(!next.game.over||next.result.goldDelta.some(n=>!Number.isSafeInteger(n))))throw Error('invalid_result');
-  const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop'].includes(s.prompt?.type)?1:0);
+  const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop','gukjin'].includes(s.prompt?.type)?1:0);
   return {actions,result:next.result,first:next.game.first,carry:next.game.carry,
     reset_clock:next.prompt?.p!==before.prompt?.p||completed(next)>completed(before)};
 }
@@ -110,18 +121,19 @@ export async function advanceOnline(room,p,command) {
 export async function automaticOnline(room) {
   const initial=await replayOnline(room),p=initial.prompt?.p;
   if(p===undefined)return null;
-  const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop'].includes(s.prompt?.type)?1:0);
+  const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop','gukjin'].includes(s.prompt?.type)?1:0);
   const starting=completed(initial);let next;
   for(let i=0;i<48;i++){
     const state=await replayOnline(room),{game:g,prompt:pr}=state;
     if(!pr||pr.p!==p||completed(state)>starting)break;
     let command;
     if(pr.type==='choose')command={type:'choose',index:aiChoose(g,p,pr.indices)};
+    else if(pr.type==='gukjin')command={type:'gukjin',choice:aiChooseGukjin(g,p)};
     else if(pr.type==='gostop')command={type:'gostop',decision:aiGoStop(g,p,pr.points)};
     else if(pr.type==='chongtong')command={type:'chongtong',decision:'win'};
     else{
       const card=aiChooseCard(g,p),same=card?g.hand[p].filter(c=>c.m===card.m):[],matches=card?g.matches(card.m):[];
-      const bomb=same.length>=3&&matches.length===1&&matches[0][0].length===1?same.filter(c=>c!==card).slice(0,2).map(c=>c.id):null;
+      const bomb=g.bombOption(p,card)?.map(c=>c.id)??null;
       command=same.length>=3&&!bomb&&!g.shake[p]?{type:'shake',month:card.m}:{type:'play',card:card?.id??null,bomb};
     }
     next=await advanceOnline(room,p,command);room={...room,actions:next.actions};
@@ -131,7 +143,8 @@ export async function automaticOnline(room) {
 }
 
 export async function onlineView(room,seat,cursor=0) {
-  const base={id:room.id,code:room.code,status:room.status,version:room.version,seat,
+  const base={id:room.id,code:room.code,status:room.status,version:room.version,seat,mode:room.mode,
+    quickDeadline:room.mode==='quick'?Date.parse(room.created_at)+5000:null,
     names:room.names,round:room.round_no,deadline:room.deadline,reason:room.reason||null,
     ready:room.ready||[false,false],gold:room.gold,bots:room.bots||[false,false],departed:room.departed||[false,false],
     autoCount:room.auto_count||0,lastAuto:room.last_auto,serverTime:Date.now()};
