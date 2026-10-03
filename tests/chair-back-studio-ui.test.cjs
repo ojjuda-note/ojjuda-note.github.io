@@ -7,7 +7,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
  const frame=page.frames().find(f=>f.url().includes('/anchor-editor/index.html'));
  const nativeProject=process.env.CHAIR_NATIVE_PROJECT?JSON.parse(fs.readFileSync(process.env.CHAIR_NATIVE_PROJECT)):null;
  const result=await frame.evaluate(async nativeProject=>{
-  const app=await import('./app.js?v=20261004-chairback1'),{straightenChairLegs}=await import('../chair-straight-regions.js?v=20261004-chairback1'),{prepareRuntime,renderRuntime}=await import('./runtime.js?v=20261004-chairback1');
+  const app=await import((await(await fetch('./entry.js')).text()).match(/import\('(.\/app\.js[^']*)'\)/)[1]),{straightenChairLegs}=await import('../chair-straight-regions.js?v=20261004-chairback1'),{prepareRuntime,renderRuntime}=await import('./runtime.js?v=20261004-chairback1');
   const raw=await(await fetch('../assets/chair-v1.runtime.json')).json(),views={};
   for(const[d,v]of Object.entries(raw.views))views[d]={format:'ojjuda-furniture',version:1,name:raw.name,objectType:'furniture',usage:'floor',source:{name:d+'.png',data:v.drawings[0].data},cutout:{polygon:[],strokes:[]},layers:v.layers,mesh:v.mesh,placement:{...v.placement,...(d==='left'?{x:4.5,y:5.5}:{})}};
   const project=nativeProject||{format:'ojjuda-furniture-set',version:1,name:raw.name,objectType:'furniture',usage:'floor',dimensions:raw.dimensions,activeView:'left',views};
