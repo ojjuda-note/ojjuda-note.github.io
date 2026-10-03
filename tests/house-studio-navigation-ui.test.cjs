@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body style="overflow:auto"><button id="studio">제작실</button><button id="house">우리집</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261004-roomcache1';import{openHouseTest}from'/house-test/host.js?v=20261004-roomcache1';const options={owner:'navigation-test',authorized:()=>true,studioAuthorized:()=>true};document.querySelector('#studio').onclick=()=>openFurnitureStudio(options);document.querySelector('#house').onclick=()=>openHouseTest(options);</script></body></html>`;
+const parent=`<!doctype html><html><body style="overflow:auto"><button id="studio">제작실</button><button id="house">우리집</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261004-chairback1';import{openHouseTest}from'/house-test/host.js?v=20261004-chairback1';const options={owner:'navigation-test',authorized:()=>true,studioAuthorized:()=>true};document.querySelector('#studio').onclick=()=>openFurnitureStudio(options);document.querySelector('#house').onclick=()=>openHouseTest(options);</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -15,7 +15,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await page.frameLocator('iframe').locator('#studio-editor').waitFor({state:'visible'});
   const original=studio();await original.locator('#studio-side-table').click();await original.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
   await original.evaluate(async()=>{
-   await(await import('./app.js?v=20261004-roomcache1')).studioFlush();
+   await(await import('./app.js?v=20261004-chairback1')).studioFlush();
    window.originalPut=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(){throw new DOMException('Simulated full disk','QuotaExceededError');};
    const input=document.querySelector('#furniture-name');input.value='아직 저장하지 못한 최신 작업';input.dispatchEvent(new Event('change',{bubbles:true}));
   });
@@ -44,7 +44,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await studio().locator('#draft-resume').click();
   await studio().waitForFunction(()=>document.querySelector('#furniture-name').value==='아직 저장하지 못한 최신 작업');
   assert.deepEqual([...new Set(entryRequests.map(r=>r.path))].sort(),[...entries].sort(),'both navigation directions use the actual house and studio entries');
-  assert(entryRequests.every(r=>r.version===(r.path==='/house-test/anchor-editor/index.html'?'20261004-roomcache1':'20261004-roomcache1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
+  assert(entryRequests.every(r=>r.version===(r.path==='/house-test/anchor-editor/index.html'?'20261004-chairback1':'20261004-chairback1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('HOUSE STUDIO NAVIGATION PASS');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
