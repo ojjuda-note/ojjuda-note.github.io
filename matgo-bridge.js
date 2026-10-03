@@ -2,7 +2,11 @@
 (function () {
   'use strict';
   let overlay = null, frame = null, opening = false, unsubscribe = null, previousFocus = null;
-  let generation = 0;
+  let generation = 0, onlineReady=false;
+  function requestClose(){
+    if(onlineReady&&frame)frame.contentWindow.postMessage({type:'ojjuda:matgo:request-close'},location.origin);
+    else closeMatgo();
+  }
   function showMessage(message) {
     const target = document.getElementById('toast');
     if (target) {
@@ -18,6 +22,7 @@
     unsubscribe = null;
     if (overlay) overlay.remove();
     overlay = frame = null;
+    onlineReady=false;
     document.body.classList.remove('matgo-open');
     if (previousFocus?.isConnected) previousFocus.focus();
     previousFocus = null;
@@ -48,10 +53,10 @@
       close.textContent = '닫기 ✕';
       close.setAttribute('aria-label', '맞고 닫기');
       close.style.cssText = 'min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #ffffff33;background:#ffffff14;color:#fff;font:inherit';
-      close.onclick = closeMatgo;
+      close.onclick = requestClose;
       bar.append(label, close);
       frame = document.createElement('iframe');
-      frame.src = 'games/matgo.html?v=20261003-rules3';
+      frame.src = 'games/matgo-online.html?v=20261003-online1';
       frame.title = '오쭈다 맞고';
       frame.style.cssText = 'flex:1;min-height:0;width:100%;border:0';
       overlay.append(bar, frame);
@@ -64,10 +69,12 @@
   }
   window.openMatgo = openMatgo;
   window.closeMatgo = closeMatgo;
-  window.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay) closeMatgo(); });
+  window.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay) requestClose(); });
   window.addEventListener('message', event => {
     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow) return;
     if (event.data?.type === 'ojjuda:matgo:close') closeMatgo();
+    if (event.data?.type === 'ojjuda:matgo:online-ready') onlineReady=true;
+    if (event.data?.type === 'ojjuda:matgo:ready') onlineReady=false;
     if (event.data?.type === 'ojjuda:matgo:wallet') window.OjjudaMatgoWalletChanged?.();
     // Only the server refill endpoint can charge 쭈.
   });
