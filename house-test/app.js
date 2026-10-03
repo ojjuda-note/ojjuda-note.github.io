@@ -9,7 +9,7 @@ const stepX=ROOM.width+40,stepY=ROOM.height+40;
 let state,port,key,initialized=false,selected='0:0',tab='room',expanding=false,overview=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
 let linkedDraft=false,deskDraft=null,standaloneChairDraft=null,editSession=0,activeDragCleanup=null;
-let itemCategory='furniture',previewMode=false,connecting=false,disposed=false;
+let itemCategory='furniture',previewMode=false,canUseStudio=false,connecting=false,disposed=false;
 const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
 const bounds=r=>({x:(r.x+2)*stepX,y:(3-r.y)*stepY});
 function toast(message){$('#notice').textContent=message;$('#notice').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#notice').classList.remove('show'),2400);}
@@ -183,7 +183,7 @@ function renderItemMenu(body){
  if(itemCategory==='settings'){
   const row=element('div','actions room-settings');
   row.append(actionButton(current().curtains?'커튼 걷기':'커튼 달기',()=>{if(!saveChange(()=>{current().curtains=!current().curtains;}))return;renderWorld();renderPanel();}),actionButton('빈방 보기',()=>{if(!saveChange(()=>{current().shelf=null;current().furniture={};current().curtains=false;}))return;renderWorld();renderPanel();}));
-  row.append(actionButton('가구 제작실',()=>port.postMessage({type:'studio'})));
+  if(canUseStudio)row.append(actionButton('가구 제작실',()=>{if(canUseStudio)port.postMessage({type:'studio'});}));
   body.append(row,element('p','panel-note','치운 가구와 소품은 아이템 메뉴에서 다시 놓을 수 있어요.'));return;
  }
  const placements=furniturePlacements(current()),grid=element('div','item-grid');grid.setAttribute('aria-label',itemCategory==='furniture'?'가구 목록':'소품 목록');
@@ -231,7 +231,7 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
  }
 
 
- if(tab==='diary'){const label=element('label','','오늘은 어떤 하루였나요?'),field=element('textarea');field.id='diary';field.maxLength=4000;field.value=state.diary;label.htmlFor='diary';field.oninput=()=>{state.diary=field.value;save();};body.append(label,field,actionButton('기록 저장',()=>{state.diary=field.value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');}),element('p','panel-note','테스트 기록은 이 기기에 저장돼요.'));}}
+ if(tab==='diary'){const label=element('label','','오늘은 어떤 하루였나요?'),field=element('textarea');field.id='diary';field.maxLength=4000;field.value=state.diary;label.htmlFor='diary';field.oninput=()=>{state.diary=field.value;save();};body.append(label,field,actionButton('기록 저장',()=>{state.diary=field.value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');}),element('p','panel-note','기록은 이 기기에 저장돼요.'));}}
 function setTab(next){if(previewMode)return;if(!['room','diary'].includes(next))return;clearPlacement();tab=next;if(expanding){expanding=false;$('#expand').setAttribute('aria-pressed','false');renderWorld();focusRoom();}document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===tab)));renderWorld();renderPanel();}
 function toggleExpansion(next=!expanding){if(previewMode)return;clearPlacement();expanding=next;$('#expand').setAttribute('aria-pressed',String(next));$('#hint').textContent=next?'연결된 방 옆의 ＋로 확장하세요':'방을 끌어 둘러보세요';renderWorld();renderPanel();focusRoom(next);}
 
@@ -246,9 +246,13 @@ $('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#ove
 new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);}).observe(view);
 window.addEventListener('message',async e=>{
  if(connecting||initialized||window.parent===window||e.source!==window.parent||e.origin!==location.origin||e.data?.type!=='ojjuda-house-test-init'||!e.ports[0]||typeof e.data.owner!=='string'||!e.data.owner||e.data.owner.length>180)return;
- connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;
- port.onmessage=event=>{if(event.data?.type==='dispose'){clearPlacement();persist();disposed=true;clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}};
+ connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;canUseStudio=e.data.canUseStudio===true;
+ port.onmessage=event=>{
+  if(event.data?.type==='dispose'){clearPlacement();persist();disposed=true;clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}
+  else if(event.data?.type==='studio-access'){canUseStudio=event.data.canUseStudio===true;if(initialized&&!previewMode)renderPanel();}
+ };
  try{
+  if((previewMode||e.data.studioItem!=null)&&!canUseStudio)throw new Error('가구 제작 권한을 확인해 주세요.');
   await loadBuiltInItems();if(disposed)return;
   await loadMadeItems(e.data.owner);if(disposed)return;
   if(previewMode)await registerMadeItem(e.data.preview);if(disposed)return;
@@ -257,7 +261,7 @@ window.addEventListener('message',async e=>{
   const missing=stored?.rooms?.some(r=>Object.keys(r.furniture||{}).some(id=>id.startsWith('made-')&&!FURNITURE[id]));
   if(missing)throw new Error('저장한 제작 아이템을 찾지 못했어요. 이 기기의 제작실에서 작업을 다시 적용해 주세요. 기존 배치는 보존됩니다.');
   state=normalize(stored);initialized=true;$('#locked').hidden=true;$('#app').hidden=false;
-  if(previewMode){$('#expand').hidden=true;$('nav').hidden=true;$('header h1 small').textContent='미리보기';$('#hint').textContent='미리보기 · 기존 배치는 바뀌지 않아요';}
+  if(previewMode){$('#expand').hidden=true;$('nav').hidden=true;$('header h1 small').hidden=false;$('#hint').textContent='미리보기 · 기존 배치는 바뀌지 않아요';}
   renderWorld();renderPanel();focusRoom();updatePeriod();periodTimer=setInterval(updatePeriod,15000);
   const item=previewMode?e.data.preview.id:e.data.studioItem;
   if(item&&FURNITURE[item]){startPlacement(item);if(!editing&&previewMode){const next=state.rooms.find(r=>findPlacement(item,furniturePlacements(r)));if(next){selected=roomKey(next);startPlacement(item);}else toast('이 방에 빈자리가 없어요. 제작실에서 크기를 줄이거나 우리집에서 공간을 비워 주세요.');}}

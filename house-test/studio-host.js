@@ -1,6 +1,6 @@
 import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261003-chairdesk1';
 import {validateRuntime} from './anchor-editor/runtime.js?v=20261003-chairdesk1';
-import {openHouseTest} from './host.js?v=20261003-chairdesk1';
+import {openHouseTest} from './host.js?v=20261003-housepublic1';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
@@ -23,7 +23,7 @@ export function openFurnitureStudio({owner,authorized}){
  const escape=e=>{if(e.key==='Escape'&&!nestedClose){e.preventDefault();requestClose();}};window.addEventListener('keydown',escape,true);close.onclick=requestClose;activeClose=cleanup;
  const watcher=setInterval(()=>{if(!authorized()||!overlay.isConnected)cleanup();},400);
  const deadline=setTimeout(()=>{status.textContent='제작실을 불러오지 못했어요. 닫은 뒤 다시 열어 주세요.';},25000);
- const showHome=options=>{nestedClose?.();nestedClose=openHouseTest({owner,authorized,...options,onClose:()=>{nestedClose=null;},onStudio:()=>frame.focus()});};
+ const showHome=options=>{if(closed||!authorized())return;nestedClose?.();nestedClose=openHouseTest({owner,authorized,...options,studioAuthorized:authorized,onClose:()=>{nestedClose=null;},onStudio:()=>frame.focus()});};
  frame.addEventListener('load',()=>{
   if(closed||!authorized())return cleanup();channel?.port1.close();channel=new MessageChannel();
   channel.port1.onmessage=async e=>{
