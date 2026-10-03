@@ -90,6 +90,7 @@ const plain=p=>({direction:p.direction,x:p.x,y:p.y});
   const views={};
   for(const id of ['left','center','right']){
    await direction(f,id);const poses=await assertPair(f);assert.equal(poses.desk.direction,id);assert.equal(await f.locator('#placement-done').isEnabled(),true);assert.deepEqual(await readSave(),baseline);views[id]=poses;
+   assert.deepEqual(poses.desk,{direction:id,...{left:{x:3.5,y:4},center:{x:3.5,y:0},right:{x:9,y:3.5}}[id]},'linked direction changes start from the visually approved pair poses');
    await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'chair-desk-link-'+id+'.png')});
   }
   const firstPair=await pair(f);await f.locator('#placement-done').click();let committed=expectedSave(baseline,firstPair);assert.deepEqual(await readSave(),committed);
