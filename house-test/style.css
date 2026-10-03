@@ -223,3 +223,27 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 /* Empty-room inspection only hides artwork; saved placements stay intact. */
 #empty-room-toggle {flex:none;min-height:28px;padding:3px 7px;border-radius:8px;font-size:11px;line-height:20px;white-space:nowrap;}
 .empty-room-preview .room.selected > .furniture,.empty-room-preview .room.selected > .curtains {visibility:hidden;pointer-events:none;}
+.cloud-records .record-toolbar{gap:6px;}
+.cloud-records select{max-width:100%;min-width:0;min-height:44px;padding:7px;border:1px solid #d7c9df;border-radius:10px;background:#fffdfa;color:inherit;font:inherit;font-size:12px;}
+.cloud-records .record-toolbar button{padding:7px 9px;font-size:12px;}
+.cloud-records .record-upload{margin-top:8px;}
+.cloud-records .record-open{width:100%;padding:0;border:0;border-radius:0;background:transparent;}
+.record-field{display:flex;flex-direction:column;gap:4px;font-size:12px;margin:8px 0;}
+.record-field input{width:100%;min-width:0;box-sizing:border-box;padding:9px;border:1px solid #d7c9df;border-radius:8px;font:inherit;}
+.record-field span{font-weight:600;}
+.record-editor:empty{display:none;}
+.record-editor form{margin:10px 0;padding:12px;border:1px solid #d7c9df;border-radius:12px;background:#fffdfa;}
+.record-editor form>button{font-size:12px;margin-right:8px;}
+.record-form-title{font-weight:700;margin:0;font-size:14px;}
+.record-friends label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px;}
+.local-records{margin:16px 0 0;border-top:1px solid #e6ddec;padding-top:8px;}
+.local-records summary{cursor:pointer;min-height:44px;align-content:center;font-size:12px;}
+.record-viewer{max-width:min(92vw,900px);max-height:90dvh;box-sizing:border-box;padding:12px;border:0;border-radius:16px;background:#fffaf4;}
+.record-viewer::backdrop{background:#211a27bb;}
+.record-viewer>button{display:block;margin:0 0 8px auto;}
+.record-viewer>img,.record-viewer>video{display:block;max-width:100%;max-height:70dvh;margin:auto;object-fit:contain;}
+.cloud-records>.record-toolbar>select{flex:1;width:100px;}
+.record-tools{position:relative;}
+.record-tools summary{display:flex;align-items:center;min-height:44px;padding:0 6px;cursor:pointer;font-size:12px;}
+.record-tools-menu{position:absolute;right:0;top:100%;z-index:3;display:grid;gap:5px;width:110px;padding:8px;border:1px solid #d7c9df;border-radius:12px;background:#fffdfa;box-shadow:0 4px 16px #39224422;}
+.record-upload[hidden]{display:none;}
