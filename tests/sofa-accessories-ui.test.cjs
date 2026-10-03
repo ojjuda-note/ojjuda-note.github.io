@@ -20,7 +20,7 @@ const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
   const pose=(target=id)=>node(target).evaluate(n=>{const result={direction:n.dataset.direction,x:Number(n.dataset.x),y:Number(n.dataset.y)};if(n.dataset.elevation!==undefined)result.elevation=Number(n.dataset.elevation);if(n.dataset.furniture.startsWith('blanket-'))result.mode=n.dataset.mode||(/(?:^|\s)assets\/blanket-floor-/.test(n.querySelector('canvas').dataset.sources)?'floor':'sofa');return result;});
   const read=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
   const ready=async()=>{await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));await f.evaluate(()=>document.fonts.ready);};
-  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});f=page.frames().find(frame=>frame.url().includes('/house-test/index.html'));await ready();};
+  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});f=page.frames().find(frame=>frame.url().includes('/house-test/index.html'));await ready();await f.locator('[data-tab="room"]').click();};
   const close=async()=>{await f.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
   const menu=async()=>{await f.locator('[data-category="accessories"]').click();const cards=f.locator('#panel-body button').filter({hasText:'담요'});assert.equal(await cards.count(),1,'the accessory menu exposes one blanket item');return cards;};
   const edit=async()=>{await(await menu()).click();await ready();await f.locator('#overview').click();};

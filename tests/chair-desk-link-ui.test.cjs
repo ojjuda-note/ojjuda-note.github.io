@@ -25,7 +25,7 @@ const plain=p=>({direction:p.direction,x:p.x,y:p.y});
   const baseline={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},carpet:{direction:'center',x:1,y:3}}}],diary:'책상과 의자 연결 후에도 보존할 기록'};
   await page.evaluate(({key,baseline})=>localStorage.setItem(key,JSON.stringify(baseline)),{key,baseline});
   const readSave=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
-  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const frame=page.frames().find(f=>f.url().includes('/house-test/index.html'));await frame.evaluate(()=>document.fonts.ready);return frame;};
+  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const frame=page.frames().find(f=>f.url().includes('/house-test/index.html'));await frame.evaluate(()=>document.fonts.ready);await frame.locator('[data-tab="room"]').click();return frame;};
   const close=async f=>{await f.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
   const pose=(f,id)=>f.locator(`[data-furniture="${id}"]`).evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)}));
   const pair=async f=>({desk:await pose(f,'desk'),chair:await pose(f,'chair')});

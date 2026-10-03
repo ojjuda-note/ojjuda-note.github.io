@@ -21,7 +21,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   const saved={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},sofa:{direction:'left',x:0,y:3},'coffee-table':{direction:'left',x:2,y:4},carpet:{direction:'center',x:1,y:3}}}],diary:'스탠드 조명 추가 전 기록 유지'};
   await page.evaluate(({key,saved})=>localStorage.setItem(key,JSON.stringify(saved)),{key,saved});
   const read=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
-  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});return page.frames().find(f=>f.url().includes('/house-test/index.html'));};
+  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});const f=page.frames().find(f=>f.url().includes('/house-test/index.html'));await f.locator('[data-tab="room"]').click();return f;};
   const close=async f=>{await f.locator('#exit').click();await page.locator('iframe[title="우리집"]').waitFor({state:'detached'});};
   const ready=f=>f.locator('[data-furniture="floor-lamp"][data-render-state="ready"]').waitFor();
   const pose=f=>f.locator('[data-furniture="floor-lamp"]').evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)}));

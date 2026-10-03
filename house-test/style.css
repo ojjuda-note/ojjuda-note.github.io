@@ -41,9 +41,10 @@ h2 {margin: 2px 0; font-size: 21px;}
 .actions .symbol {font-size: 24px; display: block; margin-bottom: 4px;}
 .panel-note {margin: 10px 0 0; color: #968698; font-size: 12px; line-height: 1.5;}
 .row {display: flex; gap: 8px; align-items: center; flex-wrap: wrap;}
-nav {background: var(--cream); display: grid; grid-template-columns: repeat(2,1fr); padding: 8px 12px max(10px,env(safe-area-inset-bottom)); gap: 4px; border-top: 1px solid #eee6f2; z-index: 7;}
-nav button {border: 0; background: transparent; font-size: 12px; padding: 8px 3px; border-radius: 16px;}
-nav button span {display: block; font-size: 24px; margin-bottom: 4px;}
+.panel-tabs {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:100%;background:var(--cream);}
+.panel-tabs button {display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:7px 10px;border:0;border-radius:12px;background:transparent;font-size:14px;font-weight:600;}
+.panel-tabs button[aria-pressed=true] {background:#eee3fa;}
+.panel-tabs button span {display:inline-flex;flex:none;}
 #notice {position: fixed; left: 50%; top: 82px; transform: translateX(-50%); max-width: 90%; padding: 10px 18px; background: #554460ed; color: white; border-radius: 18px; z-index: 20; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity .18s;}
 #notice.show {opacity: 1;}
 #save-warning {position: fixed; bottom: 0; margin: 0; padding: 4px; background: #fff3d3; color: #684f1f; z-index: 30; font-size: 11px; width: 100%; text-align: center;}
@@ -51,15 +52,14 @@ nav button span {display: block; font-size: 24px; margin-bottom: 4px;}
 #locked a {color: #78539d;}
 textarea {display: block; width: 100%; min-height: 80px; resize: vertical; max-height: 160px; border: 1px solid #e3d7ec; border-radius: 12px; padding: 10px; color: var(--ink); background: #fffdfa;}
 label {display: block; margin: 4px 0 8px; font-size: 13px;}
-@media (min-width:900px) {#panel {padding: 13px 25px;}#panel-body .actions {max-width: 650px; margin: auto;}.panel-head {max-width: 650px; margin: 0 auto 10px;}nav {padding-left: 20%; padding-right: 20%;}}
-@media (max-height:550px) and (min-width:600px) {#app {min-height: 300px;}header {padding: 3px 15px;}h1 {font-size: 19px;}.scene-heading {position: absolute; top: 53px; left: 12px; z-index: 4; background: #fffaf0da; border-radius: 14px;}#viewport {min-height: 180px;}#panel {position: absolute; right: 15px; bottom: 76px; width: 320px; max-height: 160px; border-radius: 20px; margin: 0; padding: 10px 12px; background: #fffcf4ed;}.panel-head {margin-bottom: 5px;}.panel-head small {display: none;}h2 {font-size: 16px;}.actions button {min-height: 46px; font-size: 12px; padding: 5px;}.actions .symbol {display: none;}nav {padding: 3px 22%; height: 68px;}nav button span {font-size: 18px; margin: 0;}.camera {left: 12px; right: auto;}.panel-note {display: none;}}
+@media (min-width:900px) {#panel {padding: 13px 25px;}#panel-body .actions {max-width: 650px; margin: auto;}.panel-head {max-width: 650px; margin: 0 auto 10px;}}
 @media (prefers-reduced-motion:reduce) {* {animation: none !important; transition: none !important;}}
 @media (max-width:350px) {header {padding: 8px;}h1 {font-size: 20px;}header button {padding: 6px;}#panel {padding: 12px;}.actions button {padding: 8px 4px; font-size: 13px;}.camera {gap: 2px; right: 6px;}.camera button {padding: 5px 8px;}}
 .expansion-actions {grid-template-columns: repeat(4,1fr); margin-top: 10px;}
 .expansion-actions button {font-size: 12px; min-height: 44px; padding: 6px;}
 .row select {max-width: 100%; padding: 8px 12px; border: 1px solid #e0d4e9; border-radius: 12px; background: #fffdfa; color: #65526f; min-height: 44px;}
 .symbol svg {display: block; margin: auto; width: 28px; height: 28px;}
-nav svg {display: block; margin: auto; width: 25px; height: 25px;}
+.panel-tabs svg {display:block;width:20px;height:20px;}
 #world {width: var(--world-width); height: var(--world-height);}
 .room {width: var(--room-width); height: var(--room-height); outline: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible;}
 .room.selected {box-shadow: none;}
@@ -136,7 +136,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 
 /* Let the room and its scrollable tools share short screens without hiding navigation. */
 #app {min-height: 0;}
-#app > header, #app > nav, .scene-heading {flex-shrink: 0;}
+#app > header, .scene-heading {flex-shrink: 0;}
 #viewport {min-height: min(230px,35dvh);}
 /* Keep both tabs at the diary panel's height; longer furniture lists scroll inside. */
 #panel {height: 238px; flex: 0 1 238px; min-height: 0; overscroll-behavior: contain;}
@@ -164,3 +164,30 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .placement-panel .placement-feedback > p {grid-area:1/1;margin:0;line-height:1.5;}
 .placement-feedback #placement-warning[hidden] {display:block!important;visibility:hidden;}
 .placement-feedback:has(#placement-warning:not([hidden])) .panel-note {visibility:hidden;}
+
+/* Keep the two house tabs in the panel heading, leaving the room more space. */
+#panel {display:flex;flex-direction:column;overflow:hidden;}
+#panel .panel-head {flex:none;flex-direction:column;align-items:stretch;gap:6px;width:100%;margin-bottom:8px;}
+#panel-body {min-height:0;overflow-y:auto;overscroll-behavior:contain;}
+#panel-body .item-categories {top:0;}
+
+/* Camera controls have their own row and never cover furniture. */
+.camera {position:static;flex:none;justify-content:flex-end;padding:4px 12px 12px;background:var(--cream);}
+@media (max-height:550px) {
+ header {padding:3px 12px;}
+ .scene-heading {padding:4px 12px;}
+ #viewport {min-height:28dvh;}
+ .help {display:none;}
+}
+/* Short wide screens keep the tools beside the room, with no overlapping panel. */
+@media (max-height:550px) and (min-width:600px) {
+ #app {display:grid;grid-template-columns:minmax(0,1fr) 280px;grid-template-rows:auto auto minmax(0,1fr) auto;}
+ header {grid-column:1/-1;padding:3px 15px;}
+ h1 {font-size:19px;}
+ .scene-heading {grid-column:1;padding:4px 12px;}
+ #viewport {grid-column:1;min-height:0;}
+ .camera {grid-column:1;grid-row:4;padding:4px 8px;gap:3px;}
+ .camera button {padding:5px 8px;}
+ #panel,#panel.placement-panel {grid-column:2;grid-row:2/5;position:static;width:auto;height:auto;max-height:none;margin:0;border-radius:18px 0 0 0;padding:10px 12px;}
+ .item-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+}

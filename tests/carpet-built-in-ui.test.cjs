@@ -17,7 +17,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   }}],diary:'카펫 추가 전 기록 보존'};
   await page.evaluate(({key,saved})=>localStorage.setItem(key,JSON.stringify(saved)),{key,saved});
   const readSave=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
-  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const f=page.frames().find(f=>f.url().includes('/house-test/index.html'));if(proofFont){await page.evaluate(()=>document.fonts.ready);await f.evaluate(()=>document.fonts.ready);}return f;};
+  const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const f=page.frames().find(f=>f.url().includes('/house-test/index.html'));if(proofFont){await page.evaluate(()=>document.fonts.ready);await f.evaluate(()=>document.fonts.ready);}await f.locator('[data-tab="room"]').click();return f;};
   const close=async f=>{await f.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
   const range=(f,id,value)=>f.locator(id).evaluate((el,value)=>{el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));},value);
   const pose=f=>f.locator('[data-furniture="carpet"]').evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)}));

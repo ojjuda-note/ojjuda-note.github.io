@@ -36,7 +36,7 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
 
   // A delayed menu selection must not take control back after the user leaves it.
   await page.evaluate(()=>{houseOwner='loading-selection-race';});
-  const empty={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{}}],diary:'메뉴 전환 중에도 유지할 기록'};await setSave(empty);f=await open();
+  const empty={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{}}],diary:'메뉴 전환 중에도 유지할 기록'};await setSave(empty);f=await open();await f.locator('[data-tab="room"]').click();
   const selection=blockNext('chair-v1.runtime.json');await f.getByRole('button',{name:'의자 놓기',exact:true}).click();await waitForRequest(selection.seen);
   assert.equal(await f.getByRole('button',{name:'의자 놓기',exact:true}).isDisabled(),true,'a pending card cannot submit repeated selections');assert.equal(await f.getByRole('button',{name:'의자 놓기',exact:true}).getAttribute('aria-busy'),'true');
   await f.locator('[data-tab="diary"]').click();selection.release();
