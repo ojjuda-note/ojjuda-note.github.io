@@ -1,5 +1,6 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
+import {sofaAccessorySpec,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261003-houseopen1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -9,7 +10,17 @@ export const SOFA_ACCESSORIES=[
  {id:'pink-check-cushion',label:'분홍 체크 쿠션'},
  {id:'blanket-sofa',label:'분홍 담요 · 소파용'}
 ];
+// These use the already approved cushion and draped-blanket drawings. Their
+// reserved area is independent of the former parent sofa, including on reload.
+const separateSofaAccessories=Object.fromEntries(SOFA_ACCESSORIES.map(({id,label})=>{
+ const spec=sofaAccessorySpec(id),pose=sofaAccessoryFromSofa(id,{direction:'center',x:3,y:3});
+ return [id,{label,shortLabel:label.replace(' · 소파용',''),width:spec.width,depth:spec.depth,height:spec.height,depthFill:1,introduced:16,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',allowOverlap:true,picture:'sofa-accessory',accessoryId:id,
+  preview:`assets/${id}-center-v1.png`,preferred:{...pose,elevation:0},
+  clearance:'소파와 별개로 옮기거나 치울 수 있어요. 높이를 조절해 바닥이나 가구 위에 놓아 주세요.'}];
+}));
 export const FURNITURE={
+ ...separateSofaAccessories,
  chair:{label:'원목 책상 의자',shortLabel:'의자',width:1.2,depth:1.2,height:1.65,depthFill:1,introduced:15,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/chair-center-preview-v1.png',
   preferred:{direction:'left',x:7.5,y:4.5},preferredViews:{left:{direction:'left',x:7.5,y:4.5},center:{direction:'center',x:4.5,y:4.5},right:{direction:'right',x:4,y:4.5}},
@@ -25,7 +36,7 @@ export const FURNITURE={
   preferred:{direction:'left',x:0,y:4.5},clearance:'0.5칸씩 이동 · 다른 가구와 겹치지 않는 곳에 놓아 주세요.'},
  sofa:{label:'라벤더 패브릭 소파',shortLabel:'소파',width:3.5,depth:1.5,height:1.8,depthFill:1,introduced:11,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'sofa',
-  preferred:{direction:'left',x:0,y:3},clearance:'쿠션과 담요는 소파와 함께 움직여요. 방향별 그림이 뒤집히는 위치로는 이동하지 않습니다.'},
+  preferred:{direction:'left',x:0,y:3},clearance:'쿠션과 담요는 소품 메뉴에서 따로 놓고 옮길 수 있어요. 방향별 그림이 뒤집히는 위치로는 이동하지 않습니다.'},
  'blanket-floor':{label:'분홍 니트 담요 · 바닥용',shortLabel:'바닥 담요',width:2,depth:1.5,height:.05,depthFill:1,introduced:11,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'floor',picture:'accessory',
   preferred:{direction:'center',x:3.5,y:4.5},clearance:'바닥용 그림이에요. 0.5칸씩 따로 옮길 수 있고 가구 아래에 놓을 수 있어요.'},

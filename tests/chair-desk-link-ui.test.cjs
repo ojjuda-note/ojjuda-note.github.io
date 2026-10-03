@@ -2,9 +2,9 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CHAIR_LINK_PROOF_DIR||path.resolve(root,'../chair-desk-link-proof'),proofFont=process.env.CHAIR_PROOF_FONT;
 const owner='chair-desk-link',key='ojjuda-house-playtest-v1:'+owner;
-const modelURL='/house-test/model.js?v=20261003-chairdesk1',catalogURL='/house-test/furniture-catalog.js?v=20261003-chairdesk1';
+const modelURL='/house-test/model.js?v=20261003-houseopen1',catalogURL='/house-test/furniture-catalog.js?v=20261003-houseopen1';
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/chair-v1.runtime.json')));
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-housepublic1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-houseopen1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
 const plain=p=>({direction:p.direction,x:p.x,y:p.y});
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
@@ -22,7 +22,7 @@ const plain=p=>({direction:p.direction,x:p.x,y:p.y});
    const style=document.createElement('style');style.textContent='@font-face{font-family:ChairLinkProof;src:url("/_proof-font/NotoSansCJKkr-Regular.otf") format("opentype");font-display:block}html,body,button,input,textarea{font-family:ChairLinkProof,sans-serif!important}';document.head.append(style);
   },{once:true}));
   const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR:',e.message);});await page.goto('https://fixture.test/fixture');
-  const baseline={version:11,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},carpet:{direction:'center',x:1,y:3}}}],diary:'책상과 의자 연결 후에도 보존할 기록'};
+  const baseline={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},carpet:{direction:'center',x:1,y:3}}}],diary:'책상과 의자 연결 후에도 보존할 기록'};
   await page.evaluate(({key,baseline})=>localStorage.setItem(key,JSON.stringify(baseline)),{key,baseline});
   const readSave=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
   const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const frame=page.frames().find(f=>f.url().includes('/house-test/index.html'));await frame.evaluate(()=>document.fonts.ready);return frame;};

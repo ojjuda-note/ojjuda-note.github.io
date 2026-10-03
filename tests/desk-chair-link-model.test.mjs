@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,canPlaceFurniture,canDrawFurniture,normalizePlacement,normalize} from '../house-test/model.js?v=20261003-chairdesk1';
-import {loadBuiltInItems} from '../house-test/custom-furniture.js?v=20261003-chairdesk1';
-import {itemSize} from '../house-test/furniture-catalog.js?v=20261003-chairdesk1';
+import {chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,canPlaceFurniture,canDrawFurniture,normalizePlacement,normalize} from '../house-test/model.js?v=20261003-houseopen1';
+import {loadBuiltInItems} from '../house-test/custom-furniture.js?v=20261003-houseopen1';
+import {itemSize} from '../house-test/furniture-catalog.js?v=20261003-houseopen1';
 
 // Geometry tests use the real approved meshes. Image decoding alone is stubbed;
 // painting and actual bitmap decoding remain covered by the built-in UI tests.
@@ -12,7 +12,7 @@ globalThis.Image=class{width=1;height=1;set src(value){queueMicrotask(()=>this.o
 globalThis.fetch=async url=>({ok:true,json:async()=>JSON.parse(await fs.readFile(url,'utf8'))});
 try{await loadBuiltInItems();}finally{globalThis.Image=previousImage;globalThis.fetch=previousFetch;}
 const entries=pair=>[{id:'desk',...pair.desk},{id:'chair',...pair.chair}];
-const saved=furniture=>({version:11,rooms:[{x:0,y:0,decor:true,curtains:false,shelf:null,furniture}],diary:'keep this diary'});
+const saved=furniture=>({version:12,rooms:[{x:0,y:0,decor:true,curtains:false,shelf:null,furniture}],diary:'keep this diary'});
 const preferred={direction:'right',x:9,y:3.5};
 
 test('three directions reserve exactly half a floor cell in the desk knee space',()=>{

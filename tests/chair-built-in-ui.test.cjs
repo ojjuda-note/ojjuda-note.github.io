@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CHAIR_PROOF_DIR||path.resolve(root,'../chair-deploy-proof'),proofFont=process.env.CHAIR_PROOF_FONT;
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/chair-v1.runtime.json')));
 const owner='chair-built-in',key='ojjuda-house-playtest-v1:'+owner;
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-housepublic1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-houseopen1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -20,7 +20,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
    const style=document.createElement('style');style.textContent='@font-face{font-family:ChairProof;src:url("/_proof-font/NotoSansCJKkr-Regular.otf") format("opentype");font-display:block}html,body,button,input,textarea{font-family:ChairProof,sans-serif!important}';document.head.append(style);
   },{once:true}));
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/fixture');
-  const saved={version:11,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},'coffee-table':{direction:'center',x:2,y:4},carpet:{direction:'center',x:1,y:3}}}],diary:'의자 추가 전 가구와 기록 보존'};
+  const saved={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},'coffee-table':{direction:'center',x:2,y:4},carpet:{direction:'center',x:1,y:3}}}],diary:'의자 추가 전 가구와 기록 보존'};
   await page.evaluate(({key,saved})=>localStorage.setItem(key,JSON.stringify(saved)),{key,saved});
   const readSave=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
   const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});const f=page.frames().find(f=>f.url().includes('/house-test/index.html'));await f.evaluate(()=>document.fonts.ready);return f;};
@@ -31,8 +31,11 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   let f=await open();
   assert.equal(await f.locator('[data-furniture="chair"]').count(),0,'approved chair is not automatically added to existing rooms');
   assert.deepEqual(await readSave(),saved);
+  // Migration validation below needs the approved runtime, now loaded only
+  // when the user actually selects this item from the furniture menu.
+  await f.getByRole('button',{name:'의자 놓기',exact:true}).click();await ready(f);await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await readSave(),saved);
   const catalogue=await f.evaluate(async()=>{
-   const {FURNITURE}=await import('/house-test/furniture-catalog.js?v=20261003-chairdesk1'),{listMadeItems}=await import('/house-test/custom-store.js?v=20261003-chairdesk1'),{normalize,canPlaceFurniture}=await import('/house-test/model.js?v=20261003-chairdesk1');
+   const {FURNITURE}=await import('/house-test/furniture-catalog.js?v=20261003-houseopen1'),{listMadeItems}=await import('/house-test/custom-store.js?v=20261003-houseopen1'),{normalize,canPlaceFurniture}=await import('/house-test/model.js?v=20261003-houseopen1');
    const legacyPose={direction:'left',x:7.5,y:4.5},legacy=normalize({version:7,rooms:[{x:0,y:0,shelf:null,furniture:{chair:legacyPose}}],diary:'legacy-chair-diary'});
    const c=FURNITURE.chair;return {label:c.label,shortLabel:c.shortLabel,dimensions:{width:c.width,depth:c.depth,height:c.height},autoPlace:c.autoPlace,layer:c.layer,picture:c.picture,preferredViews:c.preferredViews,slots:(await listMadeItems('chair-built-in')).length,freshRoomHasChair:normalize(null).rooms.some(r=>!!r.furniture.chair),legacyPoseValidWithLoadedRuntime:canPlaceFurniture('chair',legacyPose,[]),legacyChairPresent:!!legacy.rooms[0].furniture.chair,legacyDiary:legacy.diary};
   });
@@ -72,7 +75,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   await page.setViewportSize({width:390,height:844});await f.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'chair-built-in-mobile.png')});
   await f.getByRole('button',{name:'의자 배치',exact:true}).click();await f.getByRole('button',{name:'치우기',exact:true}).click();assert.deepEqual(await readSave(),saved);
   await close(f);f=await open();assert.equal(await f.locator('[data-furniture="chair"]').count(),0,'a removed chair must not return on reload');assert.deepEqual(await readSave(),saved);
-  const slotsAfter=await f.evaluate(async()=>{const {listMadeItems}=await import('/house-test/custom-store.js?v=20261003-chairdesk1');return (await listMadeItems('chair-built-in')).length;});assert.equal(slotsAfter,0,'built-in chair never consumes a user-created slot');
+  const slotsAfter=await f.evaluate(async()=>{const {listMadeItems}=await import('/house-test/custom-store.js?v=20261003-houseopen1');return (await listMadeItems('chair-built-in')).length;});assert.equal(slotsAfter,0,'built-in chair never consumes a user-created slot');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
   fs.writeFileSync(path.join(proof,'chair-built-in-verification.json'),JSON.stringify({menu:'furniture',notAutoPlaced:true,retiredV7ChairDiscardedWithRuntimeLoaded:true,legacyDiaryPreserved:true,directions:directionResults,standingCollisionRejected:true,floorCarpetOverlapAllowed:true,cancelPreserved:true,savedAndReopened:true,existingFurnitureAndDiaryPreserved:true,ordinaryDeskDirectionPreserved:true,removedChairStayedRemoved:true,userCreatedSlots:slotsAfter,errors,missing},null,2));
   console.log('CHAIR BUILT-IN PASS: furniture menu, registered three views, collisions, cancel, save/reopen, removal and preserved rooms/slots');

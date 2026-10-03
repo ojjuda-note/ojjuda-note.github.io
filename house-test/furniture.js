@@ -1,12 +1,14 @@
-import {madeArtwork} from './custom-furniture.js?v=20261003-chairdesk1';
-import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261003-chairdesk1';
-import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261003-chairdesk1';
-import {paintFurniture} from './furniture-painter.js?v=20261003-chairdesk1';
-import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-chairdesk1';
-import {sideTableArtwork} from './side-table-art.js?v=20261003-chairdesk1';
-import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261003-chairdesk1';
-import {sofaArtwork} from './sofa-art.js?v=20261003-chairdesk1';
-import {blanketFloorArtwork} from './accessory-art.js?v=20261003-chairdesk1';
+import {madeArtwork} from './custom-furniture.js?v=20261003-houseopen1';
+import {floorPoint,roomPoint,isDeskChairPair} from './model.js?v=20261003-houseopen1';
+import {FURNITURE,itemSize,contactBounds} from './furniture-catalog.js?v=20261003-houseopen1';
+import {paintFurniture} from './furniture-painter.js?v=20261003-houseopen1';
+import {bookshelfArtwork} from './bookshelf-art.js?v=20261003-houseopen1';
+import {sideTableArtwork} from './side-table-art.js?v=20261003-houseopen1';
+import {deskArtwork,deskChairForeground} from './desk-art.js?v=20261003-houseopen1';
+import {sofaArtwork,sofaForegroundLayers} from './sofa-art.js?v=20261003-houseopen1';
+import {sofaAccessoryArtwork} from './sofa-accessory-art.js?v=20261003-houseopen1';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from './sofa-cushion-placement.js?v=20261003-houseopen1';
+import {blanketFloorArtwork} from './accessory-art.js?v=20261003-houseopen1';
 
 export function projectiveMap(source,target){
  const rows=[];
@@ -35,6 +37,7 @@ export function furnitureGeometry(id,s){
  if(item.picture==='side-table')return sideTableArtwork(item,s,contact,size);
  if(item.picture==='desk')return deskArtwork(item,s,contact,size);
  if(item.picture==='sofa')return sofaArtwork(item,s,contact,size);
+ if(item.picture==='sofa-accessory')return sofaAccessoryArtwork(item,s,contact,size);
  if(id==='blanket-floor')return blanketFloorArtwork(item,s,contact,size);
  const cells=rectangle(contact),footprint=cells.map(([x,y])=>floorPoint(x,y));
  const reserved=rectangle({...s,...size}).map(([x,y])=>floorPoint(x,y));
@@ -64,10 +67,33 @@ export function furnitureGeometry(id,s){
  return id==='bookshelf'?bookshelfArtwork(geometry,s,item):geometry;
 }
 export const shelfGeometry=s=>furnitureGeometry('bookshelf',s);
-export function renderFurniture(button,id,s,desk=null){
+export function renderFurniture(button,id,s,desk=null,sofa=null,scenePlacements=[]){
  const item=FURNITURE[id],geometry=furnitureGeometry(id,s);if(!geometry)return null;
  Object.assign(button.style,{left:`${geometry.left}px`,top:`${geometry.top}px`,width:`${geometry.width}px`,height:`${geometry.height}px`,zIndex:String(item.layer==='floor'?4:10+Math.round(Math.max(...geometry.footprint.map(p=>p.y))))});
  button.dataset.x=s.x;button.dataset.y=s.y;button.dataset.direction=s.direction;button.dataset.furniture=id;
+ if(item.layer==='surface')button.dataset.elevation=String(s.elevation??0);
+ if(item.picture==='sofa-accessory'&&sofa){
+  const size=itemSize(id,s.direction),sofaSize=itemSize('sofa',sofa.direction);
+  const overlaps=s.x<sofa.x+sofaSize.w&&s.x+size.w>sofa.x&&s.y<sofa.y+sofaSize.d&&s.y+size.d>sofa.y;
+  if(overlaps&&(s.elevation??0)+item.height>.8&&(s.elevation??0)<FURNITURE.sofa.height){
+   const sofaGeometry=furnitureGeometry('sofa',sofa),foreground=sofaForegroundLayers(sofaGeometry,sofa.direction);
+   geometry.art.layers=geometry.art.layers.map(layer=>layer.sofaSurface?{...layer,eraseWith:foreground}:layer);
+   const order=sofaCushionOrder(Object.keys(SOFA_CUSHION_SEATS),sofa.direction),rank=id==='blanket-sofa'?0:order.indexOf(id)+1;
+   button.style.zIndex=String(11+Math.round(Math.max(...sofaGeometry.footprint.map(p=>p.y)))+rank);
+  }
+ }
+ if(item.layer==='surface'){
+  const size=itemSize(id,s.direction);
+  for(const support of scenePlacements){
+   const supportItem=FURNITURE[support.id],supportSize=itemSize(support.id,support.direction);
+   if(supportItem?.layer!=='standing'||!supportSize||(s.elevation??0)<supportItem.height-.02)continue;
+   if(s.x>=support.x+supportSize.w||s.x+size.w<=support.x||s.y>=support.y+supportSize.d||s.y+size.d<=support.y)continue;
+   const points=rectangle(contactBounds(support.id,support)).map(([x,y])=>floorPoint(x,y));
+   let depth=10+Math.round(Math.max(...points.map(p=>p.y)));
+   if(support.id==='chair'&&isDeskChairPair(desk,support))depth=Math.max(depth,12+Math.round(Math.max(...rectangle(contactBounds('desk',desk)).map(([x,y])=>floorPoint(x,y).y))));
+   button.style.zIndex=String(Math.max(Number(button.style.zIndex),depth+1));
+  }
+ }
  const canvas=document.createElement('canvas');canvas.className='furniture-paint';canvas.setAttribute('aria-hidden','true');
  button.dataset.renderState='loading';button.replaceChildren(canvas);
  const paints=[paintFurniture(canvas,geometry)];
