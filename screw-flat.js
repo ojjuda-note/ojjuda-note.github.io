@@ -125,7 +125,7 @@
       const h=hit.h;
       if(h.screw!==null) {
         st.selected=st.selected===h.screw?null:h.screw;st.focus=null;
-        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell(st.extraHoles<3?'구멍을 추가하거나 다시 시작할 수 있어요':'빈 구멍이 없어요. 다시 시작해 순서를 바꿔요');
+        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell(st.extraHoles<3?'빈 구멍이 없어요. 1쭈로 구멍을 추가해요':'빈 구멍이 없어요. 다시 시작해 순서를 바꿔요');
         return;
       }
       if(st.selected===null){tell('옮길 나사를 먼저 눌러 주세요');return;}
@@ -181,11 +181,12 @@
     }
     function draw(c) {
       if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
+      const blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h));
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
       c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,250);
       round(c,280,8,62,36,13);c.fillStyle='#E2EADF';c.fill();c.font='700 10px "Noto Sans KR",sans-serif';c.fillStyle='#5D7760';c.textAlign='center';c.fillText(`앨범 ${st.collection.size}/${PICTURES.length}`,311,26);
       c.font='12px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51);
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':blocked?(st.extraHoles<3?'빈 구멍이 없어요 · 아래에서 1쭈로 추가해요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51,312);
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';c.fillText('나사를 축으로 회전 · 판과 나사에 걸려요',26,133);
@@ -224,7 +225,7 @@
         round(c,198,493,138,42,17);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.fillText(st.L===LAST_STAGE?'기록 보기':'다음 그림 →',267,514);
       }else{
         const full=st.extraHoles>=EXTRA_HOLE_X.length,ready=sameWallet()&&!full&&!st.shopBusy;
-        round(c,24,493,164,42,16);c.fillStyle=ready?'#DDE8DD':'#EAE4DC';c.fill();c.textAlign='center';c.fillStyle=ready?'#506E57':'#9B8C7D';c.font='700 12px "Noto Sans KR",sans-serif';
+        round(c,24,493,164,42,16);c.fillStyle=ready?(blocked?'#527C5E':'#DDE8DD'):'#EAE4DC';c.fill();c.textAlign='center';c.fillStyle=ready?(blocked?'#FFFFFF':'#506E57'):'#9B8C7D';c.font='700 12px "Noto Sans KR",sans-serif';
         c.fillText(st.shopBusy==='buying'?'구매 중…':st.shopBusy==='checking'?'구매 내역 확인 중…':full?'구멍 추가 완료':'+ 구멍 1개 · 1쭈',106,507);
         c.font='9px "Noto Sans KR",sans-serif';c.fillText(`현재 판 · ${st.extraHoles}/3개 추가`,106,523);
         c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#998A7C';c.fillText(`${st.moves}번 이동`,220,514);
