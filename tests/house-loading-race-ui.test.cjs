@@ -35,6 +35,8 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
   await close(f);assert.deepEqual(await readSave(),latest,'closing preserves the newer diary, added carpet and exact attached chair pose');
 
   // A delayed menu selection must not take control back after the user leaves it.
+  // Clear public artwork so this scenario still exercises a pending network load.
+  await page.evaluate(()=>caches.delete('ojjuda-house-built-in-art-v1'));
   await page.evaluate(()=>{houseOwner='loading-selection-race';});
   const empty={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{}}],diary:'메뉴 전환 중에도 유지할 기록'};await setSave(empty);f=await open();await f.locator('[data-tab="room"]').click();
   const selection=blockNext('chair-v1.runtime.json');await f.getByRole('button',{name:'의자 놓기',exact:true}).click();await waitForRequest(selection.seen);
