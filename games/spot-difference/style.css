@@ -153,3 +153,14 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   #zoom-dialog .zoom-toolbar{grid-template-columns:64px minmax(100px,180px) 44px 44px;justify-content:center}
 }
 @media(prefers-reduced-motion:reduce){.picture-timer.time-dock .clock{transition:none}}
+
+/* Make the paid hint easy to spot without making the compact toolbar taller. */
+#hint,#zoom-dialog #zoom-hint{gap:5px;background:#ffda55;color:#442b05;border:2px solid #be790b;font-size:14px;font-weight:800;box-shadow:0 2px 0 #c69223,0 0 0 2px #fff1b8}
+#hint::before,#zoom-dialog #zoom-hint::before{content:"💡";flex-shrink:0;font-size:18px;line-height:1}
+#hint:hover:not(:disabled),#zoom-dialog #zoom-hint:hover:not(:disabled){background:#ffc92e;border-color:#9a5c00;box-shadow:0 2px 0 #aa7310,0 0 0 3px #ffeaa0}
+#hint:focus-visible,#zoom-dialog #zoom-hint:focus-visible{outline:3px solid #925900;outline-offset:3px}
+#hint:disabled,#zoom-dialog #zoom-hint:disabled{opacity:1;background:#fff1c7;color:#80652c;border-color:#dbc48a;box-shadow:none}
+@media(max-width:900px),(max-width:1100px) and (max-height:600px){
+  .game-heading #hint{gap:3px;padding:5px;font-size:13px;min-height:44px}
+  .game-heading #hint::before{font-size:16px}
+}
