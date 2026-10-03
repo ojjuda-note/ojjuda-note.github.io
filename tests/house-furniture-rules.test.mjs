@@ -51,8 +51,8 @@ for(const [direction,x,wanted]of [['right',7,9],['left',0,0],['center',3,4],['ri
 }
 // Retired models stay removed; the approved replacement desk is introduced
 // once in the starter room without losing the existing room or diary.
-for(const id of ['bookshelf','desk','sofa','blanket-floor','side-table'])assert.ok(FURNITURE[id]);
-for(const id of ['chair','plant'])assert.equal(FURNITURE[id],undefined);
+for(const id of ['bookshelf','desk','sofa','blanket-floor','side-table','chair'])assert.ok(FURNITURE[id]);
+for(const id of ['plant'])assert.equal(FURNITURE[id],undefined);
 const previous={version:7,rooms:[
  {x:0,y:0,curtains:false,shelf:{direction:'right',x:8,y:1.5},furniture:{
   desk:{direction:'right',x:8.5,y:4},chair:{direction:'left',x:7.5,y:5},
