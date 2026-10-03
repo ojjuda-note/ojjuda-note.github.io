@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#f8f5f0">
   <title>가구 세트 만들기 · 우리집</title>
-  <link rel="stylesheet" href="./style.css?v=20261004-chairfarrear1">
+  <link rel="stylesheet" href="./style.css?v=20261004-cleanup1">
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 </head>
@@ -126,14 +126,11 @@
     <main class="editor-main">
       <div class="draft-bar"><span id="draft-status" role="status">자동 임시저장 대기</span><button id="draft-resume" type="button" hidden>이어서 하기</button><button id="draft-dismiss" type="button" class="quiet" hidden>임시저장 지우기</button></div>
       <div class="editor-intro"><div><h2>그림 넣기 → 자동 준비 → 확인·저장</h2><p>하나의 개체를 세 방향으로 만듭니다. 소파 본체·쿠션·담요는 각각 다른 세트로 저장하세요.</p></div><button id="fit-view" type="button" class="quiet">화면에 맞추기</button></div>
-      <section class="ai-panel" aria-labelledby="ai-title">
-        <button id="ai-details-toggle" type="button" class="quiet simple-only" aria-expanded="false">자동 그리기 연결·설정</button><div class="ai-heading"><div><h3 id="ai-title">나머지 방향 자동 그리기</h3><p id="ai-source-label">기준 그림: 우측</p></div><button id="ai-refresh" class="quiet" type="button">연결 확인</button></div>
-        <label class="field-label" for="ai-notes">꼭 유지할 구조 (선택)</label>
-        <textarea id="ai-notes" rows="2" maxlength="2000" placeholder="예: 막힌 옆판, 상판 아래 서랍과 손잡이, 하부 서랍장"></textarea>
-        <div class="ai-actions"><button id="ai-generate" class="primary" type="button">이 개체의 나머지 두 방향 그리기</button><button id="ai-review-view" type="button" hidden>이 방향 그림 확인 완료</button></div>
-        <p id="ai-status" role="status" aria-live="polite" data-state="checking">자동 그리기 연결을 확인하고 있어요.</p>
-        <p class="help-text ai-help">제작대상 하나만 그리도록 요청합니다. 지우기 도구로 다른 개체가 남지 않았는지 확인하세요. 가려진 구조와 실제 접지점은 직접 검수해야 합니다.</p>
-      </section>
+      <details class="project-notes"><summary>작업 메모</summary>
+        <label class="field-label" for="ai-notes">편집할 때 참고할 내용 (선택)</label>
+        <textarea id="ai-notes" rows="2" maxlength="2000" placeholder="예: 막힌 옆판, 상판 아래 서랍과 손잡이"></textarea>
+      </details>
+      <button id="ai-review-view" type="button" hidden>이 방향 그림 확인 완료</button>
       <section class="set-overview" aria-label="가구 세 방향">
         <div class="set-heading"><span>제작할 방향을 선택하세요</span><output id="set-summary" aria-live="polite">0 / 3 준비</output></div>
         <div class="view-cards">
@@ -167,6 +164,6 @@
     <label>우측 그림<select id="batch-right"></select></label>
     <div class="button-row"><button id="batch-cancel" type="button">취소</button><button id="batch-apply" class="primary" type="button">세 장 함께 넣기</button></div>
   </dialog>
-  </div><script type="module" src="./entry.js?v=20261004-chairfarrear1"></script>
+  </div><script type="module" src="./entry.js?v=20261004-cleanup1"></script>
 </body>
 </html>
