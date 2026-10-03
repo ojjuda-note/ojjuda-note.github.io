@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-lamp1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'table-built-in',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261004-chairlegs1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'table-built-in',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -13,15 +13,15 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe').locator('#app').waitFor({state:'visible'});await frame().locator('[data-tab="room"]').click();return frame();};
   let f=await open();assert.equal(await f.locator('[data-furniture="coffee-table"]').count(),0,'new built-in is not added to saved rooms');
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:table-built-in'))),saved);
-  const records=await f.evaluate(async()=>{const {listMadeItems}=await import('/house-test/custom-store.js?v=20261003-lamp1');return (await listMadeItems('table-built-in')).length;});assert.equal(records,0,'built-in does not consume a user-created item slot');
+  const records=await f.evaluate(async()=>{const {listMadeItems}=await import('/house-test/custom-store.js?v=20261004-chairlegs1');return (await listMadeItems('table-built-in')).length;});assert.equal(records,0,'built-in does not consume a user-created item slot');
   await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).click();
   for(const direction of ['left','center','right']){
    await f.locator(`button[data-direction="${direction}"]:not(.furniture)`).click();
    await f.locator(`[data-furniture="coffee-table"][data-direction="${direction}"][data-render-state="ready"]`).waitFor();
-   const rendered=await f.locator('[data-furniture="coffee-table"]').evaluate(async el=>{const {furnitureGeometry}=await import('/house-test/furniture.js?v=20261003-lamp1');const pose={direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)},g=furnitureGeometry('coffee-table',pose),canvas=el.querySelector('canvas');return {anchors:g.anchors.length,width:canvas.width,height:canvas.height,finite:g.anchors.every(p=>Number.isFinite(p.x+p.y))};});
+   const rendered=await f.locator('[data-furniture="coffee-table"]').evaluate(async el=>{const {furnitureGeometry}=await import('/house-test/furniture.js?v=20261004-chairlegs1');const pose={direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)},g=furnitureGeometry('coffee-table',pose),canvas=el.querySelector('canvas');return {anchors:g.anchors.length,width:canvas.width,height:canvas.height,finite:g.anchors.every(p=>Number.isFinite(p.x+p.y))};});
    assert.equal(rendered.anchors,4);assert(rendered.width>0&&rendered.height>0&&rendered.finite);
   }
-  const collision=await f.evaluate(async()=>{const {canPlaceFurniture}=await import('/house-test/model.js?v=20261003-lamp1');const pose={direction:'left',x:2,y:4};return {free:canPlaceFurniture('coffee-table',pose,[]),overlap:canPlaceFurniture('coffee-table',pose,[{id:'sofa',direction:'left',x:2,y:4}]),gap:canPlaceFurniture('coffee-table',pose,[{id:'sofa',direction:'left',x:0,y:3}])};});
+  const collision=await f.evaluate(async()=>{const {canPlaceFurniture}=await import('/house-test/model.js?v=20261004-chairlegs1');const pose={direction:'left',x:2,y:4};return {free:canPlaceFurniture('coffee-table',pose,[]),overlap:canPlaceFurniture('coffee-table',pose,[{id:'sofa',direction:'left',x:2,y:4}]),gap:canPlaceFurniture('coffee-table',pose,[{id:'sofa',direction:'left',x:0,y:3}])};});
   assert.deepEqual(collision,{free:true,overlap:false,gap:true});
   await f.locator('button[data-direction="left"]:not(.furniture)').click();
   for(const [id,value]of [['#bookshelf-gap',2],['#bookshelf-depth',4]])await f.locator(id).evaluate((el,value)=>{el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));},value);
