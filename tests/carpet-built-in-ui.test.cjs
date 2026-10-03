@@ -65,7 +65,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   assert(visible,'the overview shows the carpet in the small mobile viewport');
   await page.screenshot({path:path.join(proof,'carpet-built-in-mobile.png')});
   await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'카펫 배치',exact:true}).click();
-  await f.getByRole('button',{name:'치우기',exact:true}).click();assert.deepEqual(await readSave(),saved,'removal preserves all original furniture and diary');
+  await f.getByRole('button',{name:'회수',exact:true}).click();assert.deepEqual(await readSave(),saved,'removal preserves all original furniture and diary');
   await close(f);f=await open();assert.equal(await f.locator('[data-furniture="carpet"]').count(),0,'removed carpet must not return after reopening');
   assert.deepEqual(await readSave(),saved);assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
   console.log('CARPET BUILT-IN PASS: accessories, three views, floor/standing overlap, cancel, save/reopen, removal, mobile and existing room preservation');

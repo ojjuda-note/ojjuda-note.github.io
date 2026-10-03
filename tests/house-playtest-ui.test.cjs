@@ -85,7 +85,7 @@ for(const x of [0,8,3.5]){
  assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),'center');
  assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'1.5');
 }
-await f.getByRole('button',{name:'배치 완료',exact:true}).click();
+await f.getByRole('button',{name:'설치',exact:true}).click();
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 assert.equal(await f.locator('#bookshelf-gap').inputValue(),'3.5','frontal lateral position is saved');
 await setShelfRange('#bookshelf-gap',6);
@@ -106,7 +106,7 @@ const projection=await f.evaluate(async()=>{
 const shelfBox=await f.locator('.bookshelf').boundingBox();await page.mouse.move(shelfBox.x+shelfBox.width/2,shelfBox.y+shelfBox.height/2);await page.mouse.down();await page.mouse.move(shelfBox.x+shelfBox.width/2-60,shelfBox.y+shelfBox.height/2+12,{steps:5});await page.mouse.up();const draggedX=Number(await f.locator('.bookshelf').getAttribute('data-x'));assert.ok(draggedX<9&&Number.isInteger(draggedX*2));
 await f.locator('button[data-direction="center"]:not(.furniture)').click();await f.locator('button[data-direction="right"]:not(.furniture)').click();
 await setShelfRange('#bookshelf-depth',.5);
-await f.getByRole('button',{name:'배치 완료',exact:true}).click();
+await f.getByRole('button',{name:'설치',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-y'),'0.5');
 await f.getByRole('button',{name:'방 설정',exact:true}).click();
 await f.getByRole('button',{name:'커튼 걷기',exact:true}).click();assert.equal(await f.locator('.curtains').count(),0);

@@ -22,7 +22,7 @@ function saveChange(change){
 }
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function stopFurnitureDrag(){if(activeDragCleanup){const cleanup=activeDragCleanup;activeDragCleanup=null;cleanup();}}
-function clearPlacement(){stopFurnitureDrag();editSession++;editing=false;draft=null;linkedDraft=false;deskDraft=null;standaloneChairDraft=null;}
+function clearPlacement(){stopFurnitureDrag();editSession++;editing=false;draft=null;linkedDraft=false;deskDraft=null;standaloneChairDraft=null;$('#placement-actions').hidden=true;}
 function placementControlId(){return linkedDraft?'desk':editingId;}
 function placementControlPose(){return linkedDraft&&editingId==='chair'?deskDraft:draft;}
 function draftPlacements(){
@@ -44,7 +44,21 @@ function applyCamera(){
  const area=cameraBounds(cameraRooms()),inset=roomInset();
  const clampAxis=(position,start,length,size)=>{const a=inset-start*scale,b=size-inset-(start+length)*scale;return Math.max(Math.min(a,b),Math.min(Math.max(a,b),position));};
  pan.x=clampAxis(pan.x,area.left,area.width,view.clientWidth);pan.y=clampAxis(pan.y,area.top,area.height,view.clientHeight);
- world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;$('#zoom-out').disabled=scale<=minimumZoom()+.000001;
+ world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;$('#zoom-out').disabled=scale<=minimumZoom()+.000001;layoutPlacementActions();
+}
+function layoutPlacementActions(){
+ const actions=$('#placement-actions');actions.hidden=!initialized||!editing||!draft||tab!=='room'||expanding||disposed;if(actions.hidden)return;
+ const item=world.querySelector('.room.selected [data-furniture="'+CSS.escape(editingId)+'"]');if(!item){actions.hidden=true;return;}
+ const recall=$('#placement-recall'),done=$('#placement-done'),recallLabel=editingId==='desk'&&linkedDraft?'책상과 의자 회수':'회수';
+ recall.hidden=previewMode;recall.title=recallLabel;recall.setAttribute('aria-label',recallLabel);done.textContent=previewMode?'미리보기 닫기':'설치';done.disabled=!validDraft();
+ // Use the rendered bounds: CSS rounds subpixels differently from the room model
+ // after resize, especially when a selected item is centered in the viewport.
+ const viewport=view.getBoundingClientRect(),rect=item.getBoundingClientRect();
+ const left=rect.left-viewport.left,top=rect.top-viewport.top,right=rect.right-viewport.left,bottom=rect.bottom-viewport.top;
+ const leftHalf=(rect.left+rect.right)/2<(viewport.left+viewport.right)/2,topHalf=(rect.top+rect.bottom)/2<(viewport.top+viewport.bottom)/2,gap=8;
+ const x=leftHalf?right+gap:left-actions.offsetWidth-gap,y=topHalf?bottom+gap:top-actions.offsetHeight-gap;
+ actions.dataset.quadrant=(topHalf?'top':'bottom')+'-'+(leftHalf?'left':'right');actions.dataset.placement=(topHalf?'below':'above')+'-'+(leftHalf?'right':'left');
+ actions.style.left=Math.max(gap,Math.min(view.clientWidth-actions.offsetWidth-gap,x))+'px';actions.style.top=Math.max(gap,Math.min(view.clientHeight-actions.offsetHeight-gap,y))+'px';
 }
 const roomInset=()=>Math.min(20,Math.min(view.clientWidth,view.clientHeight)*.028);
 function cameraRooms(){
@@ -108,7 +122,7 @@ function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.dir
  world.append(room);}
 
  if(expanding)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++){if(state.rooms.some(r=>r.x===x&&r.y===y))continue;const cell={x,y},b=bounds(cell),button=element('button','expansion');button.type='button';button.dataset.cell=roomKey(cell);button.disabled=!canAdd(state.rooms,cell);button.append(element('strong','',button.disabled?'·':'＋'),element('span','',title(cell)));button.setAttribute('aria-label',title(cell)+(button.disabled?' · 먼저 옆방을 연결해 주세요':' 확장'));button.style.left=b.x+'px';button.style.top=b.y+'px';button.onclick=()=>addRoom(cell);world.append(button);}
- $('#room-name').textContent=title(current());$('#room-count').textContent=state.rooms.length+' / 35개 방';}
+ $('#room-name').textContent=title(current());$('#room-count').textContent=state.rooms.length+' / 35개 방';layoutPlacementActions();}
 function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}if(!saveChange(()=>state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}})))return;selected=roomKey(cell);renderWorld();renderPanel();if(expanding)focusRoom(true);toast('새 방이 연결됐어요.');}
 function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;clearPlacement();selected=id;renderWorld();renderPanel();if(!expanding)focusRoom();}
 function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon('room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
@@ -151,7 +165,7 @@ function makeChairLinkControl(){
   }
   renderWorld();renderPanel();focusRoom();
  };
- label.append(input,element('span','','책상과 연결'));group.append(label,element('p','panel-note','연결하면 의자가 책상 아래로 0.5칸 들어가고 함께 이동·회전해요. 배치 완료에서 저장합니다.'));
+ label.append(input,element('span','','책상과 연결'));group.append(label,element('p','panel-note','연결하면 의자가 책상 아래로 0.5칸 들어가고 함께 이동·회전해요. 설치하면 저장됩니다.'));
  return group;
 }
 function makeAccessoryControls(){
@@ -163,7 +177,7 @@ function makeAccessoryControls(){
   input.onchange=()=>{if(!editing||editingId!=='sofa')return;draft={...draft,accessories:{...normalizeAccessories(draft.accessories),[id]:input.checked}};renderWorld();};
   label.append(input,name);group.append(label);
  }
- group.append(element('p','panel-note','체크를 해제하면 해당 물건만 치워요. 소파와 함께 이동·회전하며, 배치 완료에서 저장합니다.'));
+ group.append(element('p','panel-note','체크를 해제하면 해당 물건만 치워요. 소파와 함께 이동·회전하며, 설치하면 저장됩니다.'));
  return group;
 }
 function itemCard(label,images,placed,fn){
@@ -202,11 +216,11 @@ function renderItemMenu(body){
  }
  body.append(grid);
 }
-function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#panel-title').textContent=expanding?'집 확장':{room:editing?(linkedDraft?'책상과 함께 배치':FURNITURE[editingId].shortLabel+' 배치'):'아이템',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
+function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#panel').classList.toggle('placement-panel',tab==='room'&&editing&&!expanding);$('#panel .panel-head small').hidden=tab==='room'&&editing;layoutPlacementActions();$('#panel-title').textContent=expanding?'집 확장':{room:editing?(linkedDraft?'책상과 함께 배치':FURNITURE[editingId].shortLabel+' 배치'):'아이템',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
 
  if(tab==='room'){
   if(editing){
-   const item=FURNITURE[editingId],controlId=placementControlId(),controlItem=FURNITURE[controlId],directions=element('div','directions');
+   const item=FURNITURE[editingId],controlId=placementControlId(),controlItem=FURNITURE[controlId],directions=element('div','directions placement-directions');
    for(const [id,text]of [['left','왼쪽'],['center','정면'],['right','오른쪽']]){
     if(!controlItem.directions.includes(id))continue;
     const button=actionButton(text,()=>{
@@ -218,12 +232,10 @@ function renderPanel(){const body=$('#panel-body');body.replaceChildren();$('#pa
     });
     button.dataset.direction=id;button.setAttribute('aria-pressed',String(placementControlPose().direction===id));directions.append(button);
    }
-   body.append(directions);
+   const toolbar=element('div','placement-toolbar');toolbar.append(directions,actionButton('취소',()=>finishPlacement(false)));body.append(toolbar);
    body.append(makeFurnitureControls());if(editingId==='sofa')body.append(makeAccessoryControls());if(editingId==='chair'&&current().furniture.desk)body.append(makeChairLinkControl());
-   const row=element('div','directions'),done=actionButton(previewMode?'미리보기 닫기':'배치 완료',()=>finishPlacement(true));done.id='placement-done';done.disabled=!validDraft();
-   row.append(actionButton('취소',()=>finishPlacement(false)));if(!previewMode)row.append(actionButton(editingId==='desk'&&linkedDraft?'책상과 의자 치우기':'치우기',removeFurniture));row.append(done);
    const warning=element('p','placement-warning','다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
-   body.append(row,warning,element('p','panel-note',linkedDraft?'책상 위치를 기준으로 함께 움직여요. 의자만 치우면 책상은 그대로 남아요.':item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));
+   const feedback=element('div','placement-feedback');feedback.append(warning,element('p','panel-note',linkedDraft?'책상 위치를 기준으로 함께 움직여요. 의자만 회수하면 책상은 그대로 남아요.':item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));body.append(feedback);
    syncPlacementControls();
   }else{
    renderItemMenu(body);$('#panel').scrollTop=0;
@@ -244,6 +256,7 @@ function end(e,canceled=false){if(!pointers.has(e.pointerId))return;const p=poin
 view.addEventListener('pointerup',e=>end(e));view.addEventListener('pointercancel',e=>end(e,true));view.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(-e.deltaY*.001),point(e));},{passive:false});view.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.2);}else if(e.key==='-'){e.preventDefault();zoom(1/1.2);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();pan.x+=e.key==='ArrowLeft'?65:e.key==='ArrowRight'?-65:0;pan.y+=e.key==='ArrowUp'?65:e.key==='ArrowDown'?-65:0;applyCamera();}});
 $('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#overview').onclick=()=>focusRoom(true);$('#home-view').onclick=()=>focusRoom();$('#expand').onclick=()=>toggleExpansion();$('#exit').onclick=()=>{clearPlacement();if(initialized)persist();port?.postMessage({type:'close'});};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#exit').click();});document.querySelectorAll('[data-tab]').forEach(b=>{b.querySelector('span').innerHTML=icon(b.dataset.tab);b.onclick=()=>setTab(b.dataset.tab);});
 new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);}).observe(view);
+$('#placement-recall').onclick=()=>{if(editing&&!previewMode)removeFurniture();};$('#placement-done').onclick=()=>{if(editing)finishPlacement(true);};$('#placement-actions').addEventListener('pointerdown',event=>event.stopPropagation());new ResizeObserver(layoutPlacementActions).observe($('#placement-actions'));
 window.addEventListener('message',async e=>{
  if(connecting||initialized||window.parent===window||e.source!==window.parent||e.origin!==location.origin||e.data?.type!=='ojjuda-house-test-init'||!e.ports[0]||typeof e.data.owner!=='string'||!e.data.owner||e.data.owner.length>180)return;
  connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;canUseStudio=e.data.canUseStudio===true;
@@ -299,7 +312,7 @@ function removeFurniture(){
 }
 function updatePlacementStatus(button){
  const valid=validDraft();button.classList.toggle('placement-invalid',!valid);
- const done=$('#placement-done'),warning=$('#placement-warning');if(done)done.disabled=!valid;if(warning)warning.hidden=valid;
+ const done=$('#placement-done'),warning=$('#placement-warning');if(done)done.disabled=!valid;if(warning)warning.hidden=valid;layoutPlacementActions();
 }
 function makeFurniture(id,s,active,desk=null){
  const button=element('button','furniture '+id),item=FURNITURE[id];button.type='button';button.setAttribute('aria-label',(item.shortLabel||item.label)+' 배치 변경');button.disabled=!active||expanding||tab!=='room'||(editing&&!isEditingFurniture(id));
