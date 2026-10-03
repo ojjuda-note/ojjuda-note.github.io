@@ -46,7 +46,7 @@ assert.equal(normalizePlacement('bookshelf',{direction:'back',x:0,y:0}),null);
 assert.deepEqual(normalizePlacement('bookshelf',{direction:'right',x:99.2,y:-5}),{direction:'right',x:9,y:0});
 for(const [direction,x,wanted]of [['right',7,9],['left',0,0],['center',3,4],['right',6.5,7.5]]){
  const upgraded=normalize({version:2,rooms:[{x:0,y:0,curtains:false,shelf:{direction,x,y:1.5}}],diary:'keep me'});
- assert.equal(upgraded.version,12);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
+ assert.equal(upgraded.version,13);assert.equal(upgraded.rooms[0].shelf.x,wanted);assert.equal(upgraded.rooms[0].curtains,false);assert.equal(upgraded.diary,'keep me');
  assert.deepEqual(normalize(upgraded),upgraded,'migration runs once');
 }
 // Retired models stay removed; the approved replacement desk is introduced
@@ -61,7 +61,7 @@ const previous={version:7,rooms:[
  {x:1,y:0,curtains:true,shelf:null,furniture:{desk:{direction:'center',x:4,y:1}}}
 ],diary:'kept'};
 const next=normalize(previous);
-assert.equal(next.version,12);
+assert.equal(next.version,13);
 assert.deepEqual(next.rooms[0].shelf,previous.rooms[0].shelf);
 assert.equal(next.rooms.length,2);assert.equal(next.rooms[0].curtains,false);assert.equal(next.diary,'kept');
 assert.deepEqual(next.rooms[0].furniture,{desk:{direction:'right',x:9,y:3.5}},'replace the retired desk once at its approved free position');

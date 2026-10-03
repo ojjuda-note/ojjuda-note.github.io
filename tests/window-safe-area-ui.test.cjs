@@ -17,7 +17,9 @@ const cases = [
   {name:'월드 사진 선택',page:'note/index.html',html:`<div class="world-picker"><section class="world-picker-panel"><header class="world-picker-head">사진 선택${action}</header><div class="world-picker-grid">${long}</div></section></div>`},
   {name:'사진 확대',page:'note/index.html',html:'<div class="note-photo-lightbox"><img alt="확대 사진" src="/favicon.svg"><button class="note-photo-lightbox-close" id="audit-action">닫기</button></div>'},
   {name:'오락실 게임 공통',page:'world.html',html:`<div class="gov"><section class="gbox"><div class="ghead">게임</div>${long}${action}</section></div>`},
-  {name:'당구/포켓볼',page:'world.html',html:`<div class="gov bl-ov"><section class="gbox bl-box"><div class="ghead">포켓볼</div>${long}${action}</section></div>`},
+  // The full-screen game has six grid rows; long board content scrolls inside
+  // .bl-can. A direct 700px child creates a row the actual game never renders.
+  {name:'당구/포켓볼',page:'world.html',targets:['#audit-game-close','#audit-action'],html:`<div class="gov bl-ov"><section class="gbox bl-box"><div class="ghead"><span class="gt">포켓볼</span><button class="gx" id="audit-game-close">닫기</button></div><div class="bl-hud">나 · 친구</div><div class="bl-play"><div class="bl-can">${long}</div><div class="bl-power">샷 힘</div></div><p class="bl-msg">조준해 주세요</p><div class="bl-aim">조준 기준</div><div class="bl-ctrl">${action}</div></section></div>`},
   {name:'맞고 회원대결 선택/결과',page:'games/matgo-online.html',html:`<div class="dialog"><section>${long}${action}</section></div>`},
   {name:'맞고 PC 선택/결과',page:'games/matgo.html',html:`<div class="modal"><section class="card">${long}${action}</section></div>`},
   {name:'틀린그림찾기 로그인',page:'games/spot-difference/index.html',native:'#auth-dialog',target:'#login-submit'},
@@ -74,7 +76,7 @@ async function checkAction(page, target, bounds) {
             const height=short?260:viewport.height,top=short?20:0;
             await page.evaluate(({height,top})=>{Object.assign(auditViewport,{height,top});visualViewport.dispatchEvent(new Event('resize'));},{height,top});
             await settle(page);
-            await checkAction(page,item.target||'#audit-action',{top:top+24,bottom:top+height-48});
+            for(const target of item.targets||[item.target||'#audit-action'])await checkAction(page,target,{top:top+24,bottom:top+height-48});
           }
           console.log('PASS',viewport.width,item.name);
         }catch(error){failures.push(`${viewport.width} ${item.name}: ${error.message}`);}

@@ -1,7 +1,7 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261003-cushions3';
-import {floorPoint} from './model.js?v=20261003-cushions3';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261003-cushions3';
-import {listMadeItems} from './custom-store.js?v=20261003-cushions3';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261003-blanket4';
+import {floorPoint} from './model.js?v=20261003-blanket4';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261003-blanket4';
+import {listMadeItems} from './custom-store.js?v=20261003-blanket4';
 const items=new Map();
 const registeredViews=runtime=>Object.fromEntries(['left','center','right'].map(direction=>[direction,{...runtime.views[direction].placement,direction}]));
 // Approved built-ins use the exact 2D runtimes exported by the studio.
@@ -13,7 +13,7 @@ export async function loadBuiltInItems(){
   ['chair','chair-v1.runtime.json']
  ].map(async([id,file])=>{
   const item=FURNITURE[id],url=new URL('./assets/'+file,import.meta.url);
-  url.searchParams.set('v',new URL(import.meta.url).searchParams.get('v')||'20261003-cushions3');
+  url.searchParams.set('v',new URL(import.meta.url).searchParams.get('v')||'20261003-blanket4');
   let response;
   try{response=await fetch(url);}catch{throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
   if(!response.ok)throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');
