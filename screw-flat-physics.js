@@ -49,6 +49,8 @@
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
   const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃'];
+  const FIRST_SHAPED_STAGE=11,PIECE_INCREASES=[20,35,55,80,115,160,220,310,430,600,800];
+  const pieceCount=L=>L<FIRST_SHAPED_STAGE?1+Math.floor(L/2):7+PIECE_INCREASES.filter(n=>L>=n).length;
   function flowerOutline(first=false){
     // A convex centre and five circular caps form one concave flower without overlapping bodies.
     const radius=first?70:110,offset=first?100:80,half=Math.PI/5,edgeX=radius*Math.cos(half)-offset,edgeY=radius*Math.sin(half);
@@ -113,12 +115,12 @@
     return null;
   }
   function makeShapedLevel(L){
-    const count=Math.min(13,7+Math.floor((L-4)/5))+[50,100,175,275,400].filter(n=>L>=n).length;
-    const shape=(L-5+6)%SHAPE_NAMES.length;let leaves,roots;
+    const count=pieceCount(L);
+    const shape=(L-FIRST_SHAPED_STAGE+6)%SHAPE_NAMES.length;let leaves,roots;
     for(let attempt=0;attempt<12;attempt++){
       const random=seeded(9041+L*7919+attempt*104729);
-      roots=shapeOutline(shape,L===5).map(fitFragment);if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
-      if(L===5){
+      roots=shapeOutline(shape,L===FIRST_SHAPED_STAGE).map(fitFragment);if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
+      if(L===FIRST_SHAPED_STAGE){
         // Keep the first flower's centre small and its top mounts high enough to reopen as it falls.
         const centre=roots[4],halves=[false,true].map(low=>fitFragment(clipPlane(centre.raw,1,0,181,low)));
         centre.children=halves;leaves.splice(4,1,...halves);
@@ -150,30 +152,25 @@
     return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
   }
   function makeFlatLevel(stage){
-    const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),random=seeded(431+L*7919);
-    if(L>=5)return makeShapedLevel(L);
+    const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),count=pieceCount(L),random=seeded(431+Math.max(1,count-2)*7919);
+    if(L>=FIRST_SHAPED_STAGE)return makeShapedLevel(L);
     const top=[[153,157],[207,157],[232,169],[247,192],[251,270],[109,270],[113,192],[128,169]].map(([x,y])=>({x,y}));
     let bands,counts;
-    if(L<=3){
+    if(count===1){
+      bands=[[[95,157],[265,157],[318,475],[42,475]].map(([x,y])=>({x,y}))];counts=[1];
+    }else if(count===2){
+      bands=[top,[[109,270],[251,270],[318,475],[42,475]].map(([x,y])=>({x,y}))];counts=[1,1];
+    }else{
       bands=[[[153,157],[207,157],[232,169],[247,192],[251,266],[109,266],[113,192],[128,169]],
         [[109,266],[251,266],[307,372],[53,372]],[[53,372],[307,372],[318,475],[42,475]]].map(poly=>poly.map(([x,y])=>({x,y})));
-      counts=L===1?[1,1,1]:L===2?[1,2,1]:[1,2,2];
-    }else{
-      const rows=[[270,109,251],[323,74,286],[374,52,308],[424,43,317],[475,42,318]];
-      bands=[top];
-      for(let i=0;i<rows.length-1;i++){
-        const [y0,l0,r0]=rows[i],[y1,l1,r1]=rows[i+1];
-        // Adjacent pieces share the same boundary; the outer shape stays closed.
-        bands.push([{x:l0,y:y0},{x:r0,y:y0},{x:r1,y:y1},{x:l1,y:y1}]);
-      }
-      counts=[2,1,1,1,2];
+      counts=count===3?[1,1,1]:count===4?[1,2,1]:count===5?[1,2,2]:[2,2,2];
     }
     const plates=[],holes=[],screws=[];
     for(const x of [90,180,270])holes.push({id:holes.length,x,y:100,owner:null,screw:null});
     bands.forEach((band,row)=>{
       const left=Math.min(...band.map(v=>v.x)),right=Math.max(...band.map(v=>v.x));
       const midY=(Math.min(...band.map(v=>v.y))+Math.max(...band.map(v=>v.y)))/2;
-      const rowSlope=(random()<.5?-1:1)*(L>3&&row===0?.18+random()*.2:.05+random()*.12);
+      const rowSlope=(random()<.5?-1:1)*(.05+random()*.12);
       const cuts=[{x:left-1,slope:0}];for(let col=1;col<counts[row];col++)cuts.push({x:left+(right-left)*(col/counts[row]+(random()-.5)*.025),slope:rowSlope});cuts.push({x:right+1,slope:0});
       for(let col=0;col<counts[row];col++){
         let poly=clipLine(clipLine(band,cuts[col],midY,false),cuts[col+1],midY,true);

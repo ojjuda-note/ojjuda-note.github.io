@@ -57,7 +57,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),1,'switching versions never overwrites flat progress');
    await page.locator('[data-g=close]').click();assert.equal(await page.locator('#gov').count(),0);
   }
-  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>screwWorld.open('screw'));await page.locator('[data-mode=flat]').click();
+  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'4');screwWorld.open('screw');});await page.locator('[data-mode=flat]').click();
   const canvas=page.locator('#gcv');
   const touch=async q=>{const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+q.x*b.width/360,b.y+q.y*b.height/540);};
   const drawnText=()=>page.evaluate(()=>{
@@ -117,30 +117,30 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   }
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.complete),true,'touch relocation removes every plate and reveals the picture');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-revealed.png')});
-  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(OjjudaFlatPictures.COLLECTION_KEY))),['window-cat'],'a real puzzle completion earns its picture');
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(OjjudaFlatPictures.COLLECTION_KEY))),['puppy-beach'],'a real puzzle completion earns its picture');
   await touch({x:311,y:26});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),true);
   const lockedNames=await page.evaluate(()=>OjjudaFlatPictures.PICTURES.filter(p=>!screwWorld.current().game.state.collection.has(p.id)).map(p=>p.name));
   const albumLabels=await drawnText();for(const name of lockedNames)assert.equal(albumLabels.includes(name),false,'the locked album does not spoil picture subjects');
   await touch({x:240,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null,'locked pictures cannot be previewed');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-first.png')});
-  await touch({x:90,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),0);
+  await touch({x:240,y:264});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),3);
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-picture.png')});
   await page.keyboard.press('Escape');assert.equal(await page.locator('#gov').count(),1,'Escape returns from artwork without closing the game');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null);
   await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),false);
-  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2);
+  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),5);
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),2,'reopening continues the flat version independently');
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.has('window-cat')),true,'the earned artwork survives reopening');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),5,'reopening continues the flat version independently');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.has('puppy-beach')),true,'the earned artwork survives reopening');
   const outlines=[];
-  for(let stage=5;stage<=11;stage++){
+  for(let stage=11;stage<=17;stage++){
    await page.setViewportSize({width:390,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
    await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
    outlines.push(await page.evaluate(()=>screwWorld.current().game.state.level.shape));
    await page.evaluate(()=>new Promise(requestAnimationFrame));
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-shape-${stage}.png`)});
-   if(stage===5){
+   if(stage===11){
     await page.waitForFunction(()=>{const img=OjjudaFlatPictures.preload(screwWorld.current().game.state.level.picture).img;return img.complete&&img.naturalWidth>0;});
     const title=await drawnText();assert.ok(title.includes('숨은 그림'));assert.equal(title.includes('별바다 고래'),false,'the stage title keeps the surprise');
     const masking=await page.evaluate(()=>{
@@ -160,7 +160,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    }
   }
   assert.equal(new Set(outlines).size,7,'seven different outer metal shapes render on mobile');
-  for(const [stage,width] of [[501,320],[1000,390]]){
+  for(const [stage,width,pieces] of [[501,320,16],[1000,390,18]]){
    await page.setViewportSize({width,height:844});
    await page.evaluate(stage=>localStorage.setItem(OjjudaScrewGames.STAGE_KEY,String(stage)),stage);
    await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
@@ -169,7 +169,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
     const titleWidth=r.ctx.measureText(`${st.L}/${OjjudaScrewGames.LAST_STAGE}단계 · ${st.level.name}`).width;r.ctx.restore();
     return{stage:st.L,pieces:st.level.plates.length,spares:st.level.holes.filter(h=>h.owner===null).length,titleWidth,order:st.level.order.slice(0,2)};
    });
-   assert.equal(advanced.stage,stage);assert.equal(advanced.pieces,18);assert.equal(advanced.spares,3);
+   assert.equal(advanced.stage,stage);assert.equal(advanced.pieces,pieces);assert.equal(advanced.spares,3);
    assert.ok(advanced.titleWidth<251,'the full stage counter fits beside the album button');
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-stage-${stage}.png`)});
    for(const [index,id] of advanced.order.entries())await touchMove(id,index);
