@@ -461,18 +461,32 @@ const held = (E, screws) => screws.some(s => s.state === 'in' && (s.thru === E |
 // 여러 조각으로 된 블럭(곡선 튜브 등)은 E.parts = [{ geom, pc, pR, color }], 한 덩어리면 geom 하나
 function shapes(E) { const q = pose(E); if (!E.parts) return [{ geom: E.geom, R: q.R, c: q.c, color: E.color }]; return E.parts.map(p => ({ geom: p.geom, R: mm(q.R, p.pR), c: add(q.c, mv(q.R, p.pc)), color: p.color || E.color })); }
 const obbs = E => shapes(E).map(sh => ({ c: add(sh.c, mv(sh.R, sh.geom.cen || [0, 0, 0])), R: sh.R, h: sh.geom.half }));
+const planeCache = new WeakMap();
+function geomPlanes(geom) {
+  if (!planeCache.has(geom)) planeCache.set(geom, geom.faces.map(f => {
+    const p = geom.verts[f.idx[0]], v = geom.verts[f.idx[1]], w = geom.verts[f.idx[2]];
+    let n = norm(cross(sub(v, p), sub(w, p))); if (dot(n, f.n) < 0) n = mul(n, -1);
+    return { n, p };
+  }));
+  return planeCache.get(geom);
+}
+// 실제로 그린 볼록한 면과 교차하는 구간. 원·원뿔·지붕의 빈 모서리는 막지 않아요.
+function shapeHit(o, d, len, sh, inset = 0) {
+  const Rt = tr(sh.R), p = mv(Rt, sub(o, sh.c)), a = mv(Rt, d);
+  let lo = 0, hi = len;
+  for (const f of geomPlanes(sh.geom)) {
+    const dist = dot(f.n, sub(p, f.p)) + inset, slope = dot(f.n, a);
+    if (Math.abs(slope) < 1e-9) { if (dist > 1e-7) return false; continue; }
+    const t = -dist / slope;
+    if (slope < 0) lo = Math.max(lo, t); else hi = Math.min(hi, t);
+    if (lo > hi + 1e-7) return false;
+  }
+  return sh.geom.faces.length > 0;
+}
 function rayHit(o, d, len, els, skip) {
   for (const Q of els) {
-    if (skip.includes(Q) || Q.state !== 'on' || Q.fall || Q.dyn) continue;
-    for (const b of obbs(Q)) {
-      const Rt = tr(b.R), lo = mv(Rt, sub(o, b.c)), ld = mv(Rt, d), h = b.h; let t0 = 0, t1 = len, hit = true;
-      for (let k = 0; k < 3; k++) {
-        if (Math.abs(ld[k]) < 1e-9) { if (Math.abs(lo[k]) > h[k]) { hit = false; break; } continue; }
-        let a = (-h[k] - lo[k]) / ld[k], bb = (h[k] - lo[k]) / ld[k]; if (a > bb) [a, bb] = [bb, a];
-        t0 = Math.max(t0, a); t1 = Math.min(t1, bb); if (t0 > t1) { hit = false; break; }
-      }
-      if (hit) return Q;
-    }
+    if (skip.includes(Q) || Q.state !== 'on') continue;
+    for (const sh of shapes(Q)) if (shapeHit(o, d, len, sh)) return Q;
   }
   return null;
 }
@@ -501,8 +515,8 @@ function obbHit(A, B) {   // 겹치면 { n: B→A 쪽 방향, d: 깊이, p: 닿�
 const box = E => { const q = pose(E); return { c: add(q.c, mv(q.R, E.geom.cen || [0, 0, 0])), R: q.R, h: E.geom.half }; };
 const hitAny = (A, Q) => { for (const b of obbs(Q)) { const h = obbHit(A, b); if (h) return h; } return null; };
 function stepDyn(E, others, g, h) {   // 중력으로 떨어지고, 박힌 조각에 부딪히면 밀려나고 튕기고 미끄러져요
-  const D = E.dyn; if (D.sleep > 0.6) return;
-  D.t += h; D.v = add(D.v, mul(g, h)); D.c = add(D.c, mul(D.v, h));
+  const D = E.dyn; D.t += h; if (D.sleep > 0.6) return;
+  D.v = add(D.v, mul(g, h)); D.c = add(D.c, mul(D.v, h));
   const wl = Math.hypot(D.w[0], D.w[1], D.w[2]); if (wl > 1e-6) D.R = mm(axisRot(mul(D.w, 1 / wl), wl * h), D.R);
   D.w = mul(D.w, 1 - 0.6 * h); let touch = false;
   for (const Q of others) {
@@ -521,13 +535,22 @@ function stepDyn(E, others, g, h) {   // 중력으로 떨어지고, 박힌 조�
 }
 const cellKey = (p, mid) => [0, 1, 2].map(i => Math.floor((p[i] + mid[i]) / GRID)).join(',');
 function mapLevel(M) {   // 칸 지도: 칸 → 블럭, 특별한 조각 목록
-  M.grid = new Map(); for (const e of M.els) if (e.kind === 'block' && e.cell) M.grid.set(e.cell.join(','), e);
-  M.special = M.els.filter(e => !(e.kind === 'block' && e.cell) && !e.flat); M.mid = M.mid || [0, 0, 0];
+  M.mid = M.mid || [0, 0, 0]; M.grid = new Map();
+  for (const e of M.els) if (e.kind === 'block' && e.cell && e.cell.every((n, i) => Math.abs(e.c[i] + M.mid[i] - (n + 0.5) * GRID) < 1e-6)) M.grid.set(e.cell.join(','), e);
+  M.gridEls = new Set(M.grid.values()); M.special = M.els.filter(e => !M.gridEls.has(e));
   M.refs = new Map(M.els.map(e => [e, []])); for (const z of M.screws) { M.refs.get(z.thru).push(z); M.refs.get(z.into).push(z); }
   return M;
 }
 function gridHit(lvl, o, d, len, skip) {
-  for (let t = 0.02; t < len; t += GRID * 0.3) { const b = lvl.grid.get(cellKey(add(o, mul(d, t)), lvl.mid)); if (b && b.state === 'on' && !b.dyn && !skip.includes(b)) return b; }
+  const p = add(o, lvl.mid), cell = p.map(v => Math.floor(v / GRID)), step = d.map(Math.sign);
+  const delta = d.map(v => Math.abs(v) < 1e-9 ? Infinity : GRID / Math.abs(v));
+  const next = d.map((v, i) => Math.abs(v) < 1e-9 ? Infinity : ((cell[i] + (v > 0 ? 1 : 0)) * GRID - p[i]) / v);
+  for (let t = 0; t <= len;) {
+    const b = lvl.grid.get(cell.join(','));
+    if (b && b.state === 'on' && !b.dyn && !b.fall && !skip.includes(b) && rayHit(o, d, len, [b], skip)) return b;
+    t = Math.min(...next); if (!Number.isFinite(t)) break;
+    for (let k = 0; k < 3; k++) if (next[k] <= t + 1e-9) { cell[k] += step[k]; next[k] += delta[k]; }
+  }
   return null;
 }
 function screwPose(s) {
@@ -554,23 +577,30 @@ function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 
 }
 function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나사가 막고 있나요?
   const { p, a } = screwPose(s), o = add(p, mul(a, HEAD_H + 0.01));
-  if (Array.isArray(L)) return rayHit(o, a, 3, L, [s.thru, s.into]);
-  return gridHit(L, o, a, 9, [s.thru, s.into]) || rayHit(o, a, 9, L.special, [s.thru, s.into]) || screwHit(s, L, o, a, 9);
+  const skip = [s.thru, s.into], travel = 0.24;   // 실제 풀림 이동(0.22) + 여유. 멀리 떨어진 물체는 막지 않아요.
+  if (Array.isArray(L)) return rayHit(o, a, travel, L, skip);
+  return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, L.special, skip)
+    || rayHit(o, a, travel, L.els.filter(e => L.gridEls.has(e) && (e.dyn || e.fall)), skip) || screwHit(s, L, o, a, travel);
 }
 const STAGES = 500;
-const targetScrews = L => (L <= 1 ? 20 : Math.round(50 + 950 * Math.pow((Math.min(L, STAGES) - 2) / (STAGES - 2), 1.6)));   // 1단계 20개, 2단계 50개 → 500단계 1000개
+const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6 : Math.round(48 + 952 * Math.pow((Math.min(L, STAGES) - 4) / (STAGES - 4), 0.8));
+const colorCount = L => L <= 3 ? 2 : Math.min(3 + Math.floor((L - 4) / 4), COLORS.length);
+function tutorialModel(L) {   // 처음 세 판은 작은 물건과 두 색으로 회전·분해를 익혀요.
+  const cells = L === 1 ? [[0, 0, 0], [1, 0, 0]] : L === 2 ? [[0, 0, 0], [1, 0, 0], [2, 0, 0]] : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]];
+  return assemble(['작은 블럭', '블럭 기차', '네모 블럭'][L - 1], cells.map((p, i) => cube(...p, WOOD[i])), { minS: targetScrews(L) });
+}
 function makeLevel(L) {   // 빈자리가 모자라거나 풀 수 없는 모양이면 다시 만들어요
   for (let tries = 0; ; tries++) { try { return buildLevel(L, tries > 14); } catch (e) { if (tries > 30) throw e; } }   // 계속 안 되면 같은 나사 수의 큐브로 대신
 }
 function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: 커지는 물건은 크기를 키우고, 작은 물건은 블럭 전시대 위에
   const T = targetScrews(L), f = alt ? modelCube : MODELS[(L - 1) % MODELS.length];
-  if (L === 1) return modelCube(0, 21);
-  const ms = L >= 2 ? 50 : 0;   // 2단계부터는 나사 50개 이상
+  if (L <= 3) return tutorialModel(L);
+  const ms = Math.ceil(T * 0.85 / 3) * 3;
   if (f.blocks) { let t = 0; while (t < 60 && f.blocks(t) * 2.2 < T) t++; const A = f(t, ms); if (t > 0 && A.screws.length > T * 1.3) { const B2 = f(t - 1, ms); if (Math.abs(B2.screws.length - T) < Math.abs(A.screws.length - T)) return B2; } return A; }
   return withPedestal(f(Math.min(2, Math.floor((L - 1) / MODELS.length))), T);
 }
 function buildLevel(L, alt = false) {
-  const M = mapLevel(sizedModel(L, alt)), K = Math.min(2 + Math.floor((L - 1) / 10), COLORS.length);   // 나사 색은 10단계마다 한 가지씩 늘어요 (1~10단계 2가지 … 101단계부터 12가지)
+  const M = mapLevel(sizedModel(L, alt)), K = colorCount(L);   // 4판부터 세 색, 이후 네 단계마다 색을 늘려요.
   const order = [], left = new Set(M.screws);
   while (left.size) {   // 지금 뺄 수 있는 나사를 한꺼번에(순서는 섞어서)
     const av = [...left].filter(s => !blocked(s, M));
@@ -581,9 +611,9 @@ function buildLevel(L, alt = false) {
   }
   M.els.forEach(e => { e.state = 'on'; }); M.screws.forEach(s => { s.state = 'in'; });
   const queue = [];
-  for (let t = 0; t < order.length / 3; t++) { let c; do { c = Math.floor(Math.random() * K); } while (t >= 2 && c === queue[t - 1] && c === queue[t - 2]); queue.push(c); }
+  for (let t = 0; t < order.length / 3; t++) { let c; do { c = t < K || L <= 3 ? t % K : Math.floor(Math.random() * K); } while (t >= 2 && c === queue[t - 1] && c === queue[t - 2]); queue.push(c); }
   order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; });
-  return { name: M.name, els: M.els, screws: M.screws, queue, grid: M.grid, special: M.special, mid: M.mid, refs: M.refs };
+  return { name: M.name, els: M.els, screws: M.screws, queue, grid: M.grid, gridEls: M.gridEls, special: M.special, mid: M.mid, refs: M.refs };
 }
 // 작은 물건은 계단식 블럭 전시대 위에 올려서 나사 수를 맞춰요 (전시대도 블럭 사이에 판과 나사가 숨은 퍼즐)
 function withPedestal(obj, T) {
@@ -665,6 +695,51 @@ function paintOrder(items, cam) {
     for (const j of after[i]) if (!done[j] && --deg[j] === 0) ready.push(j);
   }
   return out;
+}
+// 화면의 같은 점에서 면까지의 역거리. 값이 큰 면이 가까워요.
+function screenDepth(n, p, V, sc, zm, pan) {
+  const nv = mv(V, n), pv = mv(V, p), s = SC * zm / sc, cz = F * sc;
+  const den = dot(nv, sub(pv, [0, 0, cz]));
+  if (Math.abs(den) < 1e-9) return null;
+  return [nv[0] / (s * den), -nv[1] / (s * den), (-nv[0] * (CX + pan[0]) / s + nv[1] * (CY + pan[1]) / s - nv[2] * cz) / den];
+}
+const depthAt = (d, p) => d[0] * p.x + d[1] * p.y + d[2];
+const polyArea = p => p.reduce((v, q, i) => { const r = p[(i + 1) % p.length]; return v + q.x * r.y - q.y * r.x; }, 0);
+function clipHalf(poly, distance) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length], da = distance(a), db = distance(b);
+    if (da >= 0) out.push(a);
+    if ((da >= 0) !== (db >= 0)) { const t = da / (da - db); out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }); }
+  }
+  return out;
+}
+function subtractPoly(poly, cut) {
+  if (cut.length < 3 || Math.abs(polyArea(cut)) < 0.001) return [poly];
+  const sign = Math.sign(polyArea(cut)), out = []; let rest = poly;
+  for (let i = 0; i < cut.length && rest.length >= 3; i++) {
+    const a = cut[i], b = cut[(i + 1) % cut.length], dist = p => sign * ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x));
+    const outside = clipHalf(rest, p => -dist(p)); if (outside.length >= 3 && Math.abs(polyArea(outside)) > 0.001) out.push(outside);
+    rest = clipHalf(rest, dist);
+  }
+  return out;
+}
+const bounds2 = p => [Math.min(...p.map(q => q.x)), Math.min(...p.map(q => q.y)), Math.max(...p.map(q => q.x)), Math.max(...p.map(q => q.y))];
+const boundsOverlap = (a, b) => a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
+function maskScrews(items, xrayOn) {
+  const faces = items.filter(it => !it.owner.p && it.owner !== xrayOn && it.alpha > 0.5)
+    .flatMap(it => it.polys.filter(pg => pg.depth).map(pg => ({ pg, bb: bounds2(pg.pts) })));
+  for (const it of items) if (it.owner.p) for (const pg of it.polys) {
+    pg.visible = [pg.pts]; if (!pg.depth) continue;
+    const bb = bounds2(pg.pts);
+    for (const other of faces) {
+      if (!boundsOverlap(bb, other.bb)) continue;
+      const d = other.pg.depth.map((v, i) => v - pg.depth[i]);
+      const front = clipHalf(other.pg.pts, p => depthAt(d, p) - 1e-6);
+      if (front.length < 3) continue;
+      pg.visible = pg.visible.flatMap(p => subtractPoly(p, front)); if (!pg.visible.length) break;
+    }
+  }
 }
 const LENS_R = 80;   // 투시 돋보기 반지름(px)
 function circleHitsHull(cx, cy, r, H) {   // 원이 볼록 다각형과 겹치나요?
@@ -942,21 +1017,24 @@ function screw3d(api) {
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
-        for (const f of geom.faces) { const nw = mv(R, f.n); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, f.n); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(f.n[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), fill: shade(color, -(1 - (0.62 + 0.38 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.35), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
+        for (const [fi, f] of geom.faces.entries()) { const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.62 + 0.38 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.35), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv, planes, bb: [x0, y0, x1, y1], pv, hull: st.big ? null : hull2d(pv) });
       };
       st.heads = new Map();
       const lv = st.lvl, alive = b => b && b.state === 'on' && !b.dyn;
-      const covers = lv.els.filter(o => o.state === 'on' && (!o.cell || o.dyn) && (o.kind === 'block' || o.kind === 'wheel')).flatMap(o => obbs(o).map(b => ({ b, o })));   // 고정 칸 블럭은 지도, 움직이는 블럭은 현재 위치로 가려요
+      const covers = lv.els.filter(o => o.state === 'on' && !o.flat && (!lv.gridEls.has(o) || o.dyn || o.fall)).flatMap(o => shapes(o).map(sh => {
+        const c = add(sh.c, mv(sh.R, sh.geom.cen || [0, 0, 0])), h = sh.geom.half;
+        const span = [0, 1, 2].map(i => Math.abs(sh.R[i * 3]) * h[0] + Math.abs(sh.R[i * 3 + 1]) * h[1] + Math.abs(sh.R[i * 3 + 2]) * h[2]);
+        return { sh, o, c, span };
+      }));   // 움직이는 조각도 현재의 실제 모양으로 가려요
       const coverOf = (pt, self) => { const res = [], g = lv.grid && lv.grid.get(cellKey(pt, lv.mid)); if (alive(g) && g !== self) { const l = sub(pt, g.c); if (Math.abs(l[0]) < GRID / 2 - 0.003 && Math.abs(l[1]) < GRID / 2 - 0.003 && Math.abs(l[2]) < GRID / 2 - 0.003) res.push(g); }
-        for (const { b, o } of covers) { if (o === self) continue; const l = mv(tr(b.R), sub(pt, b.c)); if (Math.abs(l[0]) < b.h[0] - 0.003 && Math.abs(l[1]) < b.h[1] - 0.003 && Math.abs(l[2]) < b.h[2] - 0.003) res.push(o); } return res; };
-      const buried = (pt, self) => { const cs = coverOf(pt, self); return cs.length > 0 && !(st.xrayOn && cs.every(o => o === st.xrayOn)); };   // 덮은 블럭을 투시하면 숨은 게 보여요
+        for (const { sh, o, c, span } of covers) { if (o !== self && Math.abs(pt[0] - c[0]) <= span[0] && Math.abs(pt[1] - c[1]) <= span[1] && Math.abs(pt[2] - c[2]) <= span[2] && shapeHit(pt, [0, 0, 0], 0, sh, 0.003)) res.push(o); } return res; };
       let hiddenN = 0; const found = new Set();   // 투시로 드러난 숨은 판·나사
       const fwd = mv(tr(V), [0, 0, 1]);
       for (const E of st.lvl.els) {
         if (E.state === 'gone') continue;
-        if (E.cell && !E.dyn && lv.grid && DIRS.every(n => alive(lv.grid.get([E.cell[0] + n[0], E.cell[1] + n[1], E.cell[2] + n[2]].join(','))))) continue;   // 사방이 막힌 안쪽 블럭
+        if (lv.gridEls.has(E) && !E.dyn && lv.grid && DIRS.every(n => alive(lv.grid.get([E.cell[0] + n[0], E.cell[1] + n[1], E.cell[2] + n[2]].join(','))))) continue;   // 사방이 막힌 안쪽 블럭
         if (E.flat && !E.dyn && !E.hinge && dot([E.R[1], E.R[4], E.R[7]], fwd) < -0.02) continue;   // 뒤를 향한 판
         for (const sh of shapes(E)) {
           if (E.kind === 'plate' && !E.dyn) {   // 블럭 밑에 깔린 판(쪽마다): 네 모서리 쪽 점이 모두 블럭 안이면 숨어요. 덮은 블럭을 투시하면 드러나요
@@ -974,14 +1052,15 @@ function screw3d(api) {
         const u0 = norm(cross(a, Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), R = mm(frame(a, u0), ry(spin + 0.6));
         const hc = add(p, mul(a, HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
         const hcs = add(hc, mul(u0, sh)), before = items.length;
-        if (s.state === 'in' && coverOf(hcs, s.thru).length) hiddenN++;
-        if (s.state === 'in' && buried(hcs, s.thru)) continue;   // 블럭 밑에 깔린 나사
+        const covering = s.state === 'in' ? coverOf(hcs, s.thru) : [];
+        if (covering.length) hiddenN++;
+        if (covering.length && !(st.xrayOn && covering.every(o => o === st.xrayOn))) continue;   // 블럭 밑에 깔린 나사
         if (s.state === 'in' && !E.hinge && dot(a, fwd) < -0.15) continue;   // 뒤를 향한 나사
-        if (s.state === 'in' && coverOf(hcs, s.thru).length) found.add(s);
+        if (covering.length) found.add(s);
         if (st.big && s.state === 'in') {   // 조각이 많으면 나사 머리를 팔각형 하나로 (빠르게)
           const ctr = add(hcs, mul(a, HEAD_H / 2)), w0 = mv(R, [1, 0, 0]), w1 = mv(R, [0, 0, 1]), pts = [];
           for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; pts.push(project(add(ctr, add(mul(w0, Math.cos(an) * HEAD_R), mul(w1, Math.sin(an) * HEAD_R))), V)); }
-          const col = COLORS[s.color], it2 = { z: project(ctr, V).z + 0.03, polys: [{ pts, fill: col, line: shade(col, -0.35) }], alpha: 1, owner: s, wv: [], planes: [], bb: [0, 0, 0, 0], hull: null };
+          const col = COLORS[s.color], it2 = { z: project(ctr, V).z + 0.03, polys: [{ pts, depth: screenDepth(a, ctr, V, st.sc, st.zm, st.pan), fill: col, line: shade(col, -0.35) }], alpha: 1, owner: s, wv: [], planes: [], bb: bounds2(pts), hull: null };
           if (dot(a, fwd) > 0.05) it2.cross = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(ctr, add(mul(w0, ux * HEAD_R * 0.62), mul(w1, uz * HEAD_R * 0.62))), V));
           items.push(it2); const hp = project(ctr, V); if (dot(a, fwd) > 0.12) st.heads.set(s, hp); continue;
         }
@@ -994,13 +1073,16 @@ function screw3d(api) {
       // 조각이 많으면(340개 넘으면 켜고 290개 아래면 꺼요: 오가며 깜빡이지 않게) 거리순으로 빠르게 그려요
       st.big = st.big ? items.length > 290 : items.length > 340; const order = st.big ? items.sort((a, b) => a.z - b.z) : paintOrder(items, mv(tr(V), [0, 0, F * st.sc])); st.drawn = []; st.order = order; st.cam = mv(tr(V), [0, 0, F * st.sc]); st.hiddenN = hiddenN; st.foundN = found.size; for (const f of found) if (f.p && st.ms) st.ms.found.add(f);
       const lens = st.lens; let target = null;
-      if (lens) for (let i = order.length - 1; i >= 0; i--) if (order[i].hull ? inHull(lens.x, lens.y, order[i].hull) : order[i].polys.some(pg => inPoly(lens.x, lens.y, pg.pts))) { if (!order[i].owner.p && !order[i].owner.dyn) target = order[i]; break; }   // 손 댄 조각 하나만
+      if (lens) { let nearest = -Infinity, front = null; for (const it of order) for (const pg of it.polys) if (pg.depth && inPoly(lens.x, lens.y, pg.pts)) { const z = depthAt(pg.depth, lens); if (z > nearest) { nearest = z; front = it; } } if (front && !front.owner.p && !front.owner.dyn) target = front; }   // 실제 가장 앞에 있는 조각 하나만
       const tg = target ? target.owner : null; if (!st.xr || st.xr.o !== tg) st.xr = { o: tg, t0: st.t };
       const dwell = st.lens && st.lens.hold ? 0 : 0.3, xa = tg ? Math.min(1, Math.max(0, (st.t - st.xr.t0 - dwell) / 0.18)) : 0;   // 마우스는 잠깐 멈춰야 투시가 켜지고 서서히 바뀌어요
       st.xrayOn = xa > 0.5 ? tg : null; if (xa <= 0) target = null;
-      for (const it of order) {
-        c.save(); c.globalAlpha = it.alpha * (it === target ? 1 - 0.82 * xa : 1);
+      maskScrews(order, st.xrayOn);
+      // 나사는 앞면이 가린 영역을 잘라서 그려요. 조각 수·낙하·거리 정렬과 무관하게 같은 판정이에요.
+      for (const it of [...order.filter(q => !q.owner.p), ...order.filter(q => q.owner.p)]) {
+        c.save(); c.globalAlpha = it.alpha * (target && it.owner === target.owner ? 1 - 0.82 * xa : 1);
         if (it.shaft) { c.strokeStyle = '#8C93B8'; c.lineWidth = 5; c.lineCap = 'round'; c.beginPath(); c.moveTo(it.shaft[0].x, it.shaft[0].y); c.lineTo(it.shaft[1].x, it.shaft[1].y); c.stroke(); }
+        if (it.owner.p) { c.beginPath(); for (const pg of it.polys) for (const pts of pg.visible) { pts.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y)); c.closePath(); } c.clip(); }
         for (const pg of it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
           c.fillStyle = pg.fill; c.fill();
@@ -1011,7 +1093,7 @@ function screw3d(api) {
             c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 1.2; c.stroke();
             if (pg.pts.length === 4) { const [p0, p1, p2, p3] = pg.pts; c.strokeStyle = 'rgba(120,80,40,0.09)'; c.lineWidth = 1; c.beginPath();
               for (const tt of [0.27, 0.5, 0.74]) { c.moveTo(p0.x + (p1.x - p0.x) * tt, p0.y + (p1.y - p0.y) * tt); c.lineTo(p3.x + (p2.x - p3.x) * (tt + 0.04), p3.y + (p2.y - p3.y) * (tt + 0.04)); } c.stroke(); } }
-          if (it.alpha > 0.5) st.drawn.push({ pts: pg.pts, owner: it.owner });
+          if (it.alpha > 0.5) for (const pts of pg.visible || [pg.pts]) st.drawn.push({ pts, owner: it.owner });
         }
         if (it.cross && !st.big) { const cxh = (it.cross[0].x + it.cross[1].x) / 2, cyh = (it.cross[0].y + it.cross[1].y) / 2, rh = Math.hypot(it.cross[0].x - it.cross[1].x, it.cross[0].y - it.cross[1].y) / 1.24;   // 나사 머리 광택
           const g3 = c.createRadialGradient(cxh - rh * 0.35, cyh - rh * 0.4, 0, cxh, cyh, rh * 1.05); g3.addColorStop(0, 'rgba(255,255,255,0.55)'); g3.addColorStop(0.45, 'rgba(255,255,255,0.08)'); g3.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g3; c.beginPath(); c.arc(cxh, cyh, rh, 0, Math.PI * 2); c.fill();

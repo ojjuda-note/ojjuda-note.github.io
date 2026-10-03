@@ -138,4 +138,5 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 #app {min-height: 0;}
 #app > header, #app > nav, .scene-heading {flex-shrink: 0;}
 #viewport {min-height: min(230px,35dvh);}
-#panel {min-height: 0; overscroll-behavior: contain;}
+/* Keep both tabs at the diary panel's height; longer furniture lists scroll inside. */
+#panel {height: 238px; flex: 0 1 238px; min-height: 0; overscroll-behavior: contain;}
