@@ -24,7 +24,7 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
   const frame=()=>page.frames().find(f=>/\/house-test\/index\.html/.test(f.url()));
   const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});return frame();};
   const close=async f=>{await f.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
-  const baseline={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{desk:{direction:'right',x:9,y:3.5},chair:{direction:'left',x:8.3,y:4.825,attachedTo:'desk'}}}],diary:'불러오기 전 기록'};
+  const baseline={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{desk:{direction:'right',x:9,y:3.5},chair:{direction:'left',x:8.3,y:4.825,attachedTo:'desk'}}}],diary:'불러오기 전 기록'};
   await setSave(baseline);const startup=blockNext('chair-v1.runtime.json');await page.locator('#open').click();await waitForRequest(startup.seen);
   const latest=structuredClone(baseline);latest.diary='다른 창에서 방을 여는 동안 저장한 최신 기록';latest.rooms[0].furniture.carpet={direction:'center',x:1,y:3};
   await setSave(latest);startup.release();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});let f=frame();
@@ -36,18 +36,18 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
 
   // A delayed menu selection must not take control back after the user leaves it.
   await page.evaluate(()=>{houseOwner='loading-selection-race';});
-  const empty={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{}}],diary:'메뉴 전환 중에도 유지할 기록'};await setSave(empty);f=await open();
+  const empty={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{}}],diary:'메뉴 전환 중에도 유지할 기록'};await setSave(empty);f=await open();
   const selection=blockNext('chair-v1.runtime.json');await f.getByRole('button',{name:'의자 놓기',exact:true}).click();await waitForRequest(selection.seen);
   await f.locator('[data-tab="diary"]').click();selection.release();
   await f.waitForFunction(async module=>(await import(module)).builtInItemReady('chair'),customModule);
   assert.equal(await f.locator('#diary').isVisible(),true,'a late runtime response cannot reopen the abandoned placement');
-  assert.equal(await f.locator('#placement-done').count(),0);assert.equal(await f.locator('[data-furniture="chair"]').count(),0);assert.deepEqual(await readSave(),empty);
-  await f.locator('[data-tab="room"]').click();assert.equal(await f.locator('#placement-done').count(),0,'returning to the menu does not revive a cancelled request');
+  assert.equal(await f.locator('#placement-done').isVisible(),false);assert.equal(await f.locator('[data-furniture="chair"]').count(),0);assert.deepEqual(await readSave(),empty);
+  await f.locator('[data-tab="room"]').click();assert.equal(await f.locator('#placement-done').isVisible(),false,'returning to the menu does not revive a cancelled request');
 
   // A failed on-demand request must clear its pending promise so a retry works.
   failTable=true;const tableRequests=()=>requests.filter(name=>name==='coffee-table-v2.runtime.json').length;
   await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).click();await f.locator('#notice').filter({hasText:'거실 테이블을 불러오지 못했어요'}).waitFor();
-  assert.equal(tableRequests(),1);assert.equal(await f.locator('#placement-done').count(),0);assert.equal(await f.locator('[data-furniture="coffee-table"]').count(),0);assert.deepEqual(await readSave(),empty);
+  assert.equal(tableRequests(),1);assert.equal(await f.locator('#placement-done').isVisible(),false);assert.equal(await f.locator('[data-furniture="coffee-table"]').count(),0);assert.deepEqual(await readSave(),empty);
   failTable=false;await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).click();await f.locator('[data-furniture="coffee-table"][data-render-state="ready"]').waitFor();
   assert.equal(tableRequests(),2,'retry performs a fresh runtime request after the 503');assert.equal(await f.locator('#placement-done').isEnabled(),true);assert.deepEqual(await readSave(),empty,'successful art loading alone does not save a placement');
   await f.getByRole('button',{name:'취소',exact:true}).click();await close(f);assert.deepEqual(await readSave(),empty);assert.deepEqual(errors,[]);

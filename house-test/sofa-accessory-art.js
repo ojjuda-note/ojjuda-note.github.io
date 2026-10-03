@@ -1,12 +1,13 @@
-import {floorPoint,roomPoint} from './model.js?v=20261003-houseopen1';
-import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261003-houseopen1';
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261003-houseopen1';
-import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261003-houseopen1';
-import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261003-houseopen1';
+import {floorPoint,roomPoint} from './model.js?v=20261003-houseopen2';
+import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261003-houseopen2';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261003-houseopen2';
+import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261003-houseopen2';
+import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261003-houseopen2';
 
 // Keep the authored image plane and drape registrations unchanged. Independent
 // coordinates translate their support origin; elevation moves only room z.
 export function sofaAccessoryLayers(id,placement){
+ if(isBlanket(id))id='blanket-sofa';
  const spec=sofaAccessorySpec(id),origin=sofaAccessoryOrigin(id,placement),direction=placement.direction;
  if(!spec||!origin)throw new RangeError('소품의 방향 또는 위치가 올바르지 않습니다.');
  const elevation=placement.elevation??0,project=(x,y,z)=>roomPoint(x,y,z-spec.baseElevation+elevation);
@@ -37,7 +38,8 @@ export function sofaAccessoryArtwork(item,placement,contact,size){
 const blanketAreaCache=new Map();
 const triangleArea=triangle=>{const [a,b,c]=triangle.target;return (b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);};
 export function sofaAccessoryPoseValid(id,placement){
- if(id!=='blanket-sofa')return true;
+ if(!isBlanket(id)||blanketMode(id,placement)!=='sofa')return true;
+ id='blanket-sofa';
  try{
   const direction=placement.direction;
   if(!blanketAreaCache.has(direction)){

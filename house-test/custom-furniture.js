@@ -1,7 +1,7 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261003-houseopen1';
-import {floorPoint} from './model.js?v=20261003-houseopen1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261003-houseopen1';
-import {listMadeItems} from './custom-store.js?v=20261003-houseopen1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261003-houseopen2';
+import {floorPoint} from './model.js?v=20261003-houseopen2';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261003-houseopen2';
+import {listMadeItems} from './custom-store.js?v=20261003-houseopen2';
 const items=new Map();
 const pendingBuiltIns=new Map();
 const builtInFiles={'coffee-table':'coffee-table-v2.runtime.json',carpet:'carpet-v1.runtime.json',chair:'chair-v1.runtime.json'};
@@ -16,7 +16,7 @@ export async function loadBuiltInItems(ids=Object.keys(builtInFiles)){
   const pending=(async()=>{
   const file=builtInFiles[id];
   const item=FURNITURE[id],url=new URL('./assets/'+file,import.meta.url);
-  url.searchParams.set('v',new URL(import.meta.url).searchParams.get('v')||'20261003-houseopen1');
+  url.searchParams.set('v',new URL(import.meta.url).searchParams.get('v')||'20261003-houseopen2');
   let response;
   try{response=await fetch(url);}catch{throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
   if(!response.ok)throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');

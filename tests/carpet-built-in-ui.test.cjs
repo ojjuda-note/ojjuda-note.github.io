@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CARPET_PROOF_DIR||path.resolve(root,'../carpet-deploy-proof');
 const proofFont=process.env.CARPET_PROOF_FONT;
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-houseopen1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'carpet-built-in',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261003-houseopen2';document.querySelector('#open').onclick=()=>openHouseTest({owner:'carpet-built-in',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -12,8 +12,8 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   if(proofFont)await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='@font-face{font-family:CarpetProof;src:url("/_proof-font/NotoSansCJKkr-Regular.otf") format("opentype");font-display:block}html,body,button,input,textarea{font-family:CarpetProof,sans-serif!important}';document.head.append(style);},{once:true}));
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/fixture');
   const key='ojjuda-house-playtest-v1:carpet-built-in';
-  const saved={version:12,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{
-   desk:{direction:'right',x:9,y:3.5},'coffee-table':{direction:'center',x:2,y:4},'blanket-floor':{direction:'center',x:2,y:0}
+  const saved={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{
+   desk:{direction:'right',x:9,y:3.5},'coffee-table':{direction:'center',x:2,y:4},'blanket-floor':{direction:'center',x:2,y:0,mode:'floor',elevation:0}
   }}],diary:'카펫 추가 전 기록 보존'};
   await page.evaluate(({key,saved})=>localStorage.setItem(key,JSON.stringify(saved)),{key,saved});
   const readSave=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
@@ -35,7 +35,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
    await f.locator(`[data-furniture="carpet"][data-direction="${direction}"][data-render-state="ready"]`).waitFor();
    const image=await f.locator('[data-furniture="carpet"] canvas').evaluate(canvas=>({width:canvas.width,height:canvas.height,visible:canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0)}));
    assert(image.width>0&&image.height>0&&image.visible,`${direction} carpet must draw actual pixels`);
-   const geometry=await f.locator('[data-furniture="carpet"]').evaluate(async el=>{const {furnitureGeometry}=await import('/house-test/furniture.js?v=20261003-houseopen1');const g=furnitureGeometry('carpet',{direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)});return {anchors:g.anchors,footprint:g.footprint};});
+   const geometry=await f.locator('[data-furniture="carpet"]').evaluate(async el=>{const {furnitureGeometry}=await import('/house-test/furniture.js?v=20261003-houseopen2');const g=furnitureGeometry('carpet',{direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)});return {anchors:g.anchors,footprint:g.footprint};});
    assert.equal(geometry.anchors.length,4);assert.deepEqual(geometry.anchors,geometry.footprint,`${direction} carpet handles must mark the floor footprint rather than transparent image padding`);
   }
   await range(f,'#bookshelf-gap',1);await range(f,'#bookshelf-depth',0);
@@ -65,7 +65,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   assert(visible,'the overview shows the carpet in the small mobile viewport');
   await page.screenshot({path:path.join(proof,'carpet-built-in-mobile.png')});
   await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'카펫 배치',exact:true}).click();
-  await f.getByRole('button',{name:'치우기',exact:true}).click();assert.deepEqual(await readSave(),saved,'removal preserves all original furniture and diary');
+  await f.getByRole('button',{name:'회수',exact:true}).click();assert.deepEqual(await readSave(),saved,'removal preserves all original furniture and diary');
   await close(f);f=await open();assert.equal(await f.locator('[data-furniture="carpet"]').count(),0,'removed carpet must not return after reopening');
   assert.deepEqual(await readSave(),saved);assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
   console.log('CARPET BUILT-IN PASS: accessories, three views, floor/standing overlap, cancel, save/reopen, removal, mobile and existing room preservation');
