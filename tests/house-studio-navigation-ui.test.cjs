@@ -5,8 +5,9 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
-  const context=await browser.newContext(),errors=[],missing=[];
-  await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:parent});const f=path.join(root,u.pathname);if(!f.startsWith(root+'/')||!fs.existsSync(f)||!fs.statSync(f).isFile()){missing.push(u.pathname);return route.abort();}return route.fulfill({path:f});});
+  const context=await browser.newContext(),errors=[],missing=[],entryRequests=[];
+  const entries=['/house-test/host.js','/house-test/studio-host.js','/house-test/index.html','/house-test/anchor-editor/index.html'];
+  await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(entries.includes(u.pathname))entryRequests.push({path:u.pathname,version:u.searchParams.get('v')});if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:parent});const f=path.join(root,u.pathname);if(!f.startsWith(root+'/')||!fs.existsSync(f)||!fs.statSync(f).isFile()){missing.push(u.pathname);return route.abort();}return route.fulfill({path:f});});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.goto('https://fixture.test/fixture');await page.locator('#studio').click();
   const studio=()=>page.frames().find(f=>f.url().includes('/anchor-editor/index.html'));
@@ -42,6 +43,8 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await studio().locator('#draft-resume').waitFor({state:'visible'});
   await studio().locator('#draft-resume').click();
   await studio().waitForFunction(()=>document.querySelector('#furniture-name').value==='아직 저장하지 못한 최신 작업');
+  assert.deepEqual([...new Set(entryRequests.map(r=>r.path))].sort(),[...entries].sort(),'both navigation directions use the actual house and studio entries');
+  assert(entryRequests.every(r=>r.version==='20261003-loading5'),'house/studio round trips must not reuse stale entry URLs from an earlier release');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('HOUSE STUDIO NAVIGATION PASS');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
