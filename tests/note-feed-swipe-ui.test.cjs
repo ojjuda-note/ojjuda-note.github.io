@@ -59,6 +59,11 @@ assert.ok(bootAt > 0);
         window.ojjudaRefreshFeed = async () => { window.refreshes++; return loadFeed(); };
         authKnown = true; await loadFeed();
       });
+      const welcome = page.locator('#feed-title');
+      assert.equal(await welcome.textContent(), '오늘 하루 어땠나요? 괜찮았나요');
+      assert.equal(await welcome.isVisible(), true, 'the requested welcome is visible above the cards');
+      assert.equal(await welcome.evaluate(el => el.scrollWidth <= el.clientWidth), true, 'the welcome does not overflow');
+      assert.equal(await welcome.evaluate(el => getComputedStyle(el).position), 'static', 'the welcome never covers cards as an overlay');
       const active = () => page.locator('.feed-sort-tabs .selected').getAttribute('data-sort');
       const idle = () => page.waitForFunction(() => !document.getElementById('feed').matches('.note-feed-dragging, .note-feed-settling'));
       const frame = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -67,10 +72,10 @@ assert.ok(bootAt > 0);
         type, touchPoints: points.map(([x, y, id = 1]) => ({ id, x, y, radiusX: 1, radiusY: 1, force: 1 }))
       });
       const bounds = () => page.locator('.note-feed-viewport').boundingBox();
-      const drag = async (direction, { distance = mobile ? 160 : 230, vertical = 0, cancel = false, hold = false } = {}) => {
+      const drag = async (direction, { distance = mobile ? 160 : 230, vertical = 0, cancel = false, hold = false, startY = null } = {}) => {
         const box = await bounds();
         const x = box.x + box.width * (direction < 0 ? .76 : .24);
-        const y = Math.max(200, box.y + 110);
+        const y = startY ?? Math.max(200, box.y + 110);
         if (mobile) await touch('touchStart', [[x, y]]);
         else { await page.mouse.move(x, y); await page.mouse.down(); }
         for (let i = 1; i <= 6; i++) {
@@ -125,9 +130,27 @@ assert.ok(bootAt > 0);
       await page.locator('[data-sort="latest"]').click(); await idle();
       assert.equal(await page.evaluate(() => feedTerm), '', 'leaving tags clears the old search');
 
-      // Scroll deep, then swipe: a short target page must appear at its top.
+      // Scroll deep, then swipe an actual visible photo. A fixed screen y can
+      // instead land on a tag/action after a header or card-height change.
       await page.evaluate(() => window.scrollTo({ top: 900, behavior: 'instant' }));
-      await drag(-1); assert.equal(await active(), 'popular');
+      const deepSwipe = await page.locator('.note-feed-viewport').evaluate(viewport => {
+        const box = viewport.getBoundingClientRect(), x = box.x + box.width * .76;
+        const legacyTarget = document.elementFromPoint(x, Math.max(200, box.y + 110));
+        for (const photo of viewport.querySelectorAll('.note-feed-page:not(.note-feed-ghost) .photo-open')) {
+          const rect = photo.getBoundingClientRect();
+          const top = Math.max(100, rect.top), bottom = Math.min(innerHeight - 100, rect.bottom);
+          if (bottom - top < 60 || x <= rect.left || x >= rect.right) continue;
+          const y = (top + bottom) / 2, target = document.elementFromPoint(x, y);
+          if (target?.closest('.photo-open') !== photo || target.closest('a, input, textarea, select, [data-no-swipe]')) continue;
+          return { y, legacyTarget: legacyTarget?.outerHTML.slice(0, 250), target: target.tagName };
+        }
+        return null;
+      });
+      assert.ok(deepSwipe, 'a visible photo must be hit-tested before the deep-scroll gesture');
+      console.log(`Deep ${mobile ? 'touch' : 'mouse'} swipe target:`, deepSwipe);
+      const opensBeforeDeepSwipe = await page.evaluate(() => window.cardOpens);
+      await drag(-1, { startY: deepSwipe.y }); assert.equal(await active(), 'popular');
+      assert.equal(await page.evaluate(() => window.cardOpens), opensBeforeDeepSwipe, 'a deep-feed swipe does not open a card');
       assert.ok(await page.evaluate(() => scrollY < 150), 'new tab starts near the top after a deep-feed swipe');
       await page.locator('[data-sort="latest"]').click(); await idle();
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
