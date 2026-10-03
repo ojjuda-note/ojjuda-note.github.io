@@ -26,6 +26,10 @@ function repairMesh(mesh,direction){
  // correction. Preserve any separately authored region or fade setting.
  const front=mesh.straightRegions[3];
  if(direction==='left'&&front?.start.x===782&&front.start.y===947&&front.end.x===860&&front.end.y===1532&&front.radius===50&&front.feather===75)front.endFade??=120;
+ // Only this far rear shaft needs its outer pixels to follow its own surface;
+ // the centerline alone cannot stop its rim being pulled by an outside support.
+ const rear=mesh.straightRegions[2];
+ if(direction==='right'&&rear?.start.x===729&&rear.start.y===920&&rear.end.x===826&&rear.end.y===1405&&rear.radius===48&&rear.feather===72&&mesh.indices.some(t=>[5,4,8].every(i=>t.includes(i))))rear.surfaceTriangle??=[5,4,8];
  return mesh;
 }
 export function straightenChairLegs(runtime){
