@@ -70,7 +70,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await readSave(),withChair);
   await f.locator('#overview').click();await f.waitForFunction(()=>getComputedStyle(document.querySelector('#notice')).opacity==='0');await page.screenshot({path:path.join(proof,'chair-built-in-desktop.png')});
   await page.setViewportSize({width:390,height:844});await f.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'chair-built-in-mobile.png')});
-  await f.getByRole('button',{name:'의자 배치',exact:true}).click();await f.getByRole('button',{name:'치우기',exact:true}).click();assert.deepEqual(await readSave(),saved);
+  await f.getByRole('button',{name:'의자 배치',exact:true}).click();await f.getByRole('button',{name:'회수',exact:true}).click();assert.deepEqual(await readSave(),saved);
   await close(f);f=await open();assert.equal(await f.locator('[data-furniture="chair"]').count(),0,'a removed chair must not return on reload');assert.deepEqual(await readSave(),saved);
   const slotsAfter=await f.evaluate(async()=>{const {listMadeItems}=await import('/house-test/custom-store.js?v=20261003-chairdesk1');return (await listMadeItems('chair-built-in')).length;});assert.equal(slotsAfter,0,'built-in chair never consumes a user-created slot');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);

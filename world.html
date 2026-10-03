@@ -640,7 +640,7 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;
  const authorized=()=>D.online&&D.user?.id===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261003-menunav1');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261003-actions2');
   if(request!==worldHouseRequest||!authorized()||!isWorldHouseTab())return;
   const close=openHouseTest({owner,authorized,studioAuthorized:()=>false,preserveWorldNavigation:true,onClose:()=>{
    if(request!==worldHouseRequest)return;

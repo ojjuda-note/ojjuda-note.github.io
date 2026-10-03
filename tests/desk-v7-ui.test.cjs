@@ -47,7 +47,7 @@ async function main(){
    const position=locator=>locator.evaluate(node=>({direction:node.dataset.direction,x:Number(node.dataset.x),y:Number(node.dataset.y)}));
    const deskPosition=()=>position(frame.locator('.desk'));
    const bookshelfBefore=await position(frame.locator('.bookshelf'));
-   if(await frame.locator('.chair').count()){await frame.getByRole('button',{name:'의자 배치',exact:true}).click();await frame.getByRole('button',{name:'치우기',exact:true}).click();}
+   if(await frame.locator('.chair').count()){await frame.getByRole('button',{name:'의자 배치',exact:true}).click();await frame.getByRole('button',{name:'회수',exact:true}).click();}
    assert.equal(await frame.locator('.chair').count(),0);
    await frame.getByRole('button',{name:'책상 배치',exact:true}).click();
    const contract=await frame.locator('body').evaluate(async()=>{const {FURNITURE}=await import('./furniture-catalog.js?v=20261002-desk-v7');const d=FURNITURE.desk;return {width:d.width,depth:d.depth,height:d.height,directions:d.directions};});
@@ -93,7 +93,7 @@ async function main(){
     assert.equal(await frame.locator('#placement-done').isDisabled(),false,'Reference pose must not overlap other furniture');
     entry.reference=await deskPosition();entry.referencePaint=await inspectPaint(direction);entry.screenshots.push(await capture(direction,'reference-grid'));
     // Keep a clean normal-room view at the reference pose for visual approval.
-    await frame.getByRole('button',{name:'배치 완료',exact:true}).click();
+    await frame.getByRole('button',{name:'설치',exact:true}).click();
     assert.deepEqual(await deskPosition(),entry.reference);assert.equal(await frame.locator('.floor-grid').count(),0);
     const cameraBox=await frame.locator('#viewport').boundingBox(),deskBox=await frame.locator('.desk').boundingBox();
     // Ordinary mode follows the existing bookshelf camera. Use its real pan
@@ -108,7 +108,7 @@ async function main(){
     const moved={...entry.reference,x:entry.reference.x+(direction==='right'?-.5:.5)};
     assert.deepEqual(await deskPosition(),moved);assert.equal(await frame.locator('#placement-done').isDisabled(),false);
     entry.halfCell=moved;entry.movedPaint=await inspectPaint(direction);entry.screenshots.push(await capture(direction,'half-cell-grid'));
-    await frame.getByRole('button',{name:'배치 완료',exact:true}).click();await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),moved,'Half-cell save/reopen failed');
+    await frame.getByRole('button',{name:'설치',exact:true}).click();await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();frame=await open();assert.deepEqual(await deskPosition(),moved,'Half-cell save/reopen failed');
     await frame.getByRole('button',{name:'책상 배치',exact:true}).click();
     await frame.locator('#bookshelf-depth').focus();await frame.locator('#bookshelf-depth').press('ArrowRight');await frame.locator('.desk[data-render-state="ready"]').waitFor();
     assert.deepEqual(await deskPosition(),{...moved,y:moved.y+.5},'Depth slider must move by .5 cell');
@@ -121,7 +121,7 @@ async function main(){
    await frame.locator('#panel-body button[data-direction="right"]').click();
    await frame.locator('#bookshelf-depth').focus();for(let i=0;i<7;i++)await frame.locator('#bookshelf-depth').press('ArrowRight');
    await frame.locator('.desk[data-render-state="ready"]').waitFor();assert.deepEqual(await deskPosition(),defaults.right);
-   await frame.getByRole('button',{name:'배치 완료',exact:true}).click();
+   await frame.getByRole('button',{name:'설치',exact:true}).click();
    record.finalReference=await deskPosition();record.bookshelfUnchanged=bookshelfBefore;
    record.requestedDeskAssets=[...new Set(requests.filter(url=>/\/desk-.*\.(webp|png)$/.test(url)))].sort();
    assert.deepEqual(record.requestedDeskAssets,assets.map(name=>'/house-test/assets/'+name).sort(),'Old desk assets were requested');
