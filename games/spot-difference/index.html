@@ -7,12 +7,12 @@
   <meta name="description" content="쭈다의 48가지 일상 속에서 다른 곳 여섯 개를 찾아보세요. 두 그림을 누르고, 확대하고, 힌트를 보며 즐기는 틀린그림 찾기.">
   <title>쭈다 틀린그림 찾기</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23425bea'/%3E%3Ccircle cx='28' cy='27' r='15' fill='none' stroke='white' stroke-width='6'/%3E%3Cpath d='M39 39L52 52' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261003-minute1">
-  <script src="puzzles.js?v=20261003-minute1" defer></script>
-  <script src="game-core.js?v=20261003-minute1" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261003-mix1">
+  <script src="puzzles.js?v=20261003-mix1" defer></script>
+  <script src="game-core.js?v=20261003-mix1" defer></script>
   <script src="vendor/supabase.js" defer></script>
   <script src="wallet.js" defer></script>
-  <script src="app.js?v=20261003-minute1" defer></script>
+  <script src="app.js?v=20261003-mix1" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -26,7 +26,7 @@
     </section>
     <nav class="stage-nav" aria-label="문제 이동">
       <div class="stage-select"><button id="prev" class="icon-button" aria-label="이전 문제">‹</button><label for="stage-picker" class="sr-only">문제 선택</label><select id="stage-picker"></select><button id="next" class="icon-button" aria-label="다음 문제">›</button></div>
-      <span class="difficulty">문제 순서 <b>무작위</b><span class="separator">·</span>다른 곳 <b>6개</b></span>
+      <span class="difficulty">문제 순서 <b>무작위</b><span class="separator">·</span>대·중·소 <b>2개씩</b></span>
     </nav>
     <section class="round-status" aria-label="게임 상태"><div class="hearts" id="hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</div><span class="rule-copy">오답이면 하트 −1</span><div class="wallet"><span id="wallet-balance">오쭈다 계정 연결 중</span><button id="wallet-login" class="text-button">로그인</button><button id="wallet-refresh" class="text-button" hidden>잔액 확인</button><button id="wallet-logout" class="text-button" hidden>로그아웃</button></div></section>
     <p class="wallet-note" id="wallet-note">힌트 1개 1쭈 · 1분 연장 3쭈</p>

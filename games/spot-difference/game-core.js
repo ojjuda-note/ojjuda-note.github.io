@@ -17,15 +17,16 @@
     return order;
   }
   function cleanProgress(raw,puzzles){
-    const result={current:0,found:{},rounds:{},order:shuffleOrder(puzzles.length)};
+    const result={current:0,found:{},rounds:{},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original'])),order:shuffleOrder(puzzles.length)};
     result.current=result.order[0];
     if(!raw||![1,2].includes(raw.version))return result;
     if(Array.isArray(raw.order)&&raw.order.length===puzzles.length&&new Set(raw.order).size===puzzles.length&&raw.order.every(i=>Number.isInteger(i)&&i>=0&&i<puzzles.length))result.order=[...raw.order];
     result.current=result.order[0];
     if(Number.isInteger(raw.current)&&raw.current>=0&&raw.current<puzzles.length)result.current=raw.current;
     for(const puzzle of puzzles){
-      const found=ids(raw.found?.[puzzle.id]);result.found[puzzle.id]=found;
-      const round=freshRound(),r=raw.version===2&&raw.rounds?.[puzzle.id];
+      const changed=puzzle.revision==='mixed-sizes-1'&&raw.revisions?.[puzzle.id]!==puzzle.revision;
+      const found=changed?[]:ids(raw.found?.[puzzle.id]);result.found[puzzle.id]=found;
+      const round=freshRound(),previous=raw.version===2&&raw.rounds?.[puzzle.id],r=changed&&previous?.status==='won'?null:previous;
       if(r){
         const unopened=r.status==='ready'&&r.totalMs===30000&&r.remainingMs===30000&&!found.length&&!r.paid?.length&&!r.pending;
         if(Number.isInteger(r.hearts)&&r.hearts>=0&&r.hearts<=HEARTS)round.hearts=r.hearts;

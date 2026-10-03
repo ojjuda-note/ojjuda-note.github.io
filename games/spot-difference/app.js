@@ -136,7 +136,8 @@
     closeAnswers();if(zoomDialog.open)zoomDialog.close();hideHint();state.current=index;imagesReady=false;keyboardPoint={x:50,y:50};
     $('found-details').open=false;$('hint-panel').hidden=true;
     const p=puzzle();$('scene-title').textContent=p.title;$('stage-label').textContent=`문제 ${String(position()+1).padStart(2,'0')} / 48 · 무작위 순서`;
-    $('stage-picker').value=index;$('load-error').hidden=true;const token=++loadToken,loaded=new Set(),required=p.contrast?3:2;
+    const layers=p.layers||(p.contrast?[p.contrast]:[]);
+    $('stage-picker').value=index;$('load-error').hidden=true;const token=++loadToken,loaded=new Set(),required=2+layers.length;
     surfaces.forEach(surface=>surface.querySelectorAll('.contrast-overlay').forEach(image=>image.remove()));
     function loadedSide(side){if(token!==loadToken)return;loaded.add(side);if($(side))$(side).parentElement.classList.remove('loading');if(loaded.size===required){imagesReady=true;$('load-error').hidden=true;refreshControls();}}
     for(const side of ['original','difference']){
@@ -145,8 +146,9 @@
       im.alt=`${p.title} · ${side==='original'?'첫 번째':'두 번째'} 그림`;im.src=p[side];$('zoom-'+side).src=p[side];
       if(im.complete&&im.naturalWidth)loadedSide(side);
     }
-    if(p.contrast){
-      const clips=p.contrast.regions.map(region=>{
+    layers.forEach((layer,layerIndex)=>{
+      const layerKey=`overlay-${layerIndex}`;
+      const clips=layer.regions.map(region=>{
         if(region.shape!=='rect')return {image:`radial-gradient(ellipse ${region.rx}% ${region.ry}% at ${region.x}% ${region.y}%, #000 94%, transparent 100%)`,size:'100% 100%',position:'0% 0%'};
         const left=Math.max(0,region.x-region.rx),top=Math.max(0,region.y-region.ry),width=Math.min(100,region.x+region.rx)-left,height=Math.min(100,region.y+region.ry)-top;
         return {image:'linear-gradient(#000,#000)',size:`${width}% ${height}%`,position:`${width===100?0:left/(100-width)*100}% ${height===100?0:top/(100-height)*100}%`};
@@ -157,11 +159,11 @@
         image.style.maskImage=mask;image.style.webkitMaskImage=mask;
         image.style.maskSize=maskSize;image.style.webkitMaskSize=maskSize;image.style.maskPosition=maskPosition;image.style.webkitMaskPosition=maskPosition;
         const main=!surface.classList.contains('zoom-picture');
-        if(main){image.onload=()=>loadedSide('contrast');image.onerror=()=>{if(token!==loadToken)return;imagesReady=false;$('load-error').hidden=false;refreshControls();};}
-        surface.insertBefore(image,surface.querySelector('.marks'));image.src=p.contrast.image;
-        if(main&&image.complete&&image.naturalWidth)loadedSide('contrast');
+        if(main){image.onload=()=>loadedSide(layerKey);image.onerror=()=>{if(token!==loadToken)return;imagesReady=false;$('load-error').hidden=false;refreshControls();};}
+        surface.insertBefore(image,surface.querySelector('.marks'));image.src=layer.image;
+        if(main&&image.complete&&image.naturalWidth)loadedSide(layerKey);
       }
-    }
+    });
     tick();refresh();
     speak(round().status==='won'?'이 장면은 이미 완성했어요.':round().status==='playing'?'이어서 찾아보세요.':'시작을 누르면 시간이 흘러요.');
   }
