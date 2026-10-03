@@ -9,7 +9,7 @@ test('existing rooms and deliberately empty rooms receive no new furniture',()=>
  for(let i=0;i<old.rooms.length;i++){assert.deepEqual(next.rooms[i].furniture,old.rooms[i].furniture);assert.deepEqual(next.rooms[i].shelf,old.rooms[i].shelf);assert.equal(next.rooms[i].curtains,false);}
  for(const version of [9,10,11]){const empty=normalize({version,rooms:[{x:0,y:0,shelf:null,furniture:{},curtains:false}]});assert.deepEqual(empty.rooms[0].furniture,{});assert.equal(empty.rooms[0].shelf,null);}
  assert.deepEqual(Object.keys(normalize({version:8,rooms:[{x:0,y:0,shelf:null,furniture:{}}]}).rooms[0].furniture),['desk']);
- assert.deepEqual(Object.keys(normalize(null).rooms[0].furniture),['desk']);assert.equal(FURNITURE.chair,undefined);
+ assert.deepEqual(Object.keys(normalize(null).rooms[0].furniture),['desk']);assert.equal(FURNITURE.chair.autoPlace,false,'approved chair is available without adding it to existing or new rooms');
 });
 
 test('sofa accessory visibility has independent IDs and survives normalization, rotation and reload',()=>{
