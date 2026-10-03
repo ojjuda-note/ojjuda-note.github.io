@@ -89,12 +89,12 @@
 <link rel="stylesheet" href="/world-room.css?v=20261001-places1">
 <script src="/world-places.js?v=20261001-places1"></script>
 <link rel="stylesheet" href="/world-spot-game.css?v=20261003-mobile2">
-<script src="/world-spot-game.js?v=20261003-timebar1"></script>
+<script src="/world-spot-game.js?v=20261003-safe2"></script>
 <style>body.matgo-open{overflow:hidden}</style>
 <script src="/matgo-access.js?v=20261003-adult1"></script>
-<script src="/matgo-bridge.js?v=20261003-gukjin1"></script>
-<link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe1">
-<script src="/mobile-viewport.js?v=20261003-safe1" defer></script>
+<script src="/matgo-bridge.js?v=20261003-safe2"></script>
+<link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
+<script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 </head>
 <body>
 <div id="app"></div>
@@ -493,7 +493,7 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;
  const authorized=()=>D.online&&D.user?.id===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261003-housepublic1');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261003-safe2');
   if(request!==worldHouseRequest||!authorized()||!isWorldHouseTab())return;
   const close=openHouseTest({owner,authorized,studioAuthorized:()=>false,onClose:()=>{
    if(request!==worldHouseRequest)return;
@@ -509,7 +509,7 @@ sr['house-login']=()=>location.assign('/?auth=login&next=world');
 sr['furniture-studio']=async function(){
  if(!D.online||D.isAdmin!==true||!D.user?.id||g.tab!=='admin')return M('관리자 모드에서 열어 주세요.');
  const owner=D.user.id,authorized=()=>D.online&&D.isAdmin===true&&D.user?.id===owner&&g.tab==='admin';
- try{const {openFurnitureStudio}=await import('./house-test/studio-host.js?v=20261003-housepublic1');if(authorized())openFurnitureStudio({owner,authorized});}
+ try{const {openFurnitureStudio}=await import('./house-test/studio-host.js?v=20261003-safe2');if(authorized())openFurnitureStudio({owner,authorized});}
  catch(error){console.error(error);M('제작실을 불러오지 못했어요. 잠시 후 다시 열어 주세요.');}
 };
 sr['house-playtest']=sr['house-open'];

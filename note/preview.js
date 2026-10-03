@@ -664,19 +664,25 @@ function openPhotoSourceMenu(target, anchor) {
   menu.anchor = anchor; document.body.append(menu); sourceMenu = menu;
   anchor.setAttribute('aria-expanded', 'true');
   const box = anchor.getBoundingClientRect(), width = menu.getBoundingClientRect().width;
-  menu.style.left = `${Math.max(8, Math.min(box.left, innerWidth - width - 8))}px`;
+  const area = window.OjjudaViewport?.bounds() || { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
+  menu.style.left = `${Math.max(area.left + 8, Math.min(box.left, area.right - width - 8))}px`;
   const height = menu.getBoundingClientRect().height;
-  menu.style.top = `${box.bottom + height + 8 <= innerHeight ? box.bottom + 6 : Math.max(8, box.top - height - 6)}px`;
+  const preferred = box.bottom + height + 8 <= area.bottom ? box.bottom + 6 : box.top - height - 6;
+  menu.style.top = `${Math.max(area.top + 8, Math.min(preferred, area.bottom - height - 8))}px`;
   const outside = event => { if (!menu.contains(event.target) && !anchor.contains(event.target)) closePhotoSourceMenu(); };
   const key = event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePhotoSourceMenu(true); } };
   const scroll = () => closePhotoSourceMenu();
   document.addEventListener('pointerdown', outside, true);
   document.addEventListener('keydown', key, true);
   document.addEventListener('scroll', scroll, true); window.addEventListener('resize', scroll);
+  window.visualViewport?.addEventListener('resize', scroll);
+  window.visualViewport?.addEventListener('scroll', scroll);
   sourceMenuCleanup = () => {
     document.removeEventListener('pointerdown', outside, true);
     document.removeEventListener('keydown', key, true);
     document.removeEventListener('scroll', scroll, true); window.removeEventListener('resize', scroll);
+    window.visualViewport?.removeEventListener('resize', scroll);
+    window.visualViewport?.removeEventListener('scroll', scroll);
   };
   device.addEventListener('click', () => { closePhotoSourceMenu();
     $(target === 'event' ? '#event-photo-file' : '#card-photo-file')?.click(); });

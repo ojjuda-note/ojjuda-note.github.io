@@ -3,12 +3,27 @@
   'use strict';
   const root = document.documentElement;
   const viewport = window.visualViewport;
+  // The host already reserves system insets around game/house frames.
+  if (window.parent !== window) root.dataset.viewportEmbedded = '';
   let frame = 0, navigation = null;
   const set = (name, value) => {
     const pixels = `${Math.round(value * 100) / 100}px`;
     if (root.style.getPropertyValue(name) !== pixels) root.style.setProperty(name, pixels);
   };
   const observer = window.ResizeObserver ? new ResizeObserver(schedule) : null;
+
+  function bounds() {
+    const style = getComputedStyle(root);
+    const inset = name => parseFloat(style.getPropertyValue(name)) || 0;
+    const top = Math.max(0, viewport?.offsetTop || 0);
+    return {
+      top: top + inset('--app-safe-top'),
+      bottom: top + (viewport?.height || innerHeight) - inset('--app-safe-bottom'),
+      left: Math.max(0, viewport?.offsetLeft || 0),
+      right: (viewport?.offsetLeft || 0) + (viewport?.width || innerWidth)
+    };
+  }
+  window.OjjudaViewport = Object.freeze({ bounds });
 
   function update() {
     frame = 0;
