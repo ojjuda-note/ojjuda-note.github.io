@@ -47,7 +47,14 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    assert.match(await page.locator('.ghead .gt').innerText(),/평면형/);
    assert.equal(await page.locator('.ghead').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'mode title, score and controls fit the phone header');
    assert.equal(await page.locator('[data-g=screw-modes]').isVisible(),true);
-   if(qa&&size.width===390)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-covered.png')});
+   const counter=await page.evaluate(()=>{
+    const r=screwWorld.current(),original=r.ctx.fillText;let label;
+    r.ctx.fillText=function(text,x,y,...args){if(String(text).startsWith('남은 이동 '))label={text,font:this.font,color:this.fillStyle,x,y};return original.call(this,text,x,y,...args);};
+    try{r.game.draw(r.ctx);}finally{r.ctx.fillText=original;}return label;
+   });
+   assert.equal(counter.text,'남은 이동 8회');assert.ok(parseFloat(counter.font.match(/([\d.]+)px/)[1])>=18,'the remaining moves use large type');
+   assert.equal(counter.x,180);assert.ok(counter.y<68,'the remaining counter sits above the spare holes');assert.equal(counter.color,'#ffffff');
+   if(qa&&[320,390].includes(size.width))await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-covered-${size.width}.png`)});
    await page.locator('[data-g=screw-modes]').click();
    await page.locator('[data-mode=box]').click();
    assert.equal(await page.evaluate(()=>window.__ojjScrew3d.L),5,'the box version keeps the pre-existing stage');

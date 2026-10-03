@@ -196,12 +196,14 @@
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
       c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,250);
       round(c,280,8,62,36,13);c.fillStyle='#E2EADF';c.fill();c.font='700 10px "Noto Sans KR",sans-serif';c.fillStyle='#5D7760';c.textAlign='center';c.fillText(`앨범 ${st.collection.size}/${PICTURES.length}`,311,26);
-      c.font='12px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':remaining===0?'이동을 모두 썼어요 · 1쭈로 3회 추가해요':blocked?(st.extraHoles<3?'빈 구멍이 없어요 · 아래에서 1쭈로 추가해요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',180,51,312);
+      const lowMoves=!st.complete&&remaining<=3;
+      round(c,74,39,212,29,14);c.fillStyle=lowMoves?'#B74736':'#426E53';c.fill();
+      c.font='800 18px "Noto Sans KR",sans-serif';c.fillStyle='#FFFFFF';c.fillText(`남은 이동 ${remaining}회`,180,54,194);
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
-      c.textAlign='left';c.font='700 11px "Noto Sans KR",sans-serif';c.fillStyle=remaining<=3?'#A55741':'#617663';c.fillText(`남은 이동 ${remaining}회`,26,133);
-      c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8E8178';
+      c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':remaining===0?'아래에서 1쭈로 이동 3회를 추가해요':blocked?(st.extraHoles<3?'아래에서 1쭈로 구멍을 추가해요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':'나사를 누른 뒤 빈 구멍에 끼워요',26,133,226);
+      c.fillStyle='#8E8178';
       c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();
       c.save();
