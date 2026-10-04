@@ -1,8 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
+const scheduleFixture='window.createScheduleFixture='+require('./schedule-fixture.cjs').toString()+';';
 const ledgerFixture='window.createLedgerFixture='+require('./ledger-fixture.cjs').toString()+';';
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${fs.readFileSync(path.join(root,'world-navigation.js'),'utf8')}\n${ledgerFixture}\n${fs.readFileSync(path.join(root,'world-ledger.js'),'utf8')}\n${fs.readFileSync(path.join(root,'world-life.js'),'utf8')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${fs.readFileSync(path.join(root,'world-navigation.js'),'utf8')}\n${ledgerFixture}\n${scheduleFixture}\n${fs.readFileSync(path.join(root,'world-schedule.js'),'utf8')}\n${fs.readFileSync(path.join(root,'world-ledger.js'),'utf8')}\n${fs.readFileSync(path.join(root,'world-life.js'),'utf8')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert(boot>0);
 world=world.slice(0,boot)+`
 const fixtureRooms=new Map(),fixtureRoomCalls=[],fixtureUnexpected=[];
@@ -23,6 +24,7 @@ S={auth:{signOut:async()=>{sessionStorage.setItem('fixture-logged-out','yes');D.
   if((saved?.revision||null)!==args.p_revision)return{data:{ok:false,reason:'conflict'}};
   const next={snapshot:structuredClone(args.p_snapshot),revision:crypto.randomUUID(),updatedAt:new Date().toISOString()};fixtureRooms.set(args.p_owner,next);return{data:{ok:true,revision:next.revision,updatedAt:next.updatedAt}};
  }};
+const fixtureSchedule=createScheduleFixture(()=>D.user?.id),originalRpc=S.rpc.bind(S),originalFrom=S.from.bind(S);S.rpc=(name,args)=>name==='life_schedule_month'?fixtureSchedule.rpc(name,args):originalRpc(name,args);S.from=table=>table==='life_schedule_events'?fixtureSchedule.from(table):originalFrom(table);
 P.loaded=true;P.at=Date.now()+60000;
 gm(()=>{g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
 D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'world-member-a'}:null;D.isAdmin=false;g.tab='friends';H();
