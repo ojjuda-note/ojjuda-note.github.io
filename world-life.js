@@ -81,7 +81,7 @@
    else if(key==='⌫'){value=fresh?'0':value.slice(0,-1)||'0';if(value==='-')value='0';fresh=false;}
    else if(key==='±'){if(Number.isFinite(Number(value))&&value!=='0')value=value.startsWith('-')?value.slice(1):'-'+value;}
    else if(key==='%'){if(Number.isFinite(Number(value)))value=String(Number(value)/100);}
-   else if(['+','−','×','÷','='].includes(key)){const next=Number(value);if(previous!==null&&operator&&!fresh){const result=compute(previous,next,operator);value=Number.isFinite(result)?String(Number(result.toPrecision(12))):'계산할 수 없어요';previous=Number.isFinite(result)?Number(value):null;}else previous=Number.isFinite(next)?next:null;operator=key==='='?null:key;fresh=true;}
+   else if(['+','−','×','÷','='].includes(key)){const next=Number(value);if(previous!==null&&operator&&!fresh){const result=compute(previous,next,operator);value=Number.isFinite(result)?String(Number.isSafeInteger(result)?result:Number(result.toPrecision(12))):'계산할 수 없어요';previous=Number.isFinite(result)?Number(value):null;}else previous=Number.isFinite(next)?next:null;operator=key==='='?null:key;fresh=true;}
    else{if(fresh||!Number.isFinite(Number(value))){value=key==='.'?'0.':key;fresh=false;}else if(value.length<16){if(key!=='.'||!value.includes('.'))value=value==='0'&&key!=='.'?key:value+key;}}
    display.textContent=value;
   }
