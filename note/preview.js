@@ -38,6 +38,13 @@ function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착�
 }
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
+const parkEmbedded = window.parent !== window && new URL(location.href).searchParams.get('park') === '1';
+let initialParkCompose = parkEmbedded && new URL(location.href).searchParams.get('compose') === 'memo';
+if (parkEmbedded) document.documentElement.classList.add('park-note-embedded');
+window.canCloseParkNote = () => {
+  if (busy) { message('저장이 끝날 때까지 기다려 주세요.'); return false; }
+  return backdrop.hidden || (!text.value.trim() && !cardPhotoBlob && !eventPhotoBlob) || confirm('작성 중인 노트를 닫고 공원으로 돌아갈까요?');
+};
 let initialCardId = new URL(location.href).searchParams.get('card');
 let initialKeepId = ['memo','comment'].includes(new URL(location.href).searchParams.get('keep')) ? initialCardId : null;
 const reactionPending = new Set();
@@ -1302,6 +1309,7 @@ async function positionIfAlreadyGranted() {
   return null;
 }
 function consumeInitialCard() {
+  if (initialParkCompose && authKnown && ready) { initialParkCompose = false; openComposer('memo'); }
   if (!initialCardId || !authKnown || !ready) return;
   const id = initialCardId; initialCardId = null;
   if (validCardId(id)) openCard(id);
