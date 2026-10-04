@@ -203,16 +203,27 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.mouse.move(box.x+box.width*.7,box.y+100);await page.mouse.down();
     await page.mouse.move(box.x+box.width*.7-180,box.y+100,{steps:8});await page.mouse.up();
     assert.equal(await current(),'home');await back();
-    const mouseDrag=async(selector,dx)=>{
+    const mouseDrag=async(selector,dx,{slow=false}={})=>{
       const target=page.locator(selector).first();
       await target.scrollIntoViewIfNeeded();
       const bounds=await target.boundingBox();
       const x=bounds.x+bounds.width*(dx<0?.7:.3),y=bounds.y+bounds.height/2;
       await page.mouse.move(x,y);await page.mouse.down();
-      await page.mouse.move(x+dx,y,{steps:8});await page.mouse.up();
+      if(slow){
+        // A deliberate drag over 1.4 seconds must work like a quick swipe.
+        // Keep sending real pointer moves rather than altering the app clock.
+        for(let step=1;step<=6;step++){
+          await new Promise(resolve=>setTimeout(resolve,240));
+          await page.mouse.move(x+dx*step/6,y);
+        }
+      }else await page.mouse.move(x+dx,y,{steps:8});
+      await page.mouse.up();
     };
     await mouseDrag('.world-scene',180);
     assert.equal(await current(),'friends','mouse drag cannot leave the start of the main menu');
+    await mouseDrag('.world-scene',-180,{slow:true});
+    assert.equal(await current(),'home','a deliberate mouse drag longer than 1.4 seconds still moves to the next main menu');
+    await back();
     await enterPlace('cafe');
     await mouseDrag('.visit-banner',180);
     assert.equal(await currentPlace(),'cafe','mouse drag stops at cafe');
