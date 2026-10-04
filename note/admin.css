@@ -36,13 +36,13 @@
 .na-action-form{max-width:720px;padding:18px}
 .na-edit-preview{width:min(100%,620px);min-width:0;container-type:inline-size}
 .na-edit-preview h4{margin:0 0 9px;font-size:14px}
-.na-edit-photo{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;height:max(370px,69.4cqw);padding:50px 15px;overflow:hidden;border-radius:16px;background-color:#8d93ad;background-image:linear-gradient(135deg,#f7cfdf,#aebeed);background-position:center;background-size:cover;isolation:isolate}
+.na-edit-photo{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;height:calc(max(370px,69.4cqw) * 2 / 3);padding:50px 15px;overflow:hidden;border-radius:16px;background-color:#8d93ad;background-image:linear-gradient(135deg,#f7cfdf,#aebeed);background-position:center;background-size:cover;isolation:isolate}
 .na-edit-quote{display:block;max-width:90%;max-height:calc(100% - 44px);margin:0 12%;padding:.15em .5em;overflow:hidden;border-radius:6px;background:#17203ab8;color:#fff;text-align:center;font:400 clamp(24px,4.4vw,34px)/1.55 var(--font-d,"Gowun Dodum",sans-serif);letter-spacing:-.045em;text-shadow:0 1px 3px #0005;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-wrap}
 .na-edit-quote--empty{opacity:.7}
 .na-edit-tags{position:absolute;right:17px;bottom:18px;left:17px;display:flex;gap:6px;overflow:hidden;white-space:nowrap}
 .na-edit-tags span{padding:4px 10px;border:1px solid #ffffff9c;border-radius:100px;background:#15162d60;color:#fff;font-size:11px;line-height:1.5}
-.na-edit-preview--reply{max-width:310px}.na-edit-preview--reply .na-edit-photo{height:250px;padding:38px 12px}.na-edit-preview--reply .na-edit-quote{font-size:19px}
-.na-edit-preview--event .na-edit-photo{height:max(210px,34.7cqw);padding:36px 14px}.na-edit-preview--event .na-edit-quote{font-size:clamp(19px,3.3vw,27px)}
+.na-edit-preview--reply{max-width:310px}.na-edit-preview--reply .na-edit-photo{height:calc(250px * 2 / 3);padding:38px 12px}.na-edit-preview--reply .na-edit-quote{font-size:19px}
+.na-edit-preview--event .na-edit-photo{height:calc(max(210px,34.7cqw) * 2 / 3);padding:36px 14px}.na-edit-preview--event .na-edit-quote{font-size:clamp(19px,3.3vw,27px)}
 .na-edit-font-round .na-edit-quote{font-family:"Jua",var(--font-d,sans-serif)}.na-edit-font-serif .na-edit-quote{font-family:"Noto Serif KR",serif}.na-edit-font-handwriting .na-edit-quote{font-family:"Nanum Pen Script","Jua",serif;font-size:clamp(30px,5vw,44px)}.na-edit-font-mono .na-edit-quote{font-family:"Nanum Gothic Coding",monospace;letter-spacing:-.08em}
 .na-edit-preview--reply.na-edit-font-handwriting .na-edit-quote{font-size:25px}
 .na-edit-size-large .na-edit-quote{font-size:clamp(28px,5vw,40px)}.na-edit-size-small .na-edit-quote{font-size:clamp(18px,3vw,25px)}

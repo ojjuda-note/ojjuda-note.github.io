@@ -172,13 +172,13 @@ select{font:inherit;color:inherit}
   .note-photo-pages select{width:108px;max-width:108px}
   .note-photo-pages .button{padding:6px 5px}
 }
-/* Card photos keep their size even when a legacy body is longer than the space. */
-.photo-card .photo{height:370px;height:max(370px,69.4cqw);min-height:0;aspect-ratio:auto}
-.detail-card-slot .photo-card .photo{height:430px;height:max(430px,76.8cqw);min-height:0}
-.reply-card .photo{height:250px;min-height:0;aspect-ratio:auto}
-.photo-card.note-event-card .photo{height:210px;height:max(210px,34.7cqw);min-height:0;aspect-ratio:auto}
+/* All card photo heights are two thirds of the original layout. */
+.photo-card .photo{height:calc(370px * 2 / 3);height:calc(max(370px,69.4cqw) * 2 / 3);min-height:0;aspect-ratio:auto}
+.detail-card-slot .photo-card .photo{height:calc(430px * 2 / 3);height:calc(max(430px,76.8cqw) * 2 / 3);min-height:0}
+.reply-card .photo{height:calc(250px * 2 / 3);min-height:0;aspect-ratio:auto}
+.photo-card.note-event-card .photo{height:calc(210px * 2 / 3);height:calc(max(210px,34.7cqw) * 2 / 3);min-height:0;aspect-ratio:auto}
 .photo .card-quote{max-height:calc(100% - 44px);overflow:hidden;overflow-wrap:anywhere}
-.compose-photo{--compose-photo-height:clamp(310px,calc((100vw - 90px)/1.1),500px);height:var(--compose-photo-height);min-height:0;aspect-ratio:auto}
+.compose-photo{--compose-photo-height:calc(clamp(310px,calc((100vw - 90px)/1.1),500px) * 2 / 3);height:var(--compose-photo-height);min-height:0;aspect-ratio:auto}
 .compose-overflow-warning{color:#b53350;font-size:11px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}.compose-status:has(.compose-overflow-warning:not([hidden])){justify-content:space-between}
 .note-full-body{margin:0;padding:0 17px 13px;color:var(--ink);font-size:13px}
 .note-full-body summary{width:max-content;max-width:100%;padding:5px 0;color:var(--accent);cursor:pointer;font-weight:700}
