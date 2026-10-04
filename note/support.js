@@ -226,5 +226,5 @@
     }
     await load();
   }
-  window.OjjudaNoteSupport={install,renderAdmin,open:id=>{if(layer)show(id);},openFeedback:()=>{if(layer)show(null,'feedback');},report:options=>{if(layer)showReport(options);},isOpen:()=>!!layer&&!layer.hidden,close:()=>{if(layer&&!layer.hidden)close();}};
+  window.OjjudaNoteSupport={install,renderAdmin,open:id=>{if(layer)show(id);},openFeedback:()=>{if(layer)show(null,'feedback');},report:options=>{if(layer)showReport(options);},isOpen:()=>!!layer&&!layer.hidden,canLeave:()=>!busy,close:()=>{if(layer&&!layer.hidden)close();}};
 })();

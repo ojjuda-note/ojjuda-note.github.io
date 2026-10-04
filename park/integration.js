@@ -10,6 +10,10 @@
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), .world-picker:not([hidden]), .photo-source-menu, dialog[open]');
 
   function canLeave() {
+    if (window.OjjudaNoteSupport?.canLeave?.() === false) return false;
+    if (window.OjjudaCharge?.canLeave?.() === false) {
+      flashMessage('충전 결과를 확인 중이에요. 잠시만 기다려 주세요.'); return false;
+    }
     if (managementBusy) { managementMessage.textContent = '저장이 끝날 때까지 기다려 주세요.'; return false; }
     return originalCanLeave?.() !== false;
   }

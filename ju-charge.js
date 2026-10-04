@@ -198,5 +198,5 @@
     event.preventDefault();
     open();
   });
-  window.OjjudaCharge = Object.freeze({ install, open, close, isOpen: () => !!dialog?.open });
+  window.OjjudaCharge = Object.freeze({ install, open, close, isOpen: () => !!dialog?.open, canLeave: () => !busy });
 })();
