@@ -3,7 +3,7 @@ const button=(text,click)=>{const el=node('button','',text);el.type='button';el.
 const scopes=[['me','나만 보기'],['friends','친구 공개'],['all','전체 공개']];
 function select(label,options,value){const el=node('select');el.setAttribute('aria-label',label);for(const [id,text]of options){const option=node('option','',text);option.value=id;el.append(option);}el.value=value;return el;}
 function field(label,control){const wrap=node('label','record-field');wrap.append(node('span','',label),control);return wrap;}
-export function mountCloudRecords({container,kind,request,active,foldersHost,settingsButton,initialFolder='all',onFolderChange=()=>{},postDrafts=new Map()}){
+export function mountCloudRecords({container,kind,request,active,foldersHost,settingsButton,initialFolder='all',onFolderChange=()=>{},postDrafts=new Map(),committedPostIds=new Set(),pendingPostIds=new Set()}){
  let run=0,busy=false,folderId=initialFolder,snapshot={folders:[],friends:[],groups:[]},displayed=[],managing=false,loaded=false,trash=false;const selected=new Set(),recordKey=row=>(row.type==='text'?'text:':'media:')+row.id;const label=kind==='photo'?'사진':kind==='video'?'동영상':'기록';
  const status=node('p','record-status');status.setAttribute('role','status');
  const toolbar=node('div','record-toolbar'),gallery=node('div','record-gallery '+kind),editor=node('div','record-editor');gallery.setAttribute('aria-label','우리집 앨범 '+label);
@@ -48,17 +48,19 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  function setTrash(value){if(busy)return;trash=value;container.dataset.trash=String(value);managing=false;selection.hidden=true;selected.clear();editor.replaceChildren();folders.hidden=value;uploads.hidden=true;add.hidden=value||kind==='text';newPost.hidden=value||!['all','text'].includes(kind);trashHeading.hidden=!value;void load();}
  const newPost=button('＋ 글쓰기',()=>postEditor()),trashHeading=node('div','record-trash-heading');newPost.hidden=!['all','text'].includes(kind);newPost.disabled=true;toolbar.append(newPost);trashHeading.hidden=true;trashHeading.append(node('strong','','휴지통'),button('기록으로 돌아가기',()=>setTrash(false)),node('p','panel-note','삭제한 기록을 보관하는 곳이에요. 여기서는 나만 볼 수 있어요.'));
  function postEditor(record,initialBody='',draftName='new'){
-  if(busy)return;editor.replaceChildren();const draftKey=record?.id||draftName,draft=postDrafts.get(draftKey)||{id:record?.id||crypto.randomUUID(),body:record?.caption||initialBody,folder_id:record?.folder_id||(['all','none'].includes(folderId)?null:folderId),visibility:record?.visibility||'me',create:!record};
+  if(busy)return;editor.replaceChildren();const draftKey=record?.id||draftName;let draft=postDrafts.get(draftKey)||{id:record?.id||crypto.randomUUID(),body:record?.caption||initialBody,folder_id:record?.folder_id||(['all','none'].includes(folderId)?null:folderId),visibility:record?.visibility||'me',create:!record};
+  // A reopened new-post editor must not share the ID of a write still in flight.
+  if(draft.create&&pendingPostIds.has(draft.id))draft={...draft,id:crypto.randomUUID()};
   const form=node('form','record-post-form'),body=node('textarea');body.maxLength=4000;body.required=true;body.value=draft.body;body.rows=6;
   const target=select('글 폴더',[['','미분류'],...snapshot.folders.map(row=>[row.id,row.name])],draft.folder_id||''),scope=select('글 공개범위',scopes,draft.visibility),note=node('p','panel-note');
   if(!target.value)target.value='';if(draft.folder_id&&!snapshot.folders.some(row=>row.id===draft.folder_id))scope.value='me';
-  const remember=()=>postDrafts.set(draftKey,{...draft,body:body.value,folder_id:target.value||null,visibility:scope.value});
+  const remember=()=>{if(draft.create&&committedPostIds.has(draft.id))draft={...draft,id:crypto.randomUUID()};postDrafts.set(draftKey,{...draft,body:body.value,folder_id:target.value||null,visibility:scope.value});};
   const sync=()=>{const folder=snapshot.folders.find(row=>row.id===target.value);scope.hidden=!!folder;note.textContent=folder?`글은 ‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'계정에 저장되어 다른 기기에서도 볼 수 있어요.';remember();};
   body.oninput=remember;target.onchange=()=>{if(!target.value)scope.value='me';sync();};scope.onchange=remember;sync();
   const submit=button(record?'글 수정 저장':'게시판에 저장');submit.type='submit';
   form.append(node('p','record-form-title',record?'글 수정':'새 글'),field('게시판 글',body),field('폴더',target),field('볼 수 있는 사람',scope),note,submit,button('닫기',()=>editor.replaceChildren()));
   if(record)form.append(button('휴지통으로',()=>trashEditor([record])));
-  form.onsubmit=event=>{event.preventDefault();remember();void save('save-post',postDrafts.get(draftKey),'글을 계정에 저장했어요.',()=>{postDrafts.delete(draftKey);folderId=target.value||'none';onFolderChange(folderId);});};editor.append(form);body.focus();
+  form.onsubmit=event=>{event.preventDefault();if(busy||!active())return;remember();const submitted=postDrafts.get(draftKey);if(pendingPostIds.has(submitted.id)){status.textContent='이 글의 이전 저장을 마치는 중이에요. 입력한 내용은 그대로예요. 잠시 후 다시 저장해 주세요.';return;}pendingPostIds.add(submitted.id);void save('save-post',submitted,'글을 계정에 저장했어요.',()=>{folderId=target.value||'none';onFolderChange(folderId);},()=>{committedPostIds.add(submitted.id);if(postDrafts.get(draftKey)===submitted)postDrafts.delete(draftKey);}).finally(()=>pendingPostIds.delete(submitted.id));};editor.append(form);body.focus();
  }
  const file=node('input');file.type='file';file.multiple=true;file.accept=kind==='photo'?'image/jpeg,image/png,image/gif,image/webp':kind==='video'?'video/mp4,video/quicktime,video/webm':'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm';file.hidden=true;file.setAttribute('aria-label',label+' 앨범에 올리기');
  const uploads=node('div','record-toolbar record-upload'),uploadVisibility=select('새 파일 공개범위',scopes,'me'),add=button((kind==='all'?'사진·동영상':label)+' 올리기',()=>{uploads.hidden=!uploads.hidden;});
@@ -69,9 +71,10 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  function lock(value){busy=value;for(const el of [...container.querySelectorAll('button,input,textarea,select'),...folders.querySelectorAll('button')])el.disabled=value;if(settingsButton)settingsButton.disabled=value||!loaded;syncScope();syncSelection();}
  function syncScope(){const folder=snapshot.folders.find(row=>row.id===folderId);uploadVisibility.hidden=!!folder;scopeNote.textContent=folder?`새 파일은 ‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'사진과 영상은 계정에 저장돼요. 다른 기기에서도 볼 수 있어요.';}
  function scopeLabel(value){return [...scopes,['chosen','선택한 친구·그룹']].find(([id])=>id===value)?.[1]||'공개범위 확인';}
- async function save(action,args,message,after){
+ // Successful writes can finish after a category switch; retire only their saved draft.
+ async function save(action,args,message,after,onCommitted){
   if(busy||!active())return;lock(true);status.textContent='저장 중이에요…';
-  try{const result=await request(action,args);if(!active())return;after?.(result);editor.replaceChildren();const loaded=await load();if(active()&&loaded)status.textContent=message;}
+  try{const result=await request(action,args);onCommitted?.(result);if(!active())return;after?.(result);editor.replaceChildren();const loaded=await load();if(active()&&loaded)status.textContent=message;}
   catch(error){failure(error);}finally{if(active())lock(false);}
  }
  function folderEditor(folder){
@@ -133,6 +136,8 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  async function load(offset=0){
   const current=++run;if(!offset){displayed=[];selected.clear();gallery.replaceChildren();container.querySelector('.cloud-more')?.remove();syncSelection();}status.textContent='앨범을 불러오는 중이에요…';
   try{const data=await request('list',{kind,folder:folderId,offset,trash});if(!active()||current!==run)return;
+   // Another window or device may have deleted the selected folder.
+   if(!trash&&!['all','none'].includes(folderId)&&!data.folders.some(row=>row.id===folderId)){folderId='all';onFolderChange(folderId);return load();}
    snapshot=data;loaded=true;newPost.disabled=busy;if(settingsButton)settingsButton.disabled=busy;renderFolders();syncScope();const target=destination.value;destination.replaceChildren();for(const [id,text]of [['','미분류 · 나만 보기'],...data.folders.map(row=>[row.id,row.name+' · '+scopeLabel(row.visibility)])]){const option=node('option','',text);option.value=id;destination.append(option);}destination.value=data.folders.some(row=>row.id===target)?target:'';
    status.textContent='';if(!offset)gallery.replaceChildren();container.querySelector('.cloud-more')?.remove();
    displayed.push(...data.records);renderCards();syncSelection();

@@ -33,6 +33,7 @@
   let recoveryGrant = null, recoveryCompleted = false;
   let identityVersion = 0;
   let authEventVersion = 0;
+  let authViewVersion = 0;
   let enteringNote = false;
   let recoveryPending = /(?:^|[?&])reset=1(?:&|$)/.test(location.search.slice(1))
     || /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash);
@@ -95,6 +96,7 @@
   }
 
   function setAuthMode(mode, notice = '') {
+    authViewVersion++;
     authMode = mode;
     const isSignup = mode === 'signup';
     const isForgot = mode === 'forgot';
@@ -152,6 +154,8 @@
   }
 
   function showState(title, body, buttonText = '로그인 화면으로') {
+    authViewVersion++;
+    password.value = passwordConfirm.value = '';
     clearRecoveryGrant();
     recoveryCompleted = false;
     authMode = 'state';
@@ -240,10 +244,12 @@
     enteringNote = true;
     const expectedUserId = session.user.id;
     const expectedIdentityVersion = identityVersion;
+    const expectedViewVersion = authViewVersion;
     const noteButton = document.querySelector('[data-destination="note"]');
     noteButton.disabled = true;
     const release = () => { noteButton.disabled = false; enteringNote = false; };
-    const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion;
+    const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
+      || authViewVersion !== expectedViewVersion;
     try {
       const { data: identity, error: identityError } = await client.auth.getUser();
       if (accountChanged()) return;
@@ -403,10 +409,13 @@
       return;
     }
 
+    const requestView = authViewVersion;
+    const currentView = () => dialog.open && authViewVersion === requestView;
     setBusy(true);
     try {
       if (authMode === 'login') {
         const { data, error } = await client.auth.signInWithPassword({ email: address, password: secret });
+        if (!currentView()) return;
         if (error) throw error;
         if (!data?.session?.user) throw new Error('missing_session');
         applySession(data.session);
@@ -436,6 +445,7 @@
             emailRedirectTo: confirmationUrl.href
           }
         });
+        if (!currentView()) return;
         if (error) throw error;
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
         $('signup-result').textContent = '';
@@ -455,7 +465,7 @@
         await enterNote(nickname.value.trim());
       } else if (authMode === 'forgot') {
         const data = await recoveryRequest({ action: 'check', ...recoveryDetails });
-        if (!dialog.open || authMode !== 'forgot') return;
+        if (!currentView()) return;
         if (data?.verified === false) { feedback.textContent = '회원정보가 일치하지 않아요. 입력한 네 가지 정보를 확인해 주세요.'; return; }
         if (data?.verified !== true || !/^[a-f0-9]{64}$/.test(data.reset_token)) throw new Error('recovery_unavailable');
         for (const id of ['recovery-phone', 'recovery-birth', 'recovery-gender']) $(id).value = '';
@@ -465,7 +475,7 @@
       } else if (authMode === 'direct-reset') {
         const grant = recoveryGrant;
         const data = await recoveryRequest({ action: 'reset', token: grant.token, password: secret, password_confirmation: passwordConfirm.value });
-        if (!dialog.open || recoveryGrant !== grant) return;
+        if (!currentView() || recoveryGrant !== grant) return;
         if (data?.reset !== true) throw new Error('recovery_restart_required');
         recoveryPending = false;
         history.replaceState(null, '', location.pathname);
@@ -473,6 +483,7 @@
         recoveryCompleted = true;
       } else if (authMode === 'reset') {
         const { data, error } = await client.auth.updateUser({ password: secret });
+        if (!currentView()) return;
         if (error) throw error;
         recoveryPending = false;
         history.replaceState(null, '', location.pathname);
@@ -481,11 +492,14 @@
       }
     } catch (error) {
       console.warn('계정 처리 실패:', error);
+      if (!currentView()) return;
       if (authMode === 'direct-reset' && !/invalid_recovery_password|recovery_password_mismatch/.test(error.message || '')) setAuthMode('forgot', messageFor(error));
       else feedback.textContent = messageFor(error);
     } finally {
-      password.value = '';
-      passwordConfirm.value = '';
+      if (authViewVersion === requestView) {
+        password.value = '';
+        passwordConfirm.value = '';
+      }
       setBusy(false);
     }
   }
@@ -588,6 +602,7 @@
       }
     }).catch(error => {
       console.warn('세션 확인 실패:', error);
+      if (authEventVersion !== initialVersion) return;
       applySession(null);
       resolveAuthEntry(null);
       if (recoveryPending) {

@@ -16,6 +16,7 @@ document.querySelector('#open').onclick=()=>{const account=owner;const authorize
    await page.setViewportSize({width,height:844});
    const layout=await f.evaluate(()=>({rows:[...document.querySelectorAll('[data-cloud-record-id]')].map(el=>{const row=el.getBoundingClientRect(),text=el.querySelector('.record-copy').getBoundingClientRect(),thumb=el.querySelector('.record-preview').getBoundingClientRect();return {height:row.height,textRight:text.right,thumbLeft:thumb.left,thumbWidth:thumb.width};}),folderHeight:document.querySelector('[data-folder-id]').getBoundingClientRect().height,tabHeight:document.querySelector('[role=tab]').getBoundingClientRect().height,overflow:document.documentElement.scrollWidth>innerWidth}));
    assert.equal(layout.overflow,false);assert(layout.folderHeight<=30&&layout.tabHeight<=34);assert(layout.rows.every(row=>row.height===112&&row.textRight<row.thumbLeft&&row.thumbWidth===76),'equal rows, left text, small right thumbnails');
+   if(process.env.HOUSE_ALBUM_PROOF_DIR){fs.mkdirSync(process.env.HOUSE_ALBUM_PROOF_DIR,{recursive:true});await f.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.join(process.env.HOUSE_ALBUM_PROOF_DIR,`home-list-${width}.png`)});}
   }
   await page.setViewportSize({width:390,height:844});
   await f.getByRole('button',{name:'동영상 크게 보기',exact:true}).click();await f.locator('dialog video').waitFor();assert.equal(await f.locator('dialog img').count(),0,'mixed feed video opens as video');await f.locator('dialog button').click();
