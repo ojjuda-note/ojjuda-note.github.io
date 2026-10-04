@@ -6,7 +6,7 @@
  const button=(text,action,cls)=>{const n=el('button',text,cls);n.type='button';n.onclick=action;return n;};
  const excerpt=row=>(row.title||row.body||'내용 없는 '+labels[row.kind]).replace(/\s+/g,' ').trim();
  let dispose=null,controller=null;
- function mount(host,{client,owner,games={},authorized=()=>true}={}){
+ function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
   dispose?.();dispose=null;controller=null;if(!host)return;
   let rankDispose=()=>{};
   let alive=true,request=0,view=null,rows=[],more=false,busy=false,snapshot=new Date().toISOString(),dialog=null;
@@ -82,6 +82,15 @@
     for(const [id,game] of entries.slice(start,start+3)){
      const row=el('tr','','board-leader');row.dataset.game=id;
      const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name;
+     if(typeof onOpenGame==='function'){
+      const play=button(game.name,async()=>{
+       if(!active()||token!==request||play.disabled)return;
+       play.disabled=true;status.textContent='';
+       try{await onOpenGame(id);}catch{if(active()&&token===request)status.textContent='게임을 열지 못했어요. 다시 눌러 주세요.';}
+       finally{play.disabled=false;}
+      },'board-game-open');
+      play.setAttribute('aria-label',game.name+' 게임 열기');name.replaceChildren(play);
+     }
      const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{nick,score});
     }
    }
