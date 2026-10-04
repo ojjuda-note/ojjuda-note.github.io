@@ -1,11 +1,11 @@
-import { useEffect, Component, type ReactNode } from 'react'
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Component, type ReactNode } from 'react'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import Dashboard from '@/pages/Dashboard'
+import LedgerHome from '@/ojjuda/LedgerHome'
+import Settings from '@/pages/Settings'
 import Structure from '@/pages/Structure'
 import DataInput from '@/pages/DataInput'
-import { seedCategories, db } from '@/db'
-import { useLiveQuery } from 'dexie-react-hooks'
 
 class ErrorBoundary extends Component<{children: ReactNode}, {error: Error | null}> {
   state = { error: null as Error | null }
@@ -44,18 +44,12 @@ class ErrorBoundary extends Component<{children: ReactNode}, {error: Error | nul
 function AppRoutes() {
 
 
-  // Check if user has set up income → redirect to structure if not
-  const salary = useLiveQuery(async () => {
-    const s = await db.appSettings.where('key').equals('monthlySalary').first()
-    return s ? Number(s.value) : 0
-  })
-
-  const hasSetup = salary != null && salary > 0
-
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<LedgerHome />} />
+        <Route path="/stats" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/structure" element={<Structure />} />
         <Route path="/data" element={<DataInput />} />
       </Route>
