@@ -36,8 +36,8 @@ await page.clock.runFor(4999);assert.equal(await page.locator('.board-leaders').
 await page.clock.runFor(1);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1','five seconds advances');
 await page.clock.runFor(5279);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1','dwell starts after 280ms slide');
 await page.clock.runFor(1);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'0','wraps to first page');
-await page.evaluate(()=>document.querySelector('[aria-label="게임순위 자동 넘김 일시정지"]').click());await page.clock.runFor(12000);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'0','pause stops automatic movement');
-await page.evaluate(()=>document.querySelector('[aria-label="다음 게임순위"]').click());assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
+assert.equal(await page.locator('.board-rank-controls,.board-rank-count,.board-rank-control').count(),0);
+await page.clock.runFor(5280);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
 await page.clock.runFor(300);const swipeBox=await page.locator('.board-rank-viewport').boundingBox();await page.mouse.move(swipeBox.x+30,swipeBox.y+25);await page.mouse.down();await page.mouse.move(swipeBox.x+150,swipeBox.y+27);await page.mouse.up();
 assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'0','horizontal swipe goes back');
 assert.deepEqual(await page.evaluate(()=>openedGames),['mole','runner','stacker'],'swiping the ranking board does not activate a game');
@@ -64,8 +64,8 @@ assert.equal(await page.locator('[data-game=screw]').count(),0,'no combined scre
 assert.equal(await page.locator('[data-game=matgo]').count(),0,'existing visibility rule preserved');
 await page.evaluate(()=>{OjjudaMatgoAccess.visible=()=>true;OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames()});});assert.equal(await page.locator('[data-game=matgo]').count(),1);
 for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[aria-label="게임순위 자동 넘김 시작"]').waitFor();assert.equal(await page.locator('[aria-label="게임순위 자동 넘김 시작"]').count(),1,'reduced motion defaults to paused');
+await page.emulateMedia({reducedMotion:'reduce'});await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));const frozenPage=await page.locator('.board-leaders').getAttribute('data-rank-page');await page.clock.runFor(12000);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),frozenPage,'reduced motion stops auto advance');await page.clock.resume();
 await page.setViewportSize({width:390,height:844});await page.locator('.board-leaders').screenshot({path:'/tmp/chalkboard-ranking.png'});
 await page.evaluate(()=>{viewer=null;mount();});assert.equal(await page.locator('.board-row').count(),0,'session change clears prior records');assert.ok((await page.locator('#board').innerText()).includes('로그인'));
-await page.clock.runFor(6000);assert.equal(await page.locator('.board-leaders').count(),0,'logout disposes carousel');assert.deepEqual(errors,[]);console.log('PASS: game-name links and keyboard activation, stale/unauthorized protection, standalone noninteractive labels, chalkboard ranking, exact 5-second dwell and 280ms slide, pause/swipe, distinct game variants, reduced motion, timer cleanup, BEST/latest lists, pagination, retry, refresh, detail/like/back, XSS safety, session clearing and mobile/desktop layout');
+await page.clock.runFor(6000);assert.equal(await page.locator('.board-leaders').count(),0,'logout disposes carousel');assert.deepEqual(errors,[]);console.log('PASS: game-name links and keyboard activation, stale/unauthorized protection, standalone noninteractive labels, chalkboard ranking, exact 5-second dwell and 280ms slide, compact controls-free layout/swipe, distinct game variants, reduced motion, timer cleanup, BEST/latest lists, pagination, retry, refresh, detail/like/back, XSS safety, session clearing and mobile/desktop layout');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
