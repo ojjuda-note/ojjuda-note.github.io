@@ -18,7 +18,7 @@ document.querySelector('#open').onclick=()=>{const id=owner;openHouseTest({owner
   assert.equal(await frame.locator('#app > header').isVisible(),false,'the summary does not repeat the World/back and Home heading');
   assert.equal(await frame.locator('#world').evaluate(el=>el.inert),true,'the preview cannot edit furniture');
   assert.equal(await frame.locator('#home-room-open').textContent(),'','room thumbnail has no visible label');
-  await frame.getByRole('tab',{name:'게시판',exact:true}).click();await frame.locator('#diary').fill('기존 기록');await frame.getByRole('button',{name:'기록 저장',exact:true}).click();
+  await frame.getByRole('tab',{name:'노트',exact:true}).click();await frame.locator('#diary').fill('기존 기록');await frame.getByRole('button',{name:'기록 저장',exact:true}).click();
   await frame.waitForFunction(()=>getComputedStyle(document.querySelector('#notice')).opacity==='0');
   const saved=await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:summary-a')));
   for(const [width,height]of [[390,844],[360,800],[320,568],[1280,900],[844,390]]){
@@ -37,7 +37,7 @@ document.querySelector('#open').onclick=()=>{const id=owner;openHouseTest({owner
   await frame.locator('[data-tab="diary"]').click();assert.equal(await frame.locator('#diary').inputValue(),'배치를 바꿔도 내 글은 그대로');
   const rooms=await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:summary-a')).rooms);assert.deepEqual(rooms,saved.rooms,'opening/closing room preview does not change furniture');
   await page.evaluate(()=>{owner='summary-b';profile={nick:'<img src=x onerror=alert(1)>',bio:'다른 계정\n소개'};});await page.waitForFunction(()=>document.querySelectorAll('iframe').length===0);await page.locator('#open').click();await page.frameLocator('iframe').locator('#home-room-open').waitFor();frame=page.frames().find(f=>f.url().includes('/house-test/index.html'));
-  assert.equal(await frame.locator('#home-profile-nick').textContent(),'<img src=x onerror=alert(1)>');assert.equal(await frame.locator('#home-profile-nick img').count(),0);assert.equal(await frame.locator('#home-profile-bio').textContent(),'다른 계정 소개');await frame.getByRole('tab',{name:'게시판',exact:true}).click();assert.equal(await frame.locator('#diary').inputValue(),'');
+  assert.equal(await frame.locator('#home-profile-nick').textContent(),'<img src=x onerror=alert(1)>');assert.equal(await frame.locator('#home-profile-nick img').count(),0);assert.equal(await frame.locator('#home-profile-bio').textContent(),'다른 계정 소개');await frame.getByRole('tab',{name:'노트',exact:true}).click();assert.equal(await frame.locator('#diary').inputValue(),'');
   assert.deepEqual(errors,[]);console.log('HOUSE SUMMARY PASS: header-free unified profile/room layout at five viewports, borderless rounded compact room, full-width bio, unified scrolling, real room artwork, read-only thumbnail, entry/return, saved room and diary preservation, account isolation and safe text');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

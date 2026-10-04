@@ -1,14 +1,15 @@
-import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-home-clean1';
-import {icon} from './icons.js?v=20261004-home-clean1';
+import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-folder-kind1';
+import {icon} from './icons.js?v=20261004-folder-kind1';
 import {MEDIA_TYPES,addRecordMedia,listRecordMedia,readRecordMedia,deleteRecordMedia} from './record-media-store.js?v=20261004-records1';
-const categories=[['all','전체'],['text','게시판'],['photo','사진'],['video','동영상']];
+const categories=[['all','전체'],['text','노트'],['photo','앨범'],['video','비디오']];
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
 function button(text,click){const el=node('button','',text);el.type='button';el.onclick=click;return el;}
 export function createRecordPanel({owner,getText,changeText,saveText,notify,request}){
  let cloudController=null;
- let category='all',folderId='all',container=null,generation=0,urls=[],busy=false,limit=12,disposed=false;
+ const folderIds=new Map();
+ let category='all',container=null,generation=0,urls=[],busy=false,limit=12,disposed=false;
  const lifetime=new AbortController(),postDrafts=new Map(),committedPostIds=new Set(),pendingPostIds=new Set();
- function unmount(){generation++;for(const dialog of container?.querySelectorAll('dialog')||[])dialog.close();for(const video of container?.querySelectorAll('video')||[]){video.pause();video.removeAttribute('src');video.load();}urls.forEach(url=>URL.revokeObjectURL(url));urls=[];container=null;}
+ function unmount(){generation++;cloudController?.dispose?.();for(const dialog of container?.querySelectorAll('dialog')||[])dialog.close();for(const video of container?.querySelectorAll('video')||[]){video.pause();video.removeAttribute('src');video.load();}urls.forEach(url=>URL.revokeObjectURL(url));urls=[];container=null;}
  function mount(body){
   unmount();cloudController=null;if(disposed)return;container=body;body.replaceChildren();const current=generation,active=()=>!disposed&&container===body&&current===generation;
   const wrapper=node('div','record-panel'),tabs=node('div','record-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','기록 종류');
@@ -20,7 +21,7 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
   const foldersHost=node('div','record-folder-strip'),topbar=node('div','record-topbar'),settingsButton=button('');settingsButton.innerHTML=icon('settings');settingsButton.className='record-settings-button';settingsButton.setAttribute('aria-label','우리집 설정');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.disabled=!request;topbar.append(tabs,settingsButton);wrapper.append(topbar,foldersHost,content);body.append(wrapper);
   if(request){
    const cloud=node('div','cloud-records');content.append(cloud);
-   cloudController=mountCloudRecords({postDrafts,committedPostIds,pendingPostIds,container:cloud,kind:category,request,active,foldersHost,settingsButton,initialFolder:folderId,onFolderChange:id=>{folderId=id;}});
+   cloudController=mountCloudRecords({postDrafts,committedPostIds,pendingPostIds,container:cloud,kind:category,request,active,foldersHost,settingsButton,initialFolder:folderIds.get(category)||'all',onFolderChange:((recordKind)=>id=>folderIds.set(recordKind,id))(category)});
    return;
   }
   // Isolated/offline fixtures retain their local records. Account-backed views
@@ -31,7 +32,7 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
    const label=node('label','','오늘은 어떤 하루였나요?'),field=node('textarea');field.id='diary';field.maxLength=4000;field.value=getText();label.htmlFor=field.id;field.oninput=()=>changeText(field.value);
    editor.append(summary,label,field,button('기록 저장',()=>{saveText(field.value);preview.textContent=field.value||'아직 쓴 글이 없어요.';card.hidden=!field.value.trim();summary.textContent=field.value.trim()?'글 수정':'＋ 글 기록';}),node('p','panel-note','이 기기에 보관한 글이에요.'));
    const card=node('article','record-card record-text-card'),copy=node('div','record-copy'),preview=button(getText(),()=>{editor.open=true;field.focus();});preview.className='record-text-open';
-   copy.append(node('p','record-meta','게시판 · 이 기기'),preview);card.append(copy);card.hidden=!getText().trim();diarySection.append(card,editor);
+   copy.append(node('p','record-meta','노트 · 이 기기'),preview);card.append(copy);card.hidden=!getText().trim();diarySection.append(card,editor);
   }
   const localContent=content,folders=node('div','record-folders'),all=button('전체',()=>{});all.setAttribute('aria-pressed','true');folders.append(all);foldersHost.append(folders);content.append(diarySection);
   if(category==='text')return;

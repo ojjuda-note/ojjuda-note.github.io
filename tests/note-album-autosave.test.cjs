@@ -8,7 +8,10 @@ const fixture=require('./fixtures/house-album.cjs'),source=fs.readFileSync(path.
  // Existing private Note folder is reused; album records stay private.
  await c.saveToWorldAlbum(photo,f.owner,1);let saved=f.db.media.at(-1);assert.equal(saved.folder_id,'note-folder');assert.equal(saved.visibility,'me');assert.equal(saved.caption,'공원에 올린 사진');assert(f.files.has(saved.path)&&f.files.has(saved.thumb_path));assert.equal(f.db.media_folders.length,2);
  // A same-named public folder must never receive a newly attached Note photo.
- f.db.media_folders.find(row=>row.id==='note-folder').visibility='all';await c.saveToWorldAlbum(photo,f.owner,1);saved=f.db.media.at(-1);const privateFolder=f.db.media_folders.find(row=>row.id===saved.folder_id);assert.notEqual(privateFolder.id,'note-folder');assert.equal(privateFolder.visibility,'me');assert.equal(privateFolder.allowed.length,0);
+ f.db.media_folders.find(row=>row.id==='note-folder').visibility='all';await c.saveToWorldAlbum(photo,f.owner,1);saved=f.db.media.at(-1);const privateFolder=f.db.media_folders.find(row=>row.id===saved.folder_id);assert.notEqual(privateFolder.id,'note-folder');assert.equal(privateFolder.visibility,'me');assert.equal(privateFolder.allowed.length,0);assert.equal(privateFolder.kind,'photo');
+ // A private same-named folder from another section is not reused.
+ privateFolder.kind='text';f.db.media_folders.push({id:'note-video',user_id:f.owner,name:'익명카드',kind:'video',visibility:'me',allowed:[]});
+ await c.saveToWorldAlbum(photo,f.owner,1);saved=f.db.media.at(-1);const photoFolder=f.db.media_folders.find(row=>row.id===saved.folder_id);assert.equal(photoFolder.kind,'photo');assert.notEqual(photoFolder.id,privateFolder.id);assert.notEqual(photoFolder.id,'note-video');
  const count=f.db.media.length,files=f.files.size;f.state.fail='insert';await assert.rejects(c.saveToWorldAlbum(photo,f.owner,1));assert.equal(f.db.media.length,count);assert.equal(f.files.size,files);f.state.fail=null;
  c.session.user.id='member-b';await c.saveToWorldAlbum(photo,f.owner,1);assert.equal(f.db.media.length,count,'account change cannot save the previous member’s photo');
  // Exercise the actual publish-success attachment block, including photo edits.

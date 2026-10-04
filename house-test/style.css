@@ -266,7 +266,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .records-home>header{display:none;}
 .records-home #home-scene{display:grid;grid-column:1;grid-row:1;grid-template-columns:clamp(96px,28%,144px) minmax(0,1fr);align-items:center;justify-self:center;width:min(100%,564px);min-height:110px;padding-top:18px;}
 .records-home #home-profile{grid-column:1;grid-row:1;align-self:stretch;justify-content:center;transform:translateX(var(--home-profile-offset,0px));flex-direction:column;gap:10px;padding:12px 8px;text-align:center;z-index:2;}
-.records-home .home-profile-picture{width:clamp(56px,17vw,72px);height:clamp(56px,17vw,72px);min-height:56px;border:2px solid var(--cream);box-shadow:0 0 0 1px #e7e0eb;}
+.records-home .home-profile-picture{width:clamp(64px,19vw,80px);height:clamp(64px,19vw,80px);min-height:64px;border:2px solid var(--cream);box-shadow:0 0 0 1px #e7e0eb;}
 .records-home .home-profile-picture svg{width:30px;height:30px;}
 .records-home #home-profile-nick{font-size:13px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;}
 .records-home #home-profile-bio:not(:empty){display:block;grid-column:1 / -1;grid-row:2;padding:16px 18px 2px;font-size:13px;line-height:1.7;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:left;}
@@ -356,6 +356,15 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-settings-add{display:block;min-height:44px;margin:2px 0 4px auto;padding:8px 12px;border:0;border-radius:10px;background:#eee3fa;color:#78539d;font-size:13px;font-weight:600;}
 .record-settings-empty{margin:18px 8px 22px;color:#8b7e92;font-size:13px;text-align:center;}
 .record-settings-delete{display:block;margin-top:16px;border:0;background:transparent;color:#96616b;font-size:12px;}
+.record-folder-strip[hidden],.record-folders[hidden]{display:none;}
+.record-folder-strip[hidden]+.record-content{padding-top:12px;}
+.record-card,.record-folders button{-webkit-touch-callout:none;user-select:none;}
+.record-context-dialog{width:min(calc(100vw - 40px),320px);padding:14px;background:var(--cream);color:var(--ink);}
+.record-context-dialog h3{margin:4px 8px 12px;font-size:15px;line-height:1.5;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.record-context-dialog>button{display:block;width:100%;min-height:44px;margin:0;padding:12px;border:0;border-radius:10px;background:transparent;text-align:left;font-size:14px;}
+.record-context-dialog>button:hover{background:#f3edf8;}
+.record-context-dialog>.record-context-delete{color:#a15b69;}
+.record-context-dialog>.record-context-close{margin-top:8px;border-top:1px solid #ece7ef;border-radius:0;color:#8b8191;text-align:center;}
 .record-management-confirm{border:1px solid #dfd3e7;border-radius:12px;background:#faf5ff;padding:12px;margin:8px 0;}
 .record-management-confirm>button{margin:10px 6px 0 0;font-size:12px;}
 .record-selection-tools{padding:10px;margin:8px 0;border:1px solid #dfd3e7;border-radius:12px;background:#faf5ff;}

@@ -38,7 +38,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('https://fixture.test/world.html?place=park&compose=memo');
  const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
- const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-refresh1');
+ const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-folder-kind1');
  let frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
  await frame.evaluate(()=>window.fixtureToken='kept');
