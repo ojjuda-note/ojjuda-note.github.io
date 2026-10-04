@@ -75,13 +75,14 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.addStyleTag({content:`@font-face{font-family:ViewportQA;src:url(data:font/ttf;base64,${font})}:root{--font-b:ViewportQA,sans-serif;--font-d:ViewportQA,sans-serif}body{font-family:ViewportQA,sans-serif}`});
           await page.evaluate(() => document.fonts.ready);
         }
+        // Park is embedded content: World supplies its only visible navigation.
+        if(source==='note')assert.equal(await page.locator('.bottomnav').isVisible(),false,'Park must not duplicate World navigation');
         // Simulate a 48px system navigation area and a top notch.
         await page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}html{scroll-behavior:auto}'});
         await settle(page);
-        if (viewport.width < 900) {
-          for (const screen of source === 'world' ? ['friends','home','my'] : ['my']) {
-            if (source === 'world') await page.evaluate(tab => worldTest.actions.tab({tab}), screen);
-            else await page.locator('.bottomnav [data-note-my]').click();
+        if (viewport.width < 900 && source === 'world') {
+          for (const screen of ['friends','home','life','my']) {
+            await page.evaluate(tab => worldTest.actions.tab({tab}), screen);
             await settle(page);
             await assertInside(page, page.locator('.bottomnav button').last(), {bottom:viewport.height-48}, `${source}/${screen} navigation`);
           }
@@ -105,7 +106,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         await content.evaluate(node => node.scrollTop = node.scrollHeight);
         assert.ok(await content.evaluate(node => node.scrollHeight <= node.clientHeight + node.scrollTop + 1));
         await close.click();
-        if (viewport.width < 900) {
+        if (viewport.width < 900 && source === 'world') {
           await visibleArea(page, viewport.height-60);
           await assertInside(page, page.locator('.bottomnav button').last(), {bottom:viewport.height-60-48}, `${source} navigation above browser controls`);
           await visibleArea(page, viewport.height);

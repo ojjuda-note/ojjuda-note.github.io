@@ -1,6 +1,6 @@
 import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry1';
 let activeClose=null;
-export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,onClose,onStudio}){
+export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,onFrameReady=null,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
  // Opening a member's home does not grant furniture authoring permission.
  const hasStudioAccess=()=>{try{return !!authorized()&&typeof studioAuthorized==='function'&&studioAuthorized()===true;}catch{return false;}};
@@ -14,14 +14,14 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';close.textContent='나가기';Object.assign(close.style,{top:'4px',right:'8px',width:'66px',height:'40px',fontSize:'13px'});}
- const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261004-homegroups4',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261004-life1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  const loading=inline?document.createElement('div'):createHouseEntryLoading();
  if(inline){status.textContent='우리집을 불러오는 중이에요…';loading.hidden=true;}
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  overlay.append(status,frame,loading,close);
  if(inline)mountTarget.replaceChildren(overlay);else{document.body.append(overlay);document.body.style.overflow='hidden';}
  close.focus({preventScroll:true});
- let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{};
+ let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{};
  function reveal(message,ready=false){if(closed)return;stopPaintWait();stopPaintWait=()=>{};loading.remove();frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');status.textContent=message;status.hidden=inline&&ready;if(inline&&ready){close.hidden=true;if(document.activeElement===close)frame.focus({preventScroll:true});}}
  const trackNavigation=(inline||preserveWorldNavigation)&&!studioOnly;
  const navigationObserver=trackNavigation&&window.ResizeObserver?new ResizeObserver(scheduleNavigationSpace):null;
@@ -48,7 +48,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  }
  function scheduleNavigationSpace(){if(!closed&&!navigationFrame)navigationFrame=requestAnimationFrame(updateNavigationSpace);}
  if(trackNavigation){updateNavigationSpace();window.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('scroll',scheduleNavigationSpace);}
- function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);stopPaintWait();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
+ function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);stopPaintWait();stopFrameNavigation();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
  const escape=e=>{if(e.key==='Escape'){e.preventDefault();cleanup();}};window.addEventListener('keydown',escape,true);close.onclick=cleanup;activeClose=cleanup;
  const watcher=setInterval(()=>{
   if(!authorized()||!overlay.isConnected){cleanup();return;}
@@ -59,6 +59,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const deadline=setTimeout(()=>reveal('화면을 불러오지 못했어요. 닫은 뒤 다시 열어 주세요.'),20000);
  frame.addEventListener('load',()=>{
   if(closed||!authorized()||(studioOnly&&!hasStudioAccess())){cleanup();return;}
+  stopFrameNavigation();stopFrameNavigation=onFrameReady?.(frame)||(()=>{});
   canUseStudio=hasStudioAccess();channel?.port1.close();channel=new MessageChannel();
   channel.port1.onmessage=async e=>{
    if(closed)return;if(!authorized()){cleanup();return;}
