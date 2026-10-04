@@ -94,16 +94,12 @@
      const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{nick,score});
     }
    }
-   const controls=el('div','','board-rank-controls'),count=el('span','','board-rank-count');let index=0,timer=0,hover=false,touch=null,dragging=false;
+   let index=0,timer=0,hover=false,touch=null,dragging=false;
    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
-   const previous=button('‹',()=>go(index-1),'board-rank-control'),next=button('›',()=>go(index+1),'board-rank-control');previous.setAttribute('aria-label','이전 게임순위');next.setAttribute('aria-label','다음 게임순위');
-   const toggle=button('',()=>{paused=!paused;paint();schedule();},'board-rank-control');
-   controls.append(previous,count,next,toggle);section.append(controls);content.append(section);
+   content.append(section);
    function paint(){
-    section.dataset.rankPage=String(index);count.textContent=`${index+1} / ${pages.length}`;
+    section.dataset.rankPage=String(index);
     pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
-    toggle.textContent=paused?'▶':'Ⅱ';toggle.setAttribute('aria-label',paused?'게임순위 자동 넘김 시작':'게임순위 자동 넘김 일시정지');toggle.setAttribute('aria-pressed',String(paused));
-    previous.disabled=next.disabled=toggle.disabled=pages.length<2;
    }
    function schedule(delay=5000){
     clearTimeout(timer);if(paused||pages.length<2||!active()||!section.isConnected)return;

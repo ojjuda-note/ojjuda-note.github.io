@@ -39,12 +39,7 @@
 .board-leader-score{color:#f3d98b;font-variant-numeric:tabular-nums;font-weight:600;}
 .board-leader-empty{font-size:10px;color:#c6d2b9;}
 .board-leader-retry{background:none;border:0;padding:0;color:#f3d98b;font:inherit;font-size:10px;cursor:pointer;}
-.board-rank-controls{display:flex;align-items:center;justify-content:center;gap:4px;margin:2px 0 0;}
-.board-rank-control{display:grid;place-items:center;min-width:30px;height:28px;background:none;color:#f5f3df;border:0;border-radius:4px;cursor:pointer;font:inherit;font-size:19px;padding:0 4px;}
-.board-rank-control:last-child{font-size:11px;margin-left:4px;}
-.board-rank-count{font-size:10px;min-width:32px;text-align:center;color:#c6d2b9;font-variant-numeric:tabular-nums;}
-.board-rank-control:focus-visible,.board-leader-retry:focus-visible{outline:2px solid #f3d98b;outline-offset:-2px;}
-.board-rank-control:disabled{opacity:.35;cursor:default;}
+.board-leader-retry:focus-visible{outline:2px solid #f3d98b;outline-offset:-2px;}
 @media(prefers-reduced-motion:reduce){.board-rank-track{transition:none;}}
 
 /* Match the Life and Menu typography, including titles. */
