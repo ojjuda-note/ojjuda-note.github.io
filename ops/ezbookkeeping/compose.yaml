@@ -1,0 +1,47 @@
+# Preparation only: registration remains disabled pending the identity adapter
+# and two-user authorization tests described in README.md.
+services:
+  ledger:
+    build:
+      context: ./upstream
+      args:
+        RELEASE_BUILD: "true"
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      TZ: Asia/Seoul
+      EBK_SERVER_ROOT_URL: "${LEDGER_URL:?Set the HTTPS ledger URL}/"
+      EBK_SERVER_HTTP_ADDR: 0.0.0.0
+      EBK_SERVER_HTTP_PORT: "8080"
+      EBK_SERVER_LOG_REQUEST: "false"
+      EBK_DATABASE_TYPE: sqlite3
+      EBK_DATABASE_DB_PATH: /ezbookkeeping/data/ezbookkeeping.db
+      EBK_STORAGE_TYPE: local_filesystem
+      EBK_STORAGE_LOCAL_FILESYSTEM_PATH: /ezbookkeeping/storage
+      EBK_LOG_MODE: console
+      EBK_LOG_LEVEL: warn
+      EBK_SECURITY_SECRET_KEY: "${LEDGER_SECRET_KEY:?Generate a persistent secret key}"
+      EBK_AUTH_ENABLE_INTERNAL_AUTH: "false"
+      EBK_AUTH_ENABLE_OAUTH2_AUTH: "true"
+      EBK_AUTH_OAUTH2_PROVIDER: oidc
+      EBK_AUTH_OAUTH2_CLIENT_ID: "${LEDGER_OAUTH_CLIENT_ID:?Register the Supabase OAuth client}"
+      EBK_AUTH_OAUTH2_CLIENT_SECRET: "${LEDGER_OAUTH_CLIENT_SECRET:?Set the OAuth client secret}"
+      EBK_AUTH_OAUTH2_USE_PKCE: "true"
+      EBK_AUTH_OAUTH2_USER_IDENTIFIER: username
+      EBK_AUTH_OAUTH2_AUTO_REGISTER: "false"
+      EBK_AUTH_OIDC_PROVIDER_BASE_URL: https://ziezbdjofcugznowiuda.supabase.co/auth/v1
+      EBK_AUTH_OIDC_PROVIDER_CHECK_ISSUER_URL: "true"
+      EBK_AUTH_ENABLE_OIDC_DISPLAY_NAME: "true"
+      EBK_AUTH_OIDC_CUSTOM_DISPLAY_NAME: 오쭈다
+      EBK_AUTH_OIDC_CUSTOM_DISPLAY_NAME_KO: 오쭈다
+      EBK_USER_ENABLE_REGISTER: "false"
+      EBK_USER_AVATAR_PROVIDER: internal
+      EBK_USER_ENABLE_SCHEDULED_TRANSACTION: "true"
+      EBK_MAP_MAP_PROVIDER: ""
+    volumes:
+      - ledger-data:/ezbookkeeping/data
+      - ledger-storage:/ezbookkeeping/storage
+volumes:
+  ledger-data:
+  ledger-storage:
