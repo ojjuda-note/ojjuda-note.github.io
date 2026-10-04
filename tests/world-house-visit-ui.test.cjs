@@ -204,13 +204,25 @@ window.visitTest={state:g,auth:D,model:$,actions:sr,render:H,visit:Ol,localVisit
   // Moving from a mounted own house disposes its iframe without overwriting the destination.
   await page.evaluate(()=>visitTest.actions.tab({tab:'home'}));
   await page.locator('iframe[title="우리집"]').waitFor({state:'attached'});
-  await page.evaluate(()=>visitTest.visit('open-house'));
-  await noOwnerLoading('own home to neighbor');
+  await page.locator('[data-house-entry] [aria-busy="false"]').waitFor();
+  await page.evaluate(()=>visitTest.state.surfRecent=[]);
+  await page.frameLocator('iframe[title="우리집"]').getByRole('button',{name:'순간이동',exact:true}).click();
+  await page.waitForFunction(()=>visitTest.state.visiting==='u:open-house');
+  await noOwnerLoading('own home teleport to neighbor');
+  assert.equal(await page.frameLocator('[data-house-visit-entry] iframe').getByRole('button',{name:'순간이동',exact:true}).isVisible(),true,'the new destination can teleport again');
   assert.equal(await page.evaluate(()=>visitTest.state.visiting),'u:open-house');
   assert.equal(await page.frameLocator('[data-house-visit-entry] iframe').locator('#home-profile-nick').innerText(),'방문할 이웃');
   await page.evaluate(()=>visitTest.actions.tab({tab:'friends'}));
   assert.equal(await page.evaluate(()=>visitTest.state.visiting),null);
   assert.equal(await page.locator('.world-main').count(),1);
+
+  // Cancelling during random destination selection must not reopen a home.
+  await page.evaluate(()=>{visitTest.actions.tab({tab:'home'});visitTest.resetReads();visitTest.state.surfRecent=[];visitTest.hold('open-house');visitTest.pending=visitTest.actions.surf({authorized:()=>visitTest.state.tab==='home'});});
+  await page.waitForFunction(()=>visitTest.reads.some(row=>row.table==='profiles'&&row.columns==='id'));
+  await page.evaluate(async()=>{visitTest.actions.tab({tab:'life'});visitTest.release('open-house');await visitTest.pending;});
+  assert.equal(await page.evaluate(()=>visitTest.state.tab),'life','cancelled teleport selection preserves the current menu');
+  assert.equal(await page.evaluate(()=>visitTest.state.visiting),null);
+  await page.evaluate(()=>visitTest.actions.tab({tab:'friends'}));
 
   // Slow database responses cannot replace a more recent destination/account.
   const startDelayed=async id=>{

@@ -1,6 +1,6 @@
 import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry3';
 let activeClose=null;
-export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,loadProfile=null,room=null,readOnly=false,onProfilePhoto=null,onFrameReady=null,onClose,onStudio}){
+export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,loadProfile=null,room=null,readOnly=false,onProfilePhoto=null,onFrameReady=null,onTeleport=null,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
  // Opening a member's home does not grant furniture authoring permission.
  const hasStudioAccess=()=>{try{return !!authorized()&&typeof studioAuthorized==='function'&&studioAuthorized()===true;}catch{return false;}};
@@ -14,7 +14,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';}
- const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-visit-zoom1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-home-teleport1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  let loading=createHouseEntryLoading();status.hidden=true;
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  const retry=document.createElement('button');retry.textContent='다시 시도';retry.hidden=true;retry.style.cssText='position:absolute;right:84px;top:8px;z-index:3;min-height:36px;border:1px solid #dbcee5;border-radius:10px;background:#fffaf4;color:#65526f';
@@ -25,7 +25,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const localKey='ojjuda-house-playtest-v1:'+encodeURIComponent(owner),dirtyKey=localKey+':pending-cloud';
  const markDirty=()=>{if(readOnly)return;try{localStorage.setItem(dirtyKey,JSON.stringify({revision}));}catch{}};
  const clearDirty=()=>{if(readOnly)return;try{const current=JSON.parse(localStorage.getItem(localKey));if(current&&JSON.stringify({version:current.version,rooms:current.rooms})!==lastSnapshot){markDirty();return;}localStorage.removeItem(dirtyKey);}catch{}};
- let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{},loadRun=0,revision=null,lastSnapshot='',pendingSnapshot=null,saving=false,savePaused=false,memberProfile=null,flightSnapshot=null,visitorHeight=null,visitorExpanded=false,resolvedProfile=profile;
+ let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{},loadRun=0,revision=null,lastSnapshot='',pendingSnapshot=null,saving=false,savePaused=false,memberProfile=null,flightSnapshot=null,visitorHeight=null,visitorExpanded=false,teleporting=false,resolvedProfile=profile;
  const profileValues=value=>!studioOnly&&value&&typeof value==='object'?{nick:String(value.nick||'').slice(0,80),bio:String(value.bio||'').slice(0,200),avatar_url:String(value.avatar_url||'')}:null;
  if(!studioOnly&&typeof loadProfile==='function')Promise.resolve().then(loadProfile).then(value=>{if(closed||!authorized()||!value)return;resolvedProfile=value;memberProfile=profileValues(value);channel?.port1.postMessage({type:'profile-update',profile:memberProfile});}).catch(()=>{});
  const timeout=promise=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('연결이 늦어지고 있어요. 다시 시도해 주세요.')),20000);Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
@@ -79,6 +79,11 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
   canUseStudio=!readOnly&&hasStudioAccess();channel?.port1.close();channel=new MessageChannel();
   channel.port1.onmessage=async e=>{
    if(closed)return;if(!authorized()){cleanup();return;}
+   if(e.data?.type==='teleport'){
+    if(studioOnly||teleporting||typeof onTeleport!=='function')return;teleporting=true;const reply=channel.port1;let error=null;
+    try{await onTeleport();}catch(caught){error=caught?.message||'순간이동하지 못했어요. 다시 눌러 주세요.';}
+    finally{teleporting=false;if(!closed&&authorized()&&channel?.port1===reply)reply.postMessage({type:'teleport-result',error});}return;
+   }
    if(e.data?.type==='room-view'){if(readOnly&&typeof e.data.expanded==='boolean'){visitorExpanded=e.data.expanded;scheduleNavigationSpace();}return;}
    if(e.data?.type==='room-size'){if(readOnly&&Number.isFinite(e.data.height)){visitorHeight=Math.min(600,Math.max(110,e.data.height));scheduleNavigationSpace();}return;}
    if(e.data?.type==='room-save'){if(!readOnly&&!studioOnly&&typeof room==='function'&&e.data.snapshot){pendingSnapshot=e.data.snapshot;markDirty();void saveRoom();}return;}
@@ -95,7 +100,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(readOnly||!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-visit-zoom1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-home-teleport1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   memberProfile=profileValues(resolvedProfile);
@@ -111,7 +116,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
    }}
   catch(error){if(!closed&&run===loadRun){clearTimeout(deadline);showFailure(error.message||'방을 불러오지 못했어요.',reload);}return;}
   if(closed||run!==loadRun||!authorized())return;
-  frame.contentWindow.postMessage({type:'ojjuda-house-test-init',owner,preview,studioItem,canUseStudio,profile:memberProfile,readOnly,roomSnapshot,hasRoom:!studioOnly&&typeof room==='function',canEditProfile:!readOnly&&typeof onProfilePhoto==='function',hasRecords:!readOnly&&!studioOnly&&typeof records==='function'},location.origin,[channel.port2]);
+  frame.contentWindow.postMessage({type:'ojjuda-house-test-init',owner,preview,studioItem,canUseStudio,profile:memberProfile,readOnly,roomSnapshot,canTeleport:!studioOnly&&typeof onTeleport==='function',hasRoom:!studioOnly&&typeof room==='function',canEditProfile:!readOnly&&typeof onProfilePhoto==='function',hasRecords:!readOnly&&!studioOnly&&typeof records==='function'},location.origin,[channel.port2]);
  });
  cleanup.refresh=async()=>{
   const current=()=>!closed&&authorized()&&!saving&&!pendingSnapshot&&!savePaused;
