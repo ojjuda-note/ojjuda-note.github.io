@@ -66,7 +66,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await main();
     }
     await main();
-    for(const tab of ['home','life','my']) {
+    for(const tab of ['home','board','life','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
       assert.equal(await current(),tab);
       await back();
@@ -138,7 +138,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);
       await touch('touchEnd',[]);
     };
-    const tabs=['friends','home','life','my'];
+    const tabs=['friends','home','board','life','my'];
     for(let i=0;i<tabs.length;i++){
       for(const dx of [-150,150]){
         await navigate(tabs[i]);
@@ -256,12 +256,12 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       ?route.fulfill({contentType:'text/html',body:world}):route.abort());
     const np=await native.newPage();await np.goto('https://fixture.test/world.html');
     await np.waitForFunction(()=>window.nativeBack && window.worldTest);
-    for(const tab of ['home','deco','life','my']){
+    for(const tab of ['home','deco','board','life','my']){
       await np.evaluate(tab=>{worldTest.actions.tab({tab});nativeBack({canGoBack:false})},tab);
       await np.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, separate four-tab and four-place swipe orders with both ends stopped, touch/mouse input, vertical scrolling, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, separate five-tab and four-place swipe orders with both ends stopped, touch/mouse input, vertical scrolling, cancellation and normal taps.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
