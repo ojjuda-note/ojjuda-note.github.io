@@ -1,5 +1,5 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
-import {createRecordPanel} from './record-panel.js?v=20261004-refresh1';
+import {createRecordPanel} from './record-panel.js?v=20261004-settings1';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261004-chairfarrear1';
 import {icon} from './icons.js?v=20261004-chairfarrear1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261004-chairfarrear1';

@@ -1,4 +1,4 @@
-import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-refresh1';
+import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-settings1';
 import {MEDIA_TYPES,addRecordMedia,listRecordMedia,readRecordMedia,deleteRecordMedia} from './record-media-store.js?v=20261004-records1';
 const categories=[['all','전체'],['text','게시판'],['photo','사진'],['video','동영상']];
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
