@@ -9,6 +9,8 @@ const fixture=`<!doctype html><button id="open">Open</button><script type="modul
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:fixture});const file=path.join(root,u.pathname);if(!file.startsWith(root+'/')||!fs.existsSync(file))return route.abort();return route.fulfill({path:file});});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.goto('https://fixture.test/fixture');await page.locator('#open').click();
+  // Clicking opens the iframe before its document has necessarily navigated.
+  await page.frameLocator('iframe[title="관리자 가구 제작실"]').locator('#studio-editor').waitFor({state:'visible'});
   const frame=page.frames().find(f=>f.url().includes('/anchor-editor/'));
   await frame.locator('#studio-side-table').click();await frame.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
   await frame.evaluate(async()=>{
