@@ -19,7 +19,7 @@ assert.ok(bootAt > 0);
       const html = read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, '');
       await context.route('**/*', route => {
         if (route.request().url() === 'https://ojjuda.test/world.html') return route.fulfill({contentType:'text/html',body:'<!doctype html><title>동네</title>'});
-        return route.request().url() === 'https://ojjuda.test/note/'
+        return new URL(route.request().url()).origin === 'https://ojjuda.test' && new URL(route.request().url()).pathname === '/note/'
           ? route.fulfill({ contentType: 'text/html', body: html }) : route.abort();
       });
       const page = await context.newPage();
@@ -162,6 +162,31 @@ assert.ok(bootAt > 0);
       await page.locator('[data-sort="latest"]').focus(); await page.keyboard.press('Enter');
       assert.equal(await active(), 'latest', 'keyboard tab selection still works');
       assert.deepEqual(errors, []);
+      // In embedded Park the same card gestures follow the neighborhood,
+      // regardless of the selected feed filter. Taps still select filters.
+      await page.evaluate(() => {
+        window.placeRoutes = [];
+        window.OjjudaParkFull = { embedded: true, navigate: action => placeRoutes.push(action) };
+      });
+      for (const sort of ['latest', 'popular', 'nearby', 'tag']) {
+        await page.locator(`[data-sort="${sort}"]`).click(); await idle();
+        await drag(-1); assert.equal(await active(), sort, 'Park stops on its right edge without changing the filter');
+        assert.equal(await page.locator('.note-feed-peek').count(), 0, 'the final place has no destination to the left');
+        const count = await page.evaluate(() => placeRoutes.length);
+        await drag(1, { hold: true });
+        assert.equal(await page.locator('.note-feed-peek').textContent(), '도서관');
+        if (mobile) await touch('touchEnd', []); else await page.mouse.up(); await idle();
+        assert.equal(await active(), sort, 'leaving Park preserves its selected filter');
+        assert.deepEqual(await page.evaluate(count => placeRoutes.slice(count), count), ['library']);
+      }
+      const routed = await page.evaluate(() => placeRoutes.length);
+      await drag(1, { distance: 18 });
+      if (mobile) await drag(1, { cancel: true });
+      await page.evaluate(() => document.getElementById('composer-backdrop').hidden = false);
+      await drag(1);
+      await page.evaluate(() => document.getElementById('composer-backdrop').hidden = true);
+      assert.equal(await page.evaluate(() => placeRoutes.length), routed, 'short, cancelled and composer gestures cannot leave Park');
+      await page.evaluate(() => { delete window.OjjudaParkFull; });
       await page.locator('[data-sort="tag"]').click();
       await drag(-1, { hold: true });
       assert.equal(await page.locator('.note-feed-peek').textContent(), '동네');
@@ -192,8 +217,13 @@ assert.ok(bootAt > 0);
       await page.evaluate(()=>document.getElementById('composer-backdrop').hidden=true);
       await chromeDrag(mobile?'.bottomnav':chrome);
       await page.waitForURL('https://ojjuda.test/world.html');
+      await page.goto('https://ojjuda.test/note/?embedded=1');
+      for (const file of ['style.css', 'features.css', 'world-navigation.css']) await page.addStyleTag({content:read(`note/${file}`)});
+      await page.addScriptTag({content:read('note/world-swipe.js')});
+      await chromeDrag(chrome); await chromeDrag(chrome,-150);
+      assert.equal(page.url(),'https://ojjuda.test/note/?embedded=1','legacy app swipes are disabled inside the shared World');
       assert.deepEqual(errors,[]);
-      console.log(`PASS: ${mobile ? 'touch' : 'mouse'} feed filters, animation, scroll/search, refresh, composer protection and Note-to-World swipes`);
+      console.log(`PASS: ${mobile ? 'touch' : 'mouse'} feed filters, animation, scroll/search, refresh, composer protection, standalone Note navigation and embedded Park place boundaries`);
       await context.close();
     }
   } finally { await browser.close(); }
