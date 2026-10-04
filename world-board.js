@@ -8,6 +8,7 @@
  let dispose=null,controller=null;
  function mount(host,{client,owner,games={},authorized=()=>true}={}){
   dispose?.();dispose=null;controller=null;if(!host)return;
+  let rankDispose=()=>{};
   let alive=true,request=0,view=null,rows=[],more=false,busy=false,snapshot=new Date().toISOString(),dialog=null;
   const active=()=>alive&&host.isConnected&&authorized();
   const status=el('p','','board-status');status.setAttribute('role','status');
@@ -69,31 +70,64 @@
   }
   function error(target,retry){target.replaceChildren(el('p','글을 불러오지 못했어요.','board-empty'),button('다시 시도',retry,'btn sm'));}
   function leaders(token){
-   const section=el('section','','board-leaders');section.setAttribute('aria-label','오늘의 게임 1등');
-   section.append(el('h3','🏆 오늘의 게임 1등'));
-   const strip=el('ul','','board-leader-list');section.append(strip);content.append(section);
-   return Object.entries(games).map(async([id,game])=>{
-    const item=el('li','','board-leader');item.dataset.game=id;
-    item.append(el('span',game.emoji+' '+game.name,'board-leader-game'));
-    const winner=el('div','불러오는 중…','board-leader-result');item.append(winner);strip.append(item);
+   const entries=Object.entries(games);if(!entries.length)return [];
+   const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
+   const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','오늘의 1등','board-rank-caption'));section.append(head);
+   const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);section.append(viewport);
+   const pages=[],targets=new Map();
+   for(let start=0;start<entries.length;start+=3){
+    const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
+    table.setAttribute('aria-label',`게임순위 ${pages.length+1}쪽`);
+    for(const title of ['게임','닉네임','점수']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
+    for(const [id,game] of entries.slice(start,start+3)){
+     const row=el('tr','','board-leader');row.dataset.game=id;
+     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name;
+     const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{nick,score});
+    }
+   }
+   const controls=el('div','','board-rank-controls'),count=el('span','','board-rank-count');let index=0,timer=0,hover=false,touch=null,dragging=false;
+   const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
+   const previous=button('‹',()=>go(index-1),'board-rank-control'),next=button('›',()=>go(index+1),'board-rank-control');previous.setAttribute('aria-label','이전 게임순위');next.setAttribute('aria-label','다음 게임순위');
+   const toggle=button('',()=>{paused=!paused;paint();schedule();},'board-rank-control');
+   controls.append(previous,count,next,toggle);section.append(controls);content.append(section);
+   function paint(){
+    section.dataset.rankPage=String(index);count.textContent=`${index+1} / ${pages.length}`;
+    pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
+    toggle.textContent=paused?'▶':'Ⅱ';toggle.setAttribute('aria-label',paused?'게임순위 자동 넘김 시작':'게임순위 자동 넘김 일시정지');toggle.setAttribute('aria-pressed',String(paused));
+    previous.disabled=next.disabled=toggle.disabled=pages.length<2;
+   }
+   function schedule(delay=5000){
+    clearTimeout(timer);if(paused||pages.length<2||!active()||!section.isConnected)return;
+    timer=setTimeout(()=>{const rect=section.getBoundingClientRect();if(document.hidden||hover||dragging||dialog||section.contains(document.activeElement)||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}go(index+1);},delay);
+   }
+   function go(value){index=(value+pages.length)%pages.length;track.style.transform=`translateX(-${index*100}%)`;paint();schedule(motion.matches?5000:5280);}
+   const controller=new AbortController(),options={signal:controller.signal};
+   section.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')hover=true;},options);
+   section.addEventListener('pointerleave',()=>{hover=false;},options);
+   viewport.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;touch={x:e.clientX,y:e.clientY};dragging=true;viewport.setPointerCapture(e.pointerId);},options);
+   viewport.addEventListener('pointerup',e=>{if(!touch)return;const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch=null;dragging=false;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)*1.3)go(index+(dx<0?1:-1));else schedule();},options);
+   viewport.addEventListener('pointercancel',()=>{touch=null;dragging=false;schedule();},options);
+   section.addEventListener('focusout',()=>schedule(),options);
+   document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
+   motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
+   rankDispose=()=>{clearTimeout(timer);controller.abort();};paint();schedule();
+   return entries.map(async([id,game])=>{
+    const {nick,score}=targets.get(id);
     async function load(){
-     winner.textContent='불러오는 중…';
+     nick.textContent='불러오는 중…';
      try{
-      const data=await result(client.rpc('game_ranking',{p_game:id}));
+      const data=game.rankKey===null?[]:await result(client.rpc('game_ranking',{p_game:game.rankKey||id}));
       if(!active()||token!==request)return;
       const top=Array.isArray(data)?data[0]:null;
-      if(!top||!Number.isFinite(Number(top.score))){winner.replaceChildren(el('span','집계 준비 중','board-leader-empty'));return;}
-      const nick=el('span',top.nick||'익명','board-leader-nick');nick.title=top.nick||'익명';
-      winner.replaceChildren(el('span','1등','board-leader-rank'),nick,el('strong',Number(top.score).toLocaleString('ko-KR')+game.unit,'board-leader-score'));
-     }catch{
-      if(active()&&token===request)winner.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));
-     }
+      if(!top||!Number.isFinite(Number(top.score))){nick.replaceChildren(el('span','집계 준비 중','board-leader-empty'));score.textContent='—';return;}
+      nick.textContent=top.nick||'익명';nick.title=top.nick||'익명';score.textContent=Number(top.score).toLocaleString('ko-KR')+game.unit;
+     }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));}
     }
     await load();
    });
   }
   async function home(){
-   const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
+   rankDispose();const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
    const tasks=leaders(token);
    const grid=el('div','','board-best-grid');grid.setAttribute('aria-label','종류별 BEST');content.append(grid);
    for(const kind of ['card','image','video','text']){const box=el('section','','board-best');box.dataset.best=kind;
@@ -105,6 +139,7 @@
    await Promise.all(tasks);return active()&&token===request;
   }
   function renderAll(){
+   rankDispose();
    const head=el('header','','board-list-heading');head.append(button('‹ 게시판',home,'btn sm'),el('h3',labels[view.kind]+(view.sort==='best'?' BEST':' 전체글')),button(view.sort==='best'?'최신순':'공감순',()=>all(view.kind,view.sort==='best'?'latest':'best'),'btn sm'));
    content.replaceChildren(head,list(rows,view.kind));if(more)content.append(button('더 불러오기',()=>loadPage(false),'btn board-load'));else if(rows.length)content.append(el('p','모든 글을 보았어요.','board-empty'));
   }
@@ -117,7 +152,7 @@
   function all(kind,sort){if(busy)return;view={kind,sort};snapshot=new Date().toISOString();rows=[];more=false;renderAll();void loadPage(true);}
   const escape=e=>{if(e.key==='Escape'&&dialog){e.stopPropagation();dialog.querySelector('.board-close')?.click();}};
   document.addEventListener('keydown',escape,true);
-  dispose=()=>{alive=false;request++;close();document.removeEventListener('keydown',escape,true);};
+  dispose=()=>{rankDispose();alive=false;request++;close();document.removeEventListener('keydown',escape,true);};
   controller={back(){if(close())return true;if(view){void home();return true;}return false;},refresh(){if(dialog)return Promise.resolve(false);snapshot=new Date().toISOString();return view?loadPage(true):home();}};
   if(!client||!owner){status.textContent='로그인하면 게시판의 공개 글을 볼 수 있어요.';content.append(Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));return;}
   void home();
