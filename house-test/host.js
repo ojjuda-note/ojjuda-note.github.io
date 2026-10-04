@@ -22,7 +22,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  if(inline)mountTarget.replaceChildren(overlay);else{document.body.append(overlay);document.body.style.overflow='hidden';}
  close.focus({preventScroll:true});
  let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{};
- function reveal(message,ready=false){if(closed)return;stopPaintWait();stopPaintWait=()=>{};loading.remove();frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');status.textContent=message;if(inline&&ready){close.hidden=true;status.style.padding='4px 12px';status.style.minHeight='0';if(document.activeElement===close)frame.focus({preventScroll:true});}}
+ function reveal(message,ready=false){if(closed)return;stopPaintWait();stopPaintWait=()=>{};loading.remove();frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');status.textContent=message;status.hidden=inline&&ready;if(inline&&ready){close.hidden=true;if(document.activeElement===close)frame.focus({preventScroll:true});}}
  const trackNavigation=(inline||preserveWorldNavigation)&&!studioOnly;
  const navigationObserver=trackNavigation&&window.ResizeObserver?new ResizeObserver(scheduleNavigationSpace):null;
  if(inline){navigationObserver?.observe(mountTarget);const main=mountTarget.closest('main');if(main)navigationObserver?.observe(main);}
