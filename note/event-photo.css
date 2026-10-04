@@ -2,7 +2,7 @@
 .event-photo-choice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:40px;margin:8px 1px 2px;color:var(--ink-2);font-size:11px}
 .event-photo-choice[hidden]{display:none}
 .event-photo-select,.event-photo-clear{display:inline-flex;align-items:center;justify-content:center;min-height:33px;padding:5px 12px;border:1px solid var(--line);border-radius:100px;background:var(--surface);color:var(--ink);font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}
-.event-photo-select:hover,.event-photo-clear:hover{border-color:var(--accent);color:var(--accent)}
+.event-photo-select:hover,.event-photo-clear:hover{border-color:var(--accent);color:var(--accent-ink)}
 .event-photo-select:focus-within{outline:3px solid color-mix(in srgb,var(--accent) 65%,transparent);outline-offset:3px}
 .event-photo-select input{position:absolute;width:1px;height:1px;opacity:0;clip-path:inset(50%)}
 .event-photo-select:has(input:disabled),.event-photo-clear:disabled{opacity:.5;cursor:not-allowed}
