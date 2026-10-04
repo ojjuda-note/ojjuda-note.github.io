@@ -1,11 +1,11 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
 import {createRecordPanel} from './record-panel.js?v=20261004-scope-row1';
-import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261004-chairfarrear1';
+import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261005-desklamp1';
 import {icon} from './icons.js?v=20261004-folder-kind1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261004-chairfarrear1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261004-chairfarrear1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261004-chairfarrear1';
-import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261004-chairfarrear1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261005-desklamp1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261005-desklamp1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261005-desklamp1';
+import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261005-desklamp1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
@@ -157,7 +157,7 @@ function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.dir
 function addRoom(cell){if(!canAdd(state.rooms,cell)){toast('열린 방 옆으로만 확장할 수 있어요.');return;}if(!saveChange(()=>state.rooms.push({...cell,decor:false,curtains:false,shelf:null,furniture:{}})))return;selected=roomKey(cell);renderWorld();renderPanel();if(expanding)focusRoom(true);toast('새 방이 연결됐어요.');}
 function selectRoom(id){if(!state.rooms.some(r=>roomKey(r)===id))return;clearPlacement();selected=id;renderWorld();renderPanel();if(!expanding)focusRoom();}
 function actionButton(label,fn,symbol){const b=element('button');b.type='button';b.setAttribute('aria-label',label);if(symbol){const mark=element('span','symbol');mark.innerHTML=icon('room');b.append(mark);}b.append(document.createTextNode(label));b.onclick=fn;return b;}
-function furnitureGap(s=placementControlPose()){const {w}=itemSize(placementControlId(),s.direction,s);return s.direction==='right'?FLOOR.width-w-s.x:s.x;}
+function furnitureGap(s=placementControlPose()){const {w}=itemSize(placementControlId(),s.direction,s);return Number((s.direction==='right'?FLOOR.width-w-s.x:s.x).toFixed(6));}
 function syncPlacementControls(){
  if(!draft)return;
  const pose=placementControlPose(),{w,d}=itemSize(placementControlId(),pose.direction,pose),depth=$('#bookshelf-depth'),gap=$('#bookshelf-gap');

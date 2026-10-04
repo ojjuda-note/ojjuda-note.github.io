@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261004-chairfarrear1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261004-chairfarrear1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-desklamp1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-desklamp1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,6 +26,10 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
+ 'desk-lamp':{label:'크림 원목 탁상 조명',shortLabel:'탁상 조명',width:.9,depth:.9,height:1,depthFill:1,introduced:18,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/desk-lamp-center-preview-v1.png',
+  preferred:{direction:'right',x:9,y:3.5,elevation:1.4},preferredViews:{left:{direction:'left',x:0,y:4,elevation:1.4},center:{direction:'center',x:4,y:0,elevation:1.4},right:{direction:'right',x:9,y:3.5,elevation:1.4}},
+  clearance:'책상 위에 놓는 작은 조명이에요. 높이를 조절할 수 있고, 책상을 옮기면 조명도 따로 옮겨 주세요.'},
  'floor-lamp':{label:'크림 원목 스탠드 조명',shortLabel:'스탠드 조명',width:1.5,depth:1.5,height:2.8,depthFill:1,introduced:17,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/floor-lamp-center-preview-v1.png',
   preferred:{direction:'left',x:0,y:1.5},preferredViews:{left:{direction:'left',x:0,y:1.5},center:{direction:'center',x:4,y:2.5},right:{direction:'right',x:7.5,y:1.5}},
