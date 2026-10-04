@@ -6,7 +6,7 @@
  const button=(text,action,cls)=>{const n=el('button',text,cls);n.type='button';n.onclick=action;return n;};
  const excerpt=row=>(row.title||row.body||'내용 없는 '+labels[row.kind]).replace(/\s+/g,' ').trim();
  let dispose=null,controller=null;
- function mount(host,{client,owner,authorized=()=>true}={}){
+ function mount(host,{client,owner,games={},authorized=()=>true}={}){
   dispose?.();dispose=null;controller=null;if(!host)return;
   let alive=true,request=0,view=null,rows=[],more=false,busy=false,snapshot=new Date().toISOString(),dialog=null;
   const active=()=>alive&&host.isConnected&&authorized();
@@ -68,14 +68,38 @@
    if(!items.length)ul.append(el('li','아직 공개된 글이 없어요.','board-empty'));return ul;
   }
   function error(target,retry){target.replaceChildren(el('p','글을 불러오지 못했어요.','board-empty'),button('다시 시도',retry,'btn sm'));}
+  function leaders(token){
+   const section=el('section','','board-leaders');section.setAttribute('aria-label','오늘의 게임 1등');
+   section.append(el('h3','🏆 오늘의 게임 1등'));
+   const strip=el('ul','','board-leader-list');section.append(strip);content.append(section);
+   return Object.entries(games).map(async([id,game])=>{
+    const item=el('li','','board-leader');item.dataset.game=id;
+    item.append(el('span',game.emoji+' '+game.name,'board-leader-game'));
+    const winner=el('div','불러오는 중…','board-leader-result');item.append(winner);strip.append(item);
+    async function load(){
+     winner.textContent='불러오는 중…';
+     try{
+      const data=await result(client.rpc('game_ranking',{p_game:id}));
+      if(!active()||token!==request)return;
+      const top=Array.isArray(data)?data[0]:null;
+      if(!top||!Number.isFinite(Number(top.score))){winner.replaceChildren(el('span','집계 준비 중','board-leader-empty'));return;}
+      const nick=el('span',top.nick||'익명','board-leader-nick');nick.title=top.nick||'익명';
+      winner.replaceChildren(el('span','1등','board-leader-rank'),nick,el('strong',Number(top.score).toLocaleString('ko-KR')+game.unit,'board-leader-score'));
+     }catch{
+      if(active()&&token===request)winner.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));
+     }
+    }
+    await load();
+   });
+  }
   async function home(){
    const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
+   const tasks=leaders(token);
    const grid=el('div','','board-best-grid');grid.setAttribute('aria-label','종류별 BEST');content.append(grid);
-   const tasks=[];
    for(const kind of ['card','image','video','text']){const box=el('section','','board-best');box.dataset.best=kind;
     box.append(button(labels[kind]+' BEST',()=>all(kind,'best'),'board-section-title'),el('small',kind==='card'?'최근 7일 · 공감순':'공감순'));
     const target=el('div','불러오는 중이에요…','board-best-content');box.append(target);grid.append(box);
-    tasks.push(query(kind,'best',0,3).then(data=>{if(active()&&token===request)target.replaceChildren(list(data.slice(0,3),kind));}).catch(()=>{if(active()&&token===request)error(target,home);}));}
+    tasks.push(query(kind,'best',0,1).then(data=>{if(active()&&token===request)target.replaceChildren(list(data.slice(0,1),kind));}).catch(()=>{if(active()&&token===request)error(target,home);}));}
    for(const kind of ['text','image','video']){const section=el('section','','board-latest');section.dataset.latest=kind;const head=el('header');head.append(el('h3',labels[kind]+' 최신글'),button('더보기',()=>all(kind,'latest'),'board-more'));section.append(head);const target=el('div','불러오는 중이에요…');section.append(target);content.append(section);
     tasks.push(query(kind,'latest',0,5).then(data=>{if(active()&&token===request)target.replaceChildren(list(data.slice(0,5),kind));}).catch(()=>{if(active()&&token===request)error(target,home);}));}
    await Promise.all(tasks);return active()&&token===request;
