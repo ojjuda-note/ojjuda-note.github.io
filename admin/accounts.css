@@ -1,0 +1,26 @@
+.acct-directory{min-width:0;color:var(--ink)}
+.acct-directory h3{margin:4px 0 6px;font-size:21px}
+.acct-intro,.acct-status,.acct-empty{font-size:13px;line-height:1.65;color:var(--ink-2)}
+.acct-intro{margin:0 0 14px}.acct-status:empty{display:none}
+.acct-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.acct-filters button[aria-pressed=true]{background:var(--accent-soft,var(--surface-2));border-color:var(--accent);color:var(--ink);font-weight:700}
+.acct-search{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.acct-search label{flex:1;min-width:160px;font-size:12px;color:var(--ink-2)}
+.acct-search input{display:block;margin-top:5px;width:100%;min-width:0;font-size:16px}
+.acct-search button{min-height:44px}
+.acct-count{margin:12px 0;font-size:13px;font-weight:600}
+.acct-list{display:grid;gap:10px}
+.acct-card{padding:15px;border:1px solid var(--line);border-radius:16px;background:var(--surface);min-width:0}
+.acct-member-heading{display:flex;align-items:center;gap:7px;flex-wrap:wrap;overflow-wrap:anywhere}
+.acct-member-heading .warn-tag{color:var(--ink);border-color:var(--accent);background:var(--accent-soft,var(--surface-2))}
+.acct-contact{font-size:13px;margin:4px 0 10px;color:var(--ink-2);overflow-wrap:anywhere}
+.acct-details{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0;font-size:12px;line-height:1.65}
+.acct-details dt{color:var(--ink-2)}.acct-details dd{margin:0;overflow-wrap:anywhere}
+.acct-actions,.acct-extra-actions{display:flex;flex-wrap:wrap;gap:6px}
+.acct-actions{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.acct-actions button{min-height:40px}.acct-extra-actions:empty{display:none}
+.acct-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.acct-pagination button{min-height:44px}.acct-page-label{font-size:13px;color:var(--ink-2)}
+.acct-directory [hidden]{display:none!important}
+@media(max-width:600px){.acct-filters button,.acct-actions button{min-height:44px}}
+@media(max-width:380px){.acct-card{padding:12px}.acct-search{gap:6px}.acct-search label{flex-basis:100%}.acct-search button{flex:1}.acct-details{gap:4px 8px}.acct-actions button{min-height:44px}}
