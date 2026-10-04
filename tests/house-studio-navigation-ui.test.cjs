@@ -44,7 +44,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   await studio().locator('#draft-resume').click();
   await studio().waitForFunction(()=>document.querySelector('#furniture-name').value==='아직 저장하지 못한 최신 작업');
   assert.deepEqual([...new Set(entryRequests.map(r=>r.path))].sort(),[...entries].sort(),'both navigation directions use the actual house and studio entries');
-  assert(entryRequests.every(r=>r.version===(r.path==='/house-test/index.html'?'20261004-life1':'20261004-cleanup1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
+  assert(entryRequests.every(r=>r.version===(r.path==='/house-test/index.html'?'20261004-audit1':'20261004-cleanup1')),'house/studio round trips must not reuse stale entry URLs from an earlier release');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('HOUSE STUDIO NAVIGATION PASS');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

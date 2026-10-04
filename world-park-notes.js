@@ -26,7 +26,7 @@
       if(frame?.isConnected&&panel===next&&owner===app.userId()){syncFab();flush();return;}
       panel=next;owner=app.userId();overlayOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
-      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');
+      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261004-audit1');
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       panel.querySelector('[data-park-app-slot]').replaceChildren(frame);syncFab();
@@ -42,7 +42,7 @@
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1&v=20261004-audit1';return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}

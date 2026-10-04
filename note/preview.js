@@ -3300,9 +3300,12 @@ document.addEventListener('click', event => {
   const retryReplies = event.target.closest('[data-retry-replies]');
   if (retryReplies) { retryReplies.remove(); loadReplies(stack.at(-1), detailRun, retryReplies.dataset.retryReplies === 'more'); }
 });
-$('#close-composer').addEventListener('click', closeComposer);
-backdrop.addEventListener('click', event => { if (event.target === backdrop) closeComposer(); });
-document.addEventListener('keydown', event => { if (event.key === 'Escape' && !backdrop.hidden) closeComposer(); });
+function requestCloseComposer() {
+  if (window.canCloseParkNote?.() !== false) closeComposer();
+}
+$('#close-composer').addEventListener('click', requestCloseComposer);
+backdrop.addEventListener('click', event => { if (event.target === backdrop) requestCloseComposer(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && !backdrop.hidden) requestCloseComposer(); });
 text.addEventListener('input', () => { if (autoTagMode && document.activeElement !== tags) refreshAutoTags(); updateComposer(); recordDraft(); });
 tags.addEventListener('input', () => { noteTagEdit(); updateComposer(); recordDraft(); });
 tags.addEventListener('focus', () => updateComposer()); tags.addEventListener('blur', () => updateComposer());
