@@ -17,9 +17,9 @@
   function destination() {
     const allowed = new Set([
       'overview', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
-      'settings', 'posts', 'chats', 'archive', 'quiz', 'note'
+      'settings', 'posts', 'chats', 'archive', 'quiz', 'note', 'withdrawn', 'house-content', 'activity', 'note-reports'
     ]);
-    const aliases = { account: 'overview', payment: 'settings', world: 'posts' };
+    const aliases = { account: 'overview', payment: 'settings', world: 'house-content', support: 'reports', operations: 'connections' };
     const resolve = value => allowed.has(value) ? value : aliases[value];
     let hash = location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { hash = ''; }
@@ -31,6 +31,7 @@
 
   if (!config?.supabaseUrl || !config?.supabaseKey || !window.supabase?.createClient) {
     show('error');
+    document.getElementById('retry').onclick = () => location.reload();
     return;
   }
   const client = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);

@@ -247,7 +247,7 @@
       });
       rows = [...merged.values()].sort(newest); loading = false; render();
     }
-    await load(); return { refresh: load, destroy: scope.destroy };
+    await load(); return { refresh: load, canLeave: () => !saving, hasDraft: () => false, destroy: scope.destroy };
   }
 
   async function renderSupport(options = {}) {
@@ -255,6 +255,7 @@
     if (!container || !client?.rpc || !client?.schema || !client?.auth) return;
     const scope = await scopeFor(options); if (!scope) return;
     let run = 0, loading = false, saving = false, status = 'open', rows = [], failures = [], resultText = '';
+    let inquiryController = null;
     const inquiries = el('section', undefined, 'ops-section');
     inquiries.append(el('h3', '문의·답변'), el('p', '미니홈피와 익명카드에서 접수한 문의에 답변해요.', 'ops-help'));
     const inquiryBody = el('div', undefined, 'ops-inquiries'); inquiries.append(inquiryBody);
@@ -271,7 +272,10 @@
         inquiryBody.replaceChildren(el('p', '문의 관리 화면을 불러오지 못했어요.', 'ops-empty'), button('다시 불러오기', () => void loadInquiries())); return;
       }
       try {
-        await window.OjjudaNoteSupport.renderAdmin({ client, container: inquiryBody, onChanged, isCurrent: scope.current });
+        const controller = await window.OjjudaNoteSupport.renderAdmin({ client, container: inquiryBody, onChanged, isCurrent: scope.current });
+        if (!scope.current()) { controller?.destroy?.(); return false; }
+        inquiryController?.destroy?.(); inquiryController = controller;
+        return true;
       } catch {
         if (scope.current()) inquiryBody.replaceChildren(el('p', errorText('문의'), 'ops-empty'), button('다시 불러오기', () => void loadInquiries()));
       }
@@ -332,7 +336,17 @@
       rows = [...merged.values()].sort(newest); loading = false; render();
     }
     await Promise.allSettled([loadInquiries(), load()]);
-    return { refresh: async () => { await Promise.allSettled([loadInquiries(), load()]); }, destroy: scope.destroy };
+    return {
+      canLeave: () => !saving && inquiryController?.canLeave?.() !== false,
+      hasDraft: () => inquiryController?.hasDraft?.() === true,
+      refresh: async () => {
+        if (!scope.current() || saving || inquiryController?.canLeave?.() === false) return false;
+        const refreshed = inquiryController?.refresh ? await inquiryController.refresh() : await loadInquiries();
+        if (refreshed === false || !scope.current()) return false;
+        await load(); return true;
+      },
+      destroy() { inquiryController?.destroy?.(); inquiryController = null; scope.destroy(); }
+    };
   }
 
   window.OjjudaOperations = { renderReports, renderSupport };

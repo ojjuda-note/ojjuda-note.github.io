@@ -31,12 +31,13 @@
   // Match the World's risk_pattern() for badges; the server decides which rows enter the risk list.
   const RISK_SIGNAL = /(죽고\s*싶|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|끝내고\s*싶|목숨|유서|뛰어내리|맞았|때렸|폭행|협박|학대|성폭|스토킹|죽여\s*버|죽일\s*거)/i;
   const TABS = [
-    ['cards', '전체 카드'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['settings', '공지'], ['spam', '도배 방지'], ['map', '위치 지도'],
+    ['cards', '전체 카드'], ['risk', '위험 신호'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['map', '위치 지도'], ['settings', '공지'], ['spam', '도배 방지'],
     ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
   ];
-  const NOTE_TABS = Object.freeze(TABS.slice(0, 6));
-  const VIEW_OF_TAB = { cards: 'card', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'cards', event: 'events', archive: 'archive' };
+  const NOTE_TABS = Object.freeze(TABS.slice(0, 7));
+  const VIEW_OF_TAB = { cards: 'card', risk: 'risk', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'risk', event: 'events', archive: 'archive' };
   function openTab(id) {   // 탭을 고르면 카드 종류를 맞추고 불러와요
+    if (!confirmLeave()) return false;
     if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], offset: 0, expiredOffset: 0, query: '', state: 'all' });
     return load(id);
   }
@@ -47,6 +48,7 @@
     spam: '회원 한 명이 작성하는 카드·답글을 합산합니다. 새 글부터 적용되며, 글을 삭제해도 횟수는 초기화되지 않습니다.',
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
     cards: '익명카드·답글과 위험 신호를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
+    risk: '위험 표현이 포함된 카드·답글을 확인하고 필요한 조치를 관리합니다.',
     events: '이벤트 카드를 관리합니다.',
     archive: '삭제되거나 기간이 끝난 카드를 한 달 동안 보관합니다. 기간 전에도 바로 영구 삭제할 수 있어요.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
@@ -68,7 +70,17 @@
   let externalNav = false, authorized = false, onTabChange = null;
   let root, panel, nav, main, status, closeButton;
   let editPreviewObserver = null;
-  let cleanupAutoAttempted = false;
+  let inquiryController = null;
+  const draftValues = new Map();
+  let extraDraftCheck = () => false;
+
+  function canLeave() { return !busy && inquiryController?.canLeave?.() !== false; }
+  function hasDraft() {
+    return inquiryController?.hasDraft?.() === true || extraDraftCheck()
+      || [...draftValues].some(([control, initial]) => control.isConnected && control.closest('.na-action-form,.na-settings-form') && control.value !== initial);
+  }
+  function confirmLeave() { return canLeave() && (!hasDraft() || window.confirm('작성 중인 내용을 저장하지 않고 이동할까요?')); }
+  function refresh() { return confirmLeave() ? load(tabId) : false; }
 
   function el(tag, className, value) {
     const item = document.createElement(tag);
@@ -98,8 +110,10 @@
   function badge(text, variant = '') { return el('span', `na-badge${variant ? ` na-badge--${variant}` : ''}`, text); }
   function sectionTitle(title, help) {
     editPreviewObserver?.disconnect(); editPreviewObserver = null;
+    inquiryController?.destroy?.(); inquiryController = null;
+    draftValues.clear(); extraDraftCheck = () => false;
     const heading = el('h3', 'h3 na-section-title', title); heading.tabIndex = -1;
-    main.replaceChildren(heading);
+    const tools = el('div', 'na-item-header'); tools.append(heading, button('새로고침', refresh)); main.replaceChildren(tools);
     if (help) main.append(el('p', 'na-help', help));
     return heading;
   }
@@ -118,6 +132,7 @@
     const input = el(type === 'textarea' ? 'textarea' : 'input', 'inp na-input');
     if (type !== 'textarea') input.type = type;
     input.value = value ?? '';
+    draftValues.set(input, input.value);
     wrap.append(el('span', '', label), input);
     if (help) wrap.append(el('small', '', help));
     return { wrap, input };
@@ -129,6 +144,7 @@
       const option = el('option', '', text); option.value = code; input.append(option);
     }
     input.value = value ?? choices[0][0]; wrap.append(input);
+    draftValues.set(input, input.value);
     if (help) wrap.append(el('small', '', help));
     return { wrap, input };
   }
@@ -231,7 +247,6 @@
       if (!validInstance(run) || !await currentUserMatches()) return;
       let photoCleanup = null;
       if (options.cleanupPhotos) {
-        cleanupAutoAttempted = true;
         setStatus('카드를 삭제했어요. 연결된 사진 파일을 정리하고 있어요.');
         try { photoCleanup = await drainPendingPhotoCleanup(run); }
         catch (error) { console.warn('Note photo cleanup:', error); photoCleanup = { complete: false }; }
@@ -261,7 +276,7 @@
     const heading = sectionTitle(title, description);
     const form = el('form', 'box na-form na-action-form');
     const actions = el('div', 'na-actions');
-    actions.append(button('돌아가기', () => load(actionReturn || tabId)));
+    actions.append(button('돌아가기', () => { if (confirmLeave()) load(actionReturn || tabId); }));
     build(form, actions);
     form.append(actions); main.append(form);
     focusSection(heading);
@@ -391,6 +406,7 @@
         const styleUntil = field('꾸미기 종료', 'datetime-local', localDateTime(visual.style_until), '비워 두면 꾸미기는 공개 화면에 적용되지 않습니다.');
         const originalPhoto = PHOTO_CHOICES.find(([key]) => key === visual.background_key)?.[1] || '기본';
         let photoKey = PHOTO_CHOICES.some(([key]) => key === visual.photo_key) ? visual.photo_key : '';
+        const initialPhotoKey = photoKey; extraDraftCheck = () => content.isConnected && photoKey !== initialPhotoKey;
         let photoPage = photoKey ? Math.floor((Number(photoKey) - 10) / PHOTO_PAGE_SIZE) : 0;
         const photoPanel = el('section', 'na-photo-selector');
         photoPanel.append(el('h4', '', '지정 사진'), el('p', 'na-photo-help', `처음 무작위 배정된 무료 사진: ${originalPhoto} · 아래 사진을 고르면 지정 기간 동안 적용됩니다.`));
@@ -606,20 +622,6 @@
     form.addEventListener('submit', event => { event.preventDefault(); submit(query.input.value.trim(), select?.value); });
     return form;
   }
-  function cardViewBar(view) {
-    const bar = el('div', 'seg adm-tabs na-card-views');
-    bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', '카드 표시 조건');
-    for (const [id, label] of [['card', '모든 카드'], ['risk', '⚠️ 위험 신호']]) {
-      const item = button(label, () => {
-        if (filters.cards.view === id) return;
-        filters.cards.view = id; filters.cards.offset = 0; filters.cards.expiredOffset = 0; filters.cards.query = '';
-        filters.cards.state = 'all'; load('cards');
-      });
-      item.classList.toggle('on', id === view);
-      item.setAttribute('aria-pressed', String(id === view)); bar.append(item);
-    }
-    return bar;
-  }
   function moreCardActions(...controls) {
     const more = el('details', 'na-more-actions');
     more.append(el('summary', '', '추가 작업'));
@@ -631,7 +633,6 @@
     const filter = filters.cards;
     if (filter.view === 'event') return renderEvents(run);
     if (filter.view === 'archive') return renderArchive(run);
-    main.append(cardViewBar(filter.view));
     if (filter.view === 'risk') {
       main.append(el('p', 'na-warning na-risk-help', '자살·자해·폭력·협박과 관련된 표현을 자동으로 찾은 카드와 답글입니다. 오탐이 있을 수 있으니 내용을 확인해 주세요. 긴급한 상황은 112·119, 자살예방상담은 109로 연결해 주세요.'));
     }
@@ -669,7 +670,7 @@
       actions.append(button('본문·태그 수정', () => editCard(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'));
       const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(card)), button('삭제', () => confirmDeleteCard(card), 'danger'));
       if (card.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
-      if (card.author_id) more.row.append(button('이 작성자의 카드 모두 보기', () => { Object.assign(filters.cards, { view: 'card', query: card.author_id, offset: 0, expiredOffset: 0 }); load('cards'); }));
+      if (card.author_id) more.row.append(button('이 작성자의 카드 모두 보기', () => { Object.assign(filters.cards, { view: 'card', query: card.author_id, state: 'all', offset: 0, expiredOffset: 0 }); load('cards'); }));
       item.append(actions, more.more); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
@@ -725,7 +726,10 @@
           const total = Number(rows?.[0]?.total_count) || offset;
           if (offset < total && rows?.length) more.append(el('span', '', `${number(offset)} / ${number(total)}`), button('답글 더 보기', nextPage));
         } catch (error) {
-          if (validRun(run)) { content.replaceChildren(); more.replaceChildren(); empty(content, friendlyError(error)); }
+          if (validRun(run)) {
+            if (offset === 0) content.replaceChildren();
+            more.replaceChildren(el('p', 'na-warning', friendlyError(error)), button('다시 불러오기', nextPage));
+          }
         } finally { fetching = false; }
       }
       nextPage();
@@ -774,7 +778,6 @@
     lockControls(true); setStatus('남은 사진 파일을 정리하고 있어요.');
     try {
       if (!await currentUserMatches() || !validInstance(run)) return;
-      cleanupAutoAttempted = true;
       const result = await drainPendingPhotoCleanup(run);
       if (!validInstance(run)) return;
       lockControls(false);
@@ -801,24 +804,13 @@
       rpc('admin_pending_photo_cleanup', { p_limit: 1 }).catch(error => { console.warn('Note photo cleanup queue:', error); return null; })
     ]);
     if (!validRun(run)) return;
-    let pending = !!pendingPhotos?.length;
-    if (pending && !cleanupAutoAttempted) {
-      cleanupAutoAttempted = true;
-      setStatus('남은 사진 파일을 정리하고 있어요.');
-      try {
-        const result = await drainPendingPhotoCleanup(instance);
-        if (!validRun(run)) return;
-        pending = !result.complete;
-        setStatus(result.complete ? '남은 사진 파일을 정리했어요.' : '사진 파일 일부가 남아 있어요. 다시 시도해 주세요.', pending);
-      } catch (error) {
-        if (!validRun(run)) return;
-        console.warn('Note photo cleanup:', error);
-        setStatus('남은 사진 파일을 정리하지 못했어요. 다시 시도해 주세요.', true);
-      }
-    }
-    if (pending) {
+    if (!Array.isArray(pendingPhotos)) {
       const cleanup = el('div', 'na-actions');
-      cleanup.append(el('p', 'na-warning', '삭제된 카드의 사진 파일 정리가 남아 있어요.'), button('사진 파일 정리 다시 시도', retryPhotoCleanup));
+      cleanup.append(el('p', 'na-warning', '사진 파일 정리 상태를 확인하지 못했어요. 보관 자료는 아래에서 확인할 수 있어요.'), button('사진 정리 상태 다시 확인', refresh));
+      main.append(cleanup);
+    } else if (pendingPhotos.length) {
+      const cleanup = el('div', 'na-actions');
+      cleanup.append(el('p', 'na-warning', '삭제된 카드의 사진 파일 정리가 남아 있어요. 버튼을 누르면 남은 파일을 삭제합니다.'), button('사진 파일 정리', retryPhotoCleanup));
       main.append(cleanup);
     }
     const activeSection = el('section', 'na-archive-section'); activeSection.append(el('h4', '', '원문 보관 중')); main.append(activeSection);
@@ -926,7 +918,7 @@
       filters.cards.view = 'archive'; filters.cards.offset = 0; filters.cards.expiredOffset = 0;
       return load('archive');
     }
-    Object.assign(filters.cards, { view: 'card', query: row.id, offset: 0, expiredOffset: 0 });
+    Object.assign(filters.cards, { view: 'card', query: row.id, state: 'all', offset: 0, expiredOffset: 0 });
     return load('cards');
   }
   async function renderMap(run) {
@@ -997,7 +989,9 @@
     if (!window.OjjudaNoteSupport?.renderAdmin) {
       empty(target, '문의 관리 기능을 불러오지 못했어요. 화면을 새로고침해 주세요.'); return;
     }
-    await window.OjjudaNoteSupport.renderAdmin({ client, container: target, onChanged, isCurrent: () => validRun(run) });
+    const controller = await window.OjjudaNoteSupport.renderAdmin({ client, container: target, onChanged, isCurrent: () => validRun(run) });
+    if (!validRun(run)) { controller?.destroy?.(); return; }
+    inquiryController = controller;
   }
   async function renderActions(run) {
     const offset = filters.actions.offset;
@@ -1060,7 +1054,7 @@
     return values;
   }
   async function load(nextTab = tabId) {
-    if (busy || !root || root.hidden) return;
+    if (!canLeave() || !root || root.hidden) return;
     if (VIEW_OF_TAB[nextTab]) nextTab = TAB_OF_VIEW[filters.cards.view] || 'cards';
     tabId = TABS.some(([id]) => id === nextTab) ? nextTab : 'cards'; actionReturn = null;
     const run = ++pageRun; setStatus('');
@@ -1075,7 +1069,7 @@
     focusSection(heading);
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
-      await ({ overview: renderOverview, settings: renderSettings, spam: renderSpamSettings, cards: renderCards, events: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
+      await ({ overview: renderOverview, settings: renderSettings, spam: renderSpamSettings, cards: renderCards, risk: renderCards, events: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
       if (validRun(run)) loading.remove();
       return validRun(run);
     } catch (error) {
@@ -1095,7 +1089,7 @@
     panel = el('section', 'na-panel'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'note-admin-title');
     const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '오쭈다 월드 · 공원 관리자'); h2.id = 'note-admin-title';
     title.append(h2, el('p', '', '노트 콘텐츠와 운영을 관리합니다.'));
-    closeButton = button('닫기', () => { if (!busy) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
+    closeButton = button('닫기', () => { if (confirmLeave()) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
     const layout = el('div', 'na-layout'); nav = el('nav', 'seg adm-tabs na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');
     for (const [id, label] of NOTE_TABS) { const item = button(label, () => openTab(id)); item.dataset.adminTab = id; nav.append(item); }
     main = el('div', 'na-main'); main.id = 'note-admin-content'; main.setAttribute('role', 'region'); main.setAttribute('aria-label', '관리 내용');
@@ -1103,7 +1097,7 @@
     layout.append(nav, main); panel.append(header, layout, status); root.append(panel); document.body.append(root);
     root.addEventListener('keydown', event => {
       if (root.hidden) return;
-      if (event.key === 'Escape' && !embedded) { event.preventDefault(); event.stopPropagation(); if (!busy) actionReturn ? load(actionReturn) : close(); return; }
+      if (event.key === 'Escape' && !embedded) { event.preventDefault(); event.stopPropagation(); if (confirmLeave()) actionReturn ? load(actionReturn) : close(); return; }
       if (embedded) return;
       if (event.key !== 'Tab') return;
       const items = focusables(); const first = items[0], last = items.at(-1);
@@ -1116,6 +1110,8 @@
     instance++; pageRun++; busy = false; actionReturn = null;
     subscription?.unsubscribe(); subscription = null;
     editPreviewObserver?.disconnect(); editPreviewObserver = null;
+    inquiryController?.destroy?.(); inquiryController = null;
+    draftValues.clear(); extraDraftCheck = () => false;
     adminMap?.destroy?.(); adminMap = null;
     if (!root || root.hidden) return;
     lockControls(false); root.hidden = true; main.replaceChildren(); setStatus('');
@@ -1124,7 +1120,6 @@
     if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
     externalNav = false; authorized = false; onTabChange = null;
-    cleanupAutoAttempted = false;
     filters.cards = { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0; filters.map = { offset: 0 };
     if (embedded) {
       embedded = false; root.classList.remove('na-embedded'); root.remove();
@@ -1217,5 +1212,5 @@
     await open({ client: options.client, initialTab: 'reports', onChanged: options.onChanged });
     if (authorized && root && !root.hidden && !embedded) confirmVisibility(report);
   }
-  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount, getTabs, tabs: TAB_ITEMS, selectTab, openReportedCard });
+  window.OjjudaNoteAdmin = Object.freeze({ open, close, mount, unmount, getTabs, tabs: TAB_ITEMS, selectTab, openReportedCard, refresh, canLeave, hasDraft });
 })();
