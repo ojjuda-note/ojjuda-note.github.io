@@ -291,7 +291,11 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .records-home .panel-tabs button[aria-pressed=true]{background:var(--cream);color:#71518d;box-shadow:0 1px 4px #5841680d;}
 .records-home .panel-tabs svg{width:19px;height:19px;}
 #app.house-visitor{grid-template-rows:max-content;overflow:hidden;}
-.house-visitor>header,.house-visitor #panel{display:none;}
+.house-visitor #panel,.house-visitor #expand{display:none;}
+#app.house-visitor:not(.records-home){display:flex;}
+.house-visitor>header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:18px;}
+.house-visitor #exit{flex:none;}
+.house-visitor #home-room-open::after{content:"⤢";position:absolute;right:8px;bottom:8px;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#fffcf6e8;color:#71518d;font-size:22px;}
 .house-visitor #home-scene{grid-row:1;}
 @media(max-width:350px){.records-home #panel{padding-inline:14px;}}
 

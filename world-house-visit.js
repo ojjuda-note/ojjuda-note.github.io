@@ -11,10 +11,7 @@ function visitorRecordRows(home){
  const media=(home.album||[]).filter(row=>!row.deleted_at&&(home.real||row.vis!=='me')).map(row=>({id:row.id,source:'media',kind:row.type==='video'?'video':'photo',title:row.caption||'',body:'',folder:row.folder||null,at:timestamp(row.at),art:row.type==='art'?row.art:null}));
  return [...posts,...diary,...media].sort((a,b)=>b.at-a.at||String(a.id).localeCompare(String(b.id)));
 }
-function visitorRecordsMarkup(home,{section='all',folder='all',escape:w,time,mediaCache={},guestbook,intro}){
- const community=section==='guestbook'||section==='intro';
- const navigation=`<div class="visit-sections" aria-label="집 메뉴">${[['all','기록'],['guestbook','방명록'],['intro','소개글']].map(([id,label])=>`<button type="button" data-act="sec" data-sec="${id}" aria-pressed="${community?section===id:id==='all'}">${label}</button>`).join('')}</div>`;
- if(community)return navigation+`<div class="panel-body visit-community">${section==='guestbook'?guestbook(home):intro(home)}</div>`;
+function visitorRecordsMarkup(home,{section='all',folder='all',escape:w,time,mediaCache={}}){
  const selected=categories.some(([id])=>id===section)?section:'all',kind=kinds[selected],rows=visitorRecordRows(home);
  const tabs=`<div class="visit-record-tabs" data-visit-tabs role="tablist" aria-label="기록 종류">${categories.map(([id,label])=>`<button type="button" id="visit-tab-${id}" role="tab" aria-controls="visit-record-content" aria-selected="${selected===id}" tabindex="${selected===id?0:-1}" data-act="sec" data-sec="${id}">${label}</button>`).join('')}</div>`;
  const folders=kind?(home.folders||[]).filter(item=>item.kind===kind||!item.kind&&rows.some(row=>row.kind===kind&&row.folder===item.id)):[];
@@ -27,7 +24,7 @@ function visitorRecordsMarkup(home,{section='all',folder='all',escape:w,time,med
   const preview=row.kind==='text'?'':`<button type="button" class="visit-record-preview" ${action} aria-label="${labels[row.kind]} 크게 보기: ${w(caption)}">${row.art?`<span aria-hidden="true">${w(row.art.emoji||'🖼️')}</span>`:thumb?`<img src="${w(thumb)}" alt="" loading="lazy" data-protect-photo="true">`:'<span aria-hidden="true">▧</span>'}${row.kind==='video'?'<span class="visit-record-play" aria-hidden="true">▶</span>':''}</button>`;
   return `<article class="visit-record${row.kind==='text'?' visit-record-note':''}" data-visit-record="${w(row.id)}" data-record-kind="${row.kind}"><div class="visit-record-copy"><span class="visit-record-meta">${labels[row.kind]} · ${w(time(row.at))}</span><button type="button" class="visit-record-title" ${action}>${w(caption)}</button>${row.source==='diary'?`<button class="visit-record-like" data-act="like" data-id="${w(row.id)}" aria-pressed="${row.liked}" aria-label="노트 좋아요 ${row.likes}">♥ ${row.likes}</button>`:''}</div>${preview}</article>`;
  }).join('')||'<div class="empty">아직 볼 수 있는 기록이 없어요.</div>';
- return navigation+tabs+folderBar+`<div id="visit-record-content" role="tabpanel" aria-labelledby="visit-tab-${selected}" class="visit-record-list">${content}</div>`;
+ return tabs+folderBar+`<div id="visit-record-content" role="tabpanel" aria-labelledby="visit-tab-${selected}" class="visit-record-list">${content}</div>`;
 }
 function handleVisitorTabKey(event){
  const tab=event.target.closest?.('[data-visit-tabs] [role="tab"]');if(!tab)return;
