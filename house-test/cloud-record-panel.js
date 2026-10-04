@@ -18,16 +18,29 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  function syncSelection(){count.textContent=`${selected.size}개 선택`;move.disabled=busy||!selected.size;trashSelected.disabled=busy||!selected.size;chooseAll.disabled=busy||!displayed.length;}
  function openSettings(){
   if(busy||!active()||!loaded)return;
-  const dialog=node('dialog','record-viewer record-settings-dialog'),heading=node('h3','','우리집 설정'),close=button('닫기',()=>dialog.close());
-  dialog.setAttribute('aria-label','우리집 설정');dialog.append(close,heading,node('h4','','폴더 관리'));
-  const leave=callback=>()=>{dialog.close();callback();};dialog.append(button('+ 새폴더',leave(()=>folderEditor())));
-  for(const folder of snapshot.folders){const row=node('div','record-folder-setting'),text=node('div');text.append(node('strong','',folder.name),node('p','panel-note',scopeLabel(folder.visibility)));const edit=button('수정',leave(()=>folderEditor(folder))),remove=button('삭제',leave(()=>deleteFolderEditor(folder)));edit.setAttribute('aria-label',folder.name+' 폴더 수정');remove.setAttribute('aria-label',folder.name+' 폴더 삭제');row.append(text,edit,remove);dialog.append(row);}
-  if(!snapshot.folders.length)dialog.append(node('p','panel-note','아직 만든 폴더가 없어요.'));
-  dialog.append(node('h4','','친구 그룹'),button('+ 새 그룹',leave(()=>groupEditor())));
-  for(const group of snapshot.groups||[]){const row=node('div','record-folder-setting'),text=node('div');text.append(node('strong','',group.name),node('p','panel-note',`${group.members.filter(id=>snapshot.friends.some(friend=>friend.id===id)).length}명`));const edit=button('수정',leave(()=>groupEditor(group))),remove=button('삭제',leave(()=>deleteGroupEditor(group)));edit.setAttribute('aria-label',group.name+' 그룹 수정');remove.setAttribute('aria-label',group.name+' 그룹 삭제');row.append(text,edit,remove);dialog.append(row);}
-  if(!snapshot.groups?.length)dialog.append(node('p','panel-note','가족, 학교 친구처럼 그룹을 만들어 보세요.'));
-  if(!trash)dialog.append(node('h4','','게시물 관리'),button('게시물 선택·이동',leave(()=>{managing=true;selection.hidden=false;renderCards();syncSelection();chooseAll.focus();})),node('p','panel-note','글·사진·동영상을 골라 옮기거나 휴지통에 보관해요.'));
-  dialog.append(button('휴지통',leave(()=>setTrash(true))));
+  const dialog=node('dialog','record-viewer record-settings-dialog'),header=node('div','record-settings-header'),heading=node('h3','','우리집 설정'),body=node('div','record-settings-body');
+  const paths={folder:'M3 7h6l2 2h10v11H3Z M3 7V4h6l2 3',group:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M16 4a4 4 0 0 1 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M13 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0',records:'M9 5h11 M9 12h11 M9 19h11 M3 5l1 1 2-2 M3 12l1 1 2-2 M3 19l1 1 2-2',trash:'M3 6h18 M9 6V3h6v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',next:'m9 6 6 6-6 6',back:'m15 6-6 6 6 6',close:'m6 6 12 12 M18 6 6 18'};
+  const icon=name=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.7');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('aria-hidden','true');path.setAttribute('d',paths[name]);svg.append(path);return svg;};
+  const close=button('',()=>dialog.close()),back=button('',()=>render('home'));
+  close.setAttribute('aria-label','닫기');close.autofocus=true;close.append(icon('close'));back.setAttribute('aria-label','뒤로');back.append(icon('back'));back.hidden=true;
+  dialog.setAttribute('aria-label','우리집 설정');header.append(back,heading,close);dialog.append(header,body);
+  const leave=callback=>()=>{dialog.close();callback();};let currentView='home';
+  const row=(title,detail,onClick,symbol)=>{const control=button('',onClick);control.className='record-settings-row';control.setAttribute('aria-label',title);if(symbol){const badge=node('span','record-settings-icon');badge.append(icon(symbol));control.append(badge);}const copy=node('span','record-settings-copy');copy.append(node('span','record-settings-label',title));control.append(copy);if(detail)control.append(node('span','record-settings-detail',detail));const arrow=icon('next');arrow.classList.add('record-settings-arrow');control.append(arrow);body.append(control);return control;};
+  function render(view){
+   const priorView=currentView;currentView=view;body.replaceChildren();body.scrollTop=0;back.hidden=view==='home';heading.textContent=view==='folders'?'폴더 관리':view==='groups'?'친구 그룹':'우리집 설정';dialog.dataset.settingsView=view;
+   if(view==='home'){
+    const foldersRow=row('폴더 관리',`${snapshot.folders.length}개`,()=>render('folders'),'folder'),groupsRow=row('친구 그룹',`${snapshot.groups?.length||0}개`,()=>render('groups'),'group');
+    if(!trash)row('게시물 정리','',leave(()=>{managing=true;selection.hidden=false;renderCards();syncSelection();chooseAll.focus();}),'records');
+    row('휴지통','',leave(()=>setTrash(true)),'trash');
+    if(dialog.open)(priorView==='folders'?foldersRow:groupsRow).focus();
+   }else{
+    const isFolder=view==='folders',items=isFolder?snapshot.folders:snapshot.groups||[],add=button(isFolder?'새 폴더':'새 그룹',leave(()=>isFolder?folderEditor():groupEditor()));add.className='record-settings-add';body.append(add);
+    for(const item of items){const detail=isFolder?scopeLabel(item.visibility):`${item.members.filter(id=>snapshot.friends.some(friend=>friend.id===id)).length}명`,edit=row(item.name,detail,leave(()=>isFolder?folderEditor(item):groupEditor(item)));edit.setAttribute('aria-label',item.name+(isFolder?' 폴더 수정':' 그룹 수정'));}
+    if(!items.length)body.append(node('p','record-settings-empty',isFolder?'폴더가 없어요.':'그룹이 없어요.'));
+    if(dialog.open)back.focus();
+   }
+  }
+  render('home');
   dialog.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation();});dialog.onclose=()=>dialog.remove();container.append(dialog);dialog.showModal();
  }
  function deleteFolderEditor(folder){
@@ -86,6 +99,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   const show=()=>choices.hidden=scope.value!=='chosen';scope.onchange=show;show();
   form.append(node('p','record-form-title',folder?'폴더 설정':'새 폴더'),field('폴더 이름',name),field('볼 수 있는 사람',scope),choices,node('p','panel-note','폴더 안의 글·사진·동영상은 이 공개범위를 따라요.'));
   const submit=button(folder?'폴더 저장':'폴더 만들기');submit.type='submit';form.append(submit,button('취소',()=>editor.replaceChildren()));
+  if(folder){const remove=button('폴더 삭제',()=>deleteFolderEditor(folder));remove.setAttribute('aria-label',folder.name+' 폴더 삭제');remove.className='record-settings-delete';form.append(remove);}
   form.onsubmit=event=>{event.preventDefault();void save('save-folder',{id:folder?.id,name:name.value,visibility:scope.value,allowed:[...friends.querySelectorAll('input:checked')].map(el=>el.value),allowed_groups:[...groups.querySelectorAll('input:checked')].map(el=>el.value)},'폴더를 저장했어요.',result=>{folderId=result.id;onFolderChange(folderId);});};
   editor.append(form);name.focus();
  }
@@ -97,6 +111,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   if(busy)return;editor.replaceChildren();const id=group?.id||crypto.randomUUID(),form=node('form','record-group-form'),name=node('input'),friends=friendChecks(group?.members),count=node('p','panel-note');name.type='text';name.maxLength=20;name.required=true;name.value=group?.name||'';name.placeholder='가족, 학교 친구…';
   const update=()=>count.textContent=`${friends.querySelectorAll('input:checked').length}명 선택`;friends.onchange=update;update();
   const submit=button(group?'그룹 저장':'그룹 만들기');submit.type='submit';form.append(node('p','record-form-title',group?'친구 그룹 수정':'새 친구 그룹'),field('그룹 이름',name),node('p','panel-note','그룹 이름과 구성원은 나만 볼 수 있어요. 그룹을 바꾸면 연결된 폴더를 볼 수 있는 친구도 바뀌어요.'),friends,count,submit,button('취소',()=>editor.replaceChildren()));
+  if(group){const remove=button('그룹 삭제',()=>deleteGroupEditor(group));remove.setAttribute('aria-label',group.name+' 그룹 삭제');remove.className='record-settings-delete';form.append(remove);}
   form.onsubmit=event=>{event.preventDefault();void save('save-group',{id,name:name.value,members:[...friends.querySelectorAll('input:checked')].map(el=>el.value),create:!group},'친구 그룹을 저장했어요.');};editor.append(form);name.focus();
  }
  function deleteGroupEditor(group){

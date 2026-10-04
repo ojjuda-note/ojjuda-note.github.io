@@ -328,14 +328,27 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-topbar{display:flex;align-items:end;gap:6px;}
 .record-topbar .record-tabs{flex:0 1 auto;min-width:0;}
 .record-settings-button{flex:none;width:32px;height:32px;min-height:32px;padding:2px;border-radius:9px;font-size:21px;line-height:1;background:#f0e8f7;color:#806194;}
-.record-settings-dialog{width:min(92vw,430px);color:var(--ink);}
-.record-settings-dialog h3{margin:0 0 16px;font-size:18px;}
-.record-settings-dialog h4{margin:16px 0 8px;font-size:13px;}
-.record-settings-dialog>button:not(:first-child){margin:0;display:inline-block;}
-.record-folder-setting{display:flex;align-items:center;gap:6px;padding:10px 0;border-bottom:1px solid #e8deed;}
-.record-folder-setting>div{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;}
-.record-folder-setting .panel-note{margin:3px 0 0;}
-.record-folder-setting button{padding:6px 10px;font-size:12px;}
+.record-settings-dialog{width:min(calc(100vw - 32px),400px);max-width:none;max-height:calc(100dvh - 32px);padding:0;color:var(--ink);background:var(--cream);border-radius:20px;overflow:hidden;box-shadow:0 16px 50px #2b203329;}
+.record-settings-dialog[open]{display:flex;flex-direction:column;}
+.record-settings-dialog::backdrop{background:#211a2766;}
+.record-settings-header{display:flex;align-items:center;flex:none;gap:4px;padding:10px 12px 6px 20px;}
+.record-settings-header h3{flex:1;margin:0;font-size:17px;font-weight:700;line-height:1.4;}
+.record-settings-header button{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:11px;border:0;border-radius:12px;background:transparent;}
+.record-settings-header button[hidden]{display:none;}
+.record-settings-header svg{width:21px;height:21px;}
+.record-settings-body{min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 12px 12px;}
+.record-settings-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 8px;border:0;border-radius:12px;background:transparent;text-align:left;}
+.record-settings-row+.record-settings-row{border-top:1px solid #eee8f1;border-radius:0;}
+.record-settings-row:hover,.record-settings-header button:hover{background:#f3edf8;}
+.record-settings-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:11px;background:#f1eafa;color:#806194;}
+.record-settings-icon svg{width:21px;height:21px;}
+.record-settings-copy{flex:1;min-width:0;}
+.record-settings-label{font-size:14px;font-weight:600;line-height:1.5;overflow-wrap:anywhere;}
+.record-settings-detail{flex:none;max-width:40%;color:#8b7e92;font-size:12px;line-height:1.5;text-align:right;overflow-wrap:anywhere;}
+.record-settings-arrow{flex:none;width:16px;height:16px;color:#aa9db2;}
+.record-settings-add{display:block;min-height:44px;margin:2px 0 4px auto;padding:8px 12px;border:0;border-radius:10px;background:#eee3fa;color:#78539d;font-size:13px;font-weight:600;}
+.record-settings-empty{margin:18px 8px 22px;color:#8b7e92;font-size:13px;text-align:center;}
+.record-settings-delete{display:block;margin-top:16px;border:0;background:transparent;color:#96616b;font-size:12px;}
 .record-management-confirm{border:1px solid #dfd3e7;border-radius:12px;background:#faf5ff;padding:12px;margin:8px 0;}
 .record-management-confirm>button{margin:10px 6px 0 0;font-size:12px;}
 .record-selection-tools{padding:10px;margin:8px 0;border:1px solid #dfd3e7;border-radius:12px;background:#faf5ff;}

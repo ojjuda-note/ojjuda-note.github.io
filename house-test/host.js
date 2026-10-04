@@ -14,7 +14,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';close.textContent='나가기';Object.assign(close.style,{top:'4px',right:'8px',width:'66px',height:'40px',fontSize:'13px'});}
- const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-refresh1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-settings1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  const loading=inline?document.createElement('div'):createHouseEntryLoading();
  if(inline){status.textContent=readOnly?'방을 불러오는 중이에요…':'우리집을 불러오는 중이에요…';loading.hidden=true;}
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
@@ -91,7 +91,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(readOnly||!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-refresh2').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-settings1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   memberProfile=!studioOnly&&profile&&typeof profile==='object'?{nick:String(profile.nick||'').slice(0,80),bio:String(profile.bio||'').slice(0,200),avatar_url:String(profile.avatar_url||'')}:null;
