@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
-const rendererStart = world.indexOf('function worldProfileOwner()');
+const rendererStart = world.indexOf('function worldProfileAvatar(');
 const rendererEnd = world.indexOf('}var Hf=', rendererStart) + 1;
 assert.ok(rendererStart > 0 && rendererEnd > rendererStart, 'World My renderer is available');
 const renderer = world.slice(rendererStart, rendererEnd);
@@ -79,6 +79,7 @@ async function worldFixture(context, mobile, errors) {
     window.Jn = [['all', '전체 공개'], ['friends', '친구 공개'], ['me', '나만 보기']];
     window.ce = { ready: true, list: [{ id: 'synthetic-blocked', nick: '검사 작성자' }] };
     window.Go = 'test';
+    window.ie = () => '<svg></svg>';
     window.w = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
     window.Xd = () => '/note/';
     window.Is = () => false;
@@ -113,9 +114,9 @@ async function worldFixture(context, mobile, errors) {
     'frequent notifications come before the cross-service shortcut');
   assert.equal(await page.evaluate(() => {
     const groups = [...document.querySelectorAll('.my-hub [data-my-group]')].map(node => node.dataset.myGroup);
-    return groups.indexOf('profile') < groups.indexOf('account') && groups.indexOf('display') < groups.indexOf('account')
+    return groups.indexOf('profile') < groups.indexOf('account') && groups.indexOf('account') < groups.indexOf('display')
       && groups.indexOf('account') < groups.indexOf('help');
-  }), true, 'frequent settings precede account and help');
+  }), true, 'profile and account stay together before preferences and help');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
   await fitsViewport(page, 'closed World menu');
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
@@ -130,7 +131,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-guestbook').isChecked(), true);
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'enter-place', 'logout', 'mood-pick', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'enter-place', 'logout', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
@@ -160,7 +161,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await door.getAttribute('aria-pressed'), 'false');
   assert.equal(await door.textContent(), '문 닫기');
   assert.equal(await page.evaluate(() => menuSaves), 2, 'opening the house saves once');
-  assert.match(await page.locator('[data-my-group="account"]').textContent(), /생활의 주소록·가계부와 기기 보관 기록은 현재 브라우저에만 저장돼요/);
+  assert.match(await page.locator('[data-my-group="account"]').textContent(), /주소록·가계부는 이 기기에 저장돼요/);
   await page.evaluate(() => { D.doorReady = false; renderMy(); });
   assert.equal(await door.isDisabled(), true, 'unavailable server settings cannot be changed');
   await page.evaluate(() => { D.doorReady = true; D.doorWritable = false; renderMy(); });

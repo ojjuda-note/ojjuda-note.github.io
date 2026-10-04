@@ -28,22 +28,22 @@ const root = path.join(__dirname,'..'), read = file => fs.readFileSync(path.join
   assert.equal((await page.evaluate(()=>calls.at(-1))).p_offset,30);
   await page.getByLabel('작업 분류').selectOption('coins');await page.getByText('총 2건 · 1 / 1페이지 · 최근 작업부터 표시',{exact:true}).waitFor();
   assert.equal((await page.evaluate(()=>calls.at(-1))).p_offset,0);assert.equal(await page.getByRole('button',{name:'다음',exact:true}).isDisabled(),true);
-  await page.getByLabel('기록 공간').selectOption('park');await page.getByText('총 65건 · 1 / 3페이지 · 최근 작업부터 표시',{exact:true}).waitFor();
+  await page.getByLabel('기록 종류').selectOption('park');await page.getByText('총 65건 · 1 / 3페이지 · 최근 작업부터 표시',{exact:true}).waitFor();
   assert.deepEqual(await page.evaluate(()=>calls.at(-1)),{p_source:'park',p_action:null,p_limit:30,p_offset:0});
   await page.getByRole('button',{name:'다음',exact:true}).click();await page.getByText('총 65건 · 2 / 3페이지 · 최근 작업부터 표시',{exact:true}).waitFor();
   await page.evaluate(()=>{const state=controller.getState();controller.destroy();controller=OjjudaAdminActivity.mount({container:document.getElementById('host'),client,getAdminId:()=>owner,isCurrent:()=>current,initialSource:'world',initialState:state})});
   await page.getByText('총 65건 · 2 / 3페이지 · 최근 작업부터 표시',{exact:true}).waitFor();
-  assert.equal(await page.getByLabel('기록 공간').inputValue(),'park','redraw restores the selected source and page');
+  assert.equal(await page.getByLabel('기록 종류').inputValue(),'park','redraw restores the selected source and page');
   await page.evaluate(()=>{controller.destroy();controller=OjjudaAdminActivity.mount({container:document.getElementById('host'),client,getAdminId:()=>owner,isCurrent:()=>current,initialSource:'note-actions'})});
   await page.getByText('총 65건 · 1 / 3페이지 · 최근 작업부터 표시',{exact:true}).waitFor();
-  assert.equal(await page.getByLabel('기록 공간').inputValue(),'park','legacy note action links enter Park history');
+  assert.equal(await page.getByLabel('기록 종류').inputValue(),'park','legacy note action links enter Park history');
   await page.locator('.aa-detail summary').first().click();
   for(const width of [320,390,1280]){
    await page.setViewportSize({width,height:850});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,`${width}: no horizontal overflow`);
    if(process.env.ACTIVITY_QA_DIR)await page.screenshot({path:path.join(process.env.ACTIVITY_QA_DIR,`activity-${width}.png`)});
   }
-  await page.evaluate(()=>{mode='slow'});await page.getByLabel('기록 공간').selectOption('world');await page.getByLabel('기록 공간').selectOption('park');
+  await page.evaluate(()=>{mode='slow'});await page.getByLabel('기록 종류').selectOption('world');await page.getByLabel('기록 종류').selectOption('park');
   await page.evaluate(()=>{pending[1]({data:{items:[{id:'new',action:'restore',admin_nick:'최신 결과'}],total_count:1,actions:[]}})});
   await page.getByText('처리자: 최신 결과',{exact:true}).waitFor();
   await page.evaluate(()=>{pending[0]({data:{items:[{id:'old',action:'hide',admin_nick:'오래된 결과'}],total_count:1,actions:[]}})});

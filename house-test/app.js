@@ -1,5 +1,5 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
-import {createRecordPanel} from './record-panel.js?v=20261004-audit1';
+import {createRecordPanel} from './record-panel.js?v=20261004-home2';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261004-chairfarrear1';
 import {icon} from './icons.js?v=20261004-chairfarrear1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261004-chairfarrear1';
@@ -12,14 +12,25 @@ const stepX=ROOM.width+40,stepY=ROOM.height+40;
 let state,port,key,initialized=false,selected='0:0',tab='diary',expanding=false,overview=false,scale=1,pan={x:0,y:0},timer,saveFailed=false;
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
 let linkedDraft=false,deskDraft=null,standaloneChairDraft=null,editSession=0,activeDragCleanup=null;
-let recordsPanel=null;
+let recordsPanel=null,readOnly=false,hasRoomSync=false,missingMadeItems=false,lastSummaryHeight=0,lastQueuedRooms=null;
 let itemCategory='furniture',previewMode=false,emptyRoomPreview=false,canUseStudio=false,connecting=false,disposed=false;
 const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
 const bounds=r=>({x:(r.x+2)*stepX,y:(3-r.y)*stepY});
 function toast(message){$('#notice').textContent=message;$('#notice').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#notice').classList.remove('show'),2400);}
-function persist(){if(previewMode||!initialized||disposed)return false;try{localStorage.setItem(key,JSON.stringify(state));if(saveFailed){saveFailed=false;$('#save-warning').hidden=true;}return true;}catch{saveFailed=true;$('#save-warning').hidden=false;return false;}}
+function persist(){
+ if(previewMode||readOnly||missingMadeItems||!initialized||disposed)return false;
+ const snapshot=hasRoomSync?{version:state.version,rooms:state.rooms}:null,serial=snapshot&&JSON.stringify(snapshot),changed=hasRoomSync&&serial!==lastQueuedRooms;
+ try{
+  // Keep a synchronous recovery marker before the parent receives the save.
+  if(changed&&!localStorage.getItem(key+':pending-cloud'))localStorage.setItem(key+':pending-cloud',JSON.stringify({pending:true}));
+  localStorage.setItem(key,JSON.stringify(state));
+  if(changed){port.postMessage({type:'room-save',snapshot});lastQueuedRooms=serial;}
+  if(saveFailed){saveFailed=false;$('#save-warning').hidden=true;}return true;
+ }catch{saveFailed=true;$('#save-warning').hidden=false;return false;}
+}
 function save(){return persist();}
 function saveChange(change){
+ if(readOnly||missingMadeItems)return false;
  const before=state;state=structuredClone(state);change();
  if(save())return true;
  state=before;toast('저장하지 못했어요. 저장 공간을 확인한 뒤 다시 시도해 주세요.');return false;
@@ -81,6 +92,15 @@ function minimumZoom(){
  return Math.min(single*.68,fitScale(cameraBounds(cameraRooms())));
 }
 function focusRoom(all=false){
+ if(tab==='diary'&&!previewMode&&!expanding){
+  const area=cameraBounds(state.rooms),top=76,inset=12,w=view.clientWidth;
+  const height=Math.min(380,Math.max(230,w*area.height/area.width+top+inset*2));
+  $('#app').style.setProperty('--home-scene-height',height+'px');
+  if(readOnly&&lastSummaryHeight!==Math.ceil(height)){lastSummaryHeight=Math.ceil(height);port?.postMessage({type:'room-size',height:lastSummaryHeight});}
+  const h=view.clientHeight;scale=Math.min((w-inset*2)/area.width,Math.max(1,h-top-inset)/area.height);
+  pan={x:(w-area.width*scale)/2-area.left*scale,y:top+(h-top-area.height*scale)/2-area.top*scale};
+  world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;return;
+ }
  overview=all;
  const r=current(),b=bounds(r),w=view.clientWidth,h=view.clientHeight;
  if(all){
@@ -217,7 +237,7 @@ function syncHomeSummary(){
  const summary=tab==='diary'&&!previewMode&&!expanding;
  $('#app').classList.toggle('records-home',summary);
  $('#home-profile').hidden=!summary;
- $('#home-room-open').hidden=!summary;
+ $('#home-room-open').hidden=!summary||readOnly||missingMadeItems;
  // The thumbnail reuses the live room renderer; it never changes the room save.
  world.inert=summary;
  view.tabIndex=summary?-1:0;
@@ -252,16 +272,24 @@ function renderPanel(){syncHomeSummary();recordsPanel?.unmount();const empty=$('
 
 
  if(tab==='diary')recordsPanel?.mount(body);}
-function setTab(next){if(previewMode)return;if(!['room','diary'].includes(next))return;clearPlacement();tab=next;if(expanding){expanding=false;$('#expand').setAttribute('aria-pressed','false');}renderWorld();renderPanel();focusRoom();}
-function toggleExpansion(next=!expanding){if(previewMode)return;clearPlacement();expanding=next;$('#expand').setAttribute('aria-pressed',String(next));$('#hint').textContent=next?'연결된 방 옆의 ＋로 확장하세요':'방을 끌어 둘러보세요';renderWorld();renderPanel();focusRoom(next);}
+function setTab(next){if(previewMode||readOnly||(next==='room'&&missingMadeItems))return;if(!['room','diary'].includes(next))return;clearPlacement();tab=next;if(expanding){expanding=false;$('#expand').setAttribute('aria-pressed','false');}renderWorld();renderPanel();focusRoom();}
+function toggleExpansion(next=!expanding){if(previewMode||readOnly||missingMadeItems)return;clearPlacement();expanding=next;$('#expand').setAttribute('aria-pressed',String(next));$('#hint').textContent=next?'연결된 방 옆의 ＋로 확장하세요':'방을 끌어 둘러보세요';renderWorld();renderPanel();focusRoom(next);}
 
 
 const pointers=new Map();let gesture=null;
 function point(e){const b=view.getBoundingClientRect();return {x:e.clientX-b.left,y:e.clientY-b.top};}
-view.addEventListener('pointerdown',e=>{if(e.target.closest('button,select')||e.button>0)return;const p=point(e);pointers.set(e.pointerId,p);view.setPointerCapture(e.pointerId);if(pointers.size===1)gesture={start:p,last:p,moved:false,multi:false};else if(pointers.size===2){const [a,b]=[...pointers.values()];gesture={multi:true,moved:true,distance:Math.hypot(a.x-b.x,a.y-b.y),center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};}});
+view.addEventListener('pointerdown',e=>{if(tab==='diary'&&!previewMode&&!expanding)return;if(e.target.closest('button,select')||e.button>0)return;const p=point(e);pointers.set(e.pointerId,p);view.setPointerCapture(e.pointerId);if(pointers.size===1)gesture={start:p,last:p,moved:false,multi:false};else if(pointers.size===2){const [a,b]=[...pointers.values()];gesture={multi:true,moved:true,distance:Math.hypot(a.x-b.x,a.y-b.y),center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};}});
 view.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId)||!gesture)return;const p=point(e);pointers.set(e.pointerId,p);if(pointers.size>=2){const [a,b]=[...pointers.values()],center={x:(a.x+b.x)/2,y:(a.y+b.y)/2},distance=Math.hypot(a.x-b.x,a.y-b.y);if(gesture.distance>0){zoom(distance/gesture.distance,gesture.center);pan.x+=center.x-gesture.center.x;pan.y+=center.y-gesture.center.y;applyCamera();}gesture.distance=distance;gesture.center=center;gesture.multi=true;}else if(!gesture.multi){if(Math.hypot(p.x-gesture.start.x,p.y-gesture.start.y)>7)gesture.moved=true;if(gesture.moved){pan.x+=p.x-gesture.last.x;pan.y+=p.y-gesture.last.y;applyCamera();}gesture.last=p;}});
 function end(e,canceled=false){if(!pointers.has(e.pointerId))return;const p=point(e),tap=!canceled&&gesture&&!gesture.moved&&!gesture.multi;pointers.delete(e.pointerId);if(view.hasPointerCapture(e.pointerId))view.releasePointerCapture(e.pointerId);if(tap){const wx=(p.x-pan.x)/scale,wy=(p.y-pan.y)/scale,r=state.rooms.find(r=>{const b=bounds(r);const cell=floorCell(wx-b.x,wy-b.y);return cell.x>=0&&cell.x<=FLOOR.width&&cell.y>=0&&cell.y<=FLOOR.depth;});if(r){if(roomKey(r)!==selected)selectRoom(roomKey(r));else {}}}if(!pointers.size)gesture=null;}
-view.addEventListener('pointerup',e=>end(e));view.addEventListener('pointercancel',e=>end(e,true));view.addEventListener('wheel',e=>{if(tab==='diary'&&!previewMode&&!expanding)return;e.preventDefault();zoom(Math.exp(-e.deltaY*.001),point(e));},{passive:false});view.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.2);}else if(e.key==='-'){e.preventDefault();zoom(1/1.2);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();pan.x+=e.key==='ArrowLeft'?65:e.key==='ArrowRight'?-65:0;pan.y+=e.key==='ArrowUp'?65:e.key==='ArrowDown'?-65:0;applyCamera();}});
+view.addEventListener('pointerup',e=>end(e));view.addEventListener('pointercancel',e=>end(e,true));view.addEventListener('wheel',e=>{if(tab==='diary'&&!previewMode&&!expanding)return;e.preventDefault();zoom(Math.exp(-e.deltaY*.001),point(e));},{passive:false});view.addEventListener('keydown',e=>{if(tab==='diary'&&!previewMode&&!expanding)return;if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.2);}else if(e.key==='-'){e.preventDefault();zoom(1/1.2);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();pan.x+=e.key==='ArrowLeft'?65:e.key==='ArrowRight'?-65:0;pan.y+=e.key==='ArrowUp'?65:e.key==='ArrowDown'?-65:0;applyCamera();}});
+function updateHomeProfile(profile={}){
+ profile=profile||{};
+ $('#home-profile-nick').textContent=String(profile.nick||'우리집').slice(0,80);
+ $('#home-profile-bio').textContent=String(profile.bio||'').replace(/\s+/g,' ').trim().slice(0,200);
+ const button=$('#home-profile-photo'),old=button.querySelector('img'),fallback=button.querySelector('svg');old?.remove();fallback.style.display='';
+ try{const url=new URL(profile.avatar_url,location.origin);if(!profile.avatar_url||!['https:','http:'].includes(url.protocol))return;const img=new Image();img.alt='프로필 사진';img.src=url.href;img.onload=()=>{fallback.style.display='none';};img.onerror=()=>{img.remove();fallback.style.display='';};button.append(img);}catch{}
+}
+$('#home-profile-photo').onclick=()=>{if(!readOnly&&!$('#home-profile-photo').disabled)port?.postMessage({type:'profile-photo'});};
 $('#home-room-open').onclick=()=>{setTab('room');view.focus({preventScroll:true});};
 $('#empty-room-toggle').onclick=()=>{emptyRoomPreview=!emptyRoomPreview;view.classList.toggle('empty-room-preview',emptyRoomPreview);renderPanel();};
 $('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#overview').onclick=()=>focusRoom(true);$('#home-view').onclick=()=>focusRoom();$('#expand').onclick=()=>toggleExpansion();$('#exit').onclick=()=>{clearPlacement();if(initialized)persist();port?.postMessage({type:'close'});};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#exit').click();});document.querySelectorAll('[data-tab]').forEach(b=>{b.querySelector('span').innerHTML=icon(b.dataset.tab);b.onclick=()=>setTab(b.dataset.tab);});
@@ -269,24 +297,29 @@ new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);}).observe
 $('#placement-recall').onclick=()=>{if(editing&&!previewMode)removeFurniture();};$('#placement-done').onclick=()=>{if(editing)finishPlacement(true);};$('#placement-actions').addEventListener('pointerdown',event=>event.stopPropagation());new ResizeObserver(layoutPlacementActions).observe($('#placement-actions'));
 window.addEventListener('message',async e=>{
  if(connecting||initialized||window.parent===window||e.source!==window.parent||e.origin!==location.origin||e.data?.type!=='ojjuda-house-test-init'||!e.ports[0]||typeof e.data.owner!=='string'||!e.data.owner||e.data.owner.length>180)return;
- connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;canUseStudio=e.data.canUseStudio===true;
- const recordRPC=e.data.hasRecords===true?createRecordRPC(port):null;
+ connecting=true;port=e.ports[0];readOnly=e.data.readOnly===true;hasRoomSync=e.data.hasRoom===true&&!readOnly;$('#app').classList.toggle('house-visitor',readOnly);$('#home-profile-photo').disabled=readOnly||e.data.canEditProfile!==true;$('#home-profile-photo').setAttribute('aria-label',readOnly?'프로필 사진':'프로필 사진 바꾸기');key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;canUseStudio=e.data.canUseStudio===true;
+ const recordRPC=!readOnly&&e.data.hasRecords===true?createRecordRPC(port):null;
  port.onmessage=event=>{
   if(event.data?.type==='dispose'){$('#home-profile-nick').textContent='';$('#home-profile-bio').textContent='';clearPlacement();persist();disposed=true;recordsPanel?.dispose();recordRPC?.dispose();clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}
-  else if(event.data?.type==='studio-access'){canUseStudio=event.data.canUseStudio===true;if(initialized&&!previewMode)renderPanel();}
+  else if(event.data?.type==='profile-update'){updateHomeProfile(event.data.profile);}
+  else if(event.data?.type==='studio-access'){if(readOnly)return;canUseStudio=event.data.canUseStudio===true;if(initialized&&!previewMode)renderPanel();}
  };
  try{
   if((previewMode||e.data.studioItem!=null)&&!canUseStudio)throw new Error('가구 제작 권한을 확인해 주세요.');
   // Fetch the visible room while restoring only furniture used by saved rooms.
   const background=new Image();background.fetchPriority='high';background.src=`assets/room-${period}-v${ROOM.assetVersion}.webp`;
-  const readSaved=()=>{try{return localStorage.getItem(key);}catch{return null;}};
-  let stored;
+  const readSaved=()=>{if(readOnly)return null;try{return localStorage.getItem(key);}catch{return null;}};
+  let stored,remoteApplied=false,adoptedLocalDuringLoad=false;
   for(;;){
    const snapshot=readSaved();stored=null;try{stored=JSON.parse(snapshot);}catch{}
+   const local=stored;
+   if(e.data.roomSnapshot&&!remoteApplied){remoteApplied=true;stored={...e.data.roomSnapshot,diary:typeof local?.diary==='string'?local.diary:''};
+    if(!readOnly&&snapshot&&JSON.stringify(local?.rooms)!==JSON.stringify(stored.rooms)){try{localStorage.setItem(key+':before-cloud:'+Date.now(),snapshot);}catch{throw new Error('기존 방을 안전하게 보관하지 못했어요. 저장 공간을 확인해 주세요.');}}
+   }else if(e.data.roomSnapshot)adoptedLocalDuringLoad=true;
    const needed=(Array.isArray(stored?.rooms)?stored.rooms:[]).flatMap(r=>Object.entries(r?.furniture||{}).filter(([,pose])=>pose&&typeof pose==='object').map(([id])=>id));
    if(e.data.studioItem)needed.push(e.data.studioItem);
    await loadBuiltInItems(needed);if(disposed)return;
-   await loadMadeItems(e.data.owner);if(disposed)return;
+   if(!readOnly)await loadMadeItems(e.data.owner);if(disposed)return;
    if(previewMode)await registerMadeItem(e.data.preview);if(disposed)return;
    // Another open window may save while artwork loads. Restore its latest
    // snapshot, including newly placed runtime furniture, before enabling saves.
@@ -294,15 +327,16 @@ window.addEventListener('message',async e=>{
   }
   // Never normalize a saved room until its owner-specific catalog is ready.
   const missing=stored?.rooms?.some(r=>Object.keys(r.furniture||{}).some(id=>id.startsWith('made-')&&!FURNITURE[id]));
-  if(missing)throw new Error('저장한 제작 아이템을 찾지 못했어요. 이 기기의 제작실에서 작업을 다시 적용해 주세요. 기존 배치는 보존됩니다.');
-  $('#home-profile-nick').textContent=String(e.data.profile?.nick||'우리집').slice(0,80);
-  $('#home-profile-bio').textContent=String(e.data.profile?.bio||'').replace(/\s+/g,' ').trim().slice(0,200);
-  state=normalize(stored);recordsPanel=createRecordPanel({owner:e.data.owner,request:recordRPC?.request,getText:()=>state.diary,changeText:value=>{state.diary=value;save();},saveText:value=>{state.diary=value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');},notify:toast});tab=previewMode||e.data.studioItem?'room':'diary';initialized=true;$('#locked').hidden=true;$('#app').hidden=false;
+  if(missing&&!e.data.hasRoom&&!readOnly)throw new Error('저장한 제작 아이템을 찾지 못했어요. 이 기기의 제작실에서 작업을 다시 적용해 주세요. 기존 배치는 보존됩니다.');
+  missingMadeItems=missing;
+  if(missing){$('#save-warning').hidden=false;$('#save-warning').textContent='이 기기에 없는 제작 가구는 표시할 수 없어요.';document.querySelector('[data-tab="room"]').disabled=true;}
+  updateHomeProfile(e.data.profile);
+  state=normalize(stored);if(e.data.roomSnapshot&&!adoptedLocalDuringLoad)lastQueuedRooms=JSON.stringify({version:state.version,rooms:state.rooms});recordsPanel=readOnly?null:createRecordPanel({owner:e.data.owner,request:recordRPC?.request,getText:()=>state.diary,changeText:value=>{state.diary=value;save();},saveText:value=>{state.diary=value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');},notify:toast});tab=previewMode||e.data.studioItem?'room':'diary';initialized=true;$('#locked').hidden=true;$('#app').hidden=false;
   if(previewMode){$('#expand').hidden=true;$('nav').hidden=true;$('header h1 small').hidden=false;$('#hint').textContent='미리보기 · 기존 배치는 바뀌지 않아요';}
   renderWorld();renderPanel();focusRoom();updatePeriod();periodTimer=setInterval(updatePeriod,15000);
   const item=previewMode?e.data.preview.id:e.data.studioItem;
   if(item&&FURNITURE[item]){startPlacement(item);if(!editing&&previewMode){const next=state.rooms.find(r=>findPlacement(item,furniturePlacements(r)));if(next){selected=roomKey(next);startPlacement(item);}else toast('이 방에 빈자리가 없어요. 제작실에서 크기를 줄이거나 우리집에서 공간을 비워 주세요.');}}
-  port.postMessage({type:'ready'});
+  port.postMessage({type:'ready'});if(hasRoomSync&&(!e.data.roomSnapshot||adoptedLocalDuringLoad))persist();
  }catch(error){$('#locked p').textContent=error.message||'제작 아이템을 읽지 못했어요. 닫은 뒤 다시 열어 주세요.';port.postMessage({type:'failed'});}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(initialized)persist();}else if(initialized)updatePeriod();});window.addEventListener('pagehide',()=>{if(initialized)persist();});

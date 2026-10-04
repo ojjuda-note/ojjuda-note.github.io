@@ -4,24 +4,8 @@ select{font:inherit;color:inherit}
 .note-feature-message{color:var(--accent-ink)}
 .note-notice{border-left:4px solid var(--accent);white-space:pre-wrap}
 .note-notice p{margin:0}.note-notice p+p{margin-top:7px}
-.note-announcement{margin:12px 0;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;background:var(--surface);font-size:13px}
-.note-announcement[hidden]{display:none}
-.note-announcement-row{display:flex;align-items:center;gap:10px;min-width:0;min-height:43px;padding:9px 12px;cursor:pointer;list-style:none}
-.note-announcement-row::-webkit-details-marker{display:none}
-.note-announcement-label{flex:none;padding:2px 7px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);font-size:11px;font-weight:700}
-.note-announcement-viewport{position:relative;flex:1;min-width:0;height:1.5em;overflow:hidden;white-space:nowrap}
-.note-announcement-copy{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
-.note-announcement-moving{position:absolute;top:0;left:0;width:max-content;max-width:none;opacity:0;white-space:nowrap;line-height:1.5;pointer-events:none}
-.note-announcement.is-moving .note-announcement-copy{opacity:0}
-.note-announcement.is-moving .note-announcement-moving{opacity:1;animation:note-announcement-scroll var(--ticker-duration,15s) linear 1 both}
-.note-announcement.is-moving:hover .note-announcement-copy,.note-announcement.is-moving:focus-within .note-announcement-copy{opacity:1}
-.note-announcement.is-moving:hover .note-announcement-moving,.note-announcement.is-moving:focus-within .note-announcement-moving{opacity:0;animation-play-state:paused}
-.note-announcement-open{flex:none;color:var(--ink-2);font-size:11px;white-space:nowrap}
-.note-announcement[open] .note-announcement-open{color:var(--accent-ink)}
-.note-announcement-full{margin:0;padding:10px 14px 12px;border-top:1px solid var(--line);line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
-@keyframes note-announcement-scroll{from{transform:translateX(var(--ticker-start,0px))}to{transform:translateX(-100%)}}
-@media(max-width:520px){.note-announcement-row{gap:7px;padding:8px 9px}.note-announcement-open{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.note-announcement.is-moving .note-announcement-moving{animation:none;opacity:0}.note-announcement.is-moving .note-announcement-copy{opacity:1}}
+/* Compatibility for cached Park pages; the World shell owns the service notice. */
+.note-announcement{display:none!important}
 .note-collection-tabs{background:var(--surface);margin-bottom:20px}
 .card-actions{flex-wrap:wrap}.card-actions button[aria-pressed="true"]{color:var(--accent-ink)}
 .card-actions button[aria-pressed="true"] svg{fill:var(--accent-soft)}

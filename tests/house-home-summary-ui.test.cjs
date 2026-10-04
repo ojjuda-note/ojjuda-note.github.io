@@ -24,7 +24,7 @@ document.querySelector('#open').onclick=()=>{const id=owner;openHouseTest({owner
    await page.setViewportSize({width,height});
    await frame.waitForFunction(()=>document.querySelector('#viewport').clientWidth>0);
    const boxes=await frame.evaluate(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right};};return {profile:rect('#home-profile'),room:rect('#viewport'),panel:rect('#panel'),overflow:document.documentElement.scrollWidth>innerWidth};});
-   assert(boxes.profile.right<=boxes.room.x,'profile sits left of the room');assert(boxes.panel.y>=boxes.room.bottom,'records start below the preview');assert(boxes.room.w>boxes.profile.w);assert.equal(boxes.overflow,false);
+   assert.equal(boxes.profile.x,boxes.room.x,'profile shares the same full-width scene');assert.equal(boxes.profile.y,boxes.room.y,'profile is inside the room scene');assert(boxes.panel.y>=boxes.room.bottom,'records start below the preview');assert.equal(boxes.room.w,await frame.evaluate(()=>innerWidth));assert.equal(boxes.overflow,false);
    await page.screenshot({path:path.join(proof,`summary-${width}.png`)});
   }
   await page.setViewportSize({width:390,height:844});await frame.locator('#diary').fill('배치를 바꿔도 내 글은 그대로');
@@ -32,7 +32,7 @@ document.querySelector('#open').onclick=()=>{const id=owner;openHouseTest({owner
   await frame.locator('[data-tab="diary"]').click();assert.equal(await frame.locator('#diary').inputValue(),'배치를 바꿔도 내 글은 그대로');
   const rooms=await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:summary-a')).rooms);assert.deepEqual(rooms,saved.rooms,'opening/closing room preview does not change furniture');
   await page.evaluate(()=>{owner='summary-b';profile={nick:'<img src=x onerror=alert(1)>',bio:'다른 계정\n소개'};});await page.waitForFunction(()=>document.querySelectorAll('iframe').length===0);await page.locator('#open').click();await page.frameLocator('iframe').locator('#home-room-open').waitFor();frame=page.frames().find(f=>f.url().includes('/house-test/index.html'));
-  assert.equal(await frame.locator('#home-profile-nick').textContent(),'<img src=x onerror=alert(1)>');assert.equal(await frame.locator('#home-profile-nick img').count(),0);assert.equal(await frame.locator('#home-profile-bio').textContent(),'다른 계정 소개');assert.equal(await frame.locator('#diary').inputValue(),'');
+  assert.equal(await frame.locator('#home-profile-nick').textContent(),'<img src=x onerror=alert(1)>');assert.equal(await frame.locator('#home-profile-nick img').count(),0);assert.equal(await frame.locator('#home-profile-bio').textContent(),'다른 계정 소개');await frame.getByRole('tab',{name:'게시판',exact:true}).click();assert.equal(await frame.locator('#diary').inputValue(),'');
   assert.deepEqual(errors,[]);console.log('HOUSE SUMMARY PASS: profile/room layout at four viewports, real room artwork, read-only thumbnail, entry/return, saved room and diary preservation, account isolation and safe text');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
