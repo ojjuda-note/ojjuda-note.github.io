@@ -335,3 +335,5 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-full-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;}
 
 .cloud-records[data-trash="true"]>.record-diary,.record-content:has(.cloud-records[data-trash="true"])>.local-records{display:none;}
+
+.records-home #panel,.records-home #home-profile{touch-action:pan-y pinch-zoom;}

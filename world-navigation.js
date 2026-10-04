@@ -47,9 +47,10 @@
           ? options.tabs.indexOf(document.querySelector('.bottomnav [aria-current="page"]')?.dataset.tab)
           : index;
       };
-      const swipeZone = target => {
-        const zone = target.closest?.('.main, .topbar, .bottomnav');
-        if (!zone || [...document.querySelectorAll('#modal-root:not(:empty), [role="dialog"], .gaming')]
+      const swipeZone = (target, doc=document, canStart=()=>true) => {
+        if(!canStart())return null;
+        const zone = doc===document?target.closest?.('.main, .topbar, .bottomnav'):document.querySelector('.main');
+        if (!zone || [...new Set([document,doc])].flatMap(root=>[...root.querySelectorAll('#modal-root:not(:empty), [role="dialog"], .gaming')])
           .some(element => element.getClientRects().length)) return null;
         // These surfaces already use drag, pinch, selection or media controls.
         if (target.closest('.stage,.av-preview,canvas,video,audio,input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-world-swipe="off"]')) return null;
@@ -58,11 +59,11 @@
         }
         return zone;
       };
-      const start = (event, point, kind) => {
+      const start = (event, point, kind, doc, canStart) => {
         reset();
         suppressClickUntil = 0;
         if (returning) return;
-        const zone=swipeZone(event.target);
+        const zone=swipeZone(event.target,doc,canStart);
         if (!zone) return;
         gesture = {id: kind==='touch' ? point.identifier : point.pointerId,
           x:point.clientX,y:point.clientY,kind,time:performance.now(),horizontal:false,
@@ -115,45 +116,51 @@
       };
       // Touch listeners retain vertical scrolling and nested horizontal scrollers;
       // a blanket touch-action on .main would disable their native gestures.
-      document.addEventListener('touchstart',event=>{
+      function attachDocument(doc,canStart=()=>true){
+        const removers=[];const listen=(type,fn,options)=>{doc.addEventListener(type,fn,options);removers.push(()=>doc.removeEventListener(type,fn,options));};
+      listen('touchstart',event=>{
         if(event.touches.length!==1){reset();return}
-        start(event,event.touches[0],'touch');
+        start(event,event.touches[0],'touch',doc,canStart);
       },{passive:true});
-      document.addEventListener('touchmove',event=>{
+      listen('touchmove',event=>{
         if(event.touches.length!==1){reset();return}
         if(gesture?.kind==='touch' && event.touches[0].identifier===gesture.id)move(event,event.touches[0]);
       },{passive:false});
-      document.addEventListener('touchend',event=>{
+      listen('touchend',event=>{
         if(event.touches.length){reset();return}
         const point=[...event.changedTouches].find(point=>point.identifier===gesture?.id);
         if(point && gesture?.kind==='touch')finish(point);
       },{passive:true});
-      document.addEventListener('touchcancel',reset,{passive:true});
-      document.addEventListener('pointerdown',event=>{
+      listen('touchcancel',reset,{passive:true});
+      listen('pointerdown',event=>{
         if(event.pointerType==='touch')return;
         if(event.isPrimary===false){reset();return}
-        if(event.button===0)start(event,event,'pointer');
+        if(event.button===0)start(event,event,'pointer',doc,canStart);
       });
-      document.addEventListener('pointermove',event=>{
+      listen('pointermove',event=>{
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)move(event,event);
       },{passive:false});
-      document.addEventListener('pointerup',event=>{
+      listen('pointerup',event=>{
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)finish(event);
       });
-      document.addEventListener('pointercancel',event=>{
+      listen('pointercancel',event=>{
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)reset();
       });
-      document.addEventListener('dragstart', event => {
-        if (swipeZone(event.target)) event.preventDefault();
+      listen('dragstart', event => {
+        if (swipeZone(event.target,doc,canStart)) event.preventDefault();
       });
-      document.addEventListener('click', event => {
+      listen('click', event => {
         if (event.detail && performance.now() < suppressClickUntil) {
           suppressClickUntil = 0;
           event.preventDefault(); event.stopImmediatePropagation();
         }
       }, true);
-      window.addEventListener('blur', reset);
-      return {sync, back};
+
+        doc.defaultView?.addEventListener('blur',reset);
+        return ()=>{reset();for(const remove of removers)remove();doc.defaultView?.removeEventListener('blur',reset);};
+      }
+      attachDocument(document);
+      return {sync, back, attachDocument};
     }
   };
 })();
