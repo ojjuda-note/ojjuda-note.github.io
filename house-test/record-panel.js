@@ -1,4 +1,5 @@
-import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-settings1';
+import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-home-clean1';
+import {icon} from './icons.js?v=20261004-home-clean1';
 import {MEDIA_TYPES,addRecordMedia,listRecordMedia,readRecordMedia,deleteRecordMedia} from './record-media-store.js?v=20261004-records1';
 const categories=[['all','전체'],['text','게시판'],['photo','사진'],['video','동영상']];
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
@@ -16,7 +17,7 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
   }
   function select(value){if(category===value)return;category=value;limit=12;mount(body);body.scrollTop=0;body.querySelector('[aria-selected="true"]').focus({preventScroll:true});}
   const content=node('section','record-content');content.id='record-content';content.setAttribute('role','tabpanel');content.setAttribute('aria-labelledby','record-tab-'+category);
-  const foldersHost=node('div','record-folder-strip'),topbar=node('div','record-topbar'),settingsButton=button('⚙︎');settingsButton.className='record-settings-button';settingsButton.setAttribute('aria-label','우리집 설정');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.disabled=!request;topbar.append(tabs,settingsButton);wrapper.append(topbar,foldersHost,content);body.append(wrapper);
+  const foldersHost=node('div','record-folder-strip'),topbar=node('div','record-topbar'),settingsButton=button('');settingsButton.innerHTML=icon('settings');settingsButton.className='record-settings-button';settingsButton.setAttribute('aria-label','우리집 설정');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.disabled=!request;topbar.append(tabs,settingsButton);wrapper.append(topbar,foldersHost,content);body.append(wrapper);
   if(request){
    const cloud=node('div','cloud-records');content.append(cloud);
    cloudController=mountCloudRecords({postDrafts,committedPostIds,pendingPostIds,container:cloud,kind:category,request,active,foldersHost,settingsButton,initialFolder:folderId,onFolderChange:id=>{folderId=id;}});
