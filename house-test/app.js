@@ -213,7 +213,17 @@ function renderItemMenu(body){
  if(itemCategory==='accessories')body.append(element('p','item-menu-help','쿠션과 담요를 소파로 끌면 알맞게 놓이고, 바닥으로 끌면 바닥에 놓여요.'));
  body.append(grid);
 }
-function renderPanel(){recordsPanel?.unmount();const empty=$('#empty-room-toggle');empty.hidden=tab!=='room'||editing||expanding||previewMode;empty.textContent=emptyRoomPreview?'가구 복구':'빈방 보기';empty.setAttribute('aria-pressed',String(emptyRoomPreview));const body=$('#panel-body');body.replaceChildren();$('#panel').classList.toggle('placement-panel',tab==='room'&&editing&&!expanding);$('#panel-title').hidden=!editing&&!expanding&&!previewMode;document.querySelectorAll('#panel-tabs [data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===tab)));layoutPlacementActions();$('#panel-title').textContent=expanding?'집 확장':{room:editing?(linkedDraft?'책상과 함께 배치':FURNITURE[editingId].shortLabel+' 배치'):'아이템',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
+function syncHomeSummary(){
+ const summary=tab==='diary'&&!previewMode&&!expanding;
+ $('#app').classList.toggle('records-home',summary);
+ $('#home-profile').hidden=!summary;
+ $('#home-room-open').hidden=!summary;
+ // The thumbnail reuses the live room renderer; it never changes the room save.
+ world.inert=summary;
+ view.tabIndex=summary?-1:0;
+ view.setAttribute('aria-label',summary?'내 방 미리보기':'아파트 단면, 드래그로 이동하고 두 손가락으로 확대');
+}
+function renderPanel(){syncHomeSummary();recordsPanel?.unmount();const empty=$('#empty-room-toggle');empty.hidden=tab!=='room'||editing||expanding||previewMode;empty.textContent=emptyRoomPreview?'가구 복구':'빈방 보기';empty.setAttribute('aria-pressed',String(emptyRoomPreview));const body=$('#panel-body');body.replaceChildren();$('#panel').classList.toggle('placement-panel',tab==='room'&&editing&&!expanding);$('#panel-title').hidden=!editing&&!expanding&&!previewMode;document.querySelectorAll('#panel-tabs [data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===tab)));layoutPlacementActions();$('#panel-title').textContent=expanding?'집 확장':{room:editing?(linkedDraft?'책상과 함께 배치':FURNITURE[editingId].shortLabel+' 배치'):'아이템',diary:'오늘의 기록'}[tab];if(expanding){const row=element('div','row'),select=element('select');select.setAttribute('aria-label','확장 기준 방');for(const r of state.rooms){const option=element('option','',title(r));option.value=roomKey(r);option.selected=option.value===selected;select.append(option);}select.onchange=()=>selectRoom(select.value);row.append(select);body.append(row);const controls=element('div','actions expansion-actions');for(const [dx,dy,label]of [[-1,0,'← 왼쪽'],[1,0,'오른쪽 →'],[0,1,'↑ 위층'],[0,-1,'↓ 아래층']]){const r=current(),cell={x:r.x+dx,y:r.y+dy},existing=state.rooms.find(x=>x.x===cell.x&&x.y===cell.y),b=actionButton(label+ (existing?' 보기':' 확장'),()=>existing?selectRoom(roomKey(cell)):addRoom(cell));b.disabled=!existing&&!canAdd(state.rooms,cell);controls.append(b);}body.append(controls,element('p','panel-note','가운데에서 좌우 2칸 · 위아래 3층, 최대 35개 방'));return;}
 
  if(tab==='room'){
   if(editing){
@@ -242,7 +252,7 @@ function renderPanel(){recordsPanel?.unmount();const empty=$('#empty-room-toggle
 
 
  if(tab==='diary')recordsPanel?.mount(body);}
-function setTab(next){if(previewMode)return;if(!['room','diary'].includes(next))return;clearPlacement();tab=next;if(expanding){expanding=false;$('#expand').setAttribute('aria-pressed','false');renderWorld();focusRoom();}renderWorld();renderPanel();}
+function setTab(next){if(previewMode)return;if(!['room','diary'].includes(next))return;clearPlacement();tab=next;if(expanding){expanding=false;$('#expand').setAttribute('aria-pressed','false');}renderWorld();renderPanel();focusRoom();}
 function toggleExpansion(next=!expanding){if(previewMode)return;clearPlacement();expanding=next;$('#expand').setAttribute('aria-pressed',String(next));$('#hint').textContent=next?'연결된 방 옆의 ＋로 확장하세요':'방을 끌어 둘러보세요';renderWorld();renderPanel();focusRoom(next);}
 
 
@@ -251,7 +261,8 @@ function point(e){const b=view.getBoundingClientRect();return {x:e.clientX-b.lef
 view.addEventListener('pointerdown',e=>{if(e.target.closest('button,select')||e.button>0)return;const p=point(e);pointers.set(e.pointerId,p);view.setPointerCapture(e.pointerId);if(pointers.size===1)gesture={start:p,last:p,moved:false,multi:false};else if(pointers.size===2){const [a,b]=[...pointers.values()];gesture={multi:true,moved:true,distance:Math.hypot(a.x-b.x,a.y-b.y),center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};}});
 view.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId)||!gesture)return;const p=point(e);pointers.set(e.pointerId,p);if(pointers.size>=2){const [a,b]=[...pointers.values()],center={x:(a.x+b.x)/2,y:(a.y+b.y)/2},distance=Math.hypot(a.x-b.x,a.y-b.y);if(gesture.distance>0){zoom(distance/gesture.distance,gesture.center);pan.x+=center.x-gesture.center.x;pan.y+=center.y-gesture.center.y;applyCamera();}gesture.distance=distance;gesture.center=center;gesture.multi=true;}else if(!gesture.multi){if(Math.hypot(p.x-gesture.start.x,p.y-gesture.start.y)>7)gesture.moved=true;if(gesture.moved){pan.x+=p.x-gesture.last.x;pan.y+=p.y-gesture.last.y;applyCamera();}gesture.last=p;}});
 function end(e,canceled=false){if(!pointers.has(e.pointerId))return;const p=point(e),tap=!canceled&&gesture&&!gesture.moved&&!gesture.multi;pointers.delete(e.pointerId);if(view.hasPointerCapture(e.pointerId))view.releasePointerCapture(e.pointerId);if(tap){const wx=(p.x-pan.x)/scale,wy=(p.y-pan.y)/scale,r=state.rooms.find(r=>{const b=bounds(r);const cell=floorCell(wx-b.x,wy-b.y);return cell.x>=0&&cell.x<=FLOOR.width&&cell.y>=0&&cell.y<=FLOOR.depth;});if(r){if(roomKey(r)!==selected)selectRoom(roomKey(r));else {}}}if(!pointers.size)gesture=null;}
-view.addEventListener('pointerup',e=>end(e));view.addEventListener('pointercancel',e=>end(e,true));view.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(-e.deltaY*.001),point(e));},{passive:false});view.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.2);}else if(e.key==='-'){e.preventDefault();zoom(1/1.2);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();pan.x+=e.key==='ArrowLeft'?65:e.key==='ArrowRight'?-65:0;pan.y+=e.key==='ArrowUp'?65:e.key==='ArrowDown'?-65:0;applyCamera();}});
+view.addEventListener('pointerup',e=>end(e));view.addEventListener('pointercancel',e=>end(e,true));view.addEventListener('wheel',e=>{if(tab==='diary'&&!previewMode&&!expanding)return;e.preventDefault();zoom(Math.exp(-e.deltaY*.001),point(e));},{passive:false});view.addEventListener('keydown',e=>{if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.2);}else if(e.key==='-'){e.preventDefault();zoom(1/1.2);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();pan.x+=e.key==='ArrowLeft'?65:e.key==='ArrowRight'?-65:0;pan.y+=e.key==='ArrowUp'?65:e.key==='ArrowDown'?-65:0;applyCamera();}});
+$('#home-room-open').onclick=()=>{setTab('room');view.focus({preventScroll:true});};
 $('#empty-room-toggle').onclick=()=>{emptyRoomPreview=!emptyRoomPreview;view.classList.toggle('empty-room-preview',emptyRoomPreview);renderPanel();};
 $('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#overview').onclick=()=>focusRoom(true);$('#home-view').onclick=()=>focusRoom();$('#expand').onclick=()=>toggleExpansion();$('#exit').onclick=()=>{clearPlacement();if(initialized)persist();port?.postMessage({type:'close'});};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#exit').click();});document.querySelectorAll('[data-tab]').forEach(b=>{b.querySelector('span').innerHTML=icon(b.dataset.tab);b.onclick=()=>setTab(b.dataset.tab);});
 new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);}).observe(view);
@@ -261,7 +272,7 @@ window.addEventListener('message',async e=>{
  connecting=true;port=e.ports[0];key='ojjuda-house-playtest-v1:'+encodeURIComponent(e.data.owner);previewMode=!!e.data.preview;canUseStudio=e.data.canUseStudio===true;
  const recordRPC=e.data.hasRecords===true?createRecordRPC(port):null;
  port.onmessage=event=>{
-  if(event.data?.type==='dispose'){clearPlacement();persist();disposed=true;recordsPanel?.dispose();recordRPC?.dispose();clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}
+  if(event.data?.type==='dispose'){$('#home-profile-nick').textContent='';$('#home-profile-bio').textContent='';clearPlacement();persist();disposed=true;recordsPanel?.dispose();recordRPC?.dispose();clearInterval(periodTimer);initialized=false;$('#app').hidden=true;$('#locked').hidden=false;port.close();}
   else if(event.data?.type==='studio-access'){canUseStudio=event.data.canUseStudio===true;if(initialized&&!previewMode)renderPanel();}
  };
  try{
@@ -284,6 +295,8 @@ window.addEventListener('message',async e=>{
   // Never normalize a saved room until its owner-specific catalog is ready.
   const missing=stored?.rooms?.some(r=>Object.keys(r.furniture||{}).some(id=>id.startsWith('made-')&&!FURNITURE[id]));
   if(missing)throw new Error('저장한 제작 아이템을 찾지 못했어요. 이 기기의 제작실에서 작업을 다시 적용해 주세요. 기존 배치는 보존됩니다.');
+  $('#home-profile-nick').textContent=String(e.data.profile?.nick||'우리집').slice(0,80);
+  $('#home-profile-bio').textContent=String(e.data.profile?.bio||'').replace(/\s+/g,' ').trim().slice(0,200);
   state=normalize(stored);recordsPanel=createRecordPanel({owner:e.data.owner,request:recordRPC?.request,getText:()=>state.diary,changeText:value=>{state.diary=value;save();},saveText:value=>{state.diary=value;persist();toast(saveFailed?'저장할 수 없어요. 내용을 복사해 주세요.':'이 기기에 기록을 저장했어요.');},notify:toast});tab=previewMode||e.data.studioItem?'room':'diary';initialized=true;$('#locked').hidden=true;$('#app').hidden=false;
   if(previewMode){$('#expand').hidden=true;$('nav').hidden=true;$('header h1 small').hidden=false;$('#hint').textContent='미리보기 · 기존 배치는 바뀌지 않아요';}
   renderWorld();renderPanel();focusRoom();updatePeriod();periodTimer=setInterval(updatePeriod,15000);

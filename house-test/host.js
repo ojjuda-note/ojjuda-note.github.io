@@ -1,6 +1,6 @@
 import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry1';
 let activeClose=null;
-export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,onClose,onStudio}){
+export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
  // Opening a member's home does not grant furniture authoring permission.
  const hasStudioAccess=()=>{try{return !!authorized()&&typeof studioAuthorized==='function'&&studioAuthorized()===true;}catch{return false;}};
@@ -14,7 +14,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';close.textContent='나가기';Object.assign(close.style,{top:'4px',right:'8px',width:'66px',height:'40px',fontSize:'13px'});}
- const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261004-album1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title='우리집';frame.src=new URL('./index.html?v=20261004-homeprofile1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  const loading=inline?document.createElement('div'):createHouseEntryLoading();
  if(inline){status.textContent='우리집을 불러오는 중이에요…';loading.hidden=true;}
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
@@ -77,7 +77,8 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     else import('./studio-host.js?v=20261004-cleanup1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
-  frame.contentWindow.postMessage({type:'ojjuda-house-test-init',owner,preview,studioItem,canUseStudio,hasRecords:!studioOnly&&typeof records==='function'},location.origin,[channel.port2]);
+  const memberProfile=!studioOnly&&profile&&typeof profile==='object'?{nick:String(profile.nick||'').slice(0,80),bio:String(profile.bio||'').slice(0,200)}:null;
+  frame.contentWindow.postMessage({type:'ojjuda-house-test-init',owner,preview,studioItem,canUseStudio,profile:memberProfile,hasRecords:!studioOnly&&typeof records==='function'},location.origin,[channel.port2]);
  });
  return cleanup;
 }

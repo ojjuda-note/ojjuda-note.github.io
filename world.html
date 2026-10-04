@@ -667,7 +667,7 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;
  const authorized=()=>D.online&&D.user?.id===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261004-cleanup1');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261004-homeprofile1');
   if(request!==worldHouseRequest||!authorized()||!isWorldHouseTab())return;
   let albumService;
   const records=async(action,args)=>{
@@ -682,7 +682,7 @@ async function openWorldHouse(){
   };
   const mountTarget=document.querySelector('[data-house-mount]');
   if(!mountTarget)return;
-  const close=openHouseTest({owner,authorized,records,mountTarget,studioAuthorized:()=>false,preserveWorldNavigation:true,onClose:()=>{
+  const close=openHouseTest({owner,authorized,records,mountTarget,profile:$.me,studioAuthorized:()=>false,preserveWorldNavigation:true,onClose:()=>{
    if(request!==worldHouseRequest)return;
    worldHouseClose=null;worldHouseOpening=false;worldHouseOwner=null;worldHouseRequest++;
    if(isWorldHouseTab()){g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0);}
