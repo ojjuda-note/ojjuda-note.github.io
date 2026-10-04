@@ -1,3 +1,4 @@
+import {icon} from './icons.js?v=20261004-home-clean1';
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
 const button=(text,click)=>{const el=node('button','',text);el.type='button';el.onclick=click;return el;};
 const scopes=[['me','나만 보기'],['friends','친구 공개'],['all','전체 공개']];
@@ -9,7 +10,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  const toolbar=node('div','record-toolbar'),gallery=node('div','record-gallery '+kind),editor=node('div','record-editor');gallery.setAttribute('aria-label','우리집 앨범 '+label);
  const folders=node('div','record-folders');folders.setAttribute('role','group');folders.setAttribute('aria-label','앨범 폴더');
  const refresh=button('↻',()=>{editor.replaceChildren();void load();}),newFolder=button('+ 새폴더',()=>folderEditor());
- refresh.setAttribute('aria-label','새로고침');refresh.title='새로고침';toolbar.append(refresh);
+ refresh.setAttribute('aria-label','새로고침');refresh.title='새로고침';refresh.className='record-refresh';refresh.innerHTML=icon('refresh');toolbar.append(refresh);
  if(settingsButton){settingsButton.disabled=true;settingsButton.onclick=openSettings;}
  const selection=node('div','record-selection-tools'),count=node('span','record-selection-count'),destination=select('선택한 게시물을 옮길 폴더',[['','미분류 · 나만 보기']],'');
  const move=button('선택한 게시물 이동',()=>moveEditor()),chooseAll=button('목록에서 최대 100개 선택',()=>{selected.clear();for(const row of displayed.slice(0,100))selected.add(recordKey(row));renderCards();syncSelection();}),done=button('선택 끝내기',()=>{managing=false;selected.clear();selection.hidden=true;editor.replaceChildren();renderCards();});
@@ -77,7 +78,8 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  }
  const file=node('input');file.type='file';file.multiple=true;file.accept=kind==='photo'?'image/jpeg,image/png,image/gif,image/webp':kind==='video'?'video/mp4,video/quicktime,video/webm':'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm';file.hidden=true;file.setAttribute('aria-label',label+' 앨범에 올리기');
  const uploads=node('div','record-toolbar record-upload'),uploadVisibility=select('새 파일 공개범위',scopes,'me'),add=button((kind==='all'?'사진·동영상':label)+' 올리기',()=>{uploads.hidden=!uploads.hidden;});
- const scopeNote=node('p','panel-note');uploads.hidden=true;uploads.append(uploadVisibility,button('파일 선택',()=>file.click()),node('span','panel-note',kind==='photo'?'사진 20MB까지':kind==='video'?'영상 1분 · 50MB까지':'사진 20MB · 영상 1분 / 50MB까지'),scopeNote);toolbar.append(add);
+ add.className='record-upload-toggle';
+ const scopeNote=node('p','panel-note');uploads.hidden=true;uploads.append(uploadVisibility,button('파일 선택',()=>file.click()),node('span','panel-note',kind==='photo'?'사진 20MB까지':kind==='video'?'영상 1분 · 50MB까지':'사진 20MB · 영상 1분 / 50MB까지'),scopeNote);toolbar.append(add,refresh);
  (foldersHost||container).append(folders);container.append(trashHeading,toolbar,uploads,file,status,editor,selection,gallery);if(kind==='text')add.hidden=true;
  function renderFolders(){const focused=folders.contains(document.activeElement)?document.activeElement.dataset.folderId:null;folders.replaceChildren();for(const [id,text]of [['all','전체'],...snapshot.folders.map(row=>[row.id,row.name]),['none','미분류']]){const b=button(text,()=>{if(busy)return;folderId=id;onFolderChange(id);editor.replaceChildren();selected.clear();renderFolders();void load();});b.dataset.folderId=id;b.setAttribute('aria-pressed',String(folderId===id));folders.append(b);if(id===focused)b.focus({preventScroll:true});}folders.append(newFolder);newFolder.disabled=busy||!loaded;}
  const failure=error=>{if(active()&&error.name!=='AbortError')status.textContent=error.message||'앨범을 불러오지 못했어요.';};
