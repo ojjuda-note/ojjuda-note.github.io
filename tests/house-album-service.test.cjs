@@ -16,6 +16,15 @@ const fixture=require('./fixtures/house-album.cjs'),root=path.resolve(__dirname,
  await assert.rejects(api('open',{id:'other-photo'}));await api('open',{id:'old-photo'});assert.deepEqual(f.calls.at(-1).signed,['member-a/photo.jpg']);
  const folder=await api('save-folder',{name:'여행',visibility:'chosen',allowed:['friend-a']});assert.equal(folder.visibility,'chosen');assert.deepEqual(folder.allowed,['friend-a']);
  await assert.rejects(api('save-folder',{name:'실수',visibility:'chosen',allowed:['stranger']}));
+ const group=await api('save-group',{id:'group-a',name:'가족',members:['friend-a','friend-a'],create:true});assert.deepEqual(group.members,['friend-a']);
+ f.db.house_friend_groups.push({id:'foreign',user_id:'member-b',name:'남의 그룹',members:[]});
+ assert.deepEqual((await api('list',{kind:'all'})).groups.map(row=>row.id),['group-a']);
+ await assert.rejects(api('save-group',{id:'bad',name:'금지',members:['stranger'],create:true}));await assert.rejects(api('delete-group',{id:'foreign'}));
+ await assert.rejects(api('save-folder',{name:'오류',visibility:'chosen',allowed_groups:['foreign']}));
+ const shared=await api('save-folder',{name:'그룹 공개',visibility:'chosen',allowed_groups:['group-a']});assert.deepEqual(shared.allowed_groups,['group-a']);
+ await api('save-group',{id:'group-a',name:'가족 수정',members:[]});assert.equal(f.db.house_friend_groups[0].name,'가족 수정');
+ await api('delete-group',{id:'group-a'});assert.deepEqual(f.db.media_folders.find(row=>row.id===shared.id).allowed_groups,[]);assert.equal(changes.at(-1).deletedGroup,'group-a');
+ await api('save-folder',{id:shared.id,name:'나만 남음',visibility:'chosen',allowed:[],allowed_groups:[]});
  await api('save-media',{id:'old-photo',caption:'가족 사진',visibility:'me',folder_id:folder.id});assert.equal(f.db.media[0].folder_id,folder.id);
  await assert.rejects(api('save-media',{id:'other-photo',caption:'bad',visibility:'all',folder_id:null}));assert.equal(f.db.media.at(-1).visibility,'me');
  await assert.rejects(api('save-media',{id:'old-photo',visibility:'all',folder_id:'someone-elses-folder'}));

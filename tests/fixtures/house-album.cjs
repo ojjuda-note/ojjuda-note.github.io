@@ -5,10 +5,19 @@ module.exports=function makeAlbumFixture(){
  {id:'note-photo',user_id:owner,type:'image',path:owner+'/note.jpg',thumb_path:owner+'/note-thumb.jpg',caption:'오쭈다노트에 올린 사진',visibility:'me',folder_id:'note-folder',created_at:'2026-09-09'},
  {id:'old-video',user_id:owner,type:'video',path:owner+'/movie.mp4',thumb_path:owner+'/movie-thumb.jpg',caption:'기존 영상',visibility:'me',folder_id:null,created_at:'2026-09-08'},
  {id:'other-photo',user_id:other,type:'image',path:other+'/private.jpg',thumb_path:other+'/thumb.jpg',caption:'다른 계정 사진',visibility:'me',folder_id:null,created_at:'2026-09-11'}];
- const db={media,media_folders:folders,house_posts:[],house_media_trash:[]},files=new Map(),calls=[];let serial=0;
+ const db={media,media_folders:folders,house_posts:[],house_media_trash:[],house_friend_groups:[]},files=new Map(),calls=[];let serial=0;
  const state={owner,db,files,calls,fail:null,pause:null};
  const client={async rpc(name,args){
   calls.push({rpc:name,args});if(state.pause)await state.pause;if(state.fail==='rpc')return {error:{message:'fixture rpc failed'}};
+  if(name==='house_save_friend_group'){
+   let row=db.house_friend_groups.find(row=>row.id===args.p_id);
+   if(row&&row.user_id!==state.owner||!row&&!args.p_create||db.house_friend_groups.some(row=>row.user_id===state.owner&&row.name===args.p_name&&row.id!==args.p_id))return {error:{message:'unavailable'}};
+   if(!row){row={id:args.p_id,user_id:state.owner,created_at:new Date().toISOString()};db.house_friend_groups.push(row);}Object.assign(row,{name:args.p_name,members:args.p_members});return {data:{...row}};
+  }
+  if(name==='house_delete_friend_group'){
+   const row=db.house_friend_groups.find(row=>row.id===args.p_id&&row.user_id===state.owner);if(!row)return {error:{message:'unavailable'}};
+   db.media_folders.filter(folder=>folder.user_id===state.owner).forEach(folder=>folder.allowed_groups=(folder.allowed_groups||[]).filter(id=>id!==row.id));db.house_friend_groups.splice(db.house_friend_groups.indexOf(row),1);return {data:{id:row.id}};
+  }
   if(name==='house_delete_media_folder'){
    const folder=db.media_folders.find(row=>row.id===args.p_folder_id&&row.user_id===state.owner);if(!folder)return {error:{message:'unavailable'}};
    const rows=db.media.filter(row=>row.folder_id===folder.id&&row.user_id===state.owner);rows.forEach(row=>{row.folder_id=null;row.visibility='me';});db.house_posts.filter(row=>row.folder_id===folder.id&&row.user_id===state.owner).forEach(row=>{row.folder_id=null;row.visibility='me';});db.media_folders.splice(db.media_folders.indexOf(folder),1);return {data:{deleted_folder:folder.id,moved:rows.length}};
