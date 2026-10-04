@@ -33,7 +33,7 @@ async function fixture(context, source, rpc) {
     await page.addScriptTag({ content: menu });
     await page.evaluate(() => { document.querySelector('#world-my').innerHTML = Yg(); });
   } else {
-    await page.setContent('<base href="https://fixture.test/">' + read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, ''));
+    await page.setContent('<base href="https://fixture.test/">' + read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, ''));
     for (const file of ['note/style.css','note/features.css','note/world-navigation.css','note/account.css']) await page.addStyleTag({ content: read(file) });
     await page.addScriptTag({ content: read('note/navigation.js') });
     await page.locator('[data-note-my]:visible').first().click();

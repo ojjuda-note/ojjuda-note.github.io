@@ -7,7 +7,7 @@ const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
 const bootAt = source.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange');
 assert.ok(bootAt > 0);
-const html = fs.readFileSync(path.join(root, 'note/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+const html = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 const settle = async () => { await new Promise(resolve => setTimeout(resolve, 5)); };
 const defer = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 const plain = value => JSON.parse(JSON.stringify(value));

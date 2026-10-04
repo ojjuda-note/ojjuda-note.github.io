@@ -10,12 +10,12 @@ const long = '<div style="height:700px;flex-shrink:0">긴 내용</div>';
 const action = '<button id="audit-action" type="button" style="min-height:44px">확인</button>';
 const cases = [
   {name:'월드 공통 설정/기록/사진첩',page:'world.html',html:`<div class="modal-bg"><div class="modal">${long}${action}</div></div>`},
-  {name:'카드/계정 관리',page:'note/index.html',html:`<div class="dialog-backdrop"><section class="management-dialog"><header class="management-head">카드 관리</header><div class="management-body">${long}</div><footer class="management-footer">${action}</footer></section></div>`},
-  {name:'도움말/문의/신고',page:'note/index.html',html:`<div class="dialog-backdrop note-support-layer"><section class="management-dialog"><header class="management-head">도움말</header><div class="management-body">${long}${action}</div></section></div>`},
-  {name:'알림',page:'note/index.html',html:`<div class="nn-backdrop"><section class="nn-dialog">${long}${action}</section></div>`},
-  {name:'관리자',page:'note/index.html',css:['note/admin.css'],html:`<div class="na-backdrop"><section class="na-panel"><header class="na-head">관리자</header><div class="na-layout">${long}${action}</div></section></div>`},
-  {name:'월드 사진 선택',page:'note/index.html',html:`<div class="world-picker"><section class="world-picker-panel"><header class="world-picker-head">사진 선택${action}</header><div class="world-picker-grid">${long}</div></section></div>`},
-  {name:'사진 확대',page:'note/index.html',html:'<div class="note-photo-lightbox"><img alt="확대 사진" src="/favicon.svg"><button class="note-photo-lightbox-close" id="audit-action">닫기</button></div>'},
+  {name:'카드/계정 관리',page:'park/index.html',html:`<div class="dialog-backdrop"><section class="management-dialog"><header class="management-head">카드 관리</header><div class="management-body">${long}</div><footer class="management-footer">${action}</footer></section></div>`},
+  {name:'도움말/문의/신고',page:'park/index.html',html:`<div class="dialog-backdrop note-support-layer"><section class="management-dialog"><header class="management-head">도움말</header><div class="management-body">${long}${action}</div></section></div>`},
+  {name:'알림',page:'park/index.html',html:`<div class="nn-backdrop"><section class="nn-dialog">${long}${action}</section></div>`},
+  {name:'관리자',page:'park/index.html',css:['note/admin.css'],html:`<div class="na-backdrop"><section class="na-panel"><header class="na-head">관리자</header><div class="na-layout">${long}${action}</div></section></div>`},
+  {name:'월드 사진 선택',page:'park/index.html',html:`<div class="world-picker"><section class="world-picker-panel"><header class="world-picker-head">사진 선택${action}</header><div class="world-picker-grid">${long}</div></section></div>`},
+  {name:'사진 확대',page:'park/index.html',html:'<div class="note-photo-lightbox"><img alt="확대 사진" src="/favicon.svg"><button class="note-photo-lightbox-close" id="audit-action">닫기</button></div>'},
   {name:'오락실 게임 공통',page:'world.html',html:`<div class="gov"><section class="gbox"><div class="ghead">게임</div>${long}${action}</section></div>`},
   // The full-screen game has six grid rows; long board content scrolls inside
   // .bl-can. A direct 700px child creates a row the actual game never renders.
@@ -85,7 +85,7 @@ async function checkAction(page, target, bounds) {
       // Exercise the actual photo-source placement function near the system bar and keyboard.
       const page=await context.newPage();page.setDefaultTimeout(4000);
       try{
-        await page.goto('https://fixture.test/note/index.html');
+        await page.goto('https://fixture.test/park/index.html');
         await page.addStyleTag({content:':root{--app-safe-top:24px;--app-safe-bottom:48px}'});
         const source=read('note/preview.js');
         const a=source.indexOf('function openPhotoSourceMenu('),b=source.indexOf('function closePhotoLightbox()',a);
@@ -103,7 +103,7 @@ async function checkAction(page, target, bounds) {
         }
         console.log('PASS',viewport.width,'사진 출처 선택');
       }catch(error){failures.push(`${viewport.width} 사진 출처 선택: ${error.message}`);}
-      if(!process.env.WINDOW_AUDIT_FILTER)for(const file of ['guide.html','privacy.html','terms.html','delete-account.html','note/glasses.html','admin/index.html']){
+      if(!process.env.WINDOW_AUDIT_FILTER)for(const file of ['guide.html','privacy.html','terms.html','delete-account.html','park/glasses.html','admin/index.html']){
         const documentPage=await context.newPage();documentPage.setDefaultTimeout(4000);
         try{
           await documentPage.goto('https://fixture.test/'+file);

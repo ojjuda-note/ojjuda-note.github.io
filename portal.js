@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/note/', world: '/world.html' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html' };
   const termsVersion = '2026-09-29-age14';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
@@ -123,13 +123,13 @@
     $('password-label').textContent = isReset ? '새 비밀번호' : '비밀번호';
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
-    $('auth-title').textContent = isSignup ? '오쭈다 월드/노트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드/노트';
+    $('auth-title').textContent = isSignup ? '오쭈다 월드' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드';
     $('auth-intro').textContent = isSignup ? '한 번 가입하면 두 공간을 자유롭게 오갈 수 있어요.'
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
-          : isNickname ? '노트에서 사용할 닉네임을 정해 주세요.'
+          : isNickname ? '월드에서 사용할 닉네임을 정해 주세요.'
           : '하나의 계정으로 두 공간을 즐겨요.';
-    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '노트 시작하기 ' : '로그인 ';
+    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '월드 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
   }
 
@@ -261,21 +261,21 @@
       if (error) {
         showNicknameSetup(candidate, nicknameIssue(error)
           ? '사용할 수 없는 닉네임이에요. 다른 이름을 입력해 주세요.'
-          : '노트 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
+          : '공원 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
         return;
       }
       if (data !== true) {
-        showNicknameSetup(candidate, '노트 연결을 확인하지 못했어요. 다시 시도해 주세요.');
+        showNicknameSetup(candidate, '공원 연결을 확인하지 못했어요. 다시 시도해 주세요.');
         return;
       }
-      const notePath = destinations.note + (returnCard ? `?card=${encodeURIComponent(returnCard)}` : '');
+      const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
       location.assign(notePath);
     } catch (error) {
       console.warn('노트 회원 준비 실패:', error);
       if (accountChanged()) return;
       showNicknameSetup(overrideNickname || String(session.user.user_metadata?.nickname || ''),
-        '노트 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
+        '공원 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
       release();
     }
@@ -477,7 +477,7 @@
         recoveryPending = false;
         history.replaceState(null, '', location.pathname);
         if (data?.user) applySession({ ...(session || {}), user: data.user });
-        showState('비밀번호가 바뀌었어요', '이제 노트나 월드로 이동할 수 있어요.', '공간 고르기');
+        showState('비밀번호가 바뀌었어요', '이제 월드로 이동할 수 있어요.', '공간 고르기');
       }
     } catch (error) {
       console.warn('계정 처리 실패:', error);

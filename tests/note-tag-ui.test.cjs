@@ -15,7 +15,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.setContent(read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ''));
+    await page.setContent(read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ''));
     await page.addStyleTag({ content: read('note/style.css') });
     await page.addStyleTag({ content: read('note/features.css') });
     await page.addScriptTag({ content: read('note/preview.js') });

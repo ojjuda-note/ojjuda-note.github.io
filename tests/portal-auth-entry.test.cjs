@@ -75,7 +75,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
-    assert.equal(app.element('auth-title').textContent, '오쭈다 월드/노트');
+    assert.equal(app.element('auth-title').textContent, '오쭈다 월드');
     assert.equal(app.element('.password-confirm-field').hidden, false);
     assert.equal(app.element('password-confirm-label').textContent, '비밀번호 확인');
     assert.equal(app.element('password-confirm').required, true);
@@ -129,10 +129,10 @@ function setup(query, { user = null, confirmed = false, sessionError = false, re
   const reader = { id: 'reader', email: 'reader@example.invalid' };
   const returnToCard = setup(`?auth=login&next=note&card=${cardId}`, { user: reader });
   await returnToCard.flush();
-  assert.deepEqual(returnToCard.navigations, [`/note/?card=${cardId}`], 'sign-in returns to the card being read');
+  assert.deepEqual(returnToCard.navigations, [`/world.html?place=park&card=${cardId}`], 'sign-in returns to the card being read');
   const invalidCard = setup('?auth=login&next=note&card=https://example.invalid', { user: reader });
   await invalidCard.flush();
-  assert.deepEqual(invalidCard.navigations, ['/note/'], 'only card UUIDs can be carried through login');
+  assert.deepEqual(invalidCard.navigations, ['/world.html?place=park'], 'only card UUIDs can be carried through login');
   const cardSignup = setup(`?auth=signup&next=note&card=${cardId}`);
   await cardSignup.flush(); cardSignup.fill(); await cardSignup.submit();
   assert.equal(cardSignup.signups[0].options.emailRedirectTo, `https://ojjuda.kr/?next=note&card=${cardId}`);

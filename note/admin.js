@@ -42,7 +42,7 @@
   }
   const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
   const HELP = {
-    overview: '노트의 콘텐츠와 운영 상태를 확인하세요.',
+    overview: '공원의 콘텐츠와 운영 상태를 확인하세요.',
     settings: '노트 공지를 관리합니다. 변경 사유는 작업 기록에 남습니다.',
     spam: '회원 한 명이 작성하는 카드·답글을 합산합니다. 새 글부터 적용되며, 글을 삭제해도 횟수는 초기화되지 않습니다.',
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
@@ -513,7 +513,7 @@
     const restrict = !user.is_restricted;
     actionScreen(restrict ? '노트 이용 제한' : '노트 이용 제한 해제', `${shortUser(user.user_id)} · 월드 계정과 쭈는 그대로 유지됩니다.`, (form, actions) => {
       form.append(el('p', 'na-id', user.user_id));
-      if (restrict) form.append(el('p', 'na-warning', '노트의 글 작성·수정과 공감·메모함 추가를 제한합니다. 신고와 문의, 본인 글 삭제는 계속 가능합니다. 기존 글의 공개 여부는 카드 · 답글 메뉴에서 따로 관리하세요.'));
+      if (restrict) form.append(el('p', 'na-warning', '공원의 글 작성·수정과 공감·메모함 추가를 제한합니다. 신고와 문의, 본인 글 삭제는 계속 가능합니다. 기존 글의 공개 여부는 카드 · 답글 메뉴에서 따로 관리하세요.'));
       else if (user.restriction_reason) form.append(el('p', 'na-warning', `현재 제한 사유: ${user.restriction_reason}`));
       const until = field('제한 종료 시각', 'datetime-local', '', '비워 두면 직접 해제할 때까지 유지됩니다. 현재 기기의 시간 기준입니다.');
       if (restrict) form.append(until.wrap);
@@ -1093,7 +1093,7 @@
     if (root) return;
     root = el('div', 'na-backdrop'); root.id = 'note-admin-backdrop'; root.hidden = true;
     panel = el('section', 'na-panel'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'note-admin-title');
-    const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '오쭈다노트 관리자'); h2.id = 'note-admin-title';
+    const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '오쭈다 월드 · 공원 관리자'); h2.id = 'note-admin-title';
     title.append(h2, el('p', '', '노트 콘텐츠와 운영을 관리합니다.'));
     closeButton = button('닫기', () => { if (!busy) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
     const layout = el('div', 'na-layout'); nav = el('nav', 'seg adm-tabs na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');

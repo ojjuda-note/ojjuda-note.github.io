@@ -8,7 +8,7 @@ try{
  const current=world.match(/\bGo="([^"]+)"/)?.[1],published=JSON.parse(fs.readFileSync(path.join(__dirname,'..','version.json'),'utf8')).version;
  if(!current||current!==published)throw new Error(`World version ${current} must match version.json ${published}; otherwise the update notice repeats after reloading`);
  let count=0;
- for(const file of ['index.html','world.html','note/index.html','games/matgo.html']){
+ for(const file of ['index.html','world.html','park/index.html','note/index.html','games/matgo.html']){
   const html=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
   for(const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
    if(/\bsrc\s*=/.test(match[1])||!match[2].trim()||/application\/(?:ld\+)?json/.test(match[1]))continue;
