@@ -9,7 +9,7 @@ let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.mediaTest={model:$,auth:D,actions:sr,open:nm,guest:enterWorldGuest,visit:py,render:H,state:g,calls:[],fail:false};
+window.mediaTest={model:$,auth:D,actions:sr,open:nm,guest:enterWorldGuest,visit:py,render:H,state:g,signIn:async()=>{W1=async()=>({profile:{id:"returned-member"},priv:{}});U1=(_data,initial)=>initial;rm=()=>{};await Un({id:"returned-member"});},calls:[],fail:false};
 S={from:table=>({select:()=>({eq:()=>({order:async()=>({data:[],error:null})})}),update:changes=>({eq:async(key,id)=>{
  mediaTest.calls.push({table,changes,key,id});
  return {error:mediaTest.fail?new Error('save failed'):null};
@@ -63,6 +63,8 @@ H();
   assert.deepEqual(await page.evaluate(()=>[mediaTest.model.me.nick,mediaTest.model.coins,mediaTest.model.visits.today,mediaTest.model.visits.total,mediaTest.model.diary,mediaTest.auth.user]),['손님',0,0,0,[],null],'public browsing never presents cached member records, a demo wallet or invented visits');
   assert.equal(await page.getByRole('heading',{name:'손님으로 둘러보기',includeHidden:true}).count(),1);
   assert.equal(await page.locator('[data-act="reset"]').count(),0,'guest browsing uses a login action rather than a demo-data reset');
+  await page.evaluate(()=>mediaTest.signIn());
+  assert.deepEqual(await page.evaluate(()=>[mediaTest.auth.online,mediaTest.auth.parkGuest,mediaTest.auth.user.id]),[true,false,'returned-member'],'a guest who signs in regains member features');
   assert.deepEqual(errors,[]);
   console.log('PASS: World media caption/folder save, atomic server update, no-folder preservation, failed save retry and local media.');
  }finally{await browser.close()}
