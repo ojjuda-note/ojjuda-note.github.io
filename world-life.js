@@ -5,6 +5,15 @@
  const btn=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=fn;return b;};
  const link=(text,url)=>{const a=el('a',text);a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;};
  const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+ // Verified Korean public holidays, as of 2026-10-04. Explicit annual data avoids
+ // inventing lunar dates, substitute holidays or future temporary designations.
+ // Sources: KASA 2026/2027 calendar announcements, MPM April 2026 amendments,
+ // KASI lunar calendar and NEC 2026 nationwide local election date.
+ const koreanHolidays={
+  2026:{'01-01':'신정','02-16':'설날 연휴','02-17':'설날','02-18':'설날 연휴','03-01':'삼일절','03-02':'대체공휴일 (삼일절)','05-01':'노동절','05-05':'어린이날','05-24':'부처님오신날','05-25':'대체공휴일 (부처님오신날)','06-03':'전국동시지방선거','06-06':'현충일','07-17':'제헌절','08-15':'광복절','08-17':'대체공휴일 (광복절)','09-24':'추석 연휴','09-25':'추석','09-26':'추석 연휴','10-03':'개천절','10-05':'대체공휴일 (개천절)','10-09':'한글날','12-25':'성탄절'},
+  2027:{'01-01':'신정','02-06':'설날 연휴','02-07':'설날','02-08':'설날 연휴','02-09':'대체공휴일 (설날)','03-01':'삼일절','05-01':'노동절','05-03':'대체공휴일 (노동절)','05-05':'어린이날','05-13':'부처님오신날','06-06':'현충일','07-17':'제헌절','07-19':'대체공휴일 (제헌절)','08-15':'광복절','08-16':'대체공휴일 (광복절)','09-14':'추석 연휴','09-15':'추석','09-16':'추석 연휴','10-03':'개천절','10-04':'대체공휴일 (개천절)','10-09':'한글날','10-11':'대체공휴일 (한글날)','12-25':'성탄절','12-27':'대체공휴일 (성탄절)'}
+ };
+ const holidayName=date=>koreanHolidays[Number(date.slice(0,4))]?.[date.slice(5)]||'';
  const cities=[['서울',37.57,126.98],['부산',35.18,129.08],['대구',35.87,128.60],['인천',37.46,126.71],['광주',35.16,126.85],['대전',36.35,127.38],['울산',35.54,129.31],['세종',36.48,127.29],['수원',37.26,127.03],['춘천',37.88,127.73],['강릉',37.75,128.90],['청주',36.64,127.49],['천안',36.82,127.15],['전주',35.82,127.15],['목포',34.81,126.39],['포항',36.02,129.34],['창원',35.23,128.68],['제주',33.50,126.53]];
  const weatherText=symbol=>{const code=String(symbol||'');return code.includes('thunder')?'⛈️ 뇌우':code.includes('snow')?'🌨️ 눈':code.includes('sleet')?'🌨️ 진눈깨비':code.includes('rain')?'🌧️ 비':code.includes('fog')?'🌫️ 안개':code.startsWith('clearsky')?'☀️ 맑음':code.startsWith('fair')||code.startsWith('partlycloudy')?'🌤️ 구름 조금':code.startsWith('cloudy')?'☁️ 흐림':'날씨 정보';};
  const normalizeWeather=payload=>{
@@ -27,22 +36,25 @@
    const box=el('details','','life-tool');box.dataset.lifeTool=key;box.open=!!state.open[key];box.ontoggle=()=>state.open[key]=box.open;
    const summary=el('summary'),copy=el('span');copy.append(el('strong',title));summary.append(copy,el('span','＋','life-toggle'));box.append(summary);const body=el('div','','life-tool-body');box.append(body);host.append(box);return body;
   }
-  const calendar=section('calendar','스케줄 달력'),calendarNav=el('div','','life-calendar-nav'),monthTitle=el('strong'),calendarGrid=el('div','','life-calendar-grid'),selectedLabel=el('p','','life-calendar-selected');
+  const calendar=section('calendar','스케줄 달력'),calendarNav=el('div','','life-calendar-nav'),monthTitle=el('strong'),calendarGrid=el('div','','life-calendar-grid'),selectedLabel=el('p','','life-calendar-selected'),holidayNote=el('p','','life-calendar-holiday-note');
   calendarNav.dataset.worldSwipe='off';calendarGrid.dataset.worldSwipe='off';monthTitle.setAttribute('aria-live','polite');selectedLabel.setAttribute('aria-live','polite');
   function shiftMonth(amount){const [y,m]=state.month.split('-').map(Number),d=new Date(y,m-1+amount,1);if(d.getFullYear()<1900||d.getFullYear()>2200)return;state.month=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;const day=Math.min(Number(state.selected.slice(8)),new Date(d.getFullYear(),d.getMonth()+1,0).getDate());state.selected=state.month+'-'+String(day).padStart(2,'0');renderCalendar();}
   const previousMonth=btn('‹',()=>shiftMonth(-1)),next=btn('›',()=>shiftMonth(1));previousMonth.setAttribute('aria-label','이전 달');next.setAttribute('aria-label','다음 달');
-  calendarNav.append(previousMonth,monthTitle,next,btn('오늘',()=>{state.month=today().slice(0,7);state.selected=today();renderCalendar();}));calendar.append(calendarNav,calendarGrid,selectedLabel);
+  calendarNav.append(previousMonth,monthTitle,next,btn('오늘',()=>{state.month=today().slice(0,7);state.selected=today();renderCalendar();}));calendar.append(calendarNav,calendarGrid,selectedLabel,holidayNote);holidayNote.setAttribute('aria-live','polite');
   function renderCalendar(){
    const [year,month]=state.month.split('-').map(Number),start=new Date(year,month-1,1).getDay(),days=new Date(year,month,0).getDate();
    monthTitle.textContent=`${year}년 ${month}월`;calendarGrid.replaceChildren();
+   holidayNote.replaceChildren();if(koreanHolidays[year]){holidayNote.append('대한민국 공휴일 · ',link('우주항공청 월력요항','https://astro.kasi.re.kr/life/post/almanac'));}else holidayNote.textContent=`${year}년 공휴일 정보는 아직 준비되지 않았어요. (2026~2027년 제공)`;
    for(const [i,day] of ['일','월','화','수','목','금','토'].entries()){const name=el('span',day,'life-calendar-weekday');if(i===0)name.classList.add('is-sunday');if(i===6)name.classList.add('is-saturday');calendarGrid.append(name);}
    for(let i=0;i<start;i++){const blank=el('span');blank.setAttribute('aria-hidden','true');calendarGrid.append(blank);}
    for(let day=1;day<=days;day++){
     const date=`${state.month}-${String(day).padStart(2,'0')}`,weekday=(start+day-1)%7;
     const b=btn(String(day),()=>{state.selected=date;renderCalendar();calendarGrid.querySelector(`[data-date="${date}"]`)?.focus();});b.dataset.date=date;b.setAttribute('aria-label',`${year}년 ${month}월 ${day}일`);b.setAttribute('aria-pressed',String(date===state.selected));
-    if(calendarCounts[date]){b.classList.add('has-schedule');b.setAttribute('aria-label',`${year}년 ${month}월 ${day}일, 일정 ${calendarCounts[date]}개`);}if(date===today()){b.classList.add('is-today');b.setAttribute('aria-current','date');}if(weekday===0)b.classList.add('is-sunday');if(weekday===6)b.classList.add('is-saturday');calendarGrid.append(b);
+    if(calendarCounts[date]){b.classList.add('has-schedule');b.setAttribute('aria-label',`${year}년 ${month}월 ${day}일, 일정 ${calendarCounts[date]}개`);}if(date===today()){b.classList.add('is-today');b.setAttribute('aria-current','date');}if(weekday===0)b.classList.add('is-sunday');if(weekday===6)b.classList.add('is-saturday');
+    const holiday=holidayName(date);if(holiday){b.classList.add('is-holiday');b.title=holiday;b.append(el('span',holiday.replace(/대체공휴일 \(.*\)/,'대체공휴일'),'life-calendar-holiday-name'));b.setAttribute('aria-label',b.getAttribute('aria-label')+', '+holiday);}
+    calendarGrid.append(b);
    }
-   const date=new Date(state.selected+'T12:00:00');selectedLabel.textContent=date.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});schedule?.setView(state.month,state.selected);
+   const date=new Date(state.selected+'T12:00:00');selectedLabel.textContent=date.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'})+(holidayName(state.selected)?' · '+holidayName(state.selected):'');schedule?.setView(state.month,state.selected);
   }renderCalendar();
   const scheduleHost=el('div','','life-schedule');calendar.append(scheduleHost);
   if(window.OjjudaSchedule)schedule=window.OjjudaSchedule.mount(scheduleHost,{owner,client,authorized:active,month:state.month,selected:state.selected,onChange:counts=>{calendarCounts=counts;renderCalendar();},onNavigate:date=>{state.month=date.slice(0,7);state.selected=date;renderCalendar();}});

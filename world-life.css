@@ -33,3 +33,10 @@
 .life-tool-body.donflow-expanded{position:fixed;inset:0;z-index:10000;padding:0!important;background:#fafafa;display:flex;flex-direction:column}
 .life-tool-body.donflow-expanded>.life-storage{display:none}
 .life-tool-body.donflow-expanded .life-donflow{height:100%;min-height:0;flex:1;border-radius:0}
+
+/* Keep holidays red on Saturdays, today and selected dates; labels complement color. */
+.life-calendar-grid button.is-holiday,.life-calendar-grid button.is-holiday[aria-pressed=true],.life-calendar-grid button.is-sunday[aria-pressed=true]{color:#bc4d67}
+.life-calendar-grid button.is-holiday{padding:5px 2px 8px}
+.life-calendar-holiday-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;line-height:1.4;margin-top:2px;font-weight:500}
+.life-calendar-holiday-note{text-align:center;font-size:11px;line-height:1.6;color:var(--life-muted);margin:8px 0 0}
+.life-calendar-holiday-note a{color:var(--life-muted);text-decoration:underline}
