@@ -27,8 +27,9 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
   // Leaving during room loading cancels the entry without a late reopen.
   let releaseEntry;const delayedEntry=new Promise(resolve=>releaseEntry=resolve);
   await context.route('**/house-test/index.html*',async route=>{await delayedEntry;try{await route.fallback();}catch{}});
-  await page.locator('.wd-home').click();await page.locator('[data-house-inline]').waitFor();
+  assert.equal(await page.locator('.wd-home').evaluate(button=>{button.click();return [...document.querySelectorAll('[data-house-entry] button')].some(button=>button.textContent.trim()==='나가기');}),false,'the first World render has no temporary exit button before the house module opens');await page.locator('[data-house-inline]').waitFor();
   assert.equal(await page.locator('[data-house-inline]').getAttribute('aria-busy'),'true');
+  assert.equal(await page.locator('[data-house-inline]').getByRole('button',{name:'우리집 닫기',exact:true}).count(),0,'ordinary World home uses its existing navigation during loading');
   await page.locator('.house-entry-loading').waitFor({state:'visible'});
   await page.waitForFunction(()=>[...document.querySelectorAll('.house-entry-loading img')].length===2&&[...document.querySelectorAll('.house-entry-loading img')].every(image=>image.complete&&image.naturalWidth>0));
   assert.equal(await page.locator('.house-entry-scene').isVisible(),true,'쭈다 entrance artwork is visible while the inline room loads');
