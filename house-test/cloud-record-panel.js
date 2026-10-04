@@ -145,5 +145,5 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
    return true;
   }catch(error){if(current===run)failure(error);return false;}
  }
- renderFolders();void load();return {composePost:body=>{setTrash(false);postEditor(null,body,'legacy');}};
+ renderFolders();void load();return {refresh:()=>busy||editor.childElementCount?false:load(),composePost:body=>{setTrash(false);postEditor(null,body,'legacy');}};
 }

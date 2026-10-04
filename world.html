@@ -36,12 +36,13 @@
 <!-- 서버 연결 정보 (같은 폴더의 config.js). 없으면 체험 모드로 실행돼요 -->
 <script src="config.js"></script>
 <script src="/world-navigation.js?v=20261004-swipe3"></script>
+<script src="/world-pull-refresh.js?v=20261004-refresh1"></script>
 <link rel="stylesheet" href="/world-life.css?v=20261004-home2">
 <link rel="stylesheet" href="/world-profile-photo.css?v=20261004-home2">
 <script src="/world-profile-photo.js?v=20261004-home2"></script>
 <script src="/world-life.js?v=20261004-home2"></script>
 <link rel="stylesheet" href="/world-park-notes.css?v=20261004-design1">
-<script src="/world-park-notes.js?v=20261004-swipe2"></script>
+<script src="/world-park-notes.js?v=20261004-refresh1"></script>
 <link rel="stylesheet" href="/screw-games.css?v=20261004-design1">
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -49,7 +50,7 @@
 <link rel="stylesheet" href="note/notifications.css?v=0.45.45-beta">
 <link rel="stylesheet" href="note/support.css?v=20261004-design1">
 <link rel="stylesheet" href="note/operations.css?v=20260929-feedback1">
-<link rel="stylesheet" href="/my-menu.css?v=20261004-home2">
+<link rel="stylesheet" href="/my-menu.css?v=20261004-menu2">
 <link rel="stylesheet" href="/ju-charge.css?v=20261004-design1">
 <link rel="stylesheet" href="/ju-coins.css?v=20261003-coins1">
 <script src="/ju-charge.js?v=20261004-leaveguard1"></script>
@@ -589,15 +590,15 @@ function restoreWorldProfileFocus(focus){
  if(input){input.focus({preventScroll:true});input.setSelectionRange(focus.start,focus.end,focus.direction);}
 }
 for(const event of ['input','change'])document.addEventListener(event,event=>{if(['p-nick','p-bio','p-mt'].includes(event.target?.id))rememberWorldProfileDraft();});
-function Yg(){let t=$.settings,e=worldProfileValues(),o=$.album.filter(l=>l.type==="image").length,r=$.album.filter(l=>l.type==="video").length,a=(l,s,c)=>`<div class="seg" style="max-width:420px">${s.map(([d,p])=>`<button class="${c===d?"on":""}" data-act="${l}" data-v="${d}" aria-pressed="${c===d}">${p}</button>`).join("")}</div>`,i=(l,s)=>`<div class="line-row"><label for="n-${l}">${s}</label><input type="checkbox" class="switch" id="n-${l}" data-set="notify.${l}"${t.notify[l]?" checked":""}></div>`;return`<section class="my-hub" aria-label="메뉴"><header class="my-hub-heading"><h2 class="h2">메뉴</h2></header>
-  <div class="my-shortcuts"><div class="set nn-entry my-shortcut"><div data-notifications-slot></div></div><div class="set note-my my-shortcut">${Wf("my")}</div></div>
+function Yg(){let t=$.settings,e=worldProfileValues(),o=$.album.filter(l=>l.type==="image").length,r=$.album.filter(l=>l.type==="video").length,a=(l,s,c)=>`<div class="seg" style="max-width:420px">${s.map(([d,p])=>`<button class="${c===d?"on":""}" data-act="${l}" data-v="${d}" aria-pressed="${c===d}">${p}</button>`).join("")}</div>`,i=(l,s)=>`<div class="line-row"><label for="n-${l}">${s}</label><input type="checkbox" class="switch" id="n-${l}" data-set="notify.${l}"${t.notify[l]?" checked":""}></div>`;return`<section class="my-hub world-menu-grid" aria-label="메뉴"><header class="my-hub-heading"><h2 class="h2">메뉴</h2></header>
+  <div class="my-shortcuts"><div class="set nn-entry my-shortcut"><div data-notifications-slot></div></div></div>
   <h3 class="my-section-title">내 정보</h3>
   <details class="my-menu-group" data-my-group="profile" data-profile-owner="${w(worldProfileOwner())}"${document.querySelector('.my-hub [data-my-group="profile"]')?.open?" open":""}><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">나</span><span class="my-menu-copy"><span class="my-menu-title">프로필</span></span></summary><div class="my-menu-body"><div class="set"><button class="profile-photo-entry" type="button" data-act="profile-photo"><span data-own-profile-photo>${worldProfileAvatar($.me.avatar_url)}</span><span>사진 변경</span></button><div class="field"><label for="p-nick">닉네임</label><input class="inp" id="p-nick" maxlength="12" value="${w(e.nick)}"></div>
   <div class="field"><label for="p-bio">한 줄 소개</label><input class="inp" id="p-bio" maxlength="40" value="${w(e.bio)}"></div>
   <div class="field"><label>오늘의 기분</label><div class="moods">${yi.map(l=>`<button class="${e.mood===l?"on":""}" data-act="mood-pick" data-v="${l}" aria-label="기분 ${l}">${l}</button>`).join("")}</div></div>
   <div class="field"><label for="p-mt">기분 한마디</label><input class="inp" id="p-mt" maxlength="16" value="${w(e.moodText)}"></div>
   <button class="btn pri" data-act="profile-save">프로필 저장</button></div></div></details>
-  <details class="my-menu-group" data-my-group="account"${document.querySelector('.my-hub [data-my-group="account"]')?.open?" open":""}><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▣</span><span class="my-menu-copy"><span class="my-menu-title">계정·저장 공간</span></span></summary><div class="my-menu-body"><div class="set"><h3>저장 공간</h3><p style="margin:0">사진 ${o}장, 영상 ${r}개가 ${D.online&&D.mediaReady?"서버에":"이 기기에"} 저장돼 있어요.</p></div>
+  <details class="my-menu-group" data-my-group="account"${document.querySelector('.my-hub [data-my-group="account"]')?.open?" open":""}><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▣</span><span class="my-menu-copy"><span class="my-menu-title">계정·저장</span></span></summary><div class="my-menu-body"><div class="set"><h3>저장 공간</h3><p style="margin:0">사진 ${o}장, 영상 ${r}개가 ${D.online&&D.mediaReady?"서버에":"이 기기에"} 저장돼 있어요.</p></div>
   ${D.online?`<div class="set"><h3>계정</h3><p style="margin:0 0 4px">${w(D.user&&D.user.email||"")}</p><p class="note" style="margin:0 0 12px">주소록·가계부는 이 기기에 저장돼요.</p><div class="row"><button class="btn" data-act="logout">로그아웃</button><button class="btn" data-act="pw-open">비밀번호 바꾸기</button><button class="btn ghost danger" data-act="account-delete-open">회원 탈퇴</button></div></div>`:D.parkGuest?'<div class="set"><h3>손님으로 둘러보기</h3><p>로그인하면 내 방과 기록, 친구 기능을 이용할 수 있어요.</p><button class="btn pri" data-act="house-login">로그인</button></div>':'<div class="set"><h3>체험 모드</h3><p style="margin:0 0 12px">서버에 연결되지 않아서 모든 기록이 이 기기의 브라우저에만 저장돼요. 친구들은 체험용 가상 친구예요.</p><button class="btn danger" data-act="reset">처음 상태로 되돌리기</button></div>'}</div></details>
   <h3 class="my-section-title">이용 설정</h3>
   <details class="my-menu-group" data-my-group="display"${document.querySelector('.my-hub [data-my-group="display"]')?.open?" open":""}><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">◐</span><span class="my-menu-copy"><span class="my-menu-title">화면·알림</span></span></summary><div class="my-menu-body"><div class="set"><h3>화면</h3><div class="field"><label>테마 색</label><div class="sws">${[["pink","#F0679A"],["mint","#1FA488"],["sky","#4B82F0"],["lemon","#E3A008"],["lilac","#8A6BEF"]].map(([l,s])=>`<button class="sw${t.accent===l?" on":""}" style="background:${s}" data-act="accent" data-v="${l}" aria-label="${l}"></button>`).join("")}</div></div>
@@ -606,7 +607,6 @@ function Yg(){let t=$.settings,e=worldProfileValues(),o=$.album.filter(l=>l.type
   <details class="my-menu-group" data-my-group="privacy"${document.querySelector('.my-hub [data-my-group="privacy"]')?.open?" open":""}><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">◇</span><span class="my-menu-copy"><span class="my-menu-title">공개·차단</span></span></summary><div class="my-menu-body">${D.online?`<div class="set"><h3>우리집 방문</h3><p class="note">${$.doorClosed?"현재 문이 닫혀 있어요.":"현재 문이 열려 있어요."} 문을 닫으면 친구를 포함한 다른 사람은 내 방과 기록을 볼 수 없어요.</p><button class="btn" data-act="door-toggle" aria-pressed="${!!$.doorClosed}"${!D.doorReady||D.doorWritable===!1?" disabled":""}>${$.doorClosed?"문 열기":"문 닫기"}</button>${!D.doorReady||D.doorWritable===!1?'<p class="note">방문 설정을 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.</p>':""}</div>`:""}<div class="set"><h3>공개범위 기본값</h3>${a("defvis",Jn,t.defaultVis)}</div>
   ${D.online?`<div class="set"><h3>차단한 사람</h3>${ce.ready?ce.list.length?ce.list.map(l=>`<div class="line-row"><span>${w(l.nick)}</span><button class="btn sm" data-act="unblock" data-uid="${l.id}">차단 풀기</button></div>`).join(""):'<p class="note" style="margin:0">차단한 사람이 없어요.</p>':'<p class="note" role="status">차단 목록을 불러오지 못했어요.</p>'}</div>`:""}</div></details>
   <h3 class="my-section-title">활동·도움</h3>
-  ${window.OjjudaParkNotes?.menuMarkup?.()||""}
   <div class="my-menu-group"><button class="my-menu-summary ju-charge-entry" type="button" data-ju-charge-open aria-haspopup="dialog" aria-controls="ju-charge-dialog"><span class="my-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M15 12h6v5h-6z"/><path d="M17 14.5h1"/></svg></span><span class="my-menu-copy"><span class="my-menu-title">충전</span></span></button></div>
   <details class="my-menu-group" data-my-group="help"${document.querySelector('.my-hub [data-my-group="help"]')?.open?" open":""}><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">?</span><span class="my-menu-copy"><span class="my-menu-title">도움말</span></span></summary><div class="my-menu-body"><div class="set"><h3>문의·의견</h3><button class="btn pri" data-act="support-open">문의·의견</button></div>
   <section class="ojjuda-guide-entry" aria-label="오쭈다 사용 안내"><h3>오쭈다 사용 안내</h3><a href="/guide.html">사용법 보기 <span aria-hidden="true">→</span></a></section>
@@ -812,7 +812,26 @@ var Zb=[["all","전체 공개"],["friends","친구만"],["me","나만 보기"]];
   document.getElementById("app").innerHTML=`<main class="auth"><div class="auth-loading" style="text-align:center;max-width:340px">${Oo(!1,"span")}<p>탈퇴가 끝났어요. 그동안 함께해 줘서 고마워요.</p><button class="btn pri" onclick="location.reload()">처음 화면으로</button></div></main>`
 }
 var mm={"support-open"(){ensureSharedSupport();window.OjjudaNoteSupport?.open()},"feedback-open"(){ry()},"fb-send"(t,e){ay(e)},"pw-open"(){iy()},"pw-save"(t,e){ny(e)},"account-delete-open"(){sy()},"account-delete"(t,e){ly(e)}};var dy=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());var worldNavigation=null;
+var worldPullRefresh=null;
+function worldRefreshKey(){return JSON.stringify([D.user?.id,g.tab,g.place?.id,g.visiting,L.area,L.tab]);}
+function attachWorldGestures(frame,canStart){
+ const doc=frame.contentDocument,stopSwipe=worldNavigation?.attachDocument(doc,canStart),stopPull=worldPullRefresh?.attachDocument(doc,canStart);
+ return ()=>{stopSwipe?.();stopPull?.();};
+}
+async function refreshWorldView(){
+ const key=worldRefreshKey(),current=()=>worldRefreshKey()===key;
+ if(g.tab==='admin'){if(!adminCanLeave())return false;return sr['adm-refresh']();}
+ if(worldHouseClose)return worldHouseClose.refresh?.()??false;
+ if(g.tab==='place'&&g.place?.id==='park')return worldParkNotes?.refresh?.()??false;
+ const position=[window.scrollX,window.scrollY];
+ const fields=[...document.querySelectorAll('.main input[id]:not([type=file]):not([type=password]),.main textarea[id],.main select[id]')].map(el=>({id:el.id,value:el.value,checked:el.checked}));
+ if(D.online)await Promise.all([_d(),Ls(),ke()]);
+ if(!current())return false;
+ H();for(const field of fields){const el=document.getElementById(field.id);if(el){el.value=field.value;if('checked'in el)el.checked=field.checked;}}
+ window.scrollTo(...position);return true;
+}
 async function gm(t){
+ worldPullRefresh=window.OjjudaWorldPullRefresh?.install({key:worldRefreshKey,refresh:refreshWorldView,canRefresh:()=>!document.querySelector('.record-editor form,.record-management-confirm')});
  worldNavigation=window.OjjudaWorldNavigation?.install({
   isMain:()=>g.tab==="friends"&&!g.visiting,
   currentTab:()=>g.tab==="deco"?"home":g.tab,tabs:["friends","home","life","my"],
@@ -894,7 +913,7 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;worldHouseViewer=viewer;
  const authorized=()=>D.online&&D.user?.id===viewer&&isWorldHouseView()&&worldHouseTarget()===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261004-profile-layout');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261004-refresh1');
   if(!readOnly)await resolveWorldProfilePhoto();
   if(request!==worldHouseRequest||!authorized())return;
   let albumService,roomService;
@@ -915,7 +934,7 @@ async function openWorldHouse(){
   };
   const mountTarget=document.querySelector(readOnly?'[data-house-visit-mount]':'[data-house-mount]');
   if(!mountTarget)return;
-  const close=openHouseTest({owner,authorized,room:readOnly&&!g.visitData?.real?null:room,readOnly,records:readOnly?null:records,mountTarget,profile:readOnly?{...g.visitData,avatar_url:g.visitData?.profilePhotoUrl}:$.me,onProfilePhoto:readOnly?null:openWorldProfilePhoto,studioAuthorized:()=>false,preserveWorldNavigation:true,onFrameReady:frame=>worldNavigation?.attachDocument(frame.contentDocument,()=>!!frame.contentDocument?.querySelector('#app.records-home')&&!frame.contentDocument?.querySelector('.record-editor form,.record-management-confirm')),onClose:()=>{
+  const close=openHouseTest({owner,authorized,room:readOnly&&!g.visitData?.real?null:room,readOnly,records:readOnly?null:records,mountTarget,profile:readOnly?{...g.visitData,avatar_url:g.visitData?.profilePhotoUrl}:$.me,onProfilePhoto:readOnly?null:openWorldProfilePhoto,studioAuthorized:()=>false,preserveWorldNavigation:true,onFrameReady:frame=>attachWorldGestures(frame,()=>!!frame.contentDocument?.querySelector('#app.records-home')&&!frame.contentDocument?.querySelector('.record-editor form,.record-management-confirm')),onClose:()=>{
    if(request!==worldHouseRequest)return;
    worldHouseClose=null;worldHouseOpening=false;worldHouseOwner=null;worldHouseViewer=null;worldHouseRequest++;
    if(isWorldHouseView()){g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0);}
@@ -938,7 +957,7 @@ sr['house-playtest']=sr['house-open'];
 
 var worldParkNotes=window.OjjudaParkNotes?.install({
   previousPlace:()=>worldNavigation?.step(-1),
-  onFrameReady:frame=>worldNavigation?.attachDocument(frame.contentDocument,()=>g.tab==="place"&&g.place?.id==="park"&&!frame.contentDocument?.querySelector('.dialog-backdrop:not([hidden]),.nn-backdrop:not([hidden])')),
+  onFrameReady:frame=>attachWorldGestures(frame,()=>g.tab==="place"&&g.place?.id==="park"&&!frame.contentDocument?.querySelector('.dialog-backdrop:not([hidden]),.nn-backdrop:not([hidden])')),
   place:()=>g.tab==="place"?g.place:null,userId:()=>D.user?.id||null,enter:()=>xf("park"),toWorld:()=>sr.tab({tab:"friends"}),toMenu:()=>sr.tab({tab:"my"}),onBalance:(coins,userId)=>{if(D.user?.id!==userId)return;$.coins=coins;I();qf()}
 });
 

@@ -6,7 +6,7 @@ const root = path.join(__dirname, '..');
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
-const helper = ['world-navigation.js','world-places.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
+const helper = ['world-navigation.js','world-pull-refresh.js','world-places.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
 world = world.replace('<script type="module">', `<script>${helper}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);

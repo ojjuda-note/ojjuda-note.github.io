@@ -11,7 +11,7 @@ for(const [from,to] of [
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-navigation.js','world-places.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-navigation.js','world-pull-refresh.js','world-places.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
@@ -38,7 +38,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('https://fixture.test/world.html?place=park&compose=memo');
  const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
- const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-swipe2');
+ const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-refresh1');
  let frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
  await frame.evaluate(()=>window.fixtureToken='kept');
@@ -127,24 +127,21 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.setViewportSize({width:390,height:850});
  await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
  await page.screenshot({path:'/tmp/ojjuda-world-park-single-ui.png',fullPage:true});
- // Every migrated collection is available through the actual World menu, including first-frame loads.
+ // Collections remain available in Park; the shared menu no longer lists Park shortcuts.
  for(const action of ['saved','mine','events']){
   await page.locator('.bottomnav [data-tab="my"]').click();
   assert.equal(await iframe.count(),0,'World menu exits the current Park view');
-  const button=page.locator('[data-park-action="'+action+'"]');
-  const group=button.locator('xpath=ancestor::details');if(await group.count())await group.evaluate(node=>node.open=true);
-  await button.click();
+  assert.equal(await page.locator('[data-my-group=park],[data-park-action]').count(),0);
+  await page.evaluate(action=>parkFixture.open(action),action);
   await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
   await frame.waitForFunction(mode=>typeof feedMode!=='undefined'&&feedMode===mode,action);
   assert.equal(await frame.locator('#feed').isVisible(),true,action+': queued action opens its real collection');
   assert.equal(await frame.locator('#note-my-screen').isVisible(),false,action+': collection does not expose a second app menu');
  }
  await frame.evaluate(()=>OjjudaParkFull.navigate('menu'));
- await page.locator('[data-my-group="park"]').waitFor();
+ await page.locator('.my-hub').waitFor();
  assert.equal(await iframe.count(),0,'child menu action opens the shared World menu');
- const eventStart=page.locator('[data-park-action="event-new"]');
- await eventStart.locator('xpath=ancestor::details').evaluate(node=>node.open=true);
- await eventStart.click();await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
+ await page.evaluate(()=>parkFixture.open('event-new'));await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
  assert.equal(await frame.evaluate(()=>kind),'event','World menu opens the complete event composer');
  await page.evaluate(()=>parkFixture.close());
