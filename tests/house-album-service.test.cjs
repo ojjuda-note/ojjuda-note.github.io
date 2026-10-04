@@ -35,8 +35,9 @@ const fixture=require('./fixtures/house-album.cjs'),root=path.resolve(__dirname,
  await assert.rejects(api('save-folder',{id:folder.id,kind:'video',name:'종류 변경',visibility:'me'}),/같은 종류/);
  const videoFolder=await api('save-folder',{name:'여행',kind:'video',visibility:'me'});assert.equal(videoFolder.kind,'video');
  await assert.rejects(api('save-media',{id:'old-photo',caption:'이동 실패',visibility:'me',folder_id:videoFolder.id}),/같은 종류/);
- const photo=new Blob(['photo'],{type:'image/jpeg'});await api('upload',{file:photo,kind:'photo',folder_id:'note-folder'});const added=f.db.media.at(-1);assert.equal(added.user_id,f.owner);assert.equal(added.visibility,'me');assert.equal(added.folder_id,'note-folder');assert(f.files.has(added.path));assert(f.files.has(added.thumb_path));
+ const photo=new Blob(['photo'],{type:'image/jpeg'});await api('upload',{file:photo,kind:'photo',folder_id:'note-folder',caption:'  여행 사진\n좋은 하루  '});const added=f.db.media.at(-1);assert.equal(added.caption,'여행 사진\n좋은 하루');assert.equal(added.user_id,f.owner);assert.equal(added.visibility,'me');assert.equal(added.folder_id,'note-folder');assert(f.files.has(added.path));assert(f.files.has(added.thumb_path));
  await assert.rejects(api('upload',{file:photo,kind:'photo',folder_id:videoFolder.id}),/같은 종류/);
+ await assert.rejects(api('upload',{file:photo,kind:'photo',caption:'가'.repeat(101)}),/100자/);
  const count=f.db.media.length,fileCount=f.files.size;f.state.fail='thumb';await assert.rejects(api('upload',{file:photo,kind:'photo'}));assert.equal(f.db.media.length,count);assert.equal(f.files.size,fileCount,'thumbnail failure removes only the new original');
  f.state.fail='insert';await assert.rejects(api('upload',{file:photo,kind:'photo'}));assert.equal(f.files.size,fileCount,'confirmed insert failure rolls back new files');f.state.fail=null;
  for(const call of f.calls.filter(x=>x.table&&x.operation!=='insert'))assert(call.filters.some(([key,value])=>key==='user_id'&&value===f.owner),'every read/update is owner scoped');

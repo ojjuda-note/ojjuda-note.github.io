@@ -18,7 +18,18 @@
    let q=client.from('world_board_feed').select('id,source,kind,title,body,created_at,like_count,is_liked').eq('kind',kind);
    q=q.lte('created_at',snapshot);if(sort==='best')q=q.order('like_count',{ascending:false});
    q=q.order('created_at',{ascending:false}).order('id',{ascending:false});if(kind!=='card')q=q.order('source',{ascending:false});
-   return result(q.range(offset,offset+size));
+   return result(q.range(offset,offset+size)).then(data=>thumbnails(data,kind,size));
+  }
+  async function thumbnails(data,kind,size){
+   if(!['image','video'].includes(kind)||!data.length)return data;
+   try{
+    const media=await result(client.from('media').select('id,thumb_path,path').eq('type',kind).in('id',data.slice(0,size).map(row=>row.id)));
+    const paths=new Map(media.map(row=>[row.id,row.thumb_path||(kind==='image'?row.path:null)]));
+    const wanted=[...new Set([...paths.values()].filter(Boolean))];if(!wanted.length)return data;
+    const signed=await result(client.storage.from('media').createSignedUrls(wanted,900));
+    const urls=new Map(signed.filter(row=>row.signedUrl).map(row=>[row.path,row.signedUrl]));
+    return data.map(row=>({...row,thumbnail:urls.get(paths.get(row.id))||null}));
+   }catch{return data;}
   }
   function close(){if(!dialog)return false;dialog.querySelectorAll('video').forEach(n=>n.pause());dialog.remove();dialog=null;return true;}
   async function open(row,kind){
@@ -41,7 +52,21 @@
     const message=el('p');message.setAttribute('role','status');function paintLike(){like.textContent='♥ '+Number(item.like_count).toLocaleString('ko-KR');like.setAttribute('aria-pressed',String(item.is_liked));like.setAttribute('aria-label','공감 '+item.like_count);}paintLike();body.append(like,message);
    }catch{if(active()&&dialog===overlay)body.textContent='이 글을 볼 수 없거나 불러오지 못했어요. 공개범위가 바뀌었을 수 있어요.';}
   }
-  function list(items,kind){const ul=el('ul','','board-list');for(const row of items){const li=el('li'),b=button(excerpt({...row,kind}),()=>open(row,kind),'board-row');b.title=excerpt({...row,kind});li.append(b);ul.append(li);}if(!items.length)ul.append(el('li','아직 공개된 글이 없어요.','board-empty'));return ul;}
+  function list(items,kind){
+   const ul=el('ul','','board-list');
+   for(const row of items){
+    const li=el('li'),text=excerpt({...row,kind}),b=button('',()=>open(row,kind),'board-row');b.title=text;
+    b.append(el('span',text,'board-row-text'));
+    if(kind==='image'||kind==='video'){
+     const thumb=el('span','','board-thumb');thumb.setAttribute('aria-hidden','true');
+     const fallback=el('span',kind==='video'?'':'▧','board-thumb-fallback');thumb.append(fallback);
+     if(row.thumbnail){const img=el('img');img.src=row.thumbnail;img.alt='';img.loading='lazy';img.decoding='async';img.onerror=()=>img.remove();thumb.append(img);}
+     if(kind==='video')thumb.append(el('span','▶','board-thumb-play'));b.append(thumb);
+    }
+    li.append(b);ul.append(li);
+   }
+   if(!items.length)ul.append(el('li','아직 공개된 글이 없어요.','board-empty'));return ul;
+  }
   function error(target,retry){target.replaceChildren(el('p','글을 불러오지 못했어요.','board-empty'),button('다시 시도',retry,'btn sm'));}
   async function home(){
    const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
