@@ -149,6 +149,19 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await area('world');
     assert.deepEqual(await current(), { area: 'world', tab: 'house-content' }, 'accepting discard permits the requested group');
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      const labels = await page.locator('.adm-tabs button').evaluateAll(buttons => buttons.map(button => ({
+        text: button.textContent, width: button.clientWidth, content: button.scrollWidth,
+        height: button.getBoundingClientRect().height
+      })));
+      for (const label of labels) {
+        assert.ok(label.content <= label.width + 1, `submenu label fits its button at ${width}px: ${label.text}`);
+        assert.ok(label.height >= 44, `submenu touch target at ${width}px: ${label.text}`);
+      }
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
     await assertRefreshPreservesHost('house-content');
     await area('support'); await assertRefreshPreservesHost('reports');
     await tab('feedback'); await assertRefreshPreservesHost('support');
