@@ -383,7 +383,7 @@ function startPlacement(id='bookshelf'){
   if(group){startLinkedDraft(group);editing=true;renderWorld();renderPanel();focusRoom();if(group.desk.x!==desk.x||group.desk.y!==desk.y)toast('의자 그림이 자연스럽게 보이는 가까운 자리로 함께 옮겼어요.');return;}
   if(linkedExisting){toast('책상과 의자를 함께 놓을 자리가 부족해요.');return;}
  }
- const placed=existing?normalizePlacement(id,existing):findPlacement(id,otherFurniture(),id==='bookshelf'?defaultShelf():FURNITURE[id].layer==='surface'&&current().furniture.sofa?sofaAccessoryFromSofa(id,current().furniture.sofa):undefined);
+ const placed=existing?normalizePlacement(id,existing):findPlacement(id,otherFurniture(),id==='bookshelf'?defaultShelf():FURNITURE[id].layer==='surface'&&current().furniture.sofa?(sofaAccessoryFromSofa(id,current().furniture.sofa)||FURNITURE[id].preferred):undefined);
  if(!placed){toast('가구를 놓을 자리가 부족해요. 먼저 다른 가구를 옮겨 주세요.');return;}
  editing=true;draft=clonePlacement(placed);renderWorld();renderPanel();focusRoom();
 }

@@ -91,7 +91,7 @@ export function renderFurniture(button,id,s,desk=null,sofa=null,scenePlacements=
    if(s.x>=prop.x+other.w||s.x+size.w<=prop.x||s.y>=prop.y+other.d||s.y+size.d<=prop.y||(s.elevation??0)>prop.elevation+itemHeight(prop.id,prop))continue;
    fronts.push(...sofaAccessoryLayers(prop.id,prop).filter(layer=>layer.id==='blanket-sofa-front'));
   }
-  if(fronts.length)geometry.art.layers=geometry.art.layers.map(layer=>({...layer,eraseWith:[...(layer.eraseWith||[]),...fronts]}));
+  if(fronts.length&&geometry.art.layers)geometry.art.layers=geometry.art.layers.map(layer=>({...layer,eraseWith:[...(layer.eraseWith||[]),...fronts]}));
  }
  if(layer==='surface'){
   const size=itemSize(id,s.direction,s);
