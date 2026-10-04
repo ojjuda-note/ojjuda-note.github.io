@@ -72,6 +72,8 @@
   function leaders(token){
    const entries=Object.entries(games);if(!entries.length)return [];
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
+   for(const side of ['top','bottom','left','right']){const log=el('span','','board-log board-log-'+side);log.setAttribute('aria-hidden','true');section.append(log);}
+   const leaf=el('span','','board-twig-leaf');leaf.setAttribute('aria-hidden','true');section.append(leaf);
    const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','오늘의 1등','board-rank-caption'));section.append(head);
    const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);section.append(viewport);
    const pages=[],targets=new Map();
