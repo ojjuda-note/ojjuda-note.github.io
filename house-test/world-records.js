@@ -32,6 +32,14 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
   const values={caption:caption.trim(),visibility:visibility(vis),folder_id:await folder(folder_id)};check();
   const saved=await result(client.from('media').update(values).eq('user_id',owner).eq('id',id).select(columns).single());onChange({media:saved});return {id:saved.id};
  }
+ async function deleteFolder({id}){
+  if(typeof id!=='string'||!id)throw new Error('삭제할 폴더를 골라 주세요.');
+  const data=await result(client.rpc('house_delete_media_folder',{p_folder_id:id}));onChange({deletedFolder:id});return data;
+ }
+ async function moveMedia({ids,folder_id=null}){
+  if(!Array.isArray(ids)||!ids.length||ids.length>100||ids.some(id=>typeof id!=='string'||!id||id.length>128))throw new Error('옮길 게시물을 1개부터 100개까지 골라 주세요.');
+  const data=await result(client.rpc('house_move_media',{p_ids:[...new Set(ids)],p_folder_id:folder_id||null}));onChange({movedMedia:{ids:data.ids,folder: data.folder_id}});return data;
+ }
  async function upload({file,kind,visibility:vis='me',folder_id}){
   if(!(file instanceof Blob)||!['photo','video'].includes(kind)||!file.type.startsWith(kind==='photo'?'image/':'video/'))throw new Error('사진이나 동영상 파일을 선택해 주세요.');
   visibility(vis);const folderId=await folder(folder_id);check();
@@ -58,6 +66,6 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
    throw new Error('앨범에 저장하지 못했어요. 연결과 파일을 확인한 뒤 다시 시도해 주세요.');
   }
  }
- const actions={list,open,'save-folder':saveFolder,'save-media':saveMedia,upload};
+ const actions={list,open,'save-folder':saveFolder,'save-media':saveMedia,'delete-folder':deleteFolder,'move-media':moveMedia,upload};
  return async(action,args={})=>{check();if(!Object.hasOwn(actions,action))throw new Error('지원하지 않는 앨범 작업이에요.');return actions[action](args);};
 }

@@ -7,7 +7,19 @@ module.exports=function makeAlbumFixture(){
  {id:'other-photo',user_id:other,type:'image',path:other+'/private.jpg',thumb_path:other+'/thumb.jpg',caption:'다른 계정 사진',visibility:'me',folder_id:null,created_at:'2026-09-11'}];
  const db={media,media_folders:folders},files=new Map(),calls=[];let serial=0;
  const state={owner,db,files,calls,fail:null,pause:null};
- const client={from(table){const filters=[],sorts=[];let operation='read',values,single=false,range;
+ const client={async rpc(name,args){
+  calls.push({rpc:name,args});if(state.pause)await state.pause;if(state.fail==='rpc')return {error:{message:'fixture rpc failed'}};
+  if(name==='house_delete_media_folder'){
+   const folder=db.media_folders.find(row=>row.id===args.p_folder_id&&row.user_id===state.owner);if(!folder)return {error:{message:'unavailable'}};
+   const rows=db.media.filter(row=>row.folder_id===folder.id&&row.user_id===state.owner);rows.forEach(row=>{row.folder_id=null;row.visibility='me';});db.media_folders.splice(db.media_folders.indexOf(folder),1);return {data:{deleted_folder:folder.id,moved:rows.length}};
+  }
+  if(name==='house_move_media'){
+   const ids=[...new Set(args.p_ids)],target=args.p_folder_id,rows=db.media.filter(row=>ids.includes(row.id)&&row.user_id===state.owner);
+   if(rows.length!==ids.length||target&&!db.media_folders.some(row=>row.id===target&&row.user_id===state.owner))return {error:{message:'unavailable'}};
+   rows.forEach(row=>{row.folder_id=target;if(!target)row.visibility='me';});return {data:{ids,folder_id:target,moved:rows.length}};
+  }
+  return {error:{message:'unsupported'}};
+ },from(table){const filters=[],sorts=[];let operation='read',values,single=false,range;
   const q={select(){return q;},eq(k,v){filters.push([k,v]);return q;},is(k,v){return q.eq(k,v);},in(k,v){filters.push([k,v]);return q;},order(k,o){sorts.push([k,o]);return q;},range(a,b){range=[a,b];return q;},single(){single=true;return q;},maybeSingle(){single='maybe';return q;},insert(v){operation='insert';values=v;return q;},update(v){operation='update';values=v;return q;},then(resolve,reject){return Promise.resolve().then(async()=>{
    calls.push({table,operation,filters:filters.map(x=>[...x]),values});if(state.pause)await state.pause;
    if(state.fail===operation||state.fail===table)return{error:{message:'fixture failure'}};

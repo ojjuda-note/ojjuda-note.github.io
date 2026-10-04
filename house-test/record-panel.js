@@ -1,4 +1,4 @@
-import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-homelist2';
+import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-homemanage3';
 import {MEDIA_TYPES,addRecordMedia,listRecordMedia,readRecordMedia,deleteRecordMedia} from './record-media-store.js?v=20261004-records1';
 const categories=[['all','전체'],['text','게시판'],['photo','사진'],['video','동영상']];
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
@@ -15,7 +15,7 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
   }
   function select(value){if(category===value)return;category=value;limit=12;mount(body);body.scrollTop=0;body.querySelector('[aria-selected="true"]').focus({preventScroll:true});}
   const content=node('section','record-content');content.id='record-content';content.setAttribute('role','tabpanel');content.setAttribute('aria-labelledby','record-tab-'+category);
-  const foldersHost=node('div','record-folder-strip');wrapper.append(tabs,foldersHost,content);body.append(wrapper);
+  const foldersHost=node('div','record-folder-strip'),topbar=node('div','record-topbar'),settingsButton=button('⚙︎');settingsButton.className='record-settings-button';settingsButton.setAttribute('aria-label','우리집 설정');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.disabled=!request;topbar.append(tabs,settingsButton);wrapper.append(topbar,foldersHost,content);body.append(wrapper);
   const diarySection=node('section','record-diary');
   if(category==='text'||category==='all'){
    const editor=node('details','record-diary-editor'),summary=node('summary','',getText()?'글 수정':'＋ 글 기록');editor.open=category==='text';
@@ -26,7 +26,7 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
   }
   const showFolder=id=>{folderId=id;diarySection.hidden=!['all','none'].includes(id);};showFolder(folderId);
   let localContent=content;
-  if(request){const cloud=node('div','cloud-records');content.append(cloud);mountCloudRecords({container:cloud,kind:category,request,active,foldersHost,initialFolder:folderId,onFolderChange:showFolder});cloud.append(diarySection);localContent=node('details','local-records');localContent.append(node('summary','','이 기기에만 보관한 사진·동영상'));if(category!=='text')content.append(localContent);}
+  if(request){const cloud=node('div','cloud-records');content.append(cloud);mountCloudRecords({container:cloud,kind:category,request,active,foldersHost,settingsButton,initialFolder:folderId,onFolderChange:showFolder});cloud.append(diarySection);localContent=node('details','local-records');localContent.append(node('summary','','이 기기에만 보관한 사진·동영상'));if(category!=='text')content.append(localContent);}
   else{const folders=node('div','record-folders'),all=button('전체',()=>{});all.setAttribute('aria-pressed','true');folders.append(all);foldersHost.append(folders);content.append(diarySection);}
   if(category==='text')return;
   const kind=category,label=kind==='photo'?'사진':kind==='video'?'동영상':'사진·동영상',input=node('input');input.type='file';input.multiple=true;input.accept=(MEDIA_TYPES[kind]||[]).join(',');input.hidden=true;input.setAttribute('aria-label',label+' 파일 선택');
