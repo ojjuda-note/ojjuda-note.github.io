@@ -1,4 +1,4 @@
-import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry2';
+import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry3';
 let activeClose=null;
 export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,loadProfile=null,room=null,readOnly=false,onProfilePhoto=null,onFrameReady=null,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
@@ -13,14 +13,15 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  if(inline){overlay.setAttribute('role','region');overlay.removeAttribute('aria-modal');overlay.dataset.houseInline='';Object.assign(overlay.style,{position:'relative',inset:'auto',zIndex:'auto',paddingBottom:'0',width:'100%',overflow:'hidden',borderRadius:'16px'});}
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
- if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';close.textContent='나가기';Object.assign(close.style,{top:'4px',right:'8px',width:'66px',height:'40px',fontSize:'13px'});}
+ if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';}
  const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-media-caption1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  let loading=createHouseEntryLoading();status.hidden=true;
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  const retry=document.createElement('button');retry.textContent='다시 시도';retry.hidden=true;retry.style.cssText='position:absolute;right:84px;top:8px;z-index:3;min-height:36px;border:1px solid #dbcee5;border-radius:10px;background:#fffaf4;color:#65526f';
- overlay.append(status,frame,loading,retry,close);
+ if(inline)retry.style.right='12px';
+ overlay.append(status,frame,loading,retry);if(!inline)overlay.append(close);
  if(inline)mountTarget.replaceChildren(overlay);else{document.body.append(overlay);document.body.style.overflow='hidden';}
- close.focus({preventScroll:true});
+ if(!inline)close.focus({preventScroll:true});
  const localKey='ojjuda-house-playtest-v1:'+encodeURIComponent(owner),dirtyKey=localKey+':pending-cloud';
  const markDirty=()=>{if(readOnly)return;try{localStorage.setItem(dirtyKey,JSON.stringify({revision}));}catch{}};
  const clearDirty=()=>{if(readOnly)return;try{const current=JSON.parse(localStorage.getItem(localKey));if(current&&JSON.stringify({version:current.version,rooms:current.rooms})!==lastSnapshot){markDirty();return;}localStorage.removeItem(dirtyKey);}catch{}};
@@ -29,7 +30,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  if(!studioOnly&&typeof loadProfile==='function')Promise.resolve().then(loadProfile).then(value=>{if(closed||!authorized()||!value)return;resolvedProfile=value;memberProfile=profileValues(value);channel?.port1.postMessage({type:'profile-update',profile:memberProfile});}).catch(()=>{});
  const timeout=promise=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('연결이 늦어지고 있어요. 다시 시도해 주세요.')),20000);Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
  const reload=()=>{stopPaintWait();stopPaintWait=()=>{};loading.dispose();loading=createHouseEntryLoading();overlay.insertBefore(loading,retry);retry.hidden=true;savePaused=false;status.hidden=true;status.style.paddingRight='';frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');clearTimeout(deadline);deadline=setTimeout(()=>showFailure('화면을 불러오지 못했어요. 다시 시도해 주세요.',reload),20000);frame.src=frame.src;};
- function showFailure(message,again){loading.dispose();retry.textContent='다시 시도';status.hidden=false;status.textContent=message;status.style.paddingRight='170px';retry.hidden=false;retry.onclick=again;close.hidden=false;overlay.setAttribute('aria-busy','false');}
+ function showFailure(message,again){loading.dispose();retry.textContent='다시 시도';status.hidden=false;status.textContent=message;status.style.paddingRight=inline?'100px':'170px';retry.hidden=false;retry.onclick=again;close.hidden=false;overlay.setAttribute('aria-busy','false');}
  async function saveRoom(){if(saving||savePaused||closed||readOnly||!room||!pendingSnapshot)return;saving=true;
   try{while(pendingSnapshot&&!closed&&authorized()){const next=pendingSnapshot,serial=JSON.stringify(next);pendingSnapshot=null;if(serial===lastSnapshot){if(!pendingSnapshot)clearDirty();continue;}flightSnapshot=next;const result=await timeout(room('save',{snapshot:next,revision}));if(closed)return;if(result?.ok===false){pendingSnapshot=pendingSnapshot||next;savePaused=true;showFailure('다른 곳에서 방이 바뀌었어요. 이 기기의 배치는 보관했어요. 다시 열어 확인해 주세요.',reload);return;}revision=result.revision;lastSnapshot=serial;flightSnapshot=null;if(pendingSnapshot)markDirty();else clearDirty();}if(!closed){status.hidden=true;retry.hidden=true;}}
   catch(error){if(closed)return;pendingSnapshot=pendingSnapshot||flightSnapshot;savePaused=true;showFailure(error.message||'방을 계정에 저장하지 못했어요. 이 기기의 배치는 보관했어요.',()=>{savePaused=false;retry.hidden=true;void saveRoom();});}
@@ -92,7 +93,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(readOnly||!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-entry2').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-entry3').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   memberProfile=profileValues(resolvedProfile);

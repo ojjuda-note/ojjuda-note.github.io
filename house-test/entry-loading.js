@@ -3,7 +3,7 @@ const css=`
 .house-entry-scene{position:relative;width:min(430px,100%);aspect-ratio:1;overflow:hidden;border-radius:24px;opacity:0}
 .house-entry-scene[data-art-ready]{opacity:1}
 .house-entry-house{display:block;width:100%;height:100%;object-fit:cover}
-.house-entry-walk{position:absolute;left:50%;top:91%;width:33%;transform:translate(-50%,-95.625%);transform-origin:50% 95.625%;will-change:top,transform,opacity}
+.house-entry-walk{position:absolute;left:50%;top:91%;width:33%;transform:translate3d(-50%,-95.625%,0);transform-origin:50% 95.625%;will-change:transform,opacity}
 .house-entry-jjuda{display:block;width:100%;height:auto}
 .house-entry-white{position:absolute;inset:0;z-index:2;background:#fff;opacity:0}
 @media(prefers-reduced-motion:reduce){.house-entry-walk{display:none}}
@@ -17,10 +17,11 @@ export function createHouseEntryLoading(){
  const jjuda=document.createElement('img');jjuda.className='house-entry-jjuda';jjuda.alt='';jjuda.decoding='async';
  const white=document.createElement('div');white.className='house-entry-white';
  walk.append(jjuda);scene.append(house,walk);root.append(style,scene,white);
- const motion=window.matchMedia('(prefers-reduced-motion:reduce)'),timers=new Map(),animations=new Set();
+ const motion=window.matchMedia('(prefers-reduced-motion:reduce)'),timers=new Map(),animations=new Set(),frames=new Set();
  let disposed=false,finishPromise=null,releaseCancelled;
  const cancelled=new Promise(resolve=>{releaseCancelled=resolve;});
  const delay=ms=>new Promise(resolve=>{const id=setTimeout(()=>{timers.delete(id);resolve(true);},ms);timers.set(id,resolve);});
+ const nextPaint=()=>Promise.race([new Promise(resolve=>{const tick=()=>{const id=requestAnimationFrame(()=>{frames.delete(id);resolve(true);});frames.add(id);};const id=requestAnimationFrame(()=>{frames.delete(id);tick();});frames.add(id);}),cancelled]);
  const fit=()=>{const bounds=root.getBoundingClientRect(),size=Math.min(430,bounds.width,bounds.height);if(size>0){scene.style.width=size+'px';scene.style.height=size+'px';}};
  const observer=typeof ResizeObserver==='function'?new ResizeObserver(fit):null;observer?.observe(root);
  const onResize=()=>fit();window.addEventListener('resize',onResize,{passive:true});
@@ -45,37 +46,43 @@ export function createHouseEntryLoading(){
  house.src=new URL('./assets/entry-house-v1.webp',import.meta.url).href;
  jjuda.src=new URL('./assets/entry-jjuda-back-v1.webp',import.meta.url).href;
  const prepared=(async()=>{
-  const ready=await Promise.race([Promise.all([imageReady(house),imageReady(jjuda)]).then(results=>results.every(Boolean)),delay(1000).then(()=>false),cancelled]);
+  const ready=await Promise.race([Promise.all([imageReady(house),imageReady(jjuda)]).then(results=>results.every(Boolean)),delay(4000).then(()=>false),cancelled]);
   house.onload=house.onerror=jjuda.onload=jjuda.onerror=null;
   if(disposed)return false;
   fit();
-  if(!ready){root.dataset.phase='waiting';return true;}
+  if(!ready){white.style.opacity='1';root.dataset.phase='waiting';return true;}
   scene.dataset.artReady='';
+  await play(scene,[{opacity:0},{opacity:1}],120);if(disposed)return false;
   if(!motion.matches){
    root.dataset.phase='walking';
    // The transparent sprite's feet are at 459/480 of its image height.
-   // Keep that point centered while moving from the path into the doorway.
+   // The sprite is 33% of the scene wide and 49.5% tall. Translate its feet
+   // from 91% to 61% of the scene without changing layout on every frame.
    void play(jjuda,[{transform:'translateY(0) rotate(-.6deg)'},{transform:'translateY(-2px) rotate(.6deg)'},{transform:'translateY(0) rotate(-.6deg)'},{transform:'translateY(-2px) rotate(.6deg)'},{transform:'translateY(0) rotate(-.6deg)'},{transform:'translateY(-2px) rotate(.6deg)'},{transform:'translateY(0) rotate(-.6deg)'},{transform:'translateY(-2px) rotate(.6deg)'},{transform:'translateY(0) rotate(-.6deg)'},{transform:'translateY(-2px) rotate(.6deg)'},{transform:'translateY(0) rotate(0)'}],1600);
-   await play(walk,[{top:'91%',transform:'translate(-50%,-95.625%) scale(1)',opacity:1,offset:0},{top:'65%',transform:'translate(-50%,-95.625%) scale(.70)',opacity:1,offset:.82},{top:'61%',transform:'translate(-50%,-95.625%) scale(.64)',opacity:0,offset:1}],1600);
+   await play(walk,[{transform:'translate3d(-50%,-95.625%,0) scale(1)',opacity:1,offset:0},{transform:'translate3d(-50%,-148.1503%,0) scale(.70)',opacity:1,offset:.82},{transform:'translate3d(-50%,-156.2311%,0) scale(.64)',opacity:0,offset:1}],1600);
    if(disposed)return false;
   }
-  walk.style.opacity='0';root.dataset.phase='waiting';return true;
+  walk.style.opacity='0';
+  // Finish the entrance as one sequence, even when the room is still loading.
+  // Slow loading waits behind white instead of freezing the empty house image.
+  root.dataset.phase='covering';await play(white,[{opacity:0},{opacity:1}],320);if(disposed)return false;
+  white.style.opacity='1';root.dataset.phase='waiting';return true;
  })();
  function cleanup(){
   observer?.disconnect();window.removeEventListener('resize',onResize);motion.removeEventListener?.('change',reduceMotion);
   house.onload=house.onerror=jjuda.onload=jjuda.onerror=null;
   for(const [id,resolve]of timers){clearTimeout(id);resolve(false);}timers.clear();
   for(const animation of animations)animation.cancel();animations.clear();
+  for(const id of frames)cancelAnimationFrame(id);frames.clear();
  }
  root.finish=onCovered=>{
   if(finishPromise)return finishPromise;
   finishPromise=(async()=>{
    await prepared;if(disposed)return;
-   root.dataset.phase='covering';await play(white,[{opacity:0},{opacity:1}],250);if(disposed)return;
-   white.style.opacity='1';
    // Switch to the painted room only while the white layer fully covers it.
    if(typeof onCovered==='function')onCovered();if(disposed)return;
-   root.dataset.phase='revealing';await play(root,[{opacity:1},{opacity:0}],220);if(disposed)return;
+   await nextPaint();if(disposed)return;
+   root.dataset.phase='revealing';await play(root,[{opacity:1},{opacity:0}],320);if(disposed)return;
    root.style.opacity='0';root.dataset.phase='done';cleanup();root.remove();
   })();return finishPromise;
  };
