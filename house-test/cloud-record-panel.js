@@ -7,6 +7,7 @@ const recordKind=row=>row.type==='image'?'photo':row.type==='text'?'text':'video
 const scopes=[['me','나만 보기'],['friends','친구 공개'],['all','전체 공개']];
 function select(label,options,value){const el=node('select');el.setAttribute('aria-label',label);for(const [id,text]of options){const option=node('option','',text);option.value=id;el.append(option);}el.value=value;return el;}
 function field(label,control){const wrap=node('label','record-field');wrap.append(node('span','',label),control);return wrap;}
+function folderScopeFields(folder,scope){const row=node('div','record-location-fields');row.append(field('폴더',folder),field('공개범위',scope));return row;}
 export function mountCloudRecords({container,kind,request,active,foldersHost,settingsButton,initialFolder='all',onFolderChange=()=>{},postDrafts=new Map(),committedPostIds=new Set(),pendingPostIds=new Set()}){
  let run=0,busy=false,folderId=kind==='all'?'all':initialFolder,snapshot={folders:[],friends:[],groups:[]},displayed=[],managing=false,loaded=false,trash=false;const selected=new Set(),recordKey=row=>(row.type==='text'?'text:':'media:')+row.id;const label=kind==='photo'?'사진':kind==='video'?'동영상':'기록';
  let folderHolds=[],cardHolds=[];const release=holds=>{for(const stop of holds)stop();};
@@ -88,7 +89,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   const sync=()=>{const folder=snapshot.folders.find(row=>row.id===target.value);scope.hidden=!!folder;note.textContent=folder?`글은 ‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'계정에 저장되어 다른 기기에서도 볼 수 있어요.';remember();};
   body.oninput=remember;target.onchange=()=>{if(!target.value)scope.value='me';sync();};scope.onchange=remember;sync();
   const submit=button(record?'글 수정 저장':'노트에 저장');submit.type='submit';
-  form.append(node('p','record-form-title',record?'글 수정':'새 글'),field('노트 글',body),field('폴더',target),field('볼 수 있는 사람',scope),note,submit,button('닫기',()=>editor.replaceChildren()));
+  form.append(node('p','record-form-title',record?'글 수정':'새 글'),field('노트 글',body),folderScopeFields(target,scope),note,submit,button('닫기',()=>editor.replaceChildren()));
   if(record)form.append(button('휴지통으로',()=>trashEditor([record])));
   form.onsubmit=event=>{event.preventDefault();if(busy||!active())return;remember();const submitted=postDrafts.get(draftKey);if(pendingPostIds.has(submitted.id)){status.textContent='이 글의 이전 저장을 마치는 중이에요. 입력한 내용은 그대로예요. 잠시 후 다시 저장해 주세요.';return;}pendingPostIds.add(submitted.id);void save('save-post',submitted,'글을 계정에 저장했어요.',()=>chooseFolder(target.value||'none','text'),()=>{committedPostIds.add(submitted.id);if(postDrafts.get(draftKey)===submitted)postDrafts.delete(draftKey);}).finally(()=>pendingPostIds.delete(submitted.id));};editor.append(form);body.focus();
  }
@@ -155,7 +156,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   if(busy)return;editor.replaceChildren();const form=node('form'),caption=node('textarea');caption.rows=3;caption.maxLength=100;caption.placeholder='사진이나 영상에 대한 설명을 적어 주세요 (100자까지)';caption.value=record.caption||'';
   const destination=select('파일 폴더',[['','폴더 없음'],...foldersFor(recordKind(record)).map(folder=>[folder.id,folder.name])],record.folder_id||''),scope=select('파일 공개범위',scopes,record.visibility),note=node('p','panel-note');
   function update(){const folder=snapshot.folders.find(row=>row.id===destination.value);scope.disabled=!!folder;scope.hidden=!!folder;note.textContent=folder?`‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'';}
-  destination.onchange=()=>{if(!destination.value)scope.value='me';update();};update();form.append(node('p','record-form-title',label+' 설정'),field('설명',caption),field('폴더',destination),field('볼 수 있는 사람',scope),note);
+  destination.onchange=()=>{if(!destination.value)scope.value='me';update();};update();form.append(node('p','record-form-title',label+' 설정'),field('설명',caption),folderScopeFields(destination,scope),note);
   const submit=button('파일 설정 저장');submit.type='submit';form.append(submit,button('취소',()=>editor.replaceChildren()),button('휴지통으로',()=>trashEditor([record])));form.onsubmit=event=>{event.preventDefault();void save('save-media',{id:record.id,caption:caption.value,visibility:scope.value,folder_id:destination.value||null},'설정을 저장했어요.');};editor.append(form);caption.focus();
  }
  async function showMedia(record){

@@ -231,6 +231,11 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-field{display:flex;flex-direction:column;gap:4px;font-size:12px;margin:8px 0;}
 .record-field input{width:100%;min-width:0;box-sizing:border-box;padding:9px;border:1px solid #d7c9df;border-radius:8px;font:inherit;}
 .record-field span{font-weight:600;}
+.record-location-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.record-location-fields>.record-field{min-width:0;}
+.record-location-fields select{width:100%;box-sizing:border-box;}
+.record-location-fields:has(select[hidden]){grid-template-columns:minmax(0,1fr);}
+.record-location-fields>.record-field:has(select[hidden]){display:none;}
 .record-editor:empty{display:none;}
 .record-editor form{margin:10px 0;padding:12px;border:1px solid #d7c9df;border-radius:12px;background:#fffdfa;}
 .record-editor form>button{font-size:12px;margin-right:8px;}
