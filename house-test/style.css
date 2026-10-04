@@ -257,7 +257,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .home-profile-picture img{width:100%;height:100%;object-fit:cover;}
 .home-profile-copy{min-width:0;}
 #home-profile-nick{display:block;max-width:100%;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#home-profile-bio{max-width:100%;margin:4px 0 0;font-size:11px;color:#786580;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#home-profile-bio{display:none;min-width:0;max-width:100%;margin:0;color:#786580;}
 #home-profile-bio:empty{display:none;}
 #home-room-open{position:absolute;inset:0;z-index:10;width:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;}
 #home-room-open:hover{background:#d4bde80d;}
@@ -267,7 +267,11 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .records-home>header #exit{grid-column:1;justify-self:start;}
 .records-home>header h1{grid-column:2;}
 .records-home #home-scene{display:grid;grid-column:1;grid-row:2;grid-template-columns:clamp(96px,28%,144px) minmax(0,1fr);align-items:center;justify-self:center;width:min(100%,564px);min-height:110px;}
-.records-home #home-profile{grid-column:1;grid-row:1;flex-direction:column;gap:8px;padding:10px 8px;text-align:center;z-index:2;}
+.records-home #home-profile{grid-column:1;grid-row:1;align-self:stretch;justify-content:center;transform:translateX(var(--home-profile-offset,0px));flex-direction:column;gap:10px;padding:12px 8px;text-align:center;z-index:2;}
+.records-home .home-profile-picture{width:clamp(56px,17vw,72px);height:clamp(56px,17vw,72px);min-height:56px;border:2px solid #fffaf4;box-shadow:0 0 0 1px #e5d7ec,0 3px 10px #77608c12;}
+.records-home .home-profile-picture svg{width:30px;height:30px;}
+.records-home #home-profile-nick{font-size:13px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;}
+.records-home #home-profile-bio:not(:empty){display:block;grid-column:1 / -1;grid-row:2;padding:14px 18px 4px;font-size:13px;line-height:1.75;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:left;}
 .records-home .home-profile-copy{max-width:100%;}
 .records-home #viewport{grid-column:2;grid-row:1;justify-self:end;flex:none;width:var(--home-room-width,100%);height:var(--home-room-height,140px);min-height:0;max-width:100%;margin:0;border:0;border-radius:14px;box-shadow:none;touch-action:pan-y;background:transparent;}
 .records-home .room{clip-path:inset(58px 39px 134px 38px);}
