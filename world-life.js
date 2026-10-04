@@ -1,4 +1,4 @@
-/* Personal tools: per-account storage on this browser, no contacts permission yet. */
+/* Personal tools: cloud ledger and per-account local contacts. */
 (function(){
  'use strict';
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
@@ -22,11 +22,11 @@
   if(owner)refresh(state,owner);
   states.set(owner,state);return state;
  }
- function mount(host,{owner,authorized=()=>true}={}){
+ function mount(host,{owner,client,authorized=()=>true}={}){
   owner=owner||null;
   if(!host){dispose?.();dispose=null;mounted=null;mountedOwner=null;return;}
   if(mounted===host&&mountedOwner===owner)return;dispose?.();mounted=host;mountedOwner=owner;
-  const state=load(owner);let alive=true,saving=false;const active=()=>alive&&host.isConnected&&authorized(),renderLists=[];
+  const state=load(owner);let alive=true,saving=false,closeLedger=null;const active=()=>alive&&host.isConnected&&authorized(),renderLists=[];
   const status=el('p','','life-status');status.setAttribute('role','status');
   async function save(change){
    if(!active()||!owner||saving)return false;saving=true;
@@ -66,16 +66,8 @@
    }renderLists.push(renderContacts);renderContacts();
   }else contacts.append(el('p','로그인 후 사용할 수 있어요.','life-empty'));
   const ledger=section('ledger','가계부');
-  if(owner){
-   ledger.append(el('p','이 계정·이 기기에만 저장돼요.','life-storage'));
-   const month=field('조회할 월','month',state.month),totals=el('div','','life-totals'),list=el('div','','life-list');month.input.onchange=()=>{state.month=month.input.value;renderLedger();};ledger.append(month.label,totals,list);
-   const {form,draft}=draftForm('entry'),date=named(field('날짜','date',draft.date||today()),'date'),memo=named(field('내용','text',draft.memo),'memo'),amount=named(field('금액','number',draft.amount),'amount'),type=el('select'),typeLabel=el('label','수입·지출');type.name='type';for(const [value,text]of [['expense','지출'],['income','수입']]){const option=el('option',text);option.value=value;type.append(option);}type.value=draft.type||'expense';typeLabel.append(type);
-   for(const f of [date,memo,amount])f.input.required=true;memo.input.maxLength=80;amount.input.min='1';amount.input.max='999999999999';amount.input.step='1';amount.input.inputMode='numeric';
-   const submit=btn('가계부 저장');submit.type='submit';form.append(date.label,typeLabel,memo.label,amount.label,submit);ledger.append(form);
-   form.onsubmit=async event=>{event.preventDefault();if(!active())return;const originalMemo=memo.input.value,originalAmount=amount.input.value,n=Number(originalAmount),text=originalMemo.trim(),day=date.input.value,entryType=type.value;if(!text||!Number.isSafeInteger(n)||n<1||n>999999999999||!/^\d{4}-\d{2}-\d{2}$/.test(day)||!['income','expense'].includes(entryType)){status.textContent='날짜, 내용과 금액을 확인해 주세요.';return;}if(await save(current=>({...current,entries:[...current.entries,{id:crypto.randomUUID(),date:day,memo:text,amount:n,type:entryType}]}))){state.month=day.slice(0,7);month.input.value=state.month;if(memo.input.value===originalMemo&&amount.input.value===originalAmount&&date.input.value===day&&type.value===entryType){memo.input.value='';amount.input.value='';delete state.drafts.entry;}renderLedger();}};
-   function renderLedger(){const rows=state.entries.filter(e=>e.date.slice(0,7)===state.month).sort((a,b)=>b.date.localeCompare(a.date)),income=rows.filter(e=>e.type==='income').reduce((n,e)=>n+BigInt(e.amount),0n),expense=rows.filter(e=>e.type==='expense').reduce((n,e)=>n+BigInt(e.amount),0n);totals.replaceChildren();for(const [label,value]of [['수입',income],['지출',expense],['남은 금액',income-expense]]){const item=el('div');item.append(el('small',label),el('strong',money(value)));totals.append(item);}list.replaceChildren();if(!rows.length)list.append(el('p','이 달에 기록한 내역이 없어요.','life-empty'));for(const entry of rows){const row=el('div','','life-row'),copy=el('div');copy.append(el('strong',entry.memo),el('small',entry.date),el('span',(entry.type==='income'?'+':'−')+money(entry.amount)));const remove=btn('삭제',()=>confirmation(row,'이 내역을 삭제할까요?',()=>save(current=>({...current,entries:current.entries.filter(x=>x.id!==entry.id)}))));remove.setAttribute('aria-label',entry.memo+' 내역 삭제');row.append(copy,remove);list.append(row);}}
-   renderLists.push(renderLedger);renderLedger();
-  }else ledger.append(el('p','로그인 후 사용할 수 있어요.','life-empty'));
+  if(window.OjjudaLedger)closeLedger=window.OjjudaLedger.mount(ledger,{owner,client,authorized:active});
+  else ledger.append(el('p','가계부를 불러오지 못했어요. 새로고침해 주세요.','life-empty'));
   const calculator=section('calculator','계산기'),display=el('output','0','life-calc-display'),keys=el('div','','life-calc-keys');display.setAttribute('aria-label','계산 결과');display.setAttribute('aria-live','polite');keys.dataset.worldSwipe='off';
   let value='0',previous=null,operator=null,fresh=true;const compute=(a,b,op)=>op==='+'?a+b:op==='−'?a-b:op==='×'?a*b:b===0?NaN:a/b;
   function press(key){if(!active())return;
@@ -90,7 +82,7 @@
   for(const key of ['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','±','0','.','='])keys.append(btn(key,()=>press(key)));calculator.append(display,keys);
   const storage=event=>{if(owner&&active()&&(event.key===storageKey(owner)||event.key===null)){refresh(state,owner);for(const render of renderLists)render();status.textContent=state.error?protectedMessage:'다른 창에서 바뀐 내용을 반영했어요.';}};window.addEventListener('storage',storage);
   const watcher=setInterval(()=>{if(alive&&!authorized()){host.replaceChildren();dispose?.();}},400);
-  dispose=()=>{alive=false;clearInterval(watcher);window.removeEventListener('storage',storage);};
+  dispose=()=>{alive=false;closeLedger?.();clearInterval(watcher);window.removeEventListener('storage',storage);};
  }
  window.OjjudaLife={mount};
 })();

@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {PGlite}=require('@electric-sql/pglite');
+(async()=>{const db=new PGlite();try{
+ const a='10000000-0000-0000-0000-000000000001',b='10000000-0000-0000-0000-000000000002',id='20000000-0000-0000-0000-000000000001';
+ await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);insert into auth.users values('${a}'),('${b}');create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth,public to authenticated,anon;`);
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261004124025_life_ledger.sql'),'utf8'));
+ await db.exec(`set role authenticated;set request.jwt.claim.sub='${a}';insert into life_ledger_entries(id,date,type,memo,amount,category) values('${id}','2026-10-04','expense','점심',9000,'식비');`);
+ assert.equal((await db.query('select * from life_ledger_entries')).rows.length,1);
+ let summary=await db.query("select life_ledger_month('2026-10-01') as value");assert.equal(summary.rows[0].value.expense,'9000');
+ await assert.rejects(db.exec(`insert into life_ledger_entries(user_id,date,type,memo,amount) values('${b}','2026-10-04','income','위조',1)`));
+ await assert.rejects(db.exec(`update life_ledger_entries set user_id='${b}'`));
+ await assert.rejects(db.exec('delete from life_ledger_entries'));
+ const revision=(await db.query('select revision from life_ledger_entries')).rows[0].revision;
+ await db.exec(`update life_ledger_entries set amount=10000 where revision='${revision}'`);
+ assert.notEqual((await db.query('select revision from life_ledger_entries')).rows[0].revision,revision);
+ assert.equal((await db.query(`update life_ledger_entries set amount=99 where revision='${revision}' returning id`)).rows.length,0);
+ await db.exec(`set request.jwt.claim.sub='${b}'`);assert.equal((await db.query('select * from life_ledger_entries')).rows.length,0);assert.equal((await db.query("select life_ledger_month('2026-10-01') as value")).rows[0].value.expense,'0');
+ assert.equal((await db.query(`update life_ledger_entries set amount=1 where id='${id}' returning id`)).rows.length,0);
+ await db.exec(`set request.jwt.claim.sub='${a}';update life_ledger_entries set deleted_at=now() where id='${id}';insert into life_ledger_entries(id,date,type,memo,amount) values('${id}','2026-10-04','expense','중복',9000) on conflict(user_id,id) do nothing;`);
+ assert.equal((await db.query("select life_ledger_month('2026-10-01') as value")).rows[0].value.expense,'0','import cannot resurrect a deleted record');
+ for(const amount of [0,-1,1000000000000])await assert.rejects(db.exec(`insert into life_ledger_entries(date,type,memo,amount) values('2026-10-04','expense','invalid',${amount})`));
+ await db.exec(`insert into life_ledger_entries(date,type,memo,amount) select '2026-10-04','income','월급',999999999999 from generate_series(1,10000)`);
+ assert.equal((await db.query("select life_ledger_month('2026-10-01') as value")).rows[0].value.income,'9999999999990000','totals exceed JS safe integers without precision loss');
+ await db.exec('set role anon');await assert.rejects(db.query('select * from life_ledger_entries'));await assert.rejects(db.query("select life_ledger_month('2026-10-01')"));
+ await db.exec(`reset role;delete from auth.users where id='${a}'`);assert.equal((await db.query('select * from life_ledger_entries')).rows.length,0,'account deletion removes private ledger');
+ console.log('PASS: two-account RLS, guest denial, invalid amounts, optimistic edits, exact totals, idempotent imports, deletion cascade');
+}finally{await db.close();}})().catch(e=>{console.error(e);process.exitCode=1});

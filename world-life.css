@@ -17,3 +17,6 @@
 .life-tool :is(button,input,select,summary):focus-visible{outline:3px solid var(--accent-ink,var(--ink));outline-offset:2px}
 
 .life-tool summary:focus-visible{outline-offset:-4px}
+.ledger-toolbar{display:flex;align-items:center;gap:12px}.ledger-toolbar label{flex:1}.ledger-toolbar button{flex-shrink:0;margin-top:18px}
+.ledger-categories h3{font-size:13px;margin:8px 0}.ledger-category{position:relative;display:flex;justify-content:space-between;gap:12px;padding:8px 0 12px;font-size:12px}.ledger-category strong{font-weight:500}.ledger-bar{position:absolute;bottom:4px;left:0;height:4px;max-width:100%;border-radius:5px;background:#b599c5}.ledger-import{margin-top:18px}.ledger-import button{width:100%}.ledger-income{color:#28765d}.ledger-expense{color:#a54155}.life-tool button:disabled{opacity:.55;cursor:wait}.life-tool [hidden]{display:none!important}
+:root[data-theme=dark] .ledger-income{color:#85d9b8}:root[data-theme=dark] .ledger-expense{color:#ffacbb}
