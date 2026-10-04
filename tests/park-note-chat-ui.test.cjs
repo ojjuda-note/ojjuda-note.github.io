@@ -11,12 +11,12 @@ for(const [from,to] of [
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-places.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-navigation.js','world-places.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
  user(id){D.user=id?{id}:null;worldParkNotes.sync();},render:H,repaint:Bf,actions:Ln,open:action=>worldParkNotes.open(action),close:()=>worldParkNotes.close()};
- D.isAdmin=false;g.tab='friends';H();worldParkNotes.route();
+ D.isAdmin=false;gm(()=>{g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});g.tab='friends';H();worldParkNotes.route();
  `+world.slice(world.indexOf('</script>',boot));
 // Run the real editor and navigation, replacing only remote account/feed data.
 // Seeding before integration.js also exercises queued World-menu actions on first load.
@@ -24,7 +24,7 @@ const identity=`authKnown=ready=true;session={user:{id:'fixture-member'}};myIden
 window.populateParkFixture=()=>{feed.hidden=false;detail.hidden=true;document.getElementById('connection-status').hidden=true;
  document.getElementById('feed-list').replaceChildren(...Array.from({length:9},(_,i)=>cardElement({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),kind:'memo',body:'공원에서 나누는 오늘의 이야기 '+(i+1),tags:['일상'],background_key:'plain',created_at:new Date().toISOString()})));
 };`;
-const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['park/route.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
+const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['park/route.js','note/feed-swipe.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
@@ -38,7 +38,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('https://fixture.test/world.html?place=park&compose=memo');
  const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
- const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-audit1');
+ const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-swipe2');
  let frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
  await frame.evaluate(()=>window.fixtureToken='kept');
@@ -200,7 +200,30 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"]').count(),3,'cafe chat remains available');
  await page.locator('#pmsg').fill('카페의 대화는 그대로');await page.locator('[data-act="pl-send"]').click();
  assert.ok((await page.locator('#plog').textContent()).includes('카페의 대화는 그대로'));
+ // Exercise the real child -> postMessage -> parent navigation path.
+ await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
+ frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ assert.equal(await frame.evaluate(()=>OjjudaParkFull.embedded),true);
+ await frame.evaluate(()=>OjjudaParkFull.navigate('library'));
+ await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='library');
+ assert.equal(await iframe.count(),0,'the Park library message invokes the real previous-place step');
+ // The actual feed drag uses that same bridge; the opposite edge stops.
+ await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
+ frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
+ const activeSort=await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort');
+ const dragPark=async dx=>{
+  const box=await frame.locator('.note-feed-viewport').boundingBox(),x=box.x+box.width*(dx<0?.75:.25),y=box.y+80;
+  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y,{steps:8});await page.mouse.up();
+ };
+ await dragPark(-150);
+ await frame.waitForFunction(()=>!document.getElementById('feed').matches('.note-feed-dragging,.note-feed-settling'));
+ assert.equal(await page.evaluate(()=>parkFixture.state.place.id),'park','the embedded feed cannot swipe beyond Park');
+ assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),activeSort,'place gestures preserve the filter');
+ await dragPark(150);
+ await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='library');
+ assert.equal(await iframe.count(),0,'a real embedded card swipe reaches the library without skipping places');
  assert.deepEqual(errors,[]);
- console.log('PASS: single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
+ console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

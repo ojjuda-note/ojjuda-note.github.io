@@ -6,7 +6,7 @@ const root = path.join(__dirname, '..');
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
-const helper = fs.readFileSync(path.join(root, 'world-navigation.js'), 'utf8');
+const helper = ['world-navigation.js','world-places.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
 world = world.replace('<script type="module">', `<script>${helper}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
@@ -38,11 +38,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.reload();await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
     assert.deepEqual(await page.evaluate(()=>{const m=worldTest.model;return [m.coins,m.diary[0].id,m.room.items,m.avatar,m.friends,m.petBank||null,m.themeBackup||null,localStorage.getItem('ojjuda-pet-talk'),localStorage.getItem('ojjuda-pet-mem')]}),[321,'saved-note',[],{},[],null,null,null,null],'reload clears retired assets while preserving balance and writing');
     const current=()=>page.evaluate(()=>worldTest.state.tab);
-    const noteAndBack=async()=>{
-      await page.waitForFunction(()=>worldTest.state.tab==='place' && worldTest.state.place?.id==='park');
-      await page.evaluate(()=>history.back());
-      await page.waitForFunction(()=>window.worldTest && worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
-    };
     const main=async()=>{
       await page.evaluate(()=>worldTest.actions.tab({tab:'friends'}));
       await page.waitForFunction(()=>history.state?.ojjudaWorld==='main' && worldTest.state.tab==='friends');
@@ -113,7 +108,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await touch(cancel?'touchCancel':'touchEnd',[]);
     };
     await swipe(-150,0,{hold:true});assert.equal(await current(),'home');await back();
-    await swipe(150);await noteAndBack();
+    await swipe(150);assert.equal(await current(),'friends','right swipe stops at the first main menu');
     await swipe(-30);assert.equal(await current(),'friends');
     await swipe(-150,0,{cancel:true});assert.equal(await current(),'friends');
     await swipe(-80,0,{second:true});assert.equal(await current(),'friends');
@@ -152,20 +147,55 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
         const x=box.x+box.width*(dx<0?.8:.2),y=box.y+20;
         await touch('touchStart',[[x,y]]);
         for(let j=1;j<=6;j++)await touch('touchMove',[[x+dx*j/6,y]]);
-        if(i===tabs.length-1 && dx<0){
+        if((i===0 && dx>0)||(i===tabs.length-1 && dx<0)){
           const shift=await page.locator('.main').evaluate(el=>new DOMMatrix(getComputedStyle(el).transform).m41);
-          assert.ok(shift<0 && shift>=-32,'the last menu gives a small resisted left drag');
+          assert.ok(Math.sign(shift)===Math.sign(dx) && Math.abs(shift)<=32,'the first and last menus resist dragging past the end');
         }
         await touch('touchEnd',[]);
-        if(i===0 && dx>0)await noteAndBack();
-        else if(i===tabs.length-1 && dx<0)assert.equal(await current(),tabs[i],'left swipe stops at the last World menu');
-        else assert.equal(await current(),tabs[(i+(dx<0?1:-1)+tabs.length)%tabs.length],`${tabs[i]} content supports ${dx<0?'left':'right'} swipe`);
+        const next=Math.max(0,Math.min(tabs.length-1,i+(dx<0?1:-1)));
+        assert.equal(await current(),tabs[next],`${tabs[i]} content supports ${dx<0?'left':'right'} swipe without wrapping`);
       }
     }
-    await navigate('friends');
-    await page.locator('.world-destination[data-id="cafe"]').click();
-    await touchDrag('.visit-banner',-150);
-    assert.equal(await current(),'home','place headers use the active neighborhood tab');
+    const places=['cafe','arcade','library','park'];
+    const currentPlace=()=>page.evaluate(()=>worldTest.state.tab==='place' && worldTest.state.place?.id);
+    const enterPlace=async id=>{
+      await navigate('friends');
+      await page.locator(`.world-destination[data-id="${id}"]`).click();
+      assert.equal(await currentPlace(),id);
+    };
+    for(let i=0;i<places.length;i++){
+      for(const dx of [-150,150]){
+        await enterPlace(places[i]);
+        await touchDrag('.visit-banner',dx);
+        const next=Math.max(0,Math.min(places.length-1,i+(dx<0?1:-1)));
+        assert.equal(await currentPlace(),places[next],`${places[i]} drag stays in the neighborhood order and stops at its ends`);
+        assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'friends','place swipes keep the neighborhood tab active');
+      }
+    }
+    await enterPlace('cafe');
+    const placeHistoryLength=await page.evaluate(()=>history.length);
+    for(const id of places.slice(1)){
+      await touchDrag('.visit-banner',-150);
+      assert.equal(await currentPlace(),id,'left drags follow cafe, arcade, library, park');
+    }
+    for(const id of places.slice(0,-1).reverse()){
+      await touchDrag('.visit-banner',150);
+      assert.equal(await currentPlace(),id,'right drags follow the same place order in reverse');
+    }
+    assert.equal(await page.evaluate(()=>history.length),placeHistoryLength,'moving between places does not stack navigation history');
+    await back();
+    await enterPlace('cafe');
+    await page.waitForSelector('.place-art-ready');
+    await touchDrag('.place-art-viewport',-150);
+    assert.equal(await currentPlace(),'arcade','touch dragging the normal place illustration changes to the next place');
+    await page.waitForSelector('.place-art-ready');
+    await page.locator('[aria-label="공간 확대"]').click();
+    await touchDrag('.place-art-viewport',-150);
+    assert.equal(await currentPlace(),'arcade','dragging an enlarged illustration stays in the current place');
+    assert.ok(await page.locator('.place-art-image').evaluate(el=>new DOMMatrix(getComputedStyle(el).transform).m41<0),'an enlarged illustration still pans with touch');
+    await page.locator('[aria-label="공간 맞춤"]').click();
+    await touchDrag('.place-art-viewport',150);
+    assert.equal(await currentPlace(),'cafe','returning the illustration to normal size restores place swipes');
     await main();
     // Desktop uses the same gesture through actual mouse events.
     await page.setViewportSize({width:1280,height:900});
@@ -173,6 +203,34 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.mouse.move(box.x+box.width*.7,box.y+100);await page.mouse.down();
     await page.mouse.move(box.x+box.width*.7-180,box.y+100,{steps:8});await page.mouse.up();
     assert.equal(await current(),'home');await back();
+    const mouseDrag=async(selector,dx)=>{
+      const target=page.locator(selector).first();
+      await target.scrollIntoViewIfNeeded();
+      const bounds=await target.boundingBox();
+      const x=bounds.x+bounds.width*(dx<0?.7:.3),y=bounds.y+bounds.height/2;
+      await page.mouse.move(x,y);await page.mouse.down();
+      await page.mouse.move(x+dx,y,{steps:8});await page.mouse.up();
+    };
+    await mouseDrag('.world-scene',180);
+    assert.equal(await current(),'friends','mouse drag cannot leave the start of the main menu');
+    await enterPlace('cafe');
+    await mouseDrag('.visit-banner',180);
+    assert.equal(await currentPlace(),'cafe','mouse drag stops at cafe');
+    await mouseDrag('.visit-banner',-180);
+    assert.equal(await currentPlace(),'arcade','mouse drag changes places instead of entering our house');
+    await page.waitForSelector('.place-art-ready');
+    await mouseDrag('.place-art-viewport',-180);
+    assert.equal(await currentPlace(),'library','mouse dragging the normal place illustration changes places');
+    await page.waitForSelector('.place-art-ready');
+    await page.locator('[aria-label="공간 확대"]').click();
+    await mouseDrag('.place-art-viewport',-180);
+    assert.equal(await currentPlace(),'library','mouse dragging an enlarged illustration preserves the current place');
+    assert.ok(await page.locator('.place-art-image').evaluate(el=>new DOMMatrix(getComputedStyle(el).transform).m41<0),'an enlarged illustration still pans with the mouse');
+    await enterPlace('park');
+    await mouseDrag('.visit-banner',-180);
+    assert.equal(await currentPlace(),'park','mouse drag stops at park');
+    await mouseDrag('.visit-banner',180);
+    assert.equal(await currentPlace(),'library','mouse drag returns from park to library');
     assert.deepEqual(errors,[]);
     await context.close();
 
@@ -193,6 +251,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, four destinations, modal protection and retired-state cleanup, swipes across all tabs and into Park, touch/mouse input, vertical scrolling, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, separate four-tab and four-place swipe orders with both ends stopped, touch/mouse input, vertical scrolling, cancellation and normal taps.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

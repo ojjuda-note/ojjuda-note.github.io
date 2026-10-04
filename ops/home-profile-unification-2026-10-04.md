@@ -45,3 +45,9 @@ Existing device-only room layouts sync when that member opens their home on the 
 The full-width room in 0.45.40 enlarged the preview beyond the requested layout. Restore the profile on the left and a compact room on the right within one continuous upper area. Fit the actual room interior with no right inset, crop the frame embedded in the artwork, and remove preview-only facade, floor lip and shadows. Editing and saved furniture coordinates are unchanged. Observe the shared row so resizing wider also recalculates the preview; visitor frames use the compact row's height.
 
 Verified mobile 320/390px, desktop and landscape, room entry/return, multiple rooms, saved layouts, visitors, asset cache and World navigation. Eight focused syntax/UI commands passed locally, including the updated room-boundary assertions.
+
+## Bounded drag navigation and rounded room corners — 0.45.42-beta
+
+Main-page dragging now follows Neighborhood → Home → Life → Menu. Inside the neighborhood it follows Cafe → Arcade → Library → Park. Both sequences stop at either end instead of wrapping or jumping between groups. Normal place illustrations accept navigation drags; zoomed illustrations retain panning. Embedded Park card drags go back to Library or stop at Park, while the sorting tabs remain selectable. Composer, game, input, photo and scrolling gestures retain their existing controls. Browser/native Back and iframe cleanup are preserved.
+
+Added rounded corners to the compact room preview, retaining its size, zero right inset and borderless interior. Checked touch and mouse navigation, both boundaries, actual place-image gestures, zoom/pan, Park's iframe bridge, draft protection and responsive home rendering.
