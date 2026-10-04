@@ -325,3 +325,13 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-selection-label{display:flex;align-items:center;gap:4px;margin:0 0 4px;font-size:10px;color:#806194;min-height:20px;}
 .record-selection-label input{margin:0;accent-color:#9272b8;width:16px;height:16px;flex:none;}
 @media(max-width:350px){.record-topbar .record-tabs{gap:3px;}.record-topbar .record-tabs button{padding:5px 7px;}}
+
+.record-post-form textarea{width:100%;resize:vertical;min-height:120px;line-height:1.6;}
+.record-post-form>button{margin:6px 6px 0 0;}
+.record-trash-heading{padding:10px 0;}
+.record-trash-heading>button{font-size:12px;margin-left:12px;}
+.record-trash-heading[hidden]{display:none;}
+.record-post-viewer{color:var(--ink);width:min(92vw,480px);}
+.record-full-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;}
+
+.cloud-records[data-trash="true"]>.record-diary,.record-content:has(.cloud-records[data-trash="true"])>.local-records{display:none;}

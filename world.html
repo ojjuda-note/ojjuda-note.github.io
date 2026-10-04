@@ -667,17 +667,18 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;
  const authorized=()=>D.online&&D.user?.id===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261004-homemanage3');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261004-homeposts3');
   if(request!==worldHouseRequest||!authorized()||!isWorldHouseTab())return;
   let albumService;
   const records=async(action,args)=>{
    if(!authorized())throw new Error('로그인을 다시 확인해 주세요.');
-   albumService ||= import('./house-test/world-records.js?v=20261004-homemanage3').then(({createWorldRecords})=>createWorldRecords({client:S,owner,authorized,getFriends:Uu,prepareMedia:file=>_b(file,true),onChange:change=>{
+   albumService ||= import('./house-test/world-records.js?v=20261004-homeposts3').then(({createWorldRecords})=>createWorldRecords({client:S,owner,authorized,getFriends:Uu,prepareMedia:file=>_b(file,true),onChange:change=>{
     if(!authorized())return;
     if(change.media){const item=f1(change.media),index=$.album.findIndex(row=>row.id===item.id);if(index<0)$.album.unshift(item);else $.album[index]={...$.album[index],...item};}
     if(change.folder){if(!Array.isArray($.folders))$.folders=[];const item=oc(change.folder),index=$.folders.findIndex(row=>row.id===item.id);if(index<0)$.folders.push(item);else $.folders[index]=item;}
     if(change.deletedFolder){$.folders=($.folders||[]).filter(row=>row.id!==change.deletedFolder);for(const row of $.album)if(row.folder===change.deletedFolder){row.folder=null;row.vis='me';}}
     if(change.movedMedia){const ids=new Set(change.movedMedia.ids);for(const row of $.album)if(ids.has(row.id)){row.folder=change.movedMedia.folder;if(!row.folder)row.vis='me';}}
+    if(change.trashedMedia){const ids=new Set(change.trashedMedia);$.album=$.album.filter(row=>!ids.has(row.id));}
     I();
    }}));
    return (await albumService)(action,args);
