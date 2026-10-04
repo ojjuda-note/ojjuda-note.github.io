@@ -1,22 +1,105 @@
-/* World navigation around the complete existing card application. */
+/* Card features use World's navigation and one content viewport. */
 (() => {
   'use strict';
-  const hosted=parent!==window;
-  const exitTo = href => { if(hosted) parent.location.assign(href); else location.assign(href); };
-  document.addEventListener('click',event=>{
-    const link=event.target.closest?.('a[href]');if(!link)return;
-    const url=new URL(link.href,location.href);
-    if(url.origin!==location.origin)return;
-    if(link.matches('.brand')){event.preventDefault();document.querySelector('[data-show="feed"]')?.click();return;}
-    if(url.pathname==='/world.html'||url.pathname==='/'||url.pathname==='/guide.html'){
-      if(window.canCloseParkNote?.()===false){event.preventDefault();return;}
-      event.preventDefault();exitTo(url.pathname+url.search+url.hash);
+  let hosted = false;
+  try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
+  const send = data => { if (hosted) parent.postMessage(data, location.origin); };
+  const originalCanLeave = window.canCloseParkNote;
+  let pendingAction = null, previousOverlay = null, previousBalance = null, reporting = false;
+  const visible = selector => !!document.querySelector(selector);
+  const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), .world-picker:not([hidden]), .photo-source-menu, dialog[open]');
+
+  function canLeave() {
+    if (managementBusy) { managementMessage.textContent = '저장이 끝날 때까지 기다려 주세요.'; return false; }
+    return originalCanLeave?.() !== false;
+  }
+  window.canCloseParkNote = canLeave;
+
+  function closeTopOverlay() {
+    if (window.OjjudaCharge?.isOpen?.()) { window.OjjudaCharge.close(); return true; }
+    if (photoLightbox && !photoLightbox.hidden) { closePhotoLightbox(); return true; }
+    if (worldPicker && !worldPicker.hidden) { closeWorldPicker(); return true; }
+    if (sourceMenu) { closePhotoSourceMenu(true); return true; }
+    if (notificationController?.isOpen?.()) { notificationController.close(); return true; }
+    if (window.OjjudaNoteSupport?.isOpen?.()) { window.OjjudaNoteSupport.close(); return true; }
+    if (!management.hidden) { closeManagement(); return true; }
+    if (!backdrop.hidden) { if (canLeave()) closeComposer(); return true; }
+    return false;
+  }
+
+  function back() {
+    if (closeTopOverlay()) return true;
+    if (document.body.classList.contains('note-my-open')) { window.OjjudaNoteNavigation?.leaveMy(); return true; }
+    if (!detail.hidden) { goBack(); return true; }
+    if (feedMode !== 'all') { selectCollection('all'); return true; }
+    return false;
+  }
+
+  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'glasses']);
+  function navigate(action) {
+    if (!actions.has(action)) return false;
+    if (!authKnown && client && !['world', 'menu', 'glasses'].includes(action)) { pendingAction = action; return true; }
+    if (!canLeave()) return false;
+    // Existing close methods retain their own saving guards.
+    window.OjjudaNoteSupport?.close?.();
+    if (window.OjjudaNoteSupport?.isOpen?.()) return false;
+    notificationController?.close?.();
+    window.OjjudaCharge?.close?.();
+    closePhotoSourceMenu(); closeWorldPicker(null, false); closePhotoLightbox();
+    if (!management.hidden) closeManagement();
+    if (!backdrop.hidden) closeComposer();
+    window.OjjudaNoteNavigation?.leaveMy();
+    pendingAction = null;
+    if (action === 'world' || action === 'menu') {
+      if (hosted) send({ type: 'ojjuda:park-navigate', action });
+      else location.assign('/world.html');
+    } else if (action === 'glasses') location.assign('/park/glasses.html?embedded=1');
+    else if (action === 'compose' || action === 'event-new') void openComposer(action === 'event-new' ? 'event' : 'new');
+    else if (action === 'blocked') { selectCollection('all'); void showBlocks(); }
+    else if (action === 'settings' || action === 'member-info') { selectCollection('all'); void showMemberInfo(); }
+    else if (action === 'notifications') notificationController?.open?.();
+    else if (action === 'support') window.OjjudaNoteSupport?.open?.();
+    else void selectCollection(action === 'feed' ? 'all' : action);
+    return true;
+  }
+
+  function reportState() {
+    reporting = false;
+    const open = overlayOpen();
+    if (open !== previousOverlay) { previousOverlay = open; send({ type: 'ojjuda:park-state', overlayOpen: open }); }
+    const userId = session?.user?.id;
+    if (userId && Number.isSafeInteger(worldCoins) && worldCoins >= 0) {
+      const key = `${userId}:${worldCoins}`;
+      if (key !== previousBalance) { previousBalance = key; send({ type: 'ojjuda:park-balance', userId, coins: worldCoins }); }
+    } else previousBalance = null;
+    if (pendingAction && authKnown) { const action = pendingAction; pendingAction = null; navigate(action); }
+  }
+  function scheduleReport() { if (!reporting) { reporting = true; queueMicrotask(reportState); } }
+  new MutationObserver(scheduleReport).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'open'] });
+
+  document.addEventListener('click', event => {
+    const link = event.target.closest?.('a[href]'); if (!link) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    if (link.matches('.brand')) { event.preventDefault(); navigate('feed'); return; }
+    if (url.pathname === '/world.html' && !url.search) { event.preventDefault(); navigate('world'); return; }
+    if (url.pathname === '/world.html' || url.pathname === '/' || url.pathname === '/guide.html') {
+      event.preventDefault();
+      if (canLeave()) (hosted ? parent : window).location.assign(url.pathname + url.search + url.hash);
     }
   });
-  window.OjjudaParkFull={back(){
-    if(!backdrop.hidden){if(window.canCloseParkNote?.()!==false)closeComposer();return true;}
-    if(document.body.classList.contains('note-my-open')){document.querySelector('[data-show="feed"]')?.click();return true;}
-    if(!detail.hidden){goBack();return true;}
-    return false;
-  }};
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !overlayOpen()) return;
+    if (closeTopOverlay()) { event.preventDefault(); event.stopImmediatePropagation(); }
+  }, true);
+  addEventListener('message', event => {
+    if (!hosted || event.origin !== location.origin || event.source !== parent) return;
+    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousBalance = null; scheduleReport(); }
+  });
+
+  window.OjjudaNoteNavigation?.leaveMy();
+  window.OjjudaParkFull = Object.freeze({ navigate, compose: () => navigate('compose'), back, canLeave, overlayOpen,
+    refreshBalance: () => loadWorldBalance(session?.user?.id) });
+  reportState();
+  send({ type: 'ojjuda:park-ready' });
 })();

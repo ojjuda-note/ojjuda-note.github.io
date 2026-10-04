@@ -47,7 +47,7 @@
     }
 
     function goTo(sort, options = {}, offset = 0) {
-      if (sort === 'world' && visible()) { clean(); (window.parent !== window ? window.parent : window).location.assign('/world.html'); return; }
+      if (sort === 'world' && visible()) { clean(); if(window.OjjudaParkFull?.navigate){window.OjjudaParkFull.navigate('world');return;} (window.parent !== window ? window.parent : window).location.assign('/world.html'); return; }
       if (!visible() || !order.includes(sort)) { settle(); return; }
       const previous = getActive();
       if (sort === previous) { clean(); select(sort, options); return; }

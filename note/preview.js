@@ -3156,14 +3156,14 @@ function confirmBlock(card) {
   showManagement('작성자를 차단할까요?');
   managementBody.append(node('p', 'management-help', '이 작성자의 카드와 이어진 답글이 내 노트 화면에서 숨겨집니다. 차단 목록에서 해제할 수 있어요. 월드의 차단 설정에는 적용되지 않습니다.'));
   cancelManagement();
-  managementFooter.append(managementButton('노트에서 차단', () => managementAction(
+  managementFooter.append(managementButton('공원에서 차단', () => managementAction(
     () => noteRpc('block_card_author', { p_card_id: card.id }),
     async () => { closeManagement(); await refreshCards(false); }
   ), true));
 }
 async function showBlocks() {
   if (!session?.user) return;
-  const run = showManagement('노트 차단 목록');
+  const run = showManagement('공원 차단 목록');
   state(managementBody, '차단 목록을 불러오는 중이에요.');
   try {
     const data = await noteRpc('list_blocks');

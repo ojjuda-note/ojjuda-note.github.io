@@ -84,6 +84,7 @@ async function worldFixture(context, mobile, errors) {
       document.querySelector('[data-notifications-slot]').innerHTML = '<button class="btn nn-trigger" type="button">알림함 열기</button>';
     };
   });
+  await page.addScriptTag({ content: read('world-park-notes.js') });
   await page.addScriptTag({ content: renderer + noteLinkRenderer });
   await page.evaluate(() => renderMy());
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');
@@ -101,6 +102,9 @@ async function worldFixture(context, mobile, errors) {
   await exerciseGroups(page, '.my-hub');
   for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-guestbook', 'n-friend']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
+  }
+  for (const action of ['saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'glasses']) {
+    assert.equal(await page.locator(`[data-park-action="${action}"]`).isVisible(), true, `${action} is available in the shared World menu`);
   }
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-guestbook').isChecked(), true);
