@@ -30,6 +30,14 @@ const fixture=require('./fixtures/house-album.cjs'),root=path.resolve(__dirname,
  await assert.rejects(manage('move-media',{ids:['old-photo','other-photo'],folder_id:null}));assert.equal(management.db.media[0].folder_id,'note-folder');
  management.state.fail='rpc';await assert.rejects(manage('delete-folder',{id:'note-folder'}));assert.equal(management.db.media_folders.length,2);management.state.fail=null;
  await manage('delete-folder',{id:'note-folder'});assert.equal(management.db.media.length,4);assert(management.db.media.filter(x=>x.user_id===management.owner).every(x=>x.folder_id===null&&x.visibility==='me'));assert.equal(updates.at(-1).deletedFolder,'note-folder');assert.equal(management.calls.filter(x=>x.remove).length,0,'folder management never deletes storage files');
+ const posts=fixture(),events=[],postApi=createWorldRecords({client:posts.client,owner:posts.owner,authorized:()=>true,onChange:change=>events.push(change)});
+ await postApi('save-post',{id:'old-photo',body:'동일 ID의 별도 글',create:true});await postApi('save-post',{id:'post-two',body:'두 번째 글',create:true});
+ assert.equal((await postApi('list',{kind:'text'})).records.length,2);assert.equal((await postApi('list',{kind:'all'})).records.length,5);
+ const text=await postApi('open',{id:'old-photo',type:'text'});assert.equal(text.caption,'동일 ID의 별도 글');assert.equal(text.url,undefined);
+ await postApi('manage-records',{action:'trash',media_ids:['old-photo'],post_ids:['post-two']});assert.equal((await postApi('list',{kind:'all'})).records.length,3);assert.equal((await postApi('list',{kind:'all',trash:true,folder:'old-folder'})).records.length,2,'trash is independent of the currently selected folder');assert.deepEqual(events.at(-1).trashedMedia,['old-photo']);
+ assert((await postApi('open',{id:'old-photo',type:'image',trash:true})).url.includes('photo.jpg'));
+ await postApi('manage-records',{action:'restore',media_ids:['old-photo'],post_ids:['post-two']});assert.equal(events.at(-1).media.visibility,'me');assert.equal((await postApi('list',{kind:'all',trash:true})).records.length,0);assert.equal(posts.calls.some(x=>x.remove),false);
+ await assert.rejects(postApi('save-post',{id:'bad',body:'  ',create:true}));await assert.rejects(postApi('manage-records',{action:'trash',media_ids:[]}));await assert.rejects(postApi('manage-records',{action:'trash',post_ids:['missing']}));
  let release;f.state.pause=new Promise(resolve=>release=resolve);const delayed=api('list',{kind:'photo'});await Promise.resolve();owner='member-b';release();await assert.rejects(delayed);await assert.rejects(api('save-folder',{name:'blocked',visibility:'all'}));assert.equal(f.db.media.find(x=>x.id==='other-photo').caption,'다른 계정 사진');
  console.log('PASS: restored server album, owner scoping, chosen privacy, folder moves, upload rollback, account revocation');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -4,18 +4,22 @@ const columns='id,type,path,thumb_path,caption,duration,visibility,folder_id,cre
 export function createWorldRecords({client,owner,authorized,getFriends=()=>[],prepareMedia,onChange=()=>{}}){
  const check=()=>{if(!authorized())throw new Error('로그인을 다시 확인해 주세요.');};
  async function result(query){check();const {data,error}=await query;check();if(error)throw new Error('앨범을 불러오거나 저장하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.');return data;}
- const own=table=>client.from(table).select(table==='media'?columns:'id,name,visibility,allowed').eq('user_id',owner);
+ const own=table=>client.from(table).select(table!=='media_folders'?columns:'id,name,visibility,allowed').eq('user_id',owner);
  const media=id=>result(own('media').eq('id',id).single());
  async function sign(paths){if(!paths.length)return new Map();const data=await result(client.storage.from('media').createSignedUrls(paths.filter(Boolean),900));return new Map((data||[]).map(row=>[row.path,row.signedUrl]));}
- async function list({kind,folder='all',offset=0}={}){
+ async function list({kind,folder='all',offset=0,trash=false}={}){
   if(!['all','text','photo','video'].includes(kind)||!Number.isSafeInteger(offset)||offset<0)throw new Error('기록 종류를 확인해 주세요.');
-  let query=own('media').in('type',kind==='all'?['image','video']:[kind==='photo'?'image':'video']).order('created_at',{ascending:false}).order('id',{ascending:false});
-  if(folder==='none')query=query.is('folder_id',null);else if(folder!=='all')query=query.eq('folder_id',folder);
-  const [rows,folders]=await Promise.all([kind==='text'?Promise.resolve([]):result(query.range(offset,offset+12)),result(own('media_folders').order('created_at',{ascending:true}))]);
-  const visible=rows.slice(0,12),urls=await sign(visible.map(row=>row.thumb_path||row.path));check();
+  let query=own(trash?'house_trash_records':'house_records').in('type',trash||kind==='all'?['image','video','text']:[kind==='photo'?'image':kind==='text'?'text':'video']).order('created_at',{ascending:false}).order('id',{ascending:false}).order('type',{ascending:false});
+  if(!trash&&folder==='none')query=query.is('folder_id',null);else if(!trash&&folder!=='all')query=query.eq('folder_id',folder);
+  const [rows,folders]=await Promise.all([result(query.range(offset,offset+12)),result(own('media_folders').order('created_at',{ascending:true}))]);
+  const visible=rows.slice(0,12),urls=await sign(visible.map(row=>row.thumb_path||row.path).filter(Boolean));check();
   return {records:visible.map(({path,thumb_path,...row})=>({...row,thumbnail:urls.get(thumb_path||path)||null})),folders,friends:getFriends().map(({id,nick})=>({id,nick})),more:rows.length>12};
  }
- async function open({id}){const row=await media(id),urls=await sign([row.path]);return {url:urls.get(row.path),type:row.type,caption:row.caption};}
+ async function open({id,type,trash=false}){
+  const row=type?await result(own(trash?'house_trash_records':'house_records').eq('id',id).eq('type',type).single()):await media(id);
+  if(row.type==='text')return {type:'text',caption:row.caption};
+  const urls=await sign([row.path]);return {url:urls.get(row.path),type:row.type,caption:row.caption};
+ }
  const visibility=value=>{if(!['all','friends','me'].includes(value))throw new Error('공개범위를 골라 주세요.');return value;};
  async function folder(id){if(id)await result(own('media_folders').eq('id',id).single());return id||null;}
  async function saveFolder({id,name,visibility:vis,allowed=[]}){
@@ -39,6 +43,18 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
  async function moveMedia({ids,folder_id=null}){
   if(!Array.isArray(ids)||!ids.length||ids.length>100||ids.some(id=>typeof id!=='string'||!id||id.length>128))throw new Error('옮길 게시물을 1개부터 100개까지 골라 주세요.');
   const data=await result(client.rpc('house_move_media',{p_ids:[...new Set(ids)],p_folder_id:folder_id||null}));onChange({movedMedia:{ids:data.ids,folder: data.folder_id}});return data;
+ }
+ async function savePost({id,body='',folder_id=null,visibility:vis='me',create=false}){
+  if(typeof id!=='string'||!id||id.length>128||typeof body!=='string'||!body.trim()||body.trim().length>4000)throw new Error('글을 1자부터 4,000자까지 적어 주세요.');
+  visibility(vis);return result(client.rpc('house_save_post',{p_id:id,p_body:body,p_folder_id:folder_id||null,p_visibility:vis,p_create:!!create}));
+ }
+ async function manageRecords({action,media_ids=[],post_ids=[],folder_id=null}){
+  if(!['move','trash','restore'].includes(action)||!Array.isArray(media_ids)||!Array.isArray(post_ids)||media_ids.length+post_ids.length<1||media_ids.length+post_ids.length>100||[...media_ids,...post_ids].some(id=>typeof id!=='string'||!id||id.length>128))throw new Error('게시물을 1개부터 100개까지 골라 주세요.');
+  const data=await result(client.rpc('house_manage_records',{p_action:action,p_media_ids:[...new Set(media_ids)],p_post_ids:[...new Set(post_ids)],p_folder_id:folder_id||null}));
+  if(action==='move')onChange({movedMedia:{ids:data.media_ids,folder:data.folder_id}});
+  if(action==='trash')onChange({trashedMedia:data.media_ids});
+  if(action==='restore')for(const row of data.media||[])onChange({media:row});
+  return {count:data.media_ids.length+data.post_ids.length};
  }
  async function upload({file,kind,visibility:vis='me',folder_id}){
   if(!(file instanceof Blob)||!['photo','video'].includes(kind)||!file.type.startsWith(kind==='photo'?'image/':'video/'))throw new Error('사진이나 동영상 파일을 선택해 주세요.');
@@ -66,6 +82,6 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
    throw new Error('앨범에 저장하지 못했어요. 연결과 파일을 확인한 뒤 다시 시도해 주세요.');
   }
  }
- const actions={list,open,'save-folder':saveFolder,'save-media':saveMedia,'delete-folder':deleteFolder,'move-media':moveMedia,upload};
+ const actions={list,open,'save-folder':saveFolder,'save-media':saveMedia,'delete-folder':deleteFolder,'move-media':moveMedia,'save-post':savePost,'manage-records':manageRecords,upload};
  return async(action,args={})=>{check();if(!Object.hasOwn(actions,action))throw new Error('지원하지 않는 앨범 작업이에요.');return actions[action](args);};
 }
