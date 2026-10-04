@@ -50,7 +50,7 @@ function fixture(p, mode, owner, opponents = [6, 7, 10, 11], bonusSweep = false)
     cases++;
     const combo = fixture(p, 'hand', p, [6, 7, 10, 11], true);
     await combo.g.play(p, combo.card); conserved(combo.g);
-    assert.equal(combo.events.filter(e => e.type === 'steal').length, 4, 'self ppuk 2 + bonus 1 + sweep 1');
+    assert.equal(combo.events.filter(e => e.type === 'steal').length, 3, 'self ppuk 2 + sweep 1; bonus adds no steal');
     cases++;
   }
   for (const opponents of [[], [6], [43, 48]]) {

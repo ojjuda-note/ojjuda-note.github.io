@@ -153,7 +153,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,4);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,5);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -236,7 +236,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('.stack.ppuk .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),0);
     assert.match(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),/보너스 1/);assert.equal(await f.page.locator('#mePpuk').textContent(),'뻑 1/3');
     await f.page.locator('#handMe .c[data-id="3"]').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
-    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsOp .c').count(),1,'self ppuk plus tied bonus steals 3 cards');
+    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsOp .c').count(),2,'self ppuk steals 2 cards; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){
