@@ -77,9 +77,10 @@
    }catch{if(active()&&sequence===requestNumber)weatherStatus.textContent='날씨를 불러오지 못했어요. 새로고침하거나 기상청 상세 날씨를 확인해 주세요.';}finally{clearTimeout(timeout);}
   }
   weather.parentElement.addEventListener('toggle',()=>{if(weather.parentElement.open)loadWeather();else{requestNumber++;request?.abort();}});if(weather.parentElement.open)loadWeather();
-  const news=section('news','뉴스');news.append(el('p','보고 싶은 분야를 누르면 최신 뉴스가 새 창에서 열려요.','life-storage'));
+  const news=section('news','뉴스');news.append(el('p','보고 싶은 분야를 누르면 구글 뉴스가 새 창에서 열려요.','life-storage'));
   const newsGrid=el('div','','life-news-grid');
-  for(const [name,url] of [['주요 뉴스','https://news.naver.com/'],['사회','https://news.naver.com/section/102'],['경제','https://news.naver.com/section/101'],['생활·문화','https://news.naver.com/section/103'],['세계','https://news.naver.com/section/104'],['IT·과학','https://news.naver.com/section/105'],['정치','https://news.naver.com/section/100'],['스포츠','https://sports.news.naver.com/']]){const a=link(name+' ↗',url);a.setAttribute('aria-label',name+' 뉴스 (새 창)');newsGrid.append(a);}news.append(newsGrid);
+  const googleNews='https://news.google.com/',googleLocale='hl=ko&gl=KR&ceid=KR:ko';
+  for(const [name,query] of [['주요 뉴스',''],['사회','한국 사회'],['경제','경제'],['생활·문화','생활 문화'],['세계','국제 세계'],['IT·과학','IT 과학'],['정치','한국 정치'],['스포츠','스포츠']]){const url=query?googleNews+'search?q='+encodeURIComponent(query)+'&'+googleLocale:googleNews+'?'+googleLocale;const a=link(name+' ↗',url);a.setAttribute('aria-label',name+' 구글 뉴스 (새 창)');newsGrid.append(a);}news.append(newsGrid);
   const ledger=section('ledger','가계부');
   if(window.OjjudaLedger)closeLedger=window.OjjudaLedger.mount(ledger,{owner,client,authorized:active});
   else ledger.append(el('p','가계부를 불러오지 못했어요. 새로고침해 주세요.','life-empty'));
