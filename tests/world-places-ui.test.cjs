@@ -30,7 +30,7 @@ world=world.slice(0,boot)+`
    assert.match(await picture.getAttribute('src'),new RegExp('/'+id+'-20261001\\.webp$'));
    assert.deepEqual(await picture.evaluate(img=>[img.naturalWidth,img.naturalHeight]),[1536,1024]);
    assert.equal(await page.locator('#pstage iframe, #pstage svg, #pstage canvas, #pstage [data-npc], #pstage [data-item]').count(),0,'old actors and furniture are removed');
-   assert.ok(await page.locator('#pmsg').count());
+   assert.equal(await page.locator('#pmsg').count(),id==='park'?0:1,'only park has no chat');
    assert.equal(await page.evaluate(()=>{const random=Math.random;Math.random=()=>0;try{for(let i=0;i<100;i++)placeTest.tick();return placeTest.state.place.npcs.length}finally{Math.random=random}}),0,'offline ticks never regenerate background characters');
    if(id==='library')assert.ok(await page.locator('#quizcard').isVisible());
    await picture.evaluate(img=>img.dataset.retained='yes');

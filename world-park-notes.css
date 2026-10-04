@@ -1,1 +1,14 @@
-.home[data-park-entry]{grid-template-columns:minmax(0,1fr)}.home[data-park-entry]>:first-child{width:100%;max-width:900px;margin:0 auto}.home[data-park-entry] #pstage{max-height:260px;aspect-ratio:3/1}.home[data-park-entry] #ppanel{padding:0;overflow:visible}.park-app{overflow:hidden;border-radius:20px 20px 0 0;background:#fff}.park-app-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line,#e7dce9)}.park-app-slot{height:clamp(600px,82dvh,1000px)}.park-app iframe{display:block;width:100%;height:100%;border:0;background:#fff}.park-app-expanded{overflow:hidden}.park-app-full{position:fixed;inset:0;z-index:80;border-radius:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);background:#fff}.park-app-full .park-app-head{flex:none}.park-app-full .park-app-slot{flex:1;min-height:0;height:auto}.park-live-chat{padding:14px;border-top:1px solid var(--line,#e7dce9)}.park-live-chat>summary{cursor:pointer;font-weight:700;font-size:14px;min-height:32px}.park-live-chat #plog{height:180px;min-height:80px}.park-live-chat .chatbar{margin-top:8px}@media(max-width:620px){.home[data-park-entry] #pstage{max-height:170px;aspect-ratio:2/1}.park-app-slot{height:max(610px,80dvh)}}
+/* The complete card app sits directly on the World page, outside the park scene. */
+.home[data-park-entry]{grid-template-columns:minmax(0,1fr);margin-bottom:8px}
+.home[data-park-entry]>:first-child{width:100%;max-width:900px;margin:0 auto}
+.home[data-park-entry] #pstage{max-height:260px;aspect-ratio:3/1}
+.park-app{--park-gutter:14px;display:block;width:calc(100% + 2 * var(--park-gutter));margin-inline:calc(-1 * var(--park-gutter));border:0;border-radius:0;box-shadow:none;background:transparent}
+.park-app-tools{display:flex;justify-content:flex-end;padding:0 var(--park-gutter) 8px}
+.park-app-slot{height:max(610px,85dvh)}
+.park-app iframe{display:block;width:100%;height:100%;border:0;background:transparent}
+.park-app-expanded{overflow:hidden}
+.park-app-full{position:fixed;inset:0;z-index:80;width:100%;margin:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);background:var(--bg,#eef0f8)}
+.park-app-full .park-app-tools{flex:none;padding-top:8px}
+.park-app-full .park-app-slot{flex:1;min-height:0;height:auto}
+@media(min-width:900px){.park-app{--park-gutter:32px}}
+@media(max-width:620px){.home[data-park-entry] #pstage{max-height:170px;aspect-ratio:2/1}}
