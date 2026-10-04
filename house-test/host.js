@@ -1,6 +1,6 @@
-import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry1';
+import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry2';
 let activeClose=null;
-export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,room=null,readOnly=false,onProfilePhoto=null,onFrameReady=null,onClose,onStudio}){
+export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,loadProfile=null,room=null,readOnly=false,onProfilePhoto=null,onFrameReady=null,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
  // Opening a member's home does not grant furniture authoring permission.
  const hasStudioAccess=()=>{try{return !!authorized()&&typeof studioAuthorized==='function'&&studioAuthorized()===true;}catch{return false;}};
@@ -15,8 +15,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';close.textContent='나가기';Object.assign(close.style,{top:'4px',right:'8px',width:'66px',height:'40px',fontSize:'13px'});}
  const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-media-caption1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
- const loading=inline?document.createElement('div'):createHouseEntryLoading();
- if(inline){status.textContent=readOnly?'방을 불러오는 중이에요…':'우리집을 불러오는 중이에요…';loading.hidden=true;}
+ let loading=createHouseEntryLoading();status.hidden=true;
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  const retry=document.createElement('button');retry.textContent='다시 시도';retry.hidden=true;retry.style.cssText='position:absolute;right:84px;top:8px;z-index:3;min-height:36px;border:1px solid #dbcee5;border-radius:10px;background:#fffaf4;color:#65526f';
  overlay.append(status,frame,loading,retry,close);
@@ -25,16 +24,18 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const localKey='ojjuda-house-playtest-v1:'+encodeURIComponent(owner),dirtyKey=localKey+':pending-cloud';
  const markDirty=()=>{if(readOnly)return;try{localStorage.setItem(dirtyKey,JSON.stringify({revision}));}catch{}};
  const clearDirty=()=>{if(readOnly)return;try{const current=JSON.parse(localStorage.getItem(localKey));if(current&&JSON.stringify({version:current.version,rooms:current.rooms})!==lastSnapshot){markDirty();return;}localStorage.removeItem(dirtyKey);}catch{}};
- let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{},loadRun=0,revision=null,lastSnapshot='',pendingSnapshot=null,saving=false,savePaused=false,memberProfile=null,flightSnapshot=null,visitorHeight=null;
+ let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{},loadRun=0,revision=null,lastSnapshot='',pendingSnapshot=null,saving=false,savePaused=false,memberProfile=null,flightSnapshot=null,visitorHeight=null,resolvedProfile=profile;
+ const profileValues=value=>!studioOnly&&value&&typeof value==='object'?{nick:String(value.nick||'').slice(0,80),bio:String(value.bio||'').slice(0,200),avatar_url:String(value.avatar_url||'')}:null;
+ if(!studioOnly&&typeof loadProfile==='function')Promise.resolve().then(loadProfile).then(value=>{if(closed||!authorized()||!value)return;resolvedProfile=value;memberProfile=profileValues(value);channel?.port1.postMessage({type:'profile-update',profile:memberProfile});}).catch(()=>{});
  const timeout=promise=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('연결이 늦어지고 있어요. 다시 시도해 주세요.')),20000);Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
- const reload=()=>{retry.hidden=true;savePaused=false;status.hidden=false;status.textContent=readOnly?'방을 불러오는 중이에요…':'우리집을 불러오는 중이에요…';frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');clearTimeout(deadline);deadline=setTimeout(()=>showFailure('화면을 불러오지 못했어요. 다시 시도해 주세요.',reload),20000);frame.src=frame.src;};
- function showFailure(message,again){loading.remove();retry.textContent='다시 시도';status.hidden=false;status.textContent=message;status.style.paddingRight='170px';retry.hidden=false;retry.onclick=again;close.hidden=false;overlay.setAttribute('aria-busy','false');}
+ const reload=()=>{stopPaintWait();stopPaintWait=()=>{};loading.dispose();loading=createHouseEntryLoading();overlay.insertBefore(loading,retry);retry.hidden=true;savePaused=false;status.hidden=true;status.style.paddingRight='';frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');clearTimeout(deadline);deadline=setTimeout(()=>showFailure('화면을 불러오지 못했어요. 다시 시도해 주세요.',reload),20000);frame.src=frame.src;};
+ function showFailure(message,again){loading.dispose();retry.textContent='다시 시도';status.hidden=false;status.textContent=message;status.style.paddingRight='170px';retry.hidden=false;retry.onclick=again;close.hidden=false;overlay.setAttribute('aria-busy','false');}
  async function saveRoom(){if(saving||savePaused||closed||readOnly||!room||!pendingSnapshot)return;saving=true;
   try{while(pendingSnapshot&&!closed&&authorized()){const next=pendingSnapshot,serial=JSON.stringify(next);pendingSnapshot=null;if(serial===lastSnapshot){if(!pendingSnapshot)clearDirty();continue;}flightSnapshot=next;const result=await timeout(room('save',{snapshot:next,revision}));if(closed)return;if(result?.ok===false){pendingSnapshot=pendingSnapshot||next;savePaused=true;showFailure('다른 곳에서 방이 바뀌었어요. 이 기기의 배치는 보관했어요. 다시 열어 확인해 주세요.',reload);return;}revision=result.revision;lastSnapshot=serial;flightSnapshot=null;if(pendingSnapshot)markDirty();else clearDirty();}if(!closed){status.hidden=true;retry.hidden=true;}}
   catch(error){if(closed)return;pendingSnapshot=pendingSnapshot||flightSnapshot;savePaused=true;showFailure(error.message||'방을 계정에 저장하지 못했어요. 이 기기의 배치는 보관했어요.',()=>{savePaused=false;retry.hidden=true;void saveRoom();});}
   finally{saving=false;}
  }
- function reveal(message,ready=false){if(closed)return;stopPaintWait();stopPaintWait=()=>{};loading.remove();frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');status.textContent=message;status.hidden=ready&&!message;if(inline&&ready){close.hidden=true;if(document.activeElement===close)frame.focus({preventScroll:true});}}
+ function reveal(message,ready=false){if(closed)return;stopPaintWait();stopPaintWait=()=>{};const show=()=>{if(closed)return;if(!authorized()){cleanup();return;}frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');status.textContent=message;status.hidden=ready&&!message;if(inline&&ready){close.hidden=true;if(document.activeElement===close)frame.focus({preventScroll:true});}};if(ready)void loading.finish(show);else{loading.dispose();show();}}
  const trackNavigation=(inline||preserveWorldNavigation)&&!studioOnly;
  const navigationObserver=trackNavigation&&window.ResizeObserver?new ResizeObserver(scheduleNavigationSpace):null;
  if(inline){navigationObserver?.observe(mountTarget);const main=mountTarget.closest('main');if(main)navigationObserver?.observe(main);}
@@ -60,7 +61,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  }
  function scheduleNavigationSpace(){if(!closed&&!navigationFrame)navigationFrame=requestAnimationFrame(updateNavigationSpace);}
  if(trackNavigation){updateNavigationSpace();window.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('scroll',scheduleNavigationSpace);}
- function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);stopPaintWait();stopFrameNavigation();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
+ function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);loading.dispose();stopPaintWait();stopFrameNavigation();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
  const escape=e=>{if(e.key==='Escape'&&document.querySelector('dialog[open]'))return;if(e.key==='Escape'){e.preventDefault();cleanup();}};window.addEventListener('keydown',escape,true);close.onclick=cleanup;activeClose=cleanup;
  const watcher=setInterval(()=>{
   if(!authorized()||!overlay.isConnected){cleanup();return;}
@@ -84,17 +85,17 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     const reply=channel.port1;try{const result=await records(e.data.action,e.data.args);if(!closed&&authorized()&&channel.port1===reply)reply.postMessage({type:'records-result',id:e.data.id,result});}
     catch(error){if(!closed&&authorized()&&channel.port1===reply)reply.postMessage({type:'records-result',id:e.data.id,error:error.message||'앨범을 불러오지 못했어요.'});}return;
    }
-   if(e.data?.type==='ready'){if(pendingSnapshot&&!savePaused)void saveRoom();stopPaintWait();stopPaintWait=waitForHousePaint(frame,()=>{if(closed)return;if(!authorized()){cleanup();return;}clearTimeout(deadline);if(savePaused){loading.remove();frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');return;}reveal(preview?'제작 가구 미리보기 · 기존 배치는 저장하지 않습니다':'',true);});}
+   if(e.data?.type==='ready'){if(pendingSnapshot&&!savePaused)void saveRoom();stopPaintWait();stopPaintWait=waitForHousePaint(frame,()=>{if(closed)return;if(!authorized()){cleanup();return;}clearTimeout(deadline);if(savePaused){loading.dispose();frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');return;}reveal(preview?'제작 가구 미리보기 · 기존 배치는 저장하지 않습니다':'',true);});}
    else if(e.data?.type==='failed'){clearTimeout(deadline);reveal('우리집을 불러오지 못했어요. 다시 시도해 주세요.');showFailure('우리집을 불러오지 못했어요. 다시 시도해 주세요.',reload);}
    else if(e.data?.type==='close')cleanup();
    else if(e.data?.type==='studio'){
     if(readOnly||!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-folder-kind1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-entry2').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
-  memberProfile=!studioOnly&&profile&&typeof profile==='object'?{nick:String(profile.nick||'').slice(0,80),bio:String(profile.bio||'').slice(0,200),avatar_url:String(profile.avatar_url||'')}:null;
+  memberProfile=profileValues(resolvedProfile);
   let roomSnapshot=null;
   try{if(!studioOnly&&typeof room==='function'){const result=await timeout(room('load'));if(closed||run!==loadRun||!authorized())return;if(!result||result.ok===false)throw new Error('방을 불러오지 못했어요. 다시 시도해 주세요.');roomSnapshot=result.found?result.snapshot:null;revision=result.found?result.revision:null;lastSnapshot=roomSnapshot?JSON.stringify(roomSnapshot):'';pendingSnapshot=null;savePaused=false;
     if(!readOnly){let pending,local;try{pending=JSON.parse(localStorage.getItem(dirtyKey));local=JSON.parse(localStorage.getItem(localKey));}catch{}
