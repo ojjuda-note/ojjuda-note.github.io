@@ -8,6 +8,25 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
  await page.evaluate(()=>{localStorage.setItem('ojjuda-life-v1:a','saved old contacts');window.permissionRequests=0;Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition(ok,fail){permissionRequests++;fail({code:1});}}});window.mount=owner=>OjjudaLife.mount(document.querySelector('main'),{owner});mount('a');});
  assert.equal(await page.locator('[data-life-tool=contacts]').count(),0);assert.equal(await page.evaluate(()=>localStorage.getItem('ojjuda-life-v1:a')),'saved old contacts');assert.equal(requests,0,'closed weather does not fetch');assert.equal(await page.evaluate(()=>permissionRequests),0,'no unsolicited geolocation');
  const cal=page.locator('[data-life-tool=calendar]');assert.equal(await cal.locator('[data-date]').count(),29,'leap February');await cal.getByRole('button',{name:'다음 달',exact:true}).click();assert.equal(await cal.locator('[data-date]').count(),31);await cal.getByRole('button',{name:'이전 달',exact:true}).click();await cal.locator('[data-date="2028-02-29"]').click();assert.equal(await cal.locator('[aria-pressed=true]').getAttribute('data-date'),'2028-02-29');await cal.getByRole('button',{name:'오늘',exact:true}).click();assert.equal(await cal.locator('[aria-current=date]').getAttribute('data-date'),'2028-02-15');
+ // Actual red-day rendering, including Saturday/selected precedence and exceptions.
+ assert.match(await cal.locator('.life-calendar-holiday-note').innerText(),/2028년 공휴일 정보는 아직/);
+ const shift=async n=>page.evaluate(n=>{for(let i=0;i<Math.abs(n);i++)document.querySelector(`[aria-label="${n<0?'이전 달':'다음 달'}"]`).click();},n);
+ await shift(-25);let holidayCount=0;
+ for(let i=0;i<24;i++){holidayCount+=await cal.locator('button.is-holiday').count();if(i<23)await shift(1);}
+ assert.equal(holidayCount,46,'22 dates in 2026 and 24 in 2027');
+ await shift(-14); // October 2026
+ const holiday=cal.locator('[data-date="2026-10-03"]');await holiday.click();
+ assert.equal(await holiday.evaluate(b=>getComputedStyle(b).color),'rgb(188, 77, 103)','Saturday holiday remains red when selected');
+ assert.match(await cal.locator('.life-calendar-selected').innerText(),/개천절/);
+ assert.match(await cal.locator('[data-date="2026-10-05"]').getAttribute('aria-label'),/대체공휴일.*개천절/);
+ assert.match(await cal.locator('[data-date="2026-10-09"]').innerText(),/한글날/);
+ for(const width of [320,390]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
+ await page.screenshot({path:'/tmp/life-holidays.png',fullPage:true});
+ await shift(-1);assert.equal(await cal.locator('[data-date="2026-09-28"].is-holiday').count(),0,'Saturday Chuseok alone does not add Monday substitute');
+ await shift(-3);assert.match(await cal.locator('[data-date="2026-06-03"]').getAttribute('aria-label'),/전국동시지방선거/);assert.equal(await cal.locator('[data-date="2026-06-08"].is-holiday').count(),0,'Memorial Day has no substitute');
+ await shift(11);assert.match(await cal.locator('[data-date="2027-05-03"]').getAttribute('aria-label'),/대체공휴일.*노동절/);assert.match(await cal.locator('[data-date="2027-05-13"]').getAttribute('aria-label'),/부처님오신날/);
+ await shift(2);assert.match(await cal.locator('[data-date="2027-07-19"]').getAttribute('aria-label'),/대체공휴일.*제헌절/);
+ await cal.getByRole('button',{name:'오늘',exact:true}).click();
  const w=page.locator('[data-life-tool=weather]');await w.locator('summary').click();await w.locator('.life-weather-now').waitFor();assert.ok((await w.innerText()).includes('21°'),await w.innerText());assert.equal(await w.locator('.life-weather-days>div').count(),3);await w.getByRole('button',{name:'내 위치',exact:true}).click();assert.ok((await w.innerText()).includes('위치 권한'));assert.equal(await page.evaluate(()=>permissionRequests),1);
  mode='hold';await w.getByLabel('지역',{exact:true}).selectOption('1');await page.waitForFunction(()=>document.querySelector('.life-status').textContent.includes('부산'));await w.getByLabel('지역',{exact:true}).selectOption('2');await new Promise(r=>setTimeout(r,100));assert.equal(pending.length,2);await pending[1].fulfill({contentType:'application/json',body:JSON.stringify(weather(26))});await w.locator('.life-weather-now').waitFor();await pending[0].fulfill({contentType:'application/json',body:JSON.stringify(weather(9))}).catch(()=>{});assert.ok((await w.innerText()).includes('대구'));assert.ok((await w.innerText()).includes('26°'),'newest city wins');
  mode='error';await w.getByRole('button',{name:'새로고침',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.life-status').textContent.includes('불러오지 못'));assert.equal(await w.locator('.life-weather-now').count(),0,'no fake weather on failure');mode='ok';await w.getByRole('button',{name:'새로고침',exact:true}).click();await w.locator('.life-weather-now').waitFor();
