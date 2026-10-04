@@ -45,8 +45,8 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
    const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,4);
-   const expected=(layout.width-layout.left-layout.right)/4;
+   assert.equal(layout.buttons.length,5);
+   const expected=(layout.width-layout.left-layout.right)/layout.buttons.length;
    layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*expected))<=1)});
   }
   await page.setViewportSize({width:390,height:844});
