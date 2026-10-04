@@ -159,12 +159,13 @@ window.visitTest={state:g,auth:D,model:$,actions:sr,render:H,visit:Ol,localVisit
   assert.match(await page.locator('#modal-root').innerText(),/공개 비디오 설명/);
   await page.locator('#modal-root [data-act="close"]').click();
 
-  await page.locator('[data-act="sec"][data-sec="guestbook"]').click();
-  assert.match(await page.locator('#panel').innerText(),/방명록에 남겨 둔 인사/,'the visitor guestbook remains accessible');
-  assert.equal(await page.locator('#g-text').count(),1,'a visitor can still write a guestbook message');
-  await page.locator('[data-act="sec"][data-sec="intro"]').click();
-  assert.match(await page.locator('#panel').innerText(),/다정한 이웃이에요/,'friend introductions remain accessible');
-  assert.match(await page.locator('#panel').innerText(),/친구가 되면 소개글/,'a nonfriend cannot write an introduction');
+  assert.equal(await page.locator('.visit-sections,[data-act="sec"][data-sec="guestbook"],[data-act="sec"][data-sec="intro"]').count(),0,'visitors see the four record categories without a second menu line');
+  assert.deepEqual(await page.evaluate(()=>({guestbook:visitTest.state.visitData.guestbook.length,intros:visitTest.state.visitData.intros.length})),{guestbook:1,intros:1},'removing navigation does not discard existing guestbook or introduction data');
+  for(const sec of ['guestbook','intro']){
+   await page.evaluate(sec=>visitTest.actions.sec({sec}),sec);
+   assert.equal(await section('전체').getAttribute('aria-selected'),'true','older section targets fall back to the unified record feed');
+   assert.equal(await page.locator('#g-text,.visit-community').count(),0);
+  }
   await page.evaluate(()=>visitTest.actions.sec({sec:'all'}));
   await section('전체').focus();await page.keyboard.press('ArrowRight');
   assert.equal(await section('노트').getAttribute('aria-selected'),'true','record tabs support keyboard navigation');
@@ -249,6 +250,6 @@ window.visitTest={state:g,auth:D,model:$,actions:sr,render:H,visit:Ol,localVisit
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'visit layout fits '+width+'px');
   }
   assert.deepEqual(errors,[],'visiting and leaving produce no uncaught browser errors');
-  console.log('PASS: modern visitor tabs, chronological current and legacy records, category folders, read-only media and note viewers, guestbook and introductions, keyboard/mobile layout, closed doors and visit races.');
+  console.log('PASS: direct visitor record tabs without redundant menus, chronological current and legacy records, category folders, read-only media and note viewers, retained guestbook data, keyboard/mobile layout, closed doors and visit races.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

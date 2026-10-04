@@ -29,7 +29,62 @@ window.inline=false;window.mount=document.createElement('main');document.body.ap
  f=await open();assert.equal(await f.locator('.room[data-room="0:0"] .curtains').count(),0,'reopening displays the latest local edit, not the earlier in-flight cloud snapshot');await page.getByText(/이 기기의 최근 배치를 복구했어요/).waitFor();await page.getByRole('button',{name:'이 배치 저장',exact:true}).click();await page.waitForFunction(()=>cloud.rooms[0].curtains===false);assert.equal(await page.evaluate(()=>localStorage.getItem('ojjuda-house-playtest-v1:member-a:pending-cloud')),null);
  // Unknown custom artwork keeps the original cloud and device placements intact.
  await page.evaluate(()=>{closeHouse();cloud.rooms[0].furniture['made-other-device']={direction:'left',x:2,y:2};window.customBefore=JSON.stringify(cloud);window.deviceBefore=localStorage['ojjuda-house-playtest-v1:member-a'];});f=await open();assert.equal(await f.locator('[data-tab="room"]').isDisabled(),true);await f.getByText('이 기기에 없는 제작 가구는 표시할 수 없어요.',{exact:true}).waitFor();await page.evaluate(()=>closeHouse());assert.equal(await page.evaluate(()=>JSON.stringify(cloud)),await page.evaluate(()=>customBefore));assert.equal(await page.evaluate(()=>localStorage['ojjuda-house-playtest-v1:member-a']),await page.evaluate(()=>deviceBefore));await page.evaluate(()=>delete cloud.rooms[0].furniture['made-other-device']);
- await page.evaluate(()=>{closeHouse();failure=null;readOnly=true;inline=true;owner='visitor-owner';window.before=JSON.stringify({...localStorage});});f=await open();assert.equal(await page.locator('iframe').getAttribute('title'),'포근한 하루님의 집');await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));assert.equal(await f.evaluate(()=>document.querySelector('#viewport').getBoundingClientRect().bottom<=innerHeight+1),true,'inline visitor frame expands to fit the real multi-room scene');assert.equal(await f.locator('#panel').isVisible(),false);assert.equal(await f.locator('#home-profile-photo').isDisabled(),true);assert.equal(await f.locator('#home-room-open').isVisible(),false);await f.evaluate(()=>{document.querySelector('[data-tab="room"]').click();document.querySelector('#expand').click();document.querySelector('#home-profile-photo').click();});assert.equal(await f.locator('#world').evaluate(el=>el.inert),true);await page.evaluate(()=>closeHouse());assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage})===before),true,'visiting never writes device data');assert.equal(await page.evaluate(()=>photoCalls),1);
+ // Enlarging another member's room exposes only viewing and camera controls.
+ await page.evaluate(()=>{closeHouse();failure=null;readOnly=true;inline=true;owner='visitor-owner';cloud.rooms[0].furniture.sofa={direction:'left',x:0,y:3};window.before=JSON.stringify({...localStorage});window.visitorCloudBefore=JSON.stringify(cloud);window.visitorSavesBefore=calls.filter(call=>call.action==='save').length;});
+ f=await open();assert.equal(await page.locator('iframe').getAttribute('title'),'포근한 하루님의 집');
+ await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ assert.equal(await f.evaluate(()=>document.querySelector('#viewport').getBoundingClientRect().bottom<=innerHeight+1),true,'inline visitor frame fits its compact multi-room summary');
+ assert.equal(await f.locator('#panel').isVisible(),false);assert.equal(await f.locator('#home-profile-photo').isDisabled(),true);
+ assert.equal(await f.locator('#home-room-open').isVisible(),true,'a visitor can open the room preview');
+ assert.equal(await f.locator('#home-room-open').getAttribute('aria-label'),'방 크게 보기');
+ const summaryHeight=await page.locator('iframe').evaluate(frame=>frame.clientHeight),summaryWidth=await f.locator('#viewport').evaluate(view=>view.clientWidth);
+ const cameraScale=()=>f.locator('#world').evaluate(world=>new DOMMatrix(getComputedStyle(world).transform).a);
+ const assertReadOnly=async()=>{
+  assert.equal(await f.locator('#world').evaluate(world=>world.inert),true,'room contents remain inert while camera controls work');
+  assert.equal(await f.locator('#panel').isVisible(),false,'no furniture authoring panel appears');
+  assert.equal(await f.locator('#expand').isVisible(),false,'a visitor cannot add rooms');
+  assert.equal(await f.locator('#empty-room-toggle').isVisible(),false,'a visitor cannot remove furniture from view');
+  assert.equal(await f.locator('#viewport').evaluate(view=>view.classList.contains('empty-room-preview')),false,'hidden authoring controls cannot change the displayed room');
+  assert.equal(await f.locator('#placement-actions').isVisible(),false,'no placement buttons appear');
+  assert.equal(await f.locator('.furniture').count()>0,true,'read-only checks cover a real saved furniture item');
+  assert.equal(await f.locator('.furniture').evaluateAll(items=>items.every(item=>item.disabled)),true,'saved furniture never becomes editable');
+ };
+ await f.locator('#home-room-open').click();await f.locator('.camera').waitFor({state:'visible'});
+ await page.waitForFunction(height=>document.querySelector('iframe').clientHeight>height+100,summaryHeight);
+ assert.equal(await f.locator('#viewport').evaluate(view=>view.clientWidth)>summaryWidth,true,'the enlarged room uses the available width');
+ assert.equal(await f.locator('#home-profile').isVisible(),false,'the expanded view focuses on the room');
+ await assertReadOnly();
+ if(proof){for(const [width,height]of [[320,568],[390,844],[844,390]]){
+  await page.setViewportSize({width,height});await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await f.evaluate(()=>document.fonts.ready);
+  assert.equal(await f.evaluate(()=>{const view=document.querySelector('#viewport').getBoundingClientRect(),camera=document.querySelector('.camera').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth&&view.height>0&&camera.bottom<=innerHeight+1;}),true,'visitor camera controls fit '+width+'x'+height);
+  await page.screenshot({path:path.join(proof,`visitor-expanded-${width}x${height}.png`)});
+ }await page.setViewportSize({width:390,height:844});await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
+ const initialScale=await cameraScale();await f.locator('#zoom-in').click();assert.equal(await cameraScale()>initialScale,true,'the visitor can zoom into the saved room');
+ const zoomedScale=await cameraScale();await f.locator('#zoom-out').click();assert.equal(await cameraScale()<zoomedScale,true,'the visitor can zoom back out');
+ await f.locator('#overview').click();const wholeScale=await cameraScale();await f.locator('#home-view').click();assert.equal(await cameraScale()>wholeScale,true,'current-room and whole-home views use the saved multi-room geometry');
+ await f.locator('#zoom-in').click();
+ const panBefore=await f.locator('#world').evaluate(world=>world.style.transform),area=await f.locator('#viewport').boundingBox();
+ await page.mouse.move(area.x+area.width*.55,area.y+area.height*.55);await page.mouse.down();await page.mouse.move(area.x+area.width*.72,area.y+area.height*.65,{steps:5});await page.mouse.up();
+ assert.notEqual(await f.locator('#world').evaluate(world=>world.style.transform),panBefore,'dragging pans the enlarged room without editing furniture');
+ // Even explicitly invoking hidden authoring controls cannot start a visitor edit.
+ await f.evaluate(()=>{document.querySelector('#expand').click();document.querySelector('#empty-room-toggle').click();document.querySelector('#home-profile-photo').click();document.querySelector('.furniture').click();});
+ await assertReadOnly();
+ await f.locator('#viewport').focus();await page.keyboard.press('Escape');
+ await f.locator('#home-room-open').waitFor({state:'visible'});await page.waitForFunction(height=>document.querySelector('iframe').clientHeight<=height+1,summaryHeight);
+ assert.equal(await page.locator('iframe').count(),1,'Escape returns to the same visited home without closing it');
+ assert.equal(await f.locator('.camera').isVisible(),false);
+ if(proof){for(const [width,height]of [[320,568],[390,844]]){
+  await page.setViewportSize({width,height});await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.screenshot({path:path.join(proof,`visitor-summary-${width}.png`)});
+ }await page.setViewportSize({width:390,height:844});await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
+ await f.locator('#home-room-open').click();await f.locator('.camera').waitFor({state:'visible'});await f.locator('#exit').click();
+ await f.locator('#home-room-open').waitFor({state:'visible'});assert.equal(await page.locator('iframe').count(),1,'the enlarged-room close button returns to the summary');
+ await f.locator('#home-room-open').click();await f.locator('.camera').waitFor({state:'visible'});
+ await page.evaluate(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})));
+ await f.locator('#home-room-open').waitFor({state:'visible'});assert.equal(await page.locator('iframe').count(),1,'parent-window Escape also collapses the view instead of leaving the visited home');
+ assert.equal(await page.evaluate(()=>JSON.stringify(cloud)===visitorCloudBefore),true,'viewing never changes the saved remote layout');
+ assert.equal(await page.evaluate(()=>calls.filter(call=>call.action==='save').length===visitorSavesBefore),true,'camera actions never request a server save');
+ await page.evaluate(()=>closeHouse());assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage})===before),true,'viewing and closing never write visitor device data');assert.equal(await page.evaluate(()=>photoCalls),1);
+
 
  // An immediate first-sync error remains visible when the room paint completes.
  await page.evaluate(()=>{readOnly=false;inline=false;owner='first-cloud';found=false;failure='save';});f=await open();await page.getByText('방 저장 실패',{exact:true}).waitFor();assert.equal(await f.locator('#app').isVisible(),true);assert.equal(await page.getByRole('button',{name:'다시 시도',exact:true}).isVisible(),true);await page.evaluate(()=>{closeHouse();found=true;});
@@ -38,5 +93,5 @@ window.inline=false;window.mount=document.createElement('main');document.body.ap
  await page.evaluate(()=>{closeHouse();owner='cloud-race';cloud.rooms[0].furniture.carpet={direction:'center',x:1,y:3};localStorage.setItem('ojjuda-house-playtest-v1:cloud-race',JSON.stringify({version:13,rooms:[{x:0,y:0,curtains:false,shelf:null,furniture:{}}],diary:'처음 글'}));});
  let releaseArt,started;const startedArt=new Promise(resolve=>started=resolve),artGate=new Promise(resolve=>releaseArt=resolve);await context.route('**/carpet-v1.runtime.json*',async route=>{started();await artGate;await route.fallback();});await page.locator('#open').click();await startedArt;
  await page.evaluate(()=>{const latest=structuredClone(cloud);latest.rooms.push({x:1,y:1,curtains:false,shelf:null,furniture:{}});latest.diary='다른 창에서 저장한 최신 글';localStorage.setItem('ojjuda-house-playtest-v1:cloud-race',JSON.stringify(latest));});releaseArt();await page.frameLocator('iframe').locator('#home-profile-nick').waitFor();f=page.frames().find(frame=>frame.url().includes('/house-test/index.html'));assert.equal(await f.locator('.room').count(),4,'cloud loading never replaces a newer device save with its initial snapshot');await page.waitForFunction(()=>cloud.rooms.length===4);assert.equal(await page.evaluate(()=>JSON.parse(localStorage['ojjuda-house-playtest-v1:cloud-race']).diary),'다른 창에서 저장한 최신 글');await page.evaluate(()=>closeHouse());
- assert.deepEqual(errors,[]);console.log('PASS: unified multi-room fit, profile photo callback, keyboard scrolling, local backup, cloud save retry/conflict/latest-edit recovery, unavailable custom preservation, read-only visitor and load retry');
+ assert.deepEqual(errors,[]);console.log('PASS: unified multi-room fit, profile photo callback, keyboard scrolling, local backup, cloud save retry/conflict/latest-edit recovery, unavailable custom preservation, read-only visitor enlargement, camera controls and return navigation, and load retry');
 }finally{await browser.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

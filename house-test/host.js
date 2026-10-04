@@ -14,7 +14,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';}
- const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-scope-row1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-visit-zoom1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  let loading=createHouseEntryLoading();status.hidden=true;
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  const retry=document.createElement('button');retry.textContent='다시 시도';retry.hidden=true;retry.style.cssText='position:absolute;right:84px;top:8px;z-index:3;min-height:36px;border:1px solid #dbcee5;border-radius:10px;background:#fffaf4;color:#65526f';
@@ -25,7 +25,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const localKey='ojjuda-house-playtest-v1:'+encodeURIComponent(owner),dirtyKey=localKey+':pending-cloud';
  const markDirty=()=>{if(readOnly)return;try{localStorage.setItem(dirtyKey,JSON.stringify({revision}));}catch{}};
  const clearDirty=()=>{if(readOnly)return;try{const current=JSON.parse(localStorage.getItem(localKey));if(current&&JSON.stringify({version:current.version,rooms:current.rooms})!==lastSnapshot){markDirty();return;}localStorage.removeItem(dirtyKey);}catch{}};
- let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{},loadRun=0,revision=null,lastSnapshot='',pendingSnapshot=null,saving=false,savePaused=false,memberProfile=null,flightSnapshot=null,visitorHeight=null,resolvedProfile=profile;
+ let channel=null,closed=false,navigation=null,navigationFrame=0,stopPaintWait=()=>{},stopFrameNavigation=()=>{},loadRun=0,revision=null,lastSnapshot='',pendingSnapshot=null,saving=false,savePaused=false,memberProfile=null,flightSnapshot=null,visitorHeight=null,visitorExpanded=false,resolvedProfile=profile;
  const profileValues=value=>!studioOnly&&value&&typeof value==='object'?{nick:String(value.nick||'').slice(0,80),bio:String(value.bio||'').slice(0,200),avatar_url:String(value.avatar_url||'')}:null;
  if(!studioOnly&&typeof loadProfile==='function')Promise.resolve().then(loadProfile).then(value=>{if(closed||!authorized()||!value)return;resolvedProfile=value;memberProfile=profileValues(value);channel?.port1.postMessage({type:'profile-update',profile:memberProfile});}).catch(()=>{});
  const timeout=promise=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('연결이 늦어지고 있어요. 다시 시도해 주세요.')),20000);Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
@@ -53,7 +53,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
    // Use document coordinates so scrolling does not keep growing the room.
    const contentTop=overlay.getBoundingClientRect().top+window.scrollY;
    const bottom=visible?rect.top:top+height;
-   overlay.style.height=(readOnly?(visitorHeight||160):Math.max(180,Math.floor(bottom-contentTop)))+'px';
+   overlay.style.height=(readOnly&&!visitorExpanded?(visitorHeight||160):Math.max(180,Math.floor(bottom-contentTop)))+'px';
    return;
   }
   overlay.style.height=inset?`calc(var(--app-viewport-height,100dvh) - ${inset}px)`:'var(--app-viewport-height,100dvh)';
@@ -63,7 +63,8 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  function scheduleNavigationSpace(){if(!closed&&!navigationFrame)navigationFrame=requestAnimationFrame(updateNavigationSpace);}
  if(trackNavigation){updateNavigationSpace();window.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('scroll',scheduleNavigationSpace);}
  function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);loading.dispose();stopPaintWait();stopFrameNavigation();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
- const escape=e=>{if(e.key==='Escape'&&document.querySelector('dialog[open]'))return;if(e.key==='Escape'){e.preventDefault();cleanup();}};window.addEventListener('keydown',escape,true);close.onclick=cleanup;activeClose=cleanup;
+ const leaveRoomView=()=>{if(!readOnly||!(visitorExpanded||frame.contentDocument?.querySelector('#app.house-visitor:not(.records-home)')))return false;channel?.port1.postMessage({type:'room-view',expanded:false});return true;};
+ const escape=e=>{if(e.key==='Escape'&&document.querySelector('dialog[open]'))return;if(e.key==='Escape'){e.preventDefault();if(!leaveRoomView())cleanup();}};window.addEventListener('keydown',escape,true);close.onclick=()=>{if(!leaveRoomView())cleanup();};activeClose=cleanup;
  const watcher=setInterval(()=>{
   if(!authorized()||!overlay.isConnected){cleanup();return;}
   if(trackNavigation)scheduleNavigationSpace();
@@ -78,6 +79,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
   canUseStudio=!readOnly&&hasStudioAccess();channel?.port1.close();channel=new MessageChannel();
   channel.port1.onmessage=async e=>{
    if(closed)return;if(!authorized()){cleanup();return;}
+   if(e.data?.type==='room-view'){if(readOnly&&typeof e.data.expanded==='boolean'){visitorExpanded=e.data.expanded;scheduleNavigationSpace();}return;}
    if(e.data?.type==='room-size'){if(readOnly&&Number.isFinite(e.data.height)){visitorHeight=Math.min(600,Math.max(110,e.data.height));scheduleNavigationSpace();}return;}
    if(e.data?.type==='room-save'){if(!readOnly&&!studioOnly&&typeof room==='function'&&e.data.snapshot){pendingSnapshot=e.data.snapshot;markDirty();void saveRoom();}return;}
    if(e.data?.type==='profile-photo'){if(readOnly||studioOnly||typeof onProfilePhoto!=='function')return;try{const next=await onProfilePhoto();if(next&&!closed&&authorized()){memberProfile={...memberProfile,...next};channel.port1.postMessage({type:'profile-update',profile:memberProfile});}}catch(error){if(!closed)showFailure(error.message||'사진을 바꾸지 못했어요.',()=>{retry.hidden=true;status.hidden=true;});}return;}
@@ -93,7 +95,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(readOnly||!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261004-scope-row1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261004-visit-zoom1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   memberProfile=profileValues(resolvedProfile);
