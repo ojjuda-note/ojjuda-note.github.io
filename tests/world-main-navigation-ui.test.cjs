@@ -11,7 +11,7 @@ world = world.replace('<script type="module">', `<script>${helper}</script><scri
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct};
+window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct,setClient:client=>{S=client}};
 gm(()=>{g.tab="friends";g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
 g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
 
@@ -245,6 +245,108 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.deepEqual(errors,[]);
     await context.close();
 
+    // Exercise the real board -> World opener boundary; game engines and remote
+    // iframe contents have separate suites, and this fixture cannot reach a server.
+    const boardScripts=['world-board.js','world-spot-game.js','matgo-access.js','matgo-bridge.js']
+      .map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
+    const boardWorld=world.replace('<script type="module">',`<script>${boardScripts}</script><script type="module">`);
+    const games=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+    await games.route('**/*',route=>{
+      const url=new URL(route.request().url());
+      if(url.hostname!=='fixture.test')return route.abort();
+      if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:boardWorld});
+      if(['/games/spot-difference/index.html','/games/matgo-online.html'].includes(url.pathname))
+        return route.fulfill({contentType:'text/html',body:'<!doctype html><title>Isolated game destination</title>'});
+      const file=path.join(root,url.pathname);
+      return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
+    });
+    const gp=await games.newPage(),gameErrors=[];
+    gp.on('pageerror',error=>gameErrors.push(error.message));
+    await gp.goto('https://fixture.test/world.html');
+    await gp.waitForFunction(()=>window.worldTest);
+    await gp.evaluate(()=>{
+      window.gameFixture={calls:[],age:25,screwModes:[],destroyed:[]};
+      const fixture=gameFixture;
+      function query(table){
+        let single=false;const result=()=>({data:table==='user_private'?{coins:321}:single?null:[],error:null});
+        const q=new Proxy({}, {get(target,key){
+          if(key==='then')return (resolve,reject)=>Promise.resolve(result()).then(resolve,reject);
+          return (...args)=>{fixture.calls.push({table,method:key,args});if(key==='maybeSingle'||key==='single')single=true;return q;};
+        }});return q;
+      }
+      const client={from:query,schema:()=>({rpc:async()=>({data:[],error:null})}),
+        auth:{getUser:async()=>({data:{user:{id:'board-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+        rpc:async(name,args)=>{fixture.calls.push({rpc:name,args});return {data:name==='get_my_member_identity'?{locked:true,age:fixture.age}:[],error:null};}};
+      worldTest.setClient(client);Object.assign(worldTest.auth,{online:true,user:{id:'board-member'}});
+      OjjudaMatgoAccess.configure(client);
+      window.OjjudaScrewLoader={menuHTML:()=>'<p>종류 선택</p>',load:async mode=>{
+        fixture.screwModes.push(mode);return ()=>({controls:'',update(){},draw(){},destroy(){fixture.destroyed.push(mode);}});
+      }};
+      worldTest.actions.tab({tab:'board'});
+    });
+    await gp.locator('.board-game-open').first().waitFor();
+    assert.equal(await gp.locator('.board-game-open').count(),12,'all public ranking names lead to games, including every variant');
+    assert.equal(await gp.locator('[data-game="matgo"]').count(),0,'unverified Matgo access is not advertised');
+    await gp.locator('[data-board-root]').evaluate(el=>el.dataset.retained='original-board');
+    const gameButton=id=>gp.locator(`[data-game="${id}"] .board-game-open`);
+    const openGame=async id=>{
+      const slide=await gameButton(id).evaluate(el=>[...el.closest('.board-rank-track').children].indexOf(el.closest('.board-rank-page')));
+      while(Number(await gp.locator('.board-leaders').getAttribute('data-rank-page'))!==slide)
+        await gp.getByRole('button',{name:'다음 게임순위',exact:true}).click();
+      await gameButton(id).click();
+    };
+    const stillBoard=async(id,close)=>{
+      const slide=await gp.locator('.board-leaders').getAttribute('data-rank-page');
+      await gp.locator(close).click();
+      assert.equal(await gp.evaluate(()=>worldTest.state.tab),'board',id+': closing returns to the board');
+      assert.equal(await gp.locator('[data-board-root]').getAttribute('data-retained'),'original-board',id+': opening does not remount the board');
+      assert.equal(await gp.locator('.board-leaders').getAttribute('data-rank-page'),slide,id+': ranking page is preserved');
+      assert.equal(gp.url(),'https://fixture.test/world.html');
+    };
+    for(const id of ['carom4','carom3','pool8']){
+      await openGame(id);
+      await gp.locator(`#bd-menu [data-act="bl-kind"][data-v="${id}"][aria-pressed="true"]`).waitFor();
+      assert.equal(await gp.locator('#bd-menu [data-act="bl-kind"][aria-pressed="true"]').count(),1,id+': correct billiards variant selected');
+      await stillBoard(id,'#modal-root [data-act="close"]');
+    }
+    for(const [id,mode,label] of [['screw_box','box','박스형'],['screw_flat','flat','평면형']]){
+      await openGame(id);await gp.locator(`#gov[data-screw-mode="${mode}"]`).waitFor();
+      assert.ok((await gp.locator('#gov .gt').innerText()).includes(label));
+      await stillBoard(id,'#gov [data-g="close"]');
+    }
+    assert.deepEqual(await gp.evaluate(()=>[gameFixture.screwModes,gameFixture.destroyed]),[['box','flat'],['box','flat']],'each screw row loads and closes its own selected engine');
+    await openGame('spot');await gp.locator('.spot-game-dialog[open]').waitFor();
+    assert.equal(new URL(await gp.locator('.spot-game-dialog iframe').getAttribute('src'),gp.url()).pathname,'/games/spot-difference/index.html');
+    await stillBoard('spot','.spot-game-dialog button');
+    for(const [id,label] of [['mole','두더지 잡기'],['runner','쭈 달리기'],['stacker','탑 쌓기'],['breakout','벽돌깨기']]){
+      await openGame(id);await gp.locator('#gov').waitFor();
+      assert.equal(await gp.locator('#gov').getAttribute('aria-label'),label,id+': matching arcade game opens');
+      await stillBoard(id,'#gov [data-g="close"]');
+    }
+    for(const [id,label] of [['janggi','장기'],['chess','체스']]){
+      await openGame(id);await gp.locator(`#bd-menu [data-act="bd-start"][data-k="${id}"]`).first().waitFor();
+      assert.equal(await gp.locator('#modal-root [role="dialog"]').getAttribute('aria-label'),label);
+      await stillBoard(id,'#modal-root [data-act="close"]');
+    }
+    // Use the real Matgo gate: an already visible row must recheck server age.
+    await gp.evaluate(async()=>{await OjjudaMatgoAccess.check();worldTest.render();gameFixture.age=18;});
+    assert.equal(await gp.locator('[data-game="matgo"] .board-game-open').count(),1);
+    await openGame('matgo');
+    await gp.waitForFunction(()=>document.querySelector('#toast').textContent.includes('만 19세 생일부터'));
+    assert.equal(await gp.locator('#matgo-overlay').count(),0,'a rejected fresh age check cannot open Matgo');
+    assert.equal(await gp.evaluate(()=>worldTest.state.tab),'board');
+    const checks=await gp.evaluate(()=>gameFixture.calls.filter(call=>call.rpc==='get_my_member_identity').length);
+    await gameButton('matgo').click();
+    assert.equal(await gp.evaluate(()=>gameFixture.calls.filter(call=>call.rpc==='get_my_member_identity').length),checks,'a stale Matgo row cannot bypass revoked visibility');
+    await gp.evaluate(async()=>{gameFixture.age=25;await OjjudaMatgoAccess.check();worldTest.render();});
+    await gp.locator('[data-board-root]').evaluate(el=>el.dataset.retained='original-board');
+    await openGame('matgo');await gp.locator('#matgo-overlay iframe').waitFor();
+    assert.equal(new URL(await gp.locator('#matgo-overlay iframe').getAttribute('src'),gp.url()).pathname,'/games/matgo-online.html');
+    await stillBoard('matgo','#matgo-overlay [aria-label="맞고 닫기"]');
+    assert.deepEqual(await gp.evaluate(()=>gameFixture.calls.filter(call=>['insert','update','delete','upsert'].includes(call.method)||call.rpc&&call.rpc!=='get_my_member_identity'&&call.rpc!=='game_ranking'&&call.rpc!=='billiards_ping')),[],'opening game menus never writes scores or purchases');
+    assert.deepEqual(gameErrors,[]);
+    await games.close();
+
     const native=await browser.newContext({viewport:{width:390,height:844}});
     await native.addInitScript(()=>{
       window.nativeExited=0;
@@ -262,6 +364,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, separate five-tab and four-place swipe orders with both ends stopped, touch/mouse input, vertical scrolling, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, separate five-tab and four-place swipe orders, touch/mouse input, real board game routes and variants, board preservation on close, and fresh Matgo access checks.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

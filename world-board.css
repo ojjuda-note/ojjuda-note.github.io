@@ -31,6 +31,11 @@
 .board-rank-page th:nth-child(2){width:35%;}
 .board-rank-page th:last-child,.board-leader-score{width:25%;text-align:right;padding-right:0;}
 .board-leader-game{font-weight:500;}
+.board-leader-game:has(.board-game-open){padding-top:0;padding-bottom:0;}
+.board-game-open{display:block;width:100%;min-height:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font:inherit;color:inherit;background:none;border:0;padding:8px 0;cursor:pointer;text-decoration:underline;text-decoration-color:#f5f3df66;text-underline-offset:3px;}
+.board-game-open:hover{color:#f3d98b;}
+.board-game-open:focus-visible{outline:2px solid #f3d98b;outline-offset:-2px;border-radius:3px;}
+.board-game-open:disabled{cursor:wait;}
 .board-leader-score{color:#f3d98b;font-variant-numeric:tabular-nums;font-weight:600;}
 .board-leader-empty{font-size:10px;color:#c6d2b9;}
 .board-leader-retry{background:none;border:0;padding:0;color:#f3d98b;font:inherit;font-size:10px;cursor:pointer;}
