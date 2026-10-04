@@ -115,7 +115,9 @@
    finally{busy=false;content.querySelector('.board-load')?.removeAttribute('disabled');}
   }
   function all(kind,sort){if(busy)return;view={kind,sort};snapshot=new Date().toISOString();rows=[];more=false;renderAll();void loadPage(true);}
-  dispose=()=>{alive=false;request++;close();};
+  const escape=e=>{if(e.key==='Escape'&&dialog){e.stopPropagation();dialog.querySelector('.board-close')?.click();}};
+  document.addEventListener('keydown',escape,true);
+  dispose=()=>{alive=false;request++;close();document.removeEventListener('keydown',escape,true);};
   controller={back(){if(close())return true;if(view){void home();return true;}return false;},refresh(){if(dialog)return Promise.resolve(false);snapshot=new Date().toISOString();return view?loadPage(true):home();}};
   if(!client||!owner){status.textContent='로그인하면 게시판의 공개 글을 볼 수 있어요.';content.append(Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));return;}
   void home();
