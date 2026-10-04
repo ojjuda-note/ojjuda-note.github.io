@@ -91,6 +91,6 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>worldTest.clear());
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null);
   assert.deepEqual(errors,[]);
-  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 3 equal-width menus at 5 mobile/tablet widths.');
+  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 4 equal-width menus at 5 mobile/tablet widths.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
