@@ -7,6 +7,12 @@ const fixture=require('./fixtures/house-album.cjs'),root=path.resolve(__dirname,
  const first=await api('list',{kind:'photo'});assert.deepEqual(first.records.map(x=>x.id),['old-photo','note-photo']);assert.equal(first.records[1].visibility,'me');assert(first.records.every(row=>!('path'in row)&&!('thumb_path'in row)));
  assert.deepEqual(f.calls.find(x=>x.signed).signed,['member-a/thumb.jpg','member-a/note-thumb.jpg']);
  assert.equal((await api('list',{kind:'video'})).records[0].id,'old-video');assert.equal((await api('list',{kind:'photo',folder:'note-folder'})).records[0].id,'note-photo');
+ const combined=await api('list',{kind:'all'});assert.deepEqual(combined.records.map(x=>x.id),['old-photo','note-photo','old-video']);
+ assert.equal((await api('list',{kind:'all',folder:'none'})).records[0].id,'old-video');
+ assert.equal((await api('list',{kind:'text'})).records.length,0,'local diary is not presented as a server post');
+ const pageFixture=fixture(),pageApi=createWorldRecords({client:pageFixture.client,owner:pageFixture.owner,authorized:()=>true});
+ for(let i=0;i<20;i++)pageFixture.db.media.push({...pageFixture.db.media[0],id:'page-'+String(i).padStart(2,'0'),type:i%2?'image':'video',created_at:'2026-10-01'});
+ const page1=await pageApi('list',{kind:'all'}),page2=await pageApi('list',{kind:'all',offset:12});assert.equal(page1.records.length,12);assert.equal(page1.more,true);assert.equal(page2.more,false);assert.equal(new Set([...page1.records,...page2.records].map(x=>x.id)).size,23,'mixed pagination omits no record and duplicates none');
  await assert.rejects(api('open',{id:'other-photo'}));await api('open',{id:'old-photo'});assert.deepEqual(f.calls.at(-1).signed,['member-a/photo.jpg']);
  const folder=await api('save-folder',{name:'여행',visibility:'chosen',allowed:['friend-a']});assert.equal(folder.visibility,'chosen');assert.deepEqual(folder.allowed,['friend-a']);
  await assert.rejects(api('save-folder',{name:'실수',visibility:'chosen',allowed:['stranger']}));

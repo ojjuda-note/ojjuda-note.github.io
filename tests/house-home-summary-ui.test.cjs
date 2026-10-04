@@ -17,7 +17,7 @@ document.querySelector('#open').onclick=()=>{const id=owner;openHouseTest({owner
   assert.equal(await frame.locator('#home-profile-nick').textContent(),'포근한 하루');assert.equal(await frame.locator('#home-profile-bio').textContent(),'소소한 일상 기록');
   assert.equal(await frame.locator('#world').evaluate(el=>el.inert),true,'the preview cannot edit furniture');
   assert.equal(await frame.locator('#home-room-open').textContent(),'','room thumbnail has no visible label');
-  await frame.locator('#diary').fill('기존 기록');await frame.getByRole('button',{name:'기록 저장',exact:true}).click();
+  await frame.getByRole('tab',{name:'게시판',exact:true}).click();await frame.locator('#diary').fill('기존 기록');await frame.getByRole('button',{name:'기록 저장',exact:true}).click();
   await frame.waitForFunction(()=>getComputedStyle(document.querySelector('#notice')).opacity==='0');
   const saved=await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:summary-a')));
   for(const [width,height]of [[390,844],[320,568],[1280,900],[844,390]]){

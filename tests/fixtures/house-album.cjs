@@ -8,10 +8,10 @@ module.exports=function makeAlbumFixture(){
  const db={media,media_folders:folders},files=new Map(),calls=[];let serial=0;
  const state={owner,db,files,calls,fail:null,pause:null};
  const client={from(table){const filters=[],sorts=[];let operation='read',values,single=false,range;
-  const q={select(){return q;},eq(k,v){filters.push([k,v]);return q;},is(k,v){return q.eq(k,v);},order(k,o){sorts.push([k,o]);return q;},range(a,b){range=[a,b];return q;},single(){single=true;return q;},maybeSingle(){single='maybe';return q;},insert(v){operation='insert';values=v;return q;},update(v){operation='update';values=v;return q;},then(resolve,reject){return Promise.resolve().then(async()=>{
+  const q={select(){return q;},eq(k,v){filters.push([k,v]);return q;},is(k,v){return q.eq(k,v);},in(k,v){filters.push([k,v]);return q;},order(k,o){sorts.push([k,o]);return q;},range(a,b){range=[a,b];return q;},single(){single=true;return q;},maybeSingle(){single='maybe';return q;},insert(v){operation='insert';values=v;return q;},update(v){operation='update';values=v;return q;},then(resolve,reject){return Promise.resolve().then(async()=>{
    calls.push({table,operation,filters:filters.map(x=>[...x]),values});if(state.pause)await state.pause;
    if(state.fail===operation||state.fail===table)return{error:{message:'fixture failure'}};
-   let rows=db[table].filter(row=>filters.every(([k,v])=>row[k]===v));
+   let rows=db[table].filter(row=>filters.every(([k,v])=>Array.isArray(v)?v.includes(row[k]):row[k]===v));
    if(operation==='insert'){const row={id:'new-'+(++serial),created_at:'2026-10-04',...values};db[table].push(row);rows=[row];}
    if(operation==='update')rows.forEach(row=>Object.assign(row,values));
    for(const [k,o]of [...sorts].reverse())rows.sort((a,b)=>String(a[k]).localeCompare(String(b[k]))*(o?.ascending===false?-1:1));
