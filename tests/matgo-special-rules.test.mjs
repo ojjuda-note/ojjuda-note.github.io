@@ -37,8 +37,8 @@ for(const p of [0,1])for(const bonusIds of [[48],[48,49]])for(const self of [tru
   else{g.deck.unshift(matching);g.hand[collector].push(free);}
   events.length=0;g.turn=collector;
   await g.play(collector,route==='hand'?matching:free);conserved(g);
-  assert.equal(events.find(e=>e.type==='ppukget').count,(self?2:1)+bonusIds.length);
-  assert.equal(events.filter(e=>e.type==='steal').length,(self?2:1)+bonusIds.length);
+  assert.equal(events.find(e=>e.type==='ppukget').count,(self?2:1));
+  assert.equal(events.filter(e=>e.type==='steal').length,(self?2:1));
   assert.ok(bonusIds.every(id=>g.caps[collector].some(c=>c.id===id)));
   assert.equal(g.ppukCount[p],1,'capturing does not reset or increment ppuk count');
   cases++;
@@ -55,7 +55,7 @@ for(const opponent of [[],[6]]){
 {
   const {g,events}=fixture({bonuses:[48,49],flips:[20]});
   await g.play(0,g.hand[0][0]);conserved(g);
-  assert.equal(g.floor.some(st=>st.ppuk),false);assert.equal(events.filter(e=>e.type==='steal').length,2);
+  assert.equal(g.floor.some(st=>st.ppuk),false);assert.equal(events.filter(e=>e.type==='steal').length,0);
   assert.equal(g.caps[0].filter(c=>c.k==='bonus').length,2);cases++;
 }
 

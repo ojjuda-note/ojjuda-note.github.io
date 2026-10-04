@@ -1,7 +1,7 @@
-import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261003-rules4';
+import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261004-rules5';
 import {heldPairMonths} from './matgo-view.mjs?v=20261003-gukjin1';
 import {cardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261003-gukjin1';
+import {createWallet} from './matgo-wallet.mjs?v=20261004-rules5';
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number=v=>Number(v||0).toLocaleString(),signed=v=>(v>=0?'+':'')+number(v);
@@ -47,7 +47,7 @@ function showNextEvent(){
 }
 function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;location.replace('./matgo.html?v=20261003-exit1');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;location.replace('./matgo.html?v=20261004-rules5');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const changed=room?.id!==next.id||room?.round!==next.round;
   if(changed){cursor=0;promptKey='';closeDialog();clearEvents();}
@@ -94,7 +94,7 @@ function showLobby(){
   $('#content').innerHTML=`<section class="lobby"><div class="fan" aria-hidden="true">${[CARDS[0],CARDS[8],CARDS[28]].map(cardSVG).join('')}</div><div class="eyebrow">MEMBER MATCH</div><h2>함께 치는 맞고</h2><p>다른 회원과 한 판 어때요?<br>친구와는 방 코드를 나눠 입장하세요.</p><div class="actions"><button id="quick" class="btn gold"><span>빠른 대결</span><small>상대가 없으면 컴퓨터 대결 →</small></button><button id="create" class="btn ghost"><span>방 만들기</span><small>친구와 둘이서 →</small></button></div><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" pattern="[A-Fa-f0-9]{8}" required><button class="btn" id="join">입장</button></form><button id="solo" class="text-button">컴퓨터와 대결하기</button><p class="fine">만 19세 이상 · 1점 = 100골드<br>차례마다 15초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></section>`;
   $('#quick').onclick=()=>enter('quick');$('#create').onclick=()=>enter('create');
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=$('#room-code').value.trim().toUpperCase();if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261003-exit1');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261004-rules5');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -213,7 +213,7 @@ try{
   $('#gate').hidden=true;$('#app').hidden=false;setGold(state.gold);showLobby();
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>refill();$('#exit').onclick=()=>requestExit();
-  $('#rules').onclick=()=>modal('<h2>회원 대결 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 1점 100골드 · 피박·광박·멍박·고박·흔들기·폭탄 배수를 적용해요.<br>자뻑을 먹으면 피 2장, 묶인 보너스가 있으면 보너스 1장마다 피 1장을 더 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300골드. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>처음 5,000골드 · 0골드일 때 하루 2회 무료 리필, 이후 5쭈로 5,000골드 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>',{'close-rules':()=>{promptKey='';renderRoom();}});
+  $('#rules').onclick=()=>modal('<h2>회원 대결 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 1점 100골드 · 피박·광박·멍박·고박·흔들기·폭탄 배수를 적용해요.<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300골드. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>처음 5,000골드 · 0골드일 때 하루 2회 무료 리필, 이후 5쭈로 5,000골드 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>',{'close-rules':()=>{promptKey='';renderRoom();}});
   access.subscribe(deny);
   accessTimer=setInterval(()=>{access.check().then(refreshToken).catch(deny);},45000);
   pollTimer=setInterval(()=>{void refresh();},1200);setInterval(tick,250);void refreshToken();

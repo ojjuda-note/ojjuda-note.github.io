@@ -1,5 +1,7 @@
 import {Game,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin} from './engine.mjs';
 
+import {Game as LegacyGame} from './engine-v4.mjs';
+
 // A 256-bit server-only secret drives the deal. Neither the secret nor the
 // opponent's hand / future deck is ever included in an API response.
 async function secretRandom(secret) {
@@ -18,7 +20,9 @@ export async function replayOnline(room) {
   if(!Array.isArray(actions)||actions.length>256)throw Error('invalid_actions');
   let action,choice=0,prompt=null,result=null;
   const events=[];
-  const game=new Game({
+  // Pin the rules on the first server-recorded action; preserve existing rounds.
+  const RoundGame=!actions.length||actions[0].rules_version===5?Game:LegacyGame;
+  const game=new RoundGame({
     event:async(type,data={})=>{
       const event={type,...copy(data)};events.push(event);
       if(type==='end'||type==='nagari')result=event;
@@ -109,6 +113,7 @@ export async function advanceOnline(room,p,command) {
   }else if(prompt.type==='play'&&command.type==='gukjin'){
     actions.push({type:'gukjin',p});
   }else throw Error('invalid_move');
+  if(!room.actions.length)actions[0].rules_version=5;
   const next=await replayOnline({...room,actions});
   if(next.result&&(!next.game.over||next.result.goldDelta.some(n=>!Number.isSafeInteger(n))))throw Error('invalid_result');
   const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop','gukjin'].includes(s.prompt?.type)?1:0);
