@@ -29,7 +29,7 @@
   }
   const calendar=section('calendar','스케줄 달력'),calendarNav=el('div','','life-calendar-nav'),monthTitle=el('strong'),calendarGrid=el('div','','life-calendar-grid'),selectedLabel=el('p','','life-calendar-selected');
   calendarNav.dataset.worldSwipe='off';calendarGrid.dataset.worldSwipe='off';monthTitle.setAttribute('aria-live','polite');selectedLabel.setAttribute('aria-live','polite');
-  function shiftMonth(amount){const [y,m]=state.month.split('-').map(Number),d=new Date(y,m-1+amount,1);if(d.getFullYear()<1900||d.getFullYear()>2200)return;state.month=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;renderCalendar();}
+  function shiftMonth(amount){const [y,m]=state.month.split('-').map(Number),d=new Date(y,m-1+amount,1);if(d.getFullYear()<1900||d.getFullYear()>2200)return;state.month=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;const day=Math.min(Number(state.selected.slice(8)),new Date(d.getFullYear(),d.getMonth()+1,0).getDate());state.selected=state.month+'-'+String(day).padStart(2,'0');renderCalendar();}
   const previousMonth=btn('‹',()=>shiftMonth(-1)),next=btn('›',()=>shiftMonth(1));previousMonth.setAttribute('aria-label','이전 달');next.setAttribute('aria-label','다음 달');
   calendarNav.append(previousMonth,monthTitle,next,btn('오늘',()=>{state.month=today().slice(0,7);state.selected=today();renderCalendar();}));calendar.append(calendarNav,calendarGrid,selectedLabel);
   function renderCalendar(){
