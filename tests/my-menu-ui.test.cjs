@@ -86,7 +86,6 @@ async function worldFixture(context, mobile, errors) {
     window.Os = () => '';
     window.renderMy = () => {
       document.getElementById('world-my').innerHTML = Yg();
-      document.querySelector('[data-notifications-slot]').innerHTML = '<button class="btn nn-trigger" type="button">알림함 열기</button>';
     };
     window.menuSaves = 0;
     window.I = () => { menuSaves++; };
@@ -110,8 +109,8 @@ async function worldFixture(context, mobile, errors) {
   await page.addScriptTag({ content: doorAction });
   await page.evaluate(() => renderMy());
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');
-  assert.equal(await page.locator('.my-shortcuts > :first-child [data-notifications-slot]').count(), 1,
-    'frequent notifications come before the cross-service shortcut');
+  assert.equal(await page.locator('[data-notifications-slot]').count(), 0,
+    'World menu omits the oversized notification shortcut');
   assert.equal(await page.evaluate(() => {
     const groups = [...document.querySelectorAll('.my-hub [data-my-group]')].map(node => node.dataset.myGroup);
     return groups.indexOf('profile') < groups.indexOf('account') && groups.indexOf('account') < groups.indexOf('display')
