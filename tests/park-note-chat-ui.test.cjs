@@ -151,6 +151,48 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>shareCard('00000000-0000-4000-8000-000000000001'));
  assert.match(await frame.locator('#note-share-url').inputValue(),/\/world.html\?place=park&card=/,'new share links use World');
  await frame.evaluate(()=>{closeManagement();window.fixtureToken='old-account';});
+ // A slow inquiry submission must retain its iframe when World navigation is used.
+ await frame.addScriptTag({content:read('note/support.js')});
+ await frame.evaluate(()=>{
+   OjjudaNoteSupport.install({getUserId:()=>session.user.id,client:{
+     auth:{onAuthStateChange(){}},schema:()=>({rpc:async name=>{
+       if(name==='submit_inquiry')return new Promise(resolve=>window.finishInquiry=()=>resolve({error:{message:'offline'}}));
+       return {data:name==='get_note_state'?{}:[]};
+     }})
+   }});
+   OjjudaNoteSupport.open();
+ });
+ await frame.locator('#note-inquiry-body').fill('저장 중 화면을 이동해도 사라지면 안 되는 문의');
+ await frame.getByRole('button',{name:'문의 보내기',exact:true}).click();
+ await frame.waitForFunction(()=>typeof finishInquiry==='function');
+ await page.locator('.bottomnav [data-tab="my"]').click();
+ assert.equal(await iframe.count(),1,'World navigation cannot destroy a submitting inquiry');
+ assert.equal(await frame.locator('#note-inquiry-body').inputValue(),'저장 중 화면을 이동해도 사라지면 안 되는 문의');
+ await frame.evaluate(()=>finishInquiry());
+ await frame.getByText('보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.').waitFor();
+ await frame.evaluate(()=>OjjudaNoteSupport.close());
+ // Closing a charge dialog does not cancel its server request. Keep the host
+ // alive until the response has updated the shared balance.
+ await frame.addScriptTag({content:read('ju-charge.js')});
+ await frame.evaluate(()=>{
+   window.chargeCalls=0;window.chargeBalance=null;
+   OjjudaCharge.install({getUserId:()=>session.user.id,source:'note',onBalance:coins=>window.chargeBalance=coins,client:{
+     rpc:async name=>{
+       if(name==='beta_charge'){window.chargeCalls++;return new Promise(resolve=>window.finishCharge=()=>resolve({data:{ok:true,coins:110,added:10}}));}
+       return {data:{ok:true,enabled:true,coins:chargeCalls?110:100,left:chargeCalls?4:5,limit:5}};
+     }
+   }});
+   OjjudaCharge.open();
+ });
+ await frame.getByRole('button',{name:'10쭈 무료 충전',exact:true}).click();
+ await frame.waitForFunction(()=>typeof finishCharge==='function');
+ await frame.getByRole('button',{name:'충전창 닫기',exact:true}).click();
+ await page.locator('.bottomnav [data-tab="my"]').click();
+ assert.equal(await iframe.count(),1,'World navigation cannot interrupt a pending charge after its dialog closes');
+ await frame.evaluate(()=>finishCharge());
+ await frame.waitForFunction(()=>chargeBalance===110);
+ assert.equal(await frame.evaluate(()=>chargeCalls),1,'one click sends one charge');
+ assert.equal(await frame.evaluate(()=>canCloseParkNote()),true,'navigation resumes after the charge finishes');
  await page.evaluate(()=>parkFixture.user('another-user'));
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
  await page.evaluate(()=>parkFixture.enter('cafe'));
@@ -159,6 +201,6 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.locator('#pmsg').fill('카페의 대화는 그대로');await page.locator('[data-act="pl-send"]').click();
  assert.ok((await page.locator('#plog').textContent()).includes('카페의 대화는 그대로'));
  assert.deepEqual(errors,[]);
- console.log('PASS: single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, and preserved drafts/scroll across render/back/leave');
+ console.log('PASS: single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
