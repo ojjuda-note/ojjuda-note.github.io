@@ -170,6 +170,14 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await area('note'); await assertRefreshPreservesHost('note');
     await page.locator('[data-act="adm-note-tab"][data-v="risk"]').click();
     assert.equal(await page.evaluate(() => worldTest.admin.noteTab), 'risk');
+    await area('world'); await tab('settings');
+    const selectedTab = await page.locator('.adm-tabs').evaluate(bar => {
+      const active = bar.querySelector('[aria-pressed="true"]');
+      const a = active.getBoundingClientRect(), b = bar.getBoundingClientRect();
+      return { left: a.left, right: a.right, start: b.left, end: b.right };
+    });
+    assert.ok(selectedTab.left >= selectedTab.start && selectedTab.right <= selectedTab.end,
+      'selected submenu stays visible after the containing view redraws');
     await area('payment');
     assert.deepEqual(await current(), { area: 'payment', tab: 'settings' });
     assert.equal(await page.locator('#adm-free').count(), 1);
