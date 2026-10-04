@@ -73,7 +73,7 @@
         const zone=swipeZone(event.target,doc,canStart);
         if (!zone) return;
         gesture = {id: kind==='touch' ? point.identifier : point.pointerId,
-          x:point.clientX,y:point.clientY,kind,time:performance.now(),horizontal:false,
+          x:point.clientX,y:point.clientY,kind,horizontal:false,
           route:route(),surface: zone.closest('.main') || document.querySelector('.main')};
       };
       const move = (event, point) => {
@@ -111,7 +111,7 @@
           }
           return;
         }
-        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || performance.now() - g.time > 1200) return;
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
         if (!step(direction)) return;
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
           document.querySelector('.main')?.animate(

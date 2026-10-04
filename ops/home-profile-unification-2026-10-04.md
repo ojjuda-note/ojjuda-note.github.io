@@ -51,3 +51,7 @@ Verified mobile 320/390px, desktop and landscape, room entry/return, multiple ro
 Main-page dragging now follows Neighborhood → Home → Life → Menu. Inside the neighborhood it follows Cafe → Arcade → Library → Park. Both sequences stop at either end instead of wrapping or jumping between groups. Normal place illustrations accept navigation drags; zoomed illustrations retain panning. Embedded Park card drags go back to Library or stop at Park, while the sorting tabs remain selectable. Composer, game, input, photo and scrolling gestures retain their existing controls. Browser/native Back and iframe cleanup are preserved.
 
 Added rounded corners to the compact room preview, retaining its size, zero right inset and borderless interior. Checked touch and mouse navigation, both boundaries, actual place-image gestures, zoom/pan, Park's iframe bridge, draft protection and responsive home rendering.
+
+## Slow drag completion — 0.45.43-beta
+
+Live verification exposed a legacy 1.2-second timeout that rejected deliberate drags. Removed that duration limit while keeping distance, horizontal direction, cancellation, input and boundary guards. A real mouse drag lasting more than 1.44 seconds reproduced the failure before the fix.
