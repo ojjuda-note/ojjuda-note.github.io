@@ -911,6 +911,9 @@ const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
 function fitPhotoQuote(photo, quote, tagRow) {
   if (!photo.isConnected) return;
   photo.style.height = '';
+  const minimumHeight = photo.getBoundingClientRect().height;
+  // Tags have their own fitting rules; settle their layout before measuring the quote.
+  fitTagRow(tagRow);
   if (!quote.dataset.baseFontSize) quote.dataset.baseFontSize = String(parseFloat(getComputedStyle(quote).fontSize));
   const base = Number(quote.dataset.baseFontSize);
   for (let size = base; size >= 12; size -= 1) {
@@ -918,7 +921,7 @@ function fitPhotoQuote(photo, quote, tagRow) {
     if (!photoQuoteClipped(photo, quote, tagRow)) return;
   }
   if (photoQuoteClipped(photo, quote, tagRow)) {
-    photo.style.height = `${Math.ceil(quote.scrollHeight + (tagRow.childElementCount ? tagRow.offsetHeight + 80 : 70))}px`;
+    photo.style.height = `${Math.ceil(Math.max(minimumHeight, quote.scrollHeight + (tagRow.childElementCount ? tagRow.offsetHeight * 2 + 80 : 70)))}px`;
   }
 }
 function refreshExpandedBodies() {
@@ -938,7 +941,7 @@ function photoQuoteClipped(photo, quote, tagRow) {
   return quote.scrollHeight > quote.clientHeight + 1 || quote.scrollWidth > quote.clientWidth + 1
     || quoteBounds.top < photoBounds.top + 8 || quoteBounds.bottom > photoBounds.bottom - 8
     || (tagRow.childElementCount > 0
-      && (quoteBounds.bottom + 6 > tagBounds.top || tagRow.scrollWidth > tagRow.clientWidth + 1));
+      && quoteBounds.bottom + 6 > tagBounds.top);
 }
 function cardElement(card, compact = false, expanded = false) {
   const item = node('article', compact ? 'reply-card' : 'photo-card');
