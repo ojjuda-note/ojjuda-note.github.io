@@ -264,6 +264,9 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 #home-profile-nick{display:block;max-width:100%;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 #home-profile-bio{display:none;min-width:0;max-width:100%;margin:0;color:#786580;}
 #home-profile-bio:empty{display:none;}
+#home-teleport{display:none;}
+.records-home #home-teleport:not([hidden]){display:inline-flex;grid-column:2;grid-row:2;justify-self:end;align-self:start;align-items:center;gap:4px;min-height:44px;margin:6px 18px 0 0;padding:6px 10px;border:0;border-radius:12px;background:#f0e9f7;color:#78539d;font-size:12px;font-weight:600;white-space:nowrap;}
+.records-home #home-scene.has-teleport #home-profile-bio{padding-right:124px;}
 #home-room-open{position:absolute;inset:0;z-index:10;width:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;}
 #home-room-open:hover{background:#d4bde80d;}
 #home-room-open:focus-visible{outline-offset:-4px;}
