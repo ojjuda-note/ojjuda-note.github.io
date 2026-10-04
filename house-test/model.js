@@ -1,9 +1,9 @@
-import {madePoseValid} from './custom-furniture.js?v=20261004-chairfarrear1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261004-chairfarrear1';
-import {sofaPoseValid} from './sofa-art.js?v=20261004-chairfarrear1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261004-chairfarrear1';
-import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261004-chairfarrear1';
-import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261004-chairfarrear1';
+import {madePoseValid} from './custom-furniture.js?v=20261005-desklamp1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261005-desklamp1';
+import {sofaPoseValid} from './sofa-art.js?v=20261005-desklamp1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-desklamp1';
+import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-desklamp1';
+import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-desklamp1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -23,7 +23,7 @@ export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
  const candidate=normalizePlacement(id,preferred);if(candidate&&canPlaceFurniture(id,candidate,others))return candidate;
  for(const direction of FURNITURE[id]?.directions||[]){const {w,d}=itemSize(id,direction,candidate||preferred);
   for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step){
-   const s={direction,x,y,...(isBlanket(id)?{mode:blanketMode(id,candidate||preferred),elevation:candidate?.elevation??0}:{})};
+   const s={direction,x,y,...(isBlanket(id)?{mode:blanketMode(id,candidate||preferred),elevation:candidate?.elevation??0}:itemLayer(id,candidate||preferred)==='surface'?{elevation:candidate?.elevation??preferred?.elevation??0}:{})};
    if(canPlaceFurniture(id,s,others))return normalizePlacement(id,s);
   }
  }
