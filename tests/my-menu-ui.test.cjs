@@ -119,26 +119,25 @@ async function worldFixture(context, mobile, errors) {
   }), true, 'profile and account stay together before preferences and help');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
   await fitsViewport(page, 'closed World menu');
+  const pair=await page.locator('[data-my-group=profile],[data-my-group=account]').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {top:r.top,width:r.width};}));assert.equal(pair[0].top,pair[1].top,'two menu tiles share a row');assert(Math.abs(pair[0].width-pair[1].width)<1,'menu tiles use equal widths');
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
 
   await exerciseGroups(page, '.my-hub');
   for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-guestbook', 'n-friend']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
   }
-  for (const action of ['saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'glasses']) {
-    assert.equal(await page.locator(`[data-park-action="${action}"]`).isVisible(), true, `${action} is available in the shared World menu`);
-  }
+  assert.equal(await page.locator('[data-park-action]').count(),0,'menu omits park activities');
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-guestbook').isChecked(), true);
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'enter-place', 'logout', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'logout', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
   for (const href of ['/guide.html', 'terms.html', 'privacy.html', 'https://github.com/songys/Chatbot_data']) {
     assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
   }
-  assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').isVisible(), true, 'park shortcut stays within World');
+  assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');
   await uniqueIds(page);
   await fitsViewport(page, 'expanded World menu with a long email address');
 

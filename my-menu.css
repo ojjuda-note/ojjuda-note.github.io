@@ -141,3 +141,16 @@
 
 .profile-photo-entry{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 20px;padding:0;border:0;background:none;color:var(--accent-ink,#765492);font:inherit;cursor:pointer;text-align:left}.profile-photo-entry .world-profile-avatar{width:76px;height:76px}.profile-photo-entry:focus-visible{outline:2px solid currentColor;outline-offset:5px;border-radius:12px}
 .pcard .pc-av .world-profile-avatar{width:100%;height:100%}
+
+/* Two compact menu tiles per row; opened settings use the full reading width. */
+.world-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start;}
+.world-menu-grid>.my-hub-heading,.world-menu-grid>.my-shortcuts,.world-menu-grid>.my-section-title{grid-column:1 / -1;}
+.world-menu-grid>.my-shortcuts{grid-template-columns:minmax(0,1fr);margin-bottom:4px;}
+.world-menu-grid>.my-menu-group{min-width:0;margin:0;}
+.world-menu-grid>.my-menu-group[open]{grid-column:1 / -1;}
+.world-menu-grid .my-menu-summary{gap:8px;min-height:72px;padding:12px;}
+.world-menu-grid .my-menu-icon{width:28px;height:28px;border-radius:9px;}
+.world-menu-grid .my-menu-title{font-size:13px;overflow-wrap:anywhere;}
+.world-menu-grid>.my-section-title{margin:12px 2px 0;}
+.world-menu-grid .ju-charge-entry{width:100%;text-align:left;border:0;background:transparent;color:inherit;}
+.world-menu-grid .ju-charge-entry::after{content:none;}

@@ -1,5 +1,5 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
-import {createRecordPanel} from './record-panel.js?v=20261004-home2';
+import {createRecordPanel} from './record-panel.js?v=20261004-refresh1';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261004-chairfarrear1';
 import {icon} from './icons.js?v=20261004-chairfarrear1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261004-chairfarrear1';
@@ -441,3 +441,19 @@ function makeWallGrid(s){
  if(s)level((s.elevation||0)+itemHeight(editingId,s),'furniture-height');
  return svg;
 }
+
+window.OjjudaHouseRefresh=async(snapshot,canApply=()=>true)=>{
+ const ready=()=>initialized&&!disposed&&tab==='diary'&&!previewMode&&!expanding&&!document.querySelector('.record-editor form,.record-management-confirm,dialog[open]')&&canApply();
+ if(!ready())return false;
+ const before=JSON.stringify(state.rooms);
+ if(snapshot){
+  const needed=snapshot.rooms.flatMap(r=>Object.keys(r.furniture||{}));
+  await loadBuiltInItems(needed);
+  if(needed.some(id=>id.startsWith('made-')&&!FURNITURE[id]))return false;
+ }
+ if(!ready()||before!==JSON.stringify(state.rooms))return false;
+ const refreshed=await (recordsPanel?.refresh()??true);
+ if(refreshed===false||!ready()||before!==JSON.stringify(state.rooms))return false;
+ if(snapshot){state=normalize({...state,...snapshot,diary:state.diary});lastQueuedRooms=JSON.stringify({version:state.version,rooms:state.rooms});renderWorld();focusRoom();}
+ return true;
+};

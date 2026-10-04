@@ -103,6 +103,7 @@
 
   window.OjjudaNoteNavigation?.leaveMy();
   window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, compose: () => navigate('compose'), back, canLeave, overlayOpen,
+    refresh: () => overlayOpen()||!canLeave()?false:detail.hidden?loadFeed(false,true):refreshCards(true),
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();
   send({ type: 'ojjuda:park-ready' });

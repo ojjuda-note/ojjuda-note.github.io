@@ -1,14 +1,15 @@
-import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-audit1';
+import {mountCloudRecords} from './cloud-record-panel.js?v=20261004-refresh1';
 import {MEDIA_TYPES,addRecordMedia,listRecordMedia,readRecordMedia,deleteRecordMedia} from './record-media-store.js?v=20261004-records1';
 const categories=[['all','전체'],['text','게시판'],['photo','사진'],['video','동영상']];
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
 function button(text,click){const el=node('button','',text);el.type='button';el.onclick=click;return el;}
 export function createRecordPanel({owner,getText,changeText,saveText,notify,request}){
+ let cloudController=null;
  let category='all',folderId='all',container=null,generation=0,urls=[],busy=false,limit=12,disposed=false;
  const lifetime=new AbortController(),postDrafts=new Map(),committedPostIds=new Set(),pendingPostIds=new Set();
  function unmount(){generation++;for(const dialog of container?.querySelectorAll('dialog')||[])dialog.close();for(const video of container?.querySelectorAll('video')||[]){video.pause();video.removeAttribute('src');video.load();}urls.forEach(url=>URL.revokeObjectURL(url));urls=[];container=null;}
  function mount(body){
-  unmount();if(disposed)return;container=body;body.replaceChildren();const current=generation,active=()=>!disposed&&container===body&&current===generation;
+  unmount();cloudController=null;if(disposed)return;container=body;body.replaceChildren();const current=generation,active=()=>!disposed&&container===body&&current===generation;
   const wrapper=node('div','record-panel'),tabs=node('div','record-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','기록 종류');
   for(const [value,label]of categories){const tab=button(label,()=>select(value));tab.id='record-tab-'+value;tab.dataset.recordKind=value;tab.setAttribute('role','tab');tab.setAttribute('aria-selected',String(category===value));tab.setAttribute('aria-controls','record-content');tab.tabIndex=category===value?0:-1;tabs.append(tab);
    tab.onkeydown=event=>{const index=categories.findIndex(([id])=>id===value);let next;if(event.key==='ArrowRight')next=(index+1)%categories.length;if(event.key==='ArrowLeft')next=(index+categories.length-1)%categories.length;if(event.key==='Home')next=0;if(event.key==='End')next=categories.length-1;if(next!==undefined){event.preventDefault();select(categories[next][0]);}};
@@ -18,7 +19,7 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
   const foldersHost=node('div','record-folder-strip'),topbar=node('div','record-topbar'),settingsButton=button('⚙︎');settingsButton.className='record-settings-button';settingsButton.setAttribute('aria-label','우리집 설정');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.disabled=!request;topbar.append(tabs,settingsButton);wrapper.append(topbar,foldersHost,content);body.append(wrapper);
   if(request){
    const cloud=node('div','cloud-records');content.append(cloud);
-   mountCloudRecords({postDrafts,committedPostIds,pendingPostIds,container:cloud,kind:category,request,active,foldersHost,settingsButton,initialFolder:folderId,onFolderChange:id=>{folderId=id;}});
+   cloudController=mountCloudRecords({postDrafts,committedPostIds,pendingPostIds,container:cloud,kind:category,request,active,foldersHost,settingsButton,initialFolder:folderId,onFolderChange:id=>{folderId=id;}});
    return;
   }
   // Isolated/offline fixtures retain their local records. Account-backed views
@@ -74,5 +75,5 @@ export function createRecordPanel({owner,getText,changeText,saveText,notify,requ
    if(active()&&records.length>limit){const more=button('더 보기',()=>{const scroll=body.scrollTop;limit+=12;mount(body);body.scrollTop=scroll;});localContent.insertBefore(more,localContent.lastChild);}
   }).catch(failure);
  }
- return {mount,unmount,dispose(){disposed=true;lifetime.abort();unmount();}};
+ return {mount,unmount,refresh(){if(disposed||busy||!container)return false;if(cloudController)return cloudController.refresh();mount(container);return true;},dispose(){disposed=true;lifetime.abort();unmount();}};
 }
