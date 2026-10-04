@@ -1,53 +1,60 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
-const proof=process.env.HOUSE_ENTRY_PROOF||path.resolve(root,'../house-entry-proof');
-const fixture=`<!doctype html><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js';window.allowed=true;document.querySelector('#open').onclick=()=>openHouseTest({owner:'entry-test',authorized:()=>allowed});</script>`;
+const proof=process.env.HOUSE_ENTRY_PROOF;
+const fixture=`<!doctype html><meta charset="utf-8"><style>body{margin:0}#mount{margin:0 12px}</style><button id="open">우리집</button><main id="mount"></main><script type="module">import{openHouseTest}from'/house-test/host.js';window.allowed=true;window.inline=true;window.closeCount=0;document.querySelector('#open').onclick=()=>window.closeHouse=openHouseTest({owner:'entry-test',authorized:()=>allowed,mountTarget:inline?document.querySelector('#mount'):null,onClose:()=>closeCount++});</script>`;
+const instant=`<!doctype html><div id="app"><div class="room selected"><p>준비된 방</p></div></div><script>addEventListener('message',event=>{if(event.data?.type==='ojjuda-house-test-init')event.ports[0].postMessage({type:'ready'});});</script>`;
 const gate=()=>{let release;const promise=new Promise(r=>release=r);return{promise,release};};
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
-  fs.mkdirSync(proof,{recursive:true});const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[];
-  let background=gate(),shelf=gate(),breakArt=false;
+  if(proof)fs.mkdirSync(proof,{recursive:true});const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[];
+  let background=gate(),shelf=gate(),breakArt=false,instantFrame=false;
   await context.route('**/*',async route=>{
    const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();
    if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:fixture});
+   if(instantFrame&&u.pathname==='/house-test/index.html')return route.fulfill({contentType:'text/html',body:instant});
    if(/\/room-(day|dusk|night)-/.test(u.pathname))await background?.promise;
    if(/\/assets\/bookshelf-.*\.webp$/.test(u.pathname))await shelf?.promise;
    if(breakArt&&/\/entry-.*\.webp$/.test(u.pathname))return route.fulfill({status:503,body:'unavailable'});
    const file=path.resolve(root,'.'+u.pathname);try{return file.startsWith(root+path.sep)&&fs.existsSync(file)?await route.fulfill({path:file}):await route.abort();}catch{}
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/fixture');
+  const loading=page.locator('.house-entry-loading'),frame=()=>page.frames().find(f=>f.url().includes('/house-test/index.html'));
+  const phase=name=>page.locator(`.house-entry-loading[data-phase="${name}"]`).waitFor();
+  const shot=async name=>{if(proof)await page.screenshot({path:path.join(proof,name+'.png')});};
+  const watch=async()=>{await loading.waitFor();await loading.evaluate(el=>{window.entryPhases=[];const capture=()=>{const iframe=el.parentElement?.querySelector('iframe'),phase=el.dataset.phase;if(entryPhases.at(-1)?.phase===phase)return;entryPhases.push({phase,time:performance.now(),visible:iframe&&getComputedStyle(iframe).visibility,inert:iframe?.inert,white:Number(getComputedStyle(el.querySelector('.house-entry-white')).opacity)});};capture();new MutationObserver(capture).observe(el,{attributes:true,attributeFilter:['data-phase']});});};
+  const hidden=async()=>{assert.equal(await page.locator('iframe').evaluate(el=>el.inert),true);assert.equal(await page.locator('iframe').evaluate(el=>getComputedStyle(el).visibility),'hidden');};
   const saved={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'left',x:0,y:0},furniture:{}}],diary:'그대로 보존할 기록'};
   await page.evaluate(saved=>localStorage.setItem('ojjuda-house-playtest-v1:entry-test',JSON.stringify(saved)),saved);
-  await page.locator('#open').click();await page.locator('.house-entry-scene[data-art-ready]').waitFor();
-  const f=page.frames().find(f=>f.url().includes('/house-test/index.html'));
-  await f.waitForFunction(()=>document.querySelector('#app')?.hidden===false);
-  assert.equal(await page.locator('.house-entry-loading').innerText(),'','no visible loading copy');
-  assert.equal(await page.locator('iframe').evaluate(el=>el.inert),true);
-  assert.equal(await page.locator('iframe').evaluate(el=>getComputedStyle(el).visibility),'hidden');
-  assert.equal(await page.locator('.house-entry-jjuda').getAttribute('src').then(src=>src.endsWith('/entry-jjuda-back-v1.webp')),true);
-  await page.locator('.house-entry-jjuda').evaluate(im=>im.decode());
-  await page.locator('.house-entry-walk').evaluate(el=>{for(const animation of el.getAnimations()){animation.pause();animation.currentTime=800;}});
-  await page.screenshot({path:path.join(proof,'loading-mobile.png')});
-  await page.setViewportSize({width:1280,height:900});await page.screenshot({path:path.join(proof,'loading-desktop.png')});
-  await page.emulateMedia({reducedMotion:'reduce'});
-  assert.equal(await page.locator('.house-entry-walk').evaluate(el=>getComputedStyle(el).animationName),'none');
-  await page.setViewportSize({width:320,height:568});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-  const bg=background;background=null;bg.release();await f.waitForFunction(()=>[...document.querySelectorAll('.room.selected .room-bg')].every(im=>im.complete));
-  assert.equal(await page.locator('.house-entry-loading').count(),1,'initialization and background alone must not expose unpainted furniture');
-  const art=shelf;shelf=null;art.release();await page.locator('.house-entry-loading').waitFor({state:'detached',timeout:5000});
-  assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await f.locator('.record-tabs').isVisible(),true);
-  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:entry-test'))),saved);
-  await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();assert.equal(await page.locator('iframe').count(),0);
-  // Closing and account revocation both work while the illustration is visible.
-  background=gate();await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor();await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();background.release();background=null;assert.equal(await page.locator('[role="dialog"]').count(),0);
-  background=gate();await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor();await page.evaluate(()=>allowed=false);await page.locator('[role="dialog"]').waitFor({state:'detached'});background.release();background=null;
-  await page.evaluate(()=>allowed=true);breakArt=true;await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor({state:'detached',timeout:5000});assert.equal(await page.frameLocator('iframe').locator('.record-tabs').isVisible(),true,'missing illustration cannot hold up a ready room');
-  assert.deepEqual(errors,[]);await page.close();
-  const timeoutContext=await browser.newContext();await timeoutContext.addInitScript(()=>{const original=window.setTimeout;window.setTimeout=(fn,ms,...args)=>original(fn,ms===20000?80:ms,...args);});
-  await timeoutContext.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:fixture});if(u.pathname.endsWith('/house-test/index.html'))return route.fulfill({contentType:'text/html',body:'<!doctype html><p>fixture waiting</p>'});const file=path.resolve(root,'.'+u.pathname);return fs.existsSync(file)?route.fulfill({path:file}):route.abort();});
+  // Inline World home shows the same artwork, waits at the door, then covers the painted room.
+  await page.locator('#open').click();await watch();await phase('walking');const f=frame();await f.waitForFunction(()=>document.querySelector('#app')?.hidden===false);
+  assert.equal(await page.locator('[data-house-inline] .house-entry-loading').count(),1,'the inline home route includes the entry scene');assert.equal(await loading.innerText(),'','no visible loading copy');await hidden();
+  assert.match(await page.locator('.house-entry-jjuda').getAttribute('src'),/entry-jjuda-back-v1\.webp$/);await page.locator('.house-entry-jjuda').evaluate(im=>im.decode());
+  const finite=await loading.evaluate(el=>el.getAnimations({subtree:true}).map(animation=>animation.effect.getTiming().iterations));assert(finite.length>0&&finite.every(count=>Number.isFinite(count)),'walking and stepping play a finite number of times');
+  await shot('start-390');await phase('waiting');await hidden();await shot('door-390');
+  const atDoor=await page.locator('.house-entry-walk').evaluate(el=>getComputedStyle(el).transform);await page.waitForTimeout(550);assert.equal(await page.locator('.house-entry-walk').evaluate(el=>getComputedStyle(el).transform),atDoor,'slow room loading holds at the door without restarting the walk');
+  for(const width of [320,1280]){await page.setViewportSize({width,height:width===320?568:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await shot('door-'+width);}await page.setViewportSize({width:390,height:844});
+  const bg=background;background=null;bg.release();await f.waitForFunction(()=>[...document.querySelectorAll('.room.selected .room-bg')].every(im=>im.complete));await hidden();assert.equal(await loading.getAttribute('data-phase'),'waiting','the background alone cannot expose unfinished furniture');
+  const art=shelf;shelf=null;art.release();await phase('covering');await hidden();if(proof){await page.locator('.house-entry-white').evaluate(el=>{const animation=el.getAnimations()[0];if(animation){window.whiteProofAnimation=animation;animation.pause();animation.currentTime=animation.effect.getTiming().duration-1;}});await shot('white-390');await page.evaluate(()=>window.whiteProofAnimation?.finish());}await loading.waitFor({state:'detached',timeout:5000});
+  const phases=await page.evaluate(()=>entryPhases);assert.equal(phases.filter(row=>row.phase==='walking').length,1,'the walk starts only once');const reveal=phases.find(row=>row.phase==='revealing');assert(reveal&&reveal.visible==='visible'&&reveal.inert===false&&reveal.white>=.95,'the frame is revealed only after an opaque white cover');
+  assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await f.locator('.record-tabs').isVisible(),true);assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:entry-test'))),saved);
+  for(const width of [390,320,1280]){await page.setViewportSize({width,height:width===320?568:900});await shot('reveal-'+width);}await page.evaluate(()=>closeHouse());assert.equal(await page.locator('iframe').count(),0);
+  // Even an immediately ready room waits for its one walk and the white cover.
+  instantFrame=true;await page.setViewportSize({width:390,height:844});await page.evaluate(()=>inline=false);await page.locator('#open').click();await watch();await phase('walking');await hidden();await frame().locator('#app').waitFor();await page.waitForTimeout(700);await hidden();assert.equal(await loading.getAttribute('data-phase'),'walking');await loading.waitFor({state:'detached',timeout:4000});
+  const fast=await page.evaluate(()=>entryPhases),start=fast.find(row=>row.phase==='walking'),end=fast.find(row=>row.phase==='revealing');assert(start&&end&&end.time-start.time>=1450,'a fast room cannot skip the approach to the door');assert.equal(fast.filter(row=>row.phase==='walking').length,1);assert(end.white>=.95);await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();
+  // Reduced motion skips the walk and reveals a ready room without a motion delay.
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#open').click();await loading.waitFor({state:'detached',timeout:2000});assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await frame().locator('#app').isVisible(),true);await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.emulateMedia({reducedMotion:'no-preference'});
+  // Closing, revoking an account, and navigating away cancel all delayed reveals.
+  await page.locator('#open').click();await phase('walking');await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.waitForTimeout(2000);assert.equal(await page.locator('iframe,.house-entry-loading').count(),0,'closing during the walk cannot reveal a stale room');
+  await page.locator('#open').click();await phase('walking');await page.evaluate(()=>allowed=false);await page.locator('[role="dialog"]').waitFor({state:'detached'});await page.evaluate(()=>{allowed=true;inline=true;});
+  await page.locator('#open').click();await phase('walking');await page.evaluate(()=>document.querySelector('#mount').replaceChildren(document.createTextNode('다른 메뉴')));await page.waitForTimeout(2000);assert.equal(await page.locator('#mount').textContent(),'다른 메뉴');assert.equal(await page.locator('iframe,.house-entry-loading').count(),0,'navigation cannot bring the previous frame back');
+  breakArt=true;await page.locator('#open').click();await loading.waitFor({state:'detached',timeout:3000});assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false,'missing illustration falls back to a ready room');await page.evaluate(()=>closeHouse());assert.deepEqual(errors,[]);await page.close();
+  // A real readiness timeout can be retried with a fresh animation and channel.
+  const timeoutContext=await browser.newContext();await timeoutContext.addInitScript(()=>{window.shortenEntryDeadline=true;const original=window.setTimeout;window.setTimeout=(fn,ms,...args)=>original(fn,ms===20000&&window.shortenEntryDeadline?80:ms,...args);});let recover=false;
+  await timeoutContext.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:fixture});if(u.pathname.endsWith('/house-test/index.html'))return route.fulfill({contentType:'text/html',body:recover?instant:'<!doctype html><p>fixture waiting</p>'});const file=path.resolve(root,'.'+u.pathname);return fs.existsSync(file)?route.fulfill({path:file}):route.abort();});
   const timeoutPage=await timeoutContext.newPage();await timeoutPage.goto('https://fixture.test/fixture');await timeoutPage.locator('#open').click();await timeoutPage.getByRole('status').filter({hasText:'불러오지 못했어요'}).waitFor();assert.equal(await timeoutPage.locator('.house-entry-loading').count(),0);assert.equal(await timeoutPage.getByRole('button',{name:'우리집 닫기',exact:true}).isEnabled(),true);
-  fs.writeFileSync(path.join(proof,'verification.json'),JSON.stringify({rearView:true,noLoadingCopy:true,waitsForRoomPaint:true,noAnimationDelay:true,reducedMotion:true,closeAndAuthorization:true,missingArtAndTimeout:true,savedRoomPreserved:true,errors},null,2));
-  console.log('HOUSE ENTRY LOADING PASS: rear view, no copy, paint readiness, reduced motion, close/revoke, failed art, timeout and preserved saved room');
+  recover=true;await timeoutPage.evaluate(()=>shortenEntryDeadline=false);await timeoutPage.getByRole('button',{name:'다시 시도',exact:true}).click();await timeoutPage.locator('.house-entry-loading').waitFor();await timeoutPage.locator('.house-entry-loading').waitFor({state:'detached',timeout:4000});assert.equal(await timeoutPage.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await timeoutPage.getByRole('status').filter({hasText:'불러오지 못했어요'}).count(),0);await timeoutContext.close();
+  if(proof)fs.writeFileSync(path.join(proof,'verification.json'),JSON.stringify({inlineArtwork:true,oneWalkBeforeWhite:true,waitsForRoomPaint:true,noLoop:true,reducedMotion:true,closeRevokeAndNavigation:true,missingArtAndTimeoutRetry:true,savedRoomPreserved:true,errors},null,2));
+  console.log('HOUSE ENTRY LOADING PASS: inline/modal rear-view artwork, single walk, door hold, white-covered reveal, paint readiness, reduced motion, cancellation, missing art, timeout/retry and saved-room preservation');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
