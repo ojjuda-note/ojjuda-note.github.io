@@ -24,7 +24,7 @@
   function readDraft(){state.draft=Object.fromEntries(new FormData(form));if(state.draft.repeat==='none')state.draft.repeat_until='';}
   function fill(){form.hidden=!state.open;heading.textContent=state.editing?'일정 수정':'일정 추가';save.textContent=state.editing?'수정 저장':'일정 저장';notice.textContent=state.editing?.repeat!=='none'&&state.editing?'반복 일정 전체에 적용됩니다.':'';for(const [key,f]of Object.entries(fields))f.value=state.draft?.[key]||'';fields.repeat.value=state.draft?.repeat||'none';fields.repeat_until.parentElement.hidden=fields.repeat.value==='none';fields.repeat_until.min=fields.date.value;}
   function clear(){state.open=false;state.editing=null;state.draft=null;state.id=crypto.randomUUID();fill();}
-  form.oninput=()=>{readDraft();fields.repeat_until.min=fields.date.value;};repeat.onchange=()=>{readDraft();fields.repeat_until.parentElement.hidden=repeat.value==='none';};
+  form.oninput=()=>{readDraft();fields.repeat_until.min=fields.date.value;};repeat.onchange=()=>{readDraft();if(repeat.value==='none')fields.repeat_until.value='';fields.repeat_until.parentElement.hidden=repeat.value==='none';};
   function lock(value){busy=value;for(const f of form.elements)f.disabled=value;add.disabled=value;refresh.disabled=value;list.querySelectorAll('button').forEach(b=>b.disabled=value);}
   function draw(){
    const counts={};const [y,m]=viewMonth.split('-').map(Number),days=new Date(y,m,0).getDate();for(let i=1;i<=days;i++){const date=viewMonth+'-'+String(i).padStart(2,'0');const count=rows.filter(r=>occurs(r,date)).length;if(count)counts[date]=count;}onChange(counts);
