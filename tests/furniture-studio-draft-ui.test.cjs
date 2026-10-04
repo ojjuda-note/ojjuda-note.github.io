@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const parent=`<!doctype html><html><body><button id="open">제작실</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261004-chairfarrear1';document.querySelector('#open').onclick=()=>openFurnitureStudio({owner:'draft-test',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">제작실</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js?v=20261005-desklamp1';document.querySelector('#open').onclick=()=>openFurnitureStudio({owner:'draft-test',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -16,7 +16,7 @@ const parent=`<!doctype html><html><body><button id="open">제작실</button><sc
   await page.evaluate(()=>{const doc=document.querySelector('iframe').contentDocument,el=doc.querySelector('#furniture-name');el.value='닫기 직전 변경';el.dispatchEvent(new Event('change',{bubbles:true}));[...document.querySelectorAll('button')].find(b=>b.textContent==='제작실 닫기').click();});
   await page.waitForFunction(()=>document.querySelectorAll('iframe').length===0);
   frame=await open();
-  const saved=await frame.evaluate(async()=>{const {loadDraft}=await import('./draft-store.js?v=20261004-chairfarrear1');return (await loadDraft()).project.name;});
+  const saved=await frame.evaluate(async()=>{const {loadDraft}=await import('./draft-store.js?v=20261005-desklamp1');return (await loadDraft()).project.name;});
   assert.equal(saved,'닫기 직전 변경');console.log('PASS last edit survives immediate close');
   await frame.locator('#draft-resume').click();await frame.waitForFunction(()=>document.querySelector('#furniture-name').value==='닫기 직전 변경');
   await frame.evaluate(()=>{window.originalPut=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(){throw new DOMException('Simulated full disk','QuotaExceededError');};});
@@ -29,7 +29,7 @@ const parent=`<!doctype html><html><body><button id="open">제작실</button><sc
   console.log('PASS failed save keeps editor open and retry succeeds');
   frame=await open();await frame.locator('#library-object').selectOption('blanket-bed');await frame.locator('#library-load').click();
   await frame.waitForFunction(()=>document.querySelector('#set-summary').textContent.includes('원본 그림 3/3'));
-  const imageSources=await frame.evaluate(async()=>{const {loadDraft}=await import('./draft-store.js?v=20261004-chairfarrear1');await new Promise(r=>setTimeout(r,1500));const p=(await loadDraft()).project;return Object.values(p.views).map(v=>({data:v.source.data.slice(0,23),width:v.source.width,height:v.source.height}));});
+  const imageSources=await frame.evaluate(async()=>{const {loadDraft}=await import('./draft-store.js?v=20261005-desklamp1');await new Promise(r=>setTimeout(r,1500));const p=(await loadDraft()).project;return Object.values(p.views).map(v=>({data:v.source.data.slice(0,23),width:v.source.width,height:v.source.height}));});
   assert(imageSources.every(v=>v.data.startsWith('data:image/webp;base64,')&&v.width===1536&&v.height===1024));
   console.log('PASS optimized blanket sources load and autosave');
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('STUDIO DRAFT PASS');
