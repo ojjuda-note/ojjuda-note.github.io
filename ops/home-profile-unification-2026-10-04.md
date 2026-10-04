@@ -39,3 +39,9 @@ All 49 unit-gate commands and 63 UI-gate commands passed locally. Tests were res
 ## Compatibility
 
 Existing device-only room layouts sync when that member opens their home on the device holding the layout. Built-in furniture is shared with visitors. Custom artwork remains device-only; its placement is retained, and editing is blocked on a device missing that artwork instead of silently removing it. Removed legacy controls do not delete stored diary/media data.
+
+## Compact room correction — 0.45.41-beta
+
+The full-width room in 0.45.40 enlarged the preview beyond the requested layout. Restore the profile on the left and a compact room on the right within one continuous upper area. Fit the actual room interior with no right inset, crop the frame embedded in the artwork, and remove preview-only facade, floor lip and shadows. Editing and saved furniture coordinates are unchanged. Observe the shared row so resizing wider also recalculates the preview; visitor frames use the compact row's height.
+
+Verified mobile 320/390px, desktop and landscape, room entry/return, multiple rooms, saved layouts, visitors, asset cache and World navigation. Eight focused syntax/UI commands passed locally, including the updated room-boundary assertions.

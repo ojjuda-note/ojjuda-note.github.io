@@ -23,8 +23,9 @@ document.querySelector('#open').onclick=()=>{const id=owner;openHouseTest({owner
   for(const [width,height]of [[390,844],[320,568],[1280,900],[844,390]]){
    await page.setViewportSize({width,height});
    await frame.waitForFunction(()=>document.querySelector('#viewport').clientWidth>0);
-   const boxes=await frame.evaluate(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right};};return {profile:rect('#home-profile'),room:rect('#viewport'),panel:rect('#panel'),overflow:document.documentElement.scrollWidth>innerWidth};});
-   assert.equal(boxes.profile.x,boxes.room.x,'profile shares the same full-width scene');assert.equal(boxes.profile.y,boxes.room.y,'profile is inside the room scene');assert(boxes.panel.y>=boxes.room.bottom,'records start below the preview');assert.equal(boxes.room.w,await frame.evaluate(()=>innerWidth));assert.equal(boxes.overflow,false);
+   await frame.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const boxes=await frame.evaluate(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right};};return {scene:rect('#home-scene'),profile:rect('#home-profile'),room:rect('#viewport'),panel:rect('#panel'),overflow:document.documentElement.scrollWidth>innerWidth};});
+   assert(boxes.profile.right<=boxes.room.x+1,'profile stays left of the compact room in one row');assert(Math.abs(boxes.room.right-boxes.scene.right)<1,'no right inset around the room');assert(boxes.room.w<=420&&boxes.room.h<=220,'preview does not enlarge to full screen');assert(boxes.panel.y>=boxes.scene.bottom,'records start below the unified top row');assert.equal(boxes.overflow,false);
    await page.screenshot({path:path.join(proof,`summary-${width}.png`)});
   }
   await page.setViewportSize({width:390,height:844});await frame.locator('#diary').fill('배치를 바꿔도 내 글은 그대로');
