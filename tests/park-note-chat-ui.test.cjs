@@ -15,7 +15,7 @@ world=world.replace('<script type="module">',`<script>${['world-places.js','worl
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
- user(id){D.user=id?{id}:null;worldParkNotes.sync();},render:H,repaint:Bf,close:()=>worldParkNotes.close()};
+ user(id){D.user=id?{id}:null;worldParkNotes.sync();},render:H,repaint:Bf,actions:Ln,close:()=>worldParkNotes.close()};
  D.isAdmin=false;g.tab='friends';H();worldParkNotes.route();
  `+world.slice(world.indexOf('</script>',boot));
 const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['park/route.js','note/preview.js','note/navigation.js','park/integration.js'].map(read).join('\n')+'</script></body>');
@@ -64,10 +64,13 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.evaluate(()=>parkFixture.close());
  assert.equal(await frame.locator('#note-my-screen').isVisible(),false);
  await page.locator('[data-park-expand]').click();
- await page.locator('#pmsg').fill('공원의 실시간 대화');await page.locator('[data-act="pl-send"]').click();
- assert.ok((await page.locator('#plog').textContent()).includes('공원의 실시간 대화'));
- await page.locator('#pmsg').fill('전송 전 메시지');await page.evaluate(()=>parkFixture.render());
- assert.equal(await page.locator('#pmsg').inputValue(),'전송 전 메시지');
+ assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"],.park-live-chat,#ppanel').count(),0,'park has no chat or containing panel');
+ assert.equal(await page.locator('main.main > [data-park-app]').count(),1,'full app is a direct page child outside the park box');
+ assert.equal(await page.locator('[data-park-entry] [data-park-app]').count(),0);
+ const before=await page.evaluate(()=>parkFixture.state.place.log.length);
+ await page.evaluate(()=>{parkFixture.actions['pl-send']();parkFixture.actions['pl-react']({v:'👋'});parkFixture.render()});
+ assert.equal(await page.evaluate(()=>parkFixture.state.place.log.length),before,'park chat actions are disabled');
+ assert.equal(await frame.evaluate(()=>fixtureToken),'kept','unboxed app retains state on render');
  for(const width of [320,360,768,1280]){
   await page.setViewportSize({width,height:850});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),width+': World fits');
@@ -81,7 +84,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
  await page.evaluate(()=>parkFixture.enter('cafe'));
  assert.equal(await page.locator('[data-park-app]').count(),0,'leaving removes the old account app');
+ assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"]').count(),3,'cafe chat remains available');
  assert.deepEqual(errors,[]);
- console.log('PASS: complete Park application, legacy routing, editor/menu/features, account reset, World sharing, responsive layouts, live chat and unsaved state across render/fullscreen/back/leave');
+ console.log('PASS: complete Park application, legacy routing, editor/menu/features, account reset, World sharing, responsive unboxed layouts, park chat removal, cafe chat and unsaved state across render/fullscreen/back/leave');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

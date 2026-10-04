@@ -6,7 +6,7 @@
     const active = () => app.place()?.id === 'park';
     const requested = new URL(location.href).searchParams.get('place') === 'park';
     function markup() {
-      return '<section class="park-app" data-park-app><header class="park-app-head"><strong>공원</strong><button type="button" class="btn sm" data-park-expand aria-pressed="false">크게 보기</button></header><div class="park-app-slot" data-park-app-slot><p role="status">공원을 불러오는 중이에요…</p></div></section>';
+      return '<section class="park-app" data-park-app><div class="park-app-tools"><button type="button" class="btn sm" data-park-expand aria-pressed="false">크게 보기</button></div><div class="park-app-slot" data-park-app-slot><p role="status">공원을 불러오는 중이에요…</p></div></section>';
     }
     function route() { if (requested && !routed) { routed = true; app.enter(); } }
     function sync() {
@@ -43,8 +43,8 @@
       // Replacing only the scene keeps the frame, editor, scroll and pending upload connected.
       entry.firstElementChild.replaceWith(nextEntry.firstElementChild);
       const main=entry.parentElement,nextMain=template.content.querySelector('main.main');
-      for(const child of [...main.childNodes])if(child!==entry)child.remove();
-      for(const child of [...nextMain.childNodes])if(!child.matches?.('[data-park-entry]'))main.insertBefore(child,entry);
+      for(const child of [...main.childNodes])if(child!==entry&&child!==panel)child.remove();
+      for(const child of [...nextMain.childNodes])if(!child.matches?.('[data-park-entry],[data-park-app]'))main.insertBefore(child,entry);
       return true;
     }
     document.addEventListener('click',event=>{

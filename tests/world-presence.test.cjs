@@ -20,7 +20,7 @@ const place = id => ({id, ch: 1, live: true, joined: false, npcs: [], me: {gx: 2
 
 function fixture() {
   const timers = new Map(), channels = [], lobby = [], joined = [], people = [], removed = [];
-  let clock = 0, sequence = 0;
+  let clock = 0, sequence = 0; const reads = [];
   const context = {
     D: {user: {id: 'alice'}}, $: {me: {nick: 'Alice', mood: 'happy'}, avatar: {hair: 'short'}},
     Wo: null, Vo: 0, A0: null, Xr: true, console,
@@ -43,7 +43,8 @@ function fixture() {
         channels.push(channel); return channel;
       },
       removeChannel(channel) { removed.push(channel); },
-      from() {
+      from(table) {
+        reads.push(table);
         const query = {select() { return this; }, eq() { return this; }, gt() { return this; },
           order() { return this; }, limit() { return Promise.resolve({data: [], error: null}); }};
         return query;
@@ -57,10 +58,20 @@ function fixture() {
       timers.delete(id); timer.callback();
     }
   };
-  return {context, timers, channels, lobby, joined, people, removed, tick};
+  return {context, timers, channels, lobby, joined, people, removed, tick, reads};
 }
 
 (async () => {
+  // Park keeps presence, without subscribing to messages or fetching chat history.
+  {
+    const f=fixture(); await f.context.Pa(place('park'),1);
+    assert.deepEqual(f.channels[0].events.map(event=>event.kind),['presence']);
+    assert.deepEqual(f.reads,[]);
+    await f.channels[0].status('SUBSCRIBED'); assert.deepEqual(f.joined,['park']);
+    await f.context.Pa(place('cafe'),1);
+    assert.deepEqual(f.channels[1].events.map(event=>event.kind),['presence','broadcast','postgres_changes']);
+    assert.deepEqual(f.reads,['place_messages']);
+  }
   // Coalescing still publishes the latest movement, without copying stale state.
   {
     const f = fixture(), room = place('cafe');
