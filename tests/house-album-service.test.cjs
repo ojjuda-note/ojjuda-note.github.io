@@ -24,6 +24,12 @@ const fixture=require('./fixtures/house-album.cjs'),root=path.resolve(__dirname,
  f.state.fail='insert';await assert.rejects(api('upload',{file:photo,kind:'photo'}));assert.equal(f.files.size,fileCount,'confirmed insert failure rolls back new files');f.state.fail=null;
  for(const call of f.calls.filter(x=>x.table&&x.operation!=='insert'))assert(call.filters.some(([key,value])=>key==='user_id'&&value===f.owner),'every read/update is owner scoped');
  for(const call of f.calls.filter(x=>x.operation==='insert'))assert.equal(call.values.user_id,f.owner);
+ const management=fixture(),updates=[],manage=createWorldRecords({client:management.client,owner:management.owner,authorized:()=>true,onChange:change=>updates.push(change)});
+ await assert.rejects(manage('move-media',{ids:[],folder_id:null}));await assert.rejects(manage('move-media',{ids:Array(101).fill('old-photo')}));
+ await manage('move-media',{ids:['old-photo','old-video'],folder_id:'note-folder'});assert.equal(management.db.media.find(x=>x.id==='old-video').folder_id,'note-folder');assert.deepEqual(updates.at(-1).movedMedia.ids,['old-photo','old-video']);
+ await assert.rejects(manage('move-media',{ids:['old-photo','other-photo'],folder_id:null}));assert.equal(management.db.media[0].folder_id,'note-folder');
+ management.state.fail='rpc';await assert.rejects(manage('delete-folder',{id:'note-folder'}));assert.equal(management.db.media_folders.length,2);management.state.fail=null;
+ await manage('delete-folder',{id:'note-folder'});assert.equal(management.db.media.length,4);assert(management.db.media.filter(x=>x.user_id===management.owner).every(x=>x.folder_id===null&&x.visibility==='me'));assert.equal(updates.at(-1).deletedFolder,'note-folder');assert.equal(management.calls.filter(x=>x.remove).length,0,'folder management never deletes storage files');
  let release;f.state.pause=new Promise(resolve=>release=resolve);const delayed=api('list',{kind:'photo'});await Promise.resolve();owner='member-b';release();await assert.rejects(delayed);await assert.rejects(api('save-folder',{name:'blocked',visibility:'all'}));assert.equal(f.db.media.find(x=>x.id==='other-photo').caption,'다른 계정 사진');
  console.log('PASS: restored server album, owner scoping, chosen privacy, folder moves, upload rollback, account revocation');
 })().catch(error=>{console.error(error);process.exitCode=1;});

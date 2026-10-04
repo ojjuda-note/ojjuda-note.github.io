@@ -45,12 +45,12 @@ const card=(n,extra={})=>({id:id(n),kind:'memo',display_name:'즐거운 조개',
  assert.equal(await page.locator('#plog .park-note-card').count(),2,'chat updates retain cards');
  await page.locator('[data-park-note]').first().click();
  assert.match(await page.locator('.park-note-dialog iframe').getAttribute('src'),new RegExp('park=1&card='+id(2)));
- const detailFrame=page.frames().find(f=>f.url().includes('/note/?park=1'));
+ const detailFrame=await (await page.locator('.park-note-dialog iframe').elementHandle()).contentFrame();
  await detailFrame.waitForFunction(()=>typeof canCloseParkNote==='function');
  assert.equal(await detailFrame.evaluate(()=>{openCard=id=>{window.openedParkCard=id};authKnown=ready=true;consumeInitialCard();return openedParkCard;}),id(2));
  await page.locator('.park-note-dialog button').click();assert.equal(await page.locator('.park-note-dialog').count(),0);
  await page.locator('[data-park-note-write]').click();assert.equal(await page.locator('.park-note-dialog iframe').getAttribute('src'),'/note/?park=1&compose=memo');
- const composeFrame=page.frames().find(f=>f.url().includes('compose=memo'));
+ const composeFrame=await (await page.locator('.park-note-dialog iframe').elementHandle()).contentFrame();
  await composeFrame.waitForFunction(()=>typeof canCloseParkNote==='function');
  assert.equal(await composeFrame.evaluate(()=>{openComposer=mode=>{window.openedParkComposer=mode};authKnown=ready=true;consumeInitialCard();return openedParkComposer;}),'memo');
  assert.equal(await composeFrame.evaluate(()=>{backdrop.hidden=false;text.value='아직 작성 중';window.confirm=()=>false;return canCloseParkNote();}),false);
