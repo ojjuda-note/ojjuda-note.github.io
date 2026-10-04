@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
-const begin = world.indexOf('function Yg()');
+const begin = world.indexOf('function worldProfileOwner()');
 const end = world.indexOf('function Zg()', begin);
 const menu = world.slice(begin, end);
 const packages = [[1000,10,0],[3000,30,0],[5000,50,5],[10000,100,10],[30000,300,35],[50000,500,50]];
