@@ -38,12 +38,12 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
   assert.equal(await page.locator('[role="dialog"][aria-label="우리집"]').count(),0,'ordinary home does not open a dialog');
   assert.equal(await page.evaluate(()=>document.body.style.overflow),'','World stays scrollable');
   assert.equal(await page.locator('.side').isVisible(),true,'desktop navigation stays visible beside the house');
-  await f.getByRole('tab',{name:'게시판',exact:true}).click();await f.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();await f.getByLabel('게시판 글',{exact:true}).fill('화면 갱신 중인 미저장 글');const original=f;
+  await f.getByRole('tab',{name:'노트',exact:true}).click();await f.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();await f.getByLabel('노트 글',{exact:true}).fill('화면 갱신 중인 미저장 글');const original=f;
   await page.evaluate(()=>houseWorldTest.render());assert.equal(home(),original,'shared World updates must keep the live frame connected');
-  assert.equal(await f.getByLabel('게시판 글',{exact:true}).inputValue(),'화면 갱신 중인 미저장 글');
+  assert.equal(await f.getByLabel('노트 글',{exact:true}).inputValue(),'화면 갱신 중인 미저장 글');
   await page.evaluate(()=>houseWorldTest.actions.tab({tab:'home'}));assert.equal(home(),original);assert.equal(await page.locator('iframe').count(),1,'reselecting home never creates another room');
   assert.deepEqual(entryArt,[],'ordinary home does not fetch the separate entrance illustration');
-  await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0);await f.locator('[data-tab="diary"]').click();await f.getByRole('tab',{name:'게시판',exact:true}).click();await f.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();await f.getByLabel('게시판 글',{exact:true}).fill('실제 월드 회원의 개인 집');await f.getByRole('button',{name:'게시판에 저장',exact:true}).click();await page.waitForFunction(()=>albumFixture.db.house_posts.some(row=>row.body==='실제 월드 회원의 개인 집'));assert.equal(await f.locator('#diary,.local-records,.record-diary-editor').count(),0);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:world-member-a')).diary),'기존 기기 원본');
+  await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0);await f.locator('[data-tab="diary"]').click();await f.getByRole('tab',{name:'노트',exact:true}).click();await f.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();await f.getByLabel('노트 글',{exact:true}).fill('실제 월드 회원의 개인 집');await f.getByRole('button',{name:'노트에 저장',exact:true}).click();await page.waitForFunction(()=>albumFixture.db.house_posts.some(row=>row.body==='실제 월드 회원의 개인 집'));assert.equal(await f.locator('#diary,.local-records,.record-diary-editor').count(),0);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:world-member-a')).diary),'기존 기기 원본');
   await f.locator('[data-tab="room"]').click();await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'world-member-house-desktop.png')});await f.locator('#exit').click();await noFrames();await main();
   await page.setViewportSize({width:390,height:844});await page.locator('.bottomnav [data-tab="home"]').click();f=await ready();
   const worldNav=await page.locator('.bottomnav').boundingBox(),panel=await f.locator('#panel').boundingBox(),houseNav=await f.locator('#panel .panel-head nav').boundingBox();assert(worldNav&&panel&&houseNav);const houseFrame=await page.locator('iframe[title="우리집"]').boundingBox();assert(Math.abs(houseFrame.y+houseFrame.height-worldNav.y)<=3,'the house frame meets the World menu');assert(houseNav.y>=panel.y&&houseNav.y-panel.y<=24&&houseNav.height<=56,'compact tabs sit within the panel top padding');assert.equal(await f.locator('#app > nav').count(),0);assert.deepEqual(await f.locator('nav [data-tab]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tab)),['diary','room']);
@@ -53,7 +53,7 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
    await page.setViewportSize(size);
    for(const tab of ['diary','room']){
     await f.locator('[data-tab="'+tab+'"]').click();
-    if(tab==='room')await f.locator('#home-view').click();else {await f.getByRole('tab',{name:'게시판',exact:true}).click();await f.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();}
+    if(tab==='room')await f.locator('#home-view').click();else {await f.getByRole('tab',{name:'노트',exact:true}).click();await f.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();}
     // As in the cafe, short screens may scroll the World content column.
     await page.evaluate(()=>{const house=document.querySelector('[data-house-inline]'),nav=document.querySelector('.bottomnav').getBoundingClientRect();window.scrollTo(0,Math.max(0,house.getBoundingClientRect().bottom+scrollY-nav.top));});
     await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
@@ -70,7 +70,7 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
     assert(Math.abs(before.y-after.y)<1,'scrolling the content keeps both house tabs available');
     if(tab==='room')assert(panel.y+panel.height<=nav.y+3,'short screens keep the tools above the World menu');
     assert.equal(await f.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-    if(tab==='diary'){const button=f.getByRole('button',{name:'게시판에 저장',exact:true});await button.scrollIntoViewIfNeeded();const save=await button.boundingBox(),body=await f.locator('#panel-body').boundingBox();assert(save.y>=body.y-.5&&save.y+save.height<=body.y+body.height+.5&&save.y+save.height<=nav.y,'the entire save button fits inside the panel above navigation '+JSON.stringify({size,save,body,nav}));await f.locator('#app').evaluate(el=>el.scrollTop=0);}
+    if(tab==='diary'){const button=f.getByRole('button',{name:'노트에 저장',exact:true});await button.scrollIntoViewIfNeeded();const save=await button.boundingBox(),body=await f.locator('#panel-body').boundingBox();assert(save.y>=body.y-.5&&save.y+save.height<=body.y+body.height+.5&&save.y+save.height<=nav.y,'the entire save button fits inside the panel above navigation '+JSON.stringify({size,save,body,nav}));await f.locator('#app').evaluate(el=>el.scrollTop=0);}
     await page.screenshot({path:path.join(proof,'world-house-'+size.width+'x'+size.height+'-'+tab+'.png')});
    }
   }

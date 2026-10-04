@@ -147,7 +147,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await assertInside(page, house.locator('nav button').last(), area, 'house navigation after scrolling');
           await snapshot(page, `house-${viewport.width}`);
           await house.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();
-          await house.getByLabel('게시판 글',{exact:true}).fill('키보드가 열린 상태에서도 메뉴와 저장 버튼에 접근해요.');
+          await house.getByLabel('노트 글',{exact:true}).fill('키보드가 열린 상태에서도 메뉴와 저장 버튼에 접근해요.');
           const houseKeyboardHeight=Math.min(300,viewport.height-100);
           await visibleArea(page,houseKeyboardHeight,30);
           const houseKeyboardArea={top:54,bottom:houseKeyboardHeight+30-48};
@@ -160,7 +160,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
             ['house menu above keyboard',house.locator('nav button').last()],
             ['house categories above keyboard',house.getByRole('tab',{name:'동영상',exact:true})],
             ['house folders above keyboard',house.locator('[data-folder-id="viewport-folder"]')],
-            ['house save above keyboard',house.getByRole('button',{name:'게시판에 저장',exact:true})]
+            ['house save above keyboard',house.getByRole('button',{name:'노트에 저장',exact:true})]
           ]){
             await control.scrollIntoViewIfNeeded();
             await assertInside(page,control,houseKeyboardArea,label);

@@ -26,7 +26,7 @@ document.querySelector('#preview').onclick=()=>openHouseTest({...options(),studi
   assert.equal(await f.evaluate(()=>initialStudioCapability),false,'omitting studio authorization grants no studio capability');
   await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0);
   await forge(f);assert.equal(await page.evaluate(()=>studioCalls),0,'a forged studio-channel request cannot invoke a privileged callback');assert.equal(await page.locator('iframe').count(),1,'denying a studio request keeps the ordinary house open');
-  await f.locator('[data-tab="diary"]').click();await f.getByRole('tab',{name:'게시판',exact:true}).click();await f.locator('#diary').fill('회원 A의 집 기록');await f.getByRole('button',{name:'기록 저장',exact:true}).click();
+  await f.locator('[data-tab="diary"]').click();await f.getByRole('tab',{name:'노트',exact:true}).click();await f.locator('#diary').fill('회원 A의 집 기록');await f.getByRole('button',{name:'기록 저장',exact:true}).click();
   const memberASave=await page.evaluate(()=>localStorage.getItem('ojjuda-house-playtest-v1:member-a'));assert(memberASave);
   await page.evaluate(()=>auth.id='member-b');await noFrames();f=await open();await f.locator('[data-tab="diary"]').click();assert.equal(await f.locator('#diary').inputValue(),'','another member cannot inherit the previous member room');assert.equal(await page.evaluate(()=>localStorage.getItem('ojjuda-house-playtest-v1:member-a')),memberASave);
   await page.evaluate(()=>{auth.member=false;auth.id=null;});await noFrames();
