@@ -390,3 +390,9 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 /* Small descriptive text needs the same clarity as the main record labels. */
 .panel-note,.record-empty,.record-meta,#home-profile-bio,#room-count,#period-name,.item-menu-help{color:#786580}
 .record-toolbar button,.placement-actions #placement-done{background:#805caa;border-color:#805caa}
+
+/* Media descriptions remain readable on narrow screens and in the viewer. */
+.record-upload-caption{flex:0 0 100%;min-width:0;box-sizing:border-box;}
+.record-field textarea{width:100%;min-width:0;box-sizing:border-box;resize:vertical;min-height:86px;padding:10px;border:1px solid #d7c9df;border-radius:10px;background:#fffdfa;color:inherit;font:inherit;line-height:1.6;}
+.record-upload-caption .panel-note{margin:2px 0 0;font-weight:400;}
+.record-viewer-caption{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}

@@ -95,7 +95,10 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  const file=node('input');file.type='file';file.multiple=true;file.accept=kind==='photo'?'image/jpeg,image/png,image/gif,image/webp':kind==='video'?'video/mp4,video/quicktime,video/webm':'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm';file.hidden=true;file.setAttribute('aria-label',label+' 앨범에 올리기');
  const uploads=node('div','record-toolbar record-upload'),uploadVisibility=select('새 파일 공개범위',scopes,'me'),add=button((kind==='all'?'사진·동영상':label)+' 올리기',()=>{uploads.hidden=!uploads.hidden;});
  add.className='record-upload-toggle';
- const scopeNote=node('p','panel-note');uploads.hidden=true;uploads.append(uploadVisibility,button('파일 선택',()=>file.click()),node('span','panel-note',kind==='photo'?'사진 20MB까지':kind==='video'?'영상 1분 · 50MB까지':'사진 20MB · 영상 1분 / 50MB까지'),scopeNote);toolbar.append(add,refresh);
+ const uploadCaption=node('textarea');uploadCaption.rows=3;uploadCaption.maxLength=100;uploadCaption.placeholder='사진이나 영상에 대한 설명을 적어 주세요';
+ const captionField=field('설명 (선택 · 100자까지)',uploadCaption);captionField.classList.add('record-upload-caption');
+ const captionHelp=node('p','panel-note','설명을 적은 뒤 파일을 선택해 주세요. 여러 개를 선택하면 같은 설명으로 저장돼요.');captionField.append(captionHelp);
+ const scopeNote=node('p','panel-note');uploads.hidden=true;uploads.append(captionField,uploadVisibility,button('파일 선택',()=>file.click()),node('span','panel-note',kind==='photo'?'사진 20MB까지':kind==='video'?'영상 1분 · 50MB까지':'사진 20MB · 영상 1분 / 50MB까지'),scopeNote);toolbar.append(add,refresh);
  (foldersHost||container).append(folders);container.append(trashHeading,toolbar,uploads,file,status,editor,selection,gallery);if(kind==='text')add.hidden=true;
  function renderFolders(){
   release(folderHolds);folderHolds=[];const focused=folders.contains(document.activeElement)?document.activeElement.dataset.folderId:null;folders.replaceChildren();folders.hidden=kind==='all'||trash;if(foldersHost)foldersHost.hidden=folders.hidden;if(folders.hidden)return;
@@ -149,7 +152,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   box.append(node('p','record-form-title',`‘${group.name}’ 그룹을 삭제할까요?`),node('p','panel-note','친구와 게시물은 그대로 두고 폴더의 이 그룹 선택만 해제해요. 다른 친구·그룹도 선택하지 않은 폴더는 나만 볼 수 있어요.'),cancel,accept);editor.append(box);cancel.focus();
  }
  function mediaEditor(record){
-  if(busy)return;editor.replaceChildren();const form=node('form'),caption=node('input');caption.type='text';caption.maxLength=100;caption.value=record.caption||'';
+  if(busy)return;editor.replaceChildren();const form=node('form'),caption=node('textarea');caption.rows=3;caption.maxLength=100;caption.placeholder='사진이나 영상에 대한 설명을 적어 주세요 (100자까지)';caption.value=record.caption||'';
   const destination=select('파일 폴더',[['','폴더 없음'],...foldersFor(recordKind(record)).map(folder=>[folder.id,folder.name])],record.folder_id||''),scope=select('파일 공개범위',scopes,record.visibility),note=node('p','panel-note');
   function update(){const folder=snapshot.folders.find(row=>row.id===destination.value);scope.disabled=!!folder;scope.hidden=!!folder;note.textContent=folder?`‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'';}
   destination.onchange=()=>{if(!destination.value)scope.value='me';update();};update();form.append(node('p','record-form-title',label+' 설정'),field('설명',caption),field('폴더',destination),field('볼 수 있는 사람',scope),note);
@@ -166,9 +169,9 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  file.onchange=async()=>{
   const files=[...file.files||[]];file.value='';if(busy||!active()||!files.length)return;
   if(files.length>10){status.textContent='한 번에 10개까지 올려 주세요.';return;}
-  const target=folderId==='all'||folderId==='none'?null:folderId,visibility=uploadVisibility.value;let count=0,error=null;lock(true);
-  try{for(const selected of files){if(active())status.textContent=`${count+1}/${files.length}개 저장 중이에요…`;await request('upload',{file:selected,kind:kind==='all'?(selected.type.startsWith('image/')?'photo':'video'):kind,folder_id:target,visibility});count++;}}
-  catch(caught){error=caught;}finally{if(active()){uploads.hidden=true;await load();lock(false);status.textContent=(count?`${count}개를 앨범에 저장했어요. `:'')+(error?error.message:'');}}
+  const target=folderId==='all'||folderId==='none'?null:folderId,visibility=uploadVisibility.value,caption=uploadCaption.value;let count=0,error=null;lock(true);
+  try{for(const selected of files){if(active())status.textContent=`${count+1}/${files.length}개 저장 중이에요…`;await request('upload',{file:selected,kind:kind==='all'?(selected.type.startsWith('image/')?'photo':'video'):kind,folder_id:target,visibility,caption});count++;}}
+  catch(caught){error=caught;}finally{if(active()){uploads.hidden=!error;if(!error)uploadCaption.value='';await load();lock(false);status.textContent=(count?`${count}개를 앨범에 저장했어요. `:'')+(error?error.message:'');}}
  };
  function renderCards(){release(cardHolds);cardHolds=[];gallery.replaceChildren();if(!displayed.length)gallery.append(node('p','record-empty',trash?'휴지통이 비어 있어요.':'아직 '+label+'이 없어요.'));
    for(const record of displayed){
