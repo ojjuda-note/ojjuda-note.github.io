@@ -1,6 +1,8 @@
 /* App-level swipes leave feed filters, editors and maps their own gestures. */
 (() => {
   'use strict';
+  // World handles the embedded Park's place navigation.
+  if (new URLSearchParams(location.search).get('embedded') === '1' || window.OjjudaParkFull?.embedded === true) return;
   let gesture = null, suppressClickUntil = 0;
   const blocked = () => document.body.style.overflow === 'hidden'
     || [...document.querySelectorAll('[role="dialog"], .dialog-backdrop, .nn-backdrop')]

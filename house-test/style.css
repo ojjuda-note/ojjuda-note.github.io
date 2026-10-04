@@ -269,7 +269,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .records-home #home-scene{display:grid;grid-column:1;grid-row:2;grid-template-columns:clamp(96px,28%,144px) minmax(0,1fr);align-items:center;justify-self:center;width:min(100%,564px);min-height:110px;}
 .records-home #home-profile{grid-column:1;grid-row:1;flex-direction:column;gap:8px;padding:10px 8px;text-align:center;z-index:2;}
 .records-home .home-profile-copy{max-width:100%;}
-.records-home #viewport{grid-column:2;grid-row:1;justify-self:end;flex:none;width:var(--home-room-width,100%);height:var(--home-room-height,140px);min-height:0;max-width:100%;margin:0;border:0;border-radius:0;box-shadow:none;touch-action:pan-y;background:transparent;}
+.records-home #viewport{grid-column:2;grid-row:1;justify-self:end;flex:none;width:var(--home-room-width,100%);height:var(--home-room-height,140px);min-height:0;max-width:100%;margin:0;border:0;border-radius:14px;box-shadow:none;touch-action:pan-y;background:transparent;}
 .records-home .room{clip-path:inset(58px 39px 134px 38px);}
 .records-home .room::before,.records-home .room::after{content:none;}
 .records-home .room-bg{filter:none;}
