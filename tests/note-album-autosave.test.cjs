@@ -6,7 +6,7 @@ const fixture=require('./fixtures/house-album.cjs'),source=fs.readFileSync(path.
  c.sameWorldUser=(id,epoch)=>c.identityEpoch===epoch&&c.session?.user?.id===id;
  vm.createContext(c);vm.runInContext(source.slice(source.indexOf('async function worldAlbumFolderId'),source.indexOf('let worldPicker =')),c);
  // Existing private Note folder is reused; album records stay private.
- await c.saveToWorldAlbum(photo,f.owner,1);let saved=f.db.media.at(-1);assert.equal(saved.folder_id,'note-folder');assert.equal(saved.visibility,'me');assert.equal(saved.caption,'오쭈다노트에 올린 사진');assert(f.files.has(saved.path)&&f.files.has(saved.thumb_path));assert.equal(f.db.media_folders.length,2);
+ await c.saveToWorldAlbum(photo,f.owner,1);let saved=f.db.media.at(-1);assert.equal(saved.folder_id,'note-folder');assert.equal(saved.visibility,'me');assert.equal(saved.caption,'공원에 올린 사진');assert(f.files.has(saved.path)&&f.files.has(saved.thumb_path));assert.equal(f.db.media_folders.length,2);
  // A same-named public folder must never receive a newly attached Note photo.
  f.db.media_folders.find(row=>row.id==='note-folder').visibility='all';await c.saveToWorldAlbum(photo,f.owner,1);saved=f.db.media.at(-1);const privateFolder=f.db.media_folders.find(row=>row.id===saved.folder_id);assert.notEqual(privateFolder.id,'note-folder');assert.equal(privateFolder.visibility,'me');assert.equal(privateFolder.allowed.length,0);
  const count=f.db.media.length,files=f.files.size;f.state.fail='insert';await assert.rejects(c.saveToWorldAlbum(photo,f.owner,1));assert.equal(f.db.media.length,count);assert.equal(f.files.size,files);f.state.fail=null;

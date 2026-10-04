@@ -10,7 +10,7 @@ const read=file=>fs.readFileSync(path.join(root,file),'utf8');
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   await context.route('**/*',route=>route.abort());
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.setContent(read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,''));
+  await page.setContent(read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,''));
   await page.addStyleTag({content:read('note/style.css')+read('note/features.css')+read('photo-protection.css')});
   await page.addScriptTag({content:read('photo-protection.js')});
   await page.addScriptTag({content:read('note/preview.js')});

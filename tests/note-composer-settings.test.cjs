@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
-const html = fs.readFileSync(path.join(root, 'note/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+const html = fs.readFileSync(path.join(root, 'park/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 const key = id => `ojjuda-note-composer-settings-v1:${id}`;
 const settle = () => new Promise(resolve => setImmediate(resolve));
 

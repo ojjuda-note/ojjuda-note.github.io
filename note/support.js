@@ -60,13 +60,13 @@
           link.href=key==='terms'?'/terms.html':'/privacy.html';section.append(link);
         }else if(value)section.append(el('p',value));
         else section.append(el('p',key==='contact_text'
-          ? '월드와 노트 문의는 로그인 후 아래 문의함에 남겨 주세요.'
+          ? '월드 문의는 로그인 후 아래 문의함에 남겨 주세요.'
           : '서로를 존중해 주세요. 신고는 해당 글·카드·프로필의 신고 버튼에서 접수할 수 있어요.'));
         content.append(section);
       }
       const glass=el('a','스마트 글래스 미리보기','support-document-link');
-      glass.href='/note/glasses.html';content.append(glass);
-      content.append(el('h3','내 문의'),el('p','월드·노트 공통 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
+      glass.href='/park/glasses.html';content.append(glass);
+      content.append(el('h3','내 문의'),el('p','월드 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
       if(!user){const link=el('a','대문에서 로그인','button');link.href='/';content.append(link);return;}
       const form=el('form',undefined,'support-form'),label=el('label','문의 내용'),field=el('textarea');
       field.id='note-inquiry-body';field.maxLength=2000;field.required=true;field.rows=5;label.htmlFor=field.id;
@@ -109,7 +109,7 @@
   }
   function feedbackView() {
     const epoch=++run,user=getUserId();busy=false;message.textContent='';content.replaceChildren();
-    content.append(el('p','고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려주세요. 월드와 노트 운영팀이 함께 확인해요.','support-help'));
+    content.append(el('p','고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려주세요. 월드 운영팀이 확인해요.','support-help'));
     if(!user){const login=el('a','대문에서 로그인','btn button');login.href='/';content.append(login);return;}
     const form=el('form',undefined,'support-form'),choices=el('fieldset',undefined,'support-choices');
     choices.append(el('legend','의견 종류'));
@@ -129,7 +129,7 @@
       try{
         const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:appVersion,user_agent:navigator.userAgent.slice(0,400),...bugDiagnostics(kind)});
         if(error)throw error;if(!valid(epoch,user))return;
-        content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='운영팀이 월드와 노트 의견을 함께 확인합니다.';keepFocus(epoch,user);
+        content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='월드 운영팀이 의견을 확인합니다.';keepFocus(epoch,user);
       }catch{if(valid(epoch,user))message.textContent='보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';}
       finally{if(valid(epoch,user)){busy=false;send.disabled=false;field.disabled=false;choices.disabled=false;}}
     });

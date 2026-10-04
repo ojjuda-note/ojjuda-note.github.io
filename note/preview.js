@@ -38,12 +38,11 @@ function quietLocatedReload(tries = 0) {   // 허용된 위치가 늦게 도착�
 }
 let feedSnapshot = null, feedLoading = false, replyLoading = false;
 let noteState = null, noteStateRun = 0, noticeElement = null, featureMessage = null;
-const parkEmbedded = window.parent !== window && new URL(location.href).searchParams.get('park') === '1';
+const parkEmbedded = window.parent !== window && location.pathname.startsWith('/park/');
 let initialParkCompose = parkEmbedded && new URL(location.href).searchParams.get('compose') === 'memo';
-if (parkEmbedded) document.documentElement.classList.add('park-note-embedded');
 window.canCloseParkNote = () => {
   if (busy) { message('저장이 끝날 때까지 기다려 주세요.'); return false; }
-  return backdrop.hidden || (!text.value.trim() && !cardPhotoBlob && !eventPhotoBlob) || confirm('작성 중인 노트를 닫고 공원으로 돌아갈까요?');
+  return backdrop.hidden || (!text.value.trim() && !cardPhotoBlob && !eventPhotoBlob) || confirm('작성 중인 카드를 닫고 이동할까요?');
 };
 let initialCardId = new URL(location.href).searchParams.get('card');
 let initialKeepId = ['memo','comment'].includes(new URL(location.href).searchParams.get('keep')) ? initialCardId : null;
@@ -112,7 +111,7 @@ function setPhotoBackground(element, value) {
   const key = photoAssetKey(value);
   element.classList.toggle('note-plain', !key);
   element.classList.remove('image-forest', 'image-lake');
-  element.style.backgroundImage = key ? `url("assets/${key}.jpg")` : '';
+  element.style.backgroundImage = key ? `url("/note/assets/${key}.jpg")` : '';
 }
 async function loadEventBackground(element, card) {
   const position = positionIsFresh(nearbyPosition) ? nearbyPosition : null;
@@ -555,7 +554,7 @@ async function saveToWorldAlbum(blob, userId, epoch) {
   if (!sameWorldUser(userId, epoch)) { await box.remove([path, thumbPath]); return; }
   const row = await client.from('media').insert({ id, user_id: userId, type: 'image',
     path, thumb_path: thumbPath, duration: 0, visibility: 'me', folder_id: folderId,
-    caption: '오쭈다노트에 올린 사진' });
+    caption: '공원에 올린 사진' });
   if (row.error) { await box.remove([path, thumbPath]); throw row.error; }
 }
 function keepInWorldAlbum(blob, userId, epoch) {
@@ -1541,7 +1540,7 @@ async function toggleReaction(cardId, reaction) {
 }
 function shareCard(cardId) {
   if (!validCardId(cardId)) return;
-  const url = new URL(location.pathname, location.origin); url.searchParams.set('card', cardId);
+  const url = new URL('/world.html?place=park', location.origin); url.searchParams.set('card', cardId);
   showManagement('카드 공유');
   managementBody.append(node('p', 'management-help', '이 링크로 카드를 열 수 있어요. 삭제되거나 숨김 처리된 카드는 보이지 않습니다.'));
   const label = node('label', 'field-label', '카드 링크'); label.htmlFor = 'note-share-url';
@@ -1553,7 +1552,7 @@ function shareCard(cardId) {
     catch { input.focus(); input.select(); managementMessage.textContent = '선택된 링크를 복사해 주세요.'; }
   }, true));
   if (navigator.share) managementFooter.append(managementButton('다른 앱으로 공유', async () => {
-    try { await navigator.share({ title: '오쭈다노트', url: url.href }); }
+    try { await navigator.share({ title: '오쭈다 월드 · 공원', url: url.href }); }
     catch (error) { if (error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
   }));
 }
@@ -1565,7 +1564,7 @@ function selectCollection(mode, preserveMessage = false) {
     tagTabReset?.();
   }
   feedMode = mode; if (!preserveMessage) message(''); showFeed();
-  $('#feed-title').textContent = mode === 'all' ? '오쭈다노트 카드' : mode === 'events' ? '내 이벤트' : '메모함';
+  $('#feed-title').textContent = mode === 'all' ? '공원 카드' : mode === 'events' ? '내 이벤트' : '메모함';
   $('#note-collection-tabs').hidden = mode === 'all' || mode === 'events';
   $('.feed-sort-tabs').hidden = mode !== 'all';
   document.querySelectorAll('[data-collection]').forEach(button => {
@@ -1819,7 +1818,7 @@ function updateFeaturedPhoto() {
   const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
   const ownedUntil = selected && activePhotoEntitlement(selected);
   const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10쭈 / 1개월' : '무료 · 이 사진으로 등록';
-  $('#photo-featured-image').src = `assets/${selected || backgroundKey}.jpg`;
+  $('#photo-featured-image').src = `/note/assets/${selected || backgroundKey}.jpg`;
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
@@ -1844,7 +1843,7 @@ function renderPhotoPage() {
     });
     // Tiles use the same original as the featured image, composer, and published card.
     // The older "-s" files were not made from the matching numbered originals.
-    const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+    const img = node('img'); img.src = `/note/assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
     const caption = node('span', 'note-photo-tile-caption', title);
     const mark = node('span', 'note-photo-tile-mark', '✓'); mark.setAttribute('aria-hidden', 'true');
     tile.append(input, img, caption, mark); grid.append(tile);
@@ -2768,7 +2767,7 @@ async function showNicknameChange() {
     const nickname = await fetchAccountNickname(userId);
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
-    managementBody.replaceChildren(node('p', 'management-help', '월드와 노트에서 함께 쓰는 닉네임이에요.'), form);
+    managementBody.replaceChildren(node('p', 'management-help', '월드에서 사용하는 닉네임이에요.'), form);
     const input = accountField(form, 'note-new-nickname', '닉네임'); input.maxLength = 12; input.value = nickname;
     accountFormFooter(form, '저장'); input.focus();
     form.addEventListener('submit', event => {
@@ -2793,7 +2792,7 @@ function showPasswordChange() {
   const userId = session?.user?.id; if (!userId) return;
   const run = showManagement('비밀번호 변경');
   const form = node('form', 'note-account-form'); form.noValidate = true;
-  managementBody.append(node('p', 'management-help', '월드와 노트에 로그인할 때 쓰는 비밀번호가 함께 바뀌어요.'), form);
+  managementBody.append(node('p', 'management-help', '월드에 로그인할 때 쓰는 비밀번호가 바뀌어요.'), form);
   const password = accountField(form, 'note-new-password', '새 비밀번호', 'password'); password.minLength = 6;
   password.placeholder = '6자 이상';
   const confirmation = accountField(form, 'note-confirm-password', '새 비밀번호 확인', 'password');
@@ -2809,11 +2808,11 @@ function showPasswordChange() {
     }, () => { password.value = ''; confirmation.value = ''; accountSuccess('비밀번호를 바꿨어요. 다음 로그인부터 새 비밀번호를 써 주세요.'); });
   });
 }
-function leaveNoteAccount() { location.assign('/'); }
+function leaveNoteAccount() { (parkEmbedded ? window.parent : window).location.assign('/'); }
 function showAccountLogout() {
   if (!session?.user) return;
   showManagement('로그아웃');
-  managementBody.append(node('p', 'management-help', '이 브라우저에서 월드와 노트가 함께 로그아웃돼요. 로그아웃할까요?'));
+  managementBody.append(node('p', 'management-help', '이 브라우저에서 월드가 로그아웃돼요. 로그아웃할까요?'));
   cancelManagement();
   managementFooter.append(managementButton('로그아웃', () => accountAction(async userId => {
     const { error } = await client.auth.signOut({ scope: 'local' });
@@ -2881,17 +2880,17 @@ async function showAccountDeletion() {
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
     managementBody.replaceChildren(
-      node('p', 'management-help note-account-warning', '탈퇴하면 월드와 노트 계정이 함께 삭제돼요. 방·다이어리·사진·영상·친구·쭈와 노트의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
+      node('p', 'management-help note-account-warning', '탈퇴하면 월드 계정이 삭제돼요. 방·다이어리·사진·영상·친구·쭈와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
       node('p', 'management-help', '계정정보는 1개월간 비공개 보관 후 삭제해요. 같은 이메일이나 전화번호로 3일(72시간) 동안 재가입할 수 없어요. 다른 사람의 방명록·댓글은 ‘탈퇴한 사용자’로 남아요.'), form);
     const input = accountField(form, 'note-delete-nickname', `확인을 위해 닉네임 ‘${nickname}’을 입력해 주세요`);
     const consentLabel = node('label', 'note-account-consent'), consent = node('input'); consent.type = 'checkbox';
-    consentLabel.append(consent, node('span', '', '월드와 노트가 함께 탈퇴되는 것을 확인했어요.')); form.append(consentLabel);
+    consentLabel.append(consent, node('span', '', '월드 계정과 모든 활동이 삭제되는 것을 확인했어요.')); form.append(consentLabel);
     accountFormFooter(form, '탈퇴하기', true); input.focus();
     form.addEventListener('submit', event => {
       event.preventDefault();
       if (run !== managementRun || session?.user?.id !== userId) return;
       if (input.value.trim() !== nickname) { managementMessage.textContent = '닉네임이 맞지 않아요.'; input.focus(); return; }
-      if (!consent.checked) { managementMessage.textContent = '월드와 노트의 함께 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
+      if (!consent.checked) { managementMessage.textContent = '월드 계정 탈퇴 안내를 확인해 주세요.'; consent.focus(); return; }
       void accountAction(deleteNoteAccount);
     });
   } catch {
@@ -3052,7 +3051,7 @@ function manageCard(id) {
   const card = cache.get(id);
   if (!card || !session?.user) return;
   showManagement(card.is_mine ? '내 카드 관리' : '카드 관리');
-  managementBody.append(node('p', 'management-help', '노트의 글과 차단 설정을 관리합니다.'));
+  managementBody.append(node('p', 'management-help', '공원의 글과 차단 설정을 관리합니다.'));
   if (card.is_mine) {
     const eventEnded = card.kind === 'event' && Date.parse(card.event_ends_at) <= Date.now();
     if (eventEnded) managementBody.append(node('p', 'management-help', '종료된 이벤트는 수정할 수 없지만 삭제할 수 있어요.'));
@@ -3083,7 +3082,7 @@ function showPhotoChoices(card) {
     for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
       const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
       const button = node('button', 'button'); button.type = 'button';
-      const img = node('img'); img.src = `assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+      const img = node('img'); img.src = `/note/assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       const ownedUntil = activePhotoEntitlement(key);
       button.append(img, node('strong', '', title), node('small', '', ownedUntil ? `${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 10쭈 · 1개월'));
       button.addEventListener('click', () => {
@@ -3204,7 +3203,7 @@ function installManagement() {
   const blocks = managementButton('차단 목록', showBlocks); blocks.id = 'note-blocks'; blocks.hidden = true;
   const reports = managementButton('관리자 모드 열기', () => {
     if (!moderator || !session?.user) return;
-    window.location.assign('/world.html?admin=note');
+    (parkEmbedded ? window.parent : window).location.assign('/world.html?admin=note');
   }); reports.id = 'note-moderation'; reports.className = 'btn pri'; reports.hidden = true;
   $('#note-admin-entry').append(reports);
   const memberInfo = managementButton('내 회원정보', () => showMemberInfo()); memberInfo.id = 'note-member-info'; memberInfo.hidden = true;
@@ -3420,7 +3419,7 @@ window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id |
 notificationController = window.OjjudaNoteNotifications?.install({
   client, getUserId: () => session?.user?.id || null,
   onOpenCard: id => { window.OjjudaNoteNavigation?.leaveMy(); openCard(id); },
-  onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);location.assign(url.href);},
+  onOpenWorld: (type,id) => {const url=new URL('/world.html',location.origin);url.searchParams.set('notice',type);url.searchParams.set('target',id);(parkEmbedded ? window.parent : window).location.assign(url.href);},
   onOpenInquiry: id => window.OjjudaNoteSupport?.open?.(id),
   onKeepCard: (id, cardKind) => confirmPermanent({ id, kind: cardKind })
 });
@@ -3446,6 +3445,6 @@ if (client) {
     if (backdrop.hidden && management.hidden) refreshCards(stack.length > 0);
   });
 } else {
-  authKnown = true; banner('노트 연결 설정을 확인해 주세요');
+  authKnown = true; banner('공원 연결 설정을 확인해 주세요');
   state(list, '카드를 불러올 수 없어요.'); updateAuth();
 }

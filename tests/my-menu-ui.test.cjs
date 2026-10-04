@@ -105,13 +105,14 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-guestbook').isChecked(), true);
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'logout', 'mood-pick', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'enter-place', 'logout', 'mood-pick', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
-  for (const href of ['/guide.html', '/note/', 'terms.html', 'privacy.html', 'https://github.com/songys/Chatbot_data']) {
+  for (const href of ['/guide.html', 'terms.html', 'privacy.html', 'https://github.com/songys/Chatbot_data']) {
     assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
   }
+  assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').isVisible(), true, 'park shortcut stays within World');
   await uniqueIds(page);
   await fitsViewport(page, 'expanded World menu with a long email address');
 
@@ -135,7 +136,7 @@ async function worldFixture(context, mobile, errors) {
 async function noteFixture(context, mobile, errors) {
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
-  const html = read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, '');
+  const html = read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, '');
   await page.route('https://ojjuda.test/note/', route => route.fulfill({ contentType: 'text/html', body: html }));
   await page.route('**/favicon.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: read('favicon.svg') }));
   await page.goto('https://ojjuda.test/note/');

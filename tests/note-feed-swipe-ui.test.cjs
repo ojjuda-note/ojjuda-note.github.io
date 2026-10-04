@@ -16,7 +16,7 @@ assert.ok(bootAt > 0);
     for (const mobile of [true, false]) {
       const context = await browser.newContext({ viewport: { width: mobile ? 390 : 1280, height: 844 },
         isMobile: mobile, hasTouch: mobile });
-      const html = read('note/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, '');
+      const html = read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<link\b[^>]*>/gi, '');
       await context.route('**/*', route => {
         if (route.request().url() === 'https://ojjuda.test/world.html') return route.fulfill({contentType:'text/html',body:'<!doctype html><title>동네</title>'});
         return route.request().url() === 'https://ojjuda.test/note/'

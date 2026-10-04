@@ -39,8 +39,8 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.deepEqual(await page.evaluate(()=>{const m=worldTest.model;return [m.coins,m.diary[0].id,m.room.items,m.avatar,m.friends,m.petBank||null,m.themeBackup||null,localStorage.getItem('ojjuda-pet-talk'),localStorage.getItem('ojjuda-pet-mem')]}),[321,'saved-note',[],{},[],null,null,null,null],'reload clears retired assets while preserving balance and writing');
     const current=()=>page.evaluate(()=>worldTest.state.tab);
     const noteAndBack=async()=>{
-      await page.waitForURL('https://fixture.test/note/');
-      await page.goBack();
+      await page.waitForFunction(()=>worldTest.state.tab==='place' && worldTest.state.place?.id==='park');
+      await page.evaluate(()=>history.back());
       await page.waitForFunction(()=>window.worldTest && worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
     };
     const main=async()=>{
@@ -193,6 +193,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, four destinations, modal protection and retired-state cleanup, swipes across all tabs and into Note, touch/mouse input, vertical scrolling, cancellation and normal taps.');
+    console.log('PASS: browser/native menu back, four destinations, modal protection and retired-state cleanup, swipes across all tabs and into Park, touch/mouse input, vertical scrolling, cancellation and normal taps.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

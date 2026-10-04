@@ -57,7 +57,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         const url = new URL(route.request().url());
         if (url.hostname !== 'fixture.test') return route.abort();
         if (url.pathname === '/world.html') return route.fulfill({contentType:'text/html',body:world});
-        if (url.pathname === '/note/') return route.fulfill({contentType:'text/html',body:stripScripts(read('note/index.html'))});
+        if (url.pathname === '/note/') return route.fulfill({contentType:'text/html',body:stripScripts(read('park/index.html'))});
         if (url.pathname === '/') return route.fulfill({contentType:'text/html',body:stripScripts(read('index.html'))});
         const file = path.join(root, url.pathname);
         if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.abort();
