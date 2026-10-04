@@ -20,14 +20,14 @@
   if(!host){dispose?.();dispose=null;mounted=null;mountedOwner=null;return;}
   if(mounted===host&&mountedOwner===owner)return;dispose?.();mounted=host;mountedOwner=owner;
   const state=states.get(owner)||{open:{calendar:true},month:today().slice(0,7),selected:today(),city:0};states.set(owner,state);
-  let alive=true,closeLedger=null,request=null,requestNumber=0,locating=0;
+  let alive=true,closeLedger=null,schedule=null,calendarCounts={},request=null,requestNumber=0,locating=0;
   const active=()=>alive&&host.isConnected&&authorized();
   host.replaceChildren(el('h2','생활'));
   function section(key,title){
    const box=el('details','','life-tool');box.dataset.lifeTool=key;box.open=!!state.open[key];box.ontoggle=()=>state.open[key]=box.open;
    const summary=el('summary'),copy=el('span');copy.append(el('strong',title));summary.append(copy,el('span','＋','life-toggle'));box.append(summary);const body=el('div','','life-tool-body');box.append(body);host.append(box);return body;
   }
-  const calendar=section('calendar','달력'),calendarNav=el('div','','life-calendar-nav'),monthTitle=el('strong'),calendarGrid=el('div','','life-calendar-grid'),selectedLabel=el('p','','life-calendar-selected');
+  const calendar=section('calendar','스케줄 달력'),calendarNav=el('div','','life-calendar-nav'),monthTitle=el('strong'),calendarGrid=el('div','','life-calendar-grid'),selectedLabel=el('p','','life-calendar-selected');
   calendarNav.dataset.worldSwipe='off';calendarGrid.dataset.worldSwipe='off';monthTitle.setAttribute('aria-live','polite');selectedLabel.setAttribute('aria-live','polite');
   function shiftMonth(amount){const [y,m]=state.month.split('-').map(Number),d=new Date(y,m-1+amount,1);if(d.getFullYear()<1900||d.getFullYear()>2200)return;state.month=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;renderCalendar();}
   const previousMonth=btn('‹',()=>shiftMonth(-1)),next=btn('›',()=>shiftMonth(1));previousMonth.setAttribute('aria-label','이전 달');next.setAttribute('aria-label','다음 달');
@@ -40,10 +40,13 @@
    for(let day=1;day<=days;day++){
     const date=`${state.month}-${String(day).padStart(2,'0')}`,weekday=(start+day-1)%7;
     const b=btn(String(day),()=>{state.selected=date;renderCalendar();calendarGrid.querySelector(`[data-date="${date}"]`)?.focus();});b.dataset.date=date;b.setAttribute('aria-label',`${year}년 ${month}월 ${day}일`);b.setAttribute('aria-pressed',String(date===state.selected));
-    if(date===today()){b.classList.add('is-today');b.setAttribute('aria-current','date');}if(weekday===0)b.classList.add('is-sunday');if(weekday===6)b.classList.add('is-saturday');calendarGrid.append(b);
+    if(calendarCounts[date]){b.classList.add('has-schedule');b.setAttribute('aria-label',`${year}년 ${month}월 ${day}일, 일정 ${calendarCounts[date]}개`);}if(date===today()){b.classList.add('is-today');b.setAttribute('aria-current','date');}if(weekday===0)b.classList.add('is-sunday');if(weekday===6)b.classList.add('is-saturday');calendarGrid.append(b);
    }
-   const date=new Date(state.selected+'T12:00:00');selectedLabel.textContent=date.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+   const date=new Date(state.selected+'T12:00:00');selectedLabel.textContent=date.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});schedule?.setView(state.month,state.selected);
   }renderCalendar();
+  const scheduleHost=el('div','','life-schedule');calendar.append(scheduleHost);
+  if(window.OjjudaSchedule)schedule=window.OjjudaSchedule.mount(scheduleHost,{owner,client,authorized:active,month:state.month,selected:state.selected,onChange:counts=>{calendarCounts=counts;renderCalendar();},onNavigate:date=>{state.month=date.slice(0,7);state.selected=date;renderCalendar();}});
+  else scheduleHost.append(el('p','스케줄 달력을 불러오지 못했어요. 새로고침해 주세요.','life-empty'));
   const weather=section('weather','날씨'),weatherControls=el('div','','life-weather-controls'),cityLabel=el('label','지역'),citySelect=el('select'),weatherResult=el('div','','life-weather-result'),weatherStatus=el('p','지역을 선택해 날씨를 확인해 보세요.','life-status');
   cities.forEach(([name],i)=>{const option=el('option',name);option.value=String(i);citySelect.append(option);});citySelect.setAttribute('aria-label','지역');citySelect.value=String(state.city);cityLabel.append(citySelect);weatherControls.dataset.worldSwipe='off';weatherStatus.setAttribute('role','status');
   let selectedPlace=cities[state.city];
@@ -97,7 +100,7 @@
   }
   for(const key of ['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','±','0','.','='])keys.append(btn(key,()=>press(key)));calculator.append(display,keys);
   const watcher=setInterval(()=>{if(alive&&!authorized()){host.replaceChildren();dispose?.();}},400);
-  dispose=()=>{alive=false;locating++;requestNumber++;request?.abort();closeLedger?.();clearInterval(watcher);};
+  dispose=()=>{alive=false;locating++;requestNumber++;request?.abort();schedule?.destroy();closeLedger?.();clearInterval(watcher);};
  }
  window.OjjudaLife={mount};
 })();
