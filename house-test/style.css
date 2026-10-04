@@ -248,26 +248,36 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-tools-menu{position:absolute;right:0;top:100%;z-index:3;display:grid;gap:5px;width:110px;padding:8px;border:1px solid #d7c9df;border-radius:12px;background:#fffdfa;box-shadow:0 4px 16px #39224422;}
 .record-upload[hidden]{display:none;}
 
-/* Records-first entry: member identity at left and the actual saved room at right. */
-#home-profile{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:6px 0;}
-.home-profile-picture{display:grid;place-items:center;width:56px;height:56px;flex:none;border:1px solid #ddcee9;border-radius:50%;background:#eee3fa;color:#9573ae;}
-.home-profile-picture svg{width:28px;height:28px;}
+/* Profile and actual rooms share one continuous home scene. */
+#home-profile{min-width:0;display:flex;align-items:center;gap:12px;padding:12px 18px;pointer-events:none;}
+.home-profile-picture{display:grid;place-items:center;width:48px;height:48px;min-height:48px;padding:0;flex:none;border:1px solid #ddcee9;border-radius:50%;background:#eee3fa;color:#9573ae;overflow:hidden;pointer-events:auto;}
+.home-profile-picture:disabled{opacity:1;cursor:default;}
+.home-profile-picture svg{width:25px;height:25px;}
+.home-profile-picture img{width:100%;height:100%;object-fit:cover;}
+.home-profile-copy{min-width:0;}
 #home-profile-nick{display:block;max-width:100%;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#home-profile-bio{max-width:100%;margin:0;font-size:11px;color:#95829f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#home-room-open{position:absolute;inset:0;z-index:10;width:100%;height:100%;min-height:44px;margin:0;padding:0;border:0;border-radius:14px;background:transparent;}
+#home-profile-bio{max-width:100%;margin:4px 0 0;font-size:11px;color:#786580;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#home-profile-bio:empty{display:none;}
+#home-room-open{position:absolute;inset:72px 0 0;z-index:10;width:100%;min-height:44px;margin:0;padding:0;border:0;border-radius:0;background:transparent;}
 #home-room-open:hover{background:#d4bde80d;}
 #home-room-open:focus-visible{outline-offset:-4px;}
-#app.records-home{display:grid;grid-template-columns:minmax(92px,.42fr) minmax(0,1fr);grid-template-rows:auto 148px minmax(0,1fr);column-gap:12px;background:var(--cream);}
-.records-home>header{grid-column:1/-1;grid-row:1;display:grid;grid-template-columns:1fr auto 1fr;}
+#app.records-home{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:max-content var(--home-scene-height,290px) max-content;align-content:start;overflow-y:auto;overscroll-behavior:contain;background:var(--cream);}
+.records-home>header{grid-column:1;grid-row:1;display:grid;grid-template-columns:1fr auto 1fr;}
 .records-home>header #exit{grid-column:1;justify-self:start;}
 .records-home>header h1{grid-column:2;}
-.records-home #home-profile{grid-column:1;grid-row:2;margin-left:16px;}
-.records-home #viewport{grid-column:2;grid-row:2;width:auto;height:128px;min-height:0;margin:4px 16px 16px 0;align-self:center;border-radius:14px;touch-action:pan-y;background:#f4eee7;}
+.records-home #home-profile{grid-column:1;grid-row:2;align-self:start;z-index:2;}
+.records-home #viewport{grid-column:1;grid-row:2;width:100%;height:100%;min-height:0;margin:0;touch-action:pan-y;background:var(--cream);}
+.records-home .apartment-neighbor{display:none;}
 .records-home .scene-heading,.records-home .camera,.records-home #hint,.records-home #expand{display:none;}
-.records-home #panel{grid-column:1/-1;grid-row:3;width:auto;height:auto;min-height:0;max-height:none;flex:none;margin:0;border-radius:0;padding:12px 16px;box-shadow:none;}
-.records-home #panel-body{min-width:0;}
-@media(min-width:900px){#app.records-home{grid-template-columns:minmax(160px,.6fr) minmax(0,1fr);grid-template-rows:auto 180px minmax(0,1fr);}.records-home #viewport{height:160px;}.records-home #home-profile{margin-left:24px;}.home-profile-picture{width:64px;height:64px;}}
-@media(max-width:350px){#app.records-home{grid-template-columns:88px minmax(0,1fr);gap:0 8px;}.records-home #home-profile{margin-left:10px;}.records-home #viewport{margin-right:10px;}.records-home #panel{padding:10px;}}
+.records-home #panel{grid-column:1;grid-row:3;width:100%;height:auto;min-height:0;max-height:none;flex:none;margin:0;border-radius:0;padding:12px 16px 24px;box-shadow:none;overflow:visible;}
+.records-home #panel-body{min-width:0;flex:none;overflow:visible;}
+.records-home .record-tabs{position:static;}
+.records-home #panel .panel-head{position:static;}
+#app.house-visitor{grid-template-rows:var(--home-scene-height,290px);overflow:hidden;}
+.house-visitor>header,.house-visitor #panel{display:none;}
+.house-visitor #home-profile,.house-visitor #viewport{grid-row:1;}
+@media(min-width:900px){.records-home #home-profile{padding-inline:max(24px,calc((100% - 650px)/2));}.records-home #panel{padding-inline:24px;}}
+@media(max-width:350px){.records-home #home-profile{padding-inline:12px;}.records-home #panel{padding-inline:10px;}}
 
 /* Compact file tabs and equal-height record rows. */
 .record-tabs{display:flex;gap:4px;align-items:end;padding:0;border-bottom:1px solid #d9cbe4;}

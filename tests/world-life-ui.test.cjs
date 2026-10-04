@@ -6,9 +6,24 @@ world=world.replace('<script type="module">',`<script>${fs.readFileSync(path.joi
 const boot=world.indexOf('j1(()=>H());gm(');assert(boot>0);
 const storageFixture=`<!doctype html><meta charset="utf-8"><main id="life"></main><script>${fs.readFileSync(path.join(root,'world-life.js'),'utf8')}</script><script>const options={owner:'life-storage-audit'};window.remountLife=()=>OjjudaLife.mount(document.querySelector('main'),options);remountLife();</script>`;
 world=world.slice(0,boot)+`
-window.houseWorldTest={state:g,auth:D,actions:sr,render:H};
+const fixtureRooms=new Map(),fixtureRoomCalls=[],fixtureUnexpected=[];
+window.houseWorldTest={state:g,auth:D,actions:sr,render:H,rooms:fixtureRooms,roomCalls:fixtureRoomCalls,unexpected:fixtureUnexpected};
 U.cleanupMedia=async()=>({});U.overview=async()=>({});U.contentFeed=async()=>[];U.chatFeed=async()=>[];
-S={auth:{signOut:async()=>{sessionStorage.setItem('fixture-logged-out','yes');D.user=null;D.online=false;D.isAdmin=false;H();}}};
+// Keep the production World -> room service -> host -> iframe flow. Replace
+// only transport, including compare-and-swap room saves and empty record lists.
+S={auth:{signOut:async()=>{sessionStorage.setItem('fixture-logged-out','yes');D.user=null;D.online=false;D.isAdmin=false;H();}},
+ from(table){const q={select(){return q;},eq(){return q;},in(){return q;},order(){return q;},range(){return q;},then(resolve,reject){if(!['house_records','media_folders','house_friend_groups'].includes(table)){fixtureUnexpected.push(table);return Promise.resolve({data:null,error:{message:'Unexpected fixture table: '+table}}).then(resolve,reject);}return Promise.resolve({data:[],error:null}).then(resolve,reject);}};return q;},
+ async rpc(name,args){
+  fixtureRoomCalls.push({name,args:structuredClone(args)});
+  if(!['house_room_load','house_room_save'].includes(name)){fixtureUnexpected.push(name);return{error:{message:'Unexpected fixture RPC: '+name}};}
+  if(args.p_owner!==D.user?.id)return{error:{message:'house_room_not_owner'}};
+  const saved=fixtureRooms.get(args.p_owner);
+  if(name==='house_room_load')return{data:saved?{ok:true,found:true,canEdit:true,...structuredClone(saved)}:{ok:true,found:false,canEdit:true}};
+  if(saved&&JSON.stringify(saved.snapshot)===JSON.stringify(args.p_snapshot))return{data:{ok:true,revision:saved.revision,updatedAt:saved.updatedAt}};
+  if((saved?.revision||null)!==args.p_revision)return{data:{ok:false,reason:'conflict'}};
+  const next={snapshot:structuredClone(args.p_snapshot),revision:crypto.randomUUID(),updatedAt:new Date().toISOString()};fixtureRooms.set(args.p_owner,next);return{data:{ok:true,revision:next.revision,updatedAt:next.updatedAt}};
+ }};
+P.loaded=true;P.at=Date.now()+60000;
 gm(()=>{g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
 D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'world-member-a'}:null;D.isAdmin=false;g.tab='friends';H();
 `+world.slice(world.indexOf('</script>',boot));
@@ -38,10 +53,11 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
   await page.reload();await page.waitForFunction(()=>window.houseWorldTest);await life();await contacts.locator('summary').click();assert.equal(await contacts.locator('.life-row').count(),1,'contacts persist after reload');await ledger.locator('summary').click();assert.equal(await ledger.locator('.life-row').count(),2,'ledger persists after reload');
   await page.evaluate(()=>{houseWorldTest.auth.user={id:'world-member-b'};houseWorldTest.render();});assert.equal(await contacts.locator('.life-row').count(),0);await contacts.locator('summary').click();assert.equal(await contacts.locator('.life-row').count(),0,'new account has no previous account contacts');await page.evaluate(()=>{houseWorldTest.auth.user={id:'world-member-a'};houseWorldTest.render();});assert.equal(await contacts.locator('.life-row').count(),1);
   await page.evaluate(()=>houseWorldTest.actions.tab({tab:'home'}));await page.frameLocator('iframe').locator('#app.records-home').waitFor();let f=page.frames().find(x=>x.url().includes('/house-test/index.html'));await f.waitForFunction(()=>document.querySelector('#app').getClientRects().length);
+  await page.waitForFunction(()=>houseWorldTest.rooms.has('world-member-a'));assert.deepEqual(await page.evaluate(()=>houseWorldTest.roomCalls.slice(0,2).map(call=>call.name)),['house_room_load','house_room_save'],'house entry uses the real cloud load and initial save bridge');assert.equal(await page.evaluate(()=>Object.hasOwn(houseWorldTest.rooms.get('world-member-a').snapshot,'diary')),false,'personal local writing is not sent with room geometry');
   const cdp=await context.newCDPSession(page),touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([x,y])=>({x,y,id:1}))});
   const swipe=async(locator,dx,dy=0)=>{await locator.scrollIntoViewIfNeeded();const b=await locator.boundingBox(),x=b.x+b.width*(dx<0?.8:.2),y=b.y+Math.min(25,b.height/2);await touch('touchStart',[[x,y]]);for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);await touch('touchEnd',[]);};
   await swipe(f.locator('#home-profile'),-100);await page.waitForFunction(()=>houseWorldTest.state.tab==='life');assert.equal(await page.locator('iframe').count(),0,'house-record swipe enters the single life page');
-  await swipe(page.locator('[data-life-root]>h2'),150);await page.frameLocator('iframe').locator('#app.records-home').waitFor();f=page.frames().find(x=>x.url().includes('/house-test/index.html'));await f.locator('[data-tab="room"]').click();await swipe(f.locator('#viewport'),-120);assert.equal(await page.evaluate(()=>houseWorldTest.state.tab),'home','room gestures never change World tabs');
+  await swipe(page.locator('[data-life-root]>h2'),150);await page.frameLocator('iframe').locator('#app.records-home').waitFor();assert.equal(await page.evaluate(()=>houseWorldTest.roomCalls.filter(call=>call.name==='house_room_load').length),2,'returning from life reloads the saved account room');f=page.frames().find(x=>x.url().includes('/house-test/index.html'));await f.locator('[data-tab="room"]').click();await swipe(f.locator('#viewport'),-120);assert.equal(await page.evaluate(()=>houseWorldTest.state.tab),'home','room gestures never change World tabs');assert.deepEqual(await page.evaluate(()=>houseWorldTest.unexpected),[]);
   await life();await page.evaluate(()=>{houseWorldTest.auth.online=false;houseWorldTest.auth.user=null;houseWorldTest.render();});assert.equal(await contacts.locator('input').count(),0);assert.equal(await ledger.locator('input').count(),0);await calc.locator('summary').click();await key('7');assert.equal(await calc.locator('output').textContent(),'7','guest calculator works without storing personal data');assert.deepEqual(errors,[]);
   const first=await context.newPage(),second=await context.newPage();for(const p of [first,second]){p.on('pageerror',e=>errors.push(e.message));await p.goto('https://fixture.test/life-storage-fixture.html');await p.locator('[data-life-tool="contacts"] summary').click();}
   const tool=(p,name)=>p.locator(`[data-life-tool="${name}"]`),contactDraft=async(p,name,phone)=>{await tool(p,'contacts').getByLabel('이름',{exact:true}).fill(name);await tool(p,'contacts').getByLabel('전화번호',{exact:true}).fill(phone);},contactSave=async(p,wait=true)=>{await tool(p,'contacts').getByRole('button',{name:'연락처 저장'}).click();if(wait)await p.evaluate(async()=>{if(navigator.locks)await navigator.locks.request('ojjuda-life-v1:life-storage-audit',()=>{});});};

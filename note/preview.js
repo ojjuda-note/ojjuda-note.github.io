@@ -1465,19 +1465,12 @@ async function loadNoteState() {
     const data = await noteRpc('get_note_state');
     if (run !== noteStateRun || (session?.user?.id || null) !== userId) return;
     noteState = data;
-    const announcementText = String(data.notice || '').trim();
-    $('#note-announcement-copy').textContent = announcementText;
-    $('#note-announcement-full').textContent = announcementText;
-    $('#note-announcement').hidden = !announcementText;
     const values = [data.is_restricted ? writingMessage() : ''].filter(Boolean);
     noticeElement.replaceChildren(...values.map(value => node('p', '', value)));
     noticeElement.hidden = !values.length;
   } catch (error) {
     if (run !== noteStateRun) return;
     noteState = null; console.warn('Note state:', error);
-    $('#note-announcement').hidden = true;
-    $('#note-announcement-copy').textContent = '';
-    $('#note-announcement-full').textContent = '';
     noticeElement.replaceChildren(node('p', '', '운영 상태를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.'));
     noticeElement.hidden = false;
   }

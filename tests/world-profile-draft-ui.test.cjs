@@ -12,7 +12,8 @@ let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'World boot is available');
 world = world.slice(0, boot) + `
-window.profileTest={model:$,auth:D,state:g,render:H,actions:sr,
+window.profileTest={model:$,auth:D,state:g,render:H,actions:sr,resolvePhoto:resolveWorldProfilePhoto,
+  setPhotoApi(api){worldPhotoEditor=api;worldPhotoLoad=null;},
   switchAccount(id,profile){D.user={id};D.online=true;Object.assign($.me,profile);g.tab='my';H();}};
 S={};D.online=true;D.user={id:'profile-owner-a'};D.isAdmin=false;D.doorReady=true;
 Object.assign($.me,{nick:'저장한 이름',bio:'저장한 소개',moodText:'저장한 기분',mood:'😊'});
@@ -109,7 +110,39 @@ g.tab='my';H();
     await page.locator('.bottomnav [data-tab="life"]').click();
     await page.locator('.bottomnav [data-tab="my"]').click();
     assert.deepEqual(await readProfile(), other, 'account isolation survives another menu remount');
+    // An initial signing failure cannot permanently hide the saved profile photo.
+    await page.evaluate(async()=>{
+      window.signCalls=0;profileTest.model.me.profilePhotoPath='saved-profile';profileTest.model.me.avatar_url=null;
+      profileTest.setPhotoApi({getUrl:async()=>{if(++window.signCalls===1)throw new Error('temporary offline');return 'https://fixture.test/fresh-photo.jpg';}});
+      await profileTest.resolvePhoto();
+    });
+    assert.equal(await page.evaluate(()=>profileTest.model.me.avatar_url),null);
+    await page.evaluate(()=>profileTest.resolvePhoto());
+    assert.deepEqual(await page.evaluate(()=>({calls:signCalls,url:profileTest.model.me.avatar_url})),{calls:2,url:'https://fixture.test/fresh-photo.jpg'},'reopening retries a failed signed URL request');
+    assert.equal(await page.locator('[data-own-profile-photo] img').first().getAttribute('src'),'https://fixture.test/fresh-photo.jpg','a successful retry updates the visible profile photo');
+
+    // The module owns URL expiry; returning to the menu must consult it even
+    // when the World model still has a previously signed URL.
+    await page.evaluate(()=>{
+      profileTest.model.me.avatar_url='https://fixture.test/expired-photo.jpg';
+      profileTest.setPhotoApi({getUrl:async()=>{window.signCalls++;return 'https://fixture.test/renewed-photo.jpg';}});
+    });
+    await page.locator('.bottomnav [data-tab="life"]').click();
+    await page.locator('.bottomnav [data-tab="my"]').click();
+    await page.waitForFunction(()=>profileTest.model.me.avatar_url==='https://fixture.test/renewed-photo.jpg');
+    assert.equal(await page.evaluate(()=>signCalls),3,'a menu remount renews an expired signed URL');
+
+    // Concurrent renders share a flight, but a result from a previous account
+    // cannot replace the current account photo after the request resolves.
+    await page.evaluate(()=>{
+      window.signCalls=0;profileTest.model.me.avatar_url=null;
+      profileTest.setPhotoApi({getUrl:()=>{window.signCalls++;return new Promise(resolve=>window.finishPhoto=resolve);}});
+      window.photoFlights=Promise.all([profileTest.resolvePhoto(),profileTest.resolvePhoto()]);
+    });
+    assert.equal(await page.evaluate(()=>signCalls),1,'concurrent renders deduplicate the in-flight signing request');
+    await page.evaluate(async()=>{profileTest.auth.user={id:'profile-owner-c'};profileTest.model.me.avatar_url='https://fixture.test/account-c-photo.jpg';finishPhoto('https://fixture.test/stale-account-b-photo.jpg');await photoFlights;});
+    assert.equal(await page.evaluate(()=>profileTest.model.me.avatar_url),'https://fixture.test/account-c-photo.jpg','an old account response is ignored');
     assert.deepEqual(errors, [], 'no browser runtime errors');
-    console.log('PASS: unsaved World profile and caret survive render/theme/accent/balance/tab changes, empty fields remain editable, saving clears the draft, and accounts stay isolated.');
+    console.log('PASS: unsaved World profile and caret survive render/theme/accent/balance/tab changes, empty fields remain editable, saving clears the draft, accounts stay isolated, and profile photo signing retries/renews without stale account responses.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

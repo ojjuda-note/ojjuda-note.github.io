@@ -52,15 +52,21 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
   await reload();assert.equal((await current()).tab,'admin');
-  for(const area of ['payment','world']){
-   await page.evaluate(area=>{worldTest.actions['adm-area']({v:area});worldTest.actions['adm-tab']({v:'settings'})},area);
-   await reload();assert.deepEqual(await current(),{tab:'admin',area,subtab:'settings',note:'cards'});
+  for(const [area,subtab] of [['payment','settings'],['operations','spam']]){
+   await page.evaluate(({area,subtab})=>{worldTest.actions['adm-area']({v:area});worldTest.actions['adm-tab']({v:subtab})},{area,subtab});
+   await reload();assert.equal((await current()).area,area);assert.equal((await current()).subtab,subtab);
   }
-  await page.evaluate(()=>{worldTest.actions['adm-area']({v:'note'});worldTest.actions['adm-note-tab']({v:'risk'})});
-  await reload();assert.equal((await current()).area,'note');assert.equal((await current()).note,'risk');
+  await page.evaluate(()=>{worldTest.actions['adm-area']({v:'content'});worldTest.actions['adm-tab']({v:'risk'})});
+  await reload();assert.equal((await current()).area,'content');assert.equal((await current()).subtab,'risk');
+  for(const view of [{area:'note',tab:'cards',noteTab:'archive'},{area:'world',tab:'settings'}]){
+   await page.evaluate(view=>sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'})),view);
+   await reload();
+   assert.equal((await current()).area,view.area==='note'?'content':'operations');
+   assert.equal((await current()).subtab,view.area==='note'?'archive':'spam');
+  }
   for(let index=0;index<noteLinks.length;index++){
    await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
-   await page.locator('.adm-site-links a[href="/world.html?place=park"]').click();
+   await page.goto('https://fixture.test/world.html?place=park');
    await page.waitForURL('https://fixture.test/world.html?place=park');
    assert.ok(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),'Note retains the previous admin session, reproducing the reported route');
    await page.locator('.world-link').nth(index).click();await loaded();
@@ -84,7 +90,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.goto('https://fixture.test/world.html?admin=settings');await loaded();
   assert.equal((await current()).area,'payment','existing deep links still open their requested tab');
   await page.goto('https://fixture.test/world.html?admin=note');await loaded();
-  assert.equal((await current()).area,'note','the deliberate Note administrator shortcut still works');
+  assert.equal((await current()).area,'content','the legacy Note administrator shortcut opens the content group');
   await page.evaluate(()=>sessionStorage.setItem('fixture-role','member'));
   await page.goto('https://fixture.test/world.html?admin=note');await loaded();
   assert.notEqual((await current()).tab,'admin','an explicit administrator link never grants administrator permission');

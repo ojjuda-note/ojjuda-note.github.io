@@ -13,9 +13,9 @@
     hide: '카드 숨김', restore: '카드 복구', resolve_report: '신고 처리 완료',
     archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
     purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
-    restrict_user: '공원 이용 제한', release_user: '공원 이용 제한 해제',
-    add_moderator: '공원 운영자 지정', remove_moderator: '공원 운영자 해제',
-    update_settings: '공원 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변',
+    restrict_user: '카드 이용 제한', release_user: '카드 이용 제한 해제',
+    add_moderator: '카드 운영자 지정', remove_moderator: '카드 운영자 해제',
+    update_settings: '서비스 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변',
     house_post_edit: '우리집 글 수정', house_post_delete: '우리집 글 삭제',
     media_comment_edit: '앨범 댓글 수정', media_comment_delete: '앨범 댓글 삭제'
   };
@@ -117,13 +117,13 @@
     }
     if (!owner || typeof client?.rpc !== 'function') { clear('관리자 계정만 작업 기록을 볼 수 있어요.'); return { getState, refresh() {}, destroy() { destroyed = true; container.replaceChildren(); } }; }
     const section = el('section', 'aa-history'), heading = el('h3', '', '작업 기록');
-    section.append(heading, el('p', 'aa-help', '월드와 공원의 운영 변경 및 처리 사유를 확인해요. 시간은 한국 기준이에요.'));
+    section.append(heading, el('p', 'aa-help', '변경 내용과 처리 사유를 확인해요. 시간은 한국 기준이에요.'));
     const controls = el('div', 'aa-controls');
-    sourceSelect = el('select'); sourceSelect.setAttribute('aria-label', '기록 공간');
-    for (const [value, label] of [['world','월드'],['park','공원']]) { const option = el('option', '', label); option.value = value; sourceSelect.append(option); }
+    sourceSelect = el('select'); sourceSelect.setAttribute('aria-label', '기록 종류');
+    for (const [value, label] of [['world','계정·집·대화'],['park','카드·답글']]) { const option = el('option', '', label); option.value = value; sourceSelect.append(option); }
     sourceSelect.value = source;
     actionSelect = el('select'); actionSelect.setAttribute('aria-label', '작업 분류'); actionSelect.append(el('option', '', '전체 작업')); actionSelect.firstElementChild.value = '';
-    const sourceLabel = el('label', '', '공간'), actionFilterLabel = el('label', 'aa-action-filter', '작업 분류'); sourceLabel.append(sourceSelect); actionFilterLabel.append(actionSelect);
+    const sourceLabel = el('label', '', '기록 종류'), actionFilterLabel = el('label', 'aa-action-filter', '작업 분류'); sourceLabel.append(sourceSelect); actionFilterLabel.append(actionSelect);
     sourceSelect.addEventListener('change', () => { source = sourceSelect.value; action = ''; offset = 0; actionSelect.replaceChildren(el('option', '', '전체 작업')); actionSelect.firstElementChild.value = ''; void refresh(); });
     actionSelect.addEventListener('change', () => { action = actionSelect.value; offset = 0; void refresh(); });
     refreshButton = button('새로고침', () => { void refresh(true); }); controls.append(sourceLabel, actionFilterLabel, refreshButton);

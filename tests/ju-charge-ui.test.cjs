@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
-const begin = world.indexOf('function worldProfileOwner()');
+const begin = world.indexOf('function worldProfileAvatar(');
 const end = world.indexOf('function Zg()', begin);
 const menu = world.slice(begin, end);
 const packages = [[1000,10,0],[3000,30,0],[5000,50,5],[10000,100,10],[30000,300,35],[50000,500,50]];
@@ -28,7 +28,7 @@ async function fixture(context, source, rpc) {
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
-      Object.assign(window, { g: {}, yi: ['😊'], Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, Xd: () => '/note/', Is: () => false, Os: () => '' });
+      Object.assign(window, { g: {}, yi: ['😊'], Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, ie: () => '<svg></svg>', Xd: () => '/note/', Is: () => false, Os: () => '' });
     });
     await page.addScriptTag({ content: menu });
     await page.evaluate(() => { document.querySelector('#world-my').innerHTML = Yg(); });

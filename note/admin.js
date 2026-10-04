@@ -31,8 +31,8 @@
   // Match the World's risk_pattern() for badges; the server decides which rows enter the risk list.
   const RISK_SIGNAL = /(죽고\s*싶|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|끝내고\s*싶|목숨|유서|뛰어내리|맞았|때렸|폭행|협박|학대|성폭|스토킹|죽여\s*버|죽일\s*거)/i;
   const TABS = [
-    ['cards', '전체 카드'], ['risk', '위험 신호'], ['events', '이벤트 카드'], ['archive', '삭제·만료 보관'], ['map', '위치 지도'], ['settings', '공지'], ['spam', '도배 방지'],
-    ['reports', '노트 신고'], ['inquiries', '노트 문의'], ['users', '노트 이용 제한'], ['actions', '노트 작업 기록']
+    ['cards', '카드'], ['risk', '위험 신호'], ['events', '이벤트'], ['archive', '보관함'], ['map', '위치 지도'], ['settings', '공지'], ['spam', '도배 방지'],
+    ['reports', '신고'], ['inquiries', '문의'], ['users', '카드 이용 제한'], ['actions', '작업 기록']
   ];
   const NOTE_TABS = Object.freeze(TABS.slice(0, 7));
   const VIEW_OF_TAB = { cards: 'card', risk: 'risk', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'risk', event: 'events', archive: 'archive' };
@@ -43,8 +43,8 @@
   }
   const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
   const HELP = {
-    overview: '공원의 콘텐츠와 운영 상태를 확인하세요.',
-    settings: '노트 공지를 관리합니다. 변경 사유는 작업 기록에 남습니다.',
+    overview: '콘텐츠와 운영 상태를 확인하세요.',
+    settings: '모든 화면에 표시할 공지를 관리합니다.',
     spam: '회원 한 명이 작성하는 카드·답글을 합산합니다. 새 글부터 적용되며, 글을 삭제해도 횟수는 초기화되지 않습니다.',
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
     cards: '익명카드·답글과 위험 신호를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
@@ -52,16 +52,16 @@
     events: '이벤트 카드를 관리합니다.',
     archive: '삭제되거나 기간이 끝난 카드를 한 달 동안 보관합니다. 기간 전에도 바로 영구 삭제할 수 있어요.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
-    inquiries: '이용자가 노트에 남긴 문의를 확인하고 답변합니다.',
-    users: '노트에서의 활동만 제한합니다. 오쭈다월드 계정과 쭈에는 영향을 주지 않습니다.',
-    actions: '노트에서 이루어진 운영 변경과 처리 사유를 확인하세요.'
+    inquiries: '이용자의 문의를 확인하고 답변합니다.',
+    users: '카드·답글 작성을 제한합니다. 계정 전체 이용 정지는 계정 메뉴에서 관리합니다.',
+    actions: '카드 관리 변경과 처리 사유를 확인하세요.'
   };
   const ACTIONS = {
     hide: '카드 숨김', restore: '카드 복구', resolve_report: '신고 처리 완료', edit: '카드 수정',
     archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
     purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
     restrict_user: '이용 제한', release_user: '이용 제한 해제', add_moderator: '운영자 지정',
-    remove_moderator: '운영자 해제', update_settings: '노트 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변'
+    remove_moderator: '운영자 해제', update_settings: '서비스 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변'
   };
   const filters = { cards: { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
   let client = null, onChanged = null, userId = null, subscription = null;
@@ -121,7 +121,7 @@
     heading.focus({ preventScroll: true });
     if (embedded) {
       requestAnimationFrame(() => {
-        if (heading.isConnected && !root.hidden) heading.scrollIntoView({ block: 'start' });
+        if (heading.isConnected && !root.hidden) heading.scrollIntoView({ block: externalNav ? 'nearest' : 'start' });
       });
     } else {
       main.parentElement.scrollTop = 0;
@@ -253,7 +253,7 @@
       }
       if (!validInstance(run)) return;
       if (typeof onChanged === 'function') {
-        try { await onChanged(); }
+        try { await onChanged({ action: name, ...(typeof args.p_notice === 'string' ? { notice: args.p_notice } : {}) }); }
         catch { /* The saved operation remains successful even if the host refresh fails. */ }
       }
       if (!validInstance(run)) return;
@@ -563,7 +563,7 @@
     const settings = await rpc('admin_settings'); if (!validRun(run)) return;
     const form = el('form', 'na-form na-settings-form');
     const controls = el('section', 'box na-box na-settings-group'); controls.append(el('h4', '', '공지 내용'));
-    const notice = field('노트 공지', 'textarea', settings?.notice || '', '모든 이용자에게 표시됩니다. 최대 1,000자이며, 비우면 공지가 내려갑니다.'); notice.input.maxLength = 1000; notice.input.rows = 5;
+    const notice = field('서비스 공지', 'textarea', settings?.notice || '', '최대 1,000자. 비우면 공지가 내려갑니다.'); notice.input.maxLength = 1000; notice.input.rows = 5;
     controls.append(notice.wrap);
     form.append(controls);
     const reason = reasonField(); form.append(reason.wrap);
@@ -1087,10 +1087,10 @@
     if (root) return;
     root = el('div', 'na-backdrop'); root.id = 'note-admin-backdrop'; root.hidden = true;
     panel = el('section', 'na-panel'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'note-admin-title');
-    const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '오쭈다 월드 · 공원 관리자'); h2.id = 'note-admin-title';
-    title.append(h2, el('p', '', '노트 콘텐츠와 운영을 관리합니다.'));
+    const header = el('header', 'na-head'); const title = el('div'); const h2 = el('h2', '', '콘텐츠 관리'); h2.id = 'note-admin-title';
+    title.append(h2, el('p', '', '카드와 운영 설정을 관리합니다.'));
     closeButton = button('닫기', () => { if (confirmLeave()) close(); }); closeButton.classList.add('na-close'); header.append(title, closeButton);
-    const layout = el('div', 'na-layout'); nav = el('nav', 'seg adm-tabs na-nav'); nav.setAttribute('aria-label', '노트 관리자 메뉴');
+    const layout = el('div', 'na-layout'); nav = el('nav', 'seg adm-tabs na-nav'); nav.setAttribute('aria-label', '콘텐츠 관리자 메뉴');
     for (const [id, label] of NOTE_TABS) { const item = button(label, () => openTab(id)); item.dataset.adminTab = id; nav.append(item); }
     main = el('div', 'na-main'); main.id = 'note-admin-content'; main.setAttribute('role', 'region'); main.setAttribute('aria-label', '관리 내용');
     status = el('p', 'na-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
@@ -1189,7 +1189,14 @@
       externalNav = options.externalNav === true; nav.hidden = externalNav || !authorized;
       const requested = options.initialTab || options.tabId;
       if (requested && !authorized && TAB_ITEMS.some(tab => tab.id === requested)) { tabId = requested; if (VIEW_OF_TAB[requested]) filters.cards.view = VIEW_OF_TAB[requested]; }
-      if (requested && requested !== tabId && authorized && !busy) return openTab(requested);
+      if (requested && requested !== tabId && authorized && !busy) {
+        // The host already checked pending writes and confirmed discarding this draft.
+        if (options.navigationApproved === true && canLeave()) {
+          if (VIEW_OF_TAB[requested] && filters.cards.view !== VIEW_OF_TAB[requested]) Object.assign(filters.cards, { view: VIEW_OF_TAB[requested], offset: 0, expiredOffset: 0, query: '', state: 'all' });
+          return load(requested);
+        }
+        return openTab(requested);
+      }
       return;
     }
     if (root && !root.hidden) close();

@@ -196,7 +196,7 @@
         if (typeof worldActions.ban === 'function' && value.target_user) {
           const banned = Date.parse(value.target_banned_until) > Date.now();
           if (banned) meta.append(badge(`이용 정지 · ${date(value.target_banned_until)}까지`));
-          actions.append(button(banned ? '정지 해제' : '7일 정지', () => void mutate(banned ? '이 이용자의 월드 이용 정지를 해제할까요?' : '이 이용자의 월드 활동을 7일 동안 정지할까요?', () => worldActions.ban(value.target_user, banned ? 0 : 7), banned ? '정지를 해제했어요.' : '7일 정지했어요.'), banned ? '' : 'danger'));
+          actions.append(button(banned ? '정지 해제' : '7일 정지', () => void mutate(banned ? '이 계정의 이용 정지를 해제할까요?' : '이 계정을 7일 동안 정지할까요?', () => worldActions.ban(value.target_user, banned ? 0 : 7), banned ? '정지를 해제했어요.' : '7일 정지했어요.'), banned ? '' : 'danger'));
         }
       } else {
         if (value.card_id && typeof openNoteCard === 'function') actions.append(button(value.hidden ? '카드 복구' : '카드 숨김', () => { if (scope.current() && !saving) openNoteCard(value.card_id, value); }));
