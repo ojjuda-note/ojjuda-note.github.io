@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
-const rendererStart = world.indexOf('function Yg()');
+const rendererStart = world.indexOf('function worldProfileOwner()');
 const rendererEnd = world.indexOf('}var Hf=', rendererStart) + 1;
 assert.ok(rendererStart > 0 && rendererEnd > rendererStart, 'World My renderer is available');
 const renderer = world.slice(rendererStart, rendererEnd);
