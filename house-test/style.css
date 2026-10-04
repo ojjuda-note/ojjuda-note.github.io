@@ -337,3 +337,7 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .cloud-records[data-trash="true"]>.record-diary,.record-content:has(.cloud-records[data-trash="true"])>.local-records{display:none;}
 
 .records-home #panel,.records-home #home-profile{touch-action:pan-y pinch-zoom;}
+
+/* Small descriptive text needs the same clarity as the main record labels. */
+.panel-note,.record-empty,.record-meta,#home-profile-bio,#room-count,#period-name,.item-menu-help{color:#786580}
+.record-toolbar button,.placement-actions #placement-done{background:#805caa;border-color:#805caa}

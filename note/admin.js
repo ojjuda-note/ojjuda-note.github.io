@@ -918,7 +918,7 @@
   }
   async function ensureMapTool() {
     if (window.OjjudaMap?.create) return true;
-    await Promise.all([loadAsset('css', `${ADMIN_BASE}map.css?v=admin-map-1`), loadAsset('js', `${ADMIN_BASE}map.js?v=20260929-pinch`)]);
+    await Promise.all([loadAsset('css', `${ADMIN_BASE}map.css?v=20261004-design1`), loadAsset('js', `${ADMIN_BASE}map.js?v=20260929-pinch`)]);
     return !!window.OjjudaMap?.create;
   }
   function openMappedCard(row) {

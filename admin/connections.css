@@ -29,7 +29,7 @@
 .oc-warn { color: #8d421b; background: #fff0e5; border-color: #ebc29d; }
 .oc-links { display: flex; flex-wrap: wrap; gap: 6px 12px; }
 .oc-link { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
-.oc-link:hover { color: var(--accent); }
+.oc-link:hover { color: var(--accent-ink,#a93263); }
 .oc-backup-status { margin: 10px 0; }
 .oc-backup-status p { margin-top: 7px; font-size: 13px; }
 .oc-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px; }

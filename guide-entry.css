@@ -5,7 +5,7 @@
 .ojjuda-guide-entry a{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:40px;padding:8px 16px;border:1px solid var(--line,#DADDF0);border-radius:999px;background:var(--surface,#fff);color:var(--ink,#23264A);font:500 14px/1.5 "Noto Sans KR",sans-serif;text-decoration:none}
 .ojjuda-guide-entry a:hover{border-color:var(--accent,#F0679A)}
 .ojjuda-guide-entry a:focus-visible{outline:3px solid #f0679a80;outline-offset:3px}
-.ojjuda-guide-entry a span{color:var(--accent,#F0679A)}
+.ojjuda-guide-entry a span{color:var(--accent-ink,#a93263)}
 .side .ojjuda-guide-entry{padding:14px 10px;border:0;border-top:1px solid var(--line,#DADDF0);border-radius:0;margin-top:12px}
 .side .ojjuda-guide-entry h3{font:500 11px/1.6 "Noto Sans KR",sans-serif;color:var(--ink-2,#626894);margin-bottom:8px}
 .side .ojjuda-guide-entry p{display:none}
