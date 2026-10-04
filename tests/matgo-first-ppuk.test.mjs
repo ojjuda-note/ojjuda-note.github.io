@@ -84,13 +84,25 @@ const handler=createHandler({env:k=>({SUPABASE_URL:'https://test.invalid',SUPABA
   if(body.p_action==='round')return new Response(JSON.stringify({ok:true,round,settled,gold:storedGold}));
   assert.equal(body.p_action,'settle');mutations++;storedGold=body.p_gold;settled=true;return new Response(JSON.stringify({ok:true,gold:storedGold}));
 }});
-const request=(actions,version=4)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer test',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-9000-000000000001',rules_version:version,actions,first_ppuk_gold:999999})}));
+const request=(actions,version=5)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer test',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-9000-000000000001',rules_version:version,actions,first_ppuk_gold:999999})}));
 assert.equal((await request(partial)).status,409);assert.equal(mutations,0);assert.equal(storedGold,5000);
 assert.equal((await request(complete)).status,200);assert.equal(mutations,1);
 assert.equal((await request(complete)).status,200);assert.equal(mutations,1,'duplicate final request cannot pay again');
 assert.equal(storedGold,(await verifyRound(round,complete)).gold,'the client cannot choose a reward amount');
-const {verifyRound:verifyV2Round}=await import('../supabase/functions/matgo/verify-v2.mjs');
-settled=false;mutations=0;
-assert.equal((await request(complete,2)).status,200);assert.equal(mutations,1);
-assert.equal(storedGold,(await verifyV2Round(round,complete)).gold,'older open pages keep their original settlement rules');
+for(const version of [2,4]){
+  const legacy=await import(`../supabase/functions/matgo/engine-v${version}.mjs`);
+  const {verifyRound:verifyLegacy}=await import(`../supabase/functions/matgo/verify-v${version}.mjs`);
+  let g=new legacy.Game({event:async()=>{},choose:async(p,ids)=>legacy.aiChoose(g,p,ids),goStop:async(p,s)=>p===1?legacy.aiGoStop(g,p,s):'stop'});
+  g.random=legacy.seededRandom(round.seed);g.deal();
+  while(!g.over){
+    const pending=g.pendingChongtong();if(pending){await g.declareChongtong(pending.p,pending.p===1?'win':'continue');continue;}
+    const p=g.turn,card=p===1?legacy.aiChooseCard(g,p):g.hand[p][0]||null,same=card?g.hand[p].filter(c=>c.m===card.m):[],matches=card?g.matches(card.m):[];
+    const bomb=same.length>=3&&matches.length===1&&matches[0][0].length===1?same.filter(c=>c!==card).slice(0,2):null;
+    if(same.length>=3&&!bomb&&!g.shake[p])g.shakeCards(p,card.m);
+    await g.play(p,card,bomb);
+  }
+  settled=false;mutations=0;
+  assert.equal((await request(g.actions,version)).status,200);assert.equal(mutations,1);
+  assert.equal(storedGold,(await verifyLegacy(round,g.actions)).gold,'older open pages keep their original settlement rules');
+}
 console.log(`PASS: ${cases} opening-ppuk cases, deferred-only gold, flat reward, aggregate/clamped settlement, abandoned round denial and single final server payment`);

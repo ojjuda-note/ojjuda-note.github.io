@@ -71,7 +71,9 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
     if(res.room.status==='active'){assert.equal(await gold(A),5000);assert.equal(await gold(B),5000);}
     for(const ev of res.room.events)if(ev.type==='draw'&&ev.p!==p)assert.equal(ev.card,undefined);
   }
-  assert.ok(ended,'two human transcripts finish');assert.ok(sawPrompt);
+  assert.ok(ended,'two human transcripts finish');
+  const recorded=(await db.query('select actions from ojjuda_matgo_internal.rooms where id=$1',[roomId])).rows[0].actions;
+  assert.equal(recorded[0].rules_version,5,'new online rounds pin the no-bonus-steal rules on the server');assert.ok(sawPrompt);
   assert.equal((await gold(A))+(await gold(B)),10000,'human gold is conserved');
   const balances=[await gold(A),await gold(B)];
   await call(lastRequest,lastBody);assert.deepEqual([await gold(A),await gold(B)],balances);
