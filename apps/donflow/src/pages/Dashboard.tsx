@@ -1,18 +1,14 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   useMonthlyStats,
   useBudgetComparison,
-  useMonthlySalary,
-  useCategories,
   useMonthlyTrend,
 } from '@/hooks/useDB'
 import { formatCurrency, formatNumber, getMonthKey } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage, getCurrency } from '@/lib/i18n'
-import QuickEntry from '@/ojjuda/QuickEntry'
-import { exportJSON, exportCSV, importJSON } from '@/utils/exportData'
 
 export default function Dashboard() {
   const { t } = useLanguage()
@@ -26,12 +22,8 @@ export default function Dashboard() {
 
   const { income, expense } = useMonthlyStats(monthKey)
   const budgetComparison = useBudgetComparison(monthKey)
-  const salary = useMonthlySalary()
-  const categories = useCategories()
   const navigate = useNavigate()
 
-  const [isDemo, setIsDemo] = useState(false)
-  const [demoLoading, setDemoLoading] = useState(false)
 
   const totalBudget = budgetComparison.reduce((s, b) => s + b.planned, 0)
   const hasBudgets = budgetComparison.length > 0
@@ -51,23 +43,23 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <details className="rounded-xl border bg-card"><summary className="cursor-pointer p-4 font-semibold">수입·지출 기록 ＋</summary><QuickEntry /></details>
+      <h2 className="text-lg font-bold">통계</h2>
       {/* Month Navigator */}
       <nav className="flex items-center justify-between" aria-label="Month navigation">
-        <Button variant="ghost" size="icon" onClick={() => setMonthOffset(m => m - 1)} aria-label="Previous month">
+        <Button variant="ghost" size="icon" onClick={() => setMonthOffset(m => m - 1)} aria-label="이전 달">
           <ChevronLeft className="w-5 h-5" />
         </Button>
         <span className="text-sm text-muted-foreground" aria-live="polite">{monthLabel}</span>
-        <Button variant="ghost" size="icon" onClick={() => setMonthOffset(m => m + 1)} disabled={monthOffset >= 0} aria-label="Next month">
+        <Button variant="ghost" size="icon" onClick={() => setMonthOffset(m => m + 1)} disabled={monthOffset >= 0} aria-label="다음 달">
           <ChevronRight className="w-5 h-5" />
         </Button>
       </nav>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="region" aria-label="Financial summary">
+      <div className="grid grid-cols-3 gap-2" role="region" aria-label="Financial summary">
         <div className="rounded-xl bg-secondary/50 p-3 text-center">
           <p className="text-xs text-muted-foreground">{t('income')}</p>
-          <p className="text-sm font-bold text-income mt-1">{formatCurrency(income || salary)}</p>
+          <p className="text-sm font-bold text-income mt-1">{formatCurrency(income)}</p>
         </div>
         <div className="rounded-xl bg-secondary/50 p-3 text-center">
           <p className="text-xs text-muted-foreground">{t('expense')}</p>
@@ -75,16 +67,16 @@ export default function Dashboard() {
         </div>
         <div className="rounded-xl bg-secondary/50 p-3 text-center">
           <p className="text-xs text-muted-foreground">{t('balance')}</p>
-          <p className={`text-sm font-bold mt-1 ${(income || salary) - expense >= 0 ? 'text-income' : 'text-destructive'}`}>
-            {formatCurrency((income || salary) - expense)}
+          <p className={`text-sm font-bold mt-1 ${(income) - expense >= 0 ? 'text-income' : 'text-destructive'}`}>
+            {formatCurrency((income) - expense)}
           </p>
         </div>
       </div>
 
       {/* Savings Rate */}
-      {(income > 0 || salary > 0) && expense > 0 && (
+      {(income > 0) && expense > 0 && (
         (() => {
-          const effectiveIncome = income || salary
+          const effectiveIncome = income
           const savingsRate = Math.round((effectiveIncome - expense) / effectiveIncome * 100)
           const isPositive = savingsRate > 0
           const ratingText = savingsRate >= 30 ? t('excellent') : savingsRate >= 15 ? t('good') : t('needsWork')
@@ -268,26 +260,9 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-16 space-y-6">
-          <div className="text-6xl">📊</div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold">{t('welcomeTitle') || 'Welcome to DonFlow'}</h2>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              {t('welcomeDesc') || 'Plan your budget, track spending, and see exactly where your money goes. 100% private — your data never leaves this browser.'}
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 mt-3">
-              {['수입·지출', '월별 예산', '한글·원화'].map((badge) => (
-                <span key={badge} className="text-xs px-2.5 py-1 rounded-full bg-secondary/60 text-muted-foreground border border-border/40">
-                  {badge}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => navigate('/structure')}>
-              {t('startFromScratch') || 'Start from scratch →'}
-            </Button>
-          </div>
+        <div className="rounded-xl border p-4 text-sm space-y-3">
+          <p>예산을 정하면 얼마나 남았는지 함께 볼 수 있어요.</p>
+          <Button variant="outline" onClick={() => navigate('/structure')}>예산 설정하기</Button>
         </div>
       )}
 
@@ -313,46 +288,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Export / Import Data */}
-      <div className="rounded-xl bg-secondary/30 p-4 space-y-3">
-        <p className="text-sm font-medium text-muted-foreground">{t('exportData')}</p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={exportJSON}>
-            {t('exportJsonBackup')}
-          </Button>
-          <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={exportCSV}>
-            {t('exportCsv')}
-          </Button>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 text-xs"
-            onClick={() => {
-              if (!confirm(t('importConfirm'))) return
-              const input = document.createElement('input')
-              input.type = 'file'
-              input.accept = '.json'
-              input.onchange = async (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0]
-                if (!file) return
-                const result = await importJSON(file)
-                if (result.success) {
-                  const total = Object.values(result.tables).reduce((a, b) => a + b, 0)
-                  alert(`${t('importSuccess')} ${total} ${t('tablesRestored')}`)
-                  window.location.reload()
-                } else {
-                  alert(`${t('importFailed')}: ${result.error}`)
-                }
-              }
-              input.click()
-            }}
-          >
-            {t('importJsonBackup')}
-          </Button>
-        </div>
-      </div>
 
     </div>
   )

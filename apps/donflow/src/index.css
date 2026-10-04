@@ -100,3 +100,24 @@ body {
 .oj-account button{border:1px solid var(--color-border);border-radius:7px;padding:5px 9px;background:var(--color-background)}
 button:disabled{opacity:.5;cursor:not-allowed}
 html,body,#root{min-width:0;overflow-x:clip}input,select{min-width:0}
+
+/* Everyday entry stays simple; imported DonFlow planning tools remain available. */
+.oj-month-card{padding:16px;border-radius:16px;background:var(--color-card);border:1px solid var(--color-border)}
+.oj-total{font-size:clamp(12px,3.8vw,22px);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.oj-small-button{min-height:36px;min-width:36px;padding:6px 10px;font-size:12px;border:1px solid var(--color-border);border-radius:9px;background:var(--color-card)}
+.oj-type-buttons{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--color-secondary)}
+.oj-type-buttons button{flex:1;padding:7px;border-radius:7px;font-size:13px}
+.oj-type-buttons button[aria-pressed=true]{background:var(--color-card);color:var(--color-primary);font-weight:700;box-shadow:0 1px 4px #0001}
+.oj-setting-link{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;border:1px solid var(--color-border);border-radius:12px;background:var(--color-card);font-size:14px}
+.oj-setting-link small{display:block;margin-top:5px;color:var(--color-muted-foreground);font-size:12px}
+.oj-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;border-top:1px solid var(--color-border);background:var(--color-card);padding-bottom:env(safe-area-inset-bottom)}
+.oj-account{background:transparent;padding:0 16px 4px;color:var(--color-muted-foreground);font-size:11px}
+.oj-account details[open]{padding:10px;border:1px solid var(--color-border);border-radius:10px;margin-top:8px;background:var(--color-card)}
+.oj-account button{min-height:36px}
+.oj-field{font-size:16px}
+.oj-record{display:flex;align-items:center;gap:8px;padding:10px 8px;background:var(--color-card);border:1px solid var(--color-border);border-radius:12px;font-size:13px}
+.oj-record-icon{font-size:18px;flex-shrink:0}
+.oj-record-amount{font-size:12px;text-align:right;font-weight:600;max-width:43%;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.oj-delete{min-width:28px;min-height:40px;font-size:20px;color:var(--color-muted-foreground)}
+.oj-empty{padding:28px 12px;border:1px dashed var(--color-border);border-radius:12px;font-size:13px;text-align:center;color:var(--color-muted-foreground)}
+button,a,input,select,summary{outline-offset:3px}

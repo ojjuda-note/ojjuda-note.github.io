@@ -11,6 +11,10 @@ Build from the repository root:
     npm --prefix apps/donflow run build
 
 Integration changes:
+- Everyday home: actual monthly income/expense/balance, amount + description quick entry,
+  optional date/category fields, searchable date-grouped records, inline edit/delete.
+  Saving an older entry opens its month. Imported charts are under Statistics; budget,
+  CSV/notification imports and backup restore are secondary tools under Settings.
 - Existing World session through a same-origin iframe host; no new account or server.
 - IndexedDB names and unsent drafts isolated by authenticated user ID; Web Locks prevent
   simultaneous editing in multiple tabs on one browser. The iframe closes on owner change.
