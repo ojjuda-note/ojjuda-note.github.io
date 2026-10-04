@@ -19,7 +19,7 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
   if(proofFont)await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='@font-face{font-family:HouseProof;src:url("/_proof-font/NotoSansCJKkr-Regular.otf") format("opentype");font-display:block}html,body,button,input,textarea,select{font-family:HouseProof,sans-serif!important}';document.head.append(style);},{once:true}));
   const page=await context.newPage(),entryArt=[];page.on('request',r=>{if(/\/entry-(house|jjuda)-/.test(r.url()))entryArt.push(r.url());});page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR:',e.message);});await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.houseWorldTest&&history.state?.ojjudaWorld==='main');
   const home=()=>page.frames().find(f=>/\/house-test\/index\.html/.test(f.url()));
-  const ready=async()=>{await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});await home().evaluate(()=>document.fonts.ready);assert.equal(await home().locator('[data-tab="diary"]').getAttribute('aria-pressed'),'true');assert.equal(await home().locator('#diary').isVisible(),true);return home();};
+  const ready=async()=>{await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});await home().evaluate(()=>document.fonts.ready);assert.equal(await home().locator('[data-tab="diary"]').getAttribute('aria-pressed'),'true');assert.equal(await home().locator('.record-tabs').isVisible(),true);return home();};
   const noFrames=()=>page.waitForFunction(()=>document.querySelectorAll('iframe').length===0);
   const main=()=>page.waitForFunction(()=>houseWorldTest.state.tab==='friends'&&history.state?.ojjudaWorld==='main');
   // Leaving during room loading cancels the entry without a late reopen.
@@ -36,12 +36,12 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
   assert.equal(await page.locator('[role="dialog"][aria-label="우리집"]').count(),0,'ordinary home does not open a dialog');
   assert.equal(await page.evaluate(()=>document.body.style.overflow),'','World stays scrollable');
   assert.equal(await page.locator('.side').isVisible(),true,'desktop navigation stays visible beside the house');
-  await f.locator('#diary').fill('화면 갱신 중인 미저장 글');const original=f;
+  await f.getByRole('tab',{name:'게시판',exact:true}).click();await f.locator('#diary').fill('화면 갱신 중인 미저장 글');const original=f;
   await page.evaluate(()=>houseWorldTest.render());assert.equal(home(),original,'shared World updates must keep the live frame connected');
   assert.equal(await f.locator('#diary').inputValue(),'화면 갱신 중인 미저장 글');
   await page.evaluate(()=>houseWorldTest.actions.tab({tab:'home'}));assert.equal(home(),original);assert.equal(await page.locator('iframe').count(),1,'reselecting home never creates another room');
   assert.deepEqual(entryArt,[],'ordinary home does not fetch the separate entrance illustration');
-  await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0);await f.locator('[data-tab="diary"]').click();await f.locator('#diary').fill('실제 월드 회원의 개인 집');await f.getByRole('button',{name:'기록 저장',exact:true}).click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:world-member-a')).diary),'실제 월드 회원의 개인 집');
+  await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'방 설정',exact:true}).click();assert.equal(await f.getByRole('button',{name:'가구 제작실',exact:true}).count(),0);await f.locator('[data-tab="diary"]').click();await f.getByRole('tab',{name:'게시판',exact:true}).click();await f.locator('#diary').fill('실제 월드 회원의 개인 집');await f.getByRole('button',{name:'기록 저장',exact:true}).click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:world-member-a')).diary),'실제 월드 회원의 개인 집');
   await f.locator('[data-tab="room"]').click();await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'world-member-house-desktop.png')});await f.locator('#exit').click();await noFrames();await main();
   await page.setViewportSize({width:390,height:844});await page.locator('.bottomnav [data-tab="home"]').click();f=await ready();
   const worldNav=await page.locator('.bottomnav').boundingBox(),panel=await f.locator('#panel').boundingBox(),houseNav=await f.locator('#panel .panel-head nav').boundingBox();assert(worldNav&&panel&&houseNav);assert(Math.abs(panel.y+panel.height-worldNav.y)<=3,'the panel meets the World menu without an extra house menu row or empty band');assert(houseNav.y>=panel.y&&houseNav.y+houseNav.height<=panel.y+64,'compact tabs sit at the top of the middle panel');assert.equal(await f.locator('#app > nav').count(),0);assert.deepEqual(await f.locator('nav [data-tab]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tab)),['diary','room']);
@@ -51,7 +51,7 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
    await page.setViewportSize(size);
    for(const tab of ['diary','room']){
     await f.locator('[data-tab="'+tab+'"]').click();
-    await f.locator('#home-view').click();
+    if(tab==='room')await f.locator('#home-view').click();else await f.getByRole('tab',{name:'게시판',exact:true}).click();
     // As in the cafe, short screens may scroll the World content column.
     await page.evaluate(()=>{const house=document.querySelector('[data-house-inline]'),nav=document.querySelector('.bottomnav').getBoundingClientRect();window.scrollTo(0,Math.max(0,house.getBoundingClientRect().bottom+scrollY-nav.top));});
     await f.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));

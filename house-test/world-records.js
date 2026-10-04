@@ -8,10 +8,10 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
  const media=id=>result(own('media').eq('id',id).single());
  async function sign(paths){if(!paths.length)return new Map();const data=await result(client.storage.from('media').createSignedUrls(paths.filter(Boolean),900));return new Map((data||[]).map(row=>[row.path,row.signedUrl]));}
  async function list({kind,folder='all',offset=0}={}){
-  if(!['photo','video'].includes(kind)||!Number.isSafeInteger(offset)||offset<0)throw new Error('기록 종류를 확인해 주세요.');
-  let query=own('media').eq('type',kind==='photo'?'image':'video').order('created_at',{ascending:false}).order('id',{ascending:false});
+  if(!['all','text','photo','video'].includes(kind)||!Number.isSafeInteger(offset)||offset<0)throw new Error('기록 종류를 확인해 주세요.');
+  let query=own('media').in('type',kind==='all'?['image','video']:[kind==='photo'?'image':'video']).order('created_at',{ascending:false}).order('id',{ascending:false});
   if(folder==='none')query=query.is('folder_id',null);else if(folder!=='all')query=query.eq('folder_id',folder);
-  const [rows,folders]=await Promise.all([result(query.range(offset,offset+12)),result(own('media_folders').order('created_at',{ascending:true}))]);
+  const [rows,folders]=await Promise.all([kind==='text'?Promise.resolve([]):result(query.range(offset,offset+12)),result(own('media_folders').order('created_at',{ascending:true}))]);
   const visible=rows.slice(0,12),urls=await sign(visible.map(row=>row.thumb_path||row.path));check();
   return {records:visible.map(({path,thumb_path,...row})=>({...row,thumbnail:urls.get(thumb_path||path)||null})),folders,friends:getFriends().map(({id,nick})=>({id,nick})),more:rows.length>12};
  }

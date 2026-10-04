@@ -36,13 +36,13 @@ const gate=()=>{let release;const promise=new Promise(r=>release=r);return{promi
   const bg=background;background=null;bg.release();await f.waitForFunction(()=>[...document.querySelectorAll('.room.selected .room-bg')].every(im=>im.complete));
   assert.equal(await page.locator('.house-entry-loading').count(),1,'initialization and background alone must not expose unpainted furniture');
   const art=shelf;shelf=null;art.release();await page.locator('.house-entry-loading').waitFor({state:'detached',timeout:5000});
-  assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await f.locator('#diary').isVisible(),true);
+  assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await f.locator('.record-tabs').isVisible(),true);
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:entry-test'))),saved);
   await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();assert.equal(await page.locator('iframe').count(),0);
   // Closing and account revocation both work while the illustration is visible.
   background=gate();await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor();await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();background.release();background=null;assert.equal(await page.locator('[role="dialog"]').count(),0);
   background=gate();await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor();await page.evaluate(()=>allowed=false);await page.locator('[role="dialog"]').waitFor({state:'detached'});background.release();background=null;
-  await page.evaluate(()=>allowed=true);breakArt=true;await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor({state:'detached',timeout:5000});assert.equal(await page.frameLocator('iframe').locator('#diary').isVisible(),true,'missing illustration cannot hold up a ready room');
+  await page.evaluate(()=>allowed=true);breakArt=true;await page.locator('#open').click();await page.locator('.house-entry-loading').waitFor({state:'detached',timeout:5000});assert.equal(await page.frameLocator('iframe').locator('.record-tabs').isVisible(),true,'missing illustration cannot hold up a ready room');
   assert.deepEqual(errors,[]);await page.close();
   const timeoutContext=await browser.newContext();await timeoutContext.addInitScript(()=>{const original=window.setTimeout;window.setTimeout=(fn,ms,...args)=>original(fn,ms===20000?80:ms,...args);});
   await timeoutContext.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:fixture});if(u.pathname.endsWith('/house-test/index.html'))return route.fulfill({contentType:'text/html',body:'<!doctype html><p>fixture waiting</p>'});const file=path.resolve(root,'.'+u.pathname);return fs.existsSync(file)?route.fulfill({path:file}):route.abort();});

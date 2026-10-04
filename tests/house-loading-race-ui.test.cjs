@@ -43,7 +43,7 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
   assert.equal(await f.getByRole('button',{name:'의자 놓기',exact:true}).isDisabled(),true,'a pending card cannot submit repeated selections');assert.equal(await f.getByRole('button',{name:'의자 놓기',exact:true}).getAttribute('aria-busy'),'true');
   await f.locator('[data-tab="diary"]').click();selection.release();
   await f.waitForFunction(async module=>(await import(module)).builtInItemReady('chair'),customModule);
-  assert.equal(await f.locator('#diary').isVisible(),true,'a late runtime response cannot reopen the abandoned placement');
+  assert.equal(await f.locator('.record-tabs').isVisible(),true,'a late runtime response cannot reopen the abandoned placement');
   assert.equal(await f.locator('#placement-done').isVisible(),false);assert.equal(await f.locator('[data-furniture="chair"]').count(),0);assert.deepEqual(await readSave(),empty);
   await f.locator('[data-tab="room"]').click();assert.equal(await f.locator('#placement-done').isVisible(),false,'returning to the menu does not revive a cancelled request');
 

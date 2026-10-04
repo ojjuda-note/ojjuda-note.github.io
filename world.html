@@ -667,12 +667,12 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;
  const authorized=()=>D.online&&D.user?.id===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261004-cleanup1');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261004-homelist2');
   if(request!==worldHouseRequest||!authorized()||!isWorldHouseTab())return;
   let albumService;
   const records=async(action,args)=>{
    if(!authorized())throw new Error('로그인을 다시 확인해 주세요.');
-   albumService ||= import('./house-test/world-records.js?v=20261004-album1').then(({createWorldRecords})=>createWorldRecords({client:S,owner,authorized,getFriends:Uu,prepareMedia:file=>_b(file,true),onChange:change=>{
+   albumService ||= import('./house-test/world-records.js?v=20261004-homelist2').then(({createWorldRecords})=>createWorldRecords({client:S,owner,authorized,getFriends:Uu,prepareMedia:file=>_b(file,true),onChange:change=>{
     if(!authorized())return;
     if(change.media){const item=f1(change.media),index=$.album.findIndex(row=>row.id===item.id);if(index<0)$.album.unshift(item);else $.album[index]={...$.album[index],...item};}
     if(change.folder){if(!Array.isArray($.folders))$.folders=[];const item=oc(change.folder),index=$.folders.findIndex(row=>row.id===item.id);if(index<0)$.folders.push(item);else $.folders[index]=item;}
@@ -682,7 +682,7 @@ async function openWorldHouse(){
   };
   const mountTarget=document.querySelector('[data-house-mount]');
   if(!mountTarget)return;
-  const close=openHouseTest({owner,authorized,records,mountTarget,studioAuthorized:()=>false,preserveWorldNavigation:true,onClose:()=>{
+  const close=openHouseTest({owner,authorized,records,mountTarget,profile:$.me,studioAuthorized:()=>false,preserveWorldNavigation:true,onClose:()=>{
    if(request!==worldHouseRequest)return;
    worldHouseClose=null;worldHouseOpening=false;worldHouseOwner=null;worldHouseRequest++;
    if(isWorldHouseTab()){g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0);}
