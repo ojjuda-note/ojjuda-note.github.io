@@ -60,7 +60,8 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
     const visibility=await f.evaluate(()=>{
      const view=document.querySelector('#viewport').getBoundingClientRect(),camera=document.querySelector('.camera').getBoundingClientRect(),panel=document.querySelector('#panel').getBoundingClientRect(),room=document.querySelector('.room.selected').getBoundingClientRect(),scale=room.width/1507;
      const separate=b=>b.left>=view.right-.5||b.top>=view.bottom-.5||b.right<=view.left+.5||b.bottom<=view.top+.5;
-     return {cameraOutsideRoom:separate(camera),panelOutsideRoom:separate(panel),wholeRoom:room.left+12*scale>=view.left-.5&&room.right-12*scale<=view.right+.5&&room.top+27*scale>=view.top-.5&&room.top+916*scale<=view.bottom+.5,furnitureVisible:[...document.querySelectorAll('.room.selected .furniture')].every(n=>{const b=n.getBoundingClientRect();return b.left>=view.left-.5&&b.right<=view.right+.5&&b.top>=view.top-.5&&b.bottom<=view.bottom+.5;})};
+     const summary=document.querySelector('#app').classList.contains('records-home'),crop=summary?{left:38,right:39,top:58,bottom:910}:{left:12,right:12,top:27,bottom:916};
+     return {cameraOutsideRoom:separate(camera),panelOutsideRoom:separate(panel),wholeRoom:room.left+crop.left*scale>=view.left-.5&&room.right-crop.right*scale<=view.right+.5&&room.top+crop.top*scale>=view.top-.5&&room.top+crop.bottom*scale<=view.bottom+.5,furnitureVisible:[...document.querySelectorAll('.room.selected .furniture')].every(n=>{const b=n.getBoundingClientRect();return b.left>=view.left-.5&&b.right<=view.right+.5&&b.top>=view.top-.5&&b.bottom<=view.bottom+.5;})};
     });
     assert.deepEqual(visibility,{cameraOutsideRoom:true,panelOutsideRoom:true,wholeRoom:true,furnitureVisible:true},'all furniture, including the right-hand desk, remains clear of camera controls and menus');
     const before=await f.locator('#panel-tabs').boundingBox();

@@ -93,12 +93,17 @@ function minimumZoom(){
 }
 function focusRoom(all=false){
  if(tab==='diary'&&!previewMode&&!expanding){
-  const area=cameraBounds(state.rooms),top=76,inset=12,w=view.clientWidth;
-  const height=Math.min(380,Math.max(230,w*area.height/area.width+top+inset*2));
-  $('#app').style.setProperty('--home-scene-height',height+'px');
-  if(readOnly&&lastSummaryHeight!==Math.ceil(height)){lastSummaryHeight=Math.ceil(height);port?.postMessage({type:'room-size',height:lastSummaryHeight});}
-  const h=view.clientHeight;scale=Math.min((w-inset*2)/area.width,Math.max(1,h-top-inset)/area.height);
-  pan={x:(w-area.width*scale)/2-area.left*scale,y:top+(h-top-area.height*scale)/2-area.top*scale};
+  // Fit the room interior, without the apartment facade or a padded frame.
+  // Only the preview is cropped; saved room and furniture coordinates stay intact.
+  const positions=state.rooms.map(bounds),left=Math.min(...positions.map(b=>b.x))+38,top=Math.min(...positions.map(b=>b.y))+58;
+  const area={left,top,width:Math.max(...positions.map(b=>b.x))+1468-left,height:Math.max(...positions.map(b=>b.y))+910-top};
+  const scene=$('#home-scene'),profile=$('#home-profile'),available=Math.max(1,scene.clientWidth-profile.getBoundingClientRect().width);
+  scale=Math.min(available/area.width,220/area.height);
+  view.style.setProperty('--home-room-width',area.width*scale+'px');
+  view.style.setProperty('--home-room-height',area.height*scale+'px');
+  const height=Math.ceil(scene.getBoundingClientRect().height);
+  if(readOnly&&lastSummaryHeight!==height){lastSummaryHeight=height;port?.postMessage({type:'room-size',height});}
+  pan={x:-area.left*scale,y:-area.top*scale};
   world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;return;
  }
  overview=all;
@@ -293,7 +298,8 @@ $('#home-profile-photo').onclick=()=>{if(!readOnly&&!$('#home-profile-photo').di
 $('#home-room-open').onclick=()=>{setTab('room');view.focus({preventScroll:true});};
 $('#empty-room-toggle').onclick=()=>{emptyRoomPreview=!emptyRoomPreview;view.classList.toggle('empty-room-preview',emptyRoomPreview);renderPanel();};
 $('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#overview').onclick=()=>focusRoom(true);$('#home-view').onclick=()=>focusRoom();$('#expand').onclick=()=>toggleExpansion();$('#exit').onclick=()=>{clearPlacement();if(initialized)persist();port?.postMessage({type:'close'});};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#exit').click();});document.querySelectorAll('[data-tab]').forEach(b=>{b.querySelector('span').innerHTML=icon(b.dataset.tab);b.onclick=()=>setTab(b.dataset.tab);});
-new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);}).observe(view);
+const roomResizeObserver=new ResizeObserver(()=>{if(initialized)focusRoom(expanding||overview);});
+roomResizeObserver.observe(view);roomResizeObserver.observe($('#home-scene'));
 $('#placement-recall').onclick=()=>{if(editing&&!previewMode)removeFurniture();};$('#placement-done').onclick=()=>{if(editing)finishPlacement(true);};$('#placement-actions').addEventListener('pointerdown',event=>event.stopPropagation());new ResizeObserver(layoutPlacementActions).observe($('#placement-actions'));
 window.addEventListener('message',async e=>{
  if(connecting||initialized||window.parent===window||e.source!==window.parent||e.origin!==location.origin||e.data?.type!=='ojjuda-house-test-init'||!e.ports[0]||typeof e.data.owner!=='string'||!e.data.owner||e.data.owner.length>180)return;
