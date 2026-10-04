@@ -14,7 +14,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';close.textContent='나가기';Object.assign(close.style,{top:'4px',right:'8px',width:'66px',height:'40px',fontSize:'13px'});}
- const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-room-small',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261004-profile-layout',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  const loading=inline?document.createElement('div'):createHouseEntryLoading();
  if(inline){status.textContent=readOnly?'방을 불러오는 중이에요…':'우리집을 불러오는 중이에요…';loading.hidden=true;}
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
@@ -76,7 +76,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
   canUseStudio=!readOnly&&hasStudioAccess();channel?.port1.close();channel=new MessageChannel();
   channel.port1.onmessage=async e=>{
    if(closed)return;if(!authorized()){cleanup();return;}
-   if(e.data?.type==='room-size'){if(readOnly&&Number.isFinite(e.data.height)){visitorHeight=Math.min(220,Math.max(110,e.data.height));scheduleNavigationSpace();}return;}
+   if(e.data?.type==='room-size'){if(readOnly&&Number.isFinite(e.data.height)){visitorHeight=Math.min(600,Math.max(110,e.data.height));scheduleNavigationSpace();}return;}
    if(e.data?.type==='room-save'){if(!readOnly&&!studioOnly&&typeof room==='function'&&e.data.snapshot){pendingSnapshot=e.data.snapshot;markDirty();void saveRoom();}return;}
    if(e.data?.type==='profile-photo'){if(readOnly||studioOnly||typeof onProfilePhoto!=='function')return;try{const next=await onProfilePhoto();if(next&&!closed&&authorized()){memberProfile={...memberProfile,...next};channel.port1.postMessage({type:'profile-update',profile:memberProfile});}}catch(error){if(!closed)showFailure(error.message||'사진을 바꾸지 못했어요.',()=>{retry.hidden=true;status.hidden=true;});}return;}
    if(e.data?.type==='records-request'){

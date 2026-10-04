@@ -894,7 +894,7 @@ async function openWorldHouse(){
  worldHouseOpening=true;worldHouseOwner=owner;worldHouseViewer=viewer;
  const authorized=()=>D.online&&D.user?.id===viewer&&isWorldHouseView()&&worldHouseTarget()===owner;
  try{
-  const {openHouseTest}=await import('./house-test/host.js?v=20261004-room-small');
+  const {openHouseTest}=await import('./house-test/host.js?v=20261004-profile-layout');
   if(!readOnly)await resolveWorldProfilePhoto();
   if(request!==worldHouseRequest||!authorized())return;
   let albumService,roomService;

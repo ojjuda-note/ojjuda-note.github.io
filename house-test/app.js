@@ -99,6 +99,7 @@ function focusRoom(all=false){
   const area={left,top,width:Math.max(...positions.map(b=>b.x))+1468-left,height:Math.max(...positions.map(b=>b.y))+910-top};
   const scene=$('#home-scene'),profile=$('#home-profile'),available=Math.max(1,scene.clientWidth-profile.getBoundingClientRect().width);
   scale=Math.min(available/area.width,220/area.height)*.9;
+  profile.style.setProperty('--home-profile-offset',(available-area.width*scale)/2+'px');
   view.style.setProperty('--home-room-width',area.width*scale+'px');
   view.style.setProperty('--home-room-height',area.height*scale+'px');
   const height=Math.ceil(scene.getBoundingClientRect().height);
