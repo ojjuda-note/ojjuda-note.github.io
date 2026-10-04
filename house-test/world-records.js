@@ -77,8 +77,9 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
   if(action==='restore')for(const row of data.media||[])onChange({media:row});
   return {count:data.media_ids.length+data.post_ids.length};
  }
- async function upload({file,kind,visibility:vis='me',folder_id}){
+ async function upload({file,kind,visibility:vis='me',folder_id,caption=''}){
   if(!(file instanceof Blob)||!['photo','video'].includes(kind)||!file.type.startsWith(kind==='photo'?'image/':'video/'))throw new Error('사진이나 동영상 파일을 선택해 주세요.');
+  if(typeof caption!=='string'||caption.length>100)throw new Error('설명은 100자 이내로 적어 주세요.');
   visibility(vis);const targetFolder=await folderId(folder_id,kind);check();
   const prepared=await prepareMedia(file);check();if(!prepared)throw new Error('사진은 20MB, 영상은 1분·50MB 이내의 지원 파일을 선택해 주세요.');
   if(recordKind(prepared.kind)!==kind)throw new Error('선택한 파일과 폴더 종류를 확인해 주세요.');
@@ -91,7 +92,7 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
   try{
    let response=await box.upload(path,prepared.body,{contentType:prepared.mime,upsert:false});if(response.error)throw response.error;uploaded.push(path);check();
    response=await box.upload(thumbPath,thumb,{contentType:'image/jpeg',upsert:false});if(response.error)throw response.error;uploaded.push(thumbPath);check();
-   attemptedInsert=true;response=await client.from('media').insert({id,user_id:owner,type:prepared.kind,path,thumb_path:thumbPath,duration:prepared.duration||0,visibility:vis,folder_id:targetFolder,caption:''}).select(columns).single();
+   attemptedInsert=true;response=await client.from('media').insert({id,user_id:owner,type:prepared.kind,path,thumb_path:thumbPath,duration:prepared.duration||0,visibility:vis,folder_id:targetFolder,caption:caption.trim()}).select(columns).single();
    if(response.error)throw response.error;committed=true;check();onChange({media:response.data});return {id};
   }catch(error){
    if(!committed&&uploaded.length){
