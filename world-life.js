@@ -82,7 +82,7 @@
   const googleNews='https://news.google.com/',googleLocale='hl=ko&gl=KR&ceid=KR:ko';
   for(const [name,query] of [['주요 뉴스',''],['사회','한국 사회'],['경제','경제'],['생활·문화','생활 문화'],['세계','국제 세계'],['IT·과학','IT 과학'],['정치','한국 정치'],['스포츠','스포츠']]){const url=query?googleNews+'search?q='+encodeURIComponent(query)+'&'+googleLocale:googleNews+'?'+googleLocale;const a=link(name+' ↗',url);a.setAttribute('aria-label',name+' 구글 뉴스 (새 창)');newsGrid.append(a);}news.append(newsGrid);
   const ledger=section('ledger','가계부');
-  if(window.OjjudaLedger)closeLedger=window.OjjudaLedger.mount(ledger,{owner,client,authorized:active});
+  if(window.OjjudaDonflow)closeLedger=window.OjjudaDonflow.mount(ledger,{owner,client,authorized:active});
   else ledger.append(el('p','가계부를 불러오지 못했어요. 새로고침해 주세요.','life-empty'));
   const calculator=section('calculator','계산기'),display=el('output','0','life-calc-display'),keys=el('div','','life-calc-keys');display.setAttribute('aria-label','계산 결과');display.setAttribute('aria-live','polite');keys.dataset.worldSwipe='off';
   let value='0',previous=null,operator=null,fresh=true;const compute=(a,b,op)=>op==='+'?a+b:op==='−'?a-b:op==='×'?a*b:b===0?NaN:a/b;
