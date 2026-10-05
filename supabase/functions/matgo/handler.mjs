@@ -6,7 +6,7 @@ import { verifyRound as verifyV3Round } from './verify-v3.mjs';
 import {advanceOnline,automaticOnline,replayOnline,onlineView} from './online.mjs';
 const origins = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
-const publicErrors = new Set(['adult_required', 'member_identity_required', 'not_signed_in', 'banned', 'no_account', 'gold_not_empty', 'gold_empty', 'insufficient_zzu', 'paid_confirmation_required', 'round_mismatch','match_in_progress','room_not_found','room_unavailable','state_conflict','not_your_turn','invalid_move','invalid_choice','invalid_card','invalid_bomb','invalid_decision','invalid_play','invalid_shake','invalid_gukjin','invalid_chongtong']);
+const publicErrors = new Set(['adult_required', 'member_identity_required', 'not_signed_in', 'banned', 'no_account', 'gold_not_empty', 'gold_empty', 'insufficient_zzu', 'paid_confirmation_required', 'round_mismatch','client_update_required','round_in_progress','invalid_stake','stake_offer_pending','stake_offer_changed','match_in_progress','room_not_found','room_unavailable','state_conflict','not_your_turn','invalid_move','invalid_choice','invalid_card','invalid_bomb','invalid_decision','invalid_play','invalid_shake','invalid_gukjin','invalid_chongtong']);
 const onlineActions=new Set(['online_quick','online_create','online_join','online_read','online_move','online_leave','online_ready','online_fallback']);
 const newSecret=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');
 export function createHandler({ env, fetchImpl = fetch }) {
@@ -31,14 +31,16 @@ export function createHandler({ env, fetchImpl = fetch }) {
       const bytes = new Uint8Array(size); let offset = 0;
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
       body = JSON.parse(new TextDecoder().decode(bytes));
-      if (!['status', 'start', 'refill', 'settle'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
+      if (!['status', 'start', 'refill', 'settle', 'stake'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
       if(onlineActions.has(body.action)){
         if(['online_read','online_move','online_leave','online_ready','online_fallback'].includes(body.action)&&!uuid.test(body.room_id))throw Error();
         if(body.action==='online_join'&&(typeof body.code!=='string'||! /^[a-f0-9]{8}$/i.test(body.code)))throw Error();
         if(body.action==='online_move'&&(!uuid.test(body.request_id)||!Number.isInteger(body.version)||body.version<0||!body.command||JSON.stringify(body.command).length>1024))throw Error();
         if(body.cursor!==undefined&&(!Number.isInteger(body.cursor)||body.cursor<0||body.cursor>10000))throw Error();
       }
-      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5].includes(body.rules_version ?? 1))) throw Error();
+      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6].includes(body.rules_version ?? 1))) throw Error();
+      if (body.action === 'start' && body.stakes_version !== undefined && body.stakes_version !== 1) throw Error();
+      if (body.action === 'stake' && (!Number.isInteger(body.rate) || ![200,500,2000,5000,10000,20000,50000,100000].includes(body.rate) || typeof body.accept !== 'boolean')) throw Error();
       if (body.action === 'refill' && (!uuid.test(body.request_id) || typeof body.paid !== 'boolean')) throw Error();
     } catch { return reply({ error: 'bad_request' }, 400); }
     const get = (path, options) => fetchImpl(url + path, { signal: AbortSignal.timeout(10000), ...options });
@@ -84,9 +86,9 @@ export function createHandler({ env, fetchImpl = fetch }) {
         return reply({ok:true,room:await onlineView(state.room,state.seat,body.cursor??0)});
       }
       const rpc = async (action, values = {}) => {
-        const response = await get('/rest/v1/rpc/matgo_wallet_service', { method: 'POST',
+        const response = await get('/rest/v1/rpc/'+(action==='stake'?'matgo_stake_service':'matgo_wallet_service'), { method: 'POST',
           headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ p_actor: user.id, p_action: action, ...values }) });
+          body: JSON.stringify({ p_actor: user.id, ...(action==='stake'?{}:{p_action:action}), ...values }) });
         const data = await response.json();
         if (!response.ok) throw Error(publicErrors.has(data.message) ? data.message : 'unavailable');
         return data;
@@ -94,8 +96,9 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (body.action === 'settle') {
         const snapshot = await rpc('round', { p_round: body.round_id });
         if (snapshot.settled) return reply(snapshot);
+        if ((snapshot.round.rate ?? 100)>100 && body.rules_version!==6) return reply({error:'client_update_required'},409);
         let verified;
-        try { verified = await (body.rules_version === 5 ? verifyRound : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
+        try { verified = await ([5,6].includes(body.rules_version) ? verifyRound : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
         catch {
           // Rules/scoring stay v5. Already-open browsers can finish the old CPU
           // policy; replay the entire transcript rather than trusting a result.
@@ -106,7 +109,8 @@ export function createHandler({ env, fetchImpl = fetch }) {
         return reply(await rpc('settle', { p_round: body.round_id, p_gold: verified.gold, p_first: verified.first, p_carry: verified.carry }));
       }
       if (body.action === 'refill') return reply(await rpc('refill', { p_request: body.request_id, p_paid: body.paid }));
-      return reply(await rpc(body.action));
+      if(body.action==='stake')return reply(await rpc('stake',{p_rate:body.rate,p_accept:body.accept}));
+      return reply(await rpc(body.action==='start'&&body.stakes_version===1?'start_stakes':body.action));
     } catch (error) {
       const code = publicErrors.has(error.message) ? error.message : 'unavailable';
       return reply({ error: code }, code === 'unavailable' ? 503 : 409);

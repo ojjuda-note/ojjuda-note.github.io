@@ -21,6 +21,7 @@ export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
   });
   game.random = seededRandom(round.seed);
   game.cpuMode = cpuMode;
+  game.rate = round.rate ?? 100;
   game.bank = [round.gold, 5000]; game.first = round.first; game.carry = round.carry;
   game.deal();
   for (const action of actions) {
