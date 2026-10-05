@@ -285,13 +285,13 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       worldTest.actions.tab({tab:'board'});
     });
     await gp.locator('.board-game-open').first().waitFor();
-    assert.equal(await gp.locator('.board-game-open').count(),12,'all public ranking names lead to games, including every variant');
+    assert.equal(await gp.locator('.board-game-open').count(),27,'all public ranking names lead to games, including every variant');
     assert.equal(await gp.locator('[data-game="matgo"]').count(),0,'unverified Matgo access is not advertised');
     await gp.locator('[data-board-root]').evaluate(el=>el.dataset.retained='original-board');
     const gameButton=id=>gp.locator(`[data-game="${id}"] .board-game-open`);
     const openGame=async id=>{
       const slide=await gameButton(id).evaluate(el=>[...el.closest('.board-rank-track').children].indexOf(el.closest('.board-rank-page')));
-      for(let attempts=0;Number(await gp.locator('.board-leaders').getAttribute('data-rank-page'))!==slide&&attempts<5;attempts++){
+      for(let attempts=0;Number(await gp.locator('.board-leaders').getAttribute('data-rank-page'))!==slide&&attempts<10;attempts++){
         const box=await gp.locator('.board-rank-viewport').boundingBox();
         await gp.mouse.move(box.x+box.width-25,box.y+20);await gp.mouse.down();
         await gp.mouse.move(box.x+25,box.y+22);await gp.mouse.up();
@@ -308,9 +308,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(gp.url(),'https://fixture.test/world.html');
     };
     for(const id of ['carom4','carom3','pool8']){
-      await openGame(id);
+      await openGame(id+'_hard');
       await gp.locator(`#bd-menu [data-act="bl-kind"][data-v="${id}"][aria-pressed="true"]`).waitFor();
       assert.equal(await gp.locator('#bd-menu [data-act="bl-kind"][aria-pressed="true"]').count(),1,id+': correct billiards variant selected');
+      assert.equal(await gp.locator('#bd-menu [data-act="bl-level"][data-v="hard"]').getAttribute('aria-pressed'),'true','ranking opens its selected difficulty');
       await stillBoard(id,'#modal-root [data-act="close"]');
     }
     for(const [id,mode,label] of [['screw_box','box','박스형'],['screw_flat','flat','평면형']]){
@@ -328,8 +329,9 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await stillBoard(id,'#gov [data-g="close"]');
     }
     for(const [id,label] of [['janggi','장기'],['chess','체스']]){
-      await openGame(id);await gp.locator(`#bd-menu [data-act="bd-start"][data-k="${id}"]`).first().waitFor();
+      await openGame(id+'_easy');await gp.locator(`#bd-menu [data-act="bd-start"][data-k="${id}"]`).first().waitFor();
       assert.equal(await gp.locator('#modal-root [role="dialog"]').getAttribute('aria-label'),label);
+      assert.equal(await gp.locator('#bd-menu [data-act="bd-lv"][data-v="easy"]').getAttribute('aria-pressed'),'true','board game opens its selected difficulty');
       await stillBoard(id,'#modal-root [data-act="close"]');
     }
     // Use the real Matgo gate: an already visible row must recheck server age.
