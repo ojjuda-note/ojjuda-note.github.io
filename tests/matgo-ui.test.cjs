@@ -65,7 +65,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
   await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-  assert.match(await f.page.locator('#money').textContent(),/5,000 골드/);
+  assert.match(await f.page.locator('#money').textContent(),/5,000G/);
   await f.page.locator('#menu').click();await f.page.locator('#rules').click();assert.match(await f.page.locator('.modal').textContent(),/자뻑.*피 2장/);assert.match(await f.page.locator('.modal').textContent(),/5쭈/);
   await f.page.locator('.modal button').last().click();
   for(const width of [320,390,768]){await f.page.setViewportSize({width,height:820});assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
@@ -153,7 +153,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,4);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,5);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -182,9 +182,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       if(ready)break;await f.page.waitForTimeout(20);
     }
     assert.equal(await f.page.evaluate(()=>!matgoTest.ui.busy&&firstPpukEvents.length>0),true,`opening event completed for seed ${seed}`);
-    assert.match(await f.page.locator('#goldPending').textContent(),delta>0?/첫뻑 \+300골드.*판 종료/:/첫뻑 -300골드.*판 종료/);
-    assert.match((await f.page.evaluate(()=>firstPpukEvents)).join(' '),/첫뻑!.*300골드.*판 종료 시 정산/);
-    assert.match(await f.page.locator('#money').textContent(),/5,000 골드/);assert.equal(f.state.gold,5000);
+    assert.match(await f.page.locator('#goldPending').textContent(),delta>0?/첫뻑 \+300G.*판 종료/:/첫뻑 -300G.*판 종료/);
+    assert.match((await f.page.evaluate(()=>firstPpukEvents)).join(' '),/첫뻑!.*300G.*판 종료 시 정산/);
+    assert.match(await f.page.locator('#money').textContent(),/5,000G/);assert.equal(f.state.gold,5000);
     assert.equal(f.state.requests.some(r=>r.action==='settle'),false,'opening event never sends a payout');
     await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(await f.page.locator('#goldPending').isHidden(),true);assert.equal(f.state.gold,5000);
@@ -202,7 +202,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       await f.page.waitForTimeout(20);
     }
     assert.equal(f.state.settled,true);assert.equal(f.state.requests.filter(r=>r.action==='settle').length,1);
-    assert.match(await f.page.locator('.gold-breakdown').textContent(),/첫뻑 정산 \+300골드/);
+    assert.match(await f.page.locator('.gold-breakdown').textContent(),/첫뻑 정산 \+300G/);
     assert.equal(await f.page.locator('#goldPending').isHidden(),true);
     await f.page.screenshot({path:'/tmp/matgo-first-ppuk-settlement.png'});
     assert.deepEqual(f.errors,[]);await f.context.close();
@@ -220,7 +220,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     }
     assert.equal(f.state.settled,true,'triple ppuk with gobak settles after a complete legal game');
     assert.equal(f.state.gold,3300,'5000 - 1400 triple ppuk gobak - 300 opening ppuk');assert.match(await f.page.locator('.sc').textContent(),/뻑 3회7점고박×2/);
-    assert.match(await f.page.locator('.gold-breakdown').textContent(),/첫뻑 정산 -300골드/);
+    assert.match(await f.page.locator('.gold-breakdown').textContent(),/첫뻑 정산 -300G/);
     await f.page.screenshot({path:'/tmp/matgo-triple-ppuk-gobak.png'});
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
@@ -236,7 +236,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('.stack.ppuk .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),0);
     assert.match(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),/보너스 1/);assert.equal(await f.page.locator('#mePpuk').textContent(),'뻑 1/3');
     await f.page.locator('#handMe .c[data-id="3"]').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
-    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsOp .c').count(),1,'self ppuk plus tied bonus steals 3 cards');
+    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsOp .c').count(),2,'self ppuk steals 2 cards; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){

@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/note/', world: '/world.html' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html' };
   const termsVersion = '2026-09-29-age14';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
@@ -33,6 +33,7 @@
   let recoveryGrant = null, recoveryCompleted = false;
   let identityVersion = 0;
   let authEventVersion = 0;
+  let authViewVersion = 0;
   let enteringNote = false;
   let recoveryPending = /(?:^|[?&])reset=1(?:&|$)/.test(location.search.slice(1))
     || /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash);
@@ -95,6 +96,7 @@
   }
 
   function setAuthMode(mode, notice = '') {
+    authViewVersion++;
     authMode = mode;
     const isSignup = mode === 'signup';
     const isForgot = mode === 'forgot';
@@ -123,13 +125,13 @@
     $('password-label').textContent = isReset ? '새 비밀번호' : '비밀번호';
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
-    $('auth-title').textContent = isSignup ? '오쭈다 월드/노트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드/노트';
+    $('auth-title').textContent = isSignup ? '오쭈다 월드' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드';
     $('auth-intro').textContent = isSignup ? '한 번 가입하면 두 공간을 자유롭게 오갈 수 있어요.'
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
-          : isNickname ? '노트에서 사용할 닉네임을 정해 주세요.'
+          : isNickname ? '월드에서 사용할 닉네임을 정해 주세요.'
           : '하나의 계정으로 두 공간을 즐겨요.';
-    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '노트 시작하기 ' : '로그인 ';
+    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '월드 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
   }
 
@@ -152,6 +154,8 @@
   }
 
   function showState(title, body, buttonText = '로그인 화면으로') {
+    authViewVersion++;
+    password.value = passwordConfirm.value = '';
     clearRecoveryGrant();
     recoveryCompleted = false;
     authMode = 'state';
@@ -240,10 +244,12 @@
     enteringNote = true;
     const expectedUserId = session.user.id;
     const expectedIdentityVersion = identityVersion;
+    const expectedViewVersion = authViewVersion;
     const noteButton = document.querySelector('[data-destination="note"]');
     noteButton.disabled = true;
     const release = () => { noteButton.disabled = false; enteringNote = false; };
-    const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion;
+    const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
+      || authViewVersion !== expectedViewVersion;
     try {
       const { data: identity, error: identityError } = await client.auth.getUser();
       if (accountChanged()) return;
@@ -261,21 +267,21 @@
       if (error) {
         showNicknameSetup(candidate, nicknameIssue(error)
           ? '사용할 수 없는 닉네임이에요. 다른 이름을 입력해 주세요.'
-          : '노트 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
+          : '공원 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
         return;
       }
       if (data !== true) {
-        showNicknameSetup(candidate, '노트 연결을 확인하지 못했어요. 다시 시도해 주세요.');
+        showNicknameSetup(candidate, '공원 연결을 확인하지 못했어요. 다시 시도해 주세요.');
         return;
       }
-      const notePath = destinations.note + (returnCard ? `?card=${encodeURIComponent(returnCard)}` : '');
+      const notePath = destinations.note + (returnCard ? `&card=${encodeURIComponent(returnCard)}` : '');
       clearReturnDestination();
       location.assign(notePath);
     } catch (error) {
       console.warn('노트 회원 준비 실패:', error);
       if (accountChanged()) return;
       showNicknameSetup(overrideNickname || String(session.user.user_metadata?.nickname || ''),
-        '노트 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
+        '공원 연결에 실패했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
       release();
     }
@@ -403,10 +409,13 @@
       return;
     }
 
+    const requestView = authViewVersion;
+    const currentView = () => dialog.open && authViewVersion === requestView;
     setBusy(true);
     try {
       if (authMode === 'login') {
         const { data, error } = await client.auth.signInWithPassword({ email: address, password: secret });
+        if (!currentView()) return;
         if (error) throw error;
         if (!data?.session?.user) throw new Error('missing_session');
         applySession(data.session);
@@ -436,6 +445,7 @@
             emailRedirectTo: confirmationUrl.href
           }
         });
+        if (!currentView()) return;
         if (error) throw error;
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
         $('signup-result').textContent = '';
@@ -455,7 +465,7 @@
         await enterNote(nickname.value.trim());
       } else if (authMode === 'forgot') {
         const data = await recoveryRequest({ action: 'check', ...recoveryDetails });
-        if (!dialog.open || authMode !== 'forgot') return;
+        if (!currentView()) return;
         if (data?.verified === false) { feedback.textContent = '회원정보가 일치하지 않아요. 입력한 네 가지 정보를 확인해 주세요.'; return; }
         if (data?.verified !== true || !/^[a-f0-9]{64}$/.test(data.reset_token)) throw new Error('recovery_unavailable');
         for (const id of ['recovery-phone', 'recovery-birth', 'recovery-gender']) $(id).value = '';
@@ -465,7 +475,7 @@
       } else if (authMode === 'direct-reset') {
         const grant = recoveryGrant;
         const data = await recoveryRequest({ action: 'reset', token: grant.token, password: secret, password_confirmation: passwordConfirm.value });
-        if (!dialog.open || recoveryGrant !== grant) return;
+        if (!currentView() || recoveryGrant !== grant) return;
         if (data?.reset !== true) throw new Error('recovery_restart_required');
         recoveryPending = false;
         history.replaceState(null, '', location.pathname);
@@ -473,19 +483,23 @@
         recoveryCompleted = true;
       } else if (authMode === 'reset') {
         const { data, error } = await client.auth.updateUser({ password: secret });
+        if (!currentView()) return;
         if (error) throw error;
         recoveryPending = false;
         history.replaceState(null, '', location.pathname);
         if (data?.user) applySession({ ...(session || {}), user: data.user });
-        showState('비밀번호가 바뀌었어요', '이제 노트나 월드로 이동할 수 있어요.', '공간 고르기');
+        showState('비밀번호가 바뀌었어요', '이제 월드로 이동할 수 있어요.', '공간 고르기');
       }
     } catch (error) {
       console.warn('계정 처리 실패:', error);
+      if (!currentView()) return;
       if (authMode === 'direct-reset' && !/invalid_recovery_password|recovery_password_mismatch/.test(error.message || '')) setAuthMode('forgot', messageFor(error));
       else feedback.textContent = messageFor(error);
     } finally {
-      password.value = '';
-      passwordConfirm.value = '';
+      if (authViewVersion === requestView) {
+        password.value = '';
+        passwordConfirm.value = '';
+      }
       setBusy(false);
     }
   }
@@ -588,6 +602,7 @@
       }
     }).catch(error => {
       console.warn('세션 확인 실패:', error);
+      if (authEventVersion !== initialVersion) return;
       applySession(null);
       resolveAuthEntry(null);
       if (recoveryPending) {

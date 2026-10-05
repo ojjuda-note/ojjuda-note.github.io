@@ -57,7 +57,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         const url = new URL(route.request().url());
         if (url.hostname !== 'fixture.test') return route.abort();
         if (url.pathname === '/world.html') return route.fulfill({contentType:'text/html',body:world});
-        if (url.pathname === '/note/') return route.fulfill({contentType:'text/html',body:stripScripts(read('note/index.html'))});
+        if (url.pathname === '/note/') return route.fulfill({contentType:'text/html',body:stripScripts(read('park/index.html'))});
         if (url.pathname === '/') return route.fulfill({contentType:'text/html',body:stripScripts(read('index.html'))});
         const file = path.join(root, url.pathname);
         if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.abort();
@@ -75,13 +75,14 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.addStyleTag({content:`@font-face{font-family:ViewportQA;src:url(data:font/ttf;base64,${font})}:root{--font-b:ViewportQA,sans-serif;--font-d:ViewportQA,sans-serif}body{font-family:ViewportQA,sans-serif}`});
           await page.evaluate(() => document.fonts.ready);
         }
+        // Park is embedded content: World supplies its only visible navigation.
+        if(source==='note')assert.equal(await page.locator('.bottomnav').isVisible(),false,'Park must not duplicate World navigation');
         // Simulate a 48px system navigation area and a top notch.
         await page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}html{scroll-behavior:auto}'});
         await settle(page);
-        if (viewport.width < 900) {
-          for (const screen of source === 'world' ? ['friends','home','my'] : ['my']) {
-            if (source === 'world') await page.evaluate(tab => worldTest.actions.tab({tab}), screen);
-            else await page.locator('.bottomnav [data-note-my]').click();
+        if (viewport.width < 900 && source === 'world') {
+          for (const screen of ['friends','home','life','my']) {
+            await page.evaluate(tab => worldTest.actions.tab({tab}), screen);
             await settle(page);
             await assertInside(page, page.locator('.bottomnav button').last(), {bottom:viewport.height-48}, `${source}/${screen} navigation`);
           }
@@ -105,7 +106,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         await content.evaluate(node => node.scrollTop = node.scrollHeight);
         assert.ok(await content.evaluate(node => node.scrollHeight <= node.clientHeight + node.scrollTop + 1));
         await close.click();
-        if (viewport.width < 900) {
+        if (viewport.width < 900 && source === 'world') {
           await visibleArea(page, viewport.height-60);
           await assertInside(page, page.locator('.bottomnav button').last(), {bottom:viewport.height-60-48}, `${source} navigation above browser controls`);
           await visibleArea(page, viewport.height);
@@ -136,12 +137,36 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.locator('.spot-game-header button').click();
           await page.evaluate(async () => {
             const {openHouseTest} = await import('/house-test/host.js');
-            window.closeHouse = openHouseTest({owner:'viewport-test',authorized:()=>true});
+            window.closeHouse = openHouseTest({owner:'viewport-test',authorized:()=>true,records:async action=>{if(action==='list')return {folders:[{id:'viewport-folder',name:'추억',visibility:'me'}],friends:[],groups:[],records:[],more:false};return {};}});
           });
           const house = page.frameLocator('iframe[title="우리집"]');
           await house.locator('#app').waitFor({state:'visible'});
-          await assertInside(page, house.locator('nav button').last(), area, 'house navigation');
+          // The records-first house is one scrolling page. Its upper scene and
+          // navigation need not fit at once on a short landscape screen.
+          await house.locator('nav button').last().scrollIntoViewIfNeeded();
+          await assertInside(page, house.locator('nav button').last(), area, 'house navigation after scrolling');
           await snapshot(page, `house-${viewport.width}`);
+          await house.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();
+          await house.getByLabel('노트 글',{exact:true}).fill('키보드가 열린 상태에서도 메뉴와 저장 버튼에 접근해요.');
+          const houseKeyboardHeight=Math.min(300,viewport.height-100);
+          await visibleArea(page,houseKeyboardHeight,30);
+          const houseKeyboardArea={top:54,bottom:houseKeyboardHeight+30-48};
+          const rows=await house.locator('#panel').evaluate(panel=>{
+            const menu=panel.querySelector('#panel-tabs').getBoundingClientRect(),tabs=panel.querySelector('.record-tabs').getBoundingClientRect(),folders=panel.querySelector('.record-folder-strip').getBoundingClientRect();
+            return {menuBottom:menu.bottom,tabsTop:tabs.top,tabsBottom:tabs.bottom,foldersTop:folders.top};
+          });
+          assert.ok(rows.menuBottom<=rows.tabsTop&&rows.tabsBottom<=rows.foldersTop,'house menu, record categories and folders never overlap');
+          for(const [label,control]of [
+            ['house menu above keyboard',house.locator('nav button').last()],
+            ['house categories above keyboard',house.getByRole('tab',{name:'동영상',exact:true})],
+            ['house folders above keyboard',house.locator('[data-folder-id="viewport-folder"]')],
+            ['house save above keyboard',house.getByRole('button',{name:'노트에 저장',exact:true})]
+          ]){
+            await control.scrollIntoViewIfNeeded();
+            await assertInside(page,control,houseKeyboardArea,label);
+          }
+          await snapshot(page,`house-keyboard-${viewport.width}`);
+          await visibleArea(page,viewport.height);
           await page.evaluate(() => closeHouse());
         }
         if (process.env.MOBILE_VIEWPORT_QA_DIR) {

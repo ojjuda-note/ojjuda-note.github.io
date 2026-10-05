@@ -23,7 +23,7 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
   const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-house-playtest-v1:'+houseOwner)));
   const frame=()=>page.frames().find(f=>/\/house-test\/index\.html/.test(f.url()));
   const open=async()=>{await page.locator('#open').click();await page.frameLocator('iframe[title="우리집"]').locator('#app').waitFor({state:'visible'});return frame();};
-  const close=async f=>{await f.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
+  const close=async()=>{await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('iframe'));};
   const baseline={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,furniture:{desk:{direction:'right',x:9,y:3.5},chair:{direction:'left',x:8.3,y:4.825,attachedTo:'desk'}}}],diary:'불러오기 전 기록'};
   await setSave(baseline);const startup=blockNext('chair-v1.runtime.json');await page.locator('#open').click();await waitForRequest(startup.seen);
   const latest=structuredClone(baseline);latest.diary='다른 창에서 방을 여는 동안 저장한 최신 기록';latest.rooms[0].furniture.carpet={direction:'center',x:1,y:3};
@@ -43,7 +43,7 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
   assert.equal(await f.getByRole('button',{name:'의자 놓기',exact:true}).isDisabled(),true,'a pending card cannot submit repeated selections');assert.equal(await f.getByRole('button',{name:'의자 놓기',exact:true}).getAttribute('aria-busy'),'true');
   await f.locator('[data-tab="diary"]').click();selection.release();
   await f.waitForFunction(async module=>(await import(module)).builtInItemReady('chair'),customModule);
-  assert.equal(await f.locator('#diary').isVisible(),true,'a late runtime response cannot reopen the abandoned placement');
+  assert.equal(await f.locator('.record-tabs').isVisible(),true,'a late runtime response cannot reopen the abandoned placement');
   assert.equal(await f.locator('#placement-done').isVisible(),false);assert.equal(await f.locator('[data-furniture="chair"]').count(),0);assert.deepEqual(await readSave(),empty);
   await f.locator('[data-tab="room"]').click();assert.equal(await f.locator('#placement-done').isVisible(),false,'returning to the menu does not revive a cancelled request');
 

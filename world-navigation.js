@@ -1,4 +1,4 @@
-/* World menu history and gestures. Rooms and games keep their own controls. */
+/* Separate bounded swipe sequences for main menus and neighborhood places. */
 (function () {
   'use strict';
   window.OjjudaWorldNavigation = {
@@ -41,36 +41,45 @@
         if (gesture?.surface) gesture.surface.style.transform = '';
         gesture = null;
       };
-      const currentIndex = () => {
-        const index = options.tabs.indexOf(options.currentTab());
-        return index < 0
-          ? options.tabs.indexOf(document.querySelector('.bottomnav [aria-current="page"]')?.dataset.tab)
-          : index;
+      const route = () => {
+        const place = options.currentPlace?.();
+        if (place && options.places?.includes(place)) return {group:'places',items:options.places,current:place,select:options.changePlace};
+        return {group:'main',items:options.tabs,current:options.currentTab(),select:options.changeTab};
       };
-      const swipeZone = target => {
-        const zone = target.closest?.('.main, .topbar, .bottomnav');
-        if (!zone || [...document.querySelectorAll('#modal-root:not(:empty), [role="dialog"], .gaming')]
+      const sameRoute = previous => {const next=route();return next.group===previous.group&&next.current===previous.current;};
+      const atEnd = (path, direction) => {const index=path.items.indexOf(path.current);return index<0||index+direction<0||index+direction>=path.items.length;};
+      const step = direction => {
+        if(direction!==1&&direction!==-1)return false;
+        const path=route();
+        if(atEnd(path,direction)||!options.canLeave())return false;
+        path.select(path.items[path.items.indexOf(path.current)+direction]);return true;
+      };
+      const swipeZone = (target, doc=document, canStart=()=>true) => {
+        if(!canStart())return null;
+        const zone = doc===document?target.closest?.('.main, .topbar, .bottomnav'):document.querySelector('.main');
+        if (!zone || [...new Set([document,doc])].flatMap(root=>[...root.querySelectorAll('#modal-root:not(:empty), [role="dialog"], .gaming')])
           .some(element => element.getClientRects().length)) return null;
         // These surfaces already use drag, pinch, selection or media controls.
-        if (target.closest('.stage,.av-preview,canvas,video,audio,input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-world-swipe="off"]')) return null;
+        if (target.closest('.stage:not(.place-art-stage),.av-preview,canvas,video,audio,input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-world-swipe="off"],#feed.note-feed-swipe,.note-photo-gallery')) return null;
         for (let node=target; node && node!==zone; node=node.parentElement) {
           if (node.scrollWidth > node.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(node).overflowX)) return null;
         }
         return zone;
       };
-      const start = (event, point, kind) => {
+      const start = (event, point, kind, doc, canStart) => {
         reset();
         suppressClickUntil = 0;
         if (returning) return;
-        const zone=swipeZone(event.target);
+        const zone=swipeZone(event.target,doc,canStart);
         if (!zone) return;
         gesture = {id: kind==='touch' ? point.identifier : point.pointerId,
-          x:point.clientX,y:point.clientY,kind,time:performance.now(),horizontal:false,
-          surface: zone.closest('.main') || document.querySelector('.main')};
+          x:point.clientX,y:point.clientY,kind,horizontal:false,
+          route:route(),surface: zone.closest('.main') || document.querySelector('.main')};
       };
       const move = (event, point) => {
         const g = gesture;
         if (!g) return;
+        if(!sameRoute(g.route)){reset();return;}
         const dx = point.clientX - g.x, dy = point.clientY - g.y;
         if (!g.horizontal) {
           if (Math.abs(dy) > 12 && Math.abs(dy) >= Math.abs(dx)) { reset(); return; }
@@ -78,8 +87,8 @@
           g.horizontal = true;
         }
         if (event.cancelable) event.preventDefault();
-        if (dx < 0 && currentIndex() === options.tabs.length - 1) {
-          if (g.surface) g.surface.style.transform = `translateX(${Math.max(-32, dx * .18)}px)`;
+        if (atEnd(g.route,dx < 0 ? 1 : -1)) {
+          if (g.surface) g.surface.style.transform = `translateX(${Math.max(-32,Math.min(32,dx * .18))}px)`;
           return;
         }
         if (g.surface) g.surface.style.transform = `translateX(${Math.max(-100, Math.min(100, dx * .55))}px)`;
@@ -90,11 +99,11 @@
         const dx = point.clientX - g.x, dy = point.clientY - g.y;
         const draggedTransform = g.surface?.style.transform;
         reset();
-        if (!g.horizontal) return;
+        if (!g.horizontal||!sameRoute(g.route)) return;
         suppressClickUntil = performance.now() + 400;
-        const tabs = options.tabs, index = currentIndex();
-        // Give the final menu a little resistance, then return without changing tabs.
-        if (dx < 0 && index === tabs.length - 1) {
+        const direction=dx < 0 ? 1 : -1;
+        // Both ends resist a little and settle without leaving their sequence.
+        if (atEnd(g.route,direction)) {
           if (draggedTransform && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
             edgeReturn = g.surface.animate(
               [{transform: draggedTransform}, {transform: 'translateX(0)'}],
@@ -102,11 +111,8 @@
           }
           return;
         }
-        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || performance.now() - g.time > 1200) return;
-        if (!options.canLeave()) return;
-        if (dx > 0 && options.isMain() && options.openNote) { options.openNote(); return; }
-        if (index < 0) return;
-        options.changeTab(tabs[(index + (dx < 0 ? 1 : -1) + tabs.length) % tabs.length]);
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        if (!step(direction)) return;
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
           document.querySelector('.main')?.animate(
             [{transform: `translateX(${dx < 0 ? 35 : -35}px)`, opacity: .7}, {transform: 'translateX(0)', opacity: 1}],
@@ -115,45 +121,51 @@
       };
       // Touch listeners retain vertical scrolling and nested horizontal scrollers;
       // a blanket touch-action on .main would disable their native gestures.
-      document.addEventListener('touchstart',event=>{
+      function attachDocument(doc,canStart=()=>true){
+        const removers=[];const listen=(type,fn,options)=>{doc.addEventListener(type,fn,options);removers.push(()=>doc.removeEventListener(type,fn,options));};
+      listen('touchstart',event=>{
         if(event.touches.length!==1){reset();return}
-        start(event,event.touches[0],'touch');
+        start(event,event.touches[0],'touch',doc,canStart);
       },{passive:true});
-      document.addEventListener('touchmove',event=>{
+      listen('touchmove',event=>{
         if(event.touches.length!==1){reset();return}
         if(gesture?.kind==='touch' && event.touches[0].identifier===gesture.id)move(event,event.touches[0]);
       },{passive:false});
-      document.addEventListener('touchend',event=>{
+      listen('touchend',event=>{
         if(event.touches.length){reset();return}
         const point=[...event.changedTouches].find(point=>point.identifier===gesture?.id);
         if(point && gesture?.kind==='touch')finish(point);
       },{passive:true});
-      document.addEventListener('touchcancel',reset,{passive:true});
-      document.addEventListener('pointerdown',event=>{
+      listen('touchcancel',reset,{passive:true});
+      listen('pointerdown',event=>{
         if(event.pointerType==='touch')return;
         if(event.isPrimary===false){reset();return}
-        if(event.button===0)start(event,event,'pointer');
+        if(event.button===0)start(event,event,'pointer',doc,canStart);
       });
-      document.addEventListener('pointermove',event=>{
+      listen('pointermove',event=>{
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)move(event,event);
       },{passive:false});
-      document.addEventListener('pointerup',event=>{
+      listen('pointerup',event=>{
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)finish(event);
       });
-      document.addEventListener('pointercancel',event=>{
+      listen('pointercancel',event=>{
         if(gesture?.kind==='pointer' && event.pointerId===gesture.id)reset();
       });
-      document.addEventListener('dragstart', event => {
-        if (swipeZone(event.target)) event.preventDefault();
+      listen('dragstart', event => {
+        if (swipeZone(event.target,doc,canStart)) event.preventDefault();
       });
-      document.addEventListener('click', event => {
+      listen('click', event => {
         if (event.detail && performance.now() < suppressClickUntil) {
           suppressClickUntil = 0;
           event.preventDefault(); event.stopImmediatePropagation();
         }
       }, true);
-      window.addEventListener('blur', reset);
-      return {sync, back};
+
+        doc.defaultView?.addEventListener('blur',reset);
+        return ()=>{reset();for(const remove of removers)remove();doc.defaultView?.removeEventListener('blur',reset);};
+      }
+      attachDocument(document);
+      return {sync, back, attachDocument, step};
     }
   };
 })();

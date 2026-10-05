@@ -1,8 +1,8 @@
-import {floorPoint,roomPoint} from './model.js?v=20261004-chairrightrear1';
-import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261004-chairrightrear1';
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261004-chairrightrear1';
-import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261004-chairrightrear1';
-import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261004-chairrightrear1';
+import {floorPoint,roomPoint} from './model.js?v=20261005-sofabook1';
+import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261005-sofabook1';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-sofabook1';
+import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261005-sofabook1';
+import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261005-sofabook1';
 
 // Keep the authored image plane and drape registrations unchanged. Independent
 // coordinates translate their support origin; elevation moves only room z.
@@ -17,7 +17,16 @@ export function sofaAccessoryLayers(id,placement){
   return [{id,image:asset.image,triangles:drape.surface,sofaSurface:true},{id:id+'-front',image:asset.image,triangles:drape.front}];
  }
  const seat=SOFA_CUSHION_SEATS[id],n=4,triangles=[],[sx,sy,sw,sh]=asset.sourceRect;
+ const onFloor=elevation===0,angle=({'cream-floral-cushion':-19,'sage-cushion':16,'peach-cushion':-27,'pink-check-cushion':23}[id]+{left:-12,center:0,right:12}[direction])*Math.PI/180;
+ const cos=Math.cos(angle),sin=Math.sin(angle),extent=Math.abs(cos)+Math.abs(sin);
+ const floorWidth=direction==='center'?spec.width:spec.depth,floorDepth=direction==='center'?spec.depth:spec.width;
  const point=(s,t)=>{
+  if(onFloor){
+   // Lay the existing drawing on the room plane, with each cushion turned a
+   // little differently. The rotated pixels stay inside its reserved area.
+   const u=s-.5,v=t-.5,x=placement.x+floorWidth*(.5+(u*cos-v*sin)/extent),y=placement.y+floorDepth*(.5+(u*sin+v*cos)/extent);
+   return roomPoint(x,y,.14*(1-t));
+  }
   const u=seat.u+(s-.5)*seat.width,v=seat.v+(direction==='left'?.48:direction==='right'?-.48:0)*(s-.5);
   const x=direction==='center'?u:direction==='left'?v:1.5-v,y=direction==='center'?v:direction==='left'?3.5-u:u;
   return project(origin.x+x,origin.y+y,seat.bottom+(1-t)*seat.height);
@@ -26,7 +35,7 @@ export function sofaAccessoryLayers(id,placement){
   const corners=[[x/n,y/n],[(x+1)/n,y/n],[(x+1)/n,(y+1)/n],[x/n,(y+1)/n]];
   for(const indices of [[0,1,2],[0,2,3]])triangles.push({source:indices.map(i=>[sx+corners[i][0]*sw,sy+corners[i][1]*sh]),target:indices.map(i=>point(...corners[i]))});
  }
- return [{id,image:asset.image,triangles,sofaSurface:true}];
+ return [{id,image:asset.image,triangles,sofaSurface:!onFloor}];
 }
 export function sofaAccessoryArtwork(item,placement,contact,size){
  const layers=sofaAccessoryLayers(item.accessoryId,placement),points=layers.flatMap(layer=>layer.triangles.flatMap(triangle=>triangle.target));

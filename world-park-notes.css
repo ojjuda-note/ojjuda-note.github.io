@@ -1,0 +1,16 @@
+/* World owns the viewport; only the card content scrolls in Park. */
+html.world-park-active,html.world-park-active body{height:100%;overflow:hidden;overscroll-behavior:none}
+.world-park-active #app{position:fixed;top:var(--app-viewport-top,0px);left:0;right:0;height:var(--app-viewport-height,100dvh);display:flex;flex-direction:column;overflow:hidden}
+.world-park-active #app>.shell{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+.world-park-active #app>.shell>.col{display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden}
+.world-park-active .col>.topbar{flex:none;padding-bottom:10px}
+.world-park-active .col>main.main{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;max-width:none;padding:0;overflow:hidden}
+.world-park-active .main>.notice-bar{flex:none;margin:4px 14px}
+.world-park-active #app>.bottomnav{position:relative;inset:auto;flex:none}
+.park-app{position:relative;display:flex;flex:1;min-height:0;width:100%;margin:0;border:0;border-radius:0;box-shadow:none;background:transparent;overflow:hidden}
+.park-app-slot{display:flex;flex:1;min-width:0;min-height:0}
+.park-app iframe{display:block;flex:1;width:100%;height:100%;min-height:0;border:0;background:transparent}
+.park-compose-fab{position:absolute;right:18px;bottom:18px;z-index:5;display:flex;align-items:center;gap:5px;border:0;border-radius:30px;padding:12px 18px;background:var(--accent,#f0679a);color:var(--on-accent,#171429);font-family:inherit;font-size:15px;font-weight:700;line-height:1.3;box-shadow:0 5px 18px #e9589440;cursor:pointer}
+.park-compose-fab>span{font-size:24px;font-weight:400}.park-compose-fab[hidden]{display:none}
+.park-menu-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.park-menu-actions>.btn{min-height:44px;white-space:normal}
+@media(max-width:380px){.park-compose-fab{right:14px;bottom:14px;padding:10px 15px}}

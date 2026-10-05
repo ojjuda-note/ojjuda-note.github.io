@@ -84,13 +84,22 @@ const handler=createHandler({env:k=>({SUPABASE_URL:'https://test.invalid',SUPABA
   if(body.p_action==='round')return new Response(JSON.stringify({ok:true,round,settled,gold:storedGold}));
   assert.equal(body.p_action,'settle');mutations++;storedGold=body.p_gold;settled=true;return new Response(JSON.stringify({ok:true,gold:storedGold}));
 }});
-const request=(actions,version=4)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer test',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-9000-000000000001',rules_version:version,actions,first_ppuk_gold:999999})}));
+const request=(actions,version=5)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer test',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-9000-000000000001',rules_version:version,actions,first_ppuk_gold:999999})}));
 assert.equal((await request(partial)).status,409);assert.equal(mutations,0);assert.equal(storedGold,5000);
 assert.equal((await request(complete)).status,200);assert.equal(mutations,1);
 assert.equal((await request(complete)).status,200);assert.equal(mutations,1,'duplicate final request cannot pay again');
 assert.equal(storedGold,(await verifyRound(round,complete)).gold,'the client cannot choose a reward amount');
 const {verifyRound:verifyV2Round}=await import('../supabase/functions/matgo/verify-v2.mjs');
+const legacy=await import('../supabase/functions/matgo/engine-v2.mjs');
+let oldGame;
+oldGame=new legacy.Game({event:async()=>{},choose:async(p,ids)=>legacy.aiChoose(oldGame,p,ids),goStop:async(p,s)=>p===1?legacy.aiGoStop(oldGame,p,s):'stop'});
+oldGame.random=legacy.seededRandom(round.seed);oldGame.deal();
+while(!oldGame.over){
+  const pending=oldGame.pendingChongtong();if(pending){await oldGame.declareChongtong(pending.p,'win');continue;}
+  const p=oldGame.turn,card=p===1?legacy.aiChooseCard(oldGame,p):oldGame.hand[p][0]||null;
+  await oldGame.play(p,card);
+}
 settled=false;mutations=0;
-assert.equal((await request(complete,2)).status,200);assert.equal(mutations,1);
-assert.equal(storedGold,(await verifyV2Round(round,complete)).gold,'older open pages keep their original settlement rules');
+assert.equal((await request(oldGame.actions,2)).status,200);assert.equal(mutations,1);
+assert.equal(storedGold,(await verifyV2Round(round,oldGame.actions)).gold,'older open pages keep their original settlement rules');
 console.log(`PASS: ${cases} opening-ppuk cases, deferred-only gold, flat reward, aggregate/clamped settlement, abandoned round denial and single final server payment`);

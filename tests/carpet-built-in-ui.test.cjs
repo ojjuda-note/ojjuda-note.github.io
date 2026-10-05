@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.CARPET_PROOF_DIR||path.resolve(root,'../carpet-deploy-proof');
 const proofFont=process.env.CARPET_PROOF_FONT;
-const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261004-chairrightrear1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'carpet-built-in',authorized:()=>true});</script></body></html>`;
+const parent=`<!doctype html><html><body><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=20261005-sofabook1';document.querySelector('#open').onclick=()=>openHouseTest({owner:'carpet-built-in',authorized:()=>true});</script></body></html>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
@@ -35,7 +35,7 @@ const parent=`<!doctype html><html><body><button id="open">우리집</button><sc
    await f.locator(`[data-furniture="carpet"][data-direction="${direction}"][data-render-state="ready"]`).waitFor();
    const image=await f.locator('[data-furniture="carpet"] canvas').evaluate(canvas=>({width:canvas.width,height:canvas.height,visible:canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((v,i)=>i%4===3&&v>0)}));
    assert(image.width>0&&image.height>0&&image.visible,`${direction} carpet must draw actual pixels`);
-   const geometry=await f.locator('[data-furniture="carpet"]').evaluate(async el=>{const {furnitureGeometry}=await import('/house-test/furniture.js?v=20261004-chairrightrear1');const g=furnitureGeometry('carpet',{direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)});return {anchors:g.anchors,footprint:g.footprint};});
+   const geometry=await f.locator('[data-furniture="carpet"]').evaluate(async el=>{const {furnitureGeometry}=await import('/house-test/furniture.js?v=20261005-sofabook1');const g=furnitureGeometry('carpet',{direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y)});return {anchors:g.anchors,footprint:g.footprint};});
    assert.equal(geometry.anchors.length,4);assert.deepEqual(geometry.anchors,geometry.footprint,`${direction} carpet handles must mark the floor footprint rather than transparent image padding`);
   }
   await range(f,'#bookshelf-gap',1);await range(f,'#bookshelf-depth',0);

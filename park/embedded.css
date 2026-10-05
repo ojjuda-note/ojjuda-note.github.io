@@ -1,0 +1,16 @@
+/* World supplies the only header, navigation, wallet and writing button. */
+html { overscroll-behavior-y: contain; scroll-padding-bottom: 24px; }
+body { min-height: 0; background: var(--bg); }
+html body .shell { display: block; min-height: 0; grid-template-columns: minmax(0, 1fr); }
+html body .shell > .side,
+html body .shell > .col > .mobile-top,
+html body .shell .bottomnav,
+html body .shell .write-fab,
+html body #note-my-screen { display: none !important; }
+html body .shell > .col { min-width: 0; margin: 0; }
+html body .shell > .col > .main { width: min(100%, 1120px); margin: 0 auto; padding: 12px 14px 72px; }
+html body.note-my-open .main > :not(.note-my-screen):not([hidden]) { display: block !important; }
+html body .back-button { margin-top: 4px; }
+@media (min-width: 900px) {
+  html body .shell > .col > .main { padding: 16px 24px 72px; }
+}

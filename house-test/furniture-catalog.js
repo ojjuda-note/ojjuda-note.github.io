@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261004-chairrightrear1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261004-chairrightrear1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-sofabook1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-sofabook1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,6 +26,42 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
+ 'open-book':{label:'크림 펼친 책',shortLabel:'펼친 책',width:1.25,depth:.8,height:.12,depthFill:1,introduced:26,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/open-book-center-preview-v1.png',
+  preferred:{direction:'left',x:.1,y:3.55,elevation:1.4},preferredViews:{left:{direction:'left',x:.1,y:3.55,elevation:1.4},center:{direction:'center',x:4.74,y:.1,elevation:1.4},right:{direction:'right',x:9.1,y:4.25,elevation:1.4}},
+  clearance:'책상 앞에 앉아 읽는 방향으로 놓는 책이에요. 가구와 맞지 않으면 바닥에 놓을 수 있어요.'},
+ 'pencil-cup':{label:'크림 연필꽂이',shortLabel:'연필꽂이',width:.5,depth:.5,height:.65,depthFill:1,introduced:25,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/pencil-cup-center-preview-v1.png',
+  preferred:{direction:'left',x:.2,y:3.4,elevation:1.4},preferredViews:{left:{direction:'left',x:.2,y:3.4,elevation:1.4},center:{direction:'center',x:5.8,y:.2,elevation:1.4},right:{direction:'right',x:9.2,y:5.1,elevation:1.4}},
+  clearance:'책상 위에 놓는 연필꽂이예요. 가구와 맞지 않으면 바닥에 놓을 수 있어요.'},
+ 'table-succulent':{label:'원목 사각 다육이',shortLabel:'작은 다육이',width:.7,depth:.7,height:.25,depthFill:1,introduced:24,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/table-succulent-center-preview-v1.png',
+  preferred:{direction:'left',x:3.15,y:4.05,elevation:.6},preferredViews:{left:{direction:'left',x:3.15,y:4.05,elevation:.6},center:{direction:'center',x:4.25,y:4.75,elevation:.6},right:{direction:'right',x:6.05,y:4.05,elevation:.6}},
+  clearance:'테이블 위에 놓는 작은 다육이예요. 높이를 조절할 수 있고, 테이블을 옮기면 화분도 따로 옮겨 주세요.'},
+ 'table-books':{label:'크림·세이지 책 두 권',shortLabel:'책 두 권',width:1.1,depth:1.1,height:.1,depthFill:1,introduced:23,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/table-books-center-preview-v1.png',
+  preferred:{direction:'left',x:2.7,y:4.8,elevation:.6},preferredViews:{left:{direction:'left',x:2.7,y:4.8,elevation:.6},center:{direction:'center',x:3.25,y:4.4,elevation:.6},right:{direction:'right',x:5.7,y:4.8,elevation:.6}},
+  clearance:'두 권이 함께 움직이는 책 소품이에요. 높이를 조절할 수 있고, 테이블을 옮기면 책도 따로 옮겨 주세요.'},
+ 'clover-mug':{label:'크림 클로버 머그컵',shortLabel:'클로버 머그컵',width:.5,depth:.5,height:.4,depthFill:1,introduced:22,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/clover-mug-center-preview-v1.png',
+  preferred:{direction:'left',x:2.9,y:4.6,elevation:.6},preferredViews:{left:{direction:'left',x:2.9,y:4.6,elevation:.6},center:{direction:'center',x:3.7,y:4.5,elevation:.6},right:{direction:'right',x:5.9,y:4.6,elevation:.6}},
+  clearance:'테이블 위에 놓는 작은 머그컵이에요. 높이를 조절할 수 있고, 테이블을 옮기면 컵도 따로 옮겨 주세요.'},
+ 'table-plant':{label:'크림 협탁 화분',shortLabel:'협탁 화분',width:.6,depth:.6,height:1.45,depthFill:1,introduced:21,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/table-plant-center-preview-v1.png',
+  preferred:{direction:'left',x:.03,y:5.7,elevation:.9},preferredViews:{left:{direction:'left',x:.03,y:5.7,elevation:.9},center:{direction:'center',x:4.7,y:4.53,elevation:.9},right:{direction:'right',x:9.363333,y:5.7,elevation:.9}},
+  clearance:'협탁 위에 놓는 작은 화분이에요. 높이를 조절할 수 있고, 협탁을 옮기면 화분도 따로 옮겨 주세요.'},
+ 'botanical-frame':{label:'원목 잎사귀 액자',shortLabel:'원목 액자',width:1.2,depth:.1,height:1.9,depthFill:1,introduced:20,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',wallMounted:true,picture:'made',preview:'assets/botanical-frame-center-preview-v1.png',
+  preferred:{direction:'left',x:0,y:3,elevation:2.1},preferredViews:{left:{direction:'left',x:0,y:3,elevation:2.1},center:{direction:'center',x:0,y:0,elevation:2.1},right:{direction:'right',x:9.9,y:3.5,elevation:2.1}},
+  clearance:'벽을 선택하고 위치와 높이를 조절해요. 창문과 높은 가구를 피해 걸어 주세요.'},
+ 'window-plant':{label:'크림 화분과 원목 받침',shortLabel:'창가 화분',width:2,depth:2,height:2.8,depthFill:1,introduced:19,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/window-plant-center-preview-v1.png',
+  preferred:{direction:'right',x:8,y:.5},preferredViews:{left:{direction:'left',x:0,y:.5},center:{direction:'center',x:4,y:0},right:{direction:'right',x:8,y:.5}},
+  clearance:'화분과 원목 받침을 함께 놓아요. 잎이 펼쳐질 공간을 두고 다른 가구와 겹치지 않게 놓아 주세요.'},
+ 'desk-lamp':{label:'크림 원목 탁상 조명',shortLabel:'탁상 조명',width:.9,depth:.9,height:1,depthFill:1,introduced:18,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/desk-lamp-center-preview-v1.png',
+  preferred:{direction:'right',x:9,y:3.5,elevation:1.4},preferredViews:{left:{direction:'left',x:0,y:4,elevation:1.4},center:{direction:'center',x:4,y:0,elevation:1.4},right:{direction:'right',x:9,y:3.5,elevation:1.4}},
+  clearance:'책상 위에 놓는 작은 조명이에요. 높이를 조절할 수 있고, 책상을 옮기면 조명도 따로 옮겨 주세요.'},
  'floor-lamp':{label:'크림 원목 스탠드 조명',shortLabel:'스탠드 조명',width:1.5,depth:1.5,height:2.8,depthFill:1,introduced:17,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/floor-lamp-center-preview-v1.png',
   preferred:{direction:'left',x:0,y:1.5},preferredViews:{left:{direction:'left',x:0,y:1.5},center:{direction:'center',x:4,y:2.5},right:{direction:'right',x:7.5,y:1.5}},
@@ -99,7 +135,7 @@ export function itemSize(id,direction,placement){
  return direction==='center'?{w:spec.width,d:spec.depth}:{w:spec.depth,d:spec.width};
 }
 export function itemLayer(id,placement){return isBlanket(id)?blanketMode(id,placement)==='sofa'?'surface':'floor':FURNITURE[id]?.layer;}
-export function itemHeight(id,placement){return isBlanket(id)?blanketSpec(blanketMode(id,placement)).height:FURNITURE[id]?.height;}
+export function itemHeight(id,placement){if(FURNITURE[id]?.picture==='sofa-accessory'&&(placement?.elevation??0)===0)return .14;return isBlanket(id)?blanketSpec(blanketMode(id,placement)).height:FURNITURE[id]?.height;}
 export function contactBounds(id,s){
  const item=FURNITURE[id],size=itemSize(id,s.direction,s);if(!item||!size)return null;
  // Keep the entire rear edge on the reservation's grid corners. Only the

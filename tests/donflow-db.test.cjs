@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{PGlite}=require('@electric-sql/pglite');
+(async()=>{const db=new PGlite();try{
+ const a='10000000-0000-0000-0000-000000000001',b='10000000-0000-0000-0000-000000000002',r1='20000000-0000-0000-0000-000000000001',r2='20000000-0000-0000-0000-000000000002',payload=JSON.stringify({version:1,tables:{categories:[],transactions:[]}});
+ await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);insert into auth.users values('${a}'),('${b}');create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth,public to authenticated,anon;`);
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261004131220_life_donflow.sql'),'utf8'));
+ await db.exec(`set role authenticated;set request.jwt.claim.sub='${a}'`);
+ const save=(prev,next,p=payload)=>db.query('select life_donflow_save($1,$2,$3) as revision',[prev,next,p]);
+ assert.equal((await save(null,r1)).rows[0].revision,r1);
+ assert.equal((await save(null,r1)).rows[0].revision,r1,'retry is idempotent');
+ await assert.rejects(save(null,r2),e=>e.code==='40001');
+ await save(r1,r2);await assert.rejects(save(r1,r1),e=>e.code==='40001');
+ await assert.rejects(db.exec(`update life_donflow_snapshots set user_id='${b}'`));
+ await db.exec(`set request.jwt.claim.sub='${b}'`);assert.equal((await db.query('select * from life_donflow_snapshots')).rows.length,0);
+ await assert.rejects(db.query('insert into life_donflow_snapshots(user_id,revision,payload) values($1,$2,$3)',[a,r1,payload]));
+ await assert.rejects(save(null,r1,'{"version":2,"tables":{}}'));
+ await assert.rejects(save(null,r1,'{}'));
+ await db.exec('set role anon');await assert.rejects(db.query('select * from life_donflow_snapshots'));await assert.rejects(save(null,r1));
+ await db.exec(`reset role;delete from auth.users where id='${a}'`);assert.equal((await db.query('select * from life_donflow_snapshots')).rows.length,0);
+ console.log('PASS DonFlow: own-account RLS, anonymous denial, idempotent retry, stale save conflict, validation and account deletion');
+}finally{await db.close()}})().catch(e=>{console.error(e);process.exitCode=1});

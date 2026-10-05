@@ -1,6 +1,6 @@
-import {setDraftOwner} from './draft-store.js?v=20261004-chairrightrear1';
-import {validateRuntime} from './runtime.js?v=20261004-chairrightrear1';
-import {loadBundledExample} from './example-project.js?v=20261004-chairrightrear1';
+import {setDraftOwner} from './draft-store.js?v=20261005-sofabook1';
+import {validateRuntime} from './runtime.js?v=20261005-sofabook1';
+import {loadBundledExample} from './example-project.js?v=20261005-sofabook1';
 let connected=false,port,alive=false,pending=new Map(),editor,operating=false,closingRequest=null;
 function request(type,payload={}){
  if(!alive)return Promise.reject(new Error('관리자 모드에서 제작실을 다시 열어 주세요.'));
@@ -20,7 +20,7 @@ window.addEventListener('message',async event=>{
   }
   const p=pending.get(d?.requestId);if(p){clearTimeout(p.timer);pending.delete(d.requestId);d.error?p.reject(new Error(d.error)):p.resolve(d);}};
  try{
-  editor=await import('./app.js?v=20261004-chairrightrear1');if(!alive)return;
+  editor=await import('./app.js?v=20261005-sofabook1');if(!alive)return;
   document.querySelector('#studio-locked').hidden=true;document.querySelector('#studio-editor').hidden=false;window.dispatchEvent(new Event('resize'));
   const operate=async task=>{
    if(operating||!alive)return;operating=true;
@@ -33,7 +33,7 @@ window.addEventListener('message',async event=>{
   const run=async(type)=>{const button=document.querySelector(type==='apply'?'#studio-apply':'#studio-preview');button.disabled=true;try{const bundle=editor.studioBundle();validateRuntime(bundle.runtime);await request(type,bundle);editor.studioMessage(type==='apply'?'우리집 아이템 목록에 등록했어요. 원하는 위치에 놓고 배치 완료를 눌러 주세요.':'우리집 미리보기를 열었어요.');}catch(e){editor.studioMessage(e.message);}finally{editor.studioRefresh();}};
   document.querySelector('#studio-apply').onclick=()=>operate(()=>run('apply'));
   document.querySelector('#studio-preview').onclick=()=>operate(()=>run('preview'));
-  document.querySelector('#studio-side-table').onclick=()=>operate(async()=>{const project=await loadBundledExample(new URL('./examples/side-table.furniture-set.json?v=20261004-chairrightrear1',import.meta.url));if(alive)await editor.studioRestore(project);});
+  document.querySelector('#studio-side-table').onclick=()=>operate(async()=>{const project=await loadBundledExample(new URL('./examples/side-table.furniture-set.json?v=20261005-sofabook1',import.meta.url));if(alive)await editor.studioRestore(project);});
   document.querySelector('#studio-home').onclick=()=>operate(()=>request('home'));
   document.querySelector('#studio-open-saved').onclick=()=>operate(async()=>{const id=document.querySelector('#studio-saved-items').value;if(!id)return;const result=await request('project',{id});if(alive)await editor.studioRestore(result.project);});
   const refresh=async()=>{try{const result=await request('list');const select=document.querySelector('#studio-saved-items');select.replaceChildren(new Option('등록한 제작 아이템 다시 열기',''),...result.items.map(i=>new Option(i.name,i.id)));}catch(e){editor.studioMessage(e.message);}};

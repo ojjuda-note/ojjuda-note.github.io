@@ -1,5 +1,5 @@
-import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261004-chairrightrear1';
-import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261004-chairrightrear1';
+import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261005-sofabook1';
+import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261005-sofabook1';
 const $=id=>document.getElementById(id);
 // Presentation and recovery only. The app remains the owner of project changes.
 export function mountSimpleEditor(api){
@@ -20,7 +20,6 @@ export function mountSimpleEditor(api){
  $('finish-outline').closest('details').open=false;
  $('mode-toggle').onclick=()=>{const simple=document.body.dataset.mode!=='simple';document.body.dataset.mode=simple?'simple':'advanced';$('mode-toggle').textContent=simple?'고급 설정':'간편 모드';$('mode-toggle').setAttribute('aria-pressed',String(!simple));api.mode(simple);sync();};
  $('quick-undo').onclick=()=>$('undo').click();
- $('ai-details-toggle').onclick=()=>{const panel=document.querySelector('.ai-panel'),expanded=panel.classList.toggle('expanded');$('ai-details-toggle').setAttribute('aria-expanded',String(expanded));};
  const sync=()=>{
   const {state,image,pending}=api.get();$('quick-undo').disabled=$('undo').disabled;document.body.dataset.tool=api.get().tool;
   let text=!image?'그림을 넣으면 방향·부위 구성을 준비해요.':state.dimensionStatus==='suggested'?'종류별 크기는 임시 추천값입니다.':'기존 크기와 편집 내용을 유지합니다.';

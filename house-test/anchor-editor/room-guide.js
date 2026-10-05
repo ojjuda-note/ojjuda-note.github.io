@@ -1,14 +1,15 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261004-chairrightrear1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-sofabook1';
 
 export {ROOM,FLOOR,roomPoint};
 
 /** Clockwise corners of a furniture plane in the room's existing world units. */
-export function roomPlaneWorld({plane='top',direction='right',x=9,y=3.5,width=3,depth=1,height=1.4}={}){
+export function roomPlaneWorld({plane='top',direction='right',x=9,y=3.5,width=3,depth=1,height=1.4,elevation=0}={}){
  if(!['top','front','side'].includes(plane))throw new RangeError('Unknown furniture plane');
  if(!['right','center','left'].includes(direction))throw new RangeError('Unknown furniture direction');
  if(![x,y,width,depth,height].every(Number.isFinite)||width<=0||depth<=0||height<=0)throw new RangeError('Furniture dimensions must be positive finite numbers');
  const farX=x+(direction==='center'?width:depth),nearY=y+(direction==='center'?depth:width);
- const p=(x,y,z)=>({x,y,z});
+ if(!Number.isFinite(elevation)||elevation<0||elevation+height>ROOM.wallHeight+1e-6)throw new RangeError('Invalid surface elevation');
+ const p=(x,y,z)=>({x,y,z:z+elevation});
  if(plane==='top')return [p(x,y,height),p(farX,y,height),p(farX,nearY,height),p(x,nearY,height)];
  let a,b;
  if(plane==='front'){

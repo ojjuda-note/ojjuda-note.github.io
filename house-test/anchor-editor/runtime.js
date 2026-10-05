@@ -1,11 +1,11 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261004-chairrightrear1';
-import {validQuad,drawWarp} from './warp.js?v=20261004-chairrightrear1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261004-chairrightrear1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261004-chairrightrear1';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261004-chairrightrear1';
-import {drawDrapedLayer} from './draped-parts.js?v=20261004-chairrightrear1';
-import {alphaBounds} from './cutout.js?v=20261004-chairrightrear1';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-sofabook1';
+import {validQuad,drawWarp} from './warp.js?v=20261005-sofabook1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-sofabook1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-sofabook1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-sofabook1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261005-sofabook1';
+import {alphaBounds} from './cutout.js?v=20261005-sofabook1';
 
 const directions=['left','center','right'],unit=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}];
 const fail=message=>{throw new Error(message);};
@@ -25,12 +25,13 @@ function imageData(data){
 }
 export function validateRuntime(value){
  if(value?.format!=='ojjuda-runtime-furniture'||value.version!==1||typeof value.name!=='string'||!value.name.trim()||value.name.length>80)fail('완성한 가구 정보를 확인해 주세요.');
- if(!['standing','floor'].includes(value.layer))fail('바닥에 놓는 가구 또는 소품을 선택해 주세요.');
+ if(!['standing','floor','surface'].includes(value.layer))fail('가구 또는 소품의 놓을 곳을 확인해 주세요.');
  const dims=value.dimensions;
  if(!dims||!['width','depth','height'].every(k=>Number.isFinite(dims[k])&&dims[k]>=.1&&dims[k]<=(k==='height'?4.5:7)))fail('가구 크기를 확인해 주세요.');
  for(const direction of directions){
   const v=value.views?.[direction],p=v?.placement;
   if(!p||p.direction!==direction||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.y<0||p.x+(direction==='center'?dims.width:dims.depth)>10||p.y+(direction==='center'?dims.depth:dims.width)>7||['width','depth','height'].some(k=>p[k]!==dims[k]))fail('세 방향의 크기와 위치가 맞지 않아요.');
+  if(p.elevation!==undefined&&(!Number.isFinite(p.elevation)||p.elevation<0||p.elevation+dims.height>ROOM.wallHeight+1e-6||value.layer!=='surface'&&p.elevation!==0))fail('소품 높이를 확인해 주세요.');
   if(!Array.isArray(v.layers)||v.layers.length>80)fail('그림 면 정보를 확인해 주세요.');
   if(v.mesh)normalizeMesh(v.mesh);
   else if(v.pictureLayers)normalizePictureLayers(v.pictureLayers,v.pictureLayerRules);
@@ -45,6 +46,7 @@ export function validateRuntime(value){
 export function runtimePoseValid(runtime,placement){
  try{
   const v=runtime.views[placement.direction],p={...v.placement,...placement};
+  const elevation=p.elevation??0;if(!Number.isFinite(elevation)||elevation<0||elevation+runtime.dimensions.height>ROOM.wallHeight+1e-6||runtime.layer!=='surface'&&elevation!==0)return false;
   if(v.mesh)return validateMesh(v.mesh,p).ok;
   if(v.pictureLayers)return validatePictureLayers(v.pictureLayers,p,v.pictureLayerRules).ok;
   return v.layers.every(l=>{const t=targets(l,p);return validQuad(t)&&area(t)*area(targets(l,v.placement))>0;});
@@ -73,7 +75,7 @@ export function renderRuntime(prepared,placement){
  let anchors;
  if(v.mesh)anchors=projectMesh(v.mesh,p).points.filter(a=>a.kind==='physical'&&Math.abs(a.world.z)<1e-8).map(a=>a.target);
  else if(v.pictureLayers)anchors=projectPictureLayers(v.pictureLayers,p,v.pictureLayerRules).filter(l=>!l.hidden).flatMap(l=>l.projected.points.filter(a=>a.kind==='physical'&&Math.abs(a.world.z)<1e-8).map(a=>a.target));
- else anchors=v.layers.flatMap(l=>boundWorld(l,p)).filter(w=>Math.abs(w.z)<1e-8).map(w=>roomPoint(w.x,w.y,w.z));
+ else anchors=v.layers.flatMap(l=>boundWorld(l,p)).filter(w=>Math.abs(w.z-(p.elevation??0))<1e-8).map(w=>roomPoint(w.x,w.y,w.z));
  anchors=anchors.filter((p,i,a)=>a.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<.01)===i);
  const result={left:b.x/scale,top:b.y/scale,width:b.width/scale,height:b.height/scale,anchors,canvas};
  if(prepared.cache.size>=3)prepared.cache.delete(prepared.cache.keys().next().value);prepared.cache.set(key,result);return result;

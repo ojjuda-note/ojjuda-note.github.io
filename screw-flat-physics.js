@@ -55,7 +55,9 @@
     if(dist<separation)throw Error('Metal piece screw heads overlap');
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
-  const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃'];
+  const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃','별','나비','구름','초승달','로켓','십자'];
+  const SHAPE_UNLOCKS=[80,140,220,320,450,650];
+  function shapeIndex(L){const extra=SHAPE_UNLOCKS.filter(stage=>L>=stage).length;return extra?(L-SHAPE_UNLOCKS[extra-1]+6+extra)%(7+extra):(L-11+6)%7;}
   const FIRST_SHAPED_STAGE=11,PIECE_INCREASES=[20,35,55,80,115];
   const pieceCount=L=>L<FIRST_SHAPED_STAGE?1+Math.floor(L/2):L<160?7+PIECE_INCREASES.filter(n=>L>=n).length:13+Math.floor((L-160)*37/(LAST_STAGE-160));
   function flowerOutline(first=false){
@@ -78,7 +80,36 @@
     const outside=outline.slice(1).sort((a,b)=>M.Vertices.centre(b).y-M.Vertices.centre(a).y);
     return[...outside.slice(0,4),outline[0],outside[4]];
   }
+  function advancedOutline(index){
+    const points=rows=>rows.map(([x,y])=>({x,y})),mirror=poly=>poly.map(p=>({x:360-p.x,y:p.y})).reverse();let roots;
+    if(index===7){
+      const inner=95,outer=165,half=Math.PI/5;
+      roots=[Array.from({length:5},(_,i)=>{const a=-Math.PI/2+half+i*2*half;return{x:inner*Math.cos(a),y:inner*Math.sin(a)};})];
+      for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*half;roots.push([{x:inner*Math.cos(a-half),y:inner*Math.sin(a-half)},{x:outer*Math.cos(a),y:outer*Math.sin(a)},{x:inner*Math.cos(a+half),y:inner*Math.sin(a+half)}]);}
+    }else if(index===8){
+      const top=points([[156,218],[120,175],[63,154],[35,179],[32,237],[52,282],[156,319]]);
+      const bottom=points([[156,321],[70,316],[43,346],[43,407],[72,455],[115,480],[156,440]]);
+      roots=[top,mirror(top),bottom,mirror(bottom),points([[156,218],[204,218],[204,440],[156,440]])];
+    }else if(index===9){
+      const circle=(x,y,r)=>Array.from({length:48},(_,i)=>({x:x+r*Math.cos(i*Math.PI/24),y:y+r*Math.sin(i*Math.PI/24)}));
+      const left=clipPlane(clipPlane(circle(96,310,64),1,0,100,true),0,1,330,true);
+      const middle=clipPlane(clipPlane(clipPlane(circle(180,290,90),1,0,100,false),1,0,260,true),0,1,330,true);
+      roots=[left,middle,mirror(left),points([[32,330],[328,330],[328,380],[304,429],[270,451],[90,451],[56,429],[32,380]])];
+    }else if(index===10){
+      const tip=points([[240,157],[170,154],[102,181],[61,221],[130,260]]);
+      const middle=points([[61,221],[130,260],[102,317],[32,317],[39,269]]);
+      const lower=poly=>poly.map(p=>({x:p.x,y:634-p.y})).reverse();roots=[tip,middle,lower(middle),lower(tip)];
+    }else if(index===11){
+      const fin=points([[133,302],[133,424],[44,456],[61,386]]);
+      roots=[points([[133,196],[180,151],[227,196],[227,390],[133,390]]),fin,mirror(fin),points([[142,390],[218,390],[228,432],[180,480],[132,432]])];
+    }else{
+      roots=[points([[127,245],[233,245],[233,389],[127,389]]),points([[127,151],[233,151],[233,245],[127,245]]),points([[127,389],[233,389],[233,481],[127,481]]),points([[32,245],[127,245],[127,389],[32,389]]),points([[233,245],[328,245],[328,389],[233,389]])];
+    }
+    const all=roots.flat(),minX=Math.min(...all.map(p=>p.x)),maxX=Math.max(...all.map(p=>p.x)),minY=Math.min(...all.map(p=>p.y)),maxY=Math.max(...all.map(p=>p.y));
+    return roots.map(poly=>poly.map(p=>({x:32+(p.x-minX)*296/(maxX-minX),y:151+(p.y-minY)*330/(maxY-minY)}))).sort((a,b)=>M.Vertices.centre(b).y-M.Vertices.centre(a).y);
+  }
   function shapeOutline(index,firstFlower=false){
+    if(index>=7)return advancedOutline(index);
     const points=rows=>rows.map(([x,y])=>({x,y}));
     if(index===6)return flowerOutline(firstFlower);
     if(index===0)return[points([[95,157],[265,157],[322,225],[310,380],[180,477],[50,380],[38,225]])];
@@ -122,11 +153,12 @@
     return null;
   }
   function makeShapedLevel(L){
-    const count=pieceCount(L),radius=SCREW_RADIUS/(1+Math.max(0,count-18)*.04);
-    const shape=(L-FIRST_SHAPED_STAGE+6)%SHAPE_NAMES.length;let leaves,roots;
+    const count=pieceCount(L),shape=shapeIndex(L),outline=shapeOutline(shape,L===FIRST_SHAPED_STAGE);
+    const area=outline.reduce((sum,poly)=>sum+M.Vertices.area(poly),0),density=shape>=7?Math.min(1,Math.sqrt(area/75000)):1;
+    const radius=SCREW_RADIUS*density/(1+Math.max(0,count-18)*.04);let leaves,roots;
     for(let attempt=0;attempt<12;attempt++){
       const random=seeded(9041+L*7919+attempt*104729);
-      roots=shapeOutline(shape,L===FIRST_SHAPED_STAGE).map(raw=>fitFragment(raw,radius));if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
+      roots=outline.map(raw=>fitFragment(raw,radius));if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
       if(L===FIRST_SHAPED_STAGE){
         // Keep the first flower's centre small and its top mounts high enough to reopen as it falls.
         const centre=roots[4],halves=[false,true].map(low=>fitFragment(clipPlane(centre.raw,1,0,181,low)));

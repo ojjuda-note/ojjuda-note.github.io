@@ -5,7 +5,7 @@ const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-places.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-places.js','world-park-notes.js'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.placeTest={model:$,state:g,enter:xf,sync:Sr,tick:pg,places:Pt,house:H,
@@ -22,15 +22,16 @@ world=world.slice(0,boot)+`
  await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.placeTest);
  async function enter(id){
    await page.evaluate(id=>{placeTest.enter(id,1);placeTest.freeze();},id);
-   await page.waitForSelector('.place-art-ready');
+   if(id==='park')await page.waitForSelector('[data-park-app]');
+   else await page.waitForSelector('.place-art-ready');
  }
- for(const id of ['cafe','library','park','arcade']){
+ for(const id of ['cafe','library','arcade']){
    await enter(id);
    const picture=page.locator('#pstage .place-art-image');
    assert.match(await picture.getAttribute('src'),new RegExp('/'+id+'-20261001\\.webp$'));
    assert.deepEqual(await picture.evaluate(img=>[img.naturalWidth,img.naturalHeight]),[1536,1024]);
    assert.equal(await page.locator('#pstage iframe, #pstage svg, #pstage canvas, #pstage [data-npc], #pstage [data-item]').count(),0,'old actors and furniture are removed');
-   assert.ok(await page.locator('#pmsg').count());
+   assert.equal(await page.locator('#pmsg').count(),id==='park'?0:1,'only park has no chat');
    assert.equal(await page.evaluate(()=>{const random=Math.random;Math.random=()=>0;try{for(let i=0;i<100;i++)placeTest.tick();return placeTest.state.place.npcs.length}finally{Math.random=random}}),0,'offline ticks never regenerate background characters');
    if(id==='library')assert.ok(await page.locator('#quizcard').isVisible());
    await picture.evaluate(img=>img.dataset.retained='yes');
@@ -74,6 +75,8 @@ world=world.slice(0,boot)+`
  rejectPlaceImage=false;await page.locator('.place-art-retry').click();await page.waitForSelector('.place-art-ready');
  await page.locator('[data-act="pl-leave"]').click();assert.equal(await page.locator('#pstage').count(),0);
  await enter('park');
- assert.deepEqual(errors,[]);console.log('PASS: four approved place illustrations, no actor/prop overlays, game buttons, chat, quiz, responsive fit, zoom/pan, retry and navigation');
+ assert.equal(await page.locator('#pstage,#pmsg,.place-art-viewport').count(),0,'Park is the integrated card page without a scene or chat');
+ assert.equal(await page.locator('main.main > [data-park-app]').count(),1,'Park content fills the World page');
+ assert.deepEqual(errors,[]);console.log('PASS: three illustrated places and the integrated Park card page, no actor/prop overlays, game buttons, chat, quiz, responsive fit, zoom/pan, retry and navigation');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

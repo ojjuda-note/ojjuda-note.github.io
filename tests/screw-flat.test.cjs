@@ -43,13 +43,13 @@ function clearSupports(game){
 }
 let purchases=0,ends=0;const api={setScore(){},end(){ends++;},buyScrew(){purchases++;}};
 storage.set('ojjuda-screw-stage','37');
-let last=0,maxScrews=0;const shapes=new Set(),cornerCounts=new Set();
+let last=0,maxScrews=0;const shapes=new Set(),cornerCounts=new Set(),firstShape=new Map();
 assert.equal(LAST_STAGE,1000);assert.equal(P.LAST_STAGE,LAST_STAGE);
 // All layouts use only three spare holes above the picture, never beside it.
 for(let stage=1;stage<=LAST_STAGE;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
  assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
- if(stage>=11){assert.ok(P.SHAPE_NAMES.includes(st.level.shape));shapes.add(st.level.shape);}
+ if(stage>=11){assert.ok(P.SHAPE_NAMES.includes(st.level.shape));shapes.add(st.level.shape);if(!firstShape.has(st.level.shape))firstShape.set(st.level.shape,stage);}
  assert.equal(st.level.holes.length-st.level.screws.length,3);
  for(const h of st.level.holes.filter(h=>h.owner===null)){
   assert.ok(h.y<P.BOARD.y,'no extra empty holes are created inside the picture');
@@ -73,7 +73,9 @@ for(let stage=1;stage<=LAST_STAGE;stage++){
  invariant(st.level);game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
 assert.equal(maxScrews,100);assert.equal(G.makeFlatLevel(1000).plates.length,50);
-assert.equal(shapes.size,7,'all seven metal outlines appear');
+assert.equal(shapes.size,13,'all thirteen metal outlines appear');
+for(const [name,stage] of [['별',80],['나비',140],['구름',220],['초승달',320],['로켓',450],['십자',650]])assert.equal(firstShape.get(name),stage,'new outlines appear gradually');
+assert.equal(new Set([657,670,683,696,709,722].map(n=>G.makeFlatLevel(n).picture)).size,6,'the full thirteen-shape cycle still varies hidden pictures');
 assert.equal(G.makeFlatLevel(11).shape,'꽃');
 assert.equal(G.makeFlatLevel(11).name,'별바다 고래','the first flower conceals a different subject');
 assert.equal(new Set([11,18,25,32,39,46].map(n=>G.makeFlatLevel(n).picture)).size,6,'the same flower silhouette can hide every picture');
@@ -208,4 +210,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 layouts with seven metal outlines and a flower playthrough and varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, eleven free introductory playthroughs and existing physics/input regressions.');
+console.log('PASS: 1000 layouts with thirteen progressive metal outlines and a flower playthrough and varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, eleven free introductory playthroughs and existing physics/input regressions.');

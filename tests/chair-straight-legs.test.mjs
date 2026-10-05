@@ -100,6 +100,36 @@ test('right near rear leg follows its own seat-to-foot edge while moving and aft
  console.log('right rear leg:',{positions,before:bend(before,r),after:bend(after,r)});
 });
 
+test('right far rear edges follow their own surface without moving feet or worsening other shafts',async()=>{
+ const v=fixed.views.right,previous=structuredClone(v.mesh);delete previous.straightRegions[2].surfaceTriangle;
+ const r=v.mesh.straightRegions[2],length=Math.hypot(r.end.x-r.start.x,r.end.y-r.start.y);
+ const normal={x:(r.end.y-r.start.y)/length,y:-(r.end.x-r.start.x)/length};
+ const rods=[-36,-24,0,24,36].map(d=>({start:{x:r.start.x+normal.x*d,y:r.start.y+normal.y*d},end:{x:r.end.x+normal.x*d,y:r.end.y+normal.y*d}}));
+ let positions=0;
+ for(let x=0;x<=8.5;x+=.5)for(let y=0;y<=5.5;y+=.5){
+  const pose={...v.placement,x,y};let old;
+  try{old=projectMesh(previous,pose);}catch{continue;}
+  const before=straightenProjectedMesh(old),after=straightenProjectedMesh(projectMesh(v.mesh,pose));positions++;
+  assert.deepEqual(after.points,before.points,'all registered points and contact feet stay fixed');
+  for(const a of after.points){const actual=pointAt(after,a.source);assert(Math.hypot(actual.x-a.target.x,actual.y-a.target.y)<1e-7);}
+  assert(after.triangles.every(t=>cross(...t.target)>0),'the surface pass does not fold a valid placement');
+  for(const rod of rods)assert(bend(after,rod)<=bend(before,rod)+.01,'neither rim nor center develops a worse bend');
+  for(const i of [0,1,3])assert(bend(after,v.mesh.straightRegions[i])<=bend(before,v.mesh.straightRegions[i])+.01,'the other shafts retain their correction');
+ }
+ assert.equal(positions,81);
+ const pose={...v.placement,x:5.5,y:5.5},before=straightenProjectedMesh(projectMesh(previous,pose)),after=straightenProjectedMesh(projectMesh(v.mesh,pose));
+ const oldEdge=bend(before,rods[4]),newEdge=bend(after,rods[4]);assert(oldEdge>6.6);assert(newEdge<3.5);assert.equal(after.surfaceStrength,.5);
+ const copy=normalizeMesh(v.mesh);copy.straightRegions[2].surfaceTriangle[0]=99;
+ assert.throws(()=>normalizeMesh(copy),'an unregistered surface cannot enter the renderer');
+ assert.deepEqual(normalizeMesh(v.mesh).straightRegions[2].surfaceTriangle,[5,4,8],'normalization copies surface indices');
+ const {recoverKnownChairProject}=await import('../house-test/chair-straight-regions.js');
+ const saved={name:'뒷다리 수정 후 의자',source:{data:v.drawings[0].data},placement:pose,mesh:previous};
+ assert.deepEqual((await recoverKnownChairProject(saved)).mesh,v.mesh,'previous saved projects receive the new surface metadata');
+ const custom=structuredClone(saved);custom.mesh.straightRegions[2].surfaceTriangle=[5,9,6];
+ assert.deepEqual((await recoverKnownChairProject(custom)).mesh.straightRegions[2].surfaceTriangle,[5,9,6],'an authored surface is preserved');
+ console.log('right far rear edge:',{positions,before:oldEdge,after:newEdge});
+});
+
 test('left near front leg blends into its fixed foot without weakening the whole shaft',()=>{
  const v=fixed.views.left,previous=structuredClone(v.mesh);delete previous.straightRegions[3].endFade;
  const pose={...v.placement,x:4.5,y:5.5},r=v.mesh.straightRegions[3];

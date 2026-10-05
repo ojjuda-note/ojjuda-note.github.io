@@ -187,10 +187,10 @@ async function verifyForm() {
 }
 
 (async () => {
-  for (const file of ['world.html', 'note/index.html']) {
+  for (const file of ['world.html', 'park/index.html']) {
     const html = read(file);
     assert(html.indexOf('/diagnostics.js?') < html.indexOf('signup-identity.js?'), 'collector loads before application scripts');
-    assert.match(html, /support\.js\?v=20260929-logs1/);
+    assert.match(html, /support\.js\?v=20261004-admin1/);
     assert.match(html, /notifications\.js\?v=20260929-diag1/);
   }
   await verifyCollector(); await verifyForm();

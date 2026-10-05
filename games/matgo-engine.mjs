@@ -71,7 +71,7 @@ class Game {
   }
   async ppukReward(p,stack){
     const self=stack.ppukOwner===p,bonusCount=stack.filter(c=>c.k==='bonus').length;
-    const count=(self?2:1)+bonusCount;
+    const count=self?2:1;
     await this.ui.event('ppukget',{p,self,count,bonusCount});return count;
   }
   canBombFlip(p){return this.bomb[p]>0&&this.deck.length>0;}
@@ -115,7 +115,7 @@ class Game {
     if(!card)this.bomb[p]--;
     const hand=this.hand[p]; let stole=0, swept=false, ppukGot=false;
     // ----- 0) 보너스패: 바로 먹고 더미에서 한 장 받은 뒤 다시 내 차례 -----
-    if(card && card.k==='bonus'){ hand.splice(hand.indexOf(card),1); await this.ui.event('bonusPlay',{p,card}); await this.take(p,[card],true); await this.stealPi(1-p,p,'bonus'); const d=this.deck.shift(); if(d){ hand.push(d); await this.ui.event('draw',{p,card:d}); } await this.ui.event('state'); if(!this.canMove(p))await this.endTurn(p); return; }
+    if(card && card.k==='bonus'){ hand.splice(hand.indexOf(card),1); await this.ui.event('bonusPlay',{p,card}); await this.take(p,[card],true); const d=this.deck.shift(); if(d){ hand.push(d); await this.ui.event('draw',{p,card:d}); } await this.ui.event('state'); if(!this.canMove(p))await this.endTurn(p); return; }
     this.normalPlays[p]++; // 보너스 교환은 첫 차례를 소모하지 않는다.
     // ----- 1) 손패 내기 -----
     let playedStackIdx=-1, handCardStack=null;
@@ -137,11 +137,11 @@ class Game {
     }
     // ----- 2) 패 뒤집기 -----
     let flip = this.deck.shift(); let flipStack=null;
-    // 보너스 뒤에 뻑이 나면 보너스와 피 뺏기 보상도 그 더미에 묶어 둔다.
+    // 보너스 뒤에 뻑이 나면 보너스도 그 더미에 묶는다. 보너스로 상대 피를 가져오지 않는다.
     const flipBonuses=[];
     while(flip && flip.k==='bonus'){ flipBonuses.push(flip); await this.ui.event('flipBonus',{p,card:flip}); flip=this.deck.shift(); }
     const bindsBonus=flip&&handCardStack&&flip.m===card.m&&handCardStack.length===2&&!this.floor.some(st=>st!==handCardStack&&st[0].m===card.m&&!st.ppuk);
-    if(!bindsBonus&&flipBonuses.length){await this.take(p,flipBonuses);stole+=flipBonuses.length;}
+    if(!bindsBonus&&flipBonuses.length){await this.take(p,flipBonuses);}
     let tookAny=false;
     if(flip){
       if(handCardStack && flip.m===card.m){
