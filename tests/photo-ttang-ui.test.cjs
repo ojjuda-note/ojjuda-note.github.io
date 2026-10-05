@@ -15,7 +15,7 @@ world=world.replace('</head>','<script src="/ttang-bridge.js"></script><script s
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[];
+  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true}),errors=[];
   await context.route('**/*',r=>{
    const u=new URL(r.request().url());if(u.hostname!=='127.0.0.1')return r.fulfill({body:''});
    if(u.pathname==='/fixture')return r.fulfill({contentType:'text/html',body:world});
@@ -35,17 +35,32 @@ world=world.replace('</head>','<script src="/ttang-bridge.js"></script><script s
    await page.setViewportSize({width,height});assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   }
   await page.setViewportSize({width:390,height:844});await frame.locator('#grid .cell').first().click();
-  await frame.waitForFunction(()=>mode==='play'&&!!me);await frame.click('#pause');
+  await frame.waitForFunction(()=>mode==='play'&&!!me);
+  const input=await context.newCDPSession(page),box=await frame.locator('#gameCanvas').boundingBox();
+  const x=Math.round(box.x+box.width/2),y=Math.round(box.y+box.height*.65);
+  await frame.evaluate(()=>{paused=true;me.target=0;startWait=3;me.freezeT=.8;});
+  await input.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+  await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-2}]});
+  assert.equal(await frame.evaluate(()=>me.target),0,'tiny finger jitter must not change direction');
+  assert.equal(await frame.evaluate(()=>startWait),3,'tiny finger jitter must preserve the start countdown');
+  await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-6}]});
+  assert.ok(Math.abs(await frame.evaluate(()=>me.target)+Math.PI/2)<.001,'a small upward drag must turn immediately');
+  assert.ok(await frame.evaluate(()=>startWait<=.01&&me.freezeT<=.001),'the first small drag must start movement immediately');
+  await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  assert.equal(await frame.evaluate(()=>joys.size),0,'releasing the finger must release the joystick');
+  await frame.evaluate(()=>{paused=false;});await input.detach();await frame.click('#pause');
   assert.equal(await frame.getByText('잠깐 쉬는 중').isVisible(),true);await frame.click('#go');
   await frame.evaluate(()=>win());assert.equal(await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-photo-ttang'))['0'].done),1);
   await frame.evaluate(()=>toMenu());assert.equal(await frame.locator('#grid .cell:not([disabled])').count(),2);
   await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
   await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).click();
   const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#duoBtn');
-  assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.click('#duoBtn');assert.equal(await old.locator('#mk').isVisible(),true);
+  assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.locator('#soloBtn').tap();
+  await old.waitForFunction(()=>mode==='solo'&&world.time>.1&&me.alive);assert.equal(await old.locator('#hud').isVisible(),true,'practice starts through the real World arcade');
+  await old.locator('#quit').tap();await old.locator('#yes').tap();await old.click('#duoBtn');assert.equal(await old.locator('#mk').isVisible(),true);
   await page.evaluate(()=>photoTest.open('photo_ttang'));assert.equal(await page.locator('#ttang-overlay').count(),0);
   const next=await(await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();await next.waitForSelector('#grid .cell');
   await next.press('body','Escape');await page.waitForSelector('#photo-ttang-overlay',{state:'detached'});
-  assert.deepEqual(errors,[]);console.log('PASS: real solo/multi categories, names, 20 photos, mobile layout, play, pause, clear progress, reopen, mutual cleanup and Escape');
+  assert.deepEqual(errors,[]);console.log('PASS: real solo/multi categories, names, 20 photos, mobile layout, small touch drags, play, pause, World practice, clear progress, reopen, mutual cleanup and Escape');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
