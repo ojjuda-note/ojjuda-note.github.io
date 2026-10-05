@@ -166,6 +166,11 @@
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
     speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 3쭈로 1분을 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
+    if(r.rankOwner){
+      const score=found().length,owner=r.rankOwner;
+      if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-score',score,owner},window.location.origin);
+      else Promise.resolve(wallet.recordScore?.(owner,score)).catch(()=>speak('점수를 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));
+    }
     if(reason==='won')celebrate();
   }
   function tick(){if(round().status==='playing'&&core.timeLeft(round())<=0)finish('time');else renderTime();}
@@ -173,7 +178,7 @@
     if(!imagesReady||paymentBusy||answerReview)return;
     const r=round();if(r.status==='payment'){purchase();return;}if(r.status==='lost'){reset();return;}
     if(r.status!=='ready')return;
-    r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
+    r.rankOwner=wallet.getState().userId;r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
     speak('시작! 다른 곳 여섯 개를 찾아보세요.');
     if(r.hintIndex!==null)showHint();
   }
