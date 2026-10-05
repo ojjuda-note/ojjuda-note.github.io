@@ -1,6 +1,7 @@
 // Content revisions belong to the artwork, not to each application release.
 // Update the SHA-256 whenever the corresponding runtime bytes change.
 export const builtInAssets = {
+ 'table-books': {file:'table-books-v1.runtime.json',revision:'ec7e48f63572779f'},
  'clover-mug': {file:'clover-mug-v1.runtime.json',revision:'e75c9edd9b59fe67'},
  'table-plant': {file:'table-plant-v1.runtime.json',revision:'43b6bf826c07c1ca'},
  'botanical-frame': {file:'botanical-frame-v1.runtime.json',revision:'10ac6b76bf260a1db'},
