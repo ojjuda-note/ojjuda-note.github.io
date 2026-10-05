@@ -10,18 +10,33 @@ const html=`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="vie
  const order=()=>page.locator('[data-life-tool]').evaluateAll(es=>es.filter(e=>!e.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(e=>e.dataset.lifeTool));
  const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-life-layout-v1:'+owner)||'null'));
  await click('배치 편집');await click('계산기 위로 이동');assert.deepEqual(await order(),['calendar','weather','news','calculator','ledger']);await click('취소');assert.deepEqual(await order(),['calendar','weather','news','ledger','calculator']);
- await click('위젯');await box('ledger').locator('iframe').waitFor();await page.waitForFunction(()=>frameLoads===1);await box('calculator').getByRole('button',{name:'7',exact:true}).click();
- await click('배치 편집');await click('계산기 위로 이동');await click('뉴스 숨기기');await click('날씨 크기 변경');await page.getByLabel('계산기 가로 위치',{exact:true}).selectOption('right');await click('배치 저장');
- assert.deepEqual(await order(),['calendar','weather','calculator','ledger']);assert.equal((await stored()).mode,'widgets');assert((await stored()).wide.includes('weather'));assert.equal(await page.evaluate(()=>frameLoads),1,'moving preserves the live ledger frame');assert.equal(await page.frameLocator('iframe').locator('body').evaluate(()=>window.keep),'unchanged');assert.equal(await box('calculator').locator('output').textContent(),'7','moving preserves calculator input');
- const full=await box('weather').boundingBox(),half=await box('calculator').boundingBox();assert(full.width>half.width*1.7,'widget widths follow the selected span');assert(half.x>full.x+full.width/2,'right alignment places a half widget on the right');assert.equal((await stored()).side.calculator,'right');await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:'/tmp/life-layout-widgets.png',fullPage:true});
+ await click('위젯');await box('ledger').locator('iframe').waitFor({state:'attached'});await page.waitForFunction(()=>frameLoads===1);
+ for(const id of ['calendar','weather','news','ledger','calculator']){const r=await box(id).boundingBox();assert(r.width<=162&&r.height<=162,'new widgets start at the smallest size');}
+ await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:'/tmp/life-small-widgets.png',fullPage:true});
+ await click('계산기 내용 보기');await box('calculator').getByRole('button',{name:'7',exact:true}).click();
+ await click('배치 편집');await click('계산기 위로 이동');await click('뉴스 숨기기');const weatherGrip=page.getByRole('button',{name:'날씨 모서리 크기 조절',exact:true});let grip=await weatherGrip.boundingBox();await page.mouse.move(grip.x+14,grip.y+14);await page.mouse.down();await page.mouse.move(grip.x+204,grip.y+154,{steps:12});await page.mouse.up();await click('배치 저장');
+ assert.deepEqual(await order(),['calendar','weather','calculator','ledger']);assert.equal((await stored()).mode,'widgets');assert((await stored()).sizes.weather.h>270);assert((await stored()).sizes.weather.w>.4);assert.equal(await page.evaluate(()=>frameLoads),1,'moving preserves the live ledger frame');assert.equal(await page.frameLocator('iframe').locator('body').evaluate(()=>window.keep),'unchanged');assert.equal(await box('calculator').locator('output').textContent(),'7','moving preserves calculator input');
+ const full=await box('weather').boundingBox();assert(full.width>300&&full.height>270,'edge resizing changes both dimensions');
+ // Resize a phone tile with touch, save automatically, and roll back pointer cancellation.
+ await page.setViewportSize({width:390,height:1000});
+ const resizeCdp=await context.newCDPSession(page),resizeTouch=(type,x,y)=>resizeCdp.send('Input.dispatchTouchEvent',{type,touchPoints:['touchEnd','touchCancel'].includes(type)?[]:[{x,y,id:1}]});
+ let corner=await page.getByRole('button',{name:'스케줄 달력 모서리 크기 조절',exact:true}).boundingBox();
+ await resizeTouch('touchStart',corner.x+14,corner.y+14);await resizeTouch('touchMove',corner.x+164,corner.y+194);await resizeTouch('touchEnd');
+ let resized=(await stored()).sizes.calendar;assert(resized.w>.75&&resized.h>=330,'touch changes and automatically saves both dimensions');
+ const beforeCancel=JSON.stringify(resized);corner=await page.getByRole('button',{name:'스케줄 달력 모서리 크기 조절',exact:true}).boundingBox();
+ await resizeTouch('touchStart',corner.x+14,corner.y+14);await resizeTouch('touchMove',corner.x-40,corner.y-40);await resizeTouch('touchCancel');assert.equal(JSON.stringify((await stored()).sizes.calendar),beforeCancel);
+ await page.getByRole('button',{name:'스케줄 달력 모서리 크기 조절',exact:true}).press('Home');
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'/tmp/life-small-mobile.png',fullPage:true});
+ await page.setViewportSize({width:760,height:1000});
+ await click('계산기 모서리 크기 조절');await page.getByRole('button',{name:'계산기 모서리 크기 조절',exact:true}).press('Home');
  await click('배치 편집');await click('뉴스 위젯 추가');await click('취소');assert.equal(await box('news').isVisible(),false,'cancel restores hidden state');
- await page.reload();await page.waitForFunction(()=>document.querySelector('main').dataset.lifeView==='widgets');assert.deepEqual(await order(),['calendar','weather','calculator','ledger']);
+ await page.reload();await page.waitForFunction(()=>document.querySelector('main').dataset.lifeView==='widgets');assert.deepEqual(await order(),['calendar','weather','calculator','ledger']);assert((await box('weather').boundingBox()).height>270,'saved height survives reload');
  // A desktop pointer drag drops before the target, without moving iframe DOM nodes.
  await click('배치 편집');const handle=page.getByRole('button',{name:'계산기 끌어서 이동',exact:true});await handle.scrollIntoViewIfNeeded();let a=await handle.boundingBox(),b=await box('calendar').boundingBox();await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+40,b.y+12,{steps:12});await page.mouse.up();assert.equal((await order())[0],'calculator');await click('배치 저장');
  // Phone touch dragging works too, and cancelling a pointer never commits a move.
  await page.setViewportSize({width:390,height:1000});await click('배치 편집');await page.evaluate(()=>window.scrollTo(0,0));a=await page.getByRole('button',{name:'계산기 끌어서 이동',exact:true}).boundingBox();b=await box('calendar').boundingBox();
  const cdp=await context.newCDPSession(page),touch=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'||type==='touchCancel'?[]:[{x,y,id:1}]});
- await touch('touchStart',a.x+a.width/2,a.y+a.height/2);await touch('touchMove',b.x+70,b.y+b.height-12);await touch('touchEnd');assert.deepEqual((await order()).slice(0,2),['calendar','calculator']);
+ await touch('touchStart',a.x+a.width/2,a.y+a.height/2);await touch('touchMove',b.x+b.width-20,b.y+b.height-12);await touch('touchEnd');assert.deepEqual((await order()).slice(0,2),['calendar','calculator']);
  a=await page.getByRole('button',{name:'계산기 끌어서 이동',exact:true}).boundingBox();b=await box('calendar').boundingBox();await touch('touchStart',a.x+a.width/2,a.y+a.height/2);await touch('touchMove',b.x+70,b.y+12);await touch('touchCancel');assert.deepEqual((await order()).slice(0,2),['calendar','calculator']);await click('배치 저장');
  for(const width of [320,390,760]){await page.setViewportSize({width,height:1000});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'layout must not overflow');}
  await page.setViewportSize({width:760,height:1000});await click('배치 편집');await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:'/tmp/life-layout-editor.png',fullPage:true});await click('취소');
@@ -33,5 +48,5 @@ const html=`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="vie
  await click('배치 편집');for(const name of ['스케줄 달력','계산기','날씨','가계부'])await click(name+' 숨기기');await click('배치 저장');await page.getByText('아직 꺼내 놓은 도구가 없어요.',{exact:true}).waitFor();await click('위젯 추가');await click('뉴스 위젯 추가');await click('배치 저장');assert.deepEqual(await order(),['news']);
  await click('배치 편집');await click('기본 배치');await click('배치 저장');assert.equal((await stored()).mode,'list');assert.equal((await order()).length,5);
  await page.evaluate(()=>OjjudaLife.mount(null));assert.equal(await page.locator('.life-layout-toolbar').count(),0);assert.deepEqual(errors,[]);
- console.log('PASS Life layout: view modes, reorder, add/hide, width, touch/pointer drag and cancel, save/reload, storage failure, account isolation, corrupt prefs, empty/reset, iframe/input preservation and cleanup');
+ console.log('PASS Life layout with compact resizable widgets: view modes, reorder, add/hide, width, touch/pointer drag and cancel, save/reload, storage failure, account isolation, corrupt prefs, empty/reset, iframe/input preservation and cleanup');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -36,9 +36,41 @@
 [data-life-view=widgets] .life-weather-now>strong{font-size:38px}
 [data-life-view=widgets] .life-weather-now>span{font-size:12px}
 .life-layout :is(button,summary):focus-visible{outline:3px solid var(--life-link);outline-offset:2px}
-@media(min-width:620px){[data-life-root][data-life-view=widgets]{grid-template-columns:repeat(2,minmax(0,1fr))}[data-life-view=widgets]>.life-widget-wide{grid-column:span 2}}
-@media(max-width:619px){[data-life-view=widgets] .life-layout-editor::after{content:'작은 화면에서는 보기 편하게 한 줄로 배치돼요.';display:block;margin-top:12px;font-size:11px;color:var(--life-muted)}}
 @media(prefers-reduced-motion:reduce){.life-layout *{scroll-behavior:auto!important}}
 
-.life-tool .life-layout-item-tools select{width:auto;min-width:96px;max-width:120px;min-height:36px;padding:5px 8px;font-size:12px;border-radius:9px}
-@media(max-width:619px){.life-layout>[data-life-tool]{grid-column:1/-1!important}}
+
+/* Small, readable tiles; drag the visible edges to reveal the full tool. */
+[data-life-root][data-life-view=widgets]{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px}
+[data-life-view=widgets]>h2,[data-life-view=widgets]>.life-layout-toolbar,[data-life-view=widgets]>.life-layout-editor,[data-life-view=widgets]>.life-layout-status,[data-life-view=widgets]>.life-layout-empty{flex:0 0 100%;width:100%;box-sizing:border-box}
+[data-life-view=widgets]>.life-tool{flex:0 0 auto;min-width:0;max-width:100%;height:160px;border:1px solid var(--life-line);border-radius:16px;box-sizing:border-box}
+[data-life-view=widgets]>.life-tool>summary{min-height:40px;padding:12px 14px 6px;gap:6px;line-height:1.5}
+[data-life-view=widgets]>.life-tool>summary strong{font-size:13px;line-height:1.4}
+[data-life-view=widgets]>.life-tool>.life-tool-body{display:block;position:absolute;top:var(--widget-head,42px);bottom:20px;left:12px;right:20px;padding:8px 2px 0;overflow:auto;overscroll-behavior:contain}
+[data-life-view=widgets]>.life-widget-compact>.life-tool-body{display:none}
+[data-life-view=widgets]>.life-tool>.life-tool-body.donflow-expanded{display:flex;position:fixed;inset:0;padding:0;overflow:visible}
+[data-life-view=widgets] .life-donflow{height:100%;min-height:0;border-radius:10px}
+.life-widget-preview{position:absolute;top:var(--widget-head,42px);bottom:14px;left:13px;right:13px;display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;overflow:hidden}
+.life-widget-value{font-size:23px;line-height:1.2;color:var(--life-link);font-weight:600;overflow-wrap:anywhere}
+.life-widget-hint{font-size:10px;line-height:1.5;color:var(--life-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.life-tool .life-widget-open{min-height:25px;padding:2px 0;align-self:flex-start;border:0;background:transparent;color:var(--life-link);font-size:10px;text-decoration:underline;text-underline-offset:3px}
+.life-tool .life-widget-resize{position:absolute;z-index:4;margin:0;padding:0;min-width:0;min-height:0;border:0;background:transparent;border-radius:0;touch-action:none;user-select:none}
+.life-tool .life-widget-resize-e{right:0;top:24px;bottom:25px;width:18px;cursor:ew-resize}
+.life-tool .life-widget-resize-e::after{content:'';position:absolute;right:3px;top:calc(50% - 12px);height:24px;width:3px;border-radius:3px;background:var(--life-key)}
+.life-tool .life-widget-resize-s{left:24px;right:25px;bottom:0;height:18px;cursor:ns-resize}
+.life-tool .life-widget-resize-s::after{content:'';position:absolute;left:calc(50% - 12px);bottom:3px;width:24px;height:3px;border-radius:3px;background:var(--life-key)}
+.life-tool .life-widget-resize-se{right:0;bottom:0;width:28px;height:28px;cursor:nwse-resize;border-radius:0 0 15px 0;background:var(--life-button)}
+.life-widget-resize-se::after{content:'';position:absolute;right:6px;bottom:6px;width:9px;height:9px;border-right:2px solid var(--life-link);border-bottom:2px solid var(--life-link);border-radius:0 0 3px}
+.life-widget-sizing{outline:2px solid var(--life-link);outline-offset:1px}
+.life-widget-resizing{user-select:none}
+[data-life-view=widgets].life-layout-editing .life-tool>summary{padding:9px 10px 4px;gap:5px}
+[data-life-view=widgets].life-layout-editing .life-layout-item-tools{gap:4px}
+[data-life-view=widgets] .life-layout-item-tools button{min-width:24px;min-height:27px;padding:2px 5px;font-size:12px}
+[data-life-view=widgets] .life-layout-item-tools .life-layout-handle{font-size:18px}
+[data-life-view=widgets].life-layout-editing .life-widget-preview{gap:3px}
+[data-life-view=widgets].life-layout-editing .life-widget-value{font-size:18px}
+[data-life-view=widgets].life-layout-editing .life-widget-hint{display:none}
+@media(max-width:619px){[data-life-view=widgets] .life-layout-editor::after{content:'오른쪽·아래쪽 테두리나 모서리를 끌어 크기를 조절하세요.'}}
+[data-life-view=widgets] .life-widget-narrow .life-news-grid{grid-template-columns:minmax(0,1fr)}
+[data-life-view=widgets] .life-widget-narrow .life-weather-now{flex-wrap:wrap;gap:5px}
+[data-life-view=widgets] .life-widget-narrow .life-weather-now>span{font-size:11px}
+[data-life-view=widgets] .life-calc-keys button{min-width:0;padding:6px 2px}
