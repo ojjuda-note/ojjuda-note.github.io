@@ -67,8 +67,8 @@ for(const width of [320,390,1280]){await page.setViewportSize({width,height:844}
 await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));const frozenPage=await page.locator('.board-leaders').getAttribute('data-rank-page');await page.clock.runFor(12000);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),frozenPage,'reduced motion stops auto advance');await page.clock.resume();
 await page.setViewportSize({width:390,height:844});await page.locator('.board-leaders').screenshot({path:'/tmp/chalkboard-ranking.png'});
 // Community records are shared with every member, not replaced by the viewer's personal score.
-await page.evaluate(()=>{window.personalRecords=[{game:'runner',score:567},{game:'stacker',score:0},{game:'carom4',score:4},{game:'screw_box',score:123},{game:'screw_flat',score:456}];return OjjudaBoard.refresh();});
-for(const [game,score] of [['runner','567점'],['stacker','0층'],['carom4','4점'],['screw_box','123점'],['screw_flat','456점']]){
+await page.evaluate(()=>{window.personalRecords=[{game:'matgo',score:12345},{game:'runner',score:567},{game:'stacker',score:0},{game:'carom4',score:4},{game:'screw_box',score:123},{game:'screw_flat',score:456}];return OjjudaBoard.refresh();});
+for(const [game,score] of [['matgo','12,345골드'],['runner','567점'],['stacker','0층'],['carom4','4점'],['screw_box','123점'],['screw_flat','456점']]){
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-nick`).innerText(),'다른 회원');
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-score`).innerText(),score);
 }
@@ -80,6 +80,10 @@ await page.evaluate(()=>{document.body.classList.add('gaming');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
 assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length),personalCalls+13,'public records refresh for every game on return');
+await page.evaluate(()=>{document.body.classList.add('matgo-open');});
+await page.evaluate(()=>{personalRecords.find(r=>r.game==='matgo').score=7500;document.body.classList.remove('matgo-open');});
+await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score').textContent==='7,500골드');
+assert.ok((await page.locator('[data-game=matgo] .board-leader-nick').getAttribute('title')).includes('현재 보유 골드'));
 // A score that finishes saving after the game closes must update the board too.
 const previousPage=await page.locator('.board-leaders').getAttribute('data-rank-page');
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=1001;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner:'a'}}));});
@@ -96,7 +100,7 @@ const sharedScores=await page.locator('.board-leader').allTextContents();
 await page.evaluate(()=>{viewer='b';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='b'});});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='1,001점');
 assert.deepEqual(await page.locator('.board-leader').allTextContents(),sharedScores,'a different member sees exactly the same public nicknames and scores');
-assert.equal(await page.locator('.board-rank-caption').innerText(),'오늘의 게임별 1등');
+assert.equal(await page.locator('.board-rank-caption').innerText(),'오늘 1등 · 맞고는 현재 골드');
 await page.evaluate(()=>{viewer='a';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='a'});});
 await page.evaluate(()=>{window.personalRecords=[];return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=runner] .board-leader-score').innerText(),'—','new day or cleared records cannot keep a previous score');
