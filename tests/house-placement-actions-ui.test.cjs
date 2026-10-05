@@ -69,7 +69,7 @@ const baseline={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,f
   await edit();await frame.locator('#placement-recall').click();await actions.waitFor({state:'hidden'});const recalled=structuredClone(installed);delete recalled.rooms[0].furniture[id];assert.deepEqual(await stored(),recalled,'floating Recall removes only the selected item');assert.equal(await item.count(),0);
   report.checks.push('Floating Install commits the changed pose and Recall removes the selected item');
   // A collision warning must not resize the viewport underneath an active drag.
-  await frame.locator('#exit').click();await page.waitForFunction(()=>!document.querySelector('iframe'));await page.setViewportSize({width:1100,height:960});
+  await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('iframe'));await page.setViewportSize({width:1100,height:960});
   const linked={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture:{desk:{direction:'right',x:9,y:3.5},chair:{direction:'left',x:8.3,y:4.825,attachedTo:'desk'}}}],diary:'충돌 경고가 카메라를 움직이면 안 돼요.'};
   await page.evaluate(({key,linked})=>localStorage.setItem(key,JSON.stringify(linked)),{key,linked});await page.locator('#open').click();await frame.locator('#app').waitFor({state:'visible'});await frame.locator('[data-tab="room"]').click();await frame.getByRole('button',{name:'의자 배치',exact:true}).click();await frame.locator('[data-furniture="chair"][data-render-state="ready"]').waitFor();await frame.locator('#overview').click();
   const settle=()=>viewport.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
