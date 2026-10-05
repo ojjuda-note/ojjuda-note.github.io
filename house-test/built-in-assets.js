@@ -1,6 +1,7 @@
 // Content revisions belong to the artwork, not to each application release.
 // Update the SHA-256 whenever the corresponding runtime bytes change.
 export const builtInAssets = {
+ 'pencil-cup': {file:'pencil-cup-v1.runtime.json',revision:'f28707be042aed334'},
  'table-succulent': {file:'table-succulent-v1.runtime.json',revision:'9e6c1afee5ce0abe'},
  'table-books': {file:'table-books-v1.runtime.json',revision:'ec7e48f63572779f'},
  'clover-mug': {file:'clover-mug-v1.runtime.json',revision:'e75c9edd9b59fe67'},
