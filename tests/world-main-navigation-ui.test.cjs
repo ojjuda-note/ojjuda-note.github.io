@@ -11,7 +11,7 @@ world = world.replace('<script type="module">', `<script>${helper}</script><scri
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct,setClient:client=>{S=client}};
+window.worldTest={state:g,auth:D,actions:sr,render:H,model:$,modal:ct,saveScore:tf,finishGame:S2,setClient:client=>{S=client}};
 gm(()=>{g.tab="friends";g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});
 g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
 
@@ -291,8 +291,12 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     const gameButton=id=>gp.locator(`[data-game="${id}"] .board-game-open`);
     const openGame=async id=>{
       const slide=await gameButton(id).evaluate(el=>[...el.closest('.board-rank-track').children].indexOf(el.closest('.board-rank-page')));
-      while(Number(await gp.locator('.board-leaders').getAttribute('data-rank-page'))!==slide)
-        await gp.getByRole('button',{name:'다음 게임순위',exact:true}).click();
+      for(let attempts=0;Number(await gp.locator('.board-leaders').getAttribute('data-rank-page'))!==slide&&attempts<5;attempts++){
+        const box=await gp.locator('.board-rank-viewport').boundingBox();
+        await gp.mouse.move(box.x+box.width-25,box.y+20);await gp.mouse.down();
+        await gp.mouse.move(box.x+25,box.y+22);await gp.mouse.up();
+      }
+      assert.equal(Number(await gp.locator('.board-leaders').getAttribute('data-rank-page')),slide,'swipe reaches the game');
       await gameButton(id).click();
     };
     const stillBoard=async(id,close)=>{
@@ -343,7 +347,27 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await openGame('matgo');await gp.locator('#matgo-overlay iframe').waitFor();
     assert.equal(new URL(await gp.locator('#matgo-overlay iframe').getAttribute('src'),gp.url()).pathname,'/games/matgo-online.html');
     await stillBoard('matgo','#matgo-overlay [aria-label="맞고 닫기"]');
-    assert.deepEqual(await gp.evaluate(()=>gameFixture.calls.filter(call=>['insert','update','delete','upsert'].includes(call.method)||call.rpc&&call.rpc!=='get_my_member_identity'&&call.rpc!=='game_ranking'&&call.rpc!=='billiards_ping')),[],'opening game menus never writes scores or purchases');
+    assert.deepEqual(await gp.evaluate(()=>gameFixture.calls.filter(call=>['insert','update','delete','upsert'].includes(call.method)||call.rpc&&call.rpc!=='get_my_member_identity'&&call.rpc!=='game_ranking'&&call.rpc!=='my_game_records'&&call.rpc!=='billiards_ping')),[],'opening game menus never writes scores or purchases');
+    await gp.locator('#matgo-overlay').waitFor({state:'detached'});
+    // Save paths remain available when the independent wallet check is not ready.
+    await gp.evaluate(()=>{
+      gameFixture.saved=[];gameFixture.notices=[];worldTest.auth.walletReady=false;
+      addEventListener('ojjuda:game-record-saved',event=>gameFixture.notices.push(event.detail));
+      worldTest.setClient({rpc:async(name,args)=>{gameFixture.saved.push({name,args});return {data:{ok:true,best:args.p_score}};}});
+    });
+    for(const [id,key] of [['screw_box','screw_box'],['screw_flat','screw_flat']]){
+      await openGame(id);await gp.locator('#gov').waitFor();
+      await gp.evaluate(()=>worldTest.finishGame(123));
+      assert.deepEqual(await gp.evaluate(()=>gameFixture.saved.at(-1)),{name:'submit_score',args:{p_game:key,p_score:123}});
+      await gp.locator('#gov [data-g="close"]').first().click();
+    }
+    assert.equal(await gp.evaluate(()=>gameFixture.notices.length),2,'successful writes announce a refresh');
+    await gp.evaluate(async()=>{
+      worldTest.setClient({rpc:()=>new Promise(resolve=>gameFixture.resolveSave=resolve)});
+      const saving=worldTest.saveScore('mole',25);worldTest.auth.user={id:'another-member'};
+      gameFixture.resolveSave({data:{ok:true,best:25,coins:999}});await saving;
+    });
+    assert.equal(await gp.evaluate(()=>gameFixture.notices.length),2,'old-account save cannot refresh the next account');
     assert.deepEqual(gameErrors,[]);
     await games.close();
 

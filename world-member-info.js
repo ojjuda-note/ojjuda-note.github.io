@@ -3,11 +3,13 @@
   let active = null;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-  async function open({ client, getUserId, email, renderModal, closeModal, onSupport }) {
+  async function open(options) {
+    const { client, getUserId, email, renderModal, closeModal, onSupport, entry = false, onSaved } = options;
     const owner = getUserId();
     if (!owner || !client || !window.OjjudaIdentity) return;
     active?.dispose();
-    renderModal(`<div class="mhead"><h3>개인정보 수정</h3><button class="btn sm ghost" data-act="close">닫기</button></div><div id="world-member-info"><p role="status">개인정보를 불러오고 있어요.</p></div>`, '개인정보 수정');
+    const title = entry ? '기본정보를 입력해 주세요' : '개인정보 수정';
+    renderModal(`<div class="mhead"><h3>${title}</h3><button class="btn sm ghost" data-act="close">닫기</button></div><div id="world-member-info"><p role="status">개인정보를 불러오고 있어요.</p></div>`, title);
     const root = document.getElementById('world-member-info');
     const observer = new MutationObserver(() => {
       if (getUserId() !== owner) {
@@ -25,11 +27,11 @@
       : /identity_locked/.test(error?.message || '') ? '이미 등록된 정보예요. 창을 다시 열어 확인해 주세요.'
       : '저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.';
     try {
-      const result = await client.rpc('get_my_member_identity');
+      const result = Object.hasOwn(options, 'identity') ? { data: options.identity } : await client.rpc('get_my_member_identity');
       if (!current()) return;
       if (result.error) throw result.error;
       const identity = result.data;
-      root.innerHTML = `<p class="note">생년월일·전화번호와 로그인 이메일은 다른 회원에게 공개되지 않아요.</p>
+      root.innerHTML = `${entry ? '<p>아직 등록하지 않은 기본정보가 있어요. 아래 빈칸을 채워 주세요.</p>' : ''}<p class="note">생년월일·전화번호와 로그인 이메일은 다른 회원에게 공개되지 않아요.</p>
         <div class="field"><label for="wm-email">로그인 이메일</label><input class="inp" id="wm-email" type="email" value="${escape(email)}" readonly></div>
         <form id="world-member-form">
         ${identity ? `<div class="field"><label for="wm-birth-date">생년월일</label><input class="inp" id="wm-birth-date" value="${escape(identity.birth_date)}" readonly></div>
@@ -68,6 +70,7 @@
           const saved = await client.rpc(identity ? 'update_my_phone_number' : 'complete_my_member_identity', params);
           if (!current()) return;
           if (saved.error) throw saved.error;
+          if (entry) { closeModal(); dispose(); onSaved?.(); return; }
           if (!identity) { await open({ client, getUserId, email, renderModal, closeModal, onSupport }); return; }
           form.querySelector('#wm-phone').value = saved.data?.phone_number || params.p_phone;
           message.textContent = '전화번호를 저장했어요.';
@@ -81,9 +84,40 @@
     } catch {
       if (current()) {
         root.innerHTML = '<p role="alert">개인정보를 불러오지 못했어요.</p><button class="btn" id="wm-retry">다시 불러오기</button>';
-        root.querySelector('#wm-retry').addEventListener('click', () => { if (current()) void open({ client, getUserId, email, renderModal, closeModal, onSupport }); });
+        root.querySelector('#wm-retry').addEventListener('click', () => { if (current()) void open(options); });
       }
     }
   }
-  window.OjjudaMemberInfo = { open };
+  function createEntryPrompt(options) {
+    let visit = null;
+    const complete = value => value?.birth_date && ['male', 'female'].includes(value.gender) && String(value.phone_number || '').trim();
+    function sync() {
+      const owner = options.getUserId();
+      if (!owner || !options.isVillage()) { visit?.observer?.disconnect(); visit = null; return; }
+      if (visit?.owner === owner) return;
+      visit?.observer?.disconnect();
+      const currentVisit = visit = { owner };
+      const current = () => visit === currentVisit && options.getUserId() === owner && options.isVillage();
+      void (async () => {
+        let result;
+        try { result = await options.client.rpc('get_my_member_identity'); }
+        catch { result = { error: true }; }
+        if (!current() || (!result.error && complete(result.data))) return;
+        const show = () => {
+          if (!current()) { currentVisit.observer?.disconnect(); return; }
+          // Do not replace a notice, password prompt, or another form already being used.
+          if (document.querySelector('[role="dialog"], dialog[open]')) return;
+          currentVisit.observer?.disconnect();
+          const settings = { ...options, email: options.getEmail(), entry: true };
+          if (!result.error) settings.identity = result.data;
+          void open(settings);
+        };
+        currentVisit.observer = new MutationObserver(show);
+        currentVisit.observer.observe(document.body, { childList: true, subtree: true });
+        show();
+      })();
+    }
+    return { sync };
+  }
+  window.OjjudaMemberInfo = { open, createEntryPrompt };
 })();
