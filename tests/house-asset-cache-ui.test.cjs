@@ -7,7 +7,9 @@ const root=path.resolve(__dirname,'..');
  const assetCount=Object.keys(builtInAssets).length;
  const changedChair=Buffer.concat([fs.readFileSync(path.join(root,'house-test/assets',builtInAssets.chair.file)),Buffer.from('\n')]);
  const changedRevision=crypto.createHash('sha256').update(changedChair).digest('hex').slice(0,16);
- const requests=[];let changed=false,broken=false,manifestUnavailable=false;
+ const sofaData=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets',builtInAssets.sofa.file)));sofaData.views.right.source='manifest-refresh-test';
+ const sofaBytes=Buffer.from(JSON.stringify(sofaData)),sofaRevision=crypto.createHash('sha256').update(sofaBytes).digest('hex').slice(0,16);
+ const requests=[];let changed=false,changedSofa=false,broken=false,manifestUnavailable=false;
  const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
   if(url.pathname==='/fixture'){
@@ -22,6 +24,8 @@ const root=path.resolve(__dirname,'..');
   // Expire HTTP freshness immediately: force-cache must still reuse valid bytes.
   res.setHeader('Cache-Control',runtime?'public, max-age=0':'no-store');
   if(runtime){requests.push({path:url.pathname,revision:url.searchParams.get('v'),bytes:broken?2:fs.statSync(file).size});if(broken){res.end('{}');return;}}
+  if(changedSofa&&file.endsWith('item-assets.json')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.sofa.revision,sofaRevision));return;}
+  if(changedSofa&&file.endsWith(builtInAssets.sofa.file)){res.end(sofaBytes);return;}
   if(changed&&file.endsWith('item-assets.json')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.chair.revision,changedRevision));return;}
   if(changed&&file.endsWith('chair-v1.runtime.json')){res.end(changedChair);return;}
   fs.createReadStream(file).pipe(res);
@@ -42,6 +46,10 @@ const root=path.resolve(__dirname,'..');
   changed=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems());
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),['chair-v1.runtime.json'],'manifest-only change with the same app version fetches only that asset');await page.close();
   manifestUnavailable=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['chair']));assert.equal(requests.length,start,'unavailable manifest preserves the last valid revision and cached artwork');await page.close();manifestUnavailable=false;changed=false;
+  changedSofa=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['sofa']));
+  assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets.sofa.file],'same app URL loads only the revised sofa data');
+  assert.equal(await page.evaluate(async()=>{const {SOFA_V1}=await import('/house-test/sofa-v1-registration.js?v=20261005-sofadata1');return SOFA_V1.right.source;}),'manifest-refresh-test','the rendering registration receives the downloaded data');
+  await page.close();changedSofa=false;
   // Correct URL, wrong but syntactically valid bytes: dimensions alone cannot
   // detect this stale entry. Repair it without requiring the user to retry.
   page=await open(context,'poison-cache');
