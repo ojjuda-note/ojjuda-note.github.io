@@ -115,6 +115,15 @@ await page.evaluate(()=>{viewer='a';OjjudaBoard.mount(document.querySelector('#b
 await page.evaluate(()=>{window.personalRecords=[];return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=runner] .board-leader-score').innerText(),'—','new day or cleared records cannot keep a previous score');
 assert.deepEqual(await displayedOrder(),scoresFirst(['mole']),'cleared records move back behind games with scores');
+// Opening the board before the arcade still loads Matgo after the server access check.
+await page.evaluate(()=>{window.personalRecords=[{game:'matgo',score:98600}];window.matgoEligible=false;window.OjjudaMatgoAccess={visible:()=>matgoEligible,check:()=>new Promise(resolve=>{window.finishMatgoCheck=()=>{matgoEligible=true;resolve({userId:viewer});};})};OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='a'});});
+assert.equal(await page.locator('[data-game=matgo]').count(),0,'Matgo remains hidden before access is confirmed');
+await page.evaluate(()=>finishMatgoCheck());await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score')?.textContent==='98,600골드');
+assert.equal(await page.locator('.board-rank-page').first().locator('[data-game=matgo]').count(),1,'eligible Matgo gold ranking is shown without first opening the arcade');
+await page.evaluate(()=>{OjjudaMatgoAccess={visible:()=>false,check:()=>Promise.reject(Error('underage'))};OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames()});return OjjudaBoard.refresh();});
+assert.equal(await page.locator('[data-game=matgo]').count(),0,'denied access never exposes the Matgo entry');
+await page.evaluate(()=>{OjjudaMatgoAccess={visible:()=>true,check:()=>Promise.resolve({userId:'another-user'})};mount();});await page.waitForFunction(()=>document.querySelector('[data-game=mole] .board-leader-score')?.textContent==='1,234점');assert.equal(await page.locator('[data-game=matgo]').count(),0,'a different account cannot authorize this board');
+await page.evaluate(()=>{delete window.OjjudaMatgoAccess;});
 // Slow ranking responses must not leave scored games on later pages or advance the carousel early.
 await page.evaluate(()=>{window.personalRecords=[{game:'screw',score:900}];window.slowGame='runner';mount();});
 await page.waitForFunction(()=>document.querySelector('[data-game=screw] .board-leader-score').textContent==='900점');
