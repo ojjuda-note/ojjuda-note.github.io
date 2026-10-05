@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {SOFA_ACCESSORY_IMAGES} from '../house-test/sofa-v1-registration.js?v=20261005-blanketdata1';
-import {getSofaBlanketDrape} from '../house-test/sofa-blanket-drape.js?v=20261005-blanketdata1';
-import {sofaAccessoryLayers,sofaAccessoryPoseValid} from '../house-test/sofa-accessory-art.js?v=20261005-blanketdata1';
+import {SOFA_ACCESSORY_IMAGES} from '../house-test/sofa-v1-registration.js?v=20261006-floordata1';
+import {getSofaBlanketDrape} from '../house-test/sofa-blanket-drape.js?v=20261006-floordata1';
+import {sofaAccessoryLayers,sofaAccessoryPoseValid} from '../house-test/sofa-accessory-art.js?v=20261006-floordata1';
 import {validateSofaBlanket,installSofaBlanket} from '../house-test/sofa-blanket-data.js';
 const dirs=['left','center','right'],data=JSON.parse(fs.readFileSync(new URL('../house-test/assets/sofa-blanket-v1.runtime.json',import.meta.url)));
 const original=structuredClone(SOFA_ACCESSORY_IMAGES),drapes=()=>dirs.map(getSofaBlanketDrape),beforeDrapes=drapes();

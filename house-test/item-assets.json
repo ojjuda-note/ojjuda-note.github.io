@@ -64,6 +64,10 @@
     "sofa-blanket": {
       "file": "sofa-blanket-v1.runtime.json",
       "revision": "8b23c66e0210bda3"
+    },
+    "floor-blanket": {
+      "file": "floor-blanket-v1.runtime.json",
+      "revision": "e2e6a987089eba44"
     }
   }
 }
