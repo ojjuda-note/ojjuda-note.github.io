@@ -4,10 +4,10 @@ const node=(tag,className,text)=>{const el=document.createElement(tag);if(classN
 const button=(text,click)=>{const el=node('button','',text);el.type='button';el.onclick=click;return el;};
 const folderKinds=[['text','노트'],['photo','앨범'],['video','비디오']];
 const recordKind=row=>row.type==='image'?'photo':row.type==='text'?'text':'video';
-const scopes=[['me','나만 보기'],['friends','친구 공개'],['all','전체 공개']];
+const scopes=[['all','전체 공개'],['friends','친구 공개'],['me','나만 보기']];
 function select(label,options,value){const el=node('select');el.setAttribute('aria-label',label);for(const [id,text]of options){const option=node('option','',text);option.value=id;el.append(option);}el.value=value;return el;}
 function field(label,control){const wrap=node('label','record-field');wrap.append(node('span','',label),control);return wrap;}
-function folderScopeFields(folder,scope){const row=node('div','record-location-fields');row.append(field('폴더',folder),field('공개범위',scope));return row;}
+function folderScopeFields(folder,scope){const row=node('div','record-location-fields');row.append(field('공개범위',scope),field('폴더',folder));return row;}
 export function mountCloudRecords({container,kind,request,active,foldersHost,settingsButton,initialFolder='all',onFolderChange=()=>{},postDrafts=new Map(),committedPostIds=new Set(),pendingPostIds=new Set()}){
  let run=0,busy=false,folderId=kind==='all'?'all':initialFolder,snapshot={folders:[],friends:[],groups:[]},displayed=[],managing=false,loaded=false,trash=false;const selected=new Set(),recordKey=row=>(row.type==='text'?'text:':'media:')+row.id;const label=kind==='photo'?'사진':kind==='video'?'동영상':'기록';
  let folderHolds=[],cardHolds=[];const release=holds=>{for(const stop of holds)stop();};
@@ -79,7 +79,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  function setTrash(value){if(busy)return;trash=value;container.dataset.trash=String(value);managing=false;selection.hidden=true;selected.clear();editor.replaceChildren();folders.hidden=value||kind==='all';if(foldersHost)foldersHost.hidden=folders.hidden;uploads.hidden=true;add.hidden=value||kind==='text';newPost.hidden=value||!['all','text'].includes(kind);trashHeading.hidden=!value;void load();}
  const newPost=button('＋ 글쓰기',()=>postEditor()),trashHeading=node('div','record-trash-heading');newPost.hidden=!['all','text'].includes(kind);newPost.disabled=true;toolbar.append(newPost);trashHeading.hidden=true;trashHeading.append(node('strong','','휴지통'),button('기록으로 돌아가기',()=>setTrash(false)),node('p','panel-note','삭제한 기록을 보관하는 곳이에요. 여기서는 나만 볼 수 있어요.'));
  function postEditor(record,initialBody='',draftName='new'){
-  if(busy)return;editor.replaceChildren();const draftKey=record?.id||draftName;let draft=postDrafts.get(draftKey)||{id:record?.id||crypto.randomUUID(),body:record?.caption||initialBody,folder_id:record?.folder_id||(['all','none'].includes(folderId)?null:folderId),visibility:record?.visibility||'me',create:!record};
+  if(busy)return;editor.replaceChildren();const draftKey=record?.id||draftName;let draft=postDrafts.get(draftKey)||{id:record?.id||crypto.randomUUID(),body:record?.caption||initialBody,folder_id:record?.folder_id||(['all','none'].includes(folderId)?null:folderId),visibility:record?.visibility||'all',create:!record};
   // A reopened new-post editor must not share the ID of a write still in flight.
   if(draft.create&&pendingPostIds.has(draft.id))draft={...draft,id:crypto.randomUUID()};
   const form=node('form','record-post-form'),body=node('textarea');body.maxLength=4000;body.required=true;body.value=draft.body;body.rows=6;
@@ -89,17 +89,17 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   const sync=()=>{const folder=snapshot.folders.find(row=>row.id===target.value);scope.hidden=!!folder;note.textContent=folder?`글은 ‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'계정에 저장되어 다른 기기에서도 볼 수 있어요.';remember();};
   body.oninput=remember;target.onchange=()=>{if(!target.value)scope.value='me';sync();};scope.onchange=remember;sync();
   const submit=button(record?'글 수정 저장':'노트에 저장');submit.type='submit';
-  form.append(node('p','record-form-title',record?'글 수정':'새 글'),field('노트 글',body),folderScopeFields(target,scope),note,submit,button('닫기',()=>editor.replaceChildren()));
+  form.append(node('p','record-form-title',record?'글 수정':'새 글'),folderScopeFields(target,scope),note,field('노트 글',body),submit,button('닫기',()=>editor.replaceChildren()));
   if(record)form.append(button('휴지통으로',()=>trashEditor([record])));
   form.onsubmit=event=>{event.preventDefault();if(busy||!active())return;remember();const submitted=postDrafts.get(draftKey);if(pendingPostIds.has(submitted.id)){status.textContent='이 글의 이전 저장을 마치는 중이에요. 입력한 내용은 그대로예요. 잠시 후 다시 저장해 주세요.';return;}pendingPostIds.add(submitted.id);void save('save-post',submitted,'글을 계정에 저장했어요.',()=>chooseFolder(target.value||'none','text'),()=>{committedPostIds.add(submitted.id);if(postDrafts.get(draftKey)===submitted)postDrafts.delete(draftKey);}).finally(()=>pendingPostIds.delete(submitted.id));};editor.append(form);body.focus();
  }
  const file=node('input');file.type='file';file.multiple=true;file.accept=kind==='photo'?'image/jpeg,image/png,image/gif,image/webp':kind==='video'?'video/mp4,video/quicktime,video/webm':'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm';file.hidden=true;file.setAttribute('aria-label',label+' 앨범에 올리기');
- const uploads=node('div','record-toolbar record-upload'),uploadVisibility=select('새 파일 공개범위',scopes,'me'),add=button((kind==='all'?'사진·동영상':label)+' 올리기',()=>{uploads.hidden=!uploads.hidden;});
+ const uploads=node('div','record-toolbar record-upload'),uploadVisibility=select('새 파일 공개범위',scopes,'all'),add=button((kind==='all'?'사진·동영상':label)+' 올리기',()=>{uploads.hidden=!uploads.hidden;});
  add.className='record-upload-toggle';
  const uploadCaption=node('textarea');uploadCaption.rows=3;uploadCaption.maxLength=100;uploadCaption.placeholder='사진이나 영상에 대한 설명을 적어 주세요';
  const captionField=field('설명 (선택 · 100자까지)',uploadCaption);captionField.classList.add('record-upload-caption');
  const captionHelp=node('p','panel-note','설명을 적은 뒤 파일을 선택해 주세요. 여러 개를 선택하면 같은 설명으로 저장돼요.');captionField.append(captionHelp);
- const scopeNote=node('p','panel-note');uploads.hidden=true;uploads.append(captionField,uploadVisibility,button('파일 선택',()=>file.click()),node('span','panel-note',kind==='photo'?'사진 20MB까지':kind==='video'?'영상 1분 · 50MB까지':'사진 20MB · 영상 1분 / 50MB까지'),scopeNote);toolbar.append(add,refresh);
+ const scopeNote=node('p','panel-note');uploads.hidden=true;uploads.append(uploadVisibility,captionField,button('파일 선택',()=>file.click()),node('span','panel-note',kind==='photo'?'사진 20MB까지':kind==='video'?'영상 1분 · 50MB까지':'사진 20MB · 영상 1분 / 50MB까지'),scopeNote);toolbar.append(add,refresh);
  (foldersHost||container).append(folders);container.append(trashHeading,toolbar,uploads,file,status,editor,selection,gallery);if(kind==='text')add.hidden=true;
  function renderFolders(){
   release(folderHolds);folderHolds=[];const focused=folders.contains(document.activeElement)?document.activeElement.dataset.folderId:null;folders.replaceChildren();folders.hidden=kind==='all'||trash;if(foldersHost)foldersHost.hidden=folders.hidden;if(folders.hidden)return;
@@ -126,12 +126,12 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  }
  function folderEditor(folder,folderKind=folder?.kind||kind){
   if(busy||!folderKinds.some(([id])=>id===folderKind))return;editor.replaceChildren();const form=node('form'),name=node('input');name.type='text';name.maxLength=20;name.value=folder?.name||'';name.required=true;name.placeholder='익명, 친구, 여행…';
-  const scope=select('폴더 공개범위',[...scopes,['chosen','선택한 친구·그룹']],folder?.visibility||'me'),choices=node('div'),groups=node('div','record-friends record-group-choices'),friends=friendChecks(folder?.allowed);
+  const scope=select('폴더 공개범위',[...scopes,['chosen','선택한 친구·그룹']],folder?.visibility||'all'),choices=node('div'),groups=node('div','record-friends record-group-choices'),friends=friendChecks(folder?.allowed);
   for(const group of snapshot.groups||[]){const check=node('input');check.type='checkbox';check.value=group.id;check.checked=!!folder?.allowed_groups?.includes(group.id);const option=node('label');option.append(check,document.createTextNode(group.name+` · ${group.members.filter(id=>snapshot.friends.some(friend=>friend.id===id)).length}명`));groups.append(option);}
   if(!snapshot.groups?.length)groups.append(node('p','panel-note','설정에서 친구 그룹을 만들 수 있어요.'));
   choices.append(node('h4','','친구 그룹 선택'),groups,node('h4','','개별 친구 선택'),friends,node('p','panel-note','선택한 친구와 그룹의 친구가 볼 수 있어요. 아무도 선택하지 않으면 나만 볼 수 있어요.'));
   const show=()=>choices.hidden=scope.value!=='chosen';scope.onchange=show;show();
-  form.append(node('p','record-form-title',(folderKinds.find(([id])=>id===folderKind)[1])+(folder?' 폴더 설정':' 새 폴더')),field('폴더 이름',name),field('볼 수 있는 사람',scope),choices,node('p','panel-note','폴더 안의 기록은 이 공개범위를 따라요.'));
+  form.append(node('p','record-form-title',(folderKinds.find(([id])=>id===folderKind)[1])+(folder?' 폴더 설정':' 새 폴더')),field('볼 수 있는 사람',scope),field('폴더 이름',name),choices,node('p','panel-note','폴더 안의 기록은 이 공개범위를 따라요.'));
   const submit=button(folder?'폴더 저장':'폴더 만들기');submit.type='submit';form.append(submit,button('취소',()=>editor.replaceChildren()));
   if(folder){const remove=button('폴더 삭제',()=>deleteFolderEditor(folder));remove.setAttribute('aria-label',folder.name+' 폴더 삭제');remove.className='record-settings-delete';form.append(remove);}
   form.onsubmit=event=>{event.preventDefault();void save('save-folder',{id:folder?.id,kind:folderKind,name:name.value,visibility:scope.value,allowed:[...friends.querySelectorAll('input:checked')].map(el=>el.value),allowed_groups:[...groups.querySelectorAll('input:checked')].map(el=>el.value)},'폴더를 저장했어요.',result=>chooseFolder(result.id,folderKind));};
@@ -156,7 +156,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   if(busy)return;editor.replaceChildren();const form=node('form'),caption=node('textarea');caption.rows=3;caption.maxLength=100;caption.placeholder='사진이나 영상에 대한 설명을 적어 주세요 (100자까지)';caption.value=record.caption||'';
   const destination=select('파일 폴더',[['','폴더 없음'],...foldersFor(recordKind(record)).map(folder=>[folder.id,folder.name])],record.folder_id||''),scope=select('파일 공개범위',scopes,record.visibility),note=node('p','panel-note');
   function update(){const folder=snapshot.folders.find(row=>row.id===destination.value);scope.disabled=!!folder;scope.hidden=!!folder;note.textContent=folder?`‘${folder.name}’ 폴더의 공개범위를 따라요. (${scopeLabel(folder.visibility)})`:'';}
-  destination.onchange=()=>{if(!destination.value)scope.value='me';update();};update();form.append(node('p','record-form-title',label+' 설정'),field('설명',caption),folderScopeFields(destination,scope),note);
+  destination.onchange=()=>{if(!destination.value)scope.value='me';update();};update();form.append(node('p','record-form-title',label+' 설정'),folderScopeFields(destination,scope),note,field('설명',caption));
   const submit=button('파일 설정 저장');submit.type='submit';form.append(submit,button('취소',()=>editor.replaceChildren()),button('휴지통으로',()=>trashEditor([record])));form.onsubmit=event=>{event.preventDefault();void save('save-media',{id:record.id,caption:caption.value,visibility:scope.value,folder_id:destination.value||null},'설정을 저장했어요.');};editor.append(form);caption.focus();
  }
  async function showMedia(record){
@@ -170,7 +170,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
  file.onchange=async()=>{
   const files=[...file.files||[]];file.value='';if(busy||!active()||!files.length)return;
   if(files.length>10){status.textContent='한 번에 10개까지 올려 주세요.';return;}
-  const target=folderId==='all'||folderId==='none'?null:folderId,visibility=uploadVisibility.value,caption=uploadCaption.value;let count=0,error=null;lock(true);
+  const target=folderId==='all'||folderId==='none'?null:folderId,visibility=target?'me':uploadVisibility.value,caption=uploadCaption.value;let count=0,error=null;lock(true);
   try{for(const selected of files){if(active())status.textContent=`${count+1}/${files.length}개 저장 중이에요…`;await request('upload',{file:selected,kind:kind==='all'?(selected.type.startsWith('image/')?'photo':'video'):kind,folder_id:target,visibility,caption});count++;}}
   catch(caught){error=caught;}finally{if(active()){uploads.hidden=!error;if(!error)uploadCaption.value='';await load();lock(false);status.textContent=(count?`${count}개를 앨범에 저장했어요. `:'')+(error?error.message:'');}}
  };
