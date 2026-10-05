@@ -116,8 +116,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await frame.locator('#note-announcement').count(),0,width+': Park uses the single World notice');
   assert.equal(await frame.locator('.mobile-top:visible,.side:visible,.bottomnav:visible,.write-fab:visible').count(),0,width+': no duplicate app chrome');
   assert.equal(await page.locator('.topbar .brand:visible,.side > .brand:visible').count(),1,width+': one World brand');
-  assert.equal(await page.locator('.ojjuda-copy--world:visible').count(),1,width+': one visible World greeting');
-  assert.equal(await page.locator('.ojjuda-copy--world:visible').textContent(),copy);
+  assert.equal(await page.locator('.topbar .ojjuda-copy--world,.side > .ojjuda-copy--world').count(),0,width+': World header has no extra greeting row');
   assert.equal(await frame.locator('.ojjuda-copy--feed').textContent(),copy);
   assert.equal(await page.locator('.bottomnav:visible,.sidenav:visible').count(),1,width+': one World navigation');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),width+': parent has no second vertical scrollbar');

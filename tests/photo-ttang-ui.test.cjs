@@ -48,6 +48,21 @@ world=world.replace('</head>','<script src="/ttang-bridge.js"></script><script s
   assert.ok(await frame.evaluate(()=>startWait<=.01&&me.freezeT<=.001),'the first small drag must start movement immediately');
   await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   assert.equal(await frame.evaluate(()=>joys.size),0,'releasing the finger must release the joystick');
+  for(const [width,height] of [[320,568],[390,844],[844,390]]){
+   await page.setViewportSize({width,height});
+   await frame.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const radii=await frame.evaluate(()=>{
+    const arcs=[],arc=ctx.arc,stroke=ctx.stroke;let lastArc=null;
+    ctx.arc=function(x,y,r,a,b,...rest){lastArc={x,y,r,a,b};return arc.call(this,x,y,r,a,b,...rest)};
+    ctx.stroke=function(...args){if(lastArc?.x===0&&lastArc?.y===0&&lastArc.b-lastArc.a>=TAU&&this.strokeStyle==='#ffffff')arcs.push(lastArc.r+this.lineWidth/2);return stroke.apply(this,args)};
+    try{draw(0)}finally{ctx.arc=arc;ctx.stroke=stroke}
+    return{drawn:arcs,hit:world.bodyRadius(me)*view().S,line:world.trailRadius*view().S*2};
+   });
+   assert.equal(radii.drawn.length,1,'one visible player body');
+   assert.ok(Math.abs(radii.drawn[0]-radii.hit)<1e-8,'drawn body including its outline equals the collision radius');
+   assert.ok(radii.line>=5,'small screens retain the visible line width');
+  }
+  await page.setViewportSize({width:390,height:844});
   await frame.evaluate(()=>{paused=false;});await input.detach();await frame.click('#pause');
   assert.equal(await frame.getByText('잠깐 쉬는 중').isVisible(),true);await frame.click('#go');
   await frame.evaluate(()=>win());assert.equal(await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-photo-ttang'))['0'].done),1);
