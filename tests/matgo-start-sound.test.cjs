@@ -4,12 +4,12 @@ const root=path.join(__dirname,'..');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
  try{
-  for(const mode of ['touch','keyboard','muted']){
+  for(const mode of ['touch','keyboard','muted','rich']){
    const context=await browser.newContext({viewport:{width:390,height:820},hasTouch:true});
-   const errors=[];let starts=0;
+   const errors=[],gold=mode==='rich'?900001:5000;let starts=0;
    await context.exposeBinding('soundFixture',async(_,{action})=>{
     if(action==='start')starts++;
-    return {data:{ok:true,gold:5000,coins:20,free_left:2,round:action==='start'?{id:'test-round',seed:10,gold:5000,first:0,carry:1}:null}};
+    return {data:{ok:true,gold,coins:20,free_left:2,round:action==='start'?{id:'test-round',seed:10,gold,first:0,carry:1}:null}};
    });
    await context.addInitScript(({mode})=>{
     localStorage.setItem('ojjuda-matgo-sound',mode==='muted'?'off':'on');
@@ -51,6 +51,7 @@ const root=path.join(__dirname,'..');
     await page.evaluate(()=>matgoSoundTest.startRound());assert.equal(starts,2,'later rounds need no extra start prompt');
     await page.reload();await page.locator('#matgo-start-play').waitFor();assert.equal(starts,2,'re-entry gets a new audio gesture before dealing');
    }
+   assert.equal(await page.evaluate(()=>matgoSoundTest.game.cpuLevel),mode==='rich'?10:1,'solo browser uses the server balance for the next CPU tier');
    assert.deepEqual(errors,[]);await context.close();
   }
   console.log('PASS: cold-start touch/keyboard enables real audio before deal; mute, replay, reload and synthetic-click protection');
