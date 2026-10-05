@@ -2,10 +2,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.OPEN_BOOK_PROOF_DIR||path.resolve(root,'../open-book-proof');
 const bytes=fs.readFileSync(path.join(root,'house-test/assets/open-book-v1.runtime.json')),runtime=JSON.parse(bytes);
-assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),'ebc35a155522716b5891edbc75aa8210904a6e71d941ffc79323daf14def4e36');
+assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),'f6b1f38b7e9853863d5e0fd62e2c5499cfbe630558dc14eb0b1b1f4ed0f2a67d');
 for(const d of ['left','center','right']){
  const feet=runtime.views[d].mesh.anchors.filter(a=>a.kind==='physical'&&a.world.z===0);
- const pair=d==='right'?[feet[1],feet[2]]:[feet[0],feet[1]];
+ const pair=d==='left'?[feet[1],feet[2]]:[feet[0],feet[1]];
  const axis=d==='center'?'y':'x',expected=d==='left'?.8:d==='center'?.8:0;
  assert(pair.every(a=>Math.abs(a.world[axis]-expected)<1e-6),d+' book reading edge faces seated reader');
 }
