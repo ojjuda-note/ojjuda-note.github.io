@@ -20,8 +20,9 @@
     return `<button class="btn pri arcade-create-shortcut" data-arcade-action="create" data-kind="${escape(kind)}">방 제목을 정하고 공개 대전방 만들기</button>`;
   }
   function markup() { return '<section class="arcade-rooms" data-arcade-rooms aria-label="오락실 대전방"></section>'; }
+  function feedMarkup() { return '<div class="arcade-room-feed" data-arcade-room-feed data-room-list aria-label="채팅에 게시된 대전방"></div>'; }
   function create(options) {
-    let root = null, owner = null, epoch = 0, timer = null, polling = false, busy = false, disposed = false;
+    let root = null, list = null, owner = null, epoch = 0, timer = null, polling = false, busy = false, disposed = false;
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null;
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
@@ -48,14 +49,18 @@
     }
     function render() {
       if (!root?.isConnected) return;
-      if (!root.querySelector('[data-room-list]')) {
-        root.innerHTML = `<div class="arcade-rooms-head"><div><h3>대전방</h3><p>방을 골라 함께 한 판 해요</p></div><button class="btn pri" data-arcade-action="create">＋ 방 만들기</button></div>
+      if (!root.querySelector('[data-room-filter]')) {
+        root.innerHTML = `<div class="arcade-rooms-head"><div><h3>대전방</h3><p>만든 방이 아래 채팅창에 올라와요</p></div><button class="btn pri" data-arcade-action="create">＋ 방 만들기</button></div>
           <div class="arcade-room-filters"><select aria-label="대전방 게임 선택" data-room-filter><option value="">모든 게임</option></select><input class="inp" type="search" data-room-search maxlength="40" placeholder="방번호 또는 제목 검색" aria-label="방번호 또는 제목 검색"></div>
-          <p class="arcade-room-issue" data-room-issue role="status" hidden></p><div data-room-list></div>
+          <p class="arcade-room-issue" data-room-issue role="status" hidden></p>
           <button class="arcade-room-retry" data-arcade-action="refresh">방 목록 새로고침</button>`;
         root.querySelector('[data-room-search]').value = query;
         signature = '';
       }
+      let nextList = document.querySelector('[data-arcade-room-feed]') || root.querySelector('[data-room-list]');
+      // Older cached shells can still display rooms until their next refresh.
+      if (!nextList) { nextList = document.createElement('div'); nextList.dataset.roomList = ''; root.append(nextList); }
+      if (list !== nextList) { list = nextList; signature = ''; }
       const select = root.querySelector('[data-room-filter]');
       const choices = Object.entries(games).filter(([kind]) => kind !== 'matgo' || canMatgo);
       if (select.options.length !== choices.length + 1) {
@@ -68,11 +73,14 @@
       const text = query.trim().replace(/^#/, '').toLocaleLowerCase();
       const shown = rooms.filter(r => (!filter || r.kind === filter) && (!text || String(r.room_no).includes(text) || r.title.toLocaleLowerCase().includes(text)));
       if (mine && !shown.some(r => r.room_no === mine.room_no)) shown.unshift(mine);
+      shown.sort((a, b) => a.room_no - b.room_no);
       const next = JSON.stringify([shown, busy, owner]);
       if (signature !== next) {
+        const chat = list.closest('.plog'), atBottom = chat && chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
         signature = next;
-        root.querySelector('[data-room-list]').innerHTML = shown.length ? shown.map(card).join('')
+        list.innerHTML = shown.length ? shown.map(card).join('')
           : `<p class="arcade-room-empty">${owner ? query || filter ? '조건에 맞는 방이 없어요.' : '아직 열린 방이 없어요.<br>첫 대전방을 만들어 보세요.' : '로그인하면 대전방을 만들고 참여할 수 있어요.'}</p>`;
+        if (atBottom) chat.scrollTop = chat.scrollHeight;
       }
       root.querySelector('[data-arcade-action="create"]').disabled = busy || !owner;
     }
@@ -113,6 +121,14 @@
     }
     function layoutSelect(selected) {
       return `<label class="field">장기 시작 배치<select class="inp" name="layout">${layouts.map(([code, label]) => `<option value="${code}"${code === selected ? ' selected' : ''}>${label}</option>`).join('')}</select></label>`;
+    }
+    function revealMine() { list?.querySelector('.arcade-room-card.mine')?.scrollIntoView({ block: 'nearest' }); }
+    function created(room) {
+      sync();
+      if (!owner || !room?.is_host || !room.is_member || !Number.isSafeInteger(room.room_no) || !games[room.kind] || typeof room.title !== 'string' || room.status !== 'waiting') { void poll(); return; }
+      // The same-origin game sends the server's safe room card; joining still requires the RPC.
+      epoch++; mine = room; rooms = rooms.filter(r => r.room_no !== room.room_no); rooms.push(room);
+      issue = ''; render(); revealMine(); void poll();
     }
     async function perform(action, params, actor) {
       busy = true; epoch++; render();
@@ -157,7 +173,7 @@
         try {
           const room = await perform('create', { p_kind: kind, p_title: title, p_options: { request_id: request, layout } }, actor);
           if (!room) return;
-          if (form.isConnected) options.closeModal(); options.goArcade(); sync();
+          if (form.isConnected) options.closeModal(); options.goArcade(); sync(); revealMine();
           options.notify(`방 #${room.room_no}을 만들었어요. 상대가 참여하면 시작해요.`); void poll();
         } catch (error) { if (current(actor) && form.isConnected) form.querySelector('[data-room-message]').textContent = message(error); }
         finally { controls.forEach(el => el.disabled = false); }
@@ -203,7 +219,7 @@
     document.addEventListener('click', click);
     document.addEventListener('input', input);
     document.addEventListener('change', input);
-    return { sync, openCreate, refresh: poll, dispose() { disposed = true; epoch++; clearTimeout(timer); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); } };
+    return { sync, openCreate, created, refresh: poll, dispose() { disposed = true; epoch++; clearTimeout(timer); document.removeEventListener('click', click); document.removeEventListener('input', input); document.removeEventListener('change', input); } };
   }
-  window.OjjudaArcadeRooms = { create, markup, shortcut, message };
+  window.OjjudaArcadeRooms = { create, markup, feedMarkup, shortcut, message };
 })();

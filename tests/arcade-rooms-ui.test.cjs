@@ -6,7 +6,7 @@ const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 S=window.fixtureClient;Pa=async()=>{};P.loaded=true;P.friends=[];
 D.online=true;D.user={id:window.fixtureActor};D.doorReady=true;D.boardReady=true;D.billiardsReady=true;D.janggiLayoutReady=true;
-window.arcadeTest={actions:sr,render:H,auth:D,state:g,client:S,rooms:()=>worldArcadeRooms,
+window.arcadeTest={actions:sr,render:H,auth:D,state:g,client:S,rooms:()=>worldArcadeRooms,chat:text=>{g.place.log.push({sys:true,text});eo();},redraw:Bf,
  switchActor:id=>{D.user={id};window.fixtureActor=id;worldArcadeRooms.sync()}};
 g.tab='friends';H();
 `+world.slice(world.indexOf('</script>',boot));
@@ -59,19 +59,35 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
     const a=await screen(A),b=await screen(B);
     const title=kind+' 초보 <b> & 친구들';
     await a.page.locator('#pmsg').fill('보내기 전 채팅');
-    if(kind==='matgo')await a.page.locator('[data-arcade-rooms] [data-arcade-action=create]').click();
-    else{
+    if(kind==='matgo'){
+      await a.page.locator('[data-act=matgo-open]').click();
+      const frame=a.page.frameLocator('#matgo-overlay iframe');
+      await frame.locator('#create').click();await frame.locator('#public-room-title').fill(title);
+      await frame.locator('#public-room-form button[type=submit]').click();
+      await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
+    }else{
       await a.page.evaluate(kind=>arcadeTest.actions[/^(carom|pool)/.test(kind)?'bl-open':'bd-open']({v:kind}),kind);
       await a.page.locator('[data-arcade-action=create][data-kind="'+kind+'"]').click();
+      await a.page.locator('#arcade-room-form select[name=kind]').selectOption(kind);
+      await a.page.locator('#arcade-room-form input[name=title]').fill(title);
+      if(kind==='janggi')await a.page.locator('#arcade-room-form select[name=layout]').selectOption('heeh');
+      await a.page.locator('#arcade-room-form button[type=submit]').click();
     }
-    await a.page.locator('#arcade-room-form select[name=kind]').selectOption(kind);
-    await a.page.locator('#arcade-room-form input[name=title]').fill(title);
-    if(kind==='janggi')await a.page.locator('#arcade-room-form select[name=layout]').selectOption('heeh');
-    await a.page.locator('#arcade-room-form button[type=submit]').click();
-    await a.page.locator('.arcade-room-card.mine').waitFor();await refresh(b.page);
+    await a.page.locator('#plog .arcade-room-card.mine').waitFor();
+    await b.page.locator('#plog .arcade-room-card').waitFor();
+    assert.equal(await a.page.locator('[data-arcade-rooms] .arcade-room-card').count(),0,'room is inside the chat, not a separate list');
+    await a.page.evaluate(()=>arcadeTest.chat('일반 채팅을 새로 받아요'));
+    assert.equal(await a.page.locator('#plog .arcade-room-card').count(),1,'normal chat refresh preserves the room post');
     assert.equal(await a.page.locator('#pmsg').inputValue(),'보내기 전 채팅','room publishing preserves chat input');
     assert.equal(await b.page.locator('.arcade-room-copy h4').textContent(),title,'untrusted title is rendered as text');
     const room=(await f.arcade(A,'list')).mine;
+    if(kind==='matgo'){
+      // Returning to chat must keep the waiting match, including after resuming it.
+      await a.page.locator('[data-act=matgo-open]').click();
+      await a.page.frameLocator('#matgo-overlay iframe').locator('#wait-in-chat').click();
+      await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
+      assert.equal((await f.db.query('select status from ojjuda_matgo_internal.rooms where id=$1',[room.match_id])).rows[0].status,'waiting');
+    }
     await b.page.locator('[data-room-search]').fill(String(room.room_no));await refresh(b.page);
     assert.equal(await b.page.locator('[data-room-search]').inputValue(),String(room.room_no));
     if(kind==='chess'){
@@ -105,6 +121,6 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
   await refresh(b.page);await a.page.locator('[data-arcade-action=cancel]').click();await a.page.locator('.arcade-room-card').waitFor({state:'detached'});await refresh(b.page);assert.equal(await b.page.locator('.arcade-room-card').count(),0);
   await a.page.evaluate(()=>arcadeTest.switchActor(null));assert.equal(await a.page.locator('[data-arcade-action=create]').isDisabled(),true);assert.equal(await a.page.locator('.arcade-room-card').count(),0);
   await a.context.close();await b.context.close();assert.deepEqual(errors,[]);
-  console.log('PASS: real World menus for all 6 games, two browser game launch, Matgo iframe hands, host navigation, room title/number, escaping, 320/390/1280 widths, chat drafts, filters, cancellation, age and logout.');
+  console.log('PASS: all 6 game rooms appear inside chat automatically, messages preserve posts, Matgo creation/return keeps waiting room, two browsers launch the same game, responsive widths, drafts, filters, cancellation, age and logout.');
  }finally{await browser.close();await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

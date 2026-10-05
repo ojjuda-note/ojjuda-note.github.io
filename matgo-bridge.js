@@ -60,7 +60,7 @@
       close.onclick = requestClose;
       bar.append(close);
       frame = document.createElement('iframe');
-      const params = new URLSearchParams({ v: '20261005-rooms1' });
+      const params = new URLSearchParams({ v: '20261005-chatrooms2' });
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
       if (typeof options.title === 'string') params.set('room_title', options.title.slice(0, 80));
@@ -84,7 +84,14 @@
   window.addEventListener('message', event => {
     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow) return;
     if (event.data?.type === 'ojjuda:matgo:close') closeMatgo();
-    if (event.data?.type === 'ojjuda:matgo:online-ready') onlineReady=true;
+    if (event.data?.type === 'ojjuda:matgo:online-ready') {
+      onlineReady=true;
+      frame.contentWindow.postMessage({type:'ojjuda:matgo:capabilities',publicLobby:typeof window.OjjudaArcadeRoomCreated==='function'},location.origin);
+    }
+    if (event.data?.type === 'ojjuda:matgo:room-created' && typeof window.OjjudaArcadeRoomCreated==='function') {
+      const room=event.data.room;
+      closeMatgo();window.OjjudaArcadeRoomCreated(room);return;
+    }
     if (event.data?.type === 'ojjuda:matgo:ready') onlineReady=false;
     if (['ojjuda:matgo:online-ready','ojjuda:matgo:ready'].includes(event.data?.type))document.getElementById('matgo-loading-bar')?.remove();
     if (event.data?.type === 'ojjuda:matgo:wallet') window.OjjudaMatgoWalletChanged?.();
