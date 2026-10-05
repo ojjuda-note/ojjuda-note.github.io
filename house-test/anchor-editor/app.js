@@ -1,18 +1,19 @@
-import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261005-sofabook1';
-import {validQuad,homography,project,drawWarp} from './warp.js?v=20261005-sofabook1';
-import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261005-sofabook1';
-import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261005-sofabook1';
-import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261005-sofabook1';
-import {makeZip} from './zip.js?v=20261005-sofabook1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261005-sofabook1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261005-sofabook1';
-import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261005-sofabook1';
-import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261005-sofabook1';
-import {PICTURE_LIBRARY} from './accessory-library.js?v=20261005-sofabook1';
-import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261005-sofabook1';
-import {mountPartsEditor} from './parts-editor.js?v=20261005-sofabook1';
-import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261005-sofabook1';
-import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261005-sofabook1';
+import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261005-shapeguard1';
+import {pictureShape} from './shape-check.js?v=20261005-shapeguard1';
+import {validQuad,homography,project,drawWarp} from './warp.js?v=20261005-shapeguard1';
+import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261005-shapeguard1';
+import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261005-shapeguard1';
+import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261005-shapeguard1';
+import {makeZip} from './zip.js?v=20261005-shapeguard1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261005-shapeguard1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261005-shapeguard1';
+import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261005-shapeguard1';
+import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261005-shapeguard1';
+import {PICTURE_LIBRARY} from './accessory-library.js?v=20261005-shapeguard1';
+import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261005-shapeguard1';
+import {mountPartsEditor} from './parts-editor.js?v=20261005-shapeguard1';
+import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261005-shapeguard1';
+import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261005-shapeguard1';
 import {mountSimpleEditor} from './simple-editor.js?v=20261004-cleanup1';
 
 const $=id=>document.getElementById(id);
@@ -120,6 +121,7 @@ function previewFor(direction){
    if(valid&&p.layers.every(l=>!!l.binding)&&result){status='준비';ready=true;}
    if(!partsPlaneCoverage(p,slot.cutout).ok){status='부위·물건 등록 범위 부족';ready=false;result=null;}
   }
+  if(ready){try{const shape=pictureShape(p,parentPicture(p,slot.cutout),targetFor);if(!shape.ok){status='변형 과다 · 기준점 수정 필요';ready=false;}}catch{status='그림 비율 확인 필요';ready=false;}}
   if(p.provenance?.kind==='ai'&&!p.provenance.reviewed){status='AI 그림 · 확인 필요';ready=false;}
   if(!result)result=cropped(slot.cutout);
  }
@@ -130,11 +132,13 @@ function syncSet(){
  for(const direction of DIRECTIONS){
   const p=previewFor(direction),canvas=$('preview-'+direction),ctx=canvas.getContext('2d');count+=p.ready?1:0;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(p.result){const img=p.result.canvas,k=Math.min((canvas.width-16)/img.width,(canvas.height-16)/img.height);ctx.drawImage(img,(canvas.width-img.width*k)/2,(canvas.height-img.height*k)/2,img.width*k,img.height*k);}
+  const original=slots[direction].cutout?cropped(slots[direction].cutout):null;
+  for(const [i,entry]of [original,p.result].entries())if(entry){const img=entry.canvas,w=canvas.width/2,k=Math.min((w-12)/img.width,(canvas.height-28)/img.height);ctx.drawImage(img,i*w+(w-img.width*k)/2,22+(canvas.height-28-img.height*k)/2,img.width*k,img.height*k);}
+  ctx.fillStyle='#51405f';ctx.font='12px '+getComputedStyle(canvas).fontFamily;ctx.textAlign='center';ctx.fillText('원본',canvas.width/4,15);ctx.fillText('배치 결과',canvas.width*3/4,15);
   $('status-'+direction).textContent=p.status;$('status-'+direction).dataset.state=slots[direction].state.provenance?.kind==='ai'&&!slots[direction].state.provenance.reviewed?'review':p.ready?'ready':'missing';
   document.querySelectorAll('[data-view="'+direction+'"]').forEach(b=>{b.classList.toggle('active',direction===activeView);b.setAttribute('aria-pressed',String(direction===activeView));});
  }
- $('set-summary').textContent=`원본 그림 ${DIRECTIONS.filter(d=>!!slots[d].sourceImage).length}/3 · 격자 연결 ${count}/3${count===3?' · 세트 내보내기 가능':' · 격자 미등록 그림도 작업 파일에 저장돼요'}`;
+ $('set-summary').textContent=`원본 그림 ${DIRECTIONS.filter(d=>!!slots[d].sourceImage).length}/3 · 등록 검사 ${count}/3${count===3?' · 모양과 접지는 배치 결과에서 확인해 주세요':' · 수정 중인 그림도 작업 파일에 저장돼요'}`;
  $('export-set').disabled=count!==3||loading||!!gesture;
  for(const id of ['studio-apply','studio-preview'])if($(id))$(id).disabled=count!==3||loading||!!gesture||!['floor','surface'].includes(shared.usage);
  $('export-parts').disabled=!DIRECTIONS.some(d=>slots[d].state.parts)||loading||!!gesture;
@@ -350,7 +354,7 @@ function png(canvas,name){canvas.toBlob(blob=>{if(!blob){message('PNG 저장에 
 function cropped(canvas){const b=alphaBounds(canvas);if(!b)return null;const out=document.createElement('canvas');out.width=b.width;out.height=b.height;out.getContext('2d').drawImage(canvas,b.x,b.y,b.width,b.height,0,0,b.width,b.height);return {canvas:out,bounds:b};}
 $('export-cutout').onclick=()=>{if(!cutout)return;const result=cropped(cutout);if(!result){message('남은 그림이 없어요. 되살리기로 복구해 주세요.');return;}png(result.canvas,filename()+'-'+activeView+'-분리.png');message('주변을 지운 투명 그림을 저장했어요.');};
 function furnitureCanvas(scale=1,p=state,masked=cutout){const c=document.createElement('canvas');c.width=ROOM.width*scale;c.height=ROOM.height*scale;const ctx=c.getContext('2d');ctx.scale(scale,scale);drawFurniture(ctx,p,masked);return c;}
-$('export-png').onclick=()=>{if(!partsPlaneCoverage(state,cutout).ok){message('등록한 면 밖의 부위·물건이 있어요. 전체 그림의 기준점을 먼저 보완해 주세요.');return;}if(state.pictureLayers){const check=validatePictureLayers(state.pictureLayers,state.placement,state.pictureLayerRules);if(!check.ok){message(check.error);return;}if(!cachedPictureLayersCoverage(parentPicture(state,cutout),state.pictureLayers).ok){message('부위 기준점 밖에 그림이 남아 있어요. 누락한 부위의 외곽을 보완해 주세요.');return;}}else if(state.mesh){const check=validateMesh(state.mesh,state.placement);if(!check.ok){message(check.error);return;}if(!cachedMeshCoverage(parentPicture(state,cutout),state.mesh).ok){message('곡선 기준점 밖에 그림이 남아 있어요. 외곽 기준점을 보완해 주세요.');return;}}else if(!state.layers.some(ready))return;const result=cropped(furnitureCanvas(3));if(!result){message('남은 그림이 없어요. 꼭지점과 외곽선을 확인해 주세요.');return;}png(result.canvas,filename()+'-'+activeView+'-가구.png');message('방과 격자를 제외한 3배 해상도 투명 가구 PNG를 저장했어요.');};
+$('export-png').onclick=()=>{storeActive();if(!previewFor(activeView).ready){message('현재 방향의 등록 검사를 통과한 뒤 배치 그림을 저장해 주세요. 원본과 작업 파일은 저장할 수 있어요.');return;}if(!partsPlaneCoverage(state,cutout).ok){message('등록한 면 밖의 부위·물건이 있어요. 전체 그림의 기준점을 먼저 보완해 주세요.');return;}if(state.pictureLayers){const check=validatePictureLayers(state.pictureLayers,state.placement,state.pictureLayerRules);if(!check.ok){message(check.error);return;}if(!cachedPictureLayersCoverage(parentPicture(state,cutout),state.pictureLayers).ok){message('부위 기준점 밖에 그림이 남아 있어요. 누락한 부위의 외곽을 보완해 주세요.');return;}}else if(state.mesh){const check=validateMesh(state.mesh,state.placement);if(!check.ok){message(check.error);return;}if(!cachedMeshCoverage(parentPicture(state,cutout),state.mesh).ok){message('곡선 기준점 밖에 그림이 남아 있어요. 외곽 기준점을 보완해 주세요.');return;}}else if(!state.layers.some(ready))return;const result=cropped(furnitureCanvas(3));if(!result){message('남은 그림이 없어요. 꼭지점과 외곽선을 확인해 주세요.');return;}png(result.canvas,filename()+'-'+activeView+'-가구.png');message('방과 격자를 제외한 3배 해상도 투명 가구 PNG를 저장했어요.');};
 function exportProject(p=state,masked=cutout){
  if(!p.source)return null;
  const result=cropped(furnitureCanvas(1,p,masked)),projected=p.mesh?meshProjection(p):null;
@@ -568,7 +572,7 @@ export function studioBundle(){
  if(loading||!canSave())throw new Error('진행 중인 편집을 마친 뒤 적용해 주세요.');
  const project=exportSet();if(!project.complete)throw new Error('세 방향의 그림과 격자 연결을 먼저 완성해 주세요.');
  if(!['floor','surface'].includes(shared.usage))throw new Error('소파·침대 위 소품은 부모 가구에 넣은 다음 가구 세트로 적용해 주세요.');
- const runtime={format:'ojjuda-runtime-furniture',version:1,name:project.name,dimensions:project.dimensions,layer:shared.usage==='surface'?'surface':shared.objectType==='furniture'?'standing':'floor',views:{}};
+ const runtime={format:'ojjuda-runtime-furniture',version:1,shapePolicy:1,name:project.name,dimensions:project.dimensions,layer:shared.usage==='surface'?'surface':shared.objectType==='furniture'?'standing':'floor',views:{}};
  const png=image=>{if(image.toDataURL)return image.toDataURL('image/png');const c=document.createElement('canvas');c.width=image.naturalWidth||image.width;c.height=image.naturalHeight||image.height;c.getContext('2d').drawImage(image,0,0);return c.toDataURL('image/png');};
  for(const d of DIRECTIONS){const slot=slots[d],p=slot.state,plan=drapePlan(p,slot.cutout);runtime.views[d]={placement:clone(p.placement),layers:clone(p.layers).map(l=>l.binding?{...l,binding:{...l.binding,uv:l.binding.uv||clone(unitQuad),offset:l.binding.offset||0}}:l),...(p.mesh?{mesh:clone(p.mesh)}:{}),...(p.pictureLayers?{pictureLayers:clone(p.pictureLayers),pictureLayerRules:clone(p.pictureLayerRules||{})}:{}),preview:project.views[d].asset.data,drawings:(plan?.layers||[{image:slot.cutout}]).map(l=>({data:png(l.image),...(l.registration?{registration:clone(l.registration),segment:l.segment}:{})}))};}
  return {runtime,project};

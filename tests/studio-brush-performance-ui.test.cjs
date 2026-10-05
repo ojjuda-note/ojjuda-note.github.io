@@ -12,7 +12,7 @@ const fixture=`<!doctype html><button id="open">Open</button><script type="modul
   // Clicking opens the iframe before its document has necessarily navigated.
   await page.frameLocator('iframe[title="관리자 가구 제작실"]').locator('#studio-editor').waitFor({state:'visible'});
   const frame=page.frames().find(f=>f.url().includes('/anchor-editor/'));
-  await frame.locator('#studio-side-table').click();await frame.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
+  await frame.locator('#studio-side-table').click();await frame.waitForFunction(()=>document.querySelector('#set-summary').textContent.includes('원본 그림 3/3'));
   await frame.evaluate(async()=>{
    const entry=await(await fetch('./entry.js')).text();window.editor=await import(entry.match(/import\('(.\/app\.js[^']*)'\)/)[1]);
    window.before=editor.studioBundle();window.active=before.project.activeView;

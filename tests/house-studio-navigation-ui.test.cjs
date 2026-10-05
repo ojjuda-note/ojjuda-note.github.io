@@ -1,3 +1,4 @@
+const {loadValidStudioItem}=require('./furniture-studio-fixture.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
@@ -19,7 +20,7 @@ const parent=`<!doctype html><html><body style="overflow:auto"><button id="studi
   const studio=()=>page.frames().find(f=>f.url().includes('/anchor-editor/index.html'));
   const house=()=>page.frames().find(f=>/house-test\/index.html/.test(f.url()));
   await page.frameLocator('iframe').locator('#studio-editor').waitFor({state:'visible'});
-  const original=studio();await original.locator('#studio-side-table').click();await original.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
+  const original=studio();await loadValidStudioItem(original);await original.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
   await original.evaluate(async()=>{
    await(await import((await(await fetch('./entry.js')).text()).match(/import\('(.\/app\.js[^']*)'\)/)[1])).studioFlush();
    window.originalPut=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(){throw new DOMException('Simulated full disk','QuotaExceededError');};
