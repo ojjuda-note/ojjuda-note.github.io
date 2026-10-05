@@ -1,11 +1,14 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-sofabook1';
-import {validQuad,drawWarp} from './warp.js?v=20261005-sofabook1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-sofabook1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-sofabook1';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-sofabook1';
-import {drawDrapedLayer} from './draped-parts.js?v=20261005-sofabook1';
-import {alphaBounds} from './cutout.js?v=20261005-sofabook1';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-shapeguard1';
+import {validQuad,drawWarp} from './warp.js?v=20261005-shapeguard1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-shapeguard1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-shapeguard1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-shapeguard1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261005-shapeguard1';
+import {alphaBounds} from './cutout.js?v=20261005-shapeguard1';
+import {pictureShape} from './shape-check.js?v=20261005-shapeguard1';
+
+const preparedPictures=new WeakMap();
 
 const directions=['left','center','right'],unit=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}];
 const fail=message=>{throw new Error(message);};
@@ -26,6 +29,7 @@ function imageData(data){
 export function validateRuntime(value){
  if(value?.format!=='ojjuda-runtime-furniture'||value.version!==1||typeof value.name!=='string'||!value.name.trim()||value.name.length>80)fail('완성한 가구 정보를 확인해 주세요.');
  if(!['standing','floor','surface'].includes(value.layer))fail('가구 또는 소품의 놓을 곳을 확인해 주세요.');
+ if(value.shapePolicy!==undefined&&value.shapePolicy!==1)fail('그림 비율 검사 버전을 확인해 주세요.');
  const dims=value.dimensions;
  if(!dims||!['width','depth','height'].every(k=>Number.isFinite(dims[k])&&dims[k]>=.1&&dims[k]<=(k==='height'?4.5:7)))fail('가구 크기를 확인해 주세요.');
  for(const direction of directions){
@@ -47,6 +51,8 @@ export function runtimePoseValid(runtime,placement){
  try{
   const v=runtime.views[placement.direction],p={...v.placement,...placement};
   const elevation=p.elevation??0;if(!Number.isFinite(elevation)||elevation<0||elevation+runtime.dimensions.height>ROOM.wallHeight+1e-6||runtime.layer!=='surface'&&elevation!==0)return false;
+  const pictures=preparedPictures.get(runtime)?.[placement.direction];
+  if(runtime.shapePolicy===1&&pictures&&!pictures.every(image=>pictureShape(v,image,targets,p).ok))return false;
   if(v.mesh)return validateMesh(v.mesh,p).ok;
   if(v.pictureLayers)return validatePictureLayers(v.pictureLayers,p,v.pictureLayerRules).ok;
   return v.layers.every(l=>{const t=targets(l,p);return validQuad(t)&&area(t)*area(targets(l,v.placement))>0;});
@@ -56,6 +62,11 @@ function decode(data){return new Promise((resolve,reject)=>{const im=new Image()
 export async function prepareRuntime(value){
  const runtime=validateRuntime(value),views={};
  for(const d of directions){const v=runtime.views[d];views[d]={...v,drawings:await Promise.all(v.drawings.map(async layer=>({...layer,image:await decode(layer.data)})))};}
+ if(runtime.shapePolicy===1){
+  const pictures=Object.fromEntries(directions.map(d=>[d,views[d].drawings.filter(l=>!l.registration).map(l=>l.image)]));
+  for(const d of directions){if(!pictures[d].length)fail('검사할 본체 그림이 없어요.');for(const image of pictures[d]){const check=pictureShape(runtime.views[d],image,targets);if(!check.ok)fail(check.error);}}
+  preparedPictures.set(runtime,pictures);
+ }
  return {runtime,views,cache:new Map()};
 }
 export function renderRuntime(prepared,placement){

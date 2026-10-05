@@ -1,4 +1,4 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-sofabook1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-shapeguard1';
 
 export {ROOM,FLOOR,roomPoint};
 
