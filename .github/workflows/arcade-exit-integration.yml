@@ -1,0 +1,111 @@
+name: Integrate and verify arcade exit
+on:
+  push:
+    branches: [codex/arcade-exit-confirm-20261004]
+    paths: [.github/workflows/arcade-exit-integration.yml]
+permissions:
+  contents: write
+concurrency:
+  group: arcade-exit-integration
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      START_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Combine selected exit confirmation with current main
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main 4e12bee295428c07aacceb94e80f4903cdcffba0
+          git checkout --detach origin/main
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import subprocess
+          
+          source = '4e12bee295428c07aacceb94e80f4903cdcffba0'
+          read = lambda path: subprocess.check_output(['git', 'show', source + ':' + path], text=True)
+          original = read('world.html')
+          main = pathlib.Path('world.html').read_text()
+          
+          def once(text, old, new):
+              assert text.count(old) == 1, 'Code moved; review before retrying: ' + old[:100]
+              return text.replace(old, new, 1)
+          
+          start = original.index('// User-requested exits ask first;')
+          helper = original[start:original.index('function El(){', start)]
+          main = once(main,
+              'if(R?.game?.state?.albumOpen&&R.game.onKey?.(l.key)){l.preventDefault();return}El();return}',
+              'if(R?.game?.state?.albumOpen&&R.game.onKey?.(l.key)){l.preventDefault();return}l.preventDefault();requestArcadeClose();return}')
+          main = once(main, 'function El(){', '\n' + helper + 'function El(){')
+          main = once(main, 'o==="close"?El():o==="sound"?', 'o==="close"?requestArcadeClose():o==="sound"?')
+          pathlib.Path('world.html').write_text(main)
+          pathlib.Path('tests/arcade-exit-ui.test.cjs').write_text(read('tests/arcade-exit-ui.test.cjs'))
+          
+          # Existing user flows must explicitly accept the new game-exit confirmation.
+          p = pathlib.Path('tests/screw-modes-ui.test.cjs')
+          text = p.read_text()
+          text = once(text,
+              "   await page.locator('[data-g=close]').click();assert.equal(await page.locator('#gov').count(),0);",
+              "   let exitPrompt;page.once('dialog',async dialog=>{exitPrompt=dialog.message();await dialog.accept();});\n"
+              "   await page.locator('[data-g=close]').click();assert.match(exitPrompt,/게임을 나갈까요/);assert.equal(await page.locator('#gov').count(),0);")
+          p.write_text(text)
+          
+          p = pathlib.Path('tests/world-main-navigation-ui.test.cjs')
+          text = p.read_text()
+          text = once(text,
+              "      await gp.locator(close).click();",
+              "      let exitPrompt;const playingScrew=id==='screw_box'||id==='screw_flat';\n"
+              "      if(playingScrew)gp.once('dialog',async dialog=>{exitPrompt=dialog.message();await dialog.accept();});\n"
+              "      await gp.locator(close).click();\n"
+              "      if(playingScrew){assert.match(exitPrompt,/게임을 나갈까요/);assert.equal(await gp.locator('#gov').count(),0);}")
+          # The current registry already includes Ttang; reach the existing opening/closing checks.
+          text = once(text,
+              "assert.equal(await gp.locator('.board-game-open').count(),27,'all public ranking names lead to games, including every variant');",
+              "assert.equal(await gp.locator('.board-game-open').count(),28,'all public ranking names lead to games, including every variant');")
+          p.write_text(text)
+          
+          p = pathlib.Path('tests/package.json')
+          pkg = json.loads(p.read_text())
+          name = 'node arcade-exit-ui.test.cjs'
+          assert name not in pkg['scripts']['test:ui']
+          pkg['scripts']['test:ui'] = name + ' && ' + pkg['scripts']['test:ui']
+          p.write_text(json.dumps(pkg, ensure_ascii=False, indent=2) + '\n')
+          print('Integrated game-exit confirmation without reverting current version, loading guards, rewards, friend search or room posts.')
+          PY
+          git diff --check
+      - name: Install locked test tools
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify exits, existing game flows and recent fixes
+        working-directory: tests
+        run: |
+          node inline-scripts.test.cjs
+          node arcade-exit-ui.test.cjs
+          node screw-modes-ui.test.cjs
+          node world-main-navigation-ui.test.cjs
+          node world-reward-response-ui.test.cjs
+          node world-friend-search-ui.test.cjs
+      - name: Save only the verified fix to its existing branch
+        run: |
+          git add world.html tests/package.json tests/arcade-exit-ui.test.cjs tests/screw-modes-ui.test.cjs tests/world-main-navigation-ui.test.cjs
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tree=$(git write-tree)
+          main_sha=$(git rev-parse origin/main)
+          commit=$(git commit-tree "$tree" -p "$START_SHA" -p "$main_sha" -m 'Integrate current World into verified arcade exit confirmation')
+          git push origin "$commit:refs/heads/codex/arcade-exit-confirm-20261004"
+          echo "CHECKED_HEAD=$commit"
+          echo "CHECKED_TREE=$tree"
+          echo "BASE_MAIN=$main_sha"
+          sha256sum world.html tests/package.json tests/arcade-exit-ui.test.cjs tests/screw-modes-ui.test.cjs tests/world-main-navigation-ui.test.cjs
