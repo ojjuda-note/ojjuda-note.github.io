@@ -8,7 +8,7 @@
  let dispose=null,controller=null;
  function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
   dispose?.();dispose=null;controller=null;if(!host)return;
-  let rankDispose=()=>{};
+  let rankDispose=()=>{},rankPage=0;
   let alive=true,request=0,view=null,rows=[],more=false,busy=false,snapshot=new Date().toISOString(),dialog=null;
   const active=()=>alive&&host.isConnected&&authorized();
   const status=el('p','','board-status');status.setAttribute('role','status');
@@ -97,10 +97,11 @@
      const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{nick,score});
     }
    }
-   let index=0,timer=0,hover=false,touch=null,dragging=false;
+   let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false;
    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
    content.append(section);
    function paint(){
+    rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
     section.dataset.rankPage=String(index);
     pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
    }
@@ -118,9 +119,13 @@
    section.addEventListener('focusout',()=>schedule(),options);
    document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
    motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
-   let gaming=document.body.classList.contains('gaming');
+   const playing=()=>document.body.classList.contains('gaming')||document.body.classList.contains('matgo-open');
+   let gaming=playing();
+   window.addEventListener('ojjuda:game-record-saved',event=>{
+    if(event.detail?.owner===owner&&active()&&token===request&&!playing())void home();
+   },options);
    const observer=new MutationObserver(()=>{
-    const next=document.body.classList.contains('gaming');
+    const next=playing();
     if(gaming&&!next&&active()&&token===request)void home();
     gaming=next;
    });
