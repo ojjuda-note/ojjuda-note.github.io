@@ -42,7 +42,7 @@ const root=path.join(__dirname,'..');
   const minor=await screen(MINOR,18);await minor.page.waitForSelector('#retry:not([hidden])');assert.equal(await minor.page.locator('#quick').count(),0);await minor.context.close();
   const solo=await screen(C);await solo.page.locator('#quick').click();await solo.page.locator('#quick-seconds').waitFor();
   await solo.page.waitForTimeout(2000);assert.ok(solo.page.url().includes('matgo-online.html'),'quick search waits before switching');
-  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#handMe').waitFor();
+  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#matgo-start-play').click();await solo.page.locator('#handMe').waitFor();
   assert.equal((await f.call(C,{action:'status'})).online_room,null);await solo.context.close();
   const a=await screen(A),b=await screen(B);
   await a.page.locator('#quick').waitFor();await b.page.locator('#quick').waitFor();
