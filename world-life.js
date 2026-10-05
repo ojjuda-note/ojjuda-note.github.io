@@ -60,18 +60,22 @@
   if(window.OjjudaSchedule)schedule=window.OjjudaSchedule.mount(scheduleHost,{owner,client,authorized:active,month:state.month,selected:state.selected,onChange:counts=>{calendarCounts=counts;renderCalendar();},onNavigate:date=>{state.month=date.slice(0,7);state.selected=date;renderCalendar();}});
   else scheduleHost.append(el('p','스케줄 달력을 불러오지 못했어요. 새로고침해 주세요.','life-empty'));
   const weather=section('weather','날씨'),weatherControls=el('div','','life-weather-controls'),cityLabel=el('label','지역'),citySelect=el('select'),weatherResult=el('div','','life-weather-result'),weatherStatus=el('p','지역을 선택해 날씨를 확인해 보세요.','life-status');
-  cities.forEach(([name],i)=>{const option=el('option',name);option.value=String(i);citySelect.append(option);});citySelect.setAttribute('aria-label','지역');citySelect.value=String(state.city);cityLabel.append(citySelect);weatherControls.dataset.worldSwipe='off';weatherStatus.setAttribute('role','status');
-  let selectedPlace=cities[state.city];
-  const locate=btn('내 위치',()=>{
+  const here=el('option','내 위치');here.value='here';citySelect.append(here);
+  cities.forEach(([name],i)=>{const option=el('option',name);option.value=String(i);citySelect.append(option);});citySelect.setAttribute('aria-label','지역');citySelect.value='here';cityLabel.append(citySelect);weatherControls.dataset.worldSwipe='off';weatherStatus.setAttribute('role','status');
+  let selectedPlace=null,weatherStarted=false;
+  function locateWeather(){
+   weatherStarted=true;citySelect.value='here';selectedPlace=null;requestNumber++;request?.abort();weatherResult.replaceChildren();
+   const token=++locating;
    if(!navigator.geolocation){weatherStatus.textContent='위치를 사용할 수 없어요. 지역을 선택해 주세요.';return;}
-   const token=++locating;weatherStatus.textContent='현재 위치를 확인하고 있어요.';
+   weatherStatus.textContent='현재 위치를 확인하고 있어요.';
    navigator.geolocation.getCurrentPosition(position=>{
     if(!active()||token!==locating)return;const lat=Math.round(position.coords.latitude*100)/100,lon=Math.round(position.coords.longitude*100)/100;
-    let option=citySelect.querySelector('[value="here"]');if(!option){option=el('option','내 위치');option.value='here';citySelect.append(option);}citySelect.value='here';selectedPlace=['내 위치',lat,lon];loadWeather(true);
+    selectedPlace=['내 위치',lat,lon];loadWeather(true);
    },()=>{if(active()&&token===locating)weatherStatus.textContent='위치 권한을 확인하거나 지역을 직접 선택해 주세요.';},{enableHighAccuracy:false,timeout:8000,maximumAge:600000});
-  });
-  citySelect.onchange=()=>{locating++;if(citySelect.value==='here')return;citySelect.querySelector('[value="here"]')?.remove();state.city=Number(citySelect.value);selectedPlace=cities[state.city];loadWeather(true);};
-  weatherControls.append(cityLabel,locate,btn('새로고침',()=>loadWeather(true)));weather.append(weatherControls,weatherStatus,weatherResult);
+  }
+  const locate=btn('내 위치',locateWeather);
+  citySelect.onchange=()=>{if(citySelect.value==='here'){locateWeather();return;}locating++;weatherStarted=true;state.city=Number(citySelect.value);selectedPlace=cities[state.city];loadWeather(true);};
+  weatherControls.append(cityLabel,locate,btn('새로고침',()=>citySelect.value==='here'?locateWeather():loadWeather(true)));weather.append(weatherControls,weatherStatus,weatherResult);
   const source=el('p','','life-weather-source');source.append('예보 기반 현재 날씨 · ',link('MET Norway','https://www.met.no/'),' · ',link('CC BY 4.0','https://creativecommons.org/licenses/by/4.0/'),' · ',link('기상청 상세 날씨','https://www.weather.go.kr/w/index.do'));weather.append(source);
   function showWeather(data,name){
    const current=data.current,temperature=Number.isFinite(current.temp)?Math.round(current.temp)+'°':'—';
@@ -82,7 +86,7 @@
    }weatherResult.append(forecast);weatherStatus.textContent=localTime(current.time)+' 기준 · 한국 시간';
   }
   async function loadWeather(force=false){
-   if(!active())return;const [name,lat,lon]=selectedPlace,key=`${lat},${lon}`;request?.abort();const sequence=++requestNumber;
+   if(!active()||!selectedPlace)return;const [name,lat,lon]=selectedPlace,key=`${lat},${lon}`;request?.abort();const sequence=++requestNumber;
    if(!force&&state.weather?.key===key&&Date.now()-state.weather.at<3600000){showWeather(state.weather.data,name);return;}
    request=new AbortController();const controller=request,timeout=setTimeout(()=>controller.abort(),10000);weatherStatus.textContent=name+' 날씨를 불러오고 있어요.';weatherResult.replaceChildren();
    try{
@@ -91,7 +95,8 @@
     if(!active()||sequence!==requestNumber)return;state.weather={key,at:Date.now(),data};showWeather(data,name);
    }catch{if(active()&&sequence===requestNumber)weatherStatus.textContent='날씨를 불러오지 못했어요. 새로고침하거나 기상청 상세 날씨를 확인해 주세요.';}finally{clearTimeout(timeout);}
   }
-  weather.parentElement.addEventListener('toggle',()=>{if(weather.parentElement.open)loadWeather();else{requestNumber++;request?.abort();}});if(weather.parentElement.open)loadWeather();
+  function openWeather(){if(!weatherStarted)locateWeather();else if(selectedPlace)loadWeather();}
+  weather.parentElement.addEventListener('toggle',()=>{if(weather.parentElement.open)openWeather();else{locating++;if(!selectedPlace)weatherStarted=false;requestNumber++;request?.abort();}});if(weather.parentElement.open)openWeather();
   const news=section('news','뉴스');news.append(el('p','보고 싶은 분야를 누르면 구글 뉴스가 새 창에서 열려요.','life-storage'));
   const newsGrid=el('div','','life-news-grid');
   const googleNews='https://news.google.com/',googleLocale='hl=ko&gl=KR&ceid=KR:ko';
