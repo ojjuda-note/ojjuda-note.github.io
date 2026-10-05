@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-windowplant1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261005-windowplant1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-wallframe1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-wallframe1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,6 +26,10 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
+ 'botanical-frame':{label:'원목 잎사귀 액자',shortLabel:'원목 액자',width:1.2,depth:.1,height:1.9,depthFill:1,introduced:20,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',wallMounted:true,picture:'made',preview:'assets/botanical-frame-center-preview-v1.png',
+  preferred:{direction:'left',x:0,y:3,elevation:2.1},preferredViews:{left:{direction:'left',x:0,y:3,elevation:2.1},center:{direction:'center',x:0,y:0,elevation:2.1},right:{direction:'right',x:9.9,y:3.5,elevation:2.1}},
+  clearance:'벽을 선택하고 위치와 높이를 조절해요. 창문과 높은 가구를 피해 걸어 주세요.'},
  'window-plant':{label:'크림 화분과 원목 받침',shortLabel:'창가 화분',width:2,depth:2,height:2.8,depthFill:1,introduced:19,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'standing',picture:'made',preview:'assets/window-plant-center-preview-v1.png',
   preferred:{direction:'right',x:8,y:.5},preferredViews:{left:{direction:'left',x:0,y:.5},center:{direction:'center',x:4,y:0},right:{direction:'right',x:8,y:.5}},
