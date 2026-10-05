@@ -9,6 +9,7 @@ on:
       - '**/*.cjs'
       - '**/*.mjs'
       - '**/*.css'
+      - 'house-test/assets/*.runtime.json'
       - 'supabase/**'
       - 'tests/**'
       - 'ops/**'
@@ -20,6 +21,7 @@ on:
       - '**/*.cjs'
       - '**/*.mjs'
       - '**/*.css'
+      - 'house-test/assets/*.runtime.json'
       - 'supabase/**'
       - 'tests/**'
       - 'ops/**'
@@ -34,6 +36,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  furniture:
+    name: Furniture registration and artwork cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check artwork revisions and deformation regressions
+        run: npm --prefix tests run test:furniture
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check registration rejection, valid application and warm cache
+        run: npm --prefix tests run test:furniture-ui
+
   regression:
     runs-on: ubuntu-latest
     timeout-minutes: 15
