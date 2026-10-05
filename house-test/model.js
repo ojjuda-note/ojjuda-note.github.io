@@ -1,9 +1,9 @@
-import {madePoseValid} from './custom-furniture.js?v=20261005-tablebooks1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261005-tablebooks1';
-import {sofaPoseValid} from './sofa-art.js?v=20261005-tablebooks1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-tablebooks1';
-import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-tablebooks1';
-import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-tablebooks1';
+import {madePoseValid} from './custom-furniture.js?v=20261005-succulent1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261005-succulent1';
+import {sofaPoseValid} from './sofa-art.js?v=20261005-succulent1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-succulent1';
+import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-succulent1';
+import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-succulent1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];

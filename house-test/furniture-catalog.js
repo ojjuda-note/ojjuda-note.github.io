@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-tablebooks1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261005-tablebooks1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-succulent1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-succulent1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,6 +26,10 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
+ 'table-succulent':{label:'원목 사각 다육이',shortLabel:'작은 다육이',width:.7,depth:.7,height:.25,depthFill:1,introduced:24,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/table-succulent-center-preview-v1.png',
+  preferred:{direction:'left',x:3.15,y:4.05,elevation:.6},preferredViews:{left:{direction:'left',x:3.15,y:4.05,elevation:.6},center:{direction:'center',x:4.25,y:4.75,elevation:.6},right:{direction:'right',x:6.05,y:4.05,elevation:.6}},
+  clearance:'테이블 위에 놓는 작은 다육이예요. 높이를 조절할 수 있고, 테이블을 옮기면 화분도 따로 옮겨 주세요.'},
  'table-books':{label:'크림·세이지 책 두 권',shortLabel:'책 두 권',width:1.1,depth:1.1,height:.1,depthFill:1,introduced:23,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/table-books-center-preview-v1.png',
   preferred:{direction:'left',x:2.7,y:4.8,elevation:.6},preferredViews:{left:{direction:'left',x:2.7,y:4.8,elevation:.6},center:{direction:'center',x:3.25,y:4.4,elevation:.6},right:{direction:'right',x:5.7,y:4.8,elevation:.6}},
