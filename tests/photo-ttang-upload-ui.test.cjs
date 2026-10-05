@@ -13,11 +13,12 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  try{
-  async function fixture(cvScript){
+  async function fixture(cvScript,slowVision=false){
    const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[],requests=[];
    await context.route('**/*',r=>{
     const u=new URL(r.request().url());
     if(u.hostname==='127.0.0.1')return u.pathname==='/photo.jpg'?r.fulfill({contentType:'image/jpeg',path:photo}):r.fulfill({contentType:'text/html',body:html.replace('</head>',mock+'</head>')});
+    if(slowVision&&u.pathname.includes('/@mediapipe/tasks-vision@'))return new Promise(resolve=>setTimeout(resolve,8000)).then(()=>r.abort());
     if(u.pathname.includes('/opencv-js@')){requests.push(u.pathname);return cvScript?r.fulfill({contentType:'application/javascript',body:cvScript}):r.abort();}
     return r.abort();
    });
@@ -36,7 +37,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
    await f.page.waitForFunction(()=>window.cvLoadDone,{},{timeout:2000});
    assert.equal(f.requests.length,1);assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  const f=await fixture(),page=f.page;
+  const f=await fixture(undefined,true),page=f.page;
   // Failed CDN initialization is retryable, and offline image preparation still
   // produces a playable stage instead of leaving the picker spinning.
   assert.equal(await page.evaluate(async()=>{let failures=0;for(let n=0;n<2;n++){try{await loadCV()}catch{failures++}}return failures}),2);
@@ -44,7 +45,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   await page.click('#uploadBtn');await page.setInputFiles('#file',invalid);
   await page.getByRole('alert').waitFor();assert.match(await page.getByRole('alert').textContent(),/JPG·PNG/);
   await page.setInputFiles('#file',photo);
-  await page.waitForSelector('#try',{timeout:6000});
+  await page.waitForSelector('#try',{timeout:30000});
   assert.equal(await page.getByAltText('게임 판 미리보기').evaluate(im=>im.complete&&im.naturalWidth>0),true);
   assert.equal(await page.locator('#try').isEnabled(),true);
   assert.equal(await page.locator('#send').isEnabled(),false);
@@ -57,7 +58,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   assert.ok(saved.rows[0].sil_pct>=35&&saved.rows[0].sil_pct<=75);
   assert.equal(saved.rows[0].mask_rle.split(',').map(Number).reduce((a,b)=>a+b,0),300*400);
   assert.ok(saved.uploads.every(u=>u.size>0&&u.type==='image/jpeg'&&u.options.upsert===false));
-  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:6000});
+  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
   await page.click('#try');await page.waitForFunction(()=>mode==='play'&&photoImg.complete&&photoImg.naturalWidth>0);
   assert.equal(await page.locator('#hud').isVisible(),true);await page.click('#pause');assert.equal(await page.getByText('잠깐 쉬는 중').isVisible(),true);await page.click('#go');
   // Registration keeps its required coverage range; a real photo can still be
