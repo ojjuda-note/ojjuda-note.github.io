@@ -1,0 +1,56 @@
+name: Verify house opening close regression
+on:
+  push:
+    branches: [fix/house-opening-close-20261005]
+    paths: [.github/workflows/house-opening-close-verify.yml]
+permissions:
+  contents: write
+env:
+  START_SHA: ${{ github.sha }}
+  BASE_SHA: 653a0711bdb61dedb11ee032ce5bb66c23812dae
+  EXPECTED_BLOB: 6e639eba00bef9ea106801477dd4698e243edd7f
+  BRANCH_NAME: fix/house-opening-close-20261005
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the isolated close action repair to the exact source base
+        run: |
+          git fetch --no-tags origin "$BASE_SHA"
+          git checkout --detach "$BASE_SHA"
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/house-opening-ui.test.cjs')
+          s=p.read_text()
+          old="const close=async f=>{await f.locator('#exit').click();"
+          new="const close=async()=>{await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();"
+          assert s.count(old)==1
+          p.write_text(s.replace(old,new,1))
+          PY
+          test "$(git hash-object tests/house-opening-ui.test.cjs)" = "$EXPECTED_BLOB"
+          node --check tests/house-opening-ui.test.cjs
+          git diff --check
+      - name: Install locked browser test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify the complete house opening UI and save preservation
+        run: node tests/house-opening-ui.test.cjs
+      - name: Publish only the verified test repair
+        run: |
+          git config user.name 'ojjuda-note'
+          git config user.email '334255691+ojjuda-note@users.noreply.github.com'
+          git add tests/house-opening-ui.test.cjs
+          checked_tree=$(git write-tree)
+          checked_head=$(printf '%s\n' 'Use the visible host close action in the house opening regression' | git commit-tree "$checked_tree" -p "$START_SHA" -p "$BASE_SHA")
+          git push origin "$checked_head:refs/heads/$BRANCH_NAME"
+          echo "CHECKED_HEAD=$checked_head"
+          echo "CHECKED_TREE=$checked_tree"
+          echo "BASE_MAIN=$BASE_SHA"
+          git diff --stat "$BASE_SHA" "$checked_head"
