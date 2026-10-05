@@ -14,7 +14,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  const status=document.createElement('div');status.setAttribute('role','status');Object.assign(status.style,{padding:'calc(8px + env(safe-area-inset-top,0px)) 64px 8px 15px',flexShrink:'0',fontSize:'12px',color:'#65526f',background:'#fffaf4'});
  const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','우리집 닫기');close.title='우리집 닫기';close.style.cssText='position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:2;border:1px solid #dbcee5;background:#fffaf4;color:#65526f;border-radius:14px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer';
  if(inline){status.style.padding='10px 82px 10px 12px';status.style.minHeight='48px';}
- const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261005-wallframe1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
+ const frame=document.createElement('iframe');frame.title=readOnly?String(profile?.nick||'이웃')+'님의 집':'우리집';frame.src=new URL('./index.html?v=20261005-scroll1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;border:0;min-height:0';
  let loading=createHouseEntryLoading();status.hidden=true;
  frame.style.visibility='hidden';frame.inert=true;overlay.setAttribute('aria-busy','true');
  const retry=document.createElement('button');retry.textContent='다시 시도';retry.hidden=true;retry.style.cssText='position:absolute;right:84px;top:8px;z-index:3;min-height:36px;border:1px solid #dbcee5;border-radius:10px;background:#fffaf4;color:#65526f';
@@ -37,6 +37,29 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
   finally{saving=false;}
  }
  function reveal(message,ready=false){if(closed)return;stopPaintWait();stopPaintWait=()=>{};const show=()=>{if(closed)return;if(!authorized()){cleanup();return;}frame.style.visibility='';frame.inert=false;overlay.setAttribute('aria-busy','false');status.textContent=message;status.hidden=ready&&!message;if(inline&&ready){close.hidden=true;if(document.activeElement===close)frame.focus({preventScroll:true});}};if(ready)void loading.finish(show);else{loading.dispose();show();}}
+ let editorHeight=null,stopEditorLayout=()=>{};
+ function observeEditorLayout(){
+  stopEditorLayout();editorHeight=null;
+  if(!inline||readOnly||studioOnly)return;
+  const doc=frame.contentDocument,app=doc?.querySelector('#app');if(!app)return;
+  let pending=0,wasEditing=false;
+  const sync=()=>{
+   pending=0;if(closed||!app.isConnected)return;
+   const expanded=!app.hidden&&!app.classList.contains('records-home');
+   const editing=expanded&&!!app.querySelector('#panel.placement-panel');
+   doc.documentElement.classList.toggle('house-inline-editor',expanded);
+   overlay.toggleAttribute('data-editor-scroll',expanded);
+   editorHeight=expanded?Math.ceil(app.getBoundingClientRect().height):null;
+   updateNavigationSpace();
+   // Selecting a lower catalog item brings its room and placement controls back.
+   if(editing&&!wasEditing){const view=doc.querySelector('#viewport');window.scrollTo({top:Math.max(0,window.scrollY+frame.getBoundingClientRect().top+view.getBoundingClientRect().top),behavior:'instant'});}
+   wasEditing=editing;
+  };
+  const schedule=()=>{if(!pending)pending=requestAnimationFrame(sync);};
+  const size=new ResizeObserver(schedule);size.observe(app);
+  const changes=new MutationObserver(schedule);changes.observe(app,{attributes:true,attributeFilter:['class','hidden']});changes.observe(doc.querySelector('#panel'),{attributes:true,attributeFilter:['class']});
+  stopEditorLayout=()=>{size.disconnect();changes.disconnect();cancelAnimationFrame(pending);};schedule();
+ }
  const trackNavigation=(inline||preserveWorldNavigation)&&!studioOnly;
  const navigationObserver=trackNavigation&&window.ResizeObserver?new ResizeObserver(scheduleNavigationSpace):null;
  if(inline){navigationObserver?.observe(mountTarget);const main=mountTarget.closest('main');if(main)navigationObserver?.observe(main);}
@@ -49,11 +72,14 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
   const visible=rect&&rect.width>0&&rect.height>0&&rect.top>=top&&rect.top<top+height&&style.display!=='none'&&style.visibility!=='hidden';
   const inset=visible?Math.max(0,top+height-rect.top):0;
   if(inline){
+   if(!readOnly&&!studioOnly)frame.contentDocument?.documentElement.style.setProperty('--house-inline-room-height',Math.max(180,Math.min(360,Math.round((height-inset)*.36)))+'px');
    // Fit the normal World content column, leaving its header/sidebar/menu usable.
    // Use document coordinates so scrolling does not keep growing the room.
    const contentTop=overlay.getBoundingClientRect().top+window.scrollY;
    const bottom=visible?rect.top:top+height;
-   overlay.style.height=(readOnly&&!visitorExpanded?(visitorHeight||160):Math.max(180,Math.floor(bottom-contentTop)))+'px';
+   const roomTop=frame.contentDocument?.querySelector('#viewport')?.getBoundingClientRect().top||0;
+   const editorSpace=editorHeight===null?null:Math.max(editorHeight,roomTop+height-inset)+(status.hidden?0:status.getBoundingClientRect().height);
+   overlay.style.height=(editorSpace!==null?editorSpace:readOnly&&!visitorExpanded?(visitorHeight||160):Math.max(180,Math.floor(bottom-contentTop)))+'px';
    return;
   }
   overlay.style.height=inset?`calc(var(--app-viewport-height,100dvh) - ${inset}px)`:'var(--app-viewport-height,100dvh)';
@@ -62,7 +88,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  }
  function scheduleNavigationSpace(){if(!closed&&!navigationFrame)navigationFrame=requestAnimationFrame(updateNavigationSpace);}
  if(trackNavigation){updateNavigationSpace();window.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('resize',scheduleNavigationSpace);window.visualViewport?.addEventListener('scroll',scheduleNavigationSpace);}
- function cleanup(){if(closed)return;closed=true;clearInterval(watcher);clearTimeout(deadline);loading.dispose();stopPaintWait();stopFrameNavigation();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
+ function cleanup(){if(closed)return;closed=true;stopEditorLayout();clearInterval(watcher);clearTimeout(deadline);loading.dispose();stopPaintWait();stopFrameNavigation();cancelAnimationFrame(navigationFrame);navigationObserver?.disconnect();window.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('resize',scheduleNavigationSpace);window.visualViewport?.removeEventListener('scroll',scheduleNavigationSpace);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();if(!inline)document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});if(activeClose===cleanup)activeClose=null;onClose?.();}
  const leaveRoomView=()=>{if(!readOnly||!(visitorExpanded||frame.contentDocument?.querySelector('#app.house-visitor:not(.records-home)')))return false;channel?.port1.postMessage({type:'room-view',expanded:false});return true;};
  const escape=e=>{if(e.key==='Escape'&&document.querySelector('dialog[open]'))return;if(e.key==='Escape'){e.preventDefault();if(!leaveRoomView())cleanup();}};window.addEventListener('keydown',escape,true);close.onclick=()=>{if(!leaveRoomView())cleanup();};activeClose=cleanup;
  const watcher=setInterval(()=>{
@@ -75,7 +101,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
  frame.addEventListener('load',async()=>{
   const run=++loadRun;
   if(closed||!authorized()||(studioOnly&&!hasStudioAccess())){cleanup();return;}
-  stopFrameNavigation();stopFrameNavigation=onFrameReady?.(frame)||(()=>{});
+  stopFrameNavigation();stopFrameNavigation=onFrameReady?.(frame)||(()=>{});observeEditorLayout();
   canUseStudio=!readOnly&&hasStudioAccess();channel?.port1.close();channel=new MessageChannel();
   channel.port1.onmessage=async e=>{
    if(closed)return;if(!authorized()){cleanup();return;}
