@@ -34,6 +34,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('https://fixture.test/world.html');
     await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
+    assert.equal(await page.locator('.topbar .ojjuda-copy--world,.side > .ojjuda-copy--world').count(),0,'the main map header has no extra greeting row');
     await page.evaluate(()=>{const model=worldTest.model;Object.assign(model,{coins:321,avatar:{hair:'bob'},room:{items:[{type:'cat'}]},rooms:[{items:[{type:'sofa'}]}],friends:[{id:'f1',room:{items:[]}}],petBank:{cat:[{}]},themeBackup:{room:{items:[]}},diary:[{id:'saved-note',title:'내 기록',body:'보존',vis:'all',at:Date.now()}]});localStorage.setItem('ojjuda-world-v1',JSON.stringify(model));localStorage.setItem('ojjuda-pet-talk','old');localStorage.setItem('ojjuda-pet-mem','old');});
     await page.reload();await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
     assert.deepEqual(await page.evaluate(()=>{const m=worldTest.model;return [m.coins,m.diary[0].id,m.room.items,m.avatar,m.friends,m.petBank||null,m.themeBackup||null,localStorage.getItem('ojjuda-pet-talk'),localStorage.getItem('ojjuda-pet-mem')]}),[321,'saved-note',[],{},[],null,null,null,null],'reload clears retired assets while preserving balance and writing');
