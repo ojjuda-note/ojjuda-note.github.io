@@ -1,0 +1,158 @@
+{
+  "format": "ojjuda-sofa-cushions",
+  "version": 1,
+  "cushions": {
+    "peach-cushion": {
+      "seat": {
+        "u": 0.63,
+        "v": 0.3,
+        "width": 0.68,
+        "height": 0.69,
+        "bottom": 0.89
+      },
+      "views": {
+        "left": {
+          "image": "assets/peach-cushion-left-v1.png",
+          "sourceRect": [
+            0,
+            39,
+            1184,
+            1240
+          ]
+        },
+        "center": {
+          "image": "assets/peach-cushion-center-v1.png",
+          "sourceRect": [
+            35,
+            82,
+            1132,
+            1165
+          ]
+        },
+        "right": {
+          "image": "assets/peach-cushion-right-v1.png",
+          "sourceRect": [
+            35,
+            23,
+            1103,
+            1261
+          ]
+        }
+      }
+    },
+    "cream-floral-cushion": {
+      "seat": {
+        "u": 0.66,
+        "v": 0.58,
+        "width": 0.78,
+        "height": 0.74,
+        "bottom": 0.81
+      },
+      "views": {
+        "left": {
+          "image": "assets/cream-floral-cushion-left-v1.png",
+          "sourceRect": [
+            25,
+            47,
+            1261,
+            1143
+          ]
+        },
+        "center": {
+          "image": "assets/cream-floral-cushion-center-v1.png",
+          "sourceRect": [
+            41,
+            48,
+            1240,
+            1093
+          ]
+        },
+        "right": {
+          "image": "assets/cream-floral-cushion-right-v1.png",
+          "sourceRect": [
+            0,
+            21,
+            1269,
+            1168
+          ]
+        }
+      }
+    },
+    "sage-cushion": {
+      "seat": {
+        "u": 1.79,
+        "v": 0.48,
+        "width": 0.76,
+        "height": 0.72,
+        "bottom": 0.81
+      },
+      "views": {
+        "left": {
+          "image": "assets/sage-cushion-left-v1.png",
+          "sourceRect": [
+            0,
+            21,
+            1171,
+            1258
+          ]
+        },
+        "center": {
+          "image": "assets/sage-cushion-center-v1.png",
+          "sourceRect": [
+            0,
+            8,
+            1285,
+            1186
+          ]
+        },
+        "right": {
+          "image": "assets/sage-cushion-right-v1.png",
+          "sourceRect": [
+            33,
+            23,
+            1144,
+            1271
+          ]
+        }
+      }
+    },
+    "pink-check-cushion": {
+      "seat": {
+        "u": 2.91,
+        "v": 0.49,
+        "width": 0.74,
+        "height": 0.72,
+        "bottom": 0.81
+      },
+      "views": {
+        "left": {
+          "image": "assets/pink-check-cushion-left-v1.png",
+          "sourceRect": [
+            0,
+            20,
+            1317,
+            1160
+          ]
+        },
+        "center": {
+          "image": "assets/pink-check-cushion-center-v1.png",
+          "sourceRect": [
+            0,
+            9,
+            1300,
+            1115
+          ]
+        },
+        "right": {
+          "image": "assets/pink-check-cushion-right-v1.png",
+          "sourceRect": [
+            47,
+            46,
+            1250,
+            1104
+          ]
+        }
+      }
+    }
+  }
+}
