@@ -265,7 +265,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await gp.goto('https://fixture.test/world.html');
     await gp.waitForFunction(()=>window.worldTest);
     await gp.evaluate(()=>{
-      window.gameFixture={calls:[],age:25,screwModes:[],destroyed:[]};
+      window.gameFixture={calls:[],age:25,identityReady:false,screwModes:[],destroyed:[]};
       const fixture=gameFixture;
       function query(table){
         let single=false;const result=()=>({data:table==='user_private'?{coins:321}:single?null:[],error:null});
@@ -276,7 +276,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       }
       const client={from:query,schema:()=>({rpc:async()=>({data:[],error:null})}),
         auth:{getUser:async()=>({data:{user:{id:'board-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
-        rpc:async(name,args)=>{fixture.calls.push({rpc:name,args});return {data:name==='get_my_member_identity'?{locked:true,age:fixture.age}:[],error:null};}};
+        rpc:async(name,args)=>{fixture.calls.push({rpc:name,args});return {data:name==='get_my_member_identity'?{locked:fixture.identityReady,age:fixture.age}:[],error:null};}};
       worldTest.setClient(client);Object.assign(worldTest.auth,{online:true,user:{id:'board-member'}});
       OjjudaMatgoAccess.configure(client);
       window.OjjudaScrewLoader={menuHTML:()=>'<p>종류 선택</p>',load:async mode=>{
@@ -285,7 +285,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       worldTest.actions.tab({tab:'board'});
     });
     await gp.locator('.board-game-open').first().waitFor();
-    assert.equal(await gp.locator('.board-game-open').count(),27,'all public ranking names lead to games, including every variant');
+    assert.equal(await gp.locator('.board-game-open').count(),28,'all public ranking names lead to games, including every variant');
     assert.equal(await gp.locator('[data-game="matgo"]').count(),0,'unverified Matgo access is not advertised');
     await gp.locator('[data-board-root]').evaluate(el=>el.dataset.retained='original-board');
     const gameButton=id=>gp.locator(`[data-game="${id}"] .board-game-open`);
@@ -301,7 +301,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     };
     const stillBoard=async(id,close)=>{
       const slide=await gp.locator('.board-leaders').getAttribute('data-rank-page');
+      let exitPrompt;const playingScrew=id==='screw_box'||id==='screw_flat';
+      if(playingScrew)gp.once('dialog',async dialog=>{exitPrompt=dialog.message();await dialog.accept();});
       await gp.locator(close).click();
+      if(playingScrew){assert.match(exitPrompt,/게임을 나갈까요/);assert.equal(await gp.locator('#gov').count(),0);}
       assert.equal(await gp.evaluate(()=>worldTest.state.tab),'board',id+': closing returns to the board');
       assert.equal(await gp.locator('[data-board-root]').getAttribute('data-retained'),'original-board',id+': opening does not remount the board');
       assert.equal(await gp.locator('.board-leaders').getAttribute('data-rank-page'),slide,id+': ranking page is preserved');
@@ -335,7 +338,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await stillBoard(id,'#modal-root [data-act="close"]');
     }
     // Use the real Matgo gate: an already visible row must recheck server age.
-    await gp.evaluate(async()=>{await OjjudaMatgoAccess.check();worldTest.render();gameFixture.age=18;});
+    await gp.evaluate(async()=>{gameFixture.identityReady=true;await OjjudaMatgoAccess.check();worldTest.render();gameFixture.age=18;});
     assert.equal(await gp.locator('[data-game="matgo"] .board-game-open').count(),1);
     await openGame('matgo');
     await gp.waitForFunction(()=>document.querySelector('#toast').textContent.includes('만 19세 생일부터'));

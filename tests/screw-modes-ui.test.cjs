@@ -69,7 +69,8 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    assert.equal(await page.locator('.ghead').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
    await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
    assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),1,'switching versions never overwrites flat progress');
-   await page.locator('[data-g=close]').click();assert.equal(await page.locator('#gov').count(),0);
+   let exitPrompt;page.once('dialog',async dialog=>{exitPrompt=dialog.message();await dialog.accept();});
+   await page.locator('[data-g=close]').click();assert.match(exitPrompt,/게임을 나갈까요/);assert.equal(await page.locator('#gov').count(),0);
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'4');screwWorld.open('screw');});await page.locator('[data-mode=flat]').click();
   const canvas=page.locator('#gcv');
