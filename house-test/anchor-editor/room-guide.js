@@ -1,4 +1,4 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-tablebooks1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-succulent1';
 
 export {ROOM,FLOOR,roomPoint};
 

@@ -1,5 +1,5 @@
-import {DESK_V7} from './desk-v7-registration.js?v=20261005-tablebooks1';
-import {registeredArtwork} from './registered-artwork.js?v=20261005-tablebooks1';
+import {DESK_V7} from './desk-v7-registration.js?v=20261005-succulent1';
+import {registeredArtwork} from './registered-artwork.js?v=20261005-succulent1';
 
 // Each direction is a separate finished picture from the furniture maker.
 // Movement remaps its registered wood regions with the actual room projection.
