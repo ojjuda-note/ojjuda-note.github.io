@@ -29,7 +29,7 @@
     if (previousFocus?.isConnected) previousFocus.focus();
     previousFocus = null;
   }
-  async function openMatgo() {
+  async function openMatgo(options = {}) {
     if (opening || overlay) return;
     opening = true;
     const attempt = generation;
@@ -60,7 +60,11 @@
       close.onclick = requestClose;
       bar.append(close);
       frame = document.createElement('iframe');
-      frame.src = 'games/matgo-online.html?v=20261005-g-unit1';
+      const params = new URLSearchParams({ v: '20261005-rooms1' });
+      if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
+      if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
+      if (typeof options.title === 'string') params.set('room_title', options.title.slice(0, 80));
+      frame.src = 'games/matgo-online.html?' + params.toString();
       frame.title = '오쭈다 맞고';
       frame.style.cssText = 'flex:1;min-height:0;width:100%;border:0';
       overlay.append(bar, frame);

@@ -6,7 +6,7 @@ const {PGlite}=require('@electric-sql/pglite');
   const {verifyAction}=await import('../supabase/functions/game-action/rules.mjs');
   const {createHandler}=await import('../supabase/functions/game-action/handler.mjs');
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
-  const lobbySource=world.match(/,f=u=>([^;]+?),m="";c\.length/)[1];
+  const lobbySource=world.match(/,f=u=>([^;]+?),m=[^;]*;c\.length/)[1];
   const myTurn=new Function('u','i',`return ${lobbySource}`);
   assert.equal(myTurn({kind:'janggi',p1:'me',moves:[],turn:'p2'},'me'),true,'accepted undo must restore the lobby turn indicator');
   assert.equal(myTurn({kind:'chess',p1:'me',moves:[{}],turn:'p1'},'me'),false);
