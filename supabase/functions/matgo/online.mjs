@@ -47,6 +47,7 @@ export async function replayOnline(room) {
     }
   });
   game.cpuMode='normal'; // A member's balance never changes PvP timeout/takeover AI.
+  game.rate=100; // Member matches, including automatic turns, always stay at 100G.
   game.random=await secretRandom(room.seed);game.bank=[...room.start_gold];
   game.first=room.first;game.carry=room.carry;game.deal();
   for(let i=0;i<actions.length;i++){

@@ -1,0 +1,61 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium}=require('playwright');
+const {fixture,A}=require('./matgo-online-fixture.cjs');
+const root=path.join(__dirname,'..');
+(async()=>{
+ const f=await fixture({stakes:true}),{db,call}=f;
+ const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox']});
+ try{
+  await call(A,{action:'status'});
+  await db.query('update ojjuda_matgo_internal.wallets set gold=400000 where user_id=$1',[A]);
+  const context=await browser.newContext({viewport:{width:320,height:650},hasTouch:true});
+  const errors=[],requests=[];
+  await context.exposeBinding('stakeFixture',async(_,body)=>{requests.push(body);const data=await call(A,body);return {data};});
+  await context.addInitScript(()=>{
+   localStorage.setItem('ojjuda-matgo-sound','off');
+   window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>()=>{},getClient:()=>({functions:{invoke:(_,{body})=>stakeFixture(body)}})};
+   const timeout=setTimeout;window.setTimeout=(fn,delay,...args)=>timeout(fn,delay<5000?Math.min(delay,5):delay,...args);
+   const animate=Element.prototype.animate;Element.prototype.animate=function(frames,options){return animate.call(this,frames,typeof options==='object'?{...options,duration:5,delay:0}:5);};
+  });
+  await context.route('**/*',async route=>{
+   const url=new URL(route.request().url());
+   if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
+   const file=path.join(root,decodeURIComponent(url.pathname));
+   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
+   if(url.pathname==='/games/matgo.html')return route.fulfill({contentType:'text/html',body:fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.stakesTest={startRound,game,ui};\nstartRound();\n})();')});
+   return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':undefined});
+  });
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('https://fixture.test/games/matgo.html');
+  await page.locator('#matgo-stake').waitFor();
+  assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 2,000G/);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'matgo-stake-keep','Enter does not accidentally accept a raise');
+  assert.equal(requests.some(r=>r.action==='start'),false,'deal waits for consent');
+  const fits=await page.locator('#matgo-stake .card').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;});
+  assert.equal(fits,true,'offer fits a 320px mobile screen');
+  if(process.env.MATGO_STAKE_SCREENSHOT)await page.screenshot({path:process.env.MATGO_STAKE_SCREENSHOT});
+  await page.locator('#matgo-stake-raise').tap();
+  const ready=()=>page.waitForFunction(()=>window.stakesTest&&!stakesTest.ui.busy&&!stakesTest.ui.dealing&&document.querySelector('#stakeRate'));
+  await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  assert.equal(await page.locator('#stakeRate').innerText(),'점당 2,000G');
+  assert.equal(requests.find(r=>r.action==='stake').accept,true);assert.equal(requests.find(r=>r.action==='start').stakes_version,1);
+  await page.reload();await ready();assert.equal(await page.locator('#matgo-stake').count(),0);assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  const end=async gold=>{const s=await call(A,{action:'status'});await db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,$3,0::smallint,1)",[A,s.round.id,gold]);};
+  await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  await end(0);await page.reload();await page.locator('#refill-gold').waitFor();
+  assert.equal(await page.locator('#stakeRate').innerText(),'점당 100G');
+  await page.locator('#refill-gold').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
+  await end(600000);await page.reload();await page.locator('#matgo-stake').waitFor();
+  assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 10,000G/);
+  await page.keyboard.press('Enter');await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
+  await page.reload();await ready();assert.equal(await page.locator('#matgo-stake').count(),0,'decline is remembered across navigation');
+  await end(700000);await page.reload();await page.locator('#matgo-stake').waitFor();
+  assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 20,000G/);
+  await page.locator('#matgo-stake-raise').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),20000);
+  await page.locator('#menu').click();await page.locator('#rules').click();
+  assert.match(await page.locator('.modal').innerText(),/회원 대결은 점당 100G 고정/);
+  assert.deepEqual(errors,[]);
+  await context.close();
+  console.log('PASS: real mobile offer, explicit raise/keep, authoritative rate display, reload/resume, decline memory, next-tier offer, bankruptcy/refill and PvP rules');
+ }finally{await browser.close();await f.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

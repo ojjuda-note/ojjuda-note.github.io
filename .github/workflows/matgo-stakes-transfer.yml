@@ -1,0 +1,24 @@
+name: Apply verified Matgo HTML patch
+on:
+  push:
+    branches: [codex/matgo-solo-stakes-20261005]
+    paths: [.github/workflows/matgo-stakes-transfer.yml, .github/matgo-stakes-transfer.py]
+permissions:
+  contents: write
+concurrency:
+  group: matgo-stakes-transfer
+  cancel-in-progress: false
+jobs:
+  patch:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Apply only the verified source patch, preserving embedded media
+        run: python3 .github/matgo-stakes-transfer.py
+      - name: Commit the file bytes through authenticated Git
+        run: |
+          git add -- games/matgo.html
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Apply verified solo stakes UI patch without retransmitting embedded media'
+          git push origin HEAD:refs/heads/codex/matgo-solo-stakes-20261005
