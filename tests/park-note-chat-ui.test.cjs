@@ -2,6 +2,14 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const copy='오늘 하루 어땠나요? 괜찮았나요';
+const checkWritingCopy=async frame=>{
+ const greeting=frame.locator('#compose-brand-copy');
+ assert.equal(await greeting.textContent(),copy);assert.equal(await greeting.isVisible(),true);
+ assert.equal(await frame.locator('#compose-text').getAttribute('aria-describedby'),'compose-brand-copy');
+ assert.equal(await frame.locator('#compose-text').inputValue(),'','the greeting is an instruction, never card content');
+ assert.equal(await frame.locator('.composer-body').evaluate(body=>{const p=body.querySelector('#compose-brand-copy').getBoundingClientRect(),b=body.getBoundingClientRect(),settings=body.querySelector('.compose-publish-settings').getBoundingClientRect();return p.top>=b.top&&p.bottom<=b.bottom&&settings.bottom<=p.top; }),true,'the full greeting is visible after public settings before writing');
+};
 // Old bookmarks, direct feature URLs and authenticated returns share one World entry.
 for(const [from,to] of [
  ['/note/?card=abc&keep=memo','/world.html?place=park&card=abc&keep=memo'],
@@ -41,6 +49,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  const source=new URL(await iframe.getAttribute('src'),'https://fixture.test');assert.equal(source.pathname,'/park/');assert.equal(source.searchParams.get('embedded'),'1');assert.equal(source.searchParams.get('compose'),'memo');assert.equal(source.searchParams.get('v'),'20261004-folder-kind1');
  let frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
+ if(process.env.OJJUDA_COPY_PROOF_DIR){fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'composer-initial-390.png')});}
+ await checkWritingCopy(frame);
  await frame.evaluate(()=>window.fixtureToken='kept');
  await frame.locator('#compose-text').fill('아직 작성 중인 공원의 이야기');
  await frame.locator('#compose-more > summary').click();
@@ -105,6 +115,9 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await frame.locator('#note-announcement').count(),0,width+': Park uses the single World notice');
   assert.equal(await frame.locator('.mobile-top:visible,.side:visible,.bottomnav:visible,.write-fab:visible').count(),0,width+': no duplicate app chrome');
   assert.equal(await page.locator('.topbar .brand:visible,.side > .brand:visible').count(),1,width+': one World brand');
+  assert.equal(await page.locator('.ojjuda-copy--world:visible').count(),1,width+': one visible World greeting');
+  assert.equal(await page.locator('.ojjuda-copy--world:visible').textContent(),copy);
+  assert.equal(await frame.locator('.ojjuda-copy--feed').textContent(),copy);
   assert.equal(await page.locator('.bottomnav:visible,.sidenav:visible').count(),1,width+': one World navigation');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),width+': parent has no second vertical scrollbar');
   await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
@@ -118,10 +131,12 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await frame.evaluate(()=>scrollY),scroll,width+': World updates preserve card scroll position');
   await page.locator('[data-park-action="compose"]').click();
   await frame.locator('#composer-backdrop').waitFor({state:'visible'});
+  await checkWritingCopy(frame);
   await page.locator('.park-compose-fab').waitFor({state:'hidden'});
   const composer=await frame.locator('.composer').boundingBox();
   const frameRect=await iframe.boundingBox();
   assert.ok(composer.y>=frameRect.y-1&&composer.y+composer.height<=frameRect.y+frameRect.height+1,width+': composer fits above World navigation');
+  if(process.env.OJJUDA_COPY_PROOF_DIR){fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,`composer-${width}.png`)});}
   await page.evaluate(()=>parkFixture.close());
  }
  await page.setViewportSize({width:390,height:850});

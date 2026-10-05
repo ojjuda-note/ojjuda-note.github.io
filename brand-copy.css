@@ -1,0 +1,13 @@
+/* Ojjuda's shared greeting, including the prompt before writing a card. */
+.ojjuda-copy{font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;word-break:keep-all;overflow-wrap:anywhere}
+.ojjuda-copy--world{margin:0;color:var(--ink-2,#626894);font-size:16px;line-height:1.55}
+.topbar{flex-wrap:wrap;row-gap:6px}
+.topbar>.ojjuda-copy--world{flex:1 0 100%;order:1;text-align:center;padding-top:4px}
+.side>.ojjuda-copy--world{margin:-8px 0 -4px}
+.auth-body>.ojjuda-copy--world,.auth-loading>.ojjuda-copy--world{text-align:center}
+.ojjuda-copy--auth{margin:0 0 14px;text-align:center;color:var(--muted,#626894);font-size:16px;line-height:1.6}
+.ojjuda-copy--feed{margin:0 0 14px;color:var(--ink);font-size:clamp(17px,2.5vw,20px);line-height:1.6}
+.ojjuda-copy--composer{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--accent-soft,#fceaf1);color:var(--ink,#23264a);font-size:18px;line-height:1.55}
+.front-heading>.ojjuda-copy--map{font-size:20px;line-height:1.6;color:var(--pink-ink,#a93263);margin:14px 0}
+@media(max-width:380px){.ojjuda-copy--composer{font-size:16px}}
+@media(min-width:900px){.topbar>.ojjuda-copy--world{display:none}}

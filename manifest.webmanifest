@@ -1,7 +1,7 @@
 {
   "name": "오쭈다월드",
   "short_name": "오쭈다월드",
-  "description": "나만의 작은 방을 꾸미고 친구 방에 놀러 가는 곳",
+  "description": "오늘 하루 어땠나요? 괜찮았나요. 일상과 마음을 나누는 오쭈다 월드.",
   "lang": "ko",
   "start_url": "./world.html",
   "display": "standalone",
