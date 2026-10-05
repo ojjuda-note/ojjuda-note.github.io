@@ -1,0 +1,219 @@
+{
+  "format": "ojjuda-sofa-blanket",
+  "version": 1,
+  "views": {
+    "left": {
+      "image": "assets/blanket-sofa-left-v1.png",
+      "sourceRect": [
+        16,
+        7,
+        1157,
+        1301
+      ],
+      "drape": {
+        "kind": "sofa-blanket-drape",
+        "version": 1,
+        "direction": "left",
+        "sourceSize": {
+          "width": 1186,
+          "height": 1326
+        },
+        "referenceDimensions": {
+          "width": 3.5,
+          "depth": 1.5,
+          "height": 1.8
+        },
+        "rows": [
+          [
+            0,
+            0.38,
+            1.04,
+            300
+          ],
+          [
+            180,
+            0.61,
+            0.94,
+            360
+          ],
+          [
+            400,
+            1.12,
+            0.86,
+            630
+          ],
+          [
+            510,
+            1.44,
+            0.82,
+            730
+          ],
+          [
+            1000,
+            1.49,
+            0.23,
+            800
+          ],
+          [
+            1150,
+            1.55,
+            0.055,
+            780
+          ],
+          [
+            1326,
+            1.75,
+            0.025,
+            730
+          ]
+        ],
+        "centerU": 0.81,
+        "unitsPerPixel": 0.00145,
+        "surfaceRows": 3,
+        "columns": 8
+      }
+    },
+    "center": {
+      "image": "assets/blanket-sofa-center-v1.png",
+      "sourceRect": [
+        0,
+        21,
+        1174,
+        1305
+      ],
+      "drape": {
+        "kind": "sofa-blanket-drape",
+        "version": 1,
+        "direction": "center",
+        "sourceSize": {
+          "width": 1186,
+          "height": 1326
+        },
+        "referenceDimensions": {
+          "width": 3.5,
+          "depth": 1.5,
+          "height": 1.8
+        },
+        "rows": [
+          [
+            0,
+            0.38,
+            1.04,
+            280
+          ],
+          [
+            180,
+            0.61,
+            0.94,
+            330
+          ],
+          [
+            400,
+            1.12,
+            0.86,
+            610
+          ],
+          [
+            510,
+            1.44,
+            0.82,
+            630
+          ],
+          [
+            1000,
+            1.49,
+            0.23,
+            660
+          ],
+          [
+            1150,
+            1.55,
+            0.055,
+            665
+          ],
+          [
+            1326,
+            1.75,
+            0.025,
+            660
+          ]
+        ],
+        "centerU": 0.81,
+        "unitsPerPixel": 0.00145,
+        "surfaceRows": 3,
+        "columns": 8
+      }
+    },
+    "right": {
+      "image": "assets/blanket-sofa-right-v1.png",
+      "sourceRect": [
+        15,
+        9,
+        1170,
+        1293
+      ],
+      "drape": {
+        "kind": "sofa-blanket-drape",
+        "version": 1,
+        "direction": "right",
+        "sourceSize": {
+          "width": 1186,
+          "height": 1326
+        },
+        "referenceDimensions": {
+          "width": 3.5,
+          "depth": 1.5,
+          "height": 1.8
+        },
+        "rows": [
+          [
+            0,
+            0.38,
+            1.04,
+            900
+          ],
+          [
+            180,
+            0.61,
+            0.94,
+            850
+          ],
+          [
+            400,
+            1.12,
+            0.86,
+            620
+          ],
+          [
+            510,
+            1.44,
+            0.82,
+            540
+          ],
+          [
+            1000,
+            1.49,
+            0.23,
+            460
+          ],
+          [
+            1150,
+            1.55,
+            0.055,
+            460
+          ],
+          [
+            1326,
+            1.75,
+            0.025,
+            500
+          ]
+        ],
+        "centerU": 0.81,
+        "unitsPerPixel": 0.00145,
+        "surfaceRows": 3,
+        "columns": 8
+      }
+    }
+  }
+}
