@@ -65,6 +65,38 @@ g.tab='my';H();
   assert.equal(await page.locator('#world-member-info').count(),0,'account switch removes private fields and ignores stale load');
   await page.evaluate(()=>{profileTest.auth.online=false;profileTest.render();});
   assert.equal(await page.locator('[data-act="member-info-open"]').count(),0,'guests cannot open personal information');
+  // Entering the actual village checks once; closing does not nag on every render.
+  await page.evaluate(()=>{window.memberRecord=null;profileTest.auth.online=true;profileTest.auth.user={id:'legacy-member',email:'legacy@example.invalid'};profileTest.actions.tab({tab:'friends'});});
+  await page.getByRole('dialog',{name:'기본정보를 입력해 주세요',exact:true}).waitFor();
+  await page.locator('#wm-birth').waitFor();
+  const entryCalls=await page.evaluate(()=>memberCalls.length);
+  await page.keyboard.press('Escape');await page.evaluate(()=>profileTest.render());
+  assert.equal(await page.locator('#world-member-info').count(),0);
+  assert.equal(await page.evaluate(()=>memberCalls.length),entryCalls,'rerender neither fetches nor reopens');
+  await page.evaluate(()=>{profileTest.actions.tab({tab:'my'});profileTest.actions.tab({tab:'friends'});});
+  await page.locator('#wm-birth').waitFor();
+  await page.locator('#wm-birth').fill('900101');await page.locator('#wm-code').fill('1');await page.locator('#wm-phone').fill('01022223333');await page.locator('#wm-consent').check();
+  await page.getByRole('button',{name:'개인정보 등록',exact:true}).click();
+  await page.locator('#world-member-info').waitFor({state:'detached'});
+  await page.evaluate(()=>{profileTest.actions.tab({tab:'my'});profileTest.actions.tab({tab:'friends'});});
+  await page.waitForTimeout(50);
+  assert.equal(await page.locator('#world-member-info').count(),0,'completed members no longer receive prompt');
+  // A delayed check cannot reveal another account's fields or cover another dialog.
+  await page.evaluate(()=>{profileTest.actions.tab({tab:'my'});window.memberRecord=null;window.memberDeferred=true;profileTest.actions.tab({tab:'friends'});});
+  await page.evaluate(()=>profileTest.actions.tab({tab:'my'}));
+  await page.evaluate(()=>{window.memberDeferred=false;window.finishMember({data:null});});
+  assert.equal(await page.locator('#world-member-info').count(),0,'leaving village cancels delayed prompt');
+  await page.evaluate(()=>{profileTest.actions['pw-open']();profileTest.actions.tab({tab:'friends'});});
+  await page.waitForTimeout(50);
+  assert.equal(await page.locator('#world-member-info').count(),0,'existing dialog is preserved');
+  await page.keyboard.press('Escape');await page.locator('#wm-birth').waitFor();
+  await page.keyboard.press('Escape');
+  await page.evaluate(()=>{profileTest.actions.tab({tab:'my'});window.memberError='offline';profileTest.actions.tab({tab:'friends'});});
+  await page.locator('#wm-retry').waitFor();
+  assert.equal(await page.locator('#wm-birth').count(),0,'failed check never assumes missing data');
+  await page.evaluate(()=>window.memberError=null);await page.locator('#wm-retry').click();await page.locator('#wm-birth').waitFor();
+  await page.evaluate(()=>{profileTest.auth.online=false;profileTest.render();});
+  await page.locator('#world-member-info').waitFor({state:'detached'});
   assert.deepEqual(errors,[]);
   console.log('PASS: unified menu opens real personal editor; validation, save/reopen, duplicate failure, correction, registration, retry and account isolation.');
  } finally {await browser.close();}

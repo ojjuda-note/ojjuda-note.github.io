@@ -80,6 +80,14 @@ await page.evaluate(()=>{document.body.classList.add('gaming');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
 assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length),personalCalls+1,'one shared personal-record query on return from a game');
+// A score that finishes saving after the game closes must update the board too.
+const previousPage=await page.locator('.board-leaders').getAttribute('data-rank-page');
+await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=1001;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner:'a'}}));});
+await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='1,001점');
+assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),previousPage,'refresh retains ranking page');
+const beforeStaleSave=await page.evaluate(()=>calls.length);
+await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner:'another-account'}})));
+assert.equal(await page.evaluate(()=>calls.length),beforeStaleSave,'other-account result is ignored');
 await page.evaluate(()=>{window.personalFail=true;return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','personal-record failure does not hide public results');
 await page.locator('[data-game=carom4] .board-leader-retry').evaluate(b=>b.click());
