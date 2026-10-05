@@ -20,7 +20,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check out the exact source base without the temporary workflow
-        run: git checkout --detach "$BASE_SHA"
+        run: |
+          git fetch --no-tags origin "$BASE_SHA"
+          git checkout --detach "$BASE_SHA"
       - name: Install locked browser test dependencies
         run: npm --prefix tests ci --ignore-scripts
       - name: Install Chromium
