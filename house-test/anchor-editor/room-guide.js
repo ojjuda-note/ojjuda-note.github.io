@@ -1,4 +1,4 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-floorprops1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-pencilcup1';
 
 export {ROOM,FLOOR,roomPoint};
 
