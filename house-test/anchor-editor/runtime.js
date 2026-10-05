@@ -1,11 +1,11 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-tableplant1';
-import {validQuad,drawWarp} from './warp.js?v=20261005-tableplant1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-tableplant1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-tableplant1';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-tableplant1';
-import {drawDrapedLayer} from './draped-parts.js?v=20261005-tableplant1';
-import {alphaBounds} from './cutout.js?v=20261005-tableplant1';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-clovermug1';
+import {validQuad,drawWarp} from './warp.js?v=20261005-clovermug1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-clovermug1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-clovermug1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-clovermug1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261005-clovermug1';
+import {alphaBounds} from './cutout.js?v=20261005-clovermug1';
 
 const directions=['left','center','right'],unit=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}];
 const fail=message=>{throw new Error(message);};
