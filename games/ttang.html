@@ -311,13 +311,13 @@ function newSolo(m){ mode=m; role=null; world=new World(64,'solo'); me=null; p2=
   if(m==='solo') me=world.addPlayer({name:'나',color:0,speed:6.6,turn:5.2});
   makeBots(6); setupUI(); }
 // ---------- 입력: 조이스틱(터치·마우스) + 키보드 ----------
-const joys=new Map(); const JR=56;
+const joys=new Map(); const JR=56, JOY_DEAD_ZONE=4;
 cv.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode==='attract'||!me) return; if(joys.size) return;
   const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el);
   joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId); });
 cv.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy);
   if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; }
-  j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>8) steerMe(Math.atan2(dy,dx)); });
+  j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>JOY_DEAD_ZONE) steerMe(Math.atan2(dy,dx)); });
 const endJ=e=>{ const j=joys.get(e.pointerId); if(!j) return; j.el.classList.add('out'); setTimeout(()=>j.el.remove(),180); joys.delete(e.pointerId); };
 cv.addEventListener('pointerup',endJ); cv.addEventListener('pointercancel',endJ);
 const keys=new Set(); const KS={u:['w','W','ArrowUp'],d:['s','S','ArrowDown'],l:['a','A','ArrowLeft'],r:['d','D','ArrowRight']};
@@ -451,7 +451,8 @@ function showEnd(){ sendResult({mode:'solo',win:false,best:+me.best.toFixed(1),k
 function showNetEnd(a,b){ const win=a===b?0:(a>b?1:-1);
   sendResult({mode:'duo',win:win>0,me:+(a/world.N*100).toFixed(1),friend:+(b/world.N*100).toFixed(1)});
   panel(`<h2>${win>0?'🎉 내가 이겼어요!':win<0?'친구가 이겼어요':'무승부!'}</h2><div class="stats" style="grid-template-columns:1fr 1fr"><div style="background:${PAL[me.color].l}"><b>${(a/world.N*100).toFixed(1)}%</b><span>나 · 처치 ${me.kills}</span></div><div style="background:${PAL[p2.color].l}"><b>${(b/world.N*100).toFixed(1)}%</b><span>친구 · 처치 ${p2.kills}</span></div></div><button class="big g" id="home">처음으로</button>`,{home:()=>{ Net.close(); toMenu(); }}); }
-function startSolo(){ roundId=crypto.randomUUID();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId},location.origin); $('menu').style.display='none'; closePanels(); Net.close(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
+function newRoundId(){ return typeof window.crypto?.randomUUID==='function'?crypto.randomUUID():'ttang-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)+'-'+Math.random().toString(36).slice(2); }
+function startSolo(){ roundId=newRoundId();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId},location.origin); $('menu').style.display='none'; closePanels(); Net.close(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
 function toMenu(){ Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
 // ================= 친구와 대결 (각자 폰) =================
 // 연결: 오쭈다월드 안에서는 Supabase 실시간 채널, 그 밖에서는 같은 기기의 다른 창끼리(시험용)
