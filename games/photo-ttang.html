@@ -77,7 +77,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 </style>
 </head>
 <body>
-<canvas id="cv"></canvas>
+<canvas id="gameCanvas"></canvas>
 <div class="hud" id="hud">
   <div class="hrow"><span class="chip" id="stageNo">1 / 20</span><span class="chip lives" id="lives">❤❤❤</span><span class="chip" id="timer">⏱ 2:30</span><span class="sp"></span><span class="chip" id="eff"></span></div>
   <div class="bar"><div id="silBar"></div><span>실루엣 <b id="silPct" style="margin:0 4px">0%</b> / 95%</span></div>
@@ -187,7 +187,7 @@ class World{
     if(!p.keepLand){ const b=p.bb, W=this.GW; if(b[2]>=0) for(let y=Math.max(0,b[1]);y<=Math.min(this.GH-1,b[3]);y++) for(let k=y*W+Math.max(0,b[0]), e=y*W+Math.min(W-1,b[2]); k<=e; k++) if(this.own[k]===p.id) this.setOwn(k,heir); p.bb=[1e9,1e9,-1,-1]; }
     if(heir&&had>0&&!p.keepLand) this.events.push({t:'inherit',p:heirP,from:p,gained:had});
     if(by&&by!==p.id) this.players[by-1].kills++;
-    if(p.bot||this.mode==='duo') p.respawnAt=this.time+(p.bot?2.4:2.0);
+    if(p.bot||this.mode==='duo') p.respawnAt=this.time+(p.bot?MOB_RESPAWN:2.0);
     this.events.push({t:'death',p,by,why,x:p.x,y:p.y}); }
   // ---------- 컴퓨터 ----------
   homePath(p){ // 큰 칸(1단위) 격자에서 내 땅까지 최단 경로 (내 오래된 선은 피함)
@@ -228,8 +228,8 @@ class World{
 }
 
 // ================= 사진 땅따먹기 =================
-const cv=document.getElementById('cv'), ctx=cv.getContext('2d'); let DPR=1, VW=0, VH=0;
-function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); VW=innerWidth; VH=innerHeight; cv.width=VW*DPR; cv.height=VH*DPR; } addEventListener('resize',resize); resize();
+const gameCanvas=document.getElementById('gameCanvas'), ctx=gameCanvas.getContext('2d'); let DPR=1, VW=0, VH=0;
+function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); VW=innerWidth; VH=innerHeight; gameCanvas.width=VW*DPR; gameCanvas.height=VH*DPR; } addEventListener('resize',resize); resize();
 const $=s=>document.getElementById(s);
 const GOAL=.95, LIVES=3;
 const timeLimit=lv=>Math.round(150-lv*2.5);   // 1단계 150초 → 20단계 102초
@@ -278,7 +278,7 @@ function updateMobs(dt){ if(!me) return; const W=world;
   // 처치된 몹은 잠시 뒤 다시 나타나요 (내 땅이 아닌 곳, 나와 먼 곳)
   for(let i=respawnQ.length-1;i>=0;i--){ if(W.time>=respawnQ[i].at){ const m=newMob(respawnQ[i].type,diff(LIST[stage].level??stage).speed); if(!W.own[W.si(m.x,m.y)]||W.own[W.si(m.x,m.y)]!==me.id){ m.born=W.time; mobs.push(m); burst(m.x,m.y,MOB[m.type].col,18,4); floats.push({x:m.x,y:m.y-1,txt:`${MOB[m.type].name} 등장!`,col:'#E53935',life:1}); respawnQ.splice(i,1); } else respawnQ[i].at=W.time+.5; } } }
 let respawnQ=[];
-let allClearShown=false; const MOB_RESPAWN=4;
+let allClearShown=false; const MOB_RESPAWN=30;
 function drawMob(m,ox,oy,S){ const T=MOB[m.type], X=ox+m.x*S, Y=oy+m.y*S, R=Math.max(7,m.r*S), t=m.ph, sc=Math.max(.05,Math.min(1,(world.time-m.born)/.4));
   ctx.save(); ctx.translate(X,Y); ctx.scale(sc,sc);
   ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,R*.95,R*.85,R*.25,0,0,TAU); ctx.fill();
@@ -323,9 +323,9 @@ function flushDirty(){ if(world.dirty.size){ for(const k of world.dirty) drawCel
   const t=performance.now(); if(revDirty&&photoImg.complete&&t-revLast>60){ revLast=t; revDirty=false; rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,rev.width,rev.height); rctx.drawImage(photoImg,0,0,rev.width,rev.height); rctx.globalCompositeOperation='destination-in'; rctx.imageSmoothingEnabled=true; rctx.drawImage(mk,0,0,rev.width,rev.height); rctx.globalCompositeOperation='source-over'; } }
 // ---------- 조이스틱 + 키보드 ----------
 const joys=new Map(), JR=56;
-cv.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode!=='play'||!me||joys.size) return; const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el); joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId); });
-cv.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy); if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; } j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>8){ world.steer(me,Math.atan2(dy,dx)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } });
-const endJ=e=>{ const j=joys.get(e.pointerId); if(!j) return; j.el.classList.add('out'); setTimeout(()=>j.el.remove(),180); joys.delete(e.pointerId); }; cv.addEventListener('pointerup',endJ); cv.addEventListener('pointercancel',endJ);
+gameCanvas.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode!=='play'||!me||joys.size) return; const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el); joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); gameCanvas.setPointerCapture&&gameCanvas.setPointerCapture(e.pointerId); });
+gameCanvas.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy); if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; } j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>8){ world.steer(me,Math.atan2(dy,dx)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } });
+const endJ=e=>{ const j=joys.get(e.pointerId); if(!j) return; j.el.classList.add('out'); setTimeout(()=>j.el.remove(),180); joys.delete(e.pointerId); }; gameCanvas.addEventListener('pointerup',endJ); gameCanvas.addEventListener('pointercancel',endJ);
 const keys=new Set(), KS={u:['w','W','ArrowUp'],d:['s','S','ArrowDown'],l:['a','A','ArrowLeft'],r:['d','D','ArrowRight']};
 function keySteer(){ if(mode!=='play'||!me) return; let x=0,y=0; if(KS.u.some(k=>keys.has(k))) y--; if(KS.d.some(k=>keys.has(k))) y++; if(KS.l.some(k=>keys.has(k))) x--; if(KS.r.some(k=>keys.has(k))) x++; if(x||y){ world.steer(me,Math.atan2(y,x)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } }
 addEventListener('keydown',e=>{ if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault(); keys.add(e.key); keySteer(); }); addEventListener('keyup',e=>{ keys.delete(e.key); keySteer(); });
@@ -487,7 +487,10 @@ const MP_VER='0.10.14', MODEL_LOCAL='models/selfie_multiclass_256x256.tflite', M
 let segmenter=null;
 async function getSegmenter(){ if(segmenter) return segmenter; const mp=await import(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}/vision_bundle.mjs`); const files=await mp.FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}/wasm`);
   let lastErr; for(const path of [MODEL_LOCAL,MODEL_REMOTE]){ try{ segmenter=await mp.ImageSegmenter.createFromOptions(files,{baseOptions:{modelAssetPath:path},runningMode:'IMAGE',outputCategoryMask:false,outputConfidenceMasks:true}); return segmenter; }catch(e){ lastErr=e; } } throw lastErr; }
-function readImage(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file); const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; }); }
+function readImage(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file), im=new Image();
+  const finish=(err)=>{ clearTimeout(timer); URL.revokeObjectURL(url); im.onload=im.onerror=null; err?rej(err):res(im); };
+  const timer=setTimeout(()=>finish(new Error('사진을 여는 시간이 너무 오래 걸려요')),15000);
+  im.onload=()=>finish(); im.onerror=()=>finish(new Error('사진을 열지 못했어요. JPG·PNG 사진으로 다시 골라 주세요.')); im.src=url; }); }
 async function personMask(img){ // 사람일 확률 (배경 확률의 반대) → 0/1 마스크, 가장 큰 덩어리만
   const W0=img.naturalWidth, H0=img.naturalHeight, k=Math.min(1,1024/Math.max(W0,H0)), W=Math.round(W0*k), H=Math.round(H0*k);
   const c=document.createElement('canvas'); c.width=W; c.height=H; c.getContext('2d').drawImage(img,0,0,W,H);
@@ -495,9 +498,9 @@ async function personMask(img){ // 사람일 확률 (배경 확률의 반대) �
   // 가장 큰 덩어리
   const lab=new Int32Array(mw*mh), q=new Int32Array(mw*mh); let best=0,bestN=0,cur=0;
   for(let i=0;i<m.length;i++){ if(!m[i]||lab[i]) continue; cur++; let h=0,t=0,n=0; q[t++]=i; lab[i]=cur; while(h<t){ const p=q[h++]; n++; const x=p%mw, y=(p/mw)|0; for(const nb of [x>0?p-1:-1,x<mw-1?p+1:-1,y>0?p-mw:-1,y<mh-1?p+mw:-1]) if(nb>=0&&m[nb]&&!lab[nb]){ lab[nb]=cur; q[t++]=nb; } } if(n>bestN){ bestN=n; best=cur; } }
-  for(let i=0;i<m.length;i++) m[i]=lab[i]===best?1:0; return {m,mw,mh,canvas:c}; }
+  for(let i=0;i<m.length;i++) m[i]=best&&lab[i]===best?1:0; return {m,mw,mh,canvas:c}; }
 // AI가 안 되면(오쭈다월드 밖, 느린 인터넷 등) 폰 안에서 색으로 윤곽을 찾는 방법으로 대신해요
-function withTimeout(p,ms){ return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]); }
+function withTimeout(p,ms){ return new Promise((res,rej)=>{ const timer=setTimeout(()=>rej(new Error('timeout')),ms); Promise.resolve(p).then(v=>{clearTimeout(timer);res(v)},e=>{clearTimeout(timer);rej(e)}); }); }
 function autoSilhouette(canvas){ const W0=canvas.width,H0=canvas.height, k=200/Math.max(W0,H0), w=Math.max(8,Math.round(W0*k)), h=Math.max(8,Math.round(H0*k));
   const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.drawImage(canvas,0,0,w,h); const d=x.getImageData(0,0,w,h).data; const N=w*h;
   const px=new Float32Array(N*3); for(let i=0;i<N;i++){ px[i*3]=d[i*4]; px[i*3+1]=d[i*4+1]; px[i*3+2]=d[i*4+2]; }
@@ -513,28 +516,35 @@ function autoSilhouette(canvas){ const W0=canvas.width,H0=canvas.height, k=200/M
   // 가장 큰 덩어리 + 구멍 메우기
   const comp=new Int32Array(N), q=new Int32Array(N); let best=0,bn=0,cur=0;
   for(let i=0;i<N;i++){ if(!lab[i]||comp[i]) continue; cur++; let hh=0,tt=0,n=0; q[tt++]=i; comp[i]=cur; while(hh<tt){ const p=q[hh++]; n++; const X=p%w,y=(p/w)|0; for(const nb of [X>0?p-1:-1,X<w-1?p+1:-1,y>0?p-w:-1,y<h-1?p+w:-1]) if(nb>=0&&lab[nb]&&!comp[nb]){ comp[nb]=cur; q[tt++]=nb; } } if(n>bn){ bn=n; best=cur; } }
-  const m=new Uint8Array(N); for(let i=0;i<N;i++) m[i]=comp[i]===best?1:0;
+  const m=new Uint8Array(N); for(let i=0;i<N;i++) m[i]=best&&comp[i]===best?1:0;
   const out=new Uint8Array(N); let hh=0,tt=0; for(let X=0;X<w;X++){ for(const i of [X,(h-1)*w+X]) if(!m[i]&&!out[i]){ out[i]=1; q[tt++]=i; } } for(let y=0;y<h;y++){ for(const i of [y*w,y*w+w-1]) if(!m[i]&&!out[i]){ out[i]=1; q[tt++]=i; } }
   while(hh<tt){ const p=q[hh++], X=p%w,y=(p/w)|0; for(const nb of [X>0?p-1:-1,X<w-1?p+1:-1,y>0?p-w:-1,y<h-1?p+w:-1]) if(nb>=0&&!m[nb]&&!out[nb]){ out[nb]=1; q[tt++]=nb; } }
   for(let i=0;i<N;i++) if(!out[i]) m[i]=1;
   return {m,mw:w,mh:h,canvas}; }
-// OpenCV(GrabCut)로 사람 찾기: AI가 안 될 때 쓰는 두 번째 방법 (처음 한 번 약 4MB 내려받기)
+// OpenCV(GrabCut)로 사람 찾기: AI가 안 될 때 쓰는 두 번째 방법
 let cvReady=null;
-function loadCV(){ if(cvReady) return cvReady; cvReady=(async()=>{ if(!window.cv) await loadScript('https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5.0.0-release.1/dist/opencv.js'); let cv=window.cv;
-  if(cv&&typeof cv.then==='function'&&!cv.Mat) cv=await new Promise(r=>cv.then(x=>r(x)));
-  if(!cv.Mat) await new Promise(r=>{ cv.onRuntimeInitialized=r; }); window.cv=cv; return cv; })(); return cvReady; }
+function loadCV(){ if(cvReady) return cvReady; cvReady=withTimeout((async()=>{
+  if(!window.cv) await loadScript('https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5.0.0-release.1/dist/opencv.js'); let module=window.cv;
+  if(!module) throw new Error('사진 처리 준비에 실패했어요');
+  if(typeof module.then==='function'&&!module.Mat){ const ready=await new Promise((res,rej)=>module.then(value=>res({cv:value}),rej)); module=ready.cv; }
+  if(!module.Mat) await new Promise(res=>{ module.onRuntimeInitialized=res; });
+  if(!module.Mat) throw new Error('사진 처리 준비에 실패했어요'); window.cv=module;
+  // A wrapper also supports older OpenCV thenables that resolve to themselves.
+  return {cv:module};
+})(),12000).catch(err=>{cvReady=null;throw err}); return cvReady; }
 function cleanMask(m,w,h){ // 가장 큰 덩어리만 남기고 구멍 메우기
   const N=w*h, comp=new Int32Array(N), q=new Int32Array(N); let best=0,bn=0,cur=0;
   for(let i=0;i<N;i++){ if(!m[i]||comp[i]) continue; cur++; let hh=0,tt=0,n=0; q[tt++]=i; comp[i]=cur; while(hh<tt){ const p=q[hh++]; n++; const X=p%w,y=(p/w)|0; for(const nb of [X>0?p-1:-1,X<w-1?p+1:-1,y>0?p-w:-1,y<h-1?p+w:-1]) if(nb>=0&&m[nb]&&!comp[nb]){ comp[nb]=cur; q[tt++]=nb; } } if(n>bn){ bn=n; best=cur; } }
+  if(!best) return m;
   for(let i=0;i<N;i++) m[i]=comp[i]===best?1:0;
   const out=new Uint8Array(N); let hh=0,tt=0; const seed=i=>{ if(!m[i]&&!out[i]){ out[i]=1; q[tt++]=i; } }; for(let X=0;X<w;X++){ seed(X); seed((h-1)*w+X); } for(let y=0;y<h;y++){ seed(y*w); seed(y*w+w-1); }
   while(hh<tt){ const p=q[hh++], X=p%w,y=(p/w)|0; for(const nb of [X>0?p-1:-1,X<w-1?p+1:-1,y>0?p-w:-1,y<h-1?p+w:-1]) if(nb>=0&&!m[nb]&&!out[nb]){ out[nb]=1; q[tt++]=nb; } }
   for(let i=0;i<N;i++) if(!out[i]) m[i]=1; return m; }
-async function grabCutMask(canvas,kind='person'){ const cv=await loadCV(); const k=360/Math.max(canvas.width,canvas.height), w=Math.round(canvas.width*k), h=Math.round(canvas.height*k);
+async function grabCutMask(canvas,kind='person'){ const {cv}=await loadCV(); const k=200/Math.max(canvas.width,canvas.height), w=Math.round(canvas.width*k), h=Math.round(canvas.height*k);
   const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.drawImage(canvas,0,0,w,h);
   const src=cv.matFromImageData(x.getImageData(0,0,w,h)), rgb=new cv.Mat(), mask=new cv.Mat(), bg=new cv.Mat(), fg=new cv.Mat();
   try{ cv.cvtColor(src,rgb,cv.COLOR_RGBA2RGB);
-    const run=(x0,y0,x1,y1)=>{ cv.grabCut(rgb,mask,new cv.Rect(Math.round(w*x0),Math.round(h*y0),Math.round(w*(x1-x0)),Math.round(h*(y1-y0))),bg,fg,5,cv.GC_INIT_WITH_RECT);
+    const run=(x0,y0,x1,y1)=>{ cv.grabCut(rgb,mask,new cv.Rect(Math.round(w*x0),Math.round(h*y0),Math.round(w*(x1-x0)),Math.round(h*(y1-y0))),bg,fg,3,cv.GC_INIT_WITH_RECT);
       const m=new Uint8Array(w*h); for(let i=0;i<w*h;i++){ const v=mask.data[i]; m[i]=v===1||v===3?1:0; } cleanMask(m,w,h);
       let n=0,xa=w,xb=0,ya=h,yb=0; for(let i=0;i<w*h;i++) if(m[i]){ n++; const X=i%w, Y=(i/w)|0; if(X<xa) xa=X; if(X>xb) xb=X; if(Y<ya) ya=Y; if(Y>yb) yb=Y; }
       const f=n/(w*h), bw=Math.max(1,xb-xa), bh=Math.max(1,yb-ya), asp=bh/bw*(h/w)*(w/h), fill=n/(bw*bh);
@@ -567,8 +577,8 @@ function autoCrop(src){ const {m,mw,mh,canvas}=src, sx=canvas.width/mw, sy=canva
   for(let y=0;y<mh;y++) for(let x=0;x<mw;x++) if(m[y*mw+x]){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
   if(x1<0) return cropFor(src,.6,canvas.width/2,canvas.height/2);
   for(let y=y0;y<=y0+(y1-y0)*.6;y++) for(let x=x0;x<=x1;x++) if(m[y*mw+x]){ sum+=x; n++; }
-  const cx=(sum/n+.5)*sx; let best=null;
-  for(let a=VIEW_MIN;a<=VIEW_MAX+1e-6;a+=.01){ let c=cropFor(src,a,cx,0); c=src.kind==='thing'?cropFor(src,a,(x0+x1+1)/2*sx,(y0+y1+1)/2*sy):cropFor(src,a,cx,y0*sy-.04*c.ch+c.ch/2); const p=gridFor(src,c).pct; const good=p>=SIL_MIN; if(!best||(good&&!best.good)||(good===best.good&&(good?a>best.a:p>best.p))) best={c,p,a,good}; }
+  const cx=((n?sum/n:(x0+x1)/2)+.5)*sx; let best=null;
+  for(let a=VIEW_MIN;a<=VIEW_MAX+1e-6;a+=.01){ let c=cropFor(src,a,cx,0); c=src.kind==='thing'?cropFor(src,a,(x0+x1+1)/2*sx,(y0+y1+1)/2*sy):cropFor(src,a,cx,y0*sy-.04*c.ch+c.ch/2); const p=gridFor(src,c).pct; const good=p>=SIL_MIN&&p<=SIL_MAX, gap=Math.max(SIL_MIN-p,0,p-SIL_MAX); if(!best||(good&&!best.good)||(good===best.good&&(good?a>best.a:gap<best.gap))) best={c,p,a,good,gap}; }
   return best.c; }
 function makeStageCrop(src,c){ const {canvas}=src, {g,pct}=gridFor(src,c);
   const out=document.createElement('canvas'); out.width=600; out.height=800; out.getContext('2d').drawImage(canvas,c.L,c.T,c.cw,c.ch,0,0,600,800);
@@ -578,22 +588,22 @@ function makeStageCrop(src,c){ const {canvas}=src, {g,pct}=gridFor(src,c);
 // ================= 내 사진으로 판 만들기 (쉬운 3단계) =================
 // ① 사진 고르기 → ② 자동으로 만든 판 확인 (난이도·해보기·등록) → (필요할 때만) 윤곽 고치기
 function uploadPanel(){ const o=panel(`<h2>내 사진으로 판 만들기</h2><div id="up"></div><button class="link" id="close">닫기</button>`,{close:()=>{}}); stepPick(o.querySelector('#up'),o); }
-function stepPick(box,o){ box.innerHTML=`<p>사람·동물·물건·풍경 무엇이든 좋아요.<br>주인공을 <b>자동으로</b> 찾아서 게임 판을 만들어 드려요.</p>
+function stepPick(box,o,error=''){ box.innerHTML=`${error?`<p role="alert">${esc(error)}</p>`:''}<p>사람·동물·물건·풍경 무엇이든 좋아요.<br>주인공을 <b>자동으로</b> 찾아서 게임 판을 만들어 드려요.</p>
   <label class="big a pick">📷 사진 고르기<input type="file" accept="image/*" id="file" hidden></label>`;
   box.querySelector('#file').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; box.innerHTML='<div class="spin"></div><p>주인공을 찾는 중이에요…</p>';
-    let src; try{ src=await findPerson(await readImage(f),t=>{ const p=box.querySelector('p'); if(p) p.textContent=t; },'auto'); }catch(err){ box.innerHTML='<p>사진을 읽지 못했어요.</p>'; setTimeout(()=>stepPick(box,o),1200); return; }
-    src.crop=autoCrop(src); stepPreview(box,src,o); }; }
+    let src; try{ src=await findPerson(await readImage(f),t=>{ const p=box.querySelector('p'); if(p) p.textContent=t; },'auto'); }catch(err){ if(o.isConnected) stepPick(box,o,err.message||'사진을 읽지 못했어요. 다른 사진을 골라 주세요.'); return; }
+    if(!o.isConnected) return; src.crop=autoCrop(src); stepPreview(box,src,o); }; }
 function previewImage(src){ const st=makeStageCrop(src,src.crop); const pv=document.createElement('canvas'); pv.width=300; pv.height=400; const p=pv.getContext('2d'); p.drawImage(st.canvas,0,0,300,400);
   const id=p.getImageData(0,0,300,400); for(let i=0;i<st.grid.length;i++) if(!st.grid[i]){ id.data[i*4]=id.data[i*4]*.22+20; id.data[i*4+1]=id.data[i*4+1]*.22+14; id.data[i*4+2]=id.data[i*4+2]*.22+45; } p.putImageData(id,0,0); return {st,url:pv.toDataURL('image/jpeg',.85)}; }
 let pickLv=7, pickVis='friends';
 const VISHINT={public:'모두가 할 수 있어요 · 관리자가 확인한 뒤 올라가요',friends:'친구만 할 수 있어요 · 바로 올라가요',private:'나만 할 수 있어요 · 바로 올라가요'};
-function stepPreview(box,src,o){ const {st,url}=previewImage(src); const ok=st.pct>=SIL_MIN&&st.pct<=SIL_MAX;
+function stepPreview(box,src,o){ const {st,url}=previewImage(src); const ok=st.pct>=SIL_MIN&&st.pct<=SIL_MAX, playable=st.pct>0;
   box.innerHTML=`<p style="margin:0 0 2px">${ok?'이렇게 게임 판이 만들어져요!':st.pct<SIL_MIN?`⚠️ 주인공이 ${st.pct.toFixed(0)}%예요 · ${SIL_MIN}% 이상이어야 해요`:'⚠️ 주인공이 너무 커요'}</p>
     <p class="kindline">${src.kind==='person'?'🧍 사람으로 알아봤어요':'🐶 동물·물건·풍경으로 알아봤어요'} · <button class="linkin" id="swk">${src.kind==='person'?'사람이 아니에요':'사람이에요'}</button></p>
     <img src="${url}" alt="게임 판 미리보기" class="pvimg">
-    <p class="hint">${ok&&st.pct>55?'주인공이 커서 조금 어려운 판이에요 · ':''}${ok?'밝은 부분(주인공)을 땅으로 덮으면 이겨요':'아래 "윤곽 고치기"로 주인공 부분을 칠해 주세요'}</p>
+    <p class="hint">${ok&&st.pct>55?'주인공이 커서 조금 어려운 판이에요 · ':''}${ok?'밝은 부분(주인공)을 땅으로 덮으면 이겨요':playable?'먼저 해볼 수 있어요. 등록하려면 아래 "윤곽 고치기"로 주인공 부분을 고쳐 주세요':'아래 "윤곽 고치기"로 주인공 부분을 칠해 주세요'}</p>
     <div class="lvbtns">${[['쉬움',1],['보통',7],['어려움',14]].map(([n,v])=>`<button class="lvb${v===pickLv?' on':''}" data-v="${v}">${n}<small>${'★'.repeat(diff(v).stars)}</small></button>`).join('')}</div>
-    <button class="big a" id="try" ${ok?'':'disabled'}>▶ 먼저 해보기</button>
+    <button class="big a" id="try" ${playable?'':'disabled'}>▶ 먼저 해보기</button>
     <div class="visbtns">${Object.entries(VISNAME).map(([k,n])=>`<button class="vb${k===pickVis?' on':''}" data-v="${k}">${n}</button>`).join('')}</div>
     <p class="hint" id="vhint"></p>
     <label class="agree1"><input type="checkbox" id="ag"> 내 사진(또는 허락받은 사진)이고, 아이·노출 사진이 아니에요</label>
