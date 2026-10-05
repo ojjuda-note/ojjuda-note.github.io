@@ -54,3 +54,9 @@
 .board-rank-page table{font-size:16px;line-height:1.45;}
 .board-leader-game,.board-leader-score{font-weight:400;}
 @media(max-width:360px){.board-rank-page table{font-size:15px;}.board-leader-empty{font-size:12px;}}
+
+/* Keep the selected difficulty visible even on narrow ranking columns. */
+.board-leader-game:has(.board-game-difficulty){padding-top:0;padding-bottom:0;}
+.board-game-open:has(.board-game-difficulty){padding:2px 0;line-height:1.15;}
+.board-game-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.board-game-difficulty{display:block;font-size:13px;line-height:1.2;color:#c6d2b9;white-space:nowrap;}
