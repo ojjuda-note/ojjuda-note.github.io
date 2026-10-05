@@ -126,11 +126,11 @@
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
     $('auth-title').textContent = isSignup ? '오쭈다 월드' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드';
-    $('auth-intro').textContent = isSignup ? '한 번 가입하면 두 공간을 자유롭게 오갈 수 있어요.'
+    $('auth-intro').textContent = isSignup ? '한 번 가입하면 오쭈다 월드의 모든 공간을 이용할 수 있어요.'
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
           : isNickname ? '월드에서 사용할 닉네임을 정해 주세요.'
-          : '하나의 계정으로 두 공간을 즐겨요.';
+          : '우리집부터 공원과 오락실까지, 오쭈다 월드에서 함께해요.';
     submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '월드 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
   }
@@ -246,8 +246,8 @@
     const expectedIdentityVersion = identityVersion;
     const expectedViewVersion = authViewVersion;
     const noteButton = document.querySelector('[data-destination="note"]');
-    noteButton.disabled = true;
-    const release = () => { noteButton.disabled = false; enteringNote = false; };
+    if (noteButton) noteButton.disabled = true;
+    const release = () => { if (noteButton) noteButton.disabled = false; enteringNote = false; };
     const accountChanged = () => session?.user?.id !== expectedUserId || identityVersion !== expectedIdentityVersion
       || authViewVersion !== expectedViewVersion;
     try {
@@ -505,7 +505,7 @@
   }
 
   document.querySelectorAll('[data-open-auth]').forEach(button => {
-    button.addEventListener('click', () => openAuth(button.dataset.openAuth));
+    button.addEventListener('click', () => openAuth(button.dataset.openAuth, 'world'));
   });
   document.querySelectorAll('[data-destination]').forEach(button => {
     button.addEventListener('click', () => {

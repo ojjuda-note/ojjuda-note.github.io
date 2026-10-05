@@ -1,6 +1,6 @@
 import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop, aiChooseGukjin } from './engine.mjs';
 
-export async function verifyRound(round, actions) {
+export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
   if (!Array.isArray(actions) || !actions.length || actions.length > 512) throw Error('invalid_actions');
   let current, choice = 0, result;
   const game = new Game({
@@ -20,6 +20,8 @@ export async function verifyRound(round, actions) {
     }
   });
   game.random = seededRandom(round.seed);
+  game.cpuMode = cpuMode;
+  game.rate = round.rate ?? 100;
   game.bank = [round.gold, 5000]; game.first = round.first; game.carry = round.carry;
   game.deal();
   for (const action of actions) {
