@@ -1,0 +1,120 @@
+name: Verify card writing placeholder
+on:
+  push:
+    branches: [fix/card-writing-copy-20261005]
+    paths: [.github/workflows/ojjuda-card-copy-verify.yml]
+permissions:
+  contents: write
+jobs:
+  card-copy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      START_SHA: ${{ github.sha }}
+      BASE_SHA: 224ba460f468a5b2144c8bc0dc958b971a45c9fe
+      BRANCH_NAME: fix/card-writing-copy-20261005
+      OJJUDA_COPY_PROOF_DIR: /tmp/ojjuda-card-copy-proof
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Apply only the card prompt correction
+        run: |
+          git fetch --no-tags origin "$BASE_SHA"
+          git checkout --detach "$BASE_SHA"
+          cat > /tmp/ojjuda-card-copy.patch <<'CARD_COPY_PATCH'
+          diff --git a/brand-copy.css b/brand-copy.css
+          index b7350bf..63b2936 100644
+          --- a/brand-copy.css
+          +++ b/brand-copy.css
+          @@ -7,7 +7,5 @@
+           .auth-body>.ojjuda-copy--world,.auth-loading>.ojjuda-copy--world{text-align:center}
+           .ojjuda-copy--auth{margin:0 0 14px;text-align:center;color:var(--muted,#626894);font-size:16px;line-height:1.6}
+           .ojjuda-copy--feed{margin:0 0 14px;color:var(--ink);font-size:clamp(17px,2.5vw,20px);line-height:1.6}
+          -.ojjuda-copy--composer{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--accent-soft,#fceaf1);color:var(--ink,#23264a);font-size:18px;line-height:1.55}
+           .front-heading>.ojjuda-copy--map{font-size:20px;line-height:1.6;color:var(--pink-ink,#a93263);margin:14px 0}
+          -@media(max-width:380px){.ojjuda-copy--composer{font-size:16px}}
+           @media(min-width:900px){.topbar>.ojjuda-copy--world{display:none}}
+          diff --git a/park/index.html b/park/index.html
+          index 5c4c14e..768ab2a 100644
+          --- a/park/index.html
+          +++ b/park/index.html
+          @@ -167,12 +167,11 @@
+                 <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
+                 <div class="composer-body">
+                   <div class="compose-publish-settings" aria-label="공개 및 표시 설정"><span class="compose-public-scope">전체 공개</span><section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-describedby="card-location-status" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite" hidden>카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section><div class="compose-quick"><label class="quick-choice"><span class="quick-label">성별</span><select id="quick-gender" aria-label="성별 표시"><option value="private">비공개</option></select></label></div></div>
+          -        <p class="ojjuda-copy ojjuda-copy--composer" id="compose-brand-copy">오늘 하루 어땠나요? 괜찮았나요</p>
+                   <p class="compose-context" id="compose-context" hidden>마음을 카드에 적어 주세요. 태그는 글에서 자동으로 골라 드려요.</p>
+                   <div class="compose-photo image-lake">
+                     <span class="compose-shade"></span>
+                     <label class="compose-photo-attach" id="card-photo-attach" role="button" tabindex="0" hidden title="사진 첨부"><input id="card-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4 7.6 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.6L15 4H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg><span class="visually-hidden">내 사진 첨부 · 무료</span></label><button class="compose-photo-remove" id="card-photo-remove" type="button" hidden aria-label="사진 빼기">×</button>
+          -          <textarea id="compose-text" aria-label="카드 글" aria-describedby="compose-brand-copy" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="2"></textarea>
+          +          <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="오늘 하루 어땠나요?&#10;괜찮았나요" rows="2"></textarea>
+                     <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
+                     <input id="compose-tags" type="text" placeholder="#태그 · 공백이나 쉼표로 나눠요 (최대 5개)" maxlength="120" autocomplete="off" aria-label="카드 태그 (최대 5개, 공백이나 쉼표로 나눠요)">
+                   </div>
+          diff --git a/tests/park-note-chat-ui.test.cjs b/tests/park-note-chat-ui.test.cjs
+          index 2728d56..63cd56c 100644
+          --- a/tests/park-note-chat-ui.test.cjs
+          +++ b/tests/park-note-chat-ui.test.cjs
+          @@ -4,11 +4,12 @@ const {chromium}=require('playwright');
+           const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
+           const copy='오늘 하루 어땠나요? 괜찮았나요';
+           const checkWritingCopy=async frame=>{
+          - const greeting=frame.locator('#compose-brand-copy');
+          - assert.equal(await greeting.textContent(),copy);assert.equal(await greeting.isVisible(),true);
+          - assert.equal(await frame.locator('#compose-text').getAttribute('aria-describedby'),'compose-brand-copy');
+          - assert.equal(await frame.locator('#compose-text').inputValue(),'','the greeting is an instruction, never card content');
+          - assert.equal(await frame.locator('.composer-body').evaluate(body=>{const p=body.querySelector('#compose-brand-copy').getBoundingClientRect(),b=body.getBoundingClientRect(),settings=body.querySelector('.compose-publish-settings').getBoundingClientRect();return p.top>=b.top&&p.bottom<=b.bottom&&settings.bottom<=p.top; }),true,'the full greeting is visible after public settings before writing');
+          + const input=frame.locator('#compose-text');
+          + assert.equal(await input.getAttribute('placeholder'),copy.replace('? ','?\n'));assert.equal(await input.isVisible(),true);
+          + assert.equal(await frame.locator('#compose-brand-copy').count(),0,'no duplicate greeting above the card');
+          + assert.equal(await input.inputValue(),'','the greeting is a placeholder, never card content');
+          + assert.equal(await input.evaluate(el=>el.matches(':placeholder-shown')&&el.scrollHeight<=el.clientHeight+1),true,'the complete greeting fits the empty input');
+          + assert.equal(await input.evaluate(el=>{const p=el.getBoundingClientRect(),photo=el.closest('.compose-photo').getBoundingClientRect(),body=el.closest('.composer-body').getBoundingClientRect();return p.top>=photo.top&&p.bottom<=photo.bottom&&p.left>=photo.left&&p.right<=photo.right&&p.top>=body.top&&p.bottom<=body.bottom; }),true,'the greeting appears inside the visible photo card before writing');
+           };
+           // Old bookmarks, direct feature URLs and authenticated returns share one World entry.
+           for(const [from,to] of [
+          CARD_COPY_PATCH
+          git apply /tmp/ojjuda-card-copy.patch
+          python3 - <<'CHECK_CARD_COPY'
+          import subprocess
+          expected = {'park/index.html': '768ab2a5c60711441faf4a64e1f980e41e620a06', 'brand-copy.css': '63b293613bb669995c59056e62d4f26e3d81dce9', 'tests/park-note-chat-ui.test.cjs': '63cd56cf24b1eb17c5a2fad7dfbafe778ad64cc3'}
+          for file, sha in expected.items():
+              actual = subprocess.check_output(['git', 'hash-object', file], text=True).strip()
+              assert actual == sha, (file, actual, sha)
+          CHECK_CARD_COPY
+          git diff --check
+          node --check tests/park-note-chat-ui.test.cjs
+      - name: Install test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check syntax and existing composer behavior
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/note-composer-settings.test.cjs
+      - name: Check the actual World card editor at mobile and desktop widths
+        run: node tests/park-note-chat-ui.test.cjs
+      - name: Save browser screenshots for review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ojjuda-card-copy-browser-proof
+          path: /tmp/ojjuda-card-copy-proof
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Publish verified source changes
+        run: |
+          git config user.name 'ojjuda-note'
+          git config user.email '334255691+ojjuda-note@users.noreply.github.com'
+          git add park/index.html brand-copy.css tests/park-note-chat-ui.test.cjs
+          checked_tree=$(git write-tree)
+          checked_head=$(printf '%s\n' 'Use the Ojjuda greeting in the card writing field' | git commit-tree "$checked_tree" -p "$START_SHA" -p "$BASE_SHA")
+          git push origin "$checked_head:refs/heads/$BRANCH_NAME"
+          echo "CHECKED_HEAD=$checked_head"
+          echo "CHECKED_TREE=$checked_tree"
+          echo "BASE_MAIN=$BASE_SHA"
+          git diff --stat "$BASE_SHA" "$checked_head"
