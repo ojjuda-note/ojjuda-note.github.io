@@ -1,0 +1,43 @@
+name: Apply verified Matgo G display
+on:
+  push:
+    branches: [codex/matgo-g-unit-publish-20261005]
+    paths: ['.github/workflows/apply-matgo-g-unit.yml']
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/matgo-g-unit-publish-20261005
+      - name: Apply amount display changes
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          for f in ['world.html','world-board.js','games/matgo.html','games/matgo-online.mjs']:
+              p=Path(f); s=p.read_text()
+              s=s.replace("unit:'골드'","unit:'G'").replace("const UNIT='골드'","const UNIT='G'")
+              if f.startswith('games/'):
+                  s=re.sub(r'(?<=[0-9}])골드','G',s)
+                  s=s.replace("+' 골드'","+'G'").replace("+'골드","+'G").replace('class="gold-unit">골드','class="gold-unit">G')
+              p.write_text(s)
+          for f in ['tests/world-board-ui.test.cjs','tests/matgo-ui.test.cjs']:
+              p=Path(f); s=re.sub(r'(?<=[0-9])골드','G',p.read_text()).replace('5,000 골드','5,000G'); p.write_text(s)
+          p=Path('world.html'); p.write_text(p.read_text().replace('/world-board.js?v=20261005-streak1','/world-board.js?v=20261005-g-unit1'))
+          for f in ['matgo-bridge.js','games/matgo-online.html','games/matgo-online.mjs']:
+              p=Path(f); p.write_text(p.read_text().replace('20261004-rules5','20261005-g-unit1'))
+          p=Path('games/matgo.html'); p.write_text(p.read_text().replace(".toLocaleString()+' '+UNIT",".toLocaleString()+UNIT"))
+      - name: Verify syntax and commit display-only files
+        run: |
+          node --check world-board.js
+          node --check games/matgo-online.mjs
+          node tests/inline-scripts.test.cjs
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add world.html world-board.js games/matgo.html games/matgo-online.mjs games/matgo-online.html matgo-bridge.js tests/world-board-ui.test.cjs tests/matgo-ui.test.cjs
+          git commit -m "Display Matgo game money amounts with G unit"
+          git push origin HEAD:codex/matgo-g-unit-publish-20261005
