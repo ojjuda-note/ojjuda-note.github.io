@@ -14,6 +14,7 @@
   }
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
   let celebrationTimer=null,autoStartToken=null;
+  const timeoutRetries=new Set();
   const celebration=$('celebration');
   let hintTimer=null,zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
@@ -61,12 +62,14 @@
   }
   function refreshControls(){
     const r=round(),playing=r.status==='playing',won=r.status==='won',lost=r.status==='lost',pending=r.status==='payment';
+    const timedOut=lost&&r.hearts>0&&r.remainingMs===0,changePicture=timedOut&&timeoutRetries.has(puzzle().id);
     $('board-shell').classList.toggle('covered',!playing&&!won&&!answerReview);$('board-curtain').hidden=playing||won||!!answerReview;
     $('board-shell').classList.toggle('reviewing',!!answerReview);
     $('gate-eyebrow').textContent=pending?'쭈 사용 확인':lost?'이번 도전 종료':'1분 도전';
     $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'준비됐나요?';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':'하단에서 3쭈로 1분을 연장하거나 다시 풀 수 있어요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
-    $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?'다시 풀기':'시작하기';
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 3쭈로 1분을 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 3쭈로 1분 연장도 가능해요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
+    $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?(changePicture?'다른 그림 풀기':'다시 풀기'):'시작하기';
+    $('reset').textContent=changePicture?'다른 그림 풀기':'다시 풀기';$('reset').setAttribute('aria-label',changePicture?'다른 그림 풀기':'이 문제 다시 풀기');
     $('start').disabled=!imagesReady||paymentBusy||!!answerReview;
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
@@ -216,7 +219,14 @@
   function reset(){
     if(paymentBusy||round().pending||answerReview)return;
     if(round().status==='playing'&&found().length&&!confirm('찾은 표시를 지우고 하트 3개, 1분으로 다시 풀까요?'))return;
-    state.found[puzzle().id]=[];state.rounds[puzzle().id]=core.freshRound();show(state.current);
+    const r=round(),timedOut=r.status==='lost'&&r.hearts>0&&r.remainingMs===0;
+    let index=state.current;
+    if(timedOut){
+      if(timeoutRetries.has(puzzle().id))index=nextUnsolved()??state.order[(position()+1)%state.order.length];
+      else timeoutRetries.add(puzzle().id);
+    }
+    const id=puzzles[index].id;
+    state.found[id]=[];state.rounds[id]=core.freshRound();show(index);
   }
   function guess(x,y,surface){
     tick();const r=round();if(r.status!=='playing'||paymentBusy||!imagesReady||answerReview)return;
