@@ -9,6 +9,11 @@ const root=path.resolve(__dirname,'..');
  const changedRevision=crypto.createHash('sha256').update(changedChair).digest('hex').slice(0,16);
  const sofaData=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets',builtInAssets.sofa.file)));sofaData.views.right.source='manifest-refresh-test';
  const sofaBytes=Buffer.from(JSON.stringify(sofaData)),sofaRevision=crypto.createHash('sha256').update(sofaBytes).digest('hex').slice(0,16);
+ const cushionData=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets',builtInAssets['sofa-cushions'].file)));
+ cushionData.cushions['sage-cushion'].seat.u=1.8;
+ cushionData.cushions['sage-cushion'].views.center.sourceRect[0]=1;
+ const cushionBytes=Buffer.from(JSON.stringify(cushionData)),cushionRevision=crypto.createHash('sha256').update(cushionBytes).digest('hex').slice(0,16);
+ let changedCushions=false;
  const requests=[];let changed=false,changedSofa=false,broken=false,manifestUnavailable=false;
  const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
@@ -24,6 +29,8 @@ const root=path.resolve(__dirname,'..');
   // Expire HTTP freshness immediately: force-cache must still reuse valid bytes.
   res.setHeader('Cache-Control',runtime?'public, max-age=0':'no-store');
   if(runtime){requests.push({path:url.pathname,revision:url.searchParams.get('v'),bytes:broken?2:fs.statSync(file).size});if(broken){res.end('{}');return;}}
+  if(changedCushions&&file.endsWith('item-assets.json')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets['sofa-cushions'].revision,cushionRevision));return;}
+  if(changedCushions&&file.endsWith(builtInAssets['sofa-cushions'].file)){res.end(cushionBytes);return;}
   if(changedSofa&&file.endsWith('item-assets.json')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.sofa.revision,sofaRevision));return;}
   if(changedSofa&&file.endsWith(builtInAssets.sofa.file)){res.end(sofaBytes);return;}
   if(changed&&file.endsWith('item-assets.json')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.chair.revision,changedRevision));return;}
@@ -48,8 +55,18 @@ const root=path.resolve(__dirname,'..');
   manifestUnavailable=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['chair']));assert.equal(requests.length,start,'unavailable manifest preserves the last valid revision and cached artwork');await page.close();manifestUnavailable=false;changed=false;
   changedSofa=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['sofa']));
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets.sofa.file],'same app URL loads only the revised sofa data');
-  assert.equal(await page.evaluate(async()=>{const {SOFA_V1}=await import('/house-test/sofa-v1-registration.js?v=20261005-sofadata1');return SOFA_V1.right.source;}),'manifest-refresh-test','the rendering registration receives the downloaded data');
+  assert.equal(await page.evaluate(async()=>{const {SOFA_V1}=await import('/house-test/sofa-v1-registration.js?v=20261005-cushiondata1');return SOFA_V1.right.source;}),'manifest-refresh-test','the rendering registration receives the downloaded data');
   await page.close();changedSofa=false;
+  page=await open(context,'first');await page.evaluate(()=>loadItems(['sofa']));await page.close();
+  changedCushions=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['sage-cushion']));
+  assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets['sofa-cushions'].file],'same app URL fetches only changed cushion data');
+  assert.deepEqual(await page.evaluate(async()=>{
+   const {SOFA_CUSHION_SEATS}=await import('/house-test/sofa-cushion-placement.js?v=20261005-cushiondata1');
+   const {SOFA_ACCESSORY_IMAGES}=await import('/house-test/sofa-v1-registration.js?v=20261005-cushiondata1');
+   const {FURNITURE}=await import('/house-test/furniture-catalog.js?v=20261005-cushiondata1');
+   return [SOFA_CUSHION_SEATS['sage-cushion'].u,SOFA_ACCESSORY_IMAGES['sage-cushion'].center.sourceRect[0],FURNITURE['sage-cushion'].preferred.x];
+  }),[1.8,1,4.42],'rendering and new-placement metadata use the downloaded cushion registration');
+  await page.close();changedCushions=false;
   // Correct URL, wrong but syntactically valid bytes: dimensions alone cannot
   // detect this stale entry. Repair it without requiring the user to retry.
   page=await open(context,'poison-cache');
