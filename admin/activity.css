@@ -1,0 +1,23 @@
+.aa-history{min-width:0;color:var(--ink,#23264a)}
+.aa-history h3{margin:0;font-size:20px}
+.aa-help,.aa-status,.aa-message{margin:10px 0 16px;color:var(--ink2,var(--ink-2,#626894));font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+.aa-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px}
+.aa-controls label{display:grid;gap:5px;font-size:12px;font-weight:700;min-width:0}
+.aa-controls .aa-action-filter{flex:1 1 180px;max-width:420px}
+.aa-controls select{width:100%;min-height:42px;max-width:100%;min-width:0;padding:8px 12px;border:1px solid var(--line,#daddf0);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#23264a);font:inherit;font-size:13px;font-weight:400}
+.aa-history .aa-button{min-height:42px;padding:8px 13px;border:1px solid var(--line,#daddf0);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#23264a);font:inherit;font-size:13px;cursor:pointer}
+.aa-history button:disabled{opacity:.5;cursor:default}
+.aa-history :focus-visible{outline:2px solid var(--accent-ink,#a93263);outline-offset:3px}
+.aa-list{display:grid;gap:12px}
+.aa-card{min-width:0;padding:16px;border:1px solid var(--line,#daddf0);border-radius:15px;background:var(--surface,#fff)}
+.aa-card-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;font-size:14px}
+.aa-date,.aa-meta{color:var(--ink2,var(--ink-2,#626894));font-size:12px;overflow-wrap:anywhere}
+.aa-meta,.aa-reason{margin:9px 0 0;line-height:1.6;overflow-wrap:anywhere}
+.aa-reason{font-size:13px;white-space:pre-wrap}
+.aa-detail{margin-top:12px;font-size:12px}
+.aa-detail summary{width:fit-content;max-width:100%;min-height:32px;padding:5px 0;cursor:pointer;color:var(--accent-ink,#a93263)}
+.aa-detail dl{display:grid;grid-template-columns:minmax(75px,120px) minmax(0,1fr);gap:8px 12px;margin:8px 0 0;padding:12px;border-radius:10px;background:var(--surface2,var(--surface-2,#f5f6fc))}
+.aa-detail dt{color:var(--ink2,var(--ink-2,#626894))}
+.aa-detail dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.aa-pager{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:18px;font-size:13px}
+@media(max-width:420px){.aa-controls{display:grid;grid-template-columns:minmax(0,1fr) auto}.aa-controls .aa-action-filter{grid-column:1/-1;grid-row:2;max-width:none}.aa-card{padding:13px}.aa-detail dl{grid-template-columns:minmax(65px,90px) minmax(0,1fr);padding:10px;gap:7px}}

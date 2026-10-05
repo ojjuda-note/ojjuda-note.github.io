@@ -16,6 +16,7 @@
       offsetX=Math.max(-maxX,Math.min(maxX,offsetX));offsetY=Math.max(-maxY,Math.min(maxY,offsetY));
       picture.style.transform='translate('+offsetX+'px,'+offsetY+'px) scale('+scale+')';
       viewport.classList.toggle('is-zoomed',scale>1);
+      stage.dataset.worldSwipe=scale>1?'off':'on';
       controls.querySelector('[aria-label="공간 축소"]').disabled=scale<=1;
       controls.querySelector('[aria-label="공간 확대"]').disabled=scale>=2;
     }
@@ -36,13 +37,13 @@
       const next=document.querySelector('#pstage');
       if(next&&next===stage){sync();return;}
       dispose();if(!next)return;
-      stage=next;stage.classList.add('place-art-stage');stage.dataset.worldSwipe='off';
+      stage=next;stage.classList.add('place-art-stage');stage.dataset.worldSwipe='on';
       events=new AbortController();const options={signal:events.signal};
       viewport=document.createElement('div');viewport.className='place-art-viewport';
       picture=document.createElement('img');picture.className='place-art-image';picture.width=1536;picture.height=1024;picture.draggable=false;picture.decoding='async';
       status=document.createElement('span');status.className='place-art-status';status.setAttribute('role','status');
       retry=document.createElement('button');retry.className='place-art-retry';retry.type='button';retry.textContent='다시 불러오기';retry.hidden=true;
-      controls=document.createElement('div');controls.className='place-art-tools';controls.setAttribute('role','group');controls.setAttribute('aria-label','공간 보기');
+      controls=document.createElement('div');controls.className='place-art-tools';controls.dataset.worldSwipe='off';controls.setAttribute('role','group');controls.setAttribute('aria-label','공간 보기');
       for(const [label,text,delta] of [['공간 축소','−',-.25],['공간 맞춤','전체 보기',0],['공간 확대','+',.25]]){
         const button=document.createElement('button');button.type='button';button.textContent=text;button.setAttribute('aria-label',label);
         button.addEventListener('click',()=>{scale=delta?Math.max(1,Math.min(2,scale+delta)):1;render();},options);controls.append(button);

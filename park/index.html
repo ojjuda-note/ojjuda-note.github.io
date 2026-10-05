@@ -23,23 +23,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/note/style.css?v=20260929-logo1">
-  <link rel="stylesheet" href="/note/features.css?v=20261004-full1">
-  <link rel="stylesheet" href="/note/event-photo.css?v=0.45.9-beta">
+  <link rel="stylesheet" href="/note/style.css?v=20261004-home2">
+  <link rel="stylesheet" href="/note/features.css?v=20261005-public1">
+  <link rel="stylesheet" href="/note/event-photo.css?v=20261004-design1">
   <link rel="stylesheet" href="/note/effects.css?v=0.45.28-beta">
-  <link rel="stylesheet" href="/note/support.css?v=0.45.42-beta">
+  <link rel="stylesheet" href="/note/support.css?v=20261004-design1">
   <link rel="stylesheet" href="/note/notifications.css?v=0.45.45-beta">
-  <link rel="stylesheet" href="/note/map.css?v=0.45.26-beta">
+  <link rel="stylesheet" href="/note/map.css?v=20261004-design1">
   <link rel="stylesheet" href="/note/pull-refresh.css?v=0.45.10-beta">
   <link rel="stylesheet" href="/note/feed-swipe.css?v=20260929-swipe1">
   <link rel="stylesheet" href="/note/world-navigation.css?v=20260929-logo1">
   <link rel="stylesheet" href="/note/account.css?v=20260929-account1">
-<link rel="stylesheet" href="/guide-entry.css?v=20260928-guide1">
+<link rel="stylesheet" href="/guide-entry.css?v=20261004-design1">
 <link rel="stylesheet" href="/photo-protection.css?v=20260929-1">
-<link rel="stylesheet" href="/my-menu.css?v=20260929-diag1">
-<link rel="stylesheet" href="/ju-charge.css?v=20261003-coins1">
+<link rel="stylesheet" href="/my-menu.css?v=20261004-home2">
+<link rel="stylesheet" href="/ju-charge.css?v=20261004-design1">
 <link rel="stylesheet" href="/ju-coins.css?v=20261003-coins1">
-<script src="/ju-charge.js?v=20261003-coins1"></script>
+<script src="/ju-charge.js?v=20261004-leaveguard1"></script>
 <script src="/photo-protection.js?v=20260929-1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
@@ -123,14 +123,6 @@
 
       <main id="main" class="main">
         <div class="preview-banner" id="connection-status" role="status" aria-live="polite"><span class="preview-dot"></span><span id="connection-message">카드를 불러오는 중</span></div>
-        <details class="note-announcement" id="note-announcement" hidden>
-          <summary class="note-announcement-row">
-            <span class="note-announcement-label">공지</span>
-            <span class="note-announcement-viewport"><span class="note-announcement-moving" aria-hidden="true"></span><span class="note-announcement-copy" id="note-announcement-copy"></span></span>
-            <span class="note-announcement-open" aria-hidden="true">전체 보기</span>
-          </summary>
-          <p class="note-announcement-full" id="note-announcement-full"></p>
-        </details>
 
         <section id="feed" class="screen" aria-labelledby="feed-title">
           <h1 id="feed-title" class="note-visually-hidden">오쭈다 월드 · 공원 카드</h1>
@@ -146,7 +138,7 @@
           <button class="back-button" type="button" data-show="feed"><svg><use href="#arrow"/></svg>카드로 돌아가기</button>
           <div class="detail-layout">
             <div class="detail-card-slot" id="detail-card-slot"></div>
-            <div class="replies"><div class="reply-heading"><div><p class="eyebrow">이야기가 이어져요</p><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" aria-live="polite"></div></div>
+            <div class="replies"><div class="reply-heading"><div><h2>답글 카드 <span id="reply-count">0</span></h2></div><button class="button primary" type="button" data-compose="reply"><svg><use href="#plus"/></svg>답글 쓰기</button></div><div id="reply-list" aria-live="polite"></div></div>
           </div>
         </section>
         <section id="note-my-screen" class="note-my-screen my-hub" aria-labelledby="note-my-title" hidden>
@@ -172,6 +164,7 @@
     <section class="composer" role="dialog" aria-modal="true" aria-labelledby="compose-title">
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
       <div class="composer-body">
+        <div class="compose-publish-settings" aria-label="공개 및 표시 설정"><span class="compose-public-scope">전체 공개</span><section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-describedby="card-location-status" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite" hidden>카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section><div class="compose-quick"><label class="quick-choice"><span class="quick-label">성별</span><select id="quick-gender" aria-label="성별 표시"><option value="private">비공개</option></select></label></div></div>
         <p class="compose-context" id="compose-context" hidden>마음을 카드에 적어 주세요. 태그는 글에서 자동으로 골라 드려요.</p>
         <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
@@ -220,23 +213,22 @@
             <div class="identity-row gender-row" hidden title="가입한 성별 또는 비공개만 선택할 수 있어요. 작성한 카드의 표시는 그대로 유지돼요."><span>성별 표시</span><label><input type="radio" name="gender" value="male" disabled>남</label><label><input type="radio" name="gender" value="female" disabled>여</label><label title="이름 앞 동그라미가 회색으로 보여요"><input type="radio" name="gender" value="private" checked>비공개</label></div>
           </div>
         </details>
-        <section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-describedby="card-location-status" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite" hidden>카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section>
+
         <section class="note-event-fields" id="note-event-fields" hidden><h3>이벤트 위치와 범위</h3><p id="event-location-status" role="status">지도를 누르거나 Tab으로 지도에 초점을 맞춘 뒤 방향키로 이동하고 아래 버튼으로 중심을 선택해 주세요. 지정한 위치와 범위는 다른 사람에게 보입니다.</p><div id="event-map" class="note-map"></div><button class="button" id="event-select-center" type="button">현재 지도 중심을 위치로 선택</button><div class="note-event-options"><label>반경 (1~30km)<input id="event-radius" type="number" inputmode="numeric" min="1" max="30" step="1" value="1"></label><label>시간 (1~24시간)<input id="event-hours" type="number" inputmode="numeric" min="1" max="24" step="1" value="1"></label></div><p id="event-price">1km × 1시간 = 100쭈</p></section>
       </div>
-      <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><div class="compose-quick"><label class="quick-choice"><span class="quick-label">이름</span><select id="quick-identity" aria-label="표시 이름"><option value="anonymous">익명</option><option value="nickname">닉네임</option></select></label><label class="quick-choice"><span class="quick-label">성별</span><select id="quick-gender" aria-label="성별 표시"><option value="private">비공개</option></select></label></div><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
+      <footer class="composer-footer"><span id="compose-message" role="status" aria-live="polite">로그인 확인 중</span><div class="compose-quick"><label class="quick-choice"><span class="quick-label">이름</span><select id="quick-identity" aria-label="표시 이름"><option value="anonymous">익명</option><option value="nickname">닉네임</option></select></label></div><button class="button primary" id="publish-card" type="button" disabled>등록하기</button></footer>
     </section>
   </div>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/note/map.js?v=20260929-pinch" defer></script>
-  <script src="/note/support.js?v=20261004-full1" defer></script>
+  <script src="/note/support.js?v=20261004-admin1" defer></script>
   <script src="/note/drafts.js?v=0.45.19-beta" defer></script>
   <script src="/note/notifications.js?v=20260929-diag1" defer></script>
-  <script src="/note/feed-swipe.js?v=20261004-single1" defer></script>
-  <script src="/note/preview.js?v=20261004-audit1" defer></script>
-  <script src="/note/notice-ticker.js?v=0.45.36-beta" defer></script>
-  <script src="/note/pull-refresh.js?v=0.45.10-beta" defer></script>
+  <script src="/note/feed-swipe.js?v=20261004-swipe2" defer></script>
+  <script src="/note/preview.js?v=20261004-folder-kind1" defer></script>
+  <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
-  <script src="/park/integration.js?v=20261004-world1" defer></script>
+  <script src="/park/integration.js?v=20261004-refresh1" defer></script>
 </body>
 </html>

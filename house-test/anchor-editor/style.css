@@ -71,3 +71,19 @@ body[data-mode="simple"] .editor-intro{margin-bottom:14px}body[data-mode="simple
 #studio-locked{max-width:460px;margin:20vh auto;padding:24px;text-align:center;line-height:1.8}#studio-locked a{color:#805caa}.studio-library{padding:12px 0;border-bottom:1px solid var(--line)}.studio-library label{display:block;font-size:12px;margin-bottom:6px}.header-actions{max-width:850px}#studio-editor[hidden]{display:none!important}
 
 #studio-side-table{margin-bottom:12px}@media(max-width:850px){.studio-library{margin:0 16px;order:2}}
+
+/* Readable helper text keeps the warm palette without fading into the paper. */
+:root{--muted:#75667e}
+.eyebrow,.field-label,.help-text,.range-label,.two-fields label,.dimension-fields label,.check-list label,.editor-intro p,.panel-tag,.panel-bottom p,.zoom-control,.workspace-note,.set-heading,.view-status,.draft-bar{color:#75667e}
+.help-text,.control-group .help-text,.editor-intro p,.panel-tag,.panel-bottom p,.workspace-note,.zoom-control{font-size:11px}
+.panel-tabs button{color:#756187}
+.view-status[data-state="missing"]{color:#806451}
+@media(max-width:850px){body[data-mode="simple"] .sidebar .control-group{align-self:stretch}}
+/* Use the available header width before wrapping an isolated action. */
+.header-actions{max-width:none;min-width:0;justify-content:flex-end}
+@media(max-width:600px){
+ .header-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+ .header-actions>button,.header-actions>.button{min-width:0;min-height:44px;word-break:keep-all;overflow-wrap:break-word}
+ .header-actions #save-status{grid-column:1/-1;margin:0}
+ .header-actions>.header-upload{grid-column:1/-1}
+}

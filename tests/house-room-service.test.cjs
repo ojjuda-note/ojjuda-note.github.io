@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+(async()=>{
+ const {createWorldRoom}=await import('data:text/javascript;base64,'+fs.readFileSync(path.join(__dirname,'../house-test/world-room.js')).toString('base64'));
+ const id='10000000-0000-0000-0000-000000000001',revision='20000000-0000-0000-0000-000000000001',updatedAt='2026-10-04T00:00:00Z';
+ const snapshot={version:13,diary:'private local writing',secret:'private',rooms:[{x:0,y:0,decor:true,curtains:true,shelf:null,diary:'hidden extra',furniture:{sofa:{x:1,y:1,direction:'left',image:'private file'},'made-local':{x:2,y:2,direction:'right'}}}]};
+ let authorized=true,calls=[],reply={data:{ok:true,found:false,canEdit:true}},pending=null;
+ const room=createWorldRoom({owner:id,authorized:()=>authorized,client:{rpc(name,args){calls.push({name,args});return pending?new Promise(resolve=>pending.resolve=resolve):Promise.resolve(reply);}}});
+ assert.deepEqual(await room('load'),{ok:true,found:false,canEdit:true});assert.equal(calls.at(-1).name,'house_room_load');assert.deepEqual(calls.at(-1).args,{p_owner:id});
+ reply={data:{ok:true,revision,updatedAt}};assert.deepEqual(await room('save',{snapshot,revision:null}),reply.data);
+ const sent=calls.at(-1).args.p_snapshot;assert(!JSON.stringify(sent).includes('private'));assert(!JSON.stringify(sent).includes('diary'));assert(!('image' in sent.rooms[0].furniture.sofa));assert('made-local' in sent.rooms[0].furniture);assert.equal(snapshot.diary,'private local writing','caller local source is never mutated');
+ reply={data:{ok:true,found:true,snapshot,revision,updatedAt,canEdit:false}};const loaded=await room('load');assert.equal(loaded.canEdit,false);assert(!JSON.stringify(loaded).includes('private'));assert.equal(loaded.snapshot.rooms[0].furniture.sofa.x,1);
+ reply={data:{ok:false,reason:'conflict'}};assert.deepEqual(await room('save',{snapshot,revision}),{ok:false,reason:'conflict'});assert.equal(calls.at(-1).args.p_revision,revision);
+ reply={error:{message:'synthetic offline'}};await assert.rejects(room('save',{snapshot,revision}),/연결/);assert.equal(snapshot.diary,'private local writing');
+ reply={error:{message:'house_room_unavailable',code:'42501'}};await assert.rejects(room('load'),/방문할 수 없어요/);
+ const before=calls.length;for(const args of [{snapshot},{snapshot,revision:'wrong'},{snapshot:{...snapshot,rooms:[]},revision:null},{snapshot:{...snapshot,rooms:[{x:0,y:0,furniture:{sofa:{x:NaN,y:0,direction:'left'}}}]},revision:null}])await assert.rejects(room('save',args));assert.equal(calls.length,before,'invalid requests never reach the server');
+ pending={};const delayed=room('load');await Promise.resolve();authorized=false;pending.resolve({data:{ok:true,found:true,snapshot,revision,updatedAt,canEdit:true}});await assert.rejects(delayed,/로그인/);
+ await assert.rejects(room('load'),/로그인/);authorized=true;pending=null;reply={data:{ok:true,found:true,snapshot,revision:'invalid',updatedAt,canEdit:true}};await assert.rejects(room('load'),/방 정보/);
+ await assert.rejects(room('delete'),/지원하지 않는/);
+ console.log('PASS: room RPC contract, geometry-only projection, untouched local data, made poses, revision forwarding, conflicts/offline/unavailable states, invalid requests and stale account fencing');
+})().catch(error=>{console.error(error);process.exitCode=1;});

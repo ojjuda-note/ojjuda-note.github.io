@@ -528,14 +528,14 @@ async function makeAlbumThumb(blob, size = 360) {
   } finally { source?.close?.(); if (temporaryUrl) URL.revokeObjectURL(temporaryUrl); }
 }
 async function worldAlbumFolderId(userId, epoch) {
-  const found = await client.from('media_folders').select('id,visibility,allowed')
-    .eq('user_id', userId).eq('name', WORLD_ALBUM_FOLDER).eq('visibility', 'me');
+  const found = await client.from('media_folders').select('id,kind,visibility,allowed')
+    .eq('user_id', userId).eq('name', WORLD_ALBUM_FOLDER).eq('kind', 'photo').eq('visibility', 'me');
   if (found.error) throw found.error;
   if (!sameWorldUser(userId, epoch)) return null;
   const privateFolder = (found.data || []).find(folder => !folder.allowed?.length);
   if (privateFolder) return privateFolder.id;
   const made = await client.from('media_folders').insert({
-    user_id: userId, name: WORLD_ALBUM_FOLDER, visibility: 'me', allowed: []
+    user_id: userId, name: WORLD_ALBUM_FOLDER, kind: 'photo', visibility: 'me', allowed: []
   }).select('id').single();
   if (made.error) throw made.error;
   return sameWorldUser(userId, epoch) ? made.data.id : null;
@@ -1465,19 +1465,12 @@ async function loadNoteState() {
     const data = await noteRpc('get_note_state');
     if (run !== noteStateRun || (session?.user?.id || null) !== userId) return;
     noteState = data;
-    const announcementText = String(data.notice || '').trim();
-    $('#note-announcement-copy').textContent = announcementText;
-    $('#note-announcement-full').textContent = announcementText;
-    $('#note-announcement').hidden = !announcementText;
     const values = [data.is_restricted ? writingMessage() : ''].filter(Boolean);
     noticeElement.replaceChildren(...values.map(value => node('p', '', value)));
     noticeElement.hidden = !values.length;
   } catch (error) {
     if (run !== noteStateRun) return;
     noteState = null; console.warn('Note state:', error);
-    $('#note-announcement').hidden = true;
-    $('#note-announcement-copy').textContent = '';
-    $('#note-announcement-full').textContent = '';
     noticeElement.replaceChildren(node('p', '', '운영 상태를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.'));
     noticeElement.hidden = false;
   }

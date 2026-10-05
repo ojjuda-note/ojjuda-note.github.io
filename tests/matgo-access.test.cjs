@@ -38,5 +38,22 @@ function fixture(age = 19) {
   while (!resolve) await new Promise(r => setImmediate(r));
   race.event('SIGNED_OUT'); resolve({ data: { age: 19, locked: true } });
   await assert.rejects(check, e => e.code === 'login'); assert.equal(race.api.allowed(), false);
+  const saved = fixture(); saved.state.identity = null;
+  await assert.rejects(saved.api.check(), e => e.code === 'identity');
+  saved.state.identity = { age: 35, locked: true };
+  await saved.api.refresh(); assert.equal(saved.api.visible(), true, 'saved identity is rechecked without a login');
+  const stale = fixture(); let finishOld, reads = 0;
+  stale.client.rpc = () => ++reads === 1 ? new Promise(resolve => { finishOld = resolve; })
+    : Promise.resolve({ data: { age: 35, locked: true } });
+  const old = assert.rejects(stale.api.check(), e => e.code === 'identity');
+  while (!finishOld) await new Promise(r => setImmediate(r));
+  const fresh = stale.api.refresh();
+  finishOld({ data: null });
+  await old; await fresh;
+  assert.equal(reads, 2, 'save refresh does not reuse a check started before the save');
+  assert.equal(stale.api.visible(), true);
+  stale.client.rpc = async () => ({ data: { age: 18, locked: true } });
+  await assert.rejects(stale.api.refresh(), e => e.code === 'underage');
+  assert.equal(stale.api.visible(), false, 'refresh still enforces the server age restriction');
   console.log('PASS: adult/minor boundaries, guest, missing identity, server error, local spoof, logout race and age-based button visibility');
 })().catch(error => { console.error(error); process.exitCode = 1; });

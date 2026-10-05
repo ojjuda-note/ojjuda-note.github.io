@@ -1,0 +1,92 @@
+/* Ojjuda ledger: warm paper, lilac accents, and a clear reading order. */
+:root[data-theme="light"] {
+  --color-background:#fbf8f4;--color-foreground:#46384f;--color-card:#fffefa;
+  --color-card-foreground:#46384f;--color-popover:#fffefa;--color-popover-foreground:#46384f;
+  --color-primary:#785895;--color-primary-foreground:#fff;
+  --color-secondary:#f2edf5;--color-secondary-foreground:#46384f;
+  --color-muted:#f2edf5;--color-muted-foreground:#807286;
+  --color-accent:#ede3f4;--color-accent-foreground:#46384f;
+  --color-border:#e9e0ea;--color-input:#e9e0ea;--color-ring:#9474af;
+  --color-income:#36796c;--color-expense:#ad6071;
+  --oj-hero:#eee3f4;--oj-hero-ink:#5e4176;--oj-hero-muted:#755c87;
+  --oj-paper-shadow:0 5px 24px #65497506;--oj-income-bg:#eaf3ee;--oj-expense-bg:#faeee9;
+}
+:root[data-theme="dark"] {
+  --color-background:#252233;--color-foreground:#eee6f2;--color-card:#302b40;
+  --color-card-foreground:#eee6f2;--color-primary:#bea2d3;--color-primary-foreground:#2a1936;
+  --color-secondary:#3b3349;--color-secondary-foreground:#eee6f2;
+  --color-muted:#3b3349;--color-muted-foreground:#c0aecb;--color-border:#50425e;
+  --color-input:#50425e;--color-ring:#bea2d3;--color-income:#9bd0bb;--color-expense:#efb0bc;
+  --oj-hero:#453651;--oj-hero-ink:#f0e1fb;--oj-hero-muted:#cbb5da;
+  --oj-paper-shadow:none;--oj-income-bg:#2d463f;--oj-expense-bg:#4c3540;
+}
+body{font-family:'Gowun Dodum','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.025em}
+#root>div>header{max-width:768px;width:100%;margin:auto;padding:22px 22px 8px}
+#root>div>header h1{font-size:19px;font-weight:650;letter-spacing:-.06em;display:flex;align-items:center;gap:8px}
+#root>div>header h1::before{content:'';width:8px;height:20px;border-radius:5px;background:#b899c9;transform:rotate(-14deg)}
+.oj-small-button{border:0;background:var(--color-secondary);border-radius:50%;min-height:36px;padding:6px 10px;color:var(--color-primary);font-size:20px;line-height:1}
+#root>div>header .oj-small-button{font-size:10px;border-radius:20px;min-height:30px;padding:8px 11px;letter-spacing:-.02em}
+.oj-account{width:100%;max-width:768px;margin:0 auto;padding:0 22px;color:var(--color-muted-foreground);font-size:10px;line-height:1.65}
+.oj-account>p::before{content:'';display:inline-block;width:5px;height:5px;background:var(--color-primary);border-radius:50%;margin:0 6px 2px 0}
+.oj-account summary{font-size:10px;opacity:.85;padding:3px 0}
+.oj-account details[open]{padding:12px;background:var(--color-card);border:1px solid var(--color-border);border-radius:16px}
+.oj-account button{border-radius:10px;font-size:11px}
+#root main{padding:18px 20px 100px;max-width:768px}
+#root main>div:has(>.oj-month-card){display:flex;flex-direction:column;gap:20px}
+#root main>div:has(>.oj-month-card)>*{margin:0}
+.oj-month-card{position:relative;padding:18px 18px 14px;border:0;border-radius:24px;background:var(--oj-hero);color:var(--oj-hero-ink);box-shadow:var(--oj-paper-shadow);isolation:isolate;overflow:hidden}
+.oj-month-card::before,.oj-month-card::after{content:'';position:absolute;z-index:-1;width:150px;height:150px;border:1px solid #a884bf26;border-radius:50%;right:-86px;top:30px;pointer-events:none}
+.oj-month-card::after{width:190px;height:190px;right:-102px;top:10px}
+.oj-month-card>div:first-child{margin-bottom:12px;justify-content:center;gap:14px}
+.oj-month-card h2{font-size:14px;font-weight:600;letter-spacing:-.03em}
+.oj-month-card .oj-small-button{background:transparent;color:var(--oj-hero-muted);min-width:30px;min-height:30px;padding:4px;font-size:22px}
+.oj-month-card>div:nth-child(2){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.oj-month-card>div:nth-child(2)>div{border-radius:14px;background:var(--color-card);padding:10px 12px}
+.oj-month-card>div:nth-child(2)>div>p:first-child{font-size:10px;line-height:1.5}
+.oj-month-card>div:nth-child(2)>div:last-child{order:-1;grid-column:1/-1;text-align:center;background:transparent;padding:0 0 12px}
+.oj-month-card>div:nth-child(2)>div:last-child>p:first-child{color:var(--oj-hero-muted);font-size:11px;margin:0 0 5px}
+.oj-total{font-size:clamp(14px,4.3vw,20px);font-weight:600;letter-spacing:-.04em;line-height:1.35;font-variant-numeric:tabular-nums}
+.oj-total>span{font-size:10px;margin-left:3px;letter-spacing:0}
+.oj-month-card>div:nth-child(2)>div:last-child .oj-total{font-size:clamp(23px,7.5vw,38px);font-weight:650;color:var(--oj-hero-ink)}
+.oj-month-card>div:nth-child(2)>div:last-child .oj-total>span{font-size:14px;font-weight:400}
+#quick-entry{border:0;border-radius:22px;background:var(--color-card);padding:18px;box-shadow:var(--oj-paper-shadow)}
+#quick-entry h2{font-size:14px;font-weight:650}
+#quick-entry>div:first-child>span{font-size:10px;background:var(--color-secondary);color:var(--color-primary);padding:3px 9px;border-radius:20px}
+.oj-type-buttons{background:transparent;gap:6px;padding:0;border-radius:0;margin:15px 0}
+.oj-type-buttons button{flex:0 1 66px;border:1px solid transparent;padding:6px 9px;font-size:12px;color:var(--color-muted-foreground);border-radius:20px;min-height:34px}
+.oj-type-buttons button[aria-pressed=true]{background:var(--color-secondary);color:var(--color-primary);box-shadow:none;font-weight:600}
+#quick-entry label{font-size:10px;color:var(--color-muted-foreground)}
+.oj-field{border:1px solid var(--color-border);border-radius:12px;background:var(--color-card);color:var(--color-foreground);font-size:16px;padding:11px 12px;box-shadow:none}
+#quick-entry input[aria-label="금액"],#quick-entry input[aria-label="내용"]{background:transparent;border:0;border-bottom:1px solid var(--color-border);border-radius:0;padding:7px 0 10px;min-height:44px;margin-top:0}
+#quick-entry input[aria-label="금액"]{font-size:23px;letter-spacing:-.04em;font-weight:550}
+#quick-entry input::placeholder{color:var(--color-muted-foreground);font-weight:400}
+#quick-entry summary{font-size:10px;line-height:1.6;padding:5px 0;color:var(--color-muted-foreground)}
+#quick-entry button[type="submit"]{border-radius:13px;background:var(--color-primary);color:var(--color-primary-foreground);font-size:13px;font-weight:550;min-height:44px;box-shadow:0 4px 10px #61457712}
+#quick-entry form>div:last-child{margin-top:12px}
+#quick-entry>p{color:var(--color-primary);font-size:11px}
+section[aria-label="최근 내역"]>div:first-child h2{font-size:15px;font-weight:650}
+section[aria-label="최근 내역"]>div:first-child>span{font-size:10px;color:var(--color-muted-foreground)}
+section[aria-label="최근 내역"]>input{font-size:16px;border:0;background:var(--color-secondary);border-radius:12px;padding:9px 12px}
+section[aria-label="최근 내역"]>ul{margin-top:6px}
+section[aria-label="최근 내역"] li>p{font-size:10px;padding-top:14px;color:var(--color-muted-foreground)}
+.oj-record{border:0;border-bottom:1px solid var(--color-border);border-radius:0;background:transparent;padding:12px 0;gap:10px;font-size:13px}
+.oj-record-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:13px;background:var(--color-secondary);font-size:17px}
+.oj-record:has(.text-income) .oj-record-icon{background:var(--oj-income-bg)}
+.oj-record:has(.text-expense) .oj-record-icon{background:var(--oj-expense-bg)}
+.oj-record button>span:first-child{font-weight:550}
+.oj-record button>span:last-child{font-size:10px;line-height:1.9}
+.oj-record-amount{font-size:13px;font-weight:600;letter-spacing:-.035em}
+.oj-record-amount>span{font-size:9px;font-weight:400}
+.oj-delete{font-size:17px;min-width:24px;min-height:40px;color:var(--color-muted-foreground)}
+.oj-empty{border:0;background:var(--color-card);border-radius:18px;padding:26px 18px;font-size:12px;line-height:1.8}
+.oj-bottom-nav{left:16px;right:16px;bottom:10px;border:1px solid var(--color-border);border-radius:20px;background:var(--color-card);box-shadow:0 5px 22px #46384f0d;padding:6px 5px calc(6px + env(safe-area-inset-bottom));max-width:728px;margin:auto}
+.oj-bottom-nav>div{gap:4px}
+.oj-bottom-nav a{flex-direction:row;justify-content:center;gap:7px;border-radius:14px;font-size:12px;min-height:40px;padding:9px 10px;font-weight:500}
+.oj-bottom-nav a>span{display:none}
+.oj-bottom-nav a[aria-current="page"]{background:var(--color-secondary);color:var(--color-primary);font-weight:650}
+.oj-bottom-nav a[aria-current="page"]::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.oj-setting-link{border:0;border-radius:18px;padding:18px;background:var(--color-card);box-shadow:var(--oj-paper-shadow)}
+button,a,input,select,summary{outline-offset:3px}
+:focus-visible{outline:2px solid var(--color-ring)}
+@media(min-width:620px){#root main>div:has(>.oj-month-card){display:grid;grid-template-columns:1fr 1.1fr;gap:24px;align-items:start}.oj-month-card{height:100%;display:flex;flex-direction:column;justify-content:center;min-height:280px}.oj-month-card~section[aria-label="최근 내역"]{grid-column:1/-1}.oj-month-card>div:first-child{margin-bottom:22px}}
+@media(max-width:350px){#root main{padding:14px 13px 96px}#root>div>header{padding:18px 15px 8px}.oj-account{padding:0 15px}.oj-month-card{padding:14px}.oj-month-card>div:nth-child(2)>div{padding:9px}#quick-entry{padding:15px}.oj-record{gap:7px}.oj-record-icon{width:30px;height:34px}.oj-record-amount{font-size:12px}.oj-bottom-nav{left:10px;right:10px}}

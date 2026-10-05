@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const {chromium}=require('playwright'),{fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+const {chromium}=require('playwright'),{fixture,A,B,C,MINOR}=require('./arcade-rooms-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
  const f=await fixture();
@@ -11,11 +11,12 @@ const root=path.join(__dirname,'..');
   await context.exposeBinding('onlineFixture',async(_,kind,body)=>{
    if(kind==='user')return{data:{user:{id:actor}}};
    if(kind==='identity')return{data:{age,locked:true}};
+   if(kind==='arcade')return f.roomRpc(actor,body);
    const data=await f.call(actor,body);if(data.room)last.set(actor,data.room);if(data.error)failures.push({actor,body,error:data.error});return{data};
   });
   await context.addInitScript(({actor})=>{
    window.OJJUDA_CONFIG={supabaseUrl:'https://mock.invalid',supabaseKey:'public'};
-   const client={auth:{getUser:()=>onlineFixture('user'),getSession:async()=>({data:{session:{access_token:actor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:()=>onlineFixture('identity'),functions:{invoke:(_,{body})=>onlineFixture('rpc',body)}};
+   const client={auth:{getUser:()=>onlineFixture('user'),getSession:async()=>({data:{session:{access_token:actor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:(name,params)=>name==='arcade_room_service'?onlineFixture('arcade',params):onlineFixture('identity'),functions:{invoke:(_,{body})=>onlineFixture('rpc',body)}};
    window.supabase={createClient:()=>client};
    const interval=setInterval;window.setInterval=(fn,t,...args)=>interval(fn,t===1200?70:t,...args);
   },{actor});
@@ -42,12 +43,12 @@ const root=path.join(__dirname,'..');
   const minor=await screen(MINOR,18);await minor.page.waitForSelector('#retry:not([hidden])');assert.equal(await minor.page.locator('#quick').count(),0);await minor.context.close();
   const solo=await screen(C);await solo.page.locator('#quick').click();await solo.page.locator('#quick-seconds').waitFor();
   await solo.page.waitForTimeout(2000);assert.ok(solo.page.url().includes('matgo-online.html'),'quick search waits before switching');
-  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#handMe').waitFor();
+  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#matgo-start-play').click();await solo.page.locator('#handMe').waitFor();
   assert.equal((await f.call(C,{action:'status'})).online_room,null);await solo.context.close();
   const a=await screen(A),b=await screen(B);
   await a.page.locator('#quick').waitFor();await b.page.locator('#quick').waitFor();
   await a.page.screenshot({path:'/tmp/matgo-online-lobby.png'});
-  await a.page.locator('#create').click();const code=await a.page.locator('#invite-code').textContent();
+  await a.page.locator('#create').click();await a.page.locator('#public-room-title').fill('맞고 친구들');await a.page.locator('#public-room-form button[type=submit]').click();const code=await a.page.locator('#invite-code').textContent();
   await b.page.locator('#room-code').fill(code);await b.page.locator('#join').click();
   await a.page.locator('#hand').waitFor();await b.page.locator('#hand').waitFor();
   assert.match(await a.page.locator('#op-name').textContent(),/별토끼/);assert.match(await b.page.locator('#op-name').textContent(),/봄고래/);
@@ -83,7 +84,7 @@ const root=path.join(__dirname,'..');
   await a.page.screenshot({path:'/tmp/matgo-online-result.png'});
   await a.page.locator('#rematch').click();await b.page.locator('#rematch').click();
   for(let i=0;i<200&&last.get(A).round!==2;i++)await a.page.waitForTimeout(20);
-  assert.equal(last.get(A).round,2);await a.page.waitForSelector('.dialog',{state:'detached'});
+  assert.equal(last.get(A).round,2);assert.equal((await f.arcade(A,'list')).mine.match_id,roomId,'public room stays registered across rematches');await a.page.waitForSelector('.dialog',{state:'detached'});
   // The iframe close handshake uses the same visible exit confirmation.
   await a.page.locator('#exit').click();await a.page.locator('#leave').waitFor();
   // Keep this standalone test on the page; the real bridge closes the iframe.

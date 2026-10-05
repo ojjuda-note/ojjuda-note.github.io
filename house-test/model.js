@@ -1,9 +1,9 @@
-import {madePoseValid} from './custom-furniture.js?v=20261004-chairfarrear1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261004-chairfarrear1';
-import {sofaPoseValid} from './sofa-art.js?v=20261004-chairfarrear1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261004-chairfarrear1';
-import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261004-chairfarrear1';
-import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261004-chairfarrear1';
+import {madePoseValid} from './custom-furniture.js?v=20261005-sofabook1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261005-sofabook1';
+import {sofaPoseValid} from './sofa-art.js?v=20261005-sofabook1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-sofabook1';
+import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-sofabook1';
+import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-sofabook1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -21,13 +21,32 @@ export function furniturePlacements(room){
 }
 export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
  const candidate=normalizePlacement(id,preferred);if(candidate&&canPlaceFurniture(id,candidate,others))return candidate;
+ if(FURNITURE[id]?.wallMounted){
+  for(const direction of FURNITURE[id].directions){const {w,d}=itemSize(id,direction),limit=direction==='center'?FLOOR.width-w:FLOOR.depth-d;
+   for(let n=0;n<=Math.ceil(limit*10);n++){const along=Math.min(limit,n/10),s=normalizePlacement(id,{direction,x:direction==='center'?along:0,y:direction==='center'?0:along,elevation:candidate?.elevation??preferred?.elevation??2.1});if(canPlaceFurniture(id,s,others))return s;}
+  }
+  return null;
+ }
  for(const direction of FURNITURE[id]?.directions||[]){const {w,d}=itemSize(id,direction,candidate||preferred);
   for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step){
-   const s={direction,x,y,...(isBlanket(id)?{mode:blanketMode(id,candidate||preferred),elevation:candidate?.elevation??0}:{})};
+   const s={direction,x,y,...(isBlanket(id)?{mode:blanketMode(id,candidate||preferred),elevation:candidate?.elevation??0}:itemLayer(id,candidate||preferred)==='surface'?{elevation:candidate?.elevation??preferred?.elevation??0}:{})};
    if(canPlaceFurniture(id,s,others))return normalizePlacement(id,s);
   }
  }
  return null;
+}
+// Explicit floor placement reserves a clear spot, including against standing
+// furniture, while carpets and flat blankets remain usable underneath it.
+export function canUseFloor(id){return !!FURNITURE[id]&&!FURNITURE[id].wallMounted&&FURNITURE[id].layer==='surface';}
+export function findFloorPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
+ if(!canUseFloor(id)||!preferred)return null;
+ const floor=normalizePlacement(id,{...preferred,elevation:0,mode:'floor'});
+ if(!floor)return null;
+ if(canPlaceFurniture(id,floor,others))return floor;
+ const {w,d}=itemSize(id,floor.direction,floor),candidates=[];
+ for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step)candidates.push({...floor,x,y});
+ candidates.sort((a,b)=>(a.x-floor.x)**2+(a.y-floor.y)**2-((b.x-floor.x)**2+(b.y-floor.y)**2));
+ return candidates.find(p=>canPlaceFurniture(id,p,others))||null;
 }
 const canonical=value=>Number(value.toFixed(6));
 // Chair poses are derived from the desk's open knee space, not its full width.
@@ -114,6 +133,11 @@ export function normalizePlacement(id,s){
  if(isBlanket(id)&&s.mode!==undefined&&!['floor','sofa'].includes(s.mode))return null;
  const size=itemSize(id,s.direction,s);if(!size)return null;const {w,d}=size;
  if(w>FLOOR.width||d>FLOOR.depth)return null;
+ if(FURNITURE[id].wallMounted){
+  const snap=value=>Math.round(value*10)/10,elevation=Number.isFinite(s.elevation)?s.elevation:FURNITURE[id].preferred.elevation;
+  return {direction:s.direction,x:canonical(s.direction==='left'?0:s.direction==='right'?FLOOR.width-w:Math.max(0,Math.min(FLOOR.width-w,snap(s.x)))),
+   y:canonical(s.direction==='center'?0:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y)))),elevation:canonical(Math.max(0,Math.min(ROOM.wallHeight-itemHeight(id,s),elevation)))};
+ }
  if(id==='chair'&&s.attachedTo!==undefined){
   if(s.attachedTo!=='desk')return null;
   const x=canonical(s.x),y=canonical(s.y);
@@ -121,7 +145,7 @@ export function normalizePlacement(id,s){
   return {direction:s.direction,x,y,attachedTo:'desk'};
  }
  if(itemLayer(id,s)==='surface'||isBlanket(id)){
-  const mode=isBlanket(id)?blanketMode(id,s):null;
+  const mode=isBlanket(id)?blanketMode(id,s):canUseFloor(id)&&s.mode==='floor'&&(s.elevation??0)===0?'floor':null;
   const elevation=mode==='floor'?0:Number.isFinite(s.elevation)?s.elevation:mode==='sofa'?blanketSpec('sofa').baseElevation:0;
   return {direction:s.direction,x:canonical(Math.max(0,Math.min(FLOOR.width-w,s.x))),y:canonical(Math.max(0,Math.min(FLOOR.depth-d,s.y))),
    elevation:canonical(Math.max(0,Math.min(ROOM.wallHeight-itemHeight(id,s),elevation))),...(mode?{mode}:{})};
@@ -135,10 +159,21 @@ export function canPlaceFurniture(id,s,others=[]){
  const placed=normalizePlacement(id,s);if(!placed||placed.x!==s.x||placed.y!==s.y||!canDrawFurniture(id,placed))return false;
  const layer=itemLayer(id,placed),elevation=s.elevation??(isBlanket(id)&&blanketMode(id,s)==='sofa'?blanketSpec('sofa').baseElevation:0);
  if((layer==='surface'||isBlanket(id))&&(!Number.isFinite(elevation)||Math.abs(elevation-placed.elevation)>1e-6))return false;
+ // Reserve the rear window and curtains, leaving the two wall strips usable.
+ if(FURNITURE[id].wallMounted&&s.direction==='center'&&s.x<8.7&&s.x+itemSize(id,s.direction,s).w>1.3)return false;
  if(id==='chair'&&placed.attachedTo==='desk'&&!others.some(other=>other.id==='desk'&&isDeskChairPair(other,placed)))return false;
  if(id==='desk'&&others.some(other=>other.id==='chair'&&other.attachedTo==='desk'&&!isDeskChairPair(placed,other)))return false;
  const size=itemSize(id,s.direction,placed);
- return others.every(other=>{const otherSize=itemSize(other.id,other.direction,other);return otherSize&&((id==='desk'&&other.id==='chair'&&isDeskChairPair(placed,other))||(id==='chair'&&other.id==='desk'&&isDeskChairPair(other,placed))||layer!==itemLayer(other.id,other)||(layer==='surface'&&FURNITURE[id].allowOverlap===true&&FURNITURE[other.id].allowOverlap===true)||s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y);});
+ return others.every(other=>{const otherSize=itemSize(other.id,other.direction,other);if(!otherSize)return false;
+  const separate=s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y;
+  if(FURNITURE[id].wallMounted||FURNITURE[other.id].wallMounted){const low=placed.elevation??0,otherLow=other.elevation??0;return separate||low+itemHeight(id,placed)<=otherLow+1e-8||otherLow+itemHeight(other.id,other)<=low+1e-8;}
+  if((canUseFloor(id)&&placed.mode==='floor')||(canUseFloor(other.id)&&other.mode==='floor')){
+   if(layer==='floor'||itemLayer(other.id,other)==='floor')return true;
+   const low=placed.elevation??0,otherLow=other.elevation??0;
+   return separate||low+itemHeight(id,placed)<=otherLow+1e-8||otherLow+itemHeight(other.id,other)<=low+1e-8;
+  }
+  return (id==='desk'&&other.id==='chair'&&isDeskChairPair(placed,other))||(id==='chair'&&other.id==='desk'&&isDeskChairPair(other,placed))||layer!==itemLayer(other.id,other)||(layer==='surface'&&FURNITURE[id].allowOverlap===true&&FURNITURE[other.id].allowOverlap===true)||separate;
+ });
 }
 // Calibrated to the inside corners where the skirting meets the floor.
 // The 10 × 7 grid stops where the side walls meet the front floor corners.
@@ -168,6 +203,20 @@ export function ceilingPoint(x,y){
 export function roomPoint(x,y,z=0){
  const floor=floorPoint(x,y),ceiling=ceilingPoint(x,y),t=z/ROOM.wallHeight;
  return {x:floor.x+(ceiling.x-floor.x)*t,y:floor.y+(ceiling.y-floor.y)*t};
+}
+// Solve a picture drag in its own wall plane using the renderer's projection.
+export function wallDragPlacement(id,p,dx,dy){
+ if(!FURNITURE[id]?.wallMounted)return normalizePlacement(id,p);
+ const item=FURNITURE[id],center=p.direction==='center',fixed=center?item.depth:p.direction==='left'?item.depth:FLOOR.width-item.depth;
+ const project=(along,z)=>center?roomPoint(along,fixed,z):roomPoint(fixed,along,z);
+ let along=(center?p.x:p.y)+item.width/2,z=p.elevation+item.height/2;
+ const start=project(along,z),target={x:start.x+dx,y:start.y+dy};
+ for(let i=0;i<10;i++){
+  const q=project(along,z),qa=project(along+.0001,z),qz=project(along,z+.0001),a=(qa.x-q.x)/.0001,b=(qz.x-q.x)/.0001,c=(qa.y-q.y)/.0001,d=(qz.y-q.y)/.0001,det=a*d-b*c;
+  if(!Number.isFinite(det)||Math.abs(det)<1e-8)return normalizePlacement(id,p);
+  const ex=target.x-q.x,ey=target.y-q.y;along+=(ex*d-b*ey)/det;z+=(a*ey-ex*c)/det;
+ }
+ return normalizePlacement(id,{...p,[center?'x':'y']:along-item.width/2,elevation:z-item.height/2});
 }
 export function floorCell(x,y){
  const a=A-x*G,b=B-x*H,c=x-C,d=D-y*G,e=E-y*H,f=y-F,det=a*e-b*d;
