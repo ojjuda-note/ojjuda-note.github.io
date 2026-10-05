@@ -1,11 +1,11 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
 import {createRecordPanel} from './record-panel.js?v=20261004-scope-row1';
-import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261005-desklamp1';
+import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261005-windowplant1';
 import {icon} from './icons.js?v=20261004-folder-kind1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261005-desklamp1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261005-desklamp1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261005-desklamp1';
-import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261005-desklamp1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261005-windowplant1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261005-windowplant1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261005-windowplant1';
+import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261005-windowplant1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
