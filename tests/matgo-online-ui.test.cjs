@@ -6,7 +6,7 @@ const root=path.join(__dirname,'..');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.MATGO_CHROMIUM?{executablePath:process.env.MATGO_CHROMIUM}:{})});
  const errors=[],last=new Map(),failures=[];
  async function screen(actor,age=25){
-  const context=await browser.newContext({viewport:{width:390,height:820}});
+  const context=await browser.newContext({viewport:{width:390,height:820},reducedMotion:'reduce'});
   context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));
   await context.exposeBinding('onlineFixture',async(_,kind,body)=>{
    if(kind==='user')return{data:{user:{id:actor}}};
@@ -18,6 +18,8 @@ const root=path.join(__dirname,'..');
    window.OJJUDA_CONFIG={supabaseUrl:'https://mock.invalid',supabaseKey:'public'};
    const client={auth:{getUser:()=>onlineFixture('user'),getSession:async()=>({data:{session:{access_token:actor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:(name,params)=>name==='arcade_room_service'?onlineFixture('arcade',params):onlineFixture('identity'),functions:{invoke:(_,{body})=>onlineFixture('rpc',body)}};
    window.supabase={createClient:()=>client};
+   // Exact visual timing is covered by matgo-online-effects-ui.test.cjs.
+   const timeout=setTimeout;window.setTimeout=(fn,t,...args)=>timeout(fn,[2000,2400].includes(t)?20:t,...args);
    const interval=setInterval;window.setInterval=(fn,t,...args)=>interval(fn,t===1200?70:t,...args);
   },{actor});
   await context.route('**/*',async route=>{
