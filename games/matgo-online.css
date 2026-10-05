@@ -6,3 +6,10 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 
 .room-label{margin:0;padding:4px 12px;text-align:center;font-size:12px;line-height:1.4;color:#ecdca9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#public-room-form{display:grid;gap:10px;text-align:left}#public-room-title{width:100%;min-width:0;padding:12px;border:1px solid #ffffff33;border-radius:12px;background:#fff;color:#241c20;font:inherit}#public-room-error{color:#ffb3a0;font-size:13px}
+
+.online-flying-card{position:fixed;z-index:9;pointer-events:none;border-radius:4px;box-shadow:0 8px 18px #0008;will-change:transform}
+.sound-start{position:fixed;z-index:11;right:12px;top:calc(52px + env(safe-area-inset-top,0px));background:#302744f5;border-color:#f2c14e88;box-shadow:0 3px 12px #0005}
+.event{inset:0;top:0;left:0;transform:none;width:100%;max-width:none;border:0;border-radius:0;padding:18px;display:grid;place-items:center;background:#120e242e;box-shadow:none;animation:none}
+.event-card{width:min(360px,100%);padding:26px 20px;border:2px solid #f2c14eaa;border-radius:26px;background:radial-gradient(ellipse at top,#574061,#21172bf5);box-shadow:0 20px 60px #0009;animation:pop .35s ease-out}
+.event-card small{display:block;color:#ddcbea;font-size:12px;letter-spacing:.1em;margin-bottom:10px}.event-card strong{font-size:clamp(28px,8vw,40px);line-height:1.35}.event-card span{font-size:15px}.event[data-side="opponent"] .event-card{border-color:#efaaad}
+@media(prefers-reduced-motion:reduce){.event-card{animation:none}}
