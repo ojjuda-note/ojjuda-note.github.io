@@ -9,6 +9,7 @@ body{overflow-y:auto;overflow-x:hidden}
 .top #menu{width:34px;padding:0;font-size:22px;line-height:1}
 .top #exit{padding:0 9px;font-size:12px}
 .my-score{font-size:12px;white-space:nowrap;color:#ffe299}
+.hand-score{flex-shrink:0;min-height:16px;line-height:16px;margin:3px 4px 0;text-align:right;font-weight:400}
 .hand button{position:relative}.pair-mark{position:absolute;top:2px;right:2px;z-index:3;display:grid;place-items:center;width:18px;height:18px;border:1px solid #c5f3ff;border-radius:6px;background:#146185;color:#fff;font-size:11px;font-weight:700;line-height:1;box-shadow:0 2px 4px #0008;pointer-events:none}.pair-mark[hidden]{display:none}
 .zone.me>.who,#log{display:none}
 .caps-own{height:64px!important;min-height:64px!important;gap:4px}
