@@ -5,7 +5,7 @@ const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,f
 const copy='오늘 하루 어땠나요? 괜찮았나요';
 const checkWritingCopy=async frame=>{
  const input=frame.locator('#compose-text');
- assert.equal(await input.getAttribute('placeholder'),copy);assert.equal(await input.isVisible(),true);
+ assert.equal(await input.getAttribute('placeholder'),copy.replace('? ','?\n'));assert.equal(await input.isVisible(),true);
  assert.equal(await frame.locator('#compose-brand-copy').count(),0,'no duplicate greeting above the card');
  assert.equal(await input.inputValue(),'','the greeting is a placeholder, never card content');
  assert.equal(await input.evaluate(el=>el.matches(':placeholder-shown')&&el.scrollHeight<=el.clientHeight+1),true,'the complete greeting fits the empty input');
