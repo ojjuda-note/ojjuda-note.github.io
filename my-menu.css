@@ -154,3 +154,5 @@
 .world-menu-grid>.my-section-title{margin:12px 2px 0;}
 .world-menu-grid .ju-charge-entry{width:100%;text-align:left;border:0;background:transparent;color:inherit;}
 .world-menu-grid .ju-charge-entry::after{content:none;}
+
+.world-menu-grid>.my-profile-account{grid-column:1 / -1;}

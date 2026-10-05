@@ -113,12 +113,13 @@ async function worldFixture(context, mobile, errors) {
     'World menu omits the oversized notification shortcut');
   assert.equal(await page.evaluate(() => {
     const groups = [...document.querySelectorAll('.my-hub [data-my-group]')].map(node => node.dataset.myGroup);
-    return groups.indexOf('profile') < groups.indexOf('account') && groups.indexOf('account') < groups.indexOf('display')
-      && groups.indexOf('account') < groups.indexOf('help');
-  }), true, 'profile and account stay together before preferences and help');
+    return !groups.includes('account') && groups.indexOf('profile') < groups.indexOf('display')
+      && groups.indexOf('profile') < groups.indexOf('help');
+  }), true, 'profile and account share one entry before preferences and help');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
   await fitsViewport(page, 'closed World menu');
-  const pair=await page.locator('[data-my-group=profile],[data-my-group=account]').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {top:r.top,width:r.width};}));assert.equal(pair[0].top,pair[1].top,'two menu tiles share a row');assert(Math.abs(pair[0].width-pair[1].width)<1,'menu tiles use equal widths');
+  assert.equal(await page.locator('[data-my-group="profile"] .my-menu-title').textContent(), '프로필·계정정보');
+  assert.equal(await page.locator('[data-my-group="profile"] [data-act="member-info-open"]').count(), 1);
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
 
   await exerciseGroups(page, '.my-hub');
@@ -129,7 +130,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-guestbook').isChecked(), true);
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'logout', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
@@ -159,7 +160,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await door.getAttribute('aria-pressed'), 'false');
   assert.equal(await door.textContent(), '문 닫기');
   assert.equal(await page.evaluate(() => menuSaves), 2, 'opening the house saves once');
-  assert.match(await page.locator('[data-my-group="account"]').textContent(), /주소록·가계부는 이 기기에 저장돼요/);
+  assert.match(await page.locator('[data-my-group="profile"]').textContent(), /주소록·가계부는 이 기기에 저장돼요/);
   await page.evaluate(() => { D.doorReady = false; renderMy(); });
   assert.equal(await door.isDisabled(), true, 'unavailable server settings cannot be changed');
   await page.evaluate(() => { D.doorReady = true; D.doorWritable = false; renderMy(); });
@@ -176,7 +177,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('[data-act="tab"][data-tab="admin"]').isVisible(), true);
   await page.evaluate(() => { D.online = false; renderMy(); });
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'offline mode cannot retain an administrator entry');
-  assert.equal(await page.locator('[data-act="logout"], [data-act="pw-open"], [data-act="account-delete-open"], [data-act="unblock"], [data-act="door-toggle"]').count(), 0,
+  assert.equal(await page.locator('[data-act="member-info-open"], [data-act="logout"], [data-act="pw-open"], [data-act="account-delete-open"], [data-act="unblock"], [data-act="door-toggle"]').count(), 0,
     'guest menus never reveal signed-in account actions');
   assert.equal(await page.locator('[data-act="reset"]').isVisible(), true, 'the existing offline reset action stays reachable');
   await uniqueIds(page);
