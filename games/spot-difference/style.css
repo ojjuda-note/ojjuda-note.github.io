@@ -166,7 +166,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 }
 
 /* A short celebration before the next randomly ordered, unsolved picture. */
-dialog.spot-celebration{width:min(390px,calc(100vw - 32px));height:fit-content;max-height:calc(100dvh - 32px);max-width:390px;margin:auto;padding:34px 24px 26px;border:1px solid #fff;border-radius:28px;background:linear-gradient(145deg,#fffdf5,#f3edff);color:#302b48;text-align:center;overflow:hidden;box-shadow:0 20px 80px #30214a40;}
+dialog.spot-celebration{width:min(390px,calc(100vw - 32px));height:fit-content;max-height:calc(100dvh - 32px);max-width:390px;margin:auto;padding:34px 24px 26px;border:1px solid #fff;border-radius:28px;background:linear-gradient(145deg,#fffdf5,#f3edff);color:#302b48;text-align:center;overflow-x:hidden;overflow-y:auto;box-shadow:0 20px 80px #30214a40;}
 dialog.spot-celebration[open]{display:block;animation:celebration-appear .3s ease-out;}
 dialog.spot-celebration::backdrop{background:#30234c66;backdrop-filter:blur(4px);}
 .spot-celebration h2{position:relative;font-size:clamp(20px,5.5vw,25px);line-height:1.4;word-break:keep-all;margin:8px 0;}
