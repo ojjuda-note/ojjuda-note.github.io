@@ -337,3 +337,10 @@ select{font:inherit;color:inherit}
 }
 /* Selection badges retain the same pink fill and a readable foreground. */
 .note-photo-featured-badge.is-selected{color:var(--on-accent)}
+
+/* Publishing choices precede card content. */
+.compose-publish-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:0 0 12px 42px;min-height:38px;font-size:12px}
+.compose-publish-settings .compose-public-scope{font-weight:600;white-space:nowrap}
+.compose-publish-settings .note-location-consent{margin:0;justify-content:flex-start}
+.compose-publish-settings .compose-quick{display:flex;align-items:center}
+.compose-publish-settings .quick-label{font-size:12px}
