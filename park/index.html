@@ -8,14 +8,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#F0679A">
-  <title>오쭈다 월드 · 공원 | 익명카드로 나누는 오늘</title>
-  <meta name="description" content="오늘의 생각을 짧은 익명카드로 남기고 다른 카드에 공감해 보세요. 오쭈다 월드 · 공원은 개발 중입니다.">
+  <title>오쭈다 월드 · 공원 | 오늘 하루 어땠나요? 괜찮았나요</title>
+  <meta name="description" content="오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 월드 · 공원은 개발 중입니다.">
   <link rel="canonical" href="https://ojjuda.kr/world.html?place=park">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="오쭈다">
   <meta property="og:url" content="https://ojjuda.kr/world.html?place=park">
-  <meta property="og:title" content="오쭈다 월드 · 공원 | 익명카드로 나누는 오늘">
-  <meta property="og:description" content="길게 쓰지 않아도 괜찮아요. 오늘의 한마디를 익명카드에 담고 다른 카드에 공감해 보세요.">
+  <meta property="og:title" content="오쭈다 월드 · 공원 | 오늘 하루 어땠나요? 괜찮았나요">
+  <meta property="og:description" content="오늘 하루 어땠나요? 괜찮았나요. 길게 쓰지 않아도 괜찮아요. 오늘의 마음을 익명카드에 담아 주세요.">
   <meta property="og:image" content="https://ojjuda.kr/icon-512.png?v=20260929-logo1">
   <meta name="twitter:card" content="summary">
   <link rel="icon" href="/favicon.svg?v=20260929-logo1" type="image/svg+xml">
@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/park/embedded.css?v=20261004-world1">
+<link rel="stylesheet" href="/brand-copy.css?v=20261005-copy1">
 </head>
 <body>
   <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -126,6 +127,7 @@
 
         <section id="feed" class="screen" aria-labelledby="feed-title">
           <h1 id="feed-title" class="note-visually-hidden">오쭈다 월드 · 공원 카드</h1>
+          <p class="ojjuda-copy ojjuda-copy--feed">오늘 하루 어땠나요? 괜찮았나요</p>
           <div class="feed-layout">
             <div class="feed-column">
               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
@@ -165,11 +167,12 @@
       <header class="composer-head"><button class="icon-button" type="button" id="close-composer" aria-label="작성창 닫기"><svg><use href="#close"/></svg></button><h2 id="compose-title">새 카드 쓰기</h2><span></span></header>
       <div class="composer-body">
         <div class="compose-publish-settings" aria-label="공개 및 표시 설정"><span class="compose-public-scope">전체 공개</span><section class="note-location-consent" id="card-location-consent"><span class="note-location-name" id="card-location-label">위치</span><button class="note-location-switch" id="card-location-button" type="button" role="switch" aria-labelledby="card-location-label" aria-describedby="card-location-status" aria-checked="false"><span class="note-switch-track" aria-hidden="true"></span><span class="note-switch-state">꺼짐</span></button><span id="card-location-status" role="status" aria-live="polite" hidden>카드를 등록하려면 위치를 켜 주세요. 정확한 좌표는 비공개로 저장돼요.</span></section><div class="compose-quick"><label class="quick-choice"><span class="quick-label">성별</span><select id="quick-gender" aria-label="성별 표시"><option value="private">비공개</option></select></label></div></div>
+        <p class="ojjuda-copy ojjuda-copy--composer" id="compose-brand-copy">오늘 하루 어땠나요? 괜찮았나요</p>
         <p class="compose-context" id="compose-context" hidden>마음을 카드에 적어 주세요. 태그는 글에서 자동으로 골라 드려요.</p>
         <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
           <label class="compose-photo-attach" id="card-photo-attach" role="button" tabindex="0" hidden title="사진 첨부"><input id="card-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4 7.6 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.6L15 4H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg><span class="visually-hidden">내 사진 첨부 · 무료</span></label><button class="compose-photo-remove" id="card-photo-remove" type="button" hidden aria-label="사진 빼기">×</button>
-          <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="2"></textarea>
+          <textarea id="compose-text" aria-label="카드 글" aria-describedby="compose-brand-copy" maxlength="200" placeholder="지금 떠오르는 마음을 적어 주세요" rows="2"></textarea>
           <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
           <input id="compose-tags" type="text" placeholder="#태그 · 공백이나 쉼표로 나눠요 (최대 5개)" maxlength="120" autocomplete="off" aria-label="카드 태그 (최대 5개, 공백이나 쉼표로 나눠요)">
         </div>
@@ -227,7 +230,7 @@
   <script src="/note/notifications.js?v=20260929-diag1" defer></script>
   <script src="/note/feed-swipe.js?v=20261004-swipe2" defer></script>
   <script src="/account-deletion.js?v=20261005-cleanup1" defer></script>
-  <script src="/note/preview.js?v=20261005-cleanup1" defer></script>
+  <script src="/note/preview.js?v=20261005-copy1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
   <script src="/park/integration.js?v=20261004-refresh1" defer></script>

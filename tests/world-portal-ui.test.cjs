@@ -5,6 +5,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const origin = 'https://ojjuda.test';
 const cardId = '00000000-0000-4000-8000-000000000010';
+const copy = '오늘 하루 어땠나요? 괜찮았나요';
 
 (async () => {
   const browser = await chromium.launch({ headless: true,
@@ -44,16 +45,22 @@ const cardId = '00000000-0000-4000-8000-000000000010';
       await page.setViewportSize({ width, height: 844 });
       await page.goto(origin + '/');
       await page.locator('#account-actions:not([hidden])').waitFor();
+      assert.equal((await page.locator('#front-title').innerText()).replace(/\s+/g, ' ').trim(), copy);
+      for (const selector of ['meta[name="description"]', 'meta[property="og:title"]', 'meta[property="og:description"]']) assert.ok((await page.locator(selector).getAttribute('content')).includes(copy));
       assert.equal(await page.locator('[data-destination]').count(), 1, 'one World entrance');
       assert.equal(await page.locator('[data-destination="world"]').count(), 1);
       assert.equal(await page.locator('[data-destination="note"]').count(), 0);
       assert.equal(await page.locator('.world-feature').count(), 5, 'all actual bottom menus');
       assert.ok(await page.locator('.world-welcome-visual img').evaluate(img => img.complete && img.naturalWidth > 0), 'existing room image loads');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'landing fits ' + width);
+      if (process.env.OJJUDA_COPY_PROOF_DIR) { fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.OJJUDA_COPY_PROOF_DIR, `landing-${width}.png`) }); }
       await page.goto(origin + '/sitemap.html');
+      assert.equal(await page.locator('.ojjuda-copy--map').textContent(), copy);
+      assert.equal(await page.locator('.ojjuda-copy--map').isVisible(), true);
       assert.equal(await page.locator('[data-map-group]').count(), 8);
       assert.equal(await page.locator('[data-map-item]:visible').count(), 49);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'directory fits ' + width);
+      if (process.env.OJJUDA_COPY_PROOF_DIR) await page.screenshot({ path: path.join(process.env.OJJUDA_COPY_PROOF_DIR, `sitemap-${width}.png`) });
     }
     await page.locator('#map-search').fill('계산기');
     assert.equal(await page.locator('[data-map-item]:visible').count(), 1);
@@ -71,6 +78,7 @@ const cardId = '00000000-0000-4000-8000-000000000010';
     await page.locator('#map-life a[href="/guide.html#life-calculator"]').click();
     assert.equal(await page.locator('#life-tools').getAttribute('open'), '');
     assert.equal(await page.locator('#life-calculator').isVisible(), true, 'feature link opens the actual guide topic');
+    assert.equal((await page.locator('#guide-title').innerText()).replace(/\s+/g, ' ').trim(), copy);
     await page.goto(origin + '/sitemap.html');
     await page.locator('#map-board a[href="/guide.html#community-board-games"]').click();
     assert.equal(await page.locator('#community-board-games').isVisible(), true);
@@ -78,6 +86,8 @@ const cardId = '00000000-0000-4000-8000-000000000010';
     await page.goto(origin + '/');
     await page.locator('[data-destination="world"]').click();
     await page.locator('#auth-dialog[open]').waitFor();
+    assert.equal(await page.locator('.ojjuda-copy--auth').textContent(), copy);
+    assert.equal(await page.locator('.ojjuda-copy--auth').isVisible(), true);
     await page.locator('#email').fill('fixture@example.invalid');
     await page.locator('#password').fill('fixture-password');
     await page.locator('#auth-submit').click();

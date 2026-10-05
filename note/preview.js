@@ -2307,8 +2307,8 @@ async function openComposer(mode, card = null, replyTo = null) {
   requestedDraftContent = draftContent();
   if (draftStatus) draftStatus.hidden = true;
   updateComposer(); backdrop.hidden = false; lockPage(true); updateComposer();
-  if (kind === 'event') $('.composer-body').scrollTop = 0;
-  text.focus();
+  $('.composer-body').scrollTop = 0;
+  text.focus({ preventScroll: true });
   if (editingId && (kind === 'memo' || kind === 'comment')) void prepareCardPhotoEdit(editingId, run);
   if (kind === 'event' && editingId && eventHadPhoto) void showExistingEventPhoto(card, run);
   if (kind === 'event' && !editingId) {
@@ -2329,7 +2329,7 @@ async function openComposer(mode, card = null, replyTo = null) {
       if (run === composerRun) { draftStatus.textContent = error.message || '임시 글을 불러오지 못했어요.'; draftStatus.hidden = false; }
     }
     finally {
-      if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus(); }
+      if (run === composerRun) { draftLoading = false; setComposerInputs(); updateComposer(); if (!backdrop.hidden) text.focus({ preventScroll: true }); }
     }
   }
   if (!editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
