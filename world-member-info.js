@@ -70,8 +70,9 @@
           const saved = await client.rpc(identity ? 'update_my_phone_number' : 'complete_my_member_identity', params);
           if (!current()) return;
           if (saved.error) throw saved.error;
-          if (entry) { closeModal(); dispose(); onSaved?.(); return; }
-          if (!identity) { await open({ client, getUserId, email, renderModal, closeModal, onSupport }); return; }
+          onSaved?.();
+          if (entry) { closeModal(); dispose(); return; }
+          if (!identity) { await open({ client, getUserId, email, renderModal, closeModal, onSupport, onSaved }); return; }
           form.querySelector('#wm-phone').value = saved.data?.phone_number || params.p_phone;
           message.textContent = '전화번호를 저장했어요.';
         } catch (error) { if (current()) message.textContent = errorMessage(error); }
