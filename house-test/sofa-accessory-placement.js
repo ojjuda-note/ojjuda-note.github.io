@@ -1,4 +1,4 @@
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-sofalegs3';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-itemmanifest1';
 
 // These are each item's reserved support area, not the transparent image frame.
 // The draped blanket keeps the original hanging ends outside its support area.
