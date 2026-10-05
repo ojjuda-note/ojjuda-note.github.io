@@ -12,7 +12,7 @@ jobs:
     env:
       START_SHA: ${{ github.sha }}
       BASE_SHA: d13f862ea436682b15afef7ff287d76bb16176ba
-      EXPECTED_BLOB: 3110495edde742a989859fc54257c181dbfea479
+      EXPECTED_BLOB: bcfc84b171232a41189d32f366469f26e7c76a19
       BRANCH_NAME: fix/studio-history-fixture-20261005
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -29,7 +29,7 @@ jobs:
           text = p.read_text()
           import_line = "const {loadValidStudioItem}=require('./furniture-studio-fixture.cjs');\n"
           old = "  await frame.locator('#studio-side-table').click();await frame.waitForFunction(()=>document.querySelector('#set-summary').textContent.includes('원본 그림 3/3'));"
-          new = "  await loadValidStudioItem(frame);await frame.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);"
+          new = "  await frame.locator('#studio-editor').waitFor({state:'visible'});await loadValidStudioItem(frame);await frame.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);"
           assert import_line not in text
           assert text.count(old) == 1
           p.write_text(import_line + text.replace(old, new, 1))
