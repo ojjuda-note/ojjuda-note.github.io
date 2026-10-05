@@ -8,9 +8,13 @@ const number=v=>Number(v||0).toLocaleString(),signed=v=>(v>=0?'+':'')+number(v);
 const messages={adult_required:'맞고는 만 19세 이상만 이용할 수 있어요.',member_identity_required:'생년월일을 등록한 뒤 입장해 주세요.',not_signed_in:'다시 로그인해 주세요.',banned:'이용이 제한된 계정이에요.',gold_empty:'골드를 충전한 뒤 시작해 주세요.',room_not_found:'방 코드를 다시 확인해 주세요.',room_unavailable:'이미 시작하거나 종료된 방이에요.',match_in_progress:'진행 중인 대결을 먼저 마쳐 주세요.',state_conflict:'차례가 바뀌었어요. 현재 판을 다시 확인할게요.',not_your_turn:'상대 차례이거나 자동 진행 중이에요.'};
 let wallet,room=null,cursor=0,busy=false,polling=false,closed=false,pendingMove=null,viewKey='',promptKey='',pollTimer,accessTimer,token=null,clockOffset=0;
 let dialog=null,dialogKey='',eventTimer,eventQueue=[],showingEvent=false;
-let arcadeRoom=null;
+let arcadeRoom=null,publicLobby=false;
 const entryParams=new URLSearchParams(location.search);
 function roomLabel(){const label=$('#room-label');if(!label)return;label.hidden=!arcadeRoom;label.textContent=arcadeRoom?`방 #${arcadeRoom.room_no} · ${arcadeRoom.title}`:'';}
+function waitInChat(){
+  if(!publicLobby||!arcadeRoom||room?.status==='active')return;
+  closed=true;window.parent.postMessage({type:'ojjuda:matgo:room-created',room:arcadeRoom},location.origin);
+}
 async function arcadeRpc(action,params={}){
   const {data,error}=await access.getClient().rpc('arcade_room_service',{p_action:action,...params});
   if(error||!data?.ok){const code=Object.keys({...messages,room_full:1,room_in_progress:1,invalid_title:1,room_rate_limit:1}).find(k=>String(error?.message||'').includes(k));const e=Error(messages[code]||({room_full:'다른 사람이 먼저 참여했어요.',room_in_progress:'참여 중인 대전방을 먼저 마무리해 주세요.',invalid_title:'방 제목을 1~40자로 입력해 주세요.',room_rate_limit:'잠시 후 다시 방을 만들어 주세요.'})[code]||'방에 연결하지 못했어요. 다시 시도해 주세요.');e.code=code;throw e;}
@@ -27,6 +31,7 @@ function createPublicRoom(){
     busy=true;form.querySelectorAll('button,input').forEach(el=>el.disabled=true);
     try{
       arcadeRoom=(await arcadeRpc('create',{p_kind:'matgo',p_title:title,p_options:{request_id:request}})).room;
+      if(publicLobby){waitInChat();return;}
       accept((await rpc({action:'online_read',room_id:arcadeRoom.match_id})).room);roomLabel();connection();
     }catch(error){if(form.isConnected)$('#public-room-error').textContent=error.message;}
     finally{busy=false;form.querySelectorAll('button,input').forEach(el=>el.disabled=false);}
@@ -154,7 +159,9 @@ function renderRoom(){
   if(room.status==='waiting'){
     if(viewKey===room.id+':waiting')return;viewKey=room.id+':waiting';
     $('#content').innerHTML=`<section class="lobby waiting"><div class="orbit" aria-hidden="true"></div><h2>${room.mode==='quick'?'상대를 찾고 있어요':'상대를 기다리고 있어요'}</h2><p>${room.mode==='quick'?'5초 안에 상대가 없으면<br>컴퓨터와 바로 시작해요. <b id="quick-seconds"></b>':'상대가 입장하면 바로 시작해요.<br>이 코드를 친구에게 알려주세요.'}</p><strong class="code" id="invite-code">${escape(room.code)}</strong><div class="row"><button id="copy-code" class="btn gold">코드 복사</button><button id="cancel-wait" class="btn ghost">대기 취소</button></div><p class="fine">대결은 두 사람 모두 입장한 뒤 시작해요.</p></section>`;
-    if(arcadeRoom){$('.waiting h2').textContent=arcadeRoom.title;$('.waiting>p').textContent='오락실 채팅창에 게시됐어요. 상대가 참여하면 시작해요.';$('#invite-code').textContent='#'+arcadeRoom.room_no;$('#copy-code').textContent='방번호 복사';roomLabel();}
+    if(arcadeRoom){$('.waiting h2').textContent=arcadeRoom.title;$('.waiting>p').textContent='오락실 채팅창에 게시됐어요. 상대가 참여하면 시작해요.';$('#invite-code').textContent='#'+arcadeRoom.room_no;$('#copy-code').textContent='방번호 복사';roomLabel();
+      if(publicLobby){$('.waiting .row').insertAdjacentHTML('beforebegin','<button id="wait-in-chat" class="btn gold">오락실 채팅에서 기다리기</button>');$('#wait-in-chat').onclick=waitInChat;}
+    }
     $('#copy-code').onclick=async()=>{const code=String(arcadeRoom?.room_no||room.code);try{await navigator.clipboard.writeText(code);toast(arcadeRoom?'방번호를 복사했어요.':'방 코드를 복사했어요.');}catch{toast('방번호 / 코드: '+code);}};$('#cancel-wait').onclick=()=>leave(false);return;
   }
   if(room.status==='cancelled'){
@@ -257,7 +264,11 @@ try{
   window.addEventListener('pagehide',departing);
   window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
   window.addEventListener('keydown',e=>{if(e.key==='Escape')requestExit();});
-  window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===window.parent&&e.data?.type==='ojjuda:matgo:request-close')requestExit();});
+  window.addEventListener('message',e=>{
+    if(e.origin!==location.origin||e.source!==window.parent)return;
+    if(e.data?.type==='ojjuda:matgo:request-close')requestExit();
+    if(e.data?.type==='ojjuda:matgo:capabilities'){publicLobby=e.data.publicLobby===true;if(room?.status==='waiting'){viewKey='';renderRoom();}}
+  });
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){void access.check().then(()=>refresh()).catch(deny);}});
   if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:online-ready'},location.origin);
   const requested=entryParams.get('room_id');
