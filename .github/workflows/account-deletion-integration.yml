@@ -1,0 +1,161 @@
+name: Integrate and verify account photo cleanup
+on:
+  push:
+    branches: [audit/account-deletion-storage-cleanup]
+    paths: [.github/workflows/account-deletion-integration.yml]
+permissions:
+  contents: write
+concurrency:
+  group: account-deletion-integration
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      START_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Integrate owner-bound cleanup with current main
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git checkout --detach origin/main
+          python3 - <<'PYTHON'
+          import os, subprocess, json
+          from pathlib import Path
+          paths = ['account-deletion.js', 'supabase/migrations/20261005081904_account_deletion_owned_storage_guard.sql', 'tests/account-deletion.test.cjs', 'tests/account-deletion-fixture.sql', 'tests/account-deletion-local.test.cjs', 'tests/note-account.test.cjs']
+          for name in paths:
+              p=Path(name);p.parent.mkdir(parents=True,exist_ok=True)
+              p.write_bytes(subprocess.check_output(['git','show',os.environ['START_SHA']+':'+name]))
+          from pathlib import Path
+
+          def once(s, old, new):
+              assert s.count(old) == 1, 'Source changed: ' + old[:90]
+              return s.replace(old, new, 1)
+
+          p = Path('world.html')
+          s = p.read_text()
+          start = s.index('async function ly(t){')
+          end = s.index('\nvar mm=', start)
+          old = s[start:end]
+          new = '''async function ly(t){
+            const userId=D.online?D.user?.id:null,current=()=>D.online&&D.user?.id===userId;
+            if(!userId||t.disabled)return;
+            if(z("#del-nick").value.trim()!==$.me.nick){M("닉네임이 맞지 않아요");return}
+            t.disabled=!0;
+            M("사진을 정리하고 탈퇴하는 중이에요…");
+            try{
+              if(!window.OjjudaAccountDeletion)throw new Error("deletion_module_unavailable");
+              await window.OjjudaAccountDeletion.run({client:S,userId,isCurrent:current});
+            }catch(error){
+              if(!current())return;
+              console.error("Account deletion failed",error);
+              t.disabled=!1;
+              M(window.OjjudaAccountDeletion?.message(error)||"탈퇴 기능을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요");
+              return;
+            }
+            if(!current())return;
+            D.leaving=!0;
+            try{await S.auth.signOut({scope:"local"})}catch{}
+            if(D.user&&D.user.id!==userId){D.leaving=!1;return;}
+            try{localStorage.removeItem(gr)}catch{}
+            dt();
+            document.getElementById("app").innerHTML=`<main class="auth"><div class="auth-loading" style="text-align:center;max-width:340px">${Oo(!1,"span")}<p>탈퇴가 끝났어요. 그동안 함께해 줘서 고마워요.</p><button class="btn pri" onclick="location.reload()">처음 화면으로</button></div></main>`
+          }'''
+          s = once(s, old, new)
+          s = once(s, '<script type="module">', '<script src="/account-deletion.js?v=20261005-cleanup1"></script>\n<script type="module">')
+          p.write_text(s)
+
+          p = Path('note/preview.js');s = p.read_text()
+          start = s.index("  const media = owner.storage.from('media'), folders = [userId], paths = [];")
+          end = s.index("  try { localStorage.removeItem(`ojjuda-note-composer-settings-v1:${userId}`); }", start)
+          s = s[:start] + '''  try {
+              if (!window.OjjudaAccountDeletion) throw new Error('deletion_module_unavailable');
+              await window.OjjudaAccountDeletion.run({ client: owner, userId,
+                isCurrent: () => run === managementRun && session?.user?.id === userId });
+            } catch (error) {
+              if (error?.message === 'account_changed') throw error;
+              throw { userMessage: window.OjjudaAccountDeletion?.message(error)
+                || '탈퇴 기능을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.' };
+            }
+          ''' + s[end:]
+          p.write_text(s)
+
+          p = Path('park/index.html');s = p.read_text()
+          s = once(s, '  <script src="/note/preview.js?v=20261004-folder-kind1" defer></script>',
+              '  <script src="/account-deletion.js?v=20261005-cleanup1" defer></script>\n  <script src="/note/preview.js?v=20261005-cleanup1" defer></script>')
+          p.write_text(s)
+          print('World and Note now share owner-bound, retryable Storage cleanup.')
+
+          p=Path('tests/package.json');d=json.loads(p.read_text())
+          command='node account-deletion.test.cjs'
+          assert command not in d['scripts']['test:unit']
+          d['scripts']['test:unit']=command+' && '+d['scripts']['test:unit']
+          d['scripts']['test:account-deletion-local']='node account-deletion-local.test.cjs'
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PYTHON
+          git diff --check
+      - name: Install locked test tools
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Verify shared cleanup and both account screens
+        working-directory: tests
+        run: |
+          node inline-scripts.test.cjs
+          node account-deletion.test.cjs
+          node note-account.test.cjs
+      - name: Start disposable Auth, Storage and Postgres
+        run: |
+          fixture_dir="$RUNNER_TEMP/account-deletion-supabase"
+          mkdir -p "$fixture_dir"
+          npx --yes supabase@2.119.0 init --help >/dev/null
+          npx --yes supabase@2.119.0 init --workdir "$fixture_dir"
+          python3 - "$fixture_dir/supabase/config.toml" <<'PYTHON'
+          from pathlib import Path
+          import re,sys
+          p=Path(sys.argv[1]);s=p.read_text()
+          s=re.sub(r'^major_version = [0-9]+$', 'major_version = 17', s, flags=re.M)
+          p.write_text(s)
+          PYTHON
+          npx --yes supabase@2.119.0 start --help >/dev/null
+          if ! npx --yes supabase@2.119.0 start --workdir "$fixture_dir" -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor >"$fixture_dir/start.log" 2>&1; then
+            echo 'Disposable Supabase failed to start; application deployment has not run.'
+            python3 - "$fixture_dir/start.log" <<'PYTHON'
+          from pathlib import Path
+          import sys
+          for line in Path(sys.argv[1]).read_text().splitlines():
+              if any(s in line.lower() for s in ['error','failed','unhealthy']) and not any(s in line.lower() for s in ['key','secret','token','password']): print(line[:300])
+          PYTHON
+            exit 1
+          fi
+          npx --yes supabase@2.119.0 status --help >/dev/null
+          npx --yes supabase@2.119.0 status --workdir "$fixture_dir" -o json >"$fixture_dir/env.json"
+          npm --prefix "$RUNNER_TEMP/account-deletion-tools" install --no-save --package-lock=false pg@8.16.3
+      - name: Exercise real Storage, failure retry and concurrent upload guards
+        env:
+          ACCOUNT_DELETION_LOCAL_ENV: ${{ runner.temp }}/account-deletion-supabase/env.json
+          ACCOUNT_DELETION_PG_MODULE: ${{ runner.temp }}/account-deletion-tools/node_modules/pg
+        run: node tests/account-deletion-local.test.cjs
+      - name: Stop the disposable server
+        if: always()
+        run: |
+          npx --yes supabase@2.119.0 stop --help >/dev/null
+          npx --yes supabase@2.119.0 stop --workdir "$RUNNER_TEMP/account-deletion-supabase" --no-backup
+      - name: Save only the verified cleanup change
+        run: |
+          git add account-deletion.js supabase/migrations/20261005081904_account_deletion_owned_storage_guard.sql tests/account-deletion.test.cjs tests/account-deletion-fixture.sql tests/account-deletion-local.test.cjs tests/note-account.test.cjs world.html note/preview.js park/index.html tests/package.json
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tree=$(git write-tree)
+          main_sha=$(git rev-parse origin/main)
+          commit=$(git commit-tree "$tree" -p "$START_SHA" -p "$main_sha" -m 'Integrate verified owner-bound photo cleanup into current World and Note')
+          git push origin "$commit:refs/heads/audit/account-deletion-storage-cleanup"
+          echo "CHECKED_HEAD=$commit"
+          echo "CHECKED_TREE=$tree"
+          echo "BASE_MAIN=$main_sha"
+          sha256sum account-deletion.js world.html note/preview.js park/index.html
