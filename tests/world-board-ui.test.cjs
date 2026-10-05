@@ -9,7 +9,7 @@ window.calls=[];window.openedGames=[];window.fail=false;window.viewer='a';window
 function query(table){const filters=[],orders=[];let from=0,to=999;const q={select(){return q},eq(k,v){filters.push([k,v]);return q},in(k,v){filters.push([k,v]);return q},lte(){return q},order(k,o){orders.push([k,o]);return q},range(a,b){from=a;to=b;return q},limit(n){to=n-1;return q},insert(){return q},delete(){return q},then(resolve){calls.push({table,filters,orders,from,to});if(window.fail){window.fail=false;return Promise.resolve({error:{message:'offline'}}).then(resolve);}let data=table==='world_board_likes'?[]:items.map(r=>({...r,type:r.kind,thumb_path:r.kind+'/'+r.id+'.jpg'})).filter(r=>filters.every(([k,v])=>Array.isArray(v)?v.includes(r[k]):r[k]===v));data.sort((a,b)=>{for(const[k,o]of orders){const diff=a[k]<b[k]?-1:a[k]>b[k]?1:0;if(diff)return o.ascending?diff:-diff;}return 0;});return Promise.resolve({data:data.slice(from,to+1)}).then(resolve);}};return q;}
 window.client={
  from:query,
- rpc(name,{p_game}){calls.push({rpc:name,game:p_game});if(p_game==='runner'&&!window.rankRetried){window.rankRetried=true;return Promise.resolve({error:{message:'offline'}});}return Promise.resolve({data:p_game==='mole'?[{nick:'긴닉네임 <img src=x onerror=alert(1)>',score:1234}]:[]});},
+ rpc(name,{p_game}){calls.push({rpc:name,game:p_game});if(name==='my_game_records'){if(window.personalFail){window.personalFail=false;return Promise.resolve({error:{message:'offline'}});}return Promise.resolve({data:window.personalRecords||[]});}if(p_game==='runner'&&!window.rankRetried){window.rankRetried=true;return Promise.resolve({error:{message:'offline'}});}return Promise.resolve({data:p_game==='mole'?[{nick:'긴닉네임 <img src=x onerror=alert(1)>',score:1234}]:[]});},
  schema(){return {rpc(){return Promise.resolve({data:[{id:'card-1',body:'오늘도 수고했어요',like_count:10}]});}};},
  storage:{from(){return {createSignedUrls(paths){return Promise.resolve({data:paths.map(path=>({path,signedUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}))});},createSignedUrl(){return Promise.resolve({data:{signedUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}});}};}}
 };
@@ -66,6 +66,26 @@ await page.evaluate(()=>{OjjudaMatgoAccess.visible=()=>true;OjjudaBoard.mount(do
 for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
 await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));const frozenPage=await page.locator('.board-leaders').getAttribute('data-rank-page');await page.clock.runFor(12000);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),frozenPage,'reduced motion stops auto advance');await page.clock.resume();
 await page.setViewportSize({width:390,height:844});await page.locator('.board-leaders').screenshot({path:'/tmp/chalkboard-ranking.png'});
+// Regression: persisted practice scores must be visible without entering the public ranking.
+await page.evaluate(()=>{window.personalRecords=[{game:'runner',score:567},{game:'stacker',score:0},{game:'carom4',score:4},{game:'screw_box',score:123},{game:'screw_flat',score:456}];return OjjudaBoard.refresh();});
+for(const [game,score] of [['runner','567점'],['stacker','0층'],['carom4','4점'],['screw_box','123점'],['screw_flat','456점']]){
+ assert.equal(await page.locator(`[data-game=${game}] .board-leader-nick`).innerText(),'내 기록');
+ assert.equal(await page.locator(`[data-game=${game}] .board-leader-score`).innerText(),score);
+}
+assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','verified first place remains the public winner');
+assert.equal(await page.locator('[data-game=chess] .board-leader-empty').innerText(),'오늘 기록 없음');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length>0),true);
+const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length);
+await page.evaluate(()=>{document.body.classList.add('gaming');});
+await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
+await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length),personalCalls+1,'one shared personal-record query on return from a game');
+await page.evaluate(()=>{window.personalFail=true;return OjjudaBoard.refresh();});
+assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','personal-record failure does not hide public results');
+await page.locator('[data-game=carom4] .board-leader-retry').evaluate(b=>b.click());
+await page.waitForFunction(()=>document.querySelector('[data-game=carom4] .board-leader-score').textContent==='4점');
+await page.evaluate(()=>{window.personalRecords=[];return OjjudaBoard.refresh();});
+assert.equal(await page.locator('[data-game=runner] .board-leader-score').innerText(),'—','new day or cleared records cannot keep a previous score');
 await page.evaluate(()=>{viewer=null;mount();});assert.equal(await page.locator('.board-row').count(),0,'session change clears prior records');assert.ok((await page.locator('#board').innerText()).includes('로그인'));
 await page.clock.runFor(6000);assert.equal(await page.locator('.board-leaders').count(),0,'logout disposes carousel');assert.deepEqual(errors,[]);console.log('PASS: game-name links and keyboard activation, stale/unauthorized protection, standalone noninteractive labels, chalkboard ranking, exact 5-second dwell and 280ms slide, compact controls-free layout/swipe, distinct game variants, reduced motion, timer cleanup, BEST/latest lists, pagination, retry, refresh, detail/like/back, XSS safety, session clearing and mobile/desktop layout');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
