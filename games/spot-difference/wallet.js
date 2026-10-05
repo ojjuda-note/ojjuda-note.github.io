@@ -40,6 +40,17 @@
     getState:()=>({...state}),
     subscribe(fn){listeners.add(fn);fn({...state});return()=>listeners.delete(fn);},
     refresh,
+    async recordScore(owner,score){
+      if(!Number.isInteger(score)||score<0||score>6)throw new Error('잘못된 점수예요.');
+      for(let attempt=0;attempt<2;attempt++){
+        if(!client||!owner||state.userId!==owner)throw new Error('게임을 시작한 계정으로 로그인해 주세요.');
+        const {data,error}=await client.rpc('submit_score',{p_game:'spot',p_score:score}).abortSignal(AbortSignal.timeout(12000));
+        if(error)throw error;
+        if(data?.ok)return data;
+        if(data?.reason!=='too_fast'||attempt)throw new Error('점수를 저장하지 못했어요.');
+        await new Promise(resolve=>setTimeout(resolve,5100));
+      }
+    },
     async signIn(email,password){
       if(!client)throw new Error('로그인 연결을 불러오지 못했어요.');
       const {data,error}=await client.auth.signInWithPassword({email,password});
