@@ -31,4 +31,12 @@ for(const y of [0,3]){
  assert.ok(seat,'the original seat seam remains covered');
  assert.ok(distortionRatio(seat.matrix)<2.5,'left seat seam must not stretch into the near arm');
 }
+// The lower right arm must keep the original fabric proportions across its seam.
+const rightArmSample={x:1000,y:950};
+for(const y of [0,3]){
+ const v=SOFA_V1.right,triangles=projectMesh(v.mesh,{...v.placement,y}).triangles;
+ const arm=triangles.find(t=>t.source.every((p,i)=>turn(p,t.source[(i+1)%3],rightArmSample)>=-1e-8));
+ assert.ok(arm,'the original lower right arm remains covered');
+ assert.ok(distortionRatio(arm.matrix)<1.2,'the lower right arm fabric must retain its proportions');
+}
 console.log('Furniture shape guard PASS: rotation, scale, shear, collapse, transparency and known book/sofa regressions');
