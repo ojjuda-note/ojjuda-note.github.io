@@ -71,8 +71,11 @@
   function error(target,retry){target.replaceChildren(el('p','글을 불러오지 못했어요.','board-empty'),button('다시 시도',retry,'btn sm'));}
   function leaders(token){
    const entries=Object.entries(games);if(!entries.length)return [];
+   // This API is scoped to the signed-in member; practice scores never become public winners.
+   let recordsRequest=null;
+   const records=()=>recordsRequest||(recordsRequest=result(client.rpc('my_game_records',{})).catch(error=>{recordsRequest=null;throw error;}));
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
-   const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','오늘의 1등','board-rank-caption'));section.append(head);
+   const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','오늘 1등 · 내 기록','board-rank-caption'));section.append(head);
    const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);section.append(paper);
    const pages=[],targets=new Map();
    for(let start=0;start<entries.length;start+=3){
@@ -115,17 +118,35 @@
    section.addEventListener('focusout',()=>schedule(),options);
    document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
    motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
-   rankDispose=()=>{clearTimeout(timer);controller.abort();};paint();schedule();
+   let gaming=document.body.classList.contains('gaming');
+   const observer=new MutationObserver(()=>{
+    const next=document.body.classList.contains('gaming');
+    if(gaming&&!next&&active()&&token===request)void home();
+    gaming=next;
+   });
+   observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+   rankDispose=()=>{clearTimeout(timer);controller.abort();observer.disconnect();};paint();schedule();
    return entries.map(async([id,game])=>{
     const {nick,score}=targets.get(id);
     async function load(){
      nick.textContent='불러오는 중…';
      try{
-      const data=game.rankKey===null?[]:await result(client.rpc('game_ranking',{p_game:game.rankKey||id}));
+      const [ranking,personal]=await Promise.allSettled([
+       game.rankKey===null?Promise.resolve([]):result(client.rpc('game_ranking',{p_game:game.rankKey||id})),records()
+      ]);
       if(!active()||token!==request)return;
-      const top=Array.isArray(data)?data[0]:null;
-      if(!top||!Number.isFinite(Number(top.score))){nick.replaceChildren(el('span','집계 준비 중','board-leader-empty'));score.textContent='—';return;}
-      nick.textContent=top.nick||'익명';nick.title=top.nick||'익명';score.textContent=Number(top.score).toLocaleString('ko-KR')+game.unit;
+      const valid=row=>row&&row.score!==null&&row.score!==''&&Number.isFinite(Number(row.score));
+      const top=ranking.status==='fulfilled'&&Array.isArray(ranking.value)?ranking.value[0]:null;
+      const mine=personal.status==='fulfilled'&&Array.isArray(personal.value)?personal.value.find(row=>row.game===id):null;
+      if(valid(top)){
+       nick.textContent=top.nick||'익명';nick.title='오늘의 1등 · '+(top.nick||'익명');score.textContent=Number(top.score).toLocaleString('ko-KR')+game.unit;
+      }else if(valid(mine)){
+       nick.textContent='내 기록';nick.title='오늘의 내 최고 연습 기록';score.textContent=Number(mine.score).toLocaleString('ko-KR')+game.unit;
+      }else{
+       score.textContent='—';nick.removeAttribute('title');
+       if(ranking.status==='rejected'||personal.status==='rejected')throw Error('records_unavailable');
+       nick.replaceChildren(el('span','오늘 기록 없음','board-leader-empty'));
+      }
      }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));}
     }
     await load();
