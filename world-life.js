@@ -23,13 +23,13 @@
   const current=read(nearest);if(!Number.isFinite(current.temp)||!Number.isFinite(Date.parse(current.time)))throw Error('weather');
   return {current,forecast:series.filter(row=>Date.parse(row.time)>Date.parse(current.time)).slice(0,3).map(read)};
  };
- const states=new Map();let mounted=null,mountedOwner=null,dispose=null;
+ const states=new Map();let mounted=null,mountedOwner=null,dispose=null,layoutModule=null;
  function mount(host,{owner,client,authorized=()=>true}={}){
   owner=owner||null;
   if(!host){dispose?.();dispose=null;mounted=null;mountedOwner=null;return;}
   if(mounted===host&&mountedOwner===owner)return;dispose?.();mounted=host;mountedOwner=owner;
   const state=states.get(owner)||{open:{calendar:true},month:today().slice(0,7),selected:today(),city:0};states.set(owner,state);
-  let alive=true,closeLedger=null,schedule=null,calendarCounts={},request=null,requestNumber=0,locating=0;
+  let alive=true,closeLayout=null,closeLedger=null,schedule=null,calendarCounts={},request=null,requestNumber=0,locating=0;
   const active=()=>alive&&host.isConnected&&authorized();
   host.replaceChildren(el('h2','생활'));
   function section(key,title){
@@ -111,8 +111,15 @@
    display.textContent=value;
   }
   for(const key of ['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','±','0','.','='])keys.append(btn(key,()=>press(key)));calculator.append(display,keys);
+  function loadLayout(){
+   layoutModule ||= import('/world-life-layout.js?v=20261005-widgets1');
+   layoutModule.then(module=>{if(active())closeLayout=module.mountLayout(host,{owner,authorized:active});}).catch(()=>{
+    layoutModule=null;if(!active())return;
+    const retry=btn('배치 기능 다시 불러오기',()=>{retry.remove();loadLayout();});retry.className='life-layout-retry';retry.dataset.worldSwipe='off';host.append(retry);
+   });
+  }loadLayout();
   const watcher=setInterval(()=>{if(alive&&!authorized()){host.replaceChildren();dispose?.();}},400);
-  dispose=()=>{alive=false;locating++;requestNumber++;request?.abort();schedule?.destroy();closeLedger?.();clearInterval(watcher);};
+  dispose=()=>{alive=false;locating++;requestNumber++;request?.abort();closeLayout?.();schedule?.destroy();closeLedger?.();clearInterval(watcher);};
  }
  window.OjjudaLife={mount};
 })();

@@ -1,0 +1,44 @@
+/* Grid order keeps live iframes and unsaved tool inputs mounted while moving. */
+[data-life-root].life-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+.life-layout>h2,.life-layout-toolbar,.life-layout-editor,.life-layout-status,.life-layout-empty{grid-column:1/-1;order:-1;min-width:0}
+.life-layout>h2{margin-bottom:0}
+.life-layout>[data-life-tool]{margin:0;min-width:0;position:relative}
+.life-layout [hidden],.life-layout>[hidden]{display:none!important}
+.life-layout-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.life-layout-toolbar button,.life-layout-editor button,.life-layout-empty button{font:inherit;font-size:12px;min-height:40px;cursor:pointer;border:1px solid var(--life-line);border-radius:12px;background:var(--life-input);color:var(--life-ink);padding:8px 12px}
+.life-layout-modes{display:flex;gap:3px;background:var(--life-button);padding:4px;border-radius:14px}
+.life-layout-modes button{border-color:transparent;background:transparent;min-height:34px;min-width:64px;padding:5px 10px}
+.life-layout-modes button[aria-pressed=true]{background:var(--life-input);color:var(--life-link);box-shadow:0 2px 6px #65526f12;font-weight:700}
+.life-layout-editor{border:1px solid var(--life-line);border-radius:16px;padding:14px;background:var(--life-bg)}
+.life-layout-tip{font-size:12px;line-height:1.7;margin:0 0 10px;color:var(--life-muted)}
+.life-layout-picker{display:flex;gap:6px;flex-wrap:wrap}
+.life-layout-picker button{font-size:12px;padding:7px 10px}
+.life-layout-picker button:disabled{opacity:.6;cursor:default;background:var(--life-button)}
+.life-layout-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
+.life-layout-actions button:last-child{background:var(--life-key);font-weight:700}
+.life-layout-status{font-size:12px;line-height:1.6;color:var(--life-muted);margin:0}
+.life-layout-status:empty{display:none}
+.life-layout-empty{padding:28px 18px;text-align:center;background:var(--life-bg);border:1px dashed var(--life-line);border-radius:18px;font-size:13px;color:var(--life-muted)}
+.life-layout-item-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;width:100%}
+.life-tool .life-layout-item-tools button{min-width:34px;min-height:36px;padding:5px 8px;border-radius:9px;font-size:12px}
+.life-tool .life-layout-item-tools .life-layout-handle{touch-action:none;cursor:grab;font-size:23px;line-height:1;background:var(--life-key);user-select:none}
+.life-layout-editing .life-tool>summary{flex-wrap:wrap;gap:10px;padding:16px}
+.life-layout-editing .life-tool>summary>span:first-child{flex:1 1 100%}
+.life-layout-editing .life-tool>.life-tool-body{display:none}
+.life-layout-editing .life-toggle,[data-life-view=widgets]>.life-tool .life-toggle{display:none}
+.life-layout-editing .life-tool{border-style:dashed}
+.life-layout-dragging{opacity:.55}
+.life-tool[data-layout-drop=before]{box-shadow:0 -5px 0 var(--life-link)}
+.life-tool[data-layout-drop=after]{box-shadow:0 5px 0 var(--life-link)}
+[data-life-view=widgets]>.life-tool>summary{min-height:60px;padding:17px 18px;cursor:default}
+[data-life-view=widgets]>.life-tool>summary strong{font-size:17px}
+[data-life-view=widgets] .life-weather-now{gap:12px}
+[data-life-view=widgets] .life-weather-now>strong{font-size:38px}
+[data-life-view=widgets] .life-weather-now>span{font-size:12px}
+.life-layout :is(button,summary):focus-visible{outline:3px solid var(--life-link);outline-offset:2px}
+@media(min-width:620px){[data-life-root][data-life-view=widgets]{grid-template-columns:repeat(2,minmax(0,1fr))}[data-life-view=widgets]>.life-widget-wide{grid-column:span 2}}
+@media(max-width:619px){[data-life-view=widgets] .life-layout-editor::after{content:'작은 화면에서는 보기 편하게 한 줄로 배치돼요.';display:block;margin-top:12px;font-size:11px;color:var(--life-muted)}}
+@media(prefers-reduced-motion:reduce){.life-layout *{scroll-behavior:auto!important}}
+
+.life-tool .life-layout-item-tools select{width:auto;min-width:96px;max-width:120px;min-height:36px;padding:5px 8px;font-size:12px;border-radius:9px}
+@media(max-width:619px){.life-layout>[data-life-tool]{grid-column:1/-1!important}}
