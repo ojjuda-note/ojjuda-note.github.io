@@ -9,7 +9,7 @@ window.calls=[];window.openedGames=[];window.fail=false;window.viewer='a';window
 function query(table){const filters=[],orders=[];let from=0,to=999;const q={select(){return q},eq(k,v){filters.push([k,v]);return q},in(k,v){filters.push([k,v]);return q},lte(){return q},order(k,o){orders.push([k,o]);return q},range(a,b){from=a;to=b;return q},limit(n){to=n-1;return q},insert(){return q},delete(){return q},then(resolve){calls.push({table,filters,orders,from,to});if(window.fail){window.fail=false;return Promise.resolve({error:{message:'offline'}}).then(resolve);}let data=table==='world_board_likes'?[]:items.map(r=>({...r,type:r.kind,thumb_path:r.kind+'/'+r.id+'.jpg'})).filter(r=>filters.every(([k,v])=>Array.isArray(v)?v.includes(r[k]):r[k]===v));data.sort((a,b)=>{for(const[k,o]of orders){const diff=a[k]<b[k]?-1:a[k]>b[k]?1:0;if(diff)return o.ascending?diff:-diff;}return 0;});return Promise.resolve({data:data.slice(from,to+1)}).then(resolve);}};return q;}
 window.client={
  from:query,
- rpc(name,{p_game}){calls.push({rpc:name,game:p_game});if(name==='my_game_records'){if(window.personalFail){window.personalFail=false;return Promise.resolve({error:{message:'offline'}});}return Promise.resolve({data:window.personalRecords||[]});}if(p_game==='runner'&&!window.rankRetried){window.rankRetried=true;return Promise.resolve({error:{message:'offline'}});}return Promise.resolve({data:p_game==='mole'?[{nick:'긴닉네임 <img src=x onerror=alert(1)>',score:1234}]:[]});},
+ rpc(name,{p_game}){calls.push({rpc:name,game:p_game});if(name!=='community_game_ranking')return Promise.resolve({error:{message:'unexpected RPC'}});if(window.personalFail&&p_game==='carom4'){window.personalFail=false;return Promise.resolve({error:{message:'offline'}});}if(p_game==='runner'&&!window.rankRetried){window.rankRetried=true;return Promise.resolve({error:{message:'offline'}});}const record=(window.personalRecords||[]).find(row=>row.game===p_game);return Promise.resolve({data:p_game==='mole'?[{nick:'긴닉네임 <img src=x onerror=alert(1)>',score:1234}]:record?[{nick:'다른 회원',score:record.score}]:[]});},
  schema(){return {rpc(){return Promise.resolve({data:[{id:'card-1',body:'오늘도 수고했어요',like_count:10}]});}};},
  storage:{from(){return {createSignedUrls(paths){return Promise.resolve({data:paths.map(path=>({path,signedUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}))});},createSignedUrl(){return Promise.resolve({data:{signedUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}});}};}}
 };
@@ -66,20 +66,20 @@ await page.evaluate(()=>{OjjudaMatgoAccess.visible=()=>true;OjjudaBoard.mount(do
 for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
 await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));const frozenPage=await page.locator('.board-leaders').getAttribute('data-rank-page');await page.clock.runFor(12000);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),frozenPage,'reduced motion stops auto advance');await page.clock.resume();
 await page.setViewportSize({width:390,height:844});await page.locator('.board-leaders').screenshot({path:'/tmp/chalkboard-ranking.png'});
-// Regression: persisted practice scores must be visible without entering the public ranking.
+// Community records are shared with every member, not replaced by the viewer's personal score.
 await page.evaluate(()=>{window.personalRecords=[{game:'runner',score:567},{game:'stacker',score:0},{game:'carom4',score:4},{game:'screw_box',score:123},{game:'screw_flat',score:456}];return OjjudaBoard.refresh();});
 for(const [game,score] of [['runner','567점'],['stacker','0층'],['carom4','4점'],['screw_box','123점'],['screw_flat','456점']]){
- assert.equal(await page.locator(`[data-game=${game}] .board-leader-nick`).innerText(),'내 기록');
+ assert.equal(await page.locator(`[data-game=${game}] .board-leader-nick`).innerText(),'다른 회원');
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-score`).innerText(),score);
 }
-assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','verified first place remains the public winner');
+assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','highest community score is shown');
 assert.equal(await page.locator('[data-game=chess] .board-leader-empty').innerText(),'오늘 기록 없음');
-assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length>0),true);
-const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length);
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length>0),true);
+const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length);
 await page.evaluate(()=>{document.body.classList.add('gaming');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
-assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='my_game_records').length),personalCalls+1,'one shared personal-record query on return from a game');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length),personalCalls+13,'public records refresh for every game on return');
 // A score that finishes saving after the game closes must update the board too.
 const previousPage=await page.locator('.board-leaders').getAttribute('data-rank-page');
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=1001;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner:'a'}}));});
@@ -89,9 +89,15 @@ const beforeStaleSave=await page.evaluate(()=>calls.length);
 await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner:'another-account'}})));
 assert.equal(await page.evaluate(()=>calls.length),beforeStaleSave,'other-account result is ignored');
 await page.evaluate(()=>{window.personalFail=true;return OjjudaBoard.refresh();});
-assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','personal-record failure does not hide public results');
+assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','one game failure does not hide other games');
 await page.locator('[data-game=carom4] .board-leader-retry').evaluate(b=>b.click());
 await page.waitForFunction(()=>document.querySelector('[data-game=carom4] .board-leader-score').textContent==='4점');
+const sharedScores=await page.locator('.board-leader').allTextContents();
+await page.evaluate(()=>{viewer='b';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='b'});});
+await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='1,001점');
+assert.deepEqual(await page.locator('.board-leader').allTextContents(),sharedScores,'a different member sees exactly the same public nicknames and scores');
+assert.equal(await page.locator('.board-rank-caption').innerText(),'오늘의 게임별 1등');
+await page.evaluate(()=>{viewer='a';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='a'});});
 await page.evaluate(()=>{window.personalRecords=[];return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=runner] .board-leader-score').innerText(),'—','new day or cleared records cannot keep a previous score');
 await page.evaluate(()=>{viewer=null;mount();});assert.equal(await page.locator('.board-row').count(),0,'session change clears prior records');assert.ok((await page.locator('#board').innerText()).includes('로그인'));
