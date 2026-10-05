@@ -27,12 +27,19 @@ function score(caps){
   const pv=pi.reduce((s,c)=>s+piVal(c),0); if(pv>=10){ pts+=pv-9; det.push([`피 ${pv}장`,pv-9]); }
   return {pts,det,g:g.length,y:y.length,t:t.length,pv};
 }
+// Solo CPU tiers: 100,000G is still level 1; 100,001G starts level 2.
+const CPU_GOLD_STEP=100000,MAX_CPU_LEVEL=10;
+function cpuLevelForGold(gold){
+  return Number.isFinite(gold)?Math.max(1,Math.min(MAX_CPU_LEVEL,Math.ceil(gold/CPU_GOLD_STEP))):1;
+}
 // ================= 게임 엔진 =================
 function shuffle(a,r=Math.random){for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 class Game {
   constructor(ui){ this.ui=ui; this.random=Math.random; this.actions=[]; this.bank=[5000,5000]; this.rate=100; this.carry=1; this.first=0; }
   deal(){
     if(this._playing)return false;
+    // Choose once per solo round from the starting balance. Online seats opt out.
+    this.cpuLevel=this.cpuMode==='normal'?1:cpuLevelForGold(this.bank[0]);
     let d,board,bonus;
     for(;;){
       d=shuffle(CARDS.map(c=>({...c,asPi:false})),this.random);board=[];bonus=[];
@@ -239,6 +246,19 @@ class Game {
   }
 }
 // ================= AI =================
+function cpuStrength(g,p){return p===1?Math.max(0,(g.cpuLevel||1)-1)/5:0;}
+function captureBonus(g,p,cards){
+  // Only exposed captures are considered: no opponent hand or future deck.
+  const mine=g.caps[p],other=g.caps[1-p];
+  const gain=Math.max(0,score([...mine,...cards]).pts-score(mine).pts);
+  const deny=Math.max(0,score([...other,...cards]).pts-score(other).pts);
+  let progress=0;
+  for(const c of cards){
+    if(c.tag==='bird'&&mine.some(x=>x.tag==='bird'))progress+=.8;
+    if(c.k==='tti'&&c.tag&&mine.some(x=>x.k==='tti'&&x.tag===c.tag))progress+=.6;
+  }
+  return Math.min(6,gain*2)+Math.min(1.5,deny*.5)+Math.min(1.5,progress);
+}
 function aiChooseCard(g,p){
   const hand=g.hand[p]; const bn=hand.find(c=>c.k==='bonus'); if(bn) return bn; let best=null,bs=-1e9;
   const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1.2;
@@ -246,6 +266,16 @@ function aiChooseCard(g,p){
     if(ms.length){ const st=ms.reduce((a,b)=>a[0].length>=b[0].length?a:b)[0]; s=val(c)+st.reduce((a,x)=>a+val(x),0); if(st.ppuk) s+=6; if(st.length===2) s+=2;
       const mine=g.caps[p]; if(c.k==='gwang'||st.some(x=>x.k==='gwang')) s+=4; if(c.k==='tti'&&c.tag){ const same=mine.filter(x=>x.k==='tti'&&x.tag===c.tag).length; s+=same*2; } if(c.tag==='bird'||st.some(x=>x.tag==='bird')){ s+=mine.filter(x=>x.tag==='bird').length*3; }
     } else { s=-val(c)-(hand.filter(x=>x.m===c.m).length>1?2:0); const left=48-g.caps[0].length-g.caps[1].length-g.floor.flat().length; s-=0; if(g.hand[1-p].length) s-=1; }
+    const strength=cpuStrength(g,p);
+    if(strength){
+      if(ms.length)s+=strength*Math.max(...ms.map(([stack])=>captureBonus(g,p,[c,...stack])));
+      else{
+        // Discard exhausted months sooner, and avoid feeding an exposed combo.
+        const known=[...hand,...g.floor.flat(),...g.caps.flat()].filter(x=>x.m===c.m).length;
+        if(known===4)s+=2*strength;
+        else s-=strength*Math.min(1.5,Math.max(0,score([...g.caps[1-p],c]).pts-g.pts(1-p))*.5);
+      }
+    }
     s+=g.random()*.5; if(s>bs){bs=s;best=c;}
   }
   return best;
@@ -255,7 +285,11 @@ function aiChooseGukjin(g,p){
   const points=asPi=>score(g.caps[p].map(c=>c.tag==='gukjin'?{...c,asPi}:c)).pts;
   return points(true)>points(false)?'pi':'yul';
 }
-function aiChoose(g,p,idxs){ const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1; return idxs.reduce((a,b)=>val(g.floor[a][0])>=val(g.floor[b][0])?a:b); }
+function aiChoose(g,p,idxs){ const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1;
+  const strength=cpuStrength(g,p);
+  const value=i=>val(g.floor[i][0])+(strength?strength*captureBonus(g,p,g.floor[i]):0);
+  return idxs.reduce((a,b)=>value(a)>=value(b)?a:b);
+}
 
 export function seededRandom(seed){let value=seed>>>0;return()=>{value=(value+0x6D2B79F5)>>>0;let t=value;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
-export { CARDS, isPi, piVal, score, Game, aiChooseCard, aiGoStop, aiChoose, aiChooseGukjin };
+export { CPU_GOLD_STEP, MAX_CPU_LEVEL, cpuLevelForGold, CARDS, isPi, piVal, score, Game, aiChooseCard, aiGoStop, aiChoose, aiChooseGukjin };

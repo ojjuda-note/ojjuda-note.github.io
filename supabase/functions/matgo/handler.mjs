@@ -96,7 +96,13 @@ export function createHandler({ env, fetchImpl = fetch }) {
         if (snapshot.settled) return reply(snapshot);
         let verified;
         try { verified = await (body.rules_version === 5 ? verifyRound : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
-        catch { return reply({ error: 'invalid_round' }, 409); }
+        catch {
+          // Rules/scoring stay v5. Already-open browsers can finish the old CPU
+          // policy; replay the entire transcript rather than trusting a result.
+          if(body.rules_version!==5||snapshot.round.gold<=100000)return reply({ error: 'invalid_round' }, 409);
+          try{verified=await verifyRound(snapshot.round,body.actions,{cpuMode:'normal'});}
+          catch{return reply({ error: 'invalid_round' }, 409);}
+        }
         return reply(await rpc('settle', { p_round: body.round_id, p_gold: verified.gold, p_first: verified.first, p_carry: verified.carry }));
       }
       if (body.action === 'refill') return reply(await rpc('refill', { p_request: body.request_id, p_paid: body.paid }));
