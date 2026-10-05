@@ -1,5 +1,5 @@
-import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261005-sofaarm2';
-import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261005-sofaarm2';
+import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261005-sofalegs3';
+import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261005-sofalegs3';
 const $=id=>document.getElementById(id);
 // Presentation and recovery only. The app remains the owner of project changes.
 export function mountSimpleEditor(api){
