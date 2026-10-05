@@ -60,15 +60,15 @@ const plain = value => JSON.parse(JSON.stringify(value));
       calls.push(['owner-client', plain(options)]);
       return {
         storage: { from(bucket) {
-          assert.equal(bucket, 'media');
+          assert.ok(['media', 'note-card-photos', 'note-event-photos'].includes(bucket));
           return {
-            async list(folder, options) { calls.push(['list', folder, options.offset]); return behavior.list ? behavior.list(folder, options) : { data: [], error: null }; },
-            async remove(paths) { calls.push(['remove', plain(paths)]); return behavior.remove ? behavior.remove(paths) : { error: null }; }
+            async remove(paths) { calls.push(['remove', plain(paths), bucket]); const result=behavior.remove ? await behavior.remove(paths) : { error: null }; if(!result.error)behavior.files=(behavior.files||[]).filter(file=>file.bucket_id!==bucket||!paths.includes(file.photo_path));return result; }
           };
         } },
-        async rpc(name) { calls.push(['rpc', name]); return behavior.rpc ? behavior.rpc() : { error: null }; }
+        async rpc(name,args) { calls.push(['rpc', name, plain(args)]); if(behavior.rpc)return behavior.rpc(name,args);return {data:name==='my_account_deletion_files'?(behavior.inventory?await behavior.inventory():(behavior.files||[]).slice(0,100)):null,error:null}; }
       };
     } };
+    run(fs.readFileSync(path.join(root, 'account-deletion.js'), 'utf8'));
     run(source.slice(0, bootAt));
     // Keep the real account/dialog/auth-change code; unrelated feed requests are out of scope.
     run(`loadWorldBalance = async () => {}; loadModerator = async () => {}; loadNoteState = async () => {};
@@ -156,26 +156,28 @@ const plain = value => JSON.parse(JSON.stringify(value));
     window.localStorage.setItem('ojjuda-note-composer-settings-v1:alice', '{}');
     window.localStorage.setItem('ojjuda-note-composer-settings-v1:bob', '{"font":"serif"}');
     window.localStorage.setItem('ojjuda-world-v1', '{}');
-    behavior.list = async (folder, { offset }) => ({ data: folder === 'alice' ? offset === 0 ?
-      [...Array.from({ length: 99 }, (_, i) => ({ id: `id${i}`, name: `${i}.jpg` })), { id: null, name: 'nested' }] : [] :
-      [{ id: 'child', name: 'child.jpg' }], error: null });
+    behavior.files = [...Array.from({length:99},(_,i)=>({bucket_id:'media',photo_path:`alice/${i}.jpg`})),
+      {bucket_id:'media',photo_path:'alice/nested/child.jpg'},
+      {bucket_id:'note-card-photos',photo_path:'alice/card.jpg'},
+      {bucket_id:'note-event-photos',photo_path:'alice/event.jpg'}];
     await readyDelete(); await submit();
-    assert.deepEqual(calls.filter(c => c[0] === 'list').map(c => c.slice(1)), [['alice', 0], ['alice', 100], ['alice/nested', 0]]);
+    assert.equal(behavior.files.length,0,'World nested files and both Note buckets are drained');
     const removed = calls.find(c => c[0] === 'remove')[1]; assert.equal(removed.length, 100); assert.ok(removed.includes('alice/nested/child.jpg'));
     const owned = calls.find(c => c[0] === 'owner-client')[1];
     assert.equal(owned.global.headers.Authorization, 'Bearer test-token-alice');
     assert.equal(owned.auth.persistSession, false); assert.equal(owned.auth.autoRefreshToken, false);
-    assert.ok(calls.findIndex(c => c[0] === 'remove') < calls.findIndex(c => c[0] === 'rpc'));
-    assert.deepEqual(calls.filter(c => c[0] === 'rpc'), [['rpc', 'delete_my_account']]);
+    assert.ok(calls.findIndex(c => c[0] === 'remove') < calls.findIndex(c => c[1] === 'delete_my_account'));
+    assert.deepEqual(calls.filter(c => c[0] === 'rpc').map(c=>c[1]),['prepare_my_account_deletion','my_account_deletion_files','my_account_deletion_files','my_account_deletion_files','delete_my_account']);
+    assert.ok(calls.filter(c=>c[0]==='rpc').every(c=>c[2].p_expected_user_id==='alice'),'every RPC names the confirmed owner');
     assert.equal(window.localStorage.getItem('ojjuda-note-composer-settings-v1:alice'), null);
     assert.equal(window.localStorage.getItem('ojjuda-note-composer-settings-v1:bob'), '{"font":"serif"}');
     assert.equal(window.localStorage.getItem('ojjuda-world-v1'), null);
     assert.equal(calls.filter(c => c[0] === 'leave').length, 1);
 
-    boot(); behavior.list = async () => ({ data: [{ id: 'photo', name: 'photo.jpg' }], error: null });
+    boot(); behavior.files=[{bucket_id:'media',photo_path:'alice/photo.jpg'}];
     behavior.remove = async () => ({ error: { message: 'storage unavailable' } });
     await readyDelete(); await submit();
-    assert.equal(calls.some(c => c[0] === 'rpc'), false); assert.equal(calls.some(c => c[0] === 'signout'), false);
+    assert.equal(calls.some(c => c[1] === 'delete_my_account'), false); assert.equal(calls.some(c => c[0] === 'signout'), false);
     assert.match(message(), /탈퇴를 마치지 못/); assert.equal(button('탈퇴하기').disabled, false);
 
     boot(); behavior.rpc = async () => ({ error: { message: 'network' } });
@@ -185,10 +187,10 @@ const plain = value => JSON.parse(JSON.stringify(value));
     boot(); behavior.verify = async () => ({ data: { user: { id: 'bob' } }, error: null });
     await readyDelete(); await submit(); assert.equal(calls.some(c => c[0] === 'owner-client'), false);
 
-    boot(); const oldList = defer(); behavior.list = () => oldList.promise;
+    boot(); const oldList = defer(); behavior.inventory = () => oldList.promise;
     await readyDelete(); await submit(); switchTo('bob');
-    oldList.resolve({ data: [{ id: 'old-photo', name: 'old.jpg' }], error: null }); await settle();
-    assert.equal(calls.some(c => ['remove', 'rpc', 'signout', 'leave'].includes(c[0])), false);
+    oldList.resolve([{bucket_id:'media',photo_path:'alice/old.jpg'}]); await settle();
+    assert.equal(calls.some(c => ['remove', 'signout', 'leave'].includes(c[0])||c[1]==='delete_my_account'), false);
     assert.equal(document.getElementById('note-account-email').textContent, 'bob@example.test');
     assert.equal(run('management.hidden'), true);
 

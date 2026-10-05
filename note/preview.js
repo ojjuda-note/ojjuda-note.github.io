@@ -2830,33 +2830,14 @@ async function deleteNoteAccount(userId, run) {
     global: { headers: { Authorization: `Bearer ${deletionSession.access_token}` } },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: `ojjuda-delete-${userId}-${run}` }
   });
-  const media = owner.storage.from('media'), folders = [userId], paths = [];
-  let removing = false;
   try {
-    while (folders.length) {
-      const folder = folders.pop();
-      for (let offset = 0;; offset += 100) {
-        current();
-        const { data: items, error: listError } = await media.list(folder, { limit: 100, offset }); current();
-        if (listError) throw listError;
-        for (const item of items || []) {
-          const path = `${folder}/${item.name}`;
-          if (item.id) paths.push(path); else folders.push(path);
-        }
-        if (!items || items.length < 100) break;
-      }
-    }
-    for (let offset = 0; offset < paths.length; offset += 100) {
-      current(); removing = true;
-      const { error: removeError } = await media.remove(paths.slice(offset, offset + 100)); current();
-      if (removeError) throw removeError;
-    }
-    current();
-    const { error: deleteError } = await owner.rpc('delete_my_account');
-    if (deleteError) throw deleteError;
+    if (!window.OjjudaAccountDeletion) throw new Error('deletion_module_unavailable');
+    await window.OjjudaAccountDeletion.run({ client: owner, userId,
+      isCurrent: () => run === managementRun && session?.user?.id === userId });
   } catch (error) {
-    if (removing && error?.message !== 'account_changed') throw { userMessage: '탈퇴를 마치지 못했어요. 일부 사진이 삭제됐을 수 있으니 다시 시도해 주세요.' };
-    throw error;
+    if (error?.message === 'account_changed') throw error;
+    throw { userMessage: window.OjjudaAccountDeletion?.message(error)
+      || '탈퇴 기능을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.' };
   }
   try { localStorage.removeItem(`ojjuda-note-composer-settings-v1:${userId}`); } catch {}
   composerSettingsFallback.delete(userId);
