@@ -112,7 +112,7 @@
   }
   for(const key of ['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','±','0','.','='])keys.append(btn(key,()=>press(key)));calculator.append(display,keys);
   function loadLayout(){
-   layoutModule ||= import('/world-life-layout.js?v=20261005-resize1');
+   layoutModule ||= import('/world-life-layout.js?v=20261005-hold1');
    layoutModule.then(module=>{if(active())closeLayout=module.mountLayout(host,{owner,authorized:active});}).catch(()=>{
     layoutModule=null;if(!active())return;
     const retry=btn('배치 기능 다시 불러오기',()=>{retry.remove();loadLayout();});retry.className='life-layout-retry';retry.dataset.worldSwipe='off';host.append(retry);

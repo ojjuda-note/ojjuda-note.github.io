@@ -19,7 +19,7 @@ function normalize(value) {
 const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
 const button=(text,label,fn)=>{const b=node('button',text);b.type='button';if(label)b.setAttribute('aria-label',label);b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();fn();});return b;};
 export function mountLayout(host,{owner,authorized=()=>true}={}) {
- let alive=true,editing=false,drag=null,raf=0,sizing=null;
+ let alive=true,editing=false,drag=null,hold=null,raf=0,sizing=null;
  const key='ojjuda-life-layout-v1:'+(owner||'guest');
  let config;try{config=normalize(JSON.parse(localStorage.getItem(key)||'null'));}catch{config=defaults();}
  let saved=structuredClone(config);
@@ -28,7 +28,7 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
  const active=()=>alive&&host.isConnected&&authorized();
  const cleanup=[];
  if(!document.querySelector('link[data-life-layout-style]')){
-  const style=node('link');style.rel='stylesheet';style.href='/world-life-layout.css?v=20261005-resize1';style.dataset.lifeLayoutStyle='';document.head.append(style);
+  const style=node('link');style.rel='stylesheet';style.href='/world-life-layout.css?v=20261005-hold1';style.dataset.lifeLayoutStyle='';document.head.append(style);
  }
  host.classList.add('life-layout');
  const toolbar=node('div','','life-layout-toolbar');toolbar.dataset.worldSwipe='off';
@@ -36,10 +36,10 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
  const status=node('p','','life-layout-status');status.setAttribute('role','status');
  const report=text=>{status.textContent=text;};
  function persist(){try{localStorage.setItem(key,JSON.stringify(config));saved=structuredClone(config);return true;}catch{report('배치를 저장하지 못했어요. 기기의 저장 공간이나 브라우저 설정을 확인해 주세요.');return false;}}
- function setMode(mode){if(!active()||drag)return;sizing?.cancel();config.mode=mode;if(!editing&&!persist()){config=structuredClone(saved);render();return;}render();report(mode==='widgets'?'오른쪽·아래쪽 테두리나 모서리를 끌어 크기를 조절하세요.':'목록으로 바꿨어요.');}
+ function setMode(mode){if(!active()||drag)return;cancelHold();sizing?.cancel();config.mode=mode;if(!editing&&!persist()){config=structuredClone(saved);render();return;}render();report(mode==='widgets'?'위젯을 길게 눌러 옮기고, ×로 숨기세요. 테두리를 끌면 크기가 바뀌어요.':'목록으로 바꿨어요.');}
  const list=button('목록',null,()=>setMode('list')),widgets=button('위젯',null,()=>setMode('widgets'));modes.append(list,widgets);
  const edit=button('배치 편집',null,()=>{if(!active())return;saved=structuredClone(config);editing=true;render();report('손잡이로 위치를 옮기고, 테두리로 크기를 조절하세요. 끝나면 배치 저장을 눌러 주세요.');});
- toolbar.append(modes,edit);
+ const restore=button('숨긴 위젯',null,()=>{edit.click();picker.querySelector('button:not(:disabled)')?.focus();});restore.hidden=true;toolbar.append(modes,restore,edit);
  const editor=node('div','','life-layout-editor');editor.dataset.worldSwipe='off';editor.hidden=true;
  const tip=node('p','원하는 순서로 옮기고, 필요한 도구만 꺼내 놓으세요.','life-layout-tip');
  const picker=node('div','','life-layout-picker');picker.setAttribute('role','group');picker.setAttribute('aria-label','위젯 추가');
@@ -65,17 +65,33 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
   const tools=node('span','','life-layout-item-tools');tools.dataset.worldSwipe='off';tools.hidden=true;
   const handle=button('⠿',title+' 끌어서 이동',()=>{});handle.className='life-layout-handle';handle.title='끌어서 위치 바꾸기';
   const up=button('↑',title+' 위로 이동',()=>move(id,-1)),down=button('↓',title+' 아래로 이동',()=>move(id,1));
-  const hide=button('×',title+' 숨기기',()=>{if(!active()||!editing)return;config.hidden=[...new Set([...config.hidden,id])];render();report(title+'을 숨겼어요. 위젯 추가에서 다시 꺼낼 수 있어요.');addButtons.get(id).focus();});
+  const hide=button('×',title+' 숨기기',()=>{if(!active()||(!editing&&config.mode!=='widgets'))return;cancelHold();finishDrag(false);const before=structuredClone(config);config.hidden=[...new Set([...config.hidden,id])];if(!editing&&!persist()){config=before;render();return;}render();report(title+'을 숨겼어요. 숨긴 위젯에서 다시 꺼낼 수 있어요.');(editing?addButtons.get(id):restore).focus();});hide.className='life-layout-hide';hide.title='위젯 숨기기';
   tools.append(handle,up,down,hide);summary.append(tools);controls.set(id,{tools,up,down,handle});
   const click=event=>{if(event.target.closest('button,select,input,option'))return;if(config.mode==='widgets'||editing)event.preventDefault();};summary.addEventListener('click',click);cleanup.push(()=>summary.removeEventListener('click',click));
   const toggled=()=>{if(config.mode==='list'&&!config.hidden.includes(id))listOpen.set(id,box.open);};box.addEventListener('toggle',toggled);cleanup.push(()=>box.removeEventListener('toggle',toggled));
   const start=event=>{
    if(!active()||!editing||event.button!==0)return;
-   event.preventDefault();event.stopPropagation();
-   drag={id,handle,pointer:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,moved:false,target:null,after:false};
-   handle.setPointerCapture(event.pointerId);box.classList.add('life-layout-dragging');raf=requestAnimationFrame(scrollDrag);
+   event.preventDefault();event.stopPropagation();beginDrag(id,handle,event);
   };
   handle.addEventListener('pointerdown',start);cleanup.push(()=>handle.removeEventListener('pointerdown',start));
+  const press=event=>{
+   if(!active()||config.mode!=='widgets'||drag||hold||event.button!==0||!event.isPrimary)return;
+   if(event.target.closest('button,a,input,select,textarea,[contenteditable],.life-tool-body'))return;
+   const point={pointerId:event.pointerId,clientX:event.clientX,clientY:event.clientY};
+   hold={...point,id,timer:setTimeout(()=>{
+    if(!hold||!active())return;hold=null;beginDrag(id,box,point);report('옮길 위치로 끌어 주세요. 놓으면 저장돼요.');
+   },450)};
+  };
+  const context=event=>{if(config.mode==='widgets'&&!event.target.closest('.life-tool-body,button,a,input,select,textarea'))event.preventDefault();};
+  box.addEventListener('pointerdown',press);box.addEventListener('contextmenu',context);
+  cleanup.push(()=>{box.removeEventListener('pointerdown',press);box.removeEventListener('contextmenu',context);});
+ }
+ function cancelHold(){if(hold){clearTimeout(hold.timer);hold=null;}}
+ function beginDrag(id,handle,event){
+  cancelHold();sizing?.cancel();
+  drag={id,handle,pointer:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,moved:false,target:null,after:false};
+  handle.setPointerCapture(event.pointerId);boxes.get(id).classList.add('life-layout-dragging');host.classList.add('life-layout-moving');raf=requestAnimationFrame(scrollDrag);
+
  }
  function clearTargets(){for(const box of boxes.values())if(box){delete box.dataset.layoutDrop;box.classList.remove('life-layout-dragging');}}
  function targetDrag(){
@@ -94,25 +110,25 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
  function finishDrag(apply){
   if(!drag)return;const current=drag;drag=null;cancelAnimationFrame(raf);
   if(current.handle.hasPointerCapture(current.pointer))current.handle.releasePointerCapture(current.pointer);
-  clearTargets();
+  clearTargets();host.classList.remove('life-layout-moving');
   if(apply&&current.moved&&current.target&&active()){
-   config.order=config.order.filter(x=>x!==current.id);const i=config.order.indexOf(current.target)+(current.after?1:0);config.order.splice(i,0,current.id);render();report('위치를 옮겼어요. 배치 저장을 누르면 유지돼요.');
+   const before=structuredClone(config);config.order=config.order.filter(x=>x!==current.id);const i=config.order.indexOf(current.target)+(current.after?1:0);config.order.splice(i,0,current.id);if(!editing&&!persist()){config=before;render();return;}render();report(editing?'위치를 옮겼어요. 배치 저장을 누르면 유지돼요.':'위치를 옮겨 저장했어요.');
   }
  }
- const pointerMove=event=>{if(!drag||event.pointerId!==drag.pointer)return;event.preventDefault();drag.x=event.clientX;drag.y=event.clientY;if(Math.hypot(drag.x-drag.startX,drag.y-drag.startY)>7)drag.moved=true;targetDrag();};
- const pointerUp=event=>{if(drag&&event.pointerId===drag.pointer)finishDrag(true);};
- const pointerCancel=event=>{if(drag&&event.pointerId===drag.pointer)finishDrag(false);};
- const escape=event=>{if(event.key==='Escape'&&drag){event.preventDefault();finishDrag(false);report('이동을 취소했어요.');}};
+ const pointerMove=event=>{if(hold&&event.pointerId===hold.pointerId&&Math.hypot(event.clientX-hold.clientX,event.clientY-hold.clientY)>8)cancelHold();if(!drag||event.pointerId!==drag.pointer)return;event.preventDefault();drag.x=event.clientX;drag.y=event.clientY;if(Math.hypot(drag.x-drag.startX,drag.y-drag.startY)>7)drag.moved=true;targetDrag();};
+ const pointerUp=event=>{if(hold&&event.pointerId===hold.pointerId)cancelHold();if(drag&&event.pointerId===drag.pointer)finishDrag(true);};
+ const pointerCancel=event=>{if(hold&&event.pointerId===hold.pointerId)cancelHold();if(drag&&event.pointerId===drag.pointer)finishDrag(false);};
+ const escape=event=>{if(event.key==='Escape'&&(drag||hold)){event.preventDefault();cancelHold();finishDrag(false);report('이동을 취소했어요.');}};
  document.addEventListener('pointermove',pointerMove,{passive:false});document.addEventListener('pointerup',pointerUp);document.addEventListener('pointercancel',pointerCancel);document.addEventListener('keydown',escape);
  function render(){
   host.dataset.lifeView=config.mode;host.classList.toggle('life-layout-editing',editing);
-  list.setAttribute('aria-pressed',String(config.mode==='list'));widgets.setAttribute('aria-pressed',String(config.mode==='widgets'));editor.hidden=!editing;edit.hidden=editing;
+  list.setAttribute('aria-pressed',String(config.mode==='list'));widgets.setAttribute('aria-pressed',String(config.mode==='widgets'));editor.hidden=!editing;edit.hidden=editing;restore.hidden=editing||!config.hidden.length;
   const visible=config.order.filter(id=>!config.hidden.includes(id));empty.hidden=!!visible.length;
   config.order.forEach((id,index)=>{
    const box=boxes.get(id),c=controls.get(id);if(!box||!c)return;
-   const hidden=config.hidden.includes(id);box.hidden=hidden;box.style.order=String(index);
+   const hidden=config.hidden.includes(id);box.hidden=hidden;if(config.mode==='widgets')box.dataset.worldSwipe='off';else delete box.dataset.worldSwipe;box.style.order=String(index);
    box.open=!hidden&&(config.mode==='widgets'||!!listOpen.get(id));
-   c.tools.hidden=!editing;c.up.disabled=visible[0]===id;c.down.disabled=visible.at(-1)===id;
+   c.tools.hidden=!editing&&config.mode!=='widgets';c.handle.hidden=!editing;c.up.hidden=!editing;c.down.hidden=!editing;c.up.disabled=visible[0]===id;c.down.disabled=visible.at(-1)===id;
    const add=addButtons.get(id);add.disabled=!hidden;add.textContent=(hidden?'+ ':'✓ ')+catalog.find(x=>x[0]===id)[1];
   });
   sizing?.refresh();
@@ -122,12 +138,12 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
   if(!editing&&!persist()){config=before;render();return;}
   render();report(editing?'크기를 바꿨어요. 배치 저장을 눌러 주세요.':'위젯 크기를 저장했어요.');
  }});
- render();if(config.mode==='widgets')report('오른쪽·아래쪽 테두리나 모서리를 끌어 크기를 조절하세요.');
+ render();if(config.mode==='widgets')report('위젯을 길게 눌러 옮기고, ×로 숨기세요. 테두리를 끌면 크기가 바뀌어요.');
  return()=>{
-  alive=false;sizing?.destroy();finishDrag(false);cleanup.forEach(fn=>fn());
+  alive=false;cancelHold();sizing?.destroy();finishDrag(false);cleanup.forEach(fn=>fn());
   document.removeEventListener('pointermove',pointerMove);document.removeEventListener('pointerup',pointerUp);document.removeEventListener('pointercancel',pointerCancel);document.removeEventListener('keydown',escape);
   host.classList.remove('life-layout','life-layout-editing');delete host.dataset.lifeView;
-  for(const box of boxes.values())if(box){box.hidden=false;box.style.removeProperty('order');box.style.removeProperty('grid-column');box.classList.remove('life-widget-wide');}
+  for(const box of boxes.values())if(box){box.hidden=false;delete box.dataset.worldSwipe;box.style.removeProperty('order');box.style.removeProperty('grid-column');box.classList.remove('life-widget-wide');}
   controls.forEach(c=>c.tools.remove());[toolbar,editor,status,empty].forEach(e=>e.remove());
  };
 }
