@@ -48,7 +48,7 @@
 <link rel="preload" as="image" href="/house-test/assets/entry-house-v1.webp">
 <link rel="preload" as="image" href="/house-test/assets/entry-jjuda-back-v1.webp">
 <link rel="stylesheet" href="/world-board.css?v=20261004-compact1">
-<script src="/world-board.js?v=20261005-community1"></script>
+<script src="/world-board.js?v=20261005-gold1"></script>
 <link rel="stylesheet" href="/world-park-notes.css?v=20261004-design1">
 <script src="/world-park-notes.js?v=20261004-media-caption1"></script>
 <link rel="stylesheet" href="/screw-games.css?v=20261004-design1">
@@ -937,7 +937,7 @@ function worldRankGames(){return {
  carom4:{name:'당구 · 4구',unit:'점',rankKey:null},carom3:{name:'당구 · 3쿠션',unit:'점',rankKey:null},pool8:{name:'당구 · 포켓볼',unit:'점',rankKey:null},
  screw_box:{name:'나사풀기 · 박스형',unit:'점',rankKey:null},screw_flat:{name:'나사풀기 · 평면형',unit:'점',rankKey:null},spot:_r.spot,
  mole:_r.mole,runner:_r.runner,stacker:_r.stacker,breakout:_r.breakout,janggi:{name:'장기',unit:'점',rankKey:null},chess:{name:'체스',unit:'점',rankKey:null},
- ...(window.OjjudaMatgoAccess?.visible()?{matgo:{name:'맞고',unit:'점',rankKey:null}}:{})
+ ...(window.OjjudaMatgoAccess?.visible()?{matgo:{name:'맞고',unit:'골드',rankingBasis:'current_gold',rankKey:null}}:{})
 };}
 function openWorldBoardGame(id){
  if(!Object.hasOwn(worldRankGames(),id))return;
