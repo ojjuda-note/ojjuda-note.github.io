@@ -92,7 +92,7 @@
       },'board-game-open');
       play.setAttribute('aria-label',game.name+' 게임 열기');labelGame(play);name.replaceChildren(play);
      }
-     const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{nick,score});
+     const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{row,nick,score,hasScore:false});
     }
    }
    let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false;
@@ -129,8 +129,17 @@
    });
    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
    rankDispose=()=>{clearTimeout(timer);controller.abort();observer.disconnect();};paint();schedule();
-   return entries.map(async([id,game])=>{
-    const {nick,score}=targets.get(id);
+   let initialLoading=true;
+   function orderByRecords(){
+    if(!active()||token!==request)return;
+    const ordered=[...entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
+    pages.forEach((page,i)=>{
+     const body=page.querySelector('tbody'),rows=ordered.slice(i*3,i*3+3).map(([id])=>targets.get(id).row);
+     if(rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
+    });
+   }
+   const loads=entries.map(async([id,game])=>{
+    const target=targets.get(id),{nick,score}=target;
     async function load(){
      nick.textContent='불러오는 중…';
      try{
@@ -138,16 +147,19 @@
       if(!active()||token!==request)return;
       const valid=row=>row&&row.score!==null&&row.score!==''&&Number.isFinite(Number(row.score));
       const top=Array.isArray(ranking)?ranking[0]:null;
-      if(valid(top)){
+      target.hasScore=!!valid(top);
+      if(target.hasScore){
        nick.textContent=top.nick||'익명';nick.title=(game.rankingBasis==='current_gold'?'현재 보유 골드 1등 · ':game.rankingBasis==='current_streak'?'현재 연승 1등 · ':'오늘의 1등 · ')+(top.nick||'익명');score.textContent=Number(top.score).toLocaleString('ko-KR')+game.unit;
       }else{
        score.textContent='—';nick.removeAttribute('title');
        nick.replaceChildren(el('span',game.rankingBasis==='current_gold'?'보유 골드 기록 없음':game.rankingBasis==='current_streak'?'연승 기록 없음':'오늘 기록 없음','board-leader-empty'));
       }
      }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));}
+     finally{if(!initialLoading)orderByRecords();}
     }
     await load();
    });
+   return [Promise.all(loads).then(()=>{initialLoading=false;orderByRecords();})];
   }
   async function home(){
    rankDispose();const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
