@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  try { if(parent!==window&&parent.OjjudaWorldPullRefresh)return; } catch {}
 
   const feed = document.getElementById('feed');
   if (!feed) return;

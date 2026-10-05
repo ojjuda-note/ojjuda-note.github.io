@@ -1,0 +1,95 @@
+/* Reciprocal navigation follows World's .note-link and My-screen layout. */
+.world-link,
+.side .world-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 0;
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  color: #e0457e;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+.world-link:hover,
+.side .world-link:hover { background: #f0679a12; border-color: var(--line); }
+.world-link span,
+.side .world-link span { margin-left: 0; color: inherit; }
+.world-link .nl-logo,
+.side .world-link .nl-logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
+  background: none;
+}
+.world-link .nl-logo img { display: block; width: 26px; height: 26px; object-fit: contain; }
+.world-link .nl-arrow,
+.side .world-link .nl-arrow { margin-left: auto; font-size: 14px; }
+.world-link.my { margin: 0; border: 0; border-radius: 14px; background: none; padding: 12px 14px; }
+.world-link.my:hover { background: #f0679a12; }
+.note-my-screen > h1 { margin: 4px 0 16px; font-family: var(--font-d); font-size: 26px; font-weight: 400; letter-spacing: -.01em; line-height: 1.3; }
+.note-my-link-card { max-width: 680px; margin-bottom: 14px; padding: 4px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+/* Match World's My-screen .set.admin-entry and .btn.pri exactly. */
+.note-my-screen .admin-entry { max-width: 680px; margin-bottom: 14px; padding: 18px; border: 1px solid var(--accent); border-radius: 20px; background: var(--surface); }
+.note-my-screen .admin-entry[hidden] { display: none; }
+.note-my-screen .admin-entry h3 { margin: 0 0 12px; font-family: var(--font-d); font-weight: 400; font-size: 19px; }
+.note-my-screen .admin-entry p { margin: 0 0 12px; }
+.note-my-screen .admin-entry .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; padding: 0 16px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent); color: var(--on-accent, #fff); font-weight: 500; font-size: 14px; white-space: nowrap; }
+.note-my-screen .admin-entry .btn:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.note-my-open .main > :not(.note-my-screen),
+.note-my-open .write-fab { display: none !important; }
+body:not(.note-my-open) .note-my-screen { display: none; }
+.note-dev-badge { margin-left: 1px; border: 0; border-radius: 999px; background: var(--accent-soft); color: var(--ink); font: 700 10.5px/1.2 var(--font-b); padding: 3px 7px; cursor: pointer; transform: translateY(-1px); }
+.note-dev-badge:hover { background: var(--accent); color: #fff; }
+.note-coinpill { display: flex; align-items: center; gap: 6px; flex: none; height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 500; text-decoration: none; font-variant-numeric: tabular-nums; }
+.note-cz { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 4px; background: #ffd37a; transform: rotate(45deg); }
+.note-cz i { color: #6b4a00; font-size: 9px; font-style: normal; font-weight: 700; line-height: 1; transform: rotate(-45deg); }
+.note-account-menu .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-radius: 14px; background: none; color: var(--ink-2); text-align: left; font-size: 15px; }
+.note-account-menu .nav-button:hover { background: var(--surface-2); }
+.note-account-menu .nav-button.on { background: var(--accent-soft); color: var(--ink); font-weight: 500; }
+.note-account-menu .nav-button.on svg { color: var(--accent); }
+.note-menu-section > h2 { font: 500 11px/1.6 var(--font-b); }
+.note-account-menu .side-tools .note-tools .button { min-height: 44px; padding: 10px 12px; border-radius: 14px; color: var(--ink-2); font-size: 15px; font-weight: 400; }
+#note-my-tools-slot { max-width: 680px; }
+#note-my-tools-slot .note-menu-section { margin: 0 0 14px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+#note-my-tools-slot .note-menu-section > h2 { margin: 0 0 10px; padding: 0 !important; border: 0; color: var(--ink); font-family: var(--font-d); font-size: 18px; font-weight: 400; }
+#note-my-tools-slot .side-caption { margin: 14px 4px; color: var(--ink-2); font-size: 12px; }
+[data-note-my] { position: relative; }
+.note-my-badge { min-width: 17px; padding: 1px 5px; border-radius: 100px; background: var(--accent); color: #fff; font: 700 10px/1.4 var(--font-b); text-align: center; }
+.side .note-my-badge { margin-left: auto; }
+.bottomnav .note-my-badge { position: absolute; top: 0; left: calc(50% + 7px); }
+@media (max-width: 899px) {
+  /* World has no mobile drawer: account actions live in My. */
+  .side { display: none !important; }
+  .mobile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: auto; min-height: 48px; padding: 12px 16px 2px; border: 0; background: transparent; }
+  .mobile-top .note-brand-row { justify-content: flex-start; gap: 7px; }
+  .main { padding: 12px 14px 110px; }
+  .bottomnav { z-index: 20; padding: 6px 4px calc(6px + env(safe-area-inset-bottom,0px)); background: color-mix(in srgb,var(--surface) 90%,transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .bottomnav button { gap: 1px; padding: 5px 0; font-size: 11px; }
+  .bottomnav button.on { font-weight: 500; }
+  .bottomnav svg { width: 22px; height: 22px; }
+}
+@media (min-width: 900px) {
+  .side { padding: 26px 18px 20px; }
+  .side .note-side-header { margin-bottom: 18px; }
+  .side .nav-button { padding: 10px 12px; border-radius: 14px; color: var(--ink-2); font-size: 15px; }
+  .side .nav-button.on { color: var(--ink); font-weight: 500; }
+  .note-my-open .main { padding: 28px 32px 48px; }
+}
+@media (max-width: 380px) {
+  .mobile-top { gap: 6px; padding-right: 12px; padding-left: 12px; }
+  .mobile-top .note-brand-row { gap: 5px; }
+  .note-coinpill { padding: 0 9px; font-size: 12px; }
+}

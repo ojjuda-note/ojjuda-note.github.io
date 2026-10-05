@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko" data-viewport-page="matgo-online">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover, interactive-widget=resizes-content">
+<title>오쭈다 맞고 · 회원 대결</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./matgo-online.css?v=20261005-rooms1">
+<script src="../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="../matgo-access.js?v=20261005-member-refresh1"></script>
+<link rel="stylesheet" href="./matgo-viewport.css?v=20261003-exit1">
+<script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
+<link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
+<script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
+</head>
+<body>
+<div id="gate" class="gate"><h1>오쭈다 맞고</h1><p id="gate-message">입장 정보를 확인하고 있어요.</p><button id="retry" class="btn" hidden>다시 확인</button></div>
+<div id="app" hidden>
+  <header class="top"><h1><em>맞고</em></h1><span class="my-score" id="my-score" aria-label="내 점수"></span><button id="money" class="pill money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary id="menu" class="pill" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><p class="pending" id="goldPending"></p><button id="rules" class="pill">규칙</button><button id="gukjin" class="pill" hidden></button></div></details><button id="exit" class="pill">나가기</button></header>
+  <p id="room-label" class="room-label" hidden></p>
+  <main id="content"></main>
+  <p id="connection" role="status" hidden></p>
+</div>
+<div id="toast" role="status" hidden></div>
+<div id="event" class="event" aria-live="polite" hidden></div>
+<script type="module" src="./matgo-online.mjs?v=20261005-chatrooms2"></script>
+</body>
+</html>

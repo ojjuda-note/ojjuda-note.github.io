@@ -1,0 +1,33 @@
+.ojjuda-operations{color:var(--ink,#23264a);min-width:0}
+.ojjuda-operations .ops-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.ojjuda-operations h3{font-size:18px;margin:0;font-weight:700}
+.ojjuda-operations .ops-help,.ojjuda-operations .ops-summary{color:var(--ink-2,#626894);font-size:13px;line-height:1.65;margin:8px 0 14px;overflow-wrap:anywhere}
+.ojjuda-operations .ops-controls{display:grid;gap:8px;margin:14px 0}
+.ojjuda-operations .ops-filters,.ojjuda-operations .ops-actions,.ojjuda-operations .ops-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ojjuda-operations .ops-filters{margin-bottom:8px}
+.ojjuda-operations .ops-list{display:grid;gap:12px}
+.ojjuda-operations .ops-card{background:var(--surface,#fff);border:1px solid var(--line,#daddf0);border-radius:16px;padding:16px;margin:0;min-width:0}
+.ojjuda-operations .ops-meta{font-size:12px;color:var(--ink-2,#626894);gap:6px;line-height:1.6}
+.ojjuda-operations .ops-badge{display:inline-flex;align-items:center;background:var(--surface-2,#f5f6fc);border:1px solid var(--line,#daddf0);padding:2px 8px;border-radius:999px;color:var(--ink,#23264a)}
+.ojjuda-operations .ops-badge.world,.ojjuda-operations .ops-badge.note{font-weight:700}
+.ojjuda-operations .ops-people{font-size:13px;margin:12px 0 8px}
+.ojjuda-operations .ops-content{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;font-size:14px;margin:12px 0}
+.ojjuda-operations blockquote.ops-content{padding:12px 14px;background:var(--surface-2,#f5f6fc);border-radius:10px;border-left:3px solid var(--line,#daddf0)}
+.ojjuda-operations .ops-reason{font-size:13px;line-height:1.6;overflow-wrap:anywhere;margin:10px 0}
+.ojjuda-operations .ops-actions{margin-top:14px}
+.ojjuda-operations .ops-empty{padding:24px 16px;text-align:center;color:var(--ink-2,#626894);background:var(--surface-2,#f5f6fc);border-radius:14px;line-height:1.7}
+.ojjuda-operations .ops-warning{padding:14px;background:var(--surface-2,#f5f6fc);border:1px solid var(--line,#daddf0);border-left:3px solid var(--accent,#f0679a);border-radius:12px;margin:12px 0;font-size:13px;line-height:1.6}
+.ojjuda-operations .ops-warning p{margin:0 0 8px}
+.ojjuda-operations .ops-message{font-size:13px;line-height:1.7;min-height:1.7em;margin:12px 0}
+.ojjuda-operations .ops-section+.ops-section{border-top:1px solid var(--line,#daddf0);margin-top:28px;padding-top:24px}
+.ojjuda-operations .ops-device summary{font-size:12px;color:var(--ink-2,#626894);cursor:pointer}
+.ojjuda-operations .ops-feedback-ai{margin-top:14px;padding:12px;background:var(--surface-2,#f5f6fc);border:1px solid var(--line,#daddf0);border-radius:12px;min-width:0}
+.ojjuda-operations .ops-feedback-ai .ops-content{font-size:13px;margin:8px 0}
+.ojjuda-operations .ops-ai-evidence{display:inline-flex;align-items:center;min-height:44px;font-size:13px;line-height:1.6;color:var(--ink,#23264a);text-decoration:underline;text-underline-offset:3px}
+.ojjuda-operations .ops-ai-updated{display:block;color:var(--ink-2,#626894);font-size:12px;line-height:1.6;margin-top:6px;overflow-wrap:anywhere}
+.ojjuda-operations .btn,.ojjuda-operations .button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 13px;font:inherit;font-size:13px;color:var(--ink,#23264a);background:var(--surface,#fff);border:1px solid var(--line,#daddf0);border-radius:12px;cursor:pointer;line-height:1.4}
+.ojjuda-operations .btn.pri,.ojjuda-operations .button.primary{background:var(--accent,#f0679a);color:var(--on-accent,#fff);border-color:var(--accent,#f0679a)}
+.ojjuda-operations .btn.danger{color:#b3425b}
+.ojjuda-operations button:disabled{cursor:wait;opacity:.55}
+.ojjuda-operations button:focus-visible,.ojjuda-operations summary:focus-visible,.ojjuda-operations .ops-ai-evidence:focus-visible{outline:3px solid var(--accent,#f0679a);outline-offset:3px}
+@media(max-width:600px){.ojjuda-operations .ops-card{padding:13px}.ojjuda-operations .ops-filters{gap:6px}.ojjuda-operations .ops-filters .btn{padding:8px 11px}.ojjuda-operations .ops-actions .btn{min-height:44px}}

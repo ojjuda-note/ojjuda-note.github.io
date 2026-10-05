@@ -18,14 +18,18 @@ import sys
 import tarfile
 import tempfile
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import boto3
 from botocore.client import Config
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
+
+NAVER_ENDPOINT = "https://kr.object.ncloudstorage.com"
+NAVER_REGION = "kr-standard"
 
 NEEDED = (
-    "SUPABASE_PROJECT_REF", "SUPABASE_REGION", "SUPABASE_DB_URL",
+    "SUPABASE_PROJECT_REF", "SUPABASE_REGION",
     "SUPABASE_S3_ACCESS_KEY", "SUPABASE_S3_SECRET_KEY",
     "BACKUP_S3_ENDPOINT", "BACKUP_S3_REGION", "BACKUP_S3_BUCKET",
     "BACKUP_S3_ACCESS_KEY", "BACKUP_S3_SECRET_KEY",
@@ -38,12 +42,26 @@ def required_config():
     if missing:
         raise RuntimeError("Missing backup configuration: " + ", ".join(missing))
     cfg = {key: os.environ[key].strip() for key in NEEDED}
-    db = urlparse(cfg["SUPABASE_DB_URL"])
-    if db.scheme not in ("postgres", "postgresql") or not db.hostname or not db.password:
-        raise RuntimeError("SUPABASE_DB_URL must be a complete Postgres connection URL")
     if not re.fullmatch(r"[a-z0-9]{20}", cfg["SUPABASE_PROJECT_REF"]):
         raise RuntimeError("Invalid Supabase project reference")
     ref = cfg["SUPABASE_PROJECT_REF"]
+    cfg["SUPABASE_DB_URL"] = os.environ.get("SUPABASE_DB_URL", "").strip()
+    if not cfg["SUPABASE_DB_URL"]:
+        # Preserve the password exactly; reserved characters must be URL-encoded.
+        password = os.environ.get("SUPABASE_DB_PASSWORD", "")
+        if not password:
+            raise RuntimeError("Missing backup configuration: SUPABASE_DB_PASSWORD or SUPABASE_DB_URL")
+        host = os.environ.get("SUPABASE_DB_POOLER_HOST", "").strip()
+        expected_host = r"aws-\d+-" + re.escape(cfg["SUPABASE_REGION"]) + r"\.pooler\.supabase\.com"
+        if not re.fullmatch(expected_host, host):
+            raise RuntimeError("SUPABASE_DB_POOLER_HOST must be the project's regional Supabase session pooler")
+        # The host is copied from Dashboard > Connect, never inferred from region.
+        cfg["SUPABASE_DB_URL"] = (
+            f"postgresql://postgres.{ref}:{quote(password, safe='')}@{host}:5432/postgres?sslmode=require"
+        )
+    db = urlparse(cfg["SUPABASE_DB_URL"])
+    if db.scheme not in ("postgres", "postgresql") or not db.hostname or not db.password:
+        raise RuntimeError("SUPABASE_DB_URL must be a complete Postgres connection URL")
     direct = db.hostname == f"db.{ref}.supabase.co" and db.username == "postgres"
     pooler = db.hostname.endswith(".pooler.supabase.com") and db.username == f"postgres.{ref}"
     if not (direct or pooler):
@@ -55,6 +73,9 @@ def required_config():
     endpoint = urlparse(cfg["BACKUP_S3_ENDPOINT"])
     if endpoint.scheme != "https" or not endpoint.hostname:
         raise RuntimeError("Offsite S3 endpoint must use HTTPS")
+    if (cfg["BACKUP_S3_ENDPOINT"].rstrip("/") != NAVER_ENDPOINT
+            or cfg["BACKUP_S3_REGION"] != NAVER_REGION):
+        raise RuntimeError("Offsite backup must use NAVER Cloud Object Storage in Korea")
     if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.-]{1,61}[a-zA-Z0-9]", cfg["BACKUP_S3_BUCKET"]):
         raise RuntimeError("Invalid offsite bucket name")
     retention = int(os.environ.get("BACKUP_RETENTION_DAYS", "30"))
@@ -68,21 +89,53 @@ def required_config():
     return cfg
 
 
+def command_failure_reason(stderr):
+    # Return only fixed descriptions. Raw tool diagnostics can contain passwords,
+    # connection URLs or database contents and must never enter public CI logs.
+    message = stderr.decode("utf-8", errors="replace").lower()
+    reasons = (
+        (("password authentication failed", "too many authentication errors",
+          "wrong password"), "database authentication rejected; verify the existing database password"),
+        (("tenant or user not found",), "database pooler tenant or user not found; verify connection settings"),
+        (("could not translate host name", "name or service not known",
+          "temporary failure in name resolution"), "database hostname resolution failed"),
+        (("timeout expired", "connection timed out"), "database connection timed out"),
+        (("network is unreachable", "no route to host", "connection refused"),
+         "database network connection unavailable"),
+        (("certificate verify failed", "ssl certificate verification failed"),
+         "database TLS certificate verification failed"),
+        (("permission denied",), "database permission denied"),
+        (("too many clients", "remaining connection slots", "max client connections"),
+         "database connection limit reached"),
+    )
+    for patterns, reason in reasons:
+        if any(pattern in message for pattern in patterns):
+            return reason
+    return "unclassified command error; check configuration or connectivity"
+
+
 def safe_run(label, args, *, env=None, output=None):
     result = subprocess.run(args, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, check=False)
     if result.returncode:
         # The Supabase CLI can include the DB URL in diagnostic output.
         # Neither arguments nor command output are emitted into CI logs.
-        raise RuntimeError(f"{label} failed (exit {result.returncode}); check credentials/connectivity")
+        reason = command_failure_reason(result.stderr)
+        raise RuntimeError(f"{label} failed (exit {result.returncode}); {reason}")
     if output:
         output.write_bytes(result.stdout)
     return result.stdout
 
 
 def pg_query(label, sql, dest, cfg):
-    env = dict(os.environ, PGDATABASE=cfg["SUPABASE_DB_URL"], PGCONNECT_TIMEOUT="20")
-    safe_run(label, ["psql", "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql],
+    # libpq does not expand a connection URL supplied through PGDATABASE.
+    # Pass explicit connection parameters to psql, with the password only in env.
+    params = conninfo_to_dict(cfg["SUPABASE_DB_URL"])
+    password = params.pop("password")
+    env = dict(os.environ, PGPASSWORD=password, PGCONNECT_TIMEOUT="20", LC_ALL="C")
+    env.pop("PGDATABASE", None)
+    safe_run(label, ["psql", "--dbname", make_conninfo(**params),
+                    "-X", "-w", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql],
              env=env, output=dest)
 
 
@@ -103,6 +156,10 @@ def s3_client(endpoint, region, access, secret):
         "s3", endpoint_url=endpoint, region_name=region,
         aws_access_key_id=access, aws_secret_access_key=secret,
         config=Config(signature_version="s3v4", s3={"addressing_style": "path"},
+                      # Avoid optional AWS streaming checksum trailers on
+                      # S3-compatible endpoints. Full SHA-256 is checked below.
+                      request_checksum_calculation="when_required",
+                      response_checksum_validation="when_required",
                       retries={"max_attempts": 5, "mode": "standard"}),
     )
 
@@ -117,6 +174,28 @@ def source_s3(cfg):
 def destination_s3(cfg):
     return s3_client(cfg["BACKUP_S3_ENDPOINT"], cfg["BACKUP_S3_REGION"],
                      cfg["BACKUP_S3_ACCESS_KEY"], cfg["BACKUP_S3_SECRET_KEY"])
+
+
+def require_private_acl(acl, label):
+    owner = acl.get("Owner", {}).get("ID")
+    grants = acl.get("Grants", [])
+    if not owner or not grants:
+        raise RuntimeError(f"Cannot verify private {label} ACL")
+    for grant in grants:
+        grantee = grant.get("Grantee", {})
+        if (grantee.get("Type") != "CanonicalUser" or grantee.get("ID") != owner
+                or grant.get("Permission") not in
+                {"FULL_CONTROL", "READ", "WRITE", "READ_ACP", "WRITE_ACP"}):
+            raise RuntimeError(f"Offsite {label} is shared; use an owner-only private backup bucket")
+    if not any(grant.get("Permission") == "FULL_CONTROL" for grant in grants):
+        raise RuntimeError(f"Cannot verify private {label} owner permissions")
+
+
+def verify_private_destination(client, cfg, key=None):
+    bucket = cfg["BACKUP_S3_BUCKET"]
+    require_private_acl(client.get_bucket_acl(Bucket=bucket), "bucket")
+    if key is not None:
+        require_private_acl(client.get_object_acl(Bucket=bucket, Key=key), "object")
 
 
 BUCKETS_SQL = "SELECT row_to_json(b)::text FROM storage.buckets b ORDER BY b.id"
@@ -277,10 +356,12 @@ def verify_archive(path):
 
 def upload_and_verify(client, cfg, file, key):
     bucket = cfg["BACKUP_S3_BUCKET"]
+    verify_private_destination(client, cfg)
     sha = digest_file(file)
     client.upload_file(str(file), bucket, key,
-                       ExtraArgs={"Metadata": {"sha256": sha},
+                       ExtraArgs={"ACL": "private", "Metadata": {"sha256": sha},
                                   "ContentType": "application/octet-stream"})
+    verify_private_destination(client, cfg, key)
     response = client.get_object(Bucket=bucket, Key=key)
     hasher = hashlib.sha256()
     try:
@@ -320,6 +401,7 @@ def main():
             raise RuntimeError(f"Required executable unavailable: {command}")
     source, offsite = source_s3(cfg), destination_s3(cfg)
     offsite.head_bucket(Bucket=cfg["BACKUP_S3_BUCKET"])
+    verify_private_destination(offsite, cfg)
     pg_query("Database connection", "SELECT 1", Path(os.devnull), cfg)
     started = dt.datetime.now(dt.timezone.utc)
     kst = started.astimezone(dt.timezone(dt.timedelta(hours=9)))

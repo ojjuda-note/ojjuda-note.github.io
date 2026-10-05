@@ -1,18 +1,18 @@
 (() => {
   'use strict';
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const COPY = Object.freeze({ reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.' });
+  const COPY = Object.freeze({ reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
   const el = (tag, text, cls) => { const item = document.createElement(tag); if (text !== undefined) item.textContent = text; if (cls) item.className = cls; return item; };
   const button = (text, action, cls = 'button') => { const item = el('button', text, cls); item.type = 'button'; item.addEventListener('click', action); return item; };
   let instance;
 
-  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard } = {}) {
+  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
     let notificationUnread = 0, retentionUnread = 0, unread = 0, loading = false, saving = false, loadError = '';
     let countRequest = null, lastRefresh = 0, priorFocus = null, priorOverflow = '', inertState = [];
-    const trigger = button('알림', () => open(), 'button nn-trigger'); trigger.id = 'note-notifications';
+    const trigger = button('알림', () => open(), 'btn nn-trigger'); trigger.id = 'note-notifications';
     const badge = el('span', '', 'nn-badge'); badge.id = 'note-notification-badge'; badge.hidden = true; badge.setAttribute('aria-hidden', 'true'); trigger.append(badge);
     trigger.setAttribute('aria-haspopup', 'dialog'); trigger.setAttribute('aria-controls', 'note-notification-dialog');
     const layer = el('div', undefined, 'nn-backdrop'); layer.id = 'note-notification-backdrop'; layer.hidden = true;
@@ -20,14 +20,36 @@
     const heading = el('header', undefined, 'nn-heading'), title = el('h2', '알림'); title.id = 'note-notification-title';
     const closeButton = button('닫기', close); heading.append(title, closeButton);
     const toolbar = el('div', undefined, 'nn-toolbar'), summary = el('p', '', 'nn-summary');
-    const readAll = button('모두 읽음', () => void markRead(null)); readAll.id = 'note-notifications-read-all'; toolbar.append(summary, readAll);
+    const readAll = button('모두 읽음', () => void markRead(null)); readAll.id = 'note-notifications-read-all';
+    const reload = button('새로고침', () => void loadPage()); const toolbarActions=el('div',undefined,'nn-toolbar-actions'); toolbarActions.append(reload,readAll); toolbar.append(summary,toolbarActions);
     const body = el('div', undefined, 'nn-body'), rows = el('ul', undefined, 'nn-list'); rows.id = 'note-notification-list'; rows.setAttribute('aria-label', '내 알림');
     const footer = el('div', undefined, 'nn-pagination');
     const status = el('p', '', 'nn-status'); status.id = 'note-notification-status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
     body.append(rows, footer); panel.append(heading, toolbar, body, status); layer.append(panel); document.body.append(layer);
-    document.querySelector('.note-tools')?.append(trigger);
+    attach();
 
-    async function rpc(name, args = {}) { const { data, error } = await client.schema('ojjuda_note').rpc(name, args); if (error) throw error; return data; }
+    const appRpcs={list_notifications:'list_app_notifications',notification_unread_count:'app_notification_unread_count',mark_notifications_read:'mark_app_notifications_read'};
+    async function rpc(name, args = {}) { const { data, error } = await (appRpcs[name] ? client.rpc(appRpcs[name],args) : client.schema('ojjuda_note').rpc(name,args)); if (error) throw error; return data; }
+    const validNoticeId=value=>typeof value==='string'&&value.length>0&&value.length<=512;
+    let channel;
+    try { channel=new BroadcastChannel('ojjuda-notifications'); } catch { /* Focus and polling remain available. */ }
+    function syncBadges() {
+      for (const item of document.querySelectorAll('[data-notification-dot]')) item.hidden = unread === 0;
+      for(const item of document.querySelectorAll('[data-notification-badge]')) { item.hidden=!unread;item.textContent=unread>99?'99+':String(unread); }
+      for(const item of document.querySelectorAll('[data-note-my],[data-tab="my"]')) item.setAttribute('aria-label',unread?`메뉴, 읽지 않은 알림 ${unread}개`:'메뉴');
+      for(const item of document.querySelectorAll('[data-notifications-open]')) item.setAttribute('aria-label',unread?`알림, 읽지 않은 알림 ${unread}개`:'알림');
+    }
+    function attach() {
+      const slot=document.querySelector('[data-notifications-slot]');if(slot&&trigger.parentElement!==slot)slot.append(trigger);
+      syncBadges();
+    }
+    function announceRead(run,user) {
+      if(!current(run,user))return;
+      channel?.postMessage({type:'read',user});countRequest=null;lastRefresh=0;
+      if(layer.hidden)void refreshCount(true);
+    }
+    if(channel)channel.onmessage=event=>{if(event.data?.type==='read'&&event.data.user===userNow()){countRequest=null;lastRefresh=0;void refresh({force:true});}};
+    document.addEventListener('click',event=>{if(event.target.closest('[data-notifications-open]')){event.preventDefault();open();}});
     const userNow = () => getUserId() || null;
     const current = (run, user) => run === identityRun && user === identity && user === userNow();
     const currentView = (run, user, view) => current(run, user) && view === viewRun && !layer.hidden;
@@ -41,13 +63,14 @@
       notificationUnread = Math.max(0, Number.isFinite(Number(notifications)) ? Math.floor(Number(notifications)) : 0);
       retentionUnread = Math.max(0, Number.isFinite(Number(retention)) ? Math.floor(Number(retention)) : 0);
       unread = notificationUnread + retentionUnread;
-      toolbar.hidden = !identity;
+      toolbar.hidden = !identity; syncBadges();
       badge.textContent = unread > 99 ? '99+' : String(unread); badge.hidden = unread === 0;
       trigger.setAttribute('aria-label', unread ? `알림, 읽지 않은 알림 ${unread}개` : '알림');
       summary.textContent = unread ? `읽지 않은 알림 ${unread}개` : '새 알림이 없어요.';
       updateControls();
     }
     function updateControls() {
+      reload.disabled=!identity||loading||saving;
       readAll.disabled = !identity || !unread || loading || saving || (!snapshotAt && !retentionItems.some(item => !item.read_at));
       for (const control of rows.querySelectorAll('button')) control.disabled = loading || saving;
       for (const control of footer.querySelectorAll('button')) control.disabled = loading || saving;
@@ -84,20 +107,21 @@
       const text = el('p', retention
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
         : COPY[item.kind], 'nn-copy');
-      const meta = el('div', undefined, 'nn-meta'), state = el('span', item.read_at ? '읽음' : '안 읽음');
+      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.kind==='inquiry_reply'?'문의':item.source==='world'?'미니홈피':'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
-      meta.append(state, time);
+      meta.append(source, state, time);
       if (retention) {
         const due = new Date(item.archive_due_at);
         meta.append(el('span', `공개 종료 ${due.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}`));
         row.append(text, el('p', (item.body || '내용 없는 카드').slice(0, 100), 'nn-retention-preview'));
       } else row.append(text);
       const actions = el('div', undefined, 'nn-actions');
-      const target = item.kind === 'inquiry_reply' ? item.inquiry_id : item.card_id;
-      const action = item.kind === 'inquiry_reply' ? onOpenInquiry : onOpenCard;
-      if (UUID.test(target || '') && typeof action === 'function') {
-        const openButton = button(item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
+      const world=item.source==='world';
+      const target = world ? item.target_id : item.kind === 'inquiry_reply' ? item.inquiry_id : item.card_id;
+      const action = world ? onOpenWorld : item.kind === 'inquiry_reply' ? onOpenInquiry : onOpenCard;
+      if ((world ? validNoticeId(target)&&['guestbook','friends','media'].includes(item.target_type) : UUID.test(target || '')) && typeof action === 'function') {
+        const openButton = button(world ? ({guestbook:'방명록 보기',friends:'친구 보기',media:'사진·댓글 보기'}[item.target_type]||'보기') : item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
       }
       if (retention && typeof onKeepCard === 'function') actions.append(button('10쭈로 영구보관', () => void keepCard(item)));
       if (!item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
@@ -107,12 +131,12 @@
       const focusId = document.activeElement?.closest('[data-notification-id]')?.dataset.notificationId;
       const visible = noticeItems();
       rows.replaceChildren(...visible.map(rowFor));
-      if (!visible.length) showEmpty('아직 받은 알림이 없어요.');
+      if (!visible.length) showEmpty(loadError?'알림을 불러오지 못했어요.':'아직 받은 알림이 없어요.');
       footer.replaceChildren();
       if (hasMore && cursor) { const more = button('알림 더 보기', () => void loadPage(true)); more.id = 'note-notifications-more'; footer.append(more); }
       if (loadError) footer.append(button('다시 시도', () => void loadPage()));
       updateControls();
-      if (focusId) rows.querySelector(`[data-notification-id="${focusId}"] button`)?.focus({ preventScroll: true });
+      if (focusId) [...rows.children].find(row=>row.dataset.notificationId===focusId)?.querySelector('button')?.focus({ preventScroll: true });
       keepFocus();
     }
     async function loadPage(more = false) {
@@ -130,12 +154,12 @@
       let generalOk = false, retentionOk = more;
       if (normal.status === 'fulfilled' && normal.value && Array.isArray(normal.value.items)) {
         const data = normal.value;
-        const incoming = data.items.filter(item => item && UUID.test(item.id || '') && Object.hasOwn(COPY, item.kind) && Number.isFinite(Date.parse(item.created_at)));
+        const incoming = data.items.filter(item => item && validNoticeId(item.id) && Object.hasOwn(COPY, item.kind) && Number.isFinite(Date.parse(item.created_at)));
         const merged = new Map((more ? items : []).map(item => [item.id, item]));
         for (const item of incoming) merged.set(item.id, item);
         items = [...merged.values()];
         if (!more) snapshotAt = Number.isFinite(Date.parse(data.as_of)) ? data.as_of : null;
-        cursor = data.next_cursor && UUID.test(data.next_cursor.id || '') && Number.isFinite(Date.parse(data.next_cursor.created_at)) ? data.next_cursor : null;
+        cursor = data.next_cursor && validNoticeId(data.next_cursor.id) && Number.isFinite(Date.parse(data.next_cursor.created_at)) ? data.next_cursor : null;
         hasMore = Boolean(data.has_more && cursor);
         setUnread(data.unread_count); generalOk = true;
       }
@@ -186,6 +210,7 @@
         p_ids: ids, p_expected_created_at: expected, p_before: ids ? null : snapshotAt }));
       for (const item of pendingRetention) requests.push(rpc('mark_retention_alert_read', { p_id: item.id }));
       const results = await Promise.allSettled(requests);
+      if(results.some(result=>result.status==='fulfilled'))announceRead(run,user);
       if (!currentView(run, user, view)) return;
       saving = false; updateControls();
       const failed = results.some(result => result.status === 'rejected');
@@ -203,42 +228,40 @@
       let failed = false;
       try { await rpc('mark_retention_alert_read', { p_id: item.id }); }
       catch { failed = true; }
+      if(!failed)announceRead(run,user);
       if (!currentView(run, user, view)) return;
       saving = false;
       if (failed) { status.textContent = '읽음 표시를 저장하지 못했어요. 다시 눌러 주세요.'; updateControls(); return; }
       const refreshed = await loadPage();
       if (currentView(run, user, view)) status.textContent = refreshed ? '읽음으로 표시했어요.' : '목록을 다시 불러오지 못했어요.';
     }
-    function markSeenOnNavigate(item) {
+    async function markSeenOnNavigate(item) {
       if (item.read_at) return;
       const run = identityRun, user = identity;
-      const request = item.kind === 'retention'
-        ? rpc('mark_retention_alert_read', { p_id: item.id })
-        : rpc('mark_notifications_read', { p_ids: [item.id], p_expected_created_at: item.created_at, p_before: null });
-      void request.catch(() => { /* Opening the target does not depend on this write. */ }).finally(() => {
-        if (current(run, user)) { countRequest = null; lastRefresh = 0; void refreshCount(true); }
-      });
-    }
-    function navigate(item, run, user, view) {
-      if (!currentView(run, user, view)) return;
-      const target = item.kind === 'inquiry_reply' ? item.inquiry_id : item.card_id;
-      const action = item.kind === 'inquiry_reply' ? onOpenInquiry : onOpenCard;
-      if (!UUID.test(target || '') || typeof action !== 'function') return;
-      close();
-      // The host rechecks the card or inquiry visibility before rendering its contents.
-      action(target);
+      try {
+        if(item.kind==='retention') await rpc('mark_retention_alert_read',{p_id:item.id});
+        else await rpc('mark_notifications_read',{p_ids:[item.id],p_expected_created_at:item.created_at,p_before:null});
+        announceRead(run,user);
+      } catch { /* The destination still checks access; an unsuccessful read stays unread. */ }
     }
     async function openItem(item) {
       if (saving || loading || !noticeItems().some(value => value.id === item.id && value.kind === item.kind)) return;
-      markSeenOnNavigate(item);
-      navigate(item, identityRun, identity, viewRun);
+      const run=identityRun,user=identity,view=viewRun,world=item.source==='world';
+      const target=world?item.target_id:item.kind==='inquiry_reply'?item.inquiry_id:item.card_id;
+      const action=world?onOpenWorld:item.kind==='inquiry_reply'?onOpenInquiry:onOpenCard;
+      if(typeof action!=='function'||!(world?validNoticeId(target)&&['guestbook','friends','media'].includes(item.target_type):UUID.test(target||'')))return;
+      saving=true;updateControls();keepFocus();await markSeenOnNavigate(item);
+      if(!currentView(run,user,view))return;
+      saving=false;close();
+      if(world)action(item.target_type,target);else action(target);
     }
-    function keepCard(item) {
+    async function keepCard(item) {
       if (saving || loading || item.kind !== 'retention' || !retentionItems.some(value => value.id === item.id)
         || typeof onKeepCard !== 'function') return;
-      markSeenOnNavigate(item);
-      const target = item.card_id, kind = item.originalKind;
-      close(); onKeepCard(target, kind);
+      const run=identityRun,user=identity,view=viewRun;
+      saving=true;updateControls();keepFocus();await markSeenOnNavigate(item);
+      if(!currentView(run,user,view))return;
+      saving=false;close();onKeepCard(item.card_id,item.originalKind);
     }
     function open() {
       changeIdentity(userNow());
@@ -280,9 +303,10 @@
       }
     });
     setUnread(0); trigger.setAttribute('aria-expanded', 'false');
-    instance = Object.freeze({ open, close, refresh });
+    instance = Object.freeze({ open, close, refresh, attach, isOpen:()=>!layer.hidden });
+    setInterval(()=>{if(identity&&document.visibilityState==='visible'&&!loading&&!saving)void refreshCount(false);},45000);
     setTimeout(() => void refresh(), 0);
     return instance;
   }
-  window.OjjudaNoteNotifications = Object.freeze({ install });
+  window.OjjudaNotifications = window.OjjudaNoteNotifications = Object.freeze({ install });
 })();

@@ -1,0 +1,27 @@
+.gcard.screw-choice-card{max-width:340px;padding:22px 17px 14px;background:#FCF8F2;color:#494355;border:1px solid #E7DED2;text-align:left;box-shadow:0 12px 40px -24px #695A4D66}
+.screw-choice-kicker{display:block;color:#79624f;font-size:10px;font-weight:700;letter-spacing:.06em}
+.screw-choice-card h3{margin:5px 0 4px;font-size:21px;letter-spacing:-.04em}
+.screw-choice-card .screw-choice-intro{color:#786754;font-size:11.5px;margin-bottom:17px}
+.screw-choices{display:grid;gap:12px}
+.screw-choice{display:grid;grid-template-columns:94px minmax(0,1fr);align-items:center;gap:10px;width:100%;padding:13px 10px;border:1px solid #DACABA;background:#F3E6D8;border-radius:19px;text-align:left;color:#514151;transition:transform .15s,box-shadow .15s}
+.screw-choice-flat{background:#EAF0E8;border-color:#CBD8C8}
+.screw-choice:hover{transform:translateY(-2px);box-shadow:0 7px 14px -10px #51415177}
+.screw-choice:active{transform:scale(.985)}
+.screw-choice:focus-visible{outline:3px solid #9B7892;outline-offset:3px}
+.screw-choice-art svg{display:block;width:100%;height:auto}
+.screw-choice-copy{display:grid;gap:6px;min-width:0}
+.screw-choice-copy strong{font-size:14px;font-weight:700;letter-spacing:-.05em}
+.screw-choice-copy>span{font-size:11.5px;line-height:1.5;color:#756252}
+.screw-choice-copy b{font-size:11px;color:#775239}
+.screw-choice-flat .screw-choice-copy b{color:#4c6a4e}
+.screw-choice-card .screw-choice-foot{margin:14px 0 0;text-align:center;font-size:10px;color:#786754}
+.screw-mode-switch{border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);border-radius:12px;min-height:34px;padding:4px 8px;font-size:11px;white-space:nowrap}
+.gov[data-screw-mode] .ghead{gap:5px}
+.gov[data-screw-mode] .ghead .gt{font-size:14px;white-space:nowrap}
+.gov[data-screw-mode] .ghead .gsc{font-size:12px;white-space:nowrap}
+@media(max-width:359px){.gcard.screw-choice-card{padding:15px 11px 12px}.screw-choice-card h3{font-size:19px}.screw-choice{grid-template-columns:76px minmax(0,1fr);gap:7px;padding:10px 8px}.screw-choice-copy strong{font-size:12px}.screw-choice-copy>span{font-size:11.5px}.screw-choice-card .screw-choice-intro{margin-bottom:12px}}
+@media(prefers-reduced-motion:reduce){.screw-choice{transition:none}}
+
+/* The warm game palette is intentionally light, including inside dark World. */
+.gcard.screw-choice-card{color-scheme:light}
+@media(prefers-reduced-motion:reduce){.screw-choice:hover,.screw-choice:active{transform:none}}

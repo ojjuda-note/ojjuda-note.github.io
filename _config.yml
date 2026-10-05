@@ -1,0 +1,10 @@
+# Runtime assets stay public; development and reproducible QA output do not.
+exclude:
+  - tests
+  - ops
+  - supabase
+  - docs
+  - house-test/qa
+  - house-test/assets/desk-left-v7.png
+  - house-test/assets/desk-center-v7.png
+  - house-test/assets/desk-right-v7.png

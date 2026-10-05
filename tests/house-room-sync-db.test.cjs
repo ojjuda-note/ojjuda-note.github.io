@@ -1,0 +1,38 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {PGlite}=require('@electric-sql/pglite');
+const root=path.resolve(__dirname,'..'),owner='10000000-0000-0000-0000-000000000001',visitor='10000000-0000-0000-0000-000000000002',other='10000000-0000-0000-0000-000000000003';
+const pose={x:3,y:2,direction:'left'},snapshot={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{x:9,y:1.5,direction:'right'},furniture:{sofa:pose,'made-original':{x:0,y:0,direction:'center'},'blanket-floor':{x:1,y:1,direction:'right',mode:'floor',elevation:0}}},{x:1,y:0,curtains:false,shelf:null,furniture:{}}]};
+(async()=>{const db=new PGlite();try{
+ await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE SCHEMA auth;
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ CREATE TABLE public.profiles(id uuid PRIMARY KEY,door_closed boolean NOT NULL DEFAULT false);INSERT INTO public.profiles VALUES('${owner}',false),('${visitor}',false),('${other}',false);
+ CREATE TABLE public.blocks(blocker uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,blocked uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,PRIMARY KEY(blocker,blocked));
+ CREATE FUNCTION public.door_open(uid uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$SELECT NOT coalesce((SELECT door_closed FROM public.profiles WHERE id=uid),false)$$;
+ CREATE FUNCTION public.blocked_between(a uuid,b uuid) RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $$BEGIN IF auth.uid() IS NULL OR auth.uid() NOT IN(a,b) THEN RAISE EXCEPTION 'helper_scope_denied';END IF;RETURN EXISTS(SELECT 1 FROM public.blocks WHERE(blocker=a AND blocked=b)OR(blocker=b AND blocked=a));END$$;
+ GRANT USAGE ON SCHEMA auth,public TO anon,authenticated;GRANT SELECT ON public.profiles TO authenticated;ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;CREATE POLICY profiles_read ON public.profiles FOR SELECT TO authenticated USING(true);
+ REVOKE ALL ON public.blocks FROM anon,authenticated;`);
+ const migration=fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_house_room_sync.sql'));await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',migration),'utf8'));
+ const actor=async(id,role='authenticated')=>db.exec(`SET ROLE ${role};SET request.jwt.claim.sub='${id||''}';`);
+ const load=async target=>(await db.query('SELECT public.house_room_load($1) result',[target])).rows[0].result;
+ const save=async(target,value,revision=null)=>(await db.query('SELECT public.house_room_save($1,$2,$3) result',[target,value,revision])).rows[0].result;
+ await actor(null,'anon');await assert.rejects(load(owner));await assert.rejects(db.query('SELECT * FROM public.house_rooms'));await actor(null);await assert.rejects(load(owner),/not_authenticated/);
+ await actor(owner);assert.deepEqual(await load(owner),{ok:true,found:false,canEdit:true});let first=await save(owner,snapshot);assert(first.ok);assert.equal((await load(owner)).revision,first.revision);assert.deepEqual((await load(owner)).snapshot,snapshot);
+ assert.deepEqual(await save(owner,snapshot),first,'retrying a lost initial response is idempotent');
+ await assert.rejects(db.query('DELETE FROM public.house_rooms'));await assert.rejects(db.query('UPDATE public.house_rooms SET revision=gen_random_uuid()'));await assert.rejects(db.query('INSERT INTO public.house_rooms(owner_id,snapshot) VALUES($1,$2)',[other,snapshot]));
+ const next=structuredClone(snapshot);next.rooms[0].curtains=false;const second=await save(owner,next,first.revision);assert(second.ok);assert.notEqual(second.revision,first.revision);
+ assert.deepEqual(await save(owner,snapshot,first.revision),{ok:false,reason:'conflict'});assert.deepEqual(await save(owner,snapshot,null),{ok:false,reason:'conflict'});assert.deepEqual(await save(owner,next,first.revision),second,'retry of a committed update retains the current revision');
+ for(const invalid of [null,{},[],{...snapshot,diary:'private text'},{...snapshot,rooms:[]},{...snapshot,rooms:[...snapshot.rooms,snapshot.rooms[0]]},{...snapshot,rooms:[{x:0,y:0},{x:2,y:3}]},{...snapshot,rooms:[{x:0.5,y:0}]},{...snapshot,rooms:[{x:0,y:0,diary:'private'}]},{...snapshot,rooms:[{x:0,y:0,furniture:{sofa:{...pose,image:'private/data'}}}]},{...snapshot,rooms:[{x:0,y:0,furniture:{sofa:{...pose,x:11}}}]},{...snapshot,rooms:[{x:0,y:0,furniture:{sofa:{...pose,direction:'script'}}}]}])await assert.rejects(save(owner,invalid,second.revision),/bad_snapshot/);
+ const oversized={version:13,rooms:Array.from({length:35},(_,i)=>({x:i%5-2,y:Math.floor(i/5)-3,furniture:Object.fromEntries(Array.from({length:128},(_,n)=>['made-'+String(n).padStart(120,'a'),pose]))}))};await assert.rejects(save(owner,oversized,second.revision),/bad_snapshot/);
+ assert.deepEqual((await load(owner)).snapshot,next,'invalid writes leave the room intact');
+ await actor(visitor);let view=await load(owner);assert.equal(view.canEdit,false);assert.equal(view.snapshot.rooms[0].furniture['made-original'].x,0);assert.equal((await db.query('SELECT count(*)::int n FROM public.house_rooms')).rows[0].n,1);
+ await assert.rejects(save(owner,snapshot,second.revision),/not_owner/);await assert.rejects(save(other,snapshot),/not_owner/);
+ await db.exec('RESET ROLE');await db.query('UPDATE public.profiles SET door_closed=true WHERE id=$1',[owner]);await actor(visitor);await assert.rejects(load(owner),/unavailable/);assert.equal((await db.query('SELECT count(*)::int n FROM public.house_rooms')).rows[0].n,0);
+ await actor(owner);assert.equal((await load(owner)).found,true,'owner can enter a closed room');await db.exec('RESET ROLE');await db.query('UPDATE public.profiles SET door_closed=false WHERE id=$1',[owner]);
+ for(const pair of [[owner,visitor],[visitor,owner]]){await db.query('INSERT INTO public.blocks VALUES($1,$2)',pair);await actor(visitor);await assert.rejects(load(owner),/unavailable/);assert.equal((await db.query('SELECT count(*)::int n FROM public.house_rooms')).rows[0].n,0);await db.exec('RESET ROLE');await db.query('DELETE FROM public.blocks');}
+ await actor(other);assert.deepEqual(await load(other),{ok:true,found:false,canEdit:true});assert.deepEqual(await save(other,snapshot,first.revision),{ok:false,reason:'conflict'},'non-null revision cannot recreate a missing room');
+ await db.exec('RESET ROLE');await db.query('DELETE FROM public.profiles WHERE id=$1',[visitor]);await actor(visitor);await assert.rejects(load(owner),/not_authenticated/);assert.equal((await db.query('SELECT count(*)::int n FROM public.house_rooms')).rows[0].n,0,'withdrawn JWT cannot read room data');
+ await db.exec('RESET ROLE');await db.query('DELETE FROM public.profiles WHERE id=$1',[owner]);assert.equal((await db.query('SELECT count(*)::int n FROM public.house_rooms')).rows[0].n,0,'account withdrawal deletes the snapshot');
+ assert((await db.query("SELECT relrowsecurity FROM pg_class WHERE oid='public.house_rooms'::regclass")).rows[0].relrowsecurity);
+ assert((await db.query("SELECT prosecdef FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname IN ('house_room_load','house_room_save')")).rows.every(row=>!row.prosecdef));
+ console.log('PASS: owner room load/save, local-diary exclusion, schema/size limits, made-pose preservation, revision conflicts, idempotent lost-response retries, anonymous/foreign/direct-write denial, closed/blocked reads, withdrawn JWT and cascade deletion');
+ }finally{await db.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

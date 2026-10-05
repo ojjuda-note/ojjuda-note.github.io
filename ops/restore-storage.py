@@ -94,29 +94,51 @@ def preserve_object_metadata(db_url, objects, mapping):
             # The transaction commits only after every row is present and checked.
 
 
+def verify_snapshot(snapshot):
+    root = Path(snapshot).resolve()
+    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+    required = {"roles.sql", "schema.sql", "data.sql", "objects.jsonl", "buckets.jsonl",
+                "storage-map.json", "source-git-mirror.tar.gz", "auth_count.txt",
+                "vault_secret_count.txt", "cron_jobs.jsonl", "migration_history.jsonl",
+                "extensions.jsonl", "managed_schema_triggers.jsonl", "managed_schema_policies.jsonl"}
+    paths = [item["path"] for item in manifest["files"]]
+    if manifest.get("format") != 1 or not required.issubset(paths) or len(paths) != len(set(paths)):
+        raise RuntimeError("Incomplete or duplicate recovery manifest")
+    for item in manifest["files"]:
+        original = root / item["path"]
+        file = original.resolve()
+        if original.is_symlink() or root not in file.parents or not file.is_file() or file.stat().st_size != item["bytes"]:
+            raise RuntimeError("Manifest path or file size mismatch")
+        if sha256(file) != item["sha256"]:
+            raise RuntimeError("Manifest SHA-256 mismatch")
+    actual = {str(file.relative_to(root)) for file in root.rglob("*") if file.is_file() and file.name != "manifest.json"}
+    if actual != set(paths):
+        raise RuntimeError("Snapshot contains files missing from the manifest")
+    mapping = json.loads((root / "storage-map.json").read_text(encoding="utf-8"))
+    rows = [json.loads(line) for line in (root / "objects.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    objects = {(row["bucket_id"], row["name"]): row for row in rows}
+    buckets = {json.loads(line)["id"] for line in (root / "buckets.jsonl").read_text(encoding="utf-8").splitlines() if line}
+    if len(rows) != len(objects) or len(mapping) != len(objects) or {(item["bucket"], item["key"]) for item in mapping} != set(objects):
+        raise RuntimeError("Snapshot Storage metadata and blob map disagree")
+    for item in mapping:
+        # The blob path is a digest, never an untrusted user filename.
+        digest = hashlib.sha256((item["bucket"] + "\0" + item["key"]).encode()).hexdigest()
+        if item["bucket"] not in buckets or item["blob"] != f"storage/blobs/{digest}" or item["blob"] not in paths:
+            raise RuntimeError("Unexpected Storage blob path")
+        blob = root / item["blob"]
+        if blob.stat().st_size != item["bytes"] or sha256(blob) != item["sha256"]:
+            raise RuntimeError("Storage blob integrity failure")
+    print(f"Verified {len(manifest['files'])} snapshot files and {len(mapping)} Storage blobs locally")
+    return manifest, mapping, objects
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("snapshot", type=Path, help="Directory extracted from the decrypted tar.gz")
     parser.add_argument("--apply", action="store_true", help="Upload only after isolated DB restore")
     args = parser.parse_args()
     root = args.snapshot.resolve()
-    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-    for item in manifest["files"]:
-        file = (root / item["path"]).resolve()
-        if root not in file.parents or file.stat().st_size != item["bytes"]:
-            raise RuntimeError("Manifest path or file size mismatch")
-        if sha256(file) != item["sha256"]:
-            raise RuntimeError("Manifest SHA-256 mismatch")
-    mapping = json.loads((root / "storage-map.json").read_text(encoding="utf-8"))
-    for item in mapping:
-        # The blob path is a digest, never an untrusted user filename.
-        digest = hashlib.sha256((item["bucket"] + "\0" + item["key"]).encode()).hexdigest()
-        if item["blob"] != f"storage/blobs/{digest}":
-            raise RuntimeError("Unexpected Storage blob path")
-        blob = root / item["blob"]
-        if blob.stat().st_size != item["bytes"] or sha256(blob) != item["sha256"]:
-            raise RuntimeError("Storage blob integrity failure")
-    print(f"Verified {len(manifest['files'])} snapshot files and {len(mapping)} Storage blobs locally")
+    manifest, mapping, objects = verify_snapshot(root)
     if not args.apply:
         return
     keys = ("RESTORE_SUPABASE_PROJECT_REF", "RESTORE_SUPABASE_REGION",
@@ -127,11 +149,6 @@ def main():
     ref = os.environ["RESTORE_SUPABASE_PROJECT_REF"]
     source_ref = manifest["project_ref"]
     db_url = target_db_url(ref, source_ref)
-    objects = {(o["bucket_id"], o["name"]): o for o in
-               [json.loads(line) for line in (root / "objects.jsonl").read_text(encoding="utf-8").splitlines()
-                if line]}
-    if len(objects) != len(mapping) or {(item["bucket"], item["key"]) for item in mapping} != set(objects):
-        raise RuntimeError("Snapshot Storage metadata and blob map disagree")
     client = boto3.client(
         "s3", endpoint_url=f"https://{ref}.storage.supabase.co/storage/v1/s3",
         region_name=os.environ["RESTORE_SUPABASE_REGION"],

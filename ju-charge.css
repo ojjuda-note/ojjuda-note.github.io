@@ -1,0 +1,75 @@
+/* Shared charge entry and responsive catalogue. */
+/* A compact wallet stays in the top-right corner on every app screen. */
+.col > .topbar, .col > .mobile-top { display: flex !important; position: sticky; top: 0; z-index: 21; align-items: center; justify-content: space-between; gap: 8px; height: auto; min-height: 50px; padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border: 0; background: color-mix(in srgb, var(--bg, #edeff9) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.topbar .nn-top-actions, .mobile-top .nn-top-actions { display: flex; align-items: center; flex: none; gap: 6px; margin-left: auto; }
+.topbar .coinpill, .mobile-top .note-coinpill { display: inline-flex; align-items: center; gap: 5px; flex: none; height: 28px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 12px/1 var(--font-b, sans-serif); font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; }
+.topbar .coinpill:hover, .mobile-top .note-coinpill:hover { border-color: var(--accent); }
+.topbar .coinpill .cz, .mobile-top .note-coinpill .note-cz { width: 14px; height: 14px; border-radius: 4px; }
+.topbar .nn-bell, .mobile-top .nn-bell { width: 30px; height: 30px; }
+.topbar .nn-bell svg, .mobile-top .nn-bell svg { width: 17px; height: 17px; }
+@media (min-width: 900px) {
+  .col > .topbar, .col > .mobile-top { min-height: 46px; padding: 8px 20px; justify-content: flex-end; }
+  .topbar > .brand, .mobile-top > .note-brand-row { display: none; }
+}
+@media (max-width: 380px) {
+  .col > .topbar, .col > .mobile-top { padding-left: 12px; padding-right: 12px; gap: 6px; }
+  .topbar .logo-mark, .mobile-top .brand-icon { width: 24px; height: 24px; }
+  .topbar .logo-word, .mobile-top .brand > span { font-size: 20px; }
+  .topbar .brand .beta, .mobile-top .note-dev-badge { display: none; }
+}
+.ju-charge-entry.my-menu-summary { width: 100%; border: 0; background: none; color: inherit; appearance: none; font: inherit; text-align: left; cursor: pointer; }
+.ju-charge-entry.my-menu-summary:hover { background: var(--surface-2, #f8f5f8); }
+.ju-charge-entry.my-menu-summary::after { transform: rotate(-45deg); }
+.ju-charge-entry:focus-visible { outline: 2px solid var(--accent-ink, #a93263); outline-offset: -3px; }
+.ju-charge-open { overflow: hidden; }
+.ju-charge-dialog { --ju-bg: var(--surface, #fff); --ju-text: var(--ink, #23264a); --ju-muted: var(--ink-2, #626894); --ju-line: var(--line, #daddf0); --ju-soft: var(--accent-soft, #fde8f0); --ju-accent: var(--accent, #f0679a); --ju-ink: var(--accent-ink, #a93263); box-sizing: border-box; width: min(560px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 0; overflow: hidden; border: 0; border-radius: 24px; background: var(--ju-bg); color: var(--ju-text); font: 15px/1.6 var(--font-b, sans-serif); box-shadow: none; }
+.ju-charge-dialog[open] { display: flex; flex-direction: column; }
+.ju-charge-dialog::backdrop { background: #0f11288c; }
+.ju-charge-dialog * { box-sizing: border-box; }
+.ju-charge-dialog [hidden] { display: none !important; }
+.ju-charge-heading { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 18px 12px; }
+.ju-charge-heading h2 { margin: 0; font: 400 20px/1.6 var(--font-d, sans-serif); }
+.ju-charge-close { flex: none; min-height: 32px; padding: 0 12px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--ju-muted); font: 500 13px var(--font-b, sans-serif); cursor: pointer; }
+.ju-charge-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 18px; }
+.ju-charge-wallet { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-radius: 12px; background: var(--surface-2, #f5f6fc); font-size: 13px; }
+.ju-charge-wallet strong { font-size: 16px; }
+.ju-charge-benefit { display: grid; gap: 5px; margin: 16px 0; font-size: 13px; color: var(--ju-ink); }
+.ju-charge-benefit span { color: var(--ju-muted); font-size: 12px; }
+.ju-charge-result { margin: 10px 0 0; color: var(--ju-ink); font-size: 13px; line-height: 1.7; }
+.ju-charge-result:empty { display: none; }
+#ju-charge-description { margin: 16px 0; color: var(--ju-muted); font-size: 12px; line-height: 1.8; }
+.ju-charge-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ju-charge-pack { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 16px 6px 14px; border: 1px solid var(--ju-line); border-radius: 16px; background: var(--ju-bg); color: var(--ju-text); font: inherit; cursor: pointer; }
+.ju-charge-pack[aria-pressed="true"] { border-color: var(--ju-accent); box-shadow: inset 0 0 0 1px var(--ju-accent); background: var(--ju-soft); }
+.ju-charge-art { display: block; flex: none; width: 108px; height: 76px; max-width: 100%; margin: 0 auto 2px; object-fit: contain; pointer-events: none; }
+.ju-charge-pack strong { font-size: 24px; letter-spacing: -.035em; white-space: nowrap; }
+.ju-charge-pack small { margin-left: 3px; font-size: 12px; font-weight: 500; }
+.ju-charge-bonus { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; padding: 2px 6px; border-radius: 999px; background: var(--ju-accent); color: var(--on-accent, #171429); font-size: 11px; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+.ju-charge-bonus-space { min-height: 24px; }
+.ju-charge-pack-total { color: var(--ju-text); font-size: 13px; font-weight: 700; }
+.ju-charge-won { color: var(--ju-muted); font-size: 12px; white-space: nowrap; }
+.ju-charge-beta .ju-charge-won::after { content: ' → 무료'; color: var(--ju-ink); font-size: 10px; }
+.ju-charge-total { display: grid; gap: 9px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--ju-line); font-size: 12px; }
+.ju-charge-total > span { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ju-charge-total b { font-weight: 500; text-align: right; }
+.ju-charge-receive { color: var(--ju-ink); }
+.ju-charge-total strong { font-size: 19px; }
+.ju-charge-notice { margin: 14px 0 0; color: var(--ju-muted); font-size: 11px; line-height: 1.75; }
+.ju-charge-login { display: inline-block; margin-top: 10px; padding-block: 8px; color: var(--ju-ink); font-size: 12px; text-underline-offset: 3px; }
+.ju-charge-footer { flex: none; padding: 14px 18px 18px; border-top: 1px solid var(--ju-line); }
+.ju-charge-checkout { width: 100%; min-height: 40px; padding: 8px 16px; border: 1px solid var(--ju-line); border-radius: 999px; background: var(--surface-2, #f5f6fc); color: var(--ju-muted); font: 500 14px var(--font-b, sans-serif); cursor: not-allowed; }
+.ju-charge-checkout:not(:disabled) { background: var(--ju-accent); border-color: var(--ju-accent); color: var(--on-accent, #171429); cursor: pointer; }
+.ju-charge-dialog .ju-charge-checkout:not(:disabled):hover { background: color-mix(in srgb, var(--ju-accent) 92%, #fff); }
+.ju-charge-refresh { display: block; margin: 10px auto 0; padding: 8px; border: 0; background: transparent; color: var(--ju-muted); font: inherit; font-size: 11px; cursor: pointer; }
+.ju-charge-dialog :is(button, a):focus-visible { outline: 3px solid var(--ju-ink); outline-offset: 3px; }
+.ju-charge-dialog button:not(:disabled):hover { background: var(--ju-soft); }
+@media (max-width: 420px) {
+  .ju-charge-heading { padding: 18px 16px 12px; }
+  .ju-charge-content { padding: 0 16px; }
+  .ju-charge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ju-charge-pack { padding: 10px 6px; gap: 4px; }
+  .ju-charge-art { width: 100px; height: 70px; }
+  .ju-charge-pack strong { font-size: 22px; }
+  .ju-charge-footer { padding: 14px 16px 18px; }
+}
+.col:has([data-house-inline][data-editor-scroll]) > .topbar { position: relative; }
