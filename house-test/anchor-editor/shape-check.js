@@ -1,7 +1,7 @@
-import {projectMesh} from './mesh.js?v=20261005-shapeguard1';
-import {projectPictureLayers} from './layered-mesh.js?v=20261005-shapeguard1';
-import {homography,project} from './warp.js?v=20261005-shapeguard1';
-import {checkShape,sourceWeights} from '../picture-quality.js?v=20261005-shapeguard1';
+import {projectMesh} from './mesh.js?v=20261005-sofaseat1';
+import {projectPictureLayers} from './layered-mesh.js?v=20261005-sofaseat1';
+import {homography,project} from './warp.js?v=20261005-sofaseat1';
+import {checkShape,sourceWeights} from '../picture-quality.js?v=20261005-sofaseat1';
 
 const weightsCache=new WeakMap();
 function affine(s,t){
