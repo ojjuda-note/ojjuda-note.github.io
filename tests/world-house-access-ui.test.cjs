@@ -52,6 +52,24 @@ D.online=!sessionStorage.getItem('fixture-logged-out');D.user=D.online?{id:'worl
   const worldNav=await page.locator('.bottomnav').boundingBox(),panel=await f.locator('#panel').boundingBox(),houseNav=await f.locator('#panel .panel-head nav').boundingBox();assert(worldNav&&panel&&houseNav);const houseFrame=await page.locator('iframe[title="우리집"]').boundingBox();assert(Math.abs(houseFrame.y+houseFrame.height-worldNav.y)<=3,'the house frame meets the World menu');assert(houseNav.y>=panel.y&&houseNav.y-panel.y<=24&&houseNav.height<=56,'compact tabs sit within the panel top padding');assert.equal(await f.locator('#app > nav').count(),0);assert.deepEqual(await f.locator('nav [data-tab]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tab)),['diary','room']);
   await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));await page.evaluate(()=>document.fonts.ready);await f.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(image=>{image.loading="eager";return image.decode().catch(error=>{throw new Error(error.message+" "+image.src+" connected="+image.isConnected);});}));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});await page.screenshot({path:path.join(proof,'world-house-menus-mobile.png')});
   await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'소품',exact:true}).click();await f.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(image=>{image.loading="eager";return image.decode().catch(error=>{throw new Error(error.message+" "+image.src+" connected="+image.isConnected);});}));});await page.screenshot({path:path.join(proof,'world-house-accessories-mobile.png')});await f.getByRole('button',{name:'가구',exact:true}).click();
+  // The inline catalog uses the World scroll, with no clipped internal list.
+  await page.setViewportSize({width:660,height:690});await f.locator('[data-tab=room]').click();
+  await f.waitForFunction(()=>document.documentElement.classList.contains('house-inline-editor'));
+  await f.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+  assert.equal(await f.locator('#panel-body').evaluate(el=>el.scrollHeight<=el.clientHeight+1),true,'entire catalog participates in page layout');
+  const roomTop=await f.locator('#viewport').boundingBox();await page.evaluate(y=>window.scrollBy(0,y),roomTop.y);
+  assert(Math.abs((await f.locator('#viewport').boundingBox()).y)<2,'room can reach the top edge of the screen');
+  assert((await page.locator('.topbar').boundingBox()).y+(await page.locator('.topbar').boundingBox()).height<=0,'World header scrolls away instead of covering the room');
+  await page.screenshot({path:path.join(proof,'room-top-tablet.png')});
+  const last=f.locator('.item-grid button').last();await last.scrollIntoViewIfNeeded();
+  let lastBox=await last.boundingBox(),menu=await page.locator('.bottomnav').boundingBox();
+  if(lastBox.y+lastBox.height>menu.y)await page.evaluate(delta=>window.scrollBy(0,delta),lastBox.y+lastBox.height-menu.y+12);
+  lastBox=await last.boundingBox();assert(lastBox.y>=0&&lastBox.y+lastBox.height<=menu.y,'last item and its caption are fully reachable above navigation');
+  await page.screenshot({path:path.join(proof,'last-item-tablet.png')});
+  await f.getByRole('button',{name:'협탁 놓기',exact:true}).click();await f.locator('#panel.placement-panel').waitFor();
+  await f.waitForFunction(()=>[...document.querySelectorAll('.furniture')].every(n=>n.dataset.renderState==='ready'));
+  await page.waitForFunction(()=>{const frame=document.querySelector('iframe[title="우리집"]');return Math.abs(frame.getBoundingClientRect().top+frame.contentDocument.querySelector('#viewport').getBoundingClientRect().top)<2;});
+  await f.getByRole('button',{name:'취소',exact:true}).click();
   for(const size of [{width:320,height:568},{width:440,height:500},{width:640,height:360},{width:844,height:390}]){
    await page.setViewportSize(size);
    for(const tab of ['diary','room']){

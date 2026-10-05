@@ -46,3 +46,11 @@
 [data-board-root],.board-detail{font-family:var(--font-b,sans-serif);}
 [data-board-root] h2,[data-board-root] h3,.board-section-title,.board-detail h3{font-family:var(--font-b,sans-serif);}
 [data-board-root]>h2{margin:8px 0;font-size:27px;font-weight:600;}
+
+/* Larger, rounded Korean lettering for the game ranking only. */
+.board-leaders,.board-leaders .board-rank-head h3{font-family:"Jua","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-weight:400;}
+.board-leaders .board-rank-head h3{font-size:22px;letter-spacing:.5px;}
+.board-rank-caption,.board-rank-page thead th,.board-leader-empty,.board-leader-retry{font-size:13px;}
+.board-rank-page table{font-size:16px;line-height:1.45;}
+.board-leader-game,.board-leader-score{font-weight:400;}
+@media(max-width:360px){.board-rank-page table{font-size:15px;}.board-leader-empty{font-size:12px;}}
