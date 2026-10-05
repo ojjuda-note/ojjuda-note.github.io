@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-openbook1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261005-openbook1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-sofabook1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-sofabook1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,7 +26,7 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
- 'open-book':{label:'크림 펼친 책',shortLabel:'펼친 책',width:1.25,depth:.8,height:.1,depthFill:1,introduced:26,autoPlace:false,
+ 'open-book':{label:'크림 펼친 책',shortLabel:'펼친 책',width:1.25,depth:.8,height:.12,depthFill:1,introduced:26,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/open-book-center-preview-v1.png',
   preferred:{direction:'left',x:.1,y:3.55,elevation:1.4},preferredViews:{left:{direction:'left',x:.1,y:3.55,elevation:1.4},center:{direction:'center',x:4.74,y:.1,elevation:1.4},right:{direction:'right',x:9.1,y:4.25,elevation:1.4}},
   clearance:'책상 앞에 앉아 읽는 방향으로 놓는 책이에요. 가구와 맞지 않으면 바닥에 놓을 수 있어요.'},
