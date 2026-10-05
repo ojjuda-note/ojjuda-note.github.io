@@ -55,10 +55,10 @@ await page.locator('[data-latest=image] .board-more').click();await page.waitFor
 await page.evaluate(()=>OjjudaBoard.refresh());await page.waitForFunction(()=>document.querySelectorAll('.board-row').length===20);assert.ok((await page.locator('.board-list-heading').innerText()).includes('앨범 전체글'),'refresh preserves category');
 await page.evaluate(()=>OjjudaBoard.back());await page.waitForSelector('[data-latest=video] .board-row');await page.screenshot({path:process.env.BOARD_SCREENSHOT||'/tmp/board-mobile.png',fullPage:true});
 await page.setViewportSize({width:1280,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-await page.addScriptTag({content:'var _r={mole:{name:"두더지 잡기",unit:"점"},runner:{name:"쭈 달리기",unit:"점"},stacker:{name:"탑 쌓기",unit:"층"},breakout:{name:"벽돌깨기",unit:"점"},spot:{name:"틀린그림찾기",unit:"곳"}};'+registry});
+await page.addScriptTag({content:'var _r={ttang:{name:"땅따먹기",unit:"점"},mole:{name:"두더지 잡기",unit:"점"},runner:{name:"쭈 달리기",unit:"점"},stacker:{name:"탑 쌓기",unit:"층"},breakout:{name:"벽돌깨기",unit:"점"},spot:{name:"틀린그림찾기",unit:"곳"}};'+registry});
 await page.evaluate(()=>{window.OjjudaMatgoAccess={visible:()=>false};OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames()});});
 assert.equal(await page.locator('.board-game-open').count(),0,'standalone boards without an opening callback keep game names noninteractive');assert.ok((await page.locator('[data-game=mole] th.board-leader-game').innerText()).includes('두더지 잡기'));
-assert.equal(await page.locator('.board-leader').count(),27);assert.equal(await page.locator('.board-rank-page').count(),9);
+assert.equal(await page.locator('.board-leader').count(),28);assert.equal(await page.locator('.board-rank-page').count(),10);
 for(const key of ['carom4_easy','carom3_normal','pool8_hard','screw_box','screw_flat','janggi_online','chess_hard'])assert.equal(await page.locator(`[data-game=${key}]`).count(),1);
 assert.equal(await page.locator('[data-game=carom4_easy] .board-game-difficulty').innerText(),'쉬움','difficulty remains visible below the game name');
 assert.equal(await page.locator('[data-game=screw]').count(),0,'no combined screw ranking');
@@ -74,13 +74,20 @@ for(const [game,score] of [['matgo','12,345골드'],['runner','567점'],['stacke
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-score`).innerText(),score);
 }
 assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','highest community score is shown');
+const registryOrder=await page.evaluate(()=>Object.keys(worldRankGames()));
+const ranked=['mole','matgo','runner','stacker','carom4_easy','screw_box','screw_flat'];
+const displayedOrder=()=>page.locator('.board-leader').evaluateAll(rows=>rows.map(row=>row.dataset.game));
+const scoresFirst=ids=>[...registryOrder.filter(id=>ids.includes(id)),...registryOrder.filter(id=>!ids.includes(id))];
+assert.deepEqual(await displayedOrder(),scoresFirst(ranked),'games with records come first, including a valid zero score, with stable order in both groups');
+assert.deepEqual(await page.locator('.board-rank-page').first().locator('.board-leader').evaluateAll(rows=>rows.map(row=>row.dataset.game)),scoresFirst(ranked).slice(0,3),'the first ranking page shows recorded games');
+
 assert.equal(await page.locator('[data-game=chess_easy] .board-leader-empty').innerText(),'연승 기록 없음');
 assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length>0),true);
 const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length);
 await page.evaluate(()=>{document.body.classList.add('gaming');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
-assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length),personalCalls+28,'public records refresh for every game on return');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length),personalCalls+29,'public records refresh for every game on return');
 await page.evaluate(()=>{document.body.classList.add('matgo-open');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='matgo').score=7500;document.body.classList.remove('matgo-open');});
 await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score').textContent==='7,500골드');
@@ -95,8 +102,10 @@ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ojjuda:game-record
 assert.equal(await page.evaluate(()=>calls.length),beforeStaleSave,'other-account result is ignored');
 await page.evaluate(()=>{window.personalFail=true;return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','one game failure does not hide other games');
+assert.deepEqual(await displayedOrder(),scoresFirst(ranked.filter(id=>id!=='carom4_easy')),'failed requests do not displace valid records');
 await page.locator('[data-game=carom4_easy] .board-leader-retry').evaluate(b=>b.click());
 await page.waitForFunction(()=>document.querySelector('[data-game=carom4_easy] .board-leader-score').textContent==='4연승');
+assert.deepEqual(await displayedOrder(),scoresFirst(ranked),'successful retry moves the game into the recorded group');
 const sharedScores=await page.locator('.board-leader').allTextContents();
 await page.evaluate(()=>{viewer='b';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='b'});});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='1,001점');
@@ -105,6 +114,7 @@ assert.equal(await page.locator('.board-rank-caption').innerText(),'현재 연�
 await page.evaluate(()=>{viewer='a';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='a'});});
 await page.evaluate(()=>{window.personalRecords=[];return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=runner] .board-leader-score').innerText(),'—','new day or cleared records cannot keep a previous score');
+assert.deepEqual(await displayedOrder(),scoresFirst(['mole']),'cleared records move back behind games with scores');
 await page.evaluate(()=>{viewer=null;mount();});assert.equal(await page.locator('.board-row').count(),0,'session change clears prior records');assert.ok((await page.locator('#board').innerText()).includes('로그인'));
 await page.clock.runFor(6000);assert.equal(await page.locator('.board-leaders').count(),0,'logout disposes carousel');assert.deepEqual(errors,[]);console.log('PASS: game-name links and keyboard activation, stale/unauthorized protection, standalone noninteractive labels, chalkboard ranking, exact 5-second dwell and 280ms slide, compact controls-free layout/swipe, distinct game variants, reduced motion, timer cleanup, BEST/latest lists, pagination, retry, refresh, detail/like/back, XSS safety, session clearing and mobile/desktop layout');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
