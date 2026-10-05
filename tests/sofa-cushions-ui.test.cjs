@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
 const repo=path.resolve(process.env.ROOT_DIR||path.join(__dirname,'..')),workspace=path.resolve(repo,'..');
 const output=path.resolve(process.env.QA_OUTPUT_DIR||path.join(require('node:os').tmpdir(),'ojjuda-sofa-accessories-qa'));
-const origin='https://fixture.test',version='20261005-wallframe1',owner='local-sofa-accessories-review',key='ojjuda-house-playtest-v1:'+owner;
+const origin='https://fixture.test',version='20261005-tableplant1',owner='local-sofa-accessories-review',key='ojjuda-house-playtest-v1:'+owner;
 const ids=['cream-floral-cushion','sage-cushion','peach-cushion','pink-check-cushion'],directions=['left','center','right'];
 const labels={'cream-floral-cushion':'크림 꽃무늬 쿠션','sage-cushion':'세이지 쿠션','peach-cushion':'피치 쿠션','pink-check-cushion':'분홍 체크 쿠션','blanket-sofa':'분홍 담요',sofa:'소파','blanket-floor':'분홍 담요'};
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
