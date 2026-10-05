@@ -190,6 +190,15 @@
   controller={back(){if(close())return true;if(view){void home();return true;}return false;},refresh(){if(dialog)return Promise.resolve(false);snapshot=new Date().toISOString();return view?loadPage(true):home();}};
   if(!client||!owner){status.textContent='로그인하면 게시판의 공개 글을 볼 수 있어요.';content.append(Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));return;}
   void home();
+  // The board may be opened before the arcade has checked Matgo eligibility.
+  const matgoAccess=window.OjjudaMatgoAccess;
+  if(!games.matgo&&typeof matgoAccess?.check==='function'){
+   void matgoAccess.check().then(member=>{
+    if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
+    games={...games,matgo:{name:'맞고',unit:'골드',rankingBasis:'current_gold'}};
+    if(!view&&!dialog)void home();
+   }).catch(()=>{});
+  }
  }
  window.OjjudaBoard={mount,back:()=>controller?.back()||false,refresh:()=>controller?.refresh()??Promise.resolve(false)};
 })();
