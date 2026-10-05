@@ -408,3 +408,11 @@ html[data-period=dusk] .curtains,html[data-period=dusk] .furniture {filter: sepi
 .record-field textarea{width:100%;min-width:0;box-sizing:border-box;resize:vertical;min-height:86px;padding:10px;border:1px solid #d7c9df;border-radius:10px;background:#fffdfa;color:inherit;font:inherit;line-height:1.6;}
 .record-upload-caption .panel-note{margin:2px 0 0;font-weight:400;}
 .record-viewer-caption{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}
+
+/* Inline decorating follows the World page scroll instead of clipping the catalog.
+   The room uses the parent viewport height, never this growing iframe's dvh. */
+html.house-inline-editor #app{height:auto;min-height:0;overflow:visible;margin-top:0;}
+.house-inline-editor #viewport{height:var(--house-inline-room-height,260px);min-height:0;flex:none;}
+.house-inline-editor #panel{height:auto;max-height:none;flex:none;overflow:visible;}
+.house-inline-editor #panel-body{overflow:visible;overscroll-behavior:auto;}
+.house-inline-editor #panel-body .item-categories{position:static;}
