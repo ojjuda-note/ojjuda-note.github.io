@@ -6,6 +6,11 @@
   let client, getUserId=()=>null, panel, layer, content, message, focus, run=0, busy=false;
   let inertState=[],previousOverflow='',targetInquiry=null,source='note',getScreen=()=>source,appVersion='',tabs,title,view='inquiries';
   const validId=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  function bugDiagnostics(kind) {
+    if(kind!=='bug')return {};
+    try { const diagnostics=window.OjjudaDiagnostics?.snapshot(source);return diagnostics?{diagnostics}:{}; }
+    catch { return {}; }
+  }
   async function rpc(name, args={}) { const {data,error}=await client.schema('ojjuda_note').rpc(name,args);if(error)throw error;return data; }
   function valid(epoch,user) {return epoch===run && user===getUserId() && !layer.hidden;}
   function keepFocus(epoch,user) {
@@ -55,13 +60,13 @@
           link.href=key==='terms'?'/terms.html':'/privacy.html';section.append(link);
         }else if(value)section.append(el('p',value));
         else section.append(el('p',key==='contact_text'
-          ? '월드와 노트 문의는 로그인 후 아래 문의함에 남겨 주세요.'
+          ? '월드 문의는 로그인 후 아래 문의함에 남겨 주세요.'
           : '서로를 존중해 주세요. 신고는 해당 글·카드·프로필의 신고 버튼에서 접수할 수 있어요.'));
         content.append(section);
       }
       const glass=el('a','스마트 글래스 미리보기','support-document-link');
-      glass.href='/note/glasses.html';content.append(glass);
-      content.append(el('h3','내 문의'),el('p','월드·노트 공통 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
+      glass.href='/park/glasses.html';content.append(glass);
+      content.append(el('h3','내 문의'),el('p','월드 문의함이에요. 문의는 본인과 운영팀만 볼 수 있어요.','support-help'));
       if(!user){const link=el('a','대문에서 로그인','button');link.href='/';content.append(link);return;}
       const form=el('form',undefined,'support-form'),label=el('label','문의 내용'),field=el('textarea');
       field.id='note-inquiry-body';field.maxLength=2000;field.required=true;field.rows=5;label.htmlFor=field.id;
@@ -104,7 +109,7 @@
   }
   function feedbackView() {
     const epoch=++run,user=getUserId();busy=false;message.textContent='';content.replaceChildren();
-    content.append(el('p','고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려주세요. 월드와 노트 운영팀이 함께 확인해요.','support-help'));
+    content.append(el('p','고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려주세요. 월드 운영팀이 확인해요.','support-help'));
     if(!user){const login=el('a','대문에서 로그인','btn button');login.href='/';content.append(login);return;}
     const form=el('form',undefined,'support-form'),choices=el('fieldset',undefined,'support-choices');
     choices.append(el('legend','의견 종류'));
@@ -113,15 +118,18 @@
     }
     const label=el('label','의견 내용'),field=el('textarea');field.id='support-feedback-body';label.htmlFor=field.id;field.maxLength=2000;field.required=true;field.rows=5;
     field.placeholder='어느 화면에서 무엇을 했을 때 어떻게 됐는지 적어 주세요.';
-    const send=el('button','보내기','btn button pri primary');send.type='submit';form.append(choices,label,field,el('small','2,000자 이내 · 답변이 필요하면 문의·답변을 이용해 주세요.'),send);content.append(form);
+    const diagnosticNotice=el('p','고장 신고에는 최근 5분의 오류 기록이 함께 전달돼요. 비밀번호와 입력 내용은 포함하지 않아요.','support-help');
+    diagnosticNotice.id='support-diagnostics-notice';
+    choices.addEventListener('change',()=>{diagnosticNotice.hidden=choices.querySelector('input:checked')?.value!=='bug';});
+    const send=el('button','보내기','btn button pri primary');send.type='submit';form.append(choices,diagnosticNotice,label,field,el('small','2,000자 이내 · 답변이 필요하면 문의·답변을 이용해 주세요.'),send);content.append(form);
     form.addEventListener('submit',async event=>{
       event.preventDefault();if(busy||!valid(epoch,user)||!field.value.trim())return;
       const kind=choices.querySelector('input:checked')?.value||'other';
       busy=true;send.disabled=true;field.disabled=true;choices.disabled=true;message.textContent='의견을 보내는 중이에요.';keepFocus(epoch,user);
       try{
-        const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:appVersion,user_agent:navigator.userAgent.slice(0,400)});
+        const {error}=await client.from('feedback').insert({user_id:user,kind,body:field.value.trim(),screen:(source+':'+String(getScreen()||'')).slice(0,40),app_version:appVersion,user_agent:navigator.userAgent.slice(0,400),...bugDiagnostics(kind)});
         if(error)throw error;if(!valid(epoch,user))return;
-        content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='운영팀이 월드와 노트 의견을 함께 확인합니다.';keepFocus(epoch,user);
+        content.replaceChildren(el('p','고마워요! 의견을 잘 받았어요.'),button('닫기',close));message.textContent='월드 운영팀이 의견을 확인합니다.';keepFocus(epoch,user);
       }catch{if(valid(epoch,user))message.textContent='보내지 못했어요. 작성한 내용은 유지됩니다. 다시 시도해 주세요.';}
       finally{if(valid(epoch,user)){busy=false;send.disabled=false;field.disabled=false;choices.disabled=false;}}
     });
@@ -155,6 +163,7 @@
   function install(options) {
     if(layer||!options.client)return;
     client=options.client;getUserId=options.getUserId;source=options.source==='world'?'world':'note';getScreen=options.getScreen||(()=>source);appVersion=options.appVersion||'';
+    try { window.OjjudaDiagnostics?.bindAuth(client,getUserId); } catch { /* Reporting remains available without diagnostics. */ }
     layer=el('div',undefined,'dialog-backdrop note-support-layer');layer.hidden=true;
     panel=el('section',undefined,'management-dialog');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','note-support-title');
     const head=el('header',undefined,'management-head');title=el('h2','문의·의견');title.id='note-support-title';
@@ -162,7 +171,7 @@
     tabs=el('nav',undefined,'support-tabs');tabs.setAttribute('aria-label','문의·의견 메뉴');
     for(const [key,label] of [['feedback','의견 보내기'],['inquiries','문의·답변']]) {const tab=button(label,()=>{if(!busy){view=key;void renderView();}});tab.dataset.supportView=key;tabs.append(tab);}
     panel.append(head,tabs,content,message);layer.append(panel);document.body.append(layer);
-    const entry=button('문의·의견',()=>show());entry.classList.add('support-entry');document.querySelector('.note-tools')?.append(entry);
+    const entry=button('문의·의견',()=>show());entry.classList.add('support-entry');(document.querySelector('#note-help-actions')||document.querySelector('.note-tools'))?.append(entry);
     document.addEventListener('click',event=>{if(event.target.closest('[data-note-feedback]')){event.preventDefault();show(null,'feedback');}});
     layer.addEventListener('click',event=>{if(event.target===layer&&!busy)close();});
     layer.addEventListener('keydown',event=>{
@@ -177,46 +186,75 @@
     let identity=getUserId();client.auth.onAuthStateChange((_event,session)=>{const next=session?.user?.id||null;if(next!==identity){identity=next;if(!layer.hidden)close(true);}});
   }
   async function renderAdmin({client:adminClient,container,onChanged=()=>{},isCurrent=()=>true}) {
-    let epoch=0,offset=0,filter='open',pending=false;
+    let epoch=0,offset=0,filter='open',pending=false,loading=false,alive=true;
+    let disabledState=[];
+    const replyFields=new Map();
     const adminRpc=async(name,args={})=>{const {data,error}=await adminClient.schema('ojjuda_note').rpc(name,args);if(error)throw error;return data;};
-    const current=n=>n===epoch&&isCurrent()&&container.isConnected;
-    async function load() {
-      const n=++epoch;container.replaceChildren();
+    const current=n=>alive&&n===epoch&&isCurrent()&&container.isConnected;
+    const hasDraft=()=>alive&&[...container.querySelectorAll('.support-form textarea')].some(field=>field.value!==field.defaultValue);
+    const canLeave=()=>!pending&&!loading;
+    const confirmLeave=()=>canLeave()&&(!hasDraft()||window.confirm('작성 중인 답변을 저장하지 않고 이동할까요?'));
+    function lock(locked) {
+      container.setAttribute('aria-busy',String(locked));
+      if(locked){disabledState=[...container.querySelectorAll('button,input,textarea,select')].map(control=>[control,control.disabled]);for(const [control]of disabledState)control.disabled=true;}
+      else {for(const [control,disabled]of disabledState)if(control.isConnected)control.disabled=disabled;disabledState=[];}
+    }
+    async function navigate(change) {if(!confirmLeave())return false;change?.();return load();}
+    async function load(preserveDrafts=false) {
+      if(pending||loading||!alive||!isCurrent()||!container.isConnected)return false;
+      loading=true;
+      // Saving one reply must not discard another reply draft or refresh its concurrency token.
+      const drafts=preserveDrafts?new Map([...replyFields].filter(([,entry])=>entry.field.value!==entry.field.defaultValue)
+        .map(([id,entry])=>[id,{value:entry.field.value,expectedUpdatedAt:entry.expectedUpdatedAt}])):new Map();
+      const keepCurrent=preserveDrafts&&container.childElementCount>0;
+      const previousEpoch=epoch,n=++epoch;if(keepCurrent)lock(true);else container.replaceChildren();
       const filters=el('div',undefined,'support-filter');
-      for(const [value,label]of[['open','답변 대기'],['resolved','답변 완료'],['all','전체']]){const b=button(label,()=>{filter=value;offset=0;void load();});b.setAttribute('aria-pressed',String(filter===value));filters.append(b);}
-      const rows=el('div'),status=el('p','불러오는 중이에요.');status.setAttribute('role','status');container.append(filters,status,rows);
+      for(const [value,label]of[['open','답변 대기'],['resolved','답변 완료'],['all','전체']]){const b=button(label,()=>void navigate(()=>{filter=value;offset=0;}));b.setAttribute('aria-pressed',String(filter===value));filters.append(b);}
+      const rows=el('div'),status=el('p','불러오는 중이에요.');status.setAttribute('role','status');if(!keepCurrent)container.append(filters,status,rows);
       try {
         const data=await adminRpc('admin_inquiries',{p_status:filter,p_limit:30,p_offset:offset});if(!current(n))return;
+        replyFields.clear();
+        if(keepCurrent)container.replaceChildren(filters,status,rows);
         status.textContent=data?.length?'':'문의가 없어요.';
         for(const item of data||[]){
           const row=inquiryRow(item),form=el('form',undefined,'support-form'),label=el('label','답변'),field=el('textarea');
-          field.id=`reply-${item.id}`;label.htmlFor=field.id;field.value=item.reply||'';field.rows=4;field.maxLength=2000;field.required=true;
+          const draft=drafts.get(item.id),expectedUpdatedAt=draft?draft.expectedUpdatedAt:item.updated_at;
+          field.id=`reply-${item.id}`;label.htmlFor=field.id;field.defaultValue=item.reply||'';field.value=draft?draft.value:field.defaultValue;field.rows=4;field.maxLength=2000;field.required=true;
+          replyFields.set(item.id,{field,expectedUpdatedAt});
           const send=el('button',item.reply?'답변 수정':'답변 등록','button primary');send.type='submit';const feedback=el('p','');feedback.setAttribute('role','status');
           form.append(label,field,send,feedback);row.append(form);rows.append(row);
           form.addEventListener('submit',async event=>{
             event.preventDefault();if(pending||!field.value.trim()||!current(n))return;
             const reply=field.value.trim();
             if(!window.confirm('이 답변을 문의 작성자에게 공개할까요?'))return;
-            pending=true;send.disabled=true;feedback.textContent='저장 중이에요.';
+            pending=true;lock(true);feedback.textContent='저장 중이에요.';let saved=false;
             try {
-              await adminRpc('admin_reply_inquiry',{p_id:item.id,p_reply:reply,p_expected_updated_at:item.updated_at});
+              await adminRpc('admin_reply_inquiry',{p_id:item.id,p_reply:reply,p_expected_updated_at:expectedUpdatedAt});
               if(!current(n))return;
+              saved=true;field.defaultValue=reply;field.value=reply;
               // A host refresh failure must not turn a committed reply into a save error.
               try {await onChanged();} catch {/* The reply has already been saved. */}
-              if(current(n))await load();
             }
-            catch(error){if(current(n))feedback.textContent=error.code==='40001'?'다른 관리자가 답변을 바꿨어요. 문의를 다시 불러와 주세요.':'답변을 저장하지 못했어요. 입력은 유지됩니다.';}
-            finally {pending=false;if(current(n))send.disabled=false;}
+            catch(error){if(current(n))feedback.textContent=error?.code==='40001'?'다른 관리자가 답변을 바꿨어요. 문의를 다시 불러와 주세요.':'답변을 저장하지 못했어요. 입력은 유지됩니다.';}
+            finally {pending=false;if(current(n)){lock(false);if(saved)await load(true);}}
           });
         }
         const pagination=el('div',undefined,'support-filter');
-        if(offset)pagination.append(button('이전',()=>{offset=Math.max(0,offset-30);void load();}));
-        if(data?.length===30)pagination.append(button('다음',()=>{offset+=30;void load();}));
+        if(offset)pagination.append(button('이전',()=>void navigate(()=>{offset=Math.max(0,offset-30);})));
+        if(data?.length===30)pagination.append(button('다음',()=>void navigate(()=>{offset+=30;})));
         rows.append(pagination);
-      }catch{if(current(n)){status.textContent='문의를 불러오지 못했어요. 관리자 권한을 확인해 주세요.';rows.append(button('다시 시도',load));}}
+        return true;
+      }catch{if(current(n)){
+        status.textContent=keepCurrent?'답변은 저장됐지만 목록을 다시 불러오지 못했어요. 다른 작성 내용은 유지됩니다.':'문의를 불러오지 못했어요. 관리자 권한을 확인해 주세요.';
+        rows.append(button('다시 시도',()=>keepCurrent?load(true):navigate()));
+        if(keepCurrent){for(const previous of container.querySelectorAll('[data-inquiry-reload-error]'))previous.remove();status.dataset.inquiryReloadError='';rows.dataset.inquiryReloadError='';container.append(status,rows);
+          // The preserved forms still belong to the previous generation and remain usable.
+          epoch=previousEpoch;lock(false);}
+      }return false;}
+      finally {loading=false;if(current(n))lock(false);}
     }
     await load();
+    return {canLeave,hasDraft,refresh:()=>navigate(),destroy(){alive=false;epoch++;replyFields.clear();}};
   }
-  window.OjjudaNoteSupport={install,renderAdmin,open:id=>{if(layer)show(id);},openFeedback:()=>{if(layer)show(null,'feedback');},report:options=>{if(layer)showReport(options);},isOpen:()=>!!layer&&!layer.hidden,close:()=>{if(layer&&!layer.hidden)close();}};
+  window.OjjudaNoteSupport={install,renderAdmin,open:id=>{if(layer)show(id);},openFeedback:()=>{if(layer)show(null,'feedback');},report:options=>{if(layer)showReport(options);},isOpen:()=>!!layer&&!layer.hidden,canLeave:()=>!busy,close:()=>{if(layer&&!layer.hidden)close();}};
 })();
-

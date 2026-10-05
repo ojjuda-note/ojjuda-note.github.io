@@ -31,10 +31,10 @@
   flex: none;
   width: 26px;
   height: 26px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #ff9ebb, #f0679a);
+  border-radius: 0;
+  background: none;
 }
-.world-link .nl-logo svg { display: block; width: 22px; height: 22px; stroke: none; }
+.world-link .nl-logo img { display: block; width: 26px; height: 26px; object-fit: contain; }
 .world-link .nl-arrow,
 .side .world-link .nl-arrow { margin-left: auto; font-size: 14px; }
 .world-link.my { margin: 0; border: 0; border-radius: 14px; background: none; padding: 12px 14px; }

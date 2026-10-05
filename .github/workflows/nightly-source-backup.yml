@@ -1,0 +1,203 @@
+name: Checked temporary source backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+      timezone: Asia/Seoul
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nightly-source-backup.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ojjuda-source-only-backup
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Error and dependency security checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check tracked JavaScript and Python syntax
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import subprocess
+          import sys
+
+          paths = subprocess.check_output(
+              ["git", "ls-files", "-z"], text=True
+          ).split("\0")
+          failed = []
+          checked = 0
+          for name in paths:
+              if not name:
+                  continue
+              path = pathlib.Path(name)
+              if path.suffix in (".js", ".cjs", ".mjs"):
+                  checked += 1
+                  if subprocess.run(["node", "--check", name]).returncode:
+                      failed.append(name)
+              elif path.suffix == ".py":
+                  checked += 1
+                  try:
+                      compile(path.read_text(encoding="utf-8"), name, "exec")
+                  except SyntaxError:
+                      failed.append(name)
+          print(f"Syntax checked: {checked} files; failures: {len(failed)}")
+          for name in failed:
+              print(f"Syntax error: {name}", file=sys.stderr)
+          sys.exit(bool(failed))
+          PY
+      - name: Install locked regression test dependencies
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium for real interface checks
+        if: ${{ !cancelled() }}
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Run signup, login, database and browser regression tests
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests test
+      - name: Audit locked dependency vulnerabilities
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests audit --audit-level=high
+      - name: Check public portal, world and note HTTPS responses
+        if: ${{ !cancelled() }}
+        run: |
+          failed=0
+          for url in https://ojjuda.kr/ https://ojjuda.kr/world.html https://ojjuda.kr/note/; do
+            if ! curl --fail --silent --show-error --location --retry 2 --max-time 30 --output /dev/null "$url"; then
+              failed=1
+            fi
+          done
+          exit "$failed"
+
+  source_backup:
+    name: Temporary source-only backup
+    needs: checks
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Package source history and tracked site assets
+        id: package
+        env:
+          SOURCE_CHECKS_RESULT: ${{ needs.checks.result }}
+        run: |
+          python3 - <<'PY'
+          import datetime as dt
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          root = Path(os.environ["RUNNER_TEMP"]) / "ojjuda-source-backup"
+          root.mkdir(mode=0o700)
+          sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          subprocess.run(["git", "bundle", "create", str(root / "repository.bundle"), "--all"], check=True)
+          subprocess.run(["git", "bundle", "verify", str(root / "repository.bundle")], check=True)
+          subprocess.run(["git", "archive", "--format=tar.gz", "--prefix=site/",
+                          "--output=" + str(root / "site-source.tar.gz"), sha], check=True)
+          note = (
+              "SOURCE-ONLY TEMPORARY BACKUP\n"
+              "Includes tracked site code/assets and available Git branches/tags/history.\n"
+              "Does not contain the live Supabase database, accounts, user-uploaded photos, "
+              "hosting settings or private credentials. This is not a full server/offsite backup.\n"
+              "Retention: 2 days in GitHub Actions; download it before expiry if needed.\n"
+              "Restore code: tar -xzf site-source.tar.gz\n"
+              "Restore history: git clone repository.bundle restored-site\n"
+          )
+          (root / "README.txt").write_text(note, encoding="utf-8")
+          def digest(path):
+              h = hashlib.sha256()
+              with path.open("rb") as stream:
+                  for chunk in iter(lambda: stream.read(4 * 1024 * 1024), b""):
+                      h.update(chunk)
+              return h.hexdigest()
+          now = dt.datetime.now(dt.timezone.utc)
+          kst = now.astimezone(dt.timezone(dt.timedelta(hours=9)))
+          manifest = {
+              "scope": "source-only",
+              "checks_result": os.environ["SOURCE_CHECKS_RESULT"],
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "commit": sha,
+              "created_at_utc": now.isoformat(),
+              "created_at_kst": kst.isoformat(),
+              "excluded": ["live_database", "user_uploads", "private_credentials", "hosting_settings"],
+              "files": [{"path": p.name, "bytes": p.stat().st_size, "sha256": digest(p)}
+                        for p in sorted(root.iterdir()) if p.is_file()],
+          }
+          manifest_path = root / "manifest.json"
+          manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"path={root}\n")
+              out.write(f"name=ojjuda-source-{kst:%Y%m%d-%H%M%S}-KST-{sha[:12]}\n")
+              out.write(f"manifest_sha256={digest(manifest_path)}\n")
+          PY
+      - name: Store temporary source backup for two days
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.path }}
+          retention-days: 2
+          compression-level: 0
+          if-no-files-found: error
+      - name: Download the saved source backup
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ runner.temp }}/ojjuda-source-readback
+      - name: Verify saved bytes and restore Git history in isolation
+        env:
+          EXPECTED_SOURCE_MANIFEST: ${{ steps.package.outputs.manifest_sha256 }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import tarfile
+
+          root = Path(os.environ["RUNNER_TEMP"]) / "ojjuda-source-readback"
+          def digest(path):
+              h = hashlib.sha256()
+              with path.open("rb") as stream:
+                  for chunk in iter(lambda: stream.read(4 * 1024 * 1024), b""):
+                      h.update(chunk)
+              return h.hexdigest()
+          manifest_path = root / "manifest.json"
+          if digest(manifest_path) != os.environ["EXPECTED_SOURCE_MANIFEST"]:
+              raise RuntimeError("Saved manifest hash mismatch")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          for item in manifest["files"]:
+              path = root / item["path"]
+              if path.stat().st_size != item["bytes"] or digest(path) != item["sha256"]:
+                  raise RuntimeError("Saved source backup hash mismatch")
+          with tarfile.open(root / "site-source.tar.gz", "r:gz") as archive:
+              if "site/index.html" not in archive.getnames():
+                  raise RuntimeError("Site archive is incomplete")
+          restored = Path(os.environ["RUNNER_TEMP"]) / "ojjuda-source-restore-check.git"
+          subprocess.run(["git", "clone", "--bare", str(root / "repository.bundle"), str(restored)], check=True)
+          subprocess.run(["git", "--git-dir=" + str(restored), "fsck", "--full"], check=True)
+          subprocess.run(["git", "--git-dir=" + str(restored), "cat-file", "-e",
+                          manifest["commit"] + "^{commit}"], check=True)
+          print("Source-only backup saved, downloaded and restore-verified; live DB and user uploads are NOT included.")
+          PY

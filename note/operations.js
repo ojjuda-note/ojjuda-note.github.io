@@ -6,6 +6,9 @@
   const WORLD_KINDS = { guestbook: '방명록', chat: '동네 대화', user: '사람', media_comment: '사진 댓글', diary: '다이어리', intro: '소개글' };
   const REASONS = { abuse: '욕설·비방', sexual: '음란·불쾌', spam: '스팸·광고', impersonation: '사칭', other: '기타' };
   const FEEDBACK_KINDS = { bug: '고장', idea: '아이디어', other: '기타' };
+  const FEEDBACK_AI_STATES = { queued: 'Codex 확인 대기', running: '검토 중', needs_review: '검토 필요', blocked: '처리 보류', resolved: '수정 확인' };
+  const FEEDBACK_AI_DISPATCH_STATES = { pending: '실행 요청 대기', dispatching: '실행 요청 중', dispatched: '실행 요청 완료', failed: '실행 요청 실패' };
+  const FEEDBACK_AI_PRIORITIES = { low: '낮음', normal: '보통', high: '높음' };
   const STATUS_LABELS = Object.fromEntries(REPORT_STATES);
   const el = (tag, value, className = '') => {
     const node = document.createElement(tag);
@@ -98,6 +101,49 @@
     for (const control of root.querySelectorAll('button')) control.disabled = busy;
   }
 
+  function feedbackAi(value) {
+    const box = el('section', undefined, 'ops-feedback-ai');
+    box.setAttribute('aria-label', 'Codex 처리 내역');
+    const ai = value && typeof value === 'object' ? value : null;
+    const meta = el('div', undefined, 'ops-meta');
+    const dispatchFailed = ai?.dispatch_status === 'failed';
+    // Evaluate freshness only when the administrator loads this record; never poll or mutate jobs.
+    const updatedAt = Date.parse(ai?.updated_at);
+    const age = Number.isFinite(updatedAt) ? Date.now() - updatedAt : 0;
+    const staleRunning = ai?.status === 'running' && age > 2 * 60 * 60 * 1000;
+    const staleDispatch = ai?.status === 'queued'
+      && ['pending', 'dispatching', 'dispatched'].includes(ai.dispatch_status) && age > 5 * 60 * 1000;
+    const stateLabel = dispatchFailed && ai.status === 'queued' ? FEEDBACK_AI_DISPATCH_STATES.failed
+      : staleRunning ? '처리 시간 초과' : staleDispatch ? '실행 시작 확인 필요'
+      : ai ? (Object.hasOwn(FEEDBACK_AI_STATES, ai.status) ? FEEDBACK_AI_STATES[ai.status] : '처리 상태 확인 필요') : '자동 확인 대기';
+    meta.append(el('strong', 'Codex'), badge(stateLabel));
+    if (ai?.dispatch_status && !(dispatchFailed && ai.status === 'queued')) {
+      meta.append(badge(Object.hasOwn(FEEDBACK_AI_DISPATCH_STATES, ai.dispatch_status)
+        ? FEEDBACK_AI_DISPATCH_STATES[ai.dispatch_status] : '실행 요청 상태 확인 필요', 'ops-ai-dispatch'));
+    }
+    if (ai && Object.hasOwn(FEEDBACK_AI_PRIORITIES, ai.priority)) meta.append(el('span', `우선순위 ${FEEDBACK_AI_PRIORITIES[ai.priority]}`));
+    box.append(meta);
+    if (ai?.dispatch_error || dispatchFailed) box.append(el('p', ai.dispatch_error
+      || '자동 처리 실행 요청을 완료하지 못했습니다. 관리자 확인이 필요합니다.', 'ops-content ops-ai-dispatch-error'));
+    if (staleRunning || staleDispatch) box.append(el('p', staleRunning
+      ? '2시간 이상 처리 기록이 갱신되지 않았습니다. 관리자 확인이 필요합니다.'
+      : '5분 이상 실행 시작이 확인되지 않았습니다. 관리자 확인이 필요합니다.', 'ops-content ops-ai-stale'));
+    if (ai?.summary) box.append(el('p', ai.summary, 'ops-content'));
+    if (ai?.result) box.append(el('p', ai.result, 'ops-content'));
+    const evidence = typeof ai?.evidence_url === 'string' ? ai.evidence_url : '';
+    // Only source-repository evidence and the private worker's Actions runs are allowed.
+    if (/^https:\/\/github\.com\/ojjuda-note\/(?:ojjuda-note\.github\.io\/(?:commit\/[0-9a-f]{40}|pull\/[1-9]\d*|actions\/runs\/[1-9]\d*)|ojjuda-codex-worker\/actions\/runs\/[1-9]\d*)$/.test(evidence)) {
+      const link = el('a', '처리 근거 보기', 'ops-ai-evidence');
+      link.href = evidence; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.setAttribute('aria-label', 'GitHub에서 처리 근거 보기 (새 창)'); box.append(link);
+    }
+    if (ai?.updated_at && Number.isFinite(Date.parse(ai.updated_at))) {
+      const time = el('time', `최근 기록: ${date(ai.updated_at)}`, 'ops-ai-updated');
+      time.dateTime = new Date(ai.updated_at).toISOString(); box.append(time);
+    }
+    return box;
+  }
+
   async function renderReports(options = {}) {
     const { client, container, worldActions = {}, openNoteCard, onChanged = () => {} } = options;
     if (!container || !client?.rpc || !client?.schema || !client?.auth) return;
@@ -150,7 +196,7 @@
         if (typeof worldActions.ban === 'function' && value.target_user) {
           const banned = Date.parse(value.target_banned_until) > Date.now();
           if (banned) meta.append(badge(`이용 정지 · ${date(value.target_banned_until)}까지`));
-          actions.append(button(banned ? '정지 해제' : '7일 정지', () => void mutate(banned ? '이 이용자의 월드 이용 정지를 해제할까요?' : '이 이용자의 월드 활동을 7일 동안 정지할까요?', () => worldActions.ban(value.target_user, banned ? 0 : 7), banned ? '정지를 해제했어요.' : '7일 정지했어요.'), banned ? '' : 'danger'));
+          actions.append(button(banned ? '정지 해제' : '7일 정지', () => void mutate(banned ? '이 계정의 이용 정지를 해제할까요?' : '이 계정을 7일 동안 정지할까요?', () => worldActions.ban(value.target_user, banned ? 0 : 7), banned ? '정지를 해제했어요.' : '7일 정지했어요.'), banned ? '' : 'danger'));
         }
       } else {
         if (value.card_id && typeof openNoteCard === 'function') actions.append(button(value.hidden ? '카드 복구' : '카드 숨김', () => { if (scope.current() && !saving) openNoteCard(value.card_id, value); }));
@@ -201,7 +247,7 @@
       });
       rows = [...merged.values()].sort(newest); loading = false; render();
     }
-    await load(); return { refresh: load, destroy: scope.destroy };
+    await load(); return { refresh: load, canLeave: () => !saving, hasDraft: () => false, destroy: scope.destroy };
   }
 
   async function renderSupport(options = {}) {
@@ -209,6 +255,7 @@
     if (!container || !client?.rpc || !client?.schema || !client?.auth) return;
     const scope = await scopeFor(options); if (!scope) return;
     let run = 0, loading = false, saving = false, status = 'open', rows = [], failures = [], resultText = '';
+    let inquiryController = null;
     const inquiries = el('section', undefined, 'ops-section');
     inquiries.append(el('h3', '문의·답변'), el('p', '미니홈피와 익명카드에서 접수한 문의에 답변해요.', 'ops-help'));
     const inquiryBody = el('div', undefined, 'ops-inquiries'); inquiries.append(inquiryBody);
@@ -216,7 +263,7 @@
     heading.append(el('h3', '의견'), button('새로고침', () => void load()));
     const filters = el('div'), warnings = el('div'), summary = el('p', '', 'ops-summary'), list = el('div', undefined, 'ops-list'), message = el('p', '', 'ops-message');
     message.setAttribute('role', 'status'); message.setAttribute('aria-live', 'polite');
-    feedback.append(heading, el('p', '고장 제보와 제안을 상태별 최근 100건씩 확인해요. 이전 접수 내용도 유지돼요.', 'ops-help'), filters, warnings, summary, list, message);
+    feedback.append(heading, el('p', '고장 제보와 제안을 상태별 최근 100건씩 확인해요. 확인함은 읽음 표시이며, 수정 여부는 Codex 처리 내역에서 확인해요.', 'ops-help'), filters, warnings, summary, list, message);
     container.replaceChildren(inquiries, feedback);
 
     async function loadInquiries() {
@@ -225,7 +272,10 @@
         inquiryBody.replaceChildren(el('p', '문의 관리 화면을 불러오지 못했어요.', 'ops-empty'), button('다시 불러오기', () => void loadInquiries())); return;
       }
       try {
-        await window.OjjudaNoteSupport.renderAdmin({ client, container: inquiryBody, onChanged, isCurrent: scope.current });
+        const controller = await window.OjjudaNoteSupport.renderAdmin({ client, container: inquiryBody, onChanged, isCurrent: scope.current });
+        if (!scope.current()) { controller?.destroy?.(); return false; }
+        inquiryController?.destroy?.(); inquiryController = controller;
+        return true;
       } catch {
         if (scope.current()) inquiryBody.replaceChildren(el('p', errorText('문의'), 'ops-empty'), button('다시 불러오기', () => void loadInquiries()));
       }
@@ -248,6 +298,7 @@
         if (value.user_agent) {
           const details = el('details', undefined, 'ops-device'); details.append(el('summary', '기기 정보'), el('p', value.user_agent, 'ops-help')); item.append(details);
         }
+        item.append(feedbackAi(value.ai));
         const actions = el('div', undefined, 'ops-actions'), next = value.status === 'done' ? 'open' : 'done';
         actions.append(button(next === 'done' ? '확인함' : '다시 열기', () => void update(value.id, next)));
         item.append(actions); list.append(item);
@@ -285,7 +336,17 @@
       rows = [...merged.values()].sort(newest); loading = false; render();
     }
     await Promise.allSettled([loadInquiries(), load()]);
-    return { refresh: async () => { await Promise.allSettled([loadInquiries(), load()]); }, destroy: scope.destroy };
+    return {
+      canLeave: () => !saving && inquiryController?.canLeave?.() !== false,
+      hasDraft: () => inquiryController?.hasDraft?.() === true,
+      refresh: async () => {
+        if (!scope.current() || saving || inquiryController?.canLeave?.() === false) return false;
+        const refreshed = inquiryController?.refresh ? await inquiryController.refresh() : await loadInquiries();
+        if (refreshed === false || !scope.current()) return false;
+        await load(); return true;
+      },
+      destroy() { inquiryController?.destroy?.(); inquiryController = null; scope.destroy(); }
+    };
   }
 
   window.OjjudaOperations = { renderReports, renderSupport };

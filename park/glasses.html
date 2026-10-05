@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <script src="/park/route.js?v=20261004-full1"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10131d">
+  <title>스마트 글래스 미리보기 | 오쭈다 월드 · 공원</title>
+  <link rel="icon" href="/favicon.svg?v=20260929-logo1" type="image/svg+xml">
+  <link rel="stylesheet" href="/note/glasses.css">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260929-logo1">
+</head>
+<body>
+  <main class="preview-page">
+    <header class="page-header">
+      <a href="/park/?embedded=1" class="back-link">← 오쭈다 월드 · 공원</a>
+      <span class="preview-label">스마트 글래스 미리보기</span>
+    </header>
+    <div class="intro">
+      <h1>가까운 카드, 시야 한쪽에 작게</h1>
+      <p>위치를 허용하면 가까운 카드부터 보여요. 좌표는 화면에 표시하지 않습니다.</p>
+    </div>
+
+    <section class="glass-frame" aria-label="스마트 글래스 화면 미리보기">
+      <div class="glass-view" id="glass-view">
+        <div class="glass-header"><span id="glass-clock">--:--</span><span id="glass-battery">안경 배터리 —</span></div>
+        <div class="glass-card" id="glass-card" hidden>
+          <div class="glass-card-top"><span id="glass-number"></span><span id="glass-distance"></span></div>
+          <button type="button" id="glass-select" class="glass-card-text" aria-label="카드 전체 보기"><span id="glass-line"></span></button>
+        </div>
+        <p class="glass-idle" id="glass-idle">위치를 허용하면 근처 카드를 볼 수 있어요.</p>
+        <div class="glass-expanded" id="glass-expanded" hidden>
+          <div class="glass-card-top"><span id="glass-expanded-number"></span><span id="glass-expanded-distance"></span></div>
+          <div id="glass-full" class="glass-full"></div>
+          <button type="button" id="glass-collapse" class="glass-close">닫기</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button type="button" id="glass-locate" class="primary">내 위치로 보기</button>
+      <button type="button" id="glass-sample">예시 화면</button>
+      <div class="pager" role="group" aria-label="가까운 카드 탐색">
+        <button type="button" id="glass-prev" disabled>이전</button>
+        <button type="button" id="glass-next" disabled>다음</button>
+      </div>
+    </div>
+    <p class="status" id="glass-status" role="status" aria-live="polite">기기에 연결되지 않은 웹 미리보기입니다.</p>
+    <p class="help">카드를 선택하면 전체 글이 열립니다. 키보드 ← → 로 이동하고 Enter로 열 수 있어요. 배터리는 연결된 안경이 값을 제공할 때 표시합니다.</p>
+  </main>
+  <script src="/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/note/glasses.js" defer></script>
+</body>
+</html>

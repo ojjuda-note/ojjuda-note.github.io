@@ -1,0 +1,58 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs'), path = require('node:path');
+const { PGlite } = require('@electric-sql/pglite');
+(async () => {
+ const db = new PGlite(), admin = '00000000-0000-4000-8000-000000000001', member = '00000000-0000-4000-8000-000000000002';
+ await db.exec(`
+  create role anon; create role authenticated;
+  create schema auth; grant usage on schema auth to anon,authenticated;
+  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+  create table public.app_admins(user_id uuid primary key);
+  create table public.profiles(id uuid primary key,nickname text);
+  create table public.admin_log(id bigint primary key,admin_id uuid,action text,target_user uuid,target text,detail jsonb,created_at timestamptz);
+  create schema ojjuda_note_internal;
+  create table ojjuda_note_internal.moderation_actions(action_id uuid primary key,card_id uuid,report_id uuid,moderator_id uuid,subject_user_id uuid,action text,reason text,detail jsonb,created_at timestamptz);
+  create function public.is_admin() returns boolean language sql stable security definer set search_path='' as $$
+   select case when current_setting('test.null_admin',true)='true' then null else exists(select 1 from public.app_admins where user_id=auth.uid()) end
+  $$;
+  insert into public.app_admins values('${admin}');
+  insert into public.profiles values('${admin}','운영자'),('${member}','대상 회원');
+  insert into public.admin_log select n,'${admin}',case when n%3=0 then 'coins' else 'rename' end,'${member}','새 닉네임',jsonb_build_object('delta',n,'reason','관리 사유'),'2026-10-04T08:00:00Z' from generate_series(1,245) n;
+  insert into ojjuda_note_internal.moderation_actions select ('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,null,null,'${admin}','${member}',case when n%2=0 then 'archive_card' else 'custom_action' end,'공원 사유','{}','2026-10-04T08:00:00Z' from generate_series(1,65) n;
+ `);
+ const sql = fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261004080923_admin_activity_history.sql'),'utf8');
+ await db.exec(sql); await db.exec(sql);
+ const value = async (sql, params=[]) => (await db.query(sql,params)).rows[0].value;
+ const list = (source='world',action=null,limit=30,offset=0) => value('select public.admin_activity_list($1,$2,$3,$4) as value',[source,action,limit,offset]);
+ for(const role of ['anon','authenticated']) assert.equal(await value(`select has_table_privilege('${role}','public.admin_log','select') as value`),false);
+ for(const name of ['public.admin_activity_list(text,text,integer,integer)','ojjuda_admin_internal.activity_list(text,text,integer,integer)']) assert.equal(await value('select has_function_privilege(\'anon\',$1,\'execute\') as value',[name]),false);
+ await db.exec('set role authenticated');
+ await assert.rejects(list,/admin_required/);
+ await value('select set_config(\'request.jwt.claim.sub\',$1,false) as value',[member]);
+ await assert.rejects(list,/admin_required/);
+ await value('select set_config(\'request.jwt.claim.sub\',$1,false) as value',[admin]);
+ await value("select set_config('test.null_admin','true',false) as value");
+ await assert.rejects(list,/admin_required/);
+ await value("select set_config('test.null_admin','false',false) as value");
+ const first = await list(), second = await list('world',null,30,30), old = await list('world',null,30,240);
+ assert.equal(first.total_count,245); assert.equal(first.items.length,30); assert.equal(first.items[0].id,'245');
+ assert.equal(first.items[0].admin_nick,'운영자'); assert.equal(first.items[0].target_nick,'대상 회원');
+ assert.equal(new Set([...first.items,...second.items].map(r=>r.id)).size,60,'same-time rows paginate without duplicates');
+ assert.equal(old.items.length,5); assert.equal(old.items.at(-1).id,'1','history beyond old 200-row cap is accessible');
+ const filtered = await list('world','coins',10,10);
+ assert.equal(filtered.total_count,81); assert.equal(filtered.items.length,10); assert.ok(filtered.items.every(r=>r.action==='coins'));
+ assert.deepEqual(filtered.actions.map(r=>r.action),['coins','rename'],'filter choices cover all source actions');
+ const park = await list('park','archive_card',30,30);
+ assert.equal(park.total_count,32); assert.equal(park.items.length,2); assert.ok(park.items.every(r=>r.source==='park'&&r.reason==='공원 사유'));
+ assert.ok((await list('park')).actions.some(r=>r.action==='custom_action'),'new action codes remain accessible');
+ assert.equal((await list('world','missing')).total_count,0); assert.equal((await list('world',null,30,999)).items.length,0);
+ assert.equal((await list('world',null,30,100001)).items.length,0,'history has no arbitrary 100,000-row browsing cap');
+ for(const args of [[null],['wrong'],['world',''],['world',' coins '],['world','x'.repeat(101)],['world',null,0],['world',null,101],['world',null,null],['world',null,30,-1],['world',null,30,null]]) await assert.rejects(()=>list(...args),/invalid_activity_page/);
+ await db.exec('reset role');
+ assert.equal(await value('select count(*) as value from public.admin_log'),245);
+ assert.equal(await value('select count(*) as value from ojjuda_note_internal.moderation_actions'),65);
+ await db.exec(`delete from public.profiles where id='${admin}'`);
+ assert.equal((await list()).items[0].admin_nick,null,'deleted profiles do not hide old history');
+ await db.exec('set role anon'); await assert.rejects(list,/permission denied/);
+ await db.close(); console.log('PASS: read-only history, >200 rows, stable ties, source/action pages and totals, unknown actions, missing profiles, anonymous/member/null-admin denial, private tables and validated bounds');
+})().catch(e=>{console.error(e);process.exitCode=1});

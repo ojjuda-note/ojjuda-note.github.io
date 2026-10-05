@@ -21,9 +21,13 @@
 .ojjuda-operations .ops-message{font-size:13px;line-height:1.7;min-height:1.7em;margin:12px 0}
 .ojjuda-operations .ops-section+.ops-section{border-top:1px solid var(--line,#daddf0);margin-top:28px;padding-top:24px}
 .ojjuda-operations .ops-device summary{font-size:12px;color:var(--ink-2,#626894);cursor:pointer}
+.ojjuda-operations .ops-feedback-ai{margin-top:14px;padding:12px;background:var(--surface-2,#f5f6fc);border:1px solid var(--line,#daddf0);border-radius:12px;min-width:0}
+.ojjuda-operations .ops-feedback-ai .ops-content{font-size:13px;margin:8px 0}
+.ojjuda-operations .ops-ai-evidence{display:inline-flex;align-items:center;min-height:44px;font-size:13px;line-height:1.6;color:var(--ink,#23264a);text-decoration:underline;text-underline-offset:3px}
+.ojjuda-operations .ops-ai-updated{display:block;color:var(--ink-2,#626894);font-size:12px;line-height:1.6;margin-top:6px;overflow-wrap:anywhere}
 .ojjuda-operations .btn,.ojjuda-operations .button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 13px;font:inherit;font-size:13px;color:var(--ink,#23264a);background:var(--surface,#fff);border:1px solid var(--line,#daddf0);border-radius:12px;cursor:pointer;line-height:1.4}
 .ojjuda-operations .btn.pri,.ojjuda-operations .button.primary{background:var(--accent,#f0679a);color:var(--on-accent,#fff);border-color:var(--accent,#f0679a)}
 .ojjuda-operations .btn.danger{color:#b3425b}
 .ojjuda-operations button:disabled{cursor:wait;opacity:.55}
-.ojjuda-operations button:focus-visible,.ojjuda-operations summary:focus-visible{outline:3px solid var(--accent,#f0679a);outline-offset:3px}
+.ojjuda-operations button:focus-visible,.ojjuda-operations summary:focus-visible,.ojjuda-operations .ops-ai-evidence:focus-visible{outline:3px solid var(--accent,#f0679a);outline-offset:3px}
 @media(max-width:600px){.ojjuda-operations .ops-card{padding:13px}.ojjuda-operations .ops-filters{gap:6px}.ojjuda-operations .ops-filters .btn{padding:8px 11px}.ojjuda-operations .ops-actions .btn{min-height:44px}}

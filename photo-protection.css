@@ -1,0 +1,13 @@
+[data-protect-photo="true"],
+[data-protect-photo="true"] img,
+[data-protect-photo="true"] image {
+  -webkit-touch-callout: none;
+}
+img[data-protect-photo="true"],
+image[data-protect-photo="true"],
+[data-protect-photo="true"] img,
+[data-protect-photo="true"] image {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
