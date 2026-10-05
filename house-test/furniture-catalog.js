@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-wallframe1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261005-wallframe1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-tableplant1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-tableplant1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -26,6 +26,10 @@ const unifiedBlanket={label:'분홍 니트 담요',shortLabel:'분홍 담요',wi
  clearance:'소파에 가져가면 걸치는 담요로, 바닥에 놓으면 펼친 담요로 바뀌어요.'};
 export const FURNITURE={
  ...separateSofaAccessories,
+ 'table-plant':{label:'크림 협탁 화분',shortLabel:'협탁 화분',width:.6,depth:.6,height:1.45,depthFill:1,introduced:21,autoPlace:false,
+  directions:['left','center','right'],anchor:'rear',layer:'surface',picture:'made',preview:'assets/table-plant-center-preview-v1.png',
+  preferred:{direction:'left',x:.03,y:5.7,elevation:.9},preferredViews:{left:{direction:'left',x:.03,y:5.7,elevation:.9},center:{direction:'center',x:4.7,y:4.53,elevation:.9},right:{direction:'right',x:9.363333,y:5.7,elevation:.9}},
+  clearance:'협탁 위에 놓는 작은 화분이에요. 높이를 조절할 수 있고, 협탁을 옮기면 화분도 따로 옮겨 주세요.'},
  'botanical-frame':{label:'원목 잎사귀 액자',shortLabel:'원목 액자',width:1.2,depth:.1,height:1.9,depthFill:1,introduced:20,autoPlace:false,
   directions:['left','center','right'],anchor:'rear',layer:'surface',wallMounted:true,picture:'made',preview:'assets/botanical-frame-center-preview-v1.png',
   preferred:{direction:'left',x:0,y:3,elevation:2.1},preferredViews:{left:{direction:'left',x:0,y:3,elevation:2.1},center:{direction:'center',x:0,y:0,elevation:2.1},right:{direction:'right',x:9.9,y:3.5,elevation:2.1}},
