@@ -1,5 +1,5 @@
-import {roomPoint} from './model.js?v=20261005-blanketdata1';
-import {FLOOR_BLANKET_REGISTRATION} from './floor-blanket-registration.js?v=20261005-blanketdata1';
+import {roomPoint} from './model.js?v=20261006-floordata1';
+import {FLOOR_BLANKET_REGISTRATION} from './floor-blanket-registration.js?v=20261006-floordata1';
 
 // A single flat illustration registered by measured cloth corners. Only those
 // picture pixels are sampled; no material, shape or hidden cloth is generated.
@@ -50,4 +50,16 @@ export function blanketFloorArtwork(item,placement,contact,size){
  const footprint=[[0,0],[1,0],[1,1],[0,1]].map(floor);
  return {footprint,reserved:footprint,anchors,contact,faces:[],left,top,width:right-left,height:bottom-top,
   art:{kind:'floor-blanket',triangles},registration:{sourceCorners:registration.sourceCorners,worldCorners:registration.normalizedFloorCorners.map(([u,v])=>({x:placement.x+u*size.w,y:placement.y+v*size.d,z:0})),image:registration.image}};
+}
+
+// Validate the same homography used for drawing before installing new data.
+export function validateFloorBlanketProjection(registration){
+ const matrix=homography(registration.sourceCorners,registration.normalizedFloorCorners.map(([x,y])=>({x,y})));
+ const [w,h]=registration.canvas,corners=[[0,0],[w,0],[w,h],[0,h]];
+ const weights=corners.map(([x,y])=>matrix[6]*x+matrix[7]*y+matrix[8]);
+ if(weights.some(v=>!Number.isFinite(v)||Math.abs(v)<1e-8||v*weights[0]<=0))throw new RangeError('Invalid floor blanket projection');
+ for(const point of registration.alphaHull){
+  const p=project(matrix,point);
+  if(![p.x,p.y].every(Number.isFinite)||p.x<-.05||p.y<-.05||p.x>1.05||p.y>1.05)throw new RangeError('Floor blanket exceeds its footprint');
+ }
 }

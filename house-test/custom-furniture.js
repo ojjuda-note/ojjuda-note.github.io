@@ -1,27 +1,38 @@
-import {validateSofaBlanket,installSofaBlanket} from './sofa-blanket-data.js?v=20261005-blanketdata1';
-import {isSofaCushion,validateSofaCushions,installSofaCushions} from './sofa-cushion-data.js?v=20261005-blanketdata1';
-import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261005-blanketdata1';
-import {validateSofaRegistration,installSofaRegistration} from './sofa-registration-data.js?v=20261005-blanketdata1';
+import {validateFloorBlanket,installFloorBlanket} from './floor-blanket-data.js?v=20261006-floordata1';
+import {validateSofaBlanket,installSofaBlanket} from './sofa-blanket-data.js?v=20261006-floordata1';
+import {isSofaCushion,validateSofaCushions,installSofaCushions} from './sofa-cushion-data.js?v=20261006-floordata1';
+import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-floordata1';
+import {validateSofaRegistration,installSofaRegistration} from './sofa-registration-data.js?v=20261006-floordata1';
 import {isCatalogItem,catalogFurniture} from './item-manifest.js?v=2';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-blanketdata1';
-import {floorPoint} from './model.js?v=20261005-blanketdata1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-blanketdata1';
-import {listMadeItems} from './custom-store.js?v=20261005-blanketdata1';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-blanketdata1';
-import {builtInAssets,loadBuiltInAssetList} from './built-in-assets.js?v=20261005-blanketdata1';
-import {readBuiltInAsset} from './built-in-cache.js?v=20261005-blanketdata1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261006-floordata1';
+import {floorPoint} from './model.js?v=20261006-floordata1';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261006-floordata1';
+import {listMadeItems} from './custom-store.js?v=20261006-floordata1';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261006-floordata1';
+import {builtInAssets,loadBuiltInAssetList} from './built-in-assets.js?v=20261006-floordata1';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261006-floordata1';
 const items=new Map(),readyBuiltIns=new Set();
 const sofaDependents=new Set(['sofa','cream-floral-cushion','sage-cushion','peach-cushion','pink-check-cushion','blanket-sofa','blanket-floor']);
+const floorBlanketDependents=new Set(['sofa','blanket-floor','blanket-sofa']);
 const pendingBuiltIns=new Map();
 const retryBuiltIns=new Set();
 let pendingCatalog;
 const loadCatalog=()=>pendingCatalog??=loadBuiltInAssetList().then(()=>{Object.assign(FURNITURE,catalogFurniture(builtInAssets));});
-export const builtInItemReady=id=>(id==='sofa'||isSofaCushion(id))?readyBuiltIns.has('sofa')&&readyBuiltIns.has('sofa-cushions')&&readyBuiltIns.has('sofa-blanket'):sofaDependents.has(id)?readyBuiltIns.has('sofa')&&readyBuiltIns.has('sofa-blanket'):!Object.hasOwn(builtInAssets,id)||readyBuiltIns.has(id);
+export const builtInItemReady=id=>{
+ if(sofaDependents.has(id)){
+  const required=['sofa','sofa-blanket'];
+  if(id==='sofa'||isSofaCushion(id))required.push('sofa-cushions');
+  if(floorBlanketDependents.has(id))required.push('floor-blanket');
+  return required.every(asset=>readyBuiltIns.has(asset));
+ }
+ return !Object.hasOwn(builtInAssets,id)||readyBuiltIns.has(id);
+};
 const registeredViews=runtime=>Object.fromEntries(['left','center','right'].map(direction=>[direction,{...runtime.views[direction].placement,direction}]));
 // Approved built-ins use the exact 2D runtimes exported by the studio.
 // They never occupy an owner's made-item slot or add themselves to a saved room.
 export async function loadBuiltInItems(ids){
  await loadCatalog();ids??=Object.keys(builtInAssets);
+ if(ids.some(id=>floorBlanketDependents.has(id)))ids=[...ids,'floor-blanket'];
  if(ids.some(id=>id==='sofa'||isSofaCushion(id)))ids=[...ids,'sofa-cushions'];
  if(ids.some(id=>sofaDependents.has(id)))ids=[...ids,'sofa','sofa-blanket'];
  if(ids.some(id=>isCatalogItem(id)&&!Object.hasOwn(builtInAssets,id)))throw new Error('저장된 아이템 목록을 찾지 못했어요. 닫은 뒤 다시 열어 주세요. 기존 배치는 보존됩니다.');
@@ -30,7 +41,7 @@ export async function loadBuiltInItems(ids){
   if(pendingBuiltIns.has(id))return pendingBuiltIns.get(id);
   const pending=(async()=>{
   const {file,revision}=builtInAssets[id];
-  const item=id==='sofa-blanket'?{shortLabel:'담요'}:id==='sofa-cushions'?{shortLabel:'쿠션'}:FURNITURE[id],url=new URL('./assets/'+file,import.meta.url);
+  const item=id==='floor-blanket'?{shortLabel:'바닥 담요'}:id==='sofa-blanket'?{shortLabel:'담요'}:id==='sofa-cushions'?{shortLabel:'쿠션'}:FURNITURE[id],url=new URL('./assets/'+file,import.meta.url);
   url.searchParams.set('v',revision);
   let asset;
   try{asset=await readBuiltInAsset(url,{reload:retryBuiltIns.has(id)});}catch{throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
@@ -39,14 +50,16 @@ export async function loadBuiltInItems(ids){
   let prepared;
   try{
    const runtime=await response.json();
-   if(id==='sofa-blanket')prepared=validateSofaBlanket(runtime);
+   if(id==='floor-blanket')prepared=validateFloorBlanket(runtime);
+   else if(id==='sofa-blanket')prepared=validateSofaBlanket(runtime);
    else if(id==='sofa-cushions')prepared=validateSofaCushions(runtime);
    else if(id==='sofa')prepared=validateSofaRegistration(runtime);
    else prepared=await prepareRuntime(id==='chair'?straightenChairLegs(runtime):runtime);
-   if(id!=='sofa'&&id!=='sofa-cushions'&&id!=='sofa-blanket'&&(['width','depth','height'].some(key=>prepared.runtime.dimensions[key]!==item[key])||prepared.runtime.layer!==item.layer))throw new Error('catalog mismatch');
+   if(id!=='sofa'&&id!=='sofa-cushions'&&id!=='sofa-blanket'&&id!=='floor-blanket'&&(['width','depth','height'].some(key=>prepared.runtime.dimensions[key]!==item[key])||prepared.runtime.layer!==item.layer))throw new Error('catalog mismatch');
   }catch{await asset.discard();throw new Error(item.shortLabel+' 정보를 확인하지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
   await asset.keep();
   readyBuiltIns.add(id);retryBuiltIns.delete(id);
+  if(id==='floor-blanket'){installFloorBlanket(prepared);return;}
   if(id==='sofa-blanket'){
    installSofaBlanket(prepared);
    for(const blanket of ['blanket-floor','blanket-sofa'])FURNITURE[blanket].preview=prepared.center.image;
