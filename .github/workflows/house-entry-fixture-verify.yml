@@ -1,0 +1,68 @@
+name: Verify house entry loading fixture
+on:
+  push:
+    branches: [fix/house-entry-loading-fixture-20261005]
+    paths: [.github/workflows/house-entry-fixture-verify.yml]
+permissions:
+  contents: write
+env:
+  START_SHA: ${{ github.sha }}
+  BASE_SHA: 6f5c04ba5e2d265116103796bbf506b5f166af7c
+  EXPECTED_BLOB: 0f54a49bb478f7f8840e42fbb951445df2ebd3d2
+  BRANCH_NAME: fix/house-entry-loading-fixture-20261005
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check out the exact source base without the temporary workflow
+        run: git checkout --detach "$BASE_SHA"
+      - name: Install locked browser test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Reproduce the original fixture error and apply its scoped repair
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          p=Path('tests/house-entry-loading-ui.test.cjs')
+          original=p.read_text()
+          marker="page.on('pageerror',e=>errors.push(e.message));"
+          assert marker in original
+          p.write_text(original.replace(marker,"page.on('pageerror',e=>{errors.push(e.message);console.error('ENTRY_FIXTURE_PAGE_ERROR:',e.message);});",1))
+          result=subprocess.run(['node',str(p)],capture_output=True,text=True,timeout=120)
+          log=result.stdout+'\n'+result.stderr
+          for line in log.splitlines():
+              if 'ENTRY_FIXTURE_PAGE_ERROR:' in line or 'Timeout' in line: print(line)
+          assert result.returncode!=0, 'The original fixture must reproduce the failure'
+          assert 'MutationObserver' in log and 'ENTRY_FIXTURE_PAGE_ERROR:' in log, 'Expected the missing layout node error'
+          print('PASS: reproduced the original missing layout node error before initialization.')
+          old='<div id="app"><div class="room selected"><p>준비된 방</p></div></div>'
+          new='<div id="app" class="records-home"><div id="viewport"><div class="room selected"><p>준비된 방</p></div></div><section id="panel"></section></div>'
+          assert original.count(old)==1
+          comment='// Preserve the real home\'s initial summary and layout containers when faking readiness.\n'
+          p.write_text(original.replace('const instant=',comment+'const instant=',1).replace(old,new,1))
+          PY
+          test "$(git hash-object tests/house-entry-loading-ui.test.cjs)" = "$EXPECTED_BLOB"
+          node --check tests/house-entry-loading-ui.test.cjs
+          git diff --check
+      - name: Check the complete entry loading UI and retry scenarios
+        run: node tests/house-entry-loading-ui.test.cjs
+      - name: Publish only the verified test repair
+        run: |
+          git config user.name 'ojjuda-note'
+          git config user.email '334255691+ojjuda-note@users.noreply.github.com'
+          git add tests/house-entry-loading-ui.test.cjs
+          checked_tree=$(git write-tree)
+          checked_head=$(printf '%s\n' 'Match immediate house readiness fixtures to the current layout' | git commit-tree "$checked_tree" -p "$START_SHA" -p "$BASE_SHA")
+          git push origin "$checked_head:refs/heads/$BRANCH_NAME"
+          echo "CHECKED_HEAD=$checked_head"
+          echo "CHECKED_TREE=$checked_tree"
+          echo "BASE_MAIN=$BASE_SHA"
+          git diff --stat "$BASE_SHA" "$checked_head"
