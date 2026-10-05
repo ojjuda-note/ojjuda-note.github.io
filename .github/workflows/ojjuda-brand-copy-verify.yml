@@ -95,6 +95,7 @@ jobs:
           .ojjuda-copy--composer{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--accent-soft,#fceaf1);color:var(--ink,#23264a);font-size:18px;line-height:1.55}
           .front-heading>.ojjuda-copy--map{font-size:20px;line-height:1.6;color:var(--pink-ink,#a93263);margin:14px 0}
           @media(max-width:380px){.ojjuda-copy--composer{font-size:16px}}
+          @media(min-width:900px){.topbar>.ojjuda-copy--world{display:none}}
           '''
           for file, content in changed.items():
               Path(file).write_text(content)
@@ -207,7 +208,7 @@ jobs:
           COPY_TEST_PATCH
           python3 - <<'CHECK_BLOBS'
           import subprocess
-          expected = {"index.html":"2d51e1aaedaa86de4f1663ff2678b798dbafb73d","world.html":"43fd4a30b88e9533f670f5a9a0918784f3c70c44","park/index.html":"5c4c14ec34d3c301001397cb985a983750582cd6","note/preview.js":"f3512e773508d4cc3263e6846cb4ec3460adf808","guide.html":"b35402e596069d5c045efcc4d967d057186b6180","sitemap.html":"2b9b17db158f1537c6806791473b11039a68b7f3","manifest.webmanifest":"594fdfa0f40554704f54609233c0d59bb37b5fc1","brand-copy.css":"946e2d7a56e2551637b2dd0648ca7cc8593f6805","tests/world-portal-ui.test.cjs":"a5554a3c35f9465ddf1ae109746b3be393280bd1","tests/park-note-chat-ui.test.cjs":"2728d566736f1540f08d690e498da854929c5c9d"}
+          expected = {"index.html":"2d51e1aaedaa86de4f1663ff2678b798dbafb73d","world.html":"43fd4a30b88e9533f670f5a9a0918784f3c70c44","park/index.html":"5c4c14ec34d3c301001397cb985a983750582cd6","note/preview.js":"f3512e773508d4cc3263e6846cb4ec3460adf808","guide.html":"b35402e596069d5c045efcc4d967d057186b6180","sitemap.html":"2b9b17db158f1537c6806791473b11039a68b7f3","manifest.webmanifest":"594fdfa0f40554704f54609233c0d59bb37b5fc1","brand-copy.css":"b7350bfd23182aeeb898bd44083fa13dd75c5648","tests/world-portal-ui.test.cjs":"a5554a3c35f9465ddf1ae109746b3be393280bd1","tests/park-note-chat-ui.test.cjs":"2728d566736f1540f08d690e498da854929c5c9d"}
           for file, sha in expected.items():
               actual = subprocess.check_output(['git', 'hash-object', file], text=True).strip()
               assert actual == sha, (file, actual, sha)
