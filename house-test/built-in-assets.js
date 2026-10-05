@@ -2,6 +2,7 @@ import {loadItemManifest} from './item-manifest.js?v=2';
 // Offline fallback for existing installations. Publish routine artwork updates
 // in item-assets.json; do not change application versions or module imports.
 const fallbackAssets = {
+ 'sofa-cushions': {"file":"sofa-cushions-v1.runtime.json","revision":"a03469c53a043506"},
  sofa: {"file":"sofa-registration-v1.runtime.json","revision":"8f93f54a9bca3a0c"},
  'open-book': {file:'open-book-v1.runtime.json',revision:'f6b1f38b7e985386'},
  'pencil-cup': {file:'pencil-cup-v1.runtime.json',revision:'f28707be042aed33'},
