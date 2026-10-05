@@ -40,3 +40,9 @@
 기존 `sofa`는 일반 가구 실행 자료 대신 `ojjuda-sofa-registration` 형식을 사용한다. `assets/sofa-registration-v1.runtime.json`의 세 방향 자료를 수정하고 새 파일로 올린 후 `item-assets.json`의 `sofa.file`과 `sofa.revision`을 갱신한다. 치수는 기존 3.5×1.5×1.8을 유지한다. 세 방향의 그림 경로·기준점·부위 순서가 검증된 뒤 함께 적용된다. 원본 PNG를 수정하면 새 이름으로 업로드하고 해당 경로를 쓴다. 앱 버전이나 모듈 캐시는 변경하지 않는다.
 
 쿠션 자리와 담요 접힘 등 기존 전용 동작의 설정 변경은 이 본체 자료에 포함되지 않는다.
+
+## 기존 쿠션 자료 수정
+
+쿠션 네 종류는 `sofa-cushions` 항목의 `ojjuda-sofa-cushions` 자료로 함께 관리한다. 각 쿠션의 `seat`는 소파 위 자리(`u`, `v`, `bottom`)와 기존 크기(`width`, `height`), `views`는 좌·정면·우의 PNG 경로와 `sourceRect: [x,y,width,height]`다. 기존 크기는 저장된 배치 보호를 위해 변경하지 않는다. 담요 정보는 이 자료에 포함되지 않는다.
+
+`assets/sofa-cushions-v1.runtime.json`을 기준으로 승인된 자료를 새 파일에 저장하고 업로드한 뒤 `item-assets.json`의 `sofa-cushions.file`과 SHA-256 앞 16자리 `revision`을 갱신한다. PNG 변경도 새 파일명을 사용한다. 앱 버전이나 모듈 캐시 변경 없이 방을 다시 열면 읽는다. 네 종류·세 방향을 모두 검증한 후 함께 적용하며, 기존 쿠션의 저장 좌표를 새 기본 자리로 자동 이동하지 않는다. 새 자리는 이후 소파에 가져다 놓을 때 사용한다.
