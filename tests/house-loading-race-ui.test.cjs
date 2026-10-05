@@ -51,9 +51,9 @@ const waitForRequest=async promise=>{let timer;try{await Promise.race([promise,n
   failTable=true;const tableRequests=()=>requests.filter(name=>name==='coffee-table-v2.runtime.json').length;
   await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).click();await f.locator('#notice').filter({hasText:'거실 테이블을 불러오지 못했어요'}).waitFor();
   assert.equal(await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).isEnabled(),true,'failure restores the card for retry');assert.equal(await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).getAttribute('aria-busy'),null);
-  assert.equal(tableRequests(),1);assert.equal(await f.locator('#placement-done').isVisible(),false);assert.equal(await f.locator('[data-furniture="coffee-table"]').count(),0);assert.deepEqual(await readSave(),empty);
+  assert.equal(tableRequests(),2,'a failed response gets one automatic reload');assert.equal(await f.locator('#placement-done').isVisible(),false);assert.equal(await f.locator('[data-furniture="coffee-table"]').count(),0);assert.deepEqual(await readSave(),empty);
   failTable=false;await f.getByRole('button',{name:'거실 테이블 놓기',exact:true}).click();await f.locator('[data-furniture="coffee-table"][data-render-state="ready"]').waitFor();
-  assert.equal(tableRequests(),2,'retry performs a fresh runtime request after the 503');assert.equal(await f.locator('#placement-done').isEnabled(),true);assert.deepEqual(await readSave(),empty,'successful art loading alone does not save a placement');
+  assert.equal(tableRequests(),3,'manual retry performs a fresh runtime request after the automatic reload failed');assert.equal(await f.locator('#placement-done').isEnabled(),true);assert.deepEqual(await readSave(),empty,'successful art loading alone does not save a placement');
   await f.getByRole('button',{name:'취소',exact:true}).click();await close(f);assert.deepEqual(await readSave(),empty);assert.deepEqual(errors,[]);
   console.log('HOUSE LOADING RACE PASS: latest snapshot and new runtime preserved; late selection cancelled; 503 retry succeeds without premature saves');
  }finally{await browser.close();}

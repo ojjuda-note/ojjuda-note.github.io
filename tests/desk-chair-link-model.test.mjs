@@ -9,7 +9,7 @@ import {itemSize} from '../house-test/furniture-catalog.js?v=20261005-shapeguard
 // painting and actual bitmap decoding remain covered by the built-in UI tests.
 const previousImage=globalThis.Image,previousFetch=globalThis.fetch;
 globalThis.Image=class{width=1;height=1;set src(value){queueMicrotask(()=>this.onload());}};
-globalThis.fetch=async url=>({ok:true,json:async()=>JSON.parse(await fs.readFile(url,'utf8'))});
+globalThis.fetch=async url=>new Response(await fs.readFile(url));
 try{await loadBuiltInItems();}finally{globalThis.Image=previousImage;globalThis.fetch=previousFetch;}
 const entries=pair=>[{id:'desk',...pair.desk},{id:'chair',...pair.chair}];
 const saved=furniture=>({version:13,rooms:[{x:0,y:0,decor:true,curtains:false,shelf:null,furniture}],diary:'keep this diary'});
