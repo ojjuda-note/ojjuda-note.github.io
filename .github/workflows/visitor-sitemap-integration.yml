@@ -1,0 +1,97 @@
+name: Integrate and verify visitor sitemap
+on:
+  push:
+    branches: [sitemap-visible-20260928]
+    paths: [.github/workflows/visitor-sitemap-integration.yml]
+permissions:
+  contents: write
+concurrency:
+  group: visitor-sitemap-integration
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      START_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - name: Add the visitor map to current home and guide
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git checkout --detach origin/main
+          python3 - <<'PYTHON'
+          import os,subprocess
+          from pathlib import Path
+          for name in ['sitemap.html','sitemap.xml']:
+              Path(name).write_bytes(subprocess.check_output(['git','show',os.environ['START_SHA']+':'+name]))
+          for name,anchor in [('index.html','<a href="/guide.html">사용 안내</a>'),('guide.html','<a href="/">첫 화면</a>')]:
+              p=Path(name);s=p.read_text()
+              assert s.count(anchor)==1, 'Footer changed: '+name
+              assert '/sitemap.html' not in s, 'Sitemap link already exists: '+name
+              p.write_text(s.replace(anchor,anchor+'<a href="/sitemap.html">사이트맵</a>',1))
+          PYTHON
+          git diff --check
+      - name: Verify public navigation and XML destinations
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from urllib.parse import urlsplit
+          import xml.etree.ElementTree as ET
+          class Page(HTMLParser):
+           def __init__(self,filename):
+            super().__init__();self.hrefs=[];self.ids=[];self.footer=False;self.footer_links=[];self.feed(Path(filename).read_text())
+           def handle_starttag(self,tag,attrs):
+            a=dict(attrs)
+            if tag=='footer':self.footer=True
+            if 'id' in a:self.ids.append(a['id'])
+            if tag=='a' and 'href' in a:
+             self.hrefs.append(a['href'])
+             if self.footer:self.footer_links.append(a['href'])
+           def handle_endtag(self,tag):
+            if tag=='footer':self.footer=False
+          site=Page('sitemap.html')
+          assert len(site.ids)==len(set(site.ids)), 'Duplicate HTML IDs'
+          for href in site.hrefs:
+           url=urlsplit(href)
+           if url.scheme:continue
+           if href.startswith('#'):assert href[1:] in site.ids;continue
+           target=Path('.'+url.path)
+           if target.is_dir():target=target/'index.html'
+           assert target.is_file(), 'Missing link target: '+href
+          assert '/world.html?place=park' in site.hrefs
+          assert not any('/note/' in h for h in site.hrefs)
+          for name in ['index.html','guide.html']:
+           assert Page(name).footer_links.count('/sitemap.html')==1, 'Footer link missing or duplicated: '+name
+          root=ET.parse('sitemap.xml').getroot()
+          ns={'sm':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          urls=[n.text for n in root.findall('sm:url/sm:loc',ns)]
+          assert len(urls)==len(set(urls)), 'Duplicate XML URLs'
+          expected={'/','/world.html?place=park','/world.html','/guide.html','/sitemap.html','/terms.html','/privacy.html'}
+          assert set(urls)=={'https://ojjuda.kr'+p for p in expected}
+          for href in site.hrefs:
+           if href.startswith('/') and not href.endswith('.xml'):assert 'https://ojjuda.kr'+href in urls
+          print('PASS: public links exist; home/guide footer entries, current Park route, unique HTML IDs, valid XML and all seven canonical URLs.')
+          PYTHON
+          python3 - <<'PYTHON'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed=={'index.html','guide.html','sitemap.xml'},changed
+          PYTHON
+      - name: Save only the checked sitemap changes
+        run: |
+          git add index.html guide.html sitemap.html sitemap.xml
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tree=$(git write-tree)
+          main_sha=$(git rev-parse origin/main)
+          commit=$(git commit-tree "$tree" -p "$START_SHA" -p "$main_sha" -m 'Integrate public visitor sitemap with current Park and World navigation')
+          git push origin "$commit:refs/heads/sitemap-visible-20260928"
+          echo "CHECKED_HEAD=$commit"
+          echo "CHECKED_TREE=$tree"
+          echo "BASE_MAIN=$main_sha"
+          sha256sum index.html guide.html sitemap.html sitemap.xml
