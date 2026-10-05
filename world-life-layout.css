@@ -82,3 +82,7 @@
 [data-life-view=widgets]:not(.life-layout-editing) .life-layout-hide{min-width:30px;min-height:30px;padding:0;font-size:18px;color:var(--life-muted);background:transparent;border:0}
 .life-layout-moving{user-select:none;cursor:grabbing}
 .life-layout-dragging{outline:2px solid var(--life-link);outline-offset:2px;cursor:grabbing}
+
+/* Move the live tile visually, preserving its original layout slot and iframe. */
+.life-layout>.life-layout-dragging{transform:translate3d(var(--life-drag-x,0px),var(--life-drag-y,0px),0);opacity:.62;z-index:50;box-shadow:0 14px 30px #39284b30;will-change:transform;transition:none;pointer-events:none}
+.life-layout>.life-layout-dragging *{pointer-events:none!important}

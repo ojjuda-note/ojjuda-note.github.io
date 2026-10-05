@@ -28,7 +28,7 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
  const active=()=>alive&&host.isConnected&&authorized();
  const cleanup=[];
  if(!document.querySelector('link[data-life-layout-style]')){
-  const style=node('link');style.rel='stylesheet';style.href='/world-life-layout.css?v=20261005-hold1';style.dataset.lifeLayoutStyle='';document.head.append(style);
+  const style=node('link');style.rel='stylesheet';style.href='/world-life-layout.css?v=20261005-drag2';style.dataset.lifeLayoutStyle='';document.head.append(style);
  }
  host.classList.add('life-layout');
  const toolbar=node('div','','life-layout-toolbar');toolbar.dataset.worldSwipe='off';
@@ -89,22 +89,29 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
  function cancelHold(){if(hold){clearTimeout(hold.timer);hold=null;}}
  function beginDrag(id,handle,event){
   cancelHold();sizing?.cancel();
-  drag={id,handle,pointer:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,moved:false,target:null,after:false};
+  const box=boxes.get(id),rect=box.getBoundingClientRect();
+  drag={id,handle,box,dx:0,dy:0,offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top,pointer:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,moved:false,target:null,after:false};
   handle.setPointerCapture(event.pointerId);boxes.get(id).classList.add('life-layout-dragging');host.classList.add('life-layout-moving');raf=requestAnimationFrame(scrollDrag);
 
  }
- function clearTargets(){for(const box of boxes.values())if(box){delete box.dataset.layoutDrop;box.classList.remove('life-layout-dragging');}}
+ function paintDrag(){
+  if(!drag)return;
+  const r=drag.box.getBoundingClientRect(),left=r.left-drag.dx,top=r.top-drag.dy;
+  drag.dx=drag.x-drag.offsetX-left;drag.dy=drag.y-drag.offsetY-top;
+  drag.box.style.setProperty('--life-drag-x',drag.dx+'px');drag.box.style.setProperty('--life-drag-y',drag.dy+'px');
+ }
+ function clearTargets(){for(const box of boxes.values())if(box){delete box.dataset.layoutDrop;box.classList.remove('life-layout-dragging');box.style.removeProperty('--life-drag-x');box.style.removeProperty('--life-drag-y');}}
  function targetDrag(){
   if(!drag)return;
   for(const box of boxes.values())if(box)delete box.dataset.layoutDrop;
   if(!drag.moved)return;
   const box=document.elementsFromPoint(drag.x,drag.y).map(e=>e.closest?.('[data-life-tool]')).find(e=>e&&host.contains(e)&&!e.hidden&&e.dataset.lifeTool!==drag.id);
   drag.target=box?.dataset.lifeTool||null;
-  if(box){const r=box.getBoundingClientRect();const source=boxes.get(drag.id).getBoundingClientRect();drag.after=Math.abs(source.top-r.top)<20?drag.x>r.left+r.width/2:drag.y>r.top+r.height/2;box.dataset.layoutDrop=drag.after?'after':'before';}
+  if(box){const r=box.getBoundingClientRect();const source=boxes.get(drag.id).getBoundingClientRect();drag.after=Math.abs(source.top-drag.dy-r.top)<20?drag.x>r.left+r.width/2:drag.y>r.top+r.height/2;box.dataset.layoutDrop=drag.after?'after':'before';}
  }
  function scrollDrag(){
   if(!drag||!active())return;
-  if(drag.moved){const edge=70,dy=drag.y<edge?-10:drag.y>innerHeight-edge?10:0;if(dy)window.scrollBy(0,dy);targetDrag();}
+  if(drag.moved){const edge=70,dy=drag.y<edge?-10:drag.y>innerHeight-edge?10:0;if(dy)window.scrollBy(0,dy);paintDrag();targetDrag();}
   raf=requestAnimationFrame(scrollDrag);
  }
  function finishDrag(apply){
@@ -115,7 +122,7 @@ export function mountLayout(host,{owner,authorized=()=>true}={}) {
    const before=structuredClone(config);config.order=config.order.filter(x=>x!==current.id);const i=config.order.indexOf(current.target)+(current.after?1:0);config.order.splice(i,0,current.id);if(!editing&&!persist()){config=before;render();return;}render();report(editing?'위치를 옮겼어요. 배치 저장을 누르면 유지돼요.':'위치를 옮겨 저장했어요.');
   }
  }
- const pointerMove=event=>{if(hold&&event.pointerId===hold.pointerId&&Math.hypot(event.clientX-hold.clientX,event.clientY-hold.clientY)>8)cancelHold();if(!drag||event.pointerId!==drag.pointer)return;event.preventDefault();drag.x=event.clientX;drag.y=event.clientY;if(Math.hypot(drag.x-drag.startX,drag.y-drag.startY)>7)drag.moved=true;targetDrag();};
+ const pointerMove=event=>{if(hold&&event.pointerId===hold.pointerId&&Math.hypot(event.clientX-hold.clientX,event.clientY-hold.clientY)>8)cancelHold();if(!drag||event.pointerId!==drag.pointer)return;event.preventDefault();drag.x=event.clientX;drag.y=event.clientY;if(Math.hypot(drag.x-drag.startX,drag.y-drag.startY)>7)drag.moved=true;paintDrag();targetDrag();};
  const pointerUp=event=>{if(hold&&event.pointerId===hold.pointerId)cancelHold();if(drag&&event.pointerId===drag.pointer)finishDrag(true);};
  const pointerCancel=event=>{if(hold&&event.pointerId===hold.pointerId)cancelHold();if(drag&&event.pointerId===drag.pointer)finishDrag(false);};
  const escape=event=>{if(event.key==='Escape'&&(drag||hold)){event.preventDefault();cancelHold();finishDrag(false);report('이동을 취소했어요.');}};
