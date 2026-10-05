@@ -1,10 +1,10 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-sofaarm2';
-import {floorPoint} from './model.js?v=20261005-sofaarm2';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-sofaarm2';
-import {listMadeItems} from './custom-store.js?v=20261005-sofaarm2';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-sofaarm2';
-import {builtInAssets} from './built-in-assets.js?v=20261005-sofaarm2';
-import {readBuiltInAsset} from './built-in-cache.js?v=20261005-sofaarm2';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-sofalegs3';
+import {floorPoint} from './model.js?v=20261005-sofalegs3';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-sofalegs3';
+import {listMadeItems} from './custom-store.js?v=20261005-sofalegs3';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-sofalegs3';
+import {builtInAssets} from './built-in-assets.js?v=20261005-sofalegs3';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261005-sofalegs3';
 const items=new Map();
 const pendingBuiltIns=new Map();
 const retryBuiltIns=new Set();
