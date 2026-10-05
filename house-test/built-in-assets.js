@@ -1,6 +1,7 @@
-// Content revisions belong to the artwork, not to each application release.
-// Update the SHA-256 whenever the corresponding runtime bytes change.
-export const builtInAssets = {
+import {loadItemManifest} from './item-manifest.js?v=1';
+// Offline fallback for existing installations. Publish routine artwork updates
+// in item-assets.json; do not change application versions or module imports.
+const fallbackAssets = {
  'open-book': {file:'open-book-v1.runtime.json',revision:'f6b1f38b7e985386'},
  'pencil-cup': {file:'pencil-cup-v1.runtime.json',revision:'f28707be042aed33'},
  'table-succulent': {file:'table-succulent-v1.runtime.json',revision:'9e6c1afee5ce0abe'},
@@ -15,3 +16,7 @@ export const builtInAssets = {
  chair: {file:'chair-v1.runtime.json',revision:'cd68eb181d23d7d7'},
  'floor-lamp': {file:'floor-lamp-v1.runtime.json',revision:'1913d26469adebeb'}
 };
+
+const manifestURL=new URL('./item-assets.json',import.meta.url);
+export const builtInAssets=/^https?:$/.test(manifestURL.protocol)
+ ?await loadItemManifest(manifestURL,fallbackAssets):fallbackAssets;

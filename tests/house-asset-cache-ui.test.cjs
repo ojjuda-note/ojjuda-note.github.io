@@ -7,13 +7,14 @@ const root=path.resolve(__dirname,'..');
  const assetCount=Object.keys(builtInAssets).length;
  const changedChair=Buffer.concat([fs.readFileSync(path.join(root,'house-test/assets',builtInAssets.chair.file)),Buffer.from('\n')]);
  const changedRevision=crypto.createHash('sha256').update(changedChair).digest('hex').slice(0,16);
- const requests=[];let changed=false,broken=false;
+ const requests=[];let changed=false,broken=false,manifestUnavailable=false;
  const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
   if(url.pathname==='/fixture'){
    res.setHeader('Content-Type','text/html');res.setHeader('Cache-Control','no-store');
    res.end(`<!doctype html><script type="module">import{loadBuiltInItems}from'/house-test/custom-furniture.js?v=${url.searchParams.get('app')}';window.loadItems=async ids=>{const start=performance.now();await Promise.all([loadBuiltInItems(ids),loadBuiltInItems(ids)]);return performance.now()-start};</script>`);return;
   }
+  if(manifestUnavailable&&url.pathname.endsWith('/item-assets.json')){res.writeHead(503);res.end();return;}
   const file=path.resolve(root,'.'+url.pathname);
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);res.end();return;}
   const runtime=file.endsWith('.runtime.json');
@@ -21,7 +22,7 @@ const root=path.resolve(__dirname,'..');
   // Expire HTTP freshness immediately: force-cache must still reuse valid bytes.
   res.setHeader('Cache-Control',runtime?'public, max-age=0':'no-store');
   if(runtime){requests.push({path:url.pathname,revision:url.searchParams.get('v'),bytes:broken?2:fs.statSync(file).size});if(broken){res.end('{}');return;}}
-  if(changed&&file.endsWith('built-in-assets.js')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.chair.revision,changedRevision));return;}
+  if(changed&&file.endsWith('item-assets.json')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.chair.revision,changedRevision));return;}
   if(changed&&file.endsWith('chair-v1.runtime.json')){res.end(changedChair);return;}
   fs.createReadStream(file).pipe(res);
  });
@@ -38,8 +39,9 @@ const root=path.resolve(__dirname,'..');
   await context.setOffline(true);
   const warmMs=await page.evaluate(()=>loadItems());
   assert.equal(requests.length-start,0,'reopening after an app version change reuses all expired cached assets, even offline');await context.setOffline(false);await page.close();
-  changed=true;page=await open(context,'changed-artwork');start=requests.length;await page.evaluate(()=>loadItems());
-  assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),['chair-v1.runtime.json'],'a changed artwork revision fetches only that asset');await page.close();changed=false;
+  changed=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems());
+  assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),['chair-v1.runtime.json'],'manifest-only change with the same app version fetches only that asset');await page.close();
+  manifestUnavailable=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['chair']));assert.equal(requests.length,start,'unavailable manifest preserves the last valid revision and cached artwork');await page.close();manifestUnavailable=false;changed=false;
   // Correct URL, wrong but syntactically valid bytes: dimensions alone cannot
   // detect this stale entry. Repair it without requiring the user to retry.
   page=await open(context,'poison-cache');
