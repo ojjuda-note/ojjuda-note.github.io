@@ -4,6 +4,9 @@ const root=path.resolve(__dirname,'..');
 (async()=>{
  const {builtInAssets}=await import(pathToFileURL(path.join(root,'house-test/built-in-assets.js')));
  for(const asset of Object.values(builtInAssets))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'house-test/assets',asset.file))).digest('hex').slice(0,16),asset.revision,'changed artwork must have a new cache revision');
+ const assetCount=Object.keys(builtInAssets).length;
+ const changedChair=Buffer.concat([fs.readFileSync(path.join(root,'house-test/assets',builtInAssets.chair.file)),Buffer.from('\n')]);
+ const changedRevision=crypto.createHash('sha256').update(changedChair).digest('hex').slice(0,16);
  const requests=[];let changed=false,broken=false;
  const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
@@ -18,7 +21,8 @@ const root=path.resolve(__dirname,'..');
   // Expire HTTP freshness immediately: force-cache must still reuse valid bytes.
   res.setHeader('Cache-Control',runtime?'public, max-age=0':'no-store');
   if(runtime){requests.push({path:url.pathname,revision:url.searchParams.get('v'),bytes:broken?2:fs.statSync(file).size});if(broken){res.end('{}');return;}}
-  if(changed&&file.endsWith('built-in-assets.js')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.chair.revision,builtInAssets.chair.revision+'-fixture-update'));return;}
+  if(changed&&file.endsWith('built-in-assets.js')){res.end(fs.readFileSync(file,'utf8').replace(builtInAssets.chair.revision,changedRevision));return;}
+  if(changed&&file.endsWith('chair-v1.runtime.json')){res.end(changedChair);return;}
   fs.createReadStream(file).pipe(res);
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -28,19 +32,29 @@ const root=path.resolve(__dirname,'..');
   const open=async(ctx,app)=>{const page=await ctx.newPage();page.on('pageerror',error=>errors.push(error.message));await page.goto(origin+'/fixture?app='+app);await page.waitForFunction(()=>typeof window.loadItems==='function');return page;};
   let page=await open(context,'first'),start=requests.length;
   const coldMs=await page.evaluate(()=>loadItems());
-  assert.equal(requests.length-start,4,'only one request per asset despite concurrent loading');
+  assert.equal(requests.length-start,assetCount,'only one request per asset despite concurrent loading');
   const coldBytes=requests.slice(start).reduce((sum,r)=>sum+r.bytes,0);await page.close();
   page=await open(context,'unrelated-app-update');start=requests.length;
   await context.setOffline(true);
   const warmMs=await page.evaluate(()=>loadItems());
-  assert.equal(requests.length-start,0,'reopening after an app version change reuses all four expired cached assets, even offline');await context.setOffline(false);await page.close();
+  assert.equal(requests.length-start,0,'reopening after an app version change reuses all expired cached assets, even offline');await context.setOffline(false);await page.close();
   changed=true;page=await open(context,'changed-artwork');start=requests.length;await page.evaluate(()=>loadItems());
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),['chair-v1.runtime.json'],'a changed artwork revision fetches only that asset');await page.close();changed=false;
+  // Correct URL, wrong but syntactically valid bytes: dimensions alone cannot
+  // detect this stale entry. Repair it without requiring the user to retry.
+  page=await open(context,'poison-cache');
+  await page.evaluate(async asset=>{
+   const url=new URL('/house-test/assets/'+asset.file,location.origin);url.searchParams.set('v',asset.revision);
+   const cache=await caches.open('ojjuda-house-built-in-art-v1'),response=await cache.match(url.href);
+   await cache.put(url.href,new Response((await response.text())+'\n',{headers:{'Content-Type':'application/json'}}));
+  },builtInAssets['coffee-table']);
+  start=requests.length;await page.evaluate(()=>loadItems(['coffee-table']));
+  assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),['coffee-table-v2.runtime.json'],'tampered warm cache automatically reloads only the affected artwork');await page.close();
   // A cacheable but invalid response cannot trap retries on those invalid bytes.
   const retryContext=await browser.newContext();broken=true;page=await open(retryContext,'retry');start=requests.length;
   assert.equal(await page.evaluate(async()=>{try{await loadItems(['coffee-table']);return false;}catch{return true;}}),true);
   broken=false;await page.evaluate(()=>loadItems(['coffee-table']));
-  assert.equal(requests.length-start,2,'retry bypasses the malformed cached response and prepares the valid runtime');
+  assert.equal(requests.length-start,3,'retry bypasses the malformed cached response and prepares the valid runtime');
   const before=requests.length;await page.evaluate(()=>loadItems(['coffee-table']));assert.equal(requests.length,before,'a successful retry is reused');
   for(const failure of ['denied','full']){
    const unavailable=await browser.newContext();
@@ -51,7 +65,7 @@ const root=path.resolve(__dirname,'..');
    const fallback=await open(unavailable,'storage-'+failure);await fallback.evaluate(()=>loadItems(['floor-lamp']));await unavailable.close();
   }
   assert.deepEqual(errors,[]);
-  const result={coldRequests:4,coldRuntimeBytes:coldBytes,warmRequests:0,warmRuntimeBytes:0,coldLocalMs:Math.round(coldMs),warmLocalMs:Math.round(warmMs),changedAssetOnly:true,malformedCacheRetry:true,offlineArtwork:true,storageDeniedOrFullFallback:true};
+  const result={coldRequests:assetCount,coldRuntimeBytes:coldBytes,warmRequests:0,warmRuntimeBytes:0,coldLocalMs:Math.round(coldMs),warmLocalMs:Math.round(warmMs),changedAssetOnly:true,malformedCacheRetry:true,tamperedWarmCacheRepaired:true,offlineArtwork:true,storageDeniedOrFullFallback:true};
   if(process.env.HOUSE_CACHE_PROOF){fs.mkdirSync(path.dirname(process.env.HOUSE_CACHE_PROOF),{recursive:true});fs.writeFileSync(process.env.HOUSE_CACHE_PROOF,JSON.stringify(result,null,2));}
   console.log('HOUSE ASSET CACHE PASS',JSON.stringify(result));
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
