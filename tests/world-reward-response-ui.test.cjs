@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
-const rewardJobs=new Map(),rewardTasks=new Map(),rewardResults=new Map(),rewardCalls=[];let rewardJobId=0,screwApi;
+const rewardJobs=new Map(),rewardTasks=new Map(),rewardResults=new Map(),rewardCalls=[];let rewardJobId=0,screwApi;const rewardNotices=[];addEventListener('ojjuda:game-record-saved',event=>rewardNotices.push(event.detail.owner));
 const rewardRequest=(kind,owner,args)=>{const id=++rewardJobId;rewardCalls.push({kind,owner,args});return new Promise((resolve,reject)=>rewardJobs.set(id,{kind,owner,resolve,reject}));};
 S={rpc(kind,args){return rewardRequest(kind,D.user?.id,args);},from(table){if(table!=='user_private')throw Error('Unexpected table');let owner;const query={select(){return query;},eq(key,value){owner=value;return query;},maybeSingle(){return rewardRequest('quiz',owner);}};return query;}};
 const fakeGame=()=>({controls:'',draw(){},update(){},destroy(){}});
@@ -13,14 +13,14 @@ D.online=true;D.user={id:'owner-a'};D.walletReady=true;D.doorReady=true;D.isAdmi
 const rewardWrites={save:0,render:0,wallet:0},rewardToasts=[],originalSave=I,originalRender=H,originalWallet=qf;
 I=()=>{rewardWrites.save++;originalSave();};H=()=>{rewardWrites.render++;originalRender();};qf=()=>{rewardWrites.wallet++;originalWallet();};M=text=>rewardToasts.push(text);
 window.rewardTest={
- async prepare(kind){if(kind==='screw'){Al('screw');await _2();}else if(kind==='result'){Al('mole');await _2();}},
+ async prepare(kind){if(['screw','screw_flat','screw_box'].includes(kind)){Al('screw');R.screwMode=kind==='screw_flat'?'flat':'box';await _2();}else if(kind==='result'){Al('mole');await _2();}},
  start(kind){let task;if(kind==='quiz')task=kg();else if(kind==='daily')task=sr.checkin({},document.createElement('button'));else if(kind==='score')task=tf('mole',150);else if(kind==='screw')task=screwApi.buyScrew('flat_moves','fixture-request',1,false);else if(kind==='result')task=S2(150);else throw Error('Unexpected test action');const id=rewardJobId;rewardTasks.set(id,Promise.resolve(task).then(value=>{rewardResults.set(id,value);},error=>{rewardResults.set(id,{error:error.message});}));return id;},
  async finish(id,data,failure){const job=rewardJobs.get(id);if(!job)throw Error('Missing request '+id);if(failure==='reject')job.reject(Error('fixture failure'));else job.resolve({data,error:failure?Error('fixture query error'):null});await rewardTasks.get(id);await new Promise(resolve=>setTimeout(resolve,0));rewardJobs.delete(id);return rewardResults.get(id);},
  switchAccount(owner,coins,online=true){D.user=owner?{id:owner}:null;D.online=online;$.coins=coins;$.lastCheckin=null;originalRender();},
  restart(){R.running=false;return _2();},close:El,
  pending(){return [...rewardJobs].map(([id,{kind,owner}])=>({id,kind,owner}));},
  snapshot(){return{user:D.user?.id||null,online:D.online,coins:$.coins,lastCheckin:$.lastCheckin,visible:document.querySelector('.coinpill').textContent,toasts:[...rewardToasts],result:document.querySelector('#gres')?.textContent||null,rank:document.querySelector('#grank')?.textContent||null,...rewardWrites};},
- calls(){return rewardCalls.map(({kind,owner})=>({kind,owner}));}
+ calls(){return rewardCalls;},notices(){return [...rewardNotices];},setWalletReady(value){D.walletReady=value;}
 };
 `+world.slice(world.indexOf('</script>',boot));
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});try{
@@ -28,6 +28,7 @@ window.rewardTest={
  const receipt={ok:true,coins:7,reward:1,best:150,rank:2,stage:1,count:3,extra_moves:9,price:1};
  for(const kind of ['quiz','daily','score','screw'])for(const mode of ['switch','logout','reject','query']){
   const f=await fixture(kind),id=await f.start(kind);assert.equal((await f.page.evaluate(()=>rewardTest.pending()))[0].owner,'owner-a');await f.switchAccount(mode==='logout'?null:'owner-b',900,mode!=='logout');const before=await f.snapshot(),result=await f.finish(id,receipt,['reject','query'].includes(mode)?mode:undefined);assert.deepEqual(await f.snapshot(),before,kind+' stale '+mode+' response never changes the new model, controls or notices');
+  assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),[],'stale scores never announce a refresh for the new account');
   if(['score','screw'].includes(kind)&&!['reject','query'].includes(mode))assert.deepEqual(result,receipt,'late purchase/score receipts are returned unchanged');await f.close();
  }
  for(const kind of ['quiz','score','screw']){
@@ -58,7 +59,19 @@ window.rewardTest={
   const f=await fixture('result'),id=await f.start('result');await f.switchAccount('owner-b',900);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());await f.finish(id,receipt,failure);assert.deepEqual(await f.snapshot(),before);assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'no ranking RPC starts under account B for account A’s completed game');await f.close();
  }
  {
-  const f=await fixture('result'),old=await f.start('result');await f.page.evaluate(()=>rewardTest.restart());const latest=await f.start('result');await f.finish(latest,{...receipt,coins:800,best:999});const before=await f.snapshot();assert.match(before.result,/999/);await f.finish(old,{...receipt,best:1});assert.deepEqual(await f.snapshot(),before,'a result from before restart cannot replace the new result or request ranking again');const ranking=(await f.page.evaluate(()=>rewardTest.pending())).filter(j=>j.kind==='game_ranking').at(-1);assert.ok(ranking);await f.switchAccount('owner-b',900);const switched=await f.snapshot();await f.finish(ranking.id,[{nick:'A 계정 랭킹',score:999,me:true}]);assert.deepEqual(await f.snapshot(),switched,'a late ranking response cannot enter the new account view');await f.close();
+  const f=await fixture('result'),old=await f.start('result');await f.page.evaluate(()=>rewardTest.restart());const latest=await f.start('result');await f.finish(latest,{...receipt,coins:800,best:999});const before=await f.snapshot();assert.match(before.result,/999/);await f.finish(old,{...receipt,best:1});assert.deepEqual(await f.snapshot(),before,'a result from before restart cannot replace the new result or request ranking again');const ranking=(await f.page.evaluate(()=>rewardTest.pending())).filter(j=>j.kind==='community_game_ranking').at(-1);assert.ok(ranking);await f.switchAccount('owner-b',900);const switched=await f.snapshot();await f.finish(ranking.id,[{nick:'A 계정 랭킹',score:999,me:true}]);assert.deepEqual(await f.snapshot(),switched,'a late ranking response cannot enter the new account view');await f.close();
  }
- console.log('PASS: reward account isolation, quiz/daily/game/purchase continuations, shared response order, valid balances, preserved RPC receipts, restart and ranking guards.');
+ // Preserve current score storage and the separate screw-mode ranking keys.
+ for(const key of ['screw_box','screw_flat']){
+  const f=await fixture(key);await f.page.evaluate(()=>rewardTest.setWalletReady(false));
+  const id=await f.start('result');
+  const submitted=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind==='submit_score').at(-1);
+  assert.deepEqual(submitted,{kind:'submit_score',owner:'owner-a',args:{p_game:key,p_score:150}},'score saving remains available before wallet readiness');
+  await f.finish(id,receipt);
+  assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),['owner-a'],'a current successful score still announces a refresh');
+  const ranked=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind==='community_game_ranking').at(-1);
+  assert.equal(ranked.args.p_game,key,'box and flat keep separate ranking keys');
+  await f.close();
+ }
+ console.log('PASS: reward account isolation, quiz/daily/game/purchase continuations, shared response order, valid balances, preserved RPC receipts, restart and ranking guards, current score notifications, wallet-independent saves and separate screw ranking keys.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

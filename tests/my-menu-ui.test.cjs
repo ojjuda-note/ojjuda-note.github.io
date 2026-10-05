@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const world = read('world.html');
-const rendererStart = world.indexOf('function worldProfileOwner()');
+const rendererStart = world.indexOf('function worldProfileAvatar(');
 const rendererEnd = world.indexOf('}var Hf=', rendererStart) + 1;
 assert.ok(rendererStart > 0 && rendererEnd > rendererStart, 'World My renderer is available');
 const renderer = world.slice(rendererStart, rendererEnd);
@@ -79,13 +79,13 @@ async function worldFixture(context, mobile, errors) {
     window.Jn = [['all', '전체 공개'], ['friends', '친구 공개'], ['me', '나만 보기']];
     window.ce = { ready: true, list: [{ id: 'synthetic-blocked', nick: '검사 작성자' }] };
     window.Go = 'test';
+    window.ie = () => '<svg></svg>';
     window.w = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
     window.Xd = () => '/note/';
     window.Is = () => false;
     window.Os = () => '';
     window.renderMy = () => {
       document.getElementById('world-my').innerHTML = Yg();
-      document.querySelector('[data-notifications-slot]').innerHTML = '<button class="btn nn-trigger" type="button">알림함 열기</button>';
     };
     window.menuSaves = 0;
     window.I = () => { menuSaves++; };
@@ -109,35 +109,35 @@ async function worldFixture(context, mobile, errors) {
   await page.addScriptTag({ content: doorAction });
   await page.evaluate(() => renderMy());
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');
-  assert.equal(await page.locator('.my-shortcuts > :first-child [data-notifications-slot]').count(), 1,
-    'frequent notifications come before the cross-service shortcut');
+  assert.equal(await page.locator('[data-notifications-slot]').count(), 0,
+    'World menu omits the oversized notification shortcut');
   assert.equal(await page.evaluate(() => {
     const groups = [...document.querySelectorAll('.my-hub [data-my-group]')].map(node => node.dataset.myGroup);
-    return groups.indexOf('profile') < groups.indexOf('account') && groups.indexOf('display') < groups.indexOf('account')
-      && groups.indexOf('account') < groups.indexOf('help');
-  }), true, 'frequent settings precede account and help');
+    return !groups.includes('account') && groups.indexOf('profile') < groups.indexOf('display')
+      && groups.indexOf('profile') < groups.indexOf('help');
+  }), true, 'profile and account share one entry before preferences and help');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
   await fitsViewport(page, 'closed World menu');
+  assert.equal(await page.locator('[data-my-group="profile"] .my-menu-title').textContent(), '프로필·계정정보');
+  assert.equal(await page.locator('[data-my-group="profile"] [data-act="member-info-open"]').count(), 1);
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
 
   await exerciseGroups(page, '.my-hub');
   for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-guestbook', 'n-friend']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
   }
-  for (const action of ['saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'glasses']) {
-    assert.equal(await page.locator(`[data-park-action="${action}"]`).isVisible(), true, `${action} is available in the shared World menu`);
-  }
+  assert.equal(await page.locator('[data-park-action]').count(),0,'menu omits park activities');
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-guestbook').isChecked(), true);
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'enter-place', 'logout', 'mood-pick', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
   for (const href of ['/guide.html', 'terms.html', 'privacy.html', 'https://github.com/songys/Chatbot_data']) {
     assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
   }
-  assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').isVisible(), true, 'park shortcut stays within World');
+  assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');
   await uniqueIds(page);
   await fitsViewport(page, 'expanded World menu with a long email address');
 
@@ -160,7 +160,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await door.getAttribute('aria-pressed'), 'false');
   assert.equal(await door.textContent(), '문 닫기');
   assert.equal(await page.evaluate(() => menuSaves), 2, 'opening the house saves once');
-  assert.match(await page.locator('[data-my-group="account"]').textContent(), /생활의 주소록·가계부와 기기 보관 기록은 현재 브라우저에만 저장돼요/);
+  assert.match(await page.locator('[data-my-group="profile"]').textContent(), /주소록·가계부는 이 기기에 저장돼요/);
   await page.evaluate(() => { D.doorReady = false; renderMy(); });
   assert.equal(await door.isDisabled(), true, 'unavailable server settings cannot be changed');
   await page.evaluate(() => { D.doorReady = true; D.doorWritable = false; renderMy(); });
@@ -177,7 +177,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('[data-act="tab"][data-tab="admin"]').isVisible(), true);
   await page.evaluate(() => { D.online = false; renderMy(); });
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'offline mode cannot retain an administrator entry');
-  assert.equal(await page.locator('[data-act="logout"], [data-act="pw-open"], [data-act="account-delete-open"], [data-act="unblock"], [data-act="door-toggle"]').count(), 0,
+  assert.equal(await page.locator('[data-act="member-info-open"], [data-act="logout"], [data-act="pw-open"], [data-act="account-delete-open"], [data-act="unblock"], [data-act="door-toggle"]').count(), 0,
     'guest menus never reveal signed-in account actions');
   assert.equal(await page.locator('[data-act="reset"]').isVisible(), true, 'the existing offline reset action stays reachable');
   await uniqueIds(page);

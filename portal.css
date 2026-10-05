@@ -12,3 +12,17 @@ dialog{border:0;padding:0;background:transparent;max-width:calc(100vw - 30px);ma
 
 /* Public guide is available before login. */
 .guide-entry{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 25px;margin-top:22px;border:1px solid var(--line);border-radius:18px;background:#fff}.guide-entry strong{display:block;font-size:16px;font-weight:600}.guide-entry small{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.8}.guide-entry-action{display:flex;align-items:center;gap:12px;flex:none;font-size:13px;font-weight:600;color:#a75977}.guide-entry:hover{border-color:var(--pink)}@media(max-width:700px){.guide-entry{padding:19px 20px;gap:12px;align-items:flex-start;flex-direction:column}.guide-entry strong{font-size:15px}.guide-entry small{font-size:12px}.guide-entry-action{align-self:flex-end}.site-footer nav{flex-wrap:wrap;gap:12px}}
+
+/* Keep account names from squeezing the brand and actions on small screens. */
+.header-inner{gap:12px}
+.logo{flex:none;white-space:nowrap}
+.signed-in-actions{min-width:0;gap:12px}
+.signed-in-actions .text-button{flex:none;white-space:nowrap}
+.account-badge{min-width:0;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* Small interface text needs more contrast than decorative pink accents. */
+:root{--muted:#706a75;--pink-ink:#963e63;--pink-hover:#963e63}
+.eyebrow,.card-kicker,.category-chip,.account-badge,.dialog-kicker,.forgot-link,.guide-entry-action{color:var(--pink-ink)}
+.world-card .card-kicker,.world-card .category-chip{color:#60618a}
+.site-footer,.dialog-demo-note{color:var(--muted)}
+.auth-tabs button{color:#6f6577}
+.field input::placeholder{color:#746d77;opacity:1}

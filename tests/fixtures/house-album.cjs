@@ -1,6 +1,6 @@
 // In-memory transport fixture; the browser uses the real World album service.
 module.exports=function makeAlbumFixture(){
- const owner='member-a',other='member-b',folders=[{id:'old-folder',user_id:owner,name:'추억',visibility:'friends',allowed:[],created_at:'2026-09-01'},{id:'note-folder',user_id:owner,name:'익명카드',visibility:'me',allowed:[],created_at:'2026-09-02'}];
+ const owner='member-a',other='member-b',folders=[{id:'old-folder',user_id:owner,name:'추억',kind:'photo',visibility:'friends',allowed:[],created_at:'2026-09-01'},{id:'note-folder',user_id:owner,name:'익명카드',kind:'photo',visibility:'me',allowed:[],created_at:'2026-09-02'}];
  const media=[{id:'old-photo',user_id:owner,type:'image',path:owner+'/photo.jpg',thumb_path:owner+'/thumb.jpg',caption:'기존 사진',visibility:'friends',folder_id:'old-folder',created_at:'2026-09-10'},
  {id:'note-photo',user_id:owner,type:'image',path:owner+'/note.jpg',thumb_path:owner+'/note-thumb.jpg',caption:'오쭈다노트에 올린 사진',visibility:'me',folder_id:'note-folder',created_at:'2026-09-09'},
  {id:'old-video',user_id:owner,type:'video',path:owner+'/movie.mp4',thumb_path:owner+'/movie-thumb.jpg',caption:'기존 영상',visibility:'me',folder_id:null,created_at:'2026-09-08'},

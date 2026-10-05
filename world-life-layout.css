@@ -1,0 +1,88 @@
+/* Grid order keeps live iframes and unsaved tool inputs mounted while moving. */
+[data-life-root].life-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+.life-layout>h2,.life-layout-toolbar,.life-layout-editor,.life-layout-status,.life-layout-empty{grid-column:1/-1;order:-1;min-width:0}
+.life-layout>h2{margin-bottom:0}
+.life-layout>[data-life-tool]{margin:0;min-width:0;position:relative}
+.life-layout [hidden],.life-layout>[hidden]{display:none!important}
+.life-layout-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.life-layout-toolbar button,.life-layout-editor button,.life-layout-empty button{font:inherit;font-size:12px;min-height:40px;cursor:pointer;border:1px solid var(--life-line);border-radius:12px;background:var(--life-input);color:var(--life-ink);padding:8px 12px}
+.life-layout-modes{display:flex;gap:3px;background:var(--life-button);padding:4px;border-radius:14px}
+.life-layout-modes button{border-color:transparent;background:transparent;min-height:34px;min-width:64px;padding:5px 10px}
+.life-layout-modes button[aria-pressed=true]{background:var(--life-input);color:var(--life-link);box-shadow:0 2px 6px #65526f12;font-weight:700}
+.life-layout-editor{border:1px solid var(--life-line);border-radius:16px;padding:14px;background:var(--life-bg)}
+.life-layout-tip{font-size:12px;line-height:1.7;margin:0 0 10px;color:var(--life-muted)}
+.life-layout-picker{display:flex;gap:6px;flex-wrap:wrap}
+.life-layout-picker button{font-size:12px;padding:7px 10px}
+.life-layout-picker button:disabled{opacity:.6;cursor:default;background:var(--life-button)}
+.life-layout-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
+.life-layout-actions button:last-child{background:var(--life-key);font-weight:700}
+.life-layout-status{font-size:12px;line-height:1.6;color:var(--life-muted);margin:0}
+.life-layout-status:empty{display:none}
+.life-layout-empty{padding:28px 18px;text-align:center;background:var(--life-bg);border:1px dashed var(--life-line);border-radius:18px;font-size:13px;color:var(--life-muted)}
+.life-layout-item-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;width:100%}
+.life-tool .life-layout-item-tools button{min-width:34px;min-height:36px;padding:5px 8px;border-radius:9px;font-size:12px}
+.life-tool .life-layout-item-tools .life-layout-handle{touch-action:none;cursor:grab;font-size:23px;line-height:1;background:var(--life-key);user-select:none}
+.life-layout-editing .life-tool>summary{flex-wrap:wrap;gap:10px;padding:16px}
+.life-layout-editing .life-tool>summary>span:first-child{flex:1 1 100%}
+.life-layout-editing .life-tool>.life-tool-body{display:none}
+.life-layout-editing .life-toggle,[data-life-view=widgets]>.life-tool .life-toggle{display:none}
+.life-layout-editing .life-tool{border-style:dashed}
+.life-layout-dragging{opacity:.55}
+.life-tool[data-layout-drop=before]{box-shadow:0 -5px 0 var(--life-link)}
+.life-tool[data-layout-drop=after]{box-shadow:0 5px 0 var(--life-link)}
+[data-life-view=widgets]>.life-tool>summary{min-height:60px;padding:17px 18px;cursor:default}
+[data-life-view=widgets]>.life-tool>summary strong{font-size:17px}
+[data-life-view=widgets] .life-weather-now{gap:12px}
+[data-life-view=widgets] .life-weather-now>strong{font-size:38px}
+[data-life-view=widgets] .life-weather-now>span{font-size:12px}
+.life-layout :is(button,summary):focus-visible{outline:3px solid var(--life-link);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.life-layout *{scroll-behavior:auto!important}}
+
+
+/* Small, readable tiles; drag the visible edges to reveal the full tool. */
+[data-life-root][data-life-view=widgets]{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px}
+[data-life-view=widgets]>h2,[data-life-view=widgets]>.life-layout-toolbar,[data-life-view=widgets]>.life-layout-editor,[data-life-view=widgets]>.life-layout-status,[data-life-view=widgets]>.life-layout-empty{flex:0 0 100%;width:100%;box-sizing:border-box}
+[data-life-view=widgets]>.life-tool{flex:0 0 auto;min-width:0;max-width:100%;height:160px;border:1px solid var(--life-line);border-radius:16px;box-sizing:border-box}
+[data-life-view=widgets]>.life-tool>summary{min-height:40px;padding:12px 14px 6px;gap:6px;line-height:1.5}
+[data-life-view=widgets]>.life-tool>summary strong{font-size:13px;line-height:1.4}
+[data-life-view=widgets]>.life-tool>.life-tool-body{display:block;position:absolute;top:var(--widget-head,42px);bottom:20px;left:12px;right:20px;padding:8px 2px 0;overflow:auto;overscroll-behavior:contain}
+[data-life-view=widgets]>.life-widget-compact>.life-tool-body{display:none}
+[data-life-view=widgets]>.life-tool>.life-tool-body.donflow-expanded{display:flex;position:fixed;inset:0;padding:0;overflow:visible}
+[data-life-view=widgets] .life-donflow{height:100%;min-height:0;border-radius:10px}
+.life-widget-preview{position:absolute;top:var(--widget-head,42px);bottom:14px;left:13px;right:13px;display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;overflow:hidden}
+.life-widget-value{font-size:23px;line-height:1.2;color:var(--life-link);font-weight:600;overflow-wrap:anywhere}
+.life-widget-hint{font-size:10px;line-height:1.5;color:var(--life-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.life-tool .life-widget-open{min-height:25px;padding:2px 0;align-self:flex-start;border:0;background:transparent;color:var(--life-link);font-size:10px;text-decoration:underline;text-underline-offset:3px}
+.life-tool .life-widget-resize{position:absolute;z-index:4;margin:0;padding:0;min-width:0;min-height:0;border:0;background:transparent;border-radius:0;touch-action:none;user-select:none}
+.life-tool .life-widget-resize-e{right:0;top:24px;bottom:25px;width:18px;cursor:ew-resize}
+.life-tool .life-widget-resize-e::after{content:'';position:absolute;right:3px;top:calc(50% - 12px);height:24px;width:3px;border-radius:3px;background:var(--life-key)}
+.life-tool .life-widget-resize-s{left:24px;right:25px;bottom:0;height:18px;cursor:ns-resize}
+.life-tool .life-widget-resize-s::after{content:'';position:absolute;left:calc(50% - 12px);bottom:3px;width:24px;height:3px;border-radius:3px;background:var(--life-key)}
+.life-tool .life-widget-resize-se{right:0;bottom:0;width:28px;height:28px;cursor:nwse-resize;border-radius:0 0 15px 0;background:var(--life-button)}
+.life-widget-resize-se::after{content:'';position:absolute;right:6px;bottom:6px;width:9px;height:9px;border-right:2px solid var(--life-link);border-bottom:2px solid var(--life-link);border-radius:0 0 3px}
+.life-widget-sizing{outline:2px solid var(--life-link);outline-offset:1px}
+.life-widget-resizing{user-select:none}
+[data-life-view=widgets].life-layout-editing .life-tool>summary{padding:9px 10px 4px;gap:5px}
+[data-life-view=widgets].life-layout-editing .life-layout-item-tools{gap:4px}
+[data-life-view=widgets] .life-layout-item-tools button{min-width:24px;min-height:27px;padding:2px 5px;font-size:12px}
+[data-life-view=widgets] .life-layout-item-tools .life-layout-handle{font-size:18px}
+[data-life-view=widgets].life-layout-editing .life-widget-preview{gap:3px}
+[data-life-view=widgets].life-layout-editing .life-widget-value{font-size:18px}
+[data-life-view=widgets].life-layout-editing .life-widget-hint{display:none}
+@media(max-width:619px){[data-life-view=widgets] .life-layout-editor::after{content:'오른쪽·아래쪽 테두리나 모서리를 끌어 크기를 조절하세요.'}}
+[data-life-view=widgets] .life-widget-narrow .life-news-grid{grid-template-columns:minmax(0,1fr)}
+[data-life-view=widgets] .life-widget-narrow .life-weather-now{flex-wrap:wrap;gap:5px}
+[data-life-view=widgets] .life-widget-narrow .life-weather-now>span{font-size:11px}
+[data-life-view=widgets] .life-calc-keys button{min-width:0;padding:6px 2px}
+
+/* Hold the card/header to move; the expanded content keeps native scrolling. */
+[data-life-view=widgets]>.life-tool>summary,[data-life-view=widgets] .life-widget-preview{touch-action:none;user-select:none;-webkit-touch-callout:none}
+[data-life-view=widgets]:not(.life-layout-editing)>.life-tool>summary{padding-right:38px}
+[data-life-view=widgets]:not(.life-layout-editing) .life-layout-item-tools{position:absolute;right:7px;top:7px;width:auto}
+[data-life-view=widgets]:not(.life-layout-editing) .life-layout-hide{min-width:30px;min-height:30px;padding:0;font-size:18px;color:var(--life-muted);background:transparent;border:0}
+.life-layout-moving{user-select:none;cursor:grabbing}
+.life-layout-dragging{outline:2px solid var(--life-link);outline-offset:2px;cursor:grabbing}
+
+/* Move the live tile visually, preserving its original layout slot and iframe. */
+.life-layout>.life-layout-dragging{transform:translate3d(var(--life-drag-x,0px),var(--life-drag-y,0px),0);opacity:.62;z-index:50;box-shadow:0 14px 30px #39284b30;will-change:transform;transition:none;pointer-events:none}
+.life-layout>.life-layout-dragging *{pointer-events:none!important}

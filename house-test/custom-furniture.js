@@ -1,10 +1,10 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261004-chairfarrear1';
-import {floorPoint} from './model.js?v=20261004-chairfarrear1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261004-chairfarrear1';
-import {listMadeItems} from './custom-store.js?v=20261004-chairfarrear1';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261004-chairfarrear1';
-import {builtInAssets} from './built-in-assets.js?v=20261004-chairfarrear1';
-import {readBuiltInAsset} from './built-in-cache.js?v=20261004-chairfarrear1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-sofabook1';
+import {floorPoint} from './model.js?v=20261005-sofabook1';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-sofabook1';
+import {listMadeItems} from './custom-store.js?v=20261005-sofabook1';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-sofabook1';
+import {builtInAssets} from './built-in-assets.js?v=20261005-sofabook1';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261005-sofabook1';
 const items=new Map();
 const pendingBuiltIns=new Map();
 const retryBuiltIns=new Set();
@@ -38,7 +38,7 @@ export async function loadBuiltInItems(ids=Object.keys(builtInAssets)){
 export async function registerMadeItem(record){
  if(!/^made-[a-f0-9]{24}$/.test(record?.id))throw new Error('제작 아이템 번호를 확인해 주세요.');
  const prepared=await prepareRuntime(record.runtime),r=prepared.runtime;
- items.set(record.id,prepared);FURNITURE[record.id]={label:r.name,shortLabel:r.name,...r.dimensions,depthFill:1,introduced:20,autoPlace:false,directions:['left','center','right'],anchor:'rear',layer:r.layer,picture:'made',preview:r.views.center.preview,preferred:r.views.left.placement,preferredViews:registeredViews(r),clearance:'제작실에서 만든 아이템 · 이 기기에 저장됩니다.'};
+ items.set(record.id,prepared);FURNITURE[record.id]={label:r.name,shortLabel:r.name,...r.dimensions,depthFill:1,introduced:20,autoPlace:false,directions:['left','center','right'],anchor:'rear',layer:r.layer,picture:'made',preview:r.views.center.preview,preferred:r.views.left.placement,preferredViews:registeredViews(r),clearance:r.layer==='surface'?'높이를 책상 상판에 맞춰 놓아 주세요. 따로 이동하고 회수할 수 있어요.':'제작실에서 만든 아이템 · 이 기기에 저장됩니다.'};
  return record.id;
 }
 export async function loadMadeItems(owner){const records=await listMadeItems(owner);for(const r of records)await registerMadeItem(r);}

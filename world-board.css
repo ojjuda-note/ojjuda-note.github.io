@@ -1,0 +1,62 @@
+[data-board-root]{max-width:840px;margin:0 auto;color:var(--ink);min-width:0}.board-best-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 20px}.board-best{padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;min-width:0}.board-best:nth-child(1){border-top:3px solid #cf92aa}.board-best:nth-child(2){border-top:3px solid #a5bea8}.board-best:nth-child(3){border-top:3px solid #a9b8d6}.board-best:nth-child(4){border-top:3px solid #c6b3d5}.board-section-title{font:inherit;font-weight:700;background:none;border:0;color:var(--ink);padding:0;text-align:left}.board-best small{display:block;color:var(--ink-2);font-size:10px;margin:4px 0 8px}.board-list{list-style:none;padding:0;margin:0;min-width:0}.board-list li{min-width:0;border-bottom:1px solid var(--line)}.board-list li:last-child{border-bottom:0}.board-row{display:block;width:100%;min-height:43px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:none;border:0;color:var(--ink);font:inherit;font-size:13px;padding:11px 2px;cursor:pointer}.board-row:hover{color:var(--accent-ink)}.board-row:focus-visible,.board-section-title:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.board-best .board-row{font-size:12px;min-height:37px;padding:9px 0}.board-latest{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}.board-latest header,.board-list-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.board-latest h3,.board-list-heading h3{font-size:15px;margin:0}.board-more{font:inherit;font-size:12px;background:none;border:0;color:var(--ink-2);padding:8px;cursor:pointer}.board-empty,.board-status{color:var(--ink-2);font-size:12px;line-height:1.8}.board-empty{padding:14px 0}.board-status:empty{display:none}.board-load{display:block;margin:20px auto}.board-backdrop{position:fixed;inset:0;background:#201b2859;z-index:1500;display:grid;place-items:center;padding:20px}.board-detail{background:var(--surface);border:1px solid var(--line);border-radius:20px;max-width:540px;width:100%;max-height:85dvh;overflow:auto;padding:20px}.board-close{display:block;margin-left:auto}.board-full-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}.board-detail img,.board-detail video{display:block;max-width:100%;max-height:55dvh;margin:14px auto;border-radius:12px}.board-detail .btn[aria-pressed=true]{color:var(--accent-ink);background:var(--accent-soft)}
+
+/* Compact right-side previews; list videos never load or autoplay. */
+.board-row{display:flex;align-items:center;gap:10px;}
+.board-row-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.board-thumb{position:relative;display:block;flex:0 0 44px;width:44px;height:44px;overflow:hidden;border-radius:8px;background:var(--surface-2,#f2edf3);border:1px solid var(--line);box-sizing:border-box;}
+.board-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.board-thumb-fallback{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-2);font-size:17px;}
+.board-thumb-play{position:absolute;right:3px;bottom:3px;display:grid;place-items:center;width:17px;height:17px;background:#2a233aa6;color:#fff;font-size:9px;border-radius:50%;}
+.board-best .board-row{gap:7px;}.board-best .board-thumb{flex-basis:32px;width:32px;height:32px;border-radius:6px;}
+
+/* One winning post per category, in compact equal-height cards. */
+.board-best{min-height:100px;box-sizing:border-box;}
+.board-best small{margin:3px 0 2px;}
+.board-best .board-row{min-height:38px;padding:4px 0;}
+.board-best .board-empty{padding:8px 0;margin:0;font-size:11px;}
+
+/* Dark green chalkboard, warm timber edge, three winners per page. */
+.board-leaders{position:relative;margin:16px 0 18px;min-width:0;padding:12px 14px 5px;border:7px solid #a7794b;border-radius:9px;color:#f5f3df;background:radial-gradient(ellipse at 25% 20%,#ffffff08,transparent 65%),linear-gradient(115deg,#29443c,#203a33);box-shadow:inset 0 0 0 2px #162c27,0 2px 0 #725136,0 4px 10px #35251d16;}
+.board-leaders::after{content:'';position:absolute;bottom:-5px;right:24px;width:26px;height:4px;transform:rotate(-3deg);border-radius:2px;background:#ece9d9;box-shadow:31px 0 0 #d9bb84;pointer-events:none;}
+.board-rank-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.board-rank-head h3{margin:0;color:inherit;font-size:18px;letter-spacing:2px;font-weight:700;}
+.board-rank-caption{font-size:10px;color:#c6d2b9;}
+.board-rank-viewport{overflow:hidden;touch-action:pan-y pinch-zoom;}
+.board-rank-track{display:flex;transition:transform .28s cubic-bezier(.22,.78,.25,1);}
+.board-rank-page{flex:0 0 100%;min-width:0;}
+.board-rank-page table{table-layout:fixed;border-collapse:collapse;width:100%;font-size:12px;text-align:left;color:inherit;}
+.board-rank-page th,.board-rank-page td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 5px;border-bottom:1px solid #e7edda24;box-sizing:border-box;}
+.board-rank-page thead th{font-size:10px;color:#c6d2b9;font-weight:400;padding-top:4px;padding-bottom:6px;border-bottom:1px solid #e7edda70;}
+.board-rank-page th:first-child{width:40%;padding-left:0;}
+.board-rank-page th:nth-child(2){width:35%;}
+.board-rank-page th:last-child,.board-leader-score{width:25%;text-align:right;padding-right:0;}
+.board-leader-game{font-weight:500;}
+.board-leader-game:has(.board-game-open){padding-top:0;padding-bottom:0;}
+.board-game-open{display:block;width:100%;min-height:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font:inherit;color:inherit;background:none;border:0;padding:8px 0;cursor:pointer;text-decoration:underline;text-decoration-color:#f5f3df66;text-underline-offset:3px;}
+.board-game-open:hover{color:#f3d98b;}
+.board-game-open:focus-visible{outline:2px solid #f3d98b;outline-offset:-2px;border-radius:3px;}
+.board-game-open:disabled{cursor:wait;}
+.board-leader-score{color:#f3d98b;font-variant-numeric:tabular-nums;font-weight:600;}
+.board-leader-empty{font-size:10px;color:#c6d2b9;}
+.board-leader-retry{background:none;border:0;padding:0;color:#f3d98b;font:inherit;font-size:10px;cursor:pointer;}
+.board-leader-retry:focus-visible{outline:2px solid #f3d98b;outline-offset:-2px;}
+@media(prefers-reduced-motion:reduce){.board-rank-track{transition:none;}}
+
+/* Match the Life and Menu typography, including titles. */
+[data-board-root],.board-detail{font-family:var(--font-b,sans-serif);}
+[data-board-root] h2,[data-board-root] h3,.board-section-title,.board-detail h3{font-family:var(--font-b,sans-serif);}
+[data-board-root]>h2{margin:8px 0;font-size:27px;font-weight:600;}
+
+/* Larger, rounded Korean lettering for the game ranking only. */
+.board-leaders,.board-leaders .board-rank-head h3{font-family:"Jua","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-weight:400;}
+.board-leaders .board-rank-head h3{font-size:22px;letter-spacing:.5px;}
+.board-rank-caption,.board-rank-page thead th,.board-leader-empty,.board-leader-retry{font-size:13px;}
+.board-rank-page table{font-size:16px;line-height:1.45;}
+.board-leader-game,.board-leader-score{font-weight:400;}
+@media(max-width:360px){.board-rank-page table{font-size:15px;}.board-leader-empty{font-size:12px;}}
+
+/* Keep the selected difficulty visible even on narrow ranking columns. */
+.board-leader-game:has(.board-game-difficulty){padding-top:0;padding-bottom:0;}
+.board-game-open:has(.board-game-difficulty){padding:2px 0;line-height:1.15;}
+.board-game-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.board-game-difficulty{display:block;font-size:13px;line-height:1.2;color:#c6d2b9;white-space:nowrap;}

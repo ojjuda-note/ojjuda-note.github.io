@@ -5,6 +5,7 @@
   // the transition. Dragging does not change the filter until release.
   function create({ root, tabs, viewport, page, getActive, select, enabled }) {
     const order = ['latest', 'popular', 'nearby', 'tag'];
+    const placeSwipe = () => window.OjjudaParkFull?.embedded === true;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let gesture = null, ghost = null, peek = null, animation = null;
     let finishTimer = 0, suppressClickUntil = 0, scrollShift = 0;
@@ -47,7 +48,8 @@
     }
 
     function goTo(sort, options = {}, offset = 0) {
-      if (sort === 'world' && visible()) { clean(); if(window.OjjudaParkFull?.navigate){window.OjjudaParkFull.navigate('world');return;} (window.parent !== window ? window.parent : window).location.assign('/world.html'); return; }
+      if (sort === 'library' && visible() && placeSwipe()) { clean(); window.OjjudaParkFull.navigate('library'); return; }
+      if (sort === 'world' && visible() && !placeSwipe()) { clean(); if(window.OjjudaParkFull?.navigate){window.OjjudaParkFull.navigate('world');return;} (window.parent !== window ? window.parent : window).location.assign('/world.html'); return; }
       if (!visible() || !order.includes(sort)) { settle(); return; }
       const previous = getActive();
       if (sort === previous) { clean(); select(sort, options); return; }
@@ -114,7 +116,10 @@
       g.lastAt = now; g.lastX = x;
       const width = viewport.clientWidth;
       const direction = dx < 0 ? 1 : -1;
-      g.next = order[order.indexOf(g.active) + direction] || (direction > 0 ? 'world' : null);
+      // Embedded Park belongs to the neighborhood: card filters remain
+      // available by tap while a page drag follows the place sequence.
+      g.next = placeSwipe() ? (direction < 0 ? 'library' : null)
+        : order[order.indexOf(g.active) + direction] || (direction > 0 ? 'world' : null);
       g.offset = g.next ? Math.max(-width, Math.min(width, dx)) : Math.max(-60, Math.min(60, dx * .22));
       translate(page, g.offset);
       if (!g.next) { peek?.remove(); peek = null; return; }
@@ -123,7 +128,7 @@
         peek.setAttribute('aria-hidden', 'true'); peek.inert = true;
         viewport.append(peek);
       }
-      peek.textContent = g.next === 'world' ? '동네' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
+      peek.textContent = g.next === 'library' ? '도서관' : g.next === 'world' ? '동네' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
       translate(peek, direction * width + g.offset, Math.max(0, -viewport.getBoundingClientRect().top + 24));
     }
 

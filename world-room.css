@@ -9,3 +9,6 @@
 .place-art-tools{display:none;position:absolute;right:10px;bottom:10px;gap:2px;padding:3px;z-index:1;border-radius:12px;border:1px solid #e4d9e7;background:#fffaf4ec}.place-art-ready .place-art-tools{display:flex}.place-art-tools button{height:36px;min-width:36px;padding:0 9px;border:0;border-radius:9px;background:transparent;color:#6b5c7b;font:inherit;font-size:13px;touch-action:manipulation}.place-art-tools button:hover{background:#eee7f6}.place-art-tools button:disabled{opacity:.4}
 #ppanel{border:1px solid #e7dce9;border-radius:22px;background:#fffcf8;overflow:hidden}.home:has(#pstage) .visit-banner{background:#fffaf4;border-color:#e8dce8;border-radius:16px}.home:has(#pstage) .stage-hint{font-size:12px;color:#827589;text-align:center;line-height:1.6}
 @media(max-width:620px){.home:has(#pstage) .visit-banner{flex-wrap:wrap;gap:8px}.place-art-tools{right:6px;bottom:6px}}
+/* Place panels follow the chosen theme while the approved scene stays unchanged. */
+:root[data-theme=dark] #ppanel,:root[data-theme=dark] .home:has(#pstage) .visit-banner{background:var(--surface);border-color:var(--line)}
+:root[data-theme=dark] .home:has(#pstage) .stage-hint{color:var(--ink-2)}

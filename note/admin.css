@@ -4,7 +4,7 @@
 .na-backdrop[hidden],.na-panel [hidden]{display:none!important}
 .na-panel{display:flex;flex-direction:column;width:min(1120px,100%);max-height:calc(100dvh - 40px);overflow:hidden;border:1px solid var(--line,#daddf0);border-radius:20px;background:var(--surface,#fff);color:var(--ink,#23264a);box-shadow:0 30px 100px #0a123666;font:14px/1.6 var(--font-b,system-ui,sans-serif)}
 .na-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid var(--line,#daddf0)}
-.na-head h2{margin:0;font:400 26px/1.3 var(--font-d,system-ui,sans-serif)}
+.na-head h2{margin:0;word-break:keep-all;overflow-wrap:anywhere;font:400 26px/1.3 var(--font-d,system-ui,sans-serif)}
 .na-head p{margin:3px 0 0;color:var(--ink-2,#626894);font-size:12px}
 .na-layout{flex:1;min-height:0;overflow:auto;padding:18px 22px 28px;overscroll-behavior:contain}
 .na-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:4px;margin:0 0 19px;padding:5px;border-radius:18px;background:var(--surface-2,#f5f6fc)}
@@ -14,7 +14,7 @@
 .na-section-title{margin:0 0 5px!important;font:400 22px/1.4 var(--font-d,system-ui,sans-serif)}
 .na-help{margin:0 0 17px;color:var(--ink-2,#626894);font-size:13px;overflow-wrap:anywhere}
 .na-status{min-height:25px;margin:0;padding:9px 22px;border-top:1px solid var(--line,#daddf0);background:var(--surface-2,#f5f6fc);color:var(--ink-2,#626894);font-size:12px;overflow-wrap:anywhere}
-.na-status:empty::before{content:"노트 운영 변경은 작업 기록에 남습니다."}
+.na-status:empty{min-height:0;margin:0;padding:0;border:0}
 .na-status--error{color:#b8324f}
 .na-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 16px;border:1px solid var(--line,#daddf0);border-radius:999px;background:var(--surface,#fff);color:var(--ink,#23264a);font:inherit;font-size:14px;font-weight:500;line-height:1.4;cursor:pointer;text-decoration:none;white-space:normal}
 .na-button:hover:not(:disabled){border-color:var(--accent,#f0679a)}
@@ -126,12 +126,12 @@ textarea.na-input{min-height:95px;resize:vertical}
 .na-screenreader{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .na-backdrop.na-embedded{position:static;display:block;padding:0;background:transparent}
 .na-backdrop.na-embedded[hidden]{display:none}
-.na-embedded .na-panel{width:100%;max-height:none;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--ink,#23264a);font:inherit}
+.na-embedded .na-panel{width:100%;height:auto;max-height:none;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--ink,#23264a);font:inherit}
 .na-embedded .na-head{display:none}
-.na-embedded .na-layout{overflow:visible;padding:0}
+.na-embedded .na-layout{flex:none;overflow:visible;padding:0}
 .na-embedded .na-main{padding:0}
 .na-embedded .na-section-title{scroll-margin-top:16px}
-.na-embedded .na-status{margin-top:16px;padding:9px 0;background:transparent}
+.na-embedded .na-status{margin-top:16px;padding:9px 0;background:transparent}.na-embedded .na-status:empty{margin:0;padding:0}
 @media(max-width:760px){.na-backdrop{padding:0}.na-panel{width:100%;max-height:100dvh;height:100dvh;border:0;border-radius:0}.na-head{padding:14px 16px}.na-head h2{font-size:22px}.na-layout{padding:14px 16px 28px}.na-nav{grid-template-columns:repeat(auto-fit,minmax(82px,1fr))}.na-settings-form,.na-visual-form{grid-template-columns:1fr}.na-settings-group:nth-of-type(3),.na-settings-form>.na-actions,.na-visual-form .na-field:last-child{grid-column:auto}.na-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.na-photo-selector{grid-column:1}.na-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.na-search .na-field:first-child{flex-basis:100%}.na-actions .na-button{flex:1}.na-embedded .na-layout{padding:0}.na-embedded .na-panel{height:auto}}
 @media(max-width:380px){.na-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.na-photo-preview img{width:120px;height:84px}}
 @media(max-width:520px){.na-edit-preview:not(.na-edit-preview--reply):not(.na-edit-preview--event):not(.na-edit-size-large):not(.na-edit-size-small):not(.na-edit-font-handwriting) .na-edit-quote{font-size:26px}}

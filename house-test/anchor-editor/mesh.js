@@ -1,4 +1,4 @@
-import {roomPoint} from './room-guide.js?v=20261004-chairfarrear1';
+import {roomPoint} from './room-guide.js?v=20261005-sofabook1';
 
 // A mesh deforms the supplied illustration. It never paints replacement shapes,
 // guesses hidden geometry, or treats an image margin as a physical contact.
@@ -139,9 +139,11 @@ export function projectMesh(mesh,placement={x:0,y:0}){
   const front=placement.direction==='center';
   sx=front?width/d.width:depth/d.depth;sy=front?depth/d.depth:width/d.width;sz=height/d.height;
  }
+ const elevation=placement.elevation??0;
+ if(!Number.isFinite(elevation)||elevation<0||elevation>4.5)fail('소품 높이가 올바르지 않습니다.');
  const points=normalized.anchors.map(a=>{
   const world={x:a.world.x*sx,y:a.world.y*sy,z:a.world.z*sz};
-  return {...a,world,target:roomPoint(placement.x+world.x,placement.y+world.y,world.z)};
+  return {...a,world,target:roomPoint(placement.x+world.x,placement.y+world.y,world.z+elevation)};
  });
  if(!points.every(p=>finite(p.target)))fail('기준점이 방의 투영 범위를 벗어났습니다.');
  const targets=points.map(p=>p.target),tol=tolerance(targets);

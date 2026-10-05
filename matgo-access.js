@@ -83,8 +83,13 @@
     return pending;
   }
   function allowed() { return !!memberId && Date.now() - checkedAt < 65000; }
+  async function refresh() {
+    // A check started before an identity save may still return the old record.
+    if (pending) { try { await pending; } catch (_) {} }
+    return check();
+  }
   root.OjjudaMatgoAccess = Object.freeze({
-    configure, check, allowed, visible: () => !!memberId, getClient,
+    configure, check, refresh, allowed, visible: () => !!memberId, getClient,
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
   });
 })(window);
