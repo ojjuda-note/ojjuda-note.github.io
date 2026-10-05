@@ -1,0 +1,51 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium}=require('playwright');
+const root=path.join(__dirname,'..');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
+ .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
+world=world.slice(0,boot)+`
+window.photoTest={open:Al,close:El};
+g.tab='friends';H();g.place={id:'arcade',log:[]};
+const host=document.createElement('section');host.id='arcade-test';host.innerHTML=Df();document.body.append(host);
+host.addEventListener('click',e=>{const b=e.target.closest('[data-act="game-open"]');if(b)Ln['game-open'](b.dataset)});
+`+world.slice(world.indexOf('</script>',boot));
+world=world.replace('</head>','<script src="/ttang-bridge.js"></script><script src="/photo-ttang-bridge.js"></script></head>');
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
+ try{
+  const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[];
+  await context.route('**/*',r=>{
+   const u=new URL(r.request().url());if(u.hostname!=='127.0.0.1')return r.fulfill({body:''});
+   if(u.pathname==='/fixture')return r.fulfill({contentType:'text/html',body:world});
+   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
+  });
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
+  const solo=page.locator('[data-arcade-games="solo"]'),multi=page.locator('[data-arcade-games="multi"]');
+  assert.equal(await solo.getByRole('button',{name:'포토땅따먹기',exact:true}).count(),1);
+  assert.equal(await solo.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),0);
+  assert.equal(await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),1);
+  assert.equal(await multi.getByRole('button',{name:'포토땅따먹기',exact:true}).count(),0);
+  await solo.getByRole('button',{name:'포토땅따먹기',exact:true}).click();
+  const frame=await (await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();
+  await frame.waitForSelector('#grid .cell');assert.equal(await frame.title(),'오쭈다 포토땅따먹기');
+  assert.equal(await frame.locator('#grid .cell').count(),20);
+  for(const [width,height] of [[320,568],[390,844],[844,390]]){
+   await page.setViewportSize({width,height});assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  }
+  await page.setViewportSize({width:390,height:844});await frame.locator('#grid .cell').first().click();
+  await frame.waitForFunction(()=>mode==='play'&&!!me);await frame.click('#pause');
+  assert.equal(await frame.getByText('잠깐 쉬는 중').isVisible(),true);await frame.click('#go');
+  await frame.evaluate(()=>win());assert.equal(await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-photo-ttang'))['0'].done),1);
+  await frame.evaluate(()=>toMenu());assert.equal(await frame.locator('#grid .cell:not([disabled])').count(),2);
+  await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
+  await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).click();
+  const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#duoBtn');
+  assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.click('#duoBtn');assert.equal(await old.locator('#mk').isVisible(),true);
+  await page.evaluate(()=>photoTest.open('photo_ttang'));assert.equal(await page.locator('#ttang-overlay').count(),0);
+  const next=await(await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();await next.waitForSelector('#grid .cell');
+  await next.press('body','Escape');await page.waitForSelector('#photo-ttang-overlay',{state:'detached'});
+  assert.deepEqual(errors,[]);console.log('PASS: real solo/multi categories, names, 20 photos, mobile layout, play, pause, clear progress, reopen, mutual cleanup and Escape');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1});
