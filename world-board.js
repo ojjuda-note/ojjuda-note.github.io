@@ -95,7 +95,7 @@
      const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{row,nick,score,hasScore:false});
     }
    }
-   let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false;
+   let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false,initialLoading=true;
    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
    content.append(section);
    function paint(){
@@ -104,7 +104,7 @@
     pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
    }
    function schedule(delay=5000){
-    clearTimeout(timer);if(paused||pages.length<2||!active()||!section.isConnected)return;
+    clearTimeout(timer);if(initialLoading||paused||pages.length<2||!active()||!section.isConnected)return;
     timer=setTimeout(()=>{const rect=section.getBoundingClientRect();if(document.hidden||hover||dragging||dialog||section.contains(document.activeElement)||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}go(index+1);},delay);
    }
    function go(value){index=(value+pages.length)%pages.length;track.style.transform=`translateX(-${index*100}%)`;paint();schedule(motion.matches?5000:5280);}
@@ -129,7 +129,6 @@
    });
    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
    rankDispose=()=>{clearTimeout(timer);controller.abort();observer.disconnect();};paint();schedule();
-   let initialLoading=true;
    function orderByRecords(){
     if(!active()||token!==request)return;
     const ordered=[...entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
@@ -155,11 +154,11 @@
        nick.replaceChildren(el('span',game.rankingBasis==='current_gold'?'보유 골드 기록 없음':game.rankingBasis==='current_streak'?'연승 기록 없음':'오늘 기록 없음','board-leader-empty'));
       }
      }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));}
-     finally{if(!initialLoading)orderByRecords();}
+     finally{orderByRecords();}
     }
     await load();
    });
-   return [Promise.all(loads).then(()=>{initialLoading=false;orderByRecords();})];
+   return [Promise.all(loads).then(()=>{initialLoading=false;orderByRecords();schedule();})];
   }
   async function home(){
    rankDispose();const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
