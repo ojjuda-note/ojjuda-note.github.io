@@ -18,6 +18,18 @@ await page.evaluate(()=>window.allowed=false);await page.waitForSelector('#ttang
 await page.evaluate(()=>window.allowed=true);await page.click('#open');await page.getByRole('button',{name:'땅따먹기 닫기'}).click();assert.equal(await page.locator('iframe').count(),0);
 // Two isolated game frames exercise the bundled transport and synchronization.
 const host=await context.newPage(),guest=await context.newPage();for(const p of [host,guest]){p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:8875/games/ttang.html');await p.click('#duoBtn');assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-await host.click('#mk');await host.waitForFunction(()=>Net.tr?.kind==='local');const code=await host.locator('.overlay:not(#menu) h2 span').innerText();await guest.fill('#code',code);await guest.click('#jn');await host.waitForFunction(()=>mode==='net'&&role==='host');await guest.waitForFunction(()=>mode==='net'&&role==='guest');await guest.waitForTimeout(400);assert.equal(await guest.evaluate(()=>world.players.length),await host.evaluate(()=>world.players.length));await host.evaluate(()=>OjjudaTtang.menu());await guest.getByText('친구가 나갔어요').waitFor();assert.deepEqual(errors,[]);
+await host.click('#mk');await host.waitForFunction(()=>Net.tr?.kind==='local');const code=await host.locator('.overlay:not(#menu) h2 span').innerText();await guest.fill('#code',code);await guest.click('#jn');await host.waitForFunction(()=>mode==='net'&&role==='host');await guest.waitForFunction(()=>mode==='net'&&role==='guest');await guest.waitForTimeout(400);assert.equal(await guest.evaluate(()=>world.players.length),await host.evaluate(()=>world.players.length));// A body-edge cut decided by the host must also eliminate the guest player.
+await host.evaluate(()=>{
+  paused=true;world.time=1;world.events=[];
+  world.own.fill(0);world.counts.fill(0);world.counts[0]=world.N;world.trail.fill(0);
+  for(const p of world.players){p.alive=false;p.trail=[];p.pts=[];p.tc=new Map();p.shieldT=0;p.kills=0;p.bb=[1e9,1e9,-1,-1];}
+  Object.assign(me,{alive:true,x:25,y:25});Object.assign(p2,{alive:true,x:6,y:10});
+  for(let i=1;i<=160;i++){const x=p2.x;p2.x=6+i*.05;world.visit(p2,x,10);}
+  me.x=10;me.y=10.5;world.visit(me,10,10.5);
+  captureNetEvents();world.events=[];Net.send(snapshot());
+});
+await guest.waitForFunction(()=>world.players[0].kills===1&&!world.players[1].alive);
+assert.equal(await host.evaluate(()=>me.kills===1&&!p2.alive),true);
+await host.evaluate(()=>OjjudaTtang.menu());await guest.getByText('친구가 나갔어요').waitFor();assert.deepEqual(errors,[]);
 console.log('PASS: mobile/landscape layout, playable solo round, pause/resume, result save, duplicate and invalid results, account change cleanup, close');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -124,6 +124,22 @@ const PAL=[
  {c:'#EC6D6D',l:'#F7BBBB',d:'#C94F4F',n:'코랄'},{c:'#BD80D4',l:'#E5C6EF',d:'#9A5FB2',n:'라일락'}];
 const BOTNAMES=['몽실','토리','콩이','보리','두부','하루','모모','구름','달이','쿠키'];
 const TAU=Math.PI*2, SELF_AGE=.4, WALL_T=1, ITEM_T=5;
+// Drawing and collisions share these world-space outer radii for every player.
+const PLAYER_RADIUS=.42, TRAIL_RADIUS=.275;
+function pointSegmentDistanceSq(x,y,ax,ay,bx,by){
+  const dx=bx-ax,dy=by-ay,len=dx*dx+dy*dy;
+  const t=len?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/len)):0;
+  return (x-ax-t*dx)**2+(y-ay-t*dy)**2;
+}
+function segmentDistanceSq(ax,ay,bx,by,cx,cy,dx,dy){
+  const ux=bx-ax,uy=by-ay,vx=dx-cx,vy=dy-cy,den=ux*vy-uy*vx;
+  if(Math.abs(den)>1e-12){
+    const wx=cx-ax,wy=cy-ay,t=(wx*vy-wy*vx)/den,u=(wx*uy-wy*ux)/den;
+    if(t>=0&&t<=1&&u>=0&&u<=1) return 0;
+  }
+  return Math.min(pointSegmentDistanceSq(ax,ay,cx,cy,dx,dy),pointSegmentDistanceSq(bx,by,cx,cy,dx,dy),
+    pointSegmentDistanceSq(cx,cy,ax,ay,bx,by),pointSegmentDistanceSq(dx,dy,ax,ay,bx,by));
+}
 const wrapA=a=>{ while(a>Math.PI) a-=TAU; while(a<-Math.PI) a+=TAU; return a; };
 class World{
   constructor(U,mode){ this.U=U; this.G=10; this.GW=U*10; this.N=this.GW*this.GW; this.mode=mode;
@@ -157,7 +173,7 @@ class World{
       if(p.shieldT>0){ p.shieldT=Math.max(0,p.shieldT-dt); if(p.shieldT===0&&this.counts[p.id]===0){ this.kill(p,0,'land'); continue; } }
       if(p.bot) this.botThink(p,dt);
       const da=wrapA(p.target-p.ang), mx=p.turn*dt; p.ang=wrapA(p.ang+Math.max(-mx,Math.min(mx,da)));
-      const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=.35, U=this.U;
+      const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=PLAYER_RADIUS, U=this.U;
       p.wall=false; if(nx<m){ nx=m; p.wall=true; } if(nx>U-m){ nx=U-m; p.wall=true; } if(ny<m){ ny=m; p.wall=true; } if(ny>U-m){ ny=U-m; p.wall=true; }
       // 한 번에 1/4칸 넘게 건너뛰지 않도록 나눠서 처리
       // 벽에 닿아 있으면 1초 뒤 터져요 (벽에서 떨어지면 다시 처음부터)
@@ -171,9 +187,24 @@ class World{
   }
   spawnItem(){ let x=0,y=0; for(let t=0;t<40;t++){ x=2+Math.random()*(this.U-4); y=2+Math.random()*(this.U-4); if(!this.own[this.si(x,y)]&&this.players.every(q=>!q.alive||Math.hypot(q.x-x,q.y-y)>3)) break; }
     this.items.push({id:++this.itemSeq,type:Math.random()<.5?'speed':'shield',x,y,born:this.time}); }
-  visit(p,px,py){ const k=this.si(p.x,p.y), id=p.id; const same=k===p.lastK; p.lastK=k;
-    const t=this.trail[k]; if(t){ if(t!==id) this.kill(this.players[t-1],id,'cut'); else if(!same&&!(p.shieldT>0)&&this.own[k]!==id&&this.time-this.trailT[k]>SELF_AGE){ this.kill(p,id,'self'); return; } }
-    for(const q of this.players){ if(q===p||!q.alive) continue; if((q.x-p.x)**2+(q.y-p.y)**2<.7){
+  touchesTrail(p,q,px,py){
+    const pts=q.pts,r=PLAYER_RADIUS+TRAIL_RADIUS,r2=r*r+1e-12;
+    const minX=Math.min(px,p.x)-r,maxX=Math.max(px,p.x)+r,minY=Math.min(py,p.y)-r,maxY=Math.max(py,p.y)+r;
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i],b=pts[i+1]||q;
+      // The newly drawn neck is connected to the body and is not a self-hit.
+      if(q===p&&(i===pts.length-1||this.time-b.t<=SELF_AGE)) continue;
+      if(Math.max(a.x,b.x)<minX||Math.min(a.x,b.x)>maxX||Math.max(a.y,b.y)<minY||Math.min(a.y,b.y)>maxY) continue;
+      if(segmentDistanceSq(px,py,p.x,p.y,a.x,a.y,b.x,b.y)<=r2) return true;
+    }
+    return false;
+  }
+  visit(p,px,py){ const k=this.si(p.x,p.y), id=p.id;
+    for(const q of this.players){
+      if(!q.alive||!q.pts.length||(q===p&&(this.own[k]===id||p.shieldT>0))) continue;
+      if(this.touchesTrail(p,q,px,py)){ this.kill(q,id,q===p?'self':'cut'); if(!p.alive) return; }
+    }
+    for(const q of this.players){ if(q===p||!q.alive) continue; if((q.x-p.x)**2+(q.y-p.y)**2<=(2*PLAYER_RADIUS)**2){
       // 서로 닿은 곳이 누구 구역인지: 두 머리 가운데 → 각자 머리 아래 순서로 판단, 구역 주인이 이김
       const mid=this.own[this.si((p.x+q.x)/2,(p.y+q.y)/2)], op=this.own[k], oq=this.own[this.si(q.x,q.y)];
       const zone=(mid===id||mid===q.id)?mid:(op===id||oq===id)&&!(op===q.id||oq===q.id)?id:(op===q.id||oq===q.id)&&!(op===id||oq===id)?q.id:0;
@@ -182,11 +213,11 @@ class World{
       else { this.kill(q,id,'head'); this.kill(p,q.id,'head'); if(!p.alive) return; } } }
     if(!p.alive) return;
     if(this.own[k]===id){ if(p.trail.length) this.capture(p); return; }
-    if(!p.trail.length) p.pts=[{x:px,y:py}];
+    if(!p.trail.length) p.pts=[{x:px,y:py,t:this.time}];
     const GW=this.GW, gx=k%GW, gy=(k/GW)|0;
     const mark=nk=>{ if(this.own[nk]===id) return; const tt=this.trail[nk]; if(tt===id||tt) return; this.trail[nk]=id; this.trailT[nk]=this.time; p.trail.push(nk); const cx=((nk%GW)/this.G)|0, cy=(((nk/GW)|0)/this.G)|0; p.tc.set(cy*this.U+cx,this.time); };
     mark(k); if(gx>0) mark(k-1); if(gx<GW-1) mark(k+1); if(gy>0) mark(k-GW); if(gy<GW-1) mark(k+GW);
-    const lp=p.pts[p.pts.length-1]; if(!lp||(lp.x-p.x)**2+(lp.y-p.y)**2>.04) p.pts.push({x:p.x,y:p.y});
+    const lp=p.pts[p.pts.length-1]; if(!lp||(lp.x-p.x)**2+(lp.y-p.y)**2>.04) p.pts.push({x:p.x,y:p.y,t:this.time});
   }
   capture(p){ const before=this.counts[p.id], id=p.id, W=this.GW;
     for(const k of p.trail){ if(this.trail[k]===id) this.trail[k]=0; this.setOwn(k,id); } const pts=p.pts; p.trail=[]; p.pts=[]; p.tc=new Map();
@@ -349,22 +380,21 @@ function drawView(V,C,focus,dt,sh){
   ctx.strokeStyle='#A08ABB'; ctx.lineWidth=4; ctx.strokeRect(ox-2,oy-2,mw+4,mw+4);
   for(const it of world.items){ const X=ox+it.x*S, Y=oy+it.y*S; if(X>V.x-S&&X<V.x+V.w+S&&Y>V.y-S&&Y<V.y+V.h+S) drawItem(it,X,Y,S); }
   for(const p of world.players){ if(!p.alive||!p.pts.length) continue; const c=PAL[p.color];
-    const path=()=>{ ctx.beginPath(); const P=p.pts; ctx.moveTo(ox+P[0].x*S,oy+P[0].y*S); for(let i=1;i<P.length-1;i++){ const mx=(P[i].x+P[i+1].x)/2, my=(P[i].y+P[i+1].y)/2; ctx.quadraticCurveTo(ox+P[i].x*S,oy+P[i].y*S,ox+mx*S,oy+my*S); } ctx.lineTo(ox+p.x*S,oy+p.y*S); };
+    const path=()=>{ ctx.beginPath(); const P=p.pts; ctx.moveTo(ox+P[0].x*S,oy+P[0].y*S); for(let i=1;i<P.length;i++) ctx.lineTo(ox+P[i].x*S,oy+P[i].y*S); ctx.lineTo(ox+p.x*S,oy+p.y*S); };
     ctx.lineCap='round'; ctx.lineJoin='round';
-    path(); ctx.strokeStyle=c.d; ctx.globalAlpha=.6; ctx.lineWidth=S*.82; ctx.stroke();
-    path(); ctx.globalAlpha=.92; ctx.strokeStyle=p.shieldT>0?'#F2C14E':c.c; ctx.lineWidth=S*.55; ctx.stroke();
+    path(); ctx.strokeStyle=c.d; ctx.globalAlpha=.6; ctx.lineWidth=S*TRAIL_RADIUS*2; ctx.stroke();
+    path(); ctx.globalAlpha=.92; ctx.strokeStyle=p.shieldT>0?'#F2C14E':c.c; ctx.lineWidth=S*TRAIL_RADIUS*1.5; ctx.stroke();
     path(); ctx.globalAlpha=.7; ctx.strokeStyle='#fff'; ctx.lineWidth=S*.12; ctx.setLineDash([S*.3,S*.4]); ctx.lineDashOffset=-world.time*S*2.2; ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; }
   const leader=world.players.reduce((a,b)=>world.counts[b.id]>world.counts[a.id]?b:a);
   for(const p of world.players){ if(!p.alive) continue; const c=PAL[p.color], X=ox+p.x*S, Y=oy+p.y*S; if(X<V.x-S*2||X>V.x+V.w+S*2||Y<V.y-S*2||Y>V.y+V.h+S*2) continue;
-    const R=S*(isHuman(p)?.72:.6), bob=Math.sin(world.time*12+p.id)*S*.04, spawnT=Math.min(1,(world.time-p.born)/.35), scl=.3+.7*(1-Math.pow(1-spawnT,3));
+    const R=S*PLAYER_RADIUS;
     // 속도 효과: 뒤로 흩날리는 줄
     if(p.boostT>0){ ctx.save(); ctx.translate(X,Y); ctx.rotate(p.ang); ctx.strokeStyle='#8FC4F2'; ctx.lineCap='round'; for(let i=0;i<4;i++){ const yy=(i-1.5)*R*.45, len=R*(1.2+((world.time*9+i*.7)%1)*1.2); ctx.globalAlpha=.75; ctx.lineWidth=S*.09; ctx.beginPath(); ctx.moveTo(-R*1.1,yy); ctx.lineTo(-R*1.1-len,yy); ctx.stroke(); } ctx.restore(); ctx.globalAlpha=1; }
-    ctx.save(); ctx.translate(X,Y+bob); ctx.scale(scl,scl);
+    ctx.save(); ctx.translate(X,Y);
     ctx.fillStyle='rgba(46,39,72,.22)'; ctx.beginPath(); ctx.ellipse(0,R*.88,R*.85,R*.3,0,0,TAU); ctx.fill();
-    ctx.save(); ctx.rotate(p.ang); ctx.fillStyle=c.d; ctx.globalAlpha=.85; ctx.beginPath(); ctx.moveTo(R*1.55,0); ctx.lineTo(R*1.12,-R*.32); ctx.lineTo(R*1.12,R*.32); ctx.closePath(); ctx.fill(); ctx.restore();
     const g=ctx.createRadialGradient(-R*.35,-R*.45,R*.1,0,0,R*1.1); g.addColorStop(0,'#fff'); g.addColorStop(.3,c.l); g.addColorStop(1,c.c);
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,R,0,TAU); ctx.fill(); ctx.lineWidth=Math.max(2,S*.09); ctx.strokeStyle=p.boostT>0?'#BCDBF7':'#fff'; ctx.stroke();
-    if(isHuman(p)){ctx.strokeStyle='#5B3C88';ctx.lineWidth=Math.max(1.5,S*.065);ctx.beginPath();ctx.arc(0,0,R+S*.13,0,TAU);ctx.stroke();}
+    ctx.lineWidth=Math.max(2,S*.09); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,R-ctx.lineWidth/2,0,TAU); ctx.fill(); ctx.strokeStyle=isHuman(p)?'#5B3C88':p.boostT>0?'#BCDBF7':'#fff'; ctx.stroke();
+    ctx.save(); ctx.rotate(p.ang); ctx.fillStyle=c.d; ctx.beginPath(); ctx.moveTo(R*.9,0); ctx.lineTo(R*.64,-R*.15); ctx.lineTo(R*.64,R*.15); ctx.closePath(); ctx.fill(); ctx.restore();
     const dx=Math.cos(p.ang), dy=Math.sin(p.ang), ex=dx*R*.28, ey=dy*R*.22;
     for(const s2 of [-1,1]){ const px=ex+s2*R*.3, py=ey-R*.12; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(px,py,R*.2,R*.24,0,0,TAU); ctx.fill(); ctx.fillStyle='#2E2748'; ctx.beginPath(); ctx.arc(px+dx*R*.07,py+dy*R*.07,R*.11,0,TAU); ctx.fill(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px+dx*R*.07-R*.04,py+dy*R*.07-R*.05,R*.04,0,TAU); ctx.fill(); }
     ctx.fillStyle='rgba(240,120,150,.45)'; for(const s2 of [-1,1]){ ctx.beginPath(); ctx.ellipse(ex+s2*R*.55,ey+R*.22,R*.14,R*.08,0,0,TAU); ctx.fill(); }
@@ -469,7 +499,7 @@ function guestPredict(dt){ // 받은 위치 사이를 부드럽게 이어서 그
   world.time=world.netTime+(performance.now()-world.netAt)/1000;
   for(const p of world.players){ if(!p.alive||p.tx===undefined) continue; const V=p.speed*(p.boostT>0?2:1);
     p.ang+=wrapA(p.tang-p.ang)*Math.min(1,dt*12); p.x+=Math.cos(p.ang)*V*dt; p.y+=Math.sin(p.ang)*V*dt; p.tx+=Math.cos(p.tang)*V*dt; p.ty+=Math.sin(p.tang)*V*dt;
-    const k=Math.min(1,dt*8); p.x+=(p.tx-p.x)*k; p.y+=(p.ty-p.y)*k; const m=.35, U=world.U; p.x=Math.max(m,Math.min(U-m,p.x)); p.y=Math.max(m,Math.min(U-m,p.y)); } }
+    const k=Math.min(1,dt*8); p.x+=(p.tx-p.x)*k; p.y+=(p.ty-p.y)*k; const m=PLAYER_RADIUS, U=world.U; p.x=Math.max(m,Math.min(U-m,p.x)); p.y=Math.max(m,Math.min(U-m,p.y)); } }
 function lobby(){ const o=panel(`<h2>친구와 대결</h2><p>각자 자기 폰으로 같이 해요. 한 명이 방을 만들고, 다른 한 명은 방 번호를 입력하세요.</p>
   <button class="big a" id="mk">방 만들기</button>
   <div style="display:flex;gap:8px;margin-top:10px"><input id="code" aria-label="방 번호 4자리" inputmode="numeric" maxlength="4" placeholder="방 번호 4자리" style="flex:1;height:56px;border-radius:18px;border:2px solid #E6DEF2;font:inherit;font-size:20px;text-align:center;letter-spacing:.3em"><button class="big b" id="jn" style="width:110px;margin:0">들어가기</button></div>
