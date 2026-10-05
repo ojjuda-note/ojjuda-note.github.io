@@ -60,6 +60,16 @@ jobs:
           
           p = pathlib.Path('tests/world-main-navigation-ui.test.cjs')
           text = p.read_text()
+          # The board now checks Matgo automatically; keep this fixture explicitly unverified
+          # until its existing eligibility checks begin, instead of relying on timing.
+          text = once(text,
+              "window.gameFixture={calls:[],age:25,screwModes:[],destroyed:[]};",
+              "window.gameFixture={calls:[],age:25,identityReady:false,screwModes:[],destroyed:[]};")
+          text = once(text,
+              "{locked:true,age:fixture.age}", "{locked:fixture.identityReady,age:fixture.age}")
+          text = once(text,
+              "await gp.evaluate(async()=>{await OjjudaMatgoAccess.check();worldTest.render();gameFixture.age=18;});",
+              "await gp.evaluate(async()=>{gameFixture.identityReady=true;await OjjudaMatgoAccess.check();worldTest.render();gameFixture.age=18;});")
           text = once(text,
               "      await gp.locator(close).click();",
               "      let exitPrompt;const playingScrew=id==='screw_box'||id==='screw_flat';\n"
