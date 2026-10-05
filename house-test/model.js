@@ -1,9 +1,9 @@
-import {madePoseValid} from './custom-furniture.js?v=20261005-succulent1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261005-succulent1';
-import {sofaPoseValid} from './sofa-art.js?v=20261005-succulent1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-succulent1';
-import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-succulent1';
-import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-succulent1';
+import {madePoseValid} from './custom-furniture.js?v=20261005-floorprops1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261005-floorprops1';
+import {sofaPoseValid} from './sofa-art.js?v=20261005-floorprops1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-floorprops1';
+import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-floorprops1';
+import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-floorprops1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -34,6 +34,19 @@ export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
   }
  }
  return null;
+}
+// Explicit floor placement reserves a clear spot, including against standing
+// furniture, while carpets and flat blankets remain usable underneath it.
+export function canUseFloor(id){return !!FURNITURE[id]&&!FURNITURE[id].wallMounted&&FURNITURE[id].layer==='surface';}
+export function findFloorPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
+ if(!canUseFloor(id)||!preferred)return null;
+ const floor=normalizePlacement(id,{...preferred,elevation:0,mode:'floor'});
+ if(!floor)return null;
+ if(canPlaceFurniture(id,floor,others))return floor;
+ const {w,d}=itemSize(id,floor.direction,floor),candidates=[];
+ for(let y=0;y<=FLOOR.depth-d;y+=FLOOR.step)for(let x=0;x<=FLOOR.width-w;x+=FLOOR.step)candidates.push({...floor,x,y});
+ candidates.sort((a,b)=>(a.x-floor.x)**2+(a.y-floor.y)**2-((b.x-floor.x)**2+(b.y-floor.y)**2));
+ return candidates.find(p=>canPlaceFurniture(id,p,others))||null;
 }
 const canonical=value=>Number(value.toFixed(6));
 // Chair poses are derived from the desk's open knee space, not its full width.
@@ -132,7 +145,7 @@ export function normalizePlacement(id,s){
   return {direction:s.direction,x,y,attachedTo:'desk'};
  }
  if(itemLayer(id,s)==='surface'||isBlanket(id)){
-  const mode=isBlanket(id)?blanketMode(id,s):null;
+  const mode=isBlanket(id)?blanketMode(id,s):canUseFloor(id)&&s.mode==='floor'&&(s.elevation??0)===0?'floor':null;
   const elevation=mode==='floor'?0:Number.isFinite(s.elevation)?s.elevation:mode==='sofa'?blanketSpec('sofa').baseElevation:0;
   return {direction:s.direction,x:canonical(Math.max(0,Math.min(FLOOR.width-w,s.x))),y:canonical(Math.max(0,Math.min(FLOOR.depth-d,s.y))),
    elevation:canonical(Math.max(0,Math.min(ROOM.wallHeight-itemHeight(id,s),elevation))),...(mode?{mode}:{})};
@@ -154,6 +167,11 @@ export function canPlaceFurniture(id,s,others=[]){
  return others.every(other=>{const otherSize=itemSize(other.id,other.direction,other);if(!otherSize)return false;
   const separate=s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y;
   if(FURNITURE[id].wallMounted||FURNITURE[other.id].wallMounted){const low=placed.elevation??0,otherLow=other.elevation??0;return separate||low+itemHeight(id,placed)<=otherLow+1e-8||otherLow+itemHeight(other.id,other)<=low+1e-8;}
+  if((canUseFloor(id)&&placed.mode==='floor')||(canUseFloor(other.id)&&other.mode==='floor')){
+   if(layer==='floor'||itemLayer(other.id,other)==='floor')return true;
+   const low=placed.elevation??0,otherLow=other.elevation??0;
+   return separate||low+itemHeight(id,placed)<=otherLow+1e-8||otherLow+itemHeight(other.id,other)<=low+1e-8;
+  }
   return (id==='desk'&&other.id==='chair'&&isDeskChairPair(placed,other))||(id==='chair'&&other.id==='desk'&&isDeskChairPair(other,placed))||layer!==itemLayer(other.id,other)||(layer==='surface'&&FURNITURE[id].allowOverlap===true&&FURNITURE[other.id].allowOverlap===true)||separate;
  });
 }

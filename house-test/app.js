@@ -1,11 +1,11 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
 import {createRecordPanel} from './record-panel.js?v=20261005-public1';
-import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261005-succulent1';
+import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261005-floorprops1';
 import {icon} from './icons.js?v=20261004-folder-kind1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,wallDragPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261005-succulent1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261005-succulent1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261005-succulent1';
-import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261005-succulent1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,findFloorPlacement,canUseFloor,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,wallDragPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261005-floorprops1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261005-floorprops1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261005-floorprops1';
+import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261005-floorprops1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
@@ -205,12 +205,21 @@ function makeChairLinkControl(){
  label.append(input,element('span','','책상과 연결'));group.append(label,element('p','panel-note','연결하면 의자가 책상 아래로 0.5칸 들어가고 함께 이동·회전해요. 설치하면 저장됩니다.'));
  return group;
 }
+function makeFloorPlacementControl(){
+ const button=actionButton('바닥에 놓기',()=>{
+  const next=findFloorPlacement(editingId,otherFurniture(),draft);
+  if(!next){toast('바닥에 빈자리가 없어요. 다른 소품을 먼저 옮겨 주세요.');return;}
+  stopFurnitureDrag();draft=next;renderWorld();renderPanel();revealFurniture();
+ });
+ button.id='accessory-floor';button.setAttribute('aria-pressed',String(draft.mode==='floor'));
+ return button;
+}
 function makeAccessoryHeightControl(){
  const label=element('label','bookshelf-position-control'),title=element('span','bookshelf-control-title'),value=element('output'),input=element('input');
  input.id='accessory-height';input.type='range';input.min='0';input.max=String(ROOM.wallHeight-FURNITURE[editingId].height);input.step='.01';input.value=String(draft.elevation||0);input.setAttribute('aria-label',FURNITURE[editingId].wallMounted?'액자 높이':'소품 높이');label.htmlFor=input.id;
  const update=()=>{value.textContent=Number(draft.elevation||0).toFixed(2).replace(/0$/,'')+'칸';input.setAttribute('aria-valuetext',value.textContent);};update();
  value.setAttribute('for',input.id);title.append(element('span','',FURNITURE[editingId].wallMounted?'바닥에서 높이':'높이 · 0은 바닥'),value);label.append(title,input);
- input.oninput=()=>{if(!editing||!draft)return;const next=normalizePlacement(editingId,{...draft,elevation:Number(input.value)});if(!canDrawDraftPose(next))return;stopFurnitureDrag();draft=next;update();renderWorld();revealFurniture();};
+ input.oninput=()=>{if(!editing||!draft)return;const next=normalizePlacement(editingId,{...draft,elevation:Number(input.value),mode:Number(input.value)===0?'floor':undefined});if(!canDrawDraftPose(next))return;stopFurnitureDrag();draft=next;update();const floor=$('#accessory-floor');if(floor)floor.setAttribute('aria-pressed',String(draft.mode==='floor'));renderWorld();revealFurniture();};
  return label;
 }
 function itemCard(label,images,placed,fn){
@@ -238,7 +247,7 @@ function renderItemMenu(body){
  const blanketId=current().furniture['blanket-floor']?'blanket-floor':current().furniture['blanket-sofa']?'blanket-sofa':'blanket-floor';
  const ids=itemCategory==='furniture'?['bookshelf',...Object.keys(FURNITURE).filter(id=>id!=='bookshelf'&&!['floor','surface'].includes(FURNITURE[id].layer)).sort((a,b)=>FURNITURE[a].introduced-FURNITURE[b].introduced)]:Object.keys(FURNITURE).filter(id=>['floor','surface'].includes(FURNITURE[id].layer)&&(!isBlanket(id)||id===blanketId));
  for(const id of ids){const item=FURNITURE[id],placed=placements.some(p=>p.id===id),label=(item.shortLabel||item.label)+(placed?' 배치':' 놓기');grid.append(itemCard(label,pictures[id]||(item.preview?[item.preview]:[]),placed,event=>requestPlacement(id,event.currentTarget)));}
- if(itemCategory==='accessories')body.append(element('p','item-menu-help','쿠션과 담요를 소파로 끌면 알맞게 놓이고, 바닥으로 끌면 바닥에 놓여요.'));
+ if(itemCategory==='accessories')body.append(element('p','item-menu-help','가구에 맞지 않는 소품은 ‘바닥에 놓기’를 누르세요. 높이를 올리면 가구 위에 다시 놓을 수 있어요.'));
  body.append(grid);
 }
 function syncHomeTeleport(){
@@ -274,7 +283,7 @@ function renderPanel(){syncHomeSummary();recordsPanel?.unmount();const empty=$('
     button.dataset.direction=id;button.setAttribute('aria-pressed',String(placementControlPose().direction===id));directions.append(button);
    }
    const toolbar=element('div','placement-toolbar');toolbar.append(directions,actionButton('취소',()=>finishPlacement(false)));body.append(toolbar);
-   body.append(makeFurnitureControls());if(!isBlanket(editingId)&&itemLayer(editingId,draft)==='surface')body.append(makeAccessoryHeightControl());if(editingId==='chair'&&current().furniture.desk)body.append(makeChairLinkControl());
+   body.append(makeFurnitureControls());if(canUseFloor(editingId))body.append(makeFloorPlacementControl());if(!isBlanket(editingId)&&itemLayer(editingId,draft)==='surface')body.append(makeAccessoryHeightControl());if(editingId==='chair'&&current().furniture.desk)body.append(makeChairLinkControl());
    const warning=element('p','placement-warning',item.wallMounted?'창문이나 다른 가구와 겹쳐요. 위치 또는 높이를 바꿔 주세요.':'다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
    const feedback=element('div','placement-feedback');feedback.append(warning,element('p','panel-note',linkedDraft?'책상 위치를 기준으로 함께 움직여요. 의자만 회수하면 책상은 그대로 남아요.':item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));body.append(feedback);
    syncPlacementControls();

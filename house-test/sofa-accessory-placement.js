@@ -1,4 +1,4 @@
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-succulent1';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-floorprops1';
 
 // These are each item's reserved support area, not the transparent image frame.
 // The draped blanket keeps the original hanging ends outside its support area.
@@ -51,6 +51,7 @@ function nearSofa(candidate,w,d,sofa){
 // Pointer movement places independent soft furnishings on the floor once they
 // leave the sofa. Explicit height-slider edits deliberately do not call this.
 export function resolveAccessoryDrag(id,candidate,sofa){
+ if(!isBlanket(id)&&candidate?.mode==='floor')return {...candidate,elevation:0};
  if(!candidate||(!Object.hasOwn(SOFA_CUSHION_SEATS,id)&&!isBlanket(id)))return candidate;
  if(!isBlanket(id))return snapCushionToSofa(id,candidate,sofa)||{...candidate,elevation:0};
  const spec=blanketSpec(blanketMode(id,candidate)),front=candidate.direction==='center';

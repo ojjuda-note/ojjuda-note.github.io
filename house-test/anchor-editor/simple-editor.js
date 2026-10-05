@@ -1,5 +1,5 @@
-import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261005-succulent1';
-import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261005-succulent1';
+import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261005-floorprops1';
+import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261005-floorprops1';
 const $=id=>document.getElementById(id);
 // Presentation and recovery only. The app remains the owner of project changes.
 export function mountSimpleEditor(api){
