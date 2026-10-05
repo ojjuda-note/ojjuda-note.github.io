@@ -1,8 +1,8 @@
-import {floorPoint,roomPoint} from './model.js?v=20261005-clovermug1';
-import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261005-clovermug1';
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-clovermug1';
-import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261005-clovermug1';
-import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261005-clovermug1';
+import {floorPoint,roomPoint} from './model.js?v=20261005-tablebooks1';
+import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261005-tablebooks1';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-tablebooks1';
+import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261005-tablebooks1';
+import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261005-tablebooks1';
 
 // Keep the authored image plane and drape registrations unchanged. Independent
 // coordinates translate their support origin; elevation moves only room z.

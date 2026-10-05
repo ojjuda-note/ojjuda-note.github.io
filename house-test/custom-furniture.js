@@ -1,10 +1,10 @@
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-clovermug1';
-import {floorPoint} from './model.js?v=20261005-clovermug1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-clovermug1';
-import {listMadeItems} from './custom-store.js?v=20261005-clovermug1';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-clovermug1';
-import {builtInAssets} from './built-in-assets.js?v=20261005-clovermug1';
-import {readBuiltInAsset} from './built-in-cache.js?v=20261005-clovermug1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-tablebooks1';
+import {floorPoint} from './model.js?v=20261005-tablebooks1';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-tablebooks1';
+import {listMadeItems} from './custom-store.js?v=20261005-tablebooks1';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-tablebooks1';
+import {builtInAssets} from './built-in-assets.js?v=20261005-tablebooks1';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261005-tablebooks1';
 const items=new Map();
 const pendingBuiltIns=new Map();
 const retryBuiltIns=new Set();
