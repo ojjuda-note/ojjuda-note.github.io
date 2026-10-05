@@ -21,4 +21,14 @@ for(const id of ['pencil-cup-v1','table-plant-v1','table-books-v1'])for(const vi
 // crushed the seat/pages. This test is deliberately not a visual approval.
 for(const view of Object.values(runtime('open-book-v1').views))assert.equal(checkShape(projectMesh(view.mesh,view.placement).triangles).ok,false,'flattened book must not be exportable again');
 for(const direction of ['left','right']){const v=SOFA_V1[direction];assert.equal(checkShape(projectMesh(v.mesh,{...v.placement,y:0}).triangles).ok,false,'compressed sofa side must be flagged');}
+// The visible seat seam next to the left arm used to land in a 9x shear.
+// A fixed point in the original PNG must stay in a moderate transform both
+// near the back wall and at the authored pose; this fails on the old diagonal.
+const sample={x:900,y:550},turn=(a,b,p)=>(b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
+for(const y of [0,3]){
+ const v=SOFA_V1.left,triangles=projectMesh(v.mesh,{...v.placement,y}).triangles;
+ const seat=triangles.find(t=>t.source.every((p,i)=>turn(p,t.source[(i+1)%3],sample)>=-1e-8));
+ assert.ok(seat,'the original seat seam remains covered');
+ assert.ok(distortionRatio(seat.matrix)<2.5,'left seat seam must not stretch into the near arm');
+}
 console.log('Furniture shape guard PASS: rotation, scale, shear, collapse, transparency and known book/sofa regressions');
