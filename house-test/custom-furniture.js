@@ -1,25 +1,28 @@
+import {validateSofaRegistration,installSofaRegistration} from './sofa-registration-data.js?v=20261005-sofadata1';
 import {isCatalogItem,catalogFurniture} from './item-manifest.js?v=2';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-itemcatalog2';
-import {floorPoint} from './model.js?v=20261005-itemcatalog2';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-itemcatalog2';
-import {listMadeItems} from './custom-store.js?v=20261005-itemcatalog2';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-itemcatalog2';
-import {builtInAssets,loadBuiltInAssetList} from './built-in-assets.js?v=20261005-itemcatalog2';
-import {readBuiltInAsset} from './built-in-cache.js?v=20261005-itemcatalog2';
-const items=new Map();
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261005-sofadata1';
+import {floorPoint} from './model.js?v=20261005-sofadata1';
+import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261005-sofadata1';
+import {listMadeItems} from './custom-store.js?v=20261005-sofadata1';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261005-sofadata1';
+import {builtInAssets,loadBuiltInAssetList} from './built-in-assets.js?v=20261005-sofadata1';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261005-sofadata1';
+const items=new Map(),readyBuiltIns=new Set();
+const sofaDependents=new Set(['sofa','cream-floral-cushion','sage-cushion','peach-cushion','pink-check-cushion','blanket-sofa','blanket-floor']);
 const pendingBuiltIns=new Map();
 const retryBuiltIns=new Set();
 let pendingCatalog;
 const loadCatalog=()=>pendingCatalog??=loadBuiltInAssetList().then(()=>{Object.assign(FURNITURE,catalogFurniture(builtInAssets));});
-export const builtInItemReady=id=>!Object.hasOwn(builtInAssets,id)||items.has(id);
+export const builtInItemReady=id=>sofaDependents.has(id)?readyBuiltIns.has('sofa'):!Object.hasOwn(builtInAssets,id)||readyBuiltIns.has(id);
 const registeredViews=runtime=>Object.fromEntries(['left','center','right'].map(direction=>[direction,{...runtime.views[direction].placement,direction}]));
 // Approved built-ins use the exact 2D runtimes exported by the studio.
 // They never occupy an owner's made-item slot or add themselves to a saved room.
 export async function loadBuiltInItems(ids){
  await loadCatalog();ids??=Object.keys(builtInAssets);
+ if(ids.some(id=>sofaDependents.has(id)))ids=[...ids,'sofa'];
  if(ids.some(id=>isCatalogItem(id)&&!Object.hasOwn(builtInAssets,id)))throw new Error('저장된 아이템 목록을 찾지 못했어요. 닫은 뒤 다시 열어 주세요. 기존 배치는 보존됩니다.');
  await Promise.all([...new Set(ids)].filter(id=>Object.hasOwn(builtInAssets,id)).map(id=>{
-  if(items.has(id))return;
+  if(readyBuiltIns.has(id))return;
   if(pendingBuiltIns.has(id))return pendingBuiltIns.get(id);
   const pending=(async()=>{
   const {file,revision}=builtInAssets[id];
@@ -31,11 +34,15 @@ export async function loadBuiltInItems(ids){
   if(!response.ok)throw new Error(item.shortLabel+'을 불러오지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');
   let prepared;
   try{
-   const runtime=await response.json();prepared=await prepareRuntime(id==='chair'?straightenChairLegs(runtime):runtime);
-   if(['width','depth','height'].some(key=>prepared.runtime.dimensions[key]!==item[key])||prepared.runtime.layer!==item.layer)throw new Error('catalog mismatch');
+   const runtime=await response.json();
+   if(id==='sofa')prepared=validateSofaRegistration(runtime);
+   else prepared=await prepareRuntime(id==='chair'?straightenChairLegs(runtime):runtime);
+   if(id!=='sofa'&&(['width','depth','height'].some(key=>prepared.runtime.dimensions[key]!==item[key])||prepared.runtime.layer!==item.layer))throw new Error('catalog mismatch');
   }catch{await asset.discard();throw new Error(item.shortLabel+' 정보를 확인하지 못했어요. 다시 열어 주세요. 기존 배치는 보존됩니다.');}
   await asset.keep();
-  items.set(id,prepared);retryBuiltIns.delete(id);if(item.preferredViews||isCatalogItem(id))item.preferredViews=registeredViews(prepared.runtime);if(isCatalogItem(id))item.preferred={...item.preferredViews.left};
+  readyBuiltIns.add(id);retryBuiltIns.delete(id);
+  if(id==='sofa'){installSofaRegistration(prepared);return;}
+  items.set(id,prepared);if(item.preferredViews||isCatalogItem(id))item.preferredViews=registeredViews(prepared.runtime);if(isCatalogItem(id))item.preferred={...item.preferredViews.left};
   })().catch(error=>{retryBuiltIns.add(id);throw error;}).finally(()=>pendingBuiltIns.delete(id));
   pendingBuiltIns.set(id,pending);return pending;
  }));

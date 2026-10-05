@@ -52,6 +52,10 @@
     "floor-lamp": {
       "file": "floor-lamp-v1.runtime.json",
       "revision": "1913d26469adebeb"
+    },
+    "sofa": {
+      "file": "sofa-registration-v1.runtime.json",
+      "revision": "8f93f54a9bca3a0c"
     }
   }
 }
