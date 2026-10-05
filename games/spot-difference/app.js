@@ -4,7 +4,14 @@
   const $=id=>document.getElementById(id),puzzles=window.JJUDA_PUZZLES,core=window.JjudaGame,wallet=window.JjudaWallet;
   const storageKey='jjuda-spot-six-v1';let stored=null,storageWorks=true;
   try{stored=JSON.parse(localStorage.getItem(storageKey));}catch{storageWorks=false;}
-  const state=core.cleanProgress(stored,puzzles);
+  // Every entry starts a new game; stored progress is only used to avoid
+  // showing the picture the player just left as the first picture again.
+  const state=core.cleanProgress(null,puzzles);
+  if(puzzles.length>1&&state.current===stored?.current){
+    const next=1+Math.floor(Math.random()*(state.order.length-1));
+    [state.order[0],state.order[next]]=[state.order[next],state.order[0]];
+    state.current=state.order[0];
+  }
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
   let hintTimer=null,zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
@@ -13,7 +20,7 @@
   const position=()=>state.order.indexOf(state.current);
   function save(){
     try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state}));storageWorks=true;}catch{storageWorks=false;}
-    $('storage-note').textContent=storageWorks?'진행 상황과 문제 순서는 이 기기에 저장돼요.':'기록 저장이 안 돼요. 쭈를 쓰려면 브라우저 저장을 허용해 주세요.';
+    $('storage-note').textContent=storageWorks?'게임을 다시 열면 처음부터 시작하고 사진도 새로 섞여요.':'게임은 다시 열면 처음부터 시작해요. 쭈를 쓰려면 브라우저 저장을 허용해 주세요.';
     return storageWorks;
   }
   function speak(message,good=false){
@@ -279,7 +286,7 @@
     $('wallet-note').textContent=w.error||`힌트 1개 1쭈 · 1분 연장 3쭈${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
     $('wallet-note').classList.toggle('error-note',!!w.error);refreshControls();
   });
-  show(state.current);setInterval(tick,200);window.addEventListener('pageshow',tick);document.addEventListener('visibilitychange',tick);
+  show(state.current);setInterval(tick,200);window.addEventListener('pageshow',event=>{if(event.persisted){location.reload();return;}tick();});document.addEventListener('visibilitychange',tick);
   if(document.modelContext?.registerTool){
     const lifecycle=new AbortController(),tools=[
       {name:'read_game_progress',title:'게임 진행 보기',description:'현재 장면, 하트와 남은 시간을 확인합니다.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute:()=>({stage:puzzle().id,position:position()+1,title:puzzle().title,found:found().length,hearts:round().hearts,seconds:Math.ceil(core.timeLeft(round())/1000),status:round().status,totalStages:48})},
