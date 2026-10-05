@@ -1,7 +1,7 @@
-import {projectMesh} from './mesh.js?v=20261005-itemmanifest1';
-import {projectPictureLayers} from './layered-mesh.js?v=20261005-itemmanifest1';
-import {homography,project} from './warp.js?v=20261005-itemmanifest1';
-import {checkShape,sourceWeights} from '../picture-quality.js?v=20261005-itemmanifest1';
+import {projectMesh} from './mesh.js?v=20261005-itemcatalog2';
+import {projectPictureLayers} from './layered-mesh.js?v=20261005-itemcatalog2';
+import {homography,project} from './warp.js?v=20261005-itemcatalog2';
+import {checkShape,sourceWeights} from '../picture-quality.js?v=20261005-itemcatalog2';
 
 const weightsCache=new WeakMap();
 function affine(s,t){

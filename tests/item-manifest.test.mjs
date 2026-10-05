@@ -23,3 +23,16 @@ test('unavailable storage and an aborted refresh retain shipped items',async()=>
  assert.deepEqual(await loadItemManifest(url,baseline,{storage,fetcher,timeoutMs:5}),baseline);
  assert.deepEqual(await loadItemManifest(url,baseline,{storage,fetcher:async()=>Response.json(manifest(updated))}),updated);
 });
+
+test('hundreds of registered item definitions stay data-only and never auto-place',async()=>{
+ const {catalogFurniture}=await import('../house-test/item-manifest.js');
+ const assets=structuredClone(baseline),definition={label:'등록 테이블',shortLabel:'등록 테이블',width:2,depth:1,height:.6,layer:'standing',preview:'assets/table-preview.png'};
+ for(let i=0;i<500;i++)assets['item-table-'+i]={file:'table.runtime.json',revision:'2222222222222222',catalog:{...definition,order:i}};
+ const checked=validateItemManifest(manifest(assets),baseline),items=catalogFurniture(checked);
+ assert.equal(Object.keys(items).length,500);
+ for(const item of Object.values(items)){assert.equal(item.autoPlace,false);assert.equal(item.picture,'made');assert.deepEqual(item.directions,['left','center','right']);}
+ for(const change of [{width:0},{height:5},{layer:'script'},{preview:'https://other.test/a.png'},{preview:'assets/../a.png'},{label:''},{order:-1},{hidden:'yes'}]){
+  const bad=structuredClone(assets);Object.assign(bad['item-table-0'].catalog,change);assert.throws(()=>validateItemManifest(manifest(bad),baseline));
+ }
+ const bad={...baseline,'made-123':assets['item-table-0']};assert.throws(()=>validateItemManifest(manifest(bad),baseline),'private item IDs cannot be registered as public');
+});

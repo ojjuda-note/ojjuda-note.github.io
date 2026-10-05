@@ -1,4 +1,4 @@
-import {roomPoint} from './room-guide.js?v=20261005-itemmanifest1';
+import {roomPoint} from './room-guide.js?v=20261005-itemcatalog2';
 
 // A mesh deforms the supplied illustration. It never paints replacement shapes,
 // guesses hidden geometry, or treats an image margin as a physical contact.
