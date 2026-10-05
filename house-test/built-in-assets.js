@@ -1,4 +1,4 @@
-import {loadItemManifest} from './item-manifest.js?v=1';
+import {loadItemManifest} from './item-manifest.js?v=2';
 // Offline fallback for existing installations. Publish routine artwork updates
 // in item-assets.json; do not change application versions or module imports.
 const fallbackAssets = {
@@ -18,5 +18,13 @@ const fallbackAssets = {
 };
 
 const manifestURL=new URL('./item-assets.json',import.meta.url);
-export const builtInAssets=/^https?:$/.test(manifestURL.protocol)
- ?await loadItemManifest(manifestURL,fallbackAssets):fallbackAssets;
+export const builtInAssets=structuredClone(fallbackAssets);
+let pendingManifest;
+// Do not await network at module evaluation: the room must install its parent
+// message listener before the iframe load event delivers initialization.
+export function loadBuiltInAssetList(){
+ return pendingManifest??=(async()=>{
+  if(/^https?:$/.test(manifestURL.protocol))Object.assign(builtInAssets,await loadItemManifest(manifestURL,fallbackAssets));
+  return builtInAssets;
+ })();
+}
