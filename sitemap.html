@@ -4,46 +4,98 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#faf8f7">
-  <meta name="description" content="오쭈다 사이트맵. 공원, 월드, 사용 안내와 운영 정책 페이지를 한눈에 찾아보세요.">
-  <title>사이트맵 | 오쭈다</title>
+  <meta name="description" content="오쭈다 월드 전체 메뉴. 동네, 우리집, 공원, 게시판, 생활과 계정 관리의 기능과 사용법을 찾아보세요.">
+  <title>월드 전체 메뉴 · 사이트맵 | 오쭈다</title>
   <link rel="canonical" href="https://ojjuda.kr/sitemap.html">
   <link rel="icon" href="/favicon.svg?v=20260929-logo1" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/portal.css?v=20261004-design1">
-  <style>
-    .map-page{max-width:900px}
-    .map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-    .map-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 8px 30px #342c3809}
-    .map-card h2{margin:0 0 14px;font-size:19px;letter-spacing:-.04em}
-    .map-card ul{list-style:none;margin:0;padding:0}
-    .map-card li+li{border-top:1px solid var(--line)}
-    .map-card a{display:block;padding:13px 0;font-weight:600}
-    .map-card a:hover{color:var(--pink-hover)}
-    .map-card small{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:400}
-    .map-xml{margin:22px 0 0;text-align:center;color:var(--muted);font-size:12px}
-    .map-xml a{text-decoration:underline;text-underline-offset:3px}
-    @media(max-width:700px){.map-grid{grid-template-columns:1fr}.map-card{padding:21px}}
-  </style>
+  <link rel="stylesheet" href="/world-portal.css?v=20261005-world1">
+  <script src="/sitemap-search.js?v=20261005-world1" defer></script>
 </head>
-<body>
+<body class="world-map">
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
-  <header class="site-header"><div class="header-inner"><a class="logo" href="/" aria-label="오쭈다 홈"><img class="logo-symbol" src="/favicon.svg?v=20260929-logo1" alt="" width="32" height="32" aria-hidden="true"> 오쭈다</a><a class="text-button" href="/">첫 화면</a></div></header>
+  <header class="site-header"><div class="header-inner"><a class="logo" href="/" aria-label="오쭈다 월드 대문"><img class="logo-symbol" src="/favicon.svg?v=20260929-logo1" alt="" width="32" height="32" aria-hidden="true"> 오쭈다 월드</a><a class="text-button" href="/">대문</a></div></header>
   <main id="main" class="front map-page" aria-labelledby="map-title">
-    <div class="front-heading"><span class="eyebrow">OJJUDA</span><h1 id="map-title">사이트맵</h1><p>찾으시는 페이지로 바로 이동하세요.</p></div>
-    <nav class="map-grid" aria-label="오쭈다 전체 메뉴">
-      <section class="map-card" aria-labelledby="map-service"><h2 id="map-service">서비스</h2><ul>
-        <li><a href="/">오쭈다 첫 화면<small>공원과 우리집의 입구</small></a></li>
-        <li><a href="/world.html?place=park">동네 공원<small>익명카드와 가까운 곳의 이야기 · 베타</small></a></li>
-        <li><a href="/world.html">오쭈다월드<small>나만의 미니홈피, 방 꾸미기와 친구 만나기 · 베타</small></a></li>
+    <div class="front-heading"><span class="eyebrow">OJJUDA WORLD</span><h1 id="map-title">월드 전체 메뉴</h1><p>동네에서 만나고, 우리집에 기록하고, 생활을 챙기는 하나의 월드.<br>메뉴 위치와 세부 기능을 확인하고 필요한 사용법을 찾아보세요.</p></div>
+    <section class="map-entry" aria-label="월드 입장"><div><strong>모든 기능은 오쭈다 월드 안에서</strong><p>입장 링크는 해당 공간으로, 사용법 링크는 자세한 안내로 이동해요.</p></div><a class="pill-button" href="/world.html">월드 시작하기 <span aria-hidden="true">→</span></a></section>
+    <div class="map-controls"><label class="map-search-label" for="map-search">어떤 기능을 찾으세요?</label><div class="map-search-row"><input id="map-search" type="search" placeholder="가계부, 사진, 친구, 게임…" autocomplete="off" aria-controls="map-groups"><button id="map-search-clear" type="button" hidden>검색 지우기</button></div><p id="map-results" class="map-results" role="status">49개 기능과 안내를 메뉴별로 확인하세요.</p><nav class="map-jump" aria-label="분야별 이동"><a href="#map-start" data-map-jump="map-start">처음 시작</a><a href="#map-neighborhood" data-map-jump="map-neighborhood">동네</a><a href="#map-home" data-map-jump="map-home">우리집</a><a href="#map-park" data-map-jump="map-park">공원 · 익명카드</a><a href="#map-board" data-map-jump="map-board">게시판</a><a href="#map-life" data-map-jump="map-life">생활</a><a href="#map-settings" data-map-jump="map-settings">메뉴 · 내 계정</a><a href="#map-help" data-map-jump="map-help">도움말 · 운영 안내</a></nav></div>
+    <div id="map-groups" class="map-grid">
+      <section id="map-start" class="map-card" data-map-group aria-labelledby="map-start-title"><div class="map-card-heading"><span class="map-card-number">01</span><h2 id="map-start-title">처음 시작</h2></div><p class="map-route">대문 → 월드 시작하기</p><ul>
+        <li data-map-item data-keywords=""><a href="/world.html"><strong>월드 시작하기</strong><small>로그인 후 동네부터 시작해요.</small><span class="map-link-kind">입장 →</span></a></li>
+        <li data-map-item data-keywords="이메일 비밀번호"><a href="/guide.html#join"><strong>회원가입과 로그인</strong><small>하나의 계정으로 월드의 공간을 이용해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="하단 이동"><a href="/guide.html#navigation"><strong>메뉴 찾기</strong><small>동네·우리집·게시판·생활·메뉴의 위치를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="초보 시작"><a href="/guide.html#recommended-start"><strong>추천 사용 순서</strong><small>처음 방문했을 때 해 보면 좋은 일들.</small><span class="map-link-kind">사용법 →</span></a></li>
       </ul></section>
-      <section class="map-card" aria-labelledby="map-help"><h2 id="map-help">안내</h2><ul>
-        <li><a href="/guide.html">사용 안내<small>처음 시작하기와 기능별 사용법</small></a></li>
-        <li><a href="/terms.html">이용약관</a></li>
-        <li><a href="/privacy.html">개인정보처리방침</a></li>
+
+      <section id="map-neighborhood" class="map-card" data-map-group aria-labelledby="map-neighborhood-title"><div class="map-card-heading"><span class="map-card-number">02</span><h2 id="map-neighborhood-title">동네</h2></div><p class="map-route">월드 → 하단 동네</p><ul>
+        <li data-map-item data-keywords="수락 거절 삭제"><a href="/guide.html#friend-request"><strong>친구 찾기·친구 신청</strong><small>닉네임 검색, 신청과 수락, 친구 관리.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="수다 채널"><a href="/guide.html#places"><strong>카페와 채팅</strong><small>공용 장소에서 친구들과 대화해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="정답 보상"><a href="/guide.html#library-quiz"><strong>도서관 퀴즈</strong><small>새 퀴즈에 참여하고 결과를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="노트"><a href="/world.html?place=park"><strong>공원</strong><small>익명카드와 동네의 이야기가 모이는 곳.</small><span class="map-link-kind">입장 →</span></a></li>
+        <li data-map-item data-keywords="땅따먹기 나사 틀린그림 게임"><a href="/guide.html#arcade"><strong>오락실 미니게임</strong><small>게임 종류와 조작 방법을 살펴봐요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="배틀 방 번호 초대 맞고"><a href="/guide.html#board-games"><strong>친구와 대전·대전방</strong><small>장기·체스·당구 등 대전과 방 참여.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="방 방문"><a href="/guide.html#surf"><strong>순간이동·친구 방 구경</strong><small>다른 이용자의 방으로 놀러 가요.</small><span class="map-link-kind">사용법 →</span></a></li>
       </ul></section>
-    </nav>
+
+      <section id="map-home" class="map-card" data-map-group aria-labelledby="map-home-title"><div class="map-card-heading"><span class="map-card-number">03</span><h2 id="map-home-title">우리집</h2></div><p class="map-route">월드 → 하단 우리집</p><ul>
+        <li data-map-item data-keywords="가구 제작 집 확장"><a href="/guide.html#decorate-room"><strong>방 꾸미기·가구 배치</strong><small>가구를 놓고 나만의 방을 만들어요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="사진 닉네임 기분"><a href="/guide.html#profile"><strong>프로필과 자기소개</strong><small>닉네임·프로필 사진·소개를 관리해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="다이어리 휴지통"><a href="/guide.html#diary"><strong>개인 게시판·글쓰기</strong><small>내 글을 쓰고 수정·정리해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="친구 그룹 이미지 비디오"><a href="/guide.html#album"><strong>사진·동영상과 폴더</strong><small>앨범을 정리하고 폴더별 공개 범위를 정해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="비밀글 숨기기"><a href="/guide.html#guestbook"><strong>방명록과 답글</strong><small>방에 남긴 메시지와 답글을 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="문 닫기 열기 친구"><a href="/guide.html#visibility"><strong>우리집 공개·방문 설정</strong><small>내 방과 기록을 누구에게 보여 줄지 정해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+      </ul></section>
+
+      <section id="map-park" class="map-card" data-map-group aria-labelledby="map-park-title"><div class="map-card-heading"><span class="map-card-number">04</span><h2 id="map-park-title">공원 · 익명카드</h2></div><p class="map-route">월드 → 동네 → 공원</p><ul>
+        <li data-map-item data-keywords="피드"><a href="/guide.html#browse-cards"><strong>최신·인기 카드</strong><small>새 이야기와 인기 있는 카드를 둘러봐요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="익명 등록"><a href="/guide.html#write-card"><strong>새 카드 작성</strong><small>글을 쓰고 이름·성별·위치를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="원형 이미지"><a href="/guide.html#card-photos"><strong>사진 첨부</strong><small>카드에 사진을 붙이고 미리 봐요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="바꾸기"><a href="/guide.html#edit-photo"><strong>카드 수정·사진 교체</strong><small>등록한 카드와 첨부 사진을 수정해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="검색 위치 권한"><a href="/guide.html#nearby"><strong>태그와 근처 카드</strong><small>태그 또는 주변의 이야기로 찾아봐요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="하트 저장 링크"><a href="/guide.html#replies"><strong>공감·답글·공유</strong><small>마음을 전하고 카드 대화를 이어 가요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="보관 수정 삭제"><a href="/guide.html#memo"><strong>메모함·내 카드</strong><small>저장한 카드와 내가 쓴 카드를 모아 봐요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="초안 글쓰기"><a href="/guide.html#drafts"><strong>임시 보관</strong><small>작성하던 내용을 다시 이어서 써요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="광고"><a href="/guide.html#create-event"><strong>이벤트 카드</strong><small>사진과 지도, 반경과 시간을 설정해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="수정 삭제 반경 시간"><a href="/guide.html#manage-event"><strong>내 이벤트 관리</strong><small>운영 기간과 내용을 바꾸거나 종료해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+      </ul></section>
+
+      <section id="map-board" class="map-card" data-map-group aria-labelledby="map-board-title"><div class="map-card-heading"><span class="map-card-number">05</span><h2 id="map-board-title">게시판</h2></div><p class="map-route">월드 → 하단 게시판</p><ul>
+        <li data-map-item data-keywords="공개 기록"><a href="/guide.html#community-board-feed"><strong>종류별 전체글</strong><small>익명카드·앨범·비디오·노트를 둘러봐요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="인기 공감순"><a href="/guide.html#community-board-best"><strong>최신순·베스트</strong><small>새 글 또는 공감이 많은 글을 찾아요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="하트"><a href="/guide.html#community-board-detail"><strong>글 상세 보기·공감</strong><small>글·사진·영상을 열고 공감해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="순위 랭킹 G"><a href="/guide.html#community-board-games"><strong>게임순위</strong><small>점수와 연승, 맞고 골드를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+      </ul></section>
+
+      <section id="map-life" class="map-card" data-map-group aria-labelledby="map-life-title"><div class="map-card-heading"><span class="map-card-number">06</span><h2 id="map-life-title">생활</h2></div><p class="map-route">월드 → 하단 생활</p><ul>
+        <li data-map-item data-keywords="일정 반복 공휴일"><a href="/guide.html#life-calendar"><strong>스케줄 달력</strong><small>날짜별 일정과 반복 일정을 관리해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="위치 기상"><a href="/guide.html#life-weather"><strong>날씨</strong><small>지역별 날씨와 예보를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="경제 사회 스포츠 IT"><a href="/guide.html#life-news"><strong>뉴스</strong><small>보고 싶은 분야의 뉴스를 열어요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="돈 가져오기 내보내기"><a href="/guide.html#life-ledger"><strong>가계부</strong><small>수입·지출과 분류별 합계를 정리해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="숫자 사칙연산"><a href="/guide.html#life-calculator"><strong>계산기</strong><small>생활 화면에서 바로 계산해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="길게 누르기 이동 드래그"><a href="/guide.html#life-layout"><strong>위젯 크기·순서·숨기기</strong><small>필요한 도구를 원하는 곳에 배치해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+      </ul></section>
+
+      <section id="map-settings" class="map-card" data-map-group aria-labelledby="map-settings-title"><div class="map-card-heading"><span class="map-card-number">07</span><h2 id="map-settings-title">메뉴 · 내 계정</h2></div><p class="map-route">월드 → 하단 메뉴</p><ul>
+        <li data-map-item data-keywords="개인정보 생년월일 전화번호"><a href="/guide.html#profile"><strong>프로필·계정정보</strong><small>내 정보와 닉네임을 확인하고 수정해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="글씨 색 테마"><a href="/guide.html#profile"><strong>화면과 알림 설정</strong><small>화면 테마와 알림 표시를 바꿔요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="친구"><a href="/guide.html#report-block"><strong>공개 범위와 차단</strong><small>공개 설정과 차단 목록을 관리해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="종 빨간점 읽음"><a href="/guide.html#bell"><strong>알림함</strong><small>새 소식과 읽지 않은 알림을 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="포인트 출석"><a href="/guide.html#wallet"><strong>쭈와 기능별 비용</strong><small>잔액, 충전과 옵션 비용을 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="계정 삭제 보안"><a href="/guide.html#account-management"><strong>비밀번호·로그아웃·탈퇴</strong><small>계정을 관리하고 탈퇴 안내를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+      </ul></section>
+
+      <section id="map-help" class="map-card" data-map-group aria-labelledby="map-help-title"><div class="map-card-heading"><span class="map-card-number">08</span><h2 id="map-help-title">도움말 · 운영 안내</h2></div><p class="map-route">월드 → 메뉴 → 도움말</p><ul>
+        <li data-map-item data-keywords="도움"><a href="/guide.html"><strong>기능별 사용 안내</strong><small>가입부터 월드의 모든 기능을 찾아봐요.</small><span class="map-link-kind">안내 →</span></a></li>
+        <li data-map-item data-keywords="운영자 지원"><a href="/guide.html#contact"><strong>문의·의견</strong><small>오류를 알리거나 개선을 제안해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="문제 콘텐츠"><a href="/guide.html#report-block"><strong>신고와 차단</strong><small>신고와 차단의 차이를 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="오류 버그"><a href="/guide.html#faq-loading"><strong>불러오기·버튼 문제</strong><small>화면이 멈추거나 기능이 안 될 때 확인해요.</small><span class="map-link-kind">사용법 →</span></a></li>
+        <li data-map-item data-keywords="약관"><a href="/terms.html"><strong>이용약관</strong><small>월드 이용 규칙과 운영 조건.</small><span class="map-link-kind">정책 →</span></a></li>
+        <li data-map-item data-keywords="개인정보"><a href="/privacy.html"><strong>개인정보처리방침</strong><small>개인정보 처리와 보관·삭제 안내.</small><span class="map-link-kind">정책 →</span></a></li>
+      </ul></section>
+    </div><p id="map-empty" class="map-empty" hidden>찾는 기능이 없어요. 다른 단어로 검색하거나 검색을 지워 주세요.</p>
     <p class="map-xml">검색엔진용 파일: <a href="/sitemap.xml">XML 사이트맵 보기</a></p>
   </main>
   <footer class="site-footer"><span>© 2026 ojjuda</span><nav aria-label="안내 및 법적 고지"><a href="/guide.html">사용 안내</a><a href="/sitemap.html" aria-current="page">사이트맵</a><a href="/terms.html">이용약관</a><a href="/privacy.html">개인정보처리방침</a><a href="mailto:mj830417@gmail.com">문의</a></nav></footer>

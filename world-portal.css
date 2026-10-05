@@ -1,0 +1,65 @@
+/* One World entrance and its public feature directory. */
+.world-portal .front{padding-top:42px;padding-bottom:48px}
+.world-welcome{display:grid;grid-template-columns:1.08fr 1fr;align-items:center;gap:46px;padding:36px 0 52px}
+.world-welcome .eyebrow{letter-spacing:.15em;margin-bottom:18px}
+.world-welcome h1{font-size:clamp(35px,4.6vw,56px);line-height:1.24;font-weight:700;letter-spacing:-.065em;word-break:keep-all}
+.world-welcome h1 em{color:var(--pink-ink);font-style:normal}
+.world-welcome-copy>p{color:var(--muted);max-width:440px;margin:22px 0;font-size:15px;line-height:1.9;word-break:keep-all}
+.world-welcome-actions{display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.world-welcome-actions .pill-button{font-size:15px;min-height:52px;padding:0 27px;gap:16px}
+.world-welcome-help{font-size:13px;text-decoration:underline;text-underline-offset:4px;color:var(--muted)}
+.world-welcome-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:21px}
+.world-welcome-meta span{padding:4px 10px;border-radius:20px;border:1px solid var(--line);color:var(--muted);font-size:11px}
+.world-welcome-visual{position:relative;margin:0;border:1px solid #e8d9dc;background:#f1e5e0;border-radius:28px;overflow:hidden;box-shadow:0 18px 45px #694d5e12}
+.world-welcome-visual img{display:block;width:100%;height:auto;aspect-ratio:1.22;object-fit:cover}
+.world-welcome-visual figcaption{padding:16px 22px;background:#fff;color:#685d68;font-size:13px;text-align:center;letter-spacing:-.02em}
+.world-welcome-stamp{position:absolute;top:19px;left:19px;padding:7px 12px;border:1px solid #ffffffb3;border-radius:20px;background:#ffffffe8;color:#6e5061;font-size:10px;font-weight:700;letter-spacing:.12em}
+.world-preview{padding-top:30px;border-top:1px solid var(--line)}
+.world-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}
+.world-section-heading h2{margin:0;font-size:24px;letter-spacing:-.05em}
+.world-section-heading p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.world-section-heading>a{flex:none;font-size:13px;color:var(--pink-ink);font-weight:600}
+.world-feature-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.world-feature{padding:23px 18px;background:#fff;border:1px solid var(--line);border-radius:16px;transition:border-color .18s,transform .18s}
+.world-feature:hover{border-color:#d1a7b8;transform:translateY(-3px)}
+.world-feature-number{display:block;color:#a77a8c;font-size:10px;font-weight:700;letter-spacing:.14em}
+.world-feature h3{margin:12px 0 7px;font-size:18px;letter-spacing:-.035em}
+.world-feature p{margin:0;color:var(--muted);font-size:12px;line-height:1.9;word-break:keep-all}
+.world-feature-arrow{display:block;margin-top:15px;color:var(--pink-ink);font-size:15px}
+.world-portal .guide-entry{margin-top:24px}
+.world-map .map-page{max-width:1100px;padding-top:46px}
+.world-map .front-heading{margin-bottom:30px}
+.world-map .front-heading p{max-width:610px;margin:14px auto 0;line-height:1.9;word-break:keep-all}
+.map-entry{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 24px;background:#f5edf0;border:1px solid #ead6df;border-radius:18px;margin-bottom:24px}
+.map-entry strong{display:block;font-size:16px}
+.map-entry p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.map-entry .pill-button{flex:none}
+.map-controls{margin-bottom:24px}
+.map-search-row{display:flex;align-items:center;gap:12px;margin-top:8px}
+.map-search-label{font-weight:600;font-size:13px}
+.map-search-row input{flex:1;min-width:0;padding:13px 15px;border:1px solid var(--line);border-radius:12px;font:inherit;background:#fff;color:var(--ink)}
+.map-search-row button{flex:none;border:1px solid var(--line);border-radius:10px;padding:11px 14px;background:#fff;color:var(--muted);font:inherit;font-size:12px}
+.map-results{margin:9px 0 15px;color:var(--muted);font-size:12px}
+.map-jump{display:flex;flex-wrap:wrap;gap:8px}
+.map-jump a{padding:7px 12px;border:1px solid var(--line);background:#fff;border-radius:20px;font-size:12px}
+.map-jump a:hover{border-color:#cca3b4;color:var(--pink-ink)}
+.map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.map-card{min-width:0;padding:26px;background:#fff;border:1px solid var(--line);border-radius:18px;scroll-margin-top:20px}
+.map-card-heading{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.map-card-number{color:#a47d8d;font-size:11px;font-weight:700;letter-spacing:.1em}
+.map-card h2{margin:0;font-size:20px;letter-spacing:-.04em}
+.map-route{margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.8}
+.map-card ul{margin:0;padding:0;list-style:none}
+.map-card li+li{border-top:1px solid var(--line)}
+.map-card li>a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center;padding:13px 0}
+.map-card li>a:hover strong{color:var(--pink-ink)}
+.map-card li strong{font-size:14px;font-weight:600;word-break:keep-all;overflow-wrap:break-word}
+.map-card li small{grid-column:1;color:var(--muted);font-size:12px;line-height:1.65;word-break:keep-all}
+.map-link-kind{grid-column:2;grid-row:1/3;color:var(--pink-ink);font-size:10px;white-space:nowrap}
+.map-empty{padding:35px 20px;border:1px dashed var(--line);border-radius:16px;text-align:center;color:var(--muted)}
+.map-xml{margin:25px 0 0;color:var(--muted);text-align:center;font-size:12px}
+.map-xml a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){.world-welcome{gap:28px}.world-feature-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.world-welcome h1{font-size:40px}}
+@media(max-width:700px){.world-portal .front{padding-top:25px}.world-welcome{grid-template-columns:1fr;gap:28px;padding:18px 0 32px}.world-welcome h1{font-size:37px}.world-welcome-copy>p{font-size:14px;margin:17px 0 21px}.world-welcome-visual{border-radius:20px}.world-welcome-visual img{aspect-ratio:1.55}.world-welcome-visual figcaption{padding:12px 14px;font-size:12px}.world-section-heading{align-items:flex-start;flex-direction:column;gap:9px}.world-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.world-feature{padding:20px 16px}.world-map .map-page{padding-top:30px}.map-entry{align-items:flex-start;flex-direction:column;padding:20px}.map-entry .pill-button{width:100%}.map-grid{grid-template-columns:1fr;gap:16px}.map-card{padding:22px 20px}.map-card li>a{gap:5px 8px}.map-search-row{gap:8px}.map-search-row input{font-size:14px}.map-card li strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.world-feature{transition:none}}
+@media(max-width:420px){.world-portal .account-actions{gap:6px}.world-portal .pill-button.small{padding:0 10px}}
