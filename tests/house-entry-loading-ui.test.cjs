@@ -2,7 +2,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.HOUSE_ENTRY_PROOF;
 const fixture=`<!doctype html><meta charset="utf-8"><style>body{margin:0}#mount{margin:0 12px}</style><button id="open">우리집</button><main id="mount"></main><script type="module">import{openHouseTest}from'/house-test/host.js';window.allowed=true;window.inline=true;window.closeCount=0;document.querySelector('#open').onclick=()=>window.closeHouse=openHouseTest({owner:'entry-test',authorized:()=>allowed,mountTarget:inline?document.querySelector('#mount'):null,onClose:()=>closeCount++});</script>`;
-const instant=`<!doctype html><div id="app"><div class="room selected"><p>준비된 방</p></div></div><script>addEventListener('message',event=>{if(event.data?.type==='ojjuda-house-test-init')event.ports[0].postMessage({type:'ready'});});</script>`;
+// Preserve the real home's initial summary and layout containers when faking readiness.
+const instant=`<!doctype html><div id="app" class="records-home"><div id="viewport"><div class="room selected"><p>준비된 방</p></div></div><section id="panel"></section></div><script>addEventListener('message',event=>{if(event.data?.type==='ojjuda-house-test-init')event.ports[0].postMessage({type:'ready'});});</script>`;
 const gate=()=>{let release;const promise=new Promise(r=>release=r);return{promise,release};};
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
