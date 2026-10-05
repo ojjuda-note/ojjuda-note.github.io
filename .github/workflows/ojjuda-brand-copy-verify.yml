@@ -13,7 +13,7 @@ jobs:
       START_SHA: ${{ github.sha }}
       BASE_SHA: 862c225946a0b6ef845042c8b978c8a0cf929572
       BRANCH_NAME: feat/ojjuda-brand-copy-20261005
-      OJJUDA_COPY_PROOF_DIR: ${{ runner.temp }}/ojjuda-copy-proof
+      OJJUDA_COPY_PROOF_DIR: /tmp/ojjuda-copy-proof
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -234,7 +234,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ojjuda-copy-browser-proof
-          path: ${{ runner.temp }}/ojjuda-copy-proof
+          path: /tmp/ojjuda-copy-proof
           if-no-files-found: ignore
           retention-days: 7
       - name: Publish only the verified source changes
