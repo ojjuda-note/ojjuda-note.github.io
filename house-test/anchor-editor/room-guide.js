@@ -1,4 +1,4 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-cushiondata1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261005-blanketdata1';
 
 export {ROOM,FLOOR,roomPoint};
 

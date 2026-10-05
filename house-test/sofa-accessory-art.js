@@ -1,8 +1,8 @@
-import {floorPoint,roomPoint} from './model.js?v=20261005-cushiondata1';
-import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261005-cushiondata1';
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-cushiondata1';
-import {getSofaBlanketDrape,projectSofaBlanketDrape} from './sofa-blanket-drape.js?v=20261005-cushiondata1';
-import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261005-cushiondata1';
+import {floorPoint,roomPoint} from './model.js?v=20261005-blanketdata1';
+import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261005-blanketdata1';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261005-blanketdata1';
+import {getSofaBlanketDrape,projectSofaBlanketDrape,sofaBlanketDrapeRevision} from './sofa-blanket-drape.js?v=20261005-blanketdata1';
+import {sofaAccessorySpec,sofaAccessoryOrigin,sofaAccessoryFromSofa,isBlanket,blanketMode} from './sofa-accessory-placement.js?v=20261005-blanketdata1';
 
 // Keep the authored image plane and drape registrations unchanged. Independent
 // coordinates translate their support origin; elevation moves only room z.
@@ -45,11 +45,13 @@ export function sofaAccessoryArtwork(item,placement,contact,size){
 }
 
 const blanketAreaCache=new Map();
+let blanketAreaRevision=-1;
 const triangleArea=triangle=>{const [a,b,c]=triangle.target;return (b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);};
 export function sofaAccessoryPoseValid(id,placement){
  if(!isBlanket(id)||blanketMode(id,placement)!=='sofa')return true;
  id='blanket-sofa';
  try{
+  if(blanketAreaRevision!==sofaBlanketDrapeRevision){blanketAreaCache.clear();blanketAreaRevision=sofaBlanketDrapeRevision;}
   const direction=placement.direction;
   if(!blanketAreaCache.has(direction)){
    const reference=sofaAccessoryFromSofa(id,SOFA_V1[direction].placement);

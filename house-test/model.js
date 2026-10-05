@@ -1,11 +1,11 @@
-import {isSofaCushion} from './sofa-cushion-data.js?v=20261005-cushiondata1';
+import {isSofaCushion} from './sofa-cushion-data.js?v=20261005-blanketdata1';
 import {isCatalogItem} from './item-manifest.js?v=2';
-import {madePoseValid} from './custom-furniture.js?v=20261005-cushiondata1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261005-cushiondata1';
-import {sofaPoseValid} from './sofa-art.js?v=20261005-cushiondata1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-cushiondata1';
-import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-cushiondata1';
-import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-cushiondata1';
+import {madePoseValid} from './custom-furniture.js?v=20261005-blanketdata1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261005-blanketdata1';
+import {sofaPoseValid} from './sofa-art.js?v=20261005-blanketdata1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261005-blanketdata1';
+import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-blanketdata1';
+import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261005-blanketdata1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -99,9 +99,9 @@ function roomFurniture(raw,shelf,version,addNew){
   // cannot override the approved relationship to the restored parent desk.
   const saved=id==='chair'&&raw[id]?.attachedTo==='desk'?chairForDesk(result.desk):raw[id];
   const placed=normalizePlacement(id,saved);
-  if((isCatalogItem(id)||id==='sofa'||isSofaCushion(id))&&saved&&placed&&['x','y','elevation'].some(k=>Math.abs((placed[k]??0)-(saved[k]??0))>1e-5))throw new Error('저장된 아이템의 크기나 위치가 달라졌어요. 기존 배치는 보존됩니다.');
+  if((isCatalogItem(id)||id==='sofa'||isSofaCushion(id)||isBlanket(id))&&saved&&placed&&['x','y','elevation'].some(k=>Math.abs((placed[k]??0)-(saved[k]??0))>1e-5))throw new Error('저장된 아이템의 크기나 위치가 달라졌어요. 기존 배치는 보존됩니다.');
   if(placed&&canPlaceFurniture(id,placed,others)){result[id]=placed;others.push({id,...placed});}
-  else if((isCatalogItem(id)||id==='sofa'||isSofaCushion(id))&&saved)throw new Error('저장된 아이템의 배치를 확인하지 못했어요. 기존 배치는 보존됩니다.');
+  else if((isCatalogItem(id)||id==='sofa'||isSofaCushion(id)||isBlanket(id))&&saved)throw new Error('저장된 아이템의 배치를 확인하지 못했어요. 기존 배치는 보존됩니다.');
  }
  // Cushions split in v12; the attached blanket splits in v13.
  // Copy only its enabled drawings to independent world poses once. Their

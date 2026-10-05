@@ -46,3 +46,9 @@
 쿠션 네 종류는 `sofa-cushions` 항목의 `ojjuda-sofa-cushions` 자료로 함께 관리한다. 각 쿠션의 `seat`는 소파 위 자리(`u`, `v`, `bottom`)와 기존 크기(`width`, `height`), `views`는 좌·정면·우의 PNG 경로와 `sourceRect: [x,y,width,height]`다. 기존 크기는 저장된 배치 보호를 위해 변경하지 않는다. 담요 정보는 이 자료에 포함되지 않는다.
 
 `assets/sofa-cushions-v1.runtime.json`을 기준으로 승인된 자료를 새 파일에 저장하고 업로드한 뒤 `item-assets.json`의 `sofa-cushions.file`과 SHA-256 앞 16자리 `revision`을 갱신한다. PNG 변경도 새 파일명을 사용한다. 앱 버전이나 모듈 캐시 변경 없이 방을 다시 열면 읽는다. 네 종류·세 방향을 모두 검증한 후 함께 적용하며, 기존 쿠션의 저장 좌표를 새 기본 자리로 자동 이동하지 않는다. 새 자리는 이후 소파에 가져다 놓을 때 사용한다.
+
+## 소파에 걸친 담요 자료 수정
+
+`sofa-blanket` 항목은 `ojjuda-sofa-blanket` 형식이다. `assets/sofa-blanket-v1.runtime.json`의 `views.left/center/right`에 PNG 경로·원본 영역과 `drape` 접힘 등록을 함께 저장한다. 새 자료와 변경 PNG를 먼저 새 파일명으로 올린 뒤 목록의 파일명·SHA-256 앞 16자리를 갱신한다. 이후 자료 수정에는 앱 버전 변경이 필요 없다.
+
+세 방향이 모두 검증되어야 적용된다. 소파 참조 치수는 3.5×1.5×1.8이며 기존 담요 배치 공간·자동 전환 위치·저장 형식은 유지한다. 자료를 바꿔도 저장된 담요를 기본 위치로 이동하지 않는다. 바닥에 펼친 담요의 그림·기준점은 이 파일에 포함되지 않는다.

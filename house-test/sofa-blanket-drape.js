@@ -8,7 +8,12 @@ const CENTRES={
 const ROWS=[[0,.38,1.04],[180,.61,.94],[400,1.12,.86],[510,1.44,.82],[1000,1.49,.23],[1150,1.55,.055],[1326,1.75,.025]];
 const fail=()=>{throw new RangeError('담요의 접힘 기준점이 올바르지 않습니다.');};
 
+const installedDrapes={};
+export let sofaBlanketDrapeRevision=0;
+export function installSofaBlanketDrapes(views){Object.assign(installedDrapes,views);sofaBlanketDrapeRevision++;}
+
 export function getSofaBlanketDrape(direction){
+ if(Object.hasOwn(installedDrapes,direction))return structuredClone(installedDrapes[direction]);
  if(!CENTRES[direction])fail();
  return {kind:'sofa-blanket-drape',version:1,direction,sourceSize:{width:1186,height:1326},referenceDimensions:{width:3.5,depth:1.5,height:1.8},rows:ROWS.map((r,i)=>[...r,CENTRES[direction][i]]),centerU:.81,unitsPerPixel:.00145,surfaceRows:3,columns:8};
 }

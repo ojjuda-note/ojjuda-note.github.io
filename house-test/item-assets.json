@@ -60,6 +60,10 @@
     "sofa-cushions": {
       "file": "sofa-cushions-v1.runtime.json",
       "revision": "a03469c53a043506"
+    },
+    "sofa-blanket": {
+      "file": "sofa-blanket-v1.runtime.json",
+      "revision": "8b23c66e0210bda3"
     }
   }
 }
