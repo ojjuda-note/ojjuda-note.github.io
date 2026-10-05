@@ -4,11 +4,12 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const copy='오늘 하루 어땠나요? 괜찮았나요';
 const checkWritingCopy=async frame=>{
- const greeting=frame.locator('#compose-brand-copy');
- assert.equal(await greeting.textContent(),copy);assert.equal(await greeting.isVisible(),true);
- assert.equal(await frame.locator('#compose-text').getAttribute('aria-describedby'),'compose-brand-copy');
- assert.equal(await frame.locator('#compose-text').inputValue(),'','the greeting is an instruction, never card content');
- assert.equal(await frame.locator('.composer-body').evaluate(body=>{const p=body.querySelector('#compose-brand-copy').getBoundingClientRect(),b=body.getBoundingClientRect(),settings=body.querySelector('.compose-publish-settings').getBoundingClientRect();return p.top>=b.top&&p.bottom<=b.bottom&&settings.bottom<=p.top; }),true,'the full greeting is visible after public settings before writing');
+ const input=frame.locator('#compose-text');
+ assert.equal(await input.getAttribute('placeholder'),copy.replace('? ','?\n'));assert.equal(await input.isVisible(),true);
+ assert.equal(await frame.locator('#compose-brand-copy').count(),0,'no duplicate greeting above the card');
+ assert.equal(await input.inputValue(),'','the greeting is a placeholder, never card content');
+ assert.equal(await input.evaluate(el=>el.matches(':placeholder-shown')&&el.scrollHeight<=el.clientHeight+1),true,'the complete greeting fits the empty input');
+ assert.equal(await input.evaluate(el=>{const p=el.getBoundingClientRect(),photo=el.closest('.compose-photo').getBoundingClientRect(),body=el.closest('.composer-body').getBoundingClientRect();return p.top>=photo.top&&p.bottom<=photo.bottom&&p.left>=photo.left&&p.right<=photo.right&&p.top>=body.top&&p.bottom<=body.bottom; }),true,'the greeting appears inside the visible photo card before writing');
 };
 // Old bookmarks, direct feature URLs and authenticated returns share one World entry.
 for(const [from,to] of [

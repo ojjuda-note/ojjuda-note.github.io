@@ -7,7 +7,5 @@
 .auth-body>.ojjuda-copy--world,.auth-loading>.ojjuda-copy--world{text-align:center}
 .ojjuda-copy--auth{margin:0 0 14px;text-align:center;color:var(--muted,#626894);font-size:16px;line-height:1.6}
 .ojjuda-copy--feed{margin:0 0 14px;color:var(--ink);font-size:clamp(17px,2.5vw,20px);line-height:1.6}
-.ojjuda-copy--composer{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--accent-soft,#fceaf1);color:var(--ink,#23264a);font-size:18px;line-height:1.55}
 .front-heading>.ojjuda-copy--map{font-size:20px;line-height:1.6;color:var(--pink-ink,#a93263);margin:14px 0}
-@media(max-width:380px){.ojjuda-copy--composer{font-size:16px}}
 @media(min-width:900px){.topbar>.ojjuda-copy--world{display:none}}
