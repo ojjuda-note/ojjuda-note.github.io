@@ -8,7 +8,7 @@ permissions:
 env:
   START_SHA: ${{ github.sha }}
   BASE_SHA: 653a0711bdb61dedb11ee032ce5bb66c23812dae
-  EXPECTED_BLOB: 6e639eba00bef9ea106801477dd4698e243edd7f
+  EXPECTED_BLOB: e283b21d235bcc74449cfdc0e044fea2e6d41be5
   BRANCH_NAME: fix/house-opening-close-20261005
 jobs:
   verify:
