@@ -1,3 +1,4 @@
+const {loadValidStudioItem}=require('./furniture-studio-fixture.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
@@ -10,7 +11,7 @@ const parent=`<button id="open">Open</button><script type="module">import{openFu
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.goto('https://fixture.test/fixture');await page.locator('#open').click();
   const frame=page.frames().find(f=>f.url().includes('/anchor-editor/'));
-  await frame.locator('#studio-side-table').click();await frame.waitForFunction(()=>document.querySelector('#set-summary').textContent.includes('원본 그림 3/3'));
+  await frame.locator('#studio-editor').waitFor({state:'visible'});await loadValidStudioItem(frame);await frame.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
   const result=await frame.evaluate(async()=>{
    const entry=await(await fetch(new URL('./entry.js',location.href))).text(),appURL=entry.match(/import\('(.\/app\.js[^']*)'\)/)[1],app=await import(appURL);
    const before=app.studioBundle().project;
