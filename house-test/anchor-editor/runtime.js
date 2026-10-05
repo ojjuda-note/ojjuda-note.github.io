@@ -1,12 +1,12 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-itemcatalog2';
-import {validQuad,drawWarp} from './warp.js?v=20261005-itemcatalog2';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-itemcatalog2';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-itemcatalog2';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-itemcatalog2';
-import {drawDrapedLayer} from './draped-parts.js?v=20261005-itemcatalog2';
-import {alphaBounds} from './cutout.js?v=20261005-itemcatalog2';
-import {pictureShape} from './shape-check.js?v=20261005-itemcatalog2';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261005-sofadata1';
+import {validQuad,drawWarp} from './warp.js?v=20261005-sofadata1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261005-sofadata1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261005-sofadata1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261005-sofadata1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261005-sofadata1';
+import {alphaBounds} from './cutout.js?v=20261005-sofadata1';
+import {pictureShape} from './shape-check.js?v=20261005-sofadata1';
 
 const preparedPictures=new WeakMap();
 
