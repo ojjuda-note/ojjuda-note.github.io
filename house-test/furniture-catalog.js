@@ -1,7 +1,7 @@
 // Shared authoring contract: rear grid anchors, item-specific front clearance,
 // three real view images, and a single approved color/material reference.
-import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-succulent1';
-export {isBlanket} from './sofa-accessory-placement.js?v=20261005-succulent1';
+import {sofaAccessorySpec,sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261005-floorprops1';
+export {isBlanket} from './sofa-accessory-placement.js?v=20261005-floorprops1';
 export const ART_STYLE={reference:'references/home-style.png',materials:['warm oak','cream ivory','muted lavender'],lighting:'soft cream daylight; retain natural grain and gentle shadows'};
 const plane=source=>({source,clip:source});
 export const SOFA_ACCESSORIES=[
@@ -127,7 +127,7 @@ export function itemSize(id,direction,placement){
  return direction==='center'?{w:spec.width,d:spec.depth}:{w:spec.depth,d:spec.width};
 }
 export function itemLayer(id,placement){return isBlanket(id)?blanketMode(id,placement)==='sofa'?'surface':'floor':FURNITURE[id]?.layer;}
-export function itemHeight(id,placement){return isBlanket(id)?blanketSpec(blanketMode(id,placement)).height:FURNITURE[id]?.height;}
+export function itemHeight(id,placement){if(FURNITURE[id]?.picture==='sofa-accessory'&&(placement?.elevation??0)===0)return .14;return isBlanket(id)?blanketSpec(blanketMode(id,placement)).height:FURNITURE[id]?.height;}
 export function contactBounds(id,s){
  const item=FURNITURE[id],size=itemSize(id,s.direction,s);if(!item||!size)return null;
  // Keep the entire rear edge on the reservation's grid corners. Only the
