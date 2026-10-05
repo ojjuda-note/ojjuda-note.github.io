@@ -8,6 +8,12 @@ const {fixture,A,B,C,MINOR}=require('./arcade-rooms-fixture.cjs');
   const cancel=(actor,room)=>arcade(actor,'cancel',{p_room:room.room_no});
   const expireRate=()=>db.exec("update ojjuda_arcade_internal.rooms set created_at=created_at-interval '2 minutes'");
   try{
+    // A private room lookup must not widen the public privacy helper's scope.
+    await assert.rejects(()=>db.transaction(async tx=>{
+      await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[B]);
+      await tx.exec('set local role authenticated');
+      await tx.query('select public.is_banned($1)',[A]);
+    }),/helper_scope_denied/);
     await assert.rejects(()=>arcade(null,'list'),/not_signed_in/);
     await db.query('update auth.users set is_anonymous=true where id=$1',[C]);
     await assert.rejects(()=>arcade(C,'list'),/not_signed_in/);
@@ -45,11 +51,11 @@ const {fixture,A,B,C,MINOR}=require('./arcade-rooms-fixture.cjs');
     assert.equal((await db.query('select count(*)::int n from public.board_games where status=\'playing\'')).rows[0].n,1);
     await db.exec("update public.board_games set status='done'");
     const blocked=(await create(A,'pool8')).room;
-    await db.query('insert into public.fixture_blocks values($1,$2)',[A,B]);
+    await db.query('insert into public.blocks values($1,$2)',[A,B]);
     assert.equal((await arcade(B,'list')).rooms.length,0);await assert.rejects(()=>join(B,blocked),/room_unavailable/);
-    await db.exec('delete from public.fixture_blocks');await db.query('insert into public.fixture_bans values($1)',[A]);
+    await db.exec('delete from public.blocks');await db.query("update public.user_private set banned_until=now()+interval '1 hour' where user_id=$1",[A]);
     assert.equal((await arcade(B,'list')).rooms.length,0);await assert.rejects(()=>join(B,blocked),/room_unavailable/);
-    await assert.rejects(()=>arcade(A,'list'),/banned/);await db.exec('delete from public.fixture_bans');
+    await assert.rejects(()=>arcade(A,'list'),/banned/);await db.query('update public.user_private set banned_until=null where user_id=$1',[A]);
     await cancel(A,blocked);await assert.rejects(()=>join(B,blocked),/room_unavailable/);
     const expired=(await create(A,'chess')).room;
     await db.query("update ojjuda_arcade_internal.rooms set expires_at=now()-interval '1 second' where room_no=$1",[expired.room_no]);
@@ -76,6 +82,8 @@ const {fixture,A,B,C,MINOR}=require('./arcade-rooms-fixture.cjs');
     await assert.rejects(()=>create(A,'chess'),/room_rate_limit/);
     await assert.rejects(()=>db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query('select * from ojjuda_arcade_internal.rooms');}),/permission denied/);
     await assert.rejects(()=>db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query('select ojjuda_arcade_internal.sync_rooms()');}),/permission denied/);
+    await assert.rejects(()=>db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query("select ojjuda_matgo_internal.wallet_service_v1($1,'status')",[A]);}),/permission denied/);
+    assert.equal((await db.query("select has_function_privilege('authenticated','ojjuda_matgo_internal.wallet_service_v1(uuid,text,uuid,boolean,uuid,bigint,smallint,integer)','execute') allowed")).rows[0].allowed,false);
     await assert.rejects(()=>db.transaction(async tx=>{await tx.exec('set local role anon');await tx.query("select public.arcade_room_service('list')");}),/permission denied/);
     console.log('PASS: all 6 room kinds, real Matgo seats, number/title, retry, one winner on concurrent joins, capacity, expiry, cancellation, age, blocks, bans, secrets, rate limit and SQL privileges.');
   }finally{await f.close();}
