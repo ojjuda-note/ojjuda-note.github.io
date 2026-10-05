@@ -69,7 +69,7 @@ await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>new Pr
 await page.setViewportSize({width:390,height:844});await page.locator('.board-leaders').screenshot({path:'/tmp/chalkboard-ranking.png'});
 // Community records are shared with every member, not replaced by the viewer's personal score.
 await page.evaluate(()=>{window.personalRecords=[{game:'matgo',score:12345},{game:'runner',score:567},{game:'stacker',score:0},{game:'carom4_easy',score:4},{game:'screw_box',score:123},{game:'screw_flat',score:456}];return OjjudaBoard.refresh();});
-for(const [game,score] of [['matgo','12,345골드'],['runner','567점'],['stacker','0층'],['carom4_easy','4연승'],['screw_box','123점'],['screw_flat','456점']]){
+for(const [game,score] of [['matgo','12,345G'],['runner','567점'],['stacker','0층'],['carom4_easy','4연승'],['screw_box','123점'],['screw_flat','456점']]){
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-nick`).innerText(),'다른 회원');
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-score`).innerText(),score);
 }
@@ -90,7 +90,7 @@ await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board
 assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length),personalCalls+29,'public records refresh for every game on return');
 await page.evaluate(()=>{document.body.classList.add('matgo-open');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='matgo').score=7500;document.body.classList.remove('matgo-open');});
-await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score').textContent==='7,500골드');
+await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score').textContent==='7,500G');
 assert.ok((await page.locator('[data-game=matgo] .board-leader-nick').getAttribute('title')).includes('현재 보유 골드'));
 // A score that finishes saving after the game closes must update the board too.
 const previousPage=await page.locator('.board-leaders').getAttribute('data-rank-page');
@@ -118,7 +118,7 @@ assert.deepEqual(await displayedOrder(),scoresFirst(['mole']),'cleared records m
 // Opening the board before the arcade still loads Matgo after the server access check.
 await page.evaluate(()=>{window.personalRecords=[{game:'matgo',score:98600}];window.matgoEligible=false;window.OjjudaMatgoAccess={visible:()=>matgoEligible,check:()=>new Promise(resolve=>{window.finishMatgoCheck=()=>{matgoEligible=true;resolve({userId:viewer});};})};OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='a'});});
 assert.equal(await page.locator('[data-game=matgo]').count(),0,'Matgo remains hidden before access is confirmed');
-await page.evaluate(()=>finishMatgoCheck());await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score')?.textContent==='98,600골드');
+await page.evaluate(()=>finishMatgoCheck());await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score')?.textContent==='98,600G');
 assert.equal(await page.locator('.board-rank-page').first().locator('[data-game=matgo]').count(),1,'eligible Matgo gold ranking is shown without first opening the arcade');
 await page.evaluate(()=>{OjjudaMatgoAccess={visible:()=>false,check:()=>Promise.reject(Error('underage'))};OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames()});return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=matgo]').count(),0,'denied access never exposes the Matgo entry');

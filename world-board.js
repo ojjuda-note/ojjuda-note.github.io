@@ -195,7 +195,7 @@
   if(!games.matgo&&typeof matgoAccess?.check==='function'){
    void matgoAccess.check().then(member=>{
     if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
-    games={...games,matgo:{name:'맞고',unit:'골드',rankingBasis:'current_gold'}};
+    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'}};
     if(!view&&!dialog)void home();
    }).catch(()=>{});
   }
