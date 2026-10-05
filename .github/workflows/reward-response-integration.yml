@@ -1,0 +1,131 @@
+name: Integrate and verify reward responses
+on:
+  push:
+    branches: [codex/reward-response-guard-20261004]
+    paths: [.github/workflows/reward-response-integration.yml]
+permissions:
+  contents: write
+concurrency:
+  group: reward-response-integration
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      START_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Combine selected reward guards with current main
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main 465158e3a78cbfddbfd3f18fdb2b914cd5a7257e e1cdf9250d94046821da7aa1358346bc0b3a45d1
+          git checkout --detach origin/main
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import subprocess
+          
+          read = lambda rev, path: subprocess.check_output(['git', 'show', rev + ':' + path], text=True)
+          source = 'e1cdf9250d94046821da7aa1358346bc0b3a45d1'
+          base = read('465158e3a78cbfddbfd3f18fdb2b914cd5a7257e', 'world.html')
+          ours = read(source, 'world.html')
+          main = pathlib.Path('world.html').read_text()
+          
+          def span(s, start, end):
+              a = s.index(start)
+              return s[a:s.index(end, a)]
+          
+          def once(s, old, new):
+              assert s.count(old) == 1, 'Code moved; review before retrying: ' + old[:90]
+              return s.replace(old, new, 1)
+          
+          pairs = [
+              (span(base, 'function Ia(', 'var Yr='), span(ours, 'var worldRewardVersion=', 'var Yr=')),
+              (span(base, 'async function vl(', 'async function tf('), span(ours, 'async function vl(', 'async function tf(')),
+              (span(base, 'async function _2(', 'function sf('), span(ours, 'async function _2(', 'function sf(')),
+              (span(base, 'async function kg(', 'function wg('), span(ours, 'async function kg(', 'function wg(')),
+              (span(base, 'checkin(t,e){', '$.coins+=ba.c'), span(ours, 'checkin(t,e){', '$.coins+=ba.c')),
+              ('async function tf(t,e){\n e=Math.max(0,Math.round(e));\n const owner=D.online?D.user?.id:null;',
+               'async function tf(t,e,request=worldRewardRequest()){\n e=Math.max(0,Math.round(e));\n const owner=request.owner;'),
+              ("  const {data,error}=await S.rpc('submit_score',{p_game:t,p_score:e});\n  if(error)throw error;\n  if(D.online&&D.user?.id===owner&&data?.ok)",
+               "  const data=await vl('submit_score',{p_game:t,p_score:e},request);\n  if(worldRewardCurrent(request)&&data?.ok)"),
+              ('async function nf(){if(R)try{let session=R,t=',
+               'async function nf(){if(R)try{const session=R,game=R.game,owner=worldRewardOwner();let t='),
+              ('e=await ef(t),o=R===session&&R.ov.querySelector("#grank");',
+               'e=await ef(t),o=R===session&&R.game===game&&owner===worldRewardOwner()&&R.ov.querySelector("#grank");'),
+              ('async function S2(t){if(!R||!R.running)return;R.running=!1,',
+               'async function S2(t){if(!R||!R.running)return;const session=R,game=R.game,request=worldRewardRequest(),current=()=>R===session&&R.game===game&&!R.running&&worldRewardCurrent(request);R.running=!1,'),
+              ('let finishedGame=R,e=R.id,o=_r[e].unit,recordKey=', 'let e=R.id,o=_r[e].unit,recordKey='),
+              ('let r=await tf(recordKey,t),a=R===finishedGame&&!R.running&&R.ov.querySelector("#gres");',
+               'let r=await tf(recordKey,t,request);if(!current())return;let a=R.ov.querySelector("#gres");'),
+              ('}catch(r){console.error(r);let a=R===finishedGame&&!R.running&&R.ov.querySelector("#gres");',
+               '}catch(r){if(!current())return;console.error(r);let a=R.ov.querySelector("#gres");'),
+              ('if(R===finishedGame&&!R.running)nf()', 'if(current())nf()'),
+          ]
+          for old, new in pairs:
+              main = once(main, old, new)
+          pathlib.Path('world.html').write_text(main)
+          
+          test = read(source, 'tests/world-reward-response-ui.test.cjs')
+          test = once(test, 'let rewardJobId=0,screwApi;', "let rewardJobId=0,screwApi;const rewardNotices=[];addEventListener('ojjuda:game-record-saved',event=>rewardNotices.push(event.detail.owner));")
+          test = once(test, "async prepare(kind){if(kind==='screw'){Al('screw');await _2();}", "async prepare(kind){if(['screw','screw_flat','screw_box'].includes(kind)){Al('screw');R.screwMode=kind==='screw_flat'?'flat':'box';await _2();}")
+          test = once(test, 'calls(){return rewardCalls.map(({kind,owner})=>({kind,owner}));}', 'calls(){return rewardCalls;},notices(){return [...rewardNotices];},setWalletReady(value){D.walletReady=value;}')
+          test = once(test, "j.kind==='game_ranking'", "j.kind==='community_game_ranking'")
+          test = once(test, "  if(['score','screw'].includes(kind)", "  assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),[],'stale scores never announce a refresh for the new account');\n  if(['score','screw'].includes(kind)")
+          extra = ''' // Preserve current score storage and the separate screw-mode ranking keys.
+           for(const key of ['screw_box','screw_flat']){
+            const f=await fixture(key);await f.page.evaluate(()=>rewardTest.setWalletReady(false));
+            const id=await f.start('result');
+            const submitted=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind==='submit_score').at(-1);
+            assert.deepEqual(submitted,{kind:'submit_score',owner:'owner-a',args:{p_game:key,p_score:150}},'score saving remains available before wallet readiness');
+            await f.finish(id,receipt);
+            assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),['owner-a'],'a current successful score still announces a refresh');
+            const ranked=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind==='community_game_ranking').at(-1);
+            assert.equal(ranked.args.p_game,key,'box and flat keep separate ranking keys');
+            await f.close();
+           }
+          '''
+          test = once(test, " console.log('PASS: reward account isolation", extra + " console.log('PASS: reward account isolation")
+          test = once(test, 'restart and ranking guards.', 'restart and ranking guards, current score notifications, wallet-independent saves and separate screw ranking keys.')
+          pathlib.Path('tests/world-reward-response-ui.test.cjs').write_text(test)
+          
+          p = pathlib.Path('tests/package.json')
+          pkg = json.loads(p.read_text())
+          name = 'node world-reward-response-ui.test.cjs'
+          assert name not in pkg['scripts']['test:ui']
+          pkg['scripts']['test:ui'] = name + ' && ' + pkg['scripts']['test:ui']
+          p.write_text(json.dumps(pkg, ensure_ascii=False, indent=2) + '\n')
+          print('Integrated reward guards with current score notifications and separate screw ranking keys; preserved all existing test commands.')
+          PY
+          git diff --check
+      - name: Install locked test tools
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify syntax, rewards, wallet and friend interactions
+        working-directory: tests
+        run: |
+          node inline-scripts.test.cjs
+          node world-reward-response-ui.test.cjs
+          node world-wallet-response-ui.test.cjs
+          node world-friend-search-ui.test.cjs
+      - name: Save only the verified fix to its existing branch
+        run: |
+          git add world.html tests/package.json tests/world-reward-response-ui.test.cjs
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tree=$(git write-tree)
+          main_sha=$(git rev-parse origin/main)
+          commit=$(git commit-tree "$tree" -p "$START_SHA" -p "$main_sha" -m 'Integrate current World into verified reward response guards')
+          git push origin "$commit:refs/heads/codex/reward-response-guard-20261004"
+          echo "CHECKED_HEAD=$commit"
+          echo "CHECKED_TREE=$tree"
+          echo "BASE_MAIN=$main_sha"
+          sha256sum world.html tests/package.json tests/world-reward-response-ui.test.cjs
