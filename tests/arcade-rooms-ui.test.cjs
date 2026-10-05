@@ -4,7 +4,7 @@ const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
-S=window.fixtureClient;Pa=async()=>{};P.loaded=true;P.friends=[];
+S=window.fixtureClient;P.loaded=true;P.friends=[];
 D.online=true;D.user={id:window.fixtureActor};D.doorReady=true;D.boardReady=true;D.billiardsReady=true;D.janggiLayoutReady=true;
 window.arcadeTest={actions:sr,render:H,auth:D,state:g,client:S,rooms:()=>worldArcadeRooms,chat:text=>{g.place.log.push({sys:true,text});eo();},redraw:Bf,
  switchActor:id=>{D.user={id};window.fixtureActor=id;worldArcadeRooms.sync()}};
@@ -31,11 +31,21 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
   await context.addInitScript(({actor,minor})=>{
     window.fixtureActor=actor;
     window.OJJUDA_CONFIG={supabaseUrl:'https://mock.invalid',supabaseKey:'public'};
-    const channel={on(){return this},subscribe(){return this},unsubscribe(){}};
+    window.fixtureChannels=[];
+    function channel(name,options){
+      const listeners=[],state={};
+      const ch={name,on(type,filter,callback){listeners.push({type,filter,callback});return this},
+        subscribe(callback){if(callback)queueMicrotask(()=>callback('SUBSCRIBED'));return this},
+        async track(value){state[options?.config?.presence?.key||fixtureActor]=[value];ch.sync();},
+        async untrack(){},unsubscribe(){},presenceState:()=>state,
+        sync(){for(const l of listeners)if(l.type==='presence')l.callback()},
+        message(value){for(const l of listeners)if(l.type==='postgres_changes')l.callback({new:value})}};
+      fixtureChannels.push(ch);return ch;
+    }
     const client={auth:{getUser:async()=>({data:{user:{id:fixtureActor}}}),getSession:async()=>({data:{session:{access_token:fixtureActor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
       rpc:(name,params)=>name==='arcade_room_service'?roomFixture('arcade',fixtureActor,params):Promise.resolve({data:{age:minor?11:36,locked:true}}),
-      functions:{invoke:(_,{body})=>roomFixture('matgo',fixtureActor,body)},channel:()=>channel,removeChannel(){},
-      from(table){const p={table,eq:[],in:[],single:false};const q={select(){return q},eq(k,v){p.eq.push([k,v]);return q},in(k,v){p.in.push([k,v]);return q},order(){return q},limit(){return q},or(){return q},maybeSingle(){p.single=true;return q},then(resolve,reject){return roomFixture('from',fixtureActor,p).then(resolve,reject)}};return q;}};
+      functions:{invoke:(_,{body})=>roomFixture('matgo',fixtureActor,body)},channel,removeChannel(){},
+      from(table){const p={table,eq:[],in:[],single:false};const q={select(){return q},eq(k,v){p.eq.push([k,v]);return q},in(k,v){p.in.push([k,v]);return q},gt(){return q},order(){return q},limit(){return q},or(){return q},maybeSingle(){p.single=true;return q},then(resolve,reject){return roomFixture('from',fixtureActor,p).then(resolve,reject)}};return q;}};
     window.fixtureClient=client;window.supabase={createClient:()=>client};
   },{actor,minor:actor===MINOR});
   await context.route('**/*',async route=>{
@@ -50,6 +60,7 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
   const page=await context.newPage();page.setDefaultTimeout(8000);
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.arcadeTest);
   await page.evaluate(async()=>{OjjudaMatgoAccess.configure(arcadeTest.client);await OjjudaMatgoAccess.check().catch(()=>{});arcadeTest.actions['enter-place']({id:'arcade'});await arcadeTest.rooms().refresh();});
+  await page.waitForFunction(()=>arcadeTest.state.place.joined);
   return {page,context};
  }
  const refresh=page=>page.evaluate(()=>arcadeTest.rooms().refresh());
@@ -58,7 +69,6 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
   for(const kind of ['chess','janggi','carom4','carom3','pool8','matgo']){
     const a=await screen(A),b=await screen(B);
     const title=kind+' 초보 <b> & 친구들';
-    await a.page.locator('#pmsg').fill('보내기 전 채팅');
     if(kind==='matgo'){
       await a.page.locator('[data-act=matgo-open]').click();
       const frame=a.page.frameLocator('#matgo-overlay iframe');
@@ -74,8 +84,11 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
       await a.page.locator('#arcade-room-form button[type=submit]').click();
     }
     await a.page.locator('#plog .arcade-room-card.mine').waitFor();
+    await a.page.evaluate(()=>fixtureChannels.find(c=>c.name.startsWith('place:')).sync());
+    await a.page.locator('#plog .arcade-room-card.mine').waitFor();
     await b.page.locator('#plog .arcade-room-card').waitFor();
     assert.equal(await a.page.locator('[data-arcade-rooms] .arcade-room-card').count(),0,'room is inside the chat, not a separate list');
+    await a.page.locator('#pmsg').fill('보내기 전 채팅');
     await a.page.evaluate(()=>arcadeTest.chat('일반 채팅을 새로 받아요'));
     assert.equal(await a.page.locator('#plog .arcade-room-card').count(),1,'normal chat refresh preserves the room post');
     assert.equal(await a.page.locator('#pmsg').inputValue(),'보내기 전 채팅','room publishing preserves chat input');

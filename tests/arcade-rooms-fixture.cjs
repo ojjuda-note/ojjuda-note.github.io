@@ -5,18 +5,25 @@ async function fixture(){
   await db.exec(`alter table auth.users add column is_anonymous boolean default false;
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;
-    create table public.fixture_bans(id uuid primary key);
-    create table public.fixture_blocks(a uuid,b uuid);
-    create or replace function public.is_banned(uuid) returns boolean language sql security definer as $$select exists(select 1 from public.fixture_bans where id=$1)$$;
-    create function public.blocked_between(uuid,uuid) returns boolean language sql security definer as $$select exists(select 1 from public.fixture_blocks where (a=$1 and b=$2) or (a=$2 and b=$1))$$;
+    alter table public.user_private add column banned_until timestamptz;
+    create table public.blocks(blocker uuid,blocked uuid);
     create schema extensions;
     create function extensions.gen_random_bytes(integer) returns bytea language sql as $$select decode(repeat('ab',$1),'hex')$$;
     create table public.board_games(id uuid primary key default gen_random_uuid(),kind text not null check(kind in ('chess','janggi','carom4','carom3','pool8')),
       p1 uuid references public.profiles(id),p2 uuid references public.profiles(id),p1_nick text,p2_nick text,status text default 'invited' check(status in ('invited','playing','done','declined','canceled')),
       moves jsonb default '[]',turn text default 'p1',janggi_layout jsonb,verified_state jsonb,created_at timestamptz default now(),updated_at timestamptz default now());
     alter table public.board_games enable row level security;`);
-  const migration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(n=>n.endsWith('_arcade_public_rooms.sql'));
-  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',migration),'utf8'));
+  const migrations=path.join(__dirname,'../supabase/migrations');
+  // Use the actual scoped helpers. Permissive stubs hide cross-member 403 errors.
+  const privacy=fs.readFileSync(path.join(migrations,'20260930231544_scope_world_privacy_helpers.sql'),'utf8');
+  for(const name of ['blocked_between','is_banned']){
+    const start=privacy.indexOf('CREATE OR REPLACE FUNCTION public.'+name+'(');
+    await db.exec(privacy.slice(start,privacy.indexOf('$function$;',start)+11));
+  }
+  const migration=fs.readdirSync(migrations).find(n=>n.endsWith('_arcade_public_rooms.sql'));
+  await db.exec(fs.readFileSync(path.join(migrations,migration),'utf8'));
+  const visibility=fs.readdirSync(migrations).find(n=>n.endsWith('_arcade_room_host_visibility.sql'));
+  await db.exec(fs.readFileSync(path.join(migrations,visibility),'utf8'));
   async function arcade(actor,action,params={}){
     return db.transaction(async tx=>{
       await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);
