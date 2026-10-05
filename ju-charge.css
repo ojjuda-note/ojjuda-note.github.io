@@ -72,3 +72,4 @@
   .ju-charge-pack strong { font-size: 22px; }
   .ju-charge-footer { padding: 14px 16px 18px; }
 }
+.col:has([data-house-inline][data-editor-scroll]) > .topbar { position: relative; }
