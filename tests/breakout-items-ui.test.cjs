@@ -2,6 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
+    game.testStage=n=>{level=n;fillBricks();newTurn();};
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/games/breakout-game.js')?s:'')
@@ -76,12 +77,32 @@ g.tab='friends';H();
    await page.evaluate(()=>{breakoutTest.finishStage();breakoutTest.finishStage()});
    assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().level),3);
    const types=await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.bricks.length,s.bricks.some(b=>b.hp===2),s.bricks.some(b=>b.solid),s.balls[0].piercing]});
-   assert.deepEqual(types,[15,true,true,false]);checks++;
+   assert.deepEqual(types,[34,true,true,false]);checks++;
    if(width===390){
     await catchItem('pierce');await catchItem('ten');
     await page.evaluate(()=>breakoutTest.step(.24));
     // Capture the real renderer after actual item drops and paddle catches.
     await page.locator('#gov .gbox').screenshot({path:process.env.BREAKOUT_SCREENSHOT||'/workspace/scratch/ojjuda-breakout-items-20261006.png'});
+   }
+   if(width===390){
+    await page.evaluate(()=>{const r=breakoutTest.current;r.game.testStage(100);r.game.draw(r.ctx);});
+    assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().bricks.length),1000);
+    await page.locator('#gov .gbox').screenshot({path:'/workspace/scratch/ojjuda-breakout-stage100-20261006.png'});
+    const metrics=await page.evaluate(()=>{
+     const r=breakoutTest.current,g=r.game,s=g.inspect(),brick=s.bricks.find(b=>!b.solid),transform=r.ctx.getTransform(),x=Math.floor((brick.x+brick.w/2)*transform.a+transform.e),y=Math.floor((brick.y+brick.h/2)*transform.d+transform.f);
+     const before=Array.from(r.ctx.getImageData(x,y,1,1).data);brick.on=false;g.draw(r.ctx);
+     const after=Array.from(r.ctx.getImageData(x,y,1,1).data);
+     g.onKey(' ');const times=[];
+     for(let i=0;i<180;i++){
+      const state=g.inspect();while(state.balls.length<10)state.balls.push({...state.balls[0],id:1000+state.balls.length,contacts:new Set()});
+      for(const [j,b] of state.balls.entries())Object.assign(b,{x:24+j*32,y:150+(i%20)*5,vx:j%2?state.speed:-state.speed,vy:-state.speed*.2});
+      const start=performance.now();g.update(1/60);g.draw(r.ctx);times.push(performance.now()-start);
+     }
+     times.sort((a,b)=>a-b);return {before,after,p95:times[Math.floor(times.length*.95)]};
+    });
+    assert.notDeepEqual(metrics.before,metrics.after,'destroyed bricks disappear from the cached layer');
+    assert.ok(metrics.p95<40,'1000-brick, ten-ball update and draw stay within the regression frame budget');
+    console.log('1000 bricks / 10 balls: p95 '+metrics.p95.toFixed(2)+' ms');
    }
    await page.evaluate(()=>{while(breakoutTest.current.running)breakoutTest.finishStage()});
    await page.locator('#gres').waitFor();assert.match(await page.locator('#gscreen').innerText(),/100단계 클리어/);

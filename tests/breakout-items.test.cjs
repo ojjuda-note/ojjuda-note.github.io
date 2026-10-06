@@ -86,10 +86,10 @@ for(const piercing of [false,true]){
 {
   const f=fixture(),layouts=Array.from({length:100},(_,i)=>f.game.previewStage(i+1));
   for(const [index,bricks] of layouts.entries()){
-    const stage=index+1;assert.ok(bricks.length>=14&&bricks.length<=63);
+    const stage=index+1;assert.ok(bricks.length>=14&&bricks.length<=1000);
     if(index)assert.ok(bricks.length>=layouts[index-1].length,'later stages never contain fewer bricks');
     if(index>=2)assert.ok(bricks.length>layouts[index-2].length,'the brick count grows every two stages');
-    assert.ok(bricks.every(b=>b.x>=0&&b.x+b.w<=360&&b.y>=84&&b.y+b.h<300&&b.w===30&&b.h===12));
+    assert.ok(bricks.every(b=>b.x>=0&&b.x+b.w<=360&&b.y>=84&&b.y+b.h<300&&b.w<=30&&b.h<=12&&b.w>=7&&b.h>=4));
     if(stage>=2)assert.ok(bricks.some(b=>b.hp===2));
     if(stage>=3)assert.ok(bricks.some(b=>b.solid));
     assert.ok(bricks.filter(b=>b.solid).every(b=>b.y===84),'steel cannot form an enclosure around targets');
@@ -99,8 +99,8 @@ for(const piercing of [false,true]){
   const fingerprints=new Set(layouts.map(bs=>JSON.stringify(Array.from(bs,b=>[b.x,b.y,b.hp,b.solid]))));
   assert.equal(fingerprints.size,100,'all 100 stages have distinct brick arrangements');
   assert.ok(layouts[99].filter(b=>b.hp===2).length>layouts[1].filter(b=>b.hp===2).length);
-  assert.equal(layouts[0].length,14);assert.equal(layouts[99].length,63);
-  assert.equal(layouts.flat().filter(b=>!b.solid).length*10,35600,'the full run remains within the 40,000-point record limit');
+  assert.equal(layouts[0].length,14);assert.equal(layouts[99].length,1000);
+  assert.equal(layouts.flat().filter(b=>!b.solid).length*10,504100,'the full run remains within the 550,000-point record limit');
 }
 for(const piercing of [false,true]){
   const f=fixture();f.game.testStage(2);if(piercing)f.catchItem(f.hit('pierce'));else f.launch();
@@ -115,7 +115,7 @@ for(const piercing of [false,true]){
 for(const piercing of [false,true]){
   const f=fixture();f.game.testStage(3);if(piercing)f.catchItem(f.hit('pierce'));else f.launch();
   const s=f.state(),steel=s.bricks.find(b=>b.solid),ball=s.balls[0],before=s.score;
-  for(const b of s.bricks)if(b!==steel&&b.id%10===steel.id%10)b.on=false;
+  for(const b of s.bricks)if(b!==steel&&Math.abs(b.x-steel.x)<.01)b.on=false;
   Object.assign(ball,{x:steel.x+steel.w/2,y:steel.y+steel.h+12,vx:0,vy:-s.speed});f.advance(.1);
   assert.equal(steel.on,true);assert.equal(f.state().score,before);assert.equal(f.state().drops.length,0);
   assert.equal(ball.vy<0,piercing,'a normal ball rebounds from steel; the piercing ball passes without destroying it');
@@ -167,4 +167,30 @@ for(const piercing of [false,true]){
   }
   assert.equal(new Set(renders).size,1,'all falling item types have identical shapes, colors and labels');
 }
-console.log('PASS: 100 distinct stages and final completion, two-hit contacts, unbreakable steel and open passages, falling items, two/ten balls, one-turn piercing, multiball lives, time-based bounded acceleration, fast collision, and teardown');
+{
+  const f=fixture();f.catchItem(f.hit('pierce'));let s=f.state(),ball=s.balls[0];
+  Object.assign(ball,{x:ball.r+.1,y:350,vx:-s.speed,vy:0});f.game.update(1/240);
+  assert.equal(ball.piercing,true);assert.equal(ball.pierceBounces,2,'left wall does not consume piercing');
+  Object.assign(ball,{x:360-ball.r-.1,y:350,vx:s.speed,vy:0});f.game.update(1/240);
+  assert.equal(ball.pierceBounces,2,'right wall does not consume piercing');
+  Object.assign(ball,{x:180,y:60+ball.r+.1,vx:0,vy:-s.speed});f.game.update(1/240);
+  assert.equal(ball.pierceBounces,2,'ceiling does not consume piercing');
+  Object.assign(ball,{x:s.paddle.x+s.paddle.w/2,y:s.paddle.y-ball.r-.1,vx:0,vy:s.speed});f.game.update(1/240);
+  assert.equal(ball.piercing,true);assert.equal(ball.pierceBounces,1,'first paddle bounce keeps piercing');
+  f.game.update(1/240);assert.equal(ball.pierceBounces,1,'moving away from the paddle does not count again');
+  Object.assign(ball,{x:180,y:60+ball.r+.1,vx:0,vy:-s.speed});f.game.update(1/240);
+  assert.equal(ball.pierceBounces,1,'wall between paddle hits does not count');
+  Object.assign(ball,{x:s.paddle.x+s.paddle.w/2,y:s.paddle.y-ball.r-.1,vx:0,vy:s.speed});f.game.update(1/240);
+  assert.equal(ball.piercing,false);assert.equal(ball.pierceBounces,0,'second paddle bounce turns piercing off');
+  const brick=s.bricks.filter(b=>b.on&&!b.solid&&b.hp===1).at(-1);
+  Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
+  assert.ok(ball.vy>0,'after two paddle bounces the ball rebounds from bricks again');
+}
+{
+  const f=fixture();f.catchItem(f.hit('pierce'));const s=f.state(),ball=s.balls[0],brick=s.bricks.filter(b=>b.on&&!b.solid&&b.hp===1).at(-1);
+  Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
+  assert.equal(ball.pierceBounces,2,'passing through a brick does not consume a bounce');
+  f.catchItem(f.hit('two'));assert.equal(f.state().balls.filter(b=>b.piercing).length,1,'new balls do not inherit the effect');
+  assert.equal(f.state().balls.filter(b=>!b.piercing).every(b=>b.pierceBounces===0),true);
+}
+console.log('PASS: 100 distinct stages and final completion, two-hit contacts, unbreakable steel and open passages, falling items, two/ten balls, two-paddle-bounce piercing, multiball lives, time-based bounded acceleration, fast collision, and teardown');
