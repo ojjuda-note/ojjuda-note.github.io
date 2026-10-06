@@ -1,7 +1,7 @@
 /* World's Photo Ttang entry uses the same 19+ member gate as Matgo. */
 (() => {
  'use strict';
- let overlay=null,frame=null,watcher=null,refreshTimer=null,unsubscribe=null,previousFocus=null,opening=false,generation=0;
+ let overlay=null,frame=null,watcher=null,refreshTimer=null,unsubscribe=null,previousFocus=null,opening=false,generation=0,rankDispose=null;
  const bridge={client:null,nick:'',open,close};window.OjjudaPhotoTtangBridge=bridge;
  window.openPhotoTtang=options=>open(options);
  function message(error){
@@ -11,7 +11,7 @@
  }
  function close(force=false){
   if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){message(new Error('구매 결과를 확인 중이에요. 잠시만 기다려 주세요.'));return false;}
-  generation++;unsubscribe?.();unsubscribe=null;clearInterval(watcher);clearInterval(refreshTimer);
+  generation++;rankDispose?.();rankDispose=null;unsubscribe?.();unsubscribe=null;clearInterval(watcher);clearInterval(refreshTimer);
   if(!overlay)return;
   try{frame?.contentWindow?.OjjudaPhotoTtang?.menu();}catch{}
   overlay.remove();overlay=frame=null;bridge.client=null;bridge.nick='';
@@ -36,7 +36,9 @@
    const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','포토땅따먹기 닫기');done.onclick=close;
    done.style.cssText='font:inherit;color:inherit;border:1px solid #ffffff40;background:#ffffff22;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';
    frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261006-red1';frame.allow='vibrate';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
-   bar.append(title,done);overlay.append(bar,frame);document.body.append(overlay);document.body.classList.add('gaming','photo-ttang-open');done.focus();
+   const rank=document.createElement('button');rank.type='button';rank.disabled=true;rank.textContent='이번 달 완료 사진 수로 순위 집계';rank.style.cssText='font:inherit;color:inherit;background:none;border:0';
+   rankDispose=window.OjjudaPhotoRanking?.bind({frame,client,owner,authorized:()=>authorized()&&access.allowed(),status:rank});
+   bar.append(title,rank,done);overlay.append(bar,frame);document.body.append(overlay);document.body.classList.add('gaming','photo-ttang-open');done.focus();
    unsubscribe=access.subscribe(error=>{close(true);message(error);});
    watcher=setInterval(()=>{if(!authorized()||!access.allowed())close(true);},500);
    refreshTimer=setInterval(()=>{void access.refresh().catch(()=>{});},30000);

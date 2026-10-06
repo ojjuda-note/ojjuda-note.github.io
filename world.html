@@ -50,7 +50,7 @@
 <link rel="preload" as="image" href="/house-test/assets/entry-house-v1.webp">
 <link rel="preload" as="image" href="/house-test/assets/entry-jjuda-back-v1.webp">
 <link rel="stylesheet" href="/world-board.css?v=20261006-monthly1">
-<script src="/world-board.js?v=20261006-monthly1"></script>
+<script src="/world-board.js?v=20261006-photo-rank1"></script>
 <link rel="stylesheet" href="/world-park-notes.css?v=20261004-design1">
 <script src="/world-park-notes.js?v=20261006-red1"></script>
 <link rel="stylesheet" href="/screw-games.css?v=20261004-design1">
@@ -138,6 +138,7 @@
 <script src="/matgo-access.js?v=20261005-member-refresh1"></script>
 <script src="/ttang-bridge.js?v=20261006-world3"></script>
 <script src="/photo-ttang-access.js?v=20261006-red1"></script>
+<script src="/photo-ttang-ranking.js?v=20261006-rank1"></script>
 <script src="/photo-ttang-bridge.js?v=20261006-red1"></script>
 <link rel="stylesheet" href="/games/mole-game.css?v=20261006-garden1">
 <script src="/games/mole-game.js?v=20261006-garden1"></script>
@@ -1011,7 +1012,7 @@ function worldRankGames(){
  return {...ranked,
   screw_box:{name:'나사풀기 · 박스형',unit:'점'},screw_flat:{name:'나사풀기 · 평면형',unit:'점'},spot:_r.spot,
   ttang:_r.ttang,mole:_r.mole,runner:_r.runner,stacker:_r.stacker,breakout:_r.breakout,
-  ...(window.OjjudaMatgoAccess?.visible()?{matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'}}:{})
+  ...(window.OjjudaMatgoAccess?.visible()?{matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}}:{})
  };
 }
 function openWorldBoardGame(id){

@@ -9,7 +9,7 @@
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null;
   let member = null, signedUser = null, ageCode = '', frame = null, loading = false, reserved = false, started = false;
-  let authEpoch = 0, loadTimer = null;
+  let authEpoch = 0, loadTimer = null, rankDispose = null;
   window.OjjudaPhotoTtangBridge = { client: null, nick: '' };
   access?.configure(client);
 
@@ -47,7 +47,8 @@
   }
   function stopFrame() {
     clearTimeout(loadTimer);
-    frame?.remove(); frame = null;
+    rankDispose?.(); rankDispose = null;
+    frame?.remove(); $('photo-ranking-status')?.remove(); frame = null;
     reserved = started = loading = false;
   }
   function closeGame(force=false) { if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){$('page-status').textContent='구매 결과를 확인 중이에요.';return false;}stopFrame(); renderEntry(); }
@@ -92,6 +93,14 @@
     candidate.addEventListener('error', () => loadFailure(candidate));
     candidate.src = gameUrl + (demo ? '&demo=1' : '');
     $('game-shell').append(candidate);
+    if (!demo && member) {
+      const owner = member.id, status = document.createElement('button');
+      status.id = 'photo-ranking-status'; status.type = 'button'; status.disabled = true;
+      status.textContent = '이번 달 완료 사진 수로 순위 집계';
+      status.style.cssText = 'font:11px sans-serif;background:none;color:inherit;border:0;padding:0;min-width:0;flex:1';
+      $('exit-game').before(status);
+      rankDispose = window.OjjudaPhotoRanking?.bind({frame:candidate,client,owner,authorized:()=>member?.id===owner&&access.allowed(),status});
+    }
     loadTimer = setTimeout(() => loadFailure(candidate), 20000);
   }
   window.OjjudaPhotoTtangDemo = {
