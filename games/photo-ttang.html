@@ -272,8 +272,8 @@ function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); VW=innerWidth; VH
 const $=s=>document.getElementById(s);
 const GOAL=.90, LIVES=3;
 const photoAccess=window.OjjudaPhotoTtangAccess;
-const photoAllowed=()=>photoAccess?.allowed()===true;
-function lockPhotoGame(){ mode='locked';over=true;paused=true;world=me=null;joys.clear();document.querySelectorAll('.joy').forEach(e=>e.remove());closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';panel('<h2>만 19세 이상</h2><p>로그인 후 생년월일을 확인해 주세요.</p><a class="big a" href="/photo-ttang.html" target="_top">입장 확인하기</a>',{}); }
+const photoAllowed=()=>{if(!PUBLIC_DEMO)return photoAccess?.allowed()===true;try{return parent!==window&&parent.OjjudaPhotoTtangDemo?.allowed()===true;}catch{return false;}};
+function lockPhotoGame(){ mode='locked';over=true;paused=true;world=me=null;joys.clear();document.querySelectorAll('.joy').forEach(e=>e.remove());closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';panel(PUBLIC_DEMO?'<h2>한 판 체험</h2><p>체험 페이지에서 시작해 주세요.</p><a class="big a" href="/photo-ttang.html" target="_top">체험 페이지로</a>':'<h2>만 19세 이상</h2><p>로그인 후 생년월일을 확인해 주세요.</p><a class="big a" href="/photo-ttang.html" target="_top">입장 확인하기</a>',{}); }
 const PUBLIC_DEMO=new URLSearchParams(location.search).get('demo')==='1';let demoStarted=false;
 const timeLimit=lv=>Math.round(150-lv*2.5);   // 1단계 150초 → 20단계 102초
 let endAt=0, tick=0, cdLast=4, frzLast=4;
@@ -469,7 +469,7 @@ function hud(){ if(!world||!me) return; const pct=mySil/silTotal*100; me.bestSil
 // ---------- 화면 전환 ----------
 function panel(html,btns){ const o=document.createElement('div'); o.className='overlay'; o.innerHTML=`<div class="panel">${html}</div>`; document.body.appendChild(o); for(const id in btns){ const b=o.querySelector('#'+id); if(b) b.onclick=()=>{ o.remove(); btns[id](); }; } return o; }
 function closePanels(){ document.querySelectorAll('.overlay').forEach(o=>{ if(o.id!=='menu') o.remove(); }); }
-function endDemo(won=false){ over=true;paused=true;closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';const P=LIST[stage];panel(`<h2>${won?'🎉 사진 공개!':'체험이 끝났어요'}</h2>${won?`<img src="${P.full||P.img}" alt="공개된 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">`:''}<p>다음 판은 로그인하고 즐겨요.</p><a class="big a" href="/?auth=login&amp;next=photo" target="_top">로그인하고 계속하기</a><a class="link" href="/?auth=signup&amp;next=photo" target="_top">회원가입</a>`,{}); }
+function endDemo(won=false){ over=true;paused=true;closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';const P=LIST[stage];panel(`<h2>${won?'🎉 사진 공개!':'체험이 끝났어요'}</h2>${won?`<img src="${P.full||P.img}" alt="공개된 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">`:''}<p>본게임은 로그인 · 만 19세 이상</p><a class="big a" href="/?auth=login&amp;next=photo" target="_top">로그인하고 계속하기</a><a class="link" href="/?auth=signup&amp;next=photo" target="_top">회원가입</a>`,{}); }
 function win(){ over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigator.vibrate([30,40,30,40,80]); }catch{} const {S}=view(); for(let i=0;i<6;i++) setTimeout(()=>burst(world.UW*Math.random(),world.UH*Math.random(),['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#fff'][i%5],30,9),i*120);
   const P=LIST[stage]; markPhotoDone(P); parts=[]; floats=[]; if(P.id) Comm.record(P.id,true); try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:photottang:clear',stage:P.key},location.origin); }catch{}
   if(PUBLIC_DEMO){setTimeout(()=>endDemo(true),3000);return;}
@@ -713,11 +713,11 @@ function loop(now){ if(mode==='play'&&!photoAllowed())lockPhotoGame();const dt=M
       if(!over){ const left=endAt-world.time; if(left<=10&&Math.ceil(left)!==tick){ tick=Math.ceil(left); if(tick>0){ tone(tick<=3?990:740,.08,'square',.05); try{ navigator.vibrate&&navigator.vibrate(15); }catch{} } }
         if(left<=0) timeUp(); } } }
   draw(paused?0:dt); if(now-hudT>120){ hudT=now; hud(); } requestAnimationFrame(loop); }
-window.OjjudaPhotoTtang={menu:toMenu,demo:()=>{if(!PUBLIC_DEMO)return false;resize();lives=LIVES;return startStage(0);}};
+window.OjjudaPhotoTtang={menu:toMenu,demo:()=>{if(!PUBLIC_DEMO)return false;resize();renderGrid();lives=LIVES;return startStage(0);}};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDefault();parent.postMessage({type:'ojjuda:photottang:close'},location.origin);}});
-const releasePhotoAccess=photoAccess?.subscribe(lockPhotoGame);
+const releasePhotoAccess=PUBLIC_DEMO?null:photoAccess?.subscribe(lockPhotoGame);
 addEventListener('pagehide',()=>releasePhotoAccess?.(),{once:true});
-if(photoAllowed())toMenu();else Promise.resolve(photoAccess?.check()).then(()=>photoAllowed()?toMenu():lockPhotoGame()).catch(lockPhotoGame);
+if(PUBLIC_DEMO){mode='demo-ready';$('menu').style.display='none';}else if(photoAllowed())toMenu();else Promise.resolve(photoAccess?.check()).then(()=>photoAllowed()?toMenu():lockPhotoGame()).catch(lockPhotoGame);
 requestAnimationFrame(loop);
 
 </script>
