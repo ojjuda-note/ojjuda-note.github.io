@@ -28,6 +28,11 @@ world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab,guest:()=>({guest:
    if(mode==='normal'){
     assert.equal(await page.locator('.world-feature[href*="sitemap"]').count(),0);
     await page.locator('[data-destination=home]').click();await page.locator('#auth-dialog').waitFor({state:'visible'});
+    assert.equal(await page.getByRole('link',{name:'둘러보기',exact:true}).isVisible(),true,'browse is available during normal login');
+    const placement=await page.evaluate(()=>({login:document.getElementById('auth-submit').getBoundingClientRect().bottom,browse:document.getElementById('guest-browse').getBoundingClientRect().top}));
+    assert.ok(placement.browse>=placement.login,'browse is below the login button');
+    await page.locator('#signup-tab').click();assert.equal(await page.locator('#guest-browse').isVisible(),false);
+    await page.locator('#login-tab').click();
     await page.locator('#email').fill('fixture@example.invalid');await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
     await page.waitForURL(origin+'/world.html?tab=home');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'home');
     for(const tab of ['board','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
