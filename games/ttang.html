@@ -173,7 +173,7 @@ class World{
       if(p.shieldT>0){ p.shieldT=Math.max(0,p.shieldT-dt); if(p.shieldT===0&&this.counts[p.id]===0){ this.kill(p,0,'land'); continue; } }
       if(p.bot) this.botThink(p,dt);
       const da=wrapA(p.target-p.ang), mx=p.turn*dt; p.ang=wrapA(p.ang+Math.max(-mx,Math.min(mx,da)));
-      const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=PLAYER_RADIUS, U=this.U;
+      const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=.5/this.G, U=this.U; // the outer apron leaves every boundary cell reachable
       p.wall=false; if(nx<m){ nx=m; p.wall=true; } if(nx>U-m){ nx=U-m; p.wall=true; } if(ny<m){ ny=m; p.wall=true; } if(ny>U-m){ ny=U-m; p.wall=true; }
       // 한 번에 1/4칸 넘게 건너뛰지 않도록 나눠서 처리
       // 벽에 닿아 있으면 1초 뒤 터져요 (벽에서 떨어지면 다시 처음부터)
@@ -370,6 +370,7 @@ function drawView(V,C,focus,dt,sh){
   const target=focus?{x:focus.x,y:focus.y}:{x:world.U/2,y:world.U/2}; const k=Math.min(1,dt*5); if(!C.init){ C.x=target.x; C.y=target.y; C.init=true; } C.x+=(target.x-C.x)*k; C.y+=(target.y-C.y)*k;
   const S=C.s, ox=V.x+V.w/2-C.x*S+(Math.random()-.5)*sh*14, oy=V.y+V.h/2-C.y*S+(Math.random()-.5)*sh*14, U=world.U, mw=U*S;
   ctx.fillStyle='#D9CBE9'; ctx.fillRect(V.x,V.y,V.w,V.h);
+  const edgePad=PLAYER_RADIUS*S+8;ctx.fillStyle='#ECE4F4';ctx.fillRect(ox-edgePad,oy-edgePad,mw+edgePad*2,mw+edgePad*2);
   ctx.save(); ctx.shadowColor='rgba(46,39,72,.28)'; ctx.shadowBlur=30; ctx.fillStyle='#FFF9ED'; ctx.fillRect(ox,oy,mw,mw); ctx.restore();
   const x0=Math.max(0,Math.floor((V.x-ox)/S)), x1=Math.min(U,Math.ceil((V.x+V.w-ox)/S)), y0=Math.max(0,Math.floor((V.y-oy)/S)), y1=Math.min(U,Math.ceil((V.y+V.h-oy)/S));
   ctx.fillStyle='#F4EDF7'; for(let y=y0;y<y1;y++) for(let x=x0+((x0+y)&1);x<x1;x+=2) ctx.fillRect(ox+x*S,oy+y*S,S,S);
@@ -377,7 +378,7 @@ function drawView(V,C,focus,dt,sh){
     const sx=x0*sc, sy=y0*sc, sw=(x1-x0)*sc, shh=(y1-y0)*sc;
     ctx.globalAlpha=.9; ctx.drawImage(offS,sx,sy,sw,shh,ox+x0*S,oy+y0*S+S*.16,(x1-x0)*S,(y1-y0)*S); ctx.globalAlpha=1;
     ctx.drawImage(off,sx,sy,sw,shh,ox+x0*S,oy+y0*S,(x1-x0)*S,(y1-y0)*S); }
-  ctx.strokeStyle='#A08ABB'; ctx.lineWidth=4; ctx.strokeRect(ox-2,oy-2,mw+4,mw+4);
+  ctx.strokeStyle='#A08ABB'; ctx.lineWidth=4; ctx.strokeRect(ox-edgePad,oy-edgePad,mw+edgePad*2,mw+edgePad*2);
   for(const it of world.items){ const X=ox+it.x*S, Y=oy+it.y*S; if(X>V.x-S&&X<V.x+V.w+S&&Y>V.y-S&&Y<V.y+V.h+S) drawItem(it,X,Y,S); }
   for(const p of world.players){ if(!p.alive||!p.pts.length) continue; const c=PAL[p.color];
     const path=()=>{ ctx.beginPath(); const P=p.pts; ctx.moveTo(ox+P[0].x*S,oy+P[0].y*S); for(let i=1;i<P.length;i++) ctx.lineTo(ox+P[i].x*S,oy+P[i].y*S); ctx.lineTo(ox+p.x*S,oy+p.y*S); };
@@ -500,7 +501,7 @@ function guestPredict(dt){ // 받은 위치 사이를 부드럽게 이어서 그
   world.time=world.netTime+(performance.now()-world.netAt)/1000;
   for(const p of world.players){ if(!p.alive||p.tx===undefined) continue; const V=p.speed*(p.boostT>0?2:1);
     p.ang+=wrapA(p.tang-p.ang)*Math.min(1,dt*12); p.x+=Math.cos(p.ang)*V*dt; p.y+=Math.sin(p.ang)*V*dt; p.tx+=Math.cos(p.tang)*V*dt; p.ty+=Math.sin(p.tang)*V*dt;
-    const k=Math.min(1,dt*8); p.x+=(p.tx-p.x)*k; p.y+=(p.ty-p.y)*k; const m=PLAYER_RADIUS, U=world.U; p.x=Math.max(m,Math.min(U-m,p.x)); p.y=Math.max(m,Math.min(U-m,p.y)); } }
+    const k=Math.min(1,dt*8); p.x+=(p.tx-p.x)*k; p.y+=(p.ty-p.y)*k; const m=.5/world.G, U=world.U; p.x=Math.max(m,Math.min(U-m,p.x)); p.y=Math.max(m,Math.min(U-m,p.y)); } }
 function lobby(){ const o=panel(`<h2>친구와 대결</h2><p>각자 자기 폰으로 같이 해요. 한 명이 방을 만들고, 다른 한 명은 방 번호를 입력하세요.</p>
   <button class="big a" id="mk">방 만들기</button>
   <div style="display:flex;gap:8px;margin-top:10px"><input id="code" aria-label="방 번호 4자리" inputmode="numeric" maxlength="4" placeholder="방 번호 4자리" style="flex:1;height:56px;border-radius:18px;border:2px solid #E6DEF2;font:inherit;font-size:20px;text-align:center;letter-spacing:.3em"><button class="big b" id="jn" style="width:110px;margin:0">들어가기</button></div>

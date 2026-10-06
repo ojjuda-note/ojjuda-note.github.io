@@ -59,6 +59,10 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   assert.equal(saved.rows[0].mask_rle.split(',').map(Number).reduce((a,b)=>a+b,0),300*400);
   assert.ok(saved.uploads.every(u=>u.size>0&&u.type==='image/jpeg'&&u.options.upsert===false));
   await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
+  await page.click('[data-v="public"]');await page.check('#ag');await page.click('#send');await page.getByText('등록했어요!',{exact:true}).waitFor();
+  const shared=await page.evaluate(()=>savedPhotos[1]);assert.equal(shared.visibility,'public');assert.equal(shared.status,'pending');
+  await page.getByText('관리자가 확인하면 모두에게 보여요.',{exact:false}).waitFor();
+  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
   await page.click('#try');await page.waitForFunction(()=>mode==='play'&&photoImg.complete&&photoImg.naturalWidth>0);
   assert.equal(await page.locator('#hud').isVisible(),true);await page.click('#pause');assert.equal(await page.getByText('잠깐 쉬는 중').isVisible(),true);await page.click('#go');
   // Registration keeps its required coverage range; a real photo can still be

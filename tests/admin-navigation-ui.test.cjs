@@ -35,6 +35,7 @@ function fixtureBoot() {
   }
   window.OjjudaAdminAccounts = { mount: options => mount('accounts', options) };
   window.OjjudaAdminActivity = { mount: options => mount('activity', options) };
+  window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
   window.OjjudaHouseContent = { mount: (container, options) => mount('house-content', { ...options, container }) };
   window.OjjudaConnections = { mount: options => mount('connections', options) };
   window.OjjudaOperations = {
@@ -185,6 +186,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await assertRefreshPreservesHost('house-content');
+    await tab('photo-stages'); await assertRefreshPreservesHost('photo-stages');
     await area('support'); await assertRefreshPreservesHost('reports');
     await tab('feedback'); await assertRefreshPreservesHost('support');
     await area('operations'); await tab('connections'); await assertRefreshPreservesHost('connections');
