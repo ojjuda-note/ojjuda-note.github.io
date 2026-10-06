@@ -7,6 +7,7 @@ const {test} = require('node:test');
 const html = fs.readFileSync(path.join(__dirname, '../games/ttang.html'), 'utf8');
 const engine = html.split('/*ENGINE*/')[1].split('/*ENDENGINE*/')[0];
 const {World} = vm.runInNewContext(engine + '\n({World})');
+require('./ttang-capture-cases.cjs')(World, 'ttang');
 
 function fixture({diagonal = false, bot = false, shield = 0} = {}) {
   const world = new World(32, 'solo');

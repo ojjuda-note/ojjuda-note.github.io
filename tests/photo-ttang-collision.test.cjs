@@ -11,6 +11,7 @@ const MOB_RESPAWN=30,burst=()=>{},sfx={capture(){}};
 ${mobCode}
 function hitMob(w,p,m,dt=0){world=w;me=p;mobs=[m];respawnQ=[];updateMobs(dt);return p.alive;}
 ({World,hitMob});`);
+require('./ttang-capture-cases.cjs')(World, 'photo-ttang');
 
 function fixture({diagonal=false,bot=false,scale=20}={}){
   const world=new World(32,'solo',40);world.itemsOn=false;world.setViewScale(scale);
@@ -112,6 +113,17 @@ test('mobs respect shield and owned-territory safety',()=>{
     if(protection==='shield')p.shieldT=3;else w.setOwn(w.si(10,10),p.id);
     assert.equal(hitMob(w,p,mob(11.59,10)),true);
   }
+});
+test('a mob on newly captured land dies before its next move can escape',()=>{
+  const w=new World(32,'solo',40);w.time=10;
+  const p=w.addPlayer({noSpawn:true,alive:true,x:3,y:3,born:-1});
+  const m=mob(12.09,12.05,{vx:4.2});
+  const k=w.si(m.x,m.y);w.trail[k]=p.id;p.trail=[k];
+  w.capture(p);
+  assert.equal(w.own[k],p.id);
+  assert.equal(hitMob(w,p,m,.03),true);
+  assert.equal(m.alive,false,'check the captured position before movement');
+  assert.equal(m.x,12.09);
 });
 test('birth animation uses the same growing radius for drawing and collision',()=>{
   const w=new World(32,'solo',40),p=w.addPlayer({noSpawn:true,alive:true,born:0});

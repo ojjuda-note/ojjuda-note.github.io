@@ -48,6 +48,24 @@ await host.evaluate(()=>{
 });
 await guest.waitForFunction(()=>world.players[0].kills===1&&!world.players[1].alive);
 assert.equal(await host.evaluate(()=>me.kills===1&&!p2.alive),true);
+// Closing a territory loop must eliminate an enclosed guest on both screens.
+const capture=await host.evaluate(()=>{
+  world.events=[];world.time=10;
+  world.own.fill(0);world.counts.fill(0);world.counts[0]=world.N;world.trail.fill(0);
+  for(const p of world.players){p.alive=false;p.trail=[];p.pts=[];p.tc=new Map();p.shieldT=0;p.kills=0;p.respawnAt=0;p.bb=[1e9,1e9,-1,-1];}
+  Object.assign(me,{alive:true,x:3,y:3});Object.assign(p2,{alive:true,x:12,y:12});
+  for(let y=20;y<80;y++)for(let x=20;x<60;x++)world.setOwn(y*world.GW+x,me.id);
+  world.setOwn(world.si(25,25),p2.id);
+  for(const [x,y] of [[18,3],[18,18],[3,18],[3,7]]){
+    const dx=x-me.x,dy=y-me.y,n=Math.ceil(Math.hypot(dx,dy)/.05);
+    for(let i=0;i<n;i++){const px=me.x,py=me.y;me.x+=dx/n;me.y+=dy/n;world.visit(me,px,py);}
+  }
+  const death=world.events.find(e=>e.t==='death'&&e.p===p2);
+  captureNetEvents();world.events=[];Net.send(snapshot());
+  return {alive:p2.alive,why:death?.why,kills:me.kills};
+});
+assert.deepEqual(capture,{alive:false,why:'capture',kills:1});
+await guest.waitForFunction(()=>world.players[0].kills===1&&!world.players[1].alive&&world.own[world.si(12,12)]===world.players[0].id);
 await host.evaluate(()=>OjjudaTtang.menu());await guest.getByText('친구가 나갔어요').waitFor();assert.deepEqual(errors,[]);
 console.log('PASS: mobile/landscape layout, practice without UUID API, small touch drags in practice and multiplayer, pause/resume, result save, duplicate and invalid results, account change cleanup, close');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
