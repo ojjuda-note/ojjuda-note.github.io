@@ -175,6 +175,7 @@
 
   function install(next = {}) {
     options = next;
+    window.OjjudaShop?.install(next);
     if (installedClient !== next.client) {
       subscription?.unsubscribe?.();
       installedClient = next.client;
