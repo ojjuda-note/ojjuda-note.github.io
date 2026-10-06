@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
-const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed,droppedInTurn});
+const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/games/breakout-game.js')?s:'')
@@ -17,15 +17,15 @@ window.breakoutTest={
   const game=R.game,s=game.inspect();if(s.waiting)game.onKey(' ');
   const state=game.inspect(),brick=state.bricks.filter(b=>b.on&&!b.solid&&b.hp===1).at(-1),ball=state.balls[0];
   for(const b of state.balls)Object.assign(b,{x:180,y:380,vx:0,vy:-state.speed});
-  Object.assign(ball,{x:brick.x+22,y:brick.y+brick.h+6,vx:0,vy:-state.speed});
-  const original=Math.random,roll={two:.1,ten:.6,pierce:.9}[kind],queue=state.droppedInTurn?[0,roll]:[roll];
+  Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h+6,vx:0,vy:-state.speed});
+  const original=Math.random,roll={two:.1,ten:.6,pierce:.9}[kind],queue=[0,roll];
   Math.random=()=>queue.shift()??.99;try{game.update(1/240)}finally{Math.random=original}
   return game.inspect().drops.at(-1);
  },
  finishStage(){
   const game=R.game,s=game.inspect();if(s.waiting)game.onKey(' ');
   const state=game.inspect(),last=state.bricks.filter(b=>b.on&&!b.solid).at(-1);for(const b of state.bricks)if(!b.solid)b.on=b===last;last.hp=1;
-  Object.assign(state.balls[0],{x:last.x+22,y:last.y+last.h+6,vx:0,vy:-state.speed});game.update(1/240);game.draw(R.ctx);
+  Object.assign(state.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-state.speed});game.update(1/240);game.draw(R.ctx);
  }
 };
 for(const [method,kind] of [['arcadeTap','tap'],['arcadeHit','hit'],['arcadeBonus','bonus'],['arcadeBad','bad']])gt[method]=()=>breakoutTest.audio.push(kind);
@@ -67,9 +67,10 @@ g.tab='friends';H();
     });
    }
    await catchItem('two');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),2);
+   await catchItem('two');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),4);
    await catchItem('ten');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),10);
    await catchItem('pierce');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.filter(b=>b.piercing).length),1);
-   assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus')),['bonus','bonus','bonus']);checks++;
+   assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus')),['bonus','bonus','bonus','bonus']);checks++;
    const speed=await page.evaluate(()=>breakoutTest.current.game.inspect().speed);await page.evaluate(()=>breakoutTest.step(2));
    assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().speed)-speed-10)<.01);checks++;
    await page.evaluate(()=>{breakoutTest.finishStage();breakoutTest.finishStage()});
