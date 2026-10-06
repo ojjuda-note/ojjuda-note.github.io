@@ -65,7 +65,7 @@
     async buy(request,stage){
       if(!client||!state.userId||state.userId!==request.userId)throw new Error('구매를 시작한 계정으로 로그인해 주세요.');
       const buyer=state.userId;
-      const {data,error}=await client.rpc('spot_game_buy',{
+      const {data,error}=await client.rpc('spot_game_buy_v2',{
         p_kind:request.kind,p_request_id:request.requestId,p_stage:stage,p_spot:request.spot,p_verify_only:false
       }).abortSignal(AbortSignal.timeout(12000));
       if(error)throw new Error('연결을 확인한 뒤 구매 확인을 다시 눌러주세요. 중복으로 차감되지 않아요.');

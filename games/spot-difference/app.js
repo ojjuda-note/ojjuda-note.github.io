@@ -4,10 +4,10 @@
   const $=id=>document.getElementById(id),puzzles=window.JJUDA_PUZZLES,core=window.JjudaGame,wallet=window.JjudaWallet;
   const storageKey='jjuda-spot-six-v1';let stored=null,storageWorks=true;
   try{stored=JSON.parse(localStorage.getItem(storageKey));}catch{storageWorks=false;}
-  // Every entry starts a new game; stored progress is only used to avoid
-  // showing the picture the player just left as the first picture again.
-  const state=core.cleanProgress(null,puzzles);
-  if(puzzles.length>1&&state.current===stored?.current){
+  // Preserve an unresolved payment across reloads so its receipt can be recovered.
+  const pendingStored=stored?.rounds?.[puzzles[stored.current]?.id]?.pending;
+  const state=core.cleanProgress(pendingStored?stored:null,puzzles);
+  if(!pendingStored&&puzzles.length>1&&state.current===stored?.current){
     const next=1+Math.floor(Math.random()*(state.order.length-1));
     [state.order[0],state.order[next]]=[state.order[next],state.order[0]];
     state.current=state.order[0];
@@ -67,7 +67,7 @@
     $('board-shell').classList.toggle('reviewing',!!answerReview);
     $('gate-eyebrow').textContent=pending?'쭈 사용 확인':lost?'이번 도전 종료':'1분 도전';
     $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'준비됐나요?';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 3쭈로 1분을 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 3쭈로 1분 연장도 가능해요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 1쭈로 30초를 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 1쭈로 30초 연장도 가능해요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
     $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?(changePicture?'다른 그림 풀기':'다시 풀기'):'시작하기';
     $('reset').textContent=changePicture?'다른 그림 풀기':'다시 풀기';$('reset').setAttribute('aria-label',changePicture?'다른 그림 풀기':'이 문제 다시 풀기');
     $('start').disabled=!imagesReady||paymentBusy||!!answerReview;
@@ -75,7 +75,7 @@
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
     const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1쭈':'힌트 · 1쭈';
     for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1쭈';$(id).setAttribute('aria-label',hintLabel);}
-    const extendable=(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
+    const extendable=!r.timeBought&&(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
     $('prev').disabled=position()===0||paymentBusy||pending;$('next').disabled=position()===47||paymentBusy||pending;
@@ -165,12 +165,13 @@
     r.remainingMs=core.timeLeft(r);r.deadline=null;r.status=reason==='won'?'won':'lost';
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
-    speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 3쭈로 1분을 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
-    if(r.rankOwner){
+    speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 1쭈로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
+    if(!r.assisted&&r.rankOwner){
       const score=found().length,owner=r.rankOwner;
       if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-score',score,owner},window.location.origin);
       else Promise.resolve(wallet.recordScore?.(owner,score)).catch(()=>speak('점수를 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));
     }
+    if(r.assisted)speak('도움을 사용한 판은 순위에 반영하지 않아요.',reason==='won');
     if(reason==='won')celebrate();
   }
   function tick(){if(round().status==='playing'&&core.timeLeft(round())<=0)finish('time');else renderTime();}
@@ -255,7 +256,9 @@
     if(!r.pending){
       if(kind==='hint'&&r.status!=='playing')return;
       if(kind==='time'&&(!['playing','lost'].includes(r.status)||r.hearts===0))return;
-      const price=kind==='hint'?1:3;
+      const price=1;
+      if((kind==='hint'&&r.paid.length>=2)||(kind==='time'&&r.timeBought)){speak('이번 판의 도움 횟수를 모두 사용했어요.');return;}
+      if(!confirm(kind==='hint'?'1쭈로 힌트를 볼까요? (판당 2회)':'1쭈로 30초를 추가할까요? (판당 1회)'))return;
       if(w.coins===null){speak('잔액을 먼저 확인해 주세요.');wallet.refresh().catch(()=>{});return;}
       if(w.coins<price){speak(`${price}쭈가 필요해요. 현재 ${w.coins}쭈예요.`);return;}
       if(!globalThis.crypto?.randomUUID){speak('쭈를 사용하려면 온라인 게임 링크에서 열어 주세요.');return;}
@@ -266,13 +269,14 @@
     try{
       const result=await wallet.buy(request,p.id);
       if(result.ok){
-        if(result.kind!==request.kind||result.stage!==p.id||result.spot!==request.spot||result.price!==(request.kind==='hint'?1:3))throw new Error('구매 결과를 다시 확인해 주세요.');
-        if(request.kind==='time'){r.remainingMs+=core.EXTEND_MS;r.totalMs+=core.EXTEND_MS;}
+        if(result.kind!==request.kind||result.stage!==p.id||result.spot!==request.spot||![1,...(request.kind==='time'?[3]:[])].includes(result.price))throw new Error('구매 결과를 다시 확인해 주세요.');
+        r.assisted=true;
+        if(request.kind==='time'){const extra=result.extend_ms||60000;r.remainingMs+=extra;r.totalMs+=extra;r.timeBought=true;}
         else{if(!r.paid.includes(request.spot))r.paid.push(request.spot);r.hintIndex=request.spot;}
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
         if(request.kind==='hint'){showHint();speak(`1쭈를 사용했어요. 힌트: ${p.spots[request.spot].text}`);}
-        else speak('3쭈를 사용하고 1분을 더 받았어요!',true);
+        else speak(`${result.price}쭈를 사용하고 ${(result.extend_ms||60000)/1000}초를 더 받았어요!`,true);
       }else{
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
@@ -284,6 +288,7 @@
     tick();const r=round();if(r.status!=='playing'||paymentBusy)return;
     if(r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden){showHint();return;}
     const remaining=puzzle().spots.map((_,i)=>i).filter(i=>!found().includes(i)),unpaid=remaining.filter(i=>!r.paid.includes(i));
+    if(unpaid.length&&r.paid.length>=2){speak('힌트는 한 판에 2번까지 사용할 수 있어요.');return;}
     if(unpaid.length)purchase('hint',unpaid[0]);
     else if(remaining.length){r.hintIndex=remaining[(remaining.indexOf(r.hintIndex)+1)%remaining.length];showHint();save();}
   }

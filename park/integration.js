@@ -10,6 +10,7 @@
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), .world-picker:not([hidden]), .photo-source-menu, dialog[open]');
 
   function canLeave() {
+    if (window.OjjudaShop?.canLeave?.() === false) { flashMessage('구매 결과를 확인 중이에요. 잠시만 기다려 주세요.'); return false; }
     if (window.OjjudaNoteSupport?.canLeave?.() === false) return false;
     if (window.OjjudaCharge?.canLeave?.() === false) {
       flashMessage('충전 결과를 확인 중이에요. 잠시만 기다려 주세요.'); return false;
@@ -20,6 +21,7 @@
   window.canCloseParkNote = canLeave;
 
   function closeTopOverlay() {
+    if (window.OjjudaShop?.isOpen?.()) { window.OjjudaShop.close(); return true; }
     if (window.OjjudaCharge?.isOpen?.()) { window.OjjudaCharge.close(); return true; }
     if (photoLightbox && !photoLightbox.hidden) { closePhotoLightbox(); return true; }
     if (worldPicker && !worldPicker.hidden) { closeWorldPicker(); return true; }
@@ -49,6 +51,7 @@
     if (window.OjjudaNoteSupport?.isOpen?.()) return false;
     notificationController?.close?.();
     window.OjjudaCharge?.close?.();
+    window.OjjudaShop?.close?.();
     closePhotoSourceMenu(); closeWorldPicker(null, false); closePhotoLightbox();
     if (!management.hidden) closeManagement();
     if (!backdrop.hidden) closeComposer();

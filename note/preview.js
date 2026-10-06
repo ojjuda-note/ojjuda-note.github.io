@@ -153,6 +153,7 @@ function setBoxTransparency(value) {
   if (number) number.value = String(level);
 }
 function applyVisualStyle(element, style = {}) {
+  window.OjjudaShop?.decorateCard(element,style);
   for (const cls of [...element.classList]) {
     if (/^note-(?:theme|font|size|effect)-/.test(cls)) element.classList.remove(cls);
   }
@@ -1848,7 +1849,7 @@ function renderPhotoPage() {
 }
 
 function currentStyle() {
-  return { font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
+  return { ...window.OjjudaShop?.styleFields(), font: $('#compose-font').value, size: $('#compose-size').value, theme: $('#compose-theme').value,
     effect: $('#compose-effect').value,
     textColor: $('input[name="textColor"]:checked')?.value || 'default',
     boxColor: $('input[name="boxColor"]:checked')?.value || 'default',
@@ -2048,6 +2049,7 @@ function restoreLocalComposer() {
   }
   text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   backgroundKey = photoAssetKey(content.backgroundKey) || backgroundKey;
+  window.OjjudaShop?.setStyle(content.style);
   $('#compose-font').value = FONT_CODES.includes(content.style.font) ? content.style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(content.style.size) ? content.style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(content.style.theme) ? content.style.theme : 'plain';
@@ -2084,6 +2086,7 @@ function restoreDraft(content) {
   $('#note-photo-pick').hidden = kind !== 'memo';
   text.value = content.body; tags.value = initialComposerTags(content.tags); manualTags = tagList(tags.value); rejectedTags = new Set(); autoTagsNow = [];
   const style = content.style && typeof content.style === 'object' ? content.style : {};
+  window.OjjudaShop?.setStyle(style);
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
@@ -2291,6 +2294,7 @@ async function openComposer(mode, card = null, replyTo = null) {
     : '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
   submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100쭈 결제 후 등록' : '등록하기';
   const style = editingId ? (card.style && typeof card.style === 'object' ? card.style : {}) : readComposerSettings();
+  window.OjjudaShop?.setStyle(style);
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
   $('#compose-size').value = ['large', 'small'].includes(style.size) ? style.size : 'normal';
   $('#compose-theme').value = ['rose', 'night'].includes(style.theme) ? style.theme : 'plain';
@@ -3425,3 +3429,5 @@ if (client) {
   authKnown = true; banner('공원 연결 설정을 확인해 주세요');
   state(list, '카드를 불러올 수 없어요.'); updateAuth();
 }
+
+document.addEventListener('ojjuda:shop-style',()=>{if(!backdrop.hidden){applyComposeStyle();recordDraft();}});

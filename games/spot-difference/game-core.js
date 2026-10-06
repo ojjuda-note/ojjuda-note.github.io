@@ -9,7 +9,7 @@
   }
   const ROUND_MS=60000, EXTEND_MS=60000, HEARTS=3;
   const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value);
-  function freshRound(){return {status:'ready',hearts:HEARTS,remainingMs:ROUND_MS,totalMs:ROUND_MS,deadline:null,paid:[],hintIndex:null,pending:null};}
+  function freshRound(){return {status:'ready',hearts:HEARTS,remainingMs:ROUND_MS,totalMs:ROUND_MS,deadline:null,paid:[],hintIndex:null,pending:null,assisted:false,timeBought:false};}
   function ids(value){return Array.isArray(value)?[...new Set(value.filter(i=>Number.isInteger(i)&&i>=0&&i<6))]:[];}
   function shuffleOrder(length,random=Math.random){
     const order=Array.from({length},(_,i)=>i);
@@ -33,6 +33,8 @@
         if(!unopened&&Number.isFinite(r.totalMs)&&r.totalMs>=30000)round.totalMs=r.totalMs;
         if(!unopened&&Number.isFinite(r.remainingMs))round.remainingMs=Math.max(0,Math.min(round.totalMs,r.remainingMs));
         round.paid=ids(r.paid);
+        round.assisted=r.assisted===true||round.paid.length>0||round.totalMs>ROUND_MS;round.timeBought=r.timeBought===true||round.totalMs>ROUND_MS;
+        if(uuid(r.rankOwner))round.rankOwner=r.rankOwner;
         if(round.paid.includes(r.hintIndex))round.hintIndex=r.hintIndex;
         if(['ready','playing','lost','payment'].includes(r.status))round.status=r.status;
         if(Number.isFinite(r.deadline)&&r.deadline>0)round.deadline=r.deadline;
