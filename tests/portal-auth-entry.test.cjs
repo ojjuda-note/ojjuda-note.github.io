@@ -128,6 +128,18 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const cardId = '00000000-0000-4000-8000-000000000010';
   const reader = { id: 'reader', email: 'reader@example.invalid' };
+  const photoLogin = setup('?auth=login&next=photo', { user: reader });
+  await photoLogin.flush();
+  assert.deepEqual(photoLogin.navigations, ['/photo-ttang.html'], 'photo login returns to the full game page');
+  const photoGuest = setup('?auth=login&next=photo'); await photoGuest.flush();
+  assert.equal(photoGuest.element('auth-dialog').open, true);
+  const photoSignup = setup('?auth=signup&next=photo');
+  await photoSignup.flush(); photoSignup.fill(); await photoSignup.submit();
+  assert.equal(photoSignup.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/?next=photo');
+  assert.equal(JSON.parse(photoSignup.storage.get('ojjuda_post_confirm_destination')).destination, 'photo');
+  const photoConfirmed = setup('?auth=signup&next=photo', { confirmed: true });
+  await photoConfirmed.flush(); photoConfirmed.fill(); await photoConfirmed.submit();
+  assert.deepEqual(photoConfirmed.navigations, ['/photo-ttang.html']);
   const returnToCard = setup(`?auth=login&next=note&card=${cardId}`, { user: reader });
   await returnToCard.flush();
   assert.deepEqual(returnToCard.navigations, [`/world.html?place=park&card=${cardId}`], 'sign-in returns to the card being read');

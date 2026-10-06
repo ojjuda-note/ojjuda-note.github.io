@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>포토땅따먹기 한 판 체험 · 오쭈다</title>
+  <meta name="description" content="로그인 없이 포토땅따먹기 한 판 체험. 실루엣 90%를 채우면 사진이 공개돼요. 다음 판은 로그인하고 즐겨요.">
+  <link rel="canonical" href="https://ojjuda.kr/photo-ttang.html">
+  <meta property="og:title" content="포토땅따먹기 · 로그인 없이 한 판">
+  <meta property="og:description" content="90%를 채우고 사진을 열어보세요. 한 판 무료 체험!">
+  <meta property="og:url" content="https://ojjuda.kr/photo-ttang.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box} [hidden]{display:none!important}
+    :root{color-scheme:dark;font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+    body{margin:0;min-height:100dvh;color:#f3eeff;background:radial-gradient(ellipse at 30% 20%,#34264f,transparent 65%),#1c1730;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+    button,a{font:inherit} a{color:inherit} button{cursor:pointer}
+    .page-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;flex:none;min-height:56px}
+    .brand{display:flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap;font-size:14px}
+    .brand img{width:25px;height:25px}.header-link,.exit{display:flex;align-items:center;justify-content:center;min-height:40px;padding:0 12px;border:1px solid #ffffff35;border-radius:12px;background:#ffffff15;text-decoration:none;color:inherit;font-size:13px}
+    .hero-wrap{flex:1;display:grid;place-items:center;padding:20px 16px max(24px,env(safe-area-inset-bottom,0px))}
+    .hero{width:min(440px,100%);padding:26px 22px 20px;border-radius:28px;text-align:center;color:#2e2748;background:linear-gradient(180deg,#fff,#f6f2fc);box-shadow:0 30px 80px #0004}
+    .badge{display:inline-block;font-size:12px;color:#745dbe;background:#eee8ff;border-radius:999px;padding:6px 12px}
+    h1{margin:14px 0 8px;font-size:clamp(27px,8vw,36px);color:#7e69d6} .intro{margin:0;color:#7c739a;font-size:14px;line-height:1.6}
+    .preview{position:relative;margin:22px auto 20px;max-width:290px;height:180px;overflow:hidden;border:6px solid #2e2748;border-radius:20px;background:repeating-linear-gradient(0deg,transparent 0 17px,#ffffff09 17px 18px),repeating-linear-gradient(90deg,transparent 0 17px,#ffffff09 17px 18px),#4a3f75}
+    .preview-person{position:absolute;left:42%;top:10%;width:26%;height:85%;border-radius:42% 42% 28% 28%;background:#ffffff29}.preview-person:before{content:"";position:absolute;left:20%;top:-3%;width:60%;height:25%;border-radius:50%;background:#a99bbd}
+    .preview-land{position:absolute;inset:auto 40% 0 0;height:38%;background:#9c7fe066;border-top:2px solid #d5c5fa}
+    .preview-trail{position:absolute;left:26%;top:33%;width:43%;height:32%;border:3px solid #f6a9bf;border-bottom:0}
+    .preview-player{position:absolute;left:calc(69% - 7px);top:calc(33% - 7px);width:16px;height:16px;border:3px solid #fff;border-radius:50%;background:#f08aae;box-shadow:0 0 16px #f6a9bf}
+    .primary{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;border:0;border-radius:16px;color:#fff;text-decoration:none;background:linear-gradient(180deg,#a898ee,#7e69d6);font-size:17px;font-weight:bold;box-shadow:0 10px 20px -10px #6f5fcb}
+    .primary:disabled{opacity:.6;cursor:wait}.secondary{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;font-size:13px;color:#7c739a}
+    .note{margin:12px 0 0;color:#7c739a;font-size:12px} .status{margin:10px 0 0;font-size:13px;color:#7c739a}
+    .game-shell{flex:1;min-height:0;display:flex;position:relative}.game-shell iframe{width:100%;flex:1;min-height:0;border:0;background:#1c1730}
+    body.playing{height:100dvh;min-height:0;overflow:hidden}body.playing .page-header{background:#1c1730}
+    :focus-visible{outline:3px solid #f6a9bf;outline-offset:3px}
+    @media(max-height:500px){.hero-wrap{padding-top:10px}.hero{padding:18px}.preview{height:110px;margin:12px auto}.badge{padding:4px 10px}h1{margin:8px 0}}
+  </style>
+  <script src="/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
+  <script src="/photo-ttang-page.js?v=20261006-trial1" defer></script>
+</head>
+<body>
+  <header class="page-header">
+    <a class="brand" href="/"><img src="/favicon.svg" alt="">오쭈다 월드</a>
+    <a class="header-link" id="header-login" href="/?auth=login&amp;next=photo">로그인</a>
+    <button class="exit" id="exit-game" type="button" hidden>나가기 ✕</button>
+  </header>
+  <main class="hero-wrap" id="hero-wrap">
+    <section class="hero" aria-labelledby="trial-title">
+      <span class="badge" id="trial-badge">로그인 없이 한 판</span>
+      <h1 id="trial-title">포토땅따먹기</h1>
+      <p class="intro" id="trial-intro">90%를 채우고 사진을 열어보세요.</p>
+      <div class="preview" aria-hidden="true"><span class="preview-person"></span><span class="preview-land"></span><span class="preview-trail"></span><span class="preview-player"></span></div>
+      <button class="primary" id="start-demo" type="button" disabled>한 판 체험하기</button>
+      <a class="primary" id="continue-login" href="/?auth=login&amp;next=photo" hidden>로그인하고 계속하기</a>
+      <a class="secondary" id="signup-link" href="/?auth=signup&amp;next=photo">회원가입</a>
+      <p class="note" id="trial-note">다음 판부터는 로그인</p>
+      <p class="status" id="page-status" role="status" aria-live="polite">준비 중…</p>
+    </section>
+  </main>
+  <section class="game-shell" id="game-shell" aria-label="포토땅따먹기" hidden></section>
+  <noscript>게임을 하려면 자바스크립트를 켜 주세요.</noscript>
+</body>
+</html>

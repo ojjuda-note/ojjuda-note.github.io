@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html', photo: '/photo-ttang.html' };
   const termsVersion = '2026-09-29-age14';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>오쭈다 포토땅따먹기</title>
+<script>if(window.parent===window&&location.pathname==='/games/photo-ttang.html')location.replace('/photo-ttang.html');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
@@ -73,6 +74,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 .edc{display:block;margin:0 auto;border-radius:14px;touch-action:none}
 .link{display:block;margin:10px auto 0;color:#7C739A;font-size:13px;text-decoration:underline}
 .big:disabled{opacity:.5}
+a.big{display:flex;align-items:center;justify-content:center;text-decoration:none}
 .how{font-size:12.5px;color:var(--ink2);line-height:1.6;background:#F3F0FA;border-radius:14px;padding:8px 12px;margin-top:10px;text-align:left}
 .toast{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.6);opacity:0;z-index:6;font-size:26px;font-weight:700;text-shadow:0 3px 0 #0003,0 8px 24px #0006;pointer-events:none;transition:.25s;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -267,6 +269,7 @@ const gameCanvas=document.getElementById('gameCanvas'), ctx=gameCanvas.getContex
 function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); VW=innerWidth; VH=innerHeight; gameCanvas.width=VW*DPR; gameCanvas.height=VH*DPR; } addEventListener('resize',resize); resize();
 const $=s=>document.getElementById(s);
 const GOAL=.90, LIVES=3;
+const PUBLIC_DEMO=new URLSearchParams(location.search).get('demo')==='1';let demoStarted=false;
 const timeLimit=lv=>Math.round(150-lv*2.5);   // 1단계 150초 → 20단계 102초
 let endAt=0, tick=0, cdLast=4, frzLast=4;
 // 단계별 난이도: 몹 수·종류·속도, 컴퓨터 수, 아이템 빈도
@@ -331,7 +334,7 @@ function drawMob(m,ox,oy,S){ const T=MOB[m.type], X=ox+m.x*S, Y=oy+m.y*S, R=worl
   const ex=m.vx/m.v*R*.12, ey=m.vy/m.v*R*.12; for(const s2 of [-1,1]){ ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ex+s2*R*.3,ey-R*.1,R*.2,0,TAU); ctx.fill(); ctx.fillStyle='#2E2748'; ctx.beginPath(); ctx.arc(ex+s2*R*.3+ex*.4,ey-R*.08+ey*.4,R*.1,0,TAU); ctx.fill(); ctx.strokeStyle='#2E2748'; ctx.lineWidth=Math.max(1.5,R*.09); ctx.beginPath(); ctx.moveTo(ex+s2*R*.48,ey-R*.38); ctx.lineTo(ex+s2*R*.14,ey-R*.26); ctx.stroke(); }
   ctx.restore(); }
 function decodeSil(runs,N){ const a=new Uint8Array(N); let k=0,v=0; for(const r of runs.split(',').map(Number)){ if(v) a.fill(1,k,k+r); k+=r; v^=1; } return a; }
-function startStage(i){ stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
+function startStage(i){ if(PUBLIC_DEMO){let allowed=false;try{allowed=!demoStarted&&i===0&&parent!==window&&parent.OjjudaPhotoTtangDemo?.beginRound();}catch{}if(!allowed){endDemo();return false;}demoStarted=true;} stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
   world=new World(P.UW,'solo',P.UH); world.setViewScale(view().S); sil=decodeSil(P.sil,world.N); silTotal=sil.reduce((a,b)=>a+b,0); mySil=0;
   const base=world.setOwn.bind(world); world.setOwn=(k,v)=>{ const o=world.own[k]; if(o===v) return; base(k,v); if(sil[k]&&me){ if(o===me.id) mySil--; if(v===me.id) mySil++; } };
   me=world.addPlayer({name:'나',color:0,speed:5.6,turn:5.4,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
@@ -342,7 +345,7 @@ function startStage(i){ stage=i; allClearShown=false; respawnQ=[]; const P=LIST[
   setTimeout(()=>{ if(mode==='play'&&world) toast(`${P.id?'사진 판':(i+1)+'단계'} · 몹 ${D.mobs}마리${D.bots?` · 컴퓨터 ${D.bots}명`:''}`,'#fff'); },200);
   blurredPhoto=null;photoImg=new Image(); if(/^https?:/.test(P.img)) photoImg.crossOrigin='anonymous'; photoImg.src=P.img;
   fullImg=new Image(); if(/^https?:/.test(P.full||'')) fullImg.crossOrigin='anonymous'; fullImg.src=P.full||P.img;
-  buildLayers(); $('hud').style.display='flex'; $('btns').style.display='flex'; $('menu').style.display='none'; closePanels(); hud(); }
+  buildLayers(); $('hud').style.display='flex'; $('btns').style.display='flex'; $('menu').style.display='none'; closePanels(); hud(); return true; }
 function buildLayers(){ const GW=world.GW, GH=world.GH;
   off=document.createElement('canvas'); off.width=GW*PX; off.height=GH*PX; octx=off.getContext('2d');
   offS=document.createElement('canvas'); offS.width=GW*PX; offS.height=GH*PX; osctx=offS.getContext('2d');
@@ -379,7 +382,7 @@ function handleEvents(){ for(const ev of world.events){
   if(ev.t==='inherit'&&ev.p===me){ toast(`${ev.from.name}의 땅을 가져왔어요!`,PAL[me.color].c); sfx.capture(); }
   if(ev.t==='death'){ const p=ev.p; burst(p.x,p.y,PAL[p.color].c,40,8); if(ev.why==='wall') burst(p.x,p.y,'#E53935',30,11); if(ev.why==='mob') burst(p.x,p.y,'#3B3550',20,9);
     if(p===me&&!over){ shake=.5; sfx.death(); try{ navigator.vibrate&&navigator.vibrate([60,40,60]); }catch{} lives--; hud();
-      if(lives<=0){ over=true; setTimeout(()=>panel(`<h2>아쉬워요!</h2><p>실루엣을 ${(me.bestSil||0).toFixed(0)}%까지 차지했어요.</p><button class="big a" id="again">다시 도전</button><button class="big g" id="list">사진 목록</button>`,{again:()=>{ lives=LIVES; startStage(stage); },list:()=>toMenu()}),800); }
+      if(lives<=0){ over=true; if(PUBLIC_DEMO)setTimeout(()=>endDemo(),800);else setTimeout(()=>panel(`<h2>아쉬워요!</h2><p>실루엣을 ${(me.bestSil||0).toFixed(0)}%까지 차지했어요.</p><button class="big a" id="again">다시 도전</button><button class="big g" id="list">사진 목록</button>`,{again:()=>{ lives=LIVES; startStage(stage); },list:()=>toMenu()}),800); }
       else { toast(ev.why==='wall'?'펑! 벽 조심':ev.why==='mob'?`몹에게 당했어요! 남은 기회 ${lives}번`:`탈락! 남은 기회 ${lives}번`,'#E53935'); setTimeout(()=>{ if(!over&&world&&!me.alive){ respawnMe(); me.shieldT=5; me.freezeT=3; me.born=world.time-1; frzLast=4; } },1500); } } } }
   world.events.length=0; }
 // ---------- 그리기 ----------
@@ -461,16 +464,20 @@ function hud(){ if(!world||!me) return; const pct=mySil/silTotal*100; me.bestSil
 // ---------- 화면 전환 ----------
 function panel(html,btns){ const o=document.createElement('div'); o.className='overlay'; o.innerHTML=`<div class="panel">${html}</div>`; document.body.appendChild(o); for(const id in btns){ const b=o.querySelector('#'+id); if(b) b.onclick=()=>{ o.remove(); btns[id](); }; } return o; }
 function closePanels(){ document.querySelectorAll('.overlay').forEach(o=>{ if(o.id!=='menu') o.remove(); }); }
+function endDemo(won=false){ over=true;paused=true;closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';const P=LIST[stage];panel(`<h2>${won?'🎉 사진 공개!':'체험이 끝났어요'}</h2>${won?`<img src="${P.full||P.img}" alt="공개된 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">`:''}<p>다음 판은 로그인하고 즐겨요.</p><a class="big a" href="/?auth=login&amp;next=photo" target="_top">로그인하고 계속하기</a><a class="link" href="/?auth=signup&amp;next=photo" target="_top">회원가입</a>`,{}); }
 function win(){ over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigator.vibrate([30,40,30,40,80]); }catch{} const {S}=view(); for(let i=0;i<6;i++) setTimeout(()=>burst(world.UW*Math.random(),world.UH*Math.random(),['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#fff'][i%5],30,9),i*120);
   const P=LIST[stage]; markPhotoDone(P); parts=[]; floats=[]; if(P.id) Comm.record(P.id,true); try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:photottang:clear',stage:P.key},location.origin); }catch{}
+  if(PUBLIC_DEMO){setTimeout(()=>endDemo(true),3000);return;}
   setTimeout(()=>{ const o=panel(`<h2>🎉 사진 공개!</h2><img src="${P.full||P.img}" alt="전신 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">${P.id?`<p style="margin:0 0 4px">${esc(P.nick||'누군가')}님이 올린 사진</p>`:''}<div class="row2">${stage<LIST.length-1&&!P.trial?'<button class="big a" id="next">다음 사진</button>':''}<button class="big g" id="list">사진 목록</button></div>${P.id?'<button class="link" id="rep">이 사진 신고하기</button>':''}`,{next:()=>{ lives=LIVES; startStage(stage+1); },list:()=>toMenu()});
     const rb=o.querySelector('#rep'); if(rb) rb.onclick=()=>reportPanel(P); },3000); }
 function timeUp(){ over=true; sfx.death(); shake=.4; const pct=mySil/silTotal*100;
+  if(PUBLIC_DEMO){setTimeout(()=>endDemo(),500);return;}
   setTimeout(()=>panel(`<h2>⏰ 시간 끝!</h2><p>실루엣을 ${pct.toFixed(0)}%까지 차지했어요. ${GOAL*100}%까지 ${Math.max(0,GOAL*100-pct).toFixed(0)}% 남았어요.</p><button class="big a" id="again">다시 도전</button><button class="big g" id="list">사진 목록</button>`,{again:()=>{ lives=LIVES; startStage(stage); },list:()=>toMenu()}),500); }
-function toMenu(){ mode='menu'; world=null; me=null; closePanels(); $('hud').style.display='none'; $('btns').style.display='none'; $('menu').style.display='flex'; renderGrid(); }
+function toMenu(){ if(PUBLIC_DEMO&&demoStarted)return endDemo();mode='menu'; world=null; me=null; closePanels(); $('hud').style.display='none'; $('btns').style.display='none'; $('menu').style.display='flex'; renderGrid(); }
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let LIST=PHOTOS.map((P,i)=>Object.assign({},P,{key:String(i)})), tab='base', commCache={}, gridEpoch=0;
 async function renderGrid(){ const revision=++gridEpoch, currentTab=tab, g=$('grid'); document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===tab));
+  if(PUBLIC_DEMO){LIST=[Object.assign({},PHOTOS[0],{key:'0'})];g.innerHTML='';document.querySelector('.tabs').style.display='none';$('uploadBtn').style.display='none';$('cleared').textContent='';return;}
   $('uploadBtn').style.display='';
   if(tab==='base'){ LIST=PHOTOS.map((P,i)=>Object.assign({},P,{key:String(i)})); const opened=Math.max(0,...Object.keys(prog).filter(k=>/^\d+$/.test(k)).map(Number).map(n=>n+1));
     g.innerHTML=LIST.map((P,i)=>{ const done=prog[P.key]&&prog[P.key].done, lock=i>opened; return `<button class="cell${done?' done':''}${lock?' lock':''}" data-i="${i}" ${lock?'disabled':''}>${done?`<img src="${P.full||P.img}" alt="">`:`<span class="sil" style="--r:.75"></span>`}<b>${i+1}</b><em>${'★'.repeat(diff(i).stars)}</em>${lock?'<i>🔒</i>':''}</button>`; }).join('');
@@ -701,7 +708,7 @@ function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
       if(!over){ const left=endAt-world.time; if(left<=10&&Math.ceil(left)!==tick){ tick=Math.ceil(left); if(tick>0){ tone(tick<=3?990:740,.08,'square',.05); try{ navigator.vibrate&&navigator.vibrate(15); }catch{} } }
         if(left<=0) timeUp(); } } }
   draw(paused?0:dt); if(now-hudT>120){ hudT=now; hud(); } requestAnimationFrame(loop); }
-window.OjjudaPhotoTtang={menu:toMenu};
+window.OjjudaPhotoTtang={menu:toMenu,demo:()=>{if(!PUBLIC_DEMO)return false;resize();lives=LIVES;return startStage(0);}};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDefault();parent.postMessage({type:'ojjuda:photottang:close'},location.origin);}});
 toMenu(); requestAnimationFrame(loop);
 
