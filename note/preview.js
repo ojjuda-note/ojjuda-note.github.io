@@ -104,7 +104,7 @@ async function photoActionFor(key, userId) {
   const entitlements = await loadPhotoEntitlements(userId);
   if (activePhotoEntitlement(key, entitlements)) return 'apply_owned_card_photo';
   const title = `사진 ${String(Number(key) - PHOTO_FIRST + 1).padStart(3, '0')}`;
-  return window.confirm(`${title}을 10쭈에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
+  return window.confirm(`${title}을 10 ZU에 1개월 동안 사용할까요? 구매 기간에는 다른 카드에도 적용할 수 있어요.`)
     ? 'purchase_card_photo' : null;
 }
 function setPhotoBackground(element, value) {
@@ -1811,14 +1811,14 @@ function updateFeaturedPhoto() {
   const selected = photoAssetKey(selectedPhotoKey);
   const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
   const ownedUntil = selected && activePhotoEntitlement(selected);
-  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10쭈 / 1개월' : '무료 · 이 사진으로 등록';
+  const price = selected ? ownedUntil ? `구매한 배경 · ${dateLabel(ownedUntil)}까지 사용` : '배경 이용권 · 10 ZU / 1개월' : '무료 · 이 사진으로 등록';
   $('#photo-featured-image').src = `/note/assets/${selected || backgroundKey}.jpg`;
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
   $('#photo-featured-badge').textContent = selected ? ownedUntil ? '사용 중' : '선택됨' : '무료';
   $('#photo-featured-badge').classList.toggle('is-selected', !!selected);
-  $('#photo-selection').textContent = selected ? ownedUntil ? `${name} 사용 중 · ${dateLabel(ownedUntil)}까지 추가 결제 없이 사용` : `${name} 선택됨 · 10쭈 / 1개월` : '기본 배경 무작위 · 무료';
+  $('#photo-selection').textContent = selected ? ownedUntil ? `${name} 사용 중 · ${dateLabel(ownedUntil)}까지 추가 결제 없이 사용` : `${name} 선택됨 · 10 ZU / 1개월` : '기본 배경 무작위 · 무료';
 }
 function renderPhotoPage() {
   const grid = $('#photo-grid'); grid.replaceChildren();
@@ -1826,7 +1826,7 @@ function renderPhotoPage() {
   for (let number = first; number <= Math.min(PHOTO_LAST, first + PHOTO_PAGE_SIZE - 1); number++) {
     const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
     const ownedUntil = activePhotoEntitlement(key);
-    const accessLabel = ownedUntil ? `구매함 · ${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 · 10쭈 / 1개월';
+    const accessLabel = ownedUntil ? `구매함 · ${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 · 10 ZU / 1개월';
     const tile = node('label', 'note-photo-tile'); tile.title = `${title} · ${accessLabel}`;
     const input = node('input'); input.type = 'radio'; input.name = 'photo-choice'; input.value = key;
     input.disabled = busy || draftLoading;
@@ -1865,7 +1865,7 @@ function clearEventPhoto() {
   $('#event-photo-file').value = '';
   $('#event-photo-clear').hidden = true;
   const status = $('#event-photo-status');
-  status.textContent = 'JPG·PNG·WebP · 10MB 이하 · 추가 쭈 없음';
+  status.textContent = 'JPG·PNG·WebP · 10MB 이하 · 추가 ZU 없음';
   status.classList.remove('is-error');
   if (kind === 'event') { applyComposeStyle(); updateComposer(); }
 }
@@ -1951,8 +1951,8 @@ function updateEventPrice() {
     $('#event-location-status').textContent = validRadius
       ? `선택한 위치에서 반경 ${radius}km가 파란 원으로 표시돼요. 분홍 원은 기존 이벤트 범위예요.`
       : '반경은 1~30km 사이의 정수로 입력해 주세요.';
-  $('#event-price').textContent = valid ? `${radius}km × ${hours}시간 = ${(100 * radius * hours).toLocaleString('ko-KR')}쭈` : '반경 1~30km, 시간 1~24시간을 정수로 입력해 주세요.';
-  if (kind === 'event' && !editingId) submit.textContent = valid ? `${(100 * radius * hours).toLocaleString('ko-KR')}쭈 결제 후 등록` : '범위와 시간을 확인해 주세요';
+  $('#event-price').textContent = valid ? `${radius}km × ${hours}시간 = ${(100 * radius * hours).toLocaleString('ko-KR')} ZU` : '반경 1~30km, 시간 1~24시간을 정수로 입력해 주세요.';
+  if (kind === 'event' && !editingId) submit.textContent = valid ? `${(100 * radius * hours).toLocaleString('ko-KR')} ZU 결제 후 등록` : '범위와 시간을 확인해 주세요';
   updateComposer();
   return valid;
 }
@@ -2292,7 +2292,7 @@ async function openComposer(mode, card = null, replyTo = null) {
   $('#compose-context').textContent = editingId ? kind === 'event'
     ? '글·태그·꾸미기·사진을 수정할 수 있어요. 구매한 위치·반경·기간은 그대로 유지돼요.'
     : '글과 태그를 수정할 수 있어요.' : kind === 'comment' ? replyContext() : '마음을 카드에 적어 주세요.';
-  submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100쭈 결제 후 등록' : '등록하기';
+  submit.textContent = editingId ? '수정하기' : kind === 'event' ? '100 ZU 결제 후 등록' : '등록하기';
   const style = editingId ? (card.style && typeof card.style === 'object' ? card.style : {}) : readComposerSettings();
   window.OjjudaShop?.setStyle(style);
   $('#compose-font').value = FONT_CODES.includes(style.font) ? style.font : 'default';
@@ -2408,7 +2408,7 @@ async function publishCard() {
     && !window.confirm('글이나 태그 일부가 사진 안에 다 보이지 않습니다. 카드 크게 보기에서 전체 글을 볼 수 있어요. 그래도 등록할까요?')) return;
   if (kind === 'event' && !editId) {
     const cost = Number($('#event-radius').value) * Number($('#event-hours').value) * 100;
-    if (!window.confirm(`이벤트 ${cost.toLocaleString('ko-KR')}쭈를 결제하고 등록할까요?`)) return;
+    if (!window.confirm(`이벤트 ${cost.toLocaleString('ko-KR')} ZU를 결제하고 등록할까요?`)) return;
   } else if (!editId && selectedPhoto !== 'plain') {
     busy = true; setComposerInputs(); updateComposer();
     try { selectedPhotoAction = await photoActionFor(selectedPhoto, actionUserId); }
@@ -2516,7 +2516,7 @@ async function publishCard() {
         ...(cardPhotoUploadPath ? { p_photo_path: cardPhotoUploadPath } : {}) });
     }
     if (data?.ok === false) throw Object.assign(new Error(data.reason === 'coins'
-      ? `쭈 잔액이 부족해요. ${Number(data.required || 0).toLocaleString('ko-KR')}쭈가 필요해요.`
+      ? `ZU 잔액이 부족해요. ${Number(data.required || 0).toLocaleString('ko-KR')} ZU가 필요해요.`
       : '게시가 완료되지 않았어요.'), { code: 'EVENT_REJECTED' });
   } catch (cause) { error = cause; }
   if (error && eventPhotoPath && error.code) {
@@ -2584,7 +2584,7 @@ async function publishCard() {
   if (session?.user?.id !== actionUserId) return;
   const spent = Number(data?.coins_spent ?? data?.cost_coins);
   if (publishKind === 'event' && !editId && Number.isFinite(spent)) {
-    message(`이벤트를 등록했어요. 서버에서 ${spent.toLocaleString('ko-KR')}쭈를 차감했어요.`);
+    message(`이벤트를 등록했어요. 서버에서 ${spent.toLocaleString('ko-KR')} ZU를 차감했어요.`);
     void loadWorldBalance(actionUserId);
   }
   if (publishKind === 'event' && editId) message('이벤트를 수정했어요.');
@@ -2656,7 +2656,7 @@ async function publishCard() {
 }
 function updateAuth() {
   const accountText = !authKnown ? '계정 확인 중'
-    : session?.user ? (localStage ? '테스트 계정 연결됨' : `오쭈다 계정 연결됨${worldCoins === null ? '' : ` · ${worldCoins.toLocaleString('ko-KR')}쭈`}`)
+    : session?.user ? (localStage ? '테스트 계정 연결됨' : `오쭈다 계정 연결됨${worldCoins === null ? '' : ` · ${worldCoins.toLocaleString('ko-KR')} ZU`}`)
       : (localStage ? '테스트 로그인 필요' : '대문에서 로그인해 주세요');
   $('#account-status').textContent = accountText;
   $('#note-account-section').hidden = !session?.user;
@@ -2664,7 +2664,7 @@ function updateAuth() {
   $('#note-account-name').textContent = session?.user ? accountNickname || '내 계정' : '';
   for (const balance of document.querySelectorAll('[data-note-balance]')) {
     balance.textContent = worldCoins === null ? '—' : worldCoins.toLocaleString('ko-KR');
-    const label = worldCoins === null ? '보유 쭈 확인, 충전 열기' : `보유 ${worldCoins.toLocaleString('ko-KR')}쭈, 충전 열기`;
+    const label = worldCoins === null ? '보유 ZU 확인, 충전 열기' : `보유 ${worldCoins.toLocaleString('ko-KR')} ZU, 충전 열기`;
     balance.closest('a')?.setAttribute('aria-label', label);
     balance.closest('a')?.setAttribute('title', label);
   }
@@ -2858,7 +2858,7 @@ async function showAccountDeletion() {
     if (run !== managementRun || session?.user?.id !== userId) return;
     const form = node('form', 'note-account-form'); form.noValidate = true;
     managementBody.replaceChildren(
-      node('p', 'management-help note-account-warning', '탈퇴하면 월드 계정이 삭제돼요. 방·다이어리·사진·영상·친구·쭈와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
+      node('p', 'management-help note-account-warning', '탈퇴하면 월드 계정이 삭제돼요. 방·다이어리·사진·영상·친구·ZU와 공원의 카드·답글·이벤트가 삭제되며 되돌릴 수 없어요.'),
       node('p', 'management-help', '계정정보는 1개월간 비공개 보관 후 삭제해요. 같은 이메일이나 전화번호로 3일(72시간) 동안 재가입할 수 없어요. 다른 사람의 방명록·댓글은 ‘탈퇴한 사용자’로 남아요.'), form);
     const input = accountField(form, 'note-delete-nickname', `확인을 위해 닉네임 ‘${nickname}’을 입력해 주세요`);
     const consentLabel = node('label', 'note-account-consent'), consent = node('input'); consent.type = 'checkbox';
@@ -2979,7 +2979,7 @@ async function managementAction(action, after) {
     const reason = error?.message || '';
     managementMessage.textContent = /parent_not_permanent/i.test(reason)
       ? '상위 카드가 모두 영구보관된 후에 답글을 영구보관할 수 있어요.'
-      : reason === 'coins' ? '쭈 잔액이 부족해요. 월드에서 잔액을 확인해 주세요.'
+      : reason === 'coins' ? 'ZU 잔액이 부족해요. 월드에서 잔액을 확인해 주세요.'
         : reason === 'card_unavailable' ? '이 카드는 삭제되었거나 현재 영구보관할 수 없어요.'
           : '처리하지 못했어요. 로그인과 권한을 확인한 뒤 다시 시도해 주세요.';
   } finally {
@@ -3038,7 +3038,7 @@ function manageCard(id) {
       managementBody.append(managementButton('제공 배경 선택 · 구매한 사진은 기간 내 무료', () => showPhotoChoices(card)));
     }
     if (['memo', 'comment'].includes(card.kind) && !card.permanent) {
-      managementBody.append(managementButton('영구보관 · 10쭈', () => confirmPermanent(card)));
+      managementBody.append(managementButton('영구보관 · 10 ZU', () => confirmPermanent(card)));
     }
     managementBody.append(managementButton('삭제하기', () => confirmDelete(card)));
   } else {
@@ -3049,7 +3049,7 @@ function manageCard(id) {
 }
 function showPhotoChoices(card) {
   const run = showManagement('사진 배경 선택'), userId = session?.user?.id;
-  managementBody.append(node('p', 'management-help', '사진별로 10쭈를 내면 1개월 동안 다른 카드에도 추가 결제 없이 적용할 수 있어요. 기간이 끝나면 다시 구매할 수 있으며 자동 연장은 하지 않아요.'));
+  managementBody.append(node('p', 'management-help', '사진별로 10 ZU를 내면 1개월 동안 다른 카드에도 추가 결제 없이 적용할 수 있어요. 기간이 끝나면 다시 구매할 수 있으며 자동 연장은 하지 않아요.'));
   if (card.photo_until) managementBody.append(node('p', 'management-help', `현재 사진 만료: ${dateLabel(card.photo_until)}`));
   const choices = node('div', 'note-photo-choice');
   const pages = node('div', 'note-photo-pages');
@@ -3062,7 +3062,7 @@ function showPhotoChoices(card) {
       const button = node('button', 'button'); button.type = 'button';
       const img = node('img'); img.src = `/note/assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       const ownedUntil = activePhotoEntitlement(key);
-      button.append(img, node('strong', '', title), node('small', '', ownedUntil ? `${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 10쭈 · 1개월'));
+      button.append(img, node('strong', '', title), node('small', '', ownedUntil ? `${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 10 ZU · 1개월'));
       button.addEventListener('click', () => {
         const requestId = crypto.randomUUID();
         managementPhotoAction(card.id, key, requestId,
@@ -3088,11 +3088,11 @@ function showPhotoChoices(card) {
 function confirmPermanent(card) {
   showManagement('영구보관할까요?');
   managementBody.append(node('p', 'management-help', card.kind === 'comment'
-    ? '상위 카드가 모두 영구보관되어야 답글을 영구보관할 수 있어요. 10쭈가 한 번 차감됩니다. 상위 카드 작성자가 삭제하거나 탈퇴하면 영구보관된 답글도 함께 삭제될 수 있습니다.'
-    : '이 카드를 영구보관하면 10쭈가 차감돼요. 같은 카드에 다시 결제하지 않아요.'));
+    ? '상위 카드가 모두 영구보관되어야 답글을 영구보관할 수 있어요. 10 ZU가 한 번 차감됩니다. 상위 카드 작성자가 삭제하거나 탈퇴하면 영구보관된 답글도 함께 삭제될 수 있습니다.'
+    : '이 카드를 영구보관하면 10 ZU가 차감돼요. 같은 카드에 다시 결제하지 않아요.'));
   cancelManagement();
   const requestId = crypto.randomUUID();
-  managementFooter.append(managementButton('10쭈로 영구보관', () => managementAction(
+  managementFooter.append(managementButton('10 ZU로 영구보관', () => managementAction(
     () => purchasePermanent(card.id, requestId),
     async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); await notificationController?.refresh?.(); }
   ), true));
@@ -3100,7 +3100,7 @@ function confirmPermanent(card) {
 function confirmDelete(card) {
   showManagement(card.kind === 'event' ? '이벤트를 삭제할까요?' : '카드를 삭제할까요?');
   managementBody.append(node('p', 'management-help', card.kind === 'event'
-    ? '이벤트가 즉시 내려갑니다. 이미 결제한 쭈는 돌려받지 않아요. 관리자는 삭제 내용을 1개월 동안 확인할 수 있어요.'
+    ? '이벤트가 즉시 내려갑니다. 이미 결제한 ZU는 돌려받지 않아요. 관리자는 삭제 내용을 1개월 동안 확인할 수 있어요.'
     : '공개 화면에서 내리고 이어진 답글도 함께 숨겨요. 관리자는 1개월 동안 복구할 수 있고, 이후 영구 삭제됩니다.'));
   cancelManagement();
   managementFooter.append(managementButton(card.kind === 'event' ? '이벤트 삭제' : '카드와 답글 삭제', () => managementAction(async () => {

@@ -29,12 +29,12 @@
     const promise = (async () => {
       if (mode === 'box') {
         const retry = boxAttempts++;
-        return (await import('./screw3d.js?v=20261006-prices1' + (retry ? '&retry=' + retry : ''))).screw3d;
+        return (await import('./screw3d.js?v=20261006-zu1' + (retry ? '&retry=' + retry : ''))).screw3d;
       }
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
       await script('/screw-flat-physics.js?v=20261004-shapes13', () => !!window.OjjudaFlatPhysics);
       await script('/screw-flat-pictures.js?v=20261004-surprise1', () => !!window.OjjudaFlatPictures);
-      await script('/screw-flat.js?v=20261004-cleanup1', () => !!window.OjjudaScrewGames?.flat);
+      await script('/screw-flat.js?v=20261006-zu1', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
     })().catch(error => { modes.delete(mode); throw error; });
     modes.set(mode, promise);

@@ -196,7 +196,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    }});
    OjjudaCharge.open();
  });
- await frame.getByRole('button',{name:'10쭈 무료 충전',exact:true}).click();
+ await frame.getByRole('button',{name:'10 ZU 무료 충전',exact:true}).click();
  await frame.waitForFunction(()=>typeof finishCharge==='function');
  await frame.getByRole('button',{name:'충전창 닫기',exact:true}).click();
  await page.locator('.bottomnav [data-tab="my"]').click();

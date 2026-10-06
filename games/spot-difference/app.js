@@ -23,7 +23,7 @@
   const position=()=>state.order.indexOf(state.current);
   function save(){
     try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state}));storageWorks=true;}catch{storageWorks=false;}
-    $('storage-note').textContent=storageWorks?'게임을 다시 열면 처음부터 시작하고 사진도 새로 섞여요.':'게임은 다시 열면 처음부터 시작해요. 쭈를 쓰려면 브라우저 저장을 허용해 주세요.';
+    $('storage-note').textContent=storageWorks?'게임을 다시 열면 처음부터 시작하고 사진도 새로 섞여요.':'게임은 다시 열면 처음부터 시작해요. ZU를 쓰려면 브라우저 저장을 허용해 주세요.';
     return storageWorks;
   }
   function speak(message,good=false){
@@ -65,16 +65,16 @@
     const timedOut=lost&&r.hearts>0&&r.remainingMs===0,changePicture=timedOut&&timeoutRetries.has(puzzle().id);
     $('board-shell').classList.toggle('covered',!playing&&!won&&!answerReview);$('board-curtain').hidden=playing||won||!!answerReview;
     $('board-shell').classList.toggle('reviewing',!!answerReview);
-    $('gate-eyebrow').textContent=pending?'쭈 사용 확인':lost?'이번 도전 종료':'1분 도전';
+    $('gate-eyebrow').textContent=pending?'ZU 사용 확인':lost?'이번 도전 종료':'1분 도전';
     $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'준비됐나요?';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 1쭈로 30초를 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 1쭈로 30초 연장도 가능해요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 1 ZU로 30초를 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 1 ZU로 30초 연장도 가능해요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
     $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?(changePicture?'다른 그림 풀기':'다시 풀기'):'시작하기';
     $('reset').textContent=changePicture?'다른 그림 풀기':'다시 풀기';$('reset').setAttribute('aria-label',changePicture?'다른 그림 풀기':'이 문제 다시 풀기');
     $('start').disabled=!imagesReady||paymentBusy||!!answerReview;
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
-    const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1쭈':'힌트 · 1쭈';
-    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1쭈';$(id).setAttribute('aria-label',hintLabel);}
+    const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1 ZU':'힌트 · 1 ZU';
+    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';$(id).setAttribute('aria-label',hintLabel);}
     const extendable=!r.timeBought&&(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
@@ -101,7 +101,7 @@
     $('found-details').hidden=ids.length===0;$('found-summary').textContent=`${ids.length} / 6`;
     $('answers').replaceChildren(...ids.map((i,order)=>{const li=document.createElement('li');li.value=order+1;li.textContent=puzzle().spots[i].text;return li;}));
     $('continue').textContent=position()===47?'아직 안 푼 문제':'다음 문제';$('continue').hidden=solved===48;
-    $('zoom-status').textContent=answerReview?'정답 확인 중 · 시간 정지 · 쭈 차감 없음':`${ids.length} / 6 찾았어요`;
+    $('zoom-status').textContent=answerReview?'정답 확인 중 · 시간 정지 · ZU 차감 없음':`${ids.length} / 6 찾았어요`;
     refreshControls();save();
   }
   function hideHint(clear=false){
@@ -165,7 +165,7 @@
     r.remainingMs=core.timeLeft(r);r.deadline=null;r.status=reason==='won'?'won':'lost';
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
-    speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 1쭈로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
+    speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 1 ZU로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
     if(!r.assisted&&r.rankOwner){
       const score=found().length,owner=r.rankOwner;
       if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-score',score,owner},window.location.origin);
@@ -258,12 +258,12 @@
       if(kind==='time'&&(!['playing','lost'].includes(r.status)||r.hearts===0))return;
       const price=1;
       if((kind==='hint'&&r.paid.length>=2)||(kind==='time'&&r.timeBought)){speak('이번 판의 도움 횟수를 모두 사용했어요.');return;}
-      if(!confirm(kind==='hint'?'1쭈로 힌트를 볼까요? (판당 2회)':'1쭈로 30초를 추가할까요? (판당 1회)'))return;
+      if(!confirm(kind==='hint'?'1 ZU로 힌트를 볼까요? (판당 2회)':'1 ZU로 30초를 추가할까요? (판당 1회)'))return;
       if(w.coins===null){speak('잔액을 먼저 확인해 주세요.');wallet.refresh().catch(()=>{});return;}
-      if(w.coins<price){speak(`${price}쭈가 필요해요. 현재 ${w.coins}쭈예요.`);return;}
-      if(!globalThis.crypto?.randomUUID){speak('쭈를 사용하려면 온라인 게임 링크에서 열어 주세요.');return;}
+      if(w.coins<price){speak(`${price} ZU가 필요해요. 현재 ${w.coins} ZU예요.`);return;}
+      if(!globalThis.crypto?.randomUUID){speak('ZU를 사용하려면 온라인 게임 링크에서 열어 주세요.');return;}
       r.remainingMs=core.timeLeft(r);r.pending={kind,spot,requestId:crypto.randomUUID(),userId:w.userId};r.deadline=null;r.status='payment';
-      if(!save()){r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;refreshControls();speak('쭈를 쓰려면 브라우저 저장을 허용해 주세요.');return;}
+      if(!save()){r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;refreshControls();speak('ZU를 쓰려면 브라우저 저장을 허용해 주세요.');return;}
     }
     const request=r.pending;paymentBusy=true;if(zoomDialog.open)zoomDialog.close();refreshControls();
     try{
@@ -275,12 +275,12 @@
         else{if(!r.paid.includes(request.spot))r.paid.push(request.spot);r.hintIndex=request.spot;}
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
-        if(request.kind==='hint'){showHint();speak(`1쭈를 사용했어요. 힌트: ${p.spots[request.spot].text}`);}
-        else speak(`${result.price}쭈를 사용하고 ${(result.extend_ms||60000)/1000}초를 더 받았어요!`,true);
+        if(request.kind==='hint'){showHint();speak(`1 ZU를 사용했어요. 힌트: ${p.spots[request.spot].text}`);}
+        else speak(`${result.price} ZU를 사용하고 ${(result.extend_ms||60000)/1000}초를 더 받았어요!`,true);
       }else{
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
-        speak(result.reason==='coins'?'쭈가 부족해요. 차감되지 않았어요.':result.reason==='banned'?'이 계정은 지금 쭈를 사용할 수 없어요.':'구매하지 못했어요. 잔액과 계정을 확인해 주세요.');
+        speak(result.reason==='coins'?'ZU가 부족해요. 차감되지 않았어요.':result.reason==='banned'?'이 계정은 지금 ZU를 사용할 수 없어요.':'구매하지 못했어요. 잔액과 계정을 확인해 주세요.');
       }
     }catch(error){paymentBusy=false;refresh();speak(error.message||'구매 확인을 다시 눌러주세요. 같은 구매는 한 번만 차감돼요.');}
   }
@@ -337,16 +337,16 @@
   $('wallet-logout').onclick=async()=>{if(paymentBusy)return;closeWalletMenu();walletMenu.querySelector('summary').focus();try{await wallet.signOut();$('wallet-login').focus();speak('로그아웃했어요.');}catch{speak('로그아웃하지 못했어요. 다시 시도해 주세요.');}};
   wallet.subscribe(w=>{
     if(w.canViewAnswers!==true&&answerReview)closeAnswers();
-    $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()}쭈`):'로그인 필요';
+    $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()} ZU`):'로그인 필요';
     $('wallet-login').hidden=!!w.userId;$('wallet-refresh').hidden=!w.userId;$('wallet-logout').hidden=!w.userId;
-    $('wallet-note').textContent=w.error||`힌트 1개 1쭈 · 1분 연장 3쭈${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
+    $('wallet-note').textContent=w.error||`힌트 1개 1 ZU · 1분 연장 3 ZU${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
     $('wallet-note').classList.toggle('error-note',!!w.error);refreshControls();
   });
   show(state.current);setInterval(tick,200);window.addEventListener('pageshow',event=>{if(event.persisted){location.reload();return;}tick();});document.addEventListener('visibilitychange',()=>{tick();startNextWhenReady();});
   if(document.modelContext?.registerTool){
     const lifecycle=new AbortController(),tools=[
       {name:'read_game_progress',title:'게임 진행 보기',description:'현재 장면, 하트와 남은 시간을 확인합니다.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute:()=>({stage:puzzle().id,position:position()+1,title:puzzle().title,found:found().length,hearts:round().hearts,seconds:Math.ceil(core.timeLeft(round())/1000),status:round().status,totalStages:48})},
-      {name:'open_game_stage',title:'게임 장면 선택',description:'1~48번 중 지정한 장면을 엽니다. 쭈를 사용하지 않습니다.',inputSchema:{type:'object',properties:{stage:{type:'integer',minimum:1,maximum:48}},required:['stage'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:input=>{if(!input||!Number.isInteger(input.stage)||input.stage<1||input.stage>48)throw new Error('1~48 사이 문제 번호가 필요해요.');if(paymentBusy)throw new Error('구매 확인 중이에요.');show(input.stage-1);return {stage:puzzle().id,title:puzzle().title,found:found().length};}}
+      {name:'open_game_stage',title:'게임 장면 선택',description:'1~48번 중 지정한 장면을 엽니다. ZU를 사용하지 않습니다.',inputSchema:{type:'object',properties:{stage:{type:'integer',minimum:1,maximum:48}},required:['stage'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:input=>{if(!input||!Number.isInteger(input.stage)||input.stage<1||input.stage>48)throw new Error('1~48 사이 문제 번호가 필요해요.');if(paymentBusy)throw new Error('구매 확인 중이에요.');show(input.stage-1);return {stage:puzzle().id,title:puzzle().title,found:found().length};}}
     ];
     for(const tool of tools){try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}}window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
   }

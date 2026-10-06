@@ -102,7 +102,7 @@
         detail('마지막 방문', date(record.last_seen));
         if (record.last_active) detail('마지막 활동', `${date(record.last_active)}${activityKinds[record.last_active_kind] ? ' · ' + activityKinds[record.last_active_kind] : ''}`);
         if (banned) detail('정지 종료', date(record.banned_until));
-        detail('보유 쭈', Number(record.coins || 0).toLocaleString('ko-KR') + '쭈');
+        detail('보유 ZU', Number(record.coins || 0).toLocaleString('ko-KR') + ' ZU');
       }
       card.append(details);
       if (!withdrawn) {

@@ -136,7 +136,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.getByText('정지 중', { exact: true }).waitFor();
     assert.deepEqual(await page.locator('.adm-areas button').allTextContents(),
-      ['계정', '콘텐츠', '신고·문의', '쭈', '운영']);
+      ['계정', '콘텐츠', '신고·문의', 'ZU', '운영']);
     assert.equal(await page.locator('.adm-areas').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'all five navigation groups fit the mobile width');
     await page.locator('.adm-stat').filter({ hasText: '정지 중' }).click();

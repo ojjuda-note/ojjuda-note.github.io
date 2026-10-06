@@ -123,7 +123,7 @@
       if ((world ? validNoticeId(target)&&['guestbook','friends','media'].includes(item.target_type) : UUID.test(target || '')) && typeof action === 'function') {
         const openButton = button(world ? ({guestbook:'방명록 보기',friends:'친구 보기',media:'사진·댓글 보기'}[item.target_type]||'보기') : item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
       }
-      if (retention && typeof onKeepCard === 'function') actions.append(button('10쭈로 영구보관', () => void keepCard(item)));
+      if (retention && typeof onKeepCard === 'function') actions.append(button('10 ZU로 영구보관', () => void keepCard(item)));
       if (!item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
       row.append(meta, actions); return row;
     }

@@ -30,16 +30,16 @@
   if(busy||!user()||!state)return;
   const owner=user(),wasOwned=owned(product.key);
   if(wasOwned){await equip(product);return;}
-  if(!confirm(`${product.name}\n${product.price}쭈 · ${product.months?'구매일부터 1개월 · 자동 연장 없음':'한 번 구매하면 계속 사용'}\n구매할까요?`))return;
+  if(!confirm(`${product.name}\n${product.price} ZU · ${product.months?'구매일부터 1개월 · 자동 연장 없음':'한 번 구매하면 계속 사용'}\n구매할까요?`))return;
   busy=true;render();const id=requestId(owner,product.key);
   try{
    const result=await rpc('ju_shop_buy',{p_product:product.key,p_request:id,p_verify_only:false});
    if(user()!==owner)return;
    if(!result?.ok){if(['coins','unavailable','banned','invalid','request_conflict'].includes(result?.reason)){pending.delete(keyFor(owner,product.key));try{localStorage.removeItem(keyFor(owner,product.key));}catch{}}
-    throw Error(result?.reason==='coins'?'쭈가 부족해요. 충전 후 다시 이용해 주세요.':'구매하지 못했어요. 차감 내역을 확인해 주세요.');}
+    throw Error(result?.reason==='coins'?'ZU가 부족해요. 충전 후 다시 이용해 주세요.':'구매하지 못했어요. 차감 내역을 확인해 주세요.');}
    pending.delete(keyFor(owner,product.key));try{localStorage.removeItem(keyFor(owner,product.key));}catch{}
-   await refresh();message(result.spent?`${result.spent}쭈로 구매했어요. 아래에서 적용해 주세요.`:'이미 구매한 상품이에요. 추가 차감은 없어요.');
-  }catch(error){if(user()===owner)message(error.message?.includes('쭈')?error.message:'결과를 확인하지 못했어요. 같은 상품의 구매 버튼을 다시 누르면 중복 차감 없이 확인해요.');}
+   await refresh();message(result.spent?`${result.spent} ZU로 구매했어요. 아래에서 적용해 주세요.`:'이미 구매한 상품이에요. 추가 차감은 없어요.');
+  }catch(error){if(user()===owner)message(error.message?.includes('ZU')?error.message:'결과를 확인하지 못했어요. 같은 상품의 구매 버튼을 다시 누르면 중복 차감 없이 확인해요.');}
   finally{busy=false;if(user()===owner)renderButtons();}
  }
  async function equip(product){
@@ -62,17 +62,17 @@
  }
  function render(error=''){
   if(!dialog)return;const body=dialog.querySelector('[data-shop-products]');body.replaceChildren();
-  dialog.querySelector('[data-shop-coins]').textContent=state?`${state.coins.toLocaleString('ko-KR')}쭈`:user()?'확인 중':'로그인이 필요해요';
+  dialog.querySelector('[data-shop-coins]').textContent=state?`${state.coins.toLocaleString('ko-KR')} ZU`:user()?'확인 중':'로그인이 필요해요';
   if(!user()){const a=el('a','','로그인하기');a.href='/?auth=login&next=world';body.append(a);}
   for(const product of state?.products||[]){
    const card=el('article','ju-product'),ent=owned(product.key);card.append(preview(product),el('small','',LABELS[product.slot]),el('strong','',product.name));
-   card.append(el('p','',ent?ent.expires_at?new Date(ent.expires_at).toLocaleDateString('ko-KR')+'까지':'구매 완료 · 계속 사용':`${product.price}쭈 · ${product.months?'1개월':'계속 사용'}`));
-   const button=el('button','',ent?state.selected?.[product.slot]===product.key?'적용 해제':'사용하기':`${product.price}쭈로 구매`);button.dataset.shopProduct=product.key;button.onclick=()=>buy(product);card.append(button);body.append(card);
+   card.append(el('p','',ent?ent.expires_at?new Date(ent.expires_at).toLocaleDateString('ko-KR')+'까지':'구매 완료 · 계속 사용':`${product.price} ZU · ${product.months?'1개월':'계속 사용'}`));
+   const button=el('button','',ent?state.selected?.[product.slot]===product.key?'적용 해제':'사용하기':`${product.price} ZU로 구매`);button.dataset.shopProduct=product.key;button.onclick=()=>buy(product);card.append(button);body.append(card);
   }
   message(error);renderButtons();
  }
  function open(){
-  if(!dialog){dialog=el('dialog','ju-shop-dialog');dialog.setAttribute('aria-label','쭈 상점');dialog.innerHTML='<header><div><h2>쭈 상점</h2><span data-shop-coins></span></div><button type="button" data-shop-close>닫기</button></header><p class="ju-shop-guide">기본 이용은 무료예요. 마음에 드는 꾸미기만 골라 보세요.</p><p data-shop-message role="status"></p><div data-shop-products class="ju-products"></div><footer>월 이용권은 자동 연장되지 않아요. 구매한 상품은 기간 안에 추가 차감 없이 사용해요.</footer>';document.body.append(dialog);dialog.querySelector('[data-shop-close]').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close();});}
+  if(!dialog){dialog=el('dialog','ju-shop-dialog');dialog.setAttribute('aria-label','ZU 상점');dialog.innerHTML='<header><div><h2>ZU 상점</h2><span data-shop-coins></span></div><button type="button" data-shop-close>닫기</button></header><p class="ju-shop-guide">기본 이용은 무료예요. 마음에 드는 꾸미기만 골라 보세요.</p><p data-shop-message role="status"></p><div data-shop-products class="ju-products"></div><footer>월 이용권은 자동 연장되지 않아요. 구매한 상품은 기간 안에 추가 차감 없이 사용해요.</footer>';document.body.append(dialog);dialog.querySelector('[data-shop-close]').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close();});}
   opener=document.activeElement;render();if(!dialog.open)dialog.showModal();void refresh();
  }
  function close(){if(busy){message('구매 결과를 확인하고 있어요. 잠시만 기다려 주세요.');return false;}dialog?.close();opener?.isConnected&&opener.focus();return true;}
@@ -102,7 +102,7 @@
   for(const [k,label,choices] of [['Sticker','스티커',Object.entries(STICKERS)],['Font','특별 글꼴',[['book','책갈피'],['letter','손편지'],['poster','포스터']]],['Effect','특별 효과',[['foil','금빛 테두리']]]]){
    const line=el('label','',label),select=el('select');select.dataset.shopStyle=k;select.append(new Option('기본 · 무료','none'));for(const [value,name]of choices)select.append(new Option(name,value));select.onchange=()=>document.dispatchEvent(new CustomEvent('ojjuda:shop-style'));line.append(select);wrap.append(line);
   }
-  const b=el('button','','쭈 상점 보기');b.type='button';b.onclick=open;wrap.append(b);anchor.closest('.field')?.after(wrap);if(!wrap.isConnected)anchor.parentElement.after(wrap);updateComposer();
+  const b=el('button','','ZU 상점 보기');b.type='button';b.onclick=open;wrap.append(b);anchor.closest('.field')?.after(wrap);if(!wrap.isConnected)anchor.parentElement.after(wrap);updateComposer();
  }
  function decorateCard(element,style={}){
   for(const c of [...element.classList])if(c.startsWith('ju-font-')||c==='ju-effect-foil')element.classList.remove(c);

@@ -18,22 +18,14 @@
     const pixelW=Math.round(W*dpr),pixelH=Math.round(height*dpr);
     if(c.canvas.width!==pixelW||c.canvas.height!==pixelH){c.canvas.width=pixelW;c.canvas.height=pixelH;}
     c.setTransform(dpr,0,0,dpr,0,0);
-    return{height:pixelH/dpr,scale:Math.min(1.55,Math.max(.8,height/200)),ground:pixelH/dpr-Math.min(142,height*.21)};
+    // A fixed game scale keeps the hero smaller and obstacles the same size.
+    return{height:pixelH/dpr,scale:1,ground:pixelH/dpr-Math.min(142,height*.21)};
   }
   function sprite(c,x,base,frame,size=84){
     if(!poses.img.complete||!poses.img.naturalWidth)return false;
     const sw=poses.img.naturalWidth/4,sh=poses.img.naturalHeight/2;
     const col=frame%4,row=Math.floor(frame/4),cx=CENTERS[frame]/443.5,foot=FEET[frame]/443.5;
     c.drawImage(poses.img,col*sw,row*sh,sw,sh,x-cx*size,base-foot*size,size,size);return true;
-  }
-  function projection(scale){
-    // Enlarge the nearby hero without shortening the original obstacle warning distance.
-    const near=60,falloff=70,ahead=W-83,tail=ahead-near,blend=falloff*(1-Math.exp(-tail/falloff));
-    const far=(ahead-scale*(near+blend))/(tail-blend);
-    return{
-      x(x){const dx=x-83;if(dx<=near)return 83+dx*scale;const t=dx-near;return 83+near*scale+far*t+(scale-far)*falloff*(1-Math.exp(-t/falloff));},
-      depth(x){const dx=x-83;return dx<=near?scale:Math.max(.82,far+(scale-far)*Math.exp(-(dx-near)/falloff));}
-    };
   }
   let backdrop,mistyScenery;
   function sceneryLayer(){
@@ -122,7 +114,7 @@
     c.save();c.translate(x,y);c.scale(.8+.2*Math.cos(clock*5+x*.02),1);
     oval(c,0,1,10,10,'#CF983D');oval(c,0,-1,10,10,gradient(c,-11,20,'#FFE8A0','#F3BD56'));
     c.strokeStyle='#FFF0BB';c.lineWidth=1.2;c.beginPath();c.arc(0,-1,7.8,0,TAU);c.stroke();
-    c.fillStyle='#AC7A32';c.textAlign='center';c.font=`11px ${FONT}`;c.fillText('쭈',0,3);
+    c.fillStyle='#AC7A32';c.textAlign='center';c.font=`11px ${FONT}`;c.fillText('ZU',0,3);
     oval(c,-4,-5,1.4,1,'#FFF9DB');c.restore();
     if(Math.sin(clock*4+x)>.75)star(c,x+11,y-10,3,'#FFF6C8',clock);
   }
@@ -208,9 +200,10 @@
         const view=viewport(c),drop=Math.max(0,83-(view.ground+(offset-76)*view.scale));
         c.save();scene(c,distance,clock,view,drop,reduced);
         c.save();c.translate(83-83*view.scale,view.ground-GROUND*view.scale+drop);c.scale(view.scale,view.scale);track(c,distance);c.restore();
-        const project=projection(view.scale);
-        for(const item of obstacles){const x=project.x(item.x),sx=(project.x(item.x+item.w)-x)/item.w,sy=project.depth(item.x+item.w/2);c.save();c.translate(x,view.ground+drop-GROUND*sy);c.scale(sx,sy);obstacle(c,{...item,x:0});c.restore();}
-        for(const item of pickups)if(!item.got){const s=project.depth(item.x);c.save();c.translate(project.x(item.x),view.ground+drop+(item.y-GROUND)*s);c.scale(s,s);coin(c,0,0,clock+item.x*.003);c.restore();}
+        c.save();c.translate(0,view.ground+drop-GROUND);
+        for(const item of obstacles){c.save();c.translate(item.x,0);obstacle(c,{...item,x:0});c.restore();}
+        for(const item of pickups)if(!item.got)coin(c,item.x,item.y,clock+item.x*.003);
+        c.restore();
         c.save();c.translate(83-83*view.scale,view.ground-GROUND*view.scale+drop);c.scale(view.scale,view.scale);
         const shadow=16-Math.min(10,-offset/12);oval(c,83,GROUND+2,shadow,3,'#6C70502B');
         for(const effect of effects){

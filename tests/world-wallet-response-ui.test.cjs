@@ -58,7 +58,7 @@ window.walletTest={
     await finish(newer, 850);
     const current = await snapshot();
     assert.equal(current.coins, 850);
-    assert.equal(current.visible, '쭈850');
+    assert.equal(current.visible, 'ZU850');
     assert.equal(current.save, beforeCurrent.save + 1, 'a current response saves once');
     assert.equal(current.render, beforeCurrent.render + 1, 'a current response repaints once');
     await finish(older, 880);
@@ -91,7 +91,7 @@ window.walletTest={
     await finish(emptyWallet, 0);
     const zero = await snapshot();
     assert.equal(zero.coins, 0);
-    assert.equal(zero.visible, '쭈0');
+    assert.equal(zero.visible, 'ZU0');
     assert.equal(zero.save, beforeZero.save + 1);
     assert.equal(zero.render, beforeZero.render + 1);
     assert.deepEqual(errors, [], 'no browser runtime errors');

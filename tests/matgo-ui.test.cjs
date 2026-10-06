@@ -66,7 +66,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
   await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
   assert.match(await f.page.locator('#money').textContent(),/5,000G/);
-  await f.page.locator('#menu').click();await f.page.locator('#rules').click();assert.match(await f.page.locator('.modal').textContent(),/자뻑.*피 2장/);assert.match(await f.page.locator('.modal').textContent(),/5쭈/);
+  await f.page.locator('#menu').click();await f.page.locator('#rules').click();assert.match(await f.page.locator('.modal').textContent(),/자뻑.*피 2장/);assert.match(await f.page.locator('.modal').textContent(),/5 ZU/);
   await f.page.locator('.modal button').last().click();
   for(const width of [320,390,768]){await f.page.setViewportSize({width,height:820});assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
   await f.page.setViewportSize({width:390,height:820});
@@ -241,7 +241,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){
     const f=await fixture(options);await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForSelector('#refill-gold');
-    assert.match(await f.page.locator('#refill-gold').textContent(),options.freeUsed<2?/무료/:/5쭈/);await f.page.locator('#refill-gold').click();
+    assert.match(await f.page.locator('#refill-gold').textContent(),options.freeUsed<2?/무료/:/5 ZU/);await f.page.locator('#refill-gold').click();
     if(options.coins===4){await f.page.waitForSelector('#gold-error');assert.match(await f.page.locator('#gold-error').textContent(),/부족/);assert.equal(f.state.gold,0);}
     else{await f.page.waitForFunction(()=>document.querySelector('#money')?.textContent.includes('5,000'));assert.equal(f.state.gold,5000);assert.equal(f.state.coins,options.freeUsed<2?20:15);}
     assert.equal(f.state.requests.filter(r=>r.action==='refill').length,1);assert.deepEqual(f.errors,[]);await f.context.close();
