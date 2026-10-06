@@ -25,7 +25,7 @@
   slow.setAttribute('aria-label',remaining?'적 감속 중 '+remaining+'초':'적 감속 5초 · 3 ZU');
   slow.disabled=busy||!eligible('slow');
  }
- function quickBuy(kind){if(busy||!eligible(kind))return;open();void buy(kind);}
+ function quickBuy(kind){if(busy||!eligible(kind))return;void buy(kind,true);}
  extend.onclick=()=>quickBuy('time');slow.onclick=()=>quickBuy('slow');
  const memory=new Map(),applied=new Set();
  const key=(uid,kind)=>'ojjuda-photo-help:'+uid+':'+kind;
@@ -42,7 +42,7 @@
   const free=document.createElement('div');free.className='photo-help-free-actions';
   host.querySelectorAll(':scope > button.big').forEach(button=>free.append(button));if(free.children.length)host.append(free);
   const group=document.createElement('section');group.className='photo-help';group.setAttribute('aria-label','ZU로 도움받기');
-  const title=document.createElement('div');title.className='photo-help-heading';title.innerHTML='<strong>ZU로 도움받기</strong><small>선택 후 구매 확인</small>';group.append(title);
+  const title=document.createElement('div');title.className='photo-help-heading';title.innerHTML='<strong>ZU로 도움받기</strong><small>누르면 바로 사용 · ZU 차감</small>';group.append(title);
   const grid=document.createElement('div');grid.className='photo-help-grid';group.append(grid);
   const icons={heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',time:'<circle cx="12" cy="13" r="8"/><path d="M9 2h6M12 5V2m0 7v4l3 2M19 5l2 2"/>',slow:'<path d="M11 6 4 12l7 6V6Zm9 0-7 6 7 6V6Z"/>'};
   for(const [kind,p]of Object.entries(products)){const b=document.createElement('button');b.type='button';b.className='photo-help-button ju-paid-soft';b.dataset.photoHelp=kind;b.title=p.description;b.innerHTML='<span class="photo-help-icon" aria-hidden="true"><svg viewBox="0 0 24 24">'+icons[kind]+'</svg></span><span class="photo-help-label"></span><span class="photo-help-price"></span>';b.onclick=()=>void buy(kind);grid.append(b);}
@@ -56,14 +56,14 @@
   panel(html,{'help-back':()=>{paused=false;},'help-again':()=>{lives=LIVES;startStage(stage);},'help-list':()=>toMenu()});
  }
 
- async function buy(kind){
+ async function buy(kind,direct=false){
   if(busy||!eligible(kind))return;
-  busy=true;controls();const purchasedWorld=world,p=products[kind];let uid,id;
+  busy=true;paused=true;controls();quickControls();const purchasedWorld=world,p=products[kind];let uid,id;
   try{
    if(!await Comm.ready()||!Comm.sb)throw Error('로그인 연결을 확인해 주세요.');
    const identity=await Comm.sb.auth.getUser();uid=identity.data?.user?.id;if(!uid||uid!==Comm.uid||!photoAllowed())throw Error('게임을 시작한 계정으로 로그인해 주세요.');owner=uid;
    id=pending(uid,kind);
-   if(!id){if(!confirm(p.label+' · '+p.price+' ZU\n'+p.description+'\n구매할까요?'))return;id=crypto.randomUUID();try{save(uid,kind,id);}catch{clear(uid,kind);throw Error('구매 기록을 저장할 수 없어 차감하지 않았어요. 브라우저 저장 공간을 확인해 주세요.');}}
+   if(!id){id=crypto.randomUUID();try{save(uid,kind,id);}catch{clear(uid,kind);throw Error('구매 기록을 저장할 수 없어 차감하지 않았어요. 브라우저 저장 공간을 확인해 주세요.');}}
    const response=await Comm.sb.rpc('photo_help_buy',{p_kind:kind,p_request_id:id,p_verify_only:false}).abortSignal(AbortSignal.timeout(15000));
    if(response.error)throw Error('결과를 확인하지 못했어요. 이전 결제 확인을 누르면 중복 차감 없이 다시 확인해요.');
    const r=response.data;if(!r?.ok){if(['coins','invalid','banned','membership','request_conflict'].includes(r?.reason))clear(uid,kind);throw Error(r?.reason==='coins'?'ZU가 부족해요.':r?.reason==='membership'?'입장 가능한 회원만 사용할 수 있어요.':'구매하지 못했어요. 다시 확인해 주세요.');}
@@ -77,8 +77,8 @@
    clear(uid,kind);over=lives<=0||endAt<=world.time;paused=over;hud();closePanels();
    busy=false;if(over)open();else toast(p.label+' 적용 · 남은 '+r.coins+' ZU','#F2C14E');
    try{void parent.OjjudaShop?.refresh();}catch{}
-  }catch(error){say(error.message||'구매 결과를 다시 확인해 주세요.');}
-  finally{busy=false;controls();}
+  }catch(error){if(direct){busy=false;open();}say(error.message||'구매 결과를 다시 확인해 주세요.');}
+  finally{busy=false;controls();quickControls();}
  }
  const originalPanel=panel;panel=function(...args){const o=originalPanel(...args);appendControls(o);return o;};
  const originalStart=startStage;startStage=function(...args){if(busy)return false;slowUntil=0;return originalStart(...args);};
