@@ -50,7 +50,7 @@
     frame?.remove(); frame = null;
     reserved = started = loading = false;
   }
-  function closeGame() { stopFrame(); renderEntry(); }
+  function closeGame(force=false) { if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){$('page-status').textContent='구매 결과를 확인 중이에요.';return false;}stopFrame(); renderEntry(); }
   function loadFailure(candidate) {
     if (candidate !== frame) return;
     stopFrame(); renderEntry();
@@ -86,7 +86,7 @@
         reserved = true;
         showGame(candidate);
         if (!api.demo()) { stopFrame(); renderEntry(); return; }
-      } else if (!member || !access?.allowed()) { closeGame(); return; }
+      } else if (!member || !access?.allowed()) { closeGame(true); return; }
       showGame(candidate);
     });
     candidate.addEventListener('error', () => loadFailure(candidate));
@@ -127,7 +127,7 @@
       if (frame && frame.dataset.demo === '0' && oldId === member.id) return;
       stopFrame(); openGame(false);
     } else if (oldId) {
-      closeGame();
+      closeGame(true);
     } else if (!frame) {
       renderEntry();
     }
@@ -136,7 +136,7 @@
     member = null; ageCode = error.code;
     window.OjjudaPhotoTtangBridge.client = null;
     window.OjjudaPhotoTtangBridge.nick = '';
-    if (frame?.dataset.demo === '0') closeGame();
+    if (frame?.dataset.demo === '0') closeGame(true);
     else if (!frame) renderEntry();
   });
   $('retry-age').addEventListener('click', () => { void verifyIdentity(); });
@@ -158,7 +158,7 @@
       authEpoch++; member = signedUser = null; ageCode = '';
       window.OjjudaPhotoTtangBridge.client = null;
       window.OjjudaPhotoTtangBridge.nick = '';
-      if (frame?.dataset.demo === '0') closeGame();
+      if (frame?.dataset.demo === '0') closeGame(true);
       else if (!frame) renderEntry();
     } else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
       authEpoch++;
