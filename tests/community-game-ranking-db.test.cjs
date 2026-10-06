@@ -44,5 +44,28 @@ const {PGlite}=require('@electric-sql/pglite');
  await db.exec('reset role');
  assert.equal((await db.query('select bool_or(verified) as value from game_scores')).rows[0].value,false,'public display never marks submitted scores as verified');
  assert.equal((await db.query("select prosecdef from pg_proc where oid='public.community_game_ranking(text)'::regprocedure")).rows[0].prosecdef,false);
- console.log('PASS: shared daily ranking across accounts, real nicknames, per-member best, valid bounds, old/future/banned exclusion, zero score, separate variants, private-row protection and anonymous denial');
+ await db.exec(`create table public.board_games(id uuid,p1 uuid,p2 uuid,result text,updated_at timestamptz,kind text,status text);
+ create table ojjuda_game_internal.practice_results(user_id uuid,round_id uuid,created_at timestamptz,game text,difficulty text,outcome text);`);
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/board_monthly_ranking.sql'),'utf8'));
+ await db.exec(`delete from game_scores;
+ insert into game_scores(user_id,game,score,created_at) values
+ ('${a}','runner',400,date_trunc('month',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul'),
+ ('${b}','runner',300,now()),
+ ('${b}','runner',49999,(date_trunc('month',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')-interval '1 second'),
+ ('${b}','runner',49998,now()+interval '1 second'),
+ ('${blocked}','runner',50000,now());
+ update ojjuda_matgo_internal.wallets set updated_at=now();
+ update ojjuda_matgo_internal.wallets set updated_at=(date_trunc('month',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')-interval '1 second' where user_id='${b}';
+ insert into ojjuda_game_internal.practice_results values
+ ('${a}','20000000-0000-0000-0000-000000000001',(date_trunc('month',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')-interval '1 second','chess','easy','win'),
+ ('${a}','20000000-0000-0000-0000-000000000002',now(),'chess','easy','win');
+ set role authenticated;set request.jwt.claim.sub='${a}';`);
+ const monthly=async game=>(await db.query('select public.community_game_monthly_ranking($1) as value',[game])).rows[0].value;
+ assert.deepEqual((await monthly('runner')).map(r=>r.score),[400,300],'KST month start inclusive, previous month/future/banned excluded');
+ assert.deepEqual((await monthly('matgo')).map(r=>r.score),[9000],'only wallets updated this month participate');
+ assert.equal((await monthly('chess_easy'))[0].score,1,'streak starts again each month');
+ assert.deepEqual(await monthly('unknown'),[]);
+ await db.exec("set request.jwt.claim.sub=''");await assert.rejects(monthly('runner'),/not_signed_in/);
+ await db.exec('set role anon');await assert.rejects(monthly('runner'),/permission denied/);
+ console.log('PASS: KST monthly score/streak/wallet bounds, future/banned exclusion, authorization and existing arcade behavior');
 }finally{await db.close();}})().catch(error=>{console.error(error);process.exitCode=1});

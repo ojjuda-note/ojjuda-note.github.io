@@ -72,7 +72,7 @@
   function leaders(token){
    const entries=Object.entries(games);if(!entries.length)return [];
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
-   const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span',entries.some(([,game])=>game.rankingBasis)?'현재 연승·골드 / 오늘 점수':'오늘의 게임별 1등','board-rank-caption'));section.append(head);
+   const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','이번 달','board-rank-caption'));section.append(head);
    const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);section.append(paper);
    const pages=[],targets=new Map();
    for(let start=0;start<entries.length;start+=3){
@@ -81,7 +81,7 @@
     for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
     for(const [id,game] of entries.slice(start,start+3)){
      const row=el('tr','','board-leader');row.dataset.game=id;
-     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='current_gold'?' · 현재 보유 골드 기준':game.rankingBasis==='current_streak'?' · 현재 연승 기준':'');
+     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='current_gold'?' · 이번 달 갱신된 보유 골드 기준':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
      const labelGame=target=>{if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));};labelGame(name);
      if(typeof onOpenGame==='function'){
       const play=button(game.name,async()=>{
@@ -128,7 +128,26 @@
     gaming=next;
    });
    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
-   rankDispose=()=>{clearTimeout(timer);controller.abort();observer.disconnect();};paint();schedule();
+   let fitFrame=0;
+   function fitScores(){
+    cancelAnimationFrame(fitFrame);
+    fitFrame=requestAnimationFrame(()=>{
+     if(!active()||token!==request)return;
+     for(const {score} of targets.values()){
+      const text=score.querySelector('.board-score-value');if(!text)continue;
+      const style=getComputedStyle(score),width=score.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+      if(width<=0)continue;
+      text.style.fontSize='16px';text.style.whiteSpace='nowrap';
+      const natural=text.scrollWidth;
+      const size=Math.max(11,Math.min(16,16*(width-1)/Math.max(1,natural)));
+      text.style.fontSize=size+'px';
+      if(natural*size/16>width-1)text.style.whiteSpace='normal';
+     }
+    });
+   }
+   const resize=new ResizeObserver(fitScores);resize.observe(viewport);
+   document.fonts?.ready.then(fitScores);
+   rankDispose=()=>{clearTimeout(timer);cancelAnimationFrame(fitFrame);resize.disconnect();controller.abort();observer.disconnect();};paint();schedule();
    function orderByRecords(){
     if(!active()||token!==request)return;
     const ordered=[...entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
@@ -142,19 +161,19 @@
     async function load(){
      nick.textContent='불러오는 중…';
      try{
-      const ranking=await result(client.rpc('community_game_ranking',{p_game:id}));
+      const ranking=await result(client.rpc('community_game_monthly_ranking',{p_game:id}));
       if(!active()||token!==request)return;
       const valid=row=>row&&row.score!==null&&row.score!==''&&Number.isFinite(Number(row.score));
       const top=Array.isArray(ranking)?ranking[0]:null;
       target.hasScore=!!valid(top);
       if(target.hasScore){
-       nick.textContent=top.nick||'익명';nick.title=(game.rankingBasis==='current_gold'?'현재 보유 골드 1등 · ':game.rankingBasis==='current_streak'?'현재 연승 1등 · ':'오늘의 1등 · ')+(top.nick||'익명');score.textContent=Number(top.score).toLocaleString('ko-KR')+game.unit;
+       nick.textContent=top.nick||'익명';nick.title=(game.rankingBasis==='current_gold'?'이번 달 보유 골드 1등 · ':game.rankingBasis==='current_streak'?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');score.replaceChildren(el('span',Number(top.score).toLocaleString('ko-KR')+game.unit,'board-score-value'));score.title=score.textContent;
       }else{
-       score.textContent='—';nick.removeAttribute('title');
-       nick.replaceChildren(el('span',game.rankingBasis==='current_gold'?'보유 골드 기록 없음':game.rankingBasis==='current_streak'?'연승 기록 없음':'오늘 기록 없음','board-leader-empty'));
+       score.textContent='—';score.removeAttribute('title');nick.removeAttribute('title');
+       nick.replaceChildren(el('span','이번 달 기록 없음','board-leader-empty'));
       }
      }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));}
-     finally{orderByRecords();}
+     finally{orderByRecords();fitScores();}
     }
     await load();
    });
