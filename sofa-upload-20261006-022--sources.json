@@ -1,0 +1,38 @@
+{
+  "side": {
+    "source": "1000036054.png",
+    "sourceSha256": "61823fcff915ccca1dc8eb40e6bb2f80c5ac33fb38beb206287fccd6d44bd125",
+    "crop": [
+      149,
+      458,
+      1411,
+      1249
+    ],
+    "size": [
+      1262,
+      791
+    ],
+    "file": "side.png",
+    "sha256": "8972583b2b458fc0cbf94a8062bcac2bc7dcf03f7df8d5e78a3b7e9def039f54",
+    "visiblePixels": 869323,
+    "changedVisibleRgbPixels": 0
+  },
+  "body": {
+    "source": "1000036055.png",
+    "sourceSha256": "d1a120b7b6398f0df9ba730611b46f6a41b583fbc973c145a115caf17044ff0f",
+    "crop": [
+      34,
+      136,
+      1004,
+      994
+    ],
+    "size": [
+      970,
+      858
+    ],
+    "file": "body.png",
+    "sha256": "9492d6a5f0b4e12ac811933d41a1c63461a89605a41f172b1eea4ac95699fdf4",
+    "visiblePixels": 558645,
+    "changedVisibleRgbPixels": 0
+  }
+}
