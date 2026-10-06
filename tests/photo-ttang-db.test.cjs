@@ -36,6 +36,8 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   await assert.rejects(()=>as(null,'select photo_set_visibility($1,$2)',[privateStage.id,'public']),/not allowed/);
   await assert.rejects(()=>as(null,'select photo_set_visibility($1,$2)',[privateStage.id,'public'],'anon'),/permission denied/);
   await assert.rejects(()=>as(C,'select photo_report($1,$2)',[privateStage.id,'test']),/not allowed/);
+  const queue=await as(D,"select id from photo_stages where visibility='public' and status='pending'");assert.deepEqual(queue.rows.map(r=>r.id),[pending.id],'World admins can review public uploads before approval');
+  await assert.rejects(()=>as(C,'select photo_set_status($1,$2)',[pending.id,'approved']),/not allowed/);
   await as(D,'select photo_set_status($1,$2)',[pending.id,'approved']);
   assert.equal((await as(null,'select id from photo_stages',[],'anon')).rows.length,1,'approval enables public play');
   assert.equal((await as(null,'select name from storage.objects',[],'anon')).rows.length,2,'guest can obtain approved photo files only');

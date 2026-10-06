@@ -36,6 +36,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .cell{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#4A3F75;display:flex;align-items:center;justify-content:center}
 .cell img{width:100%;height:100%;object-fit:cover}
+.cell img.blurred{filter:blur(12px);transform:scale(1.16)}
+.cell .unlock-note{position:absolute;inset:auto 3px 20px;text-align:center;font-size:10px;color:#fff;text-shadow:0 1px 3px #000;background:#2e2748aa;border-radius:8px;padding:3px}
 .cell .sil{width:46%;aspect-ratio:var(--r);border-radius:50% 50% 30% 30%/30% 30% 20% 20%;background:#ffffff40}
 .cell b{position:absolute;left:6px;top:4px;font-size:12px;color:#fff;text-shadow:0 1px 3px #000a}
 .cell i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;background:#0006}
@@ -90,7 +92,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
   <div class="tabs"><button class="tab on" data-t="base">기본 사진</button><button class="tab" data-t="all">사진 판</button><button class="tab" data-t="review" id="tabReview" style="display:none">승인</button></div>
   <button class="big b2" id="uploadBtn" style="display:none">＋ 내 사진으로 판 만들기</button>
   <div class="grid" id="grid"></div>
-  <div class="how">손가락을 대면 조이스틱이 나와요 (PC: 방향키·WASD) · 내 땅 밖으로 나갔다 돌아오면 둘러싼 곳이 내 땅 · 내 땅이 된 곳만 사진이 보여요 · 컴퓨터가 땅을 뺏으면 다시 가려져요 · 기회 3번 · ⏱ 시간 제한(1단계 150초 → 20단계 102초) · ⚡속도 2배 🛡무적 5초 · 벽에 1초 넘게 붙으면 펑<br>👾 <b>몹</b>이 내 몸이나 그리는 선에 닿으면 탈락! 내 땅 안은 안전하고, 몹을 내 땅으로 가두면 사라졌다가 30초 뒤 다른 곳에서 다시 나타나요 · 컴퓨터도 처치 후 30초 뒤 다시 나와요 · 컴퓨터를 처치해도 그 땅은 빈 땅이 돼요 · 단계가 오를수록 몹이 늘고 빨라져요 (★ 난이도)</div>
+  <div class="how">손가락을 대면 조이스틱이 나와요 (PC: 방향키·WASD) · 내 땅 밖으로 나갔다 돌아오면 둘러싼 곳이 내 땅 · 내 땅이 된 곳만 사진이 보여요 · 컴퓨터가 땅을 뺏으면 다시 가려져요 · 기회 3번 · ⏱ 시간 제한(1단계 150초 → 20단계 102초) · ⚡속도 2배 🛡무적 5초 · 벽에 1초 넘게 붙으면 펑<br>👾 <b>몹</b>이 내 몸이나 그리는 선에 닿으면 탈락! 내 땅 안은 안전하고, 몹을 내 땅으로 가두면 사라졌다가 30초 뒤 다른 곳에서 다시 나타나요 · 컴퓨터도 처치 후 30초 뒤 다시 나와요 · 이용자가 올린 사진은 판을 깨면 선명하게 보여요 · 컴퓨터를 처치해도 그 땅은 빈 땅이 돼요 · 단계가 오를수록 몹이 늘고 빨라져요 (★ 난이도)</div>
 </div></div>
 <script>
 'use strict';
@@ -156,7 +158,7 @@ class World{
       if(p.freezeT>0){ p.freezeT=Math.max(0,p.freezeT-dt); if(p.freezeT===0) p.shieldT=Math.max(p.shieldT,2); continue; }   // 부활 직후 잠깐 멈춤
       if(p.bot) this.botThink(p,dt);
       const da=wrapA(p.target-p.ang), mx=p.turn*dt; p.ang=wrapA(p.ang+Math.max(-mx,Math.min(mx,da)));
-      const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=this.bodyRadius(p), U=this.UW, UH=this.UH;
+      const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=.5/this.G, U=this.UW, UH=this.UH; // outer walking room lets the center reach every edge cell
       p.wall=false; if(nx<m){ nx=m; p.wall=true; } if(nx>U-m){ nx=U-m; p.wall=true; } if(ny<m){ ny=m; p.wall=true; } if(ny>UH-m){ ny=UH-m; p.wall=true; }
       // 한 번에 1/4칸 넘게 건너뛰지 않도록 나눠서 처리
       // 벽에 닿아 있으면 1초 뒤 터져요 (벽에서 떨어지면 다시 처음부터)
@@ -274,6 +276,11 @@ const MOB={ bounce:{name:'통통이',r:.75,v:4.2,col:'#9C7FE0'}, chase:{name:'�
 let mobs=[];
 let startWait=0, fullImg=null, stage=0, world=null, me=null, mode='menu', paused=false, parts=[], floats=[], over=false, lives=LIVES, sil=null, silTotal=0, mySil=0, photoImg=null, revealT=-1, shake=0;
 let prog={}; try{ prog=JSON.parse(localStorage.getItem('ojjuda-photo-ttang')||'{}'); }catch{} const saveProg=()=>{ try{ localStorage.setItem('ojjuda-photo-ttang',JSON.stringify(prog)); }catch{} };
+let communityProg={},communityPlayer=null,blurredPhoto=null;
+function syncCommunityProgress(uid){ const player=uid||'guest'; if(player===communityPlayer)return;communityPlayer=player;communityProg={};try{const saved=JSON.parse(localStorage.getItem('ojjuda-photo-community:'+player)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))communityProg=saved;}catch{} }
+function photoDone(P){return !!(P.id?communityProg[P.key]?.done:prog[P.key]?.done);}
+function markPhotoDone(P){if(!P.id){prog[P.key]={done:1};saveProg();return;}communityProg[P.key]={done:1};try{localStorage.setItem('ojjuda-photo-community:'+(communityPlayer||'guest'),JSON.stringify(communityProg));}catch{}}
+function gamePhotoSource(){if(!LIST[stage].id||photoDone(LIST[stage]))return photoImg;if(blurredPhoto)return blurredPhoto;const small=document.createElement('canvas');small.width=24;small.height=32;small.getContext('2d').drawImage(photoImg,0,0,24,32);blurredPhoto=document.createElement('canvas');blurredPhoto.width=rev.width;blurredPhoto.height=rev.height;const c=blurredPhoto.getContext('2d');c.filter='blur(12px)';c.drawImage(small,-12,-16,blurredPhoto.width+24,blurredPhoto.height+32);return blurredPhoto;}
 const PX=2; let silStripe=null, silEdge=null, off=null,octx=null,offS=null,osctx=null,mk=null,mkx=null,silC=null,rev=null,rctx=null,revDirty=true,revLast=0;
 function mix(a,b,t){ const A=hex(a),B=hex(b); return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')'; } function hex(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
 // ---------- 소리 ----------
@@ -333,7 +340,7 @@ function startStage(i){ stage=i; allClearShown=false; respawnQ=[]; const P=LIST[
   world.maxItems=1; world.itemGap=D.itemGap; world.nextItem=6+Math.random()*4; world.noInherit=true; const si=world.spawnItem.bind(world); world.spawnItem=()=>{ si(); world.nextItem=world.time+world.itemGap+Math.random()*2; }; me.shieldT=2; endAt=world.time+timeLimit(lv); tick=0; startWait=3; cdLast=4; for(const p of world.players) p.born=-1; for(const m of mobs) m.born=-1;
   mobs=[]; for(let m=0;m<D.mobs;m++){ const type=D.types[m%D.types.length]; mobs.push(newMob(type,D.speed)); } for(const m of mobs) m.born=-1;
   setTimeout(()=>{ if(mode==='play'&&world) toast(`${P.id?'사진 판':(i+1)+'단계'} · 몹 ${D.mobs}마리${D.bots?` · 컴퓨터 ${D.bots}명`:''}`,'#fff'); },200);
-  photoImg=new Image(); if(/^https?:/.test(P.img)) photoImg.crossOrigin='anonymous'; photoImg.src=P.img;
+  blurredPhoto=null;photoImg=new Image(); if(/^https?:/.test(P.img)) photoImg.crossOrigin='anonymous'; photoImg.src=P.img;
   fullImg=new Image(); if(/^https?:/.test(P.full||'')) fullImg.crossOrigin='anonymous'; fullImg.src=P.full||P.img;
   buildLayers(); $('hud').style.display='flex'; $('btns').style.display='flex'; $('menu').style.display='none'; closePanels(); hud(); }
 function buildLayers(){ const GW=world.GW, GH=world.GH;
@@ -354,7 +361,7 @@ function drawCell(k){ const GW=world.GW, gx=k%GW, gy=(k/GW)|0, x=gx*PX, y=gy*PX,
   osctx.fillStyle=c.d; osctx.fillRect(x,y,PX,PX);
   if(v===me.id){ mkx.fillStyle='#000'; mkx.fillRect(gx,gy,1,1); } else { octx.fillStyle=c.m||(c.m=mix(c.l,c.c,.38)); octx.fillRect(x,y,PX,PX); } }
 function flushDirty(){ if(world.dirty.size){ for(const k of world.dirty) drawCell(k); world.dirty.clear(); revDirty=true; }
-  const t=performance.now(); if(revDirty&&photoImg.complete&&t-revLast>60){ revLast=t; revDirty=false; rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,rev.width,rev.height); rctx.drawImage(photoImg,0,0,rev.width,rev.height); rctx.globalCompositeOperation='destination-in'; rctx.imageSmoothingEnabled=true; rctx.drawImage(mk,0,0,rev.width,rev.height); rctx.globalCompositeOperation='source-over'; } }
+  const t=performance.now(); if(revDirty&&photoImg.complete&&t-revLast>60){ revLast=t; revDirty=false; rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,rev.width,rev.height); rctx.drawImage(gamePhotoSource(),0,0,rev.width,rev.height); rctx.globalCompositeOperation='destination-in'; rctx.imageSmoothingEnabled=true; rctx.drawImage(mk,0,0,rev.width,rev.height); rctx.globalCompositeOperation='source-over'; } }
 // ---------- 조이스틱 + 키보드 ----------
 const joys=new Map(), JR=56, JOY_DEAD_ZONE=4;
 gameCanvas.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode!=='play'||!me||joys.size) return; const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el); joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); gameCanvas.setPointerCapture&&gameCanvas.setPointerCapture(e.pointerId); });
@@ -377,10 +384,12 @@ function handleEvents(){ for(const ev of world.events){
   world.events.length=0; }
 // ---------- 그리기 ----------
 function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
-function view(){ const top=92+(parseFloat(getComputedStyle(document.documentElement).paddingTop)||0), bot=16+(parseFloat(getComputedStyle(document.documentElement).paddingBottom)||0); const aw=VW-16, ah=VH-top-bot; const S=Math.min(aw/world.UW,ah/world.UH); return {S,ox:(VW-world.UW*S)/2,oy:top+(ah-world.UH*S)/2}; }
+function view(){ const top=92+(parseFloat(getComputedStyle(document.documentElement).paddingTop)||0), bot=16+(parseFloat(getComputedStyle(document.documentElement).paddingBottom)||0); const aw=VW-16, ah=VH-top-bot; const S=Math.min((aw-16)/(world.UW+2*PLAYER_RADIUS),(ah-16)/(world.UH+2*PLAYER_RADIUS)); return {S,pad:PLAYER_RADIUS*S+8,ox:(VW-world.UW*S)/2,oy:top+(ah-world.UH*S)/2}; }
 function draw(dt){ ctx.setTransform(DPR,0,0,DPR,0,0); const g=ctx.createLinearGradient(0,0,0,VH); g.addColorStop(0,'#2E2748'); g.addColorStop(1,'#1C1730'); ctx.fillStyle=g; ctx.fillRect(0,0,VW,VH); if(!world) return; flushDirty();
   for(const q of parts){ q.x+=q.vx*dt; q.y+=q.vy*dt; q.vx*=1-dt*3; q.vy*=1-dt*3; q.life-=dt*1.4; } parts=parts.filter(q=>q.life>0); for(const f of floats){ f.y-=dt*1.2; f.life-=dt*.9; } floats=floats.filter(f=>f.life>0);
   const {S,ox:ox0,oy:oy0}=view(); const ox=ox0+(Math.random()-.5)*shake*12, oy=oy0+(Math.random()-.5)*shake*12; shake=Math.max(0,shake-dt); const MW=world.UW*S, MH=world.UH*S;
+  // 맵 밖 여유 공간: 몸이 테두리에 가리지 않고 끝 칸까지 이동할 수 있어요.
+  const pad=view().pad;ctx.save();roundRect(ctx,ox-pad,oy-pad,MW+2*pad,MH+2*pad,14);ctx.fillStyle='#382D58';ctx.fill();ctx.strokeStyle='#73618F';ctx.lineWidth=2;ctx.stroke();ctx.restore();
   // 가려진 판
   ctx.save(); ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=24; ctx.fillStyle='#4A3F75'; roundRect(ctx,ox,oy,MW,MH,10); ctx.fill(); ctx.restore();
   ctx.save(); roundRect(ctx,ox,oy,MW,MH,10); ctx.clip();
@@ -453,7 +462,7 @@ function hud(){ if(!world||!me) return; const pct=mySil/silTotal*100; me.bestSil
 function panel(html,btns){ const o=document.createElement('div'); o.className='overlay'; o.innerHTML=`<div class="panel">${html}</div>`; document.body.appendChild(o); for(const id in btns){ const b=o.querySelector('#'+id); if(b) b.onclick=()=>{ o.remove(); btns[id](); }; } return o; }
 function closePanels(){ document.querySelectorAll('.overlay').forEach(o=>{ if(o.id!=='menu') o.remove(); }); }
 function win(){ over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigator.vibrate([30,40,30,40,80]); }catch{} const {S}=view(); for(let i=0;i<6;i++) setTimeout(()=>burst(world.UW*Math.random(),world.UH*Math.random(),['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#fff'][i%5],30,9),i*120);
-  const P=LIST[stage]; prog[P.key]={done:1}; saveProg(); parts=[]; floats=[]; if(P.id) Comm.record(P.id,true); try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:photottang:clear',stage:P.key},location.origin); }catch{}
+  const P=LIST[stage]; markPhotoDone(P); parts=[]; floats=[]; if(P.id) Comm.record(P.id,true); try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:photottang:clear',stage:P.key},location.origin); }catch{}
   setTimeout(()=>{ const o=panel(`<h2>🎉 사진 공개!</h2><img src="${P.full||P.img}" alt="전신 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">${P.id?`<p style="margin:0 0 4px">${esc(P.nick||'누군가')}님이 올린 사진</p>`:''}<div class="row2">${stage<LIST.length-1&&!P.trial?'<button class="big a" id="next">다음 사진</button>':''}<button class="big g" id="list">사진 목록</button></div>${P.id?'<button class="link" id="rep">이 사진 신고하기</button>':''}`,{next:()=>{ lives=LIVES; startStage(stage+1); },list:()=>toMenu()});
     const rb=o.querySelector('#rep'); if(rb) rb.onclick=()=>reportPanel(P); },3000); }
 function timeUp(){ over=true; sfx.death(); shake=.4; const pct=mySil/silTotal*100;
@@ -474,7 +483,7 @@ async function renderGrid(){ const revision=++gridEpoch, currentTab=tab, g=$('gr
     if(revision!==gridEpoch)return;LIST=next;
     if(!LIST.length){ g.innerHTML=`<div class="msg">${tab==='all'?'아직 사진 판이 없어요. 첫 판을 만들어 보세요!':'승인할 사진이 없어요'}</div>`; return; }
     const VIS={public:'🌐',friends:'👥',private:'🔒'}, ST={pending:'승인 대기',hidden:'숨김'};
-    g.innerHTML=LIST.map((P,i)=>{ const done=prog[P.key]; const showImg=done||P.mine||tab==='review'; return `<button class="cell${done?' done':''}${P.mine?' mine':''}" data-i="${i}">${showImg?`<img src="${P.full||P.img}" alt="">`:`<span class="sil" style="--r:.75"></span>`}<b>${P.mine?'내 판':esc(P.nick||'')}</b><em>${'★'.repeat(diff(P.level).stars)}</em><u class="st ${P.status}">${VIS[P.vis]||''}${ST[P.status]?' '+ST[P.status]:''}</u></button>`; }).join('');
+    g.innerHTML=LIST.map((P,i)=>{ const done=photoDone(P),blur=!done&&tab!=='review'; return `<button class="cell${done?' done':''}${P.mine?' mine':''}" data-i="${i}"><img src="${P.full||P.img}" alt="${blur?'클리어하면 공개되는 사진':'공개된 사진'}"${blur?' class="blurred"':''} loading="lazy">${blur?'<span class="unlock-note">클리어하면 공개</span>':''}<b>${P.mine?'내 판':esc(P.nick||'')}</b><em>${'★'.repeat(diff(P.level).stars)}</em><u class="st ${P.status}">${VIS[P.vis]||''}${ST[P.status]?' '+ST[P.status]:''}</u></button>`; }).join('');
     $('cleared').textContent=tab==='all'?`${LIST.length}개 판`:''; }
   g.querySelectorAll('.cell').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(tab==='review') return reviewPanel(LIST[i]); if(LIST[i].mine) return minePanel(LIST[i],i); lives=LIVES; startStage(i); }); }
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{ tab=t.dataset.t; renderGrid(); });
@@ -482,7 +491,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{ tab=t.dataset.t; re
 const Comm={ sb:null, uid:null, admin:false, _r:null,
   async ready(){ if(this._r) return this._r; this._r=(async()=>{ try{ let c=null; try{ const P=window.parent; if(P&&P!==window) c=P.OjjudaPhotoTtangBridge?.client||P.ojjudaSupabase||P.supabaseClient||P.sb; }catch{} c=c||window.ojjudaSupabase;
       const q=new URLSearchParams(location.search); if(!c&&q.get('sbUrl')&&q.get('sbKey')){ if(!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'); c=window.supabase.createClient(q.get('sbUrl'),q.get('sbKey')); }
-      if(!c||!c.from) return false; this.sb=c; const {data}=await c.auth.getUser(); this.uid=data&&data.user?data.user.id:null;
+      if(!c||!c.from) return false; this.sb=c; const {data}=await c.auth.getUser(); this.uid=data&&data.user?data.user.id:null;syncCommunityProgress(this.uid);
       try{ const r=await c.rpc('photo_is_admin'); this.admin=!!r.data; }catch{} if(this.admin) $('tabReview').style.display=''; return true; }catch(e){ console.warn(e); return false; } })(); return this._r; },
   async url(path){ const {data,error}=await this.sb.storage.from('photo-stages').createSignedUrl(path,3600); if(error) throw error; return data.signedUrl; },
   async listAll(){ const {data,error}=await this.sb.from('photo_stages').select('*').neq('status','rejected').order('created_at',{ascending:false}).limit(100); if(error) throw error; return data.filter(r=>r.owner===this.uid||r.status==='approved'); },
@@ -490,7 +499,7 @@ const Comm={ sb:null, uid:null, admin:false, _r:null,
   async remove(id){ const {error}=await this.sb.from('photo_stages').delete().eq('id',id); if(error) throw error; },
   async listApproved(){ const {data,error}=await this.sb.from('photo_stages').select('*').eq('status','approved').order('created_at',{ascending:false}).limit(60); if(error) throw error; return data; },
   async listMine(){ if(!this.uid) throw new Error('로그인이 필요해요'); const {data,error}=await this.sb.from('photo_stages').select('*').eq('owner',this.uid).order('created_at',{ascending:false}); if(error) throw error; return data; },
-  async listPending(){ const {data,error}=await this.sb.from('photo_stages').select('*').eq('status','pending').order('created_at',{ascending:true}).limit(60); if(error) throw error; return data; },
+  async listPending(){ const {data,error}=await this.sb.from('photo_stages').select('*').eq('visibility','public').eq('status','pending').order('created_at',{ascending:true}).limit(60); if(error) throw error; return data; },
   async upload(blob,mask,level,nick,pct,fullBlob,cropN,vis='public'){ if(!this.uid) throw new Error('로그인이 필요해요'); const base=`${this.uid}/${Date.now()}-${Math.random().toString(36).slice(2,8)}`, name=base+'.jpg', fname=base+'-full.jpg';
     const up=await this.sb.storage.from('photo-stages').upload(name,blob,{contentType:'image/jpeg',upsert:false}); if(up.error) throw up.error;
     let full_path=null; if(fullBlob){ const u2=await this.sb.storage.from('photo-stages').upload(fname,fullBlob,{contentType:'image/jpeg',upsert:false}); if(!u2.error) full_path=fname; }
@@ -511,7 +520,7 @@ function minePanel(P,i){ const o=panel(`<h2>내 판</h2><img src="${P.full||P.im
 function reportPanel(P){ const o=panel(`<h2>사진 신고</h2><p>어떤 문제가 있나요? 신고가 3번 쌓이면 바로 숨겨지고 운영자가 확인해요.</p>
   ${['허락 없이 올린 다른 사람 사진','노출이 심하거나 불쾌한 사진','어린이가 나온 사진','기타'].map((r,i)=>`<button class="big g" data-r="${esc(r)}">${r}</button>`).join('')}<button class="big g" id="cancel">취소</button>`,{cancel:()=>{}});
   o.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{ o.remove(); try{ await Comm.report(P.id,b.dataset.r); toast('신고했어요. 고마워요','#F2C14E'); }catch(e){ toast('신고하지 못했어요','#E53935'); } }); }
-function reviewPanel(P){ const o=panel(`<h2>사진 검토</h2><img src="${P.full||P.img}" alt="" style="width:100%;max-height:50vh;object-fit:contain;border-radius:14px"><p>${esc(P.nick||'')} · 난이도 ${'★'.repeat(diff(P.level).stars)}</p><div class="row2"><button class="big a" id="ok">공개</button><button class="big g" id="no">반려</button></div><button class="big g" id="play">먼저 해보기</button><button class="link" id="close">닫기</button>`,{close:()=>{}});
+function reviewPanel(P){ if(!Comm.admin)return toast('관리자만 확인할 수 있어요','#E53935');const o=panel(`<h2>사진 검토</h2><img src="${P.full||P.img}" alt="" style="width:100%;max-height:50vh;object-fit:contain;border-radius:14px"><p>${esc(P.nick||'')} · 난이도 ${'★'.repeat(diff(P.level).stars)}</p><div class="row2"><button class="big a" id="ok">공개</button><button class="big g" id="no">반려</button></div><button class="big g" id="play">먼저 해보기</button><button class="link" id="close">닫기</button>`,{close:()=>{}});
   o.querySelector('#ok').onclick=async()=>{ await Comm.setStatus(P.id,'approved'); o.remove(); toast('공개했어요','#5FB883'); renderGrid(); };
   o.querySelector('#no').onclick=async()=>{ await Comm.setStatus(P.id,'rejected'); o.remove(); toast('반려했어요','#E53935'); renderGrid(); };
   o.querySelector('#play').onclick=()=>{ o.remove(); lives=LIVES; startStage(LIST.indexOf(P)); }; }
