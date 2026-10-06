@@ -73,7 +73,7 @@ END;$function$
  assert.equal((await save('breakout',35600)).reason,'invalid');assert.deepEqual(await rank(),[]);assert.deepEqual(await rank(true),[]);
  await db.exec('reset role');
  const metadata=async()=>(await db.query("select proname,prosecdef,proconfig,proacl::text grants from pg_proc where pronamespace='ojjuda_game_internal'::regnamespace and proname in ('submit_score','community_game_ranking','community_game_monthly_ranking') order by proname")).rows;
- const before=await metadata(),migration=read('20261006055706_breakout_100_stage_score_limit.sql');
+ const before=await metadata(),migration=read('20261006060121_breakout_100_stage_score_limit.sql');
  await db.exec(migration);await db.exec(migration);assert.deepEqual(await metadata(),before,'the change is idempotent and preserves security mode, search path and grants');
  await db.exec(`set role authenticated;set request.jwt.claim.sub='${a}'`);
  const result=await save('breakout',35600);assert.equal(result.ok,true);assert.equal(result.best,35600);assert.equal(result.reward,0);assert.equal(result.coins,100);assert.equal(result.verified,false);
