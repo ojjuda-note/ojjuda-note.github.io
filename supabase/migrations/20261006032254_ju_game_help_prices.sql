@@ -1,5 +1,8 @@
+create schema if not exists ojjuda_shop_internal;
+revoke all on schema ojjuda_shop_internal from public,anon;
+grant usage on schema ojjuda_shop_internal to authenticated;
 -- Versioned endpoints keep cached clients and old receipts compatible.
-CREATE OR REPLACE FUNCTION public.screw_upgrade_buy_v2(p_kind text, p_request_id uuid, p_stage integer, p_verify_only boolean)
+CREATE OR REPLACE FUNCTION ojjuda_shop_internal.screw_upgrade_buy_v2(p_kind text, p_request_id uuid, p_stage integer, p_verify_only boolean)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -75,7 +78,7 @@ begin
   return v_result;
 end;
 $function$;
-CREATE OR REPLACE FUNCTION public.spot_game_buy_v2(p_kind text, p_request_id uuid, p_stage integer, p_spot integer DEFAULT '-1'::integer, p_verify_only boolean DEFAULT false)
+CREATE OR REPLACE FUNCTION ojjuda_shop_internal.spot_game_buy_v2(p_kind text, p_request_id uuid, p_stage integer, p_spot integer DEFAULT '-1'::integer, p_verify_only boolean DEFAULT false)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -120,5 +123,12 @@ begin
 end;
 $function$;
 
-revoke all on function public.screw_upgrade_buy_v2(text,uuid,integer,boolean), public.spot_game_buy_v2(text,uuid,integer,integer,boolean) from public,anon;
-grant execute on function public.screw_upgrade_buy_v2(text,uuid,integer,boolean), public.spot_game_buy_v2(text,uuid,integer,integer,boolean) to authenticated;
+revoke all on function ojjuda_shop_internal.screw_upgrade_buy_v2(text,uuid,integer,boolean), ojjuda_shop_internal.spot_game_buy_v2(text,uuid,integer,integer,boolean) from public,anon;
+grant execute on function ojjuda_shop_internal.screw_upgrade_buy_v2(text,uuid,integer,boolean), ojjuda_shop_internal.spot_game_buy_v2(text,uuid,integer,integer,boolean) to authenticated;
+
+create function public.screw_upgrade_buy_v2(p_kind text,p_request_id uuid,p_stage integer,p_verify_only boolean)
+returns jsonb language sql security invoker set search_path='' as $$select ojjuda_shop_internal.screw_upgrade_buy_v2(p_kind,p_request_id,p_stage,p_verify_only)$$;
+create function public.spot_game_buy_v2(p_kind text,p_request_id uuid,p_stage integer,p_spot integer default -1,p_verify_only boolean default false)
+returns jsonb language sql security invoker set search_path='' as $$select ojjuda_shop_internal.spot_game_buy_v2(p_kind,p_request_id,p_stage,p_spot,p_verify_only)$$;
+revoke all on function public.screw_upgrade_buy_v2(text,uuid,integer,boolean),public.spot_game_buy_v2(text,uuid,integer,integer,boolean) from public,anon;
+grant execute on function public.screw_upgrade_buy_v2(text,uuid,integer,boolean),public.spot_game_buy_v2(text,uuid,integer,integer,boolean) to authenticated;
