@@ -14,6 +14,22 @@ world = world.slice(0, boot) + `
 window.arcadeTest = {
   open: Al, finish: S2,
   get current() { return R; },
+  replayFrameTimes() {
+    cancelAnimationFrame(R.raf);
+    const request = window.requestAnimationFrame, update = R.game.update;
+    let callback;
+    const deltas = [];
+    window.requestAnimationFrame = fn => { callback = fn; return 0; };
+    R.game.update = dt => { deltas.push(dt); update.call(R.game, dt); };
+    try {
+      R.last = 1000; R.game.onDown(); sf();
+      for (const time of [672, 1040, 1056]) { const frame = callback; callback = null; frame(time); }
+      return deltas;
+    } finally {
+      R.game.update = update; window.requestAnimationFrame = request;
+      R.last = performance.now(); sf();
+    }
+  },
   remember() {
     this.saved = R.game;
     this.destroyed = 0;
@@ -66,7 +82,13 @@ g.tab = 'friends'; H();
         assert.equal(prompts.length, count, `${id}: no prompt before playing`);
         checks++;
 
+        if (id === 'runner') await page.emulateMedia({ reducedMotion: 'no-preference' });
         await open(id, true);
+        if (id === 'runner') {
+          assert.deepEqual(await page.evaluate(() => arcadeTest.replayFrameTimes()), [0, .05, .016],
+            'a queued frame older than the resume timestamp cannot reverse game time or break jump effects');
+          checks++;
+        }
         accept = false; hold = 200;
         await closeButton().click();
         assert.equal(prompts.length, count + 1, `${id}: active close asks once`);
@@ -89,6 +111,7 @@ g.tab = 'friends'; H();
         assert.deepEqual(await page.evaluate(() => [arcadeTest.destroyed, document.body.classList.contains('gaming')]), [1, false]);
         await page.keyboard.press('Escape');
         assert.equal(prompts.length, count + 2, `${id}: closed game has no keyboard listener`);
+        if (id === 'runner') await page.emulateMedia({ reducedMotion: 'reduce' });
         checks++;
       }
 

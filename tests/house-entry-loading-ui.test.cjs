@@ -47,6 +47,16 @@ const gate=()=>{let release;const promise=new Promise(r=>release=r);return{promi
   const fast=await page.evaluate(()=>entryPhases),start=fast.find(row=>row.phase==='walking'),end=fast.find(row=>row.phase==='revealing');assert(start&&end&&end.time-start.time>=1450,'a fast room cannot skip the approach to the door');assert.equal(fast.filter(row=>row.phase==='walking').length,1);assert(end.white>=.95);await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();
   // Reduced motion skips the walk and reveals a ready room without a motion delay.
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#open').click();await loading.waitFor({state:'detached',timeout:2000});assert.equal(await page.locator('iframe').evaluate(el=>el.inert),false);assert.equal(await frame().locator('#app').isVisible(),true);await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.emulateMedia({reducedMotion:'no-preference'});
+  // An iframe can temporarily have a document without its root during navigation.
+  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>inline=true);await page.locator('#open').click();await loading.waitFor({state:'detached',timeout:2000});
+  await page.locator('iframe').evaluate(async iframe=>{
+   const doc=iframe.contentDocument,root=doc.documentElement;doc.removeChild(root);
+   try{window.dispatchEvent(new Event('resize'));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}
+   finally{doc.appendChild(root);window.dispatchEvent(new Event('resize'));}
+  });
+  await page.waitForFunction(()=>document.querySelector('iframe').contentDocument.documentElement.style.getPropertyValue('--house-inline-room-height'));
+  assert.deepEqual(errors,[],'resizing during iframe navigation does not throw and the restored room still resizes');
+  await page.evaluate(()=>{closeHouse();inline=false;});await page.emulateMedia({reducedMotion:'no-preference'});
   // Closing, revoking an account, and navigating away cancel all delayed reveals.
   await page.locator('#open').click();await phase('walking');await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await page.waitForTimeout(2000);assert.equal(await page.locator('iframe,.house-entry-loading').count(),0,'closing during the walk cannot reveal a stale room');
   await page.locator('#open').click();await phase('walking');await page.evaluate(()=>allowed=false);await page.locator('[role="dialog"]').waitFor({state:'detached'});await page.evaluate(()=>{allowed=true;inline=true;});

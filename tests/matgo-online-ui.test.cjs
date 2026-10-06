@@ -44,13 +44,22 @@ const root=path.join(__dirname,'..');
  try{
   const minor=await screen(MINOR,18);await minor.page.waitForSelector('#retry:not([hidden])');assert.equal(await minor.page.locator('#quick').count(),0);await minor.context.close();
   const solo=await screen(C);await solo.page.locator('#quick').click();await solo.page.locator('#quick-seconds').waitFor();
+  assert.equal(await solo.page.locator('#invite-code,#copy-code').count(),0,'quick matchmaking does not show invitation controls');
+  assert.doesNotMatch(await solo.page.locator('.waiting').innerText(),/두 사람 모두 입장/,'quick waiting explains its computer fallback without contradictory invitation instructions');
+  assert.equal(await solo.page.locator('#cancel-wait').isVisible(),true);
+  if(process.env.MATGO_WAIT_PROOF)await solo.page.screenshot({path:process.env.MATGO_WAIT_PROOF});
+  await solo.page.locator('#cancel-wait').click();await solo.page.locator('#quick').waitFor();
+  assert.equal((await f.call(C,{action:'status'})).online_room,null,'cancelling clears the waiting room');
+  await solo.page.locator('#quick').click();await solo.page.locator('#quick-seconds').waitFor();
   await solo.page.waitForTimeout(2000);assert.ok(solo.page.url().includes('matgo-online.html'),'quick search waits before switching');
-  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#matgo-start-play').click();await solo.page.locator('#handMe').waitFor();
+  await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#matgo-start-play').click();
+  try{await solo.page.locator('#handMe').waitFor({timeout:10000});}catch(error){console.error('Solo fallback state',await solo.page.locator('body').innerText(),JSON.stringify({errors,failures}));throw error;}
   assert.equal((await f.call(C,{action:'status'})).online_room,null);await solo.context.close();
   const a=await screen(A),b=await screen(B);
   await a.page.locator('#quick').waitFor();await b.page.locator('#quick').waitFor();
   await a.page.screenshot({path:'/tmp/matgo-online-lobby.png'});
   await a.page.locator('#create').click();await a.page.locator('#public-room-title').fill('맞고 친구들');await a.page.locator('#public-room-form button[type=submit]').click();const code=await a.page.locator('#invite-code').textContent();
+  assert.match(code,/^#\d+$/);assert.equal(await a.page.locator('#copy-code').innerText(),'방번호 복사','public rooms retain their invitation controls');
   await b.page.locator('#room-code').fill(code);await b.page.locator('#join').click();
   await a.page.locator('#hand').waitFor();await b.page.locator('#hand').waitFor();
   assert.match(await a.page.locator('#op-name').textContent(),/별토끼/);assert.match(await b.page.locator('#op-name').textContent(),/봄고래/);

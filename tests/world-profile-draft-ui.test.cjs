@@ -71,11 +71,11 @@ g.tab='my';H();
     await page.evaluate(() => { profileTest.model.coins += 10; profileTest.render(); });
     assert.deepEqual(await readProfile(), draft, 'a balance refresh cannot erase the profile being edited');
 
-    await page.locator('.bottomnav [data-tab="life"]').click();
+    await page.locator('.bottomnav [data-tab="friends"]').click();
     assert.equal(await page.locator('#p-nick').count(), 0, 'the menu is actually unmounted');
     await page.locator('.bottomnav [data-tab="my"]').click();
     await openGroup('profile');
-    assert.deepEqual(await readProfile(), draft, 'menu → life → menu restores the unsaved profile');
+    assert.deepEqual(await readProfile(), draft, 'menu → neighborhood → menu restores the unsaved profile');
 
     for (const id of ['p-nick', 'p-bio', 'p-mt']) await page.locator('#' + id).fill('');
     await page.evaluate(() => profileTest.render());
@@ -107,7 +107,7 @@ g.tab='my';H();
     await page.evaluate(profile => profileTest.switchAccount('profile-owner-b', profile), other);
     assert.deepEqual(await readProfile(), other, 'account B never receives account A’s profile draft or mood');
     assert.notEqual(await page.evaluate(() => document.activeElement.id), 'p-nick', 'account B does not inherit account A’s input focus');
-    await page.locator('.bottomnav [data-tab="life"]').click();
+    await page.locator('.bottomnav [data-tab="friends"]').click();
     await page.locator('.bottomnav [data-tab="my"]').click();
     assert.deepEqual(await readProfile(), other, 'account isolation survives another menu remount');
     // An initial signing failure cannot permanently hide the saved profile photo.
@@ -127,7 +127,7 @@ g.tab='my';H();
       profileTest.model.me.avatar_url='https://fixture.test/expired-photo.jpg';
       profileTest.setPhotoApi({getUrl:async()=>{window.signCalls++;return 'https://fixture.test/renewed-photo.jpg';}});
     });
-    await page.locator('.bottomnav [data-tab="life"]').click();
+    await page.locator('.bottomnav [data-tab="friends"]').click();
     await page.locator('.bottomnav [data-tab="my"]').click();
     await page.waitForFunction(()=>profileTest.model.me.avatar_url==='https://fixture.test/renewed-photo.jpg');
     assert.equal(await page.evaluate(()=>signCalls),3,'a menu remount renews an expired signed URL');
