@@ -54,8 +54,8 @@
       "revision": "1913d26469adebeb"
     },
     "sofa": {
-      "file": "sofa-registration-v5.runtime.json",
-      "revision": "442ca05722977e8e"
+      "file": "sofa-registration-v6.runtime.json",
+      "revision": "56eb1f152916a74a"
     },
     "sofa-cushions": {
       "file": "sofa-cushions-v1.runtime.json",
