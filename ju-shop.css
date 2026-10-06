@@ -9,3 +9,6 @@ html[data-ju-game=game_night] .gbox,html[data-ju-game=game_night] .ghead,html[da
 .ju-effect-foil{box-shadow:inset 0 0 0 3px #d9bd74,inset 0 0 22px #e7c97770!important;animation:ju-foil-glow 4s ease-in-out infinite}.ju-card-sticker{position:absolute!important;top:13px;right:14px;z-index:4;font:26px/1.1 system-ui!important;color:#ffe9d0;filter:drop-shadow(0 2px 3px #35283880);pointer-events:none;transform:rotate(8deg)}
 @keyframes ju-foil-glow{50%{box-shadow:inset 0 0 0 3px #ffe7a7,inset 0 0 32px #e7c977a0}}
 @media(prefers-reduced-motion:reduce){.ju-effect-foil{animation:none}}
+.my-menu-summary[data-ju-shop-open]{width:100%;border:0;background:none;color:inherit;appearance:none;font:inherit;text-align:left;cursor:pointer}
+.my-menu-summary[data-ju-shop-open]:hover{background:var(--surface-2,#f8f5f8)}
+.my-menu-summary[data-ju-shop-open]::after{transform:rotate(-45deg)}
