@@ -1,0 +1,24 @@
+#gov[data-game="runner"] .gbox{--runner-height:calc(100dvh - 110px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));width:min(100%,414px);padding:8px;gap:7px;background:#EAF1EE;border:1px solid #FFFFFFB8;border-radius:28px;box-shadow:0 28px 70px -24px #385E668C}
+#gov[data-game="runner"] .ghead{padding:4px 6px;min-height:42px}
+#gov[data-game="runner"] .gt{margin-right:auto;color:#557578;font-size:14px}
+#gov[data-game="runner"] .gt svg{vertical-align:-4px;margin-right:3px}
+#gov[data-game="runner"] .gsc{display:none}
+#gov[data-game="runner"] .gx{background:#FFFBEE;color:#6A8584;flex:none;border:1px solid #DDE7DE}
+#gov[data-game="runner"] .gx svg{vertical-align:middle}
+#gov[data-game="runner"] .gcan{width:min(100%,calc(var(--runner-height) * 2 / 3));max-height:none;aspect-ratio:2/3;border-radius:21px;box-shadow:inset 0 0 0 1px #FFFFFF80}
+#gov[data-game="runner"] .gscreen{align-items:flex-end;padding:14px;background:linear-gradient(180deg,#FFF6DD00 35%,#526E642B)}
+#gov[data-game="runner"] .gcard{background:#FFFCEDF5;color:#576F70;border:1px solid #FFFFFFE0;border-radius:24px;box-shadow:0 12px 28px -12px #3B676180;padding:16px;max-width:304px}
+#gov[data-game="runner"] .gcard h3{font-family:"Jua","Gowun Dodum",sans-serif;color:#577974;font-size:25px;font-weight:400;margin:0 0 5px}
+#gov[data-game="runner"] .runner-card h3{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#gov[data-game="runner"] .gcard p{color:#83908A;font-size:12px;margin-bottom:10px}
+#gov[data-game="runner"] .runner-legend{display:flex;gap:6px;margin:0 0 13px}
+#gov[data-game="runner"] .runner-legend span{flex:1;background:#E7EEDB;border-radius:11px;padding:9px 0;color:#70856B;font-size:12px;white-space:nowrap}
+#gov[data-game="runner"] .runner-legend .coin{background:#FFF0CA;color:#A0834B}
+#gov[data-game="runner"] .btn.pri{background:linear-gradient(180deg,#8DB8A8,#719C8E);border:1px solid #678E82;color:#FFFCEC;border-radius:16px;min-height:46px;font-size:16px;box-shadow:0 4px 0 #547C72,0 8px 16px -6px #537F7375}
+#gov[data-game="runner"] .runner-start{width:100%}
+#gov[data-game="runner"] .btn:not(.pri){background:#F1EFDD;border-color:#E4DFC6;color:#72847D}
+#gov[data-game="runner"] .grank{font-size:11px;margin-top:14px;max-height:105px;overflow:auto;overscroll-behavior:contain}
+#gov[data-game="runner"] .grank:empty{display:none}
+#gov[data-game="runner"] .grank h4{font-size:11px;color:#82968B}
+#gov[data-game="runner"] .grank ol{font-size:11px}
+#gov[data-game="runner"] .grank li.me,#gov[data-game="runner"] .gcard .gbigscore{color:#719C8E}
