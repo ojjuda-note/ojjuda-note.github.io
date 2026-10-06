@@ -219,7 +219,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>OjjudaParkFull.navigate('library'));
  await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='library');
  assert.equal(await iframe.count(),0,'the Park library message invokes the real previous-place step');
- // The actual feed drag uses that same bridge; the opposite edge stops.
+ // Embedded feed gestures follow Park's position in the main menu.
  await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
  frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
@@ -229,12 +229,15 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y,{steps:8});await page.mouse.up();
  };
  await dragPark(-150);
- await frame.waitForFunction(()=>!document.getElementById('feed').matches('.note-feed-dragging,.note-feed-settling'));
- assert.equal(await page.evaluate(()=>parkFixture.state.place.id),'park','the embedded feed cannot swipe beyond Park');
- assert.equal(await frame.locator('.feed-sort-tabs .selected').getAttribute('data-sort'),activeSort,'place gestures preserve the filter');
+ await page.waitForFunction(()=>parkFixture.state.tab==='my');
+ assert.equal(await iframe.count(),0,'a left swipe from Park reaches the main menu');
+ await page.locator('.bottomnav [data-tab="park"]').click();await iframe.waitFor();
+ frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
+ await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
+ assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'park');
  await dragPark(150);
- await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='library');
- assert.equal(await iframe.count(),0,'a real embedded card swipe reaches the library without skipping places');
+ await page.waitForFunction(()=>parkFixture.state.tab==='board');
+ assert.equal(await iframe.count(),0,'a right swipe from Park reaches the board');
  assert.deepEqual(errors,[]);
  console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}

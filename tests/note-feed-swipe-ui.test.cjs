@@ -162,7 +162,7 @@ assert.ok(bootAt > 0);
       await page.locator('[data-sort="latest"]').focus(); await page.keyboard.press('Enter');
       assert.equal(await active(), 'latest', 'keyboard tab selection still works');
       assert.deepEqual(errors, []);
-      // In embedded Park the same card gestures follow the neighborhood,
+      // In embedded Park the same card gestures follow the main menu,
       // regardless of the selected feed filter. Taps still select filters.
       await page.evaluate(() => {
         window.placeRoutes = [];
@@ -170,14 +170,15 @@ assert.ok(bootAt > 0);
       });
       for (const sort of ['latest', 'popular', 'nearby', 'tag']) {
         await page.locator(`[data-sort="${sort}"]`).click(); await idle();
-        await drag(-1); assert.equal(await active(), sort, 'Park stops on its right edge without changing the filter');
-        assert.equal(await page.locator('.note-feed-peek').count(), 0, 'the final place has no destination to the left');
+        await drag(-1); assert.equal(await active(), sort, 'Park navigates forward without changing the filter');
+        assert.equal(await page.evaluate(()=>placeRoutes.at(-1)), 'menu');
+        assert.equal(await page.locator('.note-feed-peek').count(), 0, 'the preview is removed after navigation');
         const count = await page.evaluate(() => placeRoutes.length);
         await drag(1, { hold: true });
-        assert.equal(await page.locator('.note-feed-peek').textContent(), '도서관');
+        assert.equal(await page.locator('.note-feed-peek').textContent(), '게시판');
         if (mobile) await touch('touchEnd', []); else await page.mouse.up(); await idle();
         assert.equal(await active(), sort, 'leaving Park preserves its selected filter');
-        assert.deepEqual(await page.evaluate(count => placeRoutes.slice(count), count), ['library']);
+        assert.deepEqual(await page.evaluate(count => placeRoutes.slice(count), count), ['board']);
       }
       const routed = await page.evaluate(() => placeRoutes.length);
       await drag(1, { distance: 18 });
