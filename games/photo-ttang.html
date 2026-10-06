@@ -162,7 +162,7 @@ class World{
       if(p.shieldT>0){ p.shieldT=Math.max(0,p.shieldT-dt); if(p.shieldT===0&&this.counts[p.id]===0){ this.kill(p,0,'land'); continue; } }
       if(p.freezeT>0){ p.freezeT=Math.max(0,p.freezeT-dt); if(p.freezeT===0) p.shieldT=Math.max(p.shieldT,2); continue; }   // 부활 직후 잠깐 멈춤
       if(p.bot) this.botThink(p,dt);
-      const da=wrapA(p.target-p.ang), mx=p.turn*dt; p.ang=wrapA(p.ang+Math.max(-mx,Math.min(mx,da)));
+      const da=wrapA(p.target-p.ang), mx=(p.bot?this.botTurn(p):p.turn)*dt; p.ang=wrapA(p.ang+Math.max(-mx,Math.min(mx,da)));
       const V=p.speed*(p.boostT>0?2:1); let nx=p.x+Math.cos(p.ang)*V*dt, ny=p.y+Math.sin(p.ang)*V*dt; const m=.5/this.G, U=this.UW, UH=this.UH; // outer walking room lets the center reach every edge cell
       p.wall=false; if(nx<m){ nx=m; p.wall=true; } if(nx>U-m){ nx=U-m; p.wall=true; } if(ny<m){ ny=m; p.wall=true; } if(ny>UH-m){ ny=UH-m; p.wall=true; }
       // 한 번에 1/4칸 넘게 건너뛰지 않도록 나눠서 처리
@@ -179,10 +179,12 @@ class World{
     this.items.push({id:++this.itemSeq,type:Math.random()<.5?'speed':'shield',x,y,born:this.time}); }
   hitsTrail(q,ax,ay,bx,by,r,self=false){
     const minX=Math.min(ax,bx)-r,maxX=Math.max(ax,bx)+r,minY=Math.min(ay,by)-r,maxY=Math.max(ay,by)+r;
-    const neckAge=Math.max(SELF_AGE,(r+.2)/(q.speed*(q.boostT>0?2:1)));
-    for(let i=0;i<q.pts.length;i++){
+    // 방금 몸에서 나온 선은 실제 이동 거리로 보호해요. 감속 종료 때도 갑자기 목이 잘리지 않습니다.
+    let neckLength=0;
+    for(let i=q.pts.length-1;i>=0;i--){
       const a=q.pts[i],b=q.pts[i+1]||q;
-      if(self&&(i===q.pts.length-1||this.time-(b.t??0)<=neckAge)) continue;
+      if(self){ const neck=i===q.pts.length-1||this.time-(b.t??0)<=SELF_AGE||neckLength<=r+.2;
+        neckLength+=Math.hypot(b.x-a.x,b.y-a.y); if(neck) continue; }
       if(Math.max(a.x,b.x)<minX||Math.min(a.x,b.x)>maxX||Math.max(a.y,b.y)<minY||Math.min(a.y,b.y)>maxY) continue;
       if(segmentDistanceSq(ax,ay,bx,by,a.x,a.y,b.x,b.y)<=r*r+1e-12) return true;
     }
@@ -233,14 +235,41 @@ class World{
     if(p.bot||this.mode==='duo') p.respawnAt=this.time+(p.bot?MOB_RESPAWN:2.0);
     this.events.push({t:'death',p,by,why,x:p.x,y:p.y}); }
   // ---------- 컴퓨터 ----------
+  botTurn(p){ const v=p.speed*(p.boostT>0?2:1); return Math.min(p.turn,v/((this.bodyRadius(p)+this.trailRadius)*1.5)); }
   homePath(p){ // 큰 칸(1단위) 격자에서 내 땅까지 최단 경로 (내 오래된 선은 피함)
     const U=this.UW, UH=this.UH, st=++this._cst, q=this._cq, par=this._cp; const sx=Math.min(U-1,p.x|0), sy=Math.min(UH-1,p.y|0), s=sy*U+sx; let h=0,tl=0; this._cs[s]=st; par[s]=-1; q[tl++]=s;
-    const blocked=c=>{ const t=p.tc.get(c); if(t===undefined) return false; if(this.time-t<SELF_AGE+.25) return false; return true; };
+    // 선 옆으로 몸이 스치는 길도 막아요. 한 칸의 모서리까지 여유를 둡니다.
+    const blockedCells=new Uint8Array(U*UH), r=this.bodyRadius(p)+this.trailRadius+Math.SQRT1_2;
+    let neckLength=0;
+    for(let i=p.pts.length-1;i>=0;i--){ const a=p.pts[i],b=p.pts[i+1]||p;
+      const neck=i===p.pts.length-1||this.time-(b.t??0)<SELF_AGE||neckLength<r+1.5;
+      neckLength+=Math.hypot(b.x-a.x,b.y-a.y); if(neck) continue;
+      for(let y=Math.max(0,Math.floor(Math.min(a.y,b.y)-r));y<=Math.min(UH-1,Math.floor(Math.max(a.y,b.y)+r));y++)
+        for(let x=Math.max(0,Math.floor(Math.min(a.x,b.x)-r));x<=Math.min(U-1,Math.floor(Math.max(a.x,b.x)+r));x++)
+          if(pointSegmentDistanceSq(x+.5,y+.5,a.x,a.y,b.x,b.y)<=r*r) blockedCells[y*U+x]=1; }
+    const blocked=c=>blockedCells[c]&&this.own[this.si(c%U+.5,Math.floor(c/U)+.5)]!==p.id;
     while(h<tl){ const c=q[h++]; const cx=c%U, cy=(c/U)|0;
       if(c!==s&&this.own[this.si(cx+.5,cy+.5)]===p.id){ const path=[]; let x=c; while(x!==-1){ path.push(x); x=par[x]; } path.reverse(); return path; }
       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=cx+dx, ny=cy+dy; if(nx<0||ny<0||nx>=U||ny>=UH) continue; const n=ny*U+nx; if(this._cs[n]===st||blocked(n)) continue; this._cs[n]=st; par[n]=c; q[tl++]=n; } }
     return null; }
-  hazard(p,x,y){ if(x<.6||y<.6||x>this.UW-.6||y>this.UH-.6) return true; const k=this.si(x,y); const t=this.trail[k]; return t===p.id&&this.time-this.trailT[k]>SELF_AGE-.1; }
+  botSafety(p,target){
+    const v=p.speed*(p.boostT>0?2:1), turn=this.botTurn(p), r=this.bodyRadius(p)+this.trailRadius+.12;
+    if(!(v>0&&turn>0)) return Infinity;
+    const horizon=Math.max(1.6,Math.PI/turn+.3), dt=.08;
+    let x=p.x,y=p.y,ang=p.ang;
+    for(let t=dt;t<=horizon+dt/2;t+=dt){ const da=wrapA(target-ang); ang+=Math.max(-turn*dt,Math.min(turn*dt,da));
+      const nx=x+Math.cos(ang)*v*dt,ny=y+Math.sin(ang)*v*dt;
+      if(nx<.6||ny<.6||nx>this.UW-.6||ny>this.UH-.6) return t;
+      if(this.own[this.si(nx,ny)]===p.id&&p.trail.length) return Infinity;
+      let neckLength=v*t;
+      for(let i=p.pts.length-1;i>=0;i--){ const a=p.pts[i],b=p.pts[i+1]||p;
+        const neck=this.time+t-(b.t??this.time)<=SELF_AGE||neckLength<=r+.2;
+        neckLength+=Math.hypot(b.x-a.x,b.y-a.y); if(neck) continue;
+        if(pointSegmentDistanceSq(nx,ny,a.x,a.y,b.x,b.y)<=r*r) return t; }
+      x=nx;y=ny;
+    }
+    return Infinity;
+  }
   botThink(p,dt){ p.think-=dt; const id=p.id; const home=this.own[this.si(p.x,p.y)]===id;
     if(p.think<=0){ p.think=.12;
       if(home&&!p.trail.length){ p.path=null;
@@ -254,7 +283,7 @@ class World{
       if(p.trail.length){
         let danger=99; for(const q of this.players){ if(q===p||!q.alive) continue; danger=Math.min(danger,Math.hypot(q.x-p.x,q.y-p.y)); for(let i=0;i<p.pts.length;i+=4) danger=Math.min(danger,Math.hypot(q.x-p.pts[i].x,q.y-p.pts[i].y)); }
         const path=this.homePath(p); const hd=path?path.length:99;
-        if(danger<=hd+2.5||p.pts.length*.2>p.maxTrail||!p.plan.length) { p.plan=[]; p.path=path; }
+        if(path&&(danger<=hd+2.5||p.pts.length*.2>p.maxTrail||!p.plan.length)) { p.plan=[]; p.path=path; }
         if(!p.path&&p.plan.length===0) p.path=path;
         // 가까운 남의 선 노리기
         if(p.pts.length<25&&Math.random()<p.aggro*.3){ for(const q of this.players){ if(q===p||!q.alive||!q.pts.length) continue; for(let i=0;i<q.pts.length;i+=3){ const t=q.pts[i]; if(Math.hypot(t.x-p.x,t.y-p.y)<5){ p.plan=[{x:t.x,y:t.y}]; p.path=null; break; } } } }
@@ -264,9 +293,10 @@ class World{
     if(p.plan.length){ const w=p.plan[0]; tx=w.x; ty=w.y; if(Math.hypot(w.x-p.x,w.y-p.y)<.8) p.plan.shift(); }
     else if(p.path&&p.path.length){ const U=this.U; let i=Math.min(p.path.length-1,2); const c=p.path[i]; tx=(c%U)+.5; ty=((c/U)|0)+.5; if(Math.hypot(tx-p.x,ty-p.y)<.7) p.path.shift(); }
     let want=tx===null?p.ang:Math.atan2(ty-p.y,tx-p.x);
-    // 앞쪽 위험 피하기
-    const risky=a=>{ for(const d of [.6,1.2,1.9]) if(this.hazard(p,p.x+Math.cos(a)*d,p.y+Math.sin(a)*d)) return true; return false; };
-    if(risky(want)){ for(const off of [.5,-.5,1,-1,1.6,-1.6,2.3,-2.3]){ if(!risky(want+off)){ want=want+off; break; } } }
+    // 실제 회전 반경과 몸 크기로 앞길을 미리 확인해 자기 선·벽을 피해요.
+    let safety=this.botSafety(p,want);
+    if(safety!==Infinity){ const goal=want; for(const off of [.5,-.5,1,-1,1.6,-1.6,2.3,-2.3,Math.PI]){
+      const candidate=goal+off, next=this.botSafety(p,candidate); if(next>safety){ want=candidate;safety=next; } if(safety===Infinity) break; } }
     p.target=want; }
 }
 
