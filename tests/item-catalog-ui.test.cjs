@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
-const token='20261006-wall1',id='item-catalog-test-table',owner='catalog-test',key='ojjuda-house-playtest-v1:'+owner;
+const token='20261006-vine1',id='item-catalog-test-table',owner='catalog-test',key='ojjuda-house-playtest-v1:'+owner;
 const baseline=JSON.parse(fs.readFileSync(path.join(root,'house-test/item-assets.json')));
 const table={...baseline.assets['coffee-table'],catalog:{label:'목록 등록 테이블',shortLabel:'목록 테이블',width:2,depth:1.5,height:.6,layer:'standing',preview:'assets/coffee-table-center-preview-v2.png',order:1}};
 (async()=>{

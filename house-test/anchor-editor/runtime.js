@@ -1,15 +1,17 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261006-wall1';
-import {validQuad,drawWarp} from './warp.js?v=20261006-wall1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261006-wall1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261006-wall1';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-wall1';
-import {drawDrapedLayer} from './draped-parts.js?v=20261006-wall1';
-import {alphaBounds} from './cutout.js?v=20261006-wall1';
-import {pictureShape} from './shape-check.js?v=20261006-wall1';
-import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages} from './picture-assembly.js?v=20261006-wall1';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261006-vine1';
+import {validQuad,drawWarp} from './warp.js?v=20261006-vine1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261006-vine1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261006-vine1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-vine1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261006-vine1';
+import {alphaBounds} from './cutout.js?v=20261006-vine1';
+import {pictureShape} from './shape-check.js?v=20261006-vine1';
+import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages} from './picture-assembly.js?v=20261006-vine1';
 
-const preparedPictures=new WeakMap();
+import {pictureBelowContact,placedContactBoxes,contactBoxesInsideRoom} from './contact-clearance.js?v=20261006-vine1';
+
+const preparedPictures=new WeakMap(),preparedClearance=new WeakMap();
 
 const directions=['left','center','right'],unit=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}];
 const fail=message=>{throw new Error(message);};
@@ -28,9 +30,10 @@ function imageData(data){
  return data;
 }
 export function validateRuntime(value){
- if(value?.format!=='ojjuda-runtime-furniture'||![1,2].includes(value.version)||typeof value.name!=='string'||!value.name.trim()||value.name.length>80)fail('완성한 가구 정보를 확인해 주세요.');
+ if(value?.format!=='ojjuda-runtime-furniture'||![1,2,3].includes(value.version)||typeof value.name!=='string'||!value.name.trim()||value.name.length>80)fail('완성한 가구 정보를 확인해 주세요.');
  if(!['standing','floor','surface'].includes(value.layer))fail('가구 또는 소품의 놓을 곳을 확인해 주세요.');
  if(value.shapePolicy!==undefined&&value.shapePolicy!==1)fail('그림 비율 검사 버전을 확인해 주세요.');
+ if(value.version===3&&(value.layer!=='surface'||value.shapePolicy!==1))fail('늘어진 소품의 높이 검사 정보를 확인해 주세요.');
  const dims=value.dimensions;
  if(!dims||!['width','depth','height'].every(k=>Number.isFinite(dims[k])&&dims[k]>=.1&&dims[k]<=(k==='height'?4.5:7)))fail('가구 크기를 확인해 주세요.');
  for(const direction of directions){
@@ -42,14 +45,15 @@ export function validateRuntime(value){
   else if(v.mesh)normalizeMesh(v.mesh);
   else if(v.pictureLayers)normalizePictureLayers(v.pictureLayers,v.pictureLayerRules);
   else if(!v.layers.length||v.layers.some(l=>!Array.isArray(l.source)||l.source.length!==4||!l.source.every(point)||!validQuad(l.source)||!['top','front','side'].includes(l.binding?.plane)||!Array.isArray(l.binding.uv)||l.binding.uv.length!==4||!l.binding.uv.every(p=>point(p)&&p.x>=-2&&p.x<=3&&p.y>=-2&&p.y<=3)||!Number.isFinite(l.binding.offset??0)||l.binding.offset<0||l.binding.offset>7))fail('모든 면의 꼭지점을 격자에 연결해 주세요.');
+  if(value.version===3&&(!(v.mesh||v.pictureLayers)||v.mesh&&v.pictureLayers||v.pictureAssembly||v.drawings?.length!==1||v.drawings[0].registration))fail('늘어진 소품은 세 방향의 원본 그림과 곡선 기준점이 필요해요.');
   imageData(v.preview);
   if(!Array.isArray(v.drawings)||(!v.drawings.length&&!v.pictureAssembly)||v.drawings.length>80||v.pictureAssembly&&v.drawings.length)fail('가구 그림이 비어 있거나 중복됐어요.');
   for(const layer of v.drawings){imageData(layer.data);if(layer.registration){normalizeSofaBlanketDrape(layer.registration);if(!['surface','front'].includes(layer.segment))fail('담요의 그리기 순서를 확인해 주세요.');}}
-  if(!runtimePoseValid(value,p))fail('가구의 기준점이 뒤집히거나 겹쳐요. 제작실에서 확인해 주세요.');
+  if(!geometryPoseValid(value,p))fail('가구의 기준점이 뒤집히거나 겹쳐요. 제작실에서 확인해 주세요.');
  }
  return value;
 }
-export function runtimePoseValid(runtime,placement){
+function geometryPoseValid(runtime,placement){
  try{
   const v=runtime.views[placement.direction],p={...v.placement,...placement};
   const elevation=p.elevation??0;if(!Number.isFinite(elevation)||elevation<0||elevation+runtime.dimensions.height>ROOM.wallHeight+1e-6||runtime.layer!=='surface'&&elevation!==0)return false;
@@ -61,6 +65,10 @@ export function runtimePoseValid(runtime,placement){
   return v.layers.every(l=>{const t=targets(l,p);return validQuad(t)&&area(t)*area(targets(l,v.placement))>0;});
  }catch{return false;}
 }
+export function runtimePoseValid(runtime,placement){
+ if(runtime.version===3){const v=runtime.views?.[placement.direction],profile=preparedClearance.get(runtime)?.[placement.direction];if(!v||!profile||!contactBoxesInsideRoom(placedContactBoxes(profile,{...v.placement,...placement})))return false;}
+ return geometryPoseValid(runtime,placement);
+}
 function decode(data){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>im.width<=8192&&im.height<=8192&&im.width*im.height<=16000000?resolve(im):reject(new Error('그림 크기가 너무 커요.'));im.onerror=()=>reject(new Error('가구 그림을 읽지 못했어요.'));im.src=imageData(data);});}
 export async function prepareRuntime(value){
  const runtime=validateRuntime(value),views={};
@@ -69,6 +77,11 @@ export async function prepareRuntime(value){
   const pictures=Object.fromEntries(directions.map(d=>[d,views[d].drawings.filter(l=>!l.registration).map(l=>l.image)]));
   for(const d of directions){if(runtime.views[d].pictureAssembly)continue;if(!pictures[d].length)fail('검사할 본체 그림이 없어요.');for(const image of pictures[d]){const check=pictureShape(runtime.views[d],image,targets);if(!check.ok)fail(check.error);}}
   preparedPictures.set(runtime,pictures);
+ }
+ if(runtime.version===3){
+  const profiles=Object.fromEntries(directions.map(d=>[d,pictureBelowContact(runtime.views[d],views[d].drawings[0].image)]));
+  preparedClearance.set(runtime,profiles);
+  if(directions.some(d=>!runtimePoseValid(runtime,runtime.views[d].placement)))fail('늘어진 부분이 바닥이나 방 경계를 벗어나요. 높이와 위치를 확인해 주세요.');
  }
  return {runtime,views,cache:new Map()};
 }
@@ -95,4 +108,16 @@ export function renderRuntime(prepared,placement){
  anchors=anchors.filter((p,i,a)=>a.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<.01)===i);
  const result={left:b.x/scale,top:b.y/scale,width:b.width/scale,height:b.height/scale,anchors,canvas};
  if(prepared.cache.size>=3)prepared.cache.delete(prepared.cache.keys().next().value);prepared.cache.set(key,result);return result;
+}
+
+export function runtimeMinimumElevation(runtime,direction){
+ if(runtime.version!==3)return 0;
+ const profiles=preparedClearance.get(runtime);if(!profiles)return Infinity;
+ const minimum=direction?profiles[direction]?.minimum:Math.min(...Object.values(profiles).map(p=>p.minimum));
+ return Number.isFinite(minimum)?Math.ceil(Math.max(0,-minimum)*100-1e-7)/100:Infinity;
+}
+export function runtimeContactBoxes(runtime,placement){
+ if(runtime.version!==3)return [];
+ const v=runtime.views[placement.direction],profile=preparedClearance.get(runtime)?.[placement.direction];
+ return profile?placedContactBoxes(profile,{...v.placement,...placement}):null;
 }

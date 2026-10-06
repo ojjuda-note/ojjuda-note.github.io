@@ -1,8 +1,8 @@
-import {floorPoint,roomPoint} from './model.js?v=20261006-wall1';
-import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-wall1';
-import {projectMesh,validateMesh} from './picture-mesh.js?v=20261006-wall1';
-import {originalSofaArtwork} from './sofa-original-layers.js?v=20261006-wall1';
-export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-wall1';
+import {floorPoint,roomPoint} from './model.js?v=20261006-vine1';
+import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-vine1';
+import {projectMesh,validateMesh} from './picture-mesh.js?v=20261006-vine1';
+import {originalSofaArtwork} from './sofa-original-layers.js?v=20261006-vine1';
+export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-vine1';
 export function sofaPoseValid(placement,item){
  const registration=SOFA_V1[placement?.direction];
  const pose={...placement,width:item.width,depth:item.depth,height:item.height};

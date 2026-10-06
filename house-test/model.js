@@ -1,11 +1,12 @@
-import {isSofaCushion} from './sofa-cushion-data.js?v=20261006-wall1';
+import {contactBoxesOverlap} from './anchor-editor/contact-clearance.js?v=20261006-vine1';
+import {isSofaCushion} from './sofa-cushion-data.js?v=20261006-vine1';
 import {isCatalogItem} from './item-manifest.js?v=3';
-import {madePoseValid} from './custom-furniture.js?v=20261006-wall1';
-import {sideTablePoseValid} from './side-table-art.js?v=20261006-wall1';
-import {sofaPoseValid} from './sofa-art.js?v=20261006-wall1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261006-wall1';
-import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261006-wall1';
-import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261006-wall1';
+import {madePoseValid,madeMinimumElevation,madeContactBoxes} from './custom-furniture.js?v=20261006-vine1';
+import {sideTablePoseValid} from './side-table-art.js?v=20261006-vine1';
+import {sofaPoseValid} from './sofa-art.js?v=20261006-vine1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261006-vine1';
+import {sofaAccessoryFromSofa,isBlanket,blanketMode,blanketSpec} from './sofa-accessory-placement.js?v=20261006-vine1';
+import {sofaAccessoryPoseValid} from './sofa-accessory-art.js?v=20261006-vine1';
 export const roomKey=r=>`${r.x}:${r.y}`;
 export const validCell=r=>r&&Number.isInteger(r.x)&&Number.isInteger(r.y)&&Math.abs(r.x)<=2&&Math.abs(r.y)<=3;
 export const neighbors=r=>[{x:r.x-1,y:r.y},{x:r.x+1,y:r.y},{x:r.x,y:r.y-1},{x:r.x,y:r.y+1}];
@@ -39,7 +40,7 @@ export function findPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
 }
 // Explicit floor placement reserves a clear spot, including against standing
 // furniture, while carpets and flat blankets remain usable underneath it.
-export function canUseFloor(id){return !!FURNITURE[id]&&!FURNITURE[id].wallMounted&&FURNITURE[id].layer==='surface';}
+export function canUseFloor(id){return !!FURNITURE[id]&&!FURNITURE[id].wallMounted&&FURNITURE[id].layer==='surface'&&madeMinimumElevation(id)===0;}
 export function findFloorPlacement(id,others=[],preferred=FURNITURE[id]?.preferred){
  if(!canUseFloor(id)||!preferred)return null;
  const floor=normalizePlacement(id,{...preferred,elevation:0,mode:'floor'});
@@ -141,7 +142,7 @@ export function normalizePlacement(id,s){
  if(FURNITURE[id].wallMounted){
   const snap=value=>Math.round(value*10)/10,elevation=Number.isFinite(s.elevation)?s.elevation:FURNITURE[id].preferred.elevation;
   return {direction:s.direction,x:canonical(s.direction==='left'?0:s.direction==='right'?FLOOR.width-w:Math.max(0,Math.min(FLOOR.width-w,snap(s.x)))),
-   y:canonical(s.direction==='center'?0:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y)))),elevation:canonical(Math.max(0,Math.min(ROOM.wallHeight-itemHeight(id,s),elevation)))};
+   y:canonical(s.direction==='center'?0:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y)))),elevation:canonical(Math.max(madeMinimumElevation(id,s.direction),Math.min(ROOM.wallHeight-itemHeight(id,s),elevation)))};
  }
  if(id==='chair'&&s.attachedTo!==undefined){
   if(s.attachedTo!=='desk')return null;
@@ -153,7 +154,7 @@ export function normalizePlacement(id,s){
   const mode=isBlanket(id)?blanketMode(id,s):canUseFloor(id)&&s.mode==='floor'&&(s.elevation??0)===0?'floor':null;
   const elevation=mode==='floor'?0:Number.isFinite(s.elevation)?s.elevation:mode==='sofa'?blanketSpec('sofa').baseElevation:0;
   return {direction:s.direction,x:canonical(Math.max(0,Math.min(FLOOR.width-w,s.x))),y:canonical(Math.max(0,Math.min(FLOOR.depth-d,s.y))),
-   elevation:canonical(Math.max(0,Math.min(ROOM.wallHeight-itemHeight(id,s),elevation))),...(mode?{mode}:{})};
+   elevation:canonical(Math.max(madeMinimumElevation(id,s.direction),Math.min(ROOM.wallHeight-itemHeight(id,s),elevation))),...(mode?{mode}:{})};
  }
  const snap=value=>Math.round(value/FLOOR.step)*FLOOR.step;
  return {direction:s.direction,x:Math.max(0,Math.min(FLOOR.width-w,snap(s.x))),y:Math.max(0,Math.min(FLOOR.depth-d,snap(s.y)))};
@@ -168,8 +169,13 @@ export function canPlaceFurniture(id,s,others=[]){
  if(FURNITURE[id].wallMounted&&s.direction==='center'&&s.x<8.7&&s.x+itemSize(id,s.direction,s).w>1.3)return false;
  if(id==='chair'&&placed.attachedTo==='desk'&&!others.some(other=>other.id==='desk'&&isDeskChairPair(other,placed)))return false;
  if(id==='desk'&&others.some(other=>other.id==='chair'&&other.attachedTo==='desk'&&!isDeskChairPair(placed,other)))return false;
- const size=itemSize(id,s.direction,placed);
+ const size=itemSize(id,s.direction,placed),drop=madeContactBoxes(id,placed);if(drop===null)return false;
+ const body=(p,size)=>({minX:p.x,maxX:p.x+size.w,minY:p.y,maxY:p.y+size.d,minZ:p.elevation??0,maxZ:(p.elevation??0)+itemHeight(p.id,p)});
+ const ownBody=body({id,...placed},size);
  return others.every(other=>{const otherSize=itemSize(other.id,other.direction,other);if(!otherSize)return false;
+  const otherDrop=madeContactBoxes(other.id,other);if(otherDrop===null)return false;
+  const otherBody=body(other,otherSize);
+  if(drop.some(a=>contactBoxesOverlap(a,otherBody)||otherDrop.some(b=>contactBoxesOverlap(a,b)))||otherDrop.some(b=>contactBoxesOverlap(ownBody,b)))return false;
   const separate=s.x+size.w<=other.x||other.x+otherSize.w<=s.x||s.y+size.d<=other.y||other.y+otherSize.d<=s.y;
   if(FURNITURE[id].wallMounted||FURNITURE[other.id].wallMounted){const low=placed.elevation??0,otherLow=other.elevation??0;return separate||low+itemHeight(id,placed)<=otherLow+1e-8||otherLow+itemHeight(other.id,other)<=low+1e-8;}
   if((canUseFloor(id)&&placed.mode==='floor')||(canUseFloor(other.id)&&other.mode==='floor')){
@@ -233,3 +239,5 @@ export function roomPeriod(date=new Date()){
  const hour=Number(clock.format(date));
  return hour>=8&&hour<18?'day':hour>=6&&hour<8||hour>=18&&hour<20?'dusk':'night';
 }
+
+export const minimumFurnitureElevation=(id,direction)=>madeMinimumElevation(id,direction);

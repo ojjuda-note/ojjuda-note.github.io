@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {approvedSofaAssembly,normalizeAssembly,assemblyGeometry,assemblyCheck} from '../house-test/anchor-editor/picture-assembly.js?v=20261006-wall1';
+import {approvedSofaAssembly,normalizeAssembly,assemblyGeometry,assemblyCheck} from '../house-test/anchor-editor/picture-assembly.js?v=20261006-vine1';
 import {originalSofaArtwork} from '../house-test/sofa-original-layers.js';
 const read=(name,width,height)=>({data:'data:image/png;base64,'+fs.readFileSync(new URL('../house-test/assets/sofa-original-layers-v1/'+name+'.png',import.meta.url)).toString('base64'),width,height,name:name+'.png'});
 const assembly=approvedSofaAssembly(read('side',1262,791),read('body',970,858));
