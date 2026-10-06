@@ -6,131 +6,7 @@
 <title>오쭈다 맞고</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
- --bg:#2A2342;--bg2:#3A2F5B;--felt:#4C9A7A;--felt2:#2E6B54;--felt3:#1F4F3D;--wood:#8B5E3C;--wood2:#5A3A24;--surface:#FFFFFF;--ink:#2E2748;--ink-2:#8A82A6;--line:#E6DEF2;--accent:#8B7BD8;--accent2:#6F5FCB;--gold:#F2C14E;--gold2:#C8952A;--red:#E35D5D;--ok:#4FB37E;--chip:#ffffffd9;color-scheme:light}
-*,*:before,*:after{box-sizing:inherit}html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
-body{margin:0;height:100%;background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg) 60%,#1C1730);color:#F3EEFF;font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-user-select:none;user-select:none;overflow:hidden;font-variant-numeric:tabular-nums}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
-#app{height:100%;display:flex;flex-direction:column;max-width:760px;margin:0 auto}
-.top{display:flex;align-items:center;gap:10px;padding:10px 14px 6px}
-.top h1{font-size:19px;font-weight:400;margin:0;letter-spacing:.02em}.top h1 em{font-style:normal;color:var(--gold)}
-.sp{flex:1}
-.pill{height:30px;padding:0 13px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff22;font-size:12.5px;color:#F3EEFF;backdrop-filter:blur(6px)}
-.pill.money{background:linear-gradient(180deg,#F8D77A,#E0A93A);color:#3A2800;border:0;font-weight:700;box-shadow:0 4px 10px -4px #000a,inset 0 1px 0 #fff8}
-.zone{position:relative;padding:4px 12px}
-.who{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#CFC6E6;padding:0 2px 4px}
-.who b{font-weight:400;color:#fff;display:flex;align-items:center;gap:6px}
-.who b:before{content:"";width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#C3A8F5,#8B7BD8);box-shadow:inset 0 0 0 2px #ffffff55}
-.zone.op .who b:before{background:linear-gradient(135deg,#F7B9CC,#E96F93)}
-.who .pts{margin-left:auto;background:var(--chip);color:var(--ink);border-radius:999px;padding:3px 11px;font-weight:700;box-shadow:0 2px 6px -2px #0006}
-.who .go{background:linear-gradient(180deg,#FFE7A6,#F2C14E);color:#5A3E00;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;box-shadow:0 0 0 2px #ffffff33,0 0 14px #f2c14e88}
-.caps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;min-height:46px}
-.cap{display:flex;flex-wrap:wrap;align-content:flex-start;min-height:42px;background:#ffffff12;border:1px solid #ffffff1c;border-radius:12px;padding:5px 6px 4px;position:relative;box-shadow:inset 0 1px 0 #ffffff14}
-.cap .lb{position:absolute;right:7px;top:3px;font-size:10px;color:#CFC6E6;letter-spacing:.02em}
-.cap .c{width:20px;height:30px;margin-right:-10px;margin-top:9px;border-radius:3px;box-shadow:1px 1px 3px #0005}
-.cap .c:last-child{margin-right:0}
-.floor{flex:1;position:relative;margin:6px 12px;border-radius:26px;min-height:150px;
- background:radial-gradient(ellipse at 50% 35%,var(--felt) 0%,var(--felt2) 60%,var(--felt3) 100%);
- box-shadow:inset 0 0 0 6px var(--wood),inset 0 0 0 8px var(--wood2),inset 0 10px 40px #00000066,0 18px 40px -20px #000c}
-.floor:before{content:"";position:absolute;inset:8px;border-radius:19px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .08 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");pointer-events:none;mix-blend-mode:overlay}
-.fl{position:absolute;inset:0}
-.stack{position:absolute;width:var(--cw,52px);height:var(--ch,78px);transform-origin:50% 60%;transition:left .3s ease,top .3s ease}
-.stack .c{position:absolute;left:0;top:0;width:var(--cw,52px);height:var(--ch,78px);border-radius:6px;box-shadow:0 1px 0 #fff6 inset,1px 4px 8px #00000055,0 0 0 .5px #0002}
-.stack.pick{cursor:pointer}.stack.pick .c:last-child{outline:3px solid var(--gold);outline-offset:2px;animation:glow 1s infinite}
-.stack.ppuk:after{content:attr(data-ppuk-label);position:absolute;right:-10px;top:-10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;box-shadow:0 3px 8px -2px #0008}
-@keyframes glow{50%{outline-color:#fff}}
-.deck{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:var(--cw,50px);height:var(--ch,76px);text-align:center}
-.deck .back{position:relative;width:var(--cw,50px);height:var(--ch,76px);border-radius:7px;background:linear-gradient(145deg,#6F5FCB,#4A3E9C);border:2px solid #E9E0FF;box-shadow:2px 2px 0 #3B3280,4px 4px 0 #2B2460,6px 6px 0 #1E1944,8px 12px 18px #0008}
-.deck .back:after{content:"ZU";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;background:radial-gradient(circle at 50% 50%,#ffffff22 0 14px,transparent 15px)}
-.deck small{display:block;font-size:11px;color:#E9E0FF;margin-top:14px;background:#00000040;border-radius:999px;padding:1px 0}
-.hand{display:flex;gap:7px;overflow-x:auto;padding:20px 14px 10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
-.hand::-webkit-scrollbar{display:none}
-.hand .c{flex:0 0 auto;width:58px;height:87px;border-radius:7px;scroll-snap-align:center;transition:transform .15s,box-shadow .15s;box-shadow:0 1px 0 #fff8 inset,0 6px 12px -4px #000a,0 0 0 .5px #0003}
-.hand .c.match{outline:2.5px solid var(--gold);outline-offset:1px;transform:translateY(-6px);box-shadow:0 0 0 1px #fff8 inset,0 10px 16px -6px #000a,0 0 14px #f2c14e88}
-.hand .c.match:after{content:"";position:absolute;left:50%;top:-11px;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:9px solid var(--gold);filter:drop-shadow(0 0 4px #F2C14Ecc);animation:bob 1.1s ease-in-out infinite}
-@keyframes bob{50%{transform:translate(-50%,-3px)}}
-.hand .c{position:relative}
-.stack.hot2 .c:last-child{outline:3px solid #fff;outline-offset:2px}
-.stack.hot .c:last-child{box-shadow:0 0 0 2px #f2c14ecc,0 0 16px #f2c14e88,1px 4px 8px #00000055}
-.hand .c.ok{cursor:pointer}.hand .c.ok:active,.hand .c.sel{transform:translateY(-12px);box-shadow:0 14px 20px -6px #000c}.hand .c.dim{opacity:.6;filter:saturate(.7)}
-.hand.op{padding:2px 14px 4px}.hand.op .c{width:24px;height:36px;border-radius:4px;margin-right:-10px;box-shadow:1px 2px 4px #0006}
-.log{font-size:12.5px;color:#CFC6E6;padding:0 16px 4px;min-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
-.modal{position:fixed;inset:0;background:#120e2466;display:flex;align-items:center;justify-content:center;padding:18px;z-index:9;backdrop-filter:blur(6px)}
-.card{background:linear-gradient(180deg,#FFFFFF,#F6F2FC);color:var(--ink);border-radius:26px;padding:22px 20px;max-width:380px;width:100%;box-shadow:0 40px 80px -30px #000c,0 0 0 1px #ffffff80 inset;text-align:center}
-.card h2{margin:0 0 6px;font-weight:400;font-size:22px}.card p{margin:0 0 14px;color:var(--ink-2);font-size:14px;line-height:1.6}
-.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.btn{height:46px;padding:0 20px;border-radius:14px;background:linear-gradient(180deg,#9D8EE6,#7A69D0);color:#fff;font-size:15px;box-shadow:0 6px 14px -6px #6F5FCB,inset 0 1px 0 #ffffff66}
-.btn:active{transform:translateY(1px)}
-.btn.g{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
-.btn.gold{background:linear-gradient(180deg,#FFD978,#E8AD3A);color:#4A3600;box-shadow:0 6px 14px -6px #C8952A,inset 0 1px 0 #ffffff88}
-table.sc{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}table.sc td{padding:4px 4px;border-bottom:1px solid var(--line);text-align:left}table.sc td:last-child{text-align:right}
-.big{font-size:32px;margin:4px 0 8px;font-weight:700}.big.win{color:var(--ok)}.big.lose{color:var(--red)}
-.banner{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:8;pointer-events:none;text-align:center}
-.banner .txt{font-size:44px;font-weight:700;letter-spacing:.04em;color:#fff;text-shadow:0 3px 0 #0003,0 10px 30px #0008;animation:bpop .9s cubic-bezier(.2,1.4,.3,1) both}
-.banner .sub{font-size:15px;color:#fff;opacity:.9;margin-top:4px;animation:bfade .9s .15s both}
-.banner.brag .txt{background:linear-gradient(180deg,#FFF3B0,#F2C14E 55%,#D9952A);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 4px 0 #7a4a00) drop-shadow(0 10px 24px #000a)}
-.banner.warn .txt{color:#FFE5E5;filter:drop-shadow(0 4px 0 #7a1010) drop-shadow(0 10px 24px #000a)}
-.banner .rays{position:absolute;left:50%;top:50%;width:420px;height:420px;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,#ffffff00 0 10deg,#ffffff22 10deg 20deg);border-radius:50%;animation:spin 3s linear infinite,bfade .5s both;mask-image:radial-gradient(circle,#000 20%,transparent 65%);z-index:-1}
-.banner.warn .rays{background:repeating-conic-gradient(from 0deg,#ff000000 0 10deg,#ff5c5c33 10deg 20deg)}
-@keyframes bpop{0%{transform:scale(.3) rotate(-8deg);opacity:0}60%{transform:scale(1.15) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
-@keyframes bfade{from{opacity:0}to{opacity:1}}@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-.banner.out{animation:bout .35s ease-in both}@keyframes bout{to{opacity:0;transform:translate(-50%,-60%) scale(.9)}}
-.confetti{position:fixed;z-index:8;pointer-events:none;width:9px;height:14px;border-radius:2px;will-change:transform}
-.flash{position:fixed;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 0 0 #ff4b4b00;animation:flash .9s ease-out both}
-@keyframes flash{0%{box-shadow:inset 0 0 90px 20px #ff4b4bcc}100%{box-shadow:inset 0 0 0 0 #ff4b4b00}}
-.shake{animation:shk .45s}@keyframes shk{0%,100%{transform:translate(0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
-.fly.steal{filter:drop-shadow(0 0 14px #F2C14E) drop-shadow(0 12px 18px #0009);z-index:9}
-.stealtag{position:fixed;left:50%;top:calc(42% + 70px);transform:translateX(-50%);z-index:9;font-size:22px;font-weight:700;padding:6px 18px;border-radius:999px;pointer-events:none;animation:tagpop 1s ease both}
-.stealtag.good{background:linear-gradient(180deg,#FFE7A6,#F2C14E);color:#5A3E00;box-shadow:0 0 24px #F2C14E99}
-.stealtag.bad{background:linear-gradient(180deg,#FF9A9A,#E35D5D);color:#fff;box-shadow:0 0 24px #E35D5D99}
-@keyframes tagpop{0%{opacity:0;transform:translateX(-50%) scale(.5)}25%{opacity:1;transform:translateX(-50%) scale(1.15)}70%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-14px)}}
-.cap.robbed{animation:robbed .8s ease}@keyframes robbed{0%,100%{background:#ffffff12}30%{background:#E35D5D88;transform:translateX(-4px)}50%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
-.cap.gain{animation:gain .7s ease}@keyframes gain{0%,100%{background:#ffffff12}40%{background:#F2C14E88;transform:scale(1.06)}}
-.holding{position:fixed;z-index:8;transform:translate(-50%,0);display:flex;align-items:flex-end;gap:10px;pointer-events:none}
-.holding .hc{width:var(--hw);height:var(--hh);border-radius:9px;box-shadow:0 0 0 3px var(--gold),0 0 24px 4px #F2C14Eaa,0 18px 30px -8px #000c;animation:holdbob 1.4s ease-in-out infinite;overflow:hidden}
-.holding .hl{background:#000000a0;color:#fff;font-size:12.5px;line-height:1.5;padding:7px 11px;border-radius:12px;margin-bottom:8px;white-space:nowrap;backdrop-filter:blur(4px)}
-.holding .hl b{color:var(--gold);font-weight:700}
-@keyframes holdbob{50%{transform:translateY(-5px)}}
-.stack.dimmed{opacity:.35;filter:saturate(.5);transition:opacity .2s}
-.stack.pick{z-index:3}.stack.pick .c:last-child{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 18px 4px #F2C14Ecc,1px 4px 8px #00000055}
-.stack.pick{animation:pickbob 1s ease-in-out infinite}@keyframes pickbob{50%{transform:translateY(-4px) scale(1.04)}}
-.toast{position:fixed;left:50%;top:15%;transform:translate(-50%,0) scale(.6);opacity:0;background:#ffffffee;color:var(--ink);padding:10px 24px;border-radius:999px;font-size:21px;box-shadow:0 14px 34px -10px #0008;pointer-events:none;z-index:8;transition:.22s;backdrop-filter:blur(6px)}
-.toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
-.fly{position:fixed;z-index:7;pointer-events:none;transform-origin:50% 50%;filter:drop-shadow(3px 10px 10px #00000066);border-radius:7px}
-.c svg{width:100%;height:100%;display:block;border-radius:inherit}
-@media(prefers-reduced-motion:reduce){.fly,.stack .c,.hand .c{transition:none}}
-
-.top{gap:7px}.top h1{white-space:nowrap;flex-shrink:0}.top .pill{flex-shrink:0}
-#sound{width:34px;padding:0;font-size:16px;line-height:1;touch-action:manipulation}
-#sound[aria-pressed="false"]{opacity:.6}.art-credit{font-size:10px!important;line-height:1.5!important}.art-credit a{color:#6550ab;text-decoration:underline}
-.deck .back{border:0;border-radius:3px;background:#b51c13;box-shadow:2px 2px 0 #891b13,4px 4px 0 #631810,6px 6px 0 #40100c,8px 12px 18px #0008}.deck .back:after{content:none}.c,.fly,.back,.holding .hc{border-radius:3px}.fly svg,.back svg,.holding .hc svg{width:100%;height:100%;display:block;border-radius:inherit}
-@media(max-width:380px){.top{padding-left:10px;padding-right:10px;gap:5px}.top h1{font-size:17px}.top .pill{padding-left:9px;padding-right:9px}.top .pill.money{font-size:11px}#sound{width:30px;padding:0}}
-/* Append to the shared game's stylesheet. Heights cannot depend on card count. */
-.top,.zone,.log{flex-shrink:0}
-.who{min-height:26px;white-space:nowrap;flex-wrap:wrap;row-gap:4px}
-.ppuk-count{font-size:11px;color:#FFDCAE}
-.gold-pending{flex-shrink:0;text-align:right;color:#FFE3A3;font-size:12px;padding:0 14px 5px}.gold-pending[hidden]{display:none}
-.banner{width:max-content;max-width:calc(100vw - 28px)}.banner .sub{overflow-wrap:anywhere}
-.chongtong-cards{display:flex;justify-content:center;gap:8px;margin:16px 0}.chongtong-cards svg{width:46px;height:69px;border-radius:3px}
-.card{max-height:calc(100dvh - 36px);overflow:auto}
-.caps{height:50px;min-height:50px}
-.cap{display:block;height:50px;min-height:50px;overflow:hidden}
-.cap .c{position:absolute;left:6px;top:16px;width:20px;height:30px;margin:0;flex:none}
-.cap .lb{z-index:2}
-.hand.me{height:117px;min-height:117px;flex-shrink:0}
-.hand-row{display:flex;align-items:center;gap:4px;height:117px}
-.hand-row .hand.me{flex:1;min-width:0}
-.bomb-flip{flex:0 0 82px;height:87px;margin:10px 2px 0 0;padding:7px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px;background:linear-gradient(180deg,#FFE7A6,#F2C14E);color:#4A3600;box-shadow:0 5px 14px -6px #000a,inset 0 1px 0 #fff8;font-size:13px;line-height:1.25}
-.bomb-flip[hidden]{display:none}.bomb-flip small{font-size:10px}.bomb-flip strong{font-size:15px}
-.bomb-flip:disabled{opacity:.5;cursor:default}.bomb-flip:not(:disabled):active{transform:translateY(2px)}
-.bomb-flip:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.hand.op{height:42px;min-height:42px;flex-shrink:0}
-.log{height:19px;min-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.floor{flex:1 1 0}
-
-
-</style>
+<link rel="stylesheet" href="./matgo-shared.css?v=20261006-parity1">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="../matgo-access.js?v=20261003-adult1"></script>
@@ -157,8 +33,8 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <div class="toast" id="toast"></div>
 <script type="module">
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261005-stakes1";
-import {heldPairMonths} from "./matgo-view.mjs?v=20261003-gukjin1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261006-zu1";
+import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261006-parity1";
+import {createWallet} from "./matgo-wallet.mjs?v=20261006-parity1";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -392,18 +268,7 @@ function fitFloor(force){
   const sameSize=Math.abs(W-LAYOUT_W)<2&&Math.abs(H-LAYOUT_H)<2;
   if(!force&&sameSize&&n<=COLS*ROWS&&LAYOUT_N>=0)return;
   MAXST=4;
-  let best=null;
-  for(let cols=3;cols<=6;cols++){
-    const rows=Math.max(2,Math.ceil(n/cols));
-    if(rows>6)continue;
-    let cw=52;
-    for(;cw>19;cw--){
-      const spreadX=SPREAD_X*(cw/52)*(MAXST-1)+6;
-      const spreadY=SPREAD_Y*(cw/52)*(MAXST-1)+6;
-      if(cols*(cw+spreadX+8)<=W&&rows*(cw*1.5+spreadY+8)<=H)break;
-    }
-    if(!best||cw>best.cw||(cw===best.cw&&rows<best.rows))best={cols,rows,cw};
-  }
+  const best=floorLayout(r.width,r.height,n);
   const changed=best.cols!==COLS||best.rows!==ROWS;
   COLS=best.cols;ROWS=best.rows;CW=best.cw;CH=Math.round(CW*1.5);
   LAYOUT_N=n;LAYOUT_W=W;LAYOUT_H=H;
@@ -532,16 +397,16 @@ function mount(){
   <div class="zone op"><div class="who"><b>상대 (컴퓨터)</b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
   <div class="floor"><div class="fl" id="fl"></div><div class="deck"><div class="back">${backSVG}</div><small id="deckN"></small></div></div>
   <div class="log" id="log"></div>
-  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="stakeRate"></span><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="my-score hand-score" id="mePts" role="status" aria-label="내 점수"></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
+  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="my-score hand-score"><span class="stake-label" id="stakeRate"></span><span id="mePts" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261006-zu1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261006-parity1');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
   $('#sound').onclick=()=>Sound.toggle(); Sound.sync();
   $('#bombFlip').onclick=onBombFlip;
-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피박·광박·멍박·고박 ×2 · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>보유 골드 단계가 오르면 판돈을 올릴지 물어봐요. 동의한 판돈은 유지되며, 골드가 0이 되면 점당 100G부터 다시 시작해요. 회원 대결은 점당 100G 고정이에요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 0일 때 하루 2회 무료로 5,000G를 리필할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
+  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피박·광박·멍박·고박 ×2 · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>보유 골드 단계가 오르면 판돈을 올릴지 물어봐요. 동의한 판돈은 유지되며, 골드가 0이 되면 점당 100G부터 다시 시작해요. 회원 대결도 같은 판돈을 쓰고, 두 사람이 동의한 금액 중 낮은 금액을 함께 적용해요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 0일 때 하루 2회 무료로 5,000G를 리필할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
   $('#gukjin').onclick=()=>{ if(ui.busy||game.over||game.turn!==ME)return; if(game.toggleGukjin(ME))render(); };
 }
 function syncCards(container, cards, make, after){ // id 기준으로 필요한 것만 추가/제거 (깜박임 없이)
