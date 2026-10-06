@@ -166,12 +166,11 @@
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
     speak(reason==='won'?'여섯 곳을 모두 찾았어요!':reason==='time'?'시간이 다 됐어요. 1 ZU로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
-    if(!r.assisted&&r.rankOwner){
+    if(r.rankOwner){
       const score=found().length,owner=r.rankOwner;
       if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-score',score,owner},window.location.origin);
       else Promise.resolve(wallet.recordScore?.(owner,score)).catch(()=>speak('점수를 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));
     }
-    if(r.assisted)speak('도움을 사용한 판은 순위에 반영하지 않아요.',reason==='won');
     if(reason==='won')celebrate();
   }
   function tick(){if(round().status==='playing'&&core.timeLeft(round())<=0)finish('time');else renderTime();}

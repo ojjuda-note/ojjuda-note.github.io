@@ -69,6 +69,26 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.equal(await final.page.locator('#stage-picker').inputValue(),last,'last stage has no invalid or repeated next stage');
   await final.page.locator('#celebration-next').click();assert.equal(await final.page.locator('#celebration').evaluate(d=>d.open),false);
   assert.deepEqual(final.errors,[]);await final.context.close();
+  // Purchased help must not disqualify the completed round from rankings.
+  for(const kind of ['hint','time']){
+   const paid=await fixture(),page=paid.page;
+   await page.evaluate(()=>{
+    JjudaWallet.getState=()=>({ready:true,userId:'member-a',coins:100});
+    window.purchases=[];
+    JjudaWallet.buy=async(request,stage)=>{purchases.push(request.kind);return {ok:true,kind:request.kind,stage,spot:request.spot,price:1,extend_ms:60000};};
+   });
+   page.on('dialog',dialog=>dialog.accept());
+   if(kind==='time')await page.clock.install();
+   await page.locator('#start').click();
+   if(kind==='time')await page.clock.runFor(51000);
+   await page.locator(kind==='hint'?'#hint':'#extend').click();
+   await page.waitForFunction(()=>{const saved=JSON.parse(localStorage.getItem('jjuda-spot-six-v1'));return Object.values(saved.rounds).some(r=>r.assisted&&!r.pending);});
+   assert.deepEqual(await page.evaluate(()=>purchases),[kind]);
+   await solve(page);
+   assert.deepEqual(await page.evaluate(()=>spotScores),[{owner:'member-a',score:6}],kind+' purchase still records the completed score');
+   assert.doesNotMatch(await page.locator('#message').innerText(),/순위에 반영하지/);
+   assert.deepEqual(paid.errors,[]);await paid.context.close();
+  }
   const host=await browser.newPage();await host.route('**/*',route=>route.fulfill({body:'<!doctype html><body></body>',contentType:'text/html'}));await host.goto('https://fixture.test/');
   await host.addScriptTag({path:path.join(root,'world-spot-game.js')});
   await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onScore:async(score,owner)=>{if(hostFail)throw Error('offline');recorded.push({score,owner})}});window.scoreMessage=(score,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-score',score,owner:'member-a'}}));scoreMessage(7);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);scoreMessage(4);});
