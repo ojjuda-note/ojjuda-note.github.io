@@ -92,6 +92,38 @@ test('normal and slow straight movement do not hit the newly connected trail',()
     for(let i=0;i<240;i++)w.step(1/60);assert.equal(p.alive,true,`scale ${scale}, speed ${speed}`);
   }
 });
+test('ending a slowdown or starting a boost does not cut the connected neck',()=>{
+  for(const scale of [10,7,5])for(const effect of ['slow','boost']){
+    const w=new World(64,'solo',40);w.itemsOn=false;w.setViewScale(scale);w.time=1;
+    const p=w.addPlayer({noSpawn:true,alive:true,x:5,y:10,ang:0,target:0,speed:effect==='slow'?2.325:4.65,born:-1});
+    for(let i=0;i<90;i++)w.step(1/60);
+    if(effect==='slow')p.speed=4.65;else p.boostT=1;
+    for(let i=0;i<120;i++)w.step(1/60);
+    assert.equal(p.alive,true,`${effect}, scale ${scale}: speed changes must not create a self collision`);
+    assert.equal(w.events.some(e=>e.t==='death'),false);
+  }
+});
+test('computers expand land without self-destructing at normal and small screen scales',()=>{
+  const replay=vm.runInNewContext(`
+    let seed=1;Math.random=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
+    ${engine}
+    const MOB_RESPAWN=30;
+    ({World,setSeed(value){seed=value;}});
+  `);
+  for(const scale of [10,7,5])for(const seed of [1,4,5]){
+    replay.setSeed(seed);
+    const w=new replay.World(30,'solo',40);w.itemsOn=false;w.noInherit=true;w.setViewScale(scale);
+    const bot=w.addPlayer({bot:true,speed:4.65,turn:4.2,reach:5,maxTrail:15,aggro:.4});bot.born=-1;
+    const deaths=[];let gained=0;
+    for(let i=0;i<2400&&bot.alive;i++){
+      w.step(1/60);
+      for(const e of w.events){if(e.t==='death')deaths.push(e.why);if(e.t==='capture')gained+=e.gained;}
+      w.events.length=0;w.dirty.clear();
+    }
+    assert.deepEqual(deaths,[],`scale ${scale}, seed ${seed}`);
+    assert.ok(gained>0,`scale ${scale}, seed ${seed}: the bot must still capture land`);
+  }
+});
 test('mob contact uses the same visible player body at all screen scales',()=>{
   for(const scale of [20,5])for(const gap of [0,.01]){
     const w=new World(32,'solo',40);w.time=1;w.setViewScale(scale);
