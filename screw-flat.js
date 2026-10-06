@@ -253,7 +253,7 @@
       }else{
         for(const [kind,x] of [['flat_hole',24],['flat_moves',148]]){
           const hole=kind==='flat_hole',full=hole&&st.extraHoles>=EXTRA_HOLE_X.length,ready=sameWallet()&&!full&&!st.shopBusy,urgent=hole?blocked:remaining===0;
-          round(c,x,493,116,42,16);c.fillStyle=ready?(urgent?'#527C5E':'#DDE8DD'):'#EAE4DC';c.fill();c.textAlign='center';c.fillStyle=ready?(urgent?'#FFFFFF':'#506E57'):'#9B8C7D';c.font='700 11px "Noto Sans KR",sans-serif';
+          round(c,x,493,116,42,16);c.fillStyle=ready?(urgent?'#C83E4D':'#FFF0F1'):'#F3E8EA';c.fill();c.lineWidth=1;c.strokeStyle=ready?'#EDBDC4':'#DDC7CC';c.stroke();c.textAlign='center';c.fillStyle=ready?(urgent?'#FFFFFF':'#A72E40'):'#93646D';c.font='700 11px "Noto Sans KR",sans-serif';
           c.fillText(st.shopBusy==='buying'&&st.shopKind===kind?'구매 중…':st.shopBusy==='checking'?'내역 확인 중…':full?'구멍 추가 완료':hole?'+ 구멍 1개 · 1 ZU':'+ 이동 3회 · 1 ZU',x+58,507,108);
           c.font='9px "Noto Sans KR",sans-serif';c.fillText(hole?`현재 판 · ${st.extraHoles}/3개 추가`:`현재 판 · ${st.extraMoves}회 추가`,x+58,523,108);
         }

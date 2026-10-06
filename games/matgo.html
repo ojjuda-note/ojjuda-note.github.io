@@ -144,6 +144,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
+<link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
 </head>
 <body class="matgo-locked">
 <section id="matgo-gate" aria-labelledby="matgo-gate-title">
@@ -664,7 +665,7 @@ async function showRefill(){
   try{state=await wallet.status();game.bank[ME]=state.gold;render();}
   catch(error){toast(error.message,3500);return;}finally{ui.busy=false;}
   const empty=state.gold===0,paid=state.free_left===0;
-  modal(`<h2>골드 충전</h2><p>보유 ${state.gold.toLocaleString()}G<br>오늘 무료 리필 ${state.free_left}회 남음 · 보유 ${state.coins} ZU</p><p>${empty?(paid?'5 ZU를 사용하면 5,000G가 충전돼요.':'무료로 5,000G를 리필할 수 있어요.'):'골드가 0일 때 충전할 수 있어요.'}<br>무료 리필은 한국시간 자정에 2회로 초기화돼요.</p><div class="row">${empty?`<button class="btn gold" id="refill-gold">${paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필'}</button>`:''}<button class="btn g" id="close-gold">닫기</button></div>`,{'refill-gold':()=>refillGold(paid),'close-gold':()=>{}});
+  modal(`<h2>골드 충전</h2><p>보유 ${state.gold.toLocaleString()}G<br>오늘 무료 리필 ${state.free_left}회 남음 · 보유 ${state.coins} ZU</p><p>${empty?(paid?'5 ZU를 사용하면 5,000G가 충전돼요.':'무료로 5,000G를 리필할 수 있어요.'):'골드가 0일 때 충전할 수 있어요.'}<br>무료 리필은 한국시간 자정에 2회로 초기화돼요.</p><div class="row">${empty?`<button class="btn ${paid?'ju-paid-action':'gold'}" id="refill-gold">${paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필'}</button>`:''}<button class="btn g" id="close-gold">닫기</button></div>`,{'refill-gold':()=>refillGold(paid),'close-gold':()=>{}});
 }
 async function refillGold(paid){
   if(refilling)return;refilling=true;ui.busy=true;

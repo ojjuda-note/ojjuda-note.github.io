@@ -1142,8 +1142,8 @@ function drawBoxes(c, st) {
     if (b && b.close) { rr(c, x, y, L.w, 14 + ease(b.close) * (BOX_H - 14), 16); c.fillStyle = shade(COLORS[b.c], 0.2); c.fill(); }
     c.restore();
   });
-  if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = 'rgba(255,255,255,0.7)'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 상자 사기 (3 ZU)
-    c.fillStyle = '#6B5B4B'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 3 ? '#1F8F74' : '#B8A99A'; c.fillText('3 ZU', bx + BUY_W / 2, BOX_Y + 54); }
+  if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = '#FFF0F1'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#EDBDC4'; c.stroke(); c.setLineDash([]);   // 상자 사기 (3 ZU)
+    c.fillStyle = '#A72E40'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 3 ? '#A72E40' : '#93646D'; c.fillText('3 ZU', bx + BUY_W / 2, BOX_Y + 54); }
 }
 function drawBuffer(c, st) {
   const n = st.buf.length, buy = n < BUF_MAX, L = bufLay(n, buy), sc = Math.min(0.92, L.sp / 58 * 1.05), hr = Math.min(15.5, L.sp * 0.3);
@@ -1152,8 +1152,8 @@ function drawBuffer(c, st) {
   c.textAlign = 'right'; c.fillStyle = '#8A6FB8'; c.font = 'bold 11px sans-serif'; c.fillText(`🪙 ${st.coins === null ? '지갑 연결 필요' : `${st.coins} ZU`}`, 336, BUF_Y - 9);
   const full = st.buf.filter(Boolean).length;
   for (let k = 0; k < n; k++) { const h = bufHole(k, n, buy); circ(c, h.x, h.y, hr); c.fillStyle = full >= n - 1 && !st.buf[k] ? 'rgba(240,103,154,0.28)' : 'rgba(35,38,74,0.14)'; c.fill(); const s = st.buf[k]; if (s && s !== 'res') drawScrew(c, h.x, h.y, COLORS[s.color], 0, sc); }
-  if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = 'rgba(255,255,255,0.75)'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (1 ZU)
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#6B5B4B'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.coins >= 1 ? '#1F8F74' : '#B8A99A'; c.fillText('1 ZU', bx + BUY_W / 2 - 1, BUF_Y + 32); }
+  if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = '#FFF0F1'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#EDBDC4'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (1 ZU)
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#A72E40'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.coins >= 1 ? '#A72E40' : '#93646D'; c.fillText('1 ZU', bx + BUY_W / 2 - 1, BUF_Y + 32); }
   c.textBaseline = 'alphabetic';
 }
 

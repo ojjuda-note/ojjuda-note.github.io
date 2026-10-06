@@ -11,14 +11,19 @@
  function clear(uid,kind){memory.delete(key(uid,kind));try{localStorage.removeItem(key(uid,kind));}catch{}}
  function say(text){if(status?.isConnected)status.textContent=text;else toast(text);}
  function eligible(kind){return !!world&&!!me&&mode==='play'&&revealT<0&&photoAllowed()&&(kind==='heart'?lives<LIVES:kind==='time'?true:!over&&me.alive&&world.time>=slowUntil);}
- function controls(){document.querySelectorAll('[data-photo-help]').forEach(b=>{const kind=b.dataset.photoHelp;b.disabled=busy||!eligible(kind);b.textContent=(owner&&pending(owner,kind)?'이전 결제 확인 · ':'' )+products[kind].label+' · '+products[kind].price+'쭈';});}
+ function controls(){document.querySelectorAll('[data-photo-help]').forEach(b=>{const kind=b.dataset.photoHelp,p=products[kind],recover=owner&&pending(owner,kind);b.disabled=busy||!eligible(kind);b.querySelector('.photo-help-label').textContent=recover?'결제 확인':p.label;b.querySelector('.photo-help-price').textContent=p.price+'쭈';b.setAttribute('aria-label',(recover?'이전 결제 확인 · ':'')+p.label+' · '+p.price+'쭈');});}
  function appendControls(overlay){
   if(!overlay||!world||mode!=='play'||revealT>=0||!photoAllowed())return;
   const host=overlay.querySelector('.panel');if(!host||host.querySelector('.photo-help'))return;
+  host.classList.add('photo-help-panel');
+  const free=document.createElement('div');free.className='photo-help-free-actions';
+  host.querySelectorAll(':scope > button.big').forEach(button=>free.append(button));if(free.children.length)host.append(free);
   const group=document.createElement('section');group.className='photo-help';group.setAttribute('aria-label','쭈로 도움받기');
-  const title=document.createElement('p');title.textContent='필요한 도움만 골라요 · 구매 전 차감 확인';group.append(title);
-  for(const [kind,p]of Object.entries(products)){const b=document.createElement('button');b.type='button';b.className='big g';b.dataset.photoHelp=kind;b.title=p.description;b.onclick=()=>void buy(kind);group.append(b);}
-  status=document.createElement('p');status.setAttribute('role','status');status.style.cssText='font-size:13px;min-height:20px;overflow-wrap:anywhere';group.append(status);host.append(group);controls();
+  const title=document.createElement('div');title.className='photo-help-heading';title.innerHTML='<strong>쭈로 도움받기</strong><small>선택 후 구매 확인</small>';group.append(title);
+  const grid=document.createElement('div');grid.className='photo-help-grid';group.append(grid);
+  const icons={heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',time:'<circle cx="12" cy="13" r="8"/><path d="M9 2h6M12 5V2m0 7v4l3 2M19 5l2 2"/>',slow:'<path d="M11 6 4 12l7 6V6Zm9 0-7 6 7 6V6Z"/>'};
+  for(const [kind,p]of Object.entries(products)){const b=document.createElement('button');b.type='button';b.className='photo-help-button ju-paid-soft';b.dataset.photoHelp=kind;b.title=p.description;b.innerHTML='<span class="photo-help-icon" aria-hidden="true"><svg viewBox="0 0 24 24">'+icons[kind]+'</svg></span><span class="photo-help-label"></span><span class="photo-help-price"></span>';b.onclick=()=>void buy(kind);grid.append(b);}
+  status=document.createElement('p');status.className='photo-help-status';status.setAttribute('role','status');group.append(status);host.append(group);controls();
   void Comm.ready().then(ok=>{if(ok){owner=Comm.uid;controls();}});
  }
  function open(){
@@ -62,7 +67,7 @@
  // Prevent leaving only while a debit is in flight; account revocation can still close the game.
  document.addEventListener('click',e=>{if(busy&&e.target.closest('button,a')&&!e.target.closest('[data-photo-help]')){e.preventDefault();e.stopImmediatePropagation();say('구매 결과를 확인 중이에요.');}},true);
  document.addEventListener('keydown',e=>{if(busy&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();}},true);
- const b=document.createElement('button');b.type='button';b.className='rb';b.textContent='＋';b.setAttribute('aria-label','쭈로 도움받기');b.onclick=open;$('btns').prepend(b);
+ const b=document.createElement('button');b.type='button';b.className='rb photo-help-entry ju-paid-soft';b.textContent='＋';b.setAttribute('aria-label','쭈로 도움받기');b.onclick=open;$('btns').prepend(b);
  window.OjjudaPhotoTtang.canLeave=()=>!busy;
  window.OjjudaPhotoTtang.menu=toMenu;
  window.OjjudaPhotoHelp={open,isBusy:()=>busy};

@@ -27,6 +27,6 @@
 
 // Load optional paid help after the game engine has initialized. The guest demo stays free.
 if(location.pathname==='/games/photo-ttang.html'&&new URLSearchParams(location.search).get('demo')!=='1'){
-  const loadPhotoHelp=()=>{const script=document.createElement('script');script.src='/photo-ttang-help.js?v=20261006-help1';document.head.append(script);};
+  const loadPhotoHelp=()=>{const script=document.createElement('script');script.src='/photo-ttang-help.js?v=20261006-red1';document.head.append(script);};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadPhotoHelp,{once:true});else loadPhotoHelp();
 }

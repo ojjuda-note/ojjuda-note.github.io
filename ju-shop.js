@@ -66,8 +66,8 @@
   if(!user()){const a=el('a','','로그인하기');a.href='/?auth=login&next=world';body.append(a);}
   for(const product of state?.products||[]){
    const card=el('article','ju-product'),ent=owned(product.key);card.append(preview(product),el('small','',LABELS[product.slot]),el('strong','',product.name));
-   card.append(el('p','',ent?ent.expires_at?new Date(ent.expires_at).toLocaleDateString('ko-KR')+'까지':'구매 완료 · 계속 사용':`${product.price} ZU · ${product.months?'1개월':'계속 사용'}`));
-   const button=el('button','',ent?state.selected?.[product.slot]===product.key?'적용 해제':'사용하기':`${product.price} ZU로 구매`);button.dataset.shopProduct=product.key;button.onclick=()=>buy(product);card.append(button);body.append(card);
+   card.append(el('p',ent?'ju-product-owned':'ju-product-price',ent?ent.expires_at?new Date(ent.expires_at).toLocaleDateString('ko-KR')+'까지':'구매 완료 · 계속 사용':`${product.price} ZU · ${product.months?'1개월':'계속 사용'}`));
+   const button=el('button',ent?'':'ju-paid-action',ent?state.selected?.[product.slot]===product.key?'적용 해제':'사용하기':`${product.price} ZU로 구매`);button.dataset.shopProduct=product.key;button.onclick=()=>buy(product);card.append(button);body.append(card);
   }
   message(error);renderButtons();
  }

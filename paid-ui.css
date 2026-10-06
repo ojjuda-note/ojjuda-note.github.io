@@ -1,0 +1,111 @@
+/* Paid actions keep one identity across World, cards and embedded games. */
+:root {
+  --ju-paid: #c83e4d;
+  --ju-paid-hover: #ad2e3e;
+  --ju-paid-ink: #a72e40;
+  --ju-paid-soft: #fff0f1;
+  --ju-paid-line: #edbdc4;
+  --ju-paid-muted: #93646d;
+}
+:root[data-theme="dark"] {
+  --ju-paid-ink: #ffadb8;
+  --ju-paid-soft: #38212d;
+  --ju-paid-line: #864653;
+  --ju-paid-muted: #c1949e;
+}
+/* Explicit markers only: rewards, balances and already-owned items are not purchases. */
+:root .ju-paid-action {
+  background: var(--ju-paid) !important;
+  color: #fff !important;
+  border: 1px solid var(--ju-paid) !important;
+  box-shadow: none !important;
+}
+:root .ju-paid-action:hover:not(:disabled) {
+  background: var(--ju-paid-hover) !important;
+  border-color: var(--ju-paid-hover) !important;
+}
+:root .ju-paid-soft {
+  background: var(--ju-paid-soft) !important;
+  color: var(--ju-paid-ink) !important;
+  border: 1px solid var(--ju-paid-line) !important;
+  box-shadow: none !important;
+}
+:root .ju-paid-soft:hover:not(:disabled) { border-color: var(--ju-paid) !important; }
+:root :is(.ju-paid-action, .ju-paid-soft):focus-visible {
+  outline: 3px solid var(--ju-paid-ink) !important;
+  outline-offset: 3px;
+}
+:root :is(.ju-paid-action, .ju-paid-soft):disabled {
+  background: var(--ju-paid-soft) !important;
+  color: var(--ju-paid-muted) !important;
+  border-color: var(--ju-paid-line) !important;
+  opacity: .65;
+  cursor: not-allowed;
+}
+:root .ju-paid-price { color: var(--ju-paid-ink); font-weight: 700; }
+
+/* Matching shop and charge tiles, including the missing shop icon. */
+.my-menu-group:has(> [data-ju-shop-open]),
+.my-menu-group:has(> [data-ju-charge-open]) { border-color: var(--ju-paid-line); }
+:root .my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]) {
+  background: var(--ju-paid-soft);
+  color: var(--ju-paid-ink);
+  height: 100%;
+}
+:root .my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]):hover { background: var(--ju-paid-soft); }
+.my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]) .my-menu-icon {
+  background: var(--ju-paid);
+  color: #fff;
+}
+.my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]) .my-menu-caption {
+  color: var(--ju-paid-muted);
+  font-size: 11px;
+}
+.world-menu-grid .my-menu-summary[data-ju-shop-open]::after { content: none; }
+
+/* A short help section rather than three oversized full-width buttons. */
+.panel.photo-help-panel { width: min(380px, 100%); padding: 24px 18px 18px; border-radius: 24px; background: #fff; }
+.photo-help-panel h2 { font-size: 23px; }
+.photo-help-free-actions { display: flex; gap: 8px; margin-top: 16px; }
+.photo-help-free-actions .big { flex: 1; min-width: 0; height: 46px; margin: 0; border-radius: 12px; font-size: 14px; }
+.photo-help { margin-top: 20px; padding-top: 16px; border-top: 1px solid #ece8f0; }
+.photo-help .photo-help-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
+.photo-help-heading strong { font-size: 13px; color: #554b60; }
+.photo-help-heading small { color: var(--ju-paid-ink); font-size: 11px; }
+.photo-help-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.photo-help-grid .photo-help-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; width: 100%; min-width: 0; min-height: 104px; padding: 12px 4px; border-radius: 14px; font: 600 13px/1.35 system-ui, sans-serif; cursor: pointer; }
+.photo-help-icon { display: block; width: 23px; height: 23px; }
+.photo-help-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.photo-help-price { display: inline-block; padding: 3px 9px; border-radius: 20px; background: #fff; color: var(--ju-paid-ink); font-size: 12px; font-weight: 800; }
+.photo-help-button:disabled .photo-help-price { background: transparent; color: inherit; }
+.photo-help .photo-help-status { margin: 10px 0 0; font-size: 12px; overflow-wrap: anywhere; }
+.photo-help .photo-help-status:empty { display: none; }
+#btns .photo-help-entry { font-size: 21px; }
+
+/* Purchase prices remain visible next to the content preview. */
+.ju-product .ju-product-price { color: var(--ju-paid-ink); }
+.ju-product .ju-product-owned { color: var(--ink-2, #746479); }
+.ju-shop-dialog { background: var(--surface, #fff); color: var(--ink, #42374b); border-color: var(--ju-paid-line); }
+.ju-shop-dialog [data-shop-coins] { font-size: 13px; color: var(--ink-2, #746479); }
+.ju-shop-dialog [data-shop-message]:empty { display: none; }
+.ju-shop-dialog footer { margin-top: 16px; }
+.ju-product { background: var(--surface, #fff); border-color: var(--ju-paid-line); }
+.ju-product button { min-height: 42px; }
+.ju-compose-tools > button { background: var(--ju-paid-soft); color: var(--ju-paid-ink); border: 1px solid var(--ju-paid-line); }
+.ju-charge-dialog { --ju-accent: var(--ju-paid); --ju-ink: var(--ju-paid-ink); --ju-soft: var(--ju-paid-soft); }
+.ju-charge-dialog .ju-charge-pack[aria-pressed="true"] { border-color: var(--ju-paid); }
+.ju-charge-dialog .ju-charge-checkout:not(:disabled), .ju-charge-dialog .ju-charge-bonus { color: #fff; }
+.ju-charge-dialog .ju-charge-checkout:not(:disabled):hover { background: var(--ju-paid-hover); }
+.ju-paid-choice { border-color: var(--ju-paid-line); }
+.ju-paid-choice small { color: var(--ju-paid-ink); }
+.note-photo-tile.ju-paid-choice:has(input:checked) { outline-color: var(--ju-paid); border-color: var(--ju-paid); }
+.note-photo-tile.ju-paid-choice:has(input:checked) .note-photo-tile-mark { background: var(--ju-paid); color: #fff; }
+.note-photo-tile.ju-paid-choice .note-photo-tile-caption { color: var(--ju-paid-ink); background: var(--ju-paid-soft); }
+.note-photo-featured-badge.ju-paid-price { background: var(--ju-paid-soft); color: var(--ju-paid-ink); }
+@media (max-width: 350px) {
+  .panel.photo-help-panel { padding: 22px 14px 16px; }
+  .photo-help-grid { gap: 6px; }
+  .photo-help-grid .photo-help-button { font-size: 12px; }
+}
+
+.ju-charge-dialog:not(.ju-charge-beta) .ju-charge-won { color: var(--ju-paid-ink); font-weight: 700; }

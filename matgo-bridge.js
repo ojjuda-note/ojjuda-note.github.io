@@ -60,7 +60,7 @@
       close.onclick = requestClose;
       bar.append(close);
       frame = document.createElement('iframe');
-      const params = new URLSearchParams({ v: '20261005-effects1' });
+      const params = new URLSearchParams({ v: '20261006-red1' });
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
       if (typeof options.title === 'string') params.set('room_title', options.title.slice(0, 80));

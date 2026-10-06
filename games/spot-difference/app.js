@@ -74,7 +74,7 @@
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
     const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1 ZU':'힌트 · 1 ZU';
-    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';$(id).setAttribute('aria-label',hintLabel);}
+    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';$(id).setAttribute('aria-label',hintLabel);$(id).classList.toggle('ju-paid-action',!showPreviousHint&&unpaidHint);}
     const extendable=!r.timeBought&&(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
