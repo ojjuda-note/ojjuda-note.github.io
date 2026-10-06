@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {SOFA_ACCESSORY_IMAGES} from '../house-test/sofa-v1-registration.js?v=20261006-sofaparts1';
-import {SOFA_CUSHION_SEATS} from '../house-test/sofa-cushion-placement.js?v=20261006-sofaparts1';
-import {sofaAccessoryLayers} from '../house-test/sofa-accessory-art.js?v=20261006-sofaparts1';
+import {SOFA_ACCESSORY_IMAGES} from '../house-test/sofa-v1-registration.js?v=20261006-assembly1';
+import {SOFA_CUSHION_SEATS} from '../house-test/sofa-cushion-placement.js?v=20261006-assembly1';
+import {sofaAccessoryLayers} from '../house-test/sofa-accessory-art.js?v=20261006-assembly1';
 import {validateSofaCushions,installSofaCushions} from '../house-test/sofa-cushion-data.js';
 const original={seats:structuredClone(SOFA_CUSHION_SEATS),images:structuredClone(SOFA_ACCESSORY_IMAGES)};
 const data=JSON.parse(fs.readFileSync(new URL('../house-test/assets/sofa-cushions-v1.runtime.json',import.meta.url)));

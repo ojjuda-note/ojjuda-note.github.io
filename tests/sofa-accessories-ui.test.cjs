@@ -5,6 +5,7 @@ const proof=process.env.BLANKET_PROOF_DIR||path.join(workspace,'house-opening-pr
 const font=process.env.CHAIR_PROOF_FONT||path.join(workspace,'carpet-studio/NotoSansCJKkr-Regular.otf');
 const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^']+)/)[1];
 const owner='local-blanket-placement',key='ojjuda-house-playtest-v1:'+owner,id='blanket-floor';
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'house-test/item-assets.json'))),sofaViews=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets',manifest.assets.sofa.file))).views;
 const sofas={left:{direction:'left',x:0,y:3},center:{direction:'center',x:3,y:0},right:{direction:'right',x:7.5,y:3}};
 const expectedSofa=sofa=>{const offset={left:{x:.38,y:1.89},center:{x:.01,y:.38},right:{x:.02,y:.01}}[sofa.direction];return {direction:sofa.direction,x:Number((sofa.x+offset.x).toFixed(6)),y:Number((sofa.y+offset.y).toFixed(6)),elevation:.025,mode:'sofa'};};
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
@@ -35,7 +36,7 @@ const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
     return {kind:g.art.kind,size,sources:canvas.dataset.sources.split(' '),painted,zIndex:Number(n.style.zIndex),sofaZ:Number(document.querySelector('[data-furniture="sofa"]')?.style.zIndex),triangles:g.art.triangles?.length,layers:g.art.layers?.map(layer=>layer.id),registration:g.registration||null,geometryMatchesOriginal:signature(g)===signature(expected),signature:signature(g)};
    },{p,target,version});
    assert(art.painted>200,'approved blanket image paints visible pixels');assert(art.geometryMatchesOriginal,'mode uses the unchanged original source triangles and world projection');
-   const isFloor=p.mode==='floor',expectedImage=isFloor?'assets/blanket-floor-'+p.direction+'.png':'assets/blanket-sofa-'+p.direction+'-v1.png';assert(art.sources.includes(expectedImage),'the selected mode and direction load their original PNG');assert(art.sources.every(source=>source===expectedImage||!isFloor&&/^assets\/sofa-(left|center|right)-(left-arm|right-arm)-v1\.png$/.test(source)),'source pixels are limited to this original blanket and permitted sofa masks');
+   const isFloor=p.mode==='floor',expectedImage=isFloor?'assets/blanket-floor-'+p.direction+'.png':'assets/blanket-sofa-'+p.direction+'-v1.png';assert(art.sources.includes(expectedImage),'the selected mode and direction load their original PNG');assert(art.sources.every(source=>source===expectedImage||!isFloor&&(/^assets\/sofa-(left|center|right)-(left-arm|right-arm)-v1\.png$/.test(source)||source===sofaViews[p.direction].originalLayers?.side.image)),'source pixels are limited to this original blanket and permitted sofa masks');
    const [w,d]=isFloor?[2,1.5]:[1.6,1.1];assert.deepEqual(art.size,p.direction==='center'?{w,d}:{w:d,d:w});
    if(isFloor){assert.equal(art.kind,'floor-blanket');assert.equal(art.triangles,1152);assert.equal(art.registration.image,expectedImage);assert(art.registration.worldCorners.every(point=>point.z===0));assert.equal(art.zIndex,4);}
    else{assert.equal(art.kind,'sofa-accessory');assert.deepEqual(art.layers,['blanket-sofa','blanket-sofa-front']);assert(art.zIndex>art.sofaZ,'sofa drape paints over its supporting sofa');}

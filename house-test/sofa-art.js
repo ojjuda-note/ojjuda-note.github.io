@@ -1,15 +1,21 @@
-import {floorPoint,roomPoint} from './model.js?v=20261006-sofaparts1';
-import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-sofaparts1';
-import {projectMesh,validateMesh} from './picture-mesh.js?v=20261006-sofaparts1';
-export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-sofaparts1';
+import {floorPoint,roomPoint} from './model.js?v=20261006-assembly1';
+import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-assembly1';
+import {projectMesh,validateMesh} from './picture-mesh.js?v=20261006-assembly1';
+import {originalSofaArtwork} from './sofa-original-layers.js?v=20261006-assembly1';
+export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-assembly1';
 export function sofaPoseValid(placement,item){
  const registration=SOFA_V1[placement?.direction];
  const pose={...placement,width:item.width,depth:item.depth,height:item.height};
- return !!registration&&[registration.mesh,...Object.values(registration.partMeshes||{})].every(mesh=>validateMesh(mesh,pose).ok);
+ if(!registration||![registration.mesh,...Object.values(registration.partMeshes||{})].every(mesh=>validateMesh(mesh,pose).ok))return false;
+ if(registration.originalLayers){
+  try{originalSofaArtwork(item,placement,{x:placement.x,y:placement.y,w:item.depth,d:item.width},{w:item.depth,d:item.width},registration.originalLayers);}catch{return false;}
+ }
+ return true;
 }
 export function sofaArtwork(item,placement,contact,size){
  const registration=SOFA_V1[placement.direction];
  if(!registration)throw new RangeError('Unknown sofa picture direction');
+ if(registration.originalLayers)return originalSofaArtwork(item,placement,contact,size,registration.originalLayers);
  const pose={...placement,width:item.width,depth:item.depth,height:item.height};
  const projected=projectMesh(registration.mesh,pose),points=projected.points.map(p=>p.target);
  const footprint=[[contact.x,contact.y],[contact.x+contact.w,contact.y],[contact.x+contact.w,contact.y+contact.d],[contact.x,contact.y+contact.d]].map(p=>floorPoint(...p));
@@ -28,6 +34,7 @@ export function sofaArtwork(item,placement,contact,size){
 }
 
 export function sofaForegroundLayers(geometry,direction){
+ if(geometry.art.foreground)return geometry.art.layers.filter(layer=>geometry.art.foreground.includes(layer.id));
  const order=SOFA_V1[direction].order,nearParts=order.slice(order.indexOf('slot:surface')+1).filter(id=>!id.startsWith('slot:'));
  return geometry.art.layers.filter(layer=>nearParts.includes(layer.id));
 }

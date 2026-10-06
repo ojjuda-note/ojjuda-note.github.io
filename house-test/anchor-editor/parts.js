@@ -1,5 +1,5 @@
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-sofaparts1';
-import {SOFA_CUSHION_SEATS,sofaCushionOrder} from '../sofa-cushion-placement.js?v=20261006-sofaparts1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-assembly1';
+import {SOFA_CUSHION_SEATS,sofaCushionOrder} from '../sofa-cushion-placement.js?v=20261006-assembly1';
 // Original-pixel furniture partitions and ordered 2D accessory insertion.
 // Polygon edges assign whole source pixels; antialiasing never divides a pixel
 // between parts, so putting those parts back together cannot create alpha seams.
@@ -42,6 +42,7 @@ function source(value,frame=null){
  if(value.name!==undefined&&(typeof value.name!=='string'||value.name.length>240))fail('PNG 파일 이름이 올바르지 않습니다.');
  return {data,...size,...(value.name!==undefined?{name:value.name}:{})};
 }
+export const normalizePartSource=source;
 function rect(value,frame){
  if(!plain(value)||![value.x,value.y,value.width,value.height].every(Number.isFinite)||value.x<0||value.y<0||value.width<=0||value.height<=0||value.x+value.width>frame.width+1e-8||value.y+value.height>frame.height+1e-8)fail('물건의 위치와 크기를 전체 그림 안에 맞추세요.');
  return {x:value.x,y:value.y,width:value.width,height:value.height};

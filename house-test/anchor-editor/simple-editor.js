@@ -1,5 +1,5 @@
-import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261006-sofaparts1';
-import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261006-sofaparts1';
+import {analyseAlpha,nextEmptyPart} from './automation.js?v=20261006-assembly1';
+import {saveDraft,loadDraft,clearDraft} from './draft-store.js?v=20261006-assembly1';
 const $=id=>document.getElementById(id);
 // Presentation and recovery only. The app remains the owner of project changes.
 export function mountSimpleEditor(api){
@@ -31,6 +31,7 @@ export function mountSimpleEditor(api){
    text+='\n격자·원근 검수는 별도입니다. 미등록 그림도 저장할 수 있어요.';
   }
   $('quick-status').textContent=text;
+  if(state.pictureAssembly)$('quick-status').textContent='옆판과 다리를 한 장으로 유지하고 몸통 밑면을 맞췄어요.\n「그림 겹쳐 만들기」에서 높이·길이·맞춤점을 다시 조절할 수 있어요.';
   if(pending)$('draft-status').textContent='윤곽 작성 중 · 완성한 뒤 자동 임시저장';
  };
  async function persist(at,{strict=false}={}){
