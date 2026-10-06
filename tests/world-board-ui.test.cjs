@@ -63,7 +63,7 @@ for(const key of ['carom4_easy','carom3_normal','pool8_hard','screw_box','screw_
 assert.equal(await page.locator('[data-game=carom4_easy] .board-game-difficulty').innerText(),'쉬움','difficulty remains visible below the game name');
 assert.equal(await page.locator('[data-game=screw]').count(),0,'no combined screw ranking');
 assert.equal(await page.locator('[data-game=matgo]').count(),0,'existing visibility rule preserved');
-await page.evaluate(()=>{OjjudaMatgoAccess.visible=()=>true;OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames()});});assert.equal(await page.locator('[data-game=matgo]').count(),1);
+await page.evaluate(()=>{OjjudaMatgoAccess.visible=()=>true;OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames()});});assert.equal(await page.locator('[data-game=matgo]').count(),1);assert.equal(await page.locator('[data-game=photo_ttang]').count(),1,'photo ranking appears for eligible members');
 for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
 await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.clock.pauseAt(await page.evaluate(()=>Date.now()+100));const frozenPage=await page.locator('.board-leaders').getAttribute('data-rank-page');await page.clock.runFor(12000);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),frozenPage,'reduced motion stops auto advance');await page.clock.resume();
 await page.setViewportSize({width:390,height:844});await page.locator('.board-leaders').screenshot({path:'/tmp/chalkboard-ranking.png'});
@@ -101,7 +101,7 @@ const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='community_g
 await page.evaluate(()=>{document.body.classList.add('gaming');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
-assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_monthly_ranking').length),personalCalls+29,'public records refresh for every game on return');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_monthly_ranking').length),personalCalls+30,'public records refresh for every game on return');
 await page.evaluate(()=>{document.body.classList.add('matgo-open');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='matgo').score=7500;document.body.classList.remove('matgo-open');});
 await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score').textContent==='7,500G');

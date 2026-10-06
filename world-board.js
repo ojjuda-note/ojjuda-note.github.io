@@ -211,10 +211,10 @@
   void home();
   // The board may be opened before the arcade has checked Matgo eligibility.
   const matgoAccess=window.OjjudaMatgoAccess;
-  if(!games.matgo&&typeof matgoAccess?.check==='function'){
+  if((!games.matgo||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
    void matgoAccess.check().then(member=>{
     if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
-    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'}};
+    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
     if(!view&&!dialog)void home();
    }).catch(()=>{});
   }

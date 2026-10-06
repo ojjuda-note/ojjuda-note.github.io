@@ -14,7 +14,7 @@ host.addEventListener('click',e=>{const b=e.target.closest('[data-act="game-open
 `+world.slice(world.indexOf('</script>',boot));
 world=world.replace('</head>',`<script>
 window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{id:'adult-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:fixtureAge,locked:true}:false})};
-</script><script src="/matgo-access.js"></script><script src="/photo-ttang-access.js"></script><script src="/ttang-bridge.js"></script><script src="/photo-ttang-bridge.js"></script></head>`);
+</script><script src="/matgo-access.js"></script><script src="/photo-ttang-access.js"></script><script src="/ttang-bridge.js"></script><script src="/photo-ttang-ranking.js"></script><script src="/photo-ttang-bridge.js"></script></head>`);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
