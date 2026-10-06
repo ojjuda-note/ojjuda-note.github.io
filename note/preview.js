@@ -2237,6 +2237,25 @@ function validEventOptions() {
   return validEventInteger($('#event-radius').value, 1, 30)
     && validEventInteger($('#event-hours').value, 1, 24);
 }
+let pendingCardDecoration = null;
+function applyPendingCardDecoration() {
+  const pending = pendingCardDecoration;
+  if (!pending || backdrop.hidden || draftLoading) return;
+  pendingCardDecoration = null;
+  if (session?.user?.id !== pending.userId) return;
+  if (window.OjjudaShop?.applyProduct(pending.key)) message('구매한 꾸미기를 적용했어요. 미리보기에서 확인해 보세요.');
+  else message('사용 기간을 확인하지 못했어요. 상점에서 다시 확인해 주세요.');
+}
+async function useCardDecoration(key, userId) {
+  if (!['card_stickers','card_fonts','card_foil'].includes(key) || !userId || session?.user?.id !== userId || busy || draftLoading) return false;
+  await window.OjjudaShop?.refresh();
+  if (session?.user?.id !== userId || !window.OjjudaShop?.owned(key)) return false;
+  pendingCardDecoration = {key,userId};
+  window.OjjudaNoteNavigation?.leaveMy();
+  if (backdrop.hidden) await openComposer('new');
+  else applyPendingCardDecoration();
+  return true;
+}
 async function openComposer(mode, card = null, replyTo = null) {
   if (busy || draftLoading) return;
   const replyTarget = mode === 'reply' ? (validCardId(replyTo) ? replyTo : stack.at(-1)) : null;
@@ -2343,6 +2362,7 @@ async function openComposer(mode, card = null, replyTo = null) {
     }
   }
   if (!editingId && kind !== 'event' && run === composerRun && !backdrop.hidden) autoWritingLocation(run);
+  if (run === composerRun && epoch === identityEpoch) applyPendingCardDecoration();
 }
 function autoWritingLocation(run) {
   const button = $('#card-location-button');
@@ -3402,6 +3422,7 @@ function installComposerSheet() {
   summary.addEventListener('click', event => { if (skipClick) { event.preventDefault(); skipClick = false; } });
 }
 window.OjjudaCharge?.install({ client, getUserId: () => session?.user?.id || null, source: 'note',
+  onUseCardDecoration: useCardDecoration,
   onBalance: (coins, userId) => { if (session?.user?.id === userId) { balanceRun++; worldCoins = coins; updateAuth(); } } });
 window.OjjudaNoteSupport?.install({ client, getUserId: () => session?.user?.id || null, source: 'note', getScreen: () => document.body.classList.contains('note-my-open') ? 'my' : detail.hidden ? feedMode : 'card', appVersion: '0.45.50-beta' });
 notificationController = window.OjjudaNoteNotifications?.install({
