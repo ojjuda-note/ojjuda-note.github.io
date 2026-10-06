@@ -27,8 +27,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 .bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;text-shadow:0 1px 2px #0008}
 .btns{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:none;gap:8px;z-index:3}
 .rb{width:44px;height:44px;border-radius:50%;background:#ffffff22;border:1px solid #ffffff30;font-size:18px;backdrop-filter:blur(6px)}
-.joy{position:fixed;width:124px;height:124px;margin:-62px 0 0 -62px;border-radius:50%;background:radial-gradient(circle,#ffffff20 0,#ffffff40 60%,#ffffff70 100%);box-shadow:0 0 0 2px #ffffffaa;z-index:4;pointer-events:none;animation:jin .15s ease-out}
-.joy i{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--c) 70%);box-shadow:0 6px 14px -4px #0008,inset 0 0 0 3px #ffffffaa}
+.joy{position:fixed;width:88px;height:88px;margin:-44px 0 0 -44px;border-radius:50%;background:radial-gradient(circle,#ffffff20 0,#ffffff40 60%,#ffffff70 100%);box-shadow:0 0 0 2px #ffffffaa;z-index:4;pointer-events:none;animation:jin .1s ease-out}
+.joy i{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--c) 70%);box-shadow:0 0 8px #0006,inset 0 0 0 2px #ffffffaa}
 .joy.out{opacity:0;transform:scale(.8);transition:.18s}@keyframes jin{from{transform:scale(.6);opacity:0}}
 .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:#120e24bb;backdrop-filter:blur(4px)}
 .panel{background:linear-gradient(180deg,#fff,#F6F2FC);color:var(--ink);border-radius:28px;padding:22px 18px 18px;width:min(420px,100%);max-height:100%;overflow:auto;box-shadow:0 40px 80px -30px #000c;text-align:center}
@@ -212,6 +212,7 @@ class World{
   }
   capture(p){ const before=this.counts[p.id], id=p.id, W=this.GW;
     for(const k of p.trail){ if(this.trail[k]===id) this.trail[k]=0; this.setOwn(k,id); } const pts=p.pts; p.trail=[]; p.pts=[]; p.tc=new Map();
+    if(p.bot){ p.plan=[];p.path=null;p.think=0; }
     // 내 땅을 감싸는 상자 안에서만 계산 (상자 밖은 어차피 바깥)
     const b=p.bb, x0=Math.max(0,b[0]-1), y0=Math.max(0,b[1]-1), x1=Math.min(W-1,b[2]+1), y1=Math.min(this.GH-1,b[3]+1);
     const st=++this._st, q=this._q; let h=0,tl=0;
@@ -289,9 +290,13 @@ class World{
         if(p.pts.length<25&&Math.random()<p.aggro*.3){ for(const q of this.players){ if(q===p||!q.alive||!q.pts.length) continue; for(let i=0;i<q.pts.length;i+=3){ const t=q.pts[i]; if(Math.hypot(t.x-p.x,t.y-p.y)<5){ p.plan=[{x:t.x,y:t.y}]; p.path=null; break; } } } }
       }
     }
+    // 회전 원 안의 점을 계속 쫓으면 제자리에서 돌아요. 꺾을 여유가 있을 때 다음 점을 봅니다.
+    const turnRadius=p.speed*(p.boostT>0?2:1)/Math.max(.01,this.botTurn(p)), arrive=Math.max(.8,turnRadius*1.1);
+    while(p.plan.length&&Math.hypot(p.plan[0].x-p.x,p.plan[0].y-p.y)<arrive) p.plan.shift();
     let tx=null,ty=null;
-    if(p.plan.length){ const w=p.plan[0]; tx=w.x; ty=w.y; if(Math.hypot(w.x-p.x,w.y-p.y)<.8) p.plan.shift(); }
-    else if(p.path&&p.path.length){ const U=this.U; let i=Math.min(p.path.length-1,2); const c=p.path[i]; tx=(c%U)+.5; ty=((c/U)|0)+.5; if(Math.hypot(tx-p.x,ty-p.y)<.7) p.path.shift(); }
+    if(p.plan.length){ const w=p.plan[0]; tx=w.x; ty=w.y; }
+    else if(p.path&&p.path.length){ const U=this.U, i=Math.min(p.path.length-1,Math.max(2,Math.ceil(turnRadius*2))), c=p.path[i];
+      tx=(c%U)+.5;ty=((c/U)|0)+.5;if(Math.hypot(tx-p.x,ty-p.y)<arrive) p.path.shift(); }
     let want=tx===null?p.ang:Math.atan2(ty-p.y,tx-p.x);
     // 실제 회전 반경과 몸 크기로 앞길을 미리 확인해 자기 선·벽을 피해요.
     let safety=this.botSafety(p,want);
@@ -377,7 +382,7 @@ function decodeSil(runs,N){ const a=new Uint8Array(N); let k=0,v=0; for(const r 
 function startStage(i){ if(!photoAllowed()){lockPhotoGame();return false;} if(PUBLIC_DEMO){let allowed=false;try{allowed=!demoStarted&&i===0&&parent!==window&&parent.OjjudaPhotoTtangDemo?.beginRound();}catch{}if(!allowed){endDemo();return false;}demoStarted=true;} stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
   world=new World(P.UW,'solo',P.UH); world.setViewScale(view().S); sil=decodeSil(P.sil,world.N); silTotal=sil.reduce((a,b)=>a+b,0); mySil=0;
   const base=world.setOwn.bind(world); world.setOwn=(k,v)=>{ const o=world.own[k]; if(o===v) return; base(k,v); if(sil[k]&&me){ if(o===me.id) mySil--; if(v===me.id) mySil++; } };
-  me=world.addPlayer({name:'나',color:0,speed:5.6,turn:5.4,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
+  me=world.addPlayer({name:'나',color:0,speed:5.6,turn:7.2,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
   const lv=P.level??i; const D=diff(lv); const names=BOTNAMES.slice().sort(()=>Math.random()-.5); const cols=[2,3,4,5,6,7].sort(()=>Math.random()-.5);
   for(let b=0;b<D.bots;b++) world.addPlayer({name:names[b],color:cols[b],bot:true,speed:D.botSpeed+Math.random()*.4,turn:4.2,reach:2+Math.random()*5,maxTrail:10+Math.random()*10,aggro:.2+lv*.02});
   world.maxItems=1; world.itemGap=D.itemGap; world.nextItem=6+Math.random()*4; world.noInherit=true; const si=world.spawnItem.bind(world); world.spawnItem=()=>{ si(); world.nextItem=world.time+world.itemGap+Math.random()*2; }; me.shieldT=2; endAt=world.time+timeLimit(lv); tick=0; startWait=3; cdLast=4; for(const p of world.players) p.born=-1; for(const m of mobs) m.born=-1;
@@ -419,7 +424,7 @@ function redrawTerritory(){
 function flushDirty(){ if(world.dirty.size){ if(world.dirty.size>256)redrawTerritory();else for(const k of world.dirty) drawCell(k); world.dirty.clear(); revDirty=true; }
   const t=performance.now(); if(revDirty&&photoImg.complete&&t-revLast>60){ revLast=t; revDirty=false; rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,rev.width,rev.height); rctx.drawImage(gamePhotoSource(),0,0,rev.width,rev.height); rctx.globalCompositeOperation='destination-in'; rctx.imageSmoothingEnabled=true; rctx.drawImage(mk,0,0,rev.width,rev.height); rctx.globalCompositeOperation='source-over'; } }
 // ---------- 조이스틱 + 키보드 ----------
-const joys=new Map(), JR=56, JOY_DEAD_ZONE=4;
+const joys=new Map(), JR=28, JOY_DEAD_ZONE=2;
 gameCanvas.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode!=='play'||!me||joys.size) return; const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el); joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); gameCanvas.setPointerCapture&&gameCanvas.setPointerCapture(e.pointerId); });
 gameCanvas.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy); if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; } j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>JOY_DEAD_ZONE){ world.steer(me,Math.atan2(dy,dx)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } });
 const endJ=e=>{ const j=joys.get(e.pointerId); if(!j) return; j.el.classList.add('out'); setTimeout(()=>j.el.remove(),180); joys.delete(e.pointerId); }; gameCanvas.addEventListener('pointerup',endJ); gameCanvas.addEventListener('pointercancel',endJ);
