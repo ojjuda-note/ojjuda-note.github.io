@@ -189,9 +189,15 @@ async function verifyForm() {
 (async () => {
   for (const file of ['world.html', 'park/index.html']) {
     const html = read(file);
-    assert(html.indexOf('/diagnostics.js?') < html.indexOf('signup-identity.js?'), 'collector loads before application scripts');
-    assert.match(html, /support\.js\?v=20261004-admin1/);
-    assert.match(html, /notifications\.js\?v=20260929-diag1/);
+    const scripts = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/g)]
+      .map(([, src]) => new URL(src, 'https://fixture.test/' + file));
+    const index = pathname => scripts.findIndex(src => src.pathname === pathname);
+    assert(index('/diagnostics.js') >= 0 && index('/signup-identity.js') > index('/diagnostics.js'),
+      'collector is present and loads before application scripts');
+    for (const pathname of ['/note/support.js', '/note/notifications.js']) {
+      const script = scripts.find(src => src.pathname === pathname);
+      assert(script?.searchParams.get('v'), file + ': versioned ' + pathname + ' is installed');
+    }
   }
   await verifyCollector(); await verifyForm();
   console.log('PASS: bug-only recent diagnostic reports, safe error categories/paths, fetch semantics, no polling/storage/background upload, account isolation, bounds, graceful submission fallback and World legacy sender');

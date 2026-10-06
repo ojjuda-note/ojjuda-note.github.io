@@ -72,7 +72,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
   const visible=rect&&rect.width>0&&rect.height>0&&rect.top>=top&&rect.top<top+height&&style.display!=='none'&&style.visibility!=='hidden';
   const inset=visible?Math.max(0,top+height-rect.top):0;
   if(inline){
-   if(!readOnly&&!studioOnly)frame.contentDocument?.documentElement.style.setProperty('--house-inline-room-height',Math.max(180,Math.min(360,Math.round((height-inset)*.36)))+'px');
+   if(!readOnly&&!studioOnly)frame.contentDocument?.documentElement?.style.setProperty('--house-inline-room-height',Math.max(180,Math.min(360,Math.round((height-inset)*.36)))+'px');
    // Fit the normal World content column, leaving its header/sidebar/menu usable.
    // Use document coordinates so scrolling does not keep growing the room.
    const contentTop=overlay.getBoundingClientRect().top+window.scrollY;
@@ -132,7 +132,7 @@ export function openHouseTest({owner,authorized,studioAuthorized=null,preview=nu
     if(readOnly||!hasStudioAccess())return;
     cleanup();if(!hasStudioAccess())return;
     if(typeof onStudio==='function')onStudio();
-    else import('./studio-host.js?v=20261006-assembly1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
+    else import('./studio-host.js?v=20261006-runtime1').then(({openFurnitureStudio})=>{if(hasStudioAccess())openFurnitureStudio({owner,authorized:hasStudioAccess});});
    }
   };
   memberProfile=profileValues(resolvedProfile);

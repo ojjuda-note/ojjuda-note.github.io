@@ -192,11 +192,12 @@ function renderRoom(){
   if(!room||animating)return;
   if(room.status==='waiting'){
     if(viewKey===room.id+':waiting')return;viewKey=room.id+':waiting';
-    $('#content').innerHTML=`<section class="lobby waiting"><div class="orbit" aria-hidden="true"></div><h2>${room.mode==='quick'?'상대를 찾고 있어요':'상대를 기다리고 있어요'}</h2><p>${room.mode==='quick'?'5초 안에 상대가 없으면<br>컴퓨터와 바로 시작해요. <b id="quick-seconds"></b>':'상대가 입장하면 바로 시작해요.<br>이 코드를 친구에게 알려주세요.'}</p><strong class="code" id="invite-code">${escape(room.code)}</strong><div class="row"><button id="copy-code" class="btn gold">코드 복사</button><button id="cancel-wait" class="btn ghost">대기 취소</button></div><p class="fine">대결은 두 사람 모두 입장한 뒤 시작해요.</p></section>`;
+    const quick=room.mode==='quick'&&!arcadeRoom;
+    $('#content').innerHTML=`<section class="lobby waiting"><div class="orbit" aria-hidden="true"></div><h2>${quick?'상대를 찾고 있어요':'상대를 기다리고 있어요'}</h2><p>${quick?'5초 안에 상대가 없으면<br>컴퓨터와 바로 시작해요. <b id="quick-seconds"></b>':'상대가 입장하면 바로 시작해요.<br>이 코드를 친구에게 알려주세요.'}</p>${quick?'':`<strong class="code" id="invite-code">${escape(room.code)}</strong>`}<div class="row">${quick?'':'<button id="copy-code" class="btn gold">코드 복사</button>'}<button id="cancel-wait" class="btn ghost">대기 취소</button></div>${quick?'':'<p class="fine">대결은 두 사람 모두 입장한 뒤 시작해요.</p>'}</section>`;
     if(arcadeRoom){$('.waiting h2').textContent=arcadeRoom.title;$('.waiting>p').textContent='오락실 채팅창에 게시됐어요. 상대가 참여하면 시작해요.';$('#invite-code').textContent='#'+arcadeRoom.room_no;$('#copy-code').textContent='방번호 복사';roomLabel();
       if(publicLobby){$('.waiting .row').insertAdjacentHTML('beforebegin','<button id="wait-in-chat" class="btn gold">오락실 채팅에서 기다리기</button>');$('#wait-in-chat').onclick=waitInChat;}
     }
-    $('#copy-code').onclick=async()=>{const code=String(arcadeRoom?.room_no||room.code);try{await navigator.clipboard.writeText(code);toast(arcadeRoom?'방번호를 복사했어요.':'방 코드를 복사했어요.');}catch{toast('방번호 / 코드: '+code);}};$('#cancel-wait').onclick=()=>leave(false);return;
+    const copy=$('#copy-code');if(copy)copy.onclick=async()=>{const code=String(arcadeRoom?.room_no||room.code);try{await navigator.clipboard.writeText(code);toast(arcadeRoom?'방번호를 복사했어요.':'방 코드를 복사했어요.');}catch{toast('방번호 / 코드: '+code);}};$('#cancel-wait').onclick=()=>leave(false);return;
   }
   if(room.status==='cancelled'){
     if(viewKey===room.id+':cancelled')return;viewKey=room.id+':cancelled';closeDialog();clearEvents();
