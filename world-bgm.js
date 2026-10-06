@@ -48,7 +48,7 @@
   }
   function paint(reasons) {
     if (!button) return;
-    const hide = reasons.includes('game') || reasons.includes('video');
+    const hide = !button.isConnected || reasons.includes('game') || reasons.includes('video');
     if (button.hidden !== hide) button.hidden = hide;
     const pressed = String(enabled), label = enabled ? '배경음악 끄기' : '배경음악 켜기';
     if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
@@ -120,8 +120,25 @@
       attributeFilter:['class','hidden','open','src']});
     documents.set(doc, {frame, parent, dispose:() => {observer.disconnect();removers.forEach(fn => fn());}});
   }
+  function placeButton() {
+    if (!button) return;
+    // The app replaces its header during in-world navigation. Reuse this button;
+    // the audio stays outside #app and must never be restarted by a header render.
+    const anchors = [...document.querySelectorAll(
+      '.topbar [data-notifications-open],.side [data-notifications-open],.topbar #note-notifications,.side #note-notifications'
+    )];
+    const anchor = anchors.find(visible) || anchors[0];
+    if (!anchor?.parentElement) {
+      if (button.isConnected) button.remove();
+      return;
+    }
+    if (button.parentElement !== anchor.parentElement || button.nextElementSibling !== anchor) {
+      anchor.before(button);
+    }
+  }
   function scan() {
     clearTimeout(scanTimer); scanTimer = null;
+    placeButton();
     for (const [doc, record] of documents) if (!liveDocument(doc)) {record.dispose();documents.delete(doc);}
     // Maps include newly attached documents; cap nesting to avoid pathological embeds.
     let count = 0;
@@ -151,7 +168,7 @@
   function mount() {
     if (button || !document.body) return;
     const style = document.createElement('style');
-    style.textContent = '#world-bgm-toggle{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;width:38px;height:38px;padding:0;border:1px solid var(--line,#daddf0);border-radius:50%;background:var(--surface,#fff);color:var(--ink,#23264a);font:18px system-ui;box-shadow:0 2px 8px #0002;cursor:pointer;touch-action:manipulation}#world-bgm-toggle[hidden]{display:none}#world-bgm-toggle[aria-pressed="false"]{font-size:13px}#world-bgm-toggle:focus-visible{outline:3px solid var(--accent,#f0679a);outline-offset:3px}@media(min-width:900px){#world-bgm-toggle{bottom:18px;right:18px}}';
+    style.textContent = '#world-bgm-toggle{position:static;display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;align-self:center;width:32px;height:32px;margin:0;padding:0;border:1px solid var(--line,#daddf0);border-radius:50%;background:var(--surface,#fff);color:var(--ink,#23264a);font:18px/1 system-ui;box-shadow:none;cursor:pointer;touch-action:manipulation}#world-bgm-toggle[hidden]{display:none}#world-bgm-toggle[aria-pressed="false"]{font-size:13px}#world-bgm-toggle:focus-visible{outline:3px solid var(--accent,#f0679a);outline-offset:3px}@media(max-width:380px){#world-bgm-toggle{width:28px;height:28px;flex-basis:28px;font-size:16px}}';
     document.head.append(style);
     button = document.createElement('button');
     button.id = 'world-bgm-toggle'; button.type = 'button';
@@ -160,10 +177,11 @@
       if (!enabled && failed && audio) {failed = false;audio.load();}
       setEnabled(!enabled);
     });
-    document.body.append(button);
+    button.hidden = true;
     attach(document);
     scan();
     document.addEventListener('visibilitychange', reconcile);
+    window.addEventListener('resize', schedule, {passive:true});
     window.addEventListener('pagehide', () => {away = true;reconcile();});
     window.addEventListener('pageshow', () => {away = false;scan();});
     window.addEventListener('storage', event => {
