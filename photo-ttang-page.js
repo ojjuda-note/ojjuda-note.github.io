@@ -1,15 +1,17 @@
-/* One guest round, then the existing Ojjuda account flow. */
+/* One unrestricted guest round; full play uses the same 19+ member gate as Matgo. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261006-photo10';
+  const gameUrl = '/games/photo-ttang.html?v=20261006-trial2';
+  const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null;
-  let member = null, frame = null, loading = false, reserved = false, started = false;
+  let member = null, signedUser = null, ageCode = '', frame = null, loading = false, reserved = false, started = false;
   let authEpoch = 0, loadTimer = null;
   window.OjjudaPhotoTtangBridge = { client: null, nick: '' };
+  access?.configure(client);
 
   function usedTrial() {
     try { return localStorage.getItem(trialKey) === '1'; }
@@ -29,17 +31,19 @@
     $('game-shell').hidden = true;
     document.body.classList.remove('playing');
     $('exit-game').hidden = true;
-    $('header-login').hidden = Boolean(member);
+    $('header-login').hidden = Boolean(signedUser);
     $('trial-badge').textContent = member ? '솔로 게임' : used ? '체험 완료' : '로그인 없이 한 판';
     $('trial-title').textContent = used ? '체험이 끝났어요' : '포토땅따먹기';
-    $('trial-intro').textContent = used ? '로그인하고 다음 판을 즐겨요.' : '90%를 채우고 사진을 열어보세요.';
+    $('trial-intro').textContent = used ? '무료 체험은 1판이에요.' : '90%를 채우고 사진을 열어보세요.';
     $('start-demo').hidden = used;
     $('start-demo').disabled = loading;
     $('start-demo').textContent = member ? '게임 시작하기' : '한 판 체험하기';
-    $('continue-login').hidden = !used;
-    $('signup-link').hidden = Boolean(member);
-    $('trial-note').hidden = Boolean(member) || used;
-    $('page-status').textContent = loading ? '불러오는 중…' : '';
+    $('continue-login').hidden = !used || Boolean(signedUser && ageCode);
+    $('complete-identity').hidden = !(used && signedUser && ageCode === 'identity');
+    $('retry-age').hidden = !(used && signedUser && ageCode);
+    $('signup-link').hidden = Boolean(signedUser);
+    $('trial-note').hidden = Boolean(member);
+    $('page-status').textContent = loading ? '불러오는 중…' : used && signedUser ? ({underage:'본게임은 만 19세 생일부터 이용할 수 있어요.',identity:'본게임을 하려면 생년월일을 등록해 주세요.',unavailable:'나이를 확인하지 못했어요. 다시 시도해 주세요.'}[ageCode] || '') : '';
   }
   function stopFrame() {
     clearTimeout(loadTimer);
@@ -63,6 +67,7 @@
   }
   function openGame(demo) {
     if (loading || frame) return;
+    if (!demo && !access?.allowed()) { void verifyIdentity(); return; }
     loading = true;
     renderEntry();
     const candidate = document.createElement('iframe');
@@ -81,7 +86,7 @@
         reserved = true;
         showGame(candidate);
         if (!api.demo()) { stopFrame(); renderEntry(); return; }
-      } else if (!member) { closeGame(); return; }
+      } else if (!member || !access?.allowed()) { closeGame(); return; }
       showGame(candidate);
     });
     candidate.addEventListener('error', () => loadFailure(candidate));
@@ -90,6 +95,7 @@
     loadTimer = setTimeout(() => loadFailure(candidate), 20000);
   }
   window.OjjudaPhotoTtangDemo = {
+    allowed() { return Boolean(frame?.dataset.demo === '1' && (reserved || started)); },
     beginRound() {
       if (!frame || frame.dataset.demo !== '1' || !reserved || started) return false;
       started = true; reserved = false; return true;
@@ -98,14 +104,22 @@
 
   async function verifyIdentity() {
     const epoch = ++authEpoch;
-    let user = null;
+    let user = null, verified = null, code = '';
     try {
       const result = await client?.auth.getUser();
       if (!result?.error && result?.data?.user?.id && !result.data.user.is_anonymous) user = result.data.user;
     } catch { /* A public demo remains available when account lookup fails. */ }
+    if (user) {
+      try {
+        if (!access) throw Object.assign(new Error(), {code:'unavailable'});
+        const grant = await access.refresh();
+        if (grant.userId === user.id) verified = user;
+      } catch (error) { code = error?.code || 'unavailable'; }
+    }
     if (epoch !== authEpoch) return;
+    signedUser = user; ageCode = code;
     const oldId = member?.id;
-    member = user;
+    member = verified;
     window.OjjudaPhotoTtangBridge.client = member ? client : null;
     window.OjjudaPhotoTtangBridge.nick = String(member?.user_metadata?.nickname || '');
     if (member) {
@@ -118,6 +132,14 @@
       renderEntry();
     }
   }
+  access?.subscribe(error => {
+    member = null; ageCode = error.code;
+    window.OjjudaPhotoTtangBridge.client = null;
+    window.OjjudaPhotoTtangBridge.nick = '';
+    if (frame?.dataset.demo === '0') closeGame();
+    else if (!frame) renderEntry();
+  });
+  $('retry-age').addEventListener('click', () => { void verifyIdentity(); });
   $('start-demo').addEventListener('click', () => openGame(!member));
   $('exit-game').addEventListener('click', closeGame);
   addEventListener('message', event => {
@@ -128,17 +150,21 @@
     if (event.key === trialKey && !frame && !member) renderEntry();
   });
   addEventListener('pageshow', event => { if (event.persisted) void verifyIdentity(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && member) void verifyIdentity(); });
+  setInterval(() => { if (member) void verifyIdentity(); }, 30000);
   client?.auth.onAuthStateChange(event => {
     if (event === 'INITIAL_SESSION') return;
     if (event === 'SIGNED_OUT') {
-      authEpoch++; member = null;
+      authEpoch++; member = signedUser = null; ageCode = '';
       window.OjjudaPhotoTtangBridge.client = null;
       window.OjjudaPhotoTtangBridge.nick = '';
-      closeGame();
+      if (frame?.dataset.demo === '0') closeGame();
+      else if (!frame) renderEntry();
     } else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
       authEpoch++;
       setTimeout(() => { void verifyIdentity(); }, 0);
     }
   });
+  renderEntry();
   void verifyIdentity();
 })();

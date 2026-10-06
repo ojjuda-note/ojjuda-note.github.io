@@ -6,7 +6,7 @@ fs.writeFileSync(photo,Buffer.from(html.match(/data:image\/jpeg;base64,([A-Za-z0
 const invalid=path.join(dir,'broken.jpg');fs.writeFileSync(invalid,'not an image');
 const mock=`<script>
 window.savedPhotos=[];window.photoUploads=[];
-window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-4111-8111-111111111111'}}})},rpc:async()=>({data:false}),
+window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-4111-8111-111111111111'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:19,locked:true}:false}),
  storage:{from:()=>({upload:async(name,blob,options)=>{photoUploads.push({name,size:blob.size,type:blob.type,options});return{error:null}},createSignedUrl:async p=>({data:{signedUrl:p}})})},
  from:()=>{const q={select(){return q},neq(){return q},eq(){return q},order(){return q},limit(){return q},then(resolve,reject){return Promise.resolve({data:[],error:null}).then(resolve,reject)},insert:async row=>{if(window.failPhotoSave)return{error:new Error('등록 재시도 확인')};savedPhotos.push(row);return{error:null}}};return q;}};
 </script>`;
@@ -17,6 +17,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
    const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[],requests=[];
    await context.route('**/*',r=>{
     const u=new URL(r.request().url());
+    if(u.hostname==='127.0.0.1'&&u.pathname.endsWith('.js'))return r.fulfill({contentType:'application/javascript',path:path.join(root,u.pathname)});
     if(u.hostname==='127.0.0.1')return u.pathname==='/photo.jpg'?r.fulfill({contentType:'image/jpeg',path:photo}):r.fulfill({contentType:'text/html',body:html.replace('</head>',mock+'</head>')});
     if(slowVision&&u.pathname.includes('/@mediapipe/tasks-vision@'))return new Promise(resolve=>setTimeout(resolve,8000)).then(()=>r.abort());
     if(u.pathname.includes('/opencv-js@')){requests.push(u.pathname);return cvScript?r.fulfill({contentType:'application/javascript',body:cvScript}):r.abort();}

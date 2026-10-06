@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>포토땅따먹기 한 판 체험 · 오쭈다</title>
-  <meta name="description" content="로그인 없이 포토땅따먹기 한 판 체험. 실루엣 90%를 채우면 사진이 공개돼요. 다음 판은 로그인하고 즐겨요.">
+  <meta name="description" content="로그인 없이 포토땅따먹기 한 판 체험. 실루엣 90%를 채우면 사진이 공개돼요. 본게임은 로그인한 만 19세 이상 회원만 이용할 수 있어요.">
   <link rel="canonical" href="https://ojjuda.kr/photo-ttang.html">
   <meta property="og:title" content="포토땅따먹기 · 로그인 없이 한 판">
   <meta property="og:description" content="90%를 채우고 사진을 열어보세요. 한 판 무료 체험!">
@@ -39,7 +39,9 @@
   </style>
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
-  <script src="/photo-ttang-page.js?v=20261006-trial1" defer></script>
+  <script src="/matgo-access.js?v=20261005-member-refresh1"></script>
+  <script src="/photo-ttang-access.js?v=20261006-age19"></script>
+  <script src="/photo-ttang-page.js?v=20261006-trial2" defer></script>
 </head>
 <body>
   <header class="page-header">
@@ -55,8 +57,10 @@
       <div class="preview" aria-hidden="true"><span class="preview-person"></span><span class="preview-land"></span><span class="preview-trail"></span><span class="preview-player"></span></div>
       <button class="primary" id="start-demo" type="button" disabled>한 판 체험하기</button>
       <a class="primary" id="continue-login" href="/?auth=login&amp;next=photo" hidden>로그인하고 계속하기</a>
+      <a class="primary" id="complete-identity" href="/world.html" hidden>생년월일 등록</a>
+      <button class="secondary" id="retry-age" type="button" hidden>다시 확인</button>
       <a class="secondary" id="signup-link" href="/?auth=signup&amp;next=photo">회원가입</a>
-      <p class="note" id="trial-note">다음 판부터는 로그인</p>
+      <p class="note" id="trial-note">본게임은 로그인 · 만 19세 이상</p>
       <p class="status" id="page-status" role="status" aria-live="polite">준비 중…</p>
     </section>
   </main>
