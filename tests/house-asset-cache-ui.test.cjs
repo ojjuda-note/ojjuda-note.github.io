@@ -2,7 +2,9 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {pathToFileURL}=require('node:url'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
 (async()=>{
- const {builtInAssets}=await import(pathToFileURL(path.join(root,'house-test/built-in-assets.js')));
+ const {builtInAssets:fallbackAssets}=await import(pathToFileURL(path.join(root,'house-test/built-in-assets.js')));
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'house-test/item-assets.json')));
+ const builtInAssets={...fallbackAssets,...manifest.assets};
  for(const asset of Object.values(builtInAssets))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'house-test/assets',asset.file))).digest('hex').slice(0,16),asset.revision,'changed artwork must have a new cache revision');
  const assetCount=Object.keys(builtInAssets).length;
  const changedChair=Buffer.concat([fs.readFileSync(path.join(root,'house-test/assets',builtInAssets.chair.file)),Buffer.from('\n')]);
