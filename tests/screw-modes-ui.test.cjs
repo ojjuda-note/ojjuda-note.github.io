@@ -244,7 +244,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    }});
   });
   await page.waitForFunction(()=>screwWorld.current().game.state.shopReady);
-  assert.ok((await drawnText()).includes('1쭈'),'the purchase price is visible before tapping');
+  assert.ok((await drawnText()).includes('1 ZU'),'the purchase price is visible before tapping');
   for(let count=1;count<=3;count++){
    await touch({x:106,y:514});await page.waitForFunction(n=>screwWorld.current().game.state.extraHoles===n,count);
    assert.equal(await page.evaluate(()=>flatHoleWallet.coins),5-count);
@@ -259,7 +259,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.extraHoles),3,'retry retains the paid holes');
   assert.equal(await page.evaluate(()=>flatHoleWallet.buys),3,'restoring holes never charges');
   await page.evaluate(()=>{const s=screwWorld.current().game.state;s.moves=s.moveLimit;});
-  assert.ok((await drawnText()).includes('남은 이동 0회'));assert.ok((await drawnText()).includes('+ 이동 3회 · 1쭈'));
+  assert.ok((await drawnText()).includes('남은 이동 0회'));assert.ok((await drawnText()).includes('+ 이동 3회 · 1 ZU'));
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-no-moves-320.png')});
   await touch({x:206,y:514});await page.waitForFunction(()=>screwWorld.current().game.state.extraMoves===3);
   assert.equal(await page.evaluate(()=>flatHoleWallet.coins),1);assert.ok((await drawnText()).includes('남은 이동 3회'));

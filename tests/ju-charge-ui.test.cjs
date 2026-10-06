@@ -89,22 +89,22 @@ async function fixture(context, source, rpc) {
           await page.screenshot({ path: path.join(process.env.JU_CHARGE_QA_DIR, `${source}-menu-${viewport.width}.png`), fullPage: true });
         }
         await entry.click();
-        const dialog = page.getByRole('dialog', { name: '쭈 충전', exact: true });
+        const dialog = page.getByRole('dialog', { name: 'ZU 충전', exact: true });
         await page.waitForFunction(() => !document.querySelector('.ju-charge-checkout').disabled);
         assert.equal(await dialog.locator('[data-ju-pack]').count(), 6);
         assert.equal(await dialog.evaluate(node => getComputedStyle(node).backgroundColor), await page.evaluate(() => { const probe = document.createElement('div'); probe.style.backgroundColor = 'var(--surface)'; document.body.append(probe); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color; }));
         for (const [won, count, bonus] of packages) {
           const pack = dialog.locator(`[data-ju-pack="p${won}"]`);
-          assert.match(await pack.textContent(), new RegExp(count+'\\s*쭈'));
+          assert.match(await pack.textContent(), new RegExp(count+'\\s*ZU'));
           await pack.click();
           assert.equal(await pack.getAttribute('aria-pressed'), 'true');
-          assert.equal(await dialog.locator('[data-ju-total]').textContent(), `총 ${count + bonus}쭈`);
-          if (bonus) assert.equal(await pack.locator('.ju-charge-bonus').textContent(), `+${bonus}쭈 보너스`);
+          assert.equal(await dialog.locator('[data-ju-total]').textContent(), `총 ${count + bonus} ZU`);
+          if (bonus) assert.equal(await pack.locator('.ju-charge-bonus').textContent(), `+${bonus} ZU 보너스`);
           assert.equal(await dialog.locator('[aria-pressed="true"]').count(), 1);
         }
         assert.equal(await dialog.locator('[data-ju-price]').textContent(), '0원 (베타 무료)');
         await dialog.locator('.ju-charge-checkout').evaluate(button => { button.click(); button.click(); });
-        await page.waitForFunction(() => document.querySelector('[data-ju-result]').textContent.includes('550쭈'));
+        await page.waitForFunction(() => document.querySelector('[data-ju-result]').textContent.includes('550 ZU'));
         await page.waitForFunction(() => !document.querySelector('.ju-charge-checkout').disabled);
         assert.equal(writes, source === 'world' ? 1 : 2, 'rapid double activation sends one credit request');
         assert.equal(await dialog.locator('[data-ju-remaining]').textContent(), `오늘 5회 중 ${5-used}회 남았어요`);

@@ -77,16 +77,18 @@ g.tab='friends';H();
   });
   assert.equal(camera.count,45);assert.ok(camera.visible,'the camera keeps the second jump visible below the score display');
   const warning=await page.evaluate(()=>{
-   const ctx=runnerTest.current.ctx,rect=ctx.fillRect,ellipse=ctx.ellipse,random=Math.random,frames=[],baseline=runnerTest.baseline;
+   const ctx=runnerTest.current.ctx,rect=ctx.fillRect,ellipse=ctx.ellipse,random=Math.random,frames=[],sizes=[],baseline=runnerTest.baseline;
    Math.random=()=>.7;
    try{for(const factory of [baseline,OjjudaRunnerGame.create]){
     let frame=0,first=null;const game=factory({setScore(){},end(){}});
     ctx.fillRect=function(x,y,w,h){if(factory===baseline&&w===6&&h===28&&y===412&&x-12<360&&first===null)first=frame;return rect.call(this,x,y,w,h)};
-    ctx.ellipse=function(x,y,rx,ry,...args){if(factory!==baseline&&x===15&&y===442&&Math.abs(rx-19.2)<.001&&ry===3&&this.getTransform().e/Math.min(2,devicePixelRatio||1)<360&&first===null)first=frame;return ellipse.call(this,x,y,rx,ry,...args)};
-    for(;frame<200;frame++){game.update(1/120);game.draw(ctx)}frames.push(first);game.destroy?.();
-   }}finally{ctx.fillRect=rect;ctx.ellipse=ellipse;Math.random=random}return frames;
+    ctx.ellipse=function(x,y,rx,ry,...args){if(factory!==baseline&&x===15&&y===442&&Math.abs(rx-19.2)<.001&&ry===3){const m=this.getTransform(),dpr=Math.min(2,devicePixelRatio||1),left=m.e/dpr;if(left<360&&first===null)first=frame;if(left>=80&&left<360)sizes.push({x:left,width:30*m.a/dpr,height:28*m.d/dpr});}return ellipse.call(this,x,y,rx,ry,...args)};
+    for(;frame<320;frame++){game.update(1/120);game.draw(ctx)}frames.push(first);game.destroy?.();
+   }}finally{ctx.fillRect=rect;ctx.ellipse=ellipse;Math.random=random}return{frames,sizes};
   });
-  assert.ok(warning.every(Number.isInteger),JSON.stringify(warning));assert.equal(warning[0],warning[1],'zooming the hero keeps the original first-obstacle warning time');
+  assert.ok(warning.frames.every(Number.isInteger),JSON.stringify(warning.frames));assert.equal(warning.frames[0],warning.frames[1],'the first obstacle keeps the original warning time');
+  assert.ok(warning.sizes.length>40&&warning.sizes.some(s=>s.x<110),'obstacle size is checked from the screen edge to the character');
+  assert.ok(warning.sizes.every(s=>Math.abs(s.width-30)<.001&&Math.abs(s.height-28)<.001),'obstacles keep the same width and height as they approach');
   const comparison=await page.evaluate(()=>runnerTest.compare());
   assert.equal(comparison.length,18);assert.ok(comparison.every(v=>v.same),'seeded play preserves original physics, spawns, points and sound at the new visible body width');
   assert.ok(comparison.some(v=>v.coins>0),'the comparison exercises coin pickups');assert.ok(comparison.some(v=>v.ended>0),'the comparison exercises obstacle collisions');

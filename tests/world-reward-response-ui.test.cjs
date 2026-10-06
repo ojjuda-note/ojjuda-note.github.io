@@ -32,16 +32,16 @@ window.rewardTest={
   if(['score','screw'].includes(kind)&&!['reject','query'].includes(mode))assert.deepEqual(result,receipt,'late purchase/score receipts are returned unchanged');await f.close();
  }
  for(const kind of ['quiz','score','screw']){
-  const f=await fixture(kind),first=await f.start(kind),second=await f.start(kind);const newer={...receipt,coins:800};assert.deepEqual(await f.finish(second,newer),kind==='quiz'?undefined:newer);const applied=await f.snapshot();assert.equal(applied.coins,800);assert.equal(applied.visible,'쭈800');await f.finish(first,receipt);assert.equal((await f.snapshot()).coins,800,kind+' older response never rolls back newer coins');assert.equal((await f.snapshot()).wallet,applied.wallet,'the stale response never repaints the wallet');await f.close();
+  const f=await fixture(kind),first=await f.start(kind),second=await f.start(kind);const newer={...receipt,coins:800};assert.deepEqual(await f.finish(second,newer),kind==='quiz'?undefined:newer);const applied=await f.snapshot();assert.equal(applied.coins,800);assert.equal(applied.visible,'ZU800');await f.finish(first,receipt);assert.equal((await f.snapshot()).coins,800,kind+' older response never rolls back newer coins');assert.equal((await f.snapshot()).wallet,applied.wallet,'the stale response never repaints the wallet');await f.close();
  }
  {
   const f=await fixture(),oldQuiz=await f.start('quiz'),newScore=await f.start('score');await f.finish(newScore,{...receipt,coins:850});const before=await f.snapshot();await f.finish(oldQuiz,receipt);assert.deepEqual(await f.snapshot(),before,'reward types share response ordering');await f.close();
  }
  {
-  const f=await fixture(),id=await f.start('daily');await f.finish(id,{...receipt,coins:112});const saved=await f.snapshot();assert.equal(saved.coins,112);assert.ok(saved.lastCheckin);assert.deepEqual(saved.toasts,['출석 체크 완료! 1쭈를 받았어요']);assert.equal(saved.render,1);assert.equal(saved.wallet,1);await f.close();
+  const f=await fixture(),id=await f.start('daily');await f.finish(id,{...receipt,coins:112});const saved=await f.snapshot();assert.equal(saved.coins,112);assert.ok(saved.lastCheckin);assert.deepEqual(saved.toasts,['출석 체크 완료! 1 ZU를 받았어요']);assert.equal(saved.render,1);assert.equal(saved.wallet,1);await f.close();
  }
  for(const kind of ['quiz','score']){
-  const f=await fixture();for(const coins of [-1,1.5,Number.MAX_SAFE_INTEGER+1,null,'12']){const before=await f.snapshot(),id=await f.start(kind);await f.finish(id,{...receipt,coins});assert.deepEqual(await f.snapshot(),before,kind+' invalid balance is ignored');}const zero=await f.start(kind);await f.finish(zero,{...receipt,coins:0});assert.equal((await f.snapshot()).visible,'쭈0');await f.close();
+  const f=await fixture();for(const coins of [-1,1.5,Number.MAX_SAFE_INTEGER+1,null,'12']){const before=await f.snapshot(),id=await f.start(kind);await f.finish(id,{...receipt,coins});assert.deepEqual(await f.snapshot(),before,kind+' invalid balance is ignored');}const zero=await f.start(kind);await f.finish(zero,{...receipt,coins:0});assert.equal((await f.snapshot()).visible,'ZU0');await f.close();
  }
  // A newer failed/invalid read cannot hide an earlier successfully earned balance.
  for(const earlier of ['daily','quiz'])for(const failure of ['reject','query','invalid']){
@@ -50,8 +50,8 @@ window.rewardTest={
   assert.equal((await f.snapshot()).coins,111,'failed or invalid reads do not change the wallet');
   await f.finish(earned,{...receipt,coins:112});const applied=await f.snapshot();
   assert.equal(applied.coins,112,earlier+' success remains eligible after a newer '+failure+' response');
-  assert.equal(applied.visible,'쭈112');assert.equal(applied.wallet,1);
-  assert.deepEqual(applied.toasts,[earlier==='daily'?'출석 체크 완료! 1쭈를 받았어요':'정답! 1쭈를 받았어요']);
+  assert.equal(applied.visible,'ZU112');assert.equal(applied.wallet,1);
+  assert.deepEqual(applied.toasts,[earlier==='daily'?'출석 체크 완료! 1 ZU를 받았어요':'정답! 1 ZU를 받았어요']);
   if(earlier==='daily')assert.ok(applied.lastCheckin);await f.close();
  }
  // Real score-result continuation must not paint/requery for a different account.

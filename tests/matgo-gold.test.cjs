@@ -73,5 +73,5 @@ const {PGlite}=require('@electric-sql/pglite');
     assert.equal(await val("select ojjuda_account_internal.age_on('2007-10-03','2026-10-03') value"),19);
     await assert.rejects(db.query('update ojjuda_matgo_internal.wallets set gold=-1 where user_id=$1',[a]),/check constraint/);
   }finally{await db.close();}
-  console.log(`PASS: 100 server replay rounds (${losses} losses, ${zeroes} zero balances), forged results, starting gold, 2 free refills, 5쭈 charge, idempotency, insufficient funds, KST reset and server age restriction`);
+  console.log(`PASS: 100 server replay rounds (${losses} losses, ${zeroes} zero balances), forged results, starting gold, 2 free refills, 5 ZU charge, idempotency, insufficient funds, KST reset and server age restriction`);
 })().catch(error=>{console.error(error);process.exitCode=1});
