@@ -169,3 +169,14 @@
     }
   };
 })();
+
+/* World-only ambient audio; navigation remains independent if audio fails. */
+(() => {
+  if (window.top !== window || !/(?:^|\/)world(?:\.html)?\/?$/.test(location.pathname) ||
+      document.getElementById('world-bgm-loader') || window.OjjudaWorldBgm) return;
+  const script = document.createElement('script');
+  script.id = 'world-bgm-loader';
+  script.src = '/world-bgm.js?v=20261007-bgm1';
+  script.async = true;
+  document.head.append(script);
+})();
