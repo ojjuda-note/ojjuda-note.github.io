@@ -1,6 +1,6 @@
 // The user's October 6 composition: unrotated side pictures surrounding one
 // angled body picture. These are crops of supplied pixels, not new drawings.
-import {floorPoint,roomPoint} from './model.js?v=20261006-wall1';
+import {floorPoint,roomPoint} from './model.js?v=20261006-vine1';
 
 export const SOFA_ORIGINAL_PARTS={
  side:{image:'assets/sofa-original-layers-v1/side.png',size:[1262,791],feet:[[87,786],[1171,786]],height:.94,supportY:640,supportHeight:(786-640)/786*.98},

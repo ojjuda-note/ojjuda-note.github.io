@@ -1,5 +1,5 @@
-import {FLOOR_BLANKET_REGISTRATION} from './floor-blanket-registration.js?v=20261006-wall1';
-import {validateFloorBlanketProjection} from './accessory-art.js?v=20261006-wall1';
+import {FLOOR_BLANKET_REGISTRATION} from './floor-blanket-registration.js?v=20261006-vine1';
+import {validateFloorBlanketProjection} from './accessory-art.js?v=20261006-vine1';
 const directions=['left','center','right'];
 const invalid=()=>{throw new Error('Invalid floor blanket registration');};
 const points=(value,w,h,min,max)=>Array.isArray(value)&&value.length>=min&&value.length<=max&&value.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=0&&p[1]>=0&&p[0]<=w&&p[1]<=h);

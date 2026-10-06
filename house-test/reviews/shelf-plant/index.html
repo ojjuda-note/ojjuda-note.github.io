@@ -1,0 +1,40 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/house-test/"><title>크림 덩굴 화분 · 제작 확인</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4efe7;color:#43382d;font:17px/1.55 system-ui,sans-serif}main{width:min(1200px,100%);margin:auto;padding:28px}h1{font-size:29px;margin:0}p{margin:5px 0 19px;color:#746452}.badge{font-size:13px;background:#e4ecd8;border-radius:30px;padding:5px 12px;float:right}.comparison{display:grid;grid-template-columns:240px 1fr;gap:20px}.card{background:#fffcf7;border:1px solid #e7dbcd;border-radius:18px;padding:18px}h2{font-size:17px;margin:0 0 10px}.ref{display:block;height:330px;max-width:100%;margin:auto;object-fit:contain}.views{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;height:330px;align-items:center}.views canvas{width:100%;height:298px;object-fit:contain}.views div{text-align:center}.views small{display:block;color:#816f5d}.room-card{margin-top:20px}.room-layout{display:grid;grid-template-columns:1fr 230px;gap:16px;align-items:center}.room{display:block;width:100%;height:auto;border-radius:12px}#detail{width:100%;height:360px;object-fit:contain;border-radius:12px;background:#f6f1e8}.note{font-size:13px;margin:12px 2px 0;color:#776958}button{font:inherit;padding:7px 13px;border:1px solid #d8c4ad;border-radius:10px;background:#f5ede3;color:#614b35;margin-right:7px;cursor:pointer}button[aria-pressed=true]{background:#77915e;color:white}header{margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}header h2{margin:0}
+@media(max-width:650px){main{padding:18px 12px}.comparison{grid-template-columns:110px 1fr;gap:8px}.card{padding:10px}.views{height:270px}.views canvas{height:230px}.ref{height:250px}.room-layout{grid-template-columns:1fr}.room-layout aside{display:none}h1{font-size:24px}h2{font-size:14px}header{display:block}button{font-size:13px;padding:5px 8px}nav{margin-top:8px}}
+</style>
+<main><span class="badge">우리집 적용</span><h1>크림 덩굴 화분</h1><p>선반 위에 놓고, 잎은 아래로 자연스럽게.</p>
+<div class="comparison"><section class="card"><h2>기준 사진 확대</h2><img class="ref" src="/house-test/reviews/shelf-plant/reference.png"></section><section class="card"><h2>따로 그린 세 방향</h2><div class="views"><div><canvas id="left"></canvas><small>왼쪽</small></div><div><canvas id="center"></canvas><small>정면</small></div><div><canvas id="right"></canvas><small>오른쪽</small></div></div></section></div>
+<section class="card room-card"><header><h2>우리집에 놓은 모습</h2><nav><button data-view="left">왼쪽</button><button data-view="center">정면</button><button data-view="right" aria-pressed="true">오른쪽</button></nav></header><div class="room-layout"><canvas id="room" class="room" width="3014" height="2088"></canvas><aside><canvas id="detail" width="600" height="800"></canvas><p class="note">선반 윗면에 화분 밑면을 맞췄습니다.</p></aside></div><p class="note">선반과 화분은 별도 소품입니다. 화분 높이를 낮추면 늘어진 잎까지 바닥과 가구의 겹침을 확인합니다.</p></section></main>
+<script type="module">
+import {loadBuiltInItems} from '/house-test/custom-furniture.js?v=20261006-vine1';
+import {FURNITURE} from '/house-test/furniture-catalog.js?v=20261006-vine1';
+import {furnitureGeometry} from '/house-test/furniture.js?v=20261006-vine1';
+import {paintFurniture} from '/house-test/furniture-painter.js?v=20261006-vine1';
+import {canPlaceFurniture,roomPoint} from '/house-test/model.js?v=20261006-vine1';
+const id='item-shelf-plant',shelfId='item-oak-wall-shelf';
+await loadBuiltInItems(['sofa',id,shelfId]);
+const placements=FURNITURE[id].preferredViews,shelves=structuredClone(FURNITURE[shelfId].preferredViews);shelves.left.y=1.7;
+const runtime=await(await fetch('/house-test/assets/shelf-plant-v1.runtime.json')).json();
+async function drawItem(id,p){const g=furnitureGeometry(id,p),host=document.createElement('div'),canvas=document.createElement('canvas');host.hidden=true;host.append(canvas);document.body.append(host);try{await paintFurniture(canvas,g);return {g,canvas};}finally{host.remove();}}
+for(const d of ['left','center','right']){const {canvas}=await drawItem(id,placements[d]),c=document.getElementById(d);c.width=canvas.width;c.height=canvas.height;c.getContext('2d').drawImage(canvas,0,0);}
+const scene=[{id:'sofa',direction:'left',x:0,y:3},{id:'bookshelf',direction:'right',x:9,y:.5},{id:'desk',direction:'right',x:9,y:3.5}];
+const background=new Image();background.src='/house-test/assets/room-day-v3.webp';await background.decode();
+const canvas=document.getElementById('room'),ctx=canvas.getContext('2d');let rendering=false;
+const checks={};
+async function render(direction){if(rendering)return;rendering=true;try{
+ const p=placements[direction],s=shelves[direction],others=[...scene,{id:shelfId,...s}];
+ if(!canPlaceFurniture(id,p,others))throw new Error(direction+': 화분 배치 충돌');
+ const anchors=runtime.views[direction].pictureLayers.flatMap(l=>l.mesh.anchors).filter(a=>a.kind==='physical'&&a.world.z===0);
+ const contactOnShelf=anchors.every(a=>{const x=p.x+a.world.x,y=p.y+a.world.y;return x>=s.x&&x<=s.x+(direction==='center'?s.width:s.depth)&&y>=s.y&&y<=s.y+(direction==='center'?s.depth:s.width)&&Math.abs(p.elevation-(s.elevation+s.height))<1e-8;});
+ if(!contactOnShelf)throw new Error(direction+': 화분 접지점이 선반 밖에 있어요.');
+ ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(background,0,0,canvas.width,canvas.height);
+ let plant;
+ for(const item of [...others,{id,...p}]){const r=await drawItem(item.id,item);ctx.drawImage(r.canvas,r.g.left*2,r.g.top*2,r.g.width*2,r.g.height*2);if(item.id===id)plant=r.g;}
+ const detail=document.getElementById('detail'),dc=detail.getContext('2d');const cx=plant.left+plant.width/2,cy=plant.top+plant.height/2,regionHeight=Math.max(plant.height+46,230),regionWidth=regionHeight*.75;
+ dc.clearRect(0,0,detail.width,detail.height);dc.drawImage(canvas,(cx-regionWidth/2)*2,(cy-regionHeight/2)*2,regionWidth*2,regionHeight*2,0,0,600,800);
+ checks[direction]={canPlace:true,contactsOnShelf:true,shapePolicy:runtime.shapePolicy===1};
+ document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===direction)));document.body.dataset.ready=direction;
+ }finally{rendering=false;}}
+window.plantChecks=checks;document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>render(b.dataset.view));await render('right');
+</script></html>

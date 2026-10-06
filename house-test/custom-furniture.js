@@ -1,16 +1,16 @@
-import {validateFloorBlanket,installFloorBlanket} from './floor-blanket-data.js?v=20261006-wall1';
-import {validateSofaBlanket,installSofaBlanket} from './sofa-blanket-data.js?v=20261006-wall1';
-import {isSofaCushion,validateSofaCushions,installSofaCushions} from './sofa-cushion-data.js?v=20261006-wall1';
-import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-wall1';
-import {validateSofaRegistration,installSofaRegistration} from './sofa-registration-data.js?v=20261006-wall1';
+import {validateFloorBlanket,installFloorBlanket} from './floor-blanket-data.js?v=20261006-vine1';
+import {validateSofaBlanket,installSofaBlanket} from './sofa-blanket-data.js?v=20261006-vine1';
+import {isSofaCushion,validateSofaCushions,installSofaCushions} from './sofa-cushion-data.js?v=20261006-vine1';
+import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-vine1';
+import {validateSofaRegistration,installSofaRegistration} from './sofa-registration-data.js?v=20261006-vine1';
 import {isCatalogItem,catalogFurniture} from './item-manifest.js?v=3';
-import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261006-wall1';
-import {floorPoint} from './model.js?v=20261006-wall1';
-import {prepareRuntime,runtimePoseValid,renderRuntime} from './anchor-editor/runtime.js?v=20261006-wall1';
-import {listMadeItems} from './custom-store.js?v=20261006-wall1';
-import {straightenChairLegs} from './chair-straight-regions.js?v=20261006-wall1';
-import {builtInAssets,loadBuiltInAssetList} from './built-in-assets.js?v=20261006-wall1';
-import {readBuiltInAsset} from './built-in-cache.js?v=20261006-wall1';
+import {FURNITURE,itemSize} from './furniture-catalog.js?v=20261006-vine1';
+import {floorPoint} from './model.js?v=20261006-vine1';
+import {prepareRuntime,runtimePoseValid,renderRuntime,runtimeMinimumElevation,runtimeContactBoxes} from './anchor-editor/runtime.js?v=20261006-vine1';
+import {listMadeItems} from './custom-store.js?v=20261006-vine1';
+import {straightenChairLegs} from './chair-straight-regions.js?v=20261006-vine1';
+import {builtInAssets,loadBuiltInAssetList} from './built-in-assets.js?v=20261006-vine1';
+import {readBuiltInAsset} from './built-in-cache.js?v=20261006-vine1';
 const items=new Map(),readyBuiltIns=new Set();
 const sofaDependents=new Set(['sofa','cream-floral-cushion','sage-cushion','peach-cushion','pink-check-cushion','blanket-sofa','blanket-floor']);
 const floorBlanketDependents=new Set(['sofa','blanket-floor','blanket-sofa']);
@@ -74,7 +74,7 @@ export async function loadBuiltInItems(ids){
    return;
   }
   if(id==='sofa'){installSofaRegistration(prepared);return;}
-  items.set(id,prepared);if(item.preferredViews||isCatalogItem(id))item.preferredViews=registeredViews(prepared.runtime);if(isCatalogItem(id))item.preferred={...item.preferredViews.left};
+  items.set(id,prepared);if(prepared.runtime.version===3)item.clearance='화분 밑면 높이를 선반에 맞춰요. 늘어진 잎이 바닥이나 다른 가구에 닿지 않게 놓아 주세요.';if(item.preferredViews||isCatalogItem(id))item.preferredViews=registeredViews(prepared.runtime);if(isCatalogItem(id))item.preferred={...item.preferredViews.left};
   })().catch(error=>{retryBuiltIns.add(id);throw error;}).finally(()=>pendingBuiltIns.delete(id));
   pendingBuiltIns.set(id,pending);return pending;
  }));
@@ -95,3 +95,6 @@ export function madeArtwork(id,p,contact){
  const anchors=id==='carpet'?footprint:rendered.anchors;
  return {...rendered,anchors,footprint,reserved:footprint,contact,faces:[],art:{kind:'made',canvas:rendered.canvas}};
 }
+
+export function madeMinimumElevation(id,direction){const item=items.get(id);return item?runtimeMinimumElevation(item.runtime,direction):0;}
+export function madeContactBoxes(id,placement){const item=items.get(id);return item?runtimeContactBoxes(item.runtime,placement):[];}

@@ -3,7 +3,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),output=path.resolve(process.env.QA_OUTPUT_DIR||path.join(root,'..','sofa-reference'));
-const owner='original-sofa-review',version='20261006-wall1';
+const owner='original-sofa-review',version='20261006-vine1';
 (async()=>{
  fs.mkdirSync(output,{recursive:true});const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{

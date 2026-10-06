@@ -1,5 +1,5 @@
-import {SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261006-wall1';
-import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-wall1';
+import {SOFA_ACCESSORY_IMAGES} from './sofa-v1-registration.js?v=20261006-vine1';
+import {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-vine1';
 const baseline=structuredClone(SOFA_CUSHION_SEATS),directions=['left','center','right'];
 export const isSofaCushion=id=>Object.hasOwn(baseline,id);
 const invalid=()=>{throw new Error('Invalid sofa cushion registration');};
