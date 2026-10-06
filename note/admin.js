@@ -389,7 +389,7 @@
     });
   }
   function editCardVisual(card) {
-    actionScreen('카드 꾸미기·사진 지정 정정', '관리자는 꾸미기와 사진 지정 기간을 정정할 수 있습니다. 지정 기간이 끝나면 처음 무작위 배정된 무료 사진으로 돌아갑니다. 이용자에게 쭈가 차감되거나 환불되지 않으며 변경 전후 값과 사유가 기록됩니다.', (form, actions) => {
+    actionScreen('카드 꾸미기·사진 지정 정정', '관리자는 꾸미기와 사진 지정 기간을 정정할 수 있습니다. 지정 기간이 끝나면 처음 무작위 배정된 무료 사진으로 돌아갑니다. 이용자에게 ZU가 차감되거나 환불되지 않으며 변경 전후 값과 사유가 기록됩니다.', (form, actions) => {
       const content = el('div', 'na-visual-form'); content.append(el('p', 'na-empty', '현재 설정을 불러오는 중이에요.')); form.append(content);
       const run = pageRun;
       rpc('admin_card_visual', { p_card_id: card.id }).then(visual => {
@@ -499,9 +499,9 @@
     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   }
   function editEvent(event) {
-    actionScreen('이벤트 위치·시간 정정', '운영 정정이며 추가 쭈 차감이나 환불은 없습니다. 변경 전후 값과 사유가 작업 기록에 남습니다.', (form, actions) => {
+    actionScreen('이벤트 위치·시간 정정', '운영 정정이며 추가 ZU 차감이나 환불은 없습니다. 변경 전후 값과 사유가 작업 기록에 남습니다.', (form, actions) => {
       const scheduled = new Date(event.starts_at).getTime() > Date.now();
-      form.append(el('p', 'na-reason', `현재 시작: ${formatDate(event.starts_at)} · 기존 책정: ${number(event.price_coins)}쭈${scheduled ? '' : ' · 시작 기록은 변경할 수 없습니다.'}`));
+      form.append(el('p', 'na-reason', `현재 시작: ${formatDate(event.starts_at)} · 기존 책정: ${number(event.price_coins)} ZU${scheduled ? '' : ' · 시작 기록은 변경할 수 없습니다.'}`));
       const lat = field('위도', 'number', event.center_lat); lat.input.required = true; lat.input.min = '-90'; lat.input.max = '90'; lat.input.step = 'any';
       const lng = field('경도', 'number', event.center_lon); lng.input.required = true; lng.input.min = '-180'; lng.input.max = '180'; lng.input.step = 'any';
       const radius = field('반경 (km)', 'number', event.radius_km, '1~30km 사이 정수'); radius.input.required = true; radius.input.min = '1'; radius.input.max = '30'; radius.input.step = '1';
@@ -527,7 +527,7 @@
   }
   function restrictUser(user) {
     const restrict = !user.is_restricted;
-    actionScreen(restrict ? '노트 이용 제한' : '노트 이용 제한 해제', `${shortUser(user.user_id)} · 월드 계정과 쭈는 그대로 유지됩니다.`, (form, actions) => {
+    actionScreen(restrict ? '노트 이용 제한' : '노트 이용 제한 해제', `${shortUser(user.user_id)} · 월드 계정과 ZU는 그대로 유지됩니다.`, (form, actions) => {
       form.append(el('p', 'na-id', user.user_id));
       if (restrict) form.append(el('p', 'na-warning', '공원의 글 작성·수정과 공감·메모함 추가를 제한합니다. 신고와 문의, 본인 글 삭제는 계속 가능합니다. 기존 글의 공개 여부는 카드 · 답글 메뉴에서 따로 관리하세요.'));
       else if (user.restriction_reason) form.append(el('p', 'na-warning', `현재 제한 사유: ${user.restriction_reason}`));
@@ -689,7 +689,7 @@
       item.append(meta, el('blockquote', 'na-card-body', event.body));
       if (event.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of event.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(event.author_id)}`));
-      item.append(details([['카드 번호', event.id], ['작성자 번호', event.author_id], ['시작', formatDate(event.starts_at)], ['종료', formatDate(event.ends_at)], ['반경', event.radius_km != null ? `${number(event.radius_km * 1000)}m` : '없음'], ['위도', event.center_lat], ['경도', event.center_lon], ['책정 쭈', event.price_coins != null ? `${number(event.price_coins)}쭈` : '없음']]));
+      item.append(details([['카드 번호', event.id], ['작성자 번호', event.author_id], ['시작', formatDate(event.starts_at)], ['종료', formatDate(event.ends_at)], ['반경', event.radius_km != null ? `${number(event.radius_km * 1000)}m` : '없음'], ['위도', event.center_lat], ['경도', event.center_lon], ['책정 ZU', event.price_coins != null ? `${number(event.price_coins)} ZU` : '없음']]));
       const actions = el('div', 'na-actions');
       const changeTerms = button('위치·시간 정정', () => editEvent(event));
       changeTerms.disabled = new Date(event.ends_at).getTime() <= Date.now();
@@ -1040,7 +1040,7 @@
     if (detail.before?.radius_km != null && detail.after?.radius_km != null) {
       const eventTerms = terms => `위치 ${terms.lat}, ${terms.lng} · 반경 ${number(terms.radius_km)}km · 시작 ${formatDate(terms.starts_at)} · 종료 ${formatDate(terms.ends_at)}`;
       values.push(['정정 전', eventTerms(detail.before)], ['정정 후', eventTerms(detail.after)]);
-      if (detail.price_coins_unchanged != null) values.push(['기존 책정', `${number(detail.price_coins_unchanged)}쭈 (변동 없음)`]);
+      if (detail.price_coins_unchanged != null) values.push(['기존 책정', `${number(detail.price_coins_unchanged)} ZU (변동 없음)`]);
     }
     if (detail.visual_after) {
       const visual = value => {
