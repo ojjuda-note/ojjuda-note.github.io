@@ -41,10 +41,10 @@
     return false;
   }
 
-  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'library', 'glasses']);
+  const actions = new Set(['feed', 'saved', 'mine', 'events', 'event-new', 'blocked', 'settings', 'member-info', 'compose', 'notifications', 'support', 'world', 'menu', 'board', 'library', 'glasses']);
   function navigate(action) {
     if (!actions.has(action)) return false;
-    if (!authKnown && client && !['world', 'menu', 'library', 'glasses'].includes(action)) { pendingAction = action; return true; }
+    if (!authKnown && client && !['world', 'menu', 'board', 'library', 'glasses'].includes(action)) { pendingAction = action; return true; }
     if (!canLeave()) return false;
     // Existing close methods retain their own saving guards.
     window.OjjudaNoteSupport?.close?.();
@@ -57,7 +57,7 @@
     if (!backdrop.hidden) closeComposer();
     window.OjjudaNoteNavigation?.leaveMy();
     pendingAction = null;
-    if (action === 'world' || action === 'menu' || action === 'library') {
+    if (action === 'world' || action === 'menu' || action === 'board' || action === 'library') {
       if (hosted) send({ type: 'ojjuda:park-navigate', action });
       else location.assign('/world.html');
     } else if (action === 'glasses') location.assign('/park/glasses.html?embedded=1');

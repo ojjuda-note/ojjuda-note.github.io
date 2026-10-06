@@ -66,7 +66,7 @@
       if(shortcut){event.preventDefault();open(shortcut.dataset.parkAction);return;}
       const target=event.target.closest?.('[data-act="pl-leave"],[data-act="tab"],[data-act="enter-place"],[data-act="house-open"]');
       if(!target||!active())return;
-      const stays=target.dataset.act==='enter-place'&&target.dataset.id==='park';
+      const stays=(target.dataset.act==='enter-place'&&target.dataset.id==='park')||(target.dataset.act==='tab'&&target.dataset.tab==='park');
       if(!stays&&!canLeave()){event.preventDefault();event.stopImmediatePropagation();}
     },true);
     addEventListener('message',event=>{
@@ -76,6 +76,7 @@
       if(event.data?.type==='ojjuda:park-navigate'&&canLeave()){
         if(event.data.action==='world')app.toWorld?.();
         if(event.data.action==='menu')app.toMenu?.();
+        if(event.data.action==='board')app.toBoard?.();
         if(event.data.action==='library')app.previousPlace?.();
       }
       if(event.data?.type==='ojjuda:park-balance'&&event.data.userId===owner&&owner&&Number.isSafeInteger(event.data.coins)&&event.data.coins>=0)app.onBalance?.(event.data.coins,owner);

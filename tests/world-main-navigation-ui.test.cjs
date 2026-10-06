@@ -38,7 +38,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.evaluate(()=>{const model=worldTest.model;Object.assign(model,{coins:321,avatar:{hair:'bob'},room:{items:[{type:'cat'}]},rooms:[{items:[{type:'sofa'}]}],friends:[{id:'f1',room:{items:[]}}],petBank:{cat:[{}]},themeBackup:{room:{items:[]}},diary:[{id:'saved-note',title:'내 기록',body:'보존',vis:'all',at:Date.now()}]});localStorage.setItem('ojjuda-world-v1',JSON.stringify(model));localStorage.setItem('ojjuda-pet-talk','old');localStorage.setItem('ojjuda-pet-mem','old');});
     await page.reload();await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
     assert.deepEqual(await page.evaluate(()=>{const m=worldTest.model;return [m.coins,m.diary[0].id,m.room.items,m.avatar,m.friends,m.petBank||null,m.themeBackup||null,localStorage.getItem('ojjuda-pet-talk'),localStorage.getItem('ojjuda-pet-mem')]}),[321,'saved-note',[],{},[],null,null,null,null],'reload clears retired assets while preserving balance and writing');
-    const current=()=>page.evaluate(()=>worldTest.state.tab);
+    const current=()=>page.evaluate(()=>worldTest.state.tab==='place'&&worldTest.state.place?.id==='park'?'park':worldTest.state.tab);
     const main=async()=>{
       await page.evaluate(()=>worldTest.actions.tab({tab:'friends'}));
       await page.waitForFunction(()=>history.state?.ojjudaWorld==='main' && worldTest.state.tab==='friends');
@@ -67,9 +67,11 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await main();
     }
     await main();
-    for(const tab of ['home','board','life','my']) {
+    for(const tab of ['home','board','park','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
       assert.equal(await current(),tab);
+      assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),tab);
+      assert.equal(await page.locator('[data-tab="life"]').count(),0);
       await back();
     }
     for(const place of ['cafe','arcade','library','park']) {
@@ -139,7 +141,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);
       await touch('touchEnd',[]);
     };
-    const tabs=['friends','home','board','life','my'];
+    const tabs=['friends','home','board','park','my'];
     for(let i=0;i<tabs.length;i++){
       for(const dx of [-150,150]){
         await navigate(tabs[i]);
@@ -157,7 +159,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
         assert.equal(await current(),tabs[next],`${tabs[i]} content supports ${dx<0?'left':'right'} swipe without wrapping`);
       }
     }
-    const places=['cafe','arcade','library','park'];
+    const places=['cafe','arcade','library'];
     const currentPlace=()=>page.evaluate(()=>worldTest.state.tab==='place' && worldTest.state.place?.id);
     const enterPlace=async id=>{
       await navigate('friends');
@@ -177,7 +179,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     const placeHistoryLength=await page.evaluate(()=>history.length);
     for(const id of places.slice(1)){
       await touchDrag('.visit-banner',-150);
-      assert.equal(await currentPlace(),id,'left drags follow cafe, arcade, library, park');
+      assert.equal(await currentPlace(),id,'left drags follow cafe, arcade, library');
     }
     for(const id of places.slice(0,-1).reverse()){
       await touchDrag('.visit-banner',150);
@@ -240,9 +242,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.ok(await page.locator('.place-art-image').evaluate(el=>new DOMMatrix(getComputedStyle(el).transform).m41<0),'an enlarged illustration still pans with the mouse');
     await enterPlace('park');
     await mouseDrag('.visit-banner',-180);
-    assert.equal(await currentPlace(),'park','mouse drag stops at park');
+    assert.equal(await current(),'my','Park swipes forward to the main menu');
+    await enterPlace('park');
     await mouseDrag('.visit-banner',180);
-    assert.equal(await currentPlace(),'library','mouse drag returns from park to library');
+    assert.equal(await current(),'board','Park swipes back to the board');
     assert.deepEqual(errors,[]);
     await context.close();
 
@@ -394,6 +397,6 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       assert.equal(await np.evaluate(()=>nativeExited),0,'native back from menus never exits the app');
     }
     await native.close();
-    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, separate five-tab and four-place swipe orders, touch/mouse input, real board game routes and variants, board preservation on close, and fresh Matgo access checks.');
+    console.log('PASS: browser/native menu back, modal protection and retired-state cleanup, five main tabs with Park and three neighborhood places, touch/mouse input, real board game routes and variants, board preservation on close, and fresh Matgo access checks.');
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
