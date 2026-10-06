@@ -219,6 +219,9 @@ class World{
     const victims=new Set();
     for(let y=y0;y<=y1;y++) for(let k=y*W+x0, e=y*W+x1; k<=e; k++) if(this._stamp[k]!==st&&this.own[k]!==id){ const o=this.own[k]; if(o) victims.add(o); this.setOwn(k,id); }
     this.events.push({t:'capture',p,gained:this.counts[id]-before,pts});
+    // 연결 직후 내 땅 안의 적을 먼저 확정해, 처치로 물려받는 땅까지 연쇄 포획하지 않아요.
+    const trapped=this.players.filter(vp=>vp!==p&&vp.alive&&this.own[this.si(vp.x,vp.y)]===id);
+    for(const vp of trapped) this.kill(vp,id,'capture');
     for(const v of victims){ const vp=this.players[v-1]; if(vp.alive&&this.counts[v]===0) this.kill(vp,id,'land'); } }
   kill(p,by,why){ if(!p.alive) return; if(p.shieldT>0&&why!=='end') return; p.alive=false; p.boostT=0;
     for(const k of p.trail) if(this.trail[k]===p.id) this.trail[k]=0; p.trail=[]; p.pts=[]; p.tc=new Map();
@@ -309,15 +312,16 @@ function newMob(type,sc){ const T=MOB[type]; let x=0,y=0; for(let t=0;t<60;t++){
   const a=Math.random()*TAU, v=T.v*sc*(.9+Math.random()*.2); return {type,x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,v,r:T.r,ph:Math.random()*TAU,alive:true,born:world?world.time:0}; }
 function blocked(x,y,r){ if(x<r||y<r||x>world.UW-r||y>world.UH-r) return true; return me&&world.own[world.si(x,y)]===me.id; }
 function updateMobs(dt){ if(!me) return; const W=world;
-  for(const m of mobs){ if(!m.alive) continue; m.ph+=dt; const px=m.x,py=m.y,r=W.mobRadius(m);
+  for(const m of mobs){ if(!m.alive) continue;
+    // 땅을 연결한 순간의 위치로 포획: 다음 이동으로 빠져나가기 전에 처치해요.
+    if(W.own[W.si(m.x,m.y)]===me.id){ m.alive=false; burst(m.x,m.y,MOB[m.type].col,30,7); floats.push({x:m.x,y:m.y-1,txt:`${MOB[m.type].name} 처치!`,col:'#C8952A',life:1.2}); sfx.capture(); respawnQ.push({type:m.type,at:W.time+MOB_RESPAWN}); continue; }
+    m.ph+=dt; const px=m.x,py=m.y,r=W.mobRadius(m);
     if(m.type==='chase'&&me.alive&&W.own[W.si(me.x,me.y)]!==me.id){ const a=Math.atan2(me.y-m.y,me.x-m.x), cur=Math.atan2(m.vy,m.vx); const na=cur+Math.max(-2.2*dt,Math.min(2.2*dt,wrapA(a-cur))); m.vx=Math.cos(na)*m.v; m.vy=Math.sin(na)*m.v; }
     if(m.type==='spin'){ const cur=Math.atan2(m.vy,m.vx)+Math.sin(m.ph*1.7)*1.8*dt; m.vx=Math.cos(cur)*m.v; m.vy=Math.sin(cur)*m.v; }
     const n=Math.max(1,Math.ceil(m.v*dt/.1)); for(let i=0;i<n;i++){ const sx=m.vx*dt/n, sy=m.vy*dt/n;
       if(blocked(m.x+sx,m.y,r)) m.vx=-m.vx*(0.9+Math.random()*.2); else m.x+=sx;
       if(blocked(m.x,m.y+sy,r)) m.vy=-m.vy*(0.9+Math.random()*.2); else m.y+=sy;
       const sp=Math.hypot(m.vx,m.vy)||1; m.vx*=m.v/sp; m.vy*=m.v/sp; }
-    // 내 땅에 갇힌 몹은 사라져요
-    if(W.own[W.si(m.x,m.y)]===me.id){ m.alive=false; burst(m.x,m.y,MOB[m.type].col,30,7); floats.push({x:m.x,y:m.y-1,txt:`${MOB[m.type].name} 처치!`,col:'#C8952A',life:1.2}); sfx.capture(); respawnQ.push({type:m.type,at:W.time+MOB_RESPAWN}); continue; }
     if(!me.alive||over) continue;
     // 나 또는 내 선에 닿으면 탈락
     const meOut=W.own[W.si(me.x,me.y)]!==me.id;

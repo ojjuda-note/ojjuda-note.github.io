@@ -230,6 +230,9 @@ class World{
     const victims=new Set();
     for(let y=y0;y<=y1;y++) for(let k=y*W+x0, e=y*W+x1; k<=e; k++) if(this._stamp[k]!==st&&this.own[k]!==id){ const o=this.own[k]; if(o) victims.add(o); this.setOwn(k,id); }
     this.events.push({t:'capture',p,gained:this.counts[id]-before,pts});
+    // 연결 직후 내 땅 안의 적을 먼저 확정해, 처치로 물려받는 땅까지 연쇄 포획하지 않아요.
+    const trapped=this.players.filter(vp=>vp!==p&&vp.alive&&this.own[this.si(vp.x,vp.y)]===id);
+    for(const vp of trapped) this.kill(vp,id,'capture');
     for(const v of victims){ const vp=this.players[v-1]; if(vp.alive&&this.counts[v]===0) this.kill(vp,id,'land'); } }
   kill(p,by,why){ if(!p.alive) return; if(p.shieldT>0&&why!=='end') return; p.alive=false; p.boostT=0;
     for(const k of p.trail) if(this.trail[k]===p.id) this.trail[k]=0; p.trail=[]; p.pts=[]; p.tc=new Map();
