@@ -368,7 +368,20 @@ function drawCell(k){ const GW=world.GW, gx=k%GW, gy=(k/GW)|0, x=gx*PX, y=gy*PX,
   octx.clearRect(x,y,PX,PX); osctx.clearRect(x,y,PX,PX); mkx.clearRect(gx,gy,1,1); if(!v) return; const c=PAL[world.players[v-1].color];
   osctx.fillStyle=c.d; osctx.fillRect(x,y,PX,PX);
   if(v===me.id){ mkx.fillStyle='#000'; mkx.fillRect(gx,gy,1,1); } else { octx.fillStyle=c.m||(c.m=mix(c.l,c.c,.38)); octx.fillRect(x,y,PX,PX); } }
-function flushDirty(){ if(world.dirty.size){ for(const k of world.dirty) drawCell(k); world.dirty.clear(); revDirty=true; }
+// Large captures redraw horizontal runs instead of issuing canvas calls per cell.
+function redrawTerritory(){
+  const W=world.GW,H=world.GH,own=world.own;
+  octx.clearRect(0,0,off.width,off.height);osctx.clearRect(0,0,offS.width,offS.height);mkx.clearRect(0,0,W,H);
+  mkx.fillStyle='#000';
+  for(let y=0;y<H;y++)for(let x=0;x<W;){
+    const start=x,v=own[y*W+x];while(++x<W&&own[y*W+x]===v){}
+    if(!v)continue;const c=PAL[world.players[v-1].color],width=x-start;
+    osctx.fillStyle=c.d;osctx.fillRect(start*PX,y*PX,width*PX,PX);
+    if(v===me.id)mkx.fillRect(start,y,width,1);
+    else{octx.fillStyle=c.m||(c.m=mix(c.l,c.c,.38));octx.fillRect(start*PX,y*PX,width*PX,PX);}
+  }
+}
+function flushDirty(){ if(world.dirty.size){ if(world.dirty.size>256)redrawTerritory();else for(const k of world.dirty) drawCell(k); world.dirty.clear(); revDirty=true; }
   const t=performance.now(); if(revDirty&&photoImg.complete&&t-revLast>60){ revLast=t; revDirty=false; rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,rev.width,rev.height); rctx.drawImage(gamePhotoSource(),0,0,rev.width,rev.height); rctx.globalCompositeOperation='destination-in'; rctx.imageSmoothingEnabled=true; rctx.drawImage(mk,0,0,rev.width,rev.height); rctx.globalCompositeOperation='source-over'; } }
 // ---------- 조이스틱 + 키보드 ----------
 const joys=new Map(), JR=56, JOY_DEAD_ZONE=4;
@@ -473,10 +486,10 @@ function closePanels(){ document.querySelectorAll('.overlay').forEach(o=>{ if(o.
 let uploadTrial=null;
 function menuLabel(){ return uploadTrial&&LIST[stage]?.trial?'저장하기':'사진 목록'; }
 function endDemo(won=false){ over=true;paused=true;closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';const P=LIST[stage];panel(`<h2>${won?'🎉 사진 공개!':'체험이 끝났어요'}</h2>${won?`<img src="${P.full||P.img}" alt="공개된 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">`:''}<p>본게임은 로그인 · 만 19세 이상</p><a class="big a" href="/?auth=login&amp;next=photo" target="_top">로그인하고 계속하기</a><a class="link" href="/?auth=signup&amp;next=photo" target="_top">회원가입</a>`,{}); }
-function win(){ over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigator.vibrate([30,40,30,40,80]); }catch{} const {S}=view(); for(let i=0;i<6;i++) setTimeout(()=>burst(world.UW*Math.random(),world.UH*Math.random(),['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#fff'][i%5],30,9),i*120);
+function win(){ const wonWorld=world,active=()=>world===wonWorld&&mode==='play'; over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigator.vibrate([30,40,30,40,80]); }catch{} const {S}=view(); for(let i=0;i<6;i++) setTimeout(()=>{if(active())burst(wonWorld.UW*Math.random(),wonWorld.UH*Math.random(),['#F2C14E','#F6A9BF','#9C7FE0','#8FC4F2','#fff'][i%5],30,9);},i*120);
   const P=LIST[stage]; markPhotoDone(P); parts=[]; floats=[]; if(P.id) Comm.record(P.id,true); try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:photottang:clear',stage:P.key},location.origin); }catch{}
-  if(PUBLIC_DEMO){setTimeout(()=>endDemo(true),3000);return;}
-  setTimeout(()=>{ const o=panel(`<h2>🎉 사진 공개!</h2><img src="${P.full||P.img}" alt="전신 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">${P.id?`<p style="margin:0 0 4px">${esc(P.nick||'누군가')}님이 올린 사진</p>`:''}<div class="row2">${stage<LIST.length-1&&!P.trial?'<button class="big a" id="next">다음 사진</button>':''}<button class="big g" id="list">${menuLabel()}</button></div>${P.id?'<button class="link" id="rep">이 사진 신고하기</button>':''}`,{next:()=>{ lives=LIVES; startStage(stage+1); },list:()=>toMenu()});
+  if(PUBLIC_DEMO){setTimeout(()=>{if(active())endDemo(true);},3000);return;}
+  setTimeout(()=>{ if(!active())return;const o=panel(`<h2>🎉 사진 공개!</h2><img src="${P.full||P.img}" alt="전신 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">${P.id?`<p style="margin:0 0 4px">${esc(P.nick||'누군가')}님이 올린 사진</p>`:''}<div class="row2">${stage<LIST.length-1&&!P.trial?'<button class="big a" id="next">다음 사진</button>':''}<button class="big g" id="list">${menuLabel()}</button></div>${P.id?'<button class="link" id="rep">이 사진 신고하기</button>':''}`,{next:()=>{ lives=LIVES; startStage(stage+1); },list:()=>toMenu()});
     const rb=o.querySelector('#rep'); if(rb) rb.onclick=()=>reportPanel(P); },3000); }
 function timeUp(){ over=true; sfx.death(); shake=.4; const pct=mySil/silTotal*100;
   if(PUBLIC_DEMO){setTimeout(()=>endDemo(),500);return;}
