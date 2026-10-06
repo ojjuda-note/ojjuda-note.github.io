@@ -1,8 +1,8 @@
 // Draw approved picture pixels on a 2D canvas; the grid only warps their anchors.
-import {expandBookshelfTriangle} from './bookshelf-art.js?v=20261006-sofaparts1';
+import {expandBookshelfTriangle} from './bookshelf-art.js?v=20261006-assembly1';
 const imageCache=new Map();
 const compositeCache=new Map();
-const assetVersion=new URL(import.meta.url).searchParams.get('v')||'20261006-sofaparts1';
+const assetVersion=new URL(import.meta.url).searchParams.get('v')||'20261006-assembly1';
 function loadImage(path){
  if(!imageCache.has(path))imageCache.set(path,new Promise((resolve,reject)=>{
   const image=new Image();

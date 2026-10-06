@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#f8f5f0">
   <title>가구 세트 만들기 · 우리집</title>
   <link rel="stylesheet" href="./style.css?v=20261004-design1">
+  <link rel="stylesheet" href="./assembly-editor.css?v=20261006-assembly1">
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 </head>
@@ -24,6 +25,7 @@
         <select id="quick-kind"><option value="auto">파일 이름 참고 · 모르면 직접 선택</option><option value="sofa">소파</option><option value="bed">침대</option><option value="desk">책상</option><option value="chair">의자</option><option value="bookshelf">책장</option><option value="cushion">쿠션</option><option value="blanket-sofa">담요 · 소파용</option><option value="blanket-bed">담요 · 침대용</option><option value="blanket-floor">담요 · 바닥용</option></select>
         <button id="quick-undo" type="button" class="quiet full-width">되돌리기</button><p id="quick-status" role="status">그림을 넣으면 방향·부위 구성을 준비합니다. 실제 윤곽과 격자는 확인이 필요해요.</p>
       </section>
+      <section class="assembly-start"><button id="assembly-open" type="button" class="primary">그림 겹쳐 만들기</button><p>양쪽 옆판과 몸통을 넣고, 다리 위 나무판에 밑면을 맞춰요. 높이와 길이를 따로 조절할 수 있어요.</p></section>
       <details class="control-group start-group" open>
         <summary><span class="step-number">1</span><span>그림 준비</span></summary>
         <div class="group-body">
@@ -165,6 +167,6 @@
     <label>우측 그림<select id="batch-right"></select></label>
     <div class="button-row"><button id="batch-cancel" type="button">취소</button><button id="batch-apply" class="primary" type="button">세 장 함께 넣기</button></div>
   </dialog>
-  </div><script type="module" src="./entry.js?v=20261006-sofaparts1"></script>
+  </div><script type="module" src="./entry.js?v=20261006-assembly1"></script>
 </body>
 </html>

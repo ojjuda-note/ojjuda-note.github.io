@@ -1,20 +1,22 @@
-import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261006-sofaparts1';
-import {pictureShape} from './shape-check.js?v=20261006-sofaparts1';
-import {validQuad,homography,project,drawWarp} from './warp.js?v=20261006-sofaparts1';
-import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261006-sofaparts1';
-import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261006-sofaparts1';
-import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261006-sofaparts1';
-import {makeZip} from './zip.js?v=20261006-sofaparts1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261006-sofaparts1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261006-sofaparts1';
-import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261006-sofaparts1';
-import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261006-sofaparts1';
-import {PICTURE_LIBRARY} from './accessory-library.js?v=20261006-sofaparts1';
-import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261006-sofaparts1';
-import {mountPartsEditor} from './parts-editor.js?v=20261006-sofaparts1';
-import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261006-sofaparts1';
-import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261006-sofaparts1';
-import {mountSimpleEditor} from './simple-editor.js?v=20261004-cleanup1';
+import {recoverKnownChairProject} from '../chair-straight-regions.js?v=20261006-assembly1';
+import {pictureShape} from './shape-check.js?v=20261006-assembly1';
+import {validQuad,homography,project,drawWarp} from './warp.js?v=20261006-assembly1';
+import {ROOM,FLOOR,roomPoint,roomPlaneWorld,drawRoomGrid,nearestGridPoint} from './room-guide.js?v=20261006-assembly1';
+import {createCutout,alphaBounds,validatePolygon} from './cutout.js?v=20261006-assembly1';
+import {ROOM_IMAGE,REFERENCE_IMAGE} from './resources.js?v=20261006-assembly1';
+import {makeZip} from './zip.js?v=20261006-assembly1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh,meshCoverage} from './mesh.js?v=20261006-assembly1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,pictureLayersCoverage,drawPictureLayers,pictureLayerRegistrations,knownPictureRegistration,recoverKnownPictureProject} from './layered-mesh.js?v=20261006-assembly1';
+import {COFFEE_TABLE_V1} from '../coffee-table-v1-registration.js?v=20261006-assembly1';
+import {objectMetadata,OBJECT_USAGES,USAGE_LABELS} from './object-metadata.js?v=20261006-assembly1';
+import {PICTURE_LIBRARY} from './accessory-library.js?v=20261006-assembly1';
+import {createParts,normalizeParts,renderParts,getPartCanvases,getRenderOrder} from './parts.js?v=20261006-assembly1';
+import {mountPartsEditor} from './parts-editor.js?v=20261006-assembly1';
+import {hasDrapedObjects,drapedPartsPlan,drawDrapedLayer,upgradeSofaBlankets} from './draped-parts.js?v=20261006-assembly1';
+import {inferDirection,inferTarget,presetMetadata,planBatch,canAutoPrepare} from './automation.js?v=20261006-assembly1';
+import {mountSimpleEditor} from './simple-editor.js?v=20261006-assembly1';
+import {mountAssemblyEditor} from './assembly-editor.js?v=20261006-assembly1';
+import {normalizeAssembly,assemblyCheck,drawAssembly,prepareAssemblyImages} from './picture-assembly.js?v=20261006-assembly1';
 
 const $=id=>document.getElementById(id);
 // Editable state is a tree of JSON values. Copy its mutable containers while
@@ -23,7 +25,7 @@ const clone=value=>Array.isArray(value)?value.map(clone):value&&typeof value==='
 const freshLayer=(n=1)=>({id:crypto.randomUUID?.()||String(Date.now()+n),name:`그림 영역 ${n}`,source:[],target:[],binding:null});
 const DIRECTIONS=['left','center','right'];
 const LABELS={left:'좌측',center:'정면',right:'우측'};
-let partsUI=null,simpleUI=null;
+let partsUI=null,simpleUI=null,assemblyUI=null;
 const partImageCache=new Map();
 let shared={name:'새 가구',width:3,depth:1,height:1.4,...objectMetadata()},activeView='right';
 const fresh=(direction='right')=>({format:'ojjuda-furniture',version:1,name:shared.name,...objectMetadata(shared),source:null,cutout:{polygon:[],strokes:[]},layers:[freshLayer()],placement:{direction,x:direction==='left'?0:direction==='center'?(FLOOR.width-shared.width)/2:FLOOR.width-shared.depth,y:direction==='center'?0:Math.min(3.5,FLOOR.depth-shared.width),width:shared.width,depth:shared.depth,height:shared.height}});
@@ -78,6 +80,7 @@ function drapePlan(p,masked){
 }
 function parentPicture(p,masked){return drapePlan(p,masked)?.parentImage||masked;}
 function drawFurniture(ctx,p,masked,steps=32){
+ if(p.pictureAssembly){try{drawAssembly(ctx,p.pictureAssembly,assemblyImages(p.pictureAssembly),p.placement,{steps});}catch{}return;}
  if(!masked||!partsPlaneCoverage(p,masked).ok)return;
  const plan=drapePlan(p,masked),parent=plan?.parentImage||masked;
  if(p.pictureLayers&&(!validatePictureLayers(p.pictureLayers,p.placement,p.pictureLayerRules).ok||!cachedPictureLayersCoverage(parent,p.pictureLayers).ok))return;
@@ -108,7 +111,10 @@ function previewFor(direction){
  let status='이미지 필요',ready=false,result=null;
  if(slot.sourceImage){
   const p=slot.state;
-  if(p.pictureLayers){
+  if(p.pictureAssembly){
+   const check=assemblyCheck(p.pictureAssembly,p.placement);status=check.ok?'밑면 맞춤 완료':check.error;
+   if(check.ok){result=cropped(furnitureCanvas(1,p,slot.cutout));ready=!!result;}
+  }else if(p.pictureLayers){
    const check=validatePictureLayers(p.pictureLayers,p.placement,p.pictureLayerRules);status=check.ok?'외곽 그림 확인 필요':'부위 기준점 확인 필요';
    if(check.ok){const coverage=cachedPictureLayersCoverage(parentPicture(p,slot.cutout),p.pictureLayers);if(coverage.ok){result=cropped(furnitureCanvas(1,p,slot.cutout));if(result){status='준비';ready=true;}}else status='부위 그림 누락';}
   }else if(p.mesh){
@@ -121,7 +127,7 @@ function previewFor(direction){
    if(valid&&p.layers.every(l=>!!l.binding)&&result){status='준비';ready=true;}
    if(!partsPlaneCoverage(p,slot.cutout).ok){status='부위·물건 등록 범위 부족';ready=false;result=null;}
   }
-  if(ready){try{const shape=pictureShape(p,parentPicture(p,slot.cutout),targetFor);if(!shape.ok){status='변형 과다 · 기준점 수정 필요';ready=false;}}catch{status='그림 비율 확인 필요';ready=false;}}
+  if(ready&&!p.pictureAssembly){try{const shape=pictureShape(p,parentPicture(p,slot.cutout),targetFor);if(!shape.ok){status='변형 과다 · 기준점 수정 필요';ready=false;}}catch{status='그림 비율 확인 필요';ready=false;}}
   if(p.provenance?.kind==='ai'&&!p.provenance.reviewed){status='AI 그림 · 확인 필요';ready=false;}
   if(!result)result=cropped(slot.cutout);
  }
@@ -141,7 +147,7 @@ function syncSet(){
  $('set-summary').textContent=`원본 그림 ${DIRECTIONS.filter(d=>!!slots[d].sourceImage).length}/3 · 등록 검사 ${count}/3${count===3?' · 모양과 접지는 배치 결과에서 확인해 주세요':' · 수정 중인 그림도 작업 파일에 저장돼요'}`;
  $('export-set').disabled=count!==3||loading||!!gesture;
  for(const id of ['studio-apply','studio-preview'])if($(id))$(id).disabled=count!==3||loading||!!gesture||!['floor','surface'].includes(shared.usage);
- $('export-parts').disabled=!DIRECTIONS.some(d=>slots[d].state.parts)||loading||!!gesture;
+ $('export-parts').disabled=!DIRECTIONS.some(d=>slots[d].state.parts||slots[d].state.pictureAssembly)||loading||!!gesture;
  $('export-picture-set').disabled=!DIRECTIONS.every(d=>!!slots[d].sourceImage)||loading||!!gesture;
  $('picture-export-warning').textContent=count===3?'원본 그림 ZIP에는 격자에 맞추기 전의 입력 그림 3장이 들어갑니다. 배치 그림은 격자 연결 세트로 저장하세요.':'격자 미등록 또는 검수 전 그림입니다. 그림 ZIP은 원본 3장과 작업 파일만 저장하며, 실제 방 배치 완료를 뜻하지 않습니다.';
  $('save-project').disabled=!DIRECTIONS.some(d=>!!slots[d].sourceImage)||loading||!!gesture;
@@ -192,6 +198,7 @@ function horizontalValue(){const p=state.placement;return Math.round((p.directio
 function horizontalPosition(value){const p=state.placement;return p.direction==='right'?FLOOR.width-p.depth-value:value;}
 function boundPlacement(){const p=state.placement,sw=p.direction==='center'?p.width:p.depth,sd=p.direction==='center'?p.depth:p.width;clampPlacement(p);$('pos-x').max=String(FLOOR.width-sw);$('pos-y').max=String(FLOOR.depth-sd);}
 function sync(){
+ document.body.dataset.assembly=String(!!state.pictureAssembly);
  boundPlacement();$('furniture-name').value=state.name;const l=layer();$('layer-select').replaceChildren(...state.layers.map((l,i)=>new Option(l.name,String(i),false,i===selected)));
  $('object-type').value=shared.objectType;$('object-usage').replaceChildren(...OBJECT_USAGES[shared.objectType].map(u=>new Option(USAGE_LABELS[u],u,false,u===shared.usage)));
  $('library-note').textContent=shared.dimensionStatus==='suggested'?'불러온 그림의 크기는 임시값입니다. 실제 그림 기준점을 등록하고 방에서 배치를 확인해 주세요.':'개체 하나에 좌측·정면·우측 그림이 들어 있습니다. 준비된 그림은 격자 기준점 미등록 상태로 열립니다.';
@@ -210,6 +217,7 @@ function sync(){
  $('finish-outline').disabled=tool!=='outline'||polygonDraft.length<3;$('points-list').replaceChildren();
  if(!state.mesh&&!state.pictureLayers)l.source.forEach((p,i)=>{const row=document.createElement('div');row.className='point-row';const label=document.createElement('span');label.textContent=String(i+1);row.append(label);for(const axis of ['x','y']){const input=document.createElement('input');input.type='number';input.step='.1';input.min='0';input.max=String(axis==='x'?sourceImage.naturalWidth:sourceImage.naturalHeight);input.value=p[axis].toFixed(1);input.setAttribute('aria-label',`원본 점 ${i+1} ${axis}`);input.onchange=()=>{const n=Number(input.value);if(!Number.isFinite(n))return;checkpoint();p[axis]=Math.max(0,Math.min(Number(input.max),n));sync();redraw();};row.append(input);}$('points-list').append(row);});
  document.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.tool===tool));b.classList.toggle('active',b.dataset.tool===tool);});
+ if(state.pictureAssembly){$('export-png').disabled=!assemblyCheck(state.pictureAssembly,state.placement).ok;$('source-hint').textContent='원본 부위와 맞춤점은 「그림 겹쳐 만들기」에서 조절하세요.';$('room-hint').textContent='다리 위 나무판에 몸통 밑면을 맞춘 상태로 함께 움직입니다.';for(const id of ['grid-bind','free-mode','plane','plane-offset'])$(id).disabled=true;}
  syncMeshControls();partsUI?.sync();syncSet();if(document.body.dataset.mode==='simple'&&$('check-warning').hidden)$('room-hint').textContent=slots[activeView].preview?.ready?'이동 막대로 부위와 물건을 함께 옮겨 확인하세요. 겹침과 접지는 그림으로 확인해야 해요.':'격자 등록과 원근 확인이 필요해요. 고급 설정에서 실제 기준점을 연결하세요.';simpleUI?.sync();redraw();
 }
 function useTool(next){const pending=polygonDraft.length;tool=next;polygonDraft=[];if(pending)simpleUI?.schedule();sync();}
@@ -226,7 +234,7 @@ for(const kind of ['source','room']){
   if(tool==='inspect')return;
   if(kind==='source'&&(tool==='outline'||tool==='part-outline')){polygonDraft.push(sourceClamp(p));mark();sync();return;}
   if(kind==='source'&&(tool==='erase'||tool==='restore')){checkpoint();const stroke={points:[sourceClamp(p)],radius:Number($('brush-size').value),restore:tool==='restore'};state.cutout.strokes.push(stroke);gesture={kind,type:'brush',id:e.pointerId,stroke};cut();redraw();return;}
-  if(state.pictureLayers)return;
+  if(state.pictureLayers||state.pictureAssembly)return;
   if(state.mesh){
    const points=kind==='source'?state.mesh.anchors.map(a=>a.source):meshPoints(),index=nearest(points,p,kind);
    if(index>=0){checkpoint();meshSelected=index;gesture={kind,type:'mesh-anchor',id:e.pointerId,index};return;}
@@ -278,6 +286,21 @@ async function loadPartImage(data){
  if(!partImageCache.has(data)){const entry={image:null};entry.promise=imageFrom(data).then(image=>(entry.image=image)).catch(error=>{partImageCache.delete(data);throw error;});partImageCache.set(data,entry);}
  return partImageCache.get(data).promise;
 }
+function assemblyImages(a){return new Map(['near','body','far'].map(id=>[id,partImageCache.get((id==='body'?a.body:a.sides[id]).source.data)?.image]));}
+async function commitAssembly(value){
+ const a=normalizeAssembly(value),direction=a.direction;
+ await prepareAssemblyImages(a,loadPartImage);
+ const p={...state.placement,...a.dimensions,direction};
+ if(direction!==activeView){p.x=direction==='right'?10-p.depth:0;p.y=3;}clampPlacement(p);
+ const full=document.createElement('canvas');full.width=ROOM.width*3;full.height=ROOM.height*3;const ctx=full.getContext('2d');ctx.scale(3,3);drawAssembly(ctx,a,assemblyImages(a),p);
+ const result=cropped(full);if(!result)throw new Error('표시할 그림이 없어요.');
+ const source={name:'겹쳐 만든 그림.png',data:result.canvas.toDataURL('image/png'),width:result.canvas.width,height:result.canvas.height};
+ const next={...fresh(direction),version:2,source,placement:p,pictureAssembly:a};
+ const prepared=await prepareProject(next);storeActive();const previous=slots[direction];
+ prepared.history=previous.sourceImage?[...previous.history,clone(previous.state)].slice(-40):[];
+ manualShared=true;Object.assign(shared,a.dimensions);slots[direction]=prepared;loadActive(direction);applyShared();tool='inspect';mark();resetViews();sync();
+ message('원본 부위와 맞춤점을 저장했어요. 「그림 겹쳐 만들기」에서 다시 조절할 수 있어요.');
+}
 function partsImages(parts){return new Map([...(parts?.parts||[]),...(parts?.objects||[])].filter(v=>v.source).map(v=>[v.id,partImageCache.get(v.source.data)?.image]));}
 async function preparePartImages(parts){await Promise.all([...parts.parts,...parts.objects].filter(v=>v.source).map(async v=>{const image=await loadPartImage(v.source.data);if(image.naturalWidth!==v.source.width||image.naturalHeight!==v.source.height)throw new Error('부위 또는 물건의 PNG 크기 정보가 실제 그림과 달라요.');}));}
 function commitParts(parts,{record=true,intermediate=false}={}){
@@ -299,7 +322,7 @@ async function guarded(fn){if(loading||gesture)return;loading=true;try{await fn(
 function mayReplace(direction=activeView){storeActive();return !slots[direction].sourceImage||confirm(`${LABELS[direction]} 그림과 편집 내용을 바꿀까요? 다른 방향은 그대로 남아요.`);}
 const autoStates=new WeakSet();let manualShared=false;
 function untouchedForPreparation(p){
- if(p.pictureLayers)return false;
+ if(p.pictureLayers||p.pictureAssembly)return false;
  if(canAutoPrepare(p).ok)return true;
  if(!autoStates.has(p)||!p.parts||p.parts.objects.length||p.parts.parts.some(v=>v.source||v.polygon.length||v.visible===false))return false;
  const expected=createParts(p.parts.preset,p.placement.direction,p.parts.frame);
@@ -327,7 +350,7 @@ document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>useTool(b.data
 document.querySelectorAll('[data-panel]').forEach(b=>{if(b.tagName!=='BUTTON')return;b.onclick=()=>{document.body.dataset.panel=b.dataset.panel;document.querySelectorAll('button[data-panel]').forEach(x=>x.setAttribute('aria-selected',String(x===b)));redraw();};});
 $('finish-outline').onclick=finishOutline;
 $('reset-cutout').onclick=()=>{if(!sourceImage)return;checkpoint();state.cutout={polygon:[],strokes:[]};polygonDraft=[];cut();sync();};
-$('undo').onclick=async()=>{if(polygonDraft.length){polygonDraft.pop();simpleUI?.schedule();sync();return;}if(!history.length)return;state=history.pop();selected=Math.min(selected,state.layers.length-1);cut();mark();sync();};
+$('undo').onclick=()=>guarded(async()=>{if(polygonDraft.length){polygonDraft.pop();simpleUI?.schedule();sync();return;}if(!history.length)return;const previous=history.at(-1);if(previous.pictureAssembly||state.pictureAssembly||previous.source?.data!==state.source?.data){const restored=await prepareProject(previous),remaining=history.slice(0,-1);state=restored.state;sourceImage=restored.sourceImage;baseCutout=restored.baseCutout;cutout=restored.cutout;history=remaining;tool='inspect';}else{state=history.pop();cut();}selected=Math.min(selected,state.layers.length-1);mark();sync();});
 $('reset-points').onclick=()=>{checkpoint();layer().source=[];layer().target=[];layer().binding=null;sync();};
 $('layer-select').onchange=e=>{selected=Number(e.target.value);polygonDraft=[];sync();};
 $('add-layer').onclick=()=>{if(!sourceImage){message('먼저 그림을 넣어 주세요.');return;}checkpoint();state.layers.push(freshLayer(state.layers.length+1));selected=state.layers.length-1;useTool('points');message('새 영역에서 윗면·옆면 등의 실제 모서리 네 점을 찍어 주세요.');};
@@ -354,26 +377,28 @@ function png(canvas,name){canvas.toBlob(blob=>{if(!blob){message('PNG 저장에 
 function cropped(canvas){const b=alphaBounds(canvas);if(!b)return null;const out=document.createElement('canvas');out.width=b.width;out.height=b.height;out.getContext('2d').drawImage(canvas,b.x,b.y,b.width,b.height,0,0,b.width,b.height);return {canvas:out,bounds:b};}
 $('export-cutout').onclick=()=>{if(!cutout)return;const result=cropped(cutout);if(!result){message('남은 그림이 없어요. 되살리기로 복구해 주세요.');return;}png(result.canvas,filename()+'-'+activeView+'-분리.png');message('주변을 지운 투명 그림을 저장했어요.');};
 function furnitureCanvas(scale=1,p=state,masked=cutout){const c=document.createElement('canvas');c.width=ROOM.width*scale;c.height=ROOM.height*scale;const ctx=c.getContext('2d');ctx.scale(scale,scale);drawFurniture(ctx,p,masked);return c;}
-$('export-png').onclick=()=>{storeActive();if(!previewFor(activeView).ready){message('현재 방향의 등록 검사를 통과한 뒤 배치 그림을 저장해 주세요. 원본과 작업 파일은 저장할 수 있어요.');return;}if(!partsPlaneCoverage(state,cutout).ok){message('등록한 면 밖의 부위·물건이 있어요. 전체 그림의 기준점을 먼저 보완해 주세요.');return;}if(state.pictureLayers){const check=validatePictureLayers(state.pictureLayers,state.placement,state.pictureLayerRules);if(!check.ok){message(check.error);return;}if(!cachedPictureLayersCoverage(parentPicture(state,cutout),state.pictureLayers).ok){message('부위 기준점 밖에 그림이 남아 있어요. 누락한 부위의 외곽을 보완해 주세요.');return;}}else if(state.mesh){const check=validateMesh(state.mesh,state.placement);if(!check.ok){message(check.error);return;}if(!cachedMeshCoverage(parentPicture(state,cutout),state.mesh).ok){message('곡선 기준점 밖에 그림이 남아 있어요. 외곽 기준점을 보완해 주세요.');return;}}else if(!state.layers.some(ready))return;const result=cropped(furnitureCanvas(3));if(!result){message('남은 그림이 없어요. 꼭지점과 외곽선을 확인해 주세요.');return;}png(result.canvas,filename()+'-'+activeView+'-가구.png');message('방과 격자를 제외한 3배 해상도 투명 가구 PNG를 저장했어요.');};
+$('export-png').onclick=()=>{storeActive();if(!previewFor(activeView).ready){message('현재 방향의 등록 검사를 통과한 뒤 배치 그림을 저장해 주세요. 원본과 작업 파일은 저장할 수 있어요.');return;}if(!partsPlaneCoverage(state,cutout).ok){message('등록한 면 밖의 부위·물건이 있어요. 전체 그림의 기준점을 먼저 보완해 주세요.');return;}if(state.pictureLayers){const check=validatePictureLayers(state.pictureLayers,state.placement,state.pictureLayerRules);if(!check.ok){message(check.error);return;}if(!cachedPictureLayersCoverage(parentPicture(state,cutout),state.pictureLayers).ok){message('부위 기준점 밖에 그림이 남아 있어요. 누락한 부위의 외곽을 보완해 주세요.');return;}}else if(state.mesh){const check=validateMesh(state.mesh,state.placement);if(!check.ok){message(check.error);return;}if(!cachedMeshCoverage(parentPicture(state,cutout),state.mesh).ok){message('곡선 기준점 밖에 그림이 남아 있어요. 외곽 기준점을 보완해 주세요.');return;}}else if(!state.pictureAssembly&&!state.layers.some(ready))return;const result=cropped(furnitureCanvas(3));if(!result){message('남은 그림이 없어요. 꼭지점과 외곽선을 확인해 주세요.');return;}png(result.canvas,filename()+'-'+activeView+'-가구.png');message('방과 격자를 제외한 3배 해상도 투명 가구 PNG를 저장했어요.');};
 function exportProject(p=state,masked=cutout){
  if(!p.source)return null;
  const result=cropped(furnitureCanvas(1,p,masked)),projected=p.mesh?meshProjection(p):null;
  const meshRegistration=projected&&result?{kind:'mesh',placement:clone(p.placement),referenceDimensions:{width:p.placement.width,depth:p.placement.depth,height:p.placement.height},indices:projected.indices,anchors:projected.points.map((v,i)=>({source:{x:v.target.x-result.bounds.x,y:v.target.y-result.bounds.y},world:{x:v.world.x,y:v.world.y,z:v.world.z},kind:p.mesh.anchors[i].kind||'physical',label:p.mesh.anchors[i].label||''})),bounds:result.bounds}:null;
- return {...clone(p),roomCalibration:{id:'ojjuda-room-v3',width:ROOM.width,height:ROOM.height,grid:FLOOR},registration:p.mesh||p.pictureLayers?[]:p.layers.map(l=>({id:l.id,source:l.source,target:targetFor(l,p.placement),world:l.binding?boundWorld(l,p.placement):null})),...(p.pictureLayers?{pictureLayerRegistrations:result?pictureLayerRegistrations(p.pictureLayers,p.placement,result.bounds,p.pictureLayerRules):null}:{}),...(p.mesh?{meshRegistration:hasDrapedObjects(p.parts)&&meshRegistration?{...meshRegistration,scope:'parent-only'}:meshRegistration}:{}),...(hasDrapedObjects(p.parts)?{accessoryRegistration:{version:1,parent:'original-source',order:getRenderOrder(p.parts),objects:p.parts.objects.filter(o=>o.registration).map(o=>({id:o.id,registration:clone(o.registration),visible:o.visible}))}}:{}),asset:result?{data:result.canvas.toDataURL('image/png'),bounds:result.bounds,...(hasDrapedObjects(p.parts)?{purpose:'room-preview'}:{})}:null};
+ return {...clone(p),roomCalibration:{id:'ojjuda-room-v3',width:ROOM.width,height:ROOM.height,grid:FLOOR},registration:p.mesh||p.pictureLayers||p.pictureAssembly?[]:p.layers.map(l=>({id:l.id,source:l.source,target:targetFor(l,p.placement),world:l.binding?boundWorld(l,p.placement):null})),...(p.pictureLayers?{pictureLayerRegistrations:result?pictureLayerRegistrations(p.pictureLayers,p.placement,result.bounds,p.pictureLayerRules):null}:{}),...(p.mesh?{meshRegistration:hasDrapedObjects(p.parts)&&meshRegistration?{...meshRegistration,scope:'parent-only'}:meshRegistration}:{}),...(hasDrapedObjects(p.parts)?{accessoryRegistration:{version:1,parent:'original-source',order:getRenderOrder(p.parts),objects:p.parts.objects.filter(o=>o.registration).map(o=>({id:o.id,registration:clone(o.registration),visible:o.visible}))}}:{}),asset:result?{data:result.canvas.toDataURL('image/png'),bounds:result.bounds,...(hasDrapedObjects(p.parts)?{purpose:'room-preview'}:{})}:null};
 }
 function exportSet(){
- storeActive();const data={format:'ojjuda-furniture-set',version:1,name:shared.name,...objectMetadata(shared),generationNotes:$('ai-notes').value.trim(),dimensions:{width:shared.width,depth:shared.depth,height:shared.height},activeView,views:{}};
+ storeActive();const data={format:'ojjuda-furniture-set',version:DIRECTIONS.some(d=>slots[d].state.pictureAssembly)?2:1,name:shared.name,...objectMetadata(shared),generationNotes:$('ai-notes').value.trim(),dimensions:{width:shared.width,depth:shared.depth,height:shared.height},activeView,views:{}};
  for(const d of DIRECTIONS)data.views[d]=exportProject(slots[d].state,slots[d].cutout);
  data.complete=DIRECTIONS.every(d=>previewFor(d).ready);data.missing=DIRECTIONS.filter(d=>!previewFor(d).ready);data.registrationStatus=data.complete?'registered':'unregistered';return data;
 }
 function pendingOutlines(){storeActive();return DIRECTIONS.filter(d=>slots[d].polygonDraft.length>0);}
-function canSave(){const pending=pendingOutlines();if(pending.length){message(`${pending.map(d=>LABELS[d]).join('·')}의 외곽 따기를 마치거나 Esc로 취소한 뒤 저장해 주세요.`);return false;}return !gesture;}
+function canSave(){if(assemblyUI?.isOpen()){message('겹쳐 만들기 창에서 「현재 방향에 사용」 또는 「닫기」를 눌러 주세요.');return false;}const pending=pendingOutlines();if(pending.length){message(`${pending.map(d=>LABELS[d]).join('·')}의 외곽 따기를 마치거나 Esc로 취소한 뒤 저장해 주세요.`);return false;}return !gesture;}
 $('save-project').onclick=()=>{if(loading||!canSave())return;const data=exportSet();if(!DIRECTIONS.some(d=>!!data.views[d]))return;download(new Blob([JSON.stringify(data)],{type:'application/json'}),filename()+'.furniture-set.json');dirty=false;$('save-status').textContent='작업 파일 저장됨';message(data.complete?'세 방향을 한 가구 파일에 저장했어요.':'미완성 방향을 포함한 세트 작업 파일을 저장했어요. 이어서 완성할 수 있어요.');};
 const canvasBlob=canvas=>new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG를 만들지 못했어요.')),'image/png'));
 $('export-parts').onclick=()=>guarded(async()=>{
  if(!canSave())return;storeActive();
  const data=exportSet(),entries=[],manifest={format:'ojjuda-parts-set',version:1,name:shared.name,coordinateSystem:'original-source-pixels',editableProject:'furniture-set.json',registrationStatus:data.registrationStatus,views:{}};
- for(const d of DIRECTIONS){const slot=slots[d],parts=slot.state.parts;if(!parts){manifest.views[d]=null;continue;}
+ for(const d of DIRECTIONS){const slot=slots[d],parts=slot.state.parts,assembly=slot.state.pictureAssembly;
+  if(assembly){const a=clone(assembly);for(const id of ['near','body','far']){const part=id==='body'?a.body:a.sides[id],file=d+'/parts/'+id+'.png',binary=atob(part.source.data.split(',')[1]);entries.push({name:file,data:Uint8Array.from(binary,c=>c.charCodeAt(0))});part.source={name:part.source.name,width:part.source.width,height:part.source.height,file};}manifest.views[d]={mode:'picture-assembly',assembly:a};continue;}
+  if(!parts){manifest.views[d]=null;continue;}
   const canvases=getPartCanvases(slot.baseCutout,parts,partsImages(parts));
   const m={frame:clone(parts.frame),preset:parts.preset,order:clone(parts.order),renderOrder:getRenderOrder(parts),parts:[],objects:[],composite:d+'/composite.png'};
   for(const part of parts.parts){const file=d+'/parts/'+part.id+'.png';entries.push({name:file,data:await canvasBlob(canvases.get(part.id))});m.parts.push({id:part.id,name:part.name,file,visible:part.visible,remainder:part.remainder,polygon:clone(part.polygon),sourceFrame:clone(parts.frame)});}
@@ -404,6 +429,7 @@ function validateMeshDraft(mesh){
  if(mesh.indices!==undefined){const indices=mesh.indices;if(!Array.isArray(indices)||indices.length>4096||indices.some(t=>!Array.isArray(t)||t.length!==3||new Set(t).size!==3||t.some(i=>!Number.isInteger(i)||i<0||i>=mesh.anchors.length)))throw new Error('곡선 기준점 연결 정보가 올바르지 않아요.');}
 }
 function syncMeshControls(){
+ if(state.pictureAssembly){$('geometry-mode').disabled=true;$('plane-controls').hidden=true;$('mesh-controls').hidden=true;return;}
  $('geometry-mode').disabled=!!state.pictureLayers;
  if(state.pictureLayers){
   $('geometry-mode').value='mesh';$('plane-controls').hidden=true;$('mesh-controls').hidden=false;$('mesh-selected').replaceChildren(...state.pictureLayers.map(p=>new Option(p.label||p.id,p.id)));$('mesh-selected').disabled=true;$('mesh-delete').disabled=true;$('mesh-fields').replaceChildren();
@@ -440,7 +466,8 @@ $('mesh-selected').onchange=e=>{meshSelected=Number(e.target.value);sync();};
 $('mesh-delete').onclick=()=>{if(!state.mesh?.anchors.length)return;checkpoint();state.mesh.anchors.splice(meshSelected,1);delete state.mesh.indices;meshSelected=Math.max(0,meshSelected-1);sync();};
 
 function validateProject(p){
- if(!p||p.format!=='ojjuda-furniture'||p.version!==1||typeof p.name!=='string'||!/^data:image\/(png|webp|jpeg);base64,/.test(p.source?.data||''))throw new Error('이 프로그램에서 저장한 가구 파일을 열어 주세요.');
+ if(!p||p.format!=='ojjuda-furniture'||![1,2].includes(p.version)||typeof p.name!=='string'||!/^data:image\/(png|webp|jpeg);base64,/.test(p.source?.data||''))throw new Error('이 프로그램에서 저장한 가구 파일을 열어 주세요.');
+ if(p.pictureAssembly){if(p.version!==2||p.mesh||p.pictureLayers||p.parts||p.pictureAssembly.direction!==p.placement?.direction)throw new Error('겹친 그림의 방향과 편집 정보를 확인해 주세요.');normalizeAssembly(p.pictureAssembly);}
  objectMetadata(p);
  if(p.provenance&&(p.provenance.kind!=='ai'||!DIRECTIONS.includes(p.provenance.sourceDirection)||typeof p.provenance.model!=='string'||p.provenance.model.length>200||typeof p.provenance.reviewed!=='boolean'))throw new Error('AI 그림의 제작 정보가 올바르지 않아요.');
  if(p.mesh)validateMeshDraft(p.mesh);
@@ -463,12 +490,13 @@ async function prepareProject(p){
  slot.state={format:p.format,version:p.version,name:p.name.slice(0,80),...objectMetadata(p),source:{...p.source,width:img.naturalWidth,height:img.naturalHeight},cutout:clone(p.cutout),layers:clone(p.layers),placement:clone(p.placement)};
  if(p.provenance)slot.state.provenance=clone(p.provenance);if(p.mesh)slot.state.mesh=clone(p.mesh);if(p.pictureLayers)slot.state.pictureLayers=clone(p.pictureLayers);if(p.pictureLayerRules)slot.state.pictureLayerRules=clone(p.pictureLayerRules);
  slot.sourceImage=img;slot.baseCutout=masked;slot.cutout=masked;
+ if(p.pictureAssembly){slot.state.pictureAssembly=normalizeAssembly(p.pictureAssembly);await prepareAssemblyImages(slot.state.pictureAssembly,loadPartImage);}
  if(p.parts){slot.state.parts=await upgradeSofaBlankets(p.parts);if(slot.state.parts.direction!==p.placement.direction)throw new Error('부위 구성의 방향이 현재 그림과 달라요.');if(slot.state.parts.frame.width!==img.naturalWidth||slot.state.parts.frame.height!==img.naturalHeight)throw new Error('부위 캔버스 크기가 원본과 달라요.');await preparePartImages(slot.state.parts);slot.cutout=renderParts(masked,slot.state.parts,partsImages(slot.state.parts));}
  clampPlacement(slot.state.placement);return slot;
 }
 async function prepareSet(p){
  if(p?.views){const recovered=await Promise.all(DIRECTIONS.map(async d=>[d,await recoverKnownPictureProject(p.views[d],COFFEE_TABLE_V1)]));if(recovered.some(([,v])=>v.recovered)){p={...p,views:{...p.views}};for(const [d,v]of recovered)p.views[d]=v.project;const first=recovered.find(([,v])=>v.recovered)[1].project;p.dimensions={width:first.placement.width,depth:first.placement.depth,height:first.placement.height};}}
- if(p.version!==1||typeof p.name!=='string'||!p.views||typeof p.views!=='object'||!DIRECTIONS.includes(p.activeView))throw new Error('세트 파일의 기본 정보가 올바르지 않아요.');
+ if(![1,2].includes(p.version)||typeof p.name!=='string'||!p.views||typeof p.views!=='object'||!DIRECTIONS.includes(p.activeView))throw new Error('세트 파일의 기본 정보가 올바르지 않아요.');
  validateDimensions(p.dimensions);if(p.generationNotes!==undefined&&(typeof p.generationNotes!=='string'||p.generationNotes.length>2000))throw new Error('작업 메모가 올바르지 않아요.');
  const metadata=objectMetadata(p);
  for(const d of DIRECTIONS){
@@ -535,7 +563,7 @@ function syncSourceReview(){
  $('clear-view').disabled=!sourceImage||busy;
  $('ai-notes').disabled=busy;
  const ai=state.provenance?.kind==='ai';$('ai-review-view').hidden=!ai;
- $('source-title').textContent=ai?`AI 그림 · ${LABELS[activeView]}`:'원본 그림';
+ $('source-title').textContent=state.pictureAssembly?'겹친 그림':ai?`AI 그림 · ${LABELS[activeView]}`:'원본 그림';
  document.querySelector('button[data-panel="source"]').textContent=ai?'AI 그림':'원본 그림';
  $('ai-review-view').disabled=busy||!!state.provenance?.reviewed;
  $('ai-review-view').textContent=state.provenance?.reviewed?'이 방향 그림 확인됨':'이 방향 그림 확인 완료';
@@ -557,13 +585,14 @@ for(const type of ['click','change','input'])document.addEventListener(type,e=>{
 },true);
 
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
-window.addEventListener('keydown',e=>{if(loading)return;if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('undo').click();}if(e.key==='Escape'){if(cutPending)cut();polygonDraft=[];gesture=null;simpleUI?.schedule();sync();}});
+window.addEventListener('keydown',e=>{if(loading||assemblyUI?.isOpen())return;if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('undo').click();}if(e.key==='Escape'){if(cutPending)cut();polygonDraft=[];gesture=null;simpleUI?.schedule();sync();}});
 new ResizeObserver(redraw).observe(document.querySelector('main'));
 partsUI=mountPartsEditor({get:()=>({parts:state.parts,frame:{width:sourceImage?.naturalWidth||0,height:sourceImage?.naturalHeight||0},direction:activeView,baseImage:baseCutout,imageMap:partsImages(state.parts),draft:polygonDraft,tool}),commit:commitParts,run:guarded,loadImage:loadPartImage,readFile,message,redraw,startOutline:()=>useTool('part-outline'),clearDraft:()=>useTool(document.body.dataset.mode==='simple'?'inspect':'points'),setTool:useTool,checkpoint,preview:parts=>commitParts(parts,{record:false,intermediate:true}),finish:()=>{mark();sync();}});
-function rawSnapshot(){storeActive();return {format:'ojjuda-furniture-set',version:1,name:shared.name,...objectMetadata(shared),dimensions:{width:shared.width,depth:shared.depth,height:shared.height},generationNotes:$('ai-notes').value,activeView,views:Object.fromEntries(DIRECTIONS.map(d=>[d,slots[d].state.source?clone(slots[d].state):null]))};}
+function rawSnapshot(){storeActive();return {format:'ojjuda-furniture-set',version:DIRECTIONS.some(d=>slots[d].state.pictureAssembly)?2:1,name:shared.name,...objectMetadata(shared),dimensions:{width:shared.width,depth:shared.depth,height:shared.height},generationNotes:$('ai-notes').value,activeView,views:Object.fromEntries(DIRECTIONS.map(d=>[d,slots[d].state.source?clone(slots[d].state):null]))};}
 async function restoreDraft(project){const prepared=await prepareSet(project);if(hasAnySource()&&!confirm('현재 작업을 자동 임시저장한 세트로 바꿀까요?'))return false;manualShared=true;shared=prepared.shared;$('ai-notes').value=prepared.generationNotes;for(const d of DIRECTIONS)slots[d]=prepared.slots[d]||freshSlot(d);loadActive(prepared.activeView);syncKindFromProject();if(document.body.dataset.mode==='simple')tool='inspect';dirty=true;$('save-status').textContent='복원됨 · 파일 저장 전';resetViews();sync();return true;}
+assemblyUI=mountAssemblyEditor({get:()=>({state,placement:state.placement,cutout}),commit:commitAssembly,loadImage:loadPartImage,readFile});
 loadActive('right');document.body.dataset.panel='source';tool='inspect';
-simpleUI=mountSimpleEditor({get:()=>{storeActive();return {state,image:sourceImage,tool,pending:DIRECTIONS.some(d=>slots[d].polygonDraft.length),busy:loading||!!gesture||!!partsUI?.isAdjusting()};},snapshot:rawSnapshot,restore:restoreDraft,run:guarded,mode:simple=>{if(!polygonDraft.length&&['inspect','points'].includes(tool))tool=simple?'inspect':'points';sync();}});
+simpleUI=mountSimpleEditor({get:()=>{storeActive();return {state,image:sourceImage,tool,pending:DIRECTIONS.some(d=>slots[d].polygonDraft.length),busy:loading||!!gesture||!!partsUI?.isAdjusting()||!!assemblyUI?.isOpen()};},snapshot:rawSnapshot,restore:restoreDraft,run:guarded,mode:simple=>{if(!polygonDraft.length&&['inspect','points'].includes(tool))tool=simple?'inspect':'points';sync();}});
 sync();
 imageFrom(ROOM_IMAGE).then(img=>{background=img;redraw();}).catch(()=>message('방 배경을 읽지 못했어요. 꼭지점과 격자 편집은 사용할 수 있어요.'));
 
@@ -572,9 +601,9 @@ export function studioBundle(){
  if(loading||!canSave())throw new Error('진행 중인 편집을 마친 뒤 적용해 주세요.');
  const project=exportSet();if(!project.complete)throw new Error('세 방향의 그림과 격자 연결을 먼저 완성해 주세요.');
  if(!['floor','surface'].includes(shared.usage))throw new Error('소파·침대 위 소품은 부모 가구에 넣은 다음 가구 세트로 적용해 주세요.');
- const runtime={format:'ojjuda-runtime-furniture',version:1,shapePolicy:1,name:project.name,dimensions:project.dimensions,layer:shared.usage==='surface'?'surface':shared.objectType==='furniture'?'standing':'floor',views:{}};
+ const runtime={format:'ojjuda-runtime-furniture',version:project.version===2?2:1,shapePolicy:1,name:project.name,dimensions:project.dimensions,layer:shared.usage==='surface'?'surface':shared.objectType==='furniture'?'standing':'floor',views:{}};
  const png=image=>{if(image.toDataURL)return image.toDataURL('image/png');const c=document.createElement('canvas');c.width=image.naturalWidth||image.width;c.height=image.naturalHeight||image.height;c.getContext('2d').drawImage(image,0,0);return c.toDataURL('image/png');};
- for(const d of DIRECTIONS){const slot=slots[d],p=slot.state,plan=drapePlan(p,slot.cutout);runtime.views[d]={placement:clone(p.placement),layers:clone(p.layers).map(l=>l.binding?{...l,binding:{...l.binding,uv:l.binding.uv||clone(unitQuad),offset:l.binding.offset||0}}:l),...(p.mesh?{mesh:clone(p.mesh)}:{}),...(p.pictureLayers?{pictureLayers:clone(p.pictureLayers),pictureLayerRules:clone(p.pictureLayerRules||{})}:{}),preview:project.views[d].asset.data,drawings:(plan?.layers||[{image:slot.cutout}]).map(l=>({data:png(l.image),...(l.registration?{registration:clone(l.registration),segment:l.segment}:{})}))};}
+ for(const d of DIRECTIONS){const slot=slots[d],p=slot.state,plan=drapePlan(p,slot.cutout);if(p.pictureAssembly){runtime.views[d]={placement:clone(p.placement),layers:[],drawings:[],pictureAssembly:clone(p.pictureAssembly),preview:project.views[d].asset.data};continue;}runtime.views[d]={placement:clone(p.placement),layers:clone(p.layers).map(l=>l.binding?{...l,binding:{...l.binding,uv:l.binding.uv||clone(unitQuad),offset:l.binding.offset||0}}:l),...(p.mesh?{mesh:clone(p.mesh)}:{}),...(p.pictureLayers?{pictureLayers:clone(p.pictureLayers),pictureLayerRules:clone(p.pictureLayerRules||{})}:{}),preview:project.views[d].asset.data,drawings:(plan?.layers||[{image:slot.cutout}]).map(l=>({data:png(l.image),...(l.registration?{registration:clone(l.registration),segment:l.segment}:{})}))};}
  return {runtime,project};
 }
 export const studioMessage=message;

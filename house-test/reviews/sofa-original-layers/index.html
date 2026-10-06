@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원본 그림으로 조립한 소파</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3eee7;color:#382e40;font-family:system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:28px}h1{font-size:24px;margin:0 0 8px}p{margin:0 0 20px;line-height:1.6}section{background:#fffcf7;border-radius:16px;margin:18px 0;padding:20px}h2{font-size:16px;margin:0 0 16px}.compare{display:grid;grid-template-columns:1fr 1.5fr;gap:24px;align-items:center}.reference{width:100%;height:420px;object-fit:cover;object-position:0 0}.art{position:relative;height:440px;overflow:hidden}.art canvas{width:100%;height:100%;object-fit:contain}.room{position:relative;width:100%;aspect-ratio:1507/1044;overflow:hidden}.room>img{width:100%}.room>canvas{position:absolute;width:100%;height:100%;inset:0}.parts{display:grid;grid-template-columns:1fr 1fr;gap:24px}.parts img{width:100%;height:240px;object-fit:contain}label{display:inline-flex;align-items:center;gap:8px;margin:8px 20px 8px 0}small{display:block;margin-top:12px;color:#74697c}button{font:inherit;padding:8px 15px;border:1px solid #d8cadf;border-radius:10px;background:#eee2f9;cursor:pointer}@media(max-width:650px){main{padding:14px}.compare{grid-template-columns:1fr}.reference{height:320px}.art{height:350px}.parts img{height:180px}}
+</style>
+<main><h1>원본 그림으로 조립한 소파</h1><p>뒤 옆판 → 몸통 → 앞 옆판. 양쪽 옆판은 수평을 유지하고, 나무판과 다리는 붙여 두었습니다.</p>
+<section id="comparison"><div class="compare"><div><h2>기준 방의 원본 소파</h2><canvas id="reference" width="680" height="770" style="width:100%;max-height:440px;object-fit:contain"></canvas></div><div><h2>원본 부위로 조립</h2><div class="art"><canvas id="sofa"></canvas></div></div></div></section>
+<section><h2>방에서 크기 확인</h2><label>벽과 간격 <input id="gap" type="range" min="0" max="3" step=".5" value="0"><output id="gap-value">0칸</output></label><label>앞뒤 위치 <input id="depth" type="range" min="0" max="3.5" step=".5" value="3"><output id="depth-value">3칸</output></label><button id="reset">기준 위치</button><div class="room"><img src="../../assets/room-day-v3.webp" alt="실제 방 배경"><canvas id="room"></canvas></div></section>
+<section><h2>잘라 쓴 원본 부위</h2><div class="parts"><div><img src="../../assets/sofa-original-layers-v1/side.png" alt="옆판, 나무판, 다리"><small>같은 옆판을 앞뒤로 겹침</small></div><div><img src="../../assets/sofa-original-layers-v1/body.png" alt="한 장으로 유지한 소파 몸통"><small>기울어진 몸통 한 장</small></div></div></section>
+</main><script type="module">
+import {originalSofaArtwork} from '../../sofa-original-layers.js?v=20261006-assembly1';
+import {paintFurniture} from '../../furniture-painter.js?v=20261006-assembly1';
+import {FURNITURE,itemSize,contactBounds} from '../../furniture-catalog.js?v=20261006-assembly1';
+const ref=new Image();ref.src='../../references/home-style.png';await ref.decode();document.querySelector('#reference').getContext('2d').drawImage(ref,30,515,340,385,0,0,680,770);
+const gap=document.querySelector('#gap'),depth=document.querySelector('#depth');let revision=0;
+async function render(){const current=++revision;const p={direction:'left',x:+gap.value,y:+depth.value};const g=originalSofaArtwork(FURNITURE.sofa,p,contactBounds('sofa',p),itemSize('sofa','left'));
+ g.art.layers=g.art.layers.map(l=>({...l,image:'../../'+l.image}));
+ const host=document.createElement('div'),c=document.createElement('canvas');host.hidden=true;host.append(c);document.body.append(host);await paintFurniture(c,g);if(current!==revision){host.remove();return;}
+ const isolated=document.querySelector('#sofa');isolated.width=c.width;isolated.height=c.height;isolated.getContext('2d').drawImage(c,0,0);
+ const room=document.querySelector('#room');room.width=3014;room.height=2088;room.getContext('2d').drawImage(c,g.left*2,g.top*2,g.width*2,g.height*2);host.remove();
+ document.querySelector('#gap-value').value=p.x+'칸';document.querySelector('#depth-value').value=p.y+'칸';document.body.dataset.ready='true';}
+gap.oninput=depth.oninput=render;document.querySelector('#reset').onclick=()=>{gap.value=0;depth.value=3;render();};await render();
+</script></html>

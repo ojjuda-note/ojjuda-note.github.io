@@ -1,6 +1,6 @@
-import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261006-sofaparts1';
-import {normalizeSofaBlanketDrape,projectSofaBlanketDrape,installSofaBlanketDrapes} from './sofa-blanket-drape.js?v=20261006-sofaparts1';
-import {roomPoint} from './model.js?v=20261006-sofaparts1';
+import {SOFA_ACCESSORY_IMAGES,SOFA_V1} from './sofa-v1-registration.js?v=20261006-assembly1';
+import {normalizeSofaBlanketDrape,projectSofaBlanketDrape,installSofaBlanketDrapes} from './sofa-blanket-drape.js?v=20261006-assembly1';
+import {roomPoint} from './model.js?v=20261006-assembly1';
 const directions=['left','center','right'];
 const invalid=()=>{throw new Error('Invalid sofa blanket registration');};
 export function validateSofaBlanket(value){

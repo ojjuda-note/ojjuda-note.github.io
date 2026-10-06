@@ -1,12 +1,13 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261006-sofaparts1';
-import {validQuad,drawWarp} from './warp.js?v=20261006-sofaparts1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261006-sofaparts1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261006-sofaparts1';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-sofaparts1';
-import {drawDrapedLayer} from './draped-parts.js?v=20261006-sofaparts1';
-import {alphaBounds} from './cutout.js?v=20261006-sofaparts1';
-import {pictureShape} from './shape-check.js?v=20261006-sofaparts1';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261006-assembly1';
+import {validQuad,drawWarp} from './warp.js?v=20261006-assembly1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261006-assembly1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261006-assembly1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-assembly1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261006-assembly1';
+import {alphaBounds} from './cutout.js?v=20261006-assembly1';
+import {pictureShape} from './shape-check.js?v=20261006-assembly1';
+import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages} from './picture-assembly.js?v=20261006-assembly1';
 
 const preparedPictures=new WeakMap();
 
@@ -27,7 +28,7 @@ function imageData(data){
  return data;
 }
 export function validateRuntime(value){
- if(value?.format!=='ojjuda-runtime-furniture'||value.version!==1||typeof value.name!=='string'||!value.name.trim()||value.name.length>80)fail('완성한 가구 정보를 확인해 주세요.');
+ if(value?.format!=='ojjuda-runtime-furniture'||![1,2].includes(value.version)||typeof value.name!=='string'||!value.name.trim()||value.name.length>80)fail('완성한 가구 정보를 확인해 주세요.');
  if(!['standing','floor','surface'].includes(value.layer))fail('가구 또는 소품의 놓을 곳을 확인해 주세요.');
  if(value.shapePolicy!==undefined&&value.shapePolicy!==1)fail('그림 비율 검사 버전을 확인해 주세요.');
  const dims=value.dimensions;
@@ -37,11 +38,12 @@ export function validateRuntime(value){
   if(!p||p.direction!==direction||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.y<0||p.x+(direction==='center'?dims.width:dims.depth)>10||p.y+(direction==='center'?dims.depth:dims.width)>7||['width','depth','height'].some(k=>p[k]!==dims[k]))fail('세 방향의 크기와 위치가 맞지 않아요.');
   if(p.elevation!==undefined&&(!Number.isFinite(p.elevation)||p.elevation<0||p.elevation+dims.height>ROOM.wallHeight+1e-6||value.layer!=='surface'&&p.elevation!==0))fail('소품 높이를 확인해 주세요.');
   if(!Array.isArray(v.layers)||v.layers.length>80)fail('그림 면 정보를 확인해 주세요.');
-  if(v.mesh)normalizeMesh(v.mesh);
+  if(v.pictureAssembly){if(value.version!==2||v.mesh||v.pictureLayers||v.layers.length||v.pictureAssembly.direction!==direction)fail('겹친 그림의 방향과 연결 정보를 확인해 주세요.');normalizeAssembly(v.pictureAssembly);}
+  else if(v.mesh)normalizeMesh(v.mesh);
   else if(v.pictureLayers)normalizePictureLayers(v.pictureLayers,v.pictureLayerRules);
   else if(!v.layers.length||v.layers.some(l=>!Array.isArray(l.source)||l.source.length!==4||!l.source.every(point)||!validQuad(l.source)||!['top','front','side'].includes(l.binding?.plane)||!Array.isArray(l.binding.uv)||l.binding.uv.length!==4||!l.binding.uv.every(p=>point(p)&&p.x>=-2&&p.x<=3&&p.y>=-2&&p.y<=3)||!Number.isFinite(l.binding.offset??0)||l.binding.offset<0||l.binding.offset>7))fail('모든 면의 꼭지점을 격자에 연결해 주세요.');
   imageData(v.preview);
-  if(!Array.isArray(v.drawings)||!v.drawings.length||v.drawings.length>80)fail('가구 그림이 비어 있어요.');
+  if(!Array.isArray(v.drawings)||(!v.drawings.length&&!v.pictureAssembly)||v.drawings.length>80||v.pictureAssembly&&v.drawings.length)fail('가구 그림이 비어 있거나 중복됐어요.');
   for(const layer of v.drawings){imageData(layer.data);if(layer.registration){normalizeSofaBlanketDrape(layer.registration);if(!['surface','front'].includes(layer.segment))fail('담요의 그리기 순서를 확인해 주세요.');}}
   if(!runtimePoseValid(value,p))fail('가구의 기준점이 뒤집히거나 겹쳐요. 제작실에서 확인해 주세요.');
  }
@@ -52,6 +54,7 @@ export function runtimePoseValid(runtime,placement){
   const v=runtime.views[placement.direction],p={...v.placement,...placement};
   const elevation=p.elevation??0;if(!Number.isFinite(elevation)||elevation<0||elevation+runtime.dimensions.height>ROOM.wallHeight+1e-6||runtime.layer!=='surface'&&elevation!==0)return false;
   const pictures=preparedPictures.get(runtime)?.[placement.direction];
+  if(v.pictureAssembly)return assemblyCheck(v.pictureAssembly,p).ok;
   if(runtime.shapePolicy===1&&pictures&&!pictures.every(image=>pictureShape(v,image,targets,p).ok))return false;
   if(v.mesh)return validateMesh(v.mesh,p).ok;
   if(v.pictureLayers)return validatePictureLayers(v.pictureLayers,p,v.pictureLayerRules).ok;
@@ -61,10 +64,10 @@ export function runtimePoseValid(runtime,placement){
 function decode(data){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>im.width<=8192&&im.height<=8192&&im.width*im.height<=16000000?resolve(im):reject(new Error('그림 크기가 너무 커요.'));im.onerror=()=>reject(new Error('가구 그림을 읽지 못했어요.'));im.src=imageData(data);});}
 export async function prepareRuntime(value){
  const runtime=validateRuntime(value),views={};
- for(const d of directions){const v=runtime.views[d];views[d]={...v,drawings:await Promise.all(v.drawings.map(async layer=>({...layer,image:await decode(layer.data)})))};}
+ for(const d of directions){const v=runtime.views[d];views[d]={...v,drawings:await Promise.all(v.drawings.map(async layer=>({...layer,image:await decode(layer.data)}))),...(v.pictureAssembly?{assemblyImages:await prepareAssemblyImages(v.pictureAssembly,decode)}:{})};}
  if(runtime.shapePolicy===1){
   const pictures=Object.fromEntries(directions.map(d=>[d,views[d].drawings.filter(l=>!l.registration).map(l=>l.image)]));
-  for(const d of directions){if(!pictures[d].length)fail('검사할 본체 그림이 없어요.');for(const image of pictures[d]){const check=pictureShape(runtime.views[d],image,targets);if(!check.ok)fail(check.error);}}
+  for(const d of directions){if(runtime.views[d].pictureAssembly)continue;if(!pictures[d].length)fail('검사할 본체 그림이 없어요.');for(const image of pictures[d]){const check=pictureShape(runtime.views[d],image,targets);if(!check.ok)fail(check.error);}}
   preparedPictures.set(runtime,pictures);
  }
  return {runtime,views,cache:new Map()};
@@ -75,6 +78,7 @@ export function renderRuntime(prepared,placement){
  if(!runtimePoseValid(prepared.runtime,p))fail('이 방향의 그림으로 놓을 수 없는 위치예요.');
  const scale=2,full=document.createElement('canvas');full.width=ROOM.width*scale;full.height=ROOM.height*scale;
  const ctx=full.getContext('2d');ctx.scale(scale,scale);
+ if(v.pictureAssembly)drawAssembly(ctx,v.pictureAssembly,v.assemblyImages,p);
  for(const drawing of v.drawings){
   if(drawing.registration)drawDrapedLayer(ctx,drawing,p.direction,p,roomPoint);
   else if(v.pictureLayers)drawPictureLayers(ctx,drawing.image,v.pictureLayers,p,{requireCoverage:false,rules:v.pictureLayerRules});
@@ -84,7 +88,8 @@ export function renderRuntime(prepared,placement){
  const b=alphaBounds(full);if(!b)fail('표시할 가구 그림이 없어요.');
  const canvas=document.createElement('canvas');canvas.width=b.width;canvas.height=b.height;canvas.getContext('2d').drawImage(full,b.x,b.y,b.width,b.height,0,0,b.width,b.height);
  let anchors;
- if(v.mesh)anchors=projectMesh(v.mesh,p).points.filter(a=>a.kind==='physical'&&Math.abs(a.world.z)<1e-8).map(a=>a.target);
+ if(v.pictureAssembly)anchors=assemblyGeometry(v.pictureAssembly,p).anchors;
+ else if(v.mesh)anchors=projectMesh(v.mesh,p).points.filter(a=>a.kind==='physical'&&Math.abs(a.world.z)<1e-8).map(a=>a.target);
  else if(v.pictureLayers)anchors=projectPictureLayers(v.pictureLayers,p,v.pictureLayerRules).filter(l=>!l.hidden).flatMap(l=>l.projected.points.filter(a=>a.kind==='physical'&&Math.abs(a.world.z)<1e-8).map(a=>a.target));
  else anchors=v.layers.flatMap(l=>boundWorld(l,p)).filter(w=>Math.abs(w.z-(p.elevation??0))<1e-8).map(w=>roomPoint(w.x,w.y,w.z));
  anchors=anchors.filter((p,i,a)=>a.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<.01)===i);
