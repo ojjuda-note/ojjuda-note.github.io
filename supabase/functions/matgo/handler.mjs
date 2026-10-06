@@ -33,6 +33,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       body = JSON.parse(new TextDecoder().decode(bytes));
       if (!['status', 'start', 'refill', 'settle', 'stake'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
       if(onlineActions.has(body.action)){
+        if(body.stakes_version!==undefined&&body.stakes_version!==1)throw Error();
         if(['online_read','online_move','online_leave','online_ready','online_fallback'].includes(body.action)&&!uuid.test(body.room_id))throw Error();
         if(body.action==='online_join'&&(typeof body.code!=='string'||! /^[a-f0-9]{8}$/i.test(body.code)))throw Error();
         if(body.action==='online_move'&&(!uuid.test(body.request_id)||!Number.isInteger(body.version)||body.version<0||!body.command||JSON.stringify(body.command).length>1024))throw Error();
@@ -60,6 +61,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
         };
         const catchUp=async state=>{
           for(let i=0;i<6&&state.room.status==='active';i++){
+            if((state.room.round_rate??100)>100&&body.stakes_version!==1&&body.action!=='online_leave')throw Error('client_update_required');
             const replay=await replayOnline(state.room),p=replay.prompt?.p;
             if(p===undefined||(!state.room.bots[p]&&Date.parse(state.room.deadline)>Date.now()))break;
             const next=await automaticOnline(state.room);
@@ -80,7 +82,8 @@ export function createHandler({ env, fetchImpl = fetch }) {
           }
         }else{
           state=await onlineRpc(body.action.slice(7),{p_room:body.room_id??null,p_code:body.code??null,
-            p_seed:['online_quick','online_create','online_join','online_ready'].includes(body.action)?newSecret():null});
+            p_seed:['online_quick','online_create','online_join','online_ready'].includes(body.action)?newSecret():null,
+            p_next:{stakes_version:body.stakes_version??0}});
         }
         state=await catchUp(state);
         return reply({ok:true,room:await onlineView(state.room,state.seat,body.cursor??0)});

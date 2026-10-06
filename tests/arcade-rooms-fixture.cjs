@@ -27,6 +27,10 @@ async function fixture(){
   // Apply the current solo wallet after the older room-visibility migration.
   const stakes=fs.readdirSync(migrations).find(n=>n.endsWith('_matgo_solo_stakes.sql'));
   await db.exec(fs.readFileSync(path.join(migrations,stakes),'utf8'));
+  for(const suffix of ['_matgo_shared_stakes.sql','_arcade_matgo_shared_stakes.sql']){
+    const file=fs.readdirSync(migrations).find(n=>n.endsWith(suffix)&&(!n.endsWith('_arcade_matgo_shared_stakes.sql')||suffix.startsWith('_arcade')));
+    await db.exec(fs.readFileSync(path.join(migrations,file),'utf8'));
+  }
   async function arcade(actor,action,params={}){
     return db.transaction(async tx=>{
       await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);

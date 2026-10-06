@@ -24,6 +24,8 @@ async function fixture(fixtureOptions={}){
     await db.exec('alter table public.user_private add column banned_until timestamptz');
     const dir=path.join(__dirname,'../supabase/migrations'),file=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_solo_stakes.sql'));
     await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
+    const shared=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_shared_stakes.sql')&&!n.endsWith('_arcade_matgo_shared_stakes.sql'));
+    await db.exec(fs.readFileSync(path.join(dir,shared),'utf8'));
   }
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];

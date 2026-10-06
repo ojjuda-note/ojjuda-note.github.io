@@ -1,6 +1,6 @@
 // Animate only the public events returned to this seat; never reconstruct a deck.
 const FLIGHT=520, COLLECT=620, LIMIT=3200;
-export function createOnlineMotion({cardSVG,backSVG,sound,onEvent}){
+export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{}}){
   let current=null;
   const $=s=>document.querySelector(s);
   function cancel(){
@@ -34,11 +34,11 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent}){
     function floorStack(ev){
       const floor=$('.floor');
       for(const c of ev.stack||[]){if(c.id===ev.card?.id)continue;const found=face(floor,c)?.closest('.stack');if(found)return found;}
-      const stack=document.createElement('button');stack.className='stack';stack.disabled=true;floor.append(stack);return stack;
+      const stack=document.createElement('button');stack.className='stack';stack.disabled=true;(floor.querySelector('.fl')||floor).append(stack);onLayout();return stack;
     }
     function addFloor(stack,c){
       const span=document.createElement('span'),n=Math.min(3,stack.querySelectorAll('svg').length);
-      span.style.cssText=`position:absolute;inset:0;transform:translate(${n*3}px,${-n*2}px) rotate(${n*2}deg)`;
+      span.className='c';span.style.cssText=`position:absolute;inset:0;transform:translate(${n*3}px,${-n*2}px) rotate(${n*2}deg)`;
       span.innerHTML=cardSVG(c);stack.append(span);
     }
     function removeFace(node){

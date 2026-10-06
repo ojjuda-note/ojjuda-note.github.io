@@ -13,7 +13,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
     if(p==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><body><script type="module">import {openFurnitureStudio} from '/house-test/studio-host.js';window.allowed=true;openFurnitureStudio({owner:'review-admin',authorized:()=>window.allowed});</script>`});
     if(p==='/house-test/studio-host.js')return route.fulfill({path:path.join(root,p)});
     if(p==='/house-test/custom-store.js')return route.fulfill({contentType:'application/javascript',body:"export const listMadeItems=async()=>[];export const saveMadeItem=()=>new Promise(resolve=>window.releaseSave=()=>resolve({id:'made-review'}));"});
-    if(p==='/house-test/anchor-editor/runtime.js')return route.fulfill({contentType:'application/javascript',body:'export const validateRuntime=()=>{};'});
+    if(p==='/house-test/anchor-editor/runtime.js')return route.fulfill({contentType:'application/javascript',body:'export const prepareRuntime=async()=>{};'});
     if(p==='/house-test/host.js')return route.fulfill({contentType:'application/javascript',body:'export function openHouseTest(){window.openedHomes=(window.openedHomes||0)+1;return ()=>{};}'});
     if(p==='/house-test/anchor-editor/index.html')return route.fulfill({contentType:'text/html',body:`<!doctype html><script>addEventListener('message',e=>{const port=e.ports[0];if(!port)return;port.postMessage({type:'ready'});port.postMessage({type:'apply',requestId:'race',runtime:{},project:{format:'ojjuda-furniture-set',complete:true}});});</script>`});
     return route.abort();

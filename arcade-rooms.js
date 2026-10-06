@@ -171,6 +171,7 @@
         const controls = [...form.querySelectorAll('input,select,button')]; controls.forEach(el => el.disabled = true);
         form.querySelector('[data-room-message]').textContent = '방을 만들고 있어요…';
         try {
+          if(kind==='matgo'&&typeof window.openMatgo==='function'){options.closeModal();options.goArcade();await window.openMatgo({createTitle:title,createRequest:request});return;}
           const room = await perform('create', { p_kind: kind, p_title: title, p_options: { request_id: request, layout } }, actor);
           if (!room) return;
           if (form.isConnected) options.closeModal(); options.goArcade(); sync(); revealMine();
@@ -184,6 +185,7 @@
       const actor = owner;
       if (busy || !current(actor)) return;
       try {
+        if(room.kind==='matgo'&&!room.is_member&&typeof window.openMatgo==='function'){await window.openMatgo({joinRoom:room.room_no});return;}
         const updated = await perform('join', { p_room: room.room_no, p_options: layout ? { layout } : {} }, actor);
         if (!updated) return;
         if (document.getElementById('arcade-join-form')) options.closeModal();

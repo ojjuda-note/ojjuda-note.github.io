@@ -13,13 +13,20 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
   const project=nativeProject||{format:'ojjuda-furniture-set',version:1,name:raw.name,objectType:'furniture',usage:'floor',dimensions:raw.dimensions,activeView:'left',views};
   project.views.left.placement.x=4.5;project.views.left.placement.y=5.5;
   project.views.right.placement.x=5.5;project.views.right.placement.y=5.5;
-  await app.studioRestore(project);const first=app.studioBundle();await app.studioRestore(first.project);const second=app.studioBundle(),builtin=straightenChairLegs(structuredClone(raw));
-  const a=await prepareRuntime(builtin),b=await prepareRuntime(second.runtime),same=[];
-  for(const[d,v]of Object.entries(second.runtime.views)){
+  // Legacy artwork stays editable and readable without bypassing the newer
+  // shape gate. Round-trip the saved draft instead of demanding a new export.
+  const entry=await(await fetch('./entry.js')).text(),draft=await import(entry.match(/from '(.\/draft-store\.js[^']*)'/)[1]);
+  await app.studioRestore(project);await app.studioFlush();const first=(await draft.loadDraft()).project;
+  let blocked=false;try{app.studioBundle();}catch{blocked=true;}
+  await app.studioRestore(first);await app.studioFlush();const second=(await draft.loadDraft()).project,builtin=straightenChairLegs(structuredClone(raw));
+  const restored=structuredClone(builtin);
+  for(const[d,v]of Object.entries(second.views))Object.assign(restored.views[d],{mesh:v.mesh,placement:v.placement,drawings:[{data:v.source.data}]});
+  const a=await prepareRuntime(builtin),b=await prepareRuntime(restored),same=[];
+  for(const[d,v]of Object.entries(restored.views)){
    if(JSON.stringify(v.mesh)!==JSON.stringify(builtin.views[d].mesh))throw Error(d+' studio/room geometry differs');
    const x=renderRuntime(a,v.placement),y=renderRuntime(b,v.placement);same.push(x.canvas.toDataURL()===y.canvas.toDataURL());
   }
-  return {complete:first.project.complete,stable:JSON.stringify(first.runtime)===JSON.stringify(second.runtime),same,sourcePreserved:Object.keys(views).every(d=>second.project.views[d].source.data===project.views[d].source.data),placement:second.runtime.views.left.placement};
+  return {blocked,stable:JSON.stringify(first)===JSON.stringify(second),same,sourcePreserved:Object.keys(views).every(d=>second.views[d].source.data===project.views[d].source.data),placement:second.views.left.placement};
  },nativeProject);
- assert(result.complete);assert(result.stable);assert(result.sourcePreserved);assert.deepEqual(result.same,[true,true,true]);assert.equal(result.placement.x,4.5);assert.equal(result.placement.y,5.5);assert.deepEqual(errors,[]);console.log('CHAIR BACK STUDIO PASS',result);
+ if(!nativeProject)assert(result.blocked,'legacy chair artwork cannot bypass the current shape gate');assert(result.stable);assert(result.sourcePreserved);assert.deepEqual(result.same,[true,true,true]);assert.equal(result.placement.x,4.5);assert.equal(result.placement.y,5.5);assert.deepEqual(errors,[]);console.log('CHAIR BACK STUDIO PASS',result);
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});
