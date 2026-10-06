@@ -146,6 +146,58 @@ const { PGlite } = require('@electric-sql/pglite');
   assert.equal((await begin('server-role')).status, 'matched');
   assert.equal(await consume('server-role'), first);
   await db.exec('reset role');
+  // Capture a grant before hardening to ensure existing admin grants are denied too.
+  await clear();
+  assert.equal((await begin('admin-before-hardening')).status, 'matched');
+  await db.exec(`
+    create function public.admin_overview() returns boolean language plpgsql security definer
+      set search_path=pg_catalog as $$begin
+      if not public.is_admin() then raise exception 'admin_only' using errcode='42501'; end if;
+      return true; end$$;
+    create table public.security_trigger_probe(value integer);
+    create function public.security_trigger_probe() returns trigger language plpgsql security definer
+      set search_path=pg_catalog as $$begin new.value:=7; return new; end$$;
+    create trigger security_trigger_probe before insert on public.security_trigger_probe
+      for each row execute function public.security_trigger_probe();
+    grant select,insert on public.security_trigger_probe to authenticated;
+    grant all on public.app_admins,public.admin_log to anon,authenticated;
+    alter table public.profiles add column room jsonb;
+  `);
+  await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261006110951_security_rpc_and_admin_recovery.sql'), 'utf8'));
+  await db.query('insert into public.profiles(id,room) values($1,$2)', [first, {wall:'#EDE9FF'}]);
+  await assert.rejects(() => db.query('update public.profiles set room=$1 where id=$2',
+    [{wall:'red" onpointerover="alert(1)'},first]), /profiles_wall_color_safe/);
+  await assert.rejects(() => db.query('update public.profiles set room=$1 where id=$2',
+    [{wall:123},first]), /profiles_wall_color_safe/);
+  await db.query('update public.profiles set room=$1 where id=$2', [{wall:'#abc'},first]);
+  assert.equal(await consume('admin-before-hardening'), null, 'previously issued admin grant cannot be used');
+  await clear();
+  assert.equal((await begin('admin-after-hardening')).status, 'unmatched', 'personal details alone cannot recover an admin');
+  const memberDetails = [`${second}@example.invalid`, '01023456789', '2000-02-29', 'male'];
+  await clear(); await db.exec('set role service_role');
+  assert.equal((await begin('ordinary-member', memberDetails)).status, 'matched');
+  assert.equal(await consume('ordinary-member'), second, 'existing member recovery still works');
+  await db.exec('reset role');
+  await clear();
+  assert.equal((await begin('promoted-member', memberDetails)).status, 'matched');
+  await db.query('insert into public.app_admins values($1)', [second]);
+  assert.equal(await consume('promoted-member'), null, 'promotion immediately invalidates knowledge-based recovery');
+  await db.query('delete from public.app_admins where user_id=$1', [second]);
+  await db.exec('set role anon');
+  await assert.rejects(() => value('select public.admin_overview() as value'), /permission denied/);
+  await db.exec('reset role');
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [second]);
+  await db.exec('set role authenticated');
+  await assert.rejects(() => value('select public.admin_overview() as value'), /admin_only/);
+  await assert.rejects(() => db.query('insert into public.app_admins values($1)', [second]), /permission denied/);
+  await db.exec('insert into public.security_trigger_probe values(999)');
+  assert.equal(await value('select value from public.security_trigger_probe'), 7, 'revoking direct trigger execution preserves trigger behavior');
+  assert.equal(await value("select has_function_privilege('authenticated','public.security_trigger_probe()','execute') as value"), false);
+  await db.exec('reset role');
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [first]);
+  await db.exec('set role authenticated');
+  assert.equal(await value('select public.admin_overview() as value'), true, 'legitimate administrator retains access');
+  await db.exec('reset role');
   await db.close();
-  console.log('PASS: normalized phone uniqueness on signup/self/admin/legacy paths, private identity comparison, permissions, rate limits and expiry');
+  console.log('PASS: identity recovery, rate limits, admin recovery denial, RPC permissions and trigger execution');
 })().catch(error => { console.error(error); process.exitCode = 1; });

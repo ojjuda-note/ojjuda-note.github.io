@@ -73,6 +73,9 @@ jobs:
         if: ${{ !cancelled() }}
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Run dedicated security regressions
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests run test:security
       - name: Run signup, login, database and browser regression tests
         if: ${{ !cancelled() }}
         run: npm --prefix tests test
