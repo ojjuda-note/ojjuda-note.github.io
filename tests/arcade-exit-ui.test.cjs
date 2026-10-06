@@ -7,7 +7,7 @@ const root = path.join(__dirname, '..');
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame = {};');
-world = world.replace('<script type="module">', `<script>${fs.readFileSync(path.join(root, 'games/mole-game.js'), 'utf8')}${fs.readFileSync(path.join(root, 'games/runner-game.js'), 'utf8')}</script><script type="module">`);
+world = world.replace('<script type="module">', `<script>${fs.readFileSync(path.join(root, 'games/mole-game.js'), 'utf8')}${fs.readFileSync(path.join(root, 'games/runner-game.js'), 'utf8')}${fs.readFileSync(path.join(root, 'games/breakout-game.js'), 'utf8')}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'The test must use the real application module');
 world = world.slice(0, boot) + `
