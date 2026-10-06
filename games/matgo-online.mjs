@@ -1,9 +1,9 @@
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261005-g-unit1';
 import {heldPairMonths} from './matgo-view.mjs?v=20261003-gukjin1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261005-g-unit1';
+import {createWallet} from './matgo-wallet.mjs?v=20261006-zu1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261005-effects1';
-import {createOnlineSound} from './matgo-online-sound.mjs?v=20261005-effects1';
+import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -104,7 +104,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261005-stakes1');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261006-zu1');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -166,7 +166,7 @@ function showLobby(){
   $('#create small').textContent='제목을 정하고 공개하기 →';
   $('.lobby>p').innerHTML='오락실에 방을 만들고 함께 한 판 해요.<br>방번호를 입력해서도 참여할 수 있어요.';
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261005-stakes1');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261006-zu1');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -271,7 +271,7 @@ async function refill(){
   if(room?.status==='active'||room?.status==='waiting'){toast('대결을 마친 뒤 충전할 수 있어요.');return;}
   try{
     const state=await wallet.status();setGold(state.gold);const paid=state.free_left===0;
-    modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins}쭈<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold===0?(paid?'5쭈로 5,000G를 충전해요.':'무료로 5,000G를 리필해요.'):'골드가 0일 때 충전할 수 있어요.'}</p><div class="row">${state.gold===0?'<button id="refill" class="btn gold">'+(paid?'5쭈 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
+    modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins} ZU<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold===0?(paid?'5 ZU로 5,000G를 충전해요.':'무료로 5,000G를 리필해요.'):'골드가 0일 때 충전할 수 있어요.'}</p><div class="row">${state.gold===0?'<button id="refill" class="btn gold">'+(paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
   }catch(e){toast(e.message);}
 }
 function deny(error){closed=true;cancelPresentation();clearInterval(pollTimer);clearInterval(accessTimer);closeDialog();clearEvents();$('#app').hidden=true;$('#gate').hidden=false;$('#gate-message').textContent=error.message;$('#retry').hidden=false;}
@@ -292,7 +292,7 @@ try{
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#sound').onclick=()=>sound.toggle();$('#sound-start').onclick=()=>sound.preview();
   $('#money').onclick=()=>refill();$('#exit').onclick=()=>requestExit();
-  $('#rules').onclick=()=>modal('<h2>회원 대결 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 1점 100G · 피박·광박·멍박·고박·흔들기·폭탄 배수를 적용해요.<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5쭈로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>',{'close-rules':()=>{promptKey='';renderRoom();}});
+  $('#rules').onclick=()=>modal('<h2>회원 대결 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 1점 100G · 피박·광박·멍박·고박·흔들기·폭탄 배수를 적용해요.<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>',{'close-rules':()=>{promptKey='';renderRoom();}});
   access.subscribe(deny);
   accessTimer=setInterval(()=>{access.check().then(refreshToken).catch(deny);},45000);
   pollTimer=setInterval(()=>{void refresh();},1200);setInterval(tick,250);void refreshToken();

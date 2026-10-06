@@ -7,7 +7,7 @@ export function createOnlineSound(){
   try{enabled=localStorage.getItem(KEY)!=='off';}catch{}
   const cues={jjok:[['wood',0],['triangle',.13]],ttadak:[['wood',0],['wood',.13]],ppuk:[['oops',0,.3]],ppukget:[['wood',0],['cash',.12]],sweep:[['maraca',0],['triangle',.26]],bomb:[['drum',0],['gong',.06,.58]],shake:[['maraca',0],['maraca',.25]],go:[['wood',0],['gong',.12,.3]],stop:[['gong',0,.62]],combo:[['triangle',0,.6]],bonusPlay:[['cash',0,.6]],flipBonus:[['cash',0,.6]],win:[['triangle',0,.55],['applause',.08,.68]],lose:[['sad',0,.38]],nagari:[['maraca',0],['gong',.25,.25]]};
   function clips(){
-    if(!loaded)loaded=fetch(new URL('./matgo.html?v=20261005-g-unit1',import.meta.url)).then(async response=>{
+    if(!loaded)loaded=fetch(new URL('./matgo.html?v=20261006-zu1',import.meta.url)).then(async response=>{
       if(!response.ok)throw Error('sound_assets');
       const source=await response.text(),result={};
       for(const name of ['PCM','EVENT_MP3']){
