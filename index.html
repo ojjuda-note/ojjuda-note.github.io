@@ -8,7 +8,8 @@
   <meta name="description" content="오늘 하루 어땠나요? 괜찮았나요. 나만의 우리집, 익명카드가 모이는 공원, 친구와 즐기는 게임과 생활 도구. 하나의 오쭈다 월드에서 함께 만나요.">
   <title>오쭈다 월드 | 오늘 하루 어땠나요? 괜찮았나요</title>
   <link rel="stylesheet" href="/signup-identity.css?v=20260929-2">
-  <script src="/signup-identity.js?v=20260929-age14" defer></script>
+  <script src="/portal-availability.js?v=20261007-flow1" defer></script>
+  <script src="/signup-identity.js?v=20261007-flow1" defer></script>
   <link rel="canonical" href="https://ojjuda.kr/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="오쭈다">
@@ -24,8 +25,8 @@
   <link rel="stylesheet" href="portal.css?v=20261004-design1">
   <link rel="stylesheet" href="/world-portal.css?v=20261005-world1">
   <script src="config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
-  <script src="portal.js?v=20261006-photo-trial1" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
+  <script src="portal.js?v=20261007-flow1" defer></script>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260929-logo1">
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
@@ -47,7 +48,8 @@
         <span class="eyebrow">OJJUDA WORLD · BETA</span>
         <h1 id="front-title" class="ojjuda-copy">오늘 하루 어땠나요?<br><em>괜찮았나요</em></h1>
         <p>나만의 방을 꾸미고, 공원에서 마음을 나누고,<br>친구와 게임 한 판. 우리의 하루가 한곳에 모여요.</p>
-        <div class="world-welcome-actions"><button class="pill-button" type="button" data-destination="world">오쭈다 월드 시작하기 <span aria-hidden="true">→</span></button><a class="world-welcome-help" href="/guide.html">처음이세요? 사용 안내</a></div>
+        <div class="world-welcome-actions"><a class="pill-button" href="/world.html" data-destination="world">오쭈다 월드 시작하기 <span aria-hidden="true">→</span></a><a class="world-welcome-help" href="/guide.html">처음이세요? 사용 안내</a></div>
+        <div id="entry-status" hidden role="status"><p id="entry-message"></p><div class="world-welcome-actions"><button class="pill-button small" type="button" id="entry-retry">다시 시도</button><a class="world-welcome-help" href="/world.html?place=park&amp;guest=1">손님으로 둘러보기</a></div></div>
         <div class="world-welcome-meta" aria-label="운영 안내"><span>베타 서비스</span><span>하나의 월드, 하나의 계정</span></div>
       </div>
       <figure class="world-welcome-visual"><span class="world-welcome-stamp">A LITTLE WORLD OF OUR OWN</span><img src="/house-test/assets/room-day-v3.webp" width="1507" height="1044" alt="나만의 공간을 꾸밀 수 있는 오쭈다 우리집" fetchpriority="high"><figcaption>내 공간을 꾸미고, 서로의 하루를 만나요.</figcaption></figure>
@@ -55,11 +57,11 @@
     <section class="world-preview" aria-labelledby="world-features-title">
       <div class="world-section-heading"><div><h2 id="world-features-title">월드에서 만나는 하루</h2><p>모든 공간과 기능을 하나의 월드에서 이용해요.</p></div><a href="/sitemap.html">전체 메뉴와 기능 보기 →</a></div>
       <div class="world-feature-grid">
-        <a class="world-feature" href="/sitemap.html#map-neighborhood"><span class="world-feature-number">01 / NEIGHBORHOOD</span><h3>동네</h3><p>카페, 공원, 도서관과 오락실에서 친구를 만나요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
-        <a class="world-feature" href="/sitemap.html#map-home"><span class="world-feature-number">02 / MY HOME</span><h3>우리집</h3><p>방을 꾸미고 글과 사진을 모아 나를 보여 주세요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
-        <a class="world-feature" href="/sitemap.html#map-board"><span class="world-feature-number">03 / COMMUNITY</span><h3>게시판</h3><p>공개된 이야기, 사진과 영상, 게임순위를 둘러봐요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
+        <a class="world-feature" href="/world.html"><span class="world-feature-number">01 / NEIGHBORHOOD</span><h3>동네</h3><p>카페, 공원, 도서관과 오락실에서 친구를 만나요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
+        <a class="world-feature" href="/world.html?tab=home" data-destination="home"><span class="world-feature-number">02 / MY HOME</span><h3>우리집</h3><p>방을 꾸미고 글과 사진을 모아 나를 보여 주세요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
+        <a class="world-feature" href="/world.html?tab=board"><span class="world-feature-number">03 / COMMUNITY</span><h3>게시판</h3><p>공개된 이야기, 사진과 영상, 게임순위를 둘러봐요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
         <a class="world-feature" href="/world.html?place=park"><span class="world-feature-number">04 / PARK</span><h3>공원</h3><p>익명카드로 이야기를 나누고 서로의 하루를 만나요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
-        <a class="world-feature" href="/sitemap.html#map-settings"><span class="world-feature-number">05 / MY MENU</span><h3>메뉴</h3><p>프로필과 공개 설정, 알림과 계정을 관리해요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
+        <a class="world-feature" href="/world.html?tab=my"><span class="world-feature-number">05 / MY MENU</span><h3>메뉴</h3><p>프로필과 공개 설정, 알림과 계정을 관리해요.</p><span class="world-feature-arrow" aria-hidden="true">↗</span></a>
       </div>
     </section>
     <a class="guide-entry" href="/guide.html"><span><strong>오쭈다 월드를 처음 시작하시나요?</strong><small>가입부터 방 꾸미기, 카드 쓰기와 게임까지. 기능별 사용법을 확인하세요.</small></span><span class="guide-entry-action">사용 안내 <span aria-hidden="true">→</span></span></a>

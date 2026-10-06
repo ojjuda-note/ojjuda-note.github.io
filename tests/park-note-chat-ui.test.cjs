@@ -24,16 +24,17 @@ world=world.replace('<script type="module">',`<script>${['world-navigation.js','
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
- user(id){D.user=id?{id}:null;worldParkNotes.sync();},render:H,repaint:Bf,actions:Ln,open:action=>worldParkNotes.open(action),close:()=>worldParkNotes.close()};
+ user(id){D.user=id?{id}:null;worldParkNotes.sync();},render:H,repaint:Bf,actions:Ln,open:action=>worldParkNotes.open(action),useDecoration:(key,owner)=>worldParkNotes.useDecoration(key,owner),close:()=>worldParkNotes.close()};
  D.isAdmin=false;gm(()=>{g.tab='friends';g.visiting=null;g.visitData=null;H();window.scrollTo(0,0)});g.tab='friends';H();worldParkNotes.route();
  `+world.slice(world.indexOf('</script>',boot));
 // Run the real editor and navigation, replacing only remote account/feed data.
 // Seeding before integration.js also exercises queued World-menu actions on first load.
 const identity=`authKnown=ready=true;session={user:{id:'fixture-member'}};myIdentity={gender:'male'};myIdentityReady=true;myGender='male';updateAuth();consumeInitialCard();
+OjjudaShop.install({getUserId:()=>session?.user?.id,client:{auth:{onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}}}},rpc:()=>({abortSignal:async()=>({data:{ok:true,coins:40,products:[],selected:{},owned:[{key:'card_fonts',expires_at:new Date(Date.now()+86400000).toISOString()}]}})})}});
 window.populateParkFixture=()=>{feed.hidden=false;detail.hidden=true;document.getElementById('connection-status').hidden=true;
  document.getElementById('feed-list').replaceChildren(...Array.from({length:9},(_,i)=>cardElement({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),kind:'memo',body:'공원에서 나누는 오늘의 이야기 '+(i+1),tags:['일상'],background_key:'plain',created_at:new Date().toISOString()})));
 };`;
-const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['park/route.js','note/feed-swipe.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
+const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['park/route.js','ju-shop.js','note/feed-swipe.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
@@ -238,6 +239,13 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await dragPark(150);
  await page.waitForFunction(()=>parkFixture.state.tab==='board');
  assert.equal(await iframe.count(),0,'a right swipe from Park reaches the board');
+ await page.evaluate(()=>parkFixture.user('fixture-member'));
+ assert.equal(await page.evaluate(()=>parkFixture.useDecoration('card_fonts','fixture-member')),true);
+ await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
+ await frame.locator('#composer-backdrop').waitFor({state:'visible'});
+ await frame.waitForFunction(()=>document.querySelector('[data-shop-style=Font]')?.value==='book');
+ assert.equal(await frame.locator('#compose-more').evaluate(el=>el.open),true,'World shop handoff opens the real selected decoration');
+ assert.equal(await page.evaluate(()=>parkFixture.useDecoration('card_fonts','other-account')),false);
  assert.deepEqual(errors,[]);
  console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}

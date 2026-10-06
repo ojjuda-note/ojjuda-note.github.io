@@ -91,6 +91,8 @@ button:active:not(:disabled){transform:translateY(3px)}
 .panel #code{min-width:0;width:0}
 #snd,#pause{font-size:12px;font-weight:700;color:#62437e}
 </style>
+<link rel="stylesheet" href="/game-controls.css?v=20261007-flow1">
+<script src="/game-controls.js?v=20261007-flow1" defer></script>
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -109,6 +111,7 @@ button:active:not(:disabled){transform:translateY(3px)}
   <div class="panel">
     <div class="arcade-kicker">OJJUDA MINI ARCADE</div><h1>월드땅따먹기</h1><div class="arcade-scene" aria-hidden="true"><span class="arcade-spark">✦</span><i class="jelly"></i><i class="jelly friend"></i></div>
     <p>빙글 돌아오면, 여기도 내 땅!<br>말랑한 친구들과 알록달록 땅 넓히기 대결</p>
+    <div data-game-settings="ttang"></div>
     <button class="big a" id="duoBtn">✦ 친구랑 대결 · 2분 승부</button>
     <button class="big g" id="soloBtn">▶ 연습하기 · 컴퓨터 6명</button>
 <details class="arcade-rules"><summary>처음 오셨나요? 놀이 방법 보기</summary>    <div class="how"><b style="color:#2E2748">조작</b> 화면 아무 데나 손가락을 대면 조이스틱이 나와요 (PC: 마우스로 끌기 또는 방향키·WASD)<br><b style="color:#2E2748">규칙</b> 내 땅 밖으로 나가면 선이 생기고, 돌아오면 둘러싼 곳이 내 땅. 남의 선을 밟으면 그 사람 탈락, 내 선을 밟으면 내가 탈락. 부딪히면 땅 주인이 승리. 처치하면 그 땅은 내 것. 벽에 1초 넘게 있으면 펑!<br><b style="color:#2E2748">아이템</b> ⚡ 5초 동안 속도 2배 · 🛡 5초 동안 무적 (선을 밟혀도, 벽에 닿아도 안 터져요)<br><b style="color:#2E2748">친구와 대결</b> 한 명이 방을 만들고 다른 한 명이 방 번호를 넣으면 각자 폰으로 2분 대결</div></details>
@@ -316,11 +319,11 @@ function newSolo(m){ mode=m; role=null; world=new World(64,'solo'); me=null; p2=
 // ---------- 입력: 조이스틱(터치·마우스) + 키보드 ----------
 const joys=new Map(); const JR=56, JOY_DEAD_ZONE=4;
 cv.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode==='attract'||!me) return; if(joys.size) return;
-  const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el);
-  joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId); });
-cv.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy);
+  const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; const control=window.OjjudaGameControls?.styleJoystick(el,'ttang')||{range:JR,dead:JOY_DEAD_ZONE}; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el);
+  joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild,range:control.range,dead:control.dead}); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy), JR=j.range;
   if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; }
-  j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>JOY_DEAD_ZONE) steerMe(Math.atan2(dy,dx)); });
+  j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>j.dead) steerMe(Math.atan2(dy,dx)); });
 const endJ=e=>{ const j=joys.get(e.pointerId); if(!j) return; j.el.classList.add('out'); setTimeout(()=>j.el.remove(),180); joys.delete(e.pointerId); };
 cv.addEventListener('pointerup',endJ); cv.addEventListener('pointercancel',endJ);
 const keys=new Set(); const KS={u:['w','W','ArrowUp'],d:['s','S','ArrowDown'],l:['a','A','ArrowLeft'],r:['d','D','ArrowRight']};

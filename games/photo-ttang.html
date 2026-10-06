@@ -82,6 +82,8 @@ a.big{display:flex;align-items:center;justify-content:center;text-decoration:non
 .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 </style>
 <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
+<link rel="stylesheet" href="/game-controls.css?v=20261007-flow1">
+<script src="/game-controls.js?v=20261007-flow1" defer></script>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
@@ -96,6 +98,7 @@ a.big{display:flex;align-items:center;justify-content:center;text-decoration:non
   <p>실루엣 90% 채우면 사진 공개 <span id="cleared"></span></p>
   <div class="tabs"><button class="tab on" data-t="base">기본 사진</button><button class="tab" data-t="all">사진 판</button><button class="tab" data-t="review" id="tabReview" style="display:none">승인</button></div>
   <button class="big b2" id="uploadBtn" style="display:none">＋ 내 사진으로 판 만들기</button>
+  <div data-game-settings="photo_ttang"></div>
   <div class="grid" id="grid"></div>
   <div class="how">드래그로 이동 · PC 방향키<br>내 땅으로 돌아오면 영역 차지<br>몹·내 선에 닿으면 탈락</div>
 </div></div>
@@ -382,7 +385,7 @@ function decodeSil(runs,N){ const a=new Uint8Array(N); let k=0,v=0; for(const r 
 function startStage(i){ if(!photoAllowed()){lockPhotoGame();return false;} if(PUBLIC_DEMO){let allowed=false;try{allowed=!demoStarted&&i===0&&parent!==window&&parent.OjjudaPhotoTtangDemo?.beginRound();}catch{}if(!allowed){endDemo();return false;}demoStarted=true;} stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
   world=new World(P.UW,'solo',P.UH); world.setViewScale(view().S); sil=decodeSil(P.sil,world.N); silTotal=sil.reduce((a,b)=>a+b,0); mySil=0;
   const base=world.setOwn.bind(world); world.setOwn=(k,v)=>{ const o=world.own[k]; if(o===v) return; base(k,v); if(sil[k]&&me){ if(o===me.id) mySil--; if(v===me.id) mySil++; } };
-  me=world.addPlayer({name:'나',color:0,speed:5.6,turn:6.0,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
+  me=world.addPlayer({name:'나',color:0,speed:5.6,turn:({slow:4.8,normal:6,fast:7.2})[window.OjjudaGameControls?.get('photo_ttang').turn]||6,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
   const lv=P.level??i; const D=diff(lv); const names=BOTNAMES.slice().sort(()=>Math.random()-.5); const cols=[2,3,4,5,6,7].sort(()=>Math.random()-.5);
   for(let b=0;b<D.bots;b++) world.addPlayer({name:names[b],color:cols[b],bot:true,speed:D.botSpeed+Math.random()*.4,turn:4.2,reach:2+Math.random()*5,maxTrail:10+Math.random()*10,aggro:.2+lv*.02});
   world.maxItems=1; world.itemGap=D.itemGap; world.nextItem=6+Math.random()*4; world.noInherit=true; const si=world.spawnItem.bind(world); world.spawnItem=()=>{ si(); world.nextItem=world.time+world.itemGap+Math.random()*2; }; me.shieldT=2; endAt=world.time+timeLimit(lv); tick=0; startWait=3; cdLast=4; for(const p of world.players) p.born=-1; for(const m of mobs) m.born=-1;
@@ -425,8 +428,8 @@ function flushDirty(){ if(world.dirty.size){ if(world.dirty.size>256)redrawTerri
   const t=performance.now(); if(revDirty&&photoImg.complete&&t-revLast>60){ revLast=t; revDirty=false; rctx.globalCompositeOperation='source-over'; rctx.clearRect(0,0,rev.width,rev.height); rctx.drawImage(gamePhotoSource(),0,0,rev.width,rev.height); rctx.globalCompositeOperation='destination-in'; rctx.imageSmoothingEnabled=true; rctx.drawImage(mk,0,0,rev.width,rev.height); rctx.globalCompositeOperation='source-over'; } }
 // ---------- 조이스틱 + 키보드 ----------
 const joys=new Map(), JR=28, JOY_DEAD_ZONE=2;
-gameCanvas.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode!=='play'||!me||joys.size) return; const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el); joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild}); gameCanvas.setPointerCapture&&gameCanvas.setPointerCapture(e.pointerId); });
-gameCanvas.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy); if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; } j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>JOY_DEAD_ZONE){ world.steer(me,Math.atan2(dy,dx)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } });
+gameCanvas.addEventListener('pointerdown',e=>{ try{ AC&&AC.resume(); }catch{} if(mode!=='play'||!me||joys.size) return; const el=document.createElement('div'); el.className='joy'; el.innerHTML='<i></i>'; const control=window.OjjudaGameControls?.styleJoystick(el,'photo_ttang')||{range:JR,dead:JOY_DEAD_ZONE}; el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px'; el.style.setProperty('--c',PAL[me.color].c); document.body.appendChild(el); joys.set(e.pointerId,{x:e.clientX,y:e.clientY,el,knob:el.firstChild,range:control.range,dead:control.dead}); gameCanvas.setPointerCapture&&gameCanvas.setPointerCapture(e.pointerId); });
+gameCanvas.addEventListener('pointermove',e=>{ const j=joys.get(e.pointerId); if(!j) return; let dx=e.clientX-j.x, dy=e.clientY-j.y; const L=Math.hypot(dx,dy), JR=j.range; if(L>JR){ j.x+=dx*(1-JR/L); j.y+=dy*(1-JR/L); j.el.style.left=j.x+'px'; j.el.style.top=j.y+'px'; dx=e.clientX-j.x; dy=e.clientY-j.y; } j.knob.style.transform=`translate(${dx}px,${dy}px)`; if(Math.hypot(dx,dy)>j.dead){ world.steer(me,Math.atan2(dy,dx)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } });
 const endJ=e=>{ const j=joys.get(e.pointerId); if(!j) return; j.el.classList.add('out'); setTimeout(()=>j.el.remove(),180); joys.delete(e.pointerId); }; gameCanvas.addEventListener('pointerup',endJ); gameCanvas.addEventListener('pointercancel',endJ);
 const keys=new Set(), KS={u:['w','W','ArrowUp'],d:['s','S','ArrowDown'],l:['a','A','ArrowLeft'],r:['d','D','ArrowRight']};
 function keySteer(){ if(mode!=='play'||!me) return; let x=0,y=0; if(KS.u.some(k=>keys.has(k))) y--; if(KS.d.some(k=>keys.has(k))) y++; if(KS.l.some(k=>keys.has(k))) x--; if(KS.r.some(k=>keys.has(k))) x++; if(x||y){ world.steer(me,Math.atan2(y,x)); if(startWait>0) startWait=Math.min(startWait,.01); if(me.freezeT>0) me.freezeT=.001; } }

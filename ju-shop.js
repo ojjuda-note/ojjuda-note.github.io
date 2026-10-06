@@ -38,13 +38,20 @@
    if(!result?.ok){if(['coins','unavailable','banned','invalid','request_conflict'].includes(result?.reason)){pending.delete(keyFor(owner,product.key));try{localStorage.removeItem(keyFor(owner,product.key));}catch{}}
     throw Error(result?.reason==='coins'?'ZU가 부족해요. 충전 후 다시 이용해 주세요.':'구매하지 못했어요. 차감 내역을 확인해 주세요.');}
    pending.delete(keyFor(owner,product.key));try{localStorage.removeItem(keyFor(owner,product.key));}catch{}
-   await refresh();message(result.spent?`${result.spent} ZU로 구매했어요. 아래에서 적용해 주세요.`:'이미 구매한 상품이에요. 추가 차감은 없어요.');
+   await refresh();message(result.spent?`${result.spent} ZU로 구매했어요. 지금 사용하기를 눌러 적용해 보세요.`:'이미 구매한 상품이에요. 추가 차감은 없어요.');
   }catch(error){if(user()===owner)message(error.message?.includes('ZU')?error.message:'결과를 확인하지 못했어요. 같은 상품의 구매 버튼을 다시 누르면 중복 차감 없이 확인해요.');}
   finally{busy=false;if(user()===owner)renderButtons();}
  }
  async function equip(product){
   if(busy||!owned(product.key))return;
-  if(['sticker','font','effect'].includes(product.slot)){message('공원 → 카드 쓰기 → 구매한 꾸미기에서 골라 주세요.');return;}
+  if(['sticker','font','effect'].includes(product.slot)){
+   const actor=user();
+   if(!options.onUseCardDecoration){message('카드 작성 화면을 불러오지 못했어요. 다시 열어 주세요.');return;}
+   if(!close())return;
+   try{const used=await options.onUseCardDecoration(product.key,actor);if(used===false&&user()===actor){open();message('카드 작성창을 열지 못했어요. 잠시 후 다시 눌러 주세요.');}}
+   catch{if(user()===actor){open();message('꾸미기를 적용하지 못했어요. 다시 시도해 주세요.');}}
+   return;
+  }
   busy=true;renderButtons();const owner=user();
   try{const r=await rpc('ju_shop_equip',{p_slot:product.slot,p_product:state.selected?.[product.slot]===product.key?null:product.key});if(user()!==owner)return;if(!r.ok)throw Error();await refresh();message('적용했어요.');}
   catch{if(user()===owner)message('적용하지 못했어요. 다시 시도해 주세요.');}finally{busy=false;renderButtons();}
@@ -67,7 +74,7 @@
   for(const product of state?.products||[]){
    const card=el('article','ju-product'),ent=owned(product.key);card.append(preview(product),el('small','',LABELS[product.slot]),el('strong','',product.name));
    card.append(el('p',ent?'ju-product-owned':'ju-product-price',ent?ent.expires_at?new Date(ent.expires_at).toLocaleDateString('ko-KR')+'까지':'구매 완료 · 계속 사용':`${product.price} ZU · ${product.months?'1개월':'계속 사용'}`));
-   const button=el('button',ent?'':'ju-paid-action',ent?state.selected?.[product.slot]===product.key?'적용 해제':'사용하기':`${product.price} ZU로 구매`);button.dataset.shopProduct=product.key;button.onclick=()=>buy(product);card.append(button);body.append(card);
+   const button=el('button',ent?'':'ju-paid-action',ent?state.selected?.[product.slot]===product.key?'적용 해제':['sticker','font','effect'].includes(product.slot)?'지금 사용하기':'사용하기':`${product.price} ZU로 구매`);button.dataset.shopProduct=product.key;button.onclick=()=>buy(product);card.append(button);body.append(card);
   }
   message(error);renderButtons();
  }
@@ -95,6 +102,15 @@
  function bindHouse(frame,owner){const id=String(owner).match(/[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}/i)?.[0];if(!id)return()=>{};houseFrames.set(frame,id);void paintHouse(frame,id);return()=>houseFrames.delete(frame);}
  function styleFields(){return Object.fromEntries(['Sticker','Font','Effect'].map(k=>['shop'+k,document.querySelector('[data-shop-style="'+k+'"]')?.value||'none']));}
  function setStyle(style={}){installComposer();for(const k of ['Sticker','Font','Effect']){const n=document.querySelector('[data-shop-style="'+k+'"]');if(n)n.value=style['shop'+k]||'none';}}
+ function applyProduct(key){
+  const selection={card_stickers:['Sticker','heart'],card_fonts:['Font','book'],card_foil:['Effect','foil']}[key];
+  if(!selection||!owned(key))return false;
+  installComposer();const input=document.querySelector('[data-shop-style="'+selection[0]+'"]');if(!input)return false;
+  if(!input.value||input.value==='none')input.value=selection[1];
+  input.closest('details').open=true;
+  const more=document.querySelector('#compose-more');if(more)more.open=true;
+  document.dispatchEvent(new CustomEvent('ojjuda:shop-style'));return true;
+ }
  function updateComposer(){for(const [k,product] of [['Sticker','card_stickers'],['Font','card_fonts'],['Effect','card_foil']]){const n=document.querySelector('[data-shop-style="'+k+'"]');if(!n)continue;for(const o of n.options)o.disabled=o.value!=='none'&&!owned(product);if(n.value!=='none'&&!owned(product))n.value='none';}document.dispatchEvent(new CustomEvent('ojjuda:shop-style'));}
  function installComposer(){
   const anchor=document.querySelector('#compose-effect');if(!anchor||document.querySelector('[data-shop-style]'))return;
@@ -113,5 +129,5 @@
  }
  document.addEventListener('click',e=>{if(e.target.closest?.('[data-ju-shop-open]')){e.preventDefault();open();}});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refresh();});
- window.OjjudaShop={bindHouse,install,open,close,refresh,owned,styleFields,setStyle,decorateCard,decorateWorld,installComposer,isOpen:()=>!!dialog?.open,canLeave:()=>!busy};
+ window.OjjudaShop={bindHouse,install,open,close,refresh,owned,styleFields,setStyle,applyProduct,decorateCard,decorateWorld,installComposer,isOpen:()=>!!dialog?.open,canLeave:()=>!busy};
 })();

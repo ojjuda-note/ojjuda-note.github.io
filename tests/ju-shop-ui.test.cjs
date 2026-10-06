@@ -17,12 +17,13 @@ try{for(const width of [320,390,1280]){
  await page.evaluate(()=>{
   window.shopOwner='11111111-1111-4111-8111-111111111111';window.confirm=()=>true;
   const client={rpc:(...args)=>({abortSignal:()=>shopRpc(...args)}),auth:{onAuthStateChange(fn){window.shopAuth=fn;return {data:{subscription:{unsubscribe(){}}}};}}};
-  OjjudaShop.install({getUserId:()=>shopOwner,client});OjjudaShop.installComposer();
+  OjjudaShop.install({getUserId:()=>shopOwner,client,onUseCardDecoration:(key,owner)=>{window.usedDecoration={key,owner};return OjjudaShop.applyProduct(key);}});OjjudaShop.installComposer();
  });
  await page.locator('[data-ju-shop-open]').click();await page.waitForFunction(()=>document.querySelectorAll('[data-shop-product]').length===2);
  await page.locator('[data-shop-product=card_stickers]').evaluate(b=>{b.click();b.click();});await page.waitForFunction(()=>document.querySelector('[data-shop-message]').textContent.includes('결과를 확인하지'));
- assert.equal(requests.length,1);assert.equal(coins,15);await page.locator('[data-shop-product=card_stickers]').click();await page.waitForFunction(()=>document.querySelector('[data-shop-product=card_stickers]').textContent==='사용하기');assert.equal(requests.length,2);assert.equal(requests[0].p_request,requests[1].p_request);assert.equal(coins,15);
+ assert.equal(requests.length,1);assert.equal(coins,15);await page.locator('[data-shop-product=card_stickers]').click();await page.waitForFunction(()=>document.querySelector('[data-shop-product=card_stickers]').textContent==='지금 사용하기');assert.equal(requests.length,2);assert.equal(requests[0].p_request,requests[1].p_request);assert.equal(coins,15);
  assert.equal(await page.locator('.ju-shop-dialog').evaluate(n=>n.scrollWidth<=n.clientWidth+1),true);
+ await page.locator('[data-shop-product=card_stickers]').click();await page.waitForFunction(()=>window.usedDecoration);assert.equal(await page.locator('.ju-shop-dialog').isVisible(),false);assert.equal(await page.locator('[data-shop-style=Sticker]').inputValue(),'heart');assert.equal(requests.length,2,'using an owned item never buys it again');await page.locator('[data-ju-shop-open]').click();
  await page.locator('[data-shop-product=profile_flower]').click();await page.waitForFunction(()=>document.querySelector('[data-shop-product=profile_flower]').textContent==='사용하기');await page.locator('[data-shop-product=profile_flower]').click();await page.waitForFunction(()=>document.querySelector('[data-shop-product=profile_flower]').textContent==='적용 해제');
  await page.keyboard.press('Escape');assert.equal(await page.locator('.ju-shop-dialog').isVisible(),false);
  await page.evaluate(()=>{OjjudaShop.setStyle({shopSticker:'clover'});OjjudaShop.decorateCard(document.querySelector('#card'),OjjudaShop.styleFields());});assert.equal(await page.locator('.ju-card-sticker').textContent(),'🍀');
