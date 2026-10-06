@@ -5,7 +5,7 @@ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'photo-community-')),photo=path.j
 fs.writeFileSync(photo,Buffer.from(html.match(/data:image\/jpeg;base64,([A-Za-z0-9+/=]+)/)[1],'base64'));
 const mock=`<script>
 const actor=new URL(location.href).searchParams.get('actor')||'one';
-window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:actor}}})},rpc:async()=>({data:false}),
+window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:actor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:19,locked:true}:false}),
 storage:{from:()=>({createSignedUrl:async()=>({data:{signedUrl:'/photo.jpg'}})})},
 from:()=>{const filters=[];const q={select(){return q},neq(k,v){filters.push(r=>r[k]!==v);return q},eq(k,v){filters.push(r=>r[k]===v);return q},order(){return q},limit(){return q},then(resolve,reject){return Promise.resolve({data:[{id:'public-photo',owner:'uploader',nick:'사진 올린 친구',image_path:'crop.jpg',full_path:'full.jpg',visibility:'public',status:'approved',mask_rle:'30000,60000,30000',level:1,plays:0,clears:0},{id:'pending-photo',owner:'uploader',visibility:'public',status:'pending'}].filter(r=>r.status==='approved'||r.owner===actor).filter(r=>filters.every(f=>f(r))),error:null}).then(resolve,reject)}};return q;}};
 </script>`;
@@ -14,8 +14,8 @@ from:()=>{const filters=[];const q={select(){return q},neq(k,v){filters.push(r=>
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname!=='fixture.test')return r.abort();return u.pathname==='/photo.jpg'?r.fulfill({path:photo,contentType:'image/jpeg'}):r.fulfill({contentType:'text/html',body:html.replace('</head>',mock+'</head>')});});
-  const open=async actor=>{await page.goto('https://fixture.test/photo?actor='+actor);await page.locator('[data-t="all"]').click();await page.waitForSelector('#grid .cell img');await page.waitForFunction(()=>document.querySelector('#grid img').complete&&document.querySelector('#grid img').naturalWidth>0);};
+  await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname!=='fixture.test')return r.abort();if(u.pathname.endsWith('.js'))return r.fulfill({contentType:'application/javascript',path:path.join(root,u.pathname)});return u.pathname==='/photo.jpg'?r.fulfill({path:photo,contentType:'image/jpeg'}):r.fulfill({contentType:'text/html',body:html.replace('</head>',mock+'</head>')});});
+  const open=async actor=>{await page.goto('https://fixture.test/photo?actor='+actor);await page.waitForSelector('#grid .cell');await page.locator('[data-t="all"]').click();await page.waitForSelector('#grid .cell img');await page.waitForFunction(()=>document.querySelector('#grid img').complete&&document.querySelector('#grid img').naturalWidth>0);};
   const filter=()=>page.locator('#grid img').evaluate(im=>getComputedStyle(im).filter);
   await open('one');
   assert.equal(await page.locator('#grid .cell').count(),1,'unapproved public photos are not playable');
