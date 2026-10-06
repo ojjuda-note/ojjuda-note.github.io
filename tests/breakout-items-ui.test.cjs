@@ -53,12 +53,34 @@ g.tab='friends';H();
    assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width+1&&box.y+box.height<=height+1);
    assert.ok(close.y>=0&&close.y+close.height<=height,'the exit control stays visible');
    const logicalX=x=>box.x+x/360*box.width,logicalY=y=>box.y+y/540*box.height;
+   const pad=page.locator('.breakout-touchpad'),padBox=await pad.boundingBox();
+   assert.ok(padBox.height>=80,'finger control area is at least 80 CSS pixels high');
+   assert.ok(padBox.y>=box.y+box.height&&padBox.y+padBox.height<=height,'control area stays below the canvas and inside the viewport');
+   const padY=padBox.y+padBox.height/2;
+   assert.ok(padY-logicalY(502)>=50,'the finger stays at least 50px below the paddle');
+   assert.equal(await pad.evaluate(e=>getComputedStyle(e).touchAction),'none');
    await page.mouse.move(logicalX(120),logicalY(450));
    assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().paddle.x)-80)<1,'pointer movement maps to the logical paddle');
    await page.keyboard.press('ArrowRight');assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().paddle.x)-110)<1);
    assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().waiting),true);
-   if(width<900)await page.touchscreen.tap(logicalX(180),logicalY(450));else await page.mouse.click(logicalX(180),logicalY(450));
+   if(width<900)await page.touchscreen.tap(logicalX(180),padY);else await page.mouse.click(logicalX(180),padY);
    assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().waiting),false,'touch or click launches the attached ball');checks++;
+   // Drag in the lower strip: the paddle follows without covering the playing field.
+   await page.mouse.move(logicalX(180),padY);await page.mouse.down();
+   await page.mouse.move(logicalX(300),padY,{steps:4});
+   assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().paddle.x)-260)<1);
+   await page.mouse.move(box.x+box.width+20,padY);await page.mouse.up();
+   assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().paddle.x),280,'captured pointer continues beyond the strip edge');
+   if(width===390){
+    const touch=await context.newCDPSession(page),scroll=await page.evaluate(()=>scrollY);
+    await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:logicalX(180),y:padY}]});
+    await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:logicalX(90),y:padY}]});
+    await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().paddle.x)-50)<1,'a real touch drag on the lower strip moves the paddle');
+    assert.equal(await page.evaluate(()=>scrollY),scroll,'touch dragging does not scroll the page');
+    await touch.detach();
+    await page.locator('#gov .gbox').screenshot({path:'/workspace/scratch/ojjuda-breakout-touchpad-test.png'});
+   }
    async function catchItem(kind){
     const x=await page.evaluate(kind=>breakoutTest.hit(kind).x,kind);
     await page.mouse.move(logicalX(x),logicalY(450));
