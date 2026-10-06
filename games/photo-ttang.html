@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>오쭈다 포토땅따먹기</title>
 <script>if(window.parent===window&&location.pathname==='/games/photo-ttang.html')location.replace('/photo-ttang.html');</script>
+<script src="/matgo-access.js?v=20261005-member-refresh1"></script>
+<script src="/photo-ttang-access.js?v=20261006-age19"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
@@ -269,6 +271,9 @@ const gameCanvas=document.getElementById('gameCanvas'), ctx=gameCanvas.getContex
 function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); VW=innerWidth; VH=innerHeight; gameCanvas.width=VW*DPR; gameCanvas.height=VH*DPR; } addEventListener('resize',resize); resize();
 const $=s=>document.getElementById(s);
 const GOAL=.90, LIVES=3;
+const photoAccess=window.OjjudaPhotoTtangAccess;
+const photoAllowed=()=>photoAccess?.allowed()===true;
+function lockPhotoGame(){ mode='locked';over=true;paused=true;world=me=null;joys.clear();document.querySelectorAll('.joy').forEach(e=>e.remove());closePanels();$('menu').style.display='none';$('hud').style.display='none';$('btns').style.display='none';panel('<h2>만 19세 이상</h2><p>로그인 후 생년월일을 확인해 주세요.</p><a class="big a" href="/photo-ttang.html" target="_top">입장 확인하기</a>',{}); }
 const PUBLIC_DEMO=new URLSearchParams(location.search).get('demo')==='1';let demoStarted=false;
 const timeLimit=lv=>Math.round(150-lv*2.5);   // 1단계 150초 → 20단계 102초
 let endAt=0, tick=0, cdLast=4, frzLast=4;
@@ -334,7 +339,7 @@ function drawMob(m,ox,oy,S){ const T=MOB[m.type], X=ox+m.x*S, Y=oy+m.y*S, R=worl
   const ex=m.vx/m.v*R*.12, ey=m.vy/m.v*R*.12; for(const s2 of [-1,1]){ ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ex+s2*R*.3,ey-R*.1,R*.2,0,TAU); ctx.fill(); ctx.fillStyle='#2E2748'; ctx.beginPath(); ctx.arc(ex+s2*R*.3+ex*.4,ey-R*.08+ey*.4,R*.1,0,TAU); ctx.fill(); ctx.strokeStyle='#2E2748'; ctx.lineWidth=Math.max(1.5,R*.09); ctx.beginPath(); ctx.moveTo(ex+s2*R*.48,ey-R*.38); ctx.lineTo(ex+s2*R*.14,ey-R*.26); ctx.stroke(); }
   ctx.restore(); }
 function decodeSil(runs,N){ const a=new Uint8Array(N); let k=0,v=0; for(const r of runs.split(',').map(Number)){ if(v) a.fill(1,k,k+r); k+=r; v^=1; } return a; }
-function startStage(i){ if(PUBLIC_DEMO){let allowed=false;try{allowed=!demoStarted&&i===0&&parent!==window&&parent.OjjudaPhotoTtangDemo?.beginRound();}catch{}if(!allowed){endDemo();return false;}demoStarted=true;} stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
+function startStage(i){ if(!photoAllowed()){lockPhotoGame();return false;} if(PUBLIC_DEMO){let allowed=false;try{allowed=!demoStarted&&i===0&&parent!==window&&parent.OjjudaPhotoTtangDemo?.beginRound();}catch{}if(!allowed){endDemo();return false;}demoStarted=true;} stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
   world=new World(P.UW,'solo',P.UH); world.setViewScale(view().S); sil=decodeSil(P.sil,world.N); silTotal=sil.reduce((a,b)=>a+b,0); mySil=0;
   const base=world.setOwn.bind(world); world.setOwn=(k,v)=>{ const o=world.own[k]; if(o===v) return; base(k,v); if(sil[k]&&me){ if(o===me.id) mySil--; if(v===me.id) mySil++; } };
   me=world.addPlayer({name:'나',color:0,speed:5.6,turn:5.4,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
@@ -473,10 +478,10 @@ function win(){ over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigat
 function timeUp(){ over=true; sfx.death(); shake=.4; const pct=mySil/silTotal*100;
   if(PUBLIC_DEMO){setTimeout(()=>endDemo(),500);return;}
   setTimeout(()=>panel(`<h2>⏰ 시간 끝!</h2><p>실루엣을 ${pct.toFixed(0)}%까지 차지했어요. ${GOAL*100}%까지 ${Math.max(0,GOAL*100-pct).toFixed(0)}% 남았어요.</p><button class="big a" id="again">다시 도전</button><button class="big g" id="list">사진 목록</button>`,{again:()=>{ lives=LIVES; startStage(stage); },list:()=>toMenu()}),500); }
-function toMenu(){ if(PUBLIC_DEMO&&demoStarted)return endDemo();mode='menu'; world=null; me=null; closePanels(); $('hud').style.display='none'; $('btns').style.display='none'; $('menu').style.display='flex'; renderGrid(); }
+function toMenu(){ if(!photoAllowed())return lockPhotoGame();if(PUBLIC_DEMO&&demoStarted)return endDemo();mode='menu'; world=null; me=null; closePanels(); $('hud').style.display='none'; $('btns').style.display='none'; $('menu').style.display='flex'; renderGrid(); }
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let LIST=PHOTOS.map((P,i)=>Object.assign({},P,{key:String(i)})), tab='base', commCache={}, gridEpoch=0;
-async function renderGrid(){ const revision=++gridEpoch, currentTab=tab, g=$('grid'); document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===tab));
+async function renderGrid(){ if(!photoAllowed())return lockPhotoGame(); const revision=++gridEpoch, currentTab=tab, g=$('grid'); document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===tab));
   if(PUBLIC_DEMO){LIST=[Object.assign({},PHOTOS[0],{key:'0'})];g.innerHTML='';document.querySelector('.tabs').style.display='none';$('uploadBtn').style.display='none';$('cleared').textContent='';return;}
   $('uploadBtn').style.display='';
   if(tab==='base'){ LIST=PHOTOS.map((P,i)=>Object.assign({},P,{key:String(i)})); const opened=Math.max(0,...Object.keys(prog).filter(k=>/^\d+$/.test(k)).map(Number).map(n=>n+1));
@@ -702,7 +707,7 @@ $('pause').onclick=()=>{ if(over||mode!=='play') return; paused=true; panel(`<h2
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&mode==='play'&&!paused&&!over) $('pause').click(); });
 // ---------- 루프 ----------
 let last=performance.now(), hudT=0;
-function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+function loop(now){ if(mode==='play'&&!photoAllowed())lockPhotoGame();const dt=Math.min(.05,(now-last)/1000); last=now;
   if(world) world.setViewScale(view().S);
   if(world&&mode==='play'&&!paused){ if(startWait>0){ startWait-=dt; const n=Math.ceil(startWait); if(n!==cdLast&&n>0){ cdLast=n; tone(660,.12,'triangle',.07); } if(startWait<=0){ startWait=0; tone(990,.25,'triangle',.08); toast('시작!','#F2C14E'); } } else if(revealT>=0) revealT+=dt; else { world.step(dt); if(me&&me.freezeT>0){ const n=Math.ceil(me.freezeT); if(n!==frzLast){ frzLast=n; tone(660,.1,'triangle',.06); } } updateMobs(dt); handleEvents(); if(!over&&me.alive&&mySil/silTotal>=GOAL){ win(); }
       if(!over){ const left=endAt-world.time; if(left<=10&&Math.ceil(left)!==tick){ tick=Math.ceil(left); if(tick>0){ tone(tick<=3?990:740,.08,'square',.05); try{ navigator.vibrate&&navigator.vibrate(15); }catch{} } }
@@ -710,7 +715,10 @@ function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
   draw(paused?0:dt); if(now-hudT>120){ hudT=now; hud(); } requestAnimationFrame(loop); }
 window.OjjudaPhotoTtang={menu:toMenu,demo:()=>{if(!PUBLIC_DEMO)return false;resize();lives=LIVES;return startStage(0);}};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDefault();parent.postMessage({type:'ojjuda:photottang:close'},location.origin);}});
-toMenu(); requestAnimationFrame(loop);
+const releasePhotoAccess=photoAccess?.subscribe(lockPhotoGame);
+addEventListener('pagehide',()=>releasePhotoAccess?.(),{once:true});
+if(photoAllowed())toMenu();else Promise.resolve(photoAccess?.check()).then(()=>photoAllowed()?toMenu():lockPhotoGame()).catch(lockPhotoGame);
+requestAnimationFrame(loop);
 
 </script>
 </body>
