@@ -103,6 +103,7 @@
   function setAuthMode(mode, notice = '') {
     authViewVersion++;
     authMode = mode;
+    $('guest-browse').hidden = mode !== 'login';
     const isSignup = mode === 'signup';
     const isForgot = mode === 'forgot';
     const isReset = mode === 'reset' || mode === 'direct-reset';

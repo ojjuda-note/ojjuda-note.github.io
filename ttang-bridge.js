@@ -32,12 +32,11 @@
   if(d.type!=='ojjuda:ttang:result'||d.mode!=='solo'||!d.round||d.round!==current.round||current.submitted.has(d.round))return;
   if(!Number.isInteger(d.score)||d.score<0||d.score>1000)return;
   current.submitted.add(d.round);
-  if(!current.owner){status.textContent='로그인하면 순위에 기록돼요.';return;}
   status.textContent='점수를 저장하고 있어요…';
   try{
    const result=await current.onScore(d.score);
    if(session!==current||current.round!==d.round||!current.authorized())return;
-   if(!result?.ok)throw Error('score');status.textContent=d.score+'점 · 기록했어요!';
+   if(!result?.ok)throw Error('score');status.textContent=d.score+'점 · '+(current.owner?'기록했어요!':'손님으로 기록했어요!');
   }catch{if(session===current&&current.round===d.round)status.textContent='점수를 저장하지 못했어요. 연결을 확인해 주세요.';}
  });
 })();

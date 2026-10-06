@@ -26,3 +26,5 @@ dialog{border:0;padding:0;background:transparent;max-width:calc(100vw - 30px);ma
 .site-footer,.dialog-demo-note{color:var(--muted)}
 .auth-tabs button{color:#6f6577}
 .field input::placeholder{color:#746d77;opacity:1}
+
+.guest-browse{border:1px solid #e4dde1;background:#f7f4f5;color:#65546a;text-decoration:none}.guest-browse:hover{background:#eee6ed}.guest-browse[hidden]{display:none}
