@@ -49,6 +49,26 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   assert.equal(await page.getByAltText('게임 판 미리보기').evaluate(im=>im.complete&&im.naturalWidth>0),true);
   assert.equal(await page.locator('#try').isEnabled(),true);
   assert.equal(await page.locator('#send').isEnabled(),false);
+  // The editor photo belongs between its toolbars, including on small phones.
+  // It must never float over the painting or zoom buttons.
+  for(const [width,height] of [[320,568],[390,844],[844,390]]){
+   await page.setViewportSize({width,height});await page.click('#fix');await page.waitForSelector('#ed');
+   const bounds=await page.locator('#ed').evaluate(ed=>{
+    const box=ed.closest('.panel'),r=ed.getBoundingClientRect(),p=box.getBoundingClientRect();
+    const paint=box.querySelector('.fixbtns').getBoundingClientRect(),zoom=box.querySelector('#zin').parentElement.getBoundingClientRect();
+    return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,panelLeft:p.left,panelRight:p.right,paintBottom:paint.bottom,zoomTop:zoom.top};
+   });
+   assert.ok(bounds.left>=bounds.panelLeft&&bounds.right<=bounds.panelRight,'photo stays within the adjustment panel');
+   assert.ok(bounds.top>=bounds.paintBottom,'painting controls stay above the photo');
+   assert.ok(bounds.zoomTop>=bounds.bottom,'zoom controls stay below the photo');
+   for(const selector of ['[data-m="0"]','[data-m="1"]','#zin','#zout']){
+    const button=page.locator(selector);await button.scrollIntoViewIfNeeded();
+    assert.equal(await button.evaluate(b=>{const r=b.getBoundingClientRect();return b.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}),true,'editor controls are not covered by the photo');
+   }
+   await page.click('[data-m="0"]');assert.equal(await page.locator('[data-m="0"]').evaluate(b=>b.classList.contains('on')),true);
+   await page.click('[data-m="1"]');await page.click('#done');await page.waitForSelector('#try');
+  }
+  await page.setViewportSize({width:390,height:844});
   await page.check('#ag');assert.equal(await page.locator('#send').isEnabled(),true);
   await page.evaluate(()=>window.failPhotoSave=true);await page.click('#send');
   await page.getByText('등록 재시도 확인',{exact:true}).waitFor();assert.equal(await page.locator('#send').isEnabled(),true);
