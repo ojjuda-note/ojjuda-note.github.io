@@ -1,10 +1,11 @@
-import {floorPoint,roomPoint} from './model.js?v=20261006-floordata1';
-import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-floordata1';
-import {projectMesh,validateMesh} from './picture-mesh.js?v=20261006-floordata1';
-export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-floordata1';
+import {floorPoint,roomPoint} from './model.js?v=20261006-sofaparts1';
+import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-sofaparts1';
+import {projectMesh,validateMesh} from './picture-mesh.js?v=20261006-sofaparts1';
+export {SOFA_CUSHION_SEATS} from './sofa-cushion-placement.js?v=20261006-sofaparts1';
 export function sofaPoseValid(placement,item){
  const registration=SOFA_V1[placement?.direction];
- return !!registration&&validateMesh(registration.mesh,{...placement,width:item.width,depth:item.depth,height:item.height}).ok;
+ const pose={...placement,width:item.width,depth:item.depth,height:item.height};
+ return !!registration&&[registration.mesh,...Object.values(registration.partMeshes||{})].every(mesh=>validateMesh(mesh,pose).ok);
 }
 export function sofaArtwork(item,placement,contact,size){
  const registration=SOFA_V1[placement.direction];
@@ -15,7 +16,11 @@ export function sofaArtwork(item,placement,contact,size){
  const reserved=[[placement.x,placement.y],[placement.x+size.w,placement.y],[placement.x+size.w,placement.y+size.d],[placement.x,placement.y+size.d]].map(p=>floorPoint(...p));
  const layers=registration.order.filter(id=>!id.startsWith('slot:')).map(id=>({id,image:registration.parts[id],rect:[0,0,...registration.canvas]}));
  const sofaTriangles=projected.triangles.map(t=>({source:t.source.map(p=>[p.x,p.y]),target:t.target}));
- const drawLayers=layers.map(layer=>({...layer,triangles:sofaTriangles}));
+ const drawLayers=layers.map(layer=>{
+  const mesh=registration.partMeshes?.[layer.id];
+  const triangles=mesh?projectMesh(mesh,pose).triangles.map(t=>({source:t.source.map(p=>[p.x,p.y]),target:t.target})):sofaTriangles;
+  return {...layer,triangles};
+ });
  points.push(...drawLayers.flatMap(layer=>layer.triangles.flatMap(triangle=>triangle.target)));
  const left=Math.min(...points.map(p=>p.x))-2,top=Math.min(...points.map(p=>p.y))-2,right=Math.max(...points.map(p=>p.x))+2,bottom=Math.max(...points.map(p=>p.y))+2;
  return {footprint,reserved,anchors:projected.points.filter(p=>p.kind==='physical'&&Math.abs(p.world.z)<1e-8).map(p=>p.target),contact,faces:[],left,top,width:right-left,height:bottom-top,
