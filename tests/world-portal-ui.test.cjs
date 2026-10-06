@@ -47,7 +47,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
       await page.locator('#account-actions:not([hidden])').waitFor();
       assert.equal((await page.locator('#front-title').innerText()).replace(/\s+/g, ' ').trim(), copy);
       for (const selector of ['meta[name="description"]', 'meta[property="og:title"]', 'meta[property="og:description"]']) assert.ok((await page.locator(selector).getAttribute('content')).includes(copy));
-      assert.equal(await page.locator('[data-destination]').count(), 1, 'one World entrance');
+      assert.equal(await page.locator('[data-destination]').count(), 2, 'World entrance and direct Home login destination');
       assert.equal(await page.locator('[data-destination="world"]').count(), 1);
       assert.equal(await page.locator('[data-destination="note"]').count(), 0);
       assert.equal(await page.locator('.world-feature').count(), 5, 'all actual bottom menus');

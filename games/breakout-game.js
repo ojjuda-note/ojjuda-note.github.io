@@ -47,8 +47,9 @@
     else if(brick.maxHp===2){c.strokeStyle='#FFFFFFC9';c.lineWidth=1.3;c.beginPath();c.moveTo(brick.x+brick.w*.55,brick.y+3);c.lineTo(brick.x+brick.w*.45,brick.y+6);c.lineTo(brick.x+brick.w*.63,brick.y+9);c.stroke();}
   }
   function create(api){
+    const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
     const paddle={x:140,y:490,w:80,h:12};
-    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=280;
+    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=280*pace;
     let nextBallId=1,notice='',noticeTime=0;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
@@ -73,7 +74,7 @@
     }
     function setNotice(text){notice=text;noticeTime=1.6;}
     function faster(amount){
-      const next=Math.min(MAX_SPEED,speed+amount);if(next===speed)return;speed=next;
+      const next=Math.min(MAX_SPEED*pace,speed+amount*pace);if(next===speed)return;speed=next;
       for(const ball of balls){const magnitude=Math.hypot(ball.vx,ball.vy);if(magnitude){ball.vx=ball.vx/magnitude*speed;ball.vy=ball.vy/magnitude*speed;}}
     }
     function launch(){

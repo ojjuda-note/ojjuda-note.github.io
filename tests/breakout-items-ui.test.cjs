@@ -5,7 +5,7 @@ const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').re
     game.testStage=n=>{level=n;fillBricks();newTurn();};
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/games/breakout-game.js')?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/games/breakout-game.js')||s.includes('/game-controls.js'))?s:'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -43,6 +43,8 @@ g.tab='friends';H();
     const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();
     if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
     if(u.pathname==='/games/breakout-game.js')return route.fulfill({contentType:'text/javascript',body:engine});
+    if(u.pathname==='/game-controls.js')return route.fulfill({path:path.join(root,'game-controls.js')});
+    if(u.pathname==='/game-controls.css')return route.fulfill({path:path.join(root,'game-controls.css')});
     if(u.pathname==='/qa-font.ttf'&&fs.existsSync('/root/.local/share/fonts/qa-gowun-dodum.ttf'))return route.fulfill({path:'/root/.local/share/fonts/qa-gowun-dodum.ttf'});
     return route.abort();
    });

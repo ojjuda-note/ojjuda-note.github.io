@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html', photo: '/photo-ttang.html' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html' };
   const termsVersion = '2026-09-29-age14';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
@@ -18,7 +18,12 @@
   const passwordConfirm = $('password-confirm');
   const nickname = $('nickname');
   const submit = $('auth-submit');
-  $('signup-identity-slot').innerHTML = window.OjjudaIdentity.fields('signup');
+  function prepareIdentity() {
+    if (!window.OjjudaIdentity?.fields) return false;
+    if (!$('signup-identity-slot').innerHTML) $('signup-identity-slot').innerHTML = window.OjjudaIdentity.fields('signup');
+    return true;
+  }
+  prepareIdentity();
   const forgot = $('forgot-trigger');
   const accountActions = $('account-actions');
   const signedInActions = $('signed-in-actions');
@@ -113,7 +118,7 @@
     });
     dialog.querySelectorAll('.signup-only').forEach(field => { field.hidden = !isSignup; });
     $('recovery-identity-slot').hidden = !isForgot;
-    $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
+    if (prepareIdentity()) $('recovery-birth').max = window.OjjudaIdentity.todayKorea();
     nickname.closest('.field').hidden = !(isSignup || isNickname);
     dialog.querySelector('.email-field').hidden = isReset || isNickname;
     dialog.querySelector('.password-field').hidden = isForgot || isNickname;
@@ -133,6 +138,8 @@
           : '우리집부터 공원과 오락실까지, 오쭈다 월드에서 함께해요.';
     submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '월드 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
+    if ((isSignup || isForgot) && !prepareIdentity()) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
+    submit.disabled = busy || !client || ((isSignup || isForgot) && !window.OjjudaIdentity);
   }
 
   function showDialog() {
@@ -149,7 +156,7 @@
       submit.disabled = true;
       return;
     }
-    submit.disabled = busy;
+    submit.disabled = busy || (['signup', 'forgot'].includes(mode) && !window.OjjudaIdentity);
     (mode === 'signup' || mode === 'nickname' ? nickname : mode === 'reset' ? password : email).focus();
   }
 
@@ -345,6 +352,8 @@
       if (newId) void checkAdmin(newId, identityVersion);
     }
     renderAccount();
+    if (prepareIdentity()) window.OjjudaPortalAvailability?.ready();
+    else window.OjjudaPortalAvailability?.fail('일부 로그인 기능을 불러오지 못했어요. 다시 시도하거나 손님으로 둘러보세요.');
   }
 
   function validEmail(value) {
@@ -353,6 +362,10 @@
 
   async function submitForm(event) {
     event.preventDefault();
+    if (['signup', 'forgot'].includes(authMode) && !prepareIdentity()) {
+      feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
+      return;
+    }
     if (busy || !client) return;
     feedback.textContent = '';
     const address = email.value.trim();
@@ -508,9 +521,10 @@
     button.addEventListener('click', () => openAuth(button.dataset.openAuth, 'world'));
   });
   document.querySelectorAll('[data-destination]').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', event => {
       const target = button.dataset.destination;
       if (!destinationPath(target)) return;
+      event.preventDefault();
       if (session?.user) goToDestination(target);
       else openAuth('login', target);
     });
@@ -527,7 +541,7 @@
     recoveryCompleted = false;
     form.reset();
     feedback.textContent = '';
-    $('signup-result').textContent = '';
+    if ($('signup-result')) $('signup-result').textContent = '';
     pendingDestination = null;
   });
   forgot.addEventListener('click', () => setAuthMode(authMode === 'forgot' ? 'login' : 'forgot'));
@@ -568,6 +582,7 @@
     authReady = true;
     renderAccount();
     resolveAuthEntry(null);
+    window.OjjudaPortalAvailability?.fail();
     console.error('오쭈다 계정 연결 정보를 확인해 주세요.');
   } else {
     client.auth.onAuthStateChange((event, current) => {
@@ -589,6 +604,7 @@
       if (authEventVersion === initialVersion) {
         applySession(error ? null : data?.session);
         resolveAuthEntry(error ? null : data?.session?.user);
+        if (error) window.OjjudaPortalAvailability?.fail();
       }
       if (recoveryPending && !recoveryEventSeen) {
         setTimeout(() => {
@@ -605,6 +621,7 @@
       if (authEventVersion !== initialVersion) return;
       applySession(null);
       resolveAuthEntry(null);
+      window.OjjudaPortalAvailability?.fail();
       if (recoveryPending) {
         openAuth('forgot');
         feedback.textContent = '링크를 확인하지 못했어요. 새 링크를 요청해 주세요.';
