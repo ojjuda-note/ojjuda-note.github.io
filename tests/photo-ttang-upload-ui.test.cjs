@@ -80,8 +80,35 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   assert.equal(saved.rows[0].mask_rle.split(',').map(Number).reduce((a,b)=>a+b,0),300*400);
   assert.ok(saved.uploads.every(u=>u.size>0&&u.type==='image/jpeg'&&u.options.upsert===false));
   await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
-  await page.click('[data-v="public"]');await page.check('#ag');await page.click('#send');await page.getByText('등록했어요!',{exact:true}).waitFor();
+  await page.click('[data-v="public"]');await page.click('.lvb[data-v="14"]');await page.check('#ag');
+  const draftPreview=await page.getByAltText('게임 판 미리보기').getAttribute('src');
+  let tried;
+  async function tryPhoto(){
+   await page.click('#try');await page.waitForFunction(()=>mode==='play'&&photoImg.complete&&photoImg.naturalWidth>0);
+   assert.equal(await page.locator('#up').count(),0,'the draft does not cover the game');
+   tried=await page.evaluate(()=>({mask:LIST[0].sil,crop:LIST[0].crop.join(','),level:LIST[0].level}));
+  }
+  async function returnToSave(){
+   await page.getByRole('button',{name:'저장하기',exact:true}).click();await page.waitForSelector('#send');
+   assert.equal(await page.evaluate(()=>mode),'menu');assert.equal(await page.locator('#hud').isVisible(),false);
+   assert.ok(await page.getByAltText('게임 판 미리보기').getAttribute('src')===draftPreview,'the same edited photo returns');
+   assert.equal(await page.locator('#ag').isChecked(),true);assert.equal(await page.locator('#send').isEnabled(),true);
+   assert.equal(await page.locator('.lvb.on').getAttribute('data-v'),'14');assert.equal(await page.locator('.vb.on').getAttribute('data-v'),'public');
+   assert.equal(await page.locator('.overlay:not(#menu)').count(),1,'only the upload draft is open');
+  }
+  // Trying is temporary; pausing, losing or clearing must return to the original
+  // registration screen without choosing the photo or agreeing a second time.
+  await tryPhoto();await page.click('#pause');await page.click('#go');await page.click('#pause');await returnToSave();
+  await tryPhoto();await page.evaluate(()=>{paused=true;sound=false;timeUp();});
+  await page.getByRole('button',{name:'다시 도전',exact:true}).click();
+  await page.evaluate(()=>{paused=true;lives=1;world.time=10;me.shieldT=0;world.kill(me,0,'mob');handleEvents();});
+  await page.getByText('아쉬워요!',{exact:true}).waitFor();await returnToSave();
+  await tryPhoto();await page.evaluate(()=>{paused=true;win();});
+  await page.getByText('🎉 사진 공개!',{exact:true}).waitFor();await returnToSave();
+  assert.equal(await page.evaluate(()=>savedPhotos.length),1,'playing did not register the draft');
+  await page.click('#send');await page.getByText('등록했어요!',{exact:true}).waitFor();
   const shared=await page.evaluate(()=>savedPhotos[1]);assert.equal(shared.visibility,'public');assert.equal(shared.status,'pending');
+  assert.equal(shared.level,tried.level);assert.ok(shared.mask_rle===tried.mask,'saving uses the played silhouette');assert.equal(shared.crop_box,tried.crop);
   await page.getByText('관리자가 확인하면 모두에게 보여요.',{exact:false}).waitFor();
   await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
   await page.click('#try');await page.waitForFunction(()=>mode==='play'&&photoImg.complete&&photoImg.naturalWidth>0);
@@ -90,7 +117,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   // tried immediately when automatic detection needs manual correction.
   for(const fill of [10,90]){
    await page.evaluate(async({file,fill})=>{
-    toMenu();const im=await readImage(await(await fetch(file)).blob());
+    toMenu();closePanels();const im=await readImage(await(await fetch(file)).blob());
     const c=document.createElement('canvas');c.width=300;c.height=400;c.getContext('2d').drawImage(im,0,0,300,400);
     const m=new Uint8Array(300*400);m.fill(1,0,Math.round(m.length*fill/100));
     const src={canvas:c,m,mw:300,mh:400,kind:'thing'};src.crop=cropFor(src,1,150,200);
@@ -111,6 +138,6 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   });
   assert.deepEqual(respawn,{at:40,before:false,after:true,killed:0,queued:80,mobBefore:0,mobAfter:1,born:80,pending:0});
   assert.deepEqual(f.errors,[]);await f.context.close();
-  console.log('PASS: OpenCV readiness, retry, offline photo preview, trial start, registration retry, coverage rules, and 30-second bot/mob respawn');
+  console.log('PASS: photo preparation, try-to-save after pause/loss/clear, preserved edits/consent/privacy, registration retry, coverage rules, and bot/mob respawn');
  }finally{await browser.close();fs.rmSync(dir,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1});
