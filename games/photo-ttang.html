@@ -82,13 +82,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 <canvas id="gameCanvas"></canvas>
 <div class="hud" id="hud">
   <div class="hrow"><span class="chip" id="stageNo">1 / 20</span><span class="chip lives" id="lives">❤❤❤</span><span class="chip" id="timer">⏱ 2:30</span><span class="sp"></span><span class="chip" id="eff"></span></div>
-  <div class="bar"><div id="silBar"></div><span>실루엣 <b id="silPct" style="margin:0 4px">0%</b> / 95%</span></div>
+  <div class="bar"><div id="silBar"></div><span>실루엣 <b id="silPct" style="margin:0 4px">0%</b> / 90%</span></div>
 </div>
 <div class="btns" id="btns"><button class="rb" id="snd" aria-label="소리">🔊</button><button class="rb" id="pause" aria-label="일시정지">⏸</button></div>
 <div class="toast" id="toast"></div>
 <div class="overlay" id="menu"><div class="panel">
   <h1>포토땅따먹기</h1>
-  <p>실루엣 95% 채우면 사진 공개 <span id="cleared"></span></p>
+  <p>실루엣 90% 채우면 사진 공개 <span id="cleared"></span></p>
   <div class="tabs"><button class="tab on" data-t="base">기본 사진</button><button class="tab" data-t="all">사진 판</button><button class="tab" data-t="review" id="tabReview" style="display:none">승인</button></div>
   <button class="big b2" id="uploadBtn" style="display:none">＋ 내 사진으로 판 만들기</button>
   <div class="grid" id="grid"></div>
@@ -266,7 +266,7 @@ class World{
 const gameCanvas=document.getElementById('gameCanvas'), ctx=gameCanvas.getContext('2d'); let DPR=1, VW=0, VH=0;
 function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); VW=innerWidth; VH=innerHeight; gameCanvas.width=VW*DPR; gameCanvas.height=VH*DPR; } addEventListener('resize',resize); resize();
 const $=s=>document.getElementById(s);
-const GOAL=.95, LIVES=3;
+const GOAL=.90, LIVES=3;
 const timeLimit=lv=>Math.round(150-lv*2.5);   // 1단계 150초 → 20단계 102초
 let endAt=0, tick=0, cdLast=4, frzLast=4;
 // 단계별 난이도: 몹 수·종류·속도, 컴퓨터 수, 아이템 빈도
@@ -455,7 +455,7 @@ function drawParts(ox,oy,S){ for(const q of parts){ ctx.globalAlpha=Math.max(0,q
   for(const f of floats){ ctx.globalAlpha=Math.min(1,f.life*2); ctx.font=`700 ${Math.max(13,S*.9)}px "Gowun Dodum",sans-serif`; ctx.textAlign='center'; ctx.lineWidth=4; ctx.strokeStyle='#fff'; ctx.strokeText(f.txt,ox+f.x*S,oy+f.y*S); ctx.fillStyle=f.col; ctx.fillText(f.txt,ox+f.x*S,oy+f.y*S); } ctx.globalAlpha=1; }
 // ---------- HUD ----------
 function hud(){ if(!world||!me) return; const pct=mySil/silTotal*100; me.bestSil=Math.max(me.bestSil||0,pct);
-  $('stageNo').textContent=`${stage+1} / ${PHOTOS.length}`; $('silPct').textContent=pct.toFixed(1)+'%'; $('silBar').style.width=Math.min(100,pct/95*100)+'%'; $('silBar').classList.toggle('near',pct>=80);
+  $('stageNo').textContent=`${stage+1} / ${PHOTOS.length}`; $('silPct').textContent=pct.toFixed(1)+'%'; $('silBar').style.width=Math.min(100,pct/(GOAL*100)*100)+'%'; $('silBar').classList.toggle('near',pct>=80);
   $('lives').textContent='❤'.repeat(Math.max(0,lives))+'♡'.repeat(Math.max(0,LIVES-lives)); const left=Math.max(0,endAt-world.time); const tEl=$('timer'); tEl.textContent=`⏱ ${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,'0')}`; tEl.classList.toggle('warn',left<=10);
   const eff=[]; if(me.boostT>0) eff.push(`⚡ ${me.boostT.toFixed(1)}`); if(me.shieldT>0) eff.push(`🛡 ${me.shieldT.toFixed(1)}`); $('eff').textContent=eff.join('  ')||`👾 ${mobs.length}${respawnQ.length?` (+${respawnQ.length})`:''}`; }
 // ---------- 화면 전환 ----------
@@ -466,7 +466,7 @@ function win(){ over=true; revealT=0; sfx.win(); try{ navigator.vibrate&&navigat
   setTimeout(()=>{ const o=panel(`<h2>🎉 사진 공개!</h2><img src="${P.full||P.img}" alt="전신 사진" class="fullimg" style="width:100%;max-height:56vh;object-fit:contain;border-radius:16px;margin:6px 0 10px">${P.id?`<p style="margin:0 0 4px">${esc(P.nick||'누군가')}님이 올린 사진</p>`:''}<div class="row2">${stage<LIST.length-1&&!P.trial?'<button class="big a" id="next">다음 사진</button>':''}<button class="big g" id="list">사진 목록</button></div>${P.id?'<button class="link" id="rep">이 사진 신고하기</button>':''}`,{next:()=>{ lives=LIVES; startStage(stage+1); },list:()=>toMenu()});
     const rb=o.querySelector('#rep'); if(rb) rb.onclick=()=>reportPanel(P); },3000); }
 function timeUp(){ over=true; sfx.death(); shake=.4; const pct=mySil/silTotal*100;
-  setTimeout(()=>panel(`<h2>⏰ 시간 끝!</h2><p>실루엣을 ${pct.toFixed(0)}%까지 차지했어요. 95%까지 ${Math.max(0,95-pct).toFixed(0)}% 남았어요.</p><button class="big a" id="again">다시 도전</button><button class="big g" id="list">사진 목록</button>`,{again:()=>{ lives=LIVES; startStage(stage); },list:()=>toMenu()}),500); }
+  setTimeout(()=>panel(`<h2>⏰ 시간 끝!</h2><p>실루엣을 ${pct.toFixed(0)}%까지 차지했어요. ${GOAL*100}%까지 ${Math.max(0,GOAL*100-pct).toFixed(0)}% 남았어요.</p><button class="big a" id="again">다시 도전</button><button class="big g" id="list">사진 목록</button>`,{again:()=>{ lives=LIVES; startStage(stage); },list:()=>toMenu()}),500); }
 function toMenu(){ mode='menu'; world=null; me=null; closePanels(); $('hud').style.display='none'; $('btns').style.display='none'; $('menu').style.display='flex'; renderGrid(); }
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let LIST=PHOTOS.map((P,i)=>Object.assign({},P,{key:String(i)})), tab='base', commCache={}, gridEpoch=0;
