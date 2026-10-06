@@ -2,17 +2,17 @@
   'use strict';
   const W=360,H=540,MAX_BALLS=10,MAX_SPEED=620,LEVELS=100;
   const COLORS=['#F0679A','#F4A66B','#FFD37A','#7FD1A1','#8FB3F7','#B69CF0'];
-  const ITEMS={two:{text:'공 2배'},ten:{text:'공 10개'},pierce:{text:'관통 · 이번 턴'}};
+  const ITEMS={two:{text:'공 2배'},ten:{text:'공 10개'},pierce:{text:'관통 · 판 2회'}};
   function rounded(c,x,y,w,h,r,color){
     c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();c.fillStyle=color;c.fill();
   }
   function circle(c,x,y,r,color){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=color;c.fill();}
   function stageBricks(level){
-    const count=14+Math.floor((level-1)/2),cols=10,rows=Math.min(12,5+Math.floor((level-1)/12)),pattern=(level-1)%8,bricks=[],cells=[];
+    const count=14+Math.round((level-1)*986/99),cols=Math.max(10,Math.ceil(Math.sqrt(count*1.6))),rows=Math.max(5,Math.ceil(count*1.6/cols)),pitchX=340/cols,pitchY=Math.min(18,210/rows),width=Math.min(30,pitchX-Math.min(4,pitchX*.16)),height=Math.min(12,pitchY-1),pattern=(level-1)%8,bricks=[],cells=[];
     let seed=level*7919+53;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);
     // Choose silhouettes within a roomy grid instead of filling entire rows.
     function rank(row,col){
-      const x=(col-4.5)/4.5,y=(row-(rows-1)/2)/((rows-1)/2);
+      const x=(col-(cols-1)/2)/((cols-1)/2),y=(row-(rows-1)/2)/((rows-1)/2);
       if(pattern===0)return Math.abs(Math.abs(x)+Math.abs(y)-.85); // diamond
       if(pattern===1)return Math.abs(y-.55*Math.sin(x*Math.PI*2)); // wave
       if(pattern===2)return Math.abs(row-(col+level%3)%rows); // stairs
@@ -26,7 +26,7 @@
     const steelCols=new Set(Array.from({length:steelCount},(_,i)=>(level+3*i)%cols));
     for(let row=0;row<rows;row++)for(let col=0;col<cols;col++)cells.push({row,col,rank:rank(row,col)+random()*.08,solid:row===0&&steelCols.has(col)});
     const chosen=cells.filter(c=>c.solid).concat(cells.filter(c=>!c.solid).sort((a,b)=>a.rank-b.rank).slice(0,count-steelCount));
-    for(const {row,col,solid} of chosen)bricks.push({id:row*cols+col,x:12+col*34,y:84+row*18,w:30,h:12,on:true,hp:1,maxHp:1,solid,color:COLORS[(row+Math.floor((level-1)/8))%COLORS.length]});
+    for(const {row,col,solid} of chosen)bricks.push({id:row*cols+col,x:12+col*pitchX,y:84+row*pitchY,w:width,h:height,on:true,hp:1,maxHp:1,solid,color:COLORS[(row+Math.floor((level-1)/8))%COLORS.length]});
     bricks.sort((a,b)=>a.id-b.id);
     // Steel is confined to the top row and leaves at least five open columns.
     if(level>=2){
@@ -36,13 +36,37 @@
     }
     return bricks;
   }
+  function drawBrick(c,brick){
+    rounded(c,brick.x,brick.y,brick.w,brick.h,Math.min(3,brick.h/3),brick.solid?'#617085':brick.color);
+    if(brick.h<9||brick.w<18){
+      if(brick.solid||brick.hp===2){c.fillStyle='#FFFFFFB3';c.fillRect(brick.x+brick.w*.25,brick.y+brick.h*.35,Math.max(1,brick.w*.5),1);}
+      return;
+    }
+    rounded(c,brick.x+3,brick.y+3,brick.w-6,2,1,'#FFFFFF59');
+    if(brick.solid||brick.hp===2){c.fillStyle='#FFFFFF';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(brick.solid?'∞':'2',brick.x+brick.w/2,brick.y+10);}
+    else if(brick.maxHp===2){c.strokeStyle='#FFFFFFC9';c.lineWidth=1.3;c.beginPath();c.moveTo(brick.x+brick.w*.55,brick.y+3);c.lineTo(brick.x+brick.w*.45,brick.y+6);c.lineTo(brick.x+brick.w*.63,brick.y+9);c.stroke();}
+  }
   function create(api){
     const paddle={x:140,y:490,w:80,h:12};
     let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=360;
     let nextBallId=1,notice='',noticeTime=0;
-    function ballAt(x,y,vx=0,vy=0){return{id:nextBallId++,x,y,vx,vy,r:5,piercing:false,contacts:new Set()};}
+    let brickBuckets=new Map(),brickPaint=[];
+    const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
+    brickContext?.scale(2,2);
+    function nearbyBricks(ball){
+      const found=new Set();
+      for(let y=Math.floor((ball.y-ball.r)/32);y<=Math.floor((ball.y+ball.r)/32);y++)
+        for(let x=Math.floor((ball.x-ball.r)/32);x<=Math.floor((ball.x+ball.r)/32);x++)
+          for(const brick of brickBuckets.get(x+','+y)||[])found.add(brick);
+      return found;
+    }
+    function ballAt(x,y,vx=0,vy=0){return{id:nextBallId++,x,y,vx,vy,r:5,piercing:false,pierceBounces:0,contacts:new Set()};}
     function fillBricks(){
-      bricks=stageBricks(level);
+      bricks=stageBricks(level);brickBuckets=new Map();brickPaint=[];brickContext?.clearRect(0,0,W,H);
+      for(const brick of bricks)for(let y=Math.floor(brick.y/32);y<=Math.floor((brick.y+brick.h)/32);y++)
+        for(let x=Math.floor(brick.x/32);x<=Math.floor((brick.x+brick.w)/32);x++){
+          const key=x+','+y;if(!brickBuckets.has(key))brickBuckets.set(key,[]);brickBuckets.get(key).push(brick);
+        }
     }
     function newTurn(){
       balls=[ballAt(paddle.x+paddle.w/2,paddle.y-8)];drops=[];waiting=true;
@@ -70,7 +94,7 @@
       if(!balls.length||waiting)return;
       if(item.kind==='pierce'){
         const chosen=balls.find(ball=>ball.piercing)||balls[0];
-        for(const ball of balls)ball.piercing=ball===chosen;
+        for(const ball of balls){ball.piercing=ball===chosen;ball.pierceBounces=ball===chosen?2:0;}
       }else{
         const target=Math.max(balls.length,item.kind==='ten'?MAX_BALLS:balls.length*2),source=balls.find(ball=>!ball.piercing)||balls[0];
         const count=Math.min(MAX_BALLS,target)-balls.length;
@@ -92,6 +116,9 @@
     function avoidVerticalTrap(ball){
       if(Math.abs(ball.vx)<speed*.08){ball.vx=speed*.14*(ball.id%2?1:-1);ball.vy=Math.sign(ball.vy||-1)*Math.sqrt(speed**2-ball.vx**2);}
     }
+    function countPiercingPaddleBounce(ball){
+      if(ball.piercing&&--ball.pierceBounces<=0){ball.piercing=false;ball.pierceBounces=0;setNotice("관통 끝");}
+    }
     function step(dt){
       if(waiting){balls[0].x=paddle.x+paddle.w/2;balls[0].y=paddle.y-8;return;}
       faster(5*dt);
@@ -102,10 +129,10 @@
         if(ball.y<60+ball.r){ball.y=60+ball.r;ball.vy=Math.abs(ball.vy);avoidVerticalTrap(ball);}
         if(ball.vy>0&&beforeY+ball.r<=paddle.y+1&&ball.y+ball.r>=paddle.y&&ball.x>paddle.x-ball.r&&ball.x<paddle.x+paddle.w+ball.r){
           const offset=Math.max(-1,Math.min(1,(ball.x-paddle.x-paddle.w/2)/(paddle.w/2))),angle=-Math.PI/2+offset*1.05;
-          ball.vx=Math.cos(angle)*speed;ball.vy=Math.sin(angle)*speed;ball.y=paddle.y-ball.r;api.sound?.tap?.();
+          ball.vx=Math.cos(angle)*speed;ball.vy=Math.sin(angle)*speed;ball.y=paddle.y-ball.r;countPiercingPaddleBounce(ball);api.sound?.tap?.();
         }
         const touching=new Set();let bounced=false;
-        for(const brick of bricks)if(brick.on&&touchBrick(ball,brick)){
+        for(const brick of nearbyBricks(ball))if(brick.on&&touchBrick(ball,brick)){
           touching.add(brick.id);
           if(ball.contacts.has(brick.id)||bounced)continue;
           if(!brick.solid){brick.hp--;if(brick.hp===0)breakBrick(brick);else api.sound?.tap?.();}
@@ -149,11 +176,17 @@
       draw(c){
         c.fillStyle='#1F2238';c.fillRect(0,0,W,H);
         for(let i=0;i<24;i++)circle(c,i*97%W,70+i*53%420,1,'#FFFFFF50');
-        for(const brick of bricks)if(brick.on){
-          rounded(c,brick.x,brick.y,brick.w,brick.h,3,brick.solid?'#617085':brick.color);rounded(c,brick.x+3,brick.y+3,brick.w-6,2,1,'#FFFFFF59');
-          if(brick.solid||brick.hp===2){c.fillStyle='#FFFFFF';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(brick.solid?'∞':'2',brick.x+brick.w/2,brick.y+10);}
-          else if(brick.maxHp===2){c.strokeStyle='#FFFFFFC9';c.lineWidth=1.3;c.beginPath();c.moveTo(brick.x+17,brick.y+3);c.lineTo(brick.x+14,brick.y+6);c.lineTo(brick.x+19,brick.y+9);c.stroke();}
-        }
+        if(brickContext){
+          for(const brick of bricks){
+            const state=brick.on?brick.hp:0;
+            if(brickPaint[brick.id]===state)continue;
+            brickPaint[brick.id]=state;
+            const x=Math.floor(brick.x),y=Math.floor(brick.y);
+            brickContext.clearRect(x,y,Math.ceil(brick.x+brick.w)-x,Math.ceil(brick.y+brick.h)-y);
+            if(brick.on)drawBrick(brickContext,brick);
+          }
+          c.drawImage(brickLayer,0,0,W,H);
+        }else for(const brick of bricks)if(brick.on)drawBrick(c,brick);
         for(const item of drops){
           rounded(c,item.x-15,item.y-11,30,22,7,'#B9ACEC');
           c.fillStyle='#263047';c.textAlign='center';c.font='bold 13px sans-serif';c.fillText('?',item.x,item.y+4);
@@ -166,7 +199,7 @@
         c.fillStyle='#FFFFFF';c.textAlign='left';c.font='bold 18px sans-serif';c.fillText(score+'점',16,38);
         c.textAlign='right';c.fillStyle='#F0679A';c.fillText('♥'.repeat(lives),W-16,38);
         c.textAlign='center';c.font='13px sans-serif';c.fillStyle='#ACB7DD';c.fillText(level+' / '+LEVELS+'단계',W/2,38);
-        c.fillText('공 '+balls.length+'개'+(balls.some(ball=>ball.piercing)?' · 관통':'') ,W/2,63);
+        c.fillText('공 '+balls.length+'개'+(balls.some(ball=>ball.piercing)?' · 관통 '+balls.find(ball=>ball.piercing).pierceBounces+'회':'') ,W/2,63);
         if(noticeTime>0){rounded(c,108,426,144,29,10,'#343B58');c.fillStyle='#FFF2CA';c.font='bold 14px sans-serif';c.fillText(notice,W/2,446);}
         if(waiting&&!finished){c.fillStyle='#FFFFFF';c.font='bold 16px sans-serif';c.fillText('탭하면 출발',W/2,407);}
       },
