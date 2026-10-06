@@ -1,7 +1,7 @@
-import {projectMesh} from './mesh.js?v=20261006-floordata1';
-import {projectPictureLayers} from './layered-mesh.js?v=20261006-floordata1';
-import {homography,project} from './warp.js?v=20261006-floordata1';
-import {checkShape,sourceWeights} from '../picture-quality.js?v=20261006-floordata1';
+import {projectMesh} from './mesh.js?v=20261006-sofaparts1';
+import {projectPictureLayers} from './layered-mesh.js?v=20261006-sofaparts1';
+import {homography,project} from './warp.js?v=20261006-sofaparts1';
+import {checkShape,sourceWeights} from '../picture-quality.js?v=20261006-sofaparts1';
 
 const weightsCache=new WeakMap();
 function affine(s,t){
