@@ -1807,7 +1807,11 @@ function setColorChoice(group, code) {
   const chosen = [...choices].find(choice => choice.value === code) || [...choices].find(choice => choice.value === 'default');
   if (chosen) chosen.checked = true;
 }
+function updatePaidSubmit() {
+  submit.classList.toggle('ju-paid-action', !editingId && (kind === 'event' || !!selectedPhotoKey && !activePhotoEntitlement(selectedPhotoKey)));
+}
 function updateFeaturedPhoto() {
+  updatePaidSubmit();
   const selected = photoAssetKey(selectedPhotoKey);
   const name = selected ? `제공 배경 ${String(Number(selected) - PHOTO_FIRST + 1).padStart(3, '0')}` : '기본 배경 무작위';
   const ownedUntil = selected && activePhotoEntitlement(selected);
@@ -1816,6 +1820,7 @@ function updateFeaturedPhoto() {
   $('#photo-featured-image').alt = selected ? `${name} 미리보기` : '기본 사진 미리보기';
   $('#photo-featured-name').textContent = name;
   $('#photo-featured-detail').textContent = price;
+  for (const id of ['photo-featured-detail', 'photo-featured-badge', 'photo-selection']) $('#' + id).classList.toggle('ju-paid-price', !!selected && !ownedUntil);
   $('#photo-featured-badge').textContent = selected ? ownedUntil ? '사용 중' : '선택됨' : '무료';
   $('#photo-featured-badge').classList.toggle('is-selected', !!selected);
   $('#photo-selection').textContent = selected ? ownedUntil ? `${name} 사용 중 · ${dateLabel(ownedUntil)}까지 추가 결제 없이 사용` : `${name} 선택됨 · 10 ZU / 1개월` : '기본 배경 무작위 · 무료';
@@ -1827,7 +1832,7 @@ function renderPhotoPage() {
     const key = String(number), title = `사진 ${String(number - PHOTO_FIRST + 1).padStart(3, '0')}`;
     const ownedUntil = activePhotoEntitlement(key);
     const accessLabel = ownedUntil ? `구매함 · ${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 · 10 ZU / 1개월';
-    const tile = node('label', 'note-photo-tile'); tile.title = `${title} · ${accessLabel}`;
+    const tile = node('label', 'note-photo-tile' + (ownedUntil ? '' : ' ju-paid-choice')); tile.title = `${title} · ${accessLabel}`;
     const input = node('input'); input.type = 'radio'; input.name = 'photo-choice'; input.value = key;
     input.disabled = busy || draftLoading;
     input.checked = selectedPhotoKey === key; input.setAttribute('aria-label', `${title}, ${accessLabel}`);
@@ -2148,6 +2153,7 @@ function validEventInteger(value, minimum, maximum) {
   return /^\d{1,2}$/.test(raw) && Number(raw) >= minimum && Number(raw) <= maximum;
 }
 function updateComposer() {
+  updatePaidSubmit();
   $('.compose-photo')?.classList.toggle('tags-chip', document.activeElement !== tags && !!tags.value.trim());
   syncQuickChoices();
   syncCardPhotoAttach();
@@ -2902,8 +2908,8 @@ function lockPage(locked) {
   $('.shell').inert = locked;
   document.body.style.overflow = locked ? 'hidden' : '';
 }
-function managementButton(label, action, primary = false) {
-  const button = node('button', primary ? 'button primary' : 'button', label);
+function managementButton(label, action, primary = false, paid = false) {
+  const button = node('button', (primary ? 'button primary' : 'button') + (paid ? ' ju-paid-action' : ''), label);
   button.type = 'button'; button.addEventListener('click', action); return button;
 }
 function showManagement(title) {
@@ -3038,7 +3044,7 @@ function manageCard(id) {
       managementBody.append(managementButton('제공 배경 선택 · 구매한 사진은 기간 내 무료', () => showPhotoChoices(card)));
     }
     if (['memo', 'comment'].includes(card.kind) && !card.permanent) {
-      managementBody.append(managementButton('영구보관 · 10 ZU', () => confirmPermanent(card)));
+      managementBody.append(managementButton('영구보관 · 10 ZU', () => confirmPermanent(card), false, true));
     }
     managementBody.append(managementButton('삭제하기', () => confirmDelete(card)));
   } else {
@@ -3062,6 +3068,7 @@ function showPhotoChoices(card) {
       const button = node('button', 'button'); button.type = 'button';
       const img = node('img'); img.src = `/note/assets/${key}.jpg`; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       const ownedUntil = activePhotoEntitlement(key);
+      button.classList.toggle('ju-paid-choice', !ownedUntil);
       button.append(img, node('strong', '', title), node('small', '', ownedUntil ? `${dateLabel(ownedUntil)}까지 사용` : '구매·갱신 10 ZU · 1개월'));
       button.addEventListener('click', () => {
         const requestId = crypto.randomUUID();
@@ -3095,7 +3102,7 @@ function confirmPermanent(card) {
   managementFooter.append(managementButton('10 ZU로 영구보관', () => managementAction(
     () => purchasePermanent(card.id, requestId),
     async () => { closeManagement(); await refreshCards(stack.length > 0); await loadWorldBalance(session?.user?.id); await notificationController?.refresh?.(); }
-  ), true));
+  ), true, true));
 }
 function confirmDelete(card) {
   showManagement(card.kind === 'event' ? '이벤트를 삭제할까요?' : '카드를 삭제할까요?');
