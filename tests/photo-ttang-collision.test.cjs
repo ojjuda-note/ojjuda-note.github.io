@@ -77,11 +77,11 @@ test('body-to-body contact preserves territory defense and does not require cent
     assert.equal(p.alive,true);assert.equal(q.alive,true);
   }
 });
-test('body boundaries meet rectangular walls at portrait and small landscape scales',()=>{
+test('outer walking room reaches the last rectangular map cell at every screen scale',()=>{
   for(const scale of [20,5]){
     const w=new World(32,'solo',40);w.setViewScale(scale);w.time=1;w.itemsOn=false;
     const p=w.addPlayer({noSpawn:true,alive:true,x:.01,y:39.99,born:-1});w.step(0);
-    assert.ok(Math.abs(p.x-w.bodyRadius(p))<1e-8);assert.ok(Math.abs(p.y-(40-w.bodyRadius(p)))<1e-8);assert.equal(p.wall,true);
+    assert.ok(Math.abs(p.x-.5/w.G)<1e-8);assert.ok(Math.abs(p.y-(40-.5/w.G))<1e-8);assert.equal(p.wall,true);
   }
 });
 test('normal and slow straight movement do not hit the newly connected trail',()=>{
