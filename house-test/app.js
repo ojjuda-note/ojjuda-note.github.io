@@ -1,11 +1,11 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
 import {createRecordPanel} from './record-panel.js?v=20261005-public1';
-import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261006-wall1';
+import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261006-vine1';
 import {icon} from './icons.js?v=20261004-folder-kind1';
-import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,findFloorPlacement,canUseFloor,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,wallDragPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261006-wall1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261006-wall1';
-import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261006-wall1';
-import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-wall1';
+import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,findFloorPlacement,canUseFloor,minimumFurnitureElevation,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,wallDragPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261006-vine1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261006-vine1';
+import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261006-vine1';
+import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-vine1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
 for(const [key,value]of Object.entries({'room-width':ROOM.width+'px','room-height':ROOM.height+'px','room-clip':ROOM.clip,'world-width':(ROOM.width+40)*5+'px','world-height':(ROOM.height+40)*7+'px'}))document.documentElement.style.setProperty('--'+key,value);
 const stepX=ROOM.width+40,stepY=ROOM.height+40;
@@ -216,9 +216,9 @@ function makeFloorPlacementControl(){
 }
 function makeAccessoryHeightControl(){
  const label=element('label','bookshelf-position-control'),title=element('span','bookshelf-control-title'),value=element('output'),input=element('input');
- input.id='accessory-height';input.type='range';input.min='0';input.max=String(ROOM.wallHeight-FURNITURE[editingId].height);input.step='.01';input.value=String(draft.elevation||0);input.setAttribute('aria-label',editingId==='botanical-frame'?'액자 높이':FURNITURE[editingId].wallMounted?FURNITURE[editingId].shortLabel+' 높이':'소품 높이');label.htmlFor=input.id;
+ input.id='accessory-height';input.type='range';input.min=String(minimumFurnitureElevation(editingId,draft.direction));input.max=String(ROOM.wallHeight-FURNITURE[editingId].height);input.step='.01';input.value=String(draft.elevation||0);input.setAttribute('aria-label',editingId==='botanical-frame'?'액자 높이':FURNITURE[editingId].wallMounted?FURNITURE[editingId].shortLabel+' 높이':'소품 높이');label.htmlFor=input.id;
  const update=()=>{value.textContent=Number(draft.elevation||0).toFixed(2).replace(/0$/,'')+'칸';input.setAttribute('aria-valuetext',value.textContent);};update();
- value.setAttribute('for',input.id);title.append(element('span','',FURNITURE[editingId].wallMounted?'바닥에서 높이':'높이 · 0은 바닥'),value);label.append(title,input);
+ value.setAttribute('for',input.id);title.append(element('span','',FURNITURE[editingId].wallMounted?'바닥에서 높이':Number(input.min)>0?'바닥에서 높이':'높이 · 0은 바닥'),value);label.append(title,input);
  input.oninput=()=>{if(!editing||!draft)return;const next=normalizePlacement(editingId,{...draft,elevation:Number(input.value),mode:Number(input.value)===0?'floor':undefined});if(!canDrawDraftPose(next))return;stopFurnitureDrag();draft=next;update();const floor=$('#accessory-floor');if(floor)floor.setAttribute('aria-pressed',String(draft.mode==='floor'));renderWorld();revealFurniture();};
  return label;
 }

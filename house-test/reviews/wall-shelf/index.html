@@ -6,11 +6,11 @@
 <div class="comparison"><section class="card"><h2>기준 사진 확대</h2><img class="ref" src="/house-test/reviews/wall-shelf/reference.png"></section><section class="card"><h2>같은 선반의 세 방향</h2><div class="views"><div><canvas id="left"></canvas><small>왼쪽 벽</small></div><div><canvas id="center"></canvas><small>뒤쪽 벽</small></div><div><canvas id="right"></canvas><small>오른쪽 벽</small></div></div></section></div>
 <section class="card room-card"><header><h2>실제 방에서 크기 확인</h2><nav><button data-view="left">왼쪽 벽</button><button data-view="center">뒤쪽 벽</button><button data-view="right" aria-pressed="true">오른쪽 벽</button></nav></header><canvas id="room" class="room" width="3014" height="2088"></canvas><p class="note">선반 크기 1.2 × 0.4칸 · 판 두께 0.12칸 · 바닥에서 높이 2.65칸. 화분은 별도로 놓습니다.</p></section></main>
 <script type="module">
-import {loadBuiltInItems} from '/house-test/custom-furniture.js?v=20261006-wall1';
-import {FURNITURE} from '/house-test/furniture-catalog.js?v=20261006-wall1';
-import {furnitureGeometry} from '/house-test/furniture.js?v=20261006-wall1';
-import {paintFurniture} from '/house-test/furniture-painter.js?v=20261006-wall1';
-import {canPlaceFurniture} from '/house-test/model.js?v=20261006-wall1';
+import {loadBuiltInItems} from '/house-test/custom-furniture.js?v=20261006-vine1';
+import {FURNITURE} from '/house-test/furniture-catalog.js?v=20261006-vine1';
+import {furnitureGeometry} from '/house-test/furniture.js?v=20261006-vine1';
+import {paintFurniture} from '/house-test/furniture-painter.js?v=20261006-vine1';
+import {canPlaceFurniture} from '/house-test/model.js?v=20261006-vine1';
 const id='item-oak-wall-shelf';
 await loadBuiltInItems(['sofa',id]);
 if(!FURNITURE[id]?.wallMounted)throw new Error('벽선반 목록을 불러오지 못했어요.');

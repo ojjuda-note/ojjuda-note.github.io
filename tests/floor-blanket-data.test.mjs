@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {FLOOR_BLANKET_REGISTRATION} from '../house-test/floor-blanket-registration.js?v=20261006-wall1';
-import {blanketFloorArtwork} from '../house-test/accessory-art.js?v=20261006-wall1';
+import {FLOOR_BLANKET_REGISTRATION} from '../house-test/floor-blanket-registration.js?v=20261006-vine1';
+import {blanketFloorArtwork} from '../house-test/accessory-art.js?v=20261006-vine1';
 import {validateFloorBlanket,installFloorBlanket} from '../house-test/floor-blanket-data.js';
 const data=JSON.parse(fs.readFileSync(new URL('../house-test/assets/floor-blanket-v1.runtime.json',import.meta.url))),original=structuredClone(FLOOR_BLANKET_REGISTRATION);
 const render=()=>['left','center','right'].flatMap(direction=>[[0,0],[3,4],[7,1]].map(([x,y])=>blanketFloorArtwork({}, {direction,x,y},null,direction==='center'?{w:2,d:1.5}:{w:1.5,d:2})));
