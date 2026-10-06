@@ -104,12 +104,12 @@ g.tab='friends';H();
     await catchItem('pierce');await catchItem('ten');
     await page.evaluate(()=>breakoutTest.step(.24));
     // Capture the real renderer after actual item drops and paddle catches.
-    await page.locator('#gov .gbox').screenshot({path:process.env.BREAKOUT_SCREENSHOT||'/workspace/scratch/ojjuda-breakout-items-20261006.png'});
+    await page.locator('#gov .gbox').screenshot({path:process.env.BREAKOUT_SCREENSHOT||path.join(require('node:os').tmpdir(),'ojjuda-breakout-items-20261006.png')});
    }
    if(width===390){
     await page.evaluate(()=>{const r=breakoutTest.current;r.game.testStage(100);r.game.draw(r.ctx);});
     assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().bricks.length),1000);
-    await page.locator('#gov .gbox').screenshot({path:'/workspace/scratch/ojjuda-breakout-stage100-20261006.png'});
+    await page.locator('#gov .gbox').screenshot({path:path.join(require('node:os').tmpdir(),'ojjuda-breakout-stage100-20261006.png')});
     const metrics=await page.evaluate(()=>{
      const r=breakoutTest.current,g=r.game,s=g.inspect(),brick=s.bricks.find(b=>!b.solid),transform=r.ctx.getTransform(),x=Math.floor((brick.x+brick.w/2)*transform.a+transform.e),y=Math.floor((brick.y+brick.h/2)*transform.d+transform.f);
      const before=Array.from(r.ctx.getImageData(x,y,1,1).data);brick.on=false;g.draw(r.ctx);
