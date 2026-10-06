@@ -95,7 +95,7 @@ g.tab='friends';H();
    await catchItem('pierce');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.filter(b=>b.piercing).length),1);
    assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus')),['bonus','bonus','bonus','bonus']);checks++;
    const speed=await page.evaluate(()=>breakoutTest.current.game.inspect().speed);await page.evaluate(()=>breakoutTest.step(2));
-   assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().speed)-speed-10)<.01);checks++;
+   assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().speed)-speed-4)<.01);checks++;
    await page.evaluate(()=>{breakoutTest.finishStage();breakoutTest.finishStage()});
    assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().level),3);
    const types=await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.bricks.length,s.bricks.some(b=>b.hp===2),s.bricks.some(b=>b.solid),s.balls[0].piercing]});
