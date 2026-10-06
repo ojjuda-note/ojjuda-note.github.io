@@ -9,7 +9,7 @@ window.calls=[];window.openedGames=[];window.fail=false;window.viewer='a';window
 function query(table){const filters=[],orders=[];let from=0,to=999;const q={select(){return q},eq(k,v){filters.push([k,v]);return q},in(k,v){filters.push([k,v]);return q},lte(){return q},order(k,o){orders.push([k,o]);return q},range(a,b){from=a;to=b;return q},limit(n){to=n-1;return q},insert(){return q},delete(){return q},then(resolve){calls.push({table,filters,orders,from,to});if(window.fail){window.fail=false;return Promise.resolve({error:{message:'offline'}}).then(resolve);}let data=table==='world_board_likes'?[]:items.map(r=>({...r,type:r.kind,thumb_path:r.kind+'/'+r.id+'.jpg'})).filter(r=>filters.every(([k,v])=>Array.isArray(v)?v.includes(r[k]):r[k]===v));data.sort((a,b)=>{for(const[k,o]of orders){const diff=a[k]<b[k]?-1:a[k]>b[k]?1:0;if(diff)return o.ascending?diff:-diff;}return 0;});return Promise.resolve({data:data.slice(from,to+1)}).then(resolve);}};return q;}
 window.client={
  from:query,
- rpc(name,{p_game}){calls.push({rpc:name,game:p_game});if(window.slowGame===p_game)return new Promise(resolve=>{window.finishSlow=()=>{window.slowGame=null;resolve({data:[]});};});if(name!=='community_game_ranking')return Promise.resolve({error:{message:'unexpected RPC'}});if(window.personalFail&&p_game==='carom4_easy'){window.personalFail=false;return Promise.resolve({error:{message:'offline'}});}if(p_game==='runner'&&!window.rankRetried){window.rankRetried=true;return Promise.resolve({error:{message:'offline'}});}const record=(window.personalRecords||[]).find(row=>row.game===p_game);return Promise.resolve({data:p_game==='mole'?[{nick:'긴닉네임 <img src=x onerror=alert(1)>',score:1234}]:record?[{nick:'다른 회원',score:record.score}]:[]});},
+ rpc(name,{p_game}){calls.push({rpc:name,game:p_game});if(window.slowGame===p_game)return new Promise(resolve=>{window.finishSlow=()=>{window.slowGame=null;resolve({data:[]});};});if(name!=='community_game_monthly_ranking')return Promise.resolve({error:{message:'unexpected RPC'}});if(window.personalFail&&p_game==='carom4_easy'){window.personalFail=false;return Promise.resolve({error:{message:'offline'}});}if(p_game==='runner'&&!window.rankRetried){window.rankRetried=true;return Promise.resolve({error:{message:'offline'}});}const record=(window.personalRecords||[]).find(row=>row.game===p_game);return Promise.resolve({data:p_game==='mole'?[{nick:'긴닉네임 <img src=x onerror=alert(1)>',score:1234}]:record?[{nick:'다른 회원',score:record.score}]:[]});},
  schema(){return {rpc(){return Promise.resolve({data:[{id:'card-1',body:'오늘도 수고했어요',like_count:10}]});}};},
  storage:{from(){return {createSignedUrls(paths){return Promise.resolve({data:paths.map(path=>({path,signedUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}))});},createSignedUrl(){return Promise.resolve({data:{signedUrl:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}});}};}}
 };
@@ -74,6 +74,20 @@ for(const [game,score] of [['matgo','12,345G'],['runner','567점'],['stacker','0
  assert.equal(await page.locator(`[data-game=${game}] .board-leader-score`).innerText(),score);
 }
 assert.equal(await page.locator('[data-game=mole] .board-leader-score').innerText(),'1,234점','highest community score is shown');
+assert.equal(await page.locator('.board-rank-caption').innerText(),'이번 달');
+for(const width of [280,320,390,768]){
+ await page.setViewportSize({width,height:844});
+ for(const value of [1234567,9007199254740991]){
+  await page.evaluate(value=>{personalRecords.find(r=>r.game==='matgo').score=value;return OjjudaBoard.refresh();},value);
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const fit=await page.locator('[data-game=matgo] .board-leader-score').evaluate(cell=>{
+   const text=cell.querySelector('span'),r=text.getBoundingClientRect(),c=cell.getBoundingClientRect();
+   return {visible:text.scrollWidth<=text.clientWidth+1,inside:r.left>=c.left&&r.right<=c.right+1,font:parseFloat(getComputedStyle(text).fontSize)};
+  });
+  assert.ok(fit.visible&&fit.inside,JSON.stringify({width,value,fit}));assert.ok(fit.font>=11);
+ }
+}
+await page.setViewportSize({width:390,height:844});
 const registryOrder=await page.evaluate(()=>Object.keys(worldRankGames()));
 const ranked=['mole','matgo','runner','stacker','carom4_easy','screw_box','screw_flat'];
 const displayedOrder=()=>page.locator('.board-leader').evaluateAll(rows=>rows.map(row=>row.dataset.game));
@@ -81,17 +95,17 @@ const scoresFirst=ids=>[...registryOrder.filter(id=>ids.includes(id)),...registr
 assert.deepEqual(await displayedOrder(),scoresFirst(ranked),'games with records come first, including a valid zero score, with stable order in both groups');
 assert.deepEqual(await page.locator('.board-rank-page').first().locator('.board-leader').evaluateAll(rows=>rows.map(row=>row.dataset.game)),scoresFirst(ranked).slice(0,3),'the first ranking page shows recorded games');
 
-assert.equal(await page.locator('[data-game=chess_easy] .board-leader-empty').innerText(),'연승 기록 없음');
-assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length>0),true);
-const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length);
+assert.equal(await page.locator('[data-game=chess_easy] .board-leader-empty').innerText(),'이번 달 기록 없음');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_monthly_ranking').length>0),true);
+const personalCalls=await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_monthly_ranking').length);
 await page.evaluate(()=>{document.body.classList.add('gaming');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=999;document.body.classList.remove('gaming');});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='999점');
-assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_ranking').length),personalCalls+29,'public records refresh for every game on return');
+assert.equal(await page.evaluate(()=>calls.filter(c=>c.rpc==='community_game_monthly_ranking').length),personalCalls+29,'public records refresh for every game on return');
 await page.evaluate(()=>{document.body.classList.add('matgo-open');});
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='matgo').score=7500;document.body.classList.remove('matgo-open');});
 await page.waitForFunction(()=>document.querySelector('[data-game=matgo] .board-leader-score').textContent==='7,500G');
-assert.ok((await page.locator('[data-game=matgo] .board-leader-nick').getAttribute('title')).includes('현재 보유 골드'));
+assert.ok((await page.locator('[data-game=matgo] .board-leader-nick').getAttribute('title')).includes('이번 달 보유 골드'));
 // A score that finishes saving after the game closes must update the board too.
 const previousPage=await page.locator('.board-leaders').getAttribute('data-rank-page');
 await page.evaluate(()=>{personalRecords.find(r=>r.game==='runner').score=1001;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner:'a'}}));});
@@ -110,7 +124,7 @@ const sharedScores=await page.locator('.board-leader').allTextContents();
 await page.evaluate(()=>{viewer='b';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='b'});});
 await page.waitForFunction(()=>document.querySelector('[data-game=runner] .board-leader-score').textContent==='1,001점');
 assert.deepEqual(await page.locator('.board-leader').allTextContents(),sharedScores,'a different member sees exactly the same public nicknames and scores');
-assert.equal(await page.locator('.board-rank-caption').innerText(),'현재 연승·골드 / 오늘 점수');
+assert.equal(await page.locator('.board-rank-caption').innerText(),'이번 달');
 await page.evaluate(()=>{viewer='a';OjjudaBoard.mount(document.querySelector('#board'),{client,owner:viewer,games:worldRankGames(),authorized:()=>viewer==='a'});});
 await page.evaluate(()=>{window.personalRecords=[];return OjjudaBoard.refresh();});
 assert.equal(await page.locator('[data-game=runner] .board-leader-score').innerText(),'—','new day or cleared records cannot keep a previous score');
