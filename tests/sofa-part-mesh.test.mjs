@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';
-import {SOFA_V1} from '../house-test/sofa-v1-registration.js?v=20261006-floordata1';
+import {SOFA_V1} from '../house-test/sofa-v1-registration.js?v=20261006-sofaparts1';
 import {validateSofaRegistration,installSofaRegistration} from '../house-test/sofa-registration-data.js';
 import {sofaArtwork,sofaPoseValid,sofaForegroundLayers} from '../house-test/sofa-art.js';
 import {projectMesh} from '../house-test/picture-mesh.js';
