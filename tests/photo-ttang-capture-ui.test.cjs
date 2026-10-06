@@ -52,10 +52,17 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
    for(const p of world.players){p.alive=false;p.trail=[];p.pts=[];p.tc=new Map();p.bb=[1e9,1e9,-1,-1];}
    Object.assign(me,{alive:true,x:3,y:3,born:-10,shieldT:50,freezeT:0,ang:0,target:0});
    for(let y=20;y<40;y++)for(let x=20;x<40;x++)world.setOwn(y*world.GW+x,me.id);
-   mobs=[];buildLayers();
+   const trappedBot=world.addPlayer({noSpawn:true,alive:true,bot:true,color:2,name:'포획 테스트',x:12,y:12,born:-1});
+   world.setOwn(world.si(28.5,38.5),trappedBot.id);
+   const trappedMob={type:'bounce',x:12,y:15,v:4.2,vx:4.2,vy:0,r:.75,ph:0,alive:true,born:-1};
+   const outsideMob={...trappedMob,x:28.5,y:38.5};
+   mobs=[trappedMob,outsideMob];respawnQ=[];buildLayers();
    const begin=performance.now();
    for(const [x,y] of [[27,3],[27,37],[3,37],[3,3]]){const dx=x-me.x,dy=y-me.y,n=Math.ceil(Math.hypot(dx,dy)/.05);for(let i=0;i<n;i++){const px=me.x,py=me.y;me.x+=dx/n;me.y+=dy/n;world.visit(me,px,py);}}
    const captured=world.events.some(e=>e.t==='capture'&&e.gained>50000),captureMs=performance.now()-begin;
+   updateMobs(.03);
+   const trapped={botDead:!trappedBot.alive,mobDead:!trappedMob.alive,outsideAlive:outsideMob.alive,kills:me.kills,
+    botRespawn:trappedBot.respawnAt-world.time,mobRespawn:respawnQ[0]?.at-world.time};
    let calls=0;const restore=[];
    for(const c of [octx,osctx,mkx])for(const name of ['clearRect','fillRect']){const original=c[name];c[name]=function(...args){calls++;return original.apply(this,args)};restore.push(()=>c[name]=original);}
    const start=performance.now();flushDirty();const renderMs=performance.now()-start;restore.forEach(fn=>fn());
@@ -74,10 +81,11 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
    world.setOwn(world.si(8,8),0);flushDirty();
    const small=mkx.getImageData(80,80,1,1).data[3]===0;
    handleEvents();me.speed=0;paused=false;over=true;
-   return {captured,calls,captureMs,renderMs,equal,small,time:world.time};
+   return {captured,trapped,calls,captureMs,renderMs,equal,small,time:world.time};
   });
   console.log('Capture rendering:',result);
   assert.equal(result.captured,true,'real closed trail acquires a large territory');
+  assert.deepEqual(result.trapped,{botDead:true,mobDead:true,outsideAlive:true,kills:1,botRespawn:30,mobRespawn:30},'enclosed computers and mobs die and use the existing respawn timers');
   assert.equal(result.small,true,'small updates clear the photo mask');
   assert.equal(result.equal,true,'batched territory, shadows and photo mask preserve every pixel');
   assert.ok(result.calls<5000,'a large capture must not submit hundreds of thousands of canvas operations');
