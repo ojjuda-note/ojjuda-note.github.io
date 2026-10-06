@@ -79,7 +79,7 @@ g.tab='friends';H();
     assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().paddle.x)-50)<1,'a real touch drag on the lower strip moves the paddle');
     assert.equal(await page.evaluate(()=>scrollY),scroll,'touch dragging does not scroll the page');
     await touch.detach();
-    await page.locator('#gov .gbox').screenshot({path:'/workspace/scratch/ojjuda-breakout-touchpad-test.png'});
+    await page.locator('#gov .gbox').screenshot({path:path.join(require('node:os').tmpdir(),'ojjuda-breakout-touchpad-test.png')});
    }
    async function catchItem(kind){
     const x=await page.evaluate(kind=>breakoutTest.hit(kind).x,kind);

@@ -9,7 +9,8 @@
   if(!target)return alert(text);
   target.textContent=text;target.classList.add('show');clearTimeout(message.timer);message.timer=setTimeout(()=>target.classList.remove('show'),4500);
  }
- function close(){
+ function close(force=false){
+  if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){message(new Error('구매 결과를 확인 중이에요. 잠시만 기다려 주세요.'));return false;}
   generation++;unsubscribe?.();unsubscribe=null;clearInterval(watcher);clearInterval(refreshTimer);
   if(!overlay)return;
   try{frame?.contentWindow?.OjjudaPhotoTtang?.menu();}catch{}
@@ -36,8 +37,8 @@
    done.style.cssText='font:inherit;color:inherit;border:1px solid #ffffff40;background:#ffffff22;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';
    frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261006-capture1';frame.allow='vibrate';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
    bar.append(title,done);overlay.append(bar,frame);document.body.append(overlay);document.body.classList.add('gaming','photo-ttang-open');done.focus();
-   unsubscribe=access.subscribe(error=>{close();message(error);});
-   watcher=setInterval(()=>{if(!authorized()||!access.allowed())close();},500);
+   unsubscribe=access.subscribe(error=>{close(true);message(error);});
+   watcher=setInterval(()=>{if(!authorized()||!access.allowed())close(true);},500);
    refreshTimer=setInterval(()=>{void access.refresh().catch(()=>{});},30000);
   }catch(error){message(error);}finally{opening=false;}
  }

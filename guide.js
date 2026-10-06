@@ -1,5 +1,20 @@
 (() => {
   'use strict';
+  // Keep changing shop terms in the small guide script, before building the search index.
+  const costs = document.querySelector('#cost-table tbody');
+  if (costs) {
+    const rows = [...costs.rows];
+    const cosmetics = rows.find(row => row.cells[0]?.textContent === 'ZU 상점 꾸미기');
+    if (cosmetics) cosmetics.cells[2].textContent = '구매일부터 1개월, 자동 연장 없음. 이미 카드에 붙인 스티커는 그대로 남아요.';
+    for (const [label, price, note] of [
+      ['포토땅따먹기 이어하기', '하트 1개 3 ZU', '확보한 땅을 유지해요. 하트는 최대 3개예요.'],
+      ['포토땅따먹기 시간 연장', '30초 5 ZU', '현재 판의 남은 시간을 늘려요.'],
+      ['포토땅따먹기 적 감속', '5초 3 ZU', '몬스터와 컴퓨터가 절반 속도로 움직여요.']
+    ]) {
+      const row = costs.insertRow();
+      [label, price, note].forEach((text, index) => { const cell = row.insertCell(); cell.textContent = text; if (index === 1) cell.className = 'cost'; });
+    }
+  }
   const search = document.getElementById('guide-search');
   const results = document.getElementById('search-results');
   const clear = document.getElementById('search-clear');
