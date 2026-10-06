@@ -15,7 +15,7 @@ try{
  await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.hostname!=='photo.test')return route.fulfill({body:''});if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:fixture});const f=path.join(root,url.pathname);return fs.existsSync(f)?route.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':'text/html'}):route.fulfill({status:404,body:''});});
  await page.goto('https://photo.test/');const frame=page.frames().find(f=>f.url().includes('/games/'));
  frame.on('pageerror',e=>errors.push(e.message));await frame.waitForFunction(()=>!!window.OjjudaPhotoHelp);await frame.locator('#grid .cell').first().click();
- await frame.evaluate(()=>{sound=false;window.confirm=()=>true;paused=true;startWait=0;world.time=10;endAt=100;lives=0;me.alive=false;over=true;});
+ await frame.evaluate(()=>{sound=false;window.confirm=()=>{throw Error('Item purchases must not ask for confirmation')};paused=true;startWait=0;world.time=10;endAt=100;lives=0;me.alive=false;over=true;});
  const before=await frame.evaluate(()=>({owned:Array.from(world.own),count:world.counts[me.id]}));
  await frame.getByRole('button',{name:'ZU로 도움받기',exact:true}).click();await frame.locator('[data-photo-help=heart]').evaluate(b=>{b.click();b.click()});
  assert.equal(await frame.evaluate(()=>OjjudaPhotoTtang.canLeave()),false);await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy()&&lives===1);
@@ -25,7 +25,8 @@ try{
  await frame.evaluate(()=>{endAt=world.time;over=true;paused=true;OjjudaPhotoHelp.open()});
  const timeBefore=await frame.evaluate(()=>world.time);await frame.locator('[data-photo-help=time]').click();await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy()&&!over);await frame.evaluate(()=>paused=true);assert.equal(await frame.evaluate(()=>endAt),timeBefore+30);assert.equal(await page.evaluate(()=>fixtureCoins),22);
  // Lost response retains the request, then applies the paid effect exactly once.
- await page.evaluate(()=>fixtureLost=true);await frame.getByRole('button',{name:'ZU로 도움받기',exact:true}).click();await frame.locator('[data-photo-help=slow]').click();await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy()&&document.querySelector('.photo-help [role=status]').textContent.includes('결과를 확인하지'));
+ const quickSlow=frame.getByRole('button',{name:'적 감속 5초 · 3 ZU',exact:true});
+ await page.evaluate(()=>fixtureLost=true);await quickSlow.click();await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy()&&document.querySelector('.photo-help [role=status]').textContent.includes('결과를 확인하지'));
  assert.equal(await page.evaluate(()=>fixtureCoins),19);await frame.locator('[data-photo-help=slow]').click();await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy()&&!paused);await frame.evaluate(()=>paused=true);assert.equal(await page.evaluate(()=>fixtureCoins),19);
  const calls=await page.evaluate(()=>fixtureCalls);assert.equal(calls[2].p_request_id,calls[3].p_request_id);
  const slow=await frame.evaluate(()=>{
@@ -50,17 +51,13 @@ try{
  assert.equal(await frame.evaluate(()=>endAt),frozen.end+30,'extension adds to the unexpired remaining time');
  assert.equal(await page.evaluate(()=>fixtureCalls.length),debitBefore+1,'repeated shortcut taps only purchase once');
  assert.equal(await page.evaluate(()=>fixtureCoins),14);assert.equal(await quickTime.isVisible(),false,'warning clears after extension');
- // Cancelling never debits; the paused panel offers Continue.
- await frame.evaluate(()=>{endAt=world.time+7;paused=false;window.confirm=()=>false;hud()});
- await quickTime.click();await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy());
- assert.equal(await page.evaluate(()=>fixtureCalls.length),debitBefore+1);assert.equal(await frame.evaluate(()=>paused),true);
- await frame.getByRole('button',{name:'계속하기',exact:true}).click();
- await frame.evaluate(()=>{paused=true;endAt=world.time+80;window.confirm=()=>true;hud()});
- const quickSlow=frame.getByRole('button',{name:'적 감속 5초 · 3 ZU',exact:true});
+ // Successful shortcuts never open a purchase or help panel.
+ assert.equal(await frame.locator('.photo-help').count(),0);
+ await frame.evaluate(()=>{paused=true;endAt=world.time+80;hud()});
  assert.equal(await quickSlow.isEnabled(),true);await quickSlow.click();
  await frame.waitForFunction(()=>!OjjudaPhotoHelp.isBusy()&&!paused);await frame.evaluate(()=>{paused=true;hud()});
  assert.equal(await frame.getByRole('button',{name:/적 감속 중/}).isEnabled(),false,'active effect cannot be bought twice');
- assert.equal(await page.evaluate(()=>fixtureCoins),11);
+ assert.equal(await page.evaluate(()=>fixtureCoins),11);assert.equal(await frame.locator('.photo-help').count(),0);
  await frame.evaluate(()=>{world.time+=5.1;hud()});assert.equal(await quickSlow.isEnabled(),true,'can use again after five gameplay seconds');
  for(const width of [320,390,1280]){
   await page.setViewportSize({width,height:844});await frame.evaluate(()=>{paused=false;endAt=world.time+9;hud()});
@@ -85,5 +82,5 @@ try{
  await page.waitForFunction(()=>typeof finishRank==='function');assert.equal(await page.evaluate(()=>rankCalls.length),3,'duplicate in-flight clear is coalesced');
  await page.evaluate(()=>{rankDispose();document.querySelector('iframe').remove();finishRank()});
  await page.waitForFunction(()=>savedEvents===2);
- assert.deepEqual(errors,[]);console.log('PASS: ten-second warning shortcut, purchase-time pause, cancellation, repeat-tap guard, direct slow cooldown; real-engine heart continuation preserves territory; 30-second extension; five-second half-speed mobs; duplicate clicks; paid response recovery; 320/390/1280 layouts');
+ assert.deepEqual(errors,[]);console.log('PASS: ten-second warning shortcut, purchase-time pause, no confirmation or success modal, repeat-tap guard, direct slow cooldown; real-engine heart continuation preserves territory; 30-second extension; five-second half-speed mobs; duplicate clicks; paid response recovery; 320/390/1280 layouts');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
