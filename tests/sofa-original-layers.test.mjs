@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {validateSofaRegistration,installSofaRegistration} from '../house-test/sofa-registration-data.js?v=20261006-assembly1';
-import {sofaArtwork,sofaForegroundLayers,sofaPoseValid} from '../house-test/sofa-art.js?v=20261006-assembly1';
-import {floorPoint,roomPoint} from '../house-test/model.js?v=20261006-assembly1';
+import {validateSofaRegistration,installSofaRegistration} from '../house-test/sofa-registration-data.js?v=20261006-wall1';
+import {sofaArtwork,sofaForegroundLayers,sofaPoseValid} from '../house-test/sofa-art.js?v=20261006-wall1';
+import {floorPoint,roomPoint} from '../house-test/model.js?v=20261006-wall1';
 const data=JSON.parse(fs.readFileSync(new URL('../house-test/assets/sofa-registration-v10.runtime.json',import.meta.url)));
 const item={width:3.5,depth:1.5,height:1.8};
 installSofaRegistration(validateSofaRegistration(data));

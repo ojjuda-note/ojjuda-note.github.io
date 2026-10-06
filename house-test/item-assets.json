@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "assets": {
     "open-book": {
       "file": "open-book-v1.runtime.json",
@@ -68,6 +68,22 @@
     "floor-blanket": {
       "file": "floor-blanket-v1.runtime.json",
       "revision": "e2e6a987089eba44"
+    },
+    "item-oak-wall-shelf": {
+      "file": "oak-wall-shelf-v1.runtime.json",
+      "revision": "cbf2e748506c9cf2",
+      "catalog": {
+        "label": "원목 벽선반",
+        "shortLabel": "벽선반",
+        "width": 1.2,
+        "depth": 0.4,
+        "height": 0.12,
+        "layer": "surface",
+        "wallMounted": true,
+        "preview": "assets/oak-wall-shelf-preview-v1.png",
+        "order": 1,
+        "hidden": false
+      }
     }
   }
 }

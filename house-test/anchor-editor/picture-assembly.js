@@ -1,8 +1,8 @@
 // Original side pictures stay horizontal. One continuous body picture meets
 // the measured wooden support tops. The editor and installed item share this.
-import {roomPoint} from './room-guide.js?v=20261006-assembly1';
-import {homography,project,validQuad,drawWarp} from './warp.js?v=20261006-assembly1';
-import {normalizePartSource} from './parts.js?v=20261006-assembly1';
+import {roomPoint} from './room-guide.js?v=20261006-wall1';
+import {homography,project,validQuad,drawWarp} from './warp.js?v=20261006-wall1';
+import {normalizePartSource} from './parts.js?v=20261006-wall1';
 
 const fail=message=>{throw new Error(message);};
 const finite=(n,min,max)=>Number.isFinite(n)&&n>=min&&n<=max;

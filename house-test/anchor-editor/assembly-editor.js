@@ -1,5 +1,5 @@
-import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages,approvedSofaAssembly} from './picture-assembly.js?v=20261006-assembly1';
-import {alphaBounds} from './cutout.js?v=20261006-assembly1';
+import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages,approvedSofaAssembly} from './picture-assembly.js?v=20261006-wall1';
+import {alphaBounds} from './cutout.js?v=20261006-wall1';
 
 const clone=structuredClone;
 const labels={near:'가까운 옆판',body:'몸통',far:'먼 옆판'};

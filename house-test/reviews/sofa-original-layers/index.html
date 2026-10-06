@@ -9,9 +9,9 @@
 <section><h2>방에서 크기 확인</h2><label>벽과 간격 <input id="gap" type="range" min="0" max="3" step=".5" value="0"><output id="gap-value">0칸</output></label><label>앞뒤 위치 <input id="depth" type="range" min="0" max="3.5" step=".5" value="3"><output id="depth-value">3칸</output></label><button id="reset">기준 위치</button><div class="room"><img src="../../assets/room-day-v3.webp" alt="실제 방 배경"><canvas id="room"></canvas></div></section>
 <section><h2>잘라 쓴 원본 부위</h2><div class="parts"><div><img src="../../assets/sofa-original-layers-v1/side.png" alt="옆판, 나무판, 다리"><small>같은 옆판을 앞뒤로 겹침</small></div><div><img src="../../assets/sofa-original-layers-v1/body.png" alt="한 장으로 유지한 소파 몸통"><small>기울어진 몸통 한 장</small></div></div></section>
 </main><script type="module">
-import {originalSofaArtwork} from '../../sofa-original-layers.js?v=20261006-assembly1';
-import {paintFurniture} from '../../furniture-painter.js?v=20261006-assembly1';
-import {FURNITURE,itemSize,contactBounds} from '../../furniture-catalog.js?v=20261006-assembly1';
+import {originalSofaArtwork} from '../../sofa-original-layers.js?v=20261006-wall1';
+import {paintFurniture} from '../../furniture-painter.js?v=20261006-wall1';
+import {FURNITURE,itemSize,contactBounds} from '../../furniture-catalog.js?v=20261006-wall1';
 const ref=new Image();ref.src='../../references/home-style.png';await ref.decode();document.querySelector('#reference').getContext('2d').drawImage(ref,30,515,340,385,0,0,680,770);
 const gap=document.querySelector('#gap'),depth=document.querySelector('#depth');let revision=0;
 async function render(){const current=++revision;const p={direction:'left',x:+gap.value,y:+depth.value};const g=originalSofaArtwork(FURNITURE.sofa,p,contactBounds('sofa',p),itemSize('sofa','left'));

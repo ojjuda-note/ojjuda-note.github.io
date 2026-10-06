@@ -69,26 +69,26 @@ const root=path.resolve(__dirname,'..');
   manifestUnavailable=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['chair']));assert.equal(requests.length,start,'unavailable manifest preserves the last valid revision and cached artwork');await page.close();manifestUnavailable=false;changed=false;
   changedSofa=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['sofa']));
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets.sofa.file],'same app URL loads only the revised sofa data');
-  assert.equal(await page.evaluate(async()=>{const {SOFA_V1}=await import('/house-test/sofa-v1-registration.js?v=20261006-assembly1');return SOFA_V1.right.source;}),'manifest-refresh-test','the rendering registration receives the downloaded data');
+  assert.equal(await page.evaluate(async()=>{const {SOFA_V1}=await import('/house-test/sofa-v1-registration.js?v=20261006-wall1');return SOFA_V1.right.source;}),'manifest-refresh-test','the rendering registration receives the downloaded data');
   await page.close();changedSofa=false;
   page=await open(context,'first');await page.evaluate(()=>loadItems(['sofa']));await page.close();
   changedCushions=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['sage-cushion']));
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets['sofa-cushions'].file],'same app URL fetches only changed cushion data');
   assert.deepEqual(await page.evaluate(async()=>{
-   const {SOFA_CUSHION_SEATS}=await import('/house-test/sofa-cushion-placement.js?v=20261006-assembly1');
-   const {SOFA_ACCESSORY_IMAGES}=await import('/house-test/sofa-v1-registration.js?v=20261006-assembly1');
-   const {FURNITURE}=await import('/house-test/furniture-catalog.js?v=20261006-assembly1');
+   const {SOFA_CUSHION_SEATS}=await import('/house-test/sofa-cushion-placement.js?v=20261006-wall1');
+   const {SOFA_ACCESSORY_IMAGES}=await import('/house-test/sofa-v1-registration.js?v=20261006-wall1');
+   const {FURNITURE}=await import('/house-test/furniture-catalog.js?v=20261006-wall1');
    return [SOFA_CUSHION_SEATS['sage-cushion'].u,SOFA_ACCESSORY_IMAGES['sage-cushion'].center.sourceRect[0],FURNITURE['sage-cushion'].preferred.x];
   }),[1.8,1,4.42],'rendering and new-placement metadata use the downloaded cushion registration');
   await page.close();changedCushions=false;
   changedBlanket=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['blanket-floor']));
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets['sofa-blanket'].file],'same app URL fetches only changed blanket data');
-  assert.equal(await page.evaluate(async()=>{const {getSofaBlanketDrape}=await import('/house-test/sofa-blanket-drape.js?v=20261006-assembly1');return getSofaBlanketDrape('center').centerU;}),.82,'the renderer uses downloaded fold registration');
+  assert.equal(await page.evaluate(async()=>{const {getSofaBlanketDrape}=await import('/house-test/sofa-blanket-drape.js?v=20261006-wall1');return getSofaBlanketDrape('center').centerU;}),.82,'the renderer uses downloaded fold registration');
   await page.close();changedBlanket=false;
   page=await open(context,'first');await page.evaluate(()=>loadItems(['blanket-floor']));await page.close();
   changedFloor=true;page=await open(context,'first');start=requests.length;await page.evaluate(()=>loadItems(['blanket-floor']));
   assert.deepEqual(requests.slice(start).map(r=>path.basename(r.path)),[builtInAssets['floor-blanket'].file],'same app URL fetches only changed floor blanket data');
-  assert.equal(await page.evaluate(async()=>{const {FLOOR_BLANKET_REGISTRATION}=await import('/house-test/floor-blanket-registration.js?v=20261006-assembly1');return FLOOR_BLANKET_REGISTRATION.center.sourceCorners[0][0];}),267,'rendering registration uses downloaded floor corners');
+  assert.equal(await page.evaluate(async()=>{const {FLOOR_BLANKET_REGISTRATION}=await import('/house-test/floor-blanket-registration.js?v=20261006-wall1');return FLOOR_BLANKET_REGISTRATION.center.sourceCorners[0][0];}),267,'rendering registration uses downloaded floor corners');
   await page.close();changedFloor=false;
   // Correct URL, wrong but syntactically valid bytes: dimensions alone cannot
   // detect this stale entry. Repair it without requiring the user to retry.

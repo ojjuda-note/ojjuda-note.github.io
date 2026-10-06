@@ -1,13 +1,13 @@
 // The installed room uses the editor's own 2D drawing routines and room grid.
-import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261006-assembly1';
-import {validQuad,drawWarp} from './warp.js?v=20261006-assembly1';
-import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261006-assembly1';
-import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261006-assembly1';
-import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-assembly1';
-import {drawDrapedLayer} from './draped-parts.js?v=20261006-assembly1';
-import {alphaBounds} from './cutout.js?v=20261006-assembly1';
-import {pictureShape} from './shape-check.js?v=20261006-assembly1';
-import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages} from './picture-assembly.js?v=20261006-assembly1';
+import {ROOM,roomPoint,roomPlaneWorld} from './room-guide.js?v=20261006-wall1';
+import {validQuad,drawWarp} from './warp.js?v=20261006-wall1';
+import {normalizeMesh,validateMesh,projectMesh,drawMesh} from './mesh.js?v=20261006-wall1';
+import {normalizePictureLayers,validatePictureLayers,projectPictureLayers,drawPictureLayers} from './layered-mesh.js?v=20261006-wall1';
+import {normalizeSofaBlanketDrape} from '../sofa-blanket-drape.js?v=20261006-wall1';
+import {drawDrapedLayer} from './draped-parts.js?v=20261006-wall1';
+import {alphaBounds} from './cutout.js?v=20261006-wall1';
+import {pictureShape} from './shape-check.js?v=20261006-wall1';
+import {normalizeAssembly,assemblyCheck,assemblyGeometry,drawAssembly,prepareAssemblyImages} from './picture-assembly.js?v=20261006-wall1';
 
 const preparedPictures=new WeakMap();
 
