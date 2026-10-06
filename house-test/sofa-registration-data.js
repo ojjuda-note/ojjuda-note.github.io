@@ -1,5 +1,5 @@
-import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-floordata1';
-import {normalizeMesh,projectMesh} from './picture-mesh.js?v=20261006-floordata1';
+import {SOFA_V1} from './sofa-v1-registration.js?v=20261006-sofaparts1';
+import {normalizeMesh,projectMesh} from './picture-mesh.js?v=20261006-sofaparts1';
 const directions=['left','center','right'],parts=['left-arm','body','right-arm'],slots=['slot:surface','slot:front'];
 const invalid=()=>{throw new Error('Invalid sofa registration');};
 export function validateSofaRegistration(value){

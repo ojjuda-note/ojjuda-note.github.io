@@ -1,6 +1,6 @@
-import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261006-floordata1';
-import {prepareRuntime} from './anchor-editor/runtime.js?v=20261006-floordata1';
-import {openHouseTest} from './host.js?v=20261006-floordata1';
+import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261006-sofaparts1';
+import {prepareRuntime} from './anchor-editor/runtime.js?v=20261006-sofaparts1';
+import {openHouseTest} from './host.js?v=20261006-sofaparts1';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
@@ -10,7 +10,7 @@ export function openFurnitureStudio({owner,authorized}){
  const top=document.createElement('div');top.style.cssText='display:flex;gap:10px;align-items:center;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;flex-shrink:0;background:#fffaf4;color:#65526f;font-size:12px';
  const status=document.createElement('span');status.textContent='가구 제작실을 준비하고 있어요…';status.style.flex='1';
  const close=document.createElement('button');close.textContent='제작실 닫기';close.style.cssText='min-height:36px;border:1px solid #dbcee5;border-radius:10px;padding:6px 10px;background:#fffaf4;color:#65526f;cursor:pointer';
- const frame=document.createElement('iframe');frame.title='관리자 가구 제작실';frame.src=new URL('./anchor-editor/index.html?v=20261006-floordata1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+ const frame=document.createElement('iframe');frame.title='관리자 가구 제작실';frame.src=new URL('./anchor-editor/index.html?v=20261006-sofaparts1',import.meta.url).href;frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
  top.append(status,close);overlay.append(top,frame);document.body.append(overlay);document.body.style.overflow='hidden';close.focus();
  let channel,closed=false,nestedClose=null,busy=false,closing=null;
  function cleanup(){if(closed)return;closed=true;nestedClose?.();clearInterval(watcher);clearTimeout(deadline);clearTimeout(closing?.timer);channel?.port1.postMessage({type:'dispose'});channel?.port1.close();overlay.remove();document.body.style.overflow=oldOverflow;window.removeEventListener('keydown',escape,true);if(lastFocus?.isConnected)lastFocus.focus();if(activeClose===cleanup)activeClose=null;}
