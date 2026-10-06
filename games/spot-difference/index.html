@@ -9,10 +9,10 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23425bea'/%3E%3Ccircle cx='28' cy='27' r='15' fill='none' stroke='white' stroke-width='6'/%3E%3Cpath d='M39 39L52 52' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css?v=20261005-celebrate1">
   <script src="puzzles.js?v=20261003-hint1" defer></script>
-  <script src="game-core.js?v=20261003-hint1" defer></script>
+  <script src="game-core.js?v=20261006-prices1" defer></script>
   <script src="vendor/supabase.js" defer></script>
-  <script src="wallet.js?v=20261005-ranking1" defer></script>
-  <script src="app.js?v=20261005-ranking1" defer></script>
+  <script src="wallet.js?v=20261006-prices1" defer></script>
+  <script src="app.js?v=20261006-prices1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261003-coins1">
@@ -36,7 +36,7 @@
       <button id="wallet-login" class="text-button">로그인</button><button id="wallet-refresh" class="text-button" hidden>잔액 확인</button><button id="wallet-logout" class="text-button" hidden>로그아웃</button>
       <p class="menu-note" id="storage-note">게임을 다시 열면 처음부터 시작하고 사진도 새로 섞여요.</p>
     </div></details></div></section>
-    <p class="wallet-note" id="wallet-note">힌트 1개 1쭈 · 1분 연장 3쭈</p>
+    <p class="wallet-note" id="wallet-note">힌트 1개 1쭈 · 30초 연장 1쭈</p>
     </div>
     <div id="load-error" class="error" role="alert" hidden>그림을 불러오지 못했어요. <button id="retry">다시 불러오기</button></div>
     <div class="board-shell" id="board-shell"><div class="board-curtain" id="board-curtain"><div><span class="eyebrow" id="gate-eyebrow">1분 도전</span><h2 id="gate-title">준비됐나요?</h2><p id="gate-copy">하트 3개로 다른 곳 여섯 개를 찾아보세요.</p><button id="start" class="primary-button" disabled>그림 불러오는 중</button></div></div>
@@ -44,7 +44,7 @@
       <figure class="picture-card"><figcaption><span><b>A</b> 첫 번째 그림</span><span class="picture-status">자세히 살펴보세요</span></figcaption><div class="picture" data-side="original" tabindex="0" role="application" aria-label="첫 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="original" src="assets/01-original.webp" width="1536" height="1024" alt="첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
       <figure class="picture-card"><figcaption><span><b>B</b> 두 번째 그림</span><span class="picture-status">여섯 곳이 달라요</span></figcaption><div class="picture" data-side="difference" tabindex="0" role="application" aria-label="두 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="difference" src="assets/01-original.webp" width="1536" height="1024" alt="두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
     </section></div>
-    <div class="picture-timer time-dock" aria-label="그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="time-left">60</strong><small>초</small></div><button id="extend" class="soft-button extend-button" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 3쭈</small></button></div>
+    <div class="picture-timer time-dock" aria-label="그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="time-left">60</strong><small>초</small></div><button id="extend" class="soft-button extend-button" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 1쭈</small></button></div>
     <section class="playbar" aria-label="게임 도구">
       <div class="message" id="message" role="status" aria-live="polite">시작을 누르면 1분이 흘러요.</div>
       <div class="actions"><button id="zoom" class="soft-button"><span aria-hidden="true">⌕</span> 크게 보기</button></div>
@@ -55,7 +55,7 @@
   <dialog id="zoom-dialog" aria-labelledby="zoom-title">
     <div class="zoom-header"><div><h2 id="zoom-title">크게 비교하기</h2><p>그림을 밀어서 이동하고, 다른 곳을 눌러주세요.</p></div></div>
     <div class="zoom-pair"><section class="zoom-column"><h3>A<span class="zoom-picture-name"> · 첫 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-a"><div class="picture zoom-picture" data-side="original" tabindex="0" role="application" aria-label="확대한 첫 번째 그림"><img id="zoom-original" width="1536" height="1024" alt="확대한 첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section><section class="zoom-column"><h3>B<span class="zoom-picture-name"> · 두 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-b"><div class="picture zoom-picture" data-side="difference" tabindex="0" role="application" aria-label="확대한 두 번째 그림"><img id="zoom-difference" width="1536" height="1024" alt="확대한 두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section></div>
-    <div class="picture-timer time-dock zoom-picture-timer" aria-label="확대 그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="zoom-time-left">60</strong><small>초</small></div><button id="zoom-extend" class="soft-button extend-button" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 3쭈</small></button></div>
+    <div class="picture-timer time-dock zoom-picture-timer" aria-label="확대 그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="zoom-time-left">60</strong><small>초</small></div><button id="zoom-extend" class="soft-button extend-button" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 1쭈</small></button></div>
     <div class="zoom-tools" id="zoom-tools">
       <div id="zoom-status" role="status" aria-live="polite">0 / 6 찾았어요</div>
       <div class="zoom-time-dock zoom-toolbar">

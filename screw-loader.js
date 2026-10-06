@@ -29,7 +29,7 @@
     const promise = (async () => {
       if (mode === 'box') {
         const retry = boxAttempts++;
-        return (await import('./screw3d.js?v=20261004-cleanup1' + (retry ? '&retry=' + retry : ''))).screw3d;
+        return (await import('./screw3d.js?v=20261006-prices1' + (retry ? '&retry=' + retry : ''))).screw3d;
       }
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
       await script('/screw-flat-physics.js?v=20261004-shapes13', () => !!window.OjjudaFlatPhysics);
