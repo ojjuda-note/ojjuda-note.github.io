@@ -60,10 +60,13 @@
       close.onclick = requestClose;
       bar.append(close);
       frame = document.createElement('iframe');
-      const params = new URLSearchParams({ v: '20261006-runtime1' });
+      const params = new URLSearchParams({ v: '20261006-parity1' });
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
       if (typeof options.title === 'string') params.set('room_title', options.title.slice(0, 80));
+      if (/^[0-9]{4,16}$/.test(String(options.joinRoom || ''))) params.set('join_room', options.joinRoom);
+      if (typeof options.createTitle === 'string') params.set('create_title', options.createTitle.slice(0,40));
+      if (/^[0-9a-f-]{36}$/i.test(options.createRequest || '')) params.set('create_request', options.createRequest);
       frame.src = 'games/matgo-online.html?' + params.toString();
       frame.title = '오쭈다 맞고';
       frame.style.cssText = 'flex:1;min-height:0;width:100%;border:0';

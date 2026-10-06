@@ -91,6 +91,11 @@ const root=path.join(__dirname,'..');
     await reduced.page.locator('#event[data-kind=end]:not([hidden])').waitFor();
     assert.equal(await reduced.page.locator('#rematch').count(),0);
     await reduced.page.locator('#rematch').waitFor();
+    const empty={...finished,version:5,gold:[0,10000]};
+    await present(reduced.page,empty);await reduced.page.evaluate(()=>presenting);
+    assert.equal(await reduced.page.locator('#rematch').innerText(),'골드 충전');
+    await present(reduced.page,{...empty,gold:[5000,10000]});await reduced.page.evaluate(()=>presenting);
+    assert.equal(await reduced.page.locator('#rematch').innerText(),'다음 판','a refill updates the result even when the room version is unchanged');
     await reduced.context.close();assert.deepEqual(errors,[]);
     console.log('PASS: measured card flights, real recorded audio after touch, mute, readable events, idempotent polling, private replacement, visibility cancellation, resume and reduced motion');
   }finally{await browser.close();}

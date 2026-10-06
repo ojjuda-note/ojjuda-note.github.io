@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
+const {loadValidStudioItem}=require('./furniture-studio-fixture.cjs');
 const root=path.resolve(__dirname,'..');
 const fixture=`<!doctype html><button id="open">Open</button><script type="module">import{openFurnitureStudio}from'/house-test/studio-host.js';document.querySelector('#open').onclick=()=>openFurnitureStudio({owner:'brush-performance-fixture',authorized:()=>true});</script>`;
 (async()=>{
@@ -12,7 +13,7 @@ const fixture=`<!doctype html><button id="open">Open</button><script type="modul
   // Clicking opens the iframe before its document has necessarily navigated.
   await page.frameLocator('iframe[title="관리자 가구 제작실"]').locator('#studio-editor').waitFor({state:'visible'});
   const frame=page.frames().find(f=>f.url().includes('/anchor-editor/'));
-  await frame.locator('#studio-side-table').click();await frame.waitForFunction(()=>document.querySelector('#set-summary').textContent.includes('원본 그림 3/3'));
+  await loadValidStudioItem(frame);await frame.waitForFunction(()=>!document.querySelector('#studio-apply').disabled);
   await frame.evaluate(async()=>{
    const entry=await(await fetch('./entry.js')).text();window.editor=await import(entry.match(/import\('(.\/app\.js[^']*)'\)/)[1]);
    window.before=editor.studioBundle();window.active=before.project.activeView;
@@ -52,13 +53,14 @@ const fixture=`<!doctype html><button id="open">Open</button><script type="modul
    await editor.studioFlush();
    const entry=await(await fetch('./entry.js')).text(),draft=await(await import(entry.match(/from '(.\/draft-store\.js[^']*)'/)[1])).loadDraft();
    const savedStrokes=JSON.stringify(draft.project.views[active].cutout)===JSON.stringify(view.cutout);
-   for(let i=0;i<4;i++)document.querySelector('#undo').click();
+   for(let i=0;i<4;i++)await document.querySelector('#undo').onclick();
    const restored=editor.studioBundle();
    return {pixelsMatch,pointCounts,savedStrokes,sourcePreserved:view.source.data===before.project.views[active].source.data,undoMatches:JSON.stringify(restored)===JSON.stringify(before)};
   });
   console.log(JSON.stringify({measures,...check}));
   assert(check.pixelsMatch);assert(check.savedStrokes);assert(check.sourcePreserved);assert(check.undoMatches);assert.deepEqual(check.pointCounts,[81,81,81,81]);assert.deepEqual(errors,[]);
-  if(!process.env.STUDIO_PERF_BASELINE)for(const m of measures){assert.equal(m.duringBurst,0,'brush events must not allocate full image canvases before the frame');assert(m.afterFinish<=3,'each burst must rebuild the cutout at most once');}
+  // The approved mesh also needs one pixel canvas for its shape validation.
+  if(!process.env.STUDIO_PERF_BASELINE)for(const m of measures){assert.equal(m.duringBurst,0,'brush events must not allocate full image canvases before the frame');assert(m.afterFinish<=4,'each burst allows one three-canvas cutout rebuild and one shape validation');}
   console.log('STUDIO BRUSH PERFORMANCE PASS');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

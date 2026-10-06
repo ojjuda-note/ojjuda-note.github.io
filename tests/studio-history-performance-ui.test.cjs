@@ -21,7 +21,7 @@ const parent=`<button id="open">Open</button><script type="module">import{openFu
    for(let i=0;i<40;i++){input.value=String(i%2===0?0:1);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
    const editMs=performance.now()-start;
    JSON.stringify=stringify;
-   for(let i=0;i<40;i++)document.querySelector('#undo').click();
+   for(let i=0;i<40;i++)await document.querySelector('#undo').onclick();
    const after=app.studioBundle().project;
    const same=stringify(before)===stringify(after);
    await app.studioFlush();

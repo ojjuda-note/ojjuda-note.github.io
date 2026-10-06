@@ -137,7 +137,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.locator('.spot-game-header button').click();
           await page.evaluate(async () => {
             const {openHouseTest} = await import('/house-test/host.js');
-            window.closeHouse = openHouseTest({owner:'viewport-test',authorized:()=>true,records:async action=>{if(action==='list')return {folders:[{id:'viewport-folder',name:'추억',visibility:'me'}],friends:[],groups:[],records:[],more:false};return {};}});
+            window.closeHouse = openHouseTest({owner:'viewport-test',authorized:()=>true,records:async action=>{if(action==='list')return {folders:[{id:'viewport-folder',name:'추억',kind:'text',visibility:'me'}],friends:[],groups:[],records:[],more:false};return {};}});
           });
           const house = page.frameLocator('iframe[title="우리집"]');
           await house.locator('#app').waitFor({state:'visible'});
@@ -146,6 +146,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await house.locator('nav button').last().scrollIntoViewIfNeeded();
           await assertInside(page, house.locator('nav button').last(), area, 'house navigation after scrolling');
           await snapshot(page, `house-${viewport.width}`);
+          await house.getByRole('tab',{name:'노트',exact:true}).click();
           await house.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();
           await house.getByLabel('노트 글',{exact:true}).fill('키보드가 열린 상태에서도 메뉴와 저장 버튼에 접근해요.');
           const houseKeyboardHeight=Math.min(300,viewport.height-100);
@@ -158,7 +159,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           assert.ok(rows.menuBottom<=rows.tabsTop&&rows.tabsBottom<=rows.foldersTop,'house menu, record categories and folders never overlap');
           for(const [label,control]of [
             ['house menu above keyboard',house.locator('nav button').last()],
-            ['house categories above keyboard',house.getByRole('tab',{name:'동영상',exact:true})],
+            ['house categories above keyboard',house.getByRole('tab',{name:'비디오',exact:true})],
             ['house folders above keyboard',house.locator('[data-folder-id="viewport-folder"]')],
             ['house save above keyboard',house.getByRole('button',{name:'노트에 저장',exact:true})]
           ]){

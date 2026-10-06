@@ -47,7 +47,9 @@ export async function replayOnline(room) {
     }
   });
   game.cpuMode='normal'; // A member's balance never changes PvP timeout/takeover AI.
-  game.rate=100; // Member matches, including automatic turns, always stay at 100G.
+  const rate=room.round_rate??100;
+  if(![100,200,500,2000,5000,10000,20000,50000,100000].includes(rate))throw Error('invalid_stake');
+  game.rate=rate; // Only the database snapshot decides the shared rate.
   game.random=await secretRandom(room.seed);game.bank=[...room.start_gold];
   game.first=room.first;game.carry=room.carry;game.deal();
   for(let i=0;i<actions.length;i++){
@@ -109,6 +111,10 @@ export async function advanceOnline(room,p,command) {
     if(command.card!==null&&(!Number.isInteger(command.card)||command.card<0||command.card>49))throw Error('invalid_card');
     const bomb=command.bomb??null;
     if(bomb!==null&&(!Array.isArray(bomb)||![1,2].includes(bomb.length)||bomb.some(id=>!Number.isInteger(id))))throw Error('invalid_bomb');
+    if(command.shake===true){
+      const card=before.game.hand[p].find(c=>c.id===command.card);if(!card)throw Error('invalid_card');
+      actions.push({type:'shake',p,month:card.m});
+    }
     actions.push({type:'play',p,card:command.card,bomb,choices:[],gukjin:null,decision:null});
   }else if(prompt.type==='play'&&command.type==='shake'){
     actions.push({type:'shake',p,month:command.month});
@@ -152,7 +158,7 @@ export async function automaticOnline(room) {
 export async function onlineView(room,seat,cursor=0) {
   const base={id:room.id,code:room.code,status:room.status,version:room.version,seat,mode:room.mode,
     quickDeadline:room.mode==='quick'?Date.parse(room.created_at)+5000:null,
-    names:room.names,round:room.round_no,deadline:room.deadline,reason:room.reason||null,
+    rate:room.round_rate??100,names:room.names,round:room.round_no,deadline:room.deadline,reason:room.reason||null,
     ready:room.ready||[false,false],gold:room.gold,bots:room.bots||[false,false],departed:room.departed||[false,false],
     autoCount:room.auto_count||0,lastAuto:room.last_auto,serverTime:Date.now()};
   if(room.status==='waiting'||room.status==='cancelled')return base;

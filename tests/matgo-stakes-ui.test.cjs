@@ -53,7 +53,7 @@ const root=path.join(__dirname,'..');
   assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 20,000G/);
   await page.locator('#matgo-stake-raise').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),20000);
   await page.locator('#menu').click();await page.locator('#rules').click();
-  assert.match(await page.locator('.modal').innerText(),/회원 대결은 점당 100G 고정/);
+  assert.match(await page.locator('.modal').innerText(),/두 사람이 동의한 금액 중 낮은 금액/);
   assert.deepEqual(errors,[]);
   await context.close();
   console.log('PASS: real mobile offer, explicit raise/keep, authoritative rate display, reload/resume, decline memory, next-tier offer, bankruptcy/refill and PvP rules');
