@@ -20,7 +20,8 @@ window.runnerTest={
    Math.random=()=>{random=(random*1664525+1013904223)>>>0;return random/4294967296};
    const oldTap=gt.arcadeTap,oldHit=gt.arcadeHit;gt.arcadeTap=()=>audio.push('tap');gt.arcadeHit=()=>audio.push('hit');
    const game=factory({setScore:v=>scores.push(v),end:v=>ended.push(v),sound:{tap:()=>audio.push('tap'),hit:()=>audio.push('hit')}});
-   try{for(;n<3600&&!ended.length;n++){if(pattern(n))game.onDown();game.update(1/120);if(n%19===0)game.draw(R.ctx)}}
+   // Compare the unchanged opening before birds enter; their independent cycle is tested below.
+   try{for(;n<280&&!ended.length;n++){if(pattern(n))game.onDown();game.update(1/120);if(n%19===0)game.draw(R.ctx)}}
    finally{Math.random=original;gt.arcadeTap=oldTap;gt.arcadeHit=oldHit}
    return{scores,ended,audio,steps:n};
   }
@@ -92,6 +93,38 @@ g.tab='friends';H();
   const comparison=await page.evaluate(()=>runnerTest.compare());
   assert.equal(comparison.length,18);assert.ok(comparison.every(v=>v.same),'seeded play preserves original physics, spawns, points and sound at the new visible body width');
   assert.ok(comparison.some(v=>v.coins>0),'the comparison exercises coin pickups');assert.ok(comparison.some(v=>v.ended>0),'the comparison exercises obstacle collisions');
+  const birds=await page.evaluate(()=>{
+   const ctx=runnerTest.current.ctx,ellipse=ctx.ellipse,curve=ctx.quadraticCurveTo,random=Math.random,sizes=[],flaps=[];let both=false,drawn;
+   Math.random=()=>.9;
+   function play(jump,frames,measure=false){
+    const calls=[],scores=[],game=OjjudaRunnerGame.create({setScore:v=>scores.push(v),end:v=>calls.push(v)});
+    if(measure){
+     ctx.ellipse=function(x,y,rx,ry,...args){const m=this.getTransform(),dpr=Math.min(2,devicePixelRatio||1),left=m.e/dpr;if(left>=0&&left<360){if(x===15&&y===442&&Math.abs(rx-19.2)<.001&&ry===3)drawn.ground=true;if(x===10&&y===10&&rx===7&&ry===7){drawn.bird=true;if(left>=20)sizes.push({x:left,y:m.f/dpr,width:38*m.a/dpr,height:28*m.d/dpr});}}return ellipse.call(this,x,y,rx,ry,...args)};
+     ctx.quadraticCurveTo=function(cx,cy,x,y){if(cx===16&&cy===13&&x===24)flaps.push(y);return curve.call(this,cx,cy,x,y)};
+    }
+    try{for(let n=0;n<frames&&!calls.length;n++){if(jump(n))game.onDown();game.update(1/120);if(measure&&n%4===0){drawn={ground:false,bird:false};game.draw(ctx);both=both||(drawn.ground&&drawn.bird);}}
+     const count=scores.length;if(calls.length){game.update(1);game.onDown();game.update(1);}return{ends:calls.length,stopped:!calls.length||scores.length===count};
+    }finally{game.destroy();ctx.ellipse=ellipse;ctx.quadraticCurveTo=curve;}
+   }
+   function flight(flightRoll){
+    let frame=0;const positions=[];Math.random=()=>frame>=285&&frame<=292?flightRoll:.9;
+    const game=OjjudaRunnerGame.create({setScore(){},end(){}});
+    ctx.ellipse=function(x,y,rx,ry,...args){if(x===10&&y===10&&rx===7&&ry===7){const left=this.getTransform().e/Math.min(2,devicePixelRatio||1);if(left>=20&&left<360)positions.push({frame,left});}return ellipse.call(this,x,y,rx,ry,...args)};
+    try{for(;frame<420;frame++){if(frame===210)game.onDown();game.update(1/120);game.draw(ctx)}
+     const first=positions[0],last=positions.at(-1);return{samples:positions.length,speed:(first.left-last.left)*120/(last.frame-first.frame)};
+    }finally{game.destroy();ctx.ellipse=ellipse;Math.random=()=>.9;}
+   }
+   try{return{under:play(n=>n===210,480,true),contact:play(n=>n===210||n===390,450),over:play(n=>n===210||n===365||n===374,480),sizes,flaps,both,slow:flight(.1),fast:flight(.9)};}
+   finally{Math.random=random;ctx.ellipse=ellipse;ctx.quadraticCurveTo=curve;}
+  });
+  assert.equal(birds.under.ends,0,'running beneath flying birds is safe');assert.equal(birds.over.ends,0,'a timed double jump can clear a bird');
+  assert.deepEqual(birds.contact,{ends:1,stopped:true},'touching a bird in midair ends the game once');
+  assert.equal(birds.both,true,'flying birds and ground obstacles appear together on separate spawn cycles');
+  assert.ok(birds.sizes.length>25&&birds.sizes.some(s=>s.x<90),'birds are measured from the right edge through the player');
+  assert.ok(birds.sizes.every(s=>Math.abs(s.width-38)<.001&&Math.abs(s.height-28)<.001),'approaching birds keep their dimensions');
+  assert.ok(Math.max(...birds.sizes.map(s=>s.y))-Math.min(...birds.sizes.map(s=>s.y))<.001,'birds keep a steady flight height');
+  assert.ok(birds.flaps.some(y=>y<5)&&birds.flaps.some(y=>y>9),'the wings flap while the bird body stays steady');
+  assert.ok(birds.slow.samples>50&&birds.fast.samples>50&&birds.fast.speed>birds.slow.speed*1.2,'each bird receives its own randomized flight speed');
   const ended=await page.evaluate(()=>{
    let calls=[],scores=[];const game=OjjudaRunnerGame.create({setScore:v=>scores.push(v),end:v=>calls.push(v)});
    for(let n=0;n<800&&!calls.length;n++)game.update(1/120);
@@ -101,6 +134,11 @@ g.tab='friends';H();
   // Capture an actual jump while obstacles and coins approach on the lane.
   await page.evaluate(()=>{const random=Math.random;Math.random=()=>.7;try{runnerTest.step(179);runnerTest.current.game.onDown();runnerTest.step(15)}finally{Math.random=random}});
   if(process.env.RUNNER_PROOF)await page.screenshot({path:process.env.RUNNER_PROOF,type:'png'});
+  if(process.env.RUNNER_BIRD_PROOF){
+   await page.evaluate(()=>runnerTest.close());await open(true);
+   await page.evaluate(()=>{const random=Math.random;Math.random=()=>.9;try{runnerTest.step(210);runnerTest.current.game.onDown();runnerTest.step(210)}finally{Math.random=random}});
+   await page.screenshot({path:process.env.RUNNER_BIRD_PROOF,type:'png'});
+  }
   await page.evaluate(()=>runnerTest.close());await open();if(process.env.RUNNER_MENU_PROOF)await page.screenshot({path:process.env.RUNNER_MENU_PROOF,type:'png'});
   await page.evaluate(()=>runnerTest.close());await context.close();
   const missingArt=await browser.newContext({viewport:{width:390,height:844}});
@@ -113,6 +151,6 @@ g.tab='friends';H();
   const f=await fallback.newPage();f.on('pageerror',e=>errors.push(e.message));await f.goto('https://fixture.test/world.html');await f.waitForFunction(()=>window.runnerTest);await f.evaluate(()=>runnerTest.open('runner'));
   await f.locator('#gov [data-g="start"]').click();assert.equal(await f.evaluate(()=>runnerTest.current.running),true,'the original runner remains playable if graphics fail to load');await fallback.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: illustrated background and 8 character poses, adaptive canvas at four viewports, touch/keyboard double jumps and landing, mute, 18 seeded comparisons with the original runner, collision finish, and graphics fallback');
+  console.log('PASS: independent bird and ground spawn cycles, randomized bird speeds, steady flight dimensions, wing animation, safe passage underneath, double-jump clearance, air collision, four viewports, touch/keyboard controls, 18 opening comparisons, and graphics fallback');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

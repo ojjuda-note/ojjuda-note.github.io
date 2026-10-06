@@ -118,9 +118,25 @@
     oval(c,-4,-5,1.4,1,'#FFF9DB');c.restore();
     if(Math.sin(clock*4+x)>.75)star(c,x+11,y-10,3,'#FFF6C8',clock);
   }
-  function obstacle(c,item){
-    const {x,w,h,k}=item,y=GROUND-h;oval(c,x+w/2,GROUND+2,w*.64,3,'#9A785E36');
-    if(k==='cone'){
+  function bird(c,x,y,clock,reduced){
+    c.save();c.translate(x,y);
+    // Flap inside the same 38 × 28 silhouette; flight height and scale never change.
+    c.fillStyle='#3D7397';c.beginPath();c.moveTo(27,14);c.lineTo(38,7);c.lineTo(35,23);c.lineTo(27,21);c.closePath();c.fill();
+    oval(c,20,16,12,9,gradient(c,7,18,'#83D2D9','#4496B3'));
+    oval(c,17,19,9,5,'#FFF0D2');
+    oval(c,10,10,7,7,gradient(c,3,14,'#A7E2DD','#65B4C6'));
+    const tip=reduced?7:7+Math.sin(clock*16)*5;
+    c.fillStyle=gradient(c,tip,22-tip,'#7BBECF','#376F96');c.beginPath();c.moveTo(20,21);c.quadraticCurveTo(16,13,24,tip);c.quadraticCurveTo(30,10,30,19);c.quadraticCurveTo(25,25,20,21);c.closePath();c.fill();
+    line(c,[[24,12],[24,19]],'#AAD9DB',1.1);
+    c.fillStyle='#E6A65B';c.beginPath();c.moveTo(6,11);c.lineTo(0,14);c.lineTo(7,17);c.closePath();c.fill();
+    oval(c,8,9,2.8,2.8,'#FFF9E7');oval(c,7.3,9,1.3,1.8,'#284E69');oval(c,7,8.4,.45,.45,'#FFFFFF');
+    oval(c,8,14,2,1.2,'#E8AAA2');line(c,[[19,24],[18,27]],'#CDA267',1.2);
+    c.restore();
+  }
+  function obstacle(c,item,clock,reduced){
+    const {x,w,h,k}=item,y=item.y??GROUND-h;oval(c,x+w/2,GROUND+2,w*.64,3,'#9A785E36');
+    if(k==='bird')bird(c,x,y,clock,reduced);
+    else if(k==='cone'){
       c.fillStyle=gradient(c,y,h,'#F8A278','#DC755C');c.beginPath();c.moveTo(x+3,GROUND-3);c.lineTo(x+w/2-2,y);c.lineTo(x+w/2+2,y);c.lineTo(x+w-3,GROUND-3);c.closePath();c.fill();
       c.fillStyle='#FFF0D5';c.beginPath();c.moveTo(x+7,y+18);c.lineTo(x+w-7,y+18);c.lineTo(x+w-5,y+28);c.lineTo(x+5,y+28);c.closePath();c.fill();
       line(c,[[x+w/2-2,y+5],[x+6,GROUND-8]],'#FFD2A1',1.7);round(c,x,GROUND-4,w,4,2,'#B86953');
@@ -170,7 +186,7 @@
   function create(api){
     ensureArt();
     let offset=0,velocity=0,jumps=0,clock=0,distance=0,coins=0,speed=260;
-    let obstacles=[],pickups=[],effects=[],obstacleIn=1.2,coinsIn=.8,finished=false,dustIn=0,landing=0;
+    let obstacles=[],pickups=[],effects=[],obstacleIn=1.2,birdIn=2.4,coinsIn=.8,finished=false,dustIn=0,landing=0;
     previewContext=null;previewObserver?.disconnect();previewObserver=null;
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
     const score=()=>Math.floor(distance/10)+coins*20;
@@ -184,15 +200,17 @@
         // Keep the established physics and score rules; the body width follows the new sprite.
         obstacleIn-=dt;
         if(obstacleIn<=0){const cone=Math.random()<.35;obstacles.push({x:W+20,w:cone?24:30,h:cone?46:28,k:cone?'cone':'box'});obstacleIn=Math.max(.65,1.5-clock*.012)+Math.random()*.7;}
+        birdIn-=dt;
+        if(birdIn<=0){obstacles.push({x:W+20,y:GROUND-122,w:38,h:28,k:'bird',vx:speed*(.8+Math.random()*.4)});birdIn=3.6+Math.random()*1.4;}
         coinsIn-=dt;
         if(coinsIn<=0){const height=Math.random()<.5?30:95;for(let i=0;i<3;i++)pickups.push({x:W+20+i*34,y:GROUND-height-10,got:false});coinsIn=1.4+Math.random()*1.4;}
-        for(const item of obstacles)item.x-=speed*dt;
+        for(const item of obstacles)item.x-=(item.vx??speed)*dt;
         for(const item of pickups)item.x-=speed*dt;
         obstacles=obstacles.filter(item=>item.x>-60);pickups=pickups.filter(item=>item.x>-40&&!item.got);
         for(const effect of effects){effect.life+=dt;effect.x-=speed*dt*.35;}effects=effects.filter(effect=>effect.life<.55);
         dustIn-=dt;if(!wasAir&&dustIn<=0){puff(72,GROUND-2,'dust');dustIn=.13;}
         const bottom=GROUND+offset,top=bottom-64;
-        for(const item of obstacles)if(item.x<BODY_RIGHT&&item.x+item.w>BODY_LEFT&&GROUND-item.h<bottom-3){finished=true;api.end(score());return;}
+        for(const item of obstacles){const obstacleTop=item.y??GROUND-item.h;if(item.x<BODY_RIGHT&&item.x+item.w>BODY_LEFT&&obstacleTop<bottom-3&&obstacleTop+item.h>top+3){finished=true;api.end(score());return;}}
         for(const item of pickups)if(!item.got&&item.x>BODY_LEFT-12&&item.x<BODY_RIGHT+12&&item.y>top-12&&item.y<bottom){item.got=true;coins++;puff(item.x,item.y,'coin');api.sound?.hit?.();}
         api.setScore(score());
       },
@@ -201,7 +219,7 @@
         c.save();scene(c,distance,clock,view,drop,reduced);
         c.save();c.translate(83-83*view.scale,view.ground-GROUND*view.scale+drop);c.scale(view.scale,view.scale);track(c,distance);c.restore();
         c.save();c.translate(0,view.ground+drop-GROUND);
-        for(const item of obstacles){c.save();c.translate(item.x,0);obstacle(c,{...item,x:0});c.restore();}
+        for(const item of obstacles){c.save();c.translate(item.x,0);obstacle(c,{...item,x:0},clock,reduced);c.restore();}
         for(const item of pickups)if(!item.got)coin(c,item.x,item.y,clock+item.x*.003);
         c.restore();
         c.save();c.translate(83-83*view.scale,view.ground-GROUND*view.scale+drop);c.scale(view.scale,view.scale);
