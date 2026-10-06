@@ -34,6 +34,20 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   const folder=path.join(__dirname,'../supabase/migrations'),file=fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_stages.sql'));
   await db.exec(fs.readFileSync(path.join(folder,file),'utf8').replace('create extension if not exists pgcrypto;',''));
   await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_adult_access.sql'))),'utf8'));
+  await db.exec(`create table public.profiles(id uuid primary key,nickname text);
+   insert into profiles select id,'회원'||row_number() over(order by id) from auth.users;
+   create table public.user_private(user_id uuid,banned_until timestamptz);
+   create function public.is_banned(uuid) returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.user_private where user_id=$1 and banned_until>now())$$;
+   create schema ojjuda_game_internal;
+   create function ojjuda_game_internal.community_game_monthly_ranking(p_game text) returns json language plpgsql stable security definer set search_path='' as $$
+   declare v_limit int; begin
+  v_limit := case p_game when 'runner' then 50000 end;
+   return '[]'::json; end; $$;
+   grant usage on schema ojjuda_game_internal to authenticated;
+   grant execute on function ojjuda_game_internal.community_game_monthly_ranking(text) to authenticated;
+   create function public.community_game_monthly_ranking(p_game text) returns json language sql stable security invoker set search_path='' as $$select ojjuda_game_internal.community_game_monthly_ranking(p_game)$$;`);
+  const rankMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_monthly_ranking.sql'))),'utf8');
+  await db.exec(rankMigration);await db.exec(rankMigration);
   async function as(actor,sql,params=[],role='authenticated'){
    return db.transaction(async tx=>{await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);await tx.exec('set local role '+role);return tx.query(sql,params);});
   }
@@ -71,6 +85,29 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   assert.equal((await db.query('select clears from photo_stages where id=$1',[pending.id])).rows[0].clears,1);
   await db.exec(`insert into storage.objects(bucket_id,name) values('other-bucket','unrelated');create policy other_bucket_read on storage.objects for select using(bucket_id='other-bucket');`);
   assert.equal((await as(E,"select name from storage.objects where bucket_id='other-bucket'")).rows.length,1,'other games and buckets keep their original access');
+  const clear=async(actor,key)=>(await as(actor,'select photo_game_clear($1) as value',[key])).rows[0].value;
+  const rank=async(actor)=>(await as(actor,"select community_game_monthly_ranking('photo_ttang') as value")).rows[0].value;
+  assert.deepEqual(await rank(A),[],'empty means no invented historical records');
+  for(const actor of [E,F,G]){await assert.rejects(()=>clear(actor,'0'),/not_allowed/);await assert.rejects(()=>rank(actor),/not_allowed/);}
+  await assert.rejects(()=>as(null,"select photo_game_clear('0')",[],'anon'),/permission denied/);
+  await assert.rejects(()=>clear(A,'try123'),/invalid_stage/);await assert.rejects(()=>clear(A,'20'),/invalid_stage/);
+  assert.deepEqual(await clear(A,'0'),{ok:true,score:1});
+  assert.equal((await clear(A,'0')).score,1,'repeated messages and replays are idempotent');
+  assert.equal((await clear(A,'19')).score,2,'all builtin stages are supported');
+  assert.equal((await clear(A,'c'+privateStage.id)).score,3,'owner can complete own approved private stage');
+  await assert.rejects(()=>clear(C,'c'+privateStage.id),/invalid_stage/);
+  await clear(B,'c'+friends.id);await clear(B,'c'+pending.id);
+  await assert.rejects(()=>clear(C,'c'+friends.id),/invalid_stage/);
+  let leaders=await rank(B);assert.deepEqual(leaders.map(r=>[r.score,r.me]),[[3,false],[2,true]]);
+  assert.deepEqual(Object.keys(leaders[0]).sort(),['me','nick','score','source'],'photos and user ids never appear in rankings');
+  await assert.rejects(()=>as(A,'select * from ojjuda_photo_internal.game_clears'),/permission denied/);
+  await assert.rejects(()=>as(A,"insert into ojjuda_photo_internal.game_clears values($1,current_date,'1',now())",[A]),/permission denied/);
+  await db.exec(`update ojjuda_photo_internal.game_clears set month_start=(date_trunc('month',now() at time zone 'Asia/Seoul')-interval '1 month')::date where user_id='${A}';`);
+  assert.deepEqual((await rank(B)).map(r=>r.score),[2],'previous month is excluded');
+  assert.equal((await clear(A,'0')).score,1,'same photo counts again in a new month');
+  await db.exec(`insert into user_private values('${B}',now()+interval '1 day');`);
+  await assert.rejects(()=>clear(B,'1'),/not_allowed/);assert.equal((await rank(A)).length,1,'banned members excluded');
+  await db.exec('delete from user_private');
   for(const actor of [A,B,C])await as(actor,'select photo_report($1,$2)',[pending.id,'test']);
   const after=(await db.query('select status,report_count from photo_stages where id=$1',[pending.id])).rows[0];
   assert.deepEqual(after,{status:'hidden',report_count:3});

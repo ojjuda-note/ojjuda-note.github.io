@@ -12,3 +12,10 @@
 /* Place panels follow the chosen theme while the approved scene stays unchanged. */
 :root[data-theme=dark] #ppanel,:root[data-theme=dark] .home:has(#pstage) .visit-banner{background:var(--surface);border-color:var(--line)}
 :root[data-theme=dark] .home:has(#pstage) .stage-hint{color:var(--ink-2)}
+
+/* Owners see the same closed state without loading their room or records. */
+.owner-closed-home{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:min(65dvh,560px);padding:36px 20px;text-align:center;background:linear-gradient(160deg,#faf7ff,#f0ebf6);gap:12px}
+.owner-closed-home .h2,.owner-closed-home p{margin:0}.owner-closed-home p{color:#756681;font-size:14px}.owner-closed-home .btn{margin-top:8px;min-width:140px;min-height:44px}
+.owner-closed-door{width:154px;height:222px;border:10px solid #d4c7db;border-bottom:0;border-radius:80px 80px 0 0;background:#be9ec4;padding:8px 8px 0;box-shadow:0 14px 20px -18px #715a7b;box-sizing:border-box;margin-bottom:16px}
+.owner-door-leaf{height:100%;border:2px solid #9975a1;border-radius:64px 64px 0 0;background:linear-gradient(110deg,#eadbed,#d8c2df);position:relative;box-shadow:inset 4px 0 7px #fff5}
+.owner-door-leaf::before{content:'';position:absolute;inset:34px 16px 25px;border:2px solid #bc9dc6;border-radius:40px 40px 4px 4px}.owner-door-leaf span{position:absolute;right:12px;top:57%;width:11px;height:11px;border-radius:50%;background:#b98e4c;box-shadow:0 2px 3px #705c7040}
