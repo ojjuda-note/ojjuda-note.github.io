@@ -854,10 +854,10 @@ function screw3d(api) {
   async function spend(kind, price) {
     if (buying || restoreBlocked) return false;
     const balance = coins();
-    if (!sameWallet() || !api.buyScrew || (balance === null && !st.purchases.pending[kind])) { say('쭈 지갑이 연결되면 구매할 수 있어요', 1.4); return false; }
-    if (balance < price && !st.purchases.pending[kind]) { say(`${price}쭈가 필요해요`, 1.2); return false; }
+    if (!sameWallet() || !api.buyScrew || (balance === null && !st.purchases.pending[kind])) { say('ZU 지갑이 연결되면 구매할 수 있어요', 1.4); return false; }
+    if (balance < price && !st.purchases.pending[kind]) { say(`${price} ZU가 필요해요`, 1.2); return false; }
     if (!st.purchases.pending[kind]) {
-      if (typeof globalThis.confirm === 'function' && !globalThis.confirm(`${price}쭈로 ${kind === 'box' ? '색상 상자' : '보관칸'}를 추가할까요? 현재 단계에서 사용할 수 있어요.`)) return false;
+      if (typeof globalThis.confirm === 'function' && !globalThis.confirm(`${price} ZU로 ${kind === 'box' ? '색상 상자' : '보관칸'}를 추가할까요? 현재 단계에서 사용할 수 있어요.`)) return false;
       st.purchases.pending[kind] = crypto.randomUUID();
       if (!savePurchases()) { delete st.purchases.pending[kind]; say('구매 기록을 저장할 수 없어요', 1.4); return false; }
     }
@@ -867,22 +867,22 @@ function screw3d(api) {
       if (!sameWallet()) { say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 2); return false; }
       if (!r?.ok || r.stage !== st.L) {
         if (['coins', 'request_conflict', 'invalid'].includes(r?.reason)) { delete st.purchases.pending[kind]; savePurchases(); }
-        say(r?.reason === 'coins' ? `${price}쭈가 필요해요` : '지금은 구매할 수 없어요', 1.4); return false;
+        say(r?.reason === 'coins' ? `${price} ZU가 필요해요` : '지금은 구매할 수 없어요', 1.4); return false;
       }
       confirmPurchase(kind, id);
       return true;
     } catch (_) { say('구매를 완료하지 못했어요', 1.4); return false; }
     finally { buying = false; }
   }
-  async function buyBox() {   // 색상 상자 +1 (3쭈, 해당 단계만)
+  async function buyBox() {   // 색상 상자 +1 (3 ZU, 해당 단계만)
     if (buying || restoreBlocked || st.over || st.next || st.boxes.length >= BOX_MAX) return;
     if (st.qi >= st.lvl.queue.length) { say('더 나올 색이 없어요', 1.1); return; }
     if (!await spend('box', 3)) return;
-    say('색상 상자 +1 (3쭈)', 0.9);
+    say('색상 상자 +1 (3 ZU)', 0.9);
   }
-  async function buyBuf() {   // 보관 칸 +1 (1쭈, 해당 단계만)
+  async function buyBuf() {   // 보관 칸 +1 (1 ZU, 해당 단계만)
     if (buying || restoreBlocked || st.over || st.next || st.buf.length >= BUF_MAX || !await spend('buffer', 1)) return;
-    say('보관 칸 +1 (1쭈)', 0.9);
+    say('보관 칸 +1 (1 ZU)', 0.9);
   }
   const shopBtn = (x, y) => (st.boxes.length < BOX_MAX && x >= 344 - BUY_W && x <= 344 && y >= BOX_Y && y <= BOX_Y + BOX_H ? buyBox : st.buf.length < BUF_MAX && x >= 336 - BUY_W && x <= 336 && y >= BUF_Y && y <= BUF_Y + 50 ? buyBuf : null);
   function bestBox(color) {   // 같은 색 상자가 여럿이면 더 많이 찬 상자부터 채워요
@@ -928,7 +928,7 @@ function screw3d(api) {
     const h = st.heads.get(s) || { x, y };
     if (!send(s, h.x, h.y)) {
       const balance = coins(), canBuf = st.buf.length < BUF_MAX && balance >= 3, canBox = st.boxes.length < BOX_MAX && balance >= 10 && st.qi < st.lvl.queue.length;
-      if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (1쭈)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (3쭈)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
+      if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (1 ZU)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (3 ZU)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
       st.over = 1.3; say('보관 칸이 가득 찼어요', 1.3); return;
     }
     s.state = 'out'; s.t = 0; release(s.thru); release(s.into);
@@ -1142,18 +1142,18 @@ function drawBoxes(c, st) {
     if (b && b.close) { rr(c, x, y, L.w, 14 + ease(b.close) * (BOX_H - 14), 16); c.fillStyle = shade(COLORS[b.c], 0.2); c.fill(); }
     c.restore();
   });
-  if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = 'rgba(255,255,255,0.7)'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 상자 사기 (3쭈)
-    c.fillStyle = '#6B5B4B'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 3 ? '#1F8F74' : '#B8A99A'; c.fillText('3쭈', bx + BUY_W / 2, BOX_Y + 54); }
+  if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = 'rgba(255,255,255,0.7)'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 상자 사기 (3 ZU)
+    c.fillStyle = '#6B5B4B'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 3 ? '#1F8F74' : '#B8A99A'; c.fillText('3 ZU', bx + BUY_W / 2, BOX_Y + 54); }
 }
 function drawBuffer(c, st) {
   const n = st.buf.length, buy = n < BUF_MAX, L = bufLay(n, buy), sc = Math.min(0.92, L.sp / 58 * 1.05), hr = Math.min(15.5, L.sp * 0.3);
   rr(c, 24, BUF_Y, 312, 50, 25); c.fillStyle = '#E7D9CB'; c.fill();
   c.fillStyle = '#A38F7C'; c.font = '11px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillText(`보관 칸 ${n}칸`, 180, BUF_Y - 9);
-  c.textAlign = 'right'; c.fillStyle = '#8A6FB8'; c.font = 'bold 11px sans-serif'; c.fillText(`🪙 ${st.coins === null ? '지갑 연결 필요' : `${st.coins}쭈`}`, 336, BUF_Y - 9);
+  c.textAlign = 'right'; c.fillStyle = '#8A6FB8'; c.font = 'bold 11px sans-serif'; c.fillText(`🪙 ${st.coins === null ? '지갑 연결 필요' : `${st.coins} ZU`}`, 336, BUF_Y - 9);
   const full = st.buf.filter(Boolean).length;
   for (let k = 0; k < n; k++) { const h = bufHole(k, n, buy); circ(c, h.x, h.y, hr); c.fillStyle = full >= n - 1 && !st.buf[k] ? 'rgba(240,103,154,0.28)' : 'rgba(35,38,74,0.14)'; c.fill(); const s = st.buf[k]; if (s && s !== 'res') drawScrew(c, h.x, h.y, COLORS[s.color], 0, sc); }
-  if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = 'rgba(255,255,255,0.75)'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (1쭈)
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#6B5B4B'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.coins >= 1 ? '#1F8F74' : '#B8A99A'; c.fillText('1쭈', bx + BUY_W / 2 - 1, BUF_Y + 32); }
+  if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = 'rgba(255,255,255,0.75)'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#C9B8A6'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (1 ZU)
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#6B5B4B'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.coins >= 1 ? '#1F8F74' : '#B8A99A'; c.fillText('1 ZU', bx + BUY_W / 2 - 1, BUF_Y + 32); }
   c.textBaseline = 'alphabetic';
 }
 

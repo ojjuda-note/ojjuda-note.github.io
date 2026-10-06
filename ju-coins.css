@@ -6,7 +6,7 @@ html .cz, html .note-cz, .ju-coin-icon {
   height: 22px;
   border: 0;
   border-radius: 0;
-  background: url('/ju-coins/coin.svg?v=20261003-coins1') center / contain no-repeat;
+  background: url('/ju-coins/coin.svg?v=20261006-zu1') center / contain no-repeat;
   transform: none;
   vertical-align: -.2em;
 }
@@ -20,5 +20,5 @@ html .cz i, html .note-cz i { opacity: 0; transform: none; }
   flex: none;
   width: 20px;
   height: 20px;
-  background: url('/ju-coins/coin.svg?v=20261003-coins1') center / contain no-repeat;
+  background: url('/ju-coins/coin.svg?v=20261006-zu1') center / contain no-repeat;
 }

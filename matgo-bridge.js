@@ -95,6 +95,6 @@
     if (event.data?.type === 'ojjuda:matgo:ready') onlineReady=false;
     if (['ojjuda:matgo:online-ready','ojjuda:matgo:ready'].includes(event.data?.type))document.getElementById('matgo-loading-bar')?.remove();
     if (event.data?.type === 'ojjuda:matgo:wallet') window.OjjudaMatgoWalletChanged?.();
-    // Only the server refill endpoint can charge 쭈.
+    // Only the server refill endpoint can charge ZU.
   });
 })();

@@ -19,7 +19,7 @@
     const terms = query.split(' ').filter(Boolean);
     const matches = topics.filter(item => terms.every(term => item.body.includes(term) || item.titleKey.includes(term)))
       .sort((a, b) => Number(b.titleKey.includes(query)) - Number(a.titleKey.includes(query)));
-    status.textContent = matches.length ? `${matches.length}개 설명을 찾았어요.${matches.length > 10 ? ' 먼저 10개를 보여드려요.' : ''}` : '찾는 설명이 없어요. 사진, 위치, 쭈처럼 짧은 낱말로 찾아보세요.';
+    status.textContent = matches.length ? `${matches.length}개 설명을 찾았어요.${matches.length > 10 ? ' 먼저 10개를 보여드려요.' : ''}` : '찾는 설명이 없어요. 사진, 위치, ZU처럼 짧은 낱말로 찾아보세요.';
     for (const item of matches.slice(0, 10)) {
       const li = document.createElement('li'), link = document.createElement('a');
       const title = document.createElement('strong'), snippet = document.createElement('small');
