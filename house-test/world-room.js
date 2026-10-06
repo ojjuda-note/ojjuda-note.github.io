@@ -46,9 +46,10 @@ export function createWorldRoom({client,owner,authorized}){
   if(action==='load'){
    const data=await rpc('house_room_load',{p_owner:owner});
    if(data.ok!==true||typeof data.found!=='boolean'||typeof data.canEdit!=='boolean')throw new Error('방 정보를 확인하지 못했어요. 다시 시도해 주세요.');
-   if(!data.found)return{ok:true,found:false,canEdit:data.canEdit};
+   const door=typeof data.doorClosed==='boolean'?{doorClosed:data.doorClosed}:{};
+   if(!data.found)return{ok:true,found:false,canEdit:data.canEdit,...door};
    if(!revision(data.revision)||typeof data.updatedAt!=='string')throw new Error('방 정보를 확인하지 못했어요. 다시 시도해 주세요.');
-   return{ok:true,found:true,snapshot:geometry(data.snapshot),revision:data.revision,updatedAt:data.updatedAt,canEdit:data.canEdit};
+   return{ok:true,found:true,snapshot:geometry(data.snapshot),revision:data.revision,updatedAt:data.updatedAt,canEdit:data.canEdit,...door};
   }
   if(action==='save'){
    if(args.revision!==null&&!revision(args.revision))throw new Error('저장된 방을 먼저 확인해 주세요.');
