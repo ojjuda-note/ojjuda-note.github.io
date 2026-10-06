@@ -52,7 +52,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-2}]});
   assert.equal(await frame.evaluate(()=>me.target),0,'tiny finger jitter must not change direction');
   assert.equal(await frame.evaluate(()=>startWait),3,'tiny finger jitter must preserve the start countdown');
-  await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-6}]});
+  await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-3}]});
   assert.ok(Math.abs(await frame.evaluate(()=>me.target)+Math.PI/2)<.001,'a small upward drag must turn immediately');
   assert.ok(await frame.evaluate(()=>startWait<=.01&&me.freezeT<=.001),'the first small drag must start movement immediately');
   await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});

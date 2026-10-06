@@ -124,6 +124,28 @@ test('computers expand land without self-destructing at normal and small screen 
     assert.ok(gained>0,`scale ${scale}, seed ${seed}: the bot must still capture land`);
   }
 });
+test('computers leave a close waypoint and keep expanding after each capture',()=>{
+  for(const scale of [10,5]){
+    const World=vm.runInNewContext(`
+      let seed=42;Math.random=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
+      ${engine}
+      const MOB_RESPAWN=30;World;
+    `);
+    const w=new World(40,'solo',40);w.setViewScale(scale);w.itemsOn=false;w.time=1;
+    const bot=w.addPlayer({noSpawn:true,alive:true,bot:true,born:-1,x:20,y:24,ang:0,target:0,speed:4.65,turn:4.2,reach:5,maxTrail:15,aggro:0});
+    for(let y=120;y<280;y++)for(let x=120;x<280;x++)w.setOwn(y*w.GW+x,bot.id);
+    // The old 0.8-unit arrival threshold made this target an endless circle.
+    bot.plan=[{x:20,y:24-bot.speed/w.botTurn(bot)}];
+    const initial=w.counts[bot.id];let halfway=initial;
+    for(let i=0;i<2400&&bot.alive;i++){
+      w.step(1/60);w.events.length=0;w.dirty.clear();
+      if(i===1199)halfway=w.counts[bot.id];
+    }
+    assert.equal(bot.alive,true,`scale ${scale}: escape must preserve collision safety`);
+    assert.ok(halfway>initial,`scale ${scale}: leave the old land instead of circling`);
+    assert.ok(w.counts[bot.id]>halfway,`scale ${scale}: keep gaining land after the first trip`);
+  }
+});
 test('mob contact uses the same visible player body at all screen scales',()=>{
   for(const scale of [20,5])for(const gap of [0,.01]){
     const w=new World(32,'solo',40);w.time=1;w.setViewScale(scale);
