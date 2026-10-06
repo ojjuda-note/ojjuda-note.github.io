@@ -1,4 +1,4 @@
-import {loadItemManifest} from './item-manifest.js?v=2';
+import {loadItemManifest} from './item-manifest.js?v=3';
 // Offline fallback for existing installations. Publish routine artwork updates
 // in item-assets.json; do not change application versions or module imports.
 const fallbackAssets = {

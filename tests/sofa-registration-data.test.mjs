@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {SOFA_V1} from '../house-test/sofa-v1-registration.js?v=20261006-assembly1';
+import {SOFA_V1} from '../house-test/sofa-v1-registration.js?v=20261006-wall1';
 import {validateSofaRegistration,installSofaRegistration} from '../house-test/sofa-registration-data.js';
 const original=structuredClone(SOFA_V1),data=JSON.parse(fs.readFileSync(new URL('../house-test/assets/sofa-registration-v1.runtime.json',import.meta.url)));
 test('moving registration to data preserves every view, anchor, PNG and draw order',()=>{

@@ -1,4 +1,4 @@
-import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261006-assembly1';
+import {ROOM,FLOOR,roomPoint} from '../model.js?v=20261006-wall1';
 
 export {ROOM,FLOOR,roomPoint};
 
