@@ -2,30 +2,33 @@
   'use strict';
   const W=360,H=540,MAX_BALLS=10,MAX_SPEED=620,LEVELS=100;
   const COLORS=['#F0679A','#F4A66B','#FFD37A','#7FD1A1','#8FB3F7','#B69CF0'];
-  const ITEMS={two:{label:'2',color:'#8FB3F7',text:'공 2개'},ten:{label:'10',color:'#F58FB9',text:'공 10개'},pierce:{label:'↟',color:'#FFE08B',text:'관통 · 이번 턴'}};
+  const ITEMS={two:{text:'공 2배'},ten:{text:'공 10개'},pierce:{text:'관통 · 이번 턴'}};
   function rounded(c,x,y,w,h,r,color){
     c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();c.fillStyle=color;c.fill();
   }
   function circle(c,x,y,r,color){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=color;c.fill();}
   function stageBricks(level){
-    const count=14+Math.floor((level-1)/2),rows=Math.ceil(count/7),pattern=(level-1)%6,bricks=[],cells=[];
+    const count=14+Math.floor((level-1)/2),cols=10,rows=Math.min(12,5+Math.floor((level-1)/12)),pattern=(level-1)%8,bricks=[],cells=[];
     let seed=level*7919+53;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);
+    // Choose silhouettes within a roomy grid instead of filling entire rows.
     function rank(row,col){
-      if(pattern===1)return (col+row+Math.floor(level/6))%3;
-      if(pattern===2)return Math.abs(col-3)+Math.abs(row-(rows-1)/2);
-      if(pattern===3)return (col+level)%2;
-      if(pattern===4)return (col-row+7)%7;
-      if(pattern===5)return (row+col+Math.floor(level/6))%2;
-      return row;
+      const x=(col-4.5)/4.5,y=(row-(rows-1)/2)/((rows-1)/2);
+      if(pattern===0)return Math.abs(Math.abs(x)+Math.abs(y)-.85); // diamond
+      if(pattern===1)return Math.abs(y-.55*Math.sin(x*Math.PI*2)); // wave
+      if(pattern===2)return Math.abs(row-(col+level%3)%rows); // stairs
+      if(pattern===3)return Math.min(Math.abs(x),Math.abs(y)); // cross
+      if(pattern===4)return Math.min(Math.abs(x-.6),Math.abs(x+.6)); // towers
+      if(pattern===5)return Math.abs(Math.hypot(x,y)-.8); // ring
+      if(pattern===6)return (row+col)%2+Math.abs(y)*.2; // lattice
+      return Math.abs(Math.abs(x)-((y+1)/2)); // chevron
     }
-    for(let row=1;row<rows;row++)for(let col=0;col<7;col++)cells.push({row,col,rank:rank(row,col)+random()*.8});
-    const chosen=Array.from({length:7},(_,col)=>({row:0,col})).concat(cells.sort((a,b)=>a.rank-b.rank).slice(0,count-7));
-    for(const {row,col} of chosen)bricks.push({id:row*7+col,x:14+col*48,y:84+row*22,w:44,h:18,on:true,hp:1,maxHp:1,solid:false,color:COLORS[(row+Math.floor((level-1)/6))%COLORS.length]});
-    bricks.sort((a,b)=>a.id-b.id);
-    // Steel stays in the top row, with at least two gaps after other bricks break.
-    // It cannot enclose a breakable brick or block completion of a stage.
     const steelCount=level<3?0:Math.min(5,1+Math.floor((level-3)/20));
-    for(let i=0;i<steelCount;i++){const brick=bricks.find(b=>b.id===(level+3*i)%7);brick.solid=true;}
+    const steelCols=new Set(Array.from({length:steelCount},(_,i)=>(level+3*i)%cols));
+    for(let row=0;row<rows;row++)for(let col=0;col<cols;col++)cells.push({row,col,rank:rank(row,col)+random()*.08,solid:row===0&&steelCols.has(col)});
+    const chosen=cells.filter(c=>c.solid).concat(cells.filter(c=>!c.solid).sort((a,b)=>a.rank-b.rank).slice(0,count-steelCount));
+    for(const {row,col,solid} of chosen)bricks.push({id:row*cols+col,x:12+col*34,y:84+row*18,w:30,h:12,on:true,hp:1,maxHp:1,solid,color:COLORS[(row+Math.floor((level-1)/8))%COLORS.length]});
+    bricks.sort((a,b)=>a.id-b.id);
+    // Steel is confined to the top row and leaves at least five open columns.
     if(level>=2){
       const choices=bricks.filter(b=>!b.solid).map(brick=>({brick,rank:random()})).sort((a,b)=>a.rank-b.rank);
       const toughCount=Math.max(1,Math.floor(choices.length*Math.min(.7,.08+(level-2)*.006)));
@@ -36,13 +39,13 @@
   function create(api){
     const paddle={x:140,y:490,w:80,h:12};
     let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=360;
-    let nextBallId=1,droppedInTurn=false,notice='',noticeTime=0;
-    function ballAt(x,y,vx=0,vy=0){return{id:nextBallId++,x,y,vx,vy,r:7,piercing:false,contacts:new Set()};}
+    let nextBallId=1,notice='',noticeTime=0;
+    function ballAt(x,y,vx=0,vy=0){return{id:nextBallId++,x,y,vx,vy,r:5,piercing:false,contacts:new Set()};}
     function fillBricks(){
       bricks=stageBricks(level);
     }
     function newTurn(){
-      balls=[ballAt(paddle.x+paddle.w/2,paddle.y-8)];drops=[];waiting=true;droppedInTurn=false;
+      balls=[ballAt(paddle.x+paddle.w/2,paddle.y-8)];drops=[];waiting=true;
     }
     function setNotice(text){notice=text;noticeTime=1.6;}
     function faster(amount){
@@ -55,9 +58,9 @@
       balls[0].vx=Math.cos(angle)*speed;balls[0].vy=Math.sin(angle)*speed;api.sound?.tap?.();
     }
     function dropFrom(brick){
-      // The first broken brick in a turn always introduces an item.
-      if(droppedInTurn&&Math.random()>=.3)return;
-      droppedInTurn=true;const roll=Math.random(),kind=roll<.5?'two':roll<.7?'ten':'pierce';
+      // Rare mystery drops, including the first brick; avoid crowded pickup showers.
+      if(drops.length>=2||Math.random()>=.08)return;
+      const roll=Math.random(),kind=roll<.5?'two':roll<.7?'ten':'pierce';
       drops.push({x:brick.x+brick.w/2,y:brick.y+brick.h/2,kind});
     }
     function breakBrick(brick){
@@ -69,7 +72,7 @@
         const chosen=balls.find(ball=>ball.piercing)||balls[0];
         for(const ball of balls)ball.piercing=ball===chosen;
       }else{
-        const target=Math.max(balls.length,item.kind==='ten'?MAX_BALLS:2),source=balls.find(ball=>!ball.piercing)||balls[0];
+        const target=Math.max(balls.length,item.kind==='ten'?MAX_BALLS:balls.length*2),source=balls.find(ball=>!ball.piercing)||balls[0];
         const count=Math.min(MAX_BALLS,target)-balls.length;
         for(let i=0;i<count;i++){
           let angle=-Math.PI/2+(count===1?.65:(i/(count-1)-.5)*2.1);
@@ -79,7 +82,7 @@
           balls.push(ballAt(source.x,source.y,Math.cos(angle)*speed,Math.sin(angle)*speed));
         }
       }
-      setNotice(ITEMS[item.kind].text);api.sound?.bonus?.();
+      setNotice(item.kind==='two'?'공 2배 · '+balls.length+'개':ITEMS[item.kind].text);api.sound?.bonus?.();
     }
     function movePaddle(x){if(Number.isFinite(x))paddle.x=Math.max(0,Math.min(W-paddle.w,x-paddle.w/2));}
     function touchBrick(ball,brick){
@@ -147,13 +150,13 @@
         c.fillStyle='#1F2238';c.fillRect(0,0,W,H);
         for(let i=0;i<24;i++)circle(c,i*97%W,70+i*53%420,1,'#FFFFFF50');
         for(const brick of bricks)if(brick.on){
-          rounded(c,brick.x,brick.y,brick.w,brick.h,5,brick.solid?'#617085':brick.color);rounded(c,brick.x+3,brick.y+3,brick.w-6,4,2,'#FFFFFF59');
-          if(brick.solid||brick.hp===2){c.fillStyle='#FFFFFF';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(brick.solid?'∞':'2',brick.x+brick.w/2,brick.y+14);}
-          else if(brick.maxHp===2){c.strokeStyle='#FFFFFFC9';c.lineWidth=1.3;c.beginPath();c.moveTo(brick.x+22,brick.y+5);c.lineTo(brick.x+19,brick.y+9);c.lineTo(brick.x+25,brick.y+12);c.stroke();}
+          rounded(c,brick.x,brick.y,brick.w,brick.h,3,brick.solid?'#617085':brick.color);rounded(c,brick.x+3,brick.y+3,brick.w-6,2,1,'#FFFFFF59');
+          if(brick.solid||brick.hp===2){c.fillStyle='#FFFFFF';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(brick.solid?'∞':'2',brick.x+brick.w/2,brick.y+10);}
+          else if(brick.maxHp===2){c.strokeStyle='#FFFFFFC9';c.lineWidth=1.3;c.beginPath();c.moveTo(brick.x+17,brick.y+3);c.lineTo(brick.x+14,brick.y+6);c.lineTo(brick.x+19,brick.y+9);c.stroke();}
         }
         for(const item of drops){
-          const style=ITEMS[item.kind];rounded(c,item.x-15,item.y-11,30,22,7,style.color);
-          c.fillStyle='#263047';c.textAlign='center';c.font='bold 13px sans-serif';c.fillText(style.label,item.x,item.y+4);
+          rounded(c,item.x-15,item.y-11,30,22,7,'#B9ACEC');
+          c.fillStyle='#263047';c.textAlign='center';c.font='bold 13px sans-serif';c.fillText('?',item.x,item.y+4);
         }
         rounded(c,paddle.x,paddle.y,paddle.w,paddle.h,6,'#F4F6FB');
         for(const ball of balls){
