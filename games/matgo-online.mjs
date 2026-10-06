@@ -104,7 +104,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261006-zu1');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261006-red1');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -166,7 +166,7 @@ function showLobby(){
   $('#create small').textContent='제목을 정하고 공개하기 →';
   $('.lobby>p').innerHTML='오락실에 방을 만들고 함께 한 판 해요.<br>방번호를 입력해서도 참여할 수 있어요.';
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261006-zu1');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261006-red1');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -271,7 +271,7 @@ async function refill(){
   if(room?.status==='active'||room?.status==='waiting'){toast('대결을 마친 뒤 충전할 수 있어요.');return;}
   try{
     const state=await wallet.status();setGold(state.gold);const paid=state.free_left===0;
-    modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins} ZU<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold===0?(paid?'5 ZU로 5,000G를 충전해요.':'무료로 5,000G를 리필해요.'):'골드가 0일 때 충전할 수 있어요.'}</p><div class="row">${state.gold===0?'<button id="refill" class="btn gold">'+(paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
+    modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins} ZU<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold===0?(paid?'5 ZU로 5,000G를 충전해요.':'무료로 5,000G를 리필해요.'):'골드가 0일 때 충전할 수 있어요.'}</p><div class="row">${state.gold===0?'<button id="refill" class="btn '+(paid?'ju-paid-action':'gold')+'">'+(paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
   }catch(e){toast(e.message);}
 }
 function deny(error){closed=true;cancelPresentation();clearInterval(pollTimer);clearInterval(accessTimer);closeDialog();clearEvents();$('#app').hidden=true;$('#gate').hidden=false;$('#gate-message').textContent=error.message;$('#retry').hidden=false;}
