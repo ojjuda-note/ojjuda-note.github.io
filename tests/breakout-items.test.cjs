@@ -73,13 +73,13 @@ for(const piercing of [false,true]){
 }
 {
   const f=fixture();f.launch();const initial=f.state().speed;
-  assert.ok(initial>330&&initial<=380,'the initial speed is only moderately faster');
+  assert.ok(initial>=260&&initial<=300,'the initial speed leaves more time to follow the ball');
   for(let level=0;level<12;level++){
     if(f.state().waiting)f.launch();const s=f.state(),last=s.bricks.filter(b=>!b.solid).at(-1);
     for(const b of s.bricks)if(!b.solid)b.on=b===last;last.hp=1;
     Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
   }
-  assert.ok(f.state().speed>initial&&f.state().speed<=620,'speed increases gradually and stays bounded');
+  assert.ok(f.state().speed>initial&&f.state().speed<=460,'later stages stay within the reduced speed limit');
   f.launch();const s=f.state();Object.assign(s.balls[0],{x:180,y:468,vx:0,vy:s.speed});f.game.update(.05);
   assert.ok(s.balls[0].vy<0&&s.balls[0].y<490,'the fastest ball cannot skip the paddle during a long frame');
 }
@@ -135,7 +135,7 @@ for(const piercing of [false,true]){
   const f=fixture(),initial=f.state().speed;f.advance(5);
   assert.equal(f.state().speed,initial,'waiting for launch never speeds up the ball');
   f.launch();Object.assign(f.state().balls[0],{x:180,y:300,vx:initial,vy:0});f.advance(5);
-  assert.ok(Math.abs(f.state().speed-(initial+25))<.01,'time alone increases speed while playing');
+  assert.ok(Math.abs(f.state().speed-(initial+10))<.01,'time-based acceleration stays gentle while playing');
   assert.equal(f.state().score,0,'time-based acceleration needs no brick hits');
 }
 {

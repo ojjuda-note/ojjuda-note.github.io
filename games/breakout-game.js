@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const W=360,H=540,MAX_BALLS=10,MAX_SPEED=620,LEVELS=100;
+  const W=360,H=540,MAX_BALLS=10,MAX_SPEED=460,LEVELS=100;
   const COLORS=['#F0679A','#F4A66B','#FFD37A','#7FD1A1','#8FB3F7','#B69CF0'];
   const ITEMS={two:{text:'공 2배'},ten:{text:'공 10개'},pierce:{text:'관통 · 판 2회'}};
   function rounded(c,x,y,w,h,r,color){
@@ -48,7 +48,7 @@
   }
   function create(api){
     const paddle={x:140,y:490,w:80,h:12};
-    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=360;
+    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=280;
     let nextBallId=1,notice='',noticeTime=0;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
@@ -121,7 +121,7 @@
     }
     function step(dt){
       if(waiting){balls[0].x=paddle.x+paddle.w/2;balls[0].y=paddle.y-8;return;}
-      faster(5*dt);
+      faster(2*dt);
       for(const ball of balls){
         const beforeX=ball.x,beforeY=ball.y;ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
         if(ball.x<ball.r){ball.x=ball.r;ball.vx=Math.abs(ball.vx);}
@@ -150,7 +150,7 @@
       }
       if(bricks.every(brick=>brick.solid||!brick.on)){
         if(level===LEVELS){completed=true;finished=true;drops=[];setNotice('100단계 클리어!');api.end(score);return;}
-        level++;faster(40);fillBricks();newTurn();setNotice(level+'단계');return;
+        level++;faster(20);fillBricks();newTurn();setNotice(level+'단계');return;
       }
       balls=balls.filter(ball=>ball.y<=H+20);
       // One missed ball in a group does not cost a life.
