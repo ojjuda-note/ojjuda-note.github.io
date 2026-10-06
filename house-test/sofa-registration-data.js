@@ -3,7 +3,7 @@ import {normalizeMesh,projectMesh} from './picture-mesh.js?v=20261006-floordata1
 const directions=['left','center','right'],parts=['left-arm','body','right-arm'],slots=['slot:surface','slot:front'];
 const invalid=()=>{throw new Error('Invalid sofa registration');};
 export function validateSofaRegistration(value){
- if(value?.format!=='ojjuda-sofa-registration'||value.version!==1||!value.views||Object.keys(value.views).length!==3)invalid();
+ if(value?.format!=='ojjuda-sofa-registration'||![1,2].includes(value.version)||!value.views||Object.keys(value.views).length!==3)invalid();
  for(const direction of directions){
   const v=value.views[direction],p=v?.placement;
   if(!p||p.direction!==direction||p.width!==3.5||p.depth!==1.5||p.height!==1.8||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.y<0||p.x+(direction==='center'?3.5:1.5)>10||p.y+(direction==='center'?1.5:3.5)>7)invalid();
@@ -15,6 +15,22 @@ export function validateSofaRegistration(value){
   const feet=mesh.anchors.filter(a=>a.kind==='physical'&&Math.abs(a.world.z)<1e-8);
   if(feet.length<(direction==='center'?2:3)||feet.some(a=>a.world.x<0||a.world.y<0||a.world.x>(direction==='center'?3.5:1.5)||a.world.y>(direction==='center'?1.5:3.5)))invalid();
   projectMesh(v.mesh,p);
+  if(v.partMeshes!==undefined){
+   // Version 2 makes old clients reject unsupported part registrations instead
+   // of silently drawing them with the shared mesh. Source coverage/topology
+   // stays identical; only authored world coordinates may differ by part.
+   if(value.version!==2||!v.partMeshes||Array.isArray(v.partMeshes)||typeof v.partMeshes!=='object'||Object.keys(v.partMeshes).some(id=>!parts.includes(id)))invalid();
+   for(const part of Object.values(v.partMeshes)){
+    const own=normalizeMesh(part);
+    if(JSON.stringify(own.referenceDimensions)!==JSON.stringify(mesh.referenceDimensions)||JSON.stringify(own.indices)!==JSON.stringify(mesh.indices)||own.anchors.length!==mesh.anchors.length)invalid();
+    own.anchors.forEach((a,i)=>{
+     const base=mesh.anchors[i];
+     if(a.source.x!==base.source.x||a.source.y!==base.source.y||a.kind!==base.kind)invalid();
+     if(base.kind==='physical'&&Math.abs(base.world.z)<1e-8&&['x','y','z'].some(k=>a.world[k]!==base.world[k]))invalid();
+    });
+    projectMesh(part,p);
+   }
+  }
  }
  return structuredClone(value.views);
 }
