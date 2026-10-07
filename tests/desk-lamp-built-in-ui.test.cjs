@@ -28,7 +28,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   const pose=()=>node().evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y),elevation:Number(el.dataset.elevation)}));
   assert.equal(count(),0);assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'탁상 조명 놓기',exact:true}).click();await ready();assert.equal(count(),1);
-  assert.deepEqual(await pose(),{direction:'right',x:9.05,y:5.55,elevation:1.4});assert.equal(await f.locator('#bookshelf-gap-value').textContent(),'0.1칸');
+  assert.deepEqual(await pose(),{direction:'right',x:9.05,y:5.55,elevation:1.4});assert.equal(await f.locator('#bookshelf-gap-value').textContent(),'0.05칸');
   for(const d of ['left','center','right']){
    await f.locator('#panel button[data-direction="'+d+'"]').click();await ready();const p=runtime.views[d].placement;
    assert.deepEqual(await pose(),{direction:d,x:p.x,y:p.y,elevation:1.4});assert(await f.locator('#placement-done').isEnabled());assert.deepEqual(await read(),saved);
