@@ -4,7 +4,7 @@ const proof=process.env.WALL_SHELF_PROOF_DIR||path.resolve(root,'../wall-shelf-p
 const bytes=fs.readFileSync(path.join(root,'house-test/assets/oak-wall-shelf-v1.runtime.json')),runtime=JSON.parse(bytes);
 assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),'cbf2e748506c9cf2d8485045e4fe85556edb04cd137ec9b88f0b91a8965734e7');
 const owner='wall-shelf-built-in-test',key='ojjuda-house-playtest-v1:'+owner;
-const version=fs.readFileSync(path.join(root,'house-test/index.html'),'utf8').match(/app\.js\?v=([^"']+)/)[1];
+const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^"']+)/)[1];
 const fixture=`<!doctype html><button id="open">우리집</button><script type="module">import{openHouseTest}from'/house-test/host.js?v=${version}';document.querySelector('#open').onclick=()=>openHouseTest({owner:'${owner}',authorized:()=>true});</script>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
