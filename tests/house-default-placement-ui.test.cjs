@@ -62,6 +62,13 @@ const entries=[
    await frame.locator('#placement-done').click();assert.equal((await read()).diary,saved.diary);
   }
   const installed=await read();
+  const heightChecks=await frame.evaluate(async furniture=>{
+   const {canPlaceFurniture}=await import('./model.js?v=20261007-room1');
+   const vine={id:'item-shelf-plant',...furniture['item-shelf-plant']},book={id:'open-book',...furniture['open-book']};
+   return {vineAboveBook:canPlaceFurniture(vine.id,vine,[book]),bookBelowVine:canPlaceFurniture(book.id,book,[vine]),sameHeightBlocked:!canPlaceFurniture(vine.id,{...vine,elevation:book.elevation},[book])};
+  },installed.rooms[0].furniture);
+  for(const [name,ok]of Object.entries(heightChecks))assert(ok,name);
+
   assert.equal(Object.keys(installed.rooms[0].furniture).length,entries.length-1);
   assert.equal(installed.rooms[0].furniture.chair.attachedTo,'desk');
   assert.equal(installed.rooms[0].furniture['blanket-floor'].mode,'sofa');

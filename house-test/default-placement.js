@@ -1,5 +1,5 @@
 import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261006-vine1';
-import {FLOOR,normalizePlacement,canPlaceFurniture,findPlacement,defaultShelf} from './model.js?v=20261006-vine1';
+import {FLOOR,normalizePlacement,canPlaceFurniture,findPlacement,defaultShelf} from './model.js?v=20261007-room1';
 import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-vine1';
 
 // Starting places from references/home-style.png. These are drafts for a newly
