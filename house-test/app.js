@@ -1,6 +1,7 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
 import {createRecordPanel} from './record-panel.js?v=20261005-public1';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261006-vine1';
+import {findInitialPlacement} from './default-placement.js?v=20261007-room1';
 import {icon} from './icons.js?v=20261004-folder-kind1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,findFloorPlacement,canUseFloor,minimumFurnitureElevation,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,wallDragPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261006-vine1';
 import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261006-vine1';
@@ -407,7 +408,7 @@ function startPlacement(id='bookshelf'){
   if(group){startLinkedDraft(group);editing=true;renderWorld();renderPanel();focusRoom();if(group.desk.x!==desk.x||group.desk.y!==desk.y)toast('의자 그림이 자연스럽게 보이는 가까운 자리로 함께 옮겼어요.');return;}
   if(linkedExisting){toast('책상과 의자를 함께 놓을 자리가 부족해요.');return;}
  }
- const placed=existing?normalizePlacement(id,existing):findPlacement(id,otherFurniture(),id==='bookshelf'?defaultShelf():FURNITURE[id].layer==='surface'&&current().furniture.sofa?(sofaAccessoryFromSofa(id,current().furniture.sofa)||FURNITURE[id].preferred):undefined);
+ const placed=existing?normalizePlacement(id,existing):findInitialPlacement(id,otherFurniture());
  if(!placed){toast('가구를 놓을 자리가 부족해요. 먼저 다른 가구를 옮겨 주세요.');return;}
  editing=true;draft=clonePlacement(placed);renderWorld();renderPanel();focusRoom();
 }
