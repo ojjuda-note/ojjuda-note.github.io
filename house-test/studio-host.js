@@ -1,6 +1,6 @@
 import {saveMadeItem,listMadeItems} from './custom-store.js?v=20261006-vine1';
 import {prepareRuntime} from './anchor-editor/runtime.js?v=20261006-vine1';
-import {openHouseTest} from './host.js?v=20261007-frame1';
+import {openHouseTest} from './host.js?v=20261007-room1';
 let activeClose=null;
 export function openFurnitureStudio({owner,authorized}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;

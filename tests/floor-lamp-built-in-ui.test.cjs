@@ -46,7 +46,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'스탠드 조명 놓기',exact:true}).click();await ready(f);assert.equal(count(),1,'reuse selected artwork');
   await f.locator('#panel button[data-direction="left"]').click();await f.locator('#placement-done').click();
-  const installed=structuredClone(saved);installed.rooms[0].furniture['floor-lamp']={direction:'left',x:0,y:1.5};assert.deepEqual(await read(),installed);
+  const installed=structuredClone(saved);installed.rooms[0].furniture['floor-lamp']={direction:'left',x:0,y:.5};assert.deepEqual(await read(),installed);
   await f.locator('#overview').click();await f.evaluate(()=>document.fonts.ready);await f.waitForFunction(()=>getComputedStyle(document.querySelector('#notice')).opacity==='0');await page.screenshot({path:path.join(proof,'floor-lamp-desktop.png')});
   await close(f);f=await open();await ready(f);assert.deepEqual(await read(),installed);assert.deepEqual(await pose(f),installed.rooms[0].furniture['floor-lamp']);
   await f.getByRole('button',{name:'스탠드 조명 배치',exact:true}).click();await f.locator('#panel button[data-direction="center"]').click();await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),installed);

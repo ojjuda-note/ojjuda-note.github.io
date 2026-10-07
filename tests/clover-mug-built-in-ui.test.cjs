@@ -28,7 +28,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   const pose=()=>node().evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y),elevation:Number(el.dataset.elevation)}));
   assert.equal(count(),0);assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'클로버 머그컵 놓기',exact:true}).click();await ready();assert.equal(count(),1);
-  assert.deepEqual(await pose(),{direction:'left',x:2.9,y:4.6,elevation:.6});
+  assert.deepEqual(await pose(),{direction:'left',x:2.05,y:4.2,elevation:.6});
   for(const d of ['left','center','right']){
    await f.locator('#panel button[data-direction="'+d+'"]').click();await ready();const p=runtime.views[d].placement;
    assert.deepEqual(await pose(),{direction:d,x:p.x,y:p.y,elevation:.6});assert(await f.locator('#placement-done').isEnabled());assert.deepEqual(await read(),saved);
@@ -42,7 +42,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   },{version,owner});assert.equal(behavior.slots,0);assert(behavior.deskAllowed&&behavior.overlapBlocked);assert.equal(behavior.fallback.elevation,.6);
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'클로버 머그컵 놓기',exact:true}).click();await ready();assert.equal(count(),1);await f.locator('#placement-done').click();
-  const installed=structuredClone(saved);installed.rooms[0].furniture['clover-mug']={direction:'left',x:2.9,y:4.6,elevation:.6};assert.deepEqual(await read(),installed);
+  const installed=structuredClone(saved);installed.rooms[0].furniture['clover-mug']={direction:'left',x:2.05,y:4.2,elevation:.6};assert.deepEqual(await read(),installed);
   await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'clover-mug-desktop.png')});
   await f.evaluate(()=>location.reload());await f.locator('#app').waitFor({state:'visible'});await ready();assert.deepEqual(await read(),installed);assert.equal((await pose()).elevation,.6);
   await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'클로버 머그컵 배치',exact:true}).click();
