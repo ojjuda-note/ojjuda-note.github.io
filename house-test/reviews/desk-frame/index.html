@@ -1,0 +1,35 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/house-test/"><title>작은 원목 탁상 액자 · 제작 확인</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4efe7;color:#43382d;font:17px/1.55 system-ui,sans-serif}main{width:min(1200px,100%);margin:auto;padding:28px}h1{font-size:29px;margin:0}p{margin:5px 0 19px;color:#746452}.badge{font-size:13px;background:#e4ecd8;border-radius:30px;padding:5px 12px;float:right}.comparison{display:grid;grid-template-columns:240px 1fr;gap:20px}.card{background:#fffcf7;border:1px solid #e7dbcd;border-radius:18px;padding:18px}h2{font-size:17px;margin:0 0 10px}.ref{display:block;height:330px;max-width:100%;margin:auto;object-fit:contain}.views{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;height:330px;align-items:center}.views canvas{width:100%;height:298px;object-fit:contain}.views div{text-align:center}.views small{display:block;color:#816f5d}.room-card{margin-top:20px}.room-layout{display:grid;grid-template-columns:1fr 230px;gap:16px;align-items:center}.room{display:block;width:100%;height:auto;border-radius:12px}#detail{width:100%;height:360px;object-fit:contain;border-radius:12px;background:#f6f1e8}.note{font-size:13px;margin:12px 2px 0;color:#776958}button{font:inherit;padding:7px 13px;border:1px solid #d8c4ad;border-radius:10px;background:#f5ede3;color:#614b35;margin-right:7px;cursor:pointer}button[aria-pressed=true]{background:#77915e;color:white}header{margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}header h2{margin:0}
+@media(max-width:650px){main{padding:18px 12px}.comparison{grid-template-columns:110px 1fr;gap:8px}.card{padding:10px}.views{height:270px}.views canvas{height:230px}.ref{height:250px}.room-layout{grid-template-columns:1fr}.room-layout aside{display:none}h1{font-size:24px}h2{font-size:14px}header{display:block}button{font-size:13px;padding:5px 8px}nav{margin-top:8px}}
+</style>
+<main><span class="badge">우리집 소품</span><h1>작은 원목 탁상 액자</h1><p>벽에 기대고, 밑면은 책상 위에 맞췄습니다.</p>
+<div class="comparison"><section class="card"><h2>기준 사진 확대</h2><img class="ref" src="/house-test/reviews/desk-frame/reference.png" alt="기준 사진 속 책상 위 액자 확대"></section><section class="card"><h2>세 방향</h2><div class="views"><div><canvas id="left"></canvas><small>왼쪽</small></div><div><canvas id="center"></canvas><small>정면</small></div><div><canvas id="right"></canvas><small>오른쪽</small></div></div></section></div>
+<section class="card room-card"><header><h2>우리집에 놓은 모습</h2><nav><button data-view="left">왼쪽</button><button data-view="center">정면</button><button data-view="right" aria-pressed="true">오른쪽</button></nav></header><div class="room-layout"><canvas id="room" class="room" width="3014" height="2088"></canvas><aside><canvas id="detail" width="720" height="960"></canvas><p class="note">스탠드 뒤로 자연스럽게 가려집니다.</p></aside></div><p class="note">우리집 → 소품 → 탁상 액자에서 놓을 수 있습니다. 액자와 스탠드는 각각 옮길 수 있습니다.</p></section>
+<p class="note"><a href="/house-test/assets/desk-frame-v1.furniture-set.json" download>액자 제작 파일</a></p></main>
+<script type="module">
+import {loadBuiltInItems} from '/house-test/custom-furniture.js?v=20261006-vine1';
+import {FURNITURE} from '/house-test/furniture-catalog.js?v=20261006-vine1';
+import {furnitureGeometry} from '/house-test/furniture.js?v=20261006-vine1';
+import {paintFurniture} from '/house-test/furniture-painter.js?v=20261006-vine1';
+import {canPlaceFurniture} from '/house-test/model.js?v=20261006-vine1';
+const id='item-desk-frame';
+await loadBuiltInItems([id,'desk-lamp']);
+const placements=FURNITURE[id].preferredViews;
+async function drawItem(id,p){const g=furnitureGeometry(id,p),host=document.createElement('div'),canvas=document.createElement('canvas');host.hidden=true;host.append(canvas);document.body.append(host);try{await paintFurniture(canvas,g);return {g,canvas};}finally{host.remove();}}
+for(const d of ['left','center','right']){const {canvas}=await drawItem(id,placements[d]),c=document.getElementById(d);c.width=canvas.width;c.height=canvas.height;c.getContext('2d').drawImage(canvas,0,0);}
+const background=new Image();background.src='/house-test/assets/room-day-v3.webp';await background.decode();
+const canvas=document.getElementById('room'),ctx=canvas.getContext('2d');let rendering=false;
+async function render(direction){if(rendering)return;rendering=true;try{
+ const p=placements[direction],desk={id:'desk',direction,...({left:{x:0,y:0},center:{x:0,y:0},right:{x:9,y:3.5}}[direction])};
+ const lamp={id:'desk-lamp',direction,elevation:1.4,...({left:{x:.05,y:2.05},center:{x:1.5,y:.05},right:{x:9.05,y:5.55}}[direction])};
+ if(!canPlaceFurniture(id,p,[desk,lamp]))throw new Error(direction+': 액자 배치 충돌');
+ const surface=[lamp,{id,...p}].map(item=>({item,g:furnitureGeometry(item.id,item)})).sort((a,b)=>Math.max(...a.g.footprint.map(p=>p.y))-Math.max(...b.g.footprint.map(p=>p.y)));
+ ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(background,0,0,canvas.width,canvas.height);
+ for(const item of [desk,...surface.map(o=>o.item)]){const r=await drawItem(item.id,item);ctx.drawImage(r.canvas,r.g.left*2,r.g.top*2,r.g.width*2,r.g.height*2);}
+ const g=furnitureGeometry(id,p),detail=document.getElementById('detail'),dc=detail.getContext('2d'),h=Math.max(220,g.height+100),w=h*.75,cx=g.left+g.width/2,cy=g.top+g.height/2+25;
+ dc.clearRect(0,0,detail.width,detail.height);dc.drawImage(canvas,(cx-w/2)*2,(cy-h/2)*2,w*2,h*2,0,0,detail.width,detail.height);
+ document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===direction)));document.body.dataset.ready=direction;
+ }finally{rendering=false;}}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>render(b.dataset.view));await render('right');
+</script></html>

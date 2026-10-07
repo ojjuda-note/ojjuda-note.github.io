@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.SHELF_PLANT_PROOF_DIR||path.resolve(root,'../shelf-plant-proof');
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/shelf-plant-v1.runtime.json')));
 const owner='shelf-plant-test',key='ojjuda-house-playtest-v1:'+owner;
-const version=fs.readFileSync(path.join(root,'house-test/index.html'),'utf8').match(/app\.js\?v=([^"']+)/)[1];
+const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^"']+)/)[1];
 assert.equal(runtime.version,3);assert.equal(runtime.shapePolicy,1);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});

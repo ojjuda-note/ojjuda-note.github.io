@@ -138,6 +138,18 @@ function element(tag,classes,text){const n=document.createElement(tag);if(classe
 
 
 
+// Items on the same table share its stacking level. Resolve that tie by room
+// depth, not the order in which an owner added them. Keep the dragged node in
+// place so moving its siblings cannot interrupt pointer capture.
+function orderRoomFurniture(room,pinned=null){
+ const nodes=[...room.querySelectorAll(':scope > .furniture')];
+ const depth=node=>{const size=itemSize(node.dataset.furniture,node.dataset.direction);return Number(node.dataset.y)+(size?.d||0);};
+ nodes.sort((a,b)=>Number(a.style.zIndex)-Number(b.style.zIndex)||depth(a)-depth(b));
+ if(!nodes.length)return;
+ const pivot=nodes.includes(pinned)?pinned:nodes[0],index=nodes.indexOf(pivot);
+ let next=pivot;for(let i=index-1;i>=0;i--){const node=nodes[i];if(node.nextElementSibling!==next)room.insertBefore(node,next);next=node;}
+ let previous=pivot;for(let i=index+1;i<nodes.length;i++){const node=nodes[i];if(previous.nextElementSibling!==node)room.insertBefore(node,previous.nextElementSibling);previous=node;}
+}
 function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.direction==='right');world.replaceChildren();
  for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++){
   if(state.rooms.some(r=>r.x===x&&r.y===y))continue;
@@ -150,6 +162,7 @@ function renderWorld(){view.classList.toggle('editing-right',editing&&draft?.dir
  if(active&&editing){placed.push(...draftPlacements());room.append(makeWallGrid(draft),makeGrid(draft));}
  const desk=placed.find(p=>p.id==='desk'),sofa=placed.find(p=>p.id==='sofa');
  for(const {id,...placement}of placed)room.append(makeFurniture(id,placement,active,desk,sofa,placed));
+ orderRoomFurniture(room);
  world.append(room);}
 
  if(expanding)for(let y=-3;y<=3;y++)for(let x=-2;x<=2;x++){if(state.rooms.some(r=>r.x===x&&r.y===y))continue;const cell={x,y},b=bounds(cell),button=element('button','expansion');button.type='button';button.dataset.cell=roomKey(cell);button.disabled=!canAdd(state.rooms,cell);button.append(element('strong','',button.disabled?'·':'＋'),element('span','',title(cell)));button.setAttribute('aria-label',title(cell)+(button.disabled?' · 먼저 옆방을 연결해 주세요':' 확장'));button.style.left=b.x+'px';button.style.top=b.y+'px';button.onclick=()=>addRoom(cell);world.append(button);}
@@ -430,6 +443,7 @@ function makeFurniture(id,s,active,desk=null,sofa=null,placements=[]){
    const visible=[...furniturePlacements(current()).filter(p=>!isEditingFurniture(p.id)),...draftPlacements()];
    for(const {id:placedId,...placement}of draftPlacements()){const node=room.querySelector('[data-furniture="'+placedId+'"]');if(node){renderFurniture(node,placedId,placement,linkedDraft?placementControlPose():current().furniture.desk,editingId==='sofa'?draft:current().furniture.sofa,visible);updatePlacementStatus(node);}}
    if(itemLayer(editingId,draft)==='standing'||isBlanket(editingId))for(const {id:propId,...prop}of furniturePlacements(current()).filter(p=>!isEditingFurniture(p.id)&&itemLayer(p.id,p)==='surface')){const node=room.querySelector('[data-furniture="'+propId+'"]');if(node)renderFurniture(node,propId,prop,current().furniture.desk,editingId==='sofa'?draft:current().furniture.sofa,visible);}
+   orderRoomFurniture(room,button);
    const grid=room.querySelector('.floor-grid');if(grid)grid.replaceWith(makeGrid(draft));if(FURNITURE[controlId].wallMounted){const wall=room.querySelector('.wall-grid');if(wall)wall.replaceWith(makeWallGrid(draft));}syncPlacementControls();
   };
   const cleanup=()=>{button.removeEventListener('pointermove',drag);button.removeEventListener('pointerup',up);button.removeEventListener('pointercancel',cancel);if(button.hasPointerCapture(pointerId))button.releasePointerCapture(pointerId);if(activeDragCleanup===cleanup)activeDragCleanup=null;};
