@@ -84,7 +84,28 @@ class Game {
   canBombFlip(p){return this.bomb[p]>0&&this.deck.length>0;}
   canMove(p){return this.hand[p].length>0||this.canBombFlip(p);}
   pts(p){ return score(this.caps[p]).pts; }
-  async stealPi(from,to,why){ const c=this.caps[from]; const idx=(()=>{ let i=c.findIndex(x=>x.k==='pi'); if(i<0) i=c.findIndex(x=>x.k==='yul'&&x.asPi); if(i<0) i=c.findIndex(x=>x.k==='ssang'); if(i<0) i=c.findIndex(x=>x.k==='bonus'); return i; })(); if(idx<0) return false; const [card]=c.splice(idx,1); this.caps[to].push(card); await this.ui.event('steal',{from,to,card,why}); return true; }
+  async stealPi(from,to,why,count=1){
+    const caps=this.caps[from];let taken=false;
+    const doubleIndex=()=>{
+      let i=caps.findIndex(c=>c.k==='yul'&&c.asPi);
+      if(i<0)i=caps.findIndex(c=>c.k==='ssang');
+      if(i<0)i=caps.findIndex(c=>c.k==='bonus'&&piVal(c)===2);
+      return i;
+    };
+    while(count>0){
+      // Pay two pi with one double-pi card before taking ordinary pi.
+      let idx=count>=2?doubleIndex():-1;
+      if(idx<0)idx=caps.findIndex(c=>c.k==='pi');
+      if(idx<0)idx=doubleIndex();
+      // A triple-pi bonus is available only when it is the last pi card.
+      if(idx<0){const pi=caps.filter(isPi);if(pi.length===1)idx=caps.indexOf(pi[0]);}
+      if(idx<0)break;
+      const [card]=caps.splice(idx,1);this.caps[to].push(card);
+      count-=piVal(card);taken=true;
+      await this.ui.event('steal',{from,to,card,why});
+    }
+    return taken;
+  }
   async take(p,cards,silent){
     if(!cards.length)return;
     const before=new Set(score(this.caps[p]).det.map(d=>d[0]));
@@ -179,7 +200,7 @@ class Game {
     if(handCardStack && handCardStack.pending){ delete handCardStack.pending; if(handCardStack.length>=2 && !handCardStack.ppuk){ this.floor.splice(this.floor.indexOf(handCardStack),1); await this.take(p,handCardStack); tookAny=true; } }
     this.floor.forEach(st=>delete st.pending);
     if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p}); }
-    for(let i=0;i<stole;i++) await this.stealPi(1-p,p,'bonus');
+    await this.stealPi(1-p,p,'bonus',stole);
     await this.ui.event('state');
     await this.endTurn(p);
     return true;

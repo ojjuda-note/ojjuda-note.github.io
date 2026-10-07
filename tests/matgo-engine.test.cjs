@@ -53,11 +53,44 @@ function fixture(p, mode, owner, opponents = [6, 7, 10, 11], bonusSweep = false)
     assert.equal(combo.events.filter(e => e.type === 'steal').length, 3, 'self ppuk 2 + sweep 1; bonus adds no steal');
     cases++;
   }
-  for (const opponents of [[], [6], [43, 48]]) {
+  for (const opponents of [[], [6]]) {
     const { g, events, card } = fixture(0, 'hand', 0, opponents);
     await g.play(0, card); conserved(g);
     assert.equal(events.filter(e => e.type === 'steal').length, Math.min(2, opponents.length));
     assert.equal(g.caps[1].length, 0, 'available pi, including bonus, can be taken');
+    cases++;
+  }
+  for (const p of [0, 1]) for (const mode of ['hand', 'flip']) {
+    for (const {opponents, expected, self = true, asPi = false} of [
+      {opponents:[43,48],expected:[48]},
+      {opponents:[6,7,41],expected:[41]},
+      {opponents:[49,6,48,7],expected:[48]},
+      {opponents:[32,6,7],expected:[32],asPi:true},
+      {opponents:[32,6,7],expected:[6,7]},
+      {opponents:[49,6,7],expected:[6,7]},
+      {opponents:[49,47,6,7],expected:[47]},
+      {opponents:[49,6],expected:[6,49]},
+      {opponents:[49],expected:[49]},
+      {opponents:[49,32,20],expected:[49]},
+      {opponents:[49,48],expected:[48]},
+      {opponents:[49,48,6],expected:[6],self:false},
+      {opponents:[49,48],expected:[48],self:false},
+      {opponents:[49],expected:[49],self:false},
+    ]) {
+      const {g,events,card}=fixture(p,mode,self?p:1-p,opponents);
+      if(asPi)g.caps[1-p].find(c=>c.id===32).asPi=true;
+      await g.play(p,card);conserved(g);
+      assert.deepEqual(events.filter(e=>e.type==='steal').map(e=>e.card.id),expected,
+        `seat ${p}, ${mode}, opponent ${opponents}, ${self?2:1} pi owed`);
+      assert.deepEqual(Array.from(g.caps[1-p],c=>c.id),opponents.filter(id=>!expected.includes(id)));
+      cases++;
+    }
+  }
+  for(const p of [0,1]){
+    const {g,events,card}=fixture(p,'hand',p,[49,41,47,6,7],true);
+    await g.play(p,card);conserved(g);
+    assert.deepEqual(events.filter(e=>e.type==='steal').map(e=>e.card.id),[41,6],
+      'self ppuk plus sweep takes one double and one single, leaving triple bonus');
     cases++;
   }
   const unknown = fixture(0, 'hand', undefined);
