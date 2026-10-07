@@ -153,7 +153,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,6);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,7);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -229,14 +229,17 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.evaluate(()=>{
       const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c}]));
       const take=id=>{const c=pool.get(id);pool.delete(id);return c;};
-      g.hand=[[1,3,16].map(take),[44].map(take)];g.floor=[0,4].map(id=>[take(id)]);g.caps=[[],[6,7,10,11].map(take)];
+      g.hand=[[1,3,16].map(take),[44].map(take)];g.floor=[0,4].map(id=>[take(id)]);g.caps=[[],[49,41,6,7].map(take)];
       g.deck=[48,2,20].map(take).concat([...pool.values()]);g.ppukCount=[0,0];g.turn=0;g.endTurn=async()=>{};render();
     });
     await f.page.locator('#handMe .c[data-id="1"]').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
     assert.equal(await f.page.locator('.stack.ppuk .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),0);
     assert.match(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),/보너스 1/);assert.equal(await f.page.locator('#mePpuk').textContent(),'뻑 1/3');
     await f.page.locator('#handMe .c[data-id="3"]').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy);
-    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);assert.equal(await f.page.locator('#capsOp .c').count(),2,'self ppuk steals 2 cards; tied bonus adds no steal');
+    assert.equal(await f.page.locator('#capsMe .c[data-id="48"]').count(),1);
+    assert.equal(await f.page.locator('#capsMe .c[data-id="41"]').count(),1,'self ppuk takes one double-pi card');
+    assert.equal(await f.page.locator('#capsOp .c[data-id="49"]').count(),1,'triple bonus stays while other pi remain');
+    assert.equal(await f.page.locator('#capsOp .c').count(),3,'two pi are paid with one double; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){

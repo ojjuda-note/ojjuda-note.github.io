@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {CARDS,Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin,cpuLevelForGold,MAX_CPU_LEVEL} from '../games/matgo-engine.mjs';
 import {aiChooseCard as oldChooseCard,aiChoose as oldChoose} from '../supabase/functions/matgo/engine-v4.mjs';
+import * as current from '../games/matgo-engine.mjs';
+import * as previous from '../supabase/functions/matgo/engine-v5.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
 import {replayOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';
@@ -41,7 +43,8 @@ const countOnly=n=>new Proxy({length:n},{get(target,key){if(key==='length')retur
 choice.hand[0]=countOnly(8);choice.deck=countOnly(20);
 assert.equal(aiChooseCard(choice,1).id,13);
 
-async function play(seed,gold,cpuMode='adaptive'){
+async function play(seed,gold,cpuMode='adaptive',engine=current){
+  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=engine;
   let game,winner=-1;
   game=new Game({event:async(type,data)=>{if(type==='end')winner=data.winner;},choose:async(p,ids)=>aiChoose(game,p,ids),chooseGukjin:async p=>aiChooseGukjin(game,p),goStop:async(p,points)=>aiGoStop(game,p,points)});
   game.cpuMode=cpuMode;game.random=seededRandom(seed);game.bank=[gold,5000];game.first=seed%2;game.deal();
@@ -75,6 +78,8 @@ assert.ok(different>0,'high-tier strategy actually changes decisions');
 
 // A cached v5 browser may still finish its original CPU policy. Both paths are
 // fully replayed from a server-owned starting balance, never a client balance.
+// Recreate the exact prior rules for cached clients, including the old CPU fallback.
+const oldTiered=await play(23,900001,'adaptive',previous),oldNormal=await play(23,900001,'normal',previous);
 let snapshot=tiered.round,settled;
 const actor='00000000-0000-4000-8000-000000000001',roundId='00000000-0000-4000-9000-000000000001';
 const handler=createHandler({env:name=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[name],fetchImpl:async(url,options)=>{
@@ -82,11 +87,13 @@ const handler=createHandler({env:name=>({SUPABASE_URL:'https://fixture.invalid',
   const params=JSON.parse(options.body);if(params.p_action==='round')return Response.json({round:snapshot});
   settled=params.p_gold;return Response.json({ok:true,gold:settled});
 }});
-const request=actions=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:5,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
+const request=(actions,version=7)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
 assert.equal((await request(tiered.game.actions)).status,200);assert.equal(settled,tiered.game.bank[0]);
-snapshot=legacy.round;assert.equal((await request(legacy.game.actions)).status,200);assert.equal(settled,legacy.game.bank[0]);
-const forged=structuredClone(legacy.game.actions);forged.find(a=>a.type==='play'&&a.p===1).card=999;
-assert.equal((await request(forged)).status,409,'compatibility does not accept forged CPU moves');
+for(const played of [oldTiered,oldNormal]){
+  snapshot=played.round;assert.equal((await request(played.game.actions,5)).status,200);assert.equal(settled,played.game.bank[0]);
+}
+const forged=structuredClone(oldNormal.game.actions);forged.find(a=>a.type==='play'&&a.p===1).card=999;
+assert.equal((await request(forged,5)).status,409,'compatibility does not accept forged CPU moves');
 
 const room={status:'active',seed:'ab'.repeat(32),actions:[],start_gold:[5000,5000],first:1,carry:1};
 const rich={...room,start_gold:[900001,900001]};

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import * as current from '../games/matgo-engine.mjs';
 import * as legacy from '../supabase/functions/matgo/engine-v4.mjs';
+import * as previous from '../supabase/functions/matgo/engine-v5.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
 import {replayOnline,advanceOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';
 
@@ -23,7 +24,7 @@ for(const p of [0,1])for(const id of [48,49]){
 }
 
 // New and already-open CPU pages settle through their own engine versions.
-for(const [version,engine] of [[4,legacy],[5,current]])for(let seed=1;seed<=20;seed++){
+for(const [version,engine] of [[4,legacy],[5,previous],[6,previous],[7,current]])for(let seed=1;seed<=20;seed++){
   const round={seed,gold:5000,first:0,carry:1};let g;
   g=new engine.Game({event:async()=>{},choose:async(p,ids)=>engine.aiChoose(g,p,ids),
     chooseGukjin:async p=>engine.aiChooseGukjin(g,p),goStop:async(p,s)=>p===1?engine.aiGoStop(g,p,s):'stop'});
@@ -52,16 +53,20 @@ let room={status:'active',seed:'11'.repeat(32),start_gold:[5000,5000],first:0,ca
 const initial=await replayOnline(room),pr=initial.prompt;
 const command=pr.type==='chongtong'?{type:'chongtong',decision:'continue'}:{type:'play',card:initial.game.hand[pr.p][0].id};
 const first=await advanceOnline(room,pr.p,{...command,rules_version:4});
-assert.equal(first.actions[0].rules_version,5);
+assert.equal(first.actions[0].rules_version,7);
 assert.equal((await replayOnline({...room,actions:first.actions})).game instanceof legacy.Game,false);
 const oldActions=structuredClone(first.actions);delete oldActions[0].rules_version;
 assert.ok((await replayOnline({...room,actions:oldActions})).game instanceof legacy.Game);
-room={...room,actions:first.actions};
-for(let i=0;i<120;i++){
-  const state=await replayOnline(room);if(state.game.over)break;
-  const next=await automaticOnline(room);room={...room,actions:next.actions};
-  assert.equal(room.actions[0].rules_version,5);
+for(const version of [5,7]){
+  const actions=structuredClone(first.actions);actions[0].rules_version=version;
+  room={...room,actions};
+  assert.equal((await replayOnline(room)).game instanceof previous.Game,version===5);
+  for(let i=0;i<120;i++){
+    const state=await replayOnline(room);if(state.game.over)break;
+    const next=await automaticOnline(room);room={...room,actions:next.actions};
+    assert.equal(room.actions[0].rules_version,version);
+  }
+  assert.equal((await replayOnline(room)).game.over,true);
 }
-assert.equal((await replayOnline(room)).game.over,true);
 assert.equal((await replayOnline({...room,actions:[]})).game instanceof legacy.Game,false,'rematch uses new rules');
-console.log('PASS: bonus value/turn/card conservation, 40 v4/v5 CPU settlements, server-pinned online rules and legacy replay');
+console.log('PASS: bonus value/turn/card conservation, 80 v4/v5/v6/v7 CPU settlements, server-pinned online rules and legacy replay');
