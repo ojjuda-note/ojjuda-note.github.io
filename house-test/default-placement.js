@@ -21,7 +21,7 @@ const reference={
   'pencil-cup':{direction:'right',x:9.05,y:3.6,elevation:1.4},
   'botanical-frame':{direction:'left',x:0,y:3,elevation:2.1},
   'item-oak-wall-shelf':{direction:'right',x:9.6,y:3.5,elevation:2.65},
-  'item-shelf-plant':{direction:'right',x:9.62,y:3.9,elevation:2.77},
+  'item-shelf-plant':{direction:'right',x:9.62,y:4.3,elevation:2.77},
   'item-desk-frame':{direction:'right',x:9.73,y:3.6,elevation:1.4},
 };
 const sofaItems=new Set(SOFA_ACCESSORIES.map(({id})=>id).concat('blanket-floor'));
@@ -30,7 +30,7 @@ export function initialPlacement(id,others=[]){
   if(id==='bookshelf')return defaultShelf();
   if(sofaItems.has(id)){
     const sofa=others.find(p=>p.id==='sofa');
-    if(sofa)return sofaAccessoryFromSofa(id,sofa);
+    if(sofa)return {...sofaAccessoryFromSofa(id,sofa),...(id.startsWith('blanket-')?{mode:'sofa'}:{})};
   }
   return {...(reference[id]||FURNITURE[id]?.preferred)};
 }

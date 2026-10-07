@@ -44,6 +44,7 @@ const entries=[
    assert.equal(p.direction,direction,id+' starts on the picture side without direction clicks');
    assert(await frame.locator('#placement-done').isEnabled(),id+' has a valid collision-free starting place');
    assert.deepEqual(await read(),before,'selection stays a draft');
+   if(id==='item-shelf-plant')assert.deepEqual(p,{direction:'right',x:9.62,y:4.3,elevation:2.77},'vines stay on their shelf away from desk accessories');
    if(id==='item-desk-frame'){
     assert.equal(p.x,9.73);assert.equal(p.y,3.6);assert.equal(p.elevation,1.4);
     await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),before);
