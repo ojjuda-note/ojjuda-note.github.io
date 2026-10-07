@@ -144,6 +144,15 @@ function segmentDistanceSq(ax,ay,bx,by,cx,cy,dx,dy){
     pointSegmentDistanceSq(cx,cy,ax,ay,bx,by),pointSegmentDistanceSq(dx,dy,ax,ay,bx,by));
 }
 const wrapA=a=>{ while(a>Math.PI) a-=TAU; while(a<-Math.PI) a+=TAU; return a; };
+// The return segment closes this excursion through the existing safe land.
+function trailEncloses(pts,endX,endY,x,y){
+  let inside=false, a={x:endX,y:endY};
+  for(const b of pts){
+    if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x) inside=!inside;
+    a=b;
+  }
+  return inside;
+}
 class World{
   constructor(U,mode){ this.U=U; this.G=10; this.GW=U*10; this.N=this.GW*this.GW; this.mode=mode;
     this.own=new Int8Array(this.N); this.trail=new Int8Array(this.N); this.trailT=new Float32Array(this.N);
@@ -222,8 +231,9 @@ class World{
     mark(k); if(gx>0) mark(k-1); if(gx<GW-1) mark(k+1); if(gy>0) mark(k-GW); if(gy<GW-1) mark(k+GW);
     const lp=p.pts[p.pts.length-1]; if(!lp||(lp.x-p.x)**2+(lp.y-p.y)**2>.04) p.pts.push({x:p.x,y:p.y,t:this.time});
   }
-  capture(p){ const before=this.counts[p.id], id=p.id, W=this.GW;
-    for(const k of p.trail){ if(this.trail[k]===id) this.trail[k]=0; this.setOwn(k,id); } const pts=p.pts; p.trail=[]; p.pts=[]; p.tc=new Map();
+  capture(p){ if(!p.trail.length) return; const before=this.counts[p.id], id=p.id, W=this.GW, claimed=new Set();
+    const claim=k=>{ if(this.own[k]!==id){ claimed.add(k); this.setOwn(k,id); } };
+    for(const k of p.trail){ if(this.trail[k]===id) this.trail[k]=0; claim(k); } const pts=p.pts; p.trail=[]; p.pts=[]; p.tc=new Map();
     // 내 땅을 감싸는 상자 안에서만 계산 (상자 밖은 어차피 바깥)
     const b=p.bb, x0=Math.max(0,b[0]-1), y0=Math.max(0,b[1]-1), x1=Math.min(W-1,b[2]+1), y1=Math.min(W-1,b[3]+1);
     const st=++this._st, q=this._q; let h=0,tl=0;
@@ -231,10 +241,11 @@ class World{
     for(let x=x0;x<=x1;x++){ push(y0*W+x); push(y1*W+x); } for(let y=y0;y<=y1;y++){ push(y*W+x0); push(y*W+x1); }
     while(h<tl){ const k=q[h++], x=k%W, y=(k/W)|0; if(x>x0) push(k-1); if(x<x1) push(k+1); if(y>y0) push(k-W); if(y<y1) push(k+W); }
     const victims=new Set();
-    for(let y=y0;y<=y1;y++) for(let k=y*W+x0, e=y*W+x1; k<=e; k++) if(this._stamp[k]!==st&&this.own[k]!==id){ const o=this.own[k]; if(o) victims.add(o); this.setOwn(k,id); }
+    for(let y=y0;y<=y1;y++) for(let k=y*W+x0, e=y*W+x1; k<=e; k++) if(this._stamp[k]!==st&&this.own[k]!==id){ const o=this.own[k]; if(o) victims.add(o); claim(k); }
     this.events.push({t:'capture',p,gained:this.counts[id]-before,pts});
-    // 연결 직후 내 땅 안의 적을 먼저 확정해, 처치로 물려받는 땅까지 연쇄 포획하지 않아요.
-    const trapped=this.players.filter(vp=>vp!==p&&vp.alive&&this.own[this.si(vp.x,vp.y)]===id);
+    // 이번에 얻은 땅과 실제로 감싼 기존 땅만 포획해요. 다른 내 땅의 침입자는 살아 있어요.
+    const encloses=(x,y)=>{ const k=this.si(x,y); return claimed.has(k)||(this.own[k]===id&&trailEncloses(pts,p.x,p.y,x,y)); };
+    const trapped=this.players.filter(vp=>vp!==p&&vp.alive&&encloses(vp.x,vp.y));
     for(const vp of trapped) this.kill(vp,id,'capture');
     for(const v of victims){ const vp=this.players[v-1]; if(vp.alive&&this.counts[v]===0) this.kill(vp,id,'land'); } }
   kill(p,by,why){ if(!p.alive) return; if(p.shieldT>0&&why!=='end') return; p.alive=false; p.boostT=0;
