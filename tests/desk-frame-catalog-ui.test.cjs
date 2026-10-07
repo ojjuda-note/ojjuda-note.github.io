@@ -55,8 +55,8 @@ const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(
   const behavior=await f.evaluate(async({version,owner,id})=>{
    const suffix='?v='+version,m=await import('/house-test/model.js'+suffix),{FURNITURE}=await import('/house-test/furniture-catalog.js'+suffix),{listMadeItems}=await import('/house-test/custom-store.js'+suffix);
    const p=FURNITURE[id].preferredViews.right,desk={id:'desk',direction:'right',x:9,y:3.5},lamp={id:'desk-lamp',direction:'right',x:9.05,y:5.55,elevation:1.4};
-   return {slots:(await listMadeItems(owner)).length,deskAndLampAllowed:m.canPlaceFurniture(id,p,[desk,lamp]),duplicateBlocked:!m.canPlaceFurniture(id,p,[{id,...p}]),insideDeskBlocked:!m.canPlaceFurniture(id,{...p,elevation:1.3},[desk])};
-  },{version,owner,id});assert.equal(behavior.slots,0);assert(behavior.deskAndLampAllowed&&behavior.duplicateBlocked&&behavior.insideDeskBlocked);
+   return {slots:(await listMadeItems(owner)).length,deskAndLampAllowed:m.canPlaceFurniture(id,p,[desk,lamp]),duplicateBlocked:!m.canPlaceFurniture(id,p,[{id,...p}]),sameHeightLampBlocked:!m.canPlaceFurniture(id,p,[desk,{...lamp,x:p.x,y:p.y}])};
+  },{version,owner,id});assert.equal(behavior.slots,0);for(const [name,value]of Object.entries(behavior))if(name!=='slots')assert(value,name);
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'탁상 액자 놓기',exact:true}).click();await ready();await f.locator('#panel button[data-direction="right"]').click();await ready();await f.locator('#placement-done').click();
   const installed=structuredClone(saved),p=runtime.views.right.placement;installed.rooms[0].furniture[id]={direction:'right',x:p.x,y:p.y,elevation:p.elevation};assert.deepEqual(await read(),installed);
