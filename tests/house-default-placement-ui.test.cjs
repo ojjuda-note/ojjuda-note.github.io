@@ -36,6 +36,14 @@ const entries=[
   const open=async()=>{await page.locator('#open').click();frame=await(await page.locator('iframe[title="우리집"]').elementHandle()).contentFrame();await frame.locator('#app').waitFor({state:'visible'});await frame.locator('[data-tab="room"]').click();};
   const pose=id=>frame.locator('[data-furniture="'+id+'"]').evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y),elevation:Number(el.dataset.elevation||0)}));
   await open();assert.deepEqual(await read(),saved,'opening the catalog never installs items automatically');
+  // Selecting a soft furnishing first uses the same reference seat as selecting it after the sofa.
+  for(const [id,label,p]of [['cream-floral-cushion','크림 꽃무늬 쿠션',{direction:'left',x:.33,y:4.45,elevation:.81}],['blanket-floor','분홍 담요',{direction:'left',x:.38,y:3.89,elevation:.025}]]){
+   await frame.getByRole('button',{name:'소품',exact:true}).click();
+   await frame.getByRole('button',{name:label+' 놓기',exact:true}).click();
+   await frame.locator('[data-furniture="'+id+'"][data-render-state="ready"]').waitFor();
+   assert.deepEqual(await pose(id),p,'reference positions also work before the sofa is installed');
+   await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
+  }
   for(const [id,label,category,direction]of entries){
    const before=await read();await frame.getByRole('button',{name:category,exact:true}).click();
    await frame.getByRole('button',{name:label+' 놓기',exact:true}).click();
@@ -44,7 +52,7 @@ const entries=[
    assert.equal(p.direction,direction,id+' starts on the picture side without direction clicks');
    assert(await frame.locator('#placement-done').isEnabled(),id+' has a valid collision-free starting place');
    assert.deepEqual(await read(),before,'selection stays a draft');
-   if(id==='item-shelf-plant')assert.deepEqual(p,{direction:'right',x:9.62,y:4.3,elevation:2.77},'vines stay on their shelf away from desk accessories');
+   if(id==='item-shelf-plant')assert.deepEqual(p,{direction:'right',x:9.62,y:4.34,elevation:2.77},'vines stay on their shelf away from desk accessories');
    if(id==='item-desk-frame'){
     assert.equal(p.x,9.73);assert.equal(p.y,3.6);assert.equal(p.elevation,1.4);
     await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),before);

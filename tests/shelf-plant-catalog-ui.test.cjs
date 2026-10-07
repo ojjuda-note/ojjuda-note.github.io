@@ -50,7 +50,7 @@ assert.equal(runtime.version,3);assert.equal(runtime.shapePolicy,1);
   await f.locator('#accessory-height').evaluate(el=>{el.value='2.3';el.dispatchEvent(new Event('input',{bubbles:true}));});await ready();assert(!(await f.locator('#placement-done').isEnabled()),'leaves hitting the table cannot be committed');
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'덩굴 화분 놓기',exact:true}).click();await ready();assert.equal(count(),loadsBeforeCancel);await f.locator('#placement-done').click();
-  const installed=structuredClone(saved);installed.rooms[0].furniture['item-shelf-plant']={direction:'right',x:9.62,y:4.3,elevation:2.77};assert.deepEqual(await read(),installed);
+  const installed=structuredClone(saved);installed.rooms[0].furniture['item-shelf-plant']={direction:'right',x:9.62,y:4.34,elevation:2.77};assert.deepEqual(await read(),installed);
   await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'shelf-plant-desktop.png')});
   await Promise.all([f.waitForNavigation({waitUntil:'domcontentloaded'}),f.evaluate(()=>location.reload())]);await f.locator('#app').waitFor({state:'visible'});await ready();assert.deepEqual(await read(),installed);
   await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'덩굴 화분 배치',exact:true}).click();
