@@ -28,7 +28,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   const pose=()=>node().evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y),elevation:Number(el.dataset.elevation||0)}));
   assert.equal(count(),0);assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'가구',exact:true}).click();await f.getByRole('button',{name:'창가 화분 놓기',exact:true}).click();await ready();assert.equal(count(),1);
-  assert.deepEqual(await pose(),{direction:'right',x:8,y:.5,elevation:0});
+  assert.deepEqual(await pose(),{direction:'right',x:7,y:.5,elevation:0});
   for(const d of ['left','center','right']){
    await f.locator('#panel button[data-direction="'+d+'"]').click();await ready();const p=runtime.views[d].placement;
    assert.deepEqual(await pose(),{direction:d,x:p.x,y:p.y,elevation:0});assert(await f.locator('#placement-done').isEnabled());assert.deepEqual(await read(),saved);
@@ -42,7 +42,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   },{version,owner});assert.equal(behavior.slots,0);assert(behavior.deskBlocked&&behavior.carpetAllowed&&behavior.overlapBlocked);assert(behavior.fallback);
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'창가 화분 놓기',exact:true}).click();await ready();assert.equal(count(),1);await f.locator('#placement-done').click();
-  const installed=structuredClone(saved);installed.rooms[0].furniture['window-plant']={direction:'right',x:8,y:.5};assert.deepEqual(await read(),installed);
+  const installed=structuredClone(saved);installed.rooms[0].furniture['window-plant']={direction:'right',x:7,y:.5};assert.deepEqual(await read(),installed);
   await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'window-plant-desktop.png')});
   await Promise.all([f.waitForNavigation({waitUntil:'domcontentloaded'}),f.evaluate(()=>location.reload())]);await f.locator('#app').waitFor({state:'visible'});await ready();assert.deepEqual(await read(),installed);assert.equal((await pose()).elevation,0);
   await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'가구',exact:true}).click();await f.getByRole('button',{name:'창가 화분 배치',exact:true}).click();

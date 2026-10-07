@@ -5,7 +5,8 @@ const projectPath=path.join(root,'house-test/assets/desk-frame-v1.furniture-set.
 const original=JSON.parse(fs.readFileSync(projectPath));
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/desk-frame-v1.runtime.json')));
 const id='item-desk-frame',owner='desk-frame-test',key='ojjuda-house-playtest-v1:'+owner;
-const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^"']+)/)[1];
+const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/furniture-catalog\.js\?v=([^"']+)/)[1];
+const modelVersion=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^"']+)/)[1];
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
@@ -52,11 +53,11 @@ const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(
    assert(await node().locator('canvas').evaluate(c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)));
   }
   assert(await lampInFront(),'the nearer lamp occludes the frame even when the frame is added last');
-  const behavior=await f.evaluate(async({version,owner,id})=>{
-   const suffix='?v='+version,m=await import('/house-test/model.js'+suffix),{FURNITURE}=await import('/house-test/furniture-catalog.js'+suffix),{listMadeItems}=await import('/house-test/custom-store.js'+suffix);
+  const behavior=await f.evaluate(async({version,modelVersion,owner,id})=>{
+   const suffix='?v='+version,m=await import('/house-test/model.js?v='+modelVersion),{FURNITURE}=await import('/house-test/furniture-catalog.js'+suffix),{listMadeItems}=await import('/house-test/custom-store.js'+suffix);
    const p=FURNITURE[id].preferredViews.right,desk={id:'desk',direction:'right',x:9,y:3.5},lamp={id:'desk-lamp',direction:'right',x:9.05,y:5.55,elevation:1.4};
    return {slots:(await listMadeItems(owner)).length,deskAndLampAllowed:m.canPlaceFurniture(id,p,[desk,lamp]),duplicateBlocked:!m.canPlaceFurniture(id,p,[{id,...p}]),sameHeightLampBlocked:!m.canPlaceFurniture(id,p,[desk,{...lamp,x:p.x,y:p.y}])};
-  },{version,owner,id});assert.equal(behavior.slots,0);for(const [name,value]of Object.entries(behavior))if(name!=='slots')assert(value,name);
+  },{version,modelVersion,owner,id});assert.equal(behavior.slots,0);for(const [name,value]of Object.entries(behavior))if(name!=='slots')assert(value,name);
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
   await f.getByRole('button',{name:'탁상 액자 놓기',exact:true}).click();await ready();await f.locator('#panel button[data-direction="right"]').click();await ready();await f.locator('#placement-done').click();
   const installed=structuredClone(saved),p=runtime.views.right.placement;installed.rooms[0].furniture[id]={direction:'right',x:p.x,y:p.y,elevation:p.elevation};assert.deepEqual(await read(),installed);

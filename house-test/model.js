@@ -183,7 +183,9 @@ export function canPlaceFurniture(id,s,others=[]){
    const low=placed.elevation??0,otherLow=other.elevation??0;
    return separate||low+itemHeight(id,placed)<=otherLow+1e-8||otherLow+itemHeight(other.id,other)<=low+1e-8;
   }
-  return (id==='desk'&&other.id==='chair'&&isDeskChairPair(placed,other))||(id==='chair'&&other.id==='desk'&&isDeskChairPair(other,placed))||layer!==itemLayer(other.id,other)||(layer==='surface'&&FURNITURE[id].allowOverlap===true&&FURNITURE[other.id].allowOverlap===true)||separate;
+  // Surface items on different shelves can share a floor footprint. The actual
+  // hanging pixels above are still checked against every other item's body.
+  return (id==='desk'&&other.id==='chair'&&isDeskChairPair(placed,other))||(id==='chair'&&other.id==='desk'&&isDeskChairPair(other,placed))||layer!==itemLayer(other.id,other)||(layer==='surface'&&(ownBody.maxZ<=otherBody.minZ+1e-8||otherBody.maxZ<=ownBody.minZ+1e-8||FURNITURE[id].allowOverlap===true&&FURNITURE[other.id].allowOverlap===true))||separate;
  });
 }
 // Calibrated to the inside corners where the skirting meets the floor.
