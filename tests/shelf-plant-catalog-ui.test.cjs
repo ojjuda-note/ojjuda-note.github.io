@@ -3,7 +3,8 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const proof=process.env.SHELF_PLANT_PROOF_DIR||path.resolve(root,'../shelf-plant-proof');
 const runtime=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets/shelf-plant-v1.runtime.json')));
 const owner='shelf-plant-test',key='ojjuda-house-playtest-v1:'+owner;
-const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^"']+)/)[1];
+const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/furniture-catalog\.js\?v=([^"']+)/)[1];
+const modelVersion=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^"']+)/)[1];
 assert.equal(runtime.version,3);assert.equal(runtime.shapePolicy,1);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
@@ -32,8 +33,8 @@ assert.equal(runtime.version,3);assert.equal(runtime.shapePolicy,1);
    assert(Number(await f.locator('#accessory-height').getAttribute('min'))>1);
    assert(await node().locator('canvas').evaluate(c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)));
   }
-  const behavior=await f.evaluate(async({version,owner})=>{
-   const suffix='?v='+version,m=await import('/house-test/model.js'+suffix),a=await import('/house-test/custom-furniture.js'+suffix),{FURNITURE}=await import('/house-test/furniture-catalog.js'+suffix),{listMadeItems}=await import('/house-test/custom-store.js'+suffix),rt=await import('/house-test/anchor-editor/runtime.js'+suffix);
+  const behavior=await f.evaluate(async({version,modelVersion,owner})=>{
+   const suffix='?v='+version,m=await import('/house-test/model.js?v='+modelVersion),a=await import('/house-test/custom-furniture.js'+suffix),{FURNITURE}=await import('/house-test/furniture-catalog.js'+suffix),{listMadeItems}=await import('/house-test/custom-store.js'+suffix),rt=await import('/house-test/anchor-editor/runtime.js'+suffix);
    const id='item-shelf-plant',p={...FURNITURE[id].preferredViews.right},desk={id:'desk',direction:'right',x:9,y:3.5},lower={...p,elevation:2.3},min=m.minimumFurnitureElevation(id,'right');
    const raw=await(await fetch('/house-test/assets/shelf-plant-v1.runtime.json')).json();rt.validateRuntime(raw);
    const checks={slots:(await listMadeItems(owner)).length,floorBlocked:!m.canUseFloor(id),unpreparedRejected:!rt.runtimePoseValid(raw,p),
@@ -44,7 +45,7 @@ assert.equal(runtime.version,3);assert.equal(runtime.shapePolicy,1);
    checks.allShelves=['left','center','right'].every(d=>{const s={...FURNITURE['item-oak-wall-shelf'].preferredViews[d]};if(d==='left')s.y=1.7;return m.canPlaceFurniture(id,FURNITURE[id].preferredViews[d],[{id:'item-oak-wall-shelf',...s}]);});
    const before=performance.now();for(let i=0;i<10;i++)m.canPlaceFurniture(id,lower,[desk,{id,...p}]);checks.collisionTenCallsMs=performance.now()-before;
    return checks;
-  },{version,owner});
+  },{version,modelVersion,owner});
   assert.equal(behavior.slots,0);for(const [k,v]of Object.entries(behavior))if(!['slots','collisionTenCallsMs'].includes(k))assert(v,k);
   const loadsBeforeCancel=count();
   await f.locator('#accessory-height').evaluate(el=>{el.value='2.3';el.dispatchEvent(new Event('input',{bubbles:true}));});await ready();assert(!(await f.locator('#placement-done').isEnabled()),'leaves hitting the table cannot be committed');

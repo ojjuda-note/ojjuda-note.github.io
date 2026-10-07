@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),workspace=path.dirname(root);
 const proof=process.env.BLANKET_PROOF_DIR||path.join(workspace,'house-opening-proof/blanket-placement');
 const font=process.env.CHAIR_PROOF_FONT||path.join(workspace,'carpet-studio/NotoSansCJKkr-Regular.otf');
-const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/model\.js\?v=([^']+)/)[1];
+const version=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8').match(/furniture-catalog\.js\?v=([^']+)/)[1];
 const owner='local-blanket-placement',key='ojjuda-house-playtest-v1:'+owner,id='blanket-floor';
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'house-test/item-assets.json'))),sofaViews=JSON.parse(fs.readFileSync(path.join(root,'house-test/assets',manifest.assets.sofa.file))).views;
 const sofas={left:{direction:'left',x:0,y:3},center:{direction:'center',x:3,y:0},right:{direction:'right',x:7.5,y:3}};
