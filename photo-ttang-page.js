@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261007-flow1';
+  const gameUrl = '/games/photo-ttang.html?v=20261007-capture2';
   const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient

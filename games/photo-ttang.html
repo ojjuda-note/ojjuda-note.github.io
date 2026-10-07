@@ -129,6 +129,15 @@ function segmentDistanceSq(ax,ay,bx,by,cx,cy,dx,dy){
     pointSegmentDistanceSq(cx,cy,ax,ay,bx,by),pointSegmentDistanceSq(dx,dy,ax,ay,bx,by));
 }
 const wrapA=a=>{ while(a>Math.PI) a-=TAU; while(a<-Math.PI) a+=TAU; return a; };
+// The return segment closes this excursion through the existing safe land.
+function trailEncloses(pts,endX,endY,x,y){
+  let inside=false, a={x:endX,y:endY};
+  for(const b of pts){
+    if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x) inside=!inside;
+    a=b;
+  }
+  return inside;
+}
 class World{
   constructor(UW,mode,UH){ UH=UH||UW; const U=UW; this.U=UW; this.UW=UW; this.UH=UH; this.G=10; this.GW=UW*10; this.GH=UH*10; this.N=this.GW*this.GH; this.mode=mode;
     this.own=new Int8Array(this.N); this.trail=new Int8Array(this.N); this.trailT=new Float32Array(this.N);
@@ -213,8 +222,9 @@ class World{
     mark(k); if(gx>0) mark(k-1); if(gx<GW-1) mark(k+1); if(gy>0) mark(k-GW); if(gy<this.GH-1) mark(k+GW);
     const lp=p.pts[p.pts.length-1]; if(!lp||(lp.x-p.x)**2+(lp.y-p.y)**2>.04) p.pts.push({x:p.x,y:p.y,t:this.time});
   }
-  capture(p){ const before=this.counts[p.id], id=p.id, W=this.GW;
-    for(const k of p.trail){ if(this.trail[k]===id) this.trail[k]=0; this.setOwn(k,id); } const pts=p.pts; p.trail=[]; p.pts=[]; p.tc=new Map();
+  capture(p){ if(!p.trail.length) return; const before=this.counts[p.id], id=p.id, W=this.GW, claimed=new Set();
+    const claim=k=>{ if(this.own[k]!==id){ claimed.add(k); this.setOwn(k,id); } };
+    for(const k of p.trail){ if(this.trail[k]===id) this.trail[k]=0; claim(k); } const pts=p.pts; p.trail=[]; p.pts=[]; p.tc=new Map();
     if(p.bot){ p.plan=[];p.path=null;p.think=0; }
     // 내 땅을 감싸는 상자 안에서만 계산 (상자 밖은 어차피 바깥)
     const b=p.bb, x0=Math.max(0,b[0]-1), y0=Math.max(0,b[1]-1), x1=Math.min(W-1,b[2]+1), y1=Math.min(this.GH-1,b[3]+1);
@@ -223,10 +233,12 @@ class World{
     for(let x=x0;x<=x1;x++){ push(y0*W+x); push(y1*W+x); } for(let y=y0;y<=y1;y++){ push(y*W+x0); push(y*W+x1); }
     while(h<tl){ const k=q[h++], x=k%W, y=(k/W)|0; if(x>x0) push(k-1); if(x<x1) push(k+1); if(y>y0) push(k-W); if(y<y1) push(k+W); }
     const victims=new Set();
-    for(let y=y0;y<=y1;y++) for(let k=y*W+x0, e=y*W+x1; k<=e; k++) if(this._stamp[k]!==st&&this.own[k]!==id){ const o=this.own[k]; if(o) victims.add(o); this.setOwn(k,id); }
+    for(let y=y0;y<=y1;y++) for(let k=y*W+x0, e=y*W+x1; k<=e; k++) if(this._stamp[k]!==st&&this.own[k]!==id){ const o=this.own[k]; if(o) victims.add(o); claim(k); }
     this.events.push({t:'capture',p,gained:this.counts[id]-before,pts});
-    // 연결 직후 내 땅 안의 적을 먼저 확정해, 처치로 물려받는 땅까지 연쇄 포획하지 않아요.
-    const trapped=this.players.filter(vp=>vp!==p&&vp.alive&&this.own[this.si(vp.x,vp.y)]===id);
+    // 이번에 얻은 땅과 실제로 감싼 기존 땅만 포획해요. 다른 내 땅의 침입자는 살아 있어요.
+    const encloses=(x,y)=>{ const k=this.si(x,y); return claimed.has(k)||(this.own[k]===id&&trailEncloses(pts,p.x,p.y,x,y)); };
+    const trapped=this.players.filter(vp=>vp!==p&&vp.alive&&encloses(vp.x,vp.y));
+    if(this.onCapture) this.onCapture(p,encloses);
     for(const vp of trapped) this.kill(vp,id,'capture');
     for(const v of victims){ const vp=this.players[v-1]; if(vp.alive&&this.counts[v]===0) this.kill(vp,id,'land'); } }
   kill(p,by,why){ if(!p.alive) return; if(p.shieldT>0&&why!=='end') return; p.alive=false; p.boostT=0;
@@ -349,10 +361,13 @@ function respawnMe(){ const W=world, GW=W.GW; let best=null,bs=-1;
 function newMob(type,sc){ const T=MOB[type]; let x=0,y=0; for(let t=0;t<60;t++){ x=1.5+Math.random()*(world.UW-3); y=1.5+Math.random()*(world.UH-3); if(!world.own[world.si(x,y)]&&Math.hypot(x-me.x,y-me.y)>Math.min(world.UW,world.UH)*.35) break; }
   const a=Math.random()*TAU, v=T.v*sc*(.9+Math.random()*.2); return {type,x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,v,r:T.r,ph:Math.random()*TAU,alive:true,born:world?world.time:0}; }
 function blocked(x,y,r){ if(x<r||y<r||x>world.UW-r||y>world.UH-r) return true; return me&&world.own[world.si(x,y)]===me.id; }
+function captureMobs(p,encloses){ if(p!==me) return; const W=world;
+  for(const m of mobs){ if(!m.alive||!encloses(m.x,m.y)) continue;
+    m.alive=false; burst(m.x,m.y,MOB[m.type].col,30,7); floats.push({x:m.x,y:m.y-1,txt:`${MOB[m.type].name} 처치!`,col:'#C8952A',life:1.2}); sfx.capture(); respawnQ.push({type:m.type,at:W.time+MOB_RESPAWN});
+  }
+}
 function updateMobs(dt){ if(!me) return; const W=world;
   for(const m of mobs){ if(!m.alive) continue;
-    // 땅을 연결한 순간의 위치로 포획: 다음 이동으로 빠져나가기 전에 처치해요.
-    if(W.own[W.si(m.x,m.y)]===me.id){ m.alive=false; burst(m.x,m.y,MOB[m.type].col,30,7); floats.push({x:m.x,y:m.y-1,txt:`${MOB[m.type].name} 처치!`,col:'#C8952A',life:1.2}); sfx.capture(); respawnQ.push({type:m.type,at:W.time+MOB_RESPAWN}); continue; }
     m.ph+=dt; const px=m.x,py=m.y,r=W.mobRadius(m);
     if(m.type==='chase'&&me.alive&&W.own[W.si(me.x,me.y)]!==me.id){ const a=Math.atan2(me.y-m.y,me.x-m.x), cur=Math.atan2(m.vy,m.vx); const na=cur+Math.max(-2.2*dt,Math.min(2.2*dt,wrapA(a-cur))); m.vx=Math.cos(na)*m.v; m.vy=Math.sin(na)*m.v; }
     if(m.type==='spin'){ const cur=Math.atan2(m.vy,m.vx)+Math.sin(m.ph*1.7)*1.8*dt; m.vx=Math.cos(cur)*m.v; m.vy=Math.sin(cur)*m.v; }
@@ -383,7 +398,7 @@ function drawMob(m,ox,oy,S){ const T=MOB[m.type], X=ox+m.x*S, Y=oy+m.y*S, R=worl
   ctx.restore(); }
 function decodeSil(runs,N){ const a=new Uint8Array(N); let k=0,v=0; for(const r of runs.split(',').map(Number)){ if(v) a.fill(1,k,k+r); k+=r; v^=1; } return a; }
 function startStage(i){ if(!photoAllowed()){lockPhotoGame();return false;} if(PUBLIC_DEMO){let allowed=false;try{allowed=!demoStarted&&i===0&&parent!==window&&parent.OjjudaPhotoTtangDemo?.beginRound();}catch{}if(!allowed){endDemo();return false;}demoStarted=true;} stage=i; allClearShown=false; respawnQ=[]; const P=LIST[i]; if(P.id) Comm.record(P.id,false); mode='play'; over=false; paused=false; parts=[]; floats=[]; revealT=-1; joys.clear(); document.querySelectorAll('.joy').forEach(e=>e.remove());
-  world=new World(P.UW,'solo',P.UH); world.setViewScale(view().S); sil=decodeSil(P.sil,world.N); silTotal=sil.reduce((a,b)=>a+b,0); mySil=0;
+  world=new World(P.UW,'solo',P.UH); world.onCapture=captureMobs; world.setViewScale(view().S); sil=decodeSil(P.sil,world.N); silTotal=sil.reduce((a,b)=>a+b,0); mySil=0;
   const base=world.setOwn.bind(world); world.setOwn=(k,v)=>{ const o=world.own[k]; if(o===v) return; base(k,v); if(sil[k]&&me){ if(o===me.id) mySil--; if(v===me.id) mySil++; } };
   me=world.addPlayer({name:'나',color:0,speed:5.6,turn:({slow:4.8,normal:6,fast:7.2})[window.OjjudaGameControls?.get('photo_ttang').turn]||6,noSpawn:true,keepLand:true}); world.spawn(me); mySil=0; for(let k=0;k<world.N;k++) if(sil[k]&&world.own[k]===me.id) mySil++;
   const lv=P.level??i; const D=diff(lv); const names=BOTNAMES.slice().sort(()=>Math.random()-.5); const cols=[2,3,4,5,6,7].sort(()=>Math.random()-.5);

@@ -4,13 +4,15 @@ const html=fs.readFileSync(path.join(__dirname,'../games/photo-ttang.html'),'utf
 const engine=html.slice(html.indexOf('/*ENGINE*/')+'/*ENGINE*/'.length,html.indexOf('// ================= 사진 땅따먹기'));
 const mobCode=html.slice(html.indexOf('function blocked('),html.indexOf('let respawnQ=[];'));
 const mobTypes=html.match(/const MOB=\{[^\n]+/)[0];
-const {World,hitMob}=vm.runInNewContext(engine+`
+const {World,hitMob,placeMobs,mobRespawns}=vm.runInNewContext(engine+`
 ${mobTypes}
 let world,me,mobs,respawnQ=[],over=false,floats=[];
 const MOB_RESPAWN=30,burst=()=>{},sfx={capture(){}};
 ${mobCode}
-function hitMob(w,p,m,dt=0){world=w;me=p;mobs=[m];respawnQ=[];updateMobs(dt);return p.alive;}
-({World,hitMob});`);
+function placeMobs(w,p,list){world=w;me=p;mobs=list;respawnQ=[];w.onCapture=captureMobs;}
+function hitMob(w,p,m,dt=0){placeMobs(w,p,[m]);updateMobs(dt);return p.alive;}
+function mobRespawns(){return respawnQ.length;}
+({World,hitMob,placeMobs,mobRespawns});`);
 require('./ttang-capture-cases.cjs')(World, 'photo-ttang');
 
 function fixture({diagonal=false,bot=false,scale=20}={}){
@@ -173,11 +175,38 @@ test('a mob on newly captured land dies before its next move can escape',()=>{
   const p=w.addPlayer({noSpawn:true,alive:true,x:3,y:3,born:-1});
   const m=mob(12.09,12.05,{vx:4.2});
   const k=w.si(m.x,m.y);w.trail[k]=p.id;p.trail=[k];
+  placeMobs(w,p,[m]);
   w.capture(p);
   assert.equal(w.own[k],p.id);
+  assert.equal(m.alive,false,'capture is decided immediately, before any mob movement');
+  assert.equal(mobRespawns(),1);
+  w.capture(p);
+  assert.equal(mobRespawns(),1,'no duplicate respawn for an already captured mob');
   assert.equal(hitMob(w,p,m,.03),true);
   assert.equal(m.alive,false,'check the captured position before movement');
   assert.equal(m.x,12.09);
+});
+test('mobs inside existing or inherited land survive without a new enclosing capture',()=>{
+  for(const type of ['bounce','chase','spike','spin']){
+    const w=new World(32,'solo',40);w.time=10;
+    const p=w.addPlayer({noSpawn:true,alive:true,x:3,y:3,born:-1});
+    const m=mob(12,12,{type});w.setOwn(w.si(12,12),p.id);
+    assert.equal(hitMob(w,p,m),true);
+    assert.equal(m.alive,true,`${type} must not die merely for standing on owned land`);
+    assert.equal(mobRespawns(),0);
+    w.capture(p);
+    assert.equal(m.alive,true,'no trail means no capture');
+  }
+});
+test('a later entrant is not caught by a capture that happened before it arrived',()=>{
+  const w=new World(32,'solo',40);w.time=10;
+  const p=w.addPlayer({noSpawn:true,alive:true,x:3,y:3,born:-1});
+  placeMobs(w,p,[]);
+  const k=w.si(12,12);w.trail[k]=p.id;p.trail=[k];w.capture(p);
+  const m=mob(12,12);
+  hitMob(w,p,m);
+  assert.equal(m.alive,true);
+  assert.equal(mobRespawns(),0);
 });
 test('birth animation uses the same growing radius for drawing and collision',()=>{
   const w=new World(32,'solo',40),p=w.addPlayer({noSpawn:true,alive:true,born:0});
