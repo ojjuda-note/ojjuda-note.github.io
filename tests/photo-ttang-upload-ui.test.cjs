@@ -137,12 +137,28 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
    paused=true;LIST=PHOTOS;startStage(14);paused=true;sound=false;
    const bot=world.players.find(p=>p.bot);world.time=10;world.kill(bot,me.id,'cut');
    const at=bot.respawnAt;world.time=39.98;world.step(.01);const before=bot.alive;world.time=40;world.step(0);const after=bot.alive;
-   mobs=mobs.slice(0,1);const m=mobs[0];world.time=50;world.setOwn(world.si(m.x,m.y),me.id);updateMobs(0);
-   const killed=mobs.length,queued=respawnQ[0].at;world.time=79.99;updateMobs(0);const mobBefore=mobs.length;
-   world.time=80;updateMobs(0);const mobAfter=mobs.length;const born=mobs[0].born;startStage(0);
-   return{at,before,after,killed,queued,mobBefore,mobAfter,born,pending:respawnQ.length};
+   // Entering existing land must not kill a mob. Close a real trail around it
+   // before checking the 30-second respawn, as the current capture rules require.
+   world.time=50;world.itemsOn=false;world.items=[];world.events=[];
+   world.own.fill(0);world.counts.fill(0);world.counts[0]=world.N;world.trail.fill(0);mySil=0;
+   for(const p of world.players){p.alive=false;p.trail=[];p.pts=[];p.tc=new Map();p.bb=[1e9,1e9,-1,-1];}
+   Object.assign(me,{alive:true,x:3,y:3,born:-1,shieldT:1});
+   for(let y=20;y<40;y++)for(let x=20;x<40;x++)world.setOwn(y*world.GW+x,me.id);
+   const m={type:'bounce',x:12,y:15,v:4.2,vx:4.2,vy:0,r:.75,ph:0,alive:true,born:-1};
+   mobs=[m];respawnQ=[];world.setOwn(world.si(m.x,m.y),me.id);updateMobs(0);
+   const entered={alive:m.alive,count:mobs.length,pending:respawnQ.length};
+   for(const [x,y] of [[18,3],[18,24],[3,24],[3,3]]){
+    const dx=x-me.x,dy=y-me.y,n=Math.ceil(Math.hypot(dx,dy)/.05);
+    for(let i=0;i<n;i++){const px=me.x,py=me.y;me.x+=dx/n;me.y+=dy/n;world.visit(me,px,py);}
+   }
+   const captured=world.events.some(e=>e.t==='capture'&&e.gained>0)&&!m.alive;
+   updateMobs(0);const killed=mobs.length,queued=respawnQ[0]?.at??null;
+   world.time=79.99;updateMobs(0);const mobBefore=mobs.length;
+   world.time=80;updateMobs(0);const mobAfter=mobs.length,born=mobs[0]?.born??null;
+   const pendingAfterRespawn=respawnQ.length;startStage(0);
+   return{at,before,after,entered,captured,killed,queued,mobBefore,mobAfter,born,pendingAfterRespawn,pending:respawnQ.length};
   });
-  assert.deepEqual(respawn,{at:40,before:false,after:true,killed:0,queued:80,mobBefore:0,mobAfter:1,born:80,pending:0});
+  assert.deepEqual(respawn,{at:40,before:false,after:true,entered:{alive:true,count:1,pending:0},captured:true,killed:0,queued:80,mobBefore:0,mobAfter:1,born:80,pendingAfterRespawn:0,pending:0},'land entry preserves mobs; enclosing capture starts the 30-second respawn');
   assert.deepEqual(f.errors,[]);await f.context.close();
   console.log('PASS: photo preparation, try-to-save after pause/loss/clear, preserved edits/consent/privacy, registration retry, coverage rules, and bot/mob respawn');
  }finally{await browser.close();fs.rmSync(dir,{recursive:true,force:true});}
