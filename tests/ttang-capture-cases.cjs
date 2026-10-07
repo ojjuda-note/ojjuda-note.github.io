@@ -36,7 +36,7 @@ module.exports = function captureCases(World, game) {
       assert.equal(player.alive, true);
       assert.ok(world.events.some(e => e.t === 'capture' && e.p === player));
     }
-    return {world, player, enemy, outside, trailCell, close};
+    return {world, player, enemy, outside, trailCell, close, walk};
   }
 
   test(`${game}: closing a real loop kills enclosed enemies with land elsewhere`, () => {
@@ -63,6 +63,31 @@ module.exports = function captureCases(World, game) {
     assert.equal(f.world.events.find(e => e.t === 'death').why, 'capture');
   });
 
+  test(`${game}: entering owned land does not kill an invader`, () => {
+    const f = fixture({oldLand:true});
+    f.enemy.trail = []; f.enemy.pts = []; f.enemy.tc.clear();
+    f.enemy.x = 5.9; f.enemy.y = 5;
+    f.world.visit(f.enemy, 6.05, 5);
+    assert.equal(f.enemy.alive, true);
+    f.world.capture(f.player);
+    assert.equal(f.enemy.alive, true, 'an empty trail must not capture existing land');
+  });
+
+  test(`${game}: a small boundary excursion does not capture distant invaders`, () => {
+    const f = fixture({oldLand:true});
+    f.walk(6.2,3); f.walk(5.8,3);
+    assert.equal(f.enemy.alive, true);
+    assert.equal(f.player.kills, 0);
+  });
+
+  test(`${game}: a real loop elsewhere does not capture an invader outside that loop`, () => {
+    const f = fixture({oldLand:true});
+    f.enemy.x = 2.5; f.enemy.y = 5;
+    f.close();
+    assert.equal(f.enemy.alive, true);
+    assert.equal(f.player.kills, 0);
+  });
+
   test(`${game}: capture preserves shield protection and has no duplicate deaths`, () => {
     const f = fixture({shield:3});
     f.outside.x = f.outside.y = 29;
@@ -70,6 +95,7 @@ module.exports = function captureCases(World, game) {
     assert.equal(f.enemy.alive, true);
     assert.equal(f.player.kills, 0);
     f.enemy.shieldT = 0;
+    for (const [x,y] of [[24,7],[24,24],[3,24],[3,7]]) f.walk(x,y);
     f.world.capture(f.player);
     f.world.capture(f.player);
     assert.equal(f.enemy.alive, false);
