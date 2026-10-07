@@ -27,7 +27,9 @@ const owner='original-sofa-review',version='20261006-vine1';
   const pose=()=>sofa().evaluate(n=>({x:+n.dataset.x,y:+n.dataset.y,direction:n.dataset.direction}));
   const slide=async(id,n)=>{await home.locator(id).evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));},String(n));await ready();};
   await open();await home.locator('[data-category="furniture"]').click();await home.getByRole('button',{name:'소파 놓기',exact:true}).click();await ready();
-  assert.equal(await sofa().locator('canvas').getAttribute('data-layers'),'right-arm body left-arm');
+  // Wait for approved artwork after the catalog placeholder becomes ready.
+ await sofa().locator('canvas[data-layers]').waitFor({state:'attached'});
+ assert.equal(await sofa().locator('canvas').getAttribute('data-layers'),'right-arm body left-arm');
   assert((await sofa().locator('canvas').getAttribute('data-sources')).includes('sofa-original-layers-v1/side.png'));
   await home.locator('#placement-done').click();await ready();
   await home.locator('.room[data-room="0:0"]').screenshot({path:path.join(output,'sofa-original-room.png')});

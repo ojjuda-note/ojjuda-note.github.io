@@ -99,6 +99,21 @@
         "order": 2,
         "hidden": false
       }
+    },
+    "item-desk-frame": {
+      "file": "desk-frame-v1.runtime.json",
+      "revision": "4476e94a61d19947",
+      "catalog": {
+        "label": "작은 원목 탁상 액자",
+        "shortLabel": "탁상 액자",
+        "width": 0.6,
+        "depth": 0.27,
+        "height": 0.75,
+        "layer": "surface",
+        "preview": "assets/desk-frame-preview-v1.png",
+        "order": 3,
+        "hidden": false
+      }
     }
   }
 }
