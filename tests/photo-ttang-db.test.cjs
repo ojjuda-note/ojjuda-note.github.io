@@ -48,6 +48,8 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
    create function public.community_game_monthly_ranking(p_game text) returns json language sql stable security invoker set search_path='' as $$select ojjuda_game_internal.community_game_monthly_ranking(p_game)$$;`);
   const rankMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_monthly_ranking.sql'))),'utf8');
   await db.exec(rankMigration);await db.exec(rankMigration);
+  const uploadMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_unlimited_uploads.sql'))),'utf8');
+  await db.exec(uploadMigration);await db.exec(uploadMigration);
   async function as(actor,sql,params=[],role='authenticated'){
    return db.transaction(async tx=>{await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);await tx.exec('set local role '+role);return tx.query(sql,params);});
   }
@@ -112,8 +114,10 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   const after=(await db.query('select status,report_count from photo_stages where id=$1',[pending.id])).rows[0];
   assert.deepEqual(after,{status:'hidden',report_count:3});
   assert.equal((await as(null,"select name from storage.objects where bucket_id='photo-stages'",[],'anon')).rows.length,0,'hidden photo no longer readable');
-  await stage(A,'private');await stage(A,'private');await assert.rejects(()=>stage(A,'private'),/하루에 5장/);
+  for(let n=0;n<12;n++)await stage(A,['private','friends','public'][n%3]);
+  assert.equal((await as(A,'select count(*)::int as total from photo_stages where owner=$1 and created_at>now()-interval \'1 day\'',[A])).rows[0].total,15,'registration has no daily quota for any visibility');
+  await assert.rejects(()=>as(C,`insert into photo_stages(owner,image_path,mask_rle) values($1,$2,'1')`,[A,A+'/forged-owner.jpg']),/login required/);
   await assert.rejects(()=>as(C,`insert into photo_stages(owner,image_path,mask_rle) values($1,$2,'1')`,[C,A+'/other.jpg']),/row-level security/);
-  console.log('PASS: server 19th-birthday boundary, guest/minor/anonymous/missing-identity data and storage gates, RPC protection, admin approval, friends, reports, daily cap and other buckets');
+  console.log('PASS: server 19th-birthday boundary, guest/minor/anonymous/missing-identity data and storage gates, RPC protection, admin approval, friends, reports, unlimited uploads and other buckets');
  }finally{await db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
