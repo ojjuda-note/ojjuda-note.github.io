@@ -3,22 +3,32 @@
  'use strict';
  const LABELS={sticker:'카드 스티커',font:'카드 글꼴',effect:'카드 효과',frame:'프로필 테두리',nickname:'이름 장식',game:'게임 테마'};
  const STICKERS={heart:'♡',clover:'🍀',moon:'🌙',coffee:'☕',flower:'🌷',cheer:'힘내!'};
- let options={},state=null,revision=0,busy=false,dialog=null,subscription=null,opener=null;
+ let options={},state=null,stateOwner=null,revision=0,busy=false,dialog=null,subscription=null,opener=null;
+ let stateRequest=null,decorOwner=null,decorClient=null,decorEpoch=0;
+ const decorCache=new Map(),decorPending=new Map(),DECOR_TTL=60000;
  const houseFrames=new Map();
  const pending=new Map();let timer=null;
  const user=()=>options.getUserId?.()||null;
- const owned=key=>state?.owned?.find(x=>x.key===key&&(!x.expires_at||Date.parse(x.expires_at)>Date.now()));
+ const owned=key=>stateOwner===user()?state?.owned?.find(x=>x.key===key&&(!x.expires_at||Date.parse(x.expires_at)>Date.now())):undefined;
  const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
  async function rpc(name,args={}){const r=await options.client.rpc(name,args).abortSignal(AbortSignal.timeout(15000));if(r.error)throw r.error;return r.data;}
- async function refresh(){
-  const run=++revision,owner=user();state=null;
-  if(!owner||!options.client){render();decorateWorld();return;}
-  try{const data=await rpc('ju_shop_state');if(run!==revision||user()!==owner)return;if(!data?.ok)throw Error('state');state=data;options.onBalance?.(data.coins,owner);render();decorateWorld();updateComposer();}
-  catch{if(run===revision){render('상점 정보를 불러오지 못했어요. 다시 열어 주세요.');decorateWorld();}}
+ function refresh({force=false}={}){
+  const owner=user(),client=options.client;
+  if(!force&&stateRequest?.owner===owner&&stateRequest.client===client)return stateRequest.promise;
+  const run=++revision;
+  if(stateOwner!==owner){state=null;stateOwner=owner;}
+  if(!owner||!client){state=null;render();decorateWorld();return Promise.resolve();}
+  const request={owner,client,promise:null};
+  request.promise=(async()=>{
+   try{const data=await rpc('ju_shop_state');if(run!==revision||user()!==owner||options.client!==client)return;if(!data?.ok)throw Error('state');state=data;options.onBalance?.(data.coins,owner);render();decorateWorld();updateComposer();}
+   catch{if(run===revision){state=null;render('상점 정보를 불러오지 못했어요. 다시 열어 주세요.');decorateWorld();}}
+   finally{if(stateRequest===request)stateRequest=null;}
+  })();
+  stateRequest=request;return request.promise;
  }
  function install(next){
   const changed=options.client!==next.client;options=next;
-  if(changed){subscription?.unsubscribe?.();subscription=next.client?.auth?.onAuthStateChange?.(()=>{revision++;state=null;setTimeout(refresh,0);})?.data?.subscription;}
+  if(changed){revision++;state=null;stateOwner=null;stateRequest=null;subscription?.unsubscribe?.();subscription=next.client?.auth?.onAuthStateChange?.((event)=>{if(event==='SIGNED_OUT'||stateOwner!==user()){revision++;state=null;stateOwner=null;stateRequest=null;resetDecor();}setTimeout(()=>void refresh(),0);})?.data?.subscription;}
   setTimeout(()=>void refresh(),0);
   clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')void refresh();},60000);
  }
@@ -38,7 +48,7 @@
    if(!result?.ok){if(['coins','unavailable','banned','invalid','request_conflict'].includes(result?.reason)){pending.delete(keyFor(owner,product.key));try{localStorage.removeItem(keyFor(owner,product.key));}catch{}}
     throw Error(result?.reason==='coins'?'ZU가 부족해요. 충전 후 다시 이용해 주세요.':'구매하지 못했어요. 차감 내역을 확인해 주세요.');}
    pending.delete(keyFor(owner,product.key));try{localStorage.removeItem(keyFor(owner,product.key));}catch{}
-   await refresh();message(result.spent?`${result.spent} ZU로 구매했어요. 지금 사용하기를 눌러 적용해 보세요.`:'이미 구매한 상품이에요. 추가 차감은 없어요.');
+   resetDecor();await refresh({force:true});message(result.spent?`${result.spent} ZU로 구매했어요. 지금 사용하기를 눌러 적용해 보세요.`:'이미 구매한 상품이에요. 추가 차감은 없어요.');
   }catch(error){if(user()===owner)message(error.message?.includes('ZU')?error.message:'결과를 확인하지 못했어요. 같은 상품의 구매 버튼을 다시 누르면 중복 차감 없이 확인해요.');}
   finally{busy=false;if(user()===owner)renderButtons();}
  }
@@ -53,7 +63,7 @@
    return;
   }
   busy=true;renderButtons();const owner=user();
-  try{const r=await rpc('ju_shop_equip',{p_slot:product.slot,p_product:state.selected?.[product.slot]===product.key?null:product.key});if(user()!==owner)return;if(!r.ok)throw Error();await refresh();message('적용했어요.');}
+  try{const r=await rpc('ju_shop_equip',{p_slot:product.slot,p_product:state.selected?.[product.slot]===product.key?null:product.key});if(user()!==owner)return;if(!r.ok)throw Error();resetDecor();await refresh({force:true});message('적용했어요.');}
   catch{if(user()===owner)message('적용하지 못했어요. 다시 시도해 주세요.');}finally{busy=false;renderButtons();}
  }
  function renderButtons(){dialog?.querySelectorAll('[data-shop-product]').forEach(button=>button.disabled=busy||!state);}
@@ -83,6 +93,24 @@
   opener=document.activeElement;render();if(!dialog.open)dialog.showModal();void refresh();
  }
  function close(){if(busy){message('구매 결과를 확인하고 있어요. 잠시만 기다려 주세요.');return false;}dialog?.close();opener?.isConnected&&opener.focus();return true;}
+ function resetDecor(){decorEpoch++;decorCache.clear();decorPending.clear();decorOwner=user();decorClient=options.client;}
+ async function publicDecor(ids){
+  if(decorOwner!==user()||decorClient!==options.client)resetDecor();
+  const epoch=decorEpoch,missing=ids.filter(id=>!decorPending.has(id)&&(!decorCache.has(id)||Date.now()-decorCache.get(id).at>=DECOR_TTL));
+  if(missing.length){
+   const request=rpc('ju_shop_public_decor',{p_users:missing}).then(data=>{
+    if(epoch!==decorEpoch||decorOwner!==user()||decorClient!==options.client)return;
+    for(const id of missing)decorCache.set(id,{data:data?.[id]||{},at:Date.now()});
+    // Keep only a small, short-lived set while browsing many neighbours.
+    while(decorCache.size>200)decorCache.delete(decorCache.keys().next().value);
+   }).finally(()=>{for(const id of missing)if(decorPending.get(id)===request)decorPending.delete(id);});
+   for(const id of missing)decorPending.set(id,request);
+  }
+  await Promise.all([...new Set(ids.map(id=>decorPending.get(id)).filter(Boolean))]);
+  if(epoch!==decorEpoch||decorOwner!==user()||decorClient!==options.client)throw Error('stale_decor_request');
+  return Object.fromEntries(ids.map(id=>[id,decorCache.get(id)?.data||{}]));
+ }
+ function decorationKey(data,slot){const entry=data?.[slot];return entry&&(!entry.expires_at||Date.parse(entry.expires_at)>Date.now())?entry.key||'':'';}
  function decorateWorld(){
   const owner=user(),selected=Object.fromEntries(Object.entries(state?.selected||{}).filter(([,key])=>owned(key)));
   for(const [frame,ownerId]of houseFrames)if(frame.isConnected)void paintHouse(frame,ownerId);else houseFrames.delete(frame);
@@ -90,13 +118,13 @@
   document.documentElement.dataset.juGame=owner?selected.game||'':'';
   document.querySelectorAll('[data-ju-own-name]').forEach(n=>n.dataset.juNickname=owner?selected.nickname||'':'');
   const ids=[...new Set([...document.querySelectorAll('[data-ju-user]')].map(n=>n.dataset.juUser).filter(x=>/^[a-f0-9-]{36}$/i.test(x)))].slice(0,100);
-  if(ids.length&&owner&&options.client)void rpc('ju_shop_public_decor',{p_users:ids}).then(data=>{if(user()!==owner)return;for(const n of document.querySelectorAll('[data-ju-user]')){const d=data[n.dataset.juUser]||{};n.querySelector('.pc-av')?.setAttribute('data-ju-frame',d.frame?.key||'');n.querySelector('.pc-name')?.setAttribute('data-ju-nickname',d.nickname?.key||'');}}).catch(()=>{});
+  if(ids.length&&owner&&options.client)void publicDecor(ids).then(data=>{if(user()!==owner)return;for(const n of document.querySelectorAll('[data-ju-user]')){if(!ids.includes(n.dataset.juUser))continue;const d=data[n.dataset.juUser]||{};n.querySelector('.pc-av')?.setAttribute('data-ju-frame',decorationKey(d,'frame'));n.querySelector('.pc-name')?.setAttribute('data-ju-nickname',decorationKey(d,'nickname'));}}).catch(()=>{});
  }
  async function paintHouse(frame,ownerId){
   const viewer=user();if(!viewer)return;
-  try{const data=await rpc('ju_shop_public_decor',{p_users:[ownerId]});if(user()!==viewer||!frame.isConnected)return;const doc=frame.contentDocument,d=data[ownerId]||{};if(!doc)return;
+  try{const data=await publicDecor([ownerId]);if(user()!==viewer||!frame.isConnected)return;const doc=frame.contentDocument,d=data[ownerId]||{};if(!doc)return;
    if(!doc.querySelector('[data-shop-css]')){const link=doc.createElement('link');link.rel='stylesheet';link.href='/ju-shop.css?v=20261006-shop1';link.dataset.shopCss='';doc.head.append(link);}
-   doc.querySelector('#home-profile-photo')?.setAttribute('data-ju-frame',d.frame?.key||'');doc.querySelector('#home-profile-nick')?.setAttribute('data-ju-nickname',d.nickname?.key||'');
+   doc.querySelector('#home-profile-photo')?.setAttribute('data-ju-frame',decorationKey(d,'frame'));doc.querySelector('#home-profile-nick')?.setAttribute('data-ju-nickname',decorationKey(d,'nickname'));
   }catch{}
  }
  function bindHouse(frame,owner){const id=String(owner).match(/[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}/i)?.[0];if(!id)return()=>{};houseFrames.set(frame,id);void paintHouse(frame,id);return()=>houseFrames.delete(frame);}
