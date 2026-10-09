@@ -77,6 +77,30 @@ const publicFolder='20000000-0000-0000-0000-000000000001',privateFolder='2000000
  await db.exec("CREATE FUNCTION public.reject_test_log() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN RAISE EXCEPTION 'synthetic audit failure';END$$;CREATE TRIGGER reject_test_log BEFORE INSERT ON public.admin_log FOR EACH ROW EXECUTE FUNCTION public.reject_test_log();");
  await actor(admin);const rollback=(await feed()).items.find(x=>x.id==='rollback');await assert.rejects(remove('post','rollback',rollback.revision),/synthetic audit failure/);await db.exec('RESET ROLE');
  assert.equal((await db.query("SELECT count(*)::int n FROM public.house_posts WHERE id='rollback'")).rows[0].n,1);assert.equal((await db.query("SELECT count(*)::int n FROM ojjuda_world_private.content_archive WHERE source_id='rollback'")).rows[0].n,0);await db.exec('DROP TRIGGER reject_test_log ON public.admin_log');
+
+ // Board comments join the same protected moderation and archive workflow.
+ await db.exec(`CREATE FUNCTION public.is_banned(uuid) RETURNS boolean LANGUAGE sql STABLE AS $$SELECT false$$;
+ CREATE FUNCTION public.blocked_between(uuid,uuid) RETURNS boolean LANGUAGE sql STABLE AS $$SELECT false$$;
+ CREATE TABLE public.diaries(id text PRIMARY KEY,user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,title text,body text,visibility text,created_at timestamptz DEFAULT now());
+ CREATE VIEW public.world_board_posts AS SELECT id,'post'::text source,user_id FROM public.house_posts WHERE deleted_at IS NULL;
+ INSERT INTO public.house_posts(id,user_id,body,visibility) VALUES('board-parent','${writer}','게시판 원글','all'),('board-private','${writer}','비공개 원글','me');
+ INSERT INTO public.diaries(id,user_id,title,body,visibility) VALUES('board-diary','${writer}','기록','내용','all');`);
+ await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261009033125_world_board_comments.sql'),'utf8'));
+ const adminBoard=fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_admin_board_comments.sql'));
+ await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',adminBoard),'utf8'));
+ await db.query("INSERT INTO public.world_board_comments(post_id,author_id,body) VALUES('board-parent',$1,'게시판 공개 댓글'),('board-private',$1,'게시판 비공개 댓글')",[other]);
+ await db.query("INSERT INTO public.world_board_comments(diary_id,author_id,body) VALUES('board-diary',$1,'기록 댓글')",[other]);
+ await actor(writer);await assert.rejects(feed('board_comment'),/not_admin/);
+ await actor(admin);let boardRows=(await feed('board_comment')).items;assert.equal(boardRows.length,3);
+ let boardPublic=boardRows.find(x=>x.body==='게시판 공개 댓글');assert.equal(boardPublic.author_nick,'다른작성자');
+ assert((await edit('board_comment',boardPublic.id,'충분히 긴 관리자 수정 댓글 '.repeat(300),boardPublic.revision)).ok);
+ assert.equal((await edit('board_comment',boardPublic.id,'덮어쓰면 안 됨',boardPublic.revision)).reason,'conflict');
+ boardRows=(await feed('board_comment')).items;
+ for(const row of boardRows){const deleted=await remove('board_comment',row.id,row.revision);assert.equal(deleted.archived,!row.is_private);}
+ assert.equal((await feed('board_comment')).items.length,0);
+ await db.exec('RESET ROLE');
+ const boardArchive=(await db.query("SELECT body FROM ojjuda_world_private.content_archive WHERE kind='board_comment'")).rows;assert.equal(boardArchive.length,2);assert(!boardArchive.some(x=>x.body.includes('비공개')));
+ const boardLogs=(await db.query("SELECT action,detail FROM public.admin_log WHERE action LIKE 'board_comment_%'")).rows;assert.equal(boardLogs.length,4);assert(boardLogs.every(x=>!('body' in x.detail)));
  // A future nullable is_admin implementation must remain fail closed.
  await db.exec("CREATE OR REPLACE FUNCTION public.is_admin() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$SELECT NULL::boolean$$");await actor(admin);await assert.rejects(feed(),/not_admin/);await assert.rejects(remove('post','rollback',rollback.revision),/not_admin/);await db.exec('RESET ROLE');
  await db.query('DELETE FROM public.profiles WHERE id=$1',[writer]);assert.equal((await db.query("SELECT count(*)::int n FROM ojjuda_world_private.content_archive WHERE source_id<>'legacy'")).rows[0].n,0,'withdrawal cascades archive references');

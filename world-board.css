@@ -67,3 +67,17 @@
 .board-rank-page th:last-child,.board-rank-page .board-leader-score{width:35%;}
 .board-rank-page .board-leader-score{overflow:visible;text-overflow:clip;white-space:normal;}
 .board-score-value{display:inline-block;max-width:100%;font-size:16px;line-height:1.25;overflow-wrap:anywhere;vertical-align:middle;}
+
+/* Reply directly to each public board item; media threads are shared with albums. */
+.board-list>li{display:flex;align-items:center;gap:8px}.board-row{min-width:0}
+.board-comment-link{flex:none;border:0;background:none;color:var(--accent-ink);font:inherit;font-size:12px;padding:10px 3px;cursor:pointer}
+.board-comments{margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
+.board-comments h4{margin:0 0 12px}.board-comment-list{list-style:none;padding:0;margin:0}
+.board-comment-list>li{padding:12px 0;border-bottom:1px solid var(--line)}
+.board-comment-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px}.board-comment-meta time{color:var(--ink-2);font-size:11px}
+.board-comment-list p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:6px 0;font-size:14px}
+.board-comment-delete{margin-left:auto;border:0;background:none;color:var(--ink-2);font:inherit;cursor:pointer}
+.board-comment-form{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.board-comment-form textarea{box-sizing:border-box;width:100%;min-height:88px;max-height:240px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.6}
+.board-comment-status{font-size:12px;color:var(--ink-2);line-height:1.5}
+@media(max-width:480px){.board-backdrop{padding:12px}.board-detail{box-sizing:border-box;padding:16px;max-height:90dvh}}

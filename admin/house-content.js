@@ -1,7 +1,7 @@
 /* Active house text and album comments. Owner trash is never requested here. */
 (() => {
   'use strict';
-  const labels = {post:'우리집 글',comment:'앨범 댓글'};
+  const labels = {post:'우리집 글',comment:'앨범 댓글',board_comment:'게시판 댓글'};
   const visibility = {all:'전체 공개',friends:'친구 공개',chosen:'고른 친구 공개',me:'나만 보기'};
   const el = (tag, className, text) => {
     const node=document.createElement(tag);if(className)node.className=className;
@@ -19,7 +19,7 @@
       const text=String(error?.message||error||'');
       if(/not_admin|42501|permission denied/i.test(text))return '관리자 권한을 다시 확인해 주세요.';
       if(/banned_word/.test(text))return '본문에 사용할 수 없는 표현이 있어요. 고친 뒤 저장해 주세요.';
-      if(/house_admin_bad_body/.test(text))return '글은 4,000자, 댓글은 200자까지 적을 수 있어요.';
+      if(/house_admin_bad_body/.test(text))return '내용을 입력해 주세요. 우리집 글은 4,000자까지 적을 수 있어요.';
       if(/Could not find|schema cache|does not exist/i.test(text))return '우리집 관리 기능을 아직 불러올 수 없어요. 잠시 후 다시 시도해 주세요.';
       return '처리하지 못했어요. 입력 내용은 남아 있으니 연결을 확인하고 다시 시도해 주세요.';
     };
@@ -66,7 +66,7 @@
     async function mutate(row,action) {
       if(!current()||saving||loading)return;
       const body=editing?.body.trim();
-      if(action==='edit'&&(!body||body.length>(row.kind==='post'?4000:200))){say('본문 길이를 확인해 주세요.',true);render();return;}
+      if(action==='edit'&&(!body||(row.kind==='post'&&body.length>4000))){say('본문 길이를 확인해 주세요.',true);render();return;}
       ++run;loading=false;saving=true;say(action==='edit'?'저장하고 있어요.':'삭제하고 있어요.');render();
       try {
         const args={p_kind:row.kind,p_id:row.id,p_revision:action==='edit'?editing.revision:row.revision};if(action==='edit')args.p_body=body;
@@ -93,9 +93,9 @@
       if(!current())return;
       const root=el('section','hc-root');root.setAttribute('aria-label','우리집 글·댓글 관리');
       const head=el('div','hc-heading');head.append(el('h3','','우리집 글·댓글'),button('새로고침',refresh));root.append(head);
-      root.append(el('p','hc-note','현재 남아 있는 우리집 글과 앨범 댓글을 관리해요. 작성자가 휴지통으로 옮긴 글은 표시하지 않아요.'));
+      root.append(el('p','hc-note','현재 남아 있는 우리집 글, 앨범 댓글과 게시판 댓글을 관리해요. 작성자가 휴지통으로 옮긴 글은 표시하지 않아요.'));
       const kinds=el('div','hc-filters');kinds.setAttribute('aria-label','종류');
-      for(const [key,label] of [['all','전체'],['post','우리집 글'],['comment','앨범 댓글']]){const b=button(label,()=>choose(key,filter));b.setAttribute('aria-pressed',String(kind===key));kinds.append(b);}root.append(kinds);
+      for(const [key,label] of [['all','전체'],['post','우리집 글'],['comment','앨범 댓글'],['board_comment','게시판 댓글']]){const b=button(label,()=>choose(key,filter));b.setAttribute('aria-pressed',String(kind===key));kinds.append(b);}root.append(kinds);
       const filters=el('div','hc-filters');filters.setAttribute('aria-label','공개·위험신호 필터');
       for(const [key,label] of [['all','전체 범위'],['public','공개'],['private','비공개'],['risk','위험 신호']]){const b=button(label,()=>choose(kind,key));b.setAttribute('aria-pressed',String(filter===key));filters.append(b);}root.append(filters);
       const form=el('form','hc-search'),search=el('input');search.type='search';search.maxLength=100;search.value=query;search.placeholder='작성자·방 주인·내용 검색';search.setAttribute('aria-label','우리집 글·댓글 검색');search.disabled=saving||loading;
@@ -111,8 +111,8 @@
         card.append(el('p','hc-note',`${row.is_private?'비공개 · ':''}${visibility[row.visibility]||'공개 범위 확인'}${row.folder_name?' · 폴더 '+row.folder_name:''}`));
         const active=editing?.kind===row.kind&&editing?.id===row.id;
         if(active){
-          const label=el('label','hc-edit-label',`${labels[row.kind]} 본문`),textarea=el('textarea','hc-editor');textarea.value=editing.body;textarea.maxLength=row.kind==='post'?4000:200;textarea.rows=row.kind==='post'?8:4;textarea.disabled=saving;label.append(textarea);card.append(label);
-          const count=el('p','hc-note',`${editing.body.length} / ${textarea.maxLength}자`);textarea.addEventListener('input',()=>{editing.body=textarea.value;count.textContent=`${textarea.value.length} / ${textarea.maxLength}자`;});card.append(count);
+          const label=el('label','hc-edit-label',`${labels[row.kind]} 본문`),textarea=el('textarea','hc-editor');textarea.value=editing.body;if(row.kind==='post')textarea.maxLength=4000;textarea.rows=row.kind==='post'?8:4;textarea.disabled=saving;label.append(textarea);card.append(label);
+          const count=el('p','hc-note',`${editing.body.length}${row.kind==='post'?' / 4000':''}자`);textarea.addEventListener('input',()=>{editing.body=textarea.value;count.textContent=`${textarea.value.length}${row.kind==='post'?' / 4000':''}자`;});card.append(count);
           const actions=el('div','hc-actions');actions.append(button('취소',()=>{if(confirmLeave()){editing=null;render();}}),button('저장',()=>mutate(row,'edit'),'hc-primary'));card.append(actions);
         }else{
           card.append(el('p','hc-body',row.body));const actions=el('div','hc-actions');
