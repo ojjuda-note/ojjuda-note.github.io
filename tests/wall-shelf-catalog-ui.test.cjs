@@ -30,7 +30,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'벽선반 놓기',exact:true}).click();await ready();assert.equal(count(),1);assert.equal(await f.getByRole('button',{name:'바닥에 놓기',exact:true}).count(),0);
   assert.deepEqual(await pose(),{direction:'right',x:9.6,y:3.5,elevation:2.65});
   for(const d of ['left','center','right']){
-   await f.locator('#panel button[data-direction="'+d+'"]').click();await ready();const p=runtime.views[d].placement;
+   if(!await f.locator('.placement-details').evaluate(el=>el.open))await f.locator('.placement-details > summary').click();await f.locator('#panel button[data-direction="'+d+'"]').click();await ready();const p=runtime.views[d].placement;
    assert.deepEqual(await pose(),{direction:d,x:p.x,y:p.y,elevation:2.65});assert(await f.locator('#placement-done').isEnabled());assert.deepEqual(await read(),saved);
    assert(await node().locator('canvas').evaluate(c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)));
   }
@@ -65,7 +65,7 @@ const fixture=`<!doctype html><button id="open">우리집</button><script type="
   await f.locator('#overview').click();await page.screenshot({path:path.join(proof,'wall-shelf-desktop.png')});
   await Promise.all([f.waitForNavigation({waitUntil:'domcontentloaded'}),f.evaluate(()=>location.reload())]);await f.locator('#app').waitFor({state:'visible'});await ready();assert.deepEqual(await read(),installed);assert.equal((await pose()).elevation,2.65);
   await f.locator('[data-tab="room"]').click();await f.getByRole('button',{name:'소품',exact:true}).click();await f.getByRole('button',{name:'벽선반 배치',exact:true}).click();
-  await f.locator('#panel button[data-direction="left"]').click();await ready();
+  if(!await f.locator('.placement-details').evaluate(el=>el.open))await f.locator('.placement-details > summary').click();await f.locator('#panel button[data-direction="left"]').click();await ready();
   await f.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),installed);assert.equal((await pose()).elevation,2.65);
   await page.setViewportSize({width:390,height:844});await f.getByRole('button',{name:'벽선반 배치',exact:true}).click();await f.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth);await page.screenshot({path:path.join(proof,'wall-shelf-mobile.png')});
   await f.locator('#placement-recall').click();assert.deepEqual(await read(),saved);await Promise.all([f.waitForNavigation({waitUntil:'domcontentloaded'}),f.evaluate(()=>location.reload())]);await f.locator('#app').waitFor({state:'visible'});assert.equal(await node().count(),0);assert.deepEqual(await read(),saved);
