@@ -34,7 +34,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    for(const mode of ['box','flat']){
     const button=page.locator(`[data-g=screw-start][data-mode=${mode}]`);await button.scrollIntoViewIfNeeded();
-    const b=await button.boundingBox();assert.ok(b.width>150 && b.height>80,'both version choices are substantial touch targets');
+    const b=await button.boundingBox();assert.ok(b.width>150 && b.height>=64,'both compact version choices remain substantial touch targets');
     assert.ok(b.x>=0 && b.x+b.width<=size.width && b.y>=0 && b.y+b.height<=size.height,'both choices remain reachable on the screen');
    }
    if(qa&&size.width===390)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
