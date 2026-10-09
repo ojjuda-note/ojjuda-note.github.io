@@ -7,8 +7,8 @@
  const excerpt=row=>(row.title||row.body||'내용 없는 '+labels[row.kind]).replace(/\s+/g,' ').trim();
  let dispose=null,controller=null,commentsReady=null;
  function loadComments(){
-  if(window.OjjudaBoardComments)return Promise.resolve(window.OjjudaBoardComments);
-  if(!commentsReady)commentsReady=import('/world-board-comments.js?v=20261009-comments2').then(()=>{if(!window.OjjudaBoardComments)throw Error('comments');return window.OjjudaBoardComments;}).catch(error=>{commentsReady=null;throw error;});
+  if(window.OjjudaBoardComments?.version==='20261009-compact1')return Promise.resolve(window.OjjudaBoardComments);
+  if(!commentsReady)commentsReady=import('/world-board-comments.js?v=20261009-compact1').then(()=>{if(!window.OjjudaBoardComments)throw Error('comments');return window.OjjudaBoardComments;}).catch(error=>{commentsReady=null;throw error;});
   return commentsReady;
  }
  function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){

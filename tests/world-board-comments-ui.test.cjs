@@ -34,6 +34,24 @@ const {chromium}=require('playwright');
   const write=await page.evaluate(()=>writes[0]);assert.equal(write.table,source==='media'?'media_comments':'world_board_comments');assert.equal(write[source==='media'?'media_id':source==='post'?'post_id':'diary_id'],'parent');
   await page.getByRole('button',{name:'내 댓글 삭제'}).click();await page.waitForFunction(()=>!document.querySelector('.board-comment-list li'));
  }
+ await page.addStyleTag({content:'.btn{display:inline-flex}'});
+ await page.evaluate(()=>{
+  mount('media');rows=[
+   {id:'parent_source',media_id:'parent',author_id:'auto',author_nick:'오쭈다자동카드',created_at:new Date().toISOString(),body:'출처 · 제작: Vladimir Pustovit\nhttps://commons.wikimedia.org/?curid=138286994\nCC BY 2.0\nhttps://creativecommons.org/licenses/by/2.0/\n크기 · 인코딩 조정본, 내용 변경 없음.'},
+   {id:'real-reply',media_id:'parent',author_id:'friend',author_nick:'회원',created_at:new Date().toISOString(),body:'고양이가 정말 편해 보여요.'}
+  ];
+ });
+ await page.waitForFunction(()=>!document.querySelector('textarea').disabled);
+ assert.equal(await page.getByRole('button',{name:'이전 댓글 더 보기'}).isVisible(),false,'global button styling must not reveal an empty pagination control');
+ assert.equal(await page.locator('.board-media-credits').isVisible(),false,'source metadata starts folded');
+ assert.equal(await page.locator('.board-comment-list:not(.board-media-credits) p').innerText(),'고양이가 정말 편해 보여요.');
+ assert.ok(await page.getByRole('textbox').evaluate(n=>n.getBoundingClientRect().height<=48),'empty reply form stays one line');
+ await page.getByRole('button',{name:'출처',exact:true}).click();
+ assert.match(await page.locator('.board-media-credits').innerText(),/Vladimir Pustovit[\s\S]*CC BY 2.0[\s\S]*내용 변경 없음/);
+ assert.equal(await page.getByRole('link',{name:'원본 보기'}).getAttribute('href'),'https://commons.wikimedia.org/?curid=138286994');
+ assert.equal(await page.getByRole('link',{name:'이용 조건'}).getAttribute('href'),'https://creativecommons.org/licenses/by/2.0/');
+ await page.getByRole('button',{name:'출처',exact:true}).click();
+ assert.equal(await page.locator('.board-media-credits').isVisible(),false);
  await page.evaluate(()=>{mount('post');window.failOnce=true;});await page.waitForFunction(()=>!document.querySelector('textarea').disabled);
  await page.getByRole('textbox').fill('실패해도 남는 내용');await page.getByRole('button',{name:'댓글 등록',exact:true}).click();await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('유지'));
  assert.equal(await page.getByRole('textbox').inputValue(),'실패해도 남는 내용');await page.getByRole('button',{name:'댓글 등록',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.board-comment-list li'));

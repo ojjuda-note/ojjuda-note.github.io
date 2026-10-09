@@ -71,13 +71,18 @@
 /* Reply directly to each public board item; media threads are shared with albums. */
 .board-list>li{display:flex;align-items:center;gap:8px}.board-row{min-width:0}
 .board-comment-link{flex:none;border:0;background:none;color:var(--accent-ink);font:inherit;font-size:12px;padding:10px 3px;cursor:pointer}
-.board-comments{margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
-.board-comments h4{margin:0 0 12px}.board-comment-list{list-style:none;padding:0;margin:0}
+.board-comments{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.board-comments [hidden]{display:none!important}.board-detail [role=status]:empty{display:none}
+.board-comments-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;min-height:30px}
+.board-comments h4{margin:0;font-size:14px}.board-comment-list{list-style:none;padding:0;margin:0}
+.board-credit-toggle{border:0;background:none;color:var(--ink-2);font:inherit;font-size:12px;padding:8px 0 8px 12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.board-media-credits{margin:0 0 8px}.board-comments .board-media-credits p{font-size:12px}.board-media-credits a{color:var(--accent-ink)}
 .board-comment-list>li{padding:12px 0;border-bottom:1px solid var(--line)}
 .board-comment-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px}.board-comment-meta time{color:var(--ink-2);font-size:11px}
 .board-comment-list p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:6px 0;font-size:14px}
 .board-comment-delete{margin-left:auto;border:0;background:none;color:var(--ink-2);font:inherit;cursor:pointer}
-.board-comment-form{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.board-comment-form textarea{box-sizing:border-box;width:100%;min-height:88px;max-height:240px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.6}
-.board-comment-status{font-size:12px;color:var(--ink-2);line-height:1.5}
+.board-comment-form{display:flex;gap:8px;align-items:flex-end;margin-top:8px}
+.board-comment-form textarea{box-sizing:border-box;flex:1;min-width:0;width:100%;height:44px;min-height:44px;max-height:140px;resize:none;overflow-y:auto;border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:24px}
+.board-comment-form .btn{flex:none;min-height:44px;margin:0;padding:8px 12px;font-size:13px;white-space:nowrap}
+.board-comment-status{font-size:12px;color:var(--ink-2);line-height:1.5}.board-comment-status:empty{display:none}
 @media(max-width:480px){.board-backdrop{padding:12px}.board-detail{box-sizing:border-box;padding:16px;max-height:90dvh}}
