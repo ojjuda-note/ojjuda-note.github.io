@@ -163,15 +163,18 @@
      if(rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
     });
    }
+   // Fetch the visible games in one request instead of competing with the feed
+   // for thirty separate HTTP/database connections.
+   const batch=result(client.rpc('community_game_monthly_leaders',{p_games:entries.map(([id])=>id)}));
    const loads=entries.map(async([id,game])=>{
     const target=targets.get(id),{nick,score}=target;
-    async function load(){
+    async function load(initial=false){
      nick.textContent='불러오는 중…';
      try{
-      const ranking=await result(client.rpc('community_game_monthly_ranking',{p_game:id}));
+      const ranking=await (initial?batch:result(client.rpc('community_game_monthly_leaders',{p_games:[id]})));
       if(!active()||token!==request)return;
       const valid=row=>row&&row.score!==null&&row.score!==''&&Number.isFinite(Number(row.score));
-      const top=Array.isArray(ranking)?ranking[0]:null;
+      const top=ranking?.[id]||null;
       target.hasScore=!!valid(top);
       if(target.hasScore){
        nick.textContent=top.nick||'익명';nick.title=(game.rankingBasis==='current_gold'?'이번 달 보유 골드 1등 · ':game.rankingBasis==='current_streak'?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');score.replaceChildren(el('span',Number(top.score).toLocaleString('ko-KR')+game.unit,'board-score-value'));score.title=score.textContent;
@@ -179,10 +182,10 @@
        score.textContent='—';score.removeAttribute('title');nick.removeAttribute('title');
        nick.replaceChildren(el('span','이번 달 기록 없음','board-leader-empty'));
       }
-     }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',load,'board-leader-retry'));}
+     }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',()=>load(),'board-leader-retry'));}
      finally{orderByRecords();fitScores();}
     }
-    await load();
+    await load(true);
    });
    return [Promise.all(loads).then(()=>{initialLoading=false;orderByRecords();schedule();})];
   }
