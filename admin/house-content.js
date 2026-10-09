@@ -19,7 +19,7 @@
       const text=String(error?.message||error||'');
       if(/not_admin|42501|permission denied/i.test(text))return '관리자 권한을 다시 확인해 주세요.';
       if(/banned_word/.test(text))return '본문에 사용할 수 없는 표현이 있어요. 고친 뒤 저장해 주세요.';
-      if(/house_admin_bad_body/.test(text))return '내용을 입력해 주세요. 우리집 글은 4,000자까지 적을 수 있어요.';
+      if(/house_admin_bad_body/.test(text))return '내용을 입력해 주세요.';
       if(/Could not find|schema cache|does not exist/i.test(text))return '우리집 관리 기능을 아직 불러올 수 없어요. 잠시 후 다시 시도해 주세요.';
       return '처리하지 못했어요. 입력 내용은 남아 있으니 연결을 확인하고 다시 시도해 주세요.';
     };
@@ -66,7 +66,7 @@
     async function mutate(row,action) {
       if(!current()||saving||loading)return;
       const body=editing?.body.trim();
-      if(action==='edit'&&(!body||(row.kind==='post'&&body.length>4000))){say('본문 길이를 확인해 주세요.',true);render();return;}
+      if(action==='edit'&&(!body)){say('본문 길이를 확인해 주세요.',true);render();return;}
       ++run;loading=false;saving=true;say(action==='edit'?'저장하고 있어요.':'삭제하고 있어요.');render();
       try {
         const args={p_kind:row.kind,p_id:row.id,p_revision:action==='edit'?editing.revision:row.revision};if(action==='edit')args.p_body=body;
@@ -111,8 +111,8 @@
         card.append(el('p','hc-note',`${row.is_private?'비공개 · ':''}${visibility[row.visibility]||'공개 범위 확인'}${row.folder_name?' · 폴더 '+row.folder_name:''}`));
         const active=editing?.kind===row.kind&&editing?.id===row.id;
         if(active){
-          const label=el('label','hc-edit-label',`${labels[row.kind]} 본문`),textarea=el('textarea','hc-editor');textarea.value=editing.body;if(row.kind==='post')textarea.maxLength=4000;textarea.rows=row.kind==='post'?8:4;textarea.disabled=saving;label.append(textarea);card.append(label);
-          const count=el('p','hc-note',`${editing.body.length}${row.kind==='post'?' / 4000':''}자`);textarea.addEventListener('input',()=>{editing.body=textarea.value;count.textContent=`${textarea.value.length}${row.kind==='post'?' / 4000':''}자`;});card.append(count);
+          const label=el('label','hc-edit-label',`${labels[row.kind]} 본문`),textarea=el('textarea','hc-editor');textarea.value=editing.body;textarea.rows=row.kind==='post'?8:4;textarea.disabled=saving;label.append(textarea);card.append(label);
+          const count=el('p','hc-note',`${editing.body.length}자`);textarea.addEventListener('input',()=>{editing.body=textarea.value;count.textContent=`${textarea.value.length}자`;});card.append(count);
           const actions=el('div','hc-actions');actions.append(button('취소',()=>{if(confirmLeave()){editing=null;render();}}),button('저장',()=>mutate(row,'edit'),'hc-primary'));card.append(actions);
         }else{
           card.append(el('p','hc-body',row.body));const actions=el('div','hc-actions');

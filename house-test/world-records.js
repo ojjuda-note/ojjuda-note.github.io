@@ -65,7 +65,7 @@ export function createWorldRecords({client,owner,authorized,getFriends=()=>[],pr
   const data=await result(client.rpc('house_move_media',{p_ids:[...new Set(ids)],p_folder_id:folder_id||null}));onChange({movedMedia:{ids:data.ids,folder: data.folder_id}});return data;
  }
  async function savePost({id,body='',folder_id=null,visibility:vis='me',create=false}){
-  if(typeof id!=='string'||!id||id.length>128||typeof body!=='string'||!body.trim()||body.trim().length>4000)throw new Error('글을 1자부터 4,000자까지 적어 주세요.');
+  if(typeof id!=='string'||!id||id.length>128||typeof body!=='string'||!body.trim())throw new Error('글 내용을 적어 주세요.');
   visibility(vis);await folderId(folder_id,'text');return result(client.rpc('house_save_post',{p_id:id,p_body:body,p_folder_id:folder_id||null,p_visibility:vis,p_create:!!create}));
  }
  async function manageRecords({action,media_ids=[],post_ids=[],folder_id=null}){
