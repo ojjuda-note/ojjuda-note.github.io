@@ -1,4 +1,4 @@
-import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261004-entry3';
+import {createHouseEntryLoading,waitForHousePaint} from './entry-loading.js?v=20261009-speed1';
 let activeClose=null;
 export function openHouseTest({owner,authorized,studioAuthorized=null,preview=null,studioItem=null,preserveWorldNavigation=false,mountTarget=null,records=null,profile=null,loadProfile=null,room=null,readOnly=false,onProfilePhoto=null,onFrameReady=null,onTeleport=null,onClose,onStudio}){
  if(typeof owner!=='string'||!owner||owner.length>180||typeof authorized!=='function'||!authorized())return;
