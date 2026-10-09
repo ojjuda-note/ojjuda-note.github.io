@@ -1,0 +1,43 @@
+name: Apply verified admin and Note source edits
+
+on:
+  push:
+    branches: [codex/admin-inbox-long-notes-20261009]
+    paths: [ops/admin-note-code-edits.json]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Apply guarded source changes and verify exact file bytes
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          manifest=pathlib.Path('ops/admin-note-code-edits.json')
+          records=json.loads(manifest.read_text())
+          for record in records:
+              path=pathlib.Path(record['path'])
+              assert not path.is_absolute() and '..' not in path.parts
+              before=path.read_bytes()
+              assert hashlib.sha256(before).hexdigest()==record['before'], str(path)
+              content=before.decode('utf-8')
+              for start,end,replacement in reversed(record['edits']):
+                  content=content[:start]+replacement+content[end:]
+              result=content.encode('utf-8')
+              assert hashlib.sha256(result).hexdigest()==record['after'], str(path)
+              path.write_bytes(result)
+              print(str(path),len(result),record['after'])
+          manifest.unlink()
+          pathlib.Path('.github/workflows/apply-admin-note-update.yml').unlink()
+          subprocess.run(['git','add','--']+[r['path'] for r in records]+['ops/admin-note-code-edits.json','.github/workflows/apply-admin-note-update.yml'],check=True)
+          PY
+          node --check admin/review-inbox.js
+          node --check note/admin.js
+          node --check note/preview.js
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Apply verified admin inbox and unlimited Note source changes'
+          git push origin HEAD:refs/heads/codex/admin-inbox-long-notes-20261009
