@@ -69,6 +69,20 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const list = async (sort,offset=0,withLocation=false) => (await db.query(
     'select * from ojjuda_note.list_cards($1,$2,$3,30000,20,$4)',
     [sort,withLocation?37:null,withLocation?127:null,{offset}])).rows;
+  // Compare every returned field before/after the optimization, for guests and members.
+  const snapshots=[];
+  for(const actor of ['',viewer]){
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)",[actor]);
+    for(const sort of ['recent','popular','nearby'])for(const offset of [0,20]){
+      snapshots.push({actor,sort,offset,rows:await list(sort,offset,true)});
+    }
+  }
+  await db.exec(read('supabase/migrations/20261009054959_reuse_card_feed_visuals.sql'));
+  for(const sample of snapshots){
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)",[sample.actor]);
+    assert.deepEqual(await list(sample.sort,sample.offset,true),sample.rows,'optimized feed preserves all fields, permissions and paging');
+  }
+  await db.query("select set_config('request.jwt.claim.sub','',false)");
   for (const sort of ['recent','popular','nearby']) {
     const rows = await list(sort,0,sort==='nearby');
     assert.equal(rows.length,20,`${sort}: filtering happens before the page limit`);
