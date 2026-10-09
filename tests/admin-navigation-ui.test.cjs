@@ -8,6 +8,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 let world = read('world.html')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+// This fixture supplies preloaded synthetic admin modules; provide their real styles too.
+world = world.replace('</head>', '<link rel="stylesheet" href="/note/admin.css"></head>');
 world = world.replace('<script type="module">', `<script>${read('world-navigation.js')}</script><script>${read('note/admin.js')}\nwindow.actualNoteAdmin=window.OjjudaNoteAdmin;</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'replace only the live boot with a synthetic service fixture');
