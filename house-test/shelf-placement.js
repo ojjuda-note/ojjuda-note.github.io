@@ -62,17 +62,20 @@ export function fitShelfPlantScene(others=[],preferred=null){
  if(direct)return {plant:direct,adjustments:[]};
  const desk=others.find(p=>p.id==='desk');if(!desk||!shelfPartner(plantId,others))return null;
  const deskSize=itemSize('desk',desk.direction,desk),height=(desk.elevation??0)+itemHeight('desk',desk);
- const onDesk=p=>{const size=itemSize(p.id,p.direction,p);return size&&Math.abs((p.elevation??0)-height)<EPS&&
-  p.x>=desk.x-EPS&&p.y>=desk.y-EPS&&p.x+size.w<=desk.x+deskSize.w+EPS&&p.y+size.d<=desk.y+deskSize.d+EPS;};
+ const onDesk=(p,contained=false)=>{const size=itemSize(p.id,p.direction,p);return size&&Math.abs((p.elevation??0)-height)<EPS&&
+  (contained?p.x>=desk.x-EPS&&p.y>=desk.y-EPS&&p.x+size.w<=desk.x+deskSize.w+EPS&&p.y+size.d<=desk.y+deskSize.d+EPS:
+   p.x<desk.x+deskSize.w-EPS&&p.y<desk.y+deskSize.d-EPS&&p.x+size.w>desk.x+EPS&&p.y+size.d>desk.y+EPS);};
+ // A manually placed book may overhang the desk. It still belongs to this
+ // tabletop and must not become a fixed obstacle when clearing the lamp.
  const movable=others.filter(p=>['desk-lamp','pencil-cup','open-book','item-desk-frame'].includes(p.id)&&onDesk(p));
  const ids=new Set(movable.map(p=>p.id)),plant=fitShelfPair(plantId,others.filter(p=>!ids.has(p.id)),preferred);
  if(!plant)return null;
  const fixed=[...others.filter(p=>!ids.has(p.id)),{id:plantId,...plant}],options=new Map();
  for(const prop of movable){
-  const size=itemSize(prop.id,prop.direction,prop),axis=(low,high,original)=>[...new Set([original,Number(high.toFixed(6)),...Array.from({length:Math.floor((high-low+EPS)/.1)+1},(_,i)=>Number((low+i*.1).toFixed(6)))])];
-  const candidates=[];
+  const size=itemSize(prop.id,prop.direction,prop),axis=(low,high,original)=>high<low-EPS?[]:[...new Set([original,Number(high.toFixed(6)),...Array.from({length:Math.floor((high-low+EPS)/.1)+1},(_,i)=>Number((low+i*.1).toFixed(6)))])];
+  const candidates=canPlaceFurniture(prop.id,prop,fixed)?[prop]:[];
   for(const x of axis(desk.x,desk.x+deskSize.w-size.w,prop.x))for(const y of axis(desk.y,desk.y+deskSize.d-size.d,prop.y)){
-   const p=normalizePlacement(prop.id,{...prop,x,y});if(p&&onDesk({id:prop.id,...p})&&canPlaceFurniture(prop.id,p,fixed))candidates.push({id:prop.id,...p});
+   const p=normalizePlacement(prop.id,{...prop,x,y});if(p&&onDesk({id:prop.id,...p},true)&&canPlaceFurniture(prop.id,p,fixed)&&!candidates.some(c=>c.x===p.x&&c.y===p.y))candidates.push({id:prop.id,...p});
   }
   candidates.sort((a,b)=>(a.x-prop.x)**2+(a.y-prop.y)**2-((b.x-prop.x)**2+(b.y-prop.y)**2)||a.y-b.y||a.x-b.x);
   if(!candidates.length)return null;options.set(prop.id,candidates);
