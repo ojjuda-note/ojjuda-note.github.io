@@ -34,6 +34,7 @@ function fixtureBoot() {
     return controller;
   }
   window.OjjudaAdminAccounts = { mount: options => mount('accounts', options) };
+  window.OjjudaReviewInbox = { mount: options => mount('review', options) };
   window.OjjudaAdminActivity = { mount: options => mount('activity', options) };
   window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
   window.OjjudaHouseContent = { mount: (container, options) => mount('house-content', { ...options, container }) };
@@ -170,7 +171,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.getByLabel('accounts 합성 입력', { exact: true }).inputValue(), '저장되지 않은 변경');
     acceptDialogs = true;
     await area('content');
-    assert.deepEqual(await current(), { area: 'content', tab: 'house-content' }, 'accepting discard permits the requested group');
+    assert.deepEqual(await current(), { area: 'content', tab: 'review' }, 'accepting discard permits the requested group');
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
@@ -185,7 +186,8 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await assertRefreshPreservesHost('house-content');
+    await assertRefreshPreservesHost('review');
+    await tab('house-content'); await assertRefreshPreservesHost('house-content');
     await tab('photo-stages'); await assertRefreshPreservesHost('photo-stages');
     await area('support'); await assertRefreshPreservesHost('reports');
     await tab('feedback'); await assertRefreshPreservesHost('support');

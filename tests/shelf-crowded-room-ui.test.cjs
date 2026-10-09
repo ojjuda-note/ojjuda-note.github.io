@@ -7,7 +7,7 @@ const app=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8'),modelVersi
  fs.mkdirSync(output,{recursive:true});
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  const errors=[],missing=[];
- try{for(const layout of [0,1]){
+ try{for(const layout of [0,1,2]){
   const existing=false,owner='shelf-crowded-'+layout,key='ojjuda-house-playtest-v1:'+owner;
   const context=await browser.newContext({viewport:{width:390,height:844}});
   await context.route('**/*',route=>{
@@ -21,6 +21,15 @@ const app=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8'),modelVersi
    'desk-lamp':{direction:'right',x:9,y:3.5+layout*.1,elevation:1.4},'pencil-cup':{direction:'right',x:9.2,y:5.7+layout*.1,elevation:1.4},
    'open-book':{direction:'right',x:9.1,y:4.4+layout*.1,elevation:1.4},'item-desk-frame':{direction:'right',x:9.73,y:5.7+layout*.1,elevation:1.4},
    [shelfId]:{direction:'right',x:9.6,y:3.5,elevation:2.65},...(existing?{[plantId]:{direction:'right',x:9.62,y:3.9,elevation:2.77}}:{})};
+  // Reproduces the saved room behind the repeated mobile report: a manually
+  // lowered/moved shelf and a book partly over the front edge of the tabletop.
+  if(layout===2)Object.assign(furniture,{
+   'desk-lamp':{direction:'right',x:9.1,y:3.5,elevation:1.4},
+   'open-book':{direction:'right',x:8.672748,y:4.90962,elevation:1.4},
+   'pencil-cup':{direction:'right',x:9,y:4.4,elevation:1.4},
+   'item-desk-frame':{direction:'right',x:9.73,y:5.787601,elevation:1.4},
+   [shelfId]:{direction:'right',x:9.6,y:4.1,elevation:2.603206}
+  });
   const saved={version:13,rooms:[{x:0,y:0,decor:true,curtains:true,shelf:{direction:'right',x:9,y:1.5},furniture}],diary:'사진 속 기존 방과 기록 보존'};
   await page.evaluate(({key,saved})=>localStorage.setItem(key,JSON.stringify(saved)),{key,saved});
   let frame;const open=async()=>{await page.locator('#open').click();frame=await(await page.locator('iframe[title="우리집"]').elementHandle()).contentFrame();await frame.locator('#app').waitFor({state:'visible',timeout:10000}).catch(async error=>{console.error({locked:await frame.locator('#locked').innerText(),errors,missing});throw error;});await frame.locator('[data-tab="room"]').click();await frame.getByRole('button',{name:'소품',exact:true}).click();};
@@ -35,10 +44,11 @@ const app=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8'),modelVersi
   assert((await z(shelfId))>(await z('bookshelf')),'a shelf in front paints in front of the bookcase');
   const plant=await pose(plantId),shelf=await pose(shelfId),lamp=await pose('desk-lamp');
   assert.deepEqual(shelf,furniture[shelfId],'the chosen shelf stays in place');
-  assert(Math.abs(plant.elevation-shelf.elevation-.12)<1e-6);assert(plant.y>=shelf.y&&plant.y+.36<=shelf.y+1.2+1e-6);
+  assert(Math.abs(plant.elevation-shelf.elevation-.12)<1e-6);assert(plant.x>=shelf.x&&plant.x+.36<=shelf.x+.4+1e-6);assert(plant.y>=shelf.y&&plant.y+.36<=shelf.y+1.2+1e-6);
   assert.notDeepEqual(lamp,furniture['desk-lamp'],'only the obstructing lamp needs room');
   assert.equal(lamp.direction,'right');assert.equal(lamp.elevation,1.4);assert(lamp.x>=9&&lamp.x+.9<=10+1e-6&&lamp.y>=3.5&&lamp.y+.9<=6.5+1e-6,'lamp remains on the desk');
   const arranged={};for(const id of ['desk-lamp','pencil-cup','open-book','item-desk-frame'])arranged[id]=await pose(id);
+  if(layout===2){const book=arranged['open-book'];assert.notDeepEqual(book,furniture['open-book'],'an overhanging book participates in automatic clearance');assert(book.x>=9&&book.y>=3.5,'a moved book returns onto the tabletop');}
   assert.equal(await frame.getByRole('slider').count(),0);assert.deepEqual(await read(),saved,'auto clearance is only a preview');
   await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);assert.deepEqual(await pose('desk-lamp'),furniture['desk-lamp']);
   await frame.getByRole('button',{name:'덩굴 화분 '+(existing?'배치':'놓기'),exact:true}).click();await ready(plantId);await frame.locator('#placement-done').click();
@@ -51,6 +61,11 @@ const app=fs.readFileSync(path.join(root,'house-test/app.js'),'utf8'),modelVersi
   await frame.locator('#bookshelf-depth').evaluate(el=>{el.value='5';el.dispatchEvent(new Event('input',{bubbles:true}));});await ready('bookshelf');
   assert((await z('bookshelf'))>(await z(shelfId)),'moving the bookcase in front reverses their drawing order');
   await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),installed);
+  if(layout===2){
+   const fallback=await frame.evaluate(async()=>{const app=await(await fetch('./app.js')).text(),version=app.match(/default-placement\.js\?v=([^'" ]+)/)[1],{findInitialPlacement}=await import('./default-placement.js?v='+version);
+    return findInitialPlacement('item-shelf-plant',[{id:'desk',direction:'right',x:9,y:3.5},{id:'item-oak-wall-shelf',direction:'right',x:9.6,y:4.8,elevation:2.2}]);});
+   assert.equal(fallback,null,'a blocked shelf must not offer a floating plant as a successful automatic placement');
+  }
   await context.close();console.log('PASS crowded room','layout '+layout,'automatic desk clearance, support, true depth, cancel/save/reopen');
  }assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
