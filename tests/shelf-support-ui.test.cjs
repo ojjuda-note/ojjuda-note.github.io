@@ -32,13 +32,15 @@ const cases=[
   const ready=id=>frame.locator('[data-furniture="'+id+'"][data-render-state="ready"]').waitFor();
   const pose=id=>frame.locator('[data-furniture="'+id+'"]').evaluate(el=>({direction:el.dataset.direction,x:Number(el.dataset.x),y:Number(el.dataset.y),elevation:Number(el.dataset.elevation)}));
   const id=first===shelfId?plantId:shelfId,label=id===plantId?'덩굴 화분':'벽선반';
-  await open();await frame.getByRole('button',{name:label+' 놓기',exact:true}).click();await ready(id);
+  await open();const camera=()=>frame.locator('#world').evaluate(el=>new DOMMatrixReadOnly(getComputedStyle(el).transform).a),roomScale=await camera();await frame.getByRole('button',{name:label+' 놓기',exact:true}).click();await ready(id);
+  assert((await camera())>roomScale*1.05,'selecting the item zooms into the placement');
   const expected=await pose(id);
   assert.equal(expected.direction,direction,'new item uses the existing partner wall');
   assert.equal(expected.elevation,id===plantId?plant.elevation:shelf.elevation,'new item fits the changed support height');
   assert(await frame.locator('#placement-done').isEnabled());assert.deepEqual(await read(),saved,'fitting is only a draft');
   assert.equal(await frame.getByRole('slider').count(),0,'fine controls start folded');assert.equal(await frame.locator('#shelf-fit').count(),0,'no extra fit action is required');
-  await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);
+  if(first===shelfId)await page.screenshot({path:path.join(output,direction+'-auto-focus.png')});
+  await frame.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await read(),saved);assert(Math.abs((await camera())-roomScale)<1e-5,'cancel returns to the whole room');
   await frame.getByRole('button',{name:label+' 놓기',exact:true}).click();await ready(id);await frame.locator('#placement-done').click();
   const installed=structuredClone(saved);installed.rooms[0].furniture[id]=expected;assert.deepEqual(await read(),installed);
   await page.getByRole('button',{name:'우리집 닫기',exact:true}).click();await open();await ready(plantId);await ready(shelfId);assert.deepEqual(await read(),installed,'both installation orders survive reopening');
