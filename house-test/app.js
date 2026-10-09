@@ -1,11 +1,11 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
 import {createRecordPanel} from './record-panel.js?v=20261005-public1';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261006-vine1';
-import {findInitialPlacement} from './default-placement.js?v=20261009-shelf1';
-import {fitShelfPair,snapShelfContact,isShelfSupported,plantFollowingShelf} from './shelf-placement.js?v=20261009-shelf1';
+import {findInitialPlacement} from './default-placement.js?v=20261009-shelf2';
+import {fitShelfPair,snapShelfContact,isShelfSupported,plantFollowingShelf,fitShelfPlantScene} from './shelf-placement.js?v=20261009-shelf2';
 import {icon} from './icons.js?v=20261004-folder-kind1';
 import {normalize,roomKey,canAdd,normalizePlacement,canPlaceFurniture,canDrawFurniture,furniturePlacements,findPlacement,findFloorPlacement,canUseFloor,minimumFurnitureElevation,chairForDesk,isDeskChairPair,canPlaceGroup,findDeskChairPlacement,wallDragPlacement,floorPoint,roomPoint,floorCell,roomPeriod,ROOM,FLOOR,defaultShelf} from './model.js?v=20261007-room1';
-import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261006-vine1';
+import {renderFurniture,furnitureGeometry} from './furniture.js?v=20261009-shelf2';
 import {FURNITURE,itemSize,itemLayer,itemHeight,isBlanket} from './furniture-catalog.js?v=20261006-vine1';
 import {resolveAccessoryDrag,sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-vine1';
 const $=s=>document.querySelector(s),view=$('#viewport'),world=$('#world');
@@ -15,6 +15,7 @@ let state,port,key,initialized=false,selected='0:0',tab='diary',expanding=false,
 let editing=false,editingId='bookshelf',draft=null,period=roomPeriod(),periodTimer;
 let linkedDraft=false,deskDraft=null,standaloneChairDraft=null,editSession=0,activeDragCleanup=null;
 let shelfAnchor=null,shelfPlantDraft=null,placementDetailsOpen=false;
+let placementAdjustments=[];
 let recordsPanel=null,readOnly=false,canTeleport=false,teleportPending=false,hasRoomSync=false,missingMadeItems=false,lastSummaryHeight=0,lastQueuedRooms=null;
 let itemCategory='furniture',previewMode=false,emptyRoomPreview=false,canUseStudio=false,connecting=false,disposed=false;
 const clonePlacement=p=>({...p,...(p.accessories?{accessories:{...p.accessories}}:{})});
@@ -40,17 +41,17 @@ function saveChange(change){
 }
 function current(){return state.rooms.find(r=>roomKey(r)===selected)||state.rooms[0];}
 function stopFurnitureDrag(){if(activeDragCleanup){const cleanup=activeDragCleanup;activeDragCleanup=null;cleanup();}}
-function clearPlacement(){stopFurnitureDrag();editSession++;editing=false;draft=null;linkedDraft=false;deskDraft=null;standaloneChairDraft=null;shelfAnchor=null;shelfPlantDraft=null;placementDetailsOpen=false;$('#placement-actions').hidden=true;emptyRoomPreview=false;view.classList.remove('empty-room-preview');}
+function clearPlacement(){stopFurnitureDrag();editSession++;editing=false;draft=null;linkedDraft=false;deskDraft=null;standaloneChairDraft=null;shelfAnchor=null;shelfPlantDraft=null;placementDetailsOpen=false;placementAdjustments=[];$('#placement-actions').hidden=true;emptyRoomPreview=false;view.classList.remove('empty-room-preview');}
 function placementControlId(){return linkedDraft?'desk':editingId;}
 function placementControlPose(){return linkedDraft&&editingId==='chair'?deskDraft:draft;}
 function draftPlacements(){
  if(!draft)return [];
  if(shelfAnchor)return [{id:editingId,...draft},{id:'item-shelf-plant',...shelfPlantDraft}];
- if(!linkedDraft)return [{id:editingId,...draft}];
+ if(!linkedDraft)return [{id:editingId,...draft},...placementAdjustments];
  const desk=placementControlPose(),chair=chairForDesk(desk);
  return [{id:'desk',...desk},{id:'chair',...chair}];
 }
-function isEditingFurniture(id){return editing&&(id===editingId||(shelfAnchor&&id==='item-shelf-plant')||(linkedDraft&&(id==='desk'||id==='chair')));}
+function isEditingFurniture(id){return editing&&(id===editingId||placementAdjustments.some(p=>p.id===id)||(shelfAnchor&&id==='item-shelf-plant')||(linkedDraft&&(id==='desk'||id==='chair')));}
 function setPlacementControlPose(next){
  if(linkedDraft){const chair=chairForDesk(next);deskDraft=clonePlacement(next);draft=clonePlacement(editingId==='desk'?next:chair);}
  else draft=clonePlacement(next);
@@ -315,7 +316,7 @@ function renderPanel(){syncHomeSummary();recordsPanel?.unmount();const empty=$('
    if(simple){const details=element('details','placement-details');details.open=placementDetailsOpen;details.ontoggle=()=>{placementDetailsOpen=details.open;};details.append(element('summary','','세부 조정'),directions);body.append(details);controls=details;}
    controls.append(makeFurnitureControls());if(canUseFloor(editingId))controls.append(makeFloorPlacementControl());if(!isBlanket(editingId)&&itemLayer(editingId,draft)==='surface')controls.append(makeAccessoryHeightControl());if(editingId==='chair'&&current().furniture.desk)controls.append(makeChairLinkControl());
    const warning=element('p','placement-warning',item.wallMounted?'창문이나 다른 가구와 겹쳐요. 위치 또는 높이를 바꿔 주세요.':'다른 가구의 배치 공간과 겹쳐요. 옆으로 옮겨 주세요.');warning.id='placement-warning';warning.hidden=validDraft();warning.setAttribute('role','status');
-   const feedback=element('div','placement-feedback');feedback.append(warning,element('p','panel-note',shelfAnchor?'선반을 옮기면 화분도 함께 움직여요.':simple?'위치가 맞으면 설치를 눌러 주세요. 옮기려면 그림을 드래그하세요.':linkedDraft?'책상 위치를 기준으로 함께 움직여요. 의자만 회수하면 책상은 그대로 남아요.':item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));body.append(feedback);
+   const feedback=element('div','placement-feedback');feedback.append(warning,element('p','panel-note',placementAdjustments.length?'화분과 겹치지 않게 '+placementAdjustments.map(p=>FURNITURE[p.id].shortLabel).join('·')+' 위치를 맞췄어요. 설치하면 함께 저장돼요.':shelfAnchor?'선반을 옮기면 화분도 함께 움직여요.':simple?'위치가 맞으면 설치를 눌러 주세요. 옮기려면 그림을 드래그하세요.':linkedDraft?'책상 위치를 기준으로 함께 움직여요. 의자만 회수하면 책상은 그대로 남아요.':item.clearance||'0.5칸씩 이동 · 책장 밑면은 배치 공간의 ⅔만 채워요.'));body.append(feedback);
    syncPlacementControls();
   }else{
    renderItemMenu(body);$('#panel-body').scrollTop=0;
@@ -399,8 +400,8 @@ window.addEventListener('message',async e=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(initialized)persist();}else if(initialized)updatePeriod();});window.addEventListener('pagehide',()=>{if(initialized)persist();});
 
 function updatePeriod(){const next=roomPeriod();document.documentElement.dataset.period=next;$('#period-name').textContent={day:'낮',dusk:'새벽 · 저녁',night:'밤'}[next];if(next!==period){period=next;world.querySelectorAll('.room-bg').forEach(im=>im.src=`assets/room-${period}-v${ROOM.assetVersion}.webp`);}}
-function otherFurniture(){return furniturePlacements(current()).filter(p=>linkedDraft?p.id!=='desk'&&p.id!=='chair':p.id!==editingId&&(!shelfAnchor||p.id!=='item-shelf-plant'));}
-function validDraft(){return !!draft&&(!shelfAnchor||isShelfSupported(shelfPlantDraft,draft))&&(linkedDraft||shelfAnchor?canPlaceGroup(draftPlacements(),otherFurniture()):canPlaceFurniture(editingId,draft,otherFurniture()));}
+function otherFurniture(){return furniturePlacements(current()).filter(p=>!placementAdjustments.some(a=>a.id===p.id)&&(linkedDraft?p.id!=='desk'&&p.id!=='chair':p.id!==editingId&&(!shelfAnchor||p.id!=='item-shelf-plant')));}
+function validDraft(){return !!draft&&(!shelfAnchor||isShelfSupported(shelfPlantDraft,draft))&&(linkedDraft||shelfAnchor||placementAdjustments.length?canPlaceGroup(draftPlacements(),otherFurniture()):canPlaceFurniture(editingId,draft,otherFurniture()));}
 async function requestPlacement(id,button){
  if(readOnly)return;
  const session=++editSession;
@@ -424,7 +425,11 @@ function startPlacement(id='bookshelf'){
   if(group){startLinkedDraft(group);editing=true;renderWorld();renderPanel();focusRoom();if(group.desk.x!==desk.x||group.desk.y!==desk.y)toast('의자 그림이 자연스럽게 보이는 가까운 자리로 함께 옮겼어요.');return;}
   if(linkedExisting){toast('책상과 의자를 함께 놓을 자리가 부족해요.');return;}
  }
- let placed=existing?normalizePlacement(id,existing):findInitialPlacement(id,otherFurniture());
+ let placed=existing?normalizePlacement(id,existing):null;
+ if(id==='item-shelf-plant'&&(!placed||!canPlaceFurniture(id,placed,otherFurniture()))){
+  const plan=fitShelfPlantScene(otherFurniture(),placed);if(plan){placed=plan.plant;placementAdjustments=plan.adjustments;}
+ }
+ if(!placed)placed=findInitialPlacement(id,otherFurniture());
  if(existing&&!canPlaceFurniture(id,placed,otherFurniture()))placed=fitShelfPair(id,otherFurniture(),placed)||placed;
  if(!placed){toast('가구를 놓을 자리가 부족해요. 먼저 다른 가구를 옮겨 주세요.');return;}
  const plant=placements.find(p=>p.id==='item-shelf-plant');
@@ -447,7 +452,7 @@ function updatePlacementStatus(button){
  const done=$('#placement-done'),warning=$('#placement-warning');if(done)done.disabled=!valid;if(warning)warning.hidden=valid;layoutPlacementActions();
 }
 function makeFurniture(id,s,active,desk=null,sofa=null,placements=[]){
- const button=element('button','furniture '+id),item=FURNITURE[id];button.type='button';button.setAttribute('aria-label',(item.shortLabel||item.label)+' 배치 변경');button.disabled=readOnly||!active||expanding||tab!=='room'||(editing&&!isEditingFurniture(id));
+ const button=element('button','furniture '+id),item=FURNITURE[id];button.type='button';button.setAttribute('aria-label',(item.shortLabel||item.label)+' 배치 변경');button.disabled=readOnly||!active||expanding||tab!=='room'||(editing&&(!isEditingFurniture(id)||placementAdjustments.some(p=>p.id===id)));
  renderFurniture(button,id,s,desk,sofa,placements);if(active&&isEditingFurniture(id))updatePlacementStatus(button);
  button.onclick=()=>{if(!editing){setTab('room');startPlacement(id);}};
  if(active)button.addEventListener('pointerdown',e=>{

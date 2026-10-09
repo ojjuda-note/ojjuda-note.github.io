@@ -1,7 +1,7 @@
 import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261006-vine1';
 import {FLOOR,normalizePlacement,canPlaceFurniture,findPlacement,defaultShelf} from './model.js?v=20261007-room1';
 import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-vine1';
-import {fitShelfPair} from './shelf-placement.js?v=20261009-shelf1';
+import {fitShelfPair} from './shelf-placement.js?v=20261009-shelf2';
 
 // Starting places from references/home-style.png. These are drafts for a newly
 // selected item, never a migration or a reason to reset a saved arrangement.
