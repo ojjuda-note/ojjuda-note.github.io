@@ -105,7 +105,9 @@ export function renderFurniture(button,id,s,desk=null,sofa=null,scenePlacements=
    button.style.zIndex=String(Math.max(Number(button.style.zIndex),depth+1));
   }
  }
- if(item.wallMounted)button.style.zIndex='5';
+ // Flat wall pictures stay against the wall. A projecting shelf has depth and
+ // must sort in front of furniture that is farther back in the room.
+ if(item.wallMounted&&item.depth<=.1)button.style.zIndex='5';
  const canvas=document.createElement('canvas');canvas.className='furniture-paint';canvas.setAttribute('aria-hidden','true');
  button.dataset.renderState='loading';button.replaceChildren(canvas);
  const paints=[paintFurniture(canvas,geometry)];

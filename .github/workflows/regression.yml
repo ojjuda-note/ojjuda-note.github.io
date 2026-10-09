@@ -55,7 +55,9 @@ jobs:
       - name: Check default positions and saved room preservation
         run: node tests/house-default-placement-ui.test.cjs
       - name: Check plants resting on moved wall shelves
-        run: node tests/shelf-support-ui.test.cjs
+        run: |
+          node tests/shelf-support-ui.test.cjs
+          node tests/shelf-crowded-room-ui.test.cjs
       - name: Check existing catalog and placement controls
         run: |
           node tests/item-catalog-ui.test.cjs
@@ -69,6 +71,7 @@ jobs:
           path: |
             /tmp/room-default-proof
             /tmp/shelf-support-proof
+            /tmp/shelf-crowded-proof
           retention-days: 3
 
   matgo:
