@@ -1,7 +1,7 @@
 import {FURNITURE,itemSize,SOFA_ACCESSORIES} from './furniture-catalog.js?v=20261006-vine1';
 import {FLOOR,normalizePlacement,canPlaceFurniture,findPlacement,defaultShelf} from './model.js?v=20261007-room1';
 import {sofaAccessoryFromSofa} from './sofa-accessory-placement.js?v=20261006-vine1';
-import {fitShelfPair} from './shelf-placement.js?v=20261009-shelf2';
+import {fitShelfPair,shelfPartner} from './shelf-placement.js?v=20261009-shelf3';
 
 // Starting places from references/home-style.png. These are drafts for a newly
 // selected item, never a migration or a reason to reset a saved arrangement.
@@ -38,6 +38,8 @@ export function initialPlacement(id,others=[]){
 
 export function findInitialPlacement(id,others=[]){
   const supported=fitShelfPair(id,others);if(supported)return supported;
+  // With a shelf present, a floating free-space pose is not a usable fallback.
+  if(id==='item-shelf-plant'&&shelfPartner(id,others))return null;
   const preferred=initialPlacement(id,others),start=normalizePlacement(id,preferred);
   if(!start)return null;
   if(canPlaceFurniture(id,start,others))return start;
