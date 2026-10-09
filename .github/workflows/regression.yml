@@ -54,6 +54,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check default positions and saved room preservation
         run: node tests/house-default-placement-ui.test.cjs
+      - name: Check plants resting on moved wall shelves
+        run: node tests/shelf-support-ui.test.cjs
       - name: Check existing catalog and placement controls
         run: |
           node tests/item-catalog-ui.test.cjs
@@ -64,7 +66,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: room-default-placement
-          path: /tmp/room-default-proof
+          path: |
+            /tmp/room-default-proof
+            /tmp/shelf-support-proof
           retention-days: 3
 
   matgo:
