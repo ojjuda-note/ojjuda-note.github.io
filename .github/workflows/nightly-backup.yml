@@ -2,7 +2,7 @@ name: Daily checks and encrypted offsite backup
 
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 3 * * 0'
       timezone: Asia/Seoul
   workflow_dispatch:
     inputs:
