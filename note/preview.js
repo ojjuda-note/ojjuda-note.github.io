@@ -921,6 +921,7 @@ function fitPhotoQuote(photo, quote, tagRow) {
   const minimumHeight = photo.getBoundingClientRect().height;
   // Tags have their own fitting rules; settle their layout before measuring the quote.
   fitTagRow(tagRow);
+  if (photo.classList.contains('note-long-body')) { quote.style.fontSize = '16px'; return; }
   if (!quote.dataset.baseFontSize) quote.dataset.baseFontSize = String(parseFloat(getComputedStyle(quote).fontSize));
   const base = Number(quote.dataset.baseFontSize);
   for (let size = base; size >= 12; size -= 1) {
@@ -939,7 +940,7 @@ function refreshExpandedBodies() {
   refreshTagRows();
   for (const entry of expandedBodyEntries) {
     if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
-    entry.full.hidden = !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
+    entry.full.hidden = !entry.longBody && !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
   }
 }
 function photoQuoteClipped(photo, quote, tagRow) {
@@ -972,7 +973,9 @@ function cardElement(card, compact = false, expanded = false) {
   applyVisualStyle(photo, style);
   const quote = node('span', 'card-quote');
   const body = hiddenEvent ? '범위 안에서만 보이는 이벤트' : typeof card.body === 'string' ? card.body : '';
-  fillCardQuote(quote, body, compact, style);
+  const preview = noteBodyPreview(body), longBody = preview !== body;
+  photo.classList.toggle('note-long-body', longBody);
+  fillCardQuote(quote, preview, compact, style);
   const tagRow = node('span', 'card-tags');
   for (const tag of Array.isArray(card.tags) ? card.tags.slice(0, 5) : []) {
     const chip = node('span', '', `#${tag}`); chip.dataset.tag = tag; chip.setAttribute('role', 'button'); chip.title = `#${tag} 태그로 찾기`;
@@ -985,7 +988,9 @@ function cardElement(card, compact = false, expanded = false) {
     tagRow.append(chip);
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
-  open.append(photo); frame.append(open);
+  open.append(photo);
+  if (longBody && !expanded) open.append(node('span', 'note-read-more', '전체 글 읽기'));
+  frame.append(open);
   quoteFitEntries.add({ photo, quote, tagRow });
   if (card.kind === 'event') frame.append(node('span', 'note-event-badge', '이벤트/광고'));
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
@@ -1006,10 +1011,11 @@ function cardElement(card, compact = false, expanded = false) {
   requestTagFit();
   if (expanded && !hiddenEvent) {
     const full = node('details', 'note-full-body');
-    full.hidden = true;
+    full.hidden = !longBody;
+    full.open = longBody;
     full.append(node('summary', '', '전체 글 보기'), node('p', '', body));
     item.append(full);
-    expandedBodyEntries.add({ item, photo, quote, tagRow, full });
+    expandedBodyEntries.add({ item, photo, quote, tagRow, full, longBody });
     requestAnimationFrame(refreshExpandedBodies);
   }
 
@@ -1075,6 +1081,11 @@ function cardElement(card, compact = false, expanded = false) {
   }
   return item;
 }
+// Shorten only the photograph preview; the stored body and reader keep every character.
+function noteBodyPreview(body) {
+  const excerpt = body.slice(0, 280).split('\n').slice(0, 6).join('\n');
+  return excerpt.length < body.length ? excerpt.trimEnd() + '…' : body;
+}
 function fillCardQuote(quote, body, compact, style) {
   body.replace(/\r\n?/g, '\n').split('\n').forEach((line, index) => {
     if (index) quote.append(document.createElement('br'));
@@ -1095,7 +1106,7 @@ function previewCardWidth(compact) {
   return Math.max(180, Math.min(compact ? 310 : 560, width));
 }
 function cardPhotoOverflows(body, values = []) {
-  if (!body) return false;
+  if (!body || noteBodyPreview(body) !== body) return false;
   const compact = kind === 'comment', style = currentStyle();
   const probe = node('div', compact ? 'reply-card' : kind === 'event' ? 'photo-card note-event-card' : 'photo-card');
   probe.style.cssText = `position:fixed;left:-10000px;top:0;width:${previewCardWidth(compact)}px;visibility:hidden;pointer-events:none`;
@@ -2047,7 +2058,7 @@ function restoreLocalComposer() {
   const content = saved?.content, age = Date.now() - Number(saved?.savedAt);
   if (!content || content.kind !== kind || content.editingId !== editingId
     || !Number.isFinite(age) || age < 0 || age > 7 * 86400000
-    || typeof content.body !== 'string' || content.body.length > 200
+    || typeof content.body !== 'string'
     || typeof content.tags !== 'string' || content.tags.length > 120
     || !content.style || typeof content.style !== 'object') {
     clearLocalComposer(); return false;
@@ -2141,8 +2152,7 @@ function parsedTags(raw = tags.value) {
     && new Set(values).size === values.length ? values : null;
 }
 function validEventBody(value) {
-  return value.length <= 200
-    && /[^\s\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u.test(value);
+  return /[^\s\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u.test(value);
 }
 function validEventPosition(position = eventPosition) {
   return !!position && Number.isFinite(position.latitude) && Number.isFinite(position.longitude)
@@ -2158,7 +2168,7 @@ function updateComposer() {
   syncQuickChoices();
   syncCardPhotoAttach();
   if (!backdrop.hidden) resizeComposerText();
-  $('#compose-count').textContent = `${text.value.length} / 200자`;
+  $('#compose-count').textContent = `${text.value.length.toLocaleString('ko-KR')}자`;
   const visual = currentStyle();
   const extra = visual.boxTransparency !== 25 || selectedPhotoKey || tags.value.trim() || visual.font !== 'default'
     || visual.size !== 'normal' || visual.effect !== 'none'
@@ -2168,15 +2178,17 @@ function updateComposer() {
   const previewTags = tagList(tags.value).slice(0, 5);
   $('#compose-tag-display').replaceChildren(...previewTags.map(value => node('span', '', `#${value.slice(0, 20)}`)));
   fitTagRow($('#compose-tag-display'));
-  const overflows = !backdrop.hidden && !!text.value.trim()
+  const longBody = noteBodyPreview(text.value) !== text.value;
+  const overflows = !longBody && !backdrop.hidden && !!text.value.trim()
     && (composerPhotoOverflows() || cardPhotoOverflows(text.value, previewTags));
   let warning = $('#compose-overflow-warning');
   if (!warning) {
     warning = node('span', 'compose-overflow-warning'); warning.id = 'compose-overflow-warning';
     $('#compose-count').before(warning);
   }
-  warning.textContent = overflows ? '사진에 글이 다 보이지 않아요. 등록할 때 확인할 수 있어요.' : '';
-  warning.hidden = !overflows;
+  warning.textContent = longBody ? '긴 글은 카드에서 전체 글을 펼쳐 읽을 수 있어요.'
+    : overflows ? '사진에 글이 다 보이지 않아요. 등록할 때 확인할 수 있어요.' : '';
+  warning.hidden = !longBody && !overflows;
   if (!client || !ready) composeMessage.textContent = '노트 연결 확인 후 등록 가능';
   else if (!authKnown) composeMessage.textContent = '로그인 확인 중';
   else if (!session?.user) {
@@ -2185,7 +2197,6 @@ function updateComposer() {
     else link.href = noteLoginHref();
     composeMessage.replaceChildren(link);
   } else if (!canWrite()) composeMessage.textContent = writingMessage();
-  else if (text.value.length > 200) composeMessage.textContent = '글은 200자 이내로 작성해 주세요';
   else if (kind === 'event' && !validEventBody(text.value)) composeMessage.textContent = '이벤트 내용을 입력해 주세요.';
   else if (!values) composeMessage.textContent = '태그는 중복 없이 5개까지, 각 20자 이내';
   else if (kind === 'comment' && replyDueChecking) composeMessage.textContent = '상위 카드 공개 종료일 확인 중';
@@ -2199,7 +2210,7 @@ function updateComposer() {
     : kind === 'event' && !editingId ? '이벤트 범위와 금액을 확인해 주세요.'
       : '';   // 등록할 준비가 됐어요. 이름·성별은 아래쪽 선택 칸에 보여요
   submit.disabled = busy || draftLoading || replyDueChecking || eventPhotoPreparing || cardPhotoPreparing || !!eventPhotoError || !client || !ready || !session?.user || !canWrite() || !text.value.trim()
-    || text.value.length > 200 || !values
+    || !values
     || (kind !== 'event' && !editingId && !writingPosition)
     || (kind === 'event' && (!validEventBody(text.value)
       || (!editingId && (!validEventPosition() || !validEventOptions()))));
@@ -2217,6 +2228,13 @@ function fitComposerWidth(photo) {   // 글쓰기 창의 글상자도 글씨 길
 }
 function resizeComposerText() {
   const photo = $('.compose-photo');
+  const longBody = noteBodyPreview(text.value) !== text.value;
+  photo.classList.toggle('note-long-body', longBody);
+  if (longBody) {
+    text.style.width = '84%'; text.style.fontSize = '16px';
+    text.style.height = `${Math.max(88, photo.clientHeight - 70)}px`;
+    return;
+  }
   fitComposerWidth(photo);
   text.style.height = 'auto';
   const minimum = 88;
@@ -2411,7 +2429,7 @@ async function replacePublishedCardPhoto(cardId, userId, path, expectedPath) {
 async function publishCard() {
   if (busy || submit.disabled || !client || !ready) return;
   let body = text.value.replace(/\r\n?/g, '\n').trim(), values = parsedTags();
-  if (!body || body.length > 200 || !values) return;
+  if (!body || !values) return;
   if (cardPhotoPreparing) { composeMessage.textContent = '사진을 준비하는 중이에요. 잠시 뒤 등록해 주세요.'; return; }
   const editId = editingId, actionUserId = composerUserId, actionEpoch = identityEpoch, actionComposerRun = composerRun;
   const previewBackgroundKey = backgroundKey;
@@ -2430,7 +2448,7 @@ async function publishCard() {
   const removeEventPhoto = kind === 'event' && !!editId && eventPhotoRemove;
   if (kind === 'comment' && !editId && archiveDueThisMonth(parentArchiveDue(cache.get(parentId)))
     && !window.confirm(`상위 카드가 ${dateLabel(parentArchiveDue(cache.get(parentId)))}에 공개 종료될 예정이에요. 이 답글도 함께 삭제될 수 있습니다. 등록할까요?`)) return;
-  if ((composerPhotoOverflows() || cardPhotoOverflows(body, values))
+  if (noteBodyPreview(body) === body && (composerPhotoOverflows() || cardPhotoOverflows(body, values))
     && !window.confirm('글이나 태그 일부가 사진 안에 다 보이지 않습니다. 카드 크게 보기에서 전체 글을 볼 수 있어요. 그래도 등록할까요?')) return;
   if (kind === 'event' && !editId) {
     const cost = Number($('#event-radius').value) * Number($('#event-hours').value) * 100;
@@ -2461,7 +2479,7 @@ async function publishCard() {
       publishKind = draftToken.content.kind; publishParent = draftToken.content.parent_id;
       if (publishKind !== kind || publishParent !== parentId) throw new Error('임시 글의 원글이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
       if (draftToken.content.background_key !== previewBackgroundKey) throw new Error('임시 글의 사진이 바뀌었어요. 작성창을 다시 열어 확인해 주세요.');
-      if (!body || body.length > 200 || !values) throw new Error('보관된 내용을 확인해 주세요.');
+      if (!body || !values) throw new Error('보관된 내용을 확인해 주세요.');
     } catch (error) {
       draftController.cancelPublish(); busy = false; setComposerInputs(); updateComposer();
       composeMessage.textContent = error.message || '임시 글 저장을 확인한 뒤 등록해 주세요.'; return;
