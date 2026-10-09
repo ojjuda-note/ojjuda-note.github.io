@@ -15,7 +15,7 @@ from:()=>{const filters=[];const q={select(){return q},neq(k,v){filters.push(r=>
   const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await context.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname!=='fixture.test')return r.abort();if(u.pathname.endsWith('.js'))return r.fulfill({contentType:'application/javascript',path:path.join(root,u.pathname)});return u.pathname==='/photo.jpg'?r.fulfill({path:photo,contentType:'image/jpeg'}):r.fulfill({contentType:'text/html',body:html.replace('</head>',mock+'</head>')});});
-  const open=async actor=>{await page.goto('https://fixture.test/photo?actor='+actor);await page.waitForSelector('#grid .cell');await page.locator('[data-t="all"]').click();await page.waitForSelector('#grid .cell img');await page.waitForFunction(()=>document.querySelector('#grid img').complete&&document.querySelector('#grid img').naturalWidth>0);};
+  const open=async actor=>{await page.goto('https://fixture.test/photo?actor='+actor);await page.locator('details:has(#grid)>summary').click();await page.waitForSelector('#grid .cell');await page.locator('[data-t="all"]').click();await page.waitForSelector('#grid .cell img');await page.waitForFunction(()=>document.querySelector('#grid img').complete&&document.querySelector('#grid img').naturalWidth>0);};
   const filter=()=>page.locator('#grid img').evaluate(im=>getComputedStyle(im).filter);
   await open('one');
   assert.equal(await page.locator('#grid .cell').count(),1,'unapproved public photos are not playable');

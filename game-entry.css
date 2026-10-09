@@ -1,0 +1,137 @@
+/* One quiet entrance for every arcade game. Only entry screens are themed. */
+.game-entry {
+  --entry-ink:#302d43;--entry-muted:#797487;--entry-line:#e9e5f0;
+  --entry-accent:#7560b5;--entry-soft:#f3f0f9;
+  box-sizing:border-box;position:relative;width:100%;max-width:420px;
+  margin:0 auto;padding:30px 24px;border:1px solid var(--entry-line);
+  border-radius:24px;background:#fff;color:var(--entry-ink);
+  box-shadow:0 14px 45px #4033570b;text-align:center;
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:14px;line-height:1.6;letter-spacing:-.025em;color-scheme:light;
+}
+.game-entry *, .game-entry *::before, .game-entry *::after{box-sizing:border-box}
+.game-entry .ge-icon{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 18px;border:1px solid #eae3f6;border-radius:20px;background:var(--entry-soft);font-size:31px;line-height:1}
+.game-entry .ge-icon{color:#7560b5}
+.game-entry .ge-icon svg{display:block;width:30px;height:30px;min-width:30px;max-width:30px;flex:none}
+.game-entry .ge-kicker{display:block;margin:0 0 6px;color:var(--entry-muted);font-size:11px;font-weight:500;letter-spacing:.07em}
+.game-entry :is(h1,h2,h3).ge-title{position:static;width:auto;height:auto;overflow:visible;clip:auto;clip-path:none;white-space:normal;margin:0;color:var(--entry-ink);font:700 25px/1.4 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.045em;text-shadow:none}
+.game-entry .ge-copy{margin:10px 0 24px;color:var(--entry-muted);font-size:13px;font-weight:400;line-height:1.65;word-break:keep-all}
+.game-entry .ge-primary,.game-entry .ge-secondary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin:10px 0 0;padding:12px 16px;border:1px solid transparent;border-radius:14px;background:var(--entry-accent);color:#fff;box-shadow:none;font-family:inherit;font-size:15px;font-weight:700;line-height:1.5;letter-spacing:-.02em;text-decoration:none;cursor:pointer;touch-action:manipulation;text-shadow:none}
+.game-entry .ge-primary{font-family:inherit;font-size:15px;font-weight:700;line-height:1.5}
+.game-entry .ge-secondary{background:#f7f5fa;border-color:var(--entry-line);color:#625574;font-family:inherit;font-size:14px;font-weight:500}
+.game-entry .ge-primary:hover{background:#65509f}
+.game-entry .ge-secondary:hover{background:#eee9f6}
+.game-entry button:disabled{opacity:.5;cursor:default}
+.game-entry :is(button,summary,input,select):focus-visible{outline:3px solid #ac97dc;outline-offset:3px}
+.game-entry .ge-more{margin:18px 0 0;padding:0;border:0;border-top:1px solid var(--entry-line);border-radius:0;background:transparent;text-align:left;color:var(--entry-muted);font-size:13px;font-weight:400;line-height:1.7;box-shadow:none}
+.game-entry .ge-more>summary{padding:14px 0 0;min-height:40px;font-size:12px;font-weight:500;cursor:pointer;color:#797487}
+.game-entry .ge-more[open]>summary{margin-bottom:12px}
+.game-entry .ge-more :is(p,.note,.how,.fine){font-size:12px;line-height:1.8;color:var(--entry-muted);margin:10px 0 0}
+.game-entry .ge-more .grank{margin:0;max-height:180px;overflow:auto}
+.game-entry .ge-hint{display:block;margin:12px 0 0;color:var(--entry-muted);font-size:11px}
+.game-entry .ge-label{display:block;margin:16px 0 8px;text-align:left;color:#827b91;font-size:11px;font-weight:500}
+.game-entry .seg{margin:0;gap:4px;background:var(--entry-soft);padding:4px;border:0;border-radius:12px;display:flex}
+.game-entry .seg button{flex:1;min-width:0;min-height:38px;margin:0;padding:7px 5px;border:0;border-radius:9px;background:transparent;color:#827b91;font-size:12px;line-height:1.4;box-shadow:none}
+.game-entry .seg button.on{background:#fff;color:#65518e;box-shadow:0 2px 5px #4933630a;font-weight:700}
+.game-entry .ge-close{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:0;border:0;border-radius:50%;background:#f7f5fa;color:#827b91;font:18px/1 sans-serif;cursor:pointer}
+.game-entry .bd-resume{margin:14px 0}
+.game-entry .bd-layout{margin:0 0 12px}
+.game-entry [hidden]{display:none!important}
+.game-entry .ge-play-modes{margin:18px 0 8px}
+.game-entry .ge-play-modes button{min-height:42px;font-size:13px}
+.game-entry .ge-friend-picker{margin-top:20px;text-align:left}
+.game-entry .ge-friends-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.game-entry .ge-friends-heading strong{font-size:13px;font-weight:500}
+.game-entry [data-friend-count]{font-size:11px;color:#797487}
+.game-entry .ge-friend-search{width:100%;min-height:42px;border:1px solid #e9e5f0;border-radius:12px;padding:9px 12px;background:#faf9fc;color:#302d43;font:inherit;font-size:12px}
+.game-entry .ge-friend-list{max-height:235px;overflow:auto;overscroll-behavior:contain;margin-top:8px}
+.game-entry .ge-friend{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f1eef6}
+.game-entry .ge-friend:last-child{border-bottom:0}
+.game-entry .ge-friend-avatar{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;background:#f3f0f9;color:#93839e;font-size:12px}
+.game-entry .ge-friend-copy{min-width:0;flex:1}
+.game-entry .ge-friend-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;color:#40374e}
+.game-entry .ge-presence{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:10px;color:#99909f}
+.game-entry .ge-presence i{width:6px;height:6px;border-radius:50%;background:#c9c5d0}
+.game-entry [data-online=true] .ge-presence{color:#39936a}
+.game-entry [data-online=true] .ge-presence i{background:#41b67d}
+.game-entry .ge-invite{min-width:52px;min-height:36px;border:1px solid #e8e1f2;border-radius:10px;background:#f3f0f9;color:#7560b5;padding:6px 10px;box-shadow:none;font-size:12px}
+.game-entry .ge-empty{margin:16px 0;color:#928a9b;font-size:12px;text-align:center}
+.game-friend-picker-overlay{position:fixed;inset:0;z-index:200005;display:flex;align-items:safe center;justify-content:center;padding:20px 12px;overflow:auto;background:#f5f3f9;overscroll-behavior:contain}
+.game-friend-picker-overlay>.game-entry{flex-shrink:0}
+.game-friend-banner{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:200006;display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:calc(100% - 24px);max-width:420px;padding:14px 16px;border:1px solid #e9e5f0;border-radius:16px;background:#fff;color:#302d43;box-shadow:0 10px 35px #302d4320;font-family:"Noto Sans KR",sans-serif}
+.game-friend-banner>span{flex:1;min-width:0}
+.game-friend-banner strong,.game-friend-banner small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.game-friend-banner small{font-size:11px;color:#797487;margin-top:3px}
+.game-friend-banner button{min-height:40px;padding:9px 12px;border:0;border-radius:11px;background:#7560b5;color:#fff;font:inherit;font-size:12px}
+.game-friend-banner [data-answer=decline]{background:#f3f0f9;color:#797487;font-size:18px;padding:6px 12px}
+.game-friend-banner p{flex-basis:100%;font-size:12px;color:#797487;margin:0}
+.game-entry .game-controls{margin:12px 0 0;padding:0;border:0;background:none;color:var(--entry-muted)}
+.game-entry .game-controls>summary{font-size:12px;font-weight:500}
+.game-entry .ge-options{display:grid;gap:10px;margin-top:20px}
+.game-entry .ge-option{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 16px;border:1px solid var(--entry-line);border-radius:14px;background:#faf9fc;color:var(--entry-ink);text-align:left;font:inherit;cursor:pointer}
+.game-entry .ge-option:hover{border-color:#b6a5d4;background:var(--entry-soft)}
+.game-entry .ge-option svg{display:block;width:48px;height:48px;flex:none}
+.game-entry .ge-option strong{display:block;font-size:14px;font-weight:700}
+.game-entry .ge-option small{display:block;margin-top:2px;font-size:11px;font-weight:400;color:var(--entry-muted)}
+.game-entry .ge-option:after{content:'→';margin-left:auto;color:var(--entry-accent)}
+/* Canvas games use the same shell until the start button is pressed. */
+#gov:has(#gscreen>.game-entry){background:#f5f3f9;backdrop-filter:none;-webkit-backdrop-filter:none;padding:12px}
+#gov:has(#gscreen>.game-entry) .gbox{width:min(100%,480px);height:100%;max-height:100%;padding:0;gap:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+#gov:has(#gscreen>.game-entry) .ghead{min-height:44px;padding:0 4px;color:#827b91;flex:none}
+#gov:has(#gscreen>.game-entry) .gt{margin-right:auto;color:#827b91;font:500 12px/1.5 inherit}
+#gov:has(#gscreen>.game-entry) .gsc{display:none}
+#gov:has(#gscreen>.game-entry) .gx{width:36px;height:36px;background:#fff;color:#827b91;border:1px solid var(--entry-line,#e9e5f0);box-shadow:none}
+#gov:has(#gscreen>.game-entry) .gcan{flex:1 1 0;min-height:0;width:100%;max-height:none;aspect-ratio:auto;border:0;border-radius:0;background:transparent;box-shadow:none}
+#gov:has(#gscreen>.game-entry) #gcv{visibility:hidden}
+#gov:has(#gscreen>.game-entry) .gscreen{padding:16px 0;align-items:safe center;background:transparent;overflow:auto;overscroll-behavior:contain}
+#gov #gscreen>.game-entry{flex-shrink:0;max-width:420px;max-height:none;padding:30px 24px;border:1px solid #e9e5f0;border-radius:24px;background:#fff;color:#302d43;box-shadow:0 14px 45px #4033570b}
+#gov #gscreen>.game-entry .ge-title{position:static;width:auto;height:auto;clip:auto;clip-path:none;color:#302d43;font:700 25px/1.4 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;margin:0}
+#gov #gscreen>.game-entry .ge-copy{margin:10px 0 24px;color:#797487;font-size:13px}
+#gov #gscreen>.game-entry .ge-primary{background:#7560b5;color:#fff;border:0;border-radius:14px;min-height:50px;font-size:15px;box-shadow:none}
+/* Board games share the card while keeping their own play settings. */
+.modal-bg:has(.ge-board-entry){background:#f5f3f9;backdrop-filter:none;padding:20px 12px;align-items:safe center;overflow:auto}
+.modal:has(>#bd-menu>.ge-board-entry){width:min(100%,420px);max-height:none;padding:0;border:0;background:transparent;border-radius:24px;box-shadow:none;overflow:visible}
+.ge-board-entry .ge-more .btn{font-size:12px}
+/* Embedded territory and picture games. */
+#menu:has(>.game-entry){background:#f5f3f9;backdrop-filter:none;padding:20px 12px;overflow:auto;align-items:safe center}
+#menu>.game-entry{max-height:none;flex-shrink:0;padding:30px 24px;background:#fff;border:1px solid #e9e5f0;border-radius:24px;color:#302d43;box-shadow:0 14px 45px #4033570b}
+#menu>.game-entry .ge-copy{margin:10px 0 24px}
+#menu>.game-entry .tabs{margin:14px 0;gap:4px;padding:4px;border-radius:12px;background:#f3f0f9}
+#menu>.game-entry .tab{color:#797487;background:transparent;border-radius:9px;border:0;font-size:12px;min-height:36px}
+#menu>.game-entry .tab.on{background:white;color:#65518e}
+#menu>.game-entry .grid{max-height:320px;overflow:auto;margin:12px 0 0;grid-template-columns:repeat(3,minmax(0,1fr))}
+#menu>.game-entry .how{padding:0;background:none;box-shadow:none;border:0;text-align:left}
+#menu>.game-entry #cleared{display:block;margin-top:5px;color:#797487;font-size:11px;font-weight:400}
+/* Difference game: conceal the busy play HUD while the entry is open. */
+.board-curtain[data-entry=menu]{border:0;border-radius:0;position:fixed;inset:0;z-index:60;padding:20px 12px;background:#f5f3f9;backdrop-filter:none;display:flex;align-items:safe center;justify-content:center;overflow:auto}
+.board-curtain[data-entry=menu]>.game-entry{padding:30px 24px;max-width:420px;max-height:none;background:#fff;border:1px solid #e9e5f0;border-radius:24px;box-shadow:0 14px 45px #4033570b}
+.board-curtain[data-entry=menu] #gate-eyebrow{color:#797487;font-size:11px;font-weight:500}
+body:has(.board-curtain[data-entry=menu]:not([hidden])){overflow:hidden}
+/* Matchmaking keeps its account and exit controls in a small, quiet header. */
+body:has(.lobby.game-entry){background:#f5f3f9}
+#app:has(.lobby.game-entry){background:#f5f3f9;color:#302d43}
+#app:has(.lobby.game-entry) .top{background:#f5f3f9;border:0;color:#797487;box-shadow:none}
+#app:has(.lobby.game-entry) .top h1{color:#797487;font-size:14px}
+#app:has(.lobby.game-entry) .top em{font-style:normal;color:#797487}
+#app:has(.lobby.game-entry) .top .pill{background:white;color:#797487;border:1px solid #e9e5f0;box-shadow:none}
+#app:has(.lobby.game-entry) #content{display:flex;align-items:safe center;justify-content:center;padding:20px 12px;overflow:auto}
+.lobby.game-entry{flex-shrink:0;margin:auto;max-width:420px;padding:30px 24px;background:#fff;border:1px solid #e9e5f0;border-radius:24px;box-shadow:0 14px 45px #4033570b;color:#302d43}
+.lobby.game-entry .join{display:flex;gap:8px;margin-top:12px}
+.lobby.game-entry .join input{width:0;flex:1;min-width:0;min-height:44px;border:1px solid #e9e5f0;border-radius:10px;background:#faf9fc;color:#302d43;padding:10px;font:inherit;font-size:12px}
+.lobby.game-entry .join .btn{background:#f3f0f9;color:#65518e;border:0;box-shadow:none;font-size:12px}
+.lobby.game-entry .ge-secondary small{display:none}
+#matgo-start{background:#f5f3f9;padding:20px 12px;overflow:auto;align-items:safe center}
+#matgo-start>.game-entry{max-height:none;flex-shrink:0;max-width:420px;padding:30px 24px;background:#fff;color:#302d43;border:1px solid #e9e5f0;border-radius:24px;box-shadow:0 14px 45px #4033570b}
+@media(max-width:360px),(max-height:580px){
+ .game-entry,#gov #gscreen>.game-entry,#menu>.game-entry,.lobby.game-entry,.board-curtain[data-entry=menu]>.game-entry{padding:24px 18px}
+ .game-entry .ge-icon{width:52px;height:52px;margin-bottom:14px;border-radius:16px;font-size:27px}
+ .game-entry .ge-copy{margin-bottom:18px}
+}
+@media(prefers-reduced-motion:reduce){.game-entry *{animation:none!important;transition:none!important}}
+
+#menu>.game-entry .arcade-rules>summary{text-align:left;list-style:disclosure-closed;padding:14px 0 0;border:0;border-radius:0;background:transparent;color:#797487;font-size:12px;font-weight:500}
+#menu>.game-entry .arcade-rules[open]>summary{list-style:disclosure-open}
+#menu>.game-entry .arcade-rules>summary::after{content:none}
+#photo-ttang-overlay>header,#ttang-overlay>header{background:#f5f3f9!important;color:#827b91!important;border:0!important}
+#photo-ttang-overlay>header>button:disabled{display:none}
+#photo-ttang-overlay>header>button:last-child,#ttang-overlay>header>button{background:#fff!important;color:#827b91!important;border:1px solid #e9e5f0!important;border-radius:12px!important}

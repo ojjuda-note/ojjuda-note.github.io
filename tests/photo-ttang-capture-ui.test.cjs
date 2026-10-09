@@ -22,7 +22,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await context.route('**/*',r=>{
    const u=new URL(r.request().url());if(u.hostname!=='127.0.0.1')return r.fulfill({body:''});
    if(u.pathname==='/fixture')return r.fulfill({contentType:'text/html',body:world});
-   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
+   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
   const solo=page.locator('[data-arcade-games="solo"]'),multi=page.locator('[data-arcade-games="multi"]');
@@ -38,7 +38,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
   await page.locator('#photo-ttang-overlay iframe').waitFor();
   const frame=await (await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();
-  await frame.waitForSelector('#grid .cell');assert.equal(await frame.title(),'오쭈다 포토땅따먹기');
+  await frame.locator('details:has(#grid)>summary').click();await frame.waitForSelector('#grid .cell');assert.equal(await frame.title(),'오쭈다 포토땅따먹기');
   assert.equal(await frame.locator('#grid .cell').count(),20);
   for(const [width,height] of [[320,568],[390,844],[844,390]]){
    await page.setViewportSize({width,height});assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);

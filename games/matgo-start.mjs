@@ -11,7 +11,7 @@ export function waitForMatgoStart(){
     const panel=document.createElement('div');
     panel.className='modal';panel.id='matgo-start';panel.setAttribute('role','dialog');
     panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','matgo-start-title');
-    panel.innerHTML='<div class="card"><h2 id="matgo-start-title">🎴 맞고</h2><p>준비되면 패를 돌려요.</p><div class="row"><button type="button" class="btn gold" id="matgo-start-play">시작하기</button><button type="button" class="btn g" id="matgo-start-exit">나가기</button></div></div>';
+    panel.innerHTML='<div class="card game-entry"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실</span><h2 id="matgo-start-title" class="ge-title">맞고</h2><p class="ge-copy">컴퓨터와 가볍게 한 판 즐겨보세요.</p><button type="button" class="btn gold ge-primary" id="matgo-start-play">시작하기</button><button type="button" class="btn g ge-secondary" id="matgo-start-exit">나가기</button></div>';
     const play=panel.querySelector('#matgo-start-play'),exit=panel.querySelector('#matgo-start-exit');
     play.addEventListener('click',event=>{
       if(!event.isTrusted||play.disabled)return;

@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/games/mole-game.js')?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/world-game-assets.js')||s.includes('/game-entry.js')?s:'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -40,10 +40,11 @@ g.tab='friends';H();
    assert.equal(await page.locator('#gov').getAttribute('data-game'),'mole');assert.equal(await page.locator('.mole-card').count(),1);
    if(width===390){const sound=page.locator('#gov [data-g="sound"]'),before=await sound.innerHTML();await sound.click();assert.notEqual(await sound.innerHTML(),before,'mute changes the native speaker icon');await sound.click();assert.equal(await sound.innerHTML(),before,'unmute restores the speaker icon');}
    assert.ok(await page.locator('#gov [data-g="start"]').isVisible());
+   await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>moleTest.freeze());
    const box=await page.locator('#gov .gbox').boundingBox(),canvas=await page.locator('#gcv').boundingBox();
    assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width+.5&&box.y+box.height<=height+.5,'garden and controls fit the viewport');
    assert.ok(Math.abs(canvas.width/canvas.height-2/3)<.002,'the targets keep their original proportions');
-   await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>{moleTest.freeze();moleTest.seed(.5)});
+   await page.evaluate(()=>{moleTest.freeze();moleTest.seed(.5)});
    await tap(60,180);assert.equal(await page.locator('#gsc').textContent(),'1점','a touch hits the visible mole at every size');
    await tap(60,180);assert.equal(await page.locator('#gsc').textContent(),'1점','the hit animation cannot award another point');
    await page.evaluate(()=>moleTest.close());

@@ -64,10 +64,11 @@
     const r=round(),playing=r.status==='playing',won=r.status==='won',lost=r.status==='lost',pending=r.status==='payment';
     const timedOut=lost&&r.hearts>0&&r.remainingMs===0,changePicture=timedOut&&timeoutRetries.has(puzzle().id);
     $('board-shell').classList.toggle('covered',!playing&&!won&&!answerReview);$('board-curtain').hidden=playing||won||!!answerReview;
-    $('board-shell').classList.toggle('reviewing',!!answerReview);
-    $('gate-eyebrow').textContent=pending?'ZU 사용 확인':lost?'이번 도전 종료':'1분 도전';
-    $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'준비됐나요?';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 1 ZU로 30초를 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 1 ZU로 30초 연장도 가능해요.'):`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 안에 다른 곳 여섯 개를 찾아보세요.`;
+    $('board-shell').classList.toggle('reviewing',!!answerReview);$('board-curtain').dataset.entry=!playing&&!won&&!lost&&!pending&&!answerReview?'menu':'round';
+    $('gate-eyebrow').textContent=pending?'ZU 사용 확인':lost?'이번 도전 종료':'오쭈다 오락실';
+    $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'틀린그림찾기';
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 1 ZU로 30초를 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 1 ZU로 30초 연장도 가능해요.'):'두 그림에서 다른 곳 여섯 개를 찾아보세요.';
+    $('gate-entry-hint').hidden=pending||lost;$('gate-entry-hint').textContent=`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 도전`;
     $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?(changePicture?'다른 그림 풀기':'다시 풀기'):'시작하기';
     $('reset').textContent=changePicture?'다른 그림 풀기':'다시 풀기';$('reset').setAttribute('aria-label',changePicture?'다른 그림 풀기':'이 문제 다시 풀기');
     $('start').disabled=!imagesReady||paymentBusy||!!answerReview;
