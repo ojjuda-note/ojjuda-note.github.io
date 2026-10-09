@@ -53,7 +53,7 @@
    if(!leave())return;let full;
    try{full=await rpc('admin_review_detail',{p_key:row.key});if(!full)throw Error('missing');}catch{say('최신 내용을 불러오지 못했어요.');return;}
    if(!current()||!details.isConnected)return;details.open=true;
-   const form=el('form','ri-edit'),input=el('textarea');input.value=full.body;input.rows=8;input.setAttribute('aria-label','본문 수정');if(row.kind==='post')input.maxLength=4000;
+   const form=el('form','ri-edit'),input=el('textarea');input.value=full.body;input.rows=8;input.setAttribute('aria-label','본문 수정');
    const save=el('button','btn pri sm','수정 저장');save.type='submit';const cancel=button('취소',()=>{if(leave()){draft=null;form.remove();}});
    form.append(input,save,cancel);details.append(form);draft={input,original:full.body};input.focus();
    form.onsubmit=async event=>{event.preventDefault();if(saving||!current()||!input.value.trim())return;saving=true;save.disabled=cancel.disabled=true;

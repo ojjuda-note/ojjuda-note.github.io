@@ -44,8 +44,6 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   await db.exec(read('supabase/migrations/20260928075731_note_initial_photo_and_replace_only.sql'));
   const migration = fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_note_preview_background.sql'));
   await db.exec(read('supabase/migrations/'+migration));
-  const unlimited = read('supabase/migrations/20261009032226_note_unlimited_body.sql');
-  await db.exec(unlimited.match(/CREATE OR REPLACE FUNCTION ojjuda_note_internal\.valid_note_body[\s\S]*?\$function\$\s*;/)[0]);
   const value = async (sql,args=[]) => (await db.query(sql,args)).rows[0]?.value;
   await db.query("select set_config('request.jwt.claim.sub',$1,false)",[member]);
   const rpc = (name,args) => value(`select ojjuda_note.${name}(${Object.keys(args).map((k,i)=>`${k} => $${i+1}`).join(',')}) as value`,Object.values(args));
@@ -55,7 +53,6 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
   const source = read('note/preview.js');
   const validCardIdSource = source.match(/^const validCardId = .*;$/m)[0];
   const publishSource = source.slice(source.indexOf('async function publishCard()'),source.indexOf('\nfunction updateAuth()'));
-  const bodyPreviewSource = source.slice(source.indexOf('function noteBodyPreview('),source.indexOf('function fillCardQuote('));
   const publishFromPreview = async ({body='미리보기 사진 유지',background='42',kind='memo',parent=null,attachment=false,draftBackground=background,withDraft=true}={}) => {
     const requestId=randomUUID(), photoId=randomUUID(), attachmentPath=`${member}/${photoId}.jpg`;
     if(attachment) await db.query('insert into storage.objects(bucket_id,name,owner_id) values($1,$2,$3)',[kind==='event'?'note-event-photos':'note-card-photos',attachmentPath,member]);
@@ -72,7 +69,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       window:{confirm:()=>true},$:selector=>({value:selector.includes('radius')||selector.includes('hours')?'1':selector.includes('gender')?'private':'anonymous'}),
       client:{auth:{getUser:async()=>({data:{user:{id:member}},error:null})},storage:{from:()=>({upload:async()=>({error:null})})}},
       uploadCardPhotoFile:async()=>attachmentPath,
-      draftController:withDraft?{preparePublish:async()=>({content:{body,tags:'',kind,parent_id:parent,background_key:draftBackground}}),cancelPublish(){},published:async()=>({cleared:true})}:null,
+      draftController:withDraft?{preparePublish:async()=>({content:{body:'미리보기 사진 유지',tags:'',kind,parent_id:parent,background_key:draftBackground}}),cancelPublish(){},published:async()=>({cleared:true})}:null,
     };
     c.noteRpc=async(name,args)=>{
       if(name==='set_my_gender')return;
@@ -81,13 +78,10 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
       c.identityEpoch++; // Stop after the real publication succeeds, before unrelated feed rendering.
       return result;
     };
-    vm.createContext(c);vm.runInContext(validCardIdSource+'\n'+bodyPreviewSource+'\n'+publishSource,c);await vm.runInContext('publishCard()',c);
+    vm.createContext(c);vm.runInContext(validCardIdSource+'\n'+publishSource,c);await vm.runInContext('publishCard()',c);
     return {calls,message:c.composeMessage.textContent,result:await value('select result as value from ojjuda_note_internal.spend_requests where request_id=$1',[requestId])};
   };
-  const longBody = '[창작 웹소설] 긴 글 저장 검증\n\n' + '첫 문장과 마지막 문장을 빠짐없이 저장한다.\n'.repeat(1200);
-  const longSaved = await publishFromPreview({body:longBody});
-  assert.equal(longSaved.calls[0].args.p_body,longBody.trim());
-  assert.equal(await value('select body as value from ojjuda_note.cards where id=$1',[longSaved.result.card_id]),longBody.trim(), 'long content reaches the real publish RPC unchanged');
+  const overlength=await publishFromPreview({body:'가'.repeat(201)});assert.equal(overlength.calls.length,0);assert.equal(overlength.result,undefined,'overlength photo card is not published');
   for(const key of ['10','42','73','189']){
     const saved=await publishFromPreview({background:key});
     assert.equal(saved.calls[0].args.p_background_key,key);

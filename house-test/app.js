@@ -1,5 +1,5 @@
 import {createRecordRPC} from './record-rpc.js?v=20261004-album1';
-import {createRecordPanel} from './record-panel.js?v=20261005-public1';
+import {createRecordPanel} from './record-panel.js?v=20261009-house-notes1';
 import {loadBuiltInItems,builtInItemReady,loadMadeItems,registerMadeItem} from './custom-furniture.js?v=20261006-vine1';
 import {findInitialPlacement} from './default-placement.js?v=20261009-shelf3';
 import {fitShelfPair,snapShelfContact,isShelfSupported,plantFollowingShelf,fitShelfPlantScene} from './shelf-placement.js?v=20261009-shelf3';

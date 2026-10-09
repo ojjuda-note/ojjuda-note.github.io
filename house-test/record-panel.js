@@ -1,4 +1,4 @@
-import {mountCloudRecords} from './cloud-record-panel.js?v=20261005-public1';
+import {mountCloudRecords} from './cloud-record-panel.js?v=20261009-house-notes1';
 import {icon} from './icons.js?v=20261004-folder-kind1';
 import {MEDIA_TYPES,addRecordMedia,listRecordMedia,readRecordMedia,deleteRecordMedia} from './record-media-store.js?v=20261004-records1';
 const categories=[['all','전체'],['text','노트'],['photo','앨범'],['video','비디오']];

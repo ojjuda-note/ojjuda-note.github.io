@@ -82,7 +82,7 @@ export function mountCloudRecords({container,kind,request,active,foldersHost,set
   if(busy)return;editor.replaceChildren();const draftKey=record?.id||draftName;let draft=postDrafts.get(draftKey)||{id:record?.id||crypto.randomUUID(),body:record?.caption||initialBody,folder_id:record?.folder_id||(['all','none'].includes(folderId)?null:folderId),visibility:record?.visibility||'all',create:!record};
   // A reopened new-post editor must not share the ID of a write still in flight.
   if(draft.create&&pendingPostIds.has(draft.id))draft={...draft,id:crypto.randomUUID()};
-  const form=node('form','record-post-form'),body=node('textarea');body.maxLength=4000;body.required=true;body.value=draft.body;body.rows=6;
+  const form=node('form','record-post-form'),body=node('textarea');body.required=true;body.value=draft.body;body.rows=6;
   const target=select('글 폴더',[['','미분류'],...foldersFor('text').map(row=>[row.id,row.name])],draft.folder_id||''),scope=select('글 공개범위',scopes,draft.visibility),note=node('p','panel-note');
   if(!target.value)target.value='';if(draft.folder_id&&!foldersFor('text').some(row=>row.id===draft.folder_id))scope.value='me';
   const remember=()=>{if(draft.create&&committedPostIds.has(draft.id))draft={...draft,id:crypto.randomUUID()};postDrafts.set(draftKey,{...draft,body:body.value,folder_id:target.value||null,visibility:scope.value});};

@@ -16,7 +16,7 @@
   function content(value) {
     const style = value?.style ?? null, photoKey = value?.photo_key ?? null;
     if (!value || typeof value.body !== 'string' || typeof value.tags !== 'string'
-      || value.tags.length > 480
+      || value.body.length > 20000 || value.tags.length > 480
       || typeof value.background_key !== 'string' || !/^\d{2,3}$/.test(value.background_key)
       || Number(value.background_key) < 10 || Number(value.background_key) > 189
       || !['memo', 'comment'].includes(value.kind)

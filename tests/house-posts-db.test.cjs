@@ -28,6 +28,11 @@ const root=path.resolve(__dirname,'..'),a='10000000-0000-0000-0000-000000000001'
  const as=async id=>db.exec(`set role authenticated;set request.jwt.claim.sub='${id}';`),save=(id,body,folder=null,vis='me',create=true)=>db.query('select public.house_save_post($1,$2,$3,$4,$5)',[id,body,folder,vis,create]),manage=(action,media=[],posts=[],folder=null)=>db.query('select public.house_manage_records($1,$2,$3,$4)',[action,media,posts,folder]),ids=async view=>(await db.query('select id from public.'+view+' order by id')).rows.map(r=>r.id);
  await as(a);await save('post','첫 번째 글',fa,'all');await save('post','재시도한 글',fa,'all');assert.deepEqual(await ids('house_posts'),['post'],'create retries reuse ID');await save('post','수정한 글',fa,'all',false);
  for(const body of ['', '   ', 'x'.repeat(4001)])await assert.rejects(save('bad',body));
+ await db.exec('reset role');
+ const unlimited=fs.readdirSync(path.join(root,'supabase/migrations')).find(n=>n.endsWith('_house_notes_unlimited_body.sql'));await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',unlimited),'utf8'));await as(a);
+ const longBody='긴 노트의 본문과 줄바꿈을 보존합니다.\n'.repeat(500);await save('post',longBody,fa,'all',false);
+ assert.equal((await db.query("select body from public.house_posts where id='post'")).rows[0].body,longBody,'house notes preserve more than 4,000 characters');
+ await save('post','수정한 글',fa,'all',false);for(const body of ['', '   '])await assert.rejects(save('bad',body));
  await assert.rejects(save('bad','다른 폴더',fb));await assert.rejects(save('missing','실수',null,'me',false));
  await assert.rejects(db.query("update public.house_posts set user_id=$1 where id='post'",[b]));
  await save('public','공개 글',null,'all');await save('friend','친구 글',null,'friends');await save('private','비밀 글');

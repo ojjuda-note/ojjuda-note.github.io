@@ -344,11 +344,3 @@ select{font:inherit;color:inherit}
 .compose-publish-settings .note-location-consent{margin:0;justify-content:flex-start}
 .compose-publish-settings .compose-quick{display:flex;align-items:center}
 .compose-publish-settings .quick-label{font-size:12px}
-
-/* Long notes keep a bounded card preview and an accessible full-text reader. */
-.photo-open{position:relative}
-.photo.note-long-body .card-quote{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;max-height:calc(100% - 70px);overflow:hidden;line-height:1.6}
-.reply-card .photo.note-long-body .card-quote{-webkit-line-clamp:3}
-.note-read-more{position:absolute;right:12px;top:10px;padding:5px 9px;border-radius:20px;background:var(--surface);color:var(--accent-ink);font:700 12px/1.4 var(--font-b)}
-.note-full-body p{font-size:16px;line-height:1.9;text-align:left;word-break:normal}
-.compose-photo.note-long-body textarea{overflow-y:auto;overscroll-behavior:contain;line-height:1.7;text-align:left;resize:none}

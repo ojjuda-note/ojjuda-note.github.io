@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/note/style.css?v=20261004-home2">
-  <link rel="stylesheet" href="/note/features.css?v=20261009-long-text1">
+  <link rel="stylesheet" href="/note/features.css?v=20261009-card-restore1">
   <link rel="stylesheet" href="/note/event-photo.css?v=20261004-design1">
   <link rel="stylesheet" href="/note/effects.css?v=0.45.28-beta">
   <link rel="stylesheet" href="/note/support.css?v=20261004-design1">
@@ -175,7 +175,7 @@
         <div class="compose-photo image-lake">
           <span class="compose-shade"></span>
           <label class="compose-photo-attach" id="card-photo-attach" role="button" tabindex="0" hidden title="사진 첨부"><input id="card-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 4 7.6 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2.6L15 4H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg><span class="visually-hidden">내 사진 첨부 · 무료</span></label><button class="compose-photo-remove" id="card-photo-remove" type="button" hidden aria-label="사진 빼기">×</button>
-          <textarea id="compose-text" aria-label="카드 글" placeholder="오늘 하루 어땠나요?&#10;괜찮았나요" rows="2"></textarea>
+          <textarea id="compose-text" aria-label="카드 글" maxlength="200" placeholder="오늘 하루 어땠나요?&#10;괜찮았나요" rows="2"></textarea>
           <div class="compose-tag-display" id="compose-tag-display" aria-live="polite" aria-label="카드 태그 미리보기"></div>
           <input id="compose-tags" type="text" placeholder="#태그 · 공백이나 쉼표로 나눠요 (최대 5개)" maxlength="120" autocomplete="off" aria-label="카드 태그 (최대 5개, 공백이나 쉼표로 나눠요)">
         </div>
@@ -184,7 +184,7 @@
           <button class="event-world-photo" id="event-world-photo" type="button">월드 사진첩에서</button><button class="event-photo-clear" id="event-photo-clear" type="button" hidden>기본 사진으로</button>
           <span id="event-photo-status" role="status" aria-live="polite">JPG·PNG·WebP · 10MB 이하 · 추가 ZU 없음</span>
         </div>
-        <div class="compose-status"><span id="compose-count">0자</span></div>
+        <div class="compose-status"><span id="compose-count">0 / 200자</span></div>
         <details class="compose-more" id="compose-more">
           <summary>꾸미기 · 추가 설정</summary>
           <div class="compose-more-content" id="compose-more-content">
@@ -229,11 +229,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/note/map.js?v=20260929-pinch" defer></script>
   <script src="/note/support.js?v=20261004-admin1" defer></script>
-  <script src="/note/drafts.js?v=20261009-long-text1" defer></script>
+  <script src="/note/drafts.js?v=20261009-card-restore1" defer></script>
   <script src="/note/notifications.js?v=20261006-zu1" defer></script>
   <script src="/note/feed-swipe.js?v=20261006-main-park1" defer></script>
   <script src="/account-deletion.js?v=20261005-cleanup1" defer></script>
-  <script src="/note/preview.js?v=20261009-long-text1" defer></script>
+  <script src="/note/preview.js?v=20261009-card-restore1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
   <script src="/park/integration.js?v=20261007-flow1" defer></script>
