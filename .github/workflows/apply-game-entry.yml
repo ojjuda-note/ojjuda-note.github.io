@@ -1,0 +1,45 @@
+name: Apply reviewed game entry changes
+on:
+  push:
+    branches: [codex/unify-game-entry-20261009]
+    paths: [.codex/game-entry-edits.json]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 2
+      - name: Apply only reviewed changes with matching source hashes
+        shell: python
+        run: |
+          import hashlib, json, pathlib, subprocess
+          source=pathlib.Path('.codex/game-entry-edits.json')
+          plan=json.loads(source.read_text())
+          assert plan['base']=='9d62a800069c8603834e57eb4de8bc3a9c9a8fa0'
+          assert subprocess.check_output(['git','rev-parse','HEAD^']).decode().strip()==plan['base']
+          def digest(data):return hashlib.sha256(data).hexdigest()
+          paths=[]
+          for entry in plan['files']:
+              path=pathlib.Path(entry['path'])
+              assert not path.is_absolute() and '..' not in path.parts
+              assert path.parts[0] in ('games','tests','supabase') or len(path.parts)==1
+              original=path.read_bytes() if path.exists() else b''
+              assert (digest(original) if path.exists() else None)==entry['old'],str(path)
+              text=original.decode('utf8')
+              for start,end,replacement in reversed(entry['edits']):
+                  assert 0<=start<=end<=len(text)
+                  text=text[:start]+replacement+text[end:]
+              result=text.encode('utf8')
+              assert digest(result)==entry['new'],str(path)
+              path.parent.mkdir(parents=True,exist_ok=True)
+              path.write_bytes(result)
+              paths.append(str(path))
+          source.unlink()
+          subprocess.run(['git','diff','--check'],check=True)
+          subprocess.run(['git','add','--',*paths,str(source)],check=True)
+          subprocess.run(['git','-c','user.name=github-actions[bot]','-c','user.email=41898282+github-actions[bot]@users.noreply.github.com','commit','-m','Unify game entrances and add friend invitations with live presence'],check=True)
+          subprocess.run(['git','push','origin','HEAD:codex/unify-game-entry-20261009'],check=True)
