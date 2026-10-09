@@ -93,6 +93,8 @@ button:active:not(:disabled){transform:translateY(3px)}
 </style>
 <link rel="stylesheet" href="/game-controls.css?v=20261007-flow1">
 <script src="/game-controls.js?v=20261007-flow1" defer></script>
+<link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
+<script src="/game-entry.js?v=20261009-entry1" defer></script>
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -107,16 +109,7 @@ button:active:not(:disabled){transform:translateY(3px)}
 <div class="zone r" id="zr"><span>위 화면에 손가락 = 플레이어2 조이스틱</span></div>
 <div class="btns" id="btns" style="display:none"><button class="rb" id="snd" aria-label="소리 켜기·끄기" aria-pressed="true">소리</button><button class="rb" id="pause" aria-label="일시정지">멈춤</button><button class="rb" id="quit" aria-label="그만하기">✕</button></div>
 <div class="toast" id="toast"></div>
-<div class="overlay" id="menu">
-  <div class="panel">
-    <div class="arcade-kicker">OJJUDA MINI ARCADE</div><h1>월드땅따먹기</h1><div class="arcade-scene" aria-hidden="true"><span class="arcade-spark">✦</span><i class="jelly"></i><i class="jelly friend"></i></div>
-    <p>빙글 돌아오면, 여기도 내 땅!<br>말랑한 친구들과 알록달록 땅 넓히기 대결</p>
-    <div data-game-settings="ttang"></div>
-    <button class="big a" id="duoBtn">✦ 친구랑 대결 · 2분 승부</button>
-    <button class="big g" id="soloBtn">▶ 연습하기 · 컴퓨터 6명</button>
-<details class="arcade-rules"><summary>처음 오셨나요? 놀이 방법 보기</summary>    <div class="how"><b style="color:#2E2748">조작</b> 화면 아무 데나 손가락을 대면 조이스틱이 나와요 (PC: 마우스로 끌기 또는 방향키·WASD)<br><b style="color:#2E2748">규칙</b> 내 땅 밖으로 나가면 선이 생기고, 돌아오면 둘러싼 곳이 내 땅. 남의 선을 밟으면 그 사람 탈락, 내 선을 밟으면 내가 탈락. 부딪히면 땅 주인이 승리. 처치하면 그 땅은 내 것. 벽에 1초 넘게 있으면 펑!<br><b style="color:#2E2748">아이템</b> ⚡ 5초 동안 속도 2배 · 🛡 5초 동안 무적 (선을 밟혀도, 벽에 닿아도 안 터져요)<br><b style="color:#2E2748">친구와 대결</b> 한 명이 방을 만들고 다른 한 명이 방 번호를 넣으면 각자 폰으로 2분 대결</div></details>
-  </div>
-</div>
+<div class="overlay" id="menu"><div class="panel game-entry" data-entry-key="ttang"><div class="ge-icon" aria-hidden="true">🟣</div><span class="ge-kicker">오쭈다 오락실</span><h1 class="ge-title">월드땅따먹기</h1><p class="ge-copy">한 바퀴 돌아오면 내 땅! 영역을 넓혀보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div><section data-entry-panel="computer"><button class="big a ge-primary" id="soloBtn">시작하기</button><span class="ge-hint">컴퓨터 6명과 자유롭게 연습해요.</span></section><section data-entry-panel="opponent" hidden><button class="big a ge-primary" id="duoBtn">친구와 대결하기</button><span class="ge-hint">각자 휴대폰으로 2분 승부</span></section><details class="ge-more arcade-rules"><summary>게임 방법</summary>    <div class="how"><b style="color:#2E2748">조작</b> 화면 아무 데나 손가락을 대면 조이스틱이 나와요 (PC: 마우스로 끌기 또는 방향키·WASD)<br><b style="color:#2E2748">규칙</b> 내 땅 밖으로 나가면 선이 생기고, 돌아오면 둘러싼 곳이 내 땅. 남의 선을 밟으면 그 사람 탈락, 내 선을 밟으면 내가 탈락. 부딪히면 땅 주인이 승리. 처치하면 그 땅은 내 것. 벽에 1초 넘게 있으면 펑!<br><b style="color:#2E2748">아이템</b> ⚡ 5초 동안 속도 2배 · 🛡 5초 동안 무적 (선을 밟혀도, 벽에 닿아도 안 터져요)<br><b style="color:#2E2748">친구와 대결</b> 한 명이 방을 만들고 다른 한 명이 방 번호를 넣으면 각자 폰으로 2분 대결</div></details><details class="ge-more"><summary>조작 설정</summary><div data-game-settings="ttang"></div></details></div></div>
 <script>
 'use strict';
 /*ENGINE*/
@@ -471,7 +464,7 @@ function showNetEnd(a,b){ const win=a===b?0:(a>b?1:-1);
   panel(`<h2>${win>0?'🎉 내가 이겼어요!':win<0?'친구가 이겼어요':'무승부!'}</h2><div class="stats" style="grid-template-columns:1fr 1fr"><div style="background:${PAL[me.color].l}"><b>${(a/world.N*100).toFixed(1)}%</b><span>나 · 처치 ${me.kills}</span></div><div style="background:${PAL[p2.color].l}"><b>${(b/world.N*100).toFixed(1)}%</b><span>친구 · 처치 ${p2.kills}</span></div></div><button class="big g" id="home">처음으로</button>`,{home:()=>{ Net.close(); toMenu(); }}); }
 function newRoundId(){ return typeof window.crypto?.randomUUID==='function'?crypto.randomUUID():'ttang-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)+'-'+Math.random().toString(36).slice(2); }
 function startSolo(){ roundId=newRoundId();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId},location.origin); $('menu').style.display='none'; closePanels(); Net.close(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
-function toMenu(){ Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
+function toMenu(){ if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
 // ================= 친구와 대결 (각자 폰) =================
 // 연결: 오쭈다월드 안에서는 Supabase 실시간 채널, 그 밖에서는 같은 기기의 다른 창끼리(시험용)
 const Net={ tr:null, kind:null, lastRx:0, sendT:0,
@@ -527,21 +520,21 @@ function lobby(){ const o=panel(`<h2>친구와 대결</h2><p>각자 자기 폰�
   o.querySelector('#jn').onclick=()=>{ const c=o.querySelector('#code').value.replace(/\D/g,''); if(c.length!==4){ o.querySelector('#code').style.borderColor='#EC6D6D'; return; } o.remove(); joinRoom(c); };
   getSupabase().then(sb=>{ const el=o.querySelector('#netinfo'); if(el) el.textContent=sb?'🌐 온라인 연결 준비됨 (오쭈다월드)':'💻 지금은 오쭈다월드 밖이라 같은 기기의 창 두 개로만 시험할 수 있어요'; }); }
 function waitPanel(title,msg,onCancel){ return panel(`<h2>${title}</h2><p id="wmsg">${msg}</p><div class="spin"></div><button class="big g" id="cancel">취소</button>`,{cancel:()=>{ onCancel&&onCancel(); }}); }
-async function hostRoom(){ const code=String(1000+Math.floor(Math.random()*9000)); let cancelled=false;
-  const w=waitPanel(`방 번호 <span style="color:#7E69D6;letter-spacing:.15em">${code}</span>`,'친구에게 이 번호를 알려 주세요. 친구가 들어오면 바로 시작해요.',()=>{ cancelled=true; Net.close(); });
+async function hostRoom(inviteCode){ const code=inviteCode||String(1000+Math.floor(Math.random()*9000)); let cancelled=false;
+  const w=waitPanel(inviteCode?'친구를 기다리는 중':`방 번호 <span style="color:#7E69D6;letter-spacing:.15em">${code}</span>`,inviteCode?'친구가 초대를 받으면 바로 시작해요.':'친구에게 이 번호를 알려 주세요. 친구가 들어오면 바로 시작해요.',()=>{ cancelled=true;if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); });
   try{ Net.tr=await openTransport(code); Net.kind=Net.tr.kind; }catch(e){ w.remove(); panel(`<h2>연결 실패</h2><p>인터넷 연결을 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>{}}); return; }
-  if(cancelled) return;
+  if(cancelled){Net.close();return;}
   if(Net.kind==='local') w.querySelector('#wmsg').textContent+=' (같은 기기의 다른 창에서 이 게임을 열고 방 번호를 넣으세요)';
   Net.tr.on(m=>{ if(m.t==='join'&&mode!=='net'&&!cancelled){ w.remove(); startHost(); }
     else if(m.t==='in'&&mode==='net'&&p2) world.steer(p2,m.a);
     else if(m.t==='ping') Net.lastRx=performance.now();
-    else if(m.t==='bye'&&mode==='net'&&!over){ over=true; panel(`<h2>친구가 나갔어요</h2><button class="big g" id="home">처음으로</button>`,{home:()=>toMenu()}); } }); }
+    else if(m.t==='bye'&&mode==='net'&&!over){ over=true; panel(`<h2>친구가 나갔어요</h2><button class="big g" id="home">처음으로</button>`,{home:()=>toMenu()}); } }); return code; }
 function startHost(){ $('menu').style.display='none'; closePanels(); mode='net'; role='host';
   world=new World(48,'duo'); world.netDirty=new Set();
   me=world.addPlayer({name:'나',color:0,speed:6.6,turn:5.2}); p2=world.addPlayer({name:'친구',color:1,speed:6.6,turn:5.2}); makeBots(3);
   endAt=world.time+120; setupUI(); world.netDirty.clear(); Net.lastRx=performance.now();
   Net.send({t:'init',U:world.U,end:endAt,time:world.time,players:world.players.map(p=>({name:p.name,color:p.color,bot:p.bot,speed:p.speed})),cells:rleAll()}); }
-async function joinRoom(code){ let done=false, cancelled=false; const w=waitPanel(`방 ${code}에 들어가는 중`,'연결하고 있어요…',()=>{ cancelled=true; Net.close(); });
+async function joinRoom(code){ let done=false, cancelled=false; const w=waitPanel(code.length===24?'친구의 게임에 들어가는 중':`방 ${code}에 들어가는 중`,'연결하고 있어요…',()=>{ cancelled=true; Net.close(); });
   try{ Net.tr=await openTransport(code); Net.kind=Net.tr.kind; }catch(e){ w.remove(); panel(`<h2>연결 실패</h2><p>인터넷 연결을 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>{}}); return; }
   Net.tr.on(m=>{ if(m.t==='init'&&!done){ done=true; w.remove(); startGuest(m); }
     else if(m.t==='s'&&mode==='net'&&role==='guest') applySnapshot(m);
@@ -554,12 +547,14 @@ function startGuest(m){ $('menu').style.display='none'; closePanels(); mode='net
   for(const p of world.players){ p.alive=false; p.pts=[]; } p2=world.players[0]; me=world.players[1]; p2.name='친구'; me.name='나';
   applyCells(m.cells); endAt=m.end; world.netTime=m.time; world.netAt=performance.now(); Net.lastRx=performance.now(); setupUI(); }
 // ---------- 버튼 ----------
-$('soloBtn').onclick=()=>startSolo(); $('duoBtn').onclick=()=>lobby();
+$('soloBtn').onclick=()=>startSolo(); let friendInviteId=null;
+function friendInvites(){try{return parent!==window?parent.OjjudaFriendInvites:null}catch{return null}}
+$('duoBtn').onclick=()=>{const invites=friendInvites();if(!invites?.available())return lobby();void invites.pick({kind:'ttang',prepare:async()=>{const code=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');const ready=await hostRoom(code);if(!ready)throw Error('room_unavailable');return {code,cancel:()=>toMenu()};},onSent:id=>{friendInviteId=id;const status=document.querySelector('#wmsg');if(status)status.textContent='친구를 초대했어요. 친구가 받으면 바로 시작해요.';}});};
 $('snd').onclick=()=>{ sound=!sound; $('snd').textContent=sound?'소리':'무음'; $('snd').setAttribute('aria-pressed',String(sound)); };
 $('pause').onclick=()=>{ if(over||mode!=='solo') return; paused=!paused; $('pause').textContent=paused?'계속':'멈춤'; if(paused) panel(`<h2>잠깐 쉬는 중</h2><button class="big a" id="go">계속하기</button><button class="big g" id="home">처음으로</button>`,{go:()=>{ paused=false; $('pause').textContent='멈춤'; },home:()=>{ paused=false; toMenu(); }}); };
 $('quit').onclick=()=>{ if(mode==='attract') return; panel(`<h2>그만할까요?</h2><button class="big a" id="no">계속하기</button><button class="big g" id="yes">처음으로</button>`,{no:()=>{},yes:()=>toMenu()}); };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&mode==='solo'&&!paused&&!over) $('pause').click(); });
-window.OjjudaTtang={ onResult:null, start:m=>m==='duo'?lobby():startSolo(), menu:()=>toMenu() };
+window.OjjudaTtang={ join:code=>/^[a-f0-9]{24}$/.test(code)?joinRoom(code):false,onResult:null, start:m=>m==='duo'?lobby():startSolo(), menu:()=>toMenu() };
 try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:ttang:ready'},'*'); }catch{}
 addEventListener('pagehide',()=>Net.close());
 addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDefault();parent.postMessage({type:'ojjuda:ttang:close'},location.origin);}});

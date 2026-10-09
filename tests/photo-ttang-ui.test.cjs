@@ -22,7 +22,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await context.route('**/*',r=>{
    const u=new URL(r.request().url());if(u.hostname!=='127.0.0.1')return r.fulfill({body:''});
    if(u.pathname==='/fixture')return r.fulfill({contentType:'text/html',body:world});
-   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
+   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
   const solo=page.locator('[data-arcade-games="solo"]'),multi=page.locator('[data-arcade-games="multi"]');
@@ -38,7 +38,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
   await page.locator('#photo-ttang-overlay iframe').waitFor();
   const frame=await (await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();
-  await frame.waitForSelector('#grid .cell');assert.equal(await frame.title(),'오쭈다 포토땅따먹기');
+  await frame.locator('details:has(#grid)>summary').click();await frame.waitForSelector('#grid .cell');assert.equal(await frame.title(),'오쭈다 포토땅따먹기');
   assert.equal(await frame.locator('#grid .cell').count(),20);
   for(const [width,height] of [[320,568],[390,844],[844,390]]){
    await page.setViewportSize({width,height});assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
@@ -78,12 +78,12 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await frame.evaluate(()=>toMenu());assert.equal(await frame.locator('#grid .cell:not([disabled])').count(),2);
   await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
   await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).click();
-  const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#duoBtn');
+  const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#soloBtn');
   assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.locator('#soloBtn').tap();
   await old.waitForFunction(()=>mode==='solo'&&world.time>.1&&me.alive);assert.equal(await old.locator('#hud').isVisible(),true,'practice starts through the real World arcade');
-  await old.locator('#quit').tap();await old.locator('#yes').tap();await old.click('#duoBtn');assert.equal(await old.locator('#mk').isVisible(),true);
+  await old.locator('#quit').tap();await old.locator('#yes').tap();await old.locator('[data-entry-mode=opponent]').click();await old.click('#duoBtn');assert.equal(await old.locator('#mk').isVisible(),true);
   await page.evaluate(()=>photoTest.open('photo_ttang'));assert.equal(await page.locator('#ttang-overlay').count(),0);
-  await page.locator('#photo-ttang-overlay iframe').waitFor();const next=await(await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();await next.waitForSelector('#grid .cell');
+  await page.locator('#photo-ttang-overlay iframe').waitFor();const next=await(await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();await next.locator('details:has(#grid)>summary').click();await next.waitForSelector('#grid .cell');
   await next.press('body','Escape');await page.waitForSelector('#photo-ttang-overlay',{state:'detached'});
   assert.deepEqual(errors,[]);console.log('PASS: real solo/multi categories, names, 20 photos, mobile layout, small touch drags, play, pause, World practice, clear progress, reopen, mutual cleanup and Escape');
  }finally{await browser.close();}

@@ -24,7 +24,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
     return r.abort();
    });
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8879/photo');
-   await page.waitForSelector('#grid .cell');
+   await page.locator('details:has(#grid)>summary').click();await page.waitForSelector('#grid .cell');
    // Production hosts renew the server age grant every 30 seconds. This isolated
    // game fixture needs the same renewal while slow image preparation is tested.
    await page.evaluate(()=>{window.testPhotoAccessRefresh=setInterval(()=>{

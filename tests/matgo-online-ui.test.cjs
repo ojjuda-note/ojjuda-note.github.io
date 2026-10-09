@@ -31,7 +31,7 @@ const root=path.join(__dirname,'..');
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
    return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
   });
-  const page=await context.newPage();await page.goto('https://fixture.test/games/matgo-online.html');return{page,context};
+  const page=await context.newPage();await page.goto('https://fixture.test/games/matgo-online.html');if(age>=19){await page.locator('[data-entry-mode=opponent]').click();await page.locator('details:has(#join-form)>summary').click();}return{page,context};
  }
  async function clickTurn(page){
   return page.evaluate(()=>{

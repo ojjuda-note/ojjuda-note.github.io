@@ -60,7 +60,8 @@
       close.onclick = requestClose;
       bar.append(close);
       frame = document.createElement('iframe');
-      const params = new URLSearchParams({ v: '20261006-parity1' });
+      const params = new URLSearchParams({ v: '20261009-entry1' });
+      if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
       if (typeof options.title === 'string') params.set('room_title', options.title.slice(0, 80));

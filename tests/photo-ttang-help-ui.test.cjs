@@ -14,7 +14,7 @@ try{
  </script><script src="/photo-ttang-ranking.js"></script><button id="rank-status"></button><iframe src="/games/photo-ttang.html"></iframe><script>window.rankDispose=OjjudaPhotoRanking.bind({frame:document.querySelector("iframe"),client:OjjudaPhotoTtangBridge.client,owner:fixtureUid,authorized:()=>fixtureUid==="11111111-1111-4111-8111-111111111111",status:document.querySelector("#rank-status")});</script>`;
  await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.hostname!=='photo.test')return route.fulfill({body:''});if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:fixture});const f=path.join(root,url.pathname);return fs.existsSync(f)?route.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':'text/html'}):route.fulfill({status:404,body:''});});
  await page.goto('https://photo.test/');const frame=page.frames().find(f=>f.url().includes('/games/'));
- frame.on('pageerror',e=>errors.push(e.message));await frame.waitForFunction(()=>!!window.OjjudaPhotoHelp);await frame.locator('#grid .cell').first().click();
+ frame.on('pageerror',e=>errors.push(e.message));await frame.waitForFunction(()=>!!window.OjjudaPhotoHelp);await frame.locator('#photoStart').click();
  await frame.evaluate(()=>{sound=false;window.confirm=()=>{throw Error('Item purchases must not ask for confirmation')};paused=true;startWait=0;world.time=10;endAt=100;lives=0;me.alive=false;over=true;});
  const before=await frame.evaluate(()=>({owned:Array.from(world.own),count:world.counts[me.id]}));
  await frame.getByRole('button',{name:'ZU로 도움받기',exact:true}).click();await frame.locator('[data-photo-help=heart]').evaluate(b=>{b.click();b.click()});

@@ -12,11 +12,13 @@
   <script src="game-core.js?v=20261006-prices1" defer></script>
   <script src="vendor/supabase.js" defer></script>
   <script src="wallet.js?v=20261006-prices1" defer></script>
-  <script src="app.js?v=20261007-guest1" defer></script>
+  <script src="app.js?v=20261009-entry1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261006-zu1">
 <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
+<link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
+<script src="/game-entry.js?v=20261009-entry1" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -41,7 +43,7 @@
     <p class="wallet-note" id="wallet-note">힌트 1개 1 ZU · 30초 연장 1 ZU</p>
     </div>
     <div id="load-error" class="error" role="alert" hidden>그림을 불러오지 못했어요. <button id="retry">다시 불러오기</button></div>
-    <div class="board-shell" id="board-shell"><div class="board-curtain" id="board-curtain"><div><span class="eyebrow" id="gate-eyebrow">1분 도전</span><h2 id="gate-title">준비됐나요?</h2><p id="gate-copy">하트 3개로 다른 곳 여섯 개를 찾아보세요.</p><button id="start" class="primary-button" disabled>그림 불러오는 중</button></div></div>
+    <div class="board-shell" id="board-shell"><div class="board-curtain" id="board-curtain" data-entry="menu"><div class="game-entry"><div class="ge-icon" aria-hidden="true">🔎</div><span class="ge-kicker" id="gate-eyebrow">오쭈다 오락실</span><h2 id="gate-title" class="ge-title">틀린그림찾기</h2><p id="gate-copy" class="ge-copy">두 그림에서 다른 곳 여섯 개를 찾아보세요.</p><button id="start" class="primary-button ge-primary" disabled>그림 불러오는 중</button><span class="ge-hint" id="gate-entry-hint">하트 3개 · 60초 도전</span></div></div>
     <section class="pair" aria-label="비교할 두 그림">
       <figure class="picture-card"><figcaption><span><b>A</b> 첫 번째 그림</span><span class="picture-status">자세히 살펴보세요</span></figcaption><div class="picture" data-side="original" tabindex="0" role="application" aria-label="첫 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="original" src="assets/01-original.webp" width="1536" height="1024" alt="첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
       <figure class="picture-card"><figcaption><span><b>B</b> 두 번째 그림</span><span class="picture-status">여섯 곳이 달라요</span></figcaption><div class="picture" data-side="difference" tabindex="0" role="application" aria-label="두 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="difference" src="assets/01-original.webp" width="1536" height="1024" alt="두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>

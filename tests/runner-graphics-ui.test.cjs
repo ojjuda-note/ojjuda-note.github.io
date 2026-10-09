@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/games/runner-game.js')?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/world-game-assets.js')||s.includes('/game-entry.js')?s:'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 // The new character has a 36-pixel torso; compare the original physics at that body width.
 world=world.replace('let v=72,B=94,j=440+i', 'let v=65,B=101,j=440+i');
@@ -48,18 +48,19 @@ g.tab='friends';H();
    const file=path.join(root,u.pathname);if(file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile())return r.fulfill({path:file});return r.abort();
   });
   const page=await context.newPage(),artRequests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/games/assets/runner-v2-'))artRequests.push(r.url())});await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.runnerTest);
-  assert.deepEqual(artRequests,[],'opening World does not download game artwork');assert.deepEqual(await page.evaluate(()=>OjjudaRunnerGame.ready),[true,true],'both original artwork files load when needed');assert.equal(artRequests.length,2);
-  async function open(start=false){await page.evaluate(()=>runnerTest.open('runner'));await page.locator('#gov').waitFor();if(start){await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>runnerTest.freeze());}}
+  assert.deepEqual(artRequests,[],'opening World does not download game artwork');await page.evaluate(()=>OjjudaGameAssets.load('runner'));await page.evaluate(()=>OjjudaRunnerGame.ready);assert.deepEqual(await page.evaluate(()=>OjjudaRunnerGame.ready),[true,true],'both original artwork files load when needed');assert.equal(artRequests.length,2);
+  async function open(start=false){await page.evaluate(()=>runnerTest.open('runner'));await page.locator('#gov').waitFor();if(start){await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>{runnerTest.freeze();resolve()})));}}
   async function tap(){const b=await page.locator('#gcv').boundingBox();await page.touchscreen.tap(b.x+b.width*.55,b.y+b.height*.6);}
   for(const [width,height] of [[320,568],[390,844],[844,390],[1280,900]]){
    await page.setViewportSize({width,height});await open();
    assert.equal(await page.locator('#gov').getAttribute('data-game'),'runner');assert.equal(await page.locator('.runner-card').count(),1);
+   await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>{runnerTest.freeze();resolve()})));
    const box=await page.locator('#gov .gbox').boundingBox(),canvas=await page.locator('#gcv').boundingBox();
    assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width+.5&&box.y+box.height<=height+.5,'the scene and controls fit the viewport');
    const bitmap=await page.locator('#gcv').evaluate(c=>({width:c.width,height:c.height}));
    assert.ok(Math.abs(canvas.width/canvas.height-bitmap.width/bitmap.height)<.002,'the canvas adapts to the display without stretching the character');
    assert.ok(canvas.height>height-90,'the game uses the available screen height');
-   const start=page.locator('#gov [data-g="start"]');assert.ok(await start.isVisible());await start.click();await page.evaluate(()=>{runnerTest.freeze();runnerTest.audio=[]});
+   await page.evaluate(()=>{runnerTest.freeze();runnerTest.audio=[]});
    await tap();await tap();await tap();assert.deepEqual(await page.evaluate(()=>runnerTest.audio),['tap','tap'],'touch allows exactly two jumps at every size');
    await page.evaluate(()=>runnerTest.close());
   }
@@ -144,7 +145,7 @@ g.tab='friends';H();
   const missingArt=await browser.newContext({viewport:{width:390,height:844}});
   await missingArt.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname!=='fixture.test')return r.abort();if(u.pathname==='/world.html')return r.fulfill({contentType:'text/html',body:world});if(u.pathname.includes('/games/assets/'))return r.abort();const file=path.join(root,u.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({path:file}):r.abort();});
   const a=await missingArt.newPage();a.on('pageerror',e=>errors.push(e.message));await a.goto('https://fixture.test/world.html');await a.waitForFunction(()=>window.runnerTest);
-  assert.deepEqual(await a.evaluate(()=>OjjudaRunnerGame.ready),[false,false]);await a.evaluate(()=>runnerTest.open('runner'));await a.locator('#gov [data-g="start"]').click();
+  await a.evaluate(()=>OjjudaGameAssets.load('runner'));assert.deepEqual(await a.evaluate(()=>OjjudaRunnerGame.ready),[false,false]);await a.evaluate(()=>runnerTest.open('runner'));await a.locator('#gov [data-g="start"]').click();
   assert.equal(await a.evaluate(()=>runnerTest.current.running),true,'missing image files do not block starting the game');await missingArt.close();
   const fallback=await browser.newContext({viewport:{width:390,height:844}});
   await fallback.route('**/*',r=>{const u=new URL(r.request().url());if(u.pathname==='/world.html')return r.fulfill({contentType:'text/html',body:world});return r.abort();});

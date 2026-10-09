@@ -84,6 +84,8 @@ a.big{display:flex;align-items:center;justify-content:center;text-decoration:non
 <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
 <link rel="stylesheet" href="/game-controls.css?v=20261007-flow1">
 <script src="/game-controls.js?v=20261007-flow1" defer></script>
+<link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
+<script src="/game-entry.js?v=20261009-entry1" defer></script>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
@@ -93,14 +95,11 @@ a.big{display:flex;align-items:center;justify-content:center;text-decoration:non
 </div>
 <div class="btns" id="btns"><button class="rb" id="snd" aria-label="소리">🔊</button><button class="rb" id="pause" aria-label="일시정지">⏸</button></div>
 <div class="toast" id="toast"></div>
-<div class="overlay" id="menu"><div class="panel">
-  <h1>포토땅따먹기</h1>
-  <p>실루엣 90% 채우면 사진 공개 <span id="cleared"></span></p>
+<div class="overlay" id="menu"><div class="panel game-entry" data-entry-key="photo-ttang">
+<div class="ge-icon" aria-hidden="true">🖼️</div><span class="ge-kicker">오쭈다 오락실</span><h1 class="ge-title">포토땅따먹기</h1><p class="ge-copy">땅을 넓혀 가려진 사진을 완성해보세요.</p><button class="big a ge-primary" id="photoStart">시작하기</button><span class="ge-hint">실루엣 90%를 채우면 사진이 공개돼요.</span><span id="cleared"></span><details class="ge-more"><summary>사진 선택 · 내 사진 등록</summary>
   <div class="tabs"><button class="tab on" data-t="base">기본 사진</button><button class="tab" data-t="all">사진 판</button><button class="tab" data-t="review" id="tabReview" style="display:none">승인</button></div>
   <button class="big b2" id="uploadBtn" style="display:none">＋ 내 사진으로 판 만들기</button>
-  <div data-game-settings="photo_ttang"></div>
-  <div class="grid" id="grid"></div>
-  <div class="how">드래그로 이동 · PC 방향키<br>내 땅으로 돌아오면 영역 차지<br>몹·내 선에 닿으면 탈락</div>
+  <div class="grid" id="grid"></div></details><details class="ge-more"><summary>게임 방법 · 조작 설정</summary><p>드래그로 이동 · PC 방향키<br>내 땅으로 돌아오면 영역 차지<br>몹·내 선에 닿으면 탈락</p><div data-game-settings="photo_ttang"></div></details>
 </div></div>
 <script>
 'use strict';
@@ -572,6 +571,7 @@ async function renderGrid(){ if(!photoAllowed())return lockPhotoGame(); const re
     g.innerHTML=LIST.map((P,i)=>{ const done=photoDone(P),blur=!done&&tab!=='review'; return `<button class="cell${done?' done':''}${P.mine?' mine':''}" data-i="${i}"><img src="${P.full||P.img}" alt="${blur?'클리어하면 공개되는 사진':'공개된 사진'}"${blur?' class="blurred"':''} loading="lazy">${blur?'<span class="unlock-note">클리어하면 공개</span>':''}<b>${P.mine?'내 판':esc(P.nick||'')}</b><em>${'★'.repeat(diff(P.level).stars)}</em><u class="st ${P.status}">${VIS[P.vis]||''}${ST[P.status]?' '+ST[P.status]:''}</u></button>`; }).join('');
     $('cleared').textContent=tab==='all'?`${LIST.length}개 판`:''; }
   g.querySelectorAll('.cell').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(tab==='review') return reviewPanel(LIST[i]); if(LIST[i].mine) return minePanel(LIST[i],i); lives=LIVES; startStage(i); }); }
+$('photoStart').onclick=async()=>{const button=$('photoStart');button.disabled=true;try{tab='base';await renderGrid();if(!photoAllowed())return;const next=$('grid').querySelector('.cell:not(.done):not([disabled])')||$('grid').querySelector('.cell:not([disabled])');next?.click();}finally{button.disabled=false;}};
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{ tab=t.dataset.t; renderGrid(); });
 // ================= 오쭈다월드 서버 연결 (Supabase) =================
 const Comm={ sb:null, uid:null, admin:false, _r:null,
