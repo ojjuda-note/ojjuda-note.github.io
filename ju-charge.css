@@ -15,8 +15,15 @@
   .col > .topbar, .col > .mobile-top { padding-left: 12px; padding-right: 12px; gap: 6px; }
   .topbar .logo-mark, .mobile-top .brand-icon { width: 24px; height: 24px; }
   .topbar .logo-word, .mobile-top .brand > span { font-size: 20px; }
-  .topbar .brand .beta, .mobile-top .note-dev-badge { display: none; }
+  .mobile-top .note-dev-badge { display: none; }
 }
+/* Keep World feedback beside the logo, including narrow phones. Wallet actions
+   can wrap to their own row instead of hiding the feedback entry. */
+.topbar > .brand { flex: none; gap: 6px; }
+.brand .beta[data-act="feedback-open"] { display: inline-flex; align-items: center; justify-content: center; flex: none; min-height: 32px; white-space: nowrap; }
+.side > .brand { gap: 5px; }
+.side > .brand:has(.beta) .logo-mark { width: 24px; height: 24px; }
+.side > .brand:has(.beta) .logo-word { font-size: 20px; }
 .ju-charge-entry.my-menu-summary { width: 100%; border: 0; background: none; color: inherit; appearance: none; font: inherit; text-align: left; cursor: pointer; }
 .ju-charge-entry.my-menu-summary:hover { background: var(--surface-2, #f8f5f8); }
 .ju-charge-entry.my-menu-summary::after { transform: rotate(-45deg); }

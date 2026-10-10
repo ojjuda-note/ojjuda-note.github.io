@@ -1,5 +1,25 @@
 (() => {
   'use strict';
+  // The World shell redraws its header on navigation. Keep its feedback label
+  // in this shared support module, alongside the dialog it opens.
+  function labelWorldFeedback(root) {
+    const selector='.brand .beta[data-act="feedback-open"]';
+    const buttons=[...(root.matches?.(selector)?[root]:[]),...root.querySelectorAll(selector)];
+    for(const button of buttons){
+      if(button.textContent!=='베타(오류,건의)')button.textContent='베타(오류,건의)';
+      button.title='오류 신고·건의 보내기';
+    }
+  }
+  function watchWorldFeedback() {
+    const app=document.getElementById('app');if(!app)return;
+    labelWorldFeedback(app);
+    new MutationObserver(records=>{
+      for(const record of records)for(const node of record.addedNodes)
+        if(node.nodeType===1)labelWorldFeedback(node);
+    }).observe(app,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchWorldFeedback,{once:true});
+  else watchWorldFeedback();
   const el = (tag, text, cls) => { const x=document.createElement(tag); if(text!==undefined)x.textContent=text; if(cls)x.className=cls; return x; };
   const button = (text, action) => { const b=el('button',text,'btn button');b.type='button';b.addEventListener('click',action);return b; };
   const date = value => new Date(value).toLocaleString('ko-KR');

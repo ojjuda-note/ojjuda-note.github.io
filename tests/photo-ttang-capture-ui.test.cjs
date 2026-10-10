@@ -6,7 +6,7 @@ let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
-S=window.fixtureClient;D.online=true;D.user={id:'adult-member'};window.OjjudaMatgoAccess.configure(S);
+S=window.fixtureClient;D.online=true;D.user={id:'adult-member'};window.OjjudaMatgoAccess.configure(S);await window.OjjudaMatgoAccess.check();
 window.photoTest={open:Al,close:El};
 g.tab='friends';H();g.place={id:'arcade',log:[]};
 const host=document.createElement('section');host.id='arcade-test';host.innerHTML=Df();document.body.append(host);
@@ -34,7 +34,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
   await page.getByText('포토땅따먹기는 만 19세 생일부터 이용할 수 있어요.',{exact:true}).waitFor();
   assert.equal(await page.locator('#photo-ttang-overlay').count(),0,'World rejects an underage member');
-  await page.evaluate(()=>fixtureAge=19);
+  await page.evaluate(async()=>{fixtureAge=19;await OjjudaMatgoAccess.check();document.querySelector('#arcade-test').innerHTML=Df();});
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
   await page.locator('#photo-ttang-overlay iframe').waitFor();
   const frame=await (await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();
