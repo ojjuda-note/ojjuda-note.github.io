@@ -128,6 +128,7 @@ jobs:
           node tests/game-friend-invites-db.test.cjs
           node tests/game-friend-invites-ui.test.cjs
           node tests/game-entry-ui.test.cjs
+          node tests/service-notice-ui.test.cjs
 
   territory:
     name: Territory capture and collision regressions

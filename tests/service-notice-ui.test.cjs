@@ -37,9 +37,20 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
   const frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
   await frame.evaluate(()=>loadNoticeStateFixture());
+  await page.addScriptTag({path:path.join(root,'game-friend-invites.js')});
+  await page.evaluate(()=>{
+   const expires_at=new Date(Date.now()+60000).toISOString(),channel={on(){return this},subscribe(){return this}};
+   const client={channel:()=>channel,removeChannel(){},rpc:async()=>({data:{ok:true,server_now:new Date().toISOString(),invites:[{id:'notice-invite',kind:'matgo',sender_name:'친구',expires_at}],responses:[]}})};
+   OjjudaFriendInvites.install({client,user:()=>'notice-member',list:()=>[],onJoin(){}});
+  });
+  await page.locator('.game-friend-inline').waitFor();
   for(const width of [320,390,1280]){
    await page.setViewportSize({width,height:850});
    assert.equal(await page.locator('[data-act="notice-open"]:visible').count(),1,width+': one common notice');
+   assert.equal(await page.locator('.game-friend-inline').evaluate(n=>n.parentElement.previousElementSibling.dataset.act),'notice-open',width+': invitation directly below the actual shared notice');
+   assert.ok(await page.locator('.ge-inline-copy').evaluate(n=>n.scrollWidth<=n.clientWidth+1),width+': complete one-line invitation text');
+   assert.equal(await page.locator('.game-friend-inline [data-answer=accept]').textContent(),'수락');
+   assert.equal(await page.locator('.game-friend-inline [data-answer=decline]').textContent(),'거부');
    assert.equal(await frame.locator('#note-announcement,.note-announcement').count(),0,width+': no second Park announcement');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),width+': shared notice fits');
    assert.ok(await frame.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),width+': Park fits');
@@ -50,8 +61,10 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   await page.evaluate(()=>noticeFixture.set('공지 <script>window.noticeInjection=true</script>'));
   assert.equal(await page.locator('.nb-text').textContent(),'공지 <script>window.noticeInjection=true</script>');assert.equal(await page.evaluate(()=>window.noticeInjection),undefined);
   await page.evaluate(()=>noticeFixture.set(''));assert.equal(await page.locator('[data-act="notice-open"]').count(),0,'clearing notice removes the banner');
+  await page.locator('.game-friend-inline').waitFor();assert.equal(await page.locator('.game-friend-inline').count(),1,'invitation remains when the notice is cleared');
   await page.evaluate(value=>{noticeFixture.set(value);noticeFixture.tab('my')},notice);
   assert.equal(await page.locator('[data-act="notice-open"]:visible').count(),1,'menu shares the same notice');
+  await page.locator('.game-friend-inline').waitFor();assert.equal(await page.locator('.game-friend-inline').evaluate(n=>n.parentElement.previousElementSibling.dataset.act),'notice-open','invitation follows the notice after navigation');
   // Old cached HTML may still create its details block; new CSS and legacy script suppress it.
   const cached=await context.newPage();await cached.setContent('<details class="note-announcement" id="note-announcement"><summary>이전 공지</summary></details>');
   await cached.addStyleTag({content:read('note/features.css')});assert.equal(await cached.locator('#note-announcement').isVisible(),false);

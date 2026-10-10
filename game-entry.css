@@ -58,13 +58,20 @@
 .game-entry .ge-empty{margin:16px 0;color:#928a9b;font-size:12px;text-align:center}
 .game-friend-picker-overlay{position:fixed;inset:0;z-index:200005;display:flex;align-items:safe center;justify-content:center;padding:20px 12px;overflow:auto;background:#f5f3f9;overscroll-behavior:contain}
 .game-friend-picker-overlay>.game-entry{flex-shrink:0}
-/* Native modal stays above embedded games and keeps keyboard focus in the invitation. */
+/* Incoming invitations sit directly below the shared announcement. */
+.game-friend-inline{box-sizing:border-box;display:flex;align-items:center;flex-wrap:nowrap;gap:5px;width:100%;min-height:40px;margin:0 0 10px;padding:3px 7px;border:1px solid #e9e2f2;border-radius:10px;background:#f7f3fc;color:#564271;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:11px;line-height:1.4;white-space:nowrap}
+.game-friend-inline .ge-inline-copy{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.game-friend-inline button{flex:none;min-height:32px;padding:5px;border:0;border-radius:6px;background:#7560b5;color:#fff;font:inherit;font-weight:600;cursor:pointer;touch-action:manipulation}
+.game-friend-inline [data-answer=decline]{background:#ece6f2;color:#625574}
+.game-friend-inline button:disabled{opacity:.5;cursor:default}
+.game-friend-inline button:focus-visible{outline:2px solid #7560b5;outline-offset:2px}
+.game-friend-inline .ge-inline-time{flex:none;min-width:27px;text-align:right;font-variant-numeric:tabular-nums}
+.game-friend-inline [data-seconds]{font-weight:600}
+/* The sender's rejection alert remains visible above embedded games. */
 .game-friend-popup{box-sizing:border-box;width:min(420px,calc(100% - 24px));max-height:calc(100dvh - 32px);padding:0;border:0;border-radius:24px;background:transparent;overflow:auto;color-scheme:light;overscroll-behavior:contain}
 .game-friend-popup::backdrop{background:#20172a80}
 .game-friend-popup>.game-entry{width:100%;max-width:none;margin:0}
 .game-friend-popup .ge-copy strong{overflow-wrap:anywhere}
-.game-friend-popup .ge-invite-countdown{margin:0 0 20px;color:#797487;font-size:11px;line-height:1.7;word-break:keep-all}
-.game-friend-popup [data-seconds]{color:#7560b5;font-variant-numeric:tabular-nums}
 .game-friend-popup .ge-invite-status{margin:14px 0 0;color:#a23e54;font-size:12px}
 
 .game-entry .game-controls{margin:12px 0 0;padding:0;border:0;background:none;color:var(--entry-muted)}
