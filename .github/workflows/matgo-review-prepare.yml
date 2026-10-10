@@ -34,8 +34,12 @@ jobs:
       - name: Commit the exact reviewed tree to the preparation branch
         run: |
           MATGO_EXPECTED_TREE=$(python -c "import json; print(json.load(open('ops/matgo-review-patch.json'))['expected_tree'])")
-          git rm .github/workflows/matgo-review-prepare.yml ops/apply-matgo-review.py ops/matgo-review-patch.json
           git add -A
-          test "$(git write-tree)" = "$MATGO_EXPECTED_TREE"
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+          MATGO_REVIEW_INDEX=$(mktemp)
+          cp "$(git rev-parse --git-path index)" "$MATGO_REVIEW_INDEX"
+          GIT_INDEX_FILE="$MATGO_REVIEW_INDEX" git update-index --force-remove .github/workflows/matgo-review-prepare.yml ops/apply-matgo-review.py ops/matgo-review-patch.json
+          test "$(GIT_INDEX_FILE="$MATGO_REVIEW_INDEX" git write-tree)" = "$MATGO_EXPECTED_TREE"
+          rm "$MATGO_REVIEW_INDEX"
           git -c user.name='ojjuda-note' -c user.email='334255691+ojjuda-note@users.noreply.github.com' commit -m 'Apply verified Matgo multipliers and captured-card long press'
           git push origin HEAD:fix/matgo-pibak-eight-20261010

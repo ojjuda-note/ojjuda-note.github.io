@@ -93,6 +93,8 @@ jobs:
       - name: Check pi rules, legacy settlement and online replay
         run: |
           node tests/matgo-engine.test.cjs
+          node tests/matgo-multipliers.test.mjs
+          node tests/matgo-captured-zoom.test.mjs
           node tests/matgo-bonus.test.mjs
           node tests/matgo-difficulty.test.mjs
           node tests/matgo-first-ppuk.test.mjs
