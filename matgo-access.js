@@ -9,6 +9,12 @@
       return;
     }
   } catch (_) {}
+  // Hide restricted games before eligibility resolves, including newly rendered buttons.
+  if(root.document?.head&&!root.document.getElementById('ojjuda-adult-visibility')){
+    const style=root.document.createElement('style');style.id='ojjuda-adult-visibility';
+    style.textContent='html:not([data-ojjuda-adult="true"]) [data-act="game-open"][data-v="photo_ttang"]{display:none!important}';
+    root.document.head.append(style);
+  }
   let client = null, subscription = null, pending = null, revision = 0;
   let memberId = null, checkedAt = 0;
   const listeners = new Set();
@@ -27,7 +33,8 @@
     revision++;
     memberId = null;
     checkedAt = 0;
-    root.document?.querySelectorAll('[data-act="matgo-open"]').forEach(button => button.remove());
+    root.document?.documentElement?.removeAttribute('data-ojjuda-adult');
+    root.document?.querySelectorAll('[data-act="matgo-open"],.board-comics').forEach(button => button.remove());
     for (const listener of listeners) { try { listener(reject(code)); } catch (_) {} }
   }
   function configure(value) {
@@ -72,6 +79,7 @@
         if (result.data.age < 19) throw reject('underage');
         if (attempt !== revision) throw reject('login');
         memberId = userId;
+        root.document?.documentElement?.setAttribute('data-ojjuda-adult','true');
         checkedAt = Date.now();
         return { userId };
       } catch (error) {

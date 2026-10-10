@@ -199,6 +199,13 @@
     tasks.push(query(kind,'best',0,1).then(data=>{if(active()&&token===request)target.replaceChildren(list(data.slice(0,1),kind));}).catch(()=>{if(active()&&token===request)error(target,home);}));}
    for(const kind of ['text','image','video']){const section=el('section','','board-latest');section.dataset.latest=kind;const head=el('header');head.append(el('h3',labels[kind]+' 최신글'),button('더보기',()=>all(kind,'latest'),'board-more'));section.append(head);const target=el('div','불러오는 중이에요…');section.append(target);content.append(section);
     tasks.push(query(kind,'latest',0,5).then(data=>{if(active()&&token===request)target.replaceChildren(list(data.slice(0,5),kind));}).catch(()=>{if(active()&&token===request)error(target,home);}));}
+   tasks.push(Promise.resolve().then(()=>result(client.rpc('comics_access',{}))).then(access=>{
+    if(!active()||token!==request||access?.allowed!==true)return;
+    const comics=el('section','','board-latest board-comics');
+    const link=el('a','','board-comics-link');link.href='/comics/';
+    link.append(el('strong','창작만화'),el('span','19','board-adult-badge'),el('span','만 19세 이상 · 만화 보러 가기 ›'));
+    comics.append(link);content.append(comics);
+   }).catch(()=>{}));
    await Promise.all(tasks);return active()&&token===request;
   }
   function renderAll(){
