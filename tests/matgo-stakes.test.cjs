@@ -71,7 +71,7 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
      await game.play(p,card,bomb);
     }
     assert.equal((await verifyRound(round,game.actions)).gold,game.bank[0]);
-    const body={action:'settle',round_id:round.id,rules_version:7,actions:game.actions,rate:1,gold:999999};
+    const body={action:'settle',round_id:round.id,rules_version:8,actions:game.actions,rate:1,gold:999999};
     const result=await call(A,body);assert.equal(result.status,200,JSON.stringify(result));assert.equal(result.gold,game.bank[0]);
     assert.equal((await call(A,body)).gold,result.gold);rounds++;
     // Isolate the next replay from bankruptcy/offer transitions tested above.

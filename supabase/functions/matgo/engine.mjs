@@ -255,7 +255,7 @@ class Game {
     }
     else{
     const g=this.go[winner]; if(g>=1){ pts+=Math.min(g,2); det.push([`${g}고`,'+'+Math.min(g,2)]); } if(g>=3){ const k=Math.pow(2,g-2); mult*=k; det.push([`${g}고 배`,'×'+k]); }
-    if(sw.det.some(d=>d[0].startsWith('피'))&&sl.pv<=5){ mult*=2; det.push(['피박','×2']); }
+    if(sw.det.some(d=>d[0].startsWith('피'))&&sl.pv<=8){ mult*=2; det.push(['피박','×2']); }
     if(sw.det.some(d=>d[0].endsWith('광'))&&sl.g===0){ mult*=2; det.push(['광박','×2']); }
     if(sw.det.some(d=>d[0].startsWith('열끗')||d[0]==='고도리')&&sl.y===0){ mult*=2; det.push(['멍박','×2']); }
     if(this.go[l]>0){ mult*=2; det.push(['고박','×2']); }

@@ -1,3 +1,5 @@
+import './matgo-captured-zoom.mjs?v=20261010-hold1';
+
 // Both captured piles are public. Never infer a pair from the hidden deck/hand.
 export function heldPairMonths(hand,caps){
   const held=new Map(),taken=new Map();

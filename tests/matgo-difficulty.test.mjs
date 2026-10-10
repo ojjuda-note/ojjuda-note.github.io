@@ -87,7 +87,7 @@ const handler=createHandler({env:name=>({SUPABASE_URL:'https://fixture.invalid',
   const params=JSON.parse(options.body);if(params.p_action==='round')return Response.json({round:snapshot});
   settled=params.p_gold;return Response.json({ok:true,gold:settled});
 }});
-const request=(actions,version=7)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
+const request=(actions,version=8)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
 assert.equal((await request(tiered.game.actions)).status,200);assert.equal(settled,tiered.game.bank[0]);
 for(const played of [oldTiered,oldNormal]){
   snapshot=played.round;assert.equal((await request(played.game.actions,5)).status,200);assert.equal(settled,played.game.bank[0]);

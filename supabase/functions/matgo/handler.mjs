@@ -1,4 +1,5 @@
 import { verifyRound } from './verify.mjs';
+import { verifyRound as verifyV7Round } from './verify-v7.mjs';
 import { verifyRound as verifyV5Round } from './verify-v5.mjs';
 import { verifyRound as verifyV4Round } from './verify-v4.mjs';
 import { verifyRound as verifyLegacyRound } from './verify-v1.mjs';
@@ -40,7 +41,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
         if(body.action==='online_move'&&(!uuid.test(body.request_id)||!Number.isInteger(body.version)||body.version<0||!body.command||JSON.stringify(body.command).length>1024))throw Error();
         if(body.cursor!==undefined&&(!Number.isInteger(body.cursor)||body.cursor<0||body.cursor>10000))throw Error();
       }
-      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7].includes(body.rules_version ?? 1))) throw Error();
+      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8].includes(body.rules_version ?? 1))) throw Error();
       if (body.action === 'start' && body.stakes_version !== undefined && body.stakes_version !== 1) throw Error();
       if (body.action === 'stake' && (!Number.isInteger(body.rate) || ![200,500,2000,5000,10000,20000,50000,100000].includes(body.rate) || typeof body.accept !== 'boolean')) throw Error();
       if (body.action === 'refill' && (!uuid.test(body.request_id) || typeof body.paid !== 'boolean')) throw Error();
@@ -100,9 +101,9 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (body.action === 'settle') {
         const snapshot = await rpc('round', { p_round: body.round_id });
         if (snapshot.settled) return reply(snapshot);
-        if ((snapshot.round.rate ?? 100)>100 && ![6,7].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8].includes(body.rules_version)) return reply({error:'client_update_required'},409);
         let verified;
-        try { verified = await (body.rules_version === 7 ? verifyRound : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
+        try { verified = await (body.rules_version === 8 ? verifyRound : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
         catch {
           // Rules/scoring stay v5. Already-open browsers can finish the old CPU
           // policy; replay the entire transcript rather than trusting a result.
