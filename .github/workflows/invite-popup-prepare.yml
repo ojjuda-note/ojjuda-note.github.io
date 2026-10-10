@@ -1,0 +1,58 @@
+name: Prepare reviewed friend invitation popup
+on:
+  push:
+    branches: [fix/game-invite-popup-20261010]
+    paths:
+      - '.github/workflows/invite-popup-prepare.yml'
+      - 'game-friend-invites.js'
+      - 'tests/game-friend-invites-*.cjs'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Update the two reviewed asset revisions without transferring embedded app contents
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path('world.html');s=p.read_bytes()
+          assert hashlib.sha256(s).hexdigest()=='4964db4937b4d0e067c5c1e660635f20075fa48bcfa9f3f075a0ebbed8b4b2f3'
+          for name in ('game-entry.css','game-friend-invites.js'):
+              old=('/'+name+'?v=20261009-entry1').encode();new=('/'+name+'?v=20261010-invite1').encode()
+              assert s.count(old)==1
+              s=s.replace(old,new)
+          assert hashlib.sha256(s).hexdigest()=='ada3ef61713e2a706ce779d8da6c06dd2f957555e71aa2286e98b6719ac524d5'
+          p.write_bytes(s)
+          PY
+      - name: Check reviewed final tree
+        run: |
+          git add world.html
+          git diff --cached --check
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+          GIT_INDEX_FILE=/tmp/invite-review-index git read-tree HEAD
+          GIT_INDEX_FILE=/tmp/invite-review-index git add world.html
+          GIT_INDEX_FILE=/tmp/invite-review-index git update-index --force-remove .github/workflows/invite-popup-prepare.yml
+          test "$(GIT_INDEX_FILE=/tmp/invite-review-index git write-tree)" = 71f8fc73900cad8fd50e91a07d6852ce666a3a94
+      - name: Install locked tests and actual browser
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          cd tests
+          npx playwright install --with-deps chromium
+      - name: Verify the server and invitation popup in Chromium
+        run: |
+          node tests/game-friend-invites-db.test.cjs
+          node tests/game-friend-invites-ui.test.cjs
+          node tests/game-entry-ui.test.cjs
+      - name: Save verified app update with authenticated Git
+        run: |
+          git config user.name 'Ojjuda automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git commit -m 'Refresh invitation popup assets after browser verification'
+          git push origin HEAD:fix/game-invite-popup-20261010

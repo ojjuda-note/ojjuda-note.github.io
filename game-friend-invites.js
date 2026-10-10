@@ -1,7 +1,9 @@
 /* Friend selection and authenticated invitations for embedded multiplayer games. */
 (() => {
   'use strict';
-  let options, owner, channel, timer, chooser, banner, authSubscription, generation=0, busy=false;
+  let options, owner, channel, timer, chooser, popup, authSubscription, generation=0, refreshSequence=0;
+  let expiryTimer, countdownTimer, incoming=[], responses=[];
+  const deadlines=new Map(), handled=new Set();
   const names={matgo:'맞고',ttang:'월드땅따먹기'};
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const message=error=>{
@@ -24,39 +26,91 @@
     const focus=chooser._focus;chooser.remove();chooser=null;
     if(focus?.isConnected)focus.focus({preventScroll:true});
   }
+  function closePopup() {
+    clearTimeout(expiryTimer);clearInterval(countdownTimer);
+    expiryTimer=countdownTimer=null;
+    if(!popup)return;
+    const node=popup;popup=null;
+    node.close();node.remove();
+    if(node._focus?.isConnected)node._focus.focus({preventScroll:true});
+  }
   function stop() {
-    generation++;clearInterval(timer);timer=null;
+    generation++;refreshSequence++;clearInterval(timer);timer=null;
     if(channel)options?.client.removeChannel(channel);channel=null;
     authSubscription?.unsubscribe();authSubscription=null;
-    closePicker();banner?.remove();banner=null;owner=null;busy=false;
+    closePopup();closePicker();owner=null;
+    incoming=[];responses=[];deadlines.clear();handled.clear();
+  }
+  function render() {
+    if(!current())return;
+    incoming=incoming.filter(invite=>!handled.has(invite.id)&&deadlines.get(invite.id)>Date.now());
+    responses=responses.filter(invite=>!handled.has(invite.id));
+    // Keep the current request stable while another friend sends an invitation.
+    const active=popup?.dataset.invite;
+    const invite=incoming.find(item=>item.id===active)||incoming[0];
+    const response=responses.find(item=>item.id===active)||responses[0];
+    const item=invite||response,type=invite?'invite':'response';
+    if(!item){closePopup();return;}
+    if(popup?.dataset.invite===item.id)return;
+    closePopup();
+    const node=document.createElement('dialog'),version=generation;popup=node;
+    node.className='game-friend-popup';node.dataset.invite=item.id;node.dataset.type=type;
+    node._focus=document.activeElement;
+    node.setAttribute('aria-labelledby','game-friend-popup-title');
+    node.setAttribute('aria-describedby','game-friend-popup-copy');
+    node.setAttribute('aria-modal','true');
+    if(type==='response')node.setAttribute('role','alertdialog');
+    node.innerHTML=`<section class="game-entry"><div class="ge-icon" aria-hidden="true">${invite?'👥':'💬'}</div><span class="ge-kicker">${names[item.kind]||'게임'}</span><h2 class="ge-title" id="game-friend-popup-title">${invite?'친구 초대':'초대 거절'}</h2><p class="ge-copy" id="game-friend-popup-copy"><strong>${escape(invite?item.sender_name:item.recipient_name)}</strong>님이 ${names[item.kind]||'게임'} 초대를 ${invite?'보냈어요.':'거절했어요.'}</p>${invite?'<p class="ge-invite-countdown">응답 시간 <strong data-seconds></strong>초 · 시간이 지나면 자동으로 닫혀요.</p><button type="button" class="ge-primary" data-answer="accept">함께하기</button><button type="button" class="ge-secondary" data-answer="decline">거절</button>':'<button type="button" class="ge-primary" data-answer="ack">확인</button>'}<p class="ge-invite-status" role="status" hidden></p></section>`;
+    const expire=()=>{
+      if(popup!==node)return;
+      closePopup();render();void refresh();
+    };
+    node.onclick=async event=>{
+      const button=event.target.closest('[data-answer]');if(!button||node._busy||!current())return;
+      if(invite&&deadlines.get(item.id)<=Date.now()){expire();return;}
+      node._busy=true;refreshSequence++;
+      node.querySelectorAll('button').forEach(b=>b.disabled=true);
+      try {
+        const data=await rpc({p_action:button.dataset.answer,p_id:item.id});
+        if(version!==generation)return;
+        handled.add(item.id);refreshSequence++;
+        if(popup===node)closePopup();
+        if(button.dataset.answer==='accept')await options.onJoin(data);
+        render();void refresh();
+      } catch(error) {
+        if(version!==generation)return;
+        if(/invite_expired|invite_unavailable|room_unavailable/.test(String(error?.message||error))){
+          handled.add(item.id);if(popup===node)closePopup();render();void refresh();
+          options.notice?.(message(error));
+        } else {
+          const status=node.querySelector('[role=status]');status.hidden=false;status.textContent=message(error);
+        }
+      } finally {node._busy=false;node.querySelectorAll('button').forEach(b=>b.disabled=false);}
+    };
+    node.addEventListener('cancel',event=>{event.preventDefault();node.querySelector('[data-answer="decline"],[data-answer="ack"]')?.click();});
+    document.body.append(node);node.showModal();
+    if(invite){
+      const tick=()=>{const left=deadlines.get(item.id)-Date.now();if(left<=0){expire();return;}node.querySelector('[data-seconds]').textContent=Math.ceil(left/1000);};
+      countdownTimer=setInterval(tick,1000);
+      expiryTimer=setTimeout(expire,Math.max(0,deadlines.get(item.id)-Date.now()));
+      tick();
+    }
   }
   async function refresh() {
     if (!current()) { stop();return; }
-    const version=generation;
+    const version=generation,sequence=++refreshSequence,started=Date.now();
     try {
       const data=await rpc({p_action:'list'});
-      if(version!==generation)return;
-      const invite=data.invites?.[0];
-      if (!invite) { banner?.remove();banner=null;return; }
-      if(banner?.dataset.invite===invite.id)return;
-      banner?.remove();banner=document.createElement('aside');banner.className='game-friend-banner';
-      banner.dataset.invite=invite.id;banner.setAttribute('aria-label','친구의 게임 초대');
-      banner.innerHTML=`<span><strong>${escape(invite.sender_name)}</strong><small>${names[invite.kind]||'게임'} 초대가 왔어요.</small></span><button type="button" data-answer="accept">함께하기</button><button type="button" data-answer="decline" aria-label="초대 거절">×</button><p role="status" hidden></p>`;
-      const node=banner;
-      banner.onclick=async event=>{
-        const button=event.target.closest('[data-answer]');if(!button||busy)return;
-        busy=true;node.querySelectorAll('button').forEach(b=>b.disabled=true);
-        try {
-          const data=await rpc({p_action:button.dataset.answer,p_id:invite.id});
-          if(version!==generation)return;
-          node.remove();if(banner===node)banner=null;
-          if(button.dataset.answer==='accept')await options.onJoin(data);
-          void refresh();
-        } catch(error) {
-          const status=node.querySelector('p');status.hidden=false;status.textContent=message(error);
-        } finally { busy=false;node.querySelectorAll('button').forEach(b=>b.disabled=false); }
-      };
-      document.body.append(banner);
+      if(version!==generation||sequence!==refreshSequence)return;
+      const now=Date.now(),serverNow=Date.parse(data.server_now);
+      incoming=data.invites||[];responses=data.responses||[];
+      for(const invite of incoming){
+        const expires=Date.parse(invite.expires_at);
+        const remaining=expires-(Number.isFinite(serverNow)?serverNow+(now-started):now);
+        const deadline=now+Math.max(0,Math.min(60000,remaining));
+        deadlines.set(invite.id,Math.min(deadlines.get(invite.id)??Infinity,deadline));
+      }
+      render();
     } catch { /* Reconnect and visibility refresh retry without interrupting a game. */ }
   }
   async function pick({kind,prepare,onSent}={}) {
@@ -96,12 +150,17 @@
     })?.data?.subscription;
     channel=config.client.channel('arcade-friend-invites:'+uid)
       .on('postgres_changes',{event:'*',schema:'public',table:'arcade_friend_invites',filter:'recipient_id=eq.'+uid},()=>void refresh())
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'arcade_friend_invites',filter:'sender_id=eq.'+uid},()=>void refresh())
       .subscribe(status=>{if(status==='SUBSCRIBED')void refresh();});
-    timer=setInterval(()=>{if(!current())stop();else if(!document.hidden)void refresh();},30000);
+    timer=setInterval(()=>{if(!current())stop();else if(!document.hidden)void refresh();},10000);
     void refresh();
   }
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&owner)void refresh();});
   document.addEventListener('keydown',event=>{
+    if(popup){
+      if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();popup.querySelector('[data-answer=decline],[data-answer=ack]')?.click();}
+      return;
+    }
     if(!chooser)return;
     if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closePicker();}
     if(event.key==='Tab'){

@@ -107,6 +107,28 @@ jobs:
           node tests/matgo-online-ui.test.cjs
           node tests/matgo-online-effects-ui.test.cjs
 
+  friend_invites:
+    name: Friend invitation popup and response
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check invitation permissions and popup lifecycle
+        run: |
+          node tests/game-friend-invites-db.test.cjs
+          node tests/game-friend-invites-ui.test.cjs
+          node tests/game-entry-ui.test.cjs
+
   territory:
     name: Territory capture and collision regressions
     runs-on: ubuntu-latest
