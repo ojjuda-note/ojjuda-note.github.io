@@ -48,6 +48,15 @@ const distance=(a,b)=>((b-a+540)%360)-180;
     });
    });
    assert.ok(nativeGuards,kind+': native touch, trackpad, Safari and double-tap zoom stay scoped to the dialog');
+   assert.deepEqual(await page.evaluate(()=>{
+    const table=document.querySelector('#bl-cv'),header=document.querySelector('.ghead');
+    const blocked=targets=>['touchstart','touchmove'].map(type=>{
+     const touches=targets.map((target,identifier)=>new Touch({identifier,target,clientX:80+identifier*60,clientY:120}));
+     const event=new TouchEvent(type,{touches,targetTouches:touches,changedTouches:touches,bubbles:true,cancelable:true});
+     targets[0].dispatchEvent(event);return event.defaultPrevented;
+    });
+    return {table:blocked([table,table]),controls:blocked([header,header]),mixed:blocked([table,header])};
+   }),{table:[false,false],controls:[true,true],mixed:[true,true]},kind+': the page guard leaves table touch input alone');
    await outsidePinch.detach();
 
    const view=page.locator('.bl-aim-heading .bl-view-toggle');
@@ -98,6 +107,21 @@ const distance=(a,b)=>((b-a+540)%360)-180;
    await pinch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(.08)});
    await pinch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
    assert.deepEqual(await snapshot(),initial,kind+': bringing fingers together restores full view without game changes');
+   // On a phone, fingers usually land one after the other and move repeatedly.
+   const staggeredBefore=await snapshot(),staggeredControls=await fixedUI();
+   await pinch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[fingers(.1)[0]]});
+   await page.waitForTimeout(60);
+   await pinch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:fingers(.1)});
+   for(const spread of [.12,.14,.16,.18,.2]){
+    await pinch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(spread)});
+    assert.ok(Math.abs((await snapshot()).zoom-spread/.1)<.03,kind+': continuous two-finger spreading changes table zoom');
+   }
+   assert.deepEqual(await fixedUI(),staggeredControls,kind+': controls stay fixed throughout continuous pinch');
+   assert.equal(await page.evaluate(()=>visualViewport.scale),1,kind+': continuous pinch never magnifies the page');
+   assert.equal(await angle(),staggeredBefore.angle,kind+': adding the second finger restores the original aim');
+   for(const spread of [.18,.15,.12,.1,.08])await pinch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(spread)});
+   await pinch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+   assert.deepEqual(await snapshot(),staggeredBefore,kind+': closing fingers returns to full table without game changes');
    await pinch.detach();
    await page.mouse.move(point.x,point.y);await page.mouse.down();
    await page.waitForFunction(()=>billiardTest.state().peek?.active);

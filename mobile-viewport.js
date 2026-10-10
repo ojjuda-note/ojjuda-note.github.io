@@ -6,7 +6,13 @@
   function keepBilliardsViewport(event) {
     if (!event.target.closest?.('.bl-ov')) return;
     if (event.type === 'wheel' && !event.ctrlKey) return;
-    if (event.type.startsWith('touch') && event.touches.length < 2) return;
+    if (event.type.startsWith('touch')) {
+      if (event.touches.length < 2) return;
+      // Let the canvas receive two-finger input without the page guard
+      // cancelling it. Its pointer handlers own zoom; touch-action blocks
+      // browser zoom, so the surrounding controls still keep their size.
+      if (Array.from(event.touches).every(touch => touch.target?.closest?.('.bl-can'))) return;
+    }
     event.preventDefault();
   }
   for (const type of ['touchstart', 'touchmove', 'gesturestart', 'gesturechange', 'wheel', 'dblclick']) {
