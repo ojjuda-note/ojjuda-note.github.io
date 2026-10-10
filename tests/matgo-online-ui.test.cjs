@@ -55,6 +55,16 @@ const root=path.join(__dirname,'..');
   await solo.page.waitForURL('**/matgo.html?*',{timeout:10000});await solo.page.locator('#matgo-start-play').click();
   try{await solo.page.locator('#handMe').waitFor({timeout:10000});}catch(error){console.error('Solo fallback state',await solo.page.locator('body').innerText(),JSON.stringify({errors,failures}));throw error;}
   assert.equal((await f.call(C,{action:'status'})).online_room,null);await solo.context.close();
+  for(const [gold,free] of [[700,0],[999,2],[1000,0]]){
+    await f.db.query('update ojjuda_matgo_internal.wallets set gold=$1,free_used=$2,round_id=null,round_seed=null where user_id=$3',[gold,free,C]);
+    const recharge=await screen(C);await recharge.page.locator('#money').click();
+    if(gold<1000){
+      await recharge.page.locator('#refill').click();
+      await recharge.page.waitForFunction(expected=>document.querySelector('#money')?.textContent.includes(expected),(gold+5000).toLocaleString('en-US'));
+      assert.equal((await f.call(C,{action:'status'})).gold,gold+5000);
+    }else{assert.equal(await recharge.page.locator('#refill').count(),0);assert.match(await recharge.page.locator('.dialog').textContent(),/1,000G 미만/);}
+    await recharge.context.close();
+  }
   const a=await screen(A),b=await screen(B);
   await a.page.locator('#quick').waitFor();await b.page.locator('#quick').waitFor();
   await a.page.screenshot({path:'/tmp/matgo-online-lobby.png'});

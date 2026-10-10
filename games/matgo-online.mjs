@@ -1,7 +1,7 @@
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
 import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261010-hold1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261010-pibak8';
+import {createWallet} from './matgo-wallet.mjs?v=20261010-refill1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
@@ -290,7 +290,7 @@ async function refill(){
   if(room?.status==='active'||room?.status==='waiting'){toast('대결을 마친 뒤 충전할 수 있어요.');return;}
   try{
     const state=await wallet.status();setGold(state.gold);const paid=state.free_left===0;
-    modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins} ZU<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold===0?(paid?'5 ZU로 5,000G를 충전해요.':'무료로 5,000G를 리필해요.'):'골드가 0일 때 충전할 수 있어요.'}</p><div class="row">${state.gold===0?'<button id="refill" class="btn '+(paid?'ju-paid-action':'gold')+'">'+(paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
+    modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins} ZU<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold<1000?(paid?'5 ZU로 남은 골드에 5,000G를 더해요.':'무료로 남은 골드에 5,000G를 더해요.'):'골드가 1,000G 미만일 때 충전할 수 있어요.'}</p><div class="row">${state.gold<1000?'<button id="refill" class="btn '+(paid?'ju-paid-action':'gold')+'">'+(paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
   }catch(e){toast(e.message);}
 }
 function deny(error){closed=true;cancelPresentation();clearInterval(pollTimer);clearInterval(accessTimer);closeDialog();clearEvents();$('#app').hidden=true;$('#gate').hidden=false;$('#gate-message').textContent=error.message;$('#retry').hidden=false;}

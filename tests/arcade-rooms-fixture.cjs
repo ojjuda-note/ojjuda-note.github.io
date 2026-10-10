@@ -31,6 +31,8 @@ async function fixture(){
     const file=fs.readdirSync(migrations).find(n=>n.endsWith(suffix)&&(!n.endsWith('_arcade_matgo_shared_stakes.sql')||suffix.startsWith('_arcade')));
     await db.exec(fs.readFileSync(path.join(migrations,file),'utf8'));
   }
+  const refill=fs.readdirSync(migrations).find(n=>n.endsWith('_matgo_additive_refill.sql'));
+  await db.exec(fs.readFileSync(path.join(migrations,refill),'utf8'));
   async function arcade(actor,action,params={}){
     return db.transaction(async tx=>{
       await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);

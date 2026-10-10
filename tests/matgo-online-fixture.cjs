@@ -27,6 +27,10 @@ async function fixture(fixtureOptions={}){
     const shared=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_shared_stakes.sql')&&!n.endsWith('_arcade_matgo_shared_stakes.sql'));
     await db.exec(fs.readFileSync(path.join(dir,shared),'utf8'));
   }
+  if(fixtureOptions.refill){
+    const dir=path.join(__dirname,'../supabase/migrations'),file=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_additive_refill.sql'));
+    await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
+  }
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
   const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],fetchImpl:async(url,options)=>{

@@ -19,11 +19,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       state.round ||= {id:'00000000-0000-4000-9000-000000000001',seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
+      if(state.round)return{data:{error:'round_in_progress'}};
+      if(state.gold>=1000)return{data:{error:'gold_not_empty'}};
       if(state.freeUsed<2)state.freeUsed++;else{if(!body.paid)return{data:{error:'paid_confirmation_required'}};if(state.coins<5)return{data:{error:'insufficient_zzu'}};state.coins-=5;}
-      state.gold=5000;return{data:snapshot()};
+      state.gold+=5000;return{data:snapshot()};
     }
     if(body.action==='settle'){
-      const result=await verifyRound(state.round,body.actions);state.gold=result.gold;state.settled=true;return{data:snapshot()};
+      const result=await verifyRound(state.round,body.actions);state.gold=result.gold;state.round=null;state.settled=true;return{data:snapshot()};
     }
     throw Error('unexpected fixture call');
   });
@@ -248,6 +250,18 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(options.coins===4){await f.page.waitForSelector('#gold-error');assert.match(await f.page.locator('#gold-error').textContent(),/부족/);assert.equal(f.state.gold,0);}
     else{await f.page.waitForFunction(()=>document.querySelector('#money')?.textContent.includes('5,000'));assert.equal(f.state.gold,5000);assert.equal(f.state.coins,options.freeUsed<2?20:15);}
     assert.equal(f.state.requests.filter(r=>r.action==='refill').length,1);assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  for(const [gold,freeUsed] of [[500,0],[999,2],[1000,0]]){
+    const f=await fixture({gold,freeUsed});await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    // Finish the fixture's server round before invoking the real recharge control.
+    f.state.round=null;await f.page.evaluate(()=>{matgoTest.game.over=true});await f.page.locator('#money').click();
+    if(gold<1000){
+      await f.page.locator('#refill-gold').click();
+      await f.page.waitForFunction(expected=>document.querySelector('#money')?.textContent.includes(expected),(gold+5000).toLocaleString('en-US'));
+      assert.equal(f.state.gold,gold+5000);assert.equal(f.state.coins,freeUsed<2?20:15);
+    }else{assert.equal(await f.page.locator('#refill-gold').count(),0);assert.match(await f.page.locator('.modal').textContent(),/1,000G 미만/);}
+    assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const age of [18,19]){
     const f=await fixture({age});await f.page.goto('https://fixture.test/world.html');await f.page.waitForFunction(()=>window.placeTest);
