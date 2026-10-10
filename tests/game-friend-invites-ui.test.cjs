@@ -1,6 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});try{
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.clock.install({time:new Date('2026-10-10T12:00:00Z')});
  await page.setContent('<meta charset="utf-8"><button id="open">친구 초대</button>');
  await page.addStyleTag({path:path.join(__dirname,'../game-entry.css')});await page.addScriptTag({path:path.join(__dirname,'../game-entry.js')});await page.addScriptTag({path:path.join(__dirname,'../game-friend-invites.js')});
  await page.evaluate(()=>{
@@ -24,7 +25,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  await page.locator('[data-answer=accept]').click();assert.equal(await page.evaluate(()=>joined.code),'abcdefabcdefabcdefabcdef');
  assert.deepEqual(await page.evaluate(()=>calls.find(c=>c.p_action==='accept')),{p_action:'accept',p_id:'in-1'});
  // The popup expires at 60 seconds without a server refresh and never records a rejection.
- const frozen=new Date('2026-10-10T13:00:00Z');await page.clock.install({time:frozen});await page.clock.pauseAt(frozen);
+ await page.clock.pauseAt(new Date('2026-10-10T13:00:00Z'));
  await page.evaluate(()=>receive('timeout','matgo'));await page.locator('.game-friend-popup').waitFor();
  assert.equal(await page.locator('[data-seconds]').textContent(),'60');
  const bounds=await page.locator('.game-friend-popup').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=390,'fits a mobile screen');

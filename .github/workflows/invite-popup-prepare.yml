@@ -39,7 +39,7 @@ jobs:
           GIT_INDEX_FILE=/tmp/invite-review-index git read-tree HEAD
           GIT_INDEX_FILE=/tmp/invite-review-index git add world.html
           GIT_INDEX_FILE=/tmp/invite-review-index git update-index --force-remove .github/workflows/invite-popup-prepare.yml
-          test "$(GIT_INDEX_FILE=/tmp/invite-review-index git write-tree)" = 71f8fc73900cad8fd50e91a07d6852ce666a3a94
+          test "$(GIT_INDEX_FILE=/tmp/invite-review-index git write-tree)" = bb9b6512f4c1abf9a4236a9b9206dff0ef88630a
       - name: Install locked tests and actual browser
         run: |
           npm --prefix tests ci --ignore-scripts

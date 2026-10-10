@@ -159,6 +159,11 @@
   document.addEventListener('keydown',event=>{
     if(popup){
       if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();popup.querySelector('[data-answer=decline],[data-answer=ack]')?.click();}
+      if(event.key==='Tab'){
+        const buttons=[...popup.querySelectorAll('button:not([disabled])')];
+        if(event.shiftKey&&document.activeElement===buttons[0]){event.preventDefault();buttons.at(-1)?.focus();}
+        else if(!event.shiftKey&&document.activeElement===buttons.at(-1)){event.preventDefault();buttons[0]?.focus();}
+      }
       return;
     }
     if(!chooser)return;
