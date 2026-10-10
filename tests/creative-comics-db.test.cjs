@@ -20,6 +20,7 @@ insert into ojjuda_account_internal.member_identity values
 ('${minor}',(now() at time zone 'Asia/Seoul')::date-interval '19 years'+interval '1 day'),
 ('${anonymous}',current_date-interval '30 years'),('${banned}',current_date-interval '30 years'),('${minorAdmin}',current_date-interval '15 years');`);
 await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261010151428_creative_comics_adult_board.sql'),'utf8'));
+await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261010153730_comic_authenticated_image_info.sql'),'utf8'));
 async function as(id,sql,args=[],role='authenticated',op='object.get_authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false),set_config('test.operation',$2,false)",[id||'',op]);await db.exec('set role '+role);try{return await db.query(sql,args)}finally{await db.exec('reset role')}}
 const book=(await as(admin,"insert into creative_comics(title) values('테스트') returning id")).rows[0].id;const file=admin+'/'+book+'/00000000-0000-4000-8000-000000000099.png';
 await assert.rejects(as(admin,'update creative_comics set published=true where id=$1',[book]),/comic_pages_incomplete/);
@@ -34,7 +35,8 @@ assert.equal((await as(adult,'select * from creative_comics')).rows.length,1);
 assert.equal((await as(adult,'select * from creative_comic_pages')).rows.length,1);
 assert.equal((await as(adult,'select * from storage.objects')).rows.length,1);
 for(const id of [minor,unknown,anonymous,banned,minorAdmin]){assert.equal((await as(id,'select comics_access() as access')).rows[0].access.allowed,false);for(const table of ['creative_comics','creative_comic_pages','storage.objects'])assert.equal((await as(id,'select * from '+table)).rows.length,0,table+' denied');await assert.rejects(as(id,"insert into creative_comics(title) values('bypass')"),/row-level security/)}
-for(const id of [admin,adult,minor])for(const op of ['object.sign','object.sign_many'])assert.equal((await as(id,'select * from storage.objects',[],'authenticated',op)).rows.length,0,'signed URLs disabled');
+for(const id of ids){const expected=[admin,adult].includes(id)?1:0;assert.equal((await as(id,'select * from storage.objects',[],'authenticated','object.get_authenticated_info')).rows.length,expected,'CDN metadata uses the same adult gate');}
+for(const id of [admin,adult,minor])for(const op of ['object.sign','object.sign_many','object.list',''])assert.equal((await as(id,'select * from storage.objects',[],'authenticated',op)).rows.length,0,'signed URLs disabled');
 await assert.rejects(as(null,'select * from creative_comics',[],'anon'),/permission denied/);await assert.rejects(as(null,'select comics_access()',[],'anon'),/permission denied/);
 assert.equal((await as(null,'select * from storage.objects',[],'anon')).rows.length,0);
 await assert.rejects(as(adult,"insert into creative_comics(title) values('not admin')"),/row-level security/);
