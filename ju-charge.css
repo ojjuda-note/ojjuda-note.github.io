@@ -17,13 +17,22 @@
   .topbar .logo-word, .mobile-top .brand > span { font-size: 20px; }
   .mobile-top .note-dev-badge { display: none; }
 }
-/* Keep World feedback beside the logo, including narrow phones. Wallet actions
-   can wrap to their own row instead of hiding the feedback entry. */
+/* Keep World feedback and wallet controls together on one row. */
 .topbar > .brand { flex: none; gap: 6px; }
 .brand .beta[data-act="feedback-open"] { display: inline-flex; align-items: center; justify-content: center; flex: none; min-height: 32px; white-space: nowrap; }
 .side > .brand { gap: 5px; }
 .side > .brand:has(.beta) .logo-mark { width: 24px; height: 24px; }
 .side > .brand:has(.beta) .logo-word { font-size: 20px; }
+@media (max-width: 899px) {
+  .col > .topbar { flex-wrap: nowrap; gap: 4px; }
+  .topbar > .brand, .topbar .brand-home { gap: 3px; }
+  .topbar .logo-mark { width: 20px; height: 20px; }
+  .topbar .logo-word { font-size: clamp(15px, 4.3vw, 20px); }
+  .topbar .brand .beta[data-act="feedback-open"] { font-size: clamp(8px, 2.6vw, 10.5px); padding: 3px 4px; margin-left: 0; min-height: 28px; transform: none; }
+  .topbar .nn-top-actions { gap: 3px; }
+  .topbar .coinpill { font-size: 11px; gap: 3px; padding: 0 5px; }
+  .topbar .nn-bell { width: 26px; height: 28px; }
+}
 .ju-charge-entry.my-menu-summary { width: 100%; border: 0; background: none; color: inherit; appearance: none; font: inherit; text-align: left; cursor: pointer; }
 .ju-charge-entry.my-menu-summary:hover { background: var(--surface-2, #f8f5f8); }
 .ju-charge-entry.my-menu-summary::after { transform: rotate(-45deg); }
