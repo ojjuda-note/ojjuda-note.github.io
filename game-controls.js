@@ -1,6 +1,17 @@
 /* Device-local controls; multiplayer simulation speed is never changed here. */
 (() => {
   'use strict';
+  // The table handles its own pinch zoom. Keep native page zoom off the
+  // entire billiards dialog, including nested scrolling areas and controls.
+  function keepBilliardsViewport(event) {
+    if (!event.target.closest?.('.bl-ov')) return;
+    if (event.type === 'wheel' && !event.ctrlKey) return;
+    if (event.type.startsWith('touch') && event.touches.length < 2) return;
+    event.preventDefault();
+  }
+  for (const type of ['touchstart', 'touchmove', 'gesturestart', 'gesturechange', 'wheel', 'dblclick']) {
+    document.addEventListener(type, keepBilliardsViewport, {capture:true, passive:false});
+  }
   const definitions = {
     breakout: { speed: ['공 속도', [['slow','느림'],['normal','보통'],['fast','빠름']]] },
     photo_ttang: {

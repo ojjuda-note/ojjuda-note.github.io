@@ -11,14 +11,44 @@ const distance=(a,b)=>((b-a+540)%360)-180;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.billiardTest);
+  await page.addScriptTag({path:path.join(root,'game-controls.js')});
   const angle=()=>page.evaluate(()=>billiardTest.angle());
+  const fixedUI=()=>page.evaluate(()=>Object.fromEntries(['.ghead','.bl-hud','.bl-can','.bl-power','.bl-msg','.bl-ctrl'].map(selector=>{
+   const rect=document.querySelector(selector).getBoundingClientRect();
+   return [selector,{x:rect.x,y:rect.y,width:rect.width,height:rect.height}];
+  })));
   for(const kind of ['carom4','carom3','pool8']){
    await page.evaluate(kind=>billiardTest.open(kind),kind);
    assert.equal(await page.locator('.bl-zoom').isVisible(),false,kind+': hidden toolbar');
+   const fixedBefore=await fixedUI(),canvasBefore=await page.locator('#bl-cv').boundingBox();
+   const outsidePinch=await context.newCDPSession(page);
+   const header=fixedBefore['.ghead'],cy=header.y+header.height/2;
+   const outsideFingers=spread=>[{id:1,x:header.x+header.width*(.4-spread),y:cy},{id:2,x:header.x+header.width*(.4+spread),y:cy}];
+   await outsidePinch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:outsideFingers(.08)});
+   await outsidePinch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:outsideFingers(.25)});
+   await outsidePinch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+   assert.equal(await page.evaluate(()=>visualViewport.scale),1,kind+': outside pinch never zooms the page');
+   assert.deepEqual(await fixedUI(),fixedBefore,kind+': outside pinch keeps controls fixed');
+   assert.deepEqual(await page.locator('#bl-cv').boundingBox(),canvasBefore,kind+': outside pinch does not zoom the table');
+   const nativeGuards=await page.evaluate(()=>{
+    const targets=['.ghead','.bl-hud','.bl-power','.bl-aim','.bl-ctrl','.bl-can','#bl-spinpick svg'];
+    return targets.every(selector=>{
+     const el=document.querySelector(selector);
+     if(getComputedStyle(el).touchAction!=='none')return false;
+     for(const type of ['gesturestart','gesturechange','dblclick']){
+      const event=new Event(type,{bubbles:true,cancelable:true});el.dispatchEvent(event);if(!event.defaultPrevented)return false;
+     }
+     const zoom=new WheelEvent('wheel',{ctrlKey:true,bubbles:true,cancelable:true});el.dispatchEvent(zoom);
+     const scroll=new WheelEvent('wheel',{deltaY:30,bubbles:true,cancelable:true});el.dispatchEvent(scroll);
+     return zoom.defaultPrevented&&!scroll.defaultPrevented;
+    });
+   });
+   assert.ok(nativeGuards,kind+': native touch, trackpad, Safari and double-tap zoom stay scoped to the dialog');
+   await outsidePinch.detach();
 
    const view=page.locator('.bl-aim-heading .bl-view-toggle');
    assert.equal(await view.isVisible(),true,kind+': controls open next to aim reference');
@@ -51,9 +81,12 @@ const distance=(a,b)=>((b-a+540)%360)-180;
    await page.waitForTimeout(550);
    assert.equal(await page.evaluate(()=>billiardTest.state().peek?.active||false),false,'two fingers never trigger hold preview');
    const baseWidth=(await page.locator('#bl-cv').boundingBox()).width;
+   const controlsBeforePinch=await fixedUI();
    await pinch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(.18)});
    const ratio=(await page.locator('#bl-cv').boundingBox()).width/baseWidth;
    assert.ok(Math.abs(ratio-1.8)<.03,kind+': spreading fingers enlarges table');
+   assert.equal(await page.evaluate(()=>visualViewport.scale),1,kind+': table pinch never zooms the page');
+   assert.deepEqual(await fixedUI(),controlsBeforePinch,kind+': table pinch keeps score and shot controls fixed');
    assert.equal(await angle(),initial.angle,'pinch leaves aim unchanged');
    if(kind==='carom4')await page.screenshot({path:'/tmp/billiards-pinch-zoom.png'});
    await pinch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[fingers(.18)[0]]});
@@ -166,5 +199,9 @@ const distance=(a,b)=>((b-a+540)%360)-180;
   await page.mouse.down();await page.evaluate(()=>billiardTest.close());await page.mouse.up();await page.evaluate(()=>billiardTest.open('carom4'));const reopened=await angle();await page.waitForTimeout(450);assert.equal(await angle(),reopened,'reopening has no stale timer');
   const tableBox=await page.locator('.bl-can').boundingBox();await page.mouse.move(tableBox.x+40,tableBox.y+60);await page.mouse.down();await page.evaluate(()=>billiardTest.close());await page.mouse.up();await page.evaluate(()=>billiardTest.open('carom4'));await page.waitForTimeout(550);assert.equal(await page.evaluate(()=>billiardTest.state().zoom),1,'no delayed zoom after close and reopen');
   assert.deepEqual(errors,[]);console.log('PASS responsive 320/390/1280 widths, blur/close cleanup, zero browser errors');
+  await page.evaluate(()=>billiardTest.close());
+  assert.equal(await page.evaluate(()=>{
+   const event=new WheelEvent('wheel',{ctrlKey:true,bubbles:true,cancelable:true});document.body.dispatchEvent(event);return event.defaultPrevented;
+  }),false,'normal page zoom is available again after leaving billiards');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
