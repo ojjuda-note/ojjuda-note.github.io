@@ -1,6 +1,17 @@
 /* Keep fixed controls inside the visible viewport, including browser/keyboard changes. */
 (() => {
   'use strict';
+  // Billiards handles table zoom itself; native page zoom would also enlarge
+  // its score and shot controls. Leave ordinary taps and scrolling alone.
+  function keepBilliardsViewport(event) {
+    if (!event.target.closest?.('.bl-ov')) return;
+    if (event.type === 'wheel' && !event.ctrlKey) return;
+    if (event.type.startsWith('touch') && event.touches.length < 2) return;
+    event.preventDefault();
+  }
+  for (const type of ['touchstart', 'touchmove', 'gesturestart', 'gesturechange', 'wheel', 'dblclick']) {
+    document.addEventListener(type, keepBilliardsViewport, {capture:true, passive:false});
+  }
   const root = document.documentElement;
   const viewport = window.visualViewport;
   // The host already reserves system insets around game/house frames.

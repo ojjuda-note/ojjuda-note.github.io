@@ -15,7 +15,7 @@ const distance=(a,b)=>((b-a+540)%360)-180;
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.billiardTest);
-  await page.addScriptTag({path:path.join(root,'game-controls.js')});
+  await page.addScriptTag({path:path.join(root,'mobile-viewport.js')});
   const angle=()=>page.evaluate(()=>billiardTest.angle());
   const fixedUI=()=>page.evaluate(()=>Object.fromEntries(['.ghead','.bl-hud','.bl-can','.bl-power','.bl-msg','.bl-ctrl'].map(selector=>{
    const rect=document.querySelector(selector).getBoundingClientRect();

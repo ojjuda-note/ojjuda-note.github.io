@@ -1,4 +1,6 @@
 /* One safe, visible area for Note, World and their dialogs. */
+/* Only the table's own zoom changes size; the surrounding game UI stays fixed. */
+#gov.bl-ov, #gov.bl-ov * { touch-action:none; }
 :root {
   --app-viewport-height: 100vh;
   --app-viewport-top: 0px;
