@@ -1,0 +1,66 @@
+name: Prepare verified additive Matgo refill
+on:
+  push:
+    branches: [fix/matgo-refill-20261010]
+    paths:
+      - '.github/workflows/matgo-refill-prepare.yml'
+      - 'ops/matgo-refill-patch.json'
+      - 'tests/matgo-refill.test.cjs'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed edits while retaining original embedded artwork
+        run: |
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          recipe=json.loads(Path('ops/matgo-refill-patch.json').read_text())
+          for entry in recipe['files']:
+              p=Path(entry['path']);raw=p.read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==entry['before'],entry['path']
+              value=raw.decode()
+              for edit in reversed(entry['edits']):
+                  start=edit['start'];old=edit['old']
+                  assert value[start:start+len(old)]==old
+                  value=value[:start]+edit['new']+value[start+len(old):]
+              raw=value.encode()
+              assert hashlib.sha256(raw).hexdigest()==entry['after'],entry['path']
+              p.write_bytes(raw)
+          PY
+          git add docs games matgo-bridge.js tests world.html
+          git diff --cached --check
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+          GIT_INDEX_FILE=/tmp/refill-review-index git read-tree "$(git write-tree)"
+          GIT_INDEX_FILE=/tmp/refill-review-index git update-index --force-remove .github/workflows/matgo-refill-prepare.yml ops/matgo-refill-patch.json
+          test "$(GIT_INDEX_FILE=/tmp/refill-review-index git write-tree)" = c0af806414ba5ece3fbaef71d847dc66610fefaa
+      - name: Install locked tests and actual browser
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          cd tests
+          npx playwright install --with-deps chromium
+      - name: Check additive refills and solo/multiplayer screens
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/matgo-refill.test.cjs
+          node tests/matgo-gold.test.cjs
+          node tests/matgo-stakes.test.cjs
+          node tests/matgo-ui.test.cjs
+          node tests/matgo-online-ui.test.cjs
+      - name: Transfer verified large files individually through authenticated Git
+        run: |
+          git config user.name 'Ojjuda automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git commit --only world.html -m 'Refresh the Matgo bridge revision'
+          git push origin HEAD:fix/matgo-refill-20261010
+          git commit --only games/matgo.html -m 'Allow additive refills between solo rounds'
+          git push origin HEAD:fix/matgo-refill-20261010
+          git commit -m 'Verify shared additive refill controls and regression coverage'
+          git push origin HEAD:fix/matgo-refill-20261010

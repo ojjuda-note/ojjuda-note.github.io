@@ -94,6 +94,7 @@ jobs:
         run: |
           node tests/matgo-engine.test.cjs
           node tests/matgo-multipliers.test.mjs
+          node tests/matgo-refill.test.cjs
           node tests/matgo-captured-zoom.test.mjs
           node tests/matgo-bonus.test.mjs
           node tests/matgo-difficulty.test.mjs
