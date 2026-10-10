@@ -114,7 +114,9 @@ const distance=(a,b)=>((b-a+540)%360)-180;
    await pinch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:fingers(.1)});
    for(const spread of [.12,.14,.16,.18,.2]){
     await pinch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:fingers(spread)});
-    assert.ok(Math.abs((await snapshot()).zoom-spread/.1)<.03,kind+': continuous two-finger spreading changes table zoom');
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
+    const gesture=await page.evaluate(()=>{const s=billiardTest.state();return{zoom:s.zoom,pinch:s.pinch,points:[...(s.touchPoints?.values()||[])],blocked:s.touchGestureBlocked};});
+    assert.ok(Math.abs(gesture.zoom-spread/.1)<.03,kind+': continuous two-finger spreading changes table zoom '+JSON.stringify({spread,...gesture}));
    }
    assert.deepEqual(await fixedUI(),staggeredControls,kind+': controls stay fixed throughout continuous pinch');
    assert.equal(await page.evaluate(()=>visualViewport.scale),1,kind+': continuous pinch never magnifies the page');
