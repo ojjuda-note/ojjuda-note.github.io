@@ -3,7 +3,7 @@
  'use strict';
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
-  tour:['/world-tour-game.css?v=20261011-tour1','/world-tour-game.js?v=20261011-tour1'],
+  tour:['/world-tour-game.css?v=20261011-tour2','/world-tour-game.js?v=20261011-tour2'],
   spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261009-entry1'],
   ttang:['/ttang-bridge.js?v=20261009-entry1'],
   photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261006-rank1','/photo-ttang-bridge.js?v=20261009-entry1'],
