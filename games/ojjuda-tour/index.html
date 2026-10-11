@@ -339,7 +339,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <p><b>🎲 주사위</b> 가운데 주사위를 누르고 있다가 놓으면 굴러가요. 더블이면 한 번 더, 세 번이면 무인도.</p>
     <p><b>🎆 페스티벌</b> 내 도시 하나 통행료 2배(겹치면 4배, 8배). <b>✈️ 세계여행</b> 다음 차례 20만 내고 원하는 칸으로. <b>🧾 국세청</b> 총자산 10% 세금. <b>🏝️ 무인도</b> 3턴, 더블 또는 50만으로 탈출.</p>
     <p><b>🎁 찬스카드</b> 천사카드, 반값 쿠폰, 도시 체인지, 지진, 태풍, 페스티벌 개최권 등 14종.</p>
-    <p>돈이 모자라면 건물과 도시를 반값에 처분해요. 모두 처분해도 잔액이 마이너스면 탈락하고 관전만 할 수 있어요. 잔액이 0 이상이면 계속 참여해요.</p>
+    <p>돈이 모자라면 건물과 도시를 반값에 처분해요. 판매할 도시나 건물이 없고 잔액이 0원 이하가 되면 탈락하고 관전만 할 수 있어요. 현금이 0원이어도 판매할 자산이 남아 있으면 계속 참여해요.</p>
     <p>마지막 한 명이 남으면 우승! 라운드 제한이 끝나거나 중간에 끝내면 남은 참가자 중 총자산 1등이 우승이에요.</p>
     </details>
   </section>
@@ -525,6 +525,7 @@ const cur=()=>G.players[G.turn];
 const alive=()=>G.players.filter(p=>!p.bankrupt);
 const canControlTurn=()=>!!G&&!G.over&&!!cur()&&cur().human&&!cur().bankrupt;
 const spectating=()=>!!G&&G.players.some(p=>p.human)&&!G.players.some(p=>p.human&&!p.bankrupt);
+const needsSettlement=p=>p.money<0||(p.money===0&&owned(p).length===0);
 const pid=p=>G.players.indexOf(p);
 const aiDelay=()=>G.fast?260:800;
 const ga=(p,o)=>avatar(p.m,o);
@@ -1245,7 +1246,7 @@ async function gameLoop(){
     while(true){
       if(alive().length<=1)return endScreen(alive()[0],'파산 승리');
       const p=cur();
-      if(!p.bankrupt&&p.money<0)await settle(p);
+      if(!p.bankrupt&&needsSettlement(p))await settle(p);
       if(!p.bankrupt){save();render();setFace(p);camOver();await takeTurn(p);await wait(300)}
       if(alive().length<=1)return endScreen(alive()[0],'파산 승리');
       const prev=G.turn;
@@ -1413,7 +1414,7 @@ async function pay(p,amt,to){
   if(p.bankrupt||G.over||amt<=0)return;
   p.money-=amt;if(to)to.money+=amt;
   sfx('pay');coinFly(p,to);floatText(p,'−'+fmt(amt),false);if(to)setTimeout(()=>floatText(to,'+'+fmt(amt),true),500);
-  if(p.money<0)await settle(p,to);
+  if(needsSettlement(p))await settle(p,to);
   render();
 }
 function release(k){delete G.owner[k];delete G.level[k];delete G.fest[k]}
@@ -1428,14 +1429,15 @@ async function settle(p,to){
     break;
   }
   if(sold.length)log(`${p.name} 급매: ${sold.join(', ')}`);
-  if(p.money<0){
-    const s=-p.money;if(to)to.money-=s;p.money=0;
+  if(needsSettlement(p)){
+    const s=Math.max(0,-p.money);if(to)to.money-=s;p.money=0;
     p.bankrupt=true;owned(p).forEach(release);p.island=0;p.travel=false;p.escape=0;p.angel=0;p.half=0;p.par=0;
-    log(`${p.name} 탈락: 모든 도시와 건물을 처분해도 ${fmt(s)}이 부족해요. 이제 관전만 할 수 있어요.`);
+    const reason=s>0?`모든 도시와 건물을 처분해도 ${fmt(s)}이 부족해요.`:'잔액이 0원이고 판매할 도시나 건물이 없어요.';
+    log(`${p.name} 탈락: ${reason} 이제 관전만 할 수 있어요.`);
     if(p===cur()){R.diceReady=false;R.holding=false;R.pickSet=null}
     // Elimination completes this turn, so it is safe to resume at this checkpoint.
     save();sfx('bust');render();setFace(p,'sad');
-    if(p.human)await ask('탈락',`<p>모든 도시와 건물을 처분해도 <b>${fmt(s)}</b>이 부족해요.</p><p>이번 투어에서 탈락했습니다.<br>이제 남은 참가자의 경기를 지켜볼 수 있어요.</p>`,[{k:'watch',l:alive().length>1?'관전하기':'결과 보기'}],p,'sad');
+    if(p.human)await ask('탈락',`<p>${reason}</p><p>이번 투어에서 탈락했습니다.<br>이제 남은 참가자의 경기를 지켜볼 수 있어요.</p>`,[{k:'watch',l:alive().length>1?'관전하기':'결과 보기'}],p,'sad');
     else{say(`${p.name} 탈락!`);await wait(aiDelay())}
   }else if(sold.length){
     if(p.human)await ask('😵 급매',`<p>돈이 모자라 반값에 팔았어요.<br>${sold.join('<br>')}</p>`,OK,p,'sad');
