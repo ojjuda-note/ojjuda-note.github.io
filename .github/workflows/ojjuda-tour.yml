@@ -1,0 +1,35 @@
+name: Ojjuda Tour
+on:
+  push:
+    paths:
+      - 'games/ojjuda-tour/**'
+      - 'world-tour-game.*'
+      - 'tests/ojjuda-tour-*.test.cjs'
+      - '.github/workflows/ojjuda-tour.yml'
+  pull_request:
+    paths:
+      - 'games/ojjuda-tour/**'
+      - 'world-tour-game.*'
+      - 'tests/ojjuda-tour-*.test.cjs'
+      - '.github/workflows/ojjuda-tour.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ojjuda-tour-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tour:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - run: node tests/ojjuda-tour-dom.test.cjs
+      - run: node tests/ojjuda-tour-ui.test.cjs
