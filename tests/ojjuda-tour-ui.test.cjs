@@ -30,6 +30,24 @@ const root=path.resolve(__dirname,'..');
     await frame.locator('#startBtn').click();
     await frame.locator('#game').waitFor({state:'visible',timeout:60000});
     await frame.locator('#three').evaluate(()=>new Promise((resolve,reject)=>{let attempts=0;const timer=setInterval(()=>{if(R.ok&&R.diceReady){clearInterval(timer);resolve()}else if(++attempts>200){clearInterval(timer);reject(Error('3D game did not become ready'))}},100)}));
+    // Save the actual WebGL board for layout review, including each building level.
+    await frame.getByRole('button',{name:'시점 초기화',exact:true}).click();
+    await embedded.waitForFunction(()=>Math.abs(R.cam.D-R.overD)<.02&&Math.abs(R.cam.el-OVER_EL)<.002);
+    const layout=await frame.locator('#three').evaluate(()=>{
+     const sizes=R.tiles.map(tile=>{tile.userData.slab.geometry.computeBoundingBox();const size=new THREE.Vector3();tile.userData.slab.geometry.boundingBox.getSize(size);return [size.x,size.z].map(v=>+v.toFixed(5))});
+     return {tiles:R.tiles.length,footprints:[...new Set(sizes.map(size=>size.join(' × ')))]};
+    });
+    console.log('Board layout:',JSON.stringify(layout));
+    fs.mkdirSync('/tmp/ojjuda-tour-proof',{recursive:true});
+    await frame.locator('#boardbox').screenshot({path:'/tmp/ojjuda-tour-proof/equal-tiles.png'});
+    await frame.locator('#three').evaluate(()=>{
+     window.layoutCheckpoint={owner:{...G.owner},level:{...G.level}};
+     for(let side=0;side<4;side++){const i=T.findIndex((t,i)=>Math.floor(i/8)===side&&t.t==='city');G.owner[i]=side%G.players.length;G.level[i]=side+1;}
+     sync3D();
+    });
+    await page.waitForTimeout(1100);
+    await frame.locator('#boardbox').screenshot({path:'/tmp/ojjuda-tour-proof/equal-tiles-buildings.png'});
+    await frame.locator('#three').evaluate(()=>{Object.assign(G,window.layoutCheckpoint);delete window.layoutCheckpoint;sync3D()});
     const point=await frame.locator('#three').evaluate(canvas=>{const p=R.diceHit.position.clone().project(R.camera);return{x:(p.x+1)*canvas.clientWidth/2,y:(1-p.y)*canvas.clientHeight/2}});
     await frame.locator('#three').click({position:point});
     await frame.locator('#three').evaluate(()=>new Promise((resolve,reject)=>{let attempts=0;const timer=setInterval(()=>{if(G.players[0].pos>0){clearInterval(timer);resolve()}else if(++attempts>400){clearInterval(timer);reject(Error('dice did not move the player'))}},100)}));
