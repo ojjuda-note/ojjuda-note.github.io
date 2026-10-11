@@ -26,6 +26,7 @@ const root=path.resolve(__dirname,'..');
    assert.equal(await frame.locator('#rows').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'roster fits '+width);
    await frame.locator('.ge-more > summary').nth(0).click();
    if(width===390){
+    await frame.locator('#plus').click();await frame.locator('[data-tour-mode=computer]').click();
     await frame.locator('#startBtn').click();
     await frame.locator('#game').waitFor({state:'visible',timeout:60000});
     await frame.locator('#three').evaluate(()=>new Promise((resolve,reject)=>{let attempts=0;const timer=setInterval(()=>{if(R.ok&&R.diceReady){clearInterval(timer);resolve()}else if(++attempts>200){clearInterval(timer);reject(Error('3D game did not become ready'))}},100)}));
@@ -38,7 +39,31 @@ const root=path.resolve(__dirname,'..');
     await frame.locator('#resumeBtn').waitFor({state:'visible'});
     await frame.locator('#resumeBtn').click();
     await frame.locator('#game').waitFor({state:'visible',timeout:60000});
-    assert.equal(await frame.locator('#three').evaluate(()=>G.players.length),2,'member checkpoint resumed');
+    assert.equal(await frame.locator('#three').evaluate(()=>G.players.length),3,'member checkpoint resumed');
+    await page.frames().find(f=>f.url().includes('/games/ojjuda-tour/')).waitForFunction(()=>R.diceReady);
+    // End the waiting test turn, then exercise a real insolvent payment and its dialog.
+    await frame.locator('#three').evaluate(()=>{
+     GEN++;if(rollResolve){const finish=rollResolve;rollResolve=null;finish()}
+     const p=G.players[0],city=T.findIndex(t=>t.t==='city');p.money=10;
+     G.owner[city]=0;G.level[city]=4;G.fest[city]=1;
+     window.eliminationFinished=pay(p,100000,G.players[1]);
+    });
+    await frame.getByRole('heading',{name:'탈락',exact:true}).waitFor();
+    await frame.getByRole('button',{name:'관전하기',exact:true}).click();
+    await frame.locator('#three').evaluate(()=>window.eliminationFinished);
+    assert.equal(await frame.locator('#eliminationStatus').isVisible(),true);
+    assert.match(await frame.locator('#players .out').innerText(),/탈락[\s\S]*관전 중/);
+    assert.equal(await frame.locator('#eliminationStatus').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'mobile elimination banner fits');
+    assert.equal(await frame.locator('#quitBtn').isVisible(),false);
+    assert.equal(await frame.locator('#three').evaluate(()=>R.pieces[0].g.visible),false,'eliminated piece leaves the board');
+    await frame.locator('#three').evaluate(()=>{void gameLoop()});
+    await page.frames().find(f=>f.url().includes('/games/ojjuda-tour/')).waitForFunction(()=>G.turn!==0&&G.players[G.turn].pos>0,{},{timeout:40000});
+    assert.equal(await frame.locator('#three').evaluate(()=>canControlTurn()),false,'spectator cannot control computer turns');
+    await page.getByRole('button',{name:'게임 목록으로 돌아가기'}).click();await page.locator('#launch').click();
+    await frame.locator('#resumeBtn').waitFor({state:'visible'});await frame.locator('#resumeBtn').click();
+    await frame.locator('#game').waitFor({state:'visible'});
+    assert.equal(await frame.locator('#three').evaluate(()=>G.players[0].bankrupt&&spectating()),true,'resume keeps eliminated spectator');
+    assert.equal(await frame.locator('#eliminationStatus').isVisible(),true);
    }
    await page.getByRole('button',{name:'게임 목록으로 돌아가기'}).click();
    assert.equal(await page.locator('dialog').count(),0);
@@ -46,6 +71,6 @@ const root=path.resolve(__dirname,'..');
    assert.deepEqual(errors,[]);
    console.log('PASS: viewport '+width);await page.close();
   }
-  console.log('PASS: 320/390/1280px entry, member handshake, real WebGL start, dice movement, exit and saved tour resume');
+  console.log('PASS: responsive entry, WebGL, dice, liquidation dialog, elimination banner, continued AI play and spectator resume');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
