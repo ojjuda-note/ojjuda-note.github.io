@@ -7,7 +7,7 @@
   "orientation": "portrait",
   "players": "2-8",
   "offline": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "messages": {
     "ojjuda-game-ready": "게임 로딩 완료",
     "ojjuda-game-result": "게임 종료 시 순위·자산 결과 전달",

@@ -128,7 +128,13 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 .players{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px;margin-top:18px}
 .pc{display:flex;gap:8px;align-items:center;padding:7px 8px;border-width:3px;box-shadow:4px 4px 0 var(--ink);border-radius:14px;transition:transform .2s}
 .pc.now{background:var(--lemon);transform:rotate(-1.5deg) scale(1.03)}
-.pc.out{filter:grayscale(1);opacity:.55}
+.pc.out{background:#eeeaf4;border-color:#82728f;box-shadow:2px 2px 0 #82728f}
+.pc.out .face{filter:grayscale(1);opacity:.55}
+.pc.out .m{color:#a3274d}
+.elimination-status{margin:0 0 14px;padding:12px 14px;border:2px solid #ddbac8;border-radius:14px;background:#fff4f7;color:#76384f;line-height:1.5;overflow-wrap:anywhere}
+.elimination-status strong{display:block;font-size:17px}
+.elimination-status span{display:block;font-size:14px}
+.elimination-status small{display:block;margin-top:3px;font-size:12px}
 .pc .face{width:44px;height:44px;flex:none;border-radius:50%;border:2.5px solid var(--ink);overflow:hidden;background:#fff}
 .pc .face svg{width:100%;height:100%;display:block;transform:scale(1.25) translateY(6%)}
 .pc.now .face svg{animation:dance 1s ease-in-out infinite}
@@ -333,7 +339,8 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <p><b>🎲 주사위</b> 가운데 주사위를 누르고 있다가 놓으면 굴러가요. 더블이면 한 번 더, 세 번이면 무인도.</p>
     <p><b>🎆 페스티벌</b> 내 도시 하나 통행료 2배(겹치면 4배, 8배). <b>✈️ 세계여행</b> 다음 차례 20만 내고 원하는 칸으로. <b>🧾 국세청</b> 총자산 10% 세금. <b>🏝️ 무인도</b> 3턴, 더블 또는 50만으로 탈출.</p>
     <p><b>🎁 찬스카드</b> 천사카드, 반값 쿠폰, 도시 체인지, 지진, 태풍, 페스티벌 개최권 등 14종.</p>
-    <p>파산하면 탈락. 라운드 제한이 끝나거나 중간에 끝내면 총자산 1등이 우승이에요.</p>
+    <p>돈이 모자라면 건물과 도시를 반값에 처분해요. 모두 처분해도 잔액이 마이너스면 탈락하고 관전만 할 수 있어요. 잔액이 0 이상이면 계속 참여해요.</p>
+    <p>마지막 한 명이 남으면 우승! 라운드 제한이 끝나거나 중간에 끝내면 남은 참가자 중 총자산 1등이 우승이에요.</p>
     </details>
   </section>
 </main>
@@ -345,6 +352,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <button class="chip" id="quitBtn">끝내기</button>
     <button class="chip hidden" id="exitBtn" aria-label="오쭈다월드로 나가기">🏠</button>
   </div>
+  <div id="eliminationStatus" class="elimination-status hidden" role="status" aria-live="polite"><strong>탈락 · 관전 중</strong><span id="eliminatedNames"></span><small id="spectatorHelp"></small></div>
   <div class="boardbox" id="boardbox">
     <canvas id="three" aria-label="3D 게임 보드. 칸을 누르면 정보가 나와요. 옆으로 밀면 시점이 돌아가요."></canvas>
     <div class="fx" id="fx"></div>
@@ -515,6 +523,8 @@ async function guard(p){const g=GEN;const r=await p;if(g!==GEN)throw STALE;retur
 const wait=ms=>guard(sleep(ms));
 const cur=()=>G.players[G.turn];
 const alive=()=>G.players.filter(p=>!p.bankrupt);
+const canControlTurn=()=>!!G&&!G.over&&!!cur()&&cur().human&&!cur().bankrupt;
+const spectating=()=>!!G&&G.players.some(p=>p.human)&&!G.players.some(p=>p.human&&!p.bankrupt);
 const pid=p=>G.players.indexOf(p);
 const aiDelay=()=>G.fast?260:800;
 const ga=(p,o)=>avatar(p.m,o);
@@ -696,7 +706,7 @@ function init3D(){
   let down=null;
   cv.addEventListener('pointerdown',e=>{
     cv.setPointerCapture(e.pointerId);
-    if(R.diceReady&&rollResolve&&!R.pickSet&&diceHitAt(e.clientX,e.clientY)){startHold();down=null;return}
+    if(canControlTurn()&&R.diceReady&&rollResolve&&!R.pickSet&&diceHitAt(e.clientX,e.clientY)){startHold();down=null;return}
     down={x:e.clientX,y:e.clientY,yaw:R.yawGoal,moved:0}});
   const endHold=()=>{if(!R.holding)return;R.holding=false;R.throwFromHold=true;R.diceHint.material.map=R.hintTexA;const r=rollResolve;rollResolve=null;R.diceReady=false;if(r)r()};
   cv.addEventListener('pointerup',endHold);cv.addEventListener('pointercancel',endHold);
@@ -771,6 +781,7 @@ function diceHitAt(cx,cy){
   const rc=new THREE.Raycaster();rc.setFromCamera(v,R.camera);return rc.intersectObjects([R.diceHit,...R.dice],false).length>0;
 }
 function startHold(){
+  if(!canControlTurn())return;
   R.holding=true;R.holdT0=now();R.holdAx=R.dice.map(()=>new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize());
   R.diceHint.material.map=R.hintTexB;R.lastRattle=0;sfx('roll');
 }
@@ -1033,10 +1044,10 @@ function tapAt(cx,cy){
   const r=$('#three').getBoundingClientRect(),v=new THREE.Vector2((cx-r.left)/r.width*2-1,-(cy-r.top)/r.height*2+1);
   const rc=new THREE.Raycaster();rc.setFromCamera(v,R.camera);
   const objs=[];R.tiles.forEach(t=>{objs.push(t.userData.pl,t.userData.slab)});
-  if(rollResolve&&R.diceReady){const dh=rc.intersectObjects([R.diceHit,...R.dice],false)[0];if(dh){const res=rollResolve;rollResolve=null;R.diceReady=false;res();return}}
+  if(canControlTurn()&&rollResolve&&R.diceReady){const dh=rc.intersectObjects([R.diceHit,...R.dice],false)[0];if(dh){const res=rollResolve;rollResolve=null;R.diceReady=false;res();return}}
   const hit=rc.intersectObjects(objs,false)[0];if(!hit)return;
   const i=hit.object.userData.i;
-  if(pickResolve){if(!pickAllowed.includes(i)){say(R.pickMsg||'반짝이는 칸만 고를 수 있어요!');sfx('pay');R.shakeT=now();return}sfx('click');const res=pickResolve;pickResolve=null;res(i);return}
+  if(canControlTurn()&&pickResolve){if(!pickAllowed.includes(i)){say(R.pickMsg||'반짝이는 칸만 고를 수 있어요!');sfx('pay');R.shakeT=now();return}sfx('click');const res=pickResolve;pickResolve=null;res(i);return}
   if(G&&$('#sheet').classList.contains('hidden'))showInfo(i);
 }
 function toScreen(v){const p=v.clone().project(R.camera),r=$('#three').getBoundingClientRect();return{x:r.left+(p.x+1)/2*r.width,y:r.top+(1-p.y)/2*r.height}}
@@ -1127,10 +1138,18 @@ function render(){
   const p=cur();
   $('#cName').textContent=p.name+(p.human?'':' 🤖');
   $('#roundline').textContent=`라운드 ${G.round}${G.maxRound?' / '+G.maxRound:''}`;
-  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.par===(p.par||0)));
+  const out=G.players.filter(q=>q.bankrupt),watching=spectating();
+  $('#eliminationStatus').classList.toggle('hidden',!out.length);
+  $('#eliminationStatus strong').textContent=watching?'탈락 · 관전 중':'탈락한 참가자';
+  const names=out.map(q=>q.name).join(' · ');
+  if($('#eliminatedNames').textContent!==names)$('#eliminatedNames').textContent=names;
+  $('#spectatorHelp').textContent=watching?'남은 참가자의 경기를 지켜보세요.':'탈락한 참가자는 참여할 수 없어요. 남은 참가자의 차례로 계속해요.';
+  $('#quitBtn').classList.toggle('hidden',watching);
+  document.querySelectorAll('#seg button').forEach(b=>{b.classList.toggle('on',+b.dataset.par===(p.par||0));b.disabled=!canControlTurn()});
+  if(!canControlTurn()){$('#rollBtn').disabled=true;$('#rollBtn').classList.add('hidden');$('#seg').classList.add('off');R.diceReady=false}
   $('#players').innerHTML=G.players.map((q,k)=>{
-    const st=[q.bankrupt?'파산':'',q.island>0?`🏝️${q.island}`:'',q.travel?'✈️':'',q.escape?`🎫${q.escape}`:'',q.angel?`😇${q.angel}`:'',q.half?`🏷️${q.half}`:''].filter(Boolean).join(' ');
-    return `<div class="pc panel${k===G.turn?' now':''}${q.bankrupt?' out':''}"><div class="face" style="background:${q.color}55">${ga(q)}</div><div class="info"><div class="n">${q.name}${q.human?'':' 🤖'}</div><div class="m">${fmt(q.money)}</div><div class="s">도시 ${owned(q).length} ${st}</div></div></div>`;
+    const st=[q.island>0?`🏝️${q.island}`:'',q.travel?'✈️':'',q.escape?`🎫${q.escape}`:'',q.angel?`😇${q.angel}`:'',q.half?`🏷️${q.half}`:''].filter(Boolean).join(' ');
+    return `<div class="pc panel${k===G.turn&&!q.bankrupt?' now':''}${q.bankrupt?' out':''}"><div class="face" style="background:${q.color}55">${ga(q)}</div><div class="info"><div class="n">${safeText(q.name)}${q.human?'':' 🤖'}</div><div class="m">${q.bankrupt?'탈락':fmt(q.money)}</div><div class="s">${q.bankrupt?'관전 중':'도시 '+owned(q).length+' '+st}</div></div></div>`;
   }).join('');
 }
 let faceP=-1,faceE='';
@@ -1226,6 +1245,7 @@ async function gameLoop(){
     while(true){
       if(alive().length<=1)return endScreen(alive()[0],'파산 승리');
       const p=cur();
+      if(!p.bankrupt&&p.money<0)await settle(p);
       if(!p.bankrupt){save();render();setFace(p);camOver();await takeTurn(p);await wait(300)}
       if(alive().length<=1)return endScreen(alive()[0],'파산 승리');
       const prev=G.turn;
@@ -1250,8 +1270,8 @@ async function doRoll(p,hint){
   say(`${a} + ${b} = ${a+b}칸!`);
   await wait(a===b||hit?650:380);return[a,b];
 }
-$('#rollBtn').onclick=()=>{if(pickResolve){const r=pickResolve;pickResolve=null;r(-1)}};
-$('#seg').addEventListener('click',e=>{const b=e.target.closest('[data-par]');if(!b||!G)return;const p=cur();if(!p.human)return;p.par=+b.dataset.par;sfx('click');render()});
+$('#rollBtn').onclick=()=>{if(canControlTurn()&&pickResolve){const r=pickResolve;pickResolve=null;r(-1)}};
+$('#seg').addEventListener('click',e=>{const b=e.target.closest('[data-par]');if(!b||!canControlTurn())return;cur().par=+b.dataset.par;sfx('click');render()});
 $('#muteBtn').onclick=()=>{muted=!muted;$('#muteBtn').textContent=muted?'🔇':'🔊';sfx('click')};
 
 async function walk(p,steps){
@@ -1271,6 +1291,7 @@ async function notify(p,title,text,expr='smile'){
 }
 
 async function takeTurn(p){
+  if(p.bankrupt||G.over)return;
   if(p.travel){
     p.travel=false;let dest;
     const all=T.map((t,i)=>i).filter(i=>i!==24);
@@ -1389,7 +1410,7 @@ async function landProperty(p,i){
 }
 
 async function pay(p,amt,to){
-  if(amt<=0)return;
+  if(p.bankrupt||G.over||amt<=0)return;
   p.money-=amt;if(to)to.money+=amt;
   sfx('pay');coinFly(p,to);floatText(p,'−'+fmt(amt),false);if(to)setTimeout(()=>floatText(to,'+'+fmt(amt),true),500);
   if(p.money<0)await settle(p,to);
@@ -1397,6 +1418,7 @@ async function pay(p,amt,to){
 }
 function release(k){delete G.owner[k];delete G.level[k];delete G.fest[k]}
 async function settle(p,to){
+  if(p.bankrupt)return;
   const sold=[];
   while(p.money<0){
     const mine=owned(p);
@@ -1408,9 +1430,13 @@ async function settle(p,to){
   if(sold.length)log(`${p.name} 급매: ${sold.join(', ')}`);
   if(p.money<0){
     const s=-p.money;if(to)to.money-=s;p.money=0;
-    p.bankrupt=true;owned(p).forEach(release);p.island=0;p.travel=false;
-    sfx('bust');render();
-    await notify(p,'💔 파산','돈이 바닥나 투어를 마쳐요. 가진 도시는 모두 빈 땅이 돼요.','sad');
+    p.bankrupt=true;owned(p).forEach(release);p.island=0;p.travel=false;p.escape=0;p.angel=0;p.half=0;p.par=0;
+    log(`${p.name} 탈락: 모든 도시와 건물을 처분해도 ${fmt(s)}이 부족해요. 이제 관전만 할 수 있어요.`);
+    if(p===cur()){R.diceReady=false;R.holding=false;R.pickSet=null}
+    // Elimination completes this turn, so it is safe to resume at this checkpoint.
+    save();sfx('bust');render();setFace(p,'sad');
+    if(p.human)await ask('탈락',`<p>모든 도시와 건물을 처분해도 <b>${fmt(s)}</b>이 부족해요.</p><p>이번 투어에서 탈락했습니다.<br>이제 남은 참가자의 경기를 지켜볼 수 있어요.</p>`,[{k:'watch',l:alive().length>1?'관전하기':'결과 보기'}],p,'sad');
+    else{say(`${p.name} 탈락!`);await wait(aiDelay())}
   }else if(sold.length){
     if(p.human)await ask('😵 급매',`<p>돈이 모자라 반값에 팔았어요.<br>${sold.join('<br>')}</p>`,OK,p,'sad');
     else{say('급하게 팔았어요…');await wait(aiDelay())}
@@ -1589,7 +1615,7 @@ async function landmarkShow(p,i){
 /* ================= ending ================= */
 function rankingHTML(){
   const r=[...G.players].sort((a,b)=>(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
-  return `<ol class="rank">${r.map((p,k)=>`<li><b>${k===0?'👑':k+1}</b><span class="face" style="background:${p.color}55">${ga(p,{expr:k===0?'happy':p.bankrupt?'sad':'smile'})}</span>${p.name}<span class="v">${p.bankrupt?'파산':fmt(assets(p))}</span></li>`).join('')}</ol>`;
+  return `<ol class="rank">${r.map((p,k)=>`<li><b>${k===0?'👑':k+1}</b><span class="face" style="background:${p.color}55">${ga(p,{expr:k===0?'happy':p.bankrupt?'sad':'smile'})}</span>${safeText(p.name)}<span class="v">${p.bankrupt?'탈락':fmt(assets(p))}</span></li>`).join('')}</ol>`;
 }
 function victory(p,kind){
   GEN++;G.over=true;clearSave();render();
@@ -1616,7 +1642,7 @@ function endScreen(winner,reason){
   sfx('win');const w=innerWidth;[.2,.5,.8].forEach((f,k)=>setTimeout(()=>confetti(w*f,innerHeight*.35,40),k*250));
 }
 $('#quitBtn').onclick=()=>{
-  if(!G||G.over)return;sfx('click');
+  if(!G||G.over||spectating())return;sfx('click');
   $('#s2Title').textContent='여기서 끝낼까요?';$('#s2Bust').innerHTML='';
   $('#s2Body').innerHTML='<p>지금 총자산으로 순위를 매겨요.</p>'+rankingHTML();
   $('#s2Btns').innerHTML=`<button class="btn" data-k="end">끝내기</button><button class="btn sec" data-k="back">계속하기</button>`;
@@ -1625,7 +1651,7 @@ $('#quitBtn').onclick=()=>{
 $('#s2Btns').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;sfx('click');
   if(k==='back'){$('#sheet2').classList.add('hidden');return}
-  if(k==='end'){$('#sheet2').classList.add('hidden');endScreen([...alive()].sort((a,c)=>assets(c)-assets(a))[0],'중간 종료');return}
+  if(k==='end'){if(spectating())return;$('#sheet2').classList.add('hidden');endScreen([...alive()].sort((a,c)=>assets(c)-assets(a))[0],'중간 종료');return}
   if(k==='new'){$('#sheet2').classList.add('hidden');$('#game').classList.add('hidden');$('#setup').classList.remove('hidden');$('#resumeBtn').classList.add('hidden');G=null;renderSetup();scrollTo(0,0)}
 });
 
