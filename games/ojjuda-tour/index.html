@@ -65,7 +65,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 .chip{border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);padding:5px 12px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
 .chip:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .boardbox{position:relative}
-.board{position:relative;display:grid;grid-template-columns:1.3fr repeat(7,1fr) 1.3fr;grid-template-rows:1.3fr repeat(7,1fr) 1.3fr;aspect-ratio:1;width:100%;gap:3px;padding:5px;border:4px solid var(--ink);border-radius:20px;box-shadow:7px 7px 0 var(--ink);background-color:var(--lemon);background-image:radial-gradient(rgba(255,255,255,.55) 20%,transparent 22%);background-size:9px 9px}
+.board{position:relative;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);aspect-ratio:1;width:100%;gap:3px;padding:5px;border:4px solid var(--ink);border-radius:20px;box-shadow:7px 7px 0 var(--ink);background-color:var(--lemon);background-image:radial-gradient(rgba(255,255,255,.55) 20%,transparent 22%);background-size:9px 9px}
 .cell{position:relative;background:#fff;color:var(--ink);border:2.5px solid var(--ink);border-radius:7px;overflow:hidden;display:flex;flex-direction:column;align-items:center;font-size:clamp(7.5px,2.15vw,12.5px);line-height:1.05;text-align:center;padding:0;min-width:0;min-height:0}
 .cell .band{width:100%;height:24%;min-height:7px;border-bottom:2px solid var(--ink);flex:none;font-size:1.05em;line-height:1;display:flex;align-items:center;justify-content:flex-start;padding-left:1px}
 .cell .nm{padding:2px 1px 0;word-break:keep-all;letter-spacing:-.05em}
@@ -611,14 +611,12 @@ function warnCheck(){
 /* ================= 3D board ================= */
 const R={ok:false,tiles:[],pieces:[],bst:{},bld:{},marks:{},anims:[],sig:{},pickSet:null,yaw:0,yawGoal:0,shakeT:0,img:{},emo:{}};
 const now=()=>performance.now();
-const TK=1.85,TL=1.45,DZ=(.6-.5)*7*1.45,HZ=(.22-.5)*7*1.45,BW=7+2*TK,BD=7*TL+2*TK;
+const TILE_SIZE=1.45,BOARD_INNER=7*TILE_SIZE,DZ=(.6-.5)*BOARD_INNER,HZ=(.22-.5)*BOARD_INNER,BW=9*TILE_SIZE,BD=BW;
 function tileGeom(i){
-  const K=TK,L=TL,Cx=3.5+K/2,Cz=3.5*L+K/2;
-  if(i%8===0){const q=[[Cx,Cz],[-Cx,Cz],[-Cx,-Cz],[Cx,-Cz]][i/8];return{x:q[0],z:q[1],w:K,d:K}}
-  if(i<8)return{x:3-(i-1),z:Cz,w:1,d:K};
-  if(i<16)return{x:-Cx,z:(3-(i-9))*L,w:K,d:L};
-  if(i<24)return{x:-3+(i-17),z:-Cz,w:1,d:K};
-  return{x:Cx,z:(-3+(i-25))*L,w:K,d:L};
+  // All 32 spaces, including corners, share one square footprint and spacing.
+  const side=Math.floor(i/8),step=i%8;
+  const [x,z]=[[4-step,4],[-4,4-step],[-4+step,-4],[4,-4+step]][side];
+  return{x:x*TILE_SIZE,z:z*TILE_SIZE,w:TILE_SIZE,d:TILE_SIZE};
 }
 function hex2rgb(h){h=h.replace('#','');return[0,2,4].map(k=>parseInt(h.substr(k,2),16))}
 function lum(h){const[r,g,b]=hex2rgb(h);return(.299*r+.587*g+.114*b)/255}
@@ -675,8 +673,8 @@ function init3D(){
   R.scene.add(M_(slabGeo(BW+1.05,BD+1.05,.38,.7,.12),std('#ff6fb5',{roughness:.5}),0,-.8,0));
   R.scene.add(M_(slabGeo(BW+.45,BD+.45,.5,.55,.12),std('#fff3e6',{roughness:.55}),0,-.5,0));
   // stage art
-  R.stageCv=document.createElement('canvas');R.stageCv.width=1024;R.stageCv.height=Math.round(1024*TL);R.stageTex=ctex(R.stageCv);
-  const stage=M_(new THREE.PlaneGeometry(6.95,7*TL-.05),std('#ffffff',{map:R.stageTex,roughness:.8}),0,.003,0);stage.rotation.x=-Math.PI/2;stage.castShadow=false;R.scene.add(stage);
+  R.stageCv=document.createElement('canvas');R.stageCv.width=R.stageCv.height=1024;R.stageTex=ctex(R.stageCv);
+  const stage=M_(new THREE.PlaneGeometry(BOARD_INNER-.05,BOARD_INNER-.05),std('#ffffff',{map:R.stageTex,roughness:.8}),0,.003,0);stage.rotation.x=-Math.PI/2;stage.castShadow=false;R.scene.add(stage);
   drawStage();
   // tiles
   const PPU=230;
@@ -978,10 +976,10 @@ function syncBuildings(i){
   if(o!==undefined){
     const grp=new THREE.Group(),col=G.players[o].color,items=[];
     if(lv===0)items.push([mkFlag(col),-.3,-.32,0]);
-    else if(lv===4)items.push([mkLandmark(col),0,-.12,4]);
-    else{if(lv>=1)items.push([mkHouse(col),-.25,-.24,1]);if(lv>=2)items.push([mkTower(col),.03,-.3,2]);if(lv>=3)items.push([mkHotel(col),.27,-.2,3])}
+    else if(lv===4)items.push([mkLandmark(col),0,-.06,4]);
+    else{if(lv>=1)items.push([mkHouse(col),-.3,-.24,1]);if(lv>=2)items.push([mkTower(col),0,-.24,2]);if(lv>=3)items.push([mkHotel(col),.3,-.24,3])}
     items.forEach(([b,fx,fz,l])=>{
-      const S=l===4?1.25:l===0?1.3:1.7;b.position.set(g.x+fx*g.w,.16,g.z+fz*g.d);b.scale.setScalar(S);
+      const S=l===4?1.25:l===0?1.3:1.4;b.position.set(g.x+fx*g.w,.16,g.z+fz*g.d);b.scale.setScalar(S);
       if(prev.o!==o||l>prev.lv||l===4){b.scale.set(S,.01,S);R.anims.push({t0:now()+Math.max(0,l-1)*110,dur:650,step(k){const v=k<.55?k/.55*1.2:1.2-(k-.55)/.45*.2;const sq=k<.55?1+(1-k/.55)*.2:1;b.scale.set(S*sq,Math.max(.01,v*S),S*sq)},done(){b.scale.setScalar(S)}})}
       grp.add(b);
     });
@@ -1068,7 +1066,7 @@ function loop3D(){
     if(u.flipT0){const k=(t-u.flipT0)/700;if(k<1){y+=Math.sin(Math.PI*k)*.8;rot=(1-Math.pow(1-k,3))*Math.PI*2}else u.flipT0=0}
     if(allowed)y+=.16+Math.sin(ts*5+i*.7)*.05;
     tile.position.y+=(y-tile.position.y)*(u.flipT0?1:1-Math.exp(-dt*14));
-    const ax=u.g.d>u.g.w;tile.rotation.x=ax?rot:0;tile.rotation.z=ax?0:rot;
+    const ax=i%8!==0&&(i<8||i>=16&&i<24);tile.rotation.x=ax?rot:0;tile.rotation.z=ax?0:rot;
     const f=G?festOf(i):0;
     if(allowed){u.top.emissive.copy(lin('#fff3b0'));u.top.emissiveIntensity=.25+.18*Math.sin(ts*6)}
     else if(f){u.top.emissive.copy(lin('#ff7cc8'));u.top.emissiveIntensity=.2+.15*Math.sin(ts*4)}
