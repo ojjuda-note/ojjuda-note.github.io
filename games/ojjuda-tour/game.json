@@ -1,8 +1,21 @@
 {
   "id": "ojjuda-tour",
   "name": "오쭈다 투어",
+  "description": "주사위를 굴려 도시를 모으고 랜드마크를 세우는 3D 보드게임. 같은 기기에서 2~8명 또는 컴퓨터와 플레이.",
   "entry": "index.html",
   "icon": "icon.png",
+  "orientation": "portrait",
   "players": "2-8",
-  "version": "1.1.0"
+  "offline": true,
+  "version": "1.1.0",
+  "messages": {
+    "ojjuda-game-ready": "게임 로딩 완료",
+    "ojjuda-game-result": "게임 종료 시 순위·자산 결과 전달",
+    "ojjuda-game-exit": "🏠 버튼을 눌러 오쭈다월드로 돌아가기"
+  },
+  "modes": [
+    "computer",
+    "local-multiplayer"
+  ],
+  "onlineMultiplayer": false
 }
