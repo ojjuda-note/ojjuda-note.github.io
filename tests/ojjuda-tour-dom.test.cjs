@@ -171,10 +171,27 @@ function eliminationGame() {
       window.proceeds=r10(T[city].p/2)+r10(costLv(city,1)/2);`);
     await w.eval('pay(G.players[0],10+proceeds,null)');
     assert.equal(w.eval('G.players[0].money'),0);
-    assert.equal(w.eval('G.players[0].bankrupt'),false,'exactly zero stays in the game');
-    assert.equal(w.eval('canControlTurn()'),true);
-    assert.equal($('#eliminationStatus').classList.contains('hidden'),true);
+    assert.equal(w.eval('G.players[0].bankrupt'),true,'zero cash and no sellable assets eliminates');
+    assert.equal(w.eval('owned(G.players[0]).length'),0);
+    assert.equal(w.eval('canControlTurn()'),false);
+    assert.equal($('#eliminationStatus').classList.contains('hidden'),false);
+    assert.match(w.notices.at(-1).body,/잔액이 0원이고 판매할 도시나 건물이 없어요/);
   }finally{b.dom.window.close()}
+  for(const hasLand of [false,true]){
+    const boundary=eliminationGame();
+    try{
+      const {w}=boundary;w.eval('G.players[0].money=10');
+      if(hasLand)w.eval('G.owner[T.findIndex(t=>t.t===\'city\')]=0');
+      await w.eval('pay(G.players[0],10,null)');
+      assert.equal(w.eval('G.players[0].bankrupt'),!hasLand,'zero cash only survives with sellable property');
+      assert.equal(w.eval('owned(G.players[0]).length'),hasLand?1:0,'zero balance does not force a sale');
+    }finally{boundary.dom.window.close()}
+  }
+  const positive=eliminationGame();
+  try{
+    positive.w.eval('G.players[0].money=10');await positive.w.eval('pay(G.players[0],9,null)');
+    assert.equal(positive.w.eval('G.players[0].bankrupt'),false,'positive cash without property survives');
+  }finally{positive.dom.window.close()}
   const c=eliminationGame();
   try {
     const {w,$}=c;
@@ -193,10 +210,10 @@ function eliminationGame() {
   const d=eliminationGame();
   try {
     const {w}=d;w.turns=[];
-    w.eval('G.players[0].money=-1;takeTurn=async p=>{window.turns.push(pid(p));throw STALE}');
+    w.eval('G.players[0].money=0;takeTurn=async p=>{window.turns.push(pid(p));throw STALE}');
     await w.eval('gameLoop()');
-    assert.equal(w.eval('G.players[0].bankrupt'),true,'old negative-balance save settles before playing');
+    assert.equal(w.eval('G.players[0].bankrupt'),true,'old zero-cash save without assets settles before playing');
     assert.deepEqual(w.turns,[1]);
   }finally{d.dom.window.close()}
-  console.log('PASS: tour entry, member bridge, liquidation, zero-balance survival, elimination notice, spectator controls, persisted elimination, skipped turns and last survivor');
+  console.log('PASS: tour entry, liquidation, zero cash with and without assets, positive cash, elimination notice, spectator controls, persisted elimination and last survivor');
 })().catch(error=>{console.error(error);process.exitCode=1});

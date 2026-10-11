@@ -46,9 +46,11 @@ const root=path.resolve(__dirname,'..');
      GEN++;if(rollResolve){const finish=rollResolve;rollResolve=null;finish()}
      const p=G.players[0],city=T.findIndex(t=>t.t==='city');p.money=10;
      G.owner[city]=0;G.level[city]=4;G.fest[city]=1;
-     window.eliminationFinished=pay(p,100000,G.players[1]);
+     const proceeds=r10(T[city].p/2)+[1,2,3,4].reduce((sum,lv)=>sum+r10(costLv(city,lv)/2),0);
+     window.eliminationFinished=pay(p,p.money+proceeds,G.players[1]);
     });
     await frame.getByRole('heading',{name:'탈락',exact:true}).waitFor();
+    assert.match(await frame.locator('#sBody').innerText(),/잔액이 0원이고 판매할 도시나 건물이 없어요/);
     await frame.getByRole('button',{name:'관전하기',exact:true}).click();
     await frame.locator('#three').evaluate(()=>window.eliminationFinished);
     assert.equal(await frame.locator('#eliminationStatus').isVisible(),true);
