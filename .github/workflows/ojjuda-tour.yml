@@ -36,3 +36,10 @@ jobs:
       - run: node tests/ojjuda-tour-dom.test.cjs
       - run: node tests/ojjuda-tour-ranking-db.test.cjs
       - run: node tests/ojjuda-tour-ui.test.cjs
+      - name: Save actual Tour board screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ojjuda-tour-board
+          path: /tmp/ojjuda-tour-proof
+          retention-days: 3
