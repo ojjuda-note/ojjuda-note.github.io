@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog';
       dialog.setAttribute('aria-label', '오쭈다 투어');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>오쭈다 투어</span></header><iframe title="오쭈다 투어 · 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261011-tour4" allow="fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>오쭈다 투어</span></header><iframe title="오쭈다 투어 · 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261011-tour5" allow="fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
       async function record(message) {
