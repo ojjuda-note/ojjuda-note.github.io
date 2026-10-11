@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
    page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',route=>{
     const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();
-    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 투어</button><script src="/world-tour-game.js"></script><script>window.records=[];document.getElementById("launch").onclick=()=>OjjudaTourGame.open({nickname:"여행친구",owner:"qa-member",onScore:async(score,id)=>{records.push({score,id});return {ok:records.length>1}}});</script>'});
+    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 마블</button><script src="/world-tour-game.js"></script><script>window.records=[];document.getElementById("launch").onclick=()=>OjjudaTourGame.open({nickname:"여행친구",owner:"qa-member",onScore:async(score,id)=>{records.push({score,id});return {ok:records.length>1}}});</script>'});
     const file=path.resolve(root,'.'+u.pathname+(u.pathname.endsWith('/')?'index.html':''));
     return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
    });
