@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
    page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',route=>{
     const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();
-    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 투어</button><script src="/world-tour-game.js"></script><script>document.getElementById("launch").onclick=()=>OjjudaTourGame.open({nickname:"여행친구",owner:"qa-member"});</script>'});
+    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 투어</button><script src="/world-tour-game.js"></script><script>document.getElementById("launch").onclick=()=>OjjudaTourGame.open({nickname:"여행친구",owner:"qa-member"});</script>'});
     const file=path.resolve(root,'.'+u.pathname+(u.pathname.endsWith('/')?'index.html':''));
     return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
    });
@@ -16,7 +16,7 @@ const root=path.resolve(__dirname,'..');
    const frame=page.frameLocator('iframe');
    await frame.locator('#tourTitle').waitFor();
    const embedded=page.frames().find(f=>f.url().includes('/games/ojjuda-tour/'));
-   await embedded.waitForFunction(()=>document.querySelector('#rows input')?.value==='여행친구');
+   await embedded.waitForFunction(()=>document.querySelector('#rows input')?.value==='여행친구').catch(async error=>{console.error({width,errors,names:await frame.locator('#rows input').evaluateAll(inputs=>inputs.map(input=>input.value))});throw error});
    assert.equal(await frame.locator('.game-entry').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'entry fits '+width);
    assert.equal(await frame.locator('body').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'no horizontal scrolling '+width);
    await frame.locator('[data-tour-mode=together]').click();
@@ -44,7 +44,7 @@ const root=path.resolve(__dirname,'..');
    assert.equal(await page.locator('dialog').count(),0);
    assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('gaming')),false);
    assert.deepEqual(errors,[]);
-   await page.close();
+   console.log('PASS: viewport '+width);await page.close();
   }
   console.log('PASS: 320/390/1280px entry, member handshake, real WebGL start, dice movement, exit and saved tour resume');
  }finally{await browser.close()}
