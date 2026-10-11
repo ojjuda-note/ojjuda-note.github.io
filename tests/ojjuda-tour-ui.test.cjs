@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
    page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',route=>{
     const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();
-    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 투어</button><script src="/world-tour-game.js"></script><script>document.getElementById("launch").onclick=()=>OjjudaTourGame.open({nickname:"여행친구",owner:"qa-member"});</script>'});
+    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 투어</button><script src="/world-tour-game.js"></script><script>window.records=[];document.getElementById("launch").onclick=()=>OjjudaTourGame.open({nickname:"여행친구",owner:"qa-member",onScore:async(score,id)=>{records.push({score,id});return {ok:records.length>1}}});</script>'});
     const file=path.resolve(root,'.'+u.pathname+(u.pathname.endsWith('/')?'index.html':''));
     return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
    });
@@ -66,6 +66,13 @@ const root=path.resolve(__dirname,'..');
     await frame.locator('#game').waitFor({state:'visible'});
     assert.equal(await frame.locator('#three').evaluate(()=>G.players[0].bankrupt&&spectating()),true,'resume keeps eliminated spectator');
     assert.equal(await frame.locator('#eliminationStatus').isVisible(),true);
+    await frame.locator('#three').evaluate(()=>endScreen(G.players[1],'라운드 종료'));
+    await frame.getByRole('button',{name:'다시 저장',exact:true}).waitFor();
+    await frame.getByRole('button',{name:'다시 저장',exact:true}).click();
+    await frame.getByText('게임 순위에 기록했어요. 이번 달 최고 자산으로 표시돼요.',{exact:true}).waitFor();
+    const records=await page.evaluate(()=>window.records);
+    assert.equal(records.length,2);assert.equal(records[0].score,0);assert.equal(records[1].id,records[0].id);
+    assert.equal(await frame.locator('#s2Body').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'result receipt fits mobile');
    }
    await page.getByRole('button',{name:'게임 목록으로 돌아가기'}).click();
    assert.equal(await page.locator('dialog').count(),0);

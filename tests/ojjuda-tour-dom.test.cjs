@@ -127,6 +127,47 @@ function eliminationGame() {
   return fixture;
 }
 (async()=>{
+  const resultGame=game(true);
+  try {
+    const {w,$,messages}=resultGame;
+    const receive=(data,origin='https://fixture.test')=>w.dispatchEvent(new w.MessageEvent('message',{origin,source:w.parent,data:{source:'ojjuda-world',...data}}));
+    receive({type:'ojjuda-tour-init',owner:'member-123',nickname:'여행친구'});
+    w.eval('begin=()=>{};confetti=()=>{}');$('#startBtn').click();
+    const runId=w.eval('G.runId');
+    w.eval("G.players[0].money=0;G.players[0].bankrupt=true;endScreen(G.players[1],'라운드 종료')");
+    const result=messages.at(-1)[0];
+    assert.equal(result.runId,runId);assert.equal(result.myRank,4);
+    assert.equal(result.ranking[result.myRank-1].assets,0,'the eliminated human is recorded, never the AI winner');
+    assert.match($('#tourRecordStatus').textContent,/기록하는 중/);
+    receive({type:'ojjuda-tour-record',runId,ok:true},'https://other.test');
+    receive({type:'ojjuda-tour-record',runId:'different',ok:true});
+    assert.match($('#tourRecordStatus').textContent,/기록하는 중/);
+    receive({type:'ojjuda-tour-record',runId,ok:false});
+    $('#tourRecordStatus button').click();assert.equal(messages.at(-1)[0].runId,runId,'retry retains the result identity');
+    receive({type:'ojjuda-tour-record',runId,ok:true});
+    assert.match($('#tourRecordStatus').textContent,/게임 순위에 기록했어요/);
+  } finally {resultGame.dom.window.close();}
+  const resultHost=new JSDOM('',{url:'https://fixture.test/world.html',runScripts:'outside-only'});
+  try {
+    const w=resultHost.window,calls=[],receipts=[];let allowed=true,finish;
+    w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
+    w.eval(read('world-tour-game.js'));
+    w.OjjudaTourGame.open({authorized:()=>allowed,onScore:(score,id)=>{calls.push([score,id]);return new Promise(resolve=>{finish=resolve})}});
+    const child=w.document.querySelector('iframe').contentWindow;child.postMessage=data=>receipts.push(data);
+    const payload={source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:'10000000-0000-4000-8000-000000000001',players:2,myRank:2,ranking:[{human:false,assets:4000,bankrupt:false},{human:true,assets:0,bankrupt:true}]};
+    const send=(data=payload,origin='https://fixture.test',source=child)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data}));
+    send(payload,'https://other.test');send(payload,'https://fixture.test',w);
+    send({...payload,myRank:1});send({...payload,ranking:payload.ranking.map(p=>({...p,assets:-1}))});
+    await Promise.resolve();assert.equal(calls.length,0);
+    send();send();await Promise.resolve();assert.deepEqual(calls,[[0,payload.runId]],'duplicate messages make one score request');
+    finish({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+    send();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(calls.length,1,'successful retries reuse the receipt');
+    assert.equal(receipts.at(-1).ok,true);
+    allowed=false;send({...payload,runId:'10000000-0000-4000-8000-000000000002'});await Promise.resolve();assert.equal(calls.length,1,'changed account cannot submit');
+  } finally {resultHost.window.close();}
+  const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
+  const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{}});
+  assert.equal(games.tour.name,'오쭈다 투어');assert.equal(games.tour.unit,'만');
   const a=eliminationGame();
   try {
     const {w,$}=a;
