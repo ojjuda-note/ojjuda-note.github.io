@@ -1,0 +1,55 @@
+const assert=require('node:assert/strict'),fs=require('fs'),path=require('path');const {PGlite}=require('@electric-sql/pglite');
+const ids=Array.from({length:7},(_,i)=>'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'));const [admin,adult,minor,unknown,anonymous,banned,minorAdmin]=ids;
+(async()=>{const db=new PGlite();try{await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;create schema ojjuda_account_internal;
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+create table auth.users(id uuid primary key,is_anonymous boolean default false);
+create table public.app_admins(user_id uuid);create table public.banned(user_id uuid);
+create function public.is_admin() returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.app_admins where user_id=auth.uid())$$;
+create function public.is_banned(uuid) returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.banned where user_id=$1)$$;
+create table ojjuda_account_internal.member_identity(user_id uuid,birth_date date);
+create function ojjuda_account_internal.age_on(date,date) returns integer language sql immutable strict as $$select extract(year from age($2,$1))::integer$$;
+create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);
+create function storage.allow_any_operation(text[]) returns boolean language sql stable as $$select coalesce(current_setting('test.operation',true),'')=any($1)$$;
+alter table storage.objects enable row level security;grant usage on schema auth,storage to authenticated,anon;grant select,insert,update,delete on storage.objects to authenticated,anon;
+insert into auth.users(id) values ${ids.map(id=>"('"+id+"')").join(',')};
+update auth.users set is_anonymous=true where id='${anonymous}';
+insert into app_admins values('${admin}'),('${minorAdmin}');insert into banned values('${banned}');
+insert into ojjuda_account_internal.member_identity values
+('${admin}',current_date-interval '30 years'),('${adult}',(now() at time zone 'Asia/Seoul')::date-interval '19 years'),
+('${minor}',(now() at time zone 'Asia/Seoul')::date-interval '19 years'+interval '1 day'),
+('${anonymous}',current_date-interval '30 years'),('${banned}',current_date-interval '30 years'),('${minorAdmin}',current_date-interval '15 years');`);
+await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261010151428_creative_comics_adult_board.sql'),'utf8'));
+await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261010153730_comic_authenticated_image_info.sql'),'utf8'));
+async function as(id,sql,args=[],role='authenticated',op='object.get_authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false),set_config('test.operation',$2,false)",[id||'',op]);await db.exec('set role '+role);try{return await db.query(sql,args)}finally{await db.exec('reset role')}}
+await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261011015929_comics_edit_and_series.sql'),'utf8'));
+const book=(await as(admin,"insert into creative_comics(title) values('original') returning id")).rows[0].id;
+const pages=[];for(let n=1;n<=2;n++){const file=admin+'/'+book+'/00000000-0000-4000-8000-'+String(100+n).padStart(12,'0')+'.png';const p=(await as(admin,'insert into creative_comic_pages(comic_id,position,filename,path,width,height) values($1,$2,$3,$4,100,200) returning id',[book,n,n+'.png',file])).rows[0];pages.push(p);await as(admin,"insert into storage.objects(bucket_id,name) values('creative-comics',$1)",[file])}
+await as(admin,'update creative_comics set published=true where id=$1',[book]);
+let revision=Number((await as(admin,'select revision from creative_comics where id=$1',[book])).rows[0].revision);
+let serial=200;const save=(who,ps,rev=revision,title='edited',request='00000000-0000-4000-8000-'+String(++serial).padStart(12,'0'))=>as(who,'select comics_save_edit($1,$2,$3,$4,$5,$6,$7,$8) as revision',[book,rev,title,'intro','series A',2,JSON.stringify(ps),request]);
+const before=JSON.stringify((await as(admin,'select * from creative_comic_pages order by position')).rows);
+for(const who of [adult,minor,unknown,anonymous,banned,minorAdmin])await assert.rejects(save(who,pages),/comic_admin_required/);
+await assert.rejects(save(admin,[]),/invalid_page_count/);
+await assert.rejects(save(admin,[pages[0],pages[0]]),/duplicate key/);
+assert.equal(JSON.stringify((await as(admin,'select * from creative_comic_pages order by position')).rows),before,'failed edit rolls back entire manifest');
+assert.equal(Number((await db.query('select count(*) as n from ojjuda_comics_internal.revisions')).rows[0].n),0,'failed edits have no partial backup');
+const request='00000000-0000-4000-8000-000000000999', reversed=[pages[1],pages[0]];
+const result=await save(admin,reversed,revision,'renamed',request);const next=Number(result.rows[0].revision);assert.equal(next,revision+1);
+assert.equal(Number((await save(admin,reversed,revision,'renamed',request)).rows[0].revision),next,'lost-response retry is idempotent');
+await assert.rejects(save(admin,reversed,revision,'different',request),/request_mismatch/);
+await assert.rejects(save(admin,pages,revision),/comic_edit_conflict/);revision=next;
+const updated=(await as(adult,'select * from creative_comics where id=$1',[book])).rows[0];assert.equal(updated.title,'renamed');assert.equal(updated.series_title,'series A');assert.equal(updated.series_order,2);assert.equal(updated.published,true);assert.equal(updated.id,book);
+assert.deepEqual((await as(adult,'select id from creative_comic_pages order by position')).rows.map(p=>p.id),reversed.map(p=>p.id));
+const staged=admin+'/'+book+'/00000000-0000-4000-8000-000000000777.png';await as(admin,"insert into storage.objects(bucket_id,name) values('creative-comics',$1)",[staged]);
+assert.equal((await as(adult,'select * from storage.objects where name=$1',[staged])).rows.length,0,'staged upload is not reader-visible');
+await assert.rejects(save(admin,[{path:staged,filename:'bad',width:0,height:200}]),/check constraint/);
+const replacement={path:staged,filename:'new.png',width:100,height:200};revision=Number((await save(admin,[pages[1],replacement])).rows[0].revision);
+assert.equal((await as(adult,'select * from storage.objects where name=$1',[staged])).rows.length,1,'committed replacement is visible');
+assert.equal((await as(adult,'select * from storage.objects')).rows.length,2,'removed original no longer reader-visible');
+assert.equal(Number((await db.query('select count(*) as n from storage.objects')).rows[0].n),3,'original bytes preserved');
+await assert.rejects(as(admin,'select * from ojjuda_comics_internal.revisions'),/permission denied/);
+assert.equal(Number((await db.query('select count(*) as n from ojjuda_comics_internal.revisions')).rows[0].n),2);
+for(const who of [minor,unknown,anonymous,banned,minorAdmin])assert.equal((await as(who,'select * from creative_comics')).rows.length,0);
+console.log('Comics editing: atomic saves, reorder, replacement, private staging, backup, series, conflicts, replay and adult/admin gates passed');
+}finally{await db.close()}})().catch(e=>{console.error(e);process.exitCode=1});
