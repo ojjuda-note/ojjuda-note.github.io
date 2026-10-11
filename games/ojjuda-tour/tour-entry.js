@@ -37,9 +37,42 @@ function tourShowError() {
   }));
   document.addEventListener('ojjuda-tour:setup', refresh);
   let initialized = false;
+  let pendingResult = null, recordTimer = 0;
+  function recordStatus(ok) {
+    const status = document.getElementById('tourRecordStatus');
+    if (!status || !pendingResult || !G?.over || G.runId !== pendingResult.runId) return;
+    clearTimeout(recordTimer);
+    status.textContent = ok ? '게임 순위에 기록했어요. 이번 달 최고 자산으로 표시돼요.' : '순위 기록을 저장하지 못했어요. ';
+    if (!ok) {
+      const retry = document.createElement('button');
+      retry.type = 'button'; retry.className = 'btn sec'; retry.textContent = '다시 저장';
+      retry.onclick = sendResult; status.append(retry);
+    }
+  }
+  function sendResult() {
+    const status = document.getElementById('tourRecordStatus');
+    if (!status || !pendingResult) return;
+    status.textContent = '게임 순위에 기록하는 중이에요…';
+    clearTimeout(recordTimer);
+    recordTimer = setTimeout(() => recordStatus(false), 25000);
+    ojjudaPost(pendingResult);
+  }
+  window.tourSubmitResult = result => {
+    pendingResult = result;
+    clearTimeout(recordTimer);
+    const status = document.getElementById('tourRecordStatus');
+    if (!status) return;
+    if (!result.myRank) { status.textContent = '사람 참가자가 있을 때 순위에 기록돼요.'; return; }
+    if (!embedded || !initialized) { status.textContent = '오쭈다 게임 목록에서 시작하면 게임 순위에 기록돼요.'; return; }
+    sendResult();
+  };
   window.addEventListener('message', event => {
-    if (!embedded || initialized || G || event.origin !== location.origin || event.source !== window.parent) return;
+    if (!embedded || event.origin !== location.origin || event.source !== window.parent) return;
     const message = event.data;
+    if (initialized && message?.source === 'ojjuda-world' && message.type === 'ojjuda-tour-record' && message.runId === pendingResult?.runId) {
+      recordStatus(message.ok === true); return;
+    }
+    if (initialized || G) return;
     if (message?.source !== 'ojjuda-world' || message.type !== 'ojjuda-tour-init') return;
     initialized = true;
     // Keep different members' progress separate on a shared device.

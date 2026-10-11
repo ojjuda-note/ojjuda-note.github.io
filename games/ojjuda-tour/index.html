@@ -319,6 +319,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     </div>
     <p id="tourStatus" role="status" class="ge-hint" hidden></p>
     <small id="tourSaveHint" class="ge-hint tour-save-hint">차례 시작 기준으로 이 기기에 자동 저장돼요.</small>
+    <p class="ge-hint tour-save-hint">게임 순위는 첫 번째 사람 참가자의 최종 자산으로 기록돼요. 이번 달 최고 기록을 표시해요.</p>
     <details class="ge-more">
       <summary>참가자 설정 <span id="tourRosterCount" class="tour-roster-count">나 + 컴퓨터 3명</span></summary>
       <div id="rows"></div>
@@ -558,7 +559,7 @@ $('#sound').onchange=e=>{muted=!e.target.checked};
 $('#startBtn').onclick=()=>{
   if(loadSave()&&!confirm('새 투어를 시작하면 저장된 투어가 바뀌어요. 시작할까요?'))return;
   $('#tourStatus').hidden=true;muted=!$('#sound').checked;
-  G={players:setupP.slice(0,setupN).map((s,i)=>({name:cleanName(s.name)||M[i].name,m:i,color:M[i].hair,human:s.human,money:START,pos:0,laps:0,island:0,escape:0,angel:0,half:0,travel:false,par:0,bankrupt:false})),
+  G={runId:crypto.randomUUID(),players:setupP.slice(0,setupN).map((s,i)=>({name:cleanName(s.name)||M[i].name,m:i,color:M[i].hair,human:s.human,money:START,pos:0,laps:0,island:0,escape:0,angel:0,half:0,travel:false,par:0,bankrupt:false})),
      owner:{},level:{},fest:{},warned:[],turn:0,round:1,maxRound:setupR,log:[],fast:$('#fast').checked,over:false};
   log(`🎉 월드투어 시작! 모두 ${fmt(START)}을 받았어요.`);
   sfx('win');begin();
@@ -1630,17 +1631,19 @@ function victory(p,kind){
 function ojjudaPost(msg){try{if(window.parent&&window.parent!==window)window.parent.postMessage(Object.assign({source:'ojjuda-tour'},msg),window.location.origin)}catch(e){}}
 function endScreen(winner,reason){
   GEN++;G.over=true;clearSave();
-  {const rk=[...G.players].sort((a,b)=>(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
-   const me=G.players.find(p=>p.human);
-   ojjudaPost({type:'ojjuda-game-result',game:'ojjuda-tour',reason:reason||'',winner:winner?winner.name:null,
-     ranking:rk.map((p,k)=>({rank:k+1,name:p.name,human:p.human,assets:p.bankrupt?0:assets(p),bankrupt:p.bankrupt})),
-     myRank:me?rk.indexOf(me)+1:null,players:G.players.length})}
+  G.runId ||= crypto.randomUUID();
+  const rk=[...G.players].sort((a,b)=>(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
+  const me=G.players.find(p=>p.human);
+  const result={type:'ojjuda-game-result',game:'ojjuda-tour',runId:G.runId,reason:reason||'',winner:winner?winner.name:null,
+    ranking:rk.map((p,k)=>({rank:k+1,name:p.name,human:p.human,assets:p.bankrupt?0:assets(p),bankrupt:p.bankrupt})),
+    myRank:me?rk.indexOf(me)+1:null,players:G.players.length};
   $('#sheet').classList.add('hidden');R.pickSet=null;
   $('#s2Title').textContent=winner?`${winner.name} 우승!`:'투어 종료';
   $('#s2Bust').innerHTML=winner?ga(winner,{bust:true,expr:'happy'}):'';
-  $('#s2Body').innerHTML=`<p>${reason?'🏆 '+reason+' · ':''}총자산(현금 + 도시 + 건물) 순위예요.</p>`+rankingHTML();
+  $('#s2Body').innerHTML=`<p>${reason?'🏆 '+reason+' · ':''}총자산(현금 + 도시 + 건물) 순위예요.</p>`+rankingHTML()+'<p id="tourRecordStatus" role="status"></p>';
   $('#s2Btns').innerHTML=`<button class="btn" data-k="new">새 투어 시작</button>`;
   $('#sheet2').classList.remove('hidden');
+  window.tourSubmitResult?.(result);
   sfx('win');const w=innerWidth;[.2,.5,.8].forEach((f,k)=>setTimeout(()=>confetti(w*f,innerHeight*.35,40),k*250));
 }
 $('#quitBtn').onclick=()=>{
@@ -1662,6 +1665,6 @@ $('#exitBtn').onclick=()=>{if(window.parent!==window)ojjudaPost({type:'ojjuda-ga
 renderSetup();
 if(loadSave())$('#resumeBtn').classList.remove('hidden');
 </script>
-<script src="tour-entry.js?v=20261011-tour1"></script>
+<script src="tour-entry.js?v=20261011-rank1"></script>
 </body>
 </html>
