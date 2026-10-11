@@ -29,7 +29,7 @@ function tourShowError() {
     const start = document.getElementById('startBtn');
     start.classList.toggle('ge-primary', !saved);
     start.classList.toggle('ge-secondary', saved);
-    start.textContent = saved ? '새 투어 시작하기' : '투어 시작하기';
+    start.textContent = saved ? '새 게임 시작하기' : '게임 시작하기';
   }
   modeButtons.forEach(button => button.addEventListener('click', () => {
     setupP.forEach((player, index) => { player.human = button.dataset.tourMode === 'together' || index === 0; });
