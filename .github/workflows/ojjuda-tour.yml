@@ -5,14 +5,18 @@ on:
       - 'games/ojjuda-tour/**'
       - 'world-tour-game.*'
       - 'supabase/migrations/*_tour_game_rankings.sql'
-      - 'tests/ojjuda-tour-*.test.cjs'
+      - 'supabase/migrations/*_marble_online_rooms.sql'
+      - 'supabase/functions/marble/**'
+      - 'tests/ojjuda-tour-*.cjs'
       - '.github/workflows/ojjuda-tour.yml'
   pull_request:
     paths:
       - 'games/ojjuda-tour/**'
       - 'world-tour-game.*'
       - 'supabase/migrations/*_tour_game_rankings.sql'
-      - 'tests/ojjuda-tour-*.test.cjs'
+      - 'supabase/migrations/*_marble_online_rooms.sql'
+      - 'supabase/functions/marble/**'
+      - 'tests/ojjuda-tour-*.cjs'
       - '.github/workflows/ojjuda-tour.yml'
 permissions:
   contents: read
@@ -35,7 +39,10 @@ jobs:
         working-directory: tests
       - run: node tests/ojjuda-tour-dom.test.cjs
       - run: node tests/ojjuda-tour-ranking-db.test.cjs
+      - run: node tests/ojjuda-tour-online-engine.test.cjs
+      - run: node tests/ojjuda-tour-online-db.test.cjs
       - run: node tests/ojjuda-tour-ui.test.cjs
+      - run: node tests/ojjuda-tour-online-ui.test.cjs
       - name: Save actual Tour board screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
