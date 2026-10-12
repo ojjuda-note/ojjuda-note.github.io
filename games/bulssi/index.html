@@ -338,7 +338,7 @@ function story(lines,done){let i=0;const step=()=>{i++;const html=lines.slice(0,
 // ---------- run ----------
 function startRun(withBoss){
   ensureAudio();st=stats();
-  R={heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],shards:[],rings:[],beams:[],trail:[],combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,gain:{light:0,metal:0,mass:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
+  R={heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,gain:{light:0,metal:0,mass:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
   for(let i=0;i<(withBoss?6:12);i++)spawnRandom(true);
   setMode('run');
   if(!S.tut){toast('끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
@@ -379,12 +379,14 @@ function hurt(n,amt){
 }
 function kill(n){
   if(n.dead)return;
-  n.dead=true;const ty=TYPES[n.t],dm=Math.pow(6,S.stage),c=col();
-  if(ty.light){const v=ty.light*dm*st.light*(st[ty.kind+'Light']||1);S.cur.light+=v;R.gain.light+=v}
-  if(ty.metal&&S.stage>=1){const v=ty.metal*st.metal*S.stage;S.cur.metal+=v;R.gain.metal+=v}
-  if(ty.mass){const v=ty.mass*st.mass;S.cur.mass+=v;R.gain.mass+=v}
-  if(ty.ice)ENCOUNTERS.recoverHeat(R,st,ty);
-  if(ty.mem){const i=S.mem[S.stage];if(i<3){toast(MEM[S.stage][i],4200);S.mem[S.stage]=i+1;save();tone(note(12),1.2,.05,'triangle')}}
+  n.dead=true;const ty=TYPES[n.t],dm=Math.pow(6,S.stage),c=col(),rewards=[];
+  const award=(kind,amount)=>{S.cur[kind]+=amount;R.gain[kind]+=amount;rewards.push({kind,amount})};
+  if(ty.light)award('light',ty.light*dm*st.light*(st[ty.kind+'Light']||1));
+  if(ty.metal&&S.stage>=1)award('metal',ty.metal*st.metal*S.stage);
+  if(ty.mass)award('mass',ty.mass*st.mass);
+  if(ty.ice){const seconds=ENCOUNTERS.recoverHeat(R,st,ty);if(seconds>0)rewards.push({kind:'seconds',amount:seconds})}
+  if(ty.mem){const i=S.mem[S.stage];if(i<3){toast(MEM[S.stage][i],4200);S.mem[S.stage]=i+1;rewards.push({kind:'memory',amount:1});save();tone(note(12),1.2,.05,'triangle')}}
+  rewardPopup(n,rewards);
   const pw=st.pw;burst(n.x,n.y,null,(reduce?3:5)+Math.round(pw*pw*(reduce?10:28)),1+pw*1.8);mote(n.x,n.y);if(pw>.2)ring(n.x,n.y,(30+60*pw)*U,.45,pc(),1+pw*2);if(pw>.5&&Math.random()<pw*.5)burst(n.x,n.y,'#fff6e8',4,2.2);
   R.combo++;R.comboT=1.3;if(R.combo%50===0){const cc=cursor();ring(cc.x,cc.y,Math.min(W,H)*.6,.6,c.rgb,4);tone(note(15),.6,.04,'triangle')}
   if(pw>.65&&R.combo%10===0){const cc=cursor();for(let i=0;i<(reduce?1:3);i++)ring(cc.x,cc.y,Math.min(W,H)*(.35+i*.16),.8+i*.15,c.pal[(i+R.combo/10)%5],2);burst(n.x,n.y,'#fff4cf',reduce?5:24,2.5);}
@@ -428,7 +430,45 @@ function drawFx(){
 }
 function mote(x,y){R.parts.push({x,y,vx:(Math.random()-.5)*80,vy:(Math.random()-.5)*80,life:1.2,max:1.2,c:`rgb(${pc()})`,s:2*U,home:true})}
 
+const REWARD_NAMES={...CUR,seconds:'시간',memory:'기억'};
+const REWARD_COLORS={light:'#ffe09a',metal:'#dce5f7',mass:'#dfb8ff',seconds:'#a9f3ef',memory:'#b5d9ff'};
+function rewardPopup(node,rewards){
+  if(!rewards.length)return;
+  const rows=rewards.map(({kind,amount})=>({
+    text:`${REWARD_NAMES[kind]} +${amount.toLocaleString('ko-KR',{maximumFractionDigits:2})}${kind==='seconds'?'초':''}`,
+    color:REWARD_COLORS[kind]
+  }));
+  const nearby=R.rewards.filter(p=>p.life>1&&Math.hypot(p.x-node.x,p.y-node.y)<65*U).length;
+  R.rewards.push({x:node.x+(nearby?((nearby%2?1:-1)*18*U):0),y:node.y-node.r-12-nearby*18*U,life:1.5,rows});
+  if(R.rewards.length>36)R.rewards.splice(0,R.rewards.length-36);
+}
+function updateRewards(dt){
+  for(const reward of R.rewards){reward.life-=dt;if(!reduce)reward.y-=24*U*dt}
+  R.rewards=R.rewards.filter(reward=>reward.life>0);
+}
+function drawRewards(){
+  ctx.save();ctx.globalCompositeOperation='source-over';ctx.textAlign='center';ctx.textBaseline='middle';
+  const size=Math.max(14,16*U),gap=size+4,placed=[];
+  ctx.font=`600 ${size}px 'IBM Plex Sans KR',sans-serif`;
+  ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(3,5,16,.95)';ctx.shadowColor='#030510';ctx.shadowBlur=5;
+  for(const reward of R.rewards){
+    const half=Math.min((W-24)/2,Math.max(...reward.rows.map(row=>ctx.measureText(row.text).width))/2+5);
+    const x=Math.max(12+half,Math.min(W-12-half,reward.x));
+    const top=R.combo>=10?185:R.boss?140:116,rowsHeight=(reward.rows.length-1)*gap;
+    const bottom=Math.max(top,H-24-rowsHeight),anchor=Math.max(top,Math.min(bottom,reward.y));
+    // Separate nearby catches so a second reward never covers the first one's amount.
+    const candidates=[anchor,...placed.flatMap(box=>[box.top-8-rowsHeight-size/2,box.bottom+8+size/2])]
+      .filter(y=>y>=top&&y<=bottom).sort((a,b)=>Math.abs(a-anchor)-Math.abs(b-anchor));
+    const y=candidates.find(y=>!placed.some(box=>x+half>box.left&&x-half<box.right&&y+rowsHeight+size/2>box.top&&y-size/2<box.bottom))??anchor;
+    placed.push({left:x-half-4,right:x+half+4,top:y-size/2-4,bottom:y+rowsHeight+size/2+4});
+    ctx.globalAlpha=Math.min(1,reward.life/.45);
+    reward.rows.forEach((row,i)=>{ctx.strokeText(row.text,x,y+i*gap,W-24);ctx.fillStyle=row.color;ctx.fillText(row.text,x,y+i*gap,W-24)});
+  }
+  ctx.restore();
+}
+
 function updateRun(dt){
+  updateRewards(dt);
   R.time+=dt;R.heat-=dt*st.decay;
   if(R.heat<=0){R.heat=0;$('#heat').style.width='0%';$('#heatTxt').textContent='0.0초';endRun();return;}
   const cur=cursor(),rad=radPx();
@@ -785,13 +825,14 @@ function drawRun(){
   if(R.combo>=10&&R.comboT>0&&mode==='run'){const a=Math.min(1,R.comboT/.4),sz=Math.min(64,22+Math.log2(R.combo)*6)*U;ctx.save();ctx.globalAlpha=a;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${sz}px 'Gowun Batang',serif`;ctx.shadowColor=col().color;ctx.shadowBlur=6+20*st.pw;{const gw=sz*3,lg=ctx.createLinearGradient(W/2-gw,0,W/2+gw,0),p=col().pal;for(let i=0;i<5;i++)lg.addColorStop(i/4,`rgb(${p[(i+Math.floor(T*4))%5]})`);ctx.fillStyle=lg}ctx.fillText(`연쇄 ${R.combo}`,W/2,150);ctx.restore()}
   // heat warning vignette
   if(mode==='run'&&R.heat<3){const a=(3-R.heat)/3*.35;const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.3,W/2,H/2,Math.max(W,H)*.7);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(10,20,60,${a})`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
+  drawRewards();
 }
 
 let last=performance.now();
 function frame(t){
   const dt=Math.min(.05,(t-last)/1000);last=t;T+=dt;
   if(mode==='run'&&!document.hidden)updateRun(dt);
-  else if(mode==='end'&&R){for(const p of R.parts){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt}R.parts=R.parts.filter(p=>p.life>0);for(const g of R.rings)g.life-=dt;R.rings=R.rings.filter(g=>g.life>0);R.flash=Math.max(0,R.flash-dt)}
+  else if(mode==='end'&&R){updateRewards(dt);for(const p of R.parts){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt}R.parts=R.parts.filter(p=>p.life>0);for(const g of R.rings)g.life-=dt;R.rings=R.rings.filter(g=>g.life>0);R.flash=Math.max(0,R.flash-dt)}
   drawBg();
   if(mode==='hub')drawHub(dt);
   else if(R)drawRun();
