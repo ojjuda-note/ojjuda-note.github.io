@@ -30,6 +30,11 @@ body[data-mode="run"] #runInfo{display:flex}
 body[data-mode="run"].boss #runInfo{top:calc(env(safe-area-inset-top,0px) + 104px)}
 #targetName{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #timeBonus{white-space:nowrap;font-variant-numeric:tabular-nums}
+#boostBtn{display:none;pointer-events:auto;flex-shrink:0;min-height:32px;padding:6px 9px;font-size:11px;line-height:1.2;white-space:nowrap;border-color:var(--flame);color:var(--flame)}
+body[data-mode="run"] #boostBtn{display:block}
+#boostBtn.active{background:color-mix(in srgb,var(--flame) 14%,var(--space))}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+@media(max-width:420px){body[data-mode="run"] #top{gap:7px;padding-left:12px;padding-right:12px}body[data-mode="run"] #cur{font-size:11px;gap:2px 7px}body[data-mode="run"] #setBtn{padding:6px 8px;font-size:11px}#runInfo{gap:6px;font-size:10px}}
 #treeTools{display:none;position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 54px);left:16px;right:16px;align-items:center;gap:6px}
 body[data-mode="hub"] #treeTools{display:flex}
 #treeTools button{font-size:12px;min-width:40px;min-height:40px;padding:5px 10px;background:rgba(6,8,26,.8)}

@@ -5,7 +5,23 @@
   const names = ['잿불','원시별','주계열성','적색거성','블랙홀'];
   const prefix = 'ojjuda.saetbyeol.save.v1:';
   let game, owner, ready = false, started = false, sent = 0, queued = null, flight = null, timer, timeout;
+  let boost = null, boostTimer;
   function post(message) { parent.postMessage({source:'ojjuda-saetbyeol', ...message}, location.origin); }
+  function sendBoost() {
+    clearTimeout(boostTimer);
+    if (!boost) return;
+    post({type:'ojjuda-game-booster', requestId:boost.requestId, runId:boost.runId, stage:boost.stage, demo:false});
+    // A lost response retries the same receipt, never a new charge.
+    boostTimer = setTimeout(sendBoost, 12000);
+  }
+  function buyBooster(runId, requestId) {
+    if (!ready || owner === 'guest') return Promise.resolve({ok:false, reason:'sign_in'});
+    if (game.isDemo() || !game.isRunning() || boost) return Promise.resolve({ok:false, reason:'unavailable'});
+    return new Promise(resolve => {
+      boost = {runId, requestId, stage:game.getState().stage, resolve};
+      sendBoost();
+    });
+  }
   function score(state) {
     const stage = Math.min(4, Math.max(0, Math.floor(Number(state.stage) || 0)));
     const levels = game.upgrades.reduce((sum, u) => sum + Math.min(u.mx, Math.max(0, Math.floor(Number(state.lv?.[u.id]) || 0))), 0);
@@ -65,7 +81,17 @@
     const m = event.data;
     if (m.type === 'ojjuda-saetbyeol-init') init(m.owner, m.admin);
     if (!ready) return;
+    if (m.type === 'ojjuda-saetbyeol-booster' && boost && boost.requestId === m.requestId && boost.runId === m.runId) {
+      const result = m.result;
+      if (!result || result.reason === 'pending') return;
+      if (result.ok === true && (result.price !== 3 || result.seconds !== 5 || result.density !== 2 ||
+          result.run_id !== boost.runId || result.stage !== boost.stage)) return;
+      if (result.ok !== true && result.ok !== false) return;
+      clearTimeout(boostTimer);
+      const resolve = boost.resolve; boost = null; resolve(result);
+    }
     if (m.type === 'ojjuda-saetbyeol-exit-request') {
+      if (boost) { game.notice('부스터 결제를 확인하고 있어요. 잠시만 기다려 주세요.'); return; }
       if (game.isRunning() && !confirm('게임을 나갈까요?\n키운 별은 자동 저장돼요.')) return;
       save(game.getState()); flush(); post({type:'ojjuda-game-exit'});
     }
@@ -94,7 +120,7 @@
     }
   }
   window.OjjudaSaetbyeolEntry = {
-    save,
+    save, buyBooster,
     connect(controller) {
       game = controller;
       $('#starStart').onclick = () => {
@@ -111,6 +137,7 @@
       };
       addEventListener('message', receive);
       addEventListener('online', flush);
+      addEventListener('online', sendBoost);
       addEventListener('pagehide', () => save(game.getState()));
       if (parent === window) {
         location.replace('/world.html?game=saetbyeol');

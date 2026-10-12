@@ -3,16 +3,19 @@
   'use strict';
   let active = null;
   window.OjjudaSaetbyeolGame = {
-    open({owner = null, client = null, onScore = null, onRanking = null, authorized = () => true} = {}) {
+    open({owner = null, client = null, onScore = null, onRanking = null, onBooster = null, authorized = () => true} = {}) {
       if (active) { active.dialog.focus(); return; }
       const previous = document.activeElement;
       const wasGaming = document.body.classList.contains('gaming');
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog saetbyeol-game-dialog';
       dialog.setAttribute('aria-label', '샛별키우기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261013-boss-balance1" allow="autoplay; fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261013-booster1" allow="autoplay; fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map();
+      const boosters = new Map();
+      const uuid = value => typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
+      let boosterFlight = null;
       let rankingPending = false, connected = false, initializing = false;
       const current = () => active?.dialog === dialog && authorized();
       function send(message) {
@@ -56,6 +59,31 @@
         } catch { send({type:'ojjuda-saetbyeol-ranking', error:true}); }
         finally { rankingPending = false; }
       }
+      async function booster(message) {
+        const {requestId, runId, stage, demo} = message;
+        if (!connected || demo !== false || !uuid(requestId) || !uuid(runId) || !Number.isInteger(stage) || stage < 0 || stage > 4) return;
+        if (!owner || typeof onBooster !== 'function') {
+          send({type:'ojjuda-saetbyeol-booster', requestId, runId, result:{ok:false, reason:owner ? 'unavailable' : 'sign_in'}});
+          return;
+        }
+        let pending = boosters.get(requestId);
+        if (pending && (pending.runId !== runId || pending.stage !== stage)) return;
+        if (boosterFlight && boosterFlight !== requestId) return;
+        if (!pending) {
+          boosterFlight = requestId;
+          let deadline;
+          const purchase = Promise.resolve().then(() => current()
+            ? onBooster(requestId, runId, stage) : {ok:false, reason:'unavailable'}).catch(() => ({ok:false, reason:'pending'}));
+          pending = {runId, stage, promise:Promise.race([purchase, new Promise(resolve => {
+            deadline = setTimeout(() => resolve({ok:false, reason:'pending'}), 10000);
+          })]).finally(() => { clearTimeout(deadline); if (boosterFlight === requestId) boosterFlight = null; })};
+          boosters.set(requestId, pending);
+        }
+        const result = await pending.promise;
+        if (!result || result.reason === 'pending') boosters.delete(requestId);
+        else if (boosters.size > 100) boosters.delete(boosters.keys().next().value);
+        send({type:'ojjuda-saetbyeol-booster', requestId, runId, result:result || {ok:false, reason:'pending'}});
+      }
       function close() {
         if (active?.dialog !== dialog) return;
         active = null;
@@ -72,6 +100,7 @@
         if (message.type === 'ojjuda-game-exit') close();
         if (message.type === 'ojjuda-game-result') void record(message);
         if (message.type === 'ojjuda-game-ranking') void ranking();
+        if (message.type === 'ojjuda-game-booster') void booster(message);
       }
       function requestClose() {
         if (!connected || !authorized()) { close(); return; }
