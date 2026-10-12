@@ -206,7 +206,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     let box=await page.locator('.world-scene').boundingBox();
     await page.mouse.move(box.x+box.width*.7,box.y+100);await page.mouse.down();
     await page.mouse.move(box.x+box.width*.7-180,box.y+100,{steps:8});await page.mouse.up();
-    assert.equal(await current(),'home');await back();
+    assert.equal(await current(),'board');await back();
     const mouseDrag=async(selector,dx,{slow=false}={})=>{
       const target=page.locator(selector).first();
       await target.scrollIntoViewIfNeeded();
@@ -226,7 +226,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await mouseDrag('.world-scene',180);
     assert.equal(await current(),'friends','mouse drag cannot leave the start of the main menu');
     await mouseDrag('.world-scene',-180,{slow:true});
-    assert.equal(await current(),'home','a deliberate mouse drag longer than 1.4 seconds still moves to the next main menu');
+    assert.equal(await current(),'board','a deliberate mouse drag longer than 1.4 seconds still moves to the next main menu');
     await back();
     await enterPlace('cafe');
     await mouseDrag('.visit-banner',180);
