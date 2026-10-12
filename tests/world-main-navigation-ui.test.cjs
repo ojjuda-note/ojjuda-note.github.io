@@ -38,7 +38,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await page.evaluate(()=>{const model=worldTest.model;Object.assign(model,{coins:321,avatar:{hair:'bob'},room:{items:[{type:'cat'}]},rooms:[{items:[{type:'sofa'}]}],friends:[{id:'f1',room:{items:[]}}],petBank:{cat:[{}]},themeBackup:{room:{items:[]}},diary:[{id:'saved-note',title:'내 기록',body:'보존',vis:'all',at:Date.now()}]});localStorage.setItem('ojjuda-world-v1',JSON.stringify(model));localStorage.setItem('ojjuda-pet-talk','old');localStorage.setItem('ojjuda-pet-mem','old');});
     await page.reload();await page.waitForFunction(()=>window.worldTest && history.state?.ojjudaWorld==='main');
     assert.deepEqual(await page.evaluate(()=>{const m=worldTest.model;return [m.coins,m.diary[0].id,m.room.items,m.avatar,m.friends,m.petBank||null,m.themeBackup||null,localStorage.getItem('ojjuda-pet-talk'),localStorage.getItem('ojjuda-pet-mem')]}),[321,'saved-note',[],{},[],null,null,null,null],'reload clears retired assets while preserving balance and writing');
-    const current=()=>page.evaluate(()=>worldTest.state.tab==='place'&&worldTest.state.place?.id==='park'?'park':worldTest.state.tab);
+    const current=()=>page.evaluate(()=>worldTest.state.tab==='place'&&['park','arcade'].includes(worldTest.state.place?.id)?worldTest.state.place.id:worldTest.state.tab);
     const main=async()=>{
       await page.evaluate(()=>worldTest.actions.tab({tab:'friends'}));
       await page.waitForFunction(()=>history.state?.ojjudaWorld==='main' && worldTest.state.tab==='friends');
@@ -48,6 +48,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await page.waitForFunction(()=>worldTest.state.tab==='friends' && history.state?.ojjudaWorld==='main');
       assert.equal(page.url(),'https://fixture.test/world.html');
     };
+    assert.deepEqual(await page.locator('.bottomnav button > span:first-of-type').allTextContents(),['동네','게시판','오락실','공원','우리집','메뉴'],'bottom menu follows the requested order');
     assert.equal(await page.locator('[data-tab="shop"]').count(),0,'store entries are removed');
     await page.evaluate(()=>worldTest.actions.tab({tab:'shop'}));
     assert.equal(await current(),'friends','old store action returns to the main screen');
@@ -67,7 +68,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       await main();
     }
     await main();
-    for(const tab of ['home','board','park','my']) {
+    for(const tab of ['board','arcade','park','home','my']) {
       await page.locator(`.bottomnav [data-tab="${tab}"]`).click();
       assert.equal(await current(),tab);
       assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),tab);
@@ -110,7 +111,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       if(second)await touch('touchStart',[[x+dx,y+dy],[x,y+60,2]]);
       await touch(cancel?'touchCancel':'touchEnd',[]);
     };
-    await swipe(-150,0,{hold:true});assert.equal(await current(),'home');await back();
+    await swipe(-150,0,{hold:true});assert.equal(await current(),'board');await back();
     await swipe(150);assert.equal(await current(),'friends','right swipe stops at the first main menu');
     await swipe(-30);assert.equal(await current(),'friends');
     await swipe(-150,0,{cancel:true});assert.equal(await current(),'friends');
@@ -141,7 +142,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       for(let i=1;i<=6;i++)await touch('touchMove',[[x+dx*i/6,y+dy*i/6]]);
       await touch('touchEnd',[]);
     };
-    const tabs=['friends','home','board','park','my'];
+    const tabs=['friends','board','arcade','park','home','my'];
     for(let i=0;i<tabs.length;i++){
       for(const dx of [-150,150]){
         await navigate(tabs[i]);
@@ -242,10 +243,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     assert.ok(await page.locator('.place-art-image').evaluate(el=>new DOMMatrix(getComputedStyle(el).transform).m41<0),'an enlarged illustration still pans with the mouse');
     await enterPlace('park');
     await mouseDrag('.visit-banner',-180);
-    assert.equal(await current(),'my','Park swipes forward to the main menu');
+    assert.equal(await current(),'home','Park swipes forward to our house');
     await enterPlace('park');
     await mouseDrag('.visit-banner',180);
-    assert.equal(await current(),'board','Park swipes back to the board');
+    assert.equal(await current(),'arcade','Park swipes back to the arcade');
     assert.deepEqual(errors,[]);
     await context.close();
 
