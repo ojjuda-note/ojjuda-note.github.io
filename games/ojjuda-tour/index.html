@@ -292,6 +292,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 </style>
 <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
 <link rel="stylesheet" href="tour-entry.css?v=20261011-tour1">
+<link rel="stylesheet" href="marble-online.css?v=20261012-online1">
 </head>
 <body>
 
@@ -306,8 +307,10 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <div class="seg tour-mode" id="tourMode" role="group" aria-label="플레이 방식">
       <button type="button" data-tour-mode="computer" class="on" aria-pressed="true">컴퓨터와</button>
       <button type="button" data-tour-mode="together" aria-pressed="false">같은 기기에서</button>
+      <button type="button" data-tour-mode="online" aria-pressed="false">온라인으로</button>
     </div>
     <p id="tourModeHelp" class="tour-mode-help">컴퓨터와 편하게 세계여행을 즐겨요.</p>
+    <div id="tourLocal">
     <div class="tour-count">
       <span class="tour-count-label">참가 인원<small>컴퓨터 포함 · 2~8명</small></span>
       <div class="count"><button type="button" id="minus" aria-label="인원 줄이기">−</button><b id="cnt" aria-live="polite">4</b><span class="tour-unit">명</span><button type="button" id="plus" aria-label="인원 늘리기">+</button></div>
@@ -343,6 +346,21 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <p>돈이 모자라면 건물과 도시를 반값에 처분해요. 판매할 도시나 건물이 없고 잔액이 0원 이하가 되면 탈락하고 관전만 할 수 있어요. 현금이 0원이어도 판매할 자산이 남아 있으면 계속 참여해요.</p>
     <p>마지막 한 명이 남으면 우승! 라운드 제한이 끝나거나 중간에 끝내면 남은 참가자 중 총자산 1등이 우승이에요.</p>
     </details>
+    </div>
+    <section id="marbleLobby" class="marble-lobby" aria-label="온라인 마블" hidden>
+      <p id="marbleIssue" class="marble-issue" role="status"></p>
+      <div id="marbleMenu">
+        <form id="marbleCreate" class="marble-form">
+          <label>방 제목<input name="title" maxlength="40" value="친구와 세계여행" required autocomplete="off"></label>
+          <div class="marble-fields"><label>최대 인원<select name="capacity"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label><label>게임 길이<select name="rounds"><option value="15">15라운드</option><option value="25" selected>25라운드</option><option value="0">무제한</option></select></label></div>
+          <button class="ge-primary" type="submit">온라인 방 만들기</button>
+        </form>
+        <form id="marbleJoin" class="marble-join"><label for="marbleCode">방 번호로 참가</label><div><input id="marbleCode" name="code" maxlength="8" minlength="8" placeholder="방 번호 8자리" pattern="[a-fA-F0-9]{8}" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="ge-secondary" type="submit">참가</button></div></form>
+        <p class="ge-hint">각자 로그인한 뒤 같은 방 번호를 입력해요.<br>온라인 기록은 참가자 모두의 순위에 저장돼요.</p>
+      </div>
+      <div id="marbleWaiting" hidden><h2 id="marbleRoomTitle"></h2><p class="marble-code"><span>방 번호</span><strong id="marbleRoomCode"></strong><button type="button" id="marbleCopy">복사</button></p><p id="marbleRoomCount"></p><ol id="marbleMembers"></ol><button type="button" class="ge-primary" id="marbleStart">함께 시작하기</button><p id="marbleWaitHelp" class="ge-hint"></p><button type="button" class="ge-secondary" id="marbleLeave">방 나가기</button></div>
+      <p class="ge-hint">선택 시간은 45초예요. 시간이 지나면 자동 진행해요.<br>새로고침하거나 다시 열면 같은 방으로 돌아와요.</p>
+    </section>
   </section>
 </main>
 
@@ -353,6 +371,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <button class="chip" id="quitBtn">끝내기</button>
     <button class="chip hidden" id="exitBtn" aria-label="오쭈다월드로 나가기">🏠</button>
   </div>
+  <div id="marbleGameBar" class="marble-game-bar" hidden><span id="marbleGameRoom"></span><b id="marbleClock"></b><span id="marbleConnection" role="status"></span></div>
   <div id="eliminationStatus" class="elimination-status hidden" role="status" aria-live="polite"><strong>탈락 · 관전 중</strong><span id="eliminatedNames"></span><small id="spectatorHelp"></small></div>
   <div class="boardbox" id="boardbox">
     <canvas id="three" aria-label="3D 게임 보드. 칸을 누르면 정보가 나와요. 옆으로 밀면 시점이 돌아가요."></canvas>
@@ -364,6 +383,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
       <button class="btn hidden" id="rollBtn">⏭️ 건너뛰기</button>
     </div>
   </div>
+  <section id="marbleControls" class="marble-controls" aria-label="온라인 차례" hidden></section>
   <section class="players" id="players"></section>
   <section class="logwrap"><h2>게임 기록</h2><ol id="log" class="panel"></ol></section>
 </div>
@@ -524,8 +544,8 @@ async function guard(p){const g=GEN;const r=await p;if(g!==GEN)throw STALE;retur
 const wait=ms=>guard(sleep(ms));
 const cur=()=>G.players[G.turn];
 const alive=()=>G.players.filter(p=>!p.bankrupt);
-const canControlTurn=()=>!!G&&!G.over&&!!cur()&&cur().human&&!cur().bankrupt;
-const spectating=()=>!!G&&G.players.some(p=>p.human)&&!G.players.some(p=>p.human&&!p.bankrupt);
+const canControlTurn=()=>!!G&&!G.over&&!!cur()&&cur().human&&!cur().bankrupt&&(!window.MarbleOnline?.active()||window.MarbleOnline.canAct());
+const spectating=()=>window.MarbleOnline?.active()?window.MarbleOnline.spectating():!!G&&G.players.some(p=>p.human)&&!G.players.some(p=>p.human&&!p.bankrupt);
 const needsSettlement=p=>p.money<0||(p.money===0&&owned(p).length===0);
 const pid=p=>G.players.indexOf(p);
 const aiDelay=()=>G.fast?260:800;
@@ -533,8 +553,8 @@ const ga=(p,o)=>avatar(p.m,o);
 const lvOf=i=>G.level[i]||0;
 const festOf=i=>G.fest[i]||0;
 
-function save(){try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
-function clearSave(){try{localStorage.removeItem(KEY)}catch(e){}}
+function save(){if(window.MarbleOnline?.active())return;try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
+function clearSave(){if(window.MarbleOnline?.active())return;try{localStorage.removeItem(KEY)}catch(e){}}
 function loadSave(){try{const s=localStorage.getItem(KEY);if(!s)return null;const g=JSON.parse(s);if(!g||g.over||!Array.isArray(g.players)||g.players.length<2||g.players.length>8)return null;g.players.forEach((p,i)=>p.name=cleanName(p.name)||M[i].name);return g}catch(e){return null}}
 
 /* ================= setup ================= */
@@ -1231,14 +1251,14 @@ async function pickTile(p,allowed,prompt,skippable=true,bad){
 }
 
 /* ================= game flow ================= */
-function begin(){
+function begin({online=false}={}){
   $('#setup').classList.add('hidden');$('#game').classList.remove('hidden');
   if(!init3D()){$('#setup').classList.remove('hidden');$('#game').classList.add('hidden');tourShowError();return;}
   R.bst={};R.sig={};R.tiles.forEach(t=>{const u=t.userData;if(u.frame){t.remove(u.frame);u.frame=null}u.frameO=undefined});Object.values(R.bld).forEach(g=>g&&R.scene.remove(g));R.bld={};Object.values(R.marks).forEach(m=>{m.fest&&R.scene.remove(m.fest);m.warn&&R.scene.remove(m.warn)});R.marks={};R.yawGoal=0;R.cam.mode='over';
   setupPieces();resize3D();
   $('#log').innerHTML=G.log.map(x=>`<li>${safeText(x)}</li>`).join('');
   $('#muteBtn').textContent=muted?'🔇':'🔊';
-  faceP=-1;render();GEN++;gameLoop();scrollTo(0,0);
+  faceP=-1;render();GEN++;if(!online)gameLoop();scrollTo(0,0);
 }
 async function gameLoop(){
   try{
@@ -1663,6 +1683,7 @@ $('#exitBtn').onclick=()=>{if(window.parent!==window)ojjudaPost({type:'ojjuda-ga
 renderSetup();
 if(loadSave())$('#resumeBtn').classList.remove('hidden');
 </script>
-<script src="tour-entry.js?v=20261012-marble1"></script>
+<script src="tour-entry.js?v=20261012-online1"></script>
+<script src="marble-online.js?v=20261012-online1"></script>
 </body>
 </html>

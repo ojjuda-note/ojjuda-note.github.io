@@ -10,15 +10,16 @@ function tourShowError() {
   if (embedded) document.documentElement.dataset.embedded = 'true';
   const modeButtons = [...document.querySelectorAll('[data-tour-mode]')];
   function refresh() {
+    const online = window.MarbleOnline?.selected() === true;
     const humans = setupP.slice(0, setupN).filter(player => player.human).length;
     const computers = setupN - humans;
     const mode = humans === setupN ? 'together' : humans === 1 && setupP[0].human ? 'computer' : 'mixed';
     modeButtons.forEach(button => {
-      const selected = button.dataset.tourMode === mode;
+      const selected = button.dataset.tourMode === (online ? 'online' : mode);
       button.classList.toggle('on', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
-    document.getElementById('tourModeHelp').textContent = mode === 'together'
+    document.getElementById('tourModeHelp').textContent = online ? '각자 기기에서 방 번호로 모여요. 로그인한 회원 2~8명이 함께해요.' : mode === 'together'
       ? '한 기기를 번갈아 사용해요. 각자 차례에 주사위를 굴려요.'
       : mode === 'computer' ? '컴퓨터와 편하게 세계여행을 즐겨요.'
       : '사람과 컴퓨터를 섞어 즐겨요. 사람은 같은 기기를 사용해요.';
@@ -32,6 +33,8 @@ function tourShowError() {
     start.textContent = saved ? '새 게임 시작하기' : '게임 시작하기';
   }
   modeButtons.forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.tourMode === 'online') { window.MarbleOnline?.open(); return; }
+    window.MarbleOnline?.local();
     setupP.forEach((player, index) => { player.human = button.dataset.tourMode === 'together' || index === 0; });
     renderSetup();
   }));
@@ -75,6 +78,8 @@ function tourShowError() {
     if (initialized || G) return;
     if (message?.source !== 'ojjuda-world' || message.type !== 'ojjuda-tour-init') return;
     initialized = true;
+    window.ojjudaMarbleAccess = {owner:message.owner,available:message.onlineAvailable === true};
+    document.dispatchEvent(new Event('ojjuda-marble:ready'));
     // Keep different members' progress separate on a shared device.
     const owner = typeof message.owner === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(message.owner) ? message.owner : 'guest';
     KEY = 'ojjuda-tour-save-v1:' + owner;
