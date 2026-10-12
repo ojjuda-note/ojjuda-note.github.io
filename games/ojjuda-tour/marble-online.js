@@ -4,6 +4,7 @@
   const $ = s => document.querySelector(s), escape = safeText;
   const messages = {
     not_signed_in:'온라인은 로그인한 오쭈다 월드에서 이용해 주세요.', banned:'지금은 온라인 게임을 이용할 수 없어요.',
+    invites_unavailable:'친구 초대를 불러오지 못했어요. 게임을 다시 열어 주세요.',
     room_full:'방이 가득 찼어요.', room_not_found:'방 번호를 다시 확인해 주세요.', room_unavailable:'종료되었거나 대기 시간이 지난 방이에요.',
     room_already_started:'이미 시작한 방이에요.', room_in_progress:'참여 중인 방이 있어요. 같은 방으로 돌아갈게요.',
     room_rate_limit:'잠시 후 다시 방을 만들어 주세요.', need_players:'두 명 이상 모이면 시작할 수 있어요.',
@@ -13,6 +14,7 @@
   };
   let selected = false, room = null, busy = false, polling = false, animating = false, connected = true, pending = null;
   let epoch = 0, timer = 0, offset = 0, controlsKey = '', resultKey = '', activeId = null;
+  let inviting = false, inviteConsumed = false;
   const requests = new Map();
   const access = () => window.ojjudaMarbleAccess;
   const available = () => access()?.available === true && access()?.owner && access().owner !== 'guest';
@@ -36,9 +38,10 @@
     if (event.source !== window.parent || event.origin !== location.origin || event.data?.source !== 'ojjuda-world') return;
     const message = event.data;
     if (message.type === 'ojjuda-tour-init' && !window.ojjudaMarbleAccess) {
-      window.ojjudaMarbleAccess = {owner:message.owner, available:message.onlineAvailable === true};
-      if (selected) void refresh();
+      window.ojjudaMarbleAccess = {owner:message.owner, available:message.onlineAvailable === true,joinCode:message.joinCode};
+      ready();
     }
+    if (message.type === 'ojjuda-marble-invite-sent') $('#marbleInviteStatus').textContent = '친구에게 초대를 보냈어요. 1분 안에 수락하면 이 방으로 들어와요.';
     if (message.type !== 'ojjuda-marble-response') return;
     const pendingRequest = requests.get(message.replyTo); if (!pendingRequest) return;
     requests.delete(message.replyTo); clearTimeout(pendingRequest.timeout);
@@ -65,7 +68,9 @@
       $('#marbleMembers').innerHTML = room.names.map((name,i) => `<li><span class="face">${avatar(i)}</span><span>${escape(name)}</span><small>${i === room.hostSeat ? '방장 ' : ''}${i === room.seat ? '· 나' : ''}</small></li>`).join('');
       $('#marbleStart').hidden = room.seat !== room.hostSeat;
       $('#marbleStart').disabled = busy || !!pending || room.names.length < 2;
-      $('#marbleWaitHelp').textContent = room.seat === room.hostSeat ? '친구에게 방 번호를 알려 주세요. 두 명 이상 모이면 시작할 수 있어요.' : '방장이 시작하면 함께 게임에 들어가요.';
+      $('#marbleInvite').hidden = room.seat !== room.hostSeat;
+      $('#marbleInvite').disabled = busy || !!pending || inviting || room.names.length >= room.capacity;
+      $('#marbleWaitHelp').textContent = room.seat === room.hostSeat ? '친구를 초대하거나 방 번호를 알려 주세요. 두 명 이상 모이면 시작할 수 있어요.' : '방장이 시작하면 함께 게임에 들어가요.';
     }
   }
   function tick() {
@@ -118,6 +123,7 @@
     if (next) offset = next.serverTime-Date.now();
     if (next && room?.id === next.id && next.version === room.version) { connected = true; controls(); tick(); return; }
     const previous = room; room = next; controlsKey = ''; connected = true;
+    if (previous?.id !== next?.id) $('#marbleInviteStatus').textContent = '';
     remember(room?.id); issue('');
     if (!room?.game) { activeId = null; $('#game').classList.add('hidden'); $('#setup').classList.remove('hidden'); renderLobby(); return; }
     const first = activeId !== room.id;
@@ -176,10 +182,11 @@
     }
   }
   const sendMove = command => canAct() ? mutate({action:'move',room_id:room.id,version:room.version,command}) : undefined;
-  async function open() {
-    if (selected) return;
+  async function open(joinCode = '') {
+    if (selected) { if (/^[A-F0-9]{8}$/.test(joinCode)) await mutate({action:'join',code:joinCode}); return; }
     selected = true; epoch++; busy = false; connected = true; room = null; activeId = null;
     renderLobby(); if (!available()) return;
+    if (/^[A-F0-9]{8}$/.test(joinCode)) { await mutate({action:'join',code:joinCode}); return; }
     const at = epoch, stored = remembered(); busy = true; renderLobby();
     try { const data = await rpc(stored ? {action:'read',room_id:stored} : {action:'mine'}); await accept(data.room,at); }
     catch(e) { if (at === epoch) { if (e.code === 'room_not_found' || e.code === 'room_unavailable') remember(null); else issue(e.message); } }
@@ -199,6 +206,13 @@
   $('#marbleJoin').onsubmit = event => { event.preventDefault(); void mutate({action:'join',code:$('#marbleCode').value.trim().toUpperCase()}); };
   $('#marbleStart').onclick = () => room && void mutate({action:'start',room_id:room.id,version:room.version});
   $('#marbleLeave').onclick = () => room && void mutate({action:'leave',room_id:room.id});
+  $('#marbleInvite').onclick = async () => {
+    if (!room || inviting || busy || pending) return;
+    inviting = true; renderLobby();
+    try { await rpc({action:'invite',room_id:room.id}); }
+    catch(error) { issue(error.message); }
+    finally { inviting = false; if (selected) renderLobby(); }
+  };
   $('#marbleCopy').onclick = async () => { try { await navigator.clipboard.writeText(room.code); issue('방 번호를 복사했어요. 친구에게 알려 주세요.'); } catch { issue('방 번호 '+room.code+'를 친구에게 알려 주세요.'); } };
   $('#marbleControls').onclick = event => {
     const button = event.target.closest('button'); if (!button || !canAct()) return;
@@ -214,9 +228,17 @@
   };
   $('#s2Btns').addEventListener('click', event => { if (event.target.closest('[data-marble-lobby]') && room) { $('#sheet2').classList.add('hidden'); void mutate({action:'leave',room_id:room.id}); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && selected) void refresh(); });
-  document.addEventListener('ojjuda-marble:ready', () => { if (selected) { renderLobby(); void refresh(); } });
+  function ready() {
+    const code = access()?.joinCode;
+    if (!inviteConsumed && available() && typeof code === 'string' && /^[A-F0-9]{8}$/.test(code)) {
+      inviteConsumed = true; void open(code); return;
+    }
+    if (selected) { renderLobby(); void refresh(); }
+  }
+  document.addEventListener('ojjuda-marble:ready', ready);
   window.MarbleOnline = {open,local,selected:()=>selected,active,canAct,spectating};
   setInterval(tick,1000);
+  ready();
   // Also covers an iframe whose initial ready reply arrived before this script loaded.
   ojjudaPost({type:'ojjuda-game-ready',game:'ojjuda-tour'});
 })();

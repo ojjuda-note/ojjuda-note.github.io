@@ -78,7 +78,7 @@ function tourShowError() {
     if (initialized || G) return;
     if (message?.source !== 'ojjuda-world' || message.type !== 'ojjuda-tour-init') return;
     initialized = true;
-    window.ojjudaMarbleAccess = {owner:message.owner,available:message.onlineAvailable === true};
+    window.ojjudaMarbleAccess = {owner:message.owner,available:message.onlineAvailable === true,joinCode:message.joinCode};
     document.dispatchEvent(new Event('ojjuda-marble:ready'));
     // Keep different members' progress separate on a shared device.
     const owner = typeof message.owner === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(message.owner) ? message.owner : 'guest';

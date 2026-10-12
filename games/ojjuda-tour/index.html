@@ -292,7 +292,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 </style>
 <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
 <link rel="stylesheet" href="tour-entry.css?v=20261011-tour1">
-<link rel="stylesheet" href="marble-online.css?v=20261012-online2">
+<link rel="stylesheet" href="marble-online.css?v=20261012-marble-invite1">
 </head>
 <body>
 
@@ -358,7 +358,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
         <form id="marbleJoin" class="marble-join"><label for="marbleCode">방 번호로 참가</label><div><input id="marbleCode" name="code" maxlength="8" minlength="8" placeholder="방 번호 8자리" pattern="[a-fA-F0-9]{8}" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="ge-secondary" type="submit">참가</button></div></form>
         <p class="ge-hint">각자 로그인한 뒤 같은 방 번호를 입력해요.<br>온라인 기록은 참가자 모두의 순위에 저장돼요.</p>
       </div>
-      <div id="marbleWaiting" hidden><h2 id="marbleRoomTitle"></h2><p class="marble-code"><span>방 번호</span><strong id="marbleRoomCode"></strong><button type="button" id="marbleCopy">복사</button></p><p id="marbleRoomCount"></p><ol id="marbleMembers"></ol><button type="button" class="ge-primary" id="marbleStart">함께 시작하기</button><p id="marbleWaitHelp" class="ge-hint"></p><button type="button" class="ge-secondary" id="marbleLeave">방 나가기</button></div>
+      <div id="marbleWaiting" hidden><h2 id="marbleRoomTitle"></h2><p class="marble-code"><span>방 번호</span><strong id="marbleRoomCode"></strong><button type="button" id="marbleCopy">복사</button></p><p id="marbleRoomCount"></p><ol id="marbleMembers"></ol><button type="button" class="ge-secondary" id="marbleInvite">친구 초대</button><p id="marbleInviteStatus" class="ge-hint" role="status"></p><button type="button" class="ge-primary" id="marbleStart">함께 시작하기</button><p id="marbleWaitHelp" class="ge-hint"></p><button type="button" class="ge-secondary" id="marbleLeave">방 나가기</button></div>
       <p class="ge-hint">선택 시간은 45초예요. 시간이 지나면 자동 진행해요.<br>새로고침하거나 다시 열면 같은 방으로 돌아와요.</p>
     </section>
   </section>
@@ -1683,7 +1683,7 @@ $('#exitBtn').onclick=()=>{if(window.parent!==window)ojjudaPost({type:'ojjuda-ga
 renderSetup();
 if(loadSave())$('#resumeBtn').classList.remove('hidden');
 </script>
-<script src="tour-entry.js?v=20261012-online2"></script>
-<script src="marble-online.js?v=20261012-online2"></script>
+<script src="tour-entry.js?v=20261012-marble-invite1"></script>
+<script src="marble-online.js?v=20261012-marble-invite1"></script>
 </body>
 </html>
