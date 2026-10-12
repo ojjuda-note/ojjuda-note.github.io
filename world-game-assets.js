@@ -3,6 +3,7 @@
  'use strict';
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
+  saetbyeol:['/world-tour-game.css?v=20261012-marble-invite1','/world-saetbyeol-game.js?v=20261013-star1'],
   tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261012-tour-purple1'],
   spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261009-entry1'],
   ttang:['/ttang-bridge.js?v=20261009-entry1'],

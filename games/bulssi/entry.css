@@ -1,0 +1,14 @@
+#starEntry{position:fixed;inset:0;z-index:30;display:flex;align-items:safe center;justify-content:center;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:24px 16px;background:#f5f3f9;color:#302d43}
+#starEntry[hidden]{display:none}
+body[data-mode="entry"] :is(#top,#heatWrap,#bossWrap,#panel,#settings,#overlay){visibility:hidden}
+body[data-mode="entry"]{touch-action:pan-y}
+#starEntry .game-entry{flex-shrink:0}
+#starEntry .star-rating{display:inline-block;margin-top:12px;padding:3px 10px;border-radius:999px;background:#edf7ef;color:#3d7b50;font-size:11px}
+#starEntry .star-progress{margin:16px 0 4px;padding:12px;border-radius:12px;background:#f7f5fa;color:#625574;font-size:13px;line-height:1.8}
+#starEntry .star-ranking{margin:12px 0;padding-left:24px;font-size:12px;color:#625574}
+#starEntry .star-ranking li{padding:5px 0}
+#starEntry .star-ranking b{float:right;font-variant-numeric:tabular-nums}
+#starRecord{display:block;padding:5px 0;font-size:11px;line-height:1.6;color:var(--dim)}
+#starRetry{font-size:11px;padding:4px 10px;margin-left:6px}
+#settings{max-height:calc(100dvh - 100px);overflow:auto;touch-action:pan-y}
+@media(max-width:380px){#starEntry{padding:16px 12px}#starEntry .game-entry{padding:24px 18px}}
