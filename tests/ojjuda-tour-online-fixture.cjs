@@ -18,7 +18,7 @@ async function fixture(){
  }
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261012024936_marble_online_rooms.sql'),'utf8'));
  const {createHandler}=await import(path.join(root,'supabase/functions/marble/handler.mjs'));
- let roll=[];
+ let roll=[],holdDeadlines=false;
  const fetchImpl=async(url,options)=>{
   if(url.endsWith('/auth/v1/user')){
    const id=options.headers.authorization.replace('Bearer fixture-','');
@@ -29,6 +29,9 @@ async function fixture(){
   const v=JSON.parse(options.body);
   try{
    const result=await db.transaction(async tx=>{
+    // UI rendering and screenshots must not consume a scripted player's turn.
+    // Timeout-specific tests leave this off and exercise the real 45-second rule.
+    if(holdDeadlines)await tx.exec("update ojjuda_marble_internal.rooms set deadline=clock_timestamp()+interval '45 seconds' where status='active'");
     await tx.exec('set local role service_role');
     return tx.query('select public.marble_online_service($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb) as data',[v.p_actor,v.p_action,v.p_room??null,v.p_code??null,v.p_request??null,v.p_expected??null,JSON.stringify(v.p_options??{}),v.p_next===undefined?null:JSON.stringify(v.p_next)]);
    });
@@ -42,6 +45,6 @@ async function fixture(){
  const join=(actor,room)=>call(actor,{action:'join',code:room.code});
  const start=(actor,room)=>call(actor,{action:'start',room_id:room.id,version:room.version,request_id:randomUUID()});
  const move=(actor,room,command,request_id=randomUUID())=>call(actor,{action:'move',room_id:room.id,version:room.version,request_id,command});
- return {db,call,handler,request,create,join,start,move,dice(...v){roll=v;},close:()=>db.close()};
+ return {db,call,handler,request,create,join,start,move,dice(...v){roll=v;},holdDeadlines(value){holdDeadlines=value;},close:()=>db.close()};
 }
 module.exports={fixture,ids};

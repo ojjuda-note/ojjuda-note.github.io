@@ -3,6 +3,7 @@ const {fixture,ids}=require('./ojjuda-tour-online-fixture.cjs');
 const root=path.resolve(__dirname,'..');
 (async()=>{
  const f=await fixture(),browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}),errors=[];
+ f.holdDeadlines(true);
  try{
   async function player(seat,width){
    const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'}),page=await context.newPage();
@@ -61,6 +62,7 @@ const root=path.resolve(__dirname,'..');
   await b.page.reload();await b.page.locator('#launch').click();await b.frame.locator('#tourTitle').waitFor();await b.frame.getByRole('button',{name:'온라인으로',exact:true}).click();
   await b.frame.locator('#game').waitFor({state:'visible',timeout:60000});await b.embedded().waitForFunction(()=>G.owner[3]===0&&G.level[3]===2);
   assert.match(await b.frame.locator('#marbleGameRoom').innerText(),new RegExp(code));
+  await a.embedded().waitForFunction(()=>MarbleOnline.canAct(),{},{timeout:60000});
   await a.frame.getByRole('button',{name:'기권',exact:true}).click();
   await a.embedded().waitForFunction(()=>G.players[0].bankrupt&&G.turn===1,{},{timeout:60000});
   assert.equal(await a.embedded().evaluate(()=>MarbleOnline.canAct()),false);assert.equal(await a.frame.locator('#marbleControls button').count(),0);
@@ -69,7 +71,7 @@ const root=path.resolve(__dirname,'..');
   await b.frame.getByRole('button',{name:'🎲 주사위 굴리기',exact:true}).waitFor({timeout:60000});
   f.dice(0,5,11);await b.frame.getByRole('button',{name:'🎲 주사위 굴리기',exact:true}).click();
   await c.embedded().waitForFunction(()=>G.turn===2&&MarbleOnline.canAct(),{},{timeout:60000});
-  const room=(await f.call(ids[0],{action:'mine'})).room;f.dice(0,1);
+  const room=(await f.call(ids[0],{action:'mine'})).room;f.dice(0,1);f.holdDeadlines(false);
   await f.db.query("update ojjuda_marble_internal.rooms set deadline=now()-interval '1 second' where id=$1",[room.id]);
   await b.embedded().waitForFunction(()=>G.turn===1&&MarbleOnline.canAct(),{},{timeout:60000});
   assert.ok(await b.embedded().evaluate(()=>G.log.some(x=>x.includes('시간 초과'))));
