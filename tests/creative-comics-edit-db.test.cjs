@@ -23,6 +23,8 @@ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/202610
 await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261010153730_comic_authenticated_image_info.sql'),'utf8'));
 async function as(id,sql,args=[],role='authenticated',op='object.get_authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false),set_config('test.operation',$2,false)",[id||'',op]);await db.exec('set role '+role);try{return await db.query(sql,args)}finally{await db.exec('reset role')}}
 await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261011015929_comics_edit_and_series.sql'),'utf8'));
+await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261012074817_comics_next_episode_column.sql'),'utf8'));
+await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261012074958_comics_next_episode_save.sql'),'utf8'));
 const book=(await as(admin,"insert into creative_comics(title) values('original') returning id")).rows[0].id;
 const pages=[];for(let n=1;n<=2;n++){const file=admin+'/'+book+'/00000000-0000-4000-8000-'+String(100+n).padStart(12,'0')+'.png';const p=(await as(admin,'insert into creative_comic_pages(comic_id,position,filename,path,width,height) values($1,$2,$3,$4,100,200) returning id',[book,n,n+'.png',file])).rows[0];pages.push(p);await as(admin,"insert into storage.objects(bucket_id,name) values('creative-comics',$1)",[file])}
 await as(admin,'update creative_comics set published=true where id=$1',[book]);
@@ -51,5 +53,22 @@ assert.equal(Number((await db.query('select count(*) as n from storage.objects')
 await assert.rejects(as(admin,'select * from ojjuda_comics_internal.revisions'),/permission denied/);
 assert.equal(Number((await db.query('select count(*) as n from ojjuda_comics_internal.revisions')).rows[0].n),2);
 for(const who of [minor,unknown,anonymous,banned,minorAdmin])assert.equal((await as(who,'select * from creative_comics')).rows.length,0);
+const target=(await as(admin,"insert into creative_comics(title) values('next chapter') returning id")).rows[0].id;
+const currentPages=(await as(admin,'select id from creative_comic_pages where comic_id=$1 order by position',[book])).rows;
+const link=(who,next,rev=revision,request='00000000-0000-4000-8000-'+String(++serial).padStart(12,'0'))=>as(who,'select comics_save_edit($1,$2,$3,$4,$5,$6,$7,$8,$9) as revision',[book,rev,'edited','intro','series A',2,JSON.stringify(currentPages),request,next]);
+for(const who of [adult,minor,unknown,anonymous,banned,minorAdmin])await assert.rejects(link(who,target),/comic_admin_required/);
+await assert.rejects(link(admin,book),/invalid_next_comic/);
+await assert.rejects(link(admin,'00000000-0000-4000-8000-999999999999'),/invalid_next_comic/);
+await assert.rejects(as(admin,'update creative_comics set next_comic_id=$1 where id=$2',[target,book]),/permission denied/);
+const linkRequest='00000000-0000-4000-8000-000000001998',oldRevision=revision;revision=Number((await link(admin,target,revision,linkRequest)).rows[0].revision);assert.equal(revision,oldRevision+2);
+assert.equal(Number((await link(admin,target,oldRevision,linkRequest)).rows[0].revision),revision,'next-link response retry is idempotent');
+await assert.rejects(link(admin,null,oldRevision,linkRequest),/request_mismatch/);
+assert.equal((await as(adult,'select next_comic_id from creative_comics where id=$1',[book])).rows[0].next_comic_id,target);
+assert.equal((await as(adult,'select id,title from creative_comics where id=$1',[target])).rows.length,0,'draft link does not expose target');
+await assert.rejects(link(admin,null,oldRevision),/comic_edit_conflict/);
+revision=Number((await save(admin,currentPages)).rows[0].revision);assert.equal((await as(admin,'select next_comic_id from creative_comics where id=$1',[book])).rows[0].next_comic_id,target,'old RPC preserves links');
+revision=Number((await link(admin,null)).rows[0].revision);assert.equal((await as(adult,'select next_comic_id from creative_comics where id=$1',[book])).rows[0].next_comic_id,null,'unlink works');
+revision=Number((await link(admin,target)).rows[0].revision);await as(admin,'delete from creative_comics where id=$1',[target]);assert.equal((await as(adult,'select next_comic_id from creative_comics where id=$1',[book])).rows[0].next_comic_id,null,'deletion clears dangling link');
+console.log('Next chapter DB: explicit links, unlink, deletion, atomic revision, conflicts, replay, legacy RPC and age/admin/draft protection passed');
 console.log('Comics editing: atomic saves, reorder, replacement, private staging, backup, series, conflicts, replay and adult/admin gates passed');
 }finally{await db.close()}})().catch(e=>{console.error(e);process.exitCode=1});
