@@ -519,6 +519,7 @@ const cleanName=value=>String(value||'').replace(/[<>&"'`\u0000-\u001f]/g,'').tr
 const safeText=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GC=['#ff7a8a','#e8364f','#ffd23f','#ffab1f','#5ddc8a','#1fae6a','#5aaeff','#2f6bff'];
 const SIDEC=[{base:'#ffe4e7',deep:'#ff5a6e'},{base:'#fff3c4',deep:'#ffbf1f'},{base:'#ddf7e5',deep:'#2fbf6a'},{base:'#deedff',deep:'#3a86ff'}];
+const TOUR_TILE={base:'#eedfff',deep:'#9b63d9'};
 const BN=['땅','별장','빌딩','호텔','랜드마크'],BI=['','🏠','🏢','🏨','🏰'];
 const BMUL=[0.5,0.9,1.3,1.5],TMUL=[0.25,0.85,2.05,4.05,7.05],TOURM=[0,1,1.6,2.4,3.2,4.5];
 const SALARY=300,START=2000;
@@ -1033,7 +1034,7 @@ function drawTile(i){
   const sig=JSON.stringify([o,o!==undefined?toll(i):0,lvOf(i),!!(im&&im.complete)]);
   if(R.sig[i]===sig)return;R.sig[i]=sig;
   const oc=o!==undefined?G.players[o].color:null,corner=i%8===0;
-  const sd=SIDEC[Math.floor(i/8)],base=corner?mix(t.bg,'#ffffff',.12):sd.base,bandC=t.t==='city'?GC[t.g]:sd.deep;
+  const sd=t.t==='special'?TOUR_TILE:SIDEC[Math.floor(i/8)],base=corner?mix(t.bg,'#ffffff',.12):sd.base,bandC=t.t==='city'?GC[t.g]:sd.deep;
   x.clearRect(0,0,W,H);x.fillStyle=base;rr(x,0,0,W,H,26);x.fill();
   x.textAlign='center';x.textBaseline='middle';
   if(!corner){
