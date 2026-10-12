@@ -25,6 +25,14 @@ world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab,guest:()=>({guest:
    },mode);
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
    await page.goto(origin+'/');
+   await page.waitForURL(origin+'/world.html?tab=friends');
+   await page.waitForFunction(()=>window.entryFixture);
+   assert.equal(await page.evaluate(()=>entryFixture.tab()),'friends','the root opens Neighborhood even if portal scripts are unavailable');
+   await page.goto(origin+'/?auth=login');
+   if(mode==='normal'||mode==='identity-missing'){
+    await page.locator('#auth-dialog[open]').waitFor();
+    await page.locator('[data-close-dialog]').click();
+   }
    if(mode==='normal'){
     assert.equal(await page.locator('.world-feature[href*="sitemap"]').count(),0);
     await page.locator('[data-destination=home]').click();await page.locator('#auth-dialog').waitFor({state:'visible'});

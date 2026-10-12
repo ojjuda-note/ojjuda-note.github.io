@@ -4,6 +4,25 @@ const path = require('node:path');
 const vm = require('node:vm');
 const identity = require('../signup-identity.js');
 const source = fs.readFileSync(path.join(__dirname, '../portal.js'), 'utf8');
+const entrance = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+const entryScript = entrance.match(/<script id="world-default-entry">([\s\S]*?)<\/script>/)?.[1];
+assert.ok(entryScript, 'the root route runs before loading the account controller');
+assert.ok(entrance.indexOf('id="world-default-entry"') < entrance.indexOf('src="/portal-availability.js'));
+function initialRoute(path) {
+  const navigations = [], location = new URL(path, 'https://ojjuda.kr');
+  location.replace = target => navigations.push(target);
+  vm.runInNewContext(entryScript, {location, URL, URLSearchParams});
+  return navigations;
+}
+for (const path of ['/', '/index.html']) assert.deepEqual(initialRoute(path), ['/world.html?tab=friends']);
+assert.deepEqual(initialRoute('/?utm_source=share'), ['/world.html?utm_source=share&tab=friends']);
+assert.deepEqual(initialRoute('/?tab=board'), ['/world.html?tab=board']);
+for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot', '/?next=note&card=fixture',
+  '/?reset=1', '/?code=fixture-code', '/?token_hash=fixture-hash&type=signup',
+  '/#access_token=fixture-token&refresh_token=fixture-refresh&type=recovery',
+  '/#error=access_denied&error_description=fixture', '/?error_code=expired']) {
+  assert.deepEqual(initialRoute(path), [], 'account entry must handle its own callback: ' + path);
+}
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
 function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, signupResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null } = {}) {
