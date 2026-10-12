@@ -2,7 +2,7 @@
   'use strict';
   window.OjjudaSaetbyeolGrowth = {
     create(upgrades, branchCount) {
-      const rounds = 3;
+      const rounds = 5;
       const tiers = [...new Set(upgrades.map(upgrade => upgrade.r))].sort((a, b) => a - b).map(stage => {
         const items = upgrades.filter(upgrade => upgrade.r === stage);
         const caps = Array(branchCount).fill(0);
@@ -17,7 +17,7 @@
             for (const upgrade of tier.items) {
               counts[upgrade.b] += Math.max(0, Math.min(upgrade.mx, Math.floor(Number(levels[upgrade.id]) || 0)));
             }
-            // Branches have different capacities, so checkpoints use thirds of
+            // Branches have different capacities, so checkpoints use fifths of
             // each branch's capacity instead of an equal number of purchases.
             for (let round = 1; round <= rounds; round++) {
               const targets = tier.caps.map(cap => Math.ceil(cap * round / rounds));

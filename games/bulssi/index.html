@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>샛별키우기 · 오쭈다</title>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
-<link rel="stylesheet" href="./entry.css?v=20261013-balance1">
+<link rel="stylesheet" href="./entry.css?v=20261013-sky2001">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
@@ -82,14 +82,16 @@ body[data-mode="hub"] #panel{display:block}
     <button id="starStart" class="ge-primary" type="button" disabled>시작하기</button>
     <button id="starExit" class="ge-secondary" type="button">게임 목록으로</button>
     <span id="starEntryHint" class="ge-hint" role="status">게임을 연결하고 있어요…</span>
-    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화하고, 보스를 넘어 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 각 진화 단계의 성장은 3개 구간으로 나뉘며, 다섯 영역의 목표를 모두 채우면 다음 구간의 강화가 열려요. 이전 단계의 강화를 모두 마쳐야 다음 단계의 강화를 시작할 수 있어요. 부족한 영역을 누르면 강화할 가지를 골라줘요.</p><p>성장 점수: 진화 단계마다 10,000점 + 강화 1회마다 10점 + 기억 1개마다 100점 + 엔딩 10,000점. 오늘과 이번 달의 최고 점수가 게임순위에 올라가요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
+    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화하고, 보스를 넘어 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 성장 항목은 다섯 뿌리에서 각각 40개씩, 총 200개로 뻗어요. 각 진화 단계의 성장은 5개 구간으로 나뉘며, 다섯 영역의 목표를 모두 채우면 다음 구간의 강화가 열려요. 이전 단계의 강화를 모두 마쳐야 다음 단계의 강화를 시작할 수 있어요. 부족한 영역을 누르면 강화할 가지를 골라줘요.</p><p>일반 천체는 50종이며, 진화할 때마다 10종씩 새로 열려요. 시간 결정은 드물게 나타나며 최소 12초 간격, 화면에 1개씩만 등장해요. 1개당 최대 1초, 한 판의 추가 시간은 최대 8초예요. 설정의 천체 도감에서 종류를 볼 수 있어요.</p><p>성장 점수: 진화 단계마다 10,000점 + 강화 1회마다 10점 + 기억 1개마다 100점 + 엔딩 10,000점. 오늘과 이번 달의 최고 점수가 게임순위에 올라가요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
     <details id="starRankingDetails" class="ge-more"><summary>오늘의 순위</summary><ol id="starRanking" class="star-ranking"></ol></details>
   </section>
 </main>
 <canvas id="c" aria-label="샛별키우기 게임 화면"></canvas>
 <div id="top"><div id="cur"></div><div id="stageName" class="serif"></div><button id="setBtn" aria-label="설정 열기">설정</button></div>
-<div id="heatWrap"><div class="barRow"><span>열</span><div class="bar"><div id="heat"></div></div><span id="heatTxt">0</span></div></div>
+<div id="heatWrap"><div class="barRow"><span>남은 시간</span><div class="bar"><div id="heat"></div></div><span id="heatTxt">0</span></div></div>
 <div id="bossWrap"><div class="barRow"><span id="bossName" class="serif"></span><div class="bar"><div id="bossFill"></div></div></div></div>
+<div id="runInfo"><span id="targetName"></span><span id="timeBonus">연장 0.0 / 8초</span></div>
+<div id="treeTools" aria-label="성장 트리 보기"><span id="treeCount">성장 0 / 200</span><button id="treeOut" aria-label="성장 트리 축소">−</button><button id="treeFit">전체</button><button id="treeIn" aria-label="성장 트리 확대">+</button><button id="treeFocus">선택</button></div>
 <div id="panel"><div id="panelIn">
   <section id="growth" aria-label="다섯 영역 균형 성장"><strong id="growthTitle"></strong><span id="growthHelp"></span><div id="growthBranches"></div></section>
   <div id="info"><div id="uName" class="serif"></div><div id="uDesc"></div><div id="uLock" role="status" hidden></div><div id="uRow"><span id="uLv"></span><button id="buy" aria-describedby="uLock"></button></div></div>
@@ -97,10 +99,13 @@ body[data-mode="hub"] #panel{display:block}
   <div id="memLine"></div><div id="starRecord" role="status"><span id="starRecordText">별을 키우면 성장 점수가 순위에 기록돼요.</span><button id="starRetry" type="button" hidden>다시 등록</button></div>
 </div></div>
 <div id="toast" class="serif"></div>
-<div id="settings"><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
+<div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><div id="ovHint">눌러서 계속</div></div>
 <script src="./entry.js?v=20261013-star1"></script>
-<script src="./growth.js?v=20261013-balance1"></script>
+<script src="./growth.js?v=20261013-sky2001"></script>
+<script src="./upgrade-branches.js?v=20261013-sky2001"></script>
+<script src="./encounters.js?v=20261013-sky2001"></script>
+<script src="./tree-controls.js?v=20261013-sky2001"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -118,37 +123,58 @@ const STAGES=[
 ];
 const BR=['열','화력','범위','수확','특수'];
 const CUR={light:'빛',metal:'금속',mass:'질량'};
-const UP=[
-  {id:'h0a',r:0,b:0,n:'열 최대치',d:'타오르는 시간 +3초',mx:5,c:5,m:1.7,k:'light',f:(s,l)=>{s.maxHeat+=3*l}},
-  {id:'h0b',r:0,b:0,n:'느린 냉각',d:'식는 속도 -8%',mx:3,c:20,m:2,k:'light',f:(s,l)=>{s.decay*=Math.pow(.92,l)}},
-  {id:'p0a',r:0,b:1,n:'불꽃 온도',d:'피해 +30%',mx:6,c:4,m:1.6,k:'light',f:(s,l)=>{s.dmg*=1+.3*l}},
-  {id:'p0b',r:0,b:1,n:'치명타 불꽃',d:'6% 확률로 피해 3배',mx:3,c:25,m:2.2,k:'light',f:(s,l)=>{s.crit+=.06*l}},
-  {id:'r0a',r:0,b:2,n:'불씨 확장',d:'태우는 범위 +12%',mx:5,c:6,m:1.7,k:'light',f:(s,l)=>{s.radius*=1+.12*l}},
-  {id:'v0a',r:0,b:3,n:'빛 수확',d:'빛 획득 +25%',mx:5,c:8,m:1.7,k:'light',f:(s,l)=>{s.light*=1+.25*l}},
-  {id:'v0b',r:0,b:3,n:'운석 밀도',d:'천체 생성 +20%',mx:4,c:15,m:1.9,k:'light',f:(s,l)=>{s.spawn*=1+.2*l}},
-  {id:'x0a',r:0,b:4,n:'얼음 녹이기',d:'얼음 조각이 주는 열 +0.4초',mx:3,c:12,m:2,k:'light',f:(s,l)=>{s.iceHeat+=.4*l}},
-  {id:'h1a',r:1,b:0,n:'성운 담요',d:'타오르는 시간 +5초',mx:4,c:150,m:1.8,k:'light',f:(s,l)=>{s.maxHeat+=5*l}},
-  {id:'p1a',r:1,b:1,n:'불꽃 온도 II',d:'피해 +40%',mx:5,c:200,m:1.7,k:'light',f:(s,l)=>{s.dmg*=1+.4*l}},
-  {id:'p1b',r:1,b:1,n:'관통',d:'철 운석에 주는 피해 +20%p',mx:3,c:10,m:2,k:'metal',f:(s,l)=>{s.pierce+=.2*l}},
+const UP=window.OjjudaSaetbyeolBranches.extend([
+  {id:'h0a',r:0,b:0,n:'열 최대치',d:'열 최대치 +1',mx:5,c:5,m:1.7,k:'light',f:(s,l)=>{s.maxHeat+=l}},
+  {id:'h0b',r:0,b:0,n:'느린 냉각',d:'식는 속도 -2%',mx:3,c:20,m:2,k:'light',f:(s,l)=>{s.decay*=Math.pow(.98,l)}},
+  {id:'p0a',r:0,b:1,n:'불꽃 온도',d:'피해 +8%',mx:6,c:4,m:1.6,k:'light',f:(s,l)=>{s.dmg*=1+.08*l}},
+  {id:'p0b',r:0,b:1,n:'치명타 불꽃',d:'치명타 확률 +2%p · 기본 치명타 피해 3배',mx:3,c:25,m:2.2,k:'light',f:(s,l)=>{s.crit+=.02*l}},
+  {id:'r0a',r:0,b:2,n:'불씨 확장',d:'태우는 범위 +4%',mx:5,c:6,m:1.7,k:'light',f:(s,l)=>{s.radius*=1+.04*l}},
+  {id:'v0a',r:0,b:3,n:'빛 수확',d:'빛 획득 +8%',mx:5,c:8,m:1.7,k:'light',f:(s,l)=>{s.light*=1+.08*l}},
+  {id:'v0b',r:0,b:3,n:'운석 밀도',d:'천체 생성 +5%',mx:4,c:15,m:1.9,k:'light',f:(s,l)=>{s.spawn*=1+.05*l}},
+  {id:'x0a',r:0,b:4,n:'얼음 녹이기',d:'시간 결정 회복량 +0.1초 · 한 판 연장 최대 8초',mx:3,c:12,m:2,k:'light',f:(s,l)=>{s.iceHeat+=.1*l}},
+  {id:'h1a',r:1,b:0,n:'성운 담요',d:'열 최대치 +1.5',mx:4,c:150,m:1.8,k:'light',f:(s,l)=>{s.maxHeat+=1.5*l}},
+  {id:'p1a',r:1,b:1,n:'불꽃 온도 II',d:'피해 +10%',mx:5,c:200,m:1.7,k:'light',f:(s,l)=>{s.dmg*=1+.1*l}},
+  {id:'p1b',r:1,b:1,n:'관통',d:'단단한 외피 관통 +8%p',mx:3,c:10,m:2,k:'metal',f:(s,l)=>{s.pierce+=.08*l}},
   {id:'r1a',r:1,b:2,n:'중력',d:'주변 천체를 끌어당긴다',mx:3,c:15,m:2,k:'metal',f:(s,l)=>{s.pull+=l}},
-  {id:'v1a',r:1,b:3,n:'금속 감각',d:'금속 획득 +30%',mx:4,c:300,m:1.8,k:'light',f:(s,l)=>{s.metal*=1+.3*l}},
-  {id:'x1a',r:1,b:4,n:'가스 연쇄',d:'가스 폭발 피해 +50%',mx:3,c:20,m:2,k:'metal',f:(s,l)=>{s.chain*=1+.5*l}},
-  {id:'h2a',r:2,b:0,n:'항성풍',d:'식는 속도 -10%',mx:3,c:2500,m:2,k:'light',f:(s,l)=>{s.decay*=Math.pow(.9,l)}},
-  {id:'p2a',r:2,b:1,n:'핵융합',d:'피해 2배',mx:3,c:3000,m:3,k:'light',f:(s,l)=>{s.dmg*=Math.pow(2,l)}},
-  {id:'r2a',r:2,b:2,n:'코로나',d:'태우는 범위 +15%',mx:4,c:2000,m:1.9,k:'light',f:(s,l)=>{s.radius*=1+.15*l}},
-  {id:'v2a',r:2,b:3,n:'혜성 유인',d:'혜성이 더 자주 나타난다',mx:3,c:60,m:2,k:'metal',f:(s,l)=>{s.comet*=1+l}},
+  {id:'v1a',r:1,b:3,n:'금속 감각',d:'금속 획득 +10%',mx:4,c:300,m:1.8,k:'light',f:(s,l)=>{s.metal*=1+.1*l}},
+  {id:'x1a',r:1,b:4,n:'가스 연쇄',d:'가스 폭발 피해 +15%',mx:3,c:20,m:2,k:'metal',f:(s,l)=>{s.chain*=1+.15*l}},
+  {id:'h2a',r:2,b:0,n:'항성풍',d:'식는 속도 -2%',mx:3,c:2500,m:2,k:'light',f:(s,l)=>{s.decay*=Math.pow(.98,l)}},
+  {id:'p2a',r:2,b:1,n:'핵융합',d:'모든 피해 +12%',mx:3,c:3000,m:3,k:'light',f:(s,l)=>{s.dmg*=1+.12*l}},
+  {id:'r2a',r:2,b:2,n:'코로나',d:'태우는 범위 +4%',mx:4,c:2000,m:1.9,k:'light',f:(s,l)=>{s.radius*=1+.04*l}},
+  {id:'v2a',r:2,b:3,n:'혜성 유인',d:'혜성 등장 비중 +25%',mx:3,c:60,m:2,k:'metal',f:(s,l)=>{s.comet*=1+.25*l}},
   {id:'x2a',r:2,b:4,n:'궤도 위성',d:'곁을 도는 보조 불꽃 +1',mx:3,c:40,m:2.5,k:'metal',f:(s,l)=>{s.sats+=l}},
-  {id:'h3a',r:3,b:0,n:'거성의 숨',d:'타오르는 시간 +8초',mx:3,c:5e4,m:2,k:'light',f:(s,l)=>{s.maxHeat+=8*l}},
-  {id:'p3a',r:3,b:1,n:'붉은 열기',d:'피해 +60%',mx:5,c:4e4,m:1.8,k:'light',f:(s,l)=>{s.dmg*=1+.6*l}},
-  {id:'r3a',r:3,b:2,n:'팽창',d:'태우는 범위 +20%',mx:3,c:300,m:2,k:'metal',f:(s,l)=>{s.radius*=1+.2*l}},
-  {id:'v3a',r:3,b:3,n:'잔해 수집',d:'빛 획득 +50%',mx:4,c:6e4,m:1.8,k:'light',f:(s,l)=>{s.light*=1+.5*l}},
+  {id:'h3a',r:3,b:0,n:'거성의 숨',d:'열 최대치 +2',mx:3,c:5e4,m:2,k:'light',f:(s,l)=>{s.maxHeat+=2*l}},
+  {id:'p3a',r:3,b:1,n:'붉은 열기',d:'피해 +8%',mx:5,c:4e4,m:1.8,k:'light',f:(s,l)=>{s.dmg*=1+.08*l}},
+  {id:'r3a',r:3,b:2,n:'팽창',d:'태우는 범위 +5%',mx:3,c:300,m:2,k:'metal',f:(s,l)=>{s.radius*=1+.05*l}},
+  {id:'v3a',r:3,b:3,n:'잔해 수집',d:'빛 획득 +10%',mx:4,c:6e4,m:1.8,k:'light',f:(s,l)=>{s.light*=1+.1*l}},
   {id:'x3a',r:3,b:4,n:'플레어',d:'주기적으로 화면 전체가 불탄다',mx:3,c:150,m:2.5,k:'metal',f:(s,l)=>{s.flare=l}},
-  {id:'h4a',r:4,b:0,n:'영원의 밤',d:'타오르는 시간 +10초',mx:3,c:8,m:2,k:'mass',f:(s,l)=>{s.maxHeat+=10*l}},
-  {id:'p4a',r:4,b:1,n:'특이점',d:'피해 3배',mx:3,c:10,m:2.5,k:'mass',f:(s,l)=>{s.dmg*=Math.pow(3,l)}},
-  {id:'r4a',r:4,b:2,n:'강착원반',d:'태우는 범위 +30%',mx:3,c:8,m:2,k:'mass',f:(s,l)=>{s.radius*=1+.3*l}},
-  {id:'v4a',r:4,b:3,n:'질량 흡수',d:'질량 획득 +50%',mx:3,c:12,m:2,k:'mass',f:(s,l)=>{s.mass*=1+.5*l}},
-  {id:'x4a',r:4,b:4,n:'사건의 지평선',d:'체력 15% 이하 천체를 즉시 흡수',mx:3,c:5,m:2,k:'mass',f:(s,l)=>{s.execute+=.15*l}}
-];
+  {id:'h4a',r:4,b:0,n:'영원의 밤',d:'열 최대치 +2.5',mx:3,c:8,m:2,k:'mass',f:(s,l)=>{s.maxHeat+=2.5*l}},
+  {id:'p4a',r:4,b:1,n:'특이점',d:'모든 피해 +15%',mx:3,c:10,m:2.5,k:'mass',f:(s,l)=>{s.dmg*=1+.15*l}},
+  {id:'r4a',r:4,b:2,n:'강착원반',d:'태우는 범위 +6%',mx:3,c:8,m:2,k:'mass',f:(s,l)=>{s.radius*=1+.06*l}},
+  {id:'v4a',r:4,b:3,n:'질량 흡수',d:'질량 획득 +10%',mx:3,c:12,m:2,k:'mass',f:(s,l)=>{s.mass*=1+.1*l}},
+  {id:'x4a',r:4,b:4,n:'사건의 지평선',d:'즉시 흡수 체력 기준 +5%p',mx:3,c:5,m:2,k:'mass',f:(s,l)=>{s.execute+=.05*l}},
+  {id:'r0b',r:0,b:2,n:'불꽃 테두리',d:'태우는 범위 +1',mx:3,c:10,m:1.8,k:'light',f:(s,l)=>{s.radius+=l}},
+  {id:'x0b',r:0,b:4,n:'운석 균열',d:'바위 운석에 주는 피해 +6%',mx:3,c:14,m:1.9,k:'light',f:(s,l)=>{s.rockDamage*=1+.06*l}},
+  {id:'h1b',r:1,b:0,n:'심지 보호',d:'열 최대치 +0.5',mx:3,c:100,m:1.8,k:'light',f:(s,l)=>{s.maxHeat+=.5*l}},
+  {id:'r1b',r:1,b:2,n:'넓은 인력',d:'천체를 끌어당기는 거리 +5%',mx:3,c:12,m:1.9,k:'metal',f:(s,l)=>{s.pullReach*=1+.05*l}},
+  {id:'v1b',r:1,b:3,n:'돌빛 수집',d:'바위 운석의 빛 수확 +8%',mx:3,c:180,m:1.8,k:'light',f:(s,l)=>{s.rockLight*=1+.08*l}},
+  {id:'x1b',r:1,b:4,n:'금속 가열',d:'금속 운석에 주는 피해 +6%',mx:3,c:18,m:2,k:'metal',f:(s,l)=>{s.ironDamage*=1+.06*l}},
+  {id:'h2b',r:2,b:0,n:'균일 연소',d:'식는 속도 -1%',mx:3,c:1800,m:1.9,k:'light',f:(s,l)=>{s.decay*=Math.pow(.99,l)}},
+  {id:'p2b',r:2,b:1,n:'핵 집중',d:'치명타 피해 배율 +0.1',mx:3,c:2400,m:2,k:'light',f:(s,l)=>{s.critPower+=.1*l}},
+  {id:'r2b',r:2,b:2,n:'위성 불꽃',d:'보조 위성의 공격 범위 +1',mx:3,c:35,m:2,k:'metal',f:(s,l)=>{s.satRadius+=l}},
+  {id:'v2b',r:2,b:3,n:'혜성 채집',d:'혜성의 빛 수확 +6%',mx:3,c:2200,m:1.9,k:'light',f:(s,l)=>{s.cometLight*=1+.06*l}},
+  {id:'x2b',r:2,b:4,n:'위성 공명',d:'보조 위성의 피해 배율 +0.03',mx:3,c:45,m:2,k:'metal',f:(s,l)=>{s.satDamage+=.03*l}},
+  {id:'h3b',r:3,b:0,n:'열 잔광',d:'시간 결정 회복량 +0.03초 · 1개 최대 1초',mx:3,c:4e4,m:1.9,k:'light',f:(s,l)=>{s.iceHeat+=.03*l}},
+  {id:'p3b',r:3,b:1,n:'성운 소각',d:'가스 천체에 주는 피해 +8%',mx:3,c:5e4,m:1.9,k:'light',f:(s,l)=>{s.gasDamage*=1+.08*l}},
+  {id:'r3b',r:3,b:2,n:'연쇄 반경',d:'가스 폭발 범위 +4%',mx:3,c:220,m:2,k:'metal',f:(s,l)=>{s.blastRadius*=1+.04*l}},
+  {id:'v3b',r:3,b:3,n:'잔해 정제',d:'금속 획득 +5%',mx:3,c:4e4,m:1.9,k:'light',f:(s,l)=>{s.metal*=1+.05*l}},
+  {id:'x3b',r:3,b:4,n:'플레어 집중',d:'화면 전체 불꽃의 피해 배율 +0.05',mx:3,c:180,m:2,k:'metal',f:(s,l)=>{s.flareDamage+=.05*l}},
+  {id:'h4b',r:4,b:0,n:'열 순환',d:'식는 속도 -1%',mx:3,c:7,m:2,k:'mass',f:(s,l)=>{s.decay*=Math.pow(.99,l)}},
+  {id:'p4b',r:4,b:1,n:'항성 붕괴',d:'별에 주는 피해 +8%',mx:3,c:9,m:2,k:'mass',f:(s,l)=>{s.starDamage*=1+.08*l}},
+  {id:'r4b',r:4,b:2,n:'중력권',d:'천체를 끌어당기는 힘 +0.15',mx:3,c:7,m:2,k:'mass',f:(s,l)=>{s.pull+=.15*l}},
+  {id:'v4b',r:4,b:3,n:'별빛 저장',d:'항성의 빛 수확 +8%',mx:3,c:9,m:2,k:'mass',f:(s,l)=>{s.starLight*=1+.08*l}},
+  {id:'x4b',r:4,b:4,n:'중력 연쇄',d:'가스 연쇄 폭발 피해 +6%',mx:3,c:8,m:2,k:'mass',f:(s,l)=>{s.chain*=1+.06*l}}
+]);
 const GROWTH=window.OjjudaSaetbyeolGrowth.create(UP,BR.length);
 const PRO=['우주의 끝, 식어버린 잔해 사이에서','작은 불씨 하나가 깨어났다.','이름도, 이유도 없이.','다만 따뜻했던 무언가를 기억하며.'];
 const MEM=[
@@ -165,22 +191,8 @@ const EVO=[
   ['그래도, 다시 빛나야 했다.','모든 것이 안쪽으로 무너진다.','블랙홀이 되었다.']
 ];
 const REMNANT=[[.75,'이 무게를 기억한다.'],[.5,'푸른 바다. 하얀 구름.'],[.25,'미안해.']];
-const TYPES={
-  rock:{hp:10,r:9,light:1},
-  ice:{hp:6,r:8,light:1,ice:1},
-  iron:{hp:40,r:11,metal:1,armor:1},
-  gas:{hp:14,r:13,light:2,gas:1},
-  comet:{hp:30,r:8,light:15,fast:1},
-  mem:{hp:20,r:10,mem:1},
-  star:{hp:60,r:12,light:5,mass:1}
-};
-const POOL=[
-  {rock:70,ice:22,comet:2},
-  {rock:50,ice:12,iron:18,gas:16,comet:2},
-  {rock:45,iron:22,gas:22,ice:6,comet:3},
-  {rock:45,iron:22,gas:24,comet:4},
-  {star:30,rock:30,iron:18,gas:18,comet:4}
-];
+const ENCOUNTERS=window.OjjudaSaetbyeolEncounters;
+const TYPES=ENCOUNTERS.types;
 
 // ---------- save ----------
 const fresh=()=>({stage:0,cur:{light:0,metal:0,mass:0},lv:{},mem:[0,0,0,0,0],intro:false,tut:false,sound:true,buys:0,sel:null});
@@ -209,9 +221,9 @@ const cost=u=>Math.ceil(u.c*Math.pow(u.m,lv(u.id)));
 const col=()=>STAGES[S.stage];
 const pc=()=>col().pal[Math.floor(Math.random()*5)];
 function stats(){
-  const s={maxHeat:10,decay:1,dmg:4,crit:0,radius:34,light:1,metal:1,mass:1,spawn:1,iceHeat:.4,pierce:0,pull:0,chain:1,sats:0,comet:1,flare:0,execute:0};
+  const s={maxHeat:10,decay:1,dmg:4,crit:0,radius:34,light:1,metal:1,mass:1,spawn:1,iceHeat:.25,pierce:0,pull:0,chain:1,sats:0,comet:1,flare:0,execute:0,critPower:3,rockDamage:1,ironDamage:1,gasDamage:1,starDamage:1,iceDamage:1,cometDamage:1,rockLight:1,cometLight:1,starLight:1,iceLight:1,pullReach:1,edgeDamage:1,cometSlow:0,satRadius:12,satDamage:.15,blastRadius:1,flareDamage:.35};
   for(const u of UP){const l=lv(u.id);if(l)u.f(s,l)}
-  s.dmg*=Math.pow(6,S.stage);s.execute=Math.min(s.execute,.45);let a=0,b=0;for(const u of UP){a+=lv(u.id);b+=u.mx}s.pw=a/b;return s;
+  s.dmg*=Math.pow(6,S.stage);s.execute=Math.min(s.execute,.3);s.cometSlow=Math.min(s.cometSlow,.6);let a=0,b=0;for(const u of UP){a+=lv(u.id);b+=u.mx}s.pw=a/b;return s;
 }
 
 // ---------- audio ----------
@@ -230,9 +242,10 @@ addEventListener('resize',resize);resize();
 
 // ---------- pointer ----------
 const P={x:0,y:0,has:false};
+const treeView={zoom:1,x:0,y:0};let treeControls=null;
 function setP(e){P.x=e.clientX;P.y=e.clientY;P.has=true;P.touch=e.pointerType!=='mouse'}
 cv.addEventListener('pointermove',setP);
-cv.addEventListener('pointerdown',e=>{setP(e);ensureAudio();if(mode==='hub')hubTap(e.clientX,e.clientY)});
+cv.addEventListener('pointerdown',e=>{setP(e);ensureAudio()});
 
 // ---------- UI ----------
 let mode='entry',R=null,st=stats();
@@ -267,7 +280,7 @@ $('#growthBranches').onclick=e=>{
   const gate=GROWTH.state(S.lv),b=Number(button.dataset.branch);
   const avail=UP.filter(u=>u.r===gate.stage&&u.b===b&&lv(u.id)<u.mx&&!upgradeLock(u,gate));
   const next=avail.find(u=>S.cur[u.k]>=cost(u))||avail[0];
-  if(next){S.sel=next.id;refresh()}
+  if(next){S.sel=next.id;refresh();treeControls?.focus(TREE[next.id])}
 };
 function refresh(){
   refreshCur();$('#stageName').textContent=col().name+(DEMO?' 체험':'');
@@ -284,6 +297,7 @@ function refresh(){
     buy.style.display='';buy.disabled=!!locked||max||S.cur[u.k]<c;buy.textContent=locked==='balance'?'다섯 영역 성장 필요':locked==='evolution'?'진화 후 해금':locked==='parent'?'앞 가지 해금 필요':max?'완성':`${CUR[u.k]} ${fmt(c)}로 ${l?'강화':'해금'}`;buy.className=(!locked&&!max&&S.cur[u.k]>=c)?'primary':'';
   }else{$('#uName').textContent=col().name;$('#uDesc').textContent='가지 끝의 별을 눌러 업그레이드를 고르세요.';$('#uLv').textContent='';$('#uLock').hidden=true;$('#uLock').textContent='';buy.style.display='none'}
   $('#bossBtn').textContent=`${col().boss}에 도전`;
+  $('#treeCount').textContent=`성장 ${UP.filter(u=>lv(u.id)>0).length} / ${UP.length}`;
   const m=S.mem[S.stage];$('#memLine').textContent=`이 단계의 기억 ${m} / 3`+(S.stage<4?'. 보스를 넘으면 다음 별로 진화해요':'');
 }
 function selectDefault(){const gate=GROWTH.state(S.lv),avail=UP.filter(u=>lv(u.id)<u.mx&&!upgradeLock(u,gate));const aff=avail.find(u=>S.cur[u.k]>=cost(u));S.sel=(aff||avail[0]||UP[0]).id}
@@ -291,6 +305,14 @@ $('#buy').onclick=()=>{const u=UP.find(x=>x.id===S.sel);if(!u||upgradeLock(u))re
 $('#go').onclick=()=>startRun(false);
 $('#bossBtn').onclick=()=>startRun(true);
 $('#setBtn').onclick=e=>{e.stopPropagation();$('#settings').classList.toggle('on')};
+$('#catalogBtn').onclick=()=>{
+  const previous=mode;if(!['hub','run'].includes(previous))return;
+  $('#settings').classList.remove('on');setMode('catalog');
+  const symbols={rock:'●',ice:'✧',iron:'⬡',gas:'☁',comet:'☄',star:'✦',mem:'◉'};
+  const rows=STAGES.map((stage,index)=>`<section class="catalog-group${index>S.stage?' catalog-locked':''}"><h3>${stage.name} · 10종${index>S.stage?' · 진화 후 등장':''}</h3><ul class="catalog-list">${ENCOUNTERS.catalog.filter(type=>type.stage===index).map(type=>`<li><span class="catalog-symbol" style="--target-color:${type.color}" aria-hidden="true">${symbols[type.kind]}</span><b>${type.name}</b><small>${type.detail}</small></li>`).join('')}</ul></section>`).join('');
+  overlay(`<h2>천체 도감 · 50종</h2><p>진화할 때마다 10종씩 새로 만나요. 빛깔·모양·움직임·내구도·보상이 서로 달라요.</p><p>시간 결정: 1개당 최대 1초, 한 판 최대 8초 연장.</p>${rows}`,{buttons:[['돌아가기',()=>{closeOv();setMode(previous)},'primary']]});
+  $('#overlay').classList.add('catalog');
+};
 $('#sndBtn').onclick=()=>{S.sound=!S.sound;save();refresh()};
 function startDemo(){if(!demoAllowed)return;DEMO=JSON.parse(JSON.stringify(S));const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;S.tut=true;S.stage=4;for(const u of UP)S.lv[u.id]=u.mx;S.mem=[3,3,3,3,3];S.cur={light:1e12,metal:1e6,mass:1e4};S.sel=UP[0].id;st=stats();R=null;applyTheme();closeOv();setMode('hub');toast('풀 업그레이드 체험 중이에요. 원래 진행은 그대로 보관돼요',3600)}
 function endDemo(){S=DEMO;DEMO=null;st=stats();R=null;applyTheme();closeOv();if(!S.sel)selectDefault();setMode('hub');toast('원래 진행으로 돌아왔어요',2600)}
@@ -308,7 +330,7 @@ function overlay(html,{buttons=[],tap=null,hint=false}={}){
   ovTap=tap;$('#ovHint').style.display=hint?'block':'none';$('#overlay').classList.add('on');
   const first=b.querySelector('button');if(first)setTimeout(()=>first.focus({preventScroll:true}),50);
 }
-function closeOv(){$('#overlay').classList.remove('on');ovTap=null}
+function closeOv(){$('#overlay').classList.remove('on','catalog');ovTap=null}
 $('#overlay').addEventListener('click',()=>{if(ovTap)ovTap()});
 addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&ovTap&&$('#overlay').classList.contains('on')){e.preventDefault();ovTap()}});
 function story(lines,done){let i=0;const step=()=>{i++;const html=lines.slice(0,i).map((l,k)=>`<p class="${k===i-1?'new':''}">${l}</p>`).join('');overlay(html,{tap:i<lines.length?step:()=>{closeOv();if(done)done()},hint:true})};step()}
@@ -316,7 +338,7 @@ function story(lines,done){let i=0;const step=()=>{i++;const html=lines.slice(0,
 // ---------- run ----------
 function startRun(withBoss){
   ensureAudio();st=stats();
-  R={heat:st.maxHeat,time:0,nodes:[],parts:[],shards:[],rings:[],beams:[],trail:[],combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,gain:{light:0,metal:0,mass:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
+  R={heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],shards:[],rings:[],beams:[],trail:[],combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,gain:{light:0,metal:0,mass:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
   for(let i=0;i<(withBoss?6:12);i++)spawnRandom(true);
   setMode('run');
   if(!S.tut){toast('끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
@@ -324,20 +346,22 @@ function startRun(withBoss){
 const cursor=()=>P.has?{x:P.x,y:P.touch?P.y-60:P.y}:{x:W/2,y:H*.6};
 const radPx=()=>Math.min(st.radius*U,Math.min(W,H)*.42);
 const topY=()=>90,botY=()=>H-30;
-function pickType(){const pool=POOL[S.stage];let tot=0;const w={};for(const k in pool){w[k]=pool[k]*(k==='comet'?st.comet:1);tot+=w[k]}let r=Math.random()*tot;for(const k in w){r-=w[k];if(r<=0)return k}return 'rock'}
+function pickType(){return ENCOUNTERS.pick(S.stage,st.comet,ENCOUNTERS.canSpawnHeat(R));}
 function spawnRandom(instant){
   let t=pickType();
-  if(S.mem[S.stage]<3&&!R.nodes.some(n=>n.t==='mem')&&Math.random()<.02)t='mem';
+  if(S.mem[S.stage]<3&&!R.nodes.some(n=>!n.dead&&TYPES[n.t].mem)&&Math.random()<.02)t='mem';
   spawn(t,instant);
 }
 function spawn(t,instant){
   const ty=TYPES[t],hp=ty.hp*Math.pow(6,S.stage);let x,y,vx,vy;
+  if(ty.ice)R.nextHeatAt=R.time+ENCOUNTERS.limits.heatSpawnGap;
   if(ty.fast){const left=Math.random()<.5;x=left?-20:W+20;y=topY()+Math.random()*(botY()-topY());vx=(left?1:-1)*(140+Math.random()*60)*U;vy=(Math.random()-.5)*30*U}
   else{x=30+Math.random()*(W-60);y=topY()+Math.random()*(botY()-topY());const a=Math.random()*TAU,sp=(4+Math.random()*10)*U;vx=Math.cos(a)*sp;vy=Math.sin(a)*sp}
-  R.nodes.push({t,x,y,vx,vy,hp,max:hp,r:ty.r*U,seed:Math.random()*1000,rot:Math.random()*TAU,spin:(Math.random()-.5)*1.2,born:instant?1:0,hit:0});
+  vx*=ty.speed;vy*=ty.speed;
+  R.nodes.push({t,x,y,vx,vy,hp,max:hp,age:0,r:ty.r*U,seed:Math.random()*1000,rot:Math.random()*TAU,spin:(Math.random()-.5)*1.2,born:instant?1:0,hit:0});
 }
 function makeBoss(){
-  const s=S.stage,hp=400*Math.pow(6,s)*[1,1.4,1.8,3,2.5][s];
+  const s=S.stage,hp=(s===0?90:120)*Math.pow(6,s)*[1,2,5,12,24][s];
   const b={k:s,x:W/2,y:H*.4,r:46*U,hp,max:hp,t:0,shield:false,moons:[],moonT:0,said:0,fire:0,vx:0,vy:0};
   if(s===2)spawnMoons(b);
   return b;
@@ -346,28 +370,31 @@ function spawnMoons(b){b.moons=[];for(let i=0;i<4;i++)b.moons.push({a:i*TAU/4,hp
 
 function hurt(n,amt){
   if(n.dead)return;
-  if(Math.random()<st.crit){amt*=3;burst(n.x,n.y,'#fff',3,1.4)}
-  if(TYPES[n.t].armor)amt*=Math.min(1,.35+st.pierce);
+  if(Math.random()<st.crit){amt*=st.critPower;burst(n.x,n.y,'#fff',3,1.4)}
+  const ty=TYPES[n.t];amt*=st[ty.kind+'Damage']||1;
+  if(ty.armor)amt*=Math.min(1,1-ty.armor+st.pierce);
   n.hp-=amt;n.hit=.12;
   if(st.execute&&n.hp>0&&n.hp/n.max<st.execute)n.hp=0;
   if(n.hp<=0)kill(n);
 }
 function kill(n){
+  if(n.dead)return;
   n.dead=true;const ty=TYPES[n.t],dm=Math.pow(6,S.stage),c=col();
-  if(ty.light){const v=ty.light*dm*st.light;S.cur.light+=v;R.gain.light+=v}
-  if(ty.metal&&S.stage>=1){const v=st.metal*S.stage;S.cur.metal+=v;R.gain.metal+=v}
-  if(ty.mass){const v=st.mass;S.cur.mass+=v;R.gain.mass+=v}
-  if(ty.ice)R.heat=Math.min(st.maxHeat,R.heat+st.iceHeat);
+  if(ty.light){const v=ty.light*dm*st.light*(st[ty.kind+'Light']||1);S.cur.light+=v;R.gain.light+=v}
+  if(ty.metal&&S.stage>=1){const v=ty.metal*st.metal*S.stage;S.cur.metal+=v;R.gain.metal+=v}
+  if(ty.mass){const v=ty.mass*st.mass;S.cur.mass+=v;R.gain.mass+=v}
+  if(ty.ice)ENCOUNTERS.recoverHeat(R,st,ty);
   if(ty.mem){const i=S.mem[S.stage];if(i<3){toast(MEM[S.stage][i],4200);S.mem[S.stage]=i+1;save();tone(note(12),1.2,.05,'triangle')}}
-  const pw=st.pw;burst(n.x,n.y,null,7+Math.round(pw*16),1+pw*1.2);mote(n.x,n.y);if(pw>.2)ring(n.x,n.y,(30+60*pw)*U,.45,pc(),1+pw*2);if(pw>.5&&Math.random()<pw*.5)burst(n.x,n.y,'#fff6e8',4,2.2);
+  const pw=st.pw;burst(n.x,n.y,null,(reduce?3:5)+Math.round(pw*pw*(reduce?10:28)),1+pw*1.8);mote(n.x,n.y);if(pw>.2)ring(n.x,n.y,(30+60*pw)*U,.45,pc(),1+pw*2);if(pw>.5&&Math.random()<pw*.5)burst(n.x,n.y,'#fff6e8',4,2.2);
   R.combo++;R.comboT=1.3;if(R.combo%50===0){const cc=cursor();ring(cc.x,cc.y,Math.min(W,H)*.6,.6,c.rgb,4);tone(note(15),.6,.04,'triangle')}
-  if(ty.gas){burst(n.x,n.y,'#e59bd0',12+Math.round(st.pw*20),1.8);ring(n.x,n.y,70*U,.5,'229,155,208',2+st.pw*2);const rr=70*U;for(const o of R.nodes)if(!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<rr+o.r)hurt(o,st.dmg*.8*st.chain)}
+  if(pw>.65&&R.combo%10===0){const cc=cursor();for(let i=0;i<(reduce?1:3);i++)ring(cc.x,cc.y,Math.min(W,H)*(.35+i*.16),.8+i*.15,c.pal[(i+R.combo/10)%5],2);burst(n.x,n.y,'#fff4cf',reduce?5:24,2.5);}
+  if(ty.gas){burst(n.x,n.y,'#e59bd0',12+Math.round(st.pw*20),1.8);ring(n.x,n.y,70*U*st.blastRadius*Math.sqrt(ty.gas),.5,'229,155,208',2+st.pw*2);const rr=70*U*st.blastRadius*Math.sqrt(ty.gas);for(const o of R.nodes)if(!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<rr+o.r)hurt(o,st.dmg*.8*st.chain*ty.gas)}
   const now=performance.now();if(now-lastKill>45){lastKill=now;tone(note(5+Math.floor(Math.random()*8)),.12,.025)}
 }
 function hurtBoss(amt){
   const b=R.boss;if(!b||b.hp<=0)return;
   if(b.shield)return;
-  if(Math.random()<st.crit)amt*=3;
+  if(Math.random()<st.crit)amt*=st.critPower;
   if(b.k===2&&b.moons.some(m=>m.hp>0))amt*=.15;
   b.hp-=amt;b.hit=.1;
   if(b.k===3){for(let i=b.said;i<REMNANT.length;i++){if(b.hp/b.max<REMNANT[i][0]){toast(REMNANT[i][1],3600);b.said=i+1}}}
@@ -378,6 +405,23 @@ function ring(x,y,max,life,c,w){R.rings.push({x,y,max,life,L:life,c,w})}
 function emitSpark(cur,rad){const c=col(),a=Math.random()*TAU;if(S.stage===4){const d=rad*(1.2+Math.random()*1.3);R.parts.push({x:cur.x+Math.cos(a)*d,y:cur.y+Math.sin(a)*d,vx:-Math.sin(a)*160*U-Math.cos(a)*60*U,vy:Math.cos(a)*160*U-Math.sin(a)*60*U,life:.7,max:.7,c:Math.random()<.3?'#fff6e8':`rgb(${pc()})`,s:(1+Math.random()*1.5)*U,swirl:1})}else{const v=(30+Math.random()*90*(1+st.pw))*U;R.parts.push({x:cur.x+Math.cos(a)*rad,y:cur.y+Math.sin(a)*rad,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20*U,life:.4+Math.random()*.4,max:.8,c:Math.random()<.3?'#fff6e8':`rgb(${pc()})`,s:(.8+Math.random()*1.4)*U})}}
 function drawFx(){
   const c=col(),cur=cursor(),pw=st.pw;
+  // Power adds overlapping ribbons and colored starbursts, not faster flashes.
+  if(mode==='run'&&pw>.25){
+    const intensity=Math.pow((pw-.25)/.75,2),rad=radPx();
+    const loops=reduce?2:2+Math.floor(intensity*6);
+    ctx.save();ctx.lineCap='round';
+    for(let j=0;j<loops;j++){
+      const spin=reduce?j:T*(.3+j*.05)*(j%2?-1:1),base=rad*(1.08+j*.07);
+      ctx.strokeStyle=`rgba(${c.pal[j%5]},${.08+intensity*.4})`;ctx.lineWidth=(1+intensity*1.4)*U;ctx.beginPath();
+      for(let i=0;i<=48;i++){const a=i/48*TAU,rr=base*(1+.07*Math.sin(a*3+spin)),px=cur.x+Math.cos(a+spin)*rr,py=cur.y+Math.sin(a+spin)*rr*.7;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();
+    }
+    if(!reduce&&intensity>.3)for(let i=0;i<Math.floor(12+intensity*28);i++){
+      const phase=(T*.18+i*.618)%1,a=i*2.399+T*.08,r=rad*.6+phase*Math.max(W,H)*.6;
+      const x=cur.x+Math.cos(a)*r,y=cur.y+Math.sin(a)*r;
+      ctx.strokeStyle=`rgba(${c.pal[i%5]},${(1-phase)*intensity*.55})`;ctx.lineWidth=1.2*U;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*(5+intensity*14)*U,y+Math.sin(a)*(5+intensity*14)*U);ctx.stroke();
+    }
+    ctx.restore();
+  }
   for(const g of R.rings){const t=1-g.life/g.L,r=g.max*(1-Math.pow(1-t,3));ctx.strokeStyle=`rgba(${g.c},${(1-t)*.9})`;ctx.lineWidth=g.w*(1-t)+.5;ctx.beginPath();ctx.arc(g.x,g.y,r,0,TAU);ctx.stroke()}
   if(pw>.12&&mode==='run'){ctx.lineWidth=1+pw*2;for(const bm of R.beams){ctx.strokeStyle=`rgba(${bm.c||c.rgb},${.3+pw*.6})`;ctx.beginPath();ctx.moveTo(cur.x,cur.y);const dx=bm.x-cur.x,dy=bm.y-cur.y,len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;for(let i=1;i<5;i++){const j=(Math.random()-.5)*len*.18;ctx.lineTo(cur.x+dx*i/5+nx*j,cur.y+dy*i/5+ny*j)}ctx.lineTo(bm.x,bm.y);ctx.stroke()}}
   if(R.trail.length>1&&mode==='run'){for(let i=0;i<st.sats;i++){ctx.beginPath();R.trail.forEach((tp,k)=>{const p=tp[i];if(!p)return;k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)});ctx.strokeStyle=`rgba(${c.pal[i%5]},.6)`;ctx.lineWidth=4*U;ctx.lineCap='round';ctx.stroke()}}
@@ -386,54 +430,64 @@ function mote(x,y){R.parts.push({x,y,vx:(Math.random()-.5)*80,vy:(Math.random()-
 
 function updateRun(dt){
   R.time+=dt;R.heat-=dt*st.decay;
+  if(R.heat<=0){R.heat=0;$('#heat').style.width='0%';$('#heatTxt').textContent='0.0초';endRun();return;}
   const cur=cursor(),rad=radPx();
   R.spawnAcc+=dt*2*st.spawn*(R.boss?.6:1);
   const maxN=Math.min(48,Math.round(26*st.spawn));
   while(R.spawnAcc>=1){R.spawnAcc--;if(R.nodes.filter(n=>!n.dead).length<maxN)spawnRandom(false)}
   for(const n of R.nodes){
     if(n.dead)continue;
-    n.born=Math.min(1,n.born+dt*3);n.hit=Math.max(0,n.hit-dt);n.rot+=n.spin*dt;
-    if(!TYPES[n.t].fast){
-      if(st.pull){const dx=cur.x-n.x,dy=cur.y-n.y,d=Math.hypot(dx,dy);if(d<rad*3&&d>4){n.vx+=dx/d*st.pull*70*U*dt;n.vy+=dy/d*st.pull*70*U*dt}}
+    n.age+=dt;n.born=Math.min(1,n.born+dt*3);n.hit=Math.max(0,n.hit-dt);n.rot+=n.spin*dt;
+    const ty=TYPES[n.t];
+    if(!ty.fast){
+      const phase=n.age*2+n.seed;
+      if(ty.motion==='wave')n.vx+=Math.sin(phase)*8*U*dt;
+      if(ty.motion==='orbit'){n.vx+=Math.cos(phase)*14*U*dt;n.vy+=Math.sin(phase)*14*U*dt;}
+      if(ty.motion==='zigzag')n.vx+=Math.sin(phase*2)*18*U*dt;
+      if(st.pull){const dx=cur.x-n.x,dy=cur.y-n.y,d=Math.hypot(dx,dy);if(d<rad*3*st.pullReach&&d>4){n.vx+=dx/d*st.pull*70*U*dt;n.vy+=dy/d*st.pull*70*U*dt}}
       const sp=Math.hypot(n.vx,n.vy),cap=60*U;if(sp>cap){n.vx*=cap/sp;n.vy*=cap/sp}
       n.vx*=1-dt*.3;n.vy*=1-dt*.3;
       if(Math.hypot(n.vx,n.vy)<3*U){const a=Math.random()*TAU;n.vx+=Math.cos(a)*6*U;n.vy+=Math.sin(a)*6*U}
     }
-    n.x+=n.vx*dt;n.y+=n.vy*dt;
+    const slow=ty.fast&&Math.hypot(n.x-cur.x,n.y-cur.y)<rad+n.r?1-st.cometSlow:1;
+    n.x+=n.vx*dt*slow;n.y+=n.vy*dt*slow;
+    if(ty.fast&&ty.motion==='wave')n.y+=Math.sin(n.age*3+n.seed)*18*U*dt;
     if(TYPES[n.t].fast){if(n.x<-60||n.x>W+60)n.dead=true}
     else{if(n.x<n.r){n.x=n.r;n.vx=Math.abs(n.vx)}if(n.x>W-n.r){n.x=W-n.r;n.vx=-Math.abs(n.vx)}if(n.y<topY()){n.y=topY();n.vy=Math.abs(n.vy)}if(n.y>botY()){n.y=botY();n.vy=-Math.abs(n.vy)}}
   }
   R.satA+=dt*2.4;
   R.tick+=dt;
   while(R.tick>=.1){R.tick-=.1;damageTick(cur,rad)}
-  if(st.flare){R.flareT+=dt;if(R.flareT>=7-st.flare){R.flareT=0;R.flash=.7;R.shake=reduce?0:8;{const cc=cursor();ring(cc.x,cc.y,Math.hypot(W,H),.9,col().rgb,6);ring(cc.x,cc.y,Math.hypot(W,H)*.6,.7,'255,246,232',3);burst(cc.x,cc.y,col().color,70,4)}tone(110,.6,.06,'sawtooth');for(const n of R.nodes)if(!n.dead)hurt(n,st.dmg*1.5);if(R.boss)hurtBoss(st.dmg*1.5)}}
+  if(st.flare){R.flareT+=dt;if(R.flareT>=7-st.flare){R.flareT=0;R.flash=.7;R.shake=reduce?0:8;{const cc=cursor();ring(cc.x,cc.y,Math.hypot(W,H),.9,col().rgb,6);ring(cc.x,cc.y,Math.hypot(W,H)*.6,.7,'255,246,232',3);burst(cc.x,cc.y,col().color,70,4)}tone(110,.6,.06,'sawtooth');for(const n of R.nodes)if(!n.dead)hurt(n,st.dmg*st.flareDamage);if(R.boss)hurtBoss(st.dmg*st.flareDamage)}}
   if(R.boss&&mode==='run')updateBoss(dt,cur,rad);
   for(const p of R.parts){p.life-=dt;if(p.home){const tx=40,ty=30,dx=tx-p.x,dy=ty-p.y;p.vx+=dx*6*dt;p.vy+=dy*6*dt;p.vx*=1-dt*2.5;p.vy*=1-dt*2.5;if(Math.hypot(dx,dy)<20)p.life=0}else if(p.swirl){const cc=cursor();p.vx+=(cc.x-p.x)*5*dt;p.vy+=(cc.y-p.y)*5*dt}else{p.vx*=1-dt*2;p.vy*=1-dt*2}p.x+=p.vx*dt;p.y+=p.vy*dt}
   R.parts=R.parts.filter(p=>p.life>0);
-  if(R.parts.length>1100)R.parts.splice(0,R.parts.length-1100);
-  for(const g of R.rings)g.life-=dt;R.rings=R.rings.filter(g=>g.life>0);if(R.rings.length>60)R.rings.splice(0,R.rings.length-60);
+  const particleCap=reduce?350:1000+Math.round(st.pw*400);if(R.parts.length>particleCap)R.parts.splice(0,R.parts.length-particleCap);
+  for(const g of R.rings)g.life-=dt;R.rings=R.rings.filter(g=>g.life>0);const ringCap=reduce?24:72;if(R.rings.length>ringCap)R.rings.splice(0,R.rings.length-ringCap);
   R.comboT-=dt;if(R.comboT<=0)R.combo=0;
-  R.sparkAcc+=dt*(6+st.pw*90);while(R.sparkAcc>=1){R.sparkAcc--;emitSpark(cur,rad)}
+  R.sparkAcc+=dt*(4+st.pw*st.pw*(reduce?35:140));while(R.sparkAcc>=1){R.sparkAcc--;emitSpark(cur,rad)}
   if(st.sats){R.trail.push(Array.from({length:st.sats},(_,i)=>satPos(cur,rad,i)));if(R.trail.length>14)R.trail.shift()}
   R.nodes=R.nodes.filter(n=>!n.dead);
   R.shake=Math.max(0,R.shake-dt*30);R.flash=Math.max(0,R.flash-dt*1.5);
   if(R.heat<=0&&mode==='run'){R.heat=0;endRun()}
   // HUD
   $('#heat').style.width=Math.max(0,R.heat/st.maxHeat*100)+'%';
-  const ht=R.heat.toFixed(1);if($('#heatTxt').textContent!==ht)$('#heatTxt').textContent=ht;
+  const ht=(R.heat/st.decay).toFixed(1)+'초';$('#timeBonus').textContent=`연장 ${R.bonusSeconds.toFixed(1)} / 8초`;if($('#heatTxt').textContent!==ht)$('#heatTxt').textContent=ht;
   if(R.boss){$('#bossFill').style.width=(R.boss.hp/R.boss.max*100)+'%';$('#bossName').textContent=col().boss}
   refreshCur();
 }
 function satPos(cur,rad,i){const a=R.satA+i*TAU/st.sats;return{x:cur.x+Math.cos(a)*rad*1.5,y:cur.y+Math.sin(a)*rad*1.5}}
 function damageTick(cur,rad){
   const base=st.dmg*.1;
-  R.beams=[];for(const n of R.nodes){if(!n.dead&&Math.hypot(cur.x-n.x,cur.y-n.y)<rad+n.r){if(R.beams.length<14)R.beams.push({x:n.x,y:n.y,c:pc()});hurt(n,base)}}
+  const target=R.nodes.filter(n=>!n.dead&&Math.hypot(cur.x-n.x,cur.y-n.y)<rad+n.r).sort((a,b)=>Math.hypot(cur.x-a.x,cur.y-a.y)-Math.hypot(cur.x-b.x,cur.y-b.y))[0];
+  $('#targetName').textContent=target?TYPES[target.t].name:'';
+  R.beams=[];for(const n of R.nodes){if(!n.dead&&Math.hypot(cur.x-n.x,cur.y-n.y)<rad+n.r){if(R.beams.length<14)R.beams.push({x:n.x,y:n.y,c:pc()});hurt(n,base*(Math.hypot(cur.x-n.x,cur.y-n.y)>rad*.65?st.edgeDamage:1))}}
   const sats=[];for(let i=0;i<st.sats;i++)sats.push(satPos(cur,rad,i));
-  for(const s of sats)for(const n of R.nodes){if(!n.dead&&Math.hypot(s.x-n.x,s.y-n.y)<12*U+n.r)hurt(n,base*.6)}
+  for(const s of sats)for(const n of R.nodes){if(!n.dead&&Math.hypot(s.x-n.x,s.y-n.y)<st.satRadius*U+n.r)hurt(n,base*st.satDamage)}
   const b=R.boss;if(!b)return;
-  if(b.k===2)for(const m of b.moons){if(m.hp<=0)continue;let hit=Math.hypot(cur.x-m.x,cur.y-m.y)<rad+m.r;for(const s of sats)if(Math.hypot(s.x-m.x,s.y-m.y)<12*U+m.r)hit=true;if(hit){m.hp-=base;m.hit=.1;if(m.hp<=0){burst(m.x,m.y,'#d9c9a0',10,1.4);tone(note(3),.3,.04)}}}
+  if(b.k===2)for(const m of b.moons){if(m.hp<=0)continue;let hit=Math.hypot(cur.x-m.x,cur.y-m.y)<rad+m.r;for(const s of sats)if(Math.hypot(s.x-m.x,s.y-m.y)<st.satRadius*U+m.r)hit=true;if(hit){m.hp-=base;m.hit=.1;if(m.hp<=0){burst(m.x,m.y,'#d9c9a0',10,1.4);tone(note(3),.3,.04)}}}
   if(Math.hypot(cur.x-b.x,cur.y-b.y)<rad+b.r){R.beams.push({x:b.x,y:b.y,c:pc()});hurtBoss(base)}
-  for(const s of sats)if(Math.hypot(s.x-b.x,s.y-b.y)<12*U+b.r)hurtBoss(base*.6);
+  for(const s of sats)if(Math.hypot(s.x-b.x,s.y-b.y)<st.satRadius*U+b.r)hurtBoss(base*st.satDamage);
 }
 function updateBoss(dt,cur,rad){
   const b=R.boss;b.t+=dt;b.hit=Math.max(0,(b.hit||0)-dt);
@@ -469,25 +523,15 @@ function resetGame(){if(DEMO){endDemo();return;}DEMO=null;const snd=S.sound;S=fr
 
 // ---------- hub (upgrade tree) ----------
 let pulse=null,camK=0;const seen={};
-const PARENT={h0a:null,h0b:'h0a',h1a:'h0a',h2a:'h1a',h3a:'h0b',h4a:'h2a',
-  p0a:null,p0b:'p0a',p1a:'p0a',p1b:'p0b',p2a:'p1a',p3a:'p1a',p4a:'p2a',
-  r0a:null,r1a:'r0a',r2a:'r1a',r3a:'r1a',r4a:'r2a',
-  v0a:null,v0b:'v0a',v1a:'v0b',v2a:'v0a',v3a:'v2a',v4a:'v1a',
-  x0a:null,x1a:'x0a',x2a:'x1a',x3a:'x1a',x4a:'x3a'};
-const TREE={};
-(function(){const kids={};for(const u of UP){const p=PARENT[u.id]||'core';(kids[p]=kids[p]||[]).push(u)}
-  function place(u,x,y,a,depth,spread){TREE[u.id]={x,y,a,depth,bend:rnd(depth*13+u.b,7)-.5};const ks=kids[u.id]||[];
-    ks.forEach((k,i)=>{const off=ks.length===1?(rnd(depth*7+u.b*3,i+3)-.5)*.35:(i-(ks.length-1)/2)*spread;const na=a+off;place(k,x+Math.cos(na),y+Math.sin(na),na,depth+1,spread*.8)})}
-  for(const u of (kids.core||[])){const a=-Math.PI/2+u.b*TAU/5;place(u,Math.cos(a)*.9,Math.sin(a)*.9,a,1,.75)}
-})();
+const {parents:PARENT,positions:TREE}=window.OjjudaSaetbyeolBranches.tree(UP);
 const vis=u=>{const p=PARENT[u.id];return lv(u.id)>0||!p||lv(p)>0};
 function hubGeo(){
-  const panel=$('#panel').offsetHeight||240,top=84;
+  const panel=$('#panel').offsetHeight||240,top=110;
   const ah=Math.max(80,H-top-panel);
   const cx=W/2,cy=top+ah/2,R0=Math.min(W*.47,ah*.47);
   let dmax=0;for(const u of UP)if(vis(u)){const t=TREE[u.id];dmax=Math.max(dmax,Math.hypot(t.x,t.y))}
   const target=R0/Math.max(dmax+.45,1.6);if(!camK)camK=target;
-  return{cx,cy,R0,k:camK,target};
+  return{cx:cx+treeView.x,cy:cy+treeView.y,centerX:cx,centerY:cy,R0,k:camK*treeView.zoom,baseK:camK,target,top,bottom:H-panel};
 }
 function upPos(u,g){const t=TREE[u.id];return{x:g.cx+t.x*g.k,y:g.cy+t.y*g.k}}
 function parentPos(u,g){const p=PARENT[u.id];return p?upPos(UP.find(x=>x.id===p),g):{x:g.cx,y:g.cy}}
@@ -498,9 +542,9 @@ function hubTap(x,y){
 }
 const qpt=(a,c,b,t)=>({x:(1-t)*(1-t)*a.x+2*(1-t)*t*c.x+t*t*b.x,y:(1-t)*(1-t)*a.y+2*(1-t)*t*c.y+t*t*b.y});
 function drawHub(dt){
-  const g0=hubGeo();camK+=(g0.target-camK)*Math.min(1,dt*2.5);const g=hubGeo(),c=col(),gate=GROWTH.state(S.lv);
+  const g0=hubGeo();if(treeView.zoom===1)camK+=(g0.target-camK)*Math.min(1,dt*2.5);const g=hubGeo(),c=col(),gate=GROWTH.state(S.lv);
   if(!drawHub.init){for(const u of UP)if(vis(u))seen[u.id]=-9;drawHub.init=true}
-  ctx.save();ctx.lineCap='round';
+  ctx.save();ctx.beginPath();ctx.rect(0,g.top,W,Math.max(1,g.bottom-g.top));ctx.clip();ctx.lineCap='round';
   if(pulse){pulse.t+=dt;if(pulse.t>.8)pulse=null}
   // branches
   const grow={};
@@ -525,7 +569,7 @@ function drawHub(dt){
   // nodes
   for(const u of UP){if(!vis(u))continue;const gp=grow[u.id];if(gp<.8)continue;const sc=(gp-.8)/.2;
     const p=upPos(u,g),l=lv(u.id),sel=S.sel===u.id,locked=!!upgradeLock(u,gate),afford=!locked&&l<u.mx&&S.cur[u.k]>=cost(u),k=c.pal[u.b];
-    const r=(l>=u.mx?11:9)*sc;
+    const r=Math.max(3,Math.min(l>=u.mx?11:9,g.k*.22))*sc;
     if(l>0){const a=.35+.65*l/u.mx;const gg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*3.5);gg.addColorStop(0,`rgba(${k},${a*.7})`);gg.addColorStop(1,`rgba(${k},0)`);ctx.fillStyle=gg;ctx.beginPath();ctx.arc(p.x,p.y,r*3.5,0,TAU);ctx.fill()}
     ctx.beginPath();ctx.arc(p.x,p.y,r,0,TAU);
     ctx.fillStyle=l>0?(l>=u.mx?'#fffaf0':`rgb(${k})`):'rgba(6,8,26,1)';ctx.fill();
@@ -570,56 +614,81 @@ function drawBg(){
 }
 function poly(x,y,r,n,seed,rot,j){ctx.beginPath();for(let i=0;i<n;i++){const a=i/n*TAU+rot,rr=r*(1-j+j*rnd(seed,i));const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
 function drawNode(n){
-  const c=col(),r=n.r*(.3+.7*n.born),{lx,ly}=nodeLight(n),x=n.x,y=n.y;
+  const ty=TYPES[n.t],rgb=hexRGB(ty.color).join(','),c=col(),pulse=ty.motion==='pulse'?1+Math.sin(T*2+n.seed)*.08:1;
+  const r=n.r*(.3+.7*n.born)*pulse,{lx,ly}=nodeLight(n),x=n.x,y=n.y;
   ctx.save();ctx.globalAlpha=n.born;
-  switch(n.t){
+  switch(ty.kind){
     case 'rock':case 'iron':{
-      const iron=n.t==='iron',base=iron?'#7d8296':c.rock;
-      poly(x,y,r,iron?6:9,n.seed,n.rot,iron?.06:.32);
-      const g=ctx.createRadialGradient(x+lx*r*.45,y+ly*r*.45,r*.1,x,y,r*1.25);g.addColorStop(0,shade(base,iron?1.55:1.35));g.addColorStop(.55,shade(base,.75));g.addColorStop(1,shade(base,.22));ctx.fillStyle=g;ctx.fill();
+      const iron=ty.kind==='iron';poly(x,y,r,ty.sides,n.seed,n.rot,iron?.06:.25);
+      const g=ctx.createRadialGradient(x+lx*r*.45,y+ly*r*.45,r*.1,x,y,r*1.25);
+      g.addColorStop(0,shade(ty.color,1.45));g.addColorStop(.55,shade(ty.color,.75));g.addColorStop(1,shade(ty.color,.2));ctx.fillStyle=g;ctx.fill();
       ctx.save();ctx.clip();
-      if(iron){ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;poly(x,y,r*.6,6,n.seed,n.rot,0);ctx.stroke();ctx.fillStyle='rgba(20,22,30,.55)';ctx.beginPath();ctx.arc(x,y,r*.15,0,TAU);ctx.fill()}
-      else{const la=Math.atan2(ly,lx)+Math.PI;for(let i=0;i<3;i++){const a=rnd(n.seed,i+20)*TAU+n.rot,d=r*.45*rnd(n.seed,i+30),cr=r*(.14+.14*rnd(n.seed,i+40)),cx=x+Math.cos(a)*d,cy=y+Math.sin(a)*d;ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.arc(cx,cy,cr,0,TAU);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,cr,la-1.2,la+1.2);ctx.stroke()}}
-      ctx.globalCompositeOperation='lighter';const rg=ctx.createRadialGradient(x+lx*r,y+ly*r,0,x+lx*r,y+ly*r,r*1.1);rg.addColorStop(0,`rgba(${c.rgb},.6)`);rg.addColorStop(1,`rgba(${c.rgb},0)`);ctx.fillStyle=rg;ctx.fillRect(x-r*1.5,y-r*1.5,r*3,r*3);
-      if(n.hit>0){ctx.strokeStyle=`rgba(${c.pal[1]},.95)`;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.beginPath();for(let i=0;i<3;i++){const a=rnd(n.seed,i+50)*TAU;ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*r*.5+Math.sin(T*20+i)*1.2,y+Math.sin(a)*r*.5);ctx.lineTo(x+Math.cos(a+.4)*r,y+Math.sin(a+.4)*r)}ctx.stroke();const hg=ctx.createRadialGradient(x,y,0,x,y,r);hg.addColorStop(0,`rgba(${c.pal[1]},.45)`);hg.addColorStop(1,`rgba(${c.pal[1]},0)`);ctx.fillStyle=hg;ctx.fillRect(x-r,y-r,r*2,r*2)}
-      ctx.restore();break}
+      if(ty.mark==='craters')for(let i=0;i<(ty.craters||3);i++){
+        const a=rnd(n.seed,i+20)*TAU+n.rot,d=r*.6*rnd(n.seed,i+30),cr=r*(.1+.12*rnd(n.seed,i+40));
+        ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.arc(x+Math.cos(a)*d,y+Math.sin(a)*d,cr,0,TAU);ctx.fill();
+      }
+      ctx.strokeStyle=shade(ty.color,1.8,.45);ctx.lineWidth=1;
+      if(iron){poly(x,y,r*.64,ty.sides,n.seed,n.rot,0);ctx.stroke();}
+      if(n.hit>0)aura(x,y,r, rgb,.55);
+      ctx.restore();break;
+    }
     case 'ice':{
-      ctx.translate(x,y);ctx.rotate(n.rot);
-      const pts=[[0,-r*1.25],[r*.7,0],[0,r*1.05],[-r*.7,0]];
-      ctx.globalCompositeOperation='lighter';aura(0,0,r*2.2,'160,220,255',.3);ctx.globalCompositeOperation='source-over';
-      ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
-      const g=ctx.createLinearGradient(-r,-r,r,r);g.addColorStop(0,'#f2fbff');g.addColorStop(.5,'#9fd6f5');g.addColorStop(1,'#3d7fb8');ctx.fillStyle=g;ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.beginPath();for(const p of pts){ctx.moveTo(0,0);ctx.lineTo(p[0],p[1])}ctx.stroke();
-      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-r*.18,-r*.5,r*.12,0,TAU);ctx.fill();
-      if(n.hit>0){ctx.globalCompositeOperation='lighter';aura(0,0,r*1.2,c.rgb,.6)}
-      break}
+      aura(x,y,r*2.1,rgb,.25);ctx.save();ctx.translate(x,y);ctx.rotate(n.rot);
+      const points=Array.from({length:ty.sides},(_,i)=>{const a=i/ty.sides*TAU-Math.PI/2;return [Math.cos(a)*r*.8,Math.sin(a)*r*1.15];});
+      ctx.beginPath();points.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.closePath();
+      const g=ctx.createLinearGradient(-r,-r,r,r);g.addColorStop(0,shade(ty.color,1.8));g.addColorStop(.5,ty.color);g.addColorStop(1,shade(ty.color,.45));ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=.9;ctx.stroke();ctx.beginPath();for(const p of points){ctx.moveTo(0,0);ctx.lineTo(...p);}ctx.stroke();ctx.restore();
+      break;
+    }
     case 'gas':{
       ctx.globalCompositeOperation='lighter';
-      for(let i=0;i<3;i++){const a=T*.6*(i%2?1:-1)+n.seed+i*2.1,ox=Math.cos(a)*r*.35,oy=Math.sin(a)*r*.35,k=['229,120,200','170,120,255','255,160,210'][i];aura(x+ox,y+oy,r*1.25,k,.55)}
-      ctx.fillStyle='rgba(255,235,248,.85)';ctx.beginPath();ctx.arc(x,y,r*.18,0,TAU);ctx.fill();
-      if(n.hit>0)aura(x,y,r*1.4,c.rgb,.5);
-      break}
+      for(let i=0;i<ty.lobes;i++){const a=T*.4*(i%2?1:-1)+n.seed+i*TAU/ty.lobes; aura(x+Math.cos(a)*r*.4,y+Math.sin(a)*r*.4,r,rgb,.35);}
+      ctx.fillStyle=shade(ty.color,1.8,.85);ctx.beginPath();ctx.arc(x,y,r*.2,0,TAU);ctx.fill();break;
+    }
     case 'comet':{
-      const sp=Math.hypot(n.vx,n.vy)||1,tx=-n.vx/sp,ty=-n.vy/sp,L=r*9;
+      const speed=Math.hypot(n.vx,n.vy)||1,tx=-n.vx/speed,tyv=-n.vy/speed,length=r*(6+ty.tail);
       ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
-      let g=ctx.createLinearGradient(x,y,x+tx*L,y+ty*L);g.addColorStop(0,'rgba(140,200,255,.75)');g.addColorStop(1,'rgba(140,200,255,0)');ctx.strokeStyle=g;ctx.lineWidth=r*.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+tx*L,y+ty*L);ctx.stroke();
-      g=ctx.createLinearGradient(x,y,x+tx*L*.7,y+ty*L*.7);g.addColorStop(0,`rgba(${c.pal[1]},.55)`);g.addColorStop(1,`rgba(${c.pal[1]},0)`);ctx.strokeStyle=g;ctx.lineWidth=r*1.6;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+tx*L*.35-ty*r*2,y+ty*L*.35+tx*r*2,x+tx*L*.7-ty*r*4,y+ty*L*.7+tx*r*4);ctx.stroke();
-      g=ctx.createRadialGradient(x,y,0,x,y,r*2.5);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.3,'rgba(200,230,255,.6)');g.addColorStop(1,'rgba(200,230,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*2.5,0,TAU);ctx.fill();break}
+      for(let i=0;i<ty.tail;i++){
+        const spread=(i-(ty.tail-1)/2)*r*2,ex=x+tx*length-tyv*spread,ey=y+tyv*length+tx*spread;
+        const g=ctx.createLinearGradient(x,y,ex,ey);g.addColorStop(0,`rgba(${rgb},.8)`);g.addColorStop(1,`rgba(${rgb},0)`);ctx.strokeStyle=g;ctx.lineWidth=r*(i===0?.65:.35);
+        ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+tx*length*.4-tyv*spread*.3,y+tyv*length*.4+tx*spread*.3,ex,ey);ctx.stroke();
+      }
+      aura(x,y,r*2.2,rgb,.7);ctx.fillStyle='#fff6e8';ctx.beginPath();ctx.arc(x,y,r*.4,0,TAU);ctx.fill();break;
+    }
     case 'mem':{
-      const p=.5+.5*Math.sin(T*3+n.seed);ctx.globalCompositeOperation='lighter';aura(x,y,r*3,'140,190,255',.35+.25*p);ctx.globalCompositeOperation='source-over';
-      const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.05,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.4,'#8fc0ff');g.addColorStop(1,'#1d3f8a');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*.75,0,TAU);ctx.fill();
-      const e=n.seed+T*.3;ctx.strokeStyle='rgba(190,220,255,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y,r*1.5,r*.5,e,0,TAU);ctx.stroke();
-      for(let i=0;i<3;i++){const a=T*1.5+i*TAU/3,px=Math.cos(a)*r*1.5,py=Math.sin(a)*r*.5;ctx.fillStyle='#e8f2ff';ctx.beginPath();ctx.arc(x+px*Math.cos(e)-py*Math.sin(e),y+px*Math.sin(e)+py*Math.cos(e),1.6,0,TAU);ctx.fill()}
-      break}
+      aura(x,y,r*2.7,rgb,.4);sphere(x,y,r*.75,ty.color,lx,ly);
+      ctx.strokeStyle=shade(ty.color,1.5,.8);ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y,r*1.5,r*.5,n.seed+T*.3,0,TAU);ctx.stroke();break;
+    }
     case 'star':{
-      ctx.globalCompositeOperation='lighter';
-      const g=ctx.createRadialGradient(x,y,0,x,y,r*2.6);g.addColorStop(0,'rgba(255,252,235,1)');g.addColorStop(.25,`rgba(${c.pal[3]},.7)`);g.addColorStop(1,`rgba(${c.pal[3]},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*2.6,0,TAU);ctx.fill();
-      const L=r*(3.5+Math.sin(T*4+n.seed)*.6);ctx.fillStyle='rgba(255,250,230,.7)';
-      for(const [a,l] of [[0,1],[Math.PI/2,1],[Math.PI/4,.5],[-Math.PI/4,.5]]){ctx.save();ctx.translate(x,y);ctx.rotate(a+n.seed);ctx.beginPath();ctx.moveTo(-L*l,0);ctx.lineTo(0,-1.2);ctx.lineTo(L*l,0);ctx.lineTo(0,1.2);ctx.closePath();ctx.fill();ctx.restore()}
-      break}
+      ctx.globalCompositeOperation='lighter';aura(x,y,r*2.4,rgb,.6);
+      ctx.save();ctx.translate(x,y);ctx.rotate(n.seed+T*.08);ctx.beginPath();
+      for(let i=0;i<ty.rays*2;i++){const a=i/(ty.rays*2)*TAU,rr=i%2?r*.2:r*1.6;i?ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+      ctx.closePath();ctx.fillStyle=shade(ty.color,1.6,.75);ctx.fill();ctx.restore();break;
+    }
   }
   ctx.restore();
-  if(n.hp<n.max&&n.hp>0){ctx.save();ctx.strokeStyle=`rgba(${c.pal[0]},.9)`;ctx.lineWidth=2;ctx.lineCap='round';ctx.beginPath();ctx.arc(x,y,r+5*U,-Math.PI/2,-Math.PI/2+TAU*n.hp/n.max);ctx.stroke();ctx.restore()}
+  ctx.save();ctx.globalAlpha=n.born;ctx.translate(x,y);ctx.rotate(n.rot*.5);ctx.strokeStyle=shade(ty.color,1.7,.7);ctx.fillStyle=shade(ty.color,1.3,.8);ctx.lineWidth=1;
+  if(['crack','lava','spokes','facets','snow'].includes(ty.mark)){
+    const arms=ty.mark==='snow'?6:ty.mark==='spokes'?5:3;
+    for(let i=0;i<arms;i++){const a=i/arms*TAU;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a+.2)*r*.4,Math.sin(a+.2)*r*.4);ctx.lineTo(Math.cos(a)*r*.85,Math.sin(a)*r*.85);ctx.stroke();}
+  }else if(ty.mark==='bands'){
+    ctx.save();ctx.beginPath();ctx.arc(0,0,r*.85,0,TAU);ctx.clip();for(const v of [-.4,0,.4]){ctx.beginPath();ctx.moveTo(-r,r*v);ctx.lineTo(r,r*v+.25*r);ctx.stroke();}ctx.restore();
+  }else if(['ring','orbit','clock','pulse'].includes(ty.mark)){
+    ctx.beginPath();ctx.ellipse(0,0,r*1.35,r*(ty.mark==='clock'?1.35:.55),.3,0,TAU);ctx.stroke();
+    if(ty.mark==='clock'){ctx.beginPath();ctx.moveTo(0,-r*.6);ctx.lineTo(0,0);ctx.lineTo(r*.4,0);ctx.stroke();}
+    if(ty.mark==='orbit'){const a=T+n.seed;ctx.beginPath();ctx.arc(Math.cos(a)*r*1.35,Math.sin(a)*r*.55,r*.16,0,TAU);ctx.fill();}
+  }else if(ty.mark==='twin'){
+    sphere(r*.65,-r*.45,r*.5,ty.color,-.7,-.7);
+  }else if(['dust','cluster'].includes(ty.mark)){
+    for(let i=0;i<4;i++){const a=n.seed+i*TAU/4;ctx.beginPath();ctx.arc(Math.cos(a)*r*1.15,Math.sin(a)*r*1.15,r*(.1+i*.035),0,TAU);ctx.fill();}
+  }else if(ty.mark==='beam'){
+    ctx.globalCompositeOperation='lighter';ctx.lineWidth=r*.22;ctx.beginPath();ctx.moveTo(0,-r*2.5);ctx.lineTo(0,r*2.5);ctx.stroke();
+  }else if(ty.mark==='core'){
+    ctx.fillStyle='#fff0d9';ctx.beginPath();ctx.arc(0,0,r*.24,0,TAU);ctx.fill();
+  }
+  if(ty.ice){ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-r*.2,0);ctx.lineTo(r*.2,0);ctx.moveTo(0,-r*.2);ctx.lineTo(0,r*.2);ctx.stroke();}
+  ctx.restore();
+  if(n.hp<n.max&&n.hp>0){ctx.save();ctx.strokeStyle=`rgba(${rgb},.95)`;ctx.lineWidth=2;ctx.lineCap='round';ctx.beginPath();ctx.arc(x,y,r+5*U,-Math.PI/2,-Math.PI/2+TAU*n.hp/n.max);ctx.stroke();ctx.restore();}
 }
 function drawBoss(b){
   const c=col(),cur=cursor();let lx=cur.x-b.x,ly=cur.y-b.y;const d=Math.hypot(lx,ly)||1;lx/=d;ly/=d;
@@ -731,6 +800,8 @@ function frame(t){
 }
 
 // ---------- boot ----------
+treeControls=window.OjjudaSaetbyeolTreeControls.install({canvas:cv,active:()=>mode==='hub',view:treeView,geometry:hubGeo,select:hubTap});
+$('#treeFocus').onclick=()=>{if(S.sel)treeControls.focus(TREE[S.sel]);};
 applyTheme();
 window.OjjudaSaetbyeolEntry.connect({
   upgrades:UP,getState:()=>S,isDemo:()=>!!DEMO,isRunning:()=>mode==='run',loadState:loadProgress,

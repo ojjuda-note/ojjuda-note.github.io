@@ -25,3 +25,25 @@ body[data-mode="entry"]{touch-action:pan-y}
 #panel{max-height:calc(100dvh - 100px);overflow:auto;touch-action:pan-y}
 @media(max-height:640px){body #panel{padding-top:16px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}#growth{margin-bottom:6px}body #info{min-height:0}body #uName{font-size:18px}body #uDesc{font-size:12px;margin-bottom:4px}body #acts{margin-top:8px}body #acts button{min-height:44px}body #memLine{margin-top:4px}}
 @media(max-width:380px){#starEntry{padding:16px 12px}#starEntry .game-entry{padding:24px 18px}}
+#runInfo{display:none;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 82px);left:16px;right:16px;gap:12px;pointer-events:none;font-size:11px;text-shadow:0 1px 5px #030616;color:#eee8ff}
+body[data-mode="run"] #runInfo{display:flex}
+body[data-mode="run"].boss #runInfo{top:calc(env(safe-area-inset-top,0px) + 104px)}
+#targetName{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#timeBonus{white-space:nowrap;font-variant-numeric:tabular-nums}
+#treeTools{display:none;position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 54px);left:16px;right:16px;align-items:center;gap:6px}
+body[data-mode="hub"] #treeTools{display:flex}
+#treeTools button{font-size:12px;min-width:40px;min-height:40px;padding:5px 10px;background:rgba(6,8,26,.8)}
+#treeCount{flex:1;font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+#overlay.catalog{padding:24px 16px;touch-action:pan-y}
+#overlay.catalog #ovText{width:min(100%,560px);max-height:calc(100dvh - 150px);overflow:auto;overscroll-behavior:contain;text-align:left;font-family:inherit;font-size:13px;line-height:1.6;touch-action:pan-y}
+#overlay.catalog #ovBtns{margin-top:14px;flex-shrink:0}
+#overlay.catalog #ovHint{display:none}
+.catalog-group{margin:20px 0}
+.catalog-group h3{color:var(--flame);font-size:15px;margin:0 0 8px}
+.catalog-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.catalog-list li{border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
+.catalog-list b{display:block;font-size:13px;color:var(--ink)}
+.catalog-list small{display:block;font-size:11px;color:var(--dim)}
+.catalog-symbol{float:left;margin:0 6px 0 0;color:var(--target-color);font-size:22px;line-height:1.2;text-shadow:0 0 12px var(--target-color)}
+.catalog-locked{opacity:.5}
+@media(max-width:340px){#treeTools{left:10px;right:10px;gap:4px}#treeTools button{padding:5px 7px}.catalog-list{grid-template-columns:1fr}}

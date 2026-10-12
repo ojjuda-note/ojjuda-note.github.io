@@ -1,32 +1,6 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const {JSDOM} = require('jsdom');
-const root = path.resolve(__dirname, '..');
-const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const source = read('games/bulssi/index.html');
-const owner = '10000000-0000-0000-0000-000000000001';
-function game({admin = false, member = 'guest', saved = null} = {}) {
-  const dom = new JSDOM(source, {url:'https://fixture.test/games/bulssi/', runScripts:'outside-only'});
-  const w = dom.window, messages = [], timers = new Map(); let timerId = 0;
-  const parent = {postMessage:(data, origin) => messages.push({data, origin})};
-  Object.defineProperty(w, 'parent', {value:parent});
-  w.matchMedia = () => ({matches:false});
-  w.requestAnimationFrame = () => 1;
-  w.setTimeout = (fn, ms) => { timers.set(++timerId, {fn, ms}); return timerId; };
-  w.clearTimeout = id => timers.delete(id);
-  w.confirm = () => true;
-  w.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, {get:(_, key) => key === 'measureText' ? () => ({width:20}) : () => {}});
-  if (saved) w.localStorage.setItem('ojjuda.saetbyeol.save.v1:' + member, JSON.stringify(saved));
-  w.eval(read('games/bulssi/entry.js'));
-  w.eval(read('games/bulssi/growth.js'));
-  const script = [...w.document.querySelectorAll('script:not([src])')][0].textContent;
-  w.eval(script.replace('requestAnimationFrame(frame);\n})();', 'window.fixture={get state(){return S},get demo(){return DEMO},get mode(){return mode},upgrades:UP,growth:GROWTH,upgradeLock,refresh,selectDefault,cost,stats,save,startDemo,endDemo,resetGame,winBoss,finale,loadProgress};\nrequestAnimationFrame(frame);\n})();'));
-  const receive = (data, origin = w.location.origin, sender = parent) => w.dispatchEvent(new w.MessageEvent('message', {origin, source:sender, data:{source:'ojjuda-world', ...data}}));
-  const tick = ms => { for (const [id, timer] of [...timers]) if (timer.ms === ms) { timers.delete(id); timer.fn(); } };
-  receive({type:'ojjuda-saetbyeol-init', owner:member, admin});
-  return {dom,w,messages,receive,tick,$:s => w.document.querySelector(s)};
-}
+const assert=require('node:assert/strict');
+const {JSDOM}=require('jsdom');
+const {game,read,source,owner}=require('./saetbyeol-fixture.cjs');
 
 // A normal player can start, save growth and retry a failed record, but cannot enter demo.
 const x = game();
@@ -92,36 +66,35 @@ try {
   const {w,$} = balanced, f = w.fixture;
   $('#starStart').click();
   const select = id => { f.state.sel = id; f.refresh(); };
-  const buy = (id, count = 1) => {
-    for (let i = 0; i < count; i++) {
-      select(id); assert.equal($('#buy').disabled, false, id + ' should be available'); $('#buy').click();
+  const fillBranch = branch => {
+    while (f.growth.state(f.state.lv).round === 1 && f.growth.state(f.state.lv).remaining[branch] > 0) {
+      const next = f.upgrades.find(u=>u.r===0&&u.b===branch&&(f.state.lv[u.id]||0)<u.mx&&!f.upgradeLock(u));
+      assert.ok(next, 'an unfinished branch always has an available purchase');
+      select(next.id); assert.equal($('#buy').disabled,false); $('#buy').click();
     }
   };
-  assert.deepEqual(Array.from(f.growth.state(f.state.lv).targets), [3,3,2,3,1]);
+  assert.deepEqual(Array.from(f.growth.state(f.state.lv).targets), [6,6,6,6,5]);
   assert.equal(w.document.querySelectorAll('#growthBranches button').length, 5);
-  buy('p0a', 3);
-  assert.equal($('#buy').disabled, true);
-  assert.match($('#uLock').textContent, /특수 1회/);
-  assert.doesNotMatch($('#uLock').textContent, /화력/);
-  const before = JSON.stringify(f.state);
-  $('#buy').disabled = false; $('#buy').click();
-  assert.equal(JSON.stringify(f.state), before, 'changing disabled cannot bypass the purchase guard');
-  select('p0b'); assert.equal($('#buy').disabled, true);
-  $('#buy').onclick(); assert.equal(f.state.lv.p0b || 0, 0, 'a sibling upgrade shares the same checkpoint');
-  buy('h0a', 3); buy('r0a', 2); buy('v0a', 3);
-  assert.equal(f.growth.state(f.state.lv).round, 1, 'four completed branches do not open the next round');
-  select('p0a'); assert.equal($('#buy').disabled, true);
+  fillBranch(1);
+  select('p0b'); assert.equal($('#buy').disabled,true);
+  assert.match($('#uLock').textContent,/특수 5회/);
+  assert.doesNotMatch($('#uLock').textContent,/화력/);
+  const before=JSON.stringify(f.state);
+  $('#buy').disabled=false;$('#buy').click();
+  assert.equal(JSON.stringify(f.state),before,'forcing a disabled sibling cannot bypass the shared gate');
+  for(const branch of [0,2,3])fillBranch(branch);
+  assert.equal(f.growth.state(f.state.lv).round,1,'four completed branches do not unlock the next round');
   $('#growthBranches [data-branch="4"]').click();
-  assert.equal(f.state.sel, 'x0a', 'the missing-branch shortcut selects an available upgrade');
-  $('#buy').click();
-  assert.equal(f.growth.state(f.state.lv).round, 2);
-  assert.match($('#growthTitle').textContent, /2 \/ 3구간/);
-  buy('p0a'); assert.equal(f.state.lv.p0a, 4);
-  select('h0a'); f.state.cur.light = 0; f.refresh();
-  assert.equal($('#buy').disabled, true);
-  $('#buy').onclick(); assert.equal(f.state.lv.h0a, 3, 'the balance gate does not bypass currency requirements');
-  select('h1a');
-  assert.match($('#uLock').textContent, /원시별로 진화/);
+  assert.equal(f.state.sel,'x0a');
+  fillBranch(4);
+  assert.equal(f.growth.state(f.state.lv).round,2);
+  assert.match($('#growthTitle').textContent,/2 \/ 5구간/);
+  select('p0b'); assert.equal($('#buy').disabled,false);$('#buy').click();
+  assert.equal(f.state.lv.p0b,1);
+  select('h0b');const level=f.state.lv.h0b;f.state.cur.light=0;f.refresh();
+  assert.equal($('#buy').disabled,true);$('#buy').onclick();
+  assert.equal(f.state.lv.h0b,level,'growth gates still require enough currency');
+  select('h1a');assert.match($('#uLock').textContent,/원시별로 진화/);
 } finally { balanced.dom.window.close(); }
 
 // Both purchase orders must be able to finish every tier despite unequal
@@ -148,7 +121,7 @@ for (const reverse of [false, true]) {
         $('#buy').click(); purchases++;
         assert.equal(f.state.lv[u.id], before + 1);
         assert.equal(f.state.cur[u.k], funds - price);
-        assert.ok(purchases < 200, 'progression should terminate');
+        assert.ok(purchases < 1000, 'progression should terminate');
       }
       for (const u of f.upgrades.filter(u => u.r === stage)) assert.equal(f.state.lv[u.id], u.mx);
       if (stage < 4) {
@@ -160,21 +133,21 @@ for (const reverse of [false, true]) {
         assert.match($('#growthHelp').textContent, /진화하면/);
       }
     }
-    assert.equal(rounds.size, 15, 'all three checkpoints in all five stages were exercised');
+    assert.equal(rounds.size, 25, 'all five checkpoints in all five stages were exercised');
     assert.equal(purchases, f.upgrades.reduce((total, u) => total + u.mx, 0));
     assert.equal(f.growth.state(f.state.lv).complete, true);
     assert.match($('#growthTitle').textContent, /다섯 영역 성장 완료/);
   } finally { progression.dom.window.close(); }
 }
 
-// Existing lopsided saves retain earned effects and can catch up without a reset.
+// Existing lopsided saves retain earned levels and can catch up without a reset.
 const legacyLevels = {h0a:5,h0b:3,p0a:6,h1a:4,p1a:3,x2a:2};
 const legacy = game({saved:{stage:2,cur:{light:1e12,metal:1e12},lv:legacyLevels,intro:true}});
 try {
   const {w,$} = legacy, f = w.fixture;
   $('#starStart').click();
   for (const [id, level] of Object.entries(legacyLevels)) assert.equal(f.state.lv[id], level);
-  assert.equal(f.stats().maxHeat, 45, 'existing late-tier upgrade effects remain active');
+  assert.equal(f.stats().maxHeat, 21, 'existing saved upgrades use the new gradual balance');
   f.state.sel = 'p1a'; f.refresh();
   assert.equal($('#buy').disabled, true);
   assert.match($('#uLock').textContent, /잿불 1구간 목표/);
@@ -189,7 +162,7 @@ try {
   assert.equal(f.growth.state(f.state.lv).stage, 1);
 } finally { legacy.dom.window.close(); }
 assert.match(source, /<script src="\.\/growth\.js\?v=/);
-console.log('PASS: balanced growth gates, shared branch caps, missing-branch shortcuts, all 15 checkpoints, evolution gates and existing-save catch-up');
+console.log('PASS: balanced growth gates, shared branch caps, missing-branch shortcuts, all 25 checkpoints, evolution gates and existing-save catch-up');
 
 // Arcade and board use the same game identifier, with no adult gate.
 const world = read('world.html');
