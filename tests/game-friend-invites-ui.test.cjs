@@ -71,6 +71,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  await page.evaluate(()=>{window.before=calls.filter(c=>c.p_action==='send').length;OjjudaFriendInvites.pick({kind:'matgo',prepare:()=>new Promise(resolve=>{window.ready=()=>resolve({code:'A1B2C3D4',cancel:()=>cancelled++})})});});
  await page.click('[data-friend-pick=on]');await page.click('.game-friend-picker-overlay .ge-close');await page.evaluate(()=>ready());
  await page.waitForFunction(()=>cancelled===1);assert.equal(await page.evaluate(()=>calls.filter(c=>c.p_action==='send').length),await page.evaluate(()=>before));
+ // Closing an embedded native game also aborts its still-preparing picker.
+ await page.evaluate(()=>{window.gameDialog=document.createElement('dialog');document.body.append(gameDialog);gameDialog.showModal();window.pickerAbort=new AbortController();OjjudaFriendInvites.pick({kind:'marble',container:gameDialog,signal:pickerAbort.signal,prepare:()=>new Promise(resolve=>{window.ready=()=>resolve({code:'A1B2C3D4',cancel:()=>cancelled++})})});});
+ await page.click('[data-friend-pick=on]');await page.evaluate(()=>{pickerAbort.abort();gameDialog.close();gameDialog.remove();ready();});
+ await page.waitForFunction(()=>cancelled===2);assert.equal(await page.locator('.game-friend-picker-overlay').count(),0);assert.equal(await page.evaluate(()=>calls.filter(c=>c.p_action==='send').length),await page.evaluate(()=>before));
  await page.click('#open');await page.locator('[data-friend-pick=on]').waitFor();await page.evaluate(()=>{uid=null;authChanged('SIGNED_OUT',null)});assert.equal(await page.locator('.game-friend-picker-overlay,.game-friend-popup,.game-friend-inline').count(),0);
  assert.deepEqual(errors,[]);console.log('PASS: one-line invitations under notices at 320/390/1280px, redraw preservation, rejection popups, exact expiry without network, clock skew, background expiry, acknowledgement, keyboard focus, selected friend recipient, presence sorting/search, accepted-game routing, cancelled preparation and sign-out cleanup');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

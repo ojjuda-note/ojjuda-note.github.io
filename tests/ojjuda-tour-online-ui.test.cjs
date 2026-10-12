@@ -1,9 +1,12 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const {fixture,ids}=require('./ojjuda-tour-online-fixture.cjs');
+const {installInvites}=require('./ojjuda-tour-friend-fixture.cjs');
 const root=path.resolve(__dirname,'..');
 (async()=>{
  const f=await fixture(),browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}),errors=[];
  f.holdDeadlines(true);
+ const invitation=await installInvites(f.db);
+ await f.db.query('insert into public.friendships values($1,$2),($1,$3)',[ids[0],ids[1],ids[2]]);
  try{
   async function player(seat,width){
    const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'}),page=await context.newPage();
@@ -14,7 +17,19 @@ const root=path.resolve(__dirname,'..');
     if(u.pathname==='/online-api'){
      const result=await f.call(ids[seat],route.request().postDataJSON());return route.fulfill({status:result.status,contentType:'application/json',body:JSON.stringify(result)});
     }
-    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><button id="launch">오쭈다 마블</button><script src="/world-tour-game.js"></script><script>window.localScores=0;const client={functions:{invoke:async(name,{body})=>{if(name!=='marble')throw Error('unexpected function');const res=await fetch('/online-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await res.json();return res.ok?{data,error:null}:{data:null,error:{context:{json:async()=>data}}};}}};document.querySelector('#launch').onclick=()=>OjjudaTourGame.open({owner:${JSON.stringify(ids[seat])},nickname:${JSON.stringify(seat===0?'민준':seat===1?'여행친구':'참가자3')},client,onScore:()=>{window.localScores++;return {ok:true}}});</script>`});
+    if(u.pathname==='/invite-api'){
+     try{return route.fulfill({contentType:'application/json',body:JSON.stringify({data:await invitation(ids[seat],route.request().postDataJSON())})});}
+     catch(error){return route.fulfill({contentType:'application/json',body:JSON.stringify({error:{message:error.message}})});}
+    }
+    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><link rel="stylesheet" href="/game-entry.css"><div id="app"><main class="main"><button data-act="notice-open">공지</button><div data-game-friend-invite-slot></div><button id="launch">오쭈다 마블</button></main></div><script src="/game-entry.js"></script><script src="/game-friend-invites.js"></script><script src="/world-tour-game.js"></script><script>
+     window.localScores=0;const owner=${JSON.stringify(ids[seat])},nickname=${JSON.stringify(seat===0?'민준':seat===1?'여행친구':'참가자3')};
+     const friends=${JSON.stringify([0,1,2].filter(i=>i!==seat).map(i=>({id:ids[i],nick:i===0?'민준':i===1?'여행친구':'참가자3',online:true})))};
+     window.OjjudaGameFriends={list:()=>friends};
+     const channel={on(){return this},subscribe(){return this}};
+     const client={rpc:async(name,args)=>{if(name!=='arcade_friend_invite')throw Error('unexpected RPC');return (await fetch('/invite-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(args)})).json()},channel:()=>channel,removeChannel(){},functions:{invoke:async(name,{body})=>{if(name!=='marble')throw Error('unexpected function');const res=await fetch('/online-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await res.json();return res.ok?{data,error:null}:{data:null,error:{context:{json:async()=>data}}};}}};
+     const launch=(joinCode='')=>OjjudaTourGame.open({owner,nickname,client,joinCode,onScore:()=>{window.localScores++;return {ok:true}}});
+     OjjudaFriendInvites.install({client,user:()=>owner,list:()=>friends,onJoin:invite=>{if(invite.kind!=='marble')throw Error('unexpected game');OjjudaTourGame.close();launch(invite.code)}});
+     document.querySelector('#launch').onclick=()=>launch();</script>`});
     const file=path.resolve(root,'.'+u.pathname+(u.pathname.endsWith('/')?'index.html':''));
     return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();
    });
@@ -37,9 +52,30 @@ const root=path.resolve(__dirname,'..');
   await a.frame.locator('#marbleCreate [name=title]').fill('세 기기 마블');await a.frame.getByRole('button',{name:'온라인 방 만들기',exact:true}).click();
   await a.frame.locator('#marbleRoomCode').waitFor({state:'visible'});const code=await a.frame.locator('#marbleRoomCode').innerText();
   assert.match(code,/^[A-F0-9]{8}$/);
-  for(const p of [b,c]){await p.frame.locator('#marbleCode').fill(code);await p.frame.getByRole('button',{name:'참가',exact:true}).click();await p.frame.locator('#marbleWaiting').waitFor({state:'visible'});}
+  fs.mkdirSync('/tmp/ojjuda-tour-proof',{recursive:true});
+  await b.page.getByRole('button',{name:'게임 목록으로 돌아가기',exact:true}).click();
+  await a.frame.getByRole('button',{name:'친구 초대',exact:true}).click();
+  await a.page.getByRole('dialog',{name:'초대할 친구 선택',exact:true}).waitFor();
+  assert.equal(await a.page.locator('.tour-game-dialog .game-friend-picker-overlay').count(),1,'friend picker is inside the native top-layer game dialog');
+  await a.page.keyboard.press('Escape');assert.equal(await a.page.locator('.game-friend-picker-overlay').count(),0);assert.equal(await a.frame.locator('#marbleRoomCode').innerText(),code);
+  await a.frame.getByRole('button',{name:'친구 초대',exact:true}).click();
+  await a.page.getByRole('searchbox',{name:'초대할 친구 검색'}).fill('여행');
+  await a.page.locator('.game-friend-picker-overlay').screenshot({path:'/tmp/ojjuda-tour-proof/marble-friend-picker.png'});
+  await a.page.locator(`[data-friend-pick="${ids[1]}"]`).click();
+  await a.page.locator('.game-friend-picker-overlay').waitFor({state:'detached'});
+  assert.match(await a.frame.locator('#marbleInviteStatus').innerText(),/초대를 보냈어요/);
+  await b.page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+  await b.page.getByRole('complementary',{name:'민준님의 오쭈다 마블 초대',exact:true}).waitFor();
+  await b.page.screenshot({path:'/tmp/ojjuda-tour-proof/marble-friend-incoming.png'});
+  assert.ok(Number(await b.page.locator('[data-seconds]').innerText())<=60);
+  await b.page.getByRole('button',{name:'수락',exact:true}).click();
+  await b.frame.locator('#marbleWaiting').waitFor({state:'visible',timeout:30000});
+  assert.equal(await b.frame.locator('#marbleRoomCode').innerText(),code,'acceptance automatically joins the inviter room');
+  assert.equal(await b.frame.locator('#marbleInvite').isVisible(),false,'only the host sends invitations');
+  await c.frame.locator('#marbleCode').fill(code);await c.frame.getByRole('button',{name:'참가',exact:true}).click();await c.frame.locator('#marbleWaiting').waitFor({state:'visible'});
   await a.embedded().waitForFunction(()=>document.querySelector('#marbleMembers').children.length===3);
   fs.mkdirSync('/tmp/ojjuda-tour-proof',{recursive:true});
+  assert.equal(await a.frame.locator('#marbleInvite').isDisabled(),true,'full rooms disable invitations');
   await a.frame.locator('.tour-entry').screenshot({path:'/tmp/ojjuda-tour-proof/online-lobby.png'});
   await a.frame.getByRole('button',{name:'함께 시작하기',exact:true}).click();
   for(const p of [a,b,c])await p.frame.locator('#game').waitFor({state:'visible',timeout:60000});
@@ -83,6 +119,6 @@ const root=path.resolve(__dirname,'..');
   }
   assert.equal((await f.db.query('select count(*)::integer n from public.game_scores')).rows[0].n,3);
   assert.deepEqual(errors,[]);
-  console.log('PASS: three separate browsers, 320/390/1280px layouts, room join/start, dice/purchase/build synchronization, reload recovery, host elimination/spectating, timeout continuation and all-player rankings');
+  console.log('PASS: friend picker above native modal, invitation/acceptance/automatic join, three separate browsers, 320/390/1280px layouts, room join/start, dice/purchase/build synchronization, reload recovery, host elimination/spectating, timeout continuation and all-player rankings');
  }finally{await browser.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
