@@ -25,6 +25,13 @@ const root=path.resolve(__dirname,'..');
    return {page,frame,context,embedded:()=>page.frames().find(x=>x.url().includes('/games/ojjuda-tour/'))};
   }
   const a=await player(0,390),b=await player(1,320),c=await player(2,1280);
+  for(const p of [a,b,c]){
+   const bounds=await p.embedded().evaluate(()=>{
+    const form=document.querySelector('#marbleJoin>div').getBoundingClientRect(),input=document.querySelector('#marbleCode').getBoundingClientRect(),button=document.querySelector('#marbleJoin button').getBoundingClientRect();
+    return {input:input.width,inside:button.right<=form.right+1};
+   });
+   assert.ok(bounds.input>=130,'room code input remains readable on small phones');assert.equal(bounds.inside,true,'join button fits the entry card');
+  }
   await a.frame.locator('#marbleCreate [name=capacity]').selectOption('3');
   await a.frame.locator('#marbleCreate [name=title]').fill('세 기기 마블');await a.frame.getByRole('button',{name:'온라인 방 만들기',exact:true}).click();
   await a.frame.locator('#marbleRoomCode').waitFor({state:'visible'});const code=await a.frame.locator('#marbleRoomCode').innerText();
