@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>샛별키우기 · 오쭈다</title>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
-<link rel="stylesheet" href="./entry.css?v=20261013-star1">
+<link rel="stylesheet" href="./entry.css?v=20261013-balance1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
@@ -82,7 +82,7 @@ body[data-mode="hub"] #panel{display:block}
     <button id="starStart" class="ge-primary" type="button" disabled>시작하기</button>
     <button id="starExit" class="ge-secondary" type="button">게임 목록으로</button>
     <span id="starEntryHint" class="ge-hint" role="status">게임을 연결하고 있어요…</span>
-    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화하고, 보스를 넘어 다음 별로 진화해요.</p><p>성장 점수: 진화 단계마다 10,000점 + 강화 1회마다 10점 + 기억 1개마다 100점 + 엔딩 10,000점. 오늘과 이번 달의 최고 점수가 게임순위에 올라가요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
+    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화하고, 보스를 넘어 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 각 진화 단계의 성장은 3개 구간으로 나뉘며, 다섯 영역의 목표를 모두 채우면 다음 구간의 강화가 열려요. 이전 단계의 강화를 모두 마쳐야 다음 단계의 강화를 시작할 수 있어요. 부족한 영역을 누르면 강화할 가지를 골라줘요.</p><p>성장 점수: 진화 단계마다 10,000점 + 강화 1회마다 10점 + 기억 1개마다 100점 + 엔딩 10,000점. 오늘과 이번 달의 최고 점수가 게임순위에 올라가요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
     <details id="starRankingDetails" class="ge-more"><summary>오늘의 순위</summary><ol id="starRanking" class="star-ranking"></ol></details>
   </section>
 </main>
@@ -91,7 +91,8 @@ body[data-mode="hub"] #panel{display:block}
 <div id="heatWrap"><div class="barRow"><span>열</span><div class="bar"><div id="heat"></div></div><span id="heatTxt">0</span></div></div>
 <div id="bossWrap"><div class="barRow"><span id="bossName" class="serif"></span><div class="bar"><div id="bossFill"></div></div></div></div>
 <div id="panel"><div id="panelIn">
-  <div id="info"><div id="uName" class="serif"></div><div id="uDesc"></div><div id="uRow"><span id="uLv"></span><button id="buy"></button></div></div>
+  <section id="growth" aria-label="다섯 영역 균형 성장"><strong id="growthTitle"></strong><span id="growthHelp"></span><div id="growthBranches"></div></section>
+  <div id="info"><div id="uName" class="serif"></div><div id="uDesc"></div><div id="uLock" role="status" hidden></div><div id="uRow"><span id="uLv"></span><button id="buy" aria-describedby="uLock"></button></div></div>
   <div id="acts"><button id="go" class="primary">타오르기</button><button id="bossBtn"></button></div>
   <div id="memLine"></div><div id="starRecord" role="status"><span id="starRecordText">별을 키우면 성장 점수가 순위에 기록돼요.</span><button id="starRetry" type="button" hidden>다시 등록</button></div>
 </div></div>
@@ -99,6 +100,7 @@ body[data-mode="hub"] #panel{display:block}
 <div id="settings"><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><div id="ovHint">눌러서 계속</div></div>
 <script src="./entry.js?v=20261013-star1"></script>
+<script src="./growth.js?v=20261013-balance1"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -147,6 +149,7 @@ const UP=[
   {id:'v4a',r:4,b:3,n:'질량 흡수',d:'질량 획득 +50%',mx:3,c:12,m:2,k:'mass',f:(s,l)=>{s.mass*=1+.5*l}},
   {id:'x4a',r:4,b:4,n:'사건의 지평선',d:'체력 15% 이하 천체를 즉시 흡수',mx:3,c:5,m:2,k:'mass',f:(s,l)=>{s.execute+=.15*l}}
 ];
+const GROWTH=window.OjjudaSaetbyeolGrowth.create(UP,BR.length);
 const PRO=['우주의 끝, 식어버린 잔해 사이에서','작은 불씨 하나가 깨어났다.','이름도, 이유도 없이.','다만 따뜻했던 무언가를 기억하며.'];
 const MEM=[
   ['돌고 있었다. 나를 중심으로, 몇 개의 작은 세계가.','가장 가까운 것은 푸른빛이었다.','그 빛이 나를 바라보던 감각이 아직 따뜻하다.'],
@@ -238,21 +241,53 @@ function applyTheme(){const c=col();document.documentElement.style.setProperty('
 function curHTML(){const c=col();let h=`<span><i style="background:${c.color}"></i>빛 ${fmt(S.cur.light)}</span>`;if(S.stage>=1||S.cur.metal)h+=`<span><i style="background:#9aa0b4;border-radius:2px"></i>금속 ${fmt(S.cur.metal)}</span>`;if(S.stage>=4||S.cur.mass)h+=`<span><i style="background:#b48cff"></i>질량 ${fmt(S.cur.mass)}</span>`;return h}
 let lastCur='';
 function refreshCur(){const h=curHTML();if(h!==lastCur){$('#cur').innerHTML=h;lastCur=h}}
+function upgradeLock(u,gate=GROWTH.state(S.lv)){
+  if(lv(u.id)>=u.mx)return '';
+  if(u.r>S.stage)return 'evolution';
+  if(!vis(u))return 'parent';
+  return GROWTH.blocks(u,gate)?'balance':'';
+}
+$('#growthBranches').innerHTML=BR.map((name,b)=>`<button type="button" data-branch="${b}"><span>${name}</span><b></b><i aria-hidden="true"></i></button>`).join('');
+function refreshGrowth(gate){
+  const waiting=!gate.complete&&gate.stage>S.stage;
+  $('#growthTitle').textContent=gate.complete?'다섯 영역 성장 완료':waiting?`${col().name} 성장 완료`:`${STAGES[gate.stage].name} · 성장 ${gate.round} / ${gate.rounds}구간`;
+  $('#growthHelp').textContent=gate.complete?'모든 가지를 끝까지 키웠어요.':waiting?`${STAGES[gate.stage].name}로 진화하면 다음 성장이 열려요.`:'다섯 목표를 채우면 다음 구간이 열려요.';
+  $('#growthBranches').hidden=waiting||gate.complete;
+  for(const button of $('#growthBranches').children){
+    const b=Number(button.dataset.branch),done=gate.counts[b],target=gate.targets[b],left=gate.remaining[b];
+    button.disabled=left===0;button.classList.toggle('done',left===0);
+    button.querySelector('b').textContent=`${done} / ${target}`;
+    button.setAttribute('aria-label',`${BR[b]} 영역: 목표 ${target}회 중 ${done}회 완료${left?`, ${left}회 더 강화하기`:''}`);
+    button.style.setProperty('--growth-color',`rgb(${col().pal[b]})`);
+    button.querySelector('i').style.width=`${Math.min(100,done/target*100)}%`;
+  }
+}
+$('#growthBranches').onclick=e=>{
+  const button=e.target.closest('button[data-branch]');if(!button||button.disabled)return;
+  const gate=GROWTH.state(S.lv),b=Number(button.dataset.branch);
+  const avail=UP.filter(u=>u.r===gate.stage&&u.b===b&&lv(u.id)<u.mx&&!upgradeLock(u,gate));
+  const next=avail.find(u=>S.cur[u.k]>=cost(u))||avail[0];
+  if(next){S.sel=next.id;refresh()}
+};
 function refresh(){
   refreshCur();$('#stageName').textContent=col().name+(DEMO?' 체험':'');
   $('#sndBtn').textContent=S.sound?'소리 끄기':'소리 켜기';$('#demoBtn').textContent=DEMO?'체험 끝내기':'풀 업그레이드 체험';
   if(mode!=='hub')return;
+  const gate=GROWTH.state(S.lv);refreshGrowth(gate);
   const u=UP.find(x=>x.id===S.sel);
   const buy=$('#buy');
-  if(u){const l=lv(u.id),c=cost(u),max=l>=u.mx,locked=u.r>S.stage;
+  if(u){const l=lv(u.id),c=cost(u),max=l>=u.mx,locked=upgradeLock(u,gate);
     $('#uName').textContent=u.n;$('#uDesc').textContent=u.d;$('#uLv').textContent=`${BR[u.b]} 갈래 · ${l} / ${u.mx}`;
-    buy.style.display='';buy.disabled=locked||max||S.cur[u.k]<c;buy.textContent=locked?`${STAGES[u.r].name} 단계에서 열려요`:max?'완성':`${CUR[u.k]} ${fmt(c)}로 ${l?'강화':'해금'}`;buy.className=(!locked&&!max&&S.cur[u.k]>=c)?'primary':'';
-  }else{$('#uName').textContent=col().name;$('#uDesc').textContent='가지 끝의 별을 눌러 업그레이드를 고르세요.';$('#uLv').textContent='';buy.style.display='none'}
+    const needs=BR.map((name,b)=>gate.remaining[b]?`${name} ${gate.remaining[b]}회`:'').filter(Boolean).join(' · ');
+    $('#uLock').hidden=!locked;
+    $('#uLock').textContent=locked==='balance'?`${STAGES[gate.stage].name} ${gate.round}구간 목표: ${needs} 더 강화해 주세요.`:locked==='evolution'?`${STAGES[u.r].name}로 진화하면 열려요.`:locked==='parent'?'이어진 앞 가지를 먼저 해금해 주세요.':'';
+    buy.style.display='';buy.disabled=!!locked||max||S.cur[u.k]<c;buy.textContent=locked==='balance'?'다섯 영역 성장 필요':locked==='evolution'?'진화 후 해금':locked==='parent'?'앞 가지 해금 필요':max?'완성':`${CUR[u.k]} ${fmt(c)}로 ${l?'강화':'해금'}`;buy.className=(!locked&&!max&&S.cur[u.k]>=c)?'primary':'';
+  }else{$('#uName').textContent=col().name;$('#uDesc').textContent='가지 끝의 별을 눌러 업그레이드를 고르세요.';$('#uLv').textContent='';$('#uLock').hidden=true;$('#uLock').textContent='';buy.style.display='none'}
   $('#bossBtn').textContent=`${col().boss}에 도전`;
-  const m=S.mem[S.stage];$('#memLine').textContent=`이 단계의 기억 ${m} / 3`+(S.stage<4?'. 보스를 넘으면 더 깊은 가지가 열려요':'');
+  const m=S.mem[S.stage];$('#memLine').textContent=`이 단계의 기억 ${m} / 3`+(S.stage<4?'. 보스를 넘으면 다음 별로 진화해요':'');
 }
-function selectDefault(){const avail=UP.filter(u=>vis(u)&&u.r<=S.stage&&lv(u.id)<u.mx);const aff=avail.find(u=>S.cur[u.k]>=cost(u));S.sel=(aff||avail[0]||UP[0]).id}
-$('#buy').onclick=()=>{const u=UP.find(x=>x.id===S.sel);if(!u||u.r>S.stage||!vis(u))return;const c=cost(u);if(lv(u.id)>=u.mx||S.cur[u.k]<c)return;S.cur[u.k]-=c;S.lv[u.id]=lv(u.id)+1;S.buys++;ensureAudio();tone(note(S.buys),.5,.05,'triangle');pulse={id:u.id,t:0};save();st=stats();refresh()};
+function selectDefault(){const gate=GROWTH.state(S.lv),avail=UP.filter(u=>lv(u.id)<u.mx&&!upgradeLock(u,gate));const aff=avail.find(u=>S.cur[u.k]>=cost(u));S.sel=(aff||avail[0]||UP[0]).id}
+$('#buy').onclick=()=>{const u=UP.find(x=>x.id===S.sel);if(!u||upgradeLock(u))return;const c=cost(u);if(lv(u.id)>=u.mx||S.cur[u.k]<c)return;S.cur[u.k]-=c;S.lv[u.id]=lv(u.id)+1;S.buys++;ensureAudio();tone(note(S.buys),.5,.05,'triangle');pulse={id:u.id,t:0};save();st=stats();refresh()};
 $('#go').onclick=()=>startRun(false);
 $('#bossBtn').onclick=()=>startRun(true);
 $('#setBtn').onclick=e=>{e.stopPropagation();$('#settings').classList.toggle('on')};
@@ -448,7 +483,7 @@ const TREE={};
 const vis=u=>{const p=PARENT[u.id];return lv(u.id)>0||!p||lv(p)>0};
 function hubGeo(){
   const panel=$('#panel').offsetHeight||240,top=84;
-  const ah=Math.max(200,H-top-panel);
+  const ah=Math.max(80,H-top-panel);
   const cx=W/2,cy=top+ah/2,R0=Math.min(W*.47,ah*.47);
   let dmax=0;for(const u of UP)if(vis(u)){const t=TREE[u.id];dmax=Math.max(dmax,Math.hypot(t.x,t.y))}
   const target=R0/Math.max(dmax+.45,1.6);if(!camK)camK=target;
@@ -463,7 +498,7 @@ function hubTap(x,y){
 }
 const qpt=(a,c,b,t)=>({x:(1-t)*(1-t)*a.x+2*(1-t)*t*c.x+t*t*b.x,y:(1-t)*(1-t)*a.y+2*(1-t)*t*c.y+t*t*b.y});
 function drawHub(dt){
-  const g0=hubGeo();camK+=(g0.target-camK)*Math.min(1,dt*2.5);const g=hubGeo(),c=col();
+  const g0=hubGeo();camK+=(g0.target-camK)*Math.min(1,dt*2.5);const g=hubGeo(),c=col(),gate=GROWTH.state(S.lv);
   if(!drawHub.init){for(const u of UP)if(vis(u))seen[u.id]=-9;drawHub.init=true}
   ctx.save();ctx.lineCap='round';
   if(pulse){pulse.t+=dt;if(pulse.t>.8)pulse=null}
@@ -489,7 +524,7 @@ function drawHub(dt){
   if(S.stage===4){ctx.strokeStyle=c.color;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(g.cx,g.cy,pr*1.4,pr*.5,-.3,0,TAU);ctx.stroke()}
   // nodes
   for(const u of UP){if(!vis(u))continue;const gp=grow[u.id];if(gp<.8)continue;const sc=(gp-.8)/.2;
-    const p=upPos(u,g),l=lv(u.id),sel=S.sel===u.id,locked=u.r>S.stage,afford=!locked&&l<u.mx&&S.cur[u.k]>=cost(u),k=c.pal[u.b];
+    const p=upPos(u,g),l=lv(u.id),sel=S.sel===u.id,locked=!!upgradeLock(u,gate),afford=!locked&&l<u.mx&&S.cur[u.k]>=cost(u),k=c.pal[u.b];
     const r=(l>=u.mx?11:9)*sc;
     if(l>0){const a=.35+.65*l/u.mx;const gg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*3.5);gg.addColorStop(0,`rgba(${k},${a*.7})`);gg.addColorStop(1,`rgba(${k},0)`);ctx.fillStyle=gg;ctx.beginPath();ctx.arc(p.x,p.y,r*3.5,0,TAU);ctx.fill()}
     ctx.beginPath();ctx.arc(p.x,p.y,r,0,TAU);

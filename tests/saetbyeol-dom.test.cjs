@@ -19,8 +19,9 @@ function game({admin = false, member = 'guest', saved = null} = {}) {
   w.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, {get:(_, key) => key === 'measureText' ? () => ({width:20}) : () => {}});
   if (saved) w.localStorage.setItem('ojjuda.saetbyeol.save.v1:' + member, JSON.stringify(saved));
   w.eval(read('games/bulssi/entry.js'));
+  w.eval(read('games/bulssi/growth.js'));
   const script = [...w.document.querySelectorAll('script:not([src])')][0].textContent;
-  w.eval(script.replace('requestAnimationFrame(frame);\n})();', 'window.fixture={get state(){return S},get demo(){return DEMO},get mode(){return mode},save,startDemo,endDemo,resetGame,winBoss,finale,loadProgress};\nrequestAnimationFrame(frame);\n})();'));
+  w.eval(script.replace('requestAnimationFrame(frame);\n})();', 'window.fixture={get state(){return S},get demo(){return DEMO},get mode(){return mode},upgrades:UP,growth:GROWTH,upgradeLock,refresh,selectDefault,cost,stats,save,startDemo,endDemo,resetGame,winBoss,finale,loadProgress};\nrequestAnimationFrame(frame);\n})();'));
   const receive = (data, origin = w.location.origin, sender = parent) => w.dispatchEvent(new w.MessageEvent('message', {origin, source:sender, data:{source:'ojjuda-world', ...data}}));
   const tick = ms => { for (const [id, timer] of [...timers]) if (timer.ms === ms) { timers.delete(id); timer.fn(); } };
   receive({type:'ojjuda-saetbyeol-init', owner:member, admin});
@@ -83,6 +84,112 @@ try {
 const forgedGuest = game({admin:true});
 try { forgedGuest.w.fixture.startDemo(); assert.equal(forgedGuest.w.fixture.demo, null); }
 finally { forgedGuest.dom.window.close(); }
+
+// A branch stops at its checkpoint, including other upgrades in that branch.
+// The last missing branch unlocks the next checkpoint without an extra action.
+const balanced = game({saved:{stage:0,cur:{light:100000},intro:true}});
+try {
+  const {w,$} = balanced, f = w.fixture;
+  $('#starStart').click();
+  const select = id => { f.state.sel = id; f.refresh(); };
+  const buy = (id, count = 1) => {
+    for (let i = 0; i < count; i++) {
+      select(id); assert.equal($('#buy').disabled, false, id + ' should be available'); $('#buy').click();
+    }
+  };
+  assert.deepEqual(Array.from(f.growth.state(f.state.lv).targets), [3,3,2,3,1]);
+  assert.equal(w.document.querySelectorAll('#growthBranches button').length, 5);
+  buy('p0a', 3);
+  assert.equal($('#buy').disabled, true);
+  assert.match($('#uLock').textContent, /특수 1회/);
+  assert.doesNotMatch($('#uLock').textContent, /화력/);
+  const before = JSON.stringify(f.state);
+  $('#buy').disabled = false; $('#buy').click();
+  assert.equal(JSON.stringify(f.state), before, 'changing disabled cannot bypass the purchase guard');
+  select('p0b'); assert.equal($('#buy').disabled, true);
+  $('#buy').onclick(); assert.equal(f.state.lv.p0b || 0, 0, 'a sibling upgrade shares the same checkpoint');
+  buy('h0a', 3); buy('r0a', 2); buy('v0a', 3);
+  assert.equal(f.growth.state(f.state.lv).round, 1, 'four completed branches do not open the next round');
+  select('p0a'); assert.equal($('#buy').disabled, true);
+  $('#growthBranches [data-branch="4"]').click();
+  assert.equal(f.state.sel, 'x0a', 'the missing-branch shortcut selects an available upgrade');
+  $('#buy').click();
+  assert.equal(f.growth.state(f.state.lv).round, 2);
+  assert.match($('#growthTitle').textContent, /2 \/ 3구간/);
+  buy('p0a'); assert.equal(f.state.lv.p0a, 4);
+  select('h0a'); f.state.cur.light = 0; f.refresh();
+  assert.equal($('#buy').disabled, true);
+  $('#buy').onclick(); assert.equal(f.state.lv.h0a, 3, 'the balance gate does not bypass currency requirements');
+  select('h1a');
+  assert.match($('#uLock').textContent, /원시별로 진화/);
+} finally { balanced.dom.window.close(); }
+
+// Both purchase orders must be able to finish every tier despite unequal
+// branch capacities and upgrades that depend on a parent being purchased.
+for (const reverse of [false, true]) {
+  const progression = game({saved:{stage:0,cur:{light:1e12,metal:1e12,mass:1e12},intro:true}});
+  try {
+    const {w,$} = progression, f = w.fixture, rounds = new Set();
+    $('#starStart').click();
+    let purchases = 0;
+    for (let stage = 0; stage < 5; stage++) {
+      f.state.stage = stage; f.refresh();
+      for (;;) {
+        const gate = f.growth.state(f.state.lv);
+        if (gate.complete || gate.stage !== stage) break;
+        rounds.add(`${gate.stage}:${gate.round}`);
+        const available = Array.from(f.upgrades).filter(u => (f.state.lv[u.id] || 0) < u.mx && !f.upgradeLock(u, gate));
+        assert.ok(available.length, `no deadlock at tier ${stage}, round ${gate.round}`);
+        f.selectDefault(); assert.ok(available.some(u => u.id === f.state.sel), 'default selection respects the gate');
+        const u = reverse ? available.at(-1) : available[0];
+        f.state.sel = u.id; f.refresh();
+        assert.equal($('#buy').disabled, false);
+        const before = f.state.lv[u.id] || 0, funds = f.state.cur[u.k], price = f.cost(u);
+        $('#buy').click(); purchases++;
+        assert.equal(f.state.lv[u.id], before + 1);
+        assert.equal(f.state.cur[u.k], funds - price);
+        assert.ok(purchases < 200, 'progression should terminate');
+      }
+      for (const u of f.upgrades.filter(u => u.r === stage)) assert.equal(f.state.lv[u.id], u.mx);
+      if (stage < 4) {
+        const next = f.upgrades.find(u => u.r === stage + 1);
+        f.state.sel = next.id; f.refresh();
+        assert.equal(f.upgradeLock(next), 'evolution');
+        assert.equal($('#buy').disabled, true);
+        assert.equal($('#growthBranches').hidden, true);
+        assert.match($('#growthHelp').textContent, /진화하면/);
+      }
+    }
+    assert.equal(rounds.size, 15, 'all three checkpoints in all five stages were exercised');
+    assert.equal(purchases, f.upgrades.reduce((total, u) => total + u.mx, 0));
+    assert.equal(f.growth.state(f.state.lv).complete, true);
+    assert.match($('#growthTitle').textContent, /다섯 영역 성장 완료/);
+  } finally { progression.dom.window.close(); }
+}
+
+// Existing lopsided saves retain earned effects and can catch up without a reset.
+const legacyLevels = {h0a:5,h0b:3,p0a:6,h1a:4,p1a:3,x2a:2};
+const legacy = game({saved:{stage:2,cur:{light:1e12,metal:1e12},lv:legacyLevels,intro:true}});
+try {
+  const {w,$} = legacy, f = w.fixture;
+  $('#starStart').click();
+  for (const [id, level] of Object.entries(legacyLevels)) assert.equal(f.state.lv[id], level);
+  assert.equal(f.stats().maxHeat, 45, 'existing late-tier upgrade effects remain active');
+  f.state.sel = 'p1a'; f.refresh();
+  assert.equal($('#buy').disabled, true);
+  assert.match($('#uLock').textContent, /잿불 1구간 목표/);
+  const funds = f.state.cur.light;
+  $('#buy').onclick(); assert.equal(f.state.lv.p1a, 3); assert.equal(f.state.cur.light, funds);
+  while (f.growth.state(f.state.lv).stage === 0) {
+    f.selectDefault(); f.refresh();
+    assert.equal($('#buy').disabled, false, 'a catch-up purchase remains available');
+    $('#buy').click();
+  }
+  for (const [id, level] of Object.entries(legacyLevels)) assert.ok(f.state.lv[id] >= level);
+  assert.equal(f.growth.state(f.state.lv).stage, 1);
+} finally { legacy.dom.window.close(); }
+assert.match(source, /<script src="\.\/growth\.js\?v=/);
+console.log('PASS: balanced growth gates, shared branch caps, missing-branch shortcuts, all 15 checkpoints, evolution gates and existing-save catch-up');
 
 // Arcade and board use the same game identifier, with no adult gate.
 const world = read('world.html');

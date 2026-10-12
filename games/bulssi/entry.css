@@ -11,4 +11,17 @@ body[data-mode="entry"]{touch-action:pan-y}
 #starRecord{display:block;padding:5px 0;font-size:11px;line-height:1.6;color:var(--dim)}
 #starRetry{font-size:11px;padding:4px 10px;margin-left:6px}
 #settings{max-height:calc(100dvh - 100px);overflow:auto;touch-action:pan-y}
+#growth{margin-bottom:12px;font-size:11px;line-height:1.5}
+#growthTitle{font-size:12px;margin-right:8px;font-weight:600}
+#growthHelp{color:var(--dim)}
+#growthBranches{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:6px}
+#growthBranches[hidden]{display:none}
+#growthBranches button{position:relative;overflow:hidden;min-width:0;min-height:44px;padding:4px 2px 7px;border-radius:8px;font-size:11px;line-height:1.4;color:var(--ink)}
+#growthBranches b{display:block;font-weight:400;font-variant-numeric:tabular-nums;color:var(--dim)}
+#growthBranches i{position:absolute;bottom:0;left:0;height:3px;background:var(--growth-color)}
+#growthBranches button.done{border-color:var(--growth-color);opacity:1;cursor:default}
+#growthBranches button.done b{color:var(--growth-color)}
+#uLock{font-size:12px;line-height:1.5;color:var(--flame);margin:0 0 8px}
+#panel{max-height:calc(100dvh - 100px);overflow:auto;touch-action:pan-y}
+@media(max-height:640px){body #panel{padding-top:16px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}#growth{margin-bottom:6px}body #info{min-height:0}body #uName{font-size:18px}body #uDesc{font-size:12px;margin-bottom:4px}body #acts{margin-top:8px}body #acts button{min-height:44px}body #memLine{margin-top:4px}}
 @media(max-width:380px){#starEntry{padding:16px 12px}#starEntry .game-entry{padding:24px 18px}}
