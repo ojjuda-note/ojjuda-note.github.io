@@ -4,6 +4,8 @@ on:
     paths:
       - 'games/ojjuda-tour/**'
       - 'world-tour-game.*'
+      - 'game-friend-invites.js'
+      - 'supabase/migrations/*_marble_friend_invites.sql'
       - 'supabase/migrations/*_tour_game_rankings.sql'
       - 'supabase/migrations/*_marble_online_rooms.sql'
       - 'supabase/functions/marble/**'
@@ -13,6 +15,8 @@ on:
     paths:
       - 'games/ojjuda-tour/**'
       - 'world-tour-game.*'
+      - 'game-friend-invites.js'
+      - 'supabase/migrations/*_marble_friend_invites.sql'
       - 'supabase/migrations/*_tour_game_rankings.sql'
       - 'supabase/migrations/*_marble_online_rooms.sql'
       - 'supabase/functions/marble/**'
@@ -41,6 +45,9 @@ jobs:
       - run: node tests/ojjuda-tour-ranking-db.test.cjs
       - run: node tests/ojjuda-tour-online-engine.test.cjs
       - run: node tests/ojjuda-tour-online-db.test.cjs
+      - run: node tests/ojjuda-tour-friend-invites-db.test.cjs
+      - run: node tests/game-friend-invites-db.test.cjs
+      - run: node tests/game-friend-invites-ui.test.cjs
       - run: node tests/ojjuda-tour-ui.test.cjs
       - run: node tests/ojjuda-tour-online-ui.test.cjs
       - name: Save actual Tour board screenshots
