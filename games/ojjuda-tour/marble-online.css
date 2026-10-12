@@ -7,7 +7,7 @@
 .marble-join{margin-top:22px;padding-top:16px;border-top:1px solid #eee8f5}
 .marble-join>div{display:flex;gap:8px;align-items:center}
 .marble-join input{flex:1;width:0;margin:0;text-transform:uppercase;letter-spacing:1px}
-.marble-join button{width:auto;margin:0;min-width:64px;flex:none}
+.tour-entry .marble-join button{width:auto;margin:0;min-width:64px;min-height:44px;flex:none}
 .marble-issue{color:#985322;font-size:12px;line-height:1.7;min-height:0;white-space:pre-line}
 .marble-issue:empty{display:none}
 #marbleWaiting h2{font-family:inherit;font-weight:600;font-size:17px;line-height:1.6;margin:0 0 12px;overflow-wrap:anywhere}
