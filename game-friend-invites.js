@@ -4,11 +4,12 @@
   let options, owner, channel, timer, chooser, popup, authSubscription, generation=0, refreshSequence=0;
   let expiryTimer, countdownTimer, mountObserver, incoming=[], responses=[];
   const deadlines=new Map(), handled=new Set();
-  const names={matgo:'맞고',ttang:'월드땅따먹기'};
+  const names={matgo:'맞고',ttang:'월드땅따먹기',marble:'오쭈다 마블'};
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const message=error=>{
     const text=String(error?.message||error||'');
     if (/friend_required/.test(text)) return '현재 친구목록에 있는 친구만 초대할 수 있어요.';
+    if (/room_full/.test(text)) return '방이 가득 찼어요. 빈자리가 생기면 다시 초대해 주세요.';
     if (/invite_expired|room_unavailable|invite_unavailable/.test(text)) return '초대가 끝났어요. 친구에게 다시 초대해 달라고 해주세요.';
     if (/invite_rate_limit/.test(text)) return '잠시 후 다시 초대해 주세요.';
     return '초대를 연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
@@ -23,7 +24,7 @@
   }
   function closePicker() {
     if (!chooser) return;
-    const focus=chooser._focus;chooser.remove();chooser=null;
+    const focus=chooser._focus;chooser._cleanup?.();chooser.remove();chooser=null;
     if(focus?.isConnected)focus.focus({preventScroll:true});
   }
   function closePopup() {
@@ -133,12 +134,14 @@
       render();
     } catch { /* Reconnect and visibility refresh retry without interrupting a game. */ }
   }
-  async function pick({kind,prepare,onSent}={}) {
-    if(!names[kind]||typeof prepare!=='function'||!current())return false;
+  async function pick({kind,prepare,onSent,container=document.body,signal}={}) {
+    if(!names[kind]||typeof prepare!=='function'||!current()||signal?.aborted)return false;
     closePicker();const node=document.createElement('div');chooser=node;
     node.className='game-friend-picker-overlay';node._focus=document.activeElement;
     node.innerHTML=`<section class="game-entry" role="dialog" aria-modal="true" aria-label="초대할 친구 선택"><button class="ge-close" aria-label="친구 선택 닫기">×</button><div class="ge-icon" aria-hidden="true">👥</div><span class="ge-kicker">${names[kind]}</span><h2 class="ge-title">친구 초대</h2><p class="ge-copy">함께할 친구를 골라주세요.</p><div class="ge-friend-picker" data-entry-friends="${kind}"><div class="ge-friends-heading"><strong>친구목록</strong><span data-friend-count></span></div><input type="search" class="ge-friend-search" data-friend-search placeholder="친구 이름 검색" aria-label="초대할 친구 검색"><div class="ge-friend-list" data-friend-list><p class="ge-empty">친구목록을 불러오고 있어요.</p></div><p class="ge-empty" data-friend-empty hidden>찾는 친구가 없어요.</p></div><p class="ge-empty" role="status" data-status></p></section>`;
-    node.querySelector('.ge-close').onclick=closePicker;document.body.append(node);node.querySelector('input').focus({preventScroll:true});
+    const abort=()=>{if(chooser===node)closePicker();};
+    signal?.addEventListener('abort',abort,{once:true});node._cleanup=()=>signal?.removeEventListener('abort',abort);
+    node.querySelector('.ge-close').onclick=closePicker;container.append(node);node.querySelector('input').focus({preventScroll:true});
     try {await options.refresh?.();} catch {if(chooser===node)node.querySelector('[data-status]').textContent='친구목록을 새로 불러오지 못했어요.';}
     if(chooser!==node||!current())return false;
     const friends=options.list();
@@ -156,7 +159,8 @@
         if(chooser!==node||!current()){await prepared?.cancel?.();return;}
         if(!prepared?.code)throw Error('room_unavailable');
         const result=await rpc({p_action:'send',p_to:friend.id,p_kind:kind,p_code:prepared.code});
-        closePicker();onSent?.(result.id);options.notice?.(friend.nick+'님에게 초대했어요.');
+        if(chooser===node)closePicker();
+        if(!signal?.aborted){onSent?.(result.id);options.notice?.(friend.nick+'님에게 초대했어요.');}
       } catch(error) {await prepared?.cancel?.();if(chooser===node)status.textContent=message(error);}
       finally {sending=false;node.querySelectorAll('[data-friend-pick]').forEach(b=>b.disabled=false);}
     });
