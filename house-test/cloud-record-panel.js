@@ -1,3 +1,4 @@
+import '../house-note-content.js?v=20261012';
 import {bindRecordHold} from './record-hold.js?v=20261004-folder-kind1';
 import {icon} from './icons.js?v=20261004-home-clean1';
 const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};

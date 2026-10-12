@@ -1,3 +1,4 @@
+void import('./house-note-content.js?v=20261012').catch(()=>{});
 (()=>{
 // The visit loader supplies only rows permitted by the current viewer's session.
 // Keep this renderer read-only; owner settings and record RPCs stay in our home.
