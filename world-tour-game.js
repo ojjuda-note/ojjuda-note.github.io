@@ -3,16 +3,35 @@
   'use strict';
   let active = null;
   window.OjjudaTourGame = {
-    open({nickname = '', owner = null, onScore = null, authorized = () => true} = {}) {
+    open({nickname = '', owner = null, client = null, onScore = null, authorized = () => true} = {}) {
       if (active) { active.dialog.focus(); return; }
       const previous = document.activeElement;
       const wasGaming = document.body.classList.contains('gaming');
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog';
       dialog.setAttribute('aria-label', '오쭈다 마블');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>오쭈다 마블</span></header><iframe title="오쭈다 마블 · 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261012-marble1" allow="fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>오쭈다 마블</span></header><iframe title="오쭈다 마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261012-online1" allow="fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
+      let onlineRequests = 0;
+      async function online(message) {
+        if (typeof message.requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(message.requestId) ||
+            !message.body || typeof message.body !== 'object' || JSON.stringify(message.body).length > 4096 ||
+            !['mine','create','join','read','start','move','surrender','leave'].includes(message.body.action) || onlineRequests >= 4) return;
+        onlineRequests++;
+        let result = {error:'not_signed_in'};
+        try {
+          if (client?.functions && owner && authorized()) {
+            const {data,error} = await client.functions.invoke('marble', {body:message.body});
+            result = data || {error:'unavailable'};
+            if (error) { try { result = await error.context.json(); } catch { result = {error:'unavailable'}; } }
+          }
+        } catch { result = {error:'unavailable'}; }
+        finally { onlineRequests--; }
+        if (active?.dialog === dialog && authorized()) frame.contentWindow.postMessage({
+          source:'ojjuda-world',type:'ojjuda-marble-response',replyTo:message.requestId,result
+        },location.origin);
+      }
       async function record(message) {
         const {runId, myRank, ranking, players} = message;
         if (message.game !== 'ojjuda-tour' || typeof runId !== 'string' ||
@@ -51,8 +70,9 @@
         if (message?.source !== 'ojjuda-tour' || !authorized()) return;
         if (message.type === 'ojjuda-game-ready') {
           frame.contentWindow.postMessage({source:'ojjuda-world', type:'ojjuda-tour-init',
-            nickname:String(nickname).slice(0, 12), owner:owner || 'guest'}, location.origin);
+            nickname:String(nickname).slice(0, 12), owner:owner || 'guest', onlineAvailable:!!(owner && client?.functions)}, location.origin);
         }
+        if (message.type === 'ojjuda-marble-request') void online(message);
         if (message.type === 'ojjuda-game-exit') close();
         // Casual records share the existing unverified, zero-reward score path.
         if (message.type === 'ojjuda-game-result') void record(message);
