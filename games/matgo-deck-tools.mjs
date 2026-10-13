@@ -1,12 +1,12 @@
-import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-table1';
-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-table1';
+import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-table2';
+import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-table2';
 export const VENT_EFFECTS = [
   {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
   {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},
   {id:'glove',name:'권투장갑',word:'퍽!',hits:[560],duration:2000},
   {id:'bomb',name:'폭탄',word:'펑!',hits:[940],duration:2600},
   {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300},
-  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[700,1500],duration:2200}
+  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[850,2300],duration:3200}
 ];
 const assetURL=id=>new URL(`./assets/matgo-vent/${id}.png`,import.meta.url).href;
 const assetCache=new Map();

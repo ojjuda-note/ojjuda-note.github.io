@@ -23,7 +23,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table1">
+<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table2">
 </head>
 <body class="matgo-locked">
 <section id="matgo-gate" aria-labelledby="matgo-gate-title">
@@ -35,12 +35,12 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-table1";
-import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-table1";
-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-table1";
+import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-table2";
+import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-table2";
+import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-table2";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261010-pibak8";
-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-table1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261013-table1";
+import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-table2";
+import {createWallet} from "./matgo-wallet.mjs?v=20261013-table2";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -419,7 +419,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판에 5쭈를 사용해 타짜 효과 한 가지를 받아요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-table1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-table2');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();

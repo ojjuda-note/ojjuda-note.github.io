@@ -64,6 +64,6 @@ try {
   }
   assert.equal(oldHandlerCalls,0,'legacy click handlers cannot open a second viewer');
   const view=fs.readFileSync(new URL('../games/matgo-view.mjs',import.meta.url),'utf8');assert.match(view,/import '\.\/matgo-captured-zoom\.mjs\?/);
-  for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261013-table1/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
+  for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261013-table2/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
   console.log(`PASS: ${cases} captured-view cases, solo/online, both players/all groups, hold/tap/keyboard, cancellation, safe dismissal, hidden-hand exclusion and unchanged cards`);
 } finally {Date.now=realNow;dom.window.close();}

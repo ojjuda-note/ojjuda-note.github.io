@@ -1,11 +1,11 @@
-import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-table1';
+import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-table2';
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-table1';
+import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-table2';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261013-table1';
+import {createWallet} from './matgo-wallet.mjs?v=20261013-table2';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
-import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-table1';
+import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-table2';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -112,7 +112,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-table1');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-table2');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -179,7 +179,7 @@ function showLobby(){
   $('#create small').textContent='제목을 정하고 공개하기 →';
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-table1');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-table2');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];

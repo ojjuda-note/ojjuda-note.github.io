@@ -8,9 +8,9 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
  const errors=[];
  const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','맞고 친구'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]},{cards:[CARDS[4],CARDS[5]]},{cards:[CARDS[12]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
- async function screen({muted=false,reduced=false}={}){
-  const context=await browser.newContext({viewport:{width:390,height:760},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
-  await context.addInitScript(({muted,room})=>{
+ async function screen({muted=false,reduced=false,room=initial,tableOnly=false,viewport={width:390,height:760}}={}){
+  const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
+  await context.addInitScript(({muted,room,tableOnly})=>{
    localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;window.payments=[];window.decline=false;window.slowPurchase=false;
    window.audioStarts=[];window.audioContexts=[];window.audioMetrics={peak:0,energy:0,count:0};
    const NativeAudio=window.AudioContext,connect=AudioNode.prototype.connect;
@@ -22,11 +22,11 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
     if(body.action==='vent'){
      if(slowPurchase)await new Promise(r=>setTimeout(r,500));
      if(decline)return{data:{error:'insufficient_zzu'}};
-     payments.push(body);return{data:{ok:true,gold:5000,coins:50-payments.length,purchase:{effect:body.effect,price:1}}};
+     payments.push(body);return{data:{ok:true,gold:5000,coins:50-payments.length,purchase:{effect:tableOnly?'table':body.effect,price:1}}};
     }
     return{data:body.action==='status'?{ok:true,gold:5000,coins:50,free_left:2,online_room:room.id}:{ok:true,room:{...fixtureRoom,deadline:new Date(Date.now()+15000).toISOString(),serverTime:Date.now()}}};
    }}})};
-  },{muted,room:initial});
+  },{muted,room,tableOnly});
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
    if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
@@ -73,11 +73,23 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    }
    if(effect.id==='glove'){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.y>=0&&b.x>=0&&b.x+b.width<=390,'enlarged glove stays fully on screen');}
    if(effect.id==='table'){
-    assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-loose-stack').count(),3);
+    assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4,'cards in a floor pile fly separately');
+    assert.equal(await page.locator('.vent-flying-card[data-kind=deck]').count(),18,'draw-pile backs join the scatter');
+    assert.equal(await page.locator('.vent-flying-card[data-kind=deck] [data-face]').count(),0,'no hidden draw card is exposed');
     assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'hidden');
     assert.ok(await page.locator('#app .fl > .stack').evaluateAll(stacks=>stacks.every(s=>getComputedStyle(s).visibility==='hidden')),'explicitly visible dealt piles stay hidden under the flying copies');
    }
    await page.screenshot({path:path.join(proof,effect.id+'.png')});
+   if(effect.id==='table'){
+    const spread=await page.locator('.vent-flying-card').evaluateAll(cards=>new Set(cards.map(c=>getComputedStyle(c).transform)).size);
+    assert.ok(spread>=18,'individual cards have different airborne paths and spins');
+    await page.waitForTimeout(1950);
+    const landed=await page.locator('.vent-flying-card[data-kind=floor]').evaluateAll(cards=>cards.every(c=>{
+     const face=document.querySelector('#app .floor [data-face="'+c.dataset.card+'"]'),r=c.getBoundingClientRect(),t=face.getBoundingClientRect();
+     return Math.abs(r.x+r.width/2-t.x-t.width/2)<2&&Math.abs(r.y+r.height/2-t.y-t.height/2)<2;
+    }));assert.equal(landed,true,'each flying face returns to its exact card in its new pile');
+    await page.screenshot({path:path.join(proof,'table-restacked.png')});
+   }
    await page.locator('.vent-layer').waitFor({state:'detached'});
    const after=await floorSnapshot();assert.equal(after.game,before.game,'cosmetic effects conserve all game data');
    assert.deepEqual(after.piles.map(p=>p.cards),before.piles.map(p=>p.cards),'pile contents and order stay unchanged');
@@ -106,6 +118,25 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   const reduced=await screen({muted:true,reduced:true});await reduced.page.setViewportSize({width:320,height:568});await reduced.page.locator('#matgo-vent').tap();await reduced.page.locator('.vent-layer').waitFor();
   assert.equal(await reduced.page.locator('.vent-weapon').isVisible(),false);assert.equal(await reduced.page.locator('.vent-word').isVisible(),true);assert.equal(await reduced.page.evaluate(()=>audioStarts.length),0);
   assert.equal(await reduced.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await reduced.page.screenshot({path:path.join(proof,'reduced-motion.png')});
-  await reduced.context.close();assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, table flip with conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
+  await reduced.context.close();
+  // A confirmed table receipt also covers resumed purchases; no real user is charged.
+  for(const [name,deckCount,caps] of [['empty-floor',20,[[],[]]],['empty-deck',0,[[CARDS[1],CARDS[4],CARDS[5],CARDS[12]],[]]]]){
+   const room=structuredClone(initial);Object.assign(room.game,{floor:[],deckCount,caps});
+   const sample=await screen({muted:true,tableOnly:true,room,viewport:{width:320,height:568}}),p=sample.page;
+   const before=await p.evaluate(()=>ventTest.snapshot());await p.locator('#matgo-vent').tap();await p.locator('.vent-table').waitFor();
+   const kind=deckCount?'deck':'captured',flying=p.locator('.vent-flying-card[data-kind='+kind+']');
+   assert.equal(await flying.count(),deckCount?18:4);assert.equal(await p.locator('.vent-flying-card[data-kind=floor]').count(),0);
+   await p.waitForTimeout(1250);
+   const spread=await flying.evaluateAll(cards=>{const r=cards.map(c=>c.getBoundingClientRect());return {x:Math.max(...r.map(a=>a.x+a.width/2))-Math.min(...r.map(a=>a.x+a.width/2)),y:Math.max(...r.map(a=>a.y+a.height/2))-Math.min(...r.map(a=>a.y+a.height/2)),inside:r.every(a=>a.x>=-1&&a.right<=innerWidth+1&&a.y>=-1&&a.bottom<=innerHeight+1)};});
+   assert.ok(spread.x>80&&spread.y>70,'cards visibly scatter across the empty board');assert.equal(spread.inside,true,'flying cards fit a small phone');
+   await p.screenshot({path:path.join(proof,name+'-flying.png')});
+   await p.locator('.vent-layer').waitFor({state:'detached'});
+   assert.equal(await p.evaluate(()=>ventTest.snapshot()),before,'empty floor, deck count, hands, captured cards, scores and turn stay unchanged');
+   assert.equal(await p.locator('#app .fl > .stack').count(),0,'swept floor stays empty');assert.equal(await p.locator('.vent-card-source').count(),0,'captured cards are visible again');
+   assert.equal(await p.evaluate(()=>payments.length),1);await p.screenshot({path:path.join(proof,name+'-restacked.png')});await sample.context.close();
+  }
+  const calm=await screen({muted:true,reduced:true,tableOnly:true});await calm.page.locator('#matgo-vent').tap();await calm.page.locator('.vent-table').waitFor();
+  assert.equal(await calm.page.locator('.vent-flying-card').count(),0);assert.equal(await calm.page.locator('body.matgo-table-flipping').count(),0);await calm.context.close();
+  assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, individual card scatter and restack, swept-floor/depleted-deck fallback, conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -5,7 +5,7 @@ import {JSDOM} from 'jsdom';
 import * as engine from '../games/matgo-engine.mjs';
 import {floorLayout,heldPairMonths} from '../games/matgo-view.mjs';
 import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games/matgo-tazza.mjs';
-import {shuffledFloorSlots} from '../games/matgo-table-flip.mjs';
+import {shuffledFloorSlots,createTableFlipScene} from '../games/matgo-table-flip.mjs';
 import {createVentControls,VENT_EFFECTS} from '../games/matgo-deck-tools.mjs';
 
 const originalGlobals=new Map(['window','document','innerWidth','ResizeObserver','setTimeout','clearTimeout'].map(k=>[k,globalThis[k]]));
@@ -62,6 +62,23 @@ try{
   assert.equal(JSON.stringify([t.game.floor,t.game.hand,t.game.deck,t.game.actions,t.game.bank]),beforeShuffle,'solo preserves cards, pile order, hands, deck and scores');
   t.render();assert.ok(t.game.floor.every((s,i)=>s.slot!==oldSlots[i]),'shuffle survives a regular render');
   t.vent.destroy();
+
+  const savedFloor=t.game.floor,savedDeck=t.game.deck,savedCaps=t.game.caps[0];
+  t.game.floor=[];t.game.caps[0]=[...savedCaps,...savedFloor.flat()];t.render();
+  for(const emptyDeck of [false,true]){
+    if(emptyDeck){t.game.deck=[];t.game.caps[0].push(...savedDeck);t.render();}
+    const before=JSON.stringify([t.game.floor,t.game.deck,t.game.hand,t.game.caps,t.game.bank,t.game.actions]);
+    const layer=d.createElement('div');d.body.appendChild(layer);
+    let changed=0;const scene=createTableFlipScene(layer,()=>{changed++;t.shuffleFloor();});
+    const kind=emptyDeck?'captured':'deck';assert.ok(layer.querySelectorAll('[data-kind="'+kind+'"]').length>0,'empty floor still throws real draw backs or public captured cards');
+    assert.equal(layer.querySelectorAll('[data-kind=floor]').length,0);
+    if(emptyDeck)assert.ok(d.querySelector('.vent-card-source'));
+    scene.clear();scene.clear();assert.equal(changed,1,'cancelling mid-flight restores each pile once');
+    assert.equal(d.querySelector('.vent-card-source'),null);assert.equal(d.body.classList.contains('matgo-table-flipping'),false);
+    assert.equal(JSON.stringify([t.game.floor,t.game.deck,t.game.hand,t.game.caps,t.game.bank,t.game.actions]),before,'sweep and depleted-deck effects conserve every game value');
+    layer.remove();
+  }
+  t.game.floor=savedFloor;t.game.deck=savedDeck;t.game.caps[0]=savedCaps;t.render();
 
   let now=0,nextTimer=0,timers=new Map(),allowed=true,hits=0;
   Date.now=()=>now;
