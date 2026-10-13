@@ -87,6 +87,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       assert.equal(await f.page.locator('#handOp').isVisible(),true,'peek remains visible on a short phone');
       assert.equal(await f.page.locator('#handOp .c').evaluateAll(cards=>cards.every((c,i)=>!i||cards[i-1].getBoundingClientRect().right<=c.getBoundingClientRect().left)),true,'revealed cards do not overlap');
       assert.equal(await f.page.locator('#matgo-vent>span').last().evaluate(el=>getComputedStyle(el).whiteSpace),'nowrap');
+      const gap=await f.page.evaluate(()=>{const left=document.querySelector('#matgo-vent').getBoundingClientRect().left;return Math.min(...[...document.querySelectorAll('.floor .fl .c')].map(c=>left-c.getBoundingClientRect().right));});
+      assert.ok(gap>=12,`floor cards leave a clear control gutter at ${width}px: ${gap}`);
+      fs.mkdirSync('/tmp/matgo-vent-proof',{recursive:true});await f.page.screenshot({path:`/tmp/matgo-vent-proof/layout-${width}-${height}.png`});
     }
     await f.page.setViewportSize({width:390,height:640});
     assert.equal(await f.page.locator('#matgo-vent .vent-icon img').count(),1);assert.match(await f.page.locator('#matgo-vent').textContent(),/1쭈/);
