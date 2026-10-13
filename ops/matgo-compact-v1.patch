@@ -1,0 +1,254 @@
+diff --git a/games/matgo-deck-tools.mjs b/games/matgo-deck-tools.mjs
+index 9e1e4b2..540182d 100644
+--- a/games/matgo-deck-tools.mjs
++++ b/games/matgo-deck-tools.mjs
+@@ -1,3 +1,3 @@
+-import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-cpu1';
+-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-cpu1';
++import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-cpu2';
++import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-cpu2';
+ export const VENT_EFFECTS = [
+@@ -79,3 +79,3 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
+     document.body.appendChild(layer);active=layer;if(effect.id==='table')tableScene=createTableFlipScene(layer,onRearrange,{reduced});cooldown=Date.now()+duration+150;sync();if(!document.hidden)sound.play(effect.id,hits);
+-    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;if(effect.id==='table'&&ms===hits[0])tableScene?.rearrange();const portrait=document.querySelector('.zone.op .cpu-portrait');if(portrait)document.body.classList.add('matgo-cpu-surprised');const current=portrait||document.querySelector('.zone.op .who b');if(current&&!reduced&&effect.id!=='table'){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
++    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;if(effect.id==='table'&&ms===hits[0])tableScene?.rearrange();const portrait=document.querySelector('.zone.op .cpu-portrait');if(portrait){document.body.classList.add('matgo-cpu-surprised');if(!layer.querySelector('.cpu-reaction')){const reaction=portrait.cloneNode(true);reaction.classList.remove('vent-hit');reaction.classList.add('cpu-reaction');layer.prepend(reaction);}}const current=portrait||document.querySelector('.zone.op .who b');if(current&&!reduced&&effect.id!=='table'){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
+     cleanupTimer=setTimeout(clear,duration);clearTimeout(resetTimer);resetTimer=setTimeout(sync,duration+170);return effect.id;
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index e0bf4ce..4c4af4d 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -20,4 +20,4 @@
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-cpu1">
+-<link rel="stylesheet" href="./matgo-opponent.css?v=20261013-cpu1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-cpu2">
++<link rel="stylesheet" href="./matgo-opponent.css?v=20261013-cpu2">
+ </head>
+@@ -34,3 +34,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261013-cpu1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261013-cpu2"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index e6afa2d..78b5218 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -1,10 +1,10 @@
+-import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-cpu1';
++import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-cpu2';
+ import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
+-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-cpu1';
++import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-cpu2';
+ import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
+-import {createWallet} from './matgo-wallet.mjs?v=20261013-cpu1';
++import {createWallet} from './matgo-wallet.mjs?v=20261013-cpu2';
+ import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
+ import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
+-import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261013-cpu1';
+-import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-cpu1';
++import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261013-cpu2';
++import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-cpu2';
+ const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
+@@ -115,3 +115,3 @@ async function accept(next){
+   if(closed)return;
+-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-cpu1');return;}
++  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-cpu2');return;}
+   if(room&&room.id===next.id&&next.version<room.version)return;
+@@ -182,3 +182,3 @@ function showLobby(){
+   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
+-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-cpu1');};
++  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-cpu2');};
+ }
+diff --git a/games/matgo-opponent.css b/games/matgo-opponent.css
+index 0222fb0..1ce2d9f 100644
+--- a/games/matgo-opponent.css
++++ b/games/matgo-opponent.css
+@@ -4,3 +4,3 @@
+ .cpu-name small{display:block;font-size:10px;color:#d8c7a1;font-weight:400}
+-.cpu-portrait{position:relative;display:block;flex:0 0 72px;width:72px;height:78px;overflow:hidden;border:1px solid #d7b57799;border-radius:19px;background:radial-gradient(ellipse at 50% 25%,#71608d,#312440 80%);box-shadow:inset 0 0 0 2px #ffffff0b,0 4px 10px #0004;isolation:isolate;pointer-events:none}
++.cpu-portrait{position:relative;display:block;flex:0 0 30px;width:30px;height:32px;overflow:hidden;border:1px solid #d7b57799;border-radius:9px;background:radial-gradient(ellipse at 50% 25%,#71608d,#312440 80%);box-shadow:inset 0 0 0 2px #ffffff0b,0 4px 10px #0004;isolation:isolate;pointer-events:none}
+ .cpu-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 1px 2px #0005)}
+@@ -11,3 +11,3 @@
+ @media(max-width:360px),(max-height:640px){
+-  .cpu-portrait{flex-basis:58px;width:58px;height:62px;border-radius:16px}
++  .cpu-portrait{flex-basis:28px;width:28px;height:30px;border-radius:8px}
+   .zone.op .who b.cpu-opponent{gap:5px;max-width:54%}
+@@ -15,2 +15,9 @@
+ }
+-.matgo-short .cpu-portrait{flex-basis:52px;width:52px;height:56px;border-radius:14px}
++.matgo-short .cpu-portrait{flex-basis:28px;width:28px;height:30px;border-radius:8px}
++
++/* A separate overlay grows without resizing the header or shifting any cards. */
++.vent-layer .cpu-reaction{position:fixed;left:12px;top:42px;width:clamp(120px,36vw,170px);height:clamp(128px,38vw,182px);margin:0;z-index:1;border-radius:24px;box-shadow:0 8px 26px #0008;animation:cpu-reaction-enter 180ms ease-out both}
++.vent-layer .cpu-reaction .cpu-face-normal{opacity:0}
++.vent-layer .cpu-reaction .cpu-face-surprised{opacity:1}
++@keyframes cpu-reaction-enter{from{transform:scale(.35);opacity:0}to{transform:scale(1);opacity:1}}
++@media(prefers-reduced-motion:reduce){.vent-layer .cpu-reaction{animation:none}}
+diff --git a/games/matgo.html b/games/matgo.html
+index f8cdb44..c6c91bd 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -25,4 +25,4 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-cpu1">
+-<link rel="stylesheet" href="./matgo-opponent.css?v=20261013-cpu1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-cpu2">
++<link rel="stylesheet" href="./matgo-opponent.css?v=20261013-cpu2">
+ </head>
+@@ -38,9 +38,9 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script type="module">
+-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-cpu1";
+-import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-cpu1";
+-import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261013-cpu1";
+-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-cpu1";
++import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-cpu2";
++import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-cpu2";
++import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261013-cpu2";
++import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-cpu2";
+ import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261010-pibak8";
+-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-cpu1";
+-import {createWallet} from "./matgo-wallet.mjs?v=20261013-cpu1";
++import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-cpu2";
++import {createWallet} from "./matgo-wallet.mjs?v=20261013-cpu2";
+ (async () => {
+@@ -425,3 +425,3 @@ function mount(){
+   vent.mount();syncTazza();
+-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-cpu1');};
++  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-cpu2');};
+   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
+@@ -589,2 +589,3 @@ async function finishRound(type,d){
+ async function startRound(){
++  if(currentRound&&!game.over)return false; // A reservation must never restart the current hand.
+   if(roundCheck||ui.dealing||ui.busy||game._playing||settling||refilling)return false;
+diff --git a/matgo-bridge.js b/matgo-bridge.js
+index d064c09..8539417 100644
+--- a/matgo-bridge.js
++++ b/matgo-bridge.js
+@@ -62,3 +62,3 @@
+       frame = document.createElement('iframe');
+-      const params = new URLSearchParams({ v: '20261013-cpu1' });
++      const params = new URLSearchParams({ v: '20261013-cpu2' });
+       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
+diff --git a/supabase/migrations/20261013082256_matgo_fresh_normal_start.sql b/supabase/migrations/20261013082256_matgo_fresh_normal_start.sql
+new file mode 100644
+index 0000000..600c574
+--- /dev/null
++++ b/supabase/migrations/20261013082256_matgo_fresh_normal_start.sql
+@@ -0,0 +1,28 @@
++-- An explicit normal start must not silently resume an unfinished paid tazza deal.
++-- Paid retries still use fun_service('tazza'); balances and purchase receipts stay intact.
++create or replace function ojjuda_matgo_internal.wallet_with_fun(
++  p_actor uuid,p_action text,p_request uuid default null,p_paid boolean default false,
++  p_round uuid default null,p_gold bigint default null,p_first smallint default null,p_carry integer default null)
++returns jsonb language plpgsql security definer set search_path='' as $$
++declare s jsonb;m text;
++begin
++  -- Validate age/account/online state and hold the existing wallet lock first.
++  s:=ojjuda_matgo_internal.wallet_service(p_actor,p_action,p_request,p_paid,p_round,p_gold,p_first,p_carry);
++  if p_action in ('start','start_stakes') and exists(
++    select 1 from ojjuda_matgo_internal.fun_purchases
++    where user_id=p_actor and kind='tazza' and reference_id=(s->'round'->>'id')::uuid
++  ) then
++    update ojjuda_matgo_internal.wallets set round_id=null,round_seed=null
++      where user_id=p_actor and round_id=(s->'round'->>'id')::uuid;
++    s:=ojjuda_matgo_internal.wallet_service(p_actor,p_action,p_request,p_paid,p_round,p_gold,p_first,p_carry);
++  end if;
++  if s->'round' is not null and s->'round'<>'null'::jsonb then
++    select effect into m from ojjuda_matgo_internal.fun_purchases
++      where user_id=p_actor and kind='tazza' and reference_id=(s->'round'->>'id')::uuid;
++    s:=jsonb_set(s,'{round,tazza_mode}',coalesce(to_jsonb(m),'null'::jsonb));
++  end if;
++  return s;
++end $$;
++revoke all on function ojjuda_matgo_internal.wallet_with_fun(uuid,text,uuid,boolean,uuid,bigint,smallint,integer) from public,anon,authenticated;
++grant execute on function ojjuda_matgo_internal.wallet_with_fun(uuid,text,uuid,boolean,uuid,bigint,smallint,integer) to service_role;
++notify pgrst,'reload schema';
+diff --git a/tests/matgo-captured-zoom.test.mjs b/tests/matgo-captured-zoom.test.mjs
+index eb41e45..5dbd094 100644
+--- a/tests/matgo-captured-zoom.test.mjs
++++ b/tests/matgo-captured-zoom.test.mjs
+@@ -66,3 +66,3 @@ try {
+   const view=fs.readFileSync(new URL('../games/matgo-view.mjs',import.meta.url),'utf8');assert.match(view,/import '\.\/matgo-captured-zoom\.mjs\?/);
+-  for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261013-cpu1/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
++  for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261013-cpu2/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
+   console.log(`PASS: ${cases} captured-view cases, solo/online, both players/all groups, hold/tap/keyboard, cancellation, safe dismissal, hidden-hand exclusion and unchanged cards`);
+diff --git a/tests/matgo-deck-tools.test.mjs b/tests/matgo-deck-tools.test.mjs
+index 984f142..d154615 100644
+--- a/tests/matgo-deck-tools.test.mjs
++++ b/tests/matgo-deck-tools.test.mjs
+@@ -54,2 +54,3 @@ try{
+   assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before,'current hand, deck, actions and gold stay unchanged');
++  assert.equal(await t.startRound(),false,'an active round cannot restart or consume its reservation');assert.equal(t.tazza.queued,true);assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before);
+   button.click();assert.equal(button.getAttribute('aria-pressed'),'false');button.click();
+diff --git a/tests/matgo-online-fixture.cjs b/tests/matgo-online-fixture.cjs
+index ea74633..bcc0041 100644
+--- a/tests/matgo-online-fixture.cjs
++++ b/tests/matgo-online-fixture.cjs
+@@ -33,3 +33,3 @@ async function fixture(fixtureOptions={}){
+   }
+-  if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
++  if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
+   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
+diff --git a/tests/matgo-purchases.test.cjs b/tests/matgo-purchases.test.cjs
+index 79c5f8d..1da463e 100644
+--- a/tests/matgo-purchases.test.cjs
++++ b/tests/matgo-purchases.test.cjs
+@@ -18,4 +18,3 @@ const {fixture}=require('./matgo-online-fixture.cjs');
+     assert.equal((await start(A)).coins,15,'separate tabs resume the same paid round');
+-    assert.equal((await call(A,{action:'start',stakes_version:1})).error,'client_update_required');
+-    assert.equal((await call(A,{action:'start',stakes_version:1,rules_version:9})).round.tazza_mode,first.round.tazza_mode);
++    assert.equal((await call(A,{action:'status'})).round.tazza_mode,first.round.tazza_mode,'read-only status preserves an active paid round');
+     assert.equal((await start(B,request)).error,'purchase_mismatch');
+@@ -60,2 +59,14 @@ const {fixture}=require('./matgo-online-fixture.cjs');
+     assert.deepEqual((await db.query('select to_jsonb(r) value from ojjuda_matgo_internal.rooms r where id=$1',[room.room.id])).rows[0].value,roomBefore,'online table flip does not change game state or turn');
++    // Re-entering through ordinary start discards the unfinished paid hand, never reactivates it.
++    await db.query('update public.user_private set coins=20 where user_id=$1',[A]);
++    const paidRequest=id(),unfinished=await start(A,paidRequest),balanceBefore=await coins(A);
++    const fresh=await call(A,{action:'start',stakes_version:1,rules_version:9});
++    assert.equal(fresh.status,200);assert.notEqual(fresh.round.id,unfinished.round.id);assert.equal(fresh.round.tazza_mode,null);
++    assert.equal(fresh.gold,unfinished.gold);assert.equal(await coins(A),balanceBefore,'normal entry never charges or refunds coins');
++    assert.equal((await call(A,{action:'start',stakes_version:1,rules_version:9})).round.id,fresh.round.id,'normal retries keep the same ordinary hand');
++    assert.equal((await start(A,paidRequest)).error,'purchase_completed','an old receipt cannot reactivate the abandoned paid hand');
++    assert.equal((await call(A,{action:'settle',round_id:unfinished.round.id,actions:[],rules_version:9})).error,'round_mismatch');
++    assert.equal((await start(A)).error,'round_in_progress','current ordinary hand cannot turn into tazza');
++    await settle(A,fresh.round.id);
++    const nextPaid=await start(A);assert.ok(nextPaid.round.tazza_mode);assert.equal(await coins(A),balanceBefore-5,'only the explicitly requested next paid hand charges');
+     await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query("select public.matgo_fun_service($1,'tazza',$2)",[A,id()]);}),/permission denied/);
+diff --git a/tests/matgo-vent-effects-ui.test.cjs b/tests/matgo-vent-effects-ui.test.cjs
+index 983d55b..34c5ee3 100644
+--- a/tests/matgo-vent-effects-ui.test.cjs
++++ b/tests/matgo-vent-effects-ui.test.cjs
+@@ -149,5 +149,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    await p.waitForFunction(()=>[...document.querySelectorAll('.cpu-portrait img')].every(i=>i.complete&&i.naturalWidth>1000));
+-   assert.equal(await p.locator('.cpu-face-normal').evaluate(el=>getComputedStyle(el).opacity),'1');
+-   assert.equal(await p.locator('.cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'0');
++   assert.equal(await p.locator('#app .cpu-face-normal').evaluate(el=>getComputedStyle(el).opacity),'1');
++   assert.equal(await p.locator('#app .cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'0');
+    const before=await p.evaluate(()=>ventTest.snapshot());
++   const portraitBox=await p.locator('#app .cpu-portrait').boundingBox();assert.ok(portraitBox.width<=32&&portraitBox.height<=34,'resting avatar stays compact');
++   const floorBox=await p.locator('#app .floor').boundingBox();
+    await p.screenshot({path:path.join(proof,'cpu-normal.png')});
+@@ -155,3 +157,6 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    if(!tableOnly)assert.equal(await p.evaluate(()=>{const portrait=document.querySelector('.cpu-portrait');ventTest.redraw();return document.querySelector('.cpu-portrait')===portrait;}),true,'loaded portrait survives the board render');
+-   assert.equal(await p.locator('.cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'1');
++   assert.equal(await p.locator('#app .cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'1');
++   await p.locator('.cpu-reaction').evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
++   const reaction=await p.locator('.cpu-reaction').boundingBox();assert.ok(reaction.width>=120&&reaction.height>=128,'reaction is enlarged during motion');
++   assert.deepEqual(await p.locator('#app .floor').boundingBox(),floorBox,'reaction does not move the board');
+    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+@@ -163,4 +168,4 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    await p.locator('.vent-layer').waitFor({state:'detached'});
+-   assert.equal(await p.locator('body.matgo-cpu-surprised').count(),0);
+-   assert.equal(await p.locator('.cpu-face-normal').evaluate(el=>getComputedStyle(el).opacity),'1');
++   assert.equal(await p.locator('body.matgo-cpu-surprised').count(),0);assert.equal(await p.locator('.cpu-reaction').count(),0);assert.deepEqual(await p.locator('#app .cpu-portrait').boundingBox(),portraitBox);
++   assert.equal(await p.locator('#app .cpu-face-normal').evaluate(el=>getComputedStyle(el).opacity),'1');
+    assert.equal(await p.evaluate(()=>ventTest.snapshot()),before,'expressions do not change the game');
+diff --git a/world.html b/world.html
+index 35743ec..cc38748 100644
+--- a/world.html
++++ b/world.html
+@@ -142,3 +142,3 @@
+ 
+-<script src="/matgo-bridge.js?v=20261013-cpu1" defer></script>
++<script src="/matgo-bridge.js?v=20261013-cpu2" defer></script>
+ <link rel="stylesheet" href="/arcade-rooms.css?v=20261005-chatrooms2">
