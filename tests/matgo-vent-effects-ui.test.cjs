@@ -83,11 +83,15 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    if(effect.id==='table'){
     const spread=await page.locator('.vent-flying-card').evaluateAll(cards=>new Set(cards.map(c=>getComputedStyle(c).transform)).size);
     assert.ok(spread>=18,'individual cards have different airborne paths and spins');
-    await page.waitForTimeout(1950);
+    await page.locator('.vent-table').evaluate(layer=>layer.getAnimations({subtree:true}).forEach(a=>{a.pause();a.currentTime=3000;}));
+    await page.waitForTimeout(40);
+    assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4);
     const landed=await page.locator('.vent-flying-card[data-kind=floor]').evaluateAll(cards=>cards.every(c=>{
      const face=document.querySelector('#app .floor [data-face="'+c.dataset.card+'"]'),r=c.getBoundingClientRect(),t=face.getBoundingClientRect();
      return Math.abs(r.x+r.width/2-t.x-t.width/2)<2&&Math.abs(r.y+r.height/2-t.y-t.height/2)<2;
     }));assert.equal(landed,true,'each flying face returns to its exact card in its new pile');
+    const deckStacked=await page.locator('.vent-flying-card[data-kind=deck]').evaluateAll(cards=>{const t=document.querySelector('#app .deck .back').getBoundingClientRect();return cards.length===18&&cards.every(c=>{const r=c.getBoundingClientRect();return Math.hypot(r.x+r.width/2-t.x-t.width/2,r.y+r.height/2-t.y-t.height/2)<8;});});
+    assert.equal(deckStacked,true,'draw cards return to a tight stack over the original deck');
     await page.screenshot({path:path.join(proof,'table-restacked.png')});
    }
    await page.locator('.vent-layer').waitFor({state:'detached'});
