@@ -52,6 +52,7 @@ try{
   const before=JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]);
   button.click();assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(button.querySelector('small').textContent,'다음 판 예약');assert.equal(t.game.tazzaMode,null);assert.ok(benefit.hidden,'a reservation does not activate the current round');
   assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before,'current hand, deck, actions and gold stay unchanged');
+  assert.equal(await t.startRound(),false,'an active round cannot restart or consume its reservation');assert.equal(t.tazza.queued,true);assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before);
   button.click();assert.equal(button.getAttribute('aria-pressed'),'false');button.click();
   t.game.over=true;failStart=true;
   assert.equal(await t.startRound(),false);assert.equal(t.tazza.queued,true);assert.equal(button.disabled,false,'failed start can be retried');
