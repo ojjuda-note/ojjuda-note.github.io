@@ -16,7 +16,7 @@
     root.document.head.append(style);
   }
   let client = null, subscription = null, pending = null, revision = 0;
-  let memberId = null, checkedAt = 0;
+  let memberId = null, authUserId = null, checkedAt = 0;
   const listeners = new Set();
   const messages = {
     login: '맞고는 로그인한 만 19세 이상 회원만 이용할 수 있어요.',
@@ -41,10 +41,16 @@
     if (client === value) return;
     if (subscription) subscription.unsubscribe();
     invalidate();
+    authUserId = null;
     client = value;
     subscription = client?.auth?.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || (event === 'SIGNED_IN' && session?.user?.id !== memberId)
-          || (memberId && session?.user?.id !== memberId)) invalidate();
+      if (event === 'SIGNED_OUT') { authUserId = null; invalidate(); return; }
+      const nextUserId = session?.user?.id;
+      if (!nextUserId) return;
+      // Returning to a tab can emit SIGNED_IN for the same user while age is loading.
+      // Track the session separately from eligibility so this does not cancel that check.
+      if ((authUserId && nextUserId !== authUserId) || session.user.is_anonymous) invalidate();
+      authUserId = nextUserId;
     })?.data?.subscription || null;
   }
   function getClient() {
@@ -64,14 +70,21 @@
       .finally(() => clearTimeout(timer));
   }
   function check() {
-    if (pending) return pending;
-    pending = (async () => {
+    if (pending?.revision === revision) return pending.promise;
+    const request = { revision, promise: null };
+    pending = request;
+    request.promise = (async () => {
+      let attempt;
       try {
-        const service = getClient(), attempt = revision;
+        const service = getClient();
+        attempt = request.revision = revision;
         // getUser validates with Auth; editable user_metadata and local age flags are never used.
         const auth = await timed(service.auth.getUser());
+        if (auth.error?.name === 'AuthRetryableFetchError' || auth.error?.status === 0 || auth.error?.status >= 500) throw reject('unavailable');
         if (auth.error || !auth.data?.user?.id || auth.data.user.is_anonymous) throw reject('login');
         const userId = auth.data.user.id;
+        if (attempt !== revision || (authUserId && authUserId !== userId)) throw reject('login');
+        authUserId = userId;
         const result = await timed(service.rpc('get_my_member_identity'));
         if (result.error) throw reject('unavailable');
         if (!result.data) throw reject('identity');
@@ -84,16 +97,17 @@
         return { userId };
       } catch (error) {
         const code = Object.hasOwn(messages, error?.code) ? error.code : 'unavailable';
-        invalidate(code);
+        // A response for an old account must not revoke a newer account's result.
+        if (attempt === undefined || attempt === revision) invalidate(code);
         throw reject(code);
       }
-    })().finally(() => { pending = null; });
-    return pending;
+    })().finally(() => { if (pending === request) pending = null; });
+    return request.promise;
   }
   function allowed() { return !!memberId && Date.now() - checkedAt < 65000; }
   async function refresh() {
     // A check started before an identity save may still return the old record.
-    if (pending) { try { await pending; } catch (_) {} }
+    if (pending?.revision === revision) { try { await pending.promise; } catch (_) {} }
     return check();
   }
   root.OjjudaMatgoAccess = Object.freeze({
