@@ -62,7 +62,7 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     if(destroyed)return false;
     clear();index=(VENT_EFFECTS.indexOf(effect)+1)%VENT_EFFECTS.length;void prepare(VENT_EFFECTS[index].id).catch(()=>{});
     const start=b.getBoundingClientRect(),end=target.getBoundingClientRect();
-    const sx=Math.min(innerWidth-62,Math.max(62,start.left+start.width/2)),sy=start.top+start.height/2;
+    const sx=Math.min(innerWidth-92,Math.max(92,start.left+start.width/2)),sy=start.top+start.height/2;
     const tx=Math.min(innerWidth-76,Math.max(76,end.left+end.width/2)),ty=Math.max(80,end.top+end.height/2);
     const angle=Math.atan2(ty-sy,tx-sx)*180/Math.PI,reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const hits=reduced?[0]:effect.hits,duration=reduced?900:effect.duration;

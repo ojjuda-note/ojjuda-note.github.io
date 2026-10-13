@@ -54,6 +54,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    assert.equal(await page.locator('.vent-layer').evaluate(el=>getComputedStyle(el).pointerEvents),'none');
    if(effect.id!=='lightning')assert.equal(await page.locator('.vent-weapon img').evaluate(el=>el.complete&&el.naturalWidth>=1000),true,'full-resolution artwork loaded');
    await page.waitForTimeout(effect.hits[0]+70);
+   if(effect.id==='gun'){const box=await page.locator('.vent-weapon').boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390,'rotated gun stays fully inside the phone screen');}
    await page.screenshot({path:path.join(proof,effect.id+'.png')});
    await page.locator('.vent-layer').waitFor({state:'detached'});
    const m=await page.evaluate(()=>({...audioMetrics,voices:audioStarts.length,states:audioStarts.map(x=>x.state)}));
