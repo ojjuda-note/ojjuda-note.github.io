@@ -1,5 +1,5 @@
-import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-cpu3';
-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-cpu3';
+import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-bonus-pi1';
+import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-bonus-pi1';
 export const VENT_EFFECTS = [
   {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
   {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},

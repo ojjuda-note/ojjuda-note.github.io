@@ -26,6 +26,7 @@ function fixture(p, mode, owner, opponents = [6, 7, 10, 11], bonusSweep = false)
   return { g, events, card: g.hand[p][0] };
 }
 (async () => {
+  await import('./matgo-triple-pi.test.mjs');
   for (const p of [0, 1]) for (const mode of ['hand', 'flip']) for (const self of [true, false]) {
     const { g, events, card } = fixture(p, mode, self ? p : 1 - p);
     await g.play(p, card); conserved(g);

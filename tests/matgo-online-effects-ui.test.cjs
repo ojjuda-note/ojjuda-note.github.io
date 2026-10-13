@@ -96,7 +96,20 @@ const root=path.join(__dirname,'..');
     assert.equal(await reduced.page.locator('#rematch').innerText(),'골드 충전');
     await present(reduced.page,{...empty,gold:[5000,10000]});await reduced.page.evaluate(()=>presenting);
     assert.equal(await reduced.page.locator('#rematch').innerText(),'다음 판','a refill updates the result even when the room version is unchanged');
-    await reduced.context.close();assert.deepEqual(errors,[]);
+    await reduced.context.close();
+    for(const to of [0,1]){
+      const before=structuredClone(initial);before.game.caps[1-to]=[CARDS[49]];
+      const sample=await screen({muted:true,resume:before}),p=sample.page;
+      const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[49]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[49]];
+      await present(p,after);await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
+      assert.match(await p.locator('#event').innerText(),/3피 보너스 한 장/);
+      assert.equal(await p.locator('#event').getAttribute('data-side'),to===0?'mine':'opponent');
+      await p.evaluate(()=>presenting);
+      assert.equal(await p.locator((to===0?'.caps-own':'.caps:not(.caps-own)')+' [data-face="49"]').count(),1);
+      assert.equal(await p.locator((to===0?'.caps:not(.caps-own)':'.caps-own')+' [data-face="49"]').count(),0);
+      await sample.context.close();
+    }
+    assert.deepEqual(errors,[]);
     console.log('PASS: measured card flights, real recorded audio after touch, mute, readable events, idempotent polling, private replacement, visibility cancellation, resume and reduced motion');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
