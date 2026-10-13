@@ -97,8 +97,9 @@ class Game {
       let idx=count>=2?doubleIndex():-1;
       if(idx<0)idx=caps.findIndex(c=>c.k==='pi');
       if(idx<0)idx=doubleIndex();
-      // A triple-pi bonus is available only when it is the last pi card.
-      if(idx<0){const pi=caps.filter(isPi);if(pi.length===1)idx=caps.indexOf(pi[0]);}
+      // With no ordinary/double pi to pay, transfer the whole triple bonus.
+      // This fallback applies to every pi-taking event, even a one-pi claim.
+      if(idx<0)idx=caps.findIndex(c=>c.k==='bonus'&&piVal(c)===3);
       if(idx<0)break;
       const [card]=caps.splice(idx,1);this.caps[to].push(card);
       count-=piVal(card);taken=true;

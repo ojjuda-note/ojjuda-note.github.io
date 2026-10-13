@@ -289,6 +289,31 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('#capsOp .c').count(),3,'two pi are paid with one double; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
+  // The reported case: the opponent has no ordinary/double pi, only one 3-pi bonus.
+  for(const scenario of (await import('./matgo-triple-fixtures.mjs')).tripleScenarios){
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.evaluate(async scenario=>{
+      const {setupTripleScenario}=await import('/tests/matgo-triple-fixtures.mjs');
+      const {game:g,CARDS,render}=matgoTest;setupTripleScenario(g,CARDS,scenario);
+      window.piEvents=[];window.piLabels=[];const original=g.ui.event.bind(g.ui);
+      g.ui.event=async(type,data)=>{piEvents.push({type,id:data?.card?.id});return original(type,data);};
+      new MutationObserver(records=>{for(const record of records)for(const el of record.addedNodes)if(el.classList?.contains('stealtag'))piLabels.push(el.textContent);}).observe(document.body,{childList:true});
+      render();
+    },scenario);
+    assert.equal(await f.page.locator('#capsOp .cap[data-g="피"] .lb').textContent(),'피 3');
+    await f.page.locator('#handMe .c[data-id="'+scenario.hand[0]+'"]').click();
+    if(scenario.bomb)await f.page.locator('.modal #y').click();
+    if(scenario.choose){await f.page.waitForFunction(()=>matgoTest.ui.resolveChoose);await f.page.evaluate(()=>{const {game:g,ui}=matgoTest;ui.resolveChoose(g.floor.findIndex(s=>ui.chooseStacks.has(s)));});}
+    await f.page.waitForFunction(()=>!matgoTest.ui.busy);
+    assert.equal(await f.page.locator('#capsOp .c[data-id="49"]').count(),0,scenario.id);
+    assert.equal(await f.page.locator('#capsMe .c[data-id="49"]').isVisible(),true,scenario.id);
+    assert.equal(await f.page.locator('#capsOp .cap[data-g="피"] .lb').textContent(),'피 0');
+    assert.deepEqual(await f.page.evaluate(()=>piEvents.filter(e=>e.type==='steal').map(e=>e.id)),[49],scenario.id);
+    assert.deepEqual(await f.page.evaluate(()=>piLabels),['3피 보너스 가져오기!']);
+    const proof='/tmp/matgo-bonus-proof';fs.mkdirSync(proof,{recursive:true});await f.page.screenshot({path:path.join(proof,scenario.id+'.png')});
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){
     const f=await fixture(options);await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForSelector('#refill-gold');
     assert.match(await f.page.locator('#refill-gold').textContent(),options.freeUsed<2?/무료/:/5 ZU/);await f.page.locator('#refill-gold').click();
