@@ -152,7 +152,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    const before=await p.evaluate(()=>ventTest.snapshot());
    await p.screenshot({path:path.join(proof,'cpu-normal.png')});
    await p.locator('#matgo-vent').tap();await p.waitForFunction(()=>document.body.classList.contains('matgo-cpu-surprised'));
-   if(!tableOnly)await p.evaluate(()=>ventTest.redraw());
+   if(!tableOnly)assert.equal(await p.evaluate(()=>{const portrait=document.querySelector('.cpu-portrait');ventTest.redraw();return document.querySelector('.cpu-portrait')===portrait;}),true,'loaded portrait survives the board render');
    assert.equal(await p.locator('.cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'1');
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    await p.screenshot({path:path.join(proof,tableOnly?'cpu-table-surprised.png':'cpu-gun-surprised.png')});
