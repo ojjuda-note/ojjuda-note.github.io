@@ -385,11 +385,11 @@ function syncTazza(){
   const button=$('#tazza-mode');if(!button)return;
   const active=game.tazzaMode&&!game.over;
   const benefit=$('#tazza-benefit'),name=active?TAZZA_MODES[game.tazzaMode]:'';
-  if(benefit){benefit.hidden=!name;benefit.textContent=name?'타짜 · '+name:'';benefit.title=name?TAZZA_DETAILS[game.tazzaMode]:'';benefit.setAttribute('aria-label',name?'현재 타짜모드 혜택: '+name:'타짜모드 혜택 없음');}
+  if(benefit){benefit.hidden=!name;benefit.textContent=name?'이번 판 · '+name:'';benefit.title=name?TAZZA_DETAILS[game.tazzaMode]:'';benefit.setAttribute('aria-label',name?'현재 타짜모드 혜택: '+name:'타짜모드 혜택 없음');}
   button.setAttribute('aria-pressed',String(tazza.queued));
-  button.classList.toggle('is-active',active);
+  button.dataset.state=tazza.queued?'queued':'idle';
   button.disabled=tazza.starting||ui.dealing||!access.allowed();
-  button.querySelector('small').textContent=tazza.queued?'예약 · 5쭈':active?TAZZA_MODES[game.tazzaMode]:'다음 판 · 5쭈';
+  button.querySelector('small').textContent=tazza.queued?'다음 판 예약':'다음 판 · 5쭈';
   button.setAttribute('aria-label',tazza.queued?'타짜모드: 다음 판 시작 시 5쭈. 누르면 예약 취소':'타짜모드 5쭈: 다음 한 판에 무작위 효과');
 }
 stopAccess=()=>{game.over=true;Sound.cancel();vent.clear();vent.sync();syncTazza();};
@@ -421,7 +421,7 @@ function mount(){
   <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="my-score hand-score"><span class="stake-label" id="stakeRate"></span><span id="tazza-benefit" class="tazza-benefit" role="status" hidden></span><span id="mePts" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
-  $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판에 5쭈를 사용해 타짜 효과 한 가지를 받아요.':'타짜모드 예약을 취소했어요.',1800);};
+  $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
   $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-cpu1');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};

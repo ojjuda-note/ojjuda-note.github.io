@@ -78,8 +78,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     const before=await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand));
     await f.page.locator('#tazza-mode').click();assert.equal(f.state.coins,20,'reservation is not charged yet');
     assert.equal(await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand)),before);
+    assert.equal(await f.page.locator('#tazza-mode small').textContent(),'다음 판 예약');
+    assert.equal(await f.page.locator('#tazza-benefit').isVisible(),false);
+    assert.equal(f.state.requests.some(r=>r.action==='tazza_start'),false,'clicking the reservation never buys or changes the current round');
     f.state.round=null;await f.page.evaluate(async()=>{matgoTest.game.over=true;await matgoTest.startRound();});
-    assert.equal(await f.page.locator('#tazza-benefit').textContent(),'타짜 · 상대 패 보기');
+    assert.equal(await f.page.locator('#tazza-benefit').textContent(),'이번 판 · 상대 패 보기');
+    assert.equal(await f.page.locator('#tazza-mode').getAttribute('aria-pressed'),'false','paid current round does not reserve another round');
+    assert.equal(await f.page.locator('#tazza-mode small').textContent(),'다음 판 · 5쭈');
     assert.equal(f.state.coins,15);assert.equal(await f.page.locator('#handOp.tazza-peek .c[data-id]').count(),10);
     for(const [width,height] of [[320,568],[390,560],[390,844],[768,720]]){
       await f.page.setViewportSize({width,height});await f.page.waitForTimeout(40);

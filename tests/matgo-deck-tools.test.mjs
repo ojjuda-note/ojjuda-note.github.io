@@ -47,16 +47,16 @@ try{
   assert.ok(button);assert.equal(button.getAttribute('aria-pressed'),'false');
   assert.deepEqual([...d.querySelector('.deck').children].map(el=>el.id||el.className),['tazza-mode','back','deckN','matgo-vent']);
   const benefit=d.getElementById('tazza-benefit');assert.ok(benefit.hidden);
-  for(const [mode,name] of Object.entries(TAZZA_MODES)){t.game.tazzaMode=mode;t.render();assert.equal(benefit.hidden,false);assert.equal(benefit.textContent,'타짜 · '+name);assert.equal(benefit.nextElementSibling.id,'mePts');}
+  for(const [mode,name] of Object.entries(TAZZA_MODES)){t.game.tazzaMode=mode;t.render();assert.equal(benefit.hidden,false);assert.equal(benefit.textContent,'이번 판 · '+name);assert.equal(benefit.nextElementSibling.id,'mePts');}
   t.game.tazzaMode=null;t.render();assert.ok(benefit.hidden);
   const before=JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]);
-  button.click();assert.equal(button.getAttribute('aria-pressed'),'true');
+  button.click();assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(button.querySelector('small').textContent,'다음 판 예약');assert.equal(t.game.tazzaMode,null);assert.ok(benefit.hidden,'a reservation does not activate the current round');
   assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before,'current hand, deck, actions and gold stay unchanged');
   button.click();assert.equal(button.getAttribute('aria-pressed'),'false');button.click();
   t.game.over=true;failStart=true;
   assert.equal(await t.startRound(),false);assert.equal(t.tazza.queued,true);assert.equal(button.disabled,false,'failed start can be retried');
   d.querySelectorAll('.modal').forEach(el=>el.remove());
-  await t.startRound();assert.equal(t.game.actions[0].type,'tazza');assert.equal(t.tazza.queued,false);assert.equal(button.querySelector('small').textContent,'상대 패 보기');
+  await t.startRound();assert.equal(t.game.actions[0].type,'tazza');assert.equal(t.tazza.queued,false);assert.equal(button.querySelector('small').textContent,'다음 판 · 5쭈');assert.equal(button.dataset.state,'idle');assert.equal(benefit.textContent,'이번 판 · 상대 패 보기');
   assert.equal(d.querySelectorAll('#handOp.tazza-peek .c[data-id]').length,10,'peek shows opponent cards');
   t.game.over=true;await t.startRound();assert.equal(t.game.actions.length,0,'following unrequested round is ordinary');
   assert.equal(button.querySelector('small').textContent,'다음 판 · 5쭈');
