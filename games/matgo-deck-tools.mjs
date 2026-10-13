@@ -1,15 +1,17 @@
-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-vent2';
+import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-table1';
+import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-table1';
 export const VENT_EFFECTS = [
   {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
   {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},
   {id:'glove',name:'권투장갑',word:'퍽!',hits:[560],duration:2000},
   {id:'bomb',name:'폭탄',word:'펑!',hits:[940],duration:2600},
-  {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300}
+  {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300},
+  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[700,1500],duration:2200}
 ];
 const assetURL=id=>new URL(`./assets/matgo-vent/${id}.png`,import.meta.url).href;
 const assetCache=new Map();
 function prepareAsset(id){
-  if(id==='lightning')return Promise.resolve();
+  if(id==='lightning'||id==='table')return Promise.resolve();
   if(!assetCache.has(id)){
     const ready=new Promise((resolve,reject)=>{
       const img=new window.Image();img.onload=()=>resolve();
@@ -25,7 +27,8 @@ function particles(){
     return `<i class="vent-spark" style="--px:${(Math.cos(angle)*radius).toFixed(1)}px;--py:${(Math.sin(angle)*radius).toFixed(1)}px;--spin:${i*43}deg;--lag:${(i%4)*22}ms"></i>`;
   }).join('')+Array.from({length:7},(_,i)=>`<i class="vent-smoke" style="--px:${(i-3)*17}px;--py:${-20-(i%3)*19}px;--spin:${i*37}deg;--lag:${i*35}ms"></i>`).join('');
 }
-export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onHit=()=>{},prepare=prepareAsset,sound=createVentSound()}={}){
+export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onHit=()=>{},onRearrange=()=>{},prepare=prepareAsset,sound=createVentSound()}={}){
+  let tableScene=null;
   let index=0,active=null,cooldown=0,resetTimer=null,cleanupTimer=null;
   let observed=null,observer=null,destroyed=false,purchasing=false;
   const hitTimers=new Set(),button=()=>document.getElementById('matgo-vent');
@@ -40,14 +43,14 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     if(!deck.querySelector('#matgo-vent')){
       const b=document.createElement('button');b.id='matgo-vent';b.type='button';b.className='vent-button';
       b.innerHTML=`<span class="vent-icon" aria-hidden="true">${weapon('gun')}</span><span>화풀이<small>1쭈</small></span>`;
-      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개 모션과 효과음을 차례로 재생');
+      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개, 판 뒤집기 모션과 효과음을 차례로 재생');
       b.title='1회 1쭈 · 소리는 게임의 소리 설정을 따라요. 패와 점수는 그대로예요.';deck.appendChild(b);
       void prepare(VENT_EFFECTS[index].id).catch(()=>{});
     }
     if(observed!==deck.parentElement){observer?.disconnect();observed=deck.parentElement;if(typeof ResizeObserver!=='undefined'){observer=new ResizeObserver(resize);observer.observe(observed);}}
     resize();sync();
   }
-  function clear(){for(const timer of hitTimers)clearTimeout(timer);hitTimers.clear();clearTimeout(cleanupTimer);sound.stop();active?.remove();active=null;document.querySelectorAll('.vent-hit').forEach(el=>el.classList.remove('vent-hit'));}
+  function clear(){for(const timer of hitTimers)clearTimeout(timer);hitTimers.clear();clearTimeout(cleanupTimer);sound.stop();tableScene?.clear();tableScene=null;active?.remove();active=null;document.querySelectorAll('.vent-hit').forEach(el=>el.classList.remove('vent-hit'));}
   async function fire(){
     const b=button(),target=document.querySelector('.zone.op .who b');
     if(destroyed||purchasing||!b||!target||Date.now()<cooldown||!canPlay()||!purchase)return false;
@@ -62,16 +65,19 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     if(destroyed)return false;
     clear();index=(VENT_EFFECTS.indexOf(effect)+1)%VENT_EFFECTS.length;void prepare(VENT_EFFECTS[index].id).catch(()=>{});
     const start=b.getBoundingClientRect(),end=target.getBoundingClientRect();
-    const sx=Math.min(innerWidth-92,Math.max(92,start.left+start.width/2)),sy=start.top+start.height/2;
-    const tx=Math.min(innerWidth-76,Math.max(76,end.left+end.width/2)),ty=Math.max(80,end.top+end.height/2);
+    const size=Math.min(230,Math.max(170,innerWidth*.5)),pad=size*.73;
+    const sx=Math.min(innerWidth-pad,Math.max(pad,start.left+start.width/2)),sy=start.top+start.height/2;
+    const floorRect=document.querySelector('#app .floor')?.getBoundingClientRect();
+    const tx=effect.id==='table'&&floorRect?floorRect.left+floorRect.width/2:Math.min(innerWidth-pad,Math.max(pad,end.left+end.width/2));
+    const ty=effect.id==='table'&&floorRect?floorRect.top+floorRect.height/2:Math.max(size*.5,end.top+end.height/2);
     const angle=Math.atan2(ty-sy,tx-sx)*180/Math.PI,reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const hits=reduced?[0]:effect.hits,duration=reduced?900:effect.duration;
     const layer=document.createElement('div');layer.className='vent-layer vent-'+effect.id;layer.dataset.effect=effect.id;layer.setAttribute('aria-hidden','true');
-    for(const [key,value] of Object.entries({sx:sx+'px',sy:sy+'px',tx:tx+'px',ty:ty+'px',dx:(tx-sx)+'px',dy:(ty-sy)+'px',aim:angle+'deg',hit:effect.hits[0]+'ms'}))layer.style.setProperty('--'+key,value);
-    const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:'<div class="vent-trail"></div>';
-    layer.innerHTML=`${effect.id==='lightning'?'':`<div class="vent-weapon">${weapon(effect.id)}</div>`}${trails}<div class="vent-impact"><div class="vent-aura"></div><div class="vent-flash"></div><div class="vent-ring"></div><div class="vent-ring second"></div>${particles()}<strong class="vent-word">${effect.word}</strong></div>`;
-    document.body.appendChild(layer);active=layer;cooldown=Date.now()+duration+150;sync();if(!document.hidden)sound.play(effect.id,hits);
-    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;const current=document.querySelector('.zone.op .who b');if(current&&!reduced){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
+    for(const [key,value] of Object.entries({sx:sx+'px',sy:sy+'px',tx:tx+'px',ty:ty+'px',dx:(tx-sx)+'px',dy:(ty-sy)+'px',aim:angle+'deg',hit:effect.hits[0]+'ms','weapon-size':size+'px'}))layer.style.setProperty('--'+key,value);
+    const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:effect.id==='table'?'':'<div class="vent-trail"></div>';
+    layer.innerHTML=`${['lightning','table'].includes(effect.id)?'':`<div class="vent-weapon">${weapon(effect.id)}</div>`}${trails}<div class="vent-impact"><div class="vent-aura"></div><div class="vent-flash"></div><div class="vent-ring"></div><div class="vent-ring second"></div>${particles()}<strong class="vent-word">${effect.word}</strong></div>`;
+    document.body.appendChild(layer);active=layer;if(effect.id==='table')tableScene=createTableFlipScene(layer,onRearrange,{reduced});cooldown=Date.now()+duration+150;sync();if(!document.hidden)sound.play(effect.id,hits);
+    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;if(effect.id==='table'&&ms===hits[0])tableScene?.rearrange();const current=document.querySelector('.zone.op .who b');if(current&&!reduced&&effect.id!=='table'){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
     cleanupTimer=setTimeout(clear,duration);clearTimeout(resetTimer);resetTimer=setTimeout(sync,duration+170);return effect.id;
   }
   function click(event){if(!event.target.closest?.('#matgo-vent'))return;event.preventDefault();event.stopPropagation();void fire();}

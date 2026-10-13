@@ -45,6 +45,9 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
     }else if(id==='bomb'){
       noise(at,.16,.68,6100);noise(at+.015,1.15,.9,1550,'lowpass',.015,100);tone(at,1.05,.9,105,28);
       noise(at+.09,.95,.36,330);noise(at+.20,.55,.20,2900,'highpass');
+    }else if(id==='table'){
+      tone(at,.45,.72,90,27);noise(at,.30,.75,1800);noise(at+.06,.8,.45,550,'lowpass',.015,110);
+      for(let i=0;i<6;i++){noise(at+.04+i*.055,.09,.18,1000+i*430,'bandpass');tone(at+.10+i*.045,.13,.065,310+i*120,80);}
     }else if(id==='lightning'){
       noise(at,.18,.5,4300,'highpass');tone(at,.3,.18,1600,140,'sawtooth');
       for(let i=0;i<5;i++){noise(at+i*.07,.055,.25,2200+i*480,'bandpass');tone(at+i*.075,.08,.075,700+i*410,120,'square');}
@@ -54,7 +57,7 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
   function play(id,hits){
     if(destroyed||!enabled()||document.hidden||ctx?.state!=='running')return false;
     stop();const start=ctx.currentTime+.018,first=(hits[0]||0)/1000;
-    if(id==='hammer'||id==='glove')noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
+    if(id==='hammer'||id==='glove'||id==='table')noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
     if(id==='bomb')noise(start,.75,.075,5200,'highpass',.05);
     if(id==='lightning'){tone(start,.55,.05,150,1050,'triangle');noise(start,.55,.055,4200,'bandpass',.15);}
     for(const ms of hits)impact(id,start+ms/1000);

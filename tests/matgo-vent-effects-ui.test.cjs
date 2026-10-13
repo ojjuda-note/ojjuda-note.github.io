@@ -7,7 +7,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
  fs.mkdirSync(proof,{recursive:true});
  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
  const errors=[];
- const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','맞고 친구'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
+ const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','맞고 친구'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]},{cards:[CARDS[4],CARDS[5]]},{cards:[CARDS[12]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
  async function screen({muted=false,reduced=false}={}){
   const context=await browser.newContext({viewport:{width:390,height:760},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
   await context.addInitScript(({muted,room})=>{
@@ -31,7 +31,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
    if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
-   if(url.pathname==='/games/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.ventTest={vent,renderRoom};'});
+   if(url.pathname==='/games/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.ventTest={vent,renderRoom,redraw:()=>{viewKey="";renderRoom();},snapshot:()=>JSON.stringify(room.game)};'});
    return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/games/matgo-online.html');await page.locator('#matgo-vent').waitFor();
@@ -47,22 +47,50 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   assert.equal(await page.locator('.vent-layer').count(),0);assert.equal(await page.evaluate(()=>audioStarts.length),0,'declined purchase stays silent');
   await page.evaluate(()=>{decline=false;slowPurchase=false;});
   const metrics=[];
+  const floorSnapshot=()=>page.evaluate(()=>({game:ventTest.snapshot(),piles:[...document.querySelectorAll('#app .fl > .stack')].map(s=>({cards:[...s.querySelectorAll('[data-face]')].map(c=>c.dataset.face),slot:s.dataset.slot}))}));
   for(const effect of VENT_EFFECTS){
+   const before=await floorSnapshot();
    await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);
    await page.evaluate(()=>{audioMetrics={peak:0,energy:0,count:0};audioStarts.length=0;});
    await page.locator('#matgo-vent').tap();await page.locator(`.vent-layer[data-effect=${effect.id}]`).waitFor();
    assert.equal(await page.locator('.vent-layer').evaluate(el=>getComputedStyle(el).pointerEvents),'none');
-   if(effect.id!=='lightning')assert.equal(await page.locator('.vent-weapon img').evaluate(el=>el.complete&&el.naturalWidth>=1000),true,'full-resolution artwork loaded');
+   if(!['lightning','table'].includes(effect.id))assert.equal(await page.locator('.vent-weapon img').evaluate(el=>el.complete&&el.naturalWidth>=1000),true,'full-resolution artwork loaded');
    await page.waitForTimeout(effect.hits[0]+70);
-   if(effect.id==='gun'){const box=await page.locator('.vent-weapon').boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390,'rotated gun stays fully inside the phone screen');}
+   if(effect.id==='gun'){
+    const box=await page.locator('.vent-weapon').boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390,'rotated gun stays fully inside the phone screen');
+    const pose=await page.locator('.vent-weapon').evaluate(el=>{
+     const matrix=new DOMMatrix(getComputedStyle(el).transform).multiply(new DOMMatrix(getComputedStyle(el.querySelector('img')).transform));
+     // Landmarks in the original right-facing art: barrel axis and grip below its rear.
+     const barrel=new DOMPoint(.61,0,0,0).matrixTransform(matrix),grip=new DOMPoint(-.18,.47,0,0).matrixTransform(matrix);
+     const icon=new DOMMatrix(getComputedStyle(document.querySelector('.vent-icon img')).transform);
+     const iconBarrel=new DOMPoint(.61,0,0,0).matrixTransform(icon),iconGrip=new DOMPoint(-.18,.47,0,0).matrixTransform(icon);
+     return {barrel:{x:barrel.x,y:barrel.y},gripY:grip.y,iconBarrelX:iconBarrel.x,iconGripY:iconGrip.y};
+    });
+    assert.ok(pose.barrel.x<0&&pose.barrel.y<0,'barrel points toward the opponent above and to the left');
+    assert.ok(pose.gripY>0,'gun grip stays below the barrel while aiming');
+    assert.ok(pose.iconBarrelX<0&&pose.iconGripY>0,'button gun faces into the board with its grip down');
+   }
+   if(effect.id==='table'){
+    assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-loose-stack').count(),3);
+    assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+   }
    await page.screenshot({path:path.join(proof,effect.id+'.png')});
    await page.locator('.vent-layer').waitFor({state:'detached'});
+   const after=await floorSnapshot();assert.equal(after.game,before.game,'cosmetic effects conserve all game data');
+   assert.deepEqual(after.piles.map(p=>p.cards),before.piles.map(p=>p.cards),'pile contents and order stay unchanged');
+   if(effect.id==='table'){
+    assert.ok(after.piles.every((p,i)=>p.slot!==before.piles[i].slot),'each pile lands in a different display slot');
+    assert.equal(await page.locator('body.matgo-table-flipping').count(),0);
+    assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'visible');
+    await page.evaluate(()=>ventTest.redraw());assert.deepEqual(await floorSnapshot(),after,'positions survive ordinary online redraws');
+    await page.screenshot({path:path.join(proof,'table-settled.png')});
+   }
    const m=await page.evaluate(()=>({...audioMetrics,voices:audioStarts.length,states:audioStarts.map(x=>x.state)}));
    assert.ok(m.peak>.015&&m.energy>.01,`${effect.id} must produce actual audible samples: ${JSON.stringify(m)}`);
    assert.ok(m.peak<1,`${effect.id} output is bounded without clipping`);assert.ok(m.states.every(s=>s==='running'));
    metrics.push({effect:effect.id,peak:m.peak,rms:Math.sqrt(m.energy/m.count),voices:m.voices});
   }
-  assert.equal(await page.evaluate(()=>payments.length),5);assert.ok(new Set(metrics.map(m=>m.voices)).size>=4,'effects have distinct sound layers');
+  assert.equal(await page.evaluate(()=>payments.length),VENT_EFFECTS.length);assert.ok(new Set(metrics.map(m=>m.voices)).size>=4,'effects have distinct sound layers');
   // Existing mute button cancels all scheduled sounds immediately and keeps future effects silent.
   await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);await page.locator('#matgo-vent').tap();await page.locator('.vent-layer').waitFor();
   await page.locator('#menu').click();await page.locator('#sound').tap();await page.waitForTimeout(100);
@@ -75,6 +103,6 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   const reduced=await screen({muted:true,reduced:true});await reduced.page.setViewportSize({width:320,height:568});await reduced.page.locator('#matgo-vent').tap();await reduced.page.locator('.vent-layer').waitFor();
   assert.equal(await reduced.page.locator('.vent-weapon').isVisible(),false);assert.equal(await reduced.page.locator('.vent-word').isVisible(),true);assert.equal(await reduced.page.evaluate(()=>audioStarts.length),0);
   assert.equal(await reduced.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await reduced.page.screenshot({path:path.join(proof,'reduced-motion.png')});
-  await reduced.context.close();assert.deepEqual(errors,[]);console.log('PASS: 5 high-resolution effects; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
+  await reduced.context.close();assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, table flip with conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

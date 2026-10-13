@@ -15,11 +15,11 @@
 .tazza-button:focus-visible,.vent-button:focus-visible{outline:3px solid white;outline-offset:2px}
 .tazza-button:active:not(:disabled),.vent-button:active:not(:disabled){transform:translateY(1px)}
 /* Material artwork, separate anticipation / contact / afterglow stages. */
-.vent-icon img{object-fit:contain;filter:drop-shadow(0 1px 1px #0009)}
+.vent-icon img{transform:scaleX(-1);object-fit:contain;filter:drop-shadow(0 1px 1px #0009)}
 .vent-layer{--warm:#ffd470;position:fixed;inset:0;z-index:36;overflow:hidden;pointer-events:none;contain:layout paint}
-.vent-weapon{position:absolute;left:var(--sx);top:var(--sy);width:124px;height:124px;margin:-62px;filter:drop-shadow(0 9px 5px #15101c66);will-change:transform,opacity}
+.vent-weapon{position:absolute;left:var(--sx);top:var(--sy);width:var(--weapon-size,195px);height:var(--weapon-size,195px);margin:calc(var(--weapon-size,195px) * -.5);filter:drop-shadow(0 9px 5px #15101c66);will-change:transform,opacity}
 .vent-weapon img{width:100%;height:100%;object-fit:contain;display:block}
-.vent-impact{position:absolute;left:var(--tx);top:var(--ty);width:1px;height:1px}
+.vent-impact{position:absolute;left:var(--tx);top:var(--ty);width:1px;height:1px;transform:scale(1.3)}
 .vent-aura,.vent-flash,.vent-ring,.vent-spark,.vent-smoke,.vent-word{position:absolute;animation-fill-mode:both}
 .vent-aura{width:150px;height:150px;left:-75px;top:-75px;border-radius:50%;background:radial-gradient(ellipse,#fff5cabb 0,#ffc46766 24%,#ff941b22 45%,transparent 70%);animation:vent-aura 1000ms var(--hit) both}
 .vent-flash{width:110px;height:110px;left:-55px;top:-55px;background:radial-gradient(ellipse,#fff 0,#fff9bb 22%,#ffc861 44%,#ec712f88 65%,transparent 72%);clip-path:polygon(50% 0,57% 29%,77% 9%,72% 35%,100% 25%,79% 49%,100% 65%,69% 65%,74% 99%,52% 75%,33% 100%,32% 73%,2% 81%,21% 56%,0 37%,29% 37%,27% 7%,44% 30%);animation:vent-flash 420ms var(--hit) both}
@@ -31,24 +31,26 @@
 .vent-word{left:0;top:30px;white-space:nowrap;font-family:system-ui,sans-serif;font-size:33px;font-weight:1000;letter-spacing:-2px;color:#fff5c9;-webkit-text-stroke:1.1px #6a3429;text-shadow:2px 3px 0 #4d2337,0 5px 8px #20152766;animation:vent-word 1300ms calc(var(--hit) + 45ms) both}
 .vent-hit{animation:vent-wobble 500ms ease-out}
 /* Two aimed shots, recoil, muzzle flare and traveling tracers. */
-.vent-gun .vent-weapon{animation:vent-recoil 1250ms both}
+.vent-gun .vent-weapon{margin-top:calc(var(--weapon-size,195px) * -.72);transform-origin:50% 72%;animation:vent-recoil 1250ms both}
+/* The opponent is to the left: keep the grip below the barrel while aiming. */
+.vent-gun .vent-weapon img{transform:scaleY(-1)}
 .vent-projectile{position:absolute;left:var(--sx);top:var(--sy);width:52px;height:4px;margin:-2px 0 0 -26px;border-radius:100%;background:linear-gradient(90deg,transparent,#ffc659,#fff8dc);box-shadow:0 0 9px #ffcc66;animation:vent-shot 80ms 250ms both}
 .vent-projectile.second{animation-delay:610ms}
 .vent-muzzle{position:absolute;left:var(--sx);top:var(--sy);width:64px;height:64px;margin:-32px;background:radial-gradient(ellipse,#fff9d1, #ffd071 24%,#ff931d88 39%,transparent 67%);clip-path:polygon(0 37%,62% 41%,100% 5%,83% 47%,100% 66%,57% 57%,4% 72%);animation:vent-muzzle 360ms 250ms 2 both}
 .vent-gun .vent-flash{animation:vent-flash 340ms 330ms 2 both}.vent-gun .vent-ring.second{animation-delay:690ms}
 /* Hammer winds up, lands and rebounds; the leather glove compresses at contact. */
-.vent-hammer .vent-weapon{left:calc(var(--tx) + 34px);top:calc(var(--ty) + 49px);width:154px;height:154px;margin:-77px;transform-origin:50% 87%;animation:vent-hammer 1480ms both}
+.vent-hammer .vent-weapon{left:calc(var(--tx) + 34px);top:calc(var(--ty) + 49px);width:calc(var(--weapon-size,195px) * 1.12);height:calc(var(--weapon-size,195px) * 1.12);margin:calc(var(--weapon-size,195px) * -.56);transform-origin:50% 87%;animation:vent-hammer 1480ms both}
 .vent-hammer .vent-trail{position:absolute;left:calc(var(--tx) - 26px);top:calc(var(--ty) - 78px);width:140px;height:140px;border-radius:50%;border:9px solid transparent;border-top-color:#ffe9c580;border-right-color:#ffd27455;filter:blur(2px);animation:vent-swing-trail 280ms 420ms both}
-.vent-glove .vent-weapon{width:140px;height:140px;margin:-70px;animation:vent-punch 1400ms both}
+.vent-glove .vent-weapon{width:var(--weapon-size,195px);height:var(--weapon-size,195px);margin:calc(var(--weapon-size,195px) * -.5);animation:vent-punch 1400ms both}
 .vent-glove .vent-trail{position:absolute;left:var(--sx);top:var(--sy);width:86px;height:28px;margin:-14px -43px;border-radius:50%;background:linear-gradient(90deg,transparent,#ffb998aa);filter:blur(3px);animation:vent-punch-trail 560ms both}
 .vent-glove .vent-flash{background:radial-gradient(#fff8da,#ffd3a0 35%,#ec694d88 58%,transparent 72%)}
 /* Arced throw, hot core, billowing smoke, embers and expanding pressure rings. */
-.vent-bomb .vent-weapon{width:105px;height:105px;margin:-52px;animation:vent-bomb 1100ms both}
+.vent-bomb .vent-weapon{width:calc(var(--weapon-size,195px) * .82);height:calc(var(--weapon-size,195px) * .82);margin:calc(var(--weapon-size,195px) * -.41);animation:vent-bomb 1100ms both}
 .vent-bomb .vent-weapon:after{content:'';position:absolute;right:5%;top:4%;width:18px;height:18px;border-radius:50%;background:radial-gradient(#fff,#ffe5a6 18%,#ff9a28 35%,transparent 70%);box-shadow:0 0 12px #ff9e3a;animation:vent-fuse 400ms ease-in-out infinite alternate}
 .vent-bomb .vent-flash{width:158px;height:158px;left:-79px;top:-79px;animation-duration:620ms;background:radial-gradient(#fffad1,#ffe895 18%,#ffb240 40%,#ee5725 55%,transparent 71%)}
 .vent-bomb .vent-aura{width:220px;height:220px;left:-110px;top:-110px}.vent-bomb .vent-smoke{width:75px;height:75px;left:-37px;top:-37px;animation-duration:1300ms}.vent-bomb .vent-spark{box-shadow:0 0 10px #ff9225}
 /* Branching electricity uses crisp vector cores with a soft blue corona. */
-.vent-lightning{--warm:#a8e7ff}.vent-bolt{position:absolute;left:calc(var(--tx) - 80px);top:0;width:160px;height:calc(var(--ty) + 15px);overflow:visible;filter:drop-shadow(0 0 5px #6ccfff);animation:vent-bolt 1050ms 350ms both}
+.vent-lightning{--warm:#a8e7ff}.vent-bolt{position:absolute;left:calc(var(--tx) - 104px);top:0;width:208px;height:calc(var(--ty) + 15px);overflow:visible;filter:drop-shadow(0 0 5px #6ccfff);animation:vent-bolt 1050ms 350ms both}
 .bolt-halo{stroke:#5bb5ff88;stroke-width:15}.bolt-core{stroke:#ecfaff;stroke-width:4}.bolt-branch{stroke:#b4e9ff;stroke-width:2}
 .vent-bolt path{stroke-dasharray:420;animation:vent-bolt-draw 330ms 350ms both}
 .vent-lightning .vent-aura{background:radial-gradient(#eefcff99,#6ad8ff44 35%,transparent 69%)}.vent-lightning .vent-ring{border-color:#cff6ff;box-shadow:0 0 12px #67cbff,inset 0 0 9px #67cbff}.vent-lightning .vent-flash{background:radial-gradient(#fff,#d3f7ff 25%,#70baff88 50%,transparent 72%)}.vent-lightning .vent-word{color:#e6faff;-webkit-text-stroke-color:#355f98}.vent-lightning .vent-spark{box-shadow:0 0 8px #6aceff}
@@ -58,9 +60,9 @@
 @keyframes vent-spark{0%{opacity:0;transform:translate(0,0) scale(.3)}10%{opacity:1}68%{opacity:.8}100%{opacity:0;transform:translate(var(--px),var(--py)) rotate(var(--spin)) scale(.1)}}
 @keyframes vent-smoke{0%{opacity:0;transform:scale(.2)}25%{opacity:.65}100%{opacity:0;transform:translate(var(--px),var(--py)) rotate(var(--spin)) scale(1.7)}}
 @keyframes vent-word{0%{opacity:0;transform:translate(-50%,10px) rotate(-12deg) scale(.35)}13%{opacity:1;transform:translate(-50%,0) rotate(-8deg) scale(1.15)}25%,70%{opacity:1;transform:translate(-50%,0) rotate(-8deg) scale(1)}100%{opacity:0;transform:translate(-50%,-12px) rotate(-5deg) scale(.95)}}
-@keyframes vent-recoil{0%{opacity:0;transform:rotate(var(--aim)) scale(.55)}16%,19%,48%{opacity:1;transform:rotate(var(--aim))}23%,52%{opacity:1;transform:rotate(calc(var(--aim) - 12deg)) translateX(-13px)}34%,63%,78%{opacity:1;transform:rotate(var(--aim))}100%{opacity:0;transform:rotate(var(--aim)) translateY(15px) scale(.8)}}
+@keyframes vent-recoil{0%{opacity:0;transform:rotate(var(--aim)) scale(.55)}16%,19%,48%{opacity:1;transform:rotate(var(--aim))}23%,52%{opacity:1;transform:rotate(calc(var(--aim) + 12deg)) translateX(-13px)}34%,63%,78%{opacity:1;transform:rotate(var(--aim))}100%{opacity:0;transform:rotate(var(--aim)) translateY(15px) scale(.8)}}
 @keyframes vent-shot{0%{opacity:0;transform:rotate(var(--aim))}12%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--aim))}}
-@keyframes vent-muzzle{0%{opacity:1;transform:rotate(var(--aim)) translateX(53px) scale(.8)}15%{opacity:1;transform:rotate(var(--aim)) translateX(55px) scale(1.2)}28%,100%{opacity:0;transform:rotate(var(--aim)) translateX(54px) scale(.4)}}
+@keyframes vent-muzzle{0%{opacity:1;transform:rotate(var(--aim)) translateX(calc(var(--weapon-size,195px) * .44)) scale(.8)}15%{opacity:1;transform:rotate(var(--aim)) translateX(calc(var(--weapon-size,195px) * .46)) scale(1.2)}28%,100%{opacity:0;transform:rotate(var(--aim)) translateX(calc(var(--weapon-size,195px) * .45)) scale(.4)}}
 @keyframes vent-hammer{0%{opacity:0;transform:rotate(42deg) scale(.65)}15%{opacity:1;transform:rotate(42deg) scale(1)}30%{transform:rotate(82deg)}44%{transform:rotate(-26deg)}53%{transform:rotate(9deg)}64%{transform:rotate(-10deg)}79%{opacity:1;transform:rotate(-8deg)}100%{opacity:0;transform:translateY(20px) rotate(-15deg) scale(.8)}}
 @keyframes vent-swing-trail{0%{opacity:0;transform:rotate(40deg) scale(.8)}30%{opacity:1}100%{opacity:0;transform:rotate(-70deg) scale(1.1)}}
 @keyframes vent-punch{0%{opacity:0;transform:rotate(calc(var(--aim) + 45deg)) scale(.5)}16%{opacity:1;transform:translate(12px,15px) rotate(calc(var(--aim) + 45deg)) scale(.8)}40%{transform:translate(var(--dx),var(--dy)) rotate(calc(var(--aim) + 45deg)) scale(1.12,.9)}48%{transform:translate(var(--dx),var(--dy)) rotate(calc(var(--aim) + 45deg)) scale(.95,1.05)}65%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(calc(var(--aim) + 45deg)) scale(1)}100%{opacity:0;transform:translate(0,20px) rotate(calc(var(--aim) + 45deg)) scale(.4)}}
@@ -74,3 +76,15 @@
 
 #app .hand.op.tazza-peek{display:flex;gap:2px;justify-content:center;min-height:39px}
 #app .hand.op.tazza-peek .c{width:26px;height:39px;flex:0 0 26px;margin-right:0;opacity:1;transform:none}
+
+/* The board flips, while unchanged card piles arc to new display slots. */
+body.matgo-table-flipping #app .floor{visibility:hidden}
+body.matgo-table-flipping #app .floor .stack{transition:none}
+.vent-table{perspective:850px}.vent-table .vent-impact{z-index:5;--hit:1500ms}
+.vent-board-copy{position:absolute!important;min-height:0!important;flex:none!important;transform-origin:50% 85%;animation:vent-table-turn 1900ms both;will-change:transform;visibility:visible!important}
+.vent-loose-stack{position:absolute;z-index:3;--land-x:0px;--land-y:0px;animation:vent-table-cards 1900ms both;filter:drop-shadow(5px 12px 6px #130d1a88)}
+.vent-loose-stack .stack{pointer-events:none!important;transition:none!important;border:0;padding:0;background:none;opacity:1}.vent-loose-stack .c{display:block;transition:none!important}
+.vent-loose-stack .ppuk{position:absolute;z-index:3;right:-10px;top:-10px;background:var(--red);color:white;padding:2px 7px;border-radius:999px;font-size:11px;white-space:nowrap}
+@keyframes vent-table-turn{0%,10%{transform:translateY(0) rotateX(0) rotateZ(0)}25%{transform:translateY(12px) rotateX(-12deg) rotateZ(2deg)}48%{transform:translateY(-35px) rotateX(155deg) rotateZ(-9deg);filter:brightness(.6)}63%{transform:translateY(-12px) rotateX(125deg) rotateZ(-4deg);filter:brightness(.7)}79%{transform:translateY(0) rotateX(0) rotateZ(0);filter:brightness(1)}84%{transform:translateY(5px) rotateX(-3deg)}92%,100%{transform:none}}
+@keyframes vent-table-cards{0%,14%{transform:none}38%{transform:translate(var(--lift-x),var(--lift-y)) rotate(var(--tumble)) scale(1.3)}53%{transform:translate(var(--lift-x),calc(var(--lift-y) - 15px)) rotate(calc(var(--tumble) * -1)) scale(1.25)}79%{transform:translate(var(--land-x),var(--land-y)) rotate(0) scale(1)}85%{transform:translate(var(--land-x),calc(var(--land-y) - 8px)) rotate(-3deg)}94%,100%{transform:translate(var(--land-x),var(--land-y)) rotate(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.vent-board-copy,.vent-loose-stack{display:none}.vent-table .vent-impact{transform:none}}
