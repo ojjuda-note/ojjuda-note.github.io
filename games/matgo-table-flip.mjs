@@ -48,11 +48,11 @@ export function createTableFlipScene(layer,onRearrange,{reduced=false}={}){
   const floor=document.querySelector('#app .floor'),pieces=[],hiddenSources=[];let rearranged=false;
   if(!floor)return {rearrange(){},clear(){}};
   if(!reduced){
-    const rect=floor.getBoundingClientRect(),board=floor.cloneNode(true);
+    const rect=floor.getBoundingClientRect(),board=floor.cloneNode(true),fragment=document.createDocumentFragment();
     board.classList.add('vent-board-copy');board.querySelectorAll('.fl,.deck').forEach(el=>el.remove());
     board.removeAttribute('id');board.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
     Object.assign(board.style,{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',margin:'0'});
-    layer.appendChild(board);
+    fragment.appendChild(board);
     function add(source,kind,stackIndex=0){
       const p=pose(source),piece=document.createElement('div'),index=pieces.length;
       if(!p.w||!p.h)return;
@@ -62,7 +62,7 @@ export function createTableFlipScene(layer,onRearrange,{reduced=false}={}){
       const offset=kind==='deck'?Math.min(stackIndex,12)*.35:0;
       p.x-=offset;p.y-=offset;
       Object.assign(piece.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px',zIndex:String(10+index)});
-      piece.appendChild(copyCard(source,p.style));scatter(piece,p,index,rect);layer.appendChild(piece);
+      piece.appendChild(copyCard(source,p.style));scatter(piece,p,index,rect);fragment.appendChild(piece);
       pieces.push({el:piece,source,kind,id:cardId(source),x:p.x,y:p.y,index,offset});
     }
     // Each face-up floor card flies separately, including cards in the same pile.
@@ -77,6 +77,9 @@ export function createTableFlipScene(layer,onRearrange,{reduced=false}={}){
       });
     }
     document.body.classList.add('matgo-table-flipping');
+    // Resolve destinations before attaching animated cards, so compositor keyframes
+    // always contain their final positions and cleanup never causes a visible jump.
+    rearrange();layer.appendChild(fragment);
   }
   function rearrange(){
     if(rearranged)return;rearranged=true;onRearrange();

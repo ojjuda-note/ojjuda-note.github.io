@@ -85,8 +85,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    if(effect.id==='table'){
     const spread=await page.locator('.vent-flying-card').evaluateAll(cards=>new Set(cards.map(c=>getComputedStyle(c).transform)).size);
     assert.ok(spread>=18,'individual cards have different airborne paths and spins');
-    await page.locator('.vent-table').evaluate(layer=>layer.getAnimations({subtree:true}).forEach(a=>{a.pause();a.currentTime=3000;}));
-    await page.waitForTimeout(40);
+    await page.waitForFunction(()=>{const cards=[...document.querySelectorAll('.vent-flying-card')];return cards.length>0&&cards.every(c=>c.getAnimations().every(a=>a.playState==='finished'));},{},{polling:'raf'});
     assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4);
     const landed=await page.locator('.vent-flying-card[data-kind=floor]').evaluateAll(cards=>cards.every(c=>{
      const face=document.querySelector('#app .floor [data-face="'+c.dataset.card+'"]'),r=c.getBoundingClientRect(),t=face.getBoundingClientRect();
