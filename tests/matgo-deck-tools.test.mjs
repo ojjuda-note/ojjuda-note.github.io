@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {JSDOM} from 'jsdom';
+import {cpuPortraitHTML} from '../games/matgo-opponent.mjs';
 import * as engine from '../games/matgo-engine.mjs';
 import {floorLayout,heldPairMonths} from '../games/matgo-view.mjs';
 import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games/matgo-tazza.mjs';
@@ -37,7 +38,7 @@ const wallet={current:{ok:true,gold:5000,stake_rate:100},status:async()=>wallet.
   if(failStart){failStart=false;throw Object.assign(Error('temporary network error'),{code:'unavailable'});}
   wallet.current={ok:true,gold:5000,stake_rate:100,round:{id:String(++roundNumber),gold:5000,seed:10,first:0,carry:1,rate:100,tazza_mode:tazza?'peek':null}};return wallet.current;
 }};
-Object.assign(w,engine,{floorLayout,heldPairMonths,dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS,createVentControls,shuffledFloorSlots,createWallet:()=>wallet});
+Object.assign(w,engine,{cpuPortraitHTML,floorLayout,heldPairMonths,dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS,createVentControls,shuffledFloorSlots,createWallet:()=>wallet});
 let code=source.match(/<script type="module">([\s\S]*?)<\/script>/)[1].replace(/^import .*;\s*$/gm,'');
 code=code.replace('(async () => {','window.testInit=(async () => {').replace('startRound();\n})();','window.testGame={game,ui,tazza,vent,render,startRound,shuffleFloor};window.firstRound=startRound();\n})();');
 try{
@@ -45,14 +46,17 @@ try{
   const t=w.testGame,button=d.getElementById('tazza-mode');
   assert.ok(button);assert.equal(button.getAttribute('aria-pressed'),'false');
   assert.deepEqual([...d.querySelector('.deck').children].map(el=>el.id||el.className),['tazza-mode','back','deckN','matgo-vent']);
+  const benefit=d.getElementById('tazza-benefit');assert.ok(benefit.hidden);
+  for(const [mode,name] of Object.entries(TAZZA_MODES)){t.game.tazzaMode=mode;t.render();assert.equal(benefit.hidden,false);assert.equal(benefit.textContent,'이번 판 · '+name);assert.equal(benefit.nextElementSibling.id,'mePts');}
+  t.game.tazzaMode=null;t.render();assert.ok(benefit.hidden);
   const before=JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]);
-  button.click();assert.equal(button.getAttribute('aria-pressed'),'true');
+  button.click();assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(button.querySelector('small').textContent,'다음 판 예약');assert.equal(t.game.tazzaMode,null);assert.ok(benefit.hidden,'a reservation does not activate the current round');
   assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before,'current hand, deck, actions and gold stay unchanged');
   button.click();assert.equal(button.getAttribute('aria-pressed'),'false');button.click();
   t.game.over=true;failStart=true;
   assert.equal(await t.startRound(),false);assert.equal(t.tazza.queued,true);assert.equal(button.disabled,false,'failed start can be retried');
   d.querySelectorAll('.modal').forEach(el=>el.remove());
-  await t.startRound();assert.equal(t.game.actions[0].type,'tazza');assert.equal(t.tazza.queued,false);assert.equal(button.querySelector('small').textContent,'상대 패 보기');
+  await t.startRound();assert.equal(t.game.actions[0].type,'tazza');assert.equal(t.tazza.queued,false);assert.equal(button.querySelector('small').textContent,'다음 판 · 5쭈');assert.equal(button.dataset.state,'idle');assert.equal(benefit.textContent,'이번 판 · 상대 패 보기');
   assert.equal(d.querySelectorAll('#handOp.tazza-peek .c[data-id]').length,10,'peek shows opponent cards');
   t.game.over=true;await t.startRound();assert.equal(t.game.actions.length,0,'following unrequested round is ordinary');
   assert.equal(button.querySelector('small').textContent,'다음 판 · 5쭈');
@@ -100,9 +104,10 @@ try{
     assert.equal(d.querySelector('.vent-layer')?.dataset.effect,effect.id);
     assert.equal(d.getElementById('matgo-vent').disabled,true);
     d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelectorAll('.vent-layer').length,1,'rapid taps do not pile up effects');
-    tick(effect.hits.at(-1)+1);assert.equal(d.querySelector('.zone.op .who b').classList.contains('vent-hit'),effect.id!=='table');
+    assert.equal(d.body.classList.contains('matgo-cpu-surprised'),false);
+    tick(effect.hits.at(-1)+1);assert.equal(d.body.classList.contains('matgo-cpu-surprised'),true);assert.equal(d.querySelector('.zone.op .cpu-portrait').classList.contains('vent-hit'),effect.id!=='table');
     if(effect.id==='table'){assert.equal(rearrangements,1);assert.ok(d.body.classList.contains('matgo-table-flipping'));assert.ok(d.querySelector('.vent-board-copy'));}
-    tick(effect.duration-effect.hits.at(-1));assert.equal(d.querySelector('.vent-layer'),null);
+    tick(effect.duration-effect.hits.at(-1));assert.equal(d.body.classList.contains('matgo-cpu-surprised'),false);assert.equal(d.querySelector('.vent-layer'),null);
     tick(200);assert.equal(d.getElementById('matgo-vent').disabled,false);assert.equal(d.body.classList.contains('matgo-table-flipping'),false);
   }
   assert.equal(rearrangements,1,'cleanup never shuffles twice');assert.equal(hits,8);assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);

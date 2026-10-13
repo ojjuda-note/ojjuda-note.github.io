@@ -1,5 +1,5 @@
-import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-table2';
-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-table2';
+import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-cpu1';
+import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-cpu1';
 export const VENT_EFFECTS = [
   {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
   {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},
@@ -50,9 +50,9 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     if(observed!==deck.parentElement){observer?.disconnect();observed=deck.parentElement;if(typeof ResizeObserver!=='undefined'){observer=new ResizeObserver(resize);observer.observe(observed);}}
     resize();sync();
   }
-  function clear(){for(const timer of hitTimers)clearTimeout(timer);hitTimers.clear();clearTimeout(cleanupTimer);sound.stop();tableScene?.clear();tableScene=null;active?.remove();active=null;document.querySelectorAll('.vent-hit').forEach(el=>el.classList.remove('vent-hit'));}
+  function clear(){for(const timer of hitTimers)clearTimeout(timer);hitTimers.clear();clearTimeout(cleanupTimer);sound.stop();tableScene?.clear();tableScene=null;active?.remove();active=null;document.body.classList.remove('matgo-cpu-surprised');document.querySelectorAll('.vent-hit').forEach(el=>el.classList.remove('vent-hit'));}
   async function fire(){
-    const b=button(),target=document.querySelector('.zone.op .who b');
+    const b=button(),target=document.querySelector('.zone.op .cpu-portrait')||document.querySelector('.zone.op .who b');
     if(destroyed||purchasing||!b||!target||Date.now()<cooldown||!canPlay()||!purchase)return false;
     const audioReady=sound.unlock();purchasing=true;sync();let effect=VENT_EFFECTS[index];
     try{
@@ -77,7 +77,7 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:effect.id==='table'?'':'<div class="vent-trail"></div>';
     layer.innerHTML=`${['lightning','table'].includes(effect.id)?'':`<div class="vent-weapon">${weapon(effect.id)}</div>`}${trails}<div class="vent-impact"><div class="vent-aura"></div><div class="vent-flash"></div><div class="vent-ring"></div><div class="vent-ring second"></div>${particles()}<strong class="vent-word">${effect.word}</strong></div>`;
     document.body.appendChild(layer);active=layer;if(effect.id==='table')tableScene=createTableFlipScene(layer,onRearrange,{reduced});cooldown=Date.now()+duration+150;sync();if(!document.hidden)sound.play(effect.id,hits);
-    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;if(effect.id==='table'&&ms===hits[0])tableScene?.rearrange();const current=document.querySelector('.zone.op .who b');if(current&&!reduced&&effect.id!=='table'){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
+    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;if(effect.id==='table'&&ms===hits[0])tableScene?.rearrange();const portrait=document.querySelector('.zone.op .cpu-portrait');if(portrait)document.body.classList.add('matgo-cpu-surprised');const current=portrait||document.querySelector('.zone.op .who b');if(current&&!reduced&&effect.id!=='table'){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
     cleanupTimer=setTimeout(clear,duration);clearTimeout(resetTimer);resetTimer=setTimeout(sync,duration+170);return effect.id;
   }
   function click(event){if(!event.target.closest?.('#matgo-vent'))return;event.preventDefault();event.stopPropagation();void fire();}

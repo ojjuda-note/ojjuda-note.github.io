@@ -1,11 +1,12 @@
-import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-table2';
+import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-cpu1';
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-table2';
+import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-cpu1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261013-table2';
+import {createWallet} from './matgo-wallet.mjs?v=20261013-cpu1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
-import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-table2';
+import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261013-cpu1';
+import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-cpu1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -112,7 +113,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-table2');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-cpu1');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -179,7 +180,7 @@ function showLobby(){
   $('#create small').textContent='제목을 정하고 공개하기 →';
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-table2');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-cpu1');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -241,12 +242,14 @@ function renderRoom(){
   if(viewKey!==key){
     if(dialogKey.startsWith('turn:')||dialogKey==='pick')closeDialog();
     const scroll=$('#hand')?.scrollLeft||0;viewKey=key;
+    const portrait=room.bots[op]?document.querySelector('.zone.op .cpu-portrait'):null;
     const label=p=>escape(room.names[p])+(room.bots[p]?' · PC 대행':'');
     const badge=p=>`${g.go[p]?'<span class="go">'+g.go[p]+'고</span>':''}${g.ppukCount[p]?'<span>뻑 '+g.ppukCount[p]+'/3</span>':''}<span class="pts">${score(g.caps[p]).pts}점</span>`;
     const text=g.over?'판이 끝났어요':room.bots[me]?'PC가 내 자리를 이어서 진행 중이에요':selecting?'가져올 바닥 패를 골라주세요':myTurn?'내 차례 · 낼 패를 고르세요':room.bots[op]?'PC가 패를 고르고 있어요':'상대 차례예요';
     const floorMonths=new Set(g.floor.map(s=>s.cards[0].m)),pairs=heldPairMonths(g.hand,g.caps);
-    $('#content').innerHTML=`<section class="board"><div class="zone op"><div class="who"><b id="op-name">${label(op)}</b><span>손패 ${g.otherCount}장</span>${badge(op)}</div>${caps(g.caps[op])}<div class="hand op op-hand" aria-label="상대 손패 뒷면">${Array(g.otherCount).fill('<div class="c">'+backSVG+'</div>').join('')}</div></div><div class="floor felt"><div class="fl">${g.floor.map((stack,i)=>`<button class="stack${selecting&&pr.indices.includes(i)?' pick':selecting?' dimmed':''}${myTurn&&g.hand.some(c=>c.m===stack.cards[0].m)?' hot':''}" data-index="${i}" data-month="${stack.cards[0].m}" aria-label="${stack.cards[0].m}월 바닥 패 ${stack.cards.length}장" ${selecting&&pr.indices.includes(i)?'':'disabled'}>${stack.cards.map((c,j)=>`<span class="c" style="transform:translate(${Math.min(3,j)*7}px,${-Math.min(3,j)*4}px) rotate(${j*6}deg)">${cardSVG(c)}</span>`).join('')}${stack.ppuk?`<span class="ppuk">${stack.cards.some(c=>c.k==='bonus')?'뻑 + 보너스':'쌌다'}</span>`:''}</button>`).join('')}</div><div class="deck"><div class="back">${backSVG}</div><small>${g.deckCount}장</small></div></div><div class="turn compact-turn${myTurn?' my':''}" aria-live="polite"><span id="turn-label">${text}</span>${!g.over?'<time id="turn-seconds"></time>':''}</div><div class="zone me">${caps(g.caps[me],true)}<div class="my-score hand-score"><span class="stake-label" id="stakeRate">점당 ${number(room.rate??100)}G</span><span id="my-score" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div id="hand" class="hand me">${[...g.hand].sort((a,b)=>a.m-b.m||a.id-b.id).map(c=>`<button class="c${myTurn&&floorMonths.has(c.m)?' match':''}" data-card="${c.id}" data-month="${c.m}" aria-label="${c.k==='bonus'?'보너스':c.m+'월'} 패 내기${pairs.has(c.m)?' · 짝패, 나머지 두 장은 이미 먹은 패':''}">${cardSVG(c)}${pairs.has(c.m)?'<span class="pair-mark">짝</span>':''}</button>`).join('')}</div>${g.bomb[me]>0&&g.deckCount?'<button id="flip" class="bomb-flip"><span>폭탄 뒤집기</span><strong>'+g.bomb[me]+'회 남음</strong><small>손패 없이 1장</small></button>':''}</div></div></section>`;
+    $('#content').innerHTML=`<section class="board"><div class="zone op"><div class="who"><b id="op-name"${room.bots[op]?' class="cpu-opponent"':''}>${room.bots[op]?cpuPortraitHTML()+'<span class="cpu-name">'+escape(room.names[op])+'<small>PC 대행</small></span>':label(op)}</b><span>손패 ${g.otherCount}장</span>${badge(op)}</div>${caps(g.caps[op])}<div class="hand op op-hand" aria-label="상대 손패 뒷면">${Array(g.otherCount).fill('<div class="c">'+backSVG+'</div>').join('')}</div></div><div class="floor felt"><div class="fl">${g.floor.map((stack,i)=>`<button class="stack${selecting&&pr.indices.includes(i)?' pick':selecting?' dimmed':''}${myTurn&&g.hand.some(c=>c.m===stack.cards[0].m)?' hot':''}" data-index="${i}" data-month="${stack.cards[0].m}" aria-label="${stack.cards[0].m}월 바닥 패 ${stack.cards.length}장" ${selecting&&pr.indices.includes(i)?'':'disabled'}>${stack.cards.map((c,j)=>`<span class="c" style="transform:translate(${Math.min(3,j)*7}px,${-Math.min(3,j)*4}px) rotate(${j*6}deg)">${cardSVG(c)}</span>`).join('')}${stack.ppuk?`<span class="ppuk">${stack.cards.some(c=>c.k==='bonus')?'뻑 + 보너스':'쌌다'}</span>`:''}</button>`).join('')}</div><div class="deck"><div class="back">${backSVG}</div><small>${g.deckCount}장</small></div></div><div class="turn compact-turn${myTurn?' my':''}" aria-live="polite"><span id="turn-label">${text}</span>${!g.over?'<time id="turn-seconds"></time>':''}</div><div class="zone me">${caps(g.caps[me],true)}<div class="my-score hand-score"><span class="stake-label" id="stakeRate">점당 ${number(room.rate??100)}G</span><span id="my-score" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div id="hand" class="hand me">${[...g.hand].sort((a,b)=>a.m-b.m||a.id-b.id).map(c=>`<button class="c${myTurn&&floorMonths.has(c.m)?' match':''}" data-card="${c.id}" data-month="${c.m}" aria-label="${c.k==='bonus'?'보너스':c.m+'월'} 패 내기${pairs.has(c.m)?' · 짝패, 나머지 두 장은 이미 먹은 패':''}">${cardSVG(c)}${pairs.has(c.m)?'<span class="pair-mark">짝</span>':''}</button>`).join('')}</div>${g.bomb[me]>0&&g.deckCount?'<button id="flip" class="bomb-flip"><span>폭탄 뒤집기</span><strong>'+g.bomb[me]+'회 남음</strong><small>손패 없이 1장</small></button>':''}</div></div></section>`;
     $('#hand').scrollLeft=scroll;
+    if(portrait)document.querySelector('.zone.op .cpu-portrait')?.replaceWith(portrait);
     $('#hand').querySelectorAll('button').forEach(b=>{b.onclick=()=>pick(Number(b.dataset.card));b.onpointerenter=()=>highlight(b.dataset.month,true);b.onpointerleave=()=>highlight(b.dataset.month,false);});
     document.querySelectorAll('.stack.pick').forEach(b=>b.onclick=()=>send({type:'choose',index:Number(b.dataset.index)}));
     if($('#flip'))$('#flip').onclick=()=>send({type:'play',card:null});

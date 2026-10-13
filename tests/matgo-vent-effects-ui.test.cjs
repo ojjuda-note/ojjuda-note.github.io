@@ -39,6 +39,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
  }
  try{
   const {context,page}=await screen();
+  assert.equal(await page.locator('.cpu-portrait').count(),0,'human opponents keep their own identity');
   assert.equal(await page.evaluate(()=>audioStarts.length),0,'no sound on page load');
   await page.evaluate(()=>{decline=true;slowPurchase=true;});
   await page.locator('#matgo-vent').tap();await page.waitForTimeout(200);
@@ -140,6 +141,30 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    assert.equal(await p.evaluate(()=>ventTest.snapshot()),before,'empty floor, deck count, hands, captured cards, scores and turn stay unchanged');
    assert.equal(await p.locator('#app .fl > .stack').count(),0,'swept floor stays empty');assert.equal(await p.locator('.vent-card-source').count(),0,'captured cards are visible again');
    assert.equal(await p.evaluate(()=>payments.length),1);await p.screenshot({path:path.join(proof,name+'-restacked.png')});await sample.context.close();
+  }
+  // Computer portraits survive online board replacement, then return to calm on cleanup.
+  for(const tableOnly of [false,true]){
+   const room=structuredClone(initial);room.bots[1]=true;room.names[1]='컴퓨터로 이어 하는 상대';
+   const sample=await screen({muted:true,tableOnly,room,viewport:{width:320,height:568}}),p=sample.page;
+   await p.waitForFunction(()=>[...document.querySelectorAll('.cpu-portrait img')].every(i=>i.complete&&i.naturalWidth>1000));
+   assert.equal(await p.locator('.cpu-face-normal').evaluate(el=>getComputedStyle(el).opacity),'1');
+   assert.equal(await p.locator('.cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'0');
+   const before=await p.evaluate(()=>ventTest.snapshot());
+   await p.screenshot({path:path.join(proof,'cpu-normal.png')});
+   await p.locator('#matgo-vent').tap();await p.waitForFunction(()=>document.body.classList.contains('matgo-cpu-surprised'));
+   if(!tableOnly)assert.equal(await p.evaluate(()=>{const portrait=document.querySelector('.cpu-portrait');ventTest.redraw();return document.querySelector('.cpu-portrait')===portrait;}),true,'loaded portrait survives the board render');
+   assert.equal(await p.locator('.cpu-face-surprised').evaluate(el=>getComputedStyle(el).opacity),'1');
+   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+   const faces=await p.locator('.cpu-portrait img').evaluateAll(imgs=>imgs.map(img=>{const style=getComputedStyle(img),r=img.getBoundingClientRect();return {class:img.className,src:img.currentSrc,complete:img.complete,naturalWidth:img.naturalWidth,opacity:style.opacity,visibility:style.visibility,display:style.display,width:r.width,height:r.height,x:r.x,y:r.y};}));
+   fs.writeFileSync(path.join(proof,tableOnly?'cpu-table-faces.json':'cpu-gun-faces.json'),JSON.stringify(faces,null,2));
+   await p.screenshot({path:path.join(proof,tableOnly?'cpu-table-surprised.png':'cpu-gun-surprised.png')});
+   await p.waitForTimeout(250);
+   await p.screenshot({path:path.join(proof,tableOnly?'cpu-table-surprised-later.png':'cpu-gun-surprised-later.png')});
+   await p.locator('.vent-layer').waitFor({state:'detached'});
+   assert.equal(await p.locator('body.matgo-cpu-surprised').count(),0);
+   assert.equal(await p.locator('.cpu-face-normal').evaluate(el=>getComputedStyle(el).opacity),'1');
+   assert.equal(await p.evaluate(()=>ventTest.snapshot()),before,'expressions do not change the game');
+   await sample.context.close();
   }
   const calm=await screen({muted:true,reduced:true,tableOnly:true});await calm.page.locator('#matgo-vent').tap();await calm.page.locator('.vent-table').waitFor();
   assert.equal(await calm.page.locator('.vent-flying-card').count(),0);assert.equal(await calm.page.locator('body.matgo-table-flipping').count(),0);await calm.context.close();
