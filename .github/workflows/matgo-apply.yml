@@ -1,0 +1,62 @@
+name: Apply and verify Matgo update
+on:
+  push:
+    branches: [codex/matgo-tazza-vent-20261013]
+    paths: ['ops/matgo-feature.patch', '.github/workflows/matgo-apply.yml']
+permissions:
+  contents: write
+concurrency:
+  group: matgo-feature-apply
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed text changes without transporting embedded media
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          assert hashlib.sha256(Path('ops/matgo-feature.patch').read_bytes()).hexdigest() == 'd91a6a5b2a656435a3b956e58207b8704fea7df9397062065f3be9ea7053f8fd'
+          PY
+          git apply --check ops/matgo-feature.patch
+          git apply ops/matgo-feature.patch
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          for name,digest in json.loads(Path('ops/matgo-files.sha256.json').read_text()).items():
+              assert hashlib.sha256(Path(name).read_bytes()).hexdigest()==digest,name
+          PY
+          git diff --check
+      - run: npm --prefix tests ci --ignore-scripts
+      - name: Install existing regression browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify payment, rules and game screens
+        run: |
+          npm --prefix tests run test:matgo-tools
+          node tests/matgo-edge.test.cjs
+          node tests/matgo-ui.test.cjs
+          node tests/matgo-online-ui.test.cjs
+      - name: Save screen evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: matgo-tazza-screen-check
+          path: /tmp/matgo-*.png
+          retention-days: 3
+      - name: Commit verified files on the feature branch
+        run: |
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          files=list(json.loads(Path('ops/matgo-files.sha256.json').read_text()))
+          subprocess.run(['git','add','--',*files],check=True)
+          PY
+          git -c user.name='Codex' -c user.email='codex@openai.com' commit -m 'Add paid solo tazza modes and opponent vent animations'
+          git push origin HEAD:codex/matgo-tazza-vent-20261013
