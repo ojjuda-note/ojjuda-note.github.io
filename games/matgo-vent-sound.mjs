@@ -59,6 +59,7 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
     stop();const start=ctx.currentTime+.018,first=(hits[0]||0)/1000;
     if(id==='hammer'||id==='glove'||id==='table')noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
     if(id==='bomb')noise(start,.75,.075,5200,'highpass',.05);
+    if(id==='table')for(let i=0;i<8;i++)noise(start+first+.15+i*.10,.16,.055,1600+i*170,'bandpass',.025);
     if(id==='lightning'){tone(start,.55,.05,150,1050,'triangle');noise(start,.55,.055,4200,'bandpass',.15);}
     for(const ms of hits)impact(id,start+ms/1000);
     return true;

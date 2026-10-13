@@ -77,14 +77,22 @@
 #app .hand.op.tazza-peek{display:flex;gap:2px;justify-content:center;min-height:39px}
 #app .hand.op.tazza-peek .c{width:26px;height:39px;flex:0 0 26px;margin-right:0;opacity:1;transform:none}
 
-/* The board flips, while unchanged card piles arc to new display slots. */
+/* Individual cards tumble, flutter, then return to their unchanged piles. */
 body.matgo-table-flipping #app .floor,body.matgo-table-flipping #app .floor *{visibility:hidden!important}
 body.matgo-table-flipping #app .floor .stack{transition:none}
-.vent-table{perspective:850px}.vent-table .vent-impact{z-index:5;--hit:1500ms}
-.vent-board-copy{position:absolute!important;min-height:0!important;flex:none!important;transform-origin:50% 85%;animation:vent-table-turn 1900ms both;will-change:transform;visibility:visible!important}
-.vent-loose-stack{position:absolute;z-index:3;--land-x:0px;--land-y:0px;animation:vent-table-cards 1900ms both;filter:drop-shadow(5px 12px 6px #130d1a88)}
-.vent-loose-stack .stack{pointer-events:none!important;transition:none!important;border:0;padding:0;background:none;opacity:1}.vent-loose-stack .c{display:block;transition:none!important}
-.vent-loose-stack .ppuk{position:absolute;z-index:3;right:-10px;top:-10px;background:var(--red);color:white;padding:2px 7px;border-radius:999px;font-size:11px;white-space:nowrap}
-@keyframes vent-table-turn{0%,10%{transform:translateY(0) rotateX(0) rotateZ(0)}25%{transform:translateY(12px) rotateX(-12deg) rotateZ(2deg)}48%{transform:translateY(-35px) rotateX(155deg) rotateZ(-9deg);filter:brightness(.6)}63%{transform:translateY(-12px) rotateX(125deg) rotateZ(-4deg);filter:brightness(.7)}79%{transform:translateY(0) rotateX(0) rotateZ(0);filter:brightness(1)}84%{transform:translateY(5px) rotateX(-3deg)}92%,100%{transform:none}}
-@keyframes vent-table-cards{0%,14%{transform:none}38%{transform:translate(var(--lift-x),var(--lift-y)) rotate(var(--tumble)) scale(1.3)}53%{transform:translate(var(--lift-x),calc(var(--lift-y) - 15px)) rotate(calc(var(--tumble) * -1)) scale(1.25)}79%{transform:translate(var(--land-x),var(--land-y)) rotate(0) scale(1)}85%{transform:translate(var(--land-x),calc(var(--land-y) - 8px)) rotate(-3deg)}94%,100%{transform:translate(var(--land-x),var(--land-y)) rotate(0) scale(1)}}
-@media(prefers-reduced-motion:reduce){.vent-board-copy,.vent-loose-stack{display:none}.vent-table .vent-impact{transform:none}}
+.vent-card-source{visibility:hidden!important}
+.vent-table{perspective:850px}.vent-table .vent-impact{z-index:100}
+.vent-board-copy{position:absolute!important;min-height:0!important;flex:none!important;transform-origin:50% 85%;animation:vent-table-turn 2500ms both;will-change:transform;visibility:visible!important}
+.vent-flying-card{position:absolute;--land-x:0px;--land-y:0px;animation:vent-card-scatter 2700ms var(--delay) both;animation-timing-function:cubic-bezier(.3,.05,.25,1);transform-origin:center;filter:drop-shadow(4px 8px 4px #130d1a77);will-change:transform;pointer-events:none}
+.vent-card-art,.vent-card-art svg{display:block;width:100%;height:100%;border-radius:inherit}
+@keyframes vent-table-turn{0%,10%{transform:none}24%{transform:translateY(12px) rotateX(-12deg) rotateZ(2deg)}42%{transform:translateY(-35px) rotateX(155deg) rotateZ(-9deg);filter:brightness(.6)}58%{transform:translateY(-12px) rotateX(125deg) rotateZ(-4deg);filter:brightness(.7)}74%{transform:none;filter:brightness(1)}81%{transform:translateY(5px) rotateX(-3deg)}91%,100%{transform:none}}
+@keyframes vent-card-scatter{
+  0%,11%{transform:rotate(var(--rest-angle))}
+  33%{transform:translate(var(--fly-x),var(--fly-y)) rotate(var(--spin-a)) rotateY(165deg) rotateX(var(--tilt)) scale(calc(var(--air-scale) * .94))}
+  49%{transform:translate(var(--drift-x),var(--drift-y)) rotate(var(--spin-b)) rotateY(345deg) rotateX(calc(var(--tilt) * -1)) scale(var(--air-scale))}
+  65%{transform:translate(var(--gather-x),var(--gather-y)) rotate(var(--spin-c)) rotateY(565deg) rotateX(var(--tilt)) scale(calc(var(--air-scale) * .84))}
+  85%{transform:translate(var(--land-x),var(--land-y)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
+  91%{transform:translate(var(--land-x),calc(var(--land-y) - 4px)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
+  98%,100%{transform:translate(var(--land-x),var(--land-y)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.vent-board-copy,.vent-flying-card{display:none}.vent-table .vent-impact{transform:none}}
