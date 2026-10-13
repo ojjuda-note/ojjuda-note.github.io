@@ -2,15 +2,22 @@
 .zone.op .who b.cpu-opponent:before{display:none}
 .cpu-name{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
 .cpu-name small{display:block;font-size:10px;color:#d8c7a1;font-weight:400}
-.cpu-portrait{position:relative;display:block;flex:0 0 72px;width:72px;height:78px;overflow:hidden;border:1px solid #d7b57799;border-radius:19px;background:radial-gradient(ellipse at 50% 25%,#71608d,#312440 80%);box-shadow:inset 0 0 0 2px #ffffff0b,0 4px 10px #0004;isolation:isolate;pointer-events:none}
+.cpu-portrait{position:relative;display:block;flex:0 0 30px;width:30px;height:32px;overflow:hidden;border:1px solid #d7b57799;border-radius:9px;background:radial-gradient(ellipse at 50% 25%,#71608d,#312440 80%);box-shadow:inset 0 0 0 2px #ffffff0b,0 4px 10px #0004;isolation:isolate;pointer-events:none}
 .cpu-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 1px 2px #0005)}
 .cpu-face-surprised{opacity:0}
 .matgo-cpu-surprised .cpu-portrait .cpu-face-normal{opacity:0}
 .matgo-cpu-surprised .cpu-portrait .cpu-face-surprised{opacity:1}
 .matgo-cpu-surprised .cpu-portrait{border-color:#ffe18f;background:radial-gradient(ellipse at 50% 25%,#af714f,#493044 85%)}
 @media(max-width:360px),(max-height:640px){
-  .cpu-portrait{flex-basis:58px;width:58px;height:62px;border-radius:16px}
+  .cpu-portrait{flex-basis:28px;width:28px;height:30px;border-radius:8px}
   .zone.op .who b.cpu-opponent{gap:5px;max-width:54%}
   .cpu-name{font-size:11px}
 }
-.matgo-short .cpu-portrait{flex-basis:52px;width:52px;height:56px;border-radius:14px}
+.matgo-short .cpu-portrait{flex-basis:28px;width:28px;height:30px;border-radius:8px}
+
+/* A separate overlay grows without resizing the header or shifting any cards. */
+.vent-layer .cpu-reaction{position:fixed;left:12px;top:42px;width:clamp(120px,36vw,170px);height:clamp(128px,38vw,182px);margin:0;z-index:1;border-radius:24px;box-shadow:0 8px 26px #0008;animation:cpu-reaction-enter 180ms ease-out both}
+.vent-layer .cpu-reaction .cpu-face-normal{opacity:0}
+.vent-layer .cpu-reaction .cpu-face-surprised{opacity:1}
+@keyframes cpu-reaction-enter{from{transform:scale(.35);opacity:0}to{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.vent-layer .cpu-reaction{animation:none}}
