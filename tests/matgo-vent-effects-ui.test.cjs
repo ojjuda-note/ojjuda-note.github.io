@@ -71,6 +71,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
     assert.ok(pose.gripY>0,'gun grip stays below the barrel while aiming');
     assert.ok(pose.iconBarrelX<0&&pose.iconGripY>0,'button gun faces into the board with its grip down');
    }
+   if(effect.id==='glove'){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.y>=0&&b.x>=0&&b.x+b.width<=390,'enlarged glove stays fully on screen');}
    if(effect.id==='table'){
     assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-loose-stack').count(),3);
     assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'hidden');
