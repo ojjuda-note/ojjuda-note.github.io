@@ -96,3 +96,6 @@ body.matgo-table-flipping #app .floor .stack{transition:none}
   98%,100%{transform:translate(var(--land-x),var(--land-y)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
 }
 @media(prefers-reduced-motion:reduce){.vent-board-copy,.vent-flying-card{display:none}.vent-table .vent-impact{transform:none}}
+.tazza-benefit{display:inline-flex;align-items:center;flex:0 1 auto;min-width:0;padding:2px 7px;border:1px solid #f2c14e77;border-radius:7px;background:#f2c14e1c;color:#ffe299;font-size:10.5px;line-height:16px;white-space:nowrap}
+.tazza-benefit[hidden]{display:none}
+.hand-score:has(.tazza-benefit:not([hidden])){gap:6px;flex-wrap:wrap}

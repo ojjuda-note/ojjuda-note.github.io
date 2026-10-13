@@ -23,7 +23,8 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table2">
+<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-cpu1">
+<link rel="stylesheet" href="./matgo-opponent.css?v=20261013-cpu1">
 </head>
 <body class="matgo-locked">
 <section id="matgo-gate" aria-labelledby="matgo-gate-title">
@@ -35,12 +36,13 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-table2";
-import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-table2";
-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-table2";
+import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-cpu1";
+import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-cpu1";
+import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261013-cpu1";
+import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-cpu1";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261010-pibak8";
-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-table2";
-import {createWallet} from "./matgo-wallet.mjs?v=20261013-table2";
+import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-cpu1";
+import {createWallet} from "./matgo-wallet.mjs?v=20261013-cpu1";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -382,6 +384,8 @@ const vent=createVentControls({canPlay:()=>access.allowed()&&!game.over&&!ui.dea
 function syncTazza(){
   const button=$('#tazza-mode');if(!button)return;
   const active=game.tazzaMode&&!game.over;
+  const benefit=$('#tazza-benefit'),name=active?TAZZA_MODES[game.tazzaMode]:'';
+  if(benefit){benefit.hidden=!name;benefit.textContent=name?'타짜 · '+name:'';benefit.title=name?TAZZA_DETAILS[game.tazzaMode]:'';benefit.setAttribute('aria-label',name?'현재 타짜모드 혜택: '+name:'타짜모드 혜택 없음');}
   button.setAttribute('aria-pressed',String(tazza.queued));
   button.classList.toggle('is-active',active);
   button.disabled=tazza.starting||ui.dealing||!access.allowed();
@@ -411,15 +415,15 @@ function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
   app.innerHTML=`<div class="top"><h1><em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary class="pill" id="menu" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><div class="gold-pending" id="goldPending" aria-live="polite" hidden></div><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button><button class="pill" id="online">회원 대결</button><button class="pill" id="gukjin" hidden></button></div></details><button class="pill" id="exit">나가기</button></div>
-  <div class="zone op"><div class="who"><b>상대 (컴퓨터)</b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
+  <div class="zone op"><div class="who"><b class="cpu-opponent">${cpuPortraitHTML()}<span class="cpu-name">컴퓨터</span></b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
   <div class="floor"><div class="fl" id="fl"></div><div class="deck"><button id="tazza-mode" class="tazza-button" type="button" aria-pressed="false"><span>타짜모드</span><small>다음 판 · 5쭈</small></button><div class="back">${backSVG}</div><small id="deckN"></small></div></div>
   <div class="log" id="log"></div>
-  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="my-score hand-score"><span class="stake-label" id="stakeRate"></span><span id="mePts" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
+  <div class="zone me"><div class="who"><b>나</b><span class="ppuk-count" id="mePpuk" hidden></span> <span class="go" id="meGo" hidden></span></div><div class="caps caps-own" id="capsMe" aria-label="내가 먹은 패"></div><div class="my-score hand-score"><span class="stake-label" id="stakeRate"></span><span id="tazza-benefit" class="tazza-benefit" role="status" hidden></span><span id="mePts" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div class="hand me" id="handMe"></div><button class="bomb-flip" id="bombFlip" type="button" hidden disabled><span>폭탄 뒤집기</span><strong id="bombFlipCount" aria-live="polite"></strong><small>손패 없이 1장</small></button></div></div>`;
   for(const id of ['capsOp','capsMe']){ const el=document.getElementById(id); el.innerHTML=['광','열끗','띠','피'].map(n=>`<div class="cap" data-g="${n}"><span class="lb">${n} 0</span></div>`).join(''); }
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판에 5쭈를 사용해 타짜 효과 한 가지를 받아요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-table2');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-cpu1');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();

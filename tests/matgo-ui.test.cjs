@@ -73,10 +73,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   {
     const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    assert.equal(await f.page.locator('#tazza-benefit').isVisible(),false);
+    await f.page.waitForFunction(()=>[...document.querySelectorAll('.cpu-portrait img')].every(i=>i.complete&&i.naturalWidth>1000));
     const before=await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand));
     await f.page.locator('#tazza-mode').click();assert.equal(f.state.coins,20,'reservation is not charged yet');
     assert.equal(await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand)),before);
     f.state.round=null;await f.page.evaluate(async()=>{matgoTest.game.over=true;await matgoTest.startRound();});
+    assert.equal(await f.page.locator('#tazza-benefit').textContent(),'타짜 · 상대 패 보기');
     assert.equal(f.state.coins,15);assert.equal(await f.page.locator('#handOp.tazza-peek .c[data-id]').count(),10);
     for(const [width,height] of [[320,568],[390,560],[390,844],[768,720]]){
       await f.page.setViewportSize({width,height});await f.page.waitForTimeout(40);
@@ -89,6 +92,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       assert.equal(await f.page.locator('#matgo-vent>span').last().evaluate(el=>getComputedStyle(el).whiteSpace),'nowrap');
       const gap=await f.page.evaluate(()=>{const left=document.querySelector('#matgo-vent').getBoundingClientRect().left;return Math.min(...[...document.querySelectorAll('.floor .fl .c')].map(c=>left-c.getBoundingClientRect().right));});
       assert.ok(gap>=12,`floor cards leave a clear control gutter at ${width}px: ${gap}`);
+      const benefit=await f.page.locator('#tazza-benefit').boundingBox(),score=await f.page.locator('#mePts').boundingBox(),portrait=await f.page.locator('.cpu-portrait').boundingBox(),caps=await f.page.locator('#capsOp').boundingBox();
+      assert.ok(benefit.x+benefit.width<=score.x&&Math.abs(benefit.y+benefit.height/2-score.y-score.height/2)<4,'active benefit appears beside my score');
+      assert.ok(portrait.x>=0&&portrait.y+portrait.height<=caps.y,'CPU portrait stays above the cards');
       fs.mkdirSync('/tmp/matgo-vent-proof',{recursive:true});await f.page.screenshot({path:`/tmp/matgo-vent-proof/layout-${width}-${height}.png`});
     }
     await f.page.setViewportSize({width:390,height:640});
