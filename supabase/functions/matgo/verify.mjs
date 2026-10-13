@@ -1,4 +1,5 @@
 import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop, aiChooseGukjin } from './engine.mjs';
+import { dealSoloRound } from './tazza.mjs';
 
 export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
   if (!Array.isArray(actions) || !actions.length || actions.length > 512) throw Error('invalid_actions');
@@ -19,12 +20,14 @@ export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
       return current.decision;
     }
   });
-  game.random = seededRandom(round.seed);
   game.cpuMode = cpuMode;
   game.rate = round.rate ?? 100;
   game.bank = [round.gold, 5000]; game.first = round.first; game.carry = round.carry;
-  game.deal();
-  for (const action of actions) {
+  const assisted = !!round.tazza_mode;
+  if (assisted && (actions[0]?.type !== 'tazza' || actions[0].p !== 0 || actions[0].mode !== round.tazza_mode || Object.keys(actions[0]).sort().join(',') !== 'mode,p,type')) throw Error('invalid_mode');
+  if (!assisted && actions[0]?.type === 'tazza') throw Error('unpaid_mode');
+  dealSoloRound(game, round, { Game, seededRandom });
+  for (const action of actions.slice(assisted ? 1 : 0)) {
     if (!action || game.over || ![0, 1].includes(action.p) || (action.type !== 'chongtong' && game.turn !== action.p)) throw Error('invalid_turn');
     current = action; choice = 0;
     if (action.type === 'chongtong') {

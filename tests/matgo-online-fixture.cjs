@@ -31,6 +31,7 @@ async function fixture(fixtureOptions={}){
     const dir=path.join(__dirname,'../supabase/migrations'),file=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_additive_refill.sql'));
     await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
   }
+  if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_paid_tazza_vent.sql'))),'utf8'));}
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
   const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],fetchImpl:async(url,options)=>{
@@ -44,6 +45,7 @@ async function fixture(fixtureOptions={}){
       if(url.endsWith('/matgo_online_fallback'))result=await db.query('select public.matgo_online_fallback($1,$2) value',[p.p_actor,p.p_room]);
       else if(url.endsWith('/matgo_online_service'))result=await db.query('select public.matgo_online_service($1,$2,$3,$4,$5,$6,$7,$8) value',[p.p_actor,p.p_action,p.p_room??null,p.p_code??null,p.p_seed??null,p.p_expected??null,p.p_request??null,p.p_next??null]);
       else if(url.endsWith('/matgo_stake_service'))result=await db.query('select public.matgo_stake_service($1,$2,$3) value',[p.p_actor,p.p_rate,p.p_accept]);
+      else if(url.endsWith('/matgo_fun_service'))result=await db.query('select public.matgo_fun_service($1,$2,$3,$4,$5) value',[p.p_actor,p.p_action,p.p_request,p.p_reference??null,p.p_effect??null]);
       else if(url.endsWith('/matgo_wallet_service'))result=await db.query('select public.matgo_wallet_service($1,$2,$3,$4,$5,$6,$7::smallint,$8) value',[p.p_actor,p.p_action,p.p_request??null,p.p_paid??false,p.p_round??null,p.p_gold??null,p.p_first??null,p.p_carry??null]);
       else throw Error('unexpected RPC');
       return new Response(JSON.stringify(result.rows[0].value));

@@ -14,6 +14,11 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='identity')return{data:state.age===null?null:{age:state.age,locked:true}};
     const snapshot=()=>({ok:true,gold:state.gold,coins:state.coins,free_left:2-state.freeUsed,round:state.round||null});
     if(body.action==='status')return{data:snapshot()};
+    if(body.action==='tazza_start'){
+      if(state.coins<5)return{data:{error:'insufficient_zzu'}};
+      state.coins-=5;state.round={id:crypto.randomUUID(),seed:10,gold:state.gold,first:0,carry:1,tazza_mode:'peek'};return{data:snapshot()};
+    }
+    if(body.action==='vent'){if(state.coins<1)return{data:{error:'insufficient_zzu'}};state.coins--;return{data:{...snapshot(),purchase:{effect:body.effect,price:1}}};}
     if(body.action==='start'){
       if(!state.gold)return{data:{error:'gold_empty'}};
       state.round ||= {id:'00000000-0000-4000-9000-000000000001',seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
@@ -50,7 +55,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/games/matgo.html'){
-      let html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoTest={game,ui,pick:onPick,render,CARDS};\nstartRound();\n})();');
+      let html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoTest={game,ui,pick:onPick,render,CARDS,startRound};\nstartRound();\n})();');
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/config.js')return route.fulfill({contentType:'text/javascript',body:''});
@@ -64,6 +69,30 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     const f=await fixture(options);await f.page.goto('https://fixture.test/games/matgo.html?adult=true&age=30');
     await f.page.waitForSelector('#matgo-retry:not([hidden])');assert.equal(await f.page.locator('.hand.me').count(),0);
     assert.equal(f.state.requests.some(r=>r.action==='start'||r.action==='status'),false);assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  {
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    const before=await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand));
+    await f.page.locator('#tazza-mode').click();assert.equal(f.state.coins,20,'reservation is not charged yet');
+    assert.equal(await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand)),before);
+    f.state.round=null;await f.page.evaluate(async()=>{matgoTest.game.over=true;await matgoTest.startRound();});
+    assert.equal(f.state.coins,15);assert.equal(await f.page.locator('#handOp.tazza-peek .c[data-id]').count(),10);
+    for(const [width,height] of [[320,568],[390,560],[390,844],[768,720]]){
+      await f.page.setViewportSize({width,height});await f.page.waitForTimeout(40);
+      const top=await f.page.locator('#tazza-mode').boundingBox(),deck=await f.page.locator('.deck .back').boundingBox(),vent=await f.page.locator('#matgo-vent').boundingBox(),hand=await f.page.locator('#handMe').boundingBox();
+      assert.ok(top.y+top.height<=deck.y+1&&deck.y+deck.height<=vent.y,JSON.stringify({top,deck,vent}));
+      assert.ok(vent.x>=0&&vent.x+vent.width<=width&&hand.y+hand.height<=height,JSON.stringify({width,height,vent,hand}));
+      assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+      assert.equal(await f.page.locator('#handOp').isVisible(),true,'peek remains visible on a short phone');
+    }
+    await f.page.setViewportSize({width:390,height:640});
+    assert.equal(await f.page.locator('#matgo-vent .vent-icon svg').count(),1);assert.match(await f.page.locator('#matgo-vent').textContent(),/1쭈/);
+    await f.page.screenshot({path:'/tmp/matgo-tazza-controls.png'});
+    await f.page.evaluate(()=>{window.ventEffects=[];new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes)if(n.nodeType===1&&n.classList.contains('vent-layer'))ventEffects.push(n.dataset.effect);}).observe(document.body,{childList:true});});
+    await f.page.locator('#matgo-vent').click();await f.page.waitForFunction(()=>ventEffects.length===1);
+    assert.equal(f.state.coins,14);assert.equal(await f.page.evaluate(()=>ventEffects[0]),'gun');
+    assert.deepEqual(f.errors,[]);await f.context.close();
   }
   const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
   await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
@@ -155,7 +184,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,8);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,9);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
