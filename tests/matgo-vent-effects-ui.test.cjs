@@ -50,6 +50,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   const floorSnapshot=()=>page.evaluate(()=>({game:ventTest.snapshot(),piles:[...document.querySelectorAll('#app .fl > .stack')].map(s=>({cards:[...s.querySelectorAll('[data-face]')].map(c=>c.dataset.face),slot:s.dataset.slot}))}));
   for(const effect of VENT_EFFECTS){
    const before=await floorSnapshot();
+   if(effect.id==='table')await page.locator('#app .fl > .stack').evaluateAll(stacks=>stacks.forEach(s=>s.style.visibility='visible')); // Solo dealing leaves explicit visibility on each pile.
    await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);
    await page.evaluate(()=>{audioMetrics={peak:0,energy:0,count:0};audioStarts.length=0;});
    await page.locator('#matgo-vent').tap();await page.locator(`.vent-layer[data-effect=${effect.id}]`).waitFor();
@@ -70,9 +71,11 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
     assert.ok(pose.gripY>0,'gun grip stays below the barrel while aiming');
     assert.ok(pose.iconBarrelX<0&&pose.iconGripY>0,'button gun faces into the board with its grip down');
    }
+   if(effect.id==='glove'){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.y>=0&&b.x>=0&&b.x+b.width<=390,'enlarged glove stays fully on screen');}
    if(effect.id==='table'){
     assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-loose-stack').count(),3);
     assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+    assert.ok(await page.locator('#app .fl > .stack').evaluateAll(stacks=>stacks.every(s=>getComputedStyle(s).visibility==='hidden')),'explicitly visible dealt piles stay hidden under the flying copies');
    }
    await page.screenshot({path:path.join(proof,effect.id+'.png')});
    await page.locator('.vent-layer').waitFor({state:'detached'});

@@ -69,7 +69,7 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     const sx=Math.min(innerWidth-pad,Math.max(pad,start.left+start.width/2)),sy=start.top+start.height/2;
     const floorRect=document.querySelector('#app .floor')?.getBoundingClientRect();
     const tx=effect.id==='table'&&floorRect?floorRect.left+floorRect.width/2:Math.min(innerWidth-pad,Math.max(pad,end.left+end.width/2));
-    const ty=effect.id==='table'&&floorRect?floorRect.top+floorRect.height/2:Math.max(size*.5,end.top+end.height/2);
+    const ty=effect.id==='table'&&floorRect?floorRect.top+floorRect.height/2:Math.max(size*(effect.id==='glove'?.8:.5),end.top+end.height/2);
     const angle=Math.atan2(ty-sy,tx-sx)*180/Math.PI,reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const hits=reduced?[0]:effect.hits,duration=reduced?900:effect.duration;
     const layer=document.createElement('div');layer.className='vent-layer vent-'+effect.id;layer.dataset.effect=effect.id;layer.setAttribute('aria-hidden','true');
