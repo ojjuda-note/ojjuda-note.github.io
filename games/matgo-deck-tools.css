@@ -78,7 +78,7 @@
 #app .hand.op.tazza-peek .c{width:26px;height:39px;flex:0 0 26px;margin-right:0;opacity:1;transform:none}
 
 /* The board flips, while unchanged card piles arc to new display slots. */
-body.matgo-table-flipping #app .floor{visibility:hidden}
+body.matgo-table-flipping #app .floor,body.matgo-table-flipping #app .floor *{visibility:hidden!important}
 body.matgo-table-flipping #app .floor .stack{transition:none}
 .vent-table{perspective:850px}.vent-table .vent-impact{z-index:5;--hit:1500ms}
 .vent-board-copy{position:absolute!important;min-height:0!important;flex:none!important;transform-origin:50% 85%;animation:vent-table-turn 1900ms both;will-change:transform;visibility:visible!important}
