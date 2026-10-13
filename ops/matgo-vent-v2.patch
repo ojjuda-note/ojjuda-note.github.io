@@ -1,0 +1,644 @@
+diff --git a/games/assets/matgo-vent/README.md b/games/assets/matgo-vent/README.md
+new file mode 100644
+index 0000000..073a55e
+--- /dev/null
++++ b/games/assets/matgo-vent/README.md
+@@ -0,0 +1,26 @@
++# 화풀이 그림과 효과음
++
++2026-10-13. Built-in image generation으로 제작한 투명 PNG 원본입니다. 별도 재압축이나 픽셀 편집 없이 사용합니다.
++
++- gun.png, hammer.png, glove.png, bomb.png: 1254 × 1254 RGBA.
++- 동작은 matgo-deck-tools.mjs / .css에서 구현합니다. 번개는 분기된 벡터 선과 발광 효과입니다.
++- matgo-vent-sound.mjs는 외부 음원 없이 Web Audio로 만든 전용 효과음입니다. 소리 끄기, 화면 숨김, 동작 종료 시 예약된 소리도 멈춥니다.
++- 이미지 로딩 성공 후 결제하고, 결제 영수증 확인 뒤 모션과 효과음을 재생합니다.
++
++## Generation prompts
++
++### gun
++
++Use case: stylized-concept. Asset type: a single transparent animated prop sprite for a polished Korean arcade card game. Premium hand-painted 3D game illustration, sculpted volume, sophisticated layered material shading, crisp bevels and tiny wear details, warm upper-left key light and cool rim highlights, readable silhouette at 120px. Square canvas, whole object centered and isolated with 10% transparent breathing room. Genuinely transparent background and no floor shadow. No people, hands, characters, lettering, logos, watermarks, frame, badge, muzzle flash, motion trails, or surrounding props. This is a finished detailed game sprite, not a flat vector icon or simple emoji. Subject: an exaggerated arcade revolver in near side view, barrel horizontal and pointing to the RIGHT. Rich dark steel, polished gunmetal edges, warm brass cylinder and trigger guard, visible cylinder flutes, screws and compact mechanical detailing, deep walnut curved grip with finely carved checkering. Chunky playful proportions with a powerful clear silhouette; appealing and polished, not photorealistic.
++
++### hammer
++
++Use case: stylized-concept. Asset type: a single transparent animated prop sprite for a polished Korean arcade card game. Premium hand-painted 3D game illustration, sculpted volume, sophisticated layered material shading, crisp bevels and tiny wear details, warm upper-left key light and cool rim highlights, readable silhouette at 120px. Square canvas, whole object centered and isolated with 10% transparent breathing room. Genuinely transparent background and no floor shadow. No people, hands, characters, lettering, logos, watermarks, frame, badge, muzzle flash, motion trails, or surrounding props. This is a finished detailed game sprite, not a flat vector icon or simple emoji. Subject: one hefty arcade mallet, upright with the head in the upper third and the handle pointing DOWN. Broad steel head with large bevels, brushed metal faces, darker forged inset panels, brass corner bands and small rivets; long walnut shaft tightly wrapped in chestnut leather with seams and a brass pommel. Three-quarter side view so the front and top planes of the head are visible. Rich tactile materials and weight.
++
++### glove
++
++Use case: stylized-concept. Asset type: a single transparent animated prop sprite for a polished Korean arcade card game. Premium hand-painted 3D game illustration, sculpted volume, sophisticated layered material shading, crisp bevels and tiny wear details, warm upper-left key light and cool rim highlights, readable silhouette at 120px. Square canvas, whole object centered and isolated with 10% transparent breathing room. Genuinely transparent background and no floor shadow. No people, hands, characters, lettering, logos, watermarks, frame, badge, muzzle flash, motion trails, or surrounding props. This is a finished detailed game sprite, not a flat vector icon or simple emoji. Subject: one chunky crimson red boxing glove ready to punch, knuckles pointing toward the upper RIGHT, wrist cuff at lower LEFT. Three-quarter view with a rounded inflated knuckle surface, sculpted thumb, fine leather grain, sewn double stitches, dark red creases, ivory edging and warm brass-toned piping around a substantial cuff. Rich shaded volumes, bright red highlights, dark burgundy shadows. No arm, no hand emerging.
++
++### bomb
++
++Use case: stylized-concept. Asset type: a single transparent animated prop sprite for a polished Korean arcade card game. Premium hand-painted 3D game illustration, sculpted volume, sophisticated layered material shading, crisp bevels and tiny wear details, warm upper-left key light and cool rim highlights, readable silhouette at 120px. Square canvas, whole object centered and isolated with 10% transparent breathing room. Genuinely transparent background and no floor shadow. No people, hands, characters, lettering, logos, watermarks, frame, badge, muzzle flash, motion trails, or surrounding props. This is a finished detailed game sprite, not a flat vector icon or simple emoji. Subject: one spherical cartoon iron bomb with a short curved braided fuse at its upper right, the fuse is UNLIT. The orb has deep blue-black forged steel, brushed curved highlights, subtle scuffs, a raised equator seam with tiny brass rivets, a thick bronze fuse socket and clearly woven brown fuse fibers. Three-quarter view, orb fills most of the sprite, slightly exaggerated playful arcade proportions.
+diff --git a/games/matgo-deck-tools.css b/games/matgo-deck-tools.css
+index a50e047..6aac00d 100644
+--- a/games/matgo-deck-tools.css
++++ b/games/matgo-deck-tools.css
+@@ -1,2 +1,2 @@
+-#app .floor.matgo-tools-floor{min-height:144px}
++#app .floor.matgo-tools-floor{min-height:160px}
+ .deck.deck-tools{top:8px;bottom:8px;right:9px;width:66px;height:auto;transform:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;z-index:3}
+@@ -7,3 +7,3 @@
+ .tazza-button,.vent-button{width:66px;height:36px;min-height:36px;flex:0 0 36px;border-radius:11px;border:1px solid #ffdf8999;box-shadow:0 3px 6px #0004;line-height:1.15;padding:3px 2px;touch-action:manipulation}
+-.tazza-button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(#ffe3a0,#edbd58);color:#462d15;font-size:12px;font-weight:700}
++.tazza-button{margin-bottom:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(#ffe3a0,#edbd58);color:#462d15;font-size:12px;font-weight:700}
+ .tazza-button small{font-size:9px;color:inherit;min-height:0;line-height:10px;background:none;width:auto}
+@@ -11,4 +11,4 @@
+ .tazza-button.is-active:not([aria-pressed=true]){background:linear-gradient(#e8ceff,#bd94e9)}
+-.vent-button{display:flex;align-items:center;justify-content:center;gap:3px;background:linear-gradient(#695180,#3c304f);color:#fff3e0;border-color:#d8aaf077;font-size:11px}
+-.vent-button>span:last-child{font-size:10px;white-space:nowrap;line-height:12px}.vent-icon{width:24px;height:24px;flex-shrink:0}.vent-icon svg{width:100%;height:100%;display:block}.vent-button small{display:block;width:auto;font-size:9px;min-height:0;line-height:11px;background:none;color:#ffe3a0}
++.vent-button{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:3px;background:linear-gradient(#695180,#3c304f);color:#fff3e0;border-color:#d8aaf077;font-size:11px}
++.vent-button>span:last-child{font-size:10px;white-space:nowrap;line-height:12px}.vent-icon{width:27px;height:27px;flex-shrink:0}.vent-icon img{width:100%;height:100%;display:block}.vent-button small{display:block;width:auto;font-size:9px;min-height:0;line-height:11px;background:none;color:#ffe3a0}
+ .tazza-button:disabled,.vent-button:disabled{opacity:.55;cursor:default}
+@@ -16,30 +16,59 @@
+ .tazza-button:active:not(:disabled),.vent-button:active:not(:disabled){transform:translateY(1px)}
+-.vent-layer{position:fixed;inset:0;z-index:36;overflow:hidden;pointer-events:none;contain:layout paint}
+-.vent-weapon{position:absolute;left:var(--sx);top:var(--sy);width:74px;height:74px;margin:-37px;filter:drop-shadow(0 4px 3px #0006);transform-origin:center;animation:vent-throw 650ms cubic-bezier(.3,.6,.5,1) both}
+-.vent-weapon svg,.vent-face svg{width:100%;height:100%;display:block}
+-.vent-impact{position:absolute;left:var(--tx);top:var(--ty);width:94px;height:94px;margin:-47px;animation:vent-pop 900ms 350ms both}
+-.vent-burst{position:absolute;inset:-12px;background:#ffdb70;clip-path:polygon(50% 0,60% 25%,80% 6%,78% 32%,100% 29%,84% 49%,100% 66%,73% 69%,77% 99%,54% 81%,34% 100%,30% 74%,3% 83%,16% 57%,0 40%,29% 35%,26% 8%,44% 26%);filter:drop-shadow(0 2px 0 #ab624b)}
+-.vent-face{position:absolute;inset:10px;transform:rotate(-10deg)}
+-.vent-word{position:absolute;left:50%;top:72%;transform:translateX(-50%) rotate(-9deg);white-space:nowrap;font-family:system-ui,sans-serif;font-size:23px;font-weight:1000;color:#fff5bd;-webkit-text-stroke:1px #5b3044;text-shadow:2px 3px 0 #51273d}
+-.vent-stars{position:absolute;top:-13px;left:5px;color:#fff1a0;font-size:26px;letter-spacing:8px;animation:vent-stars 750ms 400ms both}
+-.vent-gun .vent-weapon{transform:rotate(var(--aim));animation:vent-recoil 650ms both}
+-.vent-gun .vent-projectile{position:absolute;left:var(--sx);top:var(--sy);width:18px;height:7px;border-radius:50%;background:#ffe8a0;box-shadow:0 0 8px #ffb54d;animation:vent-shot 360ms 70ms 2 both}
+-.vent-hammer .vent-weapon{left:calc(var(--tx) + 24px);top:calc(var(--ty) - 32px);width:92px;height:92px;transform-origin:50% 90%;animation:vent-hammer 700ms both}
+-.vent-glove .vent-weapon{animation:vent-punch 750ms both}
+-.vent-bomb .vent-weapon{animation:vent-bomb 600ms both}
+-.vent-bomb .vent-burst{background:#ffb16b}
+-.vent-lightning .vent-weapon{left:var(--tx);top:calc(var(--ty) - 38px);height:120px;animation:vent-lightning 700ms both}
+-.vent-lightning .vent-burst{background:#b6dcff}
+-.vent-hit{animation:vent-wobble 550ms ease-out}
+-@keyframes vent-pop{0%{opacity:0;transform:scale(.3) rotate(-15deg)}18%{opacity:1;transform:scale(1.1)}40%,76%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9) translateY(-10px)}}
+-@keyframes vent-stars{0%{opacity:0;transform:rotate(-20deg) scale(.4)}30%{opacity:1}100%{opacity:0;transform:rotate(20deg) translateY(-14px)}}
+-@keyframes vent-throw{0%{opacity:0;transform:scale(.6)}15%{opacity:1}65%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1.15)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.4)}}
+-@keyframes vent-shot{0%{opacity:0;transform:rotate(var(--aim))}10%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--aim))}}
+-@keyframes vent-recoil{0%{opacity:0;transform:rotate(var(--aim)) scale(.5)}15%,42%,68%{opacity:1;transform:rotate(var(--aim)) translateX(-8px)}28%,56%,80%{opacity:1;transform:rotate(var(--aim))}100%{opacity:0;transform:rotate(var(--aim)) scale(.7)}}
+-@keyframes vent-hammer{0%{opacity:0;transform:rotate(75deg)}25%{opacity:1;transform:rotate(75deg)}52%{transform:rotate(-48deg)}70%{opacity:1;transform:rotate(-25deg)}100%{opacity:0;transform:rotate(-45deg)}}
+-@keyframes vent-punch{0%{opacity:0;transform:scale(.5) rotate(-30deg)}20%{opacity:1}48%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(-30deg)}68%{transform:translate(var(--dx),var(--dy)) scale(1) rotate(-30deg)}100%{opacity:0;transform:scale(.5)}}
+-@keyframes vent-bomb{0%{opacity:0;transform:scale(.5)}18%{opacity:1}68%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(320deg)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(400deg) scale(.1)}}
+-@keyframes vent-lightning{0%,30%{opacity:0;transform:translateY(-80px) scaleY(.5)}52%{opacity:1;transform:translateY(10px) scaleY(1.15)}65%,80%{opacity:1;transform:translateY(0) scaleY(1)}100%{opacity:0;transform:scale(.8)}}
+-@keyframes vent-wobble{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px) rotate(-2deg)}45%{transform:translateX(4px) rotate(2deg)}70%{transform:translateX(-2px)}}
+-@media(prefers-reduced-motion:reduce){.vent-weapon,.vent-projectile,.vent-stars{display:none}.vent-hit{animation:none}.vent-impact{animation:none;opacity:1}.vent-burst{background:#ddbd75}}
++/* Material artwork, separate anticipation / contact / afterglow stages. */
++.vent-icon img{object-fit:contain;filter:drop-shadow(0 1px 1px #0009)}
++.vent-layer{--warm:#ffd470;position:fixed;inset:0;z-index:36;overflow:hidden;pointer-events:none;contain:layout paint}
++.vent-weapon{position:absolute;left:var(--sx);top:var(--sy);width:124px;height:124px;margin:-62px;filter:drop-shadow(0 9px 5px #15101c66);will-change:transform,opacity}
++.vent-weapon img{width:100%;height:100%;object-fit:contain;display:block}
++.vent-impact{position:absolute;left:var(--tx);top:var(--ty);width:1px;height:1px}
++.vent-aura,.vent-flash,.vent-ring,.vent-spark,.vent-smoke,.vent-word{position:absolute;animation-fill-mode:both}
++.vent-aura{width:150px;height:150px;left:-75px;top:-75px;border-radius:50%;background:radial-gradient(ellipse,#fff5cabb 0,#ffc46766 24%,#ff941b22 45%,transparent 70%);animation:vent-aura 1000ms var(--hit) both}
++.vent-flash{width:110px;height:110px;left:-55px;top:-55px;background:radial-gradient(ellipse,#fff 0,#fff9bb 22%,#ffc861 44%,#ec712f88 65%,transparent 72%);clip-path:polygon(50% 0,57% 29%,77% 9%,72% 35%,100% 25%,79% 49%,100% 65%,69% 65%,74% 99%,52% 75%,33% 100%,32% 73%,2% 81%,21% 56%,0 37%,29% 37%,27% 7%,44% 30%);animation:vent-flash 420ms var(--hit) both}
++.vent-ring{left:-45px;top:-30px;width:90px;height:60px;border:3px solid #fff2b5;box-shadow:0 0 12px #ffb855,inset 0 0 9px #ffb855;border-radius:50%;animation:vent-ring 650ms var(--hit) both}
++.vent-ring.second{border-width:1px;animation-delay:calc(var(--hit) + 110ms)}
++.vent-spark{width:5px;height:13px;left:-2px;top:-6px;border-radius:60% 40%;background:linear-gradient(#fff8d7,var(--warm),#d7652677);box-shadow:0 0 7px #ffdb80;animation:vent-spark 740ms calc(var(--hit) + var(--lag)) both}
++.vent-spark:nth-of-type(3n){width:3px;height:5px}.vent-spark:nth-of-type(4n){width:9px;height:3px}
++.vent-smoke{width:49px;height:49px;left:-24px;top:-24px;border-radius:42% 58% 62% 38%;background:radial-gradient(ellipse at 34% 28%,#efe5d9bb,#91858c66 45%,#49455422 66%,transparent 72%);filter:blur(2px);animation:vent-smoke 1150ms calc(var(--hit) + 90ms + var(--lag)) both}
++.vent-word{left:0;top:30px;white-space:nowrap;font-family:system-ui,sans-serif;font-size:33px;font-weight:1000;letter-spacing:-2px;color:#fff5c9;-webkit-text-stroke:1.1px #6a3429;text-shadow:2px 3px 0 #4d2337,0 5px 8px #20152766;animation:vent-word 1300ms calc(var(--hit) + 45ms) both}
++.vent-hit{animation:vent-wobble 500ms ease-out}
++/* Two aimed shots, recoil, muzzle flare and traveling tracers. */
++.vent-gun .vent-weapon{animation:vent-recoil 1250ms both}
++.vent-projectile{position:absolute;left:var(--sx);top:var(--sy);width:52px;height:4px;margin:-2px 0 0 -26px;border-radius:100%;background:linear-gradient(90deg,transparent,#ffc659,#fff8dc);box-shadow:0 0 9px #ffcc66;animation:vent-shot 80ms 250ms both}
++.vent-projectile.second{animation-delay:610ms}
++.vent-muzzle{position:absolute;left:var(--sx);top:var(--sy);width:64px;height:64px;margin:-32px;background:radial-gradient(ellipse,#fff9d1, #ffd071 24%,#ff931d88 39%,transparent 67%);clip-path:polygon(0 37%,62% 41%,100% 5%,83% 47%,100% 66%,57% 57%,4% 72%);animation:vent-muzzle 360ms 250ms 2 both}
++.vent-gun .vent-flash{animation:vent-flash 340ms 330ms 2 both}.vent-gun .vent-ring.second{animation-delay:690ms}
++/* Hammer winds up, lands and rebounds; the leather glove compresses at contact. */
++.vent-hammer .vent-weapon{left:calc(var(--tx) + 34px);top:calc(var(--ty) + 49px);width:154px;height:154px;margin:-77px;transform-origin:50% 87%;animation:vent-hammer 1480ms both}
++.vent-hammer .vent-trail{position:absolute;left:calc(var(--tx) - 26px);top:calc(var(--ty) - 78px);width:140px;height:140px;border-radius:50%;border:9px solid transparent;border-top-color:#ffe9c580;border-right-color:#ffd27455;filter:blur(2px);animation:vent-swing-trail 280ms 420ms both}
++.vent-glove .vent-weapon{width:140px;height:140px;margin:-70px;animation:vent-punch 1400ms both}
++.vent-glove .vent-trail{position:absolute;left:var(--sx);top:var(--sy);width:86px;height:28px;margin:-14px -43px;border-radius:50%;background:linear-gradient(90deg,transparent,#ffb998aa);filter:blur(3px);animation:vent-punch-trail 560ms both}
++.vent-glove .vent-flash{background:radial-gradient(#fff8da,#ffd3a0 35%,#ec694d88 58%,transparent 72%)}
++/* Arced throw, hot core, billowing smoke, embers and expanding pressure rings. */
++.vent-bomb .vent-weapon{width:105px;height:105px;margin:-52px;animation:vent-bomb 1100ms both}
++.vent-bomb .vent-weapon:after{content:'';position:absolute;right:5%;top:4%;width:18px;height:18px;border-radius:50%;background:radial-gradient(#fff,#ffe5a6 18%,#ff9a28 35%,transparent 70%);box-shadow:0 0 12px #ff9e3a;animation:vent-fuse 400ms ease-in-out infinite alternate}
++.vent-bomb .vent-flash{width:158px;height:158px;left:-79px;top:-79px;animation-duration:620ms;background:radial-gradient(#fffad1,#ffe895 18%,#ffb240 40%,#ee5725 55%,transparent 71%)}
++.vent-bomb .vent-aura{width:220px;height:220px;left:-110px;top:-110px}.vent-bomb .vent-smoke{width:75px;height:75px;left:-37px;top:-37px;animation-duration:1300ms}.vent-bomb .vent-spark{box-shadow:0 0 10px #ff9225}
++/* Branching electricity uses crisp vector cores with a soft blue corona. */
++.vent-lightning{--warm:#a8e7ff}.vent-bolt{position:absolute;left:calc(var(--tx) - 80px);top:0;width:160px;height:calc(var(--ty) + 15px);overflow:visible;filter:drop-shadow(0 0 5px #6ccfff);animation:vent-bolt 1050ms 350ms both}
++.bolt-halo{stroke:#5bb5ff88;stroke-width:15}.bolt-core{stroke:#ecfaff;stroke-width:4}.bolt-branch{stroke:#b4e9ff;stroke-width:2}
++.vent-bolt path{stroke-dasharray:420;animation:vent-bolt-draw 330ms 350ms both}
++.vent-lightning .vent-aura{background:radial-gradient(#eefcff99,#6ad8ff44 35%,transparent 69%)}.vent-lightning .vent-ring{border-color:#cff6ff;box-shadow:0 0 12px #67cbff,inset 0 0 9px #67cbff}.vent-lightning .vent-flash{background:radial-gradient(#fff,#d3f7ff 25%,#70baff88 50%,transparent 72%)}.vent-lightning .vent-word{color:#e6faff;-webkit-text-stroke-color:#355f98}.vent-lightning .vent-spark{box-shadow:0 0 8px #6aceff}
++@keyframes vent-aura{0%{opacity:0;transform:scale(.2)}12%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.4)}}
++@keyframes vent-flash{0%{opacity:0;transform:scale(.12) rotate(-13deg)}15%{opacity:1;transform:scale(1.05) rotate(3deg)}100%{opacity:0;transform:scale(.8) rotate(16deg)}}
++@keyframes vent-ring{0%{opacity:0;transform:scale(.12)}14%{opacity:.95}100%{opacity:0;transform:scale(2.2)}}
++@keyframes vent-spark{0%{opacity:0;transform:translate(0,0) scale(.3)}10%{opacity:1}68%{opacity:.8}100%{opacity:0;transform:translate(var(--px),var(--py)) rotate(var(--spin)) scale(.1)}}
++@keyframes vent-smoke{0%{opacity:0;transform:scale(.2)}25%{opacity:.65}100%{opacity:0;transform:translate(var(--px),var(--py)) rotate(var(--spin)) scale(1.7)}}
++@keyframes vent-word{0%{opacity:0;transform:translate(-50%,10px) rotate(-12deg) scale(.35)}13%{opacity:1;transform:translate(-50%,0) rotate(-8deg) scale(1.15)}25%,70%{opacity:1;transform:translate(-50%,0) rotate(-8deg) scale(1)}100%{opacity:0;transform:translate(-50%,-12px) rotate(-5deg) scale(.95)}}
++@keyframes vent-recoil{0%{opacity:0;transform:rotate(var(--aim)) scale(.55)}16%,19%,48%{opacity:1;transform:rotate(var(--aim))}23%,52%{opacity:1;transform:rotate(calc(var(--aim) - 12deg)) translateX(-13px)}34%,63%,78%{opacity:1;transform:rotate(var(--aim))}100%{opacity:0;transform:rotate(var(--aim)) translateY(15px) scale(.8)}}
++@keyframes vent-shot{0%{opacity:0;transform:rotate(var(--aim))}12%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--aim))}}
++@keyframes vent-muzzle{0%{opacity:1;transform:rotate(var(--aim)) translateX(53px) scale(.8)}15%{opacity:1;transform:rotate(var(--aim)) translateX(55px) scale(1.2)}28%,100%{opacity:0;transform:rotate(var(--aim)) translateX(54px) scale(.4)}}
++@keyframes vent-hammer{0%{opacity:0;transform:rotate(42deg) scale(.65)}15%{opacity:1;transform:rotate(42deg) scale(1)}30%{transform:rotate(82deg)}44%{transform:rotate(-26deg)}53%{transform:rotate(9deg)}64%{transform:rotate(-10deg)}79%{opacity:1;transform:rotate(-8deg)}100%{opacity:0;transform:translateY(20px) rotate(-15deg) scale(.8)}}
++@keyframes vent-swing-trail{0%{opacity:0;transform:rotate(40deg) scale(.8)}30%{opacity:1}100%{opacity:0;transform:rotate(-70deg) scale(1.1)}}
++@keyframes vent-punch{0%{opacity:0;transform:rotate(calc(var(--aim) + 45deg)) scale(.5)}16%{opacity:1;transform:translate(12px,15px) rotate(calc(var(--aim) + 45deg)) scale(.8)}40%{transform:translate(var(--dx),var(--dy)) rotate(calc(var(--aim) + 45deg)) scale(1.12,.9)}48%{transform:translate(var(--dx),var(--dy)) rotate(calc(var(--aim) + 45deg)) scale(.95,1.05)}65%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(calc(var(--aim) + 45deg)) scale(1)}100%{opacity:0;transform:translate(0,20px) rotate(calc(var(--aim) + 45deg)) scale(.4)}}
++@keyframes vent-punch-trail{0%,40%{opacity:0;transform:rotate(var(--aim))}75%{opacity:.7}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--aim)) scaleX(2)}}
++@keyframes vent-bomb{0%{opacity:0;transform:scale(.5)}12%{opacity:1;transform:scale(.75)}44%{transform:translate(calc(var(--dx) * .55),calc(var(--dy) * .65 - 45px)) rotate(150deg) scale(.85)}85%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(345deg) scale(.9)}88%,100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(360deg) scale(.1)}}
++@keyframes vent-fuse{from{opacity:.65;transform:scale(.8)}to{opacity:1;transform:scale(1.2)}}
++@keyframes vent-bolt{0%{opacity:0;transform:scaleX(.8)}28%,45%{opacity:1;transform:scaleX(1)}70%{opacity:.65}100%{opacity:0;transform:scaleX(.9)}}
++@keyframes vent-bolt-draw{from{stroke-dashoffset:420}to{stroke-dashoffset:0}}
++@keyframes vent-wobble{0%,100%{transform:translateX(0)}18%{transform:translateX(-6px) rotate(-3deg)}40%{transform:translateX(5px) rotate(2deg)}68%{transform:translateX(-2px)}}
++@media(prefers-reduced-motion:reduce){.vent-layer .vent-weapon,.vent-projectile,.vent-muzzle,.vent-trail,.vent-bolt,.vent-flash,.vent-spark,.vent-smoke,.vent-ring{display:none}.vent-hit{animation:none}.vent-layer .vent-aura{animation:none;opacity:.5;transform:scale(.7)}.vent-layer .vent-word{animation:none;opacity:1;top:6px;transform:translateX(-50%);font-size:28px}}
+ 
+diff --git a/games/matgo-deck-tools.mjs b/games/matgo-deck-tools.mjs
+index 46b387a..d94d3e5 100644
+--- a/games/matgo-deck-tools.mjs
++++ b/games/matgo-deck-tools.mjs
+@@ -1,106 +1,82 @@
+-const svg = body => `<svg viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><g stroke="#30243e" stroke-width="4" stroke-linejoin="round">${body}</g></svg>`;
+-const art = {
+-  gun: svg('<path fill="#eb7963" d="M31 44h26l-9 44H25z"/><path fill="#78cfe0" d="M19 27h67v29H30V44H19z"/><path fill="#fff0ac" d="M26 21h24v13H26z"/><path fill="#ed775d" d="M84 29h10v25H84z"/><path fill="none" d="M56 57h11v12H52"/><path stroke="#fff" d="M37 38h35"/>'),
+-  hammer: svg('<path fill="#c69257" d="M43 38h14v56H43z"/><rect x="12" y="16" width="76" height="34" rx="9" fill="#bfc7e0"/><path stroke="#fff" d="M25 24h47"/><path stroke="#805b37" d="M47 61h6m-6 11h6m-6 11h6"/>'),
+-  glove: svg('<path fill="#e95e77" d="M23 65C7 59 7 43 13 30s17-17 30-14c29-8 46 9 44 29-1 13-12 25-26 26l-3 19H25z"/><path fill="#fff0cc" d="M24 70h39v20H24z"/><path fill="none" d="M20 47c12-8 23-2 23 14"/><path stroke="#ffb7c5" d="M33 27c10-6 26-5 34 2"/>'),
+-  bomb: svg('<path fill="none" stroke="#d5a269" d="M58 21c-1-19 25-17 22-3"/><path fill="#ece49a" d="M77 9l4-8 4 9 10 1-8 6 2 10-9-6-9 5 3-10-8-6z"/><path fill="#a1a8bf" d="M48 20h20v18H48z"/><circle cx="47" cy="62" r="31" fill="#3d3a54"/><path fill="none" stroke="#aaa7c5" d="M27 47c5-8 11-11 19-12"/>'),
+-  lightning: svg('<path fill="#ffe16b" d="M50 4L18 56h28L33 97l50-58H56L75 4z"/><path fill="none" stroke="#fff4ba" d="M48 21L33 46h25"/>')
+-};
++import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-vent2';
+ export const VENT_EFFECTS = [
+-  { id: 'gun', name: '총 쏘기', word: '탕! 탕!' },
+-  { id: 'hammer', name: '망치', word: '꽝!' },
+-  { id: 'glove', name: '권투장갑', word: '퍽!' },
+-  { id: 'bomb', name: '폭탄', word: '펑!' },
+-  { id: 'lightning', name: '번개', word: '찌릿!' }
++  {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
++  {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},
++  {id:'glove',name:'권투장갑',word:'퍽!',hits:[560],duration:2000},
++  {id:'bomb',name:'폭탄',word:'펑!',hits:[940],duration:2600},
++  {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300}
+ ];
+-const face = svg('<circle cx="50" cy="50" r="36" fill="#ffe297"/><path fill="none" d="M28 34l15 15m0-15L28 49m29-15l15 15m0-15L57 49M36 66q14-11 28 0"/>');
+-
+-export function createVentControls({ canPlay = () => true, purchase, onError = () => {}, onHit = () => {} } = {}) {
+-  let index = 0, active = null, cooldown = 0, resetTimer = null, hitTimer = null, cleanupTimer = null;
+-  let observed = null, observer = null, destroyed = false, purchasing = false;
+-  const button = () => document.getElementById('matgo-vent');
+-  function sync() {
+-    const b = button();
+-    if (b) { b.disabled = purchasing || Date.now() < cooldown || !canPlay(); b.classList.toggle('cooldown', Date.now() < cooldown); b.setAttribute('aria-busy',String(purchasing)); }
+-  }
+-  function resize() {
+-    const deck = document.querySelector('.deck.deck-tools');
+-    if (!deck) return;
+-    const h = deck.parentElement.getBoundingClientRect().height;
+-    const cardHeight = Math.max(27, Math.min(69, h - (deck.querySelector('.tazza-button') ? 116 : 76)));
+-    deck.style.setProperty('--deck-card-height', cardHeight + 'px');
+-    deck.style.setProperty('--deck-card-width', (cardHeight / 1.5) + 'px');
++const assetURL=id=>new URL(`./assets/matgo-vent/${id}.png`,import.meta.url).href;
++const assetCache=new Map();
++function prepareAsset(id){
++  if(id==='lightning')return Promise.resolve();
++  if(!assetCache.has(id)){
++    const ready=new Promise((resolve,reject)=>{
++      const img=new window.Image();img.onload=()=>resolve();
++      img.onerror=()=>{assetCache.delete(id);reject(Error('그림을 불러오지 못했어요. 잠시 후 다시 눌러 주세요.'));};
++      img.src=assetURL(id);
++    });assetCache.set(id,ready);
++  }return assetCache.get(id);
++}
++const weapon=id=>`<img src="${assetURL(id)}" alt="" draggable="false" decoding="sync">`;
++const lightning='<svg class="vent-bolt" viewBox="0 0 160 240" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="bolt-halo" d="M90 0L65 55 97 76 52 118 88 133 69 178 82 225"/><path class="bolt-core" d="M90 0L65 55 97 76 52 118 88 133 69 178 82 225"/><path class="bolt-branch" d="M65 55L35 66 45 89 18 110M88 133L121 115 131 145 149 154M69 178L42 170 27 199"/></g></svg>';
++function particles(){
++  return Array.from({length:18},(_,i)=>{const angle=i*137.508*Math.PI/180,radius=42+(i%5)*13;
++    return `<i class="vent-spark" style="--px:${(Math.cos(angle)*radius).toFixed(1)}px;--py:${(Math.sin(angle)*radius).toFixed(1)}px;--spin:${i*43}deg;--lag:${(i%4)*22}ms"></i>`;
++  }).join('')+Array.from({length:7},(_,i)=>`<i class="vent-smoke" style="--px:${(i-3)*17}px;--py:${-20-(i%3)*19}px;--spin:${i*37}deg;--lag:${i*35}ms"></i>`).join('');
++}
++export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onHit=()=>{},prepare=prepareAsset,sound=createVentSound()}={}){
++  let index=0,active=null,cooldown=0,resetTimer=null,cleanupTimer=null;
++  let observed=null,observer=null,destroyed=false,purchasing=false;
++  const hitTimers=new Set(),button=()=>document.getElementById('matgo-vent');
++  function sync(){const b=button();if(b){b.disabled=purchasing||Date.now()<cooldown||!canPlay();b.classList.toggle('cooldown',Date.now()<cooldown);b.setAttribute('aria-busy',String(purchasing));}}
++  function resize(){const deck=document.querySelector('.deck.deck-tools');if(!deck)return;const h=deck.parentElement.getBoundingClientRect().height;
++    const cardHeight=Math.max(27,Math.min(69,h-(deck.querySelector('.tazza-button')?132:84)));
++    deck.style.setProperty('--deck-card-height',cardHeight+'px');deck.style.setProperty('--deck-card-width',cardHeight/1.5+'px');
+   }
+-  function mount() {
+-    if (destroyed) return;
+-    const deck = document.querySelector('.deck');
+-    if (!deck) return;
+-    deck.classList.add('deck-tools');
+-    deck.parentElement.classList.add('matgo-tools-floor');
+-    if (!deck.querySelector('#matgo-vent')) {
+-      const b = document.createElement('button');
+-      b.id = 'matgo-vent'; b.type = 'button'; b.className = 'vent-button';
+-      b.innerHTML = `<span class="vent-icon" aria-hidden="true">${art.gun}</span><span>화풀이<small>1쭈</small></span>`;
+-      b.setAttribute('aria-label', '화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개 모션을 차례로 재생');
+-      b.title = '1회 1쭈 · 내 화면의 연출이에요. 패와 점수는 그대로예요.';
+-      deck.appendChild(b);
+-    }
+-    if (observed !== deck.parentElement) {
+-      observer?.disconnect(); observed = deck.parentElement;
+-      if (typeof ResizeObserver !== 'undefined') { observer = new ResizeObserver(resize); observer.observe(observed); }
++  function mount(){
++    if(destroyed)return;const deck=document.querySelector('.deck');if(!deck)return;
++    deck.classList.add('deck-tools');deck.parentElement.classList.add('matgo-tools-floor');
++    if(!deck.querySelector('#matgo-vent')){
++      const b=document.createElement('button');b.id='matgo-vent';b.type='button';b.className='vent-button';
++      b.innerHTML=`<span class="vent-icon" aria-hidden="true">${weapon('gun')}</span><span>화풀이<small>1쭈</small></span>`;
++      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개 모션과 효과음을 차례로 재생');
++      b.title='1회 1쭈 · 소리는 게임의 소리 설정을 따라요. 패와 점수는 그대로예요.';deck.appendChild(b);
++      void prepare(VENT_EFFECTS[index].id).catch(()=>{});
+     }
+-    resize(); sync();
++    if(observed!==deck.parentElement){observer?.disconnect();observed=deck.parentElement;if(typeof ResizeObserver!=='undefined'){observer=new ResizeObserver(resize);observer.observe(observed);}}
++    resize();sync();
+   }
+-  function clear() {
+-    clearTimeout(hitTimer); clearTimeout(cleanupTimer);
+-    active?.remove(); active = null;
+-    document.querySelectorAll('.vent-hit').forEach(el => el.classList.remove('vent-hit'));
+-  }
+-  async function fire() {
+-    const b = button(), target = document.querySelector('.zone.op .who b');
+-    if (destroyed || purchasing || !b || !target || Date.now() < cooldown || !canPlay() || !purchase) return false;
+-    purchasing=true;sync();
+-    let effect=VENT_EFFECTS[index % VENT_EFFECTS.length];
++  function clear(){for(const timer of hitTimers)clearTimeout(timer);hitTimers.clear();clearTimeout(cleanupTimer);sound.stop();active?.remove();active=null;document.querySelectorAll('.vent-hit').forEach(el=>el.classList.remove('vent-hit'));}
++  async function fire(){
++    const b=button(),target=document.querySelector('.zone.op .who b');
++    if(destroyed||purchasing||!b||!target||Date.now()<cooldown||!canPlay()||!purchase)return false;
++    const audioReady=sound.unlock();purchasing=true;sync();let effect=VENT_EFFECTS[index];
+     try{
+-      const receipt=await purchase(effect.id);
+-      effect=VENT_EFFECTS.find(item=>item.id===receipt?.purchase?.effect);
+-      if(!effect)throw Error('결제 정보를 확인하지 못했어요. 다시 눌러 주세요.');
+-    }catch(error){onError(error);return false;}
+-    finally{purchasing=false;sync();}
++      await prepare(effect.id);await audioReady; // Never charge for an image that failed to load.
++      if(destroyed||document.hidden||!canPlay())return false;
++      const receipt=await purchase(effect.id),confirmed=VENT_EFFECTS.find(item=>item.id===receipt?.purchase?.effect);
++      if(!confirmed)throw Error('결제 정보를 확인하지 못했어요. 다시 눌러 주세요.');
++      if(confirmed.id!==effect.id)await prepare(confirmed.id);effect=confirmed;
++    }catch(error){onError(error);return false;}finally{purchasing=false;sync();}
+     if(destroyed)return false;
+-    clear();
+-    index=(VENT_EFFECTS.indexOf(effect)+1)%VENT_EFFECTS.length;
+-    const start = b.getBoundingClientRect(), end = target.getBoundingClientRect();
+-    const sx = start.left + start.width / 2, sy = start.top + start.height / 2;
+-    const tx = Math.min(innerWidth - 58, Math.max(58, end.left + 16));
+-    const ty = Math.max(55, end.top + end.height / 2);
+-    const angle = Math.atan2(ty - sy, tx - sx) * 180 / Math.PI;
+-    const layer = document.createElement('div');
+-    layer.className = 'vent-layer vent-' + effect.id; layer.dataset.effect = effect.id;
+-    layer.setAttribute('aria-hidden', 'true');
+-    for (const [key, value] of Object.entries({ sx: sx + 'px', sy: sy + 'px', tx: tx + 'px', ty: ty + 'px', dx: (tx - sx) + 'px', dy: (ty - sy) + 'px', aim: angle + 'deg' })) layer.style.setProperty('--' + key, value);
+-    layer.innerHTML = `<div class="vent-weapon">${art[effect.id]}</div><div class="vent-projectile"></div><div class="vent-impact"><div class="vent-burst"></div><div class="vent-face">${face}</div><strong class="vent-word">${effect.word}</strong><span class="vent-stars">✦ ★ ✦</span></div>`;
+-    document.body.appendChild(layer); active = layer;
+-    cooldown = Date.now() + 1800; sync();
+-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+-    hitTimer = setTimeout(() => { if (!layer.isConnected) return; target.classList.add('vent-hit'); onHit(effect.id); }, reduced ? 0 : 360);
+-    cleanupTimer = setTimeout(clear, reduced ? 700 : 1350);
+-    clearTimeout(resetTimer); resetTimer = setTimeout(sync, 1820);
+-    return effect.id;
+-  }
+-  function click(event) {
+-    if (!event.target.closest?.('#matgo-vent')) return;
+-    event.preventDefault(); event.stopPropagation(); fire();
+-  }
+-  function hide() { if (document.hidden) clear(); }
+-  function destroy() {
+-    destroyed = true; clear(); clearTimeout(resetTimer); observer?.disconnect();
+-    document.removeEventListener('click', click); document.removeEventListener('visibilitychange', hide);
+-    window.removeEventListener('resize', resize); window.removeEventListener('pagehide', destroy);
++    clear();index=(VENT_EFFECTS.indexOf(effect)+1)%VENT_EFFECTS.length;void prepare(VENT_EFFECTS[index].id).catch(()=>{});
++    const start=b.getBoundingClientRect(),end=target.getBoundingClientRect();
++    const sx=Math.min(innerWidth-62,Math.max(62,start.left+start.width/2)),sy=start.top+start.height/2;
++    const tx=Math.min(innerWidth-76,Math.max(76,end.left+end.width/2)),ty=Math.max(80,end.top+end.height/2);
++    const angle=Math.atan2(ty-sy,tx-sx)*180/Math.PI,reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
++    const hits=reduced?[0]:effect.hits,duration=reduced?900:effect.duration;
++    const layer=document.createElement('div');layer.className='vent-layer vent-'+effect.id;layer.dataset.effect=effect.id;layer.setAttribute('aria-hidden','true');
++    for(const [key,value] of Object.entries({sx:sx+'px',sy:sy+'px',tx:tx+'px',ty:ty+'px',dx:(tx-sx)+'px',dy:(ty-sy)+'px',aim:angle+'deg',hit:effect.hits[0]+'ms'}))layer.style.setProperty('--'+key,value);
++    const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:'<div class="vent-trail"></div>';
++    layer.innerHTML=`${effect.id==='lightning'?'':`<div class="vent-weapon">${weapon(effect.id)}</div>`}${trails}<div class="vent-impact"><div class="vent-aura"></div><div class="vent-flash"></div><div class="vent-ring"></div><div class="vent-ring second"></div>${particles()}<strong class="vent-word">${effect.word}</strong></div>`;
++    document.body.appendChild(layer);active=layer;cooldown=Date.now()+duration+150;sync();if(!document.hidden)sound.play(effect.id,hits);
++    for(const ms of hits){const timer=setTimeout(()=>{hitTimers.delete(timer);if(!layer.isConnected||document.hidden)return;const current=document.querySelector('.zone.op .who b');if(current&&!reduced){current.classList.remove('vent-hit');void current.offsetWidth;current.classList.add('vent-hit');}onHit(effect.id);},ms);hitTimers.add(timer);}
++    cleanupTimer=setTimeout(clear,duration);clearTimeout(resetTimer);resetTimer=setTimeout(sync,duration+170);return effect.id;
+   }
+-  document.addEventListener('click', click);
+-  document.addEventListener('visibilitychange', hide);
+-  window.addEventListener('resize', resize);
+-  window.addEventListener('pagehide', destroy, { once: true });
+-  return { mount, sync, clear, destroy };
++  function click(event){if(!event.target.closest?.('#matgo-vent'))return;event.preventDefault();event.stopPropagation();void fire();}
++  function hide(){if(document.hidden)clear();}
++  function destroy(){destroyed=true;clear();clearTimeout(resetTimer);observer?.disconnect();sound.destroy();document.removeEventListener('click',click);document.removeEventListener('visibilitychange',hide);window.removeEventListener('resize',resize);window.removeEventListener('pagehide',destroy);}
++  document.addEventListener('click',click);document.addEventListener('visibilitychange',hide);window.addEventListener('resize',resize);window.addEventListener('pagehide',destroy,{once:true});
++  return {mount,sync,clear,destroy};
+ }
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index cd9c66b..02c7b1e 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -20,3 +20,3 @@
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-tazza1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-vent2">
+ </head>
+@@ -33,3 +33,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261013-tazza1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261013-vent2"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 2489e20..21da250 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -1,8 +1,8 @@
+ import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
+-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261010-hold1';
++import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-vent2';
+ import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
+-import {createWallet} from './matgo-wallet.mjs?v=20261013-tazza1';
++import {createWallet} from './matgo-wallet.mjs?v=20261013-vent2';
+ import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
+ import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
+-import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-tazza1';
++import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-vent2';
+ const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
+@@ -17,3 +17,3 @@ let arcadeRoom=null,publicLobby=false,animating=false,presentationVersion=0;
+ const sound=createOnlineSound();
+-const vent=createVentControls({canPlay:()=>!closed&&access.allowed()&&room?.status==='active',purchase:effect=>wallet.vent(room.id,effect),onError:error=>toast(error.message),onHit:()=>sound.play('land',{onCards:true})});
++const vent=createVentControls({canPlay:()=>!closed&&access.allowed()&&room?.status==='active',purchase:effect=>wallet.vent(room.id,effect),onError:error=>toast(error.message)});
+ const motion=createOnlineMotion({cardSVG,backSVG,sound,onEvent:queueEvent,onLayout:fitBoard});
+@@ -112,3 +112,3 @@ async function accept(next){
+   if(closed)return;
+-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-tazza1');return;}
++  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-vent2');return;}
+   if(room&&room.id===next.id&&next.version<room.version)return;
+@@ -179,3 +179,3 @@ function showLobby(){
+   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
+-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-tazza1');};
++  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-vent2');};
+ }
+diff --git a/games/matgo-vent-sound.mjs b/games/matgo-vent-sound.mjs
+new file mode 100644
+index 0000000..0a723e6
+--- /dev/null
++++ b/games/matgo-vent-sound.mjs
+@@ -0,0 +1,66 @@
++// Small, original Web Audio effects. No media download and no third-party samples.
++export function createVentSound({enabled=()=>{try{return window.localStorage.getItem('ojjuda-matgo-sound')!=='off';}catch{return true;}}}={}){
++  let ctx=null,bus=null,noiseBuffer=null,destroyed=false;
++  const voices=new Set();
++  function stop(){for(const voice of voices){try{voice.stop();}catch{}}voices.clear();}
++  function sync(){if(!enabled()||document.hidden)stop();}
++  function unlock(){
++    if(destroyed||!enabled())return;
++    try{
++      const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
++      if(!ctx){
++        ctx=new Audio();bus=ctx.createGain();bus.gain.value=.52;
++        const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-16;limiter.knee.value=14;limiter.ratio.value=5;limiter.attack.value=.003;limiter.release.value=.16;
++        bus.connect(limiter);limiter.connect(ctx.destination);
++        noiseBuffer=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);const samples=noiseBuffer.getChannelData(0);let seed=0x51af19;
++        for(let i=0;i<samples.length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;samples[i]=seed/2147483648-1;}
++      }
++      if(ctx.state==='suspended')return ctx.resume().catch(()=>{});
++    }catch{}
++  }
++  function voice(source,at,duration,gain,attack=.004,filter=null){
++    const envelope=ctx.createGain();envelope.gain.setValueAtTime(0,at);envelope.gain.linearRampToValueAtTime(gain,at+attack);envelope.gain.exponentialRampToValueAtTime(.0001,at+duration);
++    if(filter){source.connect(filter);filter.connect(envelope);}else source.connect(envelope);
++    envelope.connect(bus);voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect();filter?.disconnect();envelope.disconnect();};source.start(at);source.stop(at+duration+.025);
++  }
++  function noise(at,duration,gain,frequency,type='lowpass',attack=.003,endFrequency=null){
++    const source=ctx.createBufferSource();source.buffer=noiseBuffer;
++    const filter=ctx.createBiquadFilter();filter.type=type;filter.frequency.setValueAtTime(frequency,at);filter.Q.value=.65;
++    if(endFrequency)filter.frequency.exponentialRampToValueAtTime(endFrequency,at+duration);
++    voice(source,at,duration,gain,attack,filter);
++  }
++  function tone(at,duration,gain,frequency,end=frequency,type='sine'){
++    const oscillator=ctx.createOscillator();oscillator.type=type;oscillator.frequency.setValueAtTime(frequency,at);oscillator.frequency.exponentialRampToValueAtTime(end,at+duration);voice(oscillator,at,duration,gain);
++  }
++  function impact(id,at){
++    if(id==='gun'){
++      noise(at,.12,.83,7500,'lowpass');noise(at+.009,.30,.52,1350);tone(at,.19,.56,150,47);
++      noise(at+.062,.19,.14,1800,'bandpass');tone(at+.24,.17,.035,2900,2400);tone(at+.30,.12,.022,3600,3100);
++    }else if(id==='hammer'){
++      noise(at,.14,.73,4100);tone(at,.24,.65,105,38);
++      for(const [frequency,gain] of [[720,.18],[1130,.115],[1850,.055]])tone(at,.62,gain,frequency,frequency*.985);
++      noise(at+.035,.30,.17,830);
++    }else if(id==='glove'){
++      tone(at,.21,.85,190,42);noise(at,.095,.8,900);noise(at+.018,.16,.24,2300,'bandpass');tone(at+.015,.11,.16,330,90);
++    }else if(id==='bomb'){
++      noise(at,.16,.68,6100);noise(at+.015,1.15,.9,1550,'lowpass',.015,100);tone(at,1.05,.9,105,28);
++      noise(at+.09,.95,.36,330);noise(at+.20,.55,.20,2900,'highpass');
++    }else if(id==='lightning'){
++      noise(at,.18,.5,4300,'highpass');tone(at,.3,.18,1600,140,'sawtooth');
++      for(let i=0;i<5;i++){noise(at+i*.07,.055,.25,2200+i*480,'bandpass');tone(at+i*.075,.08,.075,700+i*410,120,'square');}
++      tone(at,.40,.36,100,42);
++    }
++  }
++  function play(id,hits){
++    if(destroyed||!enabled()||document.hidden||ctx?.state!=='running')return false;
++    stop();const start=ctx.currentTime+.018,first=(hits[0]||0)/1000;
++    if(id==='hammer'||id==='glove')noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
++    if(id==='bomb')noise(start,.75,.075,5200,'highpass',.05);
++    if(id==='lightning'){tone(start,.55,.05,150,1050,'triangle');noise(start,.55,.055,4200,'bandpass',.15);}
++    for(const ms of hits)impact(id,start+ms/1000);
++    return true;
++  }
++  function onClick(event){if(event.target.closest?.('#sound'))queueMicrotask(sync);}
++  document.addEventListener('click',onClick);document.addEventListener('visibilitychange',sync);window.addEventListener('storage',sync);
++  return {unlock,play,stop,destroy(){destroyed=true;stop();document.removeEventListener('click',onClick);document.removeEventListener('visibilitychange',sync);window.removeEventListener('storage',sync);if(ctx)void ctx.close().catch(()=>{});}};
++}
+diff --git a/games/matgo-view.mjs b/games/matgo-view.mjs
+index 845cf65..821d0f0 100644
+--- a/games/matgo-view.mjs
++++ b/games/matgo-view.mjs
+@@ -12,3 +12,3 @@ export function heldPairMonths(hand,caps){
+ export function floorLayout(width,height,count){
+-  const W=Math.max(60,width-94),H=Math.max(80,height-16),n=Math.max(12,count);
++  const W=Math.max(60,width-108),H=Math.max(80,height-16),n=Math.max(12,count);
+   let best=null;
+diff --git a/games/matgo.html b/games/matgo.html
+index 5fabe94..e15f70d 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -25,3 +25,3 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-tazza1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-vent2">
+ </head>
+@@ -37,7 +37,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script type="module">
+-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-tazza1";
+-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-tazza1";
++import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-vent2";
++import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-vent2";
+ import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261010-pibak8";
+-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261010-hold1";
+-import {createWallet} from "./matgo-wallet.mjs?v=20261013-tazza1";
++import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-vent2";
++import {createWallet} from "./matgo-wallet.mjs?v=20261013-vent2";
+ (async () => {
+@@ -270,3 +270,3 @@ function fitFloor(force){
+   // A constant reserve breaks the previous CW -> available width -> CW feedback loop.
+-  const W=Math.max(60,r.width-24-70),H=Math.max(80,r.height-16);
++  const W=Math.max(60,r.width-108),H=Math.max(80,r.height-16);
+   const n=Math.max(12,(game.floor?game.floor.length:8)+1);
+@@ -379,3 +379,3 @@ let currentRound=null,pendingResult=null,settling=false,refilling=false;
+ const tazza=createTazzaQueue();
+-const vent=createVentControls({canPlay:()=>access.allowed()&&!game.over&&!ui.dealing&&!roundCheck,purchase:effect=>wallet.vent(currentRound,effect),onError:error=>toast(error.message),onHit:()=>Sound.play('land',{onCards:true})});
++const vent=createVentControls({canPlay:()=>access.allowed()&&!game.over&&!ui.dealing&&!roundCheck,purchase:effect=>wallet.vent(currentRound,effect),onError:error=>toast(error.message)});
+ function syncTazza(){
+@@ -420,3 +420,3 @@ function mount(){
+   vent.mount();syncTazza();
+-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-tazza1');};
++  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-vent2');};
+   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
+diff --git a/matgo-bridge.js b/matgo-bridge.js
+index c5d8318..12a5d8f 100644
+--- a/matgo-bridge.js
++++ b/matgo-bridge.js
+@@ -62,3 +62,3 @@
+       frame = document.createElement('iframe');
+-      const params = new URLSearchParams({ v: '20261013-tazza1' });
++      const params = new URLSearchParams({ v: '20261013-vent2' });
+       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
+diff --git a/tests/matgo-deck-tools.test.mjs b/tests/matgo-deck-tools.test.mjs
+index 9e3b5a4..1514e08 100644
+--- a/tests/matgo-deck-tools.test.mjs
++++ b/tests/matgo-deck-tools.test.mjs
+@@ -58,6 +58,8 @@ try{
+   const purchase=async effect=>{purchases++;if(failPurchase)throw Error('쭈가 부족해요.');return {purchase:{effect}};};
+-  const vent=createVentControls({canPlay:()=>allowed,purchase,onError:()=>errors++,onHit:()=>hits++});vent.mount();
+-  assert.ok(d.querySelector('#matgo-vent .vent-icon svg'),'gun drawing replaces the bomb icon');
++  const sounds=[];let failAsset=false;
++  const vent=createVentControls({canPlay:()=>allowed,purchase,prepare:async()=>{if(failAsset)throw Error('image failed');},sound:{unlock(){},stop(){},destroy(){},play:(id,timing)=>sounds.push({id,timing})},onError:()=>errors++,onHit:()=>hits++});vent.mount();
++  assert.ok(d.querySelector('#matgo-vent .vent-icon img[src$="gun.png"]'),'gun drawing replaces the bomb icon');
+   assert.equal(d.querySelector('#matgo-vent small').textContent,'1쭈');
+-  failPurchase=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();
++  failAsset=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(purchases,0,'art failure never charges');assert.equal(sounds.length,0);failAsset=false;errors=0;
++  failPurchase=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
+   assert.equal(errors,1);assert.equal(d.querySelector('.vent-layer'),null,'no animation on declined payment');failPurchase=false;
+@@ -65,12 +67,12 @@ try{
+   for(const effect of VENT_EFFECTS){
+-    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();
++    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
+     assert.equal(d.querySelector('.vent-layer')?.dataset.effect,effect.id);
+     assert.equal(d.getElementById('matgo-vent').disabled,true);
+-    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelectorAll('.vent-layer').length,1,'rapid taps do not pile up effects');
+-    tick(400);assert.ok(d.querySelector('.zone.op .who b').classList.contains('vent-hit'));
+-    tick(1000);assert.equal(d.querySelector('.vent-layer'),null);
+-    tick(500);assert.equal(d.getElementById('matgo-vent').disabled,false);
++    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelectorAll('.vent-layer').length,1,'rapid taps do not pile up effects');
++    tick(effect.hits.at(-1)+1);assert.ok(d.querySelector('.zone.op .who b').classList.contains('vent-hit'));
++    tick(effect.duration-effect.hits.at(-1));assert.equal(d.querySelector('.vent-layer'),null);
++    tick(200);assert.equal(d.getElementById('matgo-vent').disabled,false);
+   }
+-  assert.equal(hits,5);assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
+-  allowed=false;vent.sync();d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer'),null);
++  assert.equal(hits,6);assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
++  allowed=false;vent.sync();d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer'),null);
+   // Online rerenders replace the entire board. A single delegated listener survives.
+@@ -78,3 +80,3 @@ try{
+   vent.mount();assert.equal(d.querySelectorAll('#matgo-vent').length,1);assert.equal(d.querySelector('.deck .tazza-button'),null,'online control does not introduce tazza');
+-  d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer').dataset.effect,'gun');
++  d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer').dataset.effect,'gun');
+   vent.destroy();assert.equal(d.querySelector('.vent-layer'),null);assert.equal(timers.size,0);
+diff --git a/tests/matgo-ui.test.cjs b/tests/matgo-ui.test.cjs
+index e3a8eac..a4551c4 100644
+--- a/tests/matgo-ui.test.cjs
++++ b/tests/matgo-ui.test.cjs
+@@ -83,3 +83,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+       const top=await f.page.locator('#tazza-mode').boundingBox(),deck=await f.page.locator('.deck .back').boundingBox(),vent=await f.page.locator('#matgo-vent').boundingBox(),hand=await f.page.locator('#handMe').boundingBox();
+-      assert.ok(top.y+top.height<=deck.y+1&&deck.y+deck.height<=vent.y,JSON.stringify({top,deck,vent}));
++      assert.ok(top.y+top.height+11<=deck.y&&deck.y+deck.height+11<=vent.y,JSON.stringify({top,deck,vent}));
+       assert.ok(vent.x>=0&&vent.x+vent.width<=width&&hand.y+hand.height<=height,JSON.stringify({width,height,vent,hand}));
+@@ -91,3 +91,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+     await f.page.setViewportSize({width:390,height:640});
+-    assert.equal(await f.page.locator('#matgo-vent .vent-icon svg').count(),1);assert.match(await f.page.locator('#matgo-vent').textContent(),/1쭈/);
++    assert.equal(await f.page.locator('#matgo-vent .vent-icon img').count(),1);assert.match(await f.page.locator('#matgo-vent').textContent(),/1쭈/);
+     await f.page.screenshot({path:'/tmp/matgo-tazza-controls.png'});
+diff --git a/tests/matgo-vent-effects-ui.test.cjs b/tests/matgo-vent-effects-ui.test.cjs
+new file mode 100644
+index 0000000..df20e16
+--- /dev/null
++++ b/tests/matgo-vent-effects-ui.test.cjs
+@@ -0,0 +1,79 @@
++const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
++const {chromium}=require('playwright');
++const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
++(async()=>{
++ const {CARDS}=await import('../games/matgo-engine.mjs');
++ const {VENT_EFFECTS}=await import('../games/matgo-deck-tools.mjs');
++ fs.mkdirSync(proof,{recursive:true});
++ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
++ const errors=[];
++ const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','맞고 친구'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
++ async function screen({muted=false,reduced=false}={}){
++  const context=await browser.newContext({viewport:{width:390,height:760},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
++  await context.addInitScript(({muted,room})=>{
++   localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;window.payments=[];window.decline=false;window.slowPurchase=false;
++   window.audioStarts=[];window.audioContexts=[];window.audioMetrics={peak:0,energy:0,count:0};
++   const NativeAudio=window.AudioContext,connect=AudioNode.prototype.connect;
++   window.AudioContext=class extends NativeAudio{constructor(...args){super(...args);this.probe=this.createAnalyser();this.probe.fftSize=2048;audioContexts.push(this);}};
++   AudioNode.prototype.connect=function(target,...args){if(target===this.context.destination&&this.context.probe)connect.call(this,this.context.probe);return connect.call(this,target,...args);};
++   for(const proto of [AudioBufferSourceNode.prototype,OscillatorNode.prototype]){const start=proto.start;proto.start=function(at){audioStarts.push({at,state:this.context.state});return start.apply(this,arguments);};}
++   setInterval(()=>{for(const ctx of audioContexts){if(ctx.state!=='running')continue;const a=new Float32Array(ctx.probe.fftSize);ctx.probe.getFloatTimeDomainData(a);for(const v of a){audioMetrics.peak=Math.max(audioMetrics.peak,Math.abs(v));audioMetrics.energy+=v*v;audioMetrics.count++;}}},15);
++   window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>{},getClient:()=>({auth:{getSession:async()=>({})},functions:{invoke:async(_,{body})=>{
++    if(body.action==='vent'){
++     if(slowPurchase)await new Promise(r=>setTimeout(r,500));
++     if(decline)return{data:{error:'insufficient_zzu'}};
++     payments.push(body);return{data:{ok:true,gold:5000,coins:50-payments.length,purchase:{effect:body.effect,price:1}}};
++    }
++    return{data:body.action==='status'?{ok:true,gold:5000,coins:50,free_left:2,online_room:room.id}:{ok:true,room:{...fixtureRoom,deadline:new Date(Date.now()+15000).toISOString(),serverTime:Date.now()}}};
++   }}})};
++  },{muted,room:initial});
++  await context.route('**/*',async route=>{
++   const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
++   if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
++   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
++   if(url.pathname==='/games/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.ventTest={vent,renderRoom};'});
++   return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
++  });
++  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/games/matgo-online.html');await page.locator('#matgo-vent').waitFor();
++  return {context,page};
++ }
++ try{
++  const {context,page}=await screen();
++  assert.equal(await page.evaluate(()=>audioStarts.length),0,'no sound on page load');
++  await page.evaluate(()=>{decline=true;slowPurchase=true;});
++  await page.locator('#matgo-vent').tap();await page.waitForTimeout(200);
++  assert.equal(await page.evaluate(()=>audioStarts.length),0,'no sound before confirmed charge');
++  await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);
++  assert.equal(await page.locator('.vent-layer').count(),0);assert.equal(await page.evaluate(()=>audioStarts.length),0,'declined purchase stays silent');
++  await page.evaluate(()=>{decline=false;slowPurchase=false;});
++  const metrics=[];
++  for(const effect of VENT_EFFECTS){
++   await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);
++   await page.evaluate(()=>{audioMetrics={peak:0,energy:0,count:0};audioStarts.length=0;});
++   await page.locator('#matgo-vent').tap();await page.locator(`.vent-layer[data-effect=${effect.id}]`).waitFor();
++   assert.equal(await page.locator('.vent-layer').evaluate(el=>getComputedStyle(el).pointerEvents),'none');
++   if(effect.id!=='lightning')assert.equal(await page.locator('.vent-weapon img').evaluate(el=>el.complete&&el.naturalWidth>=1000),true,'full-resolution artwork loaded');
++   await page.waitForTimeout(effect.hits[0]+70);
++   await page.screenshot({path:path.join(proof,effect.id+'.png')});
++   await page.locator('.vent-layer').waitFor({state:'detached'});
++   const m=await page.evaluate(()=>({...audioMetrics,voices:audioStarts.length,states:audioStarts.map(x=>x.state)}));
++   assert.ok(m.peak>.015&&m.energy>.01,`${effect.id} must produce actual audible samples: ${JSON.stringify(m)}`);
++   assert.ok(m.peak<1,`${effect.id} output is bounded without clipping`);assert.ok(m.states.every(s=>s==='running'));
++   metrics.push({effect:effect.id,peak:m.peak,rms:Math.sqrt(m.energy/m.count),voices:m.voices});
++  }
++  assert.equal(await page.evaluate(()=>payments.length),5);assert.ok(new Set(metrics.map(m=>m.voices)).size>=4,'effects have distinct sound layers');
++  // Existing mute button cancels all scheduled sounds immediately and keeps future effects silent.
++  await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);await page.locator('#matgo-vent').tap();await page.locator('.vent-layer').waitFor();
++  await page.locator('#menu').click();await page.locator('#sound').tap();await page.waitForTimeout(100);
++  await page.evaluate(()=>{audioMetrics={peak:0,energy:0,count:0};audioStarts.length=0;});await page.waitForTimeout(850);
++  assert.equal(await page.evaluate(()=>localStorage.getItem('ojjuda-matgo-sound')),'off');assert.equal(await page.evaluate(()=>audioMetrics.peak),0,'mute cancels second shot and tails');
++  await page.locator('.vent-layer').waitFor({state:'detached'});await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);await page.locator('#matgo-vent').tap();await page.locator('.vent-layer').waitFor();
++  assert.equal(await page.evaluate(()=>audioStarts.length),0,'muted effect schedules no audio');
++  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});assert.equal(await page.locator('.vent-layer').count(),0);
++  fs.writeFileSync(path.join(proof,'sound-metrics.json'),JSON.stringify(metrics,null,2));await context.close();
++  const reduced=await screen({muted:true,reduced:true});await reduced.page.setViewportSize({width:320,height:568});await reduced.page.locator('#matgo-vent').tap();await reduced.page.locator('.vent-layer').waitFor();
++  assert.equal(await reduced.page.locator('.vent-weapon').isVisible(),false);assert.equal(await reduced.page.locator('.vent-word').isVisible(),true);assert.equal(await reduced.page.evaluate(()=>audioStarts.length),0);
++  assert.equal(await reduced.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await reduced.page.screenshot({path:path.join(proof,'reduced-motion.png')});
++  await reduced.context.close();assert.deepEqual(errors,[]);console.log('PASS: 5 high-resolution effects; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
++ }finally{await browser.close();}
++})().catch(error=>{console.error(error);process.exitCode=1;});
+diff --git a/world.html b/world.html
+index 7181e36..559ac33 100644
+--- a/world.html
++++ b/world.html
+@@ -142,3 +142,3 @@
+ 
+-<script src="/matgo-bridge.js?v=20261013-tazza1" defer></script>
++<script src="/matgo-bridge.js?v=20261013-vent2" defer></script>
+ <link rel="stylesheet" href="/arcade-rooms.css?v=20261005-chatrooms2">

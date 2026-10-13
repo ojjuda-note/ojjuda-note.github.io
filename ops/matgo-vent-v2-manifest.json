@@ -1,0 +1,20 @@
+{
+  ".github/workflows/regression.yml": "8dd9df8b9cc053791197632b35bbcc192dbbe1e4db81354a00d189385fcd8f42",
+  "games/assets/matgo-vent/README.md": "6fef5815a44f64a2e1ea0cbb5ac33acb7363d8a9bd04a349e2c5166ee6659660",
+  "games/assets/matgo-vent/bomb.png": "2e7ad07d0f12381112777281a1e6234c2ea840681cd3b2dff626a53ab27d726e",
+  "games/assets/matgo-vent/glove.png": "9f952514d3316dbcb8c97d96529a507d826459c1202adb515b25697545f45157",
+  "games/assets/matgo-vent/gun.png": "4f7c53ee79c04b7126bde65aa784ebbc00a04c99928362575f7943d3833a2116",
+  "games/assets/matgo-vent/hammer.png": "6e4682b584eae6a725c14645981bb5d69eb8ee9b27c7016e00f3085d68208cad",
+  "games/matgo-deck-tools.css": "6d501545ba2fdccd221aa555347959a898f64dcb45668d5e66090dd25e67b1c9",
+  "games/matgo-deck-tools.mjs": "05b2539510f3bb6bca2904ebe493b85a663b3e9e260533c2baf4a903e07c7031",
+  "games/matgo-online.html": "01949d1d5641f7b0c40fcea0b9e3b2a0740a2aecbc5a0916ea646dafc75f525c",
+  "games/matgo-online.mjs": "8bdaea32e223d6f5b9200391657afff5475567348694739534b70c0fb21f02af",
+  "games/matgo-vent-sound.mjs": "03d8348d7c07a90f0eb1f7454fcae80f1621259f486736e5b50872964682627d",
+  "games/matgo-view.mjs": "25142601b8ce7221691e12a7ed89ce4ebe379a7ad3be4b05c11a4b8782f8ca0e",
+  "games/matgo.html": "3a30dbdaa94b68aa4715e521a8c6ce941c72a038619655c6355c64bb2816ec71",
+  "matgo-bridge.js": "f43502ef2c977e73a37e53bf63c44ac17d5d98459420478b75e54f850a40e424",
+  "tests/matgo-deck-tools.test.mjs": "81c779d39c163beb1a885c5c71744a71d003eb76d64539ec6414a79c66fe62b6",
+  "tests/matgo-ui.test.cjs": "1d70e69cb950f0ba7245ba73804f2e4ebb1d3ed2e8a667c988251a18086ab40d",
+  "tests/matgo-vent-effects-ui.test.cjs": "73621aff2a3bef872b7876ac5d0600e783f1dad68578da99e34074d02cc28b98",
+  "world.html": "0f10845b8a0ef32b6ac7003fb1a03159674ce15a695f0cca15f546fc02b9fa4a"
+}

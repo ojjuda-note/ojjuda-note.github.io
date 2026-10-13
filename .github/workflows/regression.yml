@@ -111,6 +111,14 @@ jobs:
           node tests/matgo-ui.test.cjs
           node tests/matgo-online-ui.test.cjs
           node tests/matgo-online-effects-ui.test.cjs
+          node tests/matgo-vent-effects-ui.test.cjs
+      - name: Save vent artwork and sound verification
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: matgo-vent-proof
+          path: /tmp/matgo-vent-proof
+          retention-days: 3
 
   friend_invites:
     name: Friend invitation popup and response
