@@ -81,15 +81,18 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     for(const [width,height] of [[320,568],[390,560],[390,844],[768,720]]){
       await f.page.setViewportSize({width,height});await f.page.waitForTimeout(40);
       const top=await f.page.locator('#tazza-mode').boundingBox(),deck=await f.page.locator('.deck .back').boundingBox(),vent=await f.page.locator('#matgo-vent').boundingBox(),hand=await f.page.locator('#handMe').boundingBox();
-      assert.ok(top.y+top.height<=deck.y+1&&deck.y+deck.height<=vent.y,JSON.stringify({top,deck,vent}));
+      assert.ok(top.y+top.height+11<=deck.y&&deck.y+deck.height+11<=vent.y,JSON.stringify({top,deck,vent}));
       assert.ok(vent.x>=0&&vent.x+vent.width<=width&&hand.y+hand.height<=height,JSON.stringify({width,height,vent,hand}));
       assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
       assert.equal(await f.page.locator('#handOp').isVisible(),true,'peek remains visible on a short phone');
       assert.equal(await f.page.locator('#handOp .c').evaluateAll(cards=>cards.every((c,i)=>!i||cards[i-1].getBoundingClientRect().right<=c.getBoundingClientRect().left)),true,'revealed cards do not overlap');
       assert.equal(await f.page.locator('#matgo-vent>span').last().evaluate(el=>getComputedStyle(el).whiteSpace),'nowrap');
+      const gap=await f.page.evaluate(()=>{const left=document.querySelector('#matgo-vent').getBoundingClientRect().left;return Math.min(...[...document.querySelectorAll('.floor .fl .c')].map(c=>left-c.getBoundingClientRect().right));});
+      assert.ok(gap>=12,`floor cards leave a clear control gutter at ${width}px: ${gap}`);
+      fs.mkdirSync('/tmp/matgo-vent-proof',{recursive:true});await f.page.screenshot({path:`/tmp/matgo-vent-proof/layout-${width}-${height}.png`});
     }
     await f.page.setViewportSize({width:390,height:640});
-    assert.equal(await f.page.locator('#matgo-vent .vent-icon svg').count(),1);assert.match(await f.page.locator('#matgo-vent').textContent(),/1쭈/);
+    assert.equal(await f.page.locator('#matgo-vent .vent-icon img').count(),1);assert.match(await f.page.locator('#matgo-vent').textContent(),/1쭈/);
     await f.page.screenshot({path:'/tmp/matgo-tazza-controls.png'});
     await f.page.evaluate(()=>{window.ventEffects=[];new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes)if(n.nodeType===1&&n.classList.contains('vent-layer'))ventEffects.push(n.dataset.effect);}).observe(document.body,{childList:true});});
     await f.page.locator('#matgo-vent').click();await f.page.waitForFunction(()=>ventEffects.length===1);

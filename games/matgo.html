@@ -23,7 +23,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-tazza1">
+<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-vent2">
 </head>
 <body class="matgo-locked">
 <section id="matgo-gate" aria-labelledby="matgo-gate-title">
@@ -35,11 +35,11 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-tazza1";
-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-tazza1";
+import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-vent2";
+import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-vent2";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261010-pibak8";
-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261010-hold1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261013-tazza1";
+import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-vent2";
+import {createWallet} from "./matgo-wallet.mjs?v=20261013-vent2";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -268,7 +268,7 @@ function fitFloor(force){
   const f=$('.floor');if(!f)return;
   const r=f.getBoundingClientRect();
   // A constant reserve breaks the previous CW -> available width -> CW feedback loop.
-  const W=Math.max(60,r.width-24-70),H=Math.max(80,r.height-16);
+  const W=Math.max(60,r.width-108),H=Math.max(80,r.height-16);
   const n=Math.max(12,(game.floor?game.floor.length:8)+1);
   const sameSize=Math.abs(W-LAYOUT_W)<2&&Math.abs(H-LAYOUT_H)<2;
   if(!force&&sameSize&&n<=COLS*ROWS&&LAYOUT_N>=0)return;
@@ -377,7 +377,7 @@ let game=new Game(ui), stackEls=new Map(), logEl=null;
 game.bank[ME]=wallet.current.gold;game.deal();game.over=true;
 let currentRound=null,pendingResult=null,settling=false,refilling=false;
 const tazza=createTazzaQueue();
-const vent=createVentControls({canPlay:()=>access.allowed()&&!game.over&&!ui.dealing&&!roundCheck,purchase:effect=>wallet.vent(currentRound,effect),onError:error=>toast(error.message),onHit:()=>Sound.play('land',{onCards:true})});
+const vent=createVentControls({canPlay:()=>access.allowed()&&!game.over&&!ui.dealing&&!roundCheck,purchase:effect=>wallet.vent(currentRound,effect),onError:error=>toast(error.message)});
 function syncTazza(){
   const button=$('#tazza-mode');if(!button)return;
   const active=game.tazzaMode&&!game.over;
@@ -418,7 +418,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판에 5쭈를 사용해 타짜 효과 한 가지를 받아요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-tazza1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-vent2');};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();

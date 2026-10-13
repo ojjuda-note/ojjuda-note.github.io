@@ -10,7 +10,7 @@ export function heldPairMonths(hand,caps){
 
 // Both modes use the same card size and spacing at every viewport size.
 export function floorLayout(width,height,count){
-  const W=Math.max(60,width-94),H=Math.max(80,height-16),n=Math.max(12,count);
+  const W=Math.max(60,width-108),H=Math.max(80,height-16),n=Math.max(12,count);
   let best=null;
   for(let cols=3;cols<=6;cols++){
     const rows=Math.max(2,Math.ceil(n/cols));if(rows>6)continue;
