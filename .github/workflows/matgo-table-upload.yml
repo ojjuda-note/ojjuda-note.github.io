@@ -1,0 +1,49 @@
+name: Apply and verify Matgo table patch
+on:
+  push:
+    branches: [codex/matgo-gun-upright-20261013]
+    paths: [ops/matgo-table-v1.patch]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/matgo-gun-upright-20261013
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the reviewed text-only patch
+        run: |
+          git apply --check ops/matgo-table-v1.patch
+          git apply ops/matgo-table-v1.patch
+          python - <<'PYVERIFY'
+          import hashlib,json,subprocess
+          from pathlib import Path
+          files=json.loads(Path('ops/matgo-table-v1-manifest.json').read_text())
+          for p,sha in files.items():
+              assert not p.startswith('.github/') and hashlib.sha256(Path(p).read_bytes()).hexdigest()==sha,p
+          subprocess.run(['git','add','--',*files],check=True)
+          PYVERIFY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Apply tested Matgo table flip and enlarged effects'
+          git push origin HEAD:codex/matgo-gun-upright-20261013
+      - run: npm --prefix tests ci --ignore-scripts
+      - working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check purchases and actual vent rendering
+        run: |
+          node tests/matgo-purchases.test.cjs
+          node tests/matgo-deck-tools.test.mjs
+          node tests/matgo-vent-effects-ui.test.cjs
+          node tests/matgo-ui.test.cjs
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: matgo-table-proof
+          path: /tmp/matgo-vent-proof
+          retention-days: 3
