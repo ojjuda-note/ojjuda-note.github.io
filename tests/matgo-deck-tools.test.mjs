@@ -56,27 +56,29 @@ try{
   const tick=ms=>{now+=ms;for(const [id,timer] of [...timers])if(timer.at<=now){timers.delete(id);timer.fn();}};
   let purchases=0,failPurchase=false,errors=0;
   const purchase=async effect=>{purchases++;if(failPurchase)throw Error('쭈가 부족해요.');return {purchase:{effect}};};
-  const vent=createVentControls({canPlay:()=>allowed,purchase,onError:()=>errors++,onHit:()=>hits++});vent.mount();
-  assert.ok(d.querySelector('#matgo-vent .vent-icon svg'),'gun drawing replaces the bomb icon');
+  const sounds=[];let failAsset=false;
+  const vent=createVentControls({canPlay:()=>allowed,purchase,prepare:async()=>{if(failAsset)throw Error('image failed');},sound:{unlock(){},stop(){},destroy(){},play:(id,timing)=>sounds.push({id,timing})},onError:()=>errors++,onHit:()=>hits++});vent.mount();
+  assert.ok(d.querySelector('#matgo-vent .vent-icon img[src$="gun.png"]'),'gun drawing replaces the bomb icon');
   assert.equal(d.querySelector('#matgo-vent small').textContent,'1쭈');
-  failPurchase=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();
+  failAsset=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(purchases,0,'art failure never charges');assert.equal(sounds.length,0);failAsset=false;errors=0;
+  failPurchase=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
   assert.equal(errors,1);assert.equal(d.querySelector('.vent-layer'),null,'no animation on declined payment');failPurchase=false;
   const preserved=JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]);
   for(const effect of VENT_EFFECTS){
-    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();
+    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
     assert.equal(d.querySelector('.vent-layer')?.dataset.effect,effect.id);
     assert.equal(d.getElementById('matgo-vent').disabled,true);
-    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelectorAll('.vent-layer').length,1,'rapid taps do not pile up effects');
-    tick(400);assert.ok(d.querySelector('.zone.op .who b').classList.contains('vent-hit'));
-    tick(1000);assert.equal(d.querySelector('.vent-layer'),null);
-    tick(500);assert.equal(d.getElementById('matgo-vent').disabled,false);
+    d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelectorAll('.vent-layer').length,1,'rapid taps do not pile up effects');
+    tick(effect.hits.at(-1)+1);assert.ok(d.querySelector('.zone.op .who b').classList.contains('vent-hit'));
+    tick(effect.duration-effect.hits.at(-1));assert.equal(d.querySelector('.vent-layer'),null);
+    tick(200);assert.equal(d.getElementById('matgo-vent').disabled,false);
   }
-  assert.equal(hits,5);assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
-  allowed=false;vent.sync();d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer'),null);
+  assert.equal(hits,6);assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
+  allowed=false;vent.sync();d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer'),null);
   // Online rerenders replace the entire board. A single delegated listener survives.
   allowed=true;d.querySelector('.floor').outerHTML='<div class="floor"><div class="deck"><div class="back"></div><small>20장</small></div></div>';
   vent.mount();assert.equal(d.querySelectorAll('#matgo-vent').length,1);assert.equal(d.querySelector('.deck .tazza-button'),null,'online control does not introduce tazza');
-  d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer').dataset.effect,'gun');
+  d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer').dataset.effect,'gun');
   vent.destroy();assert.equal(d.querySelector('.vent-layer'),null);assert.equal(timers.size,0);
   console.log('PASS: real solo module boots; next-round toggle/cancel/failure/one-shot wiring; 5 effects, cooldown, cleanup, online remount and unchanged game state');
 }finally{
