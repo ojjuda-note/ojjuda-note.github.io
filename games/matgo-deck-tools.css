@@ -16,6 +16,8 @@
 /* Material artwork, separate anticipation / contact / afterglow stages. */
 .vent-icon img{transform:scaleX(-1);object-fit:contain;filter:drop-shadow(0 1px 1px #0009)}
 .vent-layer{--warm:#ffd470;position:fixed;inset:0;z-index:36;overflow:hidden;pointer-events:none;contain:layout paint}
+/* Weapons, trails and impact lettering must cover the reaction portrait. */
+.vent-layer>:not(.cpu-reaction){z-index:2}
 .vent-weapon{position:absolute;left:var(--sx);top:var(--sy);width:var(--weapon-size,195px);height:var(--weapon-size,195px);margin:calc(var(--weapon-size,195px) * -.5);filter:drop-shadow(0 9px 5px #15101c66);will-change:transform,opacity}
 .vent-weapon img{width:100%;height:100%;object-fit:contain;display:block}
 .vent-impact{position:absolute;left:var(--tx);top:var(--ty);width:1px;height:1px;transform:scale(1.3)}
