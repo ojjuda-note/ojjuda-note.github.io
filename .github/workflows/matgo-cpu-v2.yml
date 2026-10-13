@@ -1,0 +1,51 @@
+name: Verify CPU expressions and next-round reservation
+on:
+  push:
+    branches: [codex/matgo-cpu-character-20261013]
+    paths: [ops/matgo-cpu-v2.patch]
+permissions:
+  contents: write
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/matgo-cpu-character-20261013
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed text edits
+        run: |
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          manifest=json.loads(Path('ops/matgo-cpu-v2-manifest.json').read_text())
+          subprocess.run(['git','apply','--check','ops/matgo-cpu-v2.patch'],check=True)
+          subprocess.run(['git','apply','ops/matgo-cpu-v2.patch'],check=True)
+          for name,digest in manifest.items():
+              assert hashlib.sha256(Path(name).read_bytes()).hexdigest()==digest,name
+          subprocess.run(['git','config','user.name','github-actions[bot]'],check=True)
+          subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
+          subprocess.run(['git','add','--']+list(manifest),check=True)
+          subprocess.run(['git','commit','-m','Clarify next-round-only tazza reservation and image decoding'],check=True)
+          subprocess.run(['git','push','origin','HEAD:refs/heads/codex/matgo-cpu-character-20261013'],check=True)
+          PY
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check solo reservation and active benefit
+        run: node tests/matgo-ui.test.cjs
+      - name: Check opponent expressions
+        if: ${{ !cancelled() }}
+        run: node tests/matgo-vent-effects-ui.test.cjs
+      - name: Save actual game screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: matgo-cpu-v2-proof
+          path: /tmp/matgo-vent-proof
+          retention-days: 3

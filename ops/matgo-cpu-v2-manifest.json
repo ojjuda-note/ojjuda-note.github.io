@@ -1,0 +1,8 @@
+{
+  "games/matgo-deck-tools.css": "601396950a48fbfb98e73c5f563a9d6d4fc887b139bee59b4ec1074221202208",
+  "games/matgo-opponent.mjs": "30a024d4e918897eb5442b26c6f3eb7da4883060a1a6d19cf50d85c89d3e4f54",
+  "games/matgo.html": "4b04d032f7d42d3bcc804fa2550a3b938b2b94be92cd6db464bea0be3d1b1fed",
+  "tests/matgo-deck-tools.test.mjs": "4c72b61fda519cb8ca0762cc6446239e4ab159ebf3fdb47ff6de318e4f96f15a",
+  "tests/matgo-ui.test.cjs": "6e15f2f0a08735adcbac6007036ba81dda1dc64b6e51fae209612472c922a2b5",
+  "tests/matgo-vent-effects-ui.test.cjs": "77e1b8daae20790adbe80f16c0dac164d49341d251b9cae4eef6d2ab9710e563"
+}

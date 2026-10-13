@@ -1,0 +1,86 @@
+diff --git a/games/matgo-deck-tools.css b/games/matgo-deck-tools.css
+index be8ca85..58473d1 100644
+--- a/games/matgo-deck-tools.css
++++ b/games/matgo-deck-tools.css
+@@ -7,6 +7,5 @@
+ .tazza-button,.vent-button{width:66px;height:36px;min-height:36px;flex:0 0 36px;border-radius:11px;border:1px solid #ffdf8999;box-shadow:0 3px 6px #0004;line-height:1.15;padding:3px 2px;touch-action:manipulation}
+-.tazza-button{margin-bottom:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(#ffe3a0,#edbd58);color:#462d15;font-size:12px;font-weight:700}
++.tazza-button{margin-bottom:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(#61516f,#3e334e);color:#fff0cf;border-color:#c8addb88;font-size:12px;font-weight:700}
+ .tazza-button small{font-size:9px;color:inherit;min-height:0;line-height:10px;background:none;width:auto}
+ .tazza-button[aria-pressed=true]{background:linear-gradient(#b6f6c4,#58c792);border-color:#d9ffe4;box-shadow:0 0 0 2px #9eeabc44,0 3px 6px #0004}
+-.tazza-button.is-active:not([aria-pressed=true]){background:linear-gradient(#e8ceff,#bd94e9)}
+ .vent-button{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:3px;background:linear-gradient(#695180,#3c304f);color:#fff3e0;border-color:#d8aaf077;font-size:11px}
+diff --git a/games/matgo-opponent.mjs b/games/matgo-opponent.mjs
+index ce57e9f..10c31bf 100644
+--- a/games/matgo-opponent.mjs
++++ b/games/matgo-opponent.mjs
+@@ -3,3 +3,3 @@ const portraitURL=expression=>new URL(`./assets/matgo-opponent/${expression}-v1.
+ export function cpuPortraitHTML(){
+-  return `<span class="cpu-portrait" role="img" aria-label="컴퓨터 상대 캐릭터"><img class="cpu-face-normal" src="${portraitURL('normal')}" width="1254" height="1254" alt="" draggable="false" decoding="async"><img class="cpu-face-surprised" src="${portraitURL('surprised')}" width="1254" height="1254" alt="" draggable="false" decoding="async"></span>`;
++  return `<span class="cpu-portrait" role="img" aria-label="컴퓨터 상대 캐릭터"><img class="cpu-face-normal" src="${portraitURL('normal')}" width="1254" height="1254" alt="" draggable="false" decoding="sync"><img class="cpu-face-surprised" src="${portraitURL('surprised')}" width="1254" height="1254" alt="" draggable="false" decoding="sync"></span>`;
+ }
+diff --git a/games/matgo.html b/games/matgo.html
+index 0a848e0..f8cdb44 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -387,7 +387,7 @@ function syncTazza(){
+   const benefit=$('#tazza-benefit'),name=active?TAZZA_MODES[game.tazzaMode]:'';
+-  if(benefit){benefit.hidden=!name;benefit.textContent=name?'타짜 · '+name:'';benefit.title=name?TAZZA_DETAILS[game.tazzaMode]:'';benefit.setAttribute('aria-label',name?'현재 타짜모드 혜택: '+name:'타짜모드 혜택 없음');}
++  if(benefit){benefit.hidden=!name;benefit.textContent=name?'이번 판 · '+name:'';benefit.title=name?TAZZA_DETAILS[game.tazzaMode]:'';benefit.setAttribute('aria-label',name?'현재 타짜모드 혜택: '+name:'타짜모드 혜택 없음');}
+   button.setAttribute('aria-pressed',String(tazza.queued));
+-  button.classList.toggle('is-active',active);
++  button.dataset.state=tazza.queued?'queued':'idle';
+   button.disabled=tazza.starting||ui.dealing||!access.allowed();
+-  button.querySelector('small').textContent=tazza.queued?'예약 · 5쭈':active?TAZZA_MODES[game.tazzaMode]:'다음 판 · 5쭈';
++  button.querySelector('small').textContent=tazza.queued?'다음 판 예약':'다음 판 · 5쭈';
+   button.setAttribute('aria-label',tazza.queued?'타짜모드: 다음 판 시작 시 5쭈. 누르면 예약 취소':'타짜모드 5쭈: 다음 한 판에 무작위 효과');
+@@ -423,3 +423,3 @@ function mount(){
+   logEl=$('#log');
+-  $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판에 5쭈를 사용해 타짜 효과 한 가지를 받아요.':'타짜모드 예약을 취소했어요.',1800);};
++  $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
+   vent.mount();syncTazza();
+diff --git a/tests/matgo-deck-tools.test.mjs b/tests/matgo-deck-tools.test.mjs
+index ba2a16b..984f142 100644
+--- a/tests/matgo-deck-tools.test.mjs
++++ b/tests/matgo-deck-tools.test.mjs
+@@ -49,6 +49,6 @@ try{
+   const benefit=d.getElementById('tazza-benefit');assert.ok(benefit.hidden);
+-  for(const [mode,name] of Object.entries(TAZZA_MODES)){t.game.tazzaMode=mode;t.render();assert.equal(benefit.hidden,false);assert.equal(benefit.textContent,'타짜 · '+name);assert.equal(benefit.nextElementSibling.id,'mePts');}
++  for(const [mode,name] of Object.entries(TAZZA_MODES)){t.game.tazzaMode=mode;t.render();assert.equal(benefit.hidden,false);assert.equal(benefit.textContent,'이번 판 · '+name);assert.equal(benefit.nextElementSibling.id,'mePts');}
+   t.game.tazzaMode=null;t.render();assert.ok(benefit.hidden);
+   const before=JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]);
+-  button.click();assert.equal(button.getAttribute('aria-pressed'),'true');
++  button.click();assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(button.querySelector('small').textContent,'다음 판 예약');assert.equal(t.game.tazzaMode,null);assert.ok(benefit.hidden,'a reservation does not activate the current round');
+   assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),before,'current hand, deck, actions and gold stay unchanged');
+@@ -58,3 +58,3 @@ try{
+   d.querySelectorAll('.modal').forEach(el=>el.remove());
+-  await t.startRound();assert.equal(t.game.actions[0].type,'tazza');assert.equal(t.tazza.queued,false);assert.equal(button.querySelector('small').textContent,'상대 패 보기');
++  await t.startRound();assert.equal(t.game.actions[0].type,'tazza');assert.equal(t.tazza.queued,false);assert.equal(button.querySelector('small').textContent,'다음 판 · 5쭈');assert.equal(button.dataset.state,'idle');assert.equal(benefit.textContent,'이번 판 · 상대 패 보기');
+   assert.equal(d.querySelectorAll('#handOp.tazza-peek .c[data-id]').length,10,'peek shows opponent cards');
+diff --git a/tests/matgo-ui.test.cjs b/tests/matgo-ui.test.cjs
+index 88e9604..60e4037 100644
+--- a/tests/matgo-ui.test.cjs
++++ b/tests/matgo-ui.test.cjs
+@@ -80,4 +80,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+     assert.equal(await f.page.evaluate(()=>JSON.stringify(matgoTest.game.hand)),before);
++    assert.equal(await f.page.locator('#tazza-mode small').textContent(),'다음 판 예약');
++    assert.equal(await f.page.locator('#tazza-benefit').isVisible(),false);
++    assert.equal(f.state.requests.some(r=>r.action==='tazza_start'),false,'clicking the reservation never buys or changes the current round');
+     f.state.round=null;await f.page.evaluate(async()=>{matgoTest.game.over=true;await matgoTest.startRound();});
+-    assert.equal(await f.page.locator('#tazza-benefit').textContent(),'타짜 · 상대 패 보기');
++    assert.equal(await f.page.locator('#tazza-benefit').textContent(),'이번 판 · 상대 패 보기');
++    assert.equal(await f.page.locator('#tazza-mode').getAttribute('aria-pressed'),'false','paid current round does not reserve another round');
++    assert.equal(await f.page.locator('#tazza-mode small').textContent(),'다음 판 · 5쭈');
+     assert.equal(f.state.coins,15);assert.equal(await f.page.locator('#handOp.tazza-peek .c[data-id]').count(),10);
+diff --git a/tests/matgo-vent-effects-ui.test.cjs b/tests/matgo-vent-effects-ui.test.cjs
+index 0f6d5b5..983d55b 100644
+--- a/tests/matgo-vent-effects-ui.test.cjs
++++ b/tests/matgo-vent-effects-ui.test.cjs
+@@ -157,3 +157,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
++   const faces=await p.locator('.cpu-portrait img').evaluateAll(imgs=>imgs.map(img=>{const style=getComputedStyle(img),r=img.getBoundingClientRect();return {class:img.className,src:img.currentSrc,complete:img.complete,naturalWidth:img.naturalWidth,opacity:style.opacity,visibility:style.visibility,display:style.display,width:r.width,height:r.height,x:r.x,y:r.y};}));
++   fs.writeFileSync(path.join(proof,tableOnly?'cpu-table-faces.json':'cpu-gun-faces.json'),JSON.stringify(faces,null,2));
+    await p.screenshot({path:path.join(proof,tableOnly?'cpu-table-surprised.png':'cpu-gun-surprised.png')});
++   await p.waitForTimeout(250);
++   await p.screenshot({path:path.join(proof,tableOnly?'cpu-table-surprised-later.png':'cpu-gun-surprised-later.png')});
+    await p.locator('.vent-layer').waitFor({state:'detached'});
