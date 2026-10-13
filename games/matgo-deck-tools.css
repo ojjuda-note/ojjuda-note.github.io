@@ -10,7 +10,7 @@
 .tazza-button[aria-pressed=true]{background:linear-gradient(#b6f6c4,#58c792);border-color:#d9ffe4;box-shadow:0 0 0 2px #9eeabc44,0 3px 6px #0004}
 .tazza-button.is-active:not([aria-pressed=true]){background:linear-gradient(#e8ceff,#bd94e9)}
 .vent-button{display:flex;align-items:center;justify-content:center;gap:3px;background:linear-gradient(#695180,#3c304f);color:#fff3e0;border-color:#d8aaf077;font-size:11px}
-.vent-icon{width:27px;height:27px;flex-shrink:0}.vent-icon svg{width:100%;height:100%;display:block}.vent-button small{display:block;width:auto;font-size:9px;min-height:0;line-height:11px;background:none;color:#ffe3a0}
+.vent-button>span:last-child{font-size:10px;white-space:nowrap;line-height:12px}.vent-icon{width:24px;height:24px;flex-shrink:0}.vent-icon svg{width:100%;height:100%;display:block}.vent-button small{display:block;width:auto;font-size:9px;min-height:0;line-height:11px;background:none;color:#ffe3a0}
 .tazza-button:disabled,.vent-button:disabled{opacity:.55;cursor:default}
 .tazza-button:focus-visible,.vent-button:focus-visible{outline:3px solid white;outline-offset:2px}
 .tazza-button:active:not(:disabled),.vent-button:active:not(:disabled){transform:translateY(1px)}
@@ -44,4 +44,4 @@
 @media(prefers-reduced-motion:reduce){.vent-weapon,.vent-projectile,.vent-stars{display:none}.vent-hit{animation:none}.vent-impact{animation:none;opacity:1}.vent-burst{background:#ddbd75}}
 
 #app .hand.op.tazza-peek{display:flex;gap:2px;justify-content:center;min-height:39px}
-#app .hand.op.tazza-peek .c{width:26px;height:39px;flex:0 0 26px;opacity:1;transform:none}
+#app .hand.op.tazza-peek .c{width:26px;height:39px;flex:0 0 26px;margin-right:0;opacity:1;transform:none}
