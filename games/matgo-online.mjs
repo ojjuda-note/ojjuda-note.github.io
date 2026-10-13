@@ -1,9 +1,10 @@
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
 import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261010-hold1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261010-refill1';
+import {createWallet} from './matgo-wallet.mjs?v=20261013-tazza1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
+import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-tazza1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -14,6 +15,7 @@ let dialog=null,dialogKey='',eventTimer,eventQueue=[],showingEvent=false;
 let friendInviteId=null;
 let arcadeRoom=null,publicLobby=false,animating=false,presentationVersion=0;
 const sound=createOnlineSound();
+const vent=createVentControls({canPlay:()=>!closed&&access.allowed()&&room?.status==='active',purchase:effect=>wallet.vent(room.id,effect),onError:error=>toast(error.message),onHit:()=>sound.play('land',{onCards:true})});
 const motion=createOnlineMotion({cardSVG,backSVG,sound,onEvent:queueEvent,onLayout:fitBoard});
 function cancelPresentation(){presentationVersion++;motion.cancel();animating=false;sound.cancel();clearEvents();}
 const entryParams=new URLSearchParams(location.search);
@@ -108,7 +110,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261006-parity1');return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-tazza1');return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -175,7 +177,7 @@ function showLobby(){
   $('#create small').textContent='제목을 정하고 공개하기 →';
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261006-parity1');};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-tazza1');};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -191,6 +193,7 @@ function fitBoard(){
   stacks.forEach(stack=>{let slot=Number(stack.dataset.slot);if(!Number.isInteger(slot)||slot<0||slot>=layout.order.length||used.has(slot))slot=layout.order.find(i=>!used.has(i));used.add(slot);stack.dataset.slot=slot;const p=layout.position(slot);stack.style.left=p.x+'px';stack.style.top=p.y+'px';stack.querySelectorAll('.c').forEach((c,j)=>c.style.transform=`translate(${Math.min(3,j)*7*layout.cw/52}px,${-Math.min(3,j)*4*layout.cw/52}px) rotate(${j*6}deg)`);});
 }
 function updateEnabled(){
+  vent.sync();
   $('#exit').disabled=busy;
   if(!room?.game)return;
   const playable=room.status==='active'&&!room.bots[room.seat]&&room.game.prompt?.type==='play'&&!busy&&!pendingMove&&!animating;
@@ -239,7 +242,7 @@ function renderRoom(){
     if($('#flip'))$('#flip').onclick=()=>send({type:'play',card:null});
     if($('#gukjin'))$('#gukjin').onclick=()=>send({type:'gukjin'});
     document.querySelectorAll('.caps-own .cap').forEach((el,i)=>{const show=()=>{if(busy||animating||room.game.prompt?.type!=='play')return;const cards=g.caps[me].filter([c=>c.k==='gwang',c=>c.k==='yul'&&!c.asPi,c=>c.k==='tti',isPi][i]);if(!cards.length)return;modal('<h2>내가 먹은 패</h2><div class="captured-expanded">'+cards.map(cardSVG).join('')+'</div><button id="captured-close" class="btn">닫기</button>',{'captured-close':()=>{promptKey='';renderRoom();}},'turn:captured');};el.onclick=show;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}};});
-    fitCaps();fitBoard();
+    vent.mount();fitCaps();fitBoard();
   }
   $('#my-score').textContent=score(g.caps[me]).pts+'점';
   updateEnabled();tick();

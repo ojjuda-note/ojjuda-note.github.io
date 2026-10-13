@@ -1,0 +1,57 @@
+const assert=require('node:assert/strict');
+const {fixture}=require('./matgo-online-fixture.cjs');
+(async()=>{
+  const f=await fixture({stakes:true,refill:true,fun:true}),{db,call,A,B,C,MINOR}=f;
+  const id=()=>crypto.randomUUID();
+  const start=(actor,request=id())=>call(actor,{action:'tazza_start',request_id:request,stakes_version:1,rules_version:9});
+  const vent=(actor,ref,request=id(),effect='gun')=>call(actor,{action:'vent',request_id:request,reference_id:ref,effect});
+  const settle=async(actor,round)=>db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,5000,0::smallint,1)",[actor,round]);
+  const coins=async actor=>(await db.query('select coins from public.user_private where user_id=$1',[actor])).rows[0].coins;
+  try{
+    assert.equal((await start(MINOR)).error,'adult_required');
+    assert.equal((await call(A,{action:'tazza_start',request_id:id()})).status,400);
+    assert.equal((await vent(A,id())).error,'no_active_round');
+    assert.equal(await coins(A),20);
+    const request=id(),first=await start(A,request);
+    assert.equal(first.status,200);assert.equal(first.coins,15);assert.ok(first.round.tazza_mode);assert.equal(first.purchase.price,5);
+    const retry=await start(A,request);assert.equal(retry.round.id,first.round.id);assert.equal(retry.round.tazza_mode,first.round.tazza_mode);assert.equal(retry.coins,15);assert.equal(retry.duplicate,true);
+    assert.equal((await start(A)).coins,15,'separate tabs resume the same paid round');
+    assert.equal((await call(A,{action:'start',stakes_version:1})).error,'client_update_required');
+    assert.equal((await call(A,{action:'start',stakes_version:1,rules_version:9})).round.tazza_mode,first.round.tazza_mode);
+    assert.equal((await start(B,request)).error,'purchase_mismatch');
+    assert.equal(await coins(B),20);
+    const vId=id();
+    const [v1,v2]=await Promise.all([vent(A,first.round.id,vId),vent(A,first.round.id,vId)]);
+    assert.equal(v1.coins,14);assert.equal(v2.coins,14);assert.equal(v2.duplicate,true);
+    assert.equal((await vent(A,first.round.id,vId,'hammer')).error,'purchase_mismatch');
+    assert.equal((await vent(B,first.round.id)).error,'no_active_round');
+    const denied=await call(A,{action:'settle',round_id:first.round.id,actions:[{type:'tazza',p:0,mode:first.round.tazza_mode}],rules_version:8});
+    assert.equal(denied.error,'client_update_required');
+    await settle(A,first.round.id);
+    assert.equal((await start(A,request)).error,'purchase_completed');
+    assert.equal((await vent(A,first.round.id,vId)).coins,14,'lost cosmetic response can be retried after the round ended');
+    assert.equal((await vent(A,first.round.id)).error,'no_active_round');
+    const beforeBag=(await db.query('select remaining from ojjuda_matgo_internal.fun_modes where user_id=$1',[A])).rows[0].remaining;
+    await db.query('update public.user_private set coins=4 where user_id=$1',[A]);
+    assert.equal((await start(A)).error,'insufficient_zzu');assert.equal(await coins(A),4);
+    assert.equal((await call(A,{action:'status'})).round,null,'failed purchase rolls back the created round');
+    assert.deepEqual((await db.query('select remaining from ojjuda_matgo_internal.fun_modes where user_id=$1',[A])).rows[0].remaining,beforeBag,'failed purchase does not use a random mode');
+    await db.query('update public.user_private set coins=100 where user_id=$1',[A]);
+    const modes=[first.round.tazza_mode];
+    for(let i=0;i<15;i++){const s=await start(A);assert.equal(s.status,200);modes.push(s.round.tazza_mode);await settle(A,s.round.id);}
+    assert.equal(new Set(modes.slice(0,8)).size,8);assert.equal(new Set(modes.slice(8,16)).size,8);assert.equal(await coins(A),25);
+    const normal=await call(A,{action:'start',stakes_version:1,rules_version:9});
+    assert.equal(normal.round.tazza_mode,null);assert.equal((await start(A)).error,'round_in_progress');assert.equal(await coins(A),25);
+    await db.query('update public.user_private set coins=0 where user_id=$1',[A]);
+    assert.equal((await vent(A,normal.round.id)).error,'insufficient_zzu');assert.equal(await coins(A),0);
+    await settle(A,normal.round.id);
+    const room=await call(B,{action:'online_create',stakes_version:1});
+    assert.equal((await vent(B,room.room.id)).error,'no_active_round','waiting room cannot charge');
+    await call(C,{action:'online_join',code:room.room.code,stakes_version:1});
+    assert.equal((await start(B)).error,'match_in_progress');
+    assert.equal((await vent(B,room.room.id)).coins,19);assert.equal((await vent(A,room.room.id)).error,'no_active_round');
+    await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query("select public.matgo_fun_service($1,'tazza',$2)",[A,id()]);}),/permission denied/);
+    await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role anon');await tx.exec('select * from ojjuda_matgo_internal.fun_purchases');}),/permission denied/);
+    console.log('PASS: atomic 5/1 ZU purchases, 8-mode shuffle bags, retry/concurrent deduplication, ownership, insufficient balance rollback, active-match checks, legacy protection and service-only permissions');
+  }finally{await f.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});
