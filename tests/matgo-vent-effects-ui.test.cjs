@@ -49,7 +49,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   const metrics=[];
   const floorSnapshot=()=>page.evaluate(()=>({game:ventTest.snapshot(),piles:[...document.querySelectorAll('#app .fl > .stack')].map(s=>({cards:[...s.querySelectorAll('[data-face]')].map(c=>c.dataset.face),slot:s.dataset.slot}))}));
   for(const effect of VENT_EFFECTS){
-   const before=await floorSnapshot();
+   const before=await floorSnapshot();let airbornePiles;
    if(effect.id==='table')await page.locator('#app .fl > .stack').evaluateAll(stacks=>stacks.forEach(s=>s.style.visibility='visible')); // Solo dealing leaves explicit visibility on each pile.
    await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);
    await page.evaluate(()=>{audioMetrics={peak:0,energy:0,count:0};audioStarts.length=0;});
@@ -75,6 +75,8 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    if(effect.id==='table'){
     assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4,'cards in a floor pile fly separately');
     assert.equal(await page.locator('.vent-flying-card[data-kind=deck]').count(),18,'draw-pile backs join the scatter');
+    airbornePiles=(await floorSnapshot()).piles;
+    assert.ok(airbornePiles.every((p,i)=>p.slot!==before.piles[i].slot),'new landing slots are chosen while cards are airborne');
     assert.equal(await page.locator('.vent-flying-card[data-kind=deck] [data-face]').count(),0,'no hidden draw card is exposed');
     assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'hidden');
     assert.ok(await page.locator('#app .fl > .stack').evaluateAll(stacks=>stacks.every(s=>getComputedStyle(s).visibility==='hidden')),'explicitly visible dealt piles stay hidden under the flying copies');
@@ -99,6 +101,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    assert.deepEqual(after.piles.map(p=>p.cards),before.piles.map(p=>p.cards),'pile contents and order stay unchanged');
    if(effect.id==='table'){
     assert.ok(after.piles.every((p,i)=>p.slot!==before.piles[i].slot),'each pile lands in a different display slot');
+    assert.deepEqual(after.piles,airbornePiles,'cleanup keeps the same landing slots without a second shuffle');
     assert.equal(await page.locator('body.matgo-table-flipping').count(),0);
     assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'visible');
     await page.evaluate(()=>ventTest.redraw());assert.deepEqual(await floorSnapshot(),after,'positions survive ordinary online redraws');
