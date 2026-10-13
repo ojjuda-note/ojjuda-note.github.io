@@ -1,0 +1,355 @@
+diff --git a/games/matgo-deck-tools.css b/games/matgo-deck-tools.css
+index 445c7d8..b01d95b 100644
+--- a/games/matgo-deck-tools.css
++++ b/games/matgo-deck-tools.css
+@@ -79,12 +79,20 @@
+ 
+-/* The board flips, while unchanged card piles arc to new display slots. */
++/* Individual cards tumble, flutter, then return to their unchanged piles. */
+ body.matgo-table-flipping #app .floor,body.matgo-table-flipping #app .floor *{visibility:hidden!important}
+ body.matgo-table-flipping #app .floor .stack{transition:none}
+-.vent-table{perspective:850px}.vent-table .vent-impact{z-index:5;--hit:1500ms}
+-.vent-board-copy{position:absolute!important;min-height:0!important;flex:none!important;transform-origin:50% 85%;animation:vent-table-turn 1900ms both;will-change:transform;visibility:visible!important}
+-.vent-loose-stack{position:absolute;z-index:3;--land-x:0px;--land-y:0px;animation:vent-table-cards 1900ms both;filter:drop-shadow(5px 12px 6px #130d1a88)}
+-.vent-loose-stack .stack{pointer-events:none!important;transition:none!important;border:0;padding:0;background:none;opacity:1}.vent-loose-stack .c{display:block;transition:none!important}
+-.vent-loose-stack .ppuk{position:absolute;z-index:3;right:-10px;top:-10px;background:var(--red);color:white;padding:2px 7px;border-radius:999px;font-size:11px;white-space:nowrap}
+-@keyframes vent-table-turn{0%,10%{transform:translateY(0) rotateX(0) rotateZ(0)}25%{transform:translateY(12px) rotateX(-12deg) rotateZ(2deg)}48%{transform:translateY(-35px) rotateX(155deg) rotateZ(-9deg);filter:brightness(.6)}63%{transform:translateY(-12px) rotateX(125deg) rotateZ(-4deg);filter:brightness(.7)}79%{transform:translateY(0) rotateX(0) rotateZ(0);filter:brightness(1)}84%{transform:translateY(5px) rotateX(-3deg)}92%,100%{transform:none}}
+-@keyframes vent-table-cards{0%,14%{transform:none}38%{transform:translate(var(--lift-x),var(--lift-y)) rotate(var(--tumble)) scale(1.3)}53%{transform:translate(var(--lift-x),calc(var(--lift-y) - 15px)) rotate(calc(var(--tumble) * -1)) scale(1.25)}79%{transform:translate(var(--land-x),var(--land-y)) rotate(0) scale(1)}85%{transform:translate(var(--land-x),calc(var(--land-y) - 8px)) rotate(-3deg)}94%,100%{transform:translate(var(--land-x),var(--land-y)) rotate(0) scale(1)}}
+-@media(prefers-reduced-motion:reduce){.vent-board-copy,.vent-loose-stack{display:none}.vent-table .vent-impact{transform:none}}
++.vent-card-source{visibility:hidden!important}
++.vent-table{perspective:850px}.vent-table .vent-impact{z-index:100}
++.vent-board-copy{position:absolute!important;min-height:0!important;flex:none!important;transform-origin:50% 85%;animation:vent-table-turn 2500ms both;will-change:transform;visibility:visible!important}
++.vent-flying-card{position:absolute;--land-x:0px;--land-y:0px;animation:vent-card-scatter 2700ms var(--delay) both;animation-timing-function:cubic-bezier(.3,.05,.25,1);transform-origin:center;filter:drop-shadow(4px 8px 4px #130d1a77);will-change:transform;pointer-events:none}
++.vent-card-art,.vent-card-art svg{display:block;width:100%;height:100%;border-radius:inherit}
++@keyframes vent-table-turn{0%,10%{transform:none}24%{transform:translateY(12px) rotateX(-12deg) rotateZ(2deg)}42%{transform:translateY(-35px) rotateX(155deg) rotateZ(-9deg);filter:brightness(.6)}58%{transform:translateY(-12px) rotateX(125deg) rotateZ(-4deg);filter:brightness(.7)}74%{transform:none;filter:brightness(1)}81%{transform:translateY(5px) rotateX(-3deg)}91%,100%{transform:none}}
++@keyframes vent-card-scatter{
++  0%,11%{transform:rotate(var(--rest-angle))}
++  33%{transform:translate(var(--fly-x),var(--fly-y)) rotate(var(--spin-a)) rotateY(165deg) rotateX(var(--tilt)) scale(calc(var(--air-scale) * .94))}
++  49%{transform:translate(var(--drift-x),var(--drift-y)) rotate(var(--spin-b)) rotateY(345deg) rotateX(calc(var(--tilt) * -1)) scale(var(--air-scale))}
++  65%{transform:translate(var(--gather-x),var(--gather-y)) rotate(var(--spin-c)) rotateY(565deg) rotateX(var(--tilt)) scale(calc(var(--air-scale) * .84))}
++  85%{transform:translate(var(--land-x),var(--land-y)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
++  91%{transform:translate(var(--land-x),calc(var(--land-y) - 4px)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
++  98%,100%{transform:translate(var(--land-x),var(--land-y)) rotate(var(--land-angle)) rotateY(720deg) scale(1)}
++}
++@media(prefers-reduced-motion:reduce){.vent-board-copy,.vent-flying-card{display:none}.vent-table .vent-impact{transform:none}}
+diff --git a/games/matgo-deck-tools.mjs b/games/matgo-deck-tools.mjs
+index 2e8a9df..587d875 100644
+--- a/games/matgo-deck-tools.mjs
++++ b/games/matgo-deck-tools.mjs
+@@ -1,3 +1,3 @@
+-import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-table1';
+-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-table1';
++import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-table2';
++import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-table2';
+ export const VENT_EFFECTS = [
+@@ -8,3 +8,3 @@ export const VENT_EFFECTS = [
+   {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300},
+-  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[700,1500],duration:2200}
++  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[850,2300],duration:3200}
+ ];
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index fb44382..4cfa8a5 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -20,3 +20,3 @@
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table2">
+ </head>
+@@ -33,3 +33,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261013-table1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261013-table2"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 6eeddb5..06c396b 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -1,9 +1,9 @@
+-import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-table1';
++import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-table2';
+ import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261010-pibak8';
+-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-table1';
++import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-table2';
+ import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
+-import {createWallet} from './matgo-wallet.mjs?v=20261013-table1';
++import {createWallet} from './matgo-wallet.mjs?v=20261013-table2';
+ import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
+ import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
+-import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-table1';
++import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-table2';
+ const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
+@@ -114,3 +114,3 @@ async function accept(next){
+   if(closed)return;
+-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-table1');return;}
++  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-table2');return;}
+   if(room&&room.id===next.id&&next.version<room.version)return;
+@@ -181,3 +181,3 @@ function showLobby(){
+   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
+-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-table1');};
++  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-table2');};
+ }
+diff --git a/games/matgo-table-flip.mjs b/games/matgo-table-flip.mjs
+index 7e58b94..5d91bd8 100644
+--- a/games/matgo-table-flip.mjs
++++ b/games/matgo-table-flip.mjs
+@@ -11,7 +11,42 @@ export function floorStackIds(stack){
+ }
++const cardId=el=>{const marked=el.matches('[data-id],[data-face]')?el:el.querySelector('[data-id],[data-face]');return marked?.dataset.id??marked?.dataset.face;};
++const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
++function pose(el){
++  const rect=el.getBoundingClientRect(),style=window.getComputedStyle(el);
++  const w=parseFloat(style.width)||el.clientWidth||rect.width,h=parseFloat(style.height)||el.clientHeight||rect.height;
++  const matrix=style.transform.match(/^matrix\(([^)]+)\)$/)?.[1].split(',').map(Number);
++  return {x:rect.left+rect.width/2-w/2,y:rect.top+rect.height/2-h/2,w,h,angle:matrix?Math.atan2(matrix[1],matrix[0])*180/Math.PI:0,style};
++}
++function copyCard(source,style){
++  const copy=source.cloneNode(true);copy.setAttribute('class','vent-card-art');
++  for(const el of [copy,...copy.querySelectorAll('*')]){
++    for(const name of ['id','data-id','data-face','data-card','tabindex'])el.removeAttribute(name);
++  }
++  Object.assign(copy.style,{position:'absolute',inset:'0',left:'0',top:'0',width:'100%',height:'100%',margin:'0',padding:'0',transform:'none',visibility:'visible',opacity:'1',animation:'none',transition:'none',background:style.background,border:style.border,borderRadius:style.borderRadius,boxShadow:'none'});
++  return copy;
++}
++function scatter(piece,p,index,rect){
++  // Spread cards across the play area, with different paths, spins and return times.
++  const vw=window.innerWidth,vh=window.innerHeight,scale=Math.min(3,Math.max(1.45,64/p.w)),pad=Math.hypot(p.w,p.h)*scale*.6+12;
++  piece.style.setProperty('--air-scale',scale);
++  const left=Math.max(pad,rect.left+pad),right=Math.max(left,Math.min(vw-pad,rect.right-pad));
++  const top=Math.min(vh/2,Math.max(pad+20,rect.top-70)),bottom=Math.max(top,Math.min(vh-pad-35,rect.bottom+20));
++  const cx=p.x+p.w/2,cy=p.y+p.h/2,dir=index%2?-1:1;
++  const x=left+(right-left)*((index*.6180339+.17)%1),y=top+(bottom-top)*((index*.381966+.13)%1);
++  const values={
++    'fly-x':x-cx,'fly-y':y-cy,
++    'drift-x':clamp(x+dir*(35+index%4*18),left,right)-cx,
++    'drift-y':clamp(y-55+index%3*40,top,bottom)-cy,
++    'gather-x':clamp(x-dir*(35+index%5*13),left,right)-cx,
++    'gather-y':clamp(y+50-index%3*25,top,bottom)-cy
++  };
++  for(const [key,value] of Object.entries(values))piece.style.setProperty('--'+key,value+'px');
++  for(const [key,value] of Object.entries({'rest-angle':p.angle,'spin-a':dir*(170+index*29),'spin-b':dir*(410+index*31),'spin-c':dir*(670+index*37),'land-angle':dir*1080+p.angle,'tilt':dir*(22+index%4*8)}))piece.style.setProperty('--'+key,value+'deg');
++  piece.style.setProperty('--delay',(index%7*22)+'ms');
++}
+ export function createTableFlipScene(layer,onRearrange,{reduced=false}={}){
+-  const floor=document.querySelector('#app .floor'),pieces=[];let rearranged=false;
++  const floor=document.querySelector('#app .floor'),pieces=[],hiddenSources=[];let rearranged=false;
+   if(!floor)return {rearrange(){},clear(){}};
+   if(!reduced){
+-    const rect=floor.getBoundingClientRect(),style=window.getComputedStyle(floor),board=floor.cloneNode(true);
++    const rect=floor.getBoundingClientRect(),board=floor.cloneNode(true);
+     board.classList.add('vent-board-copy');board.querySelectorAll('.fl,.deck').forEach(el=>el.remove());
+@@ -19,12 +54,26 @@ export function createTableFlipScene(layer,onRearrange,{reduced=false}={}){
+     Object.assign(board.style,{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',margin:'0'});
+-    layer.style.setProperty('--cw',style.getPropertyValue('--cw'));layer.style.setProperty('--ch',style.getPropertyValue('--ch'));
+     layer.appendChild(board);
+-    floor.querySelectorAll('.fl > .stack').forEach((stack,i)=>{
+-      const r=stack.getBoundingClientRect(),piece=document.createElement('div'),copy=stack.cloneNode(true);
+-      piece.className='vent-loose-stack';piece.dataset.cards=floorStackIds(stack).join(',');
+-      Object.assign(piece.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});
+-      piece.style.setProperty('--lift-x',((i%3)-1)*42+'px');piece.style.setProperty('--lift-y',-Math.min(130,Math.max(42,r.top-40))+'px');piece.style.setProperty('--tumble',((i%2?-1:1)*(22+i%4*13))+'deg');
+-      copy.removeAttribute('id');copy.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));copy.style.left='0';copy.style.top='0';
+-      piece.appendChild(copy);layer.appendChild(piece);pieces.push({el:piece,ids:floorStackIds(stack),x:r.left,y:r.top});
+-    });
++    function add(source,kind,stackIndex=0){
++      const p=pose(source),piece=document.createElement('div'),index=pieces.length;
++      if(!p.w||!p.h)return;
++      piece.className='vent-flying-card';piece.dataset.kind=kind;
++      if(kind==='floor')piece.dataset.card=cardId(source);
++      // Small offsets make the returning draw cards visibly stack one after another.
++      const offset=kind==='deck'?Math.min(stackIndex,12)*.35:0;
++      p.x-=offset;p.y-=offset;
++      Object.assign(piece.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px',zIndex:String(10+index)});
++      piece.appendChild(copyCard(source,p.style));scatter(piece,p,index,rect);layer.appendChild(piece);
++      pieces.push({el:piece,source,kind,id:cardId(source),x:p.x,y:p.y,index,offset});
++    }
++    // Each face-up floor card flies separately, including cards in the same pile.
++    floor.querySelectorAll('.fl > .stack .c').forEach(card=>add(card,'floor'));
++    const deck=floor.querySelector('.deck .back');
++    const count=Number(floor.querySelector('.deck > small')?.textContent.replace(/\D/g,'')||0);
++    if(deck)for(let i=0;i<Math.min(18,count);i++)add(deck,'deck',i);
++    // An empty draw pile and a swept floor can still use already-public captured cards.
++    if(!pieces.length){
++      [...document.querySelectorAll('#app .cap .c,#app .cap-cards > svg')].slice(0,18).forEach(card=>{
++        add(card,'captured');card.classList.add('vent-card-source');hiddenSources.push(card);
++      });
++    }
+     document.body.classList.add('matgo-table-flipping');
+@@ -33,10 +82,15 @@ export function createTableFlipScene(layer,onRearrange,{reduced=false}={}){
+     if(rearranged)return;rearranged=true;onRearrange();
+-    const stacks=[...document.querySelectorAll('#app .floor .fl > .stack')];
++    const cards=[...document.querySelectorAll('#app .floor .fl > .stack .c')];
++    const publicCards=[...document.querySelectorAll('#app .cap .c,#app .cap-cards > svg')];
+     for(const piece of pieces){
+-      const target=stacks.find(s=>floorStackIds(s).join(',')===piece.ids.join(','));
++      const target=piece.kind==='deck'?document.querySelector('#app .floor .deck .back'):
++        (piece.kind==='floor'?cards:publicCards).find(card=>cardId(card)===piece.id);
+       if(!target){piece.el.style.visibility='hidden';continue;}
+-      const r=target.getBoundingClientRect();piece.el.style.setProperty('--land-x',(r.left-piece.x)+'px');piece.el.style.setProperty('--land-y',(r.top-piece.y)+'px');
++      const p=pose(target),dir=piece.index%2?-1:1;
++      piece.el.style.setProperty('--land-x',(p.x-piece.offset-piece.x)+'px');
++      piece.el.style.setProperty('--land-y',(p.y-piece.offset-piece.y)+'px');
++      piece.el.style.setProperty('--land-angle',(dir*1080+p.angle)+'deg');
+     }
+   }
+-  return {rearrange,clear(){rearrange();document.body.classList.remove('matgo-table-flipping');}};
++  return {rearrange,clear(){rearrange();hiddenSources.forEach(el=>el.classList.remove('vent-card-source'));document.body.classList.remove('matgo-table-flipping');}};
+ }
+diff --git a/games/matgo-vent-sound.mjs b/games/matgo-vent-sound.mjs
+index 713400c..954a38e 100644
+--- a/games/matgo-vent-sound.mjs
++++ b/games/matgo-vent-sound.mjs
+@@ -61,2 +61,3 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
+     if(id==='bomb')noise(start,.75,.075,5200,'highpass',.05);
++    if(id==='table')for(let i=0;i<8;i++)noise(start+first+.15+i*.10,.16,.055,1600+i*170,'bandpass',.025);
+     if(id==='lightning'){tone(start,.55,.05,150,1050,'triangle');noise(start,.55,.055,4200,'bandpass',.15);}
+diff --git a/games/matgo.html b/games/matgo.html
+index 733591e..ab71290 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -25,3 +25,3 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-table2">
+ </head>
+@@ -37,8 +37,8 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script type="module">
+-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-table1";
+-import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-table1";
+-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-table1";
++import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261013-table2";
++import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-table2";
++import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-table2";
+ import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261010-pibak8";
+-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-table1";
+-import {createWallet} from "./matgo-wallet.mjs?v=20261013-table1";
++import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-table2";
++import {createWallet} from "./matgo-wallet.mjs?v=20261013-table2";
+ (async () => {
+@@ -421,3 +421,3 @@ function mount(){
+   vent.mount();syncTazza();
+-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-table1');};
++  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-table2');};
+   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
+diff --git a/matgo-bridge.js b/matgo-bridge.js
+index c406458..144cb67 100644
+--- a/matgo-bridge.js
++++ b/matgo-bridge.js
+@@ -62,3 +62,3 @@
+       frame = document.createElement('iframe');
+-      const params = new URLSearchParams({ v: '20261013-table1' });
++      const params = new URLSearchParams({ v: '20261013-table2' });
+       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
+diff --git a/tests/matgo-captured-zoom.test.mjs b/tests/matgo-captured-zoom.test.mjs
+index 01235ad..55b3b3c 100644
+--- a/tests/matgo-captured-zoom.test.mjs
++++ b/tests/matgo-captured-zoom.test.mjs
+@@ -66,3 +66,3 @@ try {
+   const view=fs.readFileSync(new URL('../games/matgo-view.mjs',import.meta.url),'utf8');assert.match(view,/import '\.\/matgo-captured-zoom\.mjs\?/);
+-  for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261013-table1/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
++  for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261013-table2/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
+   console.log(`PASS: ${cases} captured-view cases, solo/online, both players/all groups, hold/tap/keyboard, cancellation, safe dismissal, hidden-hand exclusion and unchanged cards`);
+diff --git a/tests/matgo-deck-tools.test.mjs b/tests/matgo-deck-tools.test.mjs
+index 1fa1744..c76376e 100644
+--- a/tests/matgo-deck-tools.test.mjs
++++ b/tests/matgo-deck-tools.test.mjs
+@@ -7,3 +7,3 @@ import {floorLayout,heldPairMonths} from '../games/matgo-view.mjs';
+ import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games/matgo-tazza.mjs';
+-import {shuffledFloorSlots} from '../games/matgo-table-flip.mjs';
++import {shuffledFloorSlots,createTableFlipScene} from '../games/matgo-table-flip.mjs';
+ import {createVentControls,VENT_EFFECTS} from '../games/matgo-deck-tools.mjs';
+@@ -65,2 +65,19 @@ try{
+ 
++  const savedFloor=t.game.floor,savedDeck=t.game.deck,savedCaps=t.game.caps[0];
++  t.game.floor=[];t.game.caps[0]=[...savedCaps,...savedFloor.flat()];t.render();
++  for(const emptyDeck of [false,true]){
++    if(emptyDeck){t.game.deck=[];t.game.caps[0].push(...savedDeck);t.render();}
++    const before=JSON.stringify([t.game.floor,t.game.deck,t.game.hand,t.game.caps,t.game.bank,t.game.actions]);
++    const layer=d.createElement('div');d.body.appendChild(layer);
++    let changed=0;const scene=createTableFlipScene(layer,()=>{changed++;t.shuffleFloor();});
++    const kind=emptyDeck?'captured':'deck';assert.ok(layer.querySelectorAll('[data-kind="'+kind+'"]').length>0,'empty floor still throws real draw backs or public captured cards');
++    assert.equal(layer.querySelectorAll('[data-kind=floor]').length,0);
++    if(emptyDeck)assert.ok(d.querySelector('.vent-card-source'));
++    scene.clear();scene.clear();assert.equal(changed,1,'cancelling mid-flight restores each pile once');
++    assert.equal(d.querySelector('.vent-card-source'),null);assert.equal(d.body.classList.contains('matgo-table-flipping'),false);
++    assert.equal(JSON.stringify([t.game.floor,t.game.deck,t.game.hand,t.game.caps,t.game.bank,t.game.actions]),before,'sweep and depleted-deck effects conserve every game value');
++    layer.remove();
++  }
++  t.game.floor=savedFloor;t.game.deck=savedDeck;t.game.caps[0]=savedCaps;t.render();
++
+   let now=0,nextTimer=0,timers=new Map(),allowed=true,hits=0;
+diff --git a/tests/matgo-vent-effects-ui.test.cjs b/tests/matgo-vent-effects-ui.test.cjs
+index dc3c221..a9e1203 100644
+--- a/tests/matgo-vent-effects-ui.test.cjs
++++ b/tests/matgo-vent-effects-ui.test.cjs
+@@ -10,5 +10,5 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+  const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','맞고 친구'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]},{cards:[CARDS[4],CARDS[5]]},{cards:[CARDS[12]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
+- async function screen({muted=false,reduced=false}={}){
+-  const context=await browser.newContext({viewport:{width:390,height:760},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
+-  await context.addInitScript(({muted,room})=>{
++ async function screen({muted=false,reduced=false,room=initial,tableOnly=false,viewport={width:390,height:760}}={}){
++  const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
++  await context.addInitScript(({muted,room,tableOnly})=>{
+    localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;window.payments=[];window.decline=false;window.slowPurchase=false;
+@@ -24,3 +24,3 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+      if(decline)return{data:{error:'insufficient_zzu'}};
+-     payments.push(body);return{data:{ok:true,gold:5000,coins:50-payments.length,purchase:{effect:body.effect,price:1}}};
++     payments.push(body);return{data:{ok:true,gold:5000,coins:50-payments.length,purchase:{effect:tableOnly?'table':body.effect,price:1}}};
+     }
+@@ -28,3 +28,3 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    }}})};
+-  },{muted,room:initial});
++  },{muted,room,tableOnly});
+   await context.route('**/*',async route=>{
+@@ -75,3 +75,5 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    if(effect.id==='table'){
+-    assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-loose-stack').count(),3);
++    assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4,'cards in a floor pile fly separately');
++    assert.equal(await page.locator('.vent-flying-card[data-kind=deck]').count(),18,'draw-pile backs join the scatter');
++    assert.equal(await page.locator('.vent-flying-card[data-kind=deck] [data-face]').count(),0,'no hidden draw card is exposed');
+     assert.equal(await page.locator('#app .floor').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+@@ -80,2 +82,12 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    await page.screenshot({path:path.join(proof,effect.id+'.png')});
++   if(effect.id==='table'){
++    const spread=await page.locator('.vent-flying-card').evaluateAll(cards=>new Set(cards.map(c=>getComputedStyle(c).transform)).size);
++    assert.ok(spread>=18,'individual cards have different airborne paths and spins');
++    await page.waitForTimeout(1950);
++    const landed=await page.locator('.vent-flying-card[data-kind=floor]').evaluateAll(cards=>cards.every(c=>{
++     const face=document.querySelector('#app .floor [data-face="'+c.dataset.card+'"]'),r=c.getBoundingClientRect(),t=face.getBoundingClientRect();
++     return Math.abs(r.x+r.width/2-t.x-t.width/2)<2&&Math.abs(r.y+r.height/2-t.y-t.height/2)<2;
++    }));assert.equal(landed,true,'each flying face returns to its exact card in its new pile');
++    await page.screenshot({path:path.join(proof,'table-restacked.png')});
++   }
+    await page.locator('.vent-layer').waitFor({state:'detached'});
+@@ -108,3 +120,22 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+   assert.equal(await reduced.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await reduced.page.screenshot({path:path.join(proof,'reduced-motion.png')});
+-  await reduced.context.close();assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, table flip with conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
++  await reduced.context.close();
++  // A confirmed table receipt also covers resumed purchases; no real user is charged.
++  for(const [name,deckCount,caps] of [['empty-floor',20,[[],[]]],['empty-deck',0,[[CARDS[1],CARDS[4],CARDS[5],CARDS[12]],[]]]]){
++   const room=structuredClone(initial);Object.assign(room.game,{floor:[],deckCount,caps});
++   const sample=await screen({muted:true,tableOnly:true,room,viewport:{width:320,height:568}}),p=sample.page;
++   const before=await p.evaluate(()=>ventTest.snapshot());await p.locator('#matgo-vent').tap();await p.locator('.vent-table').waitFor();
++   const kind=deckCount?'deck':'captured',flying=p.locator('.vent-flying-card[data-kind='+kind+']');
++   assert.equal(await flying.count(),deckCount?18:4);assert.equal(await p.locator('.vent-flying-card[data-kind=floor]').count(),0);
++   await p.waitForTimeout(1250);
++   const spread=await flying.evaluateAll(cards=>{const r=cards.map(c=>c.getBoundingClientRect());return {x:Math.max(...r.map(a=>a.x+a.width/2))-Math.min(...r.map(a=>a.x+a.width/2)),y:Math.max(...r.map(a=>a.y+a.height/2))-Math.min(...r.map(a=>a.y+a.height/2)),inside:r.every(a=>a.x>=-1&&a.right<=innerWidth+1&&a.y>=-1&&a.bottom<=innerHeight+1)};});
++   assert.ok(spread.x>80&&spread.y>70,'cards visibly scatter across the empty board');assert.equal(spread.inside,true,'flying cards fit a small phone');
++   await p.screenshot({path:path.join(proof,name+'-flying.png')});
++   await p.locator('.vent-layer').waitFor({state:'detached'});
++   assert.equal(await p.evaluate(()=>ventTest.snapshot()),before,'empty floor, deck count, hands, captured cards, scores and turn stay unchanged');
++   assert.equal(await p.locator('#app .fl > .stack').count(),0,'swept floor stays empty');assert.equal(await p.locator('.vent-card-source').count(),0,'captured cards are visible again');
++   assert.equal(await p.evaluate(()=>payments.length),1);await p.screenshot({path:path.join(proof,name+'-restacked.png')});await sample.context.close();
++  }
++  const calm=await screen({muted:true,reduced:true,tableOnly:true});await calm.page.locator('#matgo-vent').tap();await calm.page.locator('.vent-table').waitFor();
++  assert.equal(await calm.page.locator('.vent-flying-card').count(),0);assert.equal(await calm.page.locator('body.matgo-table-flipping').count(),0);await calm.context.close();
++  assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, individual card scatter and restack, swept-floor/depleted-deck fallback, conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
+  }finally{await browser.close();}
+diff --git a/world.html b/world.html
+index 8f8b495..94cd487 100644
+--- a/world.html
++++ b/world.html
+@@ -142,3 +142,3 @@
+ 
+-<script src="/matgo-bridge.js?v=20261013-table1" defer></script>
++<script src="/matgo-bridge.js?v=20261013-table2" defer></script>
+ <link rel="stylesheet" href="/arcade-rooms.css?v=20261005-chatrooms2">

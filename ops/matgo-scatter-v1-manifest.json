@@ -1,0 +1,14 @@
+{
+  "games/matgo-deck-tools.css": "c3f74de2d8d7fa4262c05497a32dc08f8672b015f342a8ddb5301226aa9d67b5",
+  "games/matgo-deck-tools.mjs": "f331b57400262e85972f5b4a12046f337857ddecfba28328cc4318717b94d8be",
+  "games/matgo-online.html": "ad2f9fcd9dba64ad222226a28fd8fbf0e6a1496fb94a71b1ccf4cb1727d55099",
+  "games/matgo-online.mjs": "e70aa9de7b5aceca85b5a902e6814c33e7aeabb24d95b033ca23b6e55726bd7d",
+  "games/matgo-table-flip.mjs": "9c1c9ca836fd13efae07d331719d4da983309c0fb0dab3af66296991a6d89eb0",
+  "games/matgo-vent-sound.mjs": "08e30499d873d84c83f40800d133ce826b8338b16c6ed0edf54e4549816ec234",
+  "games/matgo.html": "da401df5416b1c24cbe48dfbc94ed135c268349980c69fb0f6fa68c68dc35f3b",
+  "matgo-bridge.js": "3733b19329d931884100d13342f7c2ed1bd3fc399d5e2d1107447acc6bc1e006",
+  "tests/matgo-captured-zoom.test.mjs": "03ab17eb09811db9b52e89e0cf269d26b9acd1d1894c0226ed32ce21d2a0f589",
+  "tests/matgo-deck-tools.test.mjs": "7961db83a7dc249b7f70983107eb0ccaab6ce30f4c857796ffad105a8e3e2ea0",
+  "tests/matgo-vent-effects-ui.test.cjs": "cfdbb07af859b822e5b043e2fb0e1a83bef7aeaa7f6138f45f407e881fd5f7ce",
+  "world.html": "2aee6ded19596dd97dc5d01e8d76bc94403af09079718dcd3bbaebd5a9008c41"
+}
