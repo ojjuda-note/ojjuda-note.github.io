@@ -22,7 +22,7 @@ const root=path.join(__dirname,'..');
         if(this.classList.contains('online-flying-card')){const entry={at:performance.now(),duration:options.duration,back:!!this.querySelector('[aria-label="화투 뒷면"]')};flights.push(entry);animation.finished.then(()=>entry.elapsed=performance.now()-entry.at).catch(()=>entry.cancelled=true);}
         return animation;
       };
-      window.OjjudaMatgoAccess={check:async()=>{},subscribe:()=>{},getClient:()=>({auth:{getSession:async()=>({})},functions:{invoke:async(_,{body})=>({data:body.action==='status'?{ok:true,gold:5000,coins:0,free_left:2,online_room:room.id}:{ok:true,room:fixtureRoom}})}})};
+      window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>{},getClient:()=>({auth:{getSession:async()=>({})},functions:{invoke:async(_,{body})=>({data:body.action==='status'?{ok:true,gold:5000,coins:0,free_left:2,online_room:room.id}:{ok:true,room:fixtureRoom}})}})};
     },{muted,room:stamp(resume)});
     await context.route('**/*',async route=>{
       const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
