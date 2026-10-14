@@ -89,7 +89,7 @@ const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUP
 for(let seed=1;seed<=24;seed++) {
   const fresh=await playRound(server,seed),old=await playRound(legacy,seed);
   if(fresh.result?.total!==old.result?.total)changed++;
-  for(const [played,rules_version] of [[old,7],[fresh,8]]) {
+  for(const [played,rules_version] of [[old,7],[fresh,10]]) {
     snapshot=played.round;paid=null;
     const response=await handler(new Request('https://fixture.invalid',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-8000-000000000002',rules_version,actions:played.g.actions,gold:99999999})}));
     assert.equal(response.status,200);assert.equal(paid,played.g.bank[0],`rules v${rules_version} replay at seed ${seed}`);
@@ -105,4 +105,4 @@ for(const rules_version of [7,8]) {
   const r=(await finish({Game:replay.game.constructor,CARDS:server.CARDS},{loserPi:8})).result;
   assert.equal(r.det.some(([s])=>s==='피박'),rules_version===8,'online rounds retain their first recorded rules');cases++;
 }
-console.log(`PASS: ${cases} scoring/replay cases, both engines/seats, pi boundaries, ×2/×4/×8, weighted pi, v7/v8 settlements and online compatibility (${changed} changed full-round payouts)`);
+console.log(`PASS: ${cases} scoring/replay cases, both engines/seats, pi boundaries, ×2/×4/×8, weighted pi, v7/v10 settlements and online compatibility (${changed} changed full-round payouts)`);

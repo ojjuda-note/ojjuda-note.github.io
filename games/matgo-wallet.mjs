@@ -35,11 +35,11 @@ export function createWallet(access,{stakes=false,chooseStake=askStake}={}) {
       await access.check();
       if(stakes)await prepareStake();
       if(tazza){
-        pendingTazza??={action:'tazza_start',request_id:crypto.randomUUID(),stakes_version:1,rules_version:9};
+        pendingTazza??={action:'tazza_start',request_id:crypto.randomUUID(),stakes_version:1,rules_version:10};
         try{const state=await request(pendingTazza);pendingTazza=null;return state;}
         catch(error){if(error.code&&error.code!=='unavailable')pendingTazza=null;throw error;}
       }
-      const state=await request({action:'start',rules_version:9,...(stakes?{stakes_version:1}:{})});
+      const state=await request({action:'start',rules_version:10,...(stakes?{stakes_version:1}:{})});
       pendingTazza=null;return state;
     },
     vent(referenceId,effect){
@@ -49,7 +49,7 @@ export function createWallet(access,{stakes=false,chooseStake=askStake}={}) {
       ventRequest=request(pendingVent).then(data=>{pendingVent=null;return data;}).catch(error=>{if(error.code&&error.code!=='unavailable')pendingVent=null;throw error;}).finally(()=>{ventRequest=null;});
       return ventRequest;
     },
-    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:9}),
+    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:10}),
     refill(paid){
       // Retain the request ID through network failures so retries cannot charge twice.
       if(!pendingRefill||pendingRefill.paid!==paid)pendingRefill={action:'refill',request_id:crypto.randomUUID(),paid};

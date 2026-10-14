@@ -1,4 +1,5 @@
 import { verifyRound } from './verify.mjs';
+import { verifyRound as verifyV9Round } from './verify-v9.mjs';
 import { verifyRound as verifyV8Round } from './verify-v8.mjs';
 import { verifyRound as verifyV7Round } from './verify-v7.mjs';
 import { verifyRound as verifyV5Round } from './verify-v5.mjs';
@@ -37,7 +38,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       body = JSON.parse(new TextDecoder().decode(bytes));
       if (!['status', 'start', 'refill', 'settle', 'stake', 'tazza_start', 'vent'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
       if (['tazza_start','vent'].includes(body.action) && !uuid.test(body.request_id)) throw Error();
-      if (body.action==='tazza_start' && (body.rules_version!==9 || body.stakes_version!==1)) throw Error();
+      if (body.action==='tazza_start' && (![9,10].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
       if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table'].includes(body.effect))) throw Error();
       if(onlineActions.has(body.action)){
         if(body.stakes_version!==undefined&&body.stakes_version!==1)throw Error();
@@ -46,7 +47,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
         if(body.action==='online_move'&&(!uuid.test(body.request_id)||!Number.isInteger(body.version)||body.version<0||!body.command||JSON.stringify(body.command).length>1024))throw Error();
         if(body.cursor!==undefined&&(!Number.isInteger(body.cursor)||body.cursor<0||body.cursor>10000))throw Error();
       }
-      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(body.rules_version ?? 1))) throw Error();
+      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(body.rules_version ?? 1))) throw Error();
       if (body.action === 'start' && body.stakes_version !== undefined && body.stakes_version !== 1) throw Error();
       if (body.action === 'stake' && (!Number.isInteger(body.rate) || ![200,500,2000,5000,10000,20000,50000,100000].includes(body.rate) || typeof body.accept !== 'boolean')) throw Error();
       if (body.action === 'refill' && (!uuid.test(body.request_id) || typeof body.paid !== 'boolean')) throw Error();
@@ -106,10 +107,10 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (body.action === 'settle') {
         const snapshot = await rpc('round', { p_round: body.round_id });
         if (snapshot.settled) return reply(snapshot);
-        if (snapshot.round.tazza_mode && body.rules_version!==9) return reply({error:'client_update_required'},409);
-        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8,9].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+        if (snapshot.round.tazza_mode && ![9,10].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8,9,10].includes(body.rules_version)) return reply({error:'client_update_required'},409);
         let verified;
-        try { verified = await (body.rules_version === 9 ? verifyRound : body.rules_version === 8 ? verifyV8Round : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
+        try { verified = await (body.rules_version === 10 ? verifyRound : body.rules_version === 9 ? verifyV9Round : body.rules_version === 8 ? verifyV8Round : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
         catch {
           // Rules/scoring stay v5. Already-open browsers can finish the old CPU
           // policy; replay the entire transcript rather than trusting a result.
@@ -124,7 +125,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (body.action === 'vent') return reply(await rpc('vent',{p_request:body.request_id,p_reference:body.reference_id,p_effect:body.effect}));
       if(body.action==='stake')return reply(await rpc('stake',{p_rate:body.rate,p_accept:body.accept}));
       const state=await rpc(body.action==='start'&&body.stakes_version===1?'start_stakes':body.action);
-      if(body.action==='start'&&state.round?.tazza_mode&&body.rules_version!==9)return reply({error:'client_update_required'},409);
+      if(body.action==='start'&&state.round?.tazza_mode&&![9,10].includes(body.rules_version))return reply({error:'client_update_required'},409);
       return reply(state);
     } catch (error) {
       const code = publicErrors.has(error.message) ? error.message : 'unavailable';

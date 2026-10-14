@@ -1,4 +1,4 @@
-import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop, aiChooseGukjin } from './engine.mjs';
+import { Game, seededRandom, aiChooseCard, aiChoose, aiGoStop, aiChooseGukjin } from './engine-v9.mjs';
 
 export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
   if (!Array.isArray(actions) || !actions.length || actions.length > 512) throw Error('invalid_actions');

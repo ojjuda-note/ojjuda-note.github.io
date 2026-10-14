@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as engine from '../games/matgo-engine.mjs';
+import * as legacyEngine from '../supabase/functions/matgo/engine-v9.mjs';
 import {dealSoloRound,selectTazzaSeed,openingValue,createTazzaQueue,TAZZA_MODES,isTazzaCard} from '../games/matgo-tazza.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {verifyRound as verifyV8} from '../supabase/functions/matgo/verify-v8.mjs';
@@ -16,11 +17,12 @@ assert.equal(queue.begin(),true);queue.finish(true);assert.equal(queue.begin(),f
 queue.toggle();queue.toggle();assert.equal(queue.begin(),false,'click again to cancel');queue.finish(false);
 
 function conservation(g){const cards=[...g.hand.flat(),...g.floor.flat(),...g.caps.flat(),...g.deck];assert.equal(cards.length,50);assert.equal(new Set(cards.map(c=>c.id)).size,50);}
-async function play(round){
+async function play(round,engineImpl=engine){
+  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=engineImpl;
   let g;
   g=new Game({event:async()=>{},choose:async(p,ids)=>aiChoose(g,p,ids),chooseGukjin:async p=>aiChooseGukjin(g,p),goStop:async(p,n)=>aiGoStop(g,p,n)});
   g.bank=[round.gold,5000];g.rate=round.rate;g.first=round.first;g.carry=round.carry;
-  dealSoloRound(g,round,engine);const initial=structuredClone(g.hand);
+  dealSoloRound(g,round,engineImpl);const initial=structuredClone(g.hand);
   for(let turns=0;!g.over;turns++){
     assert.ok(turns<150);conservation(g);
     const pending=g.pendingChongtong();if(pending){await g.declareChongtong(pending.p,pending.p===1?'win':'continue');continue;}
@@ -48,7 +50,7 @@ for(let seed=1;seed<=160;seed++){
     const paidRound={...round,tazza_mode:assisted?'tan':null};
     const {g}=await play(paidRound);
     const verified=await verifyRound(paidRound,g.actions);assert.equal(verified.gold,g.bank[0]);assert.equal(verified.first,g.first);assert.equal(verified.carry,g.carry);
-    if(!assisted)assert.equal((await verifyV8(round,g.actions)).gold,g.bank[0]);
+    if(!assisted){const {g:old}=await play(round,legacyEngine);assert.equal((await verifyV8(round,old.actions)).gold,old.bank[0]);}
     else{last=g;lastRound=paidRound;await assert.rejects(verifyV8(round,g.actions));}
   }
 }
@@ -82,5 +84,8 @@ const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUP
   settled=body.p_gold;return Response.json({ok:true,gold:settled});
 }});
 const request=version=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions:last.actions})}));
-assert.equal((await request(9)).status,200);assert.equal(settled,last.bank[0]);assert.equal((await request(8)).status,409);
+assert.equal((await request(10)).status,200);assert.equal(settled,last.bank[0]);assert.equal((await request(8)).status,409);
+const {g:oldPaid}=await play(lastRound,legacyEngine);last=oldPaid;
+assert.equal((await request(9)).status,200);assert.equal(settled,oldPaid.bank[0]);
 console.log(`PASS: one-round queue, 560 verified full rounds across 8 paid modes, 50-card conservation, v8 compatibility, forged modes/moves rejected, online excluded; matching opening months ${(regularMatches/160).toFixed(2)} → ${(tazzaMatches/160).toFixed(2)}`);
+await import('./matgo-tan.test.mjs');

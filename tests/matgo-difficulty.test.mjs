@@ -4,6 +4,7 @@ import {CARDS,Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin,cp
 import {aiChooseCard as oldChooseCard,aiChoose as oldChoose} from '../supabase/functions/matgo/engine-v4.mjs';
 import * as current from '../games/matgo-engine.mjs';
 import * as previous from '../supabase/functions/matgo/engine-v5.mjs';
+import * as v9 from '../supabase/functions/matgo/engine-v9.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
 import {replayOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';
@@ -25,9 +26,9 @@ assert.equal(low.cpuLevel,1);assert.equal(high.cpuLevel,2);
 for(const part of ['hand','floor','deck','caps'])assert.deepEqual(low[part],high[part],'gold never changes the shuffle or initial cards');
 high.bank[0]=99999;assert.equal(high.cpuLevel,2,'tier is fixed for the current round');high.deal();assert.equal(high.cpuLevel,1,'the next round uses the new balance');
 
-// Below the threshold, the old decisions and random-number consumption stay exact.
+// Online automation opts out; both decisions and random consumption stay exact.
 for(let seed=1;seed<=80;seed++){
-  const game=fixture(100000,seed);game.random=seededRandom(seed+1000);const old=oldChooseCard(game,1);
+  const game=fixture(100000,seed);game.cpuMode='normal';game.random=seededRandom(seed+1000);const old=oldChooseCard(game,1);
   game.random=seededRandom(seed+1000);assert.equal(aiChooseCard(game,1)?.id,old?.id);
   const indices=game.floor.map((_,i)=>i);assert.equal(aiChoose(game,1,indices),oldChoose(game,1,indices));
 }
@@ -35,13 +36,49 @@ for(let seed=1;seed<=80;seed++){
 // Higher tiers recognize a complete set rather than merely a high-value card.
 const choice=fixture(900001);choice.caps=[[],[CARDS[5],CARDS[9]]];choice.floor=[[CARDS[0]],[CARDS[1]]];
 assert.equal(aiChoose(choice,1,[0,1]),1,'complete hongdan with the ribbon');
-choice.cpuLevel=1;assert.equal(aiChoose(choice,1,[0,1]),0,'normal policy remains unchanged');
+choice.cpuLevel=1;choice.random=()=>.9;assert.equal(aiChoose(choice,1,[0,1]),1,'beginner picks randomly');
+choice.random=()=>.1;assert.equal(aiChoose(choice,1,[0,1]),0,'beginner ignores the completed set');
 choice.cpuLevel=10;choice.hand[1]=[CARDS[0],CARDS[13]];choice.floor=[[CARDS[2]],[CARDS[14]]];choice.caps=[[],[CARDS[17],CARDS[25]]];choice.random=()=>0;
 assert.equal(aiChooseCard(choice,1).id,13,'collect the third chodan card');
 // Accessing even one hidden card/next-deck entry makes the test fail.
 const countOnly=n=>new Proxy({length:n},{get(target,key){if(key==='length')return target.length;throw Error('hidden information read: '+String(key));}});
 choice.hand[0]=countOnly(8);choice.deck=countOnly(20);
 assert.equal(aiChooseCard(choice,1).id,13);
+
+// Measure actual decisions, not just tier constants: Lv1 often misses captures
+// and safe stops, then every tier improves toward the full Lv10 policy.
+const decisionRates=[];
+for(let level=1;level<=10;level++){
+  const g=fixture((level-1)*100000+1),n=3600,counts=[0,0,0,0];
+  const pi=CARDS.filter(c=>c.k==='pi');
+  for(let seed=1;seed<=n;seed++){
+    g.hand[1]=[CARDS[0],CARDS[4],CARDS[8],CARDS[12]];g.floor=[[CARDS[1]]];g.caps=[[],[]];
+    g.random=seededRandom(seed);if(aiChooseCard(g,1).id===0)counts[0]++;
+    g.floor=[[CARDS[0]],[CARDS[6]]];
+    g.random=seededRandom(seed);if(aiChoose(g,1,[0,1])===0)counts[1]++;
+    g.caps=[pi.slice(0,15),[]]; // Opponent already has 6 points: stop is safe.
+    g.random=seededRandom(seed);if(aiGoStop(g,1,7)==='stop')counts[2]++;
+    g.caps=[[],[...pi.slice(0,8),{...CARDS[32],asPi:false}]];
+    g.random=seededRandom(seed);if(aiChooseGukjin(g,1)==='pi')counts[3]++;
+  }
+  const rates=counts.map(v=>v/n),skill=(level-1)/9;
+  rates.forEach((rate,i)=>{
+    const base=i===0?.25:.5;
+    assert.ok(Math.abs(rate-(base+(1-base)*skill))<.035,`level ${level}, decision ${i}: ${rate}`);
+    if(level>1)assert.ok(rate>decisionRates.at(-1)[i],`decision ${i} improves at level ${level}`);
+  });
+  decisionRates.push(rates);
+}
+assert.deepEqual(decisionRates.at(-1),[1,1,1,1]);
+// Every tier may read only public information, including the blunder paths.
+for(let level=1;level<=10;level++){
+  choice.cpuLevel=level;
+  for(let seed=1;seed<=10;seed++){
+    choice.random=seededRandom(seed);
+    assert.ok(choice.hand[1].includes(aiChooseCard(choice,1)));
+    assert.ok(['go','stop'].includes(aiGoStop(choice,1,7)));
+  }
+}
 
 async function play(seed,gold,cpuMode='adaptive',engine=current){
   const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=engine;
@@ -87,8 +124,21 @@ const handler=createHandler({env:name=>({SUPABASE_URL:'https://fixture.invalid',
   const params=JSON.parse(options.body);if(params.p_action==='round')return Response.json({round:snapshot});
   settled=params.p_gold;return Response.json({ok:true,gold:settled});
 }});
-const request=(actions,version=8)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
+const request=(actions,version=10)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
 assert.equal((await request(tiered.game.actions)).status,200);assert.equal(settled,tiered.game.bank[0]);
+// Open v8/v9 pages finish with their frozen strategy, while current pages must
+// replay the new AI. Client-supplied balance, mode and level cannot override it.
+for(const gold of [5000,100001,400001,900001])for(let seed=1;seed<=12;seed++){
+  const old=await play(seed,gold,'adaptive',v9);snapshot=old.round;
+  for(const version of [8,9]){
+    assert.equal((await request(old.game.actions,version)).status,200);
+    assert.equal(settled,old.game.bank[0]);
+  }
+  const fresh=await play(seed,gold);snapshot=fresh.round;
+  assert.equal((await request(fresh.game.actions)).status,200);assert.equal(settled,fresh.game.bank[0]);
+  const bad=structuredClone(fresh.game.actions),move=bad.find(a=>a.type==='play'&&a.p===1);
+  if(move){move.card=999;assert.equal((await request(bad)).status,409);}
+}
 for(const played of [oldTiered,oldNormal]){
   snapshot=played.round;assert.equal((await request(played.game.actions,5)).status,200);assert.equal(settled,played.game.bank[0]);
 }
@@ -99,4 +149,5 @@ const room={status:'active',seed:'ab'.repeat(32),actions:[],start_gold:[5000,500
 const rich={...room,start_gold:[900001,900001]};
 assert.equal((await replayOnline(rich)).game.cpuLevel,1,'human-room takeover and timeouts keep the original policy');
 assert.deepEqual((await automaticOnline(rich)).actions,(await automaticOnline(room)).actions);
-console.log('PASS: 10 exact gold tiers, fixed round level, unchanged deal/normal AI, public-only strategy, 200 verified rounds, cached-client settlement and unchanged online automation');
+console.log('PASS: random beginner, 10 steadily improving decision tiers, fixed gold thresholds, unchanged deal/online AI, public-only choices, 200 verified rounds and frozen v8/v9 settlements');
+console.log('Capture choice by tier: '+decisionRates.map(r=>(r[0]*100).toFixed(1)+'%').join(', '));

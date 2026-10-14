@@ -121,7 +121,7 @@ for(const [seed,p] of [[9,0],[77,1]]){
   if(p===1)await assert.rejects(verifyRound(round,[{type:'chongtong',p,decision:'continue'}]),/invalid_chongtong/);
   cases++;
 }
-for(const seed of [9,108,468]){
+for(const seed of [9,865,856]){
   const round={seed,gold:5000,first:0,carry:1};const {g,events}=seeded(seed);
   if(seed!==9)g.ui.goStop=async(p,s)=>p===1?aiGoStop(g,p,s):'go';
   while(!g.over){
@@ -133,7 +133,7 @@ for(const seed of [9,108,468]){
     await g.play(p,card,bomb);
   }
   assert.equal((await verifyRound(round,g.actions)).gold,g.bank[0]);conserved(g);
-  if(seed!==9){const result=events.find(e=>e.type==='end');assert.equal(result.special,'three_ppuk');assert.equal(result.total,seed===468?14:7);}
+  if(seed!==9){const result=events.find(e=>e.type==='end');assert.equal(result.special,'three_ppuk');assert.equal(result.total,seed===856?14:7);}
   cases++;
 }
 console.log(`PASS: ${cases} bonus-bound ppuk, per-player triple ppuk, chongtong choice and server replay scenarios`);
