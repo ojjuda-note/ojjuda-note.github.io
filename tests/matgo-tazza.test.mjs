@@ -88,3 +88,4 @@ assert.equal((await request(10)).status,200);assert.equal(settled,last.bank[0]);
 const {g:oldPaid}=await play(lastRound,legacyEngine);last=oldPaid;
 assert.equal((await request(9)).status,200);assert.equal(settled,oldPaid.bank[0]);
 console.log(`PASS: one-round queue, 560 verified full rounds across 8 paid modes, 50-card conservation, v8 compatibility, forged modes/moves rejected, online excluded; matching opening months ${(regularMatches/160).toFixed(2)} → ${(tazzaMatches/160).toFixed(2)}`);
+await import('./matgo-tan.test.mjs');

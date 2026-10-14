@@ -40,11 +40,11 @@ export function selectTazzaSeed(round, { Game, seededRandom }) {
 }
 
 export const TAZZA_MODES = Object.freeze({
-  tan: '탄쓰기', peek: '상대 패 보기', ssang: '쌍피 몰아받기', gwang: '광 몰아받기',
+  tan: '탄쓰기 · 승리 보장', peek: '상대 패 보기', ssang: '쌍피 몰아받기', gwang: '광 몰아받기',
   godori: '고도리 몰아받기', cheong: '청단 몰아받기', hong: '홍단 몰아받기', cho: '초단 몰아받기'
 });
 export const TAZZA_DETAILS = Object.freeze({
-  tan: '바닥과 잘 맞는 유리한 시작 패', peek: '이번 판 상대 손패 공개', ssang: '쌍피·2피 보너스·구쌍피를 내 손패로',
+  tan: '어떤 패를 내도 승리 · 최소 7점 보장', peek: '이번 판 상대 손패 공개', ssang: '쌍피·2피 보너스·구쌍피를 내 손패로',
   gwang: '광 5장을 내 손패로', godori: '고도리 3장을 내 손패로', cheong: '청단 3장을 내 손패로',
   hong: '홍단 3장을 내 손패로', cho: '초단 3장을 내 손패로'
 });

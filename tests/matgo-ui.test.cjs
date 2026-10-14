@@ -16,7 +16,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='status')return{data:snapshot()};
     if(body.action==='tazza_start'){
       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
-      state.coins-=5;state.round={id:crypto.randomUUID(),seed:10,gold:state.gold,first:0,carry:1,tazza_mode:'peek'};return{data:snapshot()};
+      state.coins-=5;state.round={id:crypto.randomUUID(),seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
     }
     if(body.action==='vent'){if(state.coins<1)return{data:{error:'insufficient_zzu'}};state.coins--;return{data:{...snapshot(),purchase:{effect:body.effect,price:1}}};}
     if(body.action==='start'){
@@ -108,6 +108,39 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.evaluate(()=>{window.ventEffects=[];new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes)if(n.nodeType===1&&n.classList.contains('vent-layer'))ventEffects.push(n.dataset.effect);}).observe(document.body,{childList:true});});
     await f.page.locator('#matgo-vent').click();await f.page.waitForFunction(()=>ventEffects.length===1);
     assert.equal(f.state.coins,14);assert.equal(await f.page.evaluate(()=>ventEffects[0]),'gun');
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  {
+    const f=await fixture({gold:900001,purchaseMode:'tan',purchaseSeed:2});
+    await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.locator('#tazza-mode').click();f.state.round=null;
+    await f.page.evaluate(async()=>{matgoTest.game.over=true;await matgoTest.startRound();});
+    assert.equal(f.state.coins,15);assert.match(await f.page.locator('#tazza-benefit').textContent(),/탄쓰기.*승리 보장/);
+    for(const width of [320,390,768]){
+      await f.page.setViewportSize({width,height:820});await f.page.waitForTimeout(30);
+      const benefit=await f.page.locator('#tazza-benefit').boundingBox(),score=await f.page.locator('#mePts').boundingBox();
+      assert.ok(benefit.x+benefit.width<=score.x&&Math.abs(benefit.y+benefit.height/2-score.y-score.height/2)<4);
+      assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    }
+    await f.page.setViewportSize({width:390,height:820});
+    for(let i=0;i<1500&&!f.state.settled;i++){
+      await f.page.evaluate(()=>{
+        const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#n')||modal.querySelector('button'))?.click();return;}
+        const t=matgoTest;if(t.ui.resolveChoose){document.querySelector('.stack.pick')?.click();return;}
+        if(!t.ui.busy&&!t.game.over&&t.game.turn===0){if(t.game.hand[0][0])void t.pick(t.game.hand[0][0].id);else document.querySelector('#bombFlip')?.click();}
+      });
+      await f.page.waitForTimeout(20);
+    }
+    assert.equal(f.state.settled,true);assert.ok(f.state.gold>900001);
+    await f.page.locator('.result-card #next').waitFor();
+    assert.match(await f.page.locator('.result-details h2').textContent(),/탄쓰기로 이겼어요/);
+    assert.match(await f.page.locator('.sc').textContent(),/탄쓰기 승리 보장/);
+    assert.equal(f.state.requests.filter(r=>r.action==='settle').length,1);
+    fs.mkdirSync('/tmp/matgo-vent-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-vent-proof/tan-guarantee.png'});
+    await f.page.locator('#next').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy&&!matgoTest.game.over);
+    assert.equal(await f.page.evaluate(()=>matgoTest.game.tazzaMode),null);
+    assert.equal(await f.page.locator('#tazza-benefit').isVisible(),false);assert.equal(f.state.coins,15);
+    assert.equal(f.state.requests.filter(r=>r.action==='tazza_start').length,1);
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');

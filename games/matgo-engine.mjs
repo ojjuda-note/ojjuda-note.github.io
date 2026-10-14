@@ -38,6 +38,7 @@ class Game {
   constructor(ui){ this.ui=ui; this.random=Math.random; this.actions=[]; this.bank=[5000,5000]; this.rate=100; this.carry=1; this.first=0; }
   deal(){
     if(this._playing)return false;
+    this.tazzaMode=null; // A purchased benefit belongs to exactly one solo round.
     // Choose once per solo round from the starting balance. Online seats opt out.
     this.cpuLevel=this.cpuMode==='normal'?1:cpuLevelForGold(this.bank[0]);
     let d,board,bonus;
@@ -247,11 +248,15 @@ class Game {
   }
   async finish(winner,special=null){
     if(this.over)return;
+    // The paid solo deal is the only place that enables tan. Never grant the
+    // guarantee to online seats; the server also verifies the purchase marker.
+    const tazzaSaved=this.tazzaMode==='tan'&&this.cpuMode!=='normal'&&winner!==0;
+    if(tazzaSaved){winner=0;special=this.pts(0)>=7?null:'tazza';}
     this.over=true;
     if(winner<0){ const settlement=this.settleGold(-1);this.carry=Math.min(1024,this.carry*2);this.first=1-this.first;return this.ui.event('nagari',settlement); }
     const l=1-winner, sw=score(this.caps[winner]), sl=score(this.caps[l]); let pts=sw.pts; const det=[...sw.det]; let mult=1;
     if(special){
-      pts=7;det.splice(0,det.length,[special==='chongtong'?'총통':'뻑 3회',7]);
+      pts=7;det.splice(0,det.length,[special==='tazza'?'탄쓰기 승리 보장':special==='chongtong'?'총통':'뻑 3회',7]);
       if(special==='three_ppuk'&&this.go[l]>0){mult*=2;det.push(['고박','×2']);}
     }
     else{
@@ -263,8 +268,9 @@ class Game {
     if(this.mult[winner]>1){ mult*=this.mult[winner]; det.push([this.bomb[winner]||this.shake[winner]?'흔들기·폭탄':'배',`×${this.mult[winner]}`]); }
     if(this.carry>1){ mult*=this.carry; det.push(['나가리 이월',`×${this.carry}`]); }
     }
+    if(tazzaSaved&&special!=='tazza')det.push(['탄쓰기 승리 보장','적용']);
     const total=pts*mult, money=total*this.rate,settlement=this.settleGold(winner,money);this.carry=1;this.first=winner;
-    return this.ui.event('end',{winner,pts,mult,total,money,det,special,...settlement});
+    return this.ui.event('end',{winner,pts,mult,total,money,det,special,...settlement,...(tazzaSaved?{tazzaSaved:true}:{})});
   }
 }
 // ================= AI =================
