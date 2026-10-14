@@ -5,14 +5,15 @@ const $=id=>document.getElementById(id),el=(tag,text,cls)=>{const n=document.cre
 const button=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=fn;return b;};
 const config=window.OJJUDA_CONFIG;let client,user,admin=false,generation=0,reading=0,uploading=false,chosen=[],pageRows=[],index=0,zoom=1,comic=null,observer=null,timer;
 let paintRevision=0,warmRevision=-1,comicEditor=null,nextEpisode=null;
+let uploadArchive=null,uploadController=null;
 const urls=new Map(),pending=new Map(),vp=$('viewport');
 function notice(text){$('toast').textContent=text;clearTimeout(timer);timer=setTimeout(()=>$('toast').textContent='',5000)}
 function numbers(name){return(name.normalize('NFKC').replace(/\.[^.]+$/,'').match(/\d+/g)||[]).map(BigInt)}
-function compare(a,b){const x=numbers(a.name),y=numbers(b.name);if(x.length&&y.length){for(let i=0;i<Math.min(x.length,y.length);i++)if(x[i]!==y[i])return x[i]<y[i]?-1:1;if(x.length!==y.length)return x.length-y.length}else if(x.length||y.length)return x.length?-1:1;return a.name.localeCompare(b.name,'ko',{numeric:true})}
+function compare(a,b){const an=a.orderName||a.name,bn=b.orderName||b.name,x=numbers(an),y=numbers(bn);if(x.length&&y.length){for(let i=0;i<Math.min(x.length,y.length);i++)if(x[i]!==y[i])return x[i]<y[i]?-1:1;if(x.length!==y.length)return x.length-y.length}else if(x.length||y.length)return x.length?-1:1;return an.localeCompare(bn,'ko',{numeric:true})}
 async function result(query){const {data,error}=await query;if(error)throw error;return data}
 function remember(){if(comic&&user)try{localStorage.setItem('ojjuda-comic:'+user.id+':'+comic.id,String(index))}catch{}}
 function clean(){reading++;paintRevision++;observer?.disconnect();observer=null;urls.forEach(URL.revokeObjectURL);urls.clear();pending.clear();$('pages').replaceChildren();$('reader').hidden=true;document.body.style.overflow='';comic=null;nextEpisode=null;pageRows=[]}
-function gate(message,login=false){comicEditor?.reset();clean();admin=false;$('uploadOpen').hidden=true;$('shelf').hidden=$('editor').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('login').hidden=!login;$('retry').hidden=login}
+function gate(message,login=false){uploadController?.abort();discardFiles();$('uploadForm').reset();comicEditor?.reset();clean();admin=false;$('uploadOpen').hidden=true;$('shelf').hidden=$('editor').hidden=true;$('gate').hidden=false;$('gateMessage').textContent=message;$('login').hidden=!login;$('retry').hidden=login}
 async function boot(){const token=++generation;gate('이용 가능 여부를 확인하고 있어요.');$('retry').hidden=true;
  try{const auth=await client.auth.getUser();if(token!==generation)return;user=auth.data?.user;if(auth.error||!user||user.is_anonymous){gate('로그인한 만 19세 이상 회원만 이용할 수 있어요.',true);return}
  const access=await result(client.rpc('comics_access'));if(token!==generation)return;
@@ -33,15 +34,51 @@ async function shelf(){const token=generation;comicEditor?.reset();$('uploadOpen
 async function removeBook(id){await result(client.from('creative_comics').update({published:false}).eq('id',id).select('id').single());const rows=await result(client.from('creative_comic_pages').select('path').eq('comic_id',id));for(let i=0;i<rows.length;i+=50)await result(client.storage.from('creative-comics').remove(rows.slice(i,i+50).map(p=>p.path)));await result(client.from('creative_comics').delete().eq('id',id).select('id').single())}
 function showFiles(){const list=$('fileList');list.replaceChildren();$('fileCount').textContent=chosen.length+'장 선택';chosen.forEach((f,i)=>{const li=el('li'),row=el('div'),name=el('span',f.name);name.title=f.name;row.append(name);for(const [label,delta] of [['↑',-1],['↓',1]]){const b=button(label,()=>{[chosen[i],chosen[i+delta]]=[chosen[i+delta],chosen[i]];showFiles()});b.disabled=i+delta<0||i+delta>=chosen.length;b.setAttribute('aria-label',f.name+(delta<0?' 앞으로':' 뒤로'));row.append(b)}li.append(row);list.append(li)})}
 async function imageInfo(file){const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());let mime,ext;if([137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v)){mime='image/png';ext='png'}else if(bytes[0]===255&&bytes[1]===216&&bytes[2]===255){mime='image/jpeg';ext='jpg'}else if(String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP'){mime='image/webp';ext='webp'}else throw Error('이미지 형식을 확인해 주세요: '+file.name);const url=URL.createObjectURL(file);try{const img=new Image();img.src=url;await img.decode();if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth>40000||img.naturalHeight>40000)throw Error('이미지 크기를 확인해 주세요.');return {mime,ext,width:img.naturalWidth,height:img.naturalHeight}}finally{URL.revokeObjectURL(url)}}
-$('uploadOpen').onclick=()=>{if(!admin)return;clean();$('shelf').hidden=true;$('editor').hidden=false};$('cancelUpload').onclick=()=>{if(!uploading)shelf()};$('fileInput').onchange=e=>{chosen=[...e.target.files].sort(compare);showFiles()};$('sort').onclick=()=>{chosen.sort(compare);showFiles()};
-$('uploadForm').onsubmit=async e=>{e.preventDefault();if(uploading||!admin)return;if(!chosen.length||chosen.length>500){notice('이미지를 1~500장 선택해 주세요.');return}if(chosen.some(f=>f.size>20971520)){notice('한 장의 용량은 20MB 이하여야 해요.');return}const title=$('title').value.trim();if(!title){notice('제목을 입력해 주세요.');return}const token=generation,owner=user.id,files=[...chosen];uploading=true;document.querySelectorAll('#editor input,#editor textarea,#editor button').forEach(n=>n.disabled=true);$('uploadOpen').disabled=true;$('uploadProgress').hidden=false;let id=null;
- try{const items=[];for(let i=0;i<files.length;i++){if(token!==generation)throw Error('로그인이 바뀌었어요.');$('uploadStatus').textContent=`이미지 확인 중 ${i+1} / ${files.length}`;items.push(await imageInfo(files[i]))}
- id=crypto.randomUUID();await result(client.from('creative_comics').insert({id,title,description:$('description').value.trim()}));
- for(let i=0;i<files.length;i++){if(token!==generation)throw Error('로그인이 바뀌었어요.');const info=items[i],path=owner+'/'+id+'/'+crypto.randomUUID()+'.'+info.ext;$('uploadStatus').textContent=`업로드 중 ${i+1} / ${files.length} · ${files[i].name}`;await result(client.from('creative_comic_pages').insert({comic_id:id,position:i+1,filename:files[i].name,path,width:info.width,height:info.height}));await result(client.storage.from('creative-comics').upload(path,files[i],{contentType:info.mime,cacheControl:'0',upsert:false}));$('uploadProgress').value=Math.round((i+1)/files.length*100)}
- if(token!==generation)throw Error('로그인이 바뀌었어요.');await result(client.from('creative_comics').update({published:true}).eq('id',id).select('id').single());$('uploadForm').reset();chosen=[];showFiles();notice('만화를 공개했어요. 만 19세 이상 회원이 읽을 수 있어요.');await shelf();
- }catch(error){let cleanup=true;if(id&&token===generation)try{await removeBook(id)}catch{cleanup=false}if(token===generation)$('uploadStatus').textContent='업로드를 완료하지 못했어요. '+(cleanup?'파일과 연결 상태를 확인한 뒤 다시 시도해 주세요.':'목록에 비공개로 남겨 두었어요. 삭제 후 다시 올려 주세요.');}
- finally{uploading=false;document.querySelectorAll('#editor input,#editor textarea,#editor button').forEach(n=>n.disabled=false);$('uploadOpen').disabled=false;showFiles()}
-};
+function discardFiles(){void uploadArchive?.close();uploadArchive=null;chosen=[];showFiles();}
+function lockUpload(value){document.querySelectorAll('#editor input,#editor textarea,#editor button').forEach(n=>n.disabled=value);$('uploadOpen').disabled=$('refresh').disabled=value;}
+$('uploadOpen').onclick=()=>{if(!admin||uploading)return;clean();$('uploadStatus').textContent='';$('uploadProgress').hidden=true;$('shelf').hidden=true;$('editor').hidden=false};
+$('cancelUpload').onclick=()=>{if(!uploading){discardFiles();$('uploadForm').reset();void shelf();}};
+$('fileInput').onchange=e=>{if(uploading||!admin)return;discardFiles();chosen=[...e.target.files].sort(compare);showFiles();};
+$('zipInput').onchange=e=>{const file=e.target.files?.[0];if(file)void publishFiles(file);};
+$('sort').onclick=()=>{if(!uploading){chosen.sort(compare);showFiles();}};
+$('uploadForm').onsubmit=e=>{e.preventDefault();void publishFiles();};
+async function publishFiles(archiveFile=null){
+ if(uploading||!admin||!user)return;
+ if(!archiveFile&&(!chosen.length||chosen.length>500)){notice('이미지를 1~500장 선택해 주세요.');return;}
+ if(!archiveFile&&chosen.some(f=>f.size>20971520)){notice('한 장의 용량은 20MB 이하여야 해요.');return;}
+ if(!archiveFile&&!$('title').value.trim()){notice('제목을 입력해 주세요.');return;}
+ const token=generation,owner=user.id,control=new AbortController();uploadController=control;uploading=true;lockUpload(true);
+ const current=()=>token===generation&&user?.id===owner&&admin&&!control.signal.aborted;
+ const check=()=>{if(!current())throw Error('로그인이 바뀌었어요.');};
+ $('uploadProgress').hidden=false;$('uploadProgress').value=0;let id=null,published=false;
+ try{
+  if(archiveFile){
+   $('uploadStatus').textContent='압축 안의 만화 이미지를 확인하고 있어요.';
+   const archive=await window.OjjudaComicArchive.open(archiveFile,{compare,signal:control.signal,onProgress:count=>{if(current())$('uploadStatus').textContent=`압축파일 확인 중 · 이미지 ${count}장`;}});
+   if(!current()){await archive.close();check();}
+   discardFiles();uploadArchive=archive;chosen=archive.pages;showFiles();
+   if(!$('title').value.trim())$('title').value=archive.title||'창작만화';
+  }
+  const files=[...chosen],title=$('title').value.trim();check();
+  id=crypto.randomUUID();await result(client.from('creative_comics').insert({id,title,description:$('description').value.trim()}));
+  for(let i=0;i<files.length;i++){
+   check();$('uploadStatus').textContent=`이미지 준비 중 ${i+1} / ${files.length} · ${files[i].name}`;
+   // A ZIP is kept as a file handle; only this page is decompressed in memory.
+   const file=files[i].read?await files[i].read({signal:control.signal}):files[i];check();
+   const info=await imageInfo(file);check();const path=owner+'/'+id+'/'+crypto.randomUUID()+'.'+info.ext;
+   $('uploadStatus').textContent=`업로드 중 ${i+1} / ${files.length} · ${file.name}`;
+   await result(client.from('creative_comic_pages').insert({comic_id:id,position:i+1,filename:file.name,path,width:info.width,height:info.height}));check();
+   await result(client.storage.from('creative-comics').upload(path,file,{contentType:info.mime,cacheControl:'0',upsert:false}));check();
+   $('uploadProgress').value=Math.round((i+1)/files.length*100);
+  }
+  check();await result(client.from('creative_comics').update({published:true}).eq('id',id).select('id').single());published=true;check();
+  $('uploadForm').reset();discardFiles();notice(`만화 ${files.length}장을 공개했어요. 만 19세 이상 회원이 읽을 수 있어요.`);await shelf();
+ }catch(error){
+  let cleanup=true;if(id&&!published&&current())try{await removeBook(id);}catch{cleanup=false;}
+  if(current())$('uploadStatus').textContent=published?'등록은 완료됐어요. 목록을 새로고침해 주세요.':
+   error.comicArchive?error.message:!cleanup?'목록에 비공개로 남겨 두었어요. 삭제 후 다시 올려 주세요.':'업로드를 완료하지 못했어요. 파일과 연결 상태를 확인한 뒤 다시 시도해 주세요.';
+ }finally{if(uploadController===control)uploadController=null;uploading=false;lockUpload(false);$('zipInput').value='';showFiles();}
+}
 function nav(){const step=$('viewMode').value==='spread'?2:1;$('page').value=index+1;$('page').max=pageRows.length;$('total').textContent='/ '+pageRows.length;$('first').disabled=index===0;$('prev').disabled=index===0;const last=index+step>=pageRows.length;$('next').textContent=last?'다음화':'다음';$('next').disabled=last&&!nextEpisode;$('next').title=last?(nextEpisode?'다음화: '+nextEpisode.title:'다음화가 연결되지 않았어요.'):'다음 페이지';remember()}
 function resize(){if(!pageRows.length)return;const mode=$('viewMode').value,width=Math.max(80,vp.clientWidth-32),height=Math.max(80,vp.clientHeight-32);let scale=1;if(mode!=='scroll'){const rows=pageRows.slice(index,index+(mode==='spread'?2:1));scale=Math.min(height,...rows.map(p=>height));const ratios=rows.reduce((a,p)=>a+p.width/p.height,0);scale=Math.min(height,(width-8*(rows.length-1))/ratios)}document.querySelectorAll('.sheet').forEach(n=>{const p=pageRows[+n.dataset.index];n.style.width=(mode==='scroll'?Math.min(900,width):scale*p.width/p.height)*zoom+'px';n.style.aspectRatio=p.width+'/'+p.height});$('zoomValue').textContent=Math.round(zoom*100)+'%'}
 // Share one authorized download between a displayed page and its prefetch.

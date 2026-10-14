@@ -3,17 +3,18 @@
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n};
 const btn=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=fn;return b};
 window.OjjudaComicEditor={create({client,getSession,onOpen,onDone,notice,compare,imageInfo}){
- const host=document.getElementById('editComic');let state=null,run=0,busy=false,dirty=false,previewUrl=null,previewRun=0;
+ const host=document.getElementById('editComic');let state=null,run=0,busy=false,dirty=false,previewUrl=null,previewRun=0,importController=null;
+ const archives=new Set();
  const result=async q=>{const {data,error}=await q;if(error)throw error;return data};
  const valid=s=>state===s&&s.owner===getSession().user?.id&&s.generation===getSession().generation&&getSession().admin;
  function dropPreview(){previewRun++;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null}
- function reset(){run++;state=null;busy=false;dirty=false;dropPreview();host.replaceChildren();host.hidden=true}
+ function reset(){run++;importController?.abort();importController=null;for(const archive of archives)void archive.close();archives.clear();state=null;busy=false;dirty=false;dropPreview();host.replaceChildren();host.hidden=true}
  function changed(){dirty=true;dropPreview();host.querySelector('.edit-preview')?.replaceChildren()}
  function lock(value){busy=value;host.querySelectorAll('button,input,textarea,select').forEach(n=>n.disabled=value);if(!value&&state)drawPages()}
  function field(label,type,value){const box=el('label',label),input=el(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;input.value=value??'';box.append(input);input.oninput=changed;return {box,input}}
  async function cancel(){if(busy)return;if(dirty&&!confirm('저장하지 않은 수정을 취소할까요?'))return;reset();await onDone()}
  async function preview(item){const s=state;if(!s||busy)return;dropPreview();const token=previewRun,target=host.querySelector('.edit-preview');target.replaceChildren(el('p','이미지를 불러오는 중…'));
-  try{const blob=item.file||await result(client.storage.from('creative-comics').download(item.path));if(!valid(s)||token!==previewRun)return;previewUrl=URL.createObjectURL(blob);const img=el('img');img.src=previewUrl;img.alt=item.filename||item.file.name;target.replaceChildren(img,btn('미리보기 닫기',()=>{dropPreview();target.replaceChildren()}));target.scrollIntoView({block:'nearest'})}catch{if(valid(s)&&token===previewRun)target.replaceChildren(el('p','이미지를 불러오지 못했어요.'),btn('다시 시도',()=>preview(item)))}
+  try{const blob=item.file?(item.file.read?await item.file.read():item.file):await result(client.storage.from('creative-comics').download(item.path));if(!valid(s)||token!==previewRun)return;previewUrl=URL.createObjectURL(blob);const img=el('img');img.src=previewUrl;img.alt=item.filename||item.file.name;target.replaceChildren(img,btn('미리보기 닫기',()=>{dropPreview();target.replaceChildren()}));target.scrollIntoView({block:'nearest'})}catch{if(valid(s)&&token===previewRun)target.replaceChildren(el('p','이미지를 불러오지 못했어요.'),btn('다시 시도',()=>preview(item)))}
  }
  function move(from,to){if(busy||!state)return;const list=state.pages;to=Math.max(0,Math.min(list.length-1,to));list.splice(to,0,list.splice(from,1)[0]);changed();drawPages()}
  function drawPages(){const s=state;if(!s)return;s.list.replaceChildren();s.count.textContent=s.pages.length+'장 · 저장 전에는 기존 내용이 유지돼요.';
@@ -35,9 +36,9 @@ window.OjjudaComicEditor={create({client,getSession,onOpen,onDone,notice,compare
    for(let i=0;i<s.pages.length;i++){
     if(!valid(s))throw Error('session');const p=s.pages[i];
     if(!p.file){pages.push({id:p.id});continue}
-    if(!p.staged){const info=await imageInfo(p.file);if(!valid(s))throw Error('session');const path=s.owner+'/'+s.book.id+'/'+crypto.randomUUID()+'.'+info.ext;
+    if(!p.staged){const file=p.file.read?await p.file.read():p.file;const info=await imageInfo(file);if(!valid(s))throw Error('session');const path=s.owner+'/'+s.book.id+'/'+crypto.randomUUID()+'.'+info.ext;
      s.message.textContent=`바뀐 이미지 업로드 중 ${i+1} / ${s.pages.length}`;
-     await result(client.storage.from('creative-comics').upload(path,p.file,{contentType:info.mime,cacheControl:'0',upsert:false}));
+     await result(client.storage.from('creative-comics').upload(path,file,{contentType:info.mime,cacheControl:'0',upsert:false}));
      p.staged={path,filename:p.file.name,width:info.width,height:info.height};
     }pages.push(p.staged);
    }
@@ -49,6 +50,24 @@ window.OjjudaComicEditor={create({client,getSession,onOpen,onDone,notice,compare
    if(!valid(s))return;reset();notice('수정 내용을 저장했어요.');await onDone();
   }catch(error){if(valid(s))s.message.textContent=error.code==='40001'?'다른 곳에서 먼저 수정했어요. 현재 화면을 취소하고 다시 열어 주세요.':(committed?'저장은 완료됐어요. 목록을 새로고침해 주세요.':'저장하지 못했어요. 기존 만화는 유지됩니다. 연결 상태를 확인하고 다시 저장해 주세요.');}
   finally{if(valid(s))lock(false)}
+ }
+ async function addArchives(s,input,files){
+  if(!valid(s)||busy)return;lock(true);const control=new AbortController();importController=control;const opened=[];
+  try{
+   const additions=[];
+   for(const file of files){
+    if(!valid(s))return;
+    if(window.OjjudaComicArchive.isArchive(file)){
+     s.message.textContent='압축 안의 이미지를 정리하고 있어요.';
+     const archive=await window.OjjudaComicArchive.open(file,{compare,signal:control.signal,maxPages:500-s.pages.length-additions.length});opened.push(archive);
+     if(!valid(s))return;additions.push(...archive.pages);
+    }else additions.push(file);
+    if(s.pages.length+additions.length>500)throw Error('한 만화에는 최대 500장까지 넣을 수 있어요.');
+   }
+   if(!valid(s))return;for(const archive of opened)archives.add(archive);
+   s.pages.push(...additions.sort(compare).map(file=>({file})));changed();s.message.textContent=`${additions.length}장을 추가했어요. 수정 저장을 누르면 반영돼요.`;
+  }catch(error){if(valid(s))s.message.textContent=error.message||'압축파일을 확인해 주세요.';}
+  finally{for(const archive of opened)if(!archives.has(archive))void archive.close();if(importController===control)importController=null;if(valid(s)){input.value='';lock(false);}}
  }
  async function open(book,seriesNames=[]){if(busy)return;reset();const token=run,session=getSession();if(!session.admin)return;onOpen();host.hidden=false;host.replaceChildren(el('p','수정할 만화를 불러오는 중…'));
   try{const [fresh,pages,books]=await Promise.all([result(client.from('creative_comics').select('id,title,description,revision,series_title,series_order,next_comic_id').eq('id',book.id).single()),result(client.from('creative_comic_pages').select('id,filename,path,width,height,position').eq('comic_id',book.id).order('position')),result(client.from('creative_comics').select('id,title,published,series_title,series_order').order('created_at',{ascending:false}))]);
@@ -62,7 +81,7 @@ window.OjjudaComicEditor={create({client,getSession,onOpen,onDone,notice,compare
    form.append(names,el('p','같은 묶음 이름을 입력하면 한 시리즈로 모여요. 이름을 비우면 묶음에서 빠집니다.','hint'));
    const nextLabel=el('label','다음화 연결'),next=el('select');next.id='comicNext';s.next=next;next.onchange=changed;const none=el('option','연결 안 함');none.value='';next.append(none);
    for(const target of books.filter(b=>b.id!==fresh.id)){const option=el('option',target.title+(target.published?'':' (비공개)'));option.value=target.id;next.append(option)}next.value=fresh.next_comic_id||'';nextLabel.append(next);form.append(nextLabel,el('p','마지막 페이지의 ‘다음화’ 버튼으로 연결돼요. 비공개 만화는 일반 독자가 열 수 없어요.','hint'));
-   const add=field('페이지 추가','file','');add.input.multiple=true;add.input.accept='image/png,image/jpeg,image/webp';add.input.onchange=()=>{if(busy)return;const files=[...add.input.files].sort(compare);if(s.pages.length+files.length>500){s.message.textContent='최대 500장까지 넣을 수 있어요.';add.input.value='';return}s.pages.push(...files.map(file=>({file})));add.input.value='';changed();drawPages()};form.append(add.box);
+   const add=field('페이지 추가 · 이미지 또는 ZIP','file','');add.input.multiple=true;add.input.accept='image/png,image/jpeg,image/webp,.zip,.cbz,application/zip,application/x-zip-compressed';add.input.onchange=()=>{if(busy)return;const files=[...add.input.files].sort(compare);if(files.some(f=>/\.(zip|cbz)$/i.test(f.name))){void addArchives(s,add.input,files);return;}if(s.pages.length+files.length>500){s.message.textContent='최대 500장까지 넣을 수 있어요.';add.input.value='';return}s.pages.push(...files.map(file=>({file})));add.input.value='';changed();drawPages()};form.append(add.box);
    s.count=el('p',null,'hint');s.list=el('ol',null,'edit-pages');form.append(s.count,btn('파일 번호순 정렬',()=>{s.pages.sort((a,b)=>compare({name:a.filename||a.file.name},{name:b.filename||b.file.name}));changed();drawPages()}),el('div',null,'edit-preview'),s.list);
    s.message=el('p');s.message.setAttribute('role','status');const submit=el('button','수정 저장','primary');submit.type='submit';form.append(s.message,submit);host.append(form);drawPages();
   }catch{if(token===run)host.replaceChildren(el('p','수정 화면을 불러오지 못했어요.'),btn('목록으로',cancel))}
