@@ -1,7 +1,8 @@
 const assert=require('node:assert/strict');
-const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+const fs=require('node:fs'),path=require('node:path');
+const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
 (async()=>{
- const f=await fixture({adaptive:true}),{db,call}=f;
+ const f=await fixture({adaptive:true,thousandStake:false}),{db,call}=f;
  const current=await import('../games/matgo-engine.mjs');
  const legacy=await import('../supabase/functions/matgo/engine-v10.mjs');
  const {dealSoloRound}=await import('../games/matgo-tazza.mjs');
@@ -28,6 +29,24 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
   assert.ok(g.over);return {g,outcome:result.type==='nagari'?'draw':result.winner===0?'win':'loss'};
  }
  try{
+  // Upgrading the ladder preserves already raised stakes and live snapshots.
+  await reset(4,300000);const prior=await start();assert.equal(prior.round.rate,2000);
+  for(const [actor,gold] of [[B,400000],[C,300000]]){
+   await call(actor,{action:'status'});await db.query('update ojjuda_matgo_internal.wallets set gold=$2 where user_id=$1',[actor,gold]);
+  }
+  const priorRoom=await call(B,{action:'online_create',stakes_version:1});
+  const priorJoin=await call(C,{action:'online_join',code:priorRoom.room.code,stakes_version:1});assert.equal(priorJoin.room.rate,2000);
+  const migrations=path.join(__dirname,'../supabase/migrations');
+  await db.exec(fs.readFileSync(path.join(migrations,fs.readdirSync(migrations).find(n=>n.endsWith('_matgo_thousand_stake.sql'))),'utf8'));
+  await db.query("select public.matgo_wallet_service($1,'status')",[A]);
+  let kept=await status();assert.equal(kept.status,200,JSON.stringify(kept));assert.equal(kept.stake_rate,2000);assert.equal(kept.round.rate,2000);assert.equal(kept.round.id,prior.round.id);
+  assert.equal((await call(B,{action:'online_read',room_id:priorRoom.room.id,stakes_version:1})).room.rate,2000);
+  assert.equal((await call(B,{action:'status'})).stake_rate,5000,'an already raised amount is retained after the rule change');
+  const oldRatePlay=await play(prior.round);
+  const oldRateResult=await call(A,{action:'settle',rules_version:11,round_id:prior.round.id,actions:oldRatePlay.g.actions});
+  assert.equal(oldRateResult.status,200);assert.equal(oldRateResult.gold,oldRatePlay.g.bank[0],'existing transcripts settle using their original stake');
+  await db.query('update ojjuda_matgo_internal.wallets set online_room=null,stake_rate=100,stake_seen=100 where user_id in($1,$2)',[B,C]);
+  await db.query("update ojjuda_matgo_internal.rooms set status='cancelled' where id=$1",[priorRoom.room.id]);
   await reset();
   assert.equal((await call(MINOR,{action:'start',rules_version:11,stakes_version:1})).error,'adult_required');
   assert.equal((await call(A,{action:'start',rules_version:10,stakes_version:1})).error,'client_update_required');
@@ -97,11 +116,15 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
   const completed=await call(A,{action:'settle',rules_version:10,round_id:s.round.id,actions:old.g.actions});assert.equal(completed.status,200);assert.equal(completed.cpu_win_streak,0);
   assert.equal((await start()).round.cpu_level,Math.max(5,Math.min(10,1+Math.floor(completed.gold/100000))),'a new round enforces the gold floor after a legacy round');
   // Exact stake boundaries, no offers, and old decline memory cannot suppress a raise.
-  const brackets=[[99999,1,100],[100000,2,200],[100001,2,200],[199999,2,200],[200000,3,500],[299999,3,500],[300000,4,2000],[400000,5,5000],[500000,6,10000],[600000,7,20000],[700000,8,50000],[800000,9,100000],[900000,10,100000],[9007199254740991,10,100000]];
+  const brackets=[[99999,1,100],[100000,2,200],[100001,2,200],[199999,2,200],[200000,3,500],[299999,3,500],[300000,4,1000],[399999,4,1000],[400000,5,2000],[499999,5,2000],[500000,6,3000],[600000,7,4000],[700000,8,5000],[800000,9,6000],[900000,10,7000],[1000000,10,8000],[10200000,10,100000],[10300000,10,101000],[9007199254740991,10,90071992545000]];
   for(const [gold,level,rate] of brackets){
    await reset(1,gold);await db.query('update ojjuda_matgo_internal.wallets set stake_seen=100000 where user_id=$1',[A]);
    s=await start();assert.equal(s.stake_offer,null);assert.equal(s.round.rate,rate);assert.equal(s.round.cpu_level,level,'exact gold threshold sets the minimum level');
   }
+  // The new 1,000G rate works through full authoritative replay and settlement.
+  await reset(1,300000);s=await start();const thousandPlay=await play(s.round);
+  const thousandResult=await call(A,{action:'settle',rules_version:11,round_id:s.round.id,actions:thousandPlay.g.actions});
+  assert.equal(thousandResult.status,200);assert.equal(thousandResult.gold,thousandPlay.g.bank[0]);
   // Three losses cannot go below the current balance floor at any bracket.
   for(const [gold,level] of [[100000,2],[200000,3],[300000,4],[400000,5],[500000,6],[600000,7],[700000,8],[800000,9],[900000,10]]){
    await reset(1,gold);
@@ -125,23 +148,30 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
   const live=await start();assert.equal(live.round.id,s.round.id);assert.equal(live.round.cpu_level,1);assert.equal(live.round.rate,100);
   await record(live.round,'draw',200000);s=await start();assert.equal(s.round.cpu_level,3);assert.equal(s.round.rate,500);
   await reset(8);s=await start();assert.equal(s.round.cpu_level,8);assert.equal(s.round.rate,100);
-  const raised=await record(s.round,'win',400000);assert.equal(raised.stake_rate,5000);s=await start();assert.equal(s.round.rate,5000);
+  const raised=await record(s.round,'win',400000);assert.equal(raised.stake_rate,2000);s=await start();assert.equal(s.round.rate,2000);
   await db.query('update ojjuda_matgo_internal.wallets set gold=900000 where user_id=$1',[A]);
-  assert.equal((await status()).round.rate,5000,'ongoing stake stays fixed');
-  s=await record(s.round,'loss',10000);assert.equal(s.stake_rate,5000,'lower balance retains the attained stake');
+  assert.equal((await status()).round.rate,2000,'ongoing stake stays fixed');
+  s=await record(s.round,'loss',10000);assert.equal(s.stake_rate,2000,'lower balance retains the attained stake');
+  s=await start();await record(s.round,'loss',999);await call(A,{action:'refill',request_id:crypto.randomUUID(),paid:false});
+  assert.equal((await status()).stake_rate,2000,'a refill before all-in cannot lower the saved stake');
   s=await start();await record(s.round,'loss',0);assert.equal((await status()).stake_rate,100);
-  await call(A,{action:'refill',request_id:crypto.randomUUID(),paid:false});s=await start();assert.equal(s.round.rate,100);assert.equal(s.round.cpu_level,8,'refill does not reset difficulty');
+  await call(A,{action:'refill',request_id:crypto.randomUUID(),paid:false});s=await start();assert.equal(s.round.rate,100);assert.equal(s.round.cpu_level,7,'refill preserves the level reached after three losses');
   // Online uses automatic per-player caps, with its own fixed rate and no solo statistics.
-  await reset(4,400000);await call(B,{action:'status'});await db.query('update ojjuda_matgo_internal.wallets set gold=300000 where user_id=$1',[B]);
-  let room=await call(A,{action:'online_create',stakes_version:1});assert.equal(room.status,200);
-  const joined=await call(B,{action:'online_join',code:room.room.code,stakes_version:1});assert.equal(joined.status,200);assert.equal(joined.room.rate,2000);
+  await reset(4,400000);await db.query('update ojjuda_matgo_internal.wallets set gold=300000,stake_rate=100,stake_seen=100 where user_id=$1',[B]);
+  let room=await call(A,{action:'online_create',stakes_version:1});assert.equal(room.status,200,JSON.stringify(room));
+  const joined=await call(B,{action:'online_join',code:room.room.code,stakes_version:1});assert.equal(joined.status,200,JSON.stringify(joined));assert.equal(joined.room.rate,1000);
   await db.query('update ojjuda_matgo_internal.wallets set gold=900000 where user_id in($1,$2)',[A,B]);
-  room=await call(A,{action:'online_read',room_id:room.room.id,stakes_version:1});assert.equal(room.room.rate,2000);assert.equal((await status()).cpu_win_streak,0);
+  room=await call(A,{action:'online_read',room_id:room.room.id,stakes_version:1});assert.equal(room.room.rate,1000);assert.equal((await status()).cpu_win_streak,0);
+  // Higher balances keep the same linear rule without overflowing online caps.
+  await db.query('update ojjuda_matgo_internal.wallets set online_room=null,gold=300000000000,stake_rate=100,stake_seen=100 where user_id in($1,$2)',[A,B]);
+  await db.query("update ojjuda_matgo_internal.rooms set status='cancelled' where id=$1",[room.room.id]);
+  room=await call(A,{action:'online_create',stakes_version:1});assert.equal(room.status,200,JSON.stringify(room));
+  const high=await call(B,{action:'online_join',code:room.room.code,stakes_version:1});assert.equal(high.status,200);assert.equal(high.room.rate,2999998000);
   for(const role of ['anon','authenticated']){
    const permitted=(await db.query("select has_function_privilege($1,'public.matgo_ranked_settle(uuid,uuid,bigint,smallint,integer,text)','EXECUTE') allowed",[role])).rows[0].allowed;
    assert.equal(permitted,false,'clients cannot supply their own outcomes');
   }
   assert.equal((await db.query("select has_function_privilege('service_role','public.matgo_ranked_settle(uuid,uuid,bigint,smallint,integer,text)','EXECUTE') allowed")).rows[0].allowed,true);
-  console.log('PASS: 5-win/3-loss streaks and resets, next-round snapshots, paid/draw exclusion, authoritative replay, retry/concurrency, legacy compatibility, gold minimum levels, 100,000G stake thresholds, bankruptcy/refill and online isolation');
+  console.log('PASS: 5-win/3-loss streaks and resets, next-round snapshots, paid/draw exclusion, authoritative replay, retry/concurrency, legacy compatibility, gold minimum levels, linear 1,000G stakes, saved-rate retention, bankruptcy/refill and online isolation');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

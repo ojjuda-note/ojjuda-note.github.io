@@ -50,7 +50,7 @@ export async function replayOnline(room) {
   });
   game.cpuMode='normal'; // A member's balance never changes PvP timeout/takeover AI.
   const rate=room.round_rate??100;
-  if(![100,200,500,2000,5000,10000,20000,50000,100000].includes(rate))throw Error('invalid_stake');
+  if(!Number.isSafeInteger(rate)||!([100,200,500].includes(rate)||(rate>=1000&&rate%1000===0)))throw Error('invalid_stake');
   game.rate=rate; // Only the database snapshot decides the shared rate.
   game.random=await secretRandom(room.seed);game.bank=[...room.start_gold];
   game.first=room.first;game.carry=room.carry;game.deal();

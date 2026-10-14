@@ -33,7 +33,7 @@ async function fixture({adaptive=false}={}){
   }
   const refill=fs.readdirSync(migrations).find(n=>n.endsWith('_matgo_additive_refill.sql'));
   await db.exec(fs.readFileSync(path.join(migrations,refill),'utf8'));
-  if(adaptive)for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql','_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql']){
+  if(adaptive)for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql','_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql','_matgo_thousand_stake.sql']){
     const file=fs.readdirSync(migrations).find(n=>n.endsWith(suffix));await db.exec(fs.readFileSync(path.join(migrations,file),'utf8'));
   }
   async function arcade(actor,action,params={}){
