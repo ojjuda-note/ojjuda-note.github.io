@@ -1,0 +1,53 @@
+name: Verify Matgo gold difficulty
+on:
+  push:
+    branches: [codex/matgo-basic-difficulty-20261015]
+    paths: ['ops/matgo-basic-difficulty.patch']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/matgo-basic-difficulty-20261015
+      - name: Apply and verify source changes
+        run: |
+          git apply --check ops/matgo-basic-difficulty.patch
+          git apply ops/matgo-basic-difficulty.patch
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          rows=json.loads(pathlib.Path('ops/matgo-basic-difficulty-manifest.json').read_text())
+          for row in rows:
+              data=pathlib.Path(row['path']).read_bytes()
+              assert len(data)==row['size'] and hashlib.sha256(data).hexdigest()==row['sha256'],row['path']
+          subprocess.run(['git','add','--']+[r['path'] for r in rows],check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Apply three gold-based Matgo difficulty tiers"
+          git push origin HEAD:codex/matgo-basic-difficulty-20261015
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - name: Verify difficulty, settlements and mobile screens
+        run: |
+          node tests/matgo-adaptive.test.cjs
+          node tests/matgo-tazza.test.mjs
+          node tests/matgo-ui.test.cjs
+          node tests/matgo-stakes-ui.test.cjs
+          node tests/matgo-online-effects-ui.test.cjs
+          node tests/matgo-online-ui.test.cjs
+      - name: Retain difficulty screen proof temporarily
+        if: success()
+        run: |
+          mkdir -p ops/matgo-basic-difficulty-proof
+          cp /tmp/matgo-basic-proof/*.png ops/matgo-basic-difficulty-proof/
+          git add ops/matgo-basic-difficulty-proof
+          git commit -m "Retain three-tier mobile verification"
+          git push origin HEAD:codex/matgo-basic-difficulty-20261015
