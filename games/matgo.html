@@ -15,6 +15,8 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 #matgo-gate{min-height:100%;display:grid;place-content:center;text-align:center;padding:24px;gap:12px}
 #matgo-gate[hidden]{display:none}#matgo-gate h1{font-size:24px;margin:0}#matgo-gate p{max-width:360px;line-height:1.7;margin:0}
 #matgo-gate a,#matgo-gate button{display:inline-block;color:#2e2748;background:#f2c14e;padding:12px 20px;border-radius:999px;text-decoration:none;font:inherit}
+.round-rules-note{flex-shrink:0;margin:0 12px 3px;padding:4px 8px;border-radius:8px;background:#f2c14e18;color:#f4dc9c;font-size:11px;line-height:1.4;text-align:center}
+.round-rules-note[hidden]{display:none}
 </style>
 <link rel="stylesheet" href="./matgo-viewport.css?v=20261005-score1">
 <script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
@@ -415,6 +417,7 @@ function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
   app.innerHTML=`<div class="top"><h1><em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary class="pill" id="menu" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><div class="gold-pending" id="goldPending" aria-live="polite" hidden></div><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button><button class="pill" id="online">회원 대결</button><button class="pill" id="gukjin" hidden></button></div></details><button class="pill" id="exit">나가기</button></div>
+  <p id="round-rules-note" class="round-rules-note" role="status" hidden>이전 판 이어하기 · 바닥뻑 규칙은 다음 판부터 적용</p>
   <div class="zone op"><div class="who"><b class="cpu-opponent">${cpuPortraitHTML()}<span class="cpu-name">컴퓨터 <small id="cpuLevel"></small></span></b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
   <div class="floor"><div class="fl" id="fl"></div><div class="deck"><button id="tazza-mode" class="tazza-button" type="button" aria-pressed="false"><span>타짜모드</span><small>다음 판 · 5쭈</small></button><div class="back">${backSVG}</div><small id="deckN"></small></div></div>
   <div class="log" id="log"></div>
@@ -423,7 +426,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-bonus-pi1');};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261014-round-refresh1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -443,6 +446,7 @@ function render(){
   syncTazza();vent.sync();
   const my=score(game.caps[ME]), op=score(game.caps[CPU]); const myTurn=game.turn===ME&&!game.over&&!ui.busy;
   $('#cpuLevel').textContent=`${game.cpuLevel??1}단계`;
+  $('#round-rules-note').hidden=game.over||game.openingPpuk!==false;
   $('#stakeRate').textContent='점당 '+(game.over?(wallet.current.stake_rate??game.rate):game.rate).toLocaleString()+'G';
   $('#money').textContent=game.bank[ME].toLocaleString()+UNIT; $('#opHand').textContent=`손패 ${game.hand[CPU].length}장`; $('#opPts').textContent=op.pts+'점'; $('#mePts').textContent=my.pts+'점';
   for(const [id,n] of [['opGo',game.go[CPU]],['meGo',game.go[ME]]]){ const el=document.getElementById(id); el.hidden=!n; el.textContent=n+'고'; }
@@ -595,13 +599,20 @@ async function startRound(){
   const assisted=tazza.begin();syncTazza();vent.clear();vent.sync();
   let state;
   try{await access.check();state=await wallet.start({tazza:assisted});}
-  catch(error){roundCheck=false;tazza.finish(false);syncTazza();vent.sync();if(error.code==='gold_empty'){render();await showRefill();}else{toast(error.message,3500);modal('<h2>게임 시작</h2><p id="start-error"></p><div class="row"><button class="btn" id="retry-start">다시 시작</button></div>',{'retry-start':()=>startRound()});document.getElementById('start-error').textContent=error.message;}return false;}
+  catch(error){
+    roundCheck=false;tazza.finish(false);syncTazza();vent.sync();
+    if(error.code==='gold_empty'){render();await showRefill();}
+    else if(error.code==='client_update_required'){
+      modal('<h2>맞고 업데이트</h2><p>맞고가 업데이트됐어요. 최신 화면으로 다시 열어 주세요.</p><div class="row"><button class="btn gold" id="refresh-start">업데이트하고 시작</button></div>',{'refresh-start':()=>{const url=new URL(location.href);url.searchParams.set('update',String(Date.now()));location.replace(url.href);}});
+    }else{toast(error.message,3500);modal('<h2>게임 시작</h2><p id="start-error"></p><div class="row"><button class="btn" id="retry-start">다시 시작</button></div>',{'retry-start':()=>startRound()});document.getElementById('start-error').textContent=error.message;}
+    return false;
+  }
   finally{roundCheck=false;}
   if(document.body.classList.contains('matgo-locked')){tazza.finish(false);syncTazza();return false;}
   currentRound=state.round.id;game.roundCpuLevel=state.round.cpu_level;game.rate=state.round.rate??100;game.bank=[state.gold,5000];game.first=state.round.first;game.carry=state.round.carry;
   Sound.cancel();ui.chooseStacks=null;ui.resolveChoose=null;ui.holdRect=null;ui.lastHandRect=null;ui.dealing=true;ui.busy=true;ui.warned={};LAYOUT_N=-1;dealSoloRound(game,state.round,{Game,seededRandom});tazza.finish(true);stackEls.forEach(el=>el.remove());stackEls=new Map();
   if($('#fl'))document.querySelectorAll('#capsOp .cap .c,#capsMe .cap .c,#handMe .c,#handOp .c').forEach(e=>e.remove());
-  render();if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
+  render();if(game.openingPpuk===false)toast('이전에 시작한 판을 이어갑니다. 이 판을 끝내고 다음 판을 누르면 바닥뻑 규칙이 적용돼요.',6000);else if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
 }
 async function dealAnim(){ // 패 돌리기: 바닥 카드가 덱에서 하나씩 날아와 깔림
   const dk=$('.deck .back').getBoundingClientRect(); stackEls.forEach(el=>el.style.visibility='hidden');
