@@ -8,15 +8,29 @@ const {fixture}=require('./matgo-online-fixture.cjs');
   const settle=async(actor,round)=>db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,5000,0::smallint,1)",[actor,round]);
   const coins=async actor=>(await db.query('select coins from public.user_private where user_id=$1',[actor])).rows[0].coins;
   try{
+    // Replace only the RNG dependency in this disposable database, never in a migration.
+    const definition=(await db.query("select pg_get_functiondef('ojjuda_matgo_internal.fun_service(uuid,text,uuid,uuid,text)'::regprocedure) definition")).rows[0].definition;
+    await db.exec(`create schema matgo_test;create sequence matgo_test.draws;
+      create function matgo_test.random() returns double precision language plpgsql volatile as $$
+      begin perform nextval('matgo_test.draws');return current_setting('test.matgo_roll')::double precision;end$$;`);
+    const controlled=definition.replace(/\brandom\(\)/g,'matgo_test.random()');
+    assert.notEqual(controlled,definition);await db.exec(controlled);
+    const roll=async value=>db.query("select set_config('test.matgo_roll',$1,false)",[String(value)]);
+    const draws=async()=>(await db.query('select last_value from matgo_test.draws')).rows[0].last_value;
+    const bag=async()=>(await db.query('select remaining from ojjuda_matgo_internal.fun_modes where user_id=$1',[A])).rows[0].remaining;
+    const setBag=async modes=>db.query('update ojjuda_matgo_internal.fun_modes set remaining=$2 where user_id=$1',[A,modes]);
+    await roll(.5);
     assert.equal((await start(MINOR)).error,'adult_required');
     assert.equal((await call(A,{action:'tazza_start',request_id:id()})).status,400);
     assert.equal((await vent(A,id())).error,'no_active_round');
     assert.equal(await coins(A),20);
     const request=id(),first=await start(A,request);
     assert.equal(first.status,200);assert.equal(first.coins,15);assert.ok(first.round.tazza_mode);assert.equal(first.purchase.price,5);
+    const firstDraws=await draws(),firstBag=await bag();await roll(0);
     const retry=await start(A,request);assert.equal(retry.round.id,first.round.id);assert.equal(retry.round.tazza_mode,first.round.tazza_mode);assert.equal(retry.coins,15);assert.equal(retry.duplicate,true);
     assert.equal((await start(A,request,9)).round.id,first.round.id,'an open v9 page keeps its purchase receipt');
     assert.equal((await start(A)).coins,15,'separate tabs resume the same paid round');
+    assert.equal(await draws(),firstDraws,'retries and separate tabs never reroll a paid mode');assert.deepEqual(await bag(),firstBag);await roll(.5);
     assert.equal((await call(A,{action:'status'})).round.tazza_mode,first.round.tazza_mode,'read-only status preserves an active paid round');
     assert.equal((await start(B,request)).error,'purchase_mismatch');
     assert.equal(await coins(B),20);
@@ -39,7 +53,7 @@ const {fixture}=require('./matgo-online-fixture.cjs');
     await db.query('update public.user_private set coins=100 where user_id=$1',[A]);
     const modes=[first.round.tazza_mode];
     for(let i=0;i<15;i++){const s=await start(A);assert.equal(s.status,200);modes.push(s.round.tazza_mode);await settle(A,s.round.id);}
-    assert.equal(new Set(modes.slice(0,8)).size,8);assert.equal(new Set(modes.slice(8,16)).size,8);assert.equal(await coins(A),25);
+    assert.equal(new Set(modes.slice(0,7)).size,7);assert.equal(new Set(modes.slice(7,14)).size,7);assert.ok(!modes.includes('tan'));assert.equal(await coins(A),25);
     const normal=await call(A,{action:'start',stakes_version:1,rules_version:9});
     assert.equal(normal.round.tazza_mode,null);assert.equal((await start(A)).error,'round_in_progress');assert.equal(await coins(A),25);
     const tableId=id(),table=await vent(A,normal.round.id,tableId,'table');
@@ -72,6 +86,38 @@ const {fixture}=require('./matgo-online-fixture.cjs');
     const nextPaid=await start(A);assert.ok(nextPaid.round.tazza_mode);assert.equal(await coins(A),balanceBefore-5,'only the explicitly requested next paid hand charges');
     await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query("select public.matgo_fun_service($1,'tazza',$2)",[A,id()]);}),/permission denied/);
     await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role anon');await tx.exec('select * from ojjuda_matgo_internal.fun_purchases');}),/permission denied/);
-    console.log('PASS: atomic 5/1 ZU purchases, 8-mode shuffle bags, retry/concurrent deduplication, ownership, insufficient balance rollback, active-match checks, legacy protection and service-only permissions');
+    await settle(A,nextPaid.round.id);
+    await db.query('update public.user_private set coins=1000 where user_id=$1',[A]);
+    const purchase=async value=>{await roll(value);const s=await start(A);assert.equal(s.status,200);assert.equal(s.purchase.price,5);await settle(A,s.round.id);return s.round.tazza_mode;};
+    await setBag(['tan','cheong','peek']);
+    assert.equal(await purchase(.5),'cheong');assert.deepEqual(await bag(),['peek'],'old bags drop tan without losing remaining regular modes');
+    await setBag(['tan']);
+    assert.notEqual(await purchase(.5),'tan');assert.equal((await bag()).length,6,'tan-only legacy bag refills seven regular modes');
+    await setBag(['hong','gwang']);
+    assert.equal(await purchase(0),'tan');assert.deepEqual(await bag(),['hong','gwang']);
+    assert.equal(await purchase(.049999999999999996),'tan');assert.deepEqual(await bag(),['hong','gwang'],'independent tan draws may repeat and never consume regular modes');
+    assert.equal(await purchase(.05),'hong','the 5% boundary excludes tan');
+    assert.equal(await purchase(.9999999999999999),'gwang');assert.deepEqual(await bag(),[]);
+    assert.equal(await purchase(.025),'tan');assert.deepEqual(await bag(),[],'tan does not refill or consume an empty bag');
+    assert.notEqual(await purchase(.5),'tan');assert.equal((await bag()).length,6);
+    // A failed tan purchase also rolls back lazy removal from an old bag.
+    await setBag(['tan','peek']);await roll(0);await db.query('update public.user_private set coins=4 where user_id=$1',[A]);
+    const failedRequest=id();assert.equal((await start(A,failedRequest)).error,'insufficient_zzu');
+    assert.equal(await coins(A),4);assert.deepEqual(await bag(),['tan','peek']);assert.equal((await call(A,{action:'status'})).round,null);
+    assert.equal((await db.query('select count(*)::int n from ojjuda_matgo_internal.fun_purchases where request_id=$1',[failedRequest])).rows[0].n,0);
+    await db.query('update public.user_private set coins=1000 where user_id=$1',[A]);await setBag([]);
+    const samples=[];
+    for(let i=0;i<100;i++)samples.push(await purchase((i+.5)/100));
+    assert.equal(samples.filter(m=>m==='tan').length,5,'exactly 5% of the unit interval selects tan, without a purchase counter');
+    const regular=samples.filter(m=>m!=='tan');
+    for(let i=0;i+7<=regular.length;i+=7)assert.equal(new Set(regular.slice(i,i+7)).size,7,'all seven regular modes occur once per cycle');
+    assert.equal(await coins(A),500,'100 completed draws charge exactly 100 × 5 ZU');
+    // Restore the deployed function and check its real RNG wiring with a seeded round.
+    await db.exec(definition);await setBag(['peek']);
+    await db.query('select setseed(0.25)');await db.query('select random()');
+    const actualRoll=(await db.query('select random() value')).rows[0].value;
+    await db.query('select setseed(0.25)');const real=await start(A);
+    assert.equal(real.round.tazza_mode,actualRoll<.05?'tan':'peek');
+    console.log('PASS: independent 5% tan draws and boundaries, 7-mode cycles, legacy bag migration, atomic 5/1 ZU purchases, retry/concurrent deduplication, balance rollback, active-match checks and service-only permissions');
   }finally{await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
