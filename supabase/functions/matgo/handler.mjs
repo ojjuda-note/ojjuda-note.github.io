@@ -39,7 +39,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (!['status', 'start', 'refill', 'settle', 'stake', 'tazza_start', 'vent'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
       if (['tazza_start','vent'].includes(body.action) && !uuid.test(body.request_id)) throw Error();
       if (body.action==='tazza_start' && (![9,10].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
-      if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table'].includes(body.effect))) throw Error();
+      if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(body.effect))) throw Error();
       if(onlineActions.has(body.action)){
         if(body.stakes_version!==undefined&&body.stakes_version!==1)throw Error();
         if(['online_read','online_move','online_leave','online_ready','online_fallback'].includes(body.action)&&!uuid.test(body.room_id))throw Error();

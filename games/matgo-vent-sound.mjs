@@ -36,6 +36,15 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
     if(id==='gun'){
       noise(at,.12,.83,7500,'lowpass');noise(at+.009,.30,.52,1350);tone(at,.19,.56,150,47);
       noise(at+.062,.19,.14,1800,'bandpass');tone(at+.24,.17,.035,2900,2400);tone(at+.30,.12,.022,3600,3100);
+    }else if(id==='burst'){
+      noise(at,.065,.54,7200);noise(at+.012,.15,.25,1200);tone(at,.13,.32,175,55);tone(at+.07,.08,.025,3100,2300);
+    }else if(id==='slash'){
+      noise(at,.17,.32,6500,'highpass',.009,1800);tone(at,.23,.07,2100,620,'triangle');noise(at+.025,.12,.13,3200,'bandpass');
+    }else if(id==='tomato'){
+      tone(at,.20,.6,230,48);noise(at,.16,.62,1500,'lowpass',.009,320);
+      for(let i=0;i<5;i++){tone(at+.04+i*.037,.085,.08,440-i*53,80);noise(at+.04+i*.05,.055,.095,2200-i*210,'bandpass');}
+    }else if(id==='bat'){
+      noise(at,.085,.75,4800);tone(at,.22,.65,145,44);tone(at+.004,.28,.18,510,475);tone(at+.009,.18,.08,1120,1030);noise(at+.025,.23,.19,780);
     }else if(id==='hammer'){
       noise(at,.14,.73,4100);tone(at,.24,.65,105,38);
       for(const [frequency,gain] of [[720,.18],[1130,.115],[1850,.055]])tone(at,.62,gain,frequency,frequency*.985);
@@ -57,7 +66,8 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
   function play(id,hits){
     if(destroyed||!enabled()||document.hidden||ctx?.state!=='running')return false;
     stop();const start=ctx.currentTime+.018,first=(hits[0]||0)/1000;
-    if(id==='hammer'||id==='glove'||id==='table')noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
+    if(['hammer','glove','table','bat','tomato'].includes(id))noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
+    if(id==='slash')for(const ms of hits)noise(start+Math.max(0,ms/1000-.20),.19,.14,650,'bandpass',.03,5200);
     if(id==='bomb')noise(start,.75,.075,5200,'highpass',.05);
     if(id==='table')for(let i=0;i<8;i++)noise(start+first+.15+i*.10,.16,.055,1600+i*170,'bandpass',.025);
     if(id==='lightning'){tone(start,.55,.05,150,1050,'triangle');noise(start,.55,.055,4200,'bandpass',.15);}

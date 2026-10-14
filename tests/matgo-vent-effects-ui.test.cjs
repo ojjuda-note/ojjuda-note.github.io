@@ -12,6 +12,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
   await context.addInitScript(({muted,room,tableOnly})=>{
    localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;window.payments=[];window.decline=false;window.slowPurchase=false;
+   window.ventRoll=.01;Math.random=()=>window.ventRoll;
    window.audioStarts=[];window.audioContexts=[];window.audioMetrics={peak:0,energy:0,count:0};
    const NativeAudio=window.AudioContext,connect=AudioNode.prototype.connect;
    window.AudioContext=class extends NativeAudio{constructor(...args){super(...args);this.probe=this.createAnalyser();this.probe.fftSize=2048;audioContexts.push(this);}};
@@ -50,6 +51,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   const metrics=[];
   const floorSnapshot=()=>page.evaluate(()=>({game:ventTest.snapshot(),piles:[...document.querySelectorAll('#app .fl > .stack')].map(s=>({cards:[...s.querySelectorAll('[data-face]')].map(c=>c.dataset.face),slot:s.dataset.slot}))}));
   for(const effect of VENT_EFFECTS){
+   await page.evaluate(roll=>{ventRoll=roll;},(VENT_EFFECTS.indexOf(effect)+.5)/VENT_EFFECTS.length);
    const before=await floorSnapshot();let airbornePiles;
    if(effect.id==='table')await page.locator('#app .fl > .stack').evaluateAll(stacks=>stacks.forEach(s=>s.style.visibility='visible')); // Solo dealing leaves explicit visibility on each pile.
    await page.waitForFunction(()=>!document.querySelector('#matgo-vent').disabled);
@@ -73,6 +75,10 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
     assert.ok(pose.iconBarrelX<0&&pose.iconGripY>0,'button gun faces into the board with its grip down');
    }
    if(effect.id==='glove'){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.y>=0&&b.x>=0&&b.x+b.width<=390,'enlarged glove stays fully on screen');}
+   if(['burst','slash','bat'].includes(effect.id)){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.width>=150&&b.x>=0&&b.y>=0&&b.x+b.width<=390,'new action artwork is large and fits the phone');}
+   if(effect.id==='burst'){assert.equal(await page.locator('.vent-projectile').count(),8);assert.equal(await page.locator('.vent-casing').count(),8);}
+   if(effect.id==='slash')assert.equal(await page.locator('.vent-slash-arc').count(),2);
+   if(effect.id==='tomato'){assert.equal(await page.locator('.vent-tomato-splat ellipse').count(),12);assert.equal(await page.locator('.vent-pulp-drop').count(),7);}
    if(effect.id==='table'){
     assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4,'cards in a floor pile fly separately');
     assert.equal(await page.locator('.vent-flying-card[data-kind=deck]').count(),18,'draw-pile backs join the scatter');
@@ -173,6 +179,19 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   }
   const calm=await screen({muted:true,reduced:true,tableOnly:true});await calm.page.locator('#matgo-vent').tap();await calm.page.locator('.vent-table').waitFor();
   assert.equal(await calm.page.locator('.vent-flying-card').count(),0);assert.equal(await calm.page.locator('body.matgo-table-flipping').count(),0);await calm.context.close();
-  assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, individual card scatter and restack, swept-floor/depleted-deck fallback, conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
+  for(const id of ['burst','slash','tomato','bat']){
+   const room=structuredClone(initial);room.bots[1]=true;
+   const sample=await screen({muted:true,room,viewport:{width:320,height:568}}),p=sample.page;
+   await p.evaluate(roll=>{ventRoll=roll;},(VENT_EFFECTS.findIndex(e=>e.id===id)+.5)/VENT_EFFECTS.length);
+   const before=await p.evaluate(()=>ventTest.snapshot());await p.locator('#matgo-vent').tap();await p.locator('.vent-'+id).waitFor();
+   await p.waitForTimeout(VENT_EFFECTS.find(e=>e.id===id).hits[0]+70);
+   assert.ok(await p.locator('.cpu-reaction').count());
+   assert.equal(await p.locator('.vent-layer').evaluate(el=>[...el.children].filter(c=>!c.classList.contains('cpu-reaction')).every(c=>Number(getComputedStyle(c).zIndex)>=2)),true,'new actions stay in front of the reaction photo');
+   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+   await p.screenshot({path:path.join(proof,id+'-small-phone.png')});
+   await p.locator('.vent-layer').waitFor({state:'detached'});assert.equal(await p.evaluate(()=>ventTest.snapshot()),before);assert.equal(await p.evaluate(()=>payments.length),1);
+   await sample.context.close();
+  }
+  assert.deepEqual(errors,[]);console.log('PASS: 10 large random effects, 8-shot burst, double slash, tomato splat, bat swing, upright gun, conserved cards and table restack; audible distinct sounds, charge-before-play, mute, portrait layering, small phones and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

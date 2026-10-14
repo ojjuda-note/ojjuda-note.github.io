@@ -7,7 +7,12 @@ import * as engine from '../games/matgo-engine.mjs';
 import {floorLayout,heldPairMonths} from '../games/matgo-view.mjs';
 import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games/matgo-tazza.mjs';
 import {shuffledFloorSlots,createTableFlipScene} from '../games/matgo-table-flip.mjs';
-import {createVentControls,VENT_EFFECTS} from '../games/matgo-deck-tools.mjs';
+import {createVentControls,VENT_EFFECTS,pickVentEffect} from '../games/matgo-deck-tools.mjs';
+
+assert.equal(VENT_EFFECTS.length,10);
+for(let i=0;i<VENT_EFFECTS.length;i++)assert.equal(pickVentEffect(()=>(i+.5)/VENT_EFFECTS.length),VENT_EFFECTS[i]);
+assert.equal(pickVentEffect(()=>0),VENT_EFFECTS[0]);assert.equal(pickVentEffect(()=>.999999999),VENT_EFFECTS.at(-1));
+assert.deepEqual([.65,.65,.15,.95,.05].map(n=>pickVentEffect(()=>n).id),['burst','burst','hammer','bat','gun'],'each click is independently random, not a fixed cycle');
 
 const originalGlobals=new Map(['window','document','innerWidth','ResizeObserver','setTimeout','clearTimeout'].map(k=>[k,globalThis[k]]));
 const realNow=Date.now;
@@ -92,8 +97,8 @@ try{
   const tick=ms=>{now+=ms;for(const [id,timer] of [...timers])if(timer.at<=now){timers.delete(id);timer.fn();}};
   let purchases=0,failPurchase=false,errors=0,rearrangements=0;
   const purchase=async effect=>{purchases++;if(failPurchase)throw Error('쭈가 부족해요.');return {purchase:{effect}};};
-  const sounds=[];let failAsset=false;
-  const vent=createVentControls({canPlay:()=>allowed,purchase,prepare:async()=>{if(failAsset)throw Error('image failed');},sound:{unlock(){},stop(){},destroy(){},play:(id,timing)=>sounds.push({id,timing})},onError:()=>errors++,onHit:()=>hits++,onRearrange:()=>rearrangements++});vent.mount();
+  const sounds=[];let failAsset=false,selection=0;
+  const vent=createVentControls({canPlay:()=>allowed,purchase,random:()=>selection,prepare:async()=>{if(failAsset)throw Error('image failed');},sound:{unlock(){},stop(){},destroy(){},play:(id,timing)=>sounds.push({id,timing})},onError:()=>errors++,onHit:()=>hits++,onRearrange:()=>rearrangements++});vent.mount();
   assert.ok(d.querySelector('#matgo-vent .vent-icon img[src$="gun.png"]'),'gun drawing replaces the bomb icon');
   assert.equal(d.querySelector('#matgo-vent small').textContent,'1쭈');
   failAsset=true;d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();assert.equal(purchases,0,'art failure never charges');assert.equal(sounds.length,0);failAsset=false;errors=0;
@@ -101,6 +106,7 @@ try{
   assert.equal(errors,1);assert.equal(d.querySelector('.vent-layer'),null,'no animation on declined payment');failPurchase=false;
   const preserved=JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]);
   for(const effect of VENT_EFFECTS){
+    selection=(VENT_EFFECTS.indexOf(effect)+.5)/VENT_EFFECTS.length;
     d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
     assert.equal(d.querySelector('.vent-layer')?.dataset.effect,effect.id);
     assert.equal(d.getElementById('matgo-vent').disabled,true);
@@ -111,14 +117,14 @@ try{
     tick(effect.duration-effect.hits.at(-1));assert.equal(d.body.classList.contains('matgo-cpu-surprised'),false);assert.equal(d.querySelector('.vent-layer'),null);
     tick(200);assert.equal(d.getElementById('matgo-vent').disabled,false);assert.equal(d.body.classList.contains('matgo-table-flipping'),false);
   }
-  assert.equal(rearrangements,1,'cleanup never shuffles twice');assert.equal(hits,8);assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
+  assert.equal(rearrangements,1,'cleanup never shuffles twice');assert.equal(hits,VENT_EFFECTS.reduce((n,e)=>n+e.hits.length,0));assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
   allowed=false;vent.sync();d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer'),null);
   // Online rerenders replace the entire board. A single delegated listener survives.
   allowed=true;d.querySelector('.floor').outerHTML='<div class="floor"><div class="deck"><div class="back"></div><small>20장</small></div></div>';
-  vent.mount();assert.equal(d.querySelectorAll('#matgo-vent').length,1);assert.equal(d.querySelector('.deck .tazza-button'),null,'online control does not introduce tazza');
+  selection=0;vent.mount();assert.equal(d.querySelectorAll('#matgo-vent').length,1);assert.equal(d.querySelector('.deck .tazza-button'),null,'online control does not introduce tazza');
   d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer').dataset.effect,'gun');
   vent.destroy();assert.equal(d.querySelector('.vent-layer'),null);assert.equal(timers.size,0);
-  console.log('PASS: real solo module boots; next-round toggle/cancel/failure/one-shot wiring; 6 effects, cooldown, cleanup, online remount and unchanged game state');
+  console.log('PASS: real solo module boots; next-round toggle/cancel/failure/one-shot wiring; 10 independently random effects, cooldown, cleanup, online remount and unchanged game state');
 }finally{
   w.testGame?.vent.destroy();dom.window.close();Date.now=realNow;
   for(const [key,value] of originalGlobals){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}

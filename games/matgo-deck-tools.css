@@ -73,7 +73,43 @@
 @keyframes vent-bolt{0%{opacity:0;transform:scaleX(.8)}28%,45%{opacity:1;transform:scaleX(1)}70%{opacity:.65}100%{opacity:0;transform:scaleX(.9)}}
 @keyframes vent-bolt-draw{from{stroke-dashoffset:420}to{stroke-dashoffset:0}}
 @keyframes vent-wobble{0%,100%{transform:translateX(0)}18%{transform:translateX(-6px) rotate(-3deg)}40%{transform:translateX(5px) rotate(2deg)}68%{transform:translateX(-2px)}}
-@media(prefers-reduced-motion:reduce){.vent-layer .vent-weapon,.vent-projectile,.vent-muzzle,.vent-trail,.vent-bolt,.vent-flash,.vent-spark,.vent-smoke,.vent-ring{display:none}.vent-hit{animation:none}.vent-layer .vent-aura{animation:none;opacity:.5;transform:scale(.7)}.vent-layer .vent-word{animation:none;opacity:1;top:6px;transform:translateX(-50%);font-size:28px}}
+/* Eight timed shots: upright stock/grip, recoil, muzzle flashes and tumbling brass. */
+.vent-burst .vent-weapon{margin-top:calc(var(--weapon-size,195px) * -.60);transform-origin:50% 60%;transform:rotate(var(--aim));animation:vent-burst-presence 1700ms both}
+.vent-burst .vent-weapon img{transform:scaleY(-1);animation:vent-burst-recoil 120ms 220ms 8}
+.vent-burst .vent-muzzle{animation:vent-muzzle 110ms var(--delay) both}
+.vent-burst .vent-flash{animation:vent-flash 120ms 300ms 8 both}
+.vent-burst .vent-ring.second{animation-delay:1050ms}.vent-burst .vent-word{animation-duration:1650ms}
+.vent-casing{position:absolute;left:var(--sx);top:var(--sy);width:13px;height:5px;border:1px solid #795020;border-radius:2px;background:linear-gradient(#ffe7a0,#b88332 45%,#f0c866 65%,#805022);box-shadow:1px 2px 2px #0005;animation:vent-casing 650ms var(--delay) both}
+@keyframes vent-burst-presence{0%{opacity:0}12%,78%{opacity:1}100%{opacity:0}}
+@keyframes vent-burst-recoil{0%,100%{transform:scaleY(-1)}20%{transform:translateX(-8px) rotate(-3deg) scaleY(-1)}60%{transform:translateX(-2px) scaleY(-1)}}
+@keyframes vent-casing{0%{opacity:0;transform:translate(-10px,0) rotate(0)}12%{opacity:1}45%{transform:translate(35px,-42px) rotate(220deg)}100%{opacity:0;transform:translate(58px,88px) rotate(580deg)}}
+/* Two broad clean blade passes with bright curved trails in front of the portrait. */
+.vent-slash{--warm:#d5f1ff}.vent-slash .vent-weapon{animation:vent-slash 1700ms both}
+.vent-slash-arc{position:absolute;left:calc(var(--tx) - 105px);top:calc(var(--ty) - 76px);width:210px;height:152px;border-radius:50%;border-top:8px solid #eefaff;border-left:3px solid #a8dcff88;box-shadow:0 -5px 8px #80c4ff77;animation:vent-cut-arc 380ms 370ms both;--arc-angle:-35deg}
+.vent-slash-arc:after{content:'';position:absolute;inset:9px -5px;border-top:2px solid #fff;border-radius:50%}
+.vent-slash-arc.reverse{--arc-angle:42deg;animation-delay:820ms;transform:scaleX(-1)}
+.vent-slash .vent-flash{background:radial-gradient(#fff,#e4f7ff 24%,#81bfff66 55%,transparent 72%);animation:vent-flash 450ms 450ms 2 both}
+.vent-slash .vent-word{color:#effaff;-webkit-text-stroke-color:#345578}
+@keyframes vent-slash{0%{opacity:0;transform:translate(10px,20px) rotate(-60deg) scale(.6)}12%{opacity:1;transform:translate(calc(var(--dx) + 14px),calc(var(--dy) + 16px)) rotate(-65deg)}27%{transform:translate(var(--dx),var(--dy)) rotate(25deg)}36%{transform:translate(var(--dx),var(--dy)) rotate(10deg)}43%{transform:translate(calc(var(--dx) - 8px),var(--dy)) rotate(55deg)}53%{transform:translate(var(--dx),var(--dy)) rotate(-30deg)}65%,77%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(-10deg)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 35px)) rotate(10deg) scale(.8)}}
+@keyframes vent-cut-arc{0%{opacity:0;transform:rotate(calc(var(--arc-angle) - 45deg)) scale(.45)}28%{opacity:1;transform:rotate(var(--arc-angle)) scale(1.04)}100%{opacity:0;transform:rotate(calc(var(--arc-angle) + 55deg)) scale(1.15)}}
+/* A whole tomato follows an arc, squashes, then leaves pulp, seeds and green leaves. */
+.vent-tomato{--warm:#ff942c}.vent-tomato .vent-weapon{width:calc(var(--weapon-size,195px) * .82);height:calc(var(--weapon-size,195px) * .82);margin:calc(var(--weapon-size,195px) * -.41);animation:vent-tomato 900ms both}
+.vent-tomato .vent-trail{position:absolute;left:var(--sx);top:var(--sy);width:90px;height:32px;margin:-16px -45px;border-radius:50%;background:linear-gradient(90deg,transparent,#ff9c5766);filter:blur(6px);animation:vent-punch-trail 720ms both}
+.vent-tomato-splat{position:absolute;left:calc(var(--tx) - 110px);top:calc(var(--ty) - 110px);width:220px;height:220px;filter:drop-shadow(0 4px 3px #69221155);animation:vent-splat 1550ms 720ms both}
+.vent-pulp-drop{position:absolute;left:calc(var(--tx) + var(--drop-x));top:calc(var(--ty) + 45px);width:12px;height:22px;border-radius:45% 45% 60% 60%;background:linear-gradient(90deg,#f44c19,#ffb044 38%,#d94015);animation:vent-drip 1250ms var(--delay) both}
+.vent-tomato .vent-smoke,.vent-tomato .vent-flash,.vent-tomato .vent-ring{display:none}
+.vent-tomato .vent-spark{background:#ff9f39;box-shadow:none;width:8px;height:12px}.vent-tomato .vent-spark:nth-of-type(4n){background:#6b9d39;width:12px;height:6px}
+.vent-tomato .vent-word{top:76px;color:#fff3c8;-webkit-text-stroke-color:#913719}.vent-tomato .vent-aura{background:radial-gradient(#ffb43344,transparent 70%)}
+@keyframes vent-tomato{0%{opacity:0;transform:scale(.45) rotate(-30deg)}15%{opacity:1;transform:scale(.72) rotate(-10deg)}45%{transform:translate(calc(var(--dx) * .5),calc(var(--dy) * .5 - 55px)) rotate(110deg) scale(.9)}75%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(220deg) scale(1)}80%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(235deg) scale(1.18,.72)}84%,100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(240deg) scale(1.25,.5)}}
+@keyframes vent-splat{0%{opacity:0;transform:scale(.12) rotate(-16deg)}12%{opacity:1;transform:scale(1.12) rotate(6deg)}28%,72%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:translateY(16px) scale(.98,1.08)}}
+@keyframes vent-drip{0%{opacity:0;transform:scaleY(.2)}20%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translateY(var(--drop-y)) scaleY(1.6)}}
+/* The bat has its own full wind-up, contact, wooden rebound and broad motion arc. */
+.vent-bat .vent-weapon{animation:vent-bat 1750ms both}
+.vent-bat .vent-trail{position:absolute;left:calc(var(--tx) - 108px);top:calc(var(--ty) - 85px);width:216px;height:170px;border-radius:50%;border-top:11px solid #ffc77e99;border-right:5px solid #fff0ccaa;filter:blur(1px);animation:vent-cut-arc 410ms 420ms both;--arc-angle:-18deg}
+.vent-bat .vent-flash{width:140px;height:140px;left:-70px;top:-70px;background:radial-gradient(#fff,#ffe5a5 28%,#d78a3b88 55%,transparent 72%)}
+.vent-bat .vent-ring{border-width:5px}.vent-bat .vent-word{font-size:40px;top:48px}
+@keyframes vent-bat{0%{opacity:0;transform:translate(15px,20px) rotate(-100deg) scale(.6)}14%{opacity:1;transform:translate(calc(var(--dx) + 12px),calc(var(--dy) + 15px)) rotate(-105deg)}26%{transform:translate(calc(var(--dx) + 8px),var(--dy)) rotate(-120deg)}37%{transform:translate(var(--dx),var(--dy)) rotate(28deg)}45%{transform:translate(var(--dx),var(--dy)) rotate(-10deg)}55%,76%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(8deg)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 35px)) rotate(28deg) scale(.8)}}
+@media(prefers-reduced-motion:reduce){.vent-layer .vent-weapon,.vent-projectile,.vent-muzzle,.vent-trail,.vent-bolt,.vent-flash,.vent-spark,.vent-smoke,.vent-ring,.vent-casing,.vent-slash-arc,.vent-tomato-splat,.vent-pulp-drop{display:none}.vent-hit{animation:none}.vent-layer .vent-aura{animation:none;opacity:.5;transform:scale(.7)}.vent-layer .vent-word{animation:none;opacity:1;top:6px;transform:translateX(-50%);font-size:28px}}
 
 #app .hand.op.tazza-peek{display:flex;gap:2px;justify-content:center;min-height:39px}
 #app .hand.op.tazza-peek .c{width:26px;height:39px;flex:0 0 26px;margin-right:0;opacity:1;transform:none}
