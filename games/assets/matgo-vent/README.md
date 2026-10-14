@@ -24,3 +24,31 @@ Use case: stylized-concept. Asset type: a single transparent animated prop sprit
 ### bomb
 
 Use case: stylized-concept. Asset type: a single transparent animated prop sprite for a polished Korean arcade card game. Premium hand-painted 3D game illustration, sculpted volume, sophisticated layered material shading, crisp bevels and tiny wear details, warm upper-left key light and cool rim highlights, readable silhouette at 120px. Square canvas, whole object centered and isolated with 10% transparent breathing room. Genuinely transparent background and no floor shadow. No people, hands, characters, lettering, logos, watermarks, frame, badge, muzzle flash, motion trails, or surrounding props. This is a finished detailed game sprite, not a flat vector icon or simple emoji. Subject: one spherical cartoon iron bomb with a short curved braided fuse at its upper right, the fuse is UNLIT. The orb has deep blue-black forged steel, brushed curved highlights, subtle scuffs, a raised equator seam with tiny brass rivets, a thick bronze fuse socket and clearly woven brown fuse fibers. Three-quarter view, orb fills most of the sprite, slightly exaggerated playful arcade proportions.
+
+
+## 2026-10-14 추가 화풀이
+
+- burst.png, slash.png, tomato.png, bat.png: 내장 이미지 생성 도구로 만든 1254 × 1254 RGBA 원본. 투명도와 원본 바이트를 유지합니다.
+- 따발총 8연사, 칼질 2회, 토마토 포물선과 씨앗·과육 효과, 배트 휘두르기를 각각 별도로 애니메이션합니다.
+- 10개 효과를 매 클릭마다 균등 무작위로 선택합니다. 연속해서 같은 효과가 나올 수 있으며, 응답이 불확실한 결제는 기존 영수증의 효과를 재생합니다.
+- 새 효과도 로딩 성공 → 1쭈 결제 확인 → 모션/효과음 순서이며, 소리 끄기·동작 줄이기·화면 숨김 설정을 따릅니다.
+
+### 공통 생성 프롬프트
+
+Use case: stylized-concept. Asset type: high-quality 2D mobile game animation sprite for a Korean card game. Style: richly detailed hand-painted semi-realistic 3D game inventory illustration, strong readable silhouette, warm highlights from upper left, soft blue fill, crisp material texture, like premium polished steel-and-wood game props. Square canvas, 1024x1024 or larger. True transparent alpha background; no colored backdrop, no ground, no cast shadow outside the object. One isolated object only. No people, hands, text, logo, watermark, border, ammunition, flash, blood, or motion lines. This prop will be animated separately in code.
+
+### burst
+
+A single stylized vintage submachine gun game prop for a comic rapid-fire animation. Long barrel points horizontally RIGHT, wooden stock extends LEFT, black grip and rounded drum magazine are BELOW the barrel. Full side view, upright orientation, entire object visible with 10% padding. Dark polished gunmetal, restrained brass details, rich walnut stock, finely painted wear and bright metal edges.
+
+### slash
+
+A single polished chef's knife game prop for a comic slashing animation. One broad clean silver blade points diagonally toward the UPPER RIGHT, dark walnut handle at the LOWER LEFT. Entire object visible, centered diagonal composition with 12% padding. Fine steel reflections, subtle blade bevel, richly textured wood handle with three brass rivets. No scratches suggesting injury, no stains.
+
+### tomato
+
+A single plump ripe red tomato game prop for a comic tomato-throw animation. One glossy whole tomato centered, three-quarter view, crisp green stem and a few curled leaves on top, natural rounded lobes, tiny water droplets and nuanced orange-red reflected highlights. Entire object visible with 16% padding. No plate, no cut tomato, no splatter baked into the image.
+
+### bat
+
+A single wooden baseball bat game prop for a comic swinging animation. Thick rounded barrel points diagonally toward the UPPER RIGHT, narrow handle and knob at LOWER LEFT. Entire bat visible, centered diagonal composition with 10% padding. Honey-brown varnished wood with detailed longitudinal grain, dark charcoal wrapped grip, realistic rounded end, subtle scuffs and polished highlights.

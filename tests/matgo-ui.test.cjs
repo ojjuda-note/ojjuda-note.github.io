@@ -107,7 +107,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.screenshot({path:'/tmp/matgo-tazza-controls.png'});
     await f.page.evaluate(()=>{window.ventEffects=[];new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes)if(n.nodeType===1&&n.classList.contains('vent-layer'))ventEffects.push(n.dataset.effect);}).observe(document.body,{childList:true});});
     await f.page.locator('#matgo-vent').click();await f.page.waitForFunction(()=>ventEffects.length===1);
-    assert.equal(f.state.coins,14);assert.equal(await f.page.evaluate(()=>ventEffects[0]),'gun');
+    assert.equal(f.state.coins,14);assert.ok(['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(await f.page.evaluate(()=>ventEffects[0])));
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {

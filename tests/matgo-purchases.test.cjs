@@ -118,6 +118,14 @@ const {fixture}=require('./matgo-online-fixture.cjs');
     const actualRoll=(await db.query('select random() value')).rows[0].value;
     await db.query('select setseed(0.25)');const real=await start(A);
     assert.equal(real.round.tazza_mode,actualRoll<.05?'tan':'peek');
+    const beforeVentBag=await bag(),beforeVentCoins=await coins(A);
+    for(const [i,effect] of ['burst','slash','tomato','bat'].entries()){
+      const request=id(),paid=await vent(A,real.round.id,request,effect);
+      assert.equal(paid.status,200);assert.equal(paid.purchase.effect,effect);assert.equal(paid.coins,beforeVentCoins-i-1);
+      assert.deepEqual(paid.round,real.round,'new cosmetic actions never change the paid round');
+      assert.equal((await vent(A,real.round.id,request,effect)).coins,paid.coins,'new action receipt retries charge once');
+    }
+    assert.deepEqual(await bag(),beforeVentBag,'cosmetic actions never consume tazza modes');
     console.log('PASS: independent 5% tan draws and boundaries, 7-mode cycles, legacy bag migration, atomic 5/1 ZU purchases, retry/concurrent deduplication, balance rollback, active-match checks and service-only permissions');
   }finally{await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
