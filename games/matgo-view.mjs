@@ -1,5 +1,14 @@
 import './matgo-captured-zoom.mjs?v=20261010-hold1';
 
+// This describes a claim, not a completed transfer. The steal event shows the
+// actual card/value, including a whole double/triple pi used to pay one pi.
+export function piClaimMessage({p,count=1,availablePi},viewer){
+  const mine=p===viewer,owner=mine?'상대':'내';
+  if(availablePi===0)return `${owner} 쪽에 가져올 피가 없어요`;
+  if(Number.isFinite(availablePi)&&availablePi<count)return `${owner} 피가 부족해 남은 ${availablePi}피만 ${mine?'가져와요':'내줘요'}`;
+  return `${owner} 피 ${count}장 ${mine?'가져오기':'내주기'}`;
+}
+
 // Both captured piles are public. Never infer a pair from the hidden deck/hand.
 export function heldPairMonths(hand,caps){
   const held=new Map(),taken=new Map();

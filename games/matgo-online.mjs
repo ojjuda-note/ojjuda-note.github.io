@@ -1,6 +1,6 @@
 import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-bonus-pi1';
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-bonus-pi1';
+import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=20261014-pi-audit1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
 import {createWallet} from './matgo-wallet.mjs?v=20261014-streak1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
@@ -80,15 +80,16 @@ function eventText(ev){
   const mine=ev.p===room.seat,who=mine?'':'상대 ';
   if(ev.type==='ppuk'&&ev.firstPpuk)return [who+'첫뻑!',(mine?'+300':'-300')+'G · 판 종료 시 정산'];
   if(ev.type==='ppuk')return [who+'쌌다!',`이번 판 ${ev.count}/3회${ev.bonusCount?' · 보너스도 함께 묶였어요':''}`];
-  if(ev.type==='ppukget')return [mine?(ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',mine?`상대 피 ${ev.count}장 가져오기`:`상대가 쌓인 패와 내 피 ${ev.count}장을 가져갔어요`];
+  if(ev.type==='ppukget')return [mine?(ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',piClaimMessage(ev,room.seat)];
   if(ev.type==='shake')return [who+'흔들기!','이기면 점수 ×2',ev.cards];
   if(ev.type==='bomb')return [who+(ev.handCount===2?'두 장 폭탄!':'폭탄!'),'점수 ×2 · 폭탄 뒤집기 '+(ev.flips??2)+'회'];
   if(ev.type==='go')return [who+ev.n+'고!','다음 점수를 기다려요'];
-  if(ev.type==='jjok')return [who+'쪽!','상대 피 한 장'];
-  if(ev.type==='ttadak')return [who+'따닥!','상대 피 한 장'];
-  if(ev.type==='sweep')return [who+'싹쓸이!','상대 피 한 장'];
+  if(ev.type==='jjok')return [who+'쪽!',piClaimMessage(ev,room.seat)];
+  if(ev.type==='ttadak')return [who+'따닥!',piClaimMessage(ev,room.seat)];
+  if(ev.type==='sweep')return [who+'싹쓸이!',piClaimMessage(ev,room.seat)];
   if(ev.type==='bonusPlay'||ev.type==='flipBonus')return [who+'보너스!',`${ev.card?.pv===2?'쌍피':'쓰리피'} · 한 장 더 받아요`,ev.card?[ev.card]:null];
   if(ev.type==='steal'&&ev.card?.k==='bonus')return [ev.to===room.seat?'보너스 피 가져오기!':'보너스 피 뺏겼어요!',`${piVal(ev.card)}피 보너스 한 장`,[ev.card]];
+  if(ev.type==='steal'&&ev.card)return [ev.to===room.seat?'피 가져왔어요!':'피 뺏겼어요!',`${piVal(ev.card)}피 한 장`,[ev.card]];
   if(ev.type==='ppukBonus')return [who+'보너스도 뻑에!',`보너스 ${ev.cards.length}장이 함께 묶였어요`,ev.cards];
   if(ev.type==='end')return [ev.winner===room.seat?'내가 이겼어요!':'상대가 이겼어요',ev.special==='chongtong'?'총통!':ev.special==='three_ppuk'?'뻑 3회!':'스톱 · 골드를 정산해요'];
   if(ev.type==='nagari')return ['나가리','다음 판은 점수 두 배!'];

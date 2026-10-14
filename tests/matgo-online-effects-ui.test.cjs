@@ -97,16 +97,23 @@ const root=path.join(__dirname,'..');
     await present(reduced.page,{...empty,gold:[5000,10000]});await reduced.page.evaluate(()=>presenting);
     assert.equal(await reduced.page.locator('#rematch').innerText(),'다음 판','a refill updates the result even when the room version is unchanged');
     await reduced.context.close();
-    for(const to of [0,1]){
-      const before=structuredClone(initial);before.game.caps[1-to]=[CARDS[49]];
+    for(const actor of [0,1])for(const availablePi of [0,1]){
+      const sample=await screen({muted:true,reduced:true}),p=sample.page;
+      const after={...structuredClone(initial),version:2,eventCount:1,events:[{id:0,type:'ppukget',p:actor,self:true,count:2,availablePi}]};
+      await present(p,after);await p.locator('#event[data-kind=ppukget]:not([hidden])').waitFor();
+      assert.match(await p.locator('#event').innerText(),availablePi?/피가 부족해 남은 1피만/:/가져올 피가 없어요/);
+      await sample.context.close();
+    }
+    for(const to of [0,1])for(const id of [6,41,49]){
+      const before=structuredClone(initial);before.game.caps[1-to]=[CARDS[id]];
       const sample=await screen({muted:true,resume:before}),p=sample.page;
-      const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[49]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[49]];
+      const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[id]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[id]];
       await present(p,after);await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
-      assert.match(await p.locator('#event').innerText(),/3피 보너스 한 장/);
+      assert.match(await p.locator('#event').innerText(),id===49?/3피 보너스 한 장/:id===41?/2피 한 장/:/1피 한 장/);
       assert.equal(await p.locator('#event').getAttribute('data-side'),to===0?'mine':'opponent');
       await p.evaluate(()=>presenting);
-      assert.equal(await p.locator((to===0?'.caps-own':'.caps:not(.caps-own)')+' [data-face="49"]').count(),1);
-      assert.equal(await p.locator((to===0?'.caps:not(.caps-own)':'.caps-own')+' [data-face="49"]').count(),0);
+      assert.equal(await p.locator((to===0?'.caps-own':'.caps:not(.caps-own)')+' [data-face="'+id+'"]').count(),1);
+      assert.equal(await p.locator((to===0?'.caps:not(.caps-own)':'.caps-own')+' [data-face="'+id+'"]').count(),0);
       await sample.context.close();
     }
     assert.deepEqual(errors,[]);
