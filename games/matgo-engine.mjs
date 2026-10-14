@@ -80,7 +80,7 @@ class Game {
   async ppukReward(p,stack){
     const self=stack.ppukOwner===p,bonusCount=stack.filter(c=>c.k==='bonus').length;
     const count=self?2:1;
-    await this.ui.event('ppukget',{p,self,count,bonusCount});return count;
+    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv});return count;
   }
   canBombFlip(p){return this.bomb[p]>0&&this.deck.length>0;}
   canMove(p){return this.hand[p].length>0||this.canBombFlip(p);}
@@ -176,10 +176,10 @@ class Game {
     if(flip){
       if(handCardStack && flip.m===card.m){
         if(handCardStack.length===1){ // 쪽
-          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('jjok',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
+          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('jjok',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
         } else if(handCardStack.length===2){ const other=this.floor.find(st=>st!==handCardStack&&st[0].m===card.m&&!st.ppuk);
           if(other){ // 따닥 (바닥 2장 + 손 1장 + 뒤집기 1장)
-            other.push(flip); await this.ui.event('flip',{p,card:flip,stack:other}); const all=[...handCardStack,...other]; this.floor.splice(this.floor.indexOf(handCardStack),1); this.floor.splice(this.floor.indexOf(other),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,all); tookAny=true; handCardStack=null;
+            other.push(flip); await this.ui.event('flip',{p,card:flip,stack:other}); const all=[...handCardStack,...other]; this.floor.splice(this.floor.indexOf(handCardStack),1); this.floor.splice(this.floor.indexOf(other),1); stole++; await this.ui.event('ttadak',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,all); tookAny=true; handCardStack=null;
           } else { // 뻑
           handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); handCardStack.ppuk=true; handCardStack.ppukOwner=p; delete handCardStack.pending;
           if(flipBonuses.length){handCardStack.push(...flipBonuses);await this.ui.event('ppukBonus',{p,cards:flipBonuses,stack:handCardStack});}
@@ -188,7 +188,7 @@ class Game {
           if(firstPpuk){this.firstPpukGold[p]+=300;this.firstPpukGold[1-p]-=300;}
           await this.ui.event('ppuk',{p,count:this.ppukCount[p],bonusCount:flipBonuses.length,firstPpuk,money:firstPpuk?300:0});handCardStack=null; }
         } else if(handCardStack.length===3){ // 따닥 (바닥2+손1+뒤집기1)
-          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
+          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
         }
       } else {
         const ms2=this.matches(flip.m).filter(([st])=>st!==handCardStack);
@@ -201,7 +201,7 @@ class Game {
     // 손패와 짝이 맞았던 더미 수거
     if(handCardStack && handCardStack.pending){ delete handCardStack.pending; if(handCardStack.length>=2 && !handCardStack.ppuk){ this.floor.splice(this.floor.indexOf(handCardStack),1); await this.take(p,handCardStack); tookAny=true; } }
     this.floor.forEach(st=>delete st.pending);
-    if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p}); }
+    if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p,availablePi:score(this.caps[1-p]).pv}); }
     await this.stealPi(1-p,p,'bonus',stole);
     await this.ui.event('state');
     await this.endTurn(p);

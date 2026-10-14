@@ -40,8 +40,8 @@ import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-
 import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-bonus-pi1";
 import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
 import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
-import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-streak1";
-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-bonus-pi1";
+import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-pi-audit1";
+import {floorLayout,heldPairMonths,piClaimMessage} from "./matgo-view.mjs?v=20261014-pi-audit1";
 import {createWallet} from "./matgo-wallet.mjs?v=20261014-streak1";
 (async () => {
 'use strict';
@@ -363,13 +363,13 @@ const ui={
     if(type==='steal'){ const fromSel=`.zone.${d.from===ME?'me':'op'}`, toSel=`.zone.${d.to===ME?'me':'op'}`; const el=document.querySelector(`${fromSel} .cap .c[data-id="${d.card.id}"]`); const fromCap=document.querySelectorAll(`${fromSel} .cap`)[3], toCap=document.querySelectorAll(`${toSel} .cap`)[3];
       if(el&&toCap){ const r=el.getBoundingClientRect(), t=toCap.getBoundingClientRect(); fromCap.classList.add('robbed'); setTimeout(()=>fromCap.classList.remove('robbed'),900);
         const mid={x:innerWidth/2-CW, y:innerHeight*.42-CH}; const f=flyEl(d.card,r.left,r.top,0,r.width,r.height); f.classList.add('steal'); el.style.visibility='hidden';
-        const tag=document.createElement('div'); tag.className='stealtag '+(d.to===ME?'good':'bad'); tag.textContent=d.card.k==='bonus'?`${piVal(d.card)}피 보너스 ${d.to===ME?'가져오기!':'뺏겼어요!'}`:d.to===ME?'피 뺏기!':'피 뺏겼다!'; document.body.appendChild(tag);
+        const tag=document.createElement('div'); tag.className='stealtag '+(d.to===ME?'good':'bad'); tag.textContent=d.card.k==='bonus'?`${piVal(d.card)}피 보너스 ${d.to===ME?'가져오기!':'뺏겼어요!'}`:`${piVal(d.card)}피 ${d.to===ME?'가져왔어요!':'뺏겼어요!'}`; document.body.appendChild(tag);
         await f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?-12:12}deg)`,offset:.4},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?8:-8}deg)`,offset:.6},{transform:`translate(${t.left+t.width-26-r.left}px,${t.top+6-r.top}px) scale(1) rotate(0)`}],{duration:1050,easing:'cubic-bezier(.3,.6,.25,1)',fill:'forwards'}).finished;
         toCap.classList.add('gain'); setTimeout(()=>toCap.classList.remove('gain'),700); f.remove(); tag.remove(); try{ navigator.vibrate&&navigator.vibrate(d.to===ME?[20,30,20]:[60]); }catch{} }
       render(); return; }
     if(type==='ppuk'&&d.firstPpuk){render();await banner(d.p===ME?'첫뻑!':'상대 첫뻑!',(d.p===ME?'+300G':'-300G')+' · 판 종료 시 정산'+(d.bonusCount?' · 보너스도 함께 묶였어요':''),d.p===ME?'brag':'warn',1800);return;}
     const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
-    if(msg){ const mine=d.p===ME; const sub={jjok:'상대 피 한 장 가져오기',ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · 상대 피 ${d.count}장 가져오기`:`상대가 쌓인 패와 내 피 ${d.count}장을 가져갔어요`,ttadak:'네 장 한꺼번에 + 피 한 장',sweep:'바닥을 싹 비웠어요 + 피 한 장',go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
+    if(msg){ const mine=d.p===ME; const sub={jjok:piClaimMessage(d,ME),ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · ${piClaimMessage(d,ME)}`:piClaimMessage(d,ME),ttadak:'네 장 한꺼번에 · '+piClaimMessage(d,ME),sweep:'바닥을 싹 비웠어요 · '+piClaimMessage(d,ME),go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
     if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',1500); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',1500); }
     if(type==='state'&&false){}
     if(type==='nagari'||type==='end'){ await finishRound(type,d); return; }

@@ -322,6 +322,23 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('#capsOp .c').count(),3,'two pi are paid with one double; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
+  // A genuine ppuk capture distinguishes an empty pile from a one-pi shortfall.
+  for(const p of [0,1])for(const available of [0,1]){
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    const notices=await f.page.evaluate(async({p,available})=>{
+      const {setupTripleScenario,tripleScenarios}=await import('/tests/matgo-triple-fixtures.mjs');
+      const {game:g,CARDS,render}=matgoTest;setupTripleScenario(g,CARDS,tripleScenarios[0],p);
+      g.deck.push(g.caps[1-p].shift());
+      if(available)g.caps[1-p].push(g.deck.splice(g.deck.findIndex(c=>c.id===6),1)[0]);
+      const labels=[];const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.classList?.contains('banner')||n.classList?.contains('stealtag'))labels.push(n.textContent);});
+      observer.observe(document.body,{childList:true});render();await g.play(p,g.hand[p][0]);observer.disconnect();
+      return {labels,remaining:g.caps[1-p].filter(c=>c.k==='pi').length,transferred:g.caps[p].some(c=>c.id===6)};
+    },{p,available});
+    assert.match(notices.labels.join(' '),available?/피가 부족해 남은 1피만/:/가져올 피가 없어요/);
+    assert.equal(notices.transferred,!!available);assert.equal(notices.remaining,0);
+    assert.deepEqual(f.errors,[]);await f.context.close();
+  }
   // The reported case: the opponent has no ordinary/double pi, only one 3-pi bonus.
   for(const scenario of (await import('./matgo-triple-fixtures.mjs')).tripleScenarios){
     const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
