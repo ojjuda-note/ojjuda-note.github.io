@@ -33,7 +33,7 @@ const root=path.join(__dirname,'..');
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 2,000G');
   assert.equal(await page.locator('#cpuLevel').innerText(),'5단계','400,000G sets a minimum of level 5');
   assert.equal(requests.some(r=>r.action==='stake'),false,'there is no consent request');
-  assert.equal(requests.find(r=>r.action==='start').rules_version,11);
+  assert.equal(requests.find(r=>r.action==='start').rules_version,12);
   const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
   assert.equal(fits,true,'compact level display fits a 320px mobile screen');
   await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);

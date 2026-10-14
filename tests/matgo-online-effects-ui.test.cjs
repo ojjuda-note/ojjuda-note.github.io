@@ -108,7 +108,10 @@ const root=path.join(__dirname,'..');
       const before=structuredClone(initial);before.game.caps[1-to]=[CARDS[id]];
       const sample=await screen({muted:true,resume:before}),p=sample.page;
       const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[id]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[id]];
-      await present(p,after);await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
+      if(id===49){after.events.unshift({id:0,type:'ppukget',p:to,self:false,count:1,opening:true,availablePi:3});after.events[1].id=1;after.eventCount=2;}
+      await present(p,after);
+      if(id===49){await p.locator('#event[data-kind=ppukget]:not([hidden])').waitFor();if(to===0)assert.match(await p.locator('#event').innerText(),/바닥뻑 먹기/);}
+      await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
       assert.match(await p.locator('#event').innerText(),id===49?/3피 보너스 한 장/:id===41?/2피 한 장/:/1피 한 장/);
       assert.equal(await p.locator('#event').getAttribute('data-side'),to===0?'mine':'opponent');
       await p.evaluate(()=>presenting);

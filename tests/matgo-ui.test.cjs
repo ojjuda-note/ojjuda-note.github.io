@@ -16,12 +16,12 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='status')return{data:snapshot()};
     if(body.action==='tazza_start'){
       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
-      state.coins-=5;state.round={id:crypto.randomUUID(),seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
+      state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:12,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
     }
     if(body.action==='vent'){if(state.coins<1)return{data:{error:'insufficient_zzu'}};state.coins--;return{data:{...snapshot(),purchase:{effect:body.effect,price:1}}};}
     if(body.action==='start'){
       if(!state.gold)return{data:{error:'gold_empty'}};
-      state.round ||= {id:'00000000-0000-4000-9000-000000000001',seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+      state.round ||= {id:'00000000-0000-4000-9000-000000000001',rules_version:12,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
       if(state.round)return{data:{error:'round_in_progress'}};
@@ -233,7 +233,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,10);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,12);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -321,6 +321,25 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('#capsOp .c[data-id="49"]').count(),1,'triple bonus stays while other pi remain');
     assert.equal(await f.page.locator('#capsOp .c').count(),3,'two pi are paid with one double; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
+  }
+  // Opening triples come from a real deal and pay one pi, including a whole bonus.
+  for(const p of [0,1])for(const route of ['hand','flip']){
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.evaluate(async({p,route})=>{
+      const E=await import('/games/matgo-engine.mjs');const {setupOpening}=await import('/tests/matgo-opening-fixture.mjs');
+      const {game:g,render}=matgoTest;setupOpening(g,E,{p,route,opponent:[49]});window.openingNotices=[];
+      const original=g.ui.event.bind(g.ui);g.ui.event=async(type,data)=>{if(type==='ppukget')openingNotices.push(data);return original(type,data);};render();
+    },{p,route});
+    assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
+    if(p===0&&route==='hand'){fs.mkdirSync('/tmp/matgo-opening-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-opening-proof/before.png'});}
+    await f.page.evaluate(async p=>{const g=matgoTest.game;await g.play(p,g.hand[p][0]);},p);
+    assert.equal(await f.page.locator((p===0?'#capsMe':'#capsOp')+' .c[data-id="49"]').count(),1);
+    assert.equal(await f.page.locator((p===0?'#capsOp':'#capsMe')+' .c[data-id="49"]').count(),0);
+    assert.deepEqual(await f.page.evaluate(()=>openingNotices.map(e=>({count:e.count,opening:e.opening,self:e.self}))),[{count:1,opening:true,self:false}]);
+    assert.deepEqual(await f.page.evaluate(()=>matgoTest.game.firstPpukGold),[0,0]);assert.deepEqual(await f.page.evaluate(()=>matgoTest.game.ppukCount),[0,0]);
+    if(p===0&&route==='hand')await f.page.screenshot({path:'/tmp/matgo-opening-proof/after.png'});
+    assert.deepEqual(f.errors,[]);await f.context.close();
   }
   // A genuine ppuk capture distinguishes an empty pile from a one-pi shortfall.
   for(const p of [0,1])for(const available of [0,1]){

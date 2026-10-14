@@ -23,7 +23,7 @@ export async function replayOnline(room) {
   let action,choice=0,prompt=null,result=null;
   const events=[];
   // Pin the rules on the first server-recorded action; preserve existing rounds.
-  const RoundGame=!actions.length||actions[0].rules_version===8?Game:actions[0].rules_version===7?V7Game:actions[0].rules_version===5?V5Game:LegacyGame;
+  const RoundGame=!actions.length||[8,9].includes(actions[0].rules_version)?Game:actions[0].rules_version===7?V7Game:actions[0].rules_version===5?V5Game:LegacyGame;
   const game=new RoundGame({
     event:async(type,data={})=>{
       const event={type,...copy(data)};events.push(event);
@@ -48,6 +48,7 @@ export async function replayOnline(room) {
       return action.decision;
     }
   });
+  game.openingPpuk=!actions.length||actions[0].rules_version===9;
   game.cpuMode='normal'; // A member's balance never changes PvP timeout/takeover AI.
   const rate=room.round_rate??100;
   if(!Number.isSafeInteger(rate)||!([100,200,500].includes(rate)||(rate>=1000&&rate%1000===0)))throw Error('invalid_stake');
@@ -123,7 +124,7 @@ export async function advanceOnline(room,p,command) {
   }else if(prompt.type==='play'&&command.type==='gukjin'){
     actions.push({type:'gukjin',p});
   }else throw Error('invalid_move');
-  if(!room.actions.length)actions[0].rules_version=8;
+  if(!room.actions.length)actions[0].rules_version=9;
   const next=await replayOnline({...room,actions});
   if(next.result&&(!next.game.over||next.result.goldDelta.some(n=>!Number.isSafeInteger(n))))throw Error('invalid_result');
   const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop','gukjin'].includes(s.prompt?.type)?1:0);

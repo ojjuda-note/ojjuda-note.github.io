@@ -89,8 +89,8 @@ const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUP
 for(let seed=1;seed<=24;seed++) {
   const fresh=await playRound(server,seed),old=await playRound(legacy,seed);
   if(fresh.result?.total!==old.result?.total)changed++;
-  for(const [played,rules_version] of [[old,7],[fresh,10]]) {
-    snapshot=played.round;paid=null;
+  for(const [played,rules_version] of [[old,7],[fresh,12]]) {
+    snapshot={...played.round,...(rules_version===12?{rules_version:12}:{})};paid=null;
     const response=await handler(new Request('https://fixture.invalid',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-8000-000000000002',rules_version,actions:played.g.actions,gold:99999999})}));
     assert.equal(response.status,200);assert.equal(paid,played.g.bank[0],`rules v${rules_version} replay at seed ${seed}`);
     cases++;
@@ -98,11 +98,11 @@ for(let seed=1;seed<=24;seed++) {
 }
 assert.ok(changed>0,'the completed-game sample includes changed pibak payouts');
 const room={status:'active',seed:'11'.repeat(32),actions:[],start_gold:[100000,100000],first:0,carry:1};
-const first=await automaticOnline(room);assert.equal(first.actions[0].rules_version,8);
-for(const rules_version of [7,8]) {
+const first=await automaticOnline(room);assert.equal(first.actions[0].rules_version,9);
+for(const rules_version of [7,8,9]) {
   const actions=structuredClone(first.actions);actions[0].rules_version=rules_version;
   const replay=await replayOnline({...room,actions});
   const r=(await finish({Game:replay.game.constructor,CARDS:server.CARDS},{loserPi:8})).result;
-  assert.equal(r.det.some(([s])=>s==='피박'),rules_version===8,'online rounds retain their first recorded rules');cases++;
+  assert.equal(r.det.some(([s])=>s==='피박'),rules_version>=8,'online rounds retain their first recorded rules');cases++;
 }
 console.log(`PASS: ${cases} scoring/replay cases, both engines/seats, pi boundaries, ×2/×4/×8, weighted pi, v7/v10 settlements and online compatibility (${changed} changed full-round payouts)`);
