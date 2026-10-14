@@ -3,14 +3,14 @@ const {chromium}=require('playwright');
 const {fixture,A}=require('./matgo-online-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
- const f=await fixture({stakes:true}),{db,call}=f;
+ const f=await fixture({adaptive:true}),{db,call}=f;
  const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox']});
  try{
   await call(A,{action:'status'});
   await db.query('update ojjuda_matgo_internal.wallets set gold=400000 where user_id=$1',[A]);
   const context=await browser.newContext({viewport:{width:320,height:650},hasTouch:true});
   const errors=[],requests=[];
-  await context.exposeBinding('stakeFixture',async(_,body)=>{requests.push(body);const data=await call(A,body);return {data};});
+  await context.exposeBinding('stakeFixture',async(_,body)=>{requests.push(body);const data=await call(A,body);if(body.action==='start'&&data.round){await db.query('update ojjuda_matgo_internal.wallets set round_seed=10 where user_id=$1',[A]);data.round.seed=10;}return {data};});
   await context.addInitScript(()=>{
    localStorage.setItem('ojjuda-matgo-sound','off');
    window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>()=>{},getClient:()=>({functions:{invoke:(_,{body})=>stakeFixture(body)}})};
@@ -27,35 +27,37 @@ const root=path.join(__dirname,'..');
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.goto('https://fixture.test/games/matgo.html');
-  await page.locator('#matgo-stake').waitFor();
-  assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 2,000G/);
-  assert.equal(await page.evaluate(()=>document.activeElement.id),'matgo-stake-keep','Enter does not accidentally accept a raise');
-  assert.equal(requests.some(r=>r.action==='start'),false,'deal waits for consent');
-  const fits=await page.locator('#matgo-stake .card').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;});
-  assert.equal(fits,true,'offer fits a 320px mobile screen');
-  if(process.env.MATGO_STAKE_SCREENSHOT)await page.screenshot({path:process.env.MATGO_STAKE_SCREENSHOT});
-  await page.locator('#matgo-stake-raise').tap();
   const ready=()=>page.waitForFunction(()=>window.stakesTest&&!stakesTest.ui.busy&&!stakesTest.ui.dealing&&document.querySelector('#stakeRate'));
-  await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  await ready();assert.equal(await page.locator('#matgo-stake').count(),0);
+  assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 2,000G');
-  assert.equal(requests.find(r=>r.action==='stake').accept,true);assert.equal(requests.find(r=>r.action==='start').stakes_version,1);
-  await page.reload();await ready();assert.equal(await page.locator('#matgo-stake').count(),0);assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
-  const end=async gold=>{const s=await call(A,{action:'status'});await db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,$3,0::smallint,1)",[A,s.round.id,gold]);};
+  assert.equal(await page.locator('#cpuLevel').innerText(),'1단계','large gold balance still starts at level 1');
+  assert.equal(requests.some(r=>r.action==='stake'),false,'there is no consent request');
+  assert.equal(requests.find(r=>r.action==='start').rules_version,11);
+  const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
+  assert.equal(fits,true,'compact level display fits a 320px mobile screen');
+  await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  const end=async(gold,outcome='win')=>{const s=await call(A,{action:'status'});await db.query('select public.matgo_ranked_settle($1,$2,$3,0::smallint,1,$4)',[A,s.round.id,gold,outcome]);};
+  // Reach a five-win promotion: UI changes only on the following deal.
+  for(let i=0;i<5;i++){
+    assert.equal(await page.locator('#cpuLevel').innerText(),'1단계');
+    await end(400000);await page.reload();await ready();
+  }
+  assert.equal(await page.locator('#cpuLevel').innerText(),'2단계');
+  for(let i=0;i<3;i++){await end(400000,'loss');await page.reload();await ready();}
+  assert.equal(await page.locator('#cpuLevel').innerText(),'1단계');
   await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
-  await end(0);await page.reload();await page.locator('#refill-gold').waitFor();
+  await end(0,'loss');await page.reload();await page.locator('#refill-gold').waitFor();
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 100G');
   await page.locator('#refill-gold').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
-  await end(600000);await page.reload();await page.locator('#matgo-stake').waitFor();
-  assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 10,000G/);
-  await page.keyboard.press('Enter');await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
-  await page.reload();await ready();assert.equal(await page.locator('#matgo-stake').count(),0,'decline is remembered across navigation');
-  await end(700000);await page.reload();await page.locator('#matgo-stake').waitFor();
-  assert.match(await page.locator('#matgo-stake-amount').innerText(),/100G → 20,000G/);
-  await page.locator('#matgo-stake-raise').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),20000);
+  await end(600000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),10000);
+  assert.equal(await page.locator('#matgo-stake').count(),0);
+  if(process.env.MATGO_STAKE_SCREENSHOT)await page.screenshot({path:process.env.MATGO_STAKE_SCREENSHOT});
   await page.locator('#menu').click();await page.locator('#rules').click();
-  assert.match(await page.locator('.modal').innerText(),/두 사람이 동의한 금액 중 낮은 금액/);
+  const help=await page.locator('.modal').innerText();
+  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/5연승/);assert.match(help,/3연패/);
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: real mobile offer, explicit raise/keep, authoritative rate display, reload/resume, decline memory, next-tier offer, bankruptcy/refill and PvP rules');
+  console.log('PASS: mobile automatic stakes without consent, compact level display, five-win promotion, three-loss demotion, refresh persistence, bankruptcy/refill and rules');
  }finally{await browser.close();await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -2,6 +2,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {PGlite}=require('@electric-sql/pglite');
 const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',C='00000000-0000-4000-8000-000000000003',MINOR='00000000-0000-4000-8000-000000000004';
 async function fixture(fixtureOptions={}){
+  if(fixtureOptions.adaptive)fixtureOptions={...fixtureOptions,stakes:true,refill:true,fun:true};
   const db=new PGlite();
   await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create schema ojjuda_account_internal;
     create table auth.users(id uuid primary key);create table public.profiles(id uuid primary key,nickname text);
@@ -32,6 +33,7 @@ async function fixture(fixtureOptions={}){
     await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
   }
   if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
+  if(fixtureOptions.adaptive){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_streak_auto_stakes.sql'))),'utf8'));}
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
   const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],fetchImpl:async(url,options)=>{
@@ -46,6 +48,7 @@ async function fixture(fixtureOptions={}){
       else if(url.endsWith('/matgo_online_service'))result=await db.query('select public.matgo_online_service($1,$2,$3,$4,$5,$6,$7,$8) value',[p.p_actor,p.p_action,p.p_room??null,p.p_code??null,p.p_seed??null,p.p_expected??null,p.p_request??null,p.p_next??null]);
       else if(url.endsWith('/matgo_stake_service'))result=await db.query('select public.matgo_stake_service($1,$2,$3) value',[p.p_actor,p.p_rate,p.p_accept]);
       else if(url.endsWith('/matgo_fun_service'))result=await db.query('select public.matgo_fun_service($1,$2,$3,$4,$5) value',[p.p_actor,p.p_action,p.p_request,p.p_reference??null,p.p_effect??null]);
+      else if(url.endsWith('/matgo_ranked_settle'))result=await db.query('select public.matgo_ranked_settle($1,$2,$3,$4::smallint,$5,$6) value',[p.p_actor,p.p_round,p.p_gold,p.p_first,p.p_carry,p.p_outcome]);
       else if(url.endsWith('/matgo_wallet_service'))result=await db.query('select public.matgo_wallet_service($1,$2,$3,$4,$5,$6,$7::smallint,$8) value',[p.p_actor,p.p_action,p.p_request??null,p.p_paid??false,p.p_round??null,p.p_gold??null,p.p_first??null,p.p_carry??null]);
       else throw Error('unexpected RPC');
       return new Response(JSON.stringify(result.rows[0].value));

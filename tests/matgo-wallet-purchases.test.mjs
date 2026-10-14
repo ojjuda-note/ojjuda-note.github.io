@@ -22,7 +22,7 @@ try{
   fail=true;await assert.rejects(wallet.start({tazza:true}));assert.equal(balance,15);
   const paid=await wallet.start({tazza:true});assert.equal(paid.coins,15);assert.equal(paid.round.tazza_mode,'gwang');
   const buys=requests.filter(r=>r.action==='tazza_start');assert.equal(buys[0].request_id,buys[1].request_id);
-  assert.ok(buys.every(r=>r.rules_version===10),'paid starts use the same new AI protocol as settlement');
+  assert.ok(buys.every(r=>r.rules_version===11),'paid starts use the same new AI protocol as settlement');
   fail=true;await assert.rejects(wallet.vent(round.id,'gun'));assert.equal(balance,14);
   const [a,b]=await Promise.all([wallet.vent(round.id,'hammer'),wallet.vent(round.id,'hammer')]);
   assert.equal(a.purchase.effect,'gun');assert.equal(a,b);assert.equal(balance,14);

@@ -27,7 +27,7 @@ function score(caps){
   const pv=pi.reduce((s,c)=>s+piVal(c),0); if(pv>=10){ pts+=pv-9; det.push([`피 ${pv}장`,pv-9]); }
   return {pts,det,g:g.length,y:y.length,t:t.length,pv};
 }
-// Solo CPU tiers: 100,000G is still level 1; 100,001G starts level 2.
+// Legacy rounds retain their original gold tier; new rounds use an account level snapshot.
 const CPU_GOLD_STEP=100000,MAX_CPU_LEVEL=10;
 function cpuLevelForGold(gold){
   return Number.isFinite(gold)?Math.max(1,Math.min(MAX_CPU_LEVEL,Math.ceil(gold/CPU_GOLD_STEP))):1;
@@ -39,8 +39,8 @@ class Game {
   deal(){
     if(this._playing)return false;
     this.tazzaMode=null; // A purchased benefit belongs to exactly one solo round.
-    // Choose once per solo round from the starting balance. Online seats opt out.
-    this.cpuLevel=this.cpuMode==='normal'?1:cpuLevelForGold(this.bank[0]);
+    // The server snapshots this at the start; balance changes cannot change difficulty.
+    this.cpuLevel=this.cpuMode==='normal'?1:Number.isInteger(this.roundCpuLevel)?Math.max(1,Math.min(MAX_CPU_LEVEL,this.roundCpuLevel)):cpuLevelForGold(this.bank[0]);
     let d,board,bonus;
     for(;;){
       d=shuffle(CARDS.map(c=>({...c,asPi:false})),this.random);board=[];bonus=[];

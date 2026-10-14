@@ -21,6 +21,7 @@ export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
     }
   });
   game.cpuMode = cpuMode;
+  game.roundCpuLevel = round.cpu_level;
   game.rate = round.rate ?? 100;
   game.bank = [round.gold, 5000]; game.first = round.first; game.carry = round.carry;
   const assisted = !!round.tazza_mode;
@@ -64,5 +65,5 @@ export async function verifyRound(round, actions, {cpuMode='adaptive'}={}) {
     } else throw Error('invalid_action');
   }
   if (!game.over || !result || !Number.isSafeInteger(game.bank[0]) || game.bank[0] < 0) throw Error('unfinished_round');
-  return { gold: game.bank[0], first: game.first, carry: game.carry };
+  return { gold: game.bank[0], first: game.first, carry: game.carry, outcome: result.type === 'nagari' ? 'draw' : result.winner === 0 ? 'win' : 'loss' };
 }
