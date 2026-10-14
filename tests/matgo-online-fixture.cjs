@@ -33,7 +33,7 @@ async function fixture(fixtureOptions={}){
     await db.exec(fs.readFileSync(path.join(dir,file),'utf8'));
   }
   if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
-  if(fixtureOptions.adaptive){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_streak_auto_stakes.sql'))),'utf8'));}
+  if(fixtureOptions.adaptive){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
   const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],fetchImpl:async(url,options)=>{

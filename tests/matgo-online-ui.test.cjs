@@ -126,7 +126,7 @@ const root=path.join(__dirname,'..');
   await raisedB.page.locator('#room-code').fill(raisedCode);await raisedB.page.locator('#join').click();
   await raisedA.page.locator('#hand').waitFor();await raisedB.page.locator('#hand').waitFor();
   assert.equal(await raisedA.page.locator('#matgo-stake').count(),0,'host stake rises automatically');assert.equal(await raisedB.page.locator('#matgo-stake').count(),0,'guest joins without a stake dialog');
-  assert.equal(await raisedA.page.locator('#stakeRate').innerText(),'점당 200G');assert.equal(await raisedB.page.locator('#stakeRate').innerText(),'점당 200G');
+  assert.equal(await raisedA.page.locator('#stakeRate').innerText(),'점당 500G');assert.equal(await raisedB.page.locator('#stakeRate').innerText(),'점당 500G');
   if(process.env.MATGO_PARITY_PROOF)await raisedA.page.screenshot({path:process.env.MATGO_PARITY_PROOF});
   await raisedA.context.close();await raisedB.context.close();assert.deepEqual(errors,[]);
   console.log('PASS: two browser members join by code, private hands, mobile layouts, 15-second automatic play, synchronized result, rematch, PC takeover and automatic shared stakes without a consent dialog');
