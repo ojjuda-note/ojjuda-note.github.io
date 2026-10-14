@@ -16,13 +16,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='status')return{data:snapshot()};
     if(body.action==='tazza_start'){
       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
-      state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:12,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
+      state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
     }
     if(body.action==='vent'){if(state.coins<1)return{data:{error:'insufficient_zzu'}};state.coins--;return{data:{...snapshot(),purchase:{effect:body.effect,price:1}}};}
     if(body.action==='start'){
       if(state.updateRequired)return{data:{error:'client_update_required'}};
       if(!state.gold)return{data:{error:'gold_empty'}};
-      state.round ||= {id:'00000000-0000-4000-9000-000000000001',rules_version:12,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+      state.round ||= {id:'00000000-0000-4000-9000-000000000001',rules_version:state.rulesVersion??13,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
       if(state.round)return{data:{error:'round_in_progress'}};
@@ -234,7 +234,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,12);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,13);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -246,7 +246,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.waitForSelector('.sc');assert.equal(f.state.gold,4300);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const [seed,card,delta] of [[11,40,300],[856,39,-300]]){
-    const f=await fixture({seed});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    const f=await fixture({seed,rulesVersion:12});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       window.firstPpukEvents=[];
       new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1&&node.classList.contains('banner')&&node.textContent.includes('첫뻑'))firstPpukEvents.push(node.textContent);}).observe(document.body,{childList:true});
@@ -289,7 +289,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture({seed:856});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
+    const f=await fixture({seed:856,rulesVersion:12});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
     for(let i=0;i<1500&&!f.state.settled;i++){
       await f.page.evaluate(()=>{
         const modal=document.querySelector('.modal');if(modal){(modal.textContent.includes('두 장 폭탄')?modal.querySelector('#n'):(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#y')||modal.querySelector('button')))?.click();return;}
@@ -350,8 +350,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     }
     assert.equal(f.state.settled,true);assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,11);
     await f.page.locator('#next').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.rules_version,12);assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
+    assert.equal(f.state.round.rules_version,13);assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
     assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
+    assert.equal(await f.page.locator('#cpuLevel').textContent(),'기본');
     assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
     await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
     assert.deepEqual(f.errors,[]);await f.context.close();
@@ -364,7 +365,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.waitForURL(url=>url.searchParams.has('update'));
     assert.equal(new URL(f.page.url()).searchParams.get('entry'),'kept');
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.rules_version,12);assert.deepEqual(f.errors,[]);await f.context.close();
+    assert.equal(f.state.round.rules_version,13);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   // Opening triples come from a real deal and pay one pi, including a whole bonus.
   for(const p of [0,1])for(const route of ['hand','flip']){

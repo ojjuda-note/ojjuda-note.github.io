@@ -23,7 +23,7 @@ try{
   fail=true;await assert.rejects(wallet.start({tazza:true}));assert.equal(balance,15);
   const paid=await wallet.start({tazza:true});assert.equal(paid.coins,15);assert.equal(paid.round.tazza_mode,'gwang');
   const buys=requests.filter(r=>r.action==='tazza_start');assert.equal(buys[0].request_id,buys[1].request_id);
-  assert.ok(buys.every(r=>r.rules_version===12),'paid starts use the same new AI protocol as settlement');
+  assert.ok(buys.every(r=>r.rules_version===13),'paid starts use the same new AI protocol as settlement');
   fail=true;await assert.rejects(wallet.vent(round.id,'gun'));assert.equal(balance,14);
   const [a,b]=await Promise.all([wallet.vent(round.id,'hammer'),wallet.vent(round.id,'hammer')]);
   assert.equal(a.purchase.effect,'gun');assert.equal(a,b);assert.equal(balance,14);
@@ -31,6 +31,6 @@ try{
   await wallet.vent(round.id,'hammer');assert.equal(balance,13);
   balance=0;await assert.rejects(wallet.vent(round.id,'bomb'),/화풀이는 1쭈/);
   balance=1;await wallet.vent(round.id,'bomb');assert.equal(balance,0,'known decline does not reuse an old receipt');
-  for(const version of [10,11,12]){round={id:crypto.randomUUID(),rules_version:version,cpu_level:version>=11?1:null};await wallet.status();await wallet.settle(round.id,[]);assert.equal(requests.at(-1).rules_version,version,'settlement uses the server-pinned version');}
+  for(const version of [10,11,12,13]){round={id:crypto.randomUUID(),rules_version:version,cpu_level:version>=11?1:null};await wallet.status();await wallet.settle(round.id,[]);assert.equal(requests.at(-1).rules_version,version,'settlement uses the server-pinned version');}
   console.log('PASS: wallet keeps uncertain purchase IDs and effects, coalesces double clicks, charges once, and reports per-action prices');
 }finally{dom.window.close();for(const key of ['window','document','location'])delete globalThis[key];}

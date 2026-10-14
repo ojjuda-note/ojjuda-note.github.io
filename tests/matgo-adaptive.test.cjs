@@ -7,7 +7,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
  const legacy=await import('../supabase/functions/matgo/engine-v10.mjs');
  const {dealSoloRound}=await import('../games/matgo-tazza.mjs');
  const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
- const start=()=>call(A,{action:'start',rules_version:12,stakes_version:1});
+ const start=()=>call(A,{action:'start',rules_version:13,stakes_version:1});
  const status=()=>call(A,{action:'status'});
  const reset=async(level=1,gold=5000)=>{
   await status();await db.query('update ojjuda_matgo_internal.wallets set round_id=null,round_seed=null,round_cpu_level=null,last_round=null,gold=$2,stake_rate=100,stake_seen=100,cpu_level=$3,cpu_win_streak=0,cpu_loss_streak=0,next_first=0,next_carry=1 where user_id=$1',[A,gold,level]);
@@ -48,7 +48,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   await db.query('update ojjuda_matgo_internal.wallets set online_room=null,stake_rate=100,stake_seen=100 where user_id in($1,$2)',[B,C]);
   await db.query("update ojjuda_matgo_internal.rooms set status='cancelled' where id=$1",[priorRoom.room.id]);
   await reset();
-  assert.equal((await call(MINOR,{action:'start',rules_version:12,stakes_version:1})).error,'adult_required');
+  assert.equal((await call(MINOR,{action:'start',rules_version:13,stakes_version:1})).error,'adult_required');
   assert.equal((await call(A,{action:'start',rules_version:10,stakes_version:1})).error,'client_update_required');
   assert.equal((await status()).round,null,'old client is rejected before creating a round');
   assert.equal((await call(A,{action:'tazza_start',rules_version:10,stakes_version:1,request_id:crypto.randomUUID()})).error,'client_update_required');
@@ -69,7 +69,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   let interrupted=await status();assert.equal(interrupted.cpu_level,5);assert.equal(interrupted.cpu_win_streak,1);assert.equal(interrupted.cpu_loss_streak,0,'opposite result resets the streak');
   // Excluded rounds do not break an ordinary-game streak.
   await record((await start()).round,'draw');assert.equal((await status()).cpu_win_streak,1);
-  await record((await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()})).round,'loss');
+  await record((await call(A,{action:'tazza_start',rules_version:13,stakes_version:1,request_id:crypto.randomUUID()})).round,'loss');
   assert.equal((await status()).cpu_win_streak,1);assert.equal((await status()).cpu_loss_streak,0);
   await reset(3);
   let s=await start();const first=s.round.id;
@@ -80,11 +80,11 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   // Paid rounds are excluded by their server receipt, regardless of reported gold or mode.
   await reset();await db.query('update public.user_private set coins=100 where user_id=$1',[A]);
   for(const mode of ['tan','peek','ssang','gwang','godori','cheong','hong','cho']){
-   s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(s.status,200);
+   s=await call(A,{action:'tazza_start',rules_version:13,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(s.status,200);
    await db.query("update ojjuda_matgo_internal.fun_purchases set effect=$3 where user_id=$1 and reference_id=$2 and kind='tazza'",[A,s.round.id,mode]);
    const result=await record(s.round,'win');assert.equal(result.cpu_win_streak,0);assert.equal(result.cpu_level,1);
   }
-  s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});
+  s=await call(A,{action:'tazza_start',rules_version:13,stakes_version:1,request_id:crypto.randomUUID()});
   const fresh=await start();assert.notEqual(fresh.round.id,s.round.id);assert.equal(fresh.round.tazza_mode,null);assert.equal(fresh.cpu_win_streak,0,'abandoning a paid round does not count');
   // Verify full transcripts at all levels with identical gold: account snapshot is authoritative.
   for(let level=1;level<=10;level++){
@@ -140,7 +140,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   await record((await start()).round,'loss',99998);s=await record((await start()).round,'loss',99997);assert.equal(s.cpu_level,1);
   // Paid profit still raises the gold floor without contributing to streaks.
   await reset();await record((await start()).round,'win');
-  s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});
+  s=await call(A,{action:'tazza_start',rules_version:13,stakes_version:1,request_id:crypto.randomUUID()});
   s=await record(s.round,'win',200000);assert.equal(s.cpu_level,3);assert.equal(s.cpu_win_streak,1);
   // Active snapshots issued before the new floor remain valid and unchanged.
   await reset(1,99999);s=await start();
@@ -175,4 +175,5 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   console.log('PASS: 5-win/3-loss streaks and resets, next-round snapshots, paid/draw exclusion, authoritative replay, retry/concurrency, legacy compatibility, gold minimum levels, linear 1,000G stakes, saved-rate retention, bankruptcy/refill and online isolation');
  }finally{await f.close();}
  await import('./matgo-opening-compat.test.mjs');
+ await import('./matgo-basic.test.mjs');
 })().catch(e=>{console.error(e);process.exitCode=1;});

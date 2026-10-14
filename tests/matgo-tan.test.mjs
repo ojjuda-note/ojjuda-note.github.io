@@ -4,7 +4,7 @@ import * as server from '../supabase/functions/matgo/engine.mjs';
 import {dealSoloRound,TAZZA_MODES} from '../games/matgo-tazza.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 
-function finishFixture(engine,{mode='tan',cpuMode='adaptive',points=0}={}){
+function finishFixture(engine,{mode='tan',cpuMode='standard',points=0}={}){
   const events=[],g=new engine.Game({event:async(type,data)=>events.push({type,...data})});
   g.cpuMode=cpuMode;g.deal();g.tazzaMode=mode;
   const mine=points?engine.CARDS.filter(c=>c.k==='pi').slice(0,9+points):[];
@@ -50,7 +50,7 @@ for(const engine of [browser,server]){
 let guaranteed=0,example;
 for(const gold of [5000,400001,900001])for(const policy of ['first','random'])for(let seed=1;seed<=40;seed++){
   const {Game,seededRandom,aiChooseCard,aiChoose,aiChooseGukjin,aiGoStop}=browser;
-  const random=seededRandom(seed+901),round={seed,gold,first:seed%2,carry:1,rate:100,tazza_mode:'tan'};
+  const random=seededRandom(seed+901),round={rules_version:13,seed,gold,first:seed%2,carry:1,rate:100,tazza_mode:'tan'};
   let g,result;
   g=new Game({event:async(type,data)=>{if(type==='end'||type==='nagari')result={type,...data};},
     choose:async(p,ids)=>p===1?aiChoose(g,p,ids):policy==='first'?ids[0]:ids[Math.floor(random()*ids.length)],
