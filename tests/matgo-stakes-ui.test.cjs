@@ -29,35 +29,37 @@ const root=path.join(__dirname,'..');
   await page.goto('https://fixture.test/games/matgo.html');
   const ready=()=>page.waitForFunction(()=>window.stakesTest&&!stakesTest.ui.busy&&!stakesTest.ui.dealing&&document.querySelector('#stakeRate'));
   await ready();assert.equal(await page.locator('#matgo-stake').count(),0);
-  assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
-  assert.equal(await page.locator('#stakeRate').innerText(),'점당 2,000G');
-  assert.equal(await page.locator('#cpuLevel').innerText(),'1단계','large gold balance still starts at level 1');
+  assert.equal(await page.evaluate(()=>stakesTest.game.rate),5000);
+  assert.equal(await page.locator('#stakeRate').innerText(),'점당 5,000G');
+  assert.equal(await page.locator('#cpuLevel').innerText(),'5단계','400,000G sets a minimum of level 5');
   assert.equal(requests.some(r=>r.action==='stake'),false,'there is no consent request');
   assert.equal(requests.find(r=>r.action==='start').rules_version,11);
   const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
   assert.equal(fits,true,'compact level display fits a 320px mobile screen');
-  await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),5000);
   const end=async(gold,outcome='win')=>{const s=await call(A,{action:'status'});await db.query('select public.matgo_ranked_settle($1,$2,$3,0::smallint,1,$4)',[A,s.round.id,gold,outcome]);};
   // Reach a five-win promotion: UI changes only on the following deal.
   for(let i=0;i<5;i++){
-    assert.equal(await page.locator('#cpuLevel').innerText(),'1단계');
+    assert.equal(await page.locator('#cpuLevel').innerText(),'5단계');
     await end(400000);await page.reload();await ready();
   }
-  assert.equal(await page.locator('#cpuLevel').innerText(),'2단계');
+  assert.equal(await page.locator('#cpuLevel').innerText(),'6단계');
   for(let i=0;i<3;i++){await end(400000,'loss');await page.reload();await ready();}
-  assert.equal(await page.locator('#cpuLevel').innerText(),'1단계');
-  await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  assert.equal(await page.locator('#cpuLevel').innerText(),'5단계');
+  for(let i=0;i<3;i++){await end(400000,'loss');await page.reload();await ready();}
+  assert.equal(await page.locator('#cpuLevel').innerText(),'5단계','three more losses cannot break the gold floor');
+  await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),5000);
   await end(0,'loss');await page.reload();await page.locator('#refill-gold').waitFor();
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 100G');
   await page.locator('#refill-gold').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
-  await end(600000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),10000);
+  await end(600000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),20000);
   assert.equal(await page.locator('#matgo-stake').count(),0);
   if(process.env.MATGO_STAKE_SCREENSHOT)await page.screenshot({path:process.env.MATGO_STAKE_SCREENSHOT});
   await page.locator('#menu').click();await page.locator('#rules').click();
   const help=await page.locator('.modal').innerText();
-  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/5연승/);assert.match(help,/3연패/);
+  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/5연승/);assert.match(help,/3연패/);assert.match(help,/10만G부터 2단계/);assert.match(help,/10만G부터 점당 200G/);
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: mobile automatic stakes without consent, compact level display, five-win promotion, three-loss demotion, refresh persistence, bankruptcy/refill and rules');
+  console.log('PASS: mobile automatic stakes without consent, compact level display, gold floor, five-win promotion, floor-limited three-loss demotion, refresh persistence, bankruptcy/refill and rules');
  }finally{await browser.close();await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
