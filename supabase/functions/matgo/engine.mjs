@@ -51,7 +51,12 @@ class Game {
     this.deck=d;this.floor=[];const by={};
     board.forEach(c=>(by[c.m]||(by[c.m]=[])).push(c));
     // 같은 월 3장만 묶는다. 2장은 서로 선택할 수 있도록 따로 둔다.
-    for(const cards of Object.values(by)){if(cards.length===3)this.floor.push(cards);else cards.forEach(c=>this.floor.push([c]));}
+    for(const cards of Object.values(by)){if(cards.length===3){
+      // An opening triple is a neutral ppuk: one pi, no self-ppuk/first-ppuk credit.
+      // Already-started rounds keep their original rule through the server snapshot.
+      if(this.openingPpuk!==false){cards.ppuk=true;cards.ppukOwner=null;}
+      this.floor.push(cards);
+    }else cards.forEach(c=>this.floor.push([c]));}
     this.caps=[[],[]];this.dealBonus=bonus;this.actions=[];
     this.hand=[this.deck.splice(0,10),this.deck.splice(0,10)];this.go=[0,0];this.lastPts=[0,0];this.mult=[1,1];this.shake=[0,0];this.bomb=[0,0];this.turn=this.first;this.over=false;this.log=[];
     this.ppukCount=[0,0];this.normalPlays=[0,0];this.firstPpukGold=[0,0];this.chongtongDeclined=[new Set(),new Set()];
@@ -80,7 +85,7 @@ class Game {
   async ppukReward(p,stack){
     const self=stack.ppukOwner===p,bonusCount=stack.filter(c=>c.k==='bonus').length;
     const count=self?2:1;
-    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv});return count;
+    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv,...(stack.ppukOwner===null?{opening:true}:{})});return count;
   }
   canBombFlip(p){return this.bomb[p]>0&&this.deck.length>0;}
   canMove(p){return this.hand[p].length>0||this.canBombFlip(p);}

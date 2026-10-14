@@ -83,6 +83,7 @@ function targetDeal(game, mode) {
 }
 
 export function dealSoloRound(game, round, engine) {
+  game.openingPpuk=(round.rules_version??12)>=12;
   const mode = round.tazza_mode ?? null;
   if (mode !== null && !Object.hasOwn(TAZZA_MODES, mode)) throw Error('invalid_mode');
   const seed = mode === 'tan' ? selectTazzaSeed(round, engine) : round.seed;

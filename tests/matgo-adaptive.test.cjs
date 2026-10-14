@@ -7,7 +7,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
  const legacy=await import('../supabase/functions/matgo/engine-v10.mjs');
  const {dealSoloRound}=await import('../games/matgo-tazza.mjs');
  const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
- const start=()=>call(A,{action:'start',rules_version:11,stakes_version:1});
+ const start=()=>call(A,{action:'start',rules_version:12,stakes_version:1});
  const status=()=>call(A,{action:'status'});
  const reset=async(level=1,gold=5000)=>{
   await status();await db.query('update ojjuda_matgo_internal.wallets set round_id=null,round_seed=null,round_cpu_level=null,last_round=null,gold=$2,stake_rate=100,stake_seen=100,cpu_level=$3,cpu_win_streak=0,cpu_loss_streak=0,next_first=0,next_carry=1 where user_id=$1',[A,gold,level]);
@@ -43,12 +43,12 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   assert.equal((await call(B,{action:'online_read',room_id:priorRoom.room.id,stakes_version:1})).room.rate,2000);
   assert.equal((await call(B,{action:'status'})).stake_rate,5000,'an already raised amount is retained after the rule change');
   const oldRatePlay=await play(prior.round);
-  const oldRateResult=await call(A,{action:'settle',rules_version:11,round_id:prior.round.id,actions:oldRatePlay.g.actions});
+  const oldRateResult=await call(A,{action:'settle',rules_version:12,round_id:prior.round.id,actions:oldRatePlay.g.actions});
   assert.equal(oldRateResult.status,200);assert.equal(oldRateResult.gold,oldRatePlay.g.bank[0],'existing transcripts settle using their original stake');
   await db.query('update ojjuda_matgo_internal.wallets set online_room=null,stake_rate=100,stake_seen=100 where user_id in($1,$2)',[B,C]);
   await db.query("update ojjuda_matgo_internal.rooms set status='cancelled' where id=$1",[priorRoom.room.id]);
   await reset();
-  assert.equal((await call(MINOR,{action:'start',rules_version:11,stakes_version:1})).error,'adult_required');
+  assert.equal((await call(MINOR,{action:'start',rules_version:12,stakes_version:1})).error,'adult_required');
   assert.equal((await call(A,{action:'start',rules_version:10,stakes_version:1})).error,'client_update_required');
   assert.equal((await status()).round,null,'old client is rejected before creating a round');
   assert.equal((await call(A,{action:'tazza_start',rules_version:10,stakes_version:1,request_id:crypto.randomUUID()})).error,'client_update_required');
@@ -56,7 +56,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   for(const [level,outcome,count,expected] of [[1,'win',5,2],[1,'loss',3,1],[5,'win',5,6],[5,'loss',3,4],[10,'win',5,10]]){
    await reset(level);
    for(let i=0;i<count;i++){
-    const s=await start();assert.equal(s.round.cpu_level,level);assert.equal(s.round.rules_version,11);
+    const s=await start();assert.equal(s.round.cpu_level,level);assert.equal(s.round.rules_version,12);
     const result=await record(s.round,outcome);
     assert.equal(result.cpu_level,i===count-1?expected:level,'only a complete streak changes the level');
     assert.equal(result.cpu_win_streak,outcome==='win'&&i<count-1?i+1:0);
@@ -69,7 +69,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   let interrupted=await status();assert.equal(interrupted.cpu_level,5);assert.equal(interrupted.cpu_win_streak,1);assert.equal(interrupted.cpu_loss_streak,0,'opposite result resets the streak');
   // Excluded rounds do not break an ordinary-game streak.
   await record((await start()).round,'draw');assert.equal((await status()).cpu_win_streak,1);
-  await record((await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()})).round,'loss');
+  await record((await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()})).round,'loss');
   assert.equal((await status()).cpu_win_streak,1);assert.equal((await status()).cpu_loss_streak,0);
   await reset(3);
   let s=await start();const first=s.round.id;
@@ -80,11 +80,11 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   // Paid rounds are excluded by their server receipt, regardless of reported gold or mode.
   await reset();await db.query('update public.user_private set coins=100 where user_id=$1',[A]);
   for(const mode of ['tan','peek','ssang','gwang','godori','cheong','hong','cho']){
-   s=await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(s.status,200);
+   s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(s.status,200);
    await db.query("update ojjuda_matgo_internal.fun_purchases set effect=$3 where user_id=$1 and reference_id=$2 and kind='tazza'",[A,s.round.id,mode]);
    const result=await record(s.round,'win');assert.equal(result.cpu_win_streak,0);assert.equal(result.cpu_level,1);
   }
-  s=await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()});
+  s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});
   const fresh=await start();assert.notEqual(fresh.round.id,s.round.id);assert.equal(fresh.round.tazza_mode,null);assert.equal(fresh.cpu_win_streak,0,'abandoning a paid round does not count');
   // Verify full transcripts at all levels with identical gold: account snapshot is authoritative.
   for(let level=1;level<=10;level++){
@@ -100,7 +100,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   assert.deepEqual([...outcomes.keys()],['loss','win']);
   for(const [outcome,played] of outcomes){
    await reset();s=await start();await db.query('update ojjuda_matgo_internal.wallets set round_seed=$2 where user_id=$1',[A,played.seed]);
-   const body={action:'settle',rules_version:11,round_id:s.round.id,actions:played.g.actions,cpu_level:10,outcome:'win',gold:999999999,user_id:B};
+   const body={action:'settle',rules_version:12,round_id:s.round.id,actions:played.g.actions,cpu_level:10,outcome:'win',gold:999999999,user_id:B};
    assert.equal((await call(A,{...body,rules_version:10})).error,'client_update_required');
    const bad=structuredClone(body);bad.actions.find(a=>a.type==='play').card=999;
    assert.equal((await call(A,bad)).error,'invalid_round');assert.equal((await status()).cpu_win_streak,0);
@@ -110,7 +110,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
    await call(A,body);assert.equal((await status()).cpu_win_streak,s.cpu_win_streak,'retries do not count twice');assert.equal((await status()).cpu_loss_streak,s.cpu_loss_streak);
   }
   // Existing v10 rounds retain their old strategy and can finish after the migration.
-  await reset(1,400001);s=await start();await db.query('update ojjuda_matgo_internal.wallets set round_cpu_level=null,round_seed=10,round_rate=100 where user_id=$1',[A]);
+  await reset(1,400001);s=await start();await db.query('update ojjuda_matgo_internal.wallets set round_cpu_level=null,round_rules_version=null,round_seed=10,round_rate=100 where user_id=$1',[A]);
   s=await call(A,{action:'start',rules_version:10,stakes_version:1});assert.equal(s.status,200);assert.equal(s.round.cpu_level,null);
   const old=await play(s.round,legacy);assert.equal(old.g.cpuLevel,5);
   const completed=await call(A,{action:'settle',rules_version:10,round_id:s.round.id,actions:old.g.actions});assert.equal(completed.status,200);assert.equal(completed.cpu_win_streak,0);
@@ -123,7 +123,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   }
   // The new 1,000G rate works through full authoritative replay and settlement.
   await reset(1,300000);s=await start();const thousandPlay=await play(s.round);
-  const thousandResult=await call(A,{action:'settle',rules_version:11,round_id:s.round.id,actions:thousandPlay.g.actions});
+  const thousandResult=await call(A,{action:'settle',rules_version:12,round_id:s.round.id,actions:thousandPlay.g.actions});
   assert.equal(thousandResult.status,200);assert.equal(thousandResult.gold,thousandPlay.g.bank[0]);
   // Three losses cannot go below the current balance floor at any bracket.
   for(const [gold,level] of [[100000,2],[200000,3],[300000,4],[400000,5],[500000,6],[600000,7],[700000,8],[800000,9],[900000,10]]){
@@ -140,7 +140,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   await record((await start()).round,'loss',99998);s=await record((await start()).round,'loss',99997);assert.equal(s.cpu_level,1);
   // Paid profit still raises the gold floor without contributing to streaks.
   await reset();await record((await start()).round,'win');
-  s=await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()});
+  s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});
   s=await record(s.round,'win',200000);assert.equal(s.cpu_level,3);assert.equal(s.cpu_win_streak,1);
   // Active snapshots issued before the new floor remain valid and unchanged.
   await reset(1,99999);s=await start();
@@ -174,4 +174,5 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   assert.equal((await db.query("select has_function_privilege('service_role','public.matgo_ranked_settle(uuid,uuid,bigint,smallint,integer,text)','EXECUTE') allowed")).rows[0].allowed,true);
   console.log('PASS: 5-win/3-loss streaks and resets, next-round snapshots, paid/draw exclusion, authoritative replay, retry/concurrency, legacy compatibility, gold minimum levels, linear 1,000G stakes, saved-rate retention, bankruptcy/refill and online isolation');
  }finally{await f.close();}
+ await import('./matgo-opening-compat.test.mjs');
 })().catch(e=>{console.error(e);process.exitCode=1;});

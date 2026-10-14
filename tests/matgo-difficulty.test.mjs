@@ -117,14 +117,14 @@ assert.ok(different>0,'high-tier strategy actually changes decisions');
 // fully replayed from a server-owned starting balance, never a client balance.
 // Recreate the exact prior rules for cached clients, including the old CPU fallback.
 const oldTiered=await play(23,900001,'adaptive',previous),oldNormal=await play(23,900001,'normal',previous);
-let snapshot=tiered.round,settled;
+let snapshot={...tiered.round,rules_version:12},settled;
 const actor='00000000-0000-4000-8000-000000000001',roundId='00000000-0000-4000-9000-000000000001';
 const handler=createHandler({env:name=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[name],fetchImpl:async(url,options)=>{
   if(url.endsWith('/auth/v1/user'))return Response.json({id:actor});
   const params=JSON.parse(options.body);if(params.p_action==='round')return Response.json({round:snapshot});
   settled=params.p_gold;return Response.json({ok:true,gold:settled});
 }});
-const request=(actions,version=10)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
+const request=(actions,version=12)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
 assert.equal((await request(tiered.game.actions)).status,200);assert.equal(settled,tiered.game.bank[0]);
 // Open v8/v9 pages finish with their frozen strategy, while current pages must
 // replay the new AI. Client-supplied balance, mode and level cannot override it.
@@ -134,7 +134,7 @@ for(const gold of [5000,100001,400001,900001])for(let seed=1;seed<=12;seed++){
     assert.equal((await request(old.game.actions,version)).status,200);
     assert.equal(settled,old.game.bank[0]);
   }
-  const fresh=await play(seed,gold);snapshot=fresh.round;
+  const fresh=await play(seed,gold);snapshot={...fresh.round,rules_version:12};
   assert.equal((await request(fresh.game.actions)).status,200);assert.equal(settled,fresh.game.bank[0]);
   const bad=structuredClone(fresh.game.actions),move=bad.find(a=>a.type==='play'&&a.p===1);
   if(move){move.card=999;assert.equal((await request(bad)).status,409);}

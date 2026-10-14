@@ -11,7 +11,7 @@ export function createWallet(access,{stakes=false}={}) {
     if(error){try{code=(await error.context.json()).error;}catch{}}
     if(error||code||!data?.ok){const failure=new Error(code==='insufficient_zzu'?`쭈가 부족해요. ${body.action==='vent'?'화풀이는 1쭈':body.action==='tazza_start'?'타짜모드는 5쭈':'충전은 5쭈'}가 필요해요.`:purchaseMessages[code]||messages[code]||'서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.');failure.code=code||'unavailable';throw failure;}
     current=data;
-    if(data.round?.id)roundVersions.set(data.round.id,data.round.cpu_level==null?10:11);
+    if(data.round?.id)roundVersions.set(data.round.id,data.round.rules_version??(data.round.cpu_level==null?10:11));
     if(Number.isInteger(data.coins)){
       const message={type:'ojjuda:matgo:wallet',coins:data.coins};
       if(window.parent!==window)window.parent.postMessage(message,location.origin);
@@ -30,11 +30,11 @@ export function createWallet(access,{stakes=false}={}) {
       await access.check();
       if(stakes)await prepareStake();
       if(tazza){
-        pendingTazza??={action:'tazza_start',request_id:crypto.randomUUID(),stakes_version:1,rules_version:11};
+        pendingTazza??={action:'tazza_start',request_id:crypto.randomUUID(),stakes_version:1,rules_version:12};
         try{const state=await request(pendingTazza);pendingTazza=null;return state;}
         catch(error){if(error.code&&error.code!=='unavailable')pendingTazza=null;throw error;}
       }
-      const state=await request({action:'start',rules_version:11,...(stakes?{stakes_version:1}:{})});
+      const state=await request({action:'start',rules_version:12,...(stakes?{stakes_version:1}:{})});
       pendingTazza=null;return state;
     },
     vent(referenceId,effect){
@@ -44,7 +44,7 @@ export function createWallet(access,{stakes=false}={}) {
       ventRequest=request(pendingVent).then(data=>{pendingVent=null;return data;}).catch(error=>{if(error.code&&error.code!=='unavailable')pendingVent=null;throw error;}).finally(()=>{ventRequest=null;});
       return ventRequest;
     },
-    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:roundVersions.get(roundId)??11}),
+    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:roundVersions.get(roundId)??12}),
     refill(paid){
       // Retain the request ID through network failures so retries cannot charge twice.
       if(!pendingRefill||pendingRefill.paid!==paid)pendingRefill={action:'refill',request_id:crypto.randomUUID(),paid};

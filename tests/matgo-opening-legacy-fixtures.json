@@ -1,0 +1,342 @@
+[
+  {
+    "round": {
+      "seed": 1,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 2,
+      "rules_version": 11
+    },
+    "actions": "ef3ce29fc35e985ab5022f878eaadc67ea08bfa7dddd6d8f6726bb8730f20a2f",
+    "events": "5c634a1aefe041e0c8c1d5a4921a4d634a9bf9fb60ba40d1e3101f495eb33b89",
+    "bank": [
+      4200,
+      5800
+    ]
+  },
+  {
+    "round": {
+      "seed": 2,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 3,
+      "rules_version": 11
+    },
+    "actions": "a72099ba1a468781300419bbf071dd93d7f962092c04936f078629cd0b3e31c9",
+    "events": "7337ef385a3edec61df9d5d8d81230613773b1984df72f6985f9a6e759a6b98e",
+    "bank": [
+      9100,
+      900
+    ]
+  },
+  {
+    "round": {
+      "seed": 3,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 4,
+      "rules_version": 11
+    },
+    "actions": "9d9a0c7737e9823b22e4a87bf8660b954d56bd38fb988321fcc5a24921a284fc",
+    "events": "44c1abc44c3f46617a100a308924fe96382df9a1989eaa62134825871f10466e",
+    "bank": [
+      3600,
+      6400
+    ]
+  },
+  {
+    "round": {
+      "seed": 4,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 5,
+      "rules_version": 11
+    },
+    "actions": "33eac5449246cb7ec57207d0c7be0d5ea5998260e6f155d4be07bb296b689ab8",
+    "events": "d79bf3db4bb0251026b4e9a3786345c3248bc683e62e27defd9e348dea286204",
+    "bank": [
+      6600,
+      3400
+    ]
+  },
+  {
+    "round": {
+      "seed": 5,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 6,
+      "rules_version": 11
+    },
+    "actions": "6a397f32e2e5f0309896e010170b8633be8605ce25b8a8b03866fb644694277e",
+    "events": "1fe4111b6943435d32eae493d2684ae7902b2fc53cfa9ab386f6be6d8f46bce2",
+    "bank": [
+      2200,
+      7800
+    ]
+  },
+  {
+    "round": {
+      "seed": 6,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 7,
+      "rules_version": 11
+    },
+    "actions": "1826b8141cc9250e45e59047de3d11727b868de8eb626c9b33c3fb9596841f92",
+    "events": "9001ce55227791e064be1646bc272454cbdf5ccb8a7515fea27549c3efc3b57d",
+    "bank": [
+      4300,
+      5700
+    ]
+  },
+  {
+    "round": {
+      "seed": 7,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 8,
+      "rules_version": 11
+    },
+    "actions": "a978b03a0f8c1649a04fd461f337d8e2e12e7d753ded665a35f28fef932bd849",
+    "events": "c329c6043c4909ed55b9e3cd9169acbf96ebde642bf840306d0df7443ed62cf8",
+    "bank": [
+      3700,
+      6300
+    ]
+  },
+  {
+    "round": {
+      "seed": 8,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 9,
+      "rules_version": 11
+    },
+    "actions": "995ec9357113920cb5ab2d2df526cecf3e89ebc06c3b153d0448d07603aa44ac",
+    "events": "96e185d9d84ca8a9bd71ccd2ddd333d2ad586dcefd6d5c12674fadfa7a03d0cf",
+    "bank": [
+      8000,
+      2000
+    ]
+  },
+  {
+    "round": {
+      "seed": 9,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 10,
+      "rules_version": 11
+    },
+    "actions": "41db5582e0535649ae0991069ceae09cf994cbaaeb871185d70fa71f1642229c",
+    "events": "8ab23868d6ac3a35ee0ff674348ae1eb87bab2a658928d1dcecf02ca357befe8",
+    "bank": [
+      5700,
+      4300
+    ]
+  },
+  {
+    "round": {
+      "seed": 10,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 1,
+      "rules_version": 11
+    },
+    "actions": "6a28ce26821466d9e3709bc75a897289982ec2724ca7ab52a372e8579ab0e958",
+    "events": "962cf38b4df0326763f63555e5eacd942fa330e44bfc5e08ed4a6747387dfc40",
+    "bank": [
+      7400,
+      2600
+    ]
+  },
+  {
+    "round": {
+      "seed": 11,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 2,
+      "rules_version": 11
+    },
+    "actions": "e7a5f431d0b804217c4d8d747b63df4e7740193e3b1e57eedcff0e8c41a082a2",
+    "events": "b9c4b0339cc78edc4da2c7c1e1380af166e48e62aed7d0e264ade0b4f3637adf",
+    "bank": [
+      1400,
+      8600
+    ]
+  },
+  {
+    "round": {
+      "seed": 12,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 3,
+      "rules_version": 11
+    },
+    "actions": "bae526bb304ffb078a0dd442d1901fd99d85b0155efa7335f54701d90152cf7a",
+    "events": "584b60f52d06d8f7e57f9061acea12250aa87efb02e1b7c69164de5a8d70a4a1",
+    "bank": [
+      6200,
+      3800
+    ]
+  },
+  {
+    "round": {
+      "seed": 13,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 4,
+      "rules_version": 11
+    },
+    "actions": "df8346d4a88ec007603d187d4504031c9d667ec54bba99f411c6767c01164f1f",
+    "events": "668f4f50b8130499357666cea64d66fc977e438353846a00f53a052f14620eb9",
+    "bank": [
+      7000,
+      3000
+    ]
+  },
+  {
+    "round": {
+      "seed": 14,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 5,
+      "rules_version": 11
+    },
+    "actions": "1224a68285b51987f73b0bd7e370cff2cca813b4b4e466e7f4fa41f2a6e0761e",
+    "events": "0ae24f430995b5d9726dbde4f3e7184a049a4ddfbcd6be1962a9c9dd0da45f52",
+    "bank": [
+      3200,
+      6800
+    ]
+  },
+  {
+    "round": {
+      "seed": 15,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 6,
+      "rules_version": 11
+    },
+    "actions": "f2dbfc5eadb9c0ab6ae217b0a1f50bb4b791d4235a6a9080924940f08dfb5fc0",
+    "events": "8b633315f3d3b357f1ad1b84a4aee6f23ddb88f8c3032938d7c4a0317e71e65c",
+    "bank": [
+      5800,
+      4200
+    ]
+  },
+  {
+    "round": {
+      "seed": 16,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 7,
+      "rules_version": 11
+    },
+    "actions": "0d568a781155162541fe3fca12f5a44f8e36193c4e8bffac6241fc1e99a7ea73",
+    "events": "7d0bb8f1df4885e56438234730c1b7db9e401733bdda21fcec9f61bbc9334df4",
+    "bank": [
+      7400,
+      2600
+    ]
+  },
+  {
+    "round": {
+      "seed": 17,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 8,
+      "rules_version": 11
+    },
+    "actions": "c0be19ece05d2f46b6c498b6254643fda3f7cd0e06d2edd2178125c91d61aba3",
+    "events": "09cd870295ba9509f761eb189e3fba678cb0f7c52d11c39404cd487efa0f651e",
+    "bank": [
+      4300,
+      5700
+    ]
+  },
+  {
+    "round": {
+      "seed": 18,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 9,
+      "rules_version": 11
+    },
+    "actions": "9d1a7a77415cfb292331f711ba3ad14c26cbec59c1cd84106658474bb89eadb2",
+    "events": "95fb9e712fb03810234ba06d5d9d033b3ca0073ea286fdaea827ef27f8a0003c",
+    "bank": [
+      0,
+      11000
+    ]
+  },
+  {
+    "round": {
+      "seed": 19,
+      "gold": 5000,
+      "first": 1,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 10,
+      "rules_version": 11
+    },
+    "actions": "8b4cf207275eb332f1ab5a0bba5d892fe6e58c16e71a713574718be2a2139ebf",
+    "events": "73eb3e3c3d47ea67fbd466cfc39b7c2a36b651398d0d4a388df61f88802c5407",
+    "bank": [
+      3400,
+      6600
+    ]
+  },
+  {
+    "round": {
+      "seed": 20,
+      "gold": 5000,
+      "first": 0,
+      "carry": 1,
+      "rate": 100,
+      "cpu_level": 1,
+      "rules_version": 11
+    },
+    "actions": "842b6a5afd494af1a4632d994ba79b816fc3637ebf1a3277140f99e4e974e8d3",
+    "events": "5da8680db8cad66bbd1ab4b614bbcbf1d2528d1b8c140eaf8b4d458af4ba1f01",
+    "bank": [
+      6000,
+      4000
+    ]
+  }
+]

@@ -50,8 +50,8 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
   assert.equal((await status()).gold,5000);
   await balance(200000);assert.equal((await status()).stake_offer.rate,200,'bankruptcy resets remembered offers');
   // Replay complete solo rounds at every rate, then settle using server snapshots.
-  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=await import('../games/matgo-engine.mjs');
-  const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
+  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=await import('../supabase/functions/matgo/engine-v10.mjs');
+  const {verifyRound}=await import('../supabase/functions/matgo/verify-v10.mjs');
   let rounds=0;
   for(const [gold,rate] of tiers){
    await db.query('update ojjuda_matgo_internal.wallets set gold=$1,stake_rate=100,stake_seen=100 where user_id=$2',[gold,A]);

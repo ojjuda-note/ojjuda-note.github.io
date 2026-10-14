@@ -83,8 +83,10 @@ const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUP
   const body=JSON.parse(options.body);if(body.p_action==='round')return Response.json({round:lastRound});
   settled=body.p_gold;return Response.json({ok:true,gold:settled});
 }});
+lastRound.rules_version=12;
 const request=version=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions:last.actions})}));
-assert.equal((await request(10)).status,200);assert.equal(settled,last.bank[0]);assert.equal((await request(8)).status,409);
+assert.equal((await request(12)).status,200);assert.equal(settled,last.bank[0]);assert.equal((await request(8)).status,409);
+delete lastRound.rules_version;
 const {g:oldPaid}=await play(lastRound,legacyEngine);last=oldPaid;
 assert.equal((await request(9)).status,200);assert.equal(settled,oldPaid.bank[0]);
 console.log(`PASS: one-round queue, 560 verified full rounds across 8 paid modes, 50-card conservation, v8 compatibility, forged modes/moves rejected, online excluded; matching opening months ${(regularMatches/160).toFixed(2)} → ${(tazzaMatches/160).toFixed(2)}`);
