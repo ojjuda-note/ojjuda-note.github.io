@@ -1,0 +1,230 @@
+diff --git a/games/matgo-engine.mjs b/games/matgo-engine.mjs
+index ad8fd88..94ad8e2 100644
+--- a/games/matgo-engine.mjs
++++ b/games/matgo-engine.mjs
+@@ -82,3 +82,3 @@ class Game {
+     const count=self?2:1;
+-    await this.ui.event('ppukget',{p,self,count,bonusCount});return count;
++    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv});return count;
+   }
+@@ -178,6 +178,6 @@ class Game {
+         if(handCardStack.length===1){ // 쪽
+-          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('jjok',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
++          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('jjok',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
+         } else if(handCardStack.length===2){ const other=this.floor.find(st=>st!==handCardStack&&st[0].m===card.m&&!st.ppuk);
+           if(other){ // 따닥 (바닥 2장 + 손 1장 + 뒤집기 1장)
+-            other.push(flip); await this.ui.event('flip',{p,card:flip,stack:other}); const all=[...handCardStack,...other]; this.floor.splice(this.floor.indexOf(handCardStack),1); this.floor.splice(this.floor.indexOf(other),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,all); tookAny=true; handCardStack=null;
++            other.push(flip); await this.ui.event('flip',{p,card:flip,stack:other}); const all=[...handCardStack,...other]; this.floor.splice(this.floor.indexOf(handCardStack),1); this.floor.splice(this.floor.indexOf(other),1); stole++; await this.ui.event('ttadak',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,all); tookAny=true; handCardStack=null;
+           } else { // 뻑
+@@ -190,3 +190,3 @@ class Game {
+         } else if(handCardStack.length===3){ // 따닥 (바닥2+손1+뒤집기1)
+-          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
++          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
+         }
+@@ -203,3 +203,3 @@ class Game {
+     this.floor.forEach(st=>delete st.pending);
+-    if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p}); }
++    if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p,availablePi:score(this.caps[1-p]).pv}); }
+     await this.stealPi(1-p,p,'bonus',stole);
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index 12b73cd..eb00af2 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -34,3 +34,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261014-stake1000"></script>
++<script type="module" src="./matgo-online.mjs?v=20261014-pi-audit1"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 17efa7f..9d24c00 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -2,3 +2,3 @@ import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=2026101
+ import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
+-import {floorLayout,heldPairMonths} from './matgo-view.mjs?v=20261013-bonus-pi1';
++import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=20261014-pi-audit1';
+ import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
+@@ -82,3 +82,3 @@ function eventText(ev){
+   if(ev.type==='ppuk')return [who+'쌌다!',`이번 판 ${ev.count}/3회${ev.bonusCount?' · 보너스도 함께 묶였어요':''}`];
+-  if(ev.type==='ppukget')return [mine?(ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',mine?`상대 피 ${ev.count}장 가져오기`:`상대가 쌓인 패와 내 피 ${ev.count}장을 가져갔어요`];
++  if(ev.type==='ppukget')return [mine?(ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',piClaimMessage(ev,room.seat)];
+   if(ev.type==='shake')return [who+'흔들기!','이기면 점수 ×2',ev.cards];
+@@ -86,7 +86,8 @@ function eventText(ev){
+   if(ev.type==='go')return [who+ev.n+'고!','다음 점수를 기다려요'];
+-  if(ev.type==='jjok')return [who+'쪽!','상대 피 한 장'];
+-  if(ev.type==='ttadak')return [who+'따닥!','상대 피 한 장'];
+-  if(ev.type==='sweep')return [who+'싹쓸이!','상대 피 한 장'];
++  if(ev.type==='jjok')return [who+'쪽!',piClaimMessage(ev,room.seat)];
++  if(ev.type==='ttadak')return [who+'따닥!',piClaimMessage(ev,room.seat)];
++  if(ev.type==='sweep')return [who+'싹쓸이!',piClaimMessage(ev,room.seat)];
+   if(ev.type==='bonusPlay'||ev.type==='flipBonus')return [who+'보너스!',`${ev.card?.pv===2?'쌍피':'쓰리피'} · 한 장 더 받아요`,ev.card?[ev.card]:null];
+   if(ev.type==='steal'&&ev.card?.k==='bonus')return [ev.to===room.seat?'보너스 피 가져오기!':'보너스 피 뺏겼어요!',`${piVal(ev.card)}피 보너스 한 장`,[ev.card]];
++  if(ev.type==='steal'&&ev.card)return [ev.to===room.seat?'피 가져왔어요!':'피 뺏겼어요!',`${piVal(ev.card)}피 한 장`,[ev.card]];
+   if(ev.type==='ppukBonus')return [who+'보너스도 뻑에!',`보너스 ${ev.cards.length}장이 함께 묶였어요`,ev.cards];
+diff --git a/games/matgo-view.mjs b/games/matgo-view.mjs
+index 821d0f0..71d2bf1 100644
+--- a/games/matgo-view.mjs
++++ b/games/matgo-view.mjs
+@@ -2,2 +2,11 @@ import './matgo-captured-zoom.mjs?v=20261010-hold1';
+ 
++// This describes a claim, not a completed transfer. The steal event shows the
++// actual card/value, including a whole double/triple pi used to pay one pi.
++export function piClaimMessage({p,count=1,availablePi},viewer){
++  const mine=p===viewer,owner=mine?'상대':'내';
++  if(availablePi===0)return `${owner} 쪽에 가져올 피가 없어요`;
++  if(Number.isFinite(availablePi)&&availablePi<count)return `${owner} 피가 부족해 남은 ${availablePi}피만 ${mine?'가져와요':'내줘요'}`;
++  return `${owner} 피 ${count}장 ${mine?'가져오기':'내주기'}`;
++}
++
+ // Both captured piles are public. Never infer a pair from the hidden deck/hand.
+diff --git a/games/matgo.html b/games/matgo.html
+index 0463f00..ddebbdb 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -42,4 +42,4 @@ import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
+ import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
+-import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-streak1";
+-import {floorLayout,heldPairMonths} from "./matgo-view.mjs?v=20261013-bonus-pi1";
++import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-pi-audit1";
++import {floorLayout,heldPairMonths,piClaimMessage} from "./matgo-view.mjs?v=20261014-pi-audit1";
+ import {createWallet} from "./matgo-wallet.mjs?v=20261014-streak1";
+@@ -365,3 +365,3 @@ const ui={
+         const mid={x:innerWidth/2-CW, y:innerHeight*.42-CH}; const f=flyEl(d.card,r.left,r.top,0,r.width,r.height); f.classList.add('steal'); el.style.visibility='hidden';
+-        const tag=document.createElement('div'); tag.className='stealtag '+(d.to===ME?'good':'bad'); tag.textContent=d.card.k==='bonus'?`${piVal(d.card)}피 보너스 ${d.to===ME?'가져오기!':'뺏겼어요!'}`:d.to===ME?'피 뺏기!':'피 뺏겼다!'; document.body.appendChild(tag);
++        const tag=document.createElement('div'); tag.className='stealtag '+(d.to===ME?'good':'bad'); tag.textContent=d.card.k==='bonus'?`${piVal(d.card)}피 보너스 ${d.to===ME?'가져오기!':'뺏겼어요!'}`:`${piVal(d.card)}피 ${d.to===ME?'가져왔어요!':'뺏겼어요!'}`; document.body.appendChild(tag);
+         await f.animate([{transform:'translate(0,0) scale(1) rotate(0)'},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?-12:12}deg)`,offset:.4},{transform:`translate(${mid.x-r.left}px,${mid.y-r.top}px) scale(${(CW*2)/r.width}) rotate(${d.to===ME?8:-8}deg)`,offset:.6},{transform:`translate(${t.left+t.width-26-r.left}px,${t.top+6-r.top}px) scale(1) rotate(0)`}],{duration:1050,easing:'cubic-bezier(.3,.6,.25,1)',fill:'forwards'}).finished;
+@@ -371,3 +371,3 @@ const ui={
+     const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
+-    if(msg){ const mine=d.p===ME; const sub={jjok:'상대 피 한 장 가져오기',ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · 상대 피 ${d.count}장 가져오기`:`상대가 쌓인 패와 내 피 ${d.count}장을 가져갔어요`,ttadak:'네 장 한꺼번에 + 피 한 장',sweep:'바닥을 싹 비웠어요 + 피 한 장',go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
++    if(msg){ const mine=d.p===ME; const sub={jjok:piClaimMessage(d,ME),ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · ${piClaimMessage(d,ME)}`:piClaimMessage(d,ME),ttadak:'네 장 한꺼번에 · '+piClaimMessage(d,ME),sweep:'바닥을 싹 비웠어요 · '+piClaimMessage(d,ME),go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
+     if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',1500); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',1500); }
+diff --git a/supabase/functions/matgo/engine.mjs b/supabase/functions/matgo/engine.mjs
+index ad8fd88..94ad8e2 100644
+--- a/supabase/functions/matgo/engine.mjs
++++ b/supabase/functions/matgo/engine.mjs
+@@ -82,3 +82,3 @@ class Game {
+     const count=self?2:1;
+-    await this.ui.event('ppukget',{p,self,count,bonusCount});return count;
++    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv});return count;
+   }
+@@ -178,6 +178,6 @@ class Game {
+         if(handCardStack.length===1){ // 쪽
+-          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('jjok',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
++          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('jjok',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
+         } else if(handCardStack.length===2){ const other=this.floor.find(st=>st!==handCardStack&&st[0].m===card.m&&!st.ppuk);
+           if(other){ // 따닥 (바닥 2장 + 손 1장 + 뒤집기 1장)
+-            other.push(flip); await this.ui.event('flip',{p,card:flip,stack:other}); const all=[...handCardStack,...other]; this.floor.splice(this.floor.indexOf(handCardStack),1); this.floor.splice(this.floor.indexOf(other),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,all); tookAny=true; handCardStack=null;
++            other.push(flip); await this.ui.event('flip',{p,card:flip,stack:other}); const all=[...handCardStack,...other]; this.floor.splice(this.floor.indexOf(handCardStack),1); this.floor.splice(this.floor.indexOf(other),1); stole++; await this.ui.event('ttadak',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,all); tookAny=true; handCardStack=null;
+           } else { // 뻑
+@@ -190,3 +190,3 @@ class Game {
+         } else if(handCardStack.length===3){ // 따닥 (바닥2+손1+뒤집기1)
+-          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
++          handCardStack.push(flip); await this.ui.event('flip',{p,card:flip,stack:handCardStack}); this.floor.splice(this.floor.indexOf(handCardStack),1); stole++; await this.ui.event('ttadak',{p,availablePi:score(this.caps[1-p]).pv}); await this.take(p,handCardStack); tookAny=true; handCardStack=null;
+         }
+@@ -203,3 +203,3 @@ class Game {
+     this.floor.forEach(st=>delete st.pending);
+-    if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p}); }
++    if(this.floor.length===0 && tookAny && this.deck.length){ swept=true; stole++; await this.ui.event('sweep',{p,availablePi:score(this.caps[1-p]).pv}); }
+     await this.stealPi(1-p,p,'bonus',stole);
+diff --git a/tests/matgo-engine.test.cjs b/tests/matgo-engine.test.cjs
+index f4aa730..d09b0a0 100644
+--- a/tests/matgo-engine.test.cjs
++++ b/tests/matgo-engine.test.cjs
+@@ -29,2 +29,3 @@ function fixture(p, mode, owner, opponents = [6, 7, 10, 11], bonusSweep = false)
+   await import('./matgo-triple-pi.test.mjs');
++  await import('./matgo-pi-interactions.test.mjs');
+   for (const p of [0, 1]) for (const mode of ['hand', 'flip']) for (const self of [true, false]) {
+diff --git a/tests/matgo-online-effects-ui.test.cjs b/tests/matgo-online-effects-ui.test.cjs
+index f1842d4..135100e 100644
+--- a/tests/matgo-online-effects-ui.test.cjs
++++ b/tests/matgo-online-effects-ui.test.cjs
+@@ -99,12 +99,19 @@ const root=path.join(__dirname,'..');
+     await reduced.context.close();
+-    for(const to of [0,1]){
+-      const before=structuredClone(initial);before.game.caps[1-to]=[CARDS[49]];
++    for(const actor of [0,1])for(const availablePi of [0,1]){
++      const sample=await screen({muted:true,reduced:true}),p=sample.page;
++      const after={...structuredClone(initial),version:2,eventCount:1,events:[{id:0,type:'ppukget',p:actor,self:true,count:2,availablePi}]};
++      await present(p,after);await p.locator('#event[data-kind=ppukget]:not([hidden])').waitFor();
++      assert.match(await p.locator('#event').innerText(),availablePi?/피가 부족해 남은 1피만/:/가져올 피가 없어요/);
++      await sample.context.close();
++    }
++    for(const to of [0,1])for(const id of [6,41,49]){
++      const before=structuredClone(initial);before.game.caps[1-to]=[CARDS[id]];
+       const sample=await screen({muted:true,resume:before}),p=sample.page;
+-      const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[49]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[49]];
++      const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[id]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[id]];
+       await present(p,after);await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
+-      assert.match(await p.locator('#event').innerText(),/3피 보너스 한 장/);
++      assert.match(await p.locator('#event').innerText(),id===49?/3피 보너스 한 장/:id===41?/2피 한 장/:/1피 한 장/);
+       assert.equal(await p.locator('#event').getAttribute('data-side'),to===0?'mine':'opponent');
+       await p.evaluate(()=>presenting);
+-      assert.equal(await p.locator((to===0?'.caps-own':'.caps:not(.caps-own)')+' [data-face="49"]').count(),1);
+-      assert.equal(await p.locator((to===0?'.caps:not(.caps-own)':'.caps-own')+' [data-face="49"]').count(),0);
++      assert.equal(await p.locator((to===0?'.caps-own':'.caps:not(.caps-own)')+' [data-face="'+id+'"]').count(),1);
++      assert.equal(await p.locator((to===0?'.caps:not(.caps-own)':'.caps-own')+' [data-face="'+id+'"]').count(),0);
+       await sample.context.close();
+diff --git a/tests/matgo-pi-interactions.test.mjs b/tests/matgo-pi-interactions.test.mjs
+new file mode 100644
+index 0000000..5e988d8
+--- /dev/null
++++ b/tests/matgo-pi-interactions.test.mjs
+@@ -0,0 +1,34 @@
++import assert from 'node:assert/strict';
++import {Game,CARDS,score,piVal,seededRandom} from '../games/matgo-engine.mjs';
++const stats={games:0,claims:0,withPi:0,withoutPi:0,doublePpuk:0,specialCaptures:0,bonuses:0,ordinaryTripleCaptures:0};
++for(let seed=1;seed<=5000;seed++){
++ const r=seededRandom(seed^0x9a61b38f);let events=[],g;
++ g=new Game({event:async(type,data)=>events.push({type,...data}),choose:async(_p,ids)=>ids[Math.floor(r()*ids.length)],chooseGukjin:async()=>r()<.5?'pi':'yul',goStop:async()=>r()<.5?'go':'stop'});
++ g.random=seededRandom(seed);g.roundCpuLevel=1;g.deal();
++ for(let move=0;!g.over;move++){
++  assert.ok(move<160);
++  const pending=g.pendingChongtong();if(pending){await g.declareChongtong(pending.p,'continue');continue;}
++  const p=g.turn,hand=g.hand[p],card=hand[Math.floor(r()*hand.length)]??null;
++  const stBefore=g.floor.map(st=>({cards:[...st],ppuk:st.ppuk,owner:st.ppukOwner}));
++  const available=score(g.caps[1-p]).pv;events=[];
++  const bomb=g.bombOption(p,card);await g.play(p,card,bomb&&r()<.7?bomb:null);
++  const collected=stBefore.filter(st=>st.ppuk&&st.cards.every(c=>g.caps[p].includes(c)));
++  const owed=collected.reduce((n,st)=>n+(st.owner===p?2:1),0);
++  const claims=events.filter(e=>e.type==='ppukget');const steals=events.filter(e=>e.type==='steal');
++  assert.equal(claims.reduce((n,e)=>n+e.count,0),owed,`seed ${seed}, move ${move}: ppuk reward omitted`);
++  const due=owed+events.filter(e=>['bomb','sweep','ttadak','jjok'].includes(e.type)).length;
++  let remaining=due;
++  for(const ev of steals){assert.ok(remaining>0,'never take another card after the claim is paid');remaining-=piVal(ev.card);}
++  assert.ok(remaining<=0||score(g.caps[1-p]).pv===0,`seed ${seed}, move ${move}: a payable pi claim was left unpaid`);
++  for(const ev of events.filter(e=>['ppukget','sweep','ttadak','jjok'].includes(e.type)))assert.equal(ev.availablePi,available,'claim notice uses the pre-transfer balance');
++  if(owed){stats.claims++;if(available){stats.withPi++;assert.ok(steals.length>0,`seed ${seed}, move ${move}: available pi not transferred`);}else stats.withoutPi++;}
++  if(claims.length>1)stats.doublePpuk++;
++  for(const ev of events)if(ev.type==='bomb'||ev.type==='sweep'||ev.type==='ttadak'||ev.type==='jjok')stats.specialCaptures++;
++  stats.bonuses+=events.filter(e=>e.type==='bonusPlay'||e.type==='flipBonus').length;
++  stats.ordinaryTripleCaptures+=stBefore.filter(st=>!st.ppuk&&st.cards.length===3&&st.cards.every(c=>g.caps[p].includes(c))).length;
++  const cards=[...g.hand.flat(),...g.floor.flat(),...g.caps.flat(),...g.deck];assert.equal(cards.length,50);assert.equal(new Set(cards.map(c=>c.id)).size,50);
++ }
++ stats.games++;
++}
++assert.ok(stats.withPi>0&&stats.withoutPi>0&&stats.doublePpuk>0&&stats.specialCaptures>0);
++console.log('PASS: 5,000 deterministic games; additive pi claims, available/empty pi, whole-card payment and card conservation '+JSON.stringify(stats));
+diff --git a/tests/matgo-ui.test.cjs b/tests/matgo-ui.test.cjs
+index 9b8caf9..4ff56d7 100644
+--- a/tests/matgo-ui.test.cjs
++++ b/tests/matgo-ui.test.cjs
+@@ -324,2 +324,19 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+   }
++  // A genuine ppuk capture distinguishes an empty pile from a one-pi shortfall.
++  for(const p of [0,1])for(const available of [0,1]){
++    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
++    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
++    const notices=await f.page.evaluate(async({p,available})=>{
++      const {setupTripleScenario,tripleScenarios}=await import('/tests/matgo-triple-fixtures.mjs');
++      const {game:g,CARDS,render}=matgoTest;setupTripleScenario(g,CARDS,tripleScenarios[0],p);
++      g.deck.push(g.caps[1-p].shift());
++      if(available)g.caps[1-p].push(g.deck.splice(g.deck.findIndex(c=>c.id===6),1)[0]);
++      const labels=[];const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.classList?.contains('banner')||n.classList?.contains('stealtag'))labels.push(n.textContent);});
++      observer.observe(document.body,{childList:true});render();await g.play(p,g.hand[p][0]);observer.disconnect();
++      return {labels,remaining:g.caps[1-p].filter(c=>c.k==='pi').length,transferred:g.caps[p].some(c=>c.id===6)};
++    },{p,available});
++    assert.match(notices.labels.join(' '),available?/피가 부족해 남은 1피만/:/가져올 피가 없어요/);
++    assert.equal(notices.transferred,!!available);assert.equal(notices.remaining,0);
++    assert.deepEqual(f.errors,[]);await f.context.close();
++  }
+   // The reported case: the opponent has no ordinary/double pi, only one 3-pi bonus.
