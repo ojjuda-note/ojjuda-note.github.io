@@ -333,8 +333,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
     for(const [width,height] of [[320,568],[390,820]]){
       await f.page.setViewportSize({width,height});
+      await f.page.waitForFunction(height=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--matgo-viewport-height'))===height,height);
       assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,'legacy notice leaves the hand on screen');
+      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({message:'legacy notice leaves the hand on screen',width,height,hand}));
     }
     fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/legacy.png'});
     await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
