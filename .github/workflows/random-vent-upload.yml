@@ -1,4 +1,4 @@
-name: Apply and verify random vent actions
+name: Apply and verify cartoon opponent
 on:
   push:
     branches: [codex/matgo-random-vent-20261014]
@@ -24,7 +24,7 @@ jobs:
           import hashlib,json,subprocess,urllib.request
           from pathlib import Path
           for asset in json.loads(Path('ops/random-vent-assets.json').read_text()):
-              path=Path('games/assets/matgo-vent')/asset['name']
+              path=Path('games/assets/matgo-opponent')/asset['name']
               if not path.exists():
                   assert asset['download_url'].startswith('https://ziezbdjofcugznowiuda.supabase.co/storage/')
                   data=urllib.request.urlopen(asset['download_url'],timeout=60).read()
@@ -37,7 +37,7 @@ jobs:
           PYVERIFY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Add ten random vent actions with new artwork and sound'
+          git commit -m 'Replace photographic CPU portraits with matching cartoon expressions'
           git push origin HEAD:codex/matgo-random-vent-20261014
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
@@ -60,7 +60,7 @@ jobs:
           python - <<'PYPROOF'
           from pathlib import Path
           import subprocess,shutil
-          selected=[Path('/tmp/matgo-vent-proof')/(name+'.png') for name in ['burst','slash','tomato','bat','burst-small-phone','slash-small-phone','tomato-small-phone','bat-small-phone']]
+          selected=[Path('/tmp/matgo-vent-proof')/(name+'.png') for name in ['cpu-normal','cpu-gun-surprised','burst-small-phone','slash-small-phone','tomato-small-phone','bat-small-phone']]
           files=[]
           for source in selected:
               if source.exists():
