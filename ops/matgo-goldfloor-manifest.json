@@ -1,0 +1,47 @@
+[
+  {
+    "path": "games/matgo-online.html",
+    "sha256": "cddeb23594a2d44f5e54de868c4a8a5ce646d926398f88bb293ac288e0dfd8be",
+    "size": 2605
+  },
+  {
+    "path": "games/matgo-online.mjs",
+    "sha256": "99e5d16eaf9147cce2468d4d41ec1350db99cfc136f2b736057a1a404a7b26bf",
+    "size": 42287
+  },
+  {
+    "path": "games/matgo.html",
+    "sha256": "24282f5e940cda58430c9f9b1c8389a05051f803cb85fe004b44f5be843a5fa6",
+    "size": 1461620
+  },
+  {
+    "path": "supabase/migrations/20261014122511_matgo_gold_floor.sql",
+    "sha256": "f89e42411b129d25ed4d7f9e8a061a6f542984c83e8330459f6f588f232bec50",
+    "size": 9198
+  },
+  {
+    "path": "tests/arcade-rooms-fixture.cjs",
+    "sha256": "3f2e811ed3b6cc360e511f9ef25089efc91923889bc2db1d73193111fa4c7c8e",
+    "size": 4053
+  },
+  {
+    "path": "tests/matgo-adaptive.test.cjs",
+    "sha256": "cc4efa0158ceafbcb4837bae2161f678c01ceae37df64b99f82a65262633589a",
+    "size": 13634
+  },
+  {
+    "path": "tests/matgo-online-fixture.cjs",
+    "sha256": "7177f10c64db231f68c1bfd09f66cfb063a63b989f50c553ad8076083adfc9c0",
+    "size": 5835
+  },
+  {
+    "path": "tests/matgo-online-ui.test.cjs",
+    "sha256": "4ae9fed4a6e43b9eab28fc05ab4539fc2e4bbd232c1284a1123b952df305a4d1",
+    "size": 12981
+  },
+  {
+    "path": "tests/matgo-stakes-ui.test.cjs",
+    "sha256": "9eabe99149ee624f8a807a72a47d5fe67646451a50fabdc467d0d2f584381a11",
+    "size": 5605
+  }
+]
