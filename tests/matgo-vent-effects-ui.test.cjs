@@ -77,7 +77,7 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    if(effect.id==='glove'){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.y>=0&&b.x>=0&&b.x+b.width<=390,'enlarged glove stays fully on screen');}
    if(['burst','slash','bat'].includes(effect.id)){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.width>=150&&b.x>=0&&b.y>=0&&b.x+b.width<=390,'new action artwork is large and fits the phone');}
    if(effect.id==='burst'){assert.equal(await page.locator('.vent-projectile').count(),8);assert.equal(await page.locator('.vent-casing').count(),8);}
-   if(effect.id==='slash')assert.equal(await page.locator('.vent-slash-arc').count(),2);
+   if(effect.id==='slash')assert.equal(await page.locator('.vent-fencing-trail').count(),2);
    if(effect.id==='tomato'){assert.equal(await page.locator('.vent-tomato-splat ellipse').count(),12);assert.equal(await page.locator('.vent-pulp-drop').count(),7);}
    if(effect.id==='table'){
     assert.equal(await page.locator('.vent-board-copy').count(),1);assert.equal(await page.locator('.vent-flying-card[data-kind=floor]').count(),4,'cards in a floor pile fly separately');
@@ -186,12 +186,12 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
    const before=await p.evaluate(()=>ventTest.snapshot());await p.locator('#matgo-vent').tap();await p.locator('.vent-'+id).waitFor();
    await p.waitForTimeout(VENT_EFFECTS.find(e=>e.id===id).hits[0]+70);
    assert.ok(await p.locator('.cpu-reaction').count());
-   assert.equal(await p.locator('.vent-layer').evaluate(el=>[...el.children].filter(c=>!c.classList.contains('cpu-reaction')).every(c=>Number(getComputedStyle(c).zIndex)>=2)),true,'new actions stay in front of the reaction photo');
+   assert.equal(await p.locator('.vent-layer').evaluate(el=>[...el.children].filter(c=>!c.classList.contains('cpu-reaction')).every(c=>Number(getComputedStyle(c).zIndex)>=2)),true,'new actions stay in front of the reaction portrait');
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    await p.screenshot({path:path.join(proof,id+'-small-phone.png')});
    await p.locator('.vent-layer').waitFor({state:'detached'});assert.equal(await p.evaluate(()=>ventTest.snapshot()),before);assert.equal(await p.evaluate(()=>payments.length),1);
    await sample.context.close();
   }
-  assert.deepEqual(errors,[]);console.log('PASS: 10 large random effects, 8-shot burst, double slash, tomato splat, bat swing, upright gun, conserved cards and table restack; audible distinct sounds, charge-before-play, mute, portrait layering, small phones and reduced motion');
+  assert.deepEqual(errors,[]);console.log('PASS: 10 large random effects, 8-shot burst, two fencing lunges, tomato splat, bat swing, upright gun, conserved cards and table restack; audible distinct sounds, charge-before-play, mute, portrait layering, small phones and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

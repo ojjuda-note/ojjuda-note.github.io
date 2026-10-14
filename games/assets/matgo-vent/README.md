@@ -52,3 +52,10 @@ A single plump ripe red tomato game prop for a comic tomato-throw animation. One
 ### bat
 
 A single wooden baseball bat game prop for a comic swinging animation. Thick rounded barrel points diagonally toward the UPPER RIGHT, narrow handle and knob at LOWER LEFT. Entire bat visible, centered diagonal composition with 10% padding. Honey-brown varnished wood with detailed longitudinal grain, dark charcoal wrapped grip, realistic rounded end, subtle scuffs and polished highlights.
+
+
+## 2026-10-14 펜싱칼 교체
+
+사용자 요청으로 식칼 연출을 펜싱으로 교체했습니다. `fencing-v1.png`는 내장 image_gen 도구로 만든 1254 × 1254 투명 RGBA 원본이며 변환 없이 사용합니다. 기존 `slash` 결제 식별자는 유지하지만 게임은 새 펜싱 그림만 불러옵니다. 두 번 가볍게 뻗었다가 거두는 동작, 둥근 끝의 작은 빛과 가벼운 금속음을 사용합니다. 이전 `slash.png`는 보관만 합니다.
+
+생성 프롬프트: Replace the kitchen knife completely with a modern sporting fencing épée. Keep only the polished illustrated game-asset rendering style and diagonal composition. One long, very slender silver blade with a visible rounded blue safety button at the upper-right tip, silver bell handguard, navy wrapped straight handle and metal pommel at lower left. Friendly sports-equipment tone, detailed illustrated metal highlights and grip texture, no broad cutting edge, no serrations. Entire object on a square transparent canvas. No person, hand, blood, damage, text, logo, frame, shadow or motion streaks.

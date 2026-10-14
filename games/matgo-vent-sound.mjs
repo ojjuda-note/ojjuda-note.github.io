@@ -39,7 +39,7 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
     }else if(id==='burst'){
       noise(at,.065,.54,7200);noise(at+.012,.15,.25,1200);tone(at,.13,.32,175,55);tone(at+.07,.08,.025,3100,2300);
     }else if(id==='slash'){
-      noise(at,.17,.32,6500,'highpass',.009,1800);tone(at,.23,.07,2100,620,'triangle');noise(at+.025,.12,.13,3200,'bandpass');
+      noise(at,.065,.11,1800,'bandpass');tone(at,.23,.18,1240,1180);tone(at+.008,.14,.07,1860,1770);
     }else if(id==='tomato'){
       tone(at,.20,.6,230,48);noise(at,.16,.62,1500,'lowpass',.009,320);
       for(let i=0;i<5;i++){tone(at+.04+i*.037,.085,.08,440-i*53,80);noise(at+.04+i*.05,.055,.095,2200-i*210,'bandpass');}

@@ -1,5 +1,5 @@
 import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-bonus-pi1';
-import {createVentSound} from './matgo-vent-sound.mjs?v=20261014-random-vent1';
+import {createVentSound} from './matgo-vent-sound.mjs?v=20261014-fencing1';
 export const VENT_EFFECTS = [
   {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
   {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},
@@ -8,12 +8,13 @@ export const VENT_EFFECTS = [
   {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300},
   {id:'table',name:'판 뒤집기',word:'와장창!',hits:[850,2300],duration:3200},
   {id:'burst',name:'따발총',word:'두두두두!',hits:[300,420,540,660,780,900,1020,1140],duration:2300},
-  {id:'slash',name:'칼질',word:'슈악! 샤악!',hits:[450,900],duration:2150},
+  {id:'slash',name:'펜싱',word:'톡! 톡!',hits:[450,900],duration:2150},
   {id:'tomato',name:'토마토 던지기',word:'철퍼덕!',hits:[720],duration:2400},
   {id:'bat',name:'야구 배트',word:'빠악!',hits:[650],duration:2250}
 ];
 export const pickVentEffect=(random=Math.random)=>VENT_EFFECTS[Math.floor(random()*VENT_EFFECTS.length)];
-const assetURL=id=>new URL(`./assets/matgo-vent/${id}.png`,import.meta.url).href;
+// Keep the existing receipt ID while replacing the kitchen knife with sporting equipment.
+const assetURL=id=>new URL(`./assets/matgo-vent/${id==='slash'?'fencing-v1':id}.png`,import.meta.url).href;
 const assetCache=new Map();
 function prepareAsset(id){
   if(id==='lightning'||id==='table')return Promise.resolve();
@@ -34,7 +35,7 @@ function particles(){
 }
 function extras(effect){
   if(effect.id==='burst')return effect.hits.map(ms=>`<div class="vent-muzzle" style="--delay:${ms-80}ms"></div><div class="vent-projectile" style="animation-delay:${ms-80}ms"></div><i class="vent-casing" style="--delay:${ms-30}ms"></i>`).join('');
-  if(effect.id==='slash')return '<div class="vent-slash-arc"></div><div class="vent-slash-arc reverse"></div>';
+  if(effect.id==='slash')return '<div class="vent-fencing-trail"></div><div class="vent-fencing-trail second"></div>';
   if(effect.id!=='tomato')return '';
   const seeds=Array.from({length:12},(_,i)=>{const a=i*2.4;return `<ellipse cx="${120+Math.cos(a)*(26+i*3)}" cy="${120+Math.sin(a)*(26+i*3)}" rx="3" ry="6" transform="rotate(${i*37} 120 120)"/>`;}).join('');
   return `<svg class="vent-tomato-splat" viewBox="0 0 240 240" aria-hidden="true"><defs><radialGradient id="vent-pulp"><stop stop-color="#ffb43d"/><stop offset=".45" stop-color="#ff6524"/><stop offset="1" stop-color="#d83212"/></radialGradient></defs><path fill="url(#vent-pulp)" stroke="#ff9e39" stroke-width="2" d="M118 48C140 28 145 69 166 59S212 46 197 79 228 112 208 129 234 167 198 171 194 209 165 190 142 225 124 198 91 227 79 199 38 213 50 177 12 155 37 133 9 97 46 94 34 52 72 65 85 25 118 48Z"/><path d="M89 84Q121 58 159 83M58 128Q49 150 77 162" fill="none" stroke="#ffce7388" stroke-width="9" stroke-linecap="round"/><g fill="#ffe89a" stroke="#e9a943">${seeds}</g><path d="M113 113L91 94 117 101 122 79 130 104 155 94 140 117 156 131 132 125 119 146 119 124 96 128Z" fill="#55913b" stroke="#254c28" stroke-width="2"/></svg>`+Array.from({length:7},(_,i)=>`<i class="vent-pulp-drop" style="--drop-x:${(i-3)*22}px;--drop-y:${18+(i%3)*16}px;--delay:${800+i*45}ms"></i>`).join('');
@@ -55,7 +56,7 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     if(!deck.querySelector('#matgo-vent')){
       const b=document.createElement('button');b.id='matgo-vent';b.type='button';b.className='vent-button';
       b.innerHTML=`<span class="vent-icon" aria-hidden="true">${weapon('gun')}</span><span>화풀이<small>1쭈</small></span>`;
-      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개, 판 뒤집기, 따발총, 칼질, 토마토, 야구 배트 중 무작위 모션과 효과음');
+      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개, 판 뒤집기, 따발총, 펜싱, 토마토, 야구 배트 중 무작위 모션과 효과음');
       b.title='1회 1쭈 · 소리는 게임의 소리 설정을 따라요. 패와 점수는 그대로예요.';deck.appendChild(b);
       void prepare('gun').catch(()=>{});
     }
@@ -86,6 +87,10 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
     const hits=reduced?[0]:effect.hits,duration=reduced?900:effect.duration;
     const layer=document.createElement('div');layer.className='vent-layer vent-'+effect.id;layer.dataset.effect=effect.id;layer.setAttribute('aria-hidden','true');
     for(const [key,value] of Object.entries({sx:sx+'px',sy:sy+'px',tx:tx+'px',ty:ty+'px',dx:(tx-sx)+'px',dy:(ty-sy)+'px',aim:angle+'deg',hit:effect.hits[0]+'ms','weapon-size':size+'px'}))layer.style.setProperty('--'+key,value);
+    if(effect.id==='slash'){
+      layer.style.setProperty('--tip-x',Math.cos(angle*Math.PI/180)*size*.64+'px');
+      layer.style.setProperty('--tip-y',Math.sin(angle*Math.PI/180)*size*.64+'px');
+    }
     const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:['table','burst','slash'].includes(effect.id)?extras(effect):'<div class="vent-trail"></div>'+extras(effect);
     layer.innerHTML=`${['lightning','table'].includes(effect.id)?'':`<div class="vent-weapon">${weapon(effect.id)}</div>`}${trails}<div class="vent-impact"><div class="vent-aura"></div><div class="vent-flash"></div><div class="vent-ring"></div><div class="vent-ring second"></div>${particles()}<strong class="vent-word">${effect.word}</strong></div>`;
     document.body.appendChild(layer);active=layer;if(effect.id==='table')tableScene=createTableFlipScene(layer,onRearrange,{reduced});cooldown=Date.now()+duration+150;sync();if(!document.hidden)sound.play(effect.id,hits);

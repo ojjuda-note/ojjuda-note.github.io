@@ -6,7 +6,7 @@ import {createWallet} from './matgo-wallet.mjs?v=20261013-bonus-pi1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
-import {createVentControls} from './matgo-deck-tools.mjs?v=20261014-random-vent1';
+import {createVentControls} from './matgo-deck-tools.mjs?v=20261014-fencing1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
