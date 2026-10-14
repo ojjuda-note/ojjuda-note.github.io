@@ -7,11 +7,11 @@ import {playRound} from './matgo-opening-fixture.mjs';
 const {fixture,A,B}=createRequire(import.meta.url)('./matgo-online-fixture.cjs');
 const f=await fixture({adaptive:true,openingPpuk:false}),{db,call}=f;
 try{
-  const start=()=>call(A,{action:'start',rules_version:12,stakes_version:1});
+  const start=()=>call(A,{action:'start',rules_version:13,stakes_version:1});
   let old=await start();assert.equal(old.round.rules_version,11);
   await db.query('update ojjuda_matgo_internal.wallets set round_seed=5 where user_id=$1',[A]);old=await start();
   const oldPlay=await playRound(E,dealSoloRound,old.round);
-  const request=crypto.randomUUID();const paid=await call(B,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:request});assert.equal(paid.round.rules_version,11);
+  const request=crypto.randomUUID();const paid=await call(B,{action:'tazza_start',rules_version:13,stakes_version:1,request_id:request});assert.equal(paid.round.rules_version,11);
   const dir=new URL('../supabase/migrations/',import.meta.url),file=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_opening_ppuk.sql'));
   await db.exec(fs.readFileSync(new URL(file,dir),'utf8'));
   const resumed=await start();assert.deepEqual(resumed.round,old.round);assert.equal(resumed.gold,old.gold);
@@ -31,7 +31,7 @@ try{
   const body={action:'settle',rules_version:12,round_id:fresh.round.id,actions:newPlay.g.actions};
   const done=await call(A,body);assert.equal(done.status,200);assert.equal(done.gold,newPlay.g.bank[0]);
   const duplicate=await call(A,body);assert.equal(duplicate.gold,done.gold);assert.equal(duplicate.cpu_win_streak,done.cpu_win_streak);assert.equal(duplicate.cpu_loss_streak,done.cpu_loss_streak);
-  const purchase=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(purchase.status,200);assert.equal(purchase.round.rules_version,12);assert.equal(purchase.coins,coins-5);
+  const purchase=await call(A,{action:'tazza_start',rules_version:13,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(purchase.status,200);assert.equal(purchase.round.rules_version,12);assert.equal(purchase.coins,coins-5);
   for(const role of ['anon','authenticated'])assert.equal((await db.query("select has_function_privilege($1,'ojjuda_matgo_internal.wallet_service_v1(uuid,text,uuid,boolean,uuid,bigint,smallint,integer)','execute') allowed",[role])).rows[0].allowed,false);
   console.log('PASS: opening-rule migration preserves active v11 rounds and paid retries, new v12 starts/settlement, downgrade rejection, charge protection, idempotent gold/streaks and service-only access');
 }finally{await f.close();}

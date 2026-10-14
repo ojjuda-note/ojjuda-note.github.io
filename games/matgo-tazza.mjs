@@ -83,6 +83,10 @@ function targetDeal(game, mode) {
 }
 
 export function dealSoloRound(game, round, engine) {
+  // New solo rounds use three gold tiers, without deliberate beginner mistakes.
+  // Keep the paid tan guarantee separate from online's normal/timeout policy.
+  if((round.rules_version??12)>=13){game.cpuMode='standard';game.roundCpuLevel=round.cpu_level;}
+  else if(game.cpuMode==='standard')game.cpuMode='adaptive';
   game.openingPpuk=(round.rules_version??12)>=12;
   const mode = round.tazza_mode ?? null;
   if (mode !== null && !Object.hasOwn(TAZZA_MODES, mode)) throw Error('invalid_mode');

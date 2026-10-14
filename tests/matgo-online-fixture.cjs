@@ -2,6 +2,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {PGlite}=require('@electric-sql/pglite');
 const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',C='00000000-0000-4000-8000-000000000003',MINOR='00000000-0000-4000-8000-000000000004';
 async function fixture(fixtureOptions={}){
+  if(fixtureOptions.basic)fixtureOptions={...fixtureOptions,adaptive:true};
   if(fixtureOptions.adaptive)fixtureOptions={...fixtureOptions,stakes:true,refill:true,fun:true};
   const db=new PGlite();
   await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create schema ojjuda_account_internal;
@@ -36,6 +37,7 @@ async function fixture(fixtureOptions={}){
   if(fixtureOptions.adaptive){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
   if(fixtureOptions.adaptive&&fixtureOptions.thousandStake!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_thousand_stake.sql'))),'utf8'));}
   if(fixtureOptions.adaptive&&fixtureOptions.openingPpuk!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_opening_ppuk.sql'))),'utf8'));}
+  if(fixtureOptions.basic){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_basic_difficulty.sql'))),'utf8'));}
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
   const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],fetchImpl:async(url,options)=>{

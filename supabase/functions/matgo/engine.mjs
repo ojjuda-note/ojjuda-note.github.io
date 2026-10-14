@@ -27,11 +27,12 @@ function score(caps){
   const pv=pi.reduce((s,c)=>s+piVal(c),0); if(pv>=10){ pts+=pv-9; det.push([`피 ${pv}장`,pv-9]); }
   return {pts,det,g:g.length,y:y.length,t:t.length,pv};
 }
-// Legacy rounds retain their original gold tier; new rounds use an account level snapshot.
+// Legacy rounds retain their old ladder; new rounds use three gold-based tiers.
 const CPU_GOLD_STEP=100000,MAX_CPU_LEVEL=10;
 function cpuLevelForGold(gold){
   return Number.isFinite(gold)?Math.max(1,Math.min(MAX_CPU_LEVEL,Math.ceil(gold/CPU_GOLD_STEP))):1;
 }
+function cpuTierForGold(gold){return Number.isFinite(gold)?gold>500000?3:gold>200000?2:1:1;}
 // ================= 게임 엔진 =================
 function shuffle(a,r=Math.random){for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 class Game {
@@ -40,7 +41,7 @@ class Game {
     if(this._playing)return false;
     this.tazzaMode=null; // A purchased benefit belongs to exactly one solo round.
     // The server snapshots this at the start; balance changes cannot change difficulty.
-    this.cpuLevel=this.cpuMode==='normal'?1:Number.isInteger(this.roundCpuLevel)?Math.max(1,Math.min(MAX_CPU_LEVEL,this.roundCpuLevel)):cpuLevelForGold(this.bank[0]);
+    this.cpuLevel=this.cpuMode==='normal'?1:this.cpuMode==='standard'?Number.isInteger(this.roundCpuLevel)?Math.max(1,Math.min(3,this.roundCpuLevel)):cpuTierForGold(this.bank[0]):Number.isInteger(this.roundCpuLevel)?Math.max(1,Math.min(MAX_CPU_LEVEL,this.roundCpuLevel)):cpuLevelForGold(this.bank[0]);
     let d,board,bonus;
     for(;;){
       d=shuffle(CARDS.map(c=>({...c,asPi:false})),this.random);board=[];bonus=[];
@@ -280,13 +281,13 @@ class Game {
 }
 // ================= AI =================
 function cpuMistake(g,p){
-  // Solo level 1 has no strategy. Each tier adds 1/9 deliberate decisions;
-  // level 10 uses the full strategy. PvP automation keeps its original policy.
-  if(p!==1||g.cpuMode==='normal')return false;
+  // Preserve deliberate mistakes only for legacy adaptive rounds.
+  // Standard solo tiers and online automation always use their strategy.
+  if(p!==1||['normal','standard'].includes(g.cpuMode))return false;
   const level=Math.max(1,Math.min(MAX_CPU_LEVEL,g.cpuLevel||1));
   return level===1||(level<MAX_CPU_LEVEL&&g.random()<(MAX_CPU_LEVEL-level)/(MAX_CPU_LEVEL-1));
 }
-function cpuStrength(g,p){return p===1?Math.max(0,(g.cpuLevel||1)-1)/5:0;}
+function cpuStrength(g,p){return p!==1?0:g.cpuMode==='standard'?[0,1,3][Math.max(1,Math.min(3,g.cpuLevel||1))-1]:Math.max(0,(g.cpuLevel||1)-1)/5;}
 function captureBonus(g,p,cards){
   // Only exposed captures are considered: no opponent hand or future deck.
   const mine=g.caps[p],other=g.caps[1-p];
@@ -297,6 +298,7 @@ function captureBonus(g,p,cards){
     if(c.tag==='bird'&&mine.some(x=>x.tag==='bird'))progress+=.8;
     if(c.k==='tti'&&c.tag&&mine.some(x=>x.k==='tti'&&x.tag===c.tag))progress+=.6;
   }
+  if(g.cpuMode==='standard'&&g.cpuLevel===3)return gain*4+deny*2+progress*2;
   return Math.min(6,gain*2)+Math.min(1.5,deny*.5)+Math.min(1.5,progress);
 }
 function aiChooseCard(g,p){
@@ -325,6 +327,7 @@ function aiChooseCard(g,p){
 }
 function aiGoStop(g,p,s){
   if(cpuMistake(g,p))return g.random()<.5?'go':'stop';
+  if(p===1&&g.cpuMode==='standard'&&g.cpuLevel===3&&(g.pts(1-p)>=4||g.go[1-p]>0||g.hand[p].length<=3))return 'stop';
   const o=g.pts(1-p); const lead=s-o; const risky=o>=5 || g.deck.length<4 || g.hand[p].length<=2; if(s>=12) return 'stop'; if(!risky && lead>=4 && g.go[p]<2) return 'go'; if(g.go[p]===0 && o<=2 && g.deck.length>=8 && s<10) return 'go'; return 'stop';
 }
 function aiChooseGukjin(g,p){
@@ -340,4 +343,4 @@ function aiChoose(g,p,idxs){ const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='t
 }
 
 export function seededRandom(seed){let value=seed>>>0;return()=>{value=(value+0x6D2B79F5)>>>0;let t=value;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
-export { CPU_GOLD_STEP, MAX_CPU_LEVEL, cpuLevelForGold, CARDS, isPi, piVal, score, Game, aiChooseCard, aiGoStop, aiChoose, aiChooseGukjin };
+export { CPU_GOLD_STEP, MAX_CPU_LEVEL, cpuLevelForGold, cpuTierForGold, CARDS, isPi, piVal, score, Game, aiChooseCard, aiGoStop, aiChoose, aiChooseGukjin };
