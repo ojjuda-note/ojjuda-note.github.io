@@ -102,6 +102,7 @@ jobs:
           node tests/matgo-captured-zoom.test.mjs
           node tests/matgo-bonus.test.mjs
           node tests/matgo-difficulty.test.mjs
+          node tests/matgo-adaptive.test.cjs
           node tests/matgo-first-ppuk.test.mjs
           node tests/matgo-stakes.test.cjs
           node tests/matgo-parity.test.cjs
@@ -109,6 +110,7 @@ jobs:
       - name: Check solo and online game screens
         run: |
           node tests/matgo-ui.test.cjs
+          node tests/matgo-stakes-ui.test.cjs
           node tests/matgo-online-ui.test.cjs
           node tests/matgo-online-effects-ui.test.cjs
           node tests/matgo-vent-effects-ui.test.cjs
