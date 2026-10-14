@@ -3,7 +3,7 @@ const {fixture}=require('./matgo-online-fixture.cjs');
 (async()=>{
   const f=await fixture({stakes:true,refill:true,fun:true}),{db,call,A,B,C,MINOR}=f;
   const id=()=>crypto.randomUUID();
-  const start=(actor,request=id())=>call(actor,{action:'tazza_start',request_id:request,stakes_version:1,rules_version:9});
+  const start=(actor,request=id(),version=10)=>call(actor,{action:'tazza_start',request_id:request,stakes_version:1,rules_version:version});
   const vent=(actor,ref,request=id(),effect='gun')=>call(actor,{action:'vent',request_id:request,reference_id:ref,effect});
   const settle=async(actor,round)=>db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,5000,0::smallint,1)",[actor,round]);
   const coins=async actor=>(await db.query('select coins from public.user_private where user_id=$1',[actor])).rows[0].coins;
@@ -15,6 +15,7 @@ const {fixture}=require('./matgo-online-fixture.cjs');
     const request=id(),first=await start(A,request);
     assert.equal(first.status,200);assert.equal(first.coins,15);assert.ok(first.round.tazza_mode);assert.equal(first.purchase.price,5);
     const retry=await start(A,request);assert.equal(retry.round.id,first.round.id);assert.equal(retry.round.tazza_mode,first.round.tazza_mode);assert.equal(retry.coins,15);assert.equal(retry.duplicate,true);
+    assert.equal((await start(A,request,9)).round.id,first.round.id,'an open v9 page keeps its purchase receipt');
     assert.equal((await start(A)).coins,15,'separate tabs resume the same paid round');
     assert.equal((await call(A,{action:'status'})).round.tazza_mode,first.round.tazza_mode,'read-only status preserves an active paid round');
     assert.equal((await start(B,request)).error,'purchase_mismatch');

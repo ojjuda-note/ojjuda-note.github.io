@@ -3,6 +3,7 @@ import * as current from '../games/matgo-engine.mjs';
 import * as legacy from '../supabase/functions/matgo/engine-v4.mjs';
 import * as previous from '../supabase/functions/matgo/engine-v5.mjs';
 import * as previous7 from '../supabase/functions/matgo/engine-v7.mjs';
+import * as previous9 from '../supabase/functions/matgo/engine-v9.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
 import {replayOnline,advanceOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';
 
@@ -25,7 +26,7 @@ for(const p of [0,1])for(const id of [48,49]){
 }
 
 // New and already-open CPU pages settle through their own engine versions.
-for(const [version,engine] of [[4,legacy],[5,previous],[6,previous],[7,previous7],[8,current]])for(let seed=1;seed<=20;seed++){
+for(const [version,engine] of [[4,legacy],[5,previous],[6,previous],[7,previous7],[8,previous9],[9,previous9],[10,current]])for(let seed=1;seed<=20;seed++){
   const round={seed,gold:5000,first:0,carry:1};let g;
   g=new engine.Game({event:async()=>{},choose:async(p,ids)=>engine.aiChoose(g,p,ids),
     chooseGukjin:async p=>engine.aiChooseGukjin(g,p),goStop:async(p,s)=>p===1?engine.aiGoStop(g,p,s):'stop'});
@@ -70,4 +71,4 @@ for(const version of [5,7,8]){
   assert.equal((await replayOnline(room)).game.over,true);
 }
 assert.equal((await replayOnline({...room,actions:[]})).game instanceof legacy.Game,false,'rematch uses new rules');
-console.log('PASS: bonus value/turn/card conservation, 100 v4/v5/v6/v7/v8 CPU settlements, server-pinned online rules and legacy replay');
+console.log('PASS: bonus value/turn/card conservation, 140 v4–v10 CPU settlements, server-pinned online rules and legacy replay');

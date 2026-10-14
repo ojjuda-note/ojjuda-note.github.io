@@ -268,6 +268,13 @@ class Game {
   }
 }
 // ================= AI =================
+function cpuMistake(g,p){
+  // Solo level 1 has no strategy. Each tier adds 1/9 deliberate decisions;
+  // level 10 uses the full strategy. PvP automation keeps its original policy.
+  if(p!==1||g.cpuMode==='normal')return false;
+  const level=Math.max(1,Math.min(MAX_CPU_LEVEL,g.cpuLevel||1));
+  return level===1||(level<MAX_CPU_LEVEL&&g.random()<(MAX_CPU_LEVEL-level)/(MAX_CPU_LEVEL-1));
+}
 function cpuStrength(g,p){return p===1?Math.max(0,(g.cpuLevel||1)-1)/5:0;}
 function captureBonus(g,p,cards){
   // Only exposed captures are considered: no opponent hand or future deck.
@@ -282,7 +289,10 @@ function captureBonus(g,p,cards){
   return Math.min(6,gain*2)+Math.min(1.5,deny*.5)+Math.min(1.5,progress);
 }
 function aiChooseCard(g,p){
-  const hand=g.hand[p]; const bn=hand.find(c=>c.k==='bonus'); if(bn) return bn; let best=null,bs=-1e9;
+  const hand=g.hand[p];
+  if(!hand.length)return null;
+  if(cpuMistake(g,p))return hand[Math.floor(g.random()*hand.length)];
+  const bn=hand.find(c=>c.k==='bonus'); if(bn) return bn; let best=null,bs=-1e9;
   const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1.2;
   for(const c of hand){ const ms=g.matches(c.m); let s=0;
     if(ms.length){ const st=ms.reduce((a,b)=>a[0].length>=b[0].length?a:b)[0]; s=val(c)+st.reduce((a,x)=>a+val(x),0); if(st.ppuk) s+=6; if(st.length===2) s+=2;
@@ -302,12 +312,17 @@ function aiChooseCard(g,p){
   }
   return best;
 }
-function aiGoStop(g,p,s){ const o=g.pts(1-p); const lead=s-o; const risky=o>=5 || g.deck.length<4 || g.hand[p].length<=2; if(s>=12) return 'stop'; if(!risky && lead>=4 && g.go[p]<2) return 'go'; if(g.go[p]===0 && o<=2 && g.deck.length>=8 && s<10) return 'go'; return 'stop'; }
+function aiGoStop(g,p,s){
+  if(cpuMistake(g,p))return g.random()<.5?'go':'stop';
+  const o=g.pts(1-p); const lead=s-o; const risky=o>=5 || g.deck.length<4 || g.hand[p].length<=2; if(s>=12) return 'stop'; if(!risky && lead>=4 && g.go[p]<2) return 'go'; if(g.go[p]===0 && o<=2 && g.deck.length>=8 && s<10) return 'go'; return 'stop';
+}
 function aiChooseGukjin(g,p){
+  if(cpuMistake(g,p))return g.random()<.5?'pi':'yul';
   const points=asPi=>score(g.caps[p].map(c=>c.tag==='gukjin'?{...c,asPi}:c)).pts;
   return points(true)>points(false)?'pi':'yul';
 }
 function aiChoose(g,p,idxs){ const val=c=>c.k==='gwang'?6:c.k==='yul'?3:c.k==='tti'?3:c.k==='ssang'?3:1;
+  if(cpuMistake(g,p))return idxs[Math.floor(g.random()*idxs.length)];
   const strength=cpuStrength(g,p);
   const value=i=>val(g.floor[i][0])+(strength?strength*captureBonus(g,p,g.floor[i]):0);
   return idxs.reduce((a,b)=>value(a)>=value(b)?a:b);

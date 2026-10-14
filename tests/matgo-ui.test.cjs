@@ -200,7 +200,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     await f.page.locator('#chongtong-'+decision).click();
     if(decision==='win'){
       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,9);
+      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,10);
     }else{
       await f.page.waitForFunction(()=>!matgoTest.ui.busy);assert.equal(f.state.settled,undefined);
       assert.equal(await f.page.evaluate(()=>matgoTest.game.over),false);assert.equal(await f.page.locator('.hand.me .c.ok').count(),10);
@@ -211,7 +211,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     const f=await fixture({seed:77});await f.page.goto('https://fixture.test/games/matgo.html');
     await f.page.waitForSelector('.sc');assert.equal(f.state.gold,4300);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  for(const [seed,card,delta] of [[11,40,300],[2,37,-300]]){
+  for(const [seed,card,delta] of [[11,40,300],[856,39,-300]]){
     const f=await fixture({seed});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       window.firstPpukEvents=[];
@@ -255,7 +255,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture({seed:468});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
+    const f=await fixture({seed:856});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
     for(let i=0;i<1500&&!f.state.settled;i++){
       await f.page.evaluate(()=>{
         const modal=document.querySelector('.modal');if(modal){(modal.textContent.includes('두 장 폭탄')?modal.querySelector('#n'):(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#y')||modal.querySelector('button')))?.click();return;}
