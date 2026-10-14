@@ -1,0 +1,255 @@
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index 6073470..12b73cd 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -34,3 +34,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261014-goldfloor1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261014-stake1000"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 37d1a32..17efa7f 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -330,3 +330,3 @@ try{
+   $('#money').onclick=()=>refill();$('#exit').onclick=()=>requestExit();
+-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 점당 ${number(room?.rate??wallet.current?.stake_rate??100)}G · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제)예요. 광박·멍박·고박·흔들기·폭탄 배수도 중복 적용해요(두 개 ×4, 세 개 ×8).<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 2,000G로 다음 판부터 자동으로 올라가요. 두 사람의 자동 판돈 중 낮은 금액으로 시작하며, 진행 중인 판의 금액은 바뀌지 않아요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>`,{'close-rules':()=>{promptKey='';renderRoom();}});
++  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 점당 ${number(room?.rate??wallet.current?.stake_rate??100)}G · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제)예요. 광박·멍박·고박·흔들기·폭탄 배수도 중복 적용해요(두 개 ×4, 세 개 ×8).<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지되고, 올인 후 충전하면 점당 100G부터 다시 시작해요. 두 사람의 자동 판돈 중 낮은 금액으로 시작하며, 진행 중인 판의 금액은 바뀌지 않아요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>`,{'close-rules':()=>{promptKey='';renderRoom();}});
+   access.subscribe(deny);
+diff --git a/games/matgo.html b/games/matgo.html
+index 7f5f37f..0463f00 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -431,3 +431,3 @@ function mount(){
+   $('#bombFlip').onclick=onBombFlip;
+-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제) · 광박·멍박·고박 ×2 · 배수는 중복 적용(두 개 ×4, 세 개 ×8) · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>패더미 위 타짜모드는 컴퓨터 대결 전용이며 다음 판 시작 시 5쭈를 사용해요. 탄쓰기는 매번 5%(20분의 1) 확률로 나와요. 탄쓰기가 나오지 않으면 상대 패 보기·쌍피·광·고도리·청단·홍단·초단 7종을 무작위 순서로 한 번씩 사용한 뒤 다시 섞어요. 20번마다 반드시 나오는 방식은 아니에요. 탄쓰기는 어떤 패를 내도 승리하며, 패배·나가리도 내 승리로 바뀌고 최소 7점을 받아요. 패 보기는 상대 손패 공개, 몰아받기는 해당 패를 모두 내 시작 손패에 줘요. 쌍피에는 2피 보너스·구쌍피가 포함돼요. 다시 누르면 시작 전 예약을 취소해요.<br>패더미 아래 총 그림의 화풀이를 누르면 1쭈를 사용해 총·망치·권투장갑·폭탄·번개·판 뒤집기·따발총·펜싱·토마토 던지기·야구 배트 10가지 중 하나가 매번 무작위로 나와요. 판 뒤집기는 바닥 패의 위치만 섞어요. 내 화면에서만 보이며 패와 점수는 바뀌지 않아요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 2,000G로 다음 판부터 자동으로 올라가요. 오른 판돈은 유지되며, 골드가 0이 되면 점당 100G부터 다시 시작해요. 회원 대결은 두 사람의 자동 판돈 중 낮은 금액을 함께 적용해요.<br>최저 난이도는 10만G 미만 1단계, 10만G부터 2단계, 20만G부터 3단계로 10만G마다 올라가며 최대 10단계예요. 일반 대결에서 5연승하면 한 단계 올라가고, 3연패하면 한 단계 내려가되 현재 골드의 최저 단계보다 낮아지지 않아요. 승패가 바뀌면 반대 기록은 초기화되고, 단계 조절 후에는 다시 집계해요. 1~10단계이며 다음 판부터 적용돼요. 타짜모드·나가리·회원 대결은 집계하지 않아요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 1,000G 미만일 때 하루 2회 무료로 남은 골드에 5,000G를 더할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
++  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제) · 광박·멍박·고박 ×2 · 배수는 중복 적용(두 개 ×4, 세 개 ×8) · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>패더미 위 타짜모드는 컴퓨터 대결 전용이며 다음 판 시작 시 5쭈를 사용해요. 탄쓰기는 매번 5%(20분의 1) 확률로 나와요. 탄쓰기가 나오지 않으면 상대 패 보기·쌍피·광·고도리·청단·홍단·초단 7종을 무작위 순서로 한 번씩 사용한 뒤 다시 섞어요. 20번마다 반드시 나오는 방식은 아니에요. 탄쓰기는 어떤 패를 내도 승리하며, 패배·나가리도 내 승리로 바뀌고 최소 7점을 받아요. 패 보기는 상대 손패 공개, 몰아받기는 해당 패를 모두 내 시작 손패에 줘요. 쌍피에는 2피 보너스·구쌍피가 포함돼요. 다시 누르면 시작 전 예약을 취소해요.<br>패더미 아래 총 그림의 화풀이를 누르면 1쭈를 사용해 총·망치·권투장갑·폭탄·번개·판 뒤집기·따발총·펜싱·토마토 던지기·야구 배트 10가지 중 하나가 매번 무작위로 나와요. 판 뒤집기는 바닥 패의 위치만 섞어요. 내 화면에서만 보이며 패와 점수는 바뀌지 않아요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지돼요. 올인 후 충전하면 점당 100G부터 다시 시작해요. 회원 대결은 두 사람의 자동 판돈 중 낮은 금액을 함께 적용해요.<br>최저 난이도는 10만G 미만 1단계, 10만G부터 2단계, 20만G부터 3단계로 10만G마다 올라가며 최대 10단계예요. 일반 대결에서 5연승하면 한 단계 올라가고, 3연패하면 한 단계 내려가되 현재 골드의 최저 단계보다 낮아지지 않아요. 승패가 바뀌면 반대 기록은 초기화되고, 단계 조절 후에는 다시 집계해요. 1~10단계이며 다음 판부터 적용돼요. 타짜모드·나가리·회원 대결은 집계하지 않아요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 1,000G 미만일 때 하루 2회 무료로 남은 골드에 5,000G를 더할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
+   $('#gukjin').onclick=()=>{ if(ui.busy||game.over||game.turn!==ME)return; if(game.toggleGukjin(ME))render(); };
+diff --git a/supabase/functions/matgo/online.mjs b/supabase/functions/matgo/online.mjs
+index 1cc5d41..4faa73f 100644
+--- a/supabase/functions/matgo/online.mjs
++++ b/supabase/functions/matgo/online.mjs
+@@ -52,3 +52,3 @@ export async function replayOnline(room) {
+   const rate=room.round_rate??100;
+-  if(![100,200,500,2000,5000,10000,20000,50000,100000].includes(rate))throw Error('invalid_stake');
++  if(!Number.isSafeInteger(rate)||!([100,200,500].includes(rate)||(rate>=1000&&rate%1000===0)))throw Error('invalid_stake');
+   game.rate=rate; // Only the database snapshot decides the shared rate.
+diff --git a/supabase/migrations/20261014124321_matgo_thousand_stake.sql b/supabase/migrations/20261014124321_matgo_thousand_stake.sql
+new file mode 100644
+index 0000000..081cebd
+--- /dev/null
++++ b/supabase/migrations/20261014124321_matgo_thousand_stake.sql
+@@ -0,0 +1,84 @@
++-- Automatic stakes: 100 / 200 / 500, then +1,000G per 100,000G from 300,000G.
++-- Saved stakes never decrease here; existing rounds and balances remain intact.
++select pg_advisory_xact_lock(1280136271,1);
++
++alter table ojjuda_matgo_internal.wallets
++  drop constraint wallets_stake_rate_check,
++  drop constraint wallets_stake_seen_check,
++  drop constraint wallets_round_rate_check,
++  alter column stake_rate type bigint,
++  alter column stake_seen type bigint,
++  alter column round_rate type bigint,
++  add constraint wallets_stake_rate_check check(stake_rate in(100,200,500) or (stake_rate>=1000 and stake_rate%1000=0)),
++  add constraint wallets_stake_seen_check check(stake_seen in(100,200,500) or (stake_seen>=1000 and stake_seen%1000=0)),
++  add constraint wallets_round_rate_check check(round_rate in(100,200,500) or (round_rate>=1000 and round_rate%1000=0));
++alter table ojjuda_matgo_internal.rooms
++  drop constraint rooms_round_rate_check,
++  alter column round_rate type bigint,
++  alter column stake_caps type bigint[],
++  add constraint rooms_round_rate_check check(round_rate in(100,200,500) or (round_rate>=1000 and round_rate%1000=0));
++
++-- Recreate only to widen the return type along with the wallet/room columns.
++drop function ojjuda_matgo_internal.stake_for_gold(bigint);
++create function ojjuda_matgo_internal.stake_for_gold(p_gold bigint)
++returns bigint language sql immutable security invoker set search_path='' as $$
++  select case when p_gold>=300000 then (p_gold/100000-2)*1000
++    when p_gold>=200000 then 500 when p_gold>=100000 then 200 else 100 end;
++$$;
++revoke all on function ojjuda_matgo_internal.stake_for_gold(bigint) from public,anon,authenticated;
++
++create or replace function ojjuda_matgo_internal.online_service(
++ p_actor uuid,p_action text,p_room uuid default null,p_code text default null,
++ p_seed text default null,p_expected integer default null,p_request uuid default null,p_next jsonb default null)
++returns jsonb language plpgsql security definer set search_path='' as $$
++declare
++  state jsonb;wallet jsonb;existing uuid;before_room ojjuda_matgo_internal.rooms%rowtype;
++  r ojjuda_matgo_internal.rooms%rowtype;seat integer;selected bigint:=100;new_entry boolean;new_ready boolean;
++begin
++  perform pg_advisory_xact_lock(1280136271,1);
++  wallet:=ojjuda_matgo_internal.wallet_service(p_actor,'status');
++  select online_room into existing from ojjuda_matgo_internal.wallets where user_id=p_actor;
++  if p_action='ready' then
++    select * into before_room from ojjuda_matgo_internal.rooms where id=p_room and p_actor in(host_id,guest_id);
++  end if;
++  if p_action in('quick','create','join','ready') and p_next->>'stakes_version'='1' then
++    if wallet->'stake_offer' is not null and wallet->'stake_offer'<>'null'::jsonb then raise exception 'stake_offer_pending';end if;
++    selected:=(wallet->>'stake_rate')::bigint;
++  end if;
++  state:=ojjuda_matgo_internal.online_service_v1(p_actor,p_action,p_room,p_code,p_seed,p_expected,p_request,p_next);
++  select * into strict r from ojjuda_matgo_internal.rooms where id=(state->'room'->>'id')::uuid;
++  seat:=(state->>'seat')::integer+1;
++  new_entry:=p_action in('quick','create','join') and existing is null;
++  new_ready:=p_action='ready' and before_room.status='finished' and not before_room.ready[seat];
++  if new_entry or new_ready then
++    r.stake_caps[seat]:=selected;
++    -- Only a join or a two-person rematch starts a round. Never change a live rate.
++    if r.status='active' and (new_entry or r.round_no>before_room.round_no) then
++      r.round_rate:=least(r.stake_caps[1],r.stake_caps[2]);
++    end if;
++    update ojjuda_matgo_internal.rooms set stake_caps=r.stake_caps,round_rate=r.round_rate where id=r.id;
++    state:=jsonb_set(state,'{room}',to_jsonb(r)||jsonb_build_object('gold',state->'room'->'gold'));
++  end if;
++  return state;
++end;
++$$;
++revoke all on function ojjuda_matgo_internal.online_service(uuid,text,uuid,text,text,integer,uuid,jsonb) from public,anon,authenticated;
++grant execute on function ojjuda_matgo_internal.online_service(uuid,text,uuid,text,text,integer,uuid,jsonb) to service_role;
++
++-- Invalidate cached PL/pgSQL record-field plans on existing connections after
++-- widening the two row types. Definitions, owners and grants stay unchanged.
++do $$
++declare definition text;
++begin
++  for definition in
++    select pg_get_functiondef(p.oid) from pg_proc p
++    join pg_namespace n on n.oid=p.pronamespace
++    where n.nspname='ojjuda_matgo_internal' and p.prokind='f'
++      and (p.prosrc like '%ojjuda_matgo_internal.wallets%rowtype%'
++        or p.prosrc like '%ojjuda_matgo_internal.rooms%rowtype%')
++  loop
++    execute definition;
++  end loop;
++end $$;
++
++notify pgrst,'reload schema';
+diff --git a/tests/arcade-rooms-fixture.cjs b/tests/arcade-rooms-fixture.cjs
+index f89cf40..657d3cc 100644
+--- a/tests/arcade-rooms-fixture.cjs
++++ b/tests/arcade-rooms-fixture.cjs
+@@ -35,3 +35,3 @@ async function fixture({adaptive=false}={}){
+   await db.exec(fs.readFileSync(path.join(migrations,refill),'utf8'));
+-  if(adaptive)for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql','_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql']){
++  if(adaptive)for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql','_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql','_matgo_thousand_stake.sql']){
+     const file=fs.readdirSync(migrations).find(n=>n.endsWith(suffix));await db.exec(fs.readFileSync(path.join(migrations,file),'utf8'));
+diff --git a/tests/matgo-adaptive.test.cjs b/tests/matgo-adaptive.test.cjs
+index 7d7fa0d..2b45d16 100644
+--- a/tests/matgo-adaptive.test.cjs
++++ b/tests/matgo-adaptive.test.cjs
+@@ -1,5 +1,6 @@
+ const assert=require('node:assert/strict');
+-const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
++const fs=require('node:fs'),path=require('node:path');
++const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+ (async()=>{
+- const f=await fixture({adaptive:true}),{db,call}=f;
++ const f=await fixture({adaptive:true,thousandStake:false}),{db,call}=f;
+  const current=await import('../games/matgo-engine.mjs');
+@@ -30,2 +31,20 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+  try{
++  // Upgrading the ladder preserves already raised stakes and live snapshots.
++  await reset(4,300000);const prior=await start();assert.equal(prior.round.rate,2000);
++  for(const [actor,gold] of [[B,400000],[C,300000]]){
++   await call(actor,{action:'status'});await db.query('update ojjuda_matgo_internal.wallets set gold=$2 where user_id=$1',[actor,gold]);
++  }
++  const priorRoom=await call(B,{action:'online_create',stakes_version:1});
++  const priorJoin=await call(C,{action:'online_join',code:priorRoom.room.code,stakes_version:1});assert.equal(priorJoin.room.rate,2000);
++  const migrations=path.join(__dirname,'../supabase/migrations');
++  await db.exec(fs.readFileSync(path.join(migrations,fs.readdirSync(migrations).find(n=>n.endsWith('_matgo_thousand_stake.sql'))),'utf8'));
++  await db.query("select public.matgo_wallet_service($1,'status')",[A]);
++  let kept=await status();assert.equal(kept.status,200,JSON.stringify(kept));assert.equal(kept.stake_rate,2000);assert.equal(kept.round.rate,2000);assert.equal(kept.round.id,prior.round.id);
++  assert.equal((await call(B,{action:'online_read',room_id:priorRoom.room.id,stakes_version:1})).room.rate,2000);
++  assert.equal((await call(B,{action:'status'})).stake_rate,5000,'an already raised amount is retained after the rule change');
++  const oldRatePlay=await play(prior.round);
++  const oldRateResult=await call(A,{action:'settle',rules_version:11,round_id:prior.round.id,actions:oldRatePlay.g.actions});
++  assert.equal(oldRateResult.status,200);assert.equal(oldRateResult.gold,oldRatePlay.g.bank[0],'existing transcripts settle using their original stake');
++  await db.query('update ojjuda_matgo_internal.wallets set online_room=null,stake_rate=100,stake_seen=100 where user_id in($1,$2)',[B,C]);
++  await db.query("update ojjuda_matgo_internal.rooms set status='cancelled' where id=$1",[priorRoom.room.id]);
+   await reset();
+@@ -99,3 +118,3 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+   // Exact stake boundaries, no offers, and old decline memory cannot suppress a raise.
+-  const brackets=[[99999,1,100],[100000,2,200],[100001,2,200],[199999,2,200],[200000,3,500],[299999,3,500],[300000,4,2000],[400000,5,5000],[500000,6,10000],[600000,7,20000],[700000,8,50000],[800000,9,100000],[900000,10,100000],[9007199254740991,10,100000]];
++  const brackets=[[99999,1,100],[100000,2,200],[100001,2,200],[199999,2,200],[200000,3,500],[299999,3,500],[300000,4,1000],[399999,4,1000],[400000,5,2000],[499999,5,2000],[500000,6,3000],[600000,7,4000],[700000,8,5000],[800000,9,6000],[900000,10,7000],[1000000,10,8000],[10200000,10,100000],[10300000,10,101000],[9007199254740991,10,90071992545000]];
+   for(const [gold,level,rate] of brackets){
+@@ -104,2 +123,6 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+   }
++  // The new 1,000G rate works through full authoritative replay and settlement.
++  await reset(1,300000);s=await start();const thousandPlay=await play(s.round);
++  const thousandResult=await call(A,{action:'settle',rules_version:11,round_id:s.round.id,actions:thousandPlay.g.actions});
++  assert.equal(thousandResult.status,200);assert.equal(thousandResult.gold,thousandPlay.g.bank[0]);
+   // Three losses cannot go below the current balance floor at any bracket.
+@@ -127,14 +150,21 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+   await reset(8);s=await start();assert.equal(s.round.cpu_level,8);assert.equal(s.round.rate,100);
+-  const raised=await record(s.round,'win',400000);assert.equal(raised.stake_rate,5000);s=await start();assert.equal(s.round.rate,5000);
++  const raised=await record(s.round,'win',400000);assert.equal(raised.stake_rate,2000);s=await start();assert.equal(s.round.rate,2000);
+   await db.query('update ojjuda_matgo_internal.wallets set gold=900000 where user_id=$1',[A]);
+-  assert.equal((await status()).round.rate,5000,'ongoing stake stays fixed');
+-  s=await record(s.round,'loss',10000);assert.equal(s.stake_rate,5000,'lower balance retains the attained stake');
++  assert.equal((await status()).round.rate,2000,'ongoing stake stays fixed');
++  s=await record(s.round,'loss',10000);assert.equal(s.stake_rate,2000,'lower balance retains the attained stake');
++  s=await start();await record(s.round,'loss',999);await call(A,{action:'refill',request_id:crypto.randomUUID(),paid:false});
++  assert.equal((await status()).stake_rate,2000,'a refill before all-in cannot lower the saved stake');
+   s=await start();await record(s.round,'loss',0);assert.equal((await status()).stake_rate,100);
+-  await call(A,{action:'refill',request_id:crypto.randomUUID(),paid:false});s=await start();assert.equal(s.round.rate,100);assert.equal(s.round.cpu_level,8,'refill does not reset difficulty');
++  await call(A,{action:'refill',request_id:crypto.randomUUID(),paid:false});s=await start();assert.equal(s.round.rate,100);assert.equal(s.round.cpu_level,7,'refill preserves the level reached after three losses');
+   // Online uses automatic per-player caps, with its own fixed rate and no solo statistics.
+-  await reset(4,400000);await call(B,{action:'status'});await db.query('update ojjuda_matgo_internal.wallets set gold=300000 where user_id=$1',[B]);
+-  let room=await call(A,{action:'online_create',stakes_version:1});assert.equal(room.status,200);
+-  const joined=await call(B,{action:'online_join',code:room.room.code,stakes_version:1});assert.equal(joined.status,200);assert.equal(joined.room.rate,2000);
++  await reset(4,400000);await db.query('update ojjuda_matgo_internal.wallets set gold=300000,stake_rate=100,stake_seen=100 where user_id=$1',[B]);
++  let room=await call(A,{action:'online_create',stakes_version:1});assert.equal(room.status,200,JSON.stringify(room));
++  const joined=await call(B,{action:'online_join',code:room.room.code,stakes_version:1});assert.equal(joined.status,200,JSON.stringify(joined));assert.equal(joined.room.rate,1000);
+   await db.query('update ojjuda_matgo_internal.wallets set gold=900000 where user_id in($1,$2)',[A,B]);
+-  room=await call(A,{action:'online_read',room_id:room.room.id,stakes_version:1});assert.equal(room.room.rate,2000);assert.equal((await status()).cpu_win_streak,0);
++  room=await call(A,{action:'online_read',room_id:room.room.id,stakes_version:1});assert.equal(room.room.rate,1000);assert.equal((await status()).cpu_win_streak,0);
++  // Higher balances keep the same linear rule without overflowing online caps.
++  await db.query('update ojjuda_matgo_internal.wallets set online_room=null,gold=300000000000,stake_rate=100,stake_seen=100 where user_id in($1,$2)',[A,B]);
++  await db.query("update ojjuda_matgo_internal.rooms set status='cancelled' where id=$1",[room.room.id]);
++  room=await call(A,{action:'online_create',stakes_version:1});assert.equal(room.status,200,JSON.stringify(room));
++  const high=await call(B,{action:'online_join',code:room.room.code,stakes_version:1});assert.equal(high.status,200);assert.equal(high.room.rate,2999998000);
+   for(const role of ['anon','authenticated']){
+@@ -144,3 +174,3 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+   assert.equal((await db.query("select has_function_privilege('service_role','public.matgo_ranked_settle(uuid,uuid,bigint,smallint,integer,text)','EXECUTE') allowed")).rows[0].allowed,true);
+-  console.log('PASS: 5-win/3-loss streaks and resets, next-round snapshots, paid/draw exclusion, authoritative replay, retry/concurrency, legacy compatibility, gold minimum levels, 100,000G stake thresholds, bankruptcy/refill and online isolation');
++  console.log('PASS: 5-win/3-loss streaks and resets, next-round snapshots, paid/draw exclusion, authoritative replay, retry/concurrency, legacy compatibility, gold minimum levels, linear 1,000G stakes, saved-rate retention, bankruptcy/refill and online isolation');
+  }finally{await f.close();}
+diff --git a/tests/matgo-online-fixture.cjs b/tests/matgo-online-fixture.cjs
+index 3ca91e3..4ccb1db 100644
+--- a/tests/matgo-online-fixture.cjs
++++ b/tests/matgo-online-fixture.cjs
+@@ -36,2 +36,3 @@ async function fixture(fixtureOptions={}){
+   if(fixtureOptions.adaptive){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_streak_auto_stakes.sql','_matgo_gold_floor.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
++  if(fixtureOptions.adaptive&&fixtureOptions.thousandStake!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_thousand_stake.sql'))),'utf8'));}
+   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
+diff --git a/tests/matgo-stakes-ui.test.cjs b/tests/matgo-stakes-ui.test.cjs
+index e624656..d3c8c43 100644
+--- a/tests/matgo-stakes-ui.test.cjs
++++ b/tests/matgo-stakes-ui.test.cjs
+@@ -31,4 +31,4 @@ const root=path.join(__dirname,'..');
+   await ready();assert.equal(await page.locator('#matgo-stake').count(),0);
+-  assert.equal(await page.evaluate(()=>stakesTest.game.rate),5000);
+-  assert.equal(await page.locator('#stakeRate').innerText(),'점당 5,000G');
++  assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
++  assert.equal(await page.locator('#stakeRate').innerText(),'점당 2,000G');
+   assert.equal(await page.locator('#cpuLevel').innerText(),'5단계','400,000G sets a minimum of level 5');
+@@ -38,3 +38,3 @@ const root=path.join(__dirname,'..');
+   assert.equal(fits,true,'compact level display fits a 320px mobile screen');
+-  await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),5000);
++  await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+   const end=async(gold,outcome='win')=>{const s=await call(A,{action:'status'});await db.query('select public.matgo_ranked_settle($1,$2,$3,0::smallint,1,$4)',[A,s.round.id,gold,outcome]);};
+@@ -50,3 +50,3 @@ const root=path.join(__dirname,'..');
+   assert.equal(await page.locator('#cpuLevel').innerText(),'5단계','three more losses cannot break the gold floor');
+-  await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),5000);
++  await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+   await end(0,'loss');await page.reload();await page.locator('#refill-gold').waitFor();
+@@ -54,3 +54,3 @@ const root=path.join(__dirname,'..');
+   await page.locator('#refill-gold').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
+-  await end(600000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),20000);
++  await end(600000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),4000);
+   assert.equal(await page.locator('#matgo-stake').count(),0);
+@@ -59,3 +59,3 @@ const root=path.join(__dirname,'..');
+   const help=await page.locator('.modal').innerText();
+-  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/5연승/);assert.match(help,/3연패/);assert.match(help,/10만G부터 2단계/);assert.match(help,/10만G부터 점당 200G/);
++  assert.match(help,/두 사람의 자동 판돈 중 낮은 금액/);assert.match(help,/5연승/);assert.match(help,/3연패/);assert.match(help,/10만G부터 2단계/);assert.match(help,/10만G부터 점당 200G/);assert.match(help,/30만G부터 1,000G/);
+   assert.deepEqual(errors,[]);

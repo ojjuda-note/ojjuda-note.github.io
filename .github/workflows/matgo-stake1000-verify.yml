@@ -1,0 +1,52 @@
+name: Verify Matgo linear stakes
+on:
+  push:
+    branches: [codex/matgo-1000-stake-20261014]
+    paths: ['ops/matgo-stake1000.patch']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/matgo-1000-stake-20261014
+      - name: Apply and verify source changes
+        run: |
+          git apply --check ops/matgo-stake1000.patch
+          git apply ops/matgo-stake1000.patch
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          rows=json.loads(pathlib.Path('ops/matgo-stake1000-manifest.json').read_text())
+          for row in rows:
+              data=pathlib.Path(row['path']).read_bytes()
+              assert len(data)==row['size'] and hashlib.sha256(data).hexdigest()==row['sha256'],row['path']
+          subprocess.run(['git','add','--']+[r['path'] for r in rows],check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Correct Matgo linear stakes and preserve attained rates"
+          git push origin HEAD:codex/matgo-1000-stake-20261014
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - name: Verify linear stakes and both game screens
+        env:
+          MATGO_STAKE_SCREENSHOT: /tmp/matgo-stake1000.png
+        run: |
+          node tests/matgo-adaptive.test.cjs
+          node tests/matgo-stakes-ui.test.cjs
+          node tests/matgo-online-ui.test.cjs
+      - name: Retain mobile proof temporarily
+        if: success()
+        run: |
+          mkdir -p ops/matgo-stake1000-proof
+          cp /tmp/matgo-stake1000.png ops/matgo-stake1000-proof/mobile.png
+          git add ops/matgo-stake1000-proof/mobile.png
+          git commit -m "Retain linear stake mobile verification"
+          git push origin HEAD:codex/matgo-1000-stake-20261014
