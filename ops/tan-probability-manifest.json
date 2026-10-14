@@ -1,6 +1,0 @@
-{
-  "games/matgo.html": "49d34124448f2451a6f57afe953d407eb47ed1c161516742398999990db20b94",
-  "supabase/migrations/20261014100929_matgo_tan_five_percent.sql": "d0ddcce549d86539cb1f27cdc5204b39c833f91cd2bfb8fc1a3dc30a1132e9ea",
-  "tests/matgo-online-fixture.cjs": "ff3628749349c4b33c4c1eeefbbe1f676506aa75849660c91b6f290fd5e959e1",
-  "tests/matgo-purchases.test.cjs": "6d2f1b7f9ce5858d50e9338b022b4d0481753d35ff09703f8d744d631ed228a2"
-}
