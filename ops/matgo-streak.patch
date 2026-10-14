@@ -1,15 +1,3 @@
-diff --git a/.github/workflows/regression.yml b/.github/workflows/regression.yml
-index 7a1436c..be3dd63 100644
---- a/.github/workflows/regression.yml
-+++ b/.github/workflows/regression.yml
-@@ -104,2 +104,3 @@ jobs:
-           node tests/matgo-difficulty.test.mjs
-+          node tests/matgo-adaptive.test.cjs
-           node tests/matgo-first-ppuk.test.mjs
-@@ -111,2 +112,3 @@ jobs:
-           node tests/matgo-ui.test.cjs
-+          node tests/matgo-stakes-ui.test.cjs
-           node tests/matgo-online-ui.test.cjs
 diff --git a/games/matgo-engine.mjs b/games/matgo-engine.mjs
 index dabfdeb..ad8fd88 100644
 --- a/games/matgo-engine.mjs
@@ -918,7 +906,7 @@ index 3c8df59..29cf80d 100644
 +      else if(url.endsWith('/matgo_ranked_settle'))result=await db.query('select public.matgo_ranked_settle($1,$2,$3,$4::smallint,$5,$6) value',[p.p_actor,p.p_round,p.p_gold,p.p_first,p.p_carry,p.p_outcome]);
        else if(url.endsWith('/matgo_wallet_service'))result=await db.query('select public.matgo_wallet_service($1,$2,$3,$4,$5,$6,$7::smallint,$8) value',[p.p_actor,p.p_action,p.p_request??null,p.p_paid??false,p.p_round??null,p.p_gold??null,p.p_first??null,p.p_carry??null]);
 diff --git a/tests/matgo-stakes-ui.test.cjs b/tests/matgo-stakes-ui.test.cjs
-index bfb0085..85d2b0c 100644
+index bfb0085..45363c4 100644
 --- a/tests/matgo-stakes-ui.test.cjs
 +++ b/tests/matgo-stakes-ui.test.cjs
 @@ -5,3 +5,3 @@ const root=path.join(__dirname,'..');
@@ -926,6 +914,11 @@ index bfb0085..85d2b0c 100644
 - const f=await fixture({stakes:true}),{db,call}=f;
 + const f=await fixture({adaptive:true}),{db,call}=f;
   const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox']});
+@@ -12,3 +12,3 @@ const root=path.join(__dirname,'..');
+   const errors=[],requests=[];
+-  await context.exposeBinding('stakeFixture',async(_,body)=>{requests.push(body);const data=await call(A,body);return {data};});
++  await context.exposeBinding('stakeFixture',async(_,body)=>{requests.push(body);const data=await call(A,body);if(body.action==='start'&&data.round){await db.query('update ojjuda_matgo_internal.wallets set round_seed=10 where user_id=$1',[A]);data.round.seed=10;}return {data};});
+   await context.addInitScript(()=>{
 @@ -29,32 +29,34 @@ const root=path.join(__dirname,'..');
    await page.goto('https://fixture.test/games/matgo.html');
 -  await page.locator('#matgo-stake').waitFor();

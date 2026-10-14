@@ -71,8 +71,8 @@
   },
   {
     "path": "tests/matgo-stakes-ui.test.cjs",
-    "sha256": "76c4b83fd6bdc462397fc9275d40c0867cc6220c14c9c0c1d5bc5db04e145163",
-    "size": 5144
+    "sha256": "68185a6d36e85073e754844dde21688836697c14b27a32950ac4670a846db1e8",
+    "size": 5296
   },
   {
     "path": "tests/matgo-wallet-purchases.test.mjs",
