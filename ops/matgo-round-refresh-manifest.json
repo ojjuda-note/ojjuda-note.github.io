@@ -21,7 +21,7 @@
   },
   {
     "path": "tests/matgo-ui.test.cjs",
-    "size": 40648,
-    "sha256": "6354f5191d15f8e302607abbf34b5f5888ee876c7623f390fc9225c310eb9bf4"
+    "size": 40852,
+    "sha256": "66f5746e84222445c0fa0e7b4e7aa046f75299c6c723c69a40e9f5afdf22e048"
   }
 ]
