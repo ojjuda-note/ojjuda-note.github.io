@@ -1,0 +1,55 @@
+name: Verify Matgo round refresh
+on:
+  push:
+    branches: [codex/matgo-round-refresh-20261014]
+    paths: ['ops/matgo-round-refresh.patch']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/matgo-round-refresh-20261014
+      - name: Apply and verify source changes
+        run: |
+          git apply --check ops/matgo-round-refresh.patch
+          git apply ops/matgo-round-refresh.patch
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          rows=json.loads(pathlib.Path('ops/matgo-round-refresh-manifest.json').read_text())
+          for row in rows:
+              data=pathlib.Path(row['path']).read_bytes()
+              assert len(data)==row['size'] and hashlib.sha256(data).hexdigest()==row['sha256'],row['path']
+          subprocess.run(['git','add','--']+[r['path'] for r in rows],check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Clarify resumed rounds and refresh Matgo entry pages"
+          git push origin HEAD:codex/matgo-round-refresh-20261014
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - name: Verify resumed rounds and game entry screens
+        run: |
+          node tests/matgo-opening-ppuk.test.mjs
+          node tests/matgo-opening-compat.test.mjs
+          node tests/matgo-pi-interactions.test.mjs
+          node tests/matgo-ui.test.cjs
+          node tests/matgo-stakes-ui.test.cjs
+          node tests/matgo-online-effects-ui.test.cjs
+          node tests/matgo-online-ui.test.cjs
+      - name: Retain resumed round proof temporarily
+        if: success()
+        run: |
+          mkdir -p ops/matgo-round-refresh-proof
+          cp /tmp/matgo-round-refresh-proof/legacy.png ops/matgo-round-refresh-proof/legacy.png
+          cp /tmp/matgo-round-refresh-proof/current.png ops/matgo-round-refresh-proof/current.png
+          git add ops/matgo-round-refresh-proof
+          git commit -m "Retain resumed round mobile verification"
+          git push origin HEAD:codex/matgo-round-refresh-20261014

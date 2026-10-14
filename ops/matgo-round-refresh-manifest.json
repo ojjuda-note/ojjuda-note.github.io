@@ -1,0 +1,27 @@
+[
+  {
+    "path": "games/matgo-online.html",
+    "size": 2609,
+    "sha256": "0c94c200db0cb1ee62c77c5c71b706de941da667cc5fb25c912e81f6292cbe22"
+  },
+  {
+    "path": "games/matgo-online.mjs",
+    "size": 42826,
+    "sha256": "0baa4ec403bc6fa916cbb32e2f0b07eca7e2e772bd81bd0c9e02cfe83b9055d9"
+  },
+  {
+    "path": "games/matgo.html",
+    "size": 1462928,
+    "sha256": "3001fb6d50ad5758937bf5966f7311b3fc7cb6aad4981754ae1cc3d36222ecb8"
+  },
+  {
+    "path": "matgo-bridge.js",
+    "size": 6400,
+    "sha256": "1f43035d014a169fb8761416296a50882b8ab81e90761f9037b5461b6f874f0d"
+  },
+  {
+    "path": "tests/matgo-ui.test.cjs",
+    "size": 40648,
+    "sha256": "6354f5191d15f8e302607abbf34b5f5888ee876c7623f390fc9225c310eb9bf4"
+  }
+]

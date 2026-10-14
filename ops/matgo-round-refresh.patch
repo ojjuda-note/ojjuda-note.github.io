@@ -1,0 +1,125 @@
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index 8100e2e..c25184f 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -34,3 +34,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261014-opening-ppuk1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261014-round-refresh1"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 8960ee0..a03e99d 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -117,3 +117,3 @@ async function accept(next){
+   if(closed)return;
+-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261013-bonus-pi1');return;}
++  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261014-round-refresh1&open='+Date.now());return;}
+   if(room&&room.id===next.id&&next.version<room.version)return;
+@@ -184,3 +184,3 @@ function showLobby(){
+   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
+-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261013-bonus-pi1');};
++  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261014-round-refresh1&open='+Date.now());};
+ }
+diff --git a/games/matgo.html b/games/matgo.html
+index ac91384..66de640 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -17,2 +17,4 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ #matgo-gate a,#matgo-gate button{display:inline-block;color:#2e2748;background:#f2c14e;padding:12px 20px;border-radius:999px;text-decoration:none;font:inherit}
++.round-rules-note{flex-shrink:0;margin:0 12px 3px;padding:4px 8px;border-radius:8px;background:#f2c14e18;color:#f4dc9c;font-size:11px;line-height:1.4;text-align:center}
++.round-rules-note[hidden]{display:none}
+ </style>
+@@ -417,2 +419,3 @@ function mount(){
+   app.innerHTML=`<div class="top"><h1><em>맞고</em></h1><span class="sp"></span><button class="pill money" id="money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary class="pill" id="menu" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><div class="gold-pending" id="goldPending" aria-live="polite" hidden></div><button class="pill" id="sound" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button class="pill" id="rules">규칙</button><button class="pill" id="online">회원 대결</button><button class="pill" id="gukjin" hidden></button></div></details><button class="pill" id="exit">나가기</button></div>
++  <p id="round-rules-note" class="round-rules-note" role="status" hidden>이전 판 이어하기 · 바닥뻑 규칙은 다음 판부터 적용</p>
+   <div class="zone op"><div class="who"><b class="cpu-opponent">${cpuPortraitHTML()}<span class="cpu-name">컴퓨터 <small id="cpuLevel"></small></span></b> <span id="opHand"></span><span class="ppuk-count" id="opPpuk" hidden></span> <span class="go" id="opGo" hidden></span><span class="pts" id="opPts"></span></div><div class="caps" id="capsOp"></div><div class="hand op" id="handOp"></div></div>
+@@ -425,3 +428,3 @@ function mount(){
+   vent.mount();syncTazza();
+-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261013-bonus-pi1');};
++  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261014-round-refresh1&open='+Date.now());};
+   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
+@@ -445,2 +448,3 @@ function render(){
+   $('#cpuLevel').textContent=`${game.cpuLevel??1}단계`;
++  $('#round-rules-note').hidden=game.over||game.openingPpuk!==false;
+   $('#stakeRate').textContent='점당 '+(game.over?(wallet.current.stake_rate??game.rate):game.rate).toLocaleString()+'G';
+@@ -597,3 +601,10 @@ async function startRound(){
+   try{await access.check();state=await wallet.start({tazza:assisted});}
+-  catch(error){roundCheck=false;tazza.finish(false);syncTazza();vent.sync();if(error.code==='gold_empty'){render();await showRefill();}else{toast(error.message,3500);modal('<h2>게임 시작</h2><p id="start-error"></p><div class="row"><button class="btn" id="retry-start">다시 시작</button></div>',{'retry-start':()=>startRound()});document.getElementById('start-error').textContent=error.message;}return false;}
++  catch(error){
++    roundCheck=false;tazza.finish(false);syncTazza();vent.sync();
++    if(error.code==='gold_empty'){render();await showRefill();}
++    else if(error.code==='client_update_required'){
++      modal('<h2>맞고 업데이트</h2><p>맞고가 업데이트됐어요. 최신 화면으로 다시 열어 주세요.</p><div class="row"><button class="btn gold" id="refresh-start">업데이트하고 시작</button></div>',{'refresh-start':()=>{const url=new URL(location.href);url.searchParams.set('update',String(Date.now()));location.replace(url.href);}});
++    }else{toast(error.message,3500);modal('<h2>게임 시작</h2><p id="start-error"></p><div class="row"><button class="btn" id="retry-start">다시 시작</button></div>',{'retry-start':()=>startRound()});document.getElementById('start-error').textContent=error.message;}
++    return false;
++  }
+   finally{roundCheck=false;}
+@@ -603,3 +614,3 @@ async function startRound(){
+   if($('#fl'))document.querySelectorAll('#capsOp .cap .c,#capsMe .cap .c,#handMe .c,#handOp .c').forEach(e=>e.remove());
+-  render();if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
++  render();if(game.openingPpuk===false)toast('이전에 시작한 판을 이어갑니다. 이 판을 끝내고 다음 판을 누르면 바닥뻑 규칙이 적용돼요.',6000);else if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
+ }
+diff --git a/matgo-bridge.js b/matgo-bridge.js
+index 78983d7..332d9be 100644
+--- a/matgo-bridge.js
++++ b/matgo-bridge.js
+@@ -62,3 +62,4 @@
+       frame = document.createElement('iframe');
+-      const params = new URLSearchParams({ v: '20261013-bonus-pi1' });
++      // Reopening must fetch current HTML; round rules still come from the server.
++      const params = new URLSearchParams({ v: '20261014-round-refresh1', open: String(Date.now()) });
+       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
+diff --git a/tests/matgo-ui.test.cjs b/tests/matgo-ui.test.cjs
+index 3cacd4e..81f90cf 100644
+--- a/tests/matgo-ui.test.cjs
++++ b/tests/matgo-ui.test.cjs
+@@ -22,2 +22,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+     if(body.action==='start'){
++      if(state.updateRequired)return{data:{error:'client_update_required'}};
+       if(!state.gold)return{data:{error:'gold_empty'}};
+@@ -324,2 +325,44 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+   }
++  // Reloading an old round must visibly remain old until its valid settlement.
++  {
++    const old={id:crypto.randomUUID(),rules_version:11,seed:5,gold:5000,first:0,carry:1,cpu_level:1};
++    const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');
++    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
++    assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),false);
++    assert.match(await f.page.locator('#round-rules-note').textContent(),/이전 판 이어하기.*다음 판부터/);
++    assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
++    for(const [width,height] of [[320,568],[390,820]]){
++      await f.page.setViewportSize({width,height});
++      assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
++      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,'legacy notice leaves the hand on screen');
++    }
++    fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/legacy.png'});
++    await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
++    assert.equal(f.state.round.id,old.id);assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
++    for(let i=0;i<1500&&!f.state.settled;i++){
++      await f.page.evaluate(()=>{
++        const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#chongtong-continue')||modal.querySelector('#stop')||modal.querySelector('#n')||modal.querySelector('button'))?.click();return;}
++        const t=matgoTest;if(t.ui.resolveChoose){document.querySelector('.stack.pick')?.click();return;}
++        if(!t.ui.busy&&!t.game.over&&t.game.turn===0){if(t.game.hand[0][0])void t.pick(t.game.hand[0][0].id);else document.querySelector('#bombFlip')?.click();}
++      });
++      await f.page.waitForTimeout(20);
++    }
++    assert.equal(f.state.settled,true);assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,11);
++    await f.page.locator('#next').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy&&!matgoTest.game.over);
++    assert.equal(f.state.round.rules_version,12);assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
++    assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
++    assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
++    await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
++    assert.deepEqual(f.errors,[]);await f.context.close();
++  }
++  // An update response has a real refresh action, not an endless start retry.
++  {
++    const f=await fixture({updateRequired:true});await f.page.goto('https://fixture.test/games/matgo.html?entry=kept');
++    await f.page.locator('#refresh-start').waitFor();assert.equal(f.state.round,undefined);
++    f.state.updateRequired=false;await f.page.locator('#refresh-start').click();
++    await f.page.waitForURL(url=>url.searchParams.has('update'));
++    assert.equal(new URL(f.page.url()).searchParams.get('entry'),'kept');
++    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
++    assert.equal(f.state.round.rules_version,12);assert.deepEqual(f.errors,[]);await f.context.close();
++  }
+   // Opening triples come from a real deal and pay one pi, including a whole bonus.
