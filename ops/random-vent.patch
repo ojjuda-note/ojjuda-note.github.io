@@ -1,0 +1,391 @@
+diff --git a/games/assets/matgo-vent/README.md b/games/assets/matgo-vent/README.md
+index 073a55e..75c4e09 100644
+--- a/games/assets/matgo-vent/README.md
++++ b/games/assets/matgo-vent/README.md
+@@ -26 +26,29 @@ Use case: stylized-concept. Asset type: a single transparent animated prop sprit
+ Use case: stylized-concept. Asset type: a single transparent animated prop sprite for a polished Korean arcade card game. Premium hand-painted 3D game illustration, sculpted volume, sophisticated layered material shading, crisp bevels and tiny wear details, warm upper-left key light and cool rim highlights, readable silhouette at 120px. Square canvas, whole object centered and isolated with 10% transparent breathing room. Genuinely transparent background and no floor shadow. No people, hands, characters, lettering, logos, watermarks, frame, badge, muzzle flash, motion trails, or surrounding props. This is a finished detailed game sprite, not a flat vector icon or simple emoji. Subject: one spherical cartoon iron bomb with a short curved braided fuse at its upper right, the fuse is UNLIT. The orb has deep blue-black forged steel, brushed curved highlights, subtle scuffs, a raised equator seam with tiny brass rivets, a thick bronze fuse socket and clearly woven brown fuse fibers. Three-quarter view, orb fills most of the sprite, slightly exaggerated playful arcade proportions.
++
++
++## 2026-10-14 추가 화풀이
++
++- burst.png, slash.png, tomato.png, bat.png: 내장 이미지 생성 도구로 만든 1254 × 1254 RGBA 원본. 투명도와 원본 바이트를 유지합니다.
++- 따발총 8연사, 칼질 2회, 토마토 포물선과 씨앗·과육 효과, 배트 휘두르기를 각각 별도로 애니메이션합니다.
++- 10개 효과를 매 클릭마다 균등 무작위로 선택합니다. 연속해서 같은 효과가 나올 수 있으며, 응답이 불확실한 결제는 기존 영수증의 효과를 재생합니다.
++- 새 효과도 로딩 성공 → 1쭈 결제 확인 → 모션/효과음 순서이며, 소리 끄기·동작 줄이기·화면 숨김 설정을 따릅니다.
++
++### 공통 생성 프롬프트
++
++Use case: stylized-concept. Asset type: high-quality 2D mobile game animation sprite for a Korean card game. Style: richly detailed hand-painted semi-realistic 3D game inventory illustration, strong readable silhouette, warm highlights from upper left, soft blue fill, crisp material texture, like premium polished steel-and-wood game props. Square canvas, 1024x1024 or larger. True transparent alpha background; no colored backdrop, no ground, no cast shadow outside the object. One isolated object only. No people, hands, text, logo, watermark, border, ammunition, flash, blood, or motion lines. This prop will be animated separately in code.
++
++### burst
++
++A single stylized vintage submachine gun game prop for a comic rapid-fire animation. Long barrel points horizontally RIGHT, wooden stock extends LEFT, black grip and rounded drum magazine are BELOW the barrel. Full side view, upright orientation, entire object visible with 10% padding. Dark polished gunmetal, restrained brass details, rich walnut stock, finely painted wear and bright metal edges.
++
++### slash
++
++A single polished chef's knife game prop for a comic slashing animation. One broad clean silver blade points diagonally toward the UPPER RIGHT, dark walnut handle at the LOWER LEFT. Entire object visible, centered diagonal composition with 12% padding. Fine steel reflections, subtle blade bevel, richly textured wood handle with three brass rivets. No scratches suggesting injury, no stains.
++
++### tomato
++
++A single plump ripe red tomato game prop for a comic tomato-throw animation. One glossy whole tomato centered, three-quarter view, crisp green stem and a few curled leaves on top, natural rounded lobes, tiny water droplets and nuanced orange-red reflected highlights. Entire object visible with 16% padding. No plate, no cut tomato, no splatter baked into the image.
++
++### bat
++
++A single wooden baseball bat game prop for a comic swinging animation. Thick rounded barrel points diagonally toward the UPPER RIGHT, narrow handle and knob at LOWER LEFT. Entire bat visible, centered diagonal composition with 10% padding. Honey-brown varnished wood with detailed longitudinal grain, dark charcoal wrapped grip, realistic rounded end, subtle scuffs and polished highlights.
+diff --git a/games/matgo-deck-tools.css b/games/matgo-deck-tools.css
+index cdbe29f..25b3d4c 100644
+--- a/games/matgo-deck-tools.css
++++ b/games/matgo-deck-tools.css
+@@ -75,3 +75,39 @@
+ @keyframes vent-wobble{0%,100%{transform:translateX(0)}18%{transform:translateX(-6px) rotate(-3deg)}40%{transform:translateX(5px) rotate(2deg)}68%{transform:translateX(-2px)}}
+-@media(prefers-reduced-motion:reduce){.vent-layer .vent-weapon,.vent-projectile,.vent-muzzle,.vent-trail,.vent-bolt,.vent-flash,.vent-spark,.vent-smoke,.vent-ring{display:none}.vent-hit{animation:none}.vent-layer .vent-aura{animation:none;opacity:.5;transform:scale(.7)}.vent-layer .vent-word{animation:none;opacity:1;top:6px;transform:translateX(-50%);font-size:28px}}
++/* Eight timed shots: upright stock/grip, recoil, muzzle flashes and tumbling brass. */
++.vent-burst .vent-weapon{margin-top:calc(var(--weapon-size,195px) * -.60);transform-origin:50% 60%;transform:rotate(var(--aim));animation:vent-burst-presence 1700ms both}
++.vent-burst .vent-weapon img{transform:scaleY(-1);animation:vent-burst-recoil 120ms 220ms 8}
++.vent-burst .vent-muzzle{animation:vent-muzzle 110ms var(--delay) both}
++.vent-burst .vent-flash{animation:vent-flash 120ms 300ms 8 both}
++.vent-burst .vent-ring.second{animation-delay:1050ms}.vent-burst .vent-word{animation-duration:1650ms}
++.vent-casing{position:absolute;left:var(--sx);top:var(--sy);width:13px;height:5px;border:1px solid #795020;border-radius:2px;background:linear-gradient(#ffe7a0,#b88332 45%,#f0c866 65%,#805022);box-shadow:1px 2px 2px #0005;animation:vent-casing 650ms var(--delay) both}
++@keyframes vent-burst-presence{0%{opacity:0}12%,78%{opacity:1}100%{opacity:0}}
++@keyframes vent-burst-recoil{0%,100%{transform:scaleY(-1)}20%{transform:translateX(-8px) rotate(-3deg) scaleY(-1)}60%{transform:translateX(-2px) scaleY(-1)}}
++@keyframes vent-casing{0%{opacity:0;transform:translate(-10px,0) rotate(0)}12%{opacity:1}45%{transform:translate(35px,-42px) rotate(220deg)}100%{opacity:0;transform:translate(58px,88px) rotate(580deg)}}
++/* Two broad clean blade passes with bright curved trails in front of the portrait. */
++.vent-slash{--warm:#d5f1ff}.vent-slash .vent-weapon{animation:vent-slash 1700ms both}
++.vent-slash-arc{position:absolute;left:calc(var(--tx) - 105px);top:calc(var(--ty) - 76px);width:210px;height:152px;border-radius:50%;border-top:8px solid #eefaff;border-left:3px solid #a8dcff88;box-shadow:0 -5px 8px #80c4ff77;animation:vent-cut-arc 380ms 370ms both;--arc-angle:-35deg}
++.vent-slash-arc:after{content:'';position:absolute;inset:9px -5px;border-top:2px solid #fff;border-radius:50%}
++.vent-slash-arc.reverse{--arc-angle:42deg;animation-delay:820ms;transform:scaleX(-1)}
++.vent-slash .vent-flash{background:radial-gradient(#fff,#e4f7ff 24%,#81bfff66 55%,transparent 72%);animation:vent-flash 450ms 450ms 2 both}
++.vent-slash .vent-word{color:#effaff;-webkit-text-stroke-color:#345578}
++@keyframes vent-slash{0%{opacity:0;transform:translate(10px,20px) rotate(-60deg) scale(.6)}12%{opacity:1;transform:translate(calc(var(--dx) + 14px),calc(var(--dy) + 16px)) rotate(-65deg)}27%{transform:translate(var(--dx),var(--dy)) rotate(25deg)}36%{transform:translate(var(--dx),var(--dy)) rotate(10deg)}43%{transform:translate(calc(var(--dx) - 8px),var(--dy)) rotate(55deg)}53%{transform:translate(var(--dx),var(--dy)) rotate(-30deg)}65%,77%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(-10deg)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 35px)) rotate(10deg) scale(.8)}}
++@keyframes vent-cut-arc{0%{opacity:0;transform:rotate(calc(var(--arc-angle) - 45deg)) scale(.45)}28%{opacity:1;transform:rotate(var(--arc-angle)) scale(1.04)}100%{opacity:0;transform:rotate(calc(var(--arc-angle) + 55deg)) scale(1.15)}}
++/* A whole tomato follows an arc, squashes, then leaves pulp, seeds and green leaves. */
++.vent-tomato{--warm:#ff942c}.vent-tomato .vent-weapon{width:calc(var(--weapon-size,195px) * .82);height:calc(var(--weapon-size,195px) * .82);margin:calc(var(--weapon-size,195px) * -.41);animation:vent-tomato 900ms both}
++.vent-tomato .vent-trail{position:absolute;left:var(--sx);top:var(--sy);width:90px;height:32px;margin:-16px -45px;border-radius:50%;background:linear-gradient(90deg,transparent,#ff9c5766);filter:blur(6px);animation:vent-punch-trail 720ms both}
++.vent-tomato-splat{position:absolute;left:calc(var(--tx) - 110px);top:calc(var(--ty) - 110px);width:220px;height:220px;filter:drop-shadow(0 4px 3px #69221155);animation:vent-splat 1550ms 720ms both}
++.vent-pulp-drop{position:absolute;left:calc(var(--tx) + var(--drop-x));top:calc(var(--ty) + 45px);width:12px;height:22px;border-radius:45% 45% 60% 60%;background:linear-gradient(90deg,#f44c19,#ffb044 38%,#d94015);animation:vent-drip 1250ms var(--delay) both}
++.vent-tomato .vent-smoke,.vent-tomato .vent-flash,.vent-tomato .vent-ring{display:none}
++.vent-tomato .vent-spark{background:#ff9f39;box-shadow:none;width:8px;height:12px}.vent-tomato .vent-spark:nth-of-type(4n){background:#6b9d39;width:12px;height:6px}
++.vent-tomato .vent-word{top:76px;color:#fff3c8;-webkit-text-stroke-color:#913719}.vent-tomato .vent-aura{background:radial-gradient(#ffb43344,transparent 70%)}
++@keyframes vent-tomato{0%{opacity:0;transform:scale(.45) rotate(-30deg)}15%{opacity:1;transform:scale(.72) rotate(-10deg)}45%{transform:translate(calc(var(--dx) * .5),calc(var(--dy) * .5 - 55px)) rotate(110deg) scale(.9)}75%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(220deg) scale(1)}80%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(235deg) scale(1.18,.72)}84%,100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(240deg) scale(1.25,.5)}}
++@keyframes vent-splat{0%{opacity:0;transform:scale(.12) rotate(-16deg)}12%{opacity:1;transform:scale(1.12) rotate(6deg)}28%,72%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:translateY(16px) scale(.98,1.08)}}
++@keyframes vent-drip{0%{opacity:0;transform:scaleY(.2)}20%{opacity:1}75%{opacity:.9}100%{opacity:0;transform:translateY(var(--drop-y)) scaleY(1.6)}}
++/* The bat has its own full wind-up, contact, wooden rebound and broad motion arc. */
++.vent-bat .vent-weapon{animation:vent-bat 1750ms both}
++.vent-bat .vent-trail{position:absolute;left:calc(var(--tx) - 108px);top:calc(var(--ty) - 85px);width:216px;height:170px;border-radius:50%;border-top:11px solid #ffc77e99;border-right:5px solid #fff0ccaa;filter:blur(1px);animation:vent-cut-arc 410ms 420ms both;--arc-angle:-18deg}
++.vent-bat .vent-flash{width:140px;height:140px;left:-70px;top:-70px;background:radial-gradient(#fff,#ffe5a5 28%,#d78a3b88 55%,transparent 72%)}
++.vent-bat .vent-ring{border-width:5px}.vent-bat .vent-word{font-size:40px;top:48px}
++@keyframes vent-bat{0%{opacity:0;transform:translate(15px,20px) rotate(-100deg) scale(.6)}14%{opacity:1;transform:translate(calc(var(--dx) + 12px),calc(var(--dy) + 15px)) rotate(-105deg)}26%{transform:translate(calc(var(--dx) + 8px),var(--dy)) rotate(-120deg)}37%{transform:translate(var(--dx),var(--dy)) rotate(28deg)}45%{transform:translate(var(--dx),var(--dy)) rotate(-10deg)}55%,76%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(8deg)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 35px)) rotate(28deg) scale(.8)}}
++@media(prefers-reduced-motion:reduce){.vent-layer .vent-weapon,.vent-projectile,.vent-muzzle,.vent-trail,.vent-bolt,.vent-flash,.vent-spark,.vent-smoke,.vent-ring,.vent-casing,.vent-slash-arc,.vent-tomato-splat,.vent-pulp-drop{display:none}.vent-hit{animation:none}.vent-layer .vent-aura{animation:none;opacity:.5;transform:scale(.7)}.vent-layer .vent-word{animation:none;opacity:1;top:6px;transform:translateX(-50%);font-size:28px}}
+ 
+diff --git a/games/matgo-deck-tools.mjs b/games/matgo-deck-tools.mjs
+index 67e9c77..abdb324 100644
+--- a/games/matgo-deck-tools.mjs
++++ b/games/matgo-deck-tools.mjs
+@@ -1,3 +1,3 @@
+ import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261013-bonus-pi1';
+-import {createVentSound} from './matgo-vent-sound.mjs?v=20261013-bonus-pi1';
++import {createVentSound} from './matgo-vent-sound.mjs?v=20261014-random-vent1';
+ export const VENT_EFFECTS = [
+@@ -8,4 +8,9 @@ export const VENT_EFFECTS = [
+   {id:'lightning',name:'번개',word:'찌릿!',hits:[650],duration:2300},
+-  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[850,2300],duration:3200}
++  {id:'table',name:'판 뒤집기',word:'와장창!',hits:[850,2300],duration:3200},
++  {id:'burst',name:'따발총',word:'두두두두!',hits:[300,420,540,660,780,900,1020,1140],duration:2300},
++  {id:'slash',name:'칼질',word:'슈악! 샤악!',hits:[450,900],duration:2150},
++  {id:'tomato',name:'토마토 던지기',word:'철퍼덕!',hits:[720],duration:2400},
++  {id:'bat',name:'야구 배트',word:'빠악!',hits:[650],duration:2250}
+ ];
++export const pickVentEffect=(random=Math.random)=>VENT_EFFECTS[Math.floor(random()*VENT_EFFECTS.length)];
+ const assetURL=id=>new URL(`./assets/matgo-vent/${id}.png`,import.meta.url).href;
+@@ -29,5 +34,12 @@ function particles(){
+ }
+-export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onHit=()=>{},onRearrange=()=>{},prepare=prepareAsset,sound=createVentSound()}={}){
++function extras(effect){
++  if(effect.id==='burst')return effect.hits.map(ms=>`<div class="vent-muzzle" style="--delay:${ms-80}ms"></div><div class="vent-projectile" style="animation-delay:${ms-80}ms"></div><i class="vent-casing" style="--delay:${ms-30}ms"></i>`).join('');
++  if(effect.id==='slash')return '<div class="vent-slash-arc"></div><div class="vent-slash-arc reverse"></div>';
++  if(effect.id!=='tomato')return '';
++  const seeds=Array.from({length:12},(_,i)=>{const a=i*2.4;return `<ellipse cx="${120+Math.cos(a)*(26+i*3)}" cy="${120+Math.sin(a)*(26+i*3)}" rx="3" ry="6" transform="rotate(${i*37} 120 120)"/>`;}).join('');
++  return `<svg class="vent-tomato-splat" viewBox="0 0 240 240" aria-hidden="true"><defs><radialGradient id="vent-pulp"><stop stop-color="#ffb43d"/><stop offset=".45" stop-color="#ff6524"/><stop offset="1" stop-color="#d83212"/></radialGradient></defs><path fill="url(#vent-pulp)" stroke="#ff9e39" stroke-width="2" d="M118 48C140 28 145 69 166 59S212 46 197 79 228 112 208 129 234 167 198 171 194 209 165 190 142 225 124 198 91 227 79 199 38 213 50 177 12 155 37 133 9 97 46 94 34 52 72 65 85 25 118 48Z"/><path d="M89 84Q121 58 159 83M58 128Q49 150 77 162" fill="none" stroke="#ffce7388" stroke-width="9" stroke-linecap="round"/><g fill="#ffe89a" stroke="#e9a943">${seeds}</g><path d="M113 113L91 94 117 101 122 79 130 104 155 94 140 117 156 131 132 125 119 146 119 124 96 128Z" fill="#55913b" stroke="#254c28" stroke-width="2"/></svg>`+Array.from({length:7},(_,i)=>`<i class="vent-pulp-drop" style="--drop-x:${(i-3)*22}px;--drop-y:${18+(i%3)*16}px;--delay:${800+i*45}ms"></i>`).join('');
++}
++export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onHit=()=>{},onRearrange=()=>{},prepare=prepareAsset,sound=createVentSound(),random=Math.random}={}){
+   let tableScene=null;
+-  let index=0,active=null,cooldown=0,resetTimer=null,cleanupTimer=null;
++  let active=null,cooldown=0,resetTimer=null,cleanupTimer=null;
+   let observed=null,observer=null,destroyed=false,purchasing=false;
+@@ -45,5 +57,5 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
+       b.innerHTML=`<span class="vent-icon" aria-hidden="true">${weapon('gun')}</span><span>화풀이<small>1쭈</small></span>`;
+-      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개, 판 뒤집기 모션과 효과음을 차례로 재생');
++      b.setAttribute('aria-label','화풀이 1쭈: 총, 망치, 권투장갑, 폭탄, 번개, 판 뒤집기, 따발총, 칼질, 토마토, 야구 배트 중 무작위 모션과 효과음');
+       b.title='1회 1쭈 · 소리는 게임의 소리 설정을 따라요. 패와 점수는 그대로예요.';deck.appendChild(b);
+-      void prepare(VENT_EFFECTS[index].id).catch(()=>{});
++      void prepare('gun').catch(()=>{});
+     }
+@@ -56,3 +68,3 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
+     if(destroyed||purchasing||!b||!target||Date.now()<cooldown||!canPlay()||!purchase)return false;
+-    const audioReady=sound.unlock();purchasing=true;sync();let effect=VENT_EFFECTS[index];
++    const audioReady=sound.unlock();purchasing=true;sync();let effect=pickVentEffect(random);
+     try{
+@@ -65,3 +77,3 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
+     if(destroyed)return false;
+-    clear();index=(VENT_EFFECTS.indexOf(effect)+1)%VENT_EFFECTS.length;void prepare(VENT_EFFECTS[index].id).catch(()=>{});
++    clear();
+     const start=b.getBoundingClientRect(),end=target.getBoundingClientRect();
+@@ -71,3 +83,3 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
+     const tx=effect.id==='table'&&floorRect?floorRect.left+floorRect.width/2:Math.min(innerWidth-pad,Math.max(pad,end.left+end.width/2));
+-    const ty=effect.id==='table'&&floorRect?floorRect.top+floorRect.height/2:Math.max(size*(effect.id==='glove'?.8:.5),end.top+end.height/2);
++    const ty=effect.id==='table'&&floorRect?floorRect.top+floorRect.height/2:Math.max(size*(['slash','bat'].includes(effect.id)?.85:effect.id==='glove'?.8:effect.id==='tomato'?.7:.5),end.top+end.height/2);
+     const angle=Math.atan2(ty-sy,tx-sx)*180/Math.PI,reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+@@ -76,3 +88,3 @@ export function createVentControls({canPlay=()=>true,purchase,onError=()=>{},onH
+     for(const [key,value] of Object.entries({sx:sx+'px',sy:sy+'px',tx:tx+'px',ty:ty+'px',dx:(tx-sx)+'px',dy:(ty-sy)+'px',aim:angle+'deg',hit:effect.hits[0]+'ms','weapon-size':size+'px'}))layer.style.setProperty('--'+key,value);
+-    const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:effect.id==='table'?'':'<div class="vent-trail"></div>';
++    const trails=effect.id==='gun'?'<div class="vent-muzzle"></div><div class="vent-projectile"></div><div class="vent-projectile second"></div>':effect.id==='lightning'?lightning:['table','burst','slash'].includes(effect.id)?extras(effect):'<div class="vent-trail"></div>'+extras(effect);
+     layer.innerHTML=`${['lightning','table'].includes(effect.id)?'':`<div class="vent-weapon">${weapon(effect.id)}</div>`}${trails}<div class="vent-impact"><div class="vent-aura"></div><div class="vent-flash"></div><div class="vent-ring"></div><div class="vent-ring second"></div>${particles()}<strong class="vent-word">${effect.word}</strong></div>`;
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index 669c0eb..c61c115 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -20,3 +20,3 @@
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-bonus-pi1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261014-random-vent1">
+ <link rel="stylesheet" href="./matgo-opponent.css?v=20261013-bonus-pi1">
+@@ -34,3 +34,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261013-bonus-pi1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261014-random-vent1"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 585e19e..19d60aa 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -8,3 +8,3 @@ import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
+ import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261013-bonus-pi1';
+-import {createVentControls} from './matgo-deck-tools.mjs?v=20261013-bonus-pi1';
++import {createVentControls} from './matgo-deck-tools.mjs?v=20261014-random-vent1';
+ const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
+diff --git a/games/matgo-vent-sound.mjs b/games/matgo-vent-sound.mjs
+index 954a38e..c27d037 100644
+--- a/games/matgo-vent-sound.mjs
++++ b/games/matgo-vent-sound.mjs
+@@ -38,2 +38,11 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
+       noise(at+.062,.19,.14,1800,'bandpass');tone(at+.24,.17,.035,2900,2400);tone(at+.30,.12,.022,3600,3100);
++    }else if(id==='burst'){
++      noise(at,.065,.54,7200);noise(at+.012,.15,.25,1200);tone(at,.13,.32,175,55);tone(at+.07,.08,.025,3100,2300);
++    }else if(id==='slash'){
++      noise(at,.17,.32,6500,'highpass',.009,1800);tone(at,.23,.07,2100,620,'triangle');noise(at+.025,.12,.13,3200,'bandpass');
++    }else if(id==='tomato'){
++      tone(at,.20,.6,230,48);noise(at,.16,.62,1500,'lowpass',.009,320);
++      for(let i=0;i<5;i++){tone(at+.04+i*.037,.085,.08,440-i*53,80);noise(at+.04+i*.05,.055,.095,2200-i*210,'bandpass');}
++    }else if(id==='bat'){
++      noise(at,.085,.75,4800);tone(at,.22,.65,145,44);tone(at+.004,.28,.18,510,475);tone(at+.009,.18,.08,1120,1030);noise(at+.025,.23,.19,780);
+     }else if(id==='hammer'){
+@@ -59,3 +68,4 @@ export function createVentSound({enabled=()=>{try{return window.localStorage.get
+     stop();const start=ctx.currentTime+.018,first=(hits[0]||0)/1000;
+-    if(id==='hammer'||id==='glove'||id==='table')noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
++    if(['hammer','glove','table','bat','tomato'].includes(id))noise(start+Math.max(0,first-.33),.31,.16,450,'bandpass',.08,2600);
++    if(id==='slash')for(const ms of hits)noise(start+Math.max(0,ms/1000-.20),.19,.14,650,'bandpass',.03,5200);
+     if(id==='bomb')noise(start,.75,.075,5200,'highpass',.05);
+diff --git a/games/matgo.html b/games/matgo.html
+index c2efcdc..064fbdf 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -25,3 +25,3 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script src="/game-entry.js?v=20261009-entry1" defer></script>
+-<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261013-bonus-pi1">
++<link rel="stylesheet" href="./matgo-deck-tools.css?v=20261014-random-vent1">
+ <link rel="stylesheet" href="./matgo-opponent.css?v=20261013-bonus-pi1">
+@@ -41,3 +41,3 @@ import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-bonus-pi1";
+ import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261013-bonus-pi1";
+-import {createVentControls} from "./matgo-deck-tools.mjs?v=20261013-bonus-pi1";
++import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-random-vent1";
+ import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-cpu-tan1";
+@@ -431,3 +431,3 @@ function mount(){
+   $('#bombFlip').onclick=onBombFlip;
+-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제) · 광박·멍박·고박 ×2 · 배수는 중복 적용(두 개 ×4, 세 개 ×8) · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>패더미 위 타짜모드는 컴퓨터 대결 전용이며 다음 판 시작 시 5쭈를 사용해요. 탄쓰기는 매번 5%(20분의 1) 확률로 나와요. 탄쓰기가 나오지 않으면 상대 패 보기·쌍피·광·고도리·청단·홍단·초단 7종을 무작위 순서로 한 번씩 사용한 뒤 다시 섞어요. 20번마다 반드시 나오는 방식은 아니에요. 탄쓰기는 어떤 패를 내도 승리하며, 패배·나가리도 내 승리로 바뀌고 최소 7점을 받아요. 패 보기는 상대 손패 공개, 몰아받기는 해당 패를 모두 내 시작 손패에 줘요. 쌍피에는 2피 보너스·구쌍피가 포함돼요. 다시 누르면 시작 전 예약을 취소해요.<br>패더미 아래 총 그림의 화풀이를 누르면 1쭈를 사용해 총·망치·권투장갑·폭탄·번개·판 뒤집기 연출이 차례로 나와요. 판 뒤집기는 바닥 패의 위치만 섞어요. 내 화면에서만 보이며 패와 점수는 바뀌지 않아요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>보유 골드 단계가 오르면 판돈을 올릴지 물어봐요. 동의한 판돈은 유지되며, 골드가 0이 되면 점당 100G부터 다시 시작해요. 회원 대결도 같은 판돈을 쓰고, 두 사람이 동의한 금액 중 낮은 금액을 함께 적용해요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 1,000G 미만일 때 하루 2회 무료로 남은 골드에 5,000G를 더할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
++  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제) · 광박·멍박·고박 ×2 · 배수는 중복 적용(두 개 ×4, 세 개 ×8) · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>패더미 위 타짜모드는 컴퓨터 대결 전용이며 다음 판 시작 시 5쭈를 사용해요. 탄쓰기는 매번 5%(20분의 1) 확률로 나와요. 탄쓰기가 나오지 않으면 상대 패 보기·쌍피·광·고도리·청단·홍단·초단 7종을 무작위 순서로 한 번씩 사용한 뒤 다시 섞어요. 20번마다 반드시 나오는 방식은 아니에요. 탄쓰기는 어떤 패를 내도 승리하며, 패배·나가리도 내 승리로 바뀌고 최소 7점을 받아요. 패 보기는 상대 손패 공개, 몰아받기는 해당 패를 모두 내 시작 손패에 줘요. 쌍피에는 2피 보너스·구쌍피가 포함돼요. 다시 누르면 시작 전 예약을 취소해요.<br>패더미 아래 총 그림의 화풀이를 누르면 1쭈를 사용해 총·망치·권투장갑·폭탄·번개·판 뒤집기·따발총·칼질·토마토 던지기·야구 배트 10가지 중 하나가 매번 무작위로 나와요. 판 뒤집기는 바닥 패의 위치만 섞어요. 내 화면에서만 보이며 패와 점수는 바뀌지 않아요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>보유 골드 단계가 오르면 판돈을 올릴지 물어봐요. 동의한 판돈은 유지되며, 골드가 0이 되면 점당 100G부터 다시 시작해요. 회원 대결도 같은 판돈을 쓰고, 두 사람이 동의한 금액 중 낮은 금액을 함께 적용해요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 1,000G 미만일 때 하루 2회 무료로 남은 골드에 5,000G를 더할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
+   $('#gukjin').onclick=()=>{ if(ui.busy||game.over||game.turn!==ME)return; if(game.toggleGukjin(ME))render(); };
+diff --git a/supabase/functions/matgo/handler.mjs b/supabase/functions/matgo/handler.mjs
+index deeeccc..ddc2cf7 100644
+--- a/supabase/functions/matgo/handler.mjs
++++ b/supabase/functions/matgo/handler.mjs
+@@ -41,3 +41,3 @@ export function createHandler({ env, fetchImpl = fetch }) {
+       if (body.action==='tazza_start' && (![9,10].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
+-      if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table'].includes(body.effect))) throw Error();
++      if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(body.effect))) throw Error();
+       if(onlineActions.has(body.action)){
+diff --git a/supabase/migrations/20261014102157_matgo_random_vent_actions.sql b/supabase/migrations/20261014102157_matgo_random_vent_actions.sql
+new file mode 100644
+index 0000000..3048d96
+--- /dev/null
++++ b/supabase/migrations/20261014102157_matgo_random_vent_actions.sql
+@@ -0,0 +1,61 @@
++-- Four additional cosmetic actions share the existing atomic one-ZU receipt flow.
++-- CREATE OR REPLACE preserves existing service-only grants and ownership.
++create or replace function ojjuda_matgo_internal.fun_service(
++  p_actor uuid,p_action text,p_request uuid,p_reference uuid default null,p_effect text default null)
++returns jsonb language plpgsql security definer set search_path='' as $$
++declare s jsonb;r ojjuda_matgo_internal.fun_purchases%rowtype;v_ref uuid;v_mode text;
++  v_modes text[];v_price integer;v_coins integer;v_online uuid;
++begin
++  if p_action is null or p_action not in ('tazza','vent') or p_request is null then raise exception 'invalid_purchase';end if;
++  if p_action='vent' and (p_reference is null or p_effect is null or p_effect not in ('gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat')) then raise exception 'invalid_purchase';end if;
++  -- The existing wallet service owns the match lock and validates identity/age/ban.
++  -- Keep its lock order, then lock/debit the shared ZU balance in this transaction.
++  s:=ojjuda_matgo_internal.wallet_with_fun(p_actor,'status');
++  select * into r from ojjuda_matgo_internal.fun_purchases where request_id=p_request;
++  if found then
++    if r.user_id<>p_actor or r.kind<>p_action or (p_action='vent' and (r.reference_id<>p_reference or r.effect<>p_effect)) then raise exception 'purchase_mismatch';end if;
++    if p_action='tazza' and (s->'round'->>'id')::uuid is distinct from r.reference_id then raise exception 'purchase_completed';end if;
++    return s||jsonb_build_object('duplicate',true,'purchase',jsonb_build_object('id',r.request_id,'kind',r.kind,'effect',r.effect,'price',r.price));
++  end if;
++  if p_action='tazza' then
++    if s->>'online_room' is not null then raise exception 'match_in_progress';end if;
++    if s->'round'->>'id' is not null then
++      if s->'round'->>'tazza_mode' is null then raise exception 'round_in_progress';end if;
++      return s||jsonb_build_object('duplicate',true);
++    end if;
++    s:=ojjuda_matgo_internal.wallet_with_fun(p_actor,'start_stakes');
++    v_ref:=(s->'round'->>'id')::uuid;v_price:=5;
++    insert into ojjuda_matgo_internal.fun_modes(user_id) values(p_actor) on conflict do nothing;
++    select remaining into v_modes from ojjuda_matgo_internal.fun_modes where user_id=p_actor for update;
++    -- Upgrade existing bags lazily, preserving the order of unused regular modes.
++    v_modes:=array_remove(coalesce(v_modes,array[]::text[]),'tan');
++    if random()<0.05 then
++      v_mode:='tan';
++    else
++      if cardinality(v_modes)=0 then
++        select array_agg(mode order by random()) into v_modes
++          from unnest(array['peek','ssang','gwang','godori','cheong','hong','cho']) as mode;
++      end if;
++      v_mode:=v_modes[1];
++      v_modes:=v_modes[2:];
++    end if;
++    -- Tan never consumes a regular mode. Retries return above without drawing again.
++    update ojjuda_matgo_internal.fun_modes set remaining=v_modes where user_id=p_actor;
++  else
++    v_ref:=p_reference;v_mode:=p_effect;v_price:=1;
++    v_online:=(s->>'online_room')::uuid;
++    if (s->'round'->>'id')::uuid is distinct from v_ref then
++      if v_online is distinct from v_ref or not exists(select 1 from ojjuda_matgo_internal.rooms
++          where id=v_ref and status='active' and ((host_id=p_actor and not bots[1]) or (guest_id=p_actor and not bots[2]))) then
++        raise exception 'no_active_round';
++      end if;
++    end if;
++  end if;
++  update public.user_private set coins=coins-v_price,updated_at=now()
++    where user_id=p_actor and coins>=v_price returning coins into v_coins;
++  if not found then raise exception 'insufficient_zzu';end if;
++  insert into ojjuda_matgo_internal.fun_purchases(request_id,user_id,kind,reference_id,effect,price)
++    values(p_request,p_actor,p_action,v_ref,v_mode,v_price);
++  s:=ojjuda_matgo_internal.wallet_with_fun(p_actor,'status');
++  return s||jsonb_build_object('coins',v_coins,'duplicate',false,'purchase',jsonb_build_object('id',p_request,'kind',p_action,'effect',v_mode,'price',v_price));
++end $$;
+diff --git a/tests/matgo-deck-tools.test.mjs b/tests/matgo-deck-tools.test.mjs
+index d154615..c91bd27 100644
+--- a/tests/matgo-deck-tools.test.mjs
++++ b/tests/matgo-deck-tools.test.mjs
+@@ -9,3 +9,8 @@ import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games
+ import {shuffledFloorSlots,createTableFlipScene} from '../games/matgo-table-flip.mjs';
+-import {createVentControls,VENT_EFFECTS} from '../games/matgo-deck-tools.mjs';
++import {createVentControls,VENT_EFFECTS,pickVentEffect} from '../games/matgo-deck-tools.mjs';
++
++assert.equal(VENT_EFFECTS.length,10);
++for(let i=0;i<VENT_EFFECTS.length;i++)assert.equal(pickVentEffect(()=>(i+.5)/VENT_EFFECTS.length),VENT_EFFECTS[i]);
++assert.equal(pickVentEffect(()=>0),VENT_EFFECTS[0]);assert.equal(pickVentEffect(()=>.999999999),VENT_EFFECTS.at(-1));
++assert.deepEqual([.65,.65,.15,.95,.05].map(n=>pickVentEffect(()=>n).id),['burst','burst','hammer','bat','gun'],'each click is independently random, not a fixed cycle');
+ 
+@@ -94,4 +99,4 @@ try{
+   const purchase=async effect=>{purchases++;if(failPurchase)throw Error('쭈가 부족해요.');return {purchase:{effect}};};
+-  const sounds=[];let failAsset=false;
+-  const vent=createVentControls({canPlay:()=>allowed,purchase,prepare:async()=>{if(failAsset)throw Error('image failed');},sound:{unlock(){},stop(){},destroy(){},play:(id,timing)=>sounds.push({id,timing})},onError:()=>errors++,onHit:()=>hits++,onRearrange:()=>rearrangements++});vent.mount();
++  const sounds=[];let failAsset=false,selection=0;
++  const vent=createVentControls({canPlay:()=>allowed,purchase,random:()=>selection,prepare:async()=>{if(failAsset)throw Error('image failed');},sound:{unlock(){},stop(){},destroy(){},play:(id,timing)=>sounds.push({id,timing})},onError:()=>errors++,onHit:()=>hits++,onRearrange:()=>rearrangements++});vent.mount();
+   assert.ok(d.querySelector('#matgo-vent .vent-icon img[src$="gun.png"]'),'gun drawing replaces the bomb icon');
+@@ -103,2 +108,3 @@ try{
+   for(const effect of VENT_EFFECTS){
++    selection=(VENT_EFFECTS.indexOf(effect)+.5)/VENT_EFFECTS.length;
+     d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
+@@ -113,3 +119,3 @@ try{
+   }
+-  assert.equal(rearrangements,1,'cleanup never shuffles twice');assert.equal(hits,8);assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
++  assert.equal(rearrangements,1,'cleanup never shuffles twice');assert.equal(hits,VENT_EFFECTS.reduce((n,e)=>n+e.hits.length,0));assert.deepEqual(sounds.map(s=>s.id),VENT_EFFECTS.map(e=>e.id));assert.deepEqual(sounds.map(s=>s.timing),VENT_EFFECTS.map(e=>e.hits));assert.equal(JSON.stringify([t.game.hand,t.game.deck,t.game.actions,t.game.bank]),preserved);
+   allowed=false;vent.sync();d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer'),null);
+@@ -117,6 +123,6 @@ try{
+   allowed=true;d.querySelector('.floor').outerHTML='<div class="floor"><div class="deck"><div class="back"></div><small>20장</small></div></div>';
+-  vent.mount();assert.equal(d.querySelectorAll('#matgo-vent').length,1);assert.equal(d.querySelector('.deck .tazza-button'),null,'online control does not introduce tazza');
++  selection=0;vent.mount();assert.equal(d.querySelectorAll('#matgo-vent').length,1);assert.equal(d.querySelector('.deck .tazza-button'),null,'online control does not introduce tazza');
+   d.getElementById('matgo-vent').click();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(d.querySelector('.vent-layer').dataset.effect,'gun');
+   vent.destroy();assert.equal(d.querySelector('.vent-layer'),null);assert.equal(timers.size,0);
+-  console.log('PASS: real solo module boots; next-round toggle/cancel/failure/one-shot wiring; 6 effects, cooldown, cleanup, online remount and unchanged game state');
++  console.log('PASS: real solo module boots; next-round toggle/cancel/failure/one-shot wiring; 10 independently random effects, cooldown, cleanup, online remount and unchanged game state');
+ }finally{
+diff --git a/tests/matgo-online-fixture.cjs b/tests/matgo-online-fixture.cjs
+index 4b8cf6c..3c8df59 100644
+--- a/tests/matgo-online-fixture.cjs
++++ b/tests/matgo-online-fixture.cjs
+@@ -33,3 +33,3 @@ async function fixture(fixtureOptions={}){
+   }
+-  if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
++  if(fixtureOptions.fun){const dir=path.join(__dirname,'../supabase/migrations');for(const suffix of ['_matgo_paid_tazza_vent.sql','_matgo_table_flip.sql','_matgo_fresh_normal_start.sql','_matgo_tan_five_percent.sql','_matgo_random_vent_actions.sql'])await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith(suffix))),'utf8'));}
+   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
+diff --git a/tests/matgo-purchases.test.cjs b/tests/matgo-purchases.test.cjs
+index ed232ce..09565d9 100644
+--- a/tests/matgo-purchases.test.cjs
++++ b/tests/matgo-purchases.test.cjs
+@@ -120,2 +120,10 @@ const {fixture}=require('./matgo-online-fixture.cjs');
+     assert.equal(real.round.tazza_mode,actualRoll<.05?'tan':'peek');
++    const beforeVentBag=await bag(),beforeVentCoins=await coins(A);
++    for(const [i,effect] of ['burst','slash','tomato','bat'].entries()){
++      const request=id(),paid=await vent(A,real.round.id,request,effect);
++      assert.equal(paid.status,200);assert.equal(paid.purchase.effect,effect);assert.equal(paid.coins,beforeVentCoins-i-1);
++      assert.deepEqual(paid.round,real.round,'new cosmetic actions never change the paid round');
++      assert.equal((await vent(A,real.round.id,request,effect)).coins,paid.coins,'new action receipt retries charge once');
++    }
++    assert.deepEqual(await bag(),beforeVentBag,'cosmetic actions never consume tazza modes');
+     console.log('PASS: independent 5% tan draws and boundaries, 7-mode cycles, legacy bag migration, atomic 5/1 ZU purchases, retry/concurrent deduplication, balance rollback, active-match checks and service-only permissions');
+diff --git a/tests/matgo-ui.test.cjs b/tests/matgo-ui.test.cjs
+index d30311a..9b8caf9 100644
+--- a/tests/matgo-ui.test.cjs
++++ b/tests/matgo-ui.test.cjs
+@@ -109,3 +109,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+     await f.page.locator('#matgo-vent').click();await f.page.waitForFunction(()=>ventEffects.length===1);
+-    assert.equal(f.state.coins,14);assert.equal(await f.page.evaluate(()=>ventEffects[0]),'gun');
++    assert.equal(f.state.coins,14);assert.ok(['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(await f.page.evaluate(()=>ventEffects[0])));
+     assert.deepEqual(f.errors,[]);await f.context.close();
+diff --git a/tests/matgo-vent-effects-ui.test.cjs b/tests/matgo-vent-effects-ui.test.cjs
+index 34c5ee3..f5dd842 100644
+--- a/tests/matgo-vent-effects-ui.test.cjs
++++ b/tests/matgo-vent-effects-ui.test.cjs
+@@ -14,2 +14,3 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;window.payments=[];window.decline=false;window.slowPurchase=false;
++   window.ventRoll=.01;Math.random=()=>window.ventRoll;
+    window.audioStarts=[];window.audioContexts=[];window.audioMetrics={peak:0,energy:0,count:0};
+@@ -52,2 +53,3 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+   for(const effect of VENT_EFFECTS){
++   await page.evaluate(roll=>{ventRoll=roll;},(VENT_EFFECTS.indexOf(effect)+.5)/VENT_EFFECTS.length);
+    const before=await floorSnapshot();let airbornePiles;
+@@ -75,2 +77,6 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+    if(effect.id==='glove'){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.y>=0&&b.x>=0&&b.x+b.width<=390,'enlarged glove stays fully on screen');}
++   if(['burst','slash','bat'].includes(effect.id)){const b=await page.locator('.vent-weapon').boundingBox();assert.ok(b.width>=150&&b.x>=0&&b.y>=0&&b.x+b.width<=390,'new action artwork is large and fits the phone');}
++   if(effect.id==='burst'){assert.equal(await page.locator('.vent-projectile').count(),8);assert.equal(await page.locator('.vent-casing').count(),8);}
++   if(effect.id==='slash')assert.equal(await page.locator('.vent-slash-arc').count(),2);
++   if(effect.id==='tomato'){assert.equal(await page.locator('.vent-tomato-splat ellipse').count(),12);assert.equal(await page.locator('.vent-pulp-drop').count(),7);}
+    if(effect.id==='table'){
+@@ -175,3 +181,16 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
+   assert.equal(await calm.page.locator('.vent-flying-card').count(),0);assert.equal(await calm.page.locator('body.matgo-table-flipping').count(),0);await calm.context.close();
+-  assert.deepEqual(errors,[]);console.log('PASS: 6 enlarged effects, upright gun, individual card scatter and restack, swept-floor/depleted-deck fallback, conserved cards and persistent display slots; real Web Audio energy, distinct profiles, gesture unlock, charge-before-play, mute, visibility and reduced motion');
++  for(const id of ['burst','slash','tomato','bat']){
++   const room=structuredClone(initial);room.bots[1]=true;
++   const sample=await screen({muted:true,room,viewport:{width:320,height:568}}),p=sample.page;
++   await p.evaluate(roll=>{ventRoll=roll;},(VENT_EFFECTS.findIndex(e=>e.id===id)+.5)/VENT_EFFECTS.length);
++   const before=await p.evaluate(()=>ventTest.snapshot());await p.locator('#matgo-vent').tap();await p.locator('.vent-'+id).waitFor();
++   await p.waitForTimeout(VENT_EFFECTS.find(e=>e.id===id).hits[0]+70);
++   assert.ok(await p.locator('.cpu-reaction').count());
++   assert.equal(await p.locator('.vent-layer').evaluate(el=>[...el.children].filter(c=>!c.classList.contains('cpu-reaction')).every(c=>Number(getComputedStyle(c).zIndex)>=2)),true,'new actions stay in front of the reaction photo');
++   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
++   await p.screenshot({path:path.join(proof,id+'-small-phone.png')});
++   await p.locator('.vent-layer').waitFor({state:'detached'});assert.equal(await p.evaluate(()=>ventTest.snapshot()),before);assert.equal(await p.evaluate(()=>payments.length),1);
++   await sample.context.close();
++  }
++  assert.deepEqual(errors,[]);console.log('PASS: 10 large random effects, 8-shot burst, double slash, tomato splat, bat swing, upright gun, conserved cards and table restack; audible distinct sounds, charge-before-play, mute, portrait layering, small phones and reduced motion');
+  }finally{await browser.close();}

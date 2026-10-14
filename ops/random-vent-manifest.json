@@ -1,0 +1,20 @@
+{
+  "games/assets/matgo-vent/README.md": "836201c3c5299f632d86ff117bc43f2cd1990349c6a443ca9f7e1238bbc7cb96",
+  "games/matgo-deck-tools.css": "3447fa1cd5f9ac7d1994553b2b8cbb9198a7254cb89efceddb6c2a9b079a700d",
+  "games/matgo-deck-tools.mjs": "a510700b2a6131ed7b7af864e72e67964e9a6b01da97c72a173a2927b7a21645",
+  "games/matgo-online.html": "ee9dd7a6475215ee4bb3560d7ff440ff38898b78337e49efde5d860d180793cf",
+  "games/matgo-online.mjs": "23ad184b16c5bee7091013d9caad1bb32ff4947cff8ca1f9d700351024e7a825",
+  "games/matgo-vent-sound.mjs": "4da44dbf7fceaeb278d37f619bde560905fd2ce6eb6cd5a5deca106eccdf4727",
+  "games/matgo.html": "8a2e7b8015f7b3cd417406eb01bc3c4ce558d2af42d80ead9f8e13c625fe5bb1",
+  "supabase/functions/matgo/handler.mjs": "5098d45af4fba4cd2ab9c8f152fa8880beb1efc39528620903266bc597a6a91a",
+  "supabase/migrations/20261014102157_matgo_random_vent_actions.sql": "1de70209a9fe0f2b03fc9949219a2d4b95d3c629fde5aa363a3f2a92e516fba6",
+  "tests/matgo-deck-tools.test.mjs": "b5d45ba37eacecb5ea3af2b41c0567ef4812fb9b0347aa44727b8fcf84bf16da",
+  "tests/matgo-online-fixture.cjs": "f91e636b1a1b5f8e0e5b415dbaf55bcadcbce3407ba9e2d9aff4beb0a45ba79c",
+  "tests/matgo-purchases.test.cjs": "911404f796765a783666895574d0337fa20d918fb33057dadfa391193e211106",
+  "tests/matgo-ui.test.cjs": "d49ab9c3973acf73d202e3deca19a79e1b72dacaf4e69708d9f385763e70a594",
+  "tests/matgo-vent-effects-ui.test.cjs": "79e37fc5233cdbf5bcb8bc2e1b7443c53e3857abc61b80631ba9496087e4d364",
+  "games/assets/matgo-vent/burst.png": "c45d87e327edff223386e81a4f1bc8c21a94f1d1cce598f266cfd111c2bb526a",
+  "games/assets/matgo-vent/slash.png": "fb225cce0cddba18d2bc66b88764f5ebab1fbfd46ca5bc62af26f60370f64870",
+  "games/assets/matgo-vent/tomato.png": "ae0e5b57faf707185a323978b00acf6fb4a6719d7c8591404adad84439529801",
+  "games/assets/matgo-vent/bat.png": "73fd51d71f228ff12d0d871049969d57f4256cc1798fb1f7183a6579ba9f0d1e"
+}
