@@ -1,0 +1,1036 @@
+diff --git a/games/matgo-engine.mjs b/games/matgo-engine.mjs
+index 94ad8e2..51323fc 100644
+--- a/games/matgo-engine.mjs
++++ b/games/matgo-engine.mjs
+@@ -53,3 +53,8 @@ class Game {
+     // 같은 월 3장만 묶는다. 2장은 서로 선택할 수 있도록 따로 둔다.
+-    for(const cards of Object.values(by)){if(cards.length===3)this.floor.push(cards);else cards.forEach(c=>this.floor.push([c]));}
++    for(const cards of Object.values(by)){if(cards.length===3){
++      // An opening triple is a neutral ppuk: one pi, no self-ppuk/first-ppuk credit.
++      // Already-started rounds keep their original rule through the server snapshot.
++      if(this.openingPpuk!==false){cards.ppuk=true;cards.ppukOwner=null;}
++      this.floor.push(cards);
++    }else cards.forEach(c=>this.floor.push([c]));}
+     this.caps=[[],[]];this.dealBonus=bonus;this.actions=[];
+@@ -82,3 +87,3 @@ class Game {
+     const count=self?2:1;
+-    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv});return count;
++    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv,...(stack.ppukOwner===null?{opening:true}:{})});return count;
+   }
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index eb00af2..8100e2e 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -34,3 +34,3 @@
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261014-pi-audit1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261014-opening-ppuk1"></script>
+ </body>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 9d24c00..8960ee0 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -4,3 +4,3 @@ import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=2026
+ import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
+-import {createWallet} from './matgo-wallet.mjs?v=20261014-streak1';
++import {createWallet} from './matgo-wallet.mjs?v=20261014-opening-ppuk1';
+ import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
+@@ -82,3 +82,3 @@ function eventText(ev){
+   if(ev.type==='ppuk')return [who+'쌌다!',`이번 판 ${ev.count}/3회${ev.bonusCount?' · 보너스도 함께 묶였어요':''}`];
+-  if(ev.type==='ppukget')return [mine?(ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',piClaimMessage(ev,room.seat)];
++  if(ev.type==='ppukget')return [mine?(ev.opening?'바닥뻑 먹기!':ev.self?'자뻑 먹기!':'뻑 먹기!'):'아이고!!',piClaimMessage(ev,room.seat)];
+   if(ev.type==='shake')return [who+'흔들기!','이기면 점수 ×2',ev.cards];
+@@ -251,3 +251,3 @@ function renderRoom(){
+     const floorMonths=new Set(g.floor.map(s=>s.cards[0].m)),pairs=heldPairMonths(g.hand,g.caps);
+-    $('#content').innerHTML=`<section class="board"><div class="zone op"><div class="who"><b id="op-name"${room.bots[op]?' class="cpu-opponent"':''}>${room.bots[op]?cpuPortraitHTML()+'<span class="cpu-name">'+escape(room.names[op])+'<small>PC 대행</small></span>':label(op)}</b><span>손패 ${g.otherCount}장</span>${badge(op)}</div>${caps(g.caps[op])}<div class="hand op op-hand" aria-label="상대 손패 뒷면">${Array(g.otherCount).fill('<div class="c">'+backSVG+'</div>').join('')}</div></div><div class="floor felt"><div class="fl">${g.floor.map((stack,i)=>`<button class="stack${selecting&&pr.indices.includes(i)?' pick':selecting?' dimmed':''}${myTurn&&g.hand.some(c=>c.m===stack.cards[0].m)?' hot':''}" data-index="${i}" data-month="${stack.cards[0].m}" aria-label="${stack.cards[0].m}월 바닥 패 ${stack.cards.length}장" ${selecting&&pr.indices.includes(i)?'':'disabled'}>${stack.cards.map((c,j)=>`<span class="c" style="transform:translate(${Math.min(3,j)*7}px,${-Math.min(3,j)*4}px) rotate(${j*6}deg)">${cardSVG(c)}</span>`).join('')}${stack.ppuk?`<span class="ppuk">${stack.cards.some(c=>c.k==='bonus')?'뻑 + 보너스':'쌌다'}</span>`:''}</button>`).join('')}</div><div class="deck"><div class="back">${backSVG}</div><small>${g.deckCount}장</small></div></div><div class="turn compact-turn${myTurn?' my':''}" aria-live="polite"><span id="turn-label">${text}</span>${!g.over?'<time id="turn-seconds"></time>':''}</div><div class="zone me">${caps(g.caps[me],true)}<div class="my-score hand-score"><span class="stake-label" id="stakeRate">점당 ${number(room.rate??100)}G</span><span id="my-score" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div id="hand" class="hand me">${[...g.hand].sort((a,b)=>a.m-b.m||a.id-b.id).map(c=>`<button class="c${myTurn&&floorMonths.has(c.m)?' match':''}" data-card="${c.id}" data-month="${c.m}" aria-label="${c.k==='bonus'?'보너스':c.m+'월'} 패 내기${pairs.has(c.m)?' · 짝패, 나머지 두 장은 이미 먹은 패':''}">${cardSVG(c)}${pairs.has(c.m)?'<span class="pair-mark">짝</span>':''}</button>`).join('')}</div>${g.bomb[me]>0&&g.deckCount?'<button id="flip" class="bomb-flip"><span>폭탄 뒤집기</span><strong>'+g.bomb[me]+'회 남음</strong><small>손패 없이 1장</small></button>':''}</div></div></section>`;
++    $('#content').innerHTML=`<section class="board"><div class="zone op"><div class="who"><b id="op-name"${room.bots[op]?' class="cpu-opponent"':''}>${room.bots[op]?cpuPortraitHTML()+'<span class="cpu-name">'+escape(room.names[op])+'<small>PC 대행</small></span>':label(op)}</b><span>손패 ${g.otherCount}장</span>${badge(op)}</div>${caps(g.caps[op])}<div class="hand op op-hand" aria-label="상대 손패 뒷면">${Array(g.otherCount).fill('<div class="c">'+backSVG+'</div>').join('')}</div></div><div class="floor felt"><div class="fl">${g.floor.map((stack,i)=>`<button class="stack${selecting&&pr.indices.includes(i)?' pick':selecting?' dimmed':''}${myTurn&&g.hand.some(c=>c.m===stack.cards[0].m)?' hot':''}" data-index="${i}" data-month="${stack.cards[0].m}" aria-label="${stack.cards[0].m}월 바닥 패 ${stack.cards.length}장" ${selecting&&pr.indices.includes(i)?'':'disabled'}>${stack.cards.map((c,j)=>`<span class="c" style="transform:translate(${Math.min(3,j)*7}px,${-Math.min(3,j)*4}px) rotate(${j*6}deg)">${cardSVG(c)}</span>`).join('')}${stack.ppuk?`<span class="ppuk">${stack.owner===null?'바닥뻑':stack.cards.some(c=>c.k==='bonus')?'뻑 + 보너스':'쌌다'}</span>`:''}</button>`).join('')}</div><div class="deck"><div class="back">${backSVG}</div><small>${g.deckCount}장</small></div></div><div class="turn compact-turn${myTurn?' my':''}" aria-live="polite"><span id="turn-label">${text}</span>${!g.over?'<time id="turn-seconds"></time>':''}</div><div class="zone me">${caps(g.caps[me],true)}<div class="my-score hand-score"><span class="stake-label" id="stakeRate">점당 ${number(room.rate??100)}G</span><span id="my-score" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div id="hand" class="hand me">${[...g.hand].sort((a,b)=>a.m-b.m||a.id-b.id).map(c=>`<button class="c${myTurn&&floorMonths.has(c.m)?' match':''}" data-card="${c.id}" data-month="${c.m}" aria-label="${c.k==='bonus'?'보너스':c.m+'월'} 패 내기${pairs.has(c.m)?' · 짝패, 나머지 두 장은 이미 먹은 패':''}">${cardSVG(c)}${pairs.has(c.m)?'<span class="pair-mark">짝</span>':''}</button>`).join('')}</div>${g.bomb[me]>0&&g.deckCount?'<button id="flip" class="bomb-flip"><span>폭탄 뒤집기</span><strong>'+g.bomb[me]+'회 남음</strong><small>손패 없이 1장</small></button>':''}</div></div></section>`;
+     $('#hand').scrollLeft=scroll;
+@@ -331,3 +331,3 @@ try{
+   $('#money').onclick=()=>refill();$('#exit').onclick=()=>requestExit();
+-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>7점부터 고/스톱 · 점당 ${number(room?.rate??wallet.current?.stake_rate??100)}G · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제)예요. 광박·멍박·고박·흔들기·폭탄 배수도 중복 적용해요(두 개 ×4, 세 개 ×8).<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지되고, 올인 후 충전하면 점당 100G부터 다시 시작해요. 두 사람의 자동 판돈 중 낮은 금액으로 시작하며, 진행 중인 판의 금액은 바뀌지 않아요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>`,{'close-rules':()=>{promptKey='';renderRoom();}});
++  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>처음 깔린 같은 달 3장(바닥뻑)을 먹으면 상대 피 1장 · 자뻑 횟수와 첫뻑 보상에는 포함되지 않아요.<br><br>7점부터 고/스톱 · 점당 ${number(room?.rate??wallet.current?.stake_rate??100)}G · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제)예요. 광박·멍박·고박·흔들기·폭탄 배수도 중복 적용해요(두 개 ×4, 세 개 ×8).<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지되고, 올인 후 충전하면 점당 100G부터 다시 시작해요. 두 사람의 자동 판돈 중 낮은 금액으로 시작하며, 진행 중인 판의 금액은 바뀌지 않아요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>`,{'close-rules':()=>{promptKey='';renderRoom();}});
+   access.subscribe(deny);
+diff --git a/games/matgo-tazza.mjs b/games/matgo-tazza.mjs
+index dc3b9f8..c25ac8b 100644
+--- a/games/matgo-tazza.mjs
++++ b/games/matgo-tazza.mjs
+@@ -85,2 +85,3 @@ function targetDeal(game, mode) {
+ export function dealSoloRound(game, round, engine) {
++  game.openingPpuk=(round.rules_version??12)>=12;
+   const mode = round.tazza_mode ?? null;
+diff --git a/games/matgo-wallet.mjs b/games/matgo-wallet.mjs
+index a71f8e4..cf0b952 100644
+--- a/games/matgo-wallet.mjs
++++ b/games/matgo-wallet.mjs
+@@ -13,3 +13,3 @@ export function createWallet(access,{stakes=false}={}) {
+     current=data;
+-    if(data.round?.id)roundVersions.set(data.round.id,data.round.cpu_level==null?10:11);
++    if(data.round?.id)roundVersions.set(data.round.id,data.round.rules_version??(data.round.cpu_level==null?10:11));
+     if(Number.isInteger(data.coins)){
+@@ -32,3 +32,3 @@ export function createWallet(access,{stakes=false}={}) {
+       if(tazza){
+-        pendingTazza??={action:'tazza_start',request_id:crypto.randomUUID(),stakes_version:1,rules_version:11};
++        pendingTazza??={action:'tazza_start',request_id:crypto.randomUUID(),stakes_version:1,rules_version:12};
+         try{const state=await request(pendingTazza);pendingTazza=null;return state;}
+@@ -36,3 +36,3 @@ export function createWallet(access,{stakes=false}={}) {
+       }
+-      const state=await request({action:'start',rules_version:11,...(stakes?{stakes_version:1}:{})});
++      const state=await request({action:'start',rules_version:12,...(stakes?{stakes_version:1}:{})});
+       pendingTazza=null;return state;
+@@ -46,3 +46,3 @@ export function createWallet(access,{stakes=false}={}) {
+     },
+-    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:roundVersions.get(roundId)??11}),
++    settle:(roundId,actions)=>request({action:'settle',round_id:roundId,actions,rules_version:roundVersions.get(roundId)??12}),
+     refill(paid){
+diff --git a/games/matgo.html b/games/matgo.html
+index ddebbdb..ac91384 100644
+--- a/games/matgo.html
++++ b/games/matgo.html
+@@ -38,3 +38,3 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
+ <script type="module">
+-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261014-cpu-tan1";
++import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo-tazza.mjs?v=20261014-opening-ppuk1";
+ import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-bonus-pi1";
+@@ -42,5 +42,5 @@ import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
+ import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
+-import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-pi-audit1";
++import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261014-opening-ppuk1";
+ import {floorLayout,heldPairMonths,piClaimMessage} from "./matgo-view.mjs?v=20261014-pi-audit1";
+-import {createWallet} from "./matgo-wallet.mjs?v=20261014-streak1";
++import {createWallet} from "./matgo-wallet.mjs?v=20261014-opening-ppuk1";
+ (async () => {
+@@ -370,4 +370,4 @@ const ui={
+     if(type==='ppuk'&&d.firstPpuk){render();await banner(d.p===ME?'첫뻑!':'상대 첫뻑!',(d.p===ME?'+300G':'-300G')+' · 판 종료 시 정산'+(d.bonusCount?' · 보너스도 함께 묶였어요':''),d.p===ME?'brag':'warn',1800);return;}
+-    const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
+-    if(msg){ const mine=d.p===ME; const sub={jjok:piClaimMessage(d,ME),ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.self?'내가':'상대가'} 싼 패${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · ${piClaimMessage(d,ME)}`:piClaimMessage(d,ME),ttadak:'네 장 한꺼번에 · '+piClaimMessage(d,ME),sweep:'바닥을 싹 비웠어요 · '+piClaimMessage(d,ME),go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
++    const msg={jjok:'쪽!',ppuk:'쌌다!',ppukget:d.opening?'바닥뻑 먹기!':d.self?'자뻑 먹기!':'예쓰!',ttadak:'따닥!',sweep:'싹쓸이!',go:`${d.n}고!`}[type];
++    if(msg){ const mine=d.p===ME; const sub={jjok:piClaimMessage(d,ME),ppuk:`${d.bonusCount?'보너스 '+d.bonusCount+'장도 함께 묶였어요':'세 장이 바닥에 묶였어요'} · 이번 판 ${d.count}/3회`,ppukget:mine?`${d.opening?'처음 깔린 세 장':(d.self?'내가':'상대가')+' 싼 패'}${d.bonusCount?' + 보너스 '+d.bonusCount+'장':''} · ${piClaimMessage(d,ME)}`:piClaimMessage(d,ME),ttadak:'네 장 한꺼번에 · '+piClaimMessage(d,ME),sweep:'바닥을 싹 비웠어요 · '+piClaimMessage(d,ME),go:mine?'더 올려볼까요':'조심! 상대가 고를 불렀어요'}[type]; if(type==='ppuk'&&mine) await banner('쌌다!',sub,'warn',1100); else await banner(type==='ppukget'&&!mine?'아이고!!':mine?msg:`상대 ${msg}`,sub,mine?'brag':'warn',type==='go'?1500:1200); }
+     if(type==='combo'){ const mine=d.p===ME; const names=d.names.length?d.names:d.first; const head=names[0]; const pretty={'고도리':'고도리!','홍단':'홍단!','청단':'청단!','초단':'초단!'}[head]||(head.endsWith('광')?head+'!':head+' 점수!'); const subtxt=d.names.length>1?d.names.slice(1).join(' · '):(d.first.length&&d.names.length?d.first.join(' · '):''); if(mine) await banner(pretty,subtxt||'잘했어요!','brag',1500); else await banner('상대 '+pretty,subtxt||'따라잡아야 해요','warn',1500); }
+@@ -431,3 +431,3 @@ function mount(){
+   $('#bombFlip').onclick=onBombFlip;
+-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제) · 광박·멍박·고박 ×2 · 배수는 중복 적용(두 개 ×4, 세 개 ×8) · 흔들기·폭탄 ×2 · 쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>패더미 위 타짜모드는 컴퓨터 대결 전용이며 다음 판 시작 시 5쭈를 사용해요. 탄쓰기는 매번 5%(20분의 1) 확률로 나와요. 탄쓰기가 나오지 않으면 상대 패 보기·쌍피·광·고도리·청단·홍단·초단 7종을 무작위 순서로 한 번씩 사용한 뒤 다시 섞어요. 20번마다 반드시 나오는 방식은 아니에요. 탄쓰기는 어떤 패를 내도 승리하며, 패배·나가리도 내 승리로 바뀌고 최소 7점을 받아요. 패 보기는 상대 손패 공개, 몰아받기는 해당 패를 모두 내 시작 손패에 줘요. 쌍피에는 2피 보너스·구쌍피가 포함돼요. 다시 누르면 시작 전 예약을 취소해요.<br>패더미 아래 총 그림의 화풀이를 누르면 1쭈를 사용해 총·망치·권투장갑·폭탄·번개·판 뒤집기·따발총·펜싱·토마토 던지기·야구 배트 10가지 중 하나가 매번 무작위로 나와요. 판 뒤집기는 바닥 패의 위치만 섞어요. 내 화면에서만 보이며 패와 점수는 바뀌지 않아요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지돼요. 올인 후 충전하면 점당 100G부터 다시 시작해요. 회원 대결은 두 사람의 자동 판돈 중 낮은 금액을 함께 적용해요.<br>최저 난이도는 10만G 미만 1단계, 10만G부터 2단계, 20만G부터 3단계로 10만G마다 올라가며 최대 10단계예요. 일반 대결에서 5연승하면 한 단계 올라가고, 3연패하면 한 단계 내려가되 현재 골드의 최저 단계보다 낮아지지 않아요. 승패가 바뀌면 반대 기록은 초기화되고, 단계 조절 후에는 다시 집계해요. 1~10단계이며 다음 판부터 적용돼요. 타짜모드·나가리·회원 대결은 집계하지 않아요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 1,000G 미만일 때 하루 2회 무료로 남은 골드에 5,000G를 더할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
++  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p style="text-align:left">7점부터 고/스톱 · 광 3장 3점(비광 포함 2점), 4광 4점, 5광 15점 · 열끗·띠 5장부터 1점씩 · 고도리 5점 · 홍단·청단·초단 각 3점 · 피 10장부터 1점씩(쌍피 2장)<br>1고 +1, 2고 +2, 3고부터 ×2씩 · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제) · 광박·멍박·고박 ×2 · 배수는 중복 적용(두 개 ×4, 세 개 ×8) · 흔들기·폭탄 ×2 · 처음 깔린 같은 달 3장(바닥뻑)·쪽·따닥·상대 뻑 먹기·싹쓸이는 상대 피 1장, 자뻑(내가 싼 패) 먹기는 상대 피 2장 가져오기. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 보너스 뒤에 뻑이 나면 보너스도 함께 묶여요. 피가 부족하면 있는 만큼만 가져와요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요 · 나가리면 다음 판 ×2<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>손패에 같은 월 4장이 모이면 총통: 7점으로 승리하거나 계속할 수 있어요. 계속하기는 고 횟수를 올리지 않아요. 양쪽 모두 총통이면 선부터 선택하고, 컴퓨터는 7점 승리를 선택해요.<br>각자 첫 차례에 뻑을 내면 첫뻑으로 상대에게 300G를 받아요. 먼저 보너스패를 교환해도 첫 차례로 인정해요. 첫뻑은 이벤트와 예정 금액만 표시하고, 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 중간에 나가면 지급되지 않아요.<br>한 판에서 같은 사람이 뻑을 3번 내면 7점으로 자동 승리해요. 뻑을 먹어도 횟수는 유지되며 다음 판에 초기화돼요. 총통은 7점으로 정산해요. 뻑 3회 승리는 기본 7점이며 상대가 고를 선언했다면 고박 ×2로 14점이에요.<br>폭탄 뒤에는 내 패 오른쪽의 ‘폭탄 뒤집기’를 내 차례에 누르세요. 손패를 내지 않고 더미만 뒤집으며, 손패 2장 + 바닥 2장인 두 장 폭탄은 1회, 손패 3장 + 바닥 1장인 세 장 폭탄은 2회 사용할 수 있어요. 한 차례에 한 번씩 쓰고 남은 횟수는 이번 판에만 유지돼요.<br>패더미 위 타짜모드는 컴퓨터 대결 전용이며 다음 판 시작 시 5쭈를 사용해요. 탄쓰기는 매번 5%(20분의 1) 확률로 나와요. 탄쓰기가 나오지 않으면 상대 패 보기·쌍피·광·고도리·청단·홍단·초단 7종을 무작위 순서로 한 번씩 사용한 뒤 다시 섞어요. 20번마다 반드시 나오는 방식은 아니에요. 탄쓰기는 어떤 패를 내도 승리하며, 패배·나가리도 내 승리로 바뀌고 최소 7점을 받아요. 패 보기는 상대 손패 공개, 몰아받기는 해당 패를 모두 내 시작 손패에 줘요. 쌍피에는 2피 보너스·구쌍피가 포함돼요. 다시 누르면 시작 전 예약을 취소해요.<br>패더미 아래 총 그림의 화풀이를 누르면 1쭈를 사용해 총·망치·권투장갑·폭탄·번개·판 뒤집기·따발총·펜싱·토마토 던지기·야구 배트 10가지 중 하나가 매번 무작위로 나와요. 판 뒤집기는 바닥 패의 위치만 섞어요. 내 화면에서만 보이며 패와 점수는 바뀌지 않아요.<br>1점 = ${game.rate.toLocaleString()}${UNIT}<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지돼요. 올인 후 충전하면 점당 100G부터 다시 시작해요. 회원 대결은 두 사람의 자동 판돈 중 낮은 금액을 함께 적용해요.<br>최저 난이도는 10만G 미만 1단계, 10만G부터 2단계, 20만G부터 3단계로 10만G마다 올라가며 최대 10단계예요. 일반 대결에서 5연승하면 한 단계 올라가고, 3연패하면 한 단계 내려가되 현재 골드의 최저 단계보다 낮아지지 않아요. 승패가 바뀌면 반대 기록은 초기화되고, 단계 조절 후에는 다시 집계해요. 1~10단계이며 다음 판부터 적용돼요. 타짜모드·나가리·회원 대결은 집계하지 않아요.<br>처음 5,000G · 잔액은 0 미만으로 내려가지 않아요.<br>골드가 1,000G 미만일 때 하루 2회 무료로 남은 골드에 5,000G를 더할 수 있어요. 이후 5 ZU로 5,000G 충전 · 무료 횟수는 한국시간 자정에 초기화돼요.</p><p class="art-credit">화투 그림: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener noreferrer">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · 크기 조정·WebP 변환<br>기본 패 효과음: 사용자 제공 녹음 발췌<br>패 내려치기 · 패 가져오기<br>앞뒤 여백 정리·음량 조정, 원본 속도와 음높이 유지<br>이벤트 효과음: Freesound CC0 1.0 — <a href="https://freesound.org/people/Sassaby/sounds/533093/" target="_blank" rel="noopener">Sassaby</a> · <a href="https://freesound.org/people/Joao_Janz/sounds/482642/" target="_blank" rel="noopener">Joao_Janz</a> · <a href="https://freesound.org/people/soundmary/sounds/117592/" target="_blank" rel="noopener">soundmary</a> · <a href="https://freesound.org/people/cabled_mess/sounds/349504/" target="_blank" rel="noopener">cabled_mess</a> · <a href="https://freesound.org/people/modusmogulus/sounds/794903/" target="_blank" rel="noopener">modusmogulus</a> · <a href="https://freesound.org/people/kirbydx/sounds/175409/" target="_blank" rel="noopener">kirbydx</a> · <a href="https://freesound.org/people/Sadiquecat/sounds/792505/" target="_blank" rel="noopener">Sadiquecat</a> · <a href="https://freesound.org/people/Tristan/sounds/16786/" target="_blank" rel="noopener">Tristan</a></p><div class="row"><button class="btn" id="ok">닫기</button></div>`,{ok:()=>{}});
+   $('#gukjin').onclick=()=>{ if(ui.busy||game.over||game.turn!==ME)return; if(game.toggleGukjin(ME))render(); };
+@@ -463,3 +463,3 @@ function render(){
+   game.floor.forEach((st,i)=>{ ensureSlot(st); const pos=slotPos(st.slot); let el=stackEls.get(st); if(!el){ el=document.createElement('div'); el.className='stack'; fl.appendChild(el); stackEls.set(st,el); }
+-    el.dataset.ppukLabel=st.some(c=>c.k==='bonus')?`뻑 · 보너스 ${st.filter(c=>c.k==='bonus').length}`:'쌌다';
++    el.dataset.ppukLabel=st.ppukOwner===null?'바닥뻑':st.some(c=>c.k==='bonus')?`뻑 · 보너스 ${st.filter(c=>c.k==='bonus').length}`:'쌌다';
+     el.classList.toggle('ppuk',!!st.ppuk); el.classList.toggle('pick',!!ui.chooseStacks&&ui.chooseStacks.has(st)); el.classList.toggle('dimmed',!!ui.chooseStacks&&!ui.chooseStacks.has(st)); el.style.left=(pos.x-fb.x)+'px'; el.style.top=(pos.y-fb.y)+'px';
+diff --git a/supabase/functions/matgo/engine.mjs b/supabase/functions/matgo/engine.mjs
+index 94ad8e2..51323fc 100644
+--- a/supabase/functions/matgo/engine.mjs
++++ b/supabase/functions/matgo/engine.mjs
+@@ -53,3 +53,8 @@ class Game {
+     // 같은 월 3장만 묶는다. 2장은 서로 선택할 수 있도록 따로 둔다.
+-    for(const cards of Object.values(by)){if(cards.length===3)this.floor.push(cards);else cards.forEach(c=>this.floor.push([c]));}
++    for(const cards of Object.values(by)){if(cards.length===3){
++      // An opening triple is a neutral ppuk: one pi, no self-ppuk/first-ppuk credit.
++      // Already-started rounds keep their original rule through the server snapshot.
++      if(this.openingPpuk!==false){cards.ppuk=true;cards.ppukOwner=null;}
++      this.floor.push(cards);
++    }else cards.forEach(c=>this.floor.push([c]));}
+     this.caps=[[],[]];this.dealBonus=bonus;this.actions=[];
+@@ -82,3 +87,3 @@ class Game {
+     const count=self?2:1;
+-    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv});return count;
++    await this.ui.event('ppukget',{p,self,count,bonusCount,availablePi:score(this.caps[1-p]).pv,...(stack.ppukOwner===null?{opening:true}:{})});return count;
+   }
+diff --git a/supabase/functions/matgo/handler.mjs b/supabase/functions/matgo/handler.mjs
+index 2b05240..84d70f9 100644
+--- a/supabase/functions/matgo/handler.mjs
++++ b/supabase/functions/matgo/handler.mjs
+@@ -41,3 +41,3 @@ export function createHandler({ env, fetchImpl = fetch }) {
+       if (['tazza_start','vent'].includes(body.action) && !uuid.test(body.request_id)) throw Error();
+-      if (body.action==='tazza_start' && (![9,10,11].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
++      if (body.action==='tazza_start' && (![9,10,11,12].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
+       if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(body.effect))) throw Error();
+@@ -50,3 +50,3 @@ export function createHandler({ env, fetchImpl = fetch }) {
+       }
+-      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(body.rules_version ?? 1))) throw Error();
++      if (body.action === 'settle' && (!uuid.test(body.round_id) || !Array.isArray(body.actions) || ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(body.rules_version ?? 1))) throw Error();
+       if (body.action === 'start' && body.stakes_version !== undefined && body.stakes_version !== 1) throw Error();
+@@ -111,7 +111,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
+         const ranked=snapshot.round.cpu_level!=null;
+-        if (ranked && body.rules_version!==11) return reply({error:'client_update_required'},409);
+-        if (snapshot.round.tazza_mode && ![9,10,11].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+-        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8,9,10,11].includes(body.rules_version)) return reply({error:'client_update_required'},409);
++        if ((ranked||snapshot.round.rules_version>=11||body.rules_version>=11) && body.rules_version!==(snapshot.round.rules_version??(ranked?11:10))) return reply({error:'client_update_required'},409);
++        if (snapshot.round.tazza_mode && ![9,10,11,12].includes(body.rules_version)) return reply({error:'client_update_required'},409);
++        if ((snapshot.round.rate ?? 100)>100 && ![6,7,8,9,10,11,12].includes(body.rules_version)) return reply({error:'client_update_required'},409);
+         let verified;
+-        try { verified = await (body.rules_version === 11 ? verifyRound : body.rules_version === 10 ? verifyV10Round : body.rules_version === 9 ? verifyV9Round : body.rules_version === 8 ? verifyV8Round : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
++        try { verified = await ([11,12].includes(body.rules_version) ? verifyRound : body.rules_version === 10 ? verifyV10Round : body.rules_version === 9 ? verifyV9Round : body.rules_version === 8 ? verifyV8Round : body.rules_version === 7 ? verifyV7Round : [5,6].includes(body.rules_version) ? verifyV5Round : body.rules_version === 4 ? verifyV4Round : body.rules_version === 3 ? verifyV3Round : body.rules_version === 2 ? verifyV2Round : verifyLegacyRound)(snapshot.round, body.actions); }
+         catch {
+@@ -125,6 +125,6 @@ export function createHandler({ env, fetchImpl = fetch }) {
+       }
+-      if (['start','tazza_start'].includes(body.action) && body.rules_version!==11) {
++      if (['start','tazza_start'].includes(body.action) && body.rules_version!==12) {
+         const state=await rpc('status');
+         // Let an already-open legacy round finish, but never create one after rollout.
+-        if (state.cpu_level!=null && (!state.round || state.round.cpu_level!=null || body.action==='tazza_start' || state.round.tazza_mode)) return reply({error:'client_update_required'},409);
++        if (state.cpu_level!=null && (!state.round || (state.round.cpu_level!=null&&body.rules_version!==(state.round.rules_version??11)) || (body.action==='tazza_start'?!state.round.tazza_mode:!!state.round.tazza_mode))) return reply({error:'client_update_required'},409);
+       }
+@@ -135,3 +135,3 @@ export function createHandler({ env, fetchImpl = fetch }) {
+       const state=await rpc(body.action==='start'&&body.stakes_version===1?'start_stakes':body.action);
+-      if(body.action==='start'&&state.round?.tazza_mode&&![9,10,11].includes(body.rules_version))return reply({error:'client_update_required'},409);
++      if(body.action==='start'&&state.round?.tazza_mode&&![9,10,11,12].includes(body.rules_version))return reply({error:'client_update_required'},409);
+       return reply(state);
+diff --git a/supabase/functions/matgo/online.mjs b/supabase/functions/matgo/online.mjs
+index 4faa73f..382f6bb 100644
+--- a/supabase/functions/matgo/online.mjs
++++ b/supabase/functions/matgo/online.mjs
+@@ -25,3 +25,3 @@ export async function replayOnline(room) {
+   // Pin the rules on the first server-recorded action; preserve existing rounds.
+-  const RoundGame=!actions.length||actions[0].rules_version===8?Game:actions[0].rules_version===7?V7Game:actions[0].rules_version===5?V5Game:LegacyGame;
++  const RoundGame=!actions.length||[8,9].includes(actions[0].rules_version)?Game:actions[0].rules_version===7?V7Game:actions[0].rules_version===5?V5Game:LegacyGame;
+   const game=new RoundGame({
+@@ -50,2 +50,3 @@ export async function replayOnline(room) {
+   });
++  game.openingPpuk=!actions.length||actions[0].rules_version===9;
+   game.cpuMode='normal'; // A member's balance never changes PvP timeout/takeover AI.
+@@ -125,3 +126,3 @@ export async function advanceOnline(room,p,command) {
+   }else throw Error('invalid_move');
+-  if(!room.actions.length)actions[0].rules_version=8;
++  if(!room.actions.length)actions[0].rules_version=9;
+   const next=await replayOnline({...room,actions});
+diff --git a/supabase/functions/matgo/tazza.mjs b/supabase/functions/matgo/tazza.mjs
+index dc3b9f8..c25ac8b 100644
+--- a/supabase/functions/matgo/tazza.mjs
++++ b/supabase/functions/matgo/tazza.mjs
+@@ -85,2 +85,3 @@ function targetDeal(game, mode) {
+ export function dealSoloRound(game, round, engine) {
++  game.openingPpuk=(round.rules_version??12)>=12;
+   const mode = round.tazza_mode ?? null;
+diff --git a/supabase/migrations/20261014142932_matgo_opening_ppuk.sql b/supabase/migrations/20261014142932_matgo_opening_ppuk.sql
+new file mode 100644
+index 0000000..c65c4f0
+--- /dev/null
++++ b/supabase/migrations/20261014142932_matgo_opening_ppuk.sql
+@@ -0,0 +1,92 @@
++-- Pin new rounds without changing any existing round, gold, stakes or streaks.
++alter table ojjuda_matgo_internal.wallets
++  add column round_rules_version smallint check (round_rules_version in (10,11,12));
++
++create or replace function ojjuda_matgo_internal.wallet_service_v1(
++  p_actor uuid,p_action text,p_request uuid default null,p_paid boolean default false,
++  p_round uuid default null,p_gold bigint default null,p_first smallint default null,p_carry integer default null)
++returns jsonb language plpgsql security definer set search_path='' as $$
++declare w ojjuda_matgo_internal.wallets%rowtype; v_birth date;
++  v_today date := (clock_timestamp() at time zone 'Asia/Seoul')::date;
++  v_coins integer; v_charge smallint := 0; v_duplicate boolean := false; v_settled boolean := false;
++begin
++  if p_actor is null or not exists(select 1 from auth.users where id=p_actor) then
++    raise exception 'not_signed_in' using errcode='42501';
++  end if;
++  select birth_date into v_birth from ojjuda_account_internal.member_identity where user_id=p_actor;
++  if v_birth is null then raise exception 'member_identity_required' using errcode='42501'; end if;
++  if ojjuda_account_internal.age_on(v_birth,v_today)<19 then raise exception 'adult_required' using errcode='42501'; end if;
++  if exists(select 1 from public.user_private banned
++    where banned.user_id=p_actor and banned.banned_until>now()) then
++    raise exception 'banned' using errcode='42501';
++  end if;
++  select coins into v_coins from public.user_private where user_id=p_actor;
++  if not found then raise exception 'no_account' using errcode='42501'; end if;
++  if p_action not in ('status','start','start_stakes','round','settle','refill') then raise exception 'invalid_action'; end if;
++  insert into ojjuda_matgo_internal.wallets(user_id) values(p_actor) on conflict do nothing;
++  select * into strict w from ojjuda_matgo_internal.wallets where user_id=p_actor for update;
++  if w.refill_day<>v_today then w.refill_day:=v_today;w.free_used:=0;end if;
++  -- Promote only between rounds; the live round keeps its own rate.
++  if w.round_id is null then
++    w.stake_rate:=greatest(w.stake_rate,ojjuda_matgo_internal.stake_for_gold(w.gold));
++    w.stake_seen:=w.stake_rate;
++    w.cpu_level:=greatest(w.cpu_level,ojjuda_matgo_internal.cpu_floor_for_gold(w.gold));
++  end if;
++  if p_action='refill' then
++    if p_request is null then raise exception 'request_id_required'; end if;
++    select charged into v_charge from ojjuda_matgo_internal.refills where user_id=p_actor and request_id=p_request;
++    v_duplicate:=found;
++    if not v_duplicate then
++      if w.round_id is not null then raise exception 'round_in_progress'; end if;
++      if w.gold>=1000 then raise exception 'gold_not_empty'; end if;
++      if w.free_used<2 then
++        v_charge:=0;w.free_used:=w.free_used+1;
++      else
++        if p_paid is distinct from true then raise exception 'paid_confirmation_required'; end if;
++        update public.user_private set coins=coins-5,updated_at=now() where user_id=p_actor and coins>=5 returning coins into v_coins;
++        if not found then raise exception 'insufficient_zzu'; end if;
++        v_charge:=5;
++      end if;
++      if w.gold=0 then w.next_first:=0;w.next_carry:=1;end if;
++      w.gold:=w.gold+5000;
++      insert into ojjuda_matgo_internal.refills(user_id,request_id,charged) values(p_actor,p_request,v_charge);
++    end if;
++  elsif p_action in('start','start_stakes') then
++    if w.gold<=0 then raise exception 'gold_empty'; end if;
++    if p_action='start' and (case when w.round_id is null then w.stake_rate else w.round_rate end)>100 then
++      raise exception 'client_update_required';
++    end if;
++    if w.round_id is null then
++      w.round_rate:=w.stake_rate;w.round_cpu_level:=w.cpu_level;w.round_rules_version:=12;
++      w.round_id:=gen_random_uuid();w.round_seed:=floor(random()*4294967296)::bigint;
++    end if;
++  elsif p_action in ('round','settle') then
++    if p_round is not null and w.last_round=p_round then v_settled:=true;
++    elsif p_round is null or w.round_id is distinct from p_round then raise exception 'round_mismatch';
++    elsif p_action='settle' then
++      if p_gold is null or p_gold<0 or p_gold>9007199254740991 or p_first is null or p_first not in(0,1)
++         or p_carry is null or p_carry<1 or p_carry>1024 then raise exception 'invalid_result'; end if;
++      w.gold:=p_gold;w.next_first:=p_first;w.next_carry:=p_carry;
++      w.last_round:=w.round_id;w.round_id:=null;w.round_seed:=null;w.round_cpu_level:=null;w.round_rules_version:=null;v_settled:=true;
++    end if;
++  end if;
++  if w.round_id is null then
++    w.stake_rate:=case when w.gold=0 then 100 else greatest(w.stake_rate,ojjuda_matgo_internal.stake_for_gold(w.gold)) end;
++    w.stake_seen:=w.stake_rate;
++    w.cpu_level:=greatest(w.cpu_level,ojjuda_matgo_internal.cpu_floor_for_gold(w.gold));
++  end if;
++  update ojjuda_matgo_internal.wallets set gold=w.gold,refill_day=w.refill_day,free_used=w.free_used,
++    next_first=w.next_first,next_carry=w.next_carry,round_id=w.round_id,round_seed=w.round_seed,last_round=w.last_round,
++    stake_rate=w.stake_rate,stake_seen=w.stake_seen,round_rate=w.round_rate,round_cpu_level=w.round_cpu_level,round_rules_version=w.round_rules_version,cpu_level=w.cpu_level,updated_at=now()
++    where user_id=p_actor returning * into w;
++  return jsonb_build_object('ok',true,'gold',w.gold,'free_left',2-w.free_used,'refill_day',w.refill_day,
++    'coins',v_coins,'charged',coalesce(v_charge,0),'duplicate',v_duplicate,'settled',v_settled,
++    'stake_rate',w.stake_rate,
++    'stake_offer',null,'cpu_level',w.cpu_level,'cpu_win_streak',w.cpu_win_streak,'cpu_loss_streak',w.cpu_loss_streak,
++    'round',case when w.round_id is null then null else jsonb_build_object('id',w.round_id,'seed',w.round_seed,'gold',w.gold,'first',w.next_first,'carry',w.next_carry,'rate',w.round_rate,'cpu_level',w.round_cpu_level,'rules_version',coalesce(w.round_rules_version,case when w.round_cpu_level is null then 10 else 11 end)) end);
++end;
++$$;
++
++revoke all on function ojjuda_matgo_internal.wallet_service_v1(uuid,text,uuid,boolean,uuid,bigint,smallint,integer) from public,anon,authenticated;
++
++notify pgrst,'reload schema';
+diff --git a/tests/matgo-adaptive.test.cjs b/tests/matgo-adaptive.test.cjs
+index 2b45d16..904ea01 100644
+--- a/tests/matgo-adaptive.test.cjs
++++ b/tests/matgo-adaptive.test.cjs
+@@ -9,3 +9,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+  const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
+- const start=()=>call(A,{action:'start',rules_version:11,stakes_version:1});
++ const start=()=>call(A,{action:'start',rules_version:12,stakes_version:1});
+  const status=()=>call(A,{action:'status'});
+@@ -45,3 +45,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   const oldRatePlay=await play(prior.round);
+-  const oldRateResult=await call(A,{action:'settle',rules_version:11,round_id:prior.round.id,actions:oldRatePlay.g.actions});
++  const oldRateResult=await call(A,{action:'settle',rules_version:12,round_id:prior.round.id,actions:oldRatePlay.g.actions});
+   assert.equal(oldRateResult.status,200);assert.equal(oldRateResult.gold,oldRatePlay.g.bank[0],'existing transcripts settle using their original stake');
+@@ -50,3 +50,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   await reset();
+-  assert.equal((await call(MINOR,{action:'start',rules_version:11,stakes_version:1})).error,'adult_required');
++  assert.equal((await call(MINOR,{action:'start',rules_version:12,stakes_version:1})).error,'adult_required');
+   assert.equal((await call(A,{action:'start',rules_version:10,stakes_version:1})).error,'client_update_required');
+@@ -58,3 +58,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+    for(let i=0;i<count;i++){
+-    const s=await start();assert.equal(s.round.cpu_level,level);assert.equal(s.round.rules_version,11);
++    const s=await start();assert.equal(s.round.cpu_level,level);assert.equal(s.round.rules_version,12);
+     const result=await record(s.round,outcome);
+@@ -71,3 +71,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   await record((await start()).round,'draw');assert.equal((await status()).cpu_win_streak,1);
+-  await record((await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()})).round,'loss');
++  await record((await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()})).round,'loss');
+   assert.equal((await status()).cpu_win_streak,1);assert.equal((await status()).cpu_loss_streak,0);
+@@ -82,3 +82,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   for(const mode of ['tan','peek','ssang','gwang','godori','cheong','hong','cho']){
+-   s=await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(s.status,200);
++   s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(s.status,200);
+    await db.query("update ojjuda_matgo_internal.fun_purchases set effect=$3 where user_id=$1 and reference_id=$2 and kind='tazza'",[A,s.round.id,mode]);
+@@ -86,3 +86,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   }
+-  s=await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()});
++  s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});
+   const fresh=await start();assert.notEqual(fresh.round.id,s.round.id);assert.equal(fresh.round.tazza_mode,null);assert.equal(fresh.cpu_win_streak,0,'abandoning a paid round does not count');
+@@ -102,3 +102,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+    await reset();s=await start();await db.query('update ojjuda_matgo_internal.wallets set round_seed=$2 where user_id=$1',[A,played.seed]);
+-   const body={action:'settle',rules_version:11,round_id:s.round.id,actions:played.g.actions,cpu_level:10,outcome:'win',gold:999999999,user_id:B};
++   const body={action:'settle',rules_version:12,round_id:s.round.id,actions:played.g.actions,cpu_level:10,outcome:'win',gold:999999999,user_id:B};
+    assert.equal((await call(A,{...body,rules_version:10})).error,'client_update_required');
+@@ -112,3 +112,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   // Existing v10 rounds retain their old strategy and can finish after the migration.
+-  await reset(1,400001);s=await start();await db.query('update ojjuda_matgo_internal.wallets set round_cpu_level=null,round_seed=10,round_rate=100 where user_id=$1',[A]);
++  await reset(1,400001);s=await start();await db.query('update ojjuda_matgo_internal.wallets set round_cpu_level=null,round_rules_version=null,round_seed=10,round_rate=100 where user_id=$1',[A]);
+   s=await call(A,{action:'start',rules_version:10,stakes_version:1});assert.equal(s.status,200);assert.equal(s.round.cpu_level,null);
+@@ -125,3 +125,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   await reset(1,300000);s=await start();const thousandPlay=await play(s.round);
+-  const thousandResult=await call(A,{action:'settle',rules_version:11,round_id:s.round.id,actions:thousandPlay.g.actions});
++  const thousandResult=await call(A,{action:'settle',rules_version:12,round_id:s.round.id,actions:thousandPlay.g.actions});
+   assert.equal(thousandResult.status,200);assert.equal(thousandResult.gold,thousandPlay.g.bank[0]);
+@@ -142,3 +142,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+   await reset();await record((await start()).round,'win');
+-  s=await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()});
++  s=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});
+   s=await record(s.round,'win',200000);assert.equal(s.cpu_level,3);assert.equal(s.cpu_win_streak,1);
+@@ -176,2 +176,3 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
+  }finally{await f.close();}
++ await import('./matgo-opening-compat.test.mjs');
+ })().catch(e=>{console.error(e);process.exitCode=1;});
+diff --git a/tests/matgo-bonus.test.mjs b/tests/matgo-bonus.test.mjs
+index a81aa1a..ab7dcdf 100644
+--- a/tests/matgo-bonus.test.mjs
++++ b/tests/matgo-bonus.test.mjs
+@@ -6,2 +6,3 @@ import * as previous7 from '../supabase/functions/matgo/engine-v7.mjs';
+ import * as previous9 from '../supabase/functions/matgo/engine-v9.mjs';
++import * as previous10 from '../supabase/functions/matgo/engine-v10.mjs';
+ import {createHandler} from '../supabase/functions/matgo/handler.mjs';
+@@ -28,3 +29,3 @@ for(const p of [0,1])for(const id of [48,49]){
+ // New and already-open CPU pages settle through their own engine versions.
+-for(const [version,engine] of [[4,legacy],[5,previous],[6,previous],[7,previous7],[8,previous9],[9,previous9],[10,current]])for(let seed=1;seed<=20;seed++){
++for(const [version,engine] of [[4,legacy],[5,previous],[6,previous],[7,previous7],[8,previous9],[9,previous9],[10,previous10]])for(let seed=1;seed<=20;seed++){
+   const round={seed,gold:5000,first:0,carry:1};let g;
+@@ -57,3 +58,3 @@ const command=pr.type==='chongtong'?{type:'chongtong',decision:'continue'}:{type
+ const first=await advanceOnline(room,pr.p,{...command,rules_version:4});
+-assert.equal(first.actions[0].rules_version,8);
++assert.equal(first.actions[0].rules_version,9);
+ assert.equal((await replayOnline({...room,actions:first.actions})).game instanceof legacy.Game,false);
+@@ -61,3 +62,3 @@ const oldActions=structuredClone(first.actions);delete oldActions[0].rules_versi
+ assert.ok((await replayOnline({...room,actions:oldActions})).game instanceof legacy.Game);
+-for(const version of [5,7,8]){
++for(const version of [5,7,8,9]){
+   const actions=structuredClone(first.actions);actions[0].rules_version=version;
+diff --git a/tests/matgo-difficulty.test.mjs b/tests/matgo-difficulty.test.mjs
+index 9dd3f2e..de0adad 100644
+--- a/tests/matgo-difficulty.test.mjs
++++ b/tests/matgo-difficulty.test.mjs
+@@ -119,3 +119,3 @@ assert.ok(different>0,'high-tier strategy actually changes decisions');
+ const oldTiered=await play(23,900001,'adaptive',previous),oldNormal=await play(23,900001,'normal',previous);
+-let snapshot=tiered.round,settled;
++let snapshot={...tiered.round,rules_version:12},settled;
+ const actor='00000000-0000-4000-8000-000000000001',roundId='00000000-0000-4000-9000-000000000001';
+@@ -126,3 +126,3 @@ const handler=createHandler({env:name=>({SUPABASE_URL:'https://fixture.invalid',
+ }});
+-const request=(actions,version=10)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
++const request=(actions,version=12)=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions,gold:1,cpuMode:'normal',cpuLevel:1})}));
+ assert.equal((await request(tiered.game.actions)).status,200);assert.equal(settled,tiered.game.bank[0]);
+@@ -136,3 +136,3 @@ for(const gold of [5000,100001,400001,900001])for(let seed=1;seed<=12;seed++){
+   }
+-  const fresh=await play(seed,gold);snapshot=fresh.round;
++  const fresh=await play(seed,gold);snapshot={...fresh.round,rules_version:12};
+   assert.equal((await request(fresh.game.actions)).status,200);assert.equal(settled,fresh.game.bank[0]);
+diff --git a/tests/matgo-engine.test.cjs b/tests/matgo-engine.test.cjs
+index d09b0a0..3be1f85 100644
+--- a/tests/matgo-engine.test.cjs
++++ b/tests/matgo-engine.test.cjs
+@@ -30,2 +30,3 @@ function fixture(p, mode, owner, opponents = [6, 7, 10, 11], bonusSweep = false)
+   await import('./matgo-pi-interactions.test.mjs');
++  await import('./matgo-opening-ppuk.test.mjs');
+   for (const p of [0, 1]) for (const mode of ['hand', 'flip']) for (const self of [true, false]) {
+diff --git a/tests/matgo-multipliers.test.mjs b/tests/matgo-multipliers.test.mjs
+index 640c541..387dae7 100644
+--- a/tests/matgo-multipliers.test.mjs
++++ b/tests/matgo-multipliers.test.mjs
+@@ -91,4 +91,4 @@ for(let seed=1;seed<=24;seed++) {
+   if(fresh.result?.total!==old.result?.total)changed++;
+-  for(const [played,rules_version] of [[old,7],[fresh,10]]) {
+-    snapshot=played.round;paid=null;
++  for(const [played,rules_version] of [[old,7],[fresh,12]]) {
++    snapshot={...played.round,...(rules_version===12?{rules_version:12}:{})};paid=null;
+     const response=await handler(new Request('https://fixture.invalid',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify({action:'settle',round_id:'00000000-0000-4000-8000-000000000002',rules_version,actions:played.g.actions,gold:99999999})}));
+@@ -100,4 +100,4 @@ assert.ok(changed>0,'the completed-game sample includes changed pibak payouts');
+ const room={status:'active',seed:'11'.repeat(32),actions:[],start_gold:[100000,100000],first:0,carry:1};
+-const first=await automaticOnline(room);assert.equal(first.actions[0].rules_version,8);
+-for(const rules_version of [7,8]) {
++const first=await automaticOnline(room);assert.equal(first.actions[0].rules_version,9);
++for(const rules_version of [7,8,9]) {
+   const actions=structuredClone(first.actions);actions[0].rules_version=rules_version;
+@@ -105,3 +105,3 @@ for(const rules_version of [7,8]) {
+   const r=(await finish({Game:replay.game.constructor,CARDS:server.CARDS},{loserPi:8})).result;
+-  assert.equal(r.det.some(([s])=>s==='피박'),rules_version===8,'online rounds retain their first recorded rules');cases++;
++  assert.equal(r.det.some(([s])=>s==='피박'),rules_version>=8,'online rounds retain their first recorded rules');cases++;
+ }
+diff --git a/tests/matgo-online-effects-ui.test.cjs b/tests/matgo-online-effects-ui.test.cjs
+index 135100e..3a601ab 100644
+--- a/tests/matgo-online-effects-ui.test.cjs
++++ b/tests/matgo-online-effects-ui.test.cjs
+@@ -110,3 +110,6 @@ const root=path.join(__dirname,'..');
+       const after=structuredClone(before);after.version=2;after.eventCount=1;after.events=[{id:0,type:'steal',from:1-to,to,card:CARDS[id]}];after.game.caps=[[],[]];after.game.caps[to]=[CARDS[id]];
+-      await present(p,after);await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
++      if(id===49){after.events.unshift({id:0,type:'ppukget',p:to,self:false,count:1,opening:true,availablePi:3});after.events[1].id=1;after.eventCount=2;}
++      await present(p,after);
++      if(id===49){await p.locator('#event[data-kind=ppukget]:not([hidden])').waitFor();if(to===0)assert.match(await p.locator('#event').innerText(),/바닥뻑 먹기/);}
++      await p.locator('#event[data-kind=steal]:not([hidden])').waitFor();
+       assert.match(await p.locator('#event').innerText(),id===49?/3피 보너스 한 장/:id===41?/2피 한 장/:/1피 한 장/);
+diff --git a/tests/matgo-online-fixture.cjs b/tests/matgo-online-fixture.cjs
+index 4ccb1db..16ac47b 100644
+--- a/tests/matgo-online-fixture.cjs
++++ b/tests/matgo-online-fixture.cjs
+@@ -37,2 +37,3 @@ async function fixture(fixtureOptions={}){
+   if(fixtureOptions.adaptive&&fixtureOptions.thousandStake!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_thousand_stake.sql'))),'utf8'));}
++  if(fixtureOptions.adaptive&&fixtureOptions.openingPpuk!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_opening_ppuk.sql'))),'utf8'));}
+   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
+diff --git a/tests/matgo-opening-compat.test.mjs b/tests/matgo-opening-compat.test.mjs
+new file mode 100644
+index 0000000..19da021
+--- /dev/null
++++ b/tests/matgo-opening-compat.test.mjs
+@@ -0,0 +1,37 @@
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++import {createRequire} from 'node:module';
++import * as E from '../games/matgo-engine.mjs';
++import {dealSoloRound} from '../games/matgo-tazza.mjs';
++import {playRound} from './matgo-opening-fixture.mjs';
++const {fixture,A,B}=createRequire(import.meta.url)('./matgo-online-fixture.cjs');
++const f=await fixture({adaptive:true,openingPpuk:false}),{db,call}=f;
++try{
++  const start=()=>call(A,{action:'start',rules_version:12,stakes_version:1});
++  let old=await start();assert.equal(old.round.rules_version,11);
++  await db.query('update ojjuda_matgo_internal.wallets set round_seed=5 where user_id=$1',[A]);old=await start();
++  const oldPlay=await playRound(E,dealSoloRound,old.round);
++  const request=crypto.randomUUID();const paid=await call(B,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:request});assert.equal(paid.round.rules_version,11);
++  const dir=new URL('../supabase/migrations/',import.meta.url),file=fs.readdirSync(dir).find(n=>n.endsWith('_matgo_opening_ppuk.sql'));
++  await db.exec(fs.readFileSync(new URL(file,dir),'utf8'));
++  const resumed=await start();assert.deepEqual(resumed.round,old.round);assert.equal(resumed.gold,old.gold);
++  assert.equal((await call(A,{action:'start',rules_version:11,stakes_version:1})).round.id,old.round.id);
++  assert.equal((await call(A,{action:'settle',rules_version:12,round_id:old.round.id,actions:oldPlay.g.actions})).error,'client_update_required');
++  const settled=await call(A,{action:'settle',rules_version:11,round_id:old.round.id,actions:oldPlay.g.actions});assert.equal(settled.status,200);assert.equal(settled.gold,oldPlay.g.bank[0]);
++  const retry=await call(B,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:request});assert.equal(retry.status,200);assert.equal(retry.round.id,paid.round.id);assert.equal(retry.coins,paid.coins,'old paid retry cannot charge again');
++  // No old client may start a new round, charge a purchase, or downgrade a v12 settlement.
++  assert.equal((await call(A,{action:'start',rules_version:11,stakes_version:1})).error,'client_update_required');
++  const coins=(await call(A,{action:'status'})).coins;
++  assert.equal((await call(A,{action:'tazza_start',rules_version:11,stakes_version:1,request_id:crypto.randomUUID()})).error,'client_update_required');
++  assert.equal((await call(A,{action:'status'})).coins,coins);
++  let fresh=await start();assert.equal(fresh.round.rules_version,12);
++  await db.query('update ojjuda_matgo_internal.wallets set round_seed=5 where user_id=$1',[A]);fresh=await start();
++  const newPlay=await playRound(E,dealSoloRound,fresh.round);
++  assert.equal((await call(A,{action:'settle',rules_version:11,round_id:fresh.round.id,actions:newPlay.g.actions})).error,'client_update_required');
++  const body={action:'settle',rules_version:12,round_id:fresh.round.id,actions:newPlay.g.actions};
++  const done=await call(A,body);assert.equal(done.status,200);assert.equal(done.gold,newPlay.g.bank[0]);
++  const duplicate=await call(A,body);assert.equal(duplicate.gold,done.gold);assert.equal(duplicate.cpu_win_streak,done.cpu_win_streak);assert.equal(duplicate.cpu_loss_streak,done.cpu_loss_streak);
++  const purchase=await call(A,{action:'tazza_start',rules_version:12,stakes_version:1,request_id:crypto.randomUUID()});assert.equal(purchase.status,200);assert.equal(purchase.round.rules_version,12);assert.equal(purchase.coins,coins-5);
++  for(const role of ['anon','authenticated'])assert.equal((await db.query("select has_function_privilege($1,'ojjuda_matgo_internal.wallet_service_v1(uuid,text,uuid,boolean,uuid,bigint,smallint,integer)','execute') allowed",[role])).rows[0].allowed,false);
++  console.log('PASS: opening-rule migration preserves active v11 rounds and paid retries, new v12 starts/settlement, downgrade rejection, charge protection, idempotent gold/streaks and service-only access');
++}finally{await f.close();}
+diff --git a/tests/matgo-opening-fixture.mjs b/tests/matgo-opening-fixture.mjs
+new file mode 100644
+index 0000000..eb99d85
+--- /dev/null
++++ b/tests/matgo-opening-fixture.mjs
+@@ -0,0 +1,32 @@
++// Keep the triple produced by the real deal; arrange the other cards for a capture.
++export function setupOpening(g,E,{p=0,route='hand',opponent=[6,7],sweep=false,enabled=true}={}){
++  g.openingPpuk=enabled;g.random=E.seededRandom(5);g.deal();
++  const stack=g.floor.find(st=>st.length===3);
++  if(!stack||stack[0].m!==4)throw Error('opening fixture changed');
++  const pool=new Map(E.CARDS.filter(c=>!stack.some(s=>s.id===c.id)).map(c=>[c.id,{...c,asPi:false}]));
++  const take=id=>{const c=pool.get(id);if(!c)throw Error('duplicate fixture card '+id);pool.delete(id);return c;};
++  g.floor=[stack,[take(sweep?(route==='hand'?4:5):8)]];
++  g.hand=[[],[]];g.hand[p]=[route==='hand'?14:4,16].map(take);g.hand[1-p]=[take(44)];
++  g.caps=[[],[]];g.caps[1-p]=opponent.map(take);
++  g.deck=[take(route==='flip'?14:sweep?5:20),...pool.values()];
++  g.turn=p;g.endTurn=async()=>{};
++  return {stack,card:g.hand[p][0]};
++}
++
++export async function playRound(E,dealSoloRound,round){
++  let g;const events=[];
++  g=new E.Game({event:async(type,data)=>events.push(JSON.parse(JSON.stringify({type,...data}))),
++    choose:async(p,ids)=>E.aiChoose(g,p,ids),chooseGukjin:async p=>E.aiChooseGukjin(g,p),goStop:async(p,s)=>E.aiGoStop(g,p,s)});
++  Object.assign(g,{bank:[round.gold,5000],rate:round.rate??100,first:round.first,carry:round.carry,roundCpuLevel:round.cpu_level});
++  dealSoloRound(g,round,E);
++  for(let move=0;!g.over&&move<160;move++){
++    const pending=g.pendingChongtong();if(pending){await g.declareChongtong(pending.p,'win');continue;}
++    const p=g.turn,rng=g.random;if(p===0)g.random=()=>.25;
++    const card=E.aiChooseCard(g,p);g.random=rng;
++    const same=card?g.hand[p].filter(c=>c.m===card.m):[],matches=card?g.matches(card.m):[];
++    const bomb=same.length>=3&&matches.length===1&&matches[0][0].length===1?same.filter(c=>c!==card).slice(0,2):null;
++    if(same.length>=3&&!bomb&&!g.shake[p])g.shakeCards(p,card.m);
++    if(await g.play(p,card,bomb)===false)throw Error('invalid fixture move');
++  }
++  if(!g.over)throw Error('unfinished fixture');return {g,events};
++}
+diff --git a/tests/matgo-opening-legacy-fixtures.json b/tests/matgo-opening-legacy-fixtures.json
+new file mode 100644
+index 0000000..ce76a38
+--- /dev/null
++++ b/tests/matgo-opening-legacy-fixtures.json
+@@ -0,0 +1,342 @@
++[
++  {
++    "round": {
++      "seed": 1,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 2,
++      "rules_version": 11
++    },
++    "actions": "ef3ce29fc35e985ab5022f878eaadc67ea08bfa7dddd6d8f6726bb8730f20a2f",
++    "events": "5c634a1aefe041e0c8c1d5a4921a4d634a9bf9fb60ba40d1e3101f495eb33b89",
++    "bank": [
++      4200,
++      5800
++    ]
++  },
++  {
++    "round": {
++      "seed": 2,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 3,
++      "rules_version": 11
++    },
++    "actions": "a72099ba1a468781300419bbf071dd93d7f962092c04936f078629cd0b3e31c9",
++    "events": "7337ef385a3edec61df9d5d8d81230613773b1984df72f6985f9a6e759a6b98e",
++    "bank": [
++      9100,
++      900
++    ]
++  },
++  {
++    "round": {
++      "seed": 3,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 4,
++      "rules_version": 11
++    },
++    "actions": "9d9a0c7737e9823b22e4a87bf8660b954d56bd38fb988321fcc5a24921a284fc",
++    "events": "44c1abc44c3f46617a100a308924fe96382df9a1989eaa62134825871f10466e",
++    "bank": [
++      3600,
++      6400
++    ]
++  },
++  {
++    "round": {
++      "seed": 4,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 5,
++      "rules_version": 11
++    },
++    "actions": "33eac5449246cb7ec57207d0c7be0d5ea5998260e6f155d4be07bb296b689ab8",
++    "events": "d79bf3db4bb0251026b4e9a3786345c3248bc683e62e27defd9e348dea286204",
++    "bank": [
++      6600,
++      3400
++    ]
++  },
++  {
++    "round": {
++      "seed": 5,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 6,
++      "rules_version": 11
++    },
++    "actions": "6a397f32e2e5f0309896e010170b8633be8605ce25b8a8b03866fb644694277e",
++    "events": "1fe4111b6943435d32eae493d2684ae7902b2fc53cfa9ab386f6be6d8f46bce2",
++    "bank": [
++      2200,
++      7800
++    ]
++  },
++  {
++    "round": {
++      "seed": 6,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 7,
++      "rules_version": 11
++    },
++    "actions": "1826b8141cc9250e45e59047de3d11727b868de8eb626c9b33c3fb9596841f92",
++    "events": "9001ce55227791e064be1646bc272454cbdf5ccb8a7515fea27549c3efc3b57d",
++    "bank": [
++      4300,
++      5700
++    ]
++  },
++  {
++    "round": {
++      "seed": 7,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 8,
++      "rules_version": 11
++    },
++    "actions": "a978b03a0f8c1649a04fd461f337d8e2e12e7d753ded665a35f28fef932bd849",
++    "events": "c329c6043c4909ed55b9e3cd9169acbf96ebde642bf840306d0df7443ed62cf8",
++    "bank": [
++      3700,
++      6300
++    ]
++  },
++  {
++    "round": {
++      "seed": 8,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 9,
++      "rules_version": 11
++    },
++    "actions": "995ec9357113920cb5ab2d2df526cecf3e89ebc06c3b153d0448d07603aa44ac",
++    "events": "96e185d9d84ca8a9bd71ccd2ddd333d2ad586dcefd6d5c12674fadfa7a03d0cf",
++    "bank": [
++      8000,
++      2000
++    ]
++  },
++  {
++    "round": {
++      "seed": 9,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 10,
++      "rules_version": 11
++    },
++    "actions": "41db5582e0535649ae0991069ceae09cf994cbaaeb871185d70fa71f1642229c",
++    "events": "8ab23868d6ac3a35ee0ff674348ae1eb87bab2a658928d1dcecf02ca357befe8",
++    "bank": [
++      5700,
++      4300
++    ]
++  },
++  {
++    "round": {
++      "seed": 10,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 1,
++      "rules_version": 11
++    },
++    "actions": "6a28ce26821466d9e3709bc75a897289982ec2724ca7ab52a372e8579ab0e958",
++    "events": "962cf38b4df0326763f63555e5eacd942fa330e44bfc5e08ed4a6747387dfc40",
++    "bank": [
++      7400,
++      2600
++    ]
++  },
++  {
++    "round": {
++      "seed": 11,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 2,
++      "rules_version": 11
++    },
++    "actions": "e7a5f431d0b804217c4d8d747b63df4e7740193e3b1e57eedcff0e8c41a082a2",
++    "events": "b9c4b0339cc78edc4da2c7c1e1380af166e48e62aed7d0e264ade0b4f3637adf",
++    "bank": [
++      1400,
++      8600
++    ]
++  },
++  {
++    "round": {
++      "seed": 12,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 3,
++      "rules_version": 11
++    },
++    "actions": "bae526bb304ffb078a0dd442d1901fd99d85b0155efa7335f54701d90152cf7a",
++    "events": "584b60f52d06d8f7e57f9061acea12250aa87efb02e1b7c69164de5a8d70a4a1",
++    "bank": [
++      6200,
++      3800
++    ]
++  },
++  {
++    "round": {
++      "seed": 13,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 4,
++      "rules_version": 11
++    },
++    "actions": "df8346d4a88ec007603d187d4504031c9d667ec54bba99f411c6767c01164f1f",
++    "events": "668f4f50b8130499357666cea64d66fc977e438353846a00f53a052f14620eb9",
++    "bank": [
++      7000,
++      3000
++    ]
++  },
++  {
++    "round": {
++      "seed": 14,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 5,
++      "rules_version": 11
++    },
++    "actions": "1224a68285b51987f73b0bd7e370cff2cca813b4b4e466e7f4fa41f2a6e0761e",
++    "events": "0ae24f430995b5d9726dbde4f3e7184a049a4ddfbcd6be1962a9c9dd0da45f52",
++    "bank": [
++      3200,
++      6800
++    ]
++  },
++  {
++    "round": {
++      "seed": 15,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 6,
++      "rules_version": 11
++    },
++    "actions": "f2dbfc5eadb9c0ab6ae217b0a1f50bb4b791d4235a6a9080924940f08dfb5fc0",
++    "events": "8b633315f3d3b357f1ad1b84a4aee6f23ddb88f8c3032938d7c4a0317e71e65c",
++    "bank": [
++      5800,
++      4200
++    ]
++  },
++  {
++    "round": {
++      "seed": 16,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 7,
++      "rules_version": 11
++    },
++    "actions": "0d568a781155162541fe3fca12f5a44f8e36193c4e8bffac6241fc1e99a7ea73",
++    "events": "7d0bb8f1df4885e56438234730c1b7db9e401733bdda21fcec9f61bbc9334df4",
++    "bank": [
++      7400,
++      2600
++    ]
++  },
++  {
++    "round": {
++      "seed": 17,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 8,
++      "rules_version": 11
++    },
++    "actions": "c0be19ece05d2f46b6c498b6254643fda3f7cd0e06d2edd2178125c91d61aba3",
++    "events": "09cd870295ba9509f761eb189e3fba678cb0f7c52d11c39404cd487efa0f651e",
++    "bank": [
++      4300,
++      5700
++    ]
++  },
++  {
++    "round": {
++      "seed": 18,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 9,
++      "rules_version": 11
++    },
++    "actions": "9d1a7a77415cfb292331f711ba3ad14c26cbec59c1cd84106658474bb89eadb2",
++    "events": "95fb9e712fb03810234ba06d5d9d033b3ca0073ea286fdaea827ef27f8a0003c",
++    "bank": [
++      0,
++      11000
++    ]
++  },
++  {
++    "round": {
++      "seed": 19,
++      "gold": 5000,
++      "first": 1,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 10,
++      "rules_version": 11
++    },
++    "actions": "8b4cf207275eb332f1ab5a0bba5d892fe6e58c16e71a713574718be2a2139ebf",
++    "events": "73eb3e3c3d47ea67fbd466cfc39b7c2a36b651398d0d4a388df61f88802c5407",
++    "bank": [
++      3400,
++      6600
++    ]
++  },
++  {
++    "round": {
++      "seed": 20,
++      "gold": 5000,
++      "first": 0,
++      "carry": 1,
++      "rate": 100,
++      "cpu_level": 1,
++      "rules_version": 11
++    },
++    "actions": "842b6a5afd494af1a4632d994ba79b816fc3637ebf1a3277140f99e4e974e8d3",
++    "events": "5da8680db8cad66bbd1ab4b614bbcbf1d2528d1b8c140eaf8b4d458af4ba1f01",
++    "bank": [
++      6000,
++      4000
++    ]
++  }
++]
+diff --git a/tests/matgo-opening-ppuk.test.mjs b/tests/matgo-opening-ppuk.test.mjs
+new file mode 100644
+index 0000000..44282de
+--- /dev/null
++++ b/tests/matgo-opening-ppuk.test.mjs
+@@ -0,0 +1,54 @@
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++import {createHash} from 'node:crypto';
++import * as browser from '../games/matgo-engine.mjs';
++import * as server from '../supabase/functions/matgo/engine.mjs';
++import {dealSoloRound} from '../games/matgo-tazza.mjs';
++import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
++import {setupOpening,playRound} from './matgo-opening-fixture.mjs';
++import {replayOnline,advanceOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';
++const conserved=g=>{const cards=[...g.hand.flat(),...g.caps.flat(),...g.floor.flat(),...g.deck];assert.equal(cards.length,50);assert.equal(new Set(cards.map(c=>c.id)).size,50);};
++let cases=0;
++for(const E of [browser,server])for(const p of [0,1])for(const route of ['hand','flip'])for(const opponent of [[],[6],[6,7],[41],[49]])for(const sweep of [false,true]){
++  const events=[],g=new E.Game({event:async(type,data)=>events.push({type,...data}),choose:async(_p,ids)=>ids[0]});
++  const {stack,card}=setupOpening(g,E,{p,route,opponent,sweep});
++  assert.equal(stack.ppuk,true);assert.equal(stack.ppukOwner,null);
++  assert.deepEqual(g.ppukCount,[0,0]);assert.deepEqual(g.firstPpukGold,[0,0]);
++  await g.play(p,card);conserved(g);
++  const claim=events.find(e=>e.type==='ppukget');assert.equal(claim.count,1);assert.equal(claim.self,false);assert.equal(claim.opening,true);
++  assert.equal(events.some(e=>e.type==='sweep'),sweep);
++  const steals=events.filter(e=>e.type==='steal').map(e=>e.card.id);
++  assert.deepEqual(steals,opponent.length?(opponent[0]===6?opponent.slice(0,sweep?2:1):opponent):[]);
++  assert.deepEqual(g.ppukCount,[0,0]);assert.deepEqual(g.firstPpukGold,[0,0]);
++  assert.ok(!events.some(e=>e.type==='ppuk'||e.special==='three_ppuk'));cases++;
++}
++// Two opening triples plus a sweep are additive, with no fictitious self owner.
++{
++  const E=browser,events=[],g=new E.Game({event:async(type,data)=>events.push({type,...data})});
++  for(let seed=1;seed<2000;seed++){g.random=E.seededRandom(seed);g.deal();if(g.floor.filter(st=>st.length===3).length===2)break;}
++  const stacks=g.floor.filter(st=>st.length===3);assert.equal(stacks.length,2);
++  const pool=new Map([...g.hand.flat(),...g.caps.flat(),...g.deck,...g.floor.filter(st=>!stacks.includes(st)).flat()].map(c=>[c.id,c]));
++  const take=pred=>{const c=[...pool.values()].find(pred);assert.ok(c);pool.delete(c.id);return c;};
++  const hand=take(c=>c.m===stacks[0][0].m),flip=take(c=>c.m===stacks[1][0].m);
++  g.floor=stacks;g.hand=[[hand],[]];g.caps=[[],Array.from({length:3},()=>take(c=>c.k==='pi'))];g.deck=[flip,...pool.values()];g.turn=0;g.endTurn=async()=>{};
++  await g.play(0,hand);conserved(g);assert.equal(events.filter(e=>e.type==='ppukget').length,2);assert.equal(events.filter(e=>e.type==='steal').length,3);assert.equal(g.floor.length,0);cases++;
++}
++// Fingerprints were recorded from the deployed v11 code before this fix.
++const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
++for(const row of JSON.parse(fs.readFileSync(new URL('./matgo-opening-legacy-fixtures.json',import.meta.url)))){
++  const {g,events}=await playRound(browser,dealSoloRound,row.round);
++  assert.equal(hash(g.actions),row.actions);assert.equal(hash(events),row.events);assert.deepEqual(g.bank,row.bank);
++  assert.equal((await verifyRound(row.round,g.actions)).gold,g.bank[0]);
++  const fresh=await playRound(browser,dealSoloRound,{...row.round,rules_version:12});
++  assert.equal((await verifyRound({...row.round,rules_version:12},fresh.g.actions)).gold,fresh.g.bank[0]);cases++;
++}
++// Online rules are server-pinned; old v8 actions still use their original deal.
++let room={status:'active',seed:'11'.repeat(32),start_gold:[5000,5000],first:0,carry:1,actions:[]};
++const first=await automaticOnline(room);assert.equal(first.actions[0].rules_version,9);
++for(const version of [8,9]){
++  const actions=structuredClone(first.actions);actions[0].rules_version=version;let saved={...room,actions};
++  assert.equal((await replayOnline(saved)).game.openingPpuk,version===9);
++  for(let n=0;n<150;n++){const s=await replayOnline(saved);if(s.game.over)break;saved={...saved,...await automaticOnline(saved)};}
++  assert.equal((await replayOnline(saved)).game.over,true);assert.equal(saved.actions[0].rules_version,version);cases++;
++}
++console.log(`PASS: ${cases} opening triple cases, both engines/seats/routes, zero/single/double/triple pi, combined sweeps, 20 unchanged v11 fingerprints, v12 replay and online v8/v9 pinning`);
+diff --git a/tests/matgo-stakes-ui.test.cjs b/tests/matgo-stakes-ui.test.cjs
+index d3c8c43..2faa9a6 100644
+--- a/tests/matgo-stakes-ui.test.cjs
++++ b/tests/matgo-stakes-ui.test.cjs
+@@ -35,3 +35,3 @@ const root=path.join(__dirname,'..');
+   assert.equal(requests.some(r=>r.action==='stake'),false,'there is no consent request');
+-  assert.equal(requests.find(r=>r.action==='start').rules_version,11);
++  assert.equal(requests.find(r=>r.action==='start').rules_version,12);
+   const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
+diff --git a/tests/matgo-stakes.test.cjs b/tests/matgo-stakes.test.cjs
+index 86091a3..8d05d10 100644
+--- a/tests/matgo-stakes.test.cjs
++++ b/tests/matgo-stakes.test.cjs
+@@ -52,4 +52,4 @@ const {fixture,A,B,MINOR}=require('./matgo-online-fixture.cjs');
+   // Replay complete solo rounds at every rate, then settle using server snapshots.
+-  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=await import('../games/matgo-engine.mjs');
+-  const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
++  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=await import('../supabase/functions/matgo/engine-v10.mjs');
++  const {verifyRound}=await import('../supabase/functions/matgo/verify-v10.mjs');
+   let rounds=0;
+diff --git a/tests/matgo-tazza.test.mjs b/tests/matgo-tazza.test.mjs
+index 5d5bde9..bb57e8f 100644
+--- a/tests/matgo-tazza.test.mjs
++++ b/tests/matgo-tazza.test.mjs
+@@ -85,4 +85,6 @@ const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUP
+ }});
++lastRound.rules_version=12;
+ const request=version=>handler(new Request('https://edge.invalid',{method:'POST',headers:{authorization:'Bearer user',origin:'https://ojjuda.kr'},body:JSON.stringify({action:'settle',round_id:roundId,rules_version:version,actions:last.actions})}));
+-assert.equal((await request(10)).status,200);assert.equal(settled,last.bank[0]);assert.equal((await request(8)).status,409);
++assert.equal((await request(12)).status,200);assert.equal(settled,last.bank[0]);assert.equal((await request(8)).status,409);
++delete lastRound.rules_version;
+ const {g:oldPaid}=await play(lastRound,legacyEngine);last=oldPaid;
+diff --git a/tests/matgo-ui.test.cjs b/tests/matgo-ui.test.cjs
+index 4ff56d7..3cacd4e 100644
+--- a/tests/matgo-ui.test.cjs
++++ b/tests/matgo-ui.test.cjs
+@@ -18,3 +18,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
+-      state.coins-=5;state.round={id:crypto.randomUUID(),seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
++      state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:12,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
+     }
+@@ -23,3 +23,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+       if(!state.gold)return{data:{error:'gold_empty'}};
+-      state.round ||= {id:'00000000-0000-4000-9000-000000000001',seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
++      state.round ||= {id:'00000000-0000-4000-9000-000000000001',rules_version:12,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+     }
+@@ -235,3 +235,3 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+       await f.page.waitForSelector('.sc');assert.equal(f.state.gold,5700);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);
+-      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,10);
++      assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,12);
+     }else{
+@@ -324,2 +324,21 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
+   }
++  // Opening triples come from a real deal and pay one pi, including a whole bonus.
++  for(const p of [0,1])for(const route of ['hand','flip']){
++    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
++    await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
++    await f.page.evaluate(async({p,route})=>{
++      const E=await import('/games/matgo-engine.mjs');const {setupOpening}=await import('/tests/matgo-opening-fixture.mjs');
++      const {game:g,render}=matgoTest;setupOpening(g,E,{p,route,opponent:[49]});window.openingNotices=[];
++      const original=g.ui.event.bind(g.ui);g.ui.event=async(type,data)=>{if(type==='ppukget')openingNotices.push(data);return original(type,data);};render();
++    },{p,route});
++    assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
++    if(p===0&&route==='hand'){fs.mkdirSync('/tmp/matgo-opening-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-opening-proof/before.png'});}
++    await f.page.evaluate(async p=>{const g=matgoTest.game;await g.play(p,g.hand[p][0]);},p);
++    assert.equal(await f.page.locator((p===0?'#capsMe':'#capsOp')+' .c[data-id="49"]').count(),1);
++    assert.equal(await f.page.locator((p===0?'#capsOp':'#capsMe')+' .c[data-id="49"]').count(),0);
++    assert.deepEqual(await f.page.evaluate(()=>openingNotices.map(e=>({count:e.count,opening:e.opening,self:e.self}))),[{count:1,opening:true,self:false}]);
++    assert.deepEqual(await f.page.evaluate(()=>matgoTest.game.firstPpukGold),[0,0]);assert.deepEqual(await f.page.evaluate(()=>matgoTest.game.ppukCount),[0,0]);
++    if(p===0&&route==='hand')await f.page.screenshot({path:'/tmp/matgo-opening-proof/after.png'});
++    assert.deepEqual(f.errors,[]);await f.context.close();
++  }
+   // A genuine ppuk capture distinguishes an empty pile from a one-pi shortfall.
+diff --git a/tests/matgo-wallet-purchases.test.mjs b/tests/matgo-wallet-purchases.test.mjs
+index e80e2eb..9186d3c 100644
+--- a/tests/matgo-wallet-purchases.test.mjs
++++ b/tests/matgo-wallet-purchases.test.mjs
+@@ -9,2 +9,3 @@ const access={check:async()=>{},getClient:()=>({functions:{invoke:async(_, {body
+   if(body.action==='status')return{data:{ok:true,coins:balance,gold:5000,round}};
++  if(body.action==='settle')return{data:{ok:true,coins:balance,gold:5000,round:null}};
+   if(body.action==='start')return{data:{ok:true,coins:balance,gold:5000,round}};
+@@ -24,3 +25,3 @@ try{
+   const buys=requests.filter(r=>r.action==='tazza_start');assert.equal(buys[0].request_id,buys[1].request_id);
+-  assert.ok(buys.every(r=>r.rules_version===11),'paid starts use the same new AI protocol as settlement');
++  assert.ok(buys.every(r=>r.rules_version===12),'paid starts use the same new AI protocol as settlement');
+   fail=true;await assert.rejects(wallet.vent(round.id,'gun'));assert.equal(balance,14);
+@@ -32,2 +33,3 @@ try{
+   balance=1;await wallet.vent(round.id,'bomb');assert.equal(balance,0,'known decline does not reuse an old receipt');
++  for(const version of [10,11,12]){round={id:crypto.randomUUID(),rules_version:version,cpu_level:version>=11?1:null};await wallet.status();await wallet.settle(round.id,[]);assert.equal(requests.at(-1).rules_version,version,'settlement uses the server-pinned version');}
+   console.log('PASS: wallet keeps uncertain purchase IDs and effects, coalesces double clicks, charges once, and reports per-action prices');
