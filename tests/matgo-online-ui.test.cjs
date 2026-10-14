@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),{fixture,A,B,C,MINOR}=require('./arcade-rooms-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
- const f=await fixture();
+ const f=await fixture({adaptive:true});
  const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.MATGO_CHROMIUM?{executablePath:process.env.MATGO_CHROMIUM}:{})});
  const errors=[],last=new Map(),failures=[];
  async function screen(actor,age=25){
@@ -122,16 +122,13 @@ const root=path.join(__dirname,'..');
   await f.db.query('update ojjuda_matgo_internal.wallets set gold=case when user_id=$1 then 200000 else 300000 end,stake_rate=100,stake_seen=100,round_id=null,round_seed=null where user_id in($1,$2)',[A,B]);
   const raisedA=await screen(A),raisedB=await screen(B);
   await raisedA.page.locator('#create').click();await raisedA.page.locator('#public-room-form button[type=submit]').click();
-  await raisedA.page.locator('#matgo-stake').waitFor();
-  assert.equal(await raisedA.page.locator('#matgo-stake-raise').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'the shared offer appears above the create-room dialog');
-  await raisedA.page.locator('#matgo-stake-raise').click();
   const raisedCode=await raisedA.page.locator('#invite-code').textContent();
   await raisedB.page.locator('#room-code').fill(raisedCode);await raisedB.page.locator('#join').click();
-  await raisedB.page.locator('#matgo-stake-raise').click();
   await raisedA.page.locator('#hand').waitFor();await raisedB.page.locator('#hand').waitFor();
+  assert.equal(await raisedA.page.locator('#matgo-stake').count(),0,'host stake rises automatically');assert.equal(await raisedB.page.locator('#matgo-stake').count(),0,'guest joins without a stake dialog');
   assert.equal(await raisedA.page.locator('#stakeRate').innerText(),'점당 200G');assert.equal(await raisedB.page.locator('#stakeRate').innerText(),'점당 200G');
   if(process.env.MATGO_PARITY_PROOF)await raisedA.page.screenshot({path:process.env.MATGO_PARITY_PROOF});
   await raisedA.context.close();await raisedB.context.close();assert.deepEqual(errors,[]);
-  console.log('PASS: two browser members join by code, private hands, mobile layouts, 15-second automatic play, synchronized result, rematch and PC takeover after exit');
+  console.log('PASS: two browser members join by code, private hands, mobile layouts, 15-second automatic play, synchronized result, rematch, PC takeover and automatic shared stakes without a consent dialog');
  }finally{await browser.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
