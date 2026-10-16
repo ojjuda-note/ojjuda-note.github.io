@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   donflow:
-    name: DonFlow source build and diagnostic reports
+    name: DonFlow source validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -58,8 +58,7 @@ jobs:
       - name: Build DonFlow source and production notices
         if: ${{ !cancelled() }}
         run: npm --prefix apps/donflow run build
-      - name: Report DonFlow dependency vulnerabilities (nonblocking)
-        continue-on-error: true
+      - name: Audit DonFlow dependencies
         if: ${{ !cancelled() }}
         run: npm --prefix apps/donflow audit --audit-level=high
 
