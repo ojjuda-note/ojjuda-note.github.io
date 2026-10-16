@@ -10,7 +10,7 @@ window.arcadeTest={actions:sr,render:H,auth:D,state:g,client:S,rooms:()=>worldAr
  switchActor:id=>{D.user={id};window.fixtureActor=id;worldArcadeRooms.sync()}};
 g.tab='friends';H();
 `+world.slice(world.indexOf('</script>',boot));
-world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script src="/matgo-access.js"></script><script src="/matgo-bridge.js"></script></head>');
+world=world.replace('</head>','<script defer src="/game-entry.js"></script><script src="/arcade-rooms.js"></script><script src="/matgo-access.js"></script><script src="/matgo-bridge.js"></script></head>');
 (async()=>{
  const f=await fixture();const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  const errors=[];
@@ -77,7 +77,10 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
       await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
     }else{
       await a.page.evaluate(kind=>arcadeTest.actions[/^(carom|pool)/.test(kind)?'bl-open':'bd-open']({v:kind}),kind);
-      await a.page.locator('[data-arcade-action=create][data-kind="'+kind+'"]').click();
+      await a.page.locator('.ge-board-entry[data-entry-ready] [data-entry-mode=opponent]').click();
+      const createRoom=a.page.locator('[data-arcade-action=create][data-kind="'+kind+'"]');
+      await a.page.locator('details.ge-more').filter({has:createRoom}).locator('summary').click();
+      await createRoom.click();
       await a.page.locator('#arcade-room-form select[name=kind]').selectOption(kind);
       await a.page.locator('#arcade-room-form input[name=title]').fill(title);
       if(kind==='janggi')await a.page.locator('#arcade-room-form select[name=layout]').selectOption('heeh');

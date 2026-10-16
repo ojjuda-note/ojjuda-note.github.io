@@ -31,6 +31,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);
   await page.evaluate(()=>guestFixture.open('breakout'));
+  await page.locator('summary').filter({hasText:/^오늘의 랭킹$/}).click();
   await page.getByRole('heading',{name:'오늘의 랭킹',exact:true}).waitFor();
   assert.equal((await page.locator('#grank li.me').innerText()).replace(/\s/g,''),'손님20','real World ranking displays and highlights the guest');
   await page.evaluate(()=>guestFixture.finish(20));
