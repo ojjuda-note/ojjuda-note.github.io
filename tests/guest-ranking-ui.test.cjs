@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://guest.test';
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/guest-game-scores.js')||tag.includes('/ttang-bridge.js')||tag.includes('/world-spot-game.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/guest-game-scores.js')||tag.includes('/world-game-assets.js')||tag.includes('/ttang-bridge.js')||tag.includes('/world-spot-game.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,login:()=>nr('login'),member:()=>{D.online=true;D.user={id:'member-a'};},finish:score=>{R.game={draw(){}};R.running=true;return S2(score)}};enterWorldGuest(()=>{g.tab='friends';H()});`+world.slice(world.indexOf('</script>',boot));
 (async()=>{
