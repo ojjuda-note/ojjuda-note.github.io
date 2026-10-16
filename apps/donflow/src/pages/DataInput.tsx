@@ -1,8 +1,8 @@
 import QuickEntry from '@/ojjuda/QuickEntry'
 import { useState, useRef } from 'react'
-import { useLanguage, getLang, type TKey } from '@/lib/i18n'
+import { useLanguage, getLang } from '@/lib/i18n'
 import Papa from 'papaparse'
-import { Upload, ClipboardPaste, Sparkles, Check, ChevronDown, ChevronUp, Search, HelpCircle } from 'lucide-react'
+import { Upload, Sparkles, Check, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -11,7 +11,7 @@ import { useCategories, useTransactions } from '@/hooks/useDB'
 import { classifyMerchant, learnMerchant, isPGMerchant } from '@/utils/merchantClassifier'
 import { parseNotifications, type ParsedTransaction } from '@/utils/notificationParser'
 import { ensureDefaultWallet } from '@/lib/defaultWallet'
-import { formatNumber, getMonthKey } from '@/lib/utils'
+import { formatNumber } from '@/lib/utils'
 
 type Tab = 'csv' | 'paste' | 'history'
 
@@ -69,7 +69,7 @@ const BANKSALAD_SUB_MAP: Record<string, string> = {
   '택시': '교통',
 }
 
-function detectTransactionType(row: Record<string, string>, amount: number): 'income' | 'expense' | 'transfer' {
+function detectTransactionType(row: Record<string, string>): 'income' | 'expense' | 'transfer' {
   const typeCol = row['타입']?.trim()
   if (typeCol) {
     if (typeCol === '수입') return 'income'
@@ -141,7 +141,6 @@ export default function DataInput() {
   const [tab, setTab] = useState<Tab>('history')
   const { t } = useLanguage()
   const categories = useCategories()
-  const monthKey = getMonthKey(new Date())
   const transactions = useTransactions()
 
   return (
@@ -296,7 +295,7 @@ function CsvUpload({ categories }: { categories: ReturnType<typeof useCategories
       const amount = Math.abs(parseFloat(amountStr ?? '0'))
       if (!amount || !dateVal) continue
 
-      const txType = hasBanksaladCols ? detectTransactionType(row, amount) : 'expense'
+      const txType = hasBanksaladCols ? detectTransactionType(row) : 'expense'
 
       let categoryName = getLang() === 'ko' ? '기타' : 'Other'
       let categoryId: number | undefined

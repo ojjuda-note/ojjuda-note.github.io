@@ -1,7 +1,8 @@
 import { db, seedCategories } from '@/db'
 import { ensureDefaultWallet } from '@/lib/defaultWallet'
 import { snapshot, restore } from './snapshot'
-import type { Host } from './types'
+import type { Host, LegacyLedgerEntry } from './types'
+import type { CreatingHookContext, UpdatingHookContext, DeletingHookContext } from 'dexie'
 
 const host: Host = window.ojjudaLedger
 const key = 'ojjuda-donflow-sync-' + host.owner
@@ -47,11 +48,14 @@ export async function initialize() {
   if (!active()) return
   await seedCategories(); await ensureDefaultWallet()
   // All upstream mutations remain IndexedDB transactions. Only successful commits schedule sync.
-  for (const t of db.tables) for (const kind of ['creating','updating','deleting'] as const) {
-    (t.hook as any)(kind, function(this: any) {
-      if (!active() && !suppress) throw Error('로그인이 바뀌었어요.')
-      if (!suppress) this.onsuccess = () => { changed() }
-    } as any)
+  function onMutation(this: CreatingHookContext<unknown, unknown> | UpdatingHookContext<unknown, unknown> | DeletingHookContext<unknown, unknown>) {
+    if (!active() && !suppress) throw Error('로그인이 바뀌었어요.')
+    if (!suppress) this.onsuccess = () => { changed() }
+  }
+  for (const t of db.tables) {
+    t.hook('creating', onMutation)
+    t.hook('updating', onMutation)
+    t.hook('deleting', onMutation)
   }
   suppress = false
   if (conflict) status('다른 기기의 기록과 변경이 겹쳤어요. 이 기기 기록을 백업한 뒤 계정 기록을 불러와 주세요.')
@@ -98,7 +102,7 @@ export async function sync() {
     if (meta.dirty && !conflict && state.message.includes('저장 중')) schedule()
   }
 }
-export async function useAccountCopy() {
+export async function restoreAccountCopy() {
   if (!active() || busy) return
   if (!confirm('이 기기의 변경을 계정에 저장된 기록으로 바꿉니다. 먼저 파일로 백업했나요?')) return
   busy = true; status('계정 기록을 불러오고 있어요.')
@@ -113,7 +117,7 @@ export async function useAccountCopy() {
 }
 export async function importLegacy(): Promise<number> {
   if (!active()) throw Error('closed')
-  const rows: any[] = []
+  const rows: LegacyLedgerEntry[] = []
   for (let offset=0; ; offset+=500) {
     const {data,error} = await host.client.from('life_ledger_entries').select('id,date,type,category,memo,amount,deleted_at').eq('user_id',host.owner).order('id').range(offset,offset+499)
     if (error) throw error

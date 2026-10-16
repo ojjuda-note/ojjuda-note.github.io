@@ -1,7 +1,7 @@
 /* Shared World/Note withdrawal: remove actual files before deleting the account. */
 (function (root) {
   'use strict';
-  const buckets = new Set(['media', 'note-card-photos', 'note-event-photos']);
+  const buckets = new Set(['media', 'note-card-photos', 'note-event-photos', 'photo-stages']);
   async function run({ client, userId, isCurrent = () => true }) {
     const current = () => {
       if (!userId || !isCurrent()) throw new Error('account_changed');

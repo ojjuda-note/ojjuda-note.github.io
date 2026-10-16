@@ -12,6 +12,7 @@ on:
       - 'house-test/assets/*.runtime.json'
       - 'supabase/**'
       - 'tests/**'
+      - 'apps/donflow/**'
       - 'ops/**'
       - '.github/workflows/regression.yml'
   pull_request:
@@ -24,6 +25,7 @@ on:
       - 'house-test/assets/*.runtime.json'
       - 'supabase/**'
       - 'tests/**'
+      - 'apps/donflow/**'
       - 'ops/**'
       - '.github/workflows/regression.yml'
   workflow_dispatch:
@@ -36,6 +38,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  donflow:
+    name: DonFlow source build and diagnostic reports
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked DonFlow dependencies
+        run: npm --prefix apps/donflow ci --ignore-scripts
+      - name: Lint DonFlow source
+        run: npm --prefix apps/donflow run lint
+      - name: Test DonFlow typed import and sync boundaries
+        run: node apps/donflow/scripts/typed-boundaries.test.cjs
+      - name: Build DonFlow source and production notices
+        if: ${{ !cancelled() }}
+        run: npm --prefix apps/donflow run build
+      - name: Report DonFlow dependency vulnerabilities (nonblocking)
+        continue-on-error: true
+        if: ${{ !cancelled() }}
+        run: npm --prefix apps/donflow audit --audit-level=high
+
   room_defaults:
     name: Room reference placement
     runs-on: ubuntu-latest
