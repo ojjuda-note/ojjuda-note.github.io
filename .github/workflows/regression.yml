@@ -246,13 +246,35 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+      - name: Verify regression shard coverage and failure handling
+        run: node tests/run-regression-shard.test.cjs
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Check account, card, administrator and RPC unit regressions
+        run: npm --prefix tests run test:unit
+
+  regression_ui:
+    name: UI and screw regressions (${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
       - name: Install the test browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
-      - name: Check account, card, administrator and RPC regressions
-        run: npm --prefix tests test
+      - name: Run every assigned UI and screw suite and report all failures
+        run: node tests/run-regression-shard.cjs ${{ matrix.shard }} 4
   recovery:
     name: Encrypted recovery regression
     runs-on: ubuntu-latest
