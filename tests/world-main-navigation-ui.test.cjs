@@ -173,7 +173,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
         await touchDrag('.visit-banner',dx);
         const next=Math.max(0,Math.min(places.length-1,i+(dx<0?1:-1)));
         assert.equal(await currentPlace(),places[next],`${places[i]} drag stays in the neighborhood order and stops at its ends`);
-        assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'friends','place swipes keep the neighborhood tab active');
+        assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),places[next]==='arcade'?'arcade':'friends','place swipes highlight the destination’s main menu');
       }
     }
     await enterPlace('cafe');
