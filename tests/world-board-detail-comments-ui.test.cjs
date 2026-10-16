@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});try{
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -24,6 +24,6 @@ const {chromium}=require('playwright');
  await page.waitForFunction(()=>document.activeElement===document.querySelector('.board-comment-form textarea'));
  assert.equal(await page.locator('.board-comment-list p').innerText(),'조금씩 해내고 있는 것도 충분히 대단해요.');
  for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
- await page.setViewportSize({width:390,height:844});await page.screenshot({path:'/workspace/scratch/f6fc9416cab4/ojjuda-media-work/board-detail-comments.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(os.tmpdir(),'ojjuda-board-detail-comments.png'),fullPage:true});
  assert.deepEqual(errors,[]);console.log('PASS: real board detail lazily loads comments, submits, reopens the same thread, focuses reply and fits mobile/desktop.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

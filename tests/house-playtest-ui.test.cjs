@@ -19,6 +19,7 @@ assert.deepEqual(clock,['night','dusk','dusk','day','day','dusk','dusk','night',
 for(const [hour,period] of [[8,'day'],[18,'dusk'],[20,'night'],[6,'dusk']]){await page.clock.setSystemTime(new Date(`2026-10-01T${String(hour).padStart(2,'0')}:00:00+09:00`));await page.clock.runFor(15001);assert.match(await f.locator('.room-bg').getAttribute('src'),new RegExp(`room-${period}-v3.webp`));assert.match(await f.locator('#viewport').evaluate(n=>getComputedStyle(n).backgroundImage),/apartment-wall-v1.webp/);}
 await page.clock.resume();
 await f.locator('[data-tab="room"]').click();
+await f.waitForFunction(roomFitsViewport);
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 assert.equal(await f.locator('.floor-grid').count(),1);
 assert.equal(await f.locator('.move-controls').count(),0);
@@ -27,14 +28,17 @@ const setShelfRange=async(id,value)=>{await f.locator(id).evaluate((input,value)
 
 const calibration=await f.evaluate(async()=>{const {floorPoint,floorCell}=await import('/house-test/model.js');let error=0;for(let y=0;y<=7;y+=.5)for(let x=0;x<=10;x+=.5){const p=floorPoint(x,y),c=floorCell(p.x,p.y);error=Math.max(error,Math.abs(c.x-x),Math.abs(c.y-y));}return {corners:[[0,0],[10,0],[10,7],[0,7]].map(([x,y])=>floorPoint(x,y)),error};});
 for(const [i,wanted] of [[293,614],[1209,614],[1494,910],[12,910]].entries()){assert.ok(Math.abs(calibration.corners[i].x-wanted[0])<.001);assert.ok(Math.abs(calibration.corners[i].y-wanted[1])<.001);}assert.ok(calibration.error<1e-9);
-const roomFillsViewport=()=>{const room=document.querySelector('.room.selected').getBoundingClientRect(),viewport=document.querySelector('#viewport'),view=viewport.getBoundingClientRect(),w=viewport.clientWidth,h=viewport.clientHeight,scale=room.width/1507,inset=Math.min(20,Math.min(w,h)*.028),left=room.left+12*scale-view.left,right=view.left+w-(room.right-12*scale),top=room.top+27*scale-view.top,bottom=view.top+h-(room.top+916*scale);return scale>=Math.max(w/1483,h/889)*.944-.001&&Math.max(left,right,top,bottom)<=inset+.5&&((Math.abs(left-inset)<.5&&Math.abs(right-inset)<.5)||(Math.abs(top-inset)<.5&&Math.abs(bottom-inset)<.5));};
-await f.waitForFunction(roomFillsViewport);
+// Selection now focuses the item's artwork. The whole-room fit still applies
+// to the room view; editing must instead enlarge and keep the bookshelf visible.
+const selectedShelfFitsViewport=()=>{const room=document.querySelector('.room.selected').getBoundingClientRect(),shelf=document.querySelector('.bookshelf'),art=shelf.getBoundingClientRect(),viewport=document.querySelector('#viewport'),view=viewport.getBoundingClientRect(),w=viewport.clientWidth,h=viewport.clientHeight,scale=room.width/1507,inset=Math.min(20,Math.min(w,h)*.028),wholeRoomFit=Math.min((w-2*inset)/1483,(h-2*inset)/889);return shelf.dataset.renderState==='ready'&&scale>wholeRoomFit*1.05&&art.left>=view.left-.5&&art.right<=view.left+w+.5&&art.top>=view.top-.5&&art.bottom<=view.top+h+.5;};
+await f.waitForFunction(selectedShelfFitsViewport);
 await page.screenshot({path:'/tmp/house-grid-aligned.png'});
 assert.deepEqual(await f.locator('.room-bg').evaluate(im=>({width:im.naturalWidth,height:im.naturalHeight})),{width:1507,height:1044});
 await setShelfRange('#bookshelf-gap',.5);
 assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'8.5');
 await f.getByRole('button',{name:'취소',exact:true}).click();
 assert.equal(await f.locator('.bookshelf').getAttribute('data-x'),'9');
+await f.waitForFunction(roomFitsViewport);
 await f.getByRole('button',{name:'책장 배치',exact:true}).click();
 for(const direction of ['left','center','right']){
  await f.locator(`[data-direction="${direction}"]:not(.furniture)`).click();assert.equal(await f.locator('.bookshelf').getAttribute('data-direction'),direction);await f.waitForFunction(()=>document.querySelector('.bookshelf').dataset.renderState==='ready');assert.match(await f.locator('.bookshelf canvas').getAttribute('data-sources'),new RegExp(`bookshelf-${direction}-v2.webp`));

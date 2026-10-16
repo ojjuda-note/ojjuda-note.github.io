@@ -27,7 +27,6 @@ export default function Dashboard() {
 
   const totalBudget = budgetComparison.reduce((s, b) => s + b.planned, 0)
   const hasBudgets = budgetComparison.length > 0
-  const remainingBudget = totalBudget - expense
 
   // Projection
   const dayOfMonth = now.getDate()
@@ -113,7 +112,6 @@ export default function Dashboard() {
       {/* 6-Month Spending Trend */}
       {trend.length > 0 && trend.some(m => m.expense > 0 || m.income > 0) && (() => {
         const maxVal = Math.max(...trend.map(m => Math.max(m.expense, m.income)), 1)
-        const barWidth = 100 / trend.length
         const chartH = 120
         const labelH = 20
         const svgH = chartH + labelH
@@ -228,7 +226,6 @@ export default function Dashboard() {
               const isOver = pct >= 100
               const isWarning = pct >= 80 && pct < 100
               const statusIcon = isOver ? '🔴' : isWarning ? '⚠️' : pct >= 60 ? '' : '✅'
-              const statusText = isOver ? t('exceeded') : isWarning ? t('caution') : pct < 30 ? t('comfortable') : ''
 
               return (
                 <div key={item.categoryId} className="space-y-1.5">

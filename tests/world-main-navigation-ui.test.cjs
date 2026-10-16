@@ -173,7 +173,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
         await touchDrag('.visit-banner',dx);
         const next=Math.max(0,Math.min(places.length-1,i+(dx<0?1:-1)));
         assert.equal(await currentPlace(),places[next],`${places[i]} drag stays in the neighborhood order and stops at its ends`);
-        assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'friends','place swipes keep the neighborhood tab active');
+        assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),places[next]==='arcade'?'arcade':'friends','place swipes highlight the destination’s main menu');
       }
     }
     await enterPlace('cafe');
@@ -290,7 +290,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       worldTest.actions.tab({tab:'board'});
     });
     await gp.locator('.board-game-open').first().waitFor();
-    assert.equal(await gp.locator('.board-game-open').count(),28,'all public ranking names lead to games, including every variant');
+    const publicGames=['saetbyeol','mines','tour',
+      ...['carom4','carom3','pool8','janggi','chess'].flatMap(game=>['easy','normal','hard','online'].map(level=>game+'_'+level)),
+      'screw_box','screw_flat','spot','ttang','mole','runner','stacker','breakout'];
+    assert.deepEqual(await gp.locator('.board-game-open').evaluateAll(buttons=>buttons.map(button=>button.closest('[data-game]').dataset.game)),publicGames,'all public ranking names lead to games, including every variant');
     assert.equal(await gp.locator('[data-game="matgo"]').count(),0,'unverified Matgo access is not advertised');
     await gp.locator('[data-board-root]').evaluate(el=>el.dataset.retained='original-board');
     const gameButton=id=>gp.locator(`[data-game="${id}"] .board-game-open`);
@@ -357,7 +360,7 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
     await openGame('matgo');await gp.locator('#matgo-overlay iframe').waitFor();
     assert.equal(new URL(await gp.locator('#matgo-overlay iframe').getAttribute('src'),gp.url()).pathname,'/games/matgo-online.html');
     await stillBoard('matgo','#matgo-overlay [aria-label="맞고 닫기"]');
-    assert.deepEqual(await gp.evaluate(()=>gameFixture.calls.filter(call=>['insert','update','delete','upsert'].includes(call.method)||call.rpc&&call.rpc!=='get_my_member_identity'&&call.rpc!=='community_game_ranking'&&call.rpc!=='community_game_monthly_ranking'&&call.rpc!=='community_game_monthly_leaders'&&call.rpc!=='my_game_records'&&call.rpc!=='billiards_ping')),[],'opening game menus never writes scores or purchases');
+    assert.deepEqual(await gp.evaluate(()=>gameFixture.calls.filter(call=>['insert','update','delete','upsert'].includes(call.method)||call.rpc&&call.rpc!=='get_my_member_identity'&&call.rpc!=='community_game_ranking'&&call.rpc!=='community_game_monthly_ranking'&&call.rpc!=='community_game_monthly_leaders'&&call.rpc!=='my_game_records'&&call.rpc!=='billiards_ping'&&call.rpc!=='comics_access')),[],'opening game menus never writes scores or purchases');
     await gp.locator('#matgo-overlay').waitFor({state:'detached'});
     // Save paths remain available when the independent wallet check is not ready.
     await gp.evaluate(()=>{

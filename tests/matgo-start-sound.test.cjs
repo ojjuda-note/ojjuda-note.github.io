@@ -6,9 +6,10 @@ const root=path.join(__dirname,'..');
  try{
   for(const mode of ['touch','keyboard','muted','rich']){
    const context=await browser.newContext({viewport:{width:390,height:820},hasTouch:true});
-   const errors=[],gold=mode==='rich'?900001:5000;let starts=0;
+   const errors=[],gold=mode==='rich'?900001:5000;let starts=0,settles=0;
    await context.exposeBinding('soundFixture',async(_,{action})=>{
     if(action==='start')starts++;
+    if(action==='settle')settles++;
     return {data:{ok:true,gold,coins:20,free_left:2,round:action==='start'?{id:'test-round',seed:10,gold,first:0,carry:1}:null}};
    });
    await context.addInitScript(({mode})=>{
@@ -48,7 +49,15 @@ const root=path.join(__dirname,'..');
     assert.equal(starts,1);assert.ok(await page.evaluate(()=>audioStarts.every(s=>s.state==='running'&&s.length>0)),'initial deal samples actually start in a running AudioContext');
     await page.waitForFunction(()=>!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
     assert.equal(await page.locator('#matgo-start').count(),0);
-    await page.evaluate(()=>matgoSoundTest.startRound());assert.equal(starts,2,'later rounds need no extra start prompt');
+    assert.equal(await page.evaluate(()=>matgoSoundTest.startRound()),false,'an active hand cannot be restarted');
+    assert.equal(starts,1);
+    await page.evaluate(()=>matgoSoundTest.game.finish(-1));
+    await page.locator('#next').waitFor();
+    assert.equal(settles,1,'finish the first hand before testing the next round');
+    await page.locator('#next').click();
+    await page.waitForFunction(()=>!matgoSoundTest.game.over&&!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
+    assert.equal(starts,2,'later rounds need no extra start prompt');
+    assert.equal(await page.locator('#matgo-start').count(),0);
     await page.reload();await page.locator('#matgo-start-play').waitFor();assert.equal(starts,2,'re-entry gets a new audio gesture before dealing');
    }
    assert.equal(await page.evaluate(()=>matgoSoundTest.game.cpuLevel),mode==='rich'?10:1,'solo browser uses the server balance for the next CPU tier');
