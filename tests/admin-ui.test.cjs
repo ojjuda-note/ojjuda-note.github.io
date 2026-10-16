@@ -15,19 +15,20 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
   try {
     const context = await browser.newContext({ viewport: { width: 412, height: 860 }, isMobile: true, hasTouch: true });
     // All data is synthetic and every external request is blocked.
-    const fixture = '<meta name="viewport" content="width=device-width,initial-scale=1"><div id="modal-root"></div>';
+    const fixture = '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="modal-root"></div>';
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
       if (url.origin !== 'https://fixture.test') return route.abort();
-      if (url.pathname === '/world.html') return route.fulfill({ contentType: 'text/html', body: fixture });
+      if (url.pathname === '/world.html') return route.fulfill({ contentType: 'text/html; charset=utf-8', body: fixture });
       const relative = url.pathname.slice(1);
       if (!/^(?:admin\/[\w-]+|note\/admin)\.(?:js|css)$/.test(relative)) return route.abort();
-      return route.fulfill({ contentType: relative.endsWith('.js') ? 'text/javascript' : 'text/css', body: read(relative) });
+      return route.fulfill({ contentType: relative.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8', body: read(relative) });
     });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('https://fixture.test/world.html');
+    assert.equal(await page.evaluate(() => document.characterSet), 'UTF-8', 'external Korean labels use the production page encoding');
 
     // Keep the actual entrypoint order, then load admin tools through its lazy loader.
     // Signup identity remains a required dependency of the real admin editor.
