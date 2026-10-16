@@ -290,7 +290,10 @@ g.tab="friends";H();` + world.slice(world.indexOf('</script>', boot));
       worldTest.actions.tab({tab:'board'});
     });
     await gp.locator('.board-game-open').first().waitFor();
-    assert.equal(await gp.locator('.board-game-open').count(),28,'all public ranking names lead to games, including every variant');
+    const publicGames=['saetbyeol','mines','tour',
+      ...['carom4','carom3','pool8','janggi','chess'].flatMap(game=>['easy','normal','hard','online'].map(level=>game+'_'+level)),
+      'screw_box','screw_flat','spot','ttang','mole','runner','stacker','breakout'];
+    assert.deepEqual(await gp.locator('.board-game-open').evaluateAll(buttons=>buttons.map(button=>button.closest('[data-game]').dataset.game)),publicGames,'all public ranking names lead to games, including every variant');
     assert.equal(await gp.locator('[data-game="matgo"]').count(),0,'unverified Matgo access is not advertised');
     await gp.locator('[data-board-root]').evaluate(el=>el.dataset.retained='original-board');
     const gameButton=id=>gp.locator(`[data-game="${id}"] .board-game-open`);
