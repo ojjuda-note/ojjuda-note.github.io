@@ -9,7 +9,7 @@ for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','te
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
 WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
-assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,7,32,36,12,0,130,26,0,0,34],'base damage is unchanged');
+assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,14,34,42,12,0,110,26,0,0,34],'balanced paid damage keeps the free and homing damage unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
 // Landing damage is five times the old value, while short drops remain harmless.
 for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
@@ -82,6 +82,30 @@ for(const angle of [45,90,135])for(const wind of [-WIND_MAX,0,WIND_MAX]){
  saved=fire(saved,10);saved=fire(saved,10);
  assert.equal(createEngine(saved).view().tanks[0].w,14,'Steel Rain stays selected after a paid shot and reconnecting');
 }
+// Compare real impacts on the same flat ground, including the resulting falls.
+function balancedImpact(weapon,offset=0,surface=300){
+ const game=newGame(['self','target'],'balance-impact',882);game.wind=0;game.terrain.fill(surface/2);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?800:100,y:surface,vy:0}));
+ const e=createEngine(game);e.begin({type:'fire',weapon,angle:90,power:50,moves:[]});
+ const air=WEAPONS[weapon].kind==='mirv';
+ e.view().shots.forEach(s=>Object.assign(s,{x:800+offset,y:air?surface-180:surface-.1,vx:0,vy:air?.01:2,age:99}));
+ const bursts=new Set();let frames=0;
+ while(['fly','settle'].includes(e.view().state)&&frames++<18000){e.step();e.view().booms.forEach(b=>bursts.add(b));}
+ assert.ok(frames<18000);
+ return {damage:100-e.view().tanks[1].hp,drop:e.view().tanks[1].y-surface,terrain:e.snapshot().terrain,bursts:[...bursts]};
+}
+const normalImpact=balancedImpact(0),digImpact=balancedImpact(6),nukeImpact=balancedImpact(8);
+assert.equal(normalImpact.damage,34);assert.equal(balancedImpact(4).damage,34);assert.equal(balancedImpact(5).damage,42);
+assert.ok(digImpact.drop>normalImpact.drop*2.5&&digImpact.damage>normalImpact.damage,'paid digging adds a deep fall instead of duplicating a weaker basic blast');
+assert.equal(digImpact.terrain[420],150,'deep excavation does not widen the basic blast');
+assert.equal(balancedImpact(6,0,700).damage,12,'bedrock prevents extra digging and falling damage');
+assert.equal(nukeImpact.damage,100,'a central nuclear impact still destroys a full-health tank');
+assert.equal(nukeImpact.drop,120,'nuclear excavation is wide and shallower than before');
+assert.ok(nukeImpact.terrain[495]>150&&nukeImpact.terrain[505]===150,'the nuclear crater still reaches nearly 200 units horizontally');
+assert.ok(balancedImpact(8,20).damage<100,'a near miss is no longer an automatic full-health kill');
+assert.ok(balancedImpact(8,100).damage<=45&&balancedImpact(8,150).damage<=15,'nuclear outer damage includes falling and remains limited');
+const splitImpact=balancedImpact(3);assert.equal(splitImpact.bursts.length,5);assert.ok(splitImpact.bursts.every(b=>b.w.dmg===14&&b.r===WEAPONS[0].r));
+assert.ok(splitImpact.damage>=24,'paid split fire gains useful concentrated damage');
 const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
 collisionGame.tanks.forEach((t,i)=>Object.assign(t,{x:[300,900,1400][i],y:300,vy:0}));
 for(const [offset,hit] of [[5.8,true],[6.5,false]]){

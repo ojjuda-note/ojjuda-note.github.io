@@ -4,12 +4,12 @@ export const WEAPONS=[
   {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:28.8,dmg:34},
   {name:'대형탄',price:0,desc:'폭발 범위가 넓지만 일반탄보다 피해가 약해요',ammo:Infinity,r:50.4,dmg:24},
   {name:'산탄',price:0,desc:'세 발이 앞선 폭발로 파인 땅을 통과해요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:16.8,dmg:11,count:3,kind:'scatter'},
-  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:28.8,dmg:7,kind:'mirv'},
-  {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:28.8,dmg:32,kind:'bounce'},
-  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:28.8,dmg:36,kind:'roll'},
-  {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:28.8,dmg:12},
+  {name:'분열탄',price:2,desc:'정점에서 5발로 갈라져 집중 폭격해요. 한 발 기본 피해 14',ammo:Infinity,r:28.8,dmg:14,kind:'mirv'},
+  {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요. 위력은 일반탄과 같아요',ammo:Infinity,r:28.8,dmg:34,kind:'bounce'},
+  {name:'굴러탄',price:2,desc:'비탈을 굴러 적을 노려요. 일반탄보다 강한 기본 피해 42',ammo:Infinity,r:28.8,dmg:42,kind:'roll'},
+  {name:'굴착탄',price:1,desc:'일반탄과 같은 폭으로 3배 깊게 파요. 직접 피해는 적고 낙하를 노려요',ammo:Infinity,r:28.8,dmg:12,kind:'dig',craterScaleY:3},
   {name:'흙폭탄',price:1,desc:'핵탄 범위의 60%에 흙더미를 쌓아요. 직접 피해는 없어요',ammo:Infinity,r:120,dmg:0,kind:'dirt'},
-  {name:'핵탄',price:3,desc:'넓은 범위의 대형 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
+  {name:'핵탄',price:3,desc:'넓은 대형 폭발. 정중앙은 한 방, 가장자리로 갈수록 피해가 크게 줄어요',ammo:Infinity,r:200,dmg:110,craterScaleY:.6,damageFalloff:2},
   {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:28.8,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:57.6,dmg:0,kind:'heal',heal:25},
   {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:21.6,dmg:0,kind:'teleport'},
@@ -18,7 +18,7 @@ export const WEAPONS=[
   {name:'강철비',price:0,desc:'정점에서 10발이 넓게 퍼져요. 한 발 위력은 일반탄의 10분의 1, 폭발 범위는 산탄과 같아요',ammo:Infinity,r:16.8,dmg:3.4,kind:'steelrain',pellets:10}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:28.8,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:28.8,dmg:12,kind:'pierce',pen:18,stage:2}];
-const MIRV_CHILD={name:'',r:28.8,dmg:7};
+const MIRV_CHILD={name:'',r:28.8,dmg:14};
 const STEEL_RAIN_CHILD={name:'강철비 자탄',r:WEAPONS[2].r,dmg:WEAPONS[0].dmg/10,kind:'steelrain-pellet'};
 
 const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28fad','#6ee7d2','#ffffff','#b8a07e','#ff9f43','#8ea4ff'];
@@ -94,12 +94,12 @@ function settleSand(){
   for(const c of done)active.delete(c);
 }
 
-function circleCells(x,y,r,v){const r2=r*r;
-  for(let cy=Math.max(0,Math.floor((y-r)/CS));cy<=Math.min(FR-1,Math.floor((y+r)/CS));cy++){const py=cy*CS+CS/2-y;
+function circleCells(x,y,r,v,vertical=1){const r2=r*r,ry=r*vertical;
+  for(let cy=Math.max(0,Math.floor((y-ry)/CS));cy<=Math.min(FR-1,Math.floor((y+ry)/CS));cy++){const py=(cy*CS+CS/2-y)/vertical;
     for(let cx=Math.max(0,Math.floor((x-r)/CS));cx<=Math.min(GW-1,Math.floor((x+r)/CS));cx++){const px=cx*CS+CS/2-x;if(px*px+py*py<=r2)mask[cy*GW+cx]=v;}}
   wake(x-r,x+r);}
 
-function carve(x,y,r){circleCells(x,y,r,0);}
+function carve(x,y,r,vertical=1){circleCells(x,y,r,0,vertical);}
 
 function fillCircle(x,y,r){circleCells(x,y,r,1);}
 
@@ -234,7 +234,7 @@ function burstSteelRain(s){
 function explode(x,y,w,s,outside=false){
  const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner,outside};
  // Open the crater before another pellet checks terrain, even in this same frame.
- if(w.kind==='scatter'||w.kind==='steelrain-pellet')carve(x,y,r);
+ if(w.kind==='scatter'||w.kind==='steelrain-pellet'||w.kind==='dig')carve(x,y,r,w.craterScaleY??1);
  // An off-map teleport has no valid destination; piercing stops at the boundary.
  if(outside&&w.kind==='teleport')bm.fx=true;
  if(w.kind==='dirt')bm.dirt=true;
@@ -260,11 +260,11 @@ function growBoom(b){
     return;
   }
   if(b.dirt){if(cr>b.cr){fillCircle(b.x,b.y,cr);b.cr=cr;}return;}
-  if(cr>b.cr){if(b.w.kind!=='scatter'&&b.w.kind!=='steelrain-pellet')carve(b.x,b.y,cr);b.cr=cr;}
+  if(cr>b.cr){if(b.w.kind!=='scatter'&&b.w.kind!=='steelrain-pellet'&&b.w.kind!=='dig')carve(b.x,b.y,cr,b.w.craterScaleY??1);b.cr=cr;}
   if(b.w.dmg>0)for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;
     const d=Math.hypot(t.x-b.x,(t.y-4)-b.y);
     if(d<b.r+8&&d<=cr+8){b.hit.add(t);
-      const f=1-Math.max(0,d-5)/(b.r+8),dmg=Math.max(1,Math.round(b.w.dmg*f));
+      const f=1-Math.max(0,d-5)/(b.r+8),dmg=Math.max(1,Math.round(b.w.dmg*Math.pow(f,b.w.damageFalloff??1)));
       t.hp=Math.max(0,t.hp-dmg);t.hitT=30;floats.push({x:t.x,y:t.y-24,txt:'-'+dmg,t:0});syncUI();}}
 }
 

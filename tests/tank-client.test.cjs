@@ -296,7 +296,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(local.TankView.input().angle,89.75);assert.equal(local.TankView.input().power,6,'polling preserves restored aim');
   local.eval('setAngle(90);setPower(5);fireSelected();');
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
-  assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
+  assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),110);
   assert.equal(local.eval('shots[0].w.r'),200,'nuclear shells retain their original large blast range');
   assert.equal(get(local,'netCoins').textContent,'보유 93쭈');local.eval('draw()');
   for(let i=0;i<8000;i++)local.TankOnline.tick();
