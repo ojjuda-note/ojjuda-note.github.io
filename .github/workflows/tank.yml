@@ -22,3 +22,4 @@ jobs:
       - run: node tests/tank-online-db.test.cjs
       - run: node tests/tank-solo.test.cjs
       - run: node --experimental-vm-modules tests/tank-client.test.cjs
+      - run: node tests/arcade-catalog.test.cjs

@@ -459,12 +459,12 @@ let roundId=null;
 function sendResult(r){ const msg=Object.assign({type:'ojjuda:ttang:result',round:roundId},r); try{ if(window.parent!==window) window.parent.postMessage(msg,location.origin); }catch{} try{ window.OjjudaTtang&&window.OjjudaTtang.onResult&&window.OjjudaTtang.onResult(msg); }catch{} }
 function showEnd(){ sendResult({mode:'solo',win:false,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)});
   panel(`<h2>탈락!</h2><p>${me.kills?`${me.kills}명을 처치했어요. `:''}다시 도전해 볼까요?</p><div class="stats"><div><b>${me.best.toFixed(1)}%</b><span>최고 땅</span></div><div><b>${me.kills}</b><span>처치</span></div><div><b>${Math.floor(world.time)}초</b><span>버틴 시간</span></div></div><button class="big a" id="again">다시 하기</button><button class="big g" id="home">처음으로</button>`,{again:()=>startSolo(),home:()=>toMenu()}); }
-function showNetEnd(a,b){ const win=a===b?0:(a>b?1:-1);
+function showNetEnd(a,b){ if(parent!==window)parent.postMessage({type:'ojjuda:ttang:network-end'},location.origin);const win=a===b?0:(a>b?1:-1);
   sendResult({mode:'duo',win:win>0,me:+(a/world.N*100).toFixed(1),friend:+(b/world.N*100).toFixed(1)});
   panel(`<h2>${win>0?'🎉 내가 이겼어요!':win<0?'친구가 이겼어요':'무승부!'}</h2><div class="stats" style="grid-template-columns:1fr 1fr"><div style="background:${PAL[me.color].l}"><b>${(a/world.N*100).toFixed(1)}%</b><span>나 · 처치 ${me.kills}</span></div><div style="background:${PAL[p2.color].l}"><b>${(b/world.N*100).toFixed(1)}%</b><span>친구 · 처치 ${p2.kills}</span></div></div><button class="big g" id="home">처음으로</button>`,{home:()=>{ Net.close(); toMenu(); }}); }
 function newRoundId(){ return typeof window.crypto?.randomUUID==='function'?crypto.randomUUID():'ttang-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)+'-'+Math.random().toString(36).slice(2); }
 function startSolo(){ roundId=newRoundId();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId},location.origin); $('menu').style.display='none'; closePanels(); Net.close(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
-function toMenu(){ if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
+function toMenu(){ if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin);if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
 // ================= 친구와 대결 (각자 폰) =================
 // 연결: 오쭈다월드 안에서는 Supabase 실시간 채널, 그 밖에서는 같은 기기의 다른 창끼리(시험용)
 const Net={ tr:null, kind:null, lastRx:0, sendT:0,
@@ -521,8 +521,8 @@ function lobby(){ const o=panel(`<h2>친구와 대결</h2><p>각자 자기 폰�
   getSupabase().then(sb=>{ const el=o.querySelector('#netinfo'); if(el) el.textContent=sb?'🌐 온라인 연결 준비됨 (오쭈다월드)':'💻 지금은 오쭈다월드 밖이라 같은 기기의 창 두 개로만 시험할 수 있어요'; }); }
 function waitPanel(title,msg,onCancel){ return panel(`<h2>${title}</h2><p id="wmsg">${msg}</p><div class="spin"></div><button class="big g" id="cancel">취소</button>`,{cancel:()=>{ onCancel&&onCancel(); }}); }
 async function hostRoom(inviteCode){ const code=inviteCode||String(1000+Math.floor(Math.random()*9000)); let cancelled=false;
-  const w=waitPanel(inviteCode?'친구를 기다리는 중':`방 번호 <span style="color:#7E69D6;letter-spacing:.15em">${code}</span>`,inviteCode?'친구가 초대를 받으면 바로 시작해요.':'친구에게 이 번호를 알려 주세요. 친구가 들어오면 바로 시작해요.',()=>{ cancelled=true;if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); });
-  try{ Net.tr=await openTransport(code); Net.kind=Net.tr.kind; }catch(e){ w.remove(); panel(`<h2>연결 실패</h2><p>인터넷 연결을 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>{}}); return; }
+  const w=waitPanel(inviteCode?'친구를 기다리는 중':`방 번호 <span style="color:#7E69D6;letter-spacing:.15em">${code}</span>`,inviteCode?'친구가 초대를 받으면 바로 시작해요.':'친구에게 이 번호를 알려 주세요. 친구가 들어오면 바로 시작해요.',()=>{ cancelled=true;if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); });
+  try{ Net.tr=await openTransport(code); Net.kind=Net.tr.kind; }catch(e){if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); w.remove(); panel(`<h2>연결 실패</h2><p>인터넷 연결을 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>{}}); return; }
   if(cancelled){Net.close();return;}
   if(Net.kind==='local') w.querySelector('#wmsg').textContent+=' (같은 기기의 다른 창에서 이 게임을 열고 방 번호를 넣으세요)';
   Net.tr.on(m=>{ if(m.t==='join'&&mode!=='net'&&!cancelled){ w.remove(); startHost(); }
@@ -534,13 +534,13 @@ function startHost(){ $('menu').style.display='none'; closePanels(); mode='net';
   me=world.addPlayer({name:'나',color:0,speed:6.6,turn:5.2}); p2=world.addPlayer({name:'친구',color:1,speed:6.6,turn:5.2}); makeBots(3);
   endAt=world.time+120; setupUI(); world.netDirty.clear(); Net.lastRx=performance.now();
   Net.send({t:'init',U:world.U,end:endAt,time:world.time,players:world.players.map(p=>({name:p.name,color:p.color,bot:p.bot,speed:p.speed})),cells:rleAll()}); }
-async function joinRoom(code){ let done=false, cancelled=false; const w=waitPanel(code.length===24?'친구의 게임에 들어가는 중':`방 ${code}에 들어가는 중`,'연결하고 있어요…',()=>{ cancelled=true; Net.close(); });
-  try{ Net.tr=await openTransport(code); Net.kind=Net.tr.kind; }catch(e){ w.remove(); panel(`<h2>연결 실패</h2><p>인터넷 연결을 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>{}}); return; }
+async function joinRoom(code){ let done=false, cancelled=false; const w=waitPanel(code.length===24?'친구의 게임에 들어가는 중':`방 ${code}에 들어가는 중`,'연결하고 있어요…',()=>{ cancelled=true; Net.close();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); });
+  try{ Net.tr=await openTransport(code); Net.kind=Net.tr.kind; }catch(e){if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); w.remove(); panel(`<h2>연결 실패</h2><p>인터넷 연결을 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>{}}); return; }
   Net.tr.on(m=>{ if(m.t==='init'&&!done){ done=true; w.remove(); startGuest(m); }
     else if(m.t==='s'&&mode==='net'&&role==='guest') applySnapshot(m);
     else if(m.t==='end'&&mode==='net'&&role==='guest'&&!over){ over=true; applySnapshot(m.s); showNetEnd(m.b,m.a); }
     else if(m.t==='bye'&&mode==='net'&&!over){ over=true; panel(`<h2>친구가 나갔어요</h2><button class="big g" id="home">처음으로</button>`,{home:()=>toMenu()}); } });
-  const t0=performance.now(); while(!done&&!cancelled){ Net.send({t:'join'}); await new Promise(r=>setTimeout(r,800)); if(performance.now()-t0>15000&&!done){ w.remove(); Net.close(); panel(`<h2>방을 찾지 못했어요</h2><p>방 번호 ${code}가 맞는지, 친구가 방을 만들어 두었는지 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>lobby()}); return; } } }
+  const t0=performance.now(); while(!done&&!cancelled){ Net.send({t:'join'}); await new Promise(r=>setTimeout(r,800)); if(performance.now()-t0>15000&&!done){if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); w.remove(); Net.close(); panel(`<h2>방을 찾지 못했어요</h2><p>방 번호 ${code}가 맞는지, 친구가 방을 만들어 두었는지 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>lobby()}); return; } } }
 function startGuest(m){ $('menu').style.display='none'; closePanels(); mode='net'; role='guest';
   world=new World(m.U,'duo'); world.itemsOn=false;
   m.players.forEach(pp=>world.addPlayer(Object.assign({},pp,{noSpawn:true,bot:pp.bot})));
@@ -554,7 +554,7 @@ $('snd').onclick=()=>{ sound=!sound; $('snd').textContent=sound?'소리':'무음
 $('pause').onclick=()=>{ if(over||mode!=='solo') return; paused=!paused; $('pause').textContent=paused?'계속':'멈춤'; if(paused) panel(`<h2>잠깐 쉬는 중</h2><button class="big a" id="go">계속하기</button><button class="big g" id="home">처음으로</button>`,{go:()=>{ paused=false; $('pause').textContent='멈춤'; },home:()=>{ paused=false; toMenu(); }}); };
 $('quit').onclick=()=>{ if(mode==='attract') return; panel(`<h2>그만할까요?</h2><button class="big a" id="no">계속하기</button><button class="big g" id="yes">처음으로</button>`,{no:()=>{},yes:()=>toMenu()}); };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&mode==='solo'&&!paused&&!over) $('pause').click(); });
-window.OjjudaTtang={ join:code=>/^[a-f0-9]{24}$/.test(code)?joinRoom(code):false,onResult:null, start:m=>m==='duo'?lobby():startSolo(), menu:()=>toMenu() };
+window.OjjudaTtang={ host:code=>/^[a-f0-9]{24}$/.test(code)?hostRoom(code):false,join:code=>/^[a-f0-9]{24}$/.test(code)?joinRoom(code):false,onResult:null, start:m=>m==='duo'?lobby():startSolo(), menu:()=>toMenu() };
 try{ if(window.parent!==window) window.parent.postMessage({type:'ojjuda:ttang:ready'},'*'); }catch{}
 addEventListener('pagehide',()=>Net.close());
 addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDefault();parent.postMessage({type:'ojjuda:ttang:close'},location.origin);}});

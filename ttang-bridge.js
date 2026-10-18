@@ -5,28 +5,51 @@
  const bridge={client:null,open,close};window.OjjudaTtangBridge=bridge;
  function close(){
   if(!overlay)return;
+  void leavePublicRoom();
   try{frame?.contentWindow?.OjjudaTtang?.menu();}catch{}
   clearInterval(watcher);overlay.remove();overlay=frame=session=null;bridge.client=null;
   document.body.classList.remove('ttang-open','gaming');
   if(previousFocus?.isConnected)previousFocus.focus();previousFocus=null;
  }
- function open({client,owner,authorized=()=>true,onScore=async()=>({ok:false}),joinCode}={}){
+ async function leavePublicRoom(){
+  const room=session?.arcadeRoom;if(!room)return;
+  session.arcadeRoom=null;
+  try{await bridge.client?.rpc('arcade_ttang_room',{p_action:'leave',p_room:room});}catch{}
+  window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
+ }
+ function open({client,owner,authorized=()=>true,onScore=async()=>({ok:false}),joinCode,hostCode,arcadeRoom}={}){
   if(overlay||!authorized())return;
-  previousFocus=document.activeElement;session={owner,authorized,onScore,round:null,submitted:new Set()};bridge.client=client;
+  previousFocus=document.activeElement;session={owner,authorized,onScore,round:null,submitted:new Set(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
   overlay=document.createElement('section');overlay.id='ttang-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','월드땅따먹기');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;height:100dvh;display:flex;flex-direction:column;background:#f3eafa;padding-top:env(safe-area-inset-top,0px)';
   const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;color:#684a8a;background:#fff9ee;border-bottom:1px solid #e5d5ef;font-size:12px';
   const status=document.createElement('span');status.id='ttang-save-status';status.setAttribute('role','status');status.textContent='월드땅따먹기';
   const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','월드땅따먹기 닫기');done.style.cssText='font:inherit;color:inherit;border:1px solid #ddccec;background:#eee2f8;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';done.onclick=close;
-  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261009-entry1';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261018-catalog1';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+  if(/^[a-f0-9]{24}$/.test(hostCode||''))frame.addEventListener('load',async()=>{
+   const current=session;if(!current?.authorized())return;
+   try{const code=await frame?.contentWindow?.OjjudaTtang?.host(hostCode);if(session!==current)return;
+    if(!code){await leavePublicRoom();return;}current.hosting=true;await heartbeat(current);
+   }catch{if(session===current)await leavePublicRoom();}
+  },{once:true});
   if(/^[a-f0-9]{24}$/.test(joinCode||''))frame.addEventListener('load',()=>{if(session?.authorized())frame?.contentWindow?.OjjudaTtang?.join(joinCode);},{once:true});bar.append(status,done);overlay.append(bar,frame);document.body.append(overlay);document.body.classList.add('gaming','ttang-open');done.focus();
-  watcher=setInterval(()=>{if(session&&!session.authorized())close();},500);
+  watcher=setInterval(()=>{if(session&&!session.authorized())close();else if(session?.hosting)void heartbeat(session);},500);
  }
+ async function heartbeat(current){
+  if(!current.arcadeRoom||current.heartbeatBusy||Date.now()<current.nextHeartbeat)return;
+  current.heartbeatBusy=true;current.nextHeartbeat=Date.now()+20000;
+  try{const {data,error}=await bridge.client.rpc('arcade_ttang_room',{p_action:'heartbeat',p_room:current.arcadeRoom});
+   if(session!==current)return;if(error||!data?.ok){await leavePublicRoom();statusMessage('대전방 연결을 확인해 주세요.');}
+   else window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
+  }catch{current.nextHeartbeat=Date.now()+5000;}finally{current.heartbeatBusy=false;}
+ }
+ function statusMessage(text){const status=overlay?.querySelector('#ttang-save-status');if(status)status.textContent=text;}
  addEventListener('keydown',e=>{if(overlay&&e.key==='Escape'){e.preventDefault();close();}});
  addEventListener('message',async e=>{
   if(!session||!frame||e.origin!==location.origin||e.source!==frame.contentWindow)return;
   if(!session.authorized()){close();return;}
   const d=e.data||{},current=session,status=overlay.querySelector('#ttang-save-status');
+  if(d.type==='ojjuda:ttang:network-end'||d.type==='ojjuda:ttang:menu'){void leavePublicRoom();return;}
   if(d.type==='ojjuda:ttang:close'){close();return;}
   if(d.type==='ojjuda:ttang:start'&&typeof d.round==='string'&&d.round.length<=64){current.round=d.round;status.textContent='월드땅따먹기';return;}
   if(d.type!=='ojjuda:ttang:result'||d.mode!=='solo'||!d.round||d.round!==current.round||current.submitted.has(d.round))return;

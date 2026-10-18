@@ -1,4 +1,4 @@
-import {createEngine} from './engine.mjs?v=20261018-tank4';
+import {createEngine} from './engine.mjs?v=20261018-tank6';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
@@ -161,7 +161,10 @@ addEventListener('message',e=>{
   const p=pending.get(m.replyTo);if(!p)return;clearTimeout(p.timer);pending.delete(m.replyTo);p.resolve(m.result);
  }else if(m.type==='tank-init'&&!ready){
   ready=true;available=m.available===true;
-  if(available)void refresh();else{notify(messages.not_signed_in);lobby();}
+  if(available){
+   if(typeof m.joinCode==='string'&&/^[A-F0-9]{8}$/.test(m.joinCode)){selectedMode='online';void perform({action:'join',code:m.joinCode});}
+   else void refresh();
+  }else{notify(messages.not_signed_in);lobby();}
  }
 });
 document.addEventListener('visibilitychange',()=>{

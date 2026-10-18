@@ -10,7 +10,9 @@ export const WEAPONS=[
   {name:'굴착탄',price:1,desc:'땅을 크게 파요. 피해는 적어요',ammo:Infinity,r:62,dmg:12},
   {name:'흙폭탄',price:1,desc:'핵탄 절반 크기의 흙더미를 쌓아요',ammo:Infinity,r:100,dmg:0,kind:'dirt'},
   {name:'핵탄',price:3,desc:'화면 절반 크기로 터져요. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
-  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:36,dmg:26,kind:'pierce',pen:30,stage:0}
+  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:36,dmg:26,kind:'pierce',pen:30,stage:0},
+  {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
+  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:12,dmg:12,kind:'pierce',pen:18,stage:2}];
 const MIRV_CHILD={name:'',r:11,dmg:7};
@@ -20,12 +22,16 @@ const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28f
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const G=.15,SLOW=.35,TS=.45,FUEL=150,CS=2;
-export const WIND_MAX=.038;
-// Everyone samples the same smooth gusts from the server clock and match seed.
+export const WIND_MAX=.076;
+// A shared gust is chosen every 2.8 seconds, even during flight.
+// Strength 0–9 has 80% probability; 10–20 has 20%. Direction is independent.
 export function windAt(seed,time){
- const phase=time/2800,index=Math.floor(phase),f=phase-index,blend=f*f*(3-2*f);
- const value=i=>{let x=(seed^Math.imul(i,0x9e3779b9))>>>0;x=Math.imul(x^(x>>>16),0x21f0aaad);x=Math.imul(x^(x>>>15),0x735a2d97);return ((x^(x>>>15))>>>0)/4294967296*2-1;};
- return (value(index)*(1-blend)+value(index+1)*blend)*WIND_MAX;
+ const index=Math.floor(time/2800);
+ let x=(seed^Math.imul(index,0x9e3779b9))>>>0;
+ x=Math.imul(x^(x>>>16),0x21f0aaad);x=Math.imul(x^(x>>>15),0x735a2d97);
+ const bits=(x^(x>>>15))>>>0,sample=(bits>>>1)/2147483648;
+ const strength=sample<.8?Math.floor(sample/.8*10):10+Math.floor((sample-.8)/.2*11);
+ return strength===0?0:(bits&1?-1:1)*strength/20*WIND_MAX;
 }
 export function createEngine(saved){
  let rng=saved.seed>>>0;
@@ -106,7 +112,7 @@ function checkHit(s){
   if(solid(s.x,s.y)){
     if(s.w.kind==='bounce'&&s.b>0){s.b--;let k=0;while(solid(s.x,s.y)&&k++<20)s.y-=1;s.vy=-Math.abs(s.vy)*0.62;s.vx*=0.85;sfx('tick');return;}
     if(s.w.kind==='roll'){s.rolling=true;s.rollT=0;let k=0;while(solid(s.x,s.y)&&k++<20)s.y-=1;s.vx*=0.6;return;}
-    explode(s.x,s.y,s.w);s.dead=true;
+    explode(s.x,s.y,s.w,s);s.dead=true;
   }
 }
 
@@ -122,7 +128,7 @@ function roll(s){
 
 
 function explode(x,y,w,s){
- const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set()};
+ const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner};
  if(w.kind==='dirt'){bm.dirt=true;bm.D=69;}
  if(w.kind==='pierce'&&w.stage<2&&s)bm.next={dir:Math.sign(s.vx)||(s.owner===0?1:-1),stage:w.stage+1,owner:s.owner,n:s.n,ang:s.la,vx:s.ivx??s.vx,vy:s.ivy??s.vy};
  booms.push(bm);
@@ -133,6 +139,18 @@ function growBoom(b){
   if(b.next&&b.t>=Math.round(b.D*0.6)){const st=b.next,nw=PIERCE[st.stage],m=Math.hypot(st.vx,st.vy)||1,sp=Math.max(K*20,m*0.75);b.next=null;
     shots.push({x:b.x,y:b.y,vx:st.vx/m*sp,vy:st.vy/m*sp,w:nw,age:99,owner:st.owner,trail:[b.x,b.y],n:st.n,b:0,emerge:true,la:st.ang});sfx('fire');}
   if(b.fx){b.cr=cr;return;}
+  if(b.w.kind==='teleport'){
+    b.cr=cr;const t=tanks[b.owner];
+    if(b.t===1&&t?.hp>0){t.x=clamp(b.x,6,W-6);t.y=surf(t.x);t.vy=0;floats.push({x:t.x,y:t.y-24,txt:'이사!',t:0,teleport:true});}
+    return;
+  }
+  if(b.w.kind==='heal'){
+    b.cr=cr;
+    for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;
+      if(Math.hypot(t.x-b.x,t.y-4-b.y)<=cr){b.hit.add(t);const healed=Math.min(b.w.heal,100-t.hp);
+        if(healed>0){t.hp+=healed;floats.push({x:t.x,y:t.y-24,txt:'+'+healed,t:0,heal:true});syncUI();}}}
+    return;
+  }
   if(b.dirt){if(cr>b.cr){fillCircle(b.x,b.y,cr);b.cr=cr;}return;}
   if(cr>b.cr){carve(b.x,b.y,cr);b.cr=cr;}
   if(b.w.dmg>0)for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;

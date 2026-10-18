@@ -30,14 +30,23 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   await db.query('update public.user_private set coins=0 where user_id=$1',[guest]);
   const stateBefore=room.game;
   assert.equal((await move(guest,room,command(8))).error,'coins');
+  assert.equal((await move(guest,room,command(10))).error,'coins');
+  assert.equal((await move(guest,room,command(11))).error,'coins');
   assert.deepEqual(ok(await call(guest,{action:'read',room_id:room.id})).game,stateBefore);
   room=ok(await move(guest,room,command(1)));assert.equal(room.coins,0);
-  const dupe=await Promise.all([move(a,room,command()),move(a,room,command())]);assert.equal(dupe.filter(r=>r.ok).length,1);
+  const beforeHeal=room,healRequest=randomUUID();
+  const dupe=await Promise.all([move(a,room,command(10),healRequest),move(a,room,command(10),healRequest)]);assert.equal(dupe.filter(r=>r.ok).length,2);
   room=ok(dupe.find(r=>r.ok));
+  assert.equal(room.coins,97,'healing costs exactly 1 jju even with concurrent retry');
+  assert.equal(dupe[0].room.version,dupe[1].room.version);
+  assert.deepEqual(room.game.terrain,beforeHeal.game.terrain,'authoritative healing leaves terrain unchanged');
+  assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests')).rows[0].n,2);
   // A missing player cannot hold the room forever.
   await db.query("update ojjuda_tank_internal.rooms set deadline=now()-interval '1 second' where id=$1",[room.id]);
   const turn=room.game.turn;room=ok(await call(a,{action:'read',room_id:room.id}));assert.notEqual(room.game.turn,turn);
   room=ok(await call(a,{action:'surrender',room_id:room.id,version:room.version,request_id:randomUUID()}));assert.equal(room.status,'finished');
+  const wins=(await db.query('select * from ojjuda_tank_internal.wins')).rows;
+  assert.equal(wins.length,1);assert.equal(wins[0].user_id,guest,'only the authoritative surviving player receives a win');
   assert.ok(!JSON.stringify(room).includes(a));assert.ok(!JSON.stringify(room).includes('requests'));
   // Full 12-person admission, membership and reconnect; a 13th cannot enter.
   let large=ok(await create(a,12));for(const id of ids.slice(1,12))large=ok(await join(id,large));

@@ -95,7 +95,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 @media(max-height:420px){#netHud{bottom:80px;font-size:12px}}
 </style>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
-<link rel="stylesheet" href="./entry.css?v=20261018-tank5">
+<link rel="stylesheet" href="./entry.css?v=20261018-tank6">
 </head>
 <body>
 <div id="stage"><canvas id="cv" aria-label="게임 화면"></canvas></div>
@@ -169,7 +169,9 @@ const WEAPONS=[
   {name:'굴착탄',price:1,desc:'땅을 크게 파요. 피해는 적어요',ammo:Infinity,r:62,dmg:12},
   {name:'흙폭탄',price:1,desc:'핵탄 절반 크기의 흙더미를 쌓아요',ammo:Infinity,r:38,dmg:0,kind:'dirt'},
   {name:'핵탄',price:3,desc:'화면 절반 크기로 터져요. 정중앙은 한 방에 파괴',ammo:Infinity,r:80,dmg:130},
-  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:36,dmg:26,kind:'pierce',pen:30,stage:0}
+  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:36,dmg:26,kind:'pierce',pen:30,stage:0},
+  {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
+  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:12,dmg:12,kind:'pierce',pen:18,stage:2}];
 const MIRV_CHILD={name:'',r:11,dmg:7};
@@ -475,10 +477,21 @@ function draw(){
 
   for(const s of shots){ctx.strokeStyle='rgba(255,236,200,.5)';ctx.lineWidth=1.4;ctx.beginPath();
     for(let i=0;i<s.trail.length;i+=2)i?ctx.lineTo(s.trail[i],s.trail[i+1]):ctx.moveTo(s.trail[i],s.trail[i+1]);ctx.stroke();
-    ctx.fillStyle=s.w.kind==='dirt'?'#c9a46a':'#fff3d6';ctx.beginPath();ctx.arc(s.x,s.y,s.w.r>60?3.6:2.6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=s.w.kind==='teleport'?'#a3dbff':s.w.kind==='heal'?'#8fffc5':s.w.kind==='dirt'?'#c9a46a':'#fff3d6';ctx.beginPath();ctx.arc(s.x,s.y,s.w.r>60?3.6:2.6,0,Math.PI*2);ctx.fill();
     if(s.y<0){ctx.beginPath();ctx.moveTo(s.x,4);ctx.lineTo(s.x-5,12);ctx.lineTo(s.x+5,12);ctx.fill();}}
 
   for(const b of booms){const cr=Math.max(1,b.cr),a=b.t<=b.D?1:Math.max(0,1-(b.t-b.D)/22);
+    if(b.w.kind==='teleport'){
+      ctx.globalAlpha=.2*a;ctx.fillStyle='#90cfff';ctx.fillRect(b.x-cr,b.y-50,cr*2,50);
+      ctx.globalAlpha=.9*a;ctx.strokeStyle='#b9e8ff';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x,b.y,cr,cr*.35,0,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=1;continue;
+    }
+    if(b.w.kind==='heal'){
+      ctx.globalAlpha=.14*a;ctx.fillStyle='#72f5b1';ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.9*a;ctx.strokeStyle='#a0ffcf';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(b.x-6,b.y);ctx.lineTo(b.x+6,b.y);ctx.moveTo(b.x,b.y-6);ctx.lineTo(b.x,b.y+6);ctx.stroke();
+      ctx.globalAlpha=1;continue;
+    }
     if(!b.fx&&b.t<b.D){ctx.globalAlpha=0.4;ctx.strokeStyle='#ffe3b0';ctx.lineWidth=1.2;ctx.setLineDash([3,4]);ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
     if(b.dirt){ctx.globalAlpha=0.55*a;ctx.strokeStyle='#e0c690';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;continue;}
     const rg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,cr);
@@ -489,7 +502,7 @@ function draw(){
   for(const p of bits){ctx.globalAlpha=Math.min(1,p.life/20);ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,p.s,p.s);}
   ctx.globalAlpha=1;
   ctx.font='18px "Do Hyeon", sans-serif';ctx.textAlign='center';
-  for(const f of floats){ctx.globalAlpha=1-f.t/70;ctx.fillStyle='#ffe3c4';ctx.strokeStyle='rgba(30,20,40,.7)';ctx.lineWidth=3;ctx.strokeText(f.txt,f.x,f.y);ctx.fillText(f.txt,f.x,f.y);}
+  for(const f of floats){ctx.globalAlpha=1-f.t/70;ctx.fillStyle=f.teleport?'#b9e8ff':f.heal?'#a0ffcf':'#ffe3c4';ctx.strokeStyle='rgba(30,20,40,.7)';ctx.lineWidth=3;ctx.strokeText(f.txt,f.x,f.y);ctx.fillText(f.txt,f.x,f.y);}
   ctx.globalAlpha=1;ctx.restore();
   drawMini();
   updGauges();
@@ -535,7 +548,7 @@ function updGauges(){
   $('pfill').style.width=(show?(t.pow-5)/95*100:0)+'%';$('powv').textContent=show?'힘 '+Math.round(t.pow):'힘';
   const pm=$('pmark');if(t.lastPow!=null){pm.style.display='block';pm.style.left='calc('+((t.lastPow-5)/95*100)+'% - 1px)';}else pm.style.display='none';
   $('fuelI').style.width=(t.fuel/FUEL*100)+'%';
-  const wv=Math.round(wind/WINDMAX*10);$('windv').textContent=wv<0?'← '+(-wv):wv>0?wv+' →':'0';
+  const wv=Math.round(wind/WINDMAX*20);$('windv').textContent=wv<0?'← '+(-wv):wv>0?wv+' →':'0';
 }
 function syncUI(){
   const t=tanks[turn],can=state==='aim'&&window.TankOnline?.canAim();
@@ -552,7 +565,7 @@ function syncUI(){
   tanks.forEach((tk,i)=>{if(!tk.chip)return;tk.chip.hidden=i!==ownSeat;tk.chip.querySelector('b').textContent=tk.hp;tk.chip.querySelector('.bar i').style.width=tk.hp+'%';
     tk.chip.classList.toggle('on',i===turn&&state!=='end');tk.chip.classList.toggle('dead',tk.hp<=0);});
   {const h=$('cur'),sp=h.querySelectorAll('.nm span');h.hidden=turn===ownSeat||state==='end';h.title=t.name+' 차례';h.style.setProperty('--c',t.color);sp[0].textContent=t.name+' 차례';sp[1].textContent=t.hp;h.querySelector('i').style.width=t.hp+'%';}
-  const v=Math.round(wind/WINDMAX*10);$('windv').textContent=v<0?'← '+(-v):v>0?v+' →':'0';
+  const v=Math.round(wind/WINDMAX*20);$('windv').textContent=v<0?'← '+(-v):v>0?v+' →':'0';
 }
 
 function lockAngle(){if(state==='aim'&&aimPhase==='sweep'&&!pickerOpen&&window.TankOnline?.canAim()){aimPhase='locked';moveDir=0;sfx('tick');syncUI();return true;}return false;}
@@ -625,22 +638,26 @@ function tankDestroyed(t,seat){
 }
 window.TankView={
  resize(){
-  const r=stage.getBoundingClientRect();scale=Math.min(r.width/800,r.height/450);dpr=Math.min(2,window.devicePixelRatio||1);
-  cv.style.width=(800*scale)+'px';cv.style.height=(450*scale)+'px';cv.width=Math.round(800*scale*dpr);cv.height=Math.round(450*scale*dpr);
+  const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
+  const previousWidth=VW;scale=Math.min(r.width/800,r.height/450);dpr=Math.min(2,window.devicePixelRatio||1);
+  // Expand the camera viewport to fill the display; shared physics stays 800 × 450.
+  VW=r.width/scale;H=r.height/scale;
+  cv.style.width=r.width+'px';cv.style.height=r.height+'px';cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
+  camX=clamp(camX+(previousWidth-VW)/2,0,Math.max(0,W-VW));
+  far=Array.from({length:Math.ceil(W/10)+2},(_,i)=>H*.52+Math.sin(i*.06)*H*.06+Math.sin(i*.17)*H*.03);
   miniY=$('wind').getBoundingClientRect().bottom-cv.getBoundingClientRect().top+6;
  },
  use(engine,canAim){
   const v=engine.view(),changed=tankRenderEngine!==engine,oldState=state;
-  ({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,WINDMAX,wind,ground,mask,tanks,turn,shots,booms,bits,floats,shotNo}=v);
+  ({W,MH,PL,FLOOR,FR,GW,GH,K,WINDMAX,wind,ground,mask,tanks,turn,shots,booms,bits,floats,shotNo}=v);
   tanks.forEach((t,i)=>{if(t.hp<=0&&tankHP?.[i]>0)tankDestroyed(t,i);});
   tankHP=tanks.map(t=>t.hp);
   booms=[...v.booms,...tankBursts];bits=[...v.bits,...tankDebris];
   state=['fly','settle'].includes(v.state)?v.state:v.over?'end':canAim?'aim':'watch';
   paths=[...tankHistory,...v.paths];
-  if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();camManual=false;camX=clamp(tanks[turn].x-VW/2,0,W-VW);camY=0;
-   far=Array.from({length:Math.ceil(W/10)+2},(_,i)=>H*.52+Math.sin(i*.06)*H*.06+Math.sin(i*.17)*H*.03);
+  if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();this.resize();camManual=false;camX=clamp(tanks[turn].x-VW/2,0,Math.max(0,W-VW));camY=0;
    tanks.forEach((t,i)=>{t.chip.title=t.name;const label=document.createElement('small');label.textContent=t.name+(i===window.TankOnline?.seat?.()?' (나)':'');t.chip.prepend(label);});
-   aimPhase='sweep';sweepDir=tanks[turn].x>W/2?1:-1;moveDir=0;closePicker();this.resize();}
+   aimPhase='sweep';sweepDir=tanks[turn].x>W/2?1:-1;moveDir=0;closePicker();}
   if(tankRenderDirty!==v.dirty){tDirty=true;tankRenderDirty=v.dirty;}
   if(changed||oldState!==state||frame%10===0)syncUI();
  },
@@ -672,11 +689,12 @@ window.TankView={
 };
 
 addEventListener('resize',()=>{if(state==='menu'){layout(true);genWorld();}else layout(false);});
+if(window.ResizeObserver)new ResizeObserver(()=>{if(window.TankOnline?.hasGame())window.TankView.resize();}).observe(stage);
 layout(true);genWorld();syncUI();
 let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-tank5"></script>
+<script type="module" src="./online.mjs?v=20261018-tank6"></script>
 </body>
 </html>

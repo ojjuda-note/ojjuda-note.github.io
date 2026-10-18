@@ -2,12 +2,12 @@
 (()=>{
  'use strict';let active=null;
  window.OjjudaTankGame={
-  open({owner=null,client=null,authorized=()=>true,onCoins=()=>{}}={}){
+  open({owner=null,client=null,joinCode='',authorized=()=>true,onCoins=()=>{}}={}){
    if(active){active.dialog.focus();return;}
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');dialog.className='tour-game-dialog tank-game-dialog';dialog.setAttribute('aria-label','탱크게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 하기 / 온라인 대전</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261018-tank5" allow="fullscreen; clipboard-write"></iframe>';
-   const frame=dialog.querySelector('iframe');let requests=0;
+   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 하기 / 온라인 대전</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261018-tank6" allow="fullscreen; clipboard-write"></iframe>';
+   const frame=dialog.querySelector('iframe');let requests=0,rankedRoom=null;
    function close(){if(active?.dialog!==dialog)return;active=null;window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
    async function online(m){
     if(typeof m.requestId!=='string'||! /^[a-f0-9-]{36}$/i.test(m.requestId)||!m.body||JSON.stringify(m.body).length>4096||!['list','mine','create','join','read','start','fire','cpu','surrender','leave'].includes(m.body.action)||requests>=4)return;
@@ -17,6 +17,7 @@
       const {data,error}=await client.functions.invoke('tank',{body:m.body});
       if(error){try{result=await error.context.json();}catch{result={error:'unavailable'};}}else result=data||{error:'unavailable'};
       const amount=result?.room?.coins??result?.coins;if(Number.isInteger(amount)&&amount>=0&&authorized())onCoins(amount);
+      if(authorized()&&result?.room?.status==='finished'&&rankedRoom!==result.room.id){rankedRoom=result.room.id;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{game:'tank',owner}}));}
      }
     }catch{result={error:'unavailable'};}
     finally{requests--;}
@@ -24,7 +25,7 @@
    }
    function receive(e){
     if(e.origin!==location.origin||e.source!==frame.contentWindow||e.data?.source!=='ojjuda-tank'||!authorized())return;
-    if(e.data.type==='ready')frame.contentWindow.postMessage({source:'ojjuda-world',type:'tank-init',available:!!(owner&&client?.functions)},location.origin);
+    if(e.data.type==='ready')frame.contentWindow.postMessage({source:'ojjuda-world',type:'tank-init',available:!!(owner&&client?.functions),joinCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode.toUpperCase():''},location.origin);
     else if(e.data.type==='request')void online(e.data);
     else if(e.data.type==='exit')close();
    }
