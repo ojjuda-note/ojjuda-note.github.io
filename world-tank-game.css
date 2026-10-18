@@ -1,2 +1,6 @@
-.tank-game-dialog{width:100vw;height:100dvh;border:0;border-radius:0;background:#f5f3f9}
+.tour-game-dialog.tank-game-dialog{width:100vw;height:100dvh;border:0;border-radius:0;background:#f5f3f9}
 .tank-game-dialog iframe{background:#f5f3f9}
+/* Keep navigation over the game so the battlefield gets the full viewport. */
+.tank-game-dialog .tour-game-header{position:absolute;z-index:1;left:50%;bottom:max(8px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:0;border:0;background:transparent}
+.tank-game-dialog .tour-game-header span{display:none}
+.tank-game-dialog .tour-game-header button{min-height:44px;padding:6px 10px;border:1px solid #ffffff40;border-radius:10px;background:#24203ec9;color:#e5d9ef;font-size:12px;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
