@@ -417,9 +417,9 @@ function step(){
  for(const m of motes){m.x+=(wind/WINDMAX)*.004*m.l+.0002;if(m.x>1)m.x-=1;if(m.x<0)m.x+=1;}
 }
 function updateCam(){
-  if(state==='settle'||(state==='fly'&&!shots.length&&!booms.length))return;
+  if(camManual||pan||state==='settle'||(state==='fly'&&!shots.length&&!booms.length))return;
   let tx=null,ty=null;const live=shots.find(s=>!s.dead);
-  if(live){tx=live.x;ty=live.y;}else if(booms.length){const b=booms[booms.length-1];tx=b.x;ty=b.y;}else if(tanks[turn]){ty=tanks[turn].y;if(!camManual)tx=tanks[turn].x;}
+  if(live){tx=live.x;ty=live.y;}else if(booms.length){const b=booms[booms.length-1];tx=b.x;ty=b.y;}else if(tanks[turn]){tx=tanks[turn].x;ty=tanks[turn].y;}
   if(tx!=null){const goal=clamp(tx-VW/2,0,W-VW);camX+=(goal-camX)*(live?0.12:0.06);}
   if(ty!=null){const gy=clamp(ty-(PL-40),0,MH-PL+40);camY+=(gy-camY)*0.08;}
   camX=clamp(camX,0,Math.max(0,W-VW));camY=clamp(camY,0,Math.max(0,MH-PL+40));
@@ -596,11 +596,20 @@ fireB.addEventListener('pointerdown',e=>{e.preventDefault();if(lockAngle())retur
 fireB.addEventListener('pointerup',release);fireB.addEventListener('pointercancel',()=>{if(aimPhase==='charge'){aimPhase='locked';fireB.classList.remove('charging');syncUI();}});
 prot.addEventListener('pointerdown',()=>{if(lockAngle())return;if(state==='aim'&&aimPhase==='locked'){aimPhase='sweep';syncUI();}});
 let pan=null;
-cv.addEventListener('pointerdown',e=>{pan={x:e.clientX,cam:camX,moved:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
-cv.addEventListener('pointermove',e=>{if(!pan)return;const dx=e.clientX-pan.x;if(Math.abs(dx)>8)pan.moved=true;
-  if(pan.moved){camManual=true;camX=clamp(pan.cam-dx/scale,0,Math.max(0,W-VW));}});
-cv.addEventListener('pointerup',()=>{if(pan&&!pan.moved)lockAngle();pan=null;});
-cv.addEventListener('pointercancel',()=>{pan=null;});
+cv.addEventListener('pointerdown',e=>{
+  if(pan||e.button>0||e.isPrimary===false)return;
+  pan={id:e.pointerId,x:e.clientX,y:e.clientY,camX,camY,moved:false};
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+});
+cv.addEventListener('pointermove',e=>{
+  if(!pan||pan.id!==e.pointerId)return;
+  const dx=e.clientX-pan.x,dy=e.clientY-pan.y;if(Math.hypot(dx,dy)>8)pan.moved=true;
+  if(pan.moved){camManual=true;camX=clamp(pan.camX-dx/scale,0,Math.max(0,W-VW));camY=clamp(pan.camY-dy/scale,0,Math.max(0,MH-PL+40));}
+});
+['pointerup','pointercancel','lostpointercapture'].forEach(type=>cv.addEventListener(type,e=>{
+  if(!pan||pan.id!==e.pointerId)return;
+  const tap=type==='pointerup'&&!pan.moved;pan=null;if(tap)lockAngle();
+}));
 document.addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault();});
 [[lB,-1],[rB,1]].forEach(([b,d])=>{
   b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled)return;try{b.setPointerCapture(e.pointerId);}catch(_){}moveDir=d;});
@@ -677,7 +686,8 @@ window.TankView={
   booms=[...v.booms,...tankBursts];bits=[...v.bits,...tankDebris];
   state=['fly','settle'].includes(v.state)?v.state:v.over?'end':canAim?'aim':'watch';
   paths=[...tankHistory,...v.paths];
-  if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();this.resize();camManual=false;camX=clamp(tanks[turn].x-VW/2,0,Math.max(0,W-VW));camY=0;
+  if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();this.resize();
+   if(!pan){camManual=false;camX=clamp(tanks[turn].x-VW/2,0,Math.max(0,W-VW));camY=0;}
    tanks.forEach((t,i)=>{t.chip.title=t.name;const label=document.createElement('small');label.textContent=t.name+(i===window.TankOnline?.seat?.()?' (나)':'');t.chip.prepend(label);});
    aimPhase='sweep';sweepDir=tanks[turn].x>W/2?1:-1;moveDir=0;closePicker();}
   if(tankRenderDirty!==v.dirty){tDirty=true;tankRenderDirty=v.dirty;}
