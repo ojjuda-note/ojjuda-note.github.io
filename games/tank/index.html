@@ -554,7 +554,7 @@ cv.addEventListener('pointermove',e=>{if(!pan)return;const dx=e.clientX-pan.x;if
   if(pan.moved){camManual=true;camX=clamp(pan.cam-dx/scale,0,Math.max(0,W-VW));}});
 cv.addEventListener('pointerup',()=>{if(pan&&!pan.moved)lockAngle();pan=null;});
 cv.addEventListener('pointercancel',()=>{pan=null;});
-document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault();});
 [[lB,-1],[rB,1]].forEach(([b,d])=>{
   b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled)return;try{b.setPointerCapture(e.pointerId);}catch(_){}moveDir=d;});
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>{if(moveDir===d)moveDir=0;}));});
