@@ -95,7 +95,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 @media(max-height:420px){#netHud{bottom:80px;font-size:12px}}
 </style>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
-<link rel="stylesheet" href="./entry.css?v=20261018-tank6">
+<link rel="stylesheet" href="./entry.css?v=20261018-tank7">
 </head>
 <body>
 <div id="stage"><canvas id="cv" aria-label="게임 화면"></canvas></div>
@@ -163,18 +163,18 @@ const WEAPONS=[
   {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:24,dmg:34},
   {name:'대형탄',price:0,desc:'폭발 범위가 넓어요',ammo:Infinity,r:42,dmg:52},
   {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:14,dmg:11,count:3},
-  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:11,dmg:7,kind:'mirv'},
+  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:24,dmg:7,kind:'mirv'},
   {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:24,dmg:32,kind:'bounce'},
-  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:26,dmg:36,kind:'roll'},
-  {name:'굴착탄',price:1,desc:'땅을 크게 파요. 피해는 적어요',ammo:Infinity,r:62,dmg:12},
-  {name:'흙폭탄',price:1,desc:'핵탄 절반 크기의 흙더미를 쌓아요',ammo:Infinity,r:38,dmg:0,kind:'dirt'},
-  {name:'핵탄',price:3,desc:'화면 절반 크기로 터져요. 정중앙은 한 방에 파괴',ammo:Infinity,r:80,dmg:130},
-  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:36,dmg:26,kind:'pierce',pen:30,stage:0},
+  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:24,dmg:36,kind:'roll'},
+  {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:24,dmg:12},
+  {name:'흙폭탄',price:1,desc:'일반탄 범위에 흙더미를 쌓아요',ammo:Infinity,r:24,dmg:0,kind:'dirt'},
+  {name:'핵탄',price:3,desc:'일반탄 범위의 강력한 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:24,dmg:130},
+  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
   {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}
 ];
-const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:12,dmg:12,kind:'pierce',pen:18,stage:2}];
-const MIRV_CHILD={name:'',r:11,dmg:7};
+const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:24,dmg:12,kind:'pierce',pen:18,stage:2}];
+const MIRV_CHILD={name:'',r:24,dmg:7};
 const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28fad','#6ee7d2','#ffffff','#b8a07e','#ff9f43','#8ea4ff'];
 let cfg={n:4,h:1},NT=4;
 
@@ -197,7 +197,6 @@ function layout(fresh){
     ground=new Float32Array(W+1);
     K=Math.sqrt(W*1.15*G)/100;
     WINDMAX=0.012*VW/800;
-    WEAPONS[8].r=Math.round(VW/4);WEAPONS[7].r=Math.round(VW/8);
     camX=0;camY=0;EXTRA=Math.round(H*0.6);MH=H+EXTRA;
   }else{
     const nH=Math.round(VW*r.height/r.width),dc=Math.round((nH-H)/CS),dH=dc*CS;
@@ -493,7 +492,6 @@ function draw(){
       ctx.globalAlpha=1;continue;
     }
     if(!b.fx&&b.t<b.D){ctx.globalAlpha=0.4;ctx.strokeStyle='#ffe3b0';ctx.lineWidth=1.2;ctx.setLineDash([3,4]);ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
-    if(b.dirt){ctx.globalAlpha=0.55*a;ctx.strokeStyle='#e0c690';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;continue;}
     const rg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,cr);
     rg.addColorStop(0,'rgba(255,252,232,'+a+')');rg.addColorStop(.3,'rgba(255,214,120,'+(0.95*a)+')');
     rg.addColorStop(.7,'rgba(234,120,62,'+(0.6*a)+')');rg.addColorStop(1,'rgba(170,55,45,'+(0.15*a)+')');
@@ -695,6 +693,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-tank6"></script>
+<script type="module" src="./online.mjs?v=20261018-tank7"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
 assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1]);
+for(const weapon of WEAPONS.filter(w=>w.price>0&&!['heal','teleport'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'paid explosions use the basic shell radius');
 const gusts=Array.from({length:100000},(_,i)=>windAt(123456+i%17,1700000000000+i*2800+(i%2800)));
 const strengths=gusts.map(w=>Math.round(Math.abs(w)/WIND_MAX*20));
 const strongRate=strengths.filter(w=>w>=10).length/strengths.length;
@@ -30,7 +31,10 @@ for(const size of [2,4,12]){
   // Aim near the tank to exercise terrain, explosions, damage and every special effect.
   const command={type:'fire',weapon,angle:weapon%2?75:100,power:15,moves:Array(80).fill(weapon%2?1:-1)};
   const result=advance(initial,0,command),client=createEngine(initial);assert.equal(client.begin(command),result.price);
-  let frames=0;while(['fly','settle'].includes(client.view().state)&&frames++<18000)client.step();
+  let frames=0;while(['fly','settle'].includes(client.view().state)&&frames++<18000){
+   client.step();
+   if(weapon>=3&&weapon<=9)for(const boom of client.view().booms){assert.equal(boom.r,WEAPONS[0].r,'including split and repeat explosions');assert.equal(boom.D,69,'same expansion duration as the basic shell');}
+  }
   const rendered=client.snapshot();result.state.tanks.forEach(t=>delete t.misses);
   assert.deepEqual(rendered,result.state,`server and client replay match: ${size} players, weapon ${weapon}`);
   assert.ok(result.state.terrain.every(x=>Number.isInteger(x)&&x>=0&&x<=358));

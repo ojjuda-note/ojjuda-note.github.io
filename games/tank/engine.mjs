@@ -4,18 +4,18 @@ export const WEAPONS=[
   {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:24,dmg:34},
   {name:'대형탄',price:0,desc:'폭발 범위가 넓어요',ammo:Infinity,r:42,dmg:52},
   {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:14,dmg:11,count:3},
-  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:11,dmg:7,kind:'mirv'},
+  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:24,dmg:7,kind:'mirv'},
   {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:24,dmg:32,kind:'bounce'},
-  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:26,dmg:36,kind:'roll'},
-  {name:'굴착탄',price:1,desc:'땅을 크게 파요. 피해는 적어요',ammo:Infinity,r:62,dmg:12},
-  {name:'흙폭탄',price:1,desc:'핵탄 절반 크기의 흙더미를 쌓아요',ammo:Infinity,r:100,dmg:0,kind:'dirt'},
-  {name:'핵탄',price:3,desc:'화면 절반 크기로 터져요. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
-  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:36,dmg:26,kind:'pierce',pen:30,stage:0},
+  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:24,dmg:36,kind:'roll'},
+  {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:24,dmg:12},
+  {name:'흙폭탄',price:1,desc:'일반탄 범위에 흙더미를 쌓아요',ammo:Infinity,r:24,dmg:0,kind:'dirt'},
+  {name:'핵탄',price:3,desc:'일반탄 범위의 강력한 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:24,dmg:130},
+  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
   {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}
 ];
-const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:12,dmg:12,kind:'pierce',pen:18,stage:2}];
-const MIRV_CHILD={name:'',r:11,dmg:7};
+const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:24,dmg:12,kind:'pierce',pen:18,stage:2}];
+const MIRV_CHILD={name:'',r:24,dmg:7};
 
 const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28fad','#6ee7d2','#ffffff','#b8a07e','#ff9f43','#8ea4ff'];
 
@@ -129,7 +129,7 @@ function roll(s){
 
 function explode(x,y,w,s){
  const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner};
- if(w.kind==='dirt'){bm.dirt=true;bm.D=69;}
+ if(w.kind==='dirt')bm.dirt=true;
  if(w.kind==='pierce'&&w.stage<2&&s)bm.next={dir:Math.sign(s.vx)||(s.owner===0?1:-1),stage:w.stage+1,owner:s.owner,n:s.n,ang:s.la,vx:s.ivx??s.vx,vy:s.ivy??s.vy};
  booms.push(bm);
 }
