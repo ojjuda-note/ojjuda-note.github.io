@@ -6,6 +6,8 @@ const root=path.resolve(__dirname,'..');
  const f=await fixture(),browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']}),errors=[];
  f.holdDeadlines(true);
  const invitation=await installInvites(f.db);
+ const catalog=fs.readFileSync(path.join(root,'supabase/migrations/20261018072717_arcade_complete_game_catalog.sql'),'utf8');
+ await f.db.exec(catalog.slice(0,catalog.indexOf('create table ojjuda_arcade_internal.ttang_rooms')));
  await f.db.query('insert into public.friendships values($1,$2),($1,$3)',[ids[0],ids[1],ids[2]]);
  try{
   async function player(seat,width){
@@ -17,6 +19,10 @@ const root=path.resolve(__dirname,'..');
     if(u.pathname==='/online-api'){
      const result=await f.call(ids[seat],route.request().postDataJSON());return route.fulfill({status:result.status,contentType:'application/json',body:JSON.stringify(result)});
     }
+    if(u.pathname==='/publish-api'){
+     try{const data=await f.db.transaction(async tx=>{await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[ids[seat]]);await tx.exec('set local role authenticated');return (await tx.query('select public.arcade_publish_marble($1) result',[route.request().postDataJSON().p_room])).rows[0].result;});return route.fulfill({contentType:'application/json',body:JSON.stringify({data})});}
+     catch(error){return route.fulfill({contentType:'application/json',body:JSON.stringify({error:{message:error.message}})});}
+    }
     if(u.pathname==='/invite-api'){
      try{return route.fulfill({contentType:'application/json',body:JSON.stringify({data:await invitation(ids[seat],route.request().postDataJSON())})});}
      catch(error){return route.fulfill({contentType:'application/json',body:JSON.stringify({error:{message:error.message}})});}
@@ -26,7 +32,7 @@ const root=path.resolve(__dirname,'..');
      const friends=${JSON.stringify([0,1,2].filter(i=>i!==seat).map(i=>({id:ids[i],nick:i===0?'민준':i===1?'여행친구':'참가자3',online:true})))};
      window.OjjudaGameFriends={list:()=>friends};
      const channel={on(){return this},subscribe(){return this}};
-     const client={rpc:async(name,args)=>{if(name!=='arcade_friend_invite')throw Error('unexpected RPC');return (await fetch('/invite-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(args)})).json()},channel:()=>channel,removeChannel(){},functions:{invoke:async(name,{body})=>{if(name!=='marble')throw Error('unexpected function');const res=await fetch('/online-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await res.json();return res.ok?{data,error:null}:{data:null,error:{context:{json:async()=>data}}};}}};
+     const client={rpc:async(name,args)=>{if(!['arcade_friend_invite','arcade_publish_marble'].includes(name))throw Error('unexpected RPC');return (await fetch(name==='arcade_publish_marble'?'/publish-api':'/invite-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(args)})).json()},channel:()=>channel,removeChannel(){},functions:{invoke:async(name,{body})=>{if(name!=='marble')throw Error('unexpected function');const res=await fetch('/online-api',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await res.json();return res.ok?{data,error:null}:{data:null,error:{context:{json:async()=>data}}};}}};
      const launch=(joinCode='')=>OjjudaTourGame.open({owner,nickname,client,joinCode,onScore:()=>{window.localScores++;return {ok:true}}});
      OjjudaFriendInvites.install({client,user:()=>owner,list:()=>friends,onJoin:invite=>{if(invite.kind!=='marble')throw Error('unexpected game');OjjudaTourGame.close();launch(invite.code)}});
      document.querySelector('#launch').onclick=()=>launch();</script>`});

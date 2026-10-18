@@ -5,7 +5,7 @@ const completed=(f,stage)=>Object.fromEntries(f.upgrades.filter(u=>u.r<=stage).m
 const progression=game({saved:{intro:true,tut:true,sound:false}});
 try{
   const {w,$}=progression,f=w.fixture;
-  $('#starStart').click();
+  $('#starGrowth').click();
   f.state.sel='h0a';f.state.cur.light=9;f.refresh();
   assert.equal($('#buy').disabled,true,'the old cheaper budget no longer buys heat');
   f.state.cur.light=10;f.refresh();$('#buy').click();

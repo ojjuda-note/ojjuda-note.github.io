@@ -72,7 +72,8 @@ world=world.replace('</head>','<script src="/arcade-rooms.js"></script><script s
     if(kind==='matgo'){
       await a.page.locator('[data-act=matgo-open]').click();
       const frame=a.page.frameLocator('#matgo-overlay iframe');
-      await frame.locator('#create').click();await frame.locator('#public-room-title').fill(title);
+      await frame.locator('[data-entry-mode=opponent]').click();
+      await frame.locator('#public-room-title').fill(title);
       await frame.locator('#public-room-form button[type=submit]').click();
       await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
     }else{

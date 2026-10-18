@@ -19,6 +19,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  const card=page.locator('#gov .game-entry');assert.ok(await card.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
  if(id!=='screw'){await page.locator('[data-g=start]').click();await page.waitForFunction(()=>entryTest.current()?.running);assert.equal(await page.locator('#gov .game-entry').count(),0);}
+ else{for(const mode of ['box','flat']){if(mode==='flat'){await page.evaluate(()=>entryTest.close());await page.evaluate(()=>entryTest.open('screw'));}await page.locator('[data-g=screw-start][data-mode='+mode+']').click();await page.waitForFunction(()=>entryTest.current()?.running);assert.equal(await page.locator('#gov .game-entry').count(),0);}}
  await page.evaluate(()=>entryTest.close());
  }
  await page.evaluate(()=>entryTest.friends());
@@ -38,9 +39,12 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  if(viewport.width===390&&id==='chess')await page.screenshot({path:'/tmp/game-entry-proof/friend-invite.png'});
  await page.locator('[data-entry-mode=computer]').click();assert.equal(await page.locator('[data-entry-panel=opponent]').isVisible(),false);
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
+ await page.locator('[data-entry-panel=computer] [data-act='+(/^(chess|janggi)$/.test(id)?'bd-start':'bl-start')+']').click();
+ await page.locator(/^(chess|janggi)$/.test(id)?'#bd-root':'#bl-cv').waitFor();
+ assert.equal(await page.locator('.ge-board-entry').count(),0,id+': starts directly from the entry');
  await page.evaluate(()=>entryTest.closeBoard());
  }
  assert.deepEqual(errors,[]);await page.close();
  }
- console.log('PASS: consistent entry cards at 320/390/1280px, four game starts, five opponent menus, live friend sorting, search, safe names and exact invite recipient');
+ console.log('PASS: consistent entry cards at 320/390/1280px, six arcade starts, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

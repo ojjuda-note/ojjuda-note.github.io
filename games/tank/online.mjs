@@ -40,6 +40,7 @@ function lobby(){
   $('waitingCodeRow').hidden=solo;$('waitingCount').textContent=solo?`나 1명 + 컴퓨터 ${current.capacity-1}명`:$('waitingCount').textContent;
   $('waitingHint').textContent=solo?'준비됐어요. 혼자 시작해 보세요.':'방장이 시작하면 모두 함께 전투에 들어가요.';
   $('waitingNames').innerHTML=current.names.map((name,i)=>`<span class="seatBadge${i===current.seat?' me':''}">${esc(name)}${i===current.hostSeat?' · 방장':''}${i===current.seat?' · 나':''}</span>`).join('');
+  $('inviteFriends').hidden=solo||current.seat!==current.hostSeat;$('inviteFriends').disabled=busy||current.names.length>=current.capacity;
   $('startMatch').hidden=current.seat!==current.hostSeat;$('startMatch').disabled=busy||(!solo&&current.names.length<2);
  }
 }
@@ -149,6 +150,12 @@ $('rooms').onclick=e=>{const b=e.target.closest('[data-code]');if(b&&!b.disabled
 $('refreshRooms').onclick=()=>{if(!busy&&!polling)void refresh();};
 $('startMatch').onclick=async()=>{if(!current||busy)return;void view.landscape();await perform({action:'start',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
 $('leaveRoom').onclick=()=>current&&!busy&&perform({action:'leave',room_id:current.id});
+$('inviteFriends').onclick=async()=>{
+ if(busy||current?.status!=='waiting'||current.mode==='solo'||current.seat!==current.hostSeat)return;
+ const room=current.id;$('inviteFriends').disabled=true;
+ try{await request({action:'invite',room_id:room});}catch(e){notify(messages[e.message]||'친구 초대를 열지 못했어요. 다시 시도해 주세요.');}
+ finally{render();}
+};
 $('copyCode').onclick=async()=>{try{await navigator.clipboard.writeText(current.code);notify('방 번호를 복사했어요.');}catch{notify('방 번호 '+current.code+'를 알려 주세요.');}};
 $('surrender').onclick=()=>{if(!busy&&current&&confirm(current.mode==='solo'?'이번 게임을 끝내고 처음 화면으로 갈까요?':'항복하고 관전할까요?'))void perform({action:current.mode==='solo'?'leave':'surrender',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
 $('bAgain').onclick=async()=>{if(!current||busy)return;const solo=current.mode==='solo';if(solo)$('soloOpponents').value=String(current.capacity-1);const left=await perform({action:'leave',room_id:current.id});if(left&&solo)await startSolo();};
@@ -157,7 +164,8 @@ $('bMenu').onclick=()=>current?.mode==='solo'&&!busy?perform({action:'leave',roo
 addEventListener('message',e=>{
  if(e.source!==parent||e.origin!==origin||e.data?.source!=='ojjuda-world')return;
  const m=e.data;
- if(m.type==='tank-response'){
+ if(m.type==='tank-invite-sent'){notify('친구를 초대했어요. 친구가 받으면 이 방으로 들어와요.');}
+ else if(m.type==='tank-response'){
   const p=pending.get(m.replyTo);if(!p)return;clearTimeout(p.timer);pending.delete(m.replyTo);p.resolve(m.result);
  }else if(m.type==='tank-init'&&!ready){
   ready=true;available=m.available===true;

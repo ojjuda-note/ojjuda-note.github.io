@@ -133,7 +133,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
     <section class="roomList"><h3>열린 대전방 <button id="refreshRooms" class="ge-secondary" type="button">새로고침</button></h3><div id="rooms"></div></section>
    </div>
   </div>
-  <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
+  <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
   <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람의 방향과 세기가 수시로 바뀌어요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄</td></tr></tbody></table><p>두 모드 모두 특수탄은 내가 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
@@ -697,6 +697,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-tank8"></script>
+<script type="module" src="./online.mjs?v=20261018-arcade-entry1"></script>
 </body>
 </html>

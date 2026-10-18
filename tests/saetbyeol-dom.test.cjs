@@ -16,6 +16,7 @@ try {
   receive({type:'ojjuda-saetbyeol-init',owner,admin:true}, 'https://other.test');
   w.fixture.startDemo(); assert.equal(w.fixture.demo, null);
   $('#starStart').click(); assert.equal($('#starEntry').hidden, true);
+  assert.equal(w.fixture.mode,'run');assert.ok(w.fixture.run);assert.equal($('#overlay').classList.contains('on'),false,'entry starts play without a story or second start screen');
   const state = w.fixture.state;
   state.stage = 1; state.lv.h0a = 2; state.mem = [3,0,0,0,0];
   w.fixture.save(); tick(600);
@@ -44,7 +45,7 @@ const a = game({admin:true, member:owner, saved:{stage:2,cur:{light:100},lv:{h0a
 try {
   const {w,$,messages,tick} = a;
   assert.equal($('#demoBtn').hidden, false); assert.equal($('#demoBtn').disabled, false);
-  $('#starStart').click(); w.fixture.save(); tick(600);
+  $('#starGrowth').click(); w.fixture.save(); tick(600);
   const before = w.localStorage.getItem('ojjuda.saetbyeol.save.v1:' + owner);
   const count = messages.filter(m => m.data.type === 'ojjuda-game-result').length;
   $('#demoBtn').click(); assert.ok(w.fixture.demo); assert.equal(w.fixture.state.stage, 4);
@@ -64,7 +65,7 @@ finally { forgedGuest.dom.window.close(); }
 const balanced = game({saved:{stage:0,cur:{light:100000},intro:true}});
 try {
   const {w,$} = balanced, f = w.fixture;
-  $('#starStart').click();
+  $('#starGrowth').click();
   const select = id => { f.state.sel = id; f.refresh(); };
   const fillBranch = branch => {
     while (f.growth.state(f.state.lv).round === 1 && f.growth.state(f.state.lv).remaining[branch] > 0) {
@@ -103,7 +104,7 @@ for (const reverse of [false, true]) {
   const progression = game({saved:{stage:0,cur:{light:1e12,metal:1e12,mass:1e12},intro:true}});
   try {
     const {w,$} = progression, f = w.fixture, rounds = new Set();
-    $('#starStart').click();
+    $('#starGrowth').click();
     let purchases = 0;
     for (let stage = 0; stage < 5; stage++) {
       f.state.stage = stage; f.refresh();
@@ -145,7 +146,7 @@ const legacyLevels = {h0a:5,h0b:3,p0a:6,h1a:4,p1a:3,x2a:2};
 const legacy = game({saved:{stage:2,cur:{light:1e12,metal:1e12},lv:legacyLevels,intro:true}});
 try {
   const {w,$} = legacy, f = w.fixture;
-  $('#starStart').click();
+  $('#starGrowth').click();
   for (const [id, level] of Object.entries(legacyLevels)) assert.equal(f.state.lv[id], level);
   assert.equal(f.stats().maxHeat, 21, 'existing saved upgrades use the new gradual balance');
   f.state.sel = 'p1a'; f.refresh();
@@ -167,7 +168,7 @@ console.log('PASS: balanced growth gates, shared branch caps, missing-branch sho
 // Arcade and board use the same game identifier, with no adult gate.
 const world = read('world.html');
 assert.match(world, /saetbyeol:\{name:"샛별키우기",emoji:"⭐",unit:"점"/);
-assert.match(world, /return \{saetbyeol:_r.saetbyeol/);
+assert.ok(world.includes('saetbyeol:_r.saetbyeol'), 'Saetbyeol remains in the ranking catalog');
 assert.match(world, /OjjudaSaetbyeolGame\.open\(\{owner,client:S,authorized/);
 assert.match(read('world-game-assets.js'), /saetbyeol:\[/);
 assert.match(read('guest-game-scores.js'), /'saetbyeol'/);

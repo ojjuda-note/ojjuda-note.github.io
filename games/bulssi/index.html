@@ -80,6 +80,7 @@ body[data-mode="hub"] #panel{display:block}
     <p class="ge-copy">작은 불씨에서 시작해<br>나만의 빛나는 별을 키워요.</p>
     <p id="starProgress" class="star-progress">작은 별을 깨울 준비를 하고 있어요.</p>
     <button id="starStart" class="ge-primary" type="button" disabled>시작하기</button>
+    <button id="starGrowth" class="ge-secondary" type="button" disabled>성장 · 강화</button>
     <button id="starExit" class="ge-secondary" type="button">게임 목록으로</button>
     <span id="starEntryHint" class="ge-hint" role="status">게임을 연결하고 있어요…</span>
     <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 성장 항목은 다섯 뿌리에서 각각 40개씩, 총 200개로 뻗어요. 각 진화 단계의 성장은 5개 구간으로 나뉘며, 다섯 영역의 목표를 모두 채우면 다음 구간의 강화가 열려요. 이전 단계의 강화를 모두 마쳐야 다음 단계의 강화를 시작할 수 있어요. 부족한 영역을 누르면 강화할 가지를 골라줘요.</p><p>일반 천체는 50종이며, 진화할 때마다 10종씩 새로 열려요. 시간 결정은 드물게 나타나며 최소 12초 간격, 화면에 1개씩만 등장해요. 1개당 최대 1초, 한 판의 추가 시간은 최대 8초예요. 설정의 천체 도감에서 종류를 볼 수 있어요.</p><p>오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>성장 점수: 진화 단계마다 10,000점 + 강화 1회마다 10점 + 기억 1개마다 100점 + 엔딩 10,000점. 오늘과 이번 달의 최고 점수가 게임순위에 올라가요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
@@ -102,7 +103,7 @@ body[data-mode="hub"] #panel{display:block}
 <div id="toast" class="serif" role="status"></div>
 <div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><div id="ovHint">눌러서 계속</div></div>
-<script src="./entry.js?v=20261013-booster1"></script>
+<script src="./entry.js?v=20261018-arcade-entry1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261013-sky2001"></script>
 <script src="./encounters.js?v=20261013-sky2001"></script>
@@ -599,7 +600,7 @@ function ending(){
   ]});
 }
 function finale(t){S.ended=true;save();overlay(`<h2>${t}</h2><p>여기까지 타올라 줘서 고마워요.</p>`,{buttons:[['처음부터 다시',resetGame,'primary'],['별자리 보기',()=>{closeOv();setMode('hub')}]]})}
-function resetGame(){if(R?.boostPending)return;if(DEMO){endDemo();return;}DEMO=null;const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;save();st=stats();R=null;applyTheme();closeOv();story(PRO,()=>{selectDefault();setMode('hub')})}
+function resetGame(){if(R?.boostPending)return;if(DEMO){endDemo();return;}DEMO=null;const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;save();st=stats();R=null;applyTheme();closeOv();selectDefault();setMode('hub')}
 
 // ---------- hub (upgrade tree) ----------
 let pulse=null,camK=0;const seen={};
@@ -887,9 +888,9 @@ applyTheme();
 window.OjjudaSaetbyeolEntry.connect({
   upgrades:UP,getState:()=>S,isDemo:()=>!!DEMO,isRunning:()=>mode==='run',loadState:loadProgress,notice:toast,
   allowDemo(allowed){demoAllowed=allowed===true;$('#demoBtn').hidden=!demoAllowed;$('#demoBtn').disabled=!demoAllowed;$('#starDemoNotice').hidden=!demoAllowed;},
-  start(){
-    ensureAudio();setMode('hub');
-    if(!S.intro)story(PRO,()=>{S.intro=true;save();selectDefault();refresh()});
+  start(growth=false){
+    S.intro=true;save();selectDefault();closeOv();
+    if(growth){ensureAudio();setMode('hub');}else startRun(false);
   }
 });
 requestAnimationFrame(frame);

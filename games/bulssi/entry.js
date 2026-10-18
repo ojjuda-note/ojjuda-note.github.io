@@ -72,7 +72,7 @@
     game.loadState(raw);
     game.allowDemo(admin === true && id !== 'guest');
     ready = true;
-    $('#starStart').disabled = false;
+    $('#starStart').disabled = $('#starGrowth').disabled = false;
     $('#starEntryHint').textContent = '진행 상황은 이 기기에 자동 저장돼요.';
     refresh();
   }
@@ -123,11 +123,13 @@
     save, buyBooster,
     connect(controller) {
       game = controller;
-      $('#starStart').onclick = () => {
+      const enter = (growth=false) => {
         if (!ready) return;
         started = true; $('#starEntry').hidden = true;
-        game.start(); save(game.getState());
+        game.start(growth); save(game.getState());
       };
+      $('#starStart').onclick = () => enter();
+      $('#starGrowth').onclick = () => enter(true);
       $('#starExit').onclick = () => post({type:'ojjuda-game-exit'});
       $('#starRetry').onclick = flush;
       $('#starRankingDetails').ontoggle = () => {

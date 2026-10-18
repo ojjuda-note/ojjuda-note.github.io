@@ -19,6 +19,11 @@
       async function invoke(body) {
         const {data,error} = await client.functions.invoke('marble', {body});
         if (error) { try { return await error.context.json(); } catch { return {error:'unavailable'}; } }
+        if (data?.ok && body.action === 'create' && data.room?.status === 'waiting') {
+          const published = await client.rpc('arcade_publish_marble', {p_room:data.room.id});
+          if (published.error || !published.data?.ok) return {error:'unavailable'};
+        }
+        if (data?.ok && ['create','join','start','leave','surrender'].includes(body.action)) window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
         return data || {error:'unavailable'};
       }
       async function invite(body) {

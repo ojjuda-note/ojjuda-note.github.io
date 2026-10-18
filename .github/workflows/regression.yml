@@ -143,6 +143,8 @@ jobs:
           node tests/game-friend-invites-db.test.cjs
           node tests/game-friend-invites-ui.test.cjs
           node tests/game-entry-ui.test.cjs
+          node tests/arcade-rooms-db.test.cjs
+          node tests/arcade-rooms-ui.test.cjs
           node tests/service-notice-ui.test.cjs
 
   territory:
@@ -163,6 +165,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check territory collisions, capture and embedded game screens
         run: |
+          node tests/photo-ttang-entry.test.cjs
           node tests/ttang-collision.test.cjs
           node tests/photo-ttang-collision.test.cjs
           node tests/ttang-corners.test.cjs

@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261007-capture2';
+  const gameUrl = '/games/photo-ttang.html?v=20261018-photo-modes1';
   const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
@@ -80,6 +80,12 @@
       if (frame !== candidate) return;
       const api = candidate.contentWindow?.OjjudaPhotoTtang;
       if (!api) return loadFailure(candidate);
+      if (!demo && !candidate.contentDocument.querySelector('[data-photo-entry]')) {
+        const entry = candidate.contentDocument.createElement('script');
+        entry.dataset.photoEntry = '';
+        entry.src = '/photo-ttang-entry.js?v=20261018-photo-modes1';
+        candidate.contentDocument.head.append(entry);
+      }
       if (demo) {
         const allowed = await reserveTrial();
         if (frame !== candidate) return;
