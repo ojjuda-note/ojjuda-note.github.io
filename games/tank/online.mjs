@@ -152,13 +152,13 @@ window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins
 };
 async function startPrivate(mode){
  if(busy||!available)return;
- void view.landscape();
+ void view.fullscreen();
  const capacity=mode==='local'?Number($('localPlayers').value):Number($('soloOpponents').value)+1;
  const created=await perform({action:'create',request_id:crypto.randomUUID(),options:{mode,title:mode==='local'?'같은 기기에서 탱크 한 판':'컴퓨터와 탱크 한 판',capacity}});
  if(created?.room?.status==='waiting')await perform({action:'start',room_id:created.room.id,version:created.room.version,request_id:crypto.randomUUID()});
 }
 $('soloMode').onclick=()=>chooseMode('solo');$('localMode').onclick=()=>chooseMode('local');$('onlineMode').onclick=()=>chooseMode('online');$('startSolo').onclick=()=>startPrivate('solo');$('startLocal').onclick=()=>startPrivate('local');
-$('resumeMatch').onclick=()=>{if(!current?.game||busy||uncertain)return;resumeOnEntry=false;void view.landscape();render();};
+$('resumeMatch').onclick=()=>{if(!current?.game||busy||uncertain)return;resumeOnEntry=false;void view.fullscreen();render();};
 $('newMatch').onclick=async()=>{
  if(!current||busy||uncertain||(current.mode==='online'&&current.status==='active'))return;
  if(!confirm('새 게임을 준비하면 하던 게임이 끝나요. 새로 시작할까요?'))return;
@@ -170,7 +170,7 @@ $('createRoom').onsubmit=e=>{e.preventDefault();void perform({action:'create',re
 $('joinRoom').onsubmit=e=>{e.preventDefault();void perform({action:'join',code:$('roomCode').value.trim().toUpperCase()});};
 $('rooms').onclick=e=>{const b=e.target.closest('[data-code]');if(b&&!b.disabled)void perform({action:'join',code:b.dataset.code});};
 $('refreshRooms').onclick=()=>{if(!busy&&!polling)void refresh();};
-$('startMatch').onclick=async()=>{if(!current||busy)return;void view.landscape();await perform({action:'start',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
+$('startMatch').onclick=async()=>{if(!current||busy)return;void view.fullscreen();await perform({action:'start',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
 $('leaveRoom').onclick=()=>current&&!busy&&perform({action:'leave',room_id:current.id});
 $('inviteFriends').onclick=async()=>{
  if(busy||current?.status!=='waiting'||current.mode!=='online'||current.seat!==current.hostSeat)return;

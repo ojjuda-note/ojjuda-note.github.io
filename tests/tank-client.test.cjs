@@ -9,6 +9,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const html=fs.readFileSync(path.join(root,'games/tank/index.html'),'utf8');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/tank/index.html',runScripts:'outside-only',pretendToBeVisual:true});windows.push(dom.window);
   const w=dom.window,context=dom.getInternalVMContext(),draw=()=>{};
+  w.orientationLocks=[];w.orientationUnlocks=0;w.fullscreenCalls=0;
+  Object.defineProperty(w.screen,'orientation',{value:{lock:async value=>{w.orientationLocks.push(value);},unlock:()=>{w.orientationUnlocks++;}}});
+  w.document.documentElement.requestFullscreen=async()=>{w.fullscreenCalls++;};
   w.radialGradients=[];
   w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
   w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:this.id==='power'?254:viewport.width,height:this.id==='prot'?56:this.id==='power'?28:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
@@ -32,7 +35,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   get(a,'onlineMode').click();
   get(a,'createRoom').dispatchEvent(new a.Event('submit',{cancelable:true}));
   await wait(()=>!get(a,'waitingRoom').hidden&&get(a,'waitingCode').textContent.length===8);
-  const b=await client(ids[1],false,{width:1024,height:768},get(a,'waitingCode').textContent);
+  const b=await client(ids[1],false,{width:390,height:844},get(a,'waitingCode').textContent);
   await wait(()=>get(b,'waitingNames').children.length===2);
   await wait(()=>get(a,'waitingNames').children.length===2);
   assert.equal(get(b,'startMatch').hidden,true);
@@ -41,8 +44,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>b.document.body.classList.contains('in-match'));
   a.TankOnline.tick();b.TankOnline.tick();
   assert.equal(get(a,'cv').style.width,'1536px');assert.equal(get(a,'cv').style.height,'626px');
-  assert.equal(get(b,'cv').style.width,'1024px');assert.equal(get(b,'cv').style.height,'768px');
-  assert.ok(a.eval('VW>800'));assert.ok(b.eval('H>450'));
+  assert.equal(get(b,'cv').style.width,'390px');assert.equal(get(b,'cv').style.height,'844px');
+  assert.ok(a.eval('VW>800'));assert.ok(b.eval('VW<800&&H<=MH+.001'));
+  assert.equal(get(b,'rotate'),null,'portrait play has no blocking rotate-phone overlay');
+  assert.equal(a.orientationLocks.length,0);assert.equal(a.orientationUnlocks,1);assert.equal(a.fullscreenCalls,1);
   const beforeResize=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
   assert.equal(get(a,'cv').style.width,'844px');assert.equal(get(a,'cv').style.height,'390px');
@@ -51,6 +56,16 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const saved=JSON.parse(beforeResize),resized=JSON.parse(a.eval('JSON.stringify(tankRenderEngine.snapshot())'));
   assert.deepEqual(saved.terrain,resized.terrain);assert.deepEqual(saved.tanks.map(t=>[t.x,t.y,t.hp]),resized.tanks.map(t=>[t.x,t.y,t.hp]));
   assert.equal(a.eval('tankRenderEngine.view().VW'),800);assert.equal(a.eval('tankRenderEngine.view().H'),450);
+  a.eval('setAngle(43.75);setPower(68)');
+  const beforeRotation=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
+  for(const [width,height] of [[320,568],[360,800],[430,932],[844,390]]){
+   viewport.width=width;viewport.height=height;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
+   assert.equal(get(a,'cv').style.width,width+'px');assert.equal(get(a,'cv').style.height,height+'px');
+   assert.ok(a.eval('H<=MH+.001'),'tall displays keep tanks at a usable scale');
+   assert.equal(a.eval('JSON.stringify(tankRenderEngine.snapshot())'),beforeRotation,'rotation preserves terrain, tanks, wind, turn and selected angle/power');
+   assert.equal(a.TankOnline.canAim(),true);
+  }
+  a.eval('setAngle(90);setPower(5)');
   assert.equal(get(a,'fire').disabled,false);assert.equal(get(b,'fire').disabled,true);
   // Canvas drags move both camera axes without changing aim or battle state.
   const pointer=(type,x,y,id=1,target='cv',win=a)=>{
@@ -124,6 +139,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const fired=(await f.call(ids[0],{action:'mine'})).room;
   assert.equal(fired.event.command.angle,.75);assert.equal(fired.event.command.power,50);assert.equal(fired.game.shotNo,1,'one click fires the exact quarter-degree angle and power without charging');
   assert.equal(get(a,'netTurn').textContent,'유도탄 비행 중');assert.equal(a.eval('shots[0].w.kind'),'homing');assert.equal(a.eval('shots[0].w.dmg'),34);a.eval('draw()');
+  const flightBeforeRotation=a.eval('JSON.stringify([tanks.map(t=>[t.x,t.y,t.hp]),shots.map(s=>[s.x,s.y,s.vx,s.vy]),shotNo])');
+  viewport.width=390;viewport.height=844;a.dispatchEvent(new a.Event('resize'));a.eval('draw()');
+  assert.equal(a.eval('JSON.stringify([tanks.map(t=>[t.x,t.y,t.hp]),shots.map(s=>[s.x,s.y,s.vx,s.vy]),shotNo])'),flightBeforeRotation,'rotation during flight does not move or restart a projectile');
+  viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));
   assert.equal(a.eval('camManual'),false,'firing resumes automatic camera following');
   a.eval('camY=MH-PL+40;updateCam()');assert.ok(a.eval('camY<MH-PL+40'),'the camera follows the shell vertically');
   pointer('pointerdown',300,200);pointer('pointermove',240,140);pointer('pointerup',240,140);
@@ -135,6 +154,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(a,'fire').disabled,true);assert.equal(get(b,'fire').disabled,false);
   assert.equal(get(a,'prot').getAttribute('aria-disabled'),'true');assert.equal(get(a,'power').getAttribute('aria-disabled'),'true');
   assert.equal(get(b,'prot').getAttribute('aria-disabled'),'false');assert.equal(get(b,'power').getAttribute('aria-disabled'),'false');
+  get(b,'angleUp').click();assert.equal(b.TankView.input().angle,90.25,'portrait players can use the fine angle control');
+  pointer('pointerdown',254*37/95,14,71,'power',b);pointer('pointerup',254*37/95,14,71,'power',b);
+  assert.equal(b.TankView.input().power,42,'portrait players can set power');
   assert.equal(a.eval('tanks[0].hp'),b.eval('tanks[0].hp'));
   assert.equal(a.eval('tanks[1].hp'),b.eval('tanks[1].hp'));
   // Reopening a third session for the same member restores the saved match without another debit.
@@ -143,6 +165,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(reconnected,'newMatch').hidden,true,'an active online room cannot be silently abandoned');
   get(reconnected,'resumeMatch').click();
   await wait(()=>reconnected.document.body.classList.contains('in-match'));
+  await wait(()=>reconnected.orientationUnlocks===1);
+  assert.equal(reconnected.orientationLocks.length,0,'resuming also allows either orientation');
   assert.equal(get(reconnected,'netCoins').textContent,'보유 97쭈');
   let deathSounds=0;a.sfx=type=>{if(type==='boom')deathSounds++;};
   get(a,'surrender').click();

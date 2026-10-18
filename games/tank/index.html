@@ -91,15 +91,28 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 .wcard.sel{border-color:var(--fire);box-shadow:inset 0 0 0 1px var(--fire)}
 #pClose{width:100%;height:42px;font-size:17px}
 @media (max-height:380px){.angle-step{width:32px}#prot{width:84px;height:48px}#fire{width:50px;height:50px;font-size:12px}.mv button,#wpn{height:34px}.pl{padding:3px 10px 5px}.pl .nm{font-size:14px}#wind b{font-size:16px}}
-#rotate{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#1b1d4a;color:#f6eedb;font-size:22px;text-align:center;padding:24px}
-#rotate i{width:46px;height:78px;border:4px solid #f6c27a;border-radius:10px;animation:rot 2s ease-in-out infinite}
-@keyframes rot{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
-@media (prefers-reduced-motion:reduce){#rotate i{animation:none;transform:rotate(-90deg)}}
-@media (orientation:portrait){#rotate{display:flex}}
-
 #stage{display:grid;place-items:center}
-#netHud{position:fixed;left:12px;bottom:92px;display:flex;gap:10px;align-items:center;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}#netHud[hidden]{display:none}#netHud button{font:inherit;background:#24203ec9;color:#e5d9ef;border:1px solid #ffffff40;border-radius:8px;padding:6px 10px;touch-action:manipulation}#netNotice{position:fixed;top:23%;left:50%;transform:translateX(-50%);max-width:85%;color:#ffe3b0;background:#211d38d9;border-radius:10px;padding:6px 12px;font-size:14px;z-index:15;pointer-events:none}#netNotice:empty{display:none}.chip small{grid-column:1;grid-row:1;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}.ov[hidden],[hidden]{display:none!important}body:not(.in-match) #rotate{display:none}#rotate{pointer-events:auto;background:#1b1d4ae8}.lobby button,.lobby summary{touch-action:manipulation}#netTurn{max-width:280px}.roomRow .roomInfo{min-width:0;overflow-wrap:anywhere}
+#netHud{position:fixed;left:12px;bottom:92px;display:flex;gap:10px;align-items:center;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}#netHud[hidden]{display:none}#netHud button{font:inherit;background:#24203ec9;color:#e5d9ef;border:1px solid #ffffff40;border-radius:8px;padding:6px 10px;touch-action:manipulation}#netNotice{position:fixed;top:23%;left:50%;transform:translateX(-50%);max-width:85%;color:#ffe3b0;background:#211d38d9;border-radius:10px;padding:6px 12px;font-size:14px;z-index:15;pointer-events:none}#netNotice:empty{display:none}.chip small{grid-column:1;grid-row:1;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}.ov[hidden],[hidden]{display:none!important}.lobby button,.lobby summary{touch-action:manipulation}#netTurn{max-width:280px}.roomRow .roomInfo{min-width:0;overflow-wrap:anywhere}
 @media(max-height:420px){#netHud{bottom:80px;font-size:12px}}
+#controls{display:contents}
+body:not(.in-match) #controls{display:none}
+@media(orientation:portrait) and (max-width:700px){
+  #controls{position:fixed;left:calc(env(safe-area-inset-left,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 60px);display:grid;gap:8px}
+  #controls :is(#left,#right,#netHud){position:static;inset:auto;min-width:0}
+  #left{grid-template-columns:minmax(0,1fr) 44px 44px}
+  #wpn{min-width:0}
+  .mv button,#wpn{height:44px}
+  #right{grid-template-columns:minmax(0,1fr) 58px}
+  #angleControl{justify-content:center}
+  .pbar{height:44px}
+  #netHud{gap:6px;font-size:12px}
+  #netTurn{flex:1;min-width:0;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #netCoins,#surrender{flex-shrink:0;white-space:nowrap}
+  #hud{gap:6px}
+  #roster,.pl{padding:6px 8px}
+  .chip small,.pl .nm{font-size:13px}
+  #wind{padding:4px 8px 6px}
+}
 </style>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
 <link rel="stylesheet" href="./entry.css?v=20261018-tank8">
@@ -114,6 +127,8 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 </header>
 <div id="banner"></div>
 
+<div id="controls">
+<div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
 <div id="left" class="pnl">
   <button id="wpn" class="btn"><span id="wName">일반탄</span><span id="wAmmo">∞</span></button>
   <div class="mv"><button id="mvL" class="btn" aria-label="왼쪽으로 이동">◀</button><button id="mvR" class="btn" aria-label="오른쪽으로 이동">▶</button></div>
@@ -128,6 +143,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
     <button id="angleUp" class="btn angle-step" type="button" aria-label="각도 0.25도 늘리기">+<small>0.25°</small></button>
   </div>
   <button id="fire" type="button">발사</button>
+</div>
 </div>
 
 <main id="menu" class="ov lobby" aria-label="탱크게임 시작화면">
@@ -154,10 +170,9 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람은 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, −0.25° / +0.25° 버튼으로 조금씩 조절해요. 버튼 위 파워 막대를 누르거나 끌어서 힘을 정한 뒤 발사를 눌러요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>휴대폰을 가로·세로 어느 방향으로 들어도 플레이할 수 있어요. 바람은 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, −0.25° / +0.25° 버튼으로 조금씩 조절해요. 버튼 위 파워 막대를 누르거나 끌어서 힘을 정한 뒤 발사를 눌러요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
-<div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
 <div id="netNotice" role="status"></div>
 <div id="over" class="ov hidden">
   <h2 id="winTxt"></h2>
@@ -167,14 +182,12 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 <div id="picker" class="ov hidden">
   <div class="sheet"><div class="wgrid" id="wgrid"></div><button id="pClose" class="btn">닫기</button></div>
 </div>
-<div id="rotate"><i></i>폰을 가로로 돌려주세요</div>
 
 <script>
 const $=id=>document.getElementById(id);
 const stage=$('stage'),cv=$('cv'),ctx=cv.getContext('2d'),prot=$('prot'),pctx=prot.getContext('2d');
 const fireB=$('fire'),wpnB=$('wpn'),lB=$('mvL'),rB=$('mvR'),powerSlider=$('power'),banner=$('banner');
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const portraitMQ=matchMedia('(orientation: portrait)');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const G=0.15,SLOW=0.35,TS=0.45,FUEL=150;
 const WEAPONS=[
@@ -692,9 +705,9 @@ wpnB.addEventListener('click',openPicker);
 $('pClose').addEventListener('click',closePicker);
 $('picker').addEventListener('pointerdown',e=>{if(e.target.id==='picker')closePicker();});
 
-async function goLandscape(){
+async function goFullscreen(){
   try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}
-  try{if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape');}catch(e){}
+  try{screen.orientation?.unlock?.();}catch(e){}
   await new Promise(r=>setTimeout(r,150));
 }
 let ac;
@@ -726,8 +739,10 @@ function tankDestroyed(t,seat){
 window.TankView={
  resize(){
   const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
-  const previousWidth=VW;scale=Math.min(r.width/800,r.height/450);dpr=Math.min(2,window.devicePixelRatio||1);
-  // Expand the camera viewport to fill the display; shared physics stays 800 × 450.
+  anglePointer=null;powerPointer=null;pan=null;moveDir=0;
+  const previousWidth=VW;scale=Math.max(Math.min(r.width/800,r.height/450),r.height/MH);dpr=Math.min(2,window.devicePixelRatio||1);
+  // Fill either orientation without shrinking tanks to fit an excessively tall viewport.
+  // Only the camera changes; the shared battlefield and physics keep their original size.
   VW=r.width/scale;H=r.height/scale;
   cv.style.width=r.width+'px';cv.style.height=r.height+'px';cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
   camX=clamp(camX+(previousWidth-VW)/2,0,Math.max(0,W-VW));
@@ -771,7 +786,7 @@ window.TankView={
  refresh:syncUI,
  notify:showBanner,
  sound:sfx,
- landscape:goLandscape
+ fullscreen:goFullscreen
 };
 
 addEventListener('resize',()=>{if(state==='menu'){layout(true);genWorld();}else layout(false);});
@@ -781,6 +796,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-turn-wind1"></script>
+<script type="module" src="./online.mjs?v=20261018-orientation1"></script>
 </body>
 </html>
