@@ -9,7 +9,7 @@ export const WEAPONS=[
   {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:24,dmg:36,kind:'roll'},
   {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:24,dmg:12},
   {name:'흙폭탄',price:1,desc:'일반탄 범위에 흙더미를 쌓아요',ammo:Infinity,r:24,dmg:0,kind:'dirt'},
-  {name:'핵탄',price:3,desc:'일반탄 범위의 강력한 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:24,dmg:130},
+  {name:'핵탄',price:3,desc:'넓은 범위의 대형 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
   {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
   {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}

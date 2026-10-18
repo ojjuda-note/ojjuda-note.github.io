@@ -116,7 +116,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   local.eval('lockAngle();startCharge();tanks[turn].ang=90;tanks[turn].pow=5;release();');
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
   assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
-  assert.equal(local.eval('shots[0].w.r'),local.eval('WEAPONS[0].r'),'the requested normal blast range is preserved');
+  assert.equal(local.eval('shots[0].w.r'),200,'nuclear shells retain their original large blast range');
   assert.equal(get(local,'netCoins').textContent,'보유 95쭈');local.eval('draw()');
   for(let i=0;i<8000;i++)local.TankOnline.tick();
   let localRoom=(await f.call(ids[3],{action:'mine'})).room;

@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
 assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1]);
-for(const weapon of WEAPONS.filter(w=>w.price>0&&!['heal','teleport'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'paid explosions use the basic shell radius');
+for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
+assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const gusts=Array.from({length:100000},(_,i)=>windAt(123456+i%17,1700000000000+i*2800+(i%2800)));
 const strengths=gusts.map(w=>Math.round(Math.abs(w)/WIND_MAX*20));
 const strongRate=strengths.filter(w=>w>=10).length/strengths.length;
@@ -33,7 +34,7 @@ for(const size of [2,4,12]){
   const result=advance(initial,0,command),client=createEngine(initial);assert.equal(client.begin(command),result.price);
   let frames=0;while(['fly','settle'].includes(client.view().state)&&frames++<18000){
    client.step();
-   if(weapon>=3&&weapon<=9)for(const boom of client.view().booms){assert.equal(boom.r,WEAPONS[0].r,'including split and repeat explosions');assert.equal(boom.D,69,'same expansion duration as the basic shell');}
+   if(weapon>=3&&weapon<=9)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:WEAPONS[0].r,'including split and repeat explosions');assert.equal(boom.D,weapon===8?150:69,'nuclear blasts have time to expand to full size');}
   }
   const rendered=client.snapshot();result.state.tanks.forEach(t=>delete t.misses);
   assert.deepEqual(rendered,result.state,`server and client replay match: ${size} players, weapon ${weapon}`);
@@ -42,6 +43,18 @@ for(const size of [2,4,12]){
   assert.deepEqual(createEngine(rendered).snapshot(),rendered,'snapshot preserves settled terrain');
  }
 }
+// A tank beyond a normal blast must still be damaged by the restored nuclear blast.
+const nuclearGame=newGame(['self','nearby','outside'],'nuclear-range',881);
+nuclearGame.terrain.fill(150);
+nuclearGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,700,840][i],y:300,vy:0,hp:100}));
+let nuclearTime=0;while(windAt(nuclearGame.weatherSeed,nuclearTime)!==0)nuclearTime+=2800;
+const nuclearCommand={type:'fire',weapon:8,angle:90,power:5,moves:[],windTime:nuclearTime};
+const basicBlast=advance(nuclearGame,0,{...nuclearCommand,weapon:0}),nuclearBlast=advance(nuclearGame,0,nuclearCommand);
+assert.equal(basicBlast.state.tanks[1].hp,100);
+assert.ok(nuclearBlast.state.tanks[1].hp<100,'nuclear damage reaches tanks 100 units away');
+assert.equal(nuclearBlast.state.tanks[2].hp,100,'tanks outside the large blast remain safe');
+assert.ok(nuclearBlast.state.terrain[350]>basicBlast.state.terrain[350],'the actual crater also expands');
+assert.equal(nuclearBlast.price,3,'restoring the radius does not raise the price');
 // Healing reaches twice the basic radius, including opponents and the firing tank.
 const healGame=newGame(['self','hurt','edge','outside','wreck'],'heal-test',881);
 healGame.terrain.fill(150);
