@@ -52,6 +52,12 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   // Reopening a third session for the same member restores the saved match without another debit.
   const reconnected=await client(ids[0],true);
   assert.equal(get(reconnected,'netCoins').textContent,'보유 98쭈');
+  let deathSounds=0;a.sfx=type=>{if(type==='boom')deathSounds++;};
+  get(a,'surrender').click();
+  await wait(()=>a.TankView.hasEffects());
+  assert.equal(deathSounds,1);assert.equal(get(a,'over').classList.contains('hidden'),true,'show the destruction before the result');
+  for(let i=0;i<70;i++)a.TankOnline.tick();
+  assert.equal(a.TankView.hasEffects(),false);assert.equal(get(a,'over').classList.contains('hidden'),false);
   const solo=await client(ids[2]);
   assert.ok(get(solo,'menu').querySelector('.game-entry .ge-primary'));
   get(solo,'soloOpponents').value='1';get(solo,'startSolo').click();
@@ -70,7 +76,17 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>!solo.document.body.classList.contains('in-match'));
   assert.equal(get(solo,'entryHome').hidden,false);assert.equal(get(solo,'soloSetup').hidden,false);
   assert.equal(get(solo,'startSolo').disabled,false);
-  console.log('PASS: common entrance, mode selection, solo start and automatic CPU turn, no CPU debit, quit, two online sessions, price picker, paid-shot playback and reconnect');
+  assert.equal(deathSounds,1,'subsequent ticks and room refreshes must not repeat a death explosion');
+  // A restored wreck stays quiet; a new match can explode once again.
+  const {newGame,createEngine}=await import('../games/tank/engine.mjs');
+  const living=newGame(['a','b'],'effects',88),wreck=structuredClone(living);wreck.tanks[1].hp=0;
+  solo.TankView.resetHistory();solo.TankView.use(createEngine(wreck),false);
+  assert.equal(solo.TankView.hasEffects(),false);
+  solo.TankView.resetHistory();solo.TankView.use(createEngine(living),false);solo.TankView.use(createEngine(wreck),false);
+  assert.equal(solo.TankView.hasEffects(),true);
+  for(let i=0;i<70;i++){solo.TankView.tickEffects();solo.TankView.use(createEngine(wreck),false);}
+  assert.equal(solo.TankView.hasEffects(),false);
+  console.log('PASS: one destruction burst and sound, result waits for burst, no duplicate/reconnect bursts, common entrance, solo CPU turns, two online sessions and paid ammo');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

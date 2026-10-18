@@ -1,4 +1,4 @@
-import {createEngine} from './engine.mjs?v=20261018-tank1';
+import {createEngine} from './engine.mjs?v=20261018-tank4';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
@@ -52,7 +52,7 @@ function render(){
  $('netTurn').textContent=animation?'포탄 비행 중':current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${current.game.turn===current.seat?' (나)':''} 차례${solo?'':' · '+remaining+'초'}`;
  $('surrender').textContent=solo?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
  $('bAgain').textContent=solo?'다시 하기':'대기실로';$('bMenu').textContent=solo?'처음 화면으로':'게임 목록';
- if(current.status==='finished'&&!animation){
+ if(current.status==='finished'&&!animation&&!view.hasEffects()){
   const winner=current.game.tanks.find(t=>t.hp>0);$('winTxt').textContent=solo&&!alive?'내 탱크가 파괴됐어요':winner?winner.name+' 승리':'무승부';$('winSub').textContent=solo&&!alive?'컴퓨터와 다시 도전해 보세요.':winner?'남은 체력 '+winner.hp:'모든 탱크가 파괴됐어요.';$('over').classList.remove('hidden');
  }else $('over').classList.add('hidden');
  view.refresh();queueComputer();
@@ -124,6 +124,7 @@ window.TankOnline={hasGame:()=>!!engine,canAim,balance:()=>coins,fire,
     view.finishAnimation(engine);engine=createEngine(current.game);animation=false;view.resetInput();render();
    }
   }else{
+   engine.setWindTime(Date.now()+offset);
    view.tickInput(engine,dir=>{if(moves.length>=250)return false;moves.push(dir);return true;});
    // Falling during movement can eliminate the current tank; commit that movement without charging ammo.
    if(!busy&&!uncertain&&current?.status==='active'&&current.seat===current.game.turn&&current.game.tanks[current.seat].hp>0&&engine.view().tanks[current.seat].hp<=0){
@@ -131,6 +132,7 @@ window.TankOnline={hasGame:()=>!!engine,canAim,balance:()=>coins,fire,
    }
   }
   view.use(engine,canAim());
+  if(view.tickEffects())render();
  }
 };
 async function startSolo(){

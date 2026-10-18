@@ -20,12 +20,19 @@ const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28f
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const G=.15,SLOW=.35,TS=.45,FUEL=150,CS=2;
+export const WIND_MAX=.038;
+// Everyone samples the same smooth gusts from the server clock and match seed.
+export function windAt(seed,time){
+ const phase=time/2800,index=Math.floor(phase),f=phase-index,blend=f*f*(3-2*f);
+ const value=i=>{let x=(seed^Math.imul(i,0x9e3779b9))>>>0;x=Math.imul(x^(x>>>16),0x21f0aaad);x=Math.imul(x^(x>>>15),0x735a2d97);return ((x^(x>>>15))>>>0)/4294967296*2-1;};
+ return (value(index)*(1-blend)+value(index+1)*blend)*WIND_MAX;
+}
 export function createEngine(saved){
  let rng=saved.seed>>>0;
  const random=()=>{rng=(Math.imul(1664525,rng)+1013904223)>>>0;return rng/4294967296;};
  let NT=saved.names.length,VW=800,W=VW*Math.max(3,Math.ceil(NT/3)+1),H=450,MH=720,PL=350;
  let FLOOR=MH-4,FR=Math.floor(FLOOR/CS),GW=Math.ceil((W+1)/CS),GH=Math.ceil(MH/CS)+1;
- let K=Math.sqrt(W*1.15*G)/100,WINDMAX=.012,wind=saved.wind??0;
+ let K=Math.sqrt(W*1.15*G)/100,WINDMAX=WIND_MAX,windTime=saved.windTime??0,weatherSeed=saved.weatherSeed??saved.seed,wind=windAt(weatherSeed,windTime);
  let ground=new Float32Array(W+1),mask=new Uint8Array(GW*GH),active=new Set(),tDirty=true;
  let far=[],stars=[],tanks=[],turn=saved.turn??0,state='aim',shots=[],booms=[],bits=[],floats=[],paths=[];
  let shotNo=saved.shotNo||0,settleT=0,frame=0,dirty=0,over=!!saved.over,runId=saved.runId;
@@ -81,7 +88,7 @@ function nextIdx(){for(let k=1;k<=tanks.length;k++){const j=(turn+k)%tanks.lengt
 function tip(t){const a=t.ang*Math.PI/180;return{x:t.x+Math.cos(a)*18*TS,y:t.y-9*TS-Math.sin(a)*18*TS};}
 
 
-function startTurn(i){turn=i;wind=(random()*2-1)*WINDMAX*.8;const t=tanks[i];t.fuel=FUEL;t.ang=90;t.pow=5;t.w=0;state='aim';}
+function startTurn(i){turn=i;wind=windAt(weatherSeed,windTime+frame*1000/60);const t=tanks[i];t.fuel=FUEL;t.ang=90;t.pow=5;t.w=0;state='aim';}
 function fire(){
  const t=tanks[turn],w=WEAPONS[t.w];shotNo++;t.lastAng=t.ang;t.lastPow=t.pow;
  const a=t.ang*Math.PI/180,sp=t.pow*K,p=tip(t),n=w.count||1;
@@ -156,6 +163,7 @@ function gravity(){
 }
 function step(){
  frame++;
+ wind=windAt(weatherSeed,windTime+frame*1000/60);
  for(const s of shots.slice()){
   if(s.dead)continue;
   if(s.rolling){roll(s);if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});continue;}
@@ -188,6 +196,7 @@ function move(dir){
 function begin(command){
  validateCommand(command);
  if(over||state!=='aim')throw Error('room_unavailable');
+ windTime=command.windTime??windTime;frame=0;wind=windAt(weatherSeed,windTime);
  for(const dir of command.moves)move(dir);
  const t=tanks[turn];t.ang=command.angle;t.pow=command.power;t.w=command.weapon;
  const price=t.hp>0?WEAPONS[t.w].price:0;
@@ -196,7 +205,7 @@ function begin(command){
 }
 function snapshot(){
  if(shots.length||active.size)throw Error('simulation_incomplete');
- return {runId,names:saved.names,seed:rng,turn,wind,shotNo,over,
+ return {runId,names:saved.names,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,turn,wind,shotNo,over,
   terrain:Array.from({length:GW},(_,x)=>surf(x*CS)/CS),
   tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,fuel,lastAng,lastPow}))};
 }
@@ -213,16 +222,18 @@ if(saved.terrain){
 }
 if(over)state='end';
 return {step,move,begin,snapshot,
+ setWindTime(time){if(state==='aim'&&Number.isFinite(time)){windTime=time;frame=0;wind=windAt(weatherSeed,time);}},
  surrender(seat){if(!tanks[seat]||tanks[seat].hp<=0)throw Error('already_eliminated');tanks[seat].hp=0;if(seat===turn||tanks.filter(t=>t.hp>0).length<=1)finishTurn();},
  skip(){if(over)return;tanks[turn].misses=(saved.tanks?.[turn]?.misses||0)+1;if(tanks[turn].misses>=3)tanks[turn].hp=0;finishTurn();},
  view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,WINDMAX,wind,ground,mask,tanks,turn,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
 }
 export function validateCommand(c){
  if(!c||!Number.isInteger(c.weapon)||c.weapon<0||c.weapon>=WEAPONS.length||!Number.isFinite(c.angle)||c.angle<0||c.angle>180||!Number.isFinite(c.power)||c.power<5||c.power>100||!Array.isArray(c.moves)||c.moves.length>250||c.moves.some(x=>x!==-1&&x!==1))throw Error('invalid_move');
+ if(c.windTime!==undefined&&(!Number.isSafeInteger(c.windTime)||c.windTime<0))throw Error('invalid_move');
 }
-export function newGame(names,runId,seed){
+export function newGame(names,runId,seed,windTime=0){
  if(!Array.isArray(names)||names.length<2||names.length>12)throw Error('need_players');
- return createEngine({names,runId,seed}).snapshot();
+ return createEngine({names,runId,seed,windTime}).snapshot();
 }
 export function advance(saved,seat,command){
  if(saved.over)throw Error('room_unavailable');

@@ -19,7 +19,9 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await move(a,room,{...command(),power:101})).error,'bad_request');
   // Forged client cost and state never change authoritative prices or health.
   const request=randomUUID(),before=room;
-  room=ok(await move(a,room,{...command(3),price:0,hp:999,type:'timeout'},request));
+  const shotStarted=Date.now();
+  room=ok(await move(a,room,{...command(3),price:0,hp:999,type:'timeout',windTime:1},request));
+  assert.ok(room.event.command.windTime>=shotStarted,'server chooses wind time, ignoring the client override');
   assert.equal(room.coins,98);assert.equal(room.game.shotNo,1);
   const replay=ok(await move(a,before,command(3),request));assert.equal(replay.coins,98);assert.equal(replay.version,room.version);
   assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests')).rows[0].n,1);

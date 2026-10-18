@@ -65,16 +65,16 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
      if(body.action==='start'){
       if(result.room.host_id!==user.id||result.room.status!=='waiting')throw Error('not_room_owner');
       const names=result.room.mode==='solo'?[result.room.names[0],...Array.from({length:result.room.capacity-1},(_,i)=>`컴퓨터 ${i+1}`)]:result.room.names;
-      next={state:newGame(names,result.room.id,seed()),price:0};
+      next={state:newGame(names,result.room.id,seed(),Date.now()),price:0};
      }else if(body.action==='cpu'){
       if(result.room.mode!=='solo'||result.room.status!=='active'||result.room.state.turn===result.seat)throw Error('not_your_turn');
-      const command=computerCommand(result.room.state);
+      const command=computerCommand(result.room.state,Date.now());
       next=advance(result.room.state,result.room.state.turn,command);
       event={type:'fire',actor:result.room.state.turn,fromVersion:body.version,computer:true,command};
      }else{
       if(result.room.status!=='active')throw Error('room_unavailable');
       // Ignore all client state, cost, weapon metadata and command.type fields.
-      const command=body.action==='surrender'?{type:'surrender'}:{type:'fire',weapon:body.command.weapon,angle:body.command.angle,power:body.command.power,moves:body.command.moves};
+      const command=body.action==='surrender'?{type:'surrender'}:{type:'fire',weapon:body.command.weapon,angle:body.command.angle,power:body.command.power,moves:body.command.moves,windTime:Date.now()};
       next=advance(result.room.state,result.seat,command);event.command=command;
      }
      if(result.room.mode==='solo'&&next.state.tanks[0].hp<=0)next.state.over=true;
