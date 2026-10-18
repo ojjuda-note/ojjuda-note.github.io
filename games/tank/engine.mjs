@@ -112,7 +112,13 @@ function explodeOutside(s){
 }
 
 function checkHit(s){
-  if(s.x<-80||s.x>W+80||s.y>MH+40){explodeOutside(s);return;}
+  if(s.y>MH+40){explodeOutside(s);return;}
+  if(s.x<0||s.x>W){
+    // Invisible flat ground continues each edge at its current surface height.
+    // Airborne shells can travel out and return; only ground contact ends a miss.
+    if(s.y>=surf(s.x))explodeOutside(s);
+    return;
+  }
   for(let i=0;i<tanks.length;i++){const t=tanks[i];if(t.hp<=0)continue;if(i===s.owner&&s.age<24)continue;
     if(Math.hypot(s.x-t.x,s.y-(t.y-6*TS))<12*TS){impact(s);return;}}
   if(s.emerge){if(!solid(s.x,s.y))s.emerge=false;return;}

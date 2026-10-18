@@ -155,7 +155,35 @@ assert.deepEqual(teleport.snapshot().tanks.map(t=>t.hp),[60,80]);
 assert.deepEqual(teleport.view().mask,teleportMask,'teleport leaves the terrain intact');
 const teleportedServer=advance(teleportGame,0,teleportCommand).state;teleportedServer.tanks.forEach(t=>delete t.misses);
 assert.deepEqual(teleport.snapshot(),teleportedServer);
-// Every shell bursts once per projectile when it leaves either side of the map.
+// Invisible ground extends from each edge, even far beyond the visible map.
+const sideTerrain=structuredClone(teleportGame);
+sideTerrain.terrain[0]=110;sideTerrain.terrain[sideTerrain.terrain.length-1]=180;
+for(const side of [-1,1])for(const distance of [120,1200]){
+ const edge=createEngine(sideTerrain),width=edge.view().W,edgeHeight=(side<0?110:180)*2;
+ const maskBefore=edge.view().mask.slice();
+ edge.begin({type:'fire',weapon:0,angle:90,power:5,moves:[],windTime:calmTime});
+ Object.assign(edge.view().shots[0],{x:side<0?-distance:width+distance,y:edgeHeight-40,vx:side*2,vy:2,age:99});
+ edge.step();
+ assert.equal(edge.view().shots.length,1,'passing the old side boundary must not burst a shell in midair');
+ assert.equal(edge.view().booms.length,0);
+ let frames=0;while(!edge.view().booms.length&&frames++<300)edge.step();
+ assert.ok(frames<300,'the falling shell lands on the hidden side ground');
+ const boom=edge.view().booms[0];
+ assert.ok(boom.outside&&boom.fx);assert.ok(side<0?boom.x<0:boom.x>width);
+ assert.ok(boom.y>=edgeHeight&&boom.y<edgeHeight+3,'hidden ground continues the corresponding edge height');
+ assert.equal(edge.view().W,width,'hidden terrain does not expand the visible map');
+ assert.deepEqual(edge.view().mask,maskBefore);
+}
+for(const side of [-1,1]){
+ const returning=createEngine(teleportGame),width=returning.view().W;
+ returning.begin({type:'fire',weapon:0,angle:90,power:5,moves:[],windTime:calmTime});
+ const shot=returning.view().shots[0];
+ Object.assign(shot,{x:side<0?-120:width+120,y:200,vx:-side*20,vy:-1,age:99});
+ let frames=0;while((shot.x<0||shot.x>width)&&!shot.dead&&frames++<100)returning.step();
+ assert.ok(!shot.dead&&shot.x>=0&&shot.x<=width,'an airborne shell can return from the hidden extension');
+ assert.equal(returning.view().booms.length,0);
+}
+// Every projectile bursts after landing outside, including children that split in midair.
 for(const side of [-1,1])for(let weapon=0;weapon<WEAPONS.length;weapon++){
  const missedGame=structuredClone(teleportGame);missedGame.tanks[0].x=side<0?30:2370;missedGame.tanks[1].x=1200;
  const missed=createEngine(missedGame),maskBefore=missed.view().mask.slice(),bursts=new Set();
@@ -163,7 +191,7 @@ for(const side of [-1,1])for(let weapon=0;weapon<WEAPONS.length;weapon++){
  let frames=0;
  while(['fly','settle'].includes(missed.view().state)&&frames++<18000){missed.step();missed.view().booms.forEach(b=>bursts.add(b));}
  assert.ok(frames<18000,'misses finish the turn after their explosion');
- assert.equal(bursts.size,WEAPONS[weapon].count||1,'one explosion per missed projectile, without piercing repeats');
+ assert.equal(bursts.size,WEAPONS[weapon].kind==='mirv'?5:WEAPONS[weapon].count||1,'one explosion per missed projectile, without piercing repeats');
  assert.ok([...bursts].every(b=>b.outside&&b.fx&&(side<0?b.x<0:b.x>missed.view().W)));
  assert.deepEqual(missed.view().mask,maskBefore,'an edge indicator never changes terrain');
  assert.deepEqual(missed.snapshot().tanks.map(t=>[t.x,t.y,t.hp]),missedGame.tanks.map(t=>[t.x,t.y,t.hp]),'missed healing and teleport shells have no remote effect');

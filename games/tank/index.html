@@ -433,7 +433,7 @@ function drawMini(){
   ctx.globalAlpha=.55;ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(mx+camX/W*mw+0.5,my+camY/MH*mh+0.5,VW/W*mw-1,H/MH*mh-1);
   ctx.globalAlpha=.8;
   for(const t of tanks){if(t.hp<=0)continue;ctx.fillStyle=t.color;ctx.beginPath();ctx.arc(mx+t.x/W*mw,my+t.y/MH*mh-1,2.6,0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='#fff';for(const s of shots)ctx.fillRect(mx+s.x/W*mw-1,my+clamp(s.y/MH*mh,0,mh)-1,2,2);
+  ctx.fillStyle='#fff';for(const s of shots)ctx.fillRect(mx+clamp(s.x/W*mw,0,mw)-1,my+clamp(s.y/MH*mh,0,mh)-1,2,2);
   ctx.restore();
 }
 function resolve(){
@@ -727,6 +727,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-resume1"></script>
+<script type="module" src="./online.mjs?v=20261018-side-ground1"></script>
 </body>
 </html>
