@@ -1,4 +1,4 @@
-import {createEngine} from './engine.mjs?v=20261018-tank8';
+import {createEngine,WEAPONS} from './engine.mjs?v=20261018-tank8';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
@@ -20,39 +20,41 @@ async function request(body){
   catch(e){if(e.message!=='unavailable'||attempt)throw e;}
  }
 }
-function canAim(){return !!(current?.status==='active'&&engine&&!animation&&!busy&&!uncertain&&current.seat===current.game.turn&&engine.view().tanks[current.seat]?.hp>0&&(current.mode==='solo'||Date.parse(current.deadline)>Date.now()+offset));}
+function playerSeat(){return current?.mode==='local'?(engine?.view().turn??current.game?.turn??0):current?.seat??-1;}
+function canAim(){const seat=playerSeat();return !!(current?.status==='active'&&engine&&!animation&&!busy&&!uncertain&&seat===current.game.turn&&engine.view().tanks[seat]?.hp>0&&(current.mode!=='online'||Date.parse(current.deadline)>Date.now()+offset));}
 function chooseMode(mode){
  selectedMode=mode;
  lobby();
 }
 function lobby(){
  clearTimeout(cpuTimer);cpuTimer=0;cpuVersion='';
- for(const id of ['solo','online']){$(id+'Mode').classList.toggle('on',id===selectedMode);$(id+'Mode').setAttribute('aria-pressed',String(id===selectedMode));}
- $('entryCopy').innerHTML=selectedMode==='solo'?'바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.':'바람을 읽고, 각도를 맞춰 한 발!<br>각자의 기기에서 함께해요 · 2~12명';
+ for(const id of ['solo','local','online']){$(id+'Mode').classList.toggle('on',id===selectedMode);$(id+'Mode').setAttribute('aria-pressed',String(id===selectedMode));}
+ $('entryCopy').innerHTML=selectedMode==='solo'?'바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.':selectedMode==='local'?'한 기기로 둘러앉아 한 판!<br>차례대로 번갈아 조작해요 · 2~12명':'바람을 읽고, 각도를 맞춰 한 발!<br>각자의 기기에서 함께해요 · 2~12명';
  document.body.classList.remove('in-match');$('menu').classList.remove('hidden');$('over').classList.add('hidden');$('netHud').hidden=true;
- $('entryHome').hidden=!!current;$('soloSetup').hidden=selectedMode!=='solo';$('lobbyHome').hidden=!!current||selectedMode!=='online';$('waitingRoom').hidden=!current||current.status!=='waiting';
- $('startSolo').disabled=busy||!ready||!available||uncertain;
+ $('entryHome').hidden=!!current;$('soloSetup').hidden=selectedMode!=='solo';$('localSetup').hidden=selectedMode!=='local';$('lobbyHome').hidden=!!current||selectedMode!=='online';$('waitingRoom').hidden=!current||current.status!=='waiting';
+ $('startSolo').disabled=$('startLocal').disabled=busy||!ready||!available||uncertain;
  for(const button of document.querySelectorAll('#lobbyHome button'))button.disabled=busy||!available;
- $('soloMode').disabled=$('onlineMode').disabled=busy;
+ $('soloMode').disabled=$('localMode').disabled=$('onlineMode').disabled=busy;
  if(current?.status==='waiting'){
-  const solo=current.mode==='solo';
+  const solo=current.mode==='solo',local=current.mode==='local',privateMatch=solo||local;
   $('waitingTitle').textContent=current.title;$('waitingCode').textContent=current.code;$('waitingCount').textContent=`${current.names.length} / ${current.capacity}명`;
-  $('waitingCodeRow').hidden=solo;$('waitingCount').textContent=solo?`나 1명 + 컴퓨터 ${current.capacity-1}명`:$('waitingCount').textContent;
-  $('waitingHint').textContent=solo?'준비됐어요. 혼자 시작해 보세요.':'방장이 시작하면 모두 함께 전투에 들어가요.';
-  $('waitingNames').innerHTML=current.names.map((name,i)=>`<span class="seatBadge${i===current.seat?' me':''}">${esc(name)}${i===current.hostSeat?' · 방장':''}${i===current.seat?' · 나':''}</span>`).join('');
-  $('inviteFriends').hidden=solo||current.seat!==current.hostSeat;$('inviteFriends').disabled=busy||current.names.length>=current.capacity;
-  $('startMatch').hidden=current.seat!==current.hostSeat;$('startMatch').disabled=busy||(!solo&&current.names.length<2);
+  $('waitingCodeRow').hidden=privateMatch;$('waitingCount').textContent=local?`${current.capacity}명이 같은 기기에서 대전`:solo?`나 1명 + 컴퓨터 ${current.capacity-1}명`:$('waitingCount').textContent;
+  $('waitingHint').textContent=local?'준비됐어요. 차례대로 번갈아 조작해 주세요.':solo?'준비됐어요. 혼자 시작해 보세요.':'방장이 시작하면 모두 함께 전투에 들어가요.';
+  const names=local?Array.from({length:current.capacity},(_,i)=>`플레이어 ${i+1}`):current.names;
+  $('waitingNames').innerHTML=names.map((name,i)=>`<span class="seatBadge${!local&&i===current.seat?' me':''}">${esc(name)}${!local&&i===current.hostSeat?' · 방장':''}${!local&&i===current.seat?' · 나':''}</span>`).join('');
+  $('inviteFriends').hidden=privateMatch||current.seat!==current.hostSeat;$('inviteFriends').disabled=busy||current.names.length>=current.capacity;
+  $('startMatch').hidden=current.seat!==current.hostSeat;$('startMatch').disabled=busy||(!privateMatch&&current.names.length<2);
  }
 }
 function render(){
  if(!current?.game){lobby();return;}
  document.body.classList.add('in-match');$('menu').classList.add('hidden');$('netHud').hidden=false;
  $('netCoins').textContent=`보유 ${coins}쭈`;
- const alive=current.game.tanks[current.seat]?.hp>0,remaining=Math.max(0,Math.ceil((Date.parse(current.deadline)-Date.now()-offset)/1000));
- const solo=current.mode==='solo';
- $('netTurn').textContent=animation?'포탄 비행 중':current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${current.game.turn===current.seat?' (나)':''} 차례${solo?'':' · '+remaining+'초'}`;
- $('surrender').textContent=solo?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
- $('bAgain').textContent=solo?'다시 하기':'대기실로';$('bMenu').textContent=solo?'처음 화면으로':'게임 목록';
+ const solo=current.mode==='solo',local=current.mode==='local',privateMatch=solo||local;
+ const alive=local?current.game.tanks.some(t=>t.hp>0):current.game.tanks[current.seat]?.hp>0,remaining=Math.max(0,Math.ceil((Date.parse(current.deadline)-Date.now()-offset)/1000));
+ $('netTurn').textContent=animation?`${WEAPONS[current.event?.command?.weapon]?.name||'포탄'} 비행 중`:current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${!local&&current.game.turn===current.seat?' (나)':''} 차례${local?' · 번갈아 조작해 주세요':solo?'':' · '+remaining+'초'}`;
+ $('surrender').textContent=privateMatch?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
+ $('bAgain').textContent=privateMatch?'다시 하기':'대기실로';$('bMenu').textContent=privateMatch?'처음 화면으로':'게임 목록';
  if(current.status==='finished'&&!animation&&!view.hasEffects()){
   const winner=current.game.tanks.find(t=>t.hp>0);$('winTxt').textContent=solo&&!alive?'내 탱크가 파괴됐어요':winner?winner.name+' 승리':'무승부';$('winSub').textContent=solo&&!alive?'컴퓨터와 다시 도전해 보세요.':winner?'남은 체력 '+winner.hp:'모든 탱크가 파괴됐어요.';$('over').classList.remove('hidden');
  }else $('over').classList.add('hidden');
@@ -77,7 +79,7 @@ function accept(result,animate=true){
  if(!next?.game){engine=null;animation=false;view.resetHistory();render();return;}
  const replay=animate&&!document.hidden&&!animation&&prior?.id===next.id&&prior.game&&next.event?.type==='fire'&&next.event.fromVersion===prior.version&&next.game.shotNo>prior.game.shotNo;
  if(prior?.id!==next.id)view.resetHistory();
- if(replay){engine=createEngine(prior.game);engine.begin(next.event.command);animation=true;view.sound('fire');}
+ if(replay){engine=createEngine(prior.game);engine.begin(next.event.command);animation=true;view.sound('fire');view.notify(WEAPONS[next.event.command.weapon].name+' 발사');}
  else{engine=createEngine(next.game);animation=false;}
  view.use(engine,canAim());render();
 }
@@ -116,7 +118,7 @@ async function fire(){
  const body={action:'fire',room_id:current.id,version:current.version,request_id:crypto.randomUUID(),command:{...view.input(),moves:[...moves]}};
  await perform(body);
 }
-window.TankOnline={hasGame:()=>!!engine,seat:()=>current?.seat??-1,canAim,balance:()=>coins,fire,
+window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins,fire,
  tick(){
   if(!engine)return;
   if(animation){
@@ -128,7 +130,8 @@ window.TankOnline={hasGame:()=>!!engine,seat:()=>current?.seat??-1,canAim,balanc
    engine.setWindTime(Date.now()+offset);
    view.tickInput(engine,dir=>{if(moves.length>=250)return false;moves.push(dir);return true;});
    // Falling during movement can eliminate the current tank; commit that movement without charging ammo.
-   if(!busy&&!uncertain&&current?.status==='active'&&current.seat===current.game.turn&&current.game.tanks[current.seat].hp>0&&engine.view().tanks[current.seat].hp<=0){
+   const seat=playerSeat();
+   if(!busy&&!uncertain&&current?.status==='active'&&seat===current.game.turn&&current.game.tanks[seat].hp>0&&engine.view().tanks[seat].hp<=0){
     void perform({action:'fire',room_id:current.id,version:current.version,request_id:crypto.randomUUID(),command:{...view.input(),moves:[...moves]}});
    }
   }
@@ -136,14 +139,14 @@ window.TankOnline={hasGame:()=>!!engine,seat:()=>current?.seat??-1,canAim,balanc
   if(view.tickEffects())render();
  }
 };
-async function startSolo(){
+async function startPrivate(mode){
  if(busy||!available)return;
  void view.landscape();
- const capacity=Number($('soloOpponents').value)+1;
- const created=await perform({action:'create',request_id:crypto.randomUUID(),options:{mode:'solo',title:'컴퓨터와 탱크 한 판',capacity}});
+ const capacity=mode==='local'?Number($('localPlayers').value):Number($('soloOpponents').value)+1;
+ const created=await perform({action:'create',request_id:crypto.randomUUID(),options:{mode,title:mode==='local'?'같은 기기에서 탱크 한 판':'컴퓨터와 탱크 한 판',capacity}});
  if(created?.room?.status==='waiting')await perform({action:'start',room_id:created.room.id,version:created.room.version,request_id:crypto.randomUUID()});
 }
-$('soloMode').onclick=()=>chooseMode('solo');$('onlineMode').onclick=()=>chooseMode('online');$('startSolo').onclick=startSolo;
+$('soloMode').onclick=()=>chooseMode('solo');$('localMode').onclick=()=>chooseMode('local');$('onlineMode').onclick=()=>chooseMode('online');$('startSolo').onclick=()=>startPrivate('solo');$('startLocal').onclick=()=>startPrivate('local');
 $('createRoom').onsubmit=e=>{e.preventDefault();void perform({action:'create',request_id:crypto.randomUUID(),options:{title:$('roomTitle').value.trim(),capacity:Number($('roomCapacity').value)}});};
 $('joinRoom').onsubmit=e=>{e.preventDefault();void perform({action:'join',code:$('roomCode').value.trim().toUpperCase()});};
 $('rooms').onclick=e=>{const b=e.target.closest('[data-code]');if(b&&!b.disabled)void perform({action:'join',code:b.dataset.code});};
@@ -151,16 +154,16 @@ $('refreshRooms').onclick=()=>{if(!busy&&!polling)void refresh();};
 $('startMatch').onclick=async()=>{if(!current||busy)return;void view.landscape();await perform({action:'start',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
 $('leaveRoom').onclick=()=>current&&!busy&&perform({action:'leave',room_id:current.id});
 $('inviteFriends').onclick=async()=>{
- if(busy||current?.status!=='waiting'||current.mode==='solo'||current.seat!==current.hostSeat)return;
+ if(busy||current?.status!=='waiting'||current.mode!=='online'||current.seat!==current.hostSeat)return;
  const room=current.id;$('inviteFriends').disabled=true;
  try{await request({action:'invite',room_id:room});}catch(e){notify(messages[e.message]||'친구 초대를 열지 못했어요. 다시 시도해 주세요.');}
  finally{render();}
 };
 $('copyCode').onclick=async()=>{try{await navigator.clipboard.writeText(current.code);notify('방 번호를 복사했어요.');}catch{notify('방 번호 '+current.code+'를 알려 주세요.');}};
-$('surrender').onclick=()=>{if(!busy&&current&&confirm(current.mode==='solo'?'이번 게임을 끝내고 처음 화면으로 갈까요?':'항복하고 관전할까요?'))void perform({action:current.mode==='solo'?'leave':'surrender',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
-$('bAgain').onclick=async()=>{if(!current||busy)return;const solo=current.mode==='solo';if(solo)$('soloOpponents').value=String(current.capacity-1);const left=await perform({action:'leave',room_id:current.id});if(left&&solo)await startSolo();};
+$('surrender').onclick=()=>{if(!busy&&current&&confirm(current.mode!=='online'?'이번 게임을 끝내고 처음 화면으로 갈까요?':'항복하고 관전할까요?'))void perform({action:current.mode!=='online'?'leave':'surrender',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
+$('bAgain').onclick=async()=>{if(!current||busy)return;const mode=current.mode;if(mode==='solo')$('soloOpponents').value=String(current.capacity-1);if(mode==='local')$('localPlayers').value=String(current.capacity);const left=await perform({action:'leave',room_id:current.id});if(left&&mode!=='online')await startPrivate(mode);};
 const exit=()=>parent.postMessage({source:'ojjuda-tank',type:'exit'},origin);
-$('bMenu').onclick=()=>current?.mode==='solo'&&!busy?perform({action:'leave',room_id:current.id}):exit();$('exitEntry').onclick=exit;
+$('bMenu').onclick=()=>current&&current.mode!=='online'&&!busy?perform({action:'leave',room_id:current.id}):exit();$('exitEntry').onclick=exit;
 addEventListener('message',e=>{
  if(e.source!==parent||e.origin!==origin||e.data?.source!=='ojjuda-world')return;
  const m=e.data;

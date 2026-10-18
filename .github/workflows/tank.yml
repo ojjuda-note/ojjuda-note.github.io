@@ -21,6 +21,7 @@ jobs:
       - run: node tests/tank-engine.test.mjs
       - run: node tests/tank-online-db.test.cjs
       - run: node tests/tank-solo.test.cjs
+      - run: node tests/tank-local.test.cjs
       - run: node --experimental-vm-modules tests/tank-client.test.cjs
       - run: node tests/arcade-catalog.test.cjs
       - run: node tests/arcade-entry-flows.test.cjs

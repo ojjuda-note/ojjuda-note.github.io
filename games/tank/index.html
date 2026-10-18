@@ -125,8 +125,9 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span><h1 class="ge-title">탱크게임</h1>
   <p id="entryCopy" class="ge-copy">바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.</p>
   <div id="entryHome">
-   <div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button type="button" id="soloMode" class="on" aria-pressed="true">혼자 하기</button><button type="button" id="onlineMode" aria-pressed="false">온라인 대전</button></div>
+   <div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button type="button" id="soloMode" class="on" aria-pressed="true">혼자 하기</button><button type="button" id="localMode" aria-pressed="false">같은 기기</button><button type="button" id="onlineMode" aria-pressed="false">온라인 대전</button></div>
    <div id="soloSetup"><label class="ge-label" for="soloOpponents">컴퓨터 상대</label><select id="soloOpponents"><option value="1">컴퓨터 1명</option><option value="2">컴퓨터 2명</option><option value="3" selected>컴퓨터 3명</option><option value="4">컴퓨터 4명</option><option value="5">컴퓨터 5명</option><option value="6">컴퓨터 6명</option><option value="7">컴퓨터 7명</option><option value="8">컴퓨터 8명</option><option value="9">컴퓨터 9명</option><option value="10">컴퓨터 10명</option><option value="11">컴퓨터 11명</option></select><button id="startSolo" class="ge-primary" type="button" disabled>혼자 시작하기</button><span class="ge-hint">나 1명 + 컴퓨터 · 시간 제한 없이 즐겨요</span></div>
+   <div id="localSetup" hidden><label class="ge-label" for="localPlayers">함께할 인원</label><select id="localPlayers"><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명</option><option value="10">10명</option><option value="11">11명</option><option value="12">12명</option></select><button id="startLocal" class="ge-primary" type="button" disabled>함께 시작하기</button><span class="ge-hint">한 기기에서 번갈아 조작해요.<br>유료탄은 로그인한 계정의 쭈에서 차감돼요.</span></div>
    <div id="lobbyHome" hidden>
     <form id="createRoom"><label class="ge-label" for="roomTitle">방 제목</label><input id="roomTitle" maxlength="40" value="탱크 한 판 같이 해요" required><label class="ge-label" for="roomCapacity">최대 인원</label><select id="roomCapacity"><option value="2">2명</option><option value="3">3명</option><option value="4" selected>4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명</option><option value="10">10명</option><option value="11">11명</option><option value="12">12명</option></select><button class="ge-primary" type="submit">방 만들기</button></form>
     <details class="ge-more"><summary>방 번호로 참여하기</summary><form id="joinRoom"><label class="ge-label" for="roomCode">8자리 방 번호</label><input id="roomCode" placeholder="예: A1B2C3D4" maxlength="8" pattern="[a-fA-F0-9]{8}" autocomplete="off" required><button class="ge-secondary" type="submit">입장하기</button></form></details>
@@ -136,7 +137,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람의 방향과 세기가 수시로 바뀌어요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄</td></tr></tbody></table><p>두 모드 모두 특수탄은 내가 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람의 방향과 세기가 수시로 바뀌어요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄</td></tr></tbody></table><p>특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
 <div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
@@ -476,10 +477,7 @@ function draw(){
     for(let i=1;i<=6;i++){ctx.globalAlpha=1-i/7;ctx.beginPath();ctx.arc(p.x+Math.cos(a)*6*i,p.y-Math.sin(a)*6*i,1.6,0,Math.PI*2);ctx.fill();}
     ctx.globalAlpha=1;}
 
-  for(const s of shots){ctx.strokeStyle='rgba(255,236,200,.5)';ctx.lineWidth=1.4;ctx.beginPath();
-    for(let i=0;i<s.trail.length;i+=2)i?ctx.lineTo(s.trail[i],s.trail[i+1]):ctx.moveTo(s.trail[i],s.trail[i+1]);ctx.stroke();
-    ctx.fillStyle=s.w.kind==='teleport'?'#a3dbff':s.w.kind==='heal'?'#8fffc5':s.w.kind==='dirt'?'#c9a46a':'#fff3d6';ctx.beginPath();ctx.arc(s.x,s.y,s.w.r>60?3.6:2.6,0,Math.PI*2);ctx.fill();
-    if(s.y<0){ctx.beginPath();ctx.moveTo(s.x,4);ctx.lineTo(s.x-5,12);ctx.lineTo(s.x+5,12);ctx.fill();}}
+  for(const s of shots)drawShell(s);
 
   for(const b of booms){const cr=Math.max(1,b.cr),a=b.t<=b.D?1:Math.max(0,1-(b.t-b.D)/22);
     const bx=b.outside?clamp(b.x,camX+12,camX+VW-12):b.x,by=b.outside?clamp(b.y,camY+12,camY+H-12):b.y;
@@ -507,6 +505,20 @@ function draw(){
   ctx.globalAlpha=1;ctx.restore();
   drawMini();
   updGauges();
+}
+function drawShell(s){
+  const nuclear=s.w.name==='핵탄',color=nuclear?'#ffdc53':s.w.kind==='teleport'?'#a3dbff':s.w.kind==='heal'?'#8fffc5':s.w.kind==='dirt'?'#c9a46a':'#fff3d6';
+  ctx.save();ctx.strokeStyle=nuclear?'rgba(255,220,83,.8)':'rgba(255,236,200,.5)';ctx.lineWidth=nuclear?2:1.4;ctx.beginPath();
+  for(let i=0;i<s.trail.length;i+=2)i?ctx.lineTo(s.trail[i],s.trail[i+1]):ctx.moveTo(s.trail[i],s.trail[i+1]);ctx.stroke();
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(s.x,s.y,nuclear?6:s.w.r>60?3.6:2.6,0,Math.PI*2);ctx.fill();
+  if(nuclear){
+    ctx.strokeStyle='#30283a';ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle='#30283a';
+    for(let i=0;i<3;i++){const angle=-Math.PI/2+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.arc(s.x,s.y,4.2,angle-Math.PI/6,angle+Math.PI/6);ctx.closePath();ctx.fill();}
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(s.x,s.y,1.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#30283a';ctx.beginPath();ctx.arc(s.x,s.y,.9,0,Math.PI*2);ctx.fill();
+  }
+  if(s.y<0){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(s.x,4);ctx.lineTo(s.x-5,12);ctx.lineTo(s.x+5,12);ctx.fill();}
+  ctx.restore();
 }
 function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h);ctx.fill();}
 function drawTank(t,i){
@@ -697,6 +709,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-arcade-entry1"></script>
+<script type="module" src="./online.mjs?v=20261018-tank-local1"></script>
 </body>
 </html>

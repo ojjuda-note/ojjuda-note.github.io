@@ -78,10 +78,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   solo.TankOnline.tick();assert.equal(solo.eval('tanks.length'),2);
   assert.equal(get(solo,'surrender').textContent,'그만하기');assert.doesNotMatch(get(solo,'netTurn').textContent,/초/);
   solo.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
-  await wait(()=>get(solo,'netTurn').textContent==='포탄 비행 중');
+  await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
   assert.match(get(solo,'netTurn').textContent,/컴퓨터 1/);
-  await wait(()=>get(solo,'netTurn').textContent==='포탄 비행 중');
+  await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
   assert.equal(solo.TankOnline.canAim(),true,'computer must automatically return the turn to the person');
   assert.equal(get(solo,'netCoins').textContent,'보유 100쭈');
@@ -90,6 +90,50 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(solo,'entryHome').hidden,false);assert.equal(get(solo,'soloSetup').hidden,false);
   assert.equal(get(solo,'startSolo').disabled,false);
   assert.equal(deathSounds,1,'subsequent ticks and room refreshes must not repeat a death explosion');
+  // Three people take turns on one authenticated device; no computer fires for them.
+  const local=await client(ids[3]);
+  get(local,'localMode').click();assert.equal(get(local,'localMode').getAttribute('aria-pressed'),'true');
+  assert.equal(get(local,'localSetup').hidden,false);assert.equal(get(local,'soloSetup').hidden,true);assert.equal(get(local,'lobbyHome').hidden,true);
+  assert.match(get(local,'localSetup').textContent,/로그인한 계정의 쭈/);
+  get(local,'localPlayers').value='3';get(local,'startLocal').click();
+  await wait(()=>local.document.body.classList.contains('in-match'));local.TankOnline.tick();
+  assert.equal(local.eval('tanks.length'),3);assert.doesNotMatch(get(local,'netTurn').textContent,/컴퓨터|초/);
+  for(const [seat,weapon,coins] of [[0,10,99],[1,10,98],[2,0,98]]){
+   assert.equal(local.TankOnline.canAim(),true);assert.equal(local.TankOnline.seat(),seat);
+   assert.match(get(local,'netTurn').textContent,new RegExp('플레이어 '+(seat+1)+' 차례'));
+   get(local,'wpn').click();get(local,'wgrid').children[weapon].click();
+   local.eval('lockAngle();startCharge();tanks[turn].ang=90;tanks[turn].pow=5;release();');
+   await wait(()=>get(local,'netTurn').textContent.endsWith('비행 중'));
+   for(let i=0;i<8000;i++)local.TankOnline.tick();
+   assert.equal(get(local,'netCoins').textContent,`보유 ${coins}쭈`);
+  }
+  assert.equal(local.TankOnline.seat(),0);
+  get(local,'wpn').click();get(local,'wgrid').children[8].click();
+  assert.equal(local.TankView.input().weapon,8);assert.equal(get(local,'wName').textContent,'핵탄');
+  local.dispatchEvent(new local.Event('online'));
+  await new Promise(r=>setTimeout(r,100));local.TankOnline.tick();
+  assert.equal(local.TankView.input().weapon,8,'state polling must preserve the selected nuclear shell');
+  local.eval('lockAngle();startCharge();tanks[turn].ang=90;tanks[turn].pow=5;release();');
+  await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
+  assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
+  assert.equal(local.eval('shots[0].w.r'),local.eval('WEAPONS[0].r'),'the requested normal blast range is preserved');
+  assert.equal(get(local,'netCoins').textContent,'보유 95쭈');local.eval('draw()');
+  for(let i=0;i<8000;i++)local.TankOnline.tick();
+  let localRoom=(await f.call(ids[3],{action:'mine'})).room;
+  assert.equal(localRoom.event.command.weapon,8);
+  const restored=await client(ids[3],true);restored.TankOnline.tick();
+  assert.equal(get(restored,'netCoins').textContent,'보유 95쭈');
+  assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
+  while(localRoom.status==='active')localRoom=(await f.call(ids[3],{action:'surrender',room_id:localRoom.id,version:localRoom.version,request_id:require('node:crypto').randomUUID()})).room;
+  local.dispatchEvent(new local.Event('online'));
+  await wait(()=>get(local,'netTurn').textContent==='전투 종료');
+  for(let i=0;i<70;i++)local.TankOnline.tick();
+  assert.equal(get(local,'over').classList.contains('hidden'),false);assert.equal(get(local,'bAgain').textContent,'다시 하기');
+  const previousLocalId=localRoom.id;get(local,'bAgain').click();
+  await wait(()=>local.TankOnline.canAim()&&local.eval('tankRenderEngine.snapshot().runId')!==previousLocalId);
+  local.TankOnline.tick();assert.equal(local.eval('tanks.length'),3,'play again keeps the local player count');
+  get(local,'surrender').click();await wait(()=>!local.document.body.classList.contains('in-match'));
+  assert.equal(get(local,'localSetup').hidden,false);assert.equal(get(local,'startLocal').disabled,false);
   // A restored wreck stays quiet; a new match can explode once again.
   const {newGame,createEngine}=await import('../games/tank/engine.mjs');
   const living=newGame(['a','b'],'effects',88),wreck=structuredClone(living);wreck.tanks[1].hp=0;
@@ -109,7 +153,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.equal(x,side<0?camera.x+12:camera.x+camera.w-12);
    assert.equal(y,camera.y+camera.h-12,'explosion is visible just inside the lower screen edge');
   }
-  console.log('PASS: one destruction burst and sound, result waits for burst, no duplicate/reconnect bursts, common entrance, solo CPU turns, two online sessions and paid ammo');
+  console.log('PASS: destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage and paid ammo');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

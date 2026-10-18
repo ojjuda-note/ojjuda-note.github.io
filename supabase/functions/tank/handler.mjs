@@ -38,7 +38,7 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
    if(body.action==='join'&&(typeof body.code!=='string'||!/^[a-f0-9]{8}$/i.test(body.code)))throw Error();
    if(body.action==='fire')validateCommand(body.command);
    if(body.action==='create'&&(!body.options||!Number.isInteger(body.options.capacity)||body.options.capacity<2||body.options.capacity>12||typeof body.options.title!=='string'||!body.options.title.trim()||[...body.options.title.trim()].length>40))throw Error();
-   if(body.action==='create'&&!['online','solo'].includes(body.options.mode??'online'))throw Error();
+   if(body.action==='create'&&!['online','solo','local'].includes(body.options.mode??'online'))throw Error();
   }catch{return reply({error:'bad_request'},400);}
   const get=(path,options)=>fetchImpl(url+path,{signal:AbortSignal.timeout(12000),...options});
   try{
@@ -50,7 +50,7 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
     const data=await response.json();if(!response.ok)throw Error(errors.has(data.message)?data.message:'unavailable');return data;
    };
    const catchUp=async result=>{
-    if(!result.room||result.room.mode==='solo'||result.room.status!=='active'||Date.parse(result.room.deadline)>Date.now())return result;
+    if(!result.room||result.room.mode!=='online'||result.room.status!=='active'||Date.parse(result.room.deadline)>Date.now())return result;
     const command={type:'timeout'},next=advance(result.room.state,result.room.state.turn,command);
     try{return await rpc('commit',{p_room:result.room.id,p_expected:result.room.version,p_request:crypto.randomUUID(),p_next:{...next,event:{type:'timeout',fromVersion:result.room.version,actor:result.room.state.turn}}});}
     catch(e){if(e.message!=='state_conflict'&&e.message!=='room_unavailable')throw e;return rpc('read',{p_room:result.room.id});}
@@ -64,7 +64,7 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
      let next,event={type:body.action,actor:result.seat,fromVersion:body.version};
      if(body.action==='start'){
       if(result.room.host_id!==user.id||result.room.status!=='waiting')throw Error('not_room_owner');
-      const names=result.room.mode==='solo'?[result.room.names[0],...Array.from({length:result.room.capacity-1},(_,i)=>`컴퓨터 ${i+1}`)]:result.room.names;
+      const names=result.room.mode==='local'?Array.from({length:result.room.capacity},(_,i)=>`플레이어 ${i+1}`):result.room.mode==='solo'?[result.room.names[0],...Array.from({length:result.room.capacity-1},(_,i)=>`컴퓨터 ${i+1}`)]:result.room.names;
       next={state:newGame(names,result.room.id,seed(),Date.now()),price:0};
      }else if(body.action==='cpu'){
       if(result.room.mode!=='solo'||result.room.status!=='active'||result.room.state.turn===result.seat)throw Error('not_your_turn');
@@ -75,7 +75,8 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
       if(result.room.status!=='active')throw Error('room_unavailable');
       // Ignore all client state, cost, weapon metadata and command.type fields.
       const command=body.action==='surrender'?{type:'surrender'}:{type:'fire',weapon:body.command.weapon,angle:body.command.angle,power:body.command.power,moves:body.command.moves,windTime:Date.now()};
-      next=advance(result.room.state,result.seat,command);event.command=command;
+      const seat=result.room.mode==='local'?result.room.state.turn:result.seat;
+      next=advance(result.room.state,seat,command);event.actor=seat;event.command=command;
      }
      if(result.room.mode==='solo'&&next.state.tanks[0].hp<=0)next.state.over=true;
      result=await rpc(body.action==='start'?'start':'commit',{p_room:body.room_id,p_expected:body.version,p_request:body.request_id,p_next:{...next,event}});
