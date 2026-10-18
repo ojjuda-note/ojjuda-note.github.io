@@ -30,9 +30,12 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   const left=await f.call(ids[0],{action:'leave',room_id:room.id});assert.equal(left.room,null);
   assert.equal((await f.call(ids[0],{action:'mine'})).room,null);
   // Measure actual damage, including splash and scatter, across different map sizes.
-  const {newGame,advance}=await import('../games/tank/engine.mjs');
+  const {newGame,createEngine,advance}=await import('../games/tank/engine.mjs');
   const {computerCommand,COMPUTER_ACCURACY}=await import('../supabase/functions/tank/computer.mjs');
   assert.equal(COMPUTER_ACCURACY,.05);
+  const oldGame=createEngine({names:['a','b','c'],runId:'old-cpu-map',seed:881,width:2400}).snapshot();delete oldGame.width;oldGame.wind=.076;
+  const normalized=createEngine(oldGame).snapshot();
+  assert.deepEqual(computerCommand(oldGame),computerCommand(normalized),'computer aiming uses the restored map width and capped wind of legacy saves');
   let hits=0,totalDamage=0;
   for(const size of [2,4,12])for(let seed=1;seed<=200;seed++){
    const sample=newGame(Array.from({length:size},(_,i)=>String(i)),'balance',seed*1777,1700000000000+seed*8000);

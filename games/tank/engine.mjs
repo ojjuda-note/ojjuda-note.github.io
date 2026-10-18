@@ -24,24 +24,33 @@ const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28f
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const G=.15,SLOW=.35,TS=.45,FUEL=150,CS=2;
 const isBasicWeapon=w=>Number.isInteger(w)&&WEAPONS[w]?.price===0;
-export const WIND_MAX=.076;
+export const WIND_MAX=.038;
+const windBand=wind=>{const strength=Math.round(Math.abs(wind)/WIND_MAX*10);return strength<=3?0:strength<=7?1:2;};
 // Deterministic weather samples; the engine advances the sample only at a new turn.
-// Strength 0–9 has 80% probability; 10–20 has 20%. Direction is independent.
+// Strength bands 0–3 / 4–7 / 8–10 have 70% / 20% / 10% probability.
 export function windAt(seed,time){
  const index=Math.floor(time/2800);
  let x=(seed^Math.imul(index,0x9e3779b9))>>>0;
  x=Math.imul(x^(x>>>16),0x21f0aaad);x=Math.imul(x^(x>>>15),0x735a2d97);
  const bits=(x^(x>>>15))>>>0,sample=(bits>>>1)/2147483648;
- const strength=sample<.8?Math.floor(sample/.8*10):10+Math.floor((sample-.8)/.2*11);
- return strength===0?0:(bits&1?-1:1)*strength/20*WIND_MAX;
+ const strength=sample<.7?Math.floor(sample/.7*4):sample<.9?4+Math.floor((sample-.7)/.2*4):8+Math.floor((sample-.9)/.1*3);
+ return strength===0?0:(bits&1?-1:1)*strength/10*WIND_MAX;
+}
+export function mapWidth(saved){
+ // Keep existing terrain intact; new battles use two thirds of the former width.
+ return saved.width??(saved.terrain?(saved.terrain.length-1)*CS:Math.round(800*Math.max(3,Math.ceil(saved.names.length/3)+1)*2/3));
+}
+export function currentWind(saved){
+ const index=saved.windIndex??Math.floor((saved.windTime??0)/2800);
+ return clamp(saved.wind??windAt(saved.weatherSeed??saved.seed,index*2800),-WIND_MAX,WIND_MAX);
 }
 export function createEngine(saved){
  let rng=saved.seed>>>0;
  const random=()=>{rng=(Math.imul(1664525,rng)+1013904223)>>>0;return rng/4294967296;};
- let NT=saved.names.length,VW=800,W=VW*Math.max(3,Math.ceil(NT/3)+1),H=450,MH=720,PL=350;
+ let NT=saved.names.length,VW=800,W=mapWidth(saved),H=450,MH=720,PL=350;
  let FLOOR=MH-4,FR=Math.floor(FLOOR/CS),GW=Math.ceil((W+1)/CS),GH=Math.ceil(MH/CS)+1;
  let K=Math.sqrt(W*1.15*G)/100,WINDMAX=WIND_MAX,windTime=saved.windTime??0,weatherSeed=saved.weatherSeed??saved.seed;
- let windIndex=saved.windIndex??Math.floor(windTime/2800),wind=saved.wind??windAt(weatherSeed,windIndex*2800);
+ let windIndex=saved.windIndex??Math.floor(windTime/2800),wind=currentWind(saved);
  let ground=new Float32Array(W+1),mask=new Uint8Array(GW*GH),active=new Set(),tDirty=true;
  let far=[],stars=[],tanks=[],turn=saved.turn??0,state='aim',shots=[],booms=[],bits=[],floats=[],paths=[];
  let shotNo=saved.shotNo||0,settleT=0,frame=0,dirty=0,over=!!saved.over,runId=saved.runId;
@@ -98,7 +107,12 @@ function tip(t){const a=t.ang*Math.PI/180;return{x:t.x+Math.cos(a)*18*TS,y:t.y-9
 
 
 function startTurn(i,changeWind=true){
- if(changeWind){const previous=wind;do{wind=windAt(weatherSeed,++windIndex*2800);}while(wind===previous);}
+ if(changeWind){
+  const previous=wind;wind=windAt(weatherSeed,++windIndex*2800);
+  // Preserve the chosen 70/20/10 band when avoiding the previous turn's wind.
+  const band=windBand(wind);
+  while(wind===previous||windBand(wind)!==band)wind=windAt(weatherSeed,++windIndex*2800);
+ }
  turn=i;const t=tanks[i];t.fuel=FUEL;t.ang=t.lastAng??90;t.pow=t.lastPow??5;t.w=t.basicWeapon;state='aim';
 }
 function fire(){
@@ -110,9 +124,8 @@ function fire(){
 
 function explodeOutside(s){
   if(s.dead)return;
-  // A missed shell still bursts; its edge indicator has no battlefield effects.
-  const r=s.w.r;
-  booms.push({x:s.x,y:s.y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w:s.w,cr:0,fx:true,outside:true});
+  // Keep the real impact center; terrain and tank effects reach across the edge.
+  explode(s.x,s.y,s.w,s,true);
   s.dead=true;
 }
 
@@ -181,10 +194,12 @@ function roll(s){
 }
 
 
-function explode(x,y,w,s){
- const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner};
+function explode(x,y,w,s,outside=false){
+ const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner,outside};
+ // An off-map teleport has no valid destination; piercing stops at the boundary.
+ if(outside&&w.kind==='teleport')bm.fx=true;
  if(w.kind==='dirt')bm.dirt=true;
- if(w.kind==='pierce'&&w.stage<2&&s)bm.next={dir:Math.sign(s.vx)||(s.owner===0?1:-1),stage:w.stage+1,owner:s.owner,n:s.n,ang:s.la,vx:s.ivx??s.vx,vy:s.ivy??s.vy};
+ if(w.kind==='pierce'&&w.stage<2&&s&&!outside)bm.next={dir:Math.sign(s.vx)||(s.owner===0?1:-1),stage:w.stage+1,owner:s.owner,n:s.n,ang:s.la,vx:s.ivx??s.vx,vy:s.ivy??s.vy};
  booms.push(bm);
 }
 
@@ -281,7 +296,7 @@ function begin(command){
 }
 function snapshot(){
  if(shots.length||active.size)throw Error('simulation_incomplete');
- return {runId,names:saved.names,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,wind,shotNo,over,
+ return {runId,names:saved.names,width:W,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,wind,shotNo,over,
   terrain:Array.from({length:GW},(_,x)=>surf(x*CS)/CS),
   tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow}))};
 }

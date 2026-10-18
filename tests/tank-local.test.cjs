@@ -18,7 +18,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   await f.db.query("update ojjuda_tank_internal.rooms set deadline=clock_timestamp()-interval '1 hour' where id=$1",[room.id]);
   assert.equal(ok(await f.call(owner,{action:'read',room_id:room.id})).version,room.version,'no automatic timeout in local games');
   // A flat fixture keeps the nuclear shot away from all tanks so every seat can act.
-  room.game.terrain.fill(150);room.game.tanks.forEach((t,i)=>Object.assign(t,{x:[2100,600,1200][i],y:300,vy:0}));
+  room.game.terrain.fill(150);room.game.tanks.forEach((t,i)=>Object.assign(t,{x:[1400,400,800][i],y:300,vy:0}));
   await f.db.query('update ojjuda_tank_internal.rooms set state=$2::jsonb where id=$1',[room.id,JSON.stringify(room.game)]);
   const before=room,request=randomUUID();room=ok(await fire(room,8,request));
   assert.equal(room.event.command.weapon,8);assert.equal(room.event.actor,0);assert.equal(room.coins,97);

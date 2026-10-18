@@ -1,13 +1,13 @@
 // Bounded, deterministic aiming. Computer turns use only the three free weapons.
-import {advance,windAt} from './engine.mjs';
+import {advance,mapWidth,currentWind} from './engine.mjs';
 export const COMPUTER_ACCURACY=.05;
 export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  const tanks=saved.tanks,t=tanks[saved.turn];
  const target=tanks.filter((other,i)=>i!==saved.turn&&other.hp>0).sort((a,b)=>Math.abs(a.x-t.x)-Math.abs(b.x-t.x))[0];
  if(!target||!t||t.hp<=0)throw Error('invalid_move');
- const width=800*Math.max(3,Math.ceil(tanks.length/3)+1),k=Math.sqrt(width*1.15*.15)/100,dir=target.x>t.x?1:-1;
+ const width=mapWidth(saved),k=Math.sqrt(width*1.15*.15)/100,dir=target.x>t.x?1:-1;
  const ground=x=>saved.terrain[Math.max(0,Math.min(saved.terrain.length-1,Math.floor(x/2)))]*2;
- const wind=saved.wind??windAt(saved.weatherSeed??saved.seed,saved.windTime??0);
+ const wind=currentWind(saved);
  function distance(angle,power){
   const rad=angle*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);
   const x0=t.x+cos*8.1,y0=t.y-4.05-sin*8.1,vx=cos*power*k,vy=-sin*power*k,h=.175;

@@ -47,6 +47,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(b,'cv').style.width,'390px');assert.equal(get(b,'cv').style.height,'844px');
   assert.ok(a.eval('VW>800'));assert.ok(b.eval('VW<800&&H<=MH+.001'));
   assert.equal(get(b,'rotate'),null,'portrait play has no blocking rotate-phone overlay');
+  assert.equal(a.eval('W'),1600);assert.equal(b.eval('W'),1600,'both sessions use the smaller battlefield');
   assert.equal(a.orientationLocks.length,0);assert.equal(a.orientationUnlocks,1);assert.equal(a.fullscreenCalls,1);
   const beforeResize=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
@@ -287,6 +288,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   // A restored wreck stays quiet; a new match can explode once again.
   const {newGame,createEngine}=await import('../games/tank/engine.mjs');
   const living=newGame(['a','b'],'effects',88),wreck=structuredClone(living);wreck.tanks[1].hp=0;
+  for(const [wind,label] of [[.076,'10 →'],[-.076,'← 10'],[.019,'5 →'],[0,'0']]){
+   solo.TankView.use(createEngine({...living,wind}),false);solo.eval('draw()');
+   assert.equal(get(solo,'windv').textContent,label,'the displayed wind matches the capped physical strength');
+  }
   solo.TankView.resetHistory();solo.TankView.use(createEngine(wreck),false);
   assert.equal(solo.TankView.hasEffects(),false);
   solo.TankView.resetHistory();solo.TankView.use(createEngine(living),false);solo.TankView.use(createEngine(wreck),false);
@@ -295,7 +300,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(solo.TankView.hasEffects(),false);
   // Outside bursts stay at the landing point; only the overlapping part can enter the view.
   const edgeGame=structuredClone(living);edgeGame.terrain.fill(150);edgeGame.tanks.forEach(t=>Object.assign(t,{y:300,vy:0}));
-  for(const weapon of [0,8,10,11])for(const side of [-1,0,1]){
+  for(const weapon of [0,8,11])for(const side of [-1,0,1]){
    const edge=createEngine(edgeGame);edge.begin({type:'fire',weapon,angle:90,power:5,moves:[]});
    const v=edge.view();Object.assign(v.shots[0],{x:side<0?-8:side>0?v.W+8:v.W/2,y:side?300:v.MH+41,vx:side,vy:1});edge.step();
    solo.TankView.resetHistory();solo.TankView.use(edge,false);

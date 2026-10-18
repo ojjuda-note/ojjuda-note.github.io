@@ -8,14 +8,45 @@ assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
 for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const gusts=Array.from({length:100000},(_,i)=>windAt(123456+i%17,1700000000000+i*2800+(i%2800)));
-const strengths=gusts.map(w=>Math.round(Math.abs(w)/WIND_MAX*20));
-const strongRate=strengths.filter(w=>w>=10).length/strengths.length;
-assert.ok(strongRate>.195&&strongRate<.205,`strong winds should appear 20% of the time: ${strongRate}`);
-assert.deepEqual([...new Set(strengths)].sort((a,b)=>a-b),Array.from({length:21},(_,i)=>i));
+const strengths=gusts.map(w=>Math.round(Math.abs(w)/WIND_MAX*10));
+const windRates=[[0,3,.7],[4,7,.2],[8,10,.1]].map(([lo,hi,expected])=>{
+ const rate=strengths.filter(w=>w>=lo&&w<=hi).length/strengths.length;
+ assert.ok(Math.abs(rate-expected)<.005,`wind ${lo}–${hi} should appear ${expected*100}% of the time: ${rate}`);
+ return (rate*100).toFixed(2);
+});
+assert.deepEqual([...new Set(strengths)].sort((a,b)=>a-b),Array.from({length:11},(_,i)=>i));
 assert.ok(Math.min(...gusts)<-WIND_MAX*.8&&Math.max(...gusts)>WIND_MAX*.8,'gusts reach strong winds in both directions');
 assert.ok(gusts.some(w=>Math.abs(w)<.003),'calm intervals remain possible');
 assert.ok(gusts.every(w=>Math.abs(w)<=WIND_MAX));
-assert.ok(Math.max(...gusts)-Math.min(...gusts)>.15,'maximum physical wind is doubled');
+assert.equal(WIND_MAX,.038,'the strongest physical wind is half the previous maximum');
+// Measure actual turn changes too: globally rerolling repeats would distort 70/20/10.
+const turnSampler=createEngine(newGame(['a','b','c'],'wind-distribution',3381)),turnBands=[0,0,0];
+let previousWind=turnSampler.view().wind;
+for(let i=0;i<100000;i++){
+ turnSampler.skip();const wind=turnSampler.view().wind,strength=Math.round(Math.abs(wind)/WIND_MAX*10);
+ assert.notEqual(wind,previousWind);previousWind=wind;turnBands[strength<=3?0:strength<=7?1:2]++;
+}
+turnBands.forEach((count,i)=>assert.ok(Math.abs(count/100000-[.7,.2,.1][i])<.005,`actual turns must preserve the requested band probability: ${turnBands}`));
+for(let count=2;count<=12;count++){
+ const names=Array.from({length:count},(_,i)=>String(i)),oldWidth=800*Math.max(3,Math.ceil(count/3)+1);
+ const compact=newGame(names,'compact-map',count*777),view=createEngine(compact).view();
+ assert.equal(view.W,Math.round(oldWidth*2/3));assert.equal(compact.width,view.W);
+ assert.equal(view.MH,720,'horizontal size changes without flattening the landscape');
+ assert.equal(compact.terrain.length,Math.ceil((view.W+1)/2));
+ assert.ok(compact.tanks.every(t=>t.x>=20&&t.x<=view.W-20));
+ assert.deepEqual(createEngine(compact).snapshot(),compact,'all player counts reload the saved width, including odd widths');
+ const old=createEngine({names,runId:'old-map',seed:count*777,width:oldWidth}).snapshot();delete old.width;
+ old.wind=count%2?.076:-.076;
+ const recovered=createEngine(old),restored=recovered.snapshot();
+ assert.equal(restored.width,oldWidth,'pre-update saves retain their original map size');
+ assert.deepEqual(restored.terrain,old.terrain);assert.deepEqual(restored.tanks,old.tanks);
+ assert.equal(restored.wind,Math.sign(old.wind)*WIND_MAX,'older strong winds are capped at 10');
+ const command={type:'fire',weapon:10,angle:78.25,power:30,moves:[]};
+ recovered.begin(command);let frames=0;
+ while(['fly','settle'].includes(recovered.view().state)&&frames++<18000)recovered.step();
+ const server=advance(old,old.turn,command).state;server.tanks.forEach(t=>delete t.misses);
+ assert.deepEqual(recovered.snapshot(),server,'legacy width and capped wind replay identically');
+}
 const weatherGame=newGame(['a','b','c'],'wind-test',881,1700000000000);
 const observer=createEngine(weatherGame);observer.setWindTime(1700000003400);
 for(let i=0;i<600;i++)observer.step();
@@ -38,7 +69,7 @@ assert.equal(advance(weatherGame,1,{type:'surrender'}).state.wind,weatherGame.wi
 // Each player keeps a separate free-shell choice, including after a paid shot or a reload.
 let choices=newGame(['a','b','c'],'basic-choice',881);
 choices.wind=0;choices.terrain.fill(150);
-choices.tanks.forEach((t,i)=>Object.assign(t,{x:300+i*900,y:300,vy:0}));
+choices.tanks.forEach((t,i)=>Object.assign(t,{x:200+i*600,y:300,vy:0}));
 const choose=(weapon,basicWeapon)=>{choices=advance(choices,choices.turn,{type:'fire',weapon,basicWeapon,angle:90,power:5,moves:[]}).state;};
 choose(1);assert.equal(choices.tanks[1].w,0);
 choose(2);assert.equal(choices.tanks[2].w,0);
@@ -56,7 +87,7 @@ assert.equal(createEngine(legacy).view().wind,legacy.wind,'older saved games kee
 for(const basicWeapon of [-1,3,1.5,'1',null])assert.throws(()=>advance(weatherGame,0,{...weatherCommand,basicWeapon}),/invalid_move/);
 // Remember each player's last fired angle/power, including zero and quarter degrees.
 let aimGame=newGame(['a','b','c'],'remember-aim',882);
-aimGame.terrain.fill(150);aimGame.tanks.forEach((t,i)=>Object.assign(t,{x:300+i*900,y:300,vy:0}));
+aimGame.terrain.fill(150);aimGame.tanks.forEach((t,i)=>Object.assign(t,{x:200+i*600,y:300,vy:0}));
 assert.deepEqual(aimGame.tanks.map(t=>[t.ang,t.pow]),[[90,5],[90,5],[90,5]],'new players start with the default aim');
 const rememberedAim=[[0,100],[41.25,67],[180,5]];
 for(const [angle,power] of rememberedAim)aimGame=advance(aimGame,aimGame.turn,{type:'fire',weapon:10,angle,power,moves:[]}).state;
@@ -191,7 +222,7 @@ const healedServer=advance(healGame,0,healCommand).state;healedServer.tanks.forE
 assert.deepEqual(healEngine.snapshot(),healedServer,'healing replays identically for server and all clients');
 const teleportGame=newGame(['self','opponent'],'teleport',881);
 teleportGame.wind=0;
-teleportGame.terrain.fill(150);teleportGame.tanks.forEach((t,i)=>Object.assign(t,{x:600+i*1200,y:300,vy:0,hp:60+i*20}));
+teleportGame.terrain.fill(150);teleportGame.tanks.forEach((t,i)=>Object.assign(t,{x:600+i*600,y:300,vy:0,hp:60+i*20}));
 const teleport=createEngine(teleportGame),teleportMask=teleport.view().mask.slice();
 const teleportCommand={type:'fire',weapon:11,angle:45,power:45,moves:[],windTime:calmTime};
 assert.equal(teleport.begin(teleportCommand),1);let impact=null,teleportFrames=0;
@@ -200,7 +231,7 @@ while(['fly','settle'].includes(teleport.view().state)&&teleportFrames++<18000){
 }
 assert.ok(impact&&Math.abs(impact.x-600)>50,'teleport shell travels to a new landing spot');
 assert.equal(teleport.snapshot().tanks[0].x,impact.x);assert.equal(teleport.snapshot().tanks[0].y,300);
-assert.equal(teleport.snapshot().tanks[1].x,1800,'only the firing tank moves');
+assert.equal(teleport.snapshot().tanks[1].x,1200,'only the firing tank moves');
 assert.deepEqual(teleport.snapshot().tanks.map(t=>t.hp),[60,80]);
 assert.deepEqual(teleport.view().mask,teleportMask,'teleport leaves the terrain intact');
 const teleportedServer=advance(teleportGame,0,teleportCommand).state;teleportedServer.tanks.forEach(t=>delete t.misses);
@@ -219,7 +250,7 @@ for(const side of [-1,1])for(const distance of [120,1200]){
  let frames=0;while(!edge.view().booms.length&&frames++<300)edge.step();
  assert.ok(frames<300,'the falling shell lands on the hidden side ground');
  const boom=edge.view().booms[0];
- assert.ok(boom.outside&&boom.fx);assert.ok(side<0?boom.x<0:boom.x>width);
+ assert.ok(boom.outside);assert.ok(side<0?boom.x<0:boom.x>width);
  assert.ok(boom.y>=edgeHeight&&boom.y<edgeHeight+3,'hidden ground continues the corresponding edge height');
  assert.equal(edge.view().W,width,'hidden terrain does not expand the visible map');
  assert.deepEqual(edge.view().mask,maskBefore);
@@ -235,18 +266,40 @@ for(const side of [-1,1]){
 }
 // Every projectile bursts after landing outside, including children that split in midair.
 for(const side of [-1,1])for(let weapon=0;weapon<WEAPONS.length;weapon++){
- const missedGame=structuredClone(teleportGame);missedGame.tanks[0].x=side<0?30:2370;missedGame.tanks[1].x=1200;
+ const missedGame=structuredClone(teleportGame);missedGame.tanks[0].x=side<0?30:missedGame.width-30;missedGame.tanks[1].x=missedGame.width/2;
  const missed=createEngine(missedGame),maskBefore=missed.view().mask.slice(),bursts=new Set();
  const command={type:'fire',weapon,angle:side<0?175:5,power:100,moves:[],windTime:calmTime};missed.begin(command);
  let frames=0;
  while(['fly','settle'].includes(missed.view().state)&&frames++<18000){missed.step();missed.view().booms.forEach(b=>bursts.add(b));}
  assert.ok(frames<18000,'misses finish the turn after their explosion');
  assert.equal(bursts.size,WEAPONS[weapon].kind==='mirv'?5:WEAPONS[weapon].count||1,'one explosion per missed projectile, without piercing repeats');
- assert.ok([...bursts].every(b=>b.outside&&b.fx&&(side<0?b.x<0:b.x>missed.view().W)));
- assert.deepEqual(missed.view().mask,maskBefore,'an edge indicator never changes terrain');
+ assert.ok([...bursts].every(b=>b.outside&&(side<0?b.x<0:b.x>missed.view().W)));
+ assert.deepEqual(missed.view().mask,maskBefore,'a distant outside blast cannot reach the battlefield');
  assert.deepEqual(missed.snapshot().tanks.map(t=>[t.x,t.y,t.hp]),missedGame.tanks.map(t=>[t.x,t.y,t.hp]),'missed healing and teleport shells have no remote effect');
  const server=advance(missedGame,0,command).state;server.tanks.forEach(t=>delete t.misses);
  assert.deepEqual(missed.snapshot(),server,'outside explosions replay identically online');
+}
+// Near-edge outside impacts use their real radius for craters, dirt, healing and damage.
+for(const side of [-1,1])for(const weapon of [0,1,6,7,8,9,10,11,12]){
+ const edgeGame=newGame(['edge','far'],'edge-effects',881);edgeGame.wind=0;edgeGame.terrain.fill(150);
+ edgeGame.tanks.forEach((t,i)=>Object.assign(t,{x:i?edgeGame.width/2:side<0?6:edgeGame.width-6,y:300,vy:0,hp:weapon===10?50:100}));
+ const command={type:'fire',weapon,angle:side<0?175:5,power:5,moves:[]},e=createEngine(edgeGame),bursts=new Set();
+ e.begin(command);let frames=0;
+ while(['fly','settle'].includes(e.view().state)&&frames++<18000){e.step();e.view().booms.forEach(b=>bursts.add(b));}
+ assert.ok(frames<18000);assert.equal(bursts.size,1,'outside piercing and guidance do not spawn extra impacts');
+ const b=[...bursts][0],result=e.snapshot(),kind=WEAPONS[weapon].kind;
+ assert.ok(b.outside&&(side<0?b.x<0:b.x>edgeGame.width),'the explosion center stays outside the map');
+ const edgeHeight=result.terrain[side<0?0:result.terrain.length-1];
+ if(kind==='dirt')assert.ok(edgeHeight<150,'outside dirt fills the overlapping edge');
+ else if(kind==='heal'||kind==='teleport')assert.deepEqual(result.terrain,edgeGame.terrain,'utility shots keep their non-destructive behavior');
+ else{assert.ok(edgeHeight>150,'an outside blast digs the edge');assert.ok(result.tanks[0].hp<edgeGame.tanks[0].hp,'the overlapping blast also reaches an edge tank');}
+ const untouched=Math.ceil((b.r+40)/2),index=side<0?untouched:result.terrain.length-1-untouched;
+ assert.equal(result.terrain[index],150,'ground beyond the actual radius is untouched');
+ if(kind==='heal')assert.equal(result.tanks[0].hp,75,'healing reaches only tanks inside the outside blast radius');
+ if(kind==='teleport')assert.equal(result.tanks[0].x,edgeGame.tanks[0].x,'a miss cannot teleport a tank outside the map');
+ const server=advance(edgeGame,0,command).state;server.tanks.forEach(t=>delete t.misses);
+ assert.deepEqual(result,server,'outside terrain changes agree on the server and display');
+ assert.deepEqual(createEngine(result).snapshot(),result,'edge craters survive saving and resuming');
 }
 // Exercise the lower boundary and rolling off either edge after ground contact.
 for(const edge of ['bottom','roll-left','roll-right']){
@@ -270,4 +323,4 @@ for(let n=0;n<3;n++){
 }
 assert.equal(game.tanks[0].hp,0,'three absent turns eliminate the player');
 assert.throws(()=>advance(newGame(['a','b'],'room',1),1,{type:'fire',weapon:0,angle:60,power:50,moves:[]}),/not_your_turn/);
-console.log(`PASS: 0–20 wind (${(strongRate*100).toFixed(2)}% strong), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all 13 ammo types, 2/4/12-player replay parity`);
+console.log(`PASS: 2/3 map widths, legacy saves, 0–10 wind (${windRates.join('/')}% sampled; ${turnBands.map(n=>(n/1000).toFixed(2)).join('/')}% actual turns), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all 13 ammo types, 2/4/12-player replay parity`);
