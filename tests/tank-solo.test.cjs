@@ -29,22 +29,26 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await f.call(ids[0],{action:'mine'})).room.id,room.id);
   const left=await f.call(ids[0],{action:'leave',room_id:room.id});assert.equal(left.room,null);
   assert.equal((await f.call(ids[0],{action:'mine'})).room,null);
-  // A complete computer duel demonstrates aiming, damage and termination without billing a person.
+  // Measure actual damage, including splash and scatter, across different map sizes.
   const {newGame,advance}=await import('../games/tank/engine.mjs');
-  const {computerCommand}=await import('../supabase/functions/tank/computer.mjs');
+  const {computerCommand,COMPUTER_ACCURACY}=await import('../supabase/functions/tank/computer.mjs');
+  assert.equal(COMPUTER_ACCURACY,.05);
   let hits=0,totalDamage=0;
-  for(const size of [2,4,12])for(let seed=1;seed<=24;seed++){
+  for(const size of [2,4,12])for(let seed=1;seed<=200;seed++){
    const sample=newGame(Array.from({length:size},(_,i)=>String(i)),'balance',seed*1777,1700000000000+seed*8000);
    sample.turn=seed%size;sample.shotNo=seed;
-   const next=advance(sample,sample.turn,computerCommand(sample));
+   const before=structuredClone(sample),command=computerCommand(sample),next=advance(sample,sample.turn,command);
+   assert.equal(next.price,0);assert.ok(command.weapon<3);
+   assert.deepEqual(sample,before,'aim previews must not change the saved battle');
+   if(seed===1)assert.deepEqual(computerCommand(sample),command,'retrying does not reroll accuracy');
    const damage=sample.tanks.reduce((sum,t,i)=>sum+(i===sample.turn?0:t.hp-next.state.tanks[i].hp),0);
    hits+=damage>0;totalDamage+=damage;
   }
-  assert.ok(hits>=10&&hits<=36,`casual CPU should miss often but still hit: ${hits}/72`);
-  assert.ok(totalDamage/72<15,'computer average damage should stay forgiving');
+  assert.ok(hits>=15&&hits<=45,`CPU hit rate should stay near 5%: ${hits}/600`);
+  assert.ok(totalDamage/600<3,'computer average damage should stay very low');
   // Fix the weather epoch as well as the terrain seed so CI time cannot change the duel.
   let state=newGame(['나','컴퓨터'],randomUUID(),456789,1700000000000),turns=0;
-  for(;turns<70&&!state.over;turns++){
+  for(;turns<800&&!state.over;turns++){
    const command=computerCommand(state),next=advance(state,state.turn,command);
    assert.equal(next.price,0);state=next.state;
   }
@@ -54,6 +58,6 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   room=(await f.start(ids[0],room)).room;assert.equal(room.game.tanks.length,12);
   const ended=await f.call(ids[0],{action:'surrender',room_id:room.id,version:room.version,request_id:randomUUID()});
   assert.equal(ended.room.status,'finished');assert.equal(ended.room.game.tanks[0].hp,0);assert.equal(ended.coins,98);
-  console.log(`PASS: solo privacy, 1–11 opponents, no timer, CPU authority, replay-safe billing, automatic turn cycle, defeat, leave and computer duel (${turns} turns)`);
+  console.log(`PASS: CPU hit rate ${hits}/600 (${(hits/6).toFixed(2)}%), solo privacy, 1–11 opponents, no timer, CPU authority, replay-safe billing, automatic turn cycle, defeat, leave and computer duel (${turns} turns)`);
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

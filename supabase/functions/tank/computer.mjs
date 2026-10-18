@@ -1,5 +1,6 @@
 // Bounded, deterministic aiming. Computer turns use only the three free weapons.
-import {windAt} from './engine.mjs';
+import {advance,windAt} from './engine.mjs';
+export const COMPUTER_ACCURACY=.05;
 export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  const tanks=saved.tanks,t=tanks[saved.turn];
  const target=tanks.filter((other,i)=>i!==saved.turn&&other.hp>0).sort((a,b)=>Math.abs(a.x-t.x)-Math.abs(b.x-t.x))[0];
@@ -25,9 +26,21 @@ export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  for(let a=10;a<=85;a+=5)for(let p=20;p<=100;p+=5)consider(dir>0?a:180-a,p);
  const coarse={...best};
  for(let a=coarse.angle-5;a<=coarse.angle+5;a++)for(let p=Math.max(5,coarse.power-5);p<=Math.min(100,coarse.power+5);p++)consider(a,p);
- // Casual opponents make independent angle and power errors; they never become perfect.
+ // The seeded roll stays stable on retries and never ramps up with later turns.
  let noise=(saved.seed^Math.imul(saved.shotNo+1,0x9e3779b9)^Math.imul(saved.turn+1,0x85ebca6b))>>>0;
  const random=()=>{noise=(Math.imul(noise,1664525)+1013904223)>>>0;return noise/4294967296;};
- return {type:'fire',weapon:saved.shotNo%5===0?2:saved.shotNo%3===0?0:1,windTime,
-  angle:Math.max(0,Math.min(180,best.angle+(random()*2-1)*3.5)),power:Math.max(5,Math.min(100,best.power+(random()*2-1)*5)),moves:[]};
+ const command={type:'fire',weapon:saved.shotNo%5===0?2:saved.shotNo%3===0?0:1,windTime,angle:best.angle,power:best.power,moves:[]};
+ if(random()<COMPUTER_ACCURACY)return command;
+ // Broad errors make 95% of shots miss. Check real splash, pellets and falling
+ // damage so crowded maps do not turn an inaccurate shot into an easy hit.
+ let safest=null,leastDamage=Infinity;
+ for(let attempt=0;attempt<8;attempt++){
+  const angleError=(random()<.5?-1:1)*(12+random()*38),powerError=(random()<.5?-1:1)*(15+random()*40);
+  const candidate={...command,angle:Math.max(dir>0?5:95,Math.min(dir>0?85:175,best.angle+angleError)),power:Math.max(5,Math.min(100,best.power+powerError))};
+  const next=advance(saved,saved.turn,candidate).state;
+  const damage=tanks.reduce((sum,tank,i)=>sum+Math.max(0,tank.hp-next.tanks[i].hp)*(i===saved.turn?1:1000),0);
+  if(damage<leastDamage){safest=candidate;leastDamage=damage;}
+  if(damage===0)return candidate;
+ }
+ return safest;
 }
