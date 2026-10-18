@@ -5,10 +5,13 @@ const root=path.resolve(__dirname,'..');
 const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Promise(r=>setTimeout(r,10));}throw Error('UI condition timed out');};
 (async()=>{
  const f=await fixture(),windows=[];
- async function client(actor,expectSaved=false,viewport={width:1536,height:626},joinCode=''){
+ async function client(actor,expectSaved=false,viewport={width:1536,height:626},joinCode='',savedSpeed=null){
   const html=fs.readFileSync(path.join(root,'games/tank/index.html'),'utf8');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/tank/index.html',runScripts:'outside-only',pretendToBeVisual:true});windows.push(dom.window);
   const w=dom.window,context=dom.getInternalVMContext(),draw=()=>{};
+  if(savedSpeed!==null)w.localStorage.setItem('ojjuda.tank.solo.speed',savedSpeed);
+  w.scheduledDelays=[];const nativeTimeout=w.setTimeout.bind(w);
+  w.setTimeout=(fn,delay,...args)=>{w.scheduledDelays.push(delay);return nativeTimeout(fn,delay,...args);};
   w.orientationLocks=[];w.orientationUnlocks=0;w.fullscreenCalls=0;
   Object.defineProperty(w.screen,'orientation',{value:{lock:async value=>{w.orientationLocks.push(value);},unlock:()=>{w.orientationUnlocks++;}}});
   w.document.documentElement.requestFullscreen=async()=>{w.fullscreenCalls++;};
@@ -29,7 +32,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   return w;
  }
  try{
-  const viewport={width:1536,height:626},a=await client(ids[0],false,viewport),get=(w,id)=>w.document.getElementById(id);
+  const viewport={width:1536,height:626},a=await client(ids[0],false,viewport,'','2'),get=(w,id)=>w.document.getElementById(id);
   const weaponCard=(w,id)=>get(w,'wgrid').querySelector('[data-weapon="'+id+'"]');
   assert.equal(get(a,'soloMode').getAttribute('aria-pressed'),'true');
   assert.equal(get(a,'lobbyHome').hidden,true);
@@ -44,6 +47,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>a.document.body.classList.contains('in-match'));
   await wait(()=>b.document.body.classList.contains('in-match'));
   a.TankOnline.tick();b.TankOnline.tick();
+  assert.equal(get(a,'soloSpeed').hidden,true,'online play has no speed control');
   assert.equal(get(a,'cv').style.width,'1536px');assert.equal(get(a,'cv').style.height,'626px');
   assert.equal(get(b,'cv').style.width,'390px');assert.equal(get(b,'cv').style.height,'844px');
   assert.ok(a.eval('VW>800'));assert.ok(b.eval('VW<800&&H<=MH+.001'));
@@ -206,6 +210,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const fired=(await f.call(ids[0],{action:'mine'})).room;
   assert.equal(fired.event.command.angle,1.5);assert.equal(fired.event.command.power,50);assert.equal(fired.game.shotNo,1,'one click fires the exact half-degree angle and power without charging');
   assert.equal(get(a,'netTurn').textContent,'유도탄 비행 중');assert.equal(a.eval('shots[0].w.kind'),'homing');assert.equal(a.eval('shots[0].w.dmg'),34);a.eval('draw()');
+  const onlineFrame=a.eval('tankRenderEngine.view().frame');a.TankOnline.tick();assert.equal(a.eval('tankRenderEngine.view().frame'),onlineFrame+1,'online playback stays at normal speed despite a saved solo x2 preference');
   const flightBeforeRotation=a.eval('JSON.stringify([tanks.map(t=>[t.x,t.y,t.hp]),shots.map(s=>[s.x,s.y,s.vx,s.vy]),shotNo])');
   viewport.width=390;viewport.height=844;a.dispatchEvent(new a.Event('resize'));a.eval('draw()');
   assert.equal(a.eval('JSON.stringify([tanks.map(t=>[t.x,t.y,t.hp]),shots.map(s=>[s.x,s.y,s.vx,s.vy]),shotNo])'),flightBeforeRotation,'rotation during flight does not move or restart a projectile');
@@ -247,14 +252,29 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   get(solo,'soloOpponents').value='1';get(solo,'startSolo').click();
   await wait(()=>solo.document.body.classList.contains('in-match'));
   solo.TankOnline.tick();assert.equal(solo.eval('tanks.length'),2);
+  assert.equal(get(solo,'soloSpeed').hidden,false);assert.equal(get(solo,'soloSpeed').textContent,'속도 ×1');
+  const beforeSpeed=solo.eval('JSON.stringify(tankRenderEngine.snapshot())');
+  get(solo,'soloSpeed').click();assert.equal(get(solo,'soloSpeed').textContent,'속도 ×2');
+  assert.equal(solo.localStorage.getItem('ojjuda.tank.solo.speed'),'2');
+  assert.equal(solo.eval('JSON.stringify(tankRenderEngine.snapshot())'),beforeSpeed,'speed changes do not alter aim or battle state');
   assert.equal(get(solo,'surrender').textContent,'그만하기');assert.doesNotMatch(get(solo,'netTurn').textContent,/초/);
   get(solo,'wpn').click();weaponCard(solo,12).click();
   solo.eval('setAngle(0);setPower(50);fireSelected();');
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
+  let soloFrame=solo.eval('tankRenderEngine.view().frame');solo.TankOnline.tick();assert.equal(solo.eval('tankRenderEngine.view().frame'),soloFrame+2,'double speed advances the flight by two frames');
+  get(solo,'soloSpeed').click();soloFrame=solo.eval('tankRenderEngine.view().frame');solo.TankOnline.tick();assert.equal(solo.eval('tankRenderEngine.view().frame'),soloFrame+1,'normal speed can be restored during flight');
+  get(solo,'soloSpeed').click();
+  const acceptedSolo=(await f.call(ids[2],{action:'mine'})).room;
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
+  const renderedSolo=JSON.parse(solo.eval('JSON.stringify(tankRenderEngine.snapshot())'));
+  assert.deepEqual(renderedSolo.terrain,acceptedSolo.game.terrain);assert.deepEqual(renderedSolo.turnOrder,acceptedSolo.game.turnOrder);
+  assert.deepEqual(renderedSolo.tanks.map(t=>[t.x,t.y,t.hp]),acceptedSolo.game.tanks.map(t=>[t.x,t.y,t.hp]),'double speed preserves authoritative damage and positions');
+  assert.ok(solo.scheduledDelays.includes(450),'double speed halves the computer wait');
   assert.match(get(solo,'netTurn').textContent,/컴퓨터 1/);
-  await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
-  for(let i=0;i<8000;i++)solo.TankOnline.tick();
+  for(let i=0;i<3&&!solo.TankOnline.canAim();i++){
+   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
+   for(let j=0;j<8000;j++)solo.TankOnline.tick();
+  }
   assert.equal(solo.TankOnline.canAim(),true,'computer must automatically return the turn to the person');
   assert.equal(solo.TankView.input().angle,0);assert.equal(solo.TankView.input().power,50,'the player keeps their aim after the computer fires');
   assert.equal(get(solo,'netCoins').textContent,'보유 97쭈');
@@ -270,6 +290,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.match(get(local,'localSetup').textContent,/로그인한 계정의 쭈/);
   get(local,'localPlayers').value='3';get(local,'startLocal').click();
   await wait(()=>local.document.body.classList.contains('in-match'));local.TankOnline.tick();
+  assert.equal(get(local,'soloSpeed').hidden,true,'same-device play has no speed control');
   assert.equal(local.eval('tanks.length'),3);assert.doesNotMatch(get(local,'netTurn').textContent,/컴퓨터|초/);
   const localAim=[[89.75,6],[90.25,7],[89.5,8]];
   for(const [seat,weapon,coins] of [[0,12,97],[1,10,96],[2,0,96]]){
@@ -282,18 +303,19 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    for(let i=0;i<8000;i++)local.TankOnline.tick();
    assert.equal(get(local,'netCoins').textContent,`보유 ${coins}쭈`);
   }
-  assert.equal(local.TankOnline.seat(),0);
-  assert.equal(local.TankView.input().angle,89.75);assert.equal(local.TankView.input().power,6,'same-device turns restore each player\'s aim');
+  const nextLocalSeat=local.TankOnline.seat();
+  assert.equal(local.TankView.input().angle,localAim[nextLocalSeat][0]);assert.equal(local.TankView.input().power,localAim[nextLocalSeat][1],'shuffled same-device turns restore each player\'s aim');
   local.eval('draw()');
-  assert.equal(get(local,'angv').textContent,'각도 89.75°');assert.equal(get(local,'powv').textContent,'힘 6');
-  assert.equal(local.TankView.input().weapon,1,'large shell returns after one paid shot and the other players\' turns');
-  assert.equal(get(local,'wName').textContent,'대형탄');
+  assert.equal(get(local,'angv').textContent,`각도 ${localAim[nextLocalSeat][0]}°`);assert.equal(get(local,'powv').textContent,`힘 ${localAim[nextLocalSeat][1]}`);
+  assert.equal(local.TankView.input().weapon,[1,2,0][nextLocalSeat],'the shuffled next player restores their basic shell');
+  assert.equal(get(local,'wName').textContent,['대형탄','산탄','일반탄'][nextLocalSeat]);
   get(local,'wpn').click();weaponCard(local,8).click();
   assert.equal(local.TankView.input().weapon,8);assert.equal(get(local,'wName').textContent,'핵탄');
   local.dispatchEvent(new local.Event('online'));
   await new Promise(r=>setTimeout(r,100));local.TankOnline.tick();
   assert.equal(local.TankView.input().weapon,8,'state polling must preserve the selected nuclear shell');
-  assert.equal(local.TankView.input().angle,89.75);assert.equal(local.TankView.input().power,6,'polling preserves restored aim');
+  assert.equal(local.TankView.input().angle,localAim[nextLocalSeat][0]);assert.equal(local.TankView.input().power,localAim[nextLocalSeat][1],'polling preserves restored aim');
+  localAim[nextLocalSeat]=[90,5];
   local.eval('setAngle(90);setPower(5);fireSelected();');
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
   assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
@@ -375,7 +397,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   savedSolo=(await f.start(ids[5],savedSolo)).room;
   savedSolo=(await f.move(ids[5],savedSolo,{weapon:0,angle:0,power:50,moves:[]})).room;
   assert.equal(savedSolo.game.turn,1);
-  const paused=await client(ids[5],true);
+  const paused=await client(ids[5],true,{width:390,height:844},'',solo.localStorage.getItem('ojjuda.tank.solo.speed'));
   assert.equal(paused.document.body.classList.contains('in-match'),false);
   assert.equal(get(paused,'newMatch').hidden,false);
   await new Promise(r=>setTimeout(r,1100));
@@ -385,6 +407,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   paused.confirm=()=>false;get(paused,'newMatch').click();
   assert.equal((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id,'cancelling a new game preserves the save');
   get(paused,'resumeMatch').click();
+  assert.equal(get(paused,'soloSpeed').textContent,'속도 ×2','reopening restores the saved speed');
+  assert.ok(paused.scheduledDelays.includes(450));
   assert.equal(paused.document.body.classList.contains('in-match'),true);
   await wait(async()=>(await f.call(ids[5],{action:'read',room_id:savedSolo.id})).room.version>savedSolo.version);
   paused.close();

@@ -19,7 +19,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   const paid={weapon:3,angle:0,power:50,moves:[]},requestId=randomUUID();
   const shot=await f.move(ids[0],room,paid,requestId);assert.equal(shot.ok,true);assert.equal(shot.coins,98);
   assert.equal((await f.move(ids[0],room,paid,requestId)).coins,98);room=shot.room;
-  for(let i=0;i<3&&room.status==='active'&&room.game.turn!==0;i++){
+  for(let i=0;i<room.capacity*2&&room.status==='active'&&room.game.turn!==0;i++){
    const old=room,id=randomUUID(),next=await cpu(old,id);assert.equal(next.ok,true,JSON.stringify(next));
    assert.equal(next.coins,98);assert.equal(next.room.event.computer,true);assert.ok(next.room.event.command.weapon<3);
    const repeated=await cpu(old,id);assert.equal(repeated.room.version,next.room.version);assert.equal(repeated.coins,98);

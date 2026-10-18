@@ -57,6 +57,8 @@ export function createEngine(saved){
  let windIndex=saved.windIndex??Math.floor(windTime/2800),wind=currentWind(saved);
  let ground=new Float32Array(W+1),mask=new Uint8Array(GW*GH),active=new Set(),tDirty=true;
  let far=[],stars=[],tanks=[],turn=saved.turn??0,state='aim',shots=[],booms=[],bits=[],floats=[],paths=[];
+ let turnOrder=[],round=Number.isSafeInteger(saved.round)&&saved.round>0?saved.round:1;
+ let turnSeed=Number.isInteger(saved.turnSeed)?saved.turnSeed>>>0:((saved.weatherSeed??saved.seed)^0x6d2b79f5)>>>0;
  let shotNo=saved.shotNo||0,settleT=0,frame=0,dirty=0,over=!!saved.over,runId=saved.runId;
  const prepTerrainCanvas=()=>{dirty++;},syncUI=()=>{},sfx=()=>{};
 
@@ -105,7 +107,15 @@ function fillCircle(x,y,r){circleCells(x,y,r,1);}
 
 function mkTank(x,i,name,cpu){return{x,y:surf(x),vy:0,color:COLORS[i],ang:90,pow:5,name,hp:100,ammo:WEAPONS.map(w=>w.ammo),w:0,basicWeapon:0,cpu,hitT:0,fuel:FUEL};}
 
-function nextIdx(){for(let k=1;k<=tanks.length;k++){const j=(turn+k)%tanks.length;if(tanks[j].hp>0)return j;}return turn;}
+function shuffleTurns(){
+ turnOrder=tanks.flatMap((t,i)=>t.hp>0?[i]:[]);
+ for(let i=turnOrder.length-1;i>0;i--){
+  turnSeed=(Math.imul(turnSeed,1664525)+1013904223)>>>0;
+  const j=Math.floor(turnSeed/4294967296*(i+1));
+  [turnOrder[i],turnOrder[j]]=[turnOrder[j],turnOrder[i]];
+ }
+ round++;
+}
 
 function tip(t){const a=t.ang*Math.PI/180;return{x:t.x+Math.cos(a)*18*TS,y:t.y-9*TS-Math.sin(a)*18*TS};}
 
@@ -315,8 +325,11 @@ function step(){
  if(tDirty){dirty++;tDirty=false;}
 }
 function finishTurn(){
+ turnOrder=turnOrder.filter(i=>i!==turn&&tanks[i].hp>0);
  const alive=tanks.filter(t=>t.hp>0);over=alive.length<=1;
- if(over){state='end';return;}startTurn(nextIdx());
+ if(over){state='end';return;}
+ if(!turnOrder.length)shuffleTurns();
+ startTurn(turnOrder[0]);
 }
 function move(dir){
  if(state!=='aim'||over||tanks[turn].hp<=0)return false;
@@ -337,7 +350,7 @@ function begin(command){
 }
 function snapshot(){
  if(shots.length||active.size)throw Error('simulation_incomplete');
- return {runId,names:saved.names,width:W,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,wind,shotNo,over,
+ return {runId,names:saved.names,width:W,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,turnOrder:[...turnOrder],round,turnSeed,wind,shotNo,over,
   terrain:Array.from({length:GW},(_,x)=>surf(x*CS)/CS),
   tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow}))};
 }
@@ -354,13 +367,17 @@ if(saved.terrain){
  for(const x of slots)flatten(x,10);buildMask();
  tanks=saved.names.map((name,i)=>mkTank(slots[i],i,name,false));startTurn(0,false);
 }
+// Old saves finish the remaining seats of their current round before shuffling.
+const savedOrder=saved.turnOrder;
+const validOrder=Array.isArray(savedOrder)&&savedOrder.every(i=>Number.isInteger(i)&&i>=0&&i<tanks.length)&&new Set(savedOrder).size===savedOrder.length&&(over||savedOrder[0]===turn);
+turnOrder=(validOrder?savedOrder:tanks.map((_,i)=>i).filter(i=>i>=turn)).filter(i=>tanks[i].hp>0);
 if(over)state='end';
 return {step,move,begin,snapshot,
  // Retain clock metadata for older clients without changing the turn's weather.
  setWindTime(time){if(state==='aim'&&Number.isFinite(time)){windTime=time;frame=0;}},
- surrender(seat){if(!tanks[seat]||tanks[seat].hp<=0)throw Error('already_eliminated');tanks[seat].hp=0;if(seat===turn||tanks.filter(t=>t.hp>0).length<=1)finishTurn();},
+ surrender(seat){if(!tanks[seat]||tanks[seat].hp<=0)throw Error('already_eliminated');tanks[seat].hp=0;turnOrder=turnOrder.filter(i=>i!==seat);if(seat===turn||tanks.filter(t=>t.hp>0).length<=1)finishTurn();},
  skip(){if(over)return;tanks[turn].misses=(saved.tanks?.[turn]?.misses||0)+1;if(tanks[turn].misses>=3)tanks[turn].hp=0;finishTurn();},
- view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,TS,WINDMAX,wind,ground,mask,tanks,turn,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
+ view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,TS,WINDMAX,wind,ground,mask,tanks,turn,turnOrder,round,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
 }
 export function validateCommand(c){
  if(!c||!Number.isInteger(c.weapon)||c.weapon<0||c.weapon>=WEAPONS.length||!Number.isFinite(c.angle)||c.angle<0||c.angle>180||!Number.isFinite(c.power)||c.power<5||c.power>100||!Array.isArray(c.moves)||c.moves.length>250||c.moves.some(x=>x!==-1&&x!==1))throw Error('invalid_move');

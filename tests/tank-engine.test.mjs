@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX,TANK_SCALE} from '../games/tank/engine.mjs';
+function harmlessTurn(game){
+ const t=game.tanks[game.turn];
+ return advance(game,game.turn,{type:'fire',weapon:10,angle:t.lastAng??t.ang,power:t.lastPow??t.pow,moves:[]}).state;
+}
+function returnToSeat(game,seat){
+ for(let i=0;game.turn!==seat&&i<game.tanks.length*2;i++)game=harmlessTurn(game);
+ assert.equal(game.turn,seat,'each living player must get another turn');return game;
+}
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
 assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,5,3,1,1,3,3,0]);
 assert.equal(WEAPONS[12].accuracy,.85);
@@ -80,6 +88,7 @@ for(const angle of [45,90,135])for(const wind of [-WIND_MAX,0,WIND_MAX]){
  const fire=(saved,weapon)=>advance(saved,saved.turn,{type:'fire',weapon,angle:90,power:5,moves:[]}).state;
  let saved=fire(game,14);saved=fire(saved,10);assert.equal(saved.tanks[0].w,14);
  saved=fire(saved,10);saved=fire(saved,10);
+ saved=returnToSeat(saved,0);
  assert.equal(createEngine(saved).view().tanks[0].w,14,'Steel Rain stays selected after a paid shot and reconnecting');
 }
 // Compare real impacts on the same flat ground, including the resulting falls.
@@ -174,18 +183,57 @@ assert.deepEqual(laterShot,authoritative,'choosing a different firing time canno
 assert.notEqual(advance(weatherGame,0,{type:'timeout'}).state.wind,weatherGame.wind,'a missed turn changes the wind');
 assert.notEqual(advance(weatherGame,0,{type:'surrender'}).state.wind,weatherGame.wind,'the current player surrendering changes the wind');
 assert.equal(advance(weatherGame,1,{type:'surrender'}).state.wind,weatherGame.wind,'another player surrendering leaves this turn\'s wind alone');
+// Each round grants every survivor one turn; the next round is shuffled and saved.
+for(const size of [2,4,12]){
+ let game=newGame(Array.from({length:size},(_,i)=>'seat'+i),'shuffle-rounds',size*777);
+ const seats=Array.from({length:size},(_,i)=>i),orders=new Set();
+ assert.deepEqual(game.turnOrder,seats);assert.equal(game.round,1);
+ for(let round=1;round<=8;round++){
+  const order=[...game.turnOrder],seen=new Set();orders.add(order.join(','));
+  assert.deepEqual([...order].sort((a,b)=>a-b),seats);
+  for(const seat of order){
+   assert.equal(game.round,round);assert.equal(game.turn,seat);assert.ok(!seen.has(seat));seen.add(seat);
+   assert.deepEqual(createEngine(JSON.parse(JSON.stringify(game))).snapshot().turnOrder,game.turnOrder,'reconnecting preserves the remaining order');
+   const before=game;game=harmlessTurn(game);
+   if(seen.size===size){
+    assert.deepEqual(harmlessTurn(before),game,'retrying the last shot cannot reroll next round');
+    const replay=createEngine(before),t=before.tanks[seat];
+    replay.begin({type:'fire',weapon:10,angle:t.lastAng??t.ang,power:t.lastPow??t.pow,moves:[]});
+    let frames=0;while(['fly','settle'].includes(replay.view().state)&&frames++<18000)replay.step();
+    const expected=structuredClone(game);expected.tanks.forEach(t=>delete t.misses);
+    assert.deepEqual(replay.snapshot(),expected,'all clients replay the same shuffled next turn');
+   }
+  }
+  assert.equal(game.round,round+1);assert.equal(game.turnOrder.length,size);
+ }
+ assert.ok(orders.size>1,'later rounds do not keep the fixed seat order');
+}
+{
+ let game=newGame(['a','b','c','d'],'shuffle-elimination',883);
+ game=harmlessTurn(game);const wind=game.wind;
+ game=advance(game,3,{type:'surrender'}).state;
+ assert.equal(game.turn,1);assert.equal(game.wind,wind);assert.deepEqual(game.turnOrder,[1,2],'off-turn surrender does not consume the active turn');
+ game=advance(game,1,{type:'timeout'}).state;assert.equal(game.turn,2);assert.deepEqual(game.turnOrder,[2]);
+ game=advance(game,2,{type:'surrender'}).state;
+ assert.equal(game.round,2);assert.deepEqual([...game.turnOrder].sort(),[0,1],'eliminated tanks stay out of the shuffle');
+ const legacy=newGame(['a','b','c','d'],'legacy-rounds',884);legacy.turn=2;
+ delete legacy.turnOrder;delete legacy.round;delete legacy.turnSeed;
+ let restored=createEngine(legacy).snapshot();assert.equal(restored.turn,2);assert.deepEqual(restored.turnOrder,[2,3]);
+ restored=harmlessTurn(restored);assert.equal(restored.turn,3);
+ restored=harmlessTurn(restored);assert.equal(restored.round,2);assert.equal(restored.turnOrder.length,4);
+}
 // Each player keeps a separate free-shell choice, including after a paid shot or a reload.
 let choices=newGame(['a','b','c'],'basic-choice',881);
 choices.wind=0;choices.terrain.fill(150);
 choices.tanks.forEach((t,i)=>Object.assign(t,{x:200+i*600,y:300,vy:0}));
-const choose=(weapon,basicWeapon)=>{choices=advance(choices,choices.turn,{type:'fire',weapon,basicWeapon,angle:90,power:5,moves:[]}).state;};
-choose(1);assert.equal(choices.tanks[1].w,0);
-choose(2);assert.equal(choices.tanks[2].w,0);
-choose(0);assert.equal(choices.tanks[0].w,1,'large shell stays selected on the next own turn');
-choose(10);assert.equal(choices.tanks[1].w,2,'another player retains scattershot');
-choose(10,0);choose(10);assert.equal(choices.tanks[0].w,1,'a paid shell returns to the remembered free shell');
-choose(2,1);assert.equal(choices.tanks[1].w,0,'a newly selected free shell is remembered even when a paid shell is fired instead');
-choose(10);choose(10);assert.equal(choices.tanks[0].w,2,'changing to another free shell replaces the previous choice');
+const choose=(seat,weapon,basicWeapon)=>{choices=returnToSeat(choices,seat);choices=advance(choices,seat,{type:'fire',weapon,basicWeapon,angle:90,power:5,moves:[]}).state;};
+choose(0,1);assert.equal(choices.tanks[1].w,0);
+choose(1,2);assert.equal(choices.tanks[2].w,0);
+choose(2,0);choices=returnToSeat(choices,0);assert.equal(choices.tanks[0].w,1,'large shell stays selected on the next own turn');
+choose(0,10);choices=returnToSeat(choices,1);assert.equal(choices.tanks[1].w,2,'another player retains scattershot');
+choose(1,10,0);choose(2,10);choices=returnToSeat(choices,0);assert.equal(choices.tanks[0].w,1,'a paid shell returns to the remembered free shell');
+choose(0,2,1);choices=returnToSeat(choices,1);assert.equal(choices.tanks[1].w,0,'a newly selected free shell is remembered even when a paid shell is fired instead');
+choose(1,10);choose(2,10);choices=returnToSeat(choices,0);assert.equal(choices.tanks[0].w,2,'changing to another free shell replaces the previous choice');
 const restoredChoices=createEngine(choices).snapshot();
 assert.deepEqual(restoredChoices.tanks.map(t=>t.basicWeapon),[2,0,0]);assert.equal(restoredChoices.tanks[0].w,2);
 const legacy=structuredClone(weatherGame);delete legacy.windIndex;
@@ -199,16 +247,17 @@ aimGame.terrain.fill(150);aimGame.tanks.forEach((t,i)=>Object.assign(t,{x:200+i*
 assert.deepEqual(aimGame.tanks.map(t=>[t.ang,t.pow]),[[90,5],[90,5],[90,5]],'new players start with the default aim');
 const rememberedAim=[[0,100],[41.25,67],[180,5]];
 for(const [angle,power] of rememberedAim)aimGame=advance(aimGame,aimGame.turn,{type:'fire',weapon:10,angle,power,moves:[]}).state;
-assert.equal(aimGame.turn,0);
+aimGame=returnToSeat(aimGame,0);
 assert.deepEqual(aimGame.tanks.map(t=>[t.ang,t.pow]),rememberedAim,'each player keeps their own settings when their turn returns');
 const reopenedAim=createEngine(JSON.parse(JSON.stringify(aimGame))).snapshot();
 assert.deepEqual(reopenedAim.tanks.map(t=>[t.ang,t.pow]),rememberedAim,'saved games preserve exact aim values');
 const oldAim=structuredClone(aimGame);oldAim.tanks[0].ang=90;oldAim.tanks[0].pow=5;
 assert.deepEqual(createEngine(oldAim).view().tanks.map(t=>[t.ang,t.pow]),rememberedAim,'older saves restore their recorded last shot instead of reset gauges');
 aimGame=advance(aimGame,0,{type:'fire',weapon:10,angle:72.75,power:46,moves:[]}).state;
+aimGame=returnToSeat(aimGame,1);
 aimGame=advance(aimGame,1,{type:'timeout'}).state;
 aimGame=advance(aimGame,2,{type:'surrender'}).state;
-assert.equal(aimGame.turn,0);
+aimGame=returnToSeat(aimGame,0);
 assert.deepEqual([aimGame.tanks[0].ang,aimGame.tanks[0].pow],[72.75,46],'a later shot replaces the saved settings even across skipped turns');
 assert.deepEqual([aimGame.tanks[1].lastAng,aimGame.tanks[1].lastPow],[41.25,67],'missing a turn does not replace the last fired settings');
 for(const size of [2,4,12]){
@@ -473,11 +522,7 @@ while(['fly','settle'].includes(highArc.view().state)&&arcFrames++<18000){
 }
 assert.ok(aboveScreen&&arcFrames<18000,'high shots can leave the top of the screen and fall back normally');
 let game=newGame(['a','b','c'],'room',1);
-for(let n=0;n<3;n++){
- game=advance(game,game.turn,{type:'timeout'}).state;
- game=advance(game,game.turn,{type:'fire',weapon:0,angle:0,power:100,moves:[]}).state;
- if(!game.over)game=advance(game,game.turn,{type:'fire',weapon:0,angle:180,power:100,moves:[]}).state;
-}
+for(let n=0;n<24&&game.tanks[0].hp>0;n++)game=game.turn===0?advance(game,0,{type:'timeout'}).state:harmlessTurn(game);
 assert.equal(game.tanks[0].hp,0,'three absent turns eliminate the player');
 assert.throws(()=>advance(newGame(['a','b'],'room',1),1,{type:'fire',weapon:0,angle:60,power:50,moves:[]}),/not_your_turn/);
 console.log(`PASS: 2/3 map widths, legacy saves, 0–10 wind (${windRates.join('/')}% sampled; ${turnBands.map(n=>(n/1000).toFixed(2)).join('/')}% actual turns), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all ${WEAPONS.length} ammo types, Steel Rain ten-pellet fan/free selection, bunker marker/vertical descent/underground excavation, 2/4/12-player replay parity`);

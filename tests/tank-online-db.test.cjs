@@ -44,6 +44,8 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await move(guest,room,command(12))).error,'coins');
   assert.deepEqual(ok(await call(guest,{action:'read',room_id:room.id})).game,stateBefore);
   room=ok(await move(guest,room,command(1)));assert.equal(room.coins,0);
+  for(let i=0;room.game.turn!==0&&i<2;i++)room=ok(await move(guest,room,{weapon:0,angle:room.game.tanks[1].x<room.game.width/2?180:0,power:100,moves:[]}));
+  assert.equal(room.game.turn,0,'the owner gets a turn even when a shuffled round starts with the guest');
   assert.equal(room.game.tanks[0].w,2,'returning to an online turn restores the remembered basic shell');
   const beforeHeal=room,healRequest=randomUUID();
   const dupe=await Promise.all([move(a,room,command(10),healRequest),move(a,room,command(10),healRequest)]);assert.equal(dupe.filter(r=>r.ok).length,2);
@@ -54,7 +56,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests')).rows[0].n,2);
   // A missing player cannot hold the room forever.
   await db.query("update ojjuda_tank_internal.rooms set deadline=now()-interval '1 second' where id=$1",[room.id]);
-  const turn=room.game.turn;room=ok(await call(a,{action:'read',room_id:room.id}));assert.notEqual(room.game.turn,turn);
+  const timedOut=room;room=ok(await call(a,{action:'read',room_id:room.id}));assert.equal(room.version,timedOut.version+1);assert.equal(room.event.type,'timeout');assert.notDeepEqual(room.game.turnOrder,timedOut.game.turnOrder);
   room=ok(await call(a,{action:'surrender',room_id:room.id,version:room.version,request_id:randomUUID()}));assert.equal(room.status,'finished');
   const wins=(await db.query('select * from ojjuda_tank_internal.wins')).rows;
   assert.equal(wins.length,1);assert.equal(wins[0].user_id,guest,'only the authoritative surviving player receives a win');

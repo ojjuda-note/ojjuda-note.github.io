@@ -30,12 +30,13 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.deepEqual(ok(await f.call(owner,{action:'read',room_id:room.id})).game,unchanged.game,'insufficient funds never substitutes a basic shell');
   await f.db.query('update public.user_private set coins=95 where user_id=$1',[owner]);
   room=ok(await fire(room,10));assert.equal(room.event.actor,1);assert.equal(room.game.turn,2);assert.equal(room.coins,94);
-  room=ok(await fire(room,0));assert.equal(room.event.actor,2);assert.equal(room.game.turn,0);assert.equal(room.coins,94);
+  room=ok(await fire(room,0));assert.equal(room.event.actor,2);assert.equal(room.game.round,2);assert.equal(room.game.turn,room.game.turnOrder[0]);assert.equal(room.coins,94);
+  assert.deepEqual([...room.game.turnOrder].sort(),[0,1,2]);
   const purchases=(await f.db.query('select user_id,coins from ojjuda_note_internal.spend_requests order by coins desc')).rows;
   assert.deepEqual(purchases,[{user_id:owner,coins:5},{user_id:owner,coins:1}]);
   assert.equal(ok(await f.call(owner,{action:'mine'})).mode,'local');
   // The first player's defeat must not stop the other people using the same account.
-  room.game.tanks[0].hp=0;room.game.turn=1;
+  room.game.tanks[0].hp=0;room.game.turn=1;room.game.turnOrder=[1,2];
   await f.db.query('update ojjuda_tank_internal.rooms set state=$2::jsonb where id=$1',[room.id,JSON.stringify(room.game)]);
   room=ok(await fire(room,10));assert.equal(room.game.turn,2);assert.equal(room.status,'active');
   room=ok(await f.call(owner,{action:'surrender',room_id:room.id,version:room.version,request_id:randomUUID()}));
