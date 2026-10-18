@@ -59,11 +59,18 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 .fuel .bar{flex:1;margin:0;height:5px}
 .fuel i{background:#8fb35a}
 #right{position:fixed;right:calc(env(safe-area-inset-right,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px 8px;display:grid;grid-template-columns:auto auto;gap:5px 8px;align-items:center}
-#prot{width:96px;height:56px;cursor:pointer}
+#angleControl{display:flex;align-items:center;gap:2px}
+.angle-step{width:36px;height:44px;padding:0;font-size:18px;line-height:1}
+.angle-step small{display:block;font-size:10px;line-height:1.4}
+#prot{width:96px;height:56px;cursor:crosshair;touch-action:none}
+#prot:focus-visible{outline:2px solid var(--fire);outline-offset:2px;border-radius:6px}
+#prot[aria-disabled="true"]{opacity:.5;cursor:default}
 #fire{width:58px;height:58px;border-radius:50%;border:0;background:var(--fire);color:var(--fireInk);font:inherit;font-size:13px;line-height:1.15;justify-self:end;touch-action:none;-webkit-touch-callout:none;padding:4px;cursor:pointer;transition:transform .1s}
-#fire.charging{transform:scale(.93);filter:brightness(1.12)}
+#fire:active:not(:disabled){transform:scale(.93);filter:brightness(1.12)}
 .pbar .pt{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 8px;font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.pbar{grid-column:1/-1;position:relative;height:16px;border-radius:8px;background:var(--track);overflow:hidden}
+.pbar{grid-column:1/-1;position:relative;height:28px;border-radius:8px;background:var(--track);overflow:hidden;cursor:ew-resize;touch-action:none}
+.pbar:focus-visible{outline:2px solid var(--fire);outline-offset:2px}
+.pbar[aria-disabled="true"]{cursor:default}
 .pbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#f2c46b,#e2733f 70%,#c4402f)}
 .pbar b{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.6;display:none}
 .ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;background:rgba(20,18,45,.5);color:#f6eedb;z-index:10}
@@ -83,7 +90,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 .wcard small{display:block;font-size:13px;color:var(--muted);margin-top:2px;line-height:1.3}
 .wcard.sel{border-color:var(--fire);box-shadow:inset 0 0 0 1px var(--fire)}
 #pClose{width:100%;height:42px;font-size:17px}
-@media (max-height:380px){#prot{width:84px;height:48px}#fire{width:50px;height:50px;font-size:12px}.mv button,#wpn{height:34px}.pl{padding:3px 10px 5px}.pl .nm{font-size:14px}#wind b{font-size:16px}}
+@media (max-height:380px){.angle-step{width:32px}#prot{width:84px;height:48px}#fire{width:50px;height:50px;font-size:12px}.mv button,#wpn{height:34px}.pl{padding:3px 10px 5px}.pl .nm{font-size:14px}#wind b{font-size:16px}}
 #rotate{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#1b1d4a;color:#f6eedb;font-size:22px;text-align:center;padding:24px}
 #rotate i{width:46px;height:78px;border:4px solid #f6c27a;border-radius:10px;animation:rot 2s ease-in-out infinite}
 @keyframes rot{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
@@ -114,9 +121,13 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 </div>
 
 <div id="right" class="pnl">
-  <div class="pbar"><i id="pfill"></i><b id="pmark"></b><span class="pt"><span id="angv">각도</span><span id="powv">힘</span></span></div>
-  <canvas id="prot" aria-label="각도기"></canvas>
-  <button id="fire">발사</button>
+  <div id="power" class="pbar" role="slider" tabindex="0" aria-label="발사 파워" aria-orientation="horizontal" aria-valuemin="5" aria-valuemax="100" aria-valuenow="5" aria-valuetext="힘 5" title="눌러서 파워 조절"><i id="pfill"></i><b id="pmark"></b><span class="pt"><span id="angv">각도</span><span id="powv">힘</span></span></div>
+  <div id="angleControl" role="group" aria-label="각도 조절">
+    <button id="angleDown" class="btn angle-step" type="button" aria-label="각도 0.25도 줄이기">−<small>0.25°</small></button>
+    <canvas id="prot" role="slider" tabindex="0" aria-label="발사 각도" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="180" aria-valuenow="90" aria-valuetext="90도" title="끌어서 각도 조절"></canvas>
+    <button id="angleUp" class="btn angle-step" type="button" aria-label="각도 0.25도 늘리기">+<small>0.25°</small></button>
+  </div>
+  <button id="fire" type="button">발사</button>
 </div>
 
 <main id="menu" class="ov lobby" aria-label="탱크게임 시작화면">
@@ -143,7 +154,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람은 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람은 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, −0.25° / +0.25° 버튼으로 조금씩 조절해요. 버튼 위 파워 막대를 누르거나 끌어서 힘을 정한 뒤 발사를 눌러요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
 <div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
@@ -161,7 +172,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 <script>
 const $=id=>document.getElementById(id);
 const stage=$('stage'),cv=$('cv'),ctx=cv.getContext('2d'),prot=$('prot'),pctx=prot.getContext('2d');
-const fireB=$('fire'),wpnB=$('wpn'),lB=$('mvL'),rB=$('mvR'),banner=$('banner');
+const fireB=$('fire'),wpnB=$('wpn'),lB=$('mvL'),rB=$('mvR'),powerSlider=$('power'),banner=$('banner');
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const portraitMQ=matchMedia('(orientation: portrait)');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -192,7 +203,7 @@ for(let i=0;i<30;i++)motes.push({x:Math.random(),y:Math.random(),l:Math.random()
 let ground=new Float32Array(801),far=[],stars=[],FLOOR=1e9,FR=0,MH=600,EXTRA=0,PL=300,camY=0;
 const CS=2;let GW=0,GH=0,mask=new Uint8Array(1),noise=new Int8Array(1),active=new Set(),tDirty=true;
 const tc=document.createElement('canvas'),tctx=tc.getContext('2d');let timg=null,rowCol=[];
-let tanks=[],turn=0,wind=0,mode='cpu',state='menu',aimPhase='sweep',sweepDir=1,powDir=1,moveDir=0,pickerOpen=false;
+let tanks=[],turn=0,wind=0,mode='cpu',state='menu',moveDir=0,pickerOpen=false;
 let shots=[],booms=[],bits=[],floats=[],paths=[],shotNo=0,shake=0,settleT=0,frame=0;
 let aiSkill=0,cpuT=null,cpuWait=0,cpuDriveX=0;
 
@@ -308,8 +319,7 @@ function buildRoster(){const r=$('roster');r.innerHTML='';
 function startTurn(i){
   turn=i;windBase=(Math.random()*2-1)*WINDMAX*0.8;wind=windBase;windTarget=windBase;gustT=0;camManual=false;
   const t=tanks[i];if(t.ammo[t.w]<=0)t.w=0;
-  t.ang=90;t.pow=5;t.fuel=FUEL;aimPhase='sweep';moveDir=0;{const en=pickTarget(t,true);sweepDir=en&&en.x<t.x?1:-1;}
-  fireB.classList.remove('charging');
+  t.ang=90;t.pow=5;t.fuel=FUEL;moveDir=0;
   state=t.cpu?'cpu':'aim';
   showBanner(t.name+' 차례');syncUI();
   if(t.cpu)setTimeout(cpuMove,700);
@@ -566,20 +576,26 @@ function drawProt(t){
 function updGauges(){
   const t=tanks[turn];drawProt(t);
   if(!t){$('pfill').style.width='0';$('powv').textContent='힘';$('angv').textContent='각도';$('pmark').style.display='none';$('fuelI').style.width='0';return;}
-  $('angv').textContent='각도 '+Math.round(t.ang)+'°';
-  const show=!(state==='aim'&&aimPhase!=='charge');
-  $('pfill').style.width=(show?(t.pow-5)/95*100:0)+'%';$('powv').textContent=show?'힘 '+Math.round(t.pow):'힘';
+  const angle=Math.round(t.ang*4)/4;
+  $('angv').textContent='각도 '+angle+'°';
+  prot.setAttribute('aria-valuenow',String(angle));prot.setAttribute('aria-valuetext',angle+'도');
+  $('pfill').style.width=((t.pow-5)/95*100)+'%';$('powv').textContent='힘 '+Math.round(t.pow);
+  powerSlider.setAttribute('aria-valuenow',String(Math.round(t.pow)));powerSlider.setAttribute('aria-valuetext','힘 '+Math.round(t.pow));
   const pm=$('pmark');if(t.lastPow!=null){pm.style.display='block';pm.style.left='calc('+((t.lastPow-5)/95*100)+'% - 1px)';}else pm.style.display='none';
   $('fuelI').style.width=(t.fuel/FUEL*100)+'%';
   const wv=Math.round(wind/WINDMAX*20);$('windv').textContent=wv<0?'← '+(-wv):wv>0?wv+' →':'0';
 }
 function syncUI(){
   const t=tanks[turn],can=state==='aim'&&window.TankOnline?.canAim();
-  fireB.disabled=!can;wpnB.disabled=!can||aimPhase==='charge';
+  fireB.disabled=!can;wpnB.disabled=!can;
+  const adjust=canAdjustAim();
+  $('angleDown').disabled=!adjust||t.ang<=0;$('angleUp').disabled=!adjust||t.ang>=180;
+  prot.setAttribute('aria-disabled',String(!adjust));prot.tabIndex=adjust?0:-1;
+  powerSlider.setAttribute('aria-disabled',String(!adjust));powerSlider.tabIndex=adjust?0:-1;
   if(state==='wait')fireB.disabled=true;
-  lB.disabled=rB.disabled=!can||aimPhase==='charge'||!t||t.fuel<=0;
+  lB.disabled=rB.disabled=!can||!t||t.fuel<=0;
   fireB.innerHTML=!can?(['watch','cpu','cpuAim','cpuFire','cpuDrive'].includes(state)?'상대<br>차례':state==='fly'||state==='settle'?'비행 중':'발사')
-    :aimPhase==='sweep'?'각도<br>멈추기':aimPhase==='locked'?'꾹 눌러<br>발사':'놓으면<br>발사';
+    :'발사';
   if(!t)return;
   const price=WEAPONS[t.w].price;$('wName').textContent=WEAPONS[t.w].name;$('wAmmo').textContent=price?price+'쭈/발':'무료';
   document.documentElement.style.setProperty('--cur',t.color);
@@ -591,12 +607,50 @@ function syncUI(){
   const v=Math.round(wind/WINDMAX*20);$('windv').textContent=v<0?'← '+(-v):v>0?v+' →':'0';
 }
 
-function lockAngle(){if(state==='aim'&&aimPhase==='sweep'&&!pickerOpen&&window.TankOnline?.canAim()){aimPhase='locked';moveDir=0;sfx('tick');syncUI();return true;}return false;}
-function startCharge(){if(state==='aim'&&aimPhase==='locked'&&window.TankOnline?.canAim()){aimPhase='charge';moveDir=0;tanks[turn].pow=5;powDir=1;fireB.classList.add('charging');syncUI();}}
-function release(){if(state==='aim'&&aimPhase==='charge')fire();}
-fireB.addEventListener('pointerdown',e=>{e.preventDefault();if(lockAngle())return;if(aimPhase==='locked'){try{fireB.setPointerCapture(e.pointerId);}catch(_){}startCharge();}});
-fireB.addEventListener('pointerup',release);fireB.addEventListener('pointercancel',()=>{if(aimPhase==='charge'){aimPhase='locked';fireB.classList.remove('charging');syncUI();}});
-prot.addEventListener('pointerdown',()=>{if(lockAngle())return;if(state==='aim'&&aimPhase==='locked'){aimPhase='sweep';syncUI();}});
+let anglePointer=null,powerPointer=null;
+function canAdjustAim(){return !!(state==='aim'&&!pickerOpen&&tanks[turn]&&window.TankOnline?.canAim());}
+function setAngle(value){
+  if(!canAdjustAim()||powerPointer!==null||!Number.isFinite(value))return;
+  tanks[turn].ang=clamp(Math.round(value*4)/4,0,180);moveDir=0;syncUI();updGauges();
+}
+function pointAngle(e){
+  const r=prot.getBoundingClientRect();if(!r.width||!r.height)return;
+  const x=e.clientX-r.left-r.width/2,y=r.top+r.height-3-e.clientY;
+  if(Math.hypot(x,y)<4)return;
+  setAngle(Math.atan2(Math.max(0,y),x)*180/Math.PI);
+}
+prot.addEventListener('pointerdown',e=>{
+  if(anglePointer!==null||powerPointer!==null||e.button>0||e.isPrimary===false||!canAdjustAim())return;
+  e.preventDefault();anglePointer=e.pointerId;try{prot.setPointerCapture(e.pointerId);}catch(_){}pointAngle(e);
+});
+prot.addEventListener('pointermove',e=>{if(anglePointer===e.pointerId){e.preventDefault();pointAngle(e);}});
+['pointerup','pointercancel','lostpointercapture'].forEach(type=>prot.addEventListener(type,e=>{if(anglePointer===e.pointerId)anglePointer=null;}));
+[['angleDown',-.25],['angleUp',.25]].forEach(([id,delta])=>$(id).addEventListener('click',()=>{if(canAdjustAim())setAngle(tanks[turn].ang+delta);}));
+prot.addEventListener('keydown',e=>{
+  const delta={ArrowLeft:-.25,ArrowDown:-.25,ArrowRight:.25,ArrowUp:.25,PageDown:-10,PageUp:10}[e.key];
+  if(delta===undefined&&e.key!=='Home'&&e.key!=='End')return;
+  e.preventDefault();e.stopPropagation();if(!canAdjustAim())return;
+  setAngle(e.key==='Home'?0:e.key==='End'?180:tanks[turn].ang+delta);
+});
+function setPower(value){
+  if(!canAdjustAim()||anglePointer!==null||!Number.isFinite(value))return;
+  tanks[turn].pow=clamp(Math.round(value),5,100);moveDir=0;syncUI();updGauges();
+}
+function pointPower(e){const r=powerSlider.getBoundingClientRect();if(r.width)setPower(5+(e.clientX-r.left)/r.width*95);}
+powerSlider.addEventListener('pointerdown',e=>{
+  if(powerPointer!==null||anglePointer!==null||e.button>0||e.isPrimary===false||!canAdjustAim())return;
+  e.preventDefault();powerPointer=e.pointerId;try{powerSlider.setPointerCapture(e.pointerId);}catch(_){}pointPower(e);
+});
+powerSlider.addEventListener('pointermove',e=>{if(powerPointer===e.pointerId){e.preventDefault();pointPower(e);}});
+['pointerup','pointercancel','lostpointercapture'].forEach(type=>powerSlider.addEventListener(type,e=>{if(powerPointer===e.pointerId)powerPointer=null;}));
+powerSlider.addEventListener('keydown',e=>{
+  const delta={ArrowLeft:-1,ArrowDown:-1,ArrowRight:1,ArrowUp:1,PageDown:-10,PageUp:10}[e.key];
+  if(delta===undefined&&e.key!=='Home'&&e.key!=='End')return;
+  e.preventDefault();e.stopPropagation();if(!canAdjustAim())return;
+  setPower(e.key==='Home'?5:e.key==='End'?100:tanks[turn].pow+delta);
+});
+function fireSelected(){if(canAdjustAim()&&anglePointer===null&&powerPointer===null)fire();}
+fireB.addEventListener('click',fireSelected);
 let pan=null;
 cv.addEventListener('pointerdown',e=>{
   if(pan||e.button>0||e.isPrimary===false)return;
@@ -610,22 +664,23 @@ cv.addEventListener('pointermove',e=>{
 });
 ['pointerup','pointercancel','lostpointercapture'].forEach(type=>cv.addEventListener(type,e=>{
   if(!pan||pan.id!==e.pointerId)return;
-  const tap=type==='pointerup'&&!pan.moved;pan=null;if(tap)lockAngle();
+  pan=null;
 }));
 document.addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault();});
 [[lB,-1],[rB,1]].forEach(([b,d])=>{
   b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled)return;try{b.setPointerCapture(e.pointerId);}catch(_){}moveDir=d;});
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>{if(moveDir===d)moveDir=0;}));});
 addEventListener('keydown',e=>{
-  if(state!=='aim'||pickerOpen||!window.TankOnline?.canAim())return;
-  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();if(aimPhase!=='charge')moveDir=e.key==='ArrowLeft'?-1:1;}
-  else if(e.key===' '||e.key==='Enter'){e.preventDefault();if(e.repeat)return;if(!lockAngle())startCharge();}});
+  if(e.defaultPrevented||e.target.closest?.('button,input,select,textarea,[role="slider"]')||state!=='aim'||pickerOpen||!window.TankOnline?.canAim())return;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();moveDir=e.key==='ArrowLeft'?-1:1;}
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();setAngle(tanks[turn].ang+(e.key==='ArrowUp'?0.25:-0.25));}
+  else if(e.key===' '||e.key==='Enter'){e.preventDefault();if(e.repeat)return;fireSelected();}});
 addEventListener('keyup',e=>{
   if(e.key==='ArrowLeft'||e.key==='ArrowRight')moveDir=0;
-  else if(e.key===' '||e.key==='Enter'){e.preventDefault();release();}});
+});
 
 function openPicker(){
-  if(state!=='aim'||aimPhase==='charge'||!window.TankOnline?.canAim())return;
+  if(state!=='aim'||!window.TankOnline?.canAim())return;
   const t=tanks[turn],g=$('wgrid');g.innerHTML='';
   WEAPONS.forEach((w,i)=>{const b=document.createElement('button');b.className='wcard'+(i===t.w?' sel':'');b.disabled=w.price>0&&w.price>window.TankOnline.balance();
     b.innerHTML='<b><span>'+w.name+'</span><span>'+(w.price?w.price+'쭈/발':'무료')+'</span></b><small>'+w.desc+'</small>';
@@ -691,19 +746,16 @@ window.TankView={
   if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();this.resize();
    if(!pan){camManual=false;camX=clamp(tanks[turn].x-VW/2,0,Math.max(0,W-VW));camY=0;}
    tanks.forEach((t,i)=>{t.chip.title=t.name;const label=document.createElement('small');label.textContent=t.name+(i===window.TankOnline?.seat?.()?' (나)':'');t.chip.prepend(label);});
-   aimPhase='sweep';sweepDir=tanks[turn].x>W/2?1:-1;moveDir=0;closePicker();}
+   anglePointer=null;powerPointer=null;moveDir=0;closePicker();}
   if(tankRenderDirty!==v.dirty){tDirty=true;tankRenderDirty=v.dirty;}
   if(changed||oldState!==state||frame%10===0)syncUI();
  },
  tickInput(engine,record){
   if(state!=='aim'||pickerOpen||!window.TankOnline?.canAim())return;
-  const t=tanks[turn];
-  if(moveDir&&aimPhase!=='charge'&&record(moveDir))engine.move(moveDir);
-  if(aimPhase==='sweep'){t.ang+=sweepDir*1.3;if(t.ang>=180){t.ang=180;sweepDir=-1;}else if(t.ang<=0){t.ang=0;sweepDir=1;}}
-  else if(aimPhase==='charge'){t.pow+=powDir*1.15;if(t.pow>=100){t.pow=100;powDir=-1;}else if(t.pow<=5){t.pow=5;powDir=1;}}
+  if(moveDir&&record(moveDir))engine.move(moveDir);
  },
  input(){const t=tanks[turn];return {weapon:t.w,basicWeapon:t.basicWeapon,angle:t.ang,power:t.pow};},
- resetInput(){aimPhase='sweep';moveDir=0;fireB.classList.remove('charging');closePicker();syncUI();},
+ resetInput(){anglePointer=null;powerPointer=null;moveDir=0;closePicker();syncUI();},
  finishAnimation(engine){tankHistory.push(...engine.view().paths);},
  hasEffects:()=>tankBursts.length>0,
  tickEffects(){

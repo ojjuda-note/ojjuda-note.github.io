@@ -11,7 +11,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const w=dom.window,context=dom.getInternalVMContext(),draw=()=>{};
   w.radialGradients=[];
   w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
-  w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:viewport.width,height:this.id==='prot'?56:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
+  w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:this.id==='power'?254:viewport.width,height:this.id==='prot'?56:this.id==='power'?28:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
   w.matchMedia=()=>({matches:false,addEventListener:draw});w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=draw;w.confirm=()=>true;
   const parent={postMessage(m){
    if(m.type==='ready')queueMicrotask(()=>w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:parent,data:{source:'ojjuda-world',type:'tank-init',available:true,joinCode}})));
@@ -47,15 +47,15 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
   assert.equal(get(a,'cv').style.width,'844px');assert.equal(get(a,'cv').style.height,'390px');
   assert.ok(Math.abs(a.eval('VW*scale')-844)<1e-6);assert.ok(Math.abs(a.eval('H*scale')-390)<1e-6);
-  // Preview time and aim angle may advance; positions and terrain must not resize.
+  // Resizing changes only the camera viewport, not battle positions or terrain.
   const saved=JSON.parse(beforeResize),resized=JSON.parse(a.eval('JSON.stringify(tankRenderEngine.snapshot())'));
   assert.deepEqual(saved.terrain,resized.terrain);assert.deepEqual(saved.tanks.map(t=>[t.x,t.y,t.hp]),resized.tanks.map(t=>[t.x,t.y,t.hp]));
   assert.equal(a.eval('tankRenderEngine.view().VW'),800);assert.equal(a.eval('tankRenderEngine.view().H'),450);
   assert.equal(get(a,'fire').disabled,false);assert.equal(get(b,'fire').disabled,true);
   // Canvas drags move both camera axes without changing aim or battle state.
-  const pointer=(type,x,y,id=1)=>{
-   const event=new a.MouseEvent(type,{clientX:x,clientY:y,bubbles:true,button:0});
-   Object.defineProperty(event,'pointerId',{value:id});get(a,'cv').dispatchEvent(event);
+  const pointer=(type,x,y,id=1,target='cv',win=a)=>{
+   const event=new win.MouseEvent(type,{clientX:x,clientY:y,bubbles:true,cancelable:true,button:0});
+   Object.defineProperty(event,'pointerId',{value:id});get(win,target).dispatchEvent(event);
   };
   a.eval('camX=200;camY=100;camManual=false');
   const beforePan=a.eval('JSON.stringify(tankRenderEngine.snapshot())'),cameraScale=a.eval('scale');
@@ -63,7 +63,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(a.eval('camY'),100,'automatic following pauses while a finger is down');
   pointer('pointermove',300,140);pointer('pointerup',300,140);
   assert.ok(Math.abs(a.eval('camY')-(100+60/cameraScale))<1e-6,'vertical dragging moves the camera');
-  assert.equal(a.eval('camX'),200);assert.equal(a.eval('aimPhase'),'sweep','a vertical drag must not lock the angle');
+  assert.equal(a.eval('camX'),200);assert.equal(a.TankView.input().angle,90,'a vertical drag must not change the angle');
   const afterVertical=a.eval('camY');a.eval('updateCam()');
   assert.equal(a.eval('camY'),afterVertical,'manual camera position stays put');
   pointer('pointerdown',300,200);pointer('pointermove',330,230);pointer('pointerup',330,230);
@@ -76,16 +76,53 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   pointer('pointerdown',300,200);pointer('pointerdown',100,100,2);pointer('pointermove',-300,-200,2);pointer('pointerup',-300,-200,2);
   assert.equal(a.eval('pan.id'),1,'another finger must not take over the drag');assert.equal(a.eval('camY'),0);
   pointer('pointercancel',300,200);pointer('pointermove',300,100);
-  assert.equal(a.eval('pan'),null);assert.equal(a.eval('camY'),0);assert.equal(a.eval('aimPhase'),'sweep');
+  assert.equal(a.eval('pan'),null);assert.equal(a.eval('camY'),0);assert.equal(a.TankView.input().angle,90);
   pointer('pointerdown',300,200);pointer('lostpointercapture',300,200);pointer('pointerup',300,200);
-  assert.equal(a.eval('pan'),null);assert.equal(a.eval('aimPhase'),'sweep','a cancelled gesture must not lock the angle');
+  assert.equal(a.eval('pan'),null);assert.equal(a.TankView.input().angle,90,'a cancelled gesture must not change the angle');
   assert.equal(a.eval('JSON.stringify(tankRenderEngine.snapshot())'),beforePan,'panning must not change game physics');
   pointer('pointerdown',300,200);pointer('pointerup',300,200);
-  assert.equal(a.eval('aimPhase'),'locked','a tap still locks the angle');a.eval("aimPhase='sweep';syncUI()");
+  assert.equal(a.TankView.input().angle,90,'a battlefield tap does not change the angle');
+  // Direct gauges set exact values and ignore other fingers, cancellations and spectators.
+  const key=(target,value,win=a)=>get(win,target).dispatchEvent(new win.KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
+  pointer('pointerdown',83,18,11,'prot');assert.equal(a.TankView.input().angle,45);
+  pointer('pointermove',13,18,12,'prot');pointer('pointercancel',13,18,12,'prot');
+  assert.equal(a.TankView.input().angle,45,'another finger cannot take over angle adjustment');
+  pointer('pointermove',13,18,11,'prot');assert.equal(a.TankView.input().angle,135);
+  pointer('pointerup',13,18,11,'prot');get(a,'angleDown').click();assert.equal(a.TankView.input().angle,134.75);
+  assert.equal(get(a,'angv').textContent,'각도 134.75°');assert.equal(get(a,'prot').getAttribute('aria-valuenow'),'134.75');
+  get(a,'angleUp').click();assert.equal(a.TankView.input().angle,135);
+  pointer('pointerdown',0,53,11,'prot');pointer('lostpointercapture',0,53,11,'prot');pointer('pointermove',96,53,11,'prot');
+  assert.equal(a.TankView.input().angle,180);assert.equal(get(a,'angleUp').disabled,true);
+  key('prot','Home');assert.equal(a.TankView.input().angle,0);assert.equal(get(a,'angleDown').disabled,true);
+  key('prot','ArrowRight');assert.equal(a.TankView.input().angle,.25);assert.equal(a.eval('moveDir'),0,'slider keys must not move the tank');
+  key('prot','End');key('prot','PageDown');assert.equal(a.TankView.input().angle,170);
+  assert.equal(get(a,'prot').getAttribute('aria-valuenow'),'170');
+  pointer('pointerdown',0,14,21,'power');pointer('pointermove',127,14,21,'power');
+  assert.equal(a.TankView.input().power,53);
+  pointer('pointermove',254,14,22,'power');pointer('pointerdown',48,3,22,'prot');get(a,'fire').click();
+  assert.equal(a.TankView.input().power,53);assert.equal(a.TankView.input().angle,170);assert.equal(a.eval('shotNo'),0,'a second finger cannot fire during a slider drag');
+  pointer('pointercancel',127,14,21,'power');pointer('pointermove',254,14,21,'power');assert.equal(a.TankView.input().power,53);
+  pointer('pointerdown',400,14,21,'power');pointer('pointerup',400,14,21,'power');assert.equal(a.TankView.input().power,100);
+  pointer('pointerdown',-20,14,21,'power');pointer('pointerup',-20,14,21,'power');assert.equal(a.TankView.input().power,5);
+  key('power','End');key('power','PageDown');key('power','ArrowLeft');assert.equal(a.TankView.input().power,89);
+  assert.equal(get(a,'power').getAttribute('aria-valuenow'),'89');assert.equal(get(a,'powv').textContent,'힘 89');
+  const selected=a.TankView.input();
+  for(let i=0;i<180;i++)a.TankOnline.tick();
+  assert.equal(a.TankView.input().angle,selected.angle);assert.equal(a.TankView.input().power,selected.power,'chosen angle and power never sweep automatically');
+  const watching=JSON.stringify(b.TankView.input());
+  pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleUp').click();
+  assert.equal(JSON.stringify(b.TankView.input()),watching,'spectators cannot edit the current player\'s aim');
   get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,13);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
   assert.match(cards[12].textContent,/유도탄.*3쭈\/발/);assert.match(cards[12].textContent,/85%/);
-  cards[12].click();a.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
+  const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');
+  assert.equal(JSON.stringify(a.TankView.input()),inPicker,'the weapon picker blocks hidden aim controls');
+  cards[12].click();key('prot','Home');get(a,'angleUp').click();get(a,'angleUp').click();get(a,'angleUp').click();
+  pointer('pointerdown',254*45/95,14,51,'power');pointer('pointerup',254*45/95,14,51,'power');
+  assert.equal(a.TankView.input().angle,.75);assert.equal(a.TankView.input().power,50);
+  get(a,'fire').click();get(a,'fire').click();
   await wait(()=>get(a,'netCoins').textContent==='보유 97쭈');
+  const fired=(await f.call(ids[0],{action:'mine'})).room;
+  assert.equal(fired.event.command.angle,.75);assert.equal(fired.event.command.power,50);assert.equal(fired.game.shotNo,1,'one click fires the exact quarter-degree angle and power without charging');
   assert.equal(get(a,'netTurn').textContent,'유도탄 비행 중');assert.equal(a.eval('shots[0].w.kind'),'homing');assert.equal(a.eval('shots[0].w.dmg'),34);a.eval('draw()');
   assert.equal(a.eval('camManual'),false,'firing resumes automatic camera following');
   a.eval('camY=MH-PL+40;updateCam()');assert.ok(a.eval('camY<MH-PL+40'),'the camera follows the shell vertically');
@@ -96,6 +133,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>get(b,'netTurn').textContent.includes('비행'));
   for(let i=0;i<8000;i++)b.TankOnline.tick();
   assert.equal(get(a,'fire').disabled,true);assert.equal(get(b,'fire').disabled,false);
+  assert.equal(get(a,'prot').getAttribute('aria-disabled'),'true');assert.equal(get(a,'power').getAttribute('aria-disabled'),'true');
+  assert.equal(get(b,'prot').getAttribute('aria-disabled'),'false');assert.equal(get(b,'power').getAttribute('aria-disabled'),'false');
   assert.equal(a.eval('tanks[0].hp'),b.eval('tanks[0].hp'));
   assert.equal(a.eval('tanks[1].hp'),b.eval('tanks[1].hp'));
   // Reopening a third session for the same member restores the saved match without another debit.
@@ -119,7 +158,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   solo.TankOnline.tick();assert.equal(solo.eval('tanks.length'),2);
   assert.equal(get(solo,'surrender').textContent,'그만하기');assert.doesNotMatch(get(solo,'netTurn').textContent,/초/);
   get(solo,'wpn').click();get(solo,'wgrid').children[12].click();
-  solo.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
+  solo.eval('setAngle(0);setPower(50);fireSelected();');
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
   assert.match(get(solo,'netTurn').textContent,/컴퓨터 1/);
@@ -145,7 +184,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.match(get(local,'netTurn').textContent,new RegExp('플레이어 '+(seat+1)+' 차례'));
    get(local,'wpn').click();get(local,'wgrid').children[[1,2,0][seat]].click();
    get(local,'wpn').click();get(local,'wgrid').children[weapon].click();
-   local.eval('lockAngle();startCharge();tanks[turn].ang=90;tanks[turn].pow=5;release();');
+   local.eval('setAngle(90);setPower(5);fireSelected();');
    await wait(()=>get(local,'netTurn').textContent.endsWith('비행 중'));
    for(let i=0;i<8000;i++)local.TankOnline.tick();
    assert.equal(get(local,'netCoins').textContent,`보유 ${coins}쭈`);
@@ -158,7 +197,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   local.dispatchEvent(new local.Event('online'));
   await new Promise(r=>setTimeout(r,100));local.TankOnline.tick();
   assert.equal(local.TankView.input().weapon,8,'state polling must preserve the selected nuclear shell');
-  local.eval('lockAngle();startCharge();tanks[turn].ang=90;tanks[turn].pow=5;release();');
+  local.eval('setAngle(90);setPower(5);fireSelected();');
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
   assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
   assert.equal(local.eval('shots[0].w.r'),200,'nuclear shells retain their original large blast range');
@@ -240,7 +279,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.equal(solo.radialGradients.length,0,'a distant explosion is not pinned to the viewport');
    assert.deepEqual([burst.x,burst.y],originalPosition,'panning never relocates an explosion');
   }
-  console.log('PASS: destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
+  console.log('PASS: direct angle/power gestures, fine controls, keyboard, cancellation, exact firing, destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
