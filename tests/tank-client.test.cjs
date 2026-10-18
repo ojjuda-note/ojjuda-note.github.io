@@ -214,15 +214,26 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(solo.TankView.hasEffects(),true);
   for(let i=0;i<70;i++){solo.TankView.tickEffects();solo.TankView.use(createEngine(wreck),false);}
   assert.equal(solo.TankView.hasEffects(),false);
-  // Outside bursts remain visible at the canvas edge, including missed utility shells.
-  for(const weapon of [0,10,11])for(const side of [-1,1]){
-   const edge=createEngine(living);edge.begin({type:'fire',weapon,angle:90,power:5,moves:[]});
-   Object.assign(edge.view().shots[0],{x:side<0?-81:edge.view().W+81,y:edge.view().MH+41,vx:side,vy:1});edge.step();
-   solo.TankView.resetHistory();solo.TankView.use(edge,false);solo.radialGradients.length=0;solo.eval('draw()');
-   assert.equal(solo.radialGradients.length,1,'missed shells draw an explosion');
-   const [x,y]=solo.radialGradients[0],camera=solo.eval('({x:camX,y:camY,w:VW,h:H})');
-   assert.equal(x,side<0?camera.x+12:camera.x+camera.w-12);
-   assert.equal(y,camera.y+camera.h-12,'explosion is visible just inside the lower screen edge');
+  // Outside bursts stay at the landing point; only the overlapping part can enter the view.
+  const edgeGame=structuredClone(living);edgeGame.terrain.fill(150);edgeGame.tanks.forEach(t=>Object.assign(t,{y:300,vy:0}));
+  for(const weapon of [0,8,10,11])for(const side of [-1,0,1]){
+   const edge=createEngine(edgeGame);edge.begin({type:'fire',weapon,angle:90,power:5,moves:[]});
+   const v=edge.view();Object.assign(v.shots[0],{x:side<0?-8:side>0?v.W+8:v.W/2,y:side?300:v.MH+41,vx:side,vy:1});edge.step();
+   solo.TankView.resetHistory();solo.TankView.use(edge,false);
+   const burst=edge.view().booms[0];assert.ok(burst.outside);
+   const camera=solo.eval('({w:VW,h:H})');
+   solo.eval(`camX=${side<0?0:side>0?v.W-camera.w:burst.x-camera.w/2};camY=${side?0:burst.y-camera.h-8}`);
+   burst.cr=1;solo.radialGradients.length=0;solo.eval('draw()');
+   assert.equal(solo.radialGradients.length,0,'an offscreen impact must not pop up inside the screen');
+   burst.cr=burst.r;burst.t=burst.D;solo.radialGradients.length=0;solo.eval('draw()');
+   assert.equal(solo.radialGradients.length,1,'a growing blast can reach the screen edge');
+   const [x,y,,,,radius]=solo.radialGradients[0];
+   assert.equal(x,burst.x);assert.equal(y,burst.y);assert.equal(radius,burst.r,'render at the actual position and size');
+   const originalPosition=[burst.x,burst.y];
+   solo.eval(`camX=${side<0?burst.r+40:side>0?v.W-camera.w-burst.r-40:burst.x-camera.w/2};camY=0`);
+   solo.radialGradients.length=0;solo.eval('draw()');
+   assert.equal(solo.radialGradients.length,0,'a distant explosion is not pinned to the viewport');
+   assert.deepEqual([burst.x,burst.y],originalPosition,'panning never relocates an explosion');
   }
   console.log('PASS: destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
 
