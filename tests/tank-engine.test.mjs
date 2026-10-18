@@ -5,7 +5,7 @@ assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url)
 assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3]);
 assert.equal(WEAPONS[12].accuracy,.85);
 assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
-for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
+for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const gusts=Array.from({length:100000},(_,i)=>windAt(123456+i%17,1700000000000+i*2800+(i%2800)));
 const strengths=gusts.map(w=>Math.round(Math.abs(w)/WIND_MAX*20));
@@ -36,7 +36,7 @@ for(const size of [2,4,12]){
   const result=advance(initial,0,command),client=createEngine(initial);assert.equal(client.begin(command),result.price);
   let frames=0;while(['fly','settle'].includes(client.view().state)&&frames++<18000){
    client.step();
-   if((weapon>=3&&weapon<=9)||weapon===12)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:WEAPONS[0].r,'including split, repeat and homing explosions');assert.equal(boom.D,weapon===8?150:69,'nuclear blasts have time to expand to full size');}
+   if((weapon>=3&&weapon<=9)||weapon===12)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:weapon===7?100:WEAPONS[0].r,'including split, repeat and homing explosions');assert.equal(boom.D,weapon===8?150:weapon===7?130:69,'large terrain effects have time to expand to full size');}
   }
   const rendered=client.snapshot();result.state.tanks.forEach(t=>delete t.misses);
   assert.deepEqual(rendered,result.state,`server and client replay match: ${size} players, weapon ${weapon}`);
@@ -57,6 +57,13 @@ assert.ok(nuclearBlast.state.tanks[1].hp<100,'nuclear damage reaches tanks 100 u
 assert.equal(nuclearBlast.state.tanks[2].hp,100,'tanks outside the large blast remain safe');
 assert.ok(nuclearBlast.state.terrain[350]>basicBlast.state.terrain[350],'the actual crater also expands');
 assert.equal(nuclearBlast.price,3,'restoring the radius does not raise the price');
+// Dirt fills the wider half-nuclear area without damaging tanks or raising its price.
+const dirtBlast=advance(nuclearGame,0,{...nuclearCommand,weapon:7});
+assert.equal(WEAPONS[7].r,WEAPONS[8].r/2);
+assert.ok(dirtBlast.state.terrain[340]<150,'soil reaches 80 units from the impact');
+assert.equal(dirtBlast.state.terrain[360],150,'terrain outside the 100-unit radius is unchanged');
+assert.deepEqual(dirtBlast.state.tanks.map(t=>t.hp),[100,100,100]);
+assert.equal(dirtBlast.price,1);
 // Homing searches around the impact point, ignores self/wrecks, and bursts only at the locked enemy.
 const homingGame=newGame(['self','far','nearest','wreck'],'homing-test',881);
 homingGame.seed=1;homingGame.terrain.fill(150);

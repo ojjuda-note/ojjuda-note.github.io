@@ -162,13 +162,13 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const G=0.15,SLOW=0.35,TS=0.45,FUEL=150;
 const WEAPONS=[
   {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:24,dmg:34},
-  {name:'대형탄',price:0,desc:'폭발 범위가 넓어요',ammo:Infinity,r:42,dmg:52},
+  {name:'대형탄',price:0,desc:'폭발 범위가 넓지만 일반탄보다 피해가 약해요',ammo:Infinity,r:42,dmg:24},
   {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:14,dmg:11,count:3},
   {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:24,dmg:7,kind:'mirv'},
   {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:24,dmg:32,kind:'bounce'},
   {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:24,dmg:36,kind:'roll'},
   {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:24,dmg:12},
-  {name:'흙폭탄',price:1,desc:'일반탄 범위에 흙더미를 쌓아요',ammo:Infinity,r:24,dmg:0,kind:'dirt'},
+  {name:'흙폭탄',price:1,desc:'핵탄의 절반 범위에 흙더미를 쌓아요. 직접 피해는 없어요',ammo:Infinity,r:100,dmg:0,kind:'dirt'},
   {name:'핵탄',price:3,desc:'넓은 범위의 대형 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
   {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
@@ -711,6 +711,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-homing1"></script>
+<script type="module" src="./online.mjs?v=20261018-shell-balance1"></script>
 </body>
 </html>
