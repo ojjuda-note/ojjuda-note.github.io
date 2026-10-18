@@ -14,10 +14,12 @@ export const WEAPONS=[
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:57.6,dmg:0,kind:'heal',heal:25},
   {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:21.6,dmg:0,kind:'teleport'},
   {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:28.8,dmg:34,kind:'homing',accuracy:.85},
-  {name:'벙커버스터',price:3,desc:'탄착점으로 미사일이 수직 낙하해 땅속을 깊고 넓게 파요',ammo:Infinity,r:86.4,dmg:34,kind:'bunker',depth:140,shaft:8}
+  {name:'벙커버스터',price:3,desc:'탄착점으로 미사일이 수직 낙하해 땅속을 깊고 넓게 파요',ammo:Infinity,r:86.4,dmg:34,kind:'bunker',depth:140,shaft:8},
+  {name:'강철비',price:0,desc:'정점에서 10발이 넓게 퍼져요. 한 발 위력은 일반탄의 10분의 1, 폭발 범위는 산탄과 같아요',ammo:Infinity,r:16.8,dmg:3.4,kind:'steelrain',pellets:10}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:28.8,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:28.8,dmg:12,kind:'pierce',pen:18,stage:2}];
 const MIRV_CHILD={name:'',r:28.8,dmg:7};
+const STEEL_RAIN_CHILD={name:'강철비 자탄',r:WEAPONS[2].r,dmg:WEAPONS[0].dmg/10,kind:'steelrain-pellet'};
 
 const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28fad','#6ee7d2','#ffffff','#b8a07e','#ff9f43','#8ea4ff'];
 
@@ -218,10 +220,21 @@ function roll(s){
 }
 
 
+function burstSteelRain(s){
+ s.dead=true;
+ // The flash only shows the casing opening; each child owns its own impact.
+ booms.push({x:s.x,y:s.y,r:24,t:0,D:18,w:s.w,cr:0,hit:new Set(),owner:s.owner,fx:true,airburst:true,outside:s.x<0||s.x>W});
+ for(let i=0;i<s.w.pellets;i++){
+  const a=(i/(s.w.pellets-1)-.5)*Math.PI*5/6;
+  shots.push({x:s.x,y:s.y,vx:s.vx*.35+Math.sin(a)*4.8,vy:Math.max(0,s.vy)+Math.cos(a)*4.8,
+   w:STEEL_RAIN_CHILD,age:99,owner:s.owner,trail:[s.x,s.y],n:s.n,b:0});
+ }
+}
+
 function explode(x,y,w,s,outside=false){
  const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner,outside};
  // Open the crater before another pellet checks terrain, even in this same frame.
- if(w.kind==='scatter')carve(x,y,r);
+ if(w.kind==='scatter'||w.kind==='steelrain-pellet')carve(x,y,r);
  // An off-map teleport has no valid destination; piercing stops at the boundary.
  if(outside&&w.kind==='teleport')bm.fx=true;
  if(w.kind==='dirt')bm.dirt=true;
@@ -247,7 +260,7 @@ function growBoom(b){
     return;
   }
   if(b.dirt){if(cr>b.cr){fillCircle(b.x,b.y,cr);b.cr=cr;}return;}
-  if(cr>b.cr){if(b.w.kind!=='scatter')carve(b.x,b.y,cr);b.cr=cr;}
+  if(cr>b.cr){if(b.w.kind!=='scatter'&&b.w.kind!=='steelrain-pellet')carve(b.x,b.y,cr);b.cr=cr;}
   if(b.w.dmg>0)for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;
     const d=Math.hypot(t.x-b.x,(t.y-4)-b.y);
     if(d<b.r+8&&d<=cr+8){b.hit.add(t);
@@ -288,6 +301,7 @@ function step(){
   s.age++;s.trail.push(s.x,s.y);
   if(!s.dead&&!s.rolling&&s.w.kind==='mirv'&&s.vy>0){s.dead=true;
    for(let j=-2;j<=2;j++)shots.push({x:s.x,y:s.y,vx:s.vx+j*.55,vy:s.vy,w:MIRV_CHILD,age:99,owner:s.owner,trail:[s.x,s.y],n:s.n,b:0});}
+  if(!s.dead&&!s.rolling&&s.w.kind==='steelrain'&&s.vy>=0)burstSteelRain(s);
   if(!s.dead&&s.age>12000)explodeOutside(s);
   if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});
  }

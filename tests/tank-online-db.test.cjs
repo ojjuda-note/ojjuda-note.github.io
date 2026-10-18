@@ -18,7 +18,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await move(a,room,{...command(),moves:Array(251).fill(1)})).error,'bad_request');
   assert.equal((await move(a,room,{...command(),power:101})).error,'bad_request');
   assert.equal((await move(a,room,{...command(),basicWeapon:8})).error,'bad_request');
-  assert.equal((await move(a,room,command(14))).error,'bad_request','unknown ammo cannot bypass the server catalog');
+  assert.equal((await move(a,room,command(15))).error,'bad_request','unknown ammo cannot bypass the server catalog');
   // Forged client cost and state never change authoritative prices or health.
   const request=randomUUID(),before=room;
   const shotStarted=Date.now();
@@ -79,6 +79,15 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.notDeepEqual(bunker.game.terrain,bunkerBefore.game.terrain,'the authoritative strike saves its underground excavation');
   assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests where user_id=$1',[bunkerUser])).rows[0].n,1);
   assert.deepEqual(ok(await call(bunkerUser,{action:'mine'})).game,bunker.game,'reconnecting restores the excavated terrain');
+  // All ten Steel Rain pellets are free, including with an empty wallet and retries.
+  const rainUser=ids[12];await db.query('update public.user_private set coins=0 where user_id=$1',[rainUser]);
+  let rain=ok(await call(rainUser,{action:'create',request_id:randomUUID(),options:{mode:'local',capacity:2,title:'강철비 검증'}}));
+  rain=ok(await start(rainUser,rain));const rainRequest=randomUUID();
+  const rains=await Promise.all([move(rainUser,rain,{...command(14),angle:70,power:60,basicWeapon:14,price:999},rainRequest),move(rainUser,rain,{...command(14),angle:70,power:60,basicWeapon:14},rainRequest)]);
+  rain=ok(rains[0]);assert.equal(ok(rains[1]).version,rain.version);assert.equal(rain.coins,0);
+  assert.equal(rain.game.shotNo,1);assert.equal(rain.event.command.weapon,14);assert.equal(rain.game.tanks[0].basicWeapon,14);
+  assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests where user_id=$1',[rainUser])).rows[0].n,0);
+  assert.deepEqual(ok(await call(rainUser,{action:'mine'})).game,rain.game,'reconnecting restores Steel Rain terrain and selection');
   console.log('PASS: 12 players, capacity race, authentication, private state, deterministic reconnect, authoritative fire, free basic ammo, atomic paid ammo, insufficient funds, duplicate retries, timeout and host transfer');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -51,7 +51,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(a.eval('W'),1600);assert.equal(b.eval('W'),1600,'both sessions use the smaller battlefield');
   a.eval('draw()');assert.equal(a.eval('TS'),a.eval('tankRenderEngine.view().TS'));
   assert.ok(a.canvasScales.some(([x,y])=>x===.5175&&y===.5175),'tank rendering uses the enlarged physics scale');
-  assert.deepEqual(Array.from(a.eval('WEAPONS.map(w=>w.r)')),[28.8,50.4,16.8,28.8,28.8,28.8,28.8,120,200,28.8,57.6,21.6,28.8,86.4],'the picker metadata agrees with enlarged weapon radii');
+  assert.deepEqual(Array.from(a.eval('WEAPONS.map(w=>w.r)')),[28.8,50.4,16.8,28.8,28.8,28.8,28.8,120,200,28.8,57.6,21.6,28.8,86.4,16.8],'the picker metadata agrees with enlarged weapon radii');
   assert.equal(a.orientationLocks.length,0);assert.equal(a.orientationUnlocks,1);assert.equal(a.fullscreenCalls,1);
   const beforeResize=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
@@ -191,8 +191,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const watching=JSON.stringify(b.TankView.input());
   pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleLeft').click();get(b,'powerUp').click();
   assert.equal(JSON.stringify(b.TankView.input()),watching,'spectators cannot edit the current player\'s aim');
-  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,14);
-  assert.deepEqual(Array.from(cards,c=>Number(c.dataset.weapon)),[0,1,2,4,6,7,10,11,3,5,8,9,12,13],'weapon cards sort by price while keeping their original weapon IDs');
+  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,15);
+  assert.deepEqual(Array.from(cards,c=>Number(c.dataset.weapon)),[0,1,2,14,4,6,7,10,11,3,5,8,9,12,13],'weapon cards sort by price while keeping their original weapon IDs');
+  assert.match(weaponCard(a,14).textContent,/강철비.*무료/);assert.match(weaponCard(a,14).textContent,/10발.*10분의 1/);
   assert.match(cards[0].textContent,/무료/);assert.match(weaponCard(a,8).textContent,/3쭈\/발/);assert.match(weaponCard(a,10).textContent,/치료탄.*1쭈\/발/);assert.match(weaponCard(a,10).textContent,/땅은 파이지/);
   assert.match(weaponCard(a,12).textContent,/유도탄.*3쭈\/발/);assert.match(weaponCard(a,12).textContent,/85%/);assert.match(weaponCard(a,13).textContent,/벙커버스터.*3쭈\/발/);assert.match(weaponCard(a,13).textContent,/수직 낙하/);
   const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');pointer('pointerdown',10,10,41,'angleLeft');get(a,'powerDown').click();
@@ -347,6 +348,28 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(bunkerRoom.coins,97);assert.equal(bunkerRoom.game.shotNo,1);assert.equal(bunkerRoom.event.command.weapon,13);
   assert.deepEqual(JSON.parse(bunker.eval('JSON.stringify(tankRenderEngine.snapshot().terrain)')),bunkerRoom.game.terrain,'the displayed crater matches the saved authoritative strike');
   get(bunker,'surrender').click();await wait(()=>!bunker.document.body.classList.contains('in-match'));
+  // Steel Rain is available with zero coins and visibly splits into ten children.
+  await f.db.query('update public.user_private set coins=0 where user_id=$1',[ids[7]]);
+  const rain=await client(ids[7]);get(rain,'localMode').click();get(rain,'localPlayers').value='2';get(rain,'startLocal').click();
+  await wait(()=>rain.document.body.classList.contains('in-match'));rain.TankOnline.tick();
+  get(rain,'wpn').click();assert.equal(weaponCard(rain,14).disabled,false);weaponCard(rain,14).click();
+  assert.equal(get(rain,'wName').textContent,'강철비');assert.equal(get(rain,'wAmmo').textContent,'무료');
+  rain.eval('setAngle(70);setPower(60);fireSelected();fireSelected();');
+  await wait(()=>get(rain,'netTurn').textContent==='강철비 비행 중');
+  let rainFrames=0,sawSplit=false;
+  while(rain.eval("['fly','settle'].includes(state)")&&rainFrames++<8000){
+   if(!sawSplit&&get(rain,'netTurn').textContent==='강철비 10발 확산 중'){
+    assert.equal(rain.eval('shots.length'),10);assert.ok(rain.eval("shots.every(s=>s.w.kind==='steelrain-pellet'&&s.w.r===16.8&&s.w.dmg===3.4)"));
+    assert.ok(rain.eval('booms.some(b=>b.airburst&&b.fx)'));rain.eval('draw()');sawSplit=true;
+   }
+   rain.TankOnline.tick();
+  }
+  assert.ok(sawSplit&&rainFrames<8000);
+  const rainRoom=(await f.call(ids[7],{action:'mine'})).room;
+  assert.equal(rainRoom.coins,0);assert.equal(rainRoom.game.shotNo,1);assert.equal(rainRoom.game.tanks[0].basicWeapon,14);
+  assert.equal(get(rain,'netCoins').textContent,'보유 0쭈');
+  assert.deepEqual(JSON.parse(rain.eval('JSON.stringify(tankRenderEngine.snapshot().terrain)')),rainRoom.game.terrain);
+  get(rain,'surrender').click();await wait(()=>!rain.document.body.classList.contains('in-match'));
   // Opening the entrance must not run a saved computer turn or spend coins.
   let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;
   savedSolo=(await f.start(ids[5],savedSolo)).room;

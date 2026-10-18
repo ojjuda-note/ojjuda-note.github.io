@@ -1,4 +1,4 @@
-import {createEngine,WEAPONS} from './engine.mjs?v=20261018-scatter-price1';
+import {createEngine,WEAPONS} from './engine.mjs?v=20261018-steel-rain1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
@@ -59,6 +59,11 @@ function lobby(){
 }
 function flightLabel(){
  const weapon=WEAPONS[current?.event?.command?.weapon];
+ if(weapon?.kind==='steelrain'){
+  const v=engine?.view();
+  if(v?.shots.some(s=>s.w.kind==='steelrain'))return '강철비 비행 중';
+  return v?.shots.some(s=>s.w.kind==='steelrain-pellet')||v?.booms.some(b=>b.airburst||b.w.kind==='steelrain-pellet')?'강철비 10발 확산 중':'강철비 폭발';
+ }
  if(weapon?.kind==='bunker'){
   const missile=engine?.view().shots.find(s=>s.bunker);
   return missile?`벙커버스터 ${missile.bunker.phase==='fall'?'미사일 낙하 중':'지하 관통 중'}`:engine?.view().shots.length?'벙커버스터 표적탄 비행 중':'벙커버스터 지하 폭발';
@@ -155,7 +160,7 @@ window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins
    }
   }
   view.use(engine,canAim());
-  if(animation&&WEAPONS[current.event?.command?.weapon]?.kind==='bunker'){
+  if(animation&&['bunker','steelrain'].includes(WEAPONS[current.event?.command?.weapon]?.kind)){
    const label=flightLabel();if($('netTurn').textContent!==label)$('netTurn').textContent=label;
   }
   if(view.tickEffects())render();

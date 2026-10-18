@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX,TANK_SCALE} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
-assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3,3]);
+assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3,3,0]);
 assert.equal(WEAPONS[12].accuracy,.85);
 assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
 for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt','bunker'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
@@ -48,6 +48,39 @@ for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
  while(['fly','settle'].includes(e.view().state)&&frames++<18000)e.step();
  assert.ok(frames<18000);assert.equal(e.view().turn,1,'the three explosions use one turn');
  assert.ok(e.snapshot().terrain[400]>165,'the chained craters persist after settling');
+}
+// Steel Rain opens at the apex, then ten weak pellets cover a wide fan.
+for(const angle of [45,90,135])for(const wind of [-WIND_MAX,0,WIND_MAX]){
+ const game=newGame(['self','far'],'steel-rain',882);game.wind=wind;game.terrain.fill(150);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?(angle>90?100:1500):(angle===90?800:angle>90?1400:200),y:300,vy:0}));
+ const e=createEngine(game),mask=e.view().mask.slice(),hp=e.view().tanks.map(t=>t.hp);
+ assert.equal(e.begin({type:'fire',weapon:14,angle,power:70,moves:[]}),0);
+ const parent=e.view().shots[0];let frames=0,previousVy=parent.vy;
+ while(!parent.dead&&frames++<3000){previousVy=parent.vy;e.step();}
+ assert.ok(frames<3000);assert.ok(previousVy<0&&parent.vy>=0,'split once at the highest point');
+ assert.equal(e.view().booms.filter(b=>b.airburst).length,1);
+ assert.deepEqual(e.view().mask,mask,'opening the casing causes no extra crater');
+ assert.deepEqual(e.view().tanks.map(t=>t.hp),hp,'the airburst causes no extra damage');
+ const pellets=e.view().shots;assert.equal(pellets.length,10);
+ for(const s of pellets){
+  assert.equal(s.w.kind,'steelrain-pellet');assert.equal(s.w.r,WEAPONS[2].r);assert.equal(s.w.dmg,WEAPONS[0].dmg/10);
+  assert.equal(s.x,parent.x);assert.equal(s.y,parent.y);assert.ok(s.vy>0);assert.equal(s.owner,0);assert.equal(s.n,game.shotNo+1);
+ }
+ assert.equal(new Set(pellets.map(s=>s.vx)).size,10);
+ assert.ok(Math.max(...pellets.map(s=>s.vx))-Math.min(...pellets.map(s=>s.vx))>9,'fan is much wider than the five-way split shell');
+ const impacts=new Set();
+ while(['fly','settle'].includes(e.view().state)&&frames++<18000){e.step();e.view().booms.filter(b=>!b.airburst).forEach(b=>impacts.add(b));}
+ assert.ok(frames<18000);assert.equal(impacts.size,10,'each pellet impacts exactly once without splitting again');
+ const xs=[...impacts].map(b=>b.x);assert.ok(Math.max(...xs)-Math.min(...xs)>200,'landing positions cover a wide area');
+ assert.equal(e.view().shotNo,1);assert.equal(createEngine(e.snapshot()).view().tanks[0].basicWeapon,14);
+}
+{
+ const game=newGame(['self','far'],'rain-choice',882);game.wind=0;game.terrain.fill(350);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:200,y:700,vy:0}));
+ const fire=(saved,weapon)=>advance(saved,saved.turn,{type:'fire',weapon,angle:90,power:5,moves:[]}).state;
+ let saved=fire(game,14);saved=fire(saved,10);assert.equal(saved.tanks[0].w,14);
+ saved=fire(saved,10);saved=fire(saved,10);
+ assert.equal(createEngine(saved).view().tanks[0].w,14,'Steel Rain stays selected after a paid shot and reconnecting');
 }
 const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
 collisionGame.tanks.forEach((t,i)=>Object.assign(t,{x:[300,900,1400][i],y:300,vy:0}));
@@ -372,7 +405,7 @@ for(const side of [-1,1])for(let weapon=0;weapon<WEAPONS.length;weapon++){
  let frames=0;
  while(['fly','settle'].includes(missed.view().state)&&frames++<18000){missed.step();missed.view().booms.forEach(b=>bursts.add(b));}
  assert.ok(frames<18000,'misses finish the turn after their explosion');
- assert.equal(bursts.size,WEAPONS[weapon].kind==='mirv'?5:WEAPONS[weapon].count||1,'one explosion per missed projectile, without piercing repeats');
+ assert.equal(bursts.size,WEAPONS[weapon].kind==='steelrain'?11:WEAPONS[weapon].kind==='mirv'?5:WEAPONS[weapon].count||1,'one explosion per missed projectile, plus the harmless Steel Rain airburst');
  assert.ok([...bursts].every(b=>b.outside&&(side<0?b.x<0:b.x>missed.view().W)));
  assert.deepEqual(missed.view().mask,maskBefore,'a distant outside blast cannot reach the battlefield');
  assert.deepEqual(missed.snapshot().tanks.map(t=>[t.x,t.y,t.hp]),missedGame.tanks.map(t=>[t.x,t.y,t.hp]),'missed healing and teleport shells have no remote effect');
@@ -423,4 +456,4 @@ for(let n=0;n<3;n++){
 }
 assert.equal(game.tanks[0].hp,0,'three absent turns eliminate the player');
 assert.throws(()=>advance(newGame(['a','b'],'room',1),1,{type:'fire',weapon:0,angle:60,power:50,moves:[]}),/not_your_turn/);
-console.log(`PASS: 2/3 map widths, legacy saves, 0–10 wind (${windRates.join('/')}% sampled; ${turnBands.map(n=>(n/1000).toFixed(2)).join('/')}% actual turns), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all 14 ammo types, bunker marker/vertical descent/underground excavation, 2/4/12-player replay parity`);
+console.log(`PASS: 2/3 map widths, legacy saves, 0–10 wind (${windRates.join('/')}% sampled; ${turnBands.map(n=>(n/1000).toFixed(2)).join('/')}% actual turns), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all ${WEAPONS.length} ammo types, Steel Rain ten-pellet fan/free selection, bunker marker/vertical descent/underground excavation, 2/4/12-player replay parity`);
