@@ -42,6 +42,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.locator('[data-entry-panel=computer] [data-act='+(/^(chess|janggi)$/.test(id)?'bd-start':'bl-start')+']').click();
  await page.locator(/^(chess|janggi)$/.test(id)?'#bd-root':'#bl-cv').waitFor();
  assert.equal(await page.locator('.ge-board-entry').count(),0,id+': starts directly from the entry');
+ if(await page.locator('#gov [data-bl=close]').count())await page.locator('#gov [data-bl=close]').click();
  await page.evaluate(()=>entryTest.closeBoard());
  }
  assert.deepEqual(errors,[]);await page.close();
