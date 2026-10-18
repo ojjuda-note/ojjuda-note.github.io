@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX,TANK_SCALE} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
-assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3]);
+assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3,3]);
 assert.equal(WEAPONS[12].accuracy,.85);
 assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
-for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
+for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt','bunker'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
-WEAPONS.forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
-assert.deepEqual(WEAPONS.map(w=>w.dmg),[34,24,11,7,32,36,12,0,130,26,0,0,34],'base damage is unchanged');
+WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
+assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,7,32,36,12,0,130,26,0,0,34],'base damage is unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
 const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
 collisionGame.tanks.forEach((t,i)=>Object.assign(t,{x:[300,900,1400][i],y:300,vy:0}));
@@ -157,6 +157,53 @@ assert.ok(dirtBlast.state.terrain[355]<150,'soil reaches 110 units from the impa
 assert.equal(dirtBlast.state.terrain[370],150,'terrain outside the 120-unit radius is unchanged');
 assert.deepEqual(dirtBlast.state.tanks.map(t=>t.hp),[100,100,100]);
 assert.equal(dirtBlast.price,1);
+// Bunker markers summon one vertical missile, then excavate underground before soil collapses.
+const bunkerWeapon=WEAPONS.findIndex(w=>w.kind==='bunker');
+assert.equal(bunkerWeapon,13);assert.equal(WEAPONS[bunkerWeapon].price,3);assert.equal(WEAPONS[bunkerWeapon].dmg,WEAPONS[0].dmg);
+for(const wind of [-WIND_MAX,WIND_MAX]){
+ const game=newGame(['self','nearby','far'],'bunker-test',881);game.wind=wind;game.terrain.fill(150);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:[150,950,1450][i],y:300,vy:0}));
+ const e=createEngine(game),original=e.view().mask.slice();e.begin({type:'fire',weapon:bunkerWeapon,angle:45,power:50,moves:[]});
+ const marker=e.view().shots[0];Object.assign(marker,{x:600,y:300,vx:0,vy:0,age:99});e.step();
+ const missile=e.view().shots[0],impactX=marker.x;
+ assert.equal(e.view().shots.length,1);assert.ok(marker.dead&&missile.bunker);
+ assert.equal(missile.x,impactX);assert.ok(missile.y<0,'the missile enters from above the sky');
+ assert.deepEqual(e.view().mask,original,'the marker itself cannot excavate or explode');assert.equal(e.view().booms.length,0);
+ const cell=(x,y)=>e.view().mask[Math.floor(y/2)*e.view().GW+Math.floor(x/2)];
+ const phases=new Set(),bursts=new Set();let frames=0,previousY=missile.y,cavityChecked=false;
+ while(['fly','settle'].includes(e.view().state)&&frames++<18000){
+  for(const shot of e.view().shots){
+   assert.ok(shot.bunker);phases.add(shot.bunker.phase);assert.equal(shot.x,impactX,'even maximum crosswinds cannot shift the vertical missile');
+   assert.equal(shot.vx,0);assert.ok(shot.y>=previousY,'the missile only moves down');previousY=shot.y;
+   assert.equal(e.view().booms.length,0,'penetration happens before detonation');
+  }
+  for(const boom of e.view().booms){
+   bursts.add(boom);assert.equal(boom.x,impactX);assert.equal(boom.y,440,'detonate deep below the actual surface');
+   if(boom.t===boom.D-1){
+    assert.equal(cell(impactX+40,440),0,'the underground blast removes soil far beyond the narrow shaft');
+    assert.equal(cell(impactX+40,320),1,'the overlying soil stays above the cavity until settling');
+    assert.equal(cell(impactX,330),0,'the missile leaves an open penetration shaft');
+    assert.equal(cell(impactX+100,440),1,'soil beyond the underground radius stays intact');cavityChecked=true;
+   }
+  }
+  e.step();
+ }
+ assert.ok(frames<18000&&cavityChecked);assert.deepEqual([...phases],['fall','drill']);assert.equal(bursts.size,1);
+ assert.equal(e.view().shotNo,1,'marker and missile are one shot and one turn');assert.equal(e.view().turn,1);
+ const final=e.snapshot();assert.ok(final.terrain[Math.floor((impactX+40)/2)]>150,'the roof collapses into the excavated space');
+ assert.equal(final.terrain[Math.floor((impactX+100)/2)],150);
+ assert.deepEqual(createEngine(final).snapshot(),final,'the collapsed underground crater survives continuing the game');
+}
+for(const surface of [300,700,716]){
+ const game=newGame(['self','target'],'bunker-bedrock',882);game.wind=0;game.terrain.fill(surface/2);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1100:150,y:surface,vy:0}));
+ const e=createEngine(game);e.begin({type:'fire',weapon:bunkerWeapon,angle:45,power:50,moves:[]});
+ Object.assign(e.view().shots[0],{x:1100,y:surface-4,vx:0,vy:0,age:99});e.step();
+ assert.equal(e.view().tanks[1].hp,100,'even a tank hit only marks the bunker target');
+ let frames=0;while(!e.view().booms.length&&frames++<1500)e.step();
+ assert.ok(frames<1500);assert.equal(e.view().booms.length,1);
+ assert.ok(e.view().booms[0].y>=surface&&e.view().booms[0].y<=e.view().FLOOR,'the missile stops at bedrock without moving upward or escaping the map');
+}
 // Homing searches around the impact point, ignores self/wrecks, and bursts only at the locked enemy.
 const homingGame=newGame(['self','far','nearest','wreck'],'homing-test',881);
 homingGame.wind=0;
@@ -295,7 +342,7 @@ for(const side of [-1,1])for(let weapon=0;weapon<WEAPONS.length;weapon++){
  assert.deepEqual(missed.snapshot(),server,'outside explosions replay identically online');
 }
 // Near-edge outside impacts use their real radius for craters, dirt, healing and damage.
-for(const side of [-1,1])for(const weapon of [0,1,6,7,8,9,10,11,12]){
+for(const side of [-1,1])for(const weapon of [0,1,6,7,8,9,10,11,12,13]){
  const edgeGame=newGame(['edge','far'],'edge-effects',881);edgeGame.wind=0;edgeGame.terrain.fill(150);
  edgeGame.tanks.forEach((t,i)=>Object.assign(t,{x:i?edgeGame.width/2:side<0?6:edgeGame.width-6,y:300,vy:0,hp:weapon===10?50:100}));
  const command={type:'fire',weapon,angle:side<0?175:5,power:5,moves:[]},e=createEngine(edgeGame),bursts=new Set();
@@ -338,4 +385,4 @@ for(let n=0;n<3;n++){
 }
 assert.equal(game.tanks[0].hp,0,'three absent turns eliminate the player');
 assert.throws(()=>advance(newGame(['a','b'],'room',1),1,{type:'fire',weapon:0,angle:60,power:50,moves:[]}),/not_your_turn/);
-console.log(`PASS: 2/3 map widths, legacy saves, 0–10 wind (${windRates.join('/')}% sampled; ${turnBands.map(n=>(n/1000).toFixed(2)).join('/')}% actual turns), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all 13 ammo types, 2/4/12-player replay parity`);
+console.log(`PASS: 2/3 map widths, legacy saves, 0–10 wind (${windRates.join('/')}% sampled; ${turnBands.map(n=>(n/1000).toFixed(2)).join('/')}% actual turns), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all 14 ammo types, bunker marker/vertical descent/underground excavation, 2/4/12-player replay parity`);

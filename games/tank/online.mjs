@@ -1,4 +1,4 @@
-import {createEngine,WEAPONS} from './engine.mjs?v=20261018-larger-blasts1';
+import {createEngine,WEAPONS} from './engine.mjs?v=20261018-bunker1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
@@ -57,13 +57,21 @@ function lobby(){
   $('startMatch').hidden=current.seat!==current.hostSeat;$('startMatch').disabled=busy||(!privateMatch&&current.names.length<2);
  }
 }
+function flightLabel(){
+ const weapon=WEAPONS[current?.event?.command?.weapon];
+ if(weapon?.kind==='bunker'){
+  const missile=engine?.view().shots.find(s=>s.bunker);
+  return missile?`벙커버스터 ${missile.bunker.phase==='fall'?'미사일 낙하 중':'지하 관통 중'}`:engine?.view().shots.length?'벙커버스터 표적탄 비행 중':'벙커버스터 지하 폭발';
+ }
+ return `${weapon?.name||'포탄'} 비행 중`;
+}
 function render(){
  if(!current?.game||resumeOnEntry){lobby();return;}
  document.body.classList.add('in-match');$('menu').classList.add('hidden');$('netHud').hidden=false;
  $('netCoins').textContent=`보유 ${coins}쭈`;
  const solo=current.mode==='solo',local=current.mode==='local',privateMatch=solo||local;
  const alive=local?current.game.tanks.some(t=>t.hp>0):current.game.tanks[current.seat]?.hp>0,remaining=Math.max(0,Math.ceil((Date.parse(current.deadline)-Date.now()-offset)/1000));
- $('netTurn').textContent=animation?`${WEAPONS[current.event?.command?.weapon]?.name||'포탄'} 비행 중`:current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${!local&&current.game.turn===current.seat?' (나)':''} 차례${local?' · 번갈아 조작해 주세요':solo?'':' · '+remaining+'초'}`;
+ $('netTurn').textContent=animation?flightLabel():current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${!local&&current.game.turn===current.seat?' (나)':''} 차례${local?' · 번갈아 조작해 주세요':solo?'':' · '+remaining+'초'}`;
  $('surrender').textContent=privateMatch?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
  $('bAgain').textContent=privateMatch?'다시 하기':'대기실로';$('bMenu').textContent=privateMatch?'처음 화면으로':'게임 목록';
  if(current.status==='finished'&&!animation&&!view.hasEffects()){
@@ -147,6 +155,9 @@ window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins
    }
   }
   view.use(engine,canAim());
+  if(animation&&WEAPONS[current.event?.command?.weapon]?.kind==='bunker'){
+   const label=flightLabel();if($('netTurn').textContent!==label)$('netTurn').textContent=label;
+  }
   if(view.tickEffects())render();
  }
 };

@@ -12,8 +12,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   w.orientationLocks=[];w.orientationUnlocks=0;w.fullscreenCalls=0;
   Object.defineProperty(w.screen,'orientation',{value:{lock:async value=>{w.orientationLocks.push(value);},unlock:()=>{w.orientationUnlocks++;}}});
   w.document.documentElement.requestFullscreen=async()=>{w.fullscreenCalls++;};
-  w.radialGradients=[];w.canvasScales=[];
-  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({scale:(...args)=>w.canvasScales.push(args),createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
+  w.radialGradients=[];w.canvasScales=[];w.canvasTranslations=[];
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({translate:(...args)=>w.canvasTranslations.push(args),scale:(...args)=>w.canvasScales.push(args),createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
   w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:this.id==='power'?254:viewport.width,height:this.id==='prot'?56:this.id==='power'?28:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
   w.matchMedia=()=>({matches:false,addEventListener:draw});w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=draw;w.confirm=()=>true;
   const parent={postMessage(m){
@@ -50,7 +50,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(a.eval('W'),1600);assert.equal(b.eval('W'),1600,'both sessions use the smaller battlefield');
   a.eval('draw()');assert.equal(a.eval('TS'),a.eval('tankRenderEngine.view().TS'));
   assert.ok(a.canvasScales.some(([x,y])=>x===.5175&&y===.5175),'tank rendering uses the enlarged physics scale');
-  assert.deepEqual(Array.from(a.eval('WEAPONS.map(w=>w.r)')),[28.8,50.4,16.8,28.8,28.8,28.8,28.8,120,200,28.8,57.6,21.6,28.8],'the picker metadata agrees with enlarged weapon radii');
+  assert.deepEqual(Array.from(a.eval('WEAPONS.map(w=>w.r)')),[28.8,50.4,16.8,28.8,28.8,28.8,28.8,120,200,28.8,57.6,21.6,28.8,86.4],'the picker metadata agrees with enlarged weapon radii');
   assert.equal(a.orientationLocks.length,0);assert.equal(a.orientationUnlocks,1);assert.equal(a.fullscreenCalls,1);
   const beforeResize=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
@@ -190,8 +190,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const watching=JSON.stringify(b.TankView.input());
   pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleLeft').click();get(b,'powerUp').click();
   assert.equal(JSON.stringify(b.TankView.input()),watching,'spectators cannot edit the current player\'s aim');
-  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,13);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
-  assert.match(cards[12].textContent,/유도탄.*3쭈\/발/);assert.match(cards[12].textContent,/85%/);
+  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,14);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
+  assert.match(cards[12].textContent,/유도탄.*3쭈\/발/);assert.match(cards[12].textContent,/85%/);assert.match(cards[13].textContent,/벙커버스터.*3쭈\/발/);assert.match(cards[13].textContent,/수직 낙하/);
   const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');pointer('pointerdown',10,10,41,'angleLeft');get(a,'powerDown').click();
   assert.equal(JSON.stringify(a.TankView.input()),inPicker,'the weapon picker blocks hidden aim controls');
   cards[12].click();key('prot','Home');get(a,'angleLeft').click();get(a,'angleLeft').click();get(a,'angleLeft').click();
@@ -321,6 +321,29 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   local.TankOnline.tick();assert.equal(local.eval('tanks.length'),3,'play again keeps the local player count');
   get(local,'surrender').click();await wait(()=>!local.document.body.classList.contains('in-match'));
   assert.equal(get(local,'localSetup').hidden,false);assert.equal(get(local,'startLocal').disabled,false);
+  // The new shell is selectable, animates every stage, and uses one paid command.
+  const bunker=await client(ids[6]);get(bunker,'localMode').click();get(bunker,'localPlayers').value='2';get(bunker,'startLocal').click();
+  await wait(()=>bunker.document.body.classList.contains('in-match'));bunker.TankOnline.tick();
+  get(bunker,'wpn').click();get(bunker,'wgrid').children[13].click();assert.equal(get(bunker,'wName').textContent,'벙커버스터');
+  bunker.eval('setAngle(75);setPower(20);fireSelected();fireSelected();');
+  await wait(()=>get(bunker,'netTurn').textContent==='벙커버스터 표적탄 비행 중');
+  assert.equal(get(bunker,'netCoins').textContent,'보유 97쭈');
+  const stages=new Set();let bunkerFrames=0;
+  while(bunker.eval("['fly','settle'].includes(state)")&&bunkerFrames++<8000){
+   const label=get(bunker,'netTurn').textContent;
+   if(!stages.has(label)){
+    stages.add(label);bunker.canvasTranslations.length=0;bunker.eval('draw()');
+    const missile=bunker.eval('shots.find(s=>s.bunker)');
+    if(missile)assert.ok(bunker.canvasTranslations.some(([x,y])=>x===missile.x&&y===missile.y),'draw the missile body at its actual contact point');
+   }
+   bunker.TankOnline.tick();
+  }
+  assert.ok(bunkerFrames<8000);
+  for(const stage of ['표적탄 비행 중','미사일 낙하 중','지하 관통 중','지하 폭발'])assert.ok(stages.has('벙커버스터 '+stage),'render stage: '+stage);
+  const bunkerRoom=(await f.call(ids[6],{action:'mine'})).room;
+  assert.equal(bunkerRoom.coins,97);assert.equal(bunkerRoom.game.shotNo,1);assert.equal(bunkerRoom.event.command.weapon,13);
+  assert.deepEqual(JSON.parse(bunker.eval('JSON.stringify(tankRenderEngine.snapshot().terrain)')),bunkerRoom.game.terrain,'the displayed crater matches the saved authoritative strike');
+  get(bunker,'surrender').click();await wait(()=>!bunker.document.body.classList.contains('in-match'));
   // Opening the entrance must not run a saved computer turn or spend coins.
   let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;
   savedSolo=(await f.start(ids[5],savedSolo)).room;
@@ -381,7 +404,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.equal(solo.radialGradients.length,0,'a distant explosion is not pinned to the viewport');
    assert.deepEqual([burst.x,burst.y],originalPosition,'panning never relocates an explosion');
   }
-  console.log('PASS: direct angle/power gestures, directional half-degree buttons, repeated holds, power buttons, keyboard, cancellation, exact firing, destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
+  console.log('PASS: direct angle/power gestures, directional half-degree buttons, repeated holds, power buttons, keyboard, cancellation, exact firing, destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay, bunker strike stages/crater/single payment and 3-jju payment in all modes');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

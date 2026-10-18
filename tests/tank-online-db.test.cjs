@@ -18,6 +18,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await move(a,room,{...command(),moves:Array(251).fill(1)})).error,'bad_request');
   assert.equal((await move(a,room,{...command(),power:101})).error,'bad_request');
   assert.equal((await move(a,room,{...command(),basicWeapon:8})).error,'bad_request');
+  assert.equal((await move(a,room,command(14))).error,'bad_request','unknown ammo cannot bypass the server catalog');
   // Forged client cost and state never change authoritative prices or health.
   const request=randomUUID(),before=room;
   const shotStarted=Date.now();
@@ -33,6 +34,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   // Every basic shell is free; paid shells fail atomically with an empty wallet.
   await db.query('update public.user_private set coins=2 where user_id=$1',[guest]);
   assert.equal((await move(guest,room,command(12))).error,'coins');
+  assert.equal((await move(guest,room,command(13))).error,'coins');
   assert.equal(ok(await call(guest,{action:'read',room_id:room.id})).coins,2,'a 3-jju homing shot cannot spend a 2-jju balance');
   await db.query('update public.user_private set coins=0 where user_id=$1',[guest]);
   const stateBefore=room.game;
@@ -67,6 +69,16 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
    await assert.rejects(()=>db.transaction(async tx=>{await tx.exec('set local role '+role);await tx.query('select * from ojjuda_tank_internal.rooms');}),/permission denied/);
   }
   assert.equal((await f.handler(f.request(a,{action:'mine'},{origin:'https://evil.test'}))).status,403);
+  // A complete bunker strike has one atomic charge, including a concurrent retry.
+  const bunkerUser=ids[13];
+  let bunker=ok(await call(bunkerUser,{action:'create',request_id:randomUUID(),options:{mode:'local',capacity:2,title:'벙커버스터 검증'}}));
+  bunker=ok(await start(bunkerUser,bunker));const bunkerBefore=bunker,bunkerRequest=randomUUID();
+  const strikes=await Promise.all([move(bunkerUser,bunker,{...command(13),angle:75,power:20,price:0},bunkerRequest),move(bunkerUser,bunker,{...command(13),angle:75,power:20},bunkerRequest)]);
+  bunker=ok(strikes[0]);assert.equal(ok(strikes[1]).version,bunker.version);
+  assert.equal(bunker.coins,97);assert.equal(bunker.game.shotNo,1);assert.equal(bunker.event.command.weapon,13);
+  assert.notDeepEqual(bunker.game.terrain,bunkerBefore.game.terrain,'the authoritative strike saves its underground excavation');
+  assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests where user_id=$1',[bunkerUser])).rows[0].n,1);
+  assert.deepEqual(ok(await call(bunkerUser,{action:'mine'})).game,bunker.game,'reconnecting restores the excavated terrain');
   console.log('PASS: 12 players, capacity race, authentication, private state, deterministic reconnect, authoritative fire, free basic ammo, atomic paid ammo, insufficient funds, duplicate retries, timeout and host transfer');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

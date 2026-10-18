@@ -13,7 +13,8 @@ export const WEAPONS=[
   {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:28.8,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:57.6,dmg:0,kind:'heal',heal:25},
   {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:21.6,dmg:0,kind:'teleport'},
-  {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:28.8,dmg:34,kind:'homing',accuracy:.85}
+  {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:28.8,dmg:34,kind:'homing',accuracy:.85},
+  {name:'벙커버스터',price:3,desc:'탄착점으로 미사일이 수직 낙하해 땅속을 깊고 넓게 파요',ammo:Infinity,r:86.4,dmg:34,kind:'bunker',depth:140,shaft:8}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:28.8,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:28.8,dmg:12,kind:'pierce',pen:18,stage:2}];
 const MIRV_CHILD={name:'',r:28.8,dmg:7};
@@ -125,6 +126,7 @@ function fire(){
 
 function explodeOutside(s){
   if(s.dead)return;
+  if(s.w.kind==='bunker'&&!s.bunker){callBunker(s);return;}
   // Keep the real impact center; terrain and tank effects reach across the edge.
   explode(s.x,s.y,s.w,s,true);
   s.dead=true;
@@ -151,6 +153,7 @@ function checkHit(s){
 }
 
 function impact(s){
+  if(s.w.kind==='bunker'){callBunker(s);return;}
   if(s.canHome&&s.x>=0&&s.x<=W){
     let target=-1,nearest=WEAPONS[8].r;
     for(let i=0;i<tanks.length;i++){
@@ -167,6 +170,26 @@ function impact(s){
     }
   }
   explode(s.x,s.y,s.w,s);s.dead=true;
+}
+
+function callBunker(s){
+  // The first shell only marks a target. Keep its real x, including off-map hits.
+  const surfaceY=surf(s.x);
+  shots.push({x:s.x,y:-60,vx:0,vy:20,w:s.w,age:0,owner:s.owner,trail:[s.x,-60],n:s.n,
+    bunker:{phase:'fall',targetY:s.y,surfaceY,endY:Math.max(surfaceY,Math.min(FLOOR-1,surfaceY+s.w.depth))}});
+  s.dead=true;
+}
+
+function dropBunker(s,h){
+  const dive=s.bunker;s.vx=0;
+  if(dive.phase==='fall'){
+    s.vy=20;s.y=Math.min(dive.surfaceY,s.y+s.vy*h);
+    if(s.y>=dive.surfaceY){dive.phase='drill';carve(s.x,s.y,s.w.shaft);}
+    return;
+  }
+  s.vy=8;s.y=Math.min(dive.endY,s.y+s.vy*h);
+  carve(s.x,s.y,s.w.shaft);
+  if(s.y>=dive.endY){explode(s.x,s.y,s.w,s,s.x<0||s.x>W);s.dead=true;}
 }
 
 function home(s,h){
@@ -256,6 +279,7 @@ function step(){
   if(s.rolling){roll(s);if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});continue;}
   const h=SLOW/2;
   for(let k=0;k<2&&!s.dead&&!s.rolling;k++){
+   if(s.bunker){dropBunker(s,h);continue;}
    if(s.homing){home(s,h);continue;}
    s.vx+=wind*h;s.vy+=G*h;s.x+=s.vx*h;s.y+=s.vy*h;checkHit(s);
   }
