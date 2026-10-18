@@ -10,7 +10,7 @@ window.arcadeTest={actions:sr,render:H,auth:D,state:g,client:S,rooms:()=>worldAr
  switchActor:id=>{D.user={id};window.fixtureActor=id;worldArcadeRooms.sync()}};
 g.tab='friends';H();
 `+world.slice(world.indexOf('</script>',boot));
-world=world.replace('</head>','<script src="/game-entry.js"></script><script src="/arcade-rooms.js"></script><script src="/matgo-access.js"></script><script src="/matgo-bridge.js"></script></head>');
+world=world.replace('</head>','<script src="/game-entry.js" defer></script><script src="/arcade-rooms.js"></script><script src="/matgo-access.js"></script><script src="/matgo-bridge.js"></script></head>');
 (async()=>{
  const f=await fixture();const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  const errors=[];
