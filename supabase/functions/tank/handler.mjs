@@ -74,7 +74,7 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
      }else{
       if(result.room.status!=='active')throw Error('room_unavailable');
       // Ignore all client state, cost, weapon metadata and command.type fields.
-      const command=body.action==='surrender'?{type:'surrender'}:{type:'fire',weapon:body.command.weapon,angle:body.command.angle,power:body.command.power,moves:body.command.moves,windTime:Date.now()};
+      const command=body.action==='surrender'?{type:'surrender'}:{type:'fire',weapon:body.command.weapon,basicWeapon:body.command.basicWeapon,angle:body.command.angle,power:body.command.power,moves:body.command.moves,windTime:Date.now()};
       const seat=result.room.mode==='local'?result.room.state.turn:result.seat;
       next=advance(result.room.state,seat,command);event.actor=seat;event.command=command;
      }

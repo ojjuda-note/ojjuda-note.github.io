@@ -7,14 +7,13 @@ export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  if(!target||!t||t.hp<=0)throw Error('invalid_move');
  const width=800*Math.max(3,Math.ceil(tanks.length/3)+1),k=Math.sqrt(width*1.15*.15)/100,dir=target.x>t.x?1:-1;
  const ground=x=>saved.terrain[Math.max(0,Math.min(saved.terrain.length-1,Math.floor(x/2)))]*2;
- const drift=new Float64Array(3201);let windSpeed=0;
- for(let n=1;n<drift.length;n++){windSpeed+=windAt(saved.weatherSeed??saved.seed,windTime+Math.ceil(n/2)*1000/60)*.175;drift[n]=drift[n-1]+windSpeed*.175;}
+ const wind=saved.wind??windAt(saved.weatherSeed??saved.seed,saved.windTime??0);
  function distance(angle,power){
   const rad=angle*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);
   const x0=t.x+cos*8.1,y0=t.y-4.05-sin*8.1,vx=cos*power*k,vy=-sin*power*k,h=.175;
   // Four physics substeps per sample; the discrete acceleration matches the engine.
   for(let n=4;n<=3200;n+=4){
-   const acceleration=h*h*n*(n+1)/2,x=x0+vx*n*h+drift[n],y=y0+vy*n*h+.15*acceleration;
+   const acceleration=h*h*n*(n+1)/2,x=x0+vx*n*h+wind*acceleration,y=y0+vy*n*h+.15*acceleration;
    if(x<0||x>width||y>720)return Infinity;
    const d=Math.hypot(x-target.x,y-(target.y-3));
    if(d<6||y>=ground(x))return d;

@@ -23,8 +23,9 @@ const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28f
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const G=.15,SLOW=.35,TS=.45,FUEL=150,CS=2;
+const isBasicWeapon=w=>Number.isInteger(w)&&WEAPONS[w]?.price===0;
 export const WIND_MAX=.076;
-// A shared gust is chosen every 2.8 seconds, even during flight.
+// Deterministic weather samples; the engine advances the sample only at a new turn.
 // Strength 0–9 has 80% probability; 10–20 has 20%. Direction is independent.
 export function windAt(seed,time){
  const index=Math.floor(time/2800);
@@ -39,7 +40,8 @@ export function createEngine(saved){
  const random=()=>{rng=(Math.imul(1664525,rng)+1013904223)>>>0;return rng/4294967296;};
  let NT=saved.names.length,VW=800,W=VW*Math.max(3,Math.ceil(NT/3)+1),H=450,MH=720,PL=350;
  let FLOOR=MH-4,FR=Math.floor(FLOOR/CS),GW=Math.ceil((W+1)/CS),GH=Math.ceil(MH/CS)+1;
- let K=Math.sqrt(W*1.15*G)/100,WINDMAX=WIND_MAX,windTime=saved.windTime??0,weatherSeed=saved.weatherSeed??saved.seed,wind=windAt(weatherSeed,windTime);
+ let K=Math.sqrt(W*1.15*G)/100,WINDMAX=WIND_MAX,windTime=saved.windTime??0,weatherSeed=saved.weatherSeed??saved.seed;
+ let windIndex=saved.windIndex??Math.floor(windTime/2800),wind=saved.wind??windAt(weatherSeed,windIndex*2800);
  let ground=new Float32Array(W+1),mask=new Uint8Array(GW*GH),active=new Set(),tDirty=true;
  let far=[],stars=[],tanks=[],turn=saved.turn??0,state='aim',shots=[],booms=[],bits=[],floats=[],paths=[];
  let shotNo=saved.shotNo||0,settleT=0,frame=0,dirty=0,over=!!saved.over,runId=saved.runId;
@@ -88,14 +90,17 @@ function carve(x,y,r){circleCells(x,y,r,0);}
 
 function fillCircle(x,y,r){circleCells(x,y,r,1);}
 
-function mkTank(x,i,name,cpu){return{x,y:surf(x),vy:0,color:COLORS[i],ang:90,pow:5,name,hp:100,ammo:WEAPONS.map(w=>w.ammo),w:0,cpu,hitT:0,fuel:FUEL};}
+function mkTank(x,i,name,cpu){return{x,y:surf(x),vy:0,color:COLORS[i],ang:90,pow:5,name,hp:100,ammo:WEAPONS.map(w=>w.ammo),w:0,basicWeapon:0,cpu,hitT:0,fuel:FUEL};}
 
 function nextIdx(){for(let k=1;k<=tanks.length;k++){const j=(turn+k)%tanks.length;if(tanks[j].hp>0)return j;}return turn;}
 
 function tip(t){const a=t.ang*Math.PI/180;return{x:t.x+Math.cos(a)*18*TS,y:t.y-9*TS-Math.sin(a)*18*TS};}
 
 
-function startTurn(i){turn=i;wind=windAt(weatherSeed,windTime+frame*1000/60);const t=tanks[i];t.fuel=FUEL;t.ang=90;t.pow=5;t.w=0;state='aim';}
+function startTurn(i,changeWind=true){
+ if(changeWind){const previous=wind;do{wind=windAt(weatherSeed,++windIndex*2800);}while(wind===previous);}
+ turn=i;const t=tanks[i];t.fuel=FUEL;t.ang=90;t.pow=5;t.w=t.basicWeapon;state='aim';
+}
 function fire(){
  const t=tanks[turn],w=WEAPONS[t.w];shotNo++;t.lastAng=t.ang;t.lastPow=t.pow;
  const a=t.ang*Math.PI/180,sp=t.pow*K,p=tip(t),n=w.count||1;
@@ -230,7 +235,6 @@ function gravity(){
 }
 function step(){
  frame++;
- wind=windAt(weatherSeed,windTime+frame*1000/60);
  for(const s of shots.slice()){
   if(s.dead)continue;
   if(s.rolling){roll(s);if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});continue;}
@@ -266,33 +270,36 @@ function move(dir){
 function begin(command){
  validateCommand(command);
  if(over||state!=='aim')throw Error('room_unavailable');
- windTime=command.windTime??windTime;frame=0;wind=windAt(weatherSeed,windTime);
+ windTime=command.windTime??windTime;frame=0;
  for(const dir of command.moves)move(dir);
  const t=tanks[turn];t.ang=command.angle;t.pow=command.power;t.w=command.weapon;
+ if(command.basicWeapon!==undefined)t.basicWeapon=command.basicWeapon;
+ if(isBasicWeapon(t.w))t.basicWeapon=t.w;
  const price=t.hp>0?WEAPONS[t.w].price:0;
  if(t.hp>0)fire();else finishTurn();
  return price;
 }
 function snapshot(){
  if(shots.length||active.size)throw Error('simulation_incomplete');
- return {runId,names:saved.names,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,turn,wind,shotNo,over,
+ return {runId,names:saved.names,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,wind,shotNo,over,
   terrain:Array.from({length:GW},(_,x)=>surf(x*CS)/CS),
-  tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,fuel,lastAng,lastPow}))};
+  tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow}))};
 }
 if(saved.terrain){
  if(saved.terrain.length!==GW)throw Error('invalid_state');
  for(let cx=0;cx<GW;cx++)for(let cy=saved.terrain[cx];cy<GH;cy++)mask[cy*GW+cx]=1;
- tanks=saved.tanks.map(t=>({...t,ammo:WEAPONS.map(()=>Infinity),cpu:false,hitT:0}));
+ tanks=saved.tanks.map(t=>({...t,basicWeapon:isBasicWeapon(t.basicWeapon)?t.basicWeapon:isBasicWeapon(t.w)?t.w:0,ammo:WEAPONS.map(()=>Infinity),cpu:false,hitT:0}));
 }else{
  genWorld();const slots=[];
  for(let i=0;i<NT;i++)slots.push(Math.round(clamp(W*(i+.5)/NT+(random()-.5)*W/NT*.4,20,W-20)));
  for(let i=slots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[slots[i],slots[j]]=[slots[j],slots[i]];}
  for(const x of slots)flatten(x,10);buildMask();
- tanks=saved.names.map((name,i)=>mkTank(slots[i],i,name,false));startTurn(0);
+ tanks=saved.names.map((name,i)=>mkTank(slots[i],i,name,false));startTurn(0,false);
 }
 if(over)state='end';
 return {step,move,begin,snapshot,
- setWindTime(time){if(state==='aim'&&Number.isFinite(time)){windTime=time;frame=0;wind=windAt(weatherSeed,time);}},
+ // Retain clock metadata for older clients without changing the turn's weather.
+ setWindTime(time){if(state==='aim'&&Number.isFinite(time)){windTime=time;frame=0;}},
  surrender(seat){if(!tanks[seat]||tanks[seat].hp<=0)throw Error('already_eliminated');tanks[seat].hp=0;if(seat===turn||tanks.filter(t=>t.hp>0).length<=1)finishTurn();},
  skip(){if(over)return;tanks[turn].misses=(saved.tanks?.[turn]?.misses||0)+1;if(tanks[turn].misses>=3)tanks[turn].hp=0;finishTurn();},
  view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,WINDMAX,wind,ground,mask,tanks,turn,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
@@ -300,6 +307,7 @@ return {step,move,begin,snapshot,
 export function validateCommand(c){
  if(!c||!Number.isInteger(c.weapon)||c.weapon<0||c.weapon>=WEAPONS.length||!Number.isFinite(c.angle)||c.angle<0||c.angle>180||!Number.isFinite(c.power)||c.power<5||c.power>100||!Array.isArray(c.moves)||c.moves.length>250||c.moves.some(x=>x!==-1&&x!==1))throw Error('invalid_move');
  if(c.windTime!==undefined&&(!Number.isSafeInteger(c.windTime)||c.windTime<0))throw Error('invalid_move');
+ if(c.basicWeapon!==undefined&&!isBasicWeapon(c.basicWeapon))throw Error('invalid_move');
 }
 export function newGame(names,runId,seed,windTime=0){
  if(!Array.isArray(names)||names.length<2||names.length>12)throw Error('need_players');

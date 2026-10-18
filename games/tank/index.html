@@ -143,7 +143,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람의 방향과 세기가 수시로 바뀌어요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람은 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
 <div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
@@ -629,7 +629,7 @@ function openPicker(){
   const t=tanks[turn],g=$('wgrid');g.innerHTML='';
   WEAPONS.forEach((w,i)=>{const b=document.createElement('button');b.className='wcard'+(i===t.w?' sel':'');b.disabled=w.price>0&&w.price>window.TankOnline.balance();
     b.innerHTML='<b><span>'+w.name+'</span><span>'+(w.price?w.price+'쭈/발':'무료')+'</span></b><small>'+w.desc+'</small>';
-    b.onclick=()=>{t.w=i;closePicker();syncUI();};g.appendChild(b);});
+    b.onclick=()=>{t.w=i;if(w.price===0)t.basicWeapon=i;closePicker();syncUI();};g.appendChild(b);});
   pickerOpen=true;moveDir=0;$('picker').classList.remove('hidden');
 }
 function closePicker(){pickerOpen=false;$('picker').classList.add('hidden');}
@@ -702,7 +702,7 @@ window.TankView={
   if(aimPhase==='sweep'){t.ang+=sweepDir*1.3;if(t.ang>=180){t.ang=180;sweepDir=-1;}else if(t.ang<=0){t.ang=0;sweepDir=1;}}
   else if(aimPhase==='charge'){t.pow+=powDir*1.15;if(t.pow>=100){t.pow=100;powDir=-1;}else if(t.pow<=5){t.pow=5;powDir=1;}}
  },
- input(){const t=tanks[turn];return {weapon:t.w,angle:t.ang,power:t.pow};},
+ input(){const t=tanks[turn];return {weapon:t.w,basicWeapon:t.basicWeapon,angle:t.ang,power:t.pow};},
  resetInput(){aimPhase='sweep';moveDir=0;fireB.classList.remove('charging');closePicker();syncUI();},
  finishAnimation(engine){tankHistory.push(...engine.view().paths);},
  hasEffects:()=>tankBursts.length>0,
@@ -729,6 +729,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-side-ground1"></script>
+<script type="module" src="./online.mjs?v=20261018-turn-wind1"></script>
 </body>
 </html>

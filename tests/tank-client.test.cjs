@@ -143,6 +143,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   for(const [seat,weapon,coins] of [[0,12,97],[1,10,96],[2,0,96]]){
    assert.equal(local.TankOnline.canAim(),true);assert.equal(local.TankOnline.seat(),seat);
    assert.match(get(local,'netTurn').textContent,new RegExp('플레이어 '+(seat+1)+' 차례'));
+   get(local,'wpn').click();get(local,'wgrid').children[[1,2,0][seat]].click();
    get(local,'wpn').click();get(local,'wgrid').children[weapon].click();
    local.eval('lockAngle();startCharge();tanks[turn].ang=90;tanks[turn].pow=5;release();');
    await wait(()=>get(local,'netTurn').textContent.endsWith('비행 중'));
@@ -150,6 +151,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.equal(get(local,'netCoins').textContent,`보유 ${coins}쭈`);
   }
   assert.equal(local.TankOnline.seat(),0);
+  assert.equal(local.TankView.input().weapon,1,'large shell returns after one paid shot and the other players\' turns');
+  assert.equal(get(local,'wName').textContent,'대형탄');
   get(local,'wpn').click();get(local,'wgrid').children[8].click();
   assert.equal(local.TankView.input().weapon,8);assert.equal(get(local,'wName').textContent,'핵탄');
   local.dispatchEvent(new local.Event('online'));
@@ -169,6 +172,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   get(restored,'resumeMatch').click();restored.TankOnline.tick();
   assert.equal(get(restored,'netCoins').textContent,'보유 93쭈');
   assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
+  assert.deepEqual(Array.from(restored.eval('tanks.map(t=>t.basicWeapon)')),[1,2,0],'same-device players keep independent basic selections after reconnecting');
+  assert.equal(restored.TankView.input().weapon,[1,2,0][localRoom.game.turn]);
   while(localRoom.status==='active')localRoom=(await f.call(ids[3],{action:'surrender',room_id:localRoom.id,version:localRoom.version,request_id:require('node:crypto').randomUUID()})).room;
   local.dispatchEvent(new local.Event('online'));
   await wait(()=>get(local,'netTurn').textContent==='전투 종료');

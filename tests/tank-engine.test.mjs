@@ -18,14 +18,42 @@ assert.ok(gusts.every(w=>Math.abs(w)<=WIND_MAX));
 assert.ok(Math.max(...gusts)-Math.min(...gusts)>.15,'maximum physical wind is doubled');
 const weatherGame=newGame(['a','b','c'],'wind-test',881,1700000000000);
 const observer=createEngine(weatherGame);observer.setWindTime(1700000003400);
-assert.equal(observer.view().wind,windAt(weatherGame.weatherSeed,1700000003400),'aiming uses live shared weather');
+for(let i=0;i<600;i++)observer.step();
+assert.equal(observer.view().wind,weatherGame.wind,'waiting and clock updates cannot change this turn\'s wind');
+assert.equal(createEngine(observer.snapshot()).view().wind,weatherGame.wind,'reconnecting preserves the current wind');
 const weatherCommand={type:'fire',weapon:0,angle:80,power:100,moves:[],windTime:1700000003700};
 const replayWeather=createEngine(weatherGame);replayWeather.setWindTime(1700000099999);replayWeather.begin(weatherCommand);
 const inFlight=new Set();let weatherFrames=0;
-while(['fly','settle'].includes(replayWeather.view().state)&&weatherFrames++<18000){replayWeather.step();inFlight.add(replayWeather.view().wind.toFixed(6));}
-assert.ok(inFlight.size>1,'wind changes during flight');
+while(['fly','settle'].includes(replayWeather.view().state)&&weatherFrames++<18000){inFlight.add(replayWeather.view().wind);replayWeather.step();}
+assert.deepEqual([...inFlight],[weatherGame.wind],'aiming, flight and settling all use the same wind');
+assert.notEqual(replayWeather.view().wind,weatherGame.wind,'the next turn always gets different wind');
 const authoritative=advance(weatherGame,0,weatherCommand).state;authoritative.tanks.forEach(t=>delete t.misses);
-assert.deepEqual(replayWeather.snapshot(),authoritative,'accepted wind time overrides preview timing and replays identically');
+assert.deepEqual(replayWeather.snapshot(),authoritative,'server and all clients replay the saved turn wind identically');
+const laterShot=advance(weatherGame,0,{...weatherCommand,windTime:1700099999999}).state;
+laterShot.tanks.forEach(t=>delete t.misses);laterShot.windTime=authoritative.windTime;
+assert.deepEqual(laterShot,authoritative,'choosing a different firing time cannot reroll the wind or trajectory');
+assert.notEqual(advance(weatherGame,0,{type:'timeout'}).state.wind,weatherGame.wind,'a missed turn changes the wind');
+assert.notEqual(advance(weatherGame,0,{type:'surrender'}).state.wind,weatherGame.wind,'the current player surrendering changes the wind');
+assert.equal(advance(weatherGame,1,{type:'surrender'}).state.wind,weatherGame.wind,'another player surrendering leaves this turn\'s wind alone');
+// Each player keeps a separate free-shell choice, including after a paid shot or a reload.
+let choices=newGame(['a','b','c'],'basic-choice',881);
+choices.wind=0;choices.terrain.fill(150);
+choices.tanks.forEach((t,i)=>Object.assign(t,{x:300+i*900,y:300,vy:0}));
+const choose=(weapon,basicWeapon)=>{choices=advance(choices,choices.turn,{type:'fire',weapon,basicWeapon,angle:90,power:5,moves:[]}).state;};
+choose(1);assert.equal(choices.tanks[1].w,0);
+choose(2);assert.equal(choices.tanks[2].w,0);
+choose(0);assert.equal(choices.tanks[0].w,1,'large shell stays selected on the next own turn');
+choose(10);assert.equal(choices.tanks[1].w,2,'another player retains scattershot');
+choose(10,0);choose(10);assert.equal(choices.tanks[0].w,1,'a paid shell returns to the remembered free shell');
+choose(2,1);assert.equal(choices.tanks[1].w,0,'a newly selected free shell is remembered even when a paid shell is fired instead');
+choose(10);choose(10);assert.equal(choices.tanks[0].w,2,'changing to another free shell replaces the previous choice');
+const restoredChoices=createEngine(choices).snapshot();
+assert.deepEqual(restoredChoices.tanks.map(t=>t.basicWeapon),[2,0,0]);assert.equal(restoredChoices.tanks[0].w,2);
+const legacy=structuredClone(weatherGame);delete legacy.windIndex;
+legacy.tanks.forEach((t,i)=>{delete t.basicWeapon;t.w=[2,12,0][i];});
+assert.deepEqual(createEngine(legacy).snapshot().tanks.map(t=>t.basicWeapon),[2,0,0],'older saved games recover free selections without repeating paid ammo');
+assert.equal(createEngine(legacy).view().wind,legacy.wind,'older saved games keep their current wind');
+for(const basicWeapon of [-1,3,1.5,'1',null])assert.throws(()=>advance(weatherGame,0,{...weatherCommand,basicWeapon}),/invalid_move/);
 for(const size of [2,4,12]){
  const initial=newGame(Array.from({length:size},(_,i)=>'탱크'+i),'room',size*777);
  assert.equal(initial.tanks.length,size);
@@ -47,9 +75,10 @@ for(const size of [2,4,12]){
 }
 // A tank beyond a normal blast must still be damaged by the restored nuclear blast.
 const nuclearGame=newGame(['self','nearby','outside'],'nuclear-range',881);
+nuclearGame.wind=0;
 nuclearGame.terrain.fill(150);
 nuclearGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,700,840][i],y:300,vy:0,hp:100}));
-let nuclearTime=0;while(windAt(nuclearGame.weatherSeed,nuclearTime)!==0)nuclearTime+=2800;
+const nuclearTime=0;
 const nuclearCommand={type:'fire',weapon:8,angle:90,power:5,moves:[],windTime:nuclearTime};
 const basicBlast=advance(nuclearGame,0,{...nuclearCommand,weapon:0}),nuclearBlast=advance(nuclearGame,0,nuclearCommand);
 assert.equal(basicBlast.state.tanks[1].hp,100);
@@ -66,6 +95,7 @@ assert.deepEqual(dirtBlast.state.tanks.map(t=>t.hp),[100,100,100]);
 assert.equal(dirtBlast.price,1);
 // Homing searches around the impact point, ignores self/wrecks, and bursts only at the locked enemy.
 const homingGame=newGame(['self','far','nearest','wreck'],'homing-test',881);
+homingGame.wind=0;
 homingGame.seed=1;homingGame.terrain.fill(150);
 homingGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,690,650,610][i],y:300,vy:0,hp:i===3?0:100}));
 const homingCommand={type:'fire',weapon:12,angle:90,power:5,moves:[],windTime:nuclearTime};
@@ -121,11 +151,12 @@ const homingRate=homingSuccesses/homingTrials;
 assert.ok(homingRate>.84&&homingRate<.86,`guidance should succeed 85% of the time: ${homingRate}`);
 // Healing reaches twice the basic radius, including opponents and the firing tank.
 const healGame=newGame(['self','hurt','edge','outside','wreck'],'heal-test',881);
+healGame.wind=0;
 healGame.terrain.fill(150);
 healGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,625,645,660,620][i],y:300,vy:0,hp:[50,88,50,50,0][i]}));
 const healIndex=WEAPONS.findIndex(w=>w.kind==='heal');
 assert.equal(WEAPONS[healIndex].r,WEAPONS[0].r*2);
-let calmTime=0;while(windAt(healGame.weatherSeed,calmTime)!==0)calmTime+=2800;
+const calmTime=0;
 const healEngine=createEngine(healGame),beforeMask=healEngine.view().mask.slice();
 const healCommand={type:'fire',weapon:healIndex,angle:90,power:5,moves:[],windTime:calmTime};
 assert.equal(healEngine.begin(healCommand),1);
@@ -141,6 +172,7 @@ assert.deepEqual([...recoveryLabels].sort(),['+12','+25']);
 const healedServer=advance(healGame,0,healCommand).state;healedServer.tanks.forEach(t=>delete t.misses);
 assert.deepEqual(healEngine.snapshot(),healedServer,'healing replays identically for server and all clients');
 const teleportGame=newGame(['self','opponent'],'teleport',881);
+teleportGame.wind=0;
 teleportGame.terrain.fill(150);teleportGame.tanks.forEach((t,i)=>Object.assign(t,{x:600+i*1200,y:300,vy:0,hp:60+i*20}));
 const teleport=createEngine(teleportGame),teleportMask=teleport.view().mask.slice();
 const teleportCommand={type:'fire',weapon:11,angle:45,power:45,moves:[],windTime:calmTime};

@@ -1,4 +1,4 @@
-import {createEngine,WEAPONS} from './engine.mjs?v=20261018-side-ground1';
+import {createEngine,WEAPONS} from './engine.mjs?v=20261018-turn-wind1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
@@ -139,7 +139,6 @@ window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins
     view.finishAnimation(engine);engine=createEngine(current.game);animation=false;view.resetInput();render();
    }
   }else{
-   engine.setWindTime(Date.now()+offset);
    view.tickInput(engine,dir=>{if(moves.length>=250)return false;moves.push(dir);return true;});
    // Falling during movement can eliminate the current tank; commit that movement without charging ammo.
    const seat=playerSeat();
