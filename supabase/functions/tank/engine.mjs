@@ -253,7 +253,7 @@ function growBoom(b){
       t.hp=Math.max(0,t.hp-dmg);t.hitT=30;floats.push({x:t.x,y:t.y-24,txt:'-'+dmg,t:0});syncUI();}}
 }
 
-function land(t){if(t.vy>5&&t.hp>0){const d=Math.round((t.vy-5)*4);t.hp=Math.max(0,t.hp-d);floats.push({x:t.x,y:t.y-24,txt:'-'+d,t:0});syncUI();}t.vy=0;}
+function land(t){if(t.vy>5&&t.hp>0){const d=Math.round((t.vy-5)*4)*5;t.hp=Math.max(0,t.hp-d);floats.push({x:t.x,y:t.y-24,txt:'-'+d,t:0});syncUI();}t.vy=0;}
 
 function drive(t,dir){
   if(t.fuel<=0||t.vy>0.6)return false;

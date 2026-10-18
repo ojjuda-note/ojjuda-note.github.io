@@ -11,6 +11,17 @@ const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
 WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
 assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,7,32,36,12,0,130,26,0,0,34],'base damage is unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
+// Landing damage is five times the old value, while short drops remain harmless.
+for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
+ const game=newGame(['falling','safe'],'fall-damage',881);game.terrain.fill(350);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:300,y:i?700:700-height,vy:0,hp:100}));
+ const e=createEngine(game);let frames=0;
+ while(e.view().tanks[0].y<700&&frames++<120)e.step();
+ assert.ok(frames<120);assert.equal(e.view().tanks[0].hp,hp,`fivefold landing damage for a ${height}-unit drop`);
+ assert.equal(e.view().tanks[1].hp,100);
+ for(let i=0;i<60;i++)e.step();
+ assert.equal(e.view().tanks[0].hp,hp,'one landing causes damage only once, capped at zero health');
+}
 const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
 collisionGame.tanks.forEach((t,i)=>Object.assign(t,{x:[300,900,1400][i],y:300,vy:0}));
 for(const [offset,hit] of [[5.8,true],[6.5,false]]){
