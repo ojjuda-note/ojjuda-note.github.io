@@ -45,7 +45,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
    const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,5);
+   assert.equal(layout.buttons.length,6);
    const expected=(layout.width-layout.left-layout.right)/layout.buttons.length;
    layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*expected))<=1)});
   }
@@ -97,6 +97,6 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>worldTest.clear());
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null);
   assert.deepEqual(errors,[]);
-  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 4 equal-width menus at 5 mobile/tablet widths.');
+  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 6 equal-width menus at 5 mobile/tablet widths.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

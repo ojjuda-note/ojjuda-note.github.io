@@ -15,18 +15,31 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
   try {
     const context = await browser.newContext({ viewport: { width: 412, height: 860 }, isMobile: true, hasTouch: true });
     // All data is synthetic and every external request is blocked.
-    await context.route('**/*', route => route.abort());
+    const fixture = '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="modal-root"></div>';
+    await context.route('**/*', route => {
+      const url = new URL(route.request().url());
+      if (url.origin !== 'https://fixture.test') return route.abort();
+      if (url.pathname === '/world.html') return route.fulfill({ contentType: 'text/html; charset=utf-8', body: fixture });
+      const relative = url.pathname.slice(1);
+      if (!/^(?:admin\/[\w-]+|note\/admin)\.(?:js|css)$/.test(relative)) return route.abort();
+      return route.fulfill({ contentType: relative.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8', body: read(relative) });
+    });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><div id="modal-root"></div>');
+    await page.goto('https://fixture.test/world.html');
+    assert.equal(await page.evaluate(() => document.characterSet), 'UTF-8', 'external Korean labels use the production page encoding');
 
-    // Load the actual World entrypoint's dependencies, in their real order.
-    // This catches the missing signup-identity.js regression after signup unification.
+    // Keep the actual entrypoint order, then load admin tools through its lazy loader.
+    // Signup identity remains a required dependency of the real admin editor.
     const scripts = [...read('world.html').matchAll(/<script\b[^>]*\bsrc="([^"]+)"[^>]*>/g)]
       .map(match => match[1].split('?')[0])
-      .filter(src => /\/(?:signup-identity|admin\/member-identity)\.js$/.test(src));
+      .filter(src => /\/(?:signup-identity|world-admin-loader)\.js$/.test(src));
+    assert.deepEqual(scripts, ['/signup-identity.js', '/world-admin-loader.js']);
     for (const src of scripts) await page.addScriptTag({ content: read(src.replace(/^\//, '')) });
+    assert.equal(await page.evaluate(() => !!window.OjjudaAdminIdentity), false, 'admin tools stay unloaded before opening');
+    await page.evaluate(() => OjjudaAdminAssets.load());
+    assert.equal(await page.evaluate(() => OjjudaAdminAssets.ready && !!window.OjjudaAdminIdentity), true);
     await page.evaluate(async () => {
       window.savedCalls = [];
       window.identityFixture = { registered: true, birth_date: '2000-02-29', gender: 'male', age: 26,

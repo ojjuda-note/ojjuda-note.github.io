@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const cleanup=require('../account-deletion.js');
 const owner='00000000-0000-4000-8000-000000000001';
-const buckets=['media','note-card-photos','note-event-photos'];
+const buckets=['media','note-card-photos','note-event-photos','photo-stages'];
 function fixture(files=[]){
  const state={files:files.slice(),calls:[],current:true,failBucket:null,noProgress:false,deleted:false};
  const client={
@@ -21,7 +21,7 @@ function fixture(files=[]){
  return{state,client,run:()=>cleanup.run({client,userId:owner,isCurrent:()=>state.current})};
 }
 (async()=>{
- const files=Array.from({length:205},(_,i)=>({bucket_id:buckets[i%3],photo_path:`${owner}/nested/${i}.jpg`}));
+ const files=Array.from({length:205},(_,i)=>({bucket_id:buckets[i%buckets.length],photo_path:`${owner}/nested/${i}.jpg`}));
  const success=fixture(files);await success.run();assert.equal(success.state.deleted,true);
  assert.equal(success.state.calls.filter(c=>c[0]==='my_account_deletion_files').length,4,'re-query from the start as deleted objects disappear');
  const retry=fixture(files);retry.state.failBucket='note-card-photos';
@@ -59,5 +59,5 @@ function fixture(files=[]){
   else{assert.equal(signedOut,0);assert.equal(reset,0);assert.deepEqual(removed,[]);assert.equal(app.innerHTML,'');}
   if(mode==='failure'){assert.equal(button.disabled,false);assert.match(messages.at(-1),/남은 사진 정리/);}
  }
- console.log('PASS: three buckets, nested paths, 205-file batches, partial failure and retry, no-progress rejection, foreign paths, account switches, and actual World completion/failure UI.');
+ console.log('PASS: four buckets, nested paths, 205-file batches, partial failure and retry, no-progress rejection, foreign paths, account switches, and actual World completion/failure UI.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

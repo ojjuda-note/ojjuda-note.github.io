@@ -32,7 +32,7 @@ const CARD_PATTERNS: Array<{
 const AMOUNT_RE = /([\d,]+)원/
 
 // Date/time pattern: MM/DD HH:MM or MM-DD HH:MM or MM월DD일 HH:MM
-const DATE_RE = /(\d{1,2})[\/\-월](\d{1,2})[일]?\s+(\d{1,2}):(\d{2})/
+const DATE_RE = /(\d{1,2})[/\-월](\d{1,2})[일]?\s+(\d{1,2}):(\d{2})/
 
 // Keywords to strip from merchant name
 const STRIP_KEYWORDS = /^(승인|일시불|할부\d*개월?|체크|해외)\s*/g
