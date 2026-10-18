@@ -115,7 +115,7 @@ async function fire(){
  const body={action:'fire',room_id:current.id,version:current.version,request_id:crypto.randomUUID(),command:{...view.input(),moves:[...moves]}};
  await perform(body);
 }
-window.TankOnline={hasGame:()=>!!engine,canAim,balance:()=>coins,fire,
+window.TankOnline={hasGame:()=>!!engine,seat:()=>current?.seat??-1,canAim,balance:()=>coins,fire,
  tick(){
   if(!engine)return;
   if(animation){
