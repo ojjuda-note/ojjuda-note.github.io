@@ -22,6 +22,7 @@ async function fixture(){
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018084329_tank_same_device_mode.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018090311_tank_homing_shell.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018141945_tank_steel_rain.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018163208_tank_nuclear_restore_price.sql'),'utf8'));
  const {createHandler}=await import(path.join(root,'supabase/functions/tank/handler.mjs'));
  let roll=[],holdDeadlines=false;
  const fetchImpl=async(url,options)=>{

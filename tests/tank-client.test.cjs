@@ -192,9 +192,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleLeft').click();get(b,'powerUp').click();
   assert.equal(JSON.stringify(b.TankView.input()),watching,'spectators cannot edit the current player\'s aim');
   get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,15);
-  assert.deepEqual(Array.from(cards,c=>Number(c.dataset.weapon)),[0,1,2,14,4,6,7,10,11,3,5,8,9,12,13],'weapon cards sort by price while keeping their original weapon IDs');
+  assert.deepEqual(Array.from(cards,c=>Number(c.dataset.weapon)),[0,1,2,14,4,6,7,10,11,3,5,9,12,13,8],'weapon cards sort by price while keeping their original weapon IDs');
   assert.match(weaponCard(a,14).textContent,/강철비.*무료/);assert.match(weaponCard(a,14).textContent,/10발.*10분의 1/);
-  assert.match(cards[0].textContent,/무료/);assert.match(weaponCard(a,8).textContent,/3쭈\/발/);assert.match(weaponCard(a,10).textContent,/치료탄.*1쭈\/발/);assert.match(weaponCard(a,10).textContent,/땅은 파이지/);
+  assert.match(cards[0].textContent,/무료/);assert.match(weaponCard(a,8).textContent,/5쭈\/발/);assert.match(weaponCard(a,10).textContent,/치료탄.*1쭈\/발/);assert.match(weaponCard(a,10).textContent,/땅은 파이지/);
   assert.match(weaponCard(a,12).textContent,/유도탄.*3쭈\/발/);assert.match(weaponCard(a,12).textContent,/85%/);assert.match(weaponCard(a,13).textContent,/벙커버스터.*3쭈\/발/);assert.match(weaponCard(a,13).textContent,/수직 낙하/);
   const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');pointer('pointerdown',10,10,41,'angleLeft');get(a,'powerDown').click();
   assert.equal(JSON.stringify(a.TankView.input()),inPicker,'the weapon picker blocks hidden aim controls');
@@ -296,9 +296,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(local.TankView.input().angle,89.75);assert.equal(local.TankView.input().power,6,'polling preserves restored aim');
   local.eval('setAngle(90);setPower(5);fireSelected();');
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
-  assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),110);
+  assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
   assert.equal(local.eval('shots[0].w.r'),200,'nuclear shells retain their original large blast range');
-  assert.equal(get(local,'netCoins').textContent,'보유 93쭈');local.eval('draw()');
+  assert.equal(get(local,'netCoins').textContent,'보유 91쭈');local.eval('draw()');
   for(let i=0;i<8000;i++)local.TankOnline.tick();
   let localRoom=(await f.call(ids[3],{action:'mine'})).room;
   assert.equal(localRoom.event.command.weapon,8);
@@ -306,7 +306,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(restored.TankOnline.canAim(),false,'saved matches wait for the resume button');
   assert.match(get(restored,'resumeInfo').textContent,/같은 기기 · 3명/);
   get(restored,'resumeMatch').click();restored.TankOnline.tick();
-  assert.equal(get(restored,'netCoins').textContent,'보유 93쭈');
+  assert.equal(get(restored,'netCoins').textContent,'보유 91쭈');
   assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
   assert.deepEqual(Array.from(restored.eval('tanks.map(t=>t.basicWeapon)')),[1,2,0],'same-device players keep independent basic selections after reconnecting');
   assert.equal(restored.TankView.input().weapon,[1,2,0][localRoom.game.turn]);

@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX,TANK_SCALE} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
-assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3,3,0]);
+assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,5,3,1,1,3,3,0]);
 assert.equal(WEAPONS[12].accuracy,.85);
 assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
 for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt','bunker'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
 WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
-assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,14,34,42,12,0,110,26,0,0,34],'balanced paid damage keeps the free and homing damage unchanged');
+assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,14,34,42,12,0,130,26,0,0,34],'balanced paid damage keeps the free and homing damage unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
 // Landing damage is five times the old value, while short drops remain harmless.
 for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
@@ -100,10 +100,10 @@ assert.ok(digImpact.drop>normalImpact.drop*2.5&&digImpact.damage>normalImpact.da
 assert.equal(digImpact.terrain[420],150,'deep excavation does not widen the basic blast');
 assert.equal(balancedImpact(6,0,700).damage,12,'bedrock prevents extra digging and falling damage');
 assert.equal(nukeImpact.damage,100,'a central nuclear impact still destroys a full-health tank');
-assert.equal(nukeImpact.drop,120,'nuclear excavation is wide and shallower than before');
+assert.equal(nukeImpact.drop,200,'nuclear excavation restores its original full depth');
 assert.ok(nukeImpact.terrain[495]>150&&nukeImpact.terrain[505]===150,'the nuclear crater still reaches nearly 200 units horizontally');
-assert.ok(balancedImpact(8,20).damage<100,'a near miss is no longer an automatic full-health kill');
-assert.ok(balancedImpact(8,100).damage<=45&&balancedImpact(8,150).damage<=15,'nuclear outer damage includes falling and remains limited');
+assert.equal(balancedImpact(8,20).damage,100,'restore the original close-range nuclear damage');
+assert.ok(balancedImpact(8,100).damage>=95&&balancedImpact(8,150).damage>60,'restore nuclear damage and falling at the outer blast');
 const splitImpact=balancedImpact(3);assert.equal(splitImpact.bursts.length,5);assert.ok(splitImpact.bursts.every(b=>b.w.dmg===14&&b.r===WEAPONS[0].r));
 assert.ok(splitImpact.damage>=24,'paid split fire gains useful concentrated damage');
 const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
@@ -244,7 +244,7 @@ assert.equal(basicBlast.state.terrain[316],150,'ground beyond the new normal rad
 assert.ok(nuclearBlast.state.tanks[1].hp<100,'nuclear damage reaches tanks 100 units away');
 assert.equal(nuclearBlast.state.tanks[2].hp,100,'tanks outside the large blast remain safe');
 assert.ok(nuclearBlast.state.terrain[350]>basicBlast.state.terrain[350],'the actual crater also expands');
-assert.equal(nuclearBlast.price,3,'restoring the radius does not raise the price');
+assert.equal(nuclearBlast.price,5,'the restored nuclear shell costs five jju');
 // Dirt grows by 20% too, without damaging tanks or raising its price.
 const dirtBlast=advance(nuclearGame,0,{...nuclearCommand,weapon:7});
 assert.equal(WEAPONS[7].r,120);

@@ -88,6 +88,28 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal(rain.game.shotNo,1);assert.equal(rain.event.command.weapon,14);assert.equal(rain.game.tanks[0].basicWeapon,14);
   assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests where user_id=$1',[rainUser])).rows[0].n,0);
   assert.deepEqual(ok(await call(rainUser,{action:'mine'})).game,rain.game,'reconnecting restores Steel Rain terrain and selection');
+  // The restored nuclear shell costs five in every mode, including retries.
+  ok(await call(rainUser,{action:'leave',room_id:rain.id}));
+  ok(await call(bunkerUser,{action:'leave',room_id:bunker.id}));
+  for(const mode of ['solo','local','online']){
+   let nuclear=ok(await call(rainUser,{action:'create',request_id:randomUUID(),options:{mode,capacity:2,title:'핵탄 가격 검증'}}));
+   if(mode==='online')nuclear=ok(await join(bunkerUser,nuclear));
+   nuclear=ok(await start(rainUser,nuclear));
+   const beforeNuclear=nuclear,nuclearRequest=randomUUID(),shot={...command(8),angle:45,power:100,price:3};
+   await db.query('update public.user_private set coins=4 where user_id=$1',[rainUser]);
+   assert.equal((await move(rainUser,nuclear,shot,nuclearRequest)).error,'coins',`${mode}: four jju cannot buy a nuclear shell`);
+   const rejected=ok(await call(rainUser,{action:'read',room_id:nuclear.id}));
+   assert.equal(rejected.coins,4);assert.equal(rejected.version,nuclear.version);assert.deepEqual(rejected.game,nuclear.game);
+   assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests where request_id=$1',[nuclearRequest])).rows[0].n,0);
+   await db.query('update public.user_private set coins=5 where user_id=$1',[rainUser]);
+   const duplicates=await Promise.all([move(rainUser,nuclear,shot,nuclearRequest),move(rainUser,nuclear,shot,nuclearRequest)]);
+   nuclear=ok(duplicates[0]);assert.equal(ok(duplicates[1]).version,nuclear.version);
+   assert.equal(nuclear.coins,0);assert.equal(nuclear.game.shotNo,1);assert.equal(nuclear.event.command.weapon,8);
+   assert.equal(ok(await move(rainUser,beforeNuclear,shot,nuclearRequest)).coins,0,'retries do not bill again');
+   const charges=(await db.query('select coins,result from ojjuda_note_internal.spend_requests where request_id=$1',[nuclearRequest])).rows;
+   assert.equal(charges.length,1);assert.equal(charges[0].coins,5);assert.equal(charges[0].result.price,5);
+   if(mode!=='online')ok(await call(rainUser,{action:'leave',room_id:nuclear.id}));
+  }
   console.log('PASS: 12 players, capacity race, authentication, private state, deterministic reconnect, authoritative fire, free basic ammo, atomic paid ammo, insufficient funds, duplicate retries, timeout and host transfer');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
