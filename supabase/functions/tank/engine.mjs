@@ -3,7 +3,7 @@
 export const WEAPONS=[
   {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:28.8,dmg:34},
   {name:'대형탄',price:0,desc:'폭발 범위가 넓지만 일반탄보다 피해가 약해요',ammo:Infinity,r:50.4,dmg:24},
-  {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:16.8,dmg:11,count:3},
+  {name:'산탄',price:0,desc:'세 발이 앞선 폭발로 파인 땅을 통과해요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:16.8,dmg:11,count:3,kind:'scatter'},
   {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:28.8,dmg:7,kind:'mirv'},
   {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:28.8,dmg:32,kind:'bounce'},
   {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:28.8,dmg:36,kind:'roll'},
@@ -220,6 +220,8 @@ function roll(s){
 
 function explode(x,y,w,s,outside=false){
  const r=w.r,bm={x,y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w,cr:0,hit:new Set(),owner:s?.owner,outside};
+ // Open the crater before another pellet checks terrain, even in this same frame.
+ if(w.kind==='scatter')carve(x,y,r);
  // An off-map teleport has no valid destination; piercing stops at the boundary.
  if(outside&&w.kind==='teleport')bm.fx=true;
  if(w.kind==='dirt')bm.dirt=true;
@@ -245,7 +247,7 @@ function growBoom(b){
     return;
   }
   if(b.dirt){if(cr>b.cr){fillCircle(b.x,b.y,cr);b.cr=cr;}return;}
-  if(cr>b.cr){carve(b.x,b.y,cr);b.cr=cr;}
+  if(cr>b.cr){if(b.w.kind!=='scatter')carve(b.x,b.y,cr);b.cr=cr;}
   if(b.w.dmg>0)for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;
     const d=Math.hypot(t.x-b.x,(t.y-4)-b.y);
     if(d<b.r+8&&d<=cr+8){b.hit.add(t);

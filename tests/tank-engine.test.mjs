@@ -22,6 +22,33 @@ for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
  for(let i=0;i<60;i++)e.step();
  assert.equal(e.view().tanks[0].hp,hp,'one landing causes damage only once, capped at zero health');
 }
+// Later scatter pellets pass through each earlier crater, including impacts in one frame.
+{
+ const game=newGame(['self','far'],'scatter-craters',881);game.wind=0;game.terrain.fill(150);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:300,y:300,vy:0}));
+ const e=createEngine(game);assert.equal(e.begin({type:'fire',weapon:2,angle:90,power:30,moves:[]}),0);
+ e.view().shots.forEach((s,i)=>Object.assign(s,{x:800,y:[299.9,299.5,299.2][i],vx:0,vy:4,age:99}));
+ e.step();
+ assert.equal(e.view().booms.length,1,'only the leading pellet hits the original surface');
+ assert.equal(e.view().shots.length,2,'the other two cross the removed surface in the same frame');
+ const first=e.view().booms[0],hits=[first];
+ assert.ok(first.cr<first.r,'the explosion animation continues after the crater opens');
+ assert.equal(e.view().mask[157*e.view().GW+400],0,'the full crater is already empty for collision checks');
+ assert.equal(e.view().mask[160*e.view().GW+400],1,'earth beyond the blast remains solid');
+ let frames=0;
+ while(e.view().shots.length&&frames++<120){
+  const before=e.view().mask.slice(),gw=e.view().GW;e.step();
+  for(const b of e.view().booms)if(!hits.includes(b)){
+   assert.equal(before[Math.floor(b.y/2)*gw+Math.floor(b.x/2)],1,'each following pellet explodes on remaining earth');
+   assert.ok(b.y-hits.at(-1).y>WEAPONS[2].r-2,'each pellet passes the previous crater before hitting');
+   hits.push(b);
+  }
+ }
+ assert.ok(frames<120);assert.equal(hits.length,3);assert.equal(e.view().shotNo,game.shotNo+1);
+ while(['fly','settle'].includes(e.view().state)&&frames++<18000)e.step();
+ assert.ok(frames<18000);assert.equal(e.view().turn,1,'the three explosions use one turn');
+ assert.ok(e.snapshot().terrain[400]>165,'the chained craters persist after settling');
+}
 const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
 collisionGame.tanks.forEach((t,i)=>Object.assign(t,{x:[300,900,1400][i],y:300,vy:0}));
 for(const [offset,hit] of [[5.8,true],[6.5,false]]){

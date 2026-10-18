@@ -30,6 +30,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
  }
  try{
   const viewport={width:1536,height:626},a=await client(ids[0],false,viewport),get=(w,id)=>w.document.getElementById(id);
+  const weaponCard=(w,id)=>get(w,'wgrid').querySelector('[data-weapon="'+id+'"]');
   assert.equal(get(a,'soloMode').getAttribute('aria-pressed'),'true');
   assert.equal(get(a,'lobbyHome').hidden,true);
   get(a,'onlineMode').click();
@@ -190,11 +191,13 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const watching=JSON.stringify(b.TankView.input());
   pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleLeft').click();get(b,'powerUp').click();
   assert.equal(JSON.stringify(b.TankView.input()),watching,'spectators cannot edit the current player\'s aim');
-  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,14);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
-  assert.match(cards[12].textContent,/유도탄.*3쭈\/발/);assert.match(cards[12].textContent,/85%/);assert.match(cards[13].textContent,/벙커버스터.*3쭈\/발/);assert.match(cards[13].textContent,/수직 낙하/);
+  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,14);
+  assert.deepEqual(Array.from(cards,c=>Number(c.dataset.weapon)),[0,1,2,4,6,7,10,11,3,5,8,9,12,13],'weapon cards sort by price while keeping their original weapon IDs');
+  assert.match(cards[0].textContent,/무료/);assert.match(weaponCard(a,8).textContent,/3쭈\/발/);assert.match(weaponCard(a,10).textContent,/치료탄.*1쭈\/발/);assert.match(weaponCard(a,10).textContent,/땅은 파이지/);
+  assert.match(weaponCard(a,12).textContent,/유도탄.*3쭈\/발/);assert.match(weaponCard(a,12).textContent,/85%/);assert.match(weaponCard(a,13).textContent,/벙커버스터.*3쭈\/발/);assert.match(weaponCard(a,13).textContent,/수직 낙하/);
   const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');pointer('pointerdown',10,10,41,'angleLeft');get(a,'powerDown').click();
   assert.equal(JSON.stringify(a.TankView.input()),inPicker,'the weapon picker blocks hidden aim controls');
-  cards[12].click();key('prot','Home');get(a,'angleLeft').click();get(a,'angleLeft').click();get(a,'angleLeft').click();
+  weaponCard(a,12).click();key('prot','Home');get(a,'angleLeft').click();get(a,'angleLeft').click();get(a,'angleLeft').click();
   pointer('pointerdown',254*45/95,14,51,'power');pointer('pointerup',254*45/95,14,51,'power');
   assert.equal(a.TankView.input().angle,1.5);assert.equal(a.TankView.input().power,50);
   get(a,'fire').click();get(a,'fire').click();
@@ -244,7 +247,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>solo.document.body.classList.contains('in-match'));
   solo.TankOnline.tick();assert.equal(solo.eval('tanks.length'),2);
   assert.equal(get(solo,'surrender').textContent,'그만하기');assert.doesNotMatch(get(solo,'netTurn').textContent,/초/);
-  get(solo,'wpn').click();get(solo,'wgrid').children[12].click();
+  get(solo,'wpn').click();weaponCard(solo,12).click();
   solo.eval('setAngle(0);setPower(50);fireSelected();');
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
@@ -271,8 +274,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   for(const [seat,weapon,coins] of [[0,12,97],[1,10,96],[2,0,96]]){
    assert.equal(local.TankOnline.canAim(),true);assert.equal(local.TankOnline.seat(),seat);
    assert.match(get(local,'netTurn').textContent,new RegExp('플레이어 '+(seat+1)+' 차례'));
-   get(local,'wpn').click();get(local,'wgrid').children[[1,2,0][seat]].click();
-   get(local,'wpn').click();get(local,'wgrid').children[weapon].click();
+   get(local,'wpn').click();weaponCard(local,[1,2,0][seat]).click();
+   get(local,'wpn').click();weaponCard(local,weapon).click();
    local.eval(`setAngle(${localAim[seat][0]});setPower(${localAim[seat][1]});fireSelected();`);
    await wait(()=>get(local,'netTurn').textContent.endsWith('비행 중'));
    for(let i=0;i<8000;i++)local.TankOnline.tick();
@@ -284,7 +287,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(local,'angv').textContent,'각도 89.75°');assert.equal(get(local,'powv').textContent,'힘 6');
   assert.equal(local.TankView.input().weapon,1,'large shell returns after one paid shot and the other players\' turns');
   assert.equal(get(local,'wName').textContent,'대형탄');
-  get(local,'wpn').click();get(local,'wgrid').children[8].click();
+  get(local,'wpn').click();weaponCard(local,8).click();
   assert.equal(local.TankView.input().weapon,8);assert.equal(get(local,'wName').textContent,'핵탄');
   local.dispatchEvent(new local.Event('online'));
   await new Promise(r=>setTimeout(r,100));local.TankOnline.tick();
@@ -324,7 +327,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   // The new shell is selectable, animates every stage, and uses one paid command.
   const bunker=await client(ids[6]);get(bunker,'localMode').click();get(bunker,'localPlayers').value='2';get(bunker,'startLocal').click();
   await wait(()=>bunker.document.body.classList.contains('in-match'));bunker.TankOnline.tick();
-  get(bunker,'wpn').click();get(bunker,'wgrid').children[13].click();assert.equal(get(bunker,'wName').textContent,'벙커버스터');
+  get(bunker,'wpn').click();weaponCard(bunker,13).click();assert.equal(get(bunker,'wName').textContent,'벙커버스터');
   bunker.eval('setAngle(75);setPower(20);fireSelected();fireSelected();');
   await wait(()=>get(bunker,'netTurn').textContent==='벙커버스터 표적탄 비행 중');
   assert.equal(get(bunker,'netCoins').textContent,'보유 97쭈');

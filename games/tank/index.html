@@ -202,7 +202,7 @@ let TS=.5175;
 const WEAPONS=[
   {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:28.8,dmg:34},
   {name:'대형탄',price:0,desc:'폭발 범위가 넓지만 일반탄보다 피해가 약해요',ammo:Infinity,r:50.4,dmg:24},
-  {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:16.8,dmg:11,count:3},
+  {name:'산탄',price:0,desc:'세 발이 앞선 폭발로 파인 땅을 통과해요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:16.8,dmg:11,count:3,kind:'scatter'},
   {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:28.8,dmg:7,kind:'mirv'},
   {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:28.8,dmg:32,kind:'bounce'},
   {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:28.8,dmg:36,kind:'roll'},
@@ -377,6 +377,7 @@ function roll(s){
 
 function explode(x,y,w,s){
   const r=w.r;
+  if(w.kind==='scatter')carve(x,y,r);
   if(w.kind==='dirt'){
     booms.push({x,y,r,t:0,D:Math.round(50+24*0.8),w,cr:0,dirt:true,hit:new Set()});
     for(let i=0;i<40;i++){const a=-Math.random()*Math.PI,sp=Math.random()*2.5+0.5;bits.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:40,c:'#7a6440',s:3});}
@@ -396,7 +397,7 @@ function growBoom(b){
     shots.push({x:b.x,y:b.y,vx:st.vx/m*sp,vy:st.vy/m*sp,w:nw,age:99,owner:st.owner,trail:[b.x,b.y],n:st.n,b:0,emerge:true,la:st.ang});sfx('fire');}
   if(b.fx){b.cr=cr;return;}
   if(b.dirt){if(cr>b.cr){fillCircle(b.x,b.y,cr);b.cr=cr;}return;}
-  if(cr>b.cr){carve(b.x,b.y,cr);b.cr=cr;}
+  if(cr>b.cr){if(b.w.kind!=='scatter')carve(b.x,b.y,cr);b.cr=cr;}
   if(b.w.dmg>0)for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;
     const d=Math.hypot(t.x-b.x,(t.y-4)-b.y);
     if(d<b.r+8&&d<=cr+8){b.hit.add(t);
@@ -761,7 +762,7 @@ function openPicker(){
   if(state!=='aim'||!window.TankOnline?.canAim())return;
   resetAimInput();
   const t=tanks[turn],g=$('wgrid');g.innerHTML='';
-  WEAPONS.forEach((w,i)=>{const b=document.createElement('button');b.className='wcard'+(i===t.w?' sel':'');b.disabled=w.price>0&&w.price>window.TankOnline.balance();
+  WEAPONS.map((w,i)=>({w,i})).sort((a,b)=>a.w.price-b.w.price||a.i-b.i).forEach(({w,i})=>{const b=document.createElement('button');b.className='wcard'+(i===t.w?' sel':'');b.dataset.weapon=String(i);b.disabled=w.price>0&&w.price>window.TankOnline.balance();
     b.innerHTML='<b><span>'+w.name+'</span><span>'+(w.price?w.price+'쭈/발':'무료')+'</span></b><small>'+w.desc+'</small>';
     b.onclick=()=>{t.w=i;if(w.price===0)t.basicWeapon=i;closePicker();syncUI();};g.appendChild(b);});
   pickerOpen=true;moveDir=0;$('picker').classList.remove('hidden');
@@ -863,6 +864,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-bunker-fall5x1"></script>
+<script type="module" src="./online.mjs?v=20261018-scatter-price1"></script>
 </body>
 </html>
