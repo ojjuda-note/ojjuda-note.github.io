@@ -78,6 +78,35 @@ assert.deepEqual(teleport.snapshot().tanks.map(t=>t.hp),[60,80]);
 assert.deepEqual(teleport.view().mask,teleportMask,'teleport leaves the terrain intact');
 const teleportedServer=advance(teleportGame,0,teleportCommand).state;teleportedServer.tanks.forEach(t=>delete t.misses);
 assert.deepEqual(teleport.snapshot(),teleportedServer);
+// Every shell bursts once per projectile when it leaves either side of the map.
+for(const side of [-1,1])for(let weapon=0;weapon<WEAPONS.length;weapon++){
+ const missedGame=structuredClone(teleportGame);missedGame.tanks[0].x=side<0?30:2370;missedGame.tanks[1].x=1200;
+ const missed=createEngine(missedGame),maskBefore=missed.view().mask.slice(),bursts=new Set();
+ const command={type:'fire',weapon,angle:side<0?175:5,power:100,moves:[],windTime:calmTime};missed.begin(command);
+ let frames=0;
+ while(['fly','settle'].includes(missed.view().state)&&frames++<18000){missed.step();missed.view().booms.forEach(b=>bursts.add(b));}
+ assert.ok(frames<18000,'misses finish the turn after their explosion');
+ assert.equal(bursts.size,WEAPONS[weapon].count||1,'one explosion per missed projectile, without piercing repeats');
+ assert.ok([...bursts].every(b=>b.outside&&b.fx&&(side<0?b.x<0:b.x>missed.view().W)));
+ assert.deepEqual(missed.view().mask,maskBefore,'an edge indicator never changes terrain');
+ assert.deepEqual(missed.snapshot().tanks.map(t=>[t.x,t.y,t.hp]),missedGame.tanks.map(t=>[t.x,t.y,t.hp]),'missed healing and teleport shells have no remote effect');
+ const server=advance(missedGame,0,command).state;server.tanks.forEach(t=>delete t.misses);
+ assert.deepEqual(missed.snapshot(),server,'outside explosions replay identically online');
+}
+// Exercise the lower boundary and rolling off either edge after ground contact.
+for(const edge of ['bottom','roll-left','roll-right']){
+ const engine=createEngine(teleportGame);engine.begin({type:'fire',weapon:edge==='bottom'?0:5,angle:90,power:5,moves:[],windTime:calmTime});
+ const v=engine.view(),shot=v.shots[0];
+ Object.assign(shot,edge==='bottom'?{x:v.W+1,y:v.MH+41,vx:0,vy:1}:{x:edge==='roll-left'?.1:v.W-.1,y:299,vx:edge==='roll-left'?-2:2,vy:0,rolling:true,rollT:0});
+ engine.step();assert.equal(engine.view().shots.length,0);assert.equal(engine.view().booms.length,1);assert.equal(engine.view().booms[0].outside,true);
+ engine.step();assert.equal(engine.view().booms.length,1,'edge burst is not repeated on the next tick');
+}
+const highArc=createEngine(teleportGame);highArc.begin({type:'fire',weapon:0,angle:90,power:100,moves:[],windTime:calmTime});
+let aboveScreen=false,arcFrames=0;
+while(['fly','settle'].includes(highArc.view().state)&&arcFrames++<18000){
+ highArc.step();if(highArc.view().shots.some(s=>s.y<0))aboveScreen=true;
+}
+assert.ok(aboveScreen&&arcFrames<18000,'high shots can leave the top of the screen and fall back normally');
 let game=newGame(['a','b','c'],'room',1);
 for(let n=0;n<3;n++){
  game=advance(game,game.turn,{type:'timeout'}).state;
@@ -86,4 +115,4 @@ for(let n=0;n<3;n++){
 }
 assert.equal(game.tanks[0].hp,0,'three absent turns eliminate the player');
 assert.throws(()=>advance(newGame(['a','b'],'room',1),1,{type:'fire',weapon:0,angle:60,power:50,moves:[]}),/not_your_turn/);
-console.log(`PASS: 0–20 wind (${(strongRate*100).toFixed(2)}% strong), in-flight changes, healing/teleport without terrain damage, all 12 ammo types, 2/4/12-player replay parity`);
+console.log(`PASS: 0–20 wind (${(strongRate*100).toFixed(2)}% strong), in-flight changes, healing/teleport without terrain damage, outside explosions, all 12 ammo types, 2/4/12-player replay parity`);

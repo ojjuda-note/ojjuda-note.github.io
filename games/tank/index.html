@@ -95,7 +95,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 @media(max-height:420px){#netHud{bottom:80px;font-size:12px}}
 </style>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
-<link rel="stylesheet" href="./entry.css?v=20261018-tank7">
+<link rel="stylesheet" href="./entry.css?v=20261018-tank8">
 </head>
 <body>
 <div id="stage"><canvas id="cv" aria-label="게임 화면"></canvas></div>
@@ -178,7 +178,7 @@ const MIRV_CHILD={name:'',r:24,dmg:7};
 const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28fad','#6ee7d2','#ffffff','#b8a07e','#ff9f43','#8ea4ff'];
 let cfg={n:4,h:1},NT=4;
 
-let W=800,H=450,scale=1,dpr=1,K=0.13,WINDMAX=0.012,VW=800,camX=0,camManual=false,miniY=60;
+let W=800,H=450,scale=1,dpr=1,K=0.13,WINDMAX=0.012,VW=800,camX=0,camManual=false,miniY=60,miniRight=790;
 let windBase=0,windTarget=0,gustT=0,motes=[];
 for(let i=0;i<30;i++)motes.push({x:Math.random(),y:Math.random(),l:Math.random()*0.6+0.4});
 let ground=new Float32Array(801),far=[],stars=[],FLOOR=1e9,FR=0,MH=600,EXTRA=0,PL=300,camY=0;
@@ -418,13 +418,15 @@ function updateCam(){
 }
 function drawMini(){
   if(!GW||state==='menu')return;
-  const cw=cv.width/dpr,mw=Math.min(240,cw*0.3),mh=mw*MH/W,mx=(cw-mw)/2,my=miniY;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.fillStyle='rgba(20,18,45,.45)';ctx.fillRect(mx,my,mw,mh);
-  ctx.imageSmoothingEnabled=true;ctx.drawImage(tc,0,0,GW,GH,mx,my,GW*CS/W*mw,Math.min(mh,GH*CS/MH*mh));
-  ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1;ctx.strokeRect(mx+camX/W*mw+0.5,my+camY/MH*mh+0.5,VW/W*mw-1,H/MH*mh-1);
+  const cw=cv.width/dpr,mw=Math.min(180,cw*0.24),mh=mw*MH/W,mx=clamp(miniRight-mw,8,cw-mw-8),my=miniY;
+  ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+  // No background panel; the battlefield stays visible through the faint terrain.
+  ctx.globalAlpha=.2;ctx.imageSmoothingEnabled=true;ctx.drawImage(tc,0,0,GW,GH,mx,my,GW*CS/W*mw,Math.min(mh,GH*CS/MH*mh));
+  ctx.globalAlpha=.55;ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect(mx+camX/W*mw+0.5,my+camY/MH*mh+0.5,VW/W*mw-1,H/MH*mh-1);
+  ctx.globalAlpha=.8;
   for(const t of tanks){if(t.hp<=0)continue;ctx.fillStyle=t.color;ctx.beginPath();ctx.arc(mx+t.x/W*mw,my+t.y/MH*mh-1,2.6,0,Math.PI*2);ctx.fill();}
   ctx.fillStyle='#fff';for(const s of shots)ctx.fillRect(mx+s.x/W*mw-1,my+clamp(s.y/MH*mh,0,mh)-1,2,2);
+  ctx.restore();
 }
 function resolve(){
   const dead=tanks.filter(t=>t.hp<=0&&!t.gone);
@@ -480,23 +482,24 @@ function draw(){
     if(s.y<0){ctx.beginPath();ctx.moveTo(s.x,4);ctx.lineTo(s.x-5,12);ctx.lineTo(s.x+5,12);ctx.fill();}}
 
   for(const b of booms){const cr=Math.max(1,b.cr),a=b.t<=b.D?1:Math.max(0,1-(b.t-b.D)/22);
-    if(b.w.kind==='teleport'){
+    const bx=b.outside?clamp(b.x,camX+12,camX+VW-12):b.x,by=b.outside?clamp(b.y,camY+12,camY+H-12):b.y;
+    if(!b.outside&&b.w?.kind==='teleport'){
       ctx.globalAlpha=.2*a;ctx.fillStyle='#90cfff';ctx.fillRect(b.x-cr,b.y-50,cr*2,50);
       ctx.globalAlpha=.9*a;ctx.strokeStyle='#b9e8ff';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x,b.y,cr,cr*.35,0,0,Math.PI*2);ctx.stroke();
       ctx.globalAlpha=1;continue;
     }
-    if(b.w.kind==='heal'){
+    if(!b.outside&&b.w?.kind==='heal'){
       ctx.globalAlpha=.14*a;ctx.fillStyle='#72f5b1';ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.fill();
       ctx.globalAlpha=.9*a;ctx.strokeStyle='#a0ffcf';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.stroke();
       ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(b.x-6,b.y);ctx.lineTo(b.x+6,b.y);ctx.moveTo(b.x,b.y-6);ctx.lineTo(b.x,b.y+6);ctx.stroke();
       ctx.globalAlpha=1;continue;
     }
     if(!b.fx&&b.t<b.D){ctx.globalAlpha=0.4;ctx.strokeStyle='#ffe3b0';ctx.lineWidth=1.2;ctx.setLineDash([3,4]);ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
-    const rg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,cr);
+    const rg=ctx.createRadialGradient(bx,by,0,bx,by,cr);
     rg.addColorStop(0,'rgba(255,252,232,'+a+')');rg.addColorStop(.3,'rgba(255,214,120,'+(0.95*a)+')');
     rg.addColorStop(.7,'rgba(234,120,62,'+(0.6*a)+')');rg.addColorStop(1,'rgba(170,55,45,'+(0.15*a)+')');
-    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=0.7*a;ctx.strokeStyle='#fff1d0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,cr,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(bx,by,cr,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=0.7*a;ctx.strokeStyle='#fff1d0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(bx,by,cr,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
   for(const p of bits){ctx.globalAlpha=Math.min(1,p.life/20);ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,p.s,p.s);}
   ctx.globalAlpha=1;
   ctx.font='18px "Do Hyeon", sans-serif';ctx.textAlign='center';
@@ -643,7 +646,8 @@ window.TankView={
   cv.style.width=r.width+'px';cv.style.height=r.height+'px';cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
   camX=clamp(camX+(previousWidth-VW)/2,0,Math.max(0,W-VW));
   far=Array.from({length:Math.ceil(W/10)+2},(_,i)=>H*.52+Math.sin(i*.06)*H*.06+Math.sin(i*.17)*H*.03);
-  miniY=$('wind').getBoundingClientRect().bottom-cv.getBoundingClientRect().top+6;
+  const hud=$('hud').getBoundingClientRect(),canvas=cv.getBoundingClientRect();
+  miniY=(hud.height?hud.bottom-canvas.top:52)+8;miniRight=hud.width?hud.right-canvas.left:r.width-10;
  },
  use(engine,canAim){
   const v=engine.view(),changed=tankRenderEngine!==engine,oldState=state;
@@ -687,12 +691,12 @@ window.TankView={
 };
 
 addEventListener('resize',()=>{if(state==='menu'){layout(true);genWorld();}else layout(false);});
-if(window.ResizeObserver)new ResizeObserver(()=>{if(window.TankOnline?.hasGame())window.TankView.resize();}).observe(stage);
+if(window.ResizeObserver){const observer=new ResizeObserver(()=>{if(window.TankOnline?.hasGame())window.TankView.resize();});observer.observe(stage);observer.observe($('hud'));}
 layout(true);genWorld();syncUI();
 let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-tank7"></script>
+<script type="module" src="./online.mjs?v=20261018-tank8"></script>
 </body>
 </html>

@@ -102,8 +102,16 @@ function fire(){
  state='fly';
 }
 
+function explodeOutside(s){
+  if(s.dead)return;
+  // A missed shell still bursts; its edge indicator has no battlefield effects.
+  const r=s.w.r;
+  booms.push({x:s.x,y:s.y,r,t:0,D:Math.round(Math.min(150,50+r*.8)),w:s.w,cr:0,fx:true,outside:true});
+  s.dead=true;
+}
+
 function checkHit(s){
-  if(s.x<-80||s.x>W+80||s.y>MH+40){s.dead=true;return;}
+  if(s.x<-80||s.x>W+80||s.y>MH+40){explodeOutside(s);return;}
   for(let i=0;i<tanks.length;i++){const t=tanks[i];if(t.hp<=0)continue;if(i===s.owner&&s.age<24)continue;
     if(Math.hypot(s.x-t.x,s.y-(t.y-6*TS))<12*TS){explode(s.x,s.y,s.w,s);s.dead=true;return;}}
   if(s.emerge){if(!solid(s.x,s.y))s.emerge=false;return;}
@@ -119,7 +127,7 @@ function checkHit(s){
 function roll(s){
   s.rollT++;const sl=below(s.x+2,s.y-6)-below(s.x-2,s.y-6);
   s.vx+=clamp(sl,-8,8)*0.02;s.vx*=0.985;const nx=s.x+s.vx*SLOW*1.3;
-  if(nx<0||nx>W){s.dead=true;return;}
+  if(nx<0||nx>W){s.x=nx;explodeOutside(s);return;}
   if(below(nx,s.y-6)<s.y-5)s.vx*=-0.4;else s.x=nx;
   s.y=below(s.x,s.y-6)-1;if(s.rollT%2===0)s.trail.push(s.x,s.y);
   for(const t of tanks)if(t.hp>0&&Math.hypot(s.x-t.x,s.y-(t.y-4*TS))<12*TS){explode(s.x,s.y,s.w);s.dead=true;return;}
@@ -190,7 +198,7 @@ function step(){
   s.age++;s.trail.push(s.x,s.y);
   if(!s.dead&&!s.rolling&&s.w.kind==='mirv'&&s.vy>0){s.dead=true;
    for(let j=-2;j<=2;j++)shots.push({x:s.x,y:s.y,vx:s.vx+j*.55,vy:s.vy,w:MIRV_CHILD,age:99,owner:s.owner,trail:[s.x,s.y],n:s.n,b:0});}
-  if(s.age>12000)s.dead=true;
+  if(!s.dead&&s.age>12000)explodeOutside(s);
   if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});
  }
  shots=shots.filter(s=>!s.dead);

@@ -9,7 +9,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const html=fs.readFileSync(path.join(root,'games/tank/index.html'),'utf8');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/tank/index.html',runScripts:'outside-only',pretendToBeVisual:true});windows.push(dom.window);
   const w=dom.window,context=dom.getInternalVMContext(),draw=()=>{};
-  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:()=>({addColorStop:draw}),measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
+  w.radialGradients=[];
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
   w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:viewport.width,height:this.id==='prot'?56:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
   w.matchMedia=()=>({matches:false,addEventListener:draw});w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=draw;w.confirm=()=>true;
   const parent={postMessage(m){
@@ -66,6 +67,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   let deathSounds=0;a.sfx=type=>{if(type==='boom')deathSounds++;};
   get(a,'surrender').click();
   await wait(()=>a.TankView.hasEffects());
+  a.eval('draw()'); // Destruction bursts have no weapon metadata and must render safely.
   assert.equal(deathSounds,1);assert.equal(get(a,'over').classList.contains('hidden'),true,'show the destruction before the result');
   for(let i=0;i<70;i++)a.TankOnline.tick();
   assert.equal(a.TankView.hasEffects(),false);assert.equal(get(a,'over').classList.contains('hidden'),false);
@@ -97,6 +99,16 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(solo.TankView.hasEffects(),true);
   for(let i=0;i<70;i++){solo.TankView.tickEffects();solo.TankView.use(createEngine(wreck),false);}
   assert.equal(solo.TankView.hasEffects(),false);
+  // Outside bursts remain visible at the canvas edge, including missed utility shells.
+  for(const weapon of [0,10,11])for(const side of [-1,1]){
+   const edge=createEngine(living);edge.begin({type:'fire',weapon,angle:90,power:5,moves:[]});
+   Object.assign(edge.view().shots[0],{x:side<0?-81:edge.view().W+81,y:edge.view().MH+41,vx:side,vy:1});edge.step();
+   solo.TankView.resetHistory();solo.TankView.use(edge,false);solo.radialGradients.length=0;solo.eval('draw()');
+   assert.equal(solo.radialGradients.length,1,'missed shells draw an explosion');
+   const [x,y]=solo.radialGradients[0],camera=solo.eval('({x:camX,y:camY,w:VW,h:H})');
+   assert.equal(x,side<0?camera.x+12:camera.x+camera.w-12);
+   assert.equal(y,camera.y+camera.h-12,'explosion is visible just inside the lower screen edge');
+  }
   console.log('PASS: one destruction burst and sound, result waits for burst, no duplicate/reconnect bursts, common entrance, solo CPU turns, two online sessions and paid ammo');
 
  }finally{for(const w of windows)w.close();await f.close();}
