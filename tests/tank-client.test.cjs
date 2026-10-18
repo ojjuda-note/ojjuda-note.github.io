@@ -72,9 +72,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   a.eval('setAngle(90);setPower(5)');
   assert.equal(get(a,'fire').disabled,false);assert.equal(get(b,'fire').disabled,true);
   // Canvas drags move both camera axes without changing aim or battle state.
-  const pointer=(type,x,y,id=1,target='cv',win=a)=>{
-   const event=new win.MouseEvent(type,{clientX:x,clientY:y,bubbles:true,cancelable:true,button:0});
-   Object.defineProperty(event,'pointerId',{value:id});get(win,target).dispatchEvent(event);
+  const pointer=(type,x,y,id=1,target='cv',win=a,{isPrimary=true,button=0}={})=>{
+   const event=new win.MouseEvent(type,{clientX:x,clientY:y,bubbles:true,cancelable:true,button,detail:type==='click'?1:0});
+   Object.defineProperties(event,{pointerId:{value:id},isPrimary:{value:isPrimary}});get(win,target).dispatchEvent(event);
   };
   a.eval('camX=200;camY=100;camManual=false');
   const beforePan=a.eval('JSON.stringify(tankRenderEngine.snapshot())'),cameraScale=a.eval('scale');
@@ -107,13 +107,14 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   pointer('pointermove',13,18,12,'prot');pointer('pointercancel',13,18,12,'prot');
   assert.equal(a.TankView.input().angle,45,'another finger cannot take over angle adjustment');
   pointer('pointermove',13,18,11,'prot');assert.equal(a.TankView.input().angle,135);
-  pointer('pointerup',13,18,11,'prot');get(a,'angleDown').click();assert.equal(a.TankView.input().angle,134.75);
-  assert.equal(get(a,'angv').textContent,'각도 134.75°');assert.equal(get(a,'prot').getAttribute('aria-valuenow'),'134.75');
-  get(a,'angleUp').click();assert.equal(a.TankView.input().angle,135);
+  pointer('pointerup',13,18,11,'prot');get(a,'angleRight').click();assert.equal(a.TankView.input().angle,134.5);
+  assert.equal(get(a,'angv').textContent,'각도 134.5°');assert.equal(get(a,'prot').getAttribute('aria-valuenow'),'134.5');
+  get(a,'angleLeft').click();assert.equal(a.TankView.input().angle,135);
   pointer('pointerdown',0,53,11,'prot');pointer('lostpointercapture',0,53,11,'prot');pointer('pointermove',96,53,11,'prot');
-  assert.equal(a.TankView.input().angle,180);assert.equal(get(a,'angleUp').disabled,true);
-  key('prot','Home');assert.equal(a.TankView.input().angle,0);assert.equal(get(a,'angleDown').disabled,true);
-  key('prot','ArrowRight');assert.equal(a.TankView.input().angle,.25);assert.equal(a.eval('moveDir'),0,'slider keys must not move the tank');
+  assert.equal(a.TankView.input().angle,180);assert.equal(get(a,'angleLeft').disabled,true);
+  key('prot','Home');assert.equal(a.TankView.input().angle,0);assert.equal(get(a,'angleRight').disabled,true);
+  key('prot','ArrowRight');assert.equal(a.TankView.input().angle,0);
+  key('prot','ArrowLeft');assert.equal(a.TankView.input().angle,.5);assert.equal(a.eval('moveDir'),0,'slider keys must not move the tank');
   key('prot','End');key('prot','PageDown');assert.equal(a.TankView.input().angle,170);
   assert.equal(get(a,'prot').getAttribute('aria-valuenow'),'170');
   pointer('pointerdown',0,14,21,'power');pointer('pointermove',127,14,21,'power');
@@ -125,23 +126,81 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   pointer('pointerdown',-20,14,21,'power');pointer('pointerup',-20,14,21,'power');assert.equal(a.TankView.input().power,5);
   key('power','End');key('power','PageDown');key('power','ArrowLeft');assert.equal(a.TankView.input().power,89);
   assert.equal(get(a,'power').getAttribute('aria-valuenow'),'89');assert.equal(get(a,'powv').textContent,'힘 89');
+  // Advance just the control timers synchronously; network polling keeps its real clock.
+  const realSetTimeout=a.setTimeout,realClearTimeout=a.clearTimeout,jobs=new Map();let clock=0,timerId=100000;
+  a.setTimeout=(fn,delay)=>{const id=++timerId;jobs.set(id,{fn,at:clock+delay});return id;};
+  a.clearTimeout=id=>{if(jobs.has(id))jobs.delete(id);else realClearTimeout.call(a,id);};
+  const advance=ms=>{
+   const until=clock+ms;
+   for(;;){const next=[...jobs].filter(([,job])=>job.at<=until).sort((a,b)=>a[1].at-b[1].at)[0];if(!next)break;
+    const [id,job]=next;clock=job.at;jobs.delete(id);job.fn();}
+   clock=until;
+  };
+  try{
+   a.eval('setAngle(90);setPower(50)');get(a,'angleLeft').click();
+   assert.equal(a.TankView.input().angle,90.5);assert.ok(a.eval('Math.cos(tanks[turn].ang*Math.PI/180)<0'),'left button tilts the barrel left');
+   get(a,'angleRight').click();get(a,'angleRight').click();assert.equal(a.TankView.input().angle,89.5);
+   assert.ok(a.eval('Math.cos(tanks[turn].ang*Math.PI/180)>0'),'right button tilts the barrel right');
+   a.eval('setAngle(89.75)');get(a,'angleLeft').click();assert.equal(a.TankView.input().angle,90.25,'a half-degree step preserves a remembered quarter-degree offset');
+   a.eval('setAngle(90)');pointer('pointerdown',10,10,61,'angleLeft');assert.equal(a.TankView.input().angle,90.5);
+   advance(299);assert.equal(a.TankView.input().angle,90.5,'a tap applies one step immediately');
+   advance(181);assert.equal(a.TankView.input().angle,92.5,'holding repeats after the initial delay');
+   pointer('pointerdown',10,10,62,'angleRight');pointer('pointerup',10,10,62,'angleRight');
+   pointer('pointerdown',10,10,62,'powerUp');pointer('pointerdown',48,3,62,'prot');pointer('pointerdown',254,14,62,'power');get(a,'fire').click();
+   advance(60);assert.equal(a.TankView.input().angle,93);assert.equal(a.TankView.input().power,50);assert.equal(a.eval('shotNo'),0,'a second finger cannot replace the hold or fire');
+   pointer('pointerup',400,200,61,'cv');advance(600);pointer('click',10,10,61,'angleLeft');
+   assert.equal(a.TankView.input().angle,93,'releasing outside stops and the following click adds no extra step');
+   pointer('pointerdown',10,10,63,'angleRight');pointer('pointerup',10,10,63,'angleRight');pointer('click',10,10,63,'angleRight');
+   assert.equal(a.TankView.input().angle,92.5,'a complete pointer tap steps only once');
+   pointer('pointerdown',10,10,64,'angleLeft',a,{isPrimary:false});advance(600);
+   assert.equal(a.TankView.input().angle,92.5,'secondary pointers cannot begin a hold');
+   for(const cancel of [
+    ()=>pointer('pointercancel',10,10,65,'powerUp'),
+    ()=>pointer('lostpointercapture',10,10,65,'powerUp'),
+    ()=>a.dispatchEvent(new a.Event('blur')),
+    ()=>a.dispatchEvent(new a.Event('resize')),
+    ()=>a.TankView.resetInput(),
+    ()=>{get(a,'wpn').click();get(a,'pClose').click();},
+    ()=>{Object.defineProperty(a.document,'hidden',{value:true,configurable:true});a.document.dispatchEvent(new a.Event('visibilitychange'));delete a.document.hidden;},
+    ()=>{a.eval("state='watch';syncUI()");a.TankOnline.tick();}
+   ]){
+    a.eval('setPower(50)');pointer('pointerdown',10,10,65,'powerUp');advance(420);
+    assert.equal(a.TankView.input().power,54,'power increases by one per repeat');cancel();advance(600);
+    assert.equal(a.TankView.input().power,54,'interrupted holds must stay stopped');
+   }
+   get(a,'powerDown').click();assert.equal(a.TankView.input().power,53);get(a,'powerUp').click();assert.equal(a.TankView.input().power,54);
+   pointer('pointerdown',10,10,66,'powerDown');advance(360);pointer('pointerup',10,10,66,'powerDown');advance(600);
+   assert.equal(a.TankView.input().power,51,'holding minus also repeats and stops on release');
+   for(const [id,setup,field,limit] of [['angleLeft','setAngle(179)','angle',180],['angleRight','setAngle(1)','angle',0],['powerUp','setPower(98)','power',100],['powerDown','setPower(7)','power',5]]){
+    a.eval(setup);pointer('pointerdown',10,10,67,id);advance(900);pointer('pointerup',10,10,67,id);pointer('click',10,10,67,id);
+    assert.equal(a.TankView.input()[field],limit);assert.equal(get(a,id).disabled,true,'buttons stop at their limits');assert.equal(jobs.size,0,'limits do not leave repeat timers running');
+   }
+   a.eval('setAngle(90);setPower(50)');assert.equal(key('angleRight',' '),false,'custom keyboard holds suppress native click activation');advance(360);
+   assert.equal(a.TankView.input().angle,88.5);
+   get(a,'angleRight').dispatchEvent(new a.KeyboardEvent('keydown',{key:' ',repeat:true,bubbles:true,cancelable:true}));
+   assert.equal(a.TankView.input().angle,88.5,'OS key repeats cannot add duplicate steps');
+   get(a,'angleRight').dispatchEvent(new a.KeyboardEvent('keyup',{key:' ',bubbles:true,cancelable:true}));advance(600);
+   assert.equal(a.TankView.input().angle,88.5);key('powerUp','Enter');advance(360);
+   get(a,'powerUp').dispatchEvent(new a.Event('blur'));advance(600);assert.equal(a.TankView.input().power,53,'keyboard power holds stop when focus leaves');
+   assert.equal(jobs.size,0);
+  }finally{a.TankView.resetInput();a.setTimeout=realSetTimeout;a.clearTimeout=realClearTimeout;}
   const selected=a.TankView.input();
   for(let i=0;i<180;i++)a.TankOnline.tick();
   assert.equal(a.TankView.input().angle,selected.angle);assert.equal(a.TankView.input().power,selected.power,'chosen angle and power never sweep automatically');
   const watching=JSON.stringify(b.TankView.input());
-  pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleUp').click();
+  pointer('pointerdown',83,18,31,'prot',b);pointer('pointerdown',254,14,31,'power',b);get(b,'angleLeft').click();get(b,'powerUp').click();
   assert.equal(JSON.stringify(b.TankView.input()),watching,'spectators cannot edit the current player\'s aim');
   get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,13);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
   assert.match(cards[12].textContent,/유도탄.*3쭈\/발/);assert.match(cards[12].textContent,/85%/);
-  const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');
+  const inPicker=JSON.stringify(a.TankView.input());pointer('pointerdown',48,3,41,'prot');pointer('pointerdown',254,14,41,'power');pointer('pointerdown',10,10,41,'angleLeft');get(a,'powerDown').click();
   assert.equal(JSON.stringify(a.TankView.input()),inPicker,'the weapon picker blocks hidden aim controls');
-  cards[12].click();key('prot','Home');get(a,'angleUp').click();get(a,'angleUp').click();get(a,'angleUp').click();
+  cards[12].click();key('prot','Home');get(a,'angleLeft').click();get(a,'angleLeft').click();get(a,'angleLeft').click();
   pointer('pointerdown',254*45/95,14,51,'power');pointer('pointerup',254*45/95,14,51,'power');
-  assert.equal(a.TankView.input().angle,.75);assert.equal(a.TankView.input().power,50);
+  assert.equal(a.TankView.input().angle,1.5);assert.equal(a.TankView.input().power,50);
   get(a,'fire').click();get(a,'fire').click();
   await wait(()=>get(a,'netCoins').textContent==='보유 97쭈');
   const fired=(await f.call(ids[0],{action:'mine'})).room;
-  assert.equal(fired.event.command.angle,.75);assert.equal(fired.event.command.power,50);assert.equal(fired.game.shotNo,1,'one click fires the exact quarter-degree angle and power without charging');
+  assert.equal(fired.event.command.angle,1.5);assert.equal(fired.event.command.power,50);assert.equal(fired.game.shotNo,1,'one click fires the exact half-degree angle and power without charging');
   assert.equal(get(a,'netTurn').textContent,'유도탄 비행 중');assert.equal(a.eval('shots[0].w.kind'),'homing');assert.equal(a.eval('shots[0].w.dmg'),34);a.eval('draw()');
   const flightBeforeRotation=a.eval('JSON.stringify([tanks.map(t=>[t.x,t.y,t.hp]),shots.map(s=>[s.x,s.y,s.vx,s.vy]),shotNo])');
   viewport.width=390;viewport.height=844;a.dispatchEvent(new a.Event('resize'));a.eval('draw()');
@@ -158,7 +217,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(a,'fire').disabled,true);assert.equal(get(b,'fire').disabled,false);
   assert.equal(get(a,'prot').getAttribute('aria-disabled'),'true');assert.equal(get(a,'power').getAttribute('aria-disabled'),'true');
   assert.equal(get(b,'prot').getAttribute('aria-disabled'),'false');assert.equal(get(b,'power').getAttribute('aria-disabled'),'false');
-  get(b,'angleUp').click();assert.equal(b.TankView.input().angle,90.25,'portrait players can use the fine angle control');
+  get(b,'angleLeft').click();assert.equal(b.TankView.input().angle,90.5,'portrait players can use the half-degree angle control');
   pointer('pointerdown',254*37/95,14,71,'power',b);pointer('pointerup',254*37/95,14,71,'power',b);
   assert.equal(b.TankView.input().power,42,'portrait players can set power');
   assert.equal(a.eval('tanks[0].hp'),b.eval('tanks[0].hp'));
@@ -322,7 +381,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.equal(solo.radialGradients.length,0,'a distant explosion is not pinned to the viewport');
    assert.deepEqual([burst.x,burst.y],originalPosition,'panning never relocates an explosion');
   }
-  console.log('PASS: direct angle/power gestures, fine controls, keyboard, cancellation, exact firing, destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
+  console.log('PASS: direct angle/power gestures, directional half-degree buttons, repeated holds, power buttons, keyboard, cancellation, exact firing, destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

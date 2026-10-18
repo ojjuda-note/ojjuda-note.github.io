@@ -62,13 +62,15 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 #angleControl{display:flex;align-items:center;gap:2px}
 .angle-step{width:36px;height:44px;padding:0;font-size:18px;line-height:1}
 .angle-step small{display:block;font-size:10px;line-height:1.4}
+#powerControl{grid-column:1/-1;display:grid;grid-template-columns:36px minmax(0,1fr) 36px;gap:4px;align-items:center}
+.power-step{height:36px;padding:0;font-size:20px;line-height:1}
 #prot{width:96px;height:56px;cursor:crosshair;touch-action:none}
 #prot:focus-visible{outline:2px solid var(--fire);outline-offset:2px;border-radius:6px}
 #prot[aria-disabled="true"]{opacity:.5;cursor:default}
 #fire{width:58px;height:58px;border-radius:50%;border:0;background:var(--fire);color:var(--fireInk);font:inherit;font-size:13px;line-height:1.15;justify-self:end;touch-action:none;-webkit-touch-callout:none;padding:4px;cursor:pointer;transition:transform .1s}
 #fire:active:not(:disabled){transform:scale(.93);filter:brightness(1.12)}
 .pbar .pt{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 8px;font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.pbar{grid-column:1/-1;position:relative;height:28px;border-radius:8px;background:var(--track);overflow:hidden;cursor:ew-resize;touch-action:none}
+.pbar{position:relative;min-width:0;height:28px;border-radius:8px;background:var(--track);overflow:hidden;cursor:ew-resize;touch-action:none}
 .pbar:focus-visible{outline:2px solid var(--fire);outline-offset:2px}
 .pbar[aria-disabled="true"]{cursor:default}
 .pbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#f2c46b,#e2733f 70%,#c4402f)}
@@ -104,6 +106,8 @@ body:not(.in-match) #controls{display:none}
   .mv button,#wpn{height:44px}
   #right{grid-template-columns:minmax(0,1fr) 58px}
   #angleControl{justify-content:center}
+  #powerControl{grid-template-columns:44px minmax(0,1fr) 44px}
+  .power-step{height:44px}
   .pbar{height:44px}
   #netHud{gap:6px;font-size:12px}
   #netTurn{flex:1;min-width:0;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -136,11 +140,15 @@ body:not(.in-match) #controls{display:none}
 </div>
 
 <div id="right" class="pnl">
-  <div id="power" class="pbar" role="slider" tabindex="0" aria-label="발사 파워" aria-orientation="horizontal" aria-valuemin="5" aria-valuemax="100" aria-valuenow="5" aria-valuetext="힘 5" title="눌러서 파워 조절"><i id="pfill"></i><b id="pmark"></b><span class="pt"><span id="angv">각도</span><span id="powv">힘</span></span></div>
+  <div id="powerControl" role="group" aria-label="파워 조절">
+    <button id="powerDown" class="btn power-step" type="button" aria-label="파워 1 줄이기">−</button>
+    <div id="power" class="pbar" role="slider" tabindex="0" aria-label="발사 파워" aria-orientation="horizontal" aria-valuemin="5" aria-valuemax="100" aria-valuenow="5" aria-valuetext="힘 5" title="눌러서 파워 조절"><i id="pfill"></i><b id="pmark"></b><span class="pt"><span id="angv">각도</span><span id="powv">힘</span></span></div>
+    <button id="powerUp" class="btn power-step" type="button" aria-label="파워 1 늘리기">+</button>
+  </div>
   <div id="angleControl" role="group" aria-label="각도 조절">
-    <button id="angleDown" class="btn angle-step" type="button" aria-label="각도 0.25도 줄이기">−<small>0.25°</small></button>
+    <button id="angleLeft" class="btn angle-step" type="button" aria-label="포신을 왼쪽으로 0.5도 기울이기">◀<small>0.5°</small></button>
     <canvas id="prot" role="slider" tabindex="0" aria-label="발사 각도" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="180" aria-valuenow="90" aria-valuetext="90도" title="끌어서 각도 조절"></canvas>
-    <button id="angleUp" class="btn angle-step" type="button" aria-label="각도 0.25도 늘리기">+<small>0.25°</small></button>
+    <button id="angleRight" class="btn angle-step" type="button" aria-label="포신을 오른쪽으로 0.5도 기울이기">▶<small>0.5°</small></button>
   </div>
   <button id="fire" type="button">발사</button>
 </div>
@@ -170,7 +178,7 @@ body:not(.in-match) #controls{display:none}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>휴대폰을 가로·세로 어느 방향으로 들어도 플레이할 수 있어요. 바람은 0~3이 70%, 4~7이 20%, 8~10이 10% 확률로 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, −0.25° / +0.25° 버튼으로 조금씩 조절해요. 버튼 위 파워 막대를 누르거나 끌어서 힘을 정한 뒤 발사를 눌러요. 마지막 발사 각도와 힘은 내 차례가 돌아오거나 이어하기를 해도 그대로 유지돼요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>휴대폰을 가로·세로 어느 방향으로 들어도 플레이할 수 있어요. 바람은 0~3이 70%, 4~7이 20%, 8~10이 10% 확률로 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, ◀ / ▶ 버튼으로 포신을 왼쪽 / 오른쪽으로 0.5도씩 기울여요. 파워는 − / + 버튼으로 1씩 조절하거나 위쪽 막대를 눌러 맞춰요. 각도·파워 버튼을 길게 누르면 계속 조절되고, 손을 떼면 멈춰요. 맞춘 뒤 발사를 눌러요. 마지막 발사 각도와 힘은 내 차례가 돌아오거나 이어하기를 해도 그대로 유지돼요. 왼쪽 아래 이동 화살표로 탱크를 움직이고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
 <div id="netNotice" role="status"></div>
@@ -603,7 +611,9 @@ function syncUI(){
   const t=tanks[turn],can=state==='aim'&&window.TankOnline?.canAim();
   fireB.disabled=!can;wpnB.disabled=!can;
   const adjust=canAdjustAim();
-  $('angleDown').disabled=!adjust||t.ang<=0;$('angleUp').disabled=!adjust||t.ang>=180;
+  $('angleLeft').disabled=!adjust||t.ang>=180;$('angleRight').disabled=!adjust||t.ang<=0;
+  $('powerDown').disabled=!adjust||t.pow<=5;$('powerUp').disabled=!adjust||t.pow>=100;
+  if(aimHold&&(!adjust||aimHold.tank!==t||aimHold.button.disabled))stopAimHold();
   prot.setAttribute('aria-disabled',String(!adjust));prot.tabIndex=adjust?0:-1;
   powerSlider.setAttribute('aria-disabled',String(!adjust));powerSlider.tabIndex=adjust?0:-1;
   if(state==='wait')fireB.disabled=true;
@@ -621,8 +631,49 @@ function syncUI(){
   const v=Math.round(wind/WINDMAX*10);$('windv').textContent=v<0?'← '+(-v):v>0?v+' →':'0';
 }
 
-let anglePointer=null,powerPointer=null;
+let anglePointer=null,powerPointer=null,aimHold=null;
 function canAdjustAim(){return !!(state==='aim'&&!pickerOpen&&tanks[turn]&&window.TankOnline?.canAim());}
+function stopAimHold(){
+  const held=aimHold;if(!held)return;aimHold=null;clearTimeout(held.timer);
+  if(held.pointerId!==null)try{held.button.releasePointerCapture(held.pointerId);}catch(_){}
+}
+function resetAimInput(){stopAimHold();anglePointer=null;powerPointer=null;moveDir=0;}
+function stepAimButton(button,kind,delta){
+  if(!canAdjustAim()||button.disabled||anglePointer!==null||powerPointer!==null)return false;
+  if(kind==='angle')setAngle(tanks[turn].ang+delta);else setPower(tanks[turn].pow+delta);
+  return true;
+}
+function startAimHold(button,kind,delta,pointerId=null,key=null){
+  if(aimHold||anglePointer!==null||powerPointer!==null||!canAdjustAim()||button.disabled)return;
+  const held=aimHold={button,kind,delta,pointerId,key,tank:tanks[turn],timer:0};
+  if(pointerId!==null)try{button.setPointerCapture(pointerId);}catch(_){}
+  const repeat=()=>{
+    if(aimHold!==held)return;
+    if(held.tank!==tanks[turn]||!stepAimButton(button,kind,delta)){stopAimHold();return;}
+    if(aimHold===held)held.timer=setTimeout(repeat,60);
+  };
+  stepAimButton(button,kind,delta);
+  if(aimHold===held)held.timer=setTimeout(repeat,300);
+}
+[['angleLeft','angle',.5],['angleRight','angle',-.5],['powerDown','power',-1],['powerUp','power',1]].forEach(([id,kind,delta])=>{
+  const button=$(id);
+  button.addEventListener('pointerdown',e=>{
+    if(e.button>0||e.isPrimary===false)return;
+    e.preventDefault();startAimHold(button,kind,delta,e.pointerId);
+  });
+  button.addEventListener('lostpointercapture',e=>{if(aimHold?.button===button&&aimHold.pointerId===e.pointerId)stopAimHold();});
+  button.addEventListener('keydown',e=>{
+    if(e.key!==' '&&e.key!=='Enter')return;
+    e.preventDefault();e.stopPropagation();if(!e.repeat)startAimHold(button,kind,delta,null,e.key);
+  });
+  button.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')e.preventDefault();});
+  button.addEventListener('blur',()=>{if(aimHold?.button===button)stopAimHold();});
+  // Pointer presses already step on pointerdown; keep click for assistive activation.
+  button.addEventListener('click',e=>{e.preventDefault();if(e.detail===0&&!e.pointerType&&!aimHold)stepAimButton(button,kind,delta);});
+});
+['pointerup','pointercancel'].forEach(type=>addEventListener(type,e=>{if(aimHold?.pointerId===e.pointerId)stopAimHold();},true));
+addEventListener('keyup',e=>{if(aimHold?.key===e.key)stopAimHold();});
+addEventListener('blur',resetAimInput);
 function setAngle(value){
   if(!canAdjustAim()||powerPointer!==null||!Number.isFinite(value))return;
   tanks[turn].ang=clamp(Math.round(value*4)/4,0,180);moveDir=0;syncUI();updGauges();
@@ -634,16 +685,15 @@ function pointAngle(e){
   setAngle(Math.atan2(Math.max(0,y),x)*180/Math.PI);
 }
 prot.addEventListener('pointerdown',e=>{
-  if(anglePointer!==null||powerPointer!==null||e.button>0||e.isPrimary===false||!canAdjustAim())return;
+  if(aimHold||anglePointer!==null||powerPointer!==null||e.button>0||e.isPrimary===false||!canAdjustAim())return;
   e.preventDefault();anglePointer=e.pointerId;try{prot.setPointerCapture(e.pointerId);}catch(_){}pointAngle(e);
 });
 prot.addEventListener('pointermove',e=>{if(anglePointer===e.pointerId){e.preventDefault();pointAngle(e);}});
 ['pointerup','pointercancel','lostpointercapture'].forEach(type=>prot.addEventListener(type,e=>{if(anglePointer===e.pointerId)anglePointer=null;}));
-[['angleDown',-.25],['angleUp',.25]].forEach(([id,delta])=>$(id).addEventListener('click',()=>{if(canAdjustAim())setAngle(tanks[turn].ang+delta);}));
 prot.addEventListener('keydown',e=>{
-  const delta={ArrowLeft:-.25,ArrowDown:-.25,ArrowRight:.25,ArrowUp:.25,PageDown:-10,PageUp:10}[e.key];
+  const delta={ArrowLeft:.5,ArrowDown:-.5,ArrowRight:-.5,ArrowUp:.5,PageDown:-10,PageUp:10}[e.key];
   if(delta===undefined&&e.key!=='Home'&&e.key!=='End')return;
-  e.preventDefault();e.stopPropagation();if(!canAdjustAim())return;
+  e.preventDefault();e.stopPropagation();if(aimHold||anglePointer!==null||powerPointer!==null||!canAdjustAim())return;
   setAngle(e.key==='Home'?0:e.key==='End'?180:tanks[turn].ang+delta);
 });
 function setPower(value){
@@ -652,7 +702,7 @@ function setPower(value){
 }
 function pointPower(e){const r=powerSlider.getBoundingClientRect();if(r.width)setPower(5+(e.clientX-r.left)/r.width*95);}
 powerSlider.addEventListener('pointerdown',e=>{
-  if(powerPointer!==null||anglePointer!==null||e.button>0||e.isPrimary===false||!canAdjustAim())return;
+  if(aimHold||powerPointer!==null||anglePointer!==null||e.button>0||e.isPrimary===false||!canAdjustAim())return;
   e.preventDefault();powerPointer=e.pointerId;try{powerSlider.setPointerCapture(e.pointerId);}catch(_){}pointPower(e);
 });
 powerSlider.addEventListener('pointermove',e=>{if(powerPointer===e.pointerId){e.preventDefault();pointPower(e);}});
@@ -660,10 +710,10 @@ powerSlider.addEventListener('pointermove',e=>{if(powerPointer===e.pointerId){e.
 powerSlider.addEventListener('keydown',e=>{
   const delta={ArrowLeft:-1,ArrowDown:-1,ArrowRight:1,ArrowUp:1,PageDown:-10,PageUp:10}[e.key];
   if(delta===undefined&&e.key!=='Home'&&e.key!=='End')return;
-  e.preventDefault();e.stopPropagation();if(!canAdjustAim())return;
+  e.preventDefault();e.stopPropagation();if(aimHold||anglePointer!==null||powerPointer!==null||!canAdjustAim())return;
   setPower(e.key==='Home'?5:e.key==='End'?100:tanks[turn].pow+delta);
 });
-function fireSelected(){if(canAdjustAim()&&anglePointer===null&&powerPointer===null)fire();}
+function fireSelected(){if(canAdjustAim()&&!aimHold&&anglePointer===null&&powerPointer===null)fire();}
 fireB.addEventListener('click',fireSelected);
 let pan=null;
 cv.addEventListener('pointerdown',e=>{
@@ -682,12 +732,12 @@ cv.addEventListener('pointermove',e=>{
 }));
 document.addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault();});
 [[lB,-1],[rB,1]].forEach(([b,d])=>{
-  b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled)return;try{b.setPointerCapture(e.pointerId);}catch(_){}moveDir=d;});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled||aimHold)return;try{b.setPointerCapture(e.pointerId);}catch(_){}moveDir=d;});
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>{if(moveDir===d)moveDir=0;}));});
 addEventListener('keydown',e=>{
-  if(e.defaultPrevented||e.target.closest?.('button,input,select,textarea,[role="slider"]')||state!=='aim'||pickerOpen||!window.TankOnline?.canAim())return;
+  if(e.defaultPrevented||e.target.closest?.('button,input,select,textarea,[role="slider"]')||aimHold||state!=='aim'||pickerOpen||!window.TankOnline?.canAim())return;
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();moveDir=e.key==='ArrowLeft'?-1:1;}
-  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();setAngle(tanks[turn].ang+(e.key==='ArrowUp'?0.25:-0.25));}
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();setAngle(tanks[turn].ang+(e.key==='ArrowUp'?0.5:-0.5));}
   else if(e.key===' '||e.key==='Enter'){e.preventDefault();if(e.repeat)return;fireSelected();}});
 addEventListener('keyup',e=>{
   if(e.key==='ArrowLeft'||e.key==='ArrowRight')moveDir=0;
@@ -695,6 +745,7 @@ addEventListener('keyup',e=>{
 
 function openPicker(){
   if(state!=='aim'||!window.TankOnline?.canAim())return;
+  resetAimInput();
   const t=tanks[turn],g=$('wgrid');g.innerHTML='';
   WEAPONS.forEach((w,i)=>{const b=document.createElement('button');b.className='wcard'+(i===t.w?' sel':'');b.disabled=w.price>0&&w.price>window.TankOnline.balance();
     b.innerHTML='<b><span>'+w.name+'</span><span>'+(w.price?w.price+'쭈/발':'무료')+'</span></b><small>'+w.desc+'</small>';
@@ -739,8 +790,9 @@ function tankDestroyed(t,seat){
 }
 window.TankView={
  resize(){
+  resetAimInput();
   const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
-  anglePointer=null;powerPointer=null;pan=null;moveDir=0;
+  pan=null;
   const previousWidth=VW;scale=Math.max(Math.min(r.width/800,r.height/450),r.height/MH);dpr=Math.min(2,window.devicePixelRatio||1);
   // Fill either orientation without shrinking tanks to fit an excessively tall viewport.
   // Only the camera changes; the shared battlefield and physics keep their original size.
@@ -762,7 +814,7 @@ window.TankView={
   if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();this.resize();
    if(!pan){camManual=false;camX=clamp(tanks[turn].x-VW/2,0,Math.max(0,W-VW));camY=0;}
    tanks.forEach((t,i)=>{t.chip.title=t.name;const label=document.createElement('small');label.textContent=t.name+(i===window.TankOnline?.seat?.()?' (나)':'');t.chip.prepend(label);});
-   anglePointer=null;powerPointer=null;moveDir=0;closePicker();}
+   resetAimInput();closePicker();}
   if(tankRenderDirty!==v.dirty){tDirty=true;tankRenderDirty=v.dirty;}
   if(changed||oldState!==state||frame%10===0)syncUI();
  },
@@ -771,7 +823,7 @@ window.TankView={
   if(moveDir&&record(moveDir))engine.move(moveDir);
  },
  input(){const t=tanks[turn];return {weapon:t.w,basicWeapon:t.basicWeapon,angle:t.ang,power:t.pow};},
- resetInput(){anglePointer=null;powerPointer=null;moveDir=0;closePicker();syncUI();},
+ resetInput(){resetAimInput();closePicker();syncUI();},
  finishAnimation(engine){tankHistory.push(...engine.view().paths);},
  hasEffects:()=>tankBursts.length>0,
  tickEffects(){
@@ -797,6 +849,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-larger-blasts1"></script>
+<script type="module" src="./online.mjs?v=20261018-hold-controls1"></script>
 </body>
 </html>
