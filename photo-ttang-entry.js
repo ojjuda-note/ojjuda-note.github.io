@@ -81,12 +81,12 @@
     try {
       tab = kind;
       const pending = renderGrid(), revision = gridEpoch;
+      details.open = true;
+      details.scrollIntoView?.({block:'start'});
       await pending;
       if (revision !== gridEpoch || tab !== kind || mode !== 'menu' || !photoAllowed()) return;
       const grid = document.getElementById('grid');
-      const next = grid.querySelector('.cell:not(.done):not([disabled])') || grid.querySelector('.cell:not([disabled])');
-      if (next) { status.hidden = true; lives = LIVES; startStage(Number(next.dataset.i)); }
-      else { status.textContent = grid.textContent.trim(); details.open = true; }
+      status.textContent = grid.querySelector('.cell:not([disabled])') ? '사진을 골라 주세요.' : grid.textContent.trim();
     } finally {
       loading = false;
       base.disabled = shared.disabled = false;
