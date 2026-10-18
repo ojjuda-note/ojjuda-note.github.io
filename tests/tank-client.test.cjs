@@ -21,11 +21,14 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const engine=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/engine.mjs'),'utf8'),{context});
   const online=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/online.mjs'),'utf8'),{context});
   await engine.link(()=>{throw Error('unexpected import');});await online.link(()=>engine);await online.evaluate();
-  await wait(()=>expectMatch?w.document.body.classList.contains('in-match'):!w.document.getElementById('lobbyHome').hidden);
+  await wait(()=>expectMatch?w.document.body.classList.contains('in-match'):!w.document.getElementById('startSolo').disabled);
   return w;
  }
  try{
   const a=await client(ids[0]),b=await client(ids[1]),get=(w,id)=>w.document.getElementById(id);
+  assert.equal(get(a,'soloMode').getAttribute('aria-pressed'),'true');
+  assert.equal(get(a,'lobbyHome').hidden,true);
+  get(a,'onlineMode').click();get(b,'onlineMode').click();
   get(a,'createRoom').dispatchEvent(new a.Event('submit',{cancelable:true}));
   await wait(()=>!get(a,'waitingRoom').hidden&&get(a,'waitingCode').textContent.length===8);
   get(b,'roomCode').value=get(a,'waitingCode').textContent;get(b,'joinRoom').dispatchEvent(new b.Event('submit',{cancelable:true}));
@@ -49,7 +52,25 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   // Reopening a third session for the same member restores the saved match without another debit.
   const reconnected=await client(ids[0],true);
   assert.equal(get(reconnected,'netCoins').textContent,'보유 98쭈');
-  console.log('PASS: actual game DOM, create/join/start, two isolated sessions, own-turn controls, price picker, special-shot debit, shared playback, turn handoff and reconnect');
+  const solo=await client(ids[2]);
+  assert.ok(get(solo,'menu').querySelector('.game-entry .ge-primary'));
+  get(solo,'soloOpponents').value='1';get(solo,'startSolo').click();
+  await wait(()=>solo.document.body.classList.contains('in-match'));
+  solo.TankOnline.tick();assert.equal(solo.eval('tanks.length'),2);
+  assert.equal(get(solo,'surrender').textContent,'그만하기');assert.doesNotMatch(get(solo,'netTurn').textContent,/초/);
+  solo.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
+  await wait(()=>get(solo,'netTurn').textContent==='포탄 비행 중');
+  for(let i=0;i<8000;i++)solo.TankOnline.tick();
+  assert.match(get(solo,'netTurn').textContent,/컴퓨터 1/);
+  await wait(()=>get(solo,'netTurn').textContent==='포탄 비행 중');
+  for(let i=0;i<8000;i++)solo.TankOnline.tick();
+  assert.equal(solo.TankOnline.canAim(),true,'computer must automatically return the turn to the person');
+  assert.equal(get(solo,'netCoins').textContent,'보유 100쭈');
+  get(solo,'surrender').click();
+  await wait(()=>!solo.document.body.classList.contains('in-match'));
+  assert.equal(get(solo,'entryHome').hidden,false);assert.equal(get(solo,'soloSetup').hidden,false);
+  assert.equal(get(solo,'startSolo').disabled,false);
+  console.log('PASS: common entrance, mode selection, solo start and automatic CPU turn, no CPU debit, quit, two online sessions, price picker, paid-shot playback and reconnect');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

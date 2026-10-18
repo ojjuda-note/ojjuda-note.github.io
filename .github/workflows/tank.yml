@@ -1,9 +1,9 @@
-name: Tank online multiplayer
+name: Tank solo and multiplayer
 on:
   push:
-    paths: ['games/tank/**', 'world-tank-game.*', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_online_rooms.sql', 'tests/tank-*', '.github/workflows/tank.yml']
+    paths: ['games/tank/**', 'world-tank-game.*', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', '.github/workflows/tank.yml']
   pull_request:
-    paths: ['games/tank/**', 'world-tank-game.*', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_online_rooms.sql', 'tests/tank-*', '.github/workflows/tank.yml']
+    paths: ['games/tank/**', 'world-tank-game.*', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', '.github/workflows/tank.yml']
 permissions:
   contents: read
 jobs:
@@ -20,4 +20,5 @@ jobs:
       - run: npm --prefix tests ci --ignore-scripts
       - run: node tests/tank-engine.test.mjs
       - run: node tests/tank-online-db.test.cjs
+      - run: node tests/tank-solo.test.cjs
       - run: node --experimental-vm-modules tests/tank-client.test.cjs

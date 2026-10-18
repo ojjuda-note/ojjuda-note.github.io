@@ -1,0 +1,31 @@
+/* Use the same entrance card and controls as the rest of Ojjuda's arcade. */
+#menu.lobby{background:#f5f3f9;color:#302d43;padding:24px 16px;justify-content:safe center;gap:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+#menu .game-entry{flex-shrink:0}
+#menu .ge-title{font-size:25px}
+#menu .ge-copy{max-width:none;margin:10px 0 22px;color:#797487;font-size:13px;line-height:1.65}
+#menu .ge-hint{min-height:18px;margin:12px 0 0;color:#797487;font-size:11px;line-height:1.7}
+#menu .ge-label{display:block;margin:16px 0 8px;color:#827b91;font-size:11px}
+#menu input,#menu select{width:100%;min-height:46px;padding:9px 12px;border:1px solid #e9e5f0;border-radius:12px;background:#f7f5fa;color:#625574;font:inherit;font-size:13px;touch-action:manipulation;user-select:text}
+#menu form{text-align:left;margin:18px 0 0}
+#menu h3{font-size:13px;font-weight:700;color:#625574;margin:0 0 8px}
+#menu .roomList{width:100%;text-align:left;margin:22px 0 0}
+#menu .roomList h3{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#menu .roomRow{display:flex;align-items:center;gap:10px;justify-content:space-between;border-bottom:1px solid #e9e5f0;padding:12px 0;font-size:13px}
+#menu .roomInfo{min-width:0;overflow-wrap:anywhere}
+#menu .roomRow small{display:block;color:#797487;font-size:11px}
+#menu .roomRow button,#menu #refreshRooms,#menu #copyCode{width:auto;min-height:36px;margin:0;padding:6px 10px;font-size:12px;flex-shrink:0}
+#menu #rooms>p{color:#797487;font-size:12px;line-height:1.7}
+#menu #waitingTitle{margin:20px 0 8px;font-family:inherit;font-weight:700;font-size:18px;line-height:1.5;color:#302d43;text-shadow:none}
+#menu #waitingRoom>p{color:#797487;font-size:12px;line-height:1.7}
+#menu #waitingRoom .waiting-code{display:flex;gap:10px;justify-content:center;align-items:center;margin:16px 0}
+#menu #waitingCode{font:700 23px/1.5 monospace;letter-spacing:.08em;color:#7560b5;user-select:text}
+#menu #waitingNames{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:16px 0}
+#menu .seatBadge{padding:7px 10px;border:1px solid #e9e5f0;border-radius:10px;color:#797487;font-size:12px}
+#menu .seatBadge.me{background:#f3f0f9;color:#65518e}
+#menu .ge-more p{max-width:none;margin:10px 0 0;color:#797487;font-size:12px;line-height:1.8;text-align:left}
+#menu .ge-more table{width:100%;margin-top:10px;border-collapse:collapse;color:#797487;font-size:12px}
+#menu .ge-more td,#menu .ge-more th{padding:7px 4px;text-align:left;border-bottom:1px solid #e9e5f0;font-weight:400}
+#menu .ge-more th{white-space:nowrap;color:#625574}
+#menu a{color:#7560b5}
+body:not(.in-match) :is(#hud,#left,#right,#banner){display:none}
+@media(max-width:380px){#menu.lobby{padding:16px 12px}#menu .game-entry{padding:24px 18px}}

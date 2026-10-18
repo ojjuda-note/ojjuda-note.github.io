@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>오쭈다 탱크게임 · 온라인 2~12명</title>
+<title>오쭈다 탱크게임 · 혼자 하기 · 온라인 대전</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
 <style>
@@ -88,11 +88,11 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
 @media (orientation:portrait){#rotate{display:flex}}
 
 #stage{display:grid;place-items:center}
-.lobby{overflow:auto;justify-content:flex-start;padding:24px 20px;touch-action:pan-y;background:rgba(20,18,45,.82)}
-.lobby h1{font-size:clamp(34px,7vh,62px)}.lobby input,.lobby select{width:100%;font:inherit;background:#302a4c;color:#fff;border:1px solid #8e819f;border-radius:8px;padding:9px;touch-action:manipulation;user-select:text}.lobby label{display:grid;gap:4px;text-align:left;font-size:14px}.lobby h3{margin:0 0 10px;font-size:20px;font-weight:400}.lobbyForms{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:min(760px,92vw)}.lobbyForms form{display:grid;align-content:start;gap:10px;background:#ffffff0a;border:1px solid #ffffff26;border-radius:16px;padding:14px}.lobby .go{min-width:0;font-size:17px;padding:8px 14px;touch-action:manipulation}.roomList{text-align:left;margin:18px auto;width:min(760px,92vw)}.roomList h3{display:flex;justify-content:space-between;align-items:center}.roomRow{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff20;gap:12px;padding:10px 0}.roomRow small{display:block}.priceGuide{font-size:14px;max-width:760px;color:#d4c8e8;touch-action:pan-y}.priceGuide p{font-size:14px;text-align:left;padding:12px;line-height:1.65}#waitingNames{display:flex;flex-wrap:wrap;gap:8px;max-width:700px;justify-content:center;margin:12px auto}.seatBadge{border:1px solid #ffffff35;border-radius:8px;padding:8px 12px}.seatBadge.me{border-color:#f2a65a;color:#f6c27a}#waitingCode{font:24px monospace;color:#f6c27a;user-select:text}#netMessage{font-size:14px;min-height:21px;color:#f6c27a}#netHud{position:fixed;left:12px;bottom:92px;display:flex;gap:10px;align-items:center;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}#netHud[hidden]{display:none}#netHud button{font:inherit;background:#24203ec9;color:#e5d9ef;border:1px solid #ffffff40;border-radius:8px;padding:6px 10px;touch-action:manipulation}#netNotice{position:fixed;top:23%;left:50%;transform:translateX(-50%);max-width:85%;color:#ffe3b0;background:#211d38d9;border-radius:10px;padding:6px 12px;font-size:14px;z-index:15;pointer-events:none}#netNotice:empty{display:none}.chip{width:60px}.chip small{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}.ov[hidden],[hidden]{display:none!important}body:not(.in-match) #rotate{display:none}#rotate{pointer-events:auto;background:#1b1d4ae8}.lobby button,.lobby summary{touch-action:manipulation}#netTurn{max-width:280px}.roomRow .roomInfo{min-width:0;overflow-wrap:anywhere}
-@media(max-width:550px){.lobbyForms{grid-template-columns:1fr}.lobby{padding:18px 12px}.lobby p{font-size:15px}}
-@media(max-height:420px){.lobby{padding:12px}.lobby h1{font-size:32px}.lobbyForms form{padding:10px}.lobbyForms{gap:10px}#netHud{bottom:80px;font-size:12px}}
+#netHud{position:fixed;left:12px;bottom:92px;display:flex;gap:10px;align-items:center;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}#netHud[hidden]{display:none}#netHud button{font:inherit;background:#24203ec9;color:#e5d9ef;border:1px solid #ffffff40;border-radius:8px;padding:6px 10px;touch-action:manipulation}#netNotice{position:fixed;top:23%;left:50%;transform:translateX(-50%);max-width:85%;color:#ffe3b0;background:#211d38d9;border-radius:10px;padding:6px 12px;font-size:14px;z-index:15;pointer-events:none}#netNotice:empty{display:none}.chip{width:60px}.chip small{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}.ov[hidden],[hidden]{display:none!important}body:not(.in-match) #rotate{display:none}#rotate{pointer-events:auto;background:#1b1d4ae8}.lobby button,.lobby summary{touch-action:manipulation}#netTurn{max-width:280px}.roomRow .roomInfo{min-width:0;overflow-wrap:anywhere}
+@media(max-height:420px){#netHud{bottom:80px;font-size:12px}}
 </style>
+<link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
+<link rel="stylesheet" href="./entry.css?v=20261018-tank3">
 </head>
 <body>
 <div id="stage"><canvas id="cv" aria-label="게임 화면"></canvas></div>
@@ -116,18 +116,26 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div class="pbar"><i id="pfill"></i><b id="pmark"></b><span class="pt"><span id="angv">각도</span><span id="powv">힘</span></span></div>
 </div>
 
-<div id="menu" class="ov lobby">
- <h1>탱크게임</h1><p>각자의 기기에서 모여요 · 온라인 2~12명</p>
- <p id="netMessage" role="status">오쭈다 로그인 확인 중…</p>
- <div id="lobbyHome" hidden>
-  <div class="lobbyForms">
-   <form id="createRoom"><h3>새 대전방</h3><label>방 제목<input id="roomTitle" maxlength="40" value="탱크 한 판 같이 해요" required></label><label>최대 인원<select id="roomCapacity"><option value="2">2명</option><option value="3">3명</option><option value="4" selected>4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명</option><option value="10">10명</option><option value="11">11명</option><option value="12">12명</option></select></label><button class="go" type="submit">방 만들기</button></form>
-   <form id="joinRoom"><h3>방 번호로 참여</h3><label>8자리 방 번호<input id="roomCode" placeholder="예: A1B2C3D4" maxlength="8" pattern="[a-fA-F0-9]{8}" autocomplete="off" required></label><button class="go alt" type="submit">입장하기</button><small>방 번호를 함께할 사람에게 알려 주세요.</small></form>
-  </div><section class="roomList"><h3>열린 대전방 <button id="refreshRooms" class="go alt">새로고침</button></h3><div id="rooms"></div></section>
- </div>
- <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><p>방 번호 <strong id="waitingCode"></strong> <button id="copyCode" class="go alt">복사</button></p><p id="waitingCount"></p><div id="waitingNames"></div><p>방장이 시작하면 모두 함께 전투에 들어가요.</p><div class="row"><button id="startMatch" class="go">전투 시작</button><button id="leaveRoom" class="go alt">방 나가기</button></div></div>
- <details class="priceGuide"><summary>탄 가격 · 조작 방법</summary><p>일반탄·대형탄·산탄은 무료예요.<br>통통탄·굴착탄·흙폭탄 1쭈 · 분열탄·굴러탄 2쭈 · 핵탄·관통탄 3쭈<br>특수탄은 발사 1회마다 차감돼요. 선택만 하면 차감되지 않아요.<br>각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.<br>차례를 3번 연속 놓치면 탈락해요. 탈락 후에도 관전할 수 있어요.</p></details>
-</div>
+<main id="menu" class="ov lobby" aria-label="탱크게임 시작화면">
+ <section class="game-entry">
+  <div class="ge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="18" height="7" rx="3.5"/><path d="M7 13V9h9l2 4M12 9V6h9M7 17h.01M12 17h.01M17 17h.01"/></svg></div>
+  <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span><h1 class="ge-title">탱크게임</h1>
+  <p id="entryCopy" class="ge-copy">바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.</p>
+  <div id="entryHome">
+   <div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button type="button" id="soloMode" class="on" aria-pressed="true">혼자 하기</button><button type="button" id="onlineMode" aria-pressed="false">온라인 대전</button></div>
+   <div id="soloSetup"><label class="ge-label" for="soloOpponents">컴퓨터 상대</label><select id="soloOpponents"><option value="1">컴퓨터 1명</option><option value="2">컴퓨터 2명</option><option value="3" selected>컴퓨터 3명</option><option value="4">컴퓨터 4명</option><option value="5">컴퓨터 5명</option><option value="6">컴퓨터 6명</option><option value="7">컴퓨터 7명</option><option value="8">컴퓨터 8명</option><option value="9">컴퓨터 9명</option><option value="10">컴퓨터 10명</option><option value="11">컴퓨터 11명</option></select><button id="startSolo" class="ge-primary" type="button" disabled>혼자 시작하기</button><span class="ge-hint">나 1명 + 컴퓨터 · 시간 제한 없이 즐겨요</span></div>
+   <div id="lobbyHome" hidden>
+    <form id="createRoom"><label class="ge-label" for="roomTitle">방 제목</label><input id="roomTitle" maxlength="40" value="탱크 한 판 같이 해요" required><label class="ge-label" for="roomCapacity">최대 인원</label><select id="roomCapacity"><option value="2">2명</option><option value="3">3명</option><option value="4" selected>4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명</option><option value="10">10명</option><option value="11">11명</option><option value="12">12명</option></select><button class="ge-primary" type="submit">방 만들기</button></form>
+    <details class="ge-more"><summary>방 번호로 참여하기</summary><form id="joinRoom"><label class="ge-label" for="roomCode">8자리 방 번호</label><input id="roomCode" placeholder="예: A1B2C3D4" maxlength="8" pattern="[a-fA-F0-9]{8}" autocomplete="off" required><button class="ge-secondary" type="submit">입장하기</button></form></details>
+    <section class="roomList"><h3>열린 대전방 <button id="refreshRooms" class="ge-secondary" type="button">새로고침</button></h3><div id="rooms"></div></section>
+   </div>
+  </div>
+  <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
+  <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
+  <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄</td></tr></tbody></table><p>두 모드 모두 특수탄은 내가 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+ </section>
+</main>
 <div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
 <div id="netNotice" role="status"></div>
 <div id="over" class="ov hidden">
@@ -639,6 +647,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-tank1"></script>
+<script type="module" src="./online.mjs?v=20261018-tank3"></script>
 </body>
 </html>

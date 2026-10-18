@@ -1,7 +1,7 @@
 import {createEngine} from './engine.mjs?v=20261018-tank1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
-let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0;
+let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
 const messages={not_signed_in:'오쭈다에 로그인한 뒤 이용해 주세요.',banned:'지금은 대전방을 이용할 수 없어요.',room_in_progress:'참여 중인 방을 먼저 마무리해 주세요.',room_rate_limit:'잠시 후 방을 다시 만들어 주세요.',room_full:'방 인원이 꽉 찼어요.',room_not_found:'방 번호를 확인해 주세요.',room_unavailable:'이미 닫힌 방이에요.',room_already_started:'이미 전투가 시작됐어요.',not_room_owner:'방장만 시작할 수 있어요.',need_players:'두 명 이상 모이면 시작할 수 있어요.',state_conflict:'다른 기기에서 진행됐어요. 최신 화면으로 맞추고 있어요.',not_your_turn:'내 차례에 발사해 주세요.',coins:'쭈가 부족해요. 무료 기본탄을 선택할 수 있어요.',wallet_unavailable:'쭈 잔액을 확인하지 못했어요.',already_eliminated:'이미 탈락해 관전 중이에요.',unavailable:'연결이 원활하지 않아요. 다시 연결하고 있어요.'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notify(text){$('netMessage').textContent=text;$('netNotice').textContent=current?.game?text:'';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{$('netNotice').textContent='';},6000);}
@@ -20,14 +20,27 @@ async function request(body){
   catch(e){if(e.message!=='unavailable'||attempt)throw e;}
  }
 }
-function canAim(){return !!(current?.status==='active'&&engine&&!animation&&!busy&&!uncertain&&current.seat===current.game.turn&&engine.view().tanks[current.seat]?.hp>0&&Date.parse(current.deadline)>Date.now()+offset);}
+function canAim(){return !!(current?.status==='active'&&engine&&!animation&&!busy&&!uncertain&&current.seat===current.game.turn&&engine.view().tanks[current.seat]?.hp>0&&(current.mode==='solo'||Date.parse(current.deadline)>Date.now()+offset));}
+function chooseMode(mode){
+ selectedMode=mode;
+ lobby();
+}
 function lobby(){
+ clearTimeout(cpuTimer);cpuTimer=0;cpuVersion='';
+ for(const id of ['solo','online']){$(id+'Mode').classList.toggle('on',id===selectedMode);$(id+'Mode').setAttribute('aria-pressed',String(id===selectedMode));}
+ $('entryCopy').innerHTML=selectedMode==='solo'?'바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.':'바람을 읽고, 각도를 맞춰 한 발!<br>각자의 기기에서 함께해요 · 2~12명';
  document.body.classList.remove('in-match');$('menu').classList.remove('hidden');$('over').classList.add('hidden');$('netHud').hidden=true;
- $('lobbyHome').hidden=!!current||!available;$('waitingRoom').hidden=!current||current.status!=='waiting';
+ $('entryHome').hidden=!!current;$('soloSetup').hidden=selectedMode!=='solo';$('lobbyHome').hidden=!!current||selectedMode!=='online';$('waitingRoom').hidden=!current||current.status!=='waiting';
+ $('startSolo').disabled=busy||!ready||!available||uncertain;
+ for(const button of document.querySelectorAll('#lobbyHome button'))button.disabled=busy||!available;
+ $('soloMode').disabled=$('onlineMode').disabled=busy;
  if(current?.status==='waiting'){
+  const solo=current.mode==='solo';
   $('waitingTitle').textContent=current.title;$('waitingCode').textContent=current.code;$('waitingCount').textContent=`${current.names.length} / ${current.capacity}명`;
+  $('waitingCodeRow').hidden=solo;$('waitingCount').textContent=solo?`나 1명 + 컴퓨터 ${current.capacity-1}명`:$('waitingCount').textContent;
+  $('waitingHint').textContent=solo?'준비됐어요. 혼자 시작해 보세요.':'방장이 시작하면 모두 함께 전투에 들어가요.';
   $('waitingNames').innerHTML=current.names.map((name,i)=>`<span class="seatBadge${i===current.seat?' me':''}">${esc(name)}${i===current.hostSeat?' · 방장':''}${i===current.seat?' · 나':''}</span>`).join('');
-  $('startMatch').hidden=current.seat!==current.hostSeat;$('startMatch').disabled=busy||current.names.length<2;
+  $('startMatch').hidden=current.seat!==current.hostSeat;$('startMatch').disabled=busy||(!solo&&current.names.length<2);
  }
 }
 function render(){
@@ -35,19 +48,29 @@ function render(){
  document.body.classList.add('in-match');$('menu').classList.add('hidden');$('netHud').hidden=false;
  $('netCoins').textContent=`보유 ${coins}쭈`;
  const alive=current.game.tanks[current.seat]?.hp>0,remaining=Math.max(0,Math.ceil((Date.parse(current.deadline)-Date.now()-offset)/1000));
- $('netTurn').textContent=animation?'포탄 비행 중':current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${current.game.turn===current.seat?' (나)':''} 차례 · ${remaining}초`;
- $('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
+ const solo=current.mode==='solo';
+ $('netTurn').textContent=animation?'포탄 비행 중':current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${current.game.turn===current.seat?' (나)':''} 차례${solo?'':' · '+remaining+'초'}`;
+ $('surrender').textContent=solo?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
+ $('bAgain').textContent=solo?'다시 하기':'대기실로';$('bMenu').textContent=solo?'처음 화면으로':'게임 목록';
  if(current.status==='finished'&&!animation){
-  const winner=current.game.tanks.find(t=>t.hp>0);$('winTxt').textContent=winner?winner.name+' 승리':'무승부';$('winSub').textContent=winner?'남은 체력 '+winner.hp:'모든 탱크가 파괴됐어요.';$('over').classList.remove('hidden');
+  const winner=current.game.tanks.find(t=>t.hp>0);$('winTxt').textContent=solo&&!alive?'내 탱크가 파괴됐어요':winner?winner.name+' 승리':'무승부';$('winSub').textContent=solo&&!alive?'컴퓨터와 다시 도전해 보세요.':winner?'남은 체력 '+winner.hp:'모든 탱크가 파괴됐어요.';$('over').classList.remove('hidden');
  }else $('over').classList.add('hidden');
- view.refresh();
+ view.refresh();queueComputer();
+}
+function queueComputer(){
+ const eligible=current?.mode==='solo'&&current.status==='active'&&current.game.turn!==current.seat&&!animation&&!busy&&!uncertain&&!document.hidden;
+ const key=eligible?current.id+':'+current.version:'';
+ if(!key){clearTimeout(cpuTimer);cpuTimer=0;cpuVersion='';return;}
+ if(cpuTimer&&cpuVersion===key)return;
+ clearTimeout(cpuTimer);cpuVersion=key;
+ cpuTimer=setTimeout(()=>{cpuTimer=0;if(current?.id+':'+current?.version!==key)return;void perform({action:'cpu',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});},900);
 }
 function accept(result,animate=true){
  if(Number.isInteger(result.coins))coins=result.coins;
  const next=result.room;
  if(next&&Number.isInteger(next.coins))coins=next.coins;
  if(next&&current?.id===next.id&&next.version<current.version)return;
- if(next){offset=next.serverTime-Date.now();}
+ if(next){offset=next.serverTime-Date.now();selectedMode=next.mode||'online';}
  if(next&&current?.id===next.id&&next.version===current.version){current=next;render();return;}
  const prior=current;current=next;moves=[];uncertain=false;view.resetInput();
  if(!next?.game){engine=null;animation=false;view.resetHistory();render();return;}
@@ -60,7 +83,7 @@ function accept(result,animate=true){
 async function list(){
  const result=await request({action:'list'});if(current)return;
  if(Number.isInteger(result.coins))coins=result.coins;
- $('rooms').innerHTML=result.rooms?.length?result.rooms.map(r=>`<div class="roomRow"><div class="roomInfo">${esc(r.title)}<small>${esc(r.code)} · ${r.players}/${r.capacity}명</small></div><button class="go alt" data-code="${esc(r.code)}"${r.players>=r.capacity?' disabled':''}>참여</button></div>`).join(''):'<p>아직 열린 방이 없어요. 첫 방을 만들어 보세요.</p>';
+ $('rooms').innerHTML=result.rooms?.length?result.rooms.map(r=>`<div class="roomRow"><div class="roomInfo">${esc(r.title)}<small>${esc(r.code)} · ${r.players}/${r.capacity}명</small></div><button class="ge-secondary" data-code="${esc(r.code)}"${r.players>=r.capacity?' disabled':''}>참여</button></div>`).join(''):'<p>아직 열린 방이 없어요. 첫 방을 만들어 보세요.</p>';
 }
 function schedule(){clearTimeout(timer);if(ready&&available)timer=setTimeout(refresh,current?2000:6000);}
 async function refresh(){
@@ -70,7 +93,7 @@ async function refresh(){
   const result=await request(current?{action:'read',room_id:current.id}:{action:'mine'});
   if(revision!==epoch)return;
   uncertain=false;accept(result);if(!current)await list();
-  if(!$('netNotice').textContent)$('netMessage').textContent=current?.status==='waiting'?'방 번호를 알려 주고 친구를 기다려 주세요.':current?'':'방을 만들거나 열린 방에 참여하세요.';
+  if(!$('netNotice').textContent)$('netMessage').textContent=current?.status==='waiting'?(current.mode==='solo'?'준비되면 전투를 시작하세요.':'방 번호를 알려 주고 친구를 기다려 주세요.'):current?'':`보유 ${coins}쭈 · 기본탄 3종은 무료예요`;
  }catch(e){
   if(['room_not_found','room_unavailable'].includes(e.message)){accept({room:null});}
   else if(e.message==='not_signed_in'){available=false;uncertain=true;}
@@ -81,7 +104,7 @@ async function refresh(){
 async function perform(body){
  if(busy)return;busy=true;epoch++;clearTimeout(timer);view.refresh();render();
  try{
-  const result=await request(body);accept(result);notify(body.action==='create'?'방을 만들었어요. 방 번호로 모여 주세요.':'');return result;
+  const result=await request(body);accept(result);notify(body.action==='create'&&body.options?.mode!=='solo'?'방을 만들었어요. 방 번호로 모여 주세요.':'');return result;
  }catch(e){
   uncertain=['state_conflict','not_your_turn','unavailable'].includes(e.message);
   notify(messages[e.message]||messages.unavailable);view.resetInput();
@@ -110,6 +133,14 @@ window.TankOnline={hasGame:()=>!!engine,canAim,balance:()=>coins,fire,
   view.use(engine,canAim());
  }
 };
+async function startSolo(){
+ if(busy||!available)return;
+ void view.landscape();
+ const capacity=Number($('soloOpponents').value)+1;
+ const created=await perform({action:'create',request_id:crypto.randomUUID(),options:{mode:'solo',title:'컴퓨터와 탱크 한 판',capacity}});
+ if(created?.room?.status==='waiting')await perform({action:'start',room_id:created.room.id,version:created.room.version,request_id:crypto.randomUUID()});
+}
+$('soloMode').onclick=()=>chooseMode('solo');$('onlineMode').onclick=()=>chooseMode('online');$('startSolo').onclick=startSolo;
 $('createRoom').onsubmit=e=>{e.preventDefault();void perform({action:'create',request_id:crypto.randomUUID(),options:{title:$('roomTitle').value.trim(),capacity:Number($('roomCapacity').value)}});};
 $('joinRoom').onsubmit=e=>{e.preventDefault();void perform({action:'join',code:$('roomCode').value.trim().toUpperCase()});};
 $('rooms').onclick=e=>{const b=e.target.closest('[data-code]');if(b&&!b.disabled)void perform({action:'join',code:b.dataset.code});};
@@ -117,9 +148,10 @@ $('refreshRooms').onclick=()=>{if(!busy&&!polling)void refresh();};
 $('startMatch').onclick=async()=>{if(!current||busy)return;void view.landscape();await perform({action:'start',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
 $('leaveRoom').onclick=()=>current&&!busy&&perform({action:'leave',room_id:current.id});
 $('copyCode').onclick=async()=>{try{await navigator.clipboard.writeText(current.code);notify('방 번호를 복사했어요.');}catch{notify('방 번호 '+current.code+'를 알려 주세요.');}};
-$('surrender').onclick=()=>{if(!busy&&current&&confirm('항복하고 관전할까요?'))void perform({action:'surrender',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
-$('bAgain').onclick=()=>current&&!busy&&perform({action:'leave',room_id:current.id});
-$('bMenu').onclick=()=>parent.postMessage({source:'ojjuda-tank',type:'exit'},origin);
+$('surrender').onclick=()=>{if(!busy&&current&&confirm(current.mode==='solo'?'이번 게임을 끝내고 처음 화면으로 갈까요?':'항복하고 관전할까요?'))void perform({action:current.mode==='solo'?'leave':'surrender',room_id:current.id,version:current.version,request_id:crypto.randomUUID()});};
+$('bAgain').onclick=async()=>{if(!current||busy)return;const solo=current.mode==='solo';if(solo)$('soloOpponents').value=String(current.capacity-1);const left=await perform({action:'leave',room_id:current.id});if(left&&solo)await startSolo();};
+const exit=()=>parent.postMessage({source:'ojjuda-tank',type:'exit'},origin);
+$('bMenu').onclick=()=>current?.mode==='solo'&&!busy?perform({action:'leave',room_id:current.id}):exit();$('exitEntry').onclick=exit;
 addEventListener('message',e=>{
  if(e.source!==parent||e.origin!==origin||e.data?.source!=='ojjuda-world')return;
  const m=e.data;
@@ -131,7 +163,7 @@ addEventListener('message',e=>{
  }
 });
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden){view.resetInput();return;}
+ if(document.hidden){view.resetInput();queueComputer();return;}
  if(animation&&current?.game){animation=false;engine=createEngine(current.game);view.use(engine,false);}
  uncertain=true;void refresh();
 });

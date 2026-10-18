@@ -6,11 +6,11 @@
    if(active){active.dialog.focus();return;}
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');dialog.className='tour-game-dialog tank-game-dialog';dialog.setAttribute('aria-label','탱크게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 온라인 2~12명</span></header><iframe title="탱크게임 온라인 대전" src="/games/tank/index.html?v=20261018-tank2" allow="fullscreen; clipboard-write"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 하기 / 온라인 대전</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261018-tank3" allow="fullscreen; clipboard-write"></iframe>';
    const frame=dialog.querySelector('iframe');let requests=0;
    function close(){if(active?.dialog!==dialog)return;active=null;window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
    async function online(m){
-    if(typeof m.requestId!=='string'||! /^[a-f0-9-]{36}$/i.test(m.requestId)||!m.body||JSON.stringify(m.body).length>4096||!['list','mine','create','join','read','start','fire','surrender','leave'].includes(m.body.action)||requests>=4)return;
+    if(typeof m.requestId!=='string'||! /^[a-f0-9-]{36}$/i.test(m.requestId)||!m.body||JSON.stringify(m.body).length>4096||!['list','mine','create','join','read','start','fire','cpu','surrender','leave'].includes(m.body.action)||requests>=4)return;
     requests++;let result={error:'not_signed_in'};
     try{
      if(owner&&client?.functions&&authorized()){
