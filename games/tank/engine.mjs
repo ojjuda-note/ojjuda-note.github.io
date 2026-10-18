@@ -12,7 +12,8 @@ export const WEAPONS=[
   {name:'핵탄',price:3,desc:'넓은 범위의 대형 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
   {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
-  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}
+  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'},
+  {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:24,dmg:34,kind:'homing',accuracy:.85}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:24,dmg:12,kind:'pierce',pen:18,stage:2}];
 const MIRV_CHILD={name:'',r:24,dmg:7};
@@ -98,7 +99,7 @@ function startTurn(i){turn=i;wind=windAt(weatherSeed,windTime+frame*1000/60);con
 function fire(){
  const t=tanks[turn],w=WEAPONS[t.w];shotNo++;t.lastAng=t.ang;t.lastPow=t.pow;
  const a=t.ang*Math.PI/180,sp=t.pow*K,p=tip(t),n=w.count||1;
- for(let i=0;i<n;i++){const da=(i-(n-1)/2)*.07;shots.push({x:p.x,y:p.y,vx:Math.cos(a+da)*sp,vy:-Math.sin(a+da)*sp,w,age:0,owner:turn,trail:[p.x,p.y],n:shotNo,b:w.kind==='bounce'?3:0,la:t.ang});}
+ for(let i=0;i<n;i++){const da=(i-(n-1)/2)*.07;shots.push({x:p.x,y:p.y,vx:Math.cos(a+da)*sp,vy:-Math.sin(a+da)*sp,w,age:0,owner:turn,trail:[p.x,p.y],n:shotNo,b:w.kind==='bounce'?3:0,la:t.ang,canHome:w.kind==='homing'&&random()<w.accuracy});}
  state='fly';
 }
 
@@ -113,15 +114,49 @@ function explodeOutside(s){
 function checkHit(s){
   if(s.x<-80||s.x>W+80||s.y>MH+40){explodeOutside(s);return;}
   for(let i=0;i<tanks.length;i++){const t=tanks[i];if(t.hp<=0)continue;if(i===s.owner&&s.age<24)continue;
-    if(Math.hypot(s.x-t.x,s.y-(t.y-6*TS))<12*TS){explode(s.x,s.y,s.w,s);s.dead=true;return;}}
+    if(Math.hypot(s.x-t.x,s.y-(t.y-6*TS))<12*TS){impact(s);return;}}
   if(s.emerge){if(!solid(s.x,s.y))s.emerge=false;return;}
   if(s.pen){s.pd+=Math.hypot(s.vx,s.vy)*SLOW/2;if(s.pd>=s.w.pen||!solid(s.x,s.y)){explode(s.x,s.y,s.w,s);s.dead=true;}return;}
   if(s.w.kind==='pierce'&&solid(s.x,s.y)){s.pen=true;s.pd=0;s.ivx=s.vx;s.ivy=s.vy;s.vx*=0.6;s.vy*=0.6;return;}
   if(solid(s.x,s.y)){
     if(s.w.kind==='bounce'&&s.b>0){s.b--;let k=0;while(solid(s.x,s.y)&&k++<20)s.y-=1;s.vy=-Math.abs(s.vy)*0.62;s.vx*=0.85;sfx('tick');return;}
     if(s.w.kind==='roll'){s.rolling=true;s.rollT=0;let k=0;while(solid(s.x,s.y)&&k++<20)s.y-=1;s.vx*=0.6;return;}
-    explode(s.x,s.y,s.w,s);s.dead=true;
+    impact(s);
   }
+}
+
+function impact(s){
+  if(s.canHome&&s.x>=0&&s.x<=W){
+    let target=-1,nearest=WEAPONS[8].r;
+    for(let i=0;i<tanks.length;i++){
+      const t=tanks[i];if(i===s.owner||t.hp<=0)continue;
+      const d=Math.hypot(t.x-s.x,t.y-4-s.y);
+      if(d<=nearest&&(target<0||d<nearest)){target=i;nearest=d;}
+    }
+    s.canHome=false; // One accuracy roll and one target lock per paid shot.
+    if(target>=0){
+      const t=tanks[target];let ceiling=Math.min(s.y,t.y-4);
+      for(let x=Math.min(s.x,t.x);x<=Math.max(s.x,t.x)+CS;x+=CS)ceiling=Math.min(ceiling,surf(x));
+      s.homing={target,ceiling:ceiling-24,phase:'rise'};
+      return;
+    }
+  }
+  explode(s.x,s.y,s.w,s);s.dead=true;
+}
+
+function home(s,h){
+  const guide=s.homing,t=tanks[guide.target];
+  if(!t||t.hp<=0){explode(s.x,s.y,s.w,s);s.dead=true;return;}
+  // Rise above the intervening hills, cross over them, then dive onto the locked enemy.
+  // Guidance leaves the original impact point intact and produces one normal blast.
+  const x=guide.phase==='rise'?s.x:t.x,y=guide.phase==='dive'?t.y-4:guide.ceiling;
+  const dx=x-s.x,dy=y-s.y,d=Math.hypot(dx,dy),speed=7;
+  s.vx=d?dx/d*speed:0;s.vy=d?dy/d*speed:0;
+  if(d<=speed*h){
+    s.x=x;s.y=y;
+    if(guide.phase==='dive'){explode(s.x,s.y,s.w,s);s.dead=true;}
+    else guide.phase=guide.phase==='rise'?'cross':'dive';
+  }else{s.x+=s.vx*h;s.y+=s.vy*h;}
 }
 
 function roll(s){
@@ -194,7 +229,10 @@ function step(){
   if(s.dead)continue;
   if(s.rolling){roll(s);if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});continue;}
   const h=SLOW/2;
-  for(let k=0;k<2&&!s.dead&&!s.rolling;k++){s.vx+=wind*h;s.vy+=G*h;s.x+=s.vx*h;s.y+=s.vy*h;checkHit(s);}
+  for(let k=0;k<2&&!s.dead&&!s.rolling;k++){
+   if(s.homing){home(s,h);continue;}
+   s.vx+=wind*h;s.vy+=G*h;s.x+=s.vx*h;s.y+=s.vy*h;checkHit(s);
+  }
   s.age++;s.trail.push(s.x,s.y);
   if(!s.dead&&!s.rolling&&s.w.kind==='mirv'&&s.vy>0){s.dead=true;
    for(let j=-2;j<=2;j++)shots.push({x:s.x,y:s.y,vx:s.vx+j*.55,vy:s.vy,w:MIRV_CHILD,age:99,owner:s.owner,trail:[s.x,s.y],n:s.n,b:0});}

@@ -137,7 +137,7 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람의 방향과 세기가 수시로 바뀌어요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄</td></tr></tbody></table><p>특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>바람의 방향과 세기가 수시로 바뀌어요. 각도를 눌러 멈춘 뒤, 발사 버튼을 꾹 눌렀다 떼세요. 왼쪽 화살표로 이동하고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>핵탄 · 관통탄 · 유도탄</td></tr></tbody></table><p>특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
 <div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="surrender">항복</button></div>
@@ -172,7 +172,8 @@ const WEAPONS=[
   {name:'핵탄',price:3,desc:'넓은 범위의 대형 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
   {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
   {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
-  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'}
+  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'},
+  {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:24,dmg:34,kind:'homing',accuracy:.85}
 ];
 const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:24,dmg:12,kind:'pierce',pen:18,stage:2}];
 const MIRV_CHILD={name:'',r:24,dmg:7};
@@ -507,16 +508,17 @@ function draw(){
   updGauges();
 }
 function drawShell(s){
-  const nuclear=s.w.name==='핵탄',color=nuclear?'#ffdc53':s.w.kind==='teleport'?'#a3dbff':s.w.kind==='heal'?'#8fffc5':s.w.kind==='dirt'?'#c9a46a':'#fff3d6';
-  ctx.save();ctx.strokeStyle=nuclear?'rgba(255,220,83,.8)':'rgba(255,236,200,.5)';ctx.lineWidth=nuclear?2:1.4;ctx.beginPath();
+  const nuclear=s.w.name==='핵탄',homing=s.w.kind==='homing',color=nuclear?'#ffdc53':homing?'#ff8e87':s.w.kind==='teleport'?'#a3dbff':s.w.kind==='heal'?'#8fffc5':s.w.kind==='dirt'?'#c9a46a':'#fff3d6';
+  ctx.save();ctx.strokeStyle=nuclear?'rgba(255,220,83,.8)':homing?'rgba(255,142,135,.8)':'rgba(255,236,200,.5)';ctx.lineWidth=nuclear?2:1.4;ctx.beginPath();
   for(let i=0;i<s.trail.length;i+=2)i?ctx.lineTo(s.trail[i],s.trail[i+1]):ctx.moveTo(s.trail[i],s.trail[i+1]);ctx.stroke();
-  ctx.fillStyle=color;ctx.beginPath();ctx.arc(s.x,s.y,nuclear?6:s.w.r>60?3.6:2.6,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(s.x,s.y,nuclear?6:homing?3.6:s.w.r>60?3.6:2.6,0,Math.PI*2);ctx.fill();
   if(nuclear){
     ctx.strokeStyle='#30283a';ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle='#30283a';
     for(let i=0;i<3;i++){const angle=-Math.PI/2+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.arc(s.x,s.y,4.2,angle-Math.PI/6,angle+Math.PI/6);ctx.closePath();ctx.fill();}
     ctx.fillStyle=color;ctx.beginPath();ctx.arc(s.x,s.y,1.8,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#30283a';ctx.beginPath();ctx.arc(s.x,s.y,.9,0,Math.PI*2);ctx.fill();
   }
+  if(s.homing){const target=tanks[s.homing.target];if(target?.hp>0){ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.arc(target.x,target.y-4,9,0,Math.PI*2);ctx.stroke();}}
   if(s.y<0){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(s.x,4);ctx.lineTo(s.x-5,12);ctx.lineTo(s.x+5,12);ctx.fill();}
   ctx.restore();
 }
@@ -709,6 +711,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-nuke-radius1"></script>
+<script type="module" src="./online.mjs?v=20261018-homing1"></script>
 </body>
 </html>

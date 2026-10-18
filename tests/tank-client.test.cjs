@@ -52,9 +52,11 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.deepEqual(saved.terrain,resized.terrain);assert.deepEqual(saved.tanks.map(t=>[t.x,t.y,t.hp]),resized.tanks.map(t=>[t.x,t.y,t.hp]));
   assert.equal(a.eval('tankRenderEngine.view().VW'),800);assert.equal(a.eval('tankRenderEngine.view().H'),450);
   assert.equal(get(a,'fire').disabled,false);assert.equal(get(b,'fire').disabled,true);
-  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,12);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
-  cards[3].click();a.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
-  await wait(()=>get(a,'netCoins').textContent==='보유 98쭈');
+  get(a,'wpn').click();const cards=get(a,'wgrid').children;assert.equal(cards.length,13);assert.match(cards[0].textContent,/무료/);assert.match(cards[8].textContent,/3쭈\/발/);assert.match(cards[10].textContent,/치료탄.*1쭈\/발/);assert.match(cards[10].textContent,/땅은 파이지/);
+  assert.match(cards[12].textContent,/유도탄.*3쭈\/발/);assert.match(cards[12].textContent,/85%/);
+  cards[12].click();a.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
+  await wait(()=>get(a,'netCoins').textContent==='보유 97쭈');
+  assert.equal(get(a,'netTurn').textContent,'유도탄 비행 중');assert.equal(a.eval('shots[0].w.kind'),'homing');assert.equal(a.eval('shots[0].w.dmg'),34);a.eval('draw()');
   for(let i=0;i<8000;i++)a.TankOnline.tick();
   await wait(()=>get(b,'netTurn').textContent.includes('비행'));
   for(let i=0;i<8000;i++)b.TankOnline.tick();
@@ -63,7 +65,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(a.eval('tanks[1].hp'),b.eval('tanks[1].hp'));
   // Reopening a third session for the same member restores the saved match without another debit.
   const reconnected=await client(ids[0],true);
-  assert.equal(get(reconnected,'netCoins').textContent,'보유 98쭈');
+  assert.equal(get(reconnected,'netCoins').textContent,'보유 97쭈');
   let deathSounds=0;a.sfx=type=>{if(type==='boom')deathSounds++;};
   get(a,'surrender').click();
   await wait(()=>a.TankView.hasEffects());
@@ -77,6 +79,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>solo.document.body.classList.contains('in-match'));
   solo.TankOnline.tick();assert.equal(solo.eval('tanks.length'),2);
   assert.equal(get(solo,'surrender').textContent,'그만하기');assert.doesNotMatch(get(solo,'netTurn').textContent,/초/);
+  get(solo,'wpn').click();get(solo,'wgrid').children[12].click();
   solo.eval('lockAngle();startCharge();tanks[turn].ang=0;tanks[turn].pow=50;release();');
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
@@ -84,7 +87,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
   assert.equal(solo.TankOnline.canAim(),true,'computer must automatically return the turn to the person');
-  assert.equal(get(solo,'netCoins').textContent,'보유 100쭈');
+  assert.equal(get(solo,'netCoins').textContent,'보유 97쭈');
   get(solo,'surrender').click();
   await wait(()=>!solo.document.body.classList.contains('in-match'));
   assert.equal(get(solo,'entryHome').hidden,false);assert.equal(get(solo,'soloSetup').hidden,false);
@@ -98,7 +101,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   get(local,'localPlayers').value='3';get(local,'startLocal').click();
   await wait(()=>local.document.body.classList.contains('in-match'));local.TankOnline.tick();
   assert.equal(local.eval('tanks.length'),3);assert.doesNotMatch(get(local,'netTurn').textContent,/컴퓨터|초/);
-  for(const [seat,weapon,coins] of [[0,10,99],[1,10,98],[2,0,98]]){
+  for(const [seat,weapon,coins] of [[0,12,97],[1,10,96],[2,0,96]]){
    assert.equal(local.TankOnline.canAim(),true);assert.equal(local.TankOnline.seat(),seat);
    assert.match(get(local,'netTurn').textContent,new RegExp('플레이어 '+(seat+1)+' 차례'));
    get(local,'wpn').click();get(local,'wgrid').children[weapon].click();
@@ -117,12 +120,12 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
   assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
   assert.equal(local.eval('shots[0].w.r'),200,'nuclear shells retain their original large blast range');
-  assert.equal(get(local,'netCoins').textContent,'보유 95쭈');local.eval('draw()');
+  assert.equal(get(local,'netCoins').textContent,'보유 93쭈');local.eval('draw()');
   for(let i=0;i<8000;i++)local.TankOnline.tick();
   let localRoom=(await f.call(ids[3],{action:'mine'})).room;
   assert.equal(localRoom.event.command.weapon,8);
   const restored=await client(ids[3],true);restored.TankOnline.tick();
-  assert.equal(get(restored,'netCoins').textContent,'보유 95쭈');
+  assert.equal(get(restored,'netCoins').textContent,'보유 93쭈');
   assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
   while(localRoom.status==='active')localRoom=(await f.call(ids[3],{action:'surrender',room_id:localRoom.id,version:localRoom.version,request_id:require('node:crypto').randomUUID()})).room;
   local.dispatchEvent(new local.Event('online'));
@@ -153,7 +156,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    assert.equal(x,side<0?camera.x+12:camera.x+camera.w-12);
    assert.equal(y,camera.y+camera.h-12,'explosion is visible just inside the lower screen edge');
   }
-  console.log('PASS: destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage and paid ammo');
+  console.log('PASS: destruction effects, common entrance, solo CPU turns, two online sessions, same-device human turns/reconnect/restart, nuclear selection/name/damage, homing selection/replay and 3-jju payment in all modes');
 
  }finally{for(const w of windows)w.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

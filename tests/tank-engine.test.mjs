@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
-assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1]);
+assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3]);
+assert.equal(WEAPONS[12].accuracy,.85);
+assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
 for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
 const gusts=Array.from({length:100000},(_,i)=>windAt(123456+i%17,1700000000000+i*2800+(i%2800)));
@@ -34,7 +36,7 @@ for(const size of [2,4,12]){
   const result=advance(initial,0,command),client=createEngine(initial);assert.equal(client.begin(command),result.price);
   let frames=0;while(['fly','settle'].includes(client.view().state)&&frames++<18000){
    client.step();
-   if(weapon>=3&&weapon<=9)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:WEAPONS[0].r,'including split and repeat explosions');assert.equal(boom.D,weapon===8?150:69,'nuclear blasts have time to expand to full size');}
+   if((weapon>=3&&weapon<=9)||weapon===12)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:WEAPONS[0].r,'including split, repeat and homing explosions');assert.equal(boom.D,weapon===8?150:69,'nuclear blasts have time to expand to full size');}
   }
   const rendered=client.snapshot();result.state.tanks.forEach(t=>delete t.misses);
   assert.deepEqual(rendered,result.state,`server and client replay match: ${size} players, weapon ${weapon}`);
@@ -55,6 +57,61 @@ assert.ok(nuclearBlast.state.tanks[1].hp<100,'nuclear damage reaches tanks 100 u
 assert.equal(nuclearBlast.state.tanks[2].hp,100,'tanks outside the large blast remain safe');
 assert.ok(nuclearBlast.state.terrain[350]>basicBlast.state.terrain[350],'the actual crater also expands');
 assert.equal(nuclearBlast.price,3,'restoring the radius does not raise the price');
+// Homing searches around the impact point, ignores self/wrecks, and bursts only at the locked enemy.
+const homingGame=newGame(['self','far','nearest','wreck'],'homing-test',881);
+homingGame.seed=1;homingGame.terrain.fill(150);
+homingGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,690,650,610][i],y:300,vy:0,hp:i===3?0:100}));
+const homingCommand={type:'fire',weapon:12,angle:90,power:5,moves:[],windTime:nuclearTime};
+const guided=createEngine(homingGame),guidedMask=guided.view().mask.slice();
+assert.equal(guided.begin(homingCommand),3);
+Object.assign(guided.view().shots[0],{x:610,y:300,vx:0,vy:0,age:99});guided.step();
+assert.equal(guided.view().shots[0].homing.target,2,'choose the nearest living enemy, not self or wreck');
+assert.equal(guided.view().booms.length,0,'locking does not create a first explosion');
+assert.deepEqual(guided.view().mask,guidedMask);
+let guidedFrames=0;const guidedBursts=new Set();
+while(['fly','settle'].includes(guided.view().state)&&guidedFrames++<18000){guided.step();guided.view().booms.forEach(b=>guidedBursts.add(b));}
+assert.ok(guidedFrames<18000);assert.equal(guidedBursts.size,1);
+assert.equal([...guidedBursts][0].x,650);assert.equal([...guidedBursts][0].r,24);
+assert.deepEqual(guided.snapshot().tanks.map(t=>t.hp),[100,100,66,0],'homing deals exactly normal direct-hit damage');
+assert.equal(guided.snapshot().terrain[305],150,'the original impact point is intact');
+assert.ok(guided.snapshot().terrain[325]>150,'the final normal explosion digs the target ground');
+// The search radius is the nuclear radius, inclusive; equal-distance targets use stable seat order.
+for(const [distance,expected] of [[199,1],[200,1],[200.01,undefined]]){
+ const game=structuredClone(homingGame);game.tanks.forEach((t,i)=>Object.assign(t,{x:i?600+distance:600,hp:i<2?100:0}));
+ const e=createEngine(game);e.begin(homingCommand);
+ Object.assign(e.view().shots[0],{x:600,y:296,vx:0,vy:-.15*.35/2,age:99});e.step();
+ assert.equal(e.view().shots[0]?.homing?.target,expected,`nuclear acquisition boundary: ${distance}`);
+ if(expected===undefined)assert.equal(e.view().booms[0].r,24,'no target means an ordinary impact');
+}
+const tied=structuredClone(homingGame);tied.tanks[1].x=640;tied.tanks[2].x=560;
+const tie=createEngine(tied);tie.begin(homingCommand);Object.assign(tie.view().shots[0],{x:600,y:296,vx:0,vy:-.15*.35/2,age:99});tie.step();
+assert.equal(tie.view().shots[0].homing.target,1);
+// A ridge cannot stop a successful lock; the guided shell climbs over it without carving it.
+const ridge=structuredClone(homingGame);ridge.tanks[1].x=700;ridge.tanks[2].hp=0;ridge.terrain.fill(100,310,341);
+const overHill=createEngine(ridge);overHill.begin(homingCommand);
+Object.assign(overHill.view().shots[0],{x:600,y:296,vx:0,vy:0,age:99});
+let hillFrames=0,sawCrossing=false;
+while(['fly','settle'].includes(overHill.view().state)&&hillFrames++<18000){
+ overHill.step();for(const s of overHill.view().shots)if(s.homing&&s.x>=620&&s.x<=680){sawCrossing=true;assert.ok(s.y<200,'guided shell clears the hill');}
+}
+assert.ok(sawCrossing&&hillFrames<18000);assert.equal(overHill.snapshot().tanks[1].hp,66);assert.equal(overHill.snapshot().terrain[320],100);
+// Both accuracy outcomes replay exactly, and retrying an accepted shot cannot reroll the result.
+for(const [seed,expectedHit] of [[1,true],[1700,false]]){
+ const game=structuredClone(homingGame);game.seed=seed;
+ const result=advance(game,0,homingCommand),again=advance(game,0,homingCommand),replay=createEngine(game);replay.begin(homingCommand);
+ assert.deepEqual(again,result);assert.equal(result.price,3,'successful and missed guidance both cost 3 jju');
+ let frames=0;while(['fly','settle'].includes(replay.view().state)&&frames++<18000)replay.step();
+ result.state.tanks.forEach(t=>delete t.misses);assert.deepEqual(replay.snapshot(),result.state);
+ assert.equal(result.state.tanks[2].hp,expectedHit?66:100);
+ assert.equal(result.state.tanks[0].hp,expectedHit?100:66,'failed guidance bursts at the original impact');
+}
+let homingSuccesses=0;const homingTrials=2000;
+for(let i=0;i<homingTrials;i++){
+ const e=createEngine({...homingGame,seed:Math.imul(i,0x9e3779b9)>>>0});e.begin(homingCommand);
+ if(e.view().shots[0].canHome)homingSuccesses++;
+}
+const homingRate=homingSuccesses/homingTrials;
+assert.ok(homingRate>.84&&homingRate<.86,`guidance should succeed 85% of the time: ${homingRate}`);
 // Healing reaches twice the basic radius, including opponents and the firing tank.
 const healGame=newGame(['self','hurt','edge','outside','wreck'],'heal-test',881);
 healGame.terrain.fill(150);
@@ -128,4 +185,4 @@ for(let n=0;n<3;n++){
 }
 assert.equal(game.tanks[0].hp,0,'three absent turns eliminate the player');
 assert.throws(()=>advance(newGame(['a','b'],'room',1),1,{type:'fire',weapon:0,angle:60,power:50,moves:[]}),/not_your_turn/);
-console.log(`PASS: 0–20 wind (${(strongRate*100).toFixed(2)}% strong), in-flight changes, healing/teleport without terrain damage, outside explosions, all 12 ammo types, 2/4/12-player replay parity`);
+console.log(`PASS: 0–20 wind (${(strongRate*100).toFixed(2)}% strong), homing (${(homingRate*100).toFixed(2)}% success), nearest enemy/range/ridge/failure, healing/teleport without terrain damage, outside explosions, all 13 ammo types, 2/4/12-player replay parity`);
