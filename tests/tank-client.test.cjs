@@ -12,8 +12,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   w.orientationLocks=[];w.orientationUnlocks=0;w.fullscreenCalls=0;
   Object.defineProperty(w.screen,'orientation',{value:{lock:async value=>{w.orientationLocks.push(value);},unlock:()=>{w.orientationUnlocks++;}}});
   w.document.documentElement.requestFullscreen=async()=>{w.fullscreenCalls++;};
-  w.radialGradients=[];
-  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
+  w.radialGradients=[];w.canvasScales=[];
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({scale:(...args)=>w.canvasScales.push(args),createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
   w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:this.id==='power'?254:viewport.width,height:this.id==='prot'?56:this.id==='power'?28:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
   w.matchMedia=()=>({matches:false,addEventListener:draw});w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=draw;w.confirm=()=>true;
   const parent={postMessage(m){
@@ -48,6 +48,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.ok(a.eval('VW>800'));assert.ok(b.eval('VW<800&&H<=MH+.001'));
   assert.equal(get(b,'rotate'),null,'portrait play has no blocking rotate-phone overlay');
   assert.equal(a.eval('W'),1600);assert.equal(b.eval('W'),1600,'both sessions use the smaller battlefield');
+  a.eval('draw()');assert.equal(a.eval('TS'),a.eval('tankRenderEngine.view().TS'));
+  assert.ok(a.canvasScales.some(([x,y])=>x===.5175&&y===.5175),'tank rendering uses the enlarged physics scale');
+  assert.deepEqual(Array.from(a.eval('WEAPONS.map(w=>w.r)')),[28.8,50.4,16.8,28.8,28.8,28.8,28.8,120,200,28.8,57.6,21.6,28.8],'the picker metadata agrees with enlarged weapon radii');
   assert.equal(a.orientationLocks.length,0);assert.equal(a.orientationUnlocks,1);assert.equal(a.fullscreenCalls,1);
   const beforeResize=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();

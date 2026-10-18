@@ -1,12 +1,25 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX} from '../games/tank/engine.mjs';
+import {newGame,createEngine,advance,WEAPONS,windAt,WIND_MAX,TANK_SCALE} from '../games/tank/engine.mjs';
 assert.equal(fs.readFileSync(new URL('../games/tank/engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/tank/engine.mjs',import.meta.url),'utf8'));
 assert.deepEqual(WEAPONS.map(w=>w.price),[0,0,0,2,1,2,1,1,3,3,1,1,3]);
 assert.equal(WEAPONS[12].accuracy,.85);
 assert.equal(WEAPONS[12].dmg,WEAPONS[0].dmg);
 for(const weapon of WEAPONS.filter(w=>w.price>0&&w.name!=='핵탄'&&!['heal','teleport','dirt'].includes(w.kind)))assert.equal(weapon.r,WEAPONS[0].r,'other paid explosions use the basic shell radius');
 assert.equal(WEAPONS[8].r,200,'nuclear shells restore their original large blast');
+const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
+WEAPONS.forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
+assert.deepEqual(WEAPONS.map(w=>w.dmg),[34,24,11,7,32,36,12,0,130,26,0,0,34],'base damage is unchanged');
+assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
+const collisionGame=newGame(['self','target','far'],'larger-tanks',881);collisionGame.wind=0;collisionGame.terrain.fill(150);
+collisionGame.tanks.forEach((t,i)=>Object.assign(t,{x:[300,900,1400][i],y:300,vy:0}));
+for(const [offset,hit] of [[5.8,true],[6.5,false]]){
+ const e=createEngine(collisionGame);e.begin({type:'fire',weapon:0,angle:45,power:55,moves:[]});
+ const s=e.view().shots[0],tip=18*TANK_SCALE/Math.sqrt(2);
+ assert.ok(Math.abs(s.x-(300+tip))<1e-10);assert.ok(Math.abs(s.y-(300-9*TANK_SCALE-tip))<1e-10,'the shell starts at the enlarged barrel tip');
+ Object.assign(s,{x:900+offset,y:300-6*TANK_SCALE,vx:0,vy:-.15*.35/2,age:99});e.step();
+ assert.equal(e.view().booms.length,hit?1:0,'the hit boundary grows with the visible tank');
+}
 const gusts=Array.from({length:100000},(_,i)=>windAt(123456+i%17,1700000000000+i*2800+(i%2800)));
 const strengths=gusts.map(w=>Math.round(Math.abs(w)/WIND_MAX*10));
 const windRates=[[0,3,.7],[4,7,.2],[8,10,.1]].map(([lo,hi,expected])=>{
@@ -113,7 +126,7 @@ for(const size of [2,4,12]){
   const result=advance(initial,0,command),client=createEngine(initial);assert.equal(client.begin(command),result.price);
   let frames=0;while(['fly','settle'].includes(client.view().state)&&frames++<18000){
    client.step();
-   if((weapon>=3&&weapon<=9)||weapon===12)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:weapon===7?100:WEAPONS[0].r,'including split, repeat and homing explosions');assert.equal(boom.D,weapon===8?150:weapon===7?130:69,'large terrain effects have time to expand to full size');}
+   if((weapon>=3&&weapon<=9)||weapon===12)for(const boom of client.view().booms){assert.equal(boom.r,weapon===8?200:weapon===7?120:28.8,'including split, repeat and homing explosions');assert.equal(boom.D,weapon===8?150:weapon===7?146:73,'large terrain effects have time to expand to full size');}
   }
   const rendered=client.snapshot();result.state.tanks.forEach(t=>delete t.misses);
   assert.deepEqual(rendered,result.state,`server and client replay match: ${size} players, weapon ${weapon}`);
@@ -131,15 +144,17 @@ const nuclearTime=0;
 const nuclearCommand={type:'fire',weapon:8,angle:90,power:5,moves:[],windTime:nuclearTime};
 const basicBlast=advance(nuclearGame,0,{...nuclearCommand,weapon:0}),nuclearBlast=advance(nuclearGame,0,nuclearCommand);
 assert.equal(basicBlast.state.tanks[1].hp,100);
+assert.ok(basicBlast.state.terrain[312]>150,'the enlarged normal blast digs beyond its old 24-unit radius');
+assert.equal(basicBlast.state.terrain[316],150,'ground beyond the new normal radius remains intact');
 assert.ok(nuclearBlast.state.tanks[1].hp<100,'nuclear damage reaches tanks 100 units away');
 assert.equal(nuclearBlast.state.tanks[2].hp,100,'tanks outside the large blast remain safe');
 assert.ok(nuclearBlast.state.terrain[350]>basicBlast.state.terrain[350],'the actual crater also expands');
 assert.equal(nuclearBlast.price,3,'restoring the radius does not raise the price');
-// Dirt fills the wider half-nuclear area without damaging tanks or raising its price.
+// Dirt grows by 20% too, without damaging tanks or raising its price.
 const dirtBlast=advance(nuclearGame,0,{...nuclearCommand,weapon:7});
-assert.equal(WEAPONS[7].r,WEAPONS[8].r/2);
-assert.ok(dirtBlast.state.terrain[340]<150,'soil reaches 80 units from the impact');
-assert.equal(dirtBlast.state.terrain[360],150,'terrain outside the 100-unit radius is unchanged');
+assert.equal(WEAPONS[7].r,120);
+assert.ok(dirtBlast.state.terrain[355]<150,'soil reaches 110 units from the impact');
+assert.equal(dirtBlast.state.terrain[370],150,'terrain outside the 120-unit radius is unchanged');
 assert.deepEqual(dirtBlast.state.tanks.map(t=>t.hp),[100,100,100]);
 assert.equal(dirtBlast.price,1);
 // Homing searches around the impact point, ignores self/wrecks, and bursts only at the locked enemy.
@@ -157,7 +172,7 @@ assert.deepEqual(guided.view().mask,guidedMask);
 let guidedFrames=0;const guidedBursts=new Set();
 while(['fly','settle'].includes(guided.view().state)&&guidedFrames++<18000){guided.step();guided.view().booms.forEach(b=>guidedBursts.add(b));}
 assert.ok(guidedFrames<18000);assert.equal(guidedBursts.size,1);
-assert.equal([...guidedBursts][0].x,650);assert.equal([...guidedBursts][0].r,24);
+assert.equal([...guidedBursts][0].x,650);assert.equal([...guidedBursts][0].r,28.8);
 assert.deepEqual(guided.snapshot().tanks.map(t=>t.hp),[100,100,66,0],'homing deals exactly normal direct-hit damage');
 assert.equal(guided.snapshot().terrain[305],150,'the original impact point is intact');
 assert.ok(guided.snapshot().terrain[325]>150,'the final normal explosion digs the target ground');
@@ -167,7 +182,7 @@ for(const [distance,expected] of [[199,1],[200,1],[200.01,undefined]]){
  const e=createEngine(game);e.begin(homingCommand);
  Object.assign(e.view().shots[0],{x:600,y:296,vx:0,vy:-.15*.35/2,age:99});e.step();
  assert.equal(e.view().shots[0]?.homing?.target,expected,`nuclear acquisition boundary: ${distance}`);
- if(expected===undefined)assert.equal(e.view().booms[0].r,24,'no target means an ordinary impact');
+ if(expected===undefined)assert.equal(e.view().booms[0].r,28.8,'no target means an ordinary impact');
 }
 const tied=structuredClone(homingGame);tied.tanks[1].x=640;tied.tanks[2].x=560;
 const tie=createEngine(tied);tie.begin(homingCommand);Object.assign(tie.view().shots[0],{x:600,y:296,vx:0,vy:-.15*.35/2,age:99});tie.step();
@@ -202,7 +217,7 @@ assert.ok(homingRate>.84&&homingRate<.86,`guidance should succeed 85% of the tim
 const healGame=newGame(['self','hurt','edge','outside','wreck'],'heal-test',881);
 healGame.wind=0;
 healGame.terrain.fill(150);
-healGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,625,645,660,620][i],y:300,vy:0,hp:[50,88,50,50,0][i]}));
+healGame.tanks.forEach((t,i)=>Object.assign(t,{x:[600,625,655,670,620][i],y:300,vy:0,hp:[50,88,50,50,0][i]}));
 const healIndex=WEAPONS.findIndex(w=>w.kind==='heal');
 assert.equal(WEAPONS[healIndex].r,WEAPONS[0].r*2);
 const calmTime=0;

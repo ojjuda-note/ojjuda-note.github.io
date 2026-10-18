@@ -1,5 +1,5 @@
 // Bounded, deterministic aiming. Computer turns use only the three free weapons.
-import {advance,mapWidth,currentWind} from './engine.mjs';
+import {advance,mapWidth,currentWind,TANK_SCALE} from './engine.mjs';
 export const COMPUTER_ACCURACY=.05;
 export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  const tanks=saved.tanks,t=tanks[saved.turn];
@@ -10,13 +10,13 @@ export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  const wind=currentWind(saved);
  function distance(angle,power){
   const rad=angle*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);
-  const x0=t.x+cos*8.1,y0=t.y-4.05-sin*8.1,vx=cos*power*k,vy=-sin*power*k,h=.175;
+  const x0=t.x+cos*18*TANK_SCALE,y0=t.y-9*TANK_SCALE-sin*18*TANK_SCALE,vx=cos*power*k,vy=-sin*power*k,h=.175;
   // Four physics substeps per sample; the discrete acceleration matches the engine.
   for(let n=4;n<=3200;n+=4){
    const acceleration=h*h*n*(n+1)/2,x=x0+vx*n*h+wind*acceleration,y=y0+vy*n*h+.15*acceleration;
    if(x<0||x>width||y>720)return Infinity;
-   const d=Math.hypot(x-target.x,y-(target.y-3));
-   if(d<6||y>=ground(x))return d;
+   const d=Math.hypot(x-target.x,y-(target.y-6*TANK_SCALE));
+   if(d<12*TANK_SCALE||y>=ground(x))return d;
   }
   return Infinity;
  }

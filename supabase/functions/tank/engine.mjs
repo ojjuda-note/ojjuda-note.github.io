@@ -1,28 +1,29 @@
 // Deterministic physics derived from the supplied tank-game.zip. Shared by the server and display.
 
 export const WEAPONS=[
-  {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:24,dmg:34},
-  {name:'대형탄',price:0,desc:'폭발 범위가 넓지만 일반탄보다 피해가 약해요',ammo:Infinity,r:42,dmg:24},
-  {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:14,dmg:11,count:3},
-  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:24,dmg:7,kind:'mirv'},
-  {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:24,dmg:32,kind:'bounce'},
-  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:24,dmg:36,kind:'roll'},
-  {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:24,dmg:12},
-  {name:'흙폭탄',price:1,desc:'핵탄의 절반 범위에 흙더미를 쌓아요. 직접 피해는 없어요',ammo:Infinity,r:100,dmg:0,kind:'dirt'},
+  {name:'일반탄',price:0,desc:'기본 포탄',ammo:Infinity,r:28.8,dmg:34},
+  {name:'대형탄',price:0,desc:'폭발 범위가 넓지만 일반탄보다 피해가 약해요',ammo:Infinity,r:50.4,dmg:24},
+  {name:'산탄',price:0,desc:'세 갈래로 퍼져요. 한 발 위력은 일반탄의 3분의 1',ammo:Infinity,r:16.8,dmg:11,count:3},
+  {name:'분열탄',price:2,desc:'꼭대기에서 다섯 발로 갈라져요. 한 발 위력은 5분의 1',ammo:Infinity,r:28.8,dmg:7,kind:'mirv'},
+  {name:'통통탄',price:1,desc:'땅에서 세 번 튀고 터져요',ammo:Infinity,r:28.8,dmg:32,kind:'bounce'},
+  {name:'굴러탄',price:2,desc:'떨어진 뒤 비탈을 굴러가요',ammo:Infinity,r:28.8,dmg:36,kind:'roll'},
+  {name:'굴착탄',price:1,desc:'일반탄 범위의 땅을 파요. 피해는 적어요',ammo:Infinity,r:28.8,dmg:12},
+  {name:'흙폭탄',price:1,desc:'핵탄 범위의 60%에 흙더미를 쌓아요. 직접 피해는 없어요',ammo:Infinity,r:120,dmg:0,kind:'dirt'},
   {name:'핵탄',price:3,desc:'넓은 범위의 대형 폭발. 정중앙은 한 방에 파괴',ammo:Infinity,r:200,dmg:130},
-  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:24,dmg:26,kind:'pierce',pen:30,stage:0},
-  {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:48,dmg:0,kind:'heal',heal:25},
-  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:18,dmg:0,kind:'teleport'},
-  {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:24,dmg:34,kind:'homing',accuracy:.85}
+  {name:'관통탄',price:3,desc:'땅을 뚫고 들어가 터지고, 그 자리에서 두 번 더 튀어나가 터져요',ammo:Infinity,r:28.8,dmg:26,kind:'pierce',pen:30,stage:0},
+  {name:'치료탄',price:1,desc:'일반탄 두 배 범위의 모든 생존 탱크 에너지 +25 (최대 100). 땅은 파이지 않아요',ammo:Infinity,r:57.6,dmg:0,kind:'heal',heal:25},
+  {name:'이사탄',price:1,desc:'포탄이 떨어진 자리로 내 탱크가 이동해요. 탱크와 지형에 피해가 없어요',ammo:Infinity,r:21.6,dmg:0,kind:'teleport'},
+  {name:'유도탄',price:3,desc:'탄착점에서 핵탄 범위 안의 가장 가까운 적을 85% 확률로 추적해요. 실패하면 그 자리에서 폭발. 위력은 일반탄과 같아요',ammo:Infinity,r:28.8,dmg:34,kind:'homing',accuracy:.85}
 ];
-const PIERCE=[WEAPONS[9],{name:'',r:24,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:24,dmg:12,kind:'pierce',pen:18,stage:2}];
-const MIRV_CHILD={name:'',r:24,dmg:7};
+const PIERCE=[WEAPONS[9],{name:'',r:28.8,dmg:20,kind:'pierce',pen:24,stage:1},{name:'',r:28.8,dmg:12,kind:'pierce',pen:18,stage:2}];
+const MIRV_CHILD={name:'',r:28.8,dmg:7};
 
 const COLORS=['#e8d9a8','#e07a5f','#7fc8f8','#9ad27a','#c792ea','#f6c177','#f28fad','#6ee7d2','#ffffff','#b8a07e','#ff9f43','#8ea4ff'];
 
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const G=.15,SLOW=.35,TS=.45,FUEL=150,CS=2;
+export const TANK_SCALE=.5175;
+const G=.15,SLOW=.35,TS=TANK_SCALE,FUEL=150,CS=2;
 const isBasicWeapon=w=>Number.isInteger(w)&&WEAPONS[w]?.price===0;
 export const WIND_MAX=.038;
 const windBand=wind=>{const strength=Math.round(Math.abs(wind)/WIND_MAX*10);return strength<=3?0:strength<=7?1:2;};
@@ -319,7 +320,7 @@ return {step,move,begin,snapshot,
  setWindTime(time){if(state==='aim'&&Number.isFinite(time)){windTime=time;frame=0;}},
  surrender(seat){if(!tanks[seat]||tanks[seat].hp<=0)throw Error('already_eliminated');tanks[seat].hp=0;if(seat===turn||tanks.filter(t=>t.hp>0).length<=1)finishTurn();},
  skip(){if(over)return;tanks[turn].misses=(saved.tanks?.[turn]?.misses||0)+1;if(tanks[turn].misses>=3)tanks[turn].hp=0;finishTurn();},
- view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,WINDMAX,wind,ground,mask,tanks,turn,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
+ view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,TS,WINDMAX,wind,ground,mask,tanks,turn,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
 }
 export function validateCommand(c){
  if(!c||!Number.isInteger(c.weapon)||c.weapon<0||c.weapon>=WEAPONS.length||!Number.isFinite(c.angle)||c.angle<0||c.angle>180||!Number.isFinite(c.power)||c.power<5||c.power>100||!Array.isArray(c.moves)||c.moves.length>250||c.moves.some(x=>x!==-1&&x!==1))throw Error('invalid_move');
