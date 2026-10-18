@@ -42,7 +42,8 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   }
   assert.ok(hits>=10&&hits<=36,`casual CPU should miss often but still hit: ${hits}/72`);
   assert.ok(totalDamage/72<15,'computer average damage should stay forgiving');
-  let state=newGame(['나','컴퓨터'],randomUUID(),456789),turns=0;
+  // Fix the weather epoch as well as the terrain seed so CI time cannot change the duel.
+  let state=newGame(['나','컴퓨터'],randomUUID(),456789,1700000000000),turns=0;
   for(;turns<70&&!state.over;turns++){
    const command=computerCommand(state),next=advance(state,state.turn,command);
    assert.equal(next.price,0);state=next.state;

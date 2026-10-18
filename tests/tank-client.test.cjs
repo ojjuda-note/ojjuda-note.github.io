@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
 const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Promise(r=>setTimeout(r,10));}throw Error('UI condition timed out');};
 (async()=>{
  const f=await fixture(),windows=[];
- async function client(actor,expectMatch=false,viewport={width:1536,height:626},joinCode=''){
+ async function client(actor,expectSaved=false,viewport={width:1536,height:626},joinCode=''){
   const html=fs.readFileSync(path.join(root,'games/tank/index.html'),'utf8');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/tank/index.html',runScripts:'outside-only',pretendToBeVisual:true});windows.push(dom.window);
   const w=dom.window,context=dom.getInternalVMContext(),draw=()=>{};
@@ -22,7 +22,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const engine=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/engine.mjs'),'utf8'),{context});
   const online=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/online.mjs'),'utf8'),{context});
   await engine.link(()=>{throw Error('unexpected import');});await online.link(()=>engine);await online.evaluate();
-  await wait(()=>expectMatch?w.document.body.classList.contains('in-match'):!w.document.getElementById('startSolo').disabled);
+  await wait(()=>expectSaved?(!w.document.getElementById('resumeHome').hidden&&!w.document.getElementById('resumeMatch').disabled):!w.document.getElementById('startSolo').disabled);
   return w;
  }
  try{
@@ -65,6 +65,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(a.eval('tanks[1].hp'),b.eval('tanks[1].hp'));
   // Reopening a third session for the same member restores the saved match without another debit.
   const reconnected=await client(ids[0],true);
+  assert.equal(reconnected.document.body.classList.contains('in-match'),false);
+  assert.equal(get(reconnected,'newMatch').hidden,true,'an active online room cannot be silently abandoned');
+  get(reconnected,'resumeMatch').click();
+  await wait(()=>reconnected.document.body.classList.contains('in-match'));
   assert.equal(get(reconnected,'netCoins').textContent,'보유 97쭈');
   let deathSounds=0;a.sfx=type=>{if(type==='boom')deathSounds++;};
   get(a,'surrender').click();
@@ -124,7 +128,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   for(let i=0;i<8000;i++)local.TankOnline.tick();
   let localRoom=(await f.call(ids[3],{action:'mine'})).room;
   assert.equal(localRoom.event.command.weapon,8);
-  const restored=await client(ids[3],true);restored.TankOnline.tick();
+  const restored=await client(ids[3],true);
+  assert.equal(restored.TankOnline.canAim(),false,'saved matches wait for the resume button');
+  assert.match(get(restored,'resumeInfo').textContent,/같은 기기 · 3명/);
+  get(restored,'resumeMatch').click();restored.TankOnline.tick();
   assert.equal(get(restored,'netCoins').textContent,'보유 93쭈');
   assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
   while(localRoom.status==='active')localRoom=(await f.call(ids[3],{action:'surrender',room_id:localRoom.id,version:localRoom.version,request_id:require('node:crypto').randomUUID()})).room;
@@ -137,6 +144,32 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   local.TankOnline.tick();assert.equal(local.eval('tanks.length'),3,'play again keeps the local player count');
   get(local,'surrender').click();await wait(()=>!local.document.body.classList.contains('in-match'));
   assert.equal(get(local,'localSetup').hidden,false);assert.equal(get(local,'startLocal').disabled,false);
+  // Opening the entrance must not run a saved computer turn or spend coins.
+  let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;
+  savedSolo=(await f.start(ids[5],savedSolo)).room;
+  savedSolo=(await f.move(ids[5],savedSolo,{weapon:0,angle:0,power:50,moves:[]})).room;
+  assert.equal(savedSolo.game.turn,1);
+  const paused=await client(ids[5],true);
+  assert.equal(paused.document.body.classList.contains('in-match'),false);
+  assert.equal(get(paused,'newMatch').hidden,false);
+  await new Promise(r=>setTimeout(r,1100));
+  const unchanged=(await f.call(ids[5],{action:'read',room_id:savedSolo.id})).room;
+  assert.equal(unchanged.version,savedSolo.version,'CPU waits on the entrance');
+  assert.deepEqual(unchanged.game,savedSolo.game);assert.equal(unchanged.coins,100);
+  paused.confirm=()=>false;get(paused,'newMatch').click();
+  assert.equal((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id,'cancelling a new game preserves the save');
+  get(paused,'resumeMatch').click();
+  assert.equal(paused.document.body.classList.contains('in-match'),true);
+  await wait(async()=>(await f.call(ids[5],{action:'read',room_id:savedSolo.id})).room.version>savedSolo.version);
+  paused.close();
+  const replace=await client(ids[5],true);
+  get(replace,'newMatch').click();
+  await wait(()=>!get(replace,'entryHome').hidden);
+  assert.equal((await f.call(ids[5],{action:'mine'})).room,null);
+  assert.equal(get(replace,'soloOpponents').value,'1');
+  get(replace,'startSolo').click();
+  await wait(()=>replace.document.body.classList.contains('in-match'));
+  assert.notEqual((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id);
   // A restored wreck stays quiet; a new match can explode once again.
   const {newGame,createEngine}=await import('../games/tank/engine.mjs');
   const living=newGame(['a','b'],'effects',88),wreck=structuredClone(living);wreck.tanks[1].hp=0;

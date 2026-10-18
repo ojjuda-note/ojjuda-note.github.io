@@ -2,9 +2,10 @@ import {createEngine,WEAPONS} from './engine.mjs?v=20261018-shell-balance1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
+let restoreCheck=true,resumeOnEntry=false;
 const messages={not_signed_in:'오쭈다에 로그인한 뒤 이용해 주세요.',banned:'지금은 대전방을 이용할 수 없어요.',room_in_progress:'참여 중인 방을 먼저 마무리해 주세요.',room_rate_limit:'잠시 후 방을 다시 만들어 주세요.',room_full:'방 인원이 꽉 찼어요.',room_not_found:'방 번호를 확인해 주세요.',room_unavailable:'이미 닫힌 방이에요.',room_already_started:'이미 전투가 시작됐어요.',not_room_owner:'방장만 시작할 수 있어요.',need_players:'두 명 이상 모이면 시작할 수 있어요.',state_conflict:'다른 기기에서 진행됐어요. 최신 화면으로 맞추고 있어요.',not_your_turn:'내 차례에 발사해 주세요.',coins:'쭈가 부족해요. 무료 기본탄을 선택할 수 있어요.',wallet_unavailable:'쭈 잔액을 확인하지 못했어요.',already_eliminated:'이미 탈락해 관전 중이에요.',unavailable:'연결이 원활하지 않아요. 다시 연결하고 있어요.'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function notify(text){$('netMessage').textContent=text;$('netNotice').textContent=current?.game?text:'';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{$('netNotice').textContent='';},6000);}
+function notify(text){$('netMessage').textContent=text;$('netNotice').textContent=current?.game&&!resumeOnEntry?text:'';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{$('netNotice').textContent='';},6000);}
 function rpc(body){
  if(!available)return Promise.reject(Error('not_signed_in'));
  const requestId=crypto.randomUUID();
@@ -21,7 +22,7 @@ async function request(body){
  }
 }
 function playerSeat(){return current?.mode==='local'?(engine?.view().turn??current.game?.turn??0):current?.seat??-1;}
-function canAim(){const seat=playerSeat();return !!(current?.status==='active'&&engine&&!animation&&!busy&&!uncertain&&seat===current.game.turn&&engine.view().tanks[seat]?.hp>0&&(current.mode!=='online'||Date.parse(current.deadline)>Date.now()+offset));}
+function canAim(){const seat=playerSeat();return !!(!resumeOnEntry&&current?.status==='active'&&engine&&!animation&&!busy&&!uncertain&&seat===current.game.turn&&engine.view().tanks[seat]?.hp>0&&(current.mode!=='online'||Date.parse(current.deadline)>Date.now()+offset));}
 function chooseMode(mode){
  selectedMode=mode;
  lobby();
@@ -32,6 +33,16 @@ function lobby(){
  $('entryCopy').innerHTML=selectedMode==='solo'?'바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.':selectedMode==='local'?'한 기기로 둘러앉아 한 판!<br>차례대로 번갈아 조작해요 · 2~12명':'바람을 읽고, 각도를 맞춰 한 발!<br>각자의 기기에서 함께해요 · 2~12명';
  document.body.classList.remove('in-match');$('menu').classList.remove('hidden');$('over').classList.add('hidden');$('netHud').hidden=true;
  $('entryHome').hidden=!!current;$('soloSetup').hidden=selectedMode!=='solo';$('localSetup').hidden=selectedMode!=='local';$('lobbyHome').hidden=!!current||selectedMode!=='online';$('waitingRoom').hidden=!current||current.status!=='waiting';
+ $('resumeHome').hidden=!resumeOnEntry||!current?.game;
+ if(resumeOnEntry&&current?.game){
+  const online=current.mode==='online',finished=current.status==='finished';
+  $('entryCopy').textContent=online&&!finished?'참여 중인 온라인 대전이 있어요. 이어서 참여해 주세요.':'하던 게임이 있어요. 이어서 하거나 새로 시작해 보세요.';
+  $('resumeInfo').textContent=current.mode==='solo'?`혼자 하기 · 컴퓨터 ${current.capacity-1}명`:current.mode==='local'?`같은 기기 · ${current.capacity}명`:`온라인 대전 · ${current.names.length}명`;
+  $('resumeMatch').textContent=finished?'게임 결과 보기':'하던 게임 이어서 하기';
+  $('resumeMatch').disabled=$('newMatch').disabled=busy||!ready||!available||uncertain;
+  $('newMatch').hidden=online&&!finished;
+  $('resumeHint').textContent=online&&!finished?'온라인 대전은 계속 진행돼요. 이어서 참여해 주세요.':'체력·지형·차례가 저장되어 있어요. 마지막 진행 후 24시간까지 이어 할 수 있어요.';
+ }
  $('startSolo').disabled=$('startLocal').disabled=busy||!ready||!available||uncertain;
  for(const button of document.querySelectorAll('#lobbyHome button'))button.disabled=busy||!available;
  $('soloMode').disabled=$('localMode').disabled=$('onlineMode').disabled=busy;
@@ -47,7 +58,7 @@ function lobby(){
  }
 }
 function render(){
- if(!current?.game){lobby();return;}
+ if(!current?.game||resumeOnEntry){lobby();return;}
  document.body.classList.add('in-match');$('menu').classList.add('hidden');$('netHud').hidden=false;
  $('netCoins').textContent=`보유 ${coins}쭈`;
  const solo=current.mode==='solo',local=current.mode==='local',privateMatch=solo||local;
@@ -61,7 +72,7 @@ function render(){
  view.refresh();queueComputer();
 }
 function queueComputer(){
- const eligible=current?.mode==='solo'&&current.status==='active'&&current.game.turn!==current.seat&&!animation&&!busy&&!uncertain&&!document.hidden;
+ const eligible=!resumeOnEntry&&current?.mode==='solo'&&current.status==='active'&&current.game.turn!==current.seat&&!animation&&!busy&&!uncertain&&!document.hidden;
  const key=eligible?current.id+':'+current.version:'';
  if(!key){clearTimeout(cpuTimer);cpuTimer=0;cpuVersion='';return;}
  if(cpuTimer&&cpuVersion===key)return;
@@ -76,8 +87,8 @@ function accept(result,animate=true){
  if(next){offset=next.serverTime-Date.now();selectedMode=next.mode||'online';}
  if(next&&current?.id===next.id&&next.version===current.version){current=next;render();return;}
  const prior=current;current=next;moves=[];uncertain=false;view.resetInput();
- if(!next?.game){engine=null;animation=false;view.resetHistory();render();return;}
- const replay=animate&&!document.hidden&&!animation&&prior?.id===next.id&&prior.game&&next.event?.type==='fire'&&next.event.fromVersion===prior.version&&next.game.shotNo>prior.game.shotNo;
+ if(!next?.game){resumeOnEntry=false;engine=null;animation=false;view.resetHistory();render();return;}
+ const replay=animate&&!resumeOnEntry&&!document.hidden&&!animation&&prior?.id===next.id&&prior.game&&next.event?.type==='fire'&&next.event.fromVersion===prior.version&&next.game.shotNo>prior.game.shotNo;
  if(prior?.id!==next.id)view.resetHistory();
  if(replay){engine=createEngine(prior.game);engine.begin(next.event.command);animation=true;view.sound('fire');view.notify(WEAPONS[next.event.command.weapon].name+' 발사');}
  else{engine=createEngine(next.game);animation=false;}
@@ -95,6 +106,7 @@ async function refresh(){
  try{
   const result=await request(current?{action:'read',room_id:current.id}:{action:'mine'});
   if(revision!==epoch)return;
+  if(restoreCheck){restoreCheck=false;resumeOnEntry=!!result.room?.game;}
   uncertain=false;accept(result);if(!current)await list();
   if(!$('netNotice').textContent)$('netMessage').textContent=current?.status==='waiting'?(current.mode==='solo'?'준비되면 전투를 시작하세요.':'방 번호를 알려 주고 친구를 기다려 주세요.'):current?'':`보유 ${coins}쭈 · 기본탄 3종은 무료예요`;
  }catch(e){
@@ -105,7 +117,7 @@ async function refresh(){
  }finally{polling=false;schedule();}
 }
 async function perform(body){
- if(busy)return;busy=true;epoch++;clearTimeout(timer);view.refresh();render();
+ if(busy)return;restoreCheck=false;busy=true;epoch++;clearTimeout(timer);view.refresh();render();
  try{
   const result=await request(body);accept(result);notify(body.action==='create'&&body.options?.mode!=='solo'?'방을 만들었어요. 방 번호로 모여 주세요.':'');return result;
  }catch(e){
@@ -120,7 +132,7 @@ async function fire(){
 }
 window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins,fire,
  tick(){
-  if(!engine)return;
+  if(!engine||resumeOnEntry)return;
   if(animation){
    engine.step();
    if(!['fly','settle'].includes(engine.view().state)){
@@ -147,6 +159,14 @@ async function startPrivate(mode){
  if(created?.room?.status==='waiting')await perform({action:'start',room_id:created.room.id,version:created.room.version,request_id:crypto.randomUUID()});
 }
 $('soloMode').onclick=()=>chooseMode('solo');$('localMode').onclick=()=>chooseMode('local');$('onlineMode').onclick=()=>chooseMode('online');$('startSolo').onclick=()=>startPrivate('solo');$('startLocal').onclick=()=>startPrivate('local');
+$('resumeMatch').onclick=()=>{if(!current?.game||busy||uncertain)return;resumeOnEntry=false;void view.landscape();render();};
+$('newMatch').onclick=async()=>{
+ if(!current||busy||uncertain||(current.mode==='online'&&current.status==='active'))return;
+ if(!confirm('새 게임을 준비하면 하던 게임이 끝나요. 새로 시작할까요?'))return;
+ if(current.mode==='solo')$('soloOpponents').value=String(current.capacity-1);
+ if(current.mode==='local')$('localPlayers').value=String(current.capacity);
+ await perform({action:'leave',room_id:current.id});
+};
 $('createRoom').onsubmit=e=>{e.preventDefault();void perform({action:'create',request_id:crypto.randomUUID(),options:{title:$('roomTitle').value.trim(),capacity:Number($('roomCapacity').value)}});};
 $('joinRoom').onsubmit=e=>{e.preventDefault();void perform({action:'join',code:$('roomCode').value.trim().toUpperCase()});};
 $('rooms').onclick=e=>{const b=e.target.closest('[data-code]');if(b&&!b.disabled)void perform({action:'join',code:b.dataset.code});};

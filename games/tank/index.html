@@ -124,6 +124,12 @@ button:focus-visible{outline:3px solid var(--fire);outline-offset:2px}
   <div class="ge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="18" height="7" rx="3.5"/><path d="M7 13V9h9l2 4M12 9V6h9M7 17h.01M12 17h.01M17 17h.01"/></svg></div>
   <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span><h1 class="ge-title">탱크게임</h1>
   <p id="entryCopy" class="ge-copy">바람을 읽고, 각도를 맞춰 한 발!<br>컴퓨터와 가볍게 한 판 즐겨요.</p>
+  <div id="resumeHome" hidden>
+   <p id="resumeInfo" class="ge-hint"></p>
+   <button id="resumeMatch" class="ge-primary" type="button">하던 게임 이어서 하기</button>
+   <button id="newMatch" class="ge-secondary" type="button">새 게임</button>
+   <p id="resumeHint" class="ge-hint"></p>
+  </div>
   <div id="entryHome">
    <div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button type="button" id="soloMode" class="on" aria-pressed="true">혼자 하기</button><button type="button" id="localMode" aria-pressed="false">같은 기기</button><button type="button" id="onlineMode" aria-pressed="false">온라인 대전</button></div>
    <div id="soloSetup"><label class="ge-label" for="soloOpponents">컴퓨터 상대</label><select id="soloOpponents"><option value="1">컴퓨터 1명</option><option value="2">컴퓨터 2명</option><option value="3" selected>컴퓨터 3명</option><option value="4">컴퓨터 4명</option><option value="5">컴퓨터 5명</option><option value="6">컴퓨터 6명</option><option value="7">컴퓨터 7명</option><option value="8">컴퓨터 8명</option><option value="9">컴퓨터 9명</option><option value="10">컴퓨터 10명</option><option value="11">컴퓨터 11명</option></select><button id="startSolo" class="ge-primary" type="button" disabled>혼자 시작하기</button><span class="ge-hint">나 1명 + 컴퓨터 · 시간 제한 없이 즐겨요</span></div>
@@ -711,6 +717,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261018-shell-balance1"></script>
+<script type="module" src="./online.mjs?v=20261018-resume1"></script>
 </body>
 </html>
