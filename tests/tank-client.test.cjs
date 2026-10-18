@@ -189,6 +189,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
   assert.equal(solo.TankOnline.canAim(),true,'computer must automatically return the turn to the person');
+  assert.equal(solo.TankView.input().angle,0);assert.equal(solo.TankView.input().power,50,'the player keeps their aim after the computer fires');
   assert.equal(get(solo,'netCoins').textContent,'보유 97쭈');
   get(solo,'surrender').click();
   await wait(()=>!solo.document.body.classList.contains('in-match'));
@@ -203,17 +204,21 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   get(local,'localPlayers').value='3';get(local,'startLocal').click();
   await wait(()=>local.document.body.classList.contains('in-match'));local.TankOnline.tick();
   assert.equal(local.eval('tanks.length'),3);assert.doesNotMatch(get(local,'netTurn').textContent,/컴퓨터|초/);
+  const localAim=[[89.75,6],[90.25,7],[89.5,8]];
   for(const [seat,weapon,coins] of [[0,12,97],[1,10,96],[2,0,96]]){
    assert.equal(local.TankOnline.canAim(),true);assert.equal(local.TankOnline.seat(),seat);
    assert.match(get(local,'netTurn').textContent,new RegExp('플레이어 '+(seat+1)+' 차례'));
    get(local,'wpn').click();get(local,'wgrid').children[[1,2,0][seat]].click();
    get(local,'wpn').click();get(local,'wgrid').children[weapon].click();
-   local.eval('setAngle(90);setPower(5);fireSelected();');
+   local.eval(`setAngle(${localAim[seat][0]});setPower(${localAim[seat][1]});fireSelected();`);
    await wait(()=>get(local,'netTurn').textContent.endsWith('비행 중'));
    for(let i=0;i<8000;i++)local.TankOnline.tick();
    assert.equal(get(local,'netCoins').textContent,`보유 ${coins}쭈`);
   }
   assert.equal(local.TankOnline.seat(),0);
+  assert.equal(local.TankView.input().angle,89.75);assert.equal(local.TankView.input().power,6,'same-device turns restore each player\'s aim');
+  local.eval('draw()');
+  assert.equal(get(local,'angv').textContent,'각도 89.75°');assert.equal(get(local,'powv').textContent,'힘 6');
   assert.equal(local.TankView.input().weapon,1,'large shell returns after one paid shot and the other players\' turns');
   assert.equal(get(local,'wName').textContent,'대형탄');
   get(local,'wpn').click();get(local,'wgrid').children[8].click();
@@ -221,6 +226,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   local.dispatchEvent(new local.Event('online'));
   await new Promise(r=>setTimeout(r,100));local.TankOnline.tick();
   assert.equal(local.TankView.input().weapon,8,'state polling must preserve the selected nuclear shell');
+  assert.equal(local.TankView.input().angle,89.75);assert.equal(local.TankView.input().power,6,'polling preserves restored aim');
   local.eval('setAngle(90);setPower(5);fireSelected();');
   await wait(()=>get(local,'netTurn').textContent==='핵탄 비행 중');
   assert.equal(local.eval('shots[0].w.name'),'핵탄');assert.equal(local.eval('shots[0].w.dmg'),130);
@@ -237,6 +243,11 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
   assert.deepEqual(Array.from(restored.eval('tanks.map(t=>t.basicWeapon)')),[1,2,0],'same-device players keep independent basic selections after reconnecting');
   assert.equal(restored.TankView.input().weapon,[1,2,0][localRoom.game.turn]);
+  assert.equal(restored.TankView.input().angle,localAim[localRoom.game.turn][0]);
+  assert.equal(restored.TankView.input().power,localAim[localRoom.game.turn][1],'continue restores the active player\'s last angle and power');
+  restored.eval('draw()');
+  assert.equal(get(restored,'angv').textContent,`각도 ${localAim[localRoom.game.turn][0]}°`);
+  assert.equal(get(restored,'powv').textContent,`힘 ${localAim[localRoom.game.turn][1]}`);
   while(localRoom.status==='active')localRoom=(await f.call(ids[3],{action:'surrender',room_id:localRoom.id,version:localRoom.version,request_id:require('node:crypto').randomUUID()})).room;
   local.dispatchEvent(new local.Event('online'));
   await wait(()=>get(local,'netTurn').textContent==='전투 종료');

@@ -99,7 +99,7 @@ function tip(t){const a=t.ang*Math.PI/180;return{x:t.x+Math.cos(a)*18*TS,y:t.y-9
 
 function startTurn(i,changeWind=true){
  if(changeWind){const previous=wind;do{wind=windAt(weatherSeed,++windIndex*2800);}while(wind===previous);}
- turn=i;const t=tanks[i];t.fuel=FUEL;t.ang=90;t.pow=5;t.w=t.basicWeapon;state='aim';
+ turn=i;const t=tanks[i];t.fuel=FUEL;t.ang=t.lastAng??90;t.pow=t.lastPow??5;t.w=t.basicWeapon;state='aim';
 }
 function fire(){
  const t=tanks[turn],w=WEAPONS[t.w];shotNo++;t.lastAng=t.ang;t.lastPow=t.pow;
@@ -289,6 +289,8 @@ if(saved.terrain){
  if(saved.terrain.length!==GW)throw Error('invalid_state');
  for(let cx=0;cx<GW;cx++)for(let cy=saved.terrain[cx];cy<GH;cy++)mask[cy*GW+cx]=1;
  tanks=saved.tanks.map(t=>({...t,basicWeapon:isBasicWeapon(t.basicWeapon)?t.basicWeapon:isBasicWeapon(t.w)?t.w:0,ammo:WEAPONS.map(()=>Infinity),cpu:false,hitT:0}));
+ // Older saved turns reset the gauges; recover the current player's recorded shot.
+ if(!over){const t=tanks[turn];t.ang=t.lastAng??t.ang;t.pow=t.lastPow??t.pow;}
 }else{
  genWorld();const slots=[];
  for(let i=0;i<NT;i++)slots.push(Math.round(clamp(W*(i+.5)/NT+(random()-.5)*W/NT*.4,20,W-20)));

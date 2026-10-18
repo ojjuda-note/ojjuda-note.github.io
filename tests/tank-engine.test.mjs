@@ -54,6 +54,24 @@ legacy.tanks.forEach((t,i)=>{delete t.basicWeapon;t.w=[2,12,0][i];});
 assert.deepEqual(createEngine(legacy).snapshot().tanks.map(t=>t.basicWeapon),[2,0,0],'older saved games recover free selections without repeating paid ammo');
 assert.equal(createEngine(legacy).view().wind,legacy.wind,'older saved games keep their current wind');
 for(const basicWeapon of [-1,3,1.5,'1',null])assert.throws(()=>advance(weatherGame,0,{...weatherCommand,basicWeapon}),/invalid_move/);
+// Remember each player's last fired angle/power, including zero and quarter degrees.
+let aimGame=newGame(['a','b','c'],'remember-aim',882);
+aimGame.terrain.fill(150);aimGame.tanks.forEach((t,i)=>Object.assign(t,{x:300+i*900,y:300,vy:0}));
+assert.deepEqual(aimGame.tanks.map(t=>[t.ang,t.pow]),[[90,5],[90,5],[90,5]],'new players start with the default aim');
+const rememberedAim=[[0,100],[41.25,67],[180,5]];
+for(const [angle,power] of rememberedAim)aimGame=advance(aimGame,aimGame.turn,{type:'fire',weapon:10,angle,power,moves:[]}).state;
+assert.equal(aimGame.turn,0);
+assert.deepEqual(aimGame.tanks.map(t=>[t.ang,t.pow]),rememberedAim,'each player keeps their own settings when their turn returns');
+const reopenedAim=createEngine(JSON.parse(JSON.stringify(aimGame))).snapshot();
+assert.deepEqual(reopenedAim.tanks.map(t=>[t.ang,t.pow]),rememberedAim,'saved games preserve exact aim values');
+const oldAim=structuredClone(aimGame);oldAim.tanks[0].ang=90;oldAim.tanks[0].pow=5;
+assert.deepEqual(createEngine(oldAim).view().tanks.map(t=>[t.ang,t.pow]),rememberedAim,'older saves restore their recorded last shot instead of reset gauges');
+aimGame=advance(aimGame,0,{type:'fire',weapon:10,angle:72.75,power:46,moves:[]}).state;
+aimGame=advance(aimGame,1,{type:'timeout'}).state;
+aimGame=advance(aimGame,2,{type:'surrender'}).state;
+assert.equal(aimGame.turn,0);
+assert.deepEqual([aimGame.tanks[0].ang,aimGame.tanks[0].pow],[72.75,46],'a later shot replaces the saved settings even across skipped turns');
+assert.deepEqual([aimGame.tanks[1].lastAng,aimGame.tanks[1].lastPow],[41.25,67],'missing a turn does not replace the last fired settings');
 for(const size of [2,4,12]){
  const initial=newGame(Array.from({length:size},(_,i)=>'탱크'+i),'room',size*777);
  assert.equal(initial.tanks.length,size);

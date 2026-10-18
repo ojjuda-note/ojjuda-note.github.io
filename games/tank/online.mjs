@@ -1,4 +1,4 @@
-import {createEngine,WEAPONS} from './engine.mjs?v=20261018-turn-wind1';
+import {createEngine,WEAPONS} from './engine.mjs?v=20261018-remember-aim1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
