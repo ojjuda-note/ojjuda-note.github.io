@@ -19,16 +19,20 @@ const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
 WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
 assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,14,34,42,12,0,130,26,0,0,34],'balanced paid damage keeps the free and homing damage unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
-// A shot into exposed bedrock loosens cliffs, conserves soil, and damages real falls.
+// A shot into exposed bedrock levels the entire map, conserves soil, and damages real falls.
 for(const size of [3,12]){
  const game=newGame(Array.from({length:size},(_,i)=>String(i)),'bedrock-quake',881);
- game.wind=0;game.terrain.fill(150);game.terrain.fill(358,370,520);
- game.tanks.forEach((t,i)=>Object.assign(t,{x:i===0?730:i===1?710:i===3?750:1200+i*80,y:i===3?716:300,vy:0}));
+ game.wind=0;game.terrain.fill(150);
+ const pit=Math.floor(game.width*.4625/2),safeX=Math.floor(game.width*.875);
+ game.terrain.fill(358,pit,pit+Math.floor(game.width*.1875/2));
+ game.terrain.fill(200,Math.floor(safeX/2)-30,Math.floor(safeX/2)+30);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i===0?pit*2-10:i===1?pit*2-30:i===2?safeX:i===3?pit*2+10:50+i*40,y:i===3?716:i===2?400:300,vy:0}));
  const command={type:'fire',weapon:0,angle:0,power:20*Math.sqrt(1600/game.width),moves:[]};
  const e=createEngine(game),events=new Set();assert.equal(e.begin(command),0);
- let frames=0,soil=null,collapseFrames=0;
+ let frames=0,soil=null,collapseFrames=0;const landingHits=new Map();
  while(['fly','settle'].includes(e.view().state)&&frames++<1000){
   e.step();const v=e.view();
+  for(const f of v.floats)if(f.t===0&&f.txt.startsWith('낙하 -'))landingHits.set(f.x,(landingHits.get(f.x)||0)+1);
   if(v.quake){
    events.add(v.quake);assert.equal(v.turn,0,'collapse cannot hand over a turn early');
    assert.throws(()=>e.snapshot(),/simulation_incomplete/);
@@ -41,12 +45,16 @@ for(const size of [3,12]){
  }
  assert.ok(frames<1000&&collapseFrames>1&&collapseFrames<=120);assert.equal(events.size,1);
  const saved=e.snapshot();assert.equal(e.view().mask.reduce((sum,cell)=>sum+cell,0),soil);
- assert.ok(saved.terrain[365]>game.terrain[365],'the cliff collapses away from the actual blast');
- assert.ok(saved.terrain[380]<game.terrain[380],'fallen earth fills the low ground');
- assert.ok(saved.tanks[0].y>400&&saved.tanks[0].hp<100&&saved.tanks[0].hp>0,'falling damages the shooter above the cliff');
- assert.ok(saved.tanks[1].y>400&&saved.tanks[1].hp<100,'a nearby tank outside the blast takes falling damage too');
- assert.equal(saved.tanks[2].hp,100,'the quake has no arbitrary global health penalty');
+ assert.ok(saved.terrain[pit-5]>game.terrain[pit-5],'the cliff collapses away from the actual blast');
+ assert.ok(saved.terrain[pit+10]<game.terrain[pit+10],'fallen earth fills the low ground');
+ assert.ok(saved.tanks[0].y>360&&saved.tanks[0].hp<100&&saved.tanks[0].hp>0,'falling damages the shooter above the cliff');
+ assert.ok(saved.tanks[1].y>360&&saved.tanks[1].hp<100,'a nearby tank outside the blast takes falling damage too');
+ assert.equal(saved.tanks[2].hp,100,'a supported low tank receives no arbitrary global health penalty');
+ assert.ok(Math.max(...saved.terrain)-Math.min(...saved.terrain)<=1,'the entire map is level to one terrain cell, even far from the impact');
+ assert.ok(saved.tanks.every(t=>t.y===saved.terrain[Math.floor(t.x/2)]*2&&t.vy===0),'every tank finishes on the new surface before the next turn');
  if(size===12){const t=saved.tanks[3];assert.equal(t.hp,100);assert.ok(t.y<716&&t.y<=saved.terrain[Math.floor(t.x/2)]*2,'soil arriving at the bottom supports a tank without burying it');}
+ assert.equal(landingHits.get(saved.tanks[0].x),1,'one actual landing causes exactly one damage event');
+ assert.equal(landingHits.get(saved.tanks[1].x),1);
  assert.equal(saved.shotNo,1);assert.equal(saved.turn,1);assert.equal(saved.round,1);
  const server=advance(game,0,command);assert.equal(server.price,0);assert.equal(server.frames,frames);
  assert.deepEqual(advance(game,0,command),server,'retrying cannot cause another earthquake');
@@ -68,7 +76,8 @@ for(const size of [3,12]){
  }
  assert.ok(impact.y>=700&&impact.y<702);assert.ok(frames<1000);assert.equal(events.size,1);
  const saved=e.snapshot();assert.ok(saved.terrain[365]>game.terrain[365],'the distant cliff collapses after the blast uncovers bedrock');
- assert.ok(saved.tanks[0].hp<100&&saved.tanks[1].hp<100,'tanks outside the blast take real falling damage');assert.equal(saved.tanks[2].hp,100);
+ assert.ok(saved.tanks[0].hp<100&&saved.tanks[1].hp<100,'tanks outside the blast take real falling damage');assert.ok(saved.tanks[2].hp<100,'a distant high plateau also drops and damages its tank');
+ assert.ok(Math.max(...saved.terrain)-Math.min(...saved.terrain)<=1);
  assert.equal(saved.shotNo,1);assert.equal(saved.turn,1);
  const server=advance(game,0,command);server.state.tanks.forEach(t=>delete t.misses);assert.deepEqual(saved,server.state);
 }
@@ -93,6 +102,17 @@ for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
  assert.equal(e.view().tanks[1].hp,100);
  for(let i=0;i<60;i++)e.step();
  assert.equal(e.view().tanks[0].hp,hp,'one landing causes damage only once, capped at zero health');
+}
+// The collision tolerance must not discard a falling tank's remaining speed.
+{
+ const game=newGame(['falling','safe'],'landing-tolerance',881);game.terrain.fill(350);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:300,y:i?700:699.5,vy:i?0:6,hp:100}));
+ const e=createEngine(game);e.step();
+ assert.equal(e.view().tanks[0].y,700);assert.equal(e.view().tanks[0].vy,0);
+ assert.equal(e.view().tanks[0].hp,80,'a tank half a pixel above the surface still takes its actual impact damage');
+ assert.equal(e.view().floats.filter(f=>f.txt==='낙하 -20').length,1);
+ for(let i=0;i<60;i++)e.step();
+ assert.equal(e.view().tanks[0].hp,80,'resting on the ground cannot charge the landing twice');
 }
 // Later scatter pellets pass through each earlier crater, including impacts in one frame.
 {

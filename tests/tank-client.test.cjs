@@ -425,7 +425,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(storedQuake.coins,100);assert.equal(storedQuake.game.shotNo,1);
   assert.deepEqual(shownQuake.terrain,storedQuake.game.terrain);
   assert.deepEqual(shownQuake.tanks.map(t=>[t.x,t.y,t.hp]),storedQuake.game.tanks.map(t=>[t.x,t.y,t.hp]));
-  assert.ok(shownQuake.tanks[0].hp<100&&shownQuake.tanks[1].hp<100);assert.equal(shownQuake.tanks[2].hp,100);
+  assert.ok(shownQuake.tanks.every(t=>t.hp<100),'the distant high ground also collapses and damages its tank');
+  assert.ok(Math.max(...shownQuake.terrain)-Math.min(...shownQuake.terrain)<=1,'eightfold playback ends with the entire battlefield level');
+  assert.ok(shownQuake.tanks.every(t=>t.y===shownQuake.terrain[Math.floor(t.x/2)]*2&&t.vy===0),'all tanks land before playback hands over the turn');
   // Opening the entrance must not run a saved computer turn or spend coins.
   let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;
   savedSolo=(await f.start(ids[5],savedSolo)).room;

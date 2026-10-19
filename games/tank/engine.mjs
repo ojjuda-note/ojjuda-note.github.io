@@ -123,25 +123,37 @@ function blastBedrock(b,r){
 function collapseQuake(){
  if(!quake.tops){
   quake.phase='collapse';quake.tops=Int16Array.from({length:GW},(_,cx)=>surf(cx*CS)/CS);
+  // Spread the remaining soil across the ENTIRE map. Local slope relaxation
+  // left broad cliffs standing even after its time limit. Adjacent target rows
+  // differ by at most one cell, preserving every soil cell on the integer grid.
+  const total=quake.tops.reduce((sum,top)=>sum+top,0),level=Math.floor(total/GW),extra=total%GW;
+  quake.targets=Int16Array.from({length:GW},(_,cx)=>level+Math.floor((cx+1)*extra/GW)-Math.floor(cx*extra/GW));
  }
- const tops=quake.tops;let moved=false;
- // Loosen steep slopes across the map for up to two seconds. Alternating disjoint
- // pairs move soil downhill without directional bias, deleting it, or making caves.
- // Bedrock never moves; bounded sweeps also keep server simulation time predictable.
- for(let p=0;p<8;p++)for(let cx=p%2;cx<GW-1;cx+=2){
-  const delta=tops[cx+1]-tops[cx];if(Math.abs(delta)<=1)continue;
-  const from=delta>0?cx:cx+1,to=delta>0?cx+1:cx;
-  const count=Math.min(12,Math.floor(Math.abs(delta)/2)),top=tops[from];
-  for(let i=0;i<count;i++){mask[(tops[from]++)*GW+from]=0;mask[(--tops[to])*GW+to]=1;}
-  if(p===0&&cx%12===0&&quake.ticks%4===0&&bits.length<96)
-   bits.push({x:from*CS,y:top*CS,vx:Math.sign(delta)*.5,vy:.2,life:28,c:'#b9a783',s:2});
-  moved=true;
+ const {tops,targets}=quake,rate=Math.max(1,Math.ceil(++quake.ticks*.65));
+ let removed=0,capacity=0,remaining=false;
+ // Falling soil accelerates faster than tanks, so they genuinely lose support
+ // and keep their falling velocity until landing instead of riding the ground.
+ for(let cx=0;cx<GW;cx++){
+  const top=tops[cx],count=Math.min(rate,Math.max(0,targets[cx]-top));
+  for(let i=0;i<count;i++)mask[(tops[cx]++)*GW+cx]=0;
+  removed+=count;capacity+=Math.max(0,tops[cx]-targets[cx]);
+  if(tops[cx]<targets[cx])remaining=true;
+  if(count&&cx%12===0&&quake.ticks%4===0&&bits.length<96)
+   bits.push({x:cx*CS,y:top*CS,vx:cx*CS<quake.x?.5:-.5,vy:.2,life:28,c:'#b9a783',s:2});
  }
- if(moved)tDirty=true;
+ // Distribute exactly the removed volume proportionally between all low areas.
+ // Cumulative rounding avoids a left/right bias and preserves soil each frame.
+ let filled=0,seen=0;
+ if(removed)for(let cx=0;cx<GW;cx++){
+  seen+=Math.max(0,tops[cx]-targets[cx]);
+  const share=Math.floor(seen*removed/capacity),count=share-filled;filled=share;
+  for(let i=0;i<count;i++)mask[(--tops[cx])*GW+cx]=1;
+ }
+ if(removed)tDirty=true;
  // Deposited soil supports a tank from below instead of leaving it buried.
  // A tank already falling still receives the usual landing damage once.
  for(const t of tanks){const y=tops[clamp(Math.floor(t.x/CS),0,GW-1)]*CS;if(t.y>y){t.y=y;land(t);}}
- if(++quake.ticks>=120||(!moved&&quake.t>=60))quake=null;
+ if(!remaining)quake=null;
 }
 
 function circleCells(x,y,r,v,vertical=1){const r2=r*r,ry=r*vertical;
@@ -329,7 +341,7 @@ function growBoom(b){
       t.hp=Math.max(0,t.hp-dmg);t.hitT=30;floats.push({x:t.x,y:t.y-24,txt:'-'+dmg,t:0});syncUI();}}
 }
 
-function land(t){if(t.vy>5&&t.hp>0){const d=Math.round((t.vy-5)*4)*5;t.hp=Math.max(0,t.hp-d);floats.push({x:t.x,y:t.y-24,txt:'-'+d,t:0});syncUI();}t.vy=0;}
+function land(t){if(t.vy>5&&t.hp>0){const d=Math.round((t.vy-5)*4)*5;t.hp=Math.max(0,t.hp-d);t.hitT=30;floats.push({x:t.x,y:t.y-24,txt:'낙하 -'+d,t:0});syncUI();}t.vy=0;}
 
 function drive(t,dir){
   if(t.fuel<=0||t.vy>0.6)return false;
@@ -345,7 +357,7 @@ function drive(t,dir){
 function gravity(){
  let falling=false;
  for(const t of tanks){if(t.hitT>0)t.hitT--;const gy=below(t.x,t.y);
-  if(gy>t.y+.5){t.vy+=.25;t.y+=t.vy;if(t.y>=gy){t.y=gy;land(t);}else falling=true;}else t.vy=0;}
+  if(gy>t.y+.5){t.vy+=.25;t.y+=t.vy;if(t.y>=gy){t.y=gy;land(t);}else falling=true;}else{t.y=gy;land(t);}}
  return falling;
 }
 function step(){
