@@ -464,6 +464,43 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    solo.TankView.use(createEngine({...living,wind}),false);solo.eval('draw()');
    assert.equal(get(solo,'windv').textContent,label,'the displayed wind matches the capped physical strength');
   }
+  // Compare the guide with actual shots: full ascent, then one third of the descent.
+  const aimGame=structuredClone(living);aimGame.terrain.fill(150);aimGame.wind=0;
+  aimGame.tanks.forEach((t,i)=>Object.assign(t,{x:i?1500:300,y:300,vy:0}));
+  const aim=createEngine(aimGame);solo.TankView.use(aim,true);
+  for(const [angle,power,wind] of [[60,70,0],[60,70,.019],[60,70,-.019],[120,85,0],[90,50,0],[0,55,0],[180,55,0],[45,100,0]]){
+   Object.assign(aim.view().tanks[aim.view().turn],{ang:angle,pow:power,w:0});
+   // Keep the same engine for angle/power changes to exercise live guide updates.
+   solo.eval(`wind=${wind}`);
+   const before=aim.snapshot(),guide=JSON.parse(solo.eval('JSON.stringify(aimPreview(tanks[turn]))'));
+   solo.eval('draw();aimPreview(tanks[turn])');
+   assert.deepEqual(aim.snapshot(),before,'previewing must not fire, spend currency, or mutate the match');
+   const flight=createEngine({...before,wind});
+   flight.begin({type:'fire',weapon:0,angle,power,moves:[]});
+   const shot=flight.view().shots[0],trace=[{x:shot.x,y:shot.y,distance:0}];
+   while(flight.view().shots.length&&trace.length<=12001){
+    flight.step();
+    const p=flight.view().shots[0]||flight.view().booms[0],previous=trace.at(-1);
+    trace.push({x:p.x,y:p.y,distance:previous.distance+Math.hypot(p.x-previous.x,p.y-previous.y)});
+   }
+   assert.equal(flight.view().shots.length,0,'the reference shot reaches first impact');
+   const apex=trace.reduce((top,p)=>p.y<top.y?p:top),impact=trace.at(-1),end=guide.at(-1);
+   assert.ok(end&&guide.length<=162,'the visible guide has a bounded number of dots');
+   for(const p of guide.filter(p=>Number.isInteger(p.frame))){
+    assert.ok(Math.hypot(p.x-trace[p.frame].x,p.y-trace[p.frame].y)<1e-8,'guide dots follow the real projectile');
+   }
+   const cutoff=apex.distance+(impact.distance-apex.distance)/3;
+   assert.ok(Math.abs(end.distance-cutoff)<.05,'the endpoint is one third along the descending arc');
+   if(angle>0&&angle<180){
+    assert.ok(guide.some(p=>Math.abs(p.y-apex.y)<1e-8),'the apex is shown');
+    assert.ok(end.y>apex.y&&end.y<impact.y,'the guide bends downward but stops before impact');
+   }
+  }
+  const wallGame=structuredClone(aimGame);wallGame.terrain.fill(50,170,180);
+  Object.assign(wallGame.tanks[wallGame.turn],{ang:10,pow:70,w:0});
+  solo.TankView.use(createEngine(wallGame),true);
+  const wallGuide=JSON.parse(solo.eval('JSON.stringify(aimPreview(tanks[turn]))'));
+  assert.ok(wallGuide.length>0&&wallGuide.every(p=>p.x<344),'an ascending guide stops at a nearby cliff');
   solo.TankView.resetHistory();solo.TankView.use(createEngine(wreck),false);
   assert.equal(solo.TankView.hasEffects(),false);
   solo.TankView.resetHistory();solo.TankView.use(createEngine(living),false);solo.TankView.use(createEngine(wreck),false);

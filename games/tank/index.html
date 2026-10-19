@@ -487,6 +487,49 @@ function resolve(){
 }
 
 /* ---------- draw ---------- */
+function aimPreview(t){
+  if(!t||t.hp<=0)return [];
+  const key=[turn,t.x,t.y,t.ang,t.pow,t.w,wind,K,TS,tankRenderDirty,...tanks.map(o=>[o.x,o.y,o.hp].join(':'))].join(',');
+  if(tankAimPreview?.engine===tankRenderEngine&&tankAimPreview.key===key)return tankAimPreview.points;
+  const p=tip(t),a=t.ang*Math.PI/180,h=SLOW/2,points=[],trace=[{...p,frame:0,distance:0}];
+  let x=p.x,y=p.y,vx=Math.cos(a)*t.pow*K,vy=-Math.sin(a)*t.pow*K,distance=0,apex=trace[0];
+  // Trace the central ballistic arc to first contact with the real integration.
+  // Show all of the ascent, then only one third of the descending arc length.
+  // Cache unchanged aim; drawing never advances the game or rerolls a weapon.
+  for(let frame=0;frame<=12000;frame++){
+    let hit=false,substeps=0;
+    for(let k=0;k<2&&!hit;k++){
+      const oldX=x,oldY=y;vx+=wind*h;vy+=G*h;x+=vx*h;y+=vy*h;
+      distance+=Math.hypot(x-oldX,y-oldY);substeps++;
+      if(y>MH+40)hit=true;
+      else if(x<0||x>W)hit=y>=surf(x);
+      else{
+        hit=solid(x,y);
+        for(let i=0;i<tanks.length&&!hit;i++){
+          const other=tanks[i];if(other.hp<=0||(i===turn&&frame<24))continue;
+          hit=Math.hypot(x-other.x,y-(other.y-6*TS))<12*TS;
+        }
+      }
+    }
+    const point={x,y,frame:frame+substeps/2,distance};trace.push(point);
+    if(y<apex.y)apex=point;
+    if(hit)break;
+  }
+  const limit=apex.distance+(distance-apex.distance)/3,spacing=Math.max(8,limit/160);
+  let lastDot=0;
+  for(let i=1;i<trace.length&&limit>0;i++){
+    const point=trace[i];
+    if(point.distance>=limit){
+      const previous=trace[i-1],ratio=(limit-previous.distance)/(point.distance-previous.distance||1);
+      points.push({x:previous.x+(point.x-previous.x)*ratio,y:previous.y+(point.y-previous.y)*ratio,distance:limit,progress:1});break;
+    }
+    if(point===apex||point.distance-lastDot>=spacing){
+      points.push({...point,progress:point.distance/limit});lastDot=point.distance;
+    }
+  }
+  tankAimPreview={engine:tankRenderEngine,key,points};return points;
+}
+
 function draw(){
   ctx.setTransform(scale*dpr,0,0,scale*dpr,0,0);
   ctx.save();
@@ -514,9 +557,9 @@ function draw(){
 
   tanks.forEach((t,i)=>drawTank(t,i));
 
-  if(state==='aim'||state==='cpuAim'){const t=tanks[turn],p=tip(t),a=t.ang*Math.PI/180;
-    ctx.fillStyle='rgba(255,246,220,.75)';
-    for(let i=1;i<=6;i++){ctx.globalAlpha=1-i/7;ctx.beginPath();ctx.arc(p.x+Math.cos(a)*6*i,p.y-Math.sin(a)*6*i,1.6,0,Math.PI*2);ctx.fill();}
+  if(state==='aim'||state==='cpuAim'){
+    ctx.fillStyle='#fff6dc';
+    for(const p of aimPreview(tanks[turn])){ctx.globalAlpha=.85-.65*p.progress;ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,Math.PI*2);ctx.fill();}
     ctx.globalAlpha=1;}
 
   for(const s of shots)drawShell(s);
@@ -796,7 +839,7 @@ function sfx(type,r=26){try{
 }catch(e){}}
 
 
-let tankRenderEngine=null,tankRenderDirty=-1,tankHistory=[];
+let tankRenderEngine=null,tankRenderDirty=-1,tankHistory=[],tankAimPreview=null;
 let tankHP=null,tankDeaths=new Set(),tankBursts=[],tankDebris=[],tankQuake=null;
 function tankDestroyed(t,seat){
  if(tankDeaths.has(seat))return;
@@ -861,7 +904,7 @@ window.TankView={
   shake=Math.max(0,shake-.45);
   return had&&!this.hasEffects();
  },
- resetHistory(){tankHistory=[];paths=[];tankHP=null;tankDeaths.clear();tankBursts=[];tankDebris=[];tankQuake=null;shake=0;},
+ resetHistory(){tankHistory=[];paths=[];tankHP=null;tankDeaths.clear();tankBursts=[];tankDebris=[];tankQuake=null;tankAimPreview=null;shake=0;},
  refresh:syncUI,
  notify:showBanner,
  sound:sfx,
