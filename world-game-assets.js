@@ -3,7 +3,7 @@
  'use strict';
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
-  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261019-aim-long1'],
+  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261019-aim-calm1'],
   mines:['/world-tour-game.css?v=20261012-marble-invite1','/games/mines/rules.js?v=20261013-mines1','/world-mines-game.js?v=20261013-mines1'],
   saetbyeol:['/world-tour-game.css?v=20261012-marble-invite1','/world-saetbyeol-game.js?v=20261018-arcade-entry1'],
   tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261018-arcade-entry1'],

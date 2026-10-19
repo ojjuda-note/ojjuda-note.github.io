@@ -489,17 +489,17 @@ function resolve(){
 /* ---------- draw ---------- */
 function aimPreview(t){
   if(!t||t.hp<=0)return [];
-  const key=[turn,t.x,t.y,t.ang,t.pow,t.w,wind,K,TS,tankRenderDirty,...tanks.map(o=>[o.x,o.y,o.hp].join(':'))].join(',');
+  const key=[turn,t.x,t.y,t.ang,t.pow,t.w,K,TS,tankRenderDirty,...tanks.map(o=>[o.x,o.y,o.hp].join(':'))].join(',');
   if(tankAimPreview?.engine===tankRenderEngine&&tankAimPreview.key===key)return tankAimPreview.points;
   const p=tip(t),a=t.ang*Math.PI/180,h=SLOW/2,points=[],trace=[{...p,frame:0,distance:0}];
   let x=p.x,y=p.y,vx=Math.cos(a)*t.pow*K,vy=-Math.sin(a)*t.pow*K,distance=0,apex=trace[0];
-  // Trace the central ballistic arc to first contact with the real integration.
+  // Trace the central ballistic arc with gravity; only real shots feel wind.
   // Show all of the ascent, then only one third of the descending arc length.
   // Cache unchanged aim; drawing never advances the game or rerolls a weapon.
   for(let frame=0;frame<=12000;frame++){
     let hit=false,substeps=0;
     for(let k=0;k<2&&!hit;k++){
-      const oldX=x,oldY=y;vx+=wind*h;vy+=G*h;x+=vx*h;y+=vy*h;
+      const oldX=x,oldY=y;vy+=G*h;x+=vx*h;y+=vy*h;
       distance+=Math.hypot(x-oldX,y-oldY);substeps++;
       if(y>MH+40)hit=true;
       else if(x<0||x>W)hit=y>=surf(x);
