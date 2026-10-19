@@ -60,6 +60,7 @@ export function createEngine(saved){
  let turnOrder=[],round=Number.isSafeInteger(saved.round)&&saved.round>0?saved.round:1;
  let turnSeed=Number.isInteger(saved.turnSeed)?saved.turnSeed>>>0:((saved.weatherSeed??saved.seed)^0x6d2b79f5)>>>0;
  let shotNo=saved.shotNo||0,settleT=0,frame=0,dirty=0,over=!!saved.over,runId=saved.runId;
+ let quake=null,quaked=false;
  const prepTerrainCanvas=()=>{dirty++;},syncUI=()=>{},sfx=()=>{};
 
 function genWorld(){
@@ -94,6 +95,38 @@ function settleSand(){
     for(let p=0;p<3;p++)for(let cy=FR-2;cy>=0;cy--){const i=cy*GW+cx;if(mask[i]&&!mask[i+GW]){mask[i+GW]=1;mask[i]=0;moved=true;}}
     if(moved)tDirty=true;else done.push(cx);}
   for(const c of done)active.delete(c);
+}
+
+function touchBedrock(s,y=s.y){
+ // Only a real attack-shell contact with exposed, in-map bedrock starts a quake.
+ // A blast reaching the floor, a support shell, or a visual effect cannot start one.
+ if(quaked||!(s.w.dmg>0)||s.x<0||s.x>W||y<FLOOR||surf(s.x)<FLOOR)return;
+ quaked=true;quake={x:s.x,t:0,phase:'rumble',ticks:0,tops:null};
+ wake(0,W);
+}
+
+function collapseQuake(){
+ if(!quake.tops){
+  quake.phase='collapse';quake.tops=Int16Array.from({length:GW},(_,cx)=>surf(cx*CS)/CS);
+ }
+ const tops=quake.tops;let moved=false;
+ // Loosen steep slopes across the map for up to two seconds. Alternating disjoint
+ // pairs move soil downhill without directional bias, deleting it, or making caves.
+ // Bedrock never moves; bounded sweeps also keep server simulation time predictable.
+ for(let p=0;p<8;p++)for(let cx=p%2;cx<GW-1;cx+=2){
+  const delta=tops[cx+1]-tops[cx];if(Math.abs(delta)<=1)continue;
+  const from=delta>0?cx:cx+1,to=delta>0?cx+1:cx;
+  const count=Math.min(12,Math.floor(Math.abs(delta)/2)),top=tops[from];
+  for(let i=0;i<count;i++){mask[(tops[from]++)*GW+from]=0;mask[(--tops[to])*GW+to]=1;}
+  if(p===0&&cx%12===0&&quake.ticks%4===0&&bits.length<96)
+   bits.push({x:from*CS,y:top*CS,vx:Math.sign(delta)*.5,vy:.2,life:28,c:'#b9a783',s:2});
+  moved=true;
+ }
+ if(moved)tDirty=true;
+ // Deposited soil supports a tank from below instead of leaving it buried.
+ // A tank already falling still receives the usual landing damage once.
+ for(const t of tanks){const y=tops[clamp(Math.floor(t.x/CS),0,GW-1)]*CS;if(t.y>y){t.y=y;land(t);}}
+ if(++quake.ticks>=120||(!moved&&quake.t>=60))quake=null;
 }
 
 function circleCells(x,y,r,v,vertical=1){const r2=r*r,ry=r*vertical;
@@ -152,6 +185,7 @@ function checkHit(s){
     if(s.y>=surf(s.x))explodeOutside(s);
     return;
   }
+  touchBedrock(s);
   for(let i=0;i<tanks.length;i++){const t=tanks[i];if(t.hp<=0)continue;if(i===s.owner&&s.age<24)continue;
     if(Math.hypot(s.x-t.x,s.y-(t.y-6*TS))<12*TS){impact(s);return;}}
   if(s.emerge){if(!solid(s.x,s.y))s.emerge=false;return;}
@@ -196,12 +230,12 @@ function dropBunker(s,h){
   const dive=s.bunker;s.vx=0;
   if(dive.phase==='fall'){
     s.vy=20;s.y=Math.min(dive.surfaceY,s.y+s.vy*h);
-    if(s.y>=dive.surfaceY){dive.phase='drill';carve(s.x,s.y,s.w.shaft);}
+    if(s.y>=dive.surfaceY){touchBedrock(s);dive.phase='drill';carve(s.x,s.y,s.w.shaft);}
     return;
   }
   s.vy=8;s.y=Math.min(dive.endY,s.y+s.vy*h);
   carve(s.x,s.y,s.w.shaft);
-  if(s.y>=dive.endY){explode(s.x,s.y,s.w,s,s.x<0||s.x>W);s.dead=true;}
+  if(s.y>=dive.endY){if(s.y>=FLOOR-1)touchBedrock(s,FLOOR);explode(s.x,s.y,s.w,s,s.x<0||s.x>W);s.dead=true;}
 }
 
 function home(s,h){
@@ -225,6 +259,7 @@ function roll(s){
   if(nx<0||nx>W){s.x=nx;explodeOutside(s);return;}
   if(below(nx,s.y-6)<s.y-5)s.vx*=-0.4;else s.x=nx;
   s.y=below(s.x,s.y-6)-1;if(s.rollT%2===0)s.trail.push(s.x,s.y);
+  touchBedrock(s,s.y+1);
   for(const t of tanks)if(t.hp>0&&Math.hypot(s.x-t.x,s.y-(t.y-4*TS))<12*TS){explode(s.x,s.y,s.w);s.dead=true;return;}
   if((Math.abs(s.vx)<0.04&&s.rollT>40)||s.rollT>320){explode(s.x,s.y,s.w);s.dead=true;}
 }
@@ -299,6 +334,7 @@ function gravity(){
 }
 function step(){
  frame++;
+ if(quake)quake.t++;
  for(const s of shots.slice()){
   if(s.dead)continue;
   if(s.rolling){roll(s);if(s.dead)paths.push({pts:s.trail,c:tanks[s.owner].color,o:s.owner,n:s.n});continue;}
@@ -318,9 +354,14 @@ function step(){
  shots=shots.filter(s=>!s.dead);
  for(const b of booms)growBoom(b);booms=booms.filter(b=>b.t<b.D+22);
  for(const f of floats){f.t++;f.y-=.45;}floats=floats.filter(f=>f.t<70);
- if(!shots.length&&booms.every(b=>b.t>=b.D))settleSand();
+ for(const p of bits){p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.life--;}
+ bits=bits.filter(p=>p.life>0);
+ if(!shots.length&&booms.every(b=>b.t>=b.D)){
+  settleSand();
+  if(quake&&!active.size)collapseQuake();
+ }
  const falling=gravity();
- if(state==='fly'&&!shots.length&&booms.every(b=>b.t>=b.D)&&!falling&&!active.size){state='settle';settleT=12;}
+ if(state==='fly'&&!shots.length&&booms.every(b=>b.t>=b.D)&&!falling&&!active.size&&!quake){state='settle';settleT=12;}
  if(state==='settle'&&--settleT<=0)finishTurn();
  if(tDirty){dirty++;tDirty=false;}
 }
@@ -340,6 +381,7 @@ function begin(command){
  validateCommand(command);
  if(over||state!=='aim')throw Error('room_unavailable');
  windTime=command.windTime??windTime;frame=0;
+ quake=null;quaked=false;
  for(const dir of command.moves)move(dir);
  const t=tanks[turn];t.ang=command.angle;t.pow=command.power;t.w=command.weapon;
  if(command.basicWeapon!==undefined)t.basicWeapon=command.basicWeapon;
@@ -349,7 +391,7 @@ function begin(command){
  return price;
 }
 function snapshot(){
- if(shots.length||active.size)throw Error('simulation_incomplete');
+ if(shots.length||active.size||quake)throw Error('simulation_incomplete');
  return {runId,names:saved.names,width:W,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,turnOrder:[...turnOrder],round,turnSeed,wind,shotNo,over,
   terrain:Array.from({length:GW},(_,x)=>surf(x*CS)/CS),
   tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow}))};
@@ -377,7 +419,7 @@ return {step,move,begin,snapshot,
  setWindTime(time){if(state==='aim'&&Number.isFinite(time)){windTime=time;frame=0;}},
  surrender(seat){if(!tanks[seat]||tanks[seat].hp<=0)throw Error('already_eliminated');tanks[seat].hp=0;turnOrder=turnOrder.filter(i=>i!==seat);if(seat===turn||tanks.filter(t=>t.hp>0).length<=1)finishTurn();},
  skip(){if(over)return;tanks[turn].misses=(saved.tanks?.[turn]?.misses||0)+1;if(tanks[turn].misses>=3)tanks[turn].hp=0;finishTurn();},
- view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,TS,WINDMAX,wind,ground,mask,tanks,turn,turnOrder,round,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over})};
+ view:()=>({W,H,VW,MH,PL,FLOOR,FR,GW,GH,K,TS,WINDMAX,wind,ground,mask,tanks,turn,turnOrder,round,state,shots,booms,bits,floats,paths,shotNo,frame,dirty,over,quake})};
 }
 export function validateCommand(c){
  if(!c||!Number.isInteger(c.weapon)||c.weapon<0||c.weapon>=WEAPONS.length||!Number.isFinite(c.angle)||c.angle<0||c.angle>180||!Number.isFinite(c.power)||c.power<5||c.power>100||!Array.isArray(c.moves)||c.moves.length>250||c.moves.some(x=>x!==-1&&x!==1))throw Error('invalid_move');

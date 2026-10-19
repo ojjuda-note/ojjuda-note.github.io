@@ -19,6 +19,52 @@ const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
 WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
 assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,14,34,42,12,0,130,26,0,0,34],'balanced paid damage keeps the free and homing damage unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
+// A shot into exposed bedrock loosens cliffs, conserves soil, and damages real falls.
+for(const size of [3,12]){
+ const game=newGame(Array.from({length:size},(_,i)=>String(i)),'bedrock-quake',881);
+ game.wind=0;game.terrain.fill(150);game.terrain.fill(358,370,520);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i===0?730:i===1?710:i===3?750:1200+i*80,y:i===3?716:300,vy:0}));
+ const command={type:'fire',weapon:0,angle:0,power:20*Math.sqrt(1600/game.width),moves:[]};
+ const e=createEngine(game),events=new Set();assert.equal(e.begin(command),0);
+ let frames=0,soil=null,collapseFrames=0;
+ while(['fly','settle'].includes(e.view().state)&&frames++<1000){
+  e.step();const v=e.view();
+  if(v.quake){
+   events.add(v.quake);assert.equal(v.turn,0,'collapse cannot hand over a turn early');
+   assert.throws(()=>e.snapshot(),/simulation_incomplete/);
+   if(v.quake.phase==='collapse'){
+    collapseFrames++;const count=v.mask.reduce((sum,cell)=>sum+cell,0);
+    if(soil===null)soil=count;else assert.equal(count,soil,'earth slides downhill without being deleted or created');
+    assert.ok(v.mask.subarray(v.FR*v.GW).every(cell=>cell===1),'the indestructible bottom stays solid');
+   }
+  }
+ }
+ assert.ok(frames<1000&&collapseFrames>1&&collapseFrames<=120);assert.equal(events.size,1);
+ const saved=e.snapshot();assert.equal(e.view().mask.reduce((sum,cell)=>sum+cell,0),soil);
+ assert.ok(saved.terrain[365]>game.terrain[365],'the cliff collapses away from the actual blast');
+ assert.ok(saved.terrain[380]<game.terrain[380],'fallen earth fills the low ground');
+ assert.ok(saved.tanks[0].y>400&&saved.tanks[0].hp<100&&saved.tanks[0].hp>0,'falling damages the shooter above the cliff');
+ assert.ok(saved.tanks[1].y>400&&saved.tanks[1].hp<100,'a nearby tank outside the blast takes falling damage too');
+ assert.equal(saved.tanks[2].hp,100,'the quake has no arbitrary global health penalty');
+ if(size===12){const t=saved.tanks[3];assert.equal(t.hp,100);assert.ok(t.y<716&&t.y<=saved.terrain[Math.floor(t.x/2)]*2,'soil arriving at the bottom supports a tank without burying it');}
+ assert.equal(saved.shotNo,1);assert.equal(saved.turn,1);assert.equal(saved.round,1);
+ const server=advance(game,0,command);assert.equal(server.price,0);assert.equal(server.frames,frames);
+ assert.deepEqual(advance(game,0,command),server,'retrying cannot cause another earthquake');
+ server.state.tanks.forEach(t=>delete t.misses);
+ assert.deepEqual(saved,server.state,'client and server replay the same quake and falling damage');
+ assert.deepEqual(createEngine(saved).snapshot(),saved,'collapsed earth and health survive resuming');
+}
+// Surface blasts, support shells, off-map impacts, and airbursts must not fake bedrock hits.
+for(const [weapon,surface,x,expected] of [[0,700,800,false],[0,716,800,true],[7,716,800,false],[10,716,800,false],[11,716,800,false],[0,716,-40,false],[2,716,800,true],[13,716,800,true],[14,716,800,true]]){
+ const game=newGame(['self','safe'],'quake-contact',881);game.wind=0;game.terrain.fill(surface/2);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:100,y:surface,vy:0}));
+ const e=createEngine(game);e.begin({type:'fire',weapon,angle:90,power:50,moves:[]});
+ e.view().shots.forEach(s=>Object.assign(s,{x,y:surface-.1,vx:0,vy:2,age:99}));
+ const events=new Set();let frames=0;
+ while(['fly','settle'].includes(e.view().state)&&frames++<2000){e.step();if(e.view().quake)events.add(e.view().quake);}
+ assert.ok(frames<2000);assert.equal(events.size,expected?1:0,`weapon ${weapon} at ${x}/${surface} has only the intended quake`);
+ assert.equal(e.snapshot().shotNo,1);
+}
 // Landing damage is five times the old value, while short drops remain harmless.
 for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
  const game=newGame(['falling','safe'],'fall-damage',881);game.terrain.fill(350);

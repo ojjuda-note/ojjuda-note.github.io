@@ -1,10 +1,11 @@
-import {createEngine,WEAPONS} from './engine.mjs?v=20261019-turn-speed1';
+import {createEngine,WEAPONS} from './engine.mjs?v=20261019-quake-speed1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
 let restoreCheck=true,resumeOnEntry=false;
+const SOLO_SPEEDS=[1,2,4,8];
 let soloSpeed=1;
-try{soloSpeed=localStorage.getItem('ojjuda.tank.solo.speed')==='2'?2:1;}catch{}
+try{const saved=Number(localStorage.getItem('ojjuda.tank.solo.speed'));if(SOLO_SPEEDS.includes(saved))soloSpeed=saved;}catch{}
 const playbackSpeed=()=>current?.mode==='solo'?soloSpeed:1;
 const messages={not_signed_in:'오쭈다에 로그인한 뒤 이용해 주세요.',banned:'지금은 대전방을 이용할 수 없어요.',room_in_progress:'참여 중인 방을 먼저 마무리해 주세요.',room_rate_limit:'잠시 후 방을 다시 만들어 주세요.',room_full:'방 인원이 꽉 찼어요.',room_not_found:'방 번호를 확인해 주세요.',room_unavailable:'이미 닫힌 방이에요.',room_already_started:'이미 전투가 시작됐어요.',not_room_owner:'방장만 시작할 수 있어요.',need_players:'두 명 이상 모이면 시작할 수 있어요.',state_conflict:'다른 기기에서 진행됐어요. 최신 화면으로 맞추고 있어요.',not_your_turn:'내 차례에 발사해 주세요.',coins:'쭈가 부족해요. 무료 기본탄을 선택할 수 있어요.',wallet_unavailable:'쭈 잔액을 확인하지 못했어요.',already_eliminated:'이미 탈락해 관전 중이에요.',unavailable:'연결이 원활하지 않아요. 다시 연결하고 있어요.'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -61,6 +62,7 @@ function lobby(){
  }
 }
 function flightLabel(){
+ if(engine?.view().quake)return '지진 · 지형 붕괴 중';
  const weapon=WEAPONS[current?.event?.command?.weapon];
  if(weapon?.kind==='steelrain'){
   const v=engine?.view();
@@ -78,7 +80,8 @@ function render(){
  document.body.classList.add('in-match');$('menu').classList.add('hidden');$('netHud').hidden=false;
  $('netCoins').textContent=`보유 ${coins}쭈`;
  const solo=current.mode==='solo',local=current.mode==='local',privateMatch=solo||local;
- $('soloSpeed').hidden=!solo;$('soloSpeed').textContent='속도 ×'+soloSpeed;$('soloSpeed').setAttribute('aria-pressed',String(soloSpeed===2));
+ $('soloSpeed').hidden=!solo;$('soloSpeed').textContent='속도 ×'+soloSpeed;
+ $('soloSpeed').setAttribute('aria-label',`혼자 하기 속도 ${soloSpeed}배, 누르면 ${SOLO_SPEEDS[(SOLO_SPEEDS.indexOf(soloSpeed)+1)%SOLO_SPEEDS.length]}배`);
  const alive=local?current.game.tanks.some(t=>t.hp>0):current.game.tanks[current.seat]?.hp>0,remaining=Math.max(0,Math.ceil((Date.parse(current.deadline)-Date.now()-offset)/1000));
  $('netTurn').textContent=animation?flightLabel():current.status==='finished'?'전투 종료':!alive?'탈락 · 관전 중':`${current.game.names[current.game.turn]}${!local&&current.game.turn===current.seat?' (나)':''} 차례${local?' · 번갈아 조작해 주세요':solo?'':' · '+remaining+'초'}`;
  $('surrender').textContent=privateMatch?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
@@ -166,7 +169,7 @@ window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins
    }
   }
   view.use(engine,canAim());
-  if(animation&&['bunker','steelrain'].includes(WEAPONS[current.event?.command?.weapon]?.kind)){
+  if(animation){
    const label=flightLabel();if($('netTurn').textContent!==label)$('netTurn').textContent=label;
   }
   let finishedEffects=false;
@@ -176,7 +179,7 @@ window.TankOnline={hasGame:()=>!!engine,seat:playerSeat,canAim,balance:()=>coins
 };
 $('soloSpeed').onclick=()=>{
  if(current?.mode!=='solo')return;
- soloSpeed=soloSpeed===1?2:1;
+ soloSpeed=SOLO_SPEEDS[(SOLO_SPEEDS.indexOf(soloSpeed)+1)%SOLO_SPEEDS.length];
  try{localStorage.setItem('ojjuda.tank.solo.speed',String(soloSpeed));}catch{}
  render();
 };

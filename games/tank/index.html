@@ -132,7 +132,7 @@ body:not(.in-match) #controls{display:none}
 <div id="banner"></div>
 
 <div id="controls">
-<div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="soloSpeed" type="button" hidden aria-pressed="false" aria-label="혼자 하기 두 배속">속도 ×1</button><button id="surrender">항복</button></div>
+<div id="netHud" hidden><span id="netTurn"></span><span id="netCoins"></span><button id="soloSpeed" type="button" hidden aria-label="혼자 하기 속도 1배, 누르면 2배">속도 ×1</button><button id="surrender">항복</button></div>
 <div id="left" class="pnl">
   <button id="wpn" class="btn"><span id="wName">일반탄</span><span id="wAmmo">∞</span></button>
   <div class="mv"><button id="mvL" class="btn" aria-label="왼쪽으로 이동">◀</button><button id="mvR" class="btn" aria-label="오른쪽으로 이동">▶</button></div>
@@ -178,7 +178,7 @@ body:not(.in-match) #controls{display:none}
   <div id="waitingRoom" hidden><h2 id="waitingTitle"></h2><div id="waitingCodeRow" class="waiting-code"><strong id="waitingCode"></strong><button id="copyCode" class="ge-secondary" type="button">복사</button></div><p id="waitingCount"></p><div id="waitingNames"></div><p id="waitingHint">방장이 시작하면 모두 함께 전투에 들어가요.</p><button id="inviteFriends" class="ge-secondary" type="button">친구 초대</button><button id="startMatch" class="ge-primary" type="button">전투 시작</button><button id="leaveRoom" class="ge-secondary" type="button">방 나가기</button></div>
   <button id="exitEntry" class="ge-secondary" type="button">게임 목록으로</button>
   <p id="netMessage" class="ge-hint" role="status">오쭈다 로그인 확인 중…</p>
-  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>휴대폰을 가로·세로 어느 방향으로 들어도 플레이할 수 있어요. 바람은 0~3이 70%, 4~7이 20%, 8~10이 10% 확률로 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, ◀ / ▶ 버튼으로 포신을 왼쪽 / 오른쪽으로 0.5도씩 기울여요. 파워는 − / + 버튼으로 1씩 조절하거나 위쪽 막대를 눌러 맞춰요. 각도·파워 버튼을 길게 누르면 계속 조절되고, 손을 떼면 멈춰요. 맞춘 뒤 발사를 눌러요. 마지막 발사 각도와 힘은 내 차례가 돌아오거나 이어하기를 해도 그대로 유지돼요. 왼쪽 아래 이동 화살표로 탱크를 움직이고 화면을 밀어 전장을 볼 수 있어요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄 · 강철비</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>관통탄 · 유도탄 · 벙커버스터</td></tr><tr><th scope="row">5쭈</th><td>핵탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 살아 있는 탱크가 한 번씩 쏘면 다음 라운드의 발사 순서가 무작위로 섞여요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 속도 ×1 / ×2를 선택할 수 있고, 내 탱크가 파괴되면 종료돼요.</p></details>
+  <details class="ge-more"><summary>게임 방법 · 탄 가격</summary><p>휴대폰을 가로·세로 어느 방향으로 들어도 플레이할 수 있어요. 바람은 0~3이 70%, 4~7이 20%, 8~10이 10% 확률로 매 차례 바뀌고, 그 차례의 조준과 비행 중에는 유지돼요. 각도기를 누르거나 끌어서 각도를 맞추고, ◀ / ▶ 버튼으로 포신을 왼쪽 / 오른쪽으로 0.5도씩 기울여요. 파워는 − / + 버튼으로 1씩 조절하거나 위쪽 막대를 눌러 맞춰요. 각도·파워 버튼을 길게 누르면 계속 조절되고, 손을 떼면 멈춰요. 맞춘 뒤 발사를 눌러요. 마지막 발사 각도와 힘은 내 차례가 돌아오거나 이어하기를 해도 그대로 유지돼요. 왼쪽 아래 이동 화살표로 탱크를 움직이고 화면을 밀어 전장을 볼 수 있어요.</p><p>흙이 사라진 맨바닥에 공격 포탄이 닿으면 지진이 나요. 비탈의 흙이 낮은 곳으로 무너지고, 떨어지는 탱크에는 낙하 피해가 들어가요. 지진은 한 번 발사할 때 한 번만 발생해요.</p><table aria-label="포탄 발사 1회 가격"><tbody><tr><th scope="row">무료</th><td>일반탄 · 대형탄 · 산탄 · 강철비</td></tr><tr><th scope="row">1쭈</th><td>통통탄 · 굴착탄 · 흙폭탄 · 치료탄 · 이사탄</td></tr><tr><th scope="row">2쭈</th><td>분열탄 · 굴러탄</td></tr><tr><th scope="row">3쭈</th><td>관통탄 · 유도탄 · 벙커버스터</td></tr><tr><th scope="row">5쭈</th><td>핵탄</td></tr></tbody></table><p>선택한 무료 기본탄은 직접 바꾸기 전까지 내 차례에 계속 이어져요. 특수탄을 쓴 뒤에는 선택해 둔 기본탄으로 돌아와요. 특수탄은 발사할 때마다 차감돼요. 선택만 하면 차감되지 않아요. 같은 기기에서는 모든 플레이어가 로그인한 계정의 쭈를 함께 써요. 컴퓨터는 무료 기본탄만 사용해요.</p><p>같은 기기는 2~12명이 시간 제한 없이 번갈아 조작해요. 온라인은 2~12명이 각자의 기기로 참여해요. 살아 있는 탱크가 한 번씩 쏘면 다음 라운드의 발사 순서가 무작위로 섞여요. 차례를 3번 연속 놓치면 탈락하고 관전할 수 있어요. 혼자 하기는 속도 ×1 / ×2 / ×4 / ×8을 선택할 수 있고, 내 탱크가 파괴되면 종료돼요.</p></details>
  </section>
 </main>
 <div id="netNotice" role="status"></div>
@@ -789,15 +789,15 @@ function sfx(type,r=26){try{
   if(type==='tick'){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=900;g.gain.setValueAtTime(.06,now);g.gain.exponentialRampToValueAtTime(.001,now+.06);o.connect(g).connect(ac.destination);o.start();o.stop(now+.07);return;}
   if(type==='fire'){const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.setValueAtTime(240,now);o.frequency.exponentialRampToValueAtTime(55,now+.15);
     g.gain.setValueAtTime(.07,now);g.gain.exponentialRampToValueAtTime(.001,now+.18);o.connect(g).connect(ac.destination);o.start();o.stop(now+.2);return;}
-  const len=0.3+r/80,buf=ac.createBuffer(1,Math.floor(ac.sampleRate*len),ac.sampleRate),d=buf.getChannelData(0);
+  const len=type==='quake'?.8:0.3+r/80,buf=ac.createBuffer(1,Math.floor(ac.sampleRate*len),ac.sampleRate),d=buf.getChannelData(0);
   for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
-  const s=ac.createBufferSource();s.buffer=buf;const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=500+r*10;const g=ac.createGain();g.gain.value=.4;
+  const s=ac.createBufferSource();s.buffer=buf;const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=type==='quake'?90:500+r*10;const g=ac.createGain();g.gain.value=.4;
   s.connect(f).connect(g).connect(ac.destination);s.start();
 }catch(e){}}
 
 
 let tankRenderEngine=null,tankRenderDirty=-1,tankHistory=[];
-let tankHP=null,tankDeaths=new Set(),tankBursts=[],tankDebris=[];
+let tankHP=null,tankDeaths=new Set(),tankBursts=[],tankDebris=[],tankQuake=null;
 function tankDestroyed(t,seat){
  if(tankDeaths.has(seat))return;
  tankDeaths.add(seat);
@@ -829,6 +829,11 @@ window.TankView={
   ({W,MH,PL,FLOOR,FR,GW,GH,K,TS,WINDMAX,wind,ground,mask,tanks,turn,shots,booms,bits,floats,shotNo}=v);
   tanks.forEach((t,i)=>{if(t.hp<=0&&tankHP?.[i]>0)tankDestroyed(t,i);});
   tankHP=tanks.map(t=>t.hp);
+  if(v.quake){
+   if(tankQuake!==v.quake){showBanner('지진! 흙이 무너집니다');sfx('quake');}
+   if(!reduceMotion)shake=Math.max(shake,4+6*(1-v.quake.ticks/120));
+  }
+  tankQuake=v.quake;
   booms=[...v.booms,...tankBursts];bits=[...v.bits,...tankDebris];
   state=['fly','settle'].includes(v.state)?v.state:v.over?'end':canAim?'aim':'watch';
   paths=[...tankHistory,...v.paths];
@@ -856,7 +861,7 @@ window.TankView={
   shake=Math.max(0,shake-.45);
   return had&&!this.hasEffects();
  },
- resetHistory(){tankHistory=[];paths=[];tankHP=null;tankDeaths.clear();tankBursts=[];tankDebris=[];shake=0;},
+ resetHistory(){tankHistory=[];paths=[];tankHP=null;tankDeaths.clear();tankBursts=[];tankDebris=[];tankQuake=null;shake=0;},
  refresh:syncUI,
  notify:showBanner,
  sound:sfx,
@@ -870,6 +875,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261019-turn-speed1"></script>
+<script type="module" src="./online.mjs?v=20261019-quake-speed1"></script>
 </body>
 </html>

@@ -32,7 +32,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   return w;
  }
  try{
-  const viewport={width:1536,height:626},a=await client(ids[0],false,viewport,'','2'),get=(w,id)=>w.document.getElementById(id);
+  const viewport={width:1536,height:626},a=await client(ids[0],false,viewport,'','8'),get=(w,id)=>w.document.getElementById(id);
   const weaponCard=(w,id)=>get(w,'wgrid').querySelector('[data-weapon="'+id+'"]');
   assert.equal(get(a,'soloMode').getAttribute('aria-pressed'),'true');
   assert.equal(get(a,'lobbyHome').hidden,true);
@@ -262,14 +262,23 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   solo.eval('setAngle(0);setPower(50);fireSelected();');
   await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
   let soloFrame=solo.eval('tankRenderEngine.view().frame');solo.TankOnline.tick();assert.equal(solo.eval('tankRenderEngine.view().frame'),soloFrame+2,'double speed advances the flight by two frames');
-  get(solo,'soloSpeed').click();soloFrame=solo.eval('tankRenderEngine.view().frame');solo.TankOnline.tick();assert.equal(solo.eval('tankRenderEngine.view().frame'),soloFrame+1,'normal speed can be restored during flight');
-  get(solo,'soloSpeed').click();
+  for(const speed of [4,8,1,2,4,8]){
+   get(solo,'soloSpeed').click();assert.equal(get(solo,'soloSpeed').textContent,'속도 ×'+speed);
+   assert.match(get(solo,'soloSpeed').getAttribute('aria-label'),new RegExp('속도 '+speed+'배'));
+   assert.equal(solo.localStorage.getItem('ojjuda.tank.solo.speed'),String(speed));
+   soloFrame=solo.eval('tankRenderEngine.view().frame');solo.TankOnline.tick();
+   assert.equal(solo.eval('tankRenderEngine.view().frame'),soloFrame+speed,'speed can change during flight without skipping simulation');
+  }
   const acceptedSolo=(await f.call(ids[2],{action:'mine'})).room;
   for(let i=0;i<8000;i++)solo.TankOnline.tick();
   const renderedSolo=JSON.parse(solo.eval('JSON.stringify(tankRenderEngine.snapshot())'));
   assert.deepEqual(renderedSolo.terrain,acceptedSolo.game.terrain);assert.deepEqual(renderedSolo.turnOrder,acceptedSolo.game.turnOrder);
-  assert.deepEqual(renderedSolo.tanks.map(t=>[t.x,t.y,t.hp]),acceptedSolo.game.tanks.map(t=>[t.x,t.y,t.hp]),'double speed preserves authoritative damage and positions');
-  assert.ok(solo.scheduledDelays.includes(450),'double speed halves the computer wait');
+  assert.deepEqual(renderedSolo.tanks.map(t=>[t.x,t.y,t.hp]),acceptedSolo.game.tanks.map(t=>[t.x,t.y,t.hp]),'eightfold speed preserves authoritative damage and positions');
+  assert.ok(solo.scheduledDelays.includes(112.5),'eightfold speed shortens the computer wait');
+  for(const [speed,delay] of [[1,900],[2,450],[4,225],[8,112.5]]){
+   get(solo,'soloSpeed').click();assert.equal(get(solo,'soloSpeed').textContent,'속도 ×'+speed);
+   assert.ok(solo.scheduledDelays.includes(delay),'changing speed reschedules the pending computer turn');
+  }
   assert.match(get(solo,'netTurn').textContent,/컴퓨터 1/);
   for(let i=0;i<3&&!solo.TankOnline.canAim();i++){
    await wait(()=>get(solo,'netTurn').textContent.endsWith('비행 중'));
@@ -284,7 +293,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(solo,'startSolo').disabled,false);
   assert.equal(deathSounds,1,'subsequent ticks and room refreshes must not repeat a death explosion');
   // Three people take turns on one authenticated device; no computer fires for them.
-  const local=await client(ids[3]);
+  const local=await client(ids[3],false,undefined,'','8');
   get(local,'localMode').click();assert.equal(get(local,'localMode').getAttribute('aria-pressed'),'true');
   assert.equal(get(local,'localSetup').hidden,false);assert.equal(get(local,'soloSetup').hidden,true);assert.equal(get(local,'lobbyHome').hidden,true);
   assert.match(get(local,'localSetup').textContent,/로그인한 계정의 쭈/);
@@ -392,6 +401,31 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(rain,'netCoins').textContent,'보유 0쭈');
   assert.deepEqual(JSON.parse(rain.eval('JSON.stringify(tankRenderEngine.snapshot().terrain)')),rainRoom.game.terrain);
   get(rain,'surrender').click();await wait(()=>!rain.document.body.classList.contains('in-match'));
+  // An eightfold replay shows the earthquake once and saves the actual collapse/falls.
+  let quakeRoom=(await f.call(ids[8],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:3,title:'지진'}})).room;
+  quakeRoom=(await f.start(ids[8],quakeRoom)).room;
+  const quakeGame=quakeRoom.game;quakeGame.wind=0;quakeGame.terrain.fill(150);quakeGame.terrain.fill(358,370,520);
+  quakeGame.tanks.forEach((t,i)=>Object.assign(t,{x:[730,710,1400][i],y:300,vy:0}));
+  await f.db.query('update ojjuda_tank_internal.rooms set state=$2::jsonb where id=$1',[quakeRoom.id,JSON.stringify(quakeGame)]);
+  const earthquake=await client(ids[8],true,undefined,'','8');get(earthquake,'resumeMatch').click();earthquake.TankOnline.tick();
+  let quakeSounds=0;earthquake.sfx=type=>{if(type==='quake')quakeSounds++;};
+  earthquake.eval('setAngle(0);setPower(20);fireSelected();');
+  await wait(()=>get(earthquake,'netTurn').textContent==='일반탄 비행 중');
+  let quakeTicks=0,sawQuake=false;
+  while(earthquake.eval("['fly','settle'].includes(state)")&&quakeTicks++<200){
+   earthquake.TankOnline.tick();
+   if(get(earthquake,'netTurn').textContent==='지진 · 지형 붕괴 중'){
+    sawQuake=true;assert.equal(earthquake.TankOnline.canAim(),false);
+    assert.ok(earthquake.eval('shake')>0);earthquake.eval('draw()');
+   }
+  }
+  assert.ok(sawQuake&&quakeTicks<100);assert.equal(quakeSounds,1,'the quake is announced once even at eightfold speed');
+  const shownQuake=JSON.parse(earthquake.eval('JSON.stringify(tankRenderEngine.snapshot())'));earthquake.close();
+  const storedQuake=(await f.call(ids[8],{action:'mine'})).room;
+  assert.equal(storedQuake.coins,100);assert.equal(storedQuake.game.shotNo,1);
+  assert.deepEqual(shownQuake.terrain,storedQuake.game.terrain);
+  assert.deepEqual(shownQuake.tanks.map(t=>[t.x,t.y,t.hp]),storedQuake.game.tanks.map(t=>[t.x,t.y,t.hp]));
+  assert.ok(shownQuake.tanks[0].hp<100&&shownQuake.tanks[1].hp<100);assert.equal(shownQuake.tanks[2].hp,100);
   // Opening the entrance must not run a saved computer turn or spend coins.
   let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;
   savedSolo=(await f.start(ids[5],savedSolo)).room;
@@ -407,12 +441,12 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   paused.confirm=()=>false;get(paused,'newMatch').click();
   assert.equal((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id,'cancelling a new game preserves the save');
   get(paused,'resumeMatch').click();
-  assert.equal(get(paused,'soloSpeed').textContent,'속도 ×2','reopening restores the saved speed');
-  assert.ok(paused.scheduledDelays.includes(450));
+  assert.equal(get(paused,'soloSpeed').textContent,'속도 ×8','reopening restores the saved speed');
+  assert.ok(paused.scheduledDelays.includes(112.5));
   assert.equal(paused.document.body.classList.contains('in-match'),true);
   await wait(async()=>(await f.call(ids[5],{action:'read',room_id:savedSolo.id})).room.version>savedSolo.version);
   paused.close();
-  const replace=await client(ids[5],true);
+  const replace=await client(ids[5],true,undefined,'','99');
   get(replace,'newMatch').click();
   await wait(()=>!get(replace,'entryHome').hidden);
   assert.equal((await f.call(ids[5],{action:'mine'})).room,null);
@@ -420,6 +454,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   get(replace,'startSolo').click();
   await wait(()=>replace.document.body.classList.contains('in-match'));
   assert.notEqual((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id);
+  assert.equal(get(replace,'soloSpeed').textContent,'속도 ×1','invalid saved speeds fall back to normal');
   // A restored wreck stays quiet; a new match can explode once again.
   const {newGame,createEngine}=await import('../games/tank/engine.mjs');
   const living=newGame(['a','b'],'effects',88),wreck=structuredClone(living);wreck.tanks[1].hp=0;
