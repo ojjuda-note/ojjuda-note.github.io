@@ -127,11 +127,13 @@ function blastBedrock(b,r){
 function collapseQuake(){
  if(!quake.tops){
   quake.phase='collapse';quake.tops=Int16Array.from({length:GW},(_,cx)=>surf(cx*CS)/CS);
-  // Spread the remaining soil across the ENTIRE map. Local slope relaxation
-  // left broad cliffs standing even after its time limit. Adjacent target rows
-  // differ by at most one cell, preserving every soil cell on the integer grid.
-  const total=quake.tops.reduce((sum,top)=>sum+top,0),level=Math.floor(total/GW),extra=total%GW;
-  quake.targets=Int16Array.from({length:GW},(_,cx)=>level+Math.floor((cx+1)*extra/GW)-Math.floor(cx*extra/GW));
+  // Move each column halfway toward the mean, retaining half of the relief.
+  // Cumulative integer rounding preserves every soil cell across the whole map.
+  const total=quake.tops.reduce((sum,top)=>sum+top,0);let sum=0,placed=0;
+  quake.targets=Int16Array.from(quake.tops,top=>{
+   sum+=top*GW+total;
+   const next=Math.floor(sum/(2*GW)),target=next-placed;placed=next;return target;
+  });
  }
  const {tops,targets}=quake,rate=Math.max(1,Math.ceil(++quake.ticks*.65));
  let removed=0,capacity=0,remaining=false;
@@ -350,8 +352,13 @@ function land(t){if(t.vy>5&&t.hp>0){const d=Math.round((t.vy-5)*4)*5;t.hp=Math.m
 function drive(t,dir){
   if(t.fuel<=0||t.vy>0.6)return false;
   const nx=t.x+dir*0.6;if(nx<6||nx>W-6)return false;
-  let ny=t.y;while(solid(nx,ny-1)&&t.y-ny<CS)ny-=CS;
-  if(solid(nx,ny-1))return false;
+  // Measure the grade over the tracks, not a single pixel step in the terrain.
+  // One cell of tolerance lets a rasterized 30-degree slope remain traversable.
+  const span=26*TS,back=Math.floor(clamp(nx-dir*span/2,0,W)/CS)*CS,front=Math.floor(clamp(nx+dir*span/2,0,W)/CS)*CS;
+  const riseLimit=Math.abs(front-back)/Math.sqrt(3)+CS,from=t.y-riseLimit-CS;
+  if(below(back,from)-below(front,from)>riseLimit)return false;
+  let ny=t.y;while(solid(nx,ny-1)&&t.y-ny<riseLimit)ny-=CS;
+  if(t.y-ny>riseLimit||solid(nx,ny-1))return false;
   t.x=nx;t.y=ny;t.fuel=Math.max(0,t.fuel-0.6);
   if(t.fuel<=0)syncUI();
   return true;

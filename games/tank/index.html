@@ -410,8 +410,13 @@ function land(t){if(t.vy>5&&t.hp>0){const d=Math.round((t.vy-5)*4)*5;t.hp=Math.m
 function drive(t,dir){
   if(t.fuel<=0||t.vy>0.6)return false;
   const nx=t.x+dir*0.6;if(nx<6||nx>W-6)return false;
-  let ny=t.y;while(solid(nx,ny-1)&&t.y-ny<CS)ny-=CS;
-  if(solid(nx,ny-1))return false;
+  // Measure the grade over the tracks, not a single pixel step in the terrain.
+  // One cell of tolerance lets a rasterized 30-degree slope remain traversable.
+  const span=26*TS,back=Math.floor(clamp(nx-dir*span/2,0,W)/CS)*CS,front=Math.floor(clamp(nx+dir*span/2,0,W)/CS)*CS;
+  const riseLimit=Math.abs(front-back)/Math.sqrt(3)+CS,from=t.y-riseLimit-CS;
+  if(below(back,from)-below(front,from)>riseLimit)return false;
+  let ny=t.y;while(solid(nx,ny-1)&&t.y-ny<riseLimit)ny-=CS;
+  if(t.y-ny>riseLimit||solid(nx,ny-1))return false;
   t.x=nx;t.y=ny;t.fuel=Math.max(0,t.fuel-0.6);
   if(t.fuel<=0)syncUI();
   return true;
@@ -533,7 +538,8 @@ function aimPreview(t){
 function draw(){
   ctx.setTransform(scale*dpr,0,0,scale*dpr,0,0);
   ctx.save();
-  if(shake)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  const quakeMotion=tankQuakeFX&&!reduceMotion?Math.max(0,1-tankQuakeFX.t/40):0;
+  if(shake&&!quakeMotion)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
   const sky=ctx.createLinearGradient(0,0,0,H);
   sky.addColorStop(0,'#1b1d4a');sky.addColorStop(.55,'#56407a');sky.addColorStop(1,'#e48a5a');
   ctx.fillStyle=sky;ctx.fillRect(-20,-20,W+40,H+40);
@@ -544,10 +550,12 @@ function draw(){
   ctx.globalAlpha=1;ctx.save();ctx.translate(-camX*0.4,-camY*0.6);ctx.fillStyle='#3b2d58';ctx.beginPath();ctx.moveTo(0,MH+20);
   far.forEach((y,i)=>ctx.lineTo(i*10,y));ctx.lineTo(W,MH+20);ctx.closePath();ctx.fill();ctx.restore();
   ctx.translate(-camX,-camY);
+  if(quakeMotion)ctx.translate(Math.sin(tankQuakeFX.t*2.3)*7*quakeMotion,Math.cos(tankQuakeFX.t*2.9)*3.5*quakeMotion);
   if(tDirty&&timg)paintTerrain();
   {const sx=clamp(Math.floor(camX/CS)-6,0,GW-1),sw=Math.min(GW-sx,Math.ceil(VW/CS)+14);
     ctx.imageSmoothingEnabled=false;ctx.drawImage(tc,sx,0,sw,GH,sx*CS,0,sw*CS,GH*CS);ctx.imageSmoothingEnabled=true;}
   ctx.fillStyle='rgb(60,72,40)';ctx.fillRect(-20,GH*CS-1,W+40,H+40);
+  drawQuakeEffects();
 
   const lastOf={};paths.forEach(p=>lastOf[p.o]=Math.max(lastOf[p.o]??-1,p.n));
   ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
@@ -840,7 +848,32 @@ function sfx(type,r=26){try{
 
 
 let tankRenderEngine=null,tankRenderDirty=-1,tankHistory=[],tankAimPreview=null;
-let tankHP=null,tankDeaths=new Set(),tankBursts=[],tankDebris=[],tankQuake=null;
+let tankHP=null,tankDeaths=new Set(),tankBursts=[],tankDebris=[],tankQuake=null,tankQuakeFX=null;
+function startQuakeEffects(quake){
+ if(reduceMotion)return;
+ const count=Math.ceil(W/48);
+ tankQuakeFX={t:0,D:60,phase:quake.phase,points:Array.from({length:count},(_,i)=>{
+  const x=(i+.2+Math.random()*.6)*W/count;
+  return {x,y:surf(x),delay:Math.abs(x-quake.x)/W*12,vx:(Math.random()-.5)*1.8,vy:-1.5-Math.random()*2,size:2+Math.random()*2};
+ })};
+}
+function drawQuakeEffects(){
+ const fx=tankQuakeFX;if(!fx||fx.t>=fx.D)return;
+ ctx.save();ctx.lineWidth=1.5;ctx.strokeStyle='#2d3020';
+ const fade=Math.min(1,(fx.D-fx.t)/16);
+ for(const p of fx.points){
+  const age=fx.t-p.delay;if(age<0)continue;
+  const y=surf(p.x);
+  ctx.globalAlpha=.65*fade;ctx.beginPath();ctx.moveTo(p.x-8,y+1);ctx.lineTo(p.x,y+7);ctx.lineTo(p.x-3,y+14);ctx.lineTo(p.x+5,y+23);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(p.x,y+7);ctx.lineTo(p.x+8,y+9);ctx.lineTo(p.x+11,y+15);ctx.stroke();
+  ctx.globalAlpha=.3*fade*Math.min(1,age/4)*Math.max(0,1-age/55);ctx.fillStyle='#c8b389';
+  ctx.beginPath();ctx.ellipse(p.x+p.vx*age*.3,p.y-age*.6,5+age*.28,3+age*.16,0,0,Math.PI*2);ctx.fill();
+  if(age<34){ctx.globalAlpha=fade*(1-age/34);ctx.fillStyle='#a69a62';ctx.save();
+   ctx.translate(p.x+p.vx*age,p.y+p.vy*age+.065*age*age);ctx.rotate(age*.13);
+   ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);ctx.restore();}
+ }
+ ctx.restore();
+}
 function tankDestroyed(t,seat){
  if(tankDeaths.has(seat))return;
  tankDeaths.add(seat);
@@ -873,7 +906,8 @@ window.TankView={
   tanks.forEach((t,i)=>{if(t.hp<=0&&tankHP?.[i]>0)tankDestroyed(t,i);});
   tankHP=tanks.map(t=>t.hp);
   if(v.quake){
-   if(tankQuake!==v.quake){showBanner('지진! 땅이 평평하게 무너집니다');sfx('quake');}
+   if(tankQuake!==v.quake){showBanner('지진! 땅이 흔들리며 무너집니다');sfx('quake');}
+   if(tankQuake!==v.quake||tankQuakeFX?.phase!==v.quake.phase)startQuakeEffects(v.quake);
    if(!reduceMotion)shake=Math.max(shake,4+6*(1-v.quake.ticks/120));
   }
   tankQuake=v.quake;
@@ -894,9 +928,10 @@ window.TankView={
  input(){const t=tanks[turn];return {weapon:t.w,basicWeapon:t.basicWeapon,angle:t.ang,power:t.pow};},
  resetInput(){resetAimInput();closePicker();syncUI();},
  finishAnimation(engine){tankHistory.push(...engine.view().paths);},
- hasEffects:()=>tankBursts.length>0,
- tickEffects(){
+ hasEffects:()=>tankBursts.length>0||!!(tankQuakeFX&&tankQuakeFX.t<tankQuakeFX.D),
+ tickEffects(visualStep=1){
   const had=this.hasEffects();
+  if(tankQuakeFX){tankQuakeFX.t+=visualStep;if(tankQuakeFX.t>=tankQuakeFX.D&&!tankQuake)tankQuakeFX=null;}
   for(const b of tankBursts){b.t++;b.cr=b.r*(1-Math.pow(1-Math.min(1,b.t/b.D),2));}
   tankBursts=tankBursts.filter(b=>b.t<b.D+22);
   for(const p of tankDebris){p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.vx*=.98;p.life--;}
@@ -904,7 +939,7 @@ window.TankView={
   shake=Math.max(0,shake-.45);
   return had&&!this.hasEffects();
  },
- resetHistory(){tankHistory=[];paths=[];tankHP=null;tankDeaths.clear();tankBursts=[];tankDebris=[];tankQuake=null;tankAimPreview=null;shake=0;},
+ resetHistory(){tankHistory=[];paths=[];tankHP=null;tankDeaths.clear();tankBursts=[];tankDebris=[];tankQuake=null;tankQuakeFX=null;tankAimPreview=null;shake=0;},
  refresh:syncUI,
  notify:showBanner,
  sound:sfx,
@@ -918,6 +953,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261019-wind-soft1"></script>
+<script type="module" src="./online.mjs?v=20261019-quake-half1"></script>
 </body>
 </html>

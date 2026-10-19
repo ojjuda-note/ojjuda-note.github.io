@@ -15,8 +15,8 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   w.orientationLocks=[];w.orientationUnlocks=0;w.fullscreenCalls=0;
   Object.defineProperty(w.screen,'orientation',{value:{lock:async value=>{w.orientationLocks.push(value);},unlock:()=>{w.orientationUnlocks++;}}});
   w.document.documentElement.requestFullscreen=async()=>{w.fullscreenCalls++;};
-  w.radialGradients=[];w.canvasScales=[];w.canvasTranslations=[];
-  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({translate:(...args)=>w.canvasTranslations.push(args),scale:(...args)=>w.canvasScales.push(args),createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
+  w.radialGradients=[];w.canvasScales=[];w.canvasTranslations=[];w.canvasEllipses=[];
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({translate:(...args)=>w.canvasTranslations.push(args),scale:(...args)=>w.canvasScales.push(args),ellipse:(...args)=>w.canvasEllipses.push(args),createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),createLinearGradient:()=>({addColorStop:draw}),createRadialGradient:(...args)=>{w.radialGradients.push(args);return {addColorStop:draw};},measureText:()=>({width:20})},{get:(o,k)=>o[k]||draw});
   w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.id==='prot'?96:this.id==='power'?254:viewport.width,height:this.id==='prot'?56:this.id==='power'?28:viewport.height,top:['left','right'].includes(this.id)?viewport.height-86:0,bottom:this.id==='wind'?50:viewport.height,left:0,right:viewport.width};};
   w.matchMedia=()=>({matches:false,addEventListener:draw});w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=draw;w.confirm=()=>true;
   const parent={postMessage(m){
@@ -404,7 +404,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   // An eightfold replay reaches bedrock through thin soil, shows one quake, and saves the falls.
   let quakeRoom=(await f.call(ids[8],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:3,title:'지진'}})).room;
   quakeRoom=(await f.start(ids[8],quakeRoom)).room;
-  const quakeGame=quakeRoom.game;quakeGame.wind=0;quakeGame.terrain.fill(150);quakeGame.terrain.fill(350,370,520);
+  const quakeGame=quakeRoom.game;quakeGame.wind=0;quakeGame.terrain.fill(150);quakeGame.terrain.fill(350,370,620);
   quakeGame.tanks.forEach((t,i)=>Object.assign(t,{x:[730,710,1400][i],y:300,vy:0}));
   await f.db.query('update ojjuda_tank_internal.rooms set state=$2::jsonb where id=$1',[quakeRoom.id,JSON.stringify(quakeGame)]);
   const earthquake=await client(ids[8],true,undefined,'','8');get(earthquake,'resumeMatch').click();earthquake.TankOnline.tick();
@@ -416,17 +416,23 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    earthquake.TankOnline.tick();
    if(get(earthquake,'netTurn').textContent==='지진 · 지형 붕괴 중'){
     sawQuake=true;assert.equal(earthquake.TankOnline.canAim(),false);
-    assert.ok(earthquake.eval('shake')>0);earthquake.eval('draw()');
+    assert.ok(earthquake.eval('shake')>0);earthquake.canvasEllipses.length=0;earthquake.eval('draw()');
+    assert.ok(earthquake.canvasEllipses.length>0,'the quake visibly throws up dust');
    }
   }
   assert.ok(sawQuake&&quakeTicks<100);assert.equal(quakeSounds,1,'the quake is announced once even at eightfold speed');
-  const shownQuake=JSON.parse(earthquake.eval('JSON.stringify(tankRenderEngine.snapshot())'));earthquake.close();
+  const shownQuake=JSON.parse(earthquake.eval('JSON.stringify(tankRenderEngine.snapshot())'));
+  assert.ok(earthquake.TankView.hasEffects(),'the quake remains visible after fast eightfold physics playback');
+  for(let i=0;i<65;i++)earthquake.TankView.tickEffects();
+  assert.equal(earthquake.TankView.hasEffects(),false,'aftershocks and dust fade out');
+  assert.deepEqual(JSON.parse(earthquake.eval('JSON.stringify(tankRenderEngine.snapshot())')),shownQuake,'the quake animation never changes terrain or health');
+  earthquake.close();
   const storedQuake=(await f.call(ids[8],{action:'mine'})).room;
   assert.equal(storedQuake.coins,100);assert.equal(storedQuake.game.shotNo,1);
   assert.deepEqual(shownQuake.terrain,storedQuake.game.terrain);
   assert.deepEqual(shownQuake.tanks.map(t=>[t.x,t.y,t.hp]),storedQuake.game.tanks.map(t=>[t.x,t.y,t.hp]));
   assert.ok(shownQuake.tanks.every(t=>t.hp<100),'the distant high ground also collapses and damages its tank');
-  assert.ok(Math.max(...shownQuake.terrain)-Math.min(...shownQuake.terrain)<=1,'eightfold playback ends with the entire battlefield level');
+  assert.ok(Math.abs(Math.max(...shownQuake.terrain)-Math.min(...shownQuake.terrain)-104)<=1,'eightfold playback retains half the battlefield relief');
   assert.ok(shownQuake.tanks.every(t=>t.y===shownQuake.terrain[Math.floor(t.x/2)]*2&&t.vy===0),'all tanks land before playback hands over the turn');
   // Opening the entrance must not run a saved computer turn or spend coins.
   let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;

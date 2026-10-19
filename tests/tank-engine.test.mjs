@@ -19,12 +19,12 @@ const originalRadii=[24,42,14,24,24,24,24,100,200,24,48,18,24];
 WEAPONS.slice(0,originalRadii.length).forEach((w,i)=>assert.ok(Math.abs(w.r-originalRadii[i]*(i===8?1:1.2))<1e-10,'all non-nuclear radii increase by 20%'));
 assert.deepEqual(WEAPONS.slice(0,13).map(w=>w.dmg),[34,24,11,14,34,42,12,0,130,26,0,0,34],'balanced paid damage keeps the free and homing damage unchanged');
 assert.ok(Math.abs(TANK_SCALE/.45-1.15)<1e-10,'tanks are 15% larger');
-// A shot into exposed bedrock levels the entire map, conserves soil, and damages real falls.
+// Bedrock halves the map's relief, conserves soil, and still damages sufficiently long falls.
 for(const size of [3,12]){
  const game=newGame(Array.from({length:size},(_,i)=>String(i)),'bedrock-quake',881);
  game.wind=0;game.terrain.fill(150);
  const pit=Math.floor(game.width*.4625/2),safeX=Math.floor(game.width*.875);
- game.terrain.fill(358,pit,pit+Math.floor(game.width*.1875/2));
+ game.terrain.fill(358,pit,pit+Math.floor(game.width*.3125/2));
  game.terrain.fill(200,Math.floor(safeX/2)-30,Math.floor(safeX/2)+30);
  game.tanks.forEach((t,i)=>Object.assign(t,{x:i===0?pit*2-10:i===1?pit*2-30:i===2?safeX:i===3?pit*2+10:50+i*40,y:i===3?716:i===2?400:300,vy:0}));
  const command={type:'fire',weapon:0,angle:0,power:20*Math.sqrt(1600/game.width),moves:[]};
@@ -50,7 +50,11 @@ for(const size of [3,12]){
  assert.ok(saved.tanks[0].y>360&&saved.tanks[0].hp<100&&saved.tanks[0].hp>0,'falling damages the shooter above the cliff');
  assert.ok(saved.tanks[1].y>360&&saved.tanks[1].hp<100,'a nearby tank outside the blast takes falling damage too');
  assert.equal(saved.tanks[2].hp,100,'a supported low tank receives no arbitrary global health penalty');
- assert.ok(Math.max(...saved.terrain)-Math.min(...saved.terrain)<=1,'the entire map is level to one terrain cell, even far from the impact');
+ const relief=Math.max(...saved.terrain)-Math.min(...saved.terrain);
+ assert.ok(Math.abs(relief-104)<=1,'half of the original 208-cell height difference remains');
+ const mean=saved.terrain.reduce((sum,h)=>sum+h,0)/saved.terrain.length;
+ for(const cx of [0,pit-5,pit+10,Math.floor(safeX/2),saved.terrain.length-1])
+  assert.ok(Math.abs(saved.terrain[cx]-(game.terrain[cx]+mean)/2)<1,'hills and valleys move halfway toward the mean, even far from impact');
  assert.ok(saved.tanks.every(t=>t.y===saved.terrain[Math.floor(t.x/2)]*2&&t.vy===0),'every tank finishes on the new surface before the next turn');
  if(size===12){const t=saved.tanks[3];assert.equal(t.hp,100);assert.ok(t.y<716&&t.y<=saved.terrain[Math.floor(t.x/2)]*2,'soil arriving at the bottom supports a tank without burying it');}
  assert.equal(landingHits.get(saved.tanks[0].x),1,'one actual landing causes exactly one damage event');
@@ -76,8 +80,8 @@ for(const size of [3,12]){
  }
  assert.ok(impact.y>=700&&impact.y<702);assert.ok(frames<1000);assert.equal(events.size,1);
  const saved=e.snapshot();assert.ok(saved.terrain[365]>game.terrain[365],'the distant cliff collapses after the blast uncovers bedrock');
- assert.ok(saved.tanks[0].hp<100&&saved.tanks[1].hp<100,'tanks outside the blast take real falling damage');assert.ok(saved.tanks[2].hp<100,'a distant high plateau also drops and damages its tank');
- assert.ok(Math.max(...saved.terrain)-Math.min(...saved.terrain)<=1);
+ assert.ok(saved.tanks.every(t=>t.hp===100),'the smaller collapse leaves these short falls below the damage threshold');
+ assert.ok(Math.abs(Math.max(...saved.terrain)-Math.min(...saved.terrain)-104)<=1,'the newly exposed deep pit keeps half its relief');
  assert.equal(saved.shotNo,1);assert.equal(saved.turn,1);
  const server=advance(game,0,command);server.state.tanks.forEach(t=>delete t.misses);assert.deepEqual(saved,server.state);
 }
@@ -113,6 +117,27 @@ for(const [height,hp] of [[0,100],[40,100],[60,90],[100,60],[200,0]]){
  assert.equal(e.view().floats.filter(f=>f.txt==='낙하 -20').length,1);
  for(let i=0;i<60;i++)e.step();
  assert.equal(e.view().tanks[0].hp,80,'resting on the ground cannot charge the landing twice');
+}
+// Tracks climb rasterized slopes through 30 degrees in either direction.
+for(const dir of [-1,1])for(const angle of [0,15,30,35,45,60]){
+ const game=newGame(['climber','safe'],'slope-limit',881),grade=Math.tan(angle*Math.PI/180);
+ game.wind=0;game.terrain=game.terrain.map((_,cx)=>Math.floor(Math.max(100,Math.min(700,400-dir*(cx*2-800)*grade))/2));
+ game.tanks.forEach((t,i)=>{t.x=i?100:800;t.y=game.terrain[Math.floor(t.x/2)]*2;t.vy=0;});
+ const e=createEngine(game),tank=e.view().tanks[0],moves=[];
+ for(let i=0;i<140&&e.move(dir);i++)moves.push(dir);
+ if(angle<=30){
+  assert.equal(moves.length,140,`${angle}-degree slope is climbable toward ${dir}`);
+  assert.ok(Math.abs(tank.x-(800+dir*84))<1e-8);
+  assert.ok(Math.abs(tank.fuel-66)<1e-8,'climbing spends only actual travel distance');
+  assert.equal(tank.hp,100);assert.equal(tank.y,game.terrain[Math.floor(tank.x/2)]*2);
+  const replay=advance(game,0,{type:'fire',weapon:10,angle:90,power:5,moves});
+  assert.deepEqual([replay.state.tanks[0].x,replay.state.tanks[0].y,replay.state.tanks[0].fuel],[tank.x,tank.y,tank.fuel],'server movement replay matches the client');
+ }else{
+  assert.ok(moves.length<14,`${angle}-degree slope cannot be climbed`);
+  const stopped=[tank.x,tank.y,tank.fuel];
+  for(let i=0;i<5;i++)assert.equal(e.move(dir),false);
+  assert.deepEqual([tank.x,tank.y,tank.fuel],stopped,'blocked movement never burns fuel or moves the tank');
+ }
 }
 // Later scatter pellets pass through each earlier crater, including impacts in one frame.
 {
