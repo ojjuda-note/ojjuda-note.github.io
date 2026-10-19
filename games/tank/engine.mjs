@@ -28,7 +28,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const TANK_SCALE=.5175;
 const G=.15,SLOW=.35,TS=TANK_SCALE,FUEL=150,CS=2;
 const isBasicWeapon=w=>Number.isInteger(w)&&WEAPONS[w]?.price===0;
-export const WIND_MAX=.038;
+export const WIND_MAX=.019;
 const windBand=wind=>{const strength=Math.round(Math.abs(wind)/WIND_MAX*10);return strength<=3?0:strength<=7?1:2;};
 // Deterministic weather samples; the engine advances the sample only at a new turn.
 // Strength bands 0–3 / 4–7 / 8–10 have 70% / 20% / 10% probability.
@@ -46,7 +46,11 @@ export function mapWidth(saved){
 }
 export function currentWind(saved){
  const index=saved.windIndex??Math.floor((saved.windTime??0)/2800);
- return clamp(saved.wind??windAt(saved.weatherSeed??saved.seed,index*2800),-WIND_MAX,WIND_MAX);
+ if(saved.wind===undefined)return windAt(saved.weatherSeed??saved.seed,index*2800);
+ // Preserve the displayed 0–10 strength when resuming a stronger, older wind.
+ // Record the scale in snapshots so reconnecting cannot repeatedly halve it.
+ const priorMax=Number.isFinite(saved.windMax)&&saved.windMax>0?saved.windMax:.038;
+ return clamp(saved.wind*(WIND_MAX/priorMax),-WIND_MAX,WIND_MAX);
 }
 export function createEngine(saved){
  let rng=saved.seed>>>0;
@@ -420,7 +424,7 @@ function begin(command){
 }
 function snapshot(){
  if(shots.length||active.size||quake)throw Error('simulation_incomplete');
- return {runId,names:saved.names,width:W,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,turnOrder:[...turnOrder],round,turnSeed,wind,shotNo,over,
+ return {runId,names:saved.names,width:W,seed:rng,weatherSeed,windTime:windTime+frame*1000/60,windIndex,turn,turnOrder:[...turnOrder],round,turnSeed,wind,windMax:WIND_MAX,shotNo,over,
   terrain:Array.from({length:GW},(_,x)=>surf(x*CS)/CS),
   tanks:tanks.map(({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow})=>({x,y,vy,color,ang,pow,name,hp,w,basicWeapon,fuel,lastAng,lastPow}))};
 }

@@ -460,7 +460,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   // A restored wreck stays quiet; a new match can explode once again.
   const {newGame,createEngine}=await import('../games/tank/engine.mjs');
   const living=newGame(['a','b'],'effects',88),wreck=structuredClone(living);wreck.tanks[1].hp=0;
-  for(const [wind,label] of [[.076,'10 →'],[-.076,'← 10'],[.019,'5 →'],[0,'0']]){
+  for(const [wind,label] of [[.076,'10 →'],[-.076,'← 10'],[.0095,'5 →'],[0,'0']]){
    solo.TankView.use(createEngine({...living,wind}),false);solo.eval('draw()');
    assert.equal(get(solo,'windv').textContent,label,'the displayed wind matches the capped physical strength');
   }

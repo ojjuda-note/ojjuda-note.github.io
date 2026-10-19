@@ -219,7 +219,32 @@ assert.deepEqual([...new Set(strengths)].sort((a,b)=>a-b),Array.from({length:11}
 assert.ok(Math.min(...gusts)<-WIND_MAX*.8&&Math.max(...gusts)>WIND_MAX*.8,'gusts reach strong winds in both directions');
 assert.ok(gusts.some(w=>Math.abs(w)<.003),'calm intervals remain possible');
 assert.ok(gusts.every(w=>Math.abs(w)<=WIND_MAX));
-assert.equal(WIND_MAX,.038,'the strongest physical wind is half the previous maximum');
+assert.equal(WIND_MAX,.019,'wind 10 now has the physical force of the previous wind 5');
+// Existing games keep their wind number/direction, and repeated reconnects do not
+// keep weakening it. All participants and the computer use the same migration.
+for(const direction of [-1,1])for(let level=0;level<=10;level++){
+ const old=newGame(['a','b'],'legacy-wind',881);delete old.windMax;old.wind=direction*level/10*.038;
+ const resumed=createEngine(old).snapshot();
+ assert.equal(resumed.wind,old.wind/2);assert.equal(resumed.windMax,WIND_MAX);
+ assert.equal(Math.round(Math.abs(resumed.wind)/WIND_MAX*10),level);
+ assert.deepEqual(createEngine(createEngine(resumed).snapshot()).snapshot(),resumed,'reopening keeps the normalized wind stable');
+}
+// Measure actual flight: a high vertical shot used to drift over 93 units in
+// 200 frames at wind 10. It now drifts under 47, with equal steps in both directions.
+for(const direction of [-1,1]){
+ let prior=0;
+ for(let level=0;level<=10;level++){
+  const game=newGame(['self','other'],'gentler-wind-flight',881);game.terrain.fill(150);game.wind=direction*level/10*WIND_MAX;
+  game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:400,y:300,vy:0}));
+  const e=createEngine(game);e.begin({type:'fire',weapon:0,angle:90,power:80,moves:[]});
+  for(let frame=0;frame<200;frame++)e.step();
+  const drift=(e.view().shots[0].x-400)*direction;
+  if(level===0)assert.ok(Math.abs(drift)<1e-8,'calm air never pushes the shell');
+  else assert.ok(drift-prior>4&&drift-prior<5,'each displayed step gently increases the drift');
+  if(level===10)assert.ok(drift>46&&drift<47,'even the strongest wind has half the previous drift');
+  prior=drift;
+ }
+}
 // Measure actual turn changes too: globally rerolling repeats would distort 70/20/10.
 const turnSampler=createEngine(newGame(['a','b','c'],'wind-distribution',3381)),turnBands=[0,0,0];
 let previousWind=turnSampler.view().wind;

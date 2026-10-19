@@ -875,6 +875,6 @@ let last=0,acc=0;
 function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261019-quake-flat1"></script>
+<script type="module" src="./online.mjs?v=20261019-wind-soft1"></script>
 </body>
 </html>
