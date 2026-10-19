@@ -97,12 +97,27 @@ function settleSand(){
   for(const c of done)active.delete(c);
 }
 
-function touchBedrock(s,y=s.y){
- // Only a real attack-shell contact with exposed, in-map bedrock starts a quake.
- // A blast reaching the floor, a support shell, or a visual effect cannot start one.
- if(quaked||!(s.w.dmg>0)||s.x<0||s.x>W||y<FLOOR||surf(s.x)<FLOOR)return;
- quaked=true;quake={x:s.x,t:0,phase:'rumble',ticks:0,tops:null};
+function startQuake(x){
+ quaked=true;quake={x,t:0,phase:'rumble',ticks:0,tops:null};
  wake(0,W);
+}
+
+function touchBedrock(s,y=s.y){
+ if(quaked||!(s.w.dmg>0)||s.x<0||s.x>W||y<FLOOR)return;
+ if(!cellSolid(Math.floor(s.x/CS),FR-1))startQuake(s.x);
+}
+
+function blastBedrock(b,r){
+ if(quaked||b.fx||b.outside||!(b.w.dmg>0))return;
+ // Collision stops a shell at the thin soil or wall just ABOVE the floor.
+ // Detect the blast opening/reaching the bottom row too, after carving it.
+ // Use the same cell centers and vertical scale as circleCells, including caves.
+ const dy=(FLOOR-CS/2-b.y)/(b.w.craterScaleY??1);
+ if(Math.abs(dy)>r)return;
+ const reach=Math.sqrt(r*r-dy*dy);
+ for(let cx=Math.max(0,Math.ceil((b.x-reach)/CS-.5));cx<=Math.min(GW-1,Math.floor((b.x+reach)/CS-.5));cx++){
+  if(!cellSolid(cx,FR-1)){startQuake(clamp(cx*CS+CS/2,0,W));return;}
+ }
 }
 
 function collapseQuake(){
@@ -306,6 +321,7 @@ function growBoom(b){
   }
   if(b.dirt){if(cr>b.cr){fillCircle(b.x,b.y,cr);b.cr=cr;}return;}
   if(cr>b.cr){if(b.w.kind!=='scatter'&&b.w.kind!=='steelrain-pellet'&&b.w.kind!=='dig')carve(b.x,b.y,cr,b.w.craterScaleY??1);b.cr=cr;}
+  blastBedrock(b,cr);
   if(b.w.dmg>0)for(const t of tanks){if(t.hp<=0||b.hit.has(t))continue;
     const d=Math.hypot(t.x-b.x,(t.y-4)-b.y);
     if(d<b.r+8&&d<=cr+8){b.hit.add(t);

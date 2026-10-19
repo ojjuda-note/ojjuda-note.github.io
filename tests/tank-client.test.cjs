@@ -401,10 +401,10 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(get(rain,'netCoins').textContent,'보유 0쭈');
   assert.deepEqual(JSON.parse(rain.eval('JSON.stringify(tankRenderEngine.snapshot().terrain)')),rainRoom.game.terrain);
   get(rain,'surrender').click();await wait(()=>!rain.document.body.classList.contains('in-match'));
-  // An eightfold replay shows the earthquake once and saves the actual collapse/falls.
+  // An eightfold replay reaches bedrock through thin soil, shows one quake, and saves the falls.
   let quakeRoom=(await f.call(ids[8],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:3,title:'지진'}})).room;
   quakeRoom=(await f.start(ids[8],quakeRoom)).room;
-  const quakeGame=quakeRoom.game;quakeGame.wind=0;quakeGame.terrain.fill(150);quakeGame.terrain.fill(358,370,520);
+  const quakeGame=quakeRoom.game;quakeGame.wind=0;quakeGame.terrain.fill(150);quakeGame.terrain.fill(350,370,520);
   quakeGame.tanks.forEach((t,i)=>Object.assign(t,{x:[730,710,1400][i],y:300,vy:0}));
   await f.db.query('update ojjuda_tank_internal.rooms set state=$2::jsonb where id=$1',[quakeRoom.id,JSON.stringify(quakeGame)]);
   const earthquake=await client(ids[8],true,undefined,'','8');get(earthquake,'resumeMatch').click();earthquake.TankOnline.tick();

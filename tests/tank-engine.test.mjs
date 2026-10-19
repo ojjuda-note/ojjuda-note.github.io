@@ -54,8 +54,26 @@ for(const size of [3,12]){
  assert.deepEqual(saved,server.state,'client and server replay the same quake and falling damage');
  assert.deepEqual(createEngine(saved).snapshot(),saved,'collapsed earth and health survive resuming');
 }
-// Surface blasts, support shells, off-map impacts, and airbursts must not fake bedrock hits.
-for(const [weapon,surface,x,expected] of [[0,700,800,false],[0,716,800,true],[7,716,800,false],[10,716,800,false],[11,716,800,false],[0,716,-40,false],[2,716,800,true],[13,716,800,true],[14,716,800,true]]){
+// A naturally flying shell stops above bedrock, then its blast removes the last layer.
+// Previously this left a flat-bottomed pit with no quake, collapse, or falling damage.
+{
+ const game=newGame(['self','cliff','safe'],'thin-floor-quake',881);game.wind=0;game.terrain.fill(150);game.terrain.fill(350,370,520);
+ game.tanks.forEach((t,i)=>Object.assign(t,{x:[730,710,1400][i],y:300,vy:0}));
+ const command={type:'fire',weapon:0,angle:0,power:20,moves:[]},e=createEngine(game),events=new Set();e.begin(command);
+ let frames=0,impact=null;
+ while(['fly','settle'].includes(e.view().state)&&frames++<1000){
+  e.step();const v=e.view();
+  if(!impact&&v.booms.length){impact={x:v.booms[0].x,y:v.booms[0].y};assert.equal(v.quake,null,'the shell hits soil before reaching the floor');}
+  if(v.quake)events.add(v.quake);
+ }
+ assert.ok(impact.y>=700&&impact.y<702);assert.ok(frames<1000);assert.equal(events.size,1);
+ const saved=e.snapshot();assert.ok(saved.terrain[365]>game.terrain[365],'the distant cliff collapses after the blast uncovers bedrock');
+ assert.ok(saved.tanks[0].hp<100&&saved.tanks[1].hp<100,'tanks outside the blast take real falling damage');assert.equal(saved.tanks[2].hp,100);
+ assert.equal(saved.shotNo,1);assert.equal(saved.turn,1);
+ const server=advance(game,0,command);server.state.tanks.forEach(t=>delete t.misses);assert.deepEqual(saved,server.state);
+}
+// Blasts clearing the last soil layer count; higher blasts and support effects do not.
+for(const [weapon,surface,x,expected] of [[0,680,800,false],[0,700,800,true],[0,714,800,true],[0,716,800,true],[7,716,800,false],[10,716,800,false],[11,716,800,false],[0,716,-40,false],[2,716,800,true],[13,716,800,true],[14,716,800,true]]){
  const game=newGame(['self','safe'],'quake-contact',881);game.wind=0;game.terrain.fill(surface/2);
  game.tanks.forEach((t,i)=>Object.assign(t,{x:i?1400:100,y:surface,vy:0}));
  const e=createEngine(game);e.begin({type:'fire',weapon,angle:90,power:50,moves:[]});
