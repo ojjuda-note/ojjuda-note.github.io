@@ -40,7 +40,7 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   }
   const nearestTarget=sample=>sample.tanks.filter((t,i)=>i!==sample.turn&&t.hp>0).sort((a,b)=>Math.abs(a.x-sample.tanks[sample.turn].x)-Math.abs(b.x-sample.tanks[sample.turn].x))[0];
   const landingDistance=(sample,next)=>{const target=nearestTarget(sample);return Math.min(...next.bursts.map(b=>Math.hypot(b.x-target.x,b.y-target.y)));};
-  assert.equal(COMPUTER_ACCURACY,.05);
+  assert.equal(COMPUTER_ACCURACY,.15);
   const oldGame=createEngine({names:['a','b','c'],runId:'old-cpu-map',seed:881,width:2400}).snapshot();delete oldGame.width;oldGame.wind=.076;
   const normalized=createEngine(oldGame).snapshot();
   assert.deepEqual(computerCommand(oldGame),computerCommand(normalized),'computer aiming uses the restored map width and capped wind of legacy saves');
@@ -57,8 +57,8 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
    const distance=landingDistance(sample,next);furthestLanding=Math.max(furthestLanding,distance);
    assert.ok(distance<180,`a computer should land near its nearest living opponent (${size} players, seed ${seed}, ${distance.toFixed(1)} away)`);
   }
-  assert.ok(hits>=15&&hits<=45,`CPU hit rate should stay near 5%: ${hits}/600`);
-  assert.ok(totalDamage/600<3,'computer average damage should stay very low');
+  assert.ok(hits>=60&&hits<=120,`CPU hit rate should stay near 15%: ${hits}/600`);
+  assert.ok(totalDamage/600<9,'computer average damage should stay proportional to 15% accuracy');
   // Computer-vs-computer targeting also works at both edges and in strong winds.
   for(const side of [-1,1])for(const wind of [-.038,0,.038]){
    const sample=newGame(['나','컴퓨터 1','컴퓨터 2','탈락'],'near-edge',456789,1700000000000);

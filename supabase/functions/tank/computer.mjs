@@ -1,6 +1,6 @@
 // Bounded, deterministic aiming. Computer turns use only the three free weapons.
 import {advance,mapWidth,currentWind,TANK_SCALE} from './engine.mjs';
-export const COMPUTER_ACCURACY=.05;
+export const COMPUTER_ACCURACY=.15;
 export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  const tanks=saved.tanks,t=tanks[saved.turn];
  if(!t||t.hp<=0)throw Error('invalid_move');
@@ -42,7 +42,7 @@ export function computerCommand(saved,windTime=Math.round(saved.windTime??0)){
  const command={type:'fire',weapon:saved.shotNo%5===0?2:saved.shotNo%3===0?0:1,windTime,moves:[]};
  if(random()<COMPUTER_ACCURACY){const best=aimAt(target.x,target.y-6*TANK_SCALE);return {...command,angle:best.angle,power:best.power};}
  // Miss close to the opponent instead of throwing angle and power far off.
- // Check real splash, pellets and falling damage to keep the 5% difficulty.
+ // Check real splash, pellets and falling damage to keep the 15% difficulty.
  const firstSide=random()<.5?-1:1;
  let safest=null,leastDamage=Infinity;
  for(let attempt=0;attempt<8;attempt++){
