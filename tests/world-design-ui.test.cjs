@@ -25,6 +25,9 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('[data-arcade-games=solo] .ge img').count(),9);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);
  assert.equal(await page.locator('.arcade-welcome').count(),0,'theme artwork belongs to the rankings background');
+ assert.equal(await page.locator('.arcade-home>.world-page-heading,.arcade-home [data-theme-status]').count(),0,'arcade omits the decorative introduction');
+ assert.equal(await page.getByText('오늘의 작은 즐거움',{exact:false}).count(),0);
+ assert.equal(await page.locator('.arcade-status [data-act="pl-channel"]').isVisible(),true,'channel changes remain available above rankings');
  assert.equal(await page.locator('.arcade-social [data-arcade-rooms]').isVisible(),true);
  assert.equal(await page.locator('#plog,#pmsg,[data-act=pl-send],[data-act=pl-react],.arcade-welcome [data-tab=park]').count(),0);
  const brand=await page.locator('.side>.brand').boundingBox(),nav=await page.locator('.sidenav').boundingBox();assert.ok(Math.abs((brand.y+brand.height/2)-(nav.y+nav.height/2))<3,'brand and desktop menu share one row');

@@ -82,7 +82,6 @@ async function worldFixture(context, mobile, errors) {
       rel: new Map([['friend-b',{id:'request-b',status:'accepted'}]]) };
     window.Il = () => '<span class="ini">나</span>';
     window.Le = () => false;
-    window.yi = ['😊', '😌', '😴'];
     window.Jn = [['all', '전체 공개'], ['friends', '친구 공개'], ['me', '나만 보기']];
     window.ce = { ready: true, list: [{ id: 'synthetic-blocked', nick: '검사 작성자' }] };
     window.Go = 'test';
@@ -135,13 +134,14 @@ async function worldFixture(context, mobile, errors) {
     assert.equal(await page.locator(`[data-my-group="friends"] [data-act="${action}"]`).isVisible(), true);
   }
   assert.equal(await page.locator('[data-my-group="friends"] [data-act="visit"]').count(), 0);
-  for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-friend']) {
+  for (const id of ['p-nick', 'p-bio', 'n-friend']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
   }
   assert.equal(await page.locator('[data-park-action]').count(),0,'menu omits park activities');
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  assert.equal(await page.locator('#p-mt, [data-act="mood-pick"]').count(), 0, 'profile omits retired mood controls');
+  const expectedActions = ['account-delete-open', 'accent', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);

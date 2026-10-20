@@ -1,4 +1,4 @@
-/* Separate bounded swipe sequences for main menus and neighborhood places. */
+/* Keep menus and game overlays inside World until the main screen is reached. */
 (function () {
   'use strict';
   window.OjjudaWorldNavigation = {
@@ -7,6 +7,7 @@
       let gesture = null, suppressClickUntil = 0, edgeReturn = null;
       const state = page => ({...(history.state || {}), ojjudaWorld: page});
       const pushMenu = () => history.pushState(state('menu'), '', location.href);
+      const needsEntry = () => !options.isMain() || !!options.hasOverlay?.();
       const back = () => {
         if (options.closeOverlay()) return true;
         if (options.isMain()) return false;
@@ -19,7 +20,7 @@
           initialized = true;
         }
         if (returning || handling) return;
-        if (!options.isMain()) {
+        if (needsEntry()) {
           if (history.state?.ojjudaWorld !== 'menu') pushMenu();
         } else if (history.state?.ojjudaWorld === 'menu') {
           returning = true;
@@ -32,9 +33,19 @@
         handling = true;
         try { if (!programmatic) back(); }
         finally { handling = false; }
-        if (!options.isMain()) pushMenu();
+        if (needsEntry()) pushMenu();
         else history.replaceState(state('main'), '', location.href);
       });
+      // Games mount independently of the menu renderer, including iframe games.
+      // Keep one return entry while an overlay is open, and consume it when the
+      // game closes by its own button. A cancelled exit keeps the same guard.
+      let overlayActive = !!options.hasOverlay?.();
+      new MutationObserver(() => {
+        const active = !!options.hasOverlay?.();
+        if (active === overlayActive) return;
+        overlayActive = active;
+        sync();
+      }).observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:['class','open']});
       const reset = () => {
         edgeReturn?.cancel();
         edgeReturn = null;

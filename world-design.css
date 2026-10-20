@@ -43,3 +43,4 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .world-redesign .profile-photo-stage{background:var(--surface-2)}.world-redesign .profile-photo-actions .profile-photo-save{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.world-redesign .profile-photo-zoom input{accent-color:var(--accent)}
 
 .arcade-overview{margin-bottom:32px}
+.arcade-status{margin-bottom:20px}.world-redesign .arcade-status .visit-banner{width:100%;max-width:none;margin:0;padding:0}.arcade-status .visit-banner .btn{margin-left:auto}

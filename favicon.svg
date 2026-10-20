@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none"><rect x="0" y="0" width="96" height="96" rx="27" fill="#244b3a"/><path d="M24 58V44a24 24 0 0 1 48 0v14H58V44a10 10 0 0 0-20 0v14Z" fill="#f6f0dc"/><circle cx="31" cy="69" r="7" fill="#d6ad6a"/><circle cx="65" cy="69" r="7" fill="#a7bda2"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 544 544" role="img" aria-label="오쭈다 웃는 노트">
+  <path fill="#FF765F" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>
+  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>
+  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/>
+</svg>
