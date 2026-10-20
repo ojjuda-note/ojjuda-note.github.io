@@ -143,6 +143,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.setViewportSize({width:390,height:850});
  await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
  await page.screenshot({path:'/tmp/ojjuda-world-park-single-ui.png',fullPage:true});
+ if(process.env.OJJUDA_COPY_PROOF_DIR)await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'park-mobile.png'),fullPage:true});
  // Collections remain available in Park; the shared menu no longer lists Park shortcuts.
  for(const action of ['saved','mine','events']){
   await page.locator('.bottomnav [data-tab="my"]').click();
@@ -237,8 +238,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
  assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'park');
  await dragPark(150);
- await page.waitForFunction(()=>parkFixture.state.tab==='board');
- assert.equal(await iframe.count(),0,'a right swipe from Park reaches the board');
+ await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
+ assert.equal(await iframe.count(),0,'a right swipe from Park reaches the arcade');
  await page.evaluate(()=>parkFixture.user('fixture-member'));
  assert.equal(await page.evaluate(()=>parkFixture.useDecoration('card_fonts','fixture-member')),true);
  await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();

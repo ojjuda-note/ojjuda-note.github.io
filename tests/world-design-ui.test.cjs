@@ -24,6 +24,7 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
  assert.equal(await page.locator('[data-arcade-games=solo] .ge img').count(),9);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);
+ const brand=await page.locator('.side>.brand').boundingBox(),nav=await page.locator('.sidenav').boundingBox();assert.ok(Math.abs((brand.y+brand.height/2)-(nav.y+nav.height/2))<3,'brand and desktop menu share one row');
  await page.screenshot({path:path.join(proof,'arcade-desktop.png'),fullPage:true});
  await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
@@ -33,7 +34,7 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('html').getAttribute('data-world-theme'),'christmas');await fits('mobile theme chooser');
  await page.screenshot({path:path.join(proof,'settings-themes-mobile.png'),fullPage:true});
  await page.locator('[data-my-group=profile] summary').click();await page.locator('#p-bio').fill('바뀌지 않아야 하는 작성 내용');await page.locator('[data-world-theme=spring]').click();assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
- await page.setViewportSize({width:1440,height:1050});await page.evaluate(()=>{document.querySelectorAll('details.my-menu-group').forEach(n=>n.open=false);OjjudaThemes.choose('classic');});await fits('desktop settings');await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
+ await page.setViewportSize({width:1440,height:1050});await page.evaluate(()=>{document.querySelectorAll('details.my-menu-group').forEach(n=>n.open=false);OjjudaThemes.choose('classic');});await fits('desktop settings');assert.ok(await page.locator('.settings-columns').evaluate(n=>n.clientWidth>850),'settings use the full content width');await page.screenshot({path:path.join(proof,'settings-desktop.png'),fullPage:true});
  await page.locator('[data-my-group=themes] summary').click();await page.locator('.settings-theme-section').screenshot({path:path.join(proof,'all-themes.png')});
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});

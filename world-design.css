@@ -29,3 +29,15 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 
 /* The games retain their own internal palettes. Shared dialogs use the World type system. */
 .world-redesign .world-profile-avatar-placeholder{background:transparent;color:var(--accent-ink)}
+
+.world-redesign .topbar{display:flex}.world-redesign .bottomnav{display:flex}.world-redesign .adm-tabs button{min-height:44px}
+@media(min-width:900px){.world-redesign .bottomnav{display:none}}
+/* Reset the retired sidebar/grid assumptions at the new layout boundaries. */
+.world-redesign .my-hub{display:block}.world-redesign #ppanel{border-radius:0;overflow:visible}
+.world-redesign .side{flex-direction:row;overflow:visible}
+.world-redesign .world-account .world-profile-avatar{width:100%;height:100%;display:grid;place-items:center}
+.world-redesign .coinpill .cz{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#eedcb4;vertical-align:middle}.world-redesign .coinpill .cz i{opacity:1;font-size:8px}
+.arcade-welcome p{word-break:keep-all;text-wrap:balance}
+:root{--ju-paid:#876339;--ju-paid-hover:#70512d;--ju-paid-ink:#79572d;--ju-paid-soft:#f7f0e4;--ju-paid-line:#e2d5bf;--ju-paid-muted:#8b7555}
+:root[data-theme=dark]{--ju-paid:#8f734d;--ju-paid-ink:#e7cfa8;--ju-paid-soft:#3b352a;--ju-paid-line:#6d604b;--ju-paid-muted:#c0ad8f}
+.world-redesign .profile-photo-stage{background:var(--surface-2)}.world-redesign .profile-photo-actions .profile-photo-save{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.world-redesign .profile-photo-zoom input{accent-color:var(--accent)}

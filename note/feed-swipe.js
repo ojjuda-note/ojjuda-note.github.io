@@ -127,7 +127,7 @@
         peek.setAttribute('aria-hidden', 'true'); peek.inert = true;
         viewport.append(peek);
       }
-      peek.textContent = g.next === 'board' ? '게시판' : g.next === 'menu' ? '메뉴' : g.next === 'world' ? '동네' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
+      peek.textContent = g.next === 'board' ? '오락실' : g.next === 'menu' ? '설정' : g.next === 'world' ? '오락실' : tabs.querySelector(`[data-sort="${g.next}"]`)?.textContent || '';
       translate(peek, direction * width + g.offset, Math.max(0, -viewport.getBoundingClientRect().top + 24));
     }
 
