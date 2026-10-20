@@ -118,7 +118,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await frame.locator('.mobile-top:visible,.side:visible,.bottomnav:visible,.write-fab:visible').count(),0,width+': no duplicate app chrome');
   assert.equal(await page.locator('.topbar .brand:visible,.side > .brand:visible').count(),1,width+': one World brand');
   assert.equal(await page.locator('.topbar .ojjuda-copy--world,.side > .ojjuda-copy--world').count(),0,width+': World header has no extra greeting row');
-  assert.equal(await frame.locator('.ojjuda-copy--feed').textContent(),copy);
+  assert.equal(await frame.locator('.park-heading,.ojjuda-copy--feed').count(),0,'Park opens directly on its sorting controls and cards');
   assert.equal(await page.locator('.bottomnav:visible,.sidenav:visible').count(),1,width+': one World navigation');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),width+': parent has no second vertical scrollbar');
   await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
@@ -211,9 +211,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
  await page.evaluate(()=>parkFixture.enter('arcade'));
  assert.equal(await page.locator('[data-park-app]').count(),0,'leaving removes the old account app');
- assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"]').count(),3,'arcade chat remains available');
- await page.locator('#pmsg').fill('카페의 대화는 그대로');await page.locator('[data-act="pl-send"]').click();
- assert.ok((await page.locator('#plog').textContent()).includes('카페의 대화는 그대로'));
+ assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"]').count(),0,'returning to Arcade does not restore public chat');
+ assert.equal(await page.locator('.arcade-social').count(),1,'the room section remains available');
  // Exercise the real child -> postMessage -> parent navigation path.
  await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
  frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
@@ -248,6 +247,6 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.locator('#compose-more').evaluate(el=>el.open),true,'World shop handoff opens the real selected decoration');
  assert.equal(await page.evaluate(()=>parkFixture.useDecoration('card_fonts','other-account')),false);
  assert.deepEqual(errors,[]);
- console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, cafe chat, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
+ console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, room-only Arcade, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

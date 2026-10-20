@@ -21,7 +21,7 @@
     return `<button class="btn pri arcade-create-shortcut" data-arcade-action="create" data-kind="${escape(kind)}">방 제목을 정하고 공개 대전방 만들기</button>`;
   }
   function markup() { return '<section class="arcade-rooms" data-arcade-rooms aria-label="오락실 대전방"></section>'; }
-  function feedMarkup() { return '<div class="arcade-room-feed" data-arcade-room-feed data-room-list aria-label="채팅에 게시된 대전방"></div>'; }
+  function feedMarkup() { return '<div class="arcade-room-feed" data-arcade-room-feed data-room-list aria-label="열린 대전방"></div>'; }
   function create(options) {
     let root = null, list = null, owner = null, epoch = 0, timer = null, polling = false, busy = false, disposed = false;
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null;
@@ -38,11 +38,12 @@
       if (!disposed && owner && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing')) timer = setTimeout(poll, 4000);
     }
     function card(room) {
-      const [emoji, name] = games[room.kind] || ['🎮', '게임'];
+      const [, name] = games[room.kind] || ['', '게임'];
+      const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
       const playing = room.status === 'playing';
       const action = room.is_member ? (playing ? '이어서 하기' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
-        <div class="arcade-room-game"><span aria-hidden="true">${emoji}</span><b>${name}</b></div>
+        <div class="arcade-room-game"><img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28"><b>${name}</b></div>
         <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
         <div class="arcade-room-actions"><span class="arcade-room-state${playing ? ' playing' : ''}">${playing ? '대전 중' : '상대 기다리는 중'}</span>
         <button class="btn sm${!playing || room.is_member ? ' pri' : ''}" data-arcade-action="join" data-room="${escape(room.room_no)}"${busy || (playing && !room.is_member) || (!playing && room.is_member && !room.native) || (!room.is_member && room.players>=room.capacity) ? ' disabled' : ''}>${action}</button>
@@ -51,14 +52,14 @@
     function render() {
       if (!root?.isConnected) return;
       if (!root.querySelector('[data-room-filter]')) {
-        root.innerHTML = `<div class="arcade-rooms-head"><div><h3>대전방</h3><p>만든 방이 아래 채팅창에 올라와요</p></div><button class="btn pri" data-arcade-action="create">＋ 방 만들기</button></div>
+        root.innerHTML = `<div class="arcade-rooms-head"><div><h3>대전방</h3><p>함께할 상대를 찾아보세요.</p></div><button class="btn pri" data-arcade-action="create">＋ 방 만들기</button></div>
           <div class="arcade-room-filters"><select aria-label="대전방 게임 선택" data-room-filter><option value="">모든 게임</option></select><input class="inp" type="search" data-room-search maxlength="40" placeholder="방번호 또는 제목 검색" aria-label="방번호 또는 제목 검색"></div>
           <p class="arcade-room-issue" data-room-issue role="status" hidden></p>
-          <button class="arcade-room-retry" data-arcade-action="refresh">방 목록 새로고침</button>`;
+          <button class="arcade-room-retry" data-arcade-action="refresh">방 목록 새로고침</button>${feedMarkup()}`;
         root.querySelector('[data-room-search]').value = query;
         signature = '';
       }
-      let nextList = document.querySelector('[data-arcade-room-feed]') || root.querySelector('[data-room-list]');
+      let nextList = root.querySelector('[data-arcade-room-feed]') || root.querySelector('[data-room-list]');
       // Older cached shells can still display rooms until their next refresh.
       if (!nextList) { nextList = document.createElement('div'); nextList.dataset.roomList = ''; root.append(nextList); }
       if (list !== nextList) { list = nextList; signature = ''; }
@@ -154,7 +155,7 @@
         <label class="field">방 제목<input class="inp" name="title" maxlength="40" required value="${escape(initial)}" autocomplete="off"></label>
         <div data-create-layout${kind === 'janggi' ? '' : ' hidden'}>${layoutSelect('eheh')}</div>
         <label class="field" data-create-capacity hidden>최대 인원<select class="inp" name="capacity"></select></label>
-        <p class="note">방번호는 자동으로 붙어요. 만든 방은 오락실 채팅창에 공개돼요.</p><p data-room-message role="status"></p>
+        <p class="note">방번호는 자동으로 붙어요. 만든 방은 오락실 대전방 목록에 표시돼요.</p><p data-room-message role="status"></p>
         <div class="mfoot"><button class="btn" type="button" data-act="close">취소</button><button class="btn pri" type="submit">방 만들고 기다리기</button></div></form>`, '대전방 만들기');
       const form = document.getElementById('arcade-room-form');
       let previousTitle = initial, request = null, lastParams = '';

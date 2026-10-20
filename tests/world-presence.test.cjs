@@ -62,19 +62,19 @@ function fixture() {
 }
 
 (async () => {
-  // Park keeps presence, without subscribing to messages or fetching chat history.
+  // Park and Arcade keep presence without messages, reactions or chat history.
   {
     const f=fixture(); await f.context.Pa(place('park'),1);
     assert.deepEqual(f.channels[0].events.map(event=>event.kind),['presence']);
     assert.deepEqual(f.reads,[]);
     await f.channels[0].status('SUBSCRIBED'); assert.deepEqual(f.joined,['park']);
-    await f.context.Pa(place('cafe'),1);
-    assert.deepEqual(f.channels[1].events.map(event=>event.kind),['presence','broadcast','postgres_changes']);
-    assert.deepEqual(f.reads,['place_messages']);
+    await f.context.Pa(place('arcade'),1);
+    assert.deepEqual(f.channels[1].events.map(event=>event.kind),['presence']);
+    assert.deepEqual(f.reads,[]);
   }
   // Coalescing still publishes the latest movement, without copying stale state.
   {
-    const f = fixture(), room = place('cafe');
+    const f = fixture(), room = place('arcade');
     await f.context.Pa(room, 1); const channel = f.channels[0];
     await channel.status('SUBSCRIBED'); channel.sent.length = 0;
     f.context.rn(room); f.tick(70); room.me.target = {gx: 7, gy: 6, lift: 18};
@@ -82,10 +82,10 @@ function fixture() {
     f.tick(1); assert.equal(channel.sent.length, 1);
     assert.equal(channel.sent[0].uid, 'alice'); assert.equal(channel.sent[0].gx, 7);
     assert.equal(channel.sent[0].gy, 6); assert.equal(channel.sent[0].lift, 18);
-    assert.equal(room.joined, true); assert.deepEqual(f.joined, ['cafe']);
+    assert.equal(room.joined, true); assert.deepEqual(f.joined, ['arcade']);
   }
   for (const transition of ['leave', 'logout', 'account', 'channel']) {
-    const f = fixture(), room = place('cafe');
+    const f = fixture(), room = place('arcade');
     await f.context.Pa(room, 1); const old = f.channels[0];
     f.context.rn(room);
     if (transition === 'leave') await f.context.Vs();
@@ -97,7 +97,7 @@ function fixture() {
   }
   // A pending initial track must not mark the old room joined or publish it to the lobby.
   for (const transition of ['leave', 'logout', 'account', 'channel']) {
-    const f = fixture(), room = place('cafe');
+    const f = fixture(), room = place('arcade');
     await f.context.Pa(room, 1); const old = f.channels[0];
     old.trackWait = deferred(); const completing = old.status('SUBSCRIBED');
     assert.equal(old.sent.length, 1);
@@ -115,7 +115,7 @@ function fixture() {
   }
   // Leaving an old channel may be slower than joining the new one.
   {
-    const f = fixture(); await f.context.Pa(place('cafe'), 1);
+    const f = fixture(); await f.context.Pa(place('arcade'), 1);
     const old = f.channels[0]; old.leaveWait = deferred();
     const leaving = f.context.Vs();
     await f.context.Pa(place('park'), 2); await f.channels[1].status('SUBSCRIBED');
@@ -124,14 +124,14 @@ function fixture() {
   }
   // An older join waiting for untrack must not supersede a newer join or new account.
   for (const transition of ['channel', 'logout', 'account']) {
-    const f = fixture(); await f.context.Pa(place('cafe'), 1);
+    const f = fixture(); await f.context.Pa(place('arcade'), 1);
     const old = f.channels[0]; old.leaveWait = deferred();
-    const pending = f.context.Pa(place('library'), 2);
+    const pending = f.context.Pa(place('arcade'), 2);
     if (transition === 'channel') await f.context.Pa(place('park'), 3);
     if (transition === 'logout') f.context.D.user = null;
     if (transition === 'account') f.context.D.user = {id: 'bob'};
     old.leaveWait.resolve('ok'); await pending;
-    assert.ok(!f.channels.some(channel => channel.name === 'place:library-2'),
+    assert.ok(!f.channels.some(channel => channel.name === 'place:arcade-2'),
       transition + ': superseded join is cancelled before channel creation');
   }
   console.log('PASS World presence: latest movement, leave/logout/account isolation, stale track completion and overlapping joins');

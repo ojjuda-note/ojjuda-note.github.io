@@ -3,10 +3,10 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('world-themes.js')+'\n'+read('world-game-rankings.js')+'</script></head>');
+world=world.replace('</head>','<script>'+read('world-themes.js')+'\n'+read('world-game-rankings.js')+'\n'+read('arcade-rooms.js')+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
- $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;
+ $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
  g.tab='place';g.place={id:'arcade',ch:1,count:8,log:[]};H();clearInterval(g.placeT);g.placeT=null;
  const rankClient={rpc:async(_,args)=>({data:Object.fromEntries(args.p_games.map((id,i)=>[id,{nick:['초록산책','작은별','오쭈다'][i%3],score:1200+i*60}]))})};
  window.designFixture={render:H,state:g,auth:D,model:$,actions:sr,rank(){OjjudaGameRankings.mount(document.querySelector('[data-arcade-rank-root]'),{client:rankClient,owner:'fixture',games:{mines:{name:'지뢰찾기',unit:'점'},runner:{name:'쭈 달리기',unit:'점'},stacker:{name:'탑 쌓기',unit:'층'},tank:{name:'탱크게임',unit:'승'}},onOpenGame:id=>window.openedGame=id});}};
@@ -24,6 +24,9 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
  assert.equal(await page.locator('[data-arcade-games=solo] .ge img').count(),9);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);
+ assert.equal(await page.locator('.arcade-welcome').count(),0,'theme artwork belongs to the rankings background');
+ assert.equal(await page.locator('.arcade-social [data-arcade-rooms]').isVisible(),true);
+ assert.equal(await page.locator('#plog,#pmsg,[data-act=pl-send],[data-act=pl-react],.arcade-welcome [data-tab=park]').count(),0);
  const brand=await page.locator('.side>.brand').boundingBox(),nav=await page.locator('.sidenav').boundingBox();assert.ok(Math.abs((brand.y+brand.height/2)-(nav.y+nav.height/2))<3,'brand and desktop menu share one row');
  await page.screenshot({path:path.join(proof,'arcade-desktop.png'),fullPage:true});
  await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
@@ -47,7 +50,7 @@ world=world.slice(0,boot)+`
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
  const keys=await page.evaluate(()=>OjjudaThemes.order);
- for(const key of keys){await page.evaluate(k=>OjjudaThemes.choose(k),key);await fits(key);assert.ok(await page.locator('.arcade-welcome').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
+ for(const key of keys){await page.evaluate(k=>OjjudaThemes.choose(k),key);await fits(key);assert.ok(await page.locator('[data-arcade-rank-root]').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
  await page.evaluate(()=>OjjudaThemes.choose('christmas'));await page.screenshot({path:path.join(proof,'christmas-desktop.png'),fullPage:true});
  await page.evaluate(()=>document.documentElement.dataset.theme='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
  assert.deepEqual(errors,[]);await context.close();console.log('PASS: real redesigned renderer, responsive menus, artwork, all theme palettes, keyboard-safe controls, manual selection, draft preservation and ranking pagination');
