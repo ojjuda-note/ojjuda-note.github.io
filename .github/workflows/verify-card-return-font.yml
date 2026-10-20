@@ -1,0 +1,58 @@
+name: Verify card text after Back
+on:
+  push:
+    branches: [codex/fix-card-return-font]
+    paths-ignore: ['world.html', 'note/preview.js']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Install test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Reproduce shrinking on the previous source
+        env:
+          EXPECT_CARD_FONT_BUG: '1'
+          CARD_FONT_PROOF_DIR: /tmp/card-return-font-proof
+        run: node tests/note-card-return-font-ui.test.cjs
+      - name: Apply reviewed source fix
+        run: python ops/apply-card-return-font.py
+      - name: Verify fixed navigation and card layout
+        env:
+          CARD_FONT_PROOF_DIR: /tmp/card-return-font-proof
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/note-preview-photo.test.cjs
+          node tests/note-card-return-font-ui.test.cjs
+          node tests/note-tag-ui.test.cjs
+          node tests/note-card-body-limit-ui.test.cjs
+          node tests/park-note-chat-ui.test.cjs
+          git diff --check
+      - name: Save before and after screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: card-return-font-proof
+          path: /tmp/card-return-font-proof
+          retention-days: 3
+      - name: Commit verified source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Preserve card text size on detail return and responsive resize'
+            git push origin HEAD:refs/heads/codex/fix-card-return-font
+          fi
