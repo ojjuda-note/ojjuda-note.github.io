@@ -1,0 +1,272 @@
+diff --git a/favicon.svg b/favicon.svg
+index b79dd08..edc8fbf 100644
+--- a/favicon.svg
++++ b/favicon.svg
+@@ -1 +1,5 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none"><rect x="0" y="0" width="96" height="96" rx="27" fill="#244b3a"/><path d="M24 58V44a24 24 0 0 1 48 0v14H58V44a10 10 0 0 0-20 0v14Z" fill="#f6f0dc"/><circle cx="31" cy="69" r="7" fill="#d6ad6a"/><circle cx="65" cy="69" r="7" fill="#a7bda2"/></svg>
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 544 544" role="img" aria-label="오쭈다 웃는 노트">
++  <path fill="#FF765F" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>
++  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>
++  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/>
++</svg>
+diff --git a/matgo-bridge.js b/matgo-bridge.js
+index f7ceac0..1ec6399 100644
+--- a/matgo-bridge.js
++++ b/matgo-bridge.js
+@@ -85,6 +85,7 @@
+   }
+   window.openMatgo = openMatgo;
+   window.closeMatgo = closeMatgo;
++  window.requestMatgoClose = requestClose;
+   window.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay) requestClose(); });
+   window.addEventListener('message', event => {
+     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow) return;
+diff --git a/tests/my-menu-ui.test.cjs b/tests/my-menu-ui.test.cjs
+index 8ddeb41..39b2808 100644
+--- a/tests/my-menu-ui.test.cjs
++++ b/tests/my-menu-ui.test.cjs
+@@ -82,7 +82,6 @@ async function worldFixture(context, mobile, errors) {
+       rel: new Map([['friend-b',{id:'request-b',status:'accepted'}]]) };
+     window.Il = () => '<span class="ini">나</span>';
+     window.Le = () => false;
+-    window.yi = ['😊', '😌', '😴'];
+     window.Jn = [['all', '전체 공개'], ['friends', '친구 공개'], ['me', '나만 보기']];
+     window.ce = { ready: true, list: [{ id: 'synthetic-blocked', nick: '검사 작성자' }] };
+     window.Go = 'test';
+@@ -135,13 +134,14 @@ async function worldFixture(context, mobile, errors) {
+     assert.equal(await page.locator(`[data-my-group="friends"] [data-act="${action}"]`).isVisible(), true);
+   }
+   assert.equal(await page.locator('[data-my-group="friends"] [data-act="visit"]').count(), 0);
+-  for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-friend']) {
++  for (const id of ['p-nick', 'p-bio', 'n-friend']) {
+     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
+   }
+   assert.equal(await page.locator('[data-park-action]').count(),0,'menu omits park activities');
+   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
+   assert.equal(await page.locator('#n-friend').isChecked(), false);
+-  const expectedActions = ['account-delete-open', 'accent', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
++  assert.equal(await page.locator('#p-mt, [data-act="mood-pick"]').count(), 0, 'profile omits retired mood controls');
++  const expectedActions = ['account-delete-open', 'accent', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
+     'every existing account, display, privacy and support action keeps its dispatch key');
+   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
+diff --git a/tests/package.json b/tests/package.json
+index 9628e4c..1fecf69 100644
+--- a/tests/package.json
++++ b/tests/package.json
+@@ -9,7 +9,7 @@
+     "test:unit": "node billiards-ai.test.cjs && node world-themes.test.cjs && node world-friend-settings.test.cjs && node world-three-menus.test.cjs && node mines-dom.test.cjs && node mines-ranking-db.test.cjs && node saetbyeol-dom.test.cjs && node saetbyeol-expansion.test.cjs && node saetbyeol-boss-balance.test.cjs && node saetbyeol-booster.test.cjs && node saetbyeol-ranking-db.test.cjs && node ojjuda-tour-dom.test.cjs && node ojjuda-tour-ranking-db.test.cjs && node adult-menu-visibility.test.cjs && node world-adult-resume.test.cjs && node game-friend-invites-db.test.cjs && node profile-color-security.test.cjs && node account-deletion.test.cjs && node inline-scripts.test.cjs && node community-game-ranking-db.test.cjs && node game-win-streak-db.test.cjs && node member-identity.test.cjs && node portal-auth-entry.test.cjs && node member-identity-db.test.cjs && node account-recovery-db.test.cjs && node account-recovery-edge.test.cjs && node note-moderation-db.test.cjs && node note-tag-visibility.test.cjs && node note-preview-photo.test.cjs && node note-album-autosave.test.cjs && node note-composer-settings.test.cjs && node note-account.test.cjs && node world-rpc-security.test.cjs && node world-legacy-cleanup-db.test.cjs && node world-presence.test.cjs && node game-verification.test.cjs && node breakout-items.test.cjs && node breakout-score-db.test.cjs && node feedback-ai-db.test.cjs && npm run test:feedback-dispatch && npm run test:feedback-gateway && node auto-card-visuals-db.test.cjs && node feedback-diagnostics-db.test.cjs && node matgo-engine.test.cjs && node matgo-multipliers.test.mjs && node matgo-captured-zoom.test.mjs && node matgo-bonus.test.mjs && node matgo-gukjin.test.mjs && node matgo-special-rules.test.mjs && node matgo-first-ppuk.test.mjs && node matgo-access.test.cjs && node matgo-gold.test.cjs && node matgo-refill.test.cjs && node matgo-difficulty.test.mjs && node matgo-stakes.test.cjs && node matgo-parity.test.cjs && node matgo-edge.test.cjs && node matgo-online.test.cjs && node ju-charge-db.test.cjs && node ju-shop-db.test.cjs && node ju-game-prices-db.test.cjs && node admin-account-directories-db.test.cjs && node admin-activity-db.test.cjs && node service-notice-db.test.cjs && node profile-photo-db.test.cjs && node arcade-rooms-db.test.cjs && node ttang-collision.test.cjs && node photo-ttang-collision.test.cjs && node photo-ttang-db.test.cjs && node ttang-corners.test.cjs && node monthly-cosmetics-photo-help-db.test.cjs && node shop-composer.test.cjs && node shop-read-cache.test.cjs && node guest-ranking-db.test.cjs",
+     "test:feedback-dispatch": "node feedback-ai-dispatch-db.test.cjs",
+     "test:feedback-gateway": "node feedback-codex-gateway.test.cjs",
+-    "test:ui": "node world-design-ui.test.cjs && node game-entry-ui.test.cjs && node game-friend-invites-ui.test.cjs && node world-portal-ui.test.cjs && node arcade-exit-ui.test.cjs && node breakout-items-ui.test.cjs && node mole-graphics-ui.test.cjs && node runner-graphics-ui.test.cjs && node world-reward-response-ui.test.cjs && node admin-ui.test.cjs && node note-tag-ui.test.cjs && node photo-protection-ui.test.cjs && node note-feed-swipe-ui.test.cjs && node feedback-ai-ui.test.cjs && node admin-connections-ui.test.cjs && node my-menu-ui.test.cjs && node feedback-diagnostics-ui.test.cjs && node ttang-ui.test.cjs && node photo-ttang-ui.test.cjs && node photo-ttang-capture-ui.test.cjs && node photo-ttang-trial-ui.test.cjs && node photo-ttang-upload-ui.test.cjs && node game-win-streak-ui.test.cjs && node world-pull-refresh-ui.test.cjs && node world-wallet-response-ui.test.cjs && node world-profile-draft-ui.test.cjs && node world-member-info-ui.test.cjs && node world-matgo-visibility-ui.test.cjs && node world-admin-refresh-ui.test.cjs && node park-note-chat-ui.test.cjs && node billiards-controls-ui.test.cjs && node matgo-ui.test.cjs && node matgo-start-sound.test.cjs && node matgo-stakes-ui.test.cjs && node spot-celebration-ui.test.cjs && node matgo-online-ui.test.cjs && node matgo-online-effects-ui.test.cjs && node ju-charge-ui.test.cjs && node ju-shop-ui.test.cjs && node mobile-viewport-ui.test.cjs && node window-safe-area-ui.test.cjs && node admin-accounts-ui.test.cjs && node admin-activity-ui.test.cjs && node note-admin-workflow-ui.test.cjs && node admin-navigation-ui.test.cjs && node service-notice-ui.test.cjs && node profile-photo-ui.test.cjs && node arcade-rooms-ui.test.cjs && node photo-ttang-community-ui.test.cjs && node photo-stages-admin-ui.test.cjs && node photo-ttang-help-ui.test.cjs && node owner-closed-door-ui.test.cjs && node ux-entry-ui.test.cjs && node game-controls-ui.test.cjs && node guest-ranking-ui.test.cjs && node note-card-body-limit-ui.test.cjs",
++    "test:ui": "node world-game-back-ui.test.cjs && node world-design-ui.test.cjs && node game-entry-ui.test.cjs && node game-friend-invites-ui.test.cjs && node world-portal-ui.test.cjs && node arcade-exit-ui.test.cjs && node breakout-items-ui.test.cjs && node mole-graphics-ui.test.cjs && node runner-graphics-ui.test.cjs && node world-reward-response-ui.test.cjs && node admin-ui.test.cjs && node note-tag-ui.test.cjs && node photo-protection-ui.test.cjs && node note-feed-swipe-ui.test.cjs && node feedback-ai-ui.test.cjs && node admin-connections-ui.test.cjs && node my-menu-ui.test.cjs && node feedback-diagnostics-ui.test.cjs && node ttang-ui.test.cjs && node photo-ttang-ui.test.cjs && node photo-ttang-capture-ui.test.cjs && node photo-ttang-trial-ui.test.cjs && node photo-ttang-upload-ui.test.cjs && node game-win-streak-ui.test.cjs && node world-pull-refresh-ui.test.cjs && node world-wallet-response-ui.test.cjs && node world-profile-draft-ui.test.cjs && node world-member-info-ui.test.cjs && node world-matgo-visibility-ui.test.cjs && node world-admin-refresh-ui.test.cjs && node park-note-chat-ui.test.cjs && node billiards-controls-ui.test.cjs && node matgo-ui.test.cjs && node matgo-start-sound.test.cjs && node matgo-stakes-ui.test.cjs && node spot-celebration-ui.test.cjs && node matgo-online-ui.test.cjs && node matgo-online-effects-ui.test.cjs && node ju-charge-ui.test.cjs && node ju-shop-ui.test.cjs && node mobile-viewport-ui.test.cjs && node window-safe-area-ui.test.cjs && node admin-accounts-ui.test.cjs && node admin-activity-ui.test.cjs && node note-admin-workflow-ui.test.cjs && node admin-navigation-ui.test.cjs && node service-notice-ui.test.cjs && node profile-photo-ui.test.cjs && node arcade-rooms-ui.test.cjs && node photo-ttang-community-ui.test.cjs && node photo-stages-admin-ui.test.cjs && node photo-ttang-help-ui.test.cjs && node owner-closed-door-ui.test.cjs && node ux-entry-ui.test.cjs && node game-controls-ui.test.cjs && node guest-ranking-ui.test.cjs && node note-card-body-limit-ui.test.cjs",
+     "test:account-deletion-local": "node account-deletion-local.test.cjs",
+     "test:photo": "node photo-ttang-collision.test.cjs && node photo-ttang-db.test.cjs && node photo-ttang-ui.test.cjs && node photo-ttang-capture-ui.test.cjs && node photo-ttang-trial-ui.test.cjs && node photo-ttang-upload-ui.test.cjs && node ttang-corners.test.cjs && node photo-ttang-community-ui.test.cjs && node photo-stages-admin-ui.test.cjs"
+   },
+diff --git a/tests/world-design-ui.test.cjs b/tests/world-design-ui.test.cjs
+index ca41c61..29eb7c9 100644
+--- a/tests/world-design-ui.test.cjs
++++ b/tests/world-design-ui.test.cjs
+@@ -25,6 +25,9 @@ world=world.slice(0,boot)+`
+  assert.equal(await page.locator('[data-arcade-games=solo] .ge img').count(),9);
+  assert.equal(await page.locator('.arcade-social').isVisible(),true);
+  assert.equal(await page.locator('.arcade-welcome').count(),0,'theme artwork belongs to the rankings background');
++ assert.equal(await page.locator('.arcade-home>.world-page-heading,.arcade-home [data-theme-status]').count(),0,'arcade omits the decorative introduction');
++ assert.equal(await page.getByText('오늘의 작은 즐거움',{exact:false}).count(),0);
++ assert.equal(await page.locator('.arcade-status [data-act="pl-channel"]').isVisible(),true,'channel changes remain available above rankings');
+  assert.equal(await page.locator('.arcade-social [data-arcade-rooms]').isVisible(),true);
+  assert.equal(await page.locator('#plog,#pmsg,[data-act=pl-send],[data-act=pl-react],.arcade-welcome [data-tab=park]').count(),0);
+  const brand=await page.locator('.side>.brand').boundingBox(),nav=await page.locator('.sidenav').boundingBox();assert.ok(Math.abs((brand.y+brand.height/2)-(nav.y+nav.height/2))<3,'brand and desktop menu share one row');
+diff --git a/tests/world-profile-draft-ui.test.cjs b/tests/world-profile-draft-ui.test.cjs
+index 050ea58..7ec4e78 100644
+--- a/tests/world-profile-draft-ui.test.cjs
++++ b/tests/world-profile-draft-ui.test.cjs
+@@ -3,6 +3,8 @@ const fs = require('node:fs');
+ const path = require('node:path');
+ const { chromium } = require('playwright');
+ const root = path.join(__dirname, '..');
++const proof = process.env.WORLD_PROFILE_QA_DIR;
++if (proof) fs.mkdirSync(proof, { recursive: true });
+ 
+ // Execute the real World shell, renderer and delegated click/input handlers.
+ // Only the boot/auth transport is replaced; no production account is contacted.
+@@ -28,8 +30,14 @@ g.tab='my';H();
+     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+     const errors = [];
+     page.on('pageerror', error => errors.push(error.message));
+-    await page.route('**/*', route => new URL(route.request().url()).pathname === '/world.html'
+-      ? route.fulfill({ contentType: 'text/html', body: world }) : route.abort());
++    await page.route('**/*', route => {
++      const url = new URL(route.request().url());
++      if (url.hostname !== 'fixture.test') return route.abort();
++      if (url.pathname === '/world.html') return route.fulfill({ contentType: 'text/html', body: world });
++      const file = path.join(root, url.pathname);
++      if (!file.startsWith(root + path.sep) || !/\.(css|svg)$/.test(file) || !fs.existsSync(file)) return route.abort();
++      return route.fulfill({ path: file });
++    });
+     await page.goto('https://fixture.test/world.html');
+     await page.waitForFunction(() => window.profileTest);
+ 
+@@ -39,26 +47,33 @@ g.tab='my';H();
+     };
+     const readProfile = () => page.evaluate(() => ({
+       nick: document.querySelector('#p-nick').value,
+-      bio: document.querySelector('#p-bio').value,
+-      moodText: document.querySelector('#p-mt').value,
+-      mood: document.querySelector('[data-act="mood-pick"].on')?.dataset.v
++      bio: document.querySelector('#p-bio').value
+     }));
+-    const saved = { nick: '저장한 이름', bio: '저장한 소개', moodText: '저장한 기분', mood: '😊' };
+-    const draft = { nick: '새로운 이름', bio: '아직 작성 중인 소개', moodText: '느긋한 오후', mood: '😴' };
++    const saved = { nick: '저장한 이름', bio: '저장한 소개' };
++    const draft = { nick: '새로운 이름', bio: '아직 작성 중인 소개' };
+     await openGroup('profile');
+-    for (const [id, value] of [['p-nick', draft.nick], ['p-bio', draft.bio], ['p-mt', draft.moodText]]) {
++    assert.equal(await page.locator('#p-mt, [data-act="mood-pick"], .moods').count(), 0, 'retired mood fields are absent');
++    assert.equal(await page.getByText('오늘의 기분', { exact: true }).count(), 0);
++    assert.equal(await page.getByText('기분 한마디', { exact: true }).count(), 0);
++    assert.equal(await page.locator('[data-act="profile-photo"]').isVisible(), true, 'profile photo remains editable');
++    if (proof) {
++      await page.locator('[data-my-group="profile"]').screenshot({ path: path.join(proof, 'profile-mobile.png') });
++      await page.setViewportSize({ width: 1280, height: 900 });
++      await page.locator('[data-my-group="profile"]').screenshot({ path: path.join(proof, 'profile-desktop.png') });
++      await page.setViewportSize({ width: 390, height: 844 });
++    }
++    for (const [id, value] of [['p-nick', draft.nick], ['p-bio', draft.bio]]) {
+       await page.locator('#' + id).fill(value);
+     }
+-    await page.locator(`[data-act="mood-pick"][data-v="${draft.mood}"]`).click();
+     assert.deepEqual(await page.evaluate(() => {
+-      const { nick, bio, moodText, mood } = profileTest.model.me;
+-      return { nick, bio, moodText, mood };
+-    }), saved, 'typing and selecting a mood do not commit the profile');
++      const { nick, bio } = profileTest.model.me;
++      return { nick, bio };
++    }), saved, 'typing does not commit the profile');
+ 
+     await page.locator('#p-bio').focus();
+     await page.locator('#p-bio').evaluate(input => input.setSelectionRange(3, 8, 'backward'));
+     await page.evaluate(() => profileTest.render());
+-    assert.deepEqual(await readProfile(), draft, 'a World render must preserve the unsaved profile fields and mood');
++    assert.deepEqual(await readProfile(), draft, 'a World render must preserve the unsaved profile fields');
+     assert.deepEqual(await page.evaluate(() => {
+       const input = document.activeElement;
+       return [input.id, input.selectionStart, input.selectionEnd, input.selectionDirection];
+@@ -75,37 +90,39 @@ g.tab='my';H();
+     assert.equal(await page.locator('#p-nick').count(), 0, 'the menu is actually unmounted');
+     await page.locator('.bottomnav [data-tab="my"]').click();
+     await openGroup('profile');
+-    assert.deepEqual(await readProfile(), draft, 'menu → neighborhood → menu restores the unsaved profile');
++    assert.deepEqual(await readProfile(), draft, 'settings → arcade → settings restores the unsaved profile');
+ 
+-    for (const id of ['p-nick', 'p-bio', 'p-mt']) await page.locator('#' + id).fill('');
++    for (const id of ['p-nick', 'p-bio']) await page.locator('#' + id).fill('');
+     await page.evaluate(() => profileTest.render());
+-    const cleared = { nick: '', bio: '', moodText: '', mood: draft.mood };
++    const cleared = { nick: '', bio: '' };
+     assert.deepEqual(await readProfile(), cleared, 'deliberately cleared draft fields do not fall back to the saved profile');
+     await page.locator('[data-act="profile-save"]').click();
+     assert.deepEqual(await readProfile(), cleared, 'nickname validation preserves the draft for correction');
+-    for (const [id, value] of [['p-nick', draft.nick], ['p-bio', draft.bio], ['p-mt', draft.moodText]]) {
++    for (const [id, value] of [['p-nick', draft.nick], ['p-bio', draft.bio]]) {
+       await page.locator('#' + id).fill(value);
+     }
+ 
+     // Saving should release the draft, so later fresh model data is visible.
+     await page.locator('[data-act="profile-save"]').click();
+     assert.deepEqual(await page.evaluate(() => {
+-      const { nick, bio, moodText, mood } = profileTest.model.me;
+-      return { nick, bio, moodText, mood };
+-    }), draft, 'profile-save commits all four fields together');
+-    const refreshed = { nick: '저장 후 이름', bio: '다른 기기에서 바꾼 소개', moodText: '저장 후 기분', mood: '😊' };
++      const { nick, bio } = profileTest.model.me;
++      return { nick, bio };
++    }), draft, 'profile-save commits nickname and bio without retired inputs');
++    assert.deepEqual(await page.evaluate(() => {
++      const { mood, moodText } = profileTest.model.me;
++      return { mood, moodText };
++    }), { mood: '😊', moodText: '저장한 기분' }, 'saving active fields preserves existing legacy profile data');
++    const refreshed = { nick: '저장 후 이름', bio: '다른 기기에서 바꾼 소개' };
+     await page.evaluate(profile => { Object.assign(profileTest.model.me, profile); profileTest.render(); }, refreshed);
+     assert.deepEqual(await readProfile(), refreshed, 'a saved draft is cleared and does not mask subsequent model updates');
+ 
+     await openGroup('profile');
+     await page.locator('#p-nick').fill('A만의 비공개 초안');
+     await page.locator('#p-bio').fill('A 계정에서 입력한 소개');
+-    await page.locator('#p-mt').fill('A만의 기분');
+-    await page.locator(`[data-act="mood-pick"][data-v="${draft.mood}"]`).click();
+     await page.locator('#p-nick').focus();
+-    const other = { nick: '다른 계정 이름', bio: '다른 계정 소개', moodText: '다른 계정 기분', mood: '😊' };
++    const other = { nick: '다른 계정 이름', bio: '다른 계정 소개' };
+     await page.evaluate(profile => profileTest.switchAccount('profile-owner-b', profile), other);
+-    assert.deepEqual(await readProfile(), other, 'account B never receives account A’s profile draft or mood');
++    assert.deepEqual(await readProfile(), other, 'account B never receives account A’s profile draft');
+     assert.notEqual(await page.evaluate(() => document.activeElement.id), 'p-nick', 'account B does not inherit account A’s input focus');
+     await page.locator('.bottomnav [data-tab="arcade"]').click();
+     await page.locator('.bottomnav [data-tab="my"]').click();
+diff --git a/version.json b/version.json
+index 3d6a2f6..217195f 100644
+--- a/version.json
++++ b/version.json
+@@ -1,3 +1,3 @@
+ {
+-  "version": "0.46.2-beta"
++  "version": "0.46.3-beta"
+ }
+diff --git a/world-design.css b/world-design.css
+index 0f2ba87..d691a08 100644
+--- a/world-design.css
++++ b/world-design.css
+@@ -43,3 +43,4 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
+ .world-redesign .profile-photo-stage{background:var(--surface-2)}.world-redesign .profile-photo-actions .profile-photo-save{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.world-redesign .profile-photo-zoom input{accent-color:var(--accent)}
+ 
+ .arcade-overview{margin-bottom:32px}
++.arcade-status{margin-bottom:20px}.world-redesign .arcade-status .visit-banner{width:100%;max-width:none;margin:0;padding:0}.arcade-status .visit-banner .btn{margin-left:auto}
+diff --git a/world-navigation.js b/world-navigation.js
+index fe8f452..21cdca3 100644
+--- a/world-navigation.js
++++ b/world-navigation.js
+@@ -1,4 +1,4 @@
+-/* Separate bounded swipe sequences for main menus and neighborhood places. */
++/* Keep menus and game overlays inside World until the main screen is reached. */
+ (function () {
+   'use strict';
+   window.OjjudaWorldNavigation = {
+@@ -7,6 +7,7 @@
+       let gesture = null, suppressClickUntil = 0, edgeReturn = null;
+       const state = page => ({...(history.state || {}), ojjudaWorld: page});
+       const pushMenu = () => history.pushState(state('menu'), '', location.href);
++      const needsEntry = () => !options.isMain() || !!options.hasOverlay?.();
+       const back = () => {
+         if (options.closeOverlay()) return true;
+         if (options.isMain()) return false;
+@@ -19,7 +20,7 @@
+           initialized = true;
+         }
+         if (returning || handling) return;
+-        if (!options.isMain()) {
++        if (needsEntry()) {
+           if (history.state?.ojjudaWorld !== 'menu') pushMenu();
+         } else if (history.state?.ojjudaWorld === 'menu') {
+           returning = true;
+@@ -32,9 +33,19 @@
+         handling = true;
+         try { if (!programmatic) back(); }
+         finally { handling = false; }
+-        if (!options.isMain()) pushMenu();
++        if (needsEntry()) pushMenu();
+         else history.replaceState(state('main'), '', location.href);
+       });
++      // Games mount independently of the menu renderer, including iframe games.
++      // Keep one return entry while an overlay is open, and consume it when the
++      // game closes by its own button. A cancelled exit keeps the same guard.
++      let overlayActive = !!options.hasOverlay?.();
++      new MutationObserver(() => {
++        const active = !!options.hasOverlay?.();
++        if (active === overlayActive) return;
++        overlayActive = active;
++        sync();
++      }).observe(document.body, {childList:true, subtree:true, attributes:true, attributeFilter:['class','open']});
+       const reset = () => {
+         edgeReturn?.cancel();
+         edgeReturn = null;

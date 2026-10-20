@@ -1,0 +1,65 @@
+name: Verify profile and Arcade cleanup
+on:
+  push:
+    branches: [codex/simplify-profile-arcade]
+    paths:
+      - '.github/workflows/prepare-profile-simplify.yml'
+      - 'ops/apply-profile-simplify.py'
+      - 'ops/profile-simplify.patch'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the source cleanup
+        run: |
+          python ops/apply-profile-simplify.py
+          if git apply --check ops/profile-simplify.patch; then
+            git apply ops/profile-simplify.patch
+          else
+            git apply --reverse --check ops/profile-simplify.patch
+          fi
+      - name: Install test dependencies
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify profiles, settings and Arcade
+        env:
+          WORLD_PROFILE_QA_DIR: /tmp/profile-simplify-proof/profile
+          WORLD_DESIGN_PROOF_DIR: /tmp/profile-simplify-proof/world
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/world-three-menus.test.cjs
+          node tests/world-game-back-ui.test.cjs
+          node tests/arcade-exit-ui.test.cjs
+          node tests/world-matgo-visibility-ui.test.cjs
+          node tests/world-profile-draft-ui.test.cjs
+          node tests/my-menu-ui.test.cjs
+          node tests/world-design-ui.test.cjs
+          git diff --check
+      - name: Save screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: profile-simplify-proof
+          path: /tmp/profile-simplify-proof
+          retention-days: 3
+      - name: Commit verified source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html world-design.css world-navigation.js matgo-bridge.js favicon.svg index.html park/index.html version.json tests/world-profile-draft-ui.test.cjs tests/my-menu-ui.test.cjs tests/world-design-ui.test.cjs tests/package.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Simplify World screens, restore the original logo and return games to Arcade on Back'
+            git push origin HEAD:refs/heads/codex/simplify-profile-arcade
+          fi
