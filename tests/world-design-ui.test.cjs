@@ -36,6 +36,14 @@ world=world.slice(0,boot)+`
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
  for(const width of [320,390,768,900,1280]){
   await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
+  if(width<=600){
+   const grid=await page.locator('[data-arcade-games=solo]').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
+   assert.equal(grid,3,'mobile keeps exactly three game buttons per row');
+   const labels=await page.locator('[data-arcade-games] .gbtn>span:last-child').evaluateAll(nodes=>nodes.map(n=>({size:parseFloat(getComputedStyle(n).fontSize),weight:parseInt(getComputedStyle(n).fontWeight),fits:n.scrollWidth<=n.clientWidth+1})));
+   assert.ok(labels.every(n=>n.size>=12.5&&n.weight>=700&&n.fits),'larger bold game names fit every mobile card');
+   const colors=await page.locator('[data-arcade-games=solo] .gbtn .ge').evaluateAll(nodes=>new Set(nodes.map(n=>getComputedStyle(n).backgroundImage)).size);
+   assert.ok(colors>=4,'game covers are visually distinct');
+  }
   if(width<900){
    const buttons=await page.locator('.bottomnav>button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,width:r.width,height:r.height};}));
    assert.equal(buttons.length,3);assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
@@ -44,7 +52,7 @@ world=world.slice(0,boot)+`
   }
  }
  await page.setViewportSize({width:390,height:850});await page.evaluate(()=>{OjjudaThemes.choose('autumn');designFixture.rank();});await page.screenshot({path:path.join(proof,'arcade-mobile.png'),fullPage:true});
- await page.locator('.bottomnav [data-tab=my]').click();await page.locator('[data-my-group=themes] summary').click();await page.locator('button[data-world-theme=christmas]').click();
+ await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);await page.locator('[data-my-group=themes] summary').click();await page.locator('button[data-world-theme=christmas]').click();
  assert.equal(await page.locator('html').getAttribute('data-world-theme'),'christmas');await fits('mobile theme chooser');
  await page.screenshot({path:path.join(proof,'settings-themes-mobile.png'),fullPage:true});
  await page.locator('[data-my-group=profile] summary').click();await page.locator('#p-bio').fill('바뀌지 않아야 하는 작성 내용');await page.locator('[data-world-theme=spring]').click();assert.equal(await page.locator('#p-bio').inputValue(),'바뀌지 않아야 하는 작성 내용');
@@ -52,8 +60,11 @@ world=world.slice(0,boot)+`
  await page.locator('[data-my-group=themes] summary').click();await page.locator('.settings-theme-section').screenshot({path:path.join(proof,'all-themes.png')});
  // Inspect every theme in the real Arcade, including the dark variant.
  await page.locator('.sidenav [data-tab=arcade]').click();await page.evaluate(()=>{clearInterval(designFixture.state.placeT);designFixture.rank();});
+ const original=read('brand/ojjuda-logo.svg').match(/d="[^"]+"/g);
+ const shapes=await page.locator('.side .ojjuda-theme-logo path').evaluateAll(nodes=>nodes.map(n=>'d="'+n.getAttribute('d')+'"'));
+ assert.deepEqual(shapes,original,'logo silhouette and smile remain the original paths');
  const keys=await page.evaluate(()=>OjjudaThemes.order);
- for(const key of keys){await page.evaluate(k=>OjjudaThemes.choose(k),key);await fits(key);assert.ok(await page.locator('[data-arcade-rank-root]').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
+ for(const key of keys){await page.evaluate(k=>OjjudaThemes.choose(k),key);await fits(key);assert.equal(await page.locator('.side .ojjuda-theme-logo').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.querySelector('path')).fill),true,'logo fill follows the theme');assert.ok(await page.locator('[data-arcade-rank-root]').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
  await page.evaluate(()=>OjjudaThemes.choose('christmas'));await page.screenshot({path:path.join(proof,'christmas-desktop.png'),fullPage:true});
  await page.evaluate(()=>document.documentElement.dataset.theme='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
  assert.deepEqual(errors,[]);await context.close();console.log('PASS: real redesigned renderer, responsive menus, artwork, all theme palettes, keyboard-safe controls, manual selection, draft preservation and ranking pagination');

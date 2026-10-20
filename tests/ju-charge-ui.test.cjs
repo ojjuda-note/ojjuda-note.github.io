@@ -28,7 +28,7 @@ async function fixture(context, source, rpc) {
     await page.evaluate(() => {
       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
-      Object.assign(window, { g: {}, yi: ['😊'], Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, ie: () => '<svg></svg>', Xd: () => '/note/', Is: () => false, Os: () => '' });
+      Object.assign(window, { g: {}, P: { communityOpen: false, incoming: [] }, Of: () => '', Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, ie: () => '<svg></svg>', Xd: () => '/note/', Is: () => false, Os: () => '' });
     });
     await page.addScriptTag({ content: menu });
     await page.evaluate(() => { document.querySelector('#world-my').innerHTML = Yg(); });

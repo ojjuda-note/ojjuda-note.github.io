@@ -76,7 +76,7 @@
    }
    clear(uid,kind);over=lives<=0||endAt<=world.time;paused=over;hud();closePanels();
    busy=false;if(over)open();else toast(p.label+' 적용 · 남은 '+r.coins+' ZU','#F2C14E');
-   try{void parent.OjjudaShop?.refresh();}catch{}
+
   }catch(error){if(direct){busy=false;open();}say(error.message||'구매 결과를 다시 확인해 주세요.');}
   finally{busy=false;controls();quickControls();}
  }

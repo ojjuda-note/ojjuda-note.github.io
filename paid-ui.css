@@ -44,24 +44,22 @@
 }
 :root .ju-paid-price { color: var(--ju-paid-ink); font-weight: 700; }
 
-/* Matching shop and charge tiles, including the missing shop icon. */
-.my-menu-group:has(> [data-ju-shop-open]),
+/* Charge entry. */
 .my-menu-group:has(> [data-ju-charge-open]) { border-color: var(--ju-paid-line); }
-:root .my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]) {
+:root .my-menu-summary[data-ju-charge-open] {
   background: var(--ju-paid-soft);
   color: var(--ju-paid-ink);
   height: 100%;
 }
-:root .my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]):hover { background: var(--ju-paid-soft); }
-.my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]) .my-menu-icon {
+:root .my-menu-summary[data-ju-charge-open]:hover { background: var(--ju-paid-soft); }
+.my-menu-summary[data-ju-charge-open] .my-menu-icon {
   background: var(--ju-paid);
   color: #fff;
 }
-.my-menu-summary:is([data-ju-shop-open], [data-ju-charge-open]) .my-menu-caption {
+.my-menu-summary[data-ju-charge-open] .my-menu-caption {
   color: var(--ju-paid-muted);
   font-size: 11px;
 }
-.world-menu-grid .my-menu-summary[data-ju-shop-open]::after { content: none; }
 
 /* A short help section rather than three oversized full-width buttons. */
 .panel.photo-help-panel { width: min(380px, 100%); padding: 24px 18px 18px; border-radius: 24px; background: #fff; }
@@ -82,16 +80,6 @@
 .photo-help .photo-help-status:empty { display: none; }
 #btns .photo-help-entry { font-size: 21px; }
 
-/* Purchase prices remain visible next to the content preview. */
-.ju-product .ju-product-price { color: var(--ju-paid-ink); }
-.ju-product .ju-product-owned { color: var(--ink-2, #746479); }
-.ju-shop-dialog { background: var(--surface, #fff); color: var(--ink, #42374b); border-color: var(--ju-paid-line); }
-.ju-shop-dialog [data-shop-coins] { font-size: 13px; color: var(--ink-2, #746479); }
-.ju-shop-dialog [data-shop-message]:empty { display: none; }
-.ju-shop-dialog footer { margin-top: 16px; }
-.ju-product { background: var(--surface, #fff); border-color: var(--ju-paid-line); }
-.ju-product button { min-height: 42px; }
-.ju-compose-tools > button { background: var(--ju-paid-soft); color: var(--ju-paid-ink); border: 1px solid var(--ju-paid-line); }
 .ju-charge-dialog { --ju-accent: var(--ju-paid); --ju-ink: var(--ju-paid-ink); --ju-soft: var(--ju-paid-soft); }
 .ju-charge-dialog .ju-charge-pack[aria-pressed="true"] { border-color: var(--ju-paid); }
 .ju-charge-dialog .ju-charge-checkout:not(:disabled), .ju-charge-dialog .ju-charge-bonus { color: #fff; }

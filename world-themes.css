@@ -44,3 +44,6 @@
 .world-theme-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--line);border-radius:6px;color:var(--accent-ink);background:var(--surface);font-size:10px;margin-top:10px}
 .settings-theme-section{grid-column:1/-1}.settings-theme-section .my-menu-group{overflow:clip}.settings-theme-section .theme-picker{grid-template-columns:repeat(5,minmax(0,1fr))}.settings-theme-section .theme-preview{height:100px}
 @media(max-width:600px){.settings-theme-section .theme-picker{grid-template-columns:repeat(3,minmax(0,1fr))}.settings-theme-section .theme-preview{height:75px}.theme-setting-head{align-items:flex-start}.theme-option>small{font-size:8px}}
+
+/* The original note mark uses the same accent as its current theme. */
+.ojjuda-theme-logo{display:inline-block;flex:none;color:var(--accent,#245a48);vertical-align:middle;overflow:visible}
