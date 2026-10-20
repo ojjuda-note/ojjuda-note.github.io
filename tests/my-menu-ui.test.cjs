@@ -60,11 +60,11 @@ async function worldFixture(context, mobile, errors) {
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/favicon.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: read('favicon.svg') }));
-  await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><base href="https://ojjuda.test/"><main class="main" id="world-my"></main>');
+  await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><base href="https://ojjuda.test/"><body class="world-redesign"><main class="main" id="world-my"></main></body>');
   for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
     await page.addStyleTag({ content: match[1] });
   }
-  for (const file of ['note/notifications.css', 'guide-entry.css', 'my-menu.css']) {
+  for (const file of ['note/notifications.css', 'guide-entry.css', 'my-menu.css', 'world-design.css', 'world-themes.css']) {
     await page.addStyleTag({ content: read(file) });
   }
   // Execute the real renderer and door action with synthetic account data.
@@ -179,7 +179,7 @@ async function noteFixture(context, mobile, errors) {
   await page.route('https://ojjuda.test/note/', route => route.fulfill({ contentType: 'text/html', body: html }));
   await page.route('**/favicon.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: read('favicon.svg') }));
   await page.goto('https://ojjuda.test/note/');
-  for (const file of ['note/style.css', 'note/features.css', 'note/support.css', 'note/notifications.css', 'note/world-navigation.css', 'note/account.css', 'guide-entry.css', 'my-menu.css']) {
+  for (const file of ['note/style.css', 'note/features.css', 'note/support.css', 'note/notifications.css', 'note/world-navigation.css', 'note/account.css', 'guide-entry.css', 'my-menu.css', 'world-design.css', 'world-themes.css']) {
     await page.addStyleTag({ content: read(file) });
   }
   await page.evaluate(() => {

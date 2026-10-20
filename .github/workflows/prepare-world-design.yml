@@ -1,0 +1,74 @@
+name: Prepare and verify the World redesign
+on:
+  push:
+    branches: [codex/world-design-20261022]
+    paths:
+      - '.github/workflows/prepare-world-design.yml'
+      - 'ops/apply-world-design.py'
+      - 'ops/build-design-assets.py'
+      - 'world-design.css'
+      - 'world-themes*'
+      - 'park/design.css'
+      - 'tests/**'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Prepare the original artwork and verified World source
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk libcairo2
+          python -m pip install cairosvg==2.8.2
+          python ops/apply-world-design.py
+          python ops/build-design-assets.py
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify themes and navigation
+        run: |
+          node tests/world-themes.test.cjs
+          node tests/world-three-menus.test.cjs
+          node tests/world-friend-settings.test.cjs
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Inspect the redesigned screens and all themes
+        env:
+          WORLD_DESIGN_PROOF_DIR: /tmp/world-design-proof
+        run: node tests/world-design-ui.test.cjs
+      - name: Verify settings, profiles, Park and administrators
+        env:
+          MY_MENU_QA_DIR: /tmp/world-design-proof/settings-regression
+          OJJUDA_COPY_PROOF_DIR: /tmp/world-design-proof/park
+          ADMIN_SCREENSHOT_DIR: /tmp/world-design-proof/admin
+        run: |
+          node tests/my-menu-ui.test.cjs
+          node tests/world-profile-draft-ui.test.cjs
+          node tests/park-note-chat-ui.test.cjs
+          node tests/admin-navigation-ui.test.cjs
+          node tests/world-matgo-visibility-ui.test.cjs
+          node tests/world-portal-ui.test.cjs
+      - name: Save screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: world-design-proof
+          path: /tmp/world-design-proof
+          retention-days: 3
+      - name: Commit the verified source and original assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html assets/design favicon.svg apple-touch-icon.png icon-192.png icon-512.png icon-maskable-512.png og-image.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build original World identity and seasonal artwork'
+            git push origin HEAD:refs/heads/codex/world-design-20261022
+          fi

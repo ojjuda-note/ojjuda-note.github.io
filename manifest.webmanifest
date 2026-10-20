@@ -1,25 +1,25 @@
 {
   "name": "오쭈다월드",
   "short_name": "오쭈다월드",
-  "description": "오늘 하루 어땠나요? 괜찮았나요. 일상과 마음을 나누는 오쭈다 월드.",
+  "description": "가볍게 한 판, 다정한 한마디. 오락실과 공원에서 만나요.",
   "lang": "ko",
   "start_url": "./world.html",
   "display": "standalone",
-  "background_color": "#EDEFF9",
-  "theme_color": "#FF765F",
+  "background_color": "#f7f8f4",
+  "theme_color": "#245A48",
   "icons": [
     {
-      "src": "icon-192.png?v=20260929-logo1",
+      "src": "icon-192.png?v=20261022-1",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png?v=20260929-logo1",
+      "src": "icon-512.png?v=20261022-1",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "icon-maskable-512.png?v=20260929-logo1",
+      "src": "icon-maskable-512.png?v=20261022-1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
