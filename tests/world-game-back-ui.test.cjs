@@ -14,14 +14,14 @@ let world = read('world.html')
 const scripts = ['world-navigation.js', 'world-mines-game.js', 'world-saetbyeol-game.js',
   'world-tour-game.js', 'world-tank-game.js', 'world-spot-game.js', 'ttang-bridge.js',
   'photo-ttang-bridge.js', 'matgo-bridge.js'].map(read).join('\n');
-world = world.replace('<script type="module">', `<script>${scripts}</script><script type="module">`);
+world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
 window.backFixture={open:Al,render:H,state:g,actions:sr,allowExit:true,exits:0,exitRequests:0,
   billiards:()=>ep('carom4','local'),nativeBack:()=>window.nativeBack({canGoBack:false})};
-window.OjjudaMatgoAccess={check:async()=>({userId:'fixture'}),subscribe:()=>()=>{}};
-window.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'fixture'}),allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
+window.OjjudaMatgoAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
+window.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
 D.online=false;D.isAdmin=false;S={};g.tab='arcade';
 gm(()=>sr.tab({tab:'arcade'}));H();
 ` + world.slice(world.indexOf('</script>', boot));
@@ -67,7 +67,7 @@ window.childReady=true;
       });
       const page = await context.newPage(), errors = [];
       let accept = true;
-      page.on('pageerror', error => errors.push(error.message));
+      page.on('pageerror', error => { errors.push(error.message); console.error('World Back fixture:', error.message); });
       page.on('dialog', dialog => accept ? dialog.accept() : dialog.dismiss());
       await page.goto(origin + '/outside.html');
       await page.goto(origin + '/world.html');

@@ -6,6 +6,7 @@ on:
       - '.github/workflows/prepare-profile-simplify.yml'
       - 'ops/apply-profile-simplify.py'
       - 'ops/profile-simplify.patch'
+      - 'tests/world-game-back-ui.test.cjs'
 permissions:
   contents: write
 jobs:
@@ -40,13 +41,12 @@ jobs:
         run: |
           node tests/inline-scripts.test.cjs
           node tests/world-three-menus.test.cjs
-          node tests/world-game-back-ui.test.cjs
-          node tests/arcade-exit-ui.test.cjs
-          node tests/world-matgo-visibility-ui.test.cjs
-          node tests/world-profile-draft-ui.test.cjs
-          node tests/my-menu-ui.test.cjs
-          node tests/world-design-ui.test.cjs
+          test_status=0
+          for test in world-game-back-ui arcade-exit-ui world-matgo-visibility-ui world-profile-draft-ui my-menu-ui world-design-ui; do
+            node "tests/$test.test.cjs" || test_status=1
+          done
           git diff --check
+          exit "$test_status"
       - name: Save screenshots for visual review
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
