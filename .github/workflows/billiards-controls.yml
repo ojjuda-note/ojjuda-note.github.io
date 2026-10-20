@@ -7,6 +7,7 @@ on:
       - 'mobile-viewport.js'
       - 'mobile-viewport.css'
       - 'tests/billiards-controls-ui.test.cjs'
+      - 'tests/billiards-ai.test.cjs'
       - '.github/workflows/billiards-controls.yml'
   pull_request:
     paths:
@@ -14,6 +15,7 @@ on:
       - 'mobile-viewport.js'
       - 'mobile-viewport.css'
       - 'tests/billiards-controls-ui.test.cjs'
+      - 'tests/billiards-ai.test.cjs'
       - '.github/workflows/billiards-controls.yml'
 
 permissions:
@@ -34,6 +36,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
+      - name: Check AI accuracy and consecutive scoring
+        run: node tests/billiards-ai.test.cjs
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
       - name: Install the test browser
