@@ -50,7 +50,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     let file=path.join(root,decodeURIComponent(url.pathname));
     if(url.pathname==='/world.html'){
       let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-      html=html.replace('<script type="module">',`<script>${['world-places.js','matgo-access.js','matgo-bridge.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
+      html=html.replace('<script type="module">',`<script>${['matgo-access.js','matgo-bridge.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
       const boot=html.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
       html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='home';H();`+html.slice(html.indexOf('</script>',boot));
       return route.fulfill({contentType:'text/html',body:html});

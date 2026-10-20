@@ -20,7 +20,7 @@ for(const [from,to] of [
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-navigation.js','world-pull-refresh.js','world-places.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-navigation.js','world-pull-refresh.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
@@ -208,9 +208,9 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.evaluate(()=>canCloseParkNote()),true,'navigation resumes after the charge finishes');
  await page.evaluate(()=>parkFixture.user('another-user'));
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
- await page.evaluate(()=>parkFixture.enter('cafe'));
+ await page.evaluate(()=>parkFixture.enter('arcade'));
  assert.equal(await page.locator('[data-park-app]').count(),0,'leaving removes the old account app');
- assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"]').count(),3,'cafe chat remains available');
+ assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"]').count(),3,'arcade chat remains available');
  await page.locator('#pmsg').fill('카페의 대화는 그대로');await page.locator('[data-act="pl-send"]').click();
  assert.ok((await page.locator('#plog').textContent()).includes('카페의 대화는 그대로'));
  // Exercise the real child -> postMessage -> parent navigation path.
@@ -218,8 +218,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  assert.equal(await frame.evaluate(()=>OjjudaParkFull.embedded),true);
  await frame.evaluate(()=>OjjudaParkFull.navigate('library'));
- await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='library');
- assert.equal(await iframe.count(),0,'the Park library message invokes the real previous-place step');
+ await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
+ assert.equal(await iframe.count(),0,'a retired Park library message returns to the arcade');
  // Embedded feed gestures follow Park's position in the main menu.
  await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
  frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);

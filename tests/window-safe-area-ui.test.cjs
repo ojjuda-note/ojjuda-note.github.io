@@ -24,7 +24,6 @@ const cases = [
   {name:'맞고 PC 선택/결과',page:'games/matgo.html',html:`<div class="modal"><section class="card">${long}${action}</section></div>`},
   {name:'틀린그림찾기 로그인',page:'games/spot-difference/index.html',native:'#auth-dialog',target:'#login-submit'},
   {name:'틀린그림찾기 확대',page:'games/spot-difference/index.html',native:'#zoom-dialog',target:'#close-zoom'},
-  {name:'가구 제작 방향 선택',page:'house-test/anchor-editor/index.html',native:'#batch-dialog',target:'#batch-apply'}
 ];
 
 async function settle(page) { await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))); }

@@ -42,8 +42,8 @@ const refresh=world.slice(world.indexOf('function worldRefreshKey(){'),world.ind
   await page.evaluate(()=>{waitRefresh=new Promise(resolve=>window.finishRefresh=resolve);});await touch('#target');await touch('#target');assert.equal(await page.evaluate(()=>reads),2,'only one refresh at a time');
   await page.evaluate(()=>{g.tab='life';finishRefresh();waitRefresh=null;});await page.waitForFunction(()=>document.querySelector('.world-pull-indicator').hidden);assert.equal(await page.evaluate(()=>renders),1,'a late refresh cannot repaint a new route');
   await page.evaluate(()=>failRefresh=true);await touch('#target');await page.waitForFunction(()=>document.querySelector('.world-pull-indicator').textContent.includes('못했어요'));assert.equal(await page.evaluate(()=>g.tab),'life');
-  await page.evaluate(()=>{failRefresh=false;const doc=document.querySelector('iframe').contentDocument;doc.body.innerHTML='<p id="child">우리집 기록</p>';attachChild();g.tab='home';worldHouseClose=()=>{};worldHouseClose.refresh=async()=>{window.childRefreshes=(window.childRefreshes||0)+1;return true;};document.querySelector('iframe').parentElement.setAttribute('data-house-mount','');doc.defaultView.OjjudaHouseRefresh=async()=>{window.childRefreshes=(window.childRefreshes||0)+1;return true;};});
-  await touch('#child',0,110,{child:true});await page.waitForFunction(()=>childRefreshes===1);assert.equal(await page.evaluate(()=>g.tab),'home');
+  await page.evaluate(()=>{failRefresh=false;const doc=document.querySelector('iframe').contentDocument;doc.body.innerHTML='<p id="child">공원 카드</p>';attachChild();g.tab='place';g.place.id='park';worldParkNotes={refresh:async()=>{window.childRefreshes=(window.childRefreshes||0)+1;return true;}};});
+  await touch('#child',0,110,{child:true});await page.waitForFunction(()=>childRefreshes===1);assert.equal(await page.evaluate(()=>g.place.id),'park');
   assert.deepEqual(errors,[]);console.log('PULL REFRESH PASS: current route/position/drafts, nested frame, ordinary scrolling, horizontal gestures, short/cancel/multirun guards, errors and route races');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

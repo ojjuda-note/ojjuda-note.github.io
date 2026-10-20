@@ -135,40 +135,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           const frame = await page.locator('.spot-game-dialog iframe').boundingBox();
           assert.ok(frame.y + frame.height <= viewport.height-48+1, 'embedded game stays above system navigation');
           await page.locator('.spot-game-header button').click();
-          await page.evaluate(async () => {
-            const {openHouseTest} = await import('/house-test/host.js');
-            window.closeHouse = openHouseTest({owner:'viewport-test',authorized:()=>true,records:async action=>{if(action==='list')return {folders:[{id:'viewport-folder',name:'추억',kind:'text',visibility:'me'}],friends:[],groups:[],records:[],more:false};return {};}});
-          });
-          const house = page.frameLocator('iframe[title="우리집"]');
-          await house.locator('#app').waitFor({state:'visible'});
-          // The records-first house is one scrolling page. Its upper scene and
-          // navigation need not fit at once on a short landscape screen.
-          await house.locator('nav button').last().scrollIntoViewIfNeeded();
-          await assertInside(page, house.locator('nav button').last(), area, 'house navigation after scrolling');
-          await snapshot(page, `house-${viewport.width}`);
-          await house.getByRole('tab',{name:'노트',exact:true}).click();
-          await house.getByRole('button',{name:'＋ 글쓰기',exact:true}).click();
-          await house.getByLabel('노트 글',{exact:true}).fill('키보드가 열린 상태에서도 메뉴와 저장 버튼에 접근해요.');
-          const houseKeyboardHeight=Math.min(300,viewport.height-100);
-          await visibleArea(page,houseKeyboardHeight,30);
-          const houseKeyboardArea={top:54,bottom:houseKeyboardHeight+30-48};
-          const rows=await house.locator('#panel').evaluate(panel=>{
-            const menu=panel.querySelector('#panel-tabs').getBoundingClientRect(),tabs=panel.querySelector('.record-tabs').getBoundingClientRect(),folders=panel.querySelector('.record-folder-strip').getBoundingClientRect();
-            return {menuBottom:menu.bottom,tabsTop:tabs.top,tabsBottom:tabs.bottom,foldersTop:folders.top};
-          });
-          assert.ok(rows.menuBottom<=rows.tabsTop&&rows.tabsBottom<=rows.foldersTop,'house menu, record categories and folders never overlap');
-          for(const [label,control]of [
-            ['house menu above keyboard',house.locator('nav button').last()],
-            ['house categories above keyboard',house.getByRole('tab',{name:'비디오',exact:true})],
-            ['house folders above keyboard',house.locator('[data-folder-id="viewport-folder"]')],
-            ['house save above keyboard',house.getByRole('button',{name:'노트에 저장',exact:true})]
-          ]){
-            await control.scrollIntoViewIfNeeded();
-            await assertInside(page,control,houseKeyboardArea,label);
-          }
-          await snapshot(page,`house-keyboard-${viewport.width}`);
-          await visibleArea(page,viewport.height);
-          await page.evaluate(() => closeHouse());
+
         }
         if (process.env.MOBILE_VIEWPORT_QA_DIR) {
           fs.mkdirSync(process.env.MOBILE_VIEWPORT_QA_DIR,{recursive:true});
@@ -187,6 +154,6 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
       await assertInside(portal, portal.locator('#auth-submit'), {top:44,bottom:Math.min(320,viewport.height)+20-48}, 'login above keyboard');
       await context.close();
     }
-    console.log('PASS: small portrait/landscape/desktop, system safe area, menus, charge, composer, keyboard, pinch zoom, games, house and login');
+    console.log('PASS: small portrait/landscape/desktop, system safe area, menus, charge, composer, keyboard, pinch zoom, games and login');
   } finally { await browser.close(); }
 })().catch(error => {console.error(error);process.exitCode=1;});

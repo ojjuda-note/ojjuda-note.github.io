@@ -11,7 +11,7 @@ for(const from of ['/park/','/park/index.html?card=abc#reply','/note/?compose=me
  for(const key of ['card','compose'])assert.equal(redirected.searchParams.get(key),url.searchParams.get(key));
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-places.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt};

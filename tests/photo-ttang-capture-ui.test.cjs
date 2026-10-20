@@ -25,7 +25,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
    const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
-  const solo=page.locator('[data-arcade-games="solo"]'),multi=page.locator('[data-arcade-games="multi"]');
+  const solo=page.locator('#arcade-test [data-arcade-games="solo"]'),multi=page.locator('#arcade-test [data-arcade-games="multi"]');
   assert.equal(await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),1);
   assert.equal(await solo.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),0);
   assert.equal(await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),1);
