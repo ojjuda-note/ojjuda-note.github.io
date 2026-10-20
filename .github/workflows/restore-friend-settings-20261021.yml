@@ -1,0 +1,40 @@
+name: Restore friend management in settings
+on:
+  push:
+    branches: [codex/friend-settings-20261021]
+    paths: [.github/workflows/restore-friend-settings-20261021.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the verified friend settings patch
+        run: python ops/restore-friend-settings-20261021.py
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Verify friend actions and the three main menus
+        run: |
+          node tests/world-friend-settings.test.cjs
+          node tests/world-three-menus.test.cjs
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Install the existing test browser on the CI runner
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify mobile and desktop settings
+        run: |
+          node tests/my-menu-ui.test.cjs
+          node tests/world-profile-draft-ui.test.cjs
+      - name: Save the verified World source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html version.json my-menu.css tests/my-menu-ui.test.cjs tests/package.json .github/workflows/regression.yml
+          git commit -m 'Restore friend management within settings'
+          git push origin HEAD:refs/heads/codex/friend-settings-20261021
