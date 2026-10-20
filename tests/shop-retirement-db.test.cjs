@@ -1,0 +1,21 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{randomUUID}=require('node:crypto'),{PGlite}=require('@electric-sql/pglite');
+(async()=>{const db=new PGlite(),a=randomUUID(),b=randomUUID(),card=randomUUID(),receipt=randomUUID();const root=path.join(__dirname,'..');
+const val=async(q,args=[])=>(await db.query(q,args)).rows[0].v;
+try{
+ const setup=fs.readFileSync(path.join(__dirname,'ju-shop-db.test.cjs'),'utf8').match(/await db\.exec\(`([\s\S]*?)`\);/)[1];await db.exec(new Function('a','b','card','return `'+setup+'`;')(a,b,card));
+ await db.exec("create schema ojjuda_photo_internal;create function ojjuda_photo_internal.member_allowed() returns boolean language sql stable as $$select true$$;create table ojjuda_note_internal.spend_requests(request_id uuid primary key,user_id uuid,kind text,coins integer,result jsonb);");
+ for(const f of ['20261006032049_ju_shop_entitlements.sql','20261006075251_monthly_cosmetics_photo_help.sql'])await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
+ await db.query("select set_config('request.jwt.claim.sub',$1,false)",[a]);await db.exec('set role authenticated');
+ const purchase=await val('select ju_shop_buy($1,$2) as v',['card_stickers',receipt]);assert.equal(purchase.ok,true);
+ await db.exec('reset role');const retirement=fs.readFileSync(path.join(root,'ops/retire-cosmetic-sales.sql'),'utf8');await db.exec(retirement);await db.exec(retirement);
+ assert.equal(await val('select count(*)::int as v from ojjuda_shop_internal.products where active'),0);
+ assert.equal(await val('select count(*)::int as v from ojjuda_shop_internal.receipts'),1);
+ assert.equal(await val('select count(*)::int as v from ojjuda_shop_internal.entitlements'),1);
+ await db.exec('set role authenticated');const state=await val('select ju_shop_state() as v');assert.equal(state.products.length,0);assert.equal(state.owned[0].key,'card_stickers');
+ for(const key of ['card_stickers','card_fonts','card_foil','profile_flower','profile_mint','nickname_star','game_night'])assert.equal((await val('select ju_shop_buy($1,$2) as v',[key,randomUUID()])).reason,'unavailable');
+ assert.equal((await val('select ju_shop_state() as v')).coins,purchase.coins,'retired products do not deduct ZU');
+ const replay=await val('select ju_shop_buy($1,$2) as v',['card_stickers',receipt]);assert.equal(replay.replayed,true);assert.equal(replay.coins,purchase.coins);
+ const helpId=randomUUID(),help=await val('select photo_help_buy($1,$2) as v',['heart',helpId]);assert.equal(help.ok,true);assert.equal(help.coins,purchase.coins-3);
+ assert.equal((await val('select photo_help_buy($1,$2) as v',['heart',helpId])).coins,help.coins,'game help retries remain idempotent');
+ console.log('PASS: all seven sales disabled idempotently, purchases/balance retained, stale-client purchases blocked and game help still works');
+}finally{await db.close();}})().catch(e=>{console.error(e);process.exitCode=1});

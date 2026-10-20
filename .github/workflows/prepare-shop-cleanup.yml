@@ -1,0 +1,74 @@
+name: Verify shop retirement and Arcade clarity
+on:
+  push:
+    branches: [codex/retire-shop-clear-arcade]
+    paths:
+      - '.github/workflows/prepare-shop-cleanup.yml'
+      - 'ops/apply-shop-retirement.py'
+      - 'ops/shop-ui-tests.patch'
+      - 'tests/decorations.test.cjs'
+      - 'tests/shop-retirement-db.test.cjs'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed source changes
+        run: |
+          python ops/apply-shop-retirement.py
+          if git apply --check ops/shop-ui-tests.patch; then
+            git apply ops/shop-ui-tests.patch
+          else
+            git apply --reverse --check ops/shop-ui-tests.patch
+          fi
+      - name: Install test dependencies
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Install test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify retired sales and existing purchases
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/world-three-menus.test.cjs
+          node tests/decorations.test.cjs
+          node tests/decoration-read-cache.test.cjs
+          node tests/shop-retirement-db.test.cjs
+          node tests/monthly-cosmetics-photo-help-db.test.cjs
+          node tests/ju-charge-db.test.cjs
+      - name: Verify mobile and desktop behavior
+        env:
+          WORLD_DESIGN_PROOF_DIR: /tmp/shop-cleanup-proof/world
+          SERVICE_NOTICE_SCREENSHOT_DIR: /tmp/shop-cleanup-proof/notices
+          OJJUDA_COPY_PROOF_DIR: /tmp/shop-cleanup-proof/park
+        run: |
+          test_status=0
+          for test in world-design-ui my-menu-ui park-note-chat-ui service-notice-ui world-game-back-ui ju-charge-ui photo-ttang-help-ui; do
+            node "tests/$test.test.cjs" || test_status=1
+          done
+          git diff --check
+          exit "$test_status"
+      - name: Save screenshots for review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: shop-cleanup-proof
+          path: /tmp/shop-cleanup-proof
+          retention-days: 3
+      - name: Commit verified sources
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Retire the shop, clarify game buttons and theme the original logo'
+            git push origin HEAD:refs/heads/codex/retire-shop-clear-arcade
+          fi
