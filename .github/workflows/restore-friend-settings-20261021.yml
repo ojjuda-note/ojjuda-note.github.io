@@ -2,7 +2,7 @@ name: Restore friend management in settings
 on:
   push:
     branches: [codex/friend-settings-20261021]
-    paths: [.github/workflows/restore-friend-settings-20261021.yml]
+    paths: [.github/workflows/restore-friend-settings-20261021.yml, ops/restore-friend-settings-20261021.py]
 permissions:
   contents: write
 jobs:
