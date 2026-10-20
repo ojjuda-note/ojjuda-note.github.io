@@ -20,7 +20,7 @@ for(const [from,to] of [
  vm.runInNewContext(read('park/route.js'),scope);assert.equal(result,'https://fixture.test'+to);
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-navigation.js','world-pull-refresh.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-themes.js','world-navigation.js','world-pull-refresh.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.parkFixture={state:g,enter(id){xf(id,1);clearInterval(g.placeT);g.placeT=null;},
@@ -34,7 +34,7 @@ OjjudaShop.install({getUserId:()=>session?.user?.id,client:{auth:{onAuthStateCha
 window.populateParkFixture=()=>{feed.hidden=false;detail.hidden=true;document.getElementById('connection-status').hidden=true;
  document.getElementById('feed-list').replaceChildren(...Array.from({length:9},(_,i)=>cardElement({id:'00000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),kind:'memo',body:'공원에서 나누는 오늘의 이야기 '+(i+1),tags:['일상'],background_key:'plain',created_at:new Date().toISOString()})));
 };`;
-const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['park/route.js','ju-shop.js','note/feed-swipe.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
+const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace('</body>',()=>'<script>'+['world-themes.js','park/route.js','ju-shop.js','note/feed-swipe.js','note/preview.js','note/navigation.js'].map(read).join('\n')+'\n'+identity+'\n'+read('park/integration.js')+'</script></body>');
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
@@ -143,6 +143,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.setViewportSize({width:390,height:850});
  await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
  await page.screenshot({path:'/tmp/ojjuda-world-park-single-ui.png',fullPage:true});
+ if(process.env.OJJUDA_COPY_PROOF_DIR)await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'park-mobile.png'),fullPage:true});
  // Collections remain available in Park; the shared menu no longer lists Park shortcuts.
  for(const action of ['saved','mine','events']){
   await page.locator('.bottomnav [data-tab="my"]').click();
@@ -237,8 +238,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
  assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'park');
  await dragPark(150);
- await page.waitForFunction(()=>parkFixture.state.tab==='board');
- assert.equal(await iframe.count(),0,'a right swipe from Park reaches the board');
+ await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
+ assert.equal(await iframe.count(),0,'a right swipe from Park reaches the arcade');
  await page.evaluate(()=>parkFixture.user('fixture-member'));
  assert.equal(await page.evaluate(()=>parkFixture.useDecoration('card_fonts','fixture-member')),true);
  await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();

@@ -23,7 +23,13 @@ jobs:
           node tests/billiards-ai.test.cjs
           node tests/inline-scripts.test.cjs
           git diff --check
-      # The identical generated game passed every mobile billiards UI test in run 39497908991.
+      - name: Install existing UI test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify billiards with the current World design
+        run: node tests/billiards-controls-ui.test.cjs
       - name: Commit only the verified game source
         run: |
           git config user.name 'github-actions[bot]'

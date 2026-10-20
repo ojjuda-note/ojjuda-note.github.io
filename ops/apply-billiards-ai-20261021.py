@@ -15,10 +15,10 @@ end = s.index('if(e.cx!==void 0)', start)
 assert end - start < 600
 s = s[:start] + 'let e=Ys(k.st,k.level,k.aiRun);' + s[end:]
 version = json.loads(Path('version.json').read_text())
-assert version['version'] == '0.45.130-beta'
-replace_once('Go="0.45.130-beta"', 'Go="0.45.131-beta"')
+assert version['version'] == '0.46.0-beta'
+replace_once('Go="0.46.0-beta"', 'Go="0.46.1-beta"')
 p.write_text(s)
-version['version'] = '0.45.131-beta'
+version['version'] = '0.46.1-beta'
 Path('version.json').write_text(json.dumps(version, indent=2) + '\n')
 p = Path('tests/package.json')
 s = p.read_text()

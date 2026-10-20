@@ -37,10 +37,12 @@ async function result(query){const {data,error}=await query;if(error)throw error
     }
    }
    let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false,initialLoading=true;
+   const controls=el('div','','board-rank-controls'),position=el('span','','board-rank-position');position.setAttribute('aria-live','off');
+   const prev=button('‹',()=>go(index-1)),next=button('›',()=>go(index+1));prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);if(pages.length>1)head.append(controls);
    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
    content.append(section);
    function paint(){
-    rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
+    position.textContent=(index+1)+' / '+pages.length;rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
     section.dataset.rankPage=String(index);
     pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
    }
@@ -137,7 +139,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
 async function home(){rankDispose();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token));return active()&&token===request;}
 dispose=()=>{rankDispose();alive=false;request++;};
 controller={refresh:home};
-if(!client||!owner){status.textContent='로그인하면 게임 순위를 볼 수 있어요.';content.append(Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));return;}
+if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div');copy.append(el('h3','이번 달 게임순위'),el('p','로그인하면 게임 순위를 볼 수 있어요. 나의 기록으로 함께 도전해 보세요.'),Object.assign(el('a','로그인하고 참여하기','btn'),{href:'/?auth=login&next=world'}));empty.append(art,copy);content.append(empty);return;}
 void home();
   const matgoAccess=window.OjjudaMatgoAccess;
   if((!games.matgo||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
