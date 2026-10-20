@@ -10,6 +10,8 @@ const rendererStart = world.indexOf('function worldProfileAvatar(');
 const rendererEnd = world.indexOf('}var Hf=', rendererStart) + 1;
 assert.ok(rendererStart > 0 && rendererEnd > rendererStart, 'World My renderer is available');
 const renderer = world.slice(rendererStart, rendererEnd);
+const friendRenderer = world.slice(world.indexOf('function Ag('), world.indexOf('function Cg()'))
+  + world.slice(world.indexOf('function Of()'), world.indexOf('function Il('));
 const noteLinkRenderer = world.slice(rendererEnd, world.indexOf('function Zg()', rendererEnd));
 const doorStart = world.indexOf('"door-toggle"(){');
 const doorEnd = world.indexOf(',tab(t){', doorStart);
@@ -75,6 +77,11 @@ async function worldFixture(context, mobile, errors) {
     window.D = { online: true, isAdmin: false, mediaReady: true, doorReady: true,
       user: { email: 'synthetic-account-with-a-very-long-address@example.invalid' } };
     window.g = {};
+    window.P = { loaded: true, communityOpen: false, incoming: [{req:'request-a',p:{id:'friend-a',nickname:'새 친구',bio:'함께 게임해요'}}],
+      outgoing: [], friends: [{id:'friend-b',nickname:'기존 친구',bio:'반가워요'}], results: null, q:'',
+      rel: new Map([['friend-b',{id:'request-b',status:'accepted'}]]) };
+    window.Il = () => '<span class="ini">나</span>';
+    window.Le = () => false;
     window.yi = ['😊', '😌', '😴'];
     window.Jn = [['all', '전체 공개'], ['friends', '친구 공개'], ['me', '나만 보기']];
     window.ce = { ready: true, list: [{ id: 'synthetic-blocked', nick: '검사 작성자' }] };
@@ -105,7 +112,7 @@ async function worldFixture(context, mobile, errors) {
     });
   });
   await page.addScriptTag({ content: read('world-park-notes.js') });
-  await page.addScriptTag({ content: renderer + noteLinkRenderer });
+  await page.addScriptTag({ content: friendRenderer + renderer + noteLinkRenderer });
   await page.addScriptTag({ content: doorAction });
   await page.evaluate(() => renderMy());
   assert.equal(await page.locator('[data-my-group="admin"]').count(), 0, 'member menu omits the administrator entry');
@@ -123,13 +130,18 @@ async function worldFixture(context, mobile, errors) {
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
 
   await exerciseGroups(page, '.my-hub');
+  assert.equal(await page.locator('[data-my-group="friends"] #fr-q').isVisible(), true);
+  for (const action of ['fr-accept', 'fr-decline', 'fr-remove']) {
+    assert.equal(await page.locator(`[data-my-group="friends"] [data-act="${action}"]`).isVisible(), true);
+  }
+  assert.equal(await page.locator('[data-my-group="friends"] [data-act="visit"]').count(), 0);
   for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-friend']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
   }
   assert.equal(await page.locator('[data-park-action]').count(),0,'menu omits park activities');
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
