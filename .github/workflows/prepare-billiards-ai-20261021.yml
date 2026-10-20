@@ -1,0 +1,40 @@
+name: Prepare and verify billiards AI balance
+on:
+  push:
+    branches: [codex/billiards-ai-20261021]
+    paths:
+      - 'ops/apply-billiards-ai-20261021.py'
+      - '.github/workflows/prepare-billiards-ai-20261021.yml'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the verified AI balance patch
+        run: python ops/apply-billiards-ai-20261021.py
+      - name: Verify real shot physics and application syntax
+        run: |
+          node tests/billiards-ai.test.cjs
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Install existing UI test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify the billiards controls and mobile zoom
+        run: node tests/billiards-controls-ui.test.cjs
+      - name: Commit only the verified change and remove the one-time runner
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html version.json tests/package.json .github/workflows/billiards-controls.yml
+          git rm ops/apply-billiards-ai-20261021.py .github/workflows/prepare-billiards-ai-20261021.yml
+          git commit -m 'Balance billiards AI accuracy and reduce long scoring runs'
+          git push origin HEAD:refs/heads/codex/billiards-ai-20261021
