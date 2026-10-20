@@ -1,0 +1,29 @@
+name: Finish retired fixture cleanup
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/finish-world-cleanup-20261021.yml]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Update retired fixtures and verify exact local results
+        run: |
+          python ops/finish-world-cleanup-20261021.py
+          for file in $(git diff --name-only -- tests); do node --check "$file"; done
+          node tests/portal-auth-entry.test.cjs
+          git diff --check
+      - name: Save updated test coverage
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tests
+          git commit -m 'Update surviving tests for arcade park settings'
+          git push origin HEAD:refs/heads/main
