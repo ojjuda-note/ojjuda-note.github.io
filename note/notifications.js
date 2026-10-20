@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const COPY = Object.freeze({ reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
+  const COPY = Object.freeze({ world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
   const el = (tag, text, cls) => { const item = document.createElement(tag); if (text !== undefined) item.textContent = text; if (cls) item.className = cls; return item; };
   const button = (text, action, cls = 'button') => { const item = el('button', text, cls); item.type = 'button'; item.addEventListener('click', action); return item; };
   let instance;
@@ -107,7 +107,7 @@
       const text = el('p', retention
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
         : COPY[item.kind], 'nn-copy');
-      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.kind==='inquiry_reply'?'문의':item.source==='world'?'미니홈피':'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
+      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
       meta.append(source, state, time);
@@ -120,8 +120,8 @@
       const world=item.source==='world';
       const target = world ? item.target_id : item.kind === 'inquiry_reply' ? item.inquiry_id : item.card_id;
       const action = world ? onOpenWorld : item.kind === 'inquiry_reply' ? onOpenInquiry : onOpenCard;
-      if ((world ? validNoticeId(target)&&['guestbook','friends','media'].includes(item.target_type) : UUID.test(target || '')) && typeof action === 'function') {
-        const openButton = button(world ? ({guestbook:'방명록 보기',friends:'친구 보기',media:'사진·댓글 보기'}[item.target_type]||'보기') : item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
+      if ((world ? validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type) : UUID.test(target || '')) && typeof action === 'function') {
+        const openButton = button(world ? ({guestbook:'방명록 보기',friends:'친구 보기',media:'사진·댓글 보기',message:'쪽지 읽기'}[item.target_type]||'보기') : item.kind === 'inquiry_reply' ? '답변 보기' : '카드 보기', () => void openItem(item)); openButton.dataset.notificationOpen = item.id; actions.append(openButton);
       }
       if (retention && typeof onKeepCard === 'function') actions.append(button('10 ZU로 영구보관', () => void keepCard(item)));
       if (!item.read_at) { const readButton = button('읽음 표시', () => void (retention ? markRetentionRead(item) : markRead([item.id]))); readButton.dataset.notificationRead = item.id; actions.append(readButton); }
@@ -249,7 +249,7 @@
       const run=identityRun,user=identity,view=viewRun,world=item.source==='world';
       const target=world?item.target_id:item.kind==='inquiry_reply'?item.inquiry_id:item.card_id;
       const action=world?onOpenWorld:item.kind==='inquiry_reply'?onOpenInquiry:onOpenCard;
-      if(typeof action!=='function'||!(world?validNoticeId(target)&&['guestbook','friends','media'].includes(item.target_type):UUID.test(target||'')))return;
+      if(typeof action!=='function'||!(world?validNoticeId(target)&&['guestbook','friends','media','message'].includes(item.target_type):UUID.test(target||'')))return;
       saving=true;updateControls();keepFocus();await markSeenOnNavigate(item);
       if(!currentView(run,user,view))return;
       saving=false;close();
@@ -291,6 +291,7 @@
       if (event.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
     });
+    window.addEventListener('ojjuda:messages-read', () => { countRequest=null;lastRefresh=0;void refresh({force:true});channel?.postMessage({type:'read',user:userNow()}); });
     window.addEventListener('focus', () => void refresh({ force: false }));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refresh({ force: false }); });
     client.auth.onAuthStateChange((_event, session) => {
@@ -304,7 +305,7 @@
     });
     setUnread(0); trigger.setAttribute('aria-expanded', 'false');
     instance = Object.freeze({ open, close, refresh, attach, isOpen:()=>!layer.hidden });
-    setInterval(()=>{if(identity&&document.visibilityState==='visible'&&!loading&&!saving)void refreshCount(false);},45000);
+    setInterval(()=>{if(identity&&document.visibilityState==='visible'&&!loading&&!saving)void refresh({force:false});},15000);
     setTimeout(() => void refresh(), 0);
     return instance;
   }

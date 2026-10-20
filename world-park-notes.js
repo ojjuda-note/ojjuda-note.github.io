@@ -6,7 +6,7 @@
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
-    let frame=null,panel=null,owner=null,routed=false,initial=true,pending=null,overlayOpen=false,stopFrameNavigation=()=>{};
+    let frame=null,panel=null,owner=null,routed=false,initial=true,pending=null,overlayOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
     const active=()=>app.place()?.id==='park';
     const requested=new URL(location.href).searchParams.get('place')==='park';
     const api=()=>{try{return frame?.contentWindow.OjjudaParkFull;}catch{return null;}};
@@ -14,7 +14,7 @@
       return '<section class="park-app" data-park-app aria-label="공원 카드"><div class="park-app-slot" data-park-app-slot><p role="status">공원을 불러오는 중이에요…</p></div><button type="button" class="park-compose-fab" data-park-action="compose" aria-label="새 카드 쓰기"><span aria-hidden="true">＋</span> 카드 쓰기</button></section>';
     }
     function route(){if(requested&&!routed){routed=true;app.enter();}}
-    function syncFab(){const button=panel?.querySelector('.park-compose-fab');if(button)button.hidden=overlayOpen||frame?.dataset.view==='glasses';}
+    function syncFab(){const button=panel?.querySelector('.park-compose-fab');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses';}
     function flush(){
       if(!pending||!api()?.navigate)return;
       const action=pending;pending=null;api().navigate(action);
@@ -22,12 +22,12 @@
     function sync(){
       const next=document.querySelector('[data-park-app]');
       document.documentElement.classList.toggle('world-park-active',active()&&!!next);
-      if(!active()||!next){stopFrameNavigation();stopFrameNavigation=()=>{};frame=panel=null;owner=null;overlayOpen=false;return;}
+      if(!active()||!next){stopFrameNavigation();stopFrameNavigation=()=>{};frame=panel=null;owner=null;overlayOpen=false;cardOpen=false;return;}
       if(frame?.isConnected&&panel===next&&owner===app.userId()){syncFab();flush();return;}
       stopFrameNavigation();stopFrameNavigation=()=>{};
-      panel=next;owner=app.userId();overlayOpen=false;
+      panel=next;owner=app.userId();overlayOpen=false;cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
-      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261022-clean4');
+      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261020-notes1');
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       panel.querySelector('[data-park-app-slot]').replaceChildren(frame);syncFab();
@@ -36,7 +36,7 @@
         if(frame!==currentFrame||!frame?.isConnected)return;
         stopFrameNavigation();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
         try{frame.dataset.view=frame.contentWindow.location.pathname.endsWith('/glasses.html')?'glasses':'cards';}catch{}
-        syncFab();flush();
+        cardOpen=api()?.cardOpen?.()===true;syncFab();flush();
       });
     }
     function canLeave(){try{return frame?.contentWindow.canCloseParkNote?.()!==false;}catch{return true;}}
@@ -45,7 +45,7 @@
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1&v=20261022-clean4';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1&v=20261020-notes1';return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}
@@ -72,7 +72,7 @@
     addEventListener('message',event=>{
       if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
       if(event.data?.type==='ojjuda:park-ready'){syncFab();flush();}
-      if(event.data?.type==='ojjuda:park-state'){overlayOpen=event.data.overlayOpen===true;syncFab();}
+      if(event.data?.type==='ojjuda:park-state'){overlayOpen=event.data.overlayOpen===true;cardOpen=event.data.cardOpen===true;syncFab();}
       if(event.data?.type==='ojjuda:park-navigate'&&canLeave()){
         if(event.data.action==='world')app.toWorld?.();
         if(event.data.action==='menu')app.toMenu?.();

@@ -108,6 +108,12 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.evaluate(()=>{parkFixture.actions['pl-send']();parkFixture.actions['pl-react']({v:'👋'});parkFixture.render()});
  assert.equal(await page.evaluate(()=>parkFixture.state.place.log.length),before,'park chat actions remain disabled');
  assert.equal(await frame.evaluate(()=>fixtureToken),'kept');
+ // Detail pages keep only the reply composer; the host's general composer returns on the list.
+ await frame.evaluate(()=>{feed.hidden=true;detail.hidden=false;document.querySelector('[data-compose="reply"]').hidden=false;});
+ await page.locator('.park-compose-fab').waitFor({state:'hidden'});
+ assert.equal(await frame.locator('[data-compose="reply"]').isVisible(),true);
+ await frame.evaluate(()=>{detail.hidden=true;feed.hidden=false;});
+ await page.locator('.park-compose-fab').waitFor({state:'visible'});
  // The World header/navigation remain fixed while the Park feed is the only page scroller.
  await frame.evaluate(()=>populateParkFixture());
  for(const width of [320,390,832,1280]){

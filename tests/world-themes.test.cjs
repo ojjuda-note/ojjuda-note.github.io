@@ -4,6 +4,8 @@ const root=path.join(__dirname,'..'),source=fs.readFileSync(path.join(root,'worl
 const dom=new JSDOM('<div data-world-theme-settings></div><p data-theme-greeting></p><p data-theme-status></p><textarea id="draft"></textarea>',{url:'https://ojjuda.kr',runScripts:'outside-only'});
 const w=dom.window;
 try{
+ w.localStorage.setItem('ojjuda-world-theme-v1','summer');
+ let now=Date.parse('2026-10-08T14:59:59Z'),scheduled,delay;const RealDate=w.Date;w.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};w.setTimeout=(callback,ms)=>{scheduled=callback;delay=ms;return 1;};w.clearTimeout=()=>{};
  w.eval(source);w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
  const t=w.OjjudaThemes,at=(d,m='auto')=>t.resolve(d+'T03:00:00Z',m);
  assert.equal(t.order.length,19);
@@ -14,18 +16,17 @@ try{
  assert.equal(t.resolve('2026-10-08T15:00:00.000Z'),'hangeul');
  assert.equal(t.resolve('2026-10-09T15:00:00.000Z'),'autumn');
  assert.equal(t.eventsOn('2028-10-03T03:00:00Z')[0],'chuseok');
- assert.equal(at('2026-12-25','summer'),'summer','manual selection beats calendar');
- assert.equal(at('2026-12-25','__proto__'),'christmas','invalid storage cannot select prototype keys');
- assert.equal(at('2026-02-17','classic'),'classic','automatic application can be disabled');
- assert.equal(w.document.querySelectorAll('button[data-world-theme]').length,19);
+ assert.equal(at('2026-12-25','summer'),'christmas','legacy manual argument cannot override the calendar');
+ assert.equal(w.document.querySelectorAll('button[data-world-theme]').length,0);
+ assert.equal(t.choose,undefined);assert.equal(t.getMode(),'auto');assert.equal(t.getCurrent(),'autumn');
+ assert.equal(w.localStorage.getItem('ojjuda-world-theme-v1'),null,'old manual choice removed');
  const draft=w.document.getElementById('draft');draft.value='작성 중인 내용';
- w.document.querySelector('[data-world-theme=summer]').click();
- assert.equal(t.getMode(),'summer');assert.equal(w.document.documentElement.dataset.worldTheme,'summer');assert.equal(draft.value,'작성 중인 내용');assert.equal(w.document.getElementById('draft'),draft,'theme change preserves DOM');
- assert.equal(w.localStorage.getItem('ojjuda-world-theme-v1'),'summer');
- const check=w.document.querySelector('[data-theme-auto]');check.checked=true;check.dispatchEvent(new w.Event('change',{bubbles:true}));assert.equal(t.getMode(),'auto');
- t.choose('christmas');w.localStorage.setItem('ojjuda-world-theme-v1','spring');w.dispatchEvent(new w.StorageEvent('storage',{key:'ojjuda-world-theme-v1'}));assert.equal(t.getCurrent(),'spring','other tabs synchronize');
- assert.equal(t.choose('not-a-theme'),false);
+ assert.ok(delay>=1000&&delay<=1200,'next Korean midnight is scheduled');
+ now=Date.parse('2026-10-08T15:00:01Z');scheduled();assert.equal(t.getCurrent(),'hangeul');
+ assert.equal(w.document.documentElement.dataset.worldTheme,'hangeul');assert.equal(draft.value,'작성 중인 내용');assert.equal(w.document.getElementById('draft'),draft);
+ now=Date.parse('2026-10-09T15:00:01Z');w.dispatchEvent(new w.Event('pageshow'));assert.equal(t.getCurrent(),'autumn','resuming a suspended tab recalculates its date');
+ w.localStorage.setItem('ojjuda-world-theme-v1','summer');t.sync();assert.equal(t.getCurrent(),'autumn','later legacy storage is ignored');
  for(const key of t.order){assert.ok(fs.existsSync(path.join(root,'assets/design',key==='classic'?'welcome.svg':'themes/'+key+'.svg')),key+' has its own artwork');}
  assert.equal(t.scheduleFor(2027).find(e=>e.key==='buddha').date,'2027-05-13');
- console.log('PASS: all 19 designs, KST midnight, lunar holidays through 2050, holiday priority, season fallback, manual mode, persistent selection, cross-tab sync and draft preservation');
+ console.log('PASS: all 19 designs, KST midnight, lunar holidays through 2050, holiday priority, season fallback, automatic-only mode, legacy choice ignored, midnight and resume updates and draft preservation');
 }finally{dom.window.close();}

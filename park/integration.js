@@ -5,7 +5,7 @@
   try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
   const send = data => { if (hosted) parent.postMessage(data, location.origin); };
   const originalCanLeave = window.canCloseParkNote;
-  let pendingAction = null, previousOverlay = null, previousBalance = null, reporting = false;
+  let pendingAction = null, previousOverlay = null, previousDetail = null, previousBalance = null, reporting = false;
   const visible = selector => !!document.querySelector(selector);
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), .world-picker:not([hidden]), .photo-source-menu, dialog[open]');
 
@@ -70,7 +70,9 @@
   function reportState() {
     reporting = false;
     const open = overlayOpen();
-    if (open !== previousOverlay) { previousOverlay = open; send({ type: 'ojjuda:park-state', overlayOpen: open }); }
+    const cardOpen = !detail.hidden;
+    const compose = document.querySelector('.write-fab');if(compose&&compose.hidden!==cardOpen)compose.hidden=cardOpen;
+    if (open !== previousOverlay || cardOpen !== previousDetail) { previousOverlay = open;previousDetail = cardOpen; send({ type: 'ojjuda:park-state', overlayOpen: open, cardOpen }); }
     const userId = session?.user?.id;
     if (userId && Number.isSafeInteger(worldCoins) && worldCoins >= 0) {
       const key = `${userId}:${worldCoins}`;
@@ -98,11 +100,11 @@
   }, true);
   addEventListener('message', event => {
     if (!hosted || event.origin !== location.origin || event.source !== parent) return;
-    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousBalance = null; scheduleReport(); }
+    if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousDetail = previousBalance = null; scheduleReport(); }
   });
 
   window.OjjudaNoteNavigation?.leaveMy();
-  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, compose: () => navigate('compose'), back, canLeave, overlayOpen,
+  window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, compose: () => navigate('compose'), back, canLeave, overlayOpen, cardOpen:()=>!detail.hidden,
     refresh: () => overlayOpen()||!canLeave()?false:detail.hidden?loadFeed(false,true):refreshCards(true),
     refreshBalance: () => loadWorldBalance(session?.user?.id) });
   reportState();
