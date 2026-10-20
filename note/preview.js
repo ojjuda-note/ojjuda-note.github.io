@@ -915,14 +915,16 @@ function requestTagFit() {
   if (tagFitFrame === null) tagFitFrame = requestAnimationFrame(refreshExpandedBodies);
 }
 const expandedBodyEntries = new Set(), quoteFitEntries = new Set();
-function fitPhotoQuote(photo, quote, tagRow) {
-  if (!photo.isConnected) return;
+function fitPhotoQuote(photo, quote, tagRow, initialFontSize) {
+  // A hidden feed has zero bounds, not an overflowing card. Leave its layout intact.
+  if (!photo.isConnected || photo.getBoundingClientRect().width <= 0) return;
   photo.style.height = '';
   const minimumHeight = photo.getBoundingClientRect().height;
   // Tags have their own fitting rules; settle their layout before measuring the quote.
   fitTagRow(tagRow);
-  if (!quote.dataset.baseFontSize) quote.dataset.baseFontSize = String(parseFloat(getComputedStyle(quote).fontSize));
-  const base = Number(quote.dataset.baseFontSize);
+  // Start from the authored size each time, including responsive CSS after a resize.
+  quote.style.fontSize = initialFontSize;
+  const base = parseFloat(getComputedStyle(quote).fontSize);
   for (let size = base; size >= 12; size -= 1) {
     quote.style.fontSize = `${size}px`;
     if (!photoQuoteClipped(photo, quote, tagRow)) return;
@@ -934,11 +936,12 @@ function fitPhotoQuote(photo, quote, tagRow) {
 function refreshExpandedBodies() {
   for (const entry of quoteFitEntries) {
     if (!entry.photo.isConnected) { quoteFitEntries.delete(entry); continue; }
-    fitPhotoQuote(entry.photo, entry.quote, entry.tagRow);
+    fitPhotoQuote(entry.photo, entry.quote, entry.tagRow, entry.initialFontSize);
   }
   refreshTagRows();
   for (const entry of expandedBodyEntries) {
     if (!entry.item.isConnected) { expandedBodyEntries.delete(entry); continue; }
+    if (entry.photo.getBoundingClientRect().width <= 0) continue;
     entry.full.hidden = !photoQuoteClipped(entry.photo, entry.quote, entry.tagRow);
   }
 }
@@ -986,7 +989,7 @@ function cardElement(card, compact = false, expanded = false) {
   }
   photo.append(node('span', 'photo-shade'), quote, tagRow);
   open.append(photo); frame.append(open);
-  quoteFitEntries.add({ photo, quote, tagRow });
+  quoteFitEntries.add({ photo, quote, tagRow, initialFontSize: quote.style.fontSize });
   if (card.kind === 'event') frame.append(node('span', 'note-event-badge', '이벤트/광고'));
   if ((card.kind === 'memo' || card.kind === 'comment') && card.id) {
     const thumb = node('button', 'card-photo-thumb'); thumb.type = 'button'; thumb.hidden = true;
@@ -1324,6 +1327,7 @@ function showFeed(updateUrl = true) {
   detailRun++; replyLoading = false; stack.length = 0;
   if (updateUrl) updateCardUrl();
   feed.hidden = false; detail.hidden = true;
+  requestTagFit();
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 async function loadReplies(id, version, more = false) {
