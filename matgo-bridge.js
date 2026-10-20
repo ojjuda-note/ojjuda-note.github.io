@@ -85,6 +85,7 @@
   }
   window.openMatgo = openMatgo;
   window.closeMatgo = closeMatgo;
+  window.requestMatgoClose = requestClose;
   window.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay) requestClose(); });
   window.addEventListener('message', event => {
     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow) return;
