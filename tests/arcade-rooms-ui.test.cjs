@@ -101,7 +101,7 @@ world=world.replace('</head>','<script src="/game-entry.js" defer></script><scri
     assert.equal(await b.page.locator('.arcade-room-copy h4').textContent(),title,'untrusted title is rendered as text');
     const room=(await f.arcade(A,'list')).mine;
     if(kind==='matgo'){
-      // Returning to chat must keep the waiting match, including after resuming it.
+      // Returning to the room list must keep the waiting match, including after resuming it.
       await a.page.locator('[data-act=matgo-open]').click();
       await a.page.frameLocator('#matgo-overlay iframe').locator('#wait-in-chat').click();
       await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
@@ -140,6 +140,6 @@ world=world.replace('</head>','<script src="/game-entry.js" defer></script><scri
   await refresh(b.page);await a.page.locator('[data-arcade-action=cancel]').click();await a.page.locator('.arcade-room-card').waitFor({state:'detached'});await refresh(b.page);assert.equal(await b.page.locator('.arcade-room-card').count(),0);
   await a.page.evaluate(()=>arcadeTest.switchActor(null));assert.equal(await a.page.locator('[data-arcade-action=create]').isDisabled(),true);assert.equal(await a.page.locator('.arcade-room-card').count(),0);
   await a.context.close();await b.context.close();assert.deepEqual(errors,[]);
-  console.log('PASS: all 6 game rooms appear inside chat automatically, messages preserve posts, Matgo creation/return keeps waiting room, two browsers launch the same game, responsive widths, drafts, filters, cancellation, age and logout.');
+  console.log('PASS: all 6 game rooms appear in the independent room list, public chat is absent, legacy callbacks preserve rooms, Matgo creation/return keeps waiting room, two browsers launch the same game, responsive widths, drafts, filters, cancellation, age and logout.');
  }finally{await browser.close();await f.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

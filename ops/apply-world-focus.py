@@ -3,10 +3,10 @@ import hashlib
 
 p = Path('world.html')
 s = p.read_text()
-if hashlib.sha256(p.read_bytes()).hexdigest() == '5d159b3ad95763fca07fa8daf63f626747090fee07db754fab0996955ec557cc':
+if hashlib.sha256(p.read_bytes()).hexdigest() == '063e920f74abaa08caa9ae5451060b3f89aa1a8a52ca099a12e44378f587b062':
     print('World focus already applied')
     raise SystemExit(0)
-assert hashlib.sha256(p.read_bytes()).hexdigest() == '85136b92443ec6a6bfcb0f04172a77bc8ae5eaff0d21dcc9f6e2e15a8d912a6b'
+assert hashlib.sha256(p.read_bytes()).hexdigest() == '3b17e894c473b22fc2767717fc3d7317d0536ab6ef9c55f708b9d226b570e9fc'
 
 def replace(old, new):
     global s
@@ -32,7 +32,7 @@ for old,new in [
  ('/arcade-rooms.css?v=20261005-chatrooms2','/arcade-rooms.css?v=20261022-rooms1'),
  ('/arcade-rooms.js?v=20261018-catalog1','/arcade-rooms.js?v=20261022-rooms1'),
  ('/world-design.css?v=20261022-1','/world-design.css?v=20261022-2'),
- ('0.46.0-beta','0.46.1-beta'),
+ ('0.46.1-beta','0.46.2-beta'),
 ]:
     assert old in s, old
     s=s.replace(old,new)
@@ -41,6 +41,6 @@ a = s.index('<aside class="arcade-welcome">')
 b = s.index('</aside>',a) + len('</aside>')
 s = s[:a] + s[b:]
 s = s.replace('/world-game-rankings.css?v=20261022-1','/world-game-rankings.css?v=20261022-2')
-assert hashlib.sha256(s.encode()).hexdigest() == '5d159b3ad95763fca07fa8daf63f626747090fee07db754fab0996955ec557cc'
+assert hashlib.sha256(s.encode()).hexdigest() == '063e920f74abaa08caa9ae5451060b3f89aa1a8a52ca099a12e44378f587b062'
 p.write_text(s)
 print('World focus:',p.stat().st_size,hashlib.sha256(p.read_bytes()).hexdigest())

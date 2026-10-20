@@ -155,7 +155,7 @@
         <label class="field">방 제목<input class="inp" name="title" maxlength="40" required value="${escape(initial)}" autocomplete="off"></label>
         <div data-create-layout${kind === 'janggi' ? '' : ' hidden'}>${layoutSelect('eheh')}</div>
         <label class="field" data-create-capacity hidden>최대 인원<select class="inp" name="capacity"></select></label>
-        <p class="note">방번호는 자동으로 붙어요. 만든 방은 오락실 채팅창에 공개돼요.</p><p data-room-message role="status"></p>
+        <p class="note">방번호는 자동으로 붙어요. 만든 방은 오락실 대전방 목록에 표시돼요.</p><p data-room-message role="status"></p>
         <div class="mfoot"><button class="btn" type="button" data-act="close">취소</button><button class="btn pri" type="submit">방 만들고 기다리기</button></div></form>`, '대전방 만들기');
       const form = document.getElementById('arcade-room-form');
       let previousTitle = initial, request = null, lastParams = '';

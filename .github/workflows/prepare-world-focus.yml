@@ -45,6 +45,8 @@ jobs:
         run: |
           node tests/inline-scripts.test.cjs
           node tests/world-three-menus.test.cjs
+          node tests/world-presence.test.cjs
+          node tests/billiards-ai.test.cjs
           node tests/world-design-ui.test.cjs
           node tests/arcade-rooms-ui.test.cjs
           node tests/park-note-chat-ui.test.cjs
