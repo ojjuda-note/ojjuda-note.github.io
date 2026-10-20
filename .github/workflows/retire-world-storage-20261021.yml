@@ -2,7 +2,7 @@ name: Retire unused world storage
 on:
   push:
     branches: [main]
-    paths: [.github/workflows/retire-world-storage-20261021.yml]
+    paths: [.github/workflows/retire-world-storage-20261021.yml, ops/retire-world-storage-20261021.py]
 permissions:
   contents: read
 jobs:

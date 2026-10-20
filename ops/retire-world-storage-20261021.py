@@ -34,9 +34,14 @@ if 'creative-comics' in buckets:plans['creative-comics']=objects('creative-comic
 assert len(plans['media'])<=300 and len(plans.get('creative-comics',[]))<=200,'Unexpected deletion volume; stop'
 summary={}
 for bucket,rows in plans.items():
-    for offset in range(0,len(rows),100):
-        result=client.delete_objects(Bucket=bucket,Delete={'Objects':[{'Key':r['Key']} for r in rows[offset:offset+100]],'Quiet':True})
-        if result.get('Errors'):raise RuntimeError('Storage API did not delete all objects; inspect permissions')
+    from botocore.exceptions import ClientError
+    for row in rows:
+        try:
+            client.delete_object(Bucket=bucket,Key=row['Key'])
+        except ClientError as error:
+            metadata=error.response.get('ResponseMetadata',{})
+            print(json.dumps({'operation':'DeleteObject','bucket':bucket,'status':metadata.get('HTTPStatusCode'),'code':error.response.get('Error',{}).get('Code')},ensure_ascii=False))
+            raise RuntimeError('Storage API did not authorize or complete deletion') from None
     remaining=objects(bucket)
     assert all(is_profile(r['Key']) for r in remaining) if bucket=='media' else not remaining
     summary[bucket]={'deleted_files':len(rows),'deleted_bytes':sum(r['Size'] for r in rows),'remaining_files':len(remaining)}
