@@ -13,7 +13,7 @@
  }
  function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
   dispose?.();dispose=null;controller=null;if(!host)return;
-  let rankDispose=()=>{},rankPage=0;
+  let rankDispose=()=>{},rankPage=0,rankFocusGame=null;
   let alive=true,request=0,view=null,rows=[],more=false,busy=false,snapshot=new Date().toISOString(),dialog=null;
   const active=()=>alive&&host.isConnected&&authorized();
   const status=el('p','','board-status');status.setAttribute('role','status');
@@ -127,7 +127,9 @@
    const playing=()=>document.body.classList.contains('gaming')||document.body.classList.contains('matgo-open');
    let gaming=playing();
    window.addEventListener('ojjuda:game-record-saved',event=>{
-    if(event.detail?.owner===owner&&active()&&token===request&&!playing())void home();
+    if(event.detail?.owner!==owner||!active()||token!==request)return;
+    if(targets.has(event.detail?.game))rankFocusGame=event.detail.game;
+    if(!playing())void home();
    },options);
    const observer=new MutationObserver(()=>{
     const next=playing();
@@ -187,7 +189,15 @@
     }
     await load(true);
    });
-   return [Promise.all(loads).then(()=>{initialLoading=false;orderByRecords();schedule();})];
+   return [Promise.all(loads).then(()=>{
+    if(!active()||token!==request)return;
+    initialLoading=false;orderByRecords();
+    if(rankFocusGame&&targets.has(rankFocusGame)){
+     const row=targets.get(rankFocusGame).row;
+     index=pages.findIndex(page=>page.contains(row));rankFocusGame=null;paint();
+    }
+    schedule();
+   })];
   }
   async function home(){
    rankDispose();const token=++request;view=null;rows=[];snapshot=new Date().toISOString();content.replaceChildren();status.textContent='';
