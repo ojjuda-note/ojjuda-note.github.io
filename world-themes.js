@@ -41,49 +41,24 @@ function eventsOn(value=new Date()){
  for(const key of order)if(catalog[key].date===md)events.push(key);
  return events;
 }
-function resolve(value=new Date(),mode='auto'){
- if(mode!=='auto'&&Object.hasOwn(catalog,mode))return mode;
+function resolve(value=new Date()){
  const events=eventsOn(value);if(events.length)return events[0];
  const {month}=koreaDate(value);return month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
 }
-function readMode(){try{const key=localStorage.getItem(STORAGE);return key==='auto'||Object.hasOwn(catalog,key)?key:'auto';}catch{return 'auto';}}
-let mode=readMode(),timer=0,current='',observer;
-function settingsMarkup(){return `<div class="theme-setting"><div class="theme-setting-head"><div><h3>계절·기념일 테마</h3><p data-theme-status></p></div><label class="theme-auto"><input type="checkbox" data-theme-auto ${mode==='auto'?'checked':''}><span>자동 적용</span></label></div><p class="theme-help">한국 날짜에 맞춰 바뀝니다. 원하는 테마를 고르면 이 기기에서 계속 사용할 수 있어요.</p><div class="theme-picker" role="group" aria-label="테마 선택">${order.map(key=>`<button type="button" class="theme-option" data-world-theme="${key}" aria-pressed="${mode===key}" title="${catalog[key].period}"><span class="theme-preview" data-theme-preview="${key}"><img src="/assets/design/${key==='classic'?'welcome':'themes/'+key}.svg" width="600" height="360" alt="" loading="lazy"></span><span>${catalog[key].name}</span><small>${catalog[key].period}</small></button>`).join('')}</div><p class="theme-help">기념일이 겹치면 설·추석·부처님오신날을 우선 적용하고, 기념일이 끝나면 계절 테마로 돌아갑니다.</p></div>`;}
-function refreshLabels(){
- const info=catalog[current],events=mode==='auto'?eventsOn():[],label=events.length?events.map(k=>catalog[k].name).join(' · '):info.name;
- document.querySelectorAll('[data-theme-status]').forEach(n=>{const text=(mode==='auto'?'자동 · ':'직접 선택 · ')+label;if(n.textContent!==text)n.textContent=text;});
- document.querySelectorAll('[data-theme-greeting]').forEach(n=>{if(n.textContent!==info.copy)n.textContent=info.copy;});
- document.querySelectorAll('[data-theme-auto]').forEach(n=>{n.checked=mode==='auto';});
- document.querySelectorAll('button[data-world-theme]').forEach(n=>n.setAttribute('aria-pressed',String(mode===n.dataset.worldTheme)));
-}
+// Older devices may still have a manual choice saved; calendar selection always wins.
+try{localStorage.removeItem(STORAGE);}catch{}
+let timer=0,current='';
 function apply(){
- const selected=resolve(new Date(),mode);current=selected;
- document.documentElement.dataset.worldTheme=selected;
- refreshLabels();
+ current=resolve();document.documentElement.dataset.worldTheme=current;
+ document.querySelectorAll('[data-theme-greeting]').forEach(n=>{n.textContent=catalog[current].copy;});
 }
 function schedule(){
  clearTimeout(timer);const now=Date.now(),next=(Math.floor((now+KST)/DAY)+1)*DAY-KST;
  timer=setTimeout(()=>{apply();schedule();},Math.max(1000,next-now+100));
 }
-function choose(value){
- if(value!=='auto'&&!Object.hasOwn(catalog,value))return false;
- mode=value;try{localStorage.setItem(STORAGE,mode);}catch{}
- apply();schedule();window.dispatchEvent(new CustomEvent('ojjuda:theme-change',{detail:{mode,theme:current}}));
- // The existing Park iframe is preserved; changing theme never re-renders the app.
- document.querySelectorAll('.park-app iframe').forEach(frame=>{try{frame.contentWindow.OjjudaThemes?.sync();}catch{}});
- return true;
-}
-function mount(){
- document.querySelectorAll('[data-world-theme-settings]:not([data-theme-mounted])').forEach(host=>{host.dataset.themeMounted='true';host.innerHTML=settingsMarkup();});
- refreshLabels();
-}
-function ready(){mount();observer=new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('[data-world-theme-settings],[data-theme-greeting],[data-theme-status]')||n.querySelector?.('[data-world-theme-settings],[data-theme-greeting],[data-theme-status]')))))mount();});observer.observe(document.body,{childList:true,subtree:true});}
-document.addEventListener('click',e=>{const button=e.target.closest('[data-world-theme]');if(button&&button!==document.documentElement)choose(button.dataset.worldTheme);});
-document.addEventListener('change',e=>{if(e.target.matches('[data-theme-auto]'))choose(e.target.checked?'auto':current);});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){mode=readMode();apply();schedule();}});
-window.addEventListener('pageshow',()=>{mode=readMode();apply();schedule();});
-window.addEventListener('storage',e=>{if(e.key===STORAGE||e.key===null){mode=readMode();apply();schedule();}});
-window.OjjudaThemes={catalog,order,koreaDate,eventsOn,resolve,choose,getMode:()=>mode,getCurrent:()=>current,sync(){mode=readMode();apply();schedule();},scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}};
-apply();schedule();
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();
+function sync(){apply();schedule();}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync();});
+window.addEventListener('pageshow',sync);
+window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
+sync();
 })();
