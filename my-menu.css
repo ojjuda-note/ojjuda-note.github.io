@@ -81,6 +81,14 @@
 .my-menu-body .row, .my-menu-body .line-row { flex-wrap: wrap; gap: 10px; }
 .my-menu-body .field, .my-menu-body input { min-width: 0; max-width: 100%; }
 .my-menu-body .note { font-size: 12px; line-height: 1.6; }
+.world-friend-section + .world-friend-section { margin-top: 24px; }
+.world-friend-section #fr-search-form { display: flex; flex-wrap: nowrap; gap: 8px; }
+.world-friend-section #fr-q { flex: 1; width: 0; min-width: 0; }
+.world-friend-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.world-friend-row .mid { flex: 1; min-width: 80px; max-width: 100%; overflow: hidden; }
+.world-friend-row .mid b { overflow-wrap: anywhere; }
+.world-friend-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; margin-left: auto; max-width: 100%; }
+.world-friend-actions .btn { min-height: 36px; }
 .my-menu-body p, .my-menu-body a { overflow-wrap: anywhere; }
 .my-menu-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 10px 12px; color: var(--ink, #302b33); font-size: 14px; text-decoration: none; border-radius: 9px; }
 .my-menu-link:hover { background: var(--surface-2, #f8f5f8); }
