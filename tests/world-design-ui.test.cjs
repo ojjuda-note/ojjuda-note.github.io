@@ -28,7 +28,15 @@ world=world.slice(0,boot)+`
  await page.screenshot({path:path.join(proof,'arcade-desktop.png'),fullPage:true});
  await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
- for(const width of [320,390,768,900,1280]){await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);}
+ for(const width of [320,390,768,900,1280]){
+  await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
+  if(width<900){
+   const buttons=await page.locator('.bottomnav>button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,width:r.width,height:r.height};}));
+   assert.equal(buttons.length,3);assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
+   assert.ok(Math.max(...buttons.map(b=>b.width))-Math.min(...buttons.map(b=>b.width))<1,'mobile menus have equal widths');
+   assert.ok(buttons[0].x<width/3&&buttons[2].x>width/2,'mobile menus span the bottom bar');
+  }
+ }
  await page.setViewportSize({width:390,height:850});await page.evaluate(()=>{OjjudaThemes.choose('autumn');designFixture.rank();});await page.screenshot({path:path.join(proof,'arcade-mobile.png'),fullPage:true});
  await page.locator('.bottomnav [data-tab=my]').click();await page.locator('[data-my-group=themes] summary').click();await page.locator('button[data-world-theme=christmas]').click();
  assert.equal(await page.locator('html').getAttribute('data-world-theme'),'christmas');await fits('mobile theme chooser');

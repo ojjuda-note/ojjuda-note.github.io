@@ -30,7 +30,7 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 /* The games retain their own internal palettes. Shared dialogs use the World type system. */
 .world-redesign .world-profile-avatar-placeholder{background:transparent;color:var(--accent-ink)}
 
-.world-redesign .topbar{display:flex}.world-redesign .bottomnav{display:flex}.world-redesign .adm-tabs button{min-height:44px}
+.world-redesign .topbar{display:flex}.world-redesign .bottomnav{display:flex;align-items:stretch}.world-redesign .bottomnav>button{display:flex;flex:1 1 0;min-width:0;flex-direction:column;align-items:center;justify-content:center}.world-redesign .adm-tabs button{min-height:44px}
 @media(min-width:900px){.world-redesign .bottomnav{display:none}}
 /* Reset the retired sidebar/grid assumptions at the new layout boundaries. */
 .world-redesign .my-hub{display:block}.world-redesign #ppanel{border-radius:0;overflow:visible}
