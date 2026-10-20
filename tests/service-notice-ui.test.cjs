@@ -14,7 +14,7 @@ let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,
 world=world.replace('<script type="module">',`<script>${['world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
- window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt};
+ window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt,tick:Ts,render:H};
  D.isAdmin=false;g.tab='friends';H();worldParkNotes.route();D.online=true;wt.notice=${JSON.stringify(notice)};H();
  `+world.slice(world.indexOf('</script>',boot));
 const identity=`authKnown=ready=true;session={user:{id:'fixture-member'}};myIdentity={gender:'male'};myIdentityReady=true;myGender='male';updateAuth();
@@ -46,7 +46,12 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   await page.locator('.game-friend-inline').waitFor();
   for(const width of [320,390,1280]){
    await page.setViewportSize({width,height:850});
+   await page.evaluate(()=>noticeFixture.tick());
    assert.equal(await page.locator('[data-act="notice-open"]:visible').count(),1,width+': one common notice');
+   const movement=await page.locator('.nb-flow').evaluate(n=>{const a=n.getAnimations()[0],d=Number(a.effect.getTiming().duration);a.currentTime=d*2+100;return{iterations:a.effect.getTiming().iterations,playState:a.playState,period:Math.round(d),copies:n.children.length}});
+   assert.equal(movement.iterations,Infinity,'the notice keeps moving after multiple cycles');assert.equal(movement.playState,'running');assert.equal(movement.copies,2);assert.ok(movement.period>=8000);
+   assert.equal(await page.locator('.nb-text').textContent(),notice);assert.equal(await page.locator('.nb-copy').textContent(),notice);
+   await page.locator('.nb-flow').evaluate(n=>{n.getAnimations()[0].currentTime=0;});
    assert.equal(await page.locator('.game-friend-inline').evaluate(n=>n.parentElement.previousElementSibling.dataset.act),'notice-open',width+': invitation directly below the actual shared notice');
    assert.ok(await page.locator('.ge-inline-copy').evaluate(n=>n.scrollWidth<=n.clientWidth+1),width+': complete one-line invitation text');
    assert.equal(await page.locator('.game-friend-inline [data-answer=accept]').textContent(),'수락');
@@ -58,6 +63,8 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    await page.locator('[data-act="notice-open"]').click();
    assert.ok((await page.locator('#modal-root').textContent()).includes(notice),'whole announcement is accessible');await page.evaluate(()=>noticeFixture.close());
   }
+  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.nb-flow').evaluate(n=>getComputedStyle(n).animationName),'none');
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>noticeFixture.set('공지 <script>window.noticeInjection=true</script>'));
   assert.equal(await page.locator('.nb-text').textContent(),'공지 <script>window.noticeInjection=true</script>');assert.equal(await page.evaluate(()=>window.noticeInjection),undefined);
   await page.evaluate(()=>noticeFixture.set(''));assert.equal(await page.locator('[data-act="notice-open"]').count(),0,'clearing notice removes the banner');
