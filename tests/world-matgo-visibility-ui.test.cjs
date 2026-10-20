@@ -74,8 +74,9 @@ g.tab='my';H();
 
     // Legacy-member entry prompt uses the same save hook, without re-login.
     await page.evaluate(() => {
+      matgoTest.actions.tab({ tab: 'my' });
       matgoTest.switchUser('entry-member', null);
-      matgoTest.actions.tab({ tab: 'friends' });
+      matgoTest.actions.tab({ tab: 'arcade' });
     });
     await page.getByRole('dialog', { name: '기본정보를 입력해 주세요', exact: true }).waitFor();
     await register();
