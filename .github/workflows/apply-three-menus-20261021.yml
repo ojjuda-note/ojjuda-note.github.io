@@ -1,0 +1,52 @@
+name: Prepare arcade park settings
+on:
+  push:
+    branches: [codex/arcade-park-settings-20261021]
+    paths: [.github/workflows/apply-three-menus-20261021.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the locally reproduced cleanup
+        run: |
+          python ops/apply-three-menus-20261021.py .
+          npm install --prefix /tmp/cleanup-parser --no-save --ignore-scripts acorn@8.15.0 acorn-walk@8.3.4
+          NODE_PATH=/tmp/cleanup-parser/node_modules node ops/cleanup-world-20261021.cjs .
+          python ops/finalize-cleanup-20261021.py .
+          python ops/polish-cleanup-20261021.py .
+          python ops/check-cleanup-20261021.py
+      - name: Install locked DOM test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Verify navigation, ranking and account isolation
+        run: |
+          node tests/world-three-menus.test.cjs
+          node tests/world-board-tank.test.cjs
+          node tests/adult-menu-visibility.test.cjs
+          node tests/world-adult-resume.test.cjs
+          node tests/inline-scripts.test.cjs
+          node --check world-game-rankings.js
+          git diff --check
+      - name: Install the existing test browser on the CI runner
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check settings, administration and entry screens
+        run: |
+          node tests/admin-navigation-ui.test.cjs
+          node tests/my-menu-ui.test.cjs
+          node tests/world-portal-ui.test.cjs
+          node tests/world-profile-draft-ui.test.cjs
+      - name: Commit the verified application and asset deletions
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git add world-game-rankings.js world-game-rankings.css
+          git commit -m 'Keep arcade park settings and retire unused pages and assets'
+          git push origin HEAD:refs/heads/codex/arcade-park-settings-20261021
