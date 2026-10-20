@@ -1,3 +1,16 @@
+diff --git a/tests/ju-charge-ui.test.cjs b/tests/ju-charge-ui.test.cjs
+index bfe6c36..35cded8 100644
+--- a/tests/ju-charge-ui.test.cjs
++++ b/tests/ju-charge-ui.test.cjs
+@@ -28,7 +28,7 @@ async function fixture(context, source, rpc) {
+     await page.evaluate(() => {
+       window.$ = { coins: 70, settings: { accent: 'pink', theme: 'light', defaultVis: 'all', notify: {} }, me: { nick: '검사 회원', bio: '', mood: '😊', moodText: '' }, album: [] };
+       window.D = { online: true, user: { id: 'synthetic-user', email: 'test@example.invalid' } };
+-      Object.assign(window, { g: {}, yi: ['😊'], Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, ie: () => '<svg></svg>', Xd: () => '/note/', Is: () => false, Os: () => '' });
++      Object.assign(window, { g: {}, P: { communityOpen: false, incoming: [] }, Of: () => '', Jn: [['all','전체 공개']], ce: { ready: true, list: [] }, Go: 'test', w: String, ie: () => '<svg></svg>', Xd: () => '/note/', Is: () => false, Os: () => '' });
+     });
+     await page.addScriptTag({ content: menu });
+     await page.evaluate(() => { document.querySelector('#world-my').innerHTML = Yg(); });
 diff --git a/tests/service-notice-ui.test.cjs b/tests/service-notice-ui.test.cjs
 index 3657cc9..2506499 100644
 --- a/tests/service-notice-ui.test.cjs
