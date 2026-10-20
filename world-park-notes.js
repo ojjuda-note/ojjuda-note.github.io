@@ -49,7 +49,7 @@
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1&v=20261022-1';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1&v=20261022-2';return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}
@@ -57,7 +57,7 @@
       if(!['card_stickers','card_fonts','card_foil'].includes(key)||!userId||userId!==app.userId()||!canLeave())return false;
       pendingDecoration={key,userId};
       if(!active()){app.enter();return true;}
-      if(frame?.dataset.view==='glasses'){frame.src='/park/?embedded=1&v=20261022-1';return true;}
+      if(frame?.dataset.view==='glasses'){frame.src='/park/?embedded=1&v=20261022-2';return true;}
       flush();return true;
     }
     function preserveShell(markup){

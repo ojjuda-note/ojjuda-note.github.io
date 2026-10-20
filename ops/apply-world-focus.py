@@ -1,0 +1,46 @@
+from pathlib import Path
+import hashlib
+
+p = Path('world.html')
+s = p.read_text()
+if hashlib.sha256(p.read_bytes()).hexdigest() == '5d159b3ad95763fca07fa8daf63f626747090fee07db754fab0996955ec557cc':
+    print('World focus already applied')
+    raise SystemExit(0)
+assert hashlib.sha256(p.read_bytes()).hexdigest() == '85136b92443ec6a6bfcb0f04172a77bc8ae5eaff0d21dcc9f6e2e15a8d912a6b'
+
+def replace(old, new):
+    global s
+    assert s.count(old) == 1, old[:80]
+    s = s.replace(old, new)
+
+replace('<button data-act="tab" data-tab="park">공원 산책하기 <span aria-hidden="true">↗</span></button>', '')
+a = s.index('<aside class="arcade-social">')
+b = s.index('</aside>', a) + len('</aside>')
+s = s[:a] + '<aside class="arcade-social" aria-label="대전방"><span class="world-eyebrow">PLAY TOGETHER</span>${window.OjjudaArcadeRooms?.markup()||\'<section class="arcade-rooms"><h3>대전방</h3><p class="note">대전방을 불러오는 중이에요.</p></section>\'}</aside>' + s[b:]
+# Keep channel occupancy while retiring public Arcade messages and reactions.
+a = s.index('if(t.id!=="park")i.on("broadcast"')
+b = s.index('i.subscribe(', a)
+s = s[:a] + s[b:]
+a = s.index('});if(t.id==="park")return;let{data:l,error:s}=await S.from("place_messages")')
+b = s.index('async function ', a)
+assert s[a:b].endswith('}}')
+s = s[:a] + '});}' + s[b:]
+replace('"pl-send"(){if(g.place?.id==="park")return;', '"pl-send"(){if(["park","arcade"].includes(g.place?.id))return;')
+replace('"pl-react"(t){let e=g.place;if(e?.id==="park")return;', '"pl-react"(t){let e=g.place;if(["park","arcade"].includes(e?.id))return;')
+replace('방을 채팅창에 게시했어요. 상대가 참여하면 시작해요.', '대전방을 만들었어요. 상대가 참여하면 시작해요.')
+for old,new in [
+ ('/arcade-rooms.css?v=20261005-chatrooms2','/arcade-rooms.css?v=20261022-rooms1'),
+ ('/arcade-rooms.js?v=20261018-catalog1','/arcade-rooms.js?v=20261022-rooms1'),
+ ('/world-design.css?v=20261022-1','/world-design.css?v=20261022-2'),
+ ('0.46.0-beta','0.46.1-beta'),
+]:
+    assert old in s, old
+    s=s.replace(old,new)
+s=s.replace('/world-park-notes.js?v=20261022-1','/world-park-notes.js?v=20261022-focus1')
+a = s.index('<aside class="arcade-welcome">')
+b = s.index('</aside>',a) + len('</aside>')
+s = s[:a] + s[b:]
+s = s.replace('/world-game-rankings.css?v=20261022-1','/world-game-rankings.css?v=20261022-2')
+assert hashlib.sha256(s.encode()).hexdigest() == '5d159b3ad95763fca07fa8daf63f626747090fee07db754fab0996955ec557cc'
+p.write_text(s)
+print('World focus:',p.stat().st_size,hashlib.sha256(p.read_bytes()).hexdigest())

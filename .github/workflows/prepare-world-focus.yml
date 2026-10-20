@@ -1,0 +1,68 @@
+name: Verify focused Arcade and Park
+on:
+  push:
+    branches: [codex/world-focus-20261022]
+    paths:
+      - '.github/workflows/prepare-world-focus.yml'
+      - 'ops/apply-world-focus.py'
+      - 'ops/world-focus-static.patch'
+      - 'arcade-rooms.*'
+      - 'world-design.css'
+      - 'world-game-rankings.css'
+      - 'park/design.css'
+      - 'tests/**'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply the verified source edits
+        run: |
+          python ops/apply-world-focus.py
+          if git apply --check ops/world-focus-static.patch; then
+            git apply ops/world-focus-static.patch
+          else
+            git apply --reverse --check ops/world-focus-static.patch
+          fi
+      - name: Install test dependencies
+        run: |
+          npm --prefix tests ci --ignore-scripts
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify focused screens and room creation and joining
+        env:
+          WORLD_DESIGN_PROOF_DIR: /tmp/world-design-proof
+          OJJUDA_COPY_PROOF_DIR: /tmp/world-design-proof/park
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/world-three-menus.test.cjs
+          node tests/world-design-ui.test.cjs
+          node tests/arcade-rooms-ui.test.cjs
+          node tests/park-note-chat-ui.test.cjs
+          node tests/world-matgo-visibility-ui.test.cjs
+          git diff --check
+      - name: Save screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: world-focus-proof
+          path: /tmp/world-design-proof
+          retention-days: 3
+      - name: Commit the verified application source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html games/matgo-online.mjs games/matgo-online.html park/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'Apply room-only Arcade and direct Park feed'
+            git push origin HEAD:refs/heads/codex/world-focus-20261022
+          fi

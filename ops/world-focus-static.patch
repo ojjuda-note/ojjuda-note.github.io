@@ -1,0 +1,51 @@
+diff --git a/games/matgo-online.html b/games/matgo-online.html
+index a40598f..32b3f71 100644
+--- a/games/matgo-online.html
++++ b/games/matgo-online.html
+@@ -32,6 +32,6 @@
+ </div>
+ <div id="toast" role="status" hidden></div>
+ <div id="event" class="event" aria-live="polite" hidden></div>
+-<script type="module" src="./matgo-online.mjs?v=20261018-arcade-entry1"></script>
++<script type="module" src="./matgo-online.mjs?v=20261022-rooms1"></script>
+ </body>
+ </html>
+diff --git a/games/matgo-online.mjs b/games/matgo-online.mjs
+index 1a61c6d..c0e18e4 100644
+--- a/games/matgo-online.mjs
++++ b/games/matgo-online.mjs
+@@ -225,8 +225,8 @@ function renderRoom(){
+     if(viewKey===room.id+':waiting')return;viewKey=room.id+':waiting';
+     const quick=room.mode==='quick'&&!arcadeRoom;
+     $('#content').innerHTML=`<section class="lobby waiting"><div class="orbit" aria-hidden="true"></div><h2>${quick?'상대를 찾고 있어요':'상대를 기다리고 있어요'}</h2><p>${quick?'5초 안에 상대가 없으면<br>컴퓨터와 바로 시작해요. <b id="quick-seconds"></b>':'상대가 입장하면 바로 시작해요.<br>이 코드를 친구에게 알려주세요.'}</p>${quick?'':`<strong class="code" id="invite-code">${escape(room.code)}</strong>`}<div class="row">${quick?'':'<button id="copy-code" class="btn gold">코드 복사</button>'}<button id="cancel-wait" class="btn ghost">대기 취소</button></div>${quick?'':'<p class="fine">대결은 두 사람 모두 입장한 뒤 시작해요.</p>'}</section>`;
+-    if(arcadeRoom){$('.waiting h2').textContent=arcadeRoom.title;$('.waiting>p').textContent='오락실 채팅창에 게시됐어요. 상대가 참여하면 시작해요.';$('#invite-code').textContent='#'+arcadeRoom.room_no;$('#copy-code').textContent='방번호 복사';roomLabel();
+-      if(publicLobby){$('.waiting .row').insertAdjacentHTML('beforebegin','<button id="wait-in-chat" class="btn gold">오락실 채팅에서 기다리기</button>');$('#wait-in-chat').onclick=waitInChat;}
++    if(arcadeRoom){$('.waiting h2').textContent=arcadeRoom.title;$('.waiting>p').textContent='오락실 대전방에 등록됐어요. 상대가 참여하면 시작해요.';$('#invite-code').textContent='#'+arcadeRoom.room_no;$('#copy-code').textContent='방번호 복사';roomLabel();
++      if(publicLobby){$('.waiting .row').insertAdjacentHTML('beforebegin','<button id="wait-in-chat" class="btn gold">대전방 목록에서 기다리기</button>');$('#wait-in-chat').onclick=waitInChat;}
+     }
+     const copy=$('#copy-code');if(copy)copy.onclick=async()=>{const code=String(arcadeRoom?.room_no||room.code);try{await navigator.clipboard.writeText(code);toast(arcadeRoom?'방번호를 복사했어요.':'방 코드를 복사했어요.');}catch{toast('방번호 / 코드: '+code);}};$('#cancel-wait').onclick=()=>leave(false);return;
+   }
+diff --git a/park/index.html b/park/index.html
+index 4471470..5b302aa 100644
+--- a/park/index.html
++++ b/park/index.html
+@@ -48,8 +48,8 @@
+ <link rel="stylesheet" href="/park/embedded.css?v=20261004-world1">
+ <link rel="stylesheet" href="/brand-copy.css?v=20261005-copy1">
+ <link rel="stylesheet" href="/paid-ui.css?v=20261006-red1">
+-<link rel="stylesheet" href="/world-design.css?v=20261022-1">
+-<link rel="stylesheet" href="/park/design.css?v=20261022-1">
++<link rel="stylesheet" href="/world-design.css?v=20261022-2">
++<link rel="stylesheet" href="/park/design.css?v=20261022-2">
+ <link rel="stylesheet" href="/world-themes.css?v=20261022-1">
+ <script src="/world-themes.js?v=20261022-1"></script>
+ </head>
+@@ -134,7 +134,7 @@
+         <div class="preview-banner" id="connection-status" role="status" aria-live="polite"><span class="preview-dot"></span><span id="connection-message">카드를 불러오는 중</span></div>
+ 
+         <section id="feed" class="screen" aria-labelledby="feed-title">
+-          <header class="park-heading"><div><span class="world-eyebrow">A MOMENT TO CONNECT</span><h1 id="feed-title">우리의 공원</h1><p class="ojjuda-copy ojjuda-copy--feed">오늘 하루 어땠나요? 괜찮았나요</p><span class="world-theme-chip" data-theme-status></span></div></header>
++          <h1 id="feed-title" class="park-feed-title">공원 카드</h1>
+           <div class="feed-layout">
+             <div class="feed-column">
+               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>

@@ -51,7 +51,7 @@ g.tab='my';H();
     });
     const button = page.locator('[data-act="matgo-open"]');
     assert.equal(await button.count(), 0, 'missing identity initially hides Matgo');
-    await page.locator('#pmsg').fill('계속 쓰던 메시지');
+    assert.equal(await page.locator('#pmsg,#plog').count(),0,'Arcade uses a room list without public chat');
     const register = async () => {
       await page.locator('#wm-birth').fill('900101');
       await page.locator('#wm-code').fill('1');
@@ -66,7 +66,7 @@ g.tab='my';H();
     await page.keyboard.press('Escape');
     await button.waitFor();
     assert.equal(await button.count(), 1);
-    assert.equal(await page.locator('#pmsg').inputValue(), '계속 쓰던 메시지', 'button refresh preserves chat draft');
+    assert.equal(await page.locator('#pmsg,#plog').count(),0,'age-gate refresh does not restore public chat');
     assert.equal(await page.evaluate(() => matgoTest.rankings().matgo.name), '맞고', 'ranking includes newly eligible game');
     await button.click();
     await page.locator('#matgo-overlay iframe').waitFor();
@@ -123,6 +123,6 @@ g.tab='my';H();
     assert.equal(await page.evaluate(() => OjjudaMatgoAccess.visible()), false);
     assert.equal(await button.count(), 0);
     assert.deepEqual(errors, []);
-    console.log('PASS: both identity forms restore Matgo immediately; game opens, chat survives, re-entry recovers, minors and failed saves remain blocked.');
+    console.log('PASS: both identity forms restore Matgo immediately; game opens, room-only Arcade survives, re-entry recovers, minors and failed saves remain blocked.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
