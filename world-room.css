@@ -1,21 +1,3 @@
-/* Current World navigation and illustrated public places. */
-.bottomnav{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
-/* Public places use the approved illustrated scenes without actor or prop overlays. */
-#pstage.place-art-stage{position:relative;aspect-ratio:3/2;min-height:0;max-height:none;overflow:hidden;border:1px solid #e5dce8;border-radius:22px;background:#f3edf3;box-shadow:0 14px 36px -28px #66557966}
-.place-art-viewport{position:absolute;inset:0;overflow:hidden;touch-action:pan-y}.place-art-viewport.is-zoomed{touch-action:none;cursor:grab}.place-art-viewport.is-zoomed:active{cursor:grabbing}
-.place-art-image{display:block;width:100%;height:100%;object-fit:contain;transform-origin:center;user-select:none;-webkit-user-select:none;opacity:0}.place-art-ready .place-art-image{opacity:1}
-.place-art-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 12px;border-radius:10px;background:#fffaf3e8;font-size:12px;color:#71647e;text-align:center}.place-art-status:empty{display:none}
-.place-art-retry{position:absolute;left:50%;top:calc(50% + 35px);transform:translateX(-50%);padding:8px 12px;border:1px solid #e4d9e7;border-radius:10px;background:#fffaf4;color:#6b5c7b;font:inherit;font-size:12px}
-.place-art-tools{display:none;position:absolute;right:10px;bottom:10px;gap:2px;padding:3px;z-index:1;border-radius:12px;border:1px solid #e4d9e7;background:#fffaf4ec}.place-art-ready .place-art-tools{display:flex}.place-art-tools button{height:36px;min-width:36px;padding:0 9px;border:0;border-radius:9px;background:transparent;color:#6b5c7b;font:inherit;font-size:13px;touch-action:manipulation}.place-art-tools button:hover{background:#eee7f6}.place-art-tools button:disabled{opacity:.4}
-#ppanel{border:1px solid #e7dce9;border-radius:22px;background:#fffcf8;overflow:hidden}.home:has(#pstage) .visit-banner{background:#fffaf4;border-color:#e8dce8;border-radius:16px}.home:has(#pstage) .stage-hint{font-size:12px;color:#827589;text-align:center;line-height:1.6}
-@media(max-width:620px){.home:has(#pstage) .visit-banner{flex-wrap:wrap;gap:8px}.place-art-tools{right:6px;bottom:6px}}
-/* Place panels follow the chosen theme while the approved scene stays unchanged. */
-:root[data-theme=dark] #ppanel,:root[data-theme=dark] .home:has(#pstage) .visit-banner{background:var(--surface);border-color:var(--line)}
-:root[data-theme=dark] .home:has(#pstage) .stage-hint{color:var(--ink-2)}
-
-/* Owners see the same closed state without loading their room or records. */
-.owner-closed-home{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:min(65dvh,560px);padding:36px 20px;text-align:center;background:linear-gradient(160deg,#faf7ff,#f0ebf6);gap:12px}
-.owner-closed-home .h2,.owner-closed-home p{margin:0}.owner-closed-home p{color:#756681;font-size:14px}.owner-closed-home .btn{margin-top:8px;min-width:140px;min-height:44px}
-.owner-closed-door{width:154px;height:222px;border:10px solid #d4c7db;border-bottom:0;border-radius:80px 80px 0 0;background:#be9ec4;padding:8px 8px 0;box-shadow:0 14px 20px -18px #715a7b;box-sizing:border-box;margin-bottom:16px}
-.owner-door-leaf{height:100%;border:2px solid #9975a1;border-radius:64px 64px 0 0;background:linear-gradient(110deg,#eadbed,#d8c2df);position:relative;box-shadow:inset 4px 0 7px #fff5}
-.owner-door-leaf::before{content:'';position:absolute;inset:34px 16px 25px;border:2px solid #bc9dc6;border-radius:40px 40px 4px 4px}.owner-door-leaf span{position:absolute;right:12px;top:57%;width:11px;height:11px;border-radius:50%;background:#b98e4c;box-shadow:0 2px 3px #705c7040}
+.bottomnav{grid-template-columns:repeat(3,minmax(0,1fr))}
+.arcade-home{display:grid;gap:16px;min-width:0}.arcade-home .visit-banner{margin:0}.arcade-home .board-leaders{margin:0}.arcade-home #ppanel{position:static;min-width:0;border:1px solid var(--line);border-radius:22px;background:var(--surface);overflow:hidden}
+@media(max-width:620px){.arcade-home .visit-banner{flex-wrap:wrap;gap:8px}}

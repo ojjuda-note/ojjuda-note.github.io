@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const PAGE_SIZE = 20;
-  const activityKinds = { room: '프로필·방', diary: '다이어리', guestbook: '방명록', intro: '소개글', media: '사진·영상', comment: '앨범 댓글', chat: '동네 대화', game: '게임', house_post: '우리집 글' };
+  const activityKinds = {room:'프로필',chat:'대화',game:'게임'};
   const filters = [['all', '전체'], ['today', '오늘 가입'], ['banned', '정지 중'], ['admin', '관리자']];
   const el = (tag, text, className = '') => {
     const node = document.createElement(tag);

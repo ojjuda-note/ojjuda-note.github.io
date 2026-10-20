@@ -7,7 +7,7 @@ const html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 let source=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
 source=source.replaceAll('import.meta.env','({})').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 source=source.slice(0,source.indexOf('j1(()=>H());gm('));
-source+='\nwindow.worldTest={state:g,auth:D,actions:sr,render:H,start:my,model:$,rankGames:worldRankGames};';
+source+='\nwindow.worldTest={state:g,auth:D,actions:sr,render:H,start:my,model:$,rankGames:worldRankGames,adminTabs:adminTabsByArea,adminState:L,adminMarkup:y0};';
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 function fixture(url='https://ojjuda.kr/world.html'){
  const dom=new JSDOM('<div id="app"></div><div id="modal-root"></div><div id="toast"></div>',{url,runScripts:'outside-only',pretendToBeVisual:true});
@@ -17,7 +17,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
  w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});
  w.OjjudaParkNotes={install:()=>({markup:()=>'<section data-park-app>공원 카드</section>',sync(){},route(){},canLeave:()=>true,preserveShell:()=>false})};
- w.eval(fs.readFileSync(path.join(root,'world-board.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'world-game-rankings.js'),'utf8'));
  w.eval(source);
  return dom;
 }
@@ -48,6 +48,12 @@ function fixture(url='https://ojjuda.kr/world.html'){
   t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
   assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
+  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['photo-stages','chats','cards','events','risk','map','archive']);
+  assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
+  t.adminState.area='content';t.adminState.tab='archive';t.adminState.archiveType='posts';
+  assert.ok(t.adminMarkup().includes('world-note-admin'),'archive always uses retained park cards');
+  assert.equal(/house-test|world-life\.js|world-board-comments|world-house-visit/.test(html),false);
+  assert.equal(typeof t.actions['account-login'],'function');
   assert.equal(w.document.querySelector('.sidenav').textContent.includes('undefined'),false,'all navigation icons exist');
  }finally{dom.window.close();}
  for(const [query,expected] of [['?tab=arcade','arcade'],['?tab=my','my'],['?tab=settings','my'],['?place=park','park'],['?tab=park','park'],['?tab=board','arcade'],['?tab=home','arcade']]){
@@ -60,17 +66,17 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const calls=[],opened=[];
   let score=9,allowed=true;
   const client={from(){throw Error('removed board feeds must not load');},schema(){throw Error('removed card feeds must not load');},rpc:async(name,args)=>{assert.equal(name,'community_game_monthly_leaders');calls.push(args.p_games);return {data:{tank:{nick:'순위 회원',score}}};}};
-  w.OjjudaBoard.mount(host,{client,owner:'member',games:{tank:{name:'탱크게임',unit:'승'},mines:{name:'지뢰찾기',unit:'점'}},rankingsOnly:true,authorized:()=>allowed,onOpenGame:id=>opened.push(id)});
+  w.OjjudaGameRankings.mount(host,{client,owner:'member',games:{tank:{name:'탱크게임',unit:'승'},mines:{name:'지뢰찾기',unit:'점'}},rankingsOnly:true,authorized:()=>allowed,onOpenGame:id=>opened.push(id)});
   await tick();await tick();
   assert.equal(calls.length,1,'rankings load with one batch request');
   assert.equal(host.querySelectorAll('.board-best,.board-latest,.board-comics').length,0);
   assert.equal(host.querySelector('h2'),null,'no board heading remains');
   assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'9승');
   host.querySelector('[data-game=tank] button').click();await tick();assert.deepEqual(opened,['tank']);
-  score=10;await w.OjjudaBoard.refresh();assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'10승');
+  score=10;await w.OjjudaGameRankings.refresh();assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'10승');
   allowed=false;host.querySelector('[data-game=tank] button').click();await tick();assert.equal(opened.length,1,'stale access cannot launch games');
-  w.OjjudaBoard.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 순위'));
-  w.OjjudaBoard.mount(null);
+  w.OjjudaGameRankings.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 순위'));
+  w.OjjudaGameRankings.mount(null);
  }finally{dom.window.close();}
  console.log('PASS: three menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
 })().catch(error=>{console.error(error);process.exitCode=1});

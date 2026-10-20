@@ -136,7 +136,7 @@
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
           : isNickname ? '월드에서 사용할 닉네임을 정해 주세요.'
-          : '우리집부터 공원과 오락실까지, 오쭈다 월드에서 함께해요.';
+          : '오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.';
     submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '월드 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
     if ((isSignup || isForgot) && !prepareIdentity()) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';

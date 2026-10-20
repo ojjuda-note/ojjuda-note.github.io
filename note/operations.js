@@ -3,7 +3,7 @@
 
   const instances = new WeakMap();
   const REPORT_STATES = [['all', '전체'], ['open', '접수'], ['reviewed', '확인함'], ['actioned', '조치함'], ['resolved', '처리 완료']];
-  const WORLD_KINDS = { guestbook: '방명록', chat: '동네 대화', user: '사람', media_comment: '사진 댓글', diary: '다이어리', intro: '소개글' };
+  const WORLD_KINDS = { chat: '대화', user: '사람' };
   const REASONS = { abuse: '욕설·비방', sexual: '음란·불쾌', spam: '스팸·광고', impersonation: '사칭', other: '기타' };
   const FEEDBACK_KINDS = { bug: '고장', idea: '아이디어', other: '기타' };
   const FEEDBACK_AI_STATES = { queued: 'Codex 확인 대기', running: '검토 중', needs_review: '검토 필요', blocked: '처리 보류', resolved: '수정 확인' };

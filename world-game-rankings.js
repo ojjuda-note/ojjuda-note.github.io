@@ -1,0 +1,152 @@
+/* Arcade monthly rankings. Uses the current viewer session. */
+(()=>{'use strict';
+const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
+const button=(text,action,cls)=>{const n=el('button',text,cls);n.type='button';n.onclick=action;return n;};
+let dispose=null,controller=null;
+function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
+dispose?.();dispose=null;controller=null;if(!host)return;
+let rankDispose=()=>{},rankPage=0,rankFocusGame=null,alive=true,request=0;
+const active=()=>alive&&host.isConnected&&authorized();
+const status=el('p','','board-status');status.setAttribute('role','status');
+const content=el('div');host.replaceChildren(status,content);
+async function result(query){const {data,error}=await query;if(error)throw error;if(!active())throw Error('stale');return data||[];}
+  function leaders(token){
+   const entries=Object.entries(games);if(!entries.length)return [];
+   const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
+   const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','이번 달','board-rank-caption'));section.append(head);
+   const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);section.append(paper);
+   const pages=[],targets=new Map();
+   for(let start=0;start<entries.length;start+=3){
+    const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
+    table.setAttribute('aria-label',`게임순위 ${pages.length+1}쪽`);
+    for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
+    for(const [id,game] of entries.slice(start,start+3)){
+     const row=el('tr','','board-leader');row.dataset.game=id;
+     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='current_gold'?' · 이번 달 갱신된 보유 골드 기준':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
+     const labelGame=target=>{if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));};labelGame(name);
+     if(typeof onOpenGame==='function'){
+      const play=button(game.name,async()=>{
+       if(!active()||token!==request||play.disabled)return;
+       play.disabled=true;status.textContent='';
+       try{await onOpenGame(id);}catch{if(active()&&token===request)status.textContent='게임을 열지 못했어요. 다시 눌러 주세요.';}
+       finally{play.disabled=false;}
+      },'board-game-open');
+      play.setAttribute('aria-label',game.name+' 게임 열기');labelGame(play);name.replaceChildren(play);
+     }
+     const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{row,nick,score,hasScore:false});
+    }
+   }
+   let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false,initialLoading=true;
+   const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
+   content.append(section);
+   function paint(){
+    rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
+    section.dataset.rankPage=String(index);
+    pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
+   }
+   function schedule(delay=5000){
+    clearTimeout(timer);if(initialLoading||paused||pages.length<2||!active()||!section.isConnected)return;
+    timer=setTimeout(()=>{const rect=section.getBoundingClientRect();if(document.hidden||hover||dragging||section.contains(document.activeElement)||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}go(index+1);},delay);
+   }
+   function go(value){index=(value+pages.length)%pages.length;track.style.transform=`translateX(-${index*100}%)`;paint();schedule(motion.matches?5000:5280);}
+   const controller=new AbortController(),options={signal:controller.signal};
+   section.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')hover=true;},options);
+   section.addEventListener('pointerleave',()=>{hover=false;},options);
+   viewport.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;touch={x:e.clientX,y:e.clientY};dragging=true;viewport.setPointerCapture(e.pointerId);},options);
+   viewport.addEventListener('pointerup',e=>{if(!touch)return;const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch=null;dragging=false;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)*1.3)go(index+(dx<0?1:-1));else schedule();},options);
+   viewport.addEventListener('pointercancel',()=>{touch=null;dragging=false;schedule();},options);
+   section.addEventListener('focusout',()=>schedule(),options);
+   document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
+   motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
+   const playing=()=>document.body.classList.contains('gaming')||document.body.classList.contains('matgo-open');
+   let gaming=playing();
+   window.addEventListener('ojjuda:game-record-saved',event=>{
+    if(event.detail?.owner!==owner||!active()||token!==request)return;
+    if(targets.has(event.detail?.game))rankFocusGame=event.detail.game;
+    if(!playing())void home();
+   },options);
+   const observer=new MutationObserver(()=>{
+    const next=playing();
+    if(gaming&&!next&&active()&&token===request)void home();
+    gaming=next;
+   });
+   observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+   let fitFrame=0;
+   function fitScores(){
+    cancelAnimationFrame(fitFrame);
+    fitFrame=requestAnimationFrame(()=>{
+     if(!active()||token!==request)return;
+     for(const {score} of targets.values()){
+      const text=score.querySelector('.board-score-value');if(!text)continue;
+      const style=getComputedStyle(score),width=score.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+      if(width<=0)continue;
+      text.style.fontSize='16px';text.style.whiteSpace='nowrap';
+      const natural=text.scrollWidth;
+      const size=Math.max(11,Math.min(16,16*(width-1)/Math.max(1,natural)));
+      text.style.fontSize=size+'px';
+      if(natural*size/16>width-1)text.style.whiteSpace='normal';
+     }
+    });
+   }
+   const resize=new ResizeObserver(fitScores);resize.observe(viewport);
+   document.fonts?.ready.then(fitScores);
+   rankDispose=()=>{clearTimeout(timer);cancelAnimationFrame(fitFrame);resize.disconnect();controller.abort();observer.disconnect();};paint();schedule();
+   function orderByRecords(){
+    if(!active()||token!==request)return;
+    const ordered=[...entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
+    pages.forEach((page,i)=>{
+     const body=page.querySelector('tbody'),rows=ordered.slice(i*3,i*3+3).map(([id])=>targets.get(id).row);
+     if(rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
+    });
+   }
+   // Fetch the visible games in one request instead of competing with the feed
+   // for thirty separate HTTP/database connections.
+   const batch=result(client.rpc('community_game_monthly_leaders',{p_games:entries.map(([id])=>id)}));
+   const loads=entries.map(async([id,game])=>{
+    const target=targets.get(id),{nick,score}=target;
+    async function load(initial=false){
+     nick.textContent='불러오는 중…';
+     try{
+      const ranking=await (initial?batch:result(client.rpc('community_game_monthly_leaders',{p_games:[id]})));
+      if(!active()||token!==request)return;
+      const valid=row=>row&&row.score!==null&&row.score!==''&&Number.isFinite(Number(row.score));
+      const top=ranking?.[id]||null;
+      target.hasScore=!!valid(top);
+      if(target.hasScore){
+       nick.textContent=top.nick||'익명';nick.title=(game.rankingBasis==='current_gold'?'이번 달 보유 골드 1등 · ':game.rankingBasis==='current_streak'?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');score.replaceChildren(el('span',Number(top.score).toLocaleString('ko-KR')+game.unit,'board-score-value'));score.title=score.textContent;
+      }else{
+       score.textContent='—';score.removeAttribute('title');nick.removeAttribute('title');
+       nick.replaceChildren(el('span','이번 달 기록 없음','board-leader-empty'));
+      }
+     }catch{if(active()&&token===request)nick.replaceChildren(button('다시 불러오기',()=>load(),'board-leader-retry'));}
+     finally{orderByRecords();fitScores();}
+    }
+    await load(true);
+   });
+   return [Promise.all(loads).then(()=>{
+    if(!active()||token!==request)return;
+    initialLoading=false;orderByRecords();
+    if(rankFocusGame&&targets.has(rankFocusGame)){
+     const row=targets.get(rankFocusGame).row;
+     index=pages.findIndex(page=>page.contains(row));rankFocusGame=null;paint();
+    }
+    schedule();
+   })];
+  }
+
+async function home(){rankDispose();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token));return active()&&token===request;}
+dispose=()=>{rankDispose();alive=false;request++;};
+controller={refresh:home};
+if(!client||!owner){status.textContent='로그인하면 게임 순위를 볼 수 있어요.';content.append(Object.assign(el('a','로그인','btn'),{href:'/?auth=login&next=world'}));return;}
+void home();
+  const matgoAccess=window.OjjudaMatgoAccess;
+  if((!games.matgo||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
+   void matgoAccess.check().then(member=>{
+    if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
+    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
+    void home();
+   }).catch(()=>{});
+  }
+}
+window.OjjudaGameRankings={mount,back:()=>false,refresh:()=>controller?.refresh()??Promise.resolve(false)};
+})();

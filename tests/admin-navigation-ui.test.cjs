@@ -173,7 +173,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.getByLabel('accounts 합성 입력', { exact: true }).inputValue(), '저장되지 않은 변경');
     acceptDialogs = true;
     await area('content');
-    assert.deepEqual(await current(), { area: 'content', tab: 'review' }, 'accepting discard permits the requested group');
+    assert.deepEqual(await current(), { area: 'content', tab: 'photo-stages' }, 'accepting discard permits the requested group');
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
@@ -188,8 +188,6 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await assertRefreshPreservesHost('review');
-    await tab('house-content'); await assertRefreshPreservesHost('house-content');
     await tab('photo-stages'); await assertRefreshPreservesHost('photo-stages');
     await area('support'); await assertRefreshPreservesHost('reports');
     await tab('feedback'); await assertRefreshPreservesHost('support');
@@ -200,8 +198,8 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await tab('risk');
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'risk');
     assert.deepEqual(await current(), { area: 'content', tab: 'risk' });
-    await page.locator('[data-act="adm-content-kind"][data-v="posts"]').click();
-    assert.equal(await page.evaluate(() => worldTest.admin.pk), 'risk');
+    await page.locator('[data-act="adm-content-kind"][data-v="chats"]').click();
+    assert.equal(await page.evaluate(() => worldTest.admin.cr), '__risk__');
     assert.equal(await page.locator('#world-note-admin').count(), 0);
     await page.locator('[data-act="adm-content-kind"][data-v="chats"]').click();
     assert.equal(await page.evaluate(() => worldTest.admin.cr), '__risk__');
@@ -226,30 +224,9 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await current(), { area: 'payment', tab: 'settings' });
     assert.equal(await page.locator('#adm-free').count(), 1);
 
-    // The real legacy editor's asynchronous save uses the same global navigation guard.
-    await area('content'); await tab('posts');
-    await page.locator('[data-act="adm-edit"]').click();
-    await page.locator('#ae-body').fill('수정 후 저장할 검증용 내용');
-    await page.locator('[data-act="adm-edit-save"]').click();
-    await page.waitForFunction(() => typeof fixture.editResult === 'function');
-    await area('support');
-    assert.deepEqual(await current(), { area: 'content', tab: 'posts' }, 'in-flight legacy save cannot be abandoned by group navigation');
-    assert.equal(await page.locator('#ae-body').inputValue(), '수정 후 저장할 검증용 내용');
-    await page.evaluate(() => fixture.editResult({ ok: true }));
-    await page.waitForFunction(() => !document.getElementById('ae-body'));
-    await area('support');
-    assert.deepEqual(await current(), { area: 'support', tab: 'reports' }, 'navigation resumes after the save settles');
-
-    // A disappearing final row must return to the last nonempty archive page.
-    await area('content');
-    await page.evaluate(() => { worldTest.admin.ao = 20; worldTest.admin.ar = 'all'; fixture.archiveCalls = []; });
-    await tab('archive');
-    await page.getByText('보관 검증 글 0', { exact: true }).waitFor();
-    assert.equal(await page.evaluate(() => worldTest.admin.ao), 0);
-    assert.deepEqual(await page.evaluate(() => fixture.archiveCalls), [{ reason: 'all', offset: 20 }, { reason: 'all', offset: 0 }]);
-    assert.equal(await page.locator('[data-act="adm-archive-page"][data-v="prev"]').isDisabled(), true);
-    assert.equal(await page.locator('[data-act="adm-archive-page"][data-v="next"]').isDisabled(), true);
-    assert.equal(await page.getByText('1~20 / 20', { exact: true }).count(), 1, 'page range never remains 21~20');
+    await area('content'); await tab('archive');
+    assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'archive');
+    assert.equal(await page.locator('[data-act="adm-content-kind"]').count(), 0);
 
     await page.goto('https://fixture.test/world.html?admin=note-actions'); await loaded(); await mounted('activity');
     assert.deepEqual(await current(), { area: 'operations', tab: 'activity' });

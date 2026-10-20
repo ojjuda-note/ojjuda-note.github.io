@@ -123,49 +123,25 @@ async function worldFixture(context, mobile, errors) {
   if (screenshotDirectory) await page.screenshot({ path: path.join(screenshotDirectory, `world-${mobile ? 'mobile' : 'desktop'}.png`), fullPage: true });
 
   await exerciseGroups(page, '.my-hub');
-  for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-guestbook', 'n-friend']) {
+  for (const id of ['p-nick', 'p-bio', 'p-mt', 'n-friend']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing control ${id} stays reachable`);
   }
   assert.equal(await page.locator('[data-park-action]').count(),0,'menu omits park activities');
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
-  assert.equal(await page.locator('#n-guestbook').isChecked(), true);
   assert.equal(await page.locator('#n-friend').isChecked(), false);
-  const expectedActions = ['account-delete-open', 'accent', 'defvis', 'door-toggle', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'accent', 'logout', 'member-info-open', 'mood-pick', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, display, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
-  for (const href of ['/guide.html', 'terms.html', 'privacy.html', 'https://github.com/songys/Chatbot_data']) {
+  for (const href of ['/guide.html', 'terms.html', 'privacy.html']) {
     assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
   }
   assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');
   await uniqueIds(page);
   await fitsViewport(page, 'expanded World menu with a long email address');
 
-  const door = page.locator('[data-act="door-toggle"]');
-  assert.equal(await door.isEnabled(), true, 'members can reach the restored visit setting');
-  assert.equal(await door.textContent(), '문 닫기');
-  assert.equal(await door.getAttribute('aria-pressed'), 'false');
-  assert.match(await page.locator('[data-my-group="privacy"]').textContent(), /현재 문이 열려 있어요\./);
-  await door.click();
-  await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
-  assert.equal(await door.getAttribute('aria-pressed'), 'false', 'canceling keeps the house open');
-  assert.equal(await page.evaluate(() => menuSaves), 0);
-  await door.click();
-  await page.getByRole('dialog').getByRole('button', { name: '문 닫기', exact: true }).click();
-  assert.equal(await door.getAttribute('aria-pressed'), 'true');
-  assert.equal(await door.textContent(), '문 열기');
-  assert.match(await page.locator('[data-my-group="privacy"]').textContent(), /현재 문이 닫혀 있어요\./);
-  assert.equal(await page.evaluate(() => menuSaves), 1, 'confirmed closure saves once');
-  await door.click();
-  assert.equal(await door.getAttribute('aria-pressed'), 'false');
-  assert.equal(await door.textContent(), '문 닫기');
-  assert.equal(await page.evaluate(() => menuSaves), 2, 'opening the house saves once');
-  assert.match(await page.locator('[data-my-group="profile"]').textContent(), /주소록·가계부는 이 기기에 저장돼요/);
-  await page.evaluate(() => { D.doorReady = false; renderMy(); });
-  assert.equal(await door.isDisabled(), true, 'unavailable server settings cannot be changed');
-  await page.evaluate(() => { D.doorReady = true; D.doorWritable = false; renderMy(); });
-  assert.equal(await door.isDisabled(), true, 'unavailable update permission disables the setting');
-  await page.evaluate(() => { D.doorWritable = true; renderMy(); });
+  assert.equal(await page.locator('[data-act="door-toggle"]').count(), 0);
+  assert.equal(await page.locator('#n-guestbook').count(), 0);
 
   // Existing setting handlers rerender My; expanded sections must not snap shut.
   await page.evaluate(() => { $.settings.theme = 'dark'; renderMy(); });
