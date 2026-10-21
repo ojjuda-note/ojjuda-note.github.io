@@ -16,7 +16,7 @@
     root.document.head.append(style);
   }
   let client = null, subscription = null, pending = null, revision = 0;
-  let memberId = null, authUserId = null, checkedAt = 0;
+  let memberAge = null, memberId = null, authUserId = null, checkedAt = 0;
   const listeners = new Set();
   const messages = {
     login: '맞고는 로그인한 만 19세 이상 회원만 이용할 수 있어요.',
@@ -32,8 +32,10 @@
   function invalidate(code = 'login') {
     revision++;
     memberId = null;
+    memberAge = null;
     checkedAt = 0;
     root.document?.documentElement?.removeAttribute('data-ojjuda-adult');
+    root.document?.documentElement?.removeAttribute('data-ojjuda-poker');
     root.document?.querySelectorAll('[data-act="matgo-open"],.board-comics').forEach(button => button.remove());
     for (const listener of listeners) { try { listener(reject(code)); } catch (_) {} }
   }
@@ -92,9 +94,12 @@
         if (result.data.age < 19) throw reject('underage');
         if (attempt !== revision) throw reject('login');
         memberId = userId;
+        memberAge = result.data.age;
+        if(memberAge>=20)root.document?.documentElement?.setAttribute('data-ojjuda-poker','true');
+        else root.document?.documentElement?.removeAttribute('data-ojjuda-poker');
         root.document?.documentElement?.setAttribute('data-ojjuda-adult','true');
         checkedAt = Date.now();
-        return { userId };
+        return { userId, age: memberAge };
       } catch (error) {
         const code = Object.hasOwn(messages, error?.code) ? error.code : 'unavailable';
         // A response for an old account must not revoke a newer account's result.
@@ -111,7 +116,7 @@
     return check();
   }
   root.OjjudaMatgoAccess = Object.freeze({
-    configure, check, refresh, allowed, visible: () => !!memberId, getClient,
+    configure, check, refresh, allowed, visible: (minimumAge = 19) => !!memberId && memberAge >= minimumAge, getClient,
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
   });
 })(window);
