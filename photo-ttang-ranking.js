@@ -23,7 +23,7 @@
   const receive=e=>{
    if(disposed||e.origin!==location.origin||e.source!==frame.contentWindow||e.data?.type!=='ojjuda:photottang:clear'||!authorized())return;
    const stage=e.data.stage;
-   if(typeof stage!=='string'||! /^(?:[0-9]|1[0-9]|c[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(stage))return;
+   if(typeof stage!=='string'||! /^(?:[0-9]|[1-3][0-9]|c[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(stage))return;
    void save(stage);
   };
   status?.addEventListener('click',retry);addEventListener('message',receive);

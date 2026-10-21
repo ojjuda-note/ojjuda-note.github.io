@@ -48,6 +48,8 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
    create function public.community_game_monthly_ranking(p_game text) returns json language sql stable security invoker set search_path='' as $$select ojjuda_game_internal.community_game_monthly_ranking(p_game)$$;`);
   const rankMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_monthly_ranking.sql'))),'utf8');
   await db.exec(rankMigration);await db.exec(rankMigration);
+  const menMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_men_20.sql'))),'utf8');
+  await db.exec(menMigration);await db.exec(menMigration);
   const uploadMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_unlimited_uploads.sql'))),'utf8');
   await db.exec(uploadMigration);await db.exec(uploadMigration);
   async function as(actor,sql,params=[],role='authenticated'){
@@ -92,7 +94,7 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   assert.deepEqual(await rank(A),[],'empty means no invented historical records');
   for(const actor of [E,F,G]){await assert.rejects(()=>clear(actor,'0'),/not_allowed/);await assert.rejects(()=>rank(actor),/not_allowed/);}
   await assert.rejects(()=>as(null,"select photo_game_clear('0')",[],'anon'),/permission denied/);
-  await assert.rejects(()=>clear(A,'try123'),/invalid_stage/);await assert.rejects(()=>clear(A,'20'),/invalid_stage/);
+  await assert.rejects(()=>clear(A,'try123'),/invalid_stage/);await assert.rejects(()=>clear(A,'40'),/invalid_stage/);
   assert.deepEqual(await clear(A,'0'),{ok:true,score:1});
   assert.equal((await clear(A,'0')).score,1,'repeated messages and replays are idempotent');
   assert.equal((await clear(A,'19')).score,2,'all builtin stages are supported');
@@ -100,6 +102,11 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   await assert.rejects(()=>clear(C,'c'+privateStage.id),/invalid_stage/);
   await clear(B,'c'+friends.id);await clear(B,'c'+pending.id);
   await assert.rejects(()=>clear(C,'c'+friends.id),/invalid_stage/);
+  await assert.rejects(()=>clear(E,'20'),/not_allowed/);
+  await assert.rejects(()=>clear(A,'020'),/invalid_stage/);
+  for(let key=20;key<40;key++)await clear(C,String(key));
+  assert.equal((await clear(C,'39')).score,20,'all 20 new male photos count independently without replay inflation');
+  await db.exec("delete from ojjuda_photo_internal.game_clears where user_id='"+C+"'");
   let leaders=await rank(B);assert.deepEqual(leaders.map(r=>[r.score,r.me]),[[3,false],[2,true]]);
   assert.deepEqual(Object.keys(leaders[0]).sort(),['me','nick','score','source'],'photos and user ids never appear in rankings');
   await assert.rejects(()=>as(A,'select * from ojjuda_photo_internal.game_clears'),/permission denied/);

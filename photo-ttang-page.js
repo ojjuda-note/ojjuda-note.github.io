@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261018-photo-select1';
+  const gameUrl = '/games/photo-ttang.html?v=20261021-photo-men1';
   const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
@@ -83,7 +83,7 @@
       if (!demo && !candidate.contentDocument.querySelector('[data-photo-entry]')) {
         const entry = candidate.contentDocument.createElement('script');
         entry.dataset.photoEntry = '';
-        entry.src = '/photo-ttang-entry.js?v=20261018-photo-select1';
+        entry.src = '/photo-ttang-entry.js?v=20261021-photo-men1';
         candidate.contentDocument.head.append(entry);
       }
       if (demo) {
