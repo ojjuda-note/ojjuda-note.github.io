@@ -84,6 +84,8 @@ def main():
         aws_access_key_id=os.environ['SUPABASE_S3_ACCESS_KEY'],aws_secret_access_key=os.environ['SUPABASE_S3_SECRET_KEY'],
         config=Config(signature_version='s3v4',s3={'addressing_style':'path'},request_checksum_calculation='when_required',
                       response_checksum_validation='when_required',retries={'max_attempts':3,'mode':'standard'}))
+    for bucket in BUCKETS:
+        storage.head_bucket(Bucket=bucket)
     with psycopg.connect(url, sslmode='require', connect_timeout=15, autocommit=True) as conn:
         if not conn.execute("select pg_try_advisory_lock(hashtext('ojjuda_trash_photo_cleanup'))").fetchone()[0]:
             print('Another cleanup is running');return

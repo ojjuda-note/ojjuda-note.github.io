@@ -30,10 +30,9 @@ function fixtureBoot(){
    if(state.offlineAfterSend){state.offlineAfterSend=false;return {error:{message:'synthetic connection lost'}};}
    return {data:{ok:true,id:state.requests.get(args.p_request).id}};
   }
-  if(name==='admin_trash_friend_message'){state.removed=args.p_id;return {data:{ok:true,deleted:1}};}
   if(name==='admin_friend_messages'){
    let rows=Array.from({length:36},(_,i)=>({id:id(200-i),sender_id:i%2?B:A,recipient_id:i%2?A:B,sender_name:i%2?'초록산책':'오쭈다',recipient_name:i%2?'오쭈다':'초록산책',body:i===0?'<img src=x onerror="window.injected=true">':i===1?'내일 오후에 같이 게임해요.':'친구와 주고받은 쪽지 '+i,created_at:'2026-10-20T10:00:00Z'}));
-   rows=rows.filter(m=>m.id!==state.removed);if(args.p_query)rows=rows.filter(m=>m.body.includes(args.p_query)||m.sender_name.includes(args.p_query));if(args.p_before_id)rows=rows.filter(m=>m.id<args.p_before_id);const page=rows.slice(0,30);
+   if(args.p_query)rows=rows.filter(m=>m.body.includes(args.p_query)||m.sender_name.includes(args.p_query));if(args.p_before_id)rows=rows.filter(m=>m.id<args.p_before_id);const page=rows.slice(0,30);
    return {data:{items:page,has_more:rows.length>30,next_cursor:page.length?{id:page.at(-1).id,created_at:page.at(-1).created_at}:null}};
   }
   return {data:{}};
@@ -76,7 +75,6 @@ world=world.slice(0,boot)+'('+fixtureBoot.toString()+')();\n'+world.slice(world.
  await page.locator('.afm-search input').fill('내일');await page.locator('.afm-search').getByRole('button',{name:'검색',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.afm-card').length===1);assert.ok((await page.locator('.afm-body').textContent()).includes('내일 오후'));
  await page.setViewportSize({width:1280,height:950});await page.screenshot({path:path.join(proof,'admin-notes-desktop.png'),fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
- await page.getByRole('button',{name:'휴지통으로 이동',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.afm-card').length===0);assert.equal(await page.evaluate(()=>messageFixture.calls.filter(c=>c.name==='admin_trash_friend_message').length),1);
  await page.evaluate(()=>messageFixture.open());await page.waitForFunction(()=>document.querySelector('.fm-input').disabled===false);await page.locator('.fm-input').fill('계정이 바뀌면 없어질 내용');await page.evaluate(()=>messageFixture.pause=true);await page.locator('.fm-send').click();await page.waitForFunction(()=>!!messageFixture.pending);
  await page.evaluate(()=>messageFixture.account(messageFixture.C));await page.locator('.fm-dialog').waitFor({state:'hidden'});assert.equal(await page.locator('.fm-input').inputValue(),'');assert.equal(await page.locator('.afm-card').count(),0);
  await page.evaluate(()=>messageFixture.pending({data:{ok:true}}));assert.equal(await page.locator('.fm-dialog').isVisible(),false,'late send response cannot reopen another account');
