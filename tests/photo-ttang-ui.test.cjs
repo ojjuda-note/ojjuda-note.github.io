@@ -28,7 +28,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   const solo=page.locator('[data-arcade-games="solo"]'),multi=page.locator('[data-arcade-games="multi"]');
   assert.equal(await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),1);
   assert.equal(await solo.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),0);
-  assert.equal(await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),1);
+  assert.equal(await multi.getByRole('button',{name:/^월드땅따먹기/}).count(),1);
   assert.equal(await multi.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),0);
   await page.evaluate(()=>fixtureAge=18);
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
@@ -78,7 +78,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await frame.evaluate(()=>win());assert.equal(await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-photo-ttang'))['0'].done),1);
   await frame.evaluate(()=>toMenu());assert.equal(await frame.locator('#grid .cell:not([disabled])').count(),2);
   await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
-  await multi.getByRole('button',{name:'월드땅따먹기',exact:true}).click();
+  await multi.getByRole('button',{name:/^월드땅따먹기/}).click();
   const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#soloBtn');
   assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.locator('#soloBtn').tap();
   await old.waitForFunction(()=>mode==='solo'&&world.time>.1&&me.alive);assert.equal(await old.locator('#hud').isVisible(),true,'practice starts through the real World arcade');

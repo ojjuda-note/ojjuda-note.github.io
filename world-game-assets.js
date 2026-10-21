@@ -10,7 +10,7 @@
   tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261018-arcade-entry1'],
   spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261009-entry1'],
   ttang:['/ttang-bridge.js?v=20261018-arcade-entry1'],
-  photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-men1','/photo-ttang-bridge.js?v=20261021-photo-men1'],
+  photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261021-photo-idols1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261006-bird1'],
   breakout:[...controls,'/games/breakout-game.js?v=20261007-flow1'],
