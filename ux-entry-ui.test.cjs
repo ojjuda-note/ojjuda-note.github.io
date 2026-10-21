@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://entry.test';
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/world-park-notes.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab===\'place\'?g.place?.id:g.tab,guest:()=>({guest:D.parkGuest,user:D.user,online:D.online}),start:()=>om(()=>{},H)};H();'+world.slice(world.indexOf('</script>',boot));
+world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g.place?.id:g.tab,guest:()=>({guest:D.parkGuest,user:D.user,online:D.online}),start:()=>om(()=>{},H)};'+world.slice(world.indexOf('</script>',boot));
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
