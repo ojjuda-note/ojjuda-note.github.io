@@ -1,0 +1,50 @@
+name: Verify current administrator features
+on:
+  push:
+    branches: [codex/admin-current-features]
+    paths: ['ops/current-admin-edits.json', 'ops/apply-current-admin.py', '.github/workflows/verify-current-admin.yml', 'tests/admin-current-features.test.cjs']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed administrator cleanup
+        run: python ops/apply-current-admin.py
+      - name: Install test dependencies
+        run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: |
+          npx --prefix tests playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify all current administrator screens
+        env:
+          ADMIN_SCREENSHOT_DIR: /tmp/current-admin-proof
+        run: |
+          result=0
+          for test in admin-current-features world-three-menus inline-scripts admin-navigation-ui world-admin-refresh-ui admin-ui admin-accounts-ui admin-activity-ui admin-connections-ui note-admin-workflow-ui friend-messages-ui photo-stages-admin-ui service-notice-ui feedback-ai-ui; do
+            node "tests/$test.test.cjs" || result=1
+          done
+          git diff --check || result=1
+          exit "$result"
+      - name: Save administrator screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: current-admin-proof
+          path: /tmp/current-admin-proof
+          retention-days: 3
+      - name: Commit verified cleanup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Align administrator screens with current Ojjuda features'
+            git push origin HEAD:refs/heads/codex/admin-current-features
+          fi
