@@ -48,6 +48,11 @@ world=world.slice(0,boot)+'('+fixtureBoot.toString()+')();\n'+world.slice(world.
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',dialog=>dialog.accept());
  await page.goto('https://messages.test/world.html');await page.waitForFunction(()=>window.messageFixture);
  assert.equal(await page.locator('[data-my-group=themes]').count(),0);
+ assert.equal(await page.getByRole('button',{name:'설정',exact:true}).isVisible(),true,'unread notifications preserve the Settings accessible name');
+ await page.setViewportSize({width:1280,height:850});
+ assert.equal(await page.getByRole('button',{name:'내 프로필과 설정',exact:true}).isVisible(),true,'profile shortcut retains its own accessible name');
+ assert.equal(await page.getByRole('button',{name:'설정',exact:true}).isVisible(),true,'desktop Settings retains its accessible name');
+ await page.setViewportSize({width:390,height:850});
  assert.equal(await page.locator('[data-friend-message]').count(),1);
  await page.locator('[data-friend-message]').click();await page.waitForFunction(()=>document.querySelector('.fm-list').textContent.includes('오늘도 반가워'));
  assert.equal(await page.locator('.fm-dialog').getByText('초록산책님과의 쪽지').isVisible(),true);

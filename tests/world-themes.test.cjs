@@ -5,6 +5,7 @@ const dom=new JSDOM('<div data-world-theme-settings></div><p data-theme-greeting
 const w=dom.window;
 try{
  w.localStorage.setItem('ojjuda-world-theme-v1','summer');
+ let colorListener;const colorMode={matches:false,addEventListener(type,listener){assert.equal(type,'change');colorListener=listener;}};w.matchMedia=query=>{assert.equal(query,'(prefers-color-scheme: dark)');return colorMode;};
  let now=Date.parse('2026-10-08T14:59:59Z'),scheduled,delay;const RealDate=w.Date;w.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};w.setTimeout=(callback,ms)=>{scheduled=callback;delay=ms;return 1;};w.clearTimeout=()=>{};
  w.eval(source);w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
  const t=w.OjjudaThemes,at=(d,m='auto')=>t.resolve(d+'T03:00:00Z',m);
@@ -21,6 +22,9 @@ try{
  assert.equal(t.choose,undefined);assert.equal(t.getMode(),'auto');assert.equal(t.getCurrent(),'autumn');
  assert.equal(w.localStorage.getItem('ojjuda-world-theme-v1'),null,'old manual choice removed');
  const draft=w.document.getElementById('draft');draft.value='작성 중인 내용';
+ colorMode.matches=true;colorListener();assert.equal(w.document.documentElement.dataset.theme,'dark');assert.equal(draft.value,'작성 중인 내용');
+ w.document.documentElement.dataset.accent='lilac';t.syncAppearance();assert.equal(w.document.documentElement.dataset.accent,'pink','legacy accent is ignored');
+ colorMode.matches=false;colorListener();assert.equal(w.document.documentElement.dataset.theme,undefined);
  assert.ok(delay>=1000&&delay<=1200,'next Korean midnight is scheduled');
  now=Date.parse('2026-10-08T15:00:01Z');scheduled();assert.equal(t.getCurrent(),'hangeul');
  assert.equal(w.document.documentElement.dataset.worldTheme,'hangeul');assert.equal(draft.value,'작성 중인 내용');assert.equal(w.document.getElementById('draft'),draft);

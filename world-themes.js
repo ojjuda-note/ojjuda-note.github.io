@@ -48,7 +48,15 @@ function resolve(value=new Date()){
 // Older devices may still have a manual choice saved; calendar selection always wins.
 try{localStorage.removeItem(STORAGE);}catch{}
 let timer=0,current='';
+const colorMode=window.matchMedia?.('(prefers-color-scheme: dark)');
+function syncAppearance(){
+ const root=document.documentElement;
+ root.dataset.accent='pink';
+ if(colorMode?.matches)root.dataset.theme='dark';else delete root.dataset.theme;
+}
+colorMode?.addEventListener?.('change',syncAppearance);
 function apply(){
+ syncAppearance();
  current=resolve();document.documentElement.dataset.worldTheme=current;
  document.querySelectorAll('[data-theme-greeting]').forEach(n=>{n.textContent=catalog[current].copy;});
 }
@@ -59,6 +67,6 @@ function schedule(){
 function sync(){apply();schedule();}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync();});
 window.addEventListener('pageshow',sync);
-window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
+window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
 sync();
 })();
