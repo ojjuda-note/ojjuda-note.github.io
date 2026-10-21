@@ -36,6 +36,40 @@ assert.throws(()=>short.act('raise',300));short.act('call');short.act('call');as
 const view=aiView(Object.assign(short,{phase:'betting',turn:1}));
 short.players[0].cards=[51,50,49,48];short.deck.reverse();
 assert.deepEqual(aiView(short),view,'AI view ignores opponents hidden cards and deck');
+assert.deepEqual(chooseAI(aiView(short),seed(98)),chooseAI(view,seed(98)),'hidden changes cannot affect a decision');
+
+// Behavioural samples: bluffing must exist without making every opponent
+// aggressive, and easy play must leave more opportunities to the player.
+const weak=hand(14,11,9,7,5,3,2),strong=hand(10,10,10,6,6,2,13);
+const sample=(cards,seat=1,difficulty='normal',extra={})=>{
+  const input={seat,raises:0,street:7,pot:1000,cards,opponents:[{up:hand(13,8,5,2),stack:5000}],stack:5000,bet:0,
+    legal:{need:0,call:0,check:true,mayRaise:true,minTo:100,maxTo:5000,allIn:true},...extra};
+  const rng=seed(782341),counts={raise:0,check:0,call:0,fold:0},sizes=new Set();
+  for(let i=0;i<2000;i++){
+    const action=chooseAI(input,rng,difficulty);counts[action.type]++;
+    if(action.type==='raise'){
+      assert.ok(action.to>=input.legal.minTo&&action.to<=input.legal.maxTo&&Number.isInteger(action.to),'all bets stay legal');
+      sizes.add(action.to);
+    }
+  }
+  return {...counts,sizes};
+};
+assert.equal(bestHand(weak).category,0);
+const cautious=sample(weak,1),bold=sample(weak,2),good=sample(strong,1),easyGood=sample(strong,1,'easy');
+assert.ok(cautious.raise>40&&cautious.raise<260,'a high-card hand can occasionally bluff without constant aggression');
+assert.ok(bold.raise>cautious.raise*1.3,'Duri bluffs more often than Haru');
+assert.ok(cautious.check>1600,'most weak hands still check');
+assert.ok(good.raise>300&&good.raise<850&&good.check>1000,'strong hands mix value betting with slow play');
+assert.ok(good.sizes.size>=3,'bet size no longer gives the same signal every turn');
+assert.ok(easyGood.raise<good.raise*.8,'easy opponents press a strong hand less often');
+assert.ok(Math.max(...easyGood.sizes)<Math.max(...good.sizes),'easy value bets are smaller');
+const pressure={raises:1,legal:{need:100,call:100,check:false,mayRaise:true,minTo:200,maxTo:5000,allIn:true}};
+const carefulCall=sample(weak,1,'normal',pressure),looseCall=sample(weak,3,'normal',pressure),easyCall=sample(weak,1,'easy',pressure);
+assert.ok(looseCall.call>carefulCall.call*1.5,'Bori calls weak hands more loosely');
+assert.ok(easyCall.call>carefulCall.call*1.4,'easy opponents make more loose calls');
+assert.equal(looseCall.raise,0,'weak hands do not start a repeated bluffing war');
+assert.equal(sample(weak,2,'normal',{stack:100,legal:{need:0,call:0,check:true,mayRaise:true,minTo:100,maxTo:100,allIn:true}}).raise,0,'bluffing never forces a short stack all-in');
+console.log('Poker AI: bluff/slow-play mix, distinct styles, variable bets, easy pressure and hidden-card independence pass.');
 
 let hands=0,allIns=0,early=0;
 for(let trial=1;trial<=700;trial++){

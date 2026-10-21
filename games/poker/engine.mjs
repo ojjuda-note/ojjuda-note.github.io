@@ -196,10 +196,17 @@ export function chooseDiscard(cards){
 // The AI receives only its own cards and public opponent cards. No deck/hole access.
 export function aiView(game){
   const me=game.turn;
-  return {street:game.street,pot:game.pot,legal:game.legal(),cards:[...game.players[me].cards],opponents:game.players.filter((p,i)=>i!==me&&!p.folded).map(p=>({up:[...p.up],stack:p.stack})),stack:game.players[me].stack,bet:game.players[me].bet};
+  return {seat:me,raises:game.raises,street:game.street,pot:game.pot,legal:game.legal(),cards:[...game.players[me].cards],opponents:game.players.filter((p,i)=>i!==me&&!p.folded).map(p=>({up:[...p.up],stack:p.stack})),stack:game.players[me].stack,bet:game.players[me].bet};
 }
+// Stable personalities: Haru is cautious, Duri bluffs more, Bori calls loosely.
+const AI_STYLES=[
+  {aggression:.27,bluff:.07,curiosity:.12,caution:.03},
+  {aggression:.37,bluff:.14,curiosity:.15,caution:0},
+  {aggression:.24,bluff:.09,curiosity:.28,caution:-.03}
+];
 export function chooseAI(view,random=Math.random,difficulty='normal'){
   const {legal:l,cards,opponents}=view;if(!l)throw Error('No legal actions');
+  const style=AI_STYLES[(Math.max(1,view.seat||1)-1)%AI_STYLES.length],easy=difficulty==='easy';
   const made=bestHand(cards),upBest=Math.max(0,...opponents.map(p=>bestHand(p.up).category));
   let strength=[.12,.38,.59,.73,.83,.87,.93,.98,.995][made.category];
   if(made.category===1)strength+=(rank(made.cards.find(c=>cards.filter(k=>rank(k)===rank(c)).length===2)??cards[0])-8)/65;
@@ -208,12 +215,28 @@ export function chooseAI(view,random=Math.random,difficulty='normal'){
     if(flushDraw===4)strength+=.12;
   }
   if(upBest>made.category)strength-=.16;
-  if(difficulty==='easy')strength+=(random()-.5)*.4;
-  const roll=random(),price=l.need/Math.max(1,view.pot+l.need);
-  if(l.need>0&&strength<price+.16&&roll>.13)return {type:'fold'};
-  if(l.mayRaise&&l.maxTo>=l.minTo&&((strength>.66&&roll<.5)||(strength>.2&&roll<.055))){
-    const target=Math.max(l.minTo,view.bet+l.need+Math.floor((view.pot+l.need)/2));
-    return {type:'raise',to:Math.min(target,l.maxTo)};
+  // This is an imperfect estimate, not a computed win probability.
+  strength+=(random()-.5)*(easy?.4:.18);
+  const price=l.call/Math.max(1,view.pot+l.call),canRaise=l.mayRaise&&l.maxTo>=l.minTo;
+  const raiseTo=()=>{
+    const sizes=easy?[.2,.3,.4]:[.25,.4,.6],fraction=sizes[Math.floor(random()*sizes.length)];
+    return Math.min(l.maxTo,Math.max(l.minTo,view.bet+l.need+Math.floor((view.pot+l.need)*fraction)));
+  };
+  // Small bluffs can happen with no pair, but never force a short-stack all-in
+  // or a bluffing war after a raise. More opponents make bluffing less common.
+  const bluffBudget=Math.floor(view.stack*(easy?.12:.2));
+  const bluffChance=style.bluff*(easy?.65:1)*(opponents.length>1?.7:1)*(l.need>0?.5:1);
+  if(canRaise&&strength<.6&&upBest<2&&(view.raises||0)===0&&price<=.18&&
+    l.minTo-view.bet<=bluffBudget&&random()<bluffChance){
+    return {type:'raise',to:Math.min(raiseTo(),view.bet+bluffBudget)};
+  }
+  if(l.need>0&&strength<price+.16+style.caution){
+    const curiosity=(style.curiosity+(easy?.12:0))*(price>.35?.35:1);
+    if(random()>=curiosity)return {type:'fold'};
+  }
+  // Even a good hand often checks/calls; easy opponents miss more value bets.
+  if(canRaise&&strength>.66&&random()<style.aggression*(easy?.65:1)){
+    return {type:'raise',to:raiseTo()};
   }
   return {type:l.check?'check':'call'};
 }
