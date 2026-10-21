@@ -31,11 +31,11 @@
   // Match the World's risk_pattern() for badges; the server decides which rows enter the risk list.
   const RISK_SIGNAL = /(죽고\s*싶|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|끝내고\s*싶|목숨|유서|뛰어내리|맞았|때렸|폭행|협박|학대|성폭|스토킹|죽여\s*버|죽일\s*거)/i;
   const TABS = [
-    ['cards', '카드'], ['risk', '위험 신호'], ['events', '이벤트'], ['archive', '보관함'], ['map', '위치 지도'], ['settings', '공지'], ['spam', '도배 방지'],
+    ['cards', '카드'], ['risk', '위험 신호'], ['archive', '보관함'], ['map', '위치 지도'], ['settings', '공지'], ['spam', '도배 방지'],
     ['reports', '신고'], ['inquiries', '문의'], ['users', '카드 이용 제한'], ['actions', '작업 기록']
   ];
-  const NOTE_TABS = Object.freeze(TABS.slice(0, 7));
-  const VIEW_OF_TAB = { cards: 'card', risk: 'risk', events: 'event', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'risk', event: 'events', archive: 'archive' };
+  const NOTE_TABS = Object.freeze(TABS.slice(0, 6));
+  const VIEW_OF_TAB = { cards: 'card', risk: 'risk', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'risk', archive: 'archive' };
   function openTab(id) {   // 탭을 고르면 카드 종류를 맞추고 불러와요
     if (!confirmLeave()) return false;
     if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], offset: 0, expiredOffset: 0, query: '', state: 'all' });
@@ -49,7 +49,6 @@
     map: '위치를 켜고 쓴 카드를 최신순으로 50개씩 지도에 보여 줘요. 익명 카드라 정확한 좌표 대신 약 1km 칸으로 맞춘 대략의 위치예요.',
     cards: '익명카드·답글과 위험 신호를 관리합니다. 상위 카드를 숨기면 그 답글도 함께 숨겨집니다.',
     risk: '위험 표현이 포함된 카드·답글을 확인하고 필요한 조치를 관리합니다.',
-    events: '이벤트 카드를 관리합니다.',
     archive: '삭제되거나 기간이 끝난 카드를 한 달 동안 보관합니다. 기간 전에도 바로 영구 삭제할 수 있어요.',
     reports: '신고 내용을 확인하고 카드 공개 여부와 처리 상태를 관리합니다.',
     inquiries: '이용자의 문의를 확인하고 답변합니다.',
@@ -498,33 +497,6 @@
     if (!Number.isFinite(date.getTime())) return '';
     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   }
-  function editEvent(event) {
-    actionScreen('이벤트 위치·시간 정정', '운영 정정이며 추가 ZU 차감이나 환불은 없습니다. 변경 전후 값과 사유가 작업 기록에 남습니다.', (form, actions) => {
-      const scheduled = new Date(event.starts_at).getTime() > Date.now();
-      form.append(el('p', 'na-reason', `현재 시작: ${formatDate(event.starts_at)} · 기존 책정: ${number(event.price_coins)} ZU${scheduled ? '' : ' · 시작 기록은 변경할 수 없습니다.'}`));
-      const lat = field('위도', 'number', event.center_lat); lat.input.required = true; lat.input.min = '-90'; lat.input.max = '90'; lat.input.step = 'any';
-      const lng = field('경도', 'number', event.center_lon); lng.input.required = true; lng.input.min = '-180'; lng.input.max = '180'; lng.input.step = 'any';
-      const radius = field('반경 (km)', 'number', event.radius_km, '1~30km 사이 정수'); radius.input.required = true; radius.input.min = '1'; radius.input.max = '30'; radius.input.step = '1';
-      const starts = scheduled ? field('시작 시각', 'datetime-local', localDateTime(event.starts_at), '시작 전 예약 이벤트만 변경할 수 있습니다.') : null;
-      if (starts) starts.input.required = true;
-      const ends = field('종료 시각', 'datetime-local', localDateTime(event.ends_at), '시작보다 늦고 시작 후 24시간 이내여야 합니다.'); ends.input.required = true;
-      const reason = reasonField(); form.append(lat.wrap, lng.wrap, radius.wrap);
-      if (starts) form.append(starts.wrap);
-      form.append(ends.wrap, reason.wrap);
-      const save = button('정정 내용 저장', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
-      form.addEventListener('submit', submit => {
-        submit.preventDefault(); if (!validReason(reason.input)) return;
-        const start = starts && starts.input.value !== localDateTime(event.starts_at) ? new Date(starts.input.value) : new Date(event.starts_at);
-        const end = ends.input.value === localDateTime(event.ends_at) ? new Date(event.ends_at) : new Date(ends.input.value);
-        if (starts) starts.input.setCustomValidity(!Number.isFinite(start.getTime()) || start <= Date.now() ? '시작 시각은 앞으로 지정해 주세요.' : '');
-        ends.input.setCustomValidity(!Number.isFinite(end.getTime()) || end <= Date.now() || end <= start || end - start > 86400000 ? '현재 이후이며 시작 뒤 24시간 이내의 종료 시각을 선택해 주세요.' : '');
-        if (![lat.input, lng.input, radius.input, starts?.input, ends.input].filter(Boolean).every(input => input.reportValidity())) return;
-        perform('admin_edit_event', { p_card_id: event.id, p_lat: Number(lat.input.value), p_lng: Number(lng.input.value), p_radius_km: Number(radius.input.value), p_starts_at: start.toISOString(), p_ends_at: end.toISOString(), p_reason: reason.input.value.trim() }, '이벤트 조건을 정정했어요.', 'cards');
-      });
-      starts?.input.addEventListener('input', () => starts.input.setCustomValidity(''));
-      ends.input.addEventListener('input', () => ends.input.setCustomValidity(''));
-    });
-  }
   function restrictUser(user) {
     const restrict = !user.is_restricted;
     actionScreen(restrict ? '노트 이용 제한' : '노트 이용 제한 해제', `${shortUser(user.user_id)} · 월드 계정과 ZU는 그대로 유지됩니다.`, (form, actions) => {
@@ -631,7 +603,6 @@
   }
   async function renderCards(run) {
     const filter = filters.cards;
-    if (filter.view === 'event') return renderEvents(run);
     if (filter.view === 'archive') return renderArchive(run);
     if (filter.view === 'risk') {
       main.append(el('p', 'na-warning na-risk-help', '자살·자해·폭력·협박과 관련된 표현을 자동으로 찾은 카드와 답글입니다. 오탐이 있을 수 있으니 내용을 확인해 주세요. 긴급한 상황은 112·119, 자살예방상담은 109로 연결해 주세요.'));
@@ -671,32 +642,6 @@
       const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(card)), button('삭제', () => confirmDeleteCard(card), 'danger'));
       if (card.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
       if (card.author_id) more.row.append(button('이 작성자의 카드 모두 보기', () => { Object.assign(filters.cards, { view: 'card', query: card.author_id, state: 'all', offset: 0, expiredOffset: 0 }); load('cards'); }));
-      item.append(actions, more.more); list.append(item);
-    }
-    main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
-  }
-  async function renderEvents(run) {
-    const filter = filters.cards;
-    main.append(searchForm(filter.query, '이벤트 글·카드 번호 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
-    const rows = await rpc('admin_events', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset });
-    if (!validRun(run)) return;
-    if (!rows?.length) { empty(main, '조건에 맞는 이벤트 카드가 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filter.offset = 0; load('cards'); })); return; }
-    const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}개 · 위치·반경·시간 정정은 작업 기록에 남습니다.`));
-    const list = el('div', 'na-list');
-    for (const event of rows) {
-      const item = el('article', 'adm-card na-item');
-      const meta = el('p', 'na-meta'); meta.append(badge('이벤트 카드'), badge(event.hidden ? '숨김' : '공개', event.hidden ? 'warn' : 'good'), el('span', '', formatDate(event.created_at)));
-      item.append(meta, el('blockquote', 'na-card-body', event.body));
-      if (event.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of event.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
-      item.append(el('p', 'na-reason', `작성자: ${shortUser(event.author_id)}`));
-      item.append(details([['카드 번호', event.id], ['작성자 번호', event.author_id], ['시작', formatDate(event.starts_at)], ['종료', formatDate(event.ends_at)], ['반경', event.radius_km != null ? `${number(event.radius_km * 1000)}m` : '없음'], ['위도', event.center_lat], ['경도', event.center_lon], ['책정 ZU', event.price_coins != null ? `${number(event.price_coins)} ZU` : '없음']]));
-      const actions = el('div', 'na-actions');
-      const changeTerms = button('위치·시간 정정', () => editEvent(event));
-      changeTerms.disabled = new Date(event.ends_at).getTime() <= Date.now();
-      if (changeTerms.disabled) changeTerms.title = '종료된 이벤트의 유료 조건은 변경할 수 없습니다.';
-      actions.append(button('본문·태그 수정', () => editCard(event)), button(event.hidden ? '복구' : '숨김', () => confirmVisibility(event), event.hidden ? '' : 'danger'));
-      const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(event)), changeTerms, button('삭제', () => confirmDeleteCard({ ...event, kind: 'event' }), 'danger'));
-      if (event.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: event.author_id, offset: 0 }; load('users'); }));
       item.append(actions, more.more); list.append(item);
     }
     main.append(list); pagination(main, filter.offset, total, offset => { filters.cards.offset = offset; load('cards'); });
@@ -1069,7 +1014,7 @@
     focusSection(heading);
     const loading = el('p', 'na-empty', '불러오는 중이에요.'); loading.setAttribute('role', 'status'); main.append(loading);
     try {
-      await ({ overview: renderOverview, settings: renderSettings, spam: renderSpamSettings, cards: renderCards, risk: renderCards, events: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
+      await ({ overview: renderOverview, settings: renderSettings, spam: renderSpamSettings, cards: renderCards, risk: renderCards, archive: renderCards, map: renderMap, reports: renderReports, inquiries: renderInquiries, users: renderUsers, actions: renderActions }[tabId])(run);
       if (validRun(run)) loading.remove();
       return validRun(run);
     } catch (error) {
