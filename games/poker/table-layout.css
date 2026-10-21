@@ -362,3 +362,13 @@
 .final-covered .card-state{white-space:nowrap;left:0;right:0;text-align:center;font-size:10px}
 #cards-content .final-covered .card-state{font-size:11px}
 @media(prefers-reduced-motion:reduce){.peek-cover{transition:none}}
+
+/* Keep private cards overlapped on the left and public cards on the right. */
+.poker-playing .my-cards.split-hand{justify-content:space-between;gap:clamp(10px,3vw,18px)}
+.poker-playing .hand-group{display:flex;align-items:center;flex:0 1 auto;min-width:0;width:calc(var(--hand-card-width) * (1 + (var(--group-count) - 1) * var(--group-step,.34)));isolation:isolate}
+.poker-playing .hand-group .card+.card{margin-left:calc((100% - var(--group-count) * var(--hand-card-width)) / (var(--group-count) - 1))}
+.poker-playing .split-hand.has-public:not(.hand-finished) .private-cards{opacity:.5}
+.poker-playing .public-cards{justify-content:flex-end}
+.poker-playing .card.pending-public .card-state{color:#f3cb79}
+
+.poker-playing .choosing-public .private-cards{--group-step:.6}

@@ -50,7 +50,7 @@ window.pokerFixture={show(round=1){
     if(proof&&viewport.width===390)await page.screenshot({path:path.join(proof,'poker-dragging-390.png'),fullPage:true});
     await page.mouse.move(x,y+55,{steps:3});await page.mouse.up();
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'downward drag reveals it');
-    assert.equal(await page.locator('.my-cards .card').last().getAttribute('aria-label'),'A♠');
+    assert.equal(await page.locator('.my-cards [data-card="6"]').getAttribute('aria-label'),'A♠');
     await page.evaluate(()=>pokerFixture.paint());assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'poll/repaint preserves the reveal');
     await page.evaluate(round=>pokerFixture.show(round),++round);assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'next round resets the cover even if the card matches');
     await page.locator('[data-seat="0"]').click();assert.equal(await page.locator('#cards-content [data-peek-card]').count(),1,'zoom does not bypass the cover');
