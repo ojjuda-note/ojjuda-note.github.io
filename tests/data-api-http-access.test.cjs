@@ -267,7 +267,8 @@ async function main() {
   assert.deepEqual(await write(a, `life_donflow_snapshots?user_id=eq.${b.id}`, 'PATCH', { revision: nextRevision }), []);
   assert.equal((await write(a, `life_donflow_snapshots?user_id=eq.${a.id}`, 'PATCH', { revision: nextRevision }))[0].revision, nextRevision);
   await denied(a, `life_donflow_snapshots?user_id=eq.${a.id}`, 'PATCH', { user_id: admin.id });
-  await denied(a, 'life_donflow_snapshots', 'DELETE');
+  // Keep mutations row-filtered so pg_safeupdate does not mask the ACL denial.
+  await denied(a, `life_donflow_snapshots?user_id=eq.${a.id}`, 'DELETE');
   assert.equal(await rpc(a, 'life_donflow_save', { p_expected: nextRevision, p_revision: revision, p_payload: payload }), revision);
   await denied(null, 'rpc/life_donflow_save', 'POST', { p_expected: null, p_revision: revision, p_payload: payload });
   console.log('PASS: DonFlow HTTP explicit grants, ownership isolation, column restrictions and RPC');
@@ -350,12 +351,12 @@ async function main() {
     assert.deepEqual(await read(actor, 'life_donflow_snapshots?select=user_id'), []);
     assert.deepEqual(await read(actor, 'world_board_comments?select=id'), []);
     await denied(actor, 'life_donflow_snapshots', 'POST', { revision, payload });
-    await denied(actor, 'life_donflow_snapshots', 'PATCH', { payload });
-    await denied(actor, 'life_donflow_snapshots', 'DELETE');
+    await denied(actor, `life_donflow_snapshots?user_id=eq.${actor.id}`, 'PATCH', { payload });
+    await denied(actor, `life_donflow_snapshots?user_id=eq.${actor.id}`, 'DELETE');
     await denied(actor, 'rpc/life_donflow_save', 'POST', { p_expected: null, p_revision: revision, p_payload: payload });
     await denied(actor, 'world_board_comments', 'POST', { post_id: 'public-a', body: 'retired client' });
-    await denied(actor, 'world_board_comments', 'PATCH', { body: 'retired edit' });
-    await denied(actor, 'world_board_comments', 'DELETE');
+    await denied(actor, `world_board_comments?id=eq.${diaryComment.id}`, 'PATCH', { body: 'retired edit' });
+    await denied(actor, `world_board_comments?id=eq.${diaryComment.id}`, 'DELETE');
   }
   assert.equal((await rpc(b, 'photo_game_clear', { p_stage: '39' })).ok, true);
   await denied(null, 'rpc/photo_game_clear', 'POST', { p_stage: '39' });
