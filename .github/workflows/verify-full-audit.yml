@@ -32,6 +32,7 @@ jobs:
           git diff --check || result=1
           exit "$result"
       - name: Audit all tracked source syntax and HTML resources
+        if: ${{ !cancelled() }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -66,7 +67,9 @@ jobs:
           for error in errors: print(error)
           raise SystemExit(bool(errors))
           PY
-      - run: npm --prefix tests audit --audit-level=high
+      - name: Check dependency vulnerabilities
+        if: ${{ !cancelled() }}
+        run: npm --prefix tests audit --audit-level=high
       - name: Save screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
