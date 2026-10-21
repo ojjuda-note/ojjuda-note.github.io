@@ -5,7 +5,7 @@ const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').re
     game.testStage=n=>{level=n;fillBricks();newTurn();};
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/games/breakout-game.js')||s.includes('/game-controls.js'))?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/world-game-assets.js')||s.includes('/game-entry.js'))?s:'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -46,10 +46,11 @@ g.tab='friends';H();
     if(u.pathname==='/game-controls.js')return route.fulfill({path:path.join(root,'game-controls.js')});
     if(u.pathname==='/game-controls.css')return route.fulfill({path:path.join(root,'game-controls.css')});
     if(u.pathname==='/qa-font.ttf'&&fs.existsSync('/root/.local/share/fonts/qa-gowun-dodum.ttf'))return route.fulfill({path:'/root/.local/share/fonts/qa-gowun-dodum.ttf'});
+    const file=path.join(root,u.pathname);if(file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile())return route.fulfill({path:file});
     return route.abort();
    });
    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.breakoutTest&&window.OjjudaBreakoutGame);
+   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.breakoutTest);
    await page.evaluate(()=>breakoutTest.open());await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>breakoutTest.freeze());
    const canvas=page.locator('#gcv'),box=await canvas.boundingBox(),close=await page.locator('#gov [data-g="close"]').boundingBox();
    assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width+1&&box.y+box.height<=height+1);
