@@ -47,7 +47,7 @@ export function createDealMotion({play=()=>{},onFinish=()=>{}}={}){
       const box=target.getBoundingClientRect(),width=target.offsetWidth||box.width,height=target.offsetHeight||box.height;
       const x=box.left+box.width/2,y=box.top+box.height/2;
       const dx=source.left+source.width/2-x,dy=source.top+source.height/2-y;
-      const fan=Number.parseFloat(target.style.getPropertyValue('--fan'))||0;
+      const fan=Number.parseFloat(win.getComputedStyle(target).getPropertyValue('--fan'))||0;
       later(()=>{
         const flyer=doc.createElement('span');flyer.className='card back flying-card';
         flyer.innerHTML='<span class="back-border"><span class="back-emblem">♠</span></span>';
@@ -66,7 +66,7 @@ export function createDealMotion({play=()=>{},onFinish=()=>{}}={}){
         }
         later(()=>{
           flyer.remove();target.classList.remove('dealing');target.removeAttribute('aria-hidden');
-          if(!target.classList.contains('back')){
+          if(!target.classList.contains('back')&&!target.classList.contains('final-covered')){
             try{animate(target,[{rotate:'y -85deg',filter:'brightness(.7)'},{rotate:'y 0deg',filter:'brightness(1)'}],{duration:170,easing:'ease-out'});}catch{}
           }
         },duration);
