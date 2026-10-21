@@ -17,10 +17,11 @@
   function destination() {
     const allowed = new Set([
       'overview', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
-      'settings', 'posts', 'chats', 'archive', 'quiz', 'note', 'withdrawn', 'house-content', 'activity', 'note-reports',
+      'settings', 'archive', 'note', 'withdrawn', 'activity', 'note-reports', 'photo-stages', 'messages',
       'cards', 'events', 'risk', 'map', 'notice', 'spam', 'note-cards', 'note-risk', 'note-events', 'note-map', 'note-archive', 'note-settings', 'note-spam'
     ]);
-    const aliases = { account: 'overview', payment: 'settings', content: 'house-content', world: 'house-content', support: 'reports', operations: 'notice' };
+    const aliases = { account: 'overview', payment: 'settings', content: 'cards', world: 'cards', support: 'reports', operations: 'notice',
+      posts: 'cards', 'house-content': 'cards', review: 'cards', chats: 'messages', quiz: 'overview' };
     const resolve = value => allowed.has(value) ? value : aliases[value];
     let hash = location.hash.slice(1);
     try { hash = decodeURIComponent(hash); } catch { hash = ''; }

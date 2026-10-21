@@ -39,7 +39,7 @@ function fixtureBoot() {
   window.OjjudaReviewInbox = { mount: options => mount('review', options) };
   window.OjjudaAdminActivity = { mount: options => mount('activity', options) };
   window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
-  window.OjjudaHouseContent = { mount: (container, options) => mount('house-content', { ...options, container }) };
+  window.OjjudaAdminFriendMessages = { mount: options => mount('messages', options) };
   window.OjjudaConnections = { mount: options => mount('connections', options) };
   window.OjjudaOperations = {
     renderReports: async options => mount('reports', options),
@@ -82,7 +82,9 @@ function fixtureBoot() {
     id: 'synthetic-post', kind: 'diary', title: '검증용 제목', body: '검증용 원문',
     author_nick: '합성 회원', author_id: 'synthetic-member', created_at: '2026-10-04T00:00:00Z'
   }];
-  U.chatFeed = async () => [];
+  U.chatFeed = async () => { throw new Error('Retired chat feed must never be called'); };
+  U.logList = async () => [];
+  U.setConfig = async (key, value) => { fixture.savedConfig = {key, value}; };
   U.findUsers = async () => [];
   U.reports = async () => [];
   U.feedback = async () => [];
@@ -173,7 +175,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.getByLabel('accounts 합성 입력', { exact: true }).inputValue(), '저장되지 않은 변경');
     acceptDialogs = true;
     await area('content');
-    assert.deepEqual(await current(), { area: 'content', tab: 'photo-stages' }, 'accepting discard permits the requested group');
+    assert.deepEqual(await current(), { area: 'content', tab: 'cards' }, 'accepting discard permits the requested group');
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
@@ -198,20 +200,14 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await tab('risk');
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'risk');
     assert.deepEqual(await current(), { area: 'content', tab: 'risk' });
-    await page.locator('[data-act="adm-content-kind"][data-v="chats"]').click();
-    assert.equal(await page.evaluate(() => worldTest.admin.cr), '__risk__');
-    assert.equal(await page.locator('#world-note-admin').count(), 0);
-    await page.locator('[data-act="adm-content-kind"][data-v="chats"]').click();
-    assert.equal(await page.evaluate(() => worldTest.admin.cr), '__risk__');
-    await page.locator('[data-act="adm-content-kind"][data-v="cards"]').click();
+    assert.equal(await page.locator('[data-act="adm-content-kind"]').count(), 0, 'card risks have no retired chat selector');
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'risk');
     await area('operations');
     assert.deepEqual(await current(), { area: 'operations', tab: 'notice' });
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'settings');
     await tab('spam');
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'spam');
-    await page.locator('[data-act="adm-content-kind"][data-v="chats"]').click();
-    assert.equal(await page.locator('#adm-notice').count(), 0, 'notice has one shared editor');
+    assert.equal(await page.locator('[data-act="adm-content-kind"], [data-act="adm-chatlim"]').count(), 0, 'spam prevention only exposes current card rules');
     await tab('activity');
     const selectedTab = await page.locator('.adm-tabs').evaluate(bar => {
       const active = bar.querySelector('[aria-pressed="true"]');
@@ -223,6 +219,17 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await area('payment');
     assert.deepEqual(await current(), { area: 'payment', tab: 'settings' });
     assert.equal(await page.locator('#adm-free').count(), 1);
+    await page.locator('#adm-limit').fill('0');
+    await page.locator('[data-act="adm-limit"]').click();
+    assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
+    await area('content');
+    assert.deepEqual(await page.locator('.adm-tabs button').allTextContents(), ['카드','이벤트','쪽지 관리','포토땅따먹기','위험 신호','위치 지도','보관함']);
+    await tab('messages'); await assertRefreshPreservesHost('messages');
+    for (const id of ['cards','events','risk','map','archive']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }
+    await area('support'); await tab('note-users'); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'users');
+    await area('operations'); await tab('words'); await page.getByText('검사해 보기', {exact:true}).waitFor();
+    await tab('errors'); await page.getByText('오류 기록이 없어요 🎉', {exact:true}).waitFor();
+
 
     await area('content'); await tab('archive');
     assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'archive');
@@ -235,11 +242,24 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     for (const [legacy, area, target, initialTab] of [
       ['note', 'content', 'cards', 'cards'], ['note-risk', 'content', 'risk', 'risk'],
       ['note-archive', 'content', 'archive', 'archive'], ['note-settings', 'operations', 'notice', 'settings'],
-      ['notice', 'operations', 'notice', 'settings']
+      ['notice', 'operations', 'notice', 'settings'], ['posts', 'content', 'cards', 'cards'], ['house-content', 'content', 'cards', 'cards'], ['review', 'content', 'cards', 'cards']
     ]) {
       await page.goto('https://fixture.test/world.html?admin=' + legacy); await loaded(); await mounted('note');
       assert.deepEqual(await current(), { area, tab: target }, legacy + ' maps to a functional menu');
       assert.equal(await page.evaluate(() => fixture.options.note.initialTab), initialTab);
+    }
+    await page.goto('https://fixture.test/world.html?admin=chats'); await loaded(); await mounted('messages');
+    assert.deepEqual(await current(), {area:'content',tab:'messages'});
+    await page.goto('https://fixture.test/world.html?admin=quiz'); await loaded();
+    assert.deepEqual(await current(), {area:'account',tab:'overview'});
+    for (const saved of [{area:'content',tab:'chats'}, {area:'content',tab:'risk',riskType:'chats'}, {area:'operations',tab:'spam',spamType:'chats'}]) {
+      await page.evaluate(saved => sessionStorage.setItem('ojjuda.world.admin-view', JSON.stringify({...saved,userId:'synthetic-admin'})), saved);
+      await page.goto('https://fixture.test/world.html'); await loaded();
+      // An ordinary entry clears old admin state; restore only on an actual reload.
+      await page.evaluate(saved => sessionStorage.setItem('ojjuda.world.admin-view', JSON.stringify({...saved,userId:'synthetic-admin'})), saved);
+      await page.reload(); await loaded();
+      assert.equal((await current()).tab, saved.tab==='chats'?'messages':saved.tab);
+      assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
     assert.equal(await page.locator('.adm-site-links a').count(), 1);
     assert.equal(await page.locator('.adm-site-links a').textContent(), '월드로 돌아가기');

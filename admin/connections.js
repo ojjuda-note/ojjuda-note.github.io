@@ -4,55 +4,58 @@
   const REPO = 'https://github.com/ojjuda-note/ojjuda-note.github.io';
   const API = 'https://api.github.com/repos/ojjuda-note/ojjuda-note.github.io';
   const PROJECT = 'https://supabase.com/dashboard/project/ziezbdjofcugznowiuda';
-  const VERIFIED = '2026-09-29';
-  const LAST_BACKUP = '2026-09-29T08:08:33Z';
+  const VERIFIED = '2026-10-21';
+  const BACKUP_MAX_AGE = 8 * 24 * 3600000;
   // Verified against production config, database/storage metadata, source and
   // the backup job. Gabia and NAVER Cloud were also confirmed by the owner.
   const rows = [
     { group: '사이트·운영', name: '가비아 · 도메인', importance: 'important', tag: '중요 설정',
       address: 'ojjuda.com · ojjuda.kr', data: '도메인 소유권, 만료일·갱신, DNS 연결 설정',
       note: '도메인 관리 업체: 가비아. 만료·DNS 변경 시 접속에 영향이 있어요.', links: [['가비아 관리', 'https://my.gabia.com/']] },
-    { group: '사이트·운영', name: 'GitHub Pages · 월드·노트', importance: 'important', tag: '서비스 운영',
-      address: 'ojjuda.kr', data: '대문·월드·노트·관리자 화면과 공개 이미지 파일 제공',
+    { group: '사이트·운영', name: 'GitHub Pages · 오쭈다', importance: 'important', tag: '서비스 운영',
+      address: 'ojjuda.kr', data: '오락실·공원·설정·관리자 화면과 공개 이미지 파일 제공',
       note: '웹 화면을 제공하는 서버예요. 회원 DB와 업로드 사진 원본은 Supabase에 있어요.',
-      links: [['대문', 'https://ojjuda.kr/'], ['월드', 'https://ojjuda.kr/world.html'], ['노트', 'https://ojjuda.kr/note/'], ['Pages 설정', `${REPO}/settings/pages`]] },
+      links: [['오쭈다', 'https://ojjuda.kr/'], ['공원', 'https://ojjuda.kr/world.html?place=park'], ['Pages 설정', `${REPO}/settings/pages`]] },
     { group: '사이트·운영', name: 'GitHub Pages · 사용 안내', importance: 'normal', tag: '안내 사이트',
-      address: 'ojjuda.com · ojjuda-com-redirect', data: '서비스 소개·사용법. 월드·노트 버튼은 ojjuda.kr로 연결',
+      address: 'ojjuda.com · ojjuda-com-redirect', data: '서비스 소개·사용법과 오쭈다 접속 안내',
       note: '별도 GitHub 저장소에서 안내 페이지를 제공해요.', links: [['안내 사이트', 'https://ojjuda.com/'], ['안내 소스', 'https://github.com/ojjuda-note/ojjuda-com-redirect']] },
     { group: '사이트·운영', name: 'GitHub · 운영 소스', importance: 'critical', tag: '핵심 자료',
       address: 'ojjuda-note/ojjuda-note.github.io', data: 'HTML·JS·CSS, 기본 사진, SQL·서버 함수 소스, 배포·복구 코드와 변경 이력',
       note: 'main 브랜치가 운영 배포 원본이에요. 공개 저장소이므로 비밀값을 넣지 않아요.', links: [['운영 소스', REPO]] },
     { group: '원본 자료·서버', name: 'Supabase · 운영 프로젝트', importance: 'critical', tag: '핵심 서버',
-      address: 'ziezbdjofcugznowiuda · 서울(ap-northeast-2)', data: '월드·노트가 함께 쓰는 DB·로그인·파일 저장·서버 처리',
+      address: 'ziezbdjofcugznowiuda · 서울(ap-northeast-2)', data: '오락실·공원·설정이 함께 쓰는 DB·로그인·파일 저장·서버 처리',
       note: '운영 config.js가 연결한 프로젝트예요. 프로젝트 상태 ACTIVE_HEALTHY 확인.', links: [['프로젝트 관리', PROJECT]] },
     { group: '원본 자료·서버', name: '회원·로그인 DB', importance: 'critical', tag: '핵심 · 개인정보',
       address: 'auth · ojjuda_account_internal', data: '로그인 계정, 가입 정보, 생년월일·성별·전화번호, 복구·탈퇴 보관 기록',
       note: '실제 회원 정보와 비밀번호 값은 이 표에 표시하지 않아요.', links: [['회원 인증 관리', `${PROJECT}/auth/users`], ['DB 관리', `${PROJECT}/database/tables`]] },
     { group: '원본 자료·서버', name: '월드 DB', importance: 'critical', tag: '핵심 자료',
-      address: 'public · ojjuda_world_private', data: '프로필·방·친구·글·채팅·게임, ZU 잔액·충전 기록, 신고·관리 기록과 보관 원문',
-      note: '사진·영상의 목록은 DB에, 실제 파일은 Storage에 저장돼요.', links: [['월드 DB 관리', `${PROJECT}/editor`]] },
-    { group: '원본 자료·서버', name: '노트 DB', importance: 'critical', tag: '핵심 · 위치정보',
-      address: 'ojjuda_note · ojjuda_note_internal', data: '카드·답글·공감·태그, 위치·사진 연결, 꾸미기 구매, 알림·신고·문의·자동 글 설정',
-      note: '이용자 자료와 내부 운영 자료를 나누어 보관해요.', links: [['노트 DB 관리', `${PROJECT}/editor`]] },
-    { group: '원본 자료·서버', name: 'Supabase Storage · 월드 사진·영상', importance: 'critical', tag: '핵심 원본',
-      address: 'media', data: '이용자가 올린 사진·영상의 실제 파일',
+      address: 'public · ojjuda_world_private', data: '프로필·친구·게임, ZU 잔액·충전 기록, 계정 신고와 운영 기록',
+      note: '회원·게임 기록을 보관하며 실제 사진 파일은 Storage에 저장돼요.', links: [['월드 DB 관리', `${PROJECT}/editor`]] },
+    { group: '원본 자료·서버', name: '공원 DB', importance: 'critical', tag: '핵심 · 위치정보',
+      address: 'ojjuda_note · ojjuda_note_internal', data: '카드·답글·공감·태그, 위치·사진 연결, 친구 쪽지, 알림·신고·문의·자동 글 설정',
+      note: '이용자 자료와 내부 운영 자료를 나누어 보관해요.', links: [['공원 DB 관리', `${PROJECT}/editor`]] },
+    { group: '원본 자료·서버', name: 'Supabase Storage · 프로필 사진', importance: 'critical', tag: '핵심 원본',
+      address: 'media', data: '프로필 사진과 프로필 편집용 원본 파일',
       note: '비공개 버킷 확인. DB 백업만으로는 사진·영상 파일이 복구되지 않아요.', links: [['파일 저장소 관리', `${PROJECT}/storage/buckets`]] },
-    { group: '원본 자료·서버', name: 'Supabase Storage · 노트 사진', importance: 'critical', tag: '핵심 원본',
-      address: 'note-card-photos · note-event-photos', data: '노트 카드 첨부 사진과 이벤트 사진의 실제 파일',
+    { group: '원본 자료·서버', name: 'Supabase Storage · 공원 사진', importance: 'critical', tag: '핵심 원본',
+      address: 'note-card-photos · note-event-photos', data: '공원 카드 첨부 사진과 이벤트 사진의 실제 파일',
       note: '두 버킷 모두 비공개 확인. 원본 파일도 외부 백업에 포함해요.', links: [['파일 저장소 관리', `${PROJECT}/storage/buckets`]] },
+    { group: '원본 자료·서버', name: 'Supabase Storage · 포토땅따먹기', importance: 'critical', tag: '게임 원본',
+      address: 'photo-stages', data: '포토땅따먹기의 등록 사진과 게임용 파일',
+      note: '게임 사진과 공개 상태는 콘텐츠의 포토땅따먹기에서 관리해요.', links: [['파일 저장소 관리', `${PROJECT}/storage/buckets`]] },
     { group: '원본 자료·서버', name: 'Supabase · 서버 함수', importance: 'important', tag: '중요 기능',
       address: 'Edge Functions · DB 함수(RPC)', data: 'member-recovery: 비밀번호 찾기 / game-action: 게임 검증. DB 함수는 권한·ZU·카드 처리',
       note: '두 Edge Function의 ACTIVE 상태와 운영 코드 연결 확인.', links: [['서버 함수 관리', `${PROJECT}/functions`]] },
     { group: '원본 자료·서버', name: 'Supabase Realtime', importance: 'important', tag: '실시간 연결',
-      address: '접속자·동네 대화·게임·알림 채널', data: '접속 상태와 게임·알림 변경을 화면에 실시간 전달',
+      address: '접속자·게임·알림 채널', data: '접속 상태와 게임·알림 변경을 화면에 실시간 전달',
       note: '실시간 전달 기능이에요. 영구 보관 자료는 해당 DB·Storage에서 관리해요.', links: [['프로젝트 관리', PROJECT]] },
     { group: '원본 자료·서버', name: 'Supabase Cron · 예약 작업', importance: 'important', tag: '중요 설정',
-      address: '운영 DB의 예약 작업 9개 확인', data: '자동 카드 게시, 만료 안내·보관·정리, 신고·채팅·탈퇴 자료 보존기간 처리',
+      address: '운영 DB의 예약 작업 9개 확인', data: '자동 카드 게시, 만료 안내·보관·정리, 신고·탈퇴 자료 보존기간 처리',
       note: '예약 작업을 변경하면 게시·보존기간 처리가 달라질 수 있어요.', links: [['예약 작업 확인', `${PROJECT}/integrations/cron/overview`]] },
     { group: '백업·복구', id: 'backup', name: '네이버클라우드 · 외부 백업', importance: 'critical', tag: '핵심 백업',
       address: '한국 Object Storage · ojjuda-backup-ziezbdjofcugznowiuda',
-      data: '운영 소스·회원/월드/노트 DB·사진/영상 원본을 암호화해 보관',
-      note: '매일 오전 3시(한국) 예약 · 30일 보관. 성공 여부는 아래 실행 결과에서 확인해요.',
+      data: '운영 소스·회원/월드/공원 DB·사진/영상 원본을 암호화해 보관',
+      note: '매주 일요일 오전 3시(한국) 예약 · 30일 보관. 성공 여부는 아래 실행 결과에서 확인해요.',
       links: [['네이버클라우드 콘솔', 'https://console.ncloud.com/'], ['백업 실행 기록', `${REPO}/actions/workflows/nightly-backup.yml`]] },
     { group: '백업·복구', name: 'GitHub Actions · 배포·백업 실행', importance: 'important', tag: '중요 자동화',
       address: '.github/workflows', data: '사이트 배포, 오류 검사, 외부 암호화 백업과 임시 소스 백업 실행 기록',
@@ -73,17 +76,15 @@
       address: 'tile.openstreetmap.org', data: '노트 위치 지도에 쓰는 배경 지도 이미지 제공',
       note: '카드의 저장된 위치 정보는 Supabase에 있어요.', links: [['지도 서비스', 'https://www.openstreetmap.org/']] },
     { group: '화면·기기', name: '이용자 기기 · 브라우저 저장', importance: 'important', tag: '중요 · 기기 자료',
-      address: 'localStorage · 로그인 세션', data: '기기 설정·화면 상태·노트 꾸미기 선택·반려동물 대화 등 기기에 남는 자료',
-      note: '기기 안에만 있는 자료는 서버의 외부 백업에 포함되지 않아요. 위치·음성 기능은 기기 권한을 사용해요.', links: [] },
+      address: 'localStorage · 로그인 세션', data: '기기 설정·화면 상태·게임 진행·작성 중인 카드 등 기기에 남는 자료',
+      note: '기기 안에만 있는 자료는 서버의 외부 백업에 포함되지 않아요. 위치 기능은 기기 권한을 사용해요.', links: [] },
     { group: '별도 보관·테스트', name: 'GitHub · 별도 비공개 소스', importance: 'important', tag: '별도 보관',
       address: 'ojjuda-note/ojjuda-source-private', data: '별도로 존재하는 비공개 소스 저장소',
       note: '현재 Pages 배포 원본이 아니며, 최신 운영본과의 동기화 여부는 확인이 필요해요.', links: [['비공개 저장소', 'https://github.com/ojjuda-note/ojjuda-source-private']] },
     { group: '별도 보관·테스트', name: 'Supabase · 별도 테스트 프로젝트', importance: 'normal', tag: '운영과 분리',
       address: 'ojjudanote · jucuqqbynilwlhqxyzrd', data: '별도 테스트 프로젝트. 로컬 시험 조건에만 참조가 있어요.',
       note: '현재 공개 사이트의 운영 DB가 아니에요. 운영 프로젝트와 혼동하지 마세요.', links: [['테스트 프로젝트', 'https://supabase.com/dashboard/project/jucuqqbynilwlhqxyzrd']] },
-    { group: '별도 보관·테스트', name: '스마트 글래스 미리보기', importance: 'normal', tag: '연동 준비',
-      address: 'note/glasses.html · Even G2 연동 소스', data: '카드 표시 미리보기와 기기 연동 준비 코드',
-      note: '실제 Even·Rokid 기기 서비스 연결 완료로 확인된 상태는 아니에요.', links: [['미리보기', 'https://ojjuda.kr/note/glasses.html']] }
+
   ];
   const el = (tag, className, text) => {
     const node = document.createElement(tag); if (className) node.className = className;
@@ -144,8 +145,8 @@
             const at = job.completed_at;
             const age = Date.now() - Date.parse(at);
             if (!Number.isFinite(age)) throw new Error('Missing completion time');
-            setBackup(age > 26 * 3600000 ? '확인 필요 · 백업 26시간 경과' : '백업 성공 확인',
-              `${formatDate(at)} (한국) · 암호화·업로드·검증 단계 성공. 별도 프로젝트 복원 시험 완료를 뜻하지는 않아요.`, age > 26 * 3600000 ? 'warn' : 'good', latest.id);
+            setBackup(age > BACKUP_MAX_AGE ? '확인 필요 · 주간 백업 지연' : '백업 성공 확인',
+              `${formatDate(at)} (한국) · 암호화·업로드·검증 단계 성공. 별도 프로젝트 복원 시험 완료를 뜻하지는 않아요.`, age > BACKUP_MAX_AGE ? 'warn' : 'good', latest.id);
           } else if (latest.status !== 'completed' || (job && job.status !== 'completed')) {
             setBackup('백업 대기·진행 중', '이번 실행이 완료된 뒤 결과를 다시 확인해 주세요.', 'neutral', latest.id);
           } else {
@@ -154,7 +155,7 @@
         } finally { clearTimeout(timeout); }
       } catch {
         if (version === run && current()) setBackup('현재 결과 조회 불가',
-          `GitHub 연결·조회 제한을 확인해 주세요. 기록상 마지막 확인: ${formatDate(LAST_BACKUP)} (한국), 백업 성공. 현재 상태는 실행 기록에서 확인해 주세요.`, 'warn', 36540552039);
+          'GitHub 연결·조회 제한을 확인해 주세요. 최근 백업 상태는 백업 실행 기록에서 확인해 주세요.', 'warn');
       } finally {
         if (version === run && current() && refreshButton) refreshButton.disabled = false;
       }
@@ -167,7 +168,7 @@
       for (const [label, value] of [['도메인', '가비아'], ['운영 DB·원본 사진', 'Supabase'], ['외부 백업', '네이버클라우드']]) {
         const card = el('div'); card.append(el('span', '', label), el('strong', '', value)); summary.append(card);
       }
-      section.append(summary, el('p', 'oc-meta', `구성 확인일 ${VERIFIED} · 중요 표시는 복구·개인정보·운영에 필요한 항목이에요. 비밀값과 실제 회원 자료는 표시하지 않아요.`));
+      section.append(summary, el('p', 'oc-meta', `구성 정리일 ${VERIFIED} · 중요 표시는 복구·개인정보·운영에 필요한 항목이에요. 비밀값과 실제 회원 자료는 표시하지 않아요.`));
       const scroll = el('div', 'oc-table-wrap'); scroll.tabIndex = 0; scroll.setAttribute('role', 'region'); scroll.setAttribute('aria-label', '운영 연결 표, 좌우로 스크롤할 수 있어요');
       const table = el('table', 'oc-table');
       table.append(el('caption', '', '연결된 서비스와 보관 자료 · 작은 화면에서는 표를 좌우로 밀어 보세요.'));

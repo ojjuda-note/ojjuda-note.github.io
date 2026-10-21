@@ -59,7 +59,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
   assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
-  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['photo-stages','chats','messages','cards','events','risk','map','archive']);
+  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','events','messages','photo-stages','risk','map','archive']);
   assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
   t.adminState.area='content';t.adminState.tab='archive';t.adminState.archiveType='posts';
   assert.ok(t.adminMarkup().includes('world-note-admin'),'archive always uses retained park cards');
