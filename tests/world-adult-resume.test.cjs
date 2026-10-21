@@ -37,6 +37,7 @@ async function until(test, message, timeout = 2600) {
     const photoVisible = () => w.getComputedStyle(w.document.querySelector('[data-v="photo_ttang"]')).display !== 'none';
     await w.refreshWorldMatgoAccess();
     assert.ok(matgo() && photoVisible());
+    assert.equal(matgo().nextElementSibling?.dataset.v,'poker','poker refreshes beside Matgo');
     const draft = w.document.querySelector('#pmsg');
     draft.value = '작성 중인 대화'; draft.focus(); draft.setSelectionRange(2, 4);
     const ordinary = w.document.querySelector('#ordinary');
@@ -54,6 +55,8 @@ async function until(test, message, timeout = 2600) {
     w.dispatchEvent(new w.PageTransitionEvent('pageshow', { persisted: true }));
     await until(() => matgo() && photoVisible(), 'returning restores both adult games without reload');
     assert.equal(reads, beforeResume + 1, 'resume events share one check');
+    assert.equal(matgo().nextElementSibling?.dataset.v,'poker','resume preserves the card game order');
+    assert.equal(w.document.querySelectorAll('[data-v=poker]').length,1,'refresh cannot duplicate poker');
     assert.equal(draft.value, '작성 중인 대화');
     assert.equal(w.document.activeElement, draft);
     assert.equal(draft.selectionStart, 2);
