@@ -6,7 +6,7 @@
    if(active){active.dialog.focus();return;}
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');dialog.className='tour-game-dialog tank-game-dialog';dialog.setAttribute('aria-label','탱크게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 / 같은 기기 / 온라인</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261019-quake-half1" allow="fullscreen; clipboard-write"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 / 같은 기기 / 온라인</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261021-guest1" allow="fullscreen; clipboard-write"></iframe>';
    const frame=dialog.querySelector('iframe'),invitation=new AbortController();let requests=0,rankedRoom=null;
    function close(){if(active?.dialog!==dialog)return;active=null;invitation.abort();window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
    async function invite(body){
@@ -48,6 +48,7 @@
     if(e.data.type==='ready')frame.contentWindow.postMessage({source:'ojjuda-world',type:'tank-init',available:!!(owner&&client?.functions),joinCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode.toUpperCase():''},location.origin);
     else if(e.data.type==='request')void online(e.data);
     else if(e.data.type==='exit')close();
+    else if(e.data.type==='finished')window.OjjudaGuestAccess?.finished();
    }
    const authTimer=setInterval(()=>{if(!authorized())close();},1000);
    active={dialog,close};window.addEventListener('message',receive);dialog.querySelector('button').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close();});

@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog mines-game-dialog';
       dialog.setAttribute('aria-label', '지뢰찾기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261013-mines1" allow="autoplay; fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261021-guest1" allow="autoplay; fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map();
       let rankingPending = false, connected = false;
@@ -62,6 +62,7 @@
         if (message?.source !== 'ojjuda-mines') return;
         if (message.type === 'ojjuda-game-ready') void initialize();
         if (message.type === 'ojjuda-game-exit') close();
+        if (message.type === 'ojjuda-game-finished' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.runId || '')) window.OjjudaGuestAccess?.finished();
         if (message.type === 'ojjuda-game-result') void record(message);
         if (message.type === 'ojjuda-game-ranking') void ranking();
       }

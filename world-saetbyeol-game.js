@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog saetbyeol-game-dialog';
       dialog.setAttribute('aria-label', '샛별키우기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261018-arcade-entry1" allow="autoplay; fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261021-guest1" allow="autoplay; fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map();
       const boosters = new Map();
@@ -98,6 +98,7 @@
         if (message?.source !== 'ojjuda-saetbyeol') return;
         if (message.type === 'ojjuda-game-ready') void initialize();
         if (message.type === 'ojjuda-game-exit') close();
+        if (message.type === 'ojjuda-game-finished' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.runId || '') && message.demo === false) window.OjjudaGuestAccess?.finished();
         if (message.type === 'ojjuda-game-result') void record(message);
         if (message.type === 'ojjuda-game-ranking') void ranking();
         if (message.type === 'ojjuda-game-booster') void booster(message);

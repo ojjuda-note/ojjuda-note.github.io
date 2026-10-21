@@ -14,6 +14,7 @@
         if(event.origin!==window.location.origin||event.source!==frame.contentWindow)return;
         if(event.data?.type==='ojjuda:spot-score'&&Number.isInteger(event.data.score)&&event.data.score>=0&&event.data.score<=6&&(typeof event.data.owner==='string'||event.data.owner===null)){
           const {score,owner}=event.data;
+          window.OjjudaGuestAccess?.finished();
           const save=()=>Promise.resolve(onScore?.(score,owner)).catch(error=>{
             console.warn('게임 기록 저장 실패',error);
             if(active!==dialog)return;
