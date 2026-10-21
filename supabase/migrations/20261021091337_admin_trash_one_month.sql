@@ -26,6 +26,7 @@ alter table ojjuda_trash_internal.items enable row level security;
 revoke all on ojjuda_trash_internal.items from public,anon,authenticated;
 create index trash_expiry on ojjuda_trash_internal.items(expires_at);
 create index trash_category_page on ojjuda_trash_internal.items(category,deleted_at desc,id);
+create index trash_message_retry on ojjuda_trash_internal.items((detail->>'sender_id'),(detail->>'request_id')) where category='messages';
 
 -- Record access without duplicating private message bodies. Audit entries also expire.
 create table ojjuda_trash_internal.access_log (
@@ -59,7 +60,7 @@ begin
     select nickname into v_author from public.profiles where id=(p_row->>'sender_id')::uuid;
     select nickname into v_peer from public.profiles where id=(p_row->>'recipient_id')::uuid;
     v_detail:=jsonb_build_object('sender_id',p_row->>'sender_id','recipient_id',p_row->>'recipient_id',
-      'sender_name',v_author,'recipient_name',v_peer,'created_at',p_row->>'created_at','reason',p_reason);
+      'sender_name',v_author,'recipient_name',v_peer,'request_id',p_row->>'request_id','created_at',p_row->>'created_at','reason',p_reason);
   when 'inquiries' then
     v_category:='other'; v_title:='삭제한 공원 문의';
     v_detail:=jsonb_build_object('author_id',p_row->>'user_id','reply',p_row->>'reply',
@@ -101,6 +102,21 @@ create trigger trash_deleted_message before delete on ojjuda_note_internal.frien
 create trigger trash_deleted_inquiry before delete on ojjuda_note_internal.inquiries for each row execute function ojjuda_trash_internal.capture_deleted();
 create trigger trash_deleted_feedback before delete on public.feedback for each row execute function ojjuda_trash_internal.capture_deleted();
 create trigger trash_deleted_world_archive before delete on ojjuda_world_private.content_archive for each row execute function ojjuda_trash_internal.capture_deleted();
+
+-- A lost-response retry must not recreate a message an administrator removed.
+create function ojjuda_trash_internal.reject_deleted_message_retry()
+returns trigger language plpgsql security definer set search_path=pg_catalog as $$
+begin
+  if exists(select 1 from ojjuda_trash_internal.items where category='messages'
+      and detail->>'sender_id'=new.sender_id::text and detail->>'request_id'=new.request_id::text
+      and expires_at>clock_timestamp()) then
+    raise exception 'friend_message_unavailable' using errcode='42501';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function ojjuda_trash_internal.reject_deleted_message_retry() from public,anon,authenticated;
+create trigger trash_message_retry_guard before insert on ojjuda_note_internal.friend_messages for each row execute function ojjuda_trash_internal.reject_deleted_message_retry();
 
 -- Snapshot before auth cascades remove profiles; include replies removed with a
 -- withdrawn author's card. No passwords, tokens, coordinates or file URLs copied.

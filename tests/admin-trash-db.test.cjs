@@ -36,7 +36,7 @@ const read=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',na
  const send=(n)=>call(A,'select public.send_friend_message($1,$2,$3) as v',[B,'비공개 쪽지 '+n,id(n)]);
  const one=await send(1),two=await send(2);
  for(const who of [null,A]){await assert.rejects(()=>list(who),/admin_required/);await assert.rejects(()=>remove(who,one.id),/admin_required/);}
- assert.equal((await remove(ADMIN,one.id)).deleted,1);assert.equal((await remove(ADMIN,one.id)).deleted,0);
+ assert.equal((await remove(ADMIN,one.id)).deleted,1);assert.equal((await remove(ADMIN,one.id)).deleted,0);await assert.rejects(()=>send(1),/friend_message_unavailable/);
  assert.equal((await list(ADMIN,'messages')).total,1);assert.equal((await list(ADMIN,'messages')).items[0].body,'비공개 쪽지 1');
  assert.equal((await call(B,'select public.list_app_notifications() as v')).items.filter(x=>x.kind==='world_message').length,1);
  assert.equal(await call(B,'select public.app_notification_unread_count() as v'),1);

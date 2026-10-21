@@ -25,6 +25,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       - name: Verify retention, privacy and account deletion
         run: |
+          python tests/trash-cleanup.test.py
           node tests/admin-trash-db.test.cjs
           node tests/friend-messages-db.test.cjs
           node tests/admin-account-directories-db.test.cjs
