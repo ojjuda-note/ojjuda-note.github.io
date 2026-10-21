@@ -1,0 +1,57 @@
+name: Import approved idol portrait update
+
+on:
+  push:
+    branches: [codex/photo-idol-import-20261021]
+    paths: [.github/workflows/import-photo-idols.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: photo-idol-import-20261021
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/photo-idol-import-20261021
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+            assets/photo-ttang
+            games
+            tests
+      - name: Import the verified portrait update
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle="$RUNNER_TEMP/photo-idols-part1.bundle"
+          curl --fail --show-error --location --retry 3 --max-time 180 \
+            'https://place-memo-walk.mj830417686850.chatgpt.site/updates/photo-idols-3a278fcf-part1.bundle' \
+            --output "$bundle"
+          printf '%s  %s\n' 'd3140943742abd1fd4ff53ae2a2f4fc41c6e59d4129b0b2d7c66d514dcdd2d68' "$bundle" | sha256sum --check --strict
+          git bundle verify "$bundle"
+          git fetch "$bundle" 'refs/heads/codex/photo-idol-assets-first-20261021:refs/remotes/photo-idols/first'
+          test "$(git rev-parse FETCH_HEAD)" = '28947b8a640dc3dd763921663380c842cff1b4ec'
+          bundle="$RUNNER_TEMP/photo-idols-part2.bundle"
+          curl --fail --show-error --location --retry 3 --max-time 180 \
+            'https://place-memo-walk.mj830417686850.chatgpt.site/updates/photo-idols-3a278fcf-part2.bundle' \
+            --output "$bundle"
+          printf '%s  %s\n' '8235d2f78313d89242309d8bcd6f10cdfa751ecc254d8772824cb3386a88ddcb' "$bundle" | sha256sum --check --strict
+          git bundle verify "$bundle"
+          git fetch "$bundle" 'HEAD'
+          test "$(git rev-parse FETCH_HEAD)" = '3a278fcf7b5a73b1810783addaed8d14bc90de30'
+          if git merge-base --is-ancestor FETCH_HEAD HEAD; then
+            echo 'The portrait update is already imported.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge --no-edit FETCH_HEAD
+          git diff --check origin/main..HEAD
+          git push origin HEAD:refs/heads/codex/photo-idol-import-20261021
