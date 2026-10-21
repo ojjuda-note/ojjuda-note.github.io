@@ -52,7 +52,8 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   await page.click('#uploadBtn');await page.setInputFiles('#file',invalid);
   await page.getByRole('alert').waitFor();assert.match(await page.getByRole('alert').textContent(),/JPG·PNG/);
   await page.setInputFiles('#file',photo);
-  await page.waitForSelector('#try',{timeout:30000});
+  // AI (7s) plus contour fallback (up to 25s) can exceed the default 30s.
+  await page.waitForSelector('#try',{timeout:45000});
   assert.equal(await page.getByAltText('게임 판 미리보기').evaluate(im=>im.complete&&im.naturalWidth>0),true);
   assert.equal(await page.locator('#try').isEnabled(),true);
   assert.equal(await page.locator('#send').isEnabled(),false);
@@ -85,7 +86,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   assert.ok(saved.rows[0].sil_pct>=35&&saved.rows[0].sil_pct<=75);
   assert.equal(saved.rows[0].mask_rle.split(',').map(Number).reduce((a,b)=>a+b,0),300*400);
   assert.ok(saved.uploads.every(u=>u.size>0&&u.type==='image/jpeg'&&u.options.upsert===false));
-  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
+  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:45000});
   await page.click('[data-v="public"]');await page.click('.lvb[data-v="14"]');await page.check('#ag');
   const draftPreview=await page.getByAltText('게임 판 미리보기').getAttribute('src');
   let tried;
@@ -116,7 +117,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   const shared=await page.evaluate(()=>savedPhotos[1]);assert.equal(shared.visibility,'public');assert.equal(shared.status,'pending');
   assert.equal(shared.level,tried.level);assert.ok(shared.mask_rle===tried.mask,'saving uses the played silhouette');assert.equal(shared.crop_box,tried.crop);
   await page.getByText('관리자가 확인하면 모두에게 보여요.',{exact:false}).waitFor();
-  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:30000});
+  await page.click('#ok');await page.click('#uploadBtn');await page.setInputFiles('#file',photo);await page.waitForSelector('#try',{timeout:45000});
   await page.click('#try');await page.waitForFunction(()=>mode==='play'&&photoImg.complete&&photoImg.naturalWidth>0);
   assert.equal(await page.locator('#hud').isVisible(),true);await page.click('#pause');assert.equal(await page.getByText('잠깐 쉬는 중').isVisible(),true);await page.click('#go');
   // Registration keeps its required coverage range; a real photo can still be

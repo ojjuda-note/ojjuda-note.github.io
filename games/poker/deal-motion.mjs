@@ -59,7 +59,7 @@ export function createDealMotion({play=()=>{},onFinish=()=>{}}={}){
             {transform:`translate(${dx*.28}px,${dy*.28-14}px) rotate(${fan+(dx>0?-7:7)}deg) scale(1.04)`,offset:.7,opacity:1},
             {transform:`translate(0,0) rotate(${fan}deg) scale(1)`,opacity:1}
           ],{duration,easing:'cubic-bezier(.2,.65,.25,1)',fill:'both'});
-          animate(deck,[{transform:'translateY(-50%) rotate(-7deg)'},{transform:'translateY(calc(-50% - 2px)) rotate(-9deg)'},{transform:'translateY(-50%) rotate(-7deg)'}],{duration:150});
+          animate(deck,[{translate:'0 0'},{translate:'0 -2px'},{translate:'0 0'}],{duration:150});
           play();
         }catch{
           cancel();onFinish();return;

@@ -9,7 +9,7 @@
       if(request!==opening||!authorized())return;
       const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
       const dialog=document.createElement('dialog');dialog.className='tour-game-dialog poker-game-dialog';dialog.setAttribute('aria-label','세븐포커');
-      dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>세븐포커</span></header><iframe title="세븐포커" src="/games/poker/index.html?v=20261021-poker-entry1" allow="autoplay"></iframe>';
+      dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>세븐포커</span></header><iframe title="세븐포커" src="/games/poker/index.html?v=20261021-poker-table1" allow="autoplay"></iframe>';
       const frame=dialog.querySelector('iframe');let connected=false,unsubscribe=null,inflight=0,lastResult='';
       const send=type=>frame.contentWindow?.postMessage({source:'ojjuda-world',type,owner,joinCode},location.origin);
       function close(){
@@ -22,6 +22,7 @@
         if(!authorized()||!access.visible(19)){close();return;}
         if(event.data.type==='ready'){connected=true;send('poker-init');}
         if(event.data.type==='exit')close();
+        if(event.data.type==='table-view'&&typeof event.data.playing==='boolean')dialog.classList.toggle('poker-table-open',event.data.playing);
         if(event.data.type==='rpc'){
           const {id,body}=event.data;
           if(typeof id!=='string'||id.length>64||!body||!['status','refill','list','mine','create','join','read','start','move','ready','leave'].includes(body.action)||inflight>=4)return;

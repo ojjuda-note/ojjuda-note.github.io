@@ -1,0 +1,361 @@
+/* The hand and touch controls take priority over the decorative table rim. */
+.poker-playing{--hand-card-width:clamp(76px,23vw,120px);background:#0c1511}
+.poker-playing #app{min-height:100dvh;display:flex;flex-direction:column}
+.poker-playing .app-header{width:100%;max-width:1400px;height:60px;min-height:60px;gap:12px;padding:8px max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));padding-top:max(8px,env(safe-area-inset-top));margin:0 auto}
+.table-back{flex:none;min-width:58px;min-height:44px;font-size:13px}
+.poker-playing .title{margin-right:auto}
+.poker-playing .title small{display:none}
+.poker-playing .header-tools{gap:6px}
+.poker-playing .header-tools .small-button{min-height:44px;font-size:12px}
+.poker-playing .wallet{padding-left:12px;margin-left:4px}
+.poker-playing .wallet b{font-size:20px}
+.poker-playing .online-room-bar{width:100%;padding:0 14px 4px;gap:10px;min-height:36px;font-size:12px;border:0}
+.poker-playing .online-room-bar .small-button{min-height:36px;padding:5px 8px}
+.poker-playing .solo-room{display:none}
+.poker-playing .game{flex:1;display:grid;grid-template-rows:auto 1fr auto auto;grid-template-columns:minmax(0,1fr);width:100%;max-width:1400px;margin:0 auto;padding:0 max(12px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.poker-playing .round-strip{padding:6px 12px 10px;min-height:30px}
+.poker-playing .table-id{font-size:10px}
+.poker-playing .street-dots span{font-size:11px}
+.poker-playing .table-scene{padding:0;display:flex;min-width:0}
+.poker-playing .felt{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;border:3px solid #776342;border-radius:30px;padding:16px 20px 10px;box-shadow:inset 0 0 0 2px #102e21,inset 0 0 42px #03190c88,0 4px 18px #0003}
+.poker-playing .felt-inlay{inset:7px;border-radius:24px}
+.poker-playing .opponents{width:100%;max-width:1000px;gap:28px;min-height:0;margin:0 auto}
+.poker-playing .seat{padding-top:0}
+.poker-playing .seat-label{display:none}
+.poker-playing .seat-head{min-height:48px;min-width:0;width:100%;max-width:190px;padding:7px 12px}
+.poker-playing .seat-info{min-width:0}
+.poker-playing .seat-info strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.poker-playing .seat-info small{font-size:11px}
+.poker-playing .seat-cards{min-height:0;gap:5px;padding-top:7px}
+.poker-playing .down-cards .card{width:21px;height:29.4px}
+.poker-playing .up-cards{gap:0}
+.poker-playing .up-cards .card{width:56px;height:78.4px;margin-left:-8px}
+.poker-playing .up-cards .card:first-child{margin-left:0}
+.poker-playing .seat-action{font-size:11px;min-height:22px;margin-top:4px}
+.poker-playing .pot-zone{flex:1;min-height:68px;max-height:180px;padding:5px 0;gap:3px}
+.poker-playing .pot-label{font-size:9px;color:#c6d4bd;letter-spacing:.16em}
+.poker-playing .pot-amount{font-size:38px;margin:0}
+.poker-playing .pot-zone>.chip-stacks,.poker-playing .table-rule{display:none}
+.poker-playing .deal-deck{left:calc(50% - 110px);width:36px;height:50.4px}
+.poker-playing .deal-deck>small{display:none}
+.poker-playing .player{width:100%;max-width:1000px;margin:0 auto}
+.poker-playing .player-header{padding:2px 6px 12px;min-height:40px}
+.poker-playing .player-name b{font-size:15px}
+.poker-playing .player-name>span{font-size:11px;letter-spacing:0}
+.hand-tools{display:flex;align-items:center;gap:8px}
+.poker-playing .hand-label{font-size:12px;padding:5px 8px}
+.hand-zoom{min-height:44px;padding:6px 10px;border:0;background:transparent;font-size:12px;color:#d5dfbf}
+.poker-playing .my-cards{width:100%;gap:0;min-height:0;padding:8px 0 24px}
+.poker-playing .my-cards .card{width:var(--hand-card-width);height:auto;aspect-ratio:5/7;border-radius:7px;margin:0;--fan:0deg!important}
+.poker-playing .my-cards .card+.card{margin-left:min(10px,calc((100% - var(--card-count)*var(--hand-card-width))/(var(--card-count) - 1)))}
+.poker-playing .my-cards .card.selected{transform:translateY(-12px);outline:3px solid #f3cb79;outline-offset:2px}
+.poker-playing .card-state{font-size:10px;bottom:-19px;color:#d5dfbf;left:4px;right:auto}
+.poker-playing .player-bet{font-size:11px;min-height:20px;color:#bed1b8}
+/* Oversized indices remain readable when the seven cards overlap. */
+.card-index{position:absolute;top:3%;left:3%;width:27%;background:#fff;color:#13281e;display:flex;flex-direction:column;align-items:center;line-height:.95;padding:1px 0 3px;border-radius:2px;font-size:18px;pointer-events:none}
+.card-index b{font-weight:800;font-family:Arial,sans-serif;letter-spacing:-.08em}
+.card-index i{font:normal 18px/1.05 Georgia,serif}
+.card-index.red{color:#b32935}
+.my-cards .card-index{font-size:clamp(22px,5.6vw,30px)}
+.my-cards .card-index i{font-size:clamp(21px,5.4vw,29px)}
+.up-cards .card-index{font-size:15px;width:30%}
+.up-cards .card-index i{font-size:14px}
+.down-cards .card-index{font-size:8px}
+.down-cards .card-index i{font-size:7px}
+.poker-playing .decision-panel{width:100%;max-width:1000px;align-self:end;padding:12px 0 8px;margin:0 auto;position:sticky;bottom:0;z-index:20;background:#0c1511;box-shadow:0 -8px 14px #0c151155;border-radius:14px 14px 0 0}
+.poker-playing .decision-heading{margin:0 2px 10px;min-height:22px}
+.poker-playing .status{font-size:15px}
+.poker-playing .decision-heading>span{font-size:10px}
+.poker-playing .actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-height:64px}
+.poker-playing .actions button{min-height:64px;font-size:16px;gap:6px;border-radius:12px;padding:8px}
+.poker-playing .actions button small{font-size:12px}
+.poker-playing .actions .wide{max-width:none;min-height:64px;font-size:16px;padding:14px 20px}
+.poker-playing .actions .fold{background:#24221f;color:#d2bab0}
+.poker-playing .actions .fold small{color:#ac978c}
+.poker-playing .actions .call{font-weight:800}
+.poker-playing .actions.finished-actions{grid-template-columns:1fr}
+.poker-playing .finished-actions .small-button{min-height:44px}
+.poker-playing .waiting{min-height:64px;font-size:13px}
+.poker-playing .table-footer{width:100%;max-width:1000px;margin:0 auto;padding:3px 2px;min-height:30px}
+.poker-playing .recent{font-size:11px}
+.poker-playing .recent summary{padding:6px 0;min-height:28px}
+.poker-playing .table-footer>span{font-size:9px}
+#cards-dialog{width:min(840px,calc(100% - 16px));max-width:calc(100% - 16px);padding:20px;max-height:calc(100dvh - 24px)}
+#cards-dialog>header{position:sticky;top:-20px;background:#141f18;z-index:2;padding:0 0 12px}
+#cards-dialog>header button{min-width:44px;min-height:44px}
+#cards-content{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:30px 10px}
+#cards-content .card{width:100%;height:auto;aspect-ratio:5/7}
+#cards-content .card-index{font-size:clamp(23px,5.5vw,38px)}
+#cards-content .card-index i{font-size:clamp(22px,5.2vw,36px)}
+#cards-content .muted{grid-column:1/-1;font-size:13px;line-height:1.6;margin:0}
+@media(min-width:1000px) and (min-height:700px){
+  .poker-playing .actions{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .poker-playing{--hand-card-width:clamp(72px,23vw,116px)}
+  .poker-playing .app-header{height:52px;min-height:52px;padding:4px 8px;padding-top:max(4px,env(safe-area-inset-top));gap:6px}
+  .table-back{min-width:48px;padding:6px;font-size:12px}
+  .poker-playing .title{font-size:13px;white-space:nowrap;gap:0}
+  .poker-playing .title .logo{display:none}
+  .poker-playing .header-tools{gap:0}
+  .poker-playing .header-tools .small-button{padding:6px 7px;font-size:11px}
+  .poker-playing .wallet{padding-left:8px;margin-left:3px}
+  .poker-playing .wallet b{font-size:16px}
+  .poker-playing .wallet small{font-size:8px}
+  .poker-playing .online-room-bar{gap:5px;padding:0 8px 3px;font-size:10px;flex-wrap:wrap;justify-content:space-between}
+  .poker-playing .online-room-bar>span:first-child{width:auto;max-width:calc(100% - 152px);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .poker-playing .online-room-bar b{margin-left:4px;letter-spacing:0}
+  .poker-playing .online-room-bar .small-button{font-size:10px;padding:4px 5px}
+  .poker-playing .online-clock{font-size:10px}
+  .poker-playing .game{padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right))}
+  .poker-playing .round-strip{padding:4px 6px 8px;min-height:26px;gap:4px}
+  .poker-playing .table-id{font-size:8px;letter-spacing:0}
+  .poker-playing .table-id>span{font-size:7px}
+  .poker-playing .street-dots span{font-size:10px;padding:0 7px}
+  .poker-playing .felt{border-width:2px;border-radius:21px;padding:12px 8px 8px}
+  .poker-playing .felt-inlay{inset:5px;border-radius:16px}
+  .poker-playing .opponents{gap:7px}
+  .poker-playing .seat-head{min-height:44px;padding:6px;gap:5px;max-width:160px}
+  .poker-playing .seat-monogram{font-size:18px}
+  .poker-playing .seat-info strong{font-size:12px}
+  .poker-playing .seat-info small{font-size:10px;letter-spacing:0}
+  .poker-playing .seat-info small span{font-size:8px}
+  .poker-playing .seat-cards{gap:4px;padding-top:5px}
+  .poker-playing .down-cards{gap:2px}
+  .poker-playing .down-cards .card{width:17px;height:23.8px}
+  .poker-playing .up-cards .card{width:clamp(40px,11.8vw,60px);height:auto;aspect-ratio:5/7;margin-left:-20px}
+  .poker-playing .up-cards .card:first-child{margin-left:0}
+  .poker-playing .seat-action{font-size:10px;gap:3px;min-height:20px;margin-top:3px}
+  .poker-playing .seat-action small{font-size:8px}
+  .poker-playing .pot-zone{min-height:62px;padding:6px 0}
+  .poker-playing .pot-amount{font-size:32px}
+  .poker-playing .pot-label{font-size:8px}
+  .poker-playing .deal-deck{left:calc(50% - 88px);width:30px;height:42px}
+  .poker-playing .player-header{padding:0 2px 5px;min-height:44px;gap:4px}
+  .poker-playing .player-name{gap:5px}
+  .poker-playing .player-name b{font-size:14px}
+  .poker-playing .player-name>span{font-size:10px}
+  .hand-tools{gap:2px}
+  .poker-playing .hand-label{font-size:11px;padding:4px 6px}
+  .hand-zoom{font-size:11px;padding:5px 6px}
+  .poker-playing .my-cards{padding-top:8px;padding-bottom:24px}
+  .poker-playing .player-bet{font-size:10px;min-height:18px}
+  .poker-playing .decision-panel{padding:10px 4px max(6px,env(safe-area-inset-bottom));border-radius:12px 12px 0 0}
+  .poker-playing .decision-heading{margin-bottom:8px}
+  .poker-playing .status{font-size:13px}
+  .poker-playing .decision-heading>span{display:none}
+  .poker-playing .actions{gap:7px}
+  .poker-playing .actions button{min-height:60px;font-size:16px}
+  .poker-playing .actions button small{font-size:11px}
+  .poker-playing .table-footer{padding:2px 6px;min-height:28px}
+  .poker-playing .table-footer>span{font-size:8px}
+  .poker-playing .result-banner{margin-bottom:10px;padding:10px}
+  #cards-dialog{padding:14px}
+  #cards-dialog>header{top:-14px}
+  #cards-content{grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 8px}
+  #cards-content .card:nth-child(7){grid-column:2}
+}
+@media(max-width:360px){
+  .poker-playing .title{font-size:12px}
+  .poker-playing .header-tools .small-button{padding:6px;font-size:10px}
+  .poker-playing .wallet{padding-left:6px}
+  .poker-playing .wallet b{font-size:14px}
+  .poker-playing .seat-monogram{display:none}
+  .poker-playing .table-id>span{display:none}
+  .poker-playing .street-dots span{padding:0 6px}
+  .poker-playing .up-cards .card{margin-left:-19px}
+}
+@media(max-height:740px){
+  .poker-playing .felt{padding-top:8px;padding-bottom:5px}
+  .poker-playing .down-cards{display:none}
+  .poker-playing .pot-zone{min-height:42px;gap:0;padding:2px 0}
+  .poker-playing .pot-label{font-size:7px}
+  .poker-playing .pot-amount{font-size:28px}
+  .poker-playing .deal-deck{width:25px;height:35px}
+  .poker-playing .player-header{min-height:36px;padding-bottom:0}
+  .poker-playing .hand-zoom{min-height:36px}
+  .poker-playing .actions button{min-height:52px;line-height:1.15;gap:3px;padding:6px}
+  .poker-playing .actions button small{line-height:1.1}
+  .poker-playing .decision-panel{padding-top:8px}
+}
+@media(min-width:601px) and (max-height:650px){
+  .poker-playing{--hand-card-width:clamp(64px,9vw,84px)}
+  .poker-playing .app-header{height:48px;min-height:48px;padding:2px max(10px,env(safe-area-inset-right)) 2px max(10px,env(safe-area-inset-left))}
+  .poker-playing .game{grid-template-columns:minmax(0,1fr) 236px;grid-template-rows:auto 1fr auto;gap:0 14px}
+  .poker-playing .round-strip{grid-column:1/-1;padding:3px 4px 6px;min-height:24px}
+  .poker-playing .table-scene{grid-column:1;grid-row:2}
+  .poker-playing .felt{border-radius:20px;padding:7px 10px 5px}
+  .poker-playing .felt-inlay{border-radius:14px}
+  .poker-playing .opponents{gap:9px}
+  .poker-playing .seat-head{min-height:34px;padding:4px 7px;max-width:160px}
+  .poker-playing .seat-monogram{font-size:17px}
+  .poker-playing .seat-info strong{font-size:11px}
+  .poker-playing .seat-info small{font-size:9px}
+  .poker-playing .seat-cards{padding-top:4px}
+  .poker-playing .up-cards .card{width:36px;height:50.4px;margin-left:-11px}
+  .poker-playing .up-cards .card-index{font-size:12px}
+  .poker-playing .up-cards .card-index i{font-size:11px}
+  .poker-playing .seat-action{font-size:9px;min-height:16px;margin-top:2px}
+  .poker-playing .pot-zone{min-height:27px;flex-direction:row;gap:8px}
+  .poker-playing .pot-amount{font-size:25px}
+  .poker-playing .deal-deck{left:calc(50% - 110px);width:20px;height:28px}
+  .poker-playing .player-header{min-height:28px;padding:0 3px 2px}
+  .poker-playing .hand-zoom{min-height:28px}
+  .poker-playing .my-cards{padding:4px 0 19px}
+  .poker-playing .my-cards .card-index{font-size:22px}
+  .poker-playing .my-cards .card-index i{font-size:21px}
+  .poker-playing .card-state{bottom:-15px;font-size:8px}
+  .poker-playing .player-bet{min-height:15px;font-size:9px}
+  .poker-playing .decision-panel{grid-column:2;grid-row:2;position:sticky;align-self:center;bottom:8px;padding:5px 0;background:transparent;box-shadow:none}
+  .poker-playing .decision-heading{display:block;margin-bottom:10px}
+  .poker-playing .decision-heading>span{display:none}
+  .poker-playing .status{font-size:13px}
+  .poker-playing .actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .poker-playing .actions button{min-height:64px;font-size:14px}
+  .poker-playing .actions button small{font-size:10px}
+  .poker-playing .actions .wide{padding:10px;min-height:64px;font-size:14px}
+  .poker-playing .table-footer{grid-column:1/-1;min-height:24px;padding-top:0}
+  .poker-playing .recent summary{min-height:24px;padding:4px 0}
+  .poker-playing .result-banner{margin-bottom:8px}
+  #cards-content{grid-template-columns:repeat(7,minmax(0,1fr))}
+}
+
+/* Keep the full hand above the action dock on short phone viewports. */
+@media(max-width:600px) and (max-height:620px){
+  .poker-playing .app-header{height:44px;min-height:44px;padding-top:0;padding-bottom:0}
+  .poker-playing .round-strip{display:none}
+  .poker-playing .game{grid-template-rows:1fr auto auto;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+  .poker-playing .felt{padding-top:6px;padding-bottom:4px}
+  .poker-playing .seat-head{min-height:36px;padding:4px 6px}
+  .poker-playing .seat-info{gap:2px}
+  .poker-playing .seat-info strong{font-size:11px;line-height:1.1}
+  .poker-playing .seat-info small{font-size:9px;line-height:1.1}
+  .poker-playing .up-cards .card{width:36px;height:50.4px;margin-left:-16px}
+  .poker-playing .up-cards .card-index{font-size:12px}
+  .poker-playing .up-cards .card-index i{font-size:11px}
+  .poker-playing .seat-action{min-height:16px;font-size:9px;margin-top:1px}
+  .poker-playing .pot-zone{flex-direction:row;min-height:28px;gap:6px;padding:0}
+  .poker-playing .pot-amount{font-size:25px}
+  .poker-playing .deal-deck{width:21px;height:29.4px;left:calc(50% - 95px)}
+  .poker-playing .player-header,.poker-playing .hand-zoom{min-height:32px}
+  .poker-playing .my-cards{padding-top:4px;padding-bottom:19px}
+  .poker-playing .card-state{bottom:-15px;font-size:9px}
+  .poker-playing .player-bet{display:none}
+  .poker-playing .decision-panel{padding-top:7px;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+  .poker-playing .decision-heading{min-height:19px;margin-bottom:6px}
+  .poker-playing .table-footer{min-height:22px;padding-top:0;padding-bottom:0}
+  .poker-playing .recent summary{min-height:22px;padding:2px 0}
+}
+@media(min-width:601px) and (max-height:450px){
+  .poker-playing{--hand-card-width:clamp(64px,8.6vw,72px)}
+  .poker-playing .app-header{height:44px;min-height:44px;padding-top:0;padding-bottom:0}
+  .poker-playing .round-strip{display:none}
+  .poker-playing .game{grid-template-rows:1fr auto;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+  .poker-playing .table-scene{grid-row:1/3}
+  .poker-playing .decision-panel{grid-row:1}
+  .poker-playing .table-footer{grid-column:2;grid-row:2;display:block;padding:0}
+  .poker-playing .table-footer>span{display:none}
+  .poker-playing .player-bet{display:none}
+  .poker-playing .player-header{min-height:28px}
+  .poker-playing .my-cards{padding-top:3px;padding-bottom:18px}
+}
+
+/* Four sides: the local player stays south as online seats rotate. */
+.poker-playing .felt{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,.72fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"north north north" "west pot east" "hand hand hand";gap:10px 8px;align-items:center}
+.poker-playing .opponents{display:contents}
+.poker-playing .seat-west{grid-area:west;justify-self:start;width:100%;max-width:280px}
+.poker-playing .seat-east{grid-area:east;justify-self:end;width:100%;max-width:280px}
+.poker-playing .seat-north{grid-area:north;justify-self:center;display:grid;grid-template-columns:100px minmax(0,1fr);grid-template-rows:auto auto;gap:0 12px;width:min(100%,360px);align-items:center}
+.poker-playing .seat-north .seat-head{grid-column:1;grid-row:1;align-self:end;max-width:none}
+.poker-playing .seat-north .seat-cards{grid-column:2;grid-row:1/3;align-self:center;padding-top:0}
+.poker-playing .seat-north .seat-action{grid-column:1;grid-row:2;align-self:start}
+.poker-playing .seat-north .result-seats{grid-column:1/-1;grid-row:3}
+.poker-playing .seat-north .up-cards .card{margin-left:-6px}
+.poker-playing .seat-north .up-cards .card:first-child{margin-left:0}
+.poker-playing .pot-zone{grid-area:pot;align-self:center;justify-self:stretch;min-width:0;min-height:80px;max-height:none;display:flex;flex-direction:column;gap:4px;padding:0}
+.poker-playing .pot-zone .deal-deck{position:relative;left:auto;top:auto;transform:rotate(-7deg);margin:0 0 10px;width:30px;height:42px;order:-1}
+.poker-playing .pot-amount{font-size:clamp(24px,3.6vw,42px);overflow-wrap:anywhere}
+.poker-playing .pot-amount>span{font-size:10px;margin-left:3px}
+.poker-playing .pot-label{font-size:8px;letter-spacing:.08em}
+.poker-playing .player{grid-area:hand;align-self:end}
+.poker-playing .felt:has(.opponents>.seat:nth-child(2):last-child){grid-template-areas:"west pot east" "hand hand hand";grid-template-rows:1fr auto}
+@media(max-width:600px){
+  .poker-playing .felt{gap:8px 5px;grid-template-columns:minmax(0,1fr) minmax(56px,.62fr) minmax(0,1fr)}
+  .poker-playing .seat-north{grid-template-columns:86px minmax(0,1fr);width:min(100%,304px);gap:0 10px}
+  .poker-playing .seat-north .up-cards .card{margin-left:-8px}
+  .poker-playing .seat-west .seat-head,.poker-playing .seat-east .seat-head{max-width:124px}
+  .poker-playing .pot-zone .deal-deck{width:24px;height:33.6px;margin-bottom:8px}
+  .poker-playing .pot-amount{font-size:25px}
+  .poker-playing .pot-label{font-size:7px}
+}
+@media(max-width:600px) and (max-height:620px){
+  .poker-playing{--hand-card-width:clamp(64px,20.5vw,100px)}
+  .poker-playing .felt{gap:4px;grid-template-columns:minmax(0,1fr) minmax(54px,.54fr) minmax(0,1fr)}
+  .poker-playing .seat-north{grid-template-columns:74px minmax(0,1fr);width:min(100%,254px);gap:0 8px}
+  .poker-playing .seat-head{min-height:30px;padding:3px 5px}
+  .poker-playing .seat-info{gap:1px}
+  .poker-playing .seat-action{font-size:9px;min-height:15px;line-height:1.2;margin-top:2px}
+  .poker-playing .pot-zone{min-height:70px;gap:2px}
+  .poker-playing .pot-zone .deal-deck{width:21px;height:29.4px;margin-bottom:4px}
+  .poker-playing .pot-amount{font-size:22px}
+  .poker-playing .pot-label{font-size:6px}
+  .poker-playing .my-cards{padding-top:4px;padding-bottom:6px}
+  .poker-playing .my-cards .card-state{bottom:3px;left:3px;padding:2px 3px;border-radius:3px;background:#143322e8;font-size:8px;color:#ecf1dc}
+  .poker-playing .my-cards .card-index{font-size:21px}
+  .poker-playing .my-cards .card-index i{font-size:20px}
+}
+@media(min-width:601px) and (max-height:650px){
+  .poker-playing .felt{gap:5px 8px;grid-template-columns:minmax(0,1fr) minmax(60px,.55fr) minmax(0,1fr)}
+  .poker-playing .seat-north{grid-template-columns:92px minmax(0,1fr);width:min(100%,280px);gap:0 10px}
+  .poker-playing .seat-north .up-cards .card{margin-left:-8px}
+  .poker-playing .pot-zone .deal-deck{width:21px;height:29.4px;margin-bottom:6px}
+  .poker-playing .pot-zone{gap:2px;min-height:60px}
+  .poker-playing .pot-amount{font-size:25px}
+}
+@media(min-width:601px) and (max-height:450px){
+  .poker-playing{--hand-card-width:clamp(60px,8vw,66px)}
+  .poker-playing .felt{gap:3px 8px;padding-top:5px;padding-bottom:4px}
+  .poker-playing .my-cards{padding-top:3px;padding-bottom:6px}
+  .poker-playing .my-cards .card-state{bottom:3px;left:3px;padding:2px 3px;border-radius:3px;background:#143322e8;font-size:8px;color:#ecf1dc}
+}
+/* On tall screens the opposite seat is centered above the pot. */
+@media(min-height:741px){
+  .poker-playing .seat-cards{position:relative;padding-top:8px}
+  .poker-playing .seat-cards .down-cards:has(.back){position:absolute;top:0;left:50%;transform:translateX(-50%);width:auto;z-index:0}
+  .poker-playing .seat-cards .up-cards{position:relative;z-index:1}
+  .poker-playing .seat-north{display:flex;flex-direction:column;width:min(100%,300px);gap:0}
+  .poker-playing .seat-north .seat-head{width:auto;min-width:156px;max-width:220px;min-height:36px;padding:5px 12px;align-self:center}
+  .poker-playing .seat-north .seat-info{flex-direction:row;align-items:center;gap:10px}
+  .poker-playing .seat-north .seat-cards{padding-top:8px}
+  .poker-playing .seat-north .seat-action{align-self:center;min-height:18px}
+}
+@media(max-width:600px) and (min-height:741px){
+  .poker-playing .felt{padding-top:8px;padding-bottom:4px}
+  .poker-playing .hand-zoom{min-height:36px}
+  .poker-playing .my-cards{padding-bottom:20px}
+  .poker-playing .actions button{line-height:1.15;gap:4px}
+  .poker-playing .actions button small{line-height:1.1}
+}
+@media(max-width:600px) and (min-height:741px){
+  .poker-playing .felt{row-gap:4px}
+  .poker-playing .player-header{padding-bottom:4px}
+}
+
+@media(min-width:601px) and (min-height:651px){
+  .poker-playing .player-header{padding-bottom:4px}
+  .poker-playing .felt{padding-bottom:6px}
+}
+@media(min-width:601px) and (max-height:450px){
+  .poker-playing{--hand-card-width:clamp(60px,8vw,64px)}
+  .poker-playing .felt{row-gap:2px}
+  .poker-playing .seat-info{gap:2px}
+  .poker-playing .seat-action{line-height:1.15;min-height:14px}
+  .poker-playing .up-cards .card{width:35px;height:49px}
+  .poker-playing .player-header{padding-bottom:0}
+  .poker-playing .hand-zoom{min-height:28px;padding:4px 6px;font-size:11px;line-height:1.15}
+}
+
+@media(min-width:601px) and (max-height:450px){
+  .poker-playing{--hand-card-width:clamp(60px,8vw,62px)}
+  .poker-playing .felt{padding-top:3px;padding-bottom:2px}
+}
