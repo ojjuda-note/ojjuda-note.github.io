@@ -190,7 +190,9 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await tab('photo-stages'); await assertRefreshPreservesHost('photo-stages');
+    await area('account'); await tab('referrals'); await assertRefreshPreservesHost('accounts');
+    assert.equal(await page.evaluate(() => fixture.options.accounts.view), 'referrals');
+    await area('content'); await tab('photo-stages'); await assertRefreshPreservesHost('photo-stages');
     await area('support'); await assertRefreshPreservesHost('reports');
     await tab('feedback'); await assertRefreshPreservesHost('support');
     await area('operations'); await tab('connections'); await assertRefreshPreservesHost('connections');

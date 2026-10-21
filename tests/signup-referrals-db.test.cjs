@@ -1,0 +1,72 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {PGlite}=require('@electric-sql/pglite');
+const {fuzzystrmatch}=require('@electric-sql/pglite/contrib/fuzzystrmatch');
+(async()=>{
+ const db=new PGlite({extensions:{fuzzystrmatch}});
+ const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+ try{
+  await db.exec(`create role anon; create role authenticated; create schema auth; create schema extensions;
+   create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+   grant usage on schema auth to anon,authenticated;
+   create table auth.users(id uuid primary key,email text,created_at timestamptz default now(),email_confirmed_at timestamptz,raw_user_meta_data jsonb default '{}');
+   create table public.profiles(id uuid primary key references auth.users(id) on delete cascade,nickname text unique);
+   create table public.user_private(user_id uuid primary key references auth.users(id) on delete cascade,banned_until timestamptz);
+   create table public.app_admins(user_id uuid primary key references auth.users(id) on delete cascade);
+   create function public.is_admin() returns boolean language sql stable security definer set search_path=pg_catalog as $$ select exists(select 1 from public.app_admins where user_id=auth.uid()) $$;
+  `);
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261021071516_signup_referrals.sql'),'utf8'));
+  const value=async(sql,args=[]) => (await db.query(sql,args)).rows[0]?.value;
+  const signup=(n,meta={},confirmed=true)=>db.query('insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,case when $4 then now() else null end)',[id(n),`synthetic-${n}@example.invalid`,meta,confirmed]);
+  for(const [n,name]of [[1,'민준'],[2,'민준이'],[3,'오쭈다'],[4,'테스트관리자'],[5,'abcdefgh'],[6,'민준공원'],[7,'민준친구'],[8,'민준게임'],[9,'민준산책']]){
+   await signup(n);await db.query('insert into public.profiles values($1,$2)',[id(n),name]);
+  }
+  await db.query('insert into public.app_admins values($1)',[id(4)]);
+  await db.exec('set role anon');
+  const search=async q=>(await db.query('select * from public.search_signup_referrers($1)',[q])).rows;
+  assert.equal((await search('민준'))[0].id,id(1),'exact result comes first');
+  assert.ok((await search('민쥰')).some(p=>p.id===id(1)),'Korean one-letter typo');
+  assert.ok((await search('abcedfgh')).some(p=>p.id===id(5)),'long-name transposition');
+  assert.equal((await search('민준')).length,5,'small bounded suggestion list');
+  assert.deepEqual(await search(''),[]);assert.deepEqual(await search('%'),[]);assert.deepEqual(await search('a'.repeat(1000)),[]);
+  assert.deepEqual(Object.keys((await search('오쭈다'))[0]).sort(),['id','nickname']);
+  await assert.rejects(()=>value('select public.admin_referral_counts() as value'),/permission denied/);
+  await assert.rejects(()=>db.query('select * from ojjuda_referral_internal.signups'),/permission denied/);
+  await db.exec('reset role');
+  await signup(20);
+  assert.equal(await value('select count(*)::int as value from ojjuda_referral_internal.signups'),0,'optional blank creates no referral');
+  const ref={referrer_id:id(1),referrer_nickname:'민준'};
+  await signup(21,ref,false);
+  assert.equal(await value('select count(*)::int as value from ojjuda_referral_internal.signups where confirmed_at is not null'),0);
+  const metadata=await value('select raw_user_meta_data as value from auth.users where id=$1',[id(21)]);
+  assert.equal('referrer_id' in metadata,false,'editable metadata is not the permanent record');
+  await db.query('update auth.users set email_confirmed_at=now() where id=$1',[id(21)]);
+  await db.query('update auth.users set email_confirmed_at=now(),raw_user_meta_data=$2 where id=$1',[id(21),{referrer_id:id(3),referrer_nickname:'오쭈다'}]);
+  assert.equal(await value('select referrer_id as value from ojjuda_referral_internal.signups where user_id=$1',[id(21)]),id(1),'metadata edits cannot change referral');
+  await db.query('update auth.users set raw_user_meta_data=$2 where id=$1',[id(20),ref]);
+  assert.equal(await value('select count(*)::int as value from ojjuda_referral_internal.signups'),1,'existing users cannot add attribution');
+  for(const bad of [{referrer_id:id(1)},{referrer_nickname:'민준'},{referrer_id:'bad',referrer_nickname:'민준'},{referrer_id:id(404),referrer_nickname:'민준'},{referrer_id:id(1),referrer_nickname:'오타'},{referrer_id:id(30),referrer_nickname:'자기추천'}])
+   await assert.rejects(()=>signup(30,bad),/invalid_signup_referrer/);
+  await db.query('insert into public.user_private values($1,now()+interval \'1 day\')',[id(1)]);
+  await assert.rejects(()=>signup(30,ref),/invalid_signup_referrer/);
+  assert.equal((await search('민준')).some(p=>p.id===id(1)),false);
+  await db.query('delete from public.user_private where user_id=$1',[id(1)]);
+  await signup(22,ref);await signup(23,ref,false);
+  await db.query('update public.profiles set nickname=$2 where id=$1',[id(1),'바뀐민준']);
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id(20)]);await db.exec('set role authenticated');
+  await assert.rejects(()=>value('select public.admin_referral_counts() as value'),/not_admin/);
+  await assert.rejects(()=>db.query('insert into ojjuda_referral_internal.signups(user_id,referrer_id) values($1,$2)',[id(20),id(1)]),/permission denied/);
+  await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id(4)]);await db.exec('set role authenticated');
+  const counts=await value('select public.admin_referral_counts() as value');
+  assert.equal(counts.total_referrals,2);assert.equal(counts.pending_referrals,1);
+  assert.equal(counts.items[0].nickname,'바뀐민준');assert.equal(counts.items[0].referral_count,2);assert.equal(counts.items[0].pending_count,1);
+  assert.equal((await value("select public.admin_referral_counts('바뀐') as value")).total,1);
+  assert.equal((await value("select public.admin_referral_counts('',0,1) as value")).items.length,1);
+  await db.exec('reset role');await db.query('delete from auth.users where id=$1',[id(21)]);
+  assert.equal(await value('select count(*)::int as value from ojjuda_referral_internal.signups where user_id is null'),1);
+  assert.equal((await value('select public.admin_referral_counts() as value')).total_referrals,2,'withdrawal preserves anonymous cumulative count');
+  await db.query('delete from auth.users where id=$1',[id(23)]);
+  assert.equal((await value('select public.admin_referral_counts() as value')).pending_referrals,0);
+  assert.equal(await value("select relrowsecurity as value from pg_class where oid='ojjuda_referral_internal.signups'::regclass"),true);
+  console.log('PASS: optional referrals, Korean/English typos, explicit identity validation, immutable/deduplicated confirmation counts, withdrawal, admin authorization and private RLS');
+ }finally{await db.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
