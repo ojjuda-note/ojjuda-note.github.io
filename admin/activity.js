@@ -120,7 +120,7 @@
     section.append(heading, el('p', 'aa-help', '변경 내용과 처리 사유를 확인해요. 시간은 한국 기준이에요.'));
     const controls = el('div', 'aa-controls');
     sourceSelect = el('select'); sourceSelect.setAttribute('aria-label', '기록 종류');
-    for (const [value, label] of [['world','계정·집·대화'],['park','카드·답글']]) { const option = el('option', '', label); option.value = value; sourceSelect.append(option); }
+    for (const [value, label] of [['world','계정·ZU·운영'],['park','카드·답글']]) { const option = el('option', '', label); option.value = value; sourceSelect.append(option); }
     sourceSelect.value = source;
     actionSelect = el('select'); actionSelect.setAttribute('aria-label', '작업 분류'); actionSelect.append(el('option', '', '전체 작업')); actionSelect.firstElementChild.value = '';
     const sourceLabel = el('label', '', '기록 종류'), actionFilterLabel = el('label', 'aa-action-filter', '작업 분류'); sourceLabel.append(sourceSelect); actionFilterLabel.append(actionSelect);

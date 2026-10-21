@@ -154,12 +154,12 @@
     const filters = el('div', undefined, 'ops-controls'), warnings = el('div'), summary = el('p', '', 'ops-summary');
     const list = el('div', undefined, 'ops-list'), message = el('p', '', 'ops-message');
     message.setAttribute('role', 'status'); message.setAttribute('aria-live', 'polite');
-    container.replaceChildren(heading, el('p', '미니홈피는 상태별 최근 100건, 익명카드는 처리 중인 신고와 숨긴 카드를 함께 확인해요.', 'ops-help'), filters, warnings, summary, list, message);
+    container.replaceChildren(heading, el('p', '계정 신고는 상태별 최근 100건, 공원 카드는 처리 중인 신고와 숨긴 카드를 함께 확인해요.', 'ops-help'), filters, warnings, summary, list, message);
 
     function render() {
       if (!scope.current()) return;
       filters.replaceChildren();
-      choices(filters, [['all', '전체 서비스'], ['world', '미니홈피'], ['note', '익명카드']], source, value => { source = value; render(); }, '신고 서비스');
+      choices(filters, [['all', '전체 서비스'], ['world', '계정'], ['note', '공원 카드']], source, value => { source = value; render(); }, '신고 서비스');
       choices(filters, REPORT_STATES, status, value => { status = value; render(); }, '신고 처리 상태');
       warnings.replaceChildren(); warning(warnings, failures, () => void load());
       const visible = rows.filter(row => (source === 'all' || source === row.source) && (status === 'all' || status === row.state));
@@ -173,7 +173,7 @@
     function reportRow(row) {
       const item = el('article', undefined, 'adm-card ops-card'); item.dataset.operationId = row.key;
       const value = row.value, meta = el('div', undefined, 'ops-meta');
-      meta.append(badge(row.source === 'world' ? '미니홈피' : '익명카드', row.source), badge(row.source === 'world' ? WORLD_KINDS[value.kind] || value.kind || '콘텐츠' : '카드·답글'), badge(STATUS_LABELS[row.state] || row.state), el('time', date(row.created_at)));
+      meta.append(badge(row.source === 'world' ? '계정' : '공원 카드', row.source), badge(row.source === 'world' ? WORLD_KINDS[value.kind] || value.kind || '콘텐츠' : '카드·답글'), badge(STATUS_LABELS[row.state] || row.state), el('time', date(row.created_at)));
       if (row.source === 'note') meta.append(badge(value.hidden ? '개별 숨김' : '개별 숨김 없음'));
       item.append(meta);
       if (row.source === 'world') {
@@ -189,9 +189,6 @@
         if (typeof worldActions.setReport === 'function') {
           if (row.state !== 'reviewed') actions.append(button('확인함', () => void mutate('이 신고를 확인함으로 표시할까요?', () => worldActions.setReport(value.id, 'reviewed'), '확인함으로 표시했어요.')));
           if (row.state !== 'actioned') actions.append(button('조치함', () => void mutate('이 신고를 조치함으로 표시할까요?', () => worldActions.setReport(value.id, 'actioned'), '조치함으로 표시했어요.')));
-        }
-        if (typeof worldActions.deleteContent === 'function' && ['guestbook', 'chat', 'media_comment'].includes(value.kind) && value.target_id) {
-          actions.append(button('글 삭제', () => void mutate('신고된 글을 삭제할까요?', () => worldActions.deleteContent(value.kind, value.target_id, value.target_user || null), '글 삭제를 처리했어요.'), 'danger'));
         }
         if (typeof worldActions.ban === 'function' && value.target_user) {
           const banned = Date.parse(value.target_banned_until) > Date.now();
@@ -226,10 +223,10 @@
       if (!scope.current() || loading || saving) return;
       const epoch = ++run; loading = true; render();
       const requests = [
-        ['미니홈피 접수 신고', 'world', 'open', () => rpc(client, 'public', 'admin_reports', { st: 'open' })],
-        ['미니홈피 확인한 신고', 'world', 'reviewed', () => rpc(client, 'public', 'admin_reports', { st: 'reviewed' })],
-        ['미니홈피 조치한 신고', 'world', 'actioned', () => rpc(client, 'public', 'admin_reports', { st: 'actioned' })],
-        ['익명카드 신고', 'note', null, () => rpc(client, 'ojjuda_note', 'moderation_queue')]
+        ['계정 접수 신고', 'world', 'open', () => rpc(client, 'public', 'admin_reports', { st: 'open' })],
+        ['계정 확인한 신고', 'world', 'reviewed', () => rpc(client, 'public', 'admin_reports', { st: 'reviewed' })],
+        ['계정 조치한 신고', 'world', 'actioned', () => rpc(client, 'public', 'admin_reports', { st: 'actioned' })],
+        ['공원 카드 신고', 'note', null, () => rpc(client, 'ojjuda_note', 'moderation_queue')]
       ];
       const results = await Promise.allSettled(requests.map(request => request[3]()));
       if (!scope.current() || epoch !== run) return;
@@ -257,7 +254,7 @@
     let run = 0, loading = false, saving = false, status = 'open', rows = [], failures = [], resultText = '';
     let inquiryController = null;
     const inquiries = el('section', undefined, 'ops-section');
-    inquiries.append(el('h3', '문의·답변'), el('p', '미니홈피와 익명카드에서 접수한 문의에 답변해요.', 'ops-help'));
+    inquiries.append(el('h3', '문의·답변'), el('p', '오쭈다에서 접수한 문의에 답변해요.', 'ops-help'));
     const inquiryBody = el('div', undefined, 'ops-inquiries'); inquiries.append(inquiryBody);
     const feedback = el('section', undefined, 'ops-section'), heading = el('div', undefined, 'ops-heading');
     heading.append(el('h3', '의견'), button('새로고침', () => void load()));

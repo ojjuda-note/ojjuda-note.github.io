@@ -44,10 +44,10 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.goto('https://fixture.test/world.html');await loaded();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
-   const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,5);
-   const expected=(layout.width-layout.left-layout.right)/layout.buttons.length;
-   layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*expected))<=1)});
+   const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),gap:parseFloat(getComputedStyle(el).columnGap)||0,buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
+   assert.equal(layout.buttons.length,3);
+   const expected=(layout.width-layout.left-layout.right-layout.gap*(layout.buttons.length-1))/layout.buttons.length;
+   layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*(expected+layout.gap)))<=1)});
   }
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
@@ -70,14 +70,14 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
    await page.waitForURL('https://fixture.test/world.html?place=park');
    assert.ok(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),'Note retains the previous admin session, reproducing the reported route');
    await page.locator('.world-link').nth(index).click();await loaded();
-   assert.equal((await current()).tab,'friends','a Note minihome click opens the normal World main screen');
+   assert.equal((await current()).tab,'place','a Note minihome click opens the normal World main screen');
    assert.equal(await page.locator('.adm-header').count(),0,'the ordinary minihome shortcut never opens the administrator screen');
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null,'ordinary entry clears stale administrator navigation');
-   await reload();assert.equal((await current()).tab,'friends','refresh after an ordinary entry stays out of administrator mode');
+   await reload();assert.equal((await current()).tab,'place','refresh after an ordinary entry stays out of administrator mode');
   }
   await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
   await page.goto('https://fixture.test/world.html');await loaded();
-  assert.equal((await current()).tab,'friends','direct ordinary World entry does not restore an earlier administrator screen');
+  assert.equal((await current()).tab,'place','direct ordinary World entry does not restore an earlier administrator screen');
   await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
   await page.evaluate(()=>worldTest.actions.tab({tab:'my'}));
   await reload();assert.notEqual((await current()).tab,'admin','leaving admin clears restoration');
@@ -97,6 +97,6 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>worldTest.clear());
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null);
   assert.deepEqual(errors,[]);
-  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 4 equal-width menus at 5 mobile/tablet widths.');
+  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 3 equal-width menus at 5 mobile/tablet widths.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

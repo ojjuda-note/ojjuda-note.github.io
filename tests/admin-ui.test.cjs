@@ -26,6 +26,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     const scripts = [...read('world.html').matchAll(/<script\b[^>]*\bsrc="([^"]+)"[^>]*>/g)]
       .map(match => match[1].split('?')[0])
       .filter(src => /\/(?:signup-identity|admin\/member-identity)\.js$/.test(src));
+    scripts.push('/admin/member-identity.js');
     for (const src of scripts) await page.addScriptTag({ content: read(src.replace(/^\//, '')) });
     await page.evaluate(async () => {
       window.savedCalls = [];

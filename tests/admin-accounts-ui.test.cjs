@@ -12,7 +12,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
   await page.addScriptTag({content:fs.readFileSync(path.join(root,'admin/accounts.js'),'utf8')});
   await page.evaluate(()=>{
    window.adminId='admin-a';window.calls=[];window.pending=[];window.defer=false;window.fail=false;window.unsubscribed=0;window.actions=[];
-   window.members=Array.from({length:43},(_,i)=>({id:'member-'+i,nickname:i===0?'<img src=x onerror=alert(1)>':'회원 '+i,email:'person'+i+'@example.invalid',coins:i,created_at:i<3?'2026-10-04T00:00:00Z':'2026-09-01T00:00:00Z',last_seen:null,last_active:i===0?'2026-10-04T01:00:00Z':null,last_active_kind:i===0?'house_post':null,is_admin:i===1,banned_until:i===2?'2099-01-01T00:00:00Z':null}));
+   window.members=Array.from({length:43},(_,i)=>({id:'member-'+i,nickname:i===0?'<img src=x onerror=alert(1)>':'회원 '+i,email:'person'+i+'@example.invalid',coins:i,created_at:i<3?'2026-10-04T00:00:00Z':'2026-09-01T00:00:00Z',last_seen:null,last_active:i===0?'2026-10-04T01:00:00Z':null,last_active_kind:i===0?'game':null,is_admin:i===1,banned_until:i===2?'2099-01-01T00:00:00Z':null}));
    window.withdrawn=[{id:'withdrawn-1',nickname:'보관한 회원',email_masked:'p***@example.invalid',account_created_at:'2026-08-01T00:00:00Z',withdrawn_at:'2026-10-01T00:00:00Z',expires_at:'2026-11-01T00:00:00Z',phone_number:'01099998888',birth_date:'2000-01-01',raw_snapshot:{password:'do-not-render'}}];
    window.client={auth:{onAuthStateChange(fn){window.authChanged=fn;return{data:{subscription:{unsubscribe(){unsubscribed++}}}}}},async rpc(name,args){
     calls.push({name,args});if(defer)return new Promise(resolve=>pending.push(resolve));if(fail)return{error:{message:fail===true?'synthetic transport failure':fail}};
@@ -27,7 +27,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
   });
   const idle=()=>page.waitForFunction(()=>document.querySelector('.acct-directory')?.getAttribute('aria-busy')==='false');
   await idle();assert.equal(await page.locator('.acct-card').count(),20);assert.equal(await page.locator('.acct-count').textContent(),'총 43명');
-  assert.match(await page.locator('.acct-card').first().textContent(),/우리집 글/);
+  assert.match(await page.locator('.acct-card').first().textContent(),/게임/);
   assert.equal(await page.locator('.acct-card img').count(),0,'member text cannot inject markup');
   assert.equal(await page.locator('.acct-card').first().getByText('기록 없음',{exact:true}).count(),1,'missing visit is not rendered as 1970');
   await page.getByRole('button',{name:'다음',exact:true}).click();await idle();assert.match(await page.locator('.acct-card').first().textContent(),/회원 20/);

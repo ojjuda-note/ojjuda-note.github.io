@@ -8,7 +8,7 @@ const world=read('world.html');
 const renderStart=world.indexOf('function y0()');
 const render=world.slice(renderStart,world.indexOf('function ',renderStart+10));
 const nav=world.slice(world.indexOf('adminAreas='),world.indexOf('function h0('));
-const segment=world.slice(world.indexOf('wr='),world.indexOf(',ah=',world.indexOf('wr=')));
+const segment=world.slice(world.indexOf('wr='),world.indexOf(';function noteAdminActive()',world.indexOf('wr=')));
 const mountStart=world.indexOf('var connectionsController=');
 const mount=world.slice(mountStart,world.indexOf('document.addEventListener("DOMContentLoaded",mountConnections',mountStart));
 assert.ok(mountStart>0);
@@ -30,7 +30,7 @@ assert.ok(mountStart>0);
         calls.push({url,credentials:options.credentials,headers:options.headers});
         if(mode==='error')return{ok:false,status:403};
         const result=url.includes('/jobs?')?{jobs:[{name:'backup',status:'completed',conclusion:mode==='skipped'?'skipped':mode==='failed'?'failure':'success',
-          completed_at:mode==='old'?'2026-09-27T08:08:33Z':'2026-09-29T08:08:33Z',
+          completed_at:mode==='weekly'?'2026-09-23T08:08:33Z':mode==='old'?'2026-09-20T08:08:33Z':'2026-09-29T08:08:33Z',
           steps:[{name:'Back up, encrypt, upload and verify',conclusion:mode==='stepFailed'?'failure':'success'}]}]}:
           {workflow_runs:[{id:999,event:'push',status:'completed',conclusion:'success'},{id:123,event:'workflow_dispatch',status:'completed'}]};
         return{ok:true,json:async()=>result};
@@ -48,6 +48,9 @@ assert.ok(mountStart>0);
       showConnections();`});
     await page.getByText('백업 성공 확인',{exact:true}).waitFor();
     assert.ok(await page.locator('.oc-row').count()>=24);
+    assert.equal(await page.getByRole('link',{name:'미리보기',exact:true}).count(),0);
+    assert.match(await page.locator('.oc-directory').innerText(),/매주 일요일 오전 3시/);
+    assert.match(await page.locator('.oc-directory').innerText(),/친구 쪽지/);
     assert.equal(await page.getByRole('button',{name:'운영 연결',exact:true}).getAttribute('aria-pressed'),'true');
     assert.equal(await page.locator('.oc-summary').innerText(),'도메인\n가비아\n운영 DB·원본 사진\nSupabase\n외부 백업\n네이버클라우드');
     assert.ok(await page.locator('.oc-critical').count()>8);
@@ -61,7 +64,7 @@ assert.ok(mountStart>0);
     await page.locator('.oc-table-wrap').focus();await page.keyboard.press('ArrowRight');
     await page.waitForFunction(()=>document.querySelector('.oc-table-wrap').scrollLeft>0);
     await page.screenshot({path:'/tmp/ojjuda-connections-mobile.png'});
-    for(const [mode,label]of [['skipped','확인 필요 · 백업 미완료'],['failed','확인 필요 · 백업 미완료'],['stepFailed','확인 필요 · 백업 미완료'],['old','확인 필요 · 백업 26시간 경과'],['error','현재 결과 조회 불가']]){
+    for(const [mode,label]of [['weekly','백업 성공 확인'],['skipped','확인 필요 · 백업 미완료'],['failed','확인 필요 · 백업 미완료'],['stepFailed','확인 필요 · 백업 미완료'],['old','확인 필요 · 주간 백업 지연'],['error','현재 결과 조회 불가']]){
       await page.evaluate(value=>{window.mode=value},mode);
       await page.getByRole('button',{name:'백업 실행 결과 새로고침',exact:true}).click();
       await page.getByText(label,{exact:true}).waitFor();
