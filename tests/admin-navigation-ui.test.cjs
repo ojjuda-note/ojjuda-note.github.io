@@ -223,9 +223,9 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.locator('[data-act="adm-limit"]').click();
     assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
     await area('content');
-    assert.deepEqual(await page.locator('.adm-tabs button').allTextContents(), ['카드','이벤트','쪽지 관리','포토땅따먹기','위험 신호','위치 지도','보관함']);
+    assert.deepEqual(await page.locator('.adm-tabs button').allTextContents(), ['카드','쪽지 관리','포토땅따먹기','위험 신호','위치 지도','보관함']);
     await tab('messages'); await assertRefreshPreservesHost('messages');
-    for (const id of ['cards','events','risk','map','archive']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }
+    for (const id of ['cards','risk','map','archive']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }
     await area('support'); await tab('note-users'); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'users');
     await area('operations'); await tab('words'); await page.getByText('검사해 보기', {exact:true}).waitFor();
     await tab('errors'); await page.getByText('오류 기록이 없어요 🎉', {exact:true}).waitFor();
@@ -240,6 +240,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.options.activity.initialSource), 'park',
       'the legacy Note actions link opens Park activity in the new operations group');
     for (const [legacy, area, target, initialTab] of [
+      ['events', 'content', 'cards', 'cards'], ['note-events', 'content', 'cards', 'cards'],
       ['note', 'content', 'cards', 'cards'], ['note-risk', 'content', 'risk', 'risk'],
       ['note-archive', 'content', 'archive', 'archive'], ['note-settings', 'operations', 'notice', 'settings'],
       ['notice', 'operations', 'notice', 'settings'], ['posts', 'content', 'cards', 'cards'], ['house-content', 'content', 'cards', 'cards'], ['review', 'content', 'cards', 'cards']
@@ -252,13 +253,13 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await current(), {area:'content',tab:'messages'});
     await page.goto('https://fixture.test/world.html?admin=quiz'); await loaded();
     assert.deepEqual(await current(), {area:'account',tab:'overview'});
-    for (const saved of [{area:'content',tab:'chats'}, {area:'content',tab:'risk',riskType:'chats'}, {area:'operations',tab:'spam',spamType:'chats'}]) {
+    for (const saved of [{area:'content',tab:'events'}, {area:'note',tab:'events',noteTab:'events'}, {area:'content',tab:'chats'}, {area:'content',tab:'risk',riskType:'chats'}, {area:'operations',tab:'spam',spamType:'chats'}]) {
       await page.evaluate(saved => sessionStorage.setItem('ojjuda.world.admin-view', JSON.stringify({...saved,userId:'synthetic-admin'})), saved);
       await page.goto('https://fixture.test/world.html'); await loaded();
       // An ordinary entry clears old admin state; restore only on an actual reload.
       await page.evaluate(saved => sessionStorage.setItem('ojjuda.world.admin-view', JSON.stringify({...saved,userId:'synthetic-admin'})), saved);
       await page.reload(); await loaded();
-      assert.equal((await current()).tab, saved.tab==='chats'?'messages':saved.tab);
+      assert.equal((await current()).tab, saved.tab==='events'?'cards':saved.tab==='chats'?'messages':saved.tab);
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
     assert.equal(await page.locator('.adm-site-links a').count(), 1);

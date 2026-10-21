@@ -216,6 +216,10 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     assert.equal(await admin.evaluate(() => typeof OjjudaNoteAdmin.hasDraft), 'function');
     assert.equal(await admin.evaluate(() => OjjudaNoteAdmin.getTabs().some(tab => tab.id === 'risk' && tab.label.includes('위험'))), true,
       'risk signals are directly available to the host navigation');
+    assert.equal(await admin.evaluate(() => OjjudaNoteAdmin.getTabs().some(tab => tab.id === 'events')), false);
+    assert.equal(await admin.evaluate(() => OjjudaNoteAdmin.selectTab('events')), false);
+    assert.equal(await admin.locator('[data-admin-tab="events"]').count(), 0);
+    assert.equal(await admin.evaluate(() => calls.some(call => /admin_(events|edit_event)/.test(call.name))), false);
     await admin.evaluate(async () => { await OjjudaNoteAdmin.selectTab('risk'); });
     assert.match(await content.locator('h3').textContent(), /위험/);
     let lastRisk = await admin.evaluate(() => calls.filter(call => call.name === 'admin_risk_cards').at(-1));
