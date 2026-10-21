@@ -1,0 +1,45 @@
+/* Use the arcade's shared entrance; table artwork starts with the first hand. */
+body.poker-entry-active{background:#f5f3f9;color:#302d43;color-scheme:light;--ink:#302d43;--muted:#797487;--line:#e9e5f0;--gold:#7560b5}
+.poker-entry-shell{display:flex;align-items:safe center;justify-content:center;min-height:100dvh;padding:24px 16px;overscroll-behavior:contain}
+.poker-entry{flex-shrink:0}
+.poker-entry .ge-title small{font-size:12px;font-weight:500;color:var(--entry-muted);vertical-align:middle;letter-spacing:0}
+.poker-entry .ge-copy{margin-bottom:18px}
+.poker-entry-wallet{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--entry-line);border-bottom:1px solid var(--entry-line);text-align:left;font-size:12px;color:var(--entry-muted)}
+.poker-entry-wallet strong{font-size:17px;color:var(--entry-ink);font-variant-numeric:tabular-nums}
+.poker-entry-wallet small{font-size:11px;font-weight:500;color:var(--entry-muted)}
+.poker-entry :is(.ge-primary,.ge-secondary,.refill){letter-spacing:-.02em}
+.poker-entry .refill{display:block;width:100%;max-width:none;min-height:46px;margin:12px 0 0;border:1px solid var(--entry-line);border-radius:14px;background:var(--entry-soft);color:var(--entry-accent);font-size:12px;font-weight:600}
+.poker-entry .refill:hover:enabled{background:#eee9f6;border-color:#b6a5d4}
+.poker-entry .poker-entry-form{text-align:left;margin:16px 0 0}
+.poker-entry-form :is(input,select){display:block;width:100%;min-height:46px;padding:9px 12px;border:1px solid var(--entry-line);border-radius:12px;background:#f7f5fa;color:#625574;font:inherit;font-size:13px;touch-action:manipulation}
+.poker-entry .online-connection{padding:0;color:#a23e54;overflow-wrap:anywhere}
+.poker-entry .poker-room-list{margin:22px 0 0;text-align:left}
+.poker-entry .poker-room-list h2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;color:#625574;font-family:inherit;font-size:13px;font-weight:700;line-height:1.5}
+.poker-entry :is(.poker-room-list h2,.poker-waiting-code) .ge-secondary{width:auto;min-height:36px;margin:0;padding:6px 10px;flex-shrink:0;font-size:12px}
+.poker-entry .online-room-list{margin:0;gap:0}
+.poker-entry .online-room-list>button{gap:10px;min-height:64px;padding:12px 0;border:0;border-bottom:1px solid var(--entry-line);border-radius:0;background:transparent;color:var(--entry-ink);font-size:12px;font-weight:500}
+.poker-entry .online-room-list>button:hover:enabled{background:var(--entry-soft)}
+.poker-entry .online-room-list>button>span:first-child{min-width:0;overflow-wrap:anywhere}
+.poker-entry .online-room-list>button>span:last-child{flex-shrink:0;color:var(--entry-accent);font-size:11px}
+.poker-entry .online-room-list small{margin-top:3px;color:var(--entry-muted);font-size:10px;letter-spacing:.08em}
+.poker-entry .poker-waiting-title{margin:20px 0 8px;font-size:18px;line-height:1.5;overflow-wrap:anywhere}
+.poker-entry .poker-waiting-code{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0}
+.poker-waiting-code>strong{color:var(--entry-accent);font:700 23px/1.5 monospace;letter-spacing:.08em;user-select:text}
+.poker-entry .online-seats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0}
+.poker-entry .online-seat{min-height:76px;padding:12px 8px;gap:4px;border-color:var(--entry-line);border-radius:12px;color:var(--entry-muted)}
+.poker-entry .online-seat.occupied{background:var(--entry-soft);color:#65518e}
+.poker-entry .online-seat strong{font-size:12px}
+.poker-entry .online-seat small{font-size:10px;letter-spacing:0}
+.poker-entry-active .gate{max-width:420px;margin:24px auto;padding:30px 24px;border:1px solid #e9e5f0;border-radius:24px;background:#fff;color:#302d43}
+.poker-entry-active .gate h1{font-size:25px;font-weight:700}
+.poker-entry-active dialog{background:#fff;border-color:#e9e5f0;border-radius:24px;color:#302d43;box-shadow:0 20px 60px #30204326}
+.poker-entry-active dialog::backdrop{background:#20172a80;backdrop-filter:none}
+.poker-entry-active dialog :is(p,.muted,.rank-list span,.sound-volume-label){color:#797487}
+.poker-entry-active dialog :is(h3,.rules-actions b,.rank-list b){color:#625574}
+.poker-entry-active .rules-actions{background:#f7f5fa}
+.poker-entry-active dialog button{background:#f7f5fa;border-color:#e9e5f0;border-radius:12px;color:#625574;box-shadow:none}
+.poker-entry-active dialog button:hover:enabled{background:#eee9f6;border-color:#b6a5d4}
+.poker-entry-active dialog .primary{background:#7560b5;border-color:transparent;color:#fff}
+.poker-entry-active dialog .primary:hover:enabled{background:#65509f;border-color:transparent;color:#fff}
+.poker-entry-active dialog :is(button,input):focus-visible{outline-color:#ac97dc}
+@media(max-width:380px),(max-height:580px){.poker-entry-shell{padding:16px 12px}.poker-entry.game-entry{padding:24px 18px}}

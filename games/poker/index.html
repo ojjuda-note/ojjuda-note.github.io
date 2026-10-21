@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0c1511">
+  <meta name="theme-color" content="#f5f3f9">
   <title>오쭈다 세븐포커</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=20261021-poker6">
+  <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
+  <link rel="stylesheet" href="entry.css?v=20261021-poker-entry1">
 </head>
-<body>
+<body class="poker-entry-active">
   <main id="app"><section class="gate"><span class="brand">오쭈다 오락실</span><h1>세븐포커</h1><p role="status">게임을 준비하고 있어요.</p><a href="/world.html?game=poker">오락실에서 열기</a></section></main>
   <dialog id="help" aria-labelledby="help-title">
     <header><h2 id="help-title">세븐포커 하는 법</h2><button data-close-dialog aria-label="닫기">×</button></header>
@@ -44,6 +46,6 @@
   <dialog id="cards-dialog" aria-labelledby="cards-title"><header><h2 id="cards-title">공개된 카드</h2><button data-close-dialog aria-label="닫기">×</button></header><div id="cards-content"></div></dialog>
   <dialog id="refill-dialog" aria-labelledby="refill-title"><header><h2 id="refill-title">포커 골드 충전</h2><button data-close-dialog aria-label="닫기">×</button></header><p>5쭈를 사용해 5,000골드를 충전할까요?</p><p id="refill-message" role="status"></p><div class="dialog-actions"><button data-close-dialog>취소</button><button class="primary" id="confirm-refill">5쭈로 충전</button></div></dialog>
   <dialog id="exit-dialog" aria-labelledby="exit-title"><header><h2 id="exit-title">오락실로 돌아갈까요?</h2></header><p>진행 중인 판은 저장돼요. 다시 들어오면 이어서 할 수 있어요.</p><div class="dialog-actions"><button data-close-dialog>계속하기</button><button class="primary" id="confirm-exit">저장하고 나가기</button></div></dialog>
-  <script type="module" src="app.mjs?v=20261021-poker6"></script>
+  <script type="module" src="app.mjs?v=20261021-poker-entry1"></script>
 </body>
 </html>
