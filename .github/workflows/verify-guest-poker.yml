@@ -1,0 +1,50 @@
+name: Verify guest signup and poker cards
+on:
+  push:
+    branches: [codex/guest-poker]
+    paths: ['ops/guest-poker-edits.json', 'ops/apply-guest-poker.py', '.github/workflows/verify-guest-poker.yml', 'guest-access.js', 'tests/guest-access-ui.test.cjs', 'tests/poker-card-reveal-ui.test.cjs']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed guest and poker changes
+        run: python ops/apply-guest-poker.py
+      - name: Install existing test dependencies
+        run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: |
+          npx --prefix tests playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify guest signup, completed rounds and poker cards
+        env:
+          GUEST_PROOF_DIR: /tmp/guest-poker-proof
+        run: |
+          result=0
+          for test in guest-access-ui.test.cjs poker-card-reveal-ui.test.cjs poker-dom.test.cjs poker-online-ui.test.cjs poker-engine.test.mjs world-game-back-ui.test.cjs guest-ranking-ui.test.cjs mines-dom.test.cjs saetbyeol-dom.test.cjs tank-solo.test.cjs tank-local.test.cjs world-three-menus.test.cjs inline-scripts.test.cjs portal-auth-entry.test.cjs signup-referrals-ui.test.cjs note-card-return-font-ui.test.cjs; do
+            timeout 180 node "tests/$test" || result=1
+          done
+          git diff --check || result=1
+          exit "$result"
+      - name: Save card and signup screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: guest-poker-proof
+          path: /tmp/guest-poker-proof
+          retention-days: 3
+      - name: Commit verified integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Gate guest creation and repeat play; restore poker art and reveal final card by dragging'
+            git push origin HEAD:refs/heads/codex/guest-poker
+          fi
