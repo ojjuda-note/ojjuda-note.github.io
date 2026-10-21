@@ -1,7 +1,7 @@
 import {suit,face,cardName,bestHand} from './engine.mjs?v=20261021-poker6';
 import {createPokerSound} from './sound.mjs?v=20261021-poker3';
 import {createOnlineClient,rotateView} from './online-client.mjs?v=20261021-poker6';
-import {createDealMotion} from './deal-motion.mjs?v=20261021-poker-table1';
+import {createDealMotion} from './deal-motion.mjs?v=20261021-handmotion4';
 
 const sfx=createPokerSound();
 const dealMotion=createDealMotion({play:()=>void sfx.play('card'),onFinish:()=>{
@@ -28,14 +28,27 @@ const finalCardKey = () => game?.players[0].cards.length === 7 ? `${game._roomId
 const finalCardCovered = () => !!finalCardKey() && game.phase !== 'finished' && peekedCard !== finalCardKey();
 function card(c,{hidden=false,publicCard=false,pendingPublic=false,best=false,selected=false,button=false,index=0,selectable=false,fresh=false,revealed=false,fan=0,dealSeat=0,dealOrder=index,peek=false}={}){
   const tag=button||peek?'button':'span',label=peek?'마지막 카드 · 아래로 끌어내려 보기':hidden?'비공개 카드':cardName(c);
-  return `<${tag} class="card${hidden?' back':''}${peek?' final-covered':''}${publicCard?' public':''}${pendingPublic?' pending-public':''}${best?' best':''}${selected?' selected':''}${selectable?' selectable':''}${fresh?' dealing':''}${revealed?' revealing':''}" ${fresh?`data-deal-seat="${dealSeat}" data-deal-order="${dealOrder}"`:""} ${button||peek?`type="button" data-card="${index}" aria-pressed="${selected}"`:''} ${peek?'data-peek-card aria-expanded="false"':''} style="--i:${index};--fan:${fan}deg" aria-label="${label}${publicCard?' · 공개':pendingPublic?' · 공개 예정':''}">${peek?`<span class="peek-face" aria-hidden="true">${cardFace(c)}</span><span class="peek-cover" aria-hidden="true">${cardBack}</span><span class="card-state">↓ 당겨보기</span>`:hidden?cardBack:cardFace(c)}${publicCard||pendingPublic?`<span class="card-state" aria-hidden="true">${pendingPublic?'공개 예정':'공개'}</span>`:''}</${tag}>`;
+  return `<${tag} class="card${hidden?' back':''}${peek?' final-covered':''}${publicCard?' public':''}${pendingPublic?' pending-public':''}${best?' best':''}${selected?' selected':''}${selectable?' selectable':''}${fresh?' dealing':''}${revealed?' revealing':''}" ${fresh?`data-deal-seat="${dealSeat}" data-deal-order="${dealOrder}"`:""} ${button||peek?`type="button" data-card="${index}" data-hand-card="${c}" aria-pressed="${selected}"`:''} ${peek?'data-peek-card aria-expanded="false"':''} style="--i:${index};--fan:${fan}deg" aria-label="${label}${publicCard?' · 공개':pendingPublic?' · 공개 예정':''}">${peek?`<span class="peek-face" aria-hidden="true">${cardFace(c)}</span><span class="peek-cover" aria-hidden="true">${cardBack}</span><span class="card-state">↓ 당겨보기</span>`:hidden?cardBack:cardFace(c)}${publicCard||pendingPublic?`<span class="card-state" aria-hidden="true">${pendingPublic?'공개 예정':'공개'}</span>`:''}</${tag}>`;
 }
-function revealFinalCard(){
+function revealFinalCard(node=document.querySelector('#cards-dialog[open] [data-peek-card]')||app.querySelector('[data-peek-card]')){
   if(!finalCardCovered())return;
-  peekedCard=finalCardKey();peekDrag=null;
+  const revealKey=finalCardKey(),distance=peekDrag?.distance||0;
+  peekedCard=revealKey;peekDrag=null;
   void sfx.play('reveal');
-  render({animateDeal:false});
-  if(document.querySelector('#cards-dialog').open)fillCards(0);
+  const finish=()=>{
+    if(finalCardKey()!==revealKey||node&&!node.isConnected)return;
+    render({animateDeal:false});
+    if(document.querySelector('#cards-dialog').open)fillCards(0);
+  };
+  if(!node?.animate||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){finish();return;}
+  node.classList.remove('is-peeking');node.classList.add('is-revealing');
+  const cover=node.querySelector('.peek-cover'),face=node.querySelector('.peek-face'),height=node.getBoundingClientRect().height;
+  const options={duration:220,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'};
+  try{
+    const uncover=face.animate([{clipPath:getComputedStyle(face).clipPath},{clipPath:'inset(0 0 0 0)'}],options);
+    const slide=cover.animate([{transform:`translateY(${distance}px)`,opacity:1},{transform:`translateY(${Math.max(distance+24,height*.8)}px)`,opacity:0}],options);
+    Promise.all([uncover.finished,slide.finished]).then(finish,finish);
+  }catch{finish();}
 }
 document.addEventListener('pointerdown',event=>{
   if(peekDrag){if(event.pointerId!==peekDrag.id)cancelPeek();return;}
@@ -62,7 +75,7 @@ function cancelPeek(){
 document.addEventListener('pointerup',event=>{
   if(!peekDrag||event.pointerId!==peekDrag.id)return;
   const reveal=peekDrag.key===finalCardKey()&&peekDrag.distance>=Math.min(44,peekDrag.height*.3);
-  cancelPeek();if(reveal)revealFinalCard();
+  if(reveal)revealFinalCard(peekDrag.node);else cancelPeek();
 });
 for(const type of ['pointercancel','lostpointercapture'])document.addEventListener(type,event=>{if(peekDrag?.id===event.pointerId)cancelPeek();});
 document.addEventListener('keydown',event=>{
@@ -200,8 +213,30 @@ function renderTable(animateDeal=true){
   app.innerHTML=header()+roomBar()+`<section class="game"><div class="round-strip"><span class="table-id"><i></i> ${online?.room?.mode==='solo'?'COMPUTER':'ONLINE'} <span>· HAND ${String(mode==='online'?online.room.round:done?record.rounds:record.rounds+1).padStart(2,'0')}</span></span><div class="street-dots" aria-label="진행 단계">${[[0,'패 선택'],[4,'4구'],[5,'5구'],[6,'6구'],[7,'히든']].map(([n,label])=>`<span class="${game.street===n?'on':game.street>n?'passed':''}">${label}</span>`).join('')}</div></div><div class="table-scene"><div class="felt"><div class="felt-inlay" aria-hidden="true"></div><div class="opponents">${seats}</div><div class="pot-zone${potChanged?' pot-changed':''}"><div class="deal-deck" aria-hidden="true">${card(0,{hidden:true})}${card(0,{hidden:true})}${card(0,{hidden:true})}<small>DEALER</small></div><span class="pot-label">${done?'TOTAL POT':'MAIN POT'}</span><div class="pot-amount">${fmt(game.pot)}<span>G</span></div>${chipStack(game.pot)}<span class="table-rule">SEVEN CARD STUD · ANTE 50</span></div><section class="player${myTurn?' active':''}${me.folded?' folded':''}"><div class="player-header"><div class="player-name">${dealer(0)}<b>나</b><span>${me.folded?'다이':me.allIn?'ALL IN':me.bet>0?'베팅 '+fmt(me.bet)+' G':myTurn?'내 차례':'내 카드'}</span></div><div class="hand-tools"><span class="hand-label">${selecting?'패 선택':finalCardCovered()?'히든 카드 확인':hand.name}</span><button class="hand-zoom" data-seat="0" aria-label="내 카드 크게 보기">크게 보기 ↗</button></div></div><div class="my-cards${splitHand?' split-hand':''}${game.phase==='open'&&selecting?' choosing-public':''}${publicCards.length?' has-public':''}${done?' hand-finished':''}" style="--card-count:${me.cards.length}">${myCards}</div>${same&&me.total>visual.bets[0]?'<span class="bet-flight player-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section></div></div><section class="decision-panel${myTurn?' my-turn':''}">${result}<div class="decision-heading"><div class="status" id="status" role="status" aria-live="polite">${status()}</div><span>${done?'황금 테두리 · 베스트 5장':selecting?`${game.phase==='discard'?'DISCARD':'OPEN'} 1 / ${me.cards.length}`:'한국식 세븐포커'}</span></div><div class="actions${done?' finished-actions':''}">${controls()}</div></section><div class="table-footer"><details class="recent"><summary>핸드 기록 <span>↗</span></summary><ol>${game.log.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details><span>${online?.room?.mode==='solo'?'컴퓨터와 플레이':'온라인 대전'} · 참가비 50 G</span></div></section>`;
   visual={game,cards:game.players.map(p=>[...p.cards]),shown:game.players.map((p,i)=>i===0||showdown&&!p.folded?[...p.cards]:[...p.up]),bets:game.players.map(p=>p.total),pot:game.pot,finished:done};
 }
+function captureHand(){
+  if(lobby||visual.game!==game||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return null;
+  const cards=new Map([...app.querySelectorAll('.my-cards [data-hand-card]')].map(node=>[node.dataset.handCard,node.getBoundingClientRect()]));
+  const privateGroup=app.querySelector('.private-cards');
+  return {cards,privateOpacity:privateGroup?getComputedStyle(privateGroup).opacity:'1'};
+}
+function settleHand(previous){
+  if(!previous)return;
+  const options={duration:240,easing:'cubic-bezier(.22,1,.36,1)'};
+  for(const node of app.querySelectorAll('.my-cards [data-hand-card]')){
+    const before=previous.cards.get(node.dataset.handCard);
+    if(!before||!node.animate||node.classList.contains('dealing'))continue;
+    const after=node.getBoundingClientRect(),x=before.left-after.left,y=before.top-after.top;
+    if(Math.abs(x)+Math.abs(y)>1)node.animate([{translate:`${x}px ${y}px`},{translate:'0 0'}],options);
+  }
+  const privateGroup=app.querySelector('.private-cards');
+  if(privateGroup?.animate){
+    const opacity=getComputedStyle(privateGroup).opacity;
+    if(opacity!==previous.privateOpacity)privateGroup.animate([{opacity:previous.privateOpacity},{opacity}],options);
+  }
+}
 function render({animateDeal=true}={}){
   if(!ready||conflict)return;
+  const handBefore=captureHand();
   const focused=document.activeElement,focusKey=focused?.hasAttribute('data-card')?['data-card',focused.dataset.card]:focused?.hasAttribute('data-action')?['data-action',focused.dataset.action]:null;
   const keyboardFocus=focused?.matches?.(':focus-visible'),historyOpen=app.querySelector('.recent')?.open;
   cancelPeek();
@@ -209,7 +244,7 @@ function render({animateDeal=true}={}){
   document.body.classList.toggle('poker-entry-active',lobby);
   document.body.classList.toggle('poker-playing',!lobby);
   if(playingView!==!lobby){playingView=!lobby;send('table-view',{playing:playingView});}
-  if(onlineLobby&&lobby)renderOnlineLobby();else if(lobby)renderLobby();else {renderTable(animateDeal);dealMotion.start(app,{dealer:game.dealer,seats:game.players.length});}
+  if(onlineLobby&&lobby)renderOnlineLobby();else if(lobby)renderLobby();else {renderTable(animateDeal);settleHand(handBefore);dealMotion.start(app,{dealer:game.dealer,seats:game.players.length});}
   if(historyOpen&&app.querySelector('.recent'))app.querySelector('.recent').open=true;
   if(keyboardFocus&&focusKey)app.querySelector(`[${focusKey[0]}="${focusKey[1]}"]`)?.focus({preventScroll:true});
 }

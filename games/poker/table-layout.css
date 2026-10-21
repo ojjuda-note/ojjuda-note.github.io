@@ -355,16 +355,17 @@
 .card-face{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
 .card.final-covered{touch-action:none;cursor:grab;overflow:visible;background:#fff;--peek-distance:0px;--peek-hidden:100%}
 .peek-face,.peek-cover{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden}
-.peek-face{clip-path:inset(0 0 var(--peek-hidden) 0);background:#fff}
+.peek-face{clip-path:inset(0 0 var(--peek-hidden) 0);background:#fff;transition:clip-path .18s ease}
 .peek-cover{padding:4px;background:#f2e9d1;transform:translateY(var(--peek-distance));box-shadow:0 2px 5px #0004;transition:transform .18s ease}
 .final-covered.is-peeking{cursor:grabbing;z-index:12}
-.is-peeking .peek-cover{transition:none}
+.is-peeking .peek-cover,.is-peeking .peek-face{transition:none}
+.final-covered.is-revealing{pointer-events:none}
 .final-covered .card-state{white-space:nowrap;left:0;right:0;text-align:center;font-size:10px}
 #cards-content .final-covered .card-state{font-size:11px}
-@media(prefers-reduced-motion:reduce){.peek-cover{transition:none}}
+@media(prefers-reduced-motion:reduce){.peek-cover,.peek-face{transition:none}}
 
 /* Stack from the left: opening private cards, public cards, then the final hidden card. */
-.poker-playing .my-cards.split-hand{--hand-step:.34}
+.poker-playing .my-cards.split-hand{--hand-step:.44}
 .poker-playing .hand-group{display:flex;align-items:center;flex:none;min-width:0;width:calc(var(--hand-card-width) * (1 + (var(--group-count) - 1) * var(--hand-step)));isolation:isolate}
 .poker-playing .hand-group+.hand-group{margin-left:calc((var(--hand-step) - 1) * var(--hand-card-width))}
 .poker-playing .hand-group:has(.is-peeking){z-index:2}
@@ -372,3 +373,4 @@
 .poker-playing .card.pending-public .card-state{color:#f3cb79}
 
 .poker-playing .my-cards.choosing-public{--hand-step:.6}
+.poker-playing .my-cards .card:not(.selectable):hover:enabled{transform:none;z-index:auto;box-shadow:0 1px 1px #fff9,0 4px 7px #00150865}

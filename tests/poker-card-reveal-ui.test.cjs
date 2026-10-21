@@ -74,6 +74,16 @@ window.pokerFixture={show(round=1){
    if(!before){
     await page.evaluate(()=>pokerFixture.allCards());await page.waitForFunction(()=>[...document.querySelectorAll('#cards-content img')].every(img=>img.complete&&img.naturalWidth>0));
     assert.equal(await page.locator('#cards-content img').count(),52,'all 52 original SVG faces load');
+    await page.locator('#cards-dialog [data-close-dialog]').click();
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    await page.setViewportSize({width:390,height:844});
+    await page.evaluate(round=>pokerFixture.show(round),++round);
+    const movingLast=page.locator('.my-cards [data-peek-card]'),lastBox=await movingLast.boundingBox();
+    await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.3);
+    await page.mouse.down();await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.3+55,{steps:6});await page.mouse.up();
+    await movingLast.waitFor({state:'detached'});
+    assert.equal(await page.locator('.my-cards .card').last().getAttribute('aria-label'),'A♠','animated reveal finishes on the correct rightmost card');
+    assert.equal(await page.locator('.my-cards .card').last().evaluate(el=>getComputedStyle(el).transform),'none','revealed cards do not jump up under the pointer');
     assert.deepEqual(errors,[]);
    }
    await context.close();
