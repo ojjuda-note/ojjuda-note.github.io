@@ -52,6 +52,8 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   await db.exec(menMigration);await db.exec(menMigration);
   const uploadMigration=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_ttang_unlimited_uploads.sql'))),'utf8');
   await db.exec(uploadMigration);await db.exec(uploadMigration);
+  const restrictions=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_enforce_member_restrictions_and_rpc_access.sql'))),'utf8');
+  await db.exec(restrictions.match(/CREATE OR REPLACE FUNCTION ojjuda_photo_internal\.member_allowed\(\)[\s\S]*?\$\$;/)[0]);
   async function as(actor,sql,params=[],role='authenticated'){
    return db.transaction(async tx=>{await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);await tx.exec('set local role '+role);return tx.query(sql,params);});
   }
@@ -115,6 +117,10 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   assert.deepEqual((await rank(B)).map(r=>r.score),[2],'previous month is excluded');
   assert.equal((await clear(A,'0')).score,1,'same photo counts again in a new month');
   await db.exec(`insert into user_private values('${B}',now()+interval '1 day');`);
+  assert.equal((await as(B,'select * from photo_stages')).rows.length,0,'restricted members cannot read community photos');
+  assert.equal((await as(B,"select * from storage.objects where bucket_id='photo-stages'")).rows.length,0,'restricted members cannot read photo bytes');
+  await assert.rejects(()=>stage(B,'private'),/row-level security/);
+  await assert.rejects(()=>as(B,"insert into storage.objects(bucket_id,name) values('photo-stages',$1)",[B+'/restricted.jpg']),/row-level security/);
   await assert.rejects(()=>clear(B,'1'),/not_allowed/);assert.equal((await rank(A)).length,1,'banned members excluded');
   await db.exec('delete from user_private');
   for(const actor of [A,B,C])await as(actor,'select photo_report($1,$2)',[pending.id,'test']);

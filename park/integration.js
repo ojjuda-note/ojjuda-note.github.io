@@ -7,7 +7,7 @@
   const originalCanLeave = window.canCloseParkNote;
   let pendingAction = null, previousOverlay = null, previousDetail = null, previousBalance = null, reporting = false;
   const visible = selector => !!document.querySelector(selector);
-  const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), .world-picker:not([hidden]), .photo-source-menu, dialog[open]');
+  const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), dialog[open]');
 
   function canLeave() {
     if (window.OjjudaNoteSupport?.canLeave?.() === false) return false;
@@ -22,8 +22,6 @@
   function closeTopOverlay() {
     if (window.OjjudaCharge?.isOpen?.()) { window.OjjudaCharge.close(); return true; }
     if (photoLightbox && !photoLightbox.hidden) { closePhotoLightbox(); return true; }
-    if (worldPicker && !worldPicker.hidden) { closeWorldPicker(); return true; }
-    if (sourceMenu) { closePhotoSourceMenu(true); return true; }
     if (notificationController?.isOpen?.()) { notificationController.close(); return true; }
     if (window.OjjudaNoteSupport?.isOpen?.()) { window.OjjudaNoteSupport.close(); return true; }
     if (!management.hidden) { closeManagement(); return true; }
@@ -49,7 +47,7 @@
     if (window.OjjudaNoteSupport?.isOpen?.()) return false;
     notificationController?.close?.();
     window.OjjudaCharge?.close?.();
-    closePhotoSourceMenu(); closeWorldPicker(null, false); closePhotoLightbox();
+    closePhotoLightbox();
     if (!management.hidden) closeManagement();
     if (!backdrop.hidden) closeComposer();
     window.OjjudaNoteNavigation?.leaveMy();

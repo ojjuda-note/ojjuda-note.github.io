@@ -506,202 +506,11 @@ function scheduleCardPhotoRefresh() {
     scheduleCardPhotoRefresh();
   }, Math.max(1000, next - Date.now()));
 }
-// Device photos used by Note are also saved privately in the owner's World album.
-// An existing folder with this name may be shared, so only reuse a private one.
-const WORLD_BUCKET = 'media', WORLD_ALBUM_FOLDER = '익명카드';
-const photoFromWorld = { card: false, event: false };
-const sameWorldUser = (userId, epoch) => identityEpoch === epoch && session?.user?.id === userId;
-async function makeAlbumThumb(blob, size = 360) {
-  let source, temporaryUrl;
-  try {
-    if (typeof createImageBitmap === 'function') source = await createImageBitmap(blob);
-    else {
-      temporaryUrl = URL.createObjectURL(blob);
-      source = new Image(); source.src = temporaryUrl; await source.decode();
-    }
-    const width = source.width || source.naturalWidth, height = source.height || source.naturalHeight;
-    const scale = Math.min(1, size / Math.max(width, height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(width * scale)); canvas.height = Math.max(1, Math.round(height * scale));
-    canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
-    return await new Promise((resolve, reject) => canvas.toBlob(
-      result => result ? resolve(result) : reject(new Error('사진 미리보기를 만들지 못했어요.')), 'image/jpeg', .8));
-  } finally { source?.close?.(); if (temporaryUrl) URL.revokeObjectURL(temporaryUrl); }
-}
-async function worldAlbumFolderId(userId, epoch) {
-  const found = await client.from('media_folders').select('id,kind,visibility,allowed')
-    .eq('user_id', userId).eq('name', WORLD_ALBUM_FOLDER).eq('kind', 'photo').eq('visibility', 'me');
-  if (found.error) throw found.error;
-  if (!sameWorldUser(userId, epoch)) return null;
-  const privateFolder = (found.data || []).find(folder => !folder.allowed?.length);
-  if (privateFolder) return privateFolder.id;
-  const made = await client.from('media_folders').insert({
-    user_id: userId, name: WORLD_ALBUM_FOLDER, kind: 'photo', visibility: 'me', allowed: []
-  }).select('id').single();
-  if (made.error) throw made.error;
-  return sameWorldUser(userId, epoch) ? made.data.id : null;
-}
-async function saveToWorldAlbum(blob, userId, epoch) {
-  if (!client || !blob || !sameWorldUser(userId, epoch)) return;
-  const id = crypto.randomUUID(), path = `${userId}/${id}.jpg`, thumbPath = `${userId}/${id}_thumb.jpg`;
-  const box = client.storage.from(WORLD_BUCKET);
-  const [folderId, thumb] = await Promise.all([worldAlbumFolderId(userId, epoch), makeAlbumThumb(blob)]);
-  if (!folderId || !sameWorldUser(userId, epoch)) return;
-  const first = await box.upload(path, blob, { contentType: 'image/jpeg', upsert: false });
-  if (first.error) throw first.error;
-  if (!sameWorldUser(userId, epoch)) { await box.remove([path]); return; }
-  const second = await box.upload(thumbPath, thumb, { contentType: 'image/jpeg', upsert: false });
-  if (second.error) { await box.remove([path]); throw second.error; }
-  if (!sameWorldUser(userId, epoch)) { await box.remove([path, thumbPath]); return; }
-  const row = await client.from('media').insert({ id, user_id: userId, type: 'image',
-    path, thumb_path: thumbPath, duration: 0, visibility: 'me', folder_id: folderId,
-    caption: '공원에 올린 사진' });
-  if (row.error) { await box.remove([path, thumbPath]); throw row.error; }
-}
-function keepInWorldAlbum(blob, userId, epoch) {
-  if (!sameWorldUser(userId, epoch)) return;
-  void saveToWorldAlbum(blob, userId, epoch).catch(error => {
-    console.warn('Note world album:', error);
-    if (sameWorldUser(userId, epoch)) flashMessage('월드 사진첩에는 저장하지 못했어요. 카드는 올라갔어요.', 3500);
-  });
-}
-let worldPicker = null, worldPickerState = null, worldPickerRun = 0;
-let sourceMenu = null, sourceMenuCleanup = null;
-function closePhotoSourceMenu(restoreFocus = false) {
-  const focus = sourceMenu?.anchor;
-  sourceMenuCleanup?.(); sourceMenuCleanup = null;
-  sourceMenu?.remove(); sourceMenu = null;
-  if (focus) focus.setAttribute('aria-expanded', 'false');
-  if (restoreFocus && focus?.isConnected) focus.focus({ preventScroll: true });
-}
-function closeWorldPicker(file = null, restoreFocus = true) {
-  const state = worldPickerState;
-  worldPickerState = null; worldPickerRun++;
-  if (worldPicker) { worldPicker.hidden = true; worldPicker.querySelector('.world-picker-grid').replaceChildren(); }
-  if (state) {
-    state.resolve(file);
-    if (restoreFocus && state.focus?.isConnected) state.focus.focus({ preventScroll: true });
-  }
-}
-async function pickFromWorldAlbum(focusTarget = document.activeElement) {
-  const userId = session?.user?.id, epoch = identityEpoch;
-  if (!client || !userId) { message('월드 사진첩은 로그인하면 쓸 수 있어요.'); return null; }
-  closeWorldPicker();
-  if (!worldPicker) {
-    worldPicker = node('div', 'world-picker'); worldPicker.hidden = true;
-    worldPicker.setAttribute('role', 'dialog'); worldPicker.setAttribute('aria-modal', 'true');
-    worldPicker.setAttribute('aria-label', '월드 사진첩에서 고르기');
-    const panel = node('div', 'world-picker-panel'), head = node('div', 'world-picker-head');
-    const close = node('button', 'world-picker-close', '닫기'); close.type = 'button';
-    head.append(node('strong', '', '월드 사진첩에서 고르기'), close);
-    panel.append(head, node('p', 'world-picker-status', ''), node('div', 'world-picker-grid'));
-    worldPicker.append(panel); document.body.append(worldPicker);
-    close.addEventListener('click', () => closeWorldPicker());
-    worldPicker.addEventListener('click', event => { if (event.target === worldPicker) closeWorldPicker(); });
-    worldPicker.addEventListener('keydown', event => {
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeWorldPicker(); }
-      if (event.key !== 'Tab') return;
-      const controls = [...worldPicker.querySelectorAll('button:not([disabled])')];
-      const first = controls[0], last = controls.at(-1);
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-    });
-  }
-  const run = ++worldPickerRun, focus = focusTarget;
-  const status = worldPicker.querySelector('.world-picker-status'), grid = worldPicker.querySelector('.world-picker-grid');
-  const result = new Promise(resolve => { worldPickerState = { run, userId, epoch, focus, resolve, downloading: false }; });
-  const active = () => worldPickerState?.run === run && sameWorldUser(userId, epoch);
-  status.textContent = '사진을 불러오는 중이에요…'; grid.replaceChildren(); worldPicker.hidden = false;
-  worldPicker.querySelector('.world-picker-close').focus({ preventScroll: true });
-  try {
-    const [rows, folders] = await Promise.all([
-      client.from('media').select('id,path,thumb_path,folder_id,created_at').eq('user_id', userId)
-        .eq('type', 'image').order('created_at', { ascending: false }).limit(60),
-      client.from('media_folders').select('id,name').eq('user_id', userId)
-    ]);
-    if (!active()) return await result;
-    if (rows.error) throw rows.error;
-    if (folders.error) throw folders.error;
-    const names = new Map((folders.data || []).map(folder => [folder.id, folder.name]));
-    const list = rows.data || [];
-    if (!list.length) { status.textContent = '월드 사진첩에 사진이 아직 없어요.'; return await result; }
-    const signed = await client.storage.from(WORLD_BUCKET).createSignedUrls(
-      list.map(row => row.thumb_path || row.path), 600);
-    if (!active()) return await result;
-    if (signed.error) throw signed.error;
-    const urlOf = new Map((signed.data || []).map(item => [item.path, item.signedUrl]));
-    status.textContent = '넣을 사진을 골라 주세요. (내 사진만 보여요)';
-    for (const row of list) {
-      const item = node('button', 'world-picker-item'); item.type = 'button';
-      const url = urlOf.get(row.thumb_path || row.path);
-      if (url) item.style.backgroundImage = `url("${url.replaceAll('"', '%22')}")`;
-      item.setAttribute('aria-label', `${names.get(row.folder_id) || '폴더 없음'} 사진`);
-      if (names.get(row.folder_id)) item.append(node('span', 'world-picker-folder', names.get(row.folder_id)));
-      item.addEventListener('click', async () => {
-        if (!active() || worldPickerState.downloading) return;
-        worldPickerState.downloading = true; status.textContent = '사진을 가져오는 중이에요…';
-        try {
-          const full = await client.storage.from(WORLD_BUCKET).createSignedUrl(row.path, 300);
-          if (!active()) return;
-          if (full.error) throw full.error;
-          const response = await fetch(full.data.signedUrl);
-          if (!active()) return;
-          if (!response.ok) throw new Error('download');
-          const blob = await response.blob();
-          if (active()) closeWorldPicker(new File([blob], 'world-photo.jpg', { type: blob.type || 'image/jpeg' }));
-        } catch (error) {
-          if (active()) { console.warn('Note world photo:', error); status.textContent = '사진을 가져오지 못했어요. 다른 사진을 골라 주세요.'; }
-        } finally { if (active()) worldPickerState.downloading = false; }
-      });
-      grid.append(item);
-    }
-  } catch (error) {
-    if (active()) { console.warn('Note world album list:', error); status.textContent = '월드 사진첩을 불러오지 못했어요. 잠시 뒤 다시 해 주세요.'; }
-  }
-  return await result;
-}
-function openPhotoSourceMenu(target, anchor) {
-  if (sourceMenu?.anchor === anchor) { closePhotoSourceMenu(true); return; }
-  closePhotoSourceMenu();
+// Photos attach to the current card/event; the retired World album is not used.
+function selectDevicePhoto(target, anchor) {
   if (!anchor || anchor.hidden || anchor.disabled || anchor.getAttribute('aria-disabled') === 'true') return;
-  const menu = node('div', 'photo-source-menu'); menu.setAttribute('role', 'group');
-  menu.setAttribute('aria-label', '사진 고르기');
-  const device = node('button', '', '기기에서 고르기'), world = node('button', '', '월드 사진첩에서 고르기');
-  device.type = world.type = 'button'; menu.append(device, world);
-  menu.anchor = anchor; document.body.append(menu); sourceMenu = menu;
-  anchor.setAttribute('aria-expanded', 'true');
-  const box = anchor.getBoundingClientRect(), width = menu.getBoundingClientRect().width;
-  const area = window.OjjudaViewport?.bounds() || { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
-  menu.style.left = `${Math.max(area.left + 8, Math.min(box.left, area.right - width - 8))}px`;
-  const height = menu.getBoundingClientRect().height;
-  const preferred = box.bottom + height + 8 <= area.bottom ? box.bottom + 6 : box.top - height - 6;
-  menu.style.top = `${Math.max(area.top + 8, Math.min(preferred, area.bottom - height - 8))}px`;
-  const outside = event => { if (!menu.contains(event.target) && !anchor.contains(event.target)) closePhotoSourceMenu(); };
-  const key = event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePhotoSourceMenu(true); } };
-  const scroll = () => closePhotoSourceMenu();
-  document.addEventListener('pointerdown', outside, true);
-  document.addEventListener('keydown', key, true);
-  document.addEventListener('scroll', scroll, true); window.addEventListener('resize', scroll);
-  window.visualViewport?.addEventListener('resize', scroll);
-  window.visualViewport?.addEventListener('scroll', scroll);
-  sourceMenuCleanup = () => {
-    document.removeEventListener('pointerdown', outside, true);
-    document.removeEventListener('keydown', key, true);
-    document.removeEventListener('scroll', scroll, true); window.removeEventListener('resize', scroll);
-    window.visualViewport?.removeEventListener('resize', scroll);
-    window.visualViewport?.removeEventListener('scroll', scroll);
-  };
-  device.addEventListener('click', () => { closePhotoSourceMenu();
-    $(target === 'event' ? '#event-photo-file' : '#card-photo-file')?.click(); });
-  world.addEventListener('click', async () => {
-    closePhotoSourceMenu();
-    const composer = composerRun, epoch = identityEpoch, userId = session?.user?.id;
-    const file = await pickFromWorldAlbum(anchor);
-    if (!file || composer !== composerRun || !sameWorldUser(userId, epoch) || backdrop.hidden) return;
-    if (target === 'event') await selectEventPhoto(file, true);
-    else await selectCardPhoto(file, true);
-  });
-  device.focus({ preventScroll: true });
+  const input = $(target === 'event' ? '#event-photo-file' : '#card-photo-file');
+  if (input && !input.disabled) input.click();
 }
 function closePhotoLightbox() {
   if (!photoLightbox || photoLightbox.hidden) return;
@@ -732,17 +541,16 @@ function openPhotoLightbox(url, protect = false) {
   photoLightbox.hidden = false;
   photoLightbox.querySelector('button').focus({ preventScroll: true });
 }
-async function selectCardPhoto(file, fromWorld = false) {
+async function selectCardPhoto(file) {
   if (!file || busy || !(kind === 'memo' || kind === 'comment') || (editingId && !cardPhotoEditPath)) return;
   const run = ++cardPhotoRun, composer = composerRun, epoch = identityEpoch;
   cardPhotoPreparing = true; updateComposer();
   try {
-    const blob = await prepareEventPhoto(file, fromWorld ? 20 * 1024 * 1024 : 10 * 1024 * 1024);   // JPG로 재생성하여 위치 정보를 지워요.
+    const blob = await prepareEventPhoto(file, 10 * 1024 * 1024);   // JPG로 재생성하여 위치 정보를 지워요.
     if (run !== cardPhotoRun || composer !== composerRun || epoch !== identityEpoch
       || backdrop.hidden || (editingId && !cardPhotoEditPath) || !(kind === 'memo' || kind === 'comment')) return;
     if (cardPhotoUrl) URL.revokeObjectURL(cardPhotoUrl);
     cardPhotoBlob = blob; cardPhotoUrl = URL.createObjectURL(blob); cardPhotoRequestId = crypto.randomUUID();
-    photoFromWorld.card = fromWorld;
   } catch (error) {
     if (run === cardPhotoRun) message(error.message || '사진을 읽지 못했어요. 다시 골라 주세요.');
   } finally {
@@ -751,7 +559,6 @@ async function selectCardPhoto(file, fromWorld = false) {
 }
 function clearCardPhoto() {
   cardPhotoRun++;
-  photoFromWorld.card = false;
   if (cardPhotoUrl) URL.revokeObjectURL(cardPhotoUrl);
   cardPhotoBlob = null; cardPhotoUrl = null; cardPhotoRequestId = null; cardPhotoPreparing = false;
   const input = $('#card-photo-file'); if (input) input.value = '';
@@ -767,8 +574,6 @@ function syncCardPhotoAttach() {
   remove.disabled = disabled;
   attach.hidden = !allowed; remove.hidden = !allowed || !cardPhotoUrl;
   attach.tabIndex = allowed ? 0 : -1;
-  attach.setAttribute('aria-haspopup', 'true');
-  attach.setAttribute('aria-expanded', String(sourceMenu?.anchor === attach));
   attach.classList.toggle('has-photo', !!previewUrl);
   attach.style.backgroundImage = previewUrl ? `url("${previewUrl.replaceAll('"', '%22')}")` : '';
   attach.title = editingId || cardPhotoUrl ? '첨부 사진 바꾸기' : '사진 첨부';
@@ -1867,7 +1672,6 @@ function currentStyle() {
 function chosenPhoto() { return selectedPhotoKey || 'plain'; }
 function clearEventPhoto() {
   eventPhotoRun++;
-  photoFromWorld.event = false;
   if (eventPhotoPreviewUrl) URL.revokeObjectURL(eventPhotoPreviewUrl);
   eventPhotoPreviewUrl = null; eventPhotoBlob = null; eventPhotoRequestId = null;
   eventPhotoPreparing = false; eventPhotoError = ''; eventHadPhoto = false; eventPhotoRemove = false; eventCurrentPhotoUrl = null;
@@ -1904,7 +1708,7 @@ async function prepareEventPhoto(file, maxBytes = 10 * 1024 * 1024) {
     return blob;
   } finally { source?.close?.(); if (temporaryUrl) URL.revokeObjectURL(temporaryUrl); }
 }
-async function selectEventPhoto(file, fromWorld = false) {
+async function selectEventPhoto(file) {
   if (!file || kind !== 'event' || busy) return;
   const run = ++eventPhotoRun;
   eventPhotoPreparing = true; eventPhotoError = '';
@@ -1912,11 +1716,10 @@ async function selectEventPhoto(file, fromWorld = false) {
   $('#event-photo-status').classList.remove('is-error');
   updateComposer();
   try {
-    const blob = await prepareEventPhoto(file, fromWorld ? 20 * 1024 * 1024 : 10 * 1024 * 1024);
+    const blob = await prepareEventPhoto(file, 10 * 1024 * 1024);
     if (run !== eventPhotoRun || kind !== 'event' || backdrop.hidden) return;
     if (eventPhotoPreviewUrl) URL.revokeObjectURL(eventPhotoPreviewUrl);
     eventPhotoBlob = blob; eventPhotoPreviewUrl = URL.createObjectURL(blob);
-    photoFromWorld.event = fromWorld;
     eventPhotoRequestId = crypto.randomUUID();
     eventPhotoRemove = false;
     $('#event-photo-status').textContent = `${file.name.slice(0, 40)} · 내 사진 적용`;
@@ -2119,7 +1922,6 @@ function setComposerInputs() {
   $('#card-location-button').disabled = disabled;
   for (const selector of ['#compose-font', '#compose-size', '#compose-effect', '#compose-box-transparency', '#compose-box-transparency-value', '#event-select-center', '#event-radius', '#event-hours', '#photo-gallery-toggle', '#photo-prev', '#photo-next', '#photo-page-jump']) { const input = $(selector); if (input) input.disabled = disabled; }
   $('#event-photo-file').disabled = disabled || eventPhotoPreparing;
-  $('#event-world-photo').disabled = disabled || eventPhotoPreparing;
   $('#event-photo-clear').disabled = disabled || eventPhotoPreparing;
   $('#card-photo-file').disabled = disabled || cardPhotoPreparing;
   $('#card-photo-remove').disabled = disabled || cardPhotoPreparing;
@@ -2245,7 +2047,6 @@ async function openComposer(mode, card = null, replyTo = null) {
   if (busy || draftLoading) return;
   const replyTarget = mode === 'reply' ? (validCardId(replyTo) ? replyTo : stack.at(-1)) : null;
   if (mode === 'reply' && !validCardId(replyTarget)) { message('답글을 달 카드를 다시 열어 주세요.'); return; }
-  closePhotoSourceMenu(); closeWorldPicker(null, false);
   const run = ++composerRun, epoch = identityEpoch;
   if (session?.user && !card?.is_mine) {
     const userId = session.user.id;
@@ -2360,7 +2161,6 @@ function autoWritingLocation(run) {
 function closeComposer(saveDraft = true) {
   if (busy) return;
   clearLocalComposer();
-  closePhotoSourceMenu(); closeWorldPicker(null, false);
   composerRun++; replyDueRun++; replyDueChecking = false; draftLoading = false; setComposerInputs();
   backdrop.hidden = true; writingPosition = null; eventPosition = null; locationRun++; composerMapFetchRun++;
   cardPhotoEditPath = null;
@@ -2402,7 +2202,6 @@ async function publishCard() {
   const selectedCardPhoto = (!editId || cardPhotoEditPath) && (kind === 'memo' || kind === 'comment') ? cardPhotoBlob : null;
   const selectedCardPhotoExpectedPath = cardPhotoEditPath;
   const selectedCardPhotoId = cardPhotoRequestId;
-  const selectedFromWorld = photoFromWorld.card, selectedEventFromWorld = photoFromWorld.event;
   if (kind === 'event' && (!validEventBody(body) || eventPhotoPreparing || eventPhotoError
     || (!editId && (!validEventPosition() || !validEventOptions())))) { updateComposer(); return; }
   const identityMode = $('input[name="identity"]:checked')?.value === 'nickname' ? 'nickname' : 'anonymous';
@@ -2562,20 +2361,11 @@ async function publishCard() {
     try { await noteRpc('set_card_style', { p_card_id: publishedId, p_style: currentStyle() }); }
     catch (styleError) { console.warn('Note style:', styleError); message('글은 저장됐지만 꾸미기는 적용되지 않았어요.'); }
   }
-  if (publishKind === 'event' && selectedEventPhoto && eventPhotoPath && !selectedEventFromWorld)
-    keepInWorldAlbum(selectedEventPhoto, actionUserId, actionEpoch);
-  let cardPhotoSavedToWorld = false;
-  const saveDeviceCardPhoto = () => {
-    if (selectedFromWorld || cardPhotoSavedToWorld) return;
-    cardPhotoSavedToWorld = true;
-    keepInWorldAlbum(selectedCardPhoto, actionUserId, actionEpoch);
-  };
   let cardPhotoFailed = false, cardPhotoConflict = false;
   if (selectedCardPhoto && cardPhotoUploadPath) {
     try {
       if (editId) await replacePublishedCardPhoto(publishedId, actionUserId, cardPhotoUploadPath, selectedCardPhotoExpectedPath);
       else cardPhotoCache.delete(publishedId);
-      saveDeviceCardPhoto();
     }
     catch (photoError) {
       console.warn('Note card photo:', photoError); cardPhotoFailed = true;
@@ -2654,7 +2444,6 @@ async function publishCard() {
         () => replacePublishedCardPhoto(publishedId, actionUserId, cardPhotoUploadPath, selectedCardPhotoExpectedPath),
         async () => {
           cardPhotoFailed = false; pendingCardPhotoCleanup = null; retryCardPhoto.remove();
-          saveDeviceCardPhoto();
           await refreshCards(false);
           if (photoPurchaseFailed) managementMessage.textContent = '첨부 사진을 바꿨어요. 제공 배경 결제는 다시 시도해 주세요.';
           else closeManagement();
@@ -3317,19 +3106,16 @@ $('#card-photo-attach')?.addEventListener('click', event => {
   if (event.target.closest('input')) return;
   event.preventDefault();
   if (!session?.user) { $('#card-photo-file').click(); return; }
-  openPhotoSourceMenu('card', event.currentTarget);
+  selectDevicePhoto('card', event.currentTarget);
 });
 $('#card-photo-attach')?.addEventListener('keydown', event => {
   if (event.key !== 'Enter' && event.key !== ' ') return;
   event.preventDefault();
   const input = $('#card-photo-file');
   if (!event.currentTarget.hidden && !input.disabled) {
-    if (session?.user) openPhotoSourceMenu('card', event.currentTarget);
+    if (session?.user) selectDevicePhoto('card', event.currentTarget);
     else input.click();
   }
-});
-$('#event-world-photo')?.addEventListener('click', event => {
-  event.preventDefault(); openPhotoSourceMenu('event', event.currentTarget);
 });
 $('#card-photo-remove')?.addEventListener('click', event => {
   event.preventDefault(); clearCardPhoto(); updateComposer();
@@ -3347,7 +3133,6 @@ function receiveAuth(current) {
     accountNickname = null; accountProfileRun++;
     identityEpoch++;
     myIdentity = null; myIdentityReady = false; myIdentityPromise = null; myGender = 'private'; setGenderInputs(true);
-    closePhotoSourceMenu(); closeWorldPicker(null, false);
     // Remove prior-account content immediately, before asynchronous requests finish.
     cardPhotoCache.clear(); cardPhotoWanted.clear();
     clearTimeout(cardPhotoTimer); clearTimeout(cardPhotoRefreshTimer);
