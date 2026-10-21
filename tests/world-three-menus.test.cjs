@@ -40,7 +40,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const poker=w.document.querySelector('[data-arcade-games=multi] [data-v=poker]');
   assert.ok(poker,'eligible members see poker in the requested group');
   assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
-  assert.match(poker.textContent,/2~4인 멀티/,'the menu accurately labels the current play mode');
+  assert.match(poker.textContent,/최대 4명/,'the menu displays the maximum player count');
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=18};t.render();
   assert.equal(w.document.querySelector('[data-v=poker]'),null,'18-year-olds cannot see poker');
   assert.equal(w.document.querySelector('[data-act=matgo-open]'),null,'Matgo uses the same age threshold');
