@@ -18,6 +18,7 @@
   const passwordConfirm = $('password-confirm');
   const nickname = $('nickname');
   const submit = $('auth-submit');
+  const referral = window.OjjudaSignupReferral?.mount($('signup-referral-slot'), client);
   function prepareIdentity() {
     if (!window.OjjudaIdentity?.fields) return false;
     if (!$('signup-identity-slot').innerHTML) $('signup-identity-slot').innerHTML = window.OjjudaIdentity.fields('signup');
@@ -54,6 +55,8 @@
 
   function messageFor(error) {
     const text = String(error?.message || error || '').toLowerCase();
+    if (text.includes('invalid_signup_referrer')) return '추천인 정보가 바뀌었어요. 다시 찾아 확인해 주세요.';
+    if (text.startsWith('추천인')) return error.message;
     if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
     if (text.includes('phone_already_registered') || text.includes('member_identity_phone_number_key')) return '이미 가입된 전화번호예요. 기존 계정으로 로그인해 주세요.';
     if (authMode === 'signup' && text.includes('database error')) return '이미 가입된 전화번호인지 확인해 주세요. 탈퇴 후 3일(72시간) 동안도 같은 이메일이나 전화번호로 다시 가입할 수 없어요.';
@@ -76,6 +79,7 @@
 
   function setBusy(value) {
     busy = value;
+    referral?.setBusy(value);
     submit.disabled = value;
     form.setAttribute('aria-busy', String(value));
     dialog.querySelectorAll('[data-auth-mode]').forEach(button => { button.disabled = value; });
@@ -105,6 +109,7 @@
     authMode = mode;
     $('guest-browse').hidden = mode !== 'login';
     const isSignup = mode === 'signup';
+    referral?.setActive(isSignup);
     const isForgot = mode === 'forgot';
     const isReset = mode === 'reset' || mode === 'direct-reset';
     if (mode !== 'direct-reset') clearRecoveryGrant();
@@ -375,9 +380,9 @@
     if (authMode === 'direct-reset' && (!recoveryGrant || Date.now() >= recoveryGrant.expiresAt)) {
       setAuthMode('forgot', messageFor('recovery_expired')); return;
     }
-    let signupIdentity = null, recoveryDetails = null;
+    let signupIdentity = null, recoveryDetails = null, signupReferrer = null;
     if (authMode === 'signup') {
-      try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); }
+      try { signupIdentity = window.OjjudaIdentity.read(form, 'signup'); signupReferrer = referral?.read() || null; }
       catch (error) { feedback.textContent = error.message; return; }
     }
     if (authMode === 'forgot') {
@@ -439,6 +444,8 @@
         if (destination) goToDestination(destination);
         else $('places').scrollIntoView({ behavior: 'smooth' });
       } else if (authMode === 'signup') {
+        await referral?.verify(signupReferrer);
+        if (!currentView()) return;
         const name = nickname.value.trim();
         const confirmationUrl = new URL('/', location.href);
         if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
@@ -454,13 +461,15 @@
               birth_yymmdd: signupIdentity.birthSix,
               gender_code: signupIdentity.genderCode,
               phone_number: signupIdentity.phone,
-              age_14_or_older: true
+              age_14_or_older: true,
+              ...(signupReferrer ? { referrer_id: signupReferrer.id, referrer_nickname: signupReferrer.nickname } : {})
             },
             emailRedirectTo: confirmationUrl.href
           }
         });
         if (!currentView()) return;
         if (error) throw error;
+        referral?.reset();
         for (const input of $('signup-identity-slot').querySelectorAll('input')) input.value = '';
         $('signup-result').textContent = '';
         if (data?.session?.user) {
@@ -541,6 +550,7 @@
     clearRecoveryGrant();
     recoveryCompleted = false;
     form.reset();
+    referral?.reset(); referral?.setActive(false);
     feedback.textContent = '';
     if ($('signup-result')) $('signup-result').textContent = '';
     pendingDestination = null;

@@ -16,6 +16,10 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
    window.withdrawn=[{id:'withdrawn-1',nickname:'보관한 회원',email_masked:'p***@example.invalid',account_created_at:'2026-08-01T00:00:00Z',withdrawn_at:'2026-10-01T00:00:00Z',expires_at:'2026-11-01T00:00:00Z',phone_number:'01099998888',birth_date:'2000-01-01',raw_snapshot:{password:'do-not-render'}}];
    window.client={auth:{onAuthStateChange(fn){window.authChanged=fn;return{data:{subscription:{unsubscribe(){unsubscribed++}}}}}},async rpc(name,args){
     calls.push({name,args});if(defer)return new Promise(resolve=>pending.push(resolve));if(fail)return{error:{message:fail===true?'synthetic transport failure':fail}};
+    if(name==='admin_referral_counts'){
+     const rows=[{id:'referrer-a',nickname:'추천한 회원',referral_count:7,pending_count:2,last_referred_at:'2026-10-21T03:00:00Z'}].filter(row=>!args.p_query||row.nickname.includes(args.p_query));
+     return{data:{items:rows,total:rows.length,total_referrals:rows.length?7:0,pending_referrals:rows.length?2:0}};
+    }
     let rows=name==='admin_list_withdrawn_accounts'?withdrawn:members;
     if(args.p_filter==='banned')rows=rows.filter(x=>x.banned_until);if(args.p_filter==='admin')rows=rows.filter(x=>x.is_admin);if(args.p_filter==='today')rows=rows.filter(x=>x.created_at.startsWith('2026-10-04'));
     if(args.p_query)rows=rows.filter(x=>(x.nickname+' '+(x.email||x.email_masked)).includes(args.p_query));
@@ -61,6 +65,14 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
    await page.setViewportSize({width,height});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    if(process.env.ADMIN_ACCOUNTS_PROOF_DIR){fs.mkdirSync(process.env.ADMIN_ACCOUNTS_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.ADMIN_ACCOUNTS_PROOF_DIR,`withdrawn-${width}.png`),fullPage:true});}
   }
+  await page.evaluate(()=>openDirectory('referrals'));await idle();
+  assert.equal(await page.locator('.acct-filters,[data-act]').count(),0);
+  assert.match(await page.locator('.acct-count').textContent(),/추천 가입 7명.*인증 대기 2명/);
+  assert.equal(await page.locator('.acct-details dt').allTextContents().then(x=>x.join(',')),'추천 가입,인증 대기,최근 추천 가입');
+  assert.equal(await page.evaluate(()=>calls.at(-1).name),'admin_referral_counts');
+  assert.equal(await page.evaluate(()=>'p_filter'in calls.at(-1).args),false);
+  await page.getByRole('searchbox',{name:'추천인 검색'}).fill('없는 회원');await page.getByRole('button',{name:'찾기',exact:true}).click();await idle();
+  assert.match(await page.locator('.acct-empty').textContent(),/추천인이 없어요/);
   await page.evaluate(()=>openDirectory());await idle();
   for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(process.env.ADMIN_ACCOUNTS_PROOF_DIR)await page.screenshot({path:path.join(process.env.ADMIN_ACCOUNTS_PROOF_DIR,`members-${width}.png`)});}
   await page.evaluate(()=>document.documentElement.dataset.theme='dark');if(process.env.ADMIN_ACCOUNTS_PROOF_DIR)await page.screenshot({path:path.join(process.env.ADMIN_ACCOUNTS_PROOF_DIR,'members-dark-1280.png')});
