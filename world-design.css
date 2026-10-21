@@ -43,7 +43,7 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .world-redesign .profile-photo-stage{background:var(--surface-2)}.world-redesign .profile-photo-actions .profile-photo-save{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.world-redesign .profile-photo-zoom input{accent-color:var(--accent)}
 
 .arcade-overview{margin-bottom:24px}
-.arcade-status{margin-bottom:20px}.world-redesign .arcade-status .visit-banner{width:100%;max-width:none;margin:0;padding:0}.arcade-status .visit-banner .btn{margin-left:auto}
+.arcade-social .arcade-status{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--line)}.world-redesign .arcade-status .visit-banner{width:100%;max-width:none;margin:0;padding:0}.arcade-status .visit-banner .btn{margin-left:auto}
 
 /* Game covers stay distinct from the seasonal rankings illustration. */
 .world-redesign .gbtn{--game-tint:#e2eee5;--game-edge:#aac3b1;border-color:var(--game-edge);box-shadow:0 3px 0 color-mix(in srgb,var(--game-edge) 38%,transparent)}
