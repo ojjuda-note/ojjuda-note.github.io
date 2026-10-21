@@ -1,0 +1,214 @@
+{
+  "base": "1f2d507f3e6ff93a84233c25a1f55ab0311205c1",
+  "changes": {
+    "world.html": {
+      "before": "7d63d453f79799aa2b7381b88138b006f9b4d8b7025835a7185a0f861c900997",
+      "after": "e3aea8202fbdf0d940260c3fd7ed97251b15f7155c753f427bc9bbcf88090708",
+      "edits": [
+        [
+          147508,
+          147510,
+          "22"
+        ]
+      ]
+    },
+    "portal.js": {
+      "before": "40cb9ec407c86cba931e7c5ee0af87458c53bcf879401af7451e5bd21f71697b",
+      "after": "98a874bb1c0b2fe199bd18674cf787b10a637397069b8f9f7bf7fabdbbaaa32c",
+      "edits": [
+        [
+          272,
+          272,
+          "// The document linked from the checkbox and the recorded version must agree.\n  // Keep the existing terms during the public notice period (Korea time).\n  "
+        ],
+        [
+          293,
+          293,
+          "Date.now() >= Date.parse("
+        ],
+        [
+          299,
+          299,
+          "11-20T00:00:00+"
+        ],
+        [
+          301,
+          301,
+          ":00')\n    ? '2026-11-20' : '2026-09"
+        ],
+        [
+          310,
+          310,
+          "';\n  for (const link of document.querySelectorAll('[data-policy-document]')) {\n    const name = link.dataset.policyDocument;\n    if (name === 'terms' || name === 'privacy') {\n      link.href = termsVersion === '2026-11-20' ? `/${name}.html` : `/policies/2026-09-29/${name}.html`;\n    }\n  }\n  if ($('policy-revision-note')) $('policy-revision-note').hidden = termsVersion === '2026-11-20"
+        ]
+      ]
+    },
+    "index.html": {
+      "before": "63923cee19bd151a5851bdd748dfa1b1adaf7d7e9e8a4af346e41d352607fbd4",
+      "after": "c0d7033d81cdbb0fb96747b02373e0b1774712504bda63ecc1d9968461d81e8b",
+      "edits": [
+        [
+          2619,
+          2628,
+          "policy1"
+        ],
+        [
+          9608,
+          9608,
+          "data-policy-document=\"terms\" "
+        ],
+        [
+          9614,
+          9614,
+          "/policies/2026-09-29/"
+        ],
+        [
+          9670,
+          9670,
+          "data-policy-document=\"privacy\" "
+        ],
+        [
+          9676,
+          9676,
+          "/policies/2026-09-29/"
+        ],
+        [
+          9753,
+          9753,
+          "><p id=\"policy-revision-note\" class=\"identity-hint\">11월 20일 시행 개정안: <a href=\"/terms.html#revision\" target=\"_blank\" rel=\"noopener\">이용약관</a> · <a href=\"/privacy.html#revision\" target=\"_blank\" rel=\"noopener\">개인정보처리방침</a></p"
+        ]
+      ]
+    },
+    "version.json": {
+      "before": "cc6c492a98a559fb0d9f35424f95c592a5c3488ce72fc4204fb861382f3dd574",
+      "after": "8d5f1198b195d969e3eac6613ab4139e528cfc373780d530cb75a408e603c08f",
+      "edits": [
+        [
+          21,
+          23,
+          "22"
+        ]
+      ]
+    },
+    "tests/portal-auth-entry.test.cjs": {
+      "before": "bb8dd3febd9635f0cf8a6eaa08e65f7fda04059db7d6569b2e5458609ad0704e",
+      "after": "21a9a33eb13f90357f53b35c91d9ddee4fa978657bbd8ca60fbf1aee0fd054f6",
+      "edits": [
+        [
+          1932,
+          1932,
+          ", now = Date.now()"
+        ],
+        [
+          1957,
+          1962,
+          ""
+        ],
+        [
+          1965,
+          1967,
+          ""
+        ],
+        [
+          3051,
+          3051,
+          "policyLinks = ['terms', 'privacy'].map(name => { const e = element(`${name}-link`); e.dataset.policyDocument = name; return e; });\n  const "
+        ],
+        [
+          4628,
+          4630,
+          "selector"
+        ],
+        [
+          4633,
+          4633,
+          " selector === '[data-policy-document]' ? policyLinks :"
+        ],
+        [
+          5981,
+          5981,
+          "for ("
+        ],
+        [
+          5987,
+          6035,
+          "[time, version, prefix] of [\n    ['2026-11-19T14:59:59.999Z', '2026-09-29-age14', '"
+        ],
+        [
+          6036,
+          6061,
+          "policies/2026-09-29/'],\n    ['2026-11-19T15:00:00.000Z', '2026-11-20', '/']\n  ]) {\n    "
+        ],
+        [
+          6067,
+          6427,
+          "app = setup('"
+        ],
+        [
+          6453,
+          6591,
+          "{ now: Date.parse(time) });\n    "
+        ],
+        [
+          6609,
+          6609,
+          " app.fill(); await app.submit();"
+        ],
+        [
+          6627,
+          7257,
+          ""
+        ],
+        [
+          7271,
+          7271,
+          ".options.data.terms_version, version, 'consent uses the document effective at Korea midnight');\n    for (const name of ['terms', 'privacy']) assert.equal(app.element(`${name}-link`).href, `${prefix}${name}.html`);\n    assert.equal(app.element('policy-revision-note').hidden, version === '2026-11-20');\n  }\n  const world = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');\n  const renderer = world.slice(world.indexOf('function nr('), world.indexOf('function J1('));\n  const worldRoutes = [];\n  vm.runInNewContext(`${renderer}; nr('signup'); nr('forgot');`, {\n    ha: 'login', location: { assign: url => worldRoutes.push(url) },\n    qr() { throw new Error('World must use the common signup form'); }\n  });\n  assert.deepEqual(worldRoutes, ['/?auth=signup&next=world', '/?auth=forgot&next=world']);\n  for (const destination of ['world', 'note']) {\n    const app = setup(`?auth=signup&next=${destination}`); await app.flush();\n    assert.equal(app.element('auth-dialog').open, true);\n    assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');\n    assert.equal(app.element('auth-title').textContent, '오쭈다 월드');\n    assert.equal(app.element('.password-confirm-field').hidden, false);\n    assert.equal(app.element('password-confirm-label').textContent, '비밀번호 확인');\n    assert.equal(app.element('password-confirm').required, true);\n    assert.equal(app.element('password-confirm').disabled, false);\n    assert.equal(app.location.searchParams.get('auth'), null);\n    app.fill(); await app.submit();\n    assert.equal(app.signups.length, 1);\n    const sent = app.signups[0]"
+        ]
+      ]
+    },
+    "policies/2026-09-29/terms.html": {
+      "source_at_base": "terms.html",
+      "before": "eb629064faf86482199d2e38e37a8372f8bc588f09737eda4d3d0de17e9cf585",
+      "after": "7d94e195f23ef231cdcce5d0b48342cbd2ea23dac83a62c1430aa7a4cbd3c896",
+      "edits": [
+        [
+          38,
+          38,
+          "base href=\"/\"><"
+        ],
+        [
+          203,
+          208,
+          "noindex"
+        ],
+        [
+          1862,
+          1862,
+          "aside class=\"meta\" style=\"padding:16px;border:1px solid var(--line);border-radius:12px;margin-bottom:24px\"><strong>이전 문서 보관본 · 2026년 9월 29일 게시본</strong><p>당시 게시된 원문을 보존합니다. 현재 기능 설명과 다를 수 있습니다. <a href=\"/terms.html\">2026년 10월 21일 공개한 개정본 보기</a></p></aside><"
+        ]
+      ]
+    },
+    "policies/2026-09-29/privacy.html": {
+      "source_at_base": "privacy.html",
+      "before": "f9cacffcc5ec115a5ab1e65e3d4e7851e9a150483adc0dc518f251b1d7178a1c",
+      "after": "60192cd44e18a7b18331b40176e33a3d81d206086af170aae9a221174a9959f5",
+      "edits": [
+        [
+          36,
+          36,
+          "><base href=\"/\""
+        ],
+        [
+          207,
+          212,
+          "noindex"
+        ],
+        [
+          2126,
+          2126,
+          "aside class=\"meta\" style=\"padding:16px;border:1px solid var(--line);border-radius:12px;margin-bottom:24px\"><strong>이전 문서 보관본 · 2026년 9월 29일 게시본</strong><p>당시 게시된 원문을 보존합니다. 현재 기능 설명과 다를 수 있습니다. <a href=\"/privacy.html\">2026년 10월 21일 공개한 개정본 보기</a></p></aside><"
+        ]
+      ]
+    }
+  }
+}

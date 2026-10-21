@@ -1,0 +1,86 @@
+name: Verify policy review
+on:
+  push:
+    branches: [codex/policy-review-20261021]
+    paths: ['ops/policy-edits.json', 'ops/apply-policy-review.py', '.github/workflows/verify-policy-review.yml', 'terms.html', 'privacy.html', 'delete-account.html', 'policy.css']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed source edits and preserve original policies
+        run: python ops/apply-policy-review.py
+      - run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: |
+          npx --prefix tests playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify signup consent, referrers and script integrity
+        run: |
+          node tests/portal-auth-entry.test.cjs
+          node tests/signup-referrals-ui.test.cjs
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Review mobile and desktop policy documents
+        run: |
+          node <<'JS'
+          const {chromium}=require('./tests/node_modules/playwright');
+          const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const root=process.cwd();fs.mkdirSync('/tmp/policy-proof',{recursive:true});
+            try{
+              for(const width of [320,390,1280])for(const scheme of ['light','dark']){
+                const context=await browser.newContext({viewport:{width,height:900},colorScheme:scheme});
+                await context.route('**/*',route=>{
+                  const u=new URL(route.request().url());if(u.origin!=='https://policy.test')return route.abort();
+                  const file=path.join(root,u.pathname==='/'?'/index.html':u.pathname);
+                  if(!file.startsWith(root+path.sep)||!fs.existsSync(file))return route.abort();
+                  return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':'text/html'});
+                });
+                const page=await context.newPage();
+                for(const name of ['terms','privacy','delete-account']){
+                  await page.goto('https://policy.test/'+name+'.html');
+                  assert.equal(await page.locator('h1').count(),1);
+                  assert.ok(await page.locator('h1').isVisible());
+                  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,name+' viewport overflow');
+                  const missing=await page.locator('a[href^="#"]').evaluateAll(links=>links.filter(link=>!document.getElementById(link.hash.slice(1))).map(link=>link.hash));
+                  assert.deepEqual(missing,[]);
+                  if(width===390)await page.screenshot({path:'/tmp/policy-proof/'+name+'-'+scheme+'.png',fullPage:true});
+                  console.log('PASS',name,width,scheme);
+                }
+                for(const name of ['terms','privacy']){
+                  await page.goto('https://policy.test/policies/2026-09-29/'+name+'.html');
+                  assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex,follow');
+                  assert.ok(await page.getByRole('link',{name:'2026년 10월 21일 공개한 개정본 보기'}).isVisible());
+                  assert.equal(await page.locator('a.top').evaluate(a=>a.href),'https://policy.test/');
+                }
+                await context.close();
+              }
+            }finally{await browser.close();}
+          })().catch(error=>{console.error(error);process.exit(1);});
+          JS
+      - name: Save policy screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: policy-review-proof
+          path: /tmp/policy-proof
+          retention-days: 5
+      - name: Commit verified edits
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Verify current policy documents and effective-date signup consent'
+            git push origin HEAD:refs/heads/codex/policy-review-20261021
+          fi
