@@ -35,6 +35,16 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.ok(w.document.querySelector('[data-arcade-rank-root]'));
   assert.ok(w.document.querySelector('[data-arcade-games=solo]'));
   assert.ok(w.document.querySelector('[data-arcade-games=multi]'));
+  assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=poker]'),null,'poker is not duplicated in the solo list');
+  w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=19};t.render();
+  const poker=w.document.querySelector('[data-arcade-games=multi] [data-v=poker]');
+  assert.ok(poker,'eligible members see poker in the requested group');
+  assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
+  assert.match(poker.textContent,/2~4인 멀티/,'the menu accurately labels the current play mode');
+  w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=18};t.render();
+  assert.equal(w.document.querySelector('[data-v=poker]'),null,'18-year-olds cannot see poker');
+  assert.equal(w.document.querySelector('[data-act=matgo-open]'),null,'Matgo uses the same age threshold');
+  delete w.OjjudaMatgoAccess;t.render();
   assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');
   assert.ok(t.state.placeT,'presence keeps its update timer without the image stage');
   assert.equal(w.document.querySelector('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"],.arcade-welcome [data-tab="park"]'),null,'Arcade contains no public chat or Park shortcut');

@@ -95,7 +95,7 @@
         if (attempt !== revision) throw reject('login');
         memberId = userId;
         memberAge = result.data.age;
-        if(memberAge>=20)root.document?.documentElement?.setAttribute('data-ojjuda-poker','true');
+        if(memberAge>=19)root.document?.documentElement?.setAttribute('data-ojjuda-poker','true');
         else root.document?.documentElement?.removeAttribute('data-ojjuda-poker');
         root.document?.documentElement?.setAttribute('data-ojjuda-adult','true');
         checkedAt = Date.now();
