@@ -121,6 +121,7 @@
   }
   window.OjjudaSaetbyeolEntry = {
     save, buyBooster,
+    ended(runId) { if (ready && !game.isDemo()) post({type:'ojjuda-game-finished', runId, demo:false}); },
     connect(controller) {
       game = controller;
       const enter = (growth=false) => {

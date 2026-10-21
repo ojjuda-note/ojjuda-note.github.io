@@ -71,6 +71,7 @@
         if (!me || me.human !== true || !Number.isSafeInteger(me.assets) || me.assets < 0 ||
             me.assets > 1000000 || typeof me.bankrupt !== 'boolean' || (me.bankrupt && me.assets !== 0)) return;
         if (!authorized()) return;
+        window.OjjudaGuestAccess?.finished();
         let pending = results.get(runId);
         if (!pending) {
           pending = Promise.resolve().then(() => authorized() && typeof onScore === 'function'

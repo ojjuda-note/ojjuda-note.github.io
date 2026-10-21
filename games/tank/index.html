@@ -913,6 +913,7 @@ window.TankView={
   tankQuake=v.quake;
   booms=[...v.booms,...tankBursts];bits=[...v.bits,...tankDebris];
   state=['fly','settle'].includes(v.state)?v.state:v.over?'end':canAim?'aim':'watch';
+  if(state==='end'&&oldState!=='end'&&parent!==window)parent.postMessage({source:'ojjuda-tank',type:'finished'},location.origin);
   paths=[...tankHistory,...v.paths];
   if(changed){tankRenderEngine=engine;prepTerrainCanvas();tankRenderDirty=-1;buildRoster();this.resize();
    if(!pan){camManual=false;camX=clamp(tanks[turn].x-VW/2,0,Math.max(0,W-VW));camY=0;}

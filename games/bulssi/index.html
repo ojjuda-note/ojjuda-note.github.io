@@ -103,7 +103,7 @@ body[data-mode="hub"] #panel{display:block}
 <div id="toast" class="serif" role="status"></div>
 <div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><div id="ovHint">눌러서 계속</div></div>
-<script src="./entry.js?v=20261018-arcade-entry1"></script>
+<script src="./entry.js?v=20261021-guest1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261013-sky2001"></script>
 <script src="./encounters.js?v=20261013-sky2001"></script>
@@ -581,11 +581,12 @@ function updateBoss(dt,cur,rad){
   R.shards=R.shards.filter(s=>s.life>0&&s.x>-20&&s.x<W+20&&s.y>-20&&s.y<H+20);
 }
 function endRun(){
-  mode='end';save();const g=R.gain;
+  mode='end';save();window.OjjudaSaetbyeolEntry.ended(R.id);const g=R.gain;
   let html=`<h2>식었다</h2><p>${R.boss?`아직 ${col().bossObj} 넘지 못했다.`:'불씨가 잠시 숨을 고른다.'}</p><p class="num">이번에 모은 빛 ${fmt(g.light)}`+(g.metal?`<br>금속 ${fmt(g.metal)}`:'')+(g.mass?`<br>질량 ${fmt(g.mass)}`:'')+`<br>${R.time.toFixed(1)}초 동안 타올랐다</p>`;
   overlay(html,{buttons:[['별자리로 돌아가기',()=>{closeOv();selectDefault();setMode('hub')},'primary'],['바로 다시 타오르기',()=>{closeOv();startRun(!!R.boss)}]]});
 }
 function winBoss(){
+  window.OjjudaSaetbyeolEntry.ended(R.id);
   mode='end';R.flash=1;burst(R.boss.x,R.boss.y,col().color,60,3);ring(R.boss.x,R.boss.y,Math.hypot(W,H),1.2,col().rgb,8);ring(R.boss.x,R.boss.y,Math.hypot(W,H)*.5,.9,'255,246,232',4);tone(note(10),1.5,.06,'triangle');tone(note(14),1.5,.04,'triangle');
   const s=S.stage;
   setTimeout(()=>{

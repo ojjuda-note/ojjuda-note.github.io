@@ -21,10 +21,55 @@ let playingView=null;
 let mode='online',online=null,onlineError='',roomList=[],queuedRoom=null,onlineLobby=false,wallet=null,leaveOnExit=false;
 let visual={game:null,cards:[],shown:[],bets:[],pot:0,finished:false};
 const faces=['C','H','D','S'];
-function card(c,{hidden=false,publicCard=false,best=false,selected=false,button=false,index=0,selectable=false,fresh=false,revealed=false,fan=0,dealSeat=0,dealOrder=index}={}){
-  const tag=button?'button':'span',label=hidden?'비공개 카드':cardName(c);
-  return `<${tag} class="card${hidden?' back':''}${publicCard?' public':''}${best?' best':''}${selected?' selected':''}${selectable?' selectable':''}${fresh?' dealing':''}${revealed?' revealing':''}" ${fresh?`data-deal-seat="${dealSeat}" data-deal-order="${dealOrder}"`:""} ${button?`type="button" data-card="${index}" aria-pressed="${selected}"`:''} style="--i:${index};--fan:${fan}deg" aria-label="${label}${publicCard?' · 공개':''}">${hidden?'<span class="back-border" aria-hidden="true"><span class="back-emblem">♠<small>OJ JU DA</small></span></span>':`<img class="card-face" src="cards/${faces[suit(c)]}-${face(c)}.svg" alt="" draggable="false" decoding="async"><span class="card-index${[1,2].includes(suit(c))?' red':''}" aria-hidden="true"><b>${face(c)}</b><i>${['♣','♥','♦','♠'][suit(c)]}</i></span>`}${publicCard?'<span class="card-state" aria-hidden="true">공개</span>':''}</${tag}>`;
+const cardBack = '<span class="back-border" aria-hidden="true"><span class="back-emblem">♠<small>OJ JU DA</small></span></span>';
+const cardFace = c => `<img class="card-face" src="cards/${faces[suit(c)]}-${face(c)}.svg" alt="" draggable="false" decoding="async">`;
+let peekedCard = null, peekDrag = null;
+const finalCardKey = () => game?.players[0].cards.length === 7 ? `${game._roomId}:${game._round}:${game.players[0].cards[6]}` : null;
+const finalCardCovered = () => !!finalCardKey() && game.phase !== 'finished' && peekedCard !== finalCardKey();
+function card(c,{hidden=false,publicCard=false,best=false,selected=false,button=false,index=0,selectable=false,fresh=false,revealed=false,fan=0,dealSeat=0,dealOrder=index,peek=false}={}){
+  const tag=button||peek?'button':'span',label=peek?'마지막 카드 · 아래로 끌어내려 보기':hidden?'비공개 카드':cardName(c);
+  return `<${tag} class="card${hidden?' back':''}${peek?' final-covered':''}${publicCard?' public':''}${best?' best':''}${selected?' selected':''}${selectable?' selectable':''}${fresh?' dealing':''}${revealed?' revealing':''}" ${fresh?`data-deal-seat="${dealSeat}" data-deal-order="${dealOrder}"`:""} ${button||peek?`type="button" data-card="${index}" aria-pressed="${selected}"`:''} ${peek?'data-peek-card aria-expanded="false"':''} style="--i:${index};--fan:${fan}deg" aria-label="${label}${publicCard?' · 공개':''}">${peek?`<span class="peek-face" aria-hidden="true">${cardFace(c)}</span><span class="peek-cover" aria-hidden="true">${cardBack}</span><span class="card-state">↓ 당겨보기</span>`:hidden?cardBack:cardFace(c)}${publicCard?'<span class="card-state" aria-hidden="true">공개</span>':''}</${tag}>`;
 }
+function revealFinalCard(){
+  if(!finalCardCovered())return;
+  peekedCard=finalCardKey();peekDrag=null;
+  void sfx.play('reveal');
+  render({animateDeal:false});
+  if(document.querySelector('#cards-dialog').open)fillCards(0);
+}
+document.addEventListener('pointerdown',event=>{
+  if(peekDrag){if(event.pointerId!==peekDrag.id)cancelPeek();return;}
+  const node=event.target.closest('[data-peek-card]');
+  if(!node||event.button!==0||!finalCardCovered()||dealMotion.active())return;
+  event.preventDefault();
+  peekDrag={node,id:event.pointerId,start:event.clientY,distance:0,key:finalCardKey(),height:node.getBoundingClientRect().height};
+  node.classList.add('is-peeking');
+  try{node.setPointerCapture(event.pointerId);}catch{}
+});
+document.addEventListener('pointermove',event=>{
+  if(!peekDrag||event.pointerId!==peekDrag.id)return;
+  if(peekDrag.key!==finalCardKey()||!peekDrag.node.isConnected){cancelPeek();return;}
+  event.preventDefault();
+  peekDrag.distance=Math.max(0,Math.min(peekDrag.height,event.clientY-peekDrag.start));
+  peekDrag.node.style.setProperty('--peek-distance',peekDrag.distance+'px');
+  peekDrag.node.style.setProperty('--peek-hidden',Math.max(0,100-peekDrag.distance/peekDrag.height*100)+'%');
+});
+function cancelPeek(){
+  if(!peekDrag)return;
+  const {node}=peekDrag;peekDrag=null;
+  node.classList.remove('is-peeking');node.style.removeProperty('--peek-distance');node.style.removeProperty('--peek-hidden');
+}
+document.addEventListener('pointerup',event=>{
+  if(!peekDrag||event.pointerId!==peekDrag.id)return;
+  const reveal=peekDrag.key===finalCardKey()&&peekDrag.distance>=Math.min(44,peekDrag.height*.3);
+  cancelPeek();if(reveal)revealFinalCard();
+});
+for(const type of ['pointercancel','lostpointercapture'])document.addEventListener(type,event=>{if(peekDrag?.id===event.pointerId)cancelPeek();});
+document.addEventListener('keydown',event=>{
+  if(event.target.closest('[data-peek-card]')&&['Enter',' ','ArrowDown'].includes(event.key)){
+    event.preventDefault();if(!dealMotion.active())revealFinalCard();
+  }
+});
 function chipStack(amount=500,{mini=false}={}){
   const count=mini?1:Math.min(4,Math.max(2,Math.ceil(amount/750)));
   return `<span class="chip-stacks${mini?' mini':''}" aria-hidden="true">${Array.from({length:count},(_,i)=>`<span class="chip-stack ${['jade','ivory','burgundy','gold'][i]}" style="--stack:${i}">${Array.from({length:mini?2:3+(i+Math.floor(amount/100))%4},(_,j)=>`<i class="chip" style="--layer:${j}"><span>${['50','100','500','1K'][i]}</span></i>`).join('')}</span>`).join('')}</span>`;
@@ -74,7 +119,7 @@ function acceptRoom(room){
   if(next){
     const same=game&&game._roomId===room.id&&game._round===room.round,wasDone=game?.phase==='finished',oldTurn=game?.turn;
     if(same&&game.log.at(-1)!==next.log.at(-1)){const last=next.log.at(-1)||'';const cue=last.includes('올인')?'allin':last.includes('다이')?'fold':last.includes('베팅')?'raise':last.includes('체크')?'check':last.includes('콜')?'call':null;if(cue)void sfx.play(cue);}
-    if(same)Object.assign(game,next);else game={...next,_roomId:room.id,_round:room.round};
+    if(same)Object.assign(game,next);else {peekedCard=null;game={...next,_roomId:room.id,_round:room.round};}
     lobby=false;pick=-1;render();
     if(!wasDone&&game.phase==='finished')void sfx.play(game.result.net[0]>0?'win':'end');
     else if(oldTurn!==0&&game.turn===0&&!dealMotion.active())void sfx.play('turn');
@@ -145,13 +190,14 @@ function renderTable(animateDeal=true){
     const up=p.cards.filter(c=>p.up.includes(c)),down=p.cards.filter(c=>!p.up.includes(c));
     return `<section class="seat seat-${i} seat-${position}${active?' active':''}${p.folded?' folded':''}${winning.has(i)?' winner':''}" aria-label="${esc(p.name)}${active?' 차례':''}"><div class="seat-label"><span class="seat-number">0${i}</span>${dealer(i)}<span class="seat-type">${online?.room?.mode==='solo'?'COMPUTER':'PLAYER'}</span></div><button class="seat-head" data-seat="${i}" aria-label="${esc(p.name)} 공개 카드 크게 보기"><span class="seat-monogram" aria-hidden="true">${['','♠','♦','♣'][i]}</span><span class="seat-info"><strong>${esc(p.name)}</strong><small>${fmt(p.stack)} <span>G</span></small></span><span class="turn-light" aria-hidden="true"></span></button><button class="seat-cards" data-seat="${i}" aria-label="${esc(p.name)} 공개 카드 크게 보기"><span class="down-cards">${down.map((c,k)=>card(c,{hidden:!reveal,index:k,dealSeat:i,dealOrder:p.cards.indexOf(c),fresh:fresh(i,c),revealed:reveal&&revealed(i,c),best:!!best?.cards.includes(c)})).join('')}</span><span class="up-cards">${up.map((c,k)=>card(c,{index:k,dealSeat:i,dealOrder:p.cards.indexOf(c),fresh:fresh(i,c),best:!!best?.cards.includes(c)})).join('')}</span></button><span class="seat-action${p.allIn?' is-allin':''}">${active?'<i class="action-dot"></i>':''}${esc((p.last||'대기').replace(/^베팅 .*/, '베팅'))}${p.bet>0?`<b>${fmt(p.bet)} <small>G</small></b>`:''}</span>${best?`<span class="result-seats">${best.name}</span>`:''}${betMoved?'<span class="bet-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section>`;
   }).join('');
-  app.innerHTML=header()+roomBar()+`<section class="game"><div class="round-strip"><span class="table-id"><i></i> ${online?.room?.mode==='solo'?'COMPUTER':'ONLINE'} <span>· HAND ${String(mode==='online'?online.room.round:done?record.rounds:record.rounds+1).padStart(2,'0')}</span></span><div class="street-dots" aria-label="진행 단계">${[[0,'패 선택'],[4,'4구'],[5,'5구'],[6,'6구'],[7,'히든']].map(([n,label])=>`<span class="${game.street===n?'on':game.street>n?'passed':''}">${label}</span>`).join('')}</div></div><div class="table-scene"><div class="felt"><div class="felt-inlay" aria-hidden="true"></div><div class="opponents">${seats}</div><div class="pot-zone${potChanged?' pot-changed':''}"><div class="deal-deck" aria-hidden="true">${card(0,{hidden:true})}${card(0,{hidden:true})}${card(0,{hidden:true})}<small>DEALER</small></div><span class="pot-label">${done?'TOTAL POT':'MAIN POT'}</span><div class="pot-amount">${fmt(game.pot)}<span>G</span></div>${chipStack(game.pot)}<span class="table-rule">SEVEN CARD STUD · ANTE 50</span></div><section class="player${myTurn?' active':''}${me.folded?' folded':''}"><div class="player-header"><div class="player-name">${dealer(0)}<b>나</b><span>${me.folded?'다이':me.allIn?'ALL IN':me.bet>0?'베팅 '+fmt(me.bet)+' G':myTurn?'내 차례':'내 카드'}</span></div><div class="hand-tools"><span class="hand-label">${selecting?'패 선택':hand.name}</span><button class="hand-zoom" data-seat="0" aria-label="내 카드 크게 보기">크게 보기 ↗</button></div></div><div class="my-cards" style="--card-count:${me.cards.length}">${me.cards.map((c,i)=>card(c,{button:true,index:i,publicCard:me.up.includes(c),best:done&&!me.folded&&showdown&&hand.cards.includes(c),selected:pick===i&&selecting,selectable:selecting,fresh:fresh(0,c),fan:(i-(me.cards.length-1)/2)*1.4})).join('')}</div>${same&&me.total>visual.bets[0]?'<span class="bet-flight player-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section></div></div><section class="decision-panel${myTurn?' my-turn':''}">${result}<div class="decision-heading"><div class="status" id="status" role="status" aria-live="polite">${status()}</div><span>${done?'황금 테두리 · 베스트 5장':selecting?`${game.phase==='discard'?'DISCARD':'OPEN'} 1 / ${me.cards.length}`:'한국식 세븐포커'}</span></div><div class="actions${done?' finished-actions':''}">${controls()}</div></section><div class="table-footer"><details class="recent"><summary>핸드 기록 <span>↗</span></summary><ol>${game.log.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details><span>${online?.room?.mode==='solo'?'컴퓨터와 플레이':'온라인 대전'} · 참가비 50 G</span></div></section>`;
+  app.innerHTML=header()+roomBar()+`<section class="game"><div class="round-strip"><span class="table-id"><i></i> ${online?.room?.mode==='solo'?'COMPUTER':'ONLINE'} <span>· HAND ${String(mode==='online'?online.room.round:done?record.rounds:record.rounds+1).padStart(2,'0')}</span></span><div class="street-dots" aria-label="진행 단계">${[[0,'패 선택'],[4,'4구'],[5,'5구'],[6,'6구'],[7,'히든']].map(([n,label])=>`<span class="${game.street===n?'on':game.street>n?'passed':''}">${label}</span>`).join('')}</div></div><div class="table-scene"><div class="felt"><div class="felt-inlay" aria-hidden="true"></div><div class="opponents">${seats}</div><div class="pot-zone${potChanged?' pot-changed':''}"><div class="deal-deck" aria-hidden="true">${card(0,{hidden:true})}${card(0,{hidden:true})}${card(0,{hidden:true})}<small>DEALER</small></div><span class="pot-label">${done?'TOTAL POT':'MAIN POT'}</span><div class="pot-amount">${fmt(game.pot)}<span>G</span></div>${chipStack(game.pot)}<span class="table-rule">SEVEN CARD STUD · ANTE 50</span></div><section class="player${myTurn?' active':''}${me.folded?' folded':''}"><div class="player-header"><div class="player-name">${dealer(0)}<b>나</b><span>${me.folded?'다이':me.allIn?'ALL IN':me.bet>0?'베팅 '+fmt(me.bet)+' G':myTurn?'내 차례':'내 카드'}</span></div><div class="hand-tools"><span class="hand-label">${selecting?'패 선택':finalCardCovered()?'히든 카드 확인':hand.name}</span><button class="hand-zoom" data-seat="0" aria-label="내 카드 크게 보기">크게 보기 ↗</button></div></div><div class="my-cards" style="--card-count:${me.cards.length}">${me.cards.map((c,i)=>card(c,{button:true,index:i,peek:i===6&&finalCardCovered(),publicCard:me.up.includes(c),best:done&&!me.folded&&showdown&&hand.cards.includes(c),selected:pick===i&&selecting,selectable:selecting,fresh:fresh(0,c),fan:(i-(me.cards.length-1)/2)*1.4})).join('')}</div>${same&&me.total>visual.bets[0]?'<span class="bet-flight player-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section></div></div><section class="decision-panel${myTurn?' my-turn':''}">${result}<div class="decision-heading"><div class="status" id="status" role="status" aria-live="polite">${status()}</div><span>${done?'황금 테두리 · 베스트 5장':selecting?`${game.phase==='discard'?'DISCARD':'OPEN'} 1 / ${me.cards.length}`:'한국식 세븐포커'}</span></div><div class="actions${done?' finished-actions':''}">${controls()}</div></section><div class="table-footer"><details class="recent"><summary>핸드 기록 <span>↗</span></summary><ol>${game.log.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details><span>${online?.room?.mode==='solo'?'컴퓨터와 플레이':'온라인 대전'} · 참가비 50 G</span></div></section>`;
   visual={game,cards:game.players.map(p=>[...p.cards]),shown:game.players.map((p,i)=>i===0||showdown&&!p.folded?[...p.cards]:[...p.up]),bets:game.players.map(p=>p.total),pot:game.pot,finished:done};
 }
 function render({animateDeal=true}={}){
   if(!ready||conflict)return;
   const focused=document.activeElement,focusKey=focused?.hasAttribute('data-card')?['data-card',focused.dataset.card]:focused?.hasAttribute('data-action')?['data-action',focused.dataset.action]:null;
   const keyboardFocus=focused?.matches?.(':focus-visible'),historyOpen=app.querySelector('.recent')?.open;
+  cancelPeek();
   dealMotion.cancel();
   document.body.classList.toggle('poker-entry-active',lobby);
   document.body.classList.toggle('poker-playing',!lobby);
@@ -183,12 +229,13 @@ async function start(){
  if(online.room){await online.act('ready');return;}
  await online.act('create',{options:{mode:'solo',capacity:4,title:'컴퓨터와 세븐포커',difficulty:record.difficulty}});
 }
-function showCards(seat){
-  clearTimeout(timer);
+function fillCards(seat){
   const p=game.players[seat],reveal=seat===0||game.phase==='finished'&&!game.result.uncontested&&!p.folded;
   document.querySelector('#cards-title').textContent=seat===0?'내 카드':`${p.name}의 공개 카드`;
-  document.querySelector('#cards-content').innerHTML=p.cards.map(c=>card(c,{hidden:!reveal&&!p.up.includes(c),publicCard:p.up.includes(c)})).join('')+`<p class="muted">${seat===0?'공개 표시가 없는 카드는 나만 볼 수 있어요.':'상대의 비공개 카드는 승부가 끝날 때 열려요.'}</p>`;
-  document.querySelector('#cards-dialog').showModal();
+  document.querySelector('#cards-content').innerHTML=p.cards.map((c,i)=>card(c,{index:i,peek:seat===0&&i===6&&finalCardCovered(),hidden:!reveal&&!p.up.includes(c),publicCard:p.up.includes(c)})).join('')+`<p class="muted">${seat===0?'공개 표시가 없는 카드는 나만 볼 수 있어요.':'상대의 비공개 카드는 승부가 끝날 때 열려요.'}</p>`;
+}
+function showCards(seat){
+  clearTimeout(timer);fillCards(seat);document.querySelector('#cards-dialog').showModal();
 }
 function exit(){online?.close();dealMotion.cancel();clearTimeout(timer);sfx.pause();save();send('exit');}
 function requestExit(leave=false){
@@ -217,6 +264,7 @@ document.addEventListener('click',async event=>{
   if(b.dataset.action?.startsWith('online')||b.hasAttribute('data-room-code')){await onlineAction(b);return;}
   if(mode==='online'&&online?.busy)return;
   if(b.dataset.difficulty){record.difficulty=b.dataset.difficulty;save();render();return;}
+  if(b.hasAttribute('data-peek-card')){if(event.detail===0)revealFinalCard();return;}
   if(b.hasAttribute('data-seat')){showCards(Number(b.dataset.seat));return;}
   if(b.hasAttribute('data-card')){if(['discard','open'].includes(game.phase)&&(mode!=='online'||game.turn===0)){pick=Number(b.dataset.card);void sfx.play('select');render();}else showCards(0);return;}
   const action=b.dataset.action;

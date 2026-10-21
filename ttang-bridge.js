@@ -76,6 +76,7 @@
   if(d.type!=='ojjuda:ttang:result'||d.mode!=='solo'||!d.round||d.round!==current.round||current.submitted.has(d.round))return;
   if(!Number.isInteger(d.score)||d.score<0||d.score>1000)return;
   current.submitted.add(d.round);
+  window.OjjudaGuestAccess?.finished();
   status.textContent='점수를 저장하고 있어요…';
   try{
    const result=await current.onScore(d.score);

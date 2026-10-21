@@ -50,6 +50,7 @@ try {
   $('#minesStart').click();
   assert.equal($('#minesEntry').hidden,true);assert.equal($('#app').hidden,false);
   const results = () => messages.filter(m => m.data.type === 'ojjuda-game-result');
+  const finished = () => messages.filter(m => m.data.type === 'ojjuda-game-finished');
   for (let d=0; d<8; d++) {
     f.newGame(d);f.flag(f.cells[1]);f.open(f.cells[0]);
     assert.equal(f.cells.filter(c=>c.mine).length,f.level.m);
@@ -59,6 +60,7 @@ try {
     f.flag(f.cells[1]);
     for (const cell of f.cells) if (!cell.mine) f.open(cell);
     assert.equal(f.state,'won');
+    assert.equal(finished().length,d+1,'each win reports one completed trial');
     const result=results().at(-1).data;
     assert.equal(result.difficulty,d);assert.equal(result.seconds,3+d);
     assert.equal(result.score,(d+1)*10000+10000-(3+d));
@@ -80,8 +82,10 @@ try {
   assert.equal(f.state,'won','even a dense custom board keeps the first cell safe');
   assert.equal(f.saved.cb['2x2x3'],1);assert.equal(results().length,before,'custom boards never enter public rankings');
   assert.match($('#minesRecordText').textContent,/커스텀/);
+  assert.equal(finished().length,9,'custom wins count even without a ranking score');
   f.newGame(2);f.open(f.cells[0]);f.open(f.cells.find(c=>c.mine));
   assert.equal(f.state,'lost');assert.equal(results().length,before,'losses do not submit a score');
+  assert.equal(finished().length,10,'losses report completion before delayed animations, preventing replay bypass');
   f.newGame(2);tick();
   assert.equal($('#result').classList.contains('on'),false,'old results cannot appear over a fresh round');
   assert.equal($('#board .boom'),null);assert.equal($('#board .o'),null,'old mine animations cannot reveal a fresh board');

@@ -129,7 +129,7 @@ button:focus-visible{outline:1px dotted #000;outline-offset:-5px}
   </defs>
 </svg>
 <script src="./rules.js?v=20261013-mines1"></script>
-<script src="./entry.js?v=20261013-mines1"></script>
+<script src="./entry.js?v=20261021-guest1"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -212,7 +212,7 @@ function flag(c){
 }
 function lose(c){
   if(state!=='play')return;
-  state='lost';clearInterval(timer);face('lose');
+  state='lost';clearInterval(timer);face('lose');window.OjjudaMinesEntry.ended(runId);
   if(navigator.vibrate)try{navigator.vibrate([60,40,140])}catch(e){}
   boomSound();
   els[c.i].classList.add('boom');
@@ -223,7 +223,7 @@ function lose(c){
 }
 function win(){
   if(state!=='play'||opened!==cells.length-L.m)return;
-  state='won';clearInterval(timer);face('win');
+  state='won';clearInterval(timer);face('win');window.OjjudaMinesEntry.ended(runId);
   const sec=Math.max(1,Math.ceil((performance.now()-t0)/1000));$('#time').textContent=tp(sec);
   for(const c of cells)if(c.mine&&!c.flag){c.flag=true;paint(c)}
   $('#left').textContent=pad(0,mw());
