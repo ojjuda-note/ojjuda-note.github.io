@@ -11,7 +11,7 @@ const photo=(id,owner='other',visibility='public',status='approved')=>({id,owner
  w.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'me'}}})},rpc:async()=>({data:false}),storage:{from:()=>({createSignedUrl:async()=>({data:{signedUrl:'/photo.jpg'}})})},
   from:()=>{const filters=[],q={select(){return q},eq(k,v){filters.push(r=>r[k]===v);return q},neq(k,v){filters.push(r=>r[k]!==v);return q},order(){return q},limit(){return q},async then(resolve,reject){if(release)await new Promise(r=>{release=r;});return Promise.resolve({data:rows.filter(r=>filters.every(f=>f(r))),error:fail?Error('offline'):null}).then(resolve,reject);}};return q;}};
  try{
-  w.eval(fs.readFileSync(path.join(root,'assets/photo-ttang/men-stages-v1.js'),'utf8'));
+  w.eval(fs.readFileSync(path.join(root,'assets/photo-ttang/men-stages-v2.js'),'utf8'));
   for(const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g))vm.runInContext(match[1],dom.getInternalVMContext());
   const realStart=w.startStage,starts=[];w.startStage=i=>{starts.push({key:w.eval('LIST')[i].key,id:w.eval('LIST')[i].id});};
   w.eval(entry);w.eval(entry);
