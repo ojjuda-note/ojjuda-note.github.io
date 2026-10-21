@@ -187,3 +187,19 @@ jobs:
           python -m pip install -r ops/backup-requirements.txt
       - name: Test encryption, restoration, tampering and target isolation
         run: python tests/backup-restore.test.py
+
+  data_api_grants:
+    name: Explicit Data API grants and role boundaries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Check explicit creation grants and isolated role replay
+        run: npm --prefix tests run test:data-api

@@ -1,0 +1,50 @@
+name: Opt-in local Data API HTTP verification
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/data-api-http.yml'
+      - 'tests/data-api-http-access.test.cjs'
+      - 'tests/run-data-api-http.sh'
+  workflow_dispatch:
+    inputs:
+      confirm_synthetic_test:
+        description: 'Run a disposable local Supabase stack, with synthetic data only'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-api-http-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  local_http:
+    name: Synthetic Auth, Data API and Storage boundaries
+    # Explicit opt-in branch, same repository only. No fork secrets or external dispatch.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.confirm_synthetic_test) ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.head_ref == 'test/data-api-grants-20261021')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify offline safety guards
+        run: node tests/data-api-http-access.test.cjs --check-guards
+      - name: Run pinned local native Supabase and real HTTP tests
+        env:
+          OJJUDA_LOCAL_API_TEST: '1'
+        run: bash tests/run-data-api-http.sh
+      - name: Stop and verify test services even after failure
+        if: always()
+        run: bash tests/run-data-api-http.sh --cleanup

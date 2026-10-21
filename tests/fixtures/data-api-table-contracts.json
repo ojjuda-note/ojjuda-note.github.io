@@ -1,0 +1,263 @@
+{
+  "public.feedback_ai_jobs": {
+    "migration": "20260929082930_feedback_codex_queue.sql",
+    "reason": "RPC-only processing state; no direct API-role table access.",
+    "grants": {
+      "anon": [],
+      "authenticated": [],
+      "service_role": []
+    }
+  },
+  "public.house_posts": {
+    "migration": "20261004031059_house_posts_trash.sql",
+    "reason": "Historical member posts; owner-scoped writes at creation, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "insert",
+        "select",
+        "update"
+      ],
+      "service_role": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ]
+    }
+  },
+  "public.house_media_trash": {
+    "migration": "20261004031059_house_posts_trash.sql",
+    "reason": "Historical member trash; column-only restore control, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "delete",
+        "insert",
+        "select",
+        "update(deleted_at)"
+      ],
+      "service_role": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ]
+    }
+  },
+  "public.house_friend_groups": {
+    "migration": "20261004041619_house_friend_groups.sql",
+    "reason": "Historical owner-scoped friend groups, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ],
+      "service_role": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ]
+    }
+  },
+  "public.house_rooms": {
+    "migration": "20261004090503_house_room_sync.sql",
+    "reason": "Historical direct read; writes via scoped RPC, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "select"
+      ],
+      "service_role": []
+    }
+  },
+  "public.world_board_likes": {
+    "migration": "20261004111608_world_board.sql",
+    "reason": "Historical visible-post likes, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "delete",
+        "insert",
+        "select"
+      ],
+      "service_role": []
+    }
+  },
+  "public.life_ledger_entries": {
+    "migration": "20261004124025_life_ledger.sql",
+    "reason": "Historical private ledger; no owner-column updates, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "insert",
+        "select",
+        "update(amount)",
+        "update(category)",
+        "update(date)",
+        "update(deleted_at)",
+        "update(memo)",
+        "update(type)"
+      ],
+      "service_role": []
+    }
+  },
+  "public.life_donflow_snapshots": {
+    "migration": "20261004131220_life_donflow.sql",
+    "reason": "Historical private snapshots; no owner-column updates, save retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "insert",
+        "select",
+        "update(payload)",
+        "update(revision)",
+        "update(updated_at)"
+      ],
+      "service_role": []
+    }
+  },
+  "public.life_schedule_events": {
+    "migration": "20261004132338_life_schedule.sql",
+    "reason": "Historical private events; column-scoped writes, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "insert(date)",
+        "insert(id)",
+        "insert(memo)",
+        "insert(repeat)",
+        "insert(repeat_until)",
+        "insert(time)",
+        "insert(title)",
+        "insert(user_id)",
+        "select",
+        "update(date)",
+        "update(deleted_at)",
+        "update(memo)",
+        "update(repeat)",
+        "update(repeat_until)",
+        "update(time)",
+        "update(title)"
+      ],
+      "service_role": []
+    }
+  },
+  "public.photo_stages": {
+    "migration": "20261005123653_photo_ttang_stages.sql",
+    "reason": "Owner upload/delete and visibility-scoped read; later adult RLS also applies.",
+    "grants": {
+      "anon": [
+        "select"
+      ],
+      "authenticated": [
+        "delete",
+        "insert",
+        "select"
+      ],
+      "service_role": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ]
+    }
+  },
+  "public.photo_admins": {
+    "migration": "20261005123653_photo_ttang_stages.sql",
+    "reason": "Identity helper reads only own admin membership; no client admin writes.",
+    "grants": {
+      "anon": [
+        "select"
+      ],
+      "authenticated": [
+        "select"
+      ],
+      "service_role": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ]
+    }
+  },
+  "public.photo_reports": {
+    "migration": "20261005123653_photo_ttang_stages.sql",
+    "reason": "Report RPC only for clients; service-role maintenance explicitly granted.",
+    "grants": {
+      "anon": [],
+      "authenticated": [],
+      "service_role": [
+        "delete",
+        "insert",
+        "select",
+        "update"
+      ]
+    }
+  },
+  "public.world_board_comments": {
+    "migration": "20261009033125_world_board_comments.sql",
+    "reason": "Historical visible-post comments; author/post-owner delete, writes retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "delete",
+        "insert",
+        "select"
+      ],
+      "service_role": []
+    }
+  },
+  "public.arcade_friend_invites": {
+    "migration": "20261009062933_arcade_friend_invites.sql",
+    "reason": "Participants read invitations; writes through scoped RPC.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "select"
+      ],
+      "service_role": []
+    }
+  },
+  "public.creative_comics": {
+    "migration": "20261010151428_creative_comics_adult_board.sql",
+    "reason": "Historical adult/admin comic editor; column-scoped writes, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "delete",
+        "insert(description)",
+        "insert(id)",
+        "insert(title)",
+        "select",
+        "update(description)",
+        "update(published)",
+        "update(title)"
+      ],
+      "service_role": []
+    }
+  },
+  "public.creative_comic_pages": {
+    "migration": "20261010151428_creative_comics_adult_board.sql",
+    "reason": "Historical adult/admin pages; column-scoped inserts, retired later.",
+    "grants": {
+      "anon": [],
+      "authenticated": [
+        "delete",
+        "insert(comic_id)",
+        "insert(filename)",
+        "insert(height)",
+        "insert(id)",
+        "insert(path)",
+        "insert(position)",
+        "insert(width)",
+        "select"
+      ],
+      "service_role": []
+    }
+  }
+}
