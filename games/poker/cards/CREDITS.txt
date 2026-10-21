@@ -1,0 +1,5 @@
+Classic playing card artwork by Adrian Kennard.
+Source: https://www.me.uk/cards/
+SVG files from: https://github.com/letele/playing-cards
+License: CC0 1.0 Universal (see LICENSE.txt).
+Artwork preserved without modification.
