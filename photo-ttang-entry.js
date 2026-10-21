@@ -33,13 +33,23 @@
   document.querySelector('[data-t="base"]').after(publicTab);
   publicTab.onclick = () => { tab = 'public'; void renderGrid(); };
 
+  function updateUploadVisibility() {
+    const upload = document.getElementById('uploadBtn');
+    upload.hidden = tab === 'base';
+    upload.style.display = upload.hidden ? 'none' : '';
+  }
+
   const originalGrid = renderGrid;
   renderGrid = async function () {
-    if (tab !== 'public') return originalGrid();
+    if (tab !== 'public') {
+      const pending = originalGrid();
+      updateUploadVisibility();
+      return pending;
+    }
     if (!photoAllowed()) return lockPhotoGame();
     const revision = ++gridEpoch, grid = document.getElementById('grid');
     document.querySelectorAll('.tab').forEach(button => button.classList.toggle('on', button.dataset.t === tab));
-    document.getElementById('uploadBtn').style.display = '';
+    updateUploadVisibility();
     document.getElementById('cleared').textContent = '';
     LIST = [];
     grid.innerHTML = '<div class="msg">공개 사진을 불러오는 중…</div>';
@@ -69,6 +79,7 @@
       if (revision === gridEpoch && tab === 'public') grid.innerHTML = '<div class="msg">공개 사진을 불러오지 못했어요. 다시 눌러 주세요.</div>';
     }
   };
+  updateUploadVisibility();
 
   let loading = false;
   async function enter(kind) {
