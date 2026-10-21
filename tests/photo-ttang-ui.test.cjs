@@ -77,7 +77,8 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await frame.evaluate(()=>{paused=false;});await input.detach();await frame.click('#pause');
   assert.equal(await frame.getByText('잠깐 쉬는 중').isVisible(),true);await frame.click('#go');
   await frame.evaluate(()=>win());assert.equal(await frame.evaluate(()=>JSON.parse(localStorage.getItem('ojjuda-photo-ttang'))['0'].done),1);
-  await frame.evaluate(()=>toMenu());assert.equal(await frame.locator('#grid .cell:not([disabled])').count(),2);
+  await frame.evaluate(()=>toMenu());
+  assert.deepEqual(await frame.evaluate(()=>Array.from(document.querySelectorAll('#grid .cell:not([disabled])'),cell=>LIST[Number(cell.dataset.i)].key)),['0','20','1'],'clearing the first photo unlocks the inserted photo and preserves access to the next original photo');
   await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
   await multi.getByRole('button',{name:/^월드땅따먹기/}).click();
   const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#soloBtn');
