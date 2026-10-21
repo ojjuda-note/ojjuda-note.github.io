@@ -2,7 +2,7 @@ name: Verify signup referrals
 on:
   push:
     branches: [codex/signup-referrals]
-    paths: ['ops/signup-referrals-edits.json', 'ops/apply-signup-referrals.py', '.github/workflows/verify-signup-referrals.yml', 'signup-referral.js', 'signup-referral.css', 'tests/signup-referrals-*.test.cjs', 'supabase/migrations/20261021070440_signup_referrals.sql']
+    paths: ['ops/signup-referrals-edits.json', 'ops/apply-signup-referrals.py', '.github/workflows/verify-signup-referrals.yml', 'signup-referral.js', 'signup-referral.css', 'tests/signup-referrals-*.test.cjs', 'supabase/migrations/20261021071516_signup_referrals.sql']
 permissions:
   contents: write
 jobs:

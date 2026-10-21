@@ -14,7 +14,7 @@ const {fuzzystrmatch}=require('@electric-sql/pglite/contrib/fuzzystrmatch');
    create table public.app_admins(user_id uuid primary key references auth.users(id) on delete cascade);
    create function public.is_admin() returns boolean language sql stable security definer set search_path=pg_catalog as $$ select exists(select 1 from public.app_admins where user_id=auth.uid()) $$;
   `);
-  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261021070440_signup_referrals.sql'),'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261021071516_signup_referrals.sql'),'utf8'));
   const value=async(sql,args=[]) => (await db.query(sql,args)).rows[0]?.value;
   const signup=(n,meta={},confirmed=true)=>db.query('insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,case when $4 then now() else null end)',[id(n),`synthetic-${n}@example.invalid`,meta,confirmed]);
   for(const [n,name]of [[1,'민준'],[2,'민준이'],[3,'오쭈다'],[4,'테스트관리자'],[5,'abcdefgh'],[6,'민준공원'],[7,'민준친구'],[8,'민준게임'],[9,'민준산책']]){

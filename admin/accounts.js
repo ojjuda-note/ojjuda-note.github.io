@@ -18,7 +18,7 @@
   };
 
   function mount({ container, client, getAdminId, isCurrent = () => container.isConnected, view = 'members', initialFilter = 'all', initialState, renderActions }) {
-    const withdrawn = view === 'withdrawn', referrals = view === 'referrals', owner = getAdminId?.();
+    const withdrawn = view === 'withdrawn', owner = getAdminId?.();
     let destroyed = false, run = 0, query = String(initialState?.query || '').trim().slice(0, 100), total = 0, busy = false;
     let offset = Number.isSafeInteger(initialState?.offset) && initialState.offset >= 0 ? Math.floor(initialState.offset / PAGE_SIZE) * PAGE_SIZE : 0;
     const requestedFilter = initialState?.filter || initialFilter;
@@ -26,15 +26,15 @@
     let subscription;
     const current = () => !destroyed && isCurrent() && !!owner && getAdminId?.() === owner;
     const section = el('section', undefined, 'acct-directory');
-    section.setAttribute('aria-label', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : '회원 관리');
-    const heading = el('h3', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : '회원 관리');
-    const intro = el('p', referrals ? '이메일 인증이 끝난 가입을 추천인별로 한 번씩 누적 집계해요.' : withdrawn
+    section.setAttribute('aria-label', withdrawn ? '탈퇴 기록' : '회원 관리');
+    const heading = el('h3', withdrawn ? '탈퇴 기록' : '회원 관리');
+    const intro = el('p', withdrawn
       ? '현재 보관기간이 남은 탈퇴 기록만 표시해요. 계정정보는 탈퇴 후 1개월이 지나면 자동 삭제돼요.'
       : '가입 현황과 계정 상태를 검색하고 관리해요. 날짜는 한국 시간을 기준으로 표시해요.', 'acct-intro');
     const filterBar = el('div', undefined, 'acct-filters');
     filterBar.setAttribute('role', 'group'); filterBar.setAttribute('aria-label', '회원 상태');
     const filterButtons = [];
-    if (!withdrawn && !referrals) for (const [id, label] of filters) {
+    if (!withdrawn) for (const [id, label] of filters) {
       const control = button(label, 'btn sm');
       control.dataset.accountFilter = id; control.setAttribute('aria-pressed', String(id === filter));
       control.addEventListener('click', () => {
@@ -46,9 +46,9 @@
       filterButtons.push(control); filterBar.append(control);
     }
     const form = el('form', undefined, 'acct-search');
-    const label = el('label', referrals ? '추천인 검색' : withdrawn ? '탈퇴 기록 검색' : '회원 검색');
+    const label = el('label', withdrawn ? '탈퇴 기록 검색' : '회원 검색');
     const input = el('input'); input.className = 'inp'; input.type = 'search'; input.maxLength = 100;
-    input.placeholder = referrals ? '추천인 닉네임' : '닉네임 또는 이메일'; input.autocomplete = 'off'; input.value = query;
+    input.placeholder = '닉네임 또는 이메일'; input.autocomplete = 'off'; input.value = query;
     label.append(input);
     const search = button('찾기', 'btn pri'); search.type = 'submit';
     const reset = button('초기화', 'btn'); reset.hidden = !query;
@@ -71,7 +71,7 @@
     previous.addEventListener('click', () => { if (!busy && offset > 0) { offset = Math.max(0, offset - PAGE_SIZE); void refresh(); } });
     next.addEventListener('click', () => { if (!busy && offset + PAGE_SIZE < total) { offset += PAGE_SIZE; void refresh(); } });
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
-    section.append(heading, intro); if (!withdrawn && !referrals) section.append(filterBar);
+    section.append(heading, intro); if (!withdrawn) section.append(filterBar);
     section.append(form, count, status, retry, list, pagination); container.replaceChildren(section);
 
     function clearSensitive(message) {
@@ -87,14 +87,6 @@
     }
     function item(record) {
       const card = el('article', undefined, 'acct-card');
-      if (referrals) {
-        card.append(el('strong', record.nickname || '닉네임 없음'));
-        const details = el('dl', undefined, 'acct-details');
-        details.append(el('dt', '추천 가입'), el('dd', `${Number(record.referral_count || 0).toLocaleString('ko-KR')}명`));
-        details.append(el('dt', '인증 대기'), el('dd', `${Number(record.pending_count || 0).toLocaleString('ko-KR')}명`));
-        details.append(el('dt', '최근 추천 가입'), el('dd', date(record.last_referred_at)));
-        card.append(details); return card;
-      }
       const head = el('div', undefined, 'acct-member-heading');
       head.append(el('strong', record.nickname || '닉네임 없음'));
       if (!withdrawn && record.is_admin) head.append(el('span', '관리자', 'vis'));
@@ -141,8 +133,8 @@
       list.replaceChildren(); count.textContent = ''; pagination.hidden = true;
       try {
         const args = { p_query: query, p_offset: offset, p_limit: PAGE_SIZE };
-        if (!withdrawn && !referrals) args.p_filter = filter;
-        const result = await client.rpc(referrals ? 'admin_referral_counts' : withdrawn ? 'admin_list_withdrawn_accounts' : 'admin_list_member_accounts', args);
+        if (!withdrawn) args.p_filter = filter;
+        const result = await client.rpc(withdrawn ? 'admin_list_withdrawn_accounts' : 'admin_list_member_accounts', args);
         if (request !== run || !current()) return;
         if (result.error) throw result.error;
         const data = result.data;
@@ -153,11 +145,9 @@
           offset = total > 0 ? Math.floor((total - 1) / PAGE_SIZE) * PAGE_SIZE : 0;
           return await refresh();
         }
-        count.textContent = referrals
-          ? `${query ? '검색 결과 · ' : ''}추천 가입 ${Number(data.total_referrals || 0).toLocaleString('ko-KR')}명 · 인증 대기 ${Number(data.pending_referrals || 0).toLocaleString('ko-KR')}명`
-          : `${query ? '검색 결과 ' : ''}총 ${total.toLocaleString('ko-KR')}${withdrawn ? '건' : '명'}`;
+        count.textContent = `${query ? '검색 결과 ' : ''}총 ${total.toLocaleString('ko-KR')}${withdrawn ? '건' : '명'}`;
         if (data.items.length) for (const record of data.items) list.append(item(record));
-        else list.append(el('p', referrals ? '조건에 맞는 추천인이 없어요.' : withdrawn ? '조건에 맞는 보관 중 탈퇴 기록이 없어요.' : '조건에 맞는 회원이 없어요.', 'acct-empty'));
+        else list.append(el('p', withdrawn ? '조건에 맞는 보관 중 탈퇴 기록이 없어요.' : '조건에 맞는 회원이 없어요.', 'acct-empty'));
         pageLabel.textContent = `${Math.floor(offset / PAGE_SIZE) + 1} / ${Math.max(1, Math.ceil(total / PAGE_SIZE))}페이지`;
         pagination.hidden = total <= PAGE_SIZE;
         status.textContent = '';

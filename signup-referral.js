@@ -15,7 +15,7 @@
     function reset() { cancel(); selected=candidate=null; input.value=''; status.textContent=''; results.replaceChildren(); confirmation.replaceChildren(); confirmation.hidden=true; skip.hidden=true; }
     function choose(person) {
       if (!active || locked) return;
-      cancel(); selected=null; candidate=person; results.replaceChildren(); confirmation.replaceChildren(); confirmation.hidden=false;
+      cancel(); selected=null; candidate=person; status.textContent=''; results.replaceChildren(); confirmation.replaceChildren(); confirmation.hidden=false;
       const message=document.createElement('p'); message.textContent=`‘${person.nickname}’ 님이 추천인이 맞나요?`;
       confirmation.append(message,button('이 사람이 맞아요',() => {
         if (!active || locked || candidate!==person) return;

@@ -10,6 +10,7 @@
 .identity-mask{flex:none;white-space:nowrap;font-size:16px;letter-spacing:0}
 .identity-hint,.identity-result{font-size:12px;line-height:1.6;margin:7px 0;color:#72616b;overflow-wrap:anywhere}
 .identity-result{font-weight:600;color:#593247;min-height:19px}
+.identity-result:empty{min-height:0;margin:0}
 .identity-result[data-invalid=true]{color:#b21f45}
 .member-identity-summary{display:grid;grid-template-columns:auto 1fr;gap:12px;margin:16px 0;font-size:14px}
 .member-identity-summary dt{color:#72616b}.member-identity-summary dd{margin:0;font-weight:600}
