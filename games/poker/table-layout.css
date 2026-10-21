@@ -45,9 +45,9 @@
 .hand-tools{display:flex;align-items:center;gap:8px}
 .poker-playing .hand-label{font-size:12px;padding:5px 8px}
 .hand-zoom{min-height:44px;padding:6px 10px;border:0;background:transparent;font-size:12px;color:#d5dfbf}
-.poker-playing .my-cards{width:100%;gap:0;min-height:0;padding:8px 0 24px}
+.poker-playing .my-cards{--hand-step:.6;width:100%;justify-content:flex-start;gap:0;min-height:0;padding:8px 0 24px}
 .poker-playing .my-cards .card{width:var(--hand-card-width);height:auto;aspect-ratio:5/7;border-radius:7px;margin:0;--fan:0deg!important}
-.poker-playing .my-cards .card+.card{margin-left:min(10px,calc((100% - var(--card-count)*var(--hand-card-width))/(var(--card-count) - 1)))}
+.poker-playing .my-cards .card+.card{margin-left:calc((var(--hand-step) - 1) * var(--hand-card-width))}
 .poker-playing .my-cards .card.selected{transform:translateY(-12px);outline:3px solid #f3cb79;outline-offset:2px}
 .poker-playing .card-state{font-size:10px;bottom:-19px;color:#d5dfbf;left:4px;right:auto}
 .poker-playing .player-bet{font-size:11px;min-height:20px;color:#bed1b8}
@@ -363,12 +363,14 @@
 #cards-content .final-covered .card-state{font-size:11px}
 @media(prefers-reduced-motion:reduce){.peek-cover{transition:none}}
 
-/* Keep private cards overlapped on the left and public cards on the right. */
-.poker-playing .my-cards.split-hand{justify-content:space-between;gap:clamp(10px,3vw,18px)}
-.poker-playing .hand-group{display:flex;align-items:center;flex:0 1 auto;min-width:0;width:calc(var(--hand-card-width) * (1 + (var(--group-count) - 1) * var(--group-step,.34)));isolation:isolate}
-.poker-playing .hand-group .card+.card{margin-left:calc((100% - var(--group-count) * var(--hand-card-width)) / (var(--group-count) - 1))}
+/* Stack the whole hand continuously from the left, private cards before public cards. */
+.poker-playing .my-cards.split-hand{--hand-step:.34}
+.poker-playing .hand-group{display:flex;align-items:center;flex:none;min-width:0;width:calc(var(--hand-card-width) * (1 + (var(--group-count) - 1) * var(--hand-step)));isolation:isolate}
+.poker-playing .hand-group+.hand-group{margin-left:calc((var(--hand-step) - 1) * var(--hand-card-width))}
+.poker-playing .hand-group:has(.is-peeking){z-index:2}
 .poker-playing .split-hand.has-public:not(.hand-finished) .private-cards{opacity:.5}
-.poker-playing .public-cards{justify-content:flex-end}
+.poker-playing .split-hand .final-covered .card-state{left:0;right:auto;width:calc(var(--hand-card-width) * var(--hand-step));font-size:0}
+.poker-playing .split-hand .final-covered .card-state::after{content:'↓';font-size:12px}
 .poker-playing .card.pending-public .card-state{color:#f3cb79}
 
-.poker-playing .choosing-public .private-cards{--group-step:.6}
+.poker-playing .my-cards.choosing-public{--hand-step:.6}
