@@ -84,7 +84,9 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#soloBtn');
   assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.locator('#soloBtn').tap();
   await old.waitForFunction(()=>mode==='solo'&&world.time>.1&&me.alive);assert.equal(await old.locator('#hud').isVisible(),true,'practice starts through the real World arcade');
-  await old.locator('#quit').tap();await old.locator('#yes').tap();await old.locator('[data-entry-mode=opponent]').click();await old.click('#duoBtn');assert.equal(await old.locator('#mk').isVisible(),true);
+  await old.locator('#quit').tap();await old.locator('#yes').tap();await old.locator('[data-entry-mode=opponent]').click();await old.click('#duoBtn');
+  assert.match(await old.locator('#roomEntryStatus').textContent(),/친구 초대를 연결하지 못했어요/,'the embedded game reports the unavailable invitation bridge');
+  assert.equal(await old.locator('#mk').count(),0,'embedded play never falls back to the retired standalone room dialog');
   await page.evaluate(()=>photoTest.open('photo_ttang'));assert.equal(await page.locator('#ttang-overlay').count(),0);
   await page.locator('#photo-ttang-overlay iframe').waitFor();const next=await(await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();await next.locator('details:has(#grid)>summary').click();await next.waitForSelector('#grid .cell');
   await next.press('body','Escape');await page.waitForSelector('#photo-ttang-overlay',{state:'detached'});
