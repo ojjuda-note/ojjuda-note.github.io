@@ -142,10 +142,10 @@ controller={refresh:home};
 if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div');copy.append(el('h3','이번 달 게임순위'),el('p','로그인하면 게임 순위를 볼 수 있어요. 나의 기록으로 함께 도전해 보세요.'),Object.assign(el('a','로그인하고 참여하기','btn'),{href:'/?auth=login&next=world'}));empty.append(art,copy);content.append(empty);return;}
 void home();
   const matgoAccess=window.OjjudaMatgoAccess;
-  if((!games.matgo||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
+  if((!games.matgo||!games.poker||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
    void matgoAccess.check().then(member=>{
     if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
-    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
+    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'},poker:{name:'세븐포커',unit:'G',rankingBasis:'current_gold'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
     void home();
    }).catch(()=>{});
   }
