@@ -4,7 +4,7 @@
  const button=(text,action)=>{const n=el('button','btn',text);n.type='button';n.addEventListener('click',action);return n;};
  const date=value=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
  function mount({container,client,getAdminId,isCurrent=()=>container.isConnected,initialState=null}){
-  let owner=getAdminId(),destroyed=false,run=0,busy=false,query=initialState?.query||'',pages=[null],page=0,next=null;
+  let owner=getAdminId(),destroyed=false,run=0,busy=false,removing=false,query=initialState?.query||'',pages=[null],page=0,next=null;
   const active=()=>!destroyed&&isCurrent()&&!!owner&&getAdminId()===owner;
   const section=el('section','afm-panel'),heading=el('h3','','쪽지 관리'),form=el('form','afm-search'),label=el('label','','쪽지 검색'),input=el('input');input.type='search';input.maxLength=100;input.placeholder='닉네임 또는 쪽지 내용';input.value=query;input.setAttribute('aria-label','쪽지 검색');label.append(input);
   const search=el('button','btn pri','검색');search.type='submit';const reload=button('새로고침',()=>{pages=[null];page=0;void refresh();});form.append(label,search,reload);
@@ -20,14 +20,21 @@
    try{
     const {data,error}=await client.rpc('admin_friend_messages',{p_query:query,p_limit:30,p_before_created_at:cursor?.created_at||null,p_before_id:cursor?.id||null});
     if(!active()||version!==run)return;if(error)throw error;if(!Array.isArray(data?.items))throw Error('invalid_messages_response');
-    for(const row of data.items){const article=el('article','afm-card'),head=el('div','afm-head'),time=el('time','',date(row.created_at));time.dateTime=row.created_at;head.append(el('strong','','보낸 사람 '+(row.sender_name||'이름 없음')+' → 받는 사람 '+(row.recipient_name||'이름 없음')),time);article.append(head,el('p','afm-body',row.body));const detail=el('details','afm-detail');detail.append(el('summary','','회원 번호'),el('p','','보낸 사람: '+row.sender_id),el('p','','받는 사람: '+row.recipient_id));article.append(detail);list.append(article);}
+    for(const row of data.items){const article=el('article','afm-card'),head=el('div','afm-head'),time=el('time','',date(row.created_at));time.dateTime=row.created_at;head.append(el('strong','','보낸 사람 '+(row.sender_name||'이름 없음')+' → 받는 사람 '+(row.recipient_name||'이름 없음')),time);article.append(head,el('p','afm-body',row.body));const detail=el('details','afm-detail');detail.append(el('summary','','회원 번호'),el('p','','보낸 사람: '+row.sender_id),el('p','','받는 사람: '+row.recipient_id));article.append(detail);const remove=button('휴지통으로 이동',()=>void trash(row,remove));remove.classList.add('afm-delete');article.append(remove);list.append(article);}
     next=data.has_more?data.next_cursor:null;status.textContent=data.items.length?'최근 쪽지부터 표시 · 한국 시간':'조건에 맞는 쪽지가 없어요.';
    }catch(error){if(!active()||version!==run)return;if(error?.code==='42501'){clear();return;}status.textContent='쪽지를 불러오지 못했어요. 새로고침을 눌러 주세요.';}
    finally{if(active()&&version===run){busy=false;controls();}}
   }
+  async function trash(row,control){
+   if(!active()||busy||!confirm('이 쪽지를 휴지통으로 옮길까요? 송수신 화면에서 사라지고 한 달 뒤 자동 삭제돼요.'))return;
+   busy=removing=true;controls();control.disabled=true;
+   try{const {data,error}=await client.rpc('admin_trash_friend_message',{p_id:row.id});if(error)throw error;if(!data?.ok)throw Error('delete_failed');if(active()){pages=[null];page=0;busy=false;await refresh();}}
+   catch(error){if(active()){if(error?.code==='42501')clear();else status.textContent='쪽지를 옮기지 못했어요. 다시 시도해 주세요.';}}
+   finally{removing=false;if(active()){busy=false;control.disabled=false;controls();}}
+  }
   form.addEventListener('submit',event=>{event.preventDefault();if(busy)return;query=input.value.trim();pages=[null];page=0;void refresh();});
   const subscription=client.auth?.onAuthStateChange?.((_event,session)=>{if(session?.user?.id!==owner)clear();})?.data?.subscription;
-  void refresh();return {getState:()=>({query}),refresh:()=>{pages=[null];page=0;return refresh();},destroy(){destroyed=true;run++;subscription?.unsubscribe?.();container.replaceChildren();}};
+  void refresh();return {canLeave:()=>!removing,getState:()=>({query}),refresh:()=>{pages=[null];page=0;return refresh();},destroy(){destroyed=true;run++;subscription?.unsubscribe?.();container.replaceChildren();}};
  }
  window.OjjudaAdminFriendMessages=Object.freeze({mount});
 })();
