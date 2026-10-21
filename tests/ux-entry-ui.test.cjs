@@ -42,7 +42,7 @@ world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab===\'place\'?g.plac
     await page.locator('#signup-tab').click();assert.equal(await page.locator('#guest-browse').isVisible(),false);
     await page.locator('#login-tab').click();
     await page.locator('#email').fill('fixture@example.invalid');await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
-    await page.waitForURL(origin+'/world.html?tab=arcade');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'arcade');
+    await page.waitForURL(origin+'/world.html');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'arcade');
     for(const tab of ['park','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
    }else{
     await page.locator('#entry-status').waitFor({state:'visible',timeout:12000});
