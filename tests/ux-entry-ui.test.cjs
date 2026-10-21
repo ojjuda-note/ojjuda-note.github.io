@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://entry.test';
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/world-park-notes.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab,guest:()=>({guest:D.parkGuest,user:D.user,online:D.online}),start:()=>om(()=>{},H)};H();'+world.slice(world.indexOf('</script>',boot));
+world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab===\'place\'?g.place?.id:g.tab,guest:()=>({guest:D.parkGuest,user:D.user,online:D.online}),start:()=>om(()=>{},H)};H();'+world.slice(world.indexOf('</script>',boot));
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
@@ -25,9 +25,9 @@ world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab,guest:()=>({guest:
    },mode);
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
    await page.goto(origin+'/');
-   await page.waitForURL(origin+'/world.html?tab=friends');
+   await page.waitForURL(origin+'/world.html?tab=arcade');
    await page.waitForFunction(()=>window.entryFixture);
-   assert.equal(await page.evaluate(()=>entryFixture.tab()),'friends','the root opens Neighborhood even if portal scripts are unavailable');
+   assert.equal(await page.evaluate(()=>entryFixture.tab()),'arcade','the root opens Arcade even if portal scripts are unavailable');
    await page.goto(origin+'/?auth=login');
    if(mode==='normal'||mode==='identity-missing'){
     await page.locator('#auth-dialog[open]').waitFor();
@@ -35,15 +35,15 @@ world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab,guest:()=>({guest:
    }
    if(mode==='normal'){
     assert.equal(await page.locator('.world-feature[href*="sitemap"]').count(),0);
-    await page.locator('[data-destination=home]').click();await page.locator('#auth-dialog').waitFor({state:'visible'});
+    await page.locator('[data-destination=world]').click();await page.locator('#auth-dialog').waitFor({state:'visible'});
     assert.equal(await page.getByRole('link',{name:'둘러보기',exact:true}).isVisible(),true,'browse is available during normal login');
     const placement=await page.evaluate(()=>({login:document.getElementById('auth-submit').getBoundingClientRect().bottom,browse:document.getElementById('guest-browse').getBoundingClientRect().top}));
     assert.ok(placement.browse>=placement.login,'browse is below the login button');
     await page.locator('#signup-tab').click();assert.equal(await page.locator('#guest-browse').isVisible(),false);
     await page.locator('#login-tab').click();
     await page.locator('#email').fill('fixture@example.invalid');await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
-    await page.waitForURL(origin+'/world.html?tab=home');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'home');
-    for(const tab of ['board','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
+    await page.waitForURL(origin+'/world.html?tab=arcade');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'arcade');
+    for(const tab of ['park','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
    }else{
     await page.locator('#entry-status').waitFor({state:'visible',timeout:12000});
     assert.equal(await page.getByRole('button',{name:'다시 시도',exact:true}).isVisible(),true);
@@ -59,6 +59,6 @@ world=world.slice(0,boot)+'window.entryFixture={tab:()=>g.tab,guest:()=>({guest:
    }
    assert.deepEqual(errors,[],mode+' has no unhandled runtime failure');await context.close();
   }
-  console.log('PASS: direct feature routes, Home after login, missing identity/portal scripts, slow account timeout and guest recovery');
+  console.log('PASS: current three-menu routes, Arcade after login, missing identity/portal scripts, slow account timeout and guest recovery');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

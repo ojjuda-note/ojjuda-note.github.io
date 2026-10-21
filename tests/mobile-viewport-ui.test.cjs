@@ -81,7 +81,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         await page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}html{scroll-behavior:auto}'});
         await settle(page);
         if (viewport.width < 900 && source === 'world') {
-          for (const screen of ['friends','home','life','my']) {
+          for (const screen of ['arcade','park','my']) {
             await page.evaluate(tab => worldTest.actions.tab({tab}), screen);
             await settle(page);
             await assertInside(page, page.locator('.bottomnav button').last(), {bottom:viewport.height-48}, `${source}/${screen} navigation`);

@@ -175,7 +175,7 @@ assert.ok(bootAt > 0);
         assert.equal(await page.locator('.note-feed-peek').count(), 0, 'the preview is removed after navigation');
         const count = await page.evaluate(() => placeRoutes.length);
         await drag(1, { hold: true });
-        assert.equal(await page.locator('.note-feed-peek').textContent(), '게시판');
+        assert.equal(await page.locator('.note-feed-peek').textContent(), '오락실');
         if (mobile) await touch('touchEnd', []); else await page.mouse.up(); await idle();
         assert.equal(await active(), sort, 'leaving Park preserves its selected filter');
         assert.deepEqual(await page.evaluate(count => placeRoutes.slice(count), count), ['board']);
@@ -190,7 +190,7 @@ assert.ok(bootAt > 0);
       await page.evaluate(() => { delete window.OjjudaParkFull; });
       await page.locator('[data-sort="tag"]').click();
       await drag(-1, { hold: true });
-      assert.equal(await page.locator('.note-feed-peek').textContent(), '동네');
+      assert.equal(await page.locator('.note-feed-peek').textContent(), '오락실');
       if (mobile) await touch('touchEnd', []); else await page.mouse.up();
       await page.waitForURL('https://ojjuda.test/world.html');
 

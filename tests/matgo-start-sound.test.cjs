@@ -28,7 +28,7 @@ const root=path.join(__dirname,'..');
     const file=path.join(root,decodeURIComponent(url.pathname));
     if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
     if(url.pathname==='/games/matgo.html'){
-     const html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoSoundTest={startRound,ui,game};\nstartRound();\n})();');
+     const html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoSoundTest={startRound,finishRound,ui,game};\nstartRound();\n})();');
      return route.fulfill({contentType:'text/html',body:html});
     }
     return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':undefined});
@@ -48,10 +48,14 @@ const root=path.join(__dirname,'..');
     assert.equal(starts,1);assert.ok(await page.evaluate(()=>audioStarts.every(s=>s.state==='running'&&s.length>0)),'initial deal samples actually start in a running AudioContext');
     await page.waitForFunction(()=>!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
     assert.equal(await page.locator('#matgo-start').count(),0);
-    await page.evaluate(()=>matgoSoundTest.startRound());assert.equal(starts,2,'later rounds need no extra start prompt');
+    await page.evaluate(()=>matgoSoundTest.startRound());assert.equal(starts,1,'the current hand cannot be restarted');
+    await page.evaluate(async()=>{matgoSoundTest.game.over=true;await matgoSoundTest.finishRound('nagari',{});});
+    await page.locator('#next').click();
+    await page.waitForFunction(()=>!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
+    assert.equal(starts,2,'a settled next round needs no extra start prompt');
+    assert.equal(await page.evaluate(()=>matgoSoundTest.game.cpuLevel),mode==='rich'?10:1,'solo browser uses the server balance for the next CPU tier');
     await page.reload();await page.locator('#matgo-start-play').waitFor();assert.equal(starts,2,'re-entry gets a new audio gesture before dealing');
    }
-   assert.equal(await page.evaluate(()=>matgoSoundTest.game.cpuLevel),mode==='rich'?10:1,'solo browser uses the server balance for the next CPU tier');
    assert.deepEqual(errors,[]);await context.close();
   }
   console.log('PASS: cold-start touch/keyboard enables real audio before deal; mute, replay, reload and synthetic-click protection');

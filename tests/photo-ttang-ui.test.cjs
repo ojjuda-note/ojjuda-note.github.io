@@ -7,13 +7,14 @@ let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 S=window.fixtureClient;D.online=true;D.user={id:'adult-member'};window.OjjudaMatgoAccess.configure(S);await window.OjjudaMatgoAccess.check();
-window.photoTest={open:Al,close:El};
-g.tab='friends';H();g.place={id:'arcade',log:[]};
+window.photoTest={open:Al,close:El,arcade:Df};
+g.tab='place';g.place={id:'arcade',log:[],users:[],npcs:[],ch:'1호점',count:1};
 const host=document.createElement('section');host.id='arcade-test';host.innerHTML=Df();document.body.append(host);
+H=()=>{host.innerHTML=Df();};
 host.addEventListener('click',e=>{const b=e.target.closest('[data-act="game-open"]');if(b)Ln['game-open'](b.dataset)});
 `+world.slice(world.indexOf('</script>',boot));
 world=world.replace('</head>',`<script>
-window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{id:'adult-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:fixtureAge,locked:true}:false})};
+window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{id:'adult-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:fixtureAge,locked:true}:[]}),from:()=>{const q={select:()=>q,eq:()=>q,order:()=>q,limit:()=>q,then:resolve=>Promise.resolve({data:[],error:null}).then(resolve)};return q;}};
 </script><script src="/matgo-access.js"></script><script src="/photo-ttang-access.js"></script><script src="/ttang-bridge.js"></script><script src="/photo-ttang-ranking.js"></script><script src="/photo-ttang-bridge.js"></script></head>`);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
@@ -25,7 +26,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
    const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
-  const solo=page.locator('[data-arcade-games="solo"]'),multi=page.locator('[data-arcade-games="multi"]');
+  const solo=page.locator('#arcade-test [data-arcade-games="solo"]'),multi=page.locator('#arcade-test [data-arcade-games="multi"]');
   assert.equal(await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),1);
   assert.equal(await solo.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),0);
   assert.equal(await multi.getByRole('button',{name:/^월드땅따먹기/}).count(),1);
@@ -35,7 +36,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await page.getByText('포토땅따먹기는 만 19세 생일부터 이용할 수 있어요.',{exact:true}).waitFor();
   assert.equal(await page.locator('#photo-ttang-overlay').count(),0,'World rejects an underage member');
   assert.equal(await solo.locator('[data-v=photo_ttang]').isVisible(),false,'underage check hides the game button');
-  await page.evaluate(async()=>{fixtureAge=19;await OjjudaMatgoAccess.check();document.querySelector('#arcade-test').innerHTML=Df();});
+  await page.evaluate(async()=>{fixtureAge=19;await OjjudaMatgoAccess.check();document.querySelector('#arcade-test').innerHTML=photoTest.arcade();});
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
   await page.locator('#photo-ttang-overlay iframe').waitFor();
   const frame=await (await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();
