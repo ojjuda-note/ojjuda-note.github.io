@@ -1,0 +1,50 @@
+name: Verify signup referrals
+on:
+  push:
+    branches: [codex/signup-referrals]
+    paths: ['ops/signup-referrals-edits.json', 'ops/apply-signup-referrals.py', '.github/workflows/verify-signup-referrals.yml', 'signup-referral.js', 'signup-referral.css', 'tests/signup-referrals-*.test.cjs', 'supabase/migrations/20261021070440_signup_referrals.sql']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed signup and administrator integration
+        run: python ops/apply-signup-referrals.py
+      - name: Install existing test dependencies
+        run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: |
+          npx --prefix tests playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify referral signup and administrator counts
+        env:
+          REFERRAL_PROOF_DIR: /tmp/referral-proof
+        run: |
+          result=0
+          for test in signup-referrals-db signup-referrals-ui portal-auth-entry world-portal-ui admin-accounts-ui admin-navigation-ui admin-current-features world-three-menus inline-scripts member-identity-db; do
+            node "tests/$test.test.cjs" || result=1
+          done
+          git diff --check || result=1
+          exit "$result"
+      - name: Save signup screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: referral-proof
+          path: /tmp/referral-proof
+          retention-days: 3
+      - name: Commit verified integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add optional confirmed signup referrals and administrator counts'
+            git push origin HEAD:refs/heads/codex/signup-referrals
+          fi
