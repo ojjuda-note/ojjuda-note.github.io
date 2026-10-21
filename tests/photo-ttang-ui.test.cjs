@@ -86,6 +86,6 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await page.evaluate(()=>photoTest.open('photo_ttang'));assert.equal(await page.locator('#ttang-overlay').count(),0);
   await page.locator('#photo-ttang-overlay iframe').waitFor();const next=await(await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();await next.locator('details:has(#grid)>summary').click();await next.waitForSelector('#grid .cell');
   await next.press('body','Escape');await page.waitForSelector('#photo-ttang-overlay',{state:'detached'});
-  assert.deepEqual(errors,[]);console.log('PASS: real solo/multi categories, names, 20 photos, mobile layout, small touch drags, play, pause, World practice, clear progress, reopen, mutual cleanup and Escape');
+  assert.deepEqual(errors,[]);console.log('PASS: real solo/multi categories, names, 40 photos, mobile layout, small touch drags, play, pause, World practice, clear progress, reopen, mutual cleanup and Escape');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

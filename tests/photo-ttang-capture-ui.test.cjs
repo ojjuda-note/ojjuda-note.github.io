@@ -39,7 +39,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await page.locator('#photo-ttang-overlay iframe').waitFor();
   const frame=await (await page.locator('#photo-ttang-overlay iframe').elementHandle()).contentFrame();
   await frame.locator('details:has(#grid)>summary').click();await frame.waitForSelector('#grid .cell');assert.equal(await frame.title(),'오쭈다 포토땅따먹기');
-  assert.equal(await frame.locator('#grid .cell').count(),20);
+  assert.equal(await frame.locator('#grid .cell').count(),40);
   for(const [width,height] of [[320,568],[390,844],[844,390]]){
    await page.setViewportSize({width,height});assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   }
