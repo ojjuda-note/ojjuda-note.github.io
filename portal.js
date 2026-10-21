@@ -3,7 +3,17 @@
 
   const $ = id => document.getElementById(id);
   const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html' };
-  const termsVersion = '2026-09-29-age14';
+  // The document linked from the checkbox and the recorded version must agree.
+  // Keep the existing terms during the public notice period (Korea time).
+  const termsVersion = Date.now() >= Date.parse('2026-11-20T00:00:00+09:00')
+    ? '2026-11-20' : '2026-09-29-age14';
+  for (const link of document.querySelectorAll('[data-policy-document]')) {
+    const name = link.dataset.policyDocument;
+    if (name === 'terms' || name === 'privacy') {
+      link.href = termsVersion === '2026-11-20' ? `/${name}.html` : `/policies/2026-09-29/${name}.html`;
+    }
+  }
+  if ($('policy-revision-note')) $('policy-revision-note').hidden = termsVersion === '2026-11-20';
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey)

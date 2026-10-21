@@ -25,8 +25,8 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 }
 
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
-function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, signupResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null } = {}) {
-  let clock = Date.now();
+function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, signupResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
+  let clock = now;
   const elements = new Map(), tasks = [], navigations = [], signups = [], recoveries = [], storage = new Map();
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
@@ -43,6 +43,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     return elements.get(key);
   };
   const tabs = ['login', 'signup'].map(mode => { const e = element(`${mode}-tab`); e.dataset.authMode = mode; return e; });
+  const policyLinks = ['terms', 'privacy'].map(name => { const e = element(`${name}-link`); e.dataset.policyDocument = name; return e; });
   const location = new URL(`https://ojjuda.kr/${query}`);
   location.assign = value => navigations.push(value);
   let authListener;
@@ -64,7 +65,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   };
   const context = {
     window: { OJJUDA_CONFIG: { supabaseUrl: 'https://example.test', supabaseKey: 'test' }, supabase: { createClient: () => client }, OjjudaIdentity: identity },
-    document: { getElementById: element, querySelector: element, querySelectorAll: () => [] },
+    document: { getElementById: element, querySelector: element, querySelectorAll: selector => selector === '[data-policy-document]' ? policyLinks : [] },
     Date: class extends Date { static now() { return clock; } },
     location, URL, URLSearchParams, console: { warn() {}, error() {} },
     history: { replaceState(_state, _title, url) { location.href = new URL(url, location).href; } },
@@ -83,6 +84,16 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 }
 
 (async () => {
+  for (const [time, version, prefix] of [
+    ['2026-11-19T14:59:59.999Z', '2026-09-29-age14', '/policies/2026-09-29/'],
+    ['2026-11-19T15:00:00.000Z', '2026-11-20', '/']
+  ]) {
+    const app = setup('?auth=signup&next=world', { now: Date.parse(time) });
+    await app.flush(); app.fill(); await app.submit();
+    assert.equal(app.signups[0].options.data.terms_version, version, 'consent uses the document effective at Korea midnight');
+    for (const name of ['terms', 'privacy']) assert.equal(app.element(`${name}-link`).href, `${prefix}${name}.html`);
+    assert.equal(app.element('policy-revision-note').hidden, version === '2026-11-20');
+  }
   const world = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
   const renderer = world.slice(world.indexOf('function nr('), world.indexOf('function J1('));
   const worldRoutes = [];
