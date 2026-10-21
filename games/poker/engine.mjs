@@ -83,15 +83,16 @@ export function distributePots(players, dealer=0) {
   return {payouts,pots};
 }
 export class SevenPoker {
-  constructor({stacks=[5000,5000,5000,5000],ante=50,dealer=0,random=Math.random}={}) {
-    if(stacks.length!==4||!Number.isInteger(ante)||ante<1||stacks.some(n=>!Number.isSafeInteger(n)||n<ante||n>1e9))throw Error('Invalid buy-in');
-    this.random=random;this.ante=ante;this.minimum=ante*2;this.dealer=dealer%4;this.deck=shuffle(random);
-    this.players=stacks.map((stack,i)=>({name:['나','하루','두리','보리'][i],stack,initial:stack,cards:[],up:[],total:0,bet:0,folded:false,allIn:false,last:'참가'}));
+  constructor({stacks=[5000,5000,5000,5000],ante=50,dealer=0,random=Math.random,allHuman=false,names=[]}={}) {
+    if(stacks.length<2||stacks.length>4||!Number.isInteger(ante)||ante<1||stacks.some(n=>!Number.isSafeInteger(n)||n<ante||n>1e9))throw Error('Invalid buy-in');
+    this.random=random;this.ante=ante;this.minimum=ante*2;this.dealer=dealer%stacks.length;this.deck=shuffle(random);this.allHuman=allHuman;
+    this.players=stacks.map((stack,i)=>({name:names[i]||['나','하루','두리','보리'][i],stack,initial:stack,cards:[],up:[],total:0,bet:0,folded:false,allIn:false,last:'참가'}));
     this.discarded=[];this.log=[];this.phase='discard';this.street=0;this.turn=0;this.currentBet=0;this.raises=0;this.raiseSize=this.minimum;
     this.pending=[];this.raiseAllowed=[];this.result=null;
     for(let round=0;round<4;round++)for(const p of this.players)p.cards.push(this.deck.pop());
     for(const p of this.players)this.pay(p,ante);
-    for(let i=1;i<4;i++){
+    if(allHuman){this.turn=(this.dealer+1)%stacks.length;return;}
+    for(let i=1;i<this.players.length;i++){
       const p=this.players[i];const idx=chooseDiscard(p.cards);this.discarded.push(...p.cards.splice(idx,1));
       const open=[...p.cards].sort((a,b)=>rank(b)-rank(a)||suit(b)-suit(a))[0];p.up=[open];
     }
@@ -100,13 +101,22 @@ export class SevenPoker {
   active(){return this.players.map((p,i)=>!p.folded?i:-1).filter(i=>i>=0);}
   canAct(){return this.active().filter(i=>!this.players[i].allIn);}
   pay(p,amount){const n=Math.min(p.stack,amount);p.stack-=n;p.total+=n;p.bet+=n;p.allIn=p.stack===0;return n;}
-  discard(index){
+  discard(index,seat=0){
     if(this.phase!=='discard'||!Number.isInteger(index)||index<0||index>=4)throw Error('Invalid discard');
-    this.discarded.push(...this.players[0].cards.splice(index,1));this.phase='open';
+    if(this.allHuman&&seat!==this.turn)throw Error('Not your turn');
+    this.discarded.push(...this.players[seat].cards.splice(index,1));this.phase='open';
   }
-  open(index){
+  open(index,seat=0){
     if(this.phase!=='open'||!Number.isInteger(index)||index<0||index>=3)throw Error('Invalid open card');
-    this.players[0].up=[this.players[0].cards[index]];this.dealStreet();
+    if(this.allHuman&&seat!==this.turn)throw Error('Not your turn');
+    this.players[seat].up=[this.players[seat].cards[index]];
+    if(this.allHuman){
+      for(let offset=1;offset<this.players.length;offset++){
+        const next=(seat+offset)%this.players.length,p=this.players[next];
+        if(!p.folded&&!p.up.length){this.turn=next;this.phase='discard';return;}
+      }
+    }
+    this.dealStreet();
   }
   exposedScore(p){
     const cards=p.up, g=groups(cards);
@@ -161,7 +171,7 @@ export class SevenPoker {
     }
     if(this.active().length===1){this.finish();return;}
     if(!this.pending.length){this.phase='between';this.turn=-1;return;}
-    for(let offset=1;offset<=4;offset++){const next=(id+offset)%4;if(this.pending.includes(next)){this.turn=next;break;}}
+    for(let offset=1;offset<=this.players.length;offset++){const next=(id+offset)%this.players.length;if(this.pending.includes(next)){this.turn=next;break;}}
   }
   finish(){
     if(this.phase==='finished')return;
