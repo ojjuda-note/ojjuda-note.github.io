@@ -1,0 +1,39 @@
+name: Verify administrator event removal
+on:
+  push:
+    branches: [codex/admin-without-events]
+    paths: ['ops/current-admin-edits.json', 'ops/apply-current-admin.py', '.github/workflows/verify-admin-noevents.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply administrator event removal
+        run: python ops/apply-current-admin.py
+      - name: Install existing test dependencies
+        run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: npx --prefix tests playwright install --with-deps chromium
+      - name: Verify menus, old links, reloads and shared card controls
+        run: |
+          result=0
+          for test in admin-current-features world-three-menus inline-scripts admin-navigation-ui note-admin-workflow-ui; do
+            node "tests/$test.test.cjs" || result=1
+          done
+          git diff --check || result=1
+          exit "$result"
+      - name: Commit verified removal
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Remove event administration and redirect retired entry points'
+            git push origin HEAD:refs/heads/codex/admin-without-events
+          fi
