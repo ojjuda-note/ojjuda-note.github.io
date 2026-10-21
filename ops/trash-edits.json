@@ -183,7 +183,7 @@
     },
     "tests/admin-navigation-ui.test.cjs": {
       "before": "ba71e06e1cd1d08274d47cc3c4cafb14b009ea47b642efb428a69981f582d0d7",
-      "after": "aa94c48b1c42b4488de2c0722795ef50f8344ef4ecb1f691e8526f9e39427eb4",
+      "after": "9367473a8a7da518bb04d7211096d1ee45621311d36dadc9430d0d2978cbb9da",
       "edits": [
         [
           1843,
@@ -226,9 +226,74 @@
           ""
         ],
         [
-          15904,
-          15904,
-          ");\n    }\n    for(const [legacy,category]of [['archive','cards'],['note-archive','cards'],['withdrawn','accounts'],['trash','all'],['trash-messages','messages']]){\n      await page.goto('https://fixture.test/world.html?admin='+legacy);await loaded();await mounted('trash');\n      assert.deepEqual(await current(),{area:'trash',tab:'trash-'+category});\n      assert.equal(await page.evaluate(()=>fixture.options.trash.category),category"
+          15917,
+          15917,
+          "for(const [legacy,category]of [['archive','cards'],['note-archive','cards'],['withdrawn','accounts'],['trash','all'],['trash-messages','messages']]){\n      "
+        ],
+        [
+          15972,
+          15981,
+          "'+legacy);"
+        ],
+        [
+          15996,
+          15997,
+          ""
+        ],
+        [
+          16012,
+          16028,
+          "trash');\n      "
+        ],
+        [
+          16061,
+          16062,
+          ""
+        ],
+        [
+          16069,
+          16076,
+          "trash"
+        ],
+        [
+          16083,
+          16095,
+          "trash-'+category});\n      assert.equal(await page.evaluate(()=>fixture.options.trash.category),category);\n    }"
+        ],
+        [
+          16155,
+          16159,
+          "chats"
+        ],
+        [
+          16178,
+          16178,
+          " await mounted('messages');"
+        ],
+        [
+          16224,
+          16231,
+          "content"
+        ],
+        [
+          16238,
+          16633,
+          "messages'});\n    "
+        ],
+        [
+          16681,
+          16681,
+          "?admin=quiz'); await loaded();\n    assert.deepEqual(await current(), {area:'account',tab:'overview'});\n    for (const saved of [{area:'content',tab:'events'}, {area:'note',tab:'events',noteTab:'events'}, {area:'content',tab:'chats'}, {area:'content',tab:'risk',riskType:'chats'}, {area:'operations',tab:'spam',spamType:'chats'}]) {\n      await page.evaluate(saved => sessionStorage.setItem('ojjuda.world.admin-view', JSON.stringify({...saved,userId:'synthetic-admin'})), saved);\n      await page.goto('https://fixture.test/world.html"
+        ],
+        [
+          17238,
+          17238,
+          "deepEqual(await page.locator('.adm-site-links a').allTextContents(), ['월드로 돌아가기','별천지 예약 확인','원고실']);\n    assert."
+        ],
+        [
+          17284,
+          17378,
+          "first().getAttribute('href'), '/world.html"
         ]
       ]
     },

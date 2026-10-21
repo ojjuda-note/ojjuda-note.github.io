@@ -36,12 +36,13 @@ jobs:
           git diff --check
       - name: Verify actual administrator screens
         run: |
-          node tests/admin-trash-ui.test.cjs
-          node tests/admin-navigation-ui.test.cjs
-          node tests/world-admin-refresh-ui.test.cjs
-          node tests/friend-messages-ui.test.cjs
-          node tests/admin-accounts-ui.test.cjs
-          node tests/note-admin-workflow-ui.test.cjs
+          test_status=0
+          for test_file in admin-trash-ui admin-navigation-ui world-admin-refresh-ui friend-messages-ui admin-accounts-ui note-admin-workflow-ui; do
+            if ! node "tests/${test_file}.test.cjs"; then
+              test_status=1
+            fi
+          done
+          exit "$test_status"
       - name: Save mobile review images
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
