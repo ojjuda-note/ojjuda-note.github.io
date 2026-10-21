@@ -8,7 +8,7 @@ async function entry(query,allowed=true,signedIn=true){
  vm.runInNewContext(read('admin/app.js'),context);await new Promise(setImmediate);return{redirects,panels};
 }
 (async()=>{
- for(const [requested,expected]of Object.entries({overview:'overview',content:'cards',world:'cards',posts:'cards','house-content':'cards',review:'cards',chats:'messages',quiz:'overview',messages:'messages','photo-stages':'photo-stages',cards:'cards',events:'cards','note-events':'cards',risk:'risk',map:'map',archive:'archive',payment:'settings',support:'reports',operations:'notice'})){
+ for(const [requested,expected]of Object.entries({overview:'overview',referrals:'referrals',content:'cards',world:'cards',posts:'cards','house-content':'cards',review:'cards',chats:'messages',quiz:'overview',messages:'messages','photo-stages':'photo-stages',cards:'cards',events:'cards','note-events':'cards',risk:'risk',map:'map',archive:'archive',payment:'settings',support:'reports',operations:'notice'})){
   for(const route of ['?admin='+requested,'#'+requested]){
    const{redirects}=await entry(route);assert.equal(redirects.length,1);assert.equal(new URL(redirects[0]).searchParams.get('admin'),expected,route);
   }

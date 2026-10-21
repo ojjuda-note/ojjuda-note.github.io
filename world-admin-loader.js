@@ -1,7 +1,7 @@
 /* Administrator tools load only when their screen is opened. */
 (()=>{
  'use strict';
- const scripts=["/admin/friend-messages.js?v=20261020-messages1", "/admin/member-identity.js?v=20260929-phone-unique", "/admin/connections.js?v=20261021-admin1", "/admin/accounts.js?v=20261006-zu1", "/admin/activity.js?v=20261021-admin1", "/admin/photo-stages.js?v=20261006-photo1", "note/admin.js?v=20261021-noevents1"],styles=["/admin/friend-messages.css?v=20261020-messages1", "/admin/connections.css?v=20261004-design1", "/admin/accounts.css?v=20261004-admin1", "/admin/activity.css?v=20261004-admin1", "/admin/photo-stages.css?v=20261006-photo1", "note/admin.css?v=20261004-home2"],loaded=new Map();
+ const scripts=["/admin/friend-messages.js?v=20261020-messages1", "/admin/member-identity.js?v=20260929-phone-unique", "/admin/connections.js?v=20261021-admin1", "/admin/accounts.js?v=20261021-referral1", "/admin/activity.js?v=20261021-admin1", "/admin/photo-stages.js?v=20261006-photo1", "note/admin.js?v=20261021-noevents1"],styles=["/admin/friend-messages.css?v=20261020-messages1", "/admin/connections.css?v=20261004-design1", "/admin/accounts.css?v=20261004-admin1", "/admin/activity.css?v=20261004-admin1", "/admin/photo-stages.css?v=20261006-photo1", "note/admin.css?v=20261004-home2"],loaded=new Map();
  let pending=null;
  function resource(url,style){
   if(loaded.has(url))return loaded.get(url);
