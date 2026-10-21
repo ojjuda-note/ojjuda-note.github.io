@@ -11,6 +11,7 @@ if (proof) fs.mkdirSync(proof, { recursive: true });
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+world = world.replace('</head>', () => '<script>' + fs.readFileSync(path.join(root, 'world-themes.js'), 'utf8') + '</script></head>');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'World boot is available');
 world = world.slice(0, boot) + `
@@ -78,11 +79,14 @@ g.tab='my';H();
       const input = document.activeElement;
       return [input.id, input.selectionStart, input.selectionEnd, input.selectionDirection];
     }), ['p-bio', 3, 8, 'backward'], 'a background repaint preserves input focus and the selected text');
-    await openGroup('display');
-    await page.locator('[data-act="theme"][data-v="dark"]').click();
-    assert.deepEqual(await readProfile(), draft, 'changing screen mode preserves every profile draft field');
-    await page.locator('[data-act="accent"][data-v="mint"]').click();
-    assert.deepEqual(await readProfile(), draft, 'changing the theme color preserves every profile draft field');
+    await openGroup('notifications');
+    await page.locator('#n-friend').uncheck();
+    assert.deepEqual(await readProfile(), draft, 'changing notification preferences preserves every draft field');
+    await page.emulateMedia({colorScheme:'dark'});
+    await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
+    assert.deepEqual(await readProfile(), draft, 'automatic screen mode preserves every draft field');
+    await page.emulateMedia({colorScheme:'light'});
+    await page.waitForFunction(() => !document.documentElement.dataset.theme);
     await page.evaluate(() => { profileTest.model.coins += 10; profileTest.render(); });
     assert.deepEqual(await readProfile(), draft, 'a balance refresh cannot erase the profile being edited');
 
@@ -160,6 +164,6 @@ g.tab='my';H();
     await page.evaluate(async()=>{profileTest.auth.user={id:'profile-owner-c'};profileTest.model.me.avatar_url='https://fixture.test/account-c-photo.jpg';finishPhoto('https://fixture.test/stale-account-b-photo.jpg');await photoFlights;});
     assert.equal(await page.evaluate(()=>profileTest.model.me.avatar_url),'https://fixture.test/account-c-photo.jpg','an old account response is ignored');
     assert.deepEqual(errors, [], 'no browser runtime errors');
-    console.log('PASS: unsaved World profile and caret survive render/theme/accent/balance/tab changes, empty fields remain editable, saving clears the draft, accounts stay isolated, and profile photo signing retries/renews without stale account responses.');
+    console.log('PASS: unsaved World profile and caret survive render/notifications/system appearance/balance/tab changes, empty fields remain editable, saving clears the draft, accounts stay isolated, and profile photo signing retries/renews without stale account responses.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

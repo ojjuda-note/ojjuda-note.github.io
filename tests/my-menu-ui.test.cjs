@@ -119,7 +119,7 @@ async function worldFixture(context, mobile, errors) {
     'World menu omits the oversized notification shortcut');
   assert.equal(await page.evaluate(() => {
     const groups = [...document.querySelectorAll('.my-hub [data-my-group]')].map(node => node.dataset.myGroup);
-    return !groups.includes('account') && groups.indexOf('profile') < groups.indexOf('display')
+    return !groups.includes('account') && groups.indexOf('profile') < groups.indexOf('notifications')
       && groups.indexOf('profile') < groups.indexOf('help');
   }), true, 'profile and account share one entry before preferences and help');
   assert.equal(await page.locator('details[open]').count(), 0, 'settings start closed to reduce clutter');
@@ -141,9 +141,9 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(await page.locator('#p-nick').inputValue(), '검사 회원');
   assert.equal(await page.locator('#n-friend').isChecked(), false);
   assert.equal(await page.locator('#p-mt, [data-act="mood-pick"]').count(), 0, 'profile omits retired mood controls');
-  const expectedActions = ['account-delete-open', 'accent', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'theme', 'unblock'].sort();
+  const expectedActions = ['account-delete-open', 'fr-accept', 'fr-decline', 'fr-remove', 'logout', 'member-info-open', 'profile-photo', 'profile-save', 'pw-open', 'support-open', 'unblock'].sort();
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
-    'every existing account, display, privacy and support action keeps its dispatch key');
+    'every existing account, notification, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
   for (const href of ['/guide.html', 'terms.html', 'privacy.html']) {
     assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
@@ -157,9 +157,9 @@ async function worldFixture(context, mobile, errors) {
 
   // Existing setting handlers rerender My; expanded sections must not snap shut.
   await page.evaluate(() => { $.settings.theme = 'dark'; renderMy(); });
-  assert.equal(await page.locator('[data-my-group="display"]').evaluate(node => node.open), true,
+  assert.equal(await page.locator('[data-my-group="notifications"]').evaluate(node => node.open), true,
     'a settings rerender preserves the expanded group');
-  assert.equal(await page.locator('[data-act="theme"][data-v="dark"]').getAttribute('aria-pressed'), 'true');
+  assert.equal(await page.locator('[data-act="theme"],[data-act="accent"]').count(), 0, 'saved legacy choices do not restore manual appearance controls');
   await page.evaluate(() => { D.isAdmin = true; renderMy(); });
   await page.locator('[data-my-group="admin"] > summary').click();
   assert.equal(await page.locator('[data-act="tab"][data-tab="admin"]').isVisible(), true);
