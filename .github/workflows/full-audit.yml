@@ -1,0 +1,54 @@
+name: Full application audit
+on:
+  push:
+    branches: [codex/full-audit-20261021]
+permissions:
+  contents: read
+jobs:
+  all-tests:
+    name: All tests shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - name: Run every independent regression script
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          python3 - <<'PY'
+          import pathlib, subprocess, os, json, time
+          tests=sorted([*pathlib.Path('tests').glob('*.test.cjs'),*pathlib.Path('tests').glob('*.test.mjs')])
+          tests=[p for p in tests if p.name!='account-deletion-local.test.cjs']
+          shard=int(os.environ['SHARD']); out=pathlib.Path('/tmp/full-audit'); out.mkdir(exist_ok=True)
+          results=[]
+          for test in tests[shard::6]:
+              start=time.monotonic(); log=out/(test.name+'.log')
+              with log.open('w') as f:
+                  try: result=subprocess.run(['node','--experimental-vm-modules',str(test)],stdout=f,stderr=subprocess.STDOUT,timeout=190); code=result.returncode
+                  except subprocess.TimeoutExpired: code=124
+              results.append({'test':test.name,'exit':code,'seconds':round(time.monotonic()-start,1)})
+              print(('PASS' if code==0 else 'FAIL')+': '+test.name,flush=True)
+              if code: print(log.read_text()[-6500:],flush=True)
+          (out/'results.json').write_text(json.dumps(results,indent=2))
+          print(json.dumps({'scripts':len(results),'passed':sum(r['exit']==0 for r in results),'failed':[r['test'] for r in results if r['exit']]}))
+          raise SystemExit(any(r['exit'] for r in results))
+          PY
+      - name: Save all audit logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-audit-${{ matrix.shard }}
+          path: /tmp/full-audit
+          retention-days: 5
