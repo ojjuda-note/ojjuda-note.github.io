@@ -1,0 +1,59 @@
+name: Verify administrator trash
+on:
+  push:
+    branches: [codex/admin-trash-20261021]
+    paths: ['ops/trash-edits.json', 'ops/apply-trash.py', '.github/workflows/verify-trash.yml', 'admin/trash.*', 'tests/admin-trash*', 'supabase/migrations/*admin_trash*']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 3
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed source edits
+        run: python ops/apply-trash.py
+      - run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: |
+          npx --prefix tests playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify retention, privacy and account deletion
+        run: |
+          node tests/admin-trash-db.test.cjs
+          node tests/friend-messages-db.test.cjs
+          node tests/admin-account-directories-db.test.cjs
+          node tests/member-identity-db.test.cjs
+          node tests/account-deletion.test.cjs
+          node tests/admin-current-features.test.cjs
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Verify actual administrator screens
+        run: |
+          node tests/admin-trash-ui.test.cjs
+          node tests/admin-navigation-ui.test.cjs
+          node tests/world-admin-refresh-ui.test.cjs
+          node tests/friend-messages-ui.test.cjs
+          node tests/admin-accounts-ui.test.cjs
+          node tests/note-admin-workflow-ui.test.cjs
+      - name: Save mobile review images
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: admin-trash-proof
+          path: /tmp/trash-proof
+          retention-days: 5
+      - name: Commit verified edits
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Verify administrator trash and one-month deletion lifecycle'
+            git push origin HEAD:refs/heads/codex/admin-trash-20261021
+          fi
