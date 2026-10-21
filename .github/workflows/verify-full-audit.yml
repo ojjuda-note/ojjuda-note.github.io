@@ -1,0 +1,85 @@
+name: Verify full audit fixes
+on:
+  push:
+    branches: [codex/full-audit-fixes]
+    paths: ['ops/full-audit-edits.json', 'ops/apply-full-audit.py', '.github/workflows/verify-full-audit.yml', 'tests/client-table-privileges-db.test.cjs', 'supabase/migrations/20261021080853_restrict_client_maintenance_privileges.sql']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed audit fixes
+        run: python ops/apply-full-audit.py
+      - run: npm ci --ignore-scripts --prefix tests
+      - name: Install test browser
+        run: |
+          npx --prefix tests playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Verify automatic appearance, settings, notifications and privileges
+        env:
+          WORLD_DESIGN_PROOF_DIR: /tmp/full-audit-fixes
+        run: |
+          result=0
+          for test in client-table-privileges-db.test.cjs world-themes.test.cjs world-design-ui.test.cjs my-menu-ui.test.cjs friend-messages-ui.test.cjs world-profile-draft-ui.test.cjs world-three-menus.test.cjs inline-scripts.test.cjs portal-auth-entry.test.cjs park-note-chat-ui.test.cjs admin-current-features.test.cjs; do
+            timeout 180 node "tests/$test" || result=1
+          done
+          git diff --check || result=1
+          exit "$result"
+      - name: Audit all tracked source syntax and HTML resources
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess, urllib.parse, os
+          from html.parser import HTMLParser
+          tracked=set(subprocess.check_output(['git','ls-files','-z'],text=True).split('\0'))
+          errors=[]; checked=0; refs=0
+          class Check(HTMLParser):
+              def handle_starttag(self,tag,attrs):
+                  global refs
+                  a=dict(attrs)
+                  for attr in (['src'] if tag in ('script','img','iframe','audio','video','source') else ['href'] if tag=='link' else []):
+                      val=a.get(attr,''); u=urllib.parse.urlsplit(val)
+                      if not val or u.scheme or u.netloc or val.startswith('#') or '{' in val: continue
+                      refs+=1; p=urllib.parse.unquote(u.path)
+                      target=os.path.normpath(str(Path(p.lstrip('/')) if p.startswith('/') else file.parent/p))
+                      if p.endswith('/'): target+='/index.html'
+                      if target not in tracked: errors.append(f'{file}: missing {val}')
+          for name in sorted(tracked):
+              if not name: continue
+              file=Path(name)
+              if file.suffix in ('.js','.cjs','.mjs'):
+                  checked+=1
+                  r=subprocess.run(['node','--check',name],capture_output=True,text=True)
+                  if r.returncode: errors.append(f'{file}: {r.stderr[:500]}')
+              elif file.suffix=='.py':
+                  checked+=1
+                  try: compile(file.read_text(),name,'exec')
+                  except SyntaxError as e: errors.append(f'{file}: {e}')
+              elif file.suffix=='.html': Check().feed(file.read_text())
+          print(f'Syntax: {checked} source files. HTML local resources: {refs}. Errors: {len(errors)}')
+          for error in errors: print(error)
+          raise SystemExit(bool(errors))
+          PY
+      - run: npm --prefix tests audit --audit-level=high
+      - name: Save screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-audit-fixes-proof
+          path: /tmp/full-audit-fixes
+          retention-days: 5
+      - name: Commit verified changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Finish automatic appearance and preserve Settings labels; restrict client maintenance privileges'
+            git push origin HEAD:refs/heads/codex/full-audit-fixes
+          fi
