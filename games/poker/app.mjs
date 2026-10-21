@@ -183,9 +183,9 @@ function renderTable(animateDeal=true){
   const splitHand=game.phase!=='discard',pendingOpen=game.phase==='open'&&selecting&&pick>=0;
   const ownCards=me.cards.map((c,i)=>({c,i,shown:me.up.includes(c)||(pendingOpen&&pick===i)}));
   const ownCard=({c,i})=>card(c,{button:true,index:i,peek:i===6&&finalCardCovered(),publicCard:me.up.includes(c),pendingPublic:pendingOpen&&pick===i,best:done&&!me.folded&&showdown&&hand.cards.includes(c),selected:pick===i&&selecting,selectable:selecting,fresh:fresh(0,c),fan:(i-(me.cards.length-1)/2)*1.4});
-  const privateCards=ownCards.filter(c=>!c.shown),publicCards=ownCards.filter(c=>c.shown);
+  const privateCards=ownCards.filter(c=>!c.shown&&c.i!==6),publicCards=ownCards.filter(c=>c.shown&&c.i!==6),finalCards=ownCards.filter(c=>c.i===6);
   const handGroup=(cards,kind,label)=>cards.length?`<div class="hand-group ${kind}-cards" role="group" aria-label="${label}" style="--group-count:${cards.length}">${cards.map(ownCard).join('')}</div>`:'';
-  const myCards=splitHand?handGroup(privateCards,'private',done?'비공개였던 카드':'나만 보는 카드')+handGroup(publicCards,'public',pendingOpen?'공개할 카드':'공개 카드'):ownCards.map(ownCard).join('');
+  const myCards=splitHand?handGroup(privateCards,'private',done?'비공개였던 카드':'나만 보는 카드')+handGroup(publicCards,'public',pendingOpen?'공개할 카드':'공개 카드')+handGroup(finalCards,'final','마지막 비공개 카드'):ownCards.map(ownCard).join('');
   let result='';
   if(done){
     const won=winning.has(0),names=[...winning].map(i=>game.players[i].name).join(' · '),net=game.result.net[0];

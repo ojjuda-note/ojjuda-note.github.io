@@ -32,6 +32,7 @@ window.pokerFixture={show(round=1){
     if(before){await page.screenshot({path:path.join(proof,'poker-before-390.png'),fullPage:true});continue;}
     assert.equal(await page.locator('.card-index').count(),0,'the artwork has no duplicate corner overlays');
     assert.equal(await page.locator('.my-cards .final-covered').count(),1,'only the last own card begins face down');
+    assert.equal(await page.locator('.my-cards .card').last().getAttribute('data-card'),'6','the seventh card is the rightmost card');
     assert.equal(await page.locator('.seat-cards .down-cards img').count(),0,'opponents hole cards stay absent');
     assert.equal(await page.locator('.my-cards [data-peek-card]').getAttribute('aria-label'),'마지막 카드 · 아래로 끌어내려 보기','hidden card name is not announced');
     assert.equal(await page.locator('.peek-face').first().evaluate(el=>getComputedStyle(el).clipPath),'inset(0px 0px 100%)');
@@ -40,8 +41,7 @@ window.pokerFixture={show(round=1){
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'no horizontal overflow');
     if(proof)await page.screenshot({path:path.join(proof,`poker-covered-${viewport.width}.png`),fullPage:true});
     const last=page.locator('.my-cards [data-peek-card]');await last.scrollIntoViewIfNeeded();
-    // The public cards overlap the private stack; drag its exposed left edge.
-    const rect=await last.boundingBox(),x=rect.x+rect.width*.17,y=rect.y+rect.height*.3;
+    const rect=await last.boundingBox(),x=rect.x+rect.width*.6,y=rect.y+rect.height*.3;
     await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+8);await page.mouse.up();
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'short drag stays face down');
     await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y-30);await page.mouse.up();
@@ -52,6 +52,8 @@ window.pokerFixture={show(round=1){
     await page.mouse.move(x,y+55,{steps:3});await page.mouse.up();
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'downward drag reveals it');
     assert.equal(await page.locator('.my-cards [data-card="6"]').getAttribute('aria-label'),'A♠');
+    assert.equal(await page.locator('.my-cards .final-cards').evaluate(el=>getComputedStyle(el).opacity),'1','the revealed final card stays fully opaque');
+    assert.equal(await page.locator('.my-cards .private-cards').evaluate(el=>getComputedStyle(el).opacity),'0.5','opening private cards keep their half opacity');
     await page.evaluate(()=>pokerFixture.paint());assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'poll/repaint preserves the reveal');
     await page.evaluate(round=>pokerFixture.show(round),++round);assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'next round resets the cover even if the card matches');
     await page.locator('[data-seat="0"]').click();assert.equal(await page.locator('#cards-content [data-peek-card]').count(),1,'zoom does not bypass the cover');
@@ -60,7 +62,7 @@ window.pokerFixture={show(round=1){
     if(viewport.width===390){
      await page.evaluate(round=>pokerFixture.show(round),++round);
      const touchCard=page.locator('.my-cards [data-peek-card]');await touchCard.scrollIntoViewIfNeeded();
-     const r=await touchCard.boundingBox(),touch=await context.newCDPSession(page),point={id:1,x:r.x+r.width*.17,y:r.y+r.height*.25},scroll=await page.evaluate(()=>scrollY);
+     const r=await touchCard.boundingBox(),touch=await context.newCDPSession(page),point={id:1,x:r.x+r.width*.6,y:r.y+r.height*.25},scroll=await page.evaluate(()=>scrollY);
      await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
      await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+60}]});
      await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
