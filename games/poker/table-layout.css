@@ -359,3 +359,15 @@
   .poker-playing{--hand-card-width:clamp(60px,8vw,62px)}
   .poker-playing .felt{padding-top:3px;padding-bottom:2px}
 }
+
+/* Show the result without covering the cards at the end of a hand. */
+.poker-playing .decision-panel:has(.result-banner){position:static}
+.poker-playing .result-banner{min-height:54px;padding:8px 10px;gap:10px;margin-bottom:6px}
+.poker-playing .result-copy>small{display:none}
+.poker-playing .result-copy b{font-size:16px;margin:0 0 3px}
+.poker-playing .result-copy p{font-size:10px}
+.poker-playing .result-banner>strong{font-size:25px}
+.poker-playing .result-banner>strong small{display:inline;margin:0 0 0 3px}
+.poker-playing .result-banner+.decision-heading{display:none}
+.poker-playing .actions.finished-actions{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);min-height:52px}
+.poker-playing .finished-actions button{grid-column:auto;min-height:52px;padding:8px;font-size:14px}
