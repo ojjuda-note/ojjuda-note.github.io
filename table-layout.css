@@ -363,14 +363,12 @@
 #cards-content .final-covered .card-state{font-size:11px}
 @media(prefers-reduced-motion:reduce){.peek-cover{transition:none}}
 
-/* Stack the whole hand continuously from the left, private cards before public cards. */
+/* Stack from the left: opening private cards, public cards, then the final hidden card. */
 .poker-playing .my-cards.split-hand{--hand-step:.34}
 .poker-playing .hand-group{display:flex;align-items:center;flex:none;min-width:0;width:calc(var(--hand-card-width) * (1 + (var(--group-count) - 1) * var(--hand-step)));isolation:isolate}
 .poker-playing .hand-group+.hand-group{margin-left:calc((var(--hand-step) - 1) * var(--hand-card-width))}
 .poker-playing .hand-group:has(.is-peeking){z-index:2}
 .poker-playing .split-hand.has-public:not(.hand-finished) .private-cards{opacity:.5}
-.poker-playing .split-hand .final-covered .card-state{left:0;right:auto;width:calc(var(--hand-card-width) * var(--hand-step));font-size:0}
-.poker-playing .split-hand .final-covered .card-state::after{content:'↓';font-size:12px}
 .poker-playing .card.pending-public .card-state{color:#f3cb79}
 
 .poker-playing .my-cards.choosing-public{--hand-step:.6}
