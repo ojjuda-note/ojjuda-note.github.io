@@ -61,8 +61,8 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const view of [{area:'note',tab:'cards',noteTab:'archive'},{area:'world',tab:'settings'}]){
    await page.evaluate(view=>sessionStorage.setItem('ojjuda.world.admin-view',JSON.stringify({...view,userId:'admin-a'})),view);
    await reload();
-   assert.equal((await current()).area,view.area==='note'?'content':'operations');
-   assert.equal((await current()).subtab,view.area==='note'?'archive':'spam');
+   assert.equal((await current()).area,view.area==='note'?'trash':'operations');
+   assert.equal((await current()).subtab,view.area==='note'?'trash-cards':'spam');
   }
   for(let index=0;index<noteLinks.length;index++){
    await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
