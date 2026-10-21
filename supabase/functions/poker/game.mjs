@@ -1,10 +1,12 @@
-import {SevenPoker,rank,chooseDiscard} from '../../../games/poker/engine.mjs';
+import {SevenPoker,rank,chooseDiscard,aiView,chooseAI} from '../../../games/poker/engine.mjs';
 const hydrate=state=>Object.assign(Object.create(SevenPoker.prototype),structuredClone(state));
-export function newGame(names,previous=null,random=Math.random){
- const stacks=names.map((_,i)=>previous?.players[i]?.stack>=50?previous.players[i].stack:5000);
- return new SevenPoker({names,stacks,allHuman:true,dealer:previous?(previous.dealer+1)%names.length:0,random});
+export function newGame(names,previous=null,random=Math.random,{mode='online',stacks=names.map(()=>5000)}={}){
+ const solo=mode==='solo';
+ if(stacks.some(n=>n<50))throw Error('gold_empty');
+ if(solo){names=[names[0],'하루','두리','보리'];stacks=[stacks[0],...names.slice(1).map((_,i)=>previous?.players[i+1]?.stack>=50?Math.min(1e9,previous.players[i+1].stack):5000)];}
+ return new SevenPoker({names,stacks,allHuman:!solo,dealer:previous?(previous.dealer+1)%names.length:0,random});
 }
-export function move(state,seat,command){
+export function move(state,seat,command,random=Math.random,difficulty='normal'){
  const g=hydrate(state);
  if(!command||typeof command!=='object')throw Error('invalid_move');
  if(command.type==='leave'){
@@ -24,6 +26,7 @@ export function move(state,seat,command){
   if(command.type!=='timeout')throw Error('not_your_turn');g.advance();return g;
  }
  if(g.turn!==seat||g.players[seat]?.folded||g.phase==='finished')throw Error('not_your_turn');
+ if(command.type==='ai'){if(g.allHuman||seat===0)throw Error('invalid_move');command=chooseAI(aiView(g),random,difficulty);}
  let type=command.type,index=command.index;
  if(type==='timeout'){
   if(g.phase==='discard'){type='discard';index=chooseDiscard(g.players[seat].cards);}
@@ -51,7 +54,7 @@ export function project(result){
     cards:p.cards.map((c,k)=>i===seat||p.up.includes(c)||showdown&&!p.folded?c:`hidden:${i}:${k}`)})),
    result:g.result};
  }
- return {id:r.id,code:r.code,title:r.title,capacity:r.capacity,seat,names:r.names,
+ return {id:r.id,code:r.code,title:r.title,capacity:r.capacity,mode:r.mode||'online',seat,names:r.names,
   hostSeat:r.members.indexOf(r.host_id),status:r.status,version:r.version,round:r.round,
   deadline:r.deadline,serverTime:Date.now(),departed:r.departed,ready:r.ready,game};
 }

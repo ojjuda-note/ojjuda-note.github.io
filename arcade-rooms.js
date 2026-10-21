@@ -1,7 +1,7 @@
 (function () {
   'use strict';
-  const games = { tank: ['🪖', '탱크게임'], tour: ['🌏', '오쭈다 마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'] };
-  const nativeGames = new Set(['tank','tour','ttang']);
+  const games = { tank: ['🪖', '탱크게임'], tour: ['🌏', '오쭈다 마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'] };
+  const nativeGames = new Set(['tank','tour','ttang','poker']);
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const errors = {
@@ -10,7 +10,7 @@
     room_unavailable: '이미 닫혔거나 참여할 수 없는 방이에요.', room_in_progress: '참여 중인 방이 있어요. 내 방에서 이어서 하거나 대기를 취소해 주세요.',
     match_in_progress: '진행 중인 맞고를 먼저 마무리해 주세요.', room_rate_limit: '방을 너무 빠르게 만들었어요. 잠시 후 다시 시도해 주세요.',
     room_already_started: '상대가 참여해 대전이 시작됐어요. 내 방에서 이어서 해 주세요.',
-    adult_required: '맞고는 생년월일을 등록한 만 19세 이상 회원만 이용할 수 있어요.',
+    adult_required: '이 게임은 생년월일을 등록한 만 19세 이상 회원만 이용할 수 있어요.',
     gold_empty: '맞고 골드를 먼저 충전해 주세요.', not_room_owner: '방장만 대기를 취소할 수 있어요.'
   };
   function message(error) {
@@ -64,7 +64,7 @@
       if (!nextList) { nextList = document.createElement('div'); nextList.dataset.roomList = ''; root.append(nextList); }
       if (list !== nextList) { list = nextList; signature = ''; }
       const select = root.querySelector('[data-room-filter]');
-      const choices = Object.entries(games).filter(([kind]) => kind !== 'matgo' || canMatgo);
+      const choices = Object.entries(games).filter(([kind]) => !['matgo','poker'].includes(kind) || canMatgo);
       if (select.options.length !== choices.length + 1) {
         select.innerHTML = '<option value="">모든 게임</option>' + choices.map(([kind, [, name]]) => `<option value="${kind}">${name}</option>`).join('');
         if (!choices.some(([kind]) => kind === filter)) filter = '';
@@ -147,7 +147,7 @@
       sync();
       if (!owner) { options.notify(errors.not_signed_in); return; }
       if (mine) { options.goArcade(); options.closeModal(); options.notify(errors.room_in_progress); return; }
-      const allowed = Object.entries(games).filter(([id]) => id !== 'matgo' || canMatgo || options.matgoAllowed?.());
+      const allowed = Object.entries(games).filter(([id]) => !['matgo','poker'].includes(id) || canMatgo || options.matgoAllowed?.());
       if (!allowed.some(([id]) => id === kind)) kind = allowed[0][0];
       const actor = owner, initial = games[kind][1] + ' 같이 한 판 해요';
       options.renderModal(`<div class="mhead"><h3>대전방 만들기</h3><button class="btn sm ghost" data-act="close">닫기</button></div>
@@ -164,7 +164,7 @@
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        const max=value==='tank'?12:value==='tour'?8:2;
+        const max=value==='tank'?12:value==='tour'?8:value==='poker'?4:2;
         form.querySelector('[data-create-capacity]').hidden=max===2;
         form.elements.capacity.innerHTML=Array.from({length:max-1},(_,i)=>`<option value="${i+2}"${i+2===Math.min(4,max)?' selected':''}>${i+2}명</option>`).join('');
       };

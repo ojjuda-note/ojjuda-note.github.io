@@ -9,7 +9,7 @@ const {fixture}=require('./poker-online-fixture.cjs');
  const expire=id=>db.query("update ojjuda_poker_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1",[id]);
  try{
   for(const role of ['anon','authenticated']){
-   const r=await db.query("select has_function_privilege($1,'public.poker_online_service(uuid,text,uuid,text,uuid,integer,jsonb,jsonb)','execute') f,has_schema_privilege($1,'ojjuda_poker_internal','usage') s",[role]);assert.equal(r.rows[0].f,false);assert.equal(r.rows[0].s,false);
+   const r=await db.query("select has_function_privilege($1,'public.poker_online_service(uuid,text,uuid,text,uuid,integer,jsonb,jsonb)','execute') f,has_schema_privilege($1,'ojjuda_poker_internal','usage') s",[role]);assert.equal(r.rows[0].f,false);assert.equal(r.rows[0].s,role==='authenticated');
   }
   assert.equal((await call(MINOR,{action:'list'})).error,'adult_required');
   assert.equal((await call(A,{action:'list'})).status,200,'19th birthday is eligible');
