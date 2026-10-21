@@ -50,12 +50,22 @@ window.pokerFixture={show(round=1){
     if(proof&&viewport.width===390)await page.screenshot({path:path.join(proof,'poker-dragging-390.png'),fullPage:true});
     await page.mouse.move(x,y+55,{steps:3});await page.mouse.up();
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'downward drag reveals it');
-    assert.match(await page.locator('.my-cards .card').last().getAttribute('aria-label'),/스페이드/);
+    assert.equal(await page.locator('.my-cards .card').last().getAttribute('aria-label'),'A♠');
     await page.evaluate(()=>pokerFixture.paint());assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'poll/repaint preserves the reveal');
     await page.evaluate(round=>pokerFixture.show(round),++round);assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'next round resets the cover even if the card matches');
     await page.locator('[data-seat="0"]').click();assert.equal(await page.locator('#cards-content [data-peek-card]').count(),1,'zoom does not bypass the cover');
     await page.locator('#cards-content [data-peek-card]').press('ArrowDown');assert.equal(await page.locator('#cards-content [data-peek-card]').count(),0,'keyboard reveal works in zoom');
     await page.locator('#cards-dialog [data-close-dialog]').click();assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0);
+    if(viewport.width===390){
+     await page.evaluate(round=>pokerFixture.show(round),++round);
+     const touchCard=page.locator('.my-cards [data-peek-card]');await touchCard.scrollIntoViewIfNeeded();
+     const r=await touchCard.boundingBox(),touch=await context.newCDPSession(page),point={id:1,x:r.x+r.width*.6,y:r.y+r.height*.25},scroll=await page.evaluate(()=>scrollY);
+     await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+     await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+60}]});
+     await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'a real touch drag reveals the seventh card');
+     assert.equal(await page.evaluate(()=>scrollY),scroll,'the gesture never scrolls the table');await touch.detach();
+    }
     await page.evaluate(round=>pokerFixture.show(round),++round);await page.evaluate(()=>pokerFixture.finish());assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'showdown reveals the last card');
    }
    if(!before){
