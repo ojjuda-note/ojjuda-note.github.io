@@ -51,17 +51,6 @@
 .poker-playing .my-cards .card.selected{transform:translateY(-12px);outline:3px solid #f3cb79;outline-offset:2px}
 .poker-playing .card-state{font-size:10px;bottom:-19px;color:#d5dfbf;left:4px;right:auto}
 .poker-playing .player-bet{font-size:11px;min-height:20px;color:#bed1b8}
-/* Oversized indices remain readable when the seven cards overlap. */
-.card-index{position:absolute;top:3%;left:3%;width:27%;background:#fff;color:#13281e;display:flex;flex-direction:column;align-items:center;line-height:.95;padding:1px 0 3px;border-radius:2px;font-size:18px;pointer-events:none}
-.card-index b{font-weight:800;font-family:Arial,sans-serif;letter-spacing:-.08em}
-.card-index i{font:normal 18px/1.05 Georgia,serif}
-.card-index.red{color:#b32935}
-.my-cards .card-index{font-size:clamp(22px,5.6vw,30px)}
-.my-cards .card-index i{font-size:clamp(21px,5.4vw,29px)}
-.up-cards .card-index{font-size:15px;width:30%}
-.up-cards .card-index i{font-size:14px}
-.down-cards .card-index{font-size:8px}
-.down-cards .card-index i{font-size:7px}
 .poker-playing .decision-panel{width:100%;max-width:1000px;align-self:end;padding:12px 0 8px;margin:0 auto;position:sticky;bottom:0;z-index:20;background:#0c1511;box-shadow:0 -8px 14px #0c151155;border-radius:14px 14px 0 0}
 .poker-playing .decision-heading{margin:0 2px 10px;min-height:22px}
 .poker-playing .status{font-size:15px}
@@ -85,8 +74,6 @@
 #cards-dialog>header button{min-width:44px;min-height:44px}
 #cards-content{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:30px 10px}
 #cards-content .card{width:100%;height:auto;aspect-ratio:5/7}
-#cards-content .card-index{font-size:clamp(23px,5.5vw,38px)}
-#cards-content .card-index i{font-size:clamp(22px,5.2vw,36px)}
 #cards-content .muted{grid-column:1/-1;font-size:13px;line-height:1.6;margin:0}
 @media(min-width:1000px) and (min-height:700px){
   .poker-playing .actions{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -193,8 +180,6 @@
   .poker-playing .seat-info small{font-size:9px}
   .poker-playing .seat-cards{padding-top:4px}
   .poker-playing .up-cards .card{width:36px;height:50.4px;margin-left:-11px}
-  .poker-playing .up-cards .card-index{font-size:12px}
-  .poker-playing .up-cards .card-index i{font-size:11px}
   .poker-playing .seat-action{font-size:9px;min-height:16px;margin-top:2px}
   .poker-playing .pot-zone{min-height:27px;flex-direction:row;gap:8px}
   .poker-playing .pot-amount{font-size:25px}
@@ -202,8 +187,6 @@
   .poker-playing .player-header{min-height:28px;padding:0 3px 2px}
   .poker-playing .hand-zoom{min-height:28px}
   .poker-playing .my-cards{padding:4px 0 19px}
-  .poker-playing .my-cards .card-index{font-size:22px}
-  .poker-playing .my-cards .card-index i{font-size:21px}
   .poker-playing .card-state{bottom:-15px;font-size:8px}
   .poker-playing .player-bet{min-height:15px;font-size:9px}
   .poker-playing .decision-panel{grid-column:2;grid-row:2;position:sticky;align-self:center;bottom:8px;padding:5px 0;background:transparent;box-shadow:none}
@@ -231,8 +214,6 @@
   .poker-playing .seat-info strong{font-size:11px;line-height:1.1}
   .poker-playing .seat-info small{font-size:9px;line-height:1.1}
   .poker-playing .up-cards .card{width:36px;height:50.4px;margin-left:-16px}
-  .poker-playing .up-cards .card-index{font-size:12px}
-  .poker-playing .up-cards .card-index i{font-size:11px}
   .poker-playing .seat-action{min-height:16px;font-size:9px;margin-top:1px}
   .poker-playing .pot-zone{flex-direction:row;min-height:28px;gap:6px;padding:0}
   .poker-playing .pot-amount{font-size:25px}
@@ -301,8 +282,6 @@
   .poker-playing .pot-label{font-size:6px}
   .poker-playing .my-cards{padding-top:4px;padding-bottom:6px}
   .poker-playing .my-cards .card-state{bottom:3px;left:3px;padding:2px 3px;border-radius:3px;background:#143322e8;font-size:8px;color:#ecf1dc}
-  .poker-playing .my-cards .card-index{font-size:21px}
-  .poker-playing .my-cards .card-index i{font-size:20px}
 }
 @media(min-width:601px) and (max-height:650px){
   .poker-playing .felt{gap:5px 8px;grid-template-columns:minmax(0,1fr) minmax(60px,.55fr) minmax(0,1fr)}
@@ -371,3 +350,25 @@
 .poker-playing .result-banner+.decision-heading{display:none}
 .poker-playing .actions.finished-actions{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);min-height:52px}
 .poker-playing .finished-actions button{grid-column:auto;min-height:52px;padding:8px;font-size:14px}
+
+/* Keep SVG artwork inside its card even when the hand uses an automatic height. */
+.card-face{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
+.card.final-covered{touch-action:none;cursor:grab;overflow:visible;background:#fff;--peek-distance:0px;--peek-hidden:100%}
+.peek-face,.peek-cover{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden}
+.peek-face{clip-path:inset(0 0 var(--peek-hidden) 0);background:#fff}
+.peek-cover{padding:4px;background:#f2e9d1;transform:translateY(var(--peek-distance));box-shadow:0 2px 5px #0004;transition:transform .18s ease}
+.final-covered.is-peeking{cursor:grabbing;z-index:12}
+.is-peeking .peek-cover{transition:none}
+.final-covered .card-state{white-space:nowrap;left:0;right:0;text-align:center;font-size:10px}
+#cards-content .final-covered .card-state{font-size:11px}
+@media(prefers-reduced-motion:reduce){.peek-cover{transition:none}}
+
+/* Keep private cards overlapped on the left and public cards on the right. */
+.poker-playing .my-cards.split-hand{justify-content:space-between;gap:clamp(10px,3vw,18px)}
+.poker-playing .hand-group{display:flex;align-items:center;flex:0 1 auto;min-width:0;width:calc(var(--hand-card-width) * (1 + (var(--group-count) - 1) * var(--group-step,.34)));isolation:isolate}
+.poker-playing .hand-group .card+.card{margin-left:calc((100% - var(--group-count) * var(--hand-card-width)) / (var(--group-count) - 1))}
+.poker-playing .split-hand.has-public:not(.hand-finished) .private-cards{opacity:.5}
+.poker-playing .public-cards{justify-content:flex-end}
+.poker-playing .card.pending-public .card-state{color:#f3cb79}
+
+.poker-playing .choosing-public .private-cards{--group-step:.6}
