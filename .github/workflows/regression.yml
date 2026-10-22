@@ -167,6 +167,8 @@ jobs:
       - name: Install the test browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Check purchased coupon messages and recipient privacy
+        run: node --test tests/reward-coupon-ui.test.cjs
       - name: Check account, card, administrator and RPC regressions
         run: npm --prefix tests test
   recovery:

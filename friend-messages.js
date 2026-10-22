@@ -27,7 +27,10 @@
   function render(scroll=false){
    const before=history.scrollHeight,top=history.scrollTop,nearBottom=before-top-history.clientHeight<90;
    list.replaceChildren();
-   for(const m of items){const mine=m.sender_id===owner,row=el('li','fm-row'+(mine?' fm-own':''));row.dataset.messageId=m.id;row.append(el('span','fm-direction',mine?'보낸 쪽지':'받은 쪽지'),el('p','fm-body',m.body));const time=el('time','fm-time',date(m.created_at));time.dateTime=m.created_at;row.append(time);list.append(row);}
+   for(const m of items){const mine=m.sender_id===owner,row=el('li','fm-row'+(mine?' fm-own':''));row.dataset.messageId=m.id;row.append(el('span','fm-direction',mine?'보낸 쪽지':'받은 쪽지'),el('p','fm-body',m.body));
+    const gift=String(m.body||'').match(/(?:^|\n)기프티콘 확인: https:\/\/ojjuda\.kr\/gift\.html\?id=([0-9a-f-]{36})(?:\n|$)/i);
+    if(gift&&UUID.test(gift[1])){const link=el('a','btn','기프티콘 열기');link.href='/gift.html?id='+gift[1];link.target='_blank';link.rel='noopener noreferrer';row.append(link);}
+    const time=el('time','fm-time',date(m.created_at));time.dateTime=m.created_at;row.append(time);list.append(row);}
    if(!items.length)list.append(el('li','fm-empty','아직 주고받은 쪽지가 없어요.'));
    if(scroll||nearBottom)history.scrollTop=history.scrollHeight;else history.scrollTop=top+Math.max(0,history.scrollHeight-before);
   }
