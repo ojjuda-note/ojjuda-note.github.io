@@ -144,7 +144,9 @@
 .turn-meter{height:3px;overflow:hidden;margin:-4px 1px 10px;border-radius:3px;background:#d8bc8318}
 .turn-meter i{display:block;width:100%;height:100%;background:#ceaf77;transform:scaleX(var(--remaining,1));transform-origin:left;transition:transform .25s linear,background .3s}
 .turn-meter.urgent i{background:#df927e}
-.poker-playing .actions{--action-height:60px;--action-font:16px;--action-small:11px;display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-height:0}
+.decision-panel:not(.my-turn) .turn-meter{visibility:hidden}
+.poker-playing .actions{--action-height:60px;--action-gap:9px;--action-rows:2;--action-font:16px;--action-small:11px;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--action-gap);min-height:0}
+.poker-playing .actions:not(.finished-actions){min-height:calc(var(--action-height)*var(--action-rows) + var(--action-gap)*(var(--action-rows) - 1))}
 .raise-options,.primary-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .poker-playing .actions button{transition:background .16s,border-color .16s,box-shadow .16s,translate .12s;min-width:0;font-variant-numeric:tabular-nums;letter-spacing:-.025em;border-radius:11px}
 .poker-playing .actions button:active:enabled{translate:0 2px;box-shadow:inset 0 2px 4px #0003}
@@ -160,12 +162,12 @@
 .poker-playing .actions .allin small{color:#e5bbb3}
 .poker-playing .actions .allin:hover:enabled{background:#884542;border-color:#e09b93}
 .poker-playing .actions button:disabled{opacity:.34;box-shadow:none;filter:saturate(.35)}
-.poker-playing .actions .wide{min-height:60px;font-size:16px;padding:14px 18px}
+.poker-playing .actions .wide{align-self:center;min-height:var(--action-height);font-size:16px;padding:14px 18px}
 .poker-playing .actions .wide small{font-size:11px;font-weight:550}
 .poker-playing .actions.is-pending{position:relative}
 .poker-playing .actions.is-pending:after{content:"";position:absolute;width:20px;height:20px;left:calc(50% - 10px);top:calc(50% - 10px);border:2px solid #ebd19d33;border-top-color:#ebd19d;border-radius:50%;animation:club-spin .7s linear infinite;pointer-events:none}
 @keyframes club-spin{to{rotate:360deg}}
-.poker-playing .waiting{min-height:113px;border:1px solid #a7c4ac14;background:#c4d7c403;border-radius:12px;color:#9db3a5;font-size:13px;gap:12px;letter-spacing:-.02em}
+.poker-playing .waiting{min-height:100%;border:1px solid #a7c4ac14;background:#c4d7c403;border-radius:12px;color:#9db3a5;font-size:13px;gap:12px;letter-spacing:-.02em}
 .poker-playing .thinking i{background:#bba775;width:4px;height:4px}
 .poker-playing .table-footer{max-width:1000px;min-height:28px;padding:1px 6px;color:#799081;border-top:1px solid #cad4be0c}
 .poker-playing .table-footer>span{color:#718679;font-size:9px}
@@ -206,10 +208,9 @@
  .poker-playing .seat-north .seat-action{align-self:start}
  .poker-playing .down-cards{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:0}
  .poker-playing .seat-cards .up-cards{position:relative;z-index:1}
- .poker-playing .actions{--action-height:66px;grid-template-columns:1fr 1fr;gap:9px}
+ .poker-playing .actions{--action-height:66px;--action-rows:1;grid-template-columns:1fr 1fr}
  .poker-playing .actions:has(>.wide),.poker-playing .actions:has(>.waiting){grid-template-columns:1fr}
  .poker-playing .actions.finished-actions{grid-template-columns:1.5fr 1fr}
- .poker-playing .waiting{min-height:66px}
  .poker-playing .up-cards .card{width:64px;height:89.6px}
  .poker-playing .result-banner{min-height:62px;margin-bottom:8px;padding:9px 13px}
  .poker-playing .finished-actions button{min-height:54px}
@@ -271,9 +272,9 @@
  .poker-playing .decision-heading{min-height:37px;margin-bottom:9px;gap:6px}
  .poker-playing .status{font-size:13px;line-height:1.4}
  .decision-detail{font-size:10px;margin-top:4px}
- .poker-playing .actions,.raise-options,.primary-actions{gap:7px}
- .poker-playing .actions{--action-height:54px}
- .poker-playing .waiting{min-height:110px;font-size:12px}
+ .raise-options,.primary-actions{gap:7px}
+ .poker-playing .actions{--action-height:54px;--action-gap:7px}
+ .poker-playing .waiting{font-size:12px}
  .poker-playing .table-footer{padding:0 3px;min-height:25px}
  .poker-playing .recent summary{min-height:25px;padding:4px 0}
  .poker-playing .table-footer>span{font-size:8px}
@@ -324,7 +325,6 @@
  .poker-playing .decision-heading{min-height:26px;margin-bottom:7px}
  .decision-detail{display:none}
  .poker-playing .actions{--action-height:48px;--action-font:15px;--action-small:10px}
- .poker-playing .waiting{min-height:100px}
 }
 @media(max-width:600px) and (max-height:620px){
  .poker-playing{--hand-card-width:clamp(62px,20.5vw,94px)}
@@ -346,7 +346,6 @@
  .poker-playing .actions{--action-height:44px;--action-font:14px}
  .poker-playing .status{font-size:12px}
  .poker-playing .table-footer{display:none}
- .poker-playing .waiting{min-height:93px}
  .turn-meter{margin-bottom:7px}
  .poker-playing .result-banner{min-height:51px;padding:8px}
  .poker-playing .result-copy b{font-size:15px}
@@ -389,8 +388,8 @@
  .poker-playing .status{font-size:13px}
  .decision-detail{font-size:10px}
  .raise-options,.primary-actions{gap:5px}
- .poker-playing .actions{--action-height:58px;--action-font:15px;--action-small:10px}
- .poker-playing .waiting{min-height:124px;font-size:11px}
+ .poker-playing .actions{--action-height:58px;--action-gap:5px;--action-font:15px;--action-small:10px}
+ .poker-playing .waiting{font-size:11px}
  .poker-playing .table-footer{min-height:23px}
  .poker-playing .recent summary{min-height:23px;padding:3px 0}
  .poker-playing .result-banner{padding:10px;flex-wrap:wrap;gap:7px;min-height:65px}

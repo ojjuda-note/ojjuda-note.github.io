@@ -112,7 +112,7 @@ const menu = world.slice(world.indexOf('function Df(){'), world.indexOf('functio
 const {runInNewContext} = require('node:vm');
 const markup = runInNewContext(menu + ';Df()', {
   g:{place:{id:'arcade', npcs:[]}}, Pt:{arcade:{chat:true,arcade:true}}, _r:{},
-  worldMatgoButton:()=>'', worldPokerButton:()=>'', w:value=>String(value??''), window:{}, Mf:()=>''
+  worldMatgoButton:()=>'', worldPokerButton:()=>'', worldPlacePresenceText:()=>'', w:value=>String(value??''), window:{}, Mf:()=>''
 });
 const hub = new JSDOM(markup);
 assert.equal(hub.window.document.querySelectorAll('[data-arcade-games=multi] [data-v=tour]').length, 1);

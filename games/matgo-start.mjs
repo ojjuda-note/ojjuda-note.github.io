@@ -1,12 +1,9 @@
-// A newly navigated game has no audio gesture yet, even after a lobby click.
-// The solo game's capture listeners unlock its existing sound bank on this click.
+// Re-entry always starts at the game entrance, including muted devices.
+// The same explicit click also unlocks audio when sound is enabled.
 let firstStart=null;
 export function waitForMatgoStart(){
   if(firstStart)return firstStart;
   if(document.documentElement.dataset.viewportPage!=='matgo-solo')return Promise.resolve();
-  let muted=false;
-  try{muted=localStorage.getItem('ojjuda-matgo-sound')==='off';}catch{}
-  if(muted||!(window.AudioContext||window.webkitAudioContext))return firstStart=Promise.resolve();
   firstStart=new Promise(resolve=>{
     const panel=document.createElement('div');
     panel.className='modal';panel.id='matgo-start';panel.setAttribute('role','dialog');

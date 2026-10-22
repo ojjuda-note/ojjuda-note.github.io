@@ -18,7 +18,7 @@ export function pollDelay(room,{hidden=false,now=Date.now(),failures=0}={}){
  }
  return 1200;
 }
-export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()=>{},onWallet=()=>{}}={}){
+export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()=>{},onWallet=()=>{},isPaused=()=>false}={}){
  let room=null,closed=false,pollTimer=null,busy=false,reading=false,readTask=null,retry=null,walletKey='',failures=0;
  const pending=new Map();
  function rpc(body){
@@ -40,13 +40,13 @@ export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()
   if(next)next.receivedAt=Date.now();room=next;if(changed)onRoom(room);onConnection('');
  }
  function acceptData(data){let changed=false;if(data.wallet){const key=JSON.stringify(data.wallet);changed=!!walletKey&&key!==walletKey;walletKey=key;onWallet(data.wallet);}if(Object.hasOwn(data,'room'))accept(data.room,changed);}
- function schedule(){clearTimeout(pollTimer);if(!closed&&room)pollTimer=setTimeout(read,pollDelay(room,{hidden:document.hidden,failures}));}
+ function schedule(){clearTimeout(pollTimer);if(!closed&&room&&!isPaused())pollTimer=setTimeout(read,pollDelay(room,{hidden:document.hidden,failures}));}
  async function read(){
-  if(closed||reading||busy||!room){schedule();return;}
+  if(closed||reading||busy||!room||isPaused()){schedule();return;}
   reading=true;
   readTask=(async()=>{
-   try{const data=await rpc({action:'read',room_id:room.id});failures=0;acceptData(data);}
-   catch(error){failures++;onConnection(error.message);if(['room_not_found','room_unavailable','adult_required','not_signed_in'].includes(error.code)){accept(null);onError(error.message);}}
+   try{const data=await rpc({action:'read',room_id:room.id});if(closed)return;failures=0;acceptData(data);}
+   catch(error){if(closed)return;failures++;onConnection(error.message);if(['room_not_found','room_unavailable','adult_required','not_signed_in'].includes(error.code)){accept(null);onError(error.message);}}
    finally{reading=false;schedule();}
   })();
   await readTask;

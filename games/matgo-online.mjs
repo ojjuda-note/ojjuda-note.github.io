@@ -2,7 +2,7 @@ import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=2026101
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
 import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=20261014-pi-audit1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
-import {createWallet} from './matgo-wallet.mjs?v=20261015-basic1';
+import {createWallet} from './matgo-wallet.mjs?v=20261022-entry2';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261022-agit1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
@@ -14,7 +14,7 @@ const number=v=>Number(v||0).toLocaleString(),signed=v=>(v>=0?'+':'')+number(v);
 const messages={client_update_required:'맞고가 업데이트됐어요. 새로고침한 뒤 다시 시작해 주세요.',stake_offer_pending:'판돈 선택을 확인한 뒤 다시 시작해 주세요.',adult_required:'맞고는 만 19세 이상만 이용할 수 있어요.',member_identity_required:'생년월일을 등록한 뒤 입장해 주세요.',not_signed_in:'다시 로그인해 주세요.',banned:'이용이 제한된 계정이에요.',gold_empty:'골드를 충전한 뒤 시작해 주세요.',room_not_found:'방 코드를 다시 확인해 주세요.',room_unavailable:'이미 시작하거나 종료된 방이에요.',match_in_progress:'진행 중인 대결을 먼저 마쳐 주세요.',state_conflict:'차례가 바뀌었어요. 현재 판을 다시 확인할게요.',not_your_turn:'상대 차례이거나 자동 진행 중이에요.'};
 let wallet,room=null,cursor=0,busy=false,polling=false,closed=false,pendingMove=null,viewKey='',promptKey='',pollTimer,accessTimer,token=null,clockOffset=0;
 let dialog=null,dialogKey='',eventTimer,eventQueue=[],showingEvent=false;
-let friendInviteId=null;
+let friendInviteId=null,savedRoomId=null;
 let arcadeRoom=null,publicLobby=false,animating=false,presentationVersion=0;
 let floorSlotRound='';const floorSlotByCard=new Map();
 const sound=createOnlineSound();
@@ -114,7 +114,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261022-agit1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261022-entry2&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -171,6 +171,23 @@ function showLobby(){
   arcadeRoom=null;roomLabel();
   $('#gukjin').hidden=true;viewKey='lobby';room=null;cursor=0;promptKey='';pendingMove=null;closeDialog();clearEvents();
   $('#content').innerHTML=`<section class="lobby game-entry" data-entry-key="matgo"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실</span><h2 class="ge-title">맞고</h2><p class="ge-copy">같은 달의 패를 모아 한 판 즐겨보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div><section data-entry-panel="computer"><button id="solo" class="btn gold ge-primary">시작하기</button></section><section data-entry-panel="opponent" hidden><button id="invite-friend" class="btn gold ge-primary">친구 초대</button><button id="quick" class="btn ge-secondary">빠른 대결</button><form id="public-room-form"><label for="public-room-title">방 제목</label><input id="public-room-title" maxlength="40" required value="맞고 같이 한 판 해요" autocomplete="off"><button id="create" class="btn ge-secondary" type="submit">방 만들기</button><p id="public-room-error" role="status"></p><p class="fine">만든 방은 오락실 대전방에 표시돼요.</p></form><details class="ge-more"><summary>방번호로 입장</summary><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" required><button class="btn" id="join">입장</button></form></details></section><span class="ge-hint">기본 점당 100G · 만 19세 이상</span><details class="ge-more"><summary>게임 방법 · 판돈 안내</summary><p>판돈은 혼자하기와 같고, 두 사람 중 낮은 금액을 적용해요.<br>차례마다 15초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></details></section>`;
+  if(savedRoomId){
+    const resume=document.createElement('section');resume.className='ge-resume';
+    resume.innerHTML='<p class="ge-copy">참여 중인 대전이 있어요.</p><button type="button" class="btn gold ge-primary" id="resume-room">하던 대전 이어하기</button><p class="ge-hint">온라인 대전의 차례 시간은 계속 흘러가요.</p>';
+    $('.ge-play-modes').before(resume);
+    $('#resume-room').onclick=async()=>{
+      if(busy||closed||!savedRoomId)return;
+      busy=true;const button=$('#resume-room');button.disabled=true;
+      try{
+        const id=savedRoomId;
+        if(typeof access.getClient().rpc==='function'){try{const listed=await arcadeRpc('list');if(listed.mine?.match_id===id)arcadeRoom=listed.mine;}catch{}}
+        await accept((await rpc({action:'online_read',room_id:id})).room);savedRoomId=null;roomLabel();
+      }catch(error){
+        if(['room_not_found','room_unavailable'].includes(error.code)){savedRoomId=null;showLobby();}
+        toast(error.message);
+      }finally{busy=false;if(button.isConnected)button.disabled=false;updateEnabled();}
+    };
+  }
   $('#invite-friend').onclick=()=>{
     let invites;try{invites=parent!==window?parent.OjjudaFriendInvites:null;}catch{}
     if(!invites?.available()){toast('친구 초대는 로그인한 오쭈다 아지트에서 이용해 주세요.');return;}
@@ -180,7 +197,7 @@ function showLobby(){
   const input=$('#room-code');input.setAttribute('aria-label','방번호 또는 초대 코드');input.placeholder='방번호 또는 초대 코드';input.maxLength=16;input.removeAttribute('pattern');
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261022-agit1&open='+Date.now());};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261022-entry2&open='+Date.now());};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -301,7 +318,7 @@ function requestExit(close=true){
   if(room?.status==='active'&&!room.departed[room.seat])modal('<h2>대결에서 나갈까요?</h2><p>PC가 내 자리를 이어서 쳐요.<br>중간에 나가면 이겨도 골드를 받지 못해요.<br>패배 금액은 판이 끝난 뒤 정산돼요.</p><div class="row"><button id="stay" class="btn gold">계속하기</button><button id="leave" class="btn ghost">나가기</button></div>',{stay:()=>{promptKey='';renderRoom();},leave:()=>leave(close)});
   else void leave(close);
 }
-async function lobby(){const state=await wallet.status();setGold(state.gold);showLobby();}
+async function lobby(){const state=await wallet.status();savedRoomId=state.online_room||null;setGold(state.gold);showLobby();}
 async function refill(){
   if(room?.status==='active'||room?.status==='waiting'){toast('대결을 마친 뒤 충전할 수 있어요.');return;}
   try{
@@ -323,6 +340,7 @@ $('#retry').onclick=()=>location.reload();
 try{
   if(!access)throw Error('맞고를 불러오지 못했어요. 새로고침해 주세요.');
   await access.check();wallet=createWallet(access,{stakes:true});const state=await wallet.status();
+  savedRoomId=state.online_room||null;
   $('#gate').hidden=true;$('#app').hidden=false;setGold(state.gold);showLobby();
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#sound').onclick=()=>sound.toggle();$('#sound-start').onclick=()=>sound.preview();
@@ -349,7 +367,7 @@ try{
   const joinNumber=entryParams.get('join_room');
   if(/^[0-9]{4,16}$/.test(joinNumber||''))await joinPublicRoom(joinNumber);
   const requested=entryParams.get('room_id');
-  const resume=joinNumber||friendCode?null:(/^[0-9a-f-]{36}$/i.test(requested||'')?requested:state.online_room);
+  const resume=joinNumber||friendCode?null:(/^[0-9a-f-]{36}$/i.test(requested||'')?requested:null);
   if(resume){try{
     if(typeof access.getClient().rpc==='function'){try{const listed=await arcadeRpc('list');if(listed.mine?.match_id===resume)arcadeRoom=listed.mine;}catch{}}
     await accept((await rpc({action:'online_read',room_id:resume})).room);roomLabel();

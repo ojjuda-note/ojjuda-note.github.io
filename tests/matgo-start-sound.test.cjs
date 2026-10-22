@@ -36,6 +36,8 @@ const root=path.join(__dirname,'..');
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
    await page.goto('https://fixture.test/games/matgo.html');
    if(mode==='muted'){
+    await page.locator('#matgo-start-play').waitFor();assert.equal(starts,0,'muted re-entry still waits at the entrance');
+    await page.locator('#matgo-start-play').tap();
     await page.waitForSelector('#handMe');assert.equal(await page.locator('#matgo-start').count(),0);
     assert.equal(await page.evaluate(()=>audioStarts.length),0,'saved mute preference remains silent');
    }else{
