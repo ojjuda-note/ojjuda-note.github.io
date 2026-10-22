@@ -93,8 +93,14 @@ function chipStack(amount=500,{mini=false}={}){
   return `<span class="chip-stacks${mini?' mini':''}" aria-hidden="true">${Array.from({length:count},(_,i)=>`<span class="chip-stack ${['jade','ivory','burgundy','gold'][i]}" style="--stack:${i}">${Array.from({length:mini?2:3+(i+Math.floor(amount/100))%4},(_,j)=>`<i class="chip" style="--layer:${j}"><span>${['50','100','500','1K'][i]}</span></i>`).join('')}</span>`).join('')}</span>`;
 }
 function dealer(index){return game.dealer===index?'<span class="dealer" title="이번 판 딜러" aria-label="딜러">D</span>':'';}
+function canRefill(){return !!wallet&&!wallet.locked&&wallet.gold<1000;}
+function walletView(){
+  const refill=canRefill(),amount=wallet?fmt(wallet.gold):'…';
+  const content=`<small>${refill?'골드 충전 +':'보유 골드'}</small><b>${amount}<span>G</span></b>`;
+  return refill?`<button type="button" class="wallet wallet-refill" data-action="refill" aria-label="보유 골드 ${amount} G · 충전하기" ${online?.busy?'disabled':''}>${content}</button>`:`<div class="wallet">${content}</div>`;
+}
 function header(){
-  return `<header class="app-header"><button class="table-back small-button" data-action="exit" aria-label="게임 목록으로 돌아가기">← <span>목록</span></button><div class="title"><img class="logo" src="/favicon.svg" alt="오쭈다"><span>세븐포커<small>OJJUDA · POKER CLUB</small></span></div><div class="header-tools"><button class="small-button" data-action="sound" aria-label="음성·효과음 설정" aria-haspopup="dialog"><svg class="sound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4m12-1c2 2 2 6 0 8m3-11c4 4 4 10 0 14"/></svg>${sfx.settings().enabled&&sfx.settings().volume?'소리 켬':'소리 끔'}</button><button class="small-button" data-action="help">족보</button><div class="wallet"><small>보유 골드</small><b>${wallet?fmt(wallet.gold):'…'}<span>G</span></b></div></div></header>${saveFailed?'<div class="save-warning" role="alert">이 기기에 저장하지 못했어요. 창을 닫으면 진행 내용이 사라질 수 있어요.</div>':''}`;
+  return `<header class="app-header"><button class="table-back small-button" data-action="exit" aria-label="게임 목록으로 돌아가기">← <span>목록</span></button><div class="title"><img class="logo" src="/favicon.svg" alt="오쭈다"><span>세븐포커<small>OJJUDA · POKER CLUB</small></span></div><div class="header-tools"><button class="small-button" data-action="sound" aria-label="음성·효과음 설정" aria-haspopup="dialog"><svg class="sound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4m12-1c2 2 2 6 0 8m3-11c4 4 4 10 0 14"/></svg>${sfx.settings().enabled&&sfx.settings().volume?'소리 켬':'소리 끔'}</button><button class="small-button" data-action="help">족보</button>${walletView()}</div></header>${saveFailed?'<div class="save-warning" role="alert">이 기기에 저장하지 못했어요. 창을 닫으면 진행 내용이 사라질 수 있어요.</div>':''}`;
 }
 function entryCard(content,{waiting=false}={}){
   return `<section class="poker-entry-shell"><div class="game-entry poker-entry" aria-labelledby="poker-title">
@@ -114,7 +120,7 @@ function renderLobby(){
   app.innerHTML=entryCard(`<div class="poker-solo-setup"><span class="ge-label" id="difficulty-label">컴퓨터 난이도</span><div class="seg" role="group" aria-labelledby="difficulty-label">${[['easy','편하게'],['normal','보통']].map(([id,label])=>`<button type="button" data-difficulty="${id}" class="${record.difficulty===id?'on':''}" aria-pressed="${record.difficulty===id}" ${canResume?'disabled':''}>${label}</button>`).join('')}</div><button class="ge-primary" type="button" data-action="${canResume?'resume':'start'}" ${(!wallet||record.bank<50)&&!canResume?'disabled':''}>${canResume?'하던 게임 이어서 하기':'혼자 시작하기'}</button><span class="ge-hint">나 1명 + 컴퓨터 3명</span></div>`);
 }
 function refillButton(){
- if(!wallet||wallet.locked||wallet.available>=1000)return '';
+ if(!canRefill())return '';
  return `<button class="refill" data-action="refill" ${online?.busy?'disabled':''}>5,000 G 충전 · ${wallet.free_left?`무료 (남은 ${wallet.free_left}회)`:'5쭈'}</button>`;
 }
 function acceptWallet(next){wallet=next;record.bank=next.gold;record.rounds=next.rounds;record.wins=next.wins;}
@@ -383,7 +389,7 @@ document.addEventListener('click',async event=>{
   if(action==='lobby'){lobby=true;render();return;}
   if(action==='start'||action==='next'){start();return;}
   if(action==='refill'){
-    if(!wallet||wallet.locked||wallet.available>=1000)return;
+    if(!canRefill())return;
     if(wallet.free_left){await online.refill(false);render({animateDeal:false});}
     else {document.querySelector('#refill-message').textContent='';document.querySelector('#refill-dialog').showModal();}
     return;

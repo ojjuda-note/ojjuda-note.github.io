@@ -236,10 +236,28 @@ dialog h3{font-size:13px;margin-top:25px;color:#dac79a}
 dialog p{font-size:12px;line-height:1.9;color:#b0c0a8}
 .rules-actions{display:grid;grid-template-columns:1fr 1fr;gap:0 15px;padding:10px 14px;background:#060f0959;border:1px solid var(--line);border-radius:7px}
 .rules-actions p{font-size:11px;margin:5px 0}.rules-actions b{display:block;color:#d3d9c3;font-weight:600}
-.rank-list{padding-left:21px;margin:15px 0;color:#c3a568;font-size:12px}
-.rank-list li{padding:9px 0 9px 3px;border-bottom:1px solid var(--line)}
-.rank-list b{display:block;color:#d3d9c3;font-weight:500;font-size:12px}
-.rank-list span{display:block;color:#7e9575;margin-top:5px;font-size:10px}
+#help{width:calc(100% - 16px);max-width:600px;padding:0;max-height:calc(100dvh - 16px)}
+#help>header{position:sticky;top:0;z-index:2;margin:0;padding:14px 18px;background:#172c21;border-bottom:1px solid var(--line)}
+#help>header button{width:42px;height:42px;min-height:42px;flex:none}
+.help-body{padding:0 18px 20px}
+#help .rank-intro{margin:18px 0;color:#aebfb0;font-size:12px;line-height:1.8}
+#help .rank-intro b{display:block;color:#efdfba;font-size:15px;margin-bottom:4px}
+.rank-list{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.rank-list li{padding:14px;border:1px solid #b3c4a923;border-radius:12px;background:#0b20184d}
+.rank-heading{display:flex;gap:10px;align-items:flex-start;margin-bottom:13px}
+.rank-number{display:grid;place-items:center;flex:none;width:28px;height:28px;border:1px solid #d8bc8340;border-radius:50%;color:#dec28d;font-size:11px;font-variant-numeric:tabular-nums}
+#help .rank-heading h3{margin:1px 0 4px;color:#f0e3c9;font-size:15px;font-weight:650;line-height:1.4;word-break:keep-all}
+#help .rank-heading p{margin:0;color:#adbdaf;font-size:11px;line-height:1.6;word-break:keep-all}
+.rank-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;width:100%;max-width:328px;margin:auto}
+.rank-card{display:block;width:100%;height:auto;aspect-ratio:5/7;border-radius:4px;outline:2px solid transparent;outline-offset:1px;box-shadow:0 3px 8px #0004;opacity:.7}
+.rank-card.rank-key{outline-color:#d8bc83;opacity:1}
+.rank-tiebreak{padding:0 3px 12px}
+#help .rank-tiebreak h3{margin:24px 0 8px;font-size:14px;color:#e2c996}
+#help .rank-tiebreak p{margin:8px 0;font-size:12px}
+.help-rules{border-top:1px solid var(--line);padding:3px 0}
+.help-rules>summary{cursor:pointer;padding:14px 3px;font-size:13px;color:#d5ddce;min-height:44px}
+.help-rules[open]>summary{color:#edcf91}
+@media(max-width:360px){.help-body{padding:0 12px 16px}.rank-list li{padding:12px}.rank-cards{gap:5px}#help .rank-heading h3{font-size:14px}}
 #cards-content{display:flex;flex-wrap:wrap;justify-content:center;gap:13px 9px;padding-top:12px}
 #cards-content .card{width:70px;height:98px;margin-bottom:21px;box-shadow:0 5px 10px #0005}
 #cards-content .muted{flex-basis:100%;text-align:center;font-size:11px;margin-top:2px}

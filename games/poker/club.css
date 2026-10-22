@@ -13,6 +13,9 @@
 .poker-playing .wallet small{color:#8da598;font-size:9px;letter-spacing:.03em;margin-bottom:3px}
 .poker-playing .wallet b{color:#ecd5a9;font-size:21px;font-weight:650;letter-spacing:-.02em}
 .poker-playing .wallet b span{color:#a69572;font-size:10px}
+.poker-playing .wallet-refill{display:block;min-height:44px;padding-top:3px;padding-right:6px;padding-bottom:3px;border-top:0;border-right:0;border-bottom:0;border-radius:8px;background:#dcc18a0d;box-shadow:none;text-align:right}
+.poker-playing .wallet-refill>small{color:#ebcb8d;font-weight:650}
+.poker-playing .wallet-refill:hover:enabled{background:#dcc18a22}
 .poker-playing .game{max-width:1160px;padding-right:18px;padding-left:18px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
 .poker-playing .round-strip{min-height:62px;padding:10px 4px 12px;gap:24px;align-items:center}
 .poker-playing .table-id{display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:0;color:#b6cabe;white-space:nowrap}
@@ -136,6 +139,7 @@
 .poker-playing .result-breakdown>div{display:flex;flex-wrap:wrap;gap:4px 8px}
 .poker-playing .result-breakdown dd{margin:0;color:#e1e5d7}
 .poker-playing .actions.finished-actions{grid-template-columns:1.45fr 1fr;gap:10px}
+.poker-playing .actions.finished-actions>.refill{grid-column:1/-1;order:-1;max-width:none;margin:0;min-height:46px;padding:12px;border:1px solid #d8bc8380;color:#f2d59b;background:#333b26;font-size:13px}
 .poker-playing .finished-actions .small-button{border:1px solid #c7cdb329;color:#b2c3b5;background:#17261c}
 .poker-playing dialog{border:1px solid #b7c09d35;border-radius:18px;background:linear-gradient(145deg,#1a3024,#112219);box-shadow:0 24px 70px #0008}
 .poker-playing dialog::backdrop{background:#030e0acc;backdrop-filter:blur(5px)}

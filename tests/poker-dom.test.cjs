@@ -4,7 +4,24 @@ const root=path.join(__dirname,'..');
 (async()=>{
  // Settle real side pots, then render the server-shaped snapshot through the normal bridge.
  // A side-pot payout can be smaller than the player's total contribution.
- const {SevenPoker}=await import('../games/poker/engine.mjs');
+ const {SevenPoker,evaluateFive,compare}=await import('../games/poker/engine.mjs');
+ const guide=new JSDOM(fs.readFileSync(path.join(root,'games/poker/index.html'),'utf8'));
+ try{
+  const rows=[...guide.window.document.querySelectorAll('.rank-list li')];assert.equal(rows.length,13);
+  let previous=null;
+  for(const row of rows){
+   const images=[...row.querySelectorAll('.rank-card')];assert.equal(images.length,5);
+   const cards=images.map(image=>{
+    const src=image.getAttribute('src');assert.ok(fs.existsSync(path.join(root,'games/poker',src)),src);
+    const [,suit,face]=src.match(/\/([CHDS])-(\d+|[JQKA])\.svg$/);
+    return 'CHDS'.indexOf(suit)*13+({J:11,Q:12,K:13,A:14}[face]||Number(face))-2;
+   });
+   assert.equal(new Set(cards).size,5);const hand=evaluateFive(cards);
+   assert.equal(hand.name,row.querySelector('h3').textContent,'every pictured example must match the actual game rules');
+   if(previous)assert.ok(compare(previous,hand.score)>0,'pictured ranks descend in game strength');
+   previous=hand.score;
+  }
+ }finally{guide.window.close();}
  for(const scenario of [
   {totals:[1001,50,510,1001],title:'일부 판돈 획득',received:982,net:-19},
   {totals:[1500,50,510,1500],title:'일부 판돈 획득',received:1980,net:480},
@@ -110,8 +127,10 @@ const root=path.join(__dirname,'..');
   assert.deepEqual([...spokenSeats()].sort(),[0,1,2,3],'the real solo flow identifies me and all three computers');
   resumed.click('[data-action=online-leave]');resumed.click('#confirm-exit');await until(()=>resumed.last.room===null,'solo leave settlement');
   assert.equal(resumed.last.wallet.locked,false);
-  await f.db.query('update ojjuda_poker_internal.wallets set gold=800 where user_id=$1',[A]);
-  const refill=await screen(f,A);screens.push(refill);refill.click('[data-action=refill]');await until(()=>refill.last.wallet.free_left===1,'first free refill');assert.equal(refill.last.wallet.gold,5800);assert.equal(refill.find('[data-action=refill]'),null);
+  await f.db.query('update ojjuda_poker_internal.wallets set gold=1000 where user_id=$1',[A]);
+  const threshold=await screen(f,A);screens.push(threshold);assert.equal(threshold.find('[data-action=refill]'),null,'exactly 1,000 G cannot refill');
+  await f.db.query('update ojjuda_poker_internal.wallets set gold=999 where user_id=$1',[A]);
+  const refill=await screen(f,A);screens.push(refill);refill.click('[data-action=refill]');await until(()=>refill.last.wallet.free_left===1,'first free refill');assert.equal(refill.last.wallet.gold,5999);assert.equal(refill.find('[data-action=refill]'),null);
   await f.db.query('update ojjuda_poker_internal.wallets set gold=800,free_used=2 where user_id=$1',[A]);
   const paid=await screen(f,A);screens.push(paid);paid.click('[data-action=refill]');assert.equal(paid.find('#refill-dialog').open,true);assert.match(paid.find('#refill-dialog').textContent,/5쭈/);
   assert.equal(paid.requests.some(x=>x.action==='refill'),false,'opening paid confirmation cannot debit coins');

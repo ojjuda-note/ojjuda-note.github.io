@@ -11,9 +11,12 @@ const {fixture}=require('./poker-online-fixture.cjs');
   assert.equal((await call(MINOR,{action:'status'})).error,'adult_required');
   let w=await status(A);assert.equal(w.gold,5000);assert.equal(w.free_left,2);assert.equal(w.coins,20);
   assert.equal((await refill(A,false)).error,'gold_not_empty');
-  for(const left of [1,0]){
-   await low(A);const id=crypto.randomUUID(),r=await refill(A,false,id);assert.equal(r.status,200,JSON.stringify(r));assert.equal(r.wallet.gold,5900);assert.equal(r.wallet.free_left,left);assert.equal(r.wallet.coins,20);
-   const duplicate=await refill(A,false,id);assert.equal(duplicate.wallet.duplicate,true);assert.equal(duplicate.wallet.gold,5900);assert.equal(duplicate.wallet.free_left,left);
+  await db.query('update ojjuda_poker_internal.wallets set gold=1000 where user_id=$1',[A]);
+  assert.equal((await refill(A,false)).error,'gold_not_empty','1,000 G is outside the refill range');
+  for(const [gold,left] of [[999,1],[900,0]]){
+   await db.query('update ojjuda_poker_internal.wallets set gold=$2 where user_id=$1',[A,gold]);
+   const id=crypto.randomUUID(),r=await refill(A,false,id);assert.equal(r.status,200,JSON.stringify(r));assert.equal(r.wallet.gold,gold+5000);assert.equal(r.wallet.free_left,left);assert.equal(r.wallet.coins,20);
+   const duplicate=await refill(A,false,id);assert.equal(duplicate.wallet.duplicate,true);assert.equal(duplicate.wallet.gold,gold+5000);assert.equal(duplicate.wallet.free_left,left);
   }
   await low(A);assert.equal((await refill(A,false)).error,'paid_confirmation_required');
   w=await status(A);assert.equal(w.free_left,0);assert.equal(w.coins,20,'refused payment never debits ZU');
