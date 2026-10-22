@@ -972,5 +972,27 @@
         "count": 1
       }
     ]
+  },
+  {
+    "path": "tests/world-three-menus.test.cjs",
+    "before": "6408e5030baf0df8d8dd2a13ef17cac2ac1f824d3addac7225b8dd32bdc7c340",
+    "after": "996d547aff735766b05be64500036b700cd56d72edcbe0a5622bf08dc76d220b",
+    "edits": [
+      {
+        "old": "['cards','messages','photo-stages','risk','map','archive']",
+        "new": "['cards','messages','photo-stages','risk','map']",
+        "count": 1
+      },
+      {
+        "old": "t.adminState.area='content';t.adminState.tab='archive';t.adminState.archiveType='posts';",
+        "new": "t.adminState.area='trash';t.adminState.tab='trash-cards';",
+        "count": 1
+      },
+      {
+        "old": "t.adminMarkup().includes('world-note-admin'),'archive always uses retained park cards'",
+        "new": "t.adminMarkup().includes('world-admin-trash'),'deleted cards use the unified trash screen'",
+        "count": 1
+      }
+    ]
   }
 ]
