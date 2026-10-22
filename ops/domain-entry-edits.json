@@ -1,0 +1,92 @@
+[
+  {
+    "path": "world.html",
+    "before": "827a561f0de640de43fafe400c52b7eb3918f4ab845779a1a0e232e841f014dd",
+    "edits": [
+      {
+        "old": "async function om(t,e){em=t;$c=e;if(worldParkNotes?.requested&&new URL(location.href).searchParams.get(\"guest\")===\"1\"&&!ui){enterWorldGuest(t);return}if(!S){t();return}D.online=!0,xd(!1),yc(),S.auth.onAuthStateChange((a,i)=>{setTimeout(()=>{if(a===\"PASSWORD_RECOVERY\"){ui=!0,i&&i.user&&(D.user=i.user),Tr||nr(\"reset\");return}if(a===\"SIGNED_OUT\"){clearWorldAdminView();Tr&&!D.leaving&&location.reload();return}ui||i&&i.user&&!Tr&&!ga&&(!D.user||D.user.id!==i.user.id||!Tr)&&Un(i.user)},0)});let{data:o,error:r}=await S.auth.getSession();if(r){nr(\"login\");return}o&&o.session?ui?(D.user=o.session.user,nr(\"reset\")):await Un(o.session.user):!ga&&!Tr&&(worldParkNotes?.requested&&!ui?(enterWorldGuest(t)):nr(ui?\"forgot\":\"login\"))}",
+        "new": "function worldAccountEntry(){\n const url=new URL(location.href),hash=new URLSearchParams(url.hash.slice(1));\n const keys=[\"auth\",\"next\",\"reset\",\"code\",\"token\",\"token_hash\",\"type\",\"access_token\",\"refresh_token\",\"error\",\"error_code\",\"error_description\",\"admin\",\"notice\"];\n return ui||keys.some(key=>url.searchParams.has(key)||hash.has(key));\n}\nasync function om(t,e){em=t;$c=e;const browse=!worldAccountEntry();if(browse&&worldParkNotes?.requested&&new URL(location.href).searchParams.get(\"guest\")===\"1\"&&!ui){enterWorldGuest(t);return}if(!S){browse?enterWorldGuest(t):nr(ui?\"forgot\":\"login\");return}D.online=!0,xd(!1),yc(),S.auth.onAuthStateChange((a,i)=>{setTimeout(()=>{if(a===\"PASSWORD_RECOVERY\"){ui=!0,i&&i.user&&(D.user=i.user),Tr||nr(\"reset\");return}if(a===\"SIGNED_OUT\"){clearWorldAdminView();Tr&&!D.leaving&&location.reload();return}ui||i&&i.user&&!Tr&&!ga&&(!D.user||D.user.id!==i.user.id||!Tr)&&Un(i.user)},0)});let o,r;try{({data:o,error:r}=await S.auth.getSession())}catch(error){r=error}if(r){if(ga||Tr||D.user)return;browse&&!ui?enterWorldGuest(t):nr(ui?\"forgot\":\"login\");return}o&&o.session?ui?(D.user=o.session.user,nr(\"reset\")):await Un(o.session.user):!ga&&!Tr&&(browse&&!ui?(enterWorldGuest(t)):nr(ui?\"forgot\":\"login\"))}",
+        "count": 1
+      },
+      {
+        "old": "var Go=\"0.46.31-beta\"",
+        "new": "var Go=\"0.46.32-beta\"",
+        "count": 1
+      },
+      {
+        "old": "world-admin-loader.js?v=20261022-agit1",
+        "new": "world-admin-loader.js?v=20261022-entry1",
+        "count": 1
+      }
+    ],
+    "after": "b89fbe7a05b0f729d899982f1cd5ec75d02c1c97149fa283eb4652a1f94a3a73"
+  },
+  {
+    "path": "version.json",
+    "before": "6888c64c14530e3e689f8df767ce36130e6fd4a953d5d432f30586e435d8aecb",
+    "edits": [
+      {
+        "old": "0.46.31-beta",
+        "new": "0.46.32-beta",
+        "count": 1
+      }
+    ],
+    "after": "785bc5ea8c2fa5cf4261795f6aaf9c43340aa5bb7b5c3dab5d9282ef31be7e69"
+  },
+  {
+    "path": "admin/connections.js",
+    "before": "08076e92df3e6d17523cb2334f785c2c6c6c4065da395597e8a98cd33c53a8bb",
+    "edits": [
+      {
+        "old": "const VERIFIED = '2026-10-21'",
+        "new": "const VERIFIED = '2026-10-22'",
+        "count": 1
+      },
+      {
+        "old": "links: [['오쭈다', 'https://ojjuda.kr/'], ['공원', 'https://ojjuda.kr/world.html?place=park']",
+        "new": "links: [['오락실', 'https://ojjuda.kr/'], ['공원', 'https://ojjuda.com/']",
+        "count": 1
+      },
+      {
+        "old": "name: 'GitHub Pages · 사용 안내', importance: 'normal', tag: '안내 사이트'",
+        "new": "name: 'GitHub Pages · 공원 입구', importance: 'normal', tag: '공원 바로가기'",
+        "count": 1
+      },
+      {
+        "old": "data: '서비스 소개·사용법과 오쭈다 접속 안내'",
+        "new": "data: 'ojjuda.com으로 들어오면 같은 아지트의 공원으로 연결'",
+        "count": 1
+      },
+      {
+        "old": "note: '별도 GitHub 저장소에서 안내 페이지를 제공해요.', links: [['안내 사이트', 'https://ojjuda.com/'], ['안내 소스',",
+        "new": "note: '오락실은 ojjuda.kr, 공원은 ojjuda.com으로 들어와요. 회원 계정과 자료는 함께 사용해요.', links: [['공원', 'https://ojjuda.com/'], ['연결 소스',",
+        "count": 1
+      }
+    ],
+    "after": "b3d7ec183bc0f7ab04deccaf7d073dd76afd6d260ca0f14f42577235f7f4cbdd"
+  },
+  {
+    "path": "tests/package.json",
+    "before": "666e1e8401fc37df0274a0f490b276db237e45633f3c4edd89ef4e74e10fc160",
+    "edits": [
+      {
+        "old": "\"test:unit\": \"python3 trash-cleanup.test.py",
+        "new": "\"test:unit\": \"node world-first-visit.test.cjs && python3 trash-cleanup.test.py",
+        "count": 1
+      }
+    ],
+    "after": "f6abb799e9fac1c01890b8326990a99c7f343239cce005d744c766bfe83b9296"
+  },
+  {
+    "path": "world-admin-loader.js",
+    "before": "d5673a43d5eb3f71a31e2af4561cb47842332099f61d1326f1a2a0fe3cc617da",
+    "edits": [
+      {
+        "old": "/admin/connections.js?v=20261022-agit1",
+        "new": "/admin/connections.js?v=20261022-entry1",
+        "count": 1
+      }
+    ],
+    "after": "4ad31df8d6fc30f453e062333a762c6a381109c58fb90f23fcf7aa4a207364ab"
+  }
+]

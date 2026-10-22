@@ -1,0 +1,40 @@
+name: Verify domain entrances and first visits
+on:
+  push:
+    branches: [codex/domain-entry-20261022]
+    paths: ['ops/domain-entry-edits.json', 'ops/apply-domain-entry.py', 'tests/world-first-visit.test.cjs', '.github/workflows/verify-domain-entry.yml']
+permissions:
+  contents: write
+concurrency:
+  group: domain-entry-verification
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply checked entry changes
+        run: python ops/apply-domain-entry.py
+      - name: Install the pinned test dependencies
+        run: npm --prefix tests ci --ignore-scripts --no-audit --no-fund --fetch-timeout=45000 --fetch-retries=1
+      - name: Install browser for entry and signup checks
+        run: npx --prefix tests playwright install --with-deps chromium
+      - name: Verify first visits and account preservation
+        run: |
+          node tests/world-first-visit.test.cjs
+          node tests/inline-scripts.test.cjs
+          node tests/portal-auth-entry.test.cjs
+          node tests/world-three-menus.test.cjs
+          node --test --test-concurrency=1 --test-timeout=180000 --test-reporter=spec tests/guest-access-ui.test.cjs tests/ux-entry-ui.test.cjs
+          git diff --check
+      - name: Commit verified source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git commit -m 'Let first-time visitors browse while preserving member and account entry flows'
+          git push origin HEAD:codex/domain-entry-20261022
