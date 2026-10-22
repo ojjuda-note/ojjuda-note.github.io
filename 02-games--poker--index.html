@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f3f9">
+  <title>오쭈다 세븐포커</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="오쭈다 아지트">
+<meta property="og:url" content="https://ojjuda.kr/games/poker/index.html">
+<meta property="og:title" content="오쭈다 세븐포커">
+<meta property="og:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
+<meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="오쭈다 세븐포커">
+<meta name="twitter:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
+<meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
+<meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
+  <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=20261022-entry2">
+  <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
+  <link rel="stylesheet" href="entry.css?v=20261021-poker-entry1">
+  <link rel="stylesheet" href="table-layout.css?v=20261021-handmotion4">
+  <link rel="stylesheet" href="club.css?v=20261022-fit1">
+</head>
+<body class="poker-entry-active">
+  <main id="app"><section class="gate"><span class="brand">오쭈다 오락실</span><h1>세븐포커</h1><p role="status">게임을 준비하고 있어요.</p><a href="/world.html?game=poker">오락실에서 열기</a></section></main>
+  <dialog id="help" aria-labelledby="help-title">
+    <header><h2 id="help-title">포커 족보</h2><button data-close-dialog aria-label="닫기">×</button></header>
+    <div class="help-body">
+    <p class="rank-intro"><b>위에 있을수록 강한 패예요.</b>7장 중 가장 좋은 5장으로 승부해요.<br>금색 테두리는 족보를 만드는 카드예요.</p>
+    <ol class="rank-list" aria-label="강한 순서의 포커 족보">
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">01</span><div><h3>로열 스트레이트 플러시</h3><p>같은 무늬의 10 · J · Q · K · A. 가장 강해요.</p></div></div><div class="rank-cards" aria-label="로열 스트레이트 플러시 예시"><img class="rank-card rank-key" src="cards/H-10.svg" alt="하트 10" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-J.svg" alt="하트 J" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-Q.svg" alt="하트 Q" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-K.svg" alt="하트 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-A.svg" alt="하트 A" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">02</span><div><h3>백 스트레이트 플러시</h3><p>같은 무늬의 A · 2 · 3 · 4 · 5.</p></div></div><div class="rank-cards" aria-label="백 스트레이트 플러시 예시"><img class="rank-card rank-key" src="cards/C-A.svg" alt="클로버 A" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-2.svg" alt="클로버 2" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-3.svg" alt="클로버 3" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-4.svg" alt="클로버 4" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-5.svg" alt="클로버 5" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">03</span><div><h3>스트레이트 플러시</h3><p>같은 무늬이면서 숫자가 연속인 5장.</p></div></div><div class="rank-cards" aria-label="스트레이트 플러시 예시"><img class="rank-card rank-key" src="cards/S-5.svg" alt="스페이드 5" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-6.svg" alt="스페이드 6" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-7.svg" alt="스페이드 7" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-8.svg" alt="스페이드 8" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-9.svg" alt="스페이드 9" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">04</span><div><h3>포카드</h3><p>같은 숫자 4장. 남은 1장은 아무 카드나 돼요.</p></div></div><div class="rank-cards" aria-label="포카드 예시"><img class="rank-card rank-key" src="cards/S-9.svg" alt="스페이드 9" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/D-9.svg" alt="다이아몬드 9" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-9.svg" alt="하트 9" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-9.svg" alt="클로버 9" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/H-K.svg" alt="하트 K" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">05</span><div><h3>풀하우스</h3><p>같은 숫자 3장과 같은 숫자 2장.</p></div></div><div class="rank-cards" aria-label="풀하우스 예시"><img class="rank-card rank-key" src="cards/S-K.svg" alt="스페이드 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-K.svg" alt="하트 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-K.svg" alt="클로버 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/D-7.svg" alt="다이아몬드 7" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-7.svg" alt="클로버 7" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">06</span><div><h3>플러시</h3><p>숫자와 관계없이 같은 무늬 5장.</p></div></div><div class="rank-cards" aria-label="플러시 예시"><img class="rank-card rank-key" src="cards/H-2.svg" alt="하트 2" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-5.svg" alt="하트 5" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-8.svg" alt="하트 8" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-J.svg" alt="하트 J" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-K.svg" alt="하트 K" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">07</span><div><h3>마운틴</h3><p>무늬가 섞인 10 · J · Q · K · A.</p></div></div><div class="rank-cards" aria-label="마운틴 예시"><img class="rank-card rank-key" src="cards/C-10.svg" alt="클로버 10" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-J.svg" alt="스페이드 J" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/D-Q.svg" alt="다이아몬드 Q" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-K.svg" alt="클로버 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-A.svg" alt="하트 A" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">08</span><div><h3>백스트레이트</h3><p>무늬가 섞인 A · 2 · 3 · 4 · 5.</p></div></div><div class="rank-cards" aria-label="백스트레이트 예시"><img class="rank-card rank-key" src="cards/D-A.svg" alt="다이아몬드 A" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-2.svg" alt="스페이드 2" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-3.svg" alt="하트 3" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-4.svg" alt="클로버 4" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/D-5.svg" alt="다이아몬드 5" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">09</span><div><h3>스트레이트</h3><p>무늬가 섞이고 숫자가 연속인 5장.</p></div></div><div class="rank-cards" aria-label="스트레이트 예시"><img class="rank-card rank-key" src="cards/H-5.svg" alt="하트 5" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-6.svg" alt="클로버 6" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/D-7.svg" alt="다이아몬드 7" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/S-8.svg" alt="스페이드 8" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-9.svg" alt="하트 9" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">10</span><div><h3>트리플</h3><p>같은 숫자 3장.</p></div></div><div class="rank-cards" aria-label="트리플 예시"><img class="rank-card rank-key" src="cards/S-7.svg" alt="스페이드 7" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-7.svg" alt="하트 7" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-7.svg" alt="클로버 7" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/D-Q.svg" alt="다이아몬드 Q" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/H-3.svg" alt="하트 3" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">11</span><div><h3>투페어</h3><p>같은 숫자 2장씩, 서로 다른 두 쌍.</p></div></div><div class="rank-cards" aria-label="투페어 예시"><img class="rank-card rank-key" src="cards/S-K.svg" alt="스페이드 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-K.svg" alt="하트 K" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/D-4.svg" alt="다이아몬드 4" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/C-4.svg" alt="클로버 4" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/S-8.svg" alt="스페이드 8" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">12</span><div><h3>원페어</h3><p>같은 숫자 2장.</p></div></div><div class="rank-cards" aria-label="원페어 예시"><img class="rank-card rank-key" src="cards/S-J.svg" alt="스페이드 J" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card rank-key" src="cards/H-J.svg" alt="하트 J" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/D-9.svg" alt="다이아몬드 9" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/C-5.svg" alt="클로버 5" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/H-2.svg" alt="하트 2" width="60" height="84" loading="lazy" decoding="async"></div></li>
+      <li><div class="rank-heading"><span class="rank-number" aria-hidden="true">13</span><div><h3>하이카드</h3><p>위 족보가 없으면 가장 높은 카드로 비교해요.</p></div></div><div class="rank-cards" aria-label="하이카드 예시"><img class="rank-card rank-key" src="cards/H-A.svg" alt="하트 A" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/S-J.svg" alt="스페이드 J" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/D-9.svg" alt="다이아몬드 9" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/C-6.svg" alt="클로버 6" width="60" height="84" loading="lazy" decoding="async"><img class="rank-card" src="cards/H-3.svg" alt="하트 3" width="60" height="84" loading="lazy" decoding="async"></div></li>
+    </ol>
+    <div class="rank-tiebreak"><h3>같은 족보라면?</h3><p>먼저 족보를 이루는 숫자를 비교해요.<br>예: A 원페어가 K 원페어보다 강해요.</p><p>숫자까지 모두 같으면 이 테이블에서는<br><b>♠ &gt; ♦ &gt; ♥ &gt; ♣</b> 순서로 비교해요.</p></div>
+    <details class="help-rules"><summary>게임 진행 · 베팅 방법</summary>
+    <p>처음 받은 4장 중 1장을 버리고, 남은 3장 중 1장을 공개해요. 4·5·6번째 카드는 공개, 마지막 7번째 카드는 나만 볼 수 있어요.</p>
+    <p>4구부터 매번 베팅해요. 공개 패가 가장 높은 사람이 먼저 시작해요.</p>
+    <div class="rules-actions"><p><b>체크</b> 추가 베팅 없이 넘기기</p><p><b>콜</b> 앞사람이 건 금액 맞추기</p><p><b>삥 / 쿼터 / 하프</b> 최소 금액 / 콜한 뒤 판돈의 ¼ / ½ 추가</p><p><b>올인</b> 남은 골드 모두 걸기</p><p><b>다이</b> 이번 판 포기하기</p></div>
+    <p>한 번에 최대 3회까지 올릴 수 있어요. 부족한 골드로 올인하면 건 금액만큼만 승부에 참여해요.</p>
+    <p>멀티는 2~4명이 방 코드로 참여해요. 방장이 시작하고, 한 차례는 30초예요. 시간이 지나면 패는 자동 선택하고 베팅은 체크 또는 다이 처리해요. 모두 다음 판을 준비하면 다시 시작해요.</p>
+    </details>
+    <details class="help-rules"><summary>골드 충전 · 참여 안내</summary>
+    <p>만 19세 이상 회원 전용 게임이에요. 혼자 하기와 멀티는 같은 포커 골드를 사용해요.</p>
+    <p>처음에는 5,000 G로 시작하고, <b>보유 골드가 1,000 G 미만이면 5,000 G씩 충전</b>할 수 있어요. 진행 중인 판은 정산을 마친 뒤 충전해요.</p>
+    <p>계정당 처음 2회 충전은 무료, 이후에는 5쭈예요. 이번 달에 플레이한 회원의 보유 골드로 순위를 매겨요. 맞고 골드와는 별개이며 포커 골드는 환전할 수 없어요.</p>
+    </details>
+    </div>
+  </dialog>
+  <dialog id="sound-dialog" aria-labelledby="sound-title">
+    <header><h2 id="sound-title">음성·효과음</h2><button data-close-dialog aria-label="닫기">×</button></header>
+    <label class="sound-toggle"><span>음성·효과음 켜기</span><input id="sound-enabled" type="checkbox" checked></label>
+    <fieldset class="sound-voices" aria-describedby="voice-assignment"><legend>내 목소리</legend><div class="sound-voice-options">
+      <label><input type="radio" name="poker-voice" value="classic" checked><span><b>남성 1</b><small>Grady</small></span></label>
+      <label><input type="radio" name="poker-voice" value="calm"><span><b>남성 2</b><small>Holden</small></span></label>
+      <label><input type="radio" name="poker-voice" value="bright"><span><b>여성 1</b><small>Ainsley</small></span></label>
+      <label><input type="radio" name="poker-voice" value="korean"><span><b>한국어 여성</b><small>하나</small></span></label>
+    </div></fieldset>
+    <p id="voice-assignment" class="muted">상대는 남은 목소리를 하나씩 사용해요.</p>
+    <label class="sound-volume-label" for="sound-volume">음량 <output id="sound-volume-value" for="sound-volume">45%</output></label>
+    <input id="sound-volume" type="range" min="0" max="100" step="5" value="45">
+    <button data-action="sound-test">선택한 목소리 듣기</button>
+    <p class="muted sound-saved-hint">설정은 이 기기에 저장돼요.</p>
+  </dialog>
+  <dialog id="cards-dialog" aria-labelledby="cards-title"><header><h2 id="cards-title">공개된 카드</h2><button data-close-dialog aria-label="닫기">×</button></header><div id="cards-content"></div></dialog>
+  <dialog id="refill-dialog" aria-labelledby="refill-title"><header><h2 id="refill-title">포커 골드 충전</h2><button data-close-dialog aria-label="닫기">×</button></header><p>5쭈를 사용해 5,000골드를 충전할까요?</p><p id="refill-message" role="status"></p><div class="dialog-actions"><button data-close-dialog>취소</button><button class="primary" id="confirm-refill">5쭈로 충전</button></div></dialog>
+  <dialog id="exit-dialog" aria-labelledby="exit-title"><header><h2 id="exit-title">오락실로 돌아갈까요?</h2></header><p>진행 중인 판은 저장돼요. 다시 들어오면 이어서 할 수 있어요.</p><div class="dialog-actions"><button data-close-dialog>계속하기</button><button class="primary" id="confirm-exit">저장하고 나가기</button></div></dialog>
+  <script type="module" src="app.mjs?v=20261022-entry2"></script>
+</body>
+</html>
