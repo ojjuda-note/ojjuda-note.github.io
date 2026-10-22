@@ -1,0 +1,504 @@
+[
+  {
+    "path": "index.html",
+    "before": "b982cf13397fbbae3107aebade6eb8abfcf57f86f3e6fbb511dd945f34c33e39",
+    "after": "a308f8651985c1bcd833697e7f6f9afe782201858b4a86a522393d8c089e6ebb",
+    "edits": [
+      {
+        "old": "<meta property=\"og:type\" content=\"website\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:site_name\" content=\"오쭈다\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:url\" content=\"https://ojjuda.kr/\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:title\" content=\"오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 방을 꾸미고, 공원에서 이야기하고, 친구와 게임을 즐겨요. 일상이 모이는 오쭈다 아지트.\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit1\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta name=\"twitter:card\" content=\"summary\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/\">\n<meta property=\"og:title\" content=\"오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 나만의 우리집, 익명카드가 모이는 공원, 친구와 즐기는 게임과 생활 도구. 하나의 오쭈다 아지트에서 함께 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 나만의 우리집, 익명카드가 모이는 공원, 친구와 즐기는 게임과 생활 도구. 하나의 오쭈다 아지트에서 함께 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "favicon.svg?v=20261022-clean4",
+        "new": "favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "/apple-touch-icon.png?v=20261022-1",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "오늘 하루 어땠나요? 괜찮았나요. 나만의 우리집, 익명카드가 모이는 공원, 친구와 즐기는 게임과 생활 도구. 하나의 오쭈다 아지트에서 함께 만나요.",
+        "new": "오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "world.html",
+    "before": "cfe84986f11ff04741464234e53211b279ce3efaaadead891306edd23de24e8c",
+    "after": "2213c352aedef6a0ab5f442874f3cff32f1f31e10edb98dea561ebb1dd4d97ba",
+    "edits": [
+      {
+        "old": "<meta property=\"og:type\" content=\"website\">\n",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:title\" content=\"오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요\">\n",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실과 공원에서 만나는 작고 즐거운 일상, 오쭈다 아지트.\">\n",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit1\">\n",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/\">\n<meta property=\"og:title\" content=\"오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 게임을 즐기고, 공원에서 오늘의 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 게임을 즐기고, 공원에서 오늘의 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "favicon.svg?v=20261022-clean4",
+        "new": "favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "apple-touch-icon.png?v=20261022-1",
+        "new": "apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "manifest.webmanifest?v=20261022-agit1",
+        "new": "manifest.webmanifest?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "Go=\"0.46.29-beta\"",
+        "new": "Go=\"0.46.30-beta\"",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "park/index.html",
+    "before": "acee9081403f5ae2529938298673ed3c2dc7aec1a50bf40280c5cb0f501bbaa2",
+    "after": "57693ce2c62b273aed4284867fe3d669738420328dd017fb5b7052f025807d09",
+    "edits": [
+      {
+        "old": "<meta property=\"og:type\" content=\"website\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:site_name\" content=\"오쭈다\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:url\" content=\"https://ojjuda.kr/world.html?place=park\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:title\" content=\"오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 길게 쓰지 않아도 괜찮아요. 오늘의 마음을 익명카드에 담아 주세요.\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:image\" content=\"https://ojjuda.kr/icon-512.png?v=20260929-logo1\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta name=\"twitter:card\" content=\"summary\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/world.html?place=park\">\n<meta property=\"og:title\" content=\"오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 아지트 · 공원 | 오늘 하루 어땠나요? 괜찮았나요\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오늘의 마음을 익명카드로 나누고 서로 공감해 보세요. 오쭈다 아지트 · 공원은 개발 중입니다.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg?v=20261022-clean4",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "/apple-touch-icon.png?v=20260929-logo1",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "note/index.html",
+    "before": "019a3294e2a8b06d545b250fcd2bbf8d3882bfbb8e4d1140704eca2efa768115",
+    "after": "d88efb26a22deae7c6c64d413a9aaf5045093f4d4f6b81cd769ec112ca1d78c4",
+    "edits": [
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/world.html?place=park\">\n<meta property=\"og:title\" content=\"오쭈다 아지트 · 공원\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 아지트 · 공원\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "</head>",
+        "new": "<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n</head>",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "photo-ttang.html",
+    "before": "92e2ef316ae192fa8f2bed64f1212998d52f13af7162659862d3198e5e07650c",
+    "after": "e0730872117407ca233ac3bad2f9e81ff0342057a73ba1ac3524422f93e60cf9",
+    "edits": [
+      {
+        "old": "<meta property=\"og:title\" content=\"포토땅따먹기 · 로그인 없이 한 판\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:description\" content=\"90%를 채우고 사진을 열어보세요. 한 판 무료 체험!\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "<meta property=\"og:url\" content=\"https://ojjuda.kr/photo-ttang.html\">\n  ",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/photo-ttang.html\">\n<meta property=\"og:title\" content=\"포토땅따먹기 한 판 체험 · 오쭈다\">\n<meta property=\"og:description\" content=\"로그인 없이 포토땅따먹기 한 판 체험. 실루엣 90%를 채우면 사진이 공개돼요. 본게임은 로그인한 만 19세 이상 회원만 이용할 수 있어요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"포토땅따먹기 한 판 체험 · 오쭈다\">\n<meta name=\"twitter:description\" content=\"로그인 없이 포토땅따먹기 한 판 체험. 실루엣 90%를 채우면 사진이 공개돼요. 본게임은 로그인한 만 19세 이상 회원만 이용할 수 있어요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "terms.html",
+    "before": "6305a4c8f5f4ba2d65746b9a4ad5045739072f7ca4713245df76ca2567989d24",
+    "after": "7c2a00c47fc65f064a132974319891738fc375129583763eb9ccecdb9c87b33f",
+    "edits": [
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/terms.html\">\n<meta property=\"og:title\" content=\"이용약관 | 오쭈다 아지트\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"이용약관 | 오쭈다 아지트\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/apple-touch-icon.png",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "privacy.html",
+    "before": "2ebd3a76e0871c68ea7ef8106d62ef2b493a75fc110ba140be4e7a97d7009b95",
+    "after": "fd05a4fa925c54b8e491bd36d6598efd129462a7ae315d15600ecbe663532983",
+    "edits": [
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/privacy.html\">\n<meta property=\"og:title\" content=\"개인정보처리방침 | 오쭈다 아지트\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"개인정보처리방침 | 오쭈다 아지트\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/apple-touch-icon.png",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "delete-account.html",
+    "before": "15b254e6f97f0ab905dbdf65cac2f56dca5da65788752225c29f6b8b830ed59c",
+    "after": "3796f25e7304cc4bf2983399e5934382f25864c1482523f1a9768ecf6d6a6e17",
+    "edits": [
+      {
+        "old": "</head>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/delete-account.html\">\n<meta property=\"og:title\" content=\"회원 탈퇴 안내 | 오쭈다 아지트\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"회원 탈퇴 안내 | 오쭈다 아지트\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n</head>",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/apple-touch-icon.png",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "admin/index.html",
+    "before": "e355781a9e1b070822b848943be8501553c161a826e3e8999e3689fd8b8e7ea9",
+    "after": "7178fa36ad3c9e2fe3aff9ef037901911c4c56483bcfa7ce409900b898b37295",
+    "edits": [
+      {
+        "old": "/favicon.svg?v=20260929-logo1",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/apple-touch-icon.png?v=20260929-logo1",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/poker/index.html",
+    "before": "68375d9fc6afa1e69e09bf8ba4dbc93cf4c14bb4a406b8133aac05913b23dd1e",
+    "after": "8d16ef8c2b1e7d51cdf371a00a21aa8b37d9b19116fb6021064ec37d959c9ea9",
+    "edits": [
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "guide.html",
+    "before": "ecc8f32d7894b5cca67410fa315a587d1e3b6411ff416185eb74a4050c4e508e",
+    "after": "c12bdebad70345f359f0daeed9a468736b5162f746afbee59e04623ffa664717",
+    "edits": [
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "manifest.webmanifest",
+    "before": "27e48284f19fe2c5afdb56a10a14317336fc59a99b7244fa797fc8db2ca96fe4",
+    "after": "059d6c2847b5059703311c8d2c0196ec9706b179ce7c41daa655d51fc818d835",
+    "edits": [
+      {
+        "old": "icon-192.png?v=20261022-1",
+        "new": "icon-192.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "icon-512.png?v=20261022-1",
+        "new": "icon-512.png?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "icon-maskable-512.png?v=20261022-1",
+        "new": "icon-maskable-512.png?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "park/glasses.html",
+    "before": "eecb5319e873575d0bcacace482367630fd8aca3d39208ede195b9194a2c98d8",
+    "after": "edbb71b599d3fdb8add9df86df57e3f7daa3e2d530395c1a3085d48f4928d1e2",
+    "edits": [
+      {
+        "old": "/favicon.svg?v=20260929-logo1",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "/apple-touch-icon.png?v=20260929-logo1",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "policies/2026-09-29/privacy.html",
+    "before": "06e3bb221eca4e7afd16df4af1b9ee373ad6eb841c7c2863dffb22a0faf069b9",
+    "after": "ae36b29cab92eee4049acef3b224830105fccc679594541ff9ce1bdf0f1bebf7",
+    "edits": [
+      {
+        "old": "/favicon.svg?v=20260929-logo1",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/apple-touch-icon.png?v=20260929-logo1",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "policies/2026-09-29/terms.html",
+    "before": "d9f3980f2e0632d9915b919a10c7b72d73c3aff049ca48705b65e9e1c5be3b21",
+    "after": "06808f8c38e8e42ffb10220902bc1d11334eb7e4af9957e27b040fb67fc9f15d",
+    "edits": [
+      {
+        "old": "/favicon.svg?v=20260929-logo1",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "/apple-touch-icon.png?v=20260929-logo1",
+        "new": "/apple-touch-icon.png?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "sitemap.html",
+    "before": "91ab6663515d4680152208483d2c41c298c83d9c12ba8e4f661db5b99e974736",
+    "after": "88ca3d2075dd771e713af82b0cdf32452f34729a9e3901e014a18a4fbb4b896b",
+    "edits": [
+      {
+        "old": "/favicon.svg",
+        "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/spot-difference/index.html",
+    "before": "5b0dc87ccb5527c9f1e85d3db97427ba966fd28a5858c4f431686f4790c08138",
+    "after": "2e89c68f5e2427b2b002743701e1c6c653010bda0112901ff9764f6214838e3e",
+    "edits": [
+      {
+        "old": "<link rel=\"icon\" type=\"image/svg+xml\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23425bea'/%3E%3Ccircle cx='28' cy='27' r='15' fill='none' stroke='white' stroke-width='6'/%3E%3Cpath d='M39 39L52 52' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E\">",
+        "new": "<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "brand/share.svg",
+    "before": "ca28b3613bd09f8cecb44264bc452e51d2ed289cabc940456d44eb98f175a217",
+    "after": "a289d2ba75cec4295fadda9e2e845c2c43618320d6937a9c205eeb19f1fe839a",
+    "edits": [
+      {
+        "old": "<g transform=\"translate(88 92) scale(.23)\">",
+        "new": "<g id=\"brand-mark\" transform=\"translate(88 92) scale(.23)\">",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "version.json",
+    "before": "cca3ed692dcc8fd01162e3788526a92666c8c335ddd655b4c3b9a8384e0fbac0",
+    "after": "67258be9c5c2cea76d1dc10a797adb26c6b46cd54e7ac39a197a7e2ae2b139f6",
+    "edits": [
+      {
+        "old": "0.46.29-beta",
+        "new": "0.46.30-beta",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ops/build-design-assets.py",
+    "before": "fac6ebd39f42ca255761ba73d44e4e4a7c97d2b2074246698e68d0136bd37520",
+    "after": "18f013aafd476fdf7a85f274f28858e579c4a9114a1a1775876389ba9261f2b4",
+    "edits": [
+      {
+        "old": "logo=rect(0,0,96,96,deep,27)+path('M24 58V44a24 24 0 0 1 48 0v14H58V44a10 10 0 0 0-20 0v14Z',cream)+circle(31,69,7,gold)+circle(65,69,7,sage)\n",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "(R/'favicon.svg').write_text(svg(logo,96,96))\n",
+        "new": "",
+        "count": 1
+      },
+      {
+        "old": "# The same original symbols become install/share icons at release time using CairoSVG.\ntry:\n import cairosvg\n for filename,size in [('icon-192.png',192),('icon-512.png',512),('icon-maskable-512.png',512),('apple-touch-icon.png',180)]:\n  cairosvg.svg2png(bytestring=svg(logo,96,96).encode(),write_to=str(R/filename),output_width=size,output_height=size)\n og=(R/'brand'/'share.svg').read_text()\n cairosvg.svg2png(bytestring=og.encode(),write_to=str(R/'og-image.png'))\nexcept ImportError:print('CairoSVG unavailable; release pipeline must render the icons.')\n",
+        "new": "# Reuse the approved note-shaped master for all install/share assets.\nimport runpy\nrunpy.run_path(str(R/'ops'/'render-brand.py'),run_name='__main__')\n",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "brand/README.md",
+    "before": "04a1c9c49e06c6fb3f7c7a5fbe1e77ec3028bfb77d7cf304c66c890be9ab7f9a",
+    "after": "b95eeb2c9f2f03b9663699537969955322fb6cf323748791bb3a169948070f60",
+    "edits": [
+      {
+        "old": "기본색: `#FF765F`.",
+        "new": "기본색: `#FF765F`. 서비스 기본 테마는 `#245A48`이며 모양은 동일하게 유지합니다. 설치·공유 이미지는 `ops/render-brand.py`로 승인된 SVG에서 생성합니다.",
+        "count": 1
+      }
+    ]
+  }
+]
