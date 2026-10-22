@@ -73,7 +73,7 @@
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
     section.append(heading, intro); if (!withdrawn && !referrals) section.append(filterBar);
     if (referrals) {
-      const rewards = el('a', '선물 지급 관리', 'btn');
+      const rewards = el('a', '상품권 등록 · 지급 관리', 'btn');
       rewards.href = '/admin/rewards.html';
       section.append(rewards);
     }

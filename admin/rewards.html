@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
- <title>선물 지급 관리 · 오쭈다 아지트</title>
+ <title>상품권 등록 · 지급 관리 · 오쭈다 아지트</title>
  <link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="style.css?v=20261004-home2">
  <link rel="stylesheet" href="rewards.css?v=20261022-coupon1">
  <script src="/config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
@@ -10,14 +10,14 @@
 </head>
 <body><div class="shell">
  <header class="topbar"><a class="brand" href="/">오쭈다 아지트</a><a href="/world.html?admin=referrals">추천인 관리로</a></header>
- <main class="main"><h1>선물 지급 관리</h1>
+ <main class="main"><h1>상품권 등록 · 지급 관리</h1>
   <p id="status" role="status" aria-live="polite">관리자 권한을 확인하고 있어요.</p>
   <button id="refresh" type="button" class="action">새로 확인</button>
   <div id="content" hidden>
    <section class="reward-panel"><h2>지급 기준</h2><dl id="policy"></dl><p id="delivery" class="reward-notice"></p></section>
-   <section class="reward-panel"><h2>월말 기프티콘 쪽지 발송</h2>
+   <section class="reward-panel"><h2>상품권 등록 · 쪽지 발송</h2>
     <p>직접 구매한 5,000원 기프티콘을 등록하면 선택한 당첨자에게 쪽지가 도착합니다. 이미지는 당첨자와 관리자만 볼 수 있어요.</p>
-    <p id="coupon-empty" class="reward-empty" hidden>월말 순위 마감 후 지급할 당첨자가 여기에 표시됩니다.</p>
+    <p id="coupon-empty" class="reward-empty" hidden>아직 지급 대기 중인 당첨자가 없어요. 월말 순위가 마감되어 당첨자가 확정되면 상품권 등록 양식이 여기에 표시됩니다.</p>
     <form id="coupon-form" class="coupon-form" hidden>
      <label>당첨자<select id="coupon-winner" required><option value="">당첨자를 선택해 주세요</option></select></label>
      <p id="coupon-target" role="status"></p>
