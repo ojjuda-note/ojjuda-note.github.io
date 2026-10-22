@@ -1,3 +1,5 @@
+import {pokerVoiceStyles} from './audio/voices.mjs?v=20261022-voice3';
+export {pokerVoiceStyles};
 const actionWords=Object.freeze({minimum:'삥',quarter:'쿼터',half:'하프',check:'체크',call:'콜',fold:'다이',allin:'올인',raise:'베팅'});
 // The log is capped at 40 entries. Compare overlapping suffixes so polling does
 // not repeat speech, and a settlement line cannot hide the final action.
@@ -12,12 +14,13 @@ export function pokerActionCue(before=[],after=[]){
   }
   return null;
 }
-// Native Korean action calls plus table foley. No autoplay or stale speech queue.
-export function createPokerSound({contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)(),speech=globalThis.speechSynthesis,utteranceFactory=text=>new globalThis.SpeechSynthesisUtterance(text)}={}){
+// Three recorded speakers, shared on every device, plus table foley.
+// Audio is unlocked by a user gesture; old calls never queue behind a download.
+export function createPokerSound({contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)(),fetchAudio=(...args)=>globalThis.fetch(...args),now=()=>Date.now()}={}){
   let context=null,master=null,noise=null,resuming=null,epoch=0,enabled=true,volume=.45;
-  let activated=false,spoken=null;
-  const voices=new Set(),settings=()=>({enabled,volume});
-  function stopSpeech(){const previous=spoken;spoken=null;if(previous){previous.onend=previous.onerror=null;try{speech.cancel();}catch{}}}
+  let activated=false,spoken=null,callSerial=0,voiceStyle='classic';
+  const voices=new Set(),buffers=new Map(),failures=new Map(),settings=()=>({enabled,volume,voiceStyle});
+  function stopSpeech(){callSerial++;const previous=spoken;spoken=null;if(previous){try{previous.stop();}catch{}previous.onended?.();}}
   function stop(){
     epoch++;
     stopSpeech();
@@ -26,6 +29,7 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
   function configure(value={}){
     if(typeof value.enabled==='boolean')enabled=value.enabled;
     if(Number.isFinite(value.volume))volume=Math.max(0,Math.min(1,value.volume));
+    if(Object.hasOwn(pokerVoiceStyles,value.voiceStyle)&&voiceStyle!==value.voiceStyle){voiceStyle=value.voiceStyle;stopSpeech();if(activated&&enabled&&volume)void loadVoice(voiceStyle);}
     if(!enabled||!volume)stop();
     if(master)master.gain.setValueAtTime(enabled?volume:0,context.currentTime);
     return settings();
@@ -33,7 +37,6 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
   function unlock(){
     if(!enabled||!volume)return Promise.resolve(false);
     activated=true;
-    try{speech?.getVoices();}catch{}
     try{
       if(!context){
         context=contextFactory();master=context.createGain();master.gain.value=volume;
@@ -47,10 +50,30 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
         const data=noise.getChannelData(0);let previous=0;
         for(let i=0;i<data.length;i++){previous=previous*.55+(Math.random()*2-1)*.45;data[i]=previous;}
       }
+      void loadVoice(voiceStyle);
       if(context.state==='running')return Promise.resolve(true);
       if(!resuming)resuming=Promise.resolve(context.resume()).then(()=>context.state==='running',()=>false).finally(()=>{resuming=null;});
       return resuming;
     }catch{return Promise.resolve(false);}
+  }
+  function loadVoice(style){
+    if(!context?.decodeAudioData)return Promise.resolve(null);
+    if(buffers.has(style))return buffers.get(style);
+    if(failures.has(style)&&now()-failures.get(style)<15000)return Promise.resolve(null);
+    const task=(async()=>{
+      const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
+      try{
+        const response=await fetchAudio(new URL(pokerVoiceStyles[style].file,import.meta.url),{signal:controller.signal,credentials:'same-origin'});
+        if(!response.ok)throw Error('voice unavailable');
+        const buffer=await context.decodeAudioData(await response.arrayBuffer());
+        if(!buffer||!Number.isFinite(buffer.duration)||buffer.duration<=0)throw Error('invalid voice');
+        failures.delete(style);return buffer;
+      }catch{failures.set(style,now());return null;}
+      finally{clearTimeout(timeout);}
+    })();
+    buffers.set(style,task);
+    void task.then(buffer=>{if(!buffer)buffers.delete(style);});
+    return task;
   }
   function voice(source,at,duration,level,filter=null,pan=0,attack=.003){
     if(voices.size>=64){const oldest=voices.values().next().value;try{oldest.stop();}catch{}oldest.onended?.();}
@@ -83,26 +106,31 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
     tone(460,delay,.038,.04*weight,310,pan);
   }
   function chips(count,weight=1){for(let i=0;i<count;i++)chip(i*.048+Math.random()*.009,weight,(i%2?1:-1)*.16);}
-  function say(kind,options){
-    if(!activated||!speech?.speak||!Object.hasOwn(actionWords,kind))return false;
+  async function say(kind,{preview=false}={}){
+    if(!context||!Object.hasOwn(actionWords,kind))return false;
+    stopSpeech();
+    const serial=callSerial,ticket=epoch,style=voiceStyle,started=now();
+    const buffer=await loadVoice(style);
+    if(serial!==callSerial||ticket!==epoch||!activated||!enabled||!volume)return null;
+    // A stale action is silent. The loaded voice is cached for the next turn.
+    if(!preview&&now()-started>1000)return null;
+    if(context.state!=='running'&&!(await (resuming||Promise.resolve(false))))return false;
+    if(serial!==callSerial||ticket!==epoch||!activated||!enabled||!volume||context.state!=='running')return null;
+    const cue=pokerVoiceStyles[style].cues[kind];
+    if(!buffer||!cue||cue[0]+cue[1]>buffer.duration+.04)return false;
     try{
-      const available=speech.getVoices(),korean=available.filter(v=>/^ko(?:[-_]|$)/i.test(v.lang));
-      // Do not pronounce Korean action names with an unrelated language voice.
-      if(available.length&&!korean.length)return false;
-      stopSpeech();
-      const utterance=utteranceFactory(actionWords[kind]);spoken=utterance;
-      utterance.lang='ko-KR';utterance.volume=volume;utterance.rate=1;utterance.pitch=1;
-      const chosen=korean.find(v=>v.default)||korean.find(v=>v.localService)||korean[0];
-      if(chosen)utterance.voice=chosen;
-      const ticket=epoch;
-      utterance.onend=()=>{if(spoken===utterance)spoken=null;};
-      utterance.onerror=()=>{if(spoken!==utterance)return;spoken=null;if(ticket===epoch)void play(kind,{...options,foleyOnly:true});};
-      speech.speak(utterance);return true;
+      const source=context.createBufferSource();source.buffer=buffer;source.connect(master);spoken=source;
+      let ended=false;
+      source.onended=()=>{if(ended)return;ended=true;if(spoken===source)spoken=null;source.disconnect();};
+      source.start(context.currentTime+.008,cue[0],cue[1]);return true;
     }catch{stopSpeech();return false;}
   }
-  async function play(kind,{pan=0,foleyOnly=false}={}){
+  async function play(kind,{pan=0,foleyOnly=false,preview=false}={}){
     if(!enabled||!volume||!activated)return false;
-    if(!foleyOnly&&say(kind,{pan}))return true;
+    if(!foleyOnly&&Object.hasOwn(actionWords,kind)){
+      const result=await say(kind,{preview});
+      if(result!==false)return result===true;
+    }
     if(!context)return false;
     const ticket=epoch;
     if(context.state!=='running'&&!(await (resuming||Promise.resolve(false))))return false;

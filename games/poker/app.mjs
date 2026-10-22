@@ -1,5 +1,5 @@
 import {suit,face,cardName,bestHand} from './engine.mjs?v=20261022-voice1';
-import {createPokerSound,pokerActionCue} from './sound.mjs?v=20261022-voice1';
+import {createPokerSound,pokerActionCue} from './sound.mjs?v=20261022-voice3';
 import {createOnlineClient,rotateView} from './online-client.mjs?v=20261021-poker6';
 import {createDealMotion} from './deal-motion.mjs?v=20261022-club1';
 
@@ -316,8 +316,10 @@ function save(){
  try{localStorage.setItem(key,JSON.stringify({audio:sfx.settings(),difficulty:record.difficulty}));}catch{}
 }
 function soundControls(){
-  const {enabled,volume}=sfx.settings();
+  const {enabled,volume,voiceStyle='classic'}=sfx.settings();
   document.querySelector('#sound-enabled').checked=enabled;
+  document.querySelectorAll('[name="poker-voice"]').forEach(input=>{input.checked=input.value===voiceStyle;});
+  document.querySelector('[data-action="sound-test"]').disabled=!enabled||!volume;
   document.querySelector('#sound-volume').value=Math.round(volume*100);
   document.querySelector('#sound-volume-value').textContent=Math.round(volume*100)+'%';
 }
@@ -371,7 +373,7 @@ document.addEventListener('click',async event=>{
   if(action==='exit'){requestExit();return;}
   if(action==='help'){clearTimeout(timer);document.querySelector('#help').showModal();return;}
   if(action==='sound'){clearTimeout(timer);soundControls();document.querySelector('#sound-dialog').showModal();return;}
-  if(action==='sound-test'){void sfx.play('half');return;}
+  if(action==='sound-test'){void sfx.play('half',{preview:true});return;}
   if(action==='resume'){lobby=false;render({animateDeal:false});schedule();return;}
   if(action==='lobby'){lobby=true;render();return;}
   if(action==='start'||action==='next'){start();return;}
@@ -408,9 +410,14 @@ window.addEventListener('message',async event=>{
 document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',schedule));
 document.querySelector('#sound-enabled').addEventListener('change',event=>{
   if(!ready||conflict)return;
-  sfx.configure({enabled:event.target.checked});void sfx.unlock();save();render();
+  sfx.configure({enabled:event.target.checked});void sfx.unlock();soundControls();save();render();
   if(event.target.checked)void sfx.play('select');
 });
+document.querySelectorAll('[name="poker-voice"]').forEach(input=>input.addEventListener('change',event=>{
+  if(!ready||conflict||!event.target.checked)return;
+  sfx.configure({voiceStyle:event.target.value});void sfx.unlock();soundControls();save();
+  void sfx.play('half',{preview:true});
+}));
 document.querySelector('#sound-volume').addEventListener('input',event=>{
   if(!ready||conflict)return;
   sfx.configure({volume:Number(event.target.value)/100});soundControls();save();render();

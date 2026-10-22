@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {JSDOM}=require('jsdom');const root=path.join(__dirname,'..');
 const pause=()=>new Promise(r=>setTimeout(r,5));
 async function until(fn,label){for(let i=0;i<600;i++){if(fn())return;await pause();}throw Error('timeout: '+label);}
-async function screen(f,actor,{animate=false,saved=null,joinCode=null}={}){
+async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=null}={}){
  const rules=await import('../games/poker/engine.mjs'),motion=await import('../games/poker/deal-motion.mjs');
  const dom=new JSDOM(fs.readFileSync(path.join(root,'games/poker/index.html'),'utf8'),{url:'https://ojjuda.kr/games/poker/index.html',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,requests=[],sounds=[],messages=[],flights=[],jobs=new Map();let last=null,polls=[],serial=0,now=0;
@@ -25,8 +25,9 @@ async function screen(f,actor,{animate=false,saved=null,joinCode=null}={}){
   const data=await f.call(actor,message.body);last=data;
   w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:parent,data:{source:'ojjuda-world',type:'poker-rpc',id:message.id,data,error:data.error}}));
  }};Object.defineProperty(w,'parent',{value:parent});
- w.__rules=rules;w.__motion=motion;const audio={enabled:true,volume:.45};w.__audio={pokerActionCue:(await import('../games/poker/sound.mjs')).pokerActionCue,createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:x=>sounds.push(x),unlock:async()=>true,pause(){}})};
+ w.__rules=rules;w.__motion=motion;const audio={enabled:true,volume:.45,voiceStyle:'classic'};w.__audio={pokerActionCue:(await import('../games/poker/sound.mjs')).pokerActionCue,createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:x=>sounds.push(x),unlock:async()=>true,pause(){}})};
  if(saved)w.localStorage.setItem('ojjuda.poker.practice.v1.'+actor,JSON.stringify(saved));
+ if(settings)w.localStorage.setItem('ojjuda.poker.settings.v2.'+actor,JSON.stringify(settings));
  w.eval(fs.readFileSync(path.join(root,'games/poker/online-client.mjs'),'utf8').replace(/export /g,'')+'\nwindow.__online={createOnlineClient,rotateView};');
  w.eval(fs.readFileSync(path.join(root,'games/poker/app.mjs'),'utf8').replace(/^import \{([^}]+)\} from '([^']+)';/gm,(_,names,file)=>`const {${names}}=window.${file.includes('engine.')?'__rules':file.includes('sound.')?'__audio':file.includes('online-client.')?'__online':'__motion'};`));
  const message=(data,origin='https://ojjuda.kr')=>w.dispatchEvent(new w.MessageEvent('message',{origin,source:parent,data}));
