@@ -22,7 +22,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
     for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
     for(const [id,game] of entries.slice(start,start+3)){
      const row=el('tr','','board-leader');row.dataset.game=id;
-     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='best_round_gain'?' · 이번 달 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
+     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → 연승 → 먼저 달성한 순':game.rankingBasis==='picture_clears'?' · 이번 달 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · 이번 달 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
      const labelGame=target=>{if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));};labelGame(name);
      if(typeof onOpenGame==='function'){
       const play=button(game.name,async()=>{
@@ -41,6 +41,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
    const prev=button('‹',()=>go(index-1)),next=button('›',()=>go(index+1));prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);if(pages.length>1)head.append(controls);
    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
    content.append(section);
+   section.append(el('p','쭈를 사용한 게임도 기록에 포함돼요.','board-rank-caption'));
    function paint(){
     position.textContent=(index+1)+' / '+pages.length;rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
     section.dataset.rankPage=String(index);
@@ -116,11 +117,13 @@ async function result(query){const {data,error}=await query;if(error)throw error
       target.hasScore=!!valid(top);
       if(target.hasScore){
        nick.textContent=top.nick||'익명';
-       nick.title=(game.rankingBasis==='best_round_gain'?'이번 달 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak'].includes(game.rankingBasis)?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');
+       nick.title=(game.rankingBasis==='picture_clears'?'이번 달 완료 장수 1등 · ':game.rankingBasis==='best_round_gain'?'이번 달 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak','opponents_streak'].includes(game.rankingBasis)?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');
        let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
        if(game.rankingBasis==='difficulty_time'){
         const record=window.OjjudaMinesRules?.record(Number(top.score));
         value=record?.time||'—';detail=record?.name||'';
+       }else if(game.rankingBasis==='opponents_streak'){
+        const n=Number(top.opponents);if(Number.isInteger(n)&&n>=1&&n<=11)detail=n+'명 상대';
        }else if(game.rankingBasis==='difficulty_streak'){
         const level={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'}[top.difficulty]||'';
         const variant=id==='billiards'?{carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[top.variant]:'';

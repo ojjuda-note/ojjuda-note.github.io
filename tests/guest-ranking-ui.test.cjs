@@ -22,7 +22,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
     return {auth:{onAuthStateChange(){},getSession:async()=>({data:{session:null}})},rpc(name,args){
      calls.push({name,args,guest});
      const result=name==='submit_guest_game_score'?{data:failScores?{ok:false,reason:'invalid'}:{ok:true,guest:true,best:args.p_score,reward:0,rank:null}}
-       :name==='guest_game_ranking'?{data:[{nick:'손님',score:20,me:true,source:'guest_record'}]}
+       :['record_ttang_result','record_spot_clear'].includes(name)?{data:{ok:true,score:1}}:name==='guest_game_ranking'?{data:[{nick:'손님',score:20,me:true,source:'guest_record'}]}
        :name==='submit_score'?{data:{ok:true,best:args.p_score,reward:0}}:{data:[]};
      const promise=Promise.resolve(result);promise.abortSignal=()=>promise;return promise;
     }};
@@ -44,14 +44,14 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   assert.equal(await page.evaluate(()=>calls.find(c=>c.name==='submit_guest_game_score').args.p_guest_token),call.args.p_guest_token,'guest identity survives reload');
   await page.evaluate(()=>guestFixture.open('ttang'));
   await page.waitForFunction(()=>document.querySelector('#ttang-overlay iframe')?.contentDocument?.body?.textContent.includes('game frame'));
-  await page.evaluate(()=>{const frame=document.querySelector('#ttang-overlay iframe');for(const data of [{type:'ojjuda:ttang:start',round:'one'},{type:'ojjuda:ttang:result',mode:'solo',round:'one',score:45}])dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data}));});
+  await page.evaluate(()=>{const frame=document.querySelector('#ttang-overlay iframe');for(const data of [{type:'ojjuda:ttang:start',mode:'solo',round:'10000000-0000-4000-8000-000000000001'},{type:'ojjuda:ttang:result',mode:'solo',round:'10000000-0000-4000-8000-000000000001',win:true}])dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data}));});
   await page.waitForFunction(()=>document.getElementById('ttang-save-status').textContent.includes('손님으로 기록했어요'));
-  assert.equal(await page.evaluate(()=>calls.find(c=>c.name==='submit_guest_game_score'&&c.args.p_game==='ttang').args.p_score),45);
+  assert.equal(await page.evaluate(()=>calls.find(c=>c.name==='record_ttang_result').args.p_won),true);
   await page.getByRole('button',{name:'월드땅따먹기 닫기',exact:true}).click();
   await page.evaluate(()=>guestFixture.open('spot'));
   await page.waitForFunction(()=>document.querySelector('.spot-game-dialog iframe')?.contentDocument?.body?.textContent.includes('game frame'));
-  await page.evaluate(()=>{const frame=document.querySelector('.spot-game-dialog iframe');dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data:{type:'ojjuda:spot-score',score:4,owner:null}}));});
-  await page.waitForFunction(()=>calls.some(c=>c.name==='submit_guest_game_score'&&c.args.p_game==='spot'&&c.args.p_score===4));
+  await page.evaluate(()=>{const frame=document.querySelector('.spot-game-dialog iframe');dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data:{type:'ojjuda:spot-clear',stage:4,owner:null}}));});
+  await page.waitForFunction(()=>calls.some(c=>c.name==='record_spot_clear'&&c.args.p_stage===4));
   await page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();
   await page.evaluate(()=>{guestFixture.member();return guestFixture.submit('runner',99)});
   assert.equal(await page.evaluate(()=>calls.at(-1).name),'submit_score','member writes retain the authenticated API');

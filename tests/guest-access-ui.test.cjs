@@ -44,15 +44,15 @@ const cardId='00000000-0000-4000-8000-000000000001';
    ['mines',{source:'ojjuda-mines',type:'ojjuda-game-finished',runId:uuid}],
    ['saetbyeol',{source:'ojjuda-saetbyeol',type:'ojjuda-game-finished',runId:uuid,demo:false}],
    ['tank',{source:'ojjuda-tank',type:'finished'}],
-   ['spot',{type:'ojjuda:spot-score',score:0,owner:null}],
-   ['ttang',{type:'ojjuda:ttang:result',round:'trial',mode:'solo',score:0}],
+   ['spot',{type:'ojjuda:spot-finished'}],
+   ['ttang',{type:'ojjuda:ttang:result',round:uuid,mode:'solo',win:false}],
    ['tour',{source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:uuid,players:2,myRank:2,ranking:[{}, {human:true,assets:0,bankrupt:true}]}]
   ]){
    await enter();await page.evaluate(kind=>guestFixture.open(kind),kind);await page.locator('iframe').waitFor();
    // Unrelated windows and foreign origins cannot trigger the gate.
    await page.evaluate(data=>{dispatchEvent(new MessageEvent('message',{origin:'https://foreign.invalid',source:document.querySelector('iframe').contentWindow,data}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source:window,data}));},data);
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,kind+' ignores forged sources');
-   await page.evaluate(data=>{const source=document.querySelector('iframe').contentWindow;if(data.round)dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data:{type:'ojjuda:ttang:start',round:data.round}}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data}));},data);
+   await page.evaluate(data=>{const source=document.querySelector('iframe').contentWindow;if(data.round)dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data:{type:'ojjuda:ttang:start',round:data.round,mode:'solo'}}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data}));},data);
    await signup('world');
   }
   await enter();await page.evaluate(()=>{guestFixture.member();guestFixture.open('stacker');});await page.locator('[data-g=start]').click();await page.evaluate(()=>guestFixture.finish(0));

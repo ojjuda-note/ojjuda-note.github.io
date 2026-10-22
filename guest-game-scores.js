@@ -43,5 +43,5 @@
     if (!games.has(game)) return [];
     return await rpc('guest_game_ranking',{p_game:game,p_period:period,p_guest_token:token()}) || [];
   }
-  window.OjjudaGuestScores = Object.freeze({submit,ranking,marble:async(runId,won)=>rpc('record_marble_result',{p_round:runId,p_won:won,p_guest_token:token()})});
+  window.OjjudaGuestScores = Object.freeze({submit,ranking,spot:async(stage)=>rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),territory:async(runId,won)=>rpc('record_ttang_result',{p_round:runId,p_won:won,p_guest_token:token()}),marble:async(runId,won)=>rpc('record_marble_result',{p_round:runId,p_won:won,p_guest_token:token()})});
 })();

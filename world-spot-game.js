@@ -2,23 +2,23 @@
   'use strict';
   let active=null;
   window.OjjudaSpotGame={
-    open({onClose,onScore}={}){
+    open({onClose,onClear}={}){
       if(active){active.focus();return;}
       const previous=document.activeElement;
       const dialog=document.createElement('dialog');
       dialog.className='spot-game-dialog';dialog.setAttribute('aria-label','틀린그림찾기');
-      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">닫기</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261022-agit1" allow="fullscreen"></iframe>';
+      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">닫기</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261022-ranks2" allow="fullscreen"></iframe>';
       const frame=dialog.querySelector('iframe');
       let scoreQueue=Promise.resolve();
       function onZoom(event){
         if(event.origin!==window.location.origin||event.source!==frame.contentWindow)return;
-        if(event.data?.type==='ojjuda:spot-score'&&Number.isInteger(event.data.score)&&event.data.score>=0&&event.data.score<=6&&(typeof event.data.owner==='string'||event.data.owner===null)){
-          const {score,owner}=event.data;
-          window.OjjudaGuestAccess?.finished();
-          const save=()=>Promise.resolve(onScore?.(score,owner)).catch(error=>{
+        if(event.data?.type==='ojjuda:spot-finished'){window.OjjudaGuestAccess?.finished();return;}
+        if(event.data?.type==='ojjuda:spot-clear'&&Number.isInteger(event.data.stage)&&event.data.stage>=1&&event.data.stage<=48&&(typeof event.data.owner==='string'||event.data.owner===null)){
+          const {stage,owner}=event.data;
+          const save=()=>Promise.resolve(onClear?.(stage,owner)).catch(error=>{
             console.warn('게임 기록 저장 실패',error);
             if(active!==dialog)return;
-            const retry=document.createElement('button');retry.type='button';retry.textContent='점수 다시 저장';retry.onclick=()=>{retry.remove();scoreQueue=scoreQueue.then(save)};dialog.querySelector('.spot-game-header').append(retry);
+            const retry=document.createElement('button');retry.type='button';retry.textContent='완료 기록 다시 저장';retry.onclick=()=>{retry.remove();scoreQueue=scoreQueue.then(save)};dialog.querySelector('.spot-game-header').append(retry);
           });
           scoreQueue=scoreQueue.then(save);return;
         }
