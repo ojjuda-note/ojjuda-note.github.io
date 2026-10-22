@@ -8,13 +8,13 @@ const root=path.join(__dirname,'..');
   assert.equal(s.last.wallet.gold,5000,'forged legacy local balance is ignored');
   assert.equal(s.find('[data-action=sound]').textContent,'소리 끔');
   s.click('[data-action=sound]');assert.equal(s.find('#sound-dialog').open,true);
-  assert.equal(s.w.document.querySelectorAll('[name=poker-voice]').length,3);
+  assert.equal(s.w.document.querySelectorAll('[name=poker-voice]').length,4);
   assert.equal(s.find('[name=poker-voice]:checked').value,'classic','legacy sound settings default to the original voice');
   assert.equal(s.find('[data-action=sound-test]').disabled,true,'preview respects mute');
-  const rpcCount=s.requests.length;s.click('[name=poker-voice][value=bright]');
-  assert.equal(s.find('[name=poker-voice]:checked').value,'bright');assert.equal(s.requests.length,rpcCount,'voice selection never spends gold or sends a move');
+  const rpcCount=s.requests.length;s.click('[name=poker-voice][value=korean]');
+  assert.equal(s.find('[name=poker-voice]:checked').value,'korean');assert.equal(s.requests.length,rpcCount,'voice selection never spends gold or sends a move');
   const soundSettings=JSON.parse(s.w.localStorage.getItem('ojjuda.poker.settings.v2.'+A));
-  assert.equal(soundSettings.audio.voiceStyle,'bright');assert.equal(soundSettings.audio.enabled,false);
+  assert.equal(soundSettings.audio.voiceStyle,'korean');assert.equal(soundSettings.audio.enabled,false);
   s.click('#sound-dialog [data-close-dialog]');
   s.click('[data-action=start]');await until(()=>s.find('.is-dealing'),'server solo deal');
   assert.equal(s.find('[data-card="1"]').disabled,true);assert.equal(s.w.document.querySelectorAll('.dealing').length,13);
@@ -56,9 +56,22 @@ const root=path.join(__dirname,'..');
   s.click('[data-seat="1"]');assert.equal(s.w.document.querySelectorAll('#cards-content .back').length,2);s.click('#cards-dialog [data-close-dialog]');
   s.message({source:'ojjuda-world',type:'poker-exit-request'});s.click('#confirm-exit');assert.equal(s.messages.at(-1).type,'exit');
   const resumed=await screen(f,A,{settings:soundSettings});screens.push(resumed);assert.equal(resumed.last.room.game.phase,'betting','server resumes the same solo round');
-  resumed.click('[data-action=sound]');assert.equal(resumed.find('[name=poker-voice]:checked').value,'bright','selected voice survives reopening');
+  resumed.click('[data-action=sound]');assert.equal(resumed.find('[name=poker-voice]:checked').value,'korean','selected Korean voice survives reopening');
   resumed.click('#sound-enabled');assert.equal(resumed.find('[data-action=sound-test]').disabled,false);
   resumed.click('[data-action=sound-test]');assert.equal(resumed.sounds.at(-1),'half');resumed.click('#sound-dialog [data-close-dialog]');
+  const spokenSeats=()=>new Set(resumed.soundCalls.filter(call=>Number.isInteger(call.seat)&&!call.foleyOnly).map(call=>call.seat));
+  for(let step=0;step<24&&spokenSeats().size<4;step++){
+   const room=resumed.last.room,g=room.game;
+   assert.notEqual(g.phase,'finished','all four seats speak before the hand ends');
+   if(g.phase==='betting'&&g.turn===0){
+    const version=room.version;resumed.click(g.legal.check?'[data-action=check]':'[data-action=call]');
+    await until(()=>resumed.last.room.version>version,'own confirmed action');
+   }else{
+    await f.db.query("update ojjuda_poker_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1",[room.id]);
+    await resumed.poll();
+   }
+  }
+  assert.deepEqual([...spokenSeats()].sort(),[0,1,2,3],'the real solo flow identifies me and all three computers');
   resumed.click('[data-action=online-leave]');resumed.click('#confirm-exit');await until(()=>resumed.last.room===null,'solo leave settlement');
   assert.equal(resumed.last.wallet.locked,false);
   await f.db.query('update ojjuda_poker_internal.wallets set gold=800 where user_id=$1',[A]);

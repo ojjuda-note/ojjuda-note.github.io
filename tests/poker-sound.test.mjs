@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createPokerSound,pokerActionCue,pokerVoiceStyles} from '../games/poker/sound.mjs';
+import {createPokerSound,pokerActionCue,pokerActionCall,pokerVoiceForSeat,pokerVoiceStyles} from '../games/poker/sound.mjs';
 
 function fixture(initial='running'){
   const nodes=[],sources=[];
@@ -49,9 +49,10 @@ const unsupported=createPokerSound({contextFactory:()=>{throw Error('unsupported
 assert.equal(await unsupported.unlock(),false);assert.equal(await unsupported.play('deal'),false);
 
 const actions=['minimum','quarter','half','check','call','fold','allin','raise'];
-assert.equal(Object.keys(pokerVoiceStyles).length,3);
-assert.deepEqual(Object.values(pokerVoiceStyles).map(v=>v.gender).sort(),['female','male','male']);
-assert.equal(new Set(Object.values(pokerVoiceStyles).map(v=>v.speaker)).size,3);
+assert.equal(Object.keys(pokerVoiceStyles).length,4);
+assert.deepEqual(Object.values(pokerVoiceStyles).map(v=>v.gender).sort(),['female','female','male','male']);
+assert.equal(new Set(Object.values(pokerVoiceStyles).map(v=>v.speaker)).size,4);
+assert.equal(pokerVoiceStyles.korean.language,'ko-KR');
 for(const profile of Object.values(pokerVoiceStyles)){
   assert.deepEqual(Object.keys(profile.cues),actions);
   const file=new URL('../games/poker/'+profile.file,import.meta.url);
@@ -124,6 +125,36 @@ oldDownloads[1].resolve({ok:true,arrayBuffer:async()=>oldDownloads[1].url});asse
 oldDownloads[0].resolve({ok:true,arrayBuffer:async()=>oldDownloads[0].url});assert.equal(await stale,false);
 assert.equal(switched.sources.length,1);assert.ok(switched.sources[0].buffer.identity.includes('ainsley'));
 
+const table=voiceFixture();table.audio.preloadPlayers(4);
+assert.equal(table.requests.length,0,'seat preloading still requires a user gesture');
+await table.audio.unlock();
+assert.equal(table.requests.length,4,'all four players are ready before their first action');
+for(const selected of Object.keys(pokerVoiceStyles)){
+  table.audio.configure({voiceStyle:selected});
+  const recordings=[];
+  for(let seat=0;seat<4;seat++){
+    const style=pokerVoiceForSeat(selected,seat);
+    assert.equal(await table.audio.play('call',{seat}),true);
+    const source=table.sources.at(-1);recordings.push(source.buffer.identity);
+    assert.ok(source.buffer.identity.endsWith(pokerVoiceStyles[style].file.slice(1)));
+    assert.deepEqual([source.offset,source.duration],pokerVoiceStyles[style].cues.call);
+    assert.equal(table.audio.settings().voiceStyle,selected,'opponent actions never change my saved selection');
+  }
+  assert.equal(pokerVoiceForSeat(selected,0),selected,'my chosen voice belongs only to seat zero');
+  assert.equal(new Set(recordings).size,4,'the three computers all use different remaining recordings');
+}
+assert.equal(table.requests.length,4,'changing my choice reuses all four cached files');
+for(const seat of [-1,4,1.5,'1',null])assert.equal(pokerVoiceForSeat('korean',seat),null,'unknown seats cannot impersonate me');
+assert.equal(pokerVoiceForSeat('__proto__',0),'classic');
+table.audio.pause();assert.equal(await table.audio.play('check',{seat:3}),false,'opponents also stay silent in the background');
+
+const seatDownloads=[],racing=voiceFixture(url=>new Promise(resolve=>seatDownloads.push({url:String(url),resolve})));
+await racing.audio.unlock();const oldOpponent=racing.audio.play('call',{seat:1});
+racing.audio.configure({voiceStyle:'korean'});const newPreview=racing.audio.play('half',{preview:true});
+seatDownloads.find(d=>d.url.includes('hana')).resolve({ok:true,arrayBuffer:async()=>'hana'});assert.equal(await newPreview,true);
+for(const pending of seatDownloads.filter(d=>!d.url.includes('hana')))pending.resolve({ok:true,arrayBuffer:async()=>pending.url});
+assert.equal(await oldOpponent,false,'an old opponent download cannot speak after the assignment changes');
+
 const broken=voiceFixture(async()=>{throw Error('offline');});
 await broken.audio.unlock();assert.equal(await broken.audio.play('half'),true,'failed recordings fall back to table foley');
 assert.ok(broken.sources.length>0);await broken.audio.play('call');assert.equal(broken.requests.length,1,'offline requests have a retry cooldown');
@@ -133,4 +164,9 @@ assert.equal(pokerActionCue(log,log.concat('올인왕 · 다이')),'fold','nickn
 assert.equal(pokerActionCue(log,log.concat('나 · 하프 500','정산 완료')),'half','settlement cannot hide the final call');
 assert.equal(pokerActionCue(log,log.slice(1).concat('나 · 쿼터 250')),'quarter','capped logs retain overlap');
 assert.equal(pokerActionCue(log,log.concat('6구 · 삥부터')),null,'street announcements are not action calls');
-console.log('PASS: three recorded male/female voices, action segments, cached downloads, cancellation, mute/volume, saved preferences and foley fallback');
+const players=[{name:'하루',last:'체크'},{name:'하루',last:'체크'},{name:'다이 · 하프',last:'콜'},{name:'보리',last:'하프 500'}];
+assert.deepEqual(pokerActionCall(log,log.concat('하루 · 체크'),players,1),{kind:'check',seat:1},'duplicate nicknames use the confirmed prior turn');
+assert.deepEqual(pokerActionCall(log,log.concat('다이 · 하프 · 콜'),players,2),{kind:'call',seat:2},'punctuation and action words in nicknames are safe');
+assert.deepEqual(pokerActionCall(log,log.concat('하루 · 체크','보리 · 하프 500','정산 완료'),players,0),{kind:'half',seat:3},'batched polling uses the latest actor, not the old turn');
+assert.deepEqual(pokerActionCall(log,log.concat('사라진 사람 · 다이'),players,0),{kind:'fold',seat:-1},'unresolved names use foley instead of another player voice');
+console.log('PASS: four recorded voices, Korean selection, distinct player assignments, rotation-safe action matching, cached downloads, cancellation and mute');

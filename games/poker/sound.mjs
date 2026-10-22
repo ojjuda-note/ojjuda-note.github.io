@@ -1,24 +1,37 @@
-import {pokerVoiceStyles} from './audio/voices.mjs?v=20261022-voice3';
+import {pokerVoiceStyles} from './audio/voices.mjs?v=20261022-seatvoices1';
 export {pokerVoiceStyles};
 const actionWords=Object.freeze({minimum:'삥',quarter:'쿼터',half:'하프',check:'체크',call:'콜',fold:'다이',allin:'올인',raise:'베팅'});
 // The log is capped at 40 entries. Compare overlapping suffixes so polling does
 // not repeat speech, and a settlement line cannot hide the final action.
-export function pokerActionCue(before=[],after=[]){
+export function pokerActionCall(before=[],after=[],players=[],previousTurn=-1){
   let overlap=Math.min(before.length,after.length);
   while(overlap&&!before.slice(-overlap).every((line,i)=>line===after[i]))overlap--;
-  for(const line of after.slice(overlap).reverse()){
+  const calls=[];
+  for(const line of after.slice(overlap)){
     const separator=String(line).lastIndexOf(' · ');if(separator<0)continue;
     const action=String(line).slice(separator+3);
     const word=/^(삥|쿼터|하프|체크|콜|다이|올인|베팅)(?: [\d,]+)?$/.exec(action)?.[1];
-    if(word)return Object.keys(actionWords).find(key=>actionWords[key]===word);
+    if(word)calls.push({kind:Object.keys(actionWords).find(key=>actionWords[key]===word),name:String(line).slice(0,separator),action});
   }
-  return null;
+  const call=calls.at(-1);if(!call)return null;
+  const seats=players.flatMap((player,seat)=>player.name===call.name?[seat]:[]);
+  let seat=seats.length===1?seats[0]:-1;
+  // A single confirmed action belongs to the prior turn, even when names match.
+  if(seat<0&&calls.length===1&&seats.includes(previousTurn))seat=previousTurn;
+  if(seat<0){const matching=seats.filter(i=>players[i].last===call.action);if(matching.length===1)seat=matching[0];}
+  return {kind:call.kind,seat};
 }
-// Three recorded speakers, shared on every device, plus table foley.
+export function pokerActionCue(before=[],after=[]){return pokerActionCall(before,after)?.kind||null;}
+export function pokerVoiceForSeat(selected,seat=0){
+  const styles=Object.keys(pokerVoiceStyles),own=Object.hasOwn(pokerVoiceStyles,selected)?selected:'classic';
+  if(!Number.isInteger(seat)||seat<0||seat>=styles.length)return null;
+  return [own,...styles.filter(style=>style!==own)][seat];
+}
+// Each seat has a distinct recording; seat zero always uses the saved choice.
 // Audio is unlocked by a user gesture; old calls never queue behind a download.
 export function createPokerSound({contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)(),fetchAudio=(...args)=>globalThis.fetch(...args),now=()=>Date.now()}={}){
   let context=null,master=null,noise=null,resuming=null,epoch=0,enabled=true,volume=.45;
-  let activated=false,spoken=null,callSerial=0,voiceStyle='classic';
+  let activated=false,spoken=null,callSerial=0,voiceStyle='classic',playerCount=0;
   const voices=new Set(),buffers=new Map(),failures=new Map(),settings=()=>({enabled,volume,voiceStyle});
   function stopSpeech(){callSerial++;const previous=spoken;spoken=null;if(previous){try{previous.stop();}catch{}previous.onended?.();}}
   function stop(){
@@ -29,7 +42,7 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
   function configure(value={}){
     if(typeof value.enabled==='boolean')enabled=value.enabled;
     if(Number.isFinite(value.volume))volume=Math.max(0,Math.min(1,value.volume));
-    if(Object.hasOwn(pokerVoiceStyles,value.voiceStyle)&&voiceStyle!==value.voiceStyle){voiceStyle=value.voiceStyle;stopSpeech();if(activated&&enabled&&volume)void loadVoice(voiceStyle);}
+    if(Object.hasOwn(pokerVoiceStyles,value.voiceStyle)&&voiceStyle!==value.voiceStyle){voiceStyle=value.voiceStyle;stopSpeech();if(activated&&enabled&&volume){void loadVoice(voiceStyle);preloadPlayers(playerCount);}}
     if(!enabled||!volume)stop();
     if(master)master.gain.setValueAtTime(enabled?volume:0,context.currentTime);
     return settings();
@@ -51,10 +64,16 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
         for(let i=0;i<data.length;i++){previous=previous*.55+(Math.random()*2-1)*.45;data[i]=previous;}
       }
       void loadVoice(voiceStyle);
+      preloadPlayers(playerCount);
       if(context.state==='running')return Promise.resolve(true);
       if(!resuming)resuming=Promise.resolve(context.resume()).then(()=>context.state==='running',()=>false).finally(()=>{resuming=null;});
       return resuming;
     }catch{return Promise.resolve(false);}
+  }
+  function preloadPlayers(count=0){
+    playerCount=Number.isInteger(count)?Math.max(0,Math.min(Object.keys(pokerVoiceStyles).length,count)):0;
+    if(!activated||!enabled||!volume||!context)return;
+    for(let seat=0;seat<playerCount;seat++)void loadVoice(pokerVoiceForSeat(voiceStyle,seat));
   }
   function loadVoice(style){
     if(!context?.decodeAudioData)return Promise.resolve(null);
@@ -106,10 +125,11 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
     tone(460,delay,.038,.04*weight,310,pan);
   }
   function chips(count,weight=1){for(let i=0;i<count;i++)chip(i*.048+Math.random()*.009,weight,(i%2?1:-1)*.16);}
-  async function say(kind,{preview=false}={}){
+  async function say(kind,{preview=false,seat=0,pan=0}={}){
     if(!context||!Object.hasOwn(actionWords,kind))return false;
+    const style=pokerVoiceForSeat(voiceStyle,seat);if(!style)return false;
     stopSpeech();
-    const serial=callSerial,ticket=epoch,style=voiceStyle,started=now();
+    const serial=callSerial,ticket=epoch,started=now();
     const buffer=await loadVoice(style);
     if(serial!==callSerial||ticket!==epoch||!activated||!enabled||!volume)return null;
     // A stale action is silent. The loaded voice is cached for the next turn.
@@ -119,16 +139,18 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
     const cue=pokerVoiceStyles[style].cues[kind];
     if(!buffer||!cue||cue[0]+cue[1]>buffer.duration+.04)return false;
     try{
-      const source=context.createBufferSource();source.buffer=buffer;source.connect(master);spoken=source;
+      const source=context.createBufferSource(),panner=context.createStereoPanner?.();source.buffer=buffer;
+      if(panner){panner.pan.value=Math.max(-.65,Math.min(.65,pan));source.connect(panner);panner.connect(master);}else source.connect(master);
+      spoken=source;
       let ended=false;
-      source.onended=()=>{if(ended)return;ended=true;if(spoken===source)spoken=null;source.disconnect();};
+      source.onended=()=>{if(ended)return;ended=true;if(spoken===source)spoken=null;source.disconnect();panner?.disconnect();};
       source.start(context.currentTime+.008,cue[0],cue[1]);return true;
     }catch{stopSpeech();return false;}
   }
-  async function play(kind,{pan=0,foleyOnly=false,preview=false}={}){
+  async function play(kind,{seat=0,pan=seat===1?-.35:seat===3?.35:0,foleyOnly=false,preview=false}={}){
     if(!enabled||!volume||!activated)return false;
     if(!foleyOnly&&Object.hasOwn(actionWords,kind)){
-      const result=await say(kind,{preview});
+      const result=await say(kind,{preview,seat,pan});
       if(result!==false)return result===true;
     }
     if(!context)return false;
@@ -157,5 +179,5 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
     }catch{stop();return false;}
   }
   function pause(){activated=false;stop();try{void context?.suspend().catch(()=>{});}catch{}}
-  return Object.freeze({settings,configure,unlock,play,stop,pause});
+  return Object.freeze({settings,configure,unlock,preloadPlayers,play,stop,pause});
 }

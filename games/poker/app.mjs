@@ -1,5 +1,5 @@
 import {suit,face,cardName,bestHand} from './engine.mjs?v=20261022-voice1';
-import {createPokerSound,pokerActionCue} from './sound.mjs?v=20261022-voice3';
+import {createPokerSound,pokerActionCall} from './sound.mjs?v=20261022-seatvoices1';
 import {createOnlineClient,rotateView} from './online-client.mjs?v=20261021-poker6';
 import {createDealMotion} from './deal-motion.mjs?v=20261022-club1';
 
@@ -136,12 +136,13 @@ function acceptRoom(room){
   const next=room?rotateView(room):null;
   if(next){
     const same=game&&game._roomId===room.id&&game._round===room.round,wasDone=game?.phase==='finished',oldTurn=game?.turn;
-    if(same){const cue=pokerActionCue(game.log,next.log);if(cue)void sfx.play(cue);}
+    if(same){const call=pokerActionCall(game.log,next.log,next.players,oldTurn);if(call)void sfx.play(call.kind,{seat:call.seat,foleyOnly:call.seat<0});}
     if(same)Object.assign(game,next);else {peekedCard=null;game={...next,_roomId:room.id,_round:room.round};}
+    sfx.preloadPlayers(game.players.length);
     lobby=false;pick=-1;render();
     if(!wasDone&&game.phase==='finished')void sfx.play(game.result.net[0]>0?'win':'end');
     else if(oldTurn!==0&&game.turn===0&&!dealMotion.active())void sfx.play('turn');
-  }else{game=null;lobby=true;render();}
+  }else{sfx.preloadPlayers(0);game=null;lobby=true;render();}
 }
 async function refreshRooms(){try{roomList=await online.list();if(mode==='online'&&!online.room)render();}catch(error){onlineNotice(error.message);}}
 async function onlineAction(button){

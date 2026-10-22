@@ -4,7 +4,7 @@ const {screen,until,pause}=require('./poker-ui-fixture.cjs');
 (async()=>{
  const f=await fixture(),screens=[];
  try{
-  const a=await screen(f,f.users[0]),b=await screen(f,f.users[1]);screens.push(a,b);
+  const a=await screen(f,f.users[0],{settings:{audio:{voiceStyle:'korean'}}}),b=await screen(f,f.users[1],{settings:{audio:{voiceStyle:'calm'}}});screens.push(a,b);
   a.click('[data-action=online]');b.click('[data-action=online]');
   await until(()=>a.find('#poker-create')&&b.find('#poker-join')&&a.requests.length===2&&b.requests.length===2,'online lobby');await pause();
   a.find('#poker-create [name=capacity]').value='2';a.find('#poker-create').dispatchEvent(new a.w.Event('submit',{bubbles:true,cancelable:true}));
@@ -35,7 +35,9 @@ const {screen,until,pause}=require('./poker-ui-fixture.cjs');
   other.click('[data-action=half]');await until(()=>other.last.room.game.turn!==other.last.room.seat,'half committed');
   assert.equal(other.requests.at(-1).command.preset,'half','selected preset reaches the server');
   assert.equal(other.sounds.filter(c=>c==='half').length,1,'confirmed half bet is spoken once');
+  assert.equal(other.soundCalls.findLast(c=>c.kind==='half').seat,0,'my action uses my saved voice after rotating the table');
   await active.poll();assert.equal(active.sounds.filter(c=>c==='half').length,1,'opponent hears the same exact call');
+  assert.equal(active.soundCalls.findLast(c=>c.kind==='half').seat,1,'the same action uses an opponent voice on the other client');
   await active.poll();assert.equal(active.sounds.filter(c=>c==='half').length,1,'polling never repeats the call');
   const bankBefore=a.last.room.game.players[a.last.room.seat].stack;
   a.click('[data-action=online-leave]');assert.match(a.find('#exit-dialog p').textContent,/다이/);a.click('#confirm-exit');await until(()=>a.last.room===null,'leave');

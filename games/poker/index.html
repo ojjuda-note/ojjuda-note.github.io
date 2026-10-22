@@ -22,7 +22,7 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261022-voice3">
+  <link rel="stylesheet" href="style.css?v=20261022-seatvoices1">
   <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
   <link rel="stylesheet" href="entry.css?v=20261021-poker-entry1">
   <link rel="stylesheet" href="table-layout.css?v=20261021-handmotion4">
@@ -56,19 +56,21 @@
   <dialog id="sound-dialog" aria-labelledby="sound-title">
     <header><h2 id="sound-title">음성·효과음</h2><button data-close-dialog aria-label="닫기">×</button></header>
     <label class="sound-toggle"><span>음성·효과음 켜기</span><input id="sound-enabled" type="checkbox" checked></label>
-    <fieldset class="sound-voices"><legend>목소리</legend><div class="sound-voice-options">
+    <fieldset class="sound-voices" aria-describedby="voice-assignment"><legend>내 목소리</legend><div class="sound-voice-options">
       <label><input type="radio" name="poker-voice" value="classic" checked><span><b>남성 1</b><small>Grady</small></span></label>
       <label><input type="radio" name="poker-voice" value="calm"><span><b>남성 2</b><small>Holden</small></span></label>
-      <label><input type="radio" name="poker-voice" value="bright"><span><b>여성</b><small>Ainsley</small></span></label>
+      <label><input type="radio" name="poker-voice" value="bright"><span><b>여성 1</b><small>Ainsley</small></span></label>
+      <label><input type="radio" name="poker-voice" value="korean"><span><b>한국어 여성</b><small>하나</small></span></label>
     </div></fieldset>
+    <p id="voice-assignment" class="muted">상대는 남은 목소리를 하나씩 사용해요.</p>
     <label class="sound-volume-label" for="sound-volume">음량 <output id="sound-volume-value" for="sound-volume">45%</output></label>
     <input id="sound-volume" type="range" min="0" max="100" step="5" value="45">
-    <p class="muted">삥 · 쿼터 · 하프 · 체크 · 콜 · 다이 · 올인 음성<br>카드 소리 · 내 차례 · 승리 알림<br>설정은 이 기기에 저장돼요.</p>
     <button data-action="sound-test">선택한 목소리 듣기</button>
+    <p class="muted sound-saved-hint">설정은 이 기기에 저장돼요.</p>
   </dialog>
   <dialog id="cards-dialog" aria-labelledby="cards-title"><header><h2 id="cards-title">공개된 카드</h2><button data-close-dialog aria-label="닫기">×</button></header><div id="cards-content"></div></dialog>
   <dialog id="refill-dialog" aria-labelledby="refill-title"><header><h2 id="refill-title">포커 골드 충전</h2><button data-close-dialog aria-label="닫기">×</button></header><p>5쭈를 사용해 5,000골드를 충전할까요?</p><p id="refill-message" role="status"></p><div class="dialog-actions"><button data-close-dialog>취소</button><button class="primary" id="confirm-refill">5쭈로 충전</button></div></dialog>
   <dialog id="exit-dialog" aria-labelledby="exit-title"><header><h2 id="exit-title">오락실로 돌아갈까요?</h2></header><p>진행 중인 판은 저장돼요. 다시 들어오면 이어서 할 수 있어요.</p><div class="dialog-actions"><button data-close-dialog>계속하기</button><button class="primary" id="confirm-exit">저장하고 나가기</button></div></dialog>
-  <script type="module" src="app.mjs?v=20261022-voice3"></script>
+  <script type="module" src="app.mjs?v=20261022-seatvoices1"></script>
 </body>
 </html>

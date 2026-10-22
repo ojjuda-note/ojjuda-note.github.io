@@ -248,7 +248,7 @@ dialog p{font-size:12px;line-height:1.9;color:#b0c0a8}
 .sound-toggle input{width:23px;height:23px;accent-color:var(--gold)}
 .sound-voices{border:0;padding:0;margin:18px 0 0;min-width:0}
 .sound-voices legend{font-size:12px;color:#aec0a5;margin-bottom:10px;padding:0}
-.sound-voice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sound-voice-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .sound-voice-options label{position:relative;cursor:pointer;min-width:0}
 .sound-voice-options input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
 .sound-voice-options span{display:flex;flex-direction:column;justify-content:center;gap:7px;min-height:72px;padding:10px 4px;text-align:center;border:1px solid #d7c28b33;border-radius:10px;background:#07130d66;color:#c4d0bd;transition:border-color .15s,background .15s,color .15s}
@@ -259,6 +259,17 @@ dialog p{font-size:12px;line-height:1.9;color:#b0c0a8}
 .sound-volume-label{display:flex;justify-content:space-between;margin:20px 0 6px;font-size:12px;color:#aec0a5}
 .sound-volume-label output{font-variant-numeric:tabular-nums;color:var(--gold)}
 #sound-volume{width:100%;height:36px;accent-color:var(--gold);cursor:pointer}
+#sound-dialog [data-action="sound-test"]{width:100%;min-height:44px;margin-top:8px}
+#sound-dialog .sound-saved-hint{margin-bottom:0;text-align:center}
+@media(max-height:620px){
+  #sound-dialog{padding:18px}
+  #sound-dialog header{margin-bottom:10px}
+  #sound-dialog .sound-toggle{min-height:36px}
+  #sound-dialog .sound-voices{margin-top:10px}
+  #sound-dialog .sound-voice-options span{min-height:60px;gap:4px;padding:8px 4px}
+  #sound-dialog .muted{margin:10px 0;font-size:11px;line-height:1.5}
+  #sound-dialog .sound-volume-label{margin-top:12px}
+}
 @keyframes revealCard{0%{filter:brightness(.5);scale:.04 1}100%{filter:brightness(1);scale:1 1}}
 @keyframes betToPot{from{opacity:1;translate:0 0}to{opacity:0;translate:var(--travel) 80px;scale:.65}}
 @keyframes playerBetToPot{from{opacity:1;translate:0 20px}to{opacity:0;translate:0 -60px;scale:.65}}

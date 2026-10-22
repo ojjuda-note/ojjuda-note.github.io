@@ -116,6 +116,46 @@ const profiles={
         0.58
       ]
     }
+  },
+  "korean": {
+    "speaker": "Hana",
+    "gender": "female",
+    "language": "ko-KR",
+    "file": "./audio/hana-ko-v1.mp3",
+    "cues": {
+      "minimum": [
+        0.0,
+        0.705
+      ],
+      "quarter": [
+        1.6,
+        0.665
+      ],
+      "half": [
+        3.2,
+        0.72
+      ],
+      "check": [
+        4.8,
+        0.545
+      ],
+      "call": [
+        6.4,
+        0.605
+      ],
+      "fold": [
+        8.0,
+        0.635
+      ],
+      "allin": [
+        9.6,
+        0.955
+      ],
+      "raise": [
+        11.2,
+        0.665
+      ]
+    }
   }
 };
 for(const profile of Object.values(profiles)){

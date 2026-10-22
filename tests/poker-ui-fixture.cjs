@@ -5,7 +5,7 @@ async function until(fn,label){for(let i=0;i<600;i++){if(fn())return;await pause
 async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=null}={}){
  const rules=await import('../games/poker/engine.mjs'),motion=await import('../games/poker/deal-motion.mjs');
  const dom=new JSDOM(fs.readFileSync(path.join(root,'games/poker/index.html'),'utf8'),{url:'https://ojjuda.kr/games/poker/index.html',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,requests=[],sounds=[],messages=[],flights=[],jobs=new Map();let last=null,polls=[],serial=0,now=0;
+ const w=dom.window,requests=[],sounds=[],soundCalls=[],messages=[],flights=[],jobs=new Map();let last=null,polls=[],serial=0,now=0;
  w.structuredClone=structuredClone;w.matchMedia=()=>({matches:!animate,addEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
  if(animate){
@@ -25,7 +25,7 @@ async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=n
   const data=await f.call(actor,message.body);last=data;
   w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:parent,data:{source:'ojjuda-world',type:'poker-rpc',id:message.id,data,error:data.error}}));
  }};Object.defineProperty(w,'parent',{value:parent});
- w.__rules=rules;w.__motion=motion;const audio={enabled:true,volume:.45,voiceStyle:'classic'};w.__audio={pokerActionCue:(await import('../games/poker/sound.mjs')).pokerActionCue,createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:x=>sounds.push(x),unlock:async()=>true,pause(){}})};
+ w.__rules=rules;w.__motion=motion;const audio={enabled:true,volume:.45,voiceStyle:'classic'};w.__audio={pokerActionCall:(await import('../games/poker/sound.mjs')).pokerActionCall,createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:(kind,options={})=>{sounds.push(kind);soundCalls.push({kind,...options});},preloadPlayers(){},unlock:async()=>true,pause(){}})};
  if(saved)w.localStorage.setItem('ojjuda.poker.practice.v1.'+actor,JSON.stringify(saved));
  if(settings)w.localStorage.setItem('ojjuda.poker.settings.v2.'+actor,JSON.stringify(settings));
  w.eval(fs.readFileSync(path.join(root,'games/poker/online-client.mjs'),'utf8').replace(/export /g,'')+'\nwindow.__online={createOnlineClient,rotateView};');
@@ -34,7 +34,7 @@ async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=n
  message({source:'ojjuda-world',type:'poker-init',owner:actor,joinCode});
  const find=s=>w.document.querySelector(s),click=s=>{const el=find(s);assert.ok(el,s);assert.equal(el.disabled,false,s);el.click();};
  await until(()=>last?.wallet,'server wallet');await pause();
- return {w,find,click,requests,sounds,messages,flights,message,get last(){return last;},
+ return {w,find,click,requests,sounds,soundCalls,messages,flights,message,get last(){return last;},
   async poll(){const p=polls.pop();polls=[];if(p)await p();await pause();},
   finishDeal(){let n=0;while(find('.is-dealing')){assert.ok(++n<100,'motion finishes');const next=[...jobs].sort((a,b)=>a[1].due-b[1].due)[0];assert.ok(next);jobs.delete(next[0]);now=next[1].due;next[1].fn();}},
   close(){w.dispatchEvent(new w.Event('pagehide'));dom.window.close();}
