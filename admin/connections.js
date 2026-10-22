@@ -4,7 +4,7 @@
   const REPO = 'https://github.com/ojjuda-note/ojjuda-note.github.io';
   const API = 'https://api.github.com/repos/ojjuda-note/ojjuda-note.github.io';
   const PROJECT = 'https://supabase.com/dashboard/project/ziezbdjofcugznowiuda';
-  const VERIFIED = '2026-10-21';
+  const VERIFIED = '2026-10-22';
   const BACKUP_MAX_AGE = 8 * 24 * 3600000;
   // Verified against production config, database/storage metadata, source and
   // the backup job. Gabia and NAVER Cloud were also confirmed by the owner.
@@ -15,10 +15,10 @@
     { group: '사이트·운영', name: 'GitHub Pages · 오쭈다', importance: 'important', tag: '서비스 운영',
       address: 'ojjuda.kr', data: '오락실·공원·설정·관리자 화면과 공개 이미지 파일 제공',
       note: '웹 화면을 제공하는 서버예요. 회원 DB와 업로드 사진 원본은 Supabase에 있어요.',
-      links: [['오쭈다', 'https://ojjuda.kr/'], ['공원', 'https://ojjuda.kr/world.html?place=park'], ['Pages 설정', `${REPO}/settings/pages`]] },
-    { group: '사이트·운영', name: 'GitHub Pages · 사용 안내', importance: 'normal', tag: '안내 사이트',
-      address: 'ojjuda.com · ojjuda-com-redirect', data: '서비스 소개·사용법과 오쭈다 접속 안내',
-      note: '별도 GitHub 저장소에서 안내 페이지를 제공해요.', links: [['안내 사이트', 'https://ojjuda.com/'], ['안내 소스', 'https://github.com/ojjuda-note/ojjuda-com-redirect']] },
+      links: [['오락실', 'https://ojjuda.kr/'], ['공원', 'https://ojjuda.com/'], ['Pages 설정', `${REPO}/settings/pages`]] },
+    { group: '사이트·운영', name: 'GitHub Pages · 공원 입구', importance: 'normal', tag: '공원 바로가기',
+      address: 'ojjuda.com · ojjuda-com-redirect', data: 'ojjuda.com으로 들어오면 같은 아지트의 공원으로 연결',
+      note: '오락실은 ojjuda.kr, 공원은 ojjuda.com으로 들어와요. 회원 계정과 자료는 함께 사용해요.', links: [['공원', 'https://ojjuda.com/'], ['연결 소스', 'https://github.com/ojjuda-note/ojjuda-com-redirect']] },
     { group: '사이트·운영', name: 'GitHub · 운영 소스', importance: 'critical', tag: '핵심 자료',
       address: 'ojjuda-note/ojjuda-note.github.io', data: 'HTML·JS·CSS, 기본 사진, SQL·서버 함수 소스, 배포·복구 코드와 변경 이력',
       note: 'main 브랜치가 운영 배포 원본이에요. 공개 저장소이므로 비밀값을 넣지 않아요.', links: [['운영 소스', REPO]] },
