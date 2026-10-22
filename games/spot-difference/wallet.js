@@ -3,7 +3,7 @@
   const listeners=new Set();
   const state={ready:false,userId:null,coins:null,error:null,canViewAnswers:false};
   const ownerUserId='22188825-167a-488b-8914-1b6ecc5ea717';
-  // This is the public browser key already used by Ojjuda World, never a secret.
+  // This is the public browser key already used by Ojjuda Agit, never a secret.
   const client=window.supabase?.createClient('https://ziezbdjofcugznowiuda.supabase.co','sb_publishable_iUpPUBr2HlJr9LhDRVtB0Q_toJUMazo',{
     auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
   });

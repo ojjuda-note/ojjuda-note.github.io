@@ -106,7 +106,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     const app = setup(`?auth=signup&next=${destination}`); await app.flush();
     assert.equal(app.element('auth-dialog').open, true);
     assert.equal(app.element('signup-tab').attributes['aria-selected'], 'true');
-    assert.equal(app.element('auth-title').textContent, '오쭈다 월드');
+    assert.equal(app.element('auth-title').textContent, '오쭈다 아지트');
     assert.equal(app.element('.password-confirm-field').hidden, false);
     assert.equal(app.element('password-confirm-label').textContent, '비밀번호 확인');
     assert.equal(app.element('password-confirm').required, true);

@@ -466,7 +466,7 @@ function newRoundId(){ return typeof window.crypto?.randomUUID==='function'?cryp
 function startSolo(){ roundId=newRoundId();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId},location.origin); $('menu').style.display='none'; closePanels(); Net.close(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
 function toMenu(){ if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin);if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
 // ================= 친구와 대결 (각자 폰) =================
-// 연결: 오쭈다월드 안에서는 Supabase 실시간 채널, 그 밖에서는 같은 기기의 다른 창끼리(시험용)
+// 연결: 오쭈다 아지트 안에서는 Supabase 실시간 채널, 그 밖에서는 같은 기기의 다른 창끼리(시험용)
 const Net={ tr:null, kind:null, lastRx:0, sendT:0, generation:0,
   send(m){ try{ this.tr&&this.tr.send(m); }catch{} },
   close(){ this.generation++;try{ this.tr&&this.tr.send({t:'bye'}); }catch{} try{ this.tr&&this.tr.close(); }catch{} this.tr=null; this.kind=null; } };
@@ -518,7 +518,7 @@ function lobby(){ const o=panel(`<h2>친구와 대결</h2><p>각자 자기 폰�
   <button class="big g" id="back">뒤로</button><p id="netinfo" style="font-size:12.5px;margin:12px 0 0"></p>`,{back:()=>{}});
   o.querySelector('#mk').onclick=()=>{ o.remove(); hostRoom(); };
   o.querySelector('#jn').onclick=()=>{ const c=o.querySelector('#code').value.replace(/\D/g,''); if(c.length!==4){ o.querySelector('#code').style.borderColor='#EC6D6D'; return; } o.remove(); joinRoom(c); };
-  getSupabase().then(sb=>{ const el=o.querySelector('#netinfo'); if(el) el.textContent=sb?'🌐 온라인 연결 준비됨 (오쭈다월드)':'💻 지금은 오쭈다월드 밖이라 같은 기기의 창 두 개로만 시험할 수 있어요'; }); }
+  getSupabase().then(sb=>{ const el=o.querySelector('#netinfo'); if(el) el.textContent=sb?'🌐 온라인 연결 준비됨 (오쭈다 아지트)':'💻 지금은 오쭈다 아지트 밖이라 같은 기기의 창 두 개로만 시험할 수 있어요'; }); }
 function waitPanel(title,msg,onCancel){ return panel(`<h2>${title}</h2><p id="wmsg">${msg}</p><div class="spin"></div><button class="big g" id="cancel">취소</button>`,{cancel:()=>{ onCancel&&onCancel(); }}); }
 async function hostRoom(inviteCode,{publicRoom=false}={}){ Net.close();const attempt=Net.generation;const code=inviteCode||String(1000+Math.floor(Math.random()*9000)); let cancelled=false;
   const w=waitPanel(publicRoom?'상대를 기다리는 중':inviteCode?'친구를 기다리는 중':`방 번호 <span style="color:#7E69D6;letter-spacing:.15em">${code}</span>`,publicRoom?'오락실 대전방에서 상대가 들어오면 바로 시작해요.':inviteCode?'친구가 초대를 받으면 바로 시작해요.':'친구에게 이 번호를 알려 주세요. 친구가 들어오면 바로 시작해요.',()=>{ cancelled=true;if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); });
