@@ -7,7 +7,7 @@ const root=path.join(__dirname,'..');
   const errors=[];
   const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','상대'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
   const stamp=room=>({...structuredClone(room),deadline:new Date(Date.now()+15000).toISOString(),serverTime:Date.now()});
-  async function screen({muted=false,reduced=false,resume=initial}={}){
+  async function screen({muted=false,reduced=false,resume=initial,enter=true}={}){
     const context=await browser.newContext({viewport:{width:390,height:820},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
     await context.addInitScript(({muted,room})=>{
       localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;
@@ -32,18 +32,19 @@ const root=path.join(__dirname,'..');
       return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
     });
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-    await page.goto('https://fixture.test/games/matgo-online.html');await page.locator('#hand').waitFor();
+    await page.goto('https://fixture.test/games/matgo-online.html');if(enter){await page.locator('#resume-room').click();await page.locator('#hand').waitFor();}
     await page.evaluate(()=>new MutationObserver(()=>{const event=document.querySelector('#event');if(!event.hidden)eventScreens.push({kind:event.dataset.kind,text:event.textContent,at:performance.now()});}).observe(document.querySelector('#event'),{attributes:true,childList:true}));
     return {page,context};
   }
   async function present(page,next){await page.evaluate(next=>{fixtureRoom=next;window.presenting=effectsTest.accept(next);},stamp(next));}
   const played={...structuredClone(initial),version:2,eventCount:4,events:[{id:0,type:'played',p:0,card:CARDS[0],stack:[CARDS[1],CARDS[0]]},{id:1,type:'flip',p:0,card:CARDS[4],stack:[CARDS[4]]},{id:2,type:'take',p:0,cards:[CARDS[1],CARDS[0]]},{id:3,type:'ttadak',p:0}],game:{...structuredClone(initial.game),hand:[CARDS[8]],floor:[{cards:[CARDS[4]]}],caps:[[CARDS[1],CARDS[0]],[]],deckCount:19,turn:1,prompt:{type:'waiting',p:1}}};
   try{
-    const {page,context}=await screen();
+    const {page,context}=await screen({enter:false});
     assert.equal(await page.evaluate(()=>audioContexts.length),0,'no AudioContext before a trusted gesture');
     await page.locator('#sound-start').tap();
     await page.waitForFunction(()=>audioStarts.some(s=>s.state==='running'&&s.energy),null,{timeout:10000}).catch(async error=>{console.error(await page.evaluate(()=>({contexts:audioContexts.map(c=>c.state),starts:audioStarts})));throw error;});
     assert.equal(await page.locator('#sound-start').isVisible(),false);
+    await page.locator('#resume-room').click();await page.locator('#hand').waitFor();
     await present(page,played);
     await page.waitForSelector('.online-flying-card');
     assert.equal(await page.locator('#hand button:not(:disabled)').count(),0,'no moves during presentation');

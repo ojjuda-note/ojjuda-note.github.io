@@ -72,7 +72,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(f.state.requests.some(r=>r.action==='start'||r.action==='status'),false);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(await f.page.locator('#tazza-benefit').isVisible(),false);
     await f.page.waitForFunction(()=>[...document.querySelectorAll('.cpu-portrait img')].every(i=>i.complete&&i.naturalWidth>1000));
@@ -113,7 +113,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   {
     const f=await fixture({gold:900001,purchaseMode:'tan',purchaseSeed:2});
-    await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.locator('#tazza-mode').click();f.state.round=null;
     await f.page.evaluate(async()=>{matgoTest.game.over=true;await matgoTest.startRound();});
     assert.equal(f.state.coins,15);assert.match(await f.page.locator('#tazza-benefit').textContent(),/탄쓰기.*승리 보장/);
@@ -144,7 +144,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(f.state.requests.filter(r=>r.action==='tazza_start').length,1);
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+  const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
   await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
   assert.match(await f.page.locator('#money').textContent(),/5,000G/);
   await f.page.locator('#menu').click();await f.page.locator('#rules').click();assert.match(await f.page.locator('.modal').textContent(),/자뻑.*피 2장/);assert.match(await f.page.locator('.modal').textContent(),/5 ZU/);
@@ -174,7 +174,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   assert.equal(f.state.requests.filter(r=>r.action==='settle').length,1,'leaving a completed game does not settle twice');
   assert.deepEqual(f.errors,[]);await f.context.close();
   {
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c}])),take=id=>{const c=pool.get(id);pool.delete(id);return c;};
       g.hand=[[0,1,16].map(take),[40,41].map(take)];g.floor=[2,3,8].map(id=>[take(id)]);g.caps=[[],[10,11].map(take)];
@@ -189,7 +189,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const choice of ['yul','pi']){
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c,asPi:false}]));
@@ -227,7 +227,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const decision of ['win','continue']){
-    const f=await fixture({seed:9});await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture({seed:9});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForSelector('#chongtong-win');assert.match(await f.page.locator('.modal').textContent(),/총통/);
     assert.equal(await f.page.locator('.chongtong-cards svg').count(),4);
     await f.page.setViewportSize({width:320,height:660});assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -242,11 +242,11 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture({seed:77});await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture({seed:77});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForSelector('.sc');assert.equal(f.state.gold,4300);assert.match(await f.page.locator('.sc').textContent(),/총통7점/);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const [seed,card,delta] of [[11,40,300],[856,39,-300]]){
-    const f=await fixture({seed,rulesVersion:12});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    const f=await fixture({seed,rulesVersion:12});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       window.firstPpukEvents=[];
       new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1&&node.classList.contains('banner')&&node.textContent.includes('첫뻑'))firstPpukEvents.push(node.textContent);}).observe(document.body,{childList:true});
@@ -267,13 +267,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.match((await f.page.evaluate(()=>firstPpukEvents)).join(' '),/첫뻑!.*300G.*판 종료 시 정산/);
     assert.match(await f.page.locator('#money').textContent(),/5,000G/);assert.equal(f.state.gold,5000);
     assert.equal(f.state.requests.some(r=>r.action==='settle'),false,'opening event never sends a payout');
-    await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.reload();await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(await f.page.locator('#goldPending').isHidden(),true);assert.equal(f.state.gold,5000);
     assert.equal(f.state.requests.some(r=>r.action==='settle'),false,'leaving an unfinished round does not pay');
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture({seed:11});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
+    const f=await fixture({seed:11});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest);
     for(let i=0;i<1200&&!f.state.settled;i++){
       await f.page.evaluate(()=>{
         const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#stop')||modal.querySelector('#n')||modal.querySelector('button'))?.click();return;}
@@ -289,7 +289,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture({seed:856,rulesVersion:12});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest);
+    const f=await fixture({seed:856,rulesVersion:12});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest);
     for(let i=0;i<1500&&!f.state.settled;i++){
       await f.page.evaluate(()=>{
         const modal=document.querySelector('.modal');if(modal){(modal.textContent.includes('두 장 폭탄')?modal.querySelector('#n'):(modal.querySelector('#chongtong-continue')||modal.querySelector('#go')||modal.querySelector('#y')||modal.querySelector('button')))?.click();return;}
@@ -306,7 +306,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   {
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(()=>{
       const {game:g,CARDS,render}=matgoTest,pool=new Map(CARDS.map(c=>[c.id,{...c}]));
       const take=id=>{const c=pool.get(id);pool.delete(id);return c;};
@@ -326,7 +326,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   // Reloading an old round must visibly remain old until its valid settlement.
   {
     const old={id:crypto.randomUUID(),rules_version:11,seed:5,gold:5000,first:0,carry:1,cpu_level:1};
-    const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),false);
     assert.match(await f.page.locator('#round-rules-note').textContent(),/이전 판 이어하기.*다음 판부터/);
@@ -338,7 +338,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({message:'legacy notice leaves the hand on screen',width,height,hand}));
     }
     fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/legacy.png'});
-    await f.page.reload();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+    await f.page.reload();await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(f.state.round.id,old.id);assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
     for(let i=0;i<1500&&!f.state.settled;i++){
       await f.page.evaluate(()=>{
@@ -359,17 +359,17 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   // An update response has a real refresh action, not an endless start retry.
   {
-    const f=await fixture({updateRequired:true});await f.page.goto('https://fixture.test/games/matgo.html?entry=kept');
+    const f=await fixture({updateRequired:true});await f.page.goto('https://fixture.test/games/matgo.html?entry=kept');await f.page.locator('#matgo-start-play').click();
     await f.page.locator('#refresh-start').waitFor();assert.equal(f.state.round,undefined);
     f.state.updateRequired=false;await f.page.locator('#refresh-start').click();
-    await f.page.waitForURL(url=>url.searchParams.has('update'));
+    await f.page.waitForURL(url=>url.searchParams.has('update'));await f.page.locator('#matgo-start-play').click();
     assert.equal(new URL(f.page.url()).searchParams.get('entry'),'kept');
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     assert.equal(f.state.round.rules_version,13);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   // Opening triples come from a real deal and pay one pi, including a whole bonus.
   for(const p of [0,1])for(const route of ['hand','flip']){
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(async({p,route})=>{
       const E=await import('/games/matgo-engine.mjs');const {setupOpening}=await import('/tests/matgo-opening-fixture.mjs');
@@ -388,7 +388,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   // A genuine ppuk capture distinguishes an empty pile from a one-pi shortfall.
   for(const p of [0,1])for(const available of [0,1]){
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     const notices=await f.page.evaluate(async({p,available})=>{
       const {setupTripleScenario,tripleScenarios}=await import('/tests/matgo-triple-fixtures.mjs');
@@ -405,7 +405,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   // The reported case: the opponent has no ordinary/double pi, only one 3-pi bonus.
   for(const scenario of (await import('./matgo-triple-fixtures.mjs')).tripleScenarios){
-    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(async scenario=>{
       const {setupTripleScenario}=await import('/tests/matgo-triple-fixtures.mjs');
@@ -429,14 +429,14 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const options of [{gold:0,freeUsed:0},{gold:0,freeUsed:2},{gold:0,freeUsed:2,coins:4}]){
-    const f=await fixture(options);await f.page.goto('https://fixture.test/games/matgo.html');await f.page.waitForSelector('#refill-gold');
+    const f=await fixture(options);await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();await f.page.waitForSelector('#refill-gold');
     assert.match(await f.page.locator('#refill-gold').textContent(),options.freeUsed<2?/무료/:/5 ZU/);await f.page.locator('#refill-gold').click();
     if(options.coins===4){await f.page.waitForSelector('#gold-error');assert.match(await f.page.locator('#gold-error').textContent(),/부족/);assert.equal(f.state.gold,0);}
     else{await f.page.waitForFunction(()=>document.querySelector('#money')?.textContent.includes('5,000'));assert.equal(f.state.gold,5000);assert.equal(f.state.coins,options.freeUsed<2?20:15);}
     assert.equal(f.state.requests.filter(r=>r.action==='refill').length,1);assert.deepEqual(f.errors,[]);await f.context.close();
   }
   for(const [gold,freeUsed] of [[500,0],[999,2],[1000,0]]){
-    const f=await fixture({gold,freeUsed});await f.page.goto('https://fixture.test/games/matgo.html');
+    const f=await fixture({gold,freeUsed});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     // Finish the fixture's server round before invoking the real recharge control.
     f.state.round=null;await f.page.evaluate(()=>{matgoTest.game.over=true});await f.page.locator('#money').click();

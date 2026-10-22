@@ -26,7 +26,7 @@ const root=path.join(__dirname,'..');
    return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':undefined});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('https://fixture.test/games/matgo.html');
+  await page.goto('https://fixture.test/games/matgo.html');await page.locator('#matgo-start-play').click();
   const ready=()=>page.waitForFunction(()=>window.stakesTest&&!stakesTest.ui.busy&&!stakesTest.ui.dealing&&document.querySelector('#stakeRate'));
   await ready();assert.equal(await page.locator('#matgo-stake').count(),0);
   assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
@@ -37,25 +37,25 @@ const root=path.join(__dirname,'..');
   fs.mkdirSync('/tmp/matgo-basic-proof',{recursive:true});await page.screenshot({path:'/tmp/matgo-basic-proof/middle.png'});
   const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
   assert.equal(fits,true,'compact level display fits a 320px mobile screen');
-  await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  await page.reload();await page.locator('#matgo-start-play').click();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
   const end=async(gold)=>{const s=await call(A,{action:'status'});await db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,$3,0::smallint,1)",[A,s.round.id,gold]);};
   // Win/loss streaks never alter the tier while gold stays the same.
   for(let i=0;i<5;i++){
     assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움');
-    await end(400000);await page.reload();await ready();
+    await end(400000);await page.reload();await page.locator('#matgo-start-play').click();await ready();
   }
   assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움');
-  for(let i=0;i<3;i++){await end(400000);await page.reload();await ready();}
+  for(let i=0;i<3;i++){await end(400000);await page.reload();await page.locator('#matgo-start-play').click();await ready();}
   assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움');
-  for(let i=0;i<3;i++){await end(400000);await page.reload();await ready();}
+  for(let i=0;i<3;i++){await end(400000);await page.reload();await page.locator('#matgo-start-play').click();await ready();}
   assert.equal(await page.locator('#cpuLevel').innerText(),'조금 어려움','consecutive losses do not alter the gold tier');
-  await end(125000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  await end(125000);await page.reload();await page.locator('#matgo-start-play').click();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
   assert.equal(await page.locator('#cpuLevel').innerText(),'기본');
   await page.screenshot({path:'/tmp/matgo-basic-proof/basic.png'});
-  await end(0);await page.reload();await page.locator('#refill-gold').waitFor();
+  await end(0);await page.reload();await page.locator('#matgo-start-play').click();await page.locator('#refill-gold').waitFor();
   assert.equal(await page.locator('#stakeRate').innerText(),'점당 100G');
   await page.locator('#refill-gold').tap();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),100);
-  await end(600000);await page.reload();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),4000);
+  await end(600000);await page.reload();await page.locator('#matgo-start-play').click();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),4000);
   assert.equal(await page.locator('#cpuLevel').innerText(),'아주 어려움');
   fs.mkdirSync('/tmp/matgo-basic-proof',{recursive:true});await page.screenshot({path:'/tmp/matgo-basic-proof/expert.png'});
   assert.equal(await page.locator('#matgo-stake').count(),0);
