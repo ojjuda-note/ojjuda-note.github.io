@@ -159,7 +159,7 @@ function eliminationGame() {
     send(payload,'https://other.test');send(payload,'https://fixture.test',w);
     send({...payload,myRank:1});send({...payload,ranking:payload.ranking.map(p=>({...p,assets:-1}))});
     await Promise.resolve();assert.equal(calls.length,0);
-    send();send();await Promise.resolve();assert.deepEqual(calls,[[0,payload.runId]],'duplicate messages make one score request');
+    send();send();await Promise.resolve();assert.deepEqual(calls,[[false,payload.runId]],'duplicate messages make one score request');
     finish({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
     send();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(calls.length,1,'successful retries reuse the receipt');
     assert.equal(receipts.at(-1).ok,true);
@@ -167,7 +167,7 @@ function eliminationGame() {
   } finally {resultHost.window.close();}
   const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
   const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{}});
-  assert.equal(games.tour.name,'오쭈다 마블');assert.equal(games.tour.unit,'만');
+  assert.equal(games.tour.name,'오쭈다 마블');assert.equal(games.tour.unit,'연승');
   const a=eliminationGame();
   try {
     const {w,$}=a;

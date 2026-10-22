@@ -21,7 +21,7 @@
   function flush() {
     if (!ready || !pending || flight) return;
     flight = pending; pending = null;
-    status(`${flight.score.toLocaleString('ko-KR')}점 · 순위 등록 중…`);
+    status(`${game.levels[flight.difficulty].name} · ${flight.seconds.toLocaleString('ko-KR')}초 · 순위 등록 중…`);
     post({type:'ojjuda-game-result', ...flight, completed:true});
     timeout = setTimeout(() => {
       if (!flight) return;
@@ -54,7 +54,7 @@
       ready = true;
       $('#minesLevel').value = game.getState().d;
       $('#minesStart').disabled = false;
-      $('#minesEntryHint').textContent = '완료한 기록은 게임순위에 자동 등록돼요.';
+      $('#minesEntryHint').textContent = '난이도 → 완료 시간 → 먼저 달성한 순서로 순위를 정해요.';
       progress();
     }
     if (!ready) return;
@@ -62,7 +62,7 @@
     if (m.type === 'ojjuda-mines-record' && flight?.runId === m.runId) {
       clearTimeout(timeout);
       if (m.ok === true) {
-        status(`${flight.score.toLocaleString('ko-KR')}점 · 게임순위 등록 완료`);
+        status(`${game.levels[flight.difficulty].name} · ${flight.seconds.toLocaleString('ko-KR')}초 · 게임순위 등록 완료`);
         flight = null;
         if (pending) setTimeout(flush, 5500);
       } else {
@@ -78,7 +78,8 @@
       for (const row of rows) {
         const li = document.createElement('li'), points = document.createElement('b');
         li.textContent = String(row.nick || '손님').slice(0, 20);
-        points.textContent = `${Math.max(0, Number(row.score) || 0).toLocaleString('ko-KR')}점`;
+        const record = rules.record(Number(row.score));
+        points.textContent = record ? `${record.name} · ${record.time}` : '기록 없음';
         li.append(points); list.append(li);
       }
     }

@@ -91,6 +91,7 @@ try {
   assert.equal($('#board .boom'),null);assert.equal($('#board .o'),null,'old mine animations cannot reveal a fresh board');
   receive({type:'ojjuda-mines-ranking',rows:[{nick:'<img src=x onerror=alert(1)>',score:12345}]});
   assert.equal($('#minesRanking img'),null);
+  assert.match($('#minesRanking').textContent,/바보 · 127분 35초/);
   assert.ok(messages.every(m=>m.origin==='https://fixture.test'));
   const stored=JSON.parse(w.localStorage.getItem('ojjuda.mines.save.v1:guest'));
   assert.equal(stored.best[7],10);
@@ -135,6 +136,9 @@ try {
   assert.equal(corrupt.w.fixture.saved.custom.c,20);
   assert.ok(corrupt.w.fixture.saved.best.every(x=>x===null));
   const rules=corrupt.w.OjjudaMinesRules;
+  assert.ok(rules.score(5,60)>rules.score(1,10),'higher difficulty outranks a faster easy clear');
+  assert.ok(rules.score(5,30)>rules.score(5,60),'within one difficulty the faster clear wins');
+  assert.equal(rules.record(rules.score(5,60)).time,'1분 0초');
   assert.equal(rules.score(7,1),89999);assert.equal(rules.score(0,20000),10000);
   for(const [d,sec] of [[8,1],[-1,1],[1,0],[1,NaN],[1,1.5],['1',2]])assert.equal(rules.score(d,sec),null);
 } finally {corrupt.dom.window.close();}
@@ -145,7 +149,7 @@ for(const member of ['guest',owner]) {
   finally {migrated.dom.window.close();}
 }
 const world=read('world.html');
-assert.match(world,/mines:\{name:"지뢰찾기",emoji:"🚩",unit:"점"/);
+assert.match(world,/mines:\{name:"지뢰찾기",emoji:"🚩",unit:"초"/);
 assert.match(world,/mines:_r.mines/);assert.match(world,/OjjudaMinesGame\.open\(\{owner,authorized/);
 assert.match(world,/if\(entryGame==='mines'\)Al\('mines'\)/);
 assert.match(read('guest-game-scores.js'),/'mines'/);assert.match(read('world-game-assets.js'),/mines:\[/);

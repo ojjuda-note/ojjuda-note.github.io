@@ -22,7 +22,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
     for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
     for(const [id,game] of entries.slice(start,start+3)){
      const row=el('tr','','board-leader');row.dataset.game=id;
-     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='current_gold'?' · 이번 달 갱신된 보유 골드 기준':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
+     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='best_round_gain'?' · 이번 달 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
      const labelGame=target=>{if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));};labelGame(name);
      if(typeof onOpenGame==='function'){
       const play=button(game.name,async()=>{
@@ -33,7 +33,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
       },'board-game-open');
       play.setAttribute('aria-label',game.name+' 게임 열기');labelGame(play);name.replaceChildren(play);
      }
-     const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{row,nick,score,hasScore:false});
+     const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{row,name,nick,score,hasScore:false});
     }
    }
    let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false,initialLoading=true;
@@ -115,7 +115,19 @@ async function result(query){const {data,error}=await query;if(error)throw error
       const top=ranking?.[id]||null;
       target.hasScore=!!valid(top);
       if(target.hasScore){
-       nick.textContent=top.nick||'익명';nick.title=(game.rankingBasis==='current_gold'?'이번 달 보유 골드 1등 · ':game.rankingBasis==='current_streak'?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');score.replaceChildren(el('span',Number(top.score).toLocaleString('ko-KR')+game.unit,'board-score-value'));score.title=score.textContent;
+       nick.textContent=top.nick||'익명';
+       nick.title=(game.rankingBasis==='best_round_gain'?'이번 달 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak'].includes(game.rankingBasis)?'이번 달 연승 1등 · ':'이번 달 1등 · ')+(top.nick||'익명');
+       let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
+       if(game.rankingBasis==='difficulty_time'){
+        const record=window.OjjudaMinesRules?.record(Number(top.score));
+        value=record?.time||'—';detail=record?.name||'';
+       }else if(game.rankingBasis==='difficulty_streak'){
+        const level={online:'회원대결',hard:'어려움',normal:'보통',easy:'쉬움'}[top.difficulty]||'';
+        const variant=id==='billiards'?{carom4:'4구',carom3:'3쿠션',pool8:'포켓볼'}[top.variant]:'';
+        detail=[variant,level].filter(Boolean).join(' · ');
+       }
+       if(detail){const label=target.name.querySelector('button')||target.name;label.replaceChildren(el('span',game.name,'board-game-name'),el('small',detail,'board-game-difficulty'));}
+       score.replaceChildren(el('span',value,'board-score-value'));score.title=score.textContent;
       }else{
        score.textContent='—';score.removeAttribute('title');nick.removeAttribute('title');
        nick.replaceChildren(el('span','이번 달 기록 없음','board-leader-empty'));
@@ -145,7 +157,7 @@ void home();
   if((!games.matgo||!games.poker||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
    void matgoAccess.check().then(member=>{
     if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
-    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'current_gold'},poker:{name:'세븐포커',unit:'G',rankingBasis:'current_gold'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
+    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'best_round_gain'},poker:{name:'세븐포커',unit:'G',rankingBasis:'best_round_gain'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
     void home();
    }).catch(()=>{});
   }

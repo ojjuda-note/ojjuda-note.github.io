@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog';
       dialog.setAttribute('aria-label', '오쭈다 마블');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>오쭈다 마블</span></header><iframe title="오쭈다 마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261022-agit1" allow="fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>오쭈다 마블</span></header><iframe title="오쭈다 마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261022-ranks1" allow="fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
       const invitation = new AbortController();
@@ -75,7 +75,7 @@
         let pending = results.get(runId);
         if (!pending) {
           pending = Promise.resolve().then(() => authorized() && typeof onScore === 'function'
-            ? onScore(me.assets, runId) : {ok:false}).catch(() => ({ok:false}));
+            ? onScore(message.completed === true && message.won === true && myRank === 1 && !me.bankrupt, runId) : {ok:false}).catch(() => ({ok:false}));
           results.set(runId, pending);
         }
         const result = await pending;

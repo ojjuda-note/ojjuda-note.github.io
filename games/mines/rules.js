@@ -6,6 +6,14 @@
       if (!Number.isInteger(difficulty) || difficulty < 0 || difficulty > 7 || !validTime(seconds)) return null;
       return (difficulty + 1) * 10000 + Math.max(0, 10000 - seconds);
     },
+    record(score) {
+      if (!Number.isInteger(score) || score < 10000 || score > 89999) return null;
+      const difficulty = Math.floor(score / 10000) - 1;
+      const seconds = 10000 - score % 10000;
+      const names = ['바보','초보','기본','하급','중급','고급','천재','외계인'];
+      return {difficulty, name:names[difficulty], seconds,
+        time:seconds >= 10000 ? '10,000초 이상' : seconds >= 60 ? `${Math.floor(seconds / 60)}분 ${seconds % 60}초` : `${seconds}초`};
+    },
     progress(raw) {
       const saved = {d:2, best:Array(8).fill(null), custom:{c:20,r:20,m:60}, cb:{}};
       if (!raw || typeof raw !== 'object') return saved;

@@ -1,0 +1,100 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {PGlite}=require('@electric-sql/pglite');
+const {randomUUID}=require('node:crypto');
+const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
+(async()=>{const db=new PGlite();try{
+ const a=randomUUID(),b=randomUUID(),minor=randomUUID(),banned=randomUUID();
+ await db.exec(`create role anon;create role authenticated;create role service_role;
+ create schema auth;create schema ojjuda_game_internal;create schema ojjuda_guest_internal;
+ create schema ojjuda_matgo_internal;create schema ojjuda_poker_internal;create schema ojjuda_marble_internal;
+ create schema ojjuda_tank_internal;create schema ojjuda_account_internal;create schema ojjuda_rewards_internal;
+ grant usage on schema public,auth,ojjuda_guest_internal to anon,authenticated;
+ create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create table profiles(id uuid primary key,nickname text);
+ create table user_private(user_id uuid primary key,banned_until timestamptz);
+ create table ojjuda_account_internal.member_identity(user_id uuid,birth_date date);
+ create function public.is_banned(uuid) returns boolean language sql stable as $$select exists(select 1 from public.user_private where user_id=$1 and banned_until>now())$$;
+ create function public.blocked_between(uuid,uuid) returns boolean language sql stable as $$select false$$;
+ create function ojjuda_account_internal.age_on(date,date) returns int language sql immutable as $$select extract(year from age($2,$1))::int$$;
+ create function ojjuda_poker_internal.check_member(uuid) returns void language plpgsql as $$begin
+  if $1 is null or not exists(select 1 from ojjuda_account_internal.member_identity where user_id=$1 and birth_date<=current_date-interval '19 years') then raise exception 'adult_required';end if;
+ end$$;
+ create table public.board_games(id uuid,p1 uuid,p2 uuid,kind text,status text,result text,updated_at timestamptz);
+ create table ojjuda_game_internal.practice_results(user_id uuid,round_id uuid,game text,difficulty text,outcome text,created_at timestamptz);
+ create table ojjuda_matgo_internal.wallets(user_id uuid primary key,gold bigint,round_id uuid,last_round uuid);
+ create table ojjuda_matgo_internal.rooms(id uuid,host_id uuid,guest_id uuid,status text,result jsonb,round_no int,created_at timestamptz);
+ create table ojjuda_poker_internal.rooms(id uuid,members uuid[],round int,settled_round int,state jsonb,mode text,created_at timestamptz);
+ create table ojjuda_marble_internal.rooms(id uuid,members uuid[],ranked_at timestamptz,state jsonb);
+ create table ojjuda_tank_internal.rooms(id uuid,members uuid[],status text,mode text,state jsonb);
+ create function public.community_game_ranking(p_game text) returns json language plpgsql as $$begin return '[{"nick":"untouched","score":7}]'::json;end$$;
+ create function public.community_game_monthly_ranking(p_game text) returns json language plpgsql as $$begin return '[{"nick":"untouched","score":7}]'::json;end$$;
+ create function ojjuda_guest_internal.ranking(text,text,text) returns json language sql as $$select '[]'::json$$;
+ create function public.guest_game_ranking(p_game text,p_period text default 'day',p_guest_token text default null) returns json language sql as $$select '[]'::json$$;
+ create function ojjuda_rewards_internal.monthly_candidates(p_as_of timestamptz default now())
+ returns table(game text,user_id uuid,identity_key text,nickname text,score bigint,tie_at timestamptz) language sql as $$
+ select 'runner','${a}'::uuid,'member:${a}','A',7::bigint,p_as_of union all
+ select 'matgo','${a}'::uuid,'member:${a}','A',999999::bigint,p_as_of$$;
+ insert into profiles values('${a}','A'),('${b}','B'),('${minor}','minor'),('${banned}','banned');
+ insert into user_private values('${banned}',now()+interval '1 day');
+ insert into ojjuda_account_internal.member_identity values('${a}','1990-01-01'),('${b}','1990-01-01'),('${minor}','2015-01-01'),('${banned}','1990-01-01');`);
+ await db.exec(read('supabase/migrations/20261022121120_game_ranking_criteria.sql'));
+ const rank=async game=>(await db.query('select public.community_game_monthly_ranking($1) value',[game])).rows[0].value;
+ const claims=async id=>db.exec(`set request.jwt.claim.sub='${id||''}'`);
+ const raw=async(game,user,value,ago=60,round=randomUUID())=>db.query(`insert into ojjuda_guest_internal.round_records(game,actor_key,user_id,round_id,value,source,achieved_at)
+ values($1,'member:'||$2,$2::uuid,$3,$4,'solo',now()-make_interval(secs=>$5))`,[game,user,round,value,ago]);
+ // Marble is consecutive wins, not assets or lifetime wins. Loss/draw is zero.
+ await raw('tour',a,1,300);await raw('tour',a,1,240);await raw('tour',a,0,180);await raw('tour',a,1,120);
+ await raw('tour',b,1,300);await raw('tour',b,1,240);
+ await claims(a);assert.deepEqual((await rank('tour')).map(x=>[x.nick,x.score]),[['B',2],['A',1]]);
+ await raw('tour',b,0,60);assert.deepEqual((await rank('tour')).map(x=>[x.nick,x.score]),[['A',1]]);
+ const id=randomUUID();await claims(a);
+ const save=async(won,token=null)=>(await db.query('select public.record_marble_result($1,$2,$3) value',[id,won,token])).rows[0].value;
+ await db.exec('set role authenticated');assert.equal((await save(true)).ok,true);assert.equal((await save(true)).duplicate,true);
+ assert.equal((await save(false)).reason,'request_conflict');
+ await assert.rejects(db.query('select * from ojjuda_guest_internal.round_records'),/permission denied/);
+ await db.exec('reset role');await claims(null);await db.exec('set role anon');
+ assert.equal((await save(true,'a'.repeat(64))).ok,true);assert.equal((await save(true,'a'.repeat(64))).duplicate,true);
+ assert.equal((await save(true)).reason,'invalid');
+ assert.ok((await db.query("select public.guest_game_ranking('tour','month',$1) value",['a'.repeat(64)])).rows[0].value.some(x=>x.nick==='손님'&&x.me));
+ await assert.rejects(rank('poker'),/not_signed_in/);
+ await db.exec('reset role');await claims(minor);await assert.rejects(rank('matgo'),/adult_required/);
+ // Real settlement triggers: only positive net gain, exactly once, no refills.
+ const solo=randomUUID();await db.query('insert into ojjuda_matgo_internal.wallets values($1,5000,$2,null)',[a,solo]);
+ await db.query('update ojjuda_matgo_internal.wallets set gold=gold+5000 where user_id=$1',[a]);
+ assert.equal((await db.query("select count(*)::int n from ojjuda_guest_internal.round_records where game='matgo'")).rows[0].n,0);
+ await db.query('update ojjuda_matgo_internal.wallets set gold=10700,last_round=round_id,round_id=null where user_id=$1',[a]);
+ await db.query('update ojjuda_matgo_internal.wallets set last_round=last_round where user_id=$1',[a]);
+ await claims(a);assert.equal((await rank('matgo'))[0].score,700);
+ await raw('matgo',a,200,30);await raw('matgo',b,600,30);await raw('matgo',minor,9999);await raw('matgo',banned,99999);
+ assert.deepEqual((await rank('matgo')).map(x=>[x.nick,x.score]),[['A',700],['B',600]]);
+ const online=randomUUID();await db.query("insert into ojjuda_matgo_internal.rooms values($1,$2,$3,'active',null,1,now())",[online,a,b]);
+ await db.query("update ojjuda_matgo_internal.rooms set status='finished',result='{"+'"paidDelta":[-900,900]}'+"' where id=$1",[online]);
+ assert.equal((await rank('matgo'))[0].score,900);
+ const poker=randomUUID();await db.query("insert into ojjuda_poker_internal.rooms values($1,$2,1,0,null,'online',now())",[poker,[a,b]]);
+ await db.query("update ojjuda_poker_internal.rooms set settled_round=1,state=$2 where id=$1",[poker,{phase:'finished',result:{net:[-19,800],payouts:[12037,20000]}}]);
+ await db.query('update ojjuda_poker_internal.rooms set settled_round=settled_round where id=$1',[poker]);
+ assert.deepEqual((await rank('poker')).map(x=>[x.nick,x.score]),[['B',800]],'total pot and negative-net partial winners do not inflate gains');
+ const marble=randomUUID();await db.query('insert into ojjuda_marble_internal.rooms values($1,$2,null,null)',[marble,[a,b]]);
+ await db.query('update ojjuda_marble_internal.rooms set ranked_at=now(),state=$2 where id=$1',[marble,{over:true,winner:1}]);
+ await claims(a);assert.equal((await db.query('select public.record_marble_result($1,true,null) value',[marble])).rows[0].value.reason,'online_result_is_server_owned');
+ const tank=randomUUID();await db.query("insert into ojjuda_tank_internal.rooms values($1,$2,'active','solo',null)",[tank,[a]]);
+ await db.query("update ojjuda_tank_internal.rooms set status='finished',state=$2 where id=$1",[tank,{tanks:[{hp:10},{hp:0}]}]);
+ assert.equal((await rank('tank'))[0].score,1);
+ const tank2=randomUUID();await db.query("insert into ojjuda_tank_internal.rooms values($1,$2,'active','solo',null)",[tank2,[a]]);
+ await db.query("update ojjuda_tank_internal.rooms set status='closed' where id=$1",[tank2]);assert.deepEqual(await rank('tank'),[],'leaving an active round breaks the streak');
+ // Higher difficulty wins first; equal difficulty compares current streak.
+ const practice=async(user,game,diff,outcome,ago)=>db.query('insert into ojjuda_game_internal.practice_results values($1,$2,$3,$4,$5,now()-make_interval(secs=>$6))',[user,randomUUID(),game,diff,outcome,ago]);
+ for(let i=0;i<5;i++)await practice(a,'chess','easy','win',300-i*10);
+ await practice(b,'chess','hard','win',120);await practice(a,'chess','hard','win',60);
+ assert.deepEqual((await rank('chess')).map(x=>[x.nick,x.score,x.difficulty]),[['B',1,'hard'],['A',1,'hard']],'earlier equal-difficulty equal-streak record wins');
+ await practice(b,'chess','hard','draw',30);assert.equal((await rank('chess'))[0].nick,'A');
+ await practice(a,'carom4','normal','win',90);await practice(b,'pool8','hard','win',80);
+ assert.deepEqual((await rank('billiards')).map(x=>[x.nick,x.variant]),[['B','pool8'],['A','carom4']]);
+ assert.equal((await rank('runner'))[0].score,7,'unrelated rankings are unchanged');
+ const awards=(await db.query('select * from ojjuda_rewards_internal.monthly_candidates(now())')).rows;
+ assert.deepEqual(awards.filter(x=>x.game==='matgo').map(x=>[x.nickname,x.score]).sort(),[['A',700],['B',900]]);
+ assert.deepEqual(awards.filter(x=>x.game==='chess').map(x=>[x.nickname,x.score]),[['A',1]],'monthly winner criteria match difficulty/streak leaderboard');
+ assert.ok(awards.some(x=>x.game==='runner'&&x.score===7));
+ await db.query("update ojjuda_guest_internal.round_records set achieved_at=now()-interval '40 days' where game='poker'");assert.deepEqual(await rank('poker'),[]);
+ console.log('PASS: ranking criteria, real settlement triggers, net gains, refills excluded, consecutive wins, difficulty priority, ties, duplicate rounds, month bounds, guest/member isolation, age and monthly award consistency');
+}finally{await db.close();}})().catch(e=>{console.error(e);process.exitCode=1});

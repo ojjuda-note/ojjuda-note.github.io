@@ -65,6 +65,13 @@ const memberSubmit=read('tests/breakout-score-db.test.cjs').match(/const submitB
   assert.deepEqual((await rank()).map(row=>row.score),[49950,39955],'banned, old and future records stay excluded');
   assert.equal((await db.query('select coins from user_private where user_id=$1',[member])).rows[0].coins,37);
   assert.equal((await db.query('select count(*)::int n from game_scores where verified or reward>0')).rows[0].n,0);
+  const first='10000000-0000-0000-0000-000000000003';
+  await db.exec(`insert into profiles values('${first}','먼저 달성');
+   insert into game_scores(user_id,nick,game,score,created_at) values('${first}','먼저 달성','mines',49950,now()-interval '30 seconds');`);
+  assert.equal((await rank())[0].nick,'먼저 달성','equal difficulty and time rank the earlier achievement first');
+  await db.exec(`insert into game_scores(user_id,nick,game,score,created_at) values
+   ('${member}','여행친구','mines',69940,now()),('${first}','먼저 달성','mines',19990,now());`);
+  assert.equal((await rank())[0].nick,'여행친구','advanced 60 seconds outranks beginner 10 seconds');
   console.log('PASS: Minesweeper member/guest records, lower scores, monthly best, bounds, bans, permissions and zero rewards');
  } finally {await db.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

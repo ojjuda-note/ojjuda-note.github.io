@@ -66,7 +66,7 @@ const root=path.join(__dirname,'..');
   const registrySource=world.slice(world.indexOf('var _r='),world.indexOf(',Z=360,he=540'))+';';
   w.eval(registrySource+rankSource);w.OjjudaMatgoAccess={visible:()=>true};const catalog=w.worldRankGames();
   for(const game of w.eval('Object.keys(_r)'))assert.ok(game==='screw'?catalog.screw_box&&catalog.screw_flat:catalog[game],game+' must be in board rankings');
-  assert.equal(catalog.tank.unit,'승');assert.ok(catalog.tour);
+  assert.equal(catalog.tank.unit,'연승');assert.ok(catalog.tour);
   w.eval(fs.readFileSync(path.join(root,'ttang-bridge.js'),'utf8'));
   const lifecycle=[],code='a'.repeat(24),roomId=randomUUID();
   w.OjjudaTtangBridge.open({owner:A,client:{rpc:async(_,body)=>{lifecycle.push(body.p_action);return {data:{ok:true}};}},hostCode:code,arcadeRoom:roomId});

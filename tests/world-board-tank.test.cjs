@@ -37,7 +37,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
    viewport.dispatchEvent(new w.MouseEvent('pointerup',{bubbles:true,button:0,clientX:20,clientY:20}));
   }
   assert.equal(host.querySelectorAll('[data-game=tank]').length,1,'the real game catalog includes Tank exactly once');
-  assert.equal(tank().querySelector('.board-leader-score').textContent,'9승');
+  assert.equal(tank().querySelector('.board-leader-score').textContent,'9연승');
   assert.ok(visibleTank(),'Tank wins appear on the first ranking page');
   tank().querySelector('button').click();await tick();assert.deepEqual(opened,['tank']);
   nextPage();assert.equal(currentPage(),1);assert.equal(visibleTank(),false);
@@ -48,14 +48,14 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
   assert.equal(requests.length,before,'keep the game open while its result is saved');
   w.document.body.classList.remove('gaming');await tick();
   assert.equal(typeof release,'function');delay=false;release();await tick();await tick();
-  assert.equal(tank().querySelector('.board-leader-score').textContent,'10승');
+  assert.equal(tank().querySelector('.board-leader-score').textContent,'10연승');
   assert.ok(visibleTank(),'returning from Tank reveals its refreshed ranking, even from a later page');
   assert.equal(requests.length,before+1,'refresh all rankings in one request');
   nextPage();const retained=currentPage();await w.OjjudaGameRankings.refresh();
   assert.equal(currentPage(),retained,'ordinary refresh preserves the selected page');
   w.dispatchEvent(new w.CustomEvent('ojjuda:game-record-saved',{detail:{owner:'another-member',game:'tank'}}));await tick();
   assert.equal(currentPage(),retained,'another member cannot change the selected page');
-  wins=0;await w.OjjudaGameRankings.refresh();assert.equal(tank().querySelector('.board-leader-score').textContent,'0승');
+  wins=0;await w.OjjudaGameRankings.refresh();assert.equal(tank().querySelector('.board-leader-score').textContent,'0연승');
   console.log('PASS: real Tank catalog, wins, game opening, return-page selection, delayed response, ordinary refresh and account isolation');
  }finally{w.OjjudaGameRankings?.mount(null);w.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -1652,8 +1652,8 @@ async function landmarkShow(p,i){
 }
 
 /* ================= ending ================= */
-function rankingHTML(){
-  const r=[...G.players].sort((a,b)=>(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
+function rankingHTML(winner=null){
+  const r=[...G.players].sort((a,b)=>(b===winner)-(a===winner)||(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
   return `<ol class="rank">${r.map((p,k)=>`<li><b>${k===0?'👑':k+1}</b><span class="face" style="background:${p.color}55">${ga(p,{expr:k===0?'happy':p.bankrupt?'sad':'smile'})}</span>${safeText(p.name)}<span class="v">${p.bankrupt?'탈락':fmt(assets(p))}</span></li>`).join('')}</ol>`;
 }
 function victory(p,kind){
@@ -1668,15 +1668,15 @@ function ojjudaPost(msg){try{if(window.parent&&window.parent!==window)window.par
 function endScreen(winner,reason){
   GEN++;G.over=true;clearSave();
   G.runId ||= crypto.randomUUID();
-  const rk=[...G.players].sort((a,b)=>(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
+  const rk=[...G.players].sort((a,b)=>(b===winner)-(a===winner)||(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
   const me=G.players.find(p=>p.human);
-  const result={type:'ojjuda-game-result',game:'ojjuda-tour',runId:G.runId,reason:reason||'',winner:winner?winner.name:null,
+  const result={type:'ojjuda-game-result',game:'ojjuda-tour',runId:G.runId,reason:reason||'',winner:winner?winner.name:null,completed:reason!=='중간 종료',won:reason!=='중간 종료' && winner===me,
     ranking:rk.map((p,k)=>({rank:k+1,name:p.name,human:p.human,assets:p.bankrupt?0:assets(p),bankrupt:p.bankrupt})),
     myRank:me?rk.indexOf(me)+1:null,players:G.players.length};
   $('#sheet').classList.add('hidden');R.pickSet=null;
   $('#s2Title').textContent=winner?`${winner.name} 우승!`:'게임 종료';
   $('#s2Bust').innerHTML=winner?ga(winner,{bust:true,expr:'happy'}):'';
-  $('#s2Body').innerHTML=`<p>${reason?'🏆 '+reason+' · ':''}총자산(현금 + 도시 + 건물) 순위예요.</p>`+rankingHTML()+'<p id="tourRecordStatus" role="status"></p>';
+  $('#s2Body').innerHTML=`<p>${reason?'🏆 '+reason+' · ':''}최종 순위예요. 우승 기록은 연승으로 집계돼요.</p>`+rankingHTML(winner)+'<p id="tourRecordStatus" role="status"></p>';
   $('#s2Btns').innerHTML=`<button class="btn" data-k="new">새 게임 시작</button>`;
   $('#sheet2').classList.remove('hidden');
   window.tourSubmitResult?.(result);
@@ -1701,7 +1701,7 @@ $('#exitBtn').onclick=()=>{if(window.parent!==window)ojjudaPost({type:'ojjuda-ga
 renderSetup();
 if(loadSave())$('#resumeBtn').classList.remove('hidden');
 </script>
-<script src="tour-entry.js?v=20261012-marble-invite1"></script>
+<script src="tour-entry.js?v=20261022-ranks1"></script>
 <script src="marble-online.js?v=20261022-agit1"></script>
 </body>
 </html>
