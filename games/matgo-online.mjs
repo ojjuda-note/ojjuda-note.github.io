@@ -4,7 +4,7 @@ import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=2026
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
 import {createWallet} from './matgo-wallet.mjs?v=20261015-basic1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
-import {createOnlineSound} from './matgo-online-sound.mjs?v=20261022-agit1';
+import {createOnlineSound} from './matgo-online-sound.mjs?v=20261006-zu1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
 import {createVentControls} from './matgo-deck-tools.mjs?v=20261014-fencing1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
@@ -114,7 +114,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261022-agit1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261015-basic1&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -173,14 +173,14 @@ function showLobby(){
   $('#content').innerHTML=`<section class="lobby game-entry" data-entry-key="matgo"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실</span><h2 class="ge-title">맞고</h2><p class="ge-copy">같은 달의 패를 모아 한 판 즐겨보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div><section data-entry-panel="computer"><button id="solo" class="btn gold ge-primary">시작하기</button></section><section data-entry-panel="opponent" hidden><button id="invite-friend" class="btn gold ge-primary">친구 초대</button><button id="quick" class="btn ge-secondary">빠른 대결</button><form id="public-room-form"><label for="public-room-title">방 제목</label><input id="public-room-title" maxlength="40" required value="맞고 같이 한 판 해요" autocomplete="off"><button id="create" class="btn ge-secondary" type="submit">방 만들기</button><p id="public-room-error" role="status"></p><p class="fine">만든 방은 오락실 대전방에 표시돼요.</p></form><details class="ge-more"><summary>방번호로 입장</summary><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" required><button class="btn" id="join">입장</button></form></details></section><span class="ge-hint">기본 점당 100G · 만 19세 이상</span><details class="ge-more"><summary>게임 방법 · 판돈 안내</summary><p>판돈은 혼자하기와 같고, 두 사람 중 낮은 금액을 적용해요.<br>차례마다 15초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></details></section>`;
   $('#invite-friend').onclick=()=>{
     let invites;try{invites=parent!==window?parent.OjjudaFriendInvites:null;}catch{}
-    if(!invites?.available()){toast('친구 초대는 로그인한 오쭈다 아지트에서 이용해 주세요.');return;}
+    if(!invites?.available()){toast('친구 초대는 로그인한 오쭈다 월드에서 이용해 주세요.');return;}
     invites.pick({kind:'matgo',prepare:async()=>{if(busy||closed)throw Error('room_unavailable');busy=true;try{await wallet.prepareStake();const result=await rpc({action:'online_create'});await accept(result.room);return {code:result.room.code,cancel:()=>leave(false)};}finally{busy=false;}},onSent:id=>{friendInviteId=id;}});
   };
   $('#quick').onclick=()=>enter('quick');createPublicRoom();
   const input=$('#room-code');input.setAttribute('aria-label','방번호 또는 초대 코드');input.placeholder='방번호 또는 초대 코드';input.maxLength=16;input.removeAttribute('pattern');
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261022-agit1&open='+Date.now());};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261015-basic1&open='+Date.now());};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];

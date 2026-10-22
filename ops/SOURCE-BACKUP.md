@@ -6,7 +6,7 @@
 
 `.github/workflows/nightly-source-backup.yml`이 한국 시간 매일 03:00에 다음 순서로 실행된다.
 
-1. 추적 중인 JavaScript/Python 문법, 기존 가입·로그인·격리 DB 회귀검사, 잠금 파일 기준 npm 의존성 취약점, 포털·아지트·노트 HTTPS 응답 검사.
+1. 추적 중인 JavaScript/Python 문법, 기존 가입·로그인·격리 DB 회귀검사, 잠금 파일 기준 npm 의존성 취약점, 포털·월드·노트 HTTPS 응답 검사.
 2. 검사 완료 결과를 확인한다. 문제가 있어도 복구 자료를 잃지 않도록 소스를 보존하지만, `manifest.json`의 `checks_result`에 실패 상태를 그대로 남긴다.
 3. 추적된 소스·정적 이미지·Git 브랜치/태그/이력을 묶어 GitHub Actions artifact에 저장한다.
 4. 저장본을 다시 내려받아 manifest 및 모든 파일의 SHA-256과 크기를 확인하고, Git bundle을 격리 경로에 복원해 무결성과 기준 커밋을 검사한다.

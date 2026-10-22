@@ -64,7 +64,7 @@
       remaining.textContent = data.enabled ? `오늘 ${data.limit}회 중 ${data.left}회 남았어요` : '무료 충전이 종료되었어요';
       dialog.querySelector('[data-ju-beta-title]').textContent = data.enabled ? `베타 기간 · 하루 ${data.limit}회 무료` : 'ZU 충전';
       dialog.querySelector('#ju-charge-payment-status').textContent = data.enabled
-        ? '노트와 아지트의 무료 횟수는 함께 계산돼요. 매일 밤 12시(한국 시간)에 다시 받을 수 있어요.'
+        ? '노트와 월드의 무료 횟수는 함께 계산돼요. 매일 밤 12시(한국 시간)에 다시 받을 수 있어요.'
         : '현재 유료 결제를 준비 중이에요. 결제 연결이 완료되면 이용할 수 있어요.';
       dialog.classList.toggle('ju-charge-beta', data.enabled);
       select(selected);
@@ -125,7 +125,7 @@
       <div class="ju-charge-content">
         <div class="ju-charge-wallet"><span><span class="ju-coin-icon" aria-hidden="true"></span>보유 ZU</span><strong data-ju-balance role="status">확인 중</strong></div>
         <div class="ju-charge-benefit"><strong data-ju-beta-title>베타 기간 · 하루 5회 무료</strong><span data-ju-remaining role="status">남은 횟수 확인 중</span></div>
-        <p id="ju-charge-description">원하는 충전 금액을 골라 주세요.<br>ZU는 노트와 아지트에서 함께 사용할 수 있어요.</p>
+        <p id="ju-charge-description">원하는 충전 금액을 골라 주세요.<br>ZU는 노트와 월드에서 함께 사용할 수 있어요.</p>
         <div class="ju-charge-grid" role="group" aria-label="충전 상품 6종">${packages.map(pack => `
           <button class="ju-charge-pack" type="button" data-ju-pack="${pack.id}" aria-pressed="${pack.id === selected.id}">
             <img class="ju-charge-art" src="/ju-coins/${pack.coins}.svg?v=20261006-zu1" alt="" width="120" height="84" aria-hidden="true" decoding="async"><strong>${number(pack.coins)}<small>ZU</small></strong>
@@ -134,7 +134,7 @@
           </button>`).join('')}
         </div>
         <div class="ju-charge-total" aria-live="polite" aria-atomic="true"><span>선택한 상품 <b data-ju-selected>10 ZU</b></span><span class="ju-charge-receive">받을 ZU <strong data-ju-total>총 10 ZU</strong></span><span>결제 금액 <strong data-ju-price>1,000원</strong></span></div>
-        <p class="ju-charge-notice" id="ju-charge-payment-status">노트와 아지트의 무료 횟수는 함께 계산돼요. 매일 밤 12시(한국 시간)에 다시 받을 수 있어요.</p>
+        <p class="ju-charge-notice" id="ju-charge-payment-status">노트와 월드의 무료 횟수는 함께 계산돼요. 매일 밤 12시(한국 시간)에 다시 받을 수 있어요.</p>
         <a class="ju-charge-login" data-ju-login href="/?auth=login&next=world" hidden>로그인하고 보유 ZU 확인하기 →</a>
         <p class="ju-charge-result" data-ju-result role="status" aria-live="polite"></p>
       </div>

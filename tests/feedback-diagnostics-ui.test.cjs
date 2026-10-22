@@ -176,7 +176,7 @@ async function verifyForm() {
     assert(legacy);
     const captures = [];
     const sandbox = { window: { OjjudaDiagnostics: { snapshot: source => ({ source }) } },
-      z: () => ({ value: '합성 아지트 고장 신고' }), document: { querySelector: () => ({ value: 'bug' }) },
+      z: () => ({ value: '합성 월드 고장 신고' }), document: { querySelector: () => ({ value: 'bug' }) },
       D: { user: { id: 'synthetic' } }, g: { tab: 'my' }, Go: 'test', navigator: { userAgent: 'test' },
       S: { from: () => ({ insert: async row => { captures.push(row); return {}; } }) }, dt() {}, M() {} };
     vm.createContext(sandbox); vm.runInContext(legacy, sandbox); await sandbox.ay({});

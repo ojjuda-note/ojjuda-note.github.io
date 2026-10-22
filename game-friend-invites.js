@@ -4,7 +4,7 @@
   let options, owner, channel, timer, chooser, popup, authSubscription, generation=0, refreshSequence=0;
   let expiryTimer, countdownTimer, mountObserver, incoming=[], responses=[];
   const deadlines=new Map(), handled=new Set();
-  const names={matgo:'맞고',ttang:'아지트땅따먹기',marble:'오쭈다 마블',tank:'탱크게임'};
+  const names={matgo:'맞고',ttang:'월드땅따먹기',marble:'오쭈다 마블',tank:'탱크게임'};
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const message=error=>{
     const text=String(error?.message||error||'');

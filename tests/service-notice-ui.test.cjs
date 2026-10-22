@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
-const notice='오쭈다 아지트는 지금 베타예요. 고장 난 곳이나 바라는 기능을 알려주시면 다음 업데이트에 반영할게요.';
+const notice='오쭈다월드는 지금 베타예요. 고장 난 곳이나 바라는 기능을 알려주시면 다음 업데이트에 반영할게요.';
 for(const from of ['/park/','/park/index.html?card=abc#reply','/note/?compose=memo']){
  const url=new URL(from,'https://fixture.test');let redirected;
  const scope={URL,location:{href:url.href,origin:url.origin,replace:href=>redirected=new URL(href)}};scope.window=scope;scope.parent=scope;

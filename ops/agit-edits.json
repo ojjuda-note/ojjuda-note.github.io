@@ -24,18 +24,6 @@
     ]
   },
   {
-    "path": "arcade-rooms.js",
-    "before": "8ee58fb091fc1a918f0b5582beb4a350d719c6a69738af2a43e588b6d9c3b2a1",
-    "after": "261f8c63b689ae3ec8e868db16b13c4b34f7a15a2d03665038c1d77973424e22",
-    "edits": [
-      {
-        "old": "월드",
-        "new": "아지트",
-        "count": 1
-      }
-    ]
-  },
-  {
     "path": "brand/README.md",
     "before": "a99abc134d7cfe0500f07b7cef9cc8989ea588b8e3ce9aebba6102565c2312af",
     "after": "04a1c9c49e06c6fb3f7c7a5fbe1e77ec3028bfb77d7cf304c66c890be9ab7f9a",
@@ -104,18 +92,6 @@
         "old": "월드",
         "new": "아지트",
         "count": 3
-      }
-    ]
-  },
-  {
-    "path": "game-friend-invites.js",
-    "before": "8b05c693b506f38bb6352f53c003737526ffbea5bcb02b240e4a375aebdb6499",
-    "after": "bb97c775a618db8f3ba20ce01030d14fbbd97f4e7fffc53a51d6657dd989f98e",
-    "edits": [
-      {
-        "old": "월드",
-        "new": "아지트",
-        "count": 1
       }
     ]
   },
@@ -236,7 +212,7 @@
   {
     "path": "games/ttang.html",
     "before": "c6140d3ae84dd6c74a3be83a59dec2cf28119cdd09b1398f278c65430f212534",
-    "after": "cbaed135e52e98dfb52201741ca517bc3e31bd692c7994026c6a398086056de7",
+    "after": "b4b17bc6eb40ffafe60a23073c0b85742d0d5085585ed80aaee56661034dd27a",
     "edits": [
       {
         "old": "오쭈다월드",
@@ -246,6 +222,11 @@
       {
         "old": "월드",
         "new": "아지트",
+        "count": 2
+      },
+      {
+        "old": "아지트땅따먹기",
+        "new": "월드땅따먹기",
         "count": 2
       }
     ]
@@ -668,42 +649,6 @@
     ]
   },
   {
-    "path": "tests/guest-ranking-ui.test.cjs",
-    "before": "2901cead1cc94f2bdf06b00af5a35d1813da8f2ee7c71bbcf80316373313293c",
-    "after": "4c70e48f69eb62b5fc5eaacebc6bf579bd666ac7a44b5d4fe77bd1b7b0899a16",
-    "edits": [
-      {
-        "old": "월드",
-        "new": "아지트",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "path": "tests/photo-ttang-capture-ui.test.cjs",
-    "before": "f0b1fd41796f93af17862abe5c814af66e661c7b499143e54cd3a652e6c82e3e",
-    "after": "cb812981a59f6465ab0b5ba8e3bd8d590eee2e1e901cb77e5e4489ef3d6cb8a2",
-    "edits": [
-      {
-        "old": "월드",
-        "new": "아지트",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "path": "tests/photo-ttang-ui.test.cjs",
-    "before": "b71c8e033e11118a575c895973bb5765d0efbabf049c7cd89dce324e63f79260",
-    "after": "91e37428a97ea7ab684bedec0a1165379242e6ec29dd69624ffb256f172136df",
-    "edits": [
-      {
-        "old": "월드",
-        "new": "아지트",
-        "count": 4
-      }
-    ]
-  },
-  {
     "path": "tests/portal-auth-entry.test.cjs",
     "before": "21a9a33eb13f90357f53b35c91d9ddee4fa978657bbd8ca60fbf1aee0fd054f6",
     "after": "23a091cfa8c777b6be117ff088059b255512d9e1d42c6e4eec82214702dd265c",
@@ -742,7 +687,7 @@
   {
     "path": "ttang-bridge.js",
     "before": "24916909a5961674edc44a6c468c02aff14359e916eeed1922bcdf921ba38950",
-    "after": "24a20ac2988f89a62ba0c586e14a291a32434f13bc87e6ba1df854f833b49c4f",
+    "after": "6beb8d8f1691506588e543197b63e0a358259c598f1a30b693358f5101d10000",
     "edits": [
       {
         "old": "월드",
@@ -753,13 +698,18 @@
         "old": "/games/ttang.html?v=20261018-arcade-entry1",
         "new": "/games/ttang.html?v=20261022-agit1",
         "count": 1
+      },
+      {
+        "old": "아지트땅따먹기",
+        "new": "월드땅따먹기",
+        "count": 6
       }
     ]
   },
   {
     "path": "world.html",
     "before": "ce5c5569d663725a9c094b71105e612b0090e52f2b4f4696368e662b52d08e42",
-    "after": "28d62f1406f09f611997c960070524633fd4aded946fe0517c17e2352ab23ee4",
+    "after": "cfe84986f11ff04741464234e53211b279ce3efaaadead891306edd23de24e8c",
     "edits": [
       {
         "old": "오쭈다월드",
@@ -825,6 +775,16 @@
         "old": "아지트땅따먹기<small",
         "new": "아지트<wbr>땅따먹기<small",
         "count": 1
+      },
+      {
+        "old": "아지트<wbr>땅따먹기",
+        "new": "월드땅따먹기",
+        "count": 1
+      },
+      {
+        "old": "아지트땅따먹기",
+        "new": "월드땅따먹기",
+        "count": 2
       }
     ]
   },

@@ -19,5 +19,5 @@ for name in subprocess.check_output(['git','ls-files','-z'],cwd=root).decode().s
     if not name or name in {'ops/agit-edits.json','ops/apply-agit.py'}:continue
     try:text=(root/name).read_bytes().decode()
     except UnicodeError:continue
-    assert old_name not in text,name+': old Korean branding remains'
+    assert old_name not in text.replace(old_name+'땅따먹기',''),name+': old Korean branding remains outside the retained game name'
 print('Verified renamed sources:',len(manifest))

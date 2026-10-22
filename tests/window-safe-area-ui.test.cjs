@@ -9,7 +9,7 @@ const insets = css => css.replace(/env\(safe-area-inset-(top|bottom|left|right)(
 const long = '<div style="height:700px;flex-shrink:0">긴 내용</div>';
 const action = '<button id="audit-action" type="button" style="min-height:44px">확인</button>';
 const cases = [
-  {name:'아지트 공통 설정',page:'world.html',html:`<div class="modal-bg"><div class="modal">${long}${action}</div></div>`},
+  {name:'월드 공통 설정',page:'world.html',html:`<div class="modal-bg"><div class="modal">${long}${action}</div></div>`},
   {name:'카드/계정 관리',page:'park/index.html',html:`<div class="dialog-backdrop"><section class="management-dialog"><header class="management-head">카드 관리</header><div class="management-body">${long}</div><footer class="management-footer">${action}</footer></section></div>`},
   {name:'도움말/문의/신고',page:'park/index.html',html:`<div class="dialog-backdrop note-support-layer"><section class="management-dialog"><header class="management-head">도움말</header><div class="management-body">${long}${action}</div></section></div>`},
   {name:'알림',page:'park/index.html',html:`<div class="nn-backdrop"><section class="nn-dialog">${long}${action}</section></div>`},

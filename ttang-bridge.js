@@ -23,7 +23,7 @@
   if(current.creating||current.arcadeRoom)return false;
   current.creating=true;current.createRequest ||= crypto.randomUUID();
   try{
-   const {data,error}=await client.rpc('arcade_ttang_room',{p_action:'create',p_title:'아지트땅따먹기 한 판 같이 해요',p_request:current.createRequest});
+   const {data,error}=await client.rpc('arcade_ttang_room',{p_action:'create',p_title:'월드땅따먹기 한 판 같이 해요',p_request:current.createRequest});
    if(error||!data?.ok)throw Error('unavailable');
    if(session!==current||!current.authorized()){
     await client.rpc('arcade_ttang_room',{p_action:'leave',p_room:data.room.id});return false;
@@ -41,12 +41,12 @@
  function open({client,owner,authorized=()=>true,onScore=async()=>({ok:false}),joinCode,hostCode,arcadeRoom}={}){
   if(overlay||!authorized())return;
   previousFocus=document.activeElement;session={owner,authorized,onScore,round:null,submitted:new Set(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
-  overlay=document.createElement('section');overlay.id='ttang-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','아지트땅따먹기');
+  overlay=document.createElement('section');overlay.id='ttang-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','월드땅따먹기');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;height:100dvh;display:flex;flex-direction:column;background:#f3eafa;padding-top:env(safe-area-inset-top,0px)';
   const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;color:#684a8a;background:#fff9ee;border-bottom:1px solid #e5d5ef;font-size:12px';
-  const status=document.createElement('span');status.id='ttang-save-status';status.setAttribute('role','status');status.textContent='아지트땅따먹기';
-  const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','아지트땅따먹기 닫기');done.style.cssText='font:inherit;color:inherit;border:1px solid #ddccec;background:#eee2f8;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';done.onclick=close;
-  frame=document.createElement('iframe');frame.title='아지트땅따먹기';frame.src='/games/ttang.html?v=20261022-agit1';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+  const status=document.createElement('span');status.id='ttang-save-status';status.setAttribute('role','status');status.textContent='월드땅따먹기';
+  const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','월드땅따먹기 닫기');done.style.cssText='font:inherit;color:inherit;border:1px solid #ddccec;background:#eee2f8;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';done.onclick=close;
+  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261018-arcade-entry1';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
   if(/^[a-f0-9]{24}$/.test(hostCode||''))frame.addEventListener('load',async()=>{
    const current=session;if(!current?.authorized())return;
    try{const code=await frame?.contentWindow?.OjjudaTtang?.host(hostCode,{publicRoom:!!arcadeRoom});if(session!==current)return;
@@ -72,7 +72,7 @@
   const d=e.data||{},current=session,status=overlay.querySelector('#ttang-save-status');
   if(d.type==='ojjuda:ttang:network-end'||d.type==='ojjuda:ttang:menu'){void leavePublicRoom();return;}
   if(d.type==='ojjuda:ttang:close'){close();return;}
-  if(d.type==='ojjuda:ttang:start'&&typeof d.round==='string'&&d.round.length<=64){current.round=d.round;status.textContent='아지트땅따먹기';return;}
+  if(d.type==='ojjuda:ttang:start'&&typeof d.round==='string'&&d.round.length<=64){current.round=d.round;status.textContent='월드땅따먹기';return;}
   if(d.type!=='ojjuda:ttang:result'||d.mode!=='solo'||!d.round||d.round!==current.round||current.submitted.has(d.round))return;
   if(!Number.isInteger(d.score)||d.score<0||d.score>1000)return;
   current.submitted.add(d.round);

@@ -574,7 +574,7 @@ async function renderGrid(){ if(!photoAllowed())return lockPhotoGame(); const re
     g.innerHTML=LIST.map((P,i)=>{ const done=prog[P.key]&&prog[P.key].done, lock=i>opened; return `<button class="cell${done?' done':''}${lock?' lock':''}" data-i="${i}" ${lock?'disabled':''}>${done?`<img src="${P.full||P.img}" alt="" loading="lazy" decoding="async">`:`<span class="sil" style="--r:.75"></span>`}<b>${i+1}</b><em>${'★'.repeat(diff(P.level??i).stars)}</em>${lock?'<i>🔒</i>':''}</button>`; }).join('');
     $('cleared').textContent=`${LIST.filter(P=>prog[P.key]?.done).length} / ${LIST.length} 공개`; }
   else { g.innerHTML='<div class="msg">불러오는 중…</div>'; const ok=await Comm.ready(); if(revision!==gridEpoch)return;
-    if(!ok){ g.innerHTML='<div class="msg">사진 판은 오쭈다 아지트 안에서 열 수 있어요.<br><small>(지금은 테스트 화면이라 서버에 연결되지 않아요)</small></div>'; return; }
+    if(!ok){ g.innerHTML='<div class="msg">사진 판은 오쭈다월드 안에서 열 수 있어요.<br><small>(지금은 테스트 화면이라 서버에 연결되지 않아요)</small></div>'; return; }
     let rows=[],next=[]; try{ rows=currentTab==='all'?await Comm.listAll():await Comm.listPending();
       next=await Promise.all(rows.map(async r=>({mine:r.owner===Comm.uid,vis:r.visibility||'public',id:r.id,key:'c'+r.id,img:await Comm.url(r.image_path),full:r.full_path?await Comm.url(r.full_path):null,crop:r.crop_box?r.crop_box.split(',').map(Number):null,sil:r.mask_rle,w:600,h:800,UW:30,UH:40,level:r.level,nick:r.nick,status:r.status,plays:r.plays,clears:r.clears})));
     }catch(e){ if(revision===gridEpoch)g.innerHTML=`<div class="msg">불러오지 못했어요<br><small>${esc(e.message)}</small></div>`; return; }
@@ -586,7 +586,7 @@ async function renderGrid(){ if(!photoAllowed())return lockPhotoGame(); const re
   g.querySelectorAll('.cell').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(tab==='review') return reviewPanel(LIST[i]); if(LIST[i].mine) return minePanel(LIST[i],i); lives=LIVES; startStage(i); }); }
 $('photoStart').onclick=async()=>{const button=$('photoStart');button.disabled=true;try{tab='base';await renderGrid();if(!photoAllowed())return;const next=$('grid').querySelector('.cell:not(.done):not([disabled])')||$('grid').querySelector('.cell:not([disabled])');next?.click();}finally{button.disabled=false;}};
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{ tab=t.dataset.t; renderGrid(); });
-// ================= 오쭈다 아지트 서버 연결 (Supabase) =================
+// ================= 오쭈다월드 서버 연결 (Supabase) =================
 const Comm={ sb:null, uid:null, admin:false, _r:null,
   async ready(){ if(this._r) return this._r; this._r=(async()=>{ try{ let c=null; try{ const P=window.parent; if(P&&P!==window) c=P.OjjudaPhotoTtangBridge?.client||P.ojjudaSupabase||P.supabaseClient||P.sb; }catch{} c=c||window.ojjudaSupabase;
       const q=new URLSearchParams(location.search); if(!c&&q.get('sbUrl')&&q.get('sbKey')){ if(!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'); c=window.supabase.createClient(q.get('sbUrl'),q.get('sbKey')); }
@@ -641,7 +641,7 @@ async function personMask(img){ // 사람일 확률 (배경 확률의 반대) �
   const lab=new Int32Array(mw*mh), q=new Int32Array(mw*mh); let best=0,bestN=0,cur=0;
   for(let i=0;i<m.length;i++){ if(!m[i]||lab[i]) continue; cur++; let h=0,t=0,n=0; q[t++]=i; lab[i]=cur; while(h<t){ const p=q[h++]; n++; const x=p%mw, y=(p/mw)|0; for(const nb of [x>0?p-1:-1,x<mw-1?p+1:-1,y>0?p-mw:-1,y<mh-1?p+mw:-1]) if(nb>=0&&m[nb]&&!lab[nb]){ lab[nb]=cur; q[t++]=nb; } } if(n>bestN){ bestN=n; best=cur; } }
   for(let i=0;i<m.length;i++) m[i]=best&&lab[i]===best?1:0; return {m,mw,mh,canvas:c}; }
-// AI가 안 되면(오쭈다 아지트 밖, 느린 인터넷 등) 폰 안에서 색으로 윤곽을 찾는 방법으로 대신해요
+// AI가 안 되면(오쭈다월드 밖, 느린 인터넷 등) 폰 안에서 색으로 윤곽을 찾는 방법으로 대신해요
 function withTimeout(p,ms){ return new Promise((res,rej)=>{ const timer=setTimeout(()=>rej(new Error('timeout')),ms); Promise.resolve(p).then(v=>{clearTimeout(timer);res(v)},e=>{clearTimeout(timer);rej(e)}); }); }
 function autoSilhouette(canvas){ const W0=canvas.width,H0=canvas.height, k=200/Math.max(W0,H0), w=Math.max(8,Math.round(W0*k)), h=Math.max(8,Math.round(H0*k));
   const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.drawImage(canvas,0,0,w,h); const d=x.getImageData(0,0,w,h).data; const N=w*h;
@@ -758,7 +758,7 @@ function stepPreview(box,src,o){ const {st,url}=previewImage(src); const ok=st.p
   box.querySelector('#try').onclick=()=>{ if(!photoAllowed())return lockPhotoGame();uploadTrial=o;o.remove();++gridEpoch; LIST=[{key:'try'+Date.now(),img:st.canvas.toDataURL('image/jpeg',.88),full:st.full.toDataURL('image/jpeg',.85),crop:st.cropN,sil:st.rle,w:600,h:800,UW:30,UH:40,level:pickLv,trial:true}]; lives=LIVES; startStage(0); };
   const send=box.querySelector('#send'); box.querySelector('#ag').onchange=e=>{ send.disabled=!(e.target.checked&&ok); };
   const vh=()=>{ box.querySelector('#vhint').textContent=VISHINT[pickVis]; }; vh(); box.querySelectorAll('.vb').forEach(b=>b.onclick=()=>{ pickVis=b.dataset.v; box.querySelectorAll('.vb').forEach(x=>x.classList.toggle('on',x===b)); vh(); });
-  send.onclick=async()=>{ send.disabled=true; send.textContent='올리는 중…'; try{ const ready=await Comm.ready(); if(!ready) throw new Error('등록은 오쭈다 아지트 안에서만 돼요 (먼저 해보기는 여기서도 돼요)');
+  send.onclick=async()=>{ send.disabled=true; send.textContent='올리는 중…'; try{ const ready=await Comm.ready(); if(!ready) throw new Error('등록은 오쭈다월드 안에서만 돼요 (먼저 해보기는 여기서도 돼요)');
       const blob=await new Promise(r=>st.canvas.toBlob(r,'image/jpeg',.86)), fullBlob=await new Promise(r=>st.full.toBlob(r,'image/jpeg',.85)); let nick=''; try{ nick=window.parent.OjjudaPhotoTtangBridge?.nick||window.parent.ojjudaNick||''; }catch{}
       await Comm.upload(blob,st.rle,pickLv,nick,+st.pct.toFixed(1),fullBlob,st.cropN,pickVis); o.remove(); const msg=pickVis==='public'?'관리자가 확인하면 모두에게 보여요. 그 전에는 나만 볼 수 있어요.':pickVis==='friends'?'이제 친구들이 할 수 있어요.':'사진 판에서 언제든 할 수 있어요.'; panel(`<h2>등록했어요!</h2><p>${msg}</p><button class="big a" id="ok">확인</button>`,{ok:()=>{ tab='all'; renderGrid(); }}); }
     catch(err){ send.disabled=false; send.textContent='등록하기'; toast(err.message||'올리지 못했어요','#E53935'); } }; }

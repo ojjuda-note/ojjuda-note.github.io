@@ -35,7 +35,7 @@
    const title=document.createElement('span');title.textContent='포토땅따먹기 · 솔로 · 19+';
    const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','포토땅따먹기 닫기');done.onclick=close;
    done.style.cssText='font:inherit;color:inherit;border:1px solid #ffffff40;background:#ffffff22;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';
-   frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261022-agit1';frame.allow='vibrate';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+   frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261021-photo-idols1';frame.allow='vibrate';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
    const gameFrame=frame;
    gameFrame.addEventListener('load',()=>{
     const doc=gameFrame.contentDocument;if(!gameFrame.isConnected||!doc?.getElementById('photoStart')||doc.querySelector('[data-photo-entry]'))return;

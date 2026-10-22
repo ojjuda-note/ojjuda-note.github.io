@@ -47,7 +47,7 @@ language sql stable security invoker set search_path = public as $$
   select public.is_admin() or exists (select 1 from public.photo_admins where user_id = auth.uid())
 $$;
 
--- 아지트의 수락된 친구 관계를 그대로 사용해요.
+-- 월드의 수락된 친구 관계를 그대로 사용해요.
 create or replace function public.photo_is_friend(a uuid, b uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select auth.uid() is not null and (auth.uid() = a or auth.uid() = b)

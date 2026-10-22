@@ -499,7 +499,7 @@
   }
   function restrictUser(user) {
     const restrict = !user.is_restricted;
-    actionScreen(restrict ? '노트 이용 제한' : '노트 이용 제한 해제', `${shortUser(user.user_id)} · 아지트 계정과 ZU는 그대로 유지됩니다.`, (form, actions) => {
+    actionScreen(restrict ? '노트 이용 제한' : '노트 이용 제한 해제', `${shortUser(user.user_id)} · 월드 계정과 ZU는 그대로 유지됩니다.`, (form, actions) => {
       form.append(el('p', 'na-id', user.user_id));
       if (restrict) form.append(el('p', 'na-warning', '공원의 글 작성·수정과 공감·메모함 추가를 제한합니다. 신고와 문의, 본인 글 삭제는 계속 가능합니다. 기존 글의 공개 여부는 카드 · 답글 메뉴에서 따로 관리하세요.'));
       else if (user.restriction_reason) form.append(el('p', 'na-warning', `현재 제한 사유: ${user.restriction_reason}`));

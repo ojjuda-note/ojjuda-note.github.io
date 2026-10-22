@@ -27,8 +27,8 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
   const solo=page.locator('#arcade-test [data-arcade-games="solo"]'),multi=page.locator('#arcade-test [data-arcade-games="multi"]');
   assert.equal(await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),1);
-  assert.equal(await solo.getByRole('button',{name:'아지트땅따먹기',exact:true}).count(),0);
-  assert.equal(await multi.getByRole('button',{name:/^아지트땅따먹기/}).count(),1);
+  assert.equal(await solo.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),0);
+  assert.equal(await multi.getByRole('button',{name:/^월드땅따먹기/}).count(),1);
   assert.equal(await multi.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),0);
   await page.evaluate(()=>fixtureAge=18);
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();

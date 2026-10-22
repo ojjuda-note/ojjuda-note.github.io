@@ -84,7 +84,7 @@
 ## 배포 파일
 
 `world.html`, `matgo-access.js`, `matgo-bridge.js`, `games/matgo.html`, `games/matgo-engine.mjs`, `games/matgo-wallet.mjs`.
-기존 `config.js`는 오쭈다 아지트 프로젝트를 계속 사용합니다. 서버 마이그레이션은 `supabase/migrations/20261002195728_matgo_gold_wallet.sql`, Edge Function은 `supabase/functions/matgo/`입니다.
+기존 `config.js`는 오쭈다 월드 프로젝트를 계속 사용합니다. 서버 마이그레이션은 `supabase/migrations/20261002195728_matgo_gold_wallet.sql`, Edge Function은 `supabase/functions/matgo/`입니다.
 서버 적용 후 프런트 파일을 함께 배포해야 합니다. HTML 하나만 교체하는 예전 설치 방법은 이 버전에 적용되지 않습니다.
 Edge Function은 요청마다 Supabase Auth로 사용자를 재검증하고, 서비스 전용 함수에서 회원 나이를 확인합니다. 서비스 키는 서버 환경변수에만 둡니다.
 게임과 Edge의 엔진 파일은 동일해야 하며 테스트가 이를 검사합니다.

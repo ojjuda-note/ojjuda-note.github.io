@@ -11,7 +11,7 @@
   "messages": {
     "ojjuda-game-ready": "게임 로딩 완료",
     "ojjuda-game-result": "게임 종료 시 순위·자산 결과 전달",
-    "ojjuda-game-exit": "🏠 버튼을 눌러 오쭈다 아지트로 돌아가기"
+    "ojjuda-game-exit": "🏠 버튼을 눌러 오쭈다월드로 돌아가기"
   },
   "modes": [
     "computer",
