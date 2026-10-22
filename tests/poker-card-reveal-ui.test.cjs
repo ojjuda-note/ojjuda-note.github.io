@@ -83,7 +83,11 @@ window.pokerFixture={show(round=1){
     await page.mouse.down();await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.3+55,{steps:6});await page.mouse.up();
     await movingLast.waitFor({state:'detached'});
     assert.equal(await page.locator('.my-cards .card').last().getAttribute('aria-label'),'A♠','animated reveal finishes on the correct rightmost card');
-    assert.equal(await page.locator('.my-cards .card').last().evaluate(el=>getComputedStyle(el).transform),'none','revealed cards do not jump up under the pointer');
+    assert.equal(await page.locator('.my-cards .card').last().evaluate(el=>{
+      const transform=getComputedStyle(el).transform;
+      // Browsers may serialize an unchanged card as either none or an identity matrix.
+      return transform==='none'||new DOMMatrixReadOnly(transform).isIdentity;
+    }),true,'revealed cards do not jump up under the pointer');
     assert.deepEqual(errors,[]);
    }
    await context.close();
