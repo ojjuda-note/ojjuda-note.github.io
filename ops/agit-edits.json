@@ -646,16 +646,11 @@
   {
     "path": "tests/admin-navigation-ui.test.cjs",
     "before": "9367473a8a7da518bb04d7211096d1ee45621311d36dadc9430d0d2978cbb9da",
-    "after": "1fdac1aecb23322cffc947e00b023cab10e65def03e6b1884c0ed2444a5b43bc",
+    "after": "356db057612be722abf9947894f9e545c137ed225981e074a5d979c05be8d0cf",
     "edits": [
       {
         "old": "월드",
         "new": "아지트",
-        "count": 1
-      },
-      {
-        "old": "['아지트로 돌아가기','별천지 예약 확인','원고실']",
-        "new": "['아지트로 돌아가기']",
         "count": 1
       }
     ]

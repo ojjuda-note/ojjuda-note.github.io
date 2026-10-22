@@ -42,12 +42,7 @@ jobs:
           WORLD_DESIGN_PROOF_DIR: /tmp/agit-proof
           SERVICE_NOTICE_SCREENSHOT_DIR: /tmp/agit-proof
         run: |
-          node tests/world-design-ui.test.cjs
-          node tests/admin-navigation-ui.test.cjs
-          node tests/service-notice-ui.test.cjs
-          node tests/photo-ttang-ui.test.cjs
-          node tests/guest-ranking-ui.test.cjs
-          node tests/world-game-back-ui.test.cjs
+          node --test --test-concurrency=1 --test-timeout=180000 --test-reporter=spec tests/world-design-ui.test.cjs tests/admin-navigation-ui.test.cjs tests/service-notice-ui.test.cjs tests/photo-ttang-ui.test.cjs tests/guest-ranking-ui.test.cjs tests/world-game-back-ui.test.cjs
       - name: Keep visual evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
