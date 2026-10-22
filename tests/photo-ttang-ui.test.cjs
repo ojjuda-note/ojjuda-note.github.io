@@ -28,8 +28,8 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
   const solo=page.locator('#arcade-test [data-arcade-games="solo"]'),multi=page.locator('#arcade-test [data-arcade-games="multi"]');
   assert.equal(await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),1);
-  assert.equal(await solo.getByRole('button',{name:'월드땅따먹기',exact:true}).count(),0);
-  assert.equal(await multi.getByRole('button',{name:/^월드땅따먹기/}).count(),1);
+  assert.equal(await solo.getByRole('button',{name:'아지트땅따먹기',exact:true}).count(),0);
+  assert.equal(await multi.getByRole('button',{name:/^아지트땅따먹기/}).count(),1);
   assert.equal(await multi.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).count(),0);
   await page.evaluate(()=>fixtureAge=18);
   await solo.getByRole('button',{name:'포토땅따먹기 · 만 19세 이상',exact:true}).click();
@@ -80,9 +80,9 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await frame.evaluate(()=>toMenu());
   assert.deepEqual(await frame.evaluate(()=>Array.from(document.querySelectorAll('#grid .cell:not([disabled])'),cell=>LIST[Number(cell.dataset.i)].key)),['0','20','1'],'clearing the first photo unlocks the inserted photo and preserves access to the next original photo');
   await page.getByRole('button',{name:'포토땅따먹기 닫기',exact:true}).click();assert.equal(await page.locator('#photo-ttang-overlay').count(),0);
-  await multi.getByRole('button',{name:/^월드땅따먹기/}).click();
+  await multi.getByRole('button',{name:/^아지트땅따먹기/}).click();
   const old=await(await page.locator('#ttang-overlay iframe').elementHandle()).contentFrame();await old.waitForSelector('#soloBtn');
-  assert.equal(await old.title(),'오쭈다 월드땅따먹기');await old.locator('#soloBtn').tap();
+  assert.equal(await old.title(),'오쭈다 아지트땅따먹기');await old.locator('#soloBtn').tap();
   await old.waitForFunction(()=>mode==='solo'&&world.time>.1&&me.alive);assert.equal(await old.locator('#hud').isVisible(),true,'practice starts through the real World arcade');
   await old.locator('#quit').tap();await old.locator('#yes').tap();await old.locator('[data-entry-mode=opponent]').click();await old.click('#duoBtn');
   assert.match(await old.locator('#roomEntryStatus').textContent(),/친구 초대를 연결하지 못했어요/,'the embedded game reports the unavailable invitation bridge');

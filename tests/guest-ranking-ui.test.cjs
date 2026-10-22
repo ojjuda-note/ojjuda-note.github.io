@@ -47,7 +47,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await page.evaluate(()=>{const frame=document.querySelector('#ttang-overlay iframe');for(const data of [{type:'ojjuda:ttang:start',round:'one'},{type:'ojjuda:ttang:result',mode:'solo',round:'one',score:45}])dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data}));});
   await page.waitForFunction(()=>document.getElementById('ttang-save-status').textContent.includes('손님으로 기록했어요'));
   assert.equal(await page.evaluate(()=>calls.find(c=>c.name==='submit_guest_game_score'&&c.args.p_game==='ttang').args.p_score),45);
-  await page.getByRole('button',{name:'월드땅따먹기 닫기',exact:true}).click();
+  await page.getByRole('button',{name:'아지트땅따먹기 닫기',exact:true}).click();
   await page.evaluate(()=>guestFixture.open('spot'));
   await page.waitForFunction(()=>document.querySelector('.spot-game-dialog iframe')?.contentDocument?.body?.textContent.includes('game frame'));
   await page.evaluate(()=>{const frame=document.querySelector('.spot-game-dialog iframe');dispatchEvent(new MessageEvent('message',{origin:location.origin,source:frame.contentWindow,data:{type:'ojjuda:spot-score',score:4,owner:null}}));});

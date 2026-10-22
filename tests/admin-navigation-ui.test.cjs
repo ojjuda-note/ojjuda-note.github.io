@@ -271,7 +271,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal((await current()).tab, saved.tab==='events'?'cards':saved.tab==='chats'?'messages':saved.tab);
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
-    assert.deepEqual(await page.locator('.adm-site-links a').allTextContents(), ['월드로 돌아가기','별천지 예약 확인','원고실']);
+    assert.deepEqual(await page.locator('.adm-site-links a').allTextContents(), ['아지트로 돌아가기','별천지 예약 확인','원고실']);
     assert.equal(await page.locator('.adm-site-links a').first().getAttribute('href'), '/world.html');
     // Exercise the real embedded editor with the host guard: discard is asked once.
     await page.goto('https://fixture.test/world.html?admin=notice&actualNote=1'); await loaded();

@@ -3,7 +3,7 @@
   'use strict';
   const $ = s => document.querySelector(s), escape = safeText;
   const messages = {
-    not_signed_in:'온라인은 로그인한 오쭈다 월드에서 이용해 주세요.', banned:'지금은 온라인 게임을 이용할 수 없어요.',
+    not_signed_in:'온라인은 로그인한 오쭈다 아지트에서 이용해 주세요.', banned:'지금은 온라인 게임을 이용할 수 없어요.',
     invites_unavailable:'친구 초대를 불러오지 못했어요. 게임을 다시 열어 주세요.',
     room_full:'방이 가득 찼어요.', room_not_found:'방 번호를 다시 확인해 주세요.', room_unavailable:'종료되었거나 대기 시간이 지난 방이에요.',
     room_already_started:'이미 시작한 방이에요.', room_in_progress:'참여 중인 방이 있어요. 같은 방으로 돌아갈게요.',
