@@ -72,6 +72,11 @@
     next.addEventListener('click', () => { if (!busy && offset + PAGE_SIZE < total) { offset += PAGE_SIZE; void refresh(); } });
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
     section.append(heading, intro); if (!withdrawn && !referrals) section.append(filterBar);
+    if (referrals) {
+      const rewards = el('a', '선물 지급 관리', 'btn');
+      rewards.href = '/admin/rewards.html';
+      section.append(rewards);
+    }
     section.append(form, count, status, retry, list, pagination); container.replaceChildren(section);
 
     function clearSensitive(message) {
