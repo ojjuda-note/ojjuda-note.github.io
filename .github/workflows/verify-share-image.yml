@@ -1,0 +1,32 @@
+name: Verify refreshed sharing image
+on:
+  push:
+    branches: [codex/share-image-20261022]
+    paths: ['ops/share-image-edits.json', 'ops/apply-share-image.py', '.github/workflows/verify-share-image.yml']
+permissions:
+  contents: write
+concurrency:
+  group: share-image-verification
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply and inspect sharing metadata
+        run: python ops/apply-share-image.py
+      - name: Check script syntax and patch whitespace
+        run: |
+          node tests/inline-scripts.test.cjs
+          git diff --check
+      - name: Commit verified metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git commit -m 'Use a new image filename for refreshed Ojjuda Agit sharing cards'
+          git push origin HEAD:codex/share-image-20261022

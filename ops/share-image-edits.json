@@ -1,0 +1,283 @@
+[
+  {
+    "path": "park/glasses.html",
+    "before": "7b4a215119bc2f2e64456a8ecfa9080bb6dab385313cd50557fc4c1e3cb1e06c",
+    "after": "bfe4989fc449c5eab755adb1ee453c6052d113801a451b96f4c71111b8f207cd",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "park/index.html",
+    "before": "57693ce2c62b273aed4284867fe3d669738420328dd017fb5b7052f025807d09",
+    "after": "63a4c156b9bdcb0ceaf05926841000fb04661ac1481d4ee8554026e68a08afb5",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "guide.html",
+    "before": "694f1d28719627ab372607d2774470e6e77e932eca6d7a944cc56beca54348a2",
+    "after": "98e06a4a18aa5b4ca4d189bdba2bf29eadca1a0a6a603ad52175e55e435126de",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "world.html",
+    "before": "aef1cce9f69c1bc41ad0691e0f3a1d367dcbbeb4b7c49b065a788165eb95cb36",
+    "after": "fffeaffe39b19a1c22c544434446f21d3988cd20c465739d6a323b7e33e170c2",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      },
+      {
+        "old": "Go=\"0.46.32-beta\"",
+        "new": "Go=\"0.46.33-beta\"",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "privacy.html",
+    "before": "08cac06dcc4dcc26a5c1a73b24244ab8f975266c6f37ef1d66f6ebfb5559778c",
+    "after": "a5a7c79a926b59783261b1b152237b9b0843228a35c53f1a9c076a166971c2c2",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "sitemap.html",
+    "before": "aba18ef73e746114d25b32b08f19f703196803b971c5fd7d4f5aaf6800f01905",
+    "after": "f6b4998d3be7f8cae3ddbb68187080928809b0f730804504489bf0164d71c826",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "note/glasses.html",
+    "before": "c57ecb1c7cc231446559d8bbd60f31a11c6dc5e495f60a0aa4ebcb6842dc6f37",
+    "after": "4bfb2aee55308b178b37d618c50fdf28fafdd8373d5fe9634476fbe71d87b3ff",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "note/index.html",
+    "before": "4d237b38233e7f240322498b27ee3c8542afe34c8c7dd7739cc23a0fe7b73701",
+    "after": "a35c6b003eca597ed7d56c51b6ce5c1d7fe06c7d23def34e6f26855c03fd196b",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "photo-ttang.html",
+    "before": "8799bc8f9f2881d3b9a70444808159eae36080afd75940482f5221e822b213be",
+    "after": "64bec4638ec4c54f9b44cbc03930373932c499d46c330347aae7d32a72eac31b",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "terms.html",
+    "before": "452c377979e9c9bf674242a3e749293b53c5410ee77c6bc4068e41b7107cc0ea",
+    "after": "05577ad0077f8b7ccec0014027a38eb9495c228b9c7fd4ef9c76e62e411aa30c",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "index.html",
+    "before": "a308f8651985c1bcd833697e7f6f9afe782201858b4a86a522393d8c089e6ebb",
+    "after": "49b41e15a41fe766598ecf922e490b69c91d52e56a3240d4e82525eb1b609fdc",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/poker/index.html",
+    "before": "62ec5f15af78b736a54cef8a0be666f93db3e136d3717abbd862c85b274973d3",
+    "after": "b6c5c1ceed61bce209a67e099d307cf7e489516334f7b8b546978b81ba541b02",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/ojjuda-tour/index.html",
+    "before": "322015bb69bf92118f15d214b605490b4af1bc0a520088043d5ac1c75736ae8d",
+    "after": "d997f8d513487075dc66c89210ab4054e3a5d5b8041934790029f84c60770dea",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/matgo-online.html",
+    "before": "c4e6210ecc1055168c421d92f74a483c7876bf1f2e43ad0c2016073d51a336ab",
+    "after": "0b91ae8ee632ed3438a3b18a4cbe4a9493b627157c65a70cc80e2dbd7f79614b",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/bulssi/index.html",
+    "before": "33aa4e38149353a0aaafbedd305d04cfa78c58592adf4583cd338a0d54f48a4a",
+    "after": "32f67aec14cd4d3bec86df188c3b9e1e07218f725038fa5b97dfe5b165a0dc15",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/ttang.html",
+    "before": "d76c18de2e5c47ef5c1db136ced1f1e8f5f80af0109f37ab932ffbf6ef68bc3a",
+    "after": "4f4117e6bcac46f7d90bc02b374e8be8e8684695790dfad4433dc929be31f728",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/photo-ttang.html",
+    "before": "08049e0b74a5707879ac5efb92727d8dc1ad7d725d841f35e276dcbf05ff9824",
+    "after": "b7d0d0e8c75ab8714a08ea4b379ad035781516ce09fb2298f2832e36b2631795",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/tank/index.html",
+    "before": "fb31ba58074835c168cf51752bdbba0a7dbdb593e69fbcb4e9e46d3cdfde555d",
+    "after": "f1177a2851e5090060a7d21a0a4caf9c6db5688b15975ea71f0cecf30c724ecd",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/spot-difference/index.html",
+    "before": "91f2c7fdc66cde2034f8d95f58dc3f288b6a3cc27ecf0bcbf53c9fa3821b4b3d",
+    "after": "d2b921371cff0df761fe7b30dd9468cdc6a89f36bb9d8e16c83cb9b4117a8be4",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/mines/index.html",
+    "before": "c12f67c5f470c63b1154e17c000ea796dd58f1f7fa3542a54093d1206ab82c50",
+    "after": "c5a9a9f1c1aeea5710c082e1a45c3de353745cab641e6ea5fb8feb25beffbe55",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "delete-account.html",
+    "before": "4cad124e665c21435f02afc898feb0a060a4fa1d104026c235421773653a184b",
+    "after": "c1b7afc31384d80a97ce75eb8c97063b908770dbd998d6b347cb97b3af799b29",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "games/matgo.html",
+    "before": "03280c7f3d67fe35c2e98fd311c9da539980dd0df8e6993a968ab0f575ce5148",
+    "after": "18b4ae973745e20a6fcac4ed0f644b26037755d53d01bda565559a7344ffa4b9",
+    "edits": [
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-agit-logo2",
+        "new": "https://ojjuda.kr/brand/og-agit-20261022.png",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "version.json",
+    "before": "785bc5ea8c2fa5cf4261795f6aaf9c43340aa5bb7b5c3dab5d9282ef31be7e69",
+    "after": "2ac6ce2eadc174cdb43505c74545ded11b51bc77a9c4267cf42ea02e8396309a",
+    "edits": [
+      {
+        "old": "0.46.32-beta",
+        "new": "0.46.33-beta",
+        "count": 1
+      }
+    ]
+  }
+]
