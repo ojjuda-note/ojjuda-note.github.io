@@ -9,7 +9,7 @@ function section(start, end) {
   assert.ok(first >= 0 && last > first, `production presence code: ${start}`);
   return world.slice(first, last);
 }
-const source = section('function B0(', 'function C0(') +
+const source = section('async function M0(', 'var D0=') + section('function B0(', 'function C0(') +
   section('async function Pa(', 'async function _0(');
 const deferred = () => {
   let resolve;
@@ -19,21 +19,26 @@ const deferred = () => {
 const place = id => ({id, ch: 1, live: true, joined: false, npcs: [], me: {gx: 2, gy: 3}});
 
 function fixture() {
-  const timers = new Map(), channels = [], lobby = [], joined = [], people = [], removed = [];
+  const timers = new Map(), channels = [], lobby = [], joined = [], people = [], removed = [], connections = [], tokens = [];
+  const auth = {session: {user: {id: 'alice'}, access_token: 'alice-token'}};
   let clock = 0, sequence = 0; const reads = [];
   const context = {
-    D: {user: {id: 'alice'}}, $: {me: {nick: 'Alice', mood: 'happy'}, avatar: {hair: 'short'}},
-    Wo: null, Vo: 0, A0: null, Xr: true, console,
+    D: {online: true, user: {id: 'alice'}}, $: {me: {nick: 'Alice', mood: 'happy'}, avatar: {hair: 'short'}},
+    Wo: null, Vo: 0, A0: null, worldPresenceRetry: null, worldLobbyJoining: null, console,
+    g: {place: null}, document: {hidden: false}, Event,
+    window: {addEventListener() {}, dispatchEvent() {}}, en: {},
     Ze: {track(payload) { lobby.push(payload); return Promise.resolve('ok'); }},
-    jt: {onJoined(room) { joined.push(room.id); }},
-    M0: async () => {}, Jr: (id, ch) => `${id}-${ch}`, mh: () => 1,
+    jt: {onJoined(room) { joined.push(room.id); }, onConnection(room) { connections.push(room.presenceStatus); }},
+    mh: () => 1,
     C0: room => people.push(room.id), Le: () => false,
     setTimeout(callback, delay) { const id = ++sequence; timers.set(id, {at: clock + delay, callback}); return id; },
     clearTimeout(id) { timers.delete(id); },
     S: {
-      channel(name) {
+      auth: {async getSession() { return auth.pending?.promise || {data: {session: auth.session}, error: auth.error}; }},
+      realtime: {async setAuth(token) { tokens.push(token); }},
+      channel(name, options) {
         const channel = {
-          name, sent: [], events: [],
+          name, options, sent: [], events: [],
           on(kind, filter, callback) { this.events.push({kind, filter, callback}); return this; },
           subscribe(callback) { this.status = callback; return this; },
           track(payload) { this.sent.push(payload); return this.trackWait?.promise || Promise.resolve('ok'); },
@@ -58,10 +63,97 @@ function fixture() {
       timers.delete(id); timer.callback();
     }
   };
-  return {context, timers, channels, lobby, joined, people, removed, tick, reads};
+  return {context, timers, channels, lobby, joined, people, removed, tick, reads, auth, connections, tokens};
 }
+const flush = async () => { for (let i=0;i<12;i++) await Promise.resolve(); };
 
 (async () => {
+  // A missing, failed or different account session must never join with the API key.
+  for (const state of ['missing', 'error', 'different']) {
+    const f=fixture(), room=place('arcade'); f.context.Ze=null;
+    if (state==='missing') f.auth.session=null;
+    if (state==='error') f.auth.error=new Error('network unavailable');
+    if (state==='different') f.auth.session.user.id='bob';
+    await f.context.Qs(); await f.context.Pa(room,1);
+    assert.equal(f.channels.length,0,state+': no anonymous or wrong-account channel');
+    assert.equal(f.tokens.length,0); assert.equal(room.presenceStatus,'auth');
+    assert.equal(f.timers.size,1,'one delayed retry, no busy loop');
+    f.auth.error=null; f.auth.session={user:{id:'alice'},access_token:'fresh-token'};
+    f.tick(15000); await flush();
+    assert.equal(f.channels.length,1); assert.equal(f.channels[0].options.config.private,true);
+    assert.equal(f.tokens.at(-1),'fresh-token');
+  }
+  // Repeated failures stay private, recover without a popup, and cancel pending retries.
+  {
+    const f=fixture(), room=place('arcade'); await f.context.Pa(room,1);
+    const channel=f.channels[0]; await channel.status('SUBSCRIBED');
+    await channel.status('CHANNEL_ERROR',new Error('Unauthorized'));
+    await channel.status('TIMED_OUT');
+    assert.equal(room.joined,false); assert.equal(f.timers.size,1);
+    assert.equal(f.channels.length,1,'SDK can retry without immediate duplicate subscriptions');
+    assert.equal(channel.options.config.private,true,'auth failures never downgrade to public');
+    await channel.status('SUBSCRIBED');
+    assert.equal(room.joined,true); assert.equal(room.presenceStatus,'connected'); assert.equal(f.timers.size,0);
+    await channel.status('CLOSED'); f.tick(15000); await flush();
+    assert.equal(f.channels.length,2,'closed channel is replaced after backoff');
+    assert.ok(f.removed.includes(channel));
+  }
+  // A rejected track is not treated as a successful presence join.
+  {
+    const f=fixture(), room=place('arcade'); await f.context.Pa(room,1);
+    const channel=f.channels[0]; await channel.status('SUBSCRIBED'); f.auth.session=null;
+    await channel.status('CHANNEL_ERROR',new Error('Unauthorized')); await flush();
+    assert.equal(f.context.Wo,null,'lost session stops authenticated presence before anonymous SDK retries');
+    assert.ok(f.removed.includes(channel)); assert.equal(room.presenceStatus,'auth');
+    f.tick(15000); await flush(); assert.equal(f.channels.length,1,'missing session cannot recreate a channel');
+    await f.context.Vs(); assert.equal(f.timers.size,0);
+  }
+  for (const transition of ['leave','logout','account']) {
+    const f=fixture(); await f.context.Pa(place('arcade'),1);
+    await f.channels[0].status('TIMED_OUT');
+    if (transition==='leave') await f.context.Vs();
+    if (transition==='logout') f.context.D.user=null;
+    if (transition==='account') f.context.D.user={id:'bob'};
+    f.tick(15000); await flush();
+    assert.equal(f.channels.length,1,'delayed retry cannot rejoin after '+transition);
+  }
+  {
+    const f=fixture(), room=place('arcade'); await f.context.Pa(room,1);
+    f.channels[0].trackWait={promise:Promise.resolve('error')};
+    await f.channels[0].status('SUBSCRIBED');
+    assert.equal(room.joined,false); assert.deepEqual(f.joined,[]); assert.deepEqual(f.lobby,[]);
+    assert.equal(f.timers.size,1);
+    await f.context.Vs(); assert.equal(f.timers.size,0);
+  }
+  // The real UI callback changes only the room status; solo game state and toast stay untouched.
+  {
+    const f=fixture(), room=place('arcade'), label={textContent:''}, toasts=[];
+    const game={kind:'janggi',mode:'ai',moves:12}; f.context.g.place=room; f.context.game=game;
+    f.context.vf=false; f.context.z=selector=>selector==='#pcount'?label:null;
+    f.context.M=message=>toasts.push(message);
+    vm.runInContext(section('function bg(', 'function Sf('),f.context); f.context.bg();
+    await f.context.Pa(room,1); await f.channels[0].status('CHANNEL_ERROR',new Error('Unauthorized'));
+    assert.equal(label.textContent,'접속자 인증 확인 중'); assert.deepEqual(toasts,[]);
+    assert.deepEqual(game,{kind:'janggi',mode:'ai',moves:12});
+    const other=place('park'); f.context.worldPresenceChanged(other,'reconnecting');
+    assert.equal(label.textContent,'접속자 인증 확인 중','old room cannot overwrite current status');
+    f.context.worldPresenceChanged(room,'connected'); assert.equal(label.textContent,'지금 1명');
+  }
+  // Concurrent lobby startup produces one private channel, scoped to the account that started it.
+  {
+    const f=fixture(); f.context.Ze=null; f.auth.pending=deferred();
+    const first=f.context.Qs(), second=f.context.Qs();
+    f.auth.pending.resolve({data:{session:f.auth.session}}); await Promise.all([first,second]);
+    assert.equal(f.channels.length,1); assert.equal(f.channels[0].options.config.private,true);
+    f.context.D.user={id:'bob'};
+    await f.channels[0].status('SUBSCRIBED'); assert.deepEqual(f.channels[0].sent,[]);
+  }
+  for (const transition of ['logout','account']) {
+    const f=fixture(); f.context.Ze=null; f.auth.pending=deferred();
+    const pending=f.context.Qs(); f.context.D.user=transition==='logout'?null:{id:'bob'};
+    f.auth.pending.resolve({data:{session:f.auth.session}}); await pending;
+    assert.equal(f.channels.length,0,'pending lobby join is cancelled on '+transition);
+  }
   // Park and Arcade keep presence without messages, reactions or chat history.
   {
     const f=fixture(); await f.context.Pa(place('park'),1);
@@ -134,5 +226,5 @@ function fixture() {
     assert.ok(!f.channels.some(channel => channel.name === 'place:arcade-2'),
       transition + ': superseded join is cancelled before channel creation');
   }
-  console.log('PASS World presence: latest movement, leave/logout/account isolation, stale track completion and overlapping joins');
+  console.log('PASS World presence: session ownership, private auth, quiet recovery, track failures, solo game isolation, lobby races, movement and overlapping joins');
 })().catch(error => { console.error(error); process.exitCode = 1; });
