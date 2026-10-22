@@ -32,8 +32,6 @@ icons={
 'shield':'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/>',
 'help':'<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-1 1-2 1-2 3M12 17h.01"/>'}
 (A/'interface.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg">'+''.join(f'<symbol id="{k}" viewBox="0 0 24 24">{v}</symbol>' for k,v in icons.items())+'</svg>\n')
-logo=rect(0,0,96,96,deep,27)+path('M24 58V44a24 24 0 0 1 48 0v14H58V44a10 10 0 0 0-20 0v14Z',cream)+circle(31,69,7,gold)+circle(65,69,7,sage)
-(R/'favicon.svg').write_text(svg(logo,96,96))
 # Small sculptural game emblems, each drawn around its own game mechanics.
 games={
 'mines':rect(31,19,54,47,sage,7)+rect(36,24,44,37,cream,3)+path('M57 32v27M57 32h19l-6 8 6 8H57',coral,deep,2)+rect(49,59,17,3,deep,1),
@@ -95,12 +93,7 @@ def trigram(bits,x,y,angle):
  return group(lines,f'translate({x} {y}) rotate({angle})')
 scenes['liberation']=path('M365 312V91','none','#71828b',5)+rect(368,97,164,116,'#fffdf7',2)+group('<circle r="27" fill="#b56565"/><path d="M-27 0a27 27 0 0 0 54 0A13.5 13.5 0 0 0 0 0a13.5 13.5 0 0 1-27 0Z" fill="#52768b"/>','translate(450 155) rotate(-33)')+trigram([1,1,1],397,120,-55)+trigram([0,1,0],504,120,55)+trigram([1,0,1],397,190,55)+trigram([0,0,0],504,190,-55)+blossom(510,278,'#e8c5ce',1)+leaf(523,313,sage,50,.7)
 for name,art in scenes.items():(A/'themes'/f'{name}.svg').write_text(scene(art))
-# The same original symbols become install/share icons at release time using CairoSVG.
-try:
- import cairosvg
- for filename,size in [('icon-192.png',192),('icon-512.png',512),('icon-maskable-512.png',512),('apple-touch-icon.png',180)]:
-  cairosvg.svg2png(bytestring=svg(logo,96,96).encode(),write_to=str(R/filename),output_width=size,output_height=size)
- og=(R/'brand'/'share.svg').read_text()
- cairosvg.svg2png(bytestring=og.encode(),write_to=str(R/'og-image.png'))
-except ImportError:print('CairoSVG unavailable; release pipeline must render the icons.')
+# Reuse the approved note-shaped master for all install/share assets.
+import runpy
+runpy.run_path(str(R/'ops'/'render-brand.py'),run_name='__main__')
 print('Created interface family, 16 game illustrations and',len(scenes),'individual theme scenes.')
