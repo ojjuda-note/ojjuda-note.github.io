@@ -49,6 +49,13 @@ async function open(query = '', options = {}) {
 }
 
 (async () => {
+  const login = html.match(/sr\["account-login"\]=\(\)=>\{[^\n]+\};/)[0];
+  for (const [place, destination] of [['park', 'note'], ['arcade', 'world']]) {
+    const location = {}, sr = {};
+    vm.runInNewContext(login, { sr, location, g: { tab: 'my', place: { id: place } } });
+    sr['account-login']();
+    assert.equal(location.href, '/?auth=login&next=' + destination, 'login from Settings returns to the originating menu');
+  }
   for (const query of ['', '?tab=arcade', '?place=park', '?tab=park', '?tab=my', '?utm_source=share']) {
     const guest = await open(query);
     assert.deepEqual(guest.calls, ['guest', 'start'], query + ': first visits browse without a login form');

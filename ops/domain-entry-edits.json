@@ -17,9 +17,14 @@
         "old": "world-admin-loader.js?v=20261022-agit1",
         "new": "world-admin-loader.js?v=20261022-entry1",
         "count": 1
+      },
+      {
+        "old": "sr[\"account-login\"]=()=>{location.href=\"/?auth=login&next=world\";};",
+        "new": "sr[\"account-login\"]=()=>{location.href=\"/?auth=login&next=\"+(g.place?.id===\"park\"?\"note\":\"world\");};",
+        "count": 1
       }
     ],
-    "after": "b89fbe7a05b0f729d899982f1cd5ec75d02c1c97149fa283eb4652a1f94a3a73"
+    "after": "aef1cce9f69c1bc41ad0691e0f3a1d367dcbbeb4b7c49b065a788165eb95cb36"
   },
   {
     "path": "version.json",
