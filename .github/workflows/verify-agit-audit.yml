@@ -1,0 +1,33 @@
+name: Verify Agit branding audit
+on:
+  push:
+    branches: [codex/agit-audit-20261022]
+    paths: ['ops/agit-audit-edits.json', 'ops/apply-agit-audit.py', '.github/workflows/verify-agit-audit.yml']
+permissions:
+  contents: write
+concurrency:
+  group: agit-branding-audit
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply checked branding patches
+        run: python ops/apply-agit-audit.py
+      - name: Check entry points and script syntax
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/portal-auth-entry.test.cjs
+          git diff --check
+      - name: Commit checked source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git commit -m 'Complete Agit branding on direct game links and legacy entry pages'
+          git push origin HEAD:codex/agit-audit-20261022

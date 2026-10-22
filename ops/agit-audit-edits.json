@@ -1,0 +1,283 @@
+[
+  {
+    "path": "terms.html",
+    "before": "7c2a00c47fc65f064a132974319891738fc375129583763eb9ccecdb9c87b33f",
+    "edits": [
+      {
+        "old": "?v=20261022-agit-logo2?v=20261022-agit-logo2",
+        "new": "?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ],
+    "after": "452c377979e9c9bf674242a3e749293b53c5410ee77c6bc4068e41b7107cc0ea"
+  },
+  {
+    "path": "privacy.html",
+    "before": "fd05a4fa925c54b8e491bd36d6598efd129462a7ae315d15600ecbe663532983",
+    "edits": [
+      {
+        "old": "?v=20261022-agit-logo2?v=20261022-agit-logo2",
+        "new": "?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ],
+    "after": "08cac06dcc4dcc26a5c1a73b24244ab8f975266c6f37ef1d66f6ebfb5559778c"
+  },
+  {
+    "path": "delete-account.html",
+    "before": "3796f25e7304cc4bf2983399e5934382f25864c1482523f1a9768ecf6d6a6e17",
+    "edits": [
+      {
+        "old": "?v=20261022-agit-logo2?v=20261022-agit-logo2",
+        "new": "?v=20261022-agit-logo2",
+        "count": 2
+      }
+    ],
+    "after": "4cad124e665c21435f02afc898feb0a060a4fa1d104026c235421773653a184b"
+  },
+  {
+    "path": "photo-ttang.html",
+    "before": "e0730872117407ca233ac3bad2f9e81ff0342057a73ba1ac3524422f93e60cf9",
+    "edits": [
+      {
+        "old": "?v=20261022-agit-logo2?v=20261022-agit-logo2",
+        "new": "?v=20261022-agit-logo2",
+        "count": 2
+      },
+      {
+        "old": "<title>포토땅따먹기 한 판 체험 · 오쭈다</title>",
+        "new": "<title>포토땅따먹기 한 판 체험 · 오쭈다</title>\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">",
+        "count": 1
+      }
+    ],
+    "after": "8799bc8f9f2881d3b9a70444808159eae36080afd75940482f5221e822b213be"
+  },
+  {
+    "path": "games/bulssi/index.html",
+    "before": "a9c75aa95ba9eac1358659d62c19625b3624e316c299cc4bdc40614b1fdd91a0",
+    "edits": [
+      {
+        "old": "<title>샛별키우기 · 오쭈다</title>",
+        "new": "<title>샛별키우기 · 오쭈다</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/bulssi/index.html\">\n<meta property=\"og:title\" content=\"샛별키우기 · 오쭈다\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"샛별키우기 · 오쭈다\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "33aa4e38149353a0aaafbedd305d04cfa78c58592adf4583cd338a0d54f48a4a"
+  },
+  {
+    "path": "games/matgo-online.html",
+    "before": "becf17047909e78c40db3fa1162fc4a2f6c5d6d433daa546ac306f266082dfe1",
+    "edits": [
+      {
+        "old": "<title>오쭈다 맞고 · 회원 대결</title>",
+        "new": "<title>오쭈다 맞고 · 회원 대결</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/matgo-online.html\">\n<meta property=\"og:title\" content=\"오쭈다 맞고 · 회원 대결\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 맞고 · 회원 대결\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "c4e6210ecc1055168c421d92f74a483c7876bf1f2e43ad0c2016073d51a336ab"
+  },
+  {
+    "path": "games/matgo.html",
+    "before": "197fd879da0c974dedae8ad369a34c0400d98754e09778673da70d64c9866c72",
+    "edits": [
+      {
+        "old": "<title>오쭈다 맞고</title>",
+        "new": "<title>오쭈다 맞고</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/matgo.html\">\n<meta property=\"og:title\" content=\"오쭈다 맞고\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 맞고\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "03280c7f3d67fe35c2e98fd311c9da539980dd0df8e6993a968ab0f575ce5148"
+  },
+  {
+    "path": "games/mines/index.html",
+    "before": "1227f559ef9bbdf01f3ad4cebe47edf30bbc8c56c9bcd37cf45df5466565465c",
+    "edits": [
+      {
+        "old": "<title>지뢰찾기 · 오쭈다</title>",
+        "new": "<title>지뢰찾기 · 오쭈다</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/mines/index.html\">\n<meta property=\"og:title\" content=\"지뢰찾기 · 오쭈다\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"지뢰찾기 · 오쭈다\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "c12f67c5f470c63b1154e17c000ea796dd58f1f7fa3542a54093d1206ab82c50"
+  },
+  {
+    "path": "games/ojjuda-tour/index.html",
+    "before": "539d2d3615085f0c381aab580296d6bc19c5293f4dcf78b5944f25afb654b2e1",
+    "edits": [
+      {
+        "old": "<title>오쭈다 마블</title>",
+        "new": "<title>오쭈다 마블</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/ojjuda-tour/index.html\">\n<meta property=\"og:title\" content=\"오쭈다 마블\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 마블\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "322015bb69bf92118f15d214b605490b4af1bc0a520088043d5ac1c75736ae8d"
+  },
+  {
+    "path": "games/photo-ttang.html",
+    "before": "6cda822208b46514c93aa099c4e9329c09a6eb2caf24e358288c9a0ebbf6b1ec",
+    "edits": [
+      {
+        "old": "<title>오쭈다 포토땅따먹기</title>",
+        "new": "<title>오쭈다 포토땅따먹기</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/photo-ttang.html\">\n<meta property=\"og:title\" content=\"오쭈다 포토땅따먹기\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 포토땅따먹기\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "08049e0b74a5707879ac5efb92727d8dc1ad7d725d841f35e276dcbf05ff9824"
+  },
+  {
+    "path": "games/poker/index.html",
+    "before": "8d16ef8c2b1e7d51cdf371a00a21aa8b37d9b19116fb6021064ec37d959c9ea9",
+    "edits": [
+      {
+        "old": "<title>오쭈다 세븐포커</title>",
+        "new": "<title>오쭈다 세븐포커</title>\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/poker/index.html\">\n<meta property=\"og:title\" content=\"오쭈다 세븐포커\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 세븐포커\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "62ec5f15af78b736a54cef8a0be666f93db3e136d3717abbd862c85b274973d3"
+  },
+  {
+    "path": "games/spot-difference/index.html",
+    "before": "2e89c68f5e2427b2b002743701e1c6c653010bda0112901ff9764f6214838e3e",
+    "edits": [
+      {
+        "old": "<title>쭈다 틀린그림 찾기</title>",
+        "new": "<title>쭈다 틀린그림 찾기</title>\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/spot-difference/index.html\">\n<meta property=\"og:title\" content=\"쭈다 틀린그림 찾기\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"쭈다 틀린그림 찾기\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "91f2c7fdc66cde2034f8d95f58dc3f288b6a3cc27ecf0bcbf53c9fa3821b4b3d"
+  },
+  {
+    "path": "games/tank/index.html",
+    "before": "3b12946725927aa174e7fed260d0f7aa47ae0a8d4384d6681df288de921a199c",
+    "edits": [
+      {
+        "old": "<title>오쭈다 탱크게임 · 혼자 하기 · 온라인 대전</title>",
+        "new": "<title>오쭈다 탱크게임 · 혼자 하기 · 온라인 대전</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/tank/index.html\">\n<meta property=\"og:title\" content=\"오쭈다 탱크게임 · 혼자 하기 · 온라인 대전\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 탱크게임 · 혼자 하기 · 온라인 대전\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "fb31ba58074835c168cf51752bdbba0a7dbdb593e69fbcb4e9e46d3cdfde555d"
+  },
+  {
+    "path": "games/ttang.html",
+    "before": "b4b17bc6eb40ffafe60a23073c0b85742d0d5085585ed80aaee56661034dd27a",
+    "edits": [
+      {
+        "old": "<title>오쭈다 월드땅따먹기</title>",
+        "new": "<title>오쭈다 월드땅따먹기</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/games/ttang.html\">\n<meta property=\"og:title\" content=\"오쭈다 월드땅따먹기\">\n<meta property=\"og:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 월드땅따먹기\">\n<meta name=\"twitter:description\" content=\"가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "d76c18de2e5c47ef5c1db136ced1f1e8f5f80af0109f37ab932ffbf6ef68bc3a"
+  },
+  {
+    "path": "guide.html",
+    "before": "71c37efc01cf72fd08e82f05075747e375d61572c4eaf0c5ee5050c1ae3b30d2",
+    "edits": [
+      {
+        "old": "<title>사용 안내 · 오쭈다 아지트</title>",
+        "new": "<title>사용 안내 · 오쭈다 아지트</title>\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">",
+        "count": 1
+      }
+    ],
+    "after": "694f1d28719627ab372607d2774470e6e77e932eca6d7a944cc56beca54348a2"
+  },
+  {
+    "path": "note/glasses.html",
+    "before": "019a3294e2a8b06d545b250fcd2bbf8d3882bfbb8e4d1140704eca2efa768115",
+    "edits": [
+      {
+        "old": "<title>오쭈다 아지트 · 공원으로 이동</title>",
+        "new": "<title>오쭈다 아지트 · 공원으로 이동</title>\n<link rel=\"icon\" href=\"/favicon.svg?v=20261022-agit-logo2\" type=\"image/svg+xml\">\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/world.html?place=park\">\n<meta property=\"og:title\" content=\"오쭈다 아지트 · 공원\">\n<meta property=\"og:description\" content=\"카드로 마음을 나누는 오쭈다 아지트 공원.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 아지트 · 공원\">\n<meta name=\"twitter:description\" content=\"카드로 마음을 나누는 오쭈다 아지트 공원.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "c57ecb1c7cc231446559d8bbd60f31a11c6dc5e495f60a0aa4ebcb6842dc6f37"
+  },
+  {
+    "path": "note/index.html",
+    "before": "d88efb26a22deae7c6c64d413a9aaf5045093f4d4f6b81cd769ec112ca1d78c4",
+    "edits": [
+      {
+        "old": "<title>오쭈다 아지트 · 공원으로 이동</title>",
+        "new": "<title>오쭈다 아지트 · 공원으로 이동</title>\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">",
+        "count": 1
+      }
+    ],
+    "after": "4d237b38233e7f240322498b27ee3c8542afe34c8c7dd7739cc23a0fe7b73701"
+  },
+  {
+    "path": "park/glasses.html",
+    "before": "edbb71b599d3fdb8add9df86df57e3f7daa3e2d530395c1a3085d48f4928d1e2",
+    "edits": [
+      {
+        "old": "<title>스마트 글래스 미리보기 | 오쭈다 아지트 · 공원</title>",
+        "new": "<title>스마트 글래스 미리보기 | 오쭈다 아지트 · 공원</title>\n<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/world.html?place=park\">\n<meta property=\"og:title\" content=\"오쭈다 아지트 · 공원\">\n<meta property=\"og:description\" content=\"카드로 마음을 나누는 오쭈다 아지트 공원.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"오쭈다 아지트 · 공원\">\n<meta name=\"twitter:description\" content=\"카드로 마음을 나누는 오쭈다 아지트 공원.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">",
+        "count": 1
+      }
+    ],
+    "after": "7b4a215119bc2f2e64456a8ecfa9080bb6dab385313cd50557fc4c1e3cb1e06c"
+  },
+  {
+    "path": "sitemap.html",
+    "before": "ac20794074d68098ea9dab70a22489aae8f2e7649252829bf0a1e01011b1e6cd",
+    "edits": [
+      {
+        "old": "<title>사이트맵 · 오쭈다 아지트</title>",
+        "new": "<title>사이트맵 · 오쭈다 아지트</title>\n<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=20261022-agit-logo2\">",
+        "count": 1
+      }
+    ],
+    "after": "aba18ef73e746114d25b32b08f19f703196803b971c5fd7d4f5aaf6800f01905"
+  },
+  {
+    "path": "policies/2026-09-29/privacy.html",
+    "before": "ae36b29cab92eee4049acef3b224830105fccc679594541ff9ce1bdf0f1bebf7",
+    "edits": [
+      {
+        "old": "<a class=\"top\" href=\"./\">",
+        "new": "<a class=\"top\" href=\"/\">",
+        "count": 1
+      }
+    ],
+    "after": "0da9d7953ea188e35966d48d8c4a0abbff1f3864aea09d50285eb7f702f74356"
+  },
+  {
+    "path": "policies/2026-09-29/terms.html",
+    "before": "06808f8c38e8e42ffb10220902bc1d11334eb7e4af9957e27b040fb67fc9f15d",
+    "edits": [
+      {
+        "old": "<a class=\"top\" href=\"./\">",
+        "new": "<a class=\"top\" href=\"/\">",
+        "count": 1
+      }
+    ],
+    "after": "2e34c1fb1b53e366bc9402b841e4d2c425dcb5cd94f0410c831d3f298a4f9424"
+  },
+  {
+    "path": "version.json",
+    "before": "67258be9c5c2cea76d1dc10a797adb26c6b46cd54e7ac39a197a7e2ae2b139f6",
+    "edits": [
+      {
+        "old": "0.46.30-beta",
+        "new": "0.46.31-beta",
+        "count": 1
+      }
+    ],
+    "after": "6888c64c14530e3e689f8df767ce36130e6fd4a953d5d432f30586e435d8aecb"
+  },
+  {
+    "path": "world.html",
+    "before": "2213c352aedef6a0ab5f442874f3cff32f1f31e10edb98dea561ebb1dd4d97ba",
+    "edits": [
+      {
+        "old": "var Go=\"0.46.30-beta\"",
+        "new": "var Go=\"0.46.31-beta\"",
+        "count": 1
+      }
+    ],
+    "after": "827a561f0de640de43fafe400c52b7eb3918f4ab845779a1a0e232e841f014dd"
+  }
+]
