@@ -60,7 +60,7 @@ export function createDealMotion({play=()=>{},onFinish=()=>{}}={}){
             {transform:`translate(0,0) rotate(${fan}deg) scale(1)`,opacity:1}
           ],{duration,easing:'cubic-bezier(.2,.65,.25,1)',fill:'both'});
           animate(deck,[{translate:'0 0'},{translate:'0 -2px'},{translate:'0 0'}],{duration:150});
-          play();
+          play({seat:Number(target.dataset.dealSeat)||0});
         }catch{
           cancel();onFinish();return;
         }
