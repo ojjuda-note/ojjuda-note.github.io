@@ -2,6 +2,42 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {JSDOM}=require('jsdom'),{fixture}=require('./poker-online-fixture.cjs'),{screen,until,pause}=require('./poker-ui-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
+ // Settle real side pots, then render the server-shaped snapshot through the normal bridge.
+ // A side-pot payout can be smaller than the player's total contribution.
+ const {SevenPoker}=await import('../games/poker/engine.mjs');
+ for(const scenario of [
+  {totals:[1001,50,510,1001],title:'일부 판돈 획득',received:982,net:-19},
+  {totals:[1500,50,510,1500],title:'일부 판돈 획득',received:1980,net:480},
+  {totals:[1020,50,510,1020],title:'일부 판돈 획득',received:1020,net:0},
+  {totals:[1001,50,510,1001],swap:2,title:'승리했습니다',received:2562,net:1561,victory:true},
+  {totals:[1200,50,1001,1001],swap:3,title:'두리 승리',received:199,net:-1001}
+ ]){
+  const g=new SevenPoker({names:['나','하루','두리','보리']});
+  const hands=[[39,4,45,36,15,28,49],[17,22,2,41,5,7,8],[12,25,9,35,3,10,14],[13,20,43,48,24,31,6]];
+  if(scenario.swap)[hands[0],hands[scenario.swap]]=[hands[scenario.swap],hands[0]];
+  g.players.forEach((p,i)=>Object.assign(p,{cards:hands[i],up:hands[i].slice(2,6),initial:5000,total:scenario.totals[i],stack:5000-scenario.totals[i],bet:0,folded:i===1}));
+  g.street=7;g.finish();
+  assert.equal(g.result.net[0],scenario.net);assert.equal(g.result.payouts[0],scenario.received);
+  assert.equal(g.result.payouts.reduce((a,b)=>a+b,0),g.pot,'settlement conserves the whole pot');
+  // Check another member's rotated view as well as the host's own view.
+  for(const seat of [0,2]){
+   const room={id:'settled-fixture',mode:'multi',status:'finished',round:1,version:1,seat,hostSeat:0,ready:[false,false,false,false],departed:[false,false,false,false],capacity:4,code:'RESULT',names:g.players.map(p=>p.name),game:{...JSON.parse(JSON.stringify(g)),pot:g.pot,legal:null}};
+   const s=await screen({call:async()=>({room,wallet:{gold:g.players[seat].stack,locked:true,free_left:2}})},'result-view');
+   try{
+    assert.equal(s.find('.result-breakdown div:first-child dd').textContent,scenario.totals[seat].toLocaleString('ko-KR')+' G');
+    assert.equal(s.find('.result-breakdown div:last-child dd').textContent,g.result.payouts[seat].toLocaleString('ko-KR')+' G');
+    assert.equal(s.find('.result-net-label').textContent,'최종 손익');
+    if(seat===0){
+     assert.equal(s.find('.result-copy b').textContent,scenario.title);
+     assert.equal(s.find('.result-banner').classList.contains('result-win'),!!scenario.victory);
+     const amount=s.find('.result-banner>strong');
+     assert.equal(amount.classList.contains('loss'),scenario.net<0);
+     assert.equal(amount.textContent,'최종 손익'+(scenario.net>0?'+':'')+scenario.net.toLocaleString('ko-KR')+'G');
+    }
+   }finally{s.close();}
+  }
+ }
+ console.log('PASS: side-pot losses, profits, break-even, full wins and refunds show accurate settlement details in rotated views');
  const f=await fixture(),opened=[],screens=[];
  try{
   const A=f.users[0],s=await screen(f,A,{animate:true,saved:{bank:999999999,rounds:999,audio:{enabled:false,volume:.25}}});screens.push(s);

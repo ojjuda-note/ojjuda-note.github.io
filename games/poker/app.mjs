@@ -244,8 +244,12 @@ function renderTable(animateDeal=true){
   const myCards=splitHand?handGroup(privateCards,'private',done?'비공개였던 카드':'나만 보는 카드')+handGroup(publicCards,'public',pendingOpen?'공개할 카드':'공개 카드')+handGroup(finalCards,'final','마지막 비공개 카드'):ownCards.map(ownCard).join('');
   let result='';
   if(done){
-    const won=winning.has(0),names=[...winning].map(i=>game.players[i].name).join(' · '),net=game.result.net[0];
-    result=`<section class="result-banner${won?' result-win':''}${same&&visual.finished?'':' result-enter'}" aria-label="이번 판 결과"><div class="result-seal" aria-hidden="true">${won?'♠':'◇'}</div><div class="result-copy"><small>${won?'WINNING HAND':'HAND COMPLETE'}</small><b>${won?'승리했습니다':esc(names)+' 승리'}</b><p>${game.result.uncontested?'상대 전원 다이':[...winning].map(i=>`${esc(game.players[i].name)} · ${bestHand(game.players[i].cards).name}`).join(' / ')}${game.result.pots.filter(p=>!p.refund).length>1?' · 사이드팟 정산':''}</p></div><strong class="${net>=0?'profit':'loss'}">${net>0?'+':''}${fmt(net)}<small>G</small></strong></section>`;
+    const pots=game.result.pots.filter(p=>!p.refund),won=winning.has(0),names=[...winning].map(i=>game.players[i].name).join(' · '),net=game.result.net[0];
+    // Receiving a side pot (or an unmatched-bet refund) is not a win for the whole hand.
+    const partial=won&&(net<0||pots.some(p=>!p.winners.includes(0))),victory=won&&!partial&&net>0;
+    const title=partial?'일부 판돈 획득':won?(net===0?'손익 없음':'승리했습니다'):esc(names)+' 승리';
+    const received=game.result.payouts?.[0]??me.total+net;
+    result=`<section class="result-banner${victory?' result-win':''}${same&&visual.finished?'':' result-enter'}" aria-label="이번 판 결과"><div class="result-seal" aria-hidden="true">${victory?'♠':'◇'}</div><div class="result-copy"><small>${victory?'WINNING HAND':'HAND COMPLETE'}</small><b>${title}</b><p>${game.result.uncontested?(won?'상대 전원 다이':'다이로 종료'):[...winning].map(i=>`${esc(game.players[i].name)} · ${bestHand(game.players[i].cards).name}`).join(' / ')}${pots.length>1?' · 사이드팟 정산':''}</p></div><strong class="${net>=0?'profit':'loss'}"><small class="result-net-label">최종 손익</small>${net>0?'+':''}${fmt(net)}<small class="result-unit">G</small></strong><dl class="result-breakdown"><div><dt>건 골드</dt><dd>${fmt(me.total)} G</dd></div><div><dt>받은 골드</dt><dd>${fmt(received)} G</dd></div></dl></section>`;
   }
   const seats=game.players.slice(1).map((p,j)=>{
     const position=game.players.length===2?'north':game.players.length===3?['west','east'][j]:['west','north','east'][j];
