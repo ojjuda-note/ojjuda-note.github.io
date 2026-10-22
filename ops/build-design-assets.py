@@ -100,7 +100,7 @@ try:
  import cairosvg
  for filename,size in [('icon-192.png',192),('icon-512.png',512),('icon-maskable-512.png',512),('apple-touch-icon.png',180)]:
   cairosvg.svg2png(bytestring=svg(logo,96,96).encode(),write_to=str(R/filename),output_width=size,output_height=size)
- og=svg(rect(0,0,1200,630,'#f3f5ed')+group(logo,'translate(100 130) scale(1.5)')+'<text x="100" y="395" font-family="sans-serif" font-size="68" font-weight="700" fill="#244b3a">오쭈다 월드</text><text x="104" y="450" font-family="sans-serif" font-size="25" fill="#617464">가볍게 한 판, 다정한 한마디.</text>'+group(base,'translate(420 80) scale(1.4)'),1200,630)
+ og=(R/'brand'/'share.svg').read_text()
  cairosvg.svg2png(bytestring=og.encode(),write_to=str(R/'og-image.png'))
 except ImportError:print('CairoSVG unavailable; release pipeline must render the icons.')
 print('Created interface family, 16 game illustrations and',len(scenes),'individual theme scenes.')

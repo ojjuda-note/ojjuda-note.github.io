@@ -1,4 +1,4 @@
-/* Ojjuda World arcade → member-only Matgo. Gold balances and refills are server-managed. */
+/* Ojjuda Agit arcade → member-only Matgo. Gold balances and refills are server-managed. */
 (function () {
   'use strict';
   let overlay = null, frame = null, opening = false, unsubscribe = null, previousFocus = null;

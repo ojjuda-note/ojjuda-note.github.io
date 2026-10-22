@@ -146,13 +146,13 @@
     $('password-label').textContent = isReset ? '새 비밀번호' : '비밀번호';
     $('password-confirm-label').textContent = isReset ? '새 비밀번호 확인' : '비밀번호 확인';
     password.autocomplete = isSignup || isReset ? 'new-password' : 'current-password';
-    $('auth-title').textContent = isSignup ? '오쭈다 월드' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 월드';
-    $('auth-intro').textContent = isSignup ? '한 번 가입하면 오쭈다 월드의 모든 공간을 이용할 수 있어요.'
+    $('auth-title').textContent = isSignup ? '오쭈다 아지트' : isForgot ? '비밀번호 찾기' : isReset ? '새 비밀번호 설정' : isNickname ? '닉네임 정하기' : '오쭈다 아지트';
+    $('auth-intro').textContent = isSignup ? '한 번 가입하면 오쭈다 아지트의 모든 공간을 이용할 수 있어요.'
       : isForgot ? '등록된 이메일·전화번호·생년월일·성별을 모두 입력해 주세요.'
         : isReset ? '새 비밀번호를 입력하고, 확인 칸에 한 번 더 입력해 주세요.'
-          : isNickname ? '월드에서 사용할 닉네임을 정해 주세요.'
+          : isNickname ? '아지트에서 사용할 닉네임을 정해 주세요.'
           : '오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.';
-    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '월드 시작하기 ' : '로그인 ';
+    submit.firstChild.textContent = isSignup ? '회원가입 ' : isForgot ? '회원정보 확인 ' : isReset ? '확인 ' : isNickname ? '아지트 시작하기 ' : '로그인 ';
     feedback.textContent = notice;
     if ((isSignup || isForgot) && !prepareIdentity()) feedback.textContent = '회원정보 입력 화면을 불러오지 못했어요. 다시 시도해 주세요.';
     submit.disabled = busy || !client || ((isSignup || isForgot) && !window.OjjudaIdentity);
@@ -521,7 +521,7 @@
         recoveryPending = false;
         history.replaceState(null, '', location.pathname);
         if (data?.user) applySession({ ...(session || {}), user: data.user });
-        showState('비밀번호가 바뀌었어요', '이제 월드로 이동할 수 있어요.', '공간 고르기');
+        showState('비밀번호가 바뀌었어요', '이제 아지트로 이동할 수 있어요.', '공간 고르기');
       }
     } catch (error) {
       console.warn('계정 처리 실패:', error);
