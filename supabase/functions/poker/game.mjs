@@ -36,7 +36,7 @@ export function move(state,seat,command,random=Math.random,difficulty='normal'){
  try{
   if(type==='discard'&&g.phase==='discard')g.discard(index,seat);
   else if(type==='open'&&g.phase==='open')g.open(index,seat);
-  else if(g.phase==='betting'&&['fold','check','call','raise','allin'].includes(type))g.act(type,command.to);
+  else if(g.phase==='betting'&&['fold','check','call','raise','allin'].includes(type))g.act(type,command.to,command.preset);
   else throw Error();
  }catch{throw Error('invalid_move');}
  return g;

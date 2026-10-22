@@ -145,7 +145,7 @@ export class SevenPoker {
     const minTo=this.currentBet+this.raiseSize,maxTo=p.bet+p.stack;
     return {call:Math.min(need,p.stack),need,check:need===0,mayRaise:mayRaise&&maxTo>this.currentBet,minTo,maxTo,allIn:maxTo<=this.currentBet||mayRaise};
   }
-  act(type,to=0){
+  act(type,to=0,preset=''){
     const legal=this.legal();if(!legal)throw Error('Not your turn');
     const id=this.turn,p=this.players[id];let raised=false,fullRaise=false,oldBet=this.currentBet;
     if(type==='fold'){p.folded=true;p.last='다이';}
@@ -157,9 +157,13 @@ export class SevenPoker {
       if(to<=this.currentBet){if(type!=='allin'||!legal.allIn)throw Error('Invalid call');this.pay(p,to-p.bet);p.last='올인';}
       else{
         if(!legal.mayRaise||(to<legal.minTo&&to!==legal.maxTo))throw Error('Cannot raise');
+        const presets={minimum:[0,'삥'],quarter:[.25,'쿼터'],half:[.5,'하프']};
+        const choice=Object.hasOwn(presets,preset)?presets[preset]:null;
+        // Only name a preset when its amount matches the authoritative state.
+        const label=choice&&to===Math.min(legal.maxTo,Math.max(legal.minTo,p.bet+legal.need+Math.floor((this.pot+legal.need)*choice[0])))?choice[1]:'베팅';
         this.pay(p,to-p.bet);this.currentBet=p.bet;raised=true;fullRaise=this.currentBet-oldBet>=this.raiseSize;
         if(fullRaise){this.raiseSize=this.currentBet-oldBet;this.raises++;}
-        p.last=p.allIn?'올인':`베팅 ${p.bet.toLocaleString('ko-KR')}`;
+        p.last=p.allIn?'올인':`${label} ${p.bet.toLocaleString('ko-KR')}`;
       }
     }else throw Error('Unknown action');
     this.log.push(`${p.name} · ${p.last}`);this.log=this.log.slice(-40);
@@ -230,7 +234,8 @@ export function chooseAI(view,random=Math.random,difficulty='normal'){
     l.minTo-view.bet<=bluffBudget&&random()<bluffChance){
     return {type:'raise',to:Math.min(raiseTo(),view.bet+bluffBudget)};
   }
-  if(l.need>0&&strength<price+.16+style.caution){
+  // Computer players stay in through fifth street, even against a large bet.
+  if(view.street>5&&l.need>0&&strength<price+.16+style.caution){
     const curiosity=(style.curiosity+(easy?.12:0))*(price>.35?.35:1);
     if(random()>=curiosity)return {type:'fold'};
   }

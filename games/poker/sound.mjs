@@ -1,9 +1,26 @@
-// Layered table foley. No downloads or autoplay; every source is cleaned up.
-export function createPokerSound({contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)()}={}){
+const actionWords=Object.freeze({minimum:'삥',quarter:'쿼터',half:'하프',check:'체크',call:'콜',fold:'다이',allin:'올인',raise:'베팅'});
+// The log is capped at 40 entries. Compare overlapping suffixes so polling does
+// not repeat speech, and a settlement line cannot hide the final action.
+export function pokerActionCue(before=[],after=[]){
+  let overlap=Math.min(before.length,after.length);
+  while(overlap&&!before.slice(-overlap).every((line,i)=>line===after[i]))overlap--;
+  for(const line of after.slice(overlap).reverse()){
+    const separator=String(line).lastIndexOf(' · ');if(separator<0)continue;
+    const action=String(line).slice(separator+3);
+    const word=/^(삥|쿼터|하프|체크|콜|다이|올인|베팅)(?: [\d,]+)?$/.exec(action)?.[1];
+    if(word)return Object.keys(actionWords).find(key=>actionWords[key]===word);
+  }
+  return null;
+}
+// Native Korean action calls plus table foley. No autoplay or stale speech queue.
+export function createPokerSound({contextFactory=()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)(),speech=globalThis.speechSynthesis,utteranceFactory=text=>new globalThis.SpeechSynthesisUtterance(text)}={}){
   let context=null,master=null,noise=null,resuming=null,epoch=0,enabled=true,volume=.45;
+  let activated=false,spoken=null;
   const voices=new Set(),settings=()=>({enabled,volume});
+  function stopSpeech(){const previous=spoken;spoken=null;if(previous){previous.onend=previous.onerror=null;try{speech.cancel();}catch{}}}
   function stop(){
     epoch++;
+    stopSpeech();
     for(const source of [...voices]){try{source.stop();}catch{}source.onended?.();}
   }
   function configure(value={}){
@@ -15,6 +32,8 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
   }
   function unlock(){
     if(!enabled||!volume)return Promise.resolve(false);
+    activated=true;
+    try{speech?.getVoices();}catch{}
     try{
       if(!context){
         context=contextFactory();master=context.createGain();master.gain.value=volume;
@@ -64,8 +83,27 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
     tone(460,delay,.038,.04*weight,310,pan);
   }
   function chips(count,weight=1){for(let i=0;i<count;i++)chip(i*.048+Math.random()*.009,weight,(i%2?1:-1)*.16);}
-  async function play(kind,{pan=0}={}){
-    if(!enabled||!volume||!context)return false;
+  function say(kind,options){
+    if(!activated||!speech?.speak||!Object.hasOwn(actionWords,kind))return false;
+    try{
+      const available=speech.getVoices(),korean=available.filter(v=>/^ko(?:[-_]|$)/i.test(v.lang));
+      // Do not pronounce Korean action names with an unrelated language voice.
+      if(available.length&&!korean.length)return false;
+      stopSpeech();
+      const utterance=utteranceFactory(actionWords[kind]);spoken=utterance;
+      utterance.lang='ko-KR';utterance.volume=volume;utterance.rate=1;utterance.pitch=1;
+      const chosen=korean.find(v=>v.default)||korean.find(v=>v.localService)||korean[0];
+      if(chosen)utterance.voice=chosen;
+      const ticket=epoch;
+      utterance.onend=()=>{if(spoken===utterance)spoken=null;};
+      utterance.onerror=()=>{if(spoken!==utterance)return;spoken=null;if(ticket===epoch)void play(kind,{...options,foleyOnly:true});};
+      speech.speak(utterance);return true;
+    }catch{stopSpeech();return false;}
+  }
+  async function play(kind,{pan=0,foleyOnly=false}={}){
+    if(!enabled||!volume||!activated)return false;
+    if(!foleyOnly&&say(kind,{pan}))return true;
+    if(!context)return false;
     const ticket=epoch;
     if(context.state!=='running'&&!(await (resuming||Promise.resolve(false))))return false;
     if(ticket!==epoch||!enabled||!volume||context.state!=='running')return false;
@@ -79,7 +117,7 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
         case 'check':for(const delay of [0,.105]){tone(165,delay,.055,.13,90,pan);brush(delay,.025,700,.12,pan);}break;
         case 'fold':brush(0,.16,800,.2,pan);break;
         case 'call':chips(2);break;
-        case 'raise':chips(4);break;
+        case 'minimum':case 'quarter':case 'half':case 'raise':chips(4);break;
         case 'allin':brush(0,.24,950,.2);chips(7,1.1);tone(100,.22,.17,.11,65);break;
         case 'turn':tone(523.25,0,.22,.055);tone(783.99,.09,.32,.035);break;
         case 'timer':tone(659.25,0,.11,.045);tone(659.25,.17,.11,.035);break;
@@ -90,6 +128,6 @@ export function createPokerSound({contextFactory=()=>new (globalThis.AudioContex
       return true;
     }catch{stop();return false;}
   }
-  function pause(){stop();try{void context?.suspend().catch(()=>{});}catch{}}
+  function pause(){activated=false;stop();try{void context?.suspend().catch(()=>{});}catch{}}
   return Object.freeze({settings,configure,unlock,play,stop,pause});
 }

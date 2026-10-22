@@ -25,7 +25,7 @@ async function screen(f,actor,{animate=false,saved=null,joinCode=null}={}){
   const data=await f.call(actor,message.body);last=data;
   w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:parent,data:{source:'ojjuda-world',type:'poker-rpc',id:message.id,data,error:data.error}}));
  }};Object.defineProperty(w,'parent',{value:parent});
- w.__rules=rules;w.__motion=motion;const audio={enabled:true,volume:.45};w.__audio={createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:x=>sounds.push(x),unlock:async()=>true,pause(){}})};
+ w.__rules=rules;w.__motion=motion;const audio={enabled:true,volume:.45};w.__audio={pokerActionCue:(await import('../games/poker/sound.mjs')).pokerActionCue,createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:x=>sounds.push(x),unlock:async()=>true,pause(){}})};
  if(saved)w.localStorage.setItem('ojjuda.poker.practice.v1.'+actor,JSON.stringify(saved));
  w.eval(fs.readFileSync(path.join(root,'games/poker/online-client.mjs'),'utf8').replace(/export /g,'')+'\nwindow.__online={createOnlineClient,rotateView};');
  w.eval(fs.readFileSync(path.join(root,'games/poker/app.mjs'),'utf8').replace(/^import \{([^}]+)\} from '([^']+)';/gm,(_,names,file)=>`const {${names}}=window.${file.includes('engine.')?'__rules':file.includes('sound.')?'__audio':file.includes('online-client.')?'__online':'__motion'};`));

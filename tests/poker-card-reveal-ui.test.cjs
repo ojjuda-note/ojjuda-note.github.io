@@ -34,7 +34,7 @@ window.pokerFixture={show(round=1){
     assert.equal(await page.locator('.my-cards .final-covered').count(),1,'only the last own card begins face down');
     assert.equal(await page.locator('.my-cards .card').last().getAttribute('data-card'),'6','the seventh card is the rightmost card');
     assert.equal(await page.locator('.seat-cards .down-cards img').count(),0,'opponents hole cards stay absent');
-    assert.equal(await page.locator('.my-cards [data-peek-card]').getAttribute('aria-label'),'마지막 카드 · 아래로 끌어내려 보기','hidden card name is not announced');
+    assert.equal(await page.locator('.my-cards [data-peek-card]').getAttribute('aria-label'),'마지막 카드 · 절반만 아래로 내리면 공개','hidden card name is not announced');
     assert.equal(await page.locator('.peek-face').first().evaluate(el=>getComputedStyle(el).clipPath),'inset(0px 0px 100%)');
     const measurements=await page.locator('.my-cards .card').evaluateAll(cards=>cards.map(card=>{const r=card.getBoundingClientRect(),img=card.querySelector('img'),ir=img.getBoundingClientRect();return {w:r.width,h:r.height,iw:ir.width,ih:ir.height};}));
     assert.ok(measurements.every(m=>Math.abs(m.w/m.h-5/7)<.02&&Math.abs(m.w-m.iw)<1&&Math.abs(m.h-m.ih)<1),'SVG fits the card without distortion at '+viewport.width);
@@ -46,10 +46,13 @@ window.pokerFixture={show(round=1){
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'short drag stays face down');
     await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y-30);await page.mouse.up();
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'upward drag does not open it');
-    await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+35,{steps:6});
+    await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+rect.height*.4,{steps:6});
     assert.notEqual(await page.locator('.my-cards .peek-face').evaluate(el=>getComputedStyle(el).clipPath),'inset(0px 0px 100%)','drag gradually uncovers the artwork');
     if(proof&&viewport.width===390)await page.screenshot({path:path.join(proof,'poker-dragging-390.png'),fullPage:true});
-    await page.mouse.move(x,y+55,{steps:3});await page.mouse.up();
+    await page.mouse.move(x,y+rect.height*.51,{steps:3});
+    assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'halfway reveals before the pointer is released');
+    await page.mouse.up();
+    assert.equal(await page.locator('#cards-dialog').evaluate(el=>el.open),false,'the release does not accidentally open card zoom');
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'downward drag reveals it');
     assert.equal(await page.locator('.my-cards [data-card="6"]').getAttribute('aria-label'),'A♠');
     assert.equal(await page.locator('.my-cards .final-cards').evaluate(el=>getComputedStyle(el).opacity),'1','the revealed final card stays fully opaque');
@@ -64,7 +67,7 @@ window.pokerFixture={show(round=1){
      const touchCard=page.locator('.my-cards [data-peek-card]');await touchCard.scrollIntoViewIfNeeded();
      const r=await touchCard.boundingBox(),touch=await context.newCDPSession(page),point={id:1,x:r.x+r.width*.6,y:r.y+r.height*.25},scroll=await page.evaluate(()=>scrollY);
      await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
-     await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+60}]});
+     await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+r.height*.51}]});
      await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
      assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'a real touch drag reveals the seventh card');
      assert.equal(await page.evaluate(()=>scrollY),scroll,'the gesture never scrolls the table');await touch.detach();
@@ -80,7 +83,7 @@ window.pokerFixture={show(round=1){
     await page.evaluate(round=>pokerFixture.show(round),++round);
     const movingLast=page.locator('.my-cards [data-peek-card]'),lastBox=await movingLast.boundingBox();
     await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.3);
-    await page.mouse.down();await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.3+55,{steps:6});await page.mouse.up();
+    await page.mouse.down();await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.81,{steps:6});await page.mouse.up();
     await movingLast.waitFor({state:'detached'});
     assert.equal(await page.locator('.my-cards .card').last().getAttribute('aria-label'),'A♠','animated reveal finishes on the correct rightmost card');
     assert.equal(await page.locator('.my-cards .card').last().evaluate(el=>{

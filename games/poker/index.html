@@ -54,16 +54,16 @@
     <p class="muted">멀티는 2~4명이 방 코드로 참여해요. 방장이 시작하고, 한 차례는 30초예요. 시간이 지나면 패는 자동 선택하고 베팅은 체크 또는 다이 처리해요. 모두 다음 판을 준비하면 다시 시작해요.</p><p class="muted">혼자 하기와 멀티는 같은 포커 골드를 사용해요. 처음에는 5,000 G로 시작하고, 1,000 G 미만일 때 5,000 G씩 충전할 수 있어요. 계정당 처음 2회 충전은 무료, 이후에는 5쭈예요. 이번 달에 플레이한 회원의 보유 골드로 순위를 매겨요. 맞고 골드와는 별개이며 포커 골드는 환전할 수 없어요.</p>
   </dialog>
   <dialog id="sound-dialog" aria-labelledby="sound-title">
-    <header><h2 id="sound-title">효과음</h2><button data-close-dialog aria-label="닫기">×</button></header>
-    <label class="sound-toggle"><span>게임 효과음</span><input id="sound-enabled" type="checkbox" checked></label>
+    <header><h2 id="sound-title">음성·효과음</h2><button data-close-dialog aria-label="닫기">×</button></header>
+    <label class="sound-toggle"><span>음성·효과음 켜기</span><input id="sound-enabled" type="checkbox" checked></label>
     <label class="sound-volume-label" for="sound-volume">음량 <output id="sound-volume-value" for="sound-volume">45%</output></label>
     <input id="sound-volume" type="range" min="0" max="100" step="5" value="45">
-    <p class="muted">카드 마찰음 · 칩 · 테이블 노크 · 내 차례 · 승리 알림<br>설정은 이 기기에 저장돼요.</p>
-    <button data-action="sound-test">칩 소리 들어보기</button>
+    <p class="muted">삥 · 쿼터 · 하프 · 체크 · 콜 · 다이 · 올인 음성<br>카드 소리 · 내 차례 · 승리 알림<br>설정은 이 기기에 저장돼요.</p>
+    <button data-action="sound-test">음성 들어보기</button>
   </dialog>
   <dialog id="cards-dialog" aria-labelledby="cards-title"><header><h2 id="cards-title">공개된 카드</h2><button data-close-dialog aria-label="닫기">×</button></header><div id="cards-content"></div></dialog>
   <dialog id="refill-dialog" aria-labelledby="refill-title"><header><h2 id="refill-title">포커 골드 충전</h2><button data-close-dialog aria-label="닫기">×</button></header><p>5쭈를 사용해 5,000골드를 충전할까요?</p><p id="refill-message" role="status"></p><div class="dialog-actions"><button data-close-dialog>취소</button><button class="primary" id="confirm-refill">5쭈로 충전</button></div></dialog>
   <dialog id="exit-dialog" aria-labelledby="exit-title"><header><h2 id="exit-title">오락실로 돌아갈까요?</h2></header><p>진행 중인 판은 저장돼요. 다시 들어오면 이어서 할 수 있어요.</p><div class="dialog-actions"><button data-close-dialog>계속하기</button><button class="primary" id="confirm-exit">저장하고 나가기</button></div></dialog>
-  <script type="module" src="app.mjs?v=20261022-club1"></script>
+  <script type="module" src="app.mjs?v=20261022-voice1"></script>
 </body>
 </html>

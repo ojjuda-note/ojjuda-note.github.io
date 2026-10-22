@@ -71,6 +71,20 @@ assert.equal(looseCall.raise,0,'weak hands do not start a repeated bluffing war'
 assert.equal(sample(weak,2,'normal',{stack:100,legal:{need:0,call:0,check:true,mayRaise:true,minTo:100,maxTo:100,allIn:true}}).raise,0,'bluffing never forces a short stack all-in');
 console.log('Poker AI: bluff/slow-play mix, distinct styles, variable bets, easy pressure and hidden-card independence pass.');
 
+for(const difficulty of ['easy','normal'])for(const seat of [1,2,3])for(const street of [4,5,6,7]){
+  const counts=sample(weak.slice(0,street),seat,difficulty,{street,raises:2,pot:200,stack:80,
+    legal:{need:1000,call:80,check:false,mayRaise:false,minTo:1100,maxTo:80,allIn:true}});
+  if(street<=5){assert.equal(counts.fold,0,'computers never fold through fifth street');assert.equal(counts.call,2000,'a short stack legally calls all-in under early pressure');}
+  else assert.ok(counts.fold>1000,'folding remains available from sixth street');
+}
+for(const [preset,part,label] of [['minimum',0,'삥'],['quarter',.25,'쿼터'],['half',.5,'하프']]){
+  const g=new SevenPoker({random:seed(7)});g.discard(0);g.open(0);
+  const l=g.legal(),p=g.players[g.turn],to=Math.min(l.maxTo,Math.max(l.minTo,p.bet+l.need+Math.floor((g.pot+l.need)*part)));
+  g.act('raise',to,preset);assert.match(g.log.at(-1),new RegExp(' · '+label+' '),'server retains the exact selected call');
+}
+const mislabeled=new SevenPoker({random:seed(7)});mislabeled.discard(0);mislabeled.open(0);
+mislabeled.act('raise',mislabeled.legal().minTo+10,'half');assert.match(mislabeled.log.at(-1),/ · 베팅 /,'a forged preset cannot mislabel a different amount');
+
 let hands=0,allIns=0,early=0;
 for(let trial=1;trial<=700;trial++){
   const rng=seed(trial),stacks=Array.from({length:4},()=>50+Math.floor(rng()*4500)),g=new SevenPoker({stacks,random:rng});
