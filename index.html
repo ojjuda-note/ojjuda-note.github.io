@@ -1,97 +1,76 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta name="naver-site-verification" content="2d126c8840f35094d085f8818002fa5f8973232b" />
   <meta charset="utf-8">
-  <script id="world-default-entry">
-    (() => {
-      const url = new URL(location.href), hash = new URLSearchParams(url.hash.slice(1));
-      const accountKeys = ['auth', 'next', 'reset', 'code', 'token', 'token_hash', 'type', 'access_token', 'refresh_token', 'error', 'error_code', 'error_description'];
-      if (accountKeys.some(key => url.searchParams.has(key) || hash.has(key))) return;
-      url.pathname = '/world.html';
-      if (!url.searchParams.has('tab')) url.searchParams.set('tab', 'arcade');
-      location.replace(url.pathname + url.search + url.hash);
-    })();
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#faf8f7">
-  <meta name="description" content="오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.">
-  <title>오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요</title>
-  <link rel="stylesheet" href="/signup-identity.css?v=20261022-clean-hint1">
-  <script src="/portal-availability.js?v=20261007-flow1" defer></script>
-  <script src="/signup-identity.js?v=20261022-clean-hint1" defer></script>
-  <link rel="canonical" href="https://ojjuda.kr/">
-  <link rel="icon" href="favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="portal.css?v=20261007-guest1">
-  <link rel="stylesheet" href="/world-portal.css?v=20261005-world1">
-  <script src="config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
-  <link rel="stylesheet" href="/signup-referral.css?v=20261021-referral1">
-  <script src="/signup-referral.js?v=20261021-referral1" defer></script>
-  <script src="portal.js?v=20261022-agit1" defer></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f3f9">
+  <title>오쭈다 세븐포커</title>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
-<link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
-<script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
-<link rel="stylesheet" href="/brand-copy.css?v=20261005-copy1">
-<link rel="stylesheet" href="/world-entry-design.css?v=20261022-1">
-<link rel="stylesheet" href="/world-themes.css?v=20261020-auto1">
-<script src="/world-themes.js?v=20261021-audit1"></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
-<meta property="og:url" content="https://ojjuda.kr/">
-<meta property="og:title" content="오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요">
-<meta property="og:description" content="오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.">
+<meta property="og:url" content="https://ojjuda.kr/games/poker/index.html">
+<meta property="og:title" content="오쭈다 세븐포커">
+<meta property="og:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="오쭈다 아지트 | 오늘 하루 어땠나요? 괜찮았나요">
-<meta name="twitter:description" content="오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.">
+<meta name="twitter:title" content="오쭈다 세븐포커">
+<meta name="twitter:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
+  <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=20261022-seatvoices1">
+  <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
+  <link rel="stylesheet" href="entry.css?v=20261021-poker-entry1">
+  <link rel="stylesheet" href="table-layout.css?v=20261021-handmotion4">
+  <link rel="stylesheet" href="club.css?v=20261022-club2">
 </head>
-<body class="world-portal">
-  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="logo" href="/" aria-label="오쭈다 아지트 대문"><svg class="logo-symbol ojjuda-theme-logo" viewBox="-16 -16 544 544" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg> 오쭈다 아지트</a>
-      <div class="account-actions" id="account-actions" hidden><button class="text-button" type="button" data-open-auth="login">로그인</button><button class="pill-button small" type="button" data-open-auth="signup">회원가입 <span aria-hidden="true">↗</span></button></div>
-      <span class="account-loading" id="account-loading">계정 확인 중</span>
-      <div class="account-actions signed-in-actions" id="signed-in-actions" hidden><a class="text-button" id="admin-link" href="/admin/" hidden>관리자</a><span class="account-badge" id="account-badge">내 계정</span><button class="text-button" type="button" id="logout-button">로그아웃</button></div>
-    </div>
-  </header>
-  <main id="main" class="front" aria-labelledby="front-title">
-    <section id="places" class="world-welcome" aria-label="오쭈다 아지트 시작">
-      <div class="world-welcome-copy">
-        <span class="eyebrow">OJJUDA AGIT · BETA</span>
-        <h1 id="front-title" class="ojjuda-copy">오늘 하루 어땠나요?<br><em>괜찮았나요</em></h1>
-        <p>오락실에서 게임 한 판, 공원에서 나누는 이야기.<br>우리의 하루가 한곳에 모여요.</p>
-        <div class="world-welcome-actions"><a class="pill-button" href="/world.html" data-destination="world">오쭈다 아지트 시작하기 <span aria-hidden="true">→</span></a><a class="world-welcome-help" href="/guide.html">처음이세요? 사용 안내</a></div>
-        <div id="entry-status" hidden role="status"><p id="entry-message"></p><div class="world-welcome-actions"><button class="pill-button small" type="button" id="entry-retry">다시 시도</button><a class="world-welcome-help" href="/world.html?place=park&amp;guest=1">손님으로 둘러보기</a></div></div>
-        <div class="world-welcome-meta" aria-label="운영 안내"><span>베타 서비스</span><span>하나의 아지트, 하나의 계정</span></div>
-      </div>
-
-    </section>
-    <section class="world-preview" aria-labelledby="world-features-title">
-      <div class="world-section-heading"><div><h2 id="world-features-title">아지트에서 만나는 하루</h2><p>모든 공간과 기능을 하나의 아지트에서 이용해요.</p></div><a href="/sitemap.html">전체 메뉴와 기능 보기 →</a></div>
-      <div class="world-feature-grid"><a class="world-feature" href="/world.html?tab=arcade"><h3>오락실</h3><p>게임을 즐기고 이번 달 게임 순위를 확인해요.</p></a><a class="world-feature" href="/world.html?tab=park"><h3>공원</h3><p>카드로 이야기를 나누고 서로의 하루를 만나요.</p></a><a class="world-feature" href="/world.html?tab=my"><h3>설정</h3><p>프로필, 계정과 알림을 관리해요.</p></a>
-
-
-
-
-
-      </div>
-    </section>
-    <a class="guide-entry" href="/guide.html"><span><strong>오쭈다 아지트를 처음 시작하시나요?</strong><small>게임과 공원 카드, 계정 설정까지. 기능별 사용법을 확인하세요.</small></span><span class="guide-entry-action">사용 안내 <span aria-hidden="true">→</span></span></a>
-  </main>
-  <footer class="site-footer"><span>© 2026 ojjuda</span><nav aria-label="안내 및 법적 고지"><a href="/guide.html">사용 안내</a><a href="/sitemap.html">사이트맵</a><a href="terms.html" target="_blank" rel="noopener">이용약관</a><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a><a href="mailto:mj830417@gmail.com">문의</a></nav></footer>
-
-  <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title"><div class="dialog-shell"><button class="dialog-close" type="button" data-close-dialog aria-label="닫기">×</button><svg class="dialog-mark ojjuda-theme-logo" viewBox="-16 -16 544 544" width="48" height="48" aria-hidden="true" focusable="false"><path fill="currentColor" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>  <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>  <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></svg><span class="dialog-kicker">OJJUDA ACCOUNT</span><h2 id="auth-title">오쭈다 아지트</h2><p class="ojjuda-copy ojjuda-copy--auth">오늘 하루 어땠나요? 괜찮았나요</p><p class="dialog-intro" id="auth-intro">오락실에서 게임을 즐기고 공원에서 이야기를 나눠요.</p><div class="auth-tabs" role="tablist" aria-label="계정 시작 방법"><button type="button" role="tab" id="login-tab" data-auth-mode="login" aria-selected="true">로그인</button><button type="button" role="tab" id="signup-tab" data-auth-mode="signup" aria-selected="false">회원가입</button></div><form id="auth-form" novalidate><div class="field signup-only" hidden><label for="nickname">닉네임</label><input id="nickname" name="nickname" maxlength="12" autocomplete="nickname" placeholder="1~12자"></div><div class="field email-field"><label for="email">이메일</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="hello@example.com" required></div><div id="recovery-identity-slot" class="member-identity-fields" hidden><div class="field"><label for="recovery-phone">등록된 전화번호</label><input id="recovery-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="010-0000-0000" required></div><div class="field"><label for="recovery-birth">생년월일</label><input id="recovery-birth" type="date" min="1900-01-01" required></div><div class="field"><label for="recovery-gender">성별</label><select id="recovery-gender" required><option value="">선택</option><option value="male">남성</option><option value="female">여성</option></select></div></div><div class="field password-field"><label for="password" id="password-label">비밀번호</label><input id="password" name="password" type="password" minlength="6" autocomplete="current-password" placeholder="6자 이상" required></div><div class="field password-confirm-field" hidden><label for="password-confirm" id="password-confirm-label">비밀번호 확인</label><input id="password-confirm" name="password-confirm" type="password" minlength="6" autocomplete="new-password" placeholder="한 번 더 입력" disabled></div><div class="signup-only" id="signup-identity-slot" hidden></div><div class="field signup-only" id="signup-referral-slot" hidden></div><div class="signup-only consent-field" hidden><label><input id="age-check" type="checkbox"> 만 14세 이상입니다.</label><label><input id="policy-check" type="checkbox"> <span><a data-policy-document="terms" href="/policies/2026-09-29/terms.html" target="_blank" rel="noopener">이용약관</a>과 <a data-policy-document="privacy" href="/policies/2026-09-29/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>에 동의해요</span></label><p id="policy-revision-note" class="identity-hint">11월 20일 시행 개정안: <a href="/terms.html#revision" target="_blank" rel="noopener">이용약관</a> · <a href="/privacy.html#revision" target="_blank" rel="noopener">개인정보처리방침</a></p></div><button type="button" class="forgot-link" id="forgot-trigger">비밀번호를 잊었어요</button><p class="auth-feedback" id="auth-feedback" role="alert" aria-live="polite"></p><button class="submit-button" id="auth-submit" type="submit">로그인 <span aria-hidden="true">→</span></button></form><a id="guest-browse" class="submit-button guest-browse" href="/world.html?place=park&amp;guest=1">둘러보기</a><div class="auth-state" id="auth-state" hidden><p id="auth-state-message"></p><button class="submit-button" id="recovery-reset-button" type="button" hidden>초기화</button><button class="submit-button" id="back-to-login" type="button">로그인 화면으로</button></div></div></dialog>
-
+<body class="poker-entry-active">
+  <main id="app"><section class="gate"><span class="brand">오쭈다 오락실</span><h1>세븐포커</h1><p role="status">게임을 준비하고 있어요.</p><a href="/world.html?game=poker">오락실에서 열기</a></section></main>
+  <dialog id="help" aria-labelledby="help-title">
+    <header><h2 id="help-title">세븐포커 하는 법</h2><button data-close-dialog aria-label="닫기">×</button></header>
+    <p class="muted">만 19세 이상 회원 전용 게임이에요.</p>
+    <p>처음 받은 4장 중 1장을 버리고, 남은 3장 중 1장을 공개해요. 4·5·6번째 카드는 공개, 마지막 7번째 카드는 나만 볼 수 있어요.</p>
+    <p>4구부터 매번 베팅해요. 공개 패가 가장 높은 사람이 먼저 시작해요. 마지막에는 7장 중 가장 좋은 5장으로 승부해요.</p>
+    <div class="rules-actions"><p><b>체크</b> 추가 베팅 없이 넘기기</p><p><b>콜</b> 앞사람이 건 금액 맞추기</p><p><b>삥 / 쿼터 / 하프</b> 최소 금액 / 콜한 뒤 판돈의 ¼ / ½ 추가</p><p><b>올인</b> 남은 골드 모두 걸기</p><p><b>다이</b> 이번 판 포기하기</p></div>
+    <h3>강한 족보부터</h3>
+    <ol class="rank-list">
+      <li><b>로열 스트레이트 플러시</b><span>같은 무늬 A K Q J 10</span></li>
+      <li><b>백 스트레이트 플러시</b><span>같은 무늬 A 2 3 4 5</span></li>
+      <li><b>스트레이트 플러시</b><span>같은 무늬, 연속된 숫자 5장</span></li>
+      <li><b>포카드</b><span>같은 숫자 4장</span></li>
+      <li><b>풀하우스</b><span>트리플 + 원페어</span></li>
+      <li><b>플러시</b><span>같은 무늬 5장</span></li>
+      <li><b>마운틴 · 백스트레이트 · 스트레이트</b><span>A K Q J 10 &gt; A 2 3 4 5 &gt; 그 외 연속 5장</span></li>
+      <li><b>트리플</b><span>같은 숫자 3장</span></li>
+      <li><b>투페어</b><span>같은 숫자 2장씩, 두 쌍</span></li>
+      <li><b>원페어</b><span>같은 숫자 2장</span></li>
+      <li><b>하이카드</b><span>위 족보가 없으면 높은 숫자로 승부</span></li>
+    </ol>
+    <p>이 테이블은 한국식 족보를 사용해요. 같은 족보는 구성 숫자를 차례로 비교하고, 모두 같으면 ♠ &gt; ♦ &gt; ♥ &gt; ♣ 순서로 비교해요. 한 번에 최대 3회까지 올릴 수 있어요. 부족한 골드로 올인하면 건 금액만큼만 승부에 참여해요.</p>
+    <p class="muted">멀티는 2~4명이 방 코드로 참여해요. 방장이 시작하고, 한 차례는 30초예요. 시간이 지나면 패는 자동 선택하고 베팅은 체크 또는 다이 처리해요. 모두 다음 판을 준비하면 다시 시작해요.</p><p class="muted">혼자 하기와 멀티는 같은 포커 골드를 사용해요. 처음에는 5,000 G로 시작하고, 1,000 G 미만일 때 5,000 G씩 충전할 수 있어요. 계정당 처음 2회 충전은 무료, 이후에는 5쭈예요. 이번 달에 플레이한 회원의 보유 골드로 순위를 매겨요. 맞고 골드와는 별개이며 포커 골드는 환전할 수 없어요.</p>
+  </dialog>
+  <dialog id="sound-dialog" aria-labelledby="sound-title">
+    <header><h2 id="sound-title">음성·효과음</h2><button data-close-dialog aria-label="닫기">×</button></header>
+    <label class="sound-toggle"><span>음성·효과음 켜기</span><input id="sound-enabled" type="checkbox" checked></label>
+    <fieldset class="sound-voices" aria-describedby="voice-assignment"><legend>내 목소리</legend><div class="sound-voice-options">
+      <label><input type="radio" name="poker-voice" value="classic" checked><span><b>남성 1</b><small>Grady</small></span></label>
+      <label><input type="radio" name="poker-voice" value="calm"><span><b>남성 2</b><small>Holden</small></span></label>
+      <label><input type="radio" name="poker-voice" value="bright"><span><b>여성 1</b><small>Ainsley</small></span></label>
+      <label><input type="radio" name="poker-voice" value="korean"><span><b>한국어 여성</b><small>하나</small></span></label>
+    </div></fieldset>
+    <p id="voice-assignment" class="muted">상대는 남은 목소리를 하나씩 사용해요.</p>
+    <label class="sound-volume-label" for="sound-volume">음량 <output id="sound-volume-value" for="sound-volume">45%</output></label>
+    <input id="sound-volume" type="range" min="0" max="100" step="5" value="45">
+    <button data-action="sound-test">선택한 목소리 듣기</button>
+    <p class="muted sound-saved-hint">설정은 이 기기에 저장돼요.</p>
+  </dialog>
+  <dialog id="cards-dialog" aria-labelledby="cards-title"><header><h2 id="cards-title">공개된 카드</h2><button data-close-dialog aria-label="닫기">×</button></header><div id="cards-content"></div></dialog>
+  <dialog id="refill-dialog" aria-labelledby="refill-title"><header><h2 id="refill-title">포커 골드 충전</h2><button data-close-dialog aria-label="닫기">×</button></header><p>5쭈를 사용해 5,000골드를 충전할까요?</p><p id="refill-message" role="status"></p><div class="dialog-actions"><button data-close-dialog>취소</button><button class="primary" id="confirm-refill">5쭈로 충전</button></div></dialog>
+  <dialog id="exit-dialog" aria-labelledby="exit-title"><header><h2 id="exit-title">오락실로 돌아갈까요?</h2></header><p>진행 중인 판은 저장돼요. 다시 들어오면 이어서 할 수 있어요.</p><div class="dialog-actions"><button data-close-dialog>계속하기</button><button class="primary" id="confirm-exit">저장하고 나가기</button></div></dialog>
+  <script type="module" src="app.mjs?v=20261022-seatvoices1"></script>
 </body>
 </html>
