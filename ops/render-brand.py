@@ -38,7 +38,9 @@ share,count=re.subn(r'(<g id="brand-mark"[^>]*>)[\s\S]*?(</g>)',lambda m:m[1]+'\
 assert count==1,'Shared preview must have one approved brand mark.'
 share_path.write_text(share)
 subprocess.run(['rsvg-convert','--output',str(ROOT/'og-image.png'),str(share_path)],check=True)
+# Keep the old URL working; social previews use a new filename after rebranding.
+shutil.copyfile(ROOT/'og-image.png',ROOT/'brand/og-agit-20261022.png')
 assert [p.attrib['d'] for p in ET.fromstring(favicon).findall('{'+SVG+'}path')]==[p.attrib['d'] for p in ET.fromstring(share).find('{'+SVG+'}g').findall('{'+SVG+'}path')]
-for name in ['favicon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','og-image.png']:
+for name in ['favicon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','og-image.png','brand/og-agit-20261022.png']:
     data=(ROOT/name).read_bytes()
     print(name,len(data),hashlib.sha256(data).hexdigest())
