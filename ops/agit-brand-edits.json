@@ -337,11 +337,16 @@
   {
     "path": "guide.html",
     "before": "ecc8f32d7894b5cca67410fa315a587d1e3b6411ff416185eb74a4050c4e508e",
-    "after": "c12bdebad70345f359f0daeed9a468736b5162f746afbee59e04623ffa664717",
+    "after": "71c37efc01cf72fd08e82f05075747e375d61572c4eaf0c5ee5050c1ae3b30d2",
     "edits": [
       {
         "old": "/favicon.svg",
         "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "<main>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/guide.html\">\n<meta property=\"og:title\" content=\"사용 안내 · 오쭈다 아지트\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"사용 안내 · 오쭈다 아지트\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<main>",
         "count": 1
       }
     ]
@@ -422,11 +427,16 @@
   {
     "path": "sitemap.html",
     "before": "91ab6663515d4680152208483d2c41c298c83d9c12ba8e4f661db5b99e974736",
-    "after": "88ca3d2075dd771e713af82b0cdf32452f34729a9e3901e014a18a4fbb4b896b",
+    "after": "ac20794074d68098ea9dab70a22489aae8f2e7649252829bf0a1e01011b1e6cd",
     "edits": [
       {
         "old": "/favicon.svg",
         "new": "/favicon.svg?v=20261022-agit-logo2",
+        "count": 1
+      },
+      {
+        "old": "<main>",
+        "new": "<meta property=\"og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"오쭈다 아지트\">\n<meta property=\"og:url\" content=\"https://ojjuda.kr/sitemap.html\">\n<meta property=\"og:title\" content=\"사이트맵 · 오쭈다 아지트\">\n<meta property=\"og:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta property=\"og:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta property=\"og:image:type\" content=\"image/png\">\n<meta property=\"og:image:width\" content=\"1200\">\n<meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<meta name=\"twitter:card\" content=\"summary_large_image\">\n<meta name=\"twitter:title\" content=\"사이트맵 · 오쭈다 아지트\">\n<meta name=\"twitter:description\" content=\"오늘 하루 어땠나요? 괜찮았나요. 오락실에서 게임을 즐기고, 공원에서 이야기를 나누는 오쭈다 아지트.\">\n<meta name=\"twitter:image\" content=\"https://ojjuda.kr/og-image.png?v=20261022-agit-logo2\">\n<meta name=\"twitter:image:alt\" content=\"오쭈다 아지트 · 웃는 노트 로고\">\n<main>",
         "count": 1
       }
     ]

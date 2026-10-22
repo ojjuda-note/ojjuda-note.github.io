@@ -4,11 +4,11 @@
   <rect width="1200" height="630" fill="#f7f8f4"/>
   <circle cx="1130" cy="125" r="290" fill="#e5eddf"/>
   <circle cx="1190" cy="625" r="275" fill="#eee5d4"/>
-  <g id="brand-mark" transform="translate(88 92) scale(.23)">
-<path fill="#245A48" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>
-<path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>
-<path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/>
-</g>
+  <g transform="translate(88 92) scale(.23)">
+    <path fill="#245A48" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/>
+    <path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/>
+    <path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/>
+  </g>
   <g font-family="Noto Sans CJK KR, sans-serif">
     <text x="86" y="328" font-size="78" font-weight="700" fill="#244b3a">오쭈다 아지트</text>
     <text x="90" y="403" font-size="32" fill="#617464">오늘 하루 어땠나요? 괜찮았나요</text>
