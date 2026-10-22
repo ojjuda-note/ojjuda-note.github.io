@@ -764,7 +764,7 @@
   {
     "path": "world.html",
     "before": "ce5c5569d663725a9c094b71105e612b0090e52f2b4f4696368e662b52d08e42",
-    "after": "c53a591af0b15f585103c589a6a1539ef3d015365b4dd2a367c6f9b1606f1bdd",
+    "after": "28d62f1406f09f611997c960070524633fd4aded946fe0517c17e2352ab23ee4",
     "edits": [
       {
         "old": "오쭈다월드",
@@ -824,6 +824,11 @@
       {
         "old": "/world-game-assets.js?v=20261021-handmotion4a",
         "new": "/world-game-assets.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "아지트땅따먹기<small",
+        "new": "아지트<wbr>땅따먹기<small",
         "count": 1
       }
     ]
