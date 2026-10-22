@@ -12,6 +12,8 @@ const {screen,until,pause}=require('./poker-ui-fixture.cjs');
   b.find('#poker-join [name=code]').value=code;b.find('#poker-join').dispatchEvent(new b.w.Event('submit',{bubbles:true,cancelable:true}));
   await until(()=>b.find('.online-seat.occupied'),'joined');await a.poll();
   await until(()=>!a.find('[data-action=online-start]').disabled,'host start');
+  assert.ok(a.find('.felt .table-start-overlay [data-action=online-start]'));
+  assert.equal(b.find('[data-action=online-start]').disabled,true,'guests cannot start the hand');
   a.click('[data-action=online-start]');await until(()=>a.find('.my-cards .card'),'deal on host');await b.poll();
   await until(()=>b.find('.my-cards .card'),'deal on guest');
   assert.equal(a.find('.my-cards').querySelectorAll('.card').length,4);assert.equal(b.find('.my-cards').querySelectorAll('.card').length,4);

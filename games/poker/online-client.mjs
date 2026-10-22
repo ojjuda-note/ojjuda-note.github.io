@@ -7,8 +7,19 @@ export function rotateView(room){
  if(g.result){g.result.payouts=Array.from({length:n},(_,i)=>g.result.payouts[(seat+i)%n]);g.result.net=Array.from({length:n},(_,i)=>g.result.net[(seat+i)%n]);g.result.pots.forEach(p=>p.winners=p.winners.map(at));}
  const legal=g.legal;g.legal=()=>legal;return g;
 }
+// Wake just after an automatic turn is due, instead of adding a full polling interval.
+export function pollDelay(room,{hidden=false,now=Date.now(),failures=0}={}){
+ if(hidden)return 5000;
+ if(failures)return Math.min(10000,1200*2**Math.min(failures,3));
+ const g=room?.game,automatic=room?.status==='active'&&g&&(['between','runout'].includes(g.phase)||room.mode==='solo'&&g.turn>0);
+ if(automatic){
+  const remaining=Date.parse(room.deadline)-(room.serverTime+now-room.receivedAt);
+  if(Number.isFinite(remaining))return Math.max(80,Math.min(1200,remaining+50));
+ }
+ return 1200;
+}
 export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()=>{},onWallet=()=>{}}={}){
- let room=null,closed=false,pollTimer=null,busy=false,reading=false,readTask=null,retry=null,walletKey='';
+ let room=null,closed=false,pollTimer=null,busy=false,reading=false,readTask=null,retry=null,walletKey='',failures=0;
  const pending=new Map();
  function rpc(body){
   if(closed)return Promise.reject(Error('closed'));
@@ -29,13 +40,13 @@ export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()
   if(next)next.receivedAt=Date.now();room=next;if(changed)onRoom(room);onConnection('');
  }
  function acceptData(data){let changed=false;if(data.wallet){const key=JSON.stringify(data.wallet);changed=!!walletKey&&key!==walletKey;walletKey=key;onWallet(data.wallet);}if(Object.hasOwn(data,'room'))accept(data.room,changed);}
- function schedule(){clearTimeout(pollTimer);if(!closed&&room)pollTimer=setTimeout(read,document.hidden?5000:1200);}
+ function schedule(){clearTimeout(pollTimer);if(!closed&&room)pollTimer=setTimeout(read,pollDelay(room,{hidden:document.hidden,failures}));}
  async function read(){
   if(closed||reading||busy||!room){schedule();return;}
   reading=true;
   readTask=(async()=>{
-   try{const data=await rpc({action:'read',room_id:room.id});acceptData(data);}
-   catch(error){onConnection(error.message);if(['room_not_found','room_unavailable','adult_required','not_signed_in'].includes(error.code)){accept(null);onError(error.message);}}
+   try{const data=await rpc({action:'read',room_id:room.id});failures=0;acceptData(data);}
+   catch(error){failures++;onConnection(error.message);if(['room_not_found','room_unavailable','adult_required','not_signed_in'].includes(error.code)){accept(null);onError(error.message);}}
    finally{reading=false;schedule();}
   })();
   await readTask;
@@ -53,7 +64,7 @@ export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()
    const fingerprint=JSON.stringify([action,room?.id||null,values]);
    const request_id=retry?.fingerprint===fingerprint?retry.id:crypto.randomUUID();retry={fingerprint,id:request_id};
    const data=await rpc({action,...(room?{room_id:room.id,version:room.version}:{}),...values,request_id});retry=null;
-   acceptData(data);return true;
+   failures=0;acceptData(data);return true;
   }catch(error){
    if(error.code!=='unavailable')retry=null;
    if(action==='leave'&&['room_not_found','room_unavailable'].includes(error.code)){accept(null);return true;}
@@ -63,6 +74,8 @@ export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()
    return false;
   }finally{busy=false;schedule();}
  }
- function close(){closed=true;clearTimeout(pollTimer);window.removeEventListener('message',receive);for(const p of pending.values()){clearTimeout(p.timer);p.reject(Error('closed'));}pending.clear();}
+ function visible(){if(document.hidden)schedule();else void read();}
+ document.addEventListener('visibilitychange',visible);
+ function close(){closed=true;clearTimeout(pollTimer);document.removeEventListener('visibilitychange',visible);window.removeEventListener('message',receive);for(const p of pending.values()){clearTimeout(p.timer);p.reject(Error('closed'));}pending.clear();}
  return {enter,list,act,read,close,refill:paid=>act('refill',{paid}),get room(){return room;},get busy(){return busy;}};
 }

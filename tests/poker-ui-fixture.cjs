@@ -18,7 +18,7 @@ async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=n
   };
  }
  const originalTimeout=w.setTimeout.bind(w),originalClear=w.clearTimeout.bind(w);
- w.setTimeout=(fn,ms)=>{if(ms===1200||ms===5000){polls.push(fn);return originalTimeout(()=>{},60000);}if(animate&&ms<10000){const id=-(++serial);jobs.set(id,{fn,due:now+ms});return id;}return originalTimeout(fn,ms);};
+ w.setTimeout=(fn,ms)=>{if(fn.name==='read'){polls.push(fn);return originalTimeout(()=>{},60000);}if(animate&&ms<10000){const id=-(++serial);jobs.set(id,{fn,due:now+ms});return id;}return originalTimeout(fn,ms);};
  w.clearTimeout=id=>{if(id<0)jobs.delete(id);else originalClear(id);};
  const parent={postMessage:async message=>{
   messages.push(message);if(message.type!=='rpc')return;requests.push(message.body);
@@ -34,7 +34,7 @@ async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=n
  message({source:'ojjuda-world',type:'poker-init',owner:actor,joinCode});
  const find=s=>w.document.querySelector(s),click=s=>{const el=find(s);assert.ok(el,s);assert.equal(el.disabled,false,s);el.click();};
  await until(()=>last?.wallet,'server wallet');await pause();
- return {w,find,click,requests,sounds,soundCalls,messages,flights,message,get last(){return last;},
+ return {w,find,click,requests,sounds,soundCalls,messages,flights,message,get last(){return last;},get motionTime(){return now;},
   async poll(){const p=polls.pop();polls=[];if(p)await p();await pause();},
   finishDeal(){let n=0;while(find('.is-dealing')){assert.ok(++n<100,'motion finishes');const next=[...jobs].sort((a,b)=>a[1].due-b[1].due)[0];assert.ok(next);jobs.delete(next[0]);now=next[1].due;next[1].fn();}},
   close(){w.dispatchEvent(new w.Event('pagehide'));dom.window.close();}

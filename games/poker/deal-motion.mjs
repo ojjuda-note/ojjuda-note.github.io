@@ -40,7 +40,7 @@ export function createDealMotion({play=()=>{},onFinish=()=>{}}={}){
     const animate=(node,frames,options)=>{
       const animation=node.animate(frames,options);run.animations.add(animation);return animation;
     };
-    const duration=430,interval=cards.length>4?115:180;
+    const duration=300,interval=cards.length>4?65:90;
     const status=root.querySelector('#status');if(status)status.textContent='카드를 나누고 있어요';
     cards.forEach((target,index)=>{
       // Read all positions before writing any flying card into the DOM.
@@ -72,7 +72,7 @@ export function createDealMotion({play=()=>{},onFinish=()=>{}}={}){
         },duration);
       },index*interval);
     });
-    later(()=>{cancel();onFinish();},(cards.length-1)*interval+duration+180);
+    later(()=>{cancel();onFinish();},(cards.length-1)*interval+duration+90);
     return true;
   }
   return {start,cancel,active:()=>!!current};
