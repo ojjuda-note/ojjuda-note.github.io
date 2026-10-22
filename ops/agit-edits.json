@@ -1,0 +1,976 @@
+[
+  {
+    "path": "admin/connections.js",
+    "before": "467235e070171e2a2a8c1c83fc93ed8c105ee759eb59bd22a7b55b754cca05f8",
+    "after": "08076e92df3e6d17523cb2334f785c2c6c6c4065da395597e8a98cd33c53a8bb",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "admin/index.html",
+    "before": "5690e1adc251db4ecc761938202a4e3bed202dc3446d2fa9ffd994a305d466bf",
+    "after": "e355781a9e1b070822b848943be8501553c161a826e3e8999e3689fd8b8e7ea9",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "arcade-rooms.js",
+    "before": "8ee58fb091fc1a918f0b5582beb4a350d719c6a69738af2a43e588b6d9c3b2a1",
+    "after": "261f8c63b689ae3ec8e868db16b13c4b34f7a15a2d03665038c1d77973424e22",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "brand/README.md",
+    "before": "a99abc134d7cfe0500f07b7cef9cc8989ea588b8e3ce9aebba6102565c2312af",
+    "after": "04a1c9c49e06c6fb3f7c7a5fbe1e77ec3028bfb77d7cf304c66c890be9ab7f9a",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "config.js",
+    "before": "2d8dac3017f1a09ff1ec78a320275501b54baa77602caef7f4dc80c7e33259c5",
+    "after": "56c136f75e1c2792d078170b183bc0044e7ad7b40fa6a6bacbd883740b391fba",
+    "edits": [
+      {
+        "old": "Ojjuda World",
+        "new": "Ojjuda Agit",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "delete-account.html",
+    "before": "51ddab67a5ba4b8e0206d73897541b55ba3dcaeab75dfa5b86b6d9eda6df100e",
+    "after": "15b254e6f97f0ab905dbdf65cac2f56dca5da65788752225c29f6b8b830ed59c",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "docs/design-system.md",
+    "before": "6e66ab230903d7025899d3222bc892351b9dec9d9c32926bdac1f45659fe65b9",
+    "after": "d10cd9c663fbe3c68f5688bdce8957baa61311c6aa1de2ac6d93895c17424003",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "docs/matgo.md",
+    "before": "26b0245dd1dc072f07361d46d8ea3fbaf7b8fad254d2d2929d289060796b9e5e",
+    "after": "5214e7e5e3a9ee737b8c059982fee5395e3a4388436f87bff2f13f20b879b056",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "docs/world-bgm.md",
+    "before": "6f84a26f83f54b5d063c6401c3eee48ef74b2b1ed316c37e0c04c726ef1c2ba0",
+    "after": "e24378b6235c419ed300ad422a897eff197872e050eec232a6b099bdc4e591a9",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "game-friend-invites.js",
+    "before": "8b05c693b506f38bb6352f53c003737526ffbea5bcb02b240e4a375aebdb6499",
+    "after": "bb97c775a618db8f3ba20ce01030d14fbbd97f4e7fffc53a51d6657dd989f98e",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/matgo-online.mjs",
+    "before": "50c55aaa9d4d7e7770aef388bc52a3dc835c688f7ddc684f212c6653872ce4d5",
+    "after": "b0818667cec0f9e883145eb5f4ec733cb3d42bc119234b58001405ffd502ac2f",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      },
+      {
+        "old": "./matgo.html?v=20261015-basic1",
+        "new": "./matgo.html?v=20261022-agit1",
+        "count": 2
+      },
+      {
+        "old": "./matgo-online-sound.mjs?v=20261006-zu1",
+        "new": "./matgo-online-sound.mjs?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/matgo.html",
+    "before": "1413506e0e13a1a76f003b8e58f46697148b8aa8094ff1d587c5e35bd5968ae4",
+    "after": "197fd879da0c974dedae8ad369a34c0400d98754e09778673da70d64c9866c72",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 1
+      },
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      },
+      {
+        "old": "./matgo-online.html?v=20261015-basic1",
+        "new": "./matgo-online.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/ojjuda-tour/game.json",
+    "before": "c21c9e41fe1cfae886b206785e6ee4f69ac9f78345108879afab6fd2eea73d4f",
+    "after": "9ab5a4d4bee3d9c709813dc7351666e1ecfdd1a13f9633db62a1e9b9cc246bde",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/ojjuda-tour/index.html",
+    "before": "8b6e8b44c22469e4f66f8c8f16a48604f0113dddeb221f9499a00a66eb2e54a2",
+    "after": "539d2d3615085f0c381aab580296d6bc19c5293f4dcf78b5944f25afb654b2e1",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 1
+      },
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      },
+      {
+        "old": "marble-online.js?v=20261012-marble-invite1",
+        "new": "marble-online.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/ojjuda-tour/marble-online.js",
+    "before": "bdbf4a18876381e50755b4d4c32db3e9f2d88879c5d346c957400913bfa5cd29",
+    "after": "1dbdc9ebd43e0f42c1b9193c672ade6743f272fa3fa30fb496187d1ee1794975",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/photo-ttang.html",
+    "before": "090eeba854e508b4dd1d6fad64ba5b4530d30b6381a8381bbec57493a8761176",
+    "after": "6cda822208b46514c93aa099c4e9329c09a6eb2caf24e358288c9a0ebbf6b1ec",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "path": "games/spot-difference/wallet.js",
+    "before": "0a6e3c239e69448cc72b521f363154cde6607e9310fa9656ee226be68e8092ba",
+    "after": "774b85cba7cb581ad01170b79ae97e56aeaf88ddc2c08f7d9ffe206d2f8be16b",
+    "edits": [
+      {
+        "old": "Ojjuda World",
+        "new": "Ojjuda Agit",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/ttang.html",
+    "before": "c6140d3ae84dd6c74a3be83a59dec2cf28119cdd09b1398f278c65430f212534",
+    "after": "cbaed135e52e98dfb52201741ca517bc3e31bd692c7994026c6a398086056de7",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 3
+      },
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "guide.html",
+    "before": "354a5ff8816a87e26dc0530634403f76d7cf326ddea7537f5b9782e8bf7db1d5",
+    "after": "ecc8f32d7894b5cca67410fa315a587d1e3b6411ff416185eb74a4050c4e508e",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "index.html",
+    "before": "c0d7033d81cdbb0fb96747b02373e0b1774712504bda63ecc1d9968461d81e8b",
+    "after": "b982cf13397fbbae3107aebade6eb8abfcf57f86f3e6fbb511dd945f34c33e39",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 13
+      },
+      {
+        "old": "OJJUDA WORLD",
+        "new": "OJJUDA AGIT",
+        "count": 1
+      },
+      {
+        "old": "https://ojjuda.kr/icon-512.png?v=20260929-logo1",
+        "new": "https://ojjuda.kr/og-image.png?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "portal.js?v=20261021-policy1",
+        "new": "portal.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ju-charge.js",
+    "before": "eaed38eaf5a5d1999b9fb9ec6fd3e6f0f22e3039ea537744d3f91d5d548b6cb2",
+    "after": "9df903546d885f7935af825374c721361f7aaab0a411b913a64daa2c13ac2246",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "manifest.webmanifest",
+    "before": "a81a6c102c7de977e2233881ad5e426722f1db38a1b69774372dc2d32ea2c2e9",
+    "after": "27e48284f19fe2c5afdb56a10a14317336fc59a99b7244fa797fc8db2ca96fe4",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "matgo-bridge.js",
+    "before": "c49e8826f147b3b73e0c3321cbbdca0b493b41b31c8adaecc58799cceda97c00",
+    "after": "fba82ba364e8541e38f92395950c9ef7240a2d3a96362f8cfda12f8c85d4ee5d",
+    "edits": [
+      {
+        "old": "Ojjuda World",
+        "new": "Ojjuda Agit",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "note/admin.css",
+    "before": "69f67288a7a7a4f4c91698fde22302b98bf3d6f9fb17d6746561c936350838e4",
+    "after": "897957656ce41962767069ab63f142640bc0ff19cc463c58c4955f467ebad7ef",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "note/admin.js",
+    "before": "e866785148c121b5a7e3e1d3d37a6b7047c58b73e62a7bbc75e08ddbb8db036d",
+    "after": "35592a9712b9a6f20e9d8f49087e1ad6587dc3987dc7fff4171feb947a1a558c",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "note/glasses.html",
+    "before": "e482a2669749812fbbe63ff5d45ea3df3a9014d9eaf5f12ad17ac8b0bf5c5187",
+    "after": "019a3294e2a8b06d545b250fcd2bbf8d3882bfbb8e4d1140704eca2efa768115",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "note/index.html",
+    "before": "e482a2669749812fbbe63ff5d45ea3df3a9014d9eaf5f12ad17ac8b0bf5c5187",
+    "after": "019a3294e2a8b06d545b250fcd2bbf8d3882bfbb8e4d1140704eca2efa768115",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "note/preview.js",
+    "before": "c7e3c40f9873f215edc39b4097656a05ec0aad62d87fa0091e86c56ddbe288a5",
+    "after": "47fca0ad58ed03415bab135ff8a1fc30611c61e642e3252f43fbab725a402958",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 11
+      }
+    ]
+  },
+  {
+    "path": "note/support.js",
+    "before": "392a986e1c9f64b4bcbf615e6a4686b5d0cb068311ee50d7009ccbcc8fe4b662",
+    "after": "2bee5151c2db46efd49e7cd90fa0be43fb6642df15ea004855bdfcb52b42f865",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "path": "ops/RECOVERY.md",
+    "before": "ad7ef7fdb1ea88ad863aa463f0c314d0d9e3600eda2bdd059868899e81f66d67",
+    "after": "2319df11f9c26e6c90a7294a5f8325e0bc85a79bfb2362e29dbae3734705ac76",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "ops/SOURCE-BACKUP.md",
+    "before": "2dd0a883b7928e2dba5bd75afbe068f4723b050ad2458cee54deb6b0b33086c8",
+    "after": "dca7a0ff6f5023584eeec09db6f328e06015a5b305b0bb81b707a0d031044e0a",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ops/admin-inspection-2026-10-04.md",
+    "before": "64095d1fd412eac48967266481fdb19fb2c34b65476697108209e819c6577b24",
+    "after": "cc4f70b6342806e072001a3f7ba0f1cc2dc4f352b764296f72e3cc288dd711d7",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "ops/build-design-assets.py",
+    "before": "6ba1e58d981eed54a026981fce3c367cde183b338aea02c6fdfb065eb9c9de6e",
+    "after": "fac6ebd39f42ca255761ba73d44e4e4a7c97d2b2074246698e68d0136bd37520",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      },
+      {
+        "old": " og=svg(rect(0,0,1200,630,'#f3f5ed')+group(logo,'translate(100 130) scale(1.5)')+'<text x=\"100\" y=\"395\" font-family=\"sans-serif\" font-size=\"68\" font-weight=\"700\" fill=\"#244b3a\">오쭈다 아지트</text><text x=\"104\" y=\"450\" font-family=\"sans-serif\" font-size=\"25\" fill=\"#617464\">가볍게 한 판, 다정한 한마디.</text>'+group(base,'translate(420 80) scale(1.4)'),1200,630)",
+        "new": " og=(R/'brand'/'share.svg').read_text()",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ops/daily-note-content.md",
+    "before": "c03841077167d216b896073c9316ff54d6158596d0bed10e0a88f00fbee30b71",
+    "after": "aba80cbb8409498d033fa7d654bd71a134a9ef84ee78b7137777c36c2dc838fd",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ops/inspection-2026-09-29.md",
+    "before": "603cde25d3426585975bd91b8abea36eaf0364275a0d87902472e2b7fd6fa3ce",
+    "after": "3b619f0b344de1c69979fc7a679c58adca5a4979800dcedb7fd275ae5f0aeab5",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ops/inspection-2026-10-04.md",
+    "before": "376529d25bc2c88bc7f30290a0a3fa504f56bf10d641d54f32294d0fa447b533",
+    "after": "4d88c5d31870ceb92445acda05a7f50fe01e722220f07318b24a0d5e68d225d2",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ops/inspection-2026-10-21.md",
+    "before": "393561f7dc7f56841461a93b14a9768cf67c052c6eee3fe6f0551c211c0c9c2f",
+    "after": "939409564cb84457815d424c9777cec7e2ae8fbc73de19b49a1c99287ef3b092",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "park/glasses.html",
+    "before": "eec6f3917fabf609a6b0e67a6620379c55248ac70099d578fcfbe5a2f7fcc629",
+    "after": "eecb5319e873575d0bcacace482367630fd8aca3d39208ede195b9194a2c98d8",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "park/index.html",
+    "before": "135bd8af34c89b0689a78522ea511bf3128f91894d6361309ffedcfb86bab9ee",
+    "after": "acee9081403f5ae2529938298673ed3c2dc7aec1a50bf40280c5cb0f501bbaa2",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 7
+      },
+      {
+        "old": "/ju-charge.js?v=20261022-clean4",
+        "new": "/ju-charge.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/note/support.js?v=20261004-admin1",
+        "new": "/note/support.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/note/preview.js?v=20261021-guest1",
+        "new": "/note/preview.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "photo-ttang.html",
+    "before": "310fba31c0f9ec50e14900b7624766a0201f088b341e4430fe935d4a9aa4356e",
+    "after": "92e2ef316ae192fa8f2bed64f1212998d52f13af7162659862d3198e5e07650c",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      },
+      {
+        "old": "/photo-ttang-page.js?v=20261021-photo-idols1",
+        "new": "/photo-ttang-page.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "policies/2026-09-29/privacy.html",
+    "before": "60192cd44e18a7b18331b40176e33a3d81d206086af170aae9a221174a9959f5",
+    "after": "06e3bb221eca4e7afd16df4af1b9ee373ad6eb841c7c2863dffb22a0faf069b9",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 4
+      },
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "policies/2026-09-29/terms.html",
+    "before": "7d94e195f23ef231cdcce5d0b48342cbd2ea23dac83a62c1430aa7a4cbd3c896",
+    "after": "d9f3980f2e0632d9915b919a10c7b72d73c3aff049ca48705b65e9e1c5be3b21",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "path": "portal.js",
+    "before": "98a874bb1c0b2fe199bd18674cf787b10a637397069b8f9f7bf7fabdbbaaa32c",
+    "after": "14cc1fbac0c33f5c89c85b22d1068c3656c67764da4f7fc497ebcbbb497ebadb",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "path": "privacy.html",
+    "before": "c2285df3dba242cbe0b7b52a88d60fbe655cd230c754552244f484d3585d6646",
+    "after": "2ebd3a76e0871c68ea7ef8106d62ef2b493a75fc110ba140be4e7a97d7009b95",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "sitemap.html",
+    "before": "90cbf2448c29ca123bcd5a3a513569c948cfb08f0b804515bd4dd0bf29cf7658",
+    "after": "91ab6663515d4680152208483d2c41c298c83d9c12ba8e4f661db5b99e974736",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "supabase/migrations/20261005123653_photo_ttang_stages.sql",
+    "before": "d3bb71fcfc4ce1ded8b882be8d29f5afa90ee09c75915ecbe7ebc54f00985a03",
+    "after": "5887ea517eeb9905e8a45975051d457ad1e59d06f16bca8ccad801a3ba9212ee",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "terms.html",
+    "before": "0248283be78811978fd0f5528aff4f140df9715420c5339ce1eb6a7be155d2c3",
+    "after": "6305a4c8f5f4ba2d65746b9a4ad5045739072f7ca4713245df76ca2567989d24",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "path": "tests/admin-navigation-ui.test.cjs",
+    "before": "9367473a8a7da518bb04d7211096d1ee45621311d36dadc9430d0d2978cbb9da",
+    "after": "1fdac1aecb23322cffc947e00b023cab10e65def03e6b1884c0ed2444a5b43bc",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      },
+      {
+        "old": "['아지트로 돌아가기','별천지 예약 확인','원고실']",
+        "new": "['아지트로 돌아가기']",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "tests/feedback-diagnostics-ui.test.cjs",
+    "before": "9d6c4ea382ed03abfc42f8a6f735ac0b0196d764252cf47485077055d3a129b7",
+    "after": "1ffbd49b44edadd5f321acbf67d1adbdb81be93c211ef7747da7ff46cf207c3f",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "tests/guest-ranking-ui.test.cjs",
+    "before": "2901cead1cc94f2bdf06b00af5a35d1813da8f2ee7c71bbcf80316373313293c",
+    "after": "4c70e48f69eb62b5fc5eaacebc6bf579bd666ac7a44b5d4fe77bd1b7b0899a16",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "tests/photo-ttang-capture-ui.test.cjs",
+    "before": "f0b1fd41796f93af17862abe5c814af66e661c7b499143e54cd3a652e6c82e3e",
+    "after": "cb812981a59f6465ab0b5ba8e3bd8d590eee2e1e901cb77e5e4489ef3d6cb8a2",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "path": "tests/photo-ttang-ui.test.cjs",
+    "before": "b71c8e033e11118a575c895973bb5765d0efbabf049c7cd89dce324e63f79260",
+    "after": "91e37428a97ea7ab684bedec0a1165379242e6ec29dd69624ffb256f172136df",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "path": "tests/portal-auth-entry.test.cjs",
+    "before": "21a9a33eb13f90357f53b35c91d9ddee4fa978657bbd8ca60fbf1aee0fd054f6",
+    "after": "23a091cfa8c777b6be117ff088059b255512d9e1d42c6e4eec82214702dd265c",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "tests/service-notice-ui.test.cjs",
+    "before": "e12529467077064ea9f1c5af85d06c00d55c0bbed9224a025a250995f719f3f2",
+    "after": "71afd1cc30bbceeb02add749bb5100fc446b0892780dc8289d6b43f28e6ebbc1",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "tests/window-safe-area-ui.test.cjs",
+    "before": "8e3334b38d8b7f926ca95c97679db2582b4d440fc6d4b5acf41155ea792713b8",
+    "after": "127f465ebed789a7bdf44cfba56454127decc983ac396c43c54484d022d01635",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "ttang-bridge.js",
+    "before": "24916909a5961674edc44a6c468c02aff14359e916eeed1922bcdf921ba38950",
+    "after": "24a20ac2988f89a62ba0c586e14a291a32434f13bc87e6ba1df854f833b49c4f",
+    "edits": [
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 6
+      },
+      {
+        "old": "/games/ttang.html?v=20261018-arcade-entry1",
+        "new": "/games/ttang.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "world.html",
+    "before": "ce5c5569d663725a9c094b71105e612b0090e52f2b4f4696368e662b52d08e42",
+    "after": "c53a591af0b15f585103c589a6a1539ef3d015365b4dd2a367c6f9b1606f1bdd",
+    "edits": [
+      {
+        "old": "오쭈다월드",
+        "new": "오쭈다 아지트",
+        "count": 5
+      },
+      {
+        "old": "월드",
+        "new": "아지트",
+        "count": 12
+      },
+      {
+        "old": "Go=\"0.46.28-beta\"",
+        "new": "Go=\"0.46.29-beta\"",
+        "count": 1
+      },
+      {
+        "old": "https://ojjuda.kr/og-image.png?v=20261022-1",
+        "new": "https://ojjuda.kr/og-image.png?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "manifest.webmanifest?v=20261022-1",
+        "new": "manifest.webmanifest?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/ju-charge.js?v=20261022-clean4",
+        "new": "/ju-charge.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "note/support.js?v=20261004-admin1",
+        "new": "note/support.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/matgo-bridge.js?v=20261022-back1",
+        "new": "/matgo-bridge.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/arcade-rooms.js?v=20261021-poker6",
+        "new": "/arcade-rooms.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/game-friend-invites.js?v=20261018-arcade-entry1",
+        "new": "/game-friend-invites.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/world-admin-loader.js?v=20261021-trash1",
+        "new": "/world-admin-loader.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/world-game-assets.js?v=20261021-handmotion4a",
+        "new": "/world-game-assets.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "version.json",
+    "before": "af5d677f8dc37d777b17543870ae2ec9b6d29230b6e635f19e574600fcb882b3",
+    "after": "cca3ed692dcc8fd01162e3788526a92666c8c335ddd655b4c3b9a8384e0fbac0",
+    "edits": [
+      {
+        "old": "0.46.28-beta",
+        "new": "0.46.29-beta",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/matgo-online-sound.mjs",
+    "before": "b4bd5d57fe92ecb8c68934bb0a337322f6232f66ea905b0f407c0dfb408abffc",
+    "after": "8e99522ba6442db89f14aa44c9fbfa76a4c2e102e6669924fbe8b0a875ecbc9c",
+    "edits": [
+      {
+        "old": "./matgo.html?v=20261006-zu1",
+        "new": "./matgo.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/matgo-online.html",
+    "before": "e71b08590b56fb8f1b67b6d1b1c3b17ac66e51414cd065d738e0b5e1be62ba8e",
+    "after": "becf17047909e78c40db3fa1162fc4a2f6c5d6d433daa546ac306f266082dfe1",
+    "edits": [
+      {
+        "old": "./matgo-online.mjs?v=20261022-rooms1",
+        "new": "./matgo-online.mjs?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "games/spot-difference/index.html",
+    "before": "9444c22af9114f8eec144edcd0742d8c52de7bc179776a28b2d3c4dd04820751",
+    "after": "5b0dc87ccb5527c9f1e85d3db97427ba966fd28a5858c4f431686f4790c08138",
+    "edits": [
+      {
+        "old": "wallet.js?v=20261006-prices1",
+        "new": "wallet.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "photo-ttang-bridge.js",
+    "before": "b07484463c800ca9f8de443c36ee448163978bec411857d6b35b8f9604457e84",
+    "after": "c58890134399439f054f6b75d0f0b1fe601e772f754681833a36657705053e32",
+    "edits": [
+      {
+        "old": "/games/photo-ttang.html?v=20261021-photo-idols1",
+        "new": "/games/photo-ttang.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "photo-ttang-page.js",
+    "before": "b43f85d49f60879ffffa908480d46e0f114b9ca80e94adbf48b41415054805ac",
+    "after": "7dc350d2bef9b9ddf25ad119c38d493fc1cd3e704ce7a8aab7aaa053759118d8",
+    "edits": [
+      {
+        "old": "/games/photo-ttang.html?v=20261021-photo-idols1",
+        "new": "/games/photo-ttang.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "world-admin-loader.js",
+    "before": "045338b2abe66a623dfe8c66803d7febb7309b51ff727370f3da2706919dd29e",
+    "after": "d5673a43d5eb3f71a31e2af4561cb47842332099f61d1326f1a2a0fe3cc617da",
+    "edits": [
+      {
+        "old": "/admin/connections.js?v=20261021-admin1",
+        "new": "/admin/connections.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "note/admin.js?v=20261021-noevents1",
+        "new": "note/admin.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "note/admin.css?v=20261004-home2",
+        "new": "note/admin.css?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "world-game-assets.js",
+    "before": "bae7a237e19f9dfad4bfbfa4901094f607d2dbc81504fb463eac3257a83ceebe",
+    "after": "a7df1b3121001e4aa9d9aedee5ad06592538f51898a4b411f71ffb77e5ab39ea",
+    "edits": [
+      {
+        "old": "/ttang-bridge.js?v=20261021-guest1",
+        "new": "/ttang-bridge.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/world-tour-game.js?v=20261021-guest1",
+        "new": "/world-tour-game.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/photo-ttang-bridge.js?v=20261021-photo-idols1",
+        "new": "/photo-ttang-bridge.js?v=20261022-agit1",
+        "count": 1
+      },
+      {
+        "old": "/world-spot-game.js?v=20261021-guest1",
+        "new": "/world-spot-game.js?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "world-tour-game.js",
+    "before": "8609000b1c98afef011c31f77937b5394f8193611dd85c3d5aa4d11c4d945808",
+    "after": "ae8419438864ba2b360cef2a9f7d5125d347f2f3831033454d1727fcf99f8a8c",
+    "edits": [
+      {
+        "old": "/games/ojjuda-tour/index.html?v=20261012-tour-purple1",
+        "new": "/games/ojjuda-tour/index.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "path": "world-spot-game.js",
+    "before": "aff46d9c4a9c71f4ba496b46faef59fd6e3042459d7237153c3386e75727e242",
+    "after": "d4c45fd59f4dcc6c382dec681b2bfcf63e801e431e05b3952d6b545580ea744b",
+    "edits": [
+      {
+        "old": "/games/spot-difference/index.html?v=20261009-entry1",
+        "new": "/games/spot-difference/index.html?v=20261022-agit1",
+        "count": 1
+      }
+    ]
+  }
+]

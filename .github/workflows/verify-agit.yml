@@ -1,0 +1,65 @@
+name: Verify Agit name change
+on:
+  push:
+    branches: [codex/agit-rename-20261022]
+    paths: ['ops/agit-edits.json', 'ops/apply-agit.py', '.github/workflows/verify-agit.yml', 'brand/share.svg']
+permissions:
+  contents: write
+concurrency:
+  group: agit-name-change
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply checked source replacements
+        run: python ops/apply-agit.py
+      - name: Render the share card with Korean text
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk librsvg2-bin
+          fc-match 'Noto Sans CJK KR' | grep -q 'Noto Sans CJK'
+          rsvg-convert --output og-image.png brand/share.svg
+      - name: Install locked verification dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the isolated browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify renamed entry points and scripts
+        run: |
+          node tests/inline-scripts.test.cjs
+          node tests/portal-auth-entry.test.cjs
+          node tests/world-three-menus.test.cjs
+          node tests/admin-current-features.test.cjs
+      - name: Verify desktop, mobile, administrator and game navigation
+        env:
+          WORLD_DESIGN_PROOF_DIR: /tmp/agit-proof
+          SERVICE_NOTICE_SCREENSHOT_DIR: /tmp/agit-proof
+        run: |
+          node tests/world-design-ui.test.cjs
+          node tests/admin-navigation-ui.test.cjs
+          node tests/service-notice-ui.test.cjs
+          node tests/photo-ttang-ui.test.cjs
+          node tests/guest-ranking-ui.test.cjs
+          node tests/world-game-back-ui.test.cjs
+      - name: Keep visual evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: agit-name-proof
+          path: |
+            /tmp/agit-proof
+            og-image.png
+          retention-days: 3
+      - name: Commit verified source and share image
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git commit -m 'Apply verified Ojjuda Agit branding'
+          git push origin HEAD:codex/agit-rename-20261022
