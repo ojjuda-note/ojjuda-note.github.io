@@ -21,7 +21,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(value('mines'),'1분 0초');assert.match(row('mines').textContent,/고급/);
  assert.equal(value('billiards'),'3연승');assert.match(row('billiards').textContent,/포켓볼 · 어려움/);
  assert.equal(value('janggi'),'2연승');assert.equal(value('chess'),'7연승');assert.match(row('chess').textContent,/회원대결/);
- assert.equal(value('ttang'),'3연승');assert.equal(value('spot'),'12장');assert.match(row('tank').textContent,/11명 상대/);assert.match(host.textContent,/쭈를 사용한 게임도 기록에 포함/);assert.equal(value('tour'),'4연승');assert.equal(value('tank'),'2연승');
+ assert.equal(value('ttang'),'3연승');assert.equal(value('spot'),'12장');assert.match(row('tank').textContent,/11명 상대/);assert.equal(value('tour'),'4연승');assert.equal(value('tank'),'2연승');
  assert.equal(value('matgo'),'900G');assert.equal(value('poker'),'800G');
  assert.match(row('poker').querySelector('th').title,/한 판 최대 획득 골드/);
  assert.equal(host.querySelectorAll('img').length,0,'nicknames remain text');

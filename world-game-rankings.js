@@ -41,7 +41,6 @@ async function result(query){const {data,error}=await query;if(error)throw error
    const prev=button('‹',()=>go(index-1)),next=button('›',()=>go(index+1));prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);if(pages.length>1)head.append(controls);
    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
    content.append(section);
-   section.append(el('p','쭈를 사용한 게임도 기록에 포함돼요.','board-rank-caption'));
    function paint(){
     position.textContent=(index+1)+' / '+pages.length;rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
     section.dataset.rankPage=String(index);
