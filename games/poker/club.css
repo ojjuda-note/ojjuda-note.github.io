@@ -92,24 +92,21 @@
 .turn-meter{height:3px;overflow:hidden;margin:-4px 1px 10px;border-radius:3px;background:#d8bc8318}
 .turn-meter i{display:block;width:100%;height:100%;background:#ceaf77;transform:scaleX(var(--remaining,1));transform-origin:left;transition:transform .25s linear,background .3s}
 .turn-meter.urgent i{background:#df927e}
-.poker-playing .actions{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-height:0}
+.poker-playing .actions{--action-height:60px;--action-font:16px;--action-small:11px;display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-height:0}
 .raise-options,.primary-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.primary-actions{grid-template-columns:1fr 1.45fr 1fr}
 .poker-playing .actions button{transition:background .16s,border-color .16s,box-shadow .16s,translate .12s;min-width:0;font-variant-numeric:tabular-nums;letter-spacing:-.025em;border-radius:11px}
 .poker-playing .actions button:active:enabled{translate:0 2px;box-shadow:inset 0 2px 4px #0003}
-.poker-playing .actions .raise-choice{min-height:47px;padding:9px 12px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:5px;font-size:14px;border:1px solid #aec9b42c;color:#d8e3d8;background:linear-gradient(#20372b77,#15271f77);box-shadow:inset 0 1px #d9e4c905}
-.poker-playing .actions .raise-choice small{color:#aec6b6;font-size:12px}
-.poker-playing .actions .raise-choice:hover:enabled{border-color:#d8bc8366;background:#273e2f}
-.poker-playing .primary-actions button{min-height:66px;gap:5px;font-size:17px;font-weight:750;padding:10px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.poker-playing .primary-actions button small{font-size:11px;font-weight:500;letter-spacing:0;line-height:1.15}
-.poker-playing .actions .fold{background:#1c2821;border:1px solid #a7b4a324;color:#c8d1c6;box-shadow:inset 0 1px #d8dec408}
-.poker-playing .actions .fold small{color:#84988a}
-.poker-playing .actions .call,.poker-playing .actions .primary{background:linear-gradient(135deg,#e4cfa1,#d5b579);border:1px solid #edd5a2;color:#263023;box-shadow:inset 0 1px #fff9,0 3px 0 #8e774b,0 5px 12px #0003}
-.poker-playing .actions .call small{color:#52583c}
-.poker-playing .actions .call:hover:enabled,.poker-playing .actions .primary:hover:enabled{background:linear-gradient(135deg,#efdcaf,#dfc18c);border-color:#f8e4bc}
-.poker-playing .actions .allin{background:linear-gradient(120deg,#392b24,#30251f);border:1px solid #bd8e6344;color:#e5c1a3;box-shadow:inset 0 1px #e4bd9212}
-.poker-playing .actions .allin small{color:#b3957c}
-.poker-playing .actions .allin:hover:enabled{background:#49342a;border-color:#cfa58188}
+.poker-playing .actions .raise-choice,.poker-playing .primary-actions button{height:var(--action-height);min-height:var(--action-height);padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:var(--action-font);font-weight:750;line-height:1.15}
+.poker-playing .actions .raise-choice small,.poker-playing .primary-actions button small{font-size:var(--action-small);font-weight:500;letter-spacing:0;line-height:1.15}
+.poker-playing .actions .fold{background:linear-gradient(135deg,#354047,#293239);border:1px solid #80919855;color:#e0e6e8;box-shadow:inset 0 1px #d8e3e812}
+.poker-playing .actions .fold small{color:#b4c0c5}
+.poker-playing .actions .fold:hover:enabled{background:#414f58;border-color:#99aab3}
+.poker-playing .actions .raise-choice,.poker-playing .actions .call,.poker-playing .actions .primary{background:linear-gradient(135deg,#e4cfa1,#d5b579);border:1px solid #edd5a2;color:#263023;box-shadow:inset 0 1px #fff9,0 3px 0 #8e774b,0 5px 12px #0003}
+.poker-playing .actions .raise-choice small,.poker-playing .actions .call small{color:#52583c}
+.poker-playing .actions .raise-choice:hover:enabled,.poker-playing .actions .call:hover:enabled,.poker-playing .actions .primary:hover:enabled{background:linear-gradient(135deg,#efdcaf,#dfc18c);border-color:#f8e4bc}
+.poker-playing .actions .allin{background:linear-gradient(135deg,#793b39,#592725);border:1px solid #cf827c66;color:#ffe4dd;box-shadow:inset 0 1px #f2beb51a}
+.poker-playing .actions .allin small{color:#e5bbb3}
+.poker-playing .actions .allin:hover:enabled{background:#884542;border-color:#e09b93}
 .poker-playing .actions button:disabled{opacity:.34;box-shadow:none;filter:saturate(.35)}
 .poker-playing .actions .wide{min-height:60px;font-size:16px;padding:14px 18px}
 .poker-playing .actions .wide small{font-size:11px;font-weight:550}
@@ -151,10 +148,8 @@
  .poker-playing .seat-north .seat-action{align-self:start}
  .poker-playing .down-cards{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:0}
  .poker-playing .seat-cards .up-cards{position:relative;z-index:1}
- .poker-playing .actions{grid-template-columns:1fr 1.2fr;gap:12px}
+ .poker-playing .actions{--action-height:66px;grid-template-columns:1fr 1fr;gap:9px}
  .poker-playing .actions:has(>.wide),.poker-playing .actions:has(>.waiting){grid-template-columns:1fr}
- .poker-playing .actions .raise-choice{flex-direction:column;justify-content:center;min-height:66px;font-size:16px;gap:7px}
- .poker-playing .actions .raise-choice small{font-size:12px}
  .poker-playing .actions.finished-actions{grid-template-columns:1.5fr 1fr}
  .poker-playing .waiting{min-height:66px}
  .poker-playing .up-cards .card{width:64px;height:89.6px}
@@ -219,10 +214,7 @@
  .poker-playing .status{font-size:13px;line-height:1.4}
  .decision-detail{font-size:10px;margin-top:4px}
  .poker-playing .actions,.raise-options,.primary-actions{gap:7px}
- .poker-playing .actions .raise-choice{padding:8px 10px;min-height:43px;font-size:13px}
- .poker-playing .actions .raise-choice small{font-size:11px}
- .poker-playing .primary-actions button{min-height:60px;font-size:17px;gap:5px}
- .poker-playing .primary-actions button small{font-size:10px}
+ .poker-playing .actions{--action-height:54px}
  .poker-playing .waiting{min-height:110px;font-size:12px}
  .poker-playing .table-footer{padding:0 3px;min-height:25px}
  .poker-playing .recent summary{min-height:25px;padding:4px 0}
@@ -238,8 +230,6 @@
  .poker-playing .seat-head{padding:5px}
  .poker-playing .seat-north .seat-head{min-width:140px}
  .poker-playing .seat-north .seat-monogram{display:grid}
- .poker-playing .actions .raise-choice{padding:7px;font-size:12px}
- .poker-playing .actions .raise-choice small{font-size:10px}
  .poker-playing .player-name>span{font-size:9px}
  .poker-playing .hand-label{font-size:9px;padding:4px 5px}
 }
@@ -275,8 +265,7 @@
  .poker-playing .decision-panel{padding-top:8px}
  .poker-playing .decision-heading{min-height:26px;margin-bottom:7px}
  .decision-detail{display:none}
- .poker-playing .primary-actions button{min-height:54px;font-size:16px}
- .poker-playing .actions .raise-choice{min-height:39px}
+ .poker-playing .actions{--action-height:48px;--action-font:15px;--action-small:10px}
  .poker-playing .waiting{min-height:100px}
 }
 @media(max-width:600px) and (max-height:620px){
@@ -296,8 +285,7 @@
  .poker-playing .player-header{min-height:29px}
  .poker-playing .my-cards:has(.final-covered),.poker-playing .my-cards:has(.pending-public){padding-bottom:8px}
  .poker-playing .my-cards .final-covered .card-state,.poker-playing .card.pending-public .card-state{bottom:3px;left:3px;right:auto;background:#13352bed;border-radius:3px;padding:2px 3px;font-size:8px}
- .poker-playing .primary-actions button{min-height:49px;font-size:15px}
- .poker-playing .actions .raise-choice{min-height:37px}
+ .poker-playing .actions{--action-height:44px;--action-font:14px}
  .poker-playing .status{font-size:12px}
  .poker-playing .table-footer{display:none}
  .poker-playing .waiting{min-height:93px}
@@ -343,10 +331,7 @@
  .poker-playing .status{font-size:13px}
  .decision-detail{font-size:10px}
  .raise-options,.primary-actions{gap:5px}
- .poker-playing .actions .raise-choice{flex-direction:column;justify-content:center;gap:4px;min-height:51px;font-size:12px;padding:7px 5px}
- .poker-playing .actions .raise-choice small{font-size:10px}
- .poker-playing .primary-actions button{min-height:64px;font-size:15px;padding:7px 4px}
- .poker-playing .primary-actions button small{font-size:9px}
+ .poker-playing .actions{--action-height:58px;--action-font:15px;--action-small:10px}
  .poker-playing .waiting{min-height:124px;font-size:11px}
  .poker-playing .table-footer{min-height:23px}
  .poker-playing .recent summary{min-height:23px;padding:3px 0}
