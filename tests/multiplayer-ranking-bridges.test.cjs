@@ -34,8 +34,8 @@ const tick=()=>new Promise(r=>setImmediate(r));
   w.eval(read('world-spot-game.js'));const pictures=[];w.OjjudaSpotGame.open({onClear:async(stage,owner)=>pictures.push([stage,owner])});
   const sf=w.document.querySelector('iframe');
   const spot=(stage,source=sf.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{type:'ojjuda:spot-clear',stage,owner:'a'}}));
-  spot(0);spot(49);spot(1,w);spot(1,sf.contentWindow,'https://other.test');spot(17);await tick();
-  assert.deepEqual(pictures,[[17,'a']]);
+  spot(0);spot(63);spot(1,w);spot(1,sf.contentWindow,'https://other.test');spot(17);spot(49);spot(62);await tick();
+  assert.deepEqual(pictures,[[17,'a'],[49,'a'],[62,'a']]);
   console.log('PASS: territory win/loss/quit/duplicates/retries, paid picture completion, partial finds and cross-origin isolation');
  }finally{w.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

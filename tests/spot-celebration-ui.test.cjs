@@ -35,6 +35,16 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    }
    await page.locator('#celebration[open]').waitFor();
   }
+  const photos=await fixture();
+  for(let id=49;id<=62;id++){
+   await photos.page.locator('#wallet-menu summary').click();
+   await photos.page.locator('#stage-picker').selectOption(String(id-1));
+   await photos.page.waitForFunction(()=>!document.querySelector('#start').disabled);
+   assert.match(await photos.page.locator('#stage-label').innerText(),/62.*어려움/);
+   assert.equal(await photos.page.locator('.contrast-overlay').count(),2);
+   assert.deepEqual(await photos.page.locator('#original,#difference,.contrast-overlay').evaluateAll(images=>images.map(im=>[im.naturalWidth,im.naturalHeight])),[[1536,1024],[1536,1024],[1536,1024],[1536,1024]]);
+  }
+  assert.deepEqual(photos.errors,[]);await photos.context.close();
   const f=await fixture(),p=f.page;
   const before=await p.locator('#stage-picker').inputValue();
   await solve(p,true);
@@ -63,7 +73,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.deepEqual(f.errors,[]);await f.context.close();
   const final=await fixture(true);await final.page.emulateMedia({reducedMotion:'reduce'});await solve(final.page);
   assert.match(await final.page.locator('#celebration-title').innerText(),/모든 그림/);
-  assert.equal(await final.page.locator('#solved-total').innerText(),'48');
+  assert.equal(await final.page.locator('#solved-total').innerText(),'62');
   assert.equal(await final.page.locator('#celebration-confetti').isVisible(),false);
   const last=await final.page.locator('#stage-picker').inputValue();await final.page.waitForTimeout(2600);
   assert.equal(await final.page.locator('#stage-picker').inputValue(),last,'last stage has no invalid or repeated next stage');
@@ -91,14 +101,14 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   const host=await browser.newPage();await host.route('**/*',route=>route.fulfill({body:'<!doctype html><body></body>',contentType:'text/html'}));await host.goto('https://fixture.test/');
   await host.addScriptTag({path:path.join(root,'world-spot-game.js')});
-  await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));scoreMessage(49);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);scoreMessage(4);});
-  await host.waitForFunction(()=>recorded.length===1);assert.deepEqual(await host.evaluate(()=>recorded),[{stage:4,owner:'member-a'}],'only valid scores from the same-origin game frame are accepted');
+  await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));scoreMessage(63);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);scoreMessage(62);});
+  await host.waitForFunction(()=>recorded.length===1);assert.deepEqual(await host.evaluate(()=>recorded),[{stage:62,owner:'member-a'}],'only valid scores from the same-origin game frame are accepted');
   await host.evaluate(()=>{hostFail=true;scoreMessage(6)});await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).waitFor();await host.evaluate(()=>hostFail=false);await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).click();await host.waitForFunction(()=>recorded.length===2);assert.equal(await host.evaluate(()=>recorded[1].stage),6);
   await host.evaluate(()=>{window.rpcScores=[];window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'member-a'}}}}),onAuthStateChange(fn){window.walletAuth=fn}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{coins:0}})})})}),rpc:(name,args)=>({abortSignal:async()=>{rpcScores.push({name,...args});return{data:{ok:true}}}})})};});
   await host.addScriptTag({path:path.join(root,'games/spot-difference/wallet.js')});await host.waitForFunction(()=>JjudaWallet.getState().coins===0);
   assert.equal(await host.evaluate(async()=>{try{await JjudaWallet.recordClear('other-member',6);return false}catch{return true}}),true,'standalone score rejects another account');
-  await host.evaluate(()=>JjudaWallet.recordClear('member-a',6));assert.deepEqual(await host.evaluate(()=>rpcScores),[{name:'record_spot_clear',p_stage:6}]);
+  await host.evaluate(()=>JjudaWallet.recordClear('member-a',62));assert.deepEqual(await host.evaluate(()=>rpcScores),[{name:'record_spot_clear',p_stage:62}]);
   await host.close();
-  console.log('PASS: six matches, celebration graphics, zoom completion, automatic next image, delayed loading/timer, cancellation, 48-stage completion and reduced motion');
+  console.log('PASS: six matches, celebration graphics, zoom completion, automatic next image, delayed loading/timer, cancellation, 62-stage completion and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
