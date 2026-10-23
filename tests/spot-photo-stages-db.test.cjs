@@ -23,7 +23,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  await db.exec('revoke all on function ojjuda_shop_internal.spot_game_buy_v2(text,uuid,integer,integer,boolean) from public,anon;grant execute on function ojjuda_shop_internal.spot_game_buy_v2(text,uuid,integer,integer,boolean) to authenticated;');
  const definitions=async()=>JSON.stringify((await db.query("select oid::regprocedure::text signature,prosrc,prosecdef,proconfig,proacl from pg_proc where pronamespace in ('ojjuda_shop_internal'::regnamespace,'ojjuda_guest_internal'::regnamespace) order by signature")).rows);
  const before=await definitions();
- await db.exec(read('supabase/migrations/20261023191505_spot_photo_stages.sql'));
+ await db.exec(read('supabase/migrations/20261023194219_spot_photo_stages.sql'));
  assert.equal(await definitions(),before.replaceAll('p_stage not between 1 and 48','p_stage not between 1 and 62'),'only the two upper stage limits change; caller guards and grants stay identical');
  const claims=async(id,role)=>db.exec(`reset role;set request.jwt.claim.sub='${id||''}';set role ${role};`);
  const clear=async(stage,token=null)=>(await db.query('select public.record_spot_clear($1,$2) result',[stage,token])).rows[0].result;
