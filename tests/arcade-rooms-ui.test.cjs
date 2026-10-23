@@ -103,6 +103,7 @@ world=world.replace('</head>','<script src="/game-entry.js" defer></script><scri
     if(kind==='matgo'){
       // Returning to the room list must keep the waiting match, including after resuming it.
       await a.page.locator('[data-act=matgo-open]').click();
+      await a.page.frameLocator('#matgo-overlay iframe').locator('#resume-room').click();
       await a.page.frameLocator('#matgo-overlay iframe').locator('#wait-in-chat').click();
       await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
       assert.equal((await f.db.query('select status from ojjuda_matgo_internal.rooms where id=$1',[room.match_id])).rows[0].status,'waiting');
