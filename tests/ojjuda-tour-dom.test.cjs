@@ -109,8 +109,9 @@ try {
 // Render the actual arcade menu function, so the entry cannot drift into solo games.
 const world = read('world.html');
 const menu = world.slice(world.indexOf('function Df(){'), world.indexOf('function eo(){'));
+const versionLabel = world.slice(world.indexOf('function worldGameVersion(id){'), world.indexOf('function worldMatgoButton(){'));
 const {runInNewContext} = require('node:vm');
-const markup = runInNewContext(menu + ';Df()', {
+const markup = runInNewContext(versionLabel + menu + ';Df()', {
   g:{place:{id:'arcade', npcs:[]}}, Pt:{arcade:{chat:true,arcade:true}}, _r:{},
   worldMatgoButton:()=>'', worldPokerButton:()=>'', worldPlacePresenceText:()=>'', w:value=>String(value??''), window:{}, Mf:()=>''
 });
