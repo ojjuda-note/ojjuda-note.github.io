@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'games/photo-ttang.html'),'utf8');
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'photo-community-')),photo=path.join(dir,'photo.jpg');
-fs.writeFileSync(photo,Buffer.from(html.match(/data:image\/jpeg;base64,([A-Za-z0-9+/=]+)/)[1],'base64'));
+fs.copyFileSync(path.join(root,JSON.parse(html.match(/const PHOTOS=(\[[^\n]+\]);/)[1])[0].img.slice(1)),photo);
 const mock=`<script>
 const actor=new URL(location.href).searchParams.get('actor')||'one';
 window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:actor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:19,locked:true}:false}),

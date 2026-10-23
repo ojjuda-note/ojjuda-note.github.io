@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'photo-admin-')),photo=path.join(dir,'photo.jpg');
-fs.writeFileSync(photo,Buffer.from(read('games/photo-ttang.html').match(/data:image\/jpeg;base64,([A-Za-z0-9+/=]+)/)[1],'base64'));
+fs.copyFileSync(path.join(root,JSON.parse(read('games/photo-ttang.html').match(/const PHOTOS=(\[[^\n]+\]);/)[1])[0].img.slice(1)),photo);
 function boot(){
  const actor='11111111-1111-4111-8111-111111111111';
  const fixture=window.fixture={admin:true,calls:[],listeners:[],rows:[
