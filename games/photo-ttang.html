@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <script>if(window.parent===window&&location.pathname==='/games/photo-ttang.html')location.replace('/photo-ttang.html');</script>
 <script src="/matgo-access.js?v=20261005-member-refresh1"></script>
-<script src="/photo-ttang-access.js?v=20261022-clean4"></script>
+<script src="/photo-ttang-access.js?v=20261023-media1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
@@ -437,8 +437,8 @@ function startStage(i){ if(!photoAllowed()){lockPhotoGame();return false;} if(PU
   setTimeout(()=>{ if(mode==='play'&&world) toast(`${P.id?'사진 판':(i+1)+'단계'} · 몹 ${D.mobs}마리${D.bots?` · 컴퓨터 ${D.bots}명`:''}`,'#fff'); },200);
   blurredPhoto=null;photoImg=new Image(); const stageImage=photoImg;
   const currentPhoto=()=>photoImg===stageImage&&mode==='play'&&LIST[stage]===P;
-  stageImage.onload=()=>{if(currentPhoto())revDirty=true;};
-  stageImage.onerror=()=>{if(!currentPhoto())return;paused=true;closePanels();panel('<h2>사진을 불러오지 못했어요</h2><p>연결을 확인하고 다시 눌러 주세요.</p><button class="big a" id="retryPhoto">다시 불러오기</button><button class="big g" id="photoList">사진 목록</button>',{retryPhoto:()=>{if(currentPhoto()){paused=false;stageImage.src=P.img;}},photoList:()=>toMenu()});};
+  stageImage.onload=()=>{if(currentPhoto()){revDirty=true;hud();}};
+  stageImage.onerror=()=>{if(!currentPhoto())return;paused=true;hud();closePanels();panel('<h2>사진을 불러오지 못했어요</h2><p>연결을 확인하고 다시 눌러 주세요.</p><button class="big a" id="retryPhoto">다시 불러오기</button><button class="big g" id="photoList">사진 목록</button>',{retryPhoto:()=>{if(currentPhoto()){paused=false;stageImage.src=P.img;}},photoList:()=>toMenu()});};
   if(/^https?:/.test(P.img)) photoImg.crossOrigin='anonymous'; photoImg.src=P.img;
   fullImg=new Image(); if(/^https?:/.test(P.full||'')) fullImg.crossOrigin='anonymous'; fullImg.src=P.full||P.img;
   buildLayers(); $('hud').style.display='flex'; $('btns').style.display='flex'; $('menu').style.display='none'; closePanels(); hud(); return true; }
