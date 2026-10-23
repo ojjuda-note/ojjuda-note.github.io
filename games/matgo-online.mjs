@@ -1,7 +1,7 @@
 import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-bonus-pi1';
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
 import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=20261014-pi-audit1';
-import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261003-gukjin1';
+import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261023-media1';
 import {createWallet} from './matgo-wallet.mjs?v=20261022-entry2';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261006-parity1';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261022-agit1';
