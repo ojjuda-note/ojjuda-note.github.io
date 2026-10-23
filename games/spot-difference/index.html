@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#425bea">
-  <meta name="description" content="쭈다의 48가지 일상 속에서 다른 곳 여섯 개를 찾아보세요. 두 그림을 누르고, 확대하고, 힌트를 보며 즐기는 틀린그림 찾기.">
+  <meta name="description" content="쭈다의 일상 48장과 실사풍 도시 10장, 사계절 산 4장에서 다른 곳 여섯 개를 찾아보세요. 두 그림을 누르고, 확대하고, 힌트를 보며 즐기는 틀린그림 찾기.">
   <title>쭈다 틀린그림 찾기</title>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <meta property="og:type" content="website">
@@ -25,10 +25,11 @@
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=20261006-red1">
   <script src="puzzles.js?v=20261003-hint1" defer></script>
+  <script src="photo-puzzles.js?v=20261024-photo1" defer></script>
   <script src="game-core.js?v=20261006-prices1" defer></script>
   <script src="vendor/supabase.js" defer></script>
-  <script src="wallet.js?v=20261022-ranks2" defer></script>
-  <script src="app.js?v=20261022-ranks3" defer></script>
+  <script src="wallet.js?v=20261024-photo1" defer></script>
+  <script src="app.js?v=20261024-photo1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261006-zu1">
@@ -39,12 +40,12 @@
 <body>
   <header class="topbar">
     <a class="brand" href="./" aria-label="쭈다 틀린그림 찾기 홈"><span class="brand-icon" aria-hidden="true">⌕</span><span>쭈다 <b>틀린그림 찾기</b></span></a>
-    <span class="collection"><strong id="solved-total">0</strong> / 48 완료</span>
+    <span class="collection"><strong id="solved-total">0</strong> / <span id="stage-total">62</span> 완료</span>
   </header>
   <main>
     <div class="game-heading">
     <section class="game-top" aria-labelledby="scene-title">
-      <div class="scene-info"><span class="eyebrow" id="stage-label">장면 01 / 48</span><h1 id="scene-title">쭈다의 일상 속, 다른 곳 여섯 개</h1><p>1분 안에 여섯 곳을 찾아보세요. 찾은 순서대로 번호가 붙어요.</p></div>
+      <div class="scene-info"><span class="eyebrow" id="stage-label">장면 01 / 62</span><h1 id="scene-title">쭈다의 일상 속, 다른 곳 여섯 개</h1><p>1분 안에 여섯 곳을 찾아보세요. 찾은 순서대로 번호가 붙어요.</p></div>
       <div class="score" aria-label="찾은 정답"><strong id="found-count">0</strong><span>/ 6 <small>찾았어요</small></span><div class="dots" id="dots" aria-hidden="true"></div></div>
     </section>
     <section class="round-status" aria-label="게임 상태"><div class="hearts" id="hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</div><span class="rule-copy">오답이면 하트 −1</span><div class="wallet"><span id="wallet-balance">계정 연결 중</span><button id="hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button><details id="wallet-menu" class="wallet-menu"><summary aria-label="게임 메뉴" title="게임 메뉴">⋯</summary><div class="wallet-menu-panel">
