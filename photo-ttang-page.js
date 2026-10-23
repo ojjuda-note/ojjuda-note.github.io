@@ -81,7 +81,7 @@
     candidate.addEventListener('load', async () => {
       if (frame !== candidate) return;
       const api = candidate.contentWindow?.OjjudaPhotoTtang;
-      if (!api || (!demo && !candidate.contentWindow.OjjudaPhotoEntryReady)) return loadFailure(candidate);
+      if (!api) return loadFailure(candidate);
       if (demo) {
         const allowed = await reserveTrial();
         if (frame !== candidate) return;
