@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'games/photo-ttang.html'),'utf8');
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'photo-ttang-')),photo=path.join(dir,'photo.jpg');
-fs.writeFileSync(photo,Buffer.from(html.match(/data:image\/jpeg;base64,([A-Za-z0-9+/=]+)/)[1],'base64'));
+fs.copyFileSync(path.join(root,JSON.parse(html.match(/const PHOTOS=(\[[^\n]+\]);/)[1])[0].img.slice(1)),photo);
 const invalid=path.join(dir,'broken.jpg');fs.writeFileSync(invalid,'not an image');
 const mock=`<script>
 window.savedPhotos=[];window.photoUploads=[];

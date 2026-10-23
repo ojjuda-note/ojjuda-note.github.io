@@ -23,6 +23,7 @@ function fixture() {
   const auth = {session: {user: {id: 'alice'}, access_token: 'alice-token'}};
   let clock = 0, sequence = 0; const reads = [];
   const context = {
+    Date: {now: () => clock},
     D: {online: true, user: {id: 'alice'}}, $: {me: {nick: 'Alice', mood: 'happy'}, avatar: {hair: 'short'}},
     Wo: null, Vo: 0, A0: null, worldPresenceRetry: null, worldLobbyJoining: null, console,
     g: {place: null}, document: {hidden: false}, Event,
@@ -47,7 +48,7 @@ function fixture() {
         };
         channels.push(channel); return channel;
       },
-      removeChannel(channel) { removed.push(channel); },
+      removeChannel(channel) { removed.push(channel); return channel.leaveWait?.promise || Promise.resolve("ok"); },
       from(table) {
         reads.push(table);
         const query = {select() { return this; }, eq() { return this; }, gt() { return this; },
@@ -225,6 +226,45 @@ const flush = async () => { for (let i=0;i<12;i++) await Promise.resolve(); };
     old.leaveWait.resolve('ok'); await pending;
     assert.ok(!f.channels.some(channel => channel.name === 'place:arcade-2'),
       transition + ': superseded join is cancelled before channel creation');
+  }
+  // Rapid navigation shares one presence budget across lobby and room channels.
+  {
+    const f=fixture(), visits=[];
+    for(let n=0;n<12;n++){
+      const room=place('room-'+n);visits.push(room);
+      await f.context.Pa(room,1);
+      void f.channels.at(-1).status('SUBSCRIBED');await flush();
+    }
+    const sent=()=>f.channels.reduce((sum,c)=>sum+c.sent.length,0)+f.lobby.length;
+    assert.equal(sent(),4,'at most four presence updates in the initial window');
+    assert.equal(visits.at(-1).joined,false,'waiting for a presence slot does not fake a join');
+    f.tick(30999);await flush();assert.equal(sent(),4);
+    f.tick(1);await flush();
+    assert.equal(visits.at(-1).joined,true,'latest room joins after the budget recovers');
+    assert.equal(f.lobby.at(-1).place,'room-11');
+    for(let n=2;n<11;n++)assert.equal(f.channels[n].sent.length,0,'superseded room never advertises itself');
+    assert.ok(sent()<=6);
+  }
+  // Identical state is free, while a burst preserves the most recent movement.
+  {
+    const f=fixture(),room=place('arcade');await f.context.Pa(room,1);await f.channels[0].status('SUBSCRIBED');
+    const channel=f.channels[0];
+    for(let n=0;n<20;n++){f.context.rn(room);f.tick(120);await flush();}
+    assert.equal(channel.sent.length,1,'unchanged movement is not tracked again');
+    for(let n=0;n<20;n++){room.me.target={gx:n,gy:6};f.context.rn(room);f.tick(120);await flush();}
+    assert.equal(channel.sent.length+f.lobby.length,4,'movement cannot exhaust the server presence limit');
+    f.tick(31000);await flush();assert.equal(channel.sent.at(-1).gx,19);
+  }
+  // Signing out or leaving while queued cannot send an old account's presence.
+  for(const transition of ['leave','logout','account']){
+    const f=fixture(),room=place('arcade');await f.context.Pa(room,1);await f.channels[0].status('SUBSCRIBED');
+    for(let n=0;n<4;n++){room.me.target={gx:n+1,gy:6};f.context.rn(room);f.tick(120);await flush();}
+    const before=f.channels[0].sent.length;
+    if(transition==='leave')await f.context.Vs();
+    if(transition==='logout')f.context.D.user=null;
+    if(transition==='account')f.context.D.user={id:'bob'};
+    f.tick(31000);await flush();assert.equal(f.channels[0].sent.length,before,transition);
+    assert.equal(f.context.worldPresenceQueue.size,0,'stale updates are discarded');
   }
   console.log('PASS World presence: session ownership, private auth, quiet recovery, track failures, solo game isolation, lobby races, movement and overlapping joins');
 })().catch(error => { console.error(error); process.exitCode = 1; });
