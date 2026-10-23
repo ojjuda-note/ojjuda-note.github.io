@@ -19,6 +19,7 @@
     .brand{display:flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap;font-size:14px}
     .brand img{width:25px;height:25px}.header-link,.exit{display:flex;align-items:center;justify-content:center;min-height:40px;padding:0 12px;border:1px solid #ffffff35;border-radius:12px;background:#ffffff15;text-decoration:none;color:inherit;font-size:13px}
     .hero-wrap{flex:1;display:grid;place-items:center;padding:20px 16px max(24px,env(safe-area-inset-bottom,0px))}
+    .entry-loading{flex:1;display:grid;place-items:center;padding:24px;color:#d4cbe6;font-size:14px}
     .hero{width:min(440px,100%);padding:26px 22px 20px;border-radius:28px;text-align:center;color:#2e2748;background:linear-gradient(180deg,#fff,#f6f2fc);box-shadow:0 30px 80px #0004}
     .badge{display:inline-block;font-size:12px;color:#745dbe;background:#eee8ff;border-radius:999px;padding:6px 12px}
     h1{margin:14px 0 8px;font-size:clamp(27px,8vw,36px);color:#7e69d6} .intro{margin:0;color:#7c739a;font-size:14px;line-height:1.6}
@@ -40,7 +41,7 @@
   <script src="/matgo-access.js?v=20261005-member-refresh1"></script>
   <script src="/photo-ttang-access.js?v=20261006-red1"></script>
   <script src="/photo-ttang-ranking.js?v=20261021-photo-idols1" defer></script>
-  <script src="/photo-ttang-page.js?v=20261022-agit1" defer></script>
+  <script src="/photo-ttang-page.js?v=20261023-entry1" defer></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
 <meta property="og:url" content="https://ojjuda.kr/photo-ttang.html">
@@ -63,7 +64,8 @@
     <a class="header-link" id="header-login" href="/?auth=login&amp;next=photo">로그인</a>
     <button class="exit" id="exit-game" type="button" hidden>나가기 ✕</button>
   </header>
-  <main class="hero-wrap" id="hero-wrap">
+  <p class="entry-loading" id="entry-loading" role="status">게임을 준비하고 있어요…</p>
+  <main class="hero-wrap" id="hero-wrap" hidden>
     <section class="hero" aria-labelledby="trial-title">
       <span class="badge" id="trial-badge">로그인 없이 한 판</span>
       <h1 id="trial-title">포토땅따먹기</h1>

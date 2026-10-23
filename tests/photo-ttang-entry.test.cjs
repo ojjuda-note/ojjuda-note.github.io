@@ -14,7 +14,12 @@ const photo=(id,owner='other',visibility='public',status='approved')=>({id,owner
   w.eval(fs.readFileSync(path.join(root,'assets/photo-ttang/men-stages-v2.js'),'utf8'));
   for(const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g))vm.runInContext(match[1],dom.getInternalVMContext());
   const realStart=w.startStage,starts=[];w.startStage=i=>{starts.push({key:w.eval('LIST')[i].key,id:w.eval('LIST')[i].id});};
+  assert.equal(w.document.querySelectorAll('[data-t="base"]').length,1,'the final base choice exists before entry scripts run');
+  assert.equal(w.document.querySelectorAll('[data-t="public"]').length,1,'the public choice exists once in the initial document');
+  const initialEntry=w.document.querySelector('#menu .game-entry'),initialChoices=[...initialEntry.querySelectorAll('[data-t]')];
   w.eval(entry);w.eval(entry);
+  assert.equal(w.document.querySelector('#menu .game-entry'),initialEntry,'binding keeps the original entrance');
+  assert.deepEqual([...initialEntry.querySelectorAll('[data-t]')],initialChoices,'binding never replaces or adds choice buttons');
   assert.equal(w.document.querySelectorAll('#photoPublicStart').length,1);
   const base=w.document.getElementById('photoStart'),shared=w.document.getElementById('photoPublicStart');
   const gallery=w.document.getElementById('grid'),details=gallery.closest('details');

@@ -25,6 +25,7 @@ const root=path.join(__dirname,'..');
   await frame.waitForFunction(()=>!!window.OjjudaPhotoHelp);
   assert.deepEqual(photos,[],'opening the menu does not download all photos');
   await frame.locator('#photoStart').click();
+  await frame.locator('#grid .cell:not([disabled])').first().click();
   await frame.getByRole('button',{name:'다시 불러오기',exact:true}).waitFor();
   assert.equal(await frame.evaluate(()=>world.time),0,'failed image does not consume playing time');
   assert.equal(await frame.locator('.photo-help').count(),0,'loading errors never offer paid help');

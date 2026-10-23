@@ -119,7 +119,18 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
     // Full play uses a verified account, and is removed immediately on sign-out.
     const signed = await fixture({ member: { id: 'member-one', user_metadata: { nickname: '테스트' } } });
     await signed.page.locator('iframe').waitFor({ state: 'visible' });
+    assert.equal(await signed.page.locator('#hero-wrap').isVisible(), false, 'the outer entrance stays hidden during full play');
+    await signed.page.getByRole('button', { name: '나가기 ✕', exact: true }).click();
+    const readsBeforeRefresh = await signed.page.evaluate(() => fixtureReads);
+    await signed.page.evaluate(() => fixtureAuthChange('TOKEN_REFRESHED', fixtureUser));
+    await signed.page.waitForFunction(reads => fixtureReads > reads, readsBeforeRefresh);
+    assert.equal(await signed.page.locator('iframe').count(), 0, 'a session refresh must not reopen the closed game');
+    await signed.page.getByRole('button', { name: '게임 시작하기', exact: true }).click();
+    await signed.page.locator('iframe').waitFor({ state: 'visible' });
     const full = await (await signed.page.locator('iframe').elementHandle()).contentFrame();
+    assert.equal(await full.locator('.game-entry').count(), 1);
+    assert.equal(await full.locator('[data-t="base"]').count(), 1);
+    assert.equal(await full.locator('[data-t="public"]').count(), 1);
     await full.locator('details:has(#grid)>summary').click();await full.locator('#grid .cell').first().waitFor({ state: 'visible' });
     assert.equal(await full.locator('#grid .cell').count(), 40);
     assert.equal(await full.evaluate(() => PUBLIC_DEMO), false);

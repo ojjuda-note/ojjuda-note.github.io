@@ -3,37 +3,14 @@
   'use strict';
   if (window.OjjudaPhotoEntryReady || typeof PUBLIC_DEMO === 'undefined' || PUBLIC_DEMO) return;
   const base = document.getElementById('photoStart');
-  if (!base || typeof renderGrid !== 'function') return;
+  const shared = document.getElementById('photoPublicStart');
+  const status = document.getElementById('photoEntryStatus');
+  const details = document.getElementById('grid')?.closest('details');
+  if (!base || !shared || !status || !details || typeof renderGrid !== 'function') return;
   window.OjjudaPhotoEntryReady = true;
 
-  const row = document.createElement('div');
-  row.className = 'row2';
-  row.setAttribute('role', 'group');
-  row.setAttribute('aria-label', '사진 종류 선택');
-  base.before(row);
-  base.textContent = '기본';
-  const shared = document.createElement('button');
-  shared.id = 'photoPublicStart';
-  shared.type = 'button';
-  shared.className = base.className;
-  shared.textContent = '공개';
-  row.append(base, shared);
-  const status = document.createElement('p');
-  status.id = 'photoEntryStatus';
-  status.className = 'ge-hint';
-  status.setAttribute('role', 'status');
-  status.hidden = true;
-  row.after(status);
-  const details = document.getElementById('grid').closest('details');
-  const publicTab = document.createElement('button');
-  publicTab.type = 'button';
-  publicTab.className = 'tab';
-  publicTab.dataset.t = 'public';
-  publicTab.textContent = '공개 사진';
-  document.querySelector('[data-t="base"]').after(publicTab);
-  publicTab.onclick = () => { tab = 'public'; void renderGrid(); };
-
   function updateUploadVisibility() {
+    for (const button of [base, shared]) button.setAttribute('aria-pressed', String(button.dataset.t === tab));
     const upload = document.getElementById('uploadBtn');
     upload.hidden = tab === 'base';
     upload.style.display = upload.hidden ? 'none' : '';
@@ -81,12 +58,12 @@
   };
   updateUploadVisibility();
 
-  let loading = false;
+  let pendingKind = null, entryRevision = 0;
   async function enter(kind) {
-    if (loading) return;
+    if (pendingKind === kind && tab === kind) return;
     if (!photoAllowed()) return lockPhotoGame();
-    loading = true;
-    base.disabled = shared.disabled = true;
+    const request = ++entryRevision;
+    pendingKind = kind;
     status.hidden = false;
     status.textContent = kind === 'public' ? '공개 사진을 불러오는 중…' : '기본 사진을 준비하는 중…';
     try {
@@ -99,9 +76,10 @@
       const grid = document.getElementById('grid');
       status.textContent = grid.querySelector('.cell:not([disabled])') ? '사진을 골라 주세요.' : grid.textContent.trim();
     } finally {
-      loading = false;
-      base.disabled = shared.disabled = false;
-      if (tab !== kind || mode !== 'menu') status.hidden = true;
+      if (request === entryRevision) {
+        pendingKind = null;
+        if (tab !== kind || mode !== 'menu') status.hidden = true;
+      }
     }
   }
   base.onclick = () => enter('base');
