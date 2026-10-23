@@ -3,13 +3,13 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261022-agit1';
+  const gameUrl = '/games/photo-ttang.html?v=20261023-entry1';
   const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null;
   let member = null, signedUser = null, ageCode = '', frame = null, loading = false, reserved = false, started = false;
-  let authEpoch = 0, loadTimer = null, rankDispose = null;
+  let authEpoch = 0, loadTimer = null, rankDispose = null, identityPending = true;
   window.OjjudaPhotoTtangBridge = { client: null, nick: '' };
   access?.configure(client);
 
@@ -27,7 +27,8 @@
   }
   function renderEntry() {
     const used = !member && usedTrial();
-    $('hero-wrap').hidden = false;
+    $('hero-wrap').hidden = loading || identityPending;
+    $('entry-loading').hidden = !(loading || identityPending);
     $('game-shell').hidden = true;
     document.body.classList.remove('playing');
     $('exit-game').hidden = true;
@@ -61,6 +62,7 @@
     if (candidate !== frame) return;
     clearTimeout(loadTimer); loading = false;
     $('hero-wrap').hidden = true;
+    $('entry-loading').hidden = true;
     $('game-shell').hidden = false;
     $('exit-game').hidden = false;
     document.body.classList.add('playing');
@@ -79,13 +81,7 @@
     candidate.addEventListener('load', async () => {
       if (frame !== candidate) return;
       const api = candidate.contentWindow?.OjjudaPhotoTtang;
-      if (!api) return loadFailure(candidate);
-      if (!demo && !candidate.contentDocument.querySelector('[data-photo-entry]')) {
-        const entry = candidate.contentDocument.createElement('script');
-        entry.dataset.photoEntry = '';
-        entry.src = '/photo-ttang-entry.js?v=20261021-photo-idols1';
-        candidate.contentDocument.head.append(entry);
-      }
+      if (!api || (!demo && !candidate.contentWindow.OjjudaPhotoEntryReady)) return loadFailure(candidate);
       if (demo) {
         const allowed = await reserveTrial();
         if (frame !== candidate) return;
@@ -132,6 +128,7 @@
       } catch (error) { code = error?.code || 'unavailable'; }
     }
     if (epoch !== authEpoch) return;
+    identityPending = false;
     signedUser = user; ageCode = code;
     const oldId = member?.id;
     member = verified;
@@ -139,7 +136,10 @@
     window.OjjudaPhotoTtangBridge.nick = String(member?.user_metadata?.nickname || '');
     if (member) {
       $('header-login').hidden = true;
-      if (frame && frame.dataset.demo === '0' && oldId === member.id) return;
+      if (oldId === member.id) {
+        if (!frame) renderEntry();
+        return;
+      }
       stopFrame(); openGame(false);
     } else if (oldId) {
       closeGame(true);
@@ -170,7 +170,7 @@
   client?.auth.onAuthStateChange(event => {
     if (event === 'INITIAL_SESSION') return;
     if (event === 'SIGNED_OUT') {
-      authEpoch++; member = signedUser = null; ageCode = '';
+      authEpoch++; identityPending = false; member = signedUser = null; ageCode = '';
       window.OjjudaPhotoTtangBridge.client = null;
       window.OjjudaPhotoTtangBridge.nick = '';
       if (frame?.dataset.demo === '0') closeGame(true);
