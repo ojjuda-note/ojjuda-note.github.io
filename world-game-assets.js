@@ -20,7 +20,7 @@
   janggi:'1.0.0',
   chess:'1.0.0',
   billiards:'1.0.0',
-  matgo:'1.0.0'
+  matgo:'1.0.1'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
