@@ -9,7 +9,13 @@ window.pokerFixture={show(round=1){
  const hands=[[12,25,11,24,9,22,51],[0,1,2,3,4,5,6],[13,14,15,16,17,18,19],[26,27,28,29,30,31,32]];
  game={_roomId:'fixture',_round:round,phase:'betting',street:7,turn:0,dealer:1,pot:1200,log:['히든 카드 배분'],players:hands.map((cards,i)=>({name:i?'컴퓨터 '+i:'나',cards,up:cards.slice(2,6),stack:4700,total:300,bet:0,folded:false,allIn:false,last:'체크'})),legal:()=>({need:0,call:0,maxTo:4700,minTo:50,mayRaise:true,check:true,allIn:true})};
  render({animateDeal:false});
- },paint(){render({animateDeal:false});},finish(){game.phase='finished';game.result={uncontested:false,pots:[{winners:[0]}],net:[1200,-400,-400,-400]};render({animateDeal:false});},allCards(){document.querySelector('#cards-content').innerHTML=Array.from({length:52},(_,c)=>card(c)).join('');document.querySelector('#cards-dialog').showModal();}}
+ },paint(){render({animateDeal:false});},raise(){
+ const next=structuredClone({...game,legal:game.legal()});
+ next.players[1].stack-=50;next.players[1].bet+=50;next.players[1].total+=50;next.players[1].last='베팅 50';
+ next.pot+=50;next.turn=0;next.log.push(next.players[1].name+' 베팅 50');
+ next.legal={need:50,call:50,maxTo:4700,minTo:100,mayRaise:true,check:false,allIn:true};
+ const room={...online.room,game:next};online.room=room;restoring=false;resumeOnEntry=false;acceptRoom(room);
+ },finish(){game.phase='finished';game.result={uncontested:false,pots:[{winners:[0]}],net:[1200,-400,-400,-400]};render({animateDeal:false});},allCards(){document.querySelector('#cards-content').innerHTML=Array.from({length:52},(_,c)=>card(c)).join('');document.querySelector('#cards-dialog').showModal();}}
 `;
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox'],executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined});
@@ -56,6 +62,13 @@ window.pokerFixture={show(round=1){
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'upward drag does not open it');
     await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+rect.height*.4,{steps:6});
     assert.notEqual(await page.locator('.my-cards .peek-face').evaluate(el=>getComputedStyle(el).clipPath),'inset(0px 0px 100%)','drag gradually uncovers the artwork');
+    const held=await last.elementHandle(),progress=await last.evaluate(el=>el.style.getPropertyValue('--peek-distance'));
+    await page.evaluate(()=>pokerFixture.raise());
+    assert.equal(await held.evaluate(el=>el.isConnected),true,'opponent raise keeps the held card connected');
+    assert.equal(await last.evaluate(el=>el.classList.contains('is-peeking')&&el.hasPointerCapture(1)),true,'raise keeps the mouse gesture and pointer capture');
+    assert.equal(await last.evaluate(el=>el.style.getPropertyValue('--peek-distance')),progress,'raise preserves the reveal distance');
+    assert.match(await page.locator('.pot-amount').innerText(),/1,250/,'pot updates while the hand stays connected');
+    assert.match(await page.locator('[data-action=call]').innerText(),/50/,'the latest call amount is available during the drag');
     if(proof&&viewport.width===390)await page.screenshot({path:path.join(proof,'poker-dragging-390.png'),fullPage:true});
     await page.mouse.move(x,y+rect.height*.51,{steps:3});
     assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'halfway reveals before the pointer is released');
@@ -68,6 +81,15 @@ window.pokerFixture={show(round=1){
     await page.evaluate(()=>pokerFixture.paint());assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'poll/repaint preserves the reveal');
     await page.evaluate(round=>pokerFixture.show(round),++round);assert.equal(await page.locator('.my-cards [data-peek-card]').count(),1,'next round resets the cover even if the card matches');
     await page.locator('[data-seat="0"]').click();assert.equal(await page.locator('#cards-content [data-peek-card]').count(),1,'zoom does not bypass the cover');
+    if(viewport.width===390){
+     const zoom=page.locator('#cards-content [data-peek-card]'),r=await zoom.boundingBox();
+     await page.mouse.move(r.x+r.width*.6,r.y+r.height*.25);await page.mouse.down();await page.mouse.move(r.x+r.width*.6,r.y+r.height*.55);
+     const distance=await zoom.evaluate(el=>el.style.getPropertyValue('--peek-distance'));
+     await page.evaluate(()=>pokerFixture.raise());
+     assert.equal(await zoom.evaluate(el=>el.classList.contains('is-peeking')),true,'zoom keeps the active drag after an opponent raise');
+     assert.equal(await zoom.evaluate(el=>el.style.getPropertyValue('--peek-distance')),distance);
+     await page.mouse.up();
+    }
     await page.locator('#cards-content [data-peek-card]').press('ArrowDown');assert.equal(await page.locator('#cards-content [data-peek-card]').count(),0,'keyboard reveal works in zoom');
     await page.locator('#cards-dialog [data-close-dialog]').click();assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0);
     if(viewport.width===390){
@@ -75,6 +97,9 @@ window.pokerFixture={show(round=1){
      const touchCard=page.locator('.my-cards [data-peek-card]');await touchCard.scrollIntoViewIfNeeded();
      const r=await touchCard.boundingBox(),touch=await context.newCDPSession(page),point={id:1,x:r.x+r.width*.6,y:r.y+r.height*.25},scroll=await page.evaluate(()=>scrollY);
      await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+     await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+r.height*.3}]});
+     const held=await touchCard.elementHandle();await page.evaluate(()=>pokerFixture.raise());
+     assert.equal(await held.evaluate(el=>el.isConnected&&el.classList.contains('is-peeking')),true,'opponent raise preserves a real touch gesture');
      await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+r.height*.51}]});
      await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
      assert.equal(await page.locator('.my-cards [data-peek-card]').count(),0,'a real touch drag reveals the seventh card');
@@ -89,9 +114,19 @@ window.pokerFixture={show(round=1){
     await page.emulateMedia({reducedMotion:'no-preference'});
     await page.setViewportSize({width:390,height:844});
     await page.evaluate(round=>pokerFixture.show(round),++round);
+    await page.evaluate(()=>{
+     document.addEventListener('pointermove',function duringReveal(){
+      const node=document.querySelector('.my-cards .is-revealing');if(!node)return;
+      document.removeEventListener('pointermove',duringReveal);
+      const animations=()=>[...node.querySelectorAll('.peek-face,.peek-cover')].flatMap(el=>el.getAnimations());
+      const before=animations();pokerFixture.raise();const after=animations();
+      window.revealUpdateProof={connected:node.isConnected,sameAnimations:before.length>=2&&before.every(animation=>after.includes(animation)),stillRunning:before.every(animation=>animation.playState==='running')};
+     });
+    });
     const movingLast=page.locator('.my-cards [data-peek-card]'),lastBox=await movingLast.boundingBox();
     await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.3);
     await page.mouse.down();await page.mouse.move(lastBox.x+lastBox.width*.6,lastBox.y+lastBox.height*.81,{steps:6});await page.mouse.up();
+    assert.deepEqual(await page.evaluate(()=>window.revealUpdateProof),{connected:true,sameAnimations:true,stillRunning:true},'opponent raise never restarts or detaches the finishing animation');
     await movingLast.waitFor({state:'detached'});
     assert.equal(await page.locator('.my-cards .card').last().getAttribute('aria-label'),'A♠','animated reveal finishes on the correct rightmost card');
     assert.equal(await page.locator('.my-cards .card').last().evaluate(el=>{
@@ -103,6 +138,6 @@ window.pokerFixture={show(round=1){
    }
    await context.close();
   }
-  console.log('PASS: original SVG faces fit at four viewports; seventh card covered, downward reveal, short/upward cancellation, poll persistence, next-round reset, zoom/keyboard parity, private opponent cards and all 52 artwork assets');
+  console.log('PASS: original SVG faces fit at four viewports; seventh card covered, downward reveal, short/upward cancellation, opponent raises during mouse/touch/zoom drag and finishing animation, poll persistence, next-round reset, zoom/keyboard parity, private opponent cards and all 52 artwork assets');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

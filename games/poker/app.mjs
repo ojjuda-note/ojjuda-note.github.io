@@ -24,9 +24,13 @@ let movePending=false,lastClockWarning='',dismissedStart=null;
 const faces=['C','H','D','S'];
 const cardBack = '<span class="back-border" aria-hidden="true"><span class="back-emblem">♠<small>OJJUDA</small></span></span>';
 const cardFace = c => `<img class="card-face" src="cards/${faces[suit(c)]}-${face(c)}.svg" alt="" draggable="false" decoding="async">`;
-let peekedCard = null, peekDrag = null, peekPointer = null, peekClickUntil = 0;
+let peekedCard = null, peekDrag = null, peekReveal = null, peekPointer = null, peekClickUntil = 0;
 const finalCardKey = () => game?.players[0].cards.length === 7 ? `${game._roomId}:${game._round}:${game.players[0].cards[6]}` : null;
 const finalCardCovered = () => !!finalCardKey() && game.phase !== 'finished' && peekedCard !== finalCardKey();
+function activePeek(){
+  const motion=peekDrag||peekReveal;
+  return motion&&motion.key===finalCardKey()&&motion.node?.isConnected&&!lobby&&!resumeOnEntry&&game.phase!=='finished'&&!game.players[0].folded?motion:null;
+}
 function card(c,{hidden=false,publicCard=false,pendingPublic=false,best=false,selected=false,button=false,index=0,selectable=false,fresh=false,revealed=false,fan=0,dealSeat=0,dealOrder=index,peek=false}={}){
   const tag=button||peek?'button':'span',label=peek?'마지막 카드 · 절반만 아래로 내리면 공개':hidden?'비공개 카드':cardName(c);
   return `<${tag} class="card${hidden?' back':''}${peek?' final-covered':''}${publicCard?' public':''}${pendingPublic?' pending-public':''}${best?' best':''}${selected?' selected':''}${selectable?' selectable':''}${fresh?' dealing':''}${revealed?' revealing':''}" ${fresh?`data-deal-seat="${dealSeat}" data-deal-order="${dealOrder}"`:""} ${button||peek?`type="button" data-card="${index}" data-hand-card="${c}" aria-pressed="${selected}"`:''} ${peek?'data-peek-card aria-expanded="false"':''} style="--i:${index};--fan:${fan}deg" aria-label="${label}${publicCard?' · 공개':pendingPublic?' · 공개 예정':''}">${peek?`<span class="peek-face" aria-hidden="true">${cardFace(c)}</span><span class="peek-cover" aria-hidden="true">${cardBack}</span><span class="card-state">↓ 반만 내리기</span>`:hidden?cardBack:cardFace(c)}${publicCard||pendingPublic?`<span class="card-state" aria-hidden="true">${pendingPublic?'공개 예정':'공개'}</span>`:''}</${tag}>`;
@@ -36,8 +40,11 @@ function revealFinalCard(node=document.querySelector('#cards-dialog[open] [data-
   const revealKey=finalCardKey(),distance=peekDrag?.distance||0;
   if(peekDrag){peekPointer=peekDrag.id;peekClickUntil=Date.now()+600;}
   peekedCard=revealKey;peekDrag=null;
+  const motion=peekReveal={node,key:revealKey};
   void sfx.play('reveal');
   const finish=()=>{
+    if(peekReveal!==motion)return;
+    peekReveal=null;
     if(finalCardKey()!==revealKey||node&&!node.isConnected)return;
     render({animateDeal:false});
     if(document.querySelector('#cards-dialog').open)fillCards(0);
@@ -258,6 +265,25 @@ function status(){
   if(game.turn===0)return game.legal().check?'내 차례 · 체크 또는 베팅':`내 차례 · 콜 ${fmt(game.legal().call)} G`;
   return `${game.players[game.turn].name}의 차례`;
 }
+function paintTable(markup){
+  const motion=activePeek(),hand=motion?.node.closest('.my-cards');
+  if(!hand||!app.contains(hand)){app.innerHTML=markup;return;}
+  const next=document.createElement('div');next.innerHTML=markup;
+  let current=hand,replacement=next.querySelector('.my-cards');
+  // Keep the hand and its ancestors connected so pointer capture and the
+  // reveal animations survive. Refresh bets, turns and controls around them.
+  while(current!==app){
+    const parent=current.parentElement,freshParent=replacement.parentElement;
+    if(parent!==app){
+      for(const attribute of [...parent.attributes])if(!freshParent.hasAttribute(attribute.name))parent.removeAttribute(attribute.name);
+      for(const attribute of freshParent.attributes)parent.setAttribute(attribute.name,attribute.value);
+    }
+    for(const child of [...parent.childNodes])if(child!==current)child.remove();
+    const siblings=[...freshParent.childNodes],index=siblings.indexOf(replacement);
+    current.before(...siblings.slice(0,index));current.after(...siblings.slice(index+1));
+    current=parent;replacement=freshParent;
+  }
+}
 function renderTable(animateDeal=true){
   const done=game.phase==='finished',showdown=done&&!game.result.uncontested,me=game.players[0],hand=bestHand(me.cards),selecting=['discard','open'].includes(game.phase)&&(mode!=='online'||game.turn===0),myTurn=selecting||game.phase==='betting'&&game.turn===0;
   const same=visual.game===game,winning=new Set(done?game.result.pots.filter(p=>!p.refund).flatMap(p=>p.winners):[]);
@@ -286,7 +312,7 @@ function renderTable(animateDeal=true){
     const up=p.cards.filter(c=>p.up.includes(c)),down=p.cards.filter(c=>!p.up.includes(c));
     return `<section class="seat seat-${i} seat-${position}${active?' active':''}${p.folded?' folded':''}${winning.has(i)?' winner':''}" aria-label="${esc(p.name)}${active?' 차례':''}"><div class="seat-label"><span class="seat-number">0${i}</span>${dealer(i)}<span class="seat-type">${online?.room?.mode==='solo'?'COMPUTER':'PLAYER'}</span></div><button class="seat-head" data-seat="${i}" aria-label="${esc(p.name)} 공개 카드 크게 보기"><span class="seat-monogram" aria-hidden="true">${['','♠','♦','♣'][i]}</span><span class="seat-info"><strong>${esc(p.name)}</strong><small>${fmt(p.stack)} <span>G</span></small></span><span class="turn-light" aria-hidden="true"></span></button><button class="seat-cards" data-seat="${i}" aria-label="${esc(p.name)} 공개 카드 크게 보기"><span class="down-cards">${down.map((c,k)=>card(c,{hidden:!reveal,index:k,dealSeat:i,dealOrder:p.cards.indexOf(c),fresh:fresh(i,c),revealed:reveal&&revealed(i,c),best:!!best?.cards.includes(c)})).join('')}</span><span class="up-cards">${up.map((c,k)=>card(c,{index:k,dealSeat:i,dealOrder:p.cards.indexOf(c),fresh:fresh(i,c),best:!!best?.cards.includes(c)})).join('')}</span></button><span class="seat-action${p.allIn?' is-allin':''}">${active?'<i class="action-dot"></i>':''}${esc((p.last||'대기').replace(/^(삥|쿼터|하프|베팅) [\d,]+$/, '$1'))}${p.bet>0?`<b>${fmt(p.bet)} <small>G</small></b>`:''}</span>${best?`<span class="result-seats">${best.name}</span>`:''}${betMoved?'<span class="bet-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section>`;
   }).join('');
-  app.innerHTML=header()+roomBar()+`<section class="game">${roundStrip()}<div class="table-scene"><div class="felt"><div class="felt-inlay" aria-hidden="true"></div><div class="opponents">${seats}</div><div class="pot-zone${potChanged?' pot-changed':''}"><div class="deal-deck" aria-hidden="true">${card(0,{hidden:true})}${card(0,{hidden:true})}${card(0,{hidden:true})}<small>DEALER</small></div><span class="pot-label">${done?'총 판돈':'현재 판돈'}</span><div class="pot-amount" style="--pot-digits:${fmt(game.pot).length}">${fmt(game.pot)}<span>G</span></div>${chipStack(game.pot)}<span class="table-stage${stageChanged?' stage-enter':''}">${stageLabel()}</span><span class="table-rule">SEVEN CARD STUD · ANTE 50</span></div><section class="player${myTurn?' active':''}${me.folded?' folded':''}"><div class="player-header"><div class="player-name">${dealer(0)}<b>내 패</b><span>${me.folded?'다이':me.allIn?'올인':fmt(me.stack)+' G'}</span></div><div class="hand-tools"><span class="hand-label">${selecting?'패 선택':finalCardCovered()?'히든 카드 확인':hand.name}</span><button class="hand-zoom" data-seat="0" aria-label="내 카드 크게 보기">크게 보기 ↗</button></div></div><div class="my-cards${splitHand?' split-hand':''}${game.phase==='open'&&selecting?' choosing-public':''}${publicCards.length?' has-public':''}${done?' hand-finished':''}" style="--card-count:${me.cards.length}">${myCards}</div>${same&&me.total>visual.bets[0]?'<span class="bet-flight player-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section></div></div><section class="decision-panel${myTurn?' my-turn':''}">${result}<div class="decision-heading"><div class="decision-copy"><div class="status" id="status" role="status" aria-live="polite">${status()}</div><p class="decision-detail">${decisionDetail()}</p></div>${!done&&online?.room?.mode!=='solo'?'<span class="online-clock decision-clock" aria-label="남은 시간"></span>':''}</div>${!done&&online?.room?.mode!=='solo'?'<div class="turn-meter" aria-hidden="true"><i></i></div>':''}<div class="actions${done?' finished-actions':''}">${controls()}</div></section><div class="table-footer"><details class="recent"><summary>핸드 기록 <span>↗</span></summary><ol>${game.log.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details><span>${online?.room?.mode==='solo'?'컴퓨터와 플레이':'온라인 대전'} · 참가비 50 G</span></div></section>`;
+  paintTable(header()+roomBar()+`<section class="game">${roundStrip()}<div class="table-scene"><div class="felt"><div class="felt-inlay" aria-hidden="true"></div><div class="opponents">${seats}</div><div class="pot-zone${potChanged?' pot-changed':''}"><div class="deal-deck" aria-hidden="true">${card(0,{hidden:true})}${card(0,{hidden:true})}${card(0,{hidden:true})}<small>DEALER</small></div><span class="pot-label">${done?'총 판돈':'현재 판돈'}</span><div class="pot-amount" style="--pot-digits:${fmt(game.pot).length}">${fmt(game.pot)}<span>G</span></div>${chipStack(game.pot)}<span class="table-stage${stageChanged?' stage-enter':''}">${stageLabel()}</span><span class="table-rule">SEVEN CARD STUD · ANTE 50</span></div><section class="player${myTurn?' active':''}${me.folded?' folded':''}"><div class="player-header"><div class="player-name">${dealer(0)}<b>내 패</b><span>${me.folded?'다이':me.allIn?'올인':fmt(me.stack)+' G'}</span></div><div class="hand-tools"><span class="hand-label">${selecting?'패 선택':finalCardCovered()?'히든 카드 확인':hand.name}</span><button class="hand-zoom" data-seat="0" aria-label="내 카드 크게 보기">크게 보기 ↗</button></div></div><div class="my-cards${splitHand?' split-hand':''}${game.phase==='open'&&selecting?' choosing-public':''}${publicCards.length?' has-public':''}${done?' hand-finished':''}" style="--card-count:${me.cards.length}">${myCards}</div>${same&&me.total>visual.bets[0]?'<span class="bet-flight player-flight" aria-hidden="true"><i class="chip"></i><i class="chip"></i><i class="chip"></i></span>':''}</section></div></div><section class="decision-panel${myTurn?' my-turn':''}">${result}<div class="decision-heading"><div class="decision-copy"><div class="status" id="status" role="status" aria-live="polite">${status()}</div><p class="decision-detail">${decisionDetail()}</p></div>${!done&&online?.room?.mode!=='solo'?'<span class="online-clock decision-clock" aria-label="남은 시간"></span>':''}</div>${!done&&online?.room?.mode!=='solo'?'<div class="turn-meter" aria-hidden="true"><i></i></div>':''}<div class="actions${done?' finished-actions':''}">${controls()}</div></section><div class="table-footer"><details class="recent"><summary>핸드 기록 <span>↗</span></summary><ol>${game.log.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></details><span>${online?.room?.mode==='solo'?'컴퓨터와 플레이':'온라인 대전'} · 참가비 50 G</span></div></section>`);
   if(done&&dismissedStart!==roundKey()){
     const felt=app.querySelector('.felt');for(const child of felt.children)child.setAttribute('inert','');
     felt.insertAdjacentHTML('beforeend',nextHandPopup());
@@ -341,7 +367,13 @@ function render({animateDeal=true}={}){
   const handBefore=captureHand();
   const focused=document.activeElement,focusKey=focused?.hasAttribute('data-card')?['data-card',focused.dataset.card]:focused?.hasAttribute('data-action')?['data-action',focused.dataset.action]:null;
   const keyboardFocus=focused?.matches?.(':focus-visible'),historyOpen=app.querySelector('.recent')?.open;
-  cancelPeek();
+  const motion=peekDrag||peekReveal;
+  if(!activePeek()){
+    cancelPeek();peekReveal=null;
+    if(motion?.node.closest('#cards-dialog[open]')){
+      if(!lobby&&game)fillCards(0);else document.querySelector('#cards-dialog').close();
+    }
+  }
   dealMotion.cancel();
   const tableView=!lobby||!onlineLobby||!!online?.room;
   document.body.classList.toggle('poker-entry-active',!tableView);
