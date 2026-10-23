@@ -1,6 +1,27 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
+ // Each game has its own release version. This never changes the Agit version.
+ // Asset ?v= values below are cache revisions, independent of release numbers.
+ const versions=Object.freeze({
+  poker:'1.0.0',
+  tank:'1.0.0',
+  mines:'1.0.0',
+  saetbyeol:'1.0.0',
+  tour:'1.0.0',
+  ttang:'1.0.0',
+  photo_ttang:'1.0.0',
+  mole:'1.0.0',
+  runner:'1.0.0',
+  stacker:'1.0.0',
+  breakout:'1.0.0',
+  spot:'1.0.0',
+  screw:'1.0.0',
+  janggi:'1.0.0',
+  chess:'1.0.0',
+  billiards:'1.0.0',
+  matgo:'1.0.0'
+ });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
   poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261024-peek1'],
@@ -30,6 +51,7 @@
   requests.set(url,promise);return promise;
  }
  window.OjjudaGameAssets={
+  version:id=>versions[id]||'',
   ready:id=>(groups[id]||[]).every(url=>complete.has(url)),
   load:id=>Promise.all((groups[id]||[]).map(loadResource))
  };

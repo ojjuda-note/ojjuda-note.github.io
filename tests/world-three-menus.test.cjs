@@ -18,6 +18,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
  w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});
  w.OjjudaParkNotes={install:()=>({markup:()=>'<section data-park-app>공원 카드</section>',sync(){},route(){},canLeave:()=>true,preserveShell:()=>false})};
  w.eval(fs.readFileSync(path.join(root,'world-game-rankings.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'));
  w.eval(source);
  return dom;
 }
@@ -41,6 +42,16 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.ok(poker,'eligible members see poker in the requested group');
   assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
   assert.match(poker.textContent,/최대 4명/,'the menu displays the maximum player count');
+  const gameButtons=[...w.document.querySelectorAll('[data-arcade-games] .gbtn')];
+  assert.equal(gameButtons.length,17,'every game remains in one arcade category');
+  for(const button of gameButtons){
+   const id=button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
+   const versions=button.querySelectorAll('.game-version');
+   assert.equal(versions.length,1,id+' has exactly one release version');
+   assert.match(versions[0].textContent,/^v\d+\.\d+\.\d+$/);
+   assert.equal(versions[0].textContent,'v'+w.OjjudaGameAssets.version(id),id+' uses its own game release');
+   assert.equal(versions[0].getAttribute('aria-label'),'게임 버전 '+w.OjjudaGameAssets.version(id));
+  }
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=18};t.render();
   assert.equal(w.document.querySelector('[data-v=poker]'),null,'18-year-olds cannot see poker');
   assert.equal(w.document.querySelector('[data-act=matgo-open]'),null,'Matgo uses the same age threshold');

@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('world-themes.js')+'\n'+read('world-game-rankings.js')+'\n'+read('arcade-rooms.js')+'</script></head>');
+world=world.replace('</head>','<script>'+read('world-themes.js')+'\n'+read('world-game-rankings.js')+'\n'+read('world-game-assets.js')+'\n'+read('arcade-rooms.js')+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
@@ -36,6 +36,8 @@ world=world.slice(0,boot)+`
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
  for(const width of [320,390,768,900,1280]){
   await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
+  const versions=await page.locator('[data-arcade-games] .gbtn').evaluateAll(nodes=>nodes.map(n=>{const v=n.querySelectorAll('.game-version');return{count:v.length,text:v[0]?.textContent,fits:v[0]?.scrollWidth<=v[0]?.clientWidth+1};}));
+  assert.ok(versions.every(v=>v.count===1&&/^v\d+\.\d+\.\d+$/.test(v.text)&&v.fits),'each game version appears once and fits at '+width);
   if(width<=600){
    const grid=await page.locator('[data-arcade-games=solo]').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
    assert.equal(grid,3,'mobile keeps exactly three game buttons per row');
