@@ -23,13 +23,13 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261006-red1">
+  <link rel="stylesheet" href="style.css?v=20261024-hint-star1">
   <script src="puzzles.js?v=20261003-hint1" defer></script>
   <script src="photo-puzzles.js?v=20261024-photo1" defer></script>
   <script src="game-core.js?v=20261006-prices1" defer></script>
   <script src="vendor/supabase.js" defer></script>
   <script src="wallet.js?v=20261024-photo1" defer></script>
-  <script src="app.js?v=20261024-photo1" defer></script>
+  <script src="app.js?v=20261024-hint-star1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261006-zu1">
@@ -39,7 +39,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="./" aria-label="쭈다 틀린그림 찾기 홈"><span class="brand-icon" aria-hidden="true">⌕</span><span>쭈다 <b>틀린그림 찾기</b></span></a>
+    <a id="game-home" class="brand" href="/world.html?tab=arcade" aria-label="오쭈다 아지트 홈으로 가기"><span class="brand-icon" aria-hidden="true">⌂</span><span>아지트 홈</span></a>
     <span class="collection"><strong id="solved-total">0</strong> / <span id="stage-total">62</span> 완료</span>
   </header>
   <main>
@@ -70,7 +70,7 @@
       <div class="message" id="message" role="status" aria-live="polite">시작을 누르면 1분이 흘러요.</div>
       <div class="actions"><button id="zoom" class="soft-button"><span aria-hidden="true">⌕</span> 크게 보기</button></div>
     </section>
-    <section class="hint-panel" id="hint-panel" hidden aria-label="힌트"><div><span class="eyebrow">찾기 도움</span><p id="hint-text"></p></div><button id="hint-location" class="soft-button">위치 살짝 보기</button><button id="hide-hint" class="icon-button" aria-label="힌트 닫기">×</button></section>
+    <section class="hint-panel" id="hint-panel" hidden aria-label="힌트"><div><span class="eyebrow">찾기 도움</span><p id="hint-text"></p></div><button id="hide-hint" class="icon-button" aria-label="힌트 닫기">×</button></section>
     <section id="answer-review" class="found-list answer-review" hidden aria-label="전체 정답"><div class="answer-review-heading"><div><span class="eyebrow">관리자 정답 보기</span><h2>다른 곳 6개</h2><p>확인 중에는 시간이 멈추고 ZU가 차감되지 않아요.</p></div><button id="close-answers" class="soft-button">정답 닫기</button></div><ol id="review-answers"></ol></section>
   </main>
   <dialog id="zoom-dialog" aria-labelledby="zoom-title">
@@ -82,6 +82,7 @@
       <div class="zoom-time-dock zoom-toolbar">
         <div class="zoom-vitals"><span class="hearts" id="zoom-hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</span></div>
         <button id="zoom-hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button>
+        <a id="zoom-home" class="soft-button spot-home" href="/world.html?tab=arcade" aria-label="오쭈다 아지트 홈으로 가기"><span aria-hidden="true">⌂</span>아지트 홈</a>
         <button id="zoom-more" class="icon-button" aria-label="확대 설정" aria-expanded="false" aria-controls="zoom-settings">⋯</button>
         <button id="close-zoom" class="icon-button" aria-label="확대 닫기">×</button>
       </div>
