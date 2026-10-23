@@ -87,7 +87,7 @@ const root=path.resolve(__dirname,'..');
     await frame.locator('#three').evaluate(()=>endScreen(G.players[1],'라운드 종료'));
     await frame.getByRole('button',{name:'다시 저장',exact:true}).waitFor();
     await frame.getByRole('button',{name:'다시 저장',exact:true}).click();
-    await frame.getByText('게임 순위에 기록했어요. 이번 달 최고 자산으로 표시돼요.',{exact:true}).waitFor();
+    await frame.getByText('게임 순위에 기록했어요. 우승은 연승으로 집계돼요.',{exact:true}).waitFor();
     const records=await page.evaluate(()=>window.records);
     assert.equal(records.length,2);assert.equal(records[0].score,0);assert.equal(records[1].id,records[0].id);
     assert.equal(await frame.locator('#s2Body').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'result receipt fits mobile');
