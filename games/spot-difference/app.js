@@ -16,7 +16,7 @@
   let celebrationTimer=null,autoStartToken=null;
   const timeoutRetries=new Set();
   const celebration=$('celebration');
-  let hintTimer=null,zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
+  let zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
   const found=()=>state.found[puzzle().id]||(state.found[puzzle().id]=[]);
   const round=()=>state.rounds[puzzle().id]||(state.rounds[puzzle().id]=core.freshRound());
@@ -34,16 +34,38 @@
   function makeMark(spot,number,isHint=false){
     const mark=document.createElement('div');mark.className='mark'+(isHint?' hint-mark':'');
     Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${spot.rx*2}%`,height:`${spot.ry*2}%`});
-    if(!isHint){const label=document.createElement('span');label.textContent=number;mark.append(label);if(spot.x+spot.rx>94)mark.classList.add('label-left');if(spot.y-spot.ry<5)mark.classList.add('label-below');}return mark;
+    if(isHint){
+      for(let i=0;i<3;i++){const star=document.createElement('i');star.className='hint-star';mark.append(star);}
+    }else{const label=document.createElement('span');label.textContent=number;mark.append(label);if(spot.x+spot.rx>94)mark.classList.add('label-left');if(spot.y-spot.ry<5)mark.classList.add('label-below');}return mark;
   }
   function answerOrder(){return [...found(),...puzzle().spots.map((_,i)=>i).filter(i=>!found().includes(i))];}
   function renderMarks(){
     const order=answerReview?answerOrder():found();
-    for(const surface of surfaces)surface.querySelector('.marks').replaceChildren(...order.map((spotIndex,index)=>{
-      const mark=makeMark(puzzle().spots[spotIndex],index+1);
-      if(answerReview&&!found().includes(spotIndex))mark.classList.add('answer-mark');
-      return mark;
-    }));
+    for(const surface of surfaces){
+      const layer=surface.querySelector('.marks');
+      for(const mark of [...layer.children])if(!mark.classList.contains('hint-mark'))mark.remove();
+      layer.append(...order.map((spotIndex,index)=>{
+        const mark=makeMark(puzzle().spots[spotIndex],index+1);
+        if(answerReview&&!found().includes(spotIndex))mark.classList.add('answer-mark');
+        return mark;
+      }));
+    }
+    renderHintMarks();
+  }
+  function renderHintMarks(){
+    const r=round(),active=!answerReview&&['playing','payment'].includes(r.status);
+    const remaining=active?r.paid.filter(i=>!found().includes(i)):[];
+    const keys=new Set(remaining.map(i=>`${puzzle().id}:${i}`));
+    for(const surface of surfaces){
+      const layer=surface.querySelector('.marks'),existing=new Set();
+      for(const mark of layer.querySelectorAll('.hint-mark')){
+        if(keys.has(mark.dataset.hintKey))existing.add(mark.dataset.hintKey);else mark.remove();
+      }
+      for(const i of remaining){
+        const key=`${puzzle().id}:${i}`;if(existing.has(key))continue;
+        const mark=makeMark(puzzle().spots[i],0,true);mark.dataset.hintKey=key;layer.append(mark);
+      }
+    }
   }
   function renderTime(){
     const r=round(),ms=core.timeLeft(r),seconds=Math.ceil(ms/1000),urgent=r.status==='playing'&&seconds>0&&seconds<=10,expired=r.status==='lost'&&r.hearts>0&&seconds===0,ratio=Math.max(0,Math.min(1,ms/r.totalMs));
@@ -75,13 +97,19 @@
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
     const hintLabel=showPreviousHint||!unpaidHint?'힌트 다시 보기':r.paid.length?'다음 힌트 · 1 ZU':'힌트 · 1 ZU';
-    for(const id of ['hint','zoom-hint']){$(id).disabled=!playing||paymentBusy||!!answerReview;$(id).textContent=showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';$(id).setAttribute('aria-label',hintLabel);$(id).classList.toggle('ju-paid-action',!showPreviousHint&&unpaidHint);}
+    for(const id of ['hint','zoom-hint']){
+      const label=pending?(paymentBusy?'확인 중…':'구매 다시 확인'):hintLabel;
+      $(id).disabled=(!playing&&!pending)||paymentBusy||!!answerReview;
+      $(id).textContent=pending?label:showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';
+      $(id).setAttribute('aria-label',label);$(id).classList.toggle('ju-paid-action',!pending&&!showPreviousHint&&unpaidHint);
+    }
     const extendable=!r.timeBought&&(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
     $('prev').disabled=position()===0||paymentBusy||pending;$('next').disabled=position()===puzzles.length-1||paymentBusy||pending;
     $('stage-picker').disabled=paymentBusy||pending;$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
     $('continue').disabled=paymentBusy||pending||!!answerReview;
+    for(const id of ['game-home','zoom-home'])$(id).setAttribute('aria-disabled',String(paymentBusy));
     const canViewAnswers=wallet.getState().canViewAnswers===true;
     for(const id of ['reveal-answers','zoom-reveal-answers']){
       $(id).hidden=!canViewAnswers;$(id).disabled=!imagesReady||paymentBusy||pending;
@@ -106,15 +134,15 @@
     refreshControls();save();
   }
   function hideHint(clear=false){
-    clearTimeout(hintTimer);$('hint-panel').hidden=true;
+    $('hint-panel').hidden=true;
     if(clear)round().hintIndex=null;
-    surfaces.forEach(s=>s.querySelectorAll('.hint-mark').forEach(m=>m.remove()));
+    renderHintMarks();
     refreshControls();
   }
   function showHint(){
     const i=round().hintIndex;if(i===null||!round().paid.includes(i))return;
     $('hint-text').textContent=puzzle().spots[i].text;$('hint-panel').hidden=false;
-    speak(`힌트: ${puzzle().spots[i].text}`);refreshControls();
+    renderHintMarks();speak(`힌트: ${puzzle().spots[i].text} · 별빛이 반짝이는 곳을 찾아보세요.`);refreshControls();
   }
   function closeAnswers(announce=false){
     if(!answerReview)return;
@@ -266,7 +294,9 @@
       r.remainingMs=core.timeLeft(r);r.pending={kind,spot,requestId:crypto.randomUUID(),userId:w.userId};r.deadline=null;r.status='payment';
       if(!save()){r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;refreshControls();speak('ZU를 쓰려면 브라우저 저장을 허용해 주세요.');return;}
     }
-    const request=r.pending;paymentBusy=true;if(zoomDialog.open)zoomDialog.close();refreshControls();
+    // Keep the active zoom dialog, scale and scroll position while verifying payment.
+    const request=r.pending;paymentBusy=true;refreshControls();
+    speak('ZU 사용을 확인하고 있어요. 확인하는 동안 시간은 멈춰요.');
     try{
       const result=await wallet.buy(request,p.id);
       if(result.ok){
@@ -276,7 +306,7 @@
         else{if(!r.paid.includes(request.spot))r.paid.push(request.spot);r.hintIndex=request.spot;}
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
-        if(request.kind==='hint'){showHint();speak(`1 ZU를 사용했어요. 힌트: ${p.spots[request.spot].text}`);}
+        if(request.kind==='hint'){showHint();speak(`1 ZU를 사용했어요. 힌트: ${p.spots[request.spot].text} · 찾을 때까지 별빛이 반짝여요.`);}
         else speak(`${result.price} ZU를 사용하고 ${(result.extend_ms||60000)/1000}초를 더 받았어요!`,true);
       }else{
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
@@ -286,18 +316,14 @@
     }catch(error){paymentBusy=false;refresh();speak(error.message||'구매 확인을 다시 눌러주세요. 같은 구매는 한 번만 차감돼요.');}
   }
   function hint(){
-    tick();const r=round();if(r.status!=='playing'||paymentBusy)return;
+    tick();const r=round();if(paymentBusy)return;
+    if(r.pending){purchase();return;}
+    if(r.status!=='playing')return;
     if(r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden){showHint();return;}
     const remaining=puzzle().spots.map((_,i)=>i).filter(i=>!found().includes(i)),unpaid=remaining.filter(i=>!r.paid.includes(i));
     if(unpaid.length&&r.paid.length>=2){speak('힌트는 한 판에 2번까지 사용할 수 있어요.');return;}
     if(unpaid.length)purchase('hint',unpaid[0]);
     else if(remaining.length){r.hintIndex=remaining[(remaining.indexOf(r.hintIndex)+1)%remaining.length];showHint();save();}
-  }
-  function locateHint(){
-    const r=round();if(r.status!=='playing'||r.hintIndex===null||!r.paid.includes(r.hintIndex))return;
-    surfaces.forEach(s=>s.querySelectorAll('.hint-mark').forEach(m=>m.remove()));
-    for(const surface of surfaces)surface.querySelector('.marks').append(makeMark(puzzle().spots[r.hintIndex],0,true));
-    clearTimeout(hintTimer);hintTimer=setTimeout(()=>surfaces.forEach(s=>s.querySelectorAll('.hint-mark').forEach(m=>m.remove())),3500);
   }
   for(const surface of surfaces){
     let down=null;
@@ -317,7 +343,7 @@
     if(group.children.length)$('stage-picker').append(group);
   }
   $('stage-picker').onchange=e=>{show(Number(e.target.value));closeWalletMenu();walletMenu.querySelector('summary').focus();};$('prev').onclick=()=>show(state.order[position()-1]);$('next').onclick=()=>show(state.order[position()+1]);
-  $('retry').onclick=()=>show(state.current);$('hint').onclick=hint;$('zoom-hint').onclick=hint;$('hide-hint').onclick=()=>hideHint();$('hint-location').onclick=locateHint;
+  $('retry').onclick=()=>show(state.current);$('hint').onclick=hint;$('zoom-hint').onclick=hint;$('hide-hint').onclick=()=>hideHint();
   $('start').onclick=start;$('reset').onclick=reset;$('extend').onclick=()=>purchase('time');$('zoom-extend').onclick=()=>purchase('time');
   $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=()=>{toggleAnswers();closeZoomSettings();};$('close-answers').onclick=()=>closeAnswers(true);
   $('continue').onclick=()=>{const pos=position(),index=pos<puzzles.length-1?state.order[pos+1]:state.order.find(i=>(state.found[puzzles[i].id]||[]).length<6);if(index!==undefined)show(index);window.scrollTo({top:0,behavior:'smooth'});};
@@ -326,6 +352,11 @@
   scrollA.addEventListener('scroll',()=>syncScroll(scrollA,scrollB),{passive:true});scrollB.addEventListener('scroll',()=>syncScroll(scrollB,scrollA),{passive:true});
   function resizeZoom(){const x=(scrollA.scrollLeft+scrollA.clientWidth/2)/(scrollA.scrollWidth||1),y=(scrollA.scrollTop+scrollA.clientHeight/2)/(scrollA.scrollHeight||1);for(const surface of document.querySelectorAll('.zoom-picture'))surface.style.width=`${Math.max(850,surface.parentElement.clientWidth)*Number($('zoom-level').value)}px`;for(const pane of [scrollA,scrollB]){pane.scrollLeft=x*pane.scrollWidth-pane.clientWidth/2;pane.scrollTop=y*pane.scrollHeight-pane.clientHeight/2;}}
   function notifyZoom(open){if(window.self!==window.top)window.parent.postMessage({type:'ojjuda:spot-zoom',open},window.location.origin);}
+  function goHome(event){
+    if(paymentBusy){event.preventDefault();speak('ZU 사용 확인이 끝나면 홈으로 이동할 수 있어요.');return;}
+    if(window.self!==window.top){event.preventDefault();window.parent.postMessage({type:'ojjuda:spot-home'},window.location.origin);}
+  }
+  $('game-home').onclick=goHome;$('zoom-home').onclick=goHome;
   function closeZoomSettings(){zoomDialog.classList.remove('settings-open');$('zoom-more').setAttribute('aria-expanded','false');}
   $('zoom-more').onclick=()=>{const open=zoomDialog.classList.toggle('settings-open');$('zoom-more').setAttribute('aria-expanded',String(open));if(open)$('zoom-level').focus();};
   $('zoom').onclick=()=>{if($('zoom').disabled)return;closeZoomSettings();$('zoom-tools').classList.remove('has-message');zoomDialog.showModal();document.body.style.overflow='hidden';notifyZoom(true);$('zoom-level').value='1';resizeZoom();for(const pane of [scrollA,scrollB]){pane.scrollLeft=0;pane.scrollTop=0;}refresh();};
