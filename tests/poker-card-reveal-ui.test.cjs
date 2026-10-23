@@ -28,7 +28,11 @@ window.pokerFixture={show(round=1){
    let round=0;
    for(const viewport of before?[{width:390,height:844}]:[{width:320,height:740},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){
     await page.setViewportSize(viewport);await page.evaluate(round=>pokerFixture.show(round),++round);
-    await page.waitForFunction(()=>[...document.images].every(img=>img.complete&&img.naturalWidth>0));
+    // The closed help dialog contains lazy images; wait for the active table only.
+    await page.waitForFunction(()=>{
+      const images=[...document.querySelectorAll('#app img')];
+      return images.length>0&&images.every(img=>img.complete&&img.naturalWidth>0);
+    });
     if(before){await page.screenshot({path:path.join(proof,'poker-before-390.png'),fullPage:true});continue;}
     assert.equal(await page.locator('.card-index').count(),0,'the artwork has no duplicate corner overlays');
     assert.equal(await page.locator('.my-cards .final-covered').count(),1,'only the last own card begins face down');
@@ -36,8 +40,12 @@ window.pokerFixture={show(round=1){
     assert.equal(await page.locator('.seat-cards .down-cards img').count(),0,'opponents hole cards stay absent');
     assert.equal(await page.locator('.my-cards [data-peek-card]').getAttribute('aria-label'),'마지막 카드 · 절반만 아래로 내리면 공개','hidden card name is not announced');
     assert.equal(await page.locator('.peek-face').first().evaluate(el=>getComputedStyle(el).clipPath),'inset(0px 0px 100%)');
-    const measurements=await page.locator('.my-cards .card').evaluateAll(cards=>cards.map(card=>{const r=card.getBoundingClientRect(),img=card.querySelector('img'),ir=img.getBoundingClientRect();return {w:r.width,h:r.height,iw:ir.width,ih:ir.height};}));
-    assert.ok(measurements.every(m=>Math.abs(m.w/m.h-5/7)<.02&&Math.abs(m.w-m.iw)<1&&Math.abs(m.h-m.ih)<1),'SVG fits the card without distortion at '+viewport.width);
+    const measurements=await page.locator('.my-cards .card').evaluateAll(cards=>cards.map(card=>{
+      const r=card.getBoundingClientRect(),style=getComputedStyle(card),img=card.querySelector('img'),ir=img.getBoundingClientRect();
+      // The club theme adds a border around the artwork's containing box.
+      return {w:r.width,h:r.height,cw:r.width-parseFloat(style.borderLeftWidth)-parseFloat(style.borderRightWidth),ch:r.height-parseFloat(style.borderTopWidth)-parseFloat(style.borderBottomWidth),iw:ir.width,ih:ir.height,fit:getComputedStyle(img).objectFit};
+    }));
+    assert.ok(measurements.every(m=>Math.abs(m.w/m.h-5/7)<.02&&m.fit==='contain'&&Math.abs(m.cw-m.iw)<1&&Math.abs(m.ch-m.ih)<1),'SVG fits the card without distortion at '+viewport.width+': '+JSON.stringify(measurements));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'no horizontal overflow');
     if(proof)await page.screenshot({path:path.join(proof,`poker-covered-${viewport.width}.png`),fullPage:true});
     const last=page.locator('.my-cards [data-peek-card]');await last.scrollIntoViewIfNeeded();
