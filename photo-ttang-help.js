@@ -14,8 +14,10 @@
  const slow=document.createElement('button');slow.type='button';slow.className='rb ju-paid-soft';
  slow.style.cssText='width:auto;min-width:94px;padding:0 10px;border-radius:16px;font-size:12px;background:#fff0f1;color:#9c2638;border:1px solid #ef9daa';
  slow.title='진행 중 사용 · 적을 5초간 절반 속도로';
+ function photoLoaded(){return !!photoImg?.naturalWidth;}
  function quickControls(){
-  const playing=!!world&&!!me&&mode==='play'&&revealT<0&&photoAllowed();
+  const playing=!!world&&!!me&&mode==='play'&&revealT<0&&photoAllowed()&&photoLoaded();
+  const entry=document.querySelector('.photo-help-entry');if(entry)entry.disabled=busy||!playing;
   const left=playing?endAt-world.time:0;
   urgent.hidden=!playing||over||paused||left<=0||left>10;
   extend.disabled=busy||!eligible('time');
@@ -33,10 +35,10 @@
  function save(uid,kind,id){memory.set(key(uid,kind),id);localStorage.setItem(key(uid,kind),id);}
  function clear(uid,kind){memory.delete(key(uid,kind));try{localStorage.removeItem(key(uid,kind));}catch{}}
  function say(text){if(status?.isConnected)status.textContent=text;else toast(text);}
- function eligible(kind){return !!world&&!!me&&mode==='play'&&revealT<0&&photoAllowed()&&(kind==='heart'?lives<LIVES:kind==='time'?true:!over&&me.alive&&world.time>=slowUntil);}
+ function eligible(kind){return !!world&&!!me&&mode==='play'&&revealT<0&&photoAllowed()&&photoLoaded()&&(kind==='heart'?lives<LIVES:kind==='time'?true:!over&&me.alive&&world.time>=slowUntil);}
  function controls(){document.querySelectorAll('[data-photo-help]').forEach(b=>{const kind=b.dataset.photoHelp,p=products[kind],recover=owner&&pending(owner,kind);b.disabled=busy||!eligible(kind);b.querySelector('.photo-help-label').textContent=recover?'결제 확인':p.label;b.querySelector('.photo-help-price').textContent=p.price+' ZU';b.setAttribute('aria-label',(recover?'이전 결제 확인 · ':'')+p.label+' · '+p.price+' ZU');});}
  function appendControls(overlay){
-  if(!overlay||!world||mode!=='play'||revealT>=0||!photoAllowed())return;
+  if(!overlay||!world||mode!=='play'||revealT>=0||!photoAllowed()||!photoLoaded())return;
   const host=overlay.querySelector('.panel');if(!host||host.querySelector('.photo-help'))return;
   host.classList.add('photo-help-panel');
   const free=document.createElement('div');free.className='photo-help-free-actions';
@@ -50,7 +52,7 @@
   void Comm.ready().then(ok=>{if(ok){owner=Comm.uid;controls();}});
  }
  function open(){
-  if(busy||!world||mode!=='play'||revealT>=0)return;paused=true;closePanels();
+  if(busy||!world||mode!=='play'||revealT>=0||!photoLoaded())return;paused=true;closePanels();
   quickControls();
   const html='<h2>ZU로 도움받기</h2><p>시간 연장은 진행 중에도 가능해요. 적 감속은 살아 있을 때 5초간 적용되고, 끝나면 다시 쓸 수 있어요.</p>'+(over?'<button class="big a" id="help-again">무료로 다시 도전</button><button class="big g" id="help-list">사진 목록</button>':'<button class="big a" id="help-back">계속하기</button>');
   panel(html,{'help-back':()=>{paused=false;},'help-again':()=>{lives=LIVES;startStage(stage);},'help-list':()=>toMenu()});
