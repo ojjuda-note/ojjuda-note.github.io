@@ -1,0 +1,1186 @@
+{
+  "generatedOn": "2026-10-23",
+  "note": "AI-generated photographic scenes. WebP format conversion retains the 1536×1024 framing. The game uses the identical original on both sides and reveals only six edited regions.",
+  "puzzles": [
+    {
+      "id": 49,
+      "title": "가을 언덕길 너머 도시",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. Generate one ultra-realistic 1536x1024 landscape travel photograph, full frame, no border, no collage, no lettering or watermark. A quiet Korean hillside city neighborhood, brick and pale stucco shops, narrow descending street, tiled roofs, cables and distant dense city under clear autumn afternoon light. Deep focus with credible architectural detail and natural camera texture. Visible scattered small ordinary details include a wall-mounted lamp, a bicycle with basket, three clay pots, a striped fabric awning, a small utility box and a circular drain cover. Keep these objects modest and spatially separated, embedded naturally in the scene; no prominent people, no legible signage. Beautiful believable documentary photography, not illustration, not miniature, not game art.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Input is the edit target. Create the matching second image for a HARD spot-the-difference puzzle. Keep exact 1536x1024 dimensions, same framing and every other pixel as unchanged as possible. NO camera shift, cropping, global color change, relighting, added text or watermark. Make exactly these six localized edits; pixel coordinates refer to the supplied original. Do not alter any other objects. Keep photorealism and natural texture:\n1. Remove only the small pale stone chimney/lantern ornament on the right tiled roof near (1254,486), reconstruct the tiles behind it.\n2. Change only the bicycle's brown leather saddle near (610,612) to charcoal gray.\n3. Remove the small circular gray device attached to the distant center utility pole near (1018,395).\n4. Recolor only the left wall utility box front panel, near (240,340), from gray to muted blue-gray; preserve pipes, outline and shadows.\n5. Change only the lid of the middle/rear clay jar near (257,724) from brown to dark charcoal, leaving the jar body unchanged.\n6. Replace only the central small circular lattice motif of the road manhole near (1012,956) with a plain solid metal circle; preserve the surrounding manhole pattern."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/49-original.webp",
+          "sha256": "c07f4ba8af0f144565f1076e41477f2f629319ee98556394e097d52f3f4b988a",
+          "bytes": 758970,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/49-photo-difference.webp",
+          "sha256": "680126409c42be858405b2a07e5b3f43e666cb40d6e9b5d67402ba8d3129da00",
+          "bytes": 678734,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "오른쪽 기와지붕의 작은 굴뚝 장식이 없어졌어요.",
+          "bounds1536x1024": [
+            1220,
+            446,
+            1286,
+            520
+          ]
+        },
+        {
+          "text": "자전거 안장이 갈색에서 짙은 회색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            584,
+            595,
+            636,
+            628
+          ]
+        },
+        {
+          "text": "가운데 전봇대의 둥근 장치가 없어졌어요.",
+          "bounds1536x1024": [
+            997,
+            377,
+            1038,
+            414
+          ]
+        },
+        {
+          "text": "왼쪽 벽의 계량기 덮개가 청회색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            202,
+            282,
+            276,
+            397
+          ]
+        },
+        {
+          "text": "뒤쪽 항아리의 뚜껑 색이 바뀌었어요.",
+          "bounds1536x1024": [
+            208,
+            705,
+            305,
+            743
+          ]
+        },
+        {
+          "text": "맨홀 가운데 무늬가 매끈한 원으로 바뀌었어요.",
+          "bounds1536x1024": [
+            947,
+            937,
+            1076,
+            978
+          ]
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "title": "돌다리가 있는 운하",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original image for a difficult spot-the-difference game. One ultra-realistic 1536x1024 landscape travel photograph, full frame, no border, no collage, no watermark, no readable signs or logos. Deep focus, realistic optics and fine documentary texture, physically plausible architecture, natural colors, no prominent people, not illustration or miniature. Many natural small spatially separated details useful for later subtle edits. A historic Dutch-style canal city in clear morning light. A stone arched bridge across still water, narrow brick houses, railings, bicycles, moored small boats, window flower boxes and a distant church roof. View from the canal bank at human eye level; richly detailed but coherent.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Input is the edit target. Create the matching second image for a HARD spot-the-difference puzzle. Keep exact 1536x1024 dimensions, same framing and every other pixel as unchanged as possible. NO camera shift, cropping, global color change, relighting, added text or watermark. Make exactly these six localized edits; pixel coordinates refer to the supplied original. Do not alter any other objects. Keep photorealism and natural texture:\n1. Remove the small dark handle on the cream inner front bulkhead of the nearest boat near (605,795).\n2. Recolor only the rectangular front bicycle basket near (375,648) from dark gray to warm brown, preserving its texture.\n3. Remove only the little pointed finial on top of the closest left street lamp near (168,106).\n4. Remove only the small gold-colored finial ball atop the right curved pale gable near (1359,77).\n5. Recolor only the small pink flower cluster in the left window box near (238,296) to white, retain greenery and box.\n6. Remove the small cream open boat visible under the center bridge arch near (880,596), replacing just it with matching canal water."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/50-original.webp",
+          "sha256": "55963266064f1634d11556a3272a6545dbf35525e64fccfd4d74133397da8938",
+          "bytes": 879186,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/50-photo-difference.webp",
+          "sha256": "a3264ddf4b269fc2f0bd8be2d396b482de0d420270ea3d77c63e0a1bac1fb332",
+          "bytes": 752342,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "앞쪽 배 안의 작은 사각 덮개가 없어졌어요.",
+          "bounds1536x1024": [
+            578,
+            776,
+            630,
+            811
+          ]
+        },
+        {
+          "text": "왼쪽 자전거 바구니 색이 갈색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            329,
+            608,
+            417,
+            687
+          ]
+        },
+        {
+          "text": "왼쪽 가로등 꼭대기 장식이 없어졌어요.",
+          "bounds1536x1024": [
+            151,
+            84,
+            184,
+            128
+          ]
+        },
+        {
+          "text": "오른쪽 지붕의 작은 금빛 장식이 없어졌어요.",
+          "bounds1536x1024": [
+            1344,
+            62,
+            1373,
+            92
+          ]
+        },
+        {
+          "text": "왼쪽 창가의 분홍 꽃이 흰색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            210,
+            265,
+            277,
+            325
+          ]
+        },
+        {
+          "text": "다리 아래 작은 배가 없어졌어요.",
+          "bounds1536x1024": [
+            846,
+            568,
+            913,
+            644
+          ]
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "title": "비 갠 뒤 모퉁이 카페",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original image for a difficult spot-the-difference game. One ultra-realistic 1536x1024 landscape travel photograph, full frame, no border, no collage, no watermark, no readable signs or logos. Deep focus, realistic optics and fine documentary texture, physically plausible architecture, natural colors, no prominent people, not illustration or miniature. Many natural small spatially separated details useful for later subtle edits. A quiet elegant Parisian-style corner street after light rain. Pale limestone apartment facades with wrought iron balconies, a sidewalk cafe with folded parasols and wicker chairs, small round tables with cups, potted shrubs, a parked bicycle, glistening cobblestones. Soft overcast morning, eye-level documentary travel photo.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Input is the edit target. Create the matching second image for a HARD spot-the-difference puzzle. Keep exact 1536x1024 dimensions, same framing and every other pixel as unchanged as possible. NO camera shift, cropping, global color change, relighting, added text or watermark. Make exactly these six localized edits; pixel coordinates refer to the supplied original. Do not alter any other objects. Keep photorealism and natural texture:\n1. Change only the right-hand white teacup on the foreground cafe table near (1179,659) to dark blue; keep saucer white.\n2. Remove only the black finial at the top of the large right folded parasol near (1240,108).\n3. Remove the small flower planter on the left building balcony near (331,178), keep railing and wall.\n4. Recolor only the bicycle's brown wicker basket near (548,619) to very dark green, retaining weave.\n5. Turn off only the amber bulb inside the upper-right wall lantern near (1500,90), show natural clear glass without changing lantern shape.\n6. Remove only the small white cup at the left side of the rear round cafe table near (915,629), retain table and neighboring cup."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/51-original.webp",
+          "sha256": "08c26b46e9551329ad5c1097677f0e9f0474c1ef295ddd81188cbc753bc71ed2",
+          "bytes": 841044,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/51-photo-difference.webp",
+          "sha256": "2c9a10674a7c7e65dd1464057dd0cdf139c797d867f6f0c741d1960accbbfe61",
+          "bytes": 668802,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "앞쪽 탁자의 찻잔 하나가 파란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            1158,
+            641,
+            1200,
+            678
+          ]
+        },
+        {
+          "text": "오른쪽 접힌 파라솔의 꼭대기 장식이 없어졌어요.",
+          "bounds1536x1024": [
+            1222,
+            91,
+            1259,
+            123
+          ]
+        },
+        {
+          "text": "왼쪽 위 발코니의 작은 화분이 없어졌어요.",
+          "bounds1536x1024": [
+            300,
+            155,
+            359,
+            195
+          ]
+        },
+        {
+          "text": "자전거 바구니가 짙은 녹색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            519,
+            590,
+            577,
+            645
+          ]
+        },
+        {
+          "text": "오른쪽 위 벽등의 노란 불빛이 꺼졌어요.",
+          "bounds1536x1024": [
+            1476,
+            58,
+            1524,
+            124
+          ]
+        },
+        {
+          "text": "뒤쪽 작은 탁자의 흰 찻잔이 없어졌어요.",
+          "bounds1536x1024": [
+            896,
+            610,
+            933,
+            643
+          ]
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "title": "오래된 상점 골목",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original image for a difficult spot-the-difference game. One ultra-realistic 1536x1024 landscape travel photograph, full frame, no border, no collage, no watermark, no readable signs or logos. Deep focus, realistic optics and fine documentary texture, physically plausible architecture, natural colors, no prominent people, not illustration or miniature. Many natural small spatially separated details useful for later subtle edits. A narrow Japanese city shopping lane at late afternoon. Low weathered wooden shopfronts, tiled overhangs, subtle cloth noren with no text, street mirrors, air conditioning units, bicycles, planters and distant urban buildings. Warm sunlight on one wall and cool shadows, authentic everyday street photography.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Input is the edit target. Create the matching second image for a HARD spot-the-difference puzzle. Keep exact 1536x1024 dimensions, same framing and every other pixel as unchanged as possible. NO camera shift, cropping, global color change, relighting, added text or watermark. Make exactly these six localized edits; pixel coordinates refer to the supplied original. Do not alter any other objects. Keep photorealism and natural texture:\n1. Change only the orange rim of the upper-right circular traffic mirror near (1343,204) to dark blue; leave reflection and support identical.\n2. Remove only the small red rear reflector on the right foreground bicycle near (1419,750).\n3. Remove the small ceramic jug underneath the left wooden stool near (527,770), recreate shadow and pavement.\n4. Recolor the tiny ochre flowerpot next to the mid-distance left doorway near (1007,632) to muted blue, leave plant unchanged.\n5. Recolor only the round cream paper lantern near upper-left (190,222) to pale dusty pink, preserving ribs and brightness.\n6. Remove the small pale wall-mounted AC unit near the lane center (950,308), restore the wall only there."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/52-original.webp",
+          "sha256": "2bd1f0b3066d18969aa4eb8e07d79d5bad38ddd58d56c653e25853b4110dc286",
+          "bytes": 761772,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/52-photo-difference.webp",
+          "sha256": "cafcb426c3b6e5eae0faa193271efb1b12fa5075eae54fd92b9ada3ed5fd07a8",
+          "bytes": 692530,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "오른쪽 볼록거울의 테두리 색이 바뀌었어요.",
+          "bounds1536x1024": [
+            1276,
+            134,
+            1408,
+            272
+          ]
+        },
+        {
+          "text": "앞쪽 자전거의 빨간 반사판이 없어졌어요.",
+          "bounds1536x1024": [
+            1401,
+            735,
+            1437,
+            764
+          ]
+        },
+        {
+          "text": "왼쪽 나무 의자 아래 물병이 없어졌어요.",
+          "bounds1536x1024": [
+            503,
+            720,
+            554,
+            817
+          ]
+        },
+        {
+          "text": "가운데 자전거 왼쪽 화분이 파란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            749,
+            693,
+            814,
+            753
+          ]
+        },
+        {
+          "text": "왼쪽 종이등 색이 연분홍으로 바뀌었어요.",
+          "bounds1536x1024": [
+            150,
+            180,
+            228,
+            263
+          ]
+        },
+        {
+          "text": "가운데 벽의 작은 실외기가 없어졌어요.",
+          "bounds1536x1024": [
+            924,
+            276,
+            976,
+            339
+          ]
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "title": "바다로 이어지는 언덕",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original image for a difficult spot-the-difference game. One ultra-realistic 1536x1024 landscape travel photograph, full frame, no border, no collage, no watermark, no readable signs or logos. Deep focus, realistic optics and fine documentary texture, physically plausible architecture, natural colors, no prominent people, not illustration or miniature. Many natural small spatially separated details useful for later subtle edits. A hilly San Francisco-style residential city street under bright coastal morning light. Colorful Victorian bay windows, steep road receding toward a bay, overhead tram wires, a distant small streetcar, parked cars, front steps with planters, cast metal railings and street lamps. Crisp photographic realism, no iconic bridge required.",
+      "editPrompts": [
+        "Use case: precise-object-edit. This image is the edit target for a HARD spot-the-difference game. Keep exact 1536x1024 dimensions and alignment. No crop, no camera change, no global color/texture changes, no text/watermark. Preserve every other object. Make exactly these six small localized photorealistic edits; coordinates are original-image pixels:\n1. Remove the tiny white sailboat on the distant water near (1084,430), replace with the same water.\n2. Change only the nearest left street lamp's clear cream glass near (359,321) to warm amber glass, retain frame.\n3. Remove the small terracotta pot on the mid-left tan building window ledge near (619,271), retain ledge.\n4. Change only the red left rear tail light of the closest dark parked car near (749,786) to clear silver-white, retain shape.\n5. Remove only the two tiny dark chimney caps atop the pale chimney near (815,360), keep the white chimney body.\n6. Remove the rear-window wiper on the white parked hatchback at right near (1285,769), retain window and car."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/53-original.webp",
+          "sha256": "861761b394b75784304aff8a0f5298a16666a91d5222e4bd10c99765d8876d31",
+          "bytes": 657782,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/53-photo-difference.webp",
+          "sha256": "21dcd92f6a5cfd0fc19adfa620a6c80612807404ae62c51436fe3ef145b469ff",
+          "bytes": 606964,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "바다의 작은 흰 돛단배가 없어졌어요.",
+          "bounds1536x1024": [
+            1068,
+            411,
+            1099,
+            447
+          ]
+        },
+        {
+          "text": "왼쪽 앞 가로등 유리 색이 바뀌었어요.",
+          "bounds1536x1024": [
+            337,
+            286,
+            381,
+            353
+          ]
+        },
+        {
+          "text": "가운데 건물 창가의 작은 화분이 없어졌어요.",
+          "bounds1536x1024": [
+            599,
+            255,
+            637,
+            284
+          ]
+        },
+        {
+          "text": "앞쪽 검은 자동차의 왼쪽 후미등이 흰색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            728,
+            771,
+            771,
+            801
+          ]
+        },
+        {
+          "text": "가운데 흰 굴뚝의 큰 덮개가 없어졌어요.",
+          "bounds1536x1024": [
+            799,
+            344,
+            832,
+            379
+          ]
+        },
+        {
+          "text": "오른쪽 흰 자동차의 뒷유리 와이퍼가 없어졌어요.",
+          "bounds1536x1024": [
+            1263,
+            758,
+            1309,
+            781
+          ]
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "title": "노을빛 어촌 항구",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for a hard spot-the-difference browser game. One ultra-realistic 1536x1024 landscape travel photograph, full frame without border, collage, watermark, readable text or logos. Natural color, high detail, deep focus and realistic optics. No prominent people. Many ordinary small separated details naturally belonging in this environment, useful for later subtle edits. Not illustration, not miniature, not fantasy. A Mediterranean coastal city harbor in warm late afternoon. Ochre and pale pink townhouses with shuttered windows and tiny balconies, small fishing boats tied along a stone quay, coiled ropes, a bollard, fishing floats, cafe chairs, terracotta planters. Sea and stacked hillside houses recede naturally, authentic lived-in textures.",
+      "editPrompts": [
+        "Use case: precise-object-edit. This image is the edit target for a HARD spot-the-difference game. Keep exact 1536x1024 dimensions and alignment. No crop, no camera change, no global color/texture changes, no text/watermark. Preserve every other object. Make exactly these six small localized photorealistic edits; coordinates are original-image pixels:\n1. Remove only the little black circular porthole on the nearest boat cabin near (1073,591), fill with white cabin wall.\n2. Recolor only the glass of the small lantern on the upper-left ochre wall near (210,250) to muted blue, leave metal frame.\n3. Change the small clay flowerpot on the quay near (295,577), immediately left of the larger pot, to light gray ceramic; retain flowers.\n4. Remove the isolated orange fishing float at the lower-right edge of the foreground net near (847,905), reconstruct stone and net.\n5. Recolor the yellow lifebuoy on a small mid-distance boat near (916,456) to orange-red, preserve ropes and boat.\n6. Remove only the rightmost vertical white fender hanging outside the nearest boat near (1457,716), reconstruct hull/water behind it."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/54-original.webp",
+          "sha256": "decad253d80a540f1199cce0fdfb48b3d7c22d62abb3f189f3e0dee314dfae2a",
+          "bytes": 818404,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/54-photo-difference.webp",
+          "sha256": "afc1832cf34c39a7e05c11cd62e732ef455be2819c71ce78d02e3432cc25360d",
+          "bytes": 696366,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "앞쪽 배 선실의 둥근 창이 없어졌어요.",
+          "bounds1536x1024": [
+            1058,
+            576,
+            1089,
+            607
+          ]
+        },
+        {
+          "text": "왼쪽 벽등의 유리가 푸른색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            190,
+            223,
+            228,
+            276
+          ]
+        },
+        {
+          "text": "길가의 작은 토분이 회색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            270,
+            554,
+            320,
+            600
+          ]
+        },
+        {
+          "text": "그물 앞쪽의 주황색 부표가 없어졌어요.",
+          "bounds1536x1024": [
+            820,
+            879,
+            873,
+            932
+          ]
+        },
+        {
+          "text": "뒤쪽 배의 노란 구명고리가 주황색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            895,
+            435,
+            933,
+            479
+          ]
+        },
+        {
+          "text": "앞쪽 배 맨 오른쪽의 흰 완충 부표가 없어졌어요.",
+          "bounds1536x1024": [
+            1430,
+            663,
+            1479,
+            767
+          ]
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "title": "가을빛 벽돌 주택가",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for a hard spot-the-difference browser game. One ultra-realistic 1536x1024 landscape travel photograph, full frame without border, collage, watermark, readable text or logos. Natural color, high detail, deep focus and realistic optics. No prominent people. Many ordinary small separated details naturally belonging in this environment, useful for later subtle edits. Not illustration, not miniature, not fantasy. A New York-style brownstone residential city block in early autumn morning. Red brick facades, wrought iron fire escapes, stoops, street trees, a small corner grocery with a plain dark awning, parked bicycle, utility covers and a distant yellow taxi. Eye-level 35mm documentary photograph, small architectural details sharp.",
+      "editPrompts": [
+        "Use case: precise-object-edit. This image is the edit target for a HARD spot-the-difference game. Keep exact 1536x1024 dimensions and alignment. No crop, no camera change, no global color/texture changes, no text/watermark. Preserve every other object. Make exactly these six small localized photorealistic edits; coordinates are original-image pixels:\n1. Remove only the little amber wall lantern beside the mid-left doorway near (471,328), reconstruct wall.\n2. Recolor only the small pale hydrangea flower head near (166,414) on the left steps to dusty lavender, retain neighboring flowers.\n3. Recolor only the top dome cap of the small hydrant next to the central tree near (906,616) to dark red, keep body black.\n4. Remove the small roof light of the distant yellow taxi near (1134,553), preserve taxi roof.\n5. Change only the bicycle saddle near the right side of the central tree around (1053,611) from dark brown/black to muted blue.\n6. Remove the small window AC unit near (611,294) on the left brick facade above the grocery awning, restore the window.",
+        "Use case: precise-object-edit. Input image 1 is the EDIT TARGET. This is an accurate photorealistic spot-the-difference game asset, not a new composition. Preserve exact 1536x1024 framing, texture, colors and object positions everywhere outside the requested local edit. No text or watermark. Make just the small rectangular rear license plate on the distant YELLOW TAXI a saturated cobalt BLUE plate. Taxi is near x1132 y578 in this 1536x1024 photo; the plate is centered on its rear hatch. Change only this small license plate, keep the yellow car body, roof, adjacent cars and everything else unchanged. The plate should clearly be blue."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/55-original.webp",
+          "sha256": "b0c51abe04d2f6851e0baf16639f76e17ffa77025f8536318ba191580aaf9fef",
+          "bytes": 887224,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/55-photo-difference.webp",
+          "sha256": "7abd6b99ce32e615ce10ab572429c86b250a812d915e18d2650f2378415b7970",
+          "bytes": 722020,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "왼쪽 중간 현관의 작은 벽등이 없어졌어요.",
+          "bounds1536x1024": [
+            454,
+            303,
+            487,
+            352
+          ]
+        },
+        {
+          "text": "왼쪽 계단의 꽃 한 송이가 연보라색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            143,
+            392,
+            188,
+            437
+          ]
+        },
+        {
+          "text": "소화전 위 뚜껑이 붉은색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            884,
+            592,
+            927,
+            636
+          ]
+        },
+        {
+          "text": "노란 택시의 뒷번호판이 파란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            1116,
+            570,
+            1152,
+            590
+          ]
+        },
+        {
+          "text": "오른쪽 자전거 안장 색이 바뀌었어요.",
+          "bounds1536x1024": [
+            1030,
+            591,
+            1077,
+            630
+          ]
+        },
+        {
+          "text": "왼쪽 건물 창문의 작은 에어컨이 없어졌어요.",
+          "bounds1536x1024": [
+            583,
+            273,
+            640,
+            314
+          ]
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "title": "분수대가 있는 옛 광장",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for a hard spot-the-difference browser game. One ultra-realistic 1536x1024 landscape travel photograph, full frame without border, collage, watermark, readable text or logos. Natural color, high detail, deep focus and realistic optics. No prominent people. Many ordinary small separated details naturally belonging in this environment, useful for later subtle edits. Not illustration, not miniature, not fantasy. A central European old-city cobblestone square at soft sunrise. Pastel baroque townhouses, small clock tower, tiled roofs, fountain, metal benches, cafe tables, flower planters and a few pigeons. Carefully realistic scale, atmospheric depth, human eye-level, all details naturally scattered.",
+      "editPrompts": [
+        "Use case: precise-object-edit. This image is the edit target for a HARD spot-the-difference game. Keep exact 1536x1024 dimensions and alignment. No crop, no camera change, no global color/texture changes, no text/watermark. Preserve every other object. Make exactly these six small localized photorealistic edits; coordinates are original-image pixels:\n1. Remove only the rightmost of the three pigeons on the square near (1291,792), reconstruct cobblestones and its tiny shadow.\n2. Change only the hour and minute hands of the tower clock near (727,273) to show 3:15; preserve dial, numbers and clock outline.\n3. Recolor only the small white cup on the left middle cafe table near (111,762) to dark brown; leave table.\n4. Remove only the upper curled loop detail of the central bench's right armrest near (772,709), retain the armrest support, bench and background.\n5. Recolor the tiny dormer window on the sloping terracotta roof left of the clock tower near (620,295) to muted blue, keep roof and trim.\n6. Recolor only the small right-hand flower planter container near (1369,736), next to the right bench, from dark brown to gray, retain flowers."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/56-original.webp",
+          "sha256": "b28ff51499983c289458871cb37d7b44f1acf221c313e96152859fedaeb55120",
+          "bytes": 698932,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/56-photo-difference.webp",
+          "sha256": "660b54e1c5d08fcc79fe6e2c6abb65b567299668c405ecd4406c606eaf9f6eb8",
+          "bytes": 607754,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "오른쪽 비둘기 한 마리가 없어졌어요.",
+          "bounds1536x1024": [
+            1263,
+            771,
+            1317,
+            814
+          ]
+        },
+        {
+          "text": "시계탑의 시곗바늘 방향이 바뀌었어요.",
+          "bounds1536x1024": [
+            700,
+            246,
+            753,
+            301
+          ]
+        },
+        {
+          "text": "왼쪽 작은 탁자의 흰 화분이 갈색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            91,
+            740,
+            131,
+            781
+          ]
+        },
+        {
+          "text": "가운데 벤치 팔걸이의 가로 연결 부분이 없어졌어요.",
+          "bounds1536x1024": [
+            741,
+            685,
+            794,
+            735
+          ]
+        },
+        {
+          "text": "왼쪽 지붕창의 창 색이 파란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            604,
+            276,
+            639,
+            314
+          ]
+        },
+        {
+          "text": "오른쪽 작은 화분의 용기가 회색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            1337,
+            708,
+            1400,
+            757
+          ]
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "title": "푸른 저녁의 강변",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for a hard spot-the-difference browser game. One ultra-realistic 1536x1024 landscape travel photograph, full frame without border, collage, watermark, readable text or logos. Natural color, high detail, deep focus and realistic optics. No prominent people. Many ordinary small separated details naturally belonging in this environment, useful for later subtle edits. Not illustration, not miniature, not fantasy. A modern Asian riverside city during blue hour. Glass apartment towers and illuminated office windows reflected in calm water, a pedestrian promenade with metal railings, empty benches, small planters, bicycles and bollard lights. Rich but realistic dusk color, long exposure photographic texture with sharply rendered buildings and foreground.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Change only the glass glow of the second-nearest railing lamp near (577,615) from warm amber to pale blue, keep its frame and surrounding illumination.\n2. Recolor one narrow central wooden seat slat on the closest left bench near (164,798) to charcoal gray, retain geometry and other slats.\n3. Recolor only the small bicycle saddle near (320,609) to muted reddish brown.\n4. Turn off only the short blue light strip on the roof of the riverboat near (1060,537), keep boat and nearby lights.\n5. Turn off one small warm light under the distant bridge near (508,553), leave the bridge and adjacent lights.\n6. Darken just the tiny group of two yellow-lit windows in the tall right glass tower near (1290,239), leaving the window frames and building unchanged.",
+        "Use case: precise-object-edit. Input image 1 is the EDIT TARGET. This is an accurate photorealistic spot-the-difference game asset, not a new composition. Preserve exact 1536x1024 framing, texture, colors and object positions everywhere outside the requested local edit. No text or watermark. Change the illumination on just ONE concrete bridge PIER in the distant bridge from amber/orange to muted BLUE. The pier is centered at x510 y552 of the 1536x1024 image, directly above the distant cyclist/railing. Its small face is about 20 pixels wide by 23 pixels high. Preserve its geometry. Change only the color of that one illuminated pier, no other edits."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/57-original.webp",
+          "sha256": "384a08cefdefe39247f621682a72475f63c276d819cd5c7aa040590aafd4c993",
+          "bytes": 630488,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/57-photo-difference.webp",
+          "sha256": "342ac3b273fba8aba9505d519d79952b4f935f4f12dec4bc21df57f136a50135",
+          "bytes": 538514,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "앞에서 두 번째 난간등이 푸른빛으로 바뀌었어요.",
+          "bounds1536x1024": [
+            558,
+            594,
+            597,
+            638
+          ]
+        },
+        {
+          "text": "앞쪽 벤치 가운데 나무판의 색이 바뀌었어요.",
+          "bounds1536x1024": [
+            148,
+            764,
+            179,
+            831
+          ]
+        },
+        {
+          "text": "자전거 안장 색이 붉은 갈색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            302,
+            596,
+            337,
+            620
+          ]
+        },
+        {
+          "text": "강 위 유람선 지붕의 파란 불빛이 꺼졌어요.",
+          "bounds1536x1024": [
+            1030,
+            526,
+            1088,
+            547
+          ]
+        },
+        {
+          "text": "멀리 다리 기둥의 빛이 푸른색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            495,
+            538,
+            528,
+            568
+          ]
+        },
+        {
+          "text": "오른쪽 높은 건물의 노란 창문 일부가 어두워졌어요.",
+          "bounds1536x1024": [
+            1271,
+            224,
+            1308,
+            253
+          ]
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "title": "도시 지붕 위 테라스",
+      "category": "city",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. One ultra-realistic 1536x1024 landscape photograph, full frame, no borders, no collage, no text or watermark. Deep focus, beautiful fine realistic detail, natural colors and physically plausible light, not illustration or miniature. Scattered distinct small natural details and modest scene-appropriate objects useful for later subtle edits. No prominent people. A bustling-in-detail but quiet old European city rooftop terrace view in late afternoon. Terracotta rooftops, dormer windows, chimneys, antennas, distant church dome and urban blocks. In foreground a stone terrace railing, a small wrought-iron cafe table with a cup, two chairs, terracotta herb pots and a folded parasol. Authentic architectural travel photography.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Remove only the handle on the right side of the white coffee cup on the terrace table near (752,641), keep cup and saucer.\n2. Recolor only the lid of the small glass sugar jar on the table near (849,615) to copper, preserve the glass body.\n3. Remove only the white candle inside the lower-left floor lantern near (157,830), retain lantern glass and frame.\n4. Remove the single pigeon perched on the terrace stone railing near (1226,501), reconstruct railing and background.\n5. Recolor only the teal shutters of the small central rooftop dormer near (619,433) to dark brown-gray, retain trim.\n6. Recolor only the thin tie band around the folded right parasol near (1416,320) from cream to dark brown."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/58-original.webp",
+          "sha256": "1726ad0e8c5d5fbc7c16fbab4e66ca3dd2427c5877b35626f7bba1bc4c19b106",
+          "bytes": 759060,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/58-photo-difference.webp",
+          "sha256": "ebdebabeff19b98f3d640d05bfc4ec195db7d0f9cbf249aa19d510f28d229d9f",
+          "bytes": 697902,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "흰 커피잔의 손잡이가 없어졌어요.",
+          "bounds1536x1024": [
+            739,
+            625,
+            767,
+            655
+          ]
+        },
+        {
+          "text": "유리 설탕통의 뚜껑이 구릿빛으로 바뀌었어요.",
+          "bounds1536x1024": [
+            823,
+            600,
+            873,
+            626
+          ]
+        },
+        {
+          "text": "왼쪽 바닥 랜턴 속 초가 없어졌어요.",
+          "bounds1536x1024": [
+            136,
+            790,
+            179,
+            863
+          ]
+        },
+        {
+          "text": "난간 위의 작은 비둘기가 없어졌어요.",
+          "bounds1536x1024": [
+            1191,
+            466,
+            1268,
+            533
+          ]
+        },
+        {
+          "text": "가운데 지붕창의 덧문 색이 바뀌었어요.",
+          "bounds1536x1024": [
+            598,
+            406,
+            639,
+            459
+          ]
+        },
+        {
+          "text": "오른쪽 파라솔을 묶은 띠가 갈색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            1374,
+            305,
+            1455,
+            337
+          ]
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "title": "봄 · 벚꽃 피는 산계곡",
+      "category": "mountain",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. One ultra-realistic 1536x1024 landscape photograph, full frame, no borders, no collage, no text or watermark. Deep focus, beautiful fine realistic detail, natural colors and physically plausible light, not illustration or miniature. Scattered distinct small natural details and modest scene-appropriate objects useful for later subtle edits. No prominent people. Spring in a Korean granite mountain valley: pale pink flowering trees framing a clear stream, weathered boulders, fresh green leaves, a small distant wooden footbridge, mountain ridges fading into haze, a modest wooden trail sign without text and small wildflowers at the water edge. Bright gentle morning light. Mountain landscape is the focus; believable nature photography.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Remove only the lower horizontal arrow board of the wooden trail sign at far right near (1468,455), leave post and upper arrow.\n2. Remove just the small vertical railing post near the middle of the distant bridge at (779,501), leave horizontal rails.\n3. Recolor only the little pink wildflower cluster near (169,632) in the lower left foreground to white, keep stems and neighboring flowers.\n4. Change only one small pale lichen patch on the left mid-foreground rock near (372,610) into natural green moss, preserve rock shape.\n5. Remove only the small cherry-blossom cluster at the rightmost upper-left branch tip near (681,103), leave branch tip and blue sky.\n6. Add a single tiny realistic brown songbird perched on the right stream boulder centered at (1200,696), about 32 pixels wide and 25 pixels tall, naturally lit.",
+        "Use case: precise-object-edit. Input image 1 is the EDIT TARGET. This is an accurate photorealistic spot-the-difference game asset, not a new composition. Preserve exact 1536x1024 framing, texture, colors and object positions everywhere outside the requested local edit. No text or watermark. Make exactly THREE small localized changes in this 1536x1024 mountain photo: (1) Paint a narrow red band around the center upright bridge post at x778 y502, about 12 pixels wide and 10 pixels tall. (2) Add a tiny rectangular white-red-white hiking trail blaze on the FRONT FACE of the large LEFT foreground boulder, centered x372 y610, about 24 pixels wide by 24 pixels tall. (3) Add a single small realistic dry BROWN LEAF lying flat on the FRONT FACE of the large RIGHT foreground stream boulder centered x1200 y696, about 32 pixels wide by 28 pixels tall. Include all three additions. Preserve every other existing element."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/59-original.webp",
+          "sha256": "f7b817deba990a2b48942788d59f21a13c466d32faba3d80e32b0d3e23ac3b4e",
+          "bytes": 959196,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/59-photo-difference.webp",
+          "sha256": "69f10019ab93e6dcfad049e3f246cb9e5acad6937c175ab4a047ac145aa050f6",
+          "bytes": 816722,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "오른쪽 이정표의 아래쪽 화살표가 없어졌어요.",
+          "bounds1536x1024": [
+            1430,
+            436,
+            1503,
+            476
+          ]
+        },
+        {
+          "text": "다리 가운데 기둥에 작은 붉은 표시가 생겼어요.",
+          "bounds1536x1024": [
+            764,
+            479,
+            795,
+            521
+          ]
+        },
+        {
+          "text": "왼쪽 앞의 분홍 꽃 한 무리가 흰색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            144,
+            603,
+            195,
+            660
+          ]
+        },
+        {
+          "text": "왼쪽 바위에 작은 등산로 표시가 생겼어요.",
+          "bounds1536x1024": [
+            329,
+            597,
+            375,
+            644
+          ]
+        },
+        {
+          "text": "왼쪽 위 가지 끝의 꽃송이가 없어졌어요.",
+          "bounds1536x1024": [
+            654,
+            79,
+            708,
+            125
+          ]
+        },
+        {
+          "text": "오른쪽 개울 바위에 갈색 잎이 생겼어요.",
+          "bounds1536x1024": [
+            1194,
+            632,
+            1278,
+            690
+          ]
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "title": "여름 · 산속의 푸른 호수",
+      "category": "mountain",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. One ultra-realistic 1536x1024 landscape photograph, full frame, no borders, no collage, no text or watermark. Deep focus, beautiful fine realistic detail, natural colors and physically plausible light, not illustration or miniature. Scattered distinct small natural details and modest scene-appropriate objects useful for later subtle edits. No prominent people. Summer mountain landscape: lush green peaks, a turquoise alpine lake, conifer forest, a little wooden lakeside footbridge and a small distant rustic cabin. Foreground stones, ferns, tiny yellow wildflowers, a fallen branch and a modest rock cairn near a hiking path. Clear bright natural daylight with puffy clouds. Real landscape photography.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Remove only the topmost small stone of the right foreground cairn near (1277,609), retain the rest of the stack.\n2. Remove only the tiny dark chimney on the left mountain cabin roof near (404,343), reconstruct roof.\n3. Remove only the middle short far-side vertical bridge railing post near (330,548); keep top horizontal rail, deck and other posts.\n4. Recolor only the single yellow flower head near (177,866) in the lower left foreground to white.\n5. Remove only the short upward protruding twig from the fallen lower-right log near (1205,876), leave main log.\n6. Remove the isolated small flat stone on the central foreground path near (709,865), reconstruct natural dirt and gravel."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/60-original.webp",
+          "sha256": "f24ceff370882f48ac8ac12049b06569c3a21640ca02eba15c5bb85f8416067e",
+          "bytes": 899288,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/60-photo-difference.webp",
+          "sha256": "dd40b7245ab11ea8783f8ebfe5f40845b8452260a18aae6f8ec64ecbbc501b13",
+          "bytes": 821570,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "오른쪽 돌탑 위의 작은 돌 두 개가 없어졌어요.",
+          "bounds1536x1024": [
+            1253,
+            594,
+            1303,
+            635
+          ]
+        },
+        {
+          "text": "산장의 작은 굴뚝이 없어졌어요.",
+          "bounds1536x1024": [
+            389,
+            326,
+            419,
+            357
+          ]
+        },
+        {
+          "text": "다리의 세로 기둥 하나가 없어졌어요.",
+          "bounds1536x1024": [
+            399,
+            526,
+            427,
+            623
+          ]
+        },
+        {
+          "text": "앞쪽 노란 들꽃 한 송이가 흰색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            157,
+            845,
+            198,
+            886
+          ]
+        },
+        {
+          "text": "쓰러진 통나무의 짧은 가지가 없어졌어요.",
+          "bounds1536x1024": [
+            1185,
+            845,
+            1226,
+            902
+          ]
+        },
+        {
+          "text": "산길 한가운데 작은 돌이 없어졌어요.",
+          "bounds1536x1024": [
+            673,
+            841,
+            745,
+            887
+          ]
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "title": "가을 · 단풍 물든 계곡",
+      "category": "mountain",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. One ultra-realistic 1536x1024 landscape photograph, full frame, no borders, no collage, no text or watermark. Deep focus, beautiful fine realistic detail, natural colors and physically plausible light, not illustration or miniature. Scattered distinct small natural details and modest scene-appropriate objects useful for later subtle edits. No prominent people. Autumn mountain valley landscape: red and amber maple woods mixed with dark pine, rugged mountain peaks, a stream with stone stepping rocks, a simple wooden footbridge and distant small mountain hut. Detailed fallen leaves, mossy rocks, a modest trail marker without lettering, reeds along the clear water. Soft golden afternoon light. Real nature photography.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Change only the red stripe of the red-and-white trail blaze on the left rock near (130,520) to blue, retain white bands and stone.\n2. Remove only the small chimney on the distant upper-right hut near (1300,315), reconstruct roof.\n3. Remove only the central vertical bridge railing post near (689,432), leave horizontal rails and bridge deck.\n4. Remove the single orange fallen maple leaf near (462,783) at the left edge of the foreground stream, reconstruct dark wet rock.\n5. Recolor only the small red maple leaf cluster near (690,61) at the tip of the upper-left branch to golden yellow.\n6. Add one tiny realistic gray bird perched on the right stream-bank rock centered at (1182,559), about 30 pixels wide and 24 pixels high.",
+        "Use case: precise-object-edit. Input image 1 is the EDIT TARGET. This is an accurate photorealistic spot-the-difference game asset, not a new composition. Preserve exact 1536x1024 framing, texture, colors and object positions everywhere outside the requested local edit. No text or watermark. Add ONE small clearly visible natural gray songbird, perched on top of the gray boulder at the RIGHT stream bank, directly below the trail and just left of the golden reeds. Center of bird should be approximately x1027 y528 in this 1536x1024 image, about 30 pixels wide and 25 pixels tall. The bird must have a head, beak, body and feet on the rock, naturally lit in the autumn scene. Change only this one small bird, keep everything else unchanged."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/61-original.webp",
+          "sha256": "e6c71ede24e4adc7fbd95cb5b915f7fab06f5537ea4011c498ca06559de6be52",
+          "bytes": 949246,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/61-photo-difference.webp",
+          "sha256": "d687faa64986f1daab33eca259430f7b2b2c88e50026d34e3041bdb0af9fad52",
+          "bytes": 753478,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "왼쪽 바위의 등산로 표시가 파란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            101,
+            493,
+            158,
+            543
+          ]
+        },
+        {
+          "text": "오른쪽 산장 굴뚝의 높이가 낮아졌어요.",
+          "bounds1536x1024": [
+            1283,
+            293,
+            1317,
+            332
+          ]
+        },
+        {
+          "text": "다리 가운데 세로 기둥 하나가 없어졌어요.",
+          "bounds1536x1024": [
+            674,
+            394,
+            704,
+            468
+          ]
+        },
+        {
+          "text": "왼쪽 바위 앞의 주황색 단풍잎이 없어졌어요.",
+          "bounds1536x1024": [
+            437,
+            760,
+            488,
+            805
+          ]
+        },
+        {
+          "text": "왼쪽 위 작은 단풍잎 무리가 노란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            719,
+            0,
+            825,
+            72
+          ]
+        },
+        {
+          "text": "오른쪽 물가에 새가 앉은 바위가 생겼어요.",
+          "bounds1536x1024": [
+            1170,
+            513,
+            1286,
+            626
+          ]
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "title": "겨울 · 눈 덮인 산과 다리",
+      "category": "mountain",
+      "difficulty": "hard",
+      "differenceCount": 6,
+      "generationMode": "built-in image_gen",
+      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. One ultra-realistic 1536x1024 landscape photograph, full frame, no borders, no collage, no text or watermark. Deep focus, beautiful fine realistic detail, natural colors and physically plausible light, not illustration or miniature. Scattered distinct small natural details and modest scene-appropriate objects useful for later subtle edits. No prominent people. Winter mountain landscape: snowy rugged peaks above snow-laden evergreen forest, partially frozen clear stream, a rustic timber footbridge and a small distant wooden cabin with a chimney. Foreground snow-covered rocks, a modest wooden trail post without letters, protruding dark twigs and pine cones. Crisp pale morning sun and realistic snow texture. Authentic landscape photography.",
+      "editPrompts": [
+        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Remove only the isolated pine cone on the right foreground snow near (1280,797), fill with matching undisturbed snow.\n2. Remove only the dark chimney on the distant cabin roof near (1188,371), retain roof, snow and sky.\n3. Add a narrow natural red painted trail-marker band around the right wooden post at y=558, keeping wood texture and snow cap; band about 14 pixels tall.\n4. Add a small cluster of three dark red winter berries to the existing bare twig near (172,600), each berry about 5 pixels across, naturally lit.\n5. Remove only the center vertical timber railing post near (695,491), leave the horizontal rails, snow and bridge deck.\n6. Cover only the small dark rounded rock just right of center near (1052,711) with a natural thin white snow cap, retain its shape and surrounding stream."
+      ],
+      "files": {
+        "original": {
+          "path": "assets/62-original.webp",
+          "sha256": "76c857a587dd1c229909e04aeb83135c12a2b126c7a89463dcb473d55b8aa87a",
+          "bytes": 890132,
+          "width": 1536,
+          "height": 1024
+        },
+        "edited": {
+          "path": "assets/62-photo-difference.webp",
+          "sha256": "54bb1d1684c9ec169f4c22c7822d898490c0d3fa76fe18f0a712f07a132024f1",
+          "bytes": 763052,
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      "differences": [
+        {
+          "text": "오른쪽 눈 위의 솔방울 하나가 없어졌어요.",
+          "bounds1536x1024": [
+            1251,
+            769,
+            1307,
+            824
+          ]
+        },
+        {
+          "text": "뒤쪽 산장 굴뚝의 연기가 없어졌어요.",
+          "bounds1536x1024": [
+            1166,
+            308,
+            1212,
+            378
+          ]
+        },
+        {
+          "text": "오른쪽 나무 말뚝에 붉은 띠가 생겼어요.",
+          "bounds1536x1024": [
+            1374,
+            514,
+            1432,
+            546
+          ]
+        },
+        {
+          "text": "왼쪽 잔가지에 작은 붉은 열매가 생겼어요.",
+          "bounds1536x1024": [
+            171,
+            508,
+            211,
+            548
+          ]
+        },
+        {
+          "text": "다리 가운데 세로 기둥 하나가 없어졌어요.",
+          "bounds1536x1024": [
+            676,
+            451,
+            712,
+            538
+          ]
+        },
+        {
+          "text": "가운데 오른쪽의 어두운 바위에 눈이 덮였어요.",
+          "bounds1536x1024": [
+            1011,
+            680,
+            1089,
+            739
+          ]
+        }
+      ]
+    }
+  ]
+}
