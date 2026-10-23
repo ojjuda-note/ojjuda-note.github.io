@@ -28,7 +28,11 @@ window.pokerFixture={show(round=1){
    let round=0;
    for(const viewport of before?[{width:390,height:844}]:[{width:320,height:740},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){
     await page.setViewportSize(viewport);await page.evaluate(round=>pokerFixture.show(round),++round);
-    await page.waitForFunction(()=>[...document.images].every(img=>img.complete&&img.naturalWidth>0));
+    // The closed help dialog contains lazy images; wait for the active table only.
+    await page.waitForFunction(()=>{
+      const images=[...document.querySelectorAll('#app img')];
+      return images.length>0&&images.every(img=>img.complete&&img.naturalWidth>0);
+    });
     if(before){await page.screenshot({path:path.join(proof,'poker-before-390.png'),fullPage:true});continue;}
     assert.equal(await page.locator('.card-index').count(),0,'the artwork has no duplicate corner overlays');
     assert.equal(await page.locator('.my-cards .final-covered').count(),1,'only the last own card begins face down');

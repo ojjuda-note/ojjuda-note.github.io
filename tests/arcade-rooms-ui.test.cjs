@@ -36,13 +36,13 @@ world=world.replace('</head>','<script src="/game-entry.js" defer></script><scri
       const listeners=[],state={};
       const ch={name,on(type,filter,callback){if(type==='broadcast'||filter.table==='place_messages')this.hasChat=true;listeners.push({type,filter,callback});return this},
         subscribe(callback){if(callback)queueMicrotask(()=>callback('SUBSCRIBED'));return this},
-        async track(value){state[options?.config?.presence?.key||fixtureActor]=[value];ch.sync();},
+        async track(value){state[options?.config?.presence?.key||fixtureActor]=[value];ch.sync();return 'ok';},
         async untrack(){},unsubscribe(){},presenceState:()=>state,
         sync(){for(const l of listeners)if(l.type==='presence')l.callback()},
         message(value){for(const l of listeners)if(l.type==='postgres_changes')l.callback({new:value})}};
       fixtureChannels.push(ch);return ch;
     }
-    const client={auth:{getUser:async()=>({data:{user:{id:fixtureActor}}}),getSession:async()=>({data:{session:{access_token:fixtureActor}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+    const client={auth:{getUser:async()=>({data:{user:{id:fixtureActor}}}),getSession:async()=>({data:{session:{access_token:fixtureActor,user:{id:fixtureActor}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
       rpc:(name,params)=>name==='arcade_room_service'?roomFixture('arcade',fixtureActor,params):Promise.resolve({data:{age:minor?11:36,locked:true}}),
       functions:{invoke:(_,{body})=>roomFixture('matgo',fixtureActor,body)},channel,removeChannel(){},
       from(table){const p={table,eq:[],in:[],single:false};const q={select(){return q},eq(k,v){p.eq.push([k,v]);return q},in(k,v){p.in.push([k,v]);return q},gt(){return q},order(){return q},limit(){return q},or(){return q},maybeSingle(){p.single=true;return q},then(resolve,reject){return roomFixture('from',fixtureActor,p).then(resolve,reject)}};return q;}};
