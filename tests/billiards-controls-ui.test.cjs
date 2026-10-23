@@ -201,7 +201,13 @@ const distance=(a,b)=>((b-a+540)%360)-180;
   for(const kind of ['pool8','carom4']){
    await page.evaluate(kind=>billiardTest.open(kind,'ai'),kind);
    for(const [width,height] of [[320,568],[390,844],[412,915],[568,320],[844,390],[1280,900]]){
-    await page.setViewportSize({width,height});await page.waitForTimeout(80);
+    await page.setViewportSize({width,height});
+    // Viewport events and the app's resize frame can land after setViewportSize
+    // on busy runners. Wait for the layout, not an arbitrary 80ms delay.
+    await page.waitForFunction(({width,height})=>{
+     const box=document.querySelector('.bl-box')?.getBoundingClientRect();
+     return box?.width===width&&box?.height===height;
+    },{width,height},{timeout:2000});
     const screen=await page.locator('.bl-box').boundingBox();
     assert.deepEqual(screen,{x:0,y:0,width,height},kind+': game fills viewport '+width+'x'+height);
     for(const selector of ['.ghead','.bl-hud','.bl-can','.bl-power','.bl-msg','.bl-aim','.bl-ctrl']){
