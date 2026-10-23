@@ -15,12 +15,12 @@ const messages={client_update_required:'맞고가 업데이트됐어요. 새로�
 let wallet,room=null,cursor=0,busy=false,polling=false,closed=false,pendingMove=null,viewKey='',promptKey='',pollTimer,accessTimer,token=null,clockOffset=0;
 let dialog=null,dialogKey='',eventTimer,eventQueue=[],showingEvent=false;
 let friendInviteId=null,savedRoomId=null;
-let arcadeRoom=null,publicLobby=false,animating=false,presentationVersion=0;
+let arcadeRoom=null,publicLobby=false,animating=false,presentationVersion=0,queuedRoom=null;
 let floorSlotRound='';const floorSlotByCard=new Map();
 const sound=createOnlineSound();
 const vent=createVentControls({canPlay:()=>!closed&&access.allowed()&&room?.status==='active',purchase:effect=>wallet.vent(room.id,effect),onError:error=>toast(error.message),onRearrange:shuffleFloor});
 const motion=createOnlineMotion({cardSVG,backSVG,sound,onEvent:queueEvent,onLayout:fitBoard});
-function cancelPresentation(){presentationVersion++;motion.cancel();animating=false;sound.cancel();clearEvents();}
+function cancelPresentation(){presentationVersion++;queuedRoom=null;motion.cancel();animating=false;sound.cancel();clearEvents();}
 const entryParams=new URLSearchParams(location.search);
 function roomLabel(){const label=$('#room-label');if(!label)return;label.hidden=!arcadeRoom;label.textContent=arcadeRoom?`방 #${arcadeRoom.room_no} · ${arcadeRoom.title}`:'';}
 function waitInChat(){
@@ -114,10 +114,16 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261022-entry2&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261024-smooth1&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
+  // A response already in flight may arrive during another move's animation.
+  // Finish that move before applying the newest snapshot from the same round.
+  if(!changed&&animating&&next.status!=='cancelled'){
+    if(!queuedRoom||next.version>=queuedRoom.version)queuedRoom=next;
+    return;
+  }
   const interrupted=animating;
   if(changed){cancelPresentation();cursor=0;promptKey='';closeDialog();}
   else if(interrupted){cancelPresentation();}
@@ -135,6 +141,8 @@ async function accept(next){
   }
   if(closed||version!==presentationVersion)return;
   setGold(next.gold?.[next.seat]);renderRoom();
+  const queued=queuedRoom;queuedRoom=null;
+  if(queued)await accept(queued);
 }
 async function refresh(){
   if(busy||polling||animating||closed||!room)return;
@@ -197,13 +205,16 @@ function showLobby(){
   const input=$('#room-code');input.setAttribute('aria-label','방번호 또는 초대 코드');input.placeholder='방번호 또는 초대 코드';input.maxLength=16;input.removeAttribute('pattern');
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261022-entry2&open='+Date.now());};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261024-smooth1&open='+Date.now());};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
   return '<div class="caps'+(own?' caps-own':'')+'">'+groups.map(([name,cs],i)=>`<div class="cap" ${own?'role="button" tabindex="0" data-cap="'+i+'" aria-label="'+name+' '+cs.length+'장 크게 보기"':''}><span class="lb">${name} ${name==='피'?cs.reduce((a,c)=>a+piVal(c),0):cs.length}</span><div class="cap-cards" data-count="${cs.length}">${cs.map(cardSVG).join('')}</div></div>`).join('')+'</div>';
 }
-function fitCaps(){document.querySelectorAll('.cap-cards').forEach(el=>{const n=Number(el.dataset.count),own=el.closest('.caps-own');el.style.setProperty('--step',Math.max(1,Math.min(own?18:9,(el.clientWidth-(own?32:19))/Math.max(1,n-1)))+'px');});}
+function fitCaps(){
+  const sizes=[...document.querySelectorAll('.cap-cards')].map(el=>{const n=Number(el.dataset.count),own=el.closest('.caps-own');return [el,Math.max(1,Math.min(own?18:9,(el.clientWidth-(own?32:19))/Math.max(1,n-1)))+'px'];});
+  for(const [el,step] of sizes)if(el.style.getPropertyValue('--step')!==step)el.style.setProperty('--step',step);
+}
 function highlight(month,on){document.querySelectorAll('.stack[data-month="'+month+'"]').forEach(el=>el.classList.toggle('hot2',on));}
 function fitBoard(){
   const floor=$('.board .floor');if(!floor)return;
@@ -236,6 +247,57 @@ function tick(){
   const el=$('#turn-seconds');if(el)el.textContent=Math.max(0,Math.ceil(remaining/1000))+'초';
   if(showingEvent&&!animating&&remaining<5000&&room.game?.prompt?.p===room.seat&&['chongtong','gostop','gukjin'].includes(room.game.prompt.type)){clearEvents();renderRoom();}
 }
+function boardNodeKey(node){
+  if(node.nodeType!==1)return '';
+  if(node.id)return 'id:'+node.id;
+  if(node.hasAttribute('data-face'))return 'face:'+node.getAttribute('data-face');
+  if(node.hasAttribute('data-card'))return 'card:'+node.getAttribute('data-card');
+  if(node.matches('.stack,.stack>.c')){
+    const face=node.querySelector('[data-face]');
+    if(face)return (node.matches('.stack')?'stack:':'floor-card:')+face.getAttribute('data-face');
+  }
+  if(node.matches('.cpu-portrait'))return 'portrait';
+  return '';
+}
+function syncBoardNode(node,next){
+  if(node.nodeType===3){if(node.data!==next.data)node.data=next.data;return;}
+  if(node.nodeType!==1)return;
+  // Preserve decoded artwork and ongoing CPU reactions as the table changes.
+  if(node.localName==='svg'||node.matches('.cpu-portrait'))return;
+  const layout=node.matches('.floor,.stack,.stack>.c,.cap-cards,.deck');
+  for(const {name} of [...node.attributes]){
+    if((layout&&name==='style')||name==='data-slot')continue;
+    if(!next.hasAttribute(name))node.removeAttribute(name);
+  }
+  for(const {name,value} of next.attributes){
+    if(layout&&name==='style')continue;
+    if(node.getAttribute(name)!==value)node.setAttribute(name,value);
+  }
+  const wanted=[...next.childNodes],keys=new Set(wanted.map(boardNodeKey).filter(Boolean));
+  // Remove departed cards first so surviving cards do not need to be moved.
+  for(const child of [...node.childNodes]){
+    const key=boardNodeKey(child);
+    if(key&&!keys.has(key)&&child.id!=='matgo-vent')child.remove();
+  }
+  const remaining=[...node.childNodes].filter(child=>child.id!=='matgo-vent'),used=new Set();
+  let anchor=node.firstChild;
+  for(const desired of wanted){
+    const key=boardNodeKey(desired);
+    const match=remaining.find(child=>!used.has(child)&&boardNodeKey(child)===key&&child.nodeType===desired.nodeType&&child.nodeName===desired.nodeName);
+    const child=match||desired;
+    if(child!==anchor)node.insertBefore(child,anchor);
+    if(match){used.add(match);syncBoardNode(match,desired);}
+    anchor=child.nextSibling;
+  }
+  for(const child of remaining)if(!used.has(child))child.remove();
+}
+function updateBoard(markup){
+  const template=document.createElement('template');template.innerHTML=markup;
+  const next=template.content.firstElementChild,content=$('#content'),board=content.querySelector('.board');
+  next.dataset.round=room.id+':'+room.round;
+  if(!board||board.dataset.round!==next.dataset.round)content.replaceChildren(next);
+  else syncBoardNode(board,next);
+}
 function renderRoom(){
   if(!room||animating)return;
   if(room.status==='waiting'){
@@ -255,18 +317,16 @@ function renderRoom(){
   const me=room.seat,op=1-me,pr=g.prompt,myTurn=pr?.p===me&&!room.bots[me],selecting=pr?.type==='choose';
   $('#goldPending').textContent=!g.over&&g.firstPpukGold[me]?'첫뻑 '+signed(g.firstPpukGold[me])+'G · 판 종료 시 정산':'';
   const gc=g.caps[me].find(c=>c.tag==='gukjin');$('#gukjin').hidden=!gc;if(gc)$('#gukjin').textContent='구쌍피 → '+(gc.asPi?'그림(열끗)':'쌍피');
-  const key=room.id+':'+room.version;
+  const key=room.id+':'+room.round+':'+room.version;
   if(viewKey!==key){
     if(dialogKey.startsWith('turn:')||dialogKey==='pick')closeDialog();
     const scroll=$('#hand')?.scrollLeft||0;viewKey=key;
-    const portrait=room.bots[op]?document.querySelector('.zone.op .cpu-portrait'):null;
     const label=p=>escape(room.names[p])+(room.bots[p]?' · PC 대행':'');
     const badge=p=>`${g.go[p]?'<span class="go">'+g.go[p]+'고</span>':''}${g.ppukCount[p]?'<span>뻑 '+g.ppukCount[p]+'/3</span>':''}<span class="pts">${score(g.caps[p]).pts}점</span>`;
     const text=g.over?'판이 끝났어요':room.bots[me]?'PC가 내 자리를 이어서 진행 중이에요':selecting?'가져올 바닥 패를 골라주세요':myTurn?'내 차례 · 낼 패를 고르세요':room.bots[op]?'PC가 패를 고르고 있어요':'상대 차례예요';
     const floorMonths=new Set(g.floor.map(s=>s.cards[0].m)),pairs=heldPairMonths(g.hand,g.caps);
-    $('#content').innerHTML=`<section class="board"><div class="zone op"><div class="who"><b id="op-name"${room.bots[op]?' class="cpu-opponent"':''}>${room.bots[op]?cpuPortraitHTML()+'<span class="cpu-name">'+escape(room.names[op])+'<small>PC 대행</small></span>':label(op)}</b><span>손패 ${g.otherCount}장</span>${badge(op)}</div>${caps(g.caps[op])}<div class="hand op op-hand" aria-label="상대 손패 뒷면">${Array(g.otherCount).fill('<div class="c">'+backSVG+'</div>').join('')}</div></div><div class="floor felt"><div class="fl">${g.floor.map((stack,i)=>`<button class="stack${selecting&&pr.indices.includes(i)?' pick':selecting?' dimmed':''}${myTurn&&g.hand.some(c=>c.m===stack.cards[0].m)?' hot':''}" data-index="${i}" data-month="${stack.cards[0].m}" aria-label="${stack.cards[0].m}월 바닥 패 ${stack.cards.length}장" ${selecting&&pr.indices.includes(i)?'':'disabled'}>${stack.cards.map((c,j)=>`<span class="c" style="transform:translate(${Math.min(3,j)*7}px,${-Math.min(3,j)*4}px) rotate(${j*6}deg)">${cardSVG(c)}</span>`).join('')}${stack.ppuk?`<span class="ppuk">${stack.owner===null?'바닥뻑':stack.cards.some(c=>c.k==='bonus')?'뻑 + 보너스':'쌌다'}</span>`:''}</button>`).join('')}</div><div class="deck"><div class="back">${backSVG}</div><small>${g.deckCount}장</small></div></div><div class="turn compact-turn${myTurn?' my':''}" aria-live="polite"><span id="turn-label">${text}</span>${!g.over?'<time id="turn-seconds"></time>':''}</div><div class="zone me">${caps(g.caps[me],true)}<div class="my-score hand-score"><span class="stake-label" id="stakeRate">점당 ${number(room.rate??100)}G</span><span id="my-score" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div id="hand" class="hand me">${[...g.hand].sort((a,b)=>a.m-b.m||a.id-b.id).map(c=>`<button class="c${myTurn&&floorMonths.has(c.m)?' match':''}" data-card="${c.id}" data-month="${c.m}" aria-label="${c.k==='bonus'?'보너스':c.m+'월'} 패 내기${pairs.has(c.m)?' · 짝패, 나머지 두 장은 이미 먹은 패':''}">${cardSVG(c)}${pairs.has(c.m)?'<span class="pair-mark">짝</span>':''}</button>`).join('')}</div>${g.bomb[me]>0&&g.deckCount?'<button id="flip" class="bomb-flip"><span>폭탄 뒤집기</span><strong>'+g.bomb[me]+'회 남음</strong><small>손패 없이 1장</small></button>':''}</div></div></section>`;
+    updateBoard(`<section class="board"><div class="zone op"><div class="who"><b id="op-name"${room.bots[op]?' class="cpu-opponent"':''}>${room.bots[op]?cpuPortraitHTML()+'<span class="cpu-name">'+escape(room.names[op])+'<small>PC 대행</small></span>':label(op)}</b><span>손패 ${g.otherCount}장</span>${badge(op)}</div>${caps(g.caps[op])}<div class="hand op op-hand" aria-label="상대 손패 뒷면">${Array(g.otherCount).fill('<div class="c">'+backSVG+'</div>').join('')}</div></div><div class="floor felt"><div class="fl">${g.floor.map((stack,i)=>`<button class="stack${selecting&&pr.indices.includes(i)?' pick':selecting?' dimmed':''}${myTurn&&g.hand.some(c=>c.m===stack.cards[0].m)?' hot':''}" data-index="${i}" data-month="${stack.cards[0].m}" aria-label="${stack.cards[0].m}월 바닥 패 ${stack.cards.length}장" ${selecting&&pr.indices.includes(i)?'':'disabled'}>${stack.cards.map((c,j)=>`<span class="c" style="transform:translate(${Math.min(3,j)*7}px,${-Math.min(3,j)*4}px) rotate(${j*6}deg)">${cardSVG(c)}</span>`).join('')}${stack.ppuk?`<span class="ppuk">${stack.owner===null?'바닥뻑':stack.cards.some(c=>c.k==='bonus')?'뻑 + 보너스':'쌌다'}</span>`:''}</button>`).join('')}</div><div class="deck"><div class="back">${backSVG}</div><small>${g.deckCount}장</small></div></div><div class="turn compact-turn${myTurn?' my':''}" aria-live="polite"><span id="turn-label">${text}</span>${!g.over?'<time id="turn-seconds"></time>':''}</div><div class="zone me">${caps(g.caps[me],true)}<div class="my-score hand-score"><span class="stake-label" id="stakeRate">점당 ${number(room.rate??100)}G</span><span id="my-score" role="status" aria-label="내 점수"></span></div><div class="hand-row"><div id="hand" class="hand me">${[...g.hand].sort((a,b)=>a.m-b.m||a.id-b.id).map(c=>`<button class="c${myTurn&&floorMonths.has(c.m)?' match':''}" data-card="${c.id}" data-month="${c.m}" aria-label="${c.k==='bonus'?'보너스':c.m+'월'} 패 내기${pairs.has(c.m)?' · 짝패, 나머지 두 장은 이미 먹은 패':''}">${cardSVG(c)}${pairs.has(c.m)?'<span class="pair-mark">짝</span>':''}</button>`).join('')}</div>${g.bomb[me]>0&&g.deckCount?'<button id="flip" class="bomb-flip"><span>폭탄 뒤집기</span><strong>'+g.bomb[me]+'회 남음</strong><small>손패 없이 1장</small></button>':''}</div></div></section>`);
     $('#hand').scrollLeft=scroll;
-    if(portrait)document.querySelector('.zone.op .cpu-portrait')?.replaceWith(portrait);
     $('#hand').querySelectorAll('button').forEach(b=>{b.onclick=()=>pick(Number(b.dataset.card));b.onpointerenter=()=>highlight(b.dataset.month,true);b.onpointerleave=()=>highlight(b.dataset.month,false);});
     document.querySelectorAll('.stack.pick').forEach(b=>b.onclick=()=>send({type:'choose',index:Number(b.dataset.index)}));
     if($('#flip'))$('#flip').onclick=()=>send({type:'play',card:null});

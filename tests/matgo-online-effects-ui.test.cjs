@@ -45,6 +45,7 @@ const root=path.join(__dirname,'..');
     await page.waitForFunction(()=>audioStarts.some(s=>s.state==='running'&&s.energy),null,{timeout:10000}).catch(async error=>{console.error(await page.evaluate(()=>({contexts:audioContexts.map(c=>c.state),starts:audioStarts})));throw error;});
     assert.equal(await page.locator('#sound-start').isVisible(),false);
     await page.locator('#resume-room').click();await page.locator('#hand').waitFor();
+    await page.evaluate(()=>{window.beforeBoard=document.querySelector('.board');window.beforeHand=document.querySelector('#hand [data-card="8"]');});
     await present(page,played);
     await page.waitForSelector('.online-flying-card');
     assert.equal(await page.locator('#hand button:not(:disabled)').count(),0,'no moves during presentation');
@@ -52,6 +53,7 @@ const root=path.join(__dirname,'..');
     await page.evaluate(()=>presenting);
     const flights=await page.evaluate(()=>flights);assert.equal(flights.length,4);assert.ok(flights.every(f=>f.duration>=500&&f.elapsed>=450));
     assert.equal(await page.locator('#hand button').count(),1);assert.equal(await page.locator('.online-flying-card').count(),0);
+    assert.equal(await page.evaluate(()=>beforeBoard===document.querySelector('.board')&&beforeHand===document.querySelector('#hand [data-card="8"]')),true,'a completed move preserves the table and surviving hand cards');
     await page.locator('#event:not([hidden])').waitFor();assert.match(await page.locator('#event').innerText(),/따닥/);
     await page.waitForTimeout(1100);assert.equal(await page.locator('#event').isVisible(),true,'event screen remains readable beyond one second');
     await page.screenshot({path:'/tmp/matgo-online-event-effects.png'});
@@ -120,6 +122,17 @@ const root=path.join(__dirname,'..');
       assert.equal(await p.locator((to===0?'.caps:not(.caps-own)':'.caps-own')+' [data-face="'+id+'"]').count(),0);
       await sample.context.close();
     }
+    // Overlapping responses must finish the current flight before the next one.
+    const queued=await screen({muted:true});
+    await present(queued.page,played);await queued.page.waitForSelector('.online-flying-card');
+    await queued.page.evaluate(()=>{window.firstPresentation=presenting;window.movingBoard=document.querySelector('.board');});
+    await present(queued.page,{...played,version:3,eventCount:5,events:[...played.events,{id:4,type:'draw',p:1}],game:{...played.game,otherCount:3}});
+    await queued.page.evaluate(()=>firstPresentation);
+    const ordered=await queued.page.evaluate(()=>({flights,board:movingBoard===document.querySelector('.board')}));
+    assert.equal(ordered.flights.length,5);assert.ok(ordered.flights.every(f=>!f.cancelled&&f.elapsed>=450),'concurrent snapshots never cut off a card flight');
+    assert.equal(ordered.flights[4].back,true,'queued opponent draws remain private');assert.equal(ordered.board,true);
+    assert.equal(await queued.page.locator('.op-hand>.c').count(),3);
+    await queued.context.close();
     assert.deepEqual(errors,[]);
     console.log('PASS: measured card flights, real recorded audio after touch, mute, readable events, idempotent polling, private replacement, visibility cancellation, resume and reduced motion');
   }finally{await browser.close();}

@@ -443,7 +443,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261022-agit1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261024-smooth1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
