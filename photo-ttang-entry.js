@@ -60,7 +60,7 @@
 
   let pendingKind = null, entryRevision = 0;
   async function enter(kind) {
-    if (pendingKind === kind) return;
+    if (pendingKind === kind && tab === kind) return;
     if (!photoAllowed()) return lockPhotoGame();
     const request = ++entryRevision;
     pendingKind = kind;
