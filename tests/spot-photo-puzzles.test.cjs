@@ -21,10 +21,11 @@ try{
  for(const p of photos){
   assert.equal(p.difficulty,'hard');assert.equal(p.spots.length,6);
   assert.equal(p.original,p.difference,'both sides use identical base pixels outside the six masks');
-  assert.equal(p.layers.length,1);assert.equal(p.layers[0].regions.length,6);
-  assert.deepEqual(Array.from(p.layers[0].regions,r=>r.spotIndex),[0,1,2,3,4,5]);
+  const regions=Array.from(p.layers).flatMap(layer=>Array.from(layer.regions)).sort((a,b)=>a.spotIndex-b.spotIndex);
+  assert.equal(regions.length,6);
+  assert.deepEqual(regions.map(r=>r.spotIndex),[0,1,2,3,4,5]);
   for(let i=0;i<6;i++){
-   const s=p.spots[i],r=p.layers[0].regions[i],b=s.targetBounds;
+   const s=p.spots[i],r=regions[i],b=s.targetBounds;
    assert.equal(r.shape,'rect');assert.ok(b.left>=0&&b.top>=0&&b.right<=100&&b.bottom<=100);
    assert.ok(b.right>b.left&&b.bottom>b.top);assert.ok((b.right-b.left)*(b.bottom-b.top)<140,'hard differences stay local');
    assert.ok(Math.abs(r.x-r.rx-b.left)<1e-8&&Math.abs(r.y-r.ry-b.top)<1e-8&&Math.abs(r.x+r.rx-b.right)<1e-8&&Math.abs(r.y+r.ry-b.bottom)<1e-8);
@@ -33,6 +34,7 @@ try{
    for(let j=0;j<i;j++){const t=p.spots[j].targetBounds;assert.ok(b.right<t.left||b.left>t.right||b.bottom<t.top||b.top>t.bottom,'six independent non-overlapping edited regions');}
   }
   const assets=manifest.puzzles.find(m=>m.id===p.id).files;
+  for(const file of [p.original,...Array.from(p.layers,layer=>layer.image)])assert.ok(Object.values(assets).some(f=>f.path===file),'all rendered photo assets are hash-verified');
   for(const f of Object.values(assets)){const bytes=fs.readFileSync(path.join(root,f.path));assert.equal(bytes.length,f.bytes);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),f.sha256);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(f.width,1536);assert.equal(f.height,1024);}
  }
  w.eval(read('app.js'));
@@ -46,8 +48,11 @@ try{
  for(const p of photos){
   $('stage-picker').value=p.id-1;$('stage-picker').dispatchEvent(new w.Event('change'));loadImages();
   assert.equal($('start').disabled,false);assert.match($('stage-label').textContent,/62.*어려움/);
-  assert.equal(w.document.querySelectorAll('.contrast-overlay').length,2,'one mask layer in the main and zoom views');
-  const overlay=w.document.querySelector('.contrast-overlay');assert.equal(overlay.style.maskImage.split('linear-gradient').length-1,6);
+  assert.equal(w.document.querySelectorAll('.contrast-overlay').length,p.layers.length*2,'every mask layer appears in both main and zoom views');
+  for(const id of ['difference','zoom-difference']){
+   const overlays=Array.from($(id).parentElement.querySelectorAll('.contrast-overlay'));
+   assert.equal(overlays.reduce((n,im)=>n+im.style.maskImage.split('linear-gradient').length-1,0),6,'exactly six visible edits on each B surface');
+  }
   $('start').click();assert.equal($('board-curtain').hidden,true);
   const surface=$('original').parentElement;
   tap(surface,p.spots[0].x,p.spots[0].y);tap(surface,p.spots[0].x,p.spots[0].y);
@@ -62,5 +67,5 @@ try{
  const progress=registered.find(t=>t.name==='read_game_progress'),open=registered.find(t=>t.name==='open_game_stage');
  assert.equal(progress.execute().totalStages,62);assert.equal(open.inputSchema.properties.stage.maximum,62);
  assert.equal(open.execute({stage:62}).stage,62);assert.throws(()=>open.execute({stage:63}),/1~62/);
- console.log('PASS: 14 hard photo pairs, 84 independent masks, all target corners clickable, 28 image hashes, grouping, duplicate/miss handling, completion recording and stage-62 WebMCP');
+ console.log('PASS: 14 hard photo pairs, 84 independent masks, all target corners clickable, all photo asset hashes, grouping, duplicate/miss handling, completion recording and stage-62 WebMCP');
 }finally{w.close();}
