@@ -37,6 +37,8 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   const photos=await fixture();
   for(let id=49;id<=62;id++){
+   // Enter the round before using the HUD behind the full-screen start menu.
+   if(await photos.page.locator('#start').isVisible())await photos.page.locator('#start').click();
    await photos.page.locator('#wallet-menu > summary').click();
    await photos.page.locator('#stage-picker').selectOption(String(id-1));
    await photos.page.waitForFunction(()=>!document.querySelector('#start').disabled);
