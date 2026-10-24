@@ -46,11 +46,9 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(gameButtons.length,17,'every game remains in one arcade category');
   for(const button of gameButtons){
    const id=button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
-   const versions=button.querySelectorAll('.game-version');
-   assert.equal(versions.length,1,id+' has exactly one release version');
-   assert.match(versions[0].textContent,/^v\d+\.\d+\.\d+$/);
-   assert.equal(versions[0].textContent,'v'+w.OjjudaGameAssets.version(id),id+' uses its own game release');
-   assert.equal(versions[0].getAttribute('aria-label'),'게임 버전 '+w.OjjudaGameAssets.version(id));
+   assert.equal(button.querySelectorAll('.game-version').length,0,id+' does not expose release metadata in the menu');
+   assert.doesNotMatch(button.textContent,/v\d+\.\d+\.\d+/);
+   assert.match(w.OjjudaGameAssets.version(id),/^\d+\.\d+\.\d+$/,id+' retains its internal release version');
   }
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=18};t.render();
   assert.equal(w.document.querySelector('[data-v=poker]'),null,'18-year-olds cannot see poker');

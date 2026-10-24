@@ -36,8 +36,8 @@ world=world.slice(0,boot)+`
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
  for(const width of [320,390,768,900,1280]){
   await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
-  const versions=await page.locator('[data-arcade-games] .gbtn').evaluateAll(nodes=>nodes.map(n=>{const v=n.querySelectorAll('.game-version');return{count:v.length,text:v[0]?.textContent,fits:v[0]?.scrollWidth<=v[0]?.clientWidth+1};}));
-  assert.ok(versions.every(v=>v.count===1&&/^v\d+\.\d+\.\d+$/.test(v.text)&&v.fits),'each game version appears once and fits at '+width);
+  assert.equal(await page.locator('[data-arcade-games] .game-version').count(),0,'release metadata stays out of the menu at '+width);
+  assert.doesNotMatch(await page.locator('[data-arcade-games]').allTextContents().then(t=>t.join(' ')),/v\d+\.\d+\.\d+/);
   if(width<=600){
    const grid=await page.locator('[data-arcade-games=solo]').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
    assert.equal(grid,3,'mobile keeps exactly three game buttons per row');

@@ -4,7 +4,7 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.join(__dirname, '..');
 const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
-const start = world.indexOf('function worldGameVersion(id){');
+const start = world.indexOf('function worldMatgoButton(){');
 const end = world.indexOf('var worldMemberEntry=null;', start);
 assert.ok(start > 0 && end > start);
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
