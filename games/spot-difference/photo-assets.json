@@ -347,7 +347,8 @@
       "generationMode": "built-in image_gen",
       "originalPrompt": "Use case: photorealistic-natural. Asset: original image for a difficult spot-the-difference game. One ultra-realistic 1536x1024 landscape travel photograph, full frame, no border, no collage, no watermark, no readable signs or logos. Deep focus, realistic optics and fine documentary texture, physically plausible architecture, natural colors, no prominent people, not illustration or miniature. Many natural small spatially separated details useful for later subtle edits. A hilly San Francisco-style residential city street under bright coastal morning light. Colorful Victorian bay windows, steep road receding toward a bay, overhead tram wires, a distant small streetcar, parked cars, front steps with planters, cast metal railings and street lamps. Crisp photographic realism, no iconic bridge required.",
       "editPrompts": [
-        "Use case: precise-object-edit. This image is the edit target for a HARD spot-the-difference game. Keep exact 1536x1024 dimensions and alignment. No crop, no camera change, no global color/texture changes, no text/watermark. Preserve every other object. Make exactly these six small localized photorealistic edits; coordinates are original-image pixels:\n1. Remove the tiny white sailboat on the distant water near (1084,430), replace with the same water.\n2. Change only the nearest left street lamp's clear cream glass near (359,321) to warm amber glass, retain frame.\n3. Remove the small terracotta pot on the mid-left tan building window ledge near (619,271), retain ledge.\n4. Change only the red left rear tail light of the closest dark parked car near (749,786) to clear silver-white, retain shape.\n5. Remove only the two tiny dark chimney caps atop the pale chimney near (815,360), keep the white chimney body.\n6. Remove the rear-window wiper on the white parked hatchback at right near (1285,769), retain window and car."
+        "Use case: precise-object-edit. This image is the edit target for a HARD spot-the-difference game. Keep exact 1536x1024 dimensions and alignment. No crop, no camera change, no global color/texture changes, no text/watermark. Preserve every other object. Make exactly these six small localized photorealistic edits; coordinates are original-image pixels:\n1. Remove the tiny white sailboat on the distant water near (1084,430), replace with the same water.\n2. Change only the nearest left street lamp's clear cream glass near (359,321) to warm amber glass, retain frame.\n3. Remove the small terracotta pot on the mid-left tan building window ledge near (619,271), retain ledge.\n4. Change only the red left rear tail light of the closest dark parked car near (749,786) to clear silver-white, retain shape.\n5. Remove only the two tiny dark chimney caps atop the pale chimney near (815,360), keep the white chimney body.\n6. Remove the rear-window wiper on the white parked hatchback at right near (1285,769), retain window and car.",
+        "Use case: precise-object-edit. Asset: a repaired localized difference for the existing hard spot-the-difference browser game. Input image 1 is the edit target, an original 1536x1024 street photograph. Change ONLY the white compact SUV parked at the RIGHT curb, near image coordinates (1277,795), immediately left of the foreground red sedan. Repaint the SUV's white painted body panels (rear hatch, rear bumper, roof edge, and visible side panels) a clearly recognizable natural medium cobalt blue. Preserve the original car's exact outline, size, position, wheel geometry, rear window and its black wiper, lights, license plate, reflections and believable afternoon lighting. Make the blue paint visibly distinguishable from white even when the complete picture is displayed on a phone, while retaining real photographic texture. Do not alter the red sedan or any other vehicle. Keep every other detail unchanged: exact same 1536x1024 canvas, camera, framing, street, houses, wires, ocean, trees, boats, windows, lamps, chimneys and shadows. No crop, zoom, global recolor, added elements, annotations, letters, watermark or border. Produce one full-frame matching photo."
       ],
       "files": {
         "original": {
@@ -361,6 +362,13 @@
           "path": "assets/53-photo-difference.webp",
           "sha256": "21dcd92f6a5cfd0fc19adfa620a6c80612807404ae62c51436fe3ef145b469ff",
           "bytes": 606964,
+          "width": 1536,
+          "height": 1024
+        },
+        "carColorRepair": {
+          "path": "assets/53-car-color.webp",
+          "sha256": "376139802dbf92699dc15b3ece92cc418a86c1d88798697bca437493f957dfc1",
+          "bytes": 606254,
           "width": 1536,
           "height": 1024
         }
@@ -412,15 +420,17 @@
           ]
         },
         {
-          "text": "오른쪽 흰 자동차의 뒷유리 와이퍼가 없어졌어요.",
+          "text": "오른쪽 자동차의 차체가 흰색에서 파란색으로 바뀌었어요.",
           "bounds1536x1024": [
-            1263,
-            758,
-            1309,
-            781
+            1216,
+            750,
+            1335,
+            839
           ]
         }
-      ]
+      ],
+      "revisedOn": "2026-10-24",
+      "repairNote": "Replaced the nearly invisible rear-wiper removal with a white-to-blue car body color change. The original five regions retain their existing edited image; the sixth region uses a separate generated repair layer. Both sides retain identical original pixels outside all six masks."
     },
     {
       "id": 54,
