@@ -4,6 +4,7 @@
   const PAGE_SIZE = 20;
   const activityKinds = {room:'프로필',chat:'대화',game:'게임'};
   const filters = [['all', '전체'], ['today', '오늘 가입'], ['banned', '정지 중'], ['admin', '관리자']];
+  const sorts = [['last_seen', '최근 방문순'], ['created_at', '가입일순'], ['visit_count', '방문횟수순']];
   const el = (tag, text, className = '') => {
     const node = document.createElement(tag);
     if (text !== undefined) node.textContent = text;
@@ -23,6 +24,7 @@
     let offset = Number.isSafeInteger(initialState?.offset) && initialState.offset >= 0 ? Math.floor(initialState.offset / PAGE_SIZE) * PAGE_SIZE : 0;
     const requestedFilter = initialState?.filter || initialFilter;
     let filter = filters.some(([id]) => id === requestedFilter) ? requestedFilter : 'all';
+    let sort = sorts.some(([id]) => id === initialState?.sort) ? initialState.sort : 'last_seen';
     let subscription;
     const current = () => !destroyed && isCurrent() && !!owner && getAdminId?.() === owner;
     const section = el('section', undefined, 'acct-directory');
@@ -61,6 +63,17 @@
       if (busy) return;
       query = ''; input.value = ''; reset.hidden = true; offset = 0; void refresh(); input.focus();
     });
+    const sortBar = el('div', undefined, 'acct-sort-bar');
+    const sortLabel = el('label', '정렬');
+    const sortSelect = el('select'); sortSelect.className = 'inp'; sortSelect.setAttribute('aria-label', '계정 정렬');
+    for (const [id, text] of sorts) { const option = el('option', text); option.value = id; sortSelect.append(option); }
+    sortSelect.value = sort; sortLabel.append(sortSelect);
+    sortSelect.addEventListener('change', () => {
+      if (busy) { sortSelect.value = sort; return; }
+      sort = sorts.some(([id]) => id === sortSelect.value) ? sortSelect.value : 'last_seen';
+      sortSelect.value = sort; offset = 0; void refresh();
+    });
+    sortBar.append(sortLabel, el('span', '방문횟수는 기록된 방문일 기준으로 하루 1회 집계해요.', 'acct-sort-note'));
     const count = el('p', '', 'acct-count');
     const status = el('p', '', 'acct-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     const retry = button('다시 불러오기', 'btn sm'); retry.hidden = true;
@@ -77,7 +90,8 @@
       rewards.href = '/admin/rewards.html';
       section.append(rewards);
     }
-    section.append(form, count, status, retry, list, pagination); container.replaceChildren(section);
+    section.append(form); if (!withdrawn && !referrals) section.append(sortBar);
+    section.append(count, status, retry, list, pagination); container.replaceChildren(section);
 
     function clearSensitive(message) {
       run++; busy = false;
@@ -86,7 +100,7 @@
     function setBusy(value) {
       busy = value; section.setAttribute('aria-busy', String(value));
       for (const control of [...filterButtons, search, reset, retry]) control.disabled = value;
-      input.disabled = value;
+      input.disabled = value; sortSelect.disabled = value;
       previous.disabled = value || offset === 0;
       next.disabled = value || offset + PAGE_SIZE >= total;
     }
@@ -113,6 +127,7 @@
         detail('탈퇴', date(record.withdrawn_at)); detail('자동 삭제 예정', date(record.expires_at));
       } else {
         detail('마지막 방문', date(record.last_seen));
+        detail('방문횟수', Math.max(0, Number(record.visit_count) || 0).toLocaleString('ko-KR') + '회');
         if (record.last_active) detail('마지막 활동', `${date(record.last_active)}${activityKinds[record.last_active_kind] ? ' · ' + activityKinds[record.last_active_kind] : ''}`);
         if (banned) detail('정지 종료', date(record.banned_until));
         detail('보유 ZU', Number(record.coins || 0).toLocaleString('ko-KR') + ' ZU');
@@ -146,7 +161,7 @@
       list.replaceChildren(); count.textContent = ''; pagination.hidden = true;
       try {
         const args = { p_query: query, p_offset: offset, p_limit: PAGE_SIZE };
-        if (!withdrawn && !referrals) args.p_filter = filter;
+        if (!withdrawn && !referrals) { args.p_filter = filter; args.p_sort = sort; }
         const result = await client.rpc(referrals ? 'admin_referral_counts' : withdrawn ? 'admin_list_withdrawn_accounts' : 'admin_list_member_accounts', args);
         if (request !== run || !current()) return;
         if (result.error) throw result.error;
@@ -181,7 +196,7 @@
       if (session?.user?.id !== owner || !current()) clearSensitive('로그인 상태가 바뀌었어요. 관리자 계정으로 다시 열어 주세요.');
     })?.data?.subscription;
     void refresh();
-    return { refresh, getState: () => ({ query, filter, offset }), destroy() { destroyed = true; run++; subscription?.unsubscribe?.(); container.replaceChildren(); } };
+    return { refresh, getState: () => ({ query, filter, offset, sort }), destroy() { destroyed = true; run++; subscription?.unsubscribe?.(); container.replaceChildren(); } };
   }
   window.OjjudaAdminAccounts = Object.freeze({ mount });
 })();

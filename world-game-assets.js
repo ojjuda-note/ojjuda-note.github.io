@@ -5,7 +5,7 @@
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   poker:'1.0.0',
-  tank:'1.0.0',
+  tank:'1.0.1',
   mines:'1.0.0',
   saetbyeol:'1.0.0',
   tour:'1.0.0',
@@ -15,7 +15,7 @@
   runner:'1.0.0',
   stacker:'1.0.0',
   breakout:'1.0.0',
-  spot:'1.2.1',
+  spot:'1.2.2',
   screw:'1.0.0',
   janggi:'1.0.0',
   chess:'1.0.0',

@@ -208,6 +208,89 @@ const uid = number => `00000000-0000-4000-8000-${String(number).padStart(12, '0'
     assert.equal((await withdrawn(null,null,null)).limit, 20);
     assert.equal((await withdrawn('',100)).total, 52); assert.deepEqual((await withdrawn('',100)).items, []);
 
+    // Upgrade the real RPC: all sorting happens before pagination, including visit totals.
+    await db.exec(`reset role;
+      create schema ojjuda_rewards_internal;
+      create table ojjuda_rewards_internal.activity_days (
+        user_id uuid not null references auth.users(id) on delete cascade,
+        active_day date not null, first_seen_at timestamptz not null default now(),
+        primary key(user_id,active_day));
+      alter table ojjuda_rewards_internal.activity_days enable row level security;
+      insert into ojjuda_rewards_internal.activity_days(user_id,active_day)
+        select ('00000000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,
+          date '2026-10-01'+d
+        from generate_series(1,64) i
+        cross join lateral generate_series(1,case when i in (40,50) then 12 when i=1 then 2 else i%5 end) d;
+      update auth.users set last_sign_in_at=null;
+      update public.user_private set last_seen_at=null;
+      update public.user_private set last_seen_at=timestamptz '2026-10-23 12:00Z'
+        where user_id in ('00000000-0000-4000-8000-000000000040','00000000-0000-4000-8000-000000000050');
+      update auth.users set created_at=timestamptz '2026-09-01 12:00Z'
+        where id in ('00000000-0000-4000-8000-000000000040','00000000-0000-4000-8000-000000000050');
+      update auth.users set last_sign_in_at=timestamptz '2026-10-24 12:00Z'
+        where id='00000000-0000-4000-8000-000000000055';
+      update public.user_private set last_seen_at=timestamptz '2026-10-20 12:00Z'
+        where user_id='00000000-0000-4000-8000-000000000055';
+      update auth.users set last_sign_in_at=timestamptz '2026-10-22 12:00Z'
+        where id='00000000-0000-4000-8000-000000000060';
+    `);
+    await db.exec(migration('20261024090159_admin_account_sorting.sql'));
+    const sortedMembers = (sort, query = '', filter = 'all', offset = 0, limit = 20, schema = 'public') =>
+      value(`select ${schema}.admin_list_member_accounts($1,$2,$3,$4,$5) as value`, [query,filter,offset,limit,sort]);
+    for (const schema of ['public','ojjuda_account_internal']) {
+      const signatures = (await db.query(`select p.pronargs,p.pronargdefaults,p.prosecdef,p.proconfig
+        from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+        where n.nspname=$1 and p.proname='admin_list_member_accounts'`, [schema])).rows;
+      assert.equal(signatures.length, 1, 'one signature avoids ambiguous PostgREST RPC dispatch');
+      assert.equal(signatures[0].pronargs, 5); assert.equal(signatures[0].pronargdefaults, 5);
+      assert.equal(signatures[0].prosecdef, schema === 'ojjuda_account_internal');
+      assert.deepEqual(signatures[0].proconfig, ['search_path=pg_catalog']);
+      const signature = `${schema}.admin_list_member_accounts(text,text,integer,integer,text)`;
+      assert.equal(await value("select has_function_privilege('anon',$1,'execute') as value", [signature]), false);
+      assert.equal(await value("select has_function_privilege('authenticated',$1,'execute') as value", [signature]), true);
+    }
+    await db.exec('set role anon');
+    await assert.rejects(() => sortedMembers('visit_count'), /permission denied/);
+    await db.exec('reset role; set role authenticated');
+    for (const id of [null,uid(3)]) {
+      await claim(id);
+      for (const schema of ['public','ojjuda_account_internal']) {
+        await assert.rejects(() => sortedMembers('visit_count','','all',0,20,schema), /not_admin/);
+      }
+    }
+    await claim(uid(1));
+    await assert.rejects(() => db.query('select * from ojjuda_rewards_internal.activity_days'), /permission denied/);
+    for (const sort of ['last_seen','created_at','visit_count']) {
+      const orderedPages = await Promise.all([0,20,40,60].map(offset => sortedMembers(sort,'','all',offset)));
+      const rows = orderedPages.flatMap(page => page.items);
+      assert.equal(rows.length, 64); assert.equal(new Set(rows.map(row => row.id)).size, 64);
+      assert.ok(orderedPages.every(page => page.total === 64));
+      assert.deepEqual(rows.map(row => row.id), [...rows].sort((a,b) => {
+        const time = value => value ? Date.parse(value) : -Infinity;
+        if (sort === 'visit_count' && a.visit_count !== b.visit_count) return b.visit_count-a.visit_count;
+        if (sort !== 'created_at' && time(a.last_seen) !== time(b.last_seen)) return time(b.last_seen)-time(a.last_seen);
+        if (time(a.created_at) !== time(b.created_at)) return time(b.created_at)-time(a.created_at);
+        return a.id.localeCompare(b.id);
+      }).map(row => row.id), `${sort} sorts globally with deterministic null/tie handling`);
+      rows.forEach(row => assert.deepEqual(Object.keys(row).sort(), [...memberKeys,'visit_count'].sort()));
+      assert.deepEqual((await sortedMembers(sort)).items, orderedPages[0].items, 'repeat reads are stable');
+    }
+    const byVisits = await sortedMembers('visit_count');
+    assert.deepEqual(byVisits.items.slice(0,2).map(row => [row.id,row.visit_count]), [[uid(40),12],[uid(50),12]]);
+    const recent = await sortedMembers('last_seen');
+    assert.equal(recent.items[0].id, uid(55), 'a newer login wins over an older last_seen timestamp');
+    assert.equal(recent.items[0].seen_by_login, true);
+    assert.equal(recent.items.find(row => row.id === uid(60)).coins, null, 'missing wallet still uses login visit');
+    assert.equal((await sortedMembers('visit_count','member55@')).items[0].visit_count, 0, 'no daily records means zero, not invented history');
+    assert.equal((await sortedMembers('visit_count','mixed','banned')).total, 1);
+    assert.equal((await sortedMembers('visit_count','','banned')).total, 2);
+    assert.deepEqual((await sortedMembers('created_at','','today')).items.map(row => row.id), [uid(63),uid(62)]);
+    assert.deepEqual((await members()).items, (await sortedMembers('created_at')).items, 'old four-argument clients retain their ordering');
+    assert.deepEqual((await value('select public.admin_list_member_accounts() as value')).items, (await members()).items);
+    assert.deepEqual((await sortedMembers(null)).items, (await members()).items);
+    assert.equal((await sortedMembers('visit_count','','all',100)).items.length, 0);
+    await assert.rejects(() => sortedMembers('visit_count;drop table auth.users'), /invalid_account_sort/);
+
     // Archive expiration and current administrator membership are checked on every call.
     await db.exec('reset role');
     await db.query('update ojjuda_account_internal.withdrawn_member_accounts set expires_at=now() where user_id=$1', [uid(101)]);
@@ -217,8 +300,9 @@ const uid = number => `00000000-0000-4000-8000-${String(number).padStart(12, '0'
     await db.query('delete from public.app_admins where user_id=$1', [uid(1)]);
     await db.exec('set role authenticated');
     await assert.rejects(() => members(), /not_admin/);
+    await assert.rejects(() => sortedMembers('last_seen'), /not_admin/);
     await assert.rejects(() => withdrawn(), /not_admin/);
-    console.log('PASS: account directories permissions, paginated totals, literal searches, KST filters, activity compatibility, archive expiry and strict masked fields');
+    console.log('PASS: account directory permissions, all three global sorts, visit totals, stable pagination, legacy RPC compatibility, literal searches, KST filters, activity compatibility, archive expiry and masked fields');
   } finally {
     await db.close();
   }

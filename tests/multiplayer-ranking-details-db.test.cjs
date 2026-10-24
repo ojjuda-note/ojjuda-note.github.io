@@ -102,6 +102,45 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(awards.filter(x=>x.game==='tank').length,1);assert.equal(awards.find(x=>x.game==='tank').nickname,'A');
  assert.equal(awards.find(x=>x.game==='spot'&&x.user_id===a).score,2);
  assert.equal(awards.find(x=>x.game==='ttang').score,1);
+ // Production privacy helpers stay caller-scoped even inside a definer RPC.
+ // A permissive stub/root-only test misses the whole-board failure for members.
+ await tank(b,11,true);
+ await db.exec('create table public.blocks(blocker uuid,blocked uuid)');
+ const helperSource=read('supabase/migrations/20260930231544_scope_world_privacy_helpers.sql');
+ await db.exec('drop function public.is_banned(uuid);drop function public.blocked_between(uuid,uuid)');
+ for(const name of ['is_banned','blocked_between']){
+  const start=helperSource.indexOf('CREATE OR REPLACE FUNCTION public.'+name+'(');
+  const end=helperSource.indexOf('$function$;',start)+'$function$;'.length;
+  await db.exec(helperSource.slice(start,end));
+ }
+ await db.exec(`revoke execute on function public.is_banned(uuid),public.blocked_between(uuid,uuid) from public,anon;
+ grant execute on function public.is_banned(uuid),public.blocked_between(uuid,uuid) to authenticated,service_role;`);
+ await db.exec(read('supabase/migrations/20261009051516_batch_board_monthly_leaders.sql'));
+ await claims(a);await db.exec('set role authenticated');
+ await assert.rejects(rank('tank'),/helper_scope_denied/,'reproduce another participant breaking tank ranking');
+ await assert.rejects(rank('spot'),/helper_scope_denied/,'reproduce member/guest picture ranking failure');
+ const board=async()=>(await db.query("select public.community_game_monthly_leaders(array['tank','spot','runner']) v")).rows[0].v;
+ await assert.rejects(board(),/helper_scope_denied/,'one scoped helper error breaks the entire batch');
+ await db.exec('reset role');
+ const privacyBefore=(await db.query("select pg_get_functiondef('public.is_banned(uuid)'::regprocedure) value")).rows[0].value;
+ await db.exec(read('supabase/migrations/20261024090740_ranking_member_visibility.sql'));
+ assert.equal((await db.query("select pg_get_functiondef('public.is_banned(uuid)'::regprocedure) value")).rows[0].value,privacyBefore);
+ await db.exec('set role authenticated');
+ assert.ok((await rank('tank')).some(x=>x.nick==='B'),'ordinary members can load another eligible participant');
+ assert.equal((await rank('tank')).some(x=>x.nick==='banned'),false,'banned candidates remain excluded');
+ assert.deepEqual((await rank('spot')).map(x=>[x.nick,x.score]),[['A',2],['B',2],['손님',1]]);
+ assert.deepEqual(Object.keys(await board()).sort(),['runner','spot','tank']);
+ await assert.rejects(db.query('select public.is_banned($1)',[b]),/helper_scope_denied/,'the direct privacy RPC remains restricted');
+ await assert.rejects(db.query('select * from public.user_private'),/permission denied/);
+ await db.exec('reset role');await db.query('insert into public.blocks values($1,$2)',[a,b]);await db.exec('set role authenticated');
+ assert.equal((await rank('tank')).some(x=>x.nick==='B'),false,'block filtering remains active');
+ await claims(minor);await assert.rejects(rank('matgo'),/adult_required/);
+ await claims(null);await db.exec('reset role;set role anon');
+ const guest=(await db.query("select public.guest_game_ranking('spot','month',$1) v",['a'.repeat(64)])).rows[0].v;
+ assert.ok(guest.some(x=>x.nick==='손님'&&x.me&&x.score===1),'existing guest picture rankings still work');
+ await assert.rejects(rank('tank'),/not_signed_in/);
+ await assert.rejects(board(),/permission denied/);
+ await db.exec('reset role');
  await db.exec("update ojjuda_guest_internal.spot_clears set achieved_at=now()-interval '40 days'");await claims(a);assert.deepEqual(await rank('spot'),[]);
  console.log('PASS: tank opponent priority, streaks, ties, actual field, losses, draws, paid results, territory round isolation, picture counts, duplicates, month boundaries and reward criteria');
 }finally{await db.close();}})().catch(e=>{console.error(e);process.exitCode=1});
