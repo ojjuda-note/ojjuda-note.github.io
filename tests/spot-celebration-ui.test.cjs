@@ -37,12 +37,17 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   const photos=await fixture();
   for(let id=49;id<=62;id++){
-   await photos.page.locator('#wallet-menu summary').click();
+   // Enter the round before using the HUD behind the full-screen start menu.
+   if(await photos.page.locator('#start').isVisible())await photos.page.locator('#start').click();
+   await photos.page.locator('#wallet-menu > summary').click();
    await photos.page.locator('#stage-picker').selectOption(String(id-1));
    await photos.page.waitForFunction(()=>!document.querySelector('#start').disabled);
    assert.match(await photos.page.locator('#stage-label').innerText(),/62.*어려움/);
-   assert.equal(await photos.page.locator('.contrast-overlay').count(),2);
-   assert.deepEqual(await photos.page.locator('#original,#difference,.contrast-overlay').evaluateAll(images=>images.map(im=>[im.naturalWidth,im.naturalHeight])),[[1536,1024],[1536,1024],[1536,1024],[1536,1024]]);
+   // Stage 53 also has a separate car-color layer in both normal and zoom views.
+   const layers=id===53?2:1;
+   assert.equal(await photos.page.locator('.picture:not(.zoom-picture) .contrast-overlay').count(),layers);
+   assert.equal(await photos.page.locator('.zoom-picture .contrast-overlay').count(),layers);
+   assert.deepEqual(await photos.page.locator('#original,#difference,.contrast-overlay').evaluateAll(images=>images.map(im=>[im.naturalWidth,im.naturalHeight])),Array.from({length:2+layers*2},()=>[1536,1024]));
   }
   assert.deepEqual(photos.errors,[]);await photos.context.close();
   const f=await fixture(),p=f.page;
@@ -92,8 +97,11 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    await page.locator('#start').click();
    if(kind==='time')await page.clock.runFor(51000);
    await page.locator('#zoom').click();await page.locator('#zoom-more').click();await page.locator('#zoom-level').selectOption('2');
-   await page.locator('#zoom-scroll-a').evaluate(el=>{el.scrollLeft=213;el.scrollTop=167;});
+   // Let resize scroll events finish before panning, then observe both panes.
    if(kind==='time')await page.clock.runFor(100);else await page.waitForTimeout(100);
+   await page.locator('#zoom-scroll-a').evaluate(el=>{el.scrollLeft=213;el.scrollTop=167;});
+   if(kind==='time')await page.clock.runFor(100);
+   await page.waitForFunction(()=>[...document.querySelectorAll('.zoom-scroll')].every(el=>el.scrollLeft===213&&el.scrollTop===167));
    const zoomState=()=>page.evaluate(()=>({level:document.querySelector('#zoom-level').value,panes:[...document.querySelectorAll('.zoom-scroll')].map(el=>[el.scrollLeft,el.scrollTop,el.clientWidth,el.clientHeight]),pictures:[...document.querySelectorAll('.zoom-picture')].map(el=>[el.getBoundingClientRect().width,el.getBoundingClientRect().height])}));
    const beforePayment=await zoomState();
    await page.locator(kind==='hint'?'#zoom-hint':'#zoom-extend').click();
