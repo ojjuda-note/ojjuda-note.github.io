@@ -43,8 +43,11 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    await photos.page.locator('#stage-picker').selectOption(String(id-1));
    await photos.page.waitForFunction(()=>!document.querySelector('#start').disabled);
    assert.match(await photos.page.locator('#stage-label').innerText(),/62.*어려움/);
-   assert.equal(await photos.page.locator('.contrast-overlay').count(),2);
-   assert.deepEqual(await photos.page.locator('#original,#difference,.contrast-overlay').evaluateAll(images=>images.map(im=>[im.naturalWidth,im.naturalHeight])),[[1536,1024],[1536,1024],[1536,1024],[1536,1024]]);
+   // Stage 53 also has a separate car-color layer in both normal and zoom views.
+   const layers=id===53?2:1;
+   assert.equal(await photos.page.locator('.picture:not(.zoom-picture) .contrast-overlay').count(),layers);
+   assert.equal(await photos.page.locator('.zoom-picture .contrast-overlay').count(),layers);
+   assert.deepEqual(await photos.page.locator('#original,#difference,.contrast-overlay').evaluateAll(images=>images.map(im=>[im.naturalWidth,im.naturalHeight])),Array.from({length:2+layers*2},()=>[1536,1024]));
   }
   assert.deepEqual(photos.errors,[]);await photos.context.close();
   const f=await fixture(),p=f.page;
