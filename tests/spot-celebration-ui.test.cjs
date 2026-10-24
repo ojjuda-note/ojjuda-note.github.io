@@ -37,7 +37,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   const photos=await fixture();
   for(let id=49;id<=62;id++){
-   await photos.page.locator('#wallet-menu summary').click();
+   await photos.page.locator('#wallet-menu > summary').click();
    await photos.page.locator('#stage-picker').selectOption(String(id-1));
    await photos.page.waitForFunction(()=>!document.querySelector('#start').disabled);
    assert.match(await photos.page.locator('#stage-label').innerText(),/62.*어려움/);
