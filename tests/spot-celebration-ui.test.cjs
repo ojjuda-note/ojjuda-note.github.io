@@ -97,8 +97,11 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    await page.locator('#start').click();
    if(kind==='time')await page.clock.runFor(51000);
    await page.locator('#zoom').click();await page.locator('#zoom-more').click();await page.locator('#zoom-level').selectOption('2');
-   await page.locator('#zoom-scroll-a').evaluate(el=>{el.scrollLeft=213;el.scrollTop=167;});
+   // Let resize scroll events finish before panning, then observe both panes.
    if(kind==='time')await page.clock.runFor(100);else await page.waitForTimeout(100);
+   await page.locator('#zoom-scroll-a').evaluate(el=>{el.scrollLeft=213;el.scrollTop=167;});
+   if(kind==='time')await page.clock.runFor(100);
+   await page.waitForFunction(()=>[...document.querySelectorAll('.zoom-scroll')].every(el=>el.scrollLeft===213&&el.scrollTop===167));
    const zoomState=()=>page.evaluate(()=>({level:document.querySelector('#zoom-level').value,panes:[...document.querySelectorAll('.zoom-scroll')].map(el=>[el.scrollLeft,el.scrollTop,el.clientWidth,el.clientHeight]),pictures:[...document.querySelectorAll('.zoom-picture')].map(el=>[el.getBoundingClientRect().width,el.getBoundingClientRect().height])}));
    const beforePayment=await zoomState();
    await page.locator(kind==='hint'?'#zoom-hint':'#zoom-extend').click();
