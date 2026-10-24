@@ -8,6 +8,10 @@
 .acct-search label{flex:1;min-width:160px;font-size:12px;color:var(--ink-2)}
 .acct-search input{display:block;margin-top:5px;width:100%;min-width:0;font-size:16px}
 .acct-search button{min-height:44px}
+.acct-sort-bar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px 14px;margin:12px 0}
+.acct-sort-bar label{display:grid;gap:5px;font-size:12px;color:var(--ink-2)}
+.acct-sort-bar select{min-width:150px;min-height:44px;font-size:16px}
+.acct-sort-note{flex:1;min-width:180px;font-size:12px;line-height:1.65;color:var(--ink-2)}
 .acct-count{margin:12px 0;font-size:13px;font-weight:600}
 .acct-list{display:grid;gap:10px}
 .acct-card{padding:15px;border:1px solid var(--line);border-radius:16px;background:var(--surface);min-width:0}
