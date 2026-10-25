@@ -999,7 +999,7 @@ function screw3d(api) {
       st.boxes.forEach((b, i) => { if (b && b.close) { b.close += dt / 0.45; if (b.close >= 1) { st.boxes[i] = newBox(); pullFromBuffer(); } } });
       if (!st.next) st.ms.t += dt;
       if (!st.next && st.lvl.screws.every(s => s.state === 'done') && !st.fly.length && st.lvl.els.every(e => e.state === 'gone')) {
-        const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
+        const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); api.saveScore?.(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
         st.next = 2; say(ok ? `다 분해했어요! 미션 성공 +${st.L * 10 + st.ms.bonus}` : `다 분해했어요! +${st.L * 10} (미션은 아쉬워요)`, 2);
       }
       if (st.next && (st.next -= dt) <= 0) {
