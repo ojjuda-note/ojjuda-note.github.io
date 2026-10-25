@@ -16,7 +16,7 @@
   stacker:'1.0.0',
   breakout:'1.0.0',
   spot:'1.2.2',
-  screw:'1.0.0',
+  screw:'1.0.1',
   janggi:'1.0.0',
   chess:'1.0.0',
   billiards:'1.0.0',
@@ -35,7 +35,7 @@
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261006-bird1'],
   breakout:[...controls,'/games/breakout-game.js?v=20261007-flow1'],
-  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261009-entry1'],
+  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261025-rank1'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();
