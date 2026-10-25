@@ -66,3 +66,21 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .notice-tk:focus-visible .nb-flow{animation-play-state:paused}
 @keyframes noticeFlow{to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.notice-tk .nb-flow{animation:none;width:auto}.notice-tk .nb-copy{display:none}.notice-tk .nb-text{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-right:0}}
+
+/* Keep the feedback shortcut beside the name on every header size. */
+.world-redesign .brand{flex:none;gap:6px}
+.world-redesign .brand .beta{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:38px;min-height:32px;margin:0;padding:5px 7px;font-size:10px;line-height:1.2;transform:none;cursor:pointer}
+.world-redesign .brand .beta:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+.world-redesign .side>.brand{width:auto;min-width:max-content}
+.world-redesign .topbar{flex-wrap:nowrap;gap:8px}
+@media(max-width:380px){
+ .world-redesign .topbar{padding-inline:12px;gap:4px}
+ .world-redesign .brand,.world-redesign .nn-top-actions{gap:4px}
+ .world-redesign .brand-home{gap:6px}
+ .world-redesign .logo-mark{width:24px;height:24px}
+ .world-redesign .logo-word{font-size:17px}
+ .world-redesign .logo-world{font-size:12px;margin-left:3px}
+ .world-redesign .brand .beta{min-width:34px;padding-inline:6px}
+ .world-redesign .nn-bell{width:28px;height:32px}
+ .world-redesign .coinpill{padding-inline:6px;gap:4px;font-size:11px}
+}

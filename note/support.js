@@ -6,8 +6,9 @@
     const selector='.brand .beta[data-act="feedback-open"]';
     const buttons=[...(root.matches?.(selector)?[root]:[]),...root.querySelectorAll(selector)];
     for(const button of buttons){
-      if(button.textContent!=='베타(오류,건의)')button.textContent='베타(오류,건의)';
-      button.title='오류 신고·건의 보내기';
+      if(button.textContent!=='베타')button.textContent='베타';
+      button.title='오류 신고';
+      button.setAttribute('aria-label','베타 · 오류 신고');
     }
   }
   function watchWorldFeedback() {
