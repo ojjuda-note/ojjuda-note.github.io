@@ -1,6 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
+ const revision='20261025-screw-refresh1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -16,7 +17,7 @@
   stacker:'1.0.0',
   breakout:'1.0.0',
   spot:'1.2.2',
-  screw:'1.0.1',
+  screw:'1.0.2',
   janggi:'1.0.0',
   chess:'1.0.0',
   billiards:'1.0.0',
@@ -39,6 +40,23 @@
   stacker:controls
  };
  const requests=new Map(),complete=new Set();
+ // Pull-to-refresh must notice game releases even when the Agit version stays
+ // the same. Share an in-flight check; an offline check must not block rankings.
+ let releaseCheck=null;
+ function updateRevision(){
+  if(releaseCheck)return releaseCheck;
+  releaseCheck=(async()=>{
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2000);
+   try{
+    const response=await fetch('/game-release.json?t='+Date.now(),{cache:'no-store',signal:controller.signal});
+    if(!response.ok)return null;
+    const next=(await response.json())?.revision;
+    return typeof next==='string'&&/^\d{8}-[a-z0-9-]{1,60}$/.test(next)&&next!==revision?next:null;
+   }catch{return null;}
+   finally{clearTimeout(timer);}
+  })().finally(()=>{releaseCheck=null;});
+  return releaseCheck;
+ }
  function loadResource(url){
   if(requests.has(url))return requests.get(url);
   const promise=new Promise((resolve,reject)=>{
@@ -51,6 +69,7 @@
   requests.set(url,promise);return promise;
  }
  window.OjjudaGameAssets={
+  revision,updateRevision,
   version:id=>versions[id]||'',
   ready:id=>(groups[id]||[]).every(url=>complete.has(url)),
   load:id=>Promise.all((groups[id]||[]).map(loadResource))
