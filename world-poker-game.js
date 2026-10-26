@@ -9,7 +9,7 @@
       if(request!==opening||!authorized())return;
       const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
       const dialog=document.createElement('dialog');dialog.className='tour-game-dialog poker-game-dialog';dialog.setAttribute('aria-label','세븐포커');
-      dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>세븐포커</span></header><iframe title="세븐포커" src="/games/poker/index.html?v=20261024-peek1" allow="autoplay"></iframe>';
+      dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>세븐포커</span></header><iframe title="세븐포커" src="/games/poker/index.html?v=20261026-poker-opening1" allow="autoplay"></iframe>';
       const frame=dialog.querySelector('iframe');let connected=false,unsubscribe=null,inflight=0,lastResult='';
       const send=type=>frame.contentWindow?.postMessage({source:'ojjuda-world',type,owner,joinCode},location.origin);
       function close(){
