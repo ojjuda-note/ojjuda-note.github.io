@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./matgo-shared.css?v=20261026-matgo-opaque1">
+<link rel="stylesheet" href="./matgo-shared.css?v=20261027-matgo-face1">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="../matgo-access.js?v=20261013-resume1"></script>
@@ -62,6 +62,7 @@ import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261015-basic1";
 import {floorLayout,heldPairMonths,piClaimMessage} from "./matgo-view.mjs?v=20261014-pi-audit1";
 import {createWallet} from "./matgo-wallet.mjs?v=20261022-entry2";
+import {createFlightArt} from "./matgo-flight-art.mjs?v=20261027-matgo-face1";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
@@ -321,8 +322,10 @@ function ensureSlot(st){
 function cardXform(st,i){ const k=CW/52,offset=i*Math.min(1,3/Math.max(1,st.length-1)); return {rot:st.rot+offset*6, dx:st.jx+offset*SPREAD_X*k, dy:st.jy-offset*SPREAD_Y*k}; }
 function cardScreenPos(st,i){ fitFloor(); ensureSlot(st); const p=slotPos(st.slot), t=cardXform(st,i); return {x:p.x+t.dx,y:p.y+t.dy,rot:t.rot}; }
 // ----- 날아가는 카드 -----
-function flyEl(card,x,y,rot=0,w=CW,h=CH,back=false){ const f=document.createElement('div'); f.className='fly'; f.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg)`; f.innerHTML=back?backSVG:cardSVG(card); document.body.appendChild(f); return f; }
+const flightArt=createFlightArt({cardSVG,backSVG});
+function flyEl(card,x,y,rot=0,w=CW,h=CH,back=false){ const f=document.createElement('div'); f.className='fly'; f.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg)`; f.append(flightArt.face(card,back)); document.body.appendChild(f); return f; }
 async function throwCard(card,from,to,opts={}){ // Keep geometry fixed; only transform the composited card.
+  if(!await flightArt.prepare([card]))return;
   if(opts.back)Sound.play('flip');
   const w=CW,h=CH,sw=from.w||w,sh=from.h||h;
   const x=from.x+(sw-w)/2,y=from.y+(sh-h)/2,dx=to.x-x,dy=to.y-y,dur=opts.dur||420;
@@ -336,7 +339,9 @@ async function throwCard(card,from,to,opts={}){ // Keep geometry fixed; only tra
   const timing={duration:dur,easing:'cubic-bezier(.25,.6,.3,1)',fill:'forwards'};
   if(opts.back){
     // Mount both faces before moving: no image/DOM replacement halfway through a flip.
-    f.innerHTML=`<span class="flight-face flight-back">${backSVG}</span><span class="flight-face flight-front">${cardSVG(card)}</span>`;
+    f.innerHTML='<span class="flight-face flight-back" style="opacity:1"></span><span class="flight-face flight-front" style="opacity:1;visibility:hidden"></span>';
+    f.querySelector('.flight-back').append(flightArt.face(card,true));
+    f.querySelector('.flight-front').append(flightArt.face(card));
     const faceTiming=timing;
     // Swap opaque faces at the edge of the flip; never cross-fade the card.
     f.querySelector('.flight-back').animate([{visibility:'visible',offset:0},{visibility:'visible',offset:middle},{visibility:'hidden',offset:middle},{visibility:'hidden',offset:1}],faceTiming);
@@ -347,6 +352,7 @@ async function throwCard(card,from,to,opts={}){ // Keep geometry fixed; only tra
 }
 function landFx(st){ const el=stackEls.get(st); if(!el) return; el.animate([{transform:'scale(1)'},{transform:'scale(1.07) translateY(2px)'},{transform:'scale(.98)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'}); const under=el.querySelectorAll('.c'); under.forEach((c,i)=>{ if(i<under.length-1) c.animate([{transform:c.style.transform},{transform:c.style.transform+' translate(2px,1px)'},{transform:c.style.transform}],{duration:220}); }); }
 async function collect(cards,p){
+  if(!await flightArt.prepare(cards))return;
   Sound.play('take',{count:cards.length});
   const groupOf=c=>c.k==='gwang'?0:(c.k==='yul'&&!c.asPi)?1:c.k==='tti'?2:3;
   const caps=document.querySelectorAll(`.zone.${p===ME?'me':'op'} .cap`),flights=[];
@@ -377,6 +383,7 @@ const ui={
     return new Promise(resolve=>modal(`<h2>구쌍피를 먹었어요</h2><p>어느 쪽으로 사용할까요?</p><div class="chongtong-cards">${cardSVG(card)}</div><div class="row"><button class="btn g" id="gukjin-yul">그림(열끗)</button><button class="btn gold" id="gukjin-pi">쌍피(피 2장)</button></div>`,{'gukjin-yul':()=>resolve('yul'),'gukjin-pi':()=>resolve('pi')}));
   },
   async choose(p,idxs,card,from){ if(p===CPU) return aiChoose(game,p,idxs);
+    const faceReady=await flightArt.prepare([card]);
     Sound.play('prompt');
     render(); const cand=new Set(idxs.map(i=>game.floor[i])); ui.chooseStacks=cand; stackEls.forEach((el,st)=>{ el.classList.toggle('pick',cand.has(st)); el.classList.toggle('dimmed',!cand.has(st)); });
     // 들고 있는 패를 크게 보여주기
@@ -385,10 +392,11 @@ const ui={
     hold.style.left=(fr.left+fr.width/2)+'px'; hold.style.top=(fr.bottom-h*.35)+'px'; hold.style.setProperty('--hw',w+'px'); hold.style.setProperty('--hh',h+'px'); document.body.appendChild(hold);
     // 시작 위치에서 날아오기
     let src=null; if(from==='hand'){ src=ui.lastHandRect; } else { const dk=$('.deck .back').getBoundingClientRect(); src={left:dk.left,top:dk.top,width:dk.width,height:dk.height}; }
-    const hc=hold.querySelector('.hc'); const hr=hc.getBoundingClientRect(); if(src) hc.animate([{transform:`translate(${src.left-hr.left}px,${src.top-hr.top}px) scale(${src.width/w})`},{transform:'translate(0,0) scale(1)'}],{duration:380,easing:'cubic-bezier(.25,.7,.3,1)'});
+    const hc=hold.querySelector('.hc'); if(faceReady)hc.replaceChildren(flightArt.face(card)); const hr=hc.getBoundingClientRect(); if(src&&faceReady) hc.animate([{transform:`translate(${src.left-hr.left}px,${src.top-hr.top}px) scale(${src.width/w})`},{transform:'translate(0,0) scale(1)'}],{duration:380,easing:'cubic-bezier(.25,.7,.3,1)'});
     return new Promise(res=>{ ui.resolveChoose=(i)=>{ ui.resolveChoose=null; ui.chooseStacks=null; const r=hc.getBoundingClientRect(); ui.holdRect={x:r.left,y:r.top,w:r.width,h:r.height}; hold.remove(); stackEls.forEach(el=>el.classList.remove('pick','dimmed')); res(i); }; }); },
   async goStop(p,s){ if(p===CPU){ const d=aiGoStop(game,p,s); if(d==='stop')Sound.play('stop'); toast(d==='go'?`상대: 고! (${s}점)`:`상대: 스톱 (${s}점)`,1400); await sleep(900); return d; } render(); Sound.play('prompt'); return new Promise(res=>{ modal(`<h2>${s}점!</h2><p>고를 하면 점수가 올라가지만, 상대가 먼저 나면 고박이에요.<br>상대 ${game.pts(CPU)}점 · 남은 패 ${game.deck.length}장</p><div class="row"><button class="btn gold" id="go">고!</button><button class="btn g" id="stop">스톱</button></div>`,{go:()=>res('go'),stop:()=>{Sound.play('stop');res('stop');}}); }); },
   async event(type,d={}){ if(!['played','flip','take','bonusPlay','flipBonus'].includes(type))Sound.play(type==='ppuk'&&d.firstPpuk?'bonusPlay':type,d); const who=p=>p===ME?'나':'상대';
+    if(['played','flip','take','bonusPlay','flipBonus','ppukBonus','draw','steal'].includes(type)&&!await flightArt.prepare(d.cards||[d.card])){render();return;}
     if(type==='gukjin'){render();if(d.p===CPU)toast('상대 구쌍피 → '+(d.choice==='pi'?'쌍피':'그림(열끗)'),1400);return;}
     if(type==='state'){ render(); const my=score(game.caps[ME]), op=score(game.caps[CPU]); if(!ui.warned.pibak&&op.pv>=8&&my.pv<=8){ ui.warned.pibak=1; Sound.play('warning'); await banner('피박 위험!','피를 모아야 해요','warn',1300); } if(!ui.warned.gwang&&op.g>=2&&my.g===0&&game.deck.length<10){ ui.warned.gwang=1; Sound.play('warning'); await banner('광박 위험!','광을 하나는 먹어야 해요','warn',1300); } if(!ui.warned.seven&&op.pts>=5&&op.pts<7){ ui.warned.seven=1; Sound.play('warning'); await banner('상대 '+op.pts+'점','곧 날 수 있어요','warn',1100); } return; }
     if(type==='played'&&d.card){ const st=d.stack; const i=st.indexOf(d.card); const to=cardScreenPos(st,i); let from; if(ui.holdRect&&d.p===ME){ from={...ui.holdRect,rot:0}; ui.holdRect=null; } else if(d.p===ME){ const el=document.querySelector(`.hand.me .c[data-id="${d.card.id}"]`); const r=el?el.getBoundingClientRect():$('.hand.me').getBoundingClientRect(); from={x:r.left,y:r.top,w:r.width,h:r.height,rot:0}; if(el) el.style.visibility='hidden'; } else { const hs=$('.hand.op'); const r=hs.getBoundingClientRect(); from={x:r.left+r.width/2-15,y:r.top,w:30,h:45,rot:0}; } await throwCard(d.card,from,to,{spin:d.p===ME?-25:25,dur:d.quick?330:420,onCards:i>0}); render(); landFx(st); await sleep(d.quick?40:120); return; }
@@ -467,7 +475,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261026-matgo-opaque1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261027-matgo-face1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -552,18 +560,19 @@ async function onPick(id){
   }finally{ui.busy=false;render();}
 }
 async function shakeAnim(p,cards){ // 같은 월 3장을 꺼내 보여주고 흔든 뒤 다시 손으로
+  if(!await flightArt.prepare(cards))return;
   const mine=p===ME; const cx=innerWidth/2, cy=innerHeight*.44; const w=Math.round(CW*1.45), h=Math.round(w*1.5);
   const src=cards.map(c=>{ const el=mine?document.querySelector(`.hand.me .c[data-id="${c.id}"]`):null; const r=el?el.getBoundingClientRect():$('.hand.op').getBoundingClientRect(); if(el) el.style.visibility='hidden'; return {el,r:el?r:{left:r.left+r.width/2-15,top:r.top,width:30,height:45}}; });
   const flies=cards.map((c,i)=>{ const f=flyEl(c,src[i].r.left,src[i].r.top,0,w,h,!mine); f.classList.add('steal'); f.style.width=w+'px'; f.style.height=h+'px'; return f; });
   // 1) 가운데로 모이며 앞면으로 (상대는 뒷면 → 공개)
-  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.innerHTML=cardSVG(cards[i]); },230); return f.animate([{transform:`translate(0,0) scale(${r.width/w}) rotateY(0deg)`},{transform:`translate(${tx*.5}px,${ty*.5-40}px) scale(.9) rotateY(${mine?0:90}deg)`,offset:.5},{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`}],{duration:520,delay:i*70,easing:'cubic-bezier(.25,.7,.3,1)',fill:'forwards'}).finished; }));
+  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.replaceChildren(flightArt.face(cards[i])); },230); return f.animate([{transform:`translate(0,0) scale(${r.width/w}) rotateY(0deg)`},{transform:`translate(${tx*.5}px,${ty*.5-40}px) scale(.9) rotateY(${mine?0:90}deg)`,offset:.5},{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`}],{duration:520,delay:i*70,easing:'cubic-bezier(.25,.7,.3,1)',fill:'forwards'}).finished; }));
   // 2) 흔들흔들 (부채꼴 유지)
   Sound.play('shake');
   const wob=flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; const base=`translate(${tx}px,${ty}px)`; return f.animate([0,1,2,3,4,5,6].map(k=>({transform:`${base} rotate(${rot+(k%2?10:-10)*(k===6?0:1)}deg) translateY(${k%2?-6:0}px)`})),{duration:760,easing:'ease-in-out',fill:'forwards'}).finished; });
   banner(mine?'흔들기!':'상대 흔들기!',`${cards[0].m}월 세 장 · 이기면 점수 ×2`,mine?'brag':'warn',1300); try{ navigator.vibrate&&navigator.vibrate([25,35,25,35,25]); }catch{}
   await Promise.all(wob); await sleep(260);
   // 3) 다시 손으로
-  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.innerHTML=backSVG; },200); return f.animate([{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`},{transform:`translate(0,0) scale(${r.width/w}) rotate(0deg)`}],{duration:420,delay:i*60,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'}).finished; }));
+  await Promise.all(flies.map((f,i)=>{ const r=src[i].r; const tx=cx-w/2+(i-1)*w*.62-r.left, ty=cy-h/2-r.top; const rot=(i-1)*14; if(!mine) setTimeout(()=>{ f.replaceChildren(flightArt.face(cards[i],true)); },200); return f.animate([{transform:`translate(${tx}px,${ty}px) scale(1) rotate(${rot}deg)`},{transform:`translate(0,0) scale(${r.width/w}) rotate(0deg)`}],{duration:420,delay:i*60,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'}).finished; }));
   flies.forEach(f=>f.remove()); src.forEach(x=>{ if(x.el) x.el.style.visibility=''; });
 }
 async function resolveChongtong(){

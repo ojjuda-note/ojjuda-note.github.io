@@ -1,7 +1,9 @@
+import {createFlightArt} from './matgo-flight-art.mjs?v=20261027-matgo-face1';
 // Animate only the public events returned to this seat; never reconstruct a deck.
 const FLIGHT=520, COLLECT=620, LIMIT=3200;
 export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{}}){
   let current=null;
+  const flightArt=createFlightArt({cardSVG,backSVG});
   const $=s=>document.querySelector(s);
   function cancel(){
     const job=current;if(!job)return;
@@ -51,7 +53,7 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{
       const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();
       if(!a.width||!b.width)return;
       const ghost=document.createElement('div');ghost.className='online-flying-card';ghost.setAttribute('aria-hidden','true');
-      ghost.innerHTML=c?cardSVG(c):backSVG;
+      ghost.append(flightArt.face(c,!c));
       const width=Math.min(52,Math.max(32,b.width)),height=width*1.5;
       ghost.style.cssText=`left:${a.x+a.width/2-width/2}px;top:${a.y+a.height/2-height/2}px;width:${width}px;height:${height}px`;
       document.body.append(ghost);job.ghosts.add(ghost);
@@ -66,6 +68,9 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{
       animation.cancel();job.animations.delete(animation);ghost.remove();job.ghosts.delete(ghost);
     }
     try{
+      // Leave the original cards visible until every moving face is decoded.
+      if(!reduced&&!await flightArt.prepare(moves.flatMap(ev=>ev.cards||[ev.card])))return;
+      if(job.cancelled||document.hidden)return;
       for(const ev of events){
         if(job.cancelled||document.hidden)break;
         if(reduced){onEvent(ev);continue;}

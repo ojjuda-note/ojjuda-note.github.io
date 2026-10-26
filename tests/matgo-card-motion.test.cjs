@@ -3,17 +3,21 @@ const {JSDOM}=require('jsdom');
 const source=fs.readFileSync(path.join(__dirname,'../games/matgo.html'),'utf8');
 const part=(a,b)=>source.slice(source.indexOf(a),source.indexOf(b,source.indexOf(a)));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture(){
+function fixture({images=false}={}){
  const dom=new JSDOM('<div class="zone me"><div class="cap"></div><div class="cap"></div><div class="cap"></div><div class="cap"></div></div>',{runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,animations=[],sounds=[],timers=[];
+ const w=dom.window,animations=[],sounds=[],timers=[],decodes=[];
  const style=w.document.createElement('style');style.textContent=fs.readFileSync(path.join(__dirname,'../games/matgo-shared.css'),'utf8')+'\n'+fs.readFileSync(path.join(__dirname,'../games/matgo-online.css'),'utf8');w.document.head.append(style);
  w.CW=40;w.CH=60;w.ME=0;w.game={caps:[[{id:1,k:'pi'},{id:2,k:'pi'}],[]]};w.Sound={play:(...args)=>sounds.push(args)};
- w.cardSVG=c=>'<svg data-face="'+c.id+'"></svg>';w.backSVG='<svg data-back="true"></svg>';
+ w.cardSVG=c=>'<svg data-face="'+c.id+'" aria-label="검사 패">'+(images?'<image href="/card-'+c.id+'.webp"/>':'')+'</svg>';w.backSVG='<svg data-back="true"></svg>';
+ w.HTMLImageElement.prototype.decode=function(){return new Promise((resolve,reject)=>decodes.push({image:this,fail:reject,finish:()=>{Object.defineProperties(this,{naturalWidth:{value:120},naturalHeight:{value:180}});resolve();}}));};
+ w.HTMLCanvasElement.prototype.getContext=function(){return {fillRect(){},drawImage:image=>this.dataset.painted=image.getAttribute('src')};};
+ w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-flight-art.mjs'),'utf8').replace('export function','function'));
+ w.flightArt=w.createFlightArt({cardSVG:w.cardSVG,backSVG:w.backSVG});
  w.sleep=async()=>{};w.setTimeout=(fn,delay)=>timers.push({fn,delay});
  w.Element.prototype.animate=function(frames,options){let complete;const finished=new Promise(resolve=>{complete=resolve;});const entry={node:this,frames,options,finish:()=>{entry.ended=true;complete();},ended:false};animations.push(entry);return {finished,cancel(){complete();}};};
  w.Element.prototype.getBoundingClientRect=function(){return {left:10,top:30,x:10,y:30,width:40,height:60};};
  w.eval(part('function flyEl(', 'function banner('));
- return {dom,w,animations,sounds,timers};
+ return {dom,w,animations,sounds,timers,decodes};
 }
 (async()=>{
  for(const back of [false,true]){
@@ -26,7 +30,7 @@ function fixture(){
    assert.equal(resolved,false,'a slow/delayed animation must not end when its nominal timer expires');
    assert.ok(flight.node.isConnected,'the moving card remains mounted until its animation completes');
    assert.equal(f.w.getComputedStyle(flight.node).opacity,'1','a moving solo card stays opaque');
-   assert.equal(f.w.getComputedStyle(flight.node).backgroundColor,'rgb(255, 244, 216)','card stock hides the board while artwork is decoding');
+   assert.equal(f.w.getComputedStyle(flight.node).backgroundColor,'rgba(0, 0, 0, 0)','no white placeholder covers a missing face');
    assert.ok(f.animations.every(a=>a.frames.every(k=>!('opacity' in k)||k.opacity===1)),'flips swap faces without fading either image');
    assert.ok(flight.frames.every(k=>!('width' in k)&&!('height' in k)),'movement does not trigger per-frame size layout');
    if(back){assert.ok(flight.node.querySelector('[data-face="1"]'),'the front artwork is mounted before the flip begins');assert.ok(f.animations.every(a=>a.options.easing===flight.options.easing),'both faces and the flight use the same eased timeline');assert.equal(f.timers.length,0,'flip timing uses the animation timeline, not an independent timeout');}
@@ -59,15 +63,46 @@ function fixture(){
  const online=fixture();try{
   const w=online.w;w.matchMedia=()=>({matches:false});
   w.document.body.insertAdjacentHTML('beforeend','<div class="board"><div id="hand"><button data-card="1" style="opacity:.6"><svg data-face="1"></svg></button></div><div class="floor"><div class="fl"></div></div><p id="turn-label"></p></div>');
-  w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace('export function createOnlineMotion','function createOnlineMotion'));
+  w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
   const motion=w.createOnlineMotion({cardSVG:w.cardSVG,backSVG:w.backSVG,sound:w.Sound,onEvent:()=>{}});
   const c={id:1,k:'pi'},next={seat:0,deadline:new Date(Date.now()+30000).toISOString(),serverTime:Date.now()};
   const task=motion.play({},next,[{type:'played',p:0,card:c,stack:[c]}]);await tick();
   const flight=online.animations.find(a=>a.node.classList.contains('online-flying-card'));assert.ok(flight);
   assert.ok(flight.frames.every(k=>k.opacity===1),'online movement must never interpolate from a translucent card');
   assert.equal(w.getComputedStyle(flight.node).opacity,'1');
-  assert.equal(w.getComputedStyle(flight.node).backgroundColor,'rgb(255, 244, 216)','online movement has opaque card stock before the face image loads');
+  assert.equal(w.getComputedStyle(flight.node).backgroundColor,'rgba(0, 0, 0, 0)','online flights do not substitute a blank white face');
   flight.finish();await task;assert.equal(flight.node.isConnected,false);
  }finally{online.dom.window.close();}
- console.log('PASS: opaque solo/online flights, synchronized flip faces, delayed completion, staggered capture and individual deal arrival');
+ for(const back of [false,true]){
+  const f=fixture({images:true});try{
+   const task=f.w.throwCard({id:1},{x:0,y:0},{x:80,y:90,rot:0},{back});await tick();
+   assert.equal(f.animations.length,0,'no flight begins before its actual face image decodes');
+   assert.equal(f.w.document.querySelector('.fly'),null,'a pending image must not produce a white moving rectangle');
+   f.decodes[0].finish();await tick();
+   const flight=f.animations.find(a=>a.node.classList.contains('fly'));
+   assert.ok(flight.node.querySelector('canvas[data-painted="/card-1.webp"]'),'the moving face contains the decoded artwork, including before a flip');
+   assert.equal(flight.node.querySelector('svg image'),null,'motion does not depend on a newly mounted SVG external image');
+   flight.finish();await task;
+  }finally{f.dom.window.close();}
+ }
+ for(const cancel of [false,true]){
+  const f=fixture({images:true});try{
+   const w=f.w;w.matchMedia=()=>({matches:false});
+   w.document.body.insertAdjacentHTML('beforeend','<div class="board"><div id="hand"><button data-card="1"><svg data-face="1"></svg></button></div><div class="floor"><div class="fl"></div></div></div>');
+   w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
+   const motion=w.createOnlineMotion({cardSVG:w.cardSVG,backSVG:w.backSVG,sound:w.Sound,onEvent(){}}),source=w.document.querySelector('[data-card]');
+   const task=motion.play({}, {seat:0,deadline:new Date(Date.now()+30000).toISOString(),serverTime:Date.now()},[{type:'played',p:0,card:{id:1},stack:[]}]);await tick();
+   assert.equal(source.style.visibility,'','the original card remains visible while artwork prepares');assert.equal(f.animations.length,0);
+   if(cancel)motion.cancel();f.decodes[0].finish();await tick();
+   if(cancel){assert.equal(f.animations.length,0,'cancelling a pending decode must not start stale motion');}
+   else{const flight=f.animations[0];assert.ok(flight.node.querySelector('canvas[data-painted="/card-1.webp"]'));flight.finish();}
+   await task;
+  }finally{f.dom.window.close();}
+ }
+ const failed=fixture({images:true});try{
+  const f=failed,task=f.w.throwCard({id:1},{x:0,y:0},{x:80,y:90,rot:0});f.decodes[0].fail(Error('image unavailable'));await task;
+  assert.equal(f.animations.length,0,'a failed artwork load skips motion instead of moving an empty card');
+  const retry=f.w.throwCard({id:1},{x:0,y:0},{x:80,y:90,rot:0});assert.equal(f.decodes.length,2);f.decodes[1].finish();await tick();f.animations[0].finish();await retry;
+ }finally{failed.dom.window.close();}
+ console.log('PASS: decoded painted flight artwork, slow/failed image loads, retry, cancellation, opaque motion and actual completion');
 })().catch(error=>{console.error(error);process.exitCode=1;});

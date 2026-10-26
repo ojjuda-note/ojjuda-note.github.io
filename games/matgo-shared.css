@@ -88,7 +88,7 @@ table.sc{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}
 .stack.pick{animation:pickbob 1s ease-in-out infinite}@keyframes pickbob{50%{transform:translateY(-4px) scale(1.04)}}
 .toast{position:fixed;left:50%;top:15%;transform:translate(-50%,0) scale(.6);opacity:0;background:#ffffffee;color:var(--ink);padding:10px 24px;border-radius:999px;font-size:21px;box-shadow:0 14px 34px -10px #0008;pointer-events:none;z-index:8;transition:.22s;backdrop-filter:blur(6px)}
 .toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
-.fly{position:fixed;z-index:7;pointer-events:none;transform-origin:50% 50%;box-shadow:3px 10px 10px #00000066;border-radius:7px;background:#fff4d8;opacity:1;will-change:transform}
+.fly{position:fixed;z-index:7;pointer-events:none;transform-origin:50% 50%;box-shadow:3px 10px 10px #00000066;border-radius:7px;opacity:1;will-change:transform}
 .c svg{width:100%;height:100%;display:block;border-radius:inherit}
 @media(prefers-reduced-motion:reduce){.fly,.stack .c,.hand .c{transition:none}}
 
@@ -124,5 +124,4 @@ table.sc{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}
 #matgo-stake{z-index:40}
 
 /* Flip faces follow the same timeline as their moving card. */
-.fly .flight-face{position:absolute;inset:0;display:block;border-radius:inherit;background:#fff4d8}
-.fly .flight-front{visibility:hidden}
+.fly .flight-face{position:absolute;inset:0;display:block;border-radius:inherit}

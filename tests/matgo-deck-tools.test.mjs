@@ -44,6 +44,9 @@ const wallet={current:{ok:true,gold:5000,stake_rate:100},status:async()=>wallet.
   wallet.current={ok:true,gold:5000,stake_rate:100,round:{id:String(++roundNumber),gold:5000,seed:10,first:0,carry:1,rate:100,tazza_mode:tazza?'peek':null}};return wallet.current;
 }};
 Object.assign(w,engine,{cpuPortraitHTML,floorLayout,heldPairMonths,dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS,createVentControls,shuffledFloorSlots,createWallet:()=>wallet});
+// This fixture tests deck controls; bitmap readiness and painting are exercised
+// with controlled image decodes in matgo-card-motion.test.cjs.
+w.createFlightArt=({cardSVG,backSVG})=>({prepare:async()=>true,face:(c,back=false)=>{const box=d.createElement('div');box.innerHTML=back?backSVG:cardSVG(c);return box.firstElementChild;}});
 let code=source.match(/<script type="module">([\s\S]*?)<\/script>/)[1].replace(/^import .*;\s*$/gm,'');
 code=code.replace('(async () => {','window.testInit=(async () => {').replace('startRound();\n})();','window.testGame={game,ui,tazza,vent,render,startRound,shuffleFloor};window.firstRound=startRound();\n})();');
 try{
