@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./matgo-shared.css?v=20261026-matgo-motion1">
+<link rel="stylesheet" href="./matgo-shared.css?v=20261026-matgo-opaque1">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="../matgo-access.js?v=20261013-resume1"></script>
@@ -338,8 +338,9 @@ async function throwCard(card,from,to,opts={}){ // Keep geometry fixed; only tra
     // Mount both faces before moving: no image/DOM replacement halfway through a flip.
     f.innerHTML=`<span class="flight-face flight-back">${backSVG}</span><span class="flight-face flight-front">${cardSVG(card)}</span>`;
     const faceTiming=timing;
-    f.querySelector('.flight-back').animate([{opacity:1,offset:0},{opacity:1,offset:middle},{opacity:0,offset:middle},{opacity:0,offset:1}],faceTiming);
-    f.querySelector('.flight-front').animate([{opacity:0,offset:0},{opacity:0,offset:middle},{opacity:1,offset:middle},{opacity:1,offset:1}],faceTiming);
+    // Swap opaque faces at the edge of the flip; never cross-fade the card.
+    f.querySelector('.flight-back').animate([{visibility:'visible',offset:0},{visibility:'visible',offset:middle},{visibility:'hidden',offset:middle},{visibility:'hidden',offset:1}],faceTiming);
+    f.querySelector('.flight-front').animate([{visibility:'hidden',offset:0},{visibility:'hidden',offset:middle},{visibility:'visible',offset:middle},{visibility:'visible',offset:1}],faceTiming);
   }
   await f.animate(frames,timing).finished.catch(()=>{});
   Sound.play(opts.dealing?'deal':'land',{onCards:!!opts.onCards});f.remove();
@@ -466,7 +467,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261026-matgo-motion1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261026-matgo-opaque1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();

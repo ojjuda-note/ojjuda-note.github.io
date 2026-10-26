@@ -57,7 +57,7 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{
       document.body.append(ghost);job.ghosts.add(ghost);
       const dx=b.x+b.width/2-a.x-a.width/2+offset,dy=b.y+b.height/2-a.y-a.height/2;
       const animation=ghost.animate([
-        {transform:'translate(0,0) scale(.9)',opacity:.85},
+        {transform:'translate(0,0) scale(.9)',opacity:1},
         {transform:`translate(${dx*.48}px,${dy*.48-24}px) scale(1.08)`,opacity:1,offset:.48},
         {transform:`translate(${dx}px,${dy}px) scale(1)`,opacity:1}
       ],{duration:duration*scale,easing:'ease-in-out',fill:'forwards'});

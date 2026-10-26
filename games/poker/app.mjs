@@ -2,6 +2,7 @@ import {suit,face,cardName,bestHand} from './engine.mjs?v=20261022-voice1';
 import {createPokerSound,pokerActionCall} from './sound.mjs?v=20261022-seatvoices1';
 import {createOnlineClient,rotateView} from './online-client.mjs?v=20261022-entry2';
 import {createDealMotion} from './deal-motion.mjs?v=20261022-pace1';
+import {createOpeningSelection} from './opening-selection.mjs?v=20261026-poker-opening1';
 
 const sfx=createPokerSound();
 const dealMotion=createDealMotion({play:({seat=0}={})=>void sfx.play('card',{pan:seat===1?-.4:seat===3?.4:0}),onFinish:()=>{
@@ -11,6 +12,12 @@ const dealMotion=createDealMotion({play:({seat=0}={})=>void sfx.play('card',{pan
   schedule();
 }});
 const app=document.querySelector('#app');
+const openingSelection=createOpeningSelection({onFinish:()=>{
+  // Finish returning the opening hand before dealing the fourth card.
+  if(game&&!lobby&&dealMotion.start(app,{dealer:game.dealer,seats:game.players.length}))return;
+  if(queuedRoom){const next=queuedRoom;queuedRoom=null;acceptRoom(next);return;}
+  render({animateDeal:false});schedule();
+}});
 const fmt=n=>Number(n).toLocaleString('ko-KR');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const random=()=>crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;
@@ -166,7 +173,7 @@ function acceptRoom(room){
   if(!online)return;
   if(restoring)resumeOnEntry=!!room?.game;
   if(!room?.game)resumeOnEntry=false;
-  if(dealMotion.active()&&room?.game){queuedRoom=room;return;}
+  if((dealMotion.active()||openingSelection.active())&&room?.game){queuedRoom=room;return;}
   queuedRoom=null;if(room)onlineLobby=room.mode!=='solo';
   const next=room?rotateView(room):null;
   if(next){
@@ -215,6 +222,8 @@ function updateTurnClock(){
 }
 setInterval(updateTurnClock,250);
 function stageLabel(){return game.phase==='finished'?'쇼다운':game.phase==='discard'?'첫 패 선택':game.phase==='open'?'공개 패 선택':game.street===7?'마지막 히든':game.street+'구 · 공개 카드';}
+function needsOpeningSelection(){return game&&['discard','open'].includes(game.phase)&&!game.players[0].up.length&&!game.players[0].folded;}
+function showOpeningSelection(){openingSelection.mount(app,{phase:game.phase,selecting:mode!=='online'||game.turn===0,notice:onlineError});}
 function roundStrip(){
  const current=game.phase==='finished'?7:game.street;
  return `<div class="round-strip"><div class="table-id"><i></i>${online?.room?.mode==='solo'?'컴퓨터 대전':'온라인 대전'}<span>${String(online?.room?.round||record.rounds+1).padStart(2,'0')}번 판</span></div><div class="street-dots" aria-label="게임 진행 단계">${[[0,'패 선택'],[4,'4구'],[5,'5구'],[6,'6구'],[7,'히든']].map(([n,label])=>`<span class="${current===n?'on':current>n?'passed':''}" ${current===n?'aria-current="step"':''}><i aria-hidden="true"></i>${label}</span>`).join('')}</div></div>`;
@@ -317,6 +326,7 @@ function renderTable(animateDeal=true){
     const felt=app.querySelector('.felt');for(const child of felt.children)child.setAttribute('inert','');
     felt.insertAdjacentHTML('beforeend',nextHandPopup());
   }
+  if(needsOpeningSelection()&&(!animateDeal||same))showOpeningSelection();
   visual={game,cards:game.players.map(p=>[...p.cards]),shown:game.players.map((p,i)=>i===0||showdown&&!p.folded?[...p.cards]:[...p.up]),bets:game.players.map(p=>p.total),pot:game.pot,finished:done,street:game.street};
 }
 function animateBetChips(){
@@ -343,10 +353,11 @@ function captureHand(){
   const origin=hand.getBoundingClientRect();
   const cards=new Map([...hand.querySelectorAll('[data-hand-card]')].map(node=>{const rect=node.getBoundingClientRect();return [node.dataset.handCard,{left:rect.left-origin.left,top:rect.top-origin.top}];}));
   const privateGroup=app.querySelector('.private-cards');
-  return {cards,key:handLayoutKey(hand),privateOpacity:privateGroup?getComputedStyle(privateGroup).opacity:'1'};
+  return {cards,key:handLayoutKey(hand),privateOpacity:privateGroup?getComputedStyle(privateGroup).opacity:'1',opening:openingSelection.capture(app)};
 }
 function settleHand(previous){
   if(!previous)return;
+  if(openingSelection.transfer(app,previous.opening))return true;
   const hand=app.querySelector('.my-cards');if(!hand||handLayoutKey(hand)===previous.key)return;
   const origin=hand.getBoundingClientRect();
   const options={duration:240,easing:'cubic-bezier(.22,1,.36,1)'};
@@ -374,19 +385,26 @@ function render({animateDeal=true}={}){
       if(!lobby&&game)fillCards(0);else document.querySelector('#cards-dialog').close();
     }
   }
-  dealMotion.cancel();
+  dealMotion.cancel();openingSelection.cancel();
   const tableView=!lobby||!onlineLobby||!!online?.room;
   document.body.classList.toggle('poker-entry-active',!tableView);
   document.body.classList.toggle('poker-playing',tableView);
   if(playingView!==tableView){playingView=tableView;send('table-view',{playing:playingView});}
-  if(resumeOnEntry&&game)renderResumeLobby();else if(onlineLobby&&lobby)renderOnlineLobby();else if(lobby)renderLobby();else {renderTable(animateDeal);settleHand(handBefore);animateBetChips();dealMotion.start(app,{dealer:game.dealer,seats:game.players.length});}
+  if(resumeOnEntry&&game)renderResumeLobby();else if(onlineLobby&&lobby)renderOnlineLobby();else if(lobby)renderLobby();else {
+    renderTable(animateDeal);const transferring=settleHand(handBefore);animateBetChips();
+    if(!transferring&&!dealMotion.start(app,{dealer:game.dealer,seats:game.players.length})&&needsOpeningSelection()&&!app.querySelector('.opening-selection')){
+      // Compact layouts can hide the deck; the chooser must still open.
+      const resting=openingSelection.capture(app);showOpeningSelection();openingSelection.transfer(app,resting);
+    }
+  }
   if(movePending)syncMovePending();updateTurnClock();
   if(historyOpen&&app.querySelector('.recent'))app.querySelector('.recent').open=true;
   if(keyboardFocus&&focusKey)app.querySelector(`[${focusKey[0]}="${focusKey[1]}"]`)?.focus({preventScroll:true});
 }
 
 function finishDealing(){
-  if(dealMotion.cancel()){if(queuedRoom){const next=queuedRoom;queuedRoom=null;acceptRoom(next);}else render({animateDeal:false});}
+  const dealing=dealMotion.cancel(),opening=openingSelection.cancel();
+  if(dealing||opening){if(queuedRoom){const next=queuedRoom;queuedRoom=null;acceptRoom(next);}else render({animateDeal:false});}
 }
 
 function save(){
@@ -418,7 +436,7 @@ function fillCards(seat){
 function showCards(seat){
   clearTimeout(timer);fillCards(seat);document.querySelector('#cards-dialog').showModal();
 }
-function exit(){online?.close();dealMotion.cancel();clearTimeout(timer);sfx.pause();save();send('exit');}
+function exit(){online?.close();dealMotion.cancel();openingSelection.cancel();clearTimeout(timer);sfx.pause();save();send('exit');}
 function requestExit(leave=false){
  finishDealing();leaveOnExit=!!online?.room&&(leave||online.room.mode!=='solo');
  if(!online?.room){exit();return;}
@@ -440,8 +458,8 @@ document.addEventListener('click',async event=>{
     render({animateDeal:false});return;
   }
   if(!ready||conflict)return;
-  if(dealMotion.active()){
-    if(['help','sound'].includes(b.dataset.action))finishDealing();else return;
+  if(dealMotion.active()||openingSelection.active()){
+    if(['help','sound','exit'].includes(b.dataset.action))finishDealing();else return;
   }
   if(b.dataset.action?.startsWith('online')||b.hasAttribute('data-room-code')){await onlineAction(b);return;}
   if(mode==='online'&&online?.busy)return;
@@ -507,8 +525,8 @@ document.querySelector('#sound-volume').addEventListener('input',event=>{
 });
 document.querySelector('#sound-volume').addEventListener('change',()=>{if(ready&&!conflict){void sfx.unlock();void sfx.play('half');}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){finishDealing();clearTimeout(timer);sfx.pause();save();}else schedule();});
-window.addEventListener('pagehide',()=>{online?.close();dealMotion.cancel();clearTimeout(timer);sfx.pause();save();});
-window.addEventListener('resize',()=>{if(dealMotion.active()){finishDealing();schedule();}});
+window.addEventListener('pagehide',()=>{online?.close();dealMotion.cancel();openingSelection.cancel();clearTimeout(timer);sfx.pause();save();});
+window.addEventListener('resize',()=>{if(dealMotion.active()||openingSelection.active()){finishDealing();schedule();}});
 window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{if(event.matches){finishDealing();schedule();}});
 if(parent!==window)send('ready');
 else app.innerHTML='<section class="gate"><span class="brand">오쭈다 오락실</span><h1>세븐포커</h1><p>오락실에서 세븐포커를 열어 주세요.</p><a href="/world.html?game=poker">오락실로 가기 →</a></section>';
