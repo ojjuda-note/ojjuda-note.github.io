@@ -1,0 +1,39 @@
+.opening-selection{position:fixed;inset:0;z-index:45;display:grid;place-items:center;overflow:auto;padding:max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#06130fbd}
+.opening-selection-panel{width:min(680px,100%);min-width:0;padding:clamp(14px,3vw,28px);border:1px solid #ad9865;border-radius:24px;background:radial-gradient(ellipse at 50% 35%,#285f49,#12382b 75%);box-shadow:0 24px 80px #0009,inset 0 0 0 5px #ffffff06}
+.opening-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.opening-step{font-size:12px;font-weight:700;color:#e9cd92;letter-spacing:.05em}
+.opening-heading h2{font-size:clamp(20px,5vw,28px);color:#fff8e9;margin:6px 0 0}
+.opening-heading .small-button{min-height:44px;color:#e8deca}
+.opening-notice{font-size:12px;line-height:1.5;color:#ffe2a0;text-align:center;margin:0 0 10px}
+.opening-notice:empty{display:none}
+.poker-playing .player.opening-home{visibility:hidden;min-height:calc(var(--hand-card-width)*1.4 + 60px)}
+.poker-playing .opening-selection .my-cards{--hand-card-width:clamp(52px,18vw,136px);--hand-step:1;justify-content:center;gap:clamp(7px,1.5vw,14px);padding:28px 2px 30px;min-height:0;width:100%}
+.poker-playing .opening-selection .my-cards .card{flex:none;transform:none;transition:transform .18s ease;opacity:1}
+.poker-playing .opening-selection .my-cards .card+.card{margin-left:0}
+.poker-playing .opening-selection .my-cards .card.selected{transform:translateY(-12px)}
+.poker-playing .opening-selection .hand-group{width:auto;gap:clamp(7px,1.5vw,14px);opacity:1}
+.poker-playing .opening-selection .hand-group+.hand-group{margin-left:0}
+.poker-playing .opening-selection .my-cards .card .card-state{bottom:-21px;left:0;right:0;text-align:center;background:none;padding:0;color:#f3d99e;font-size:11px}
+.poker-playing .opening-selection .decision-panel{display:block;position:static;grid-area:auto;align-self:auto;padding:0;margin:0;border:0;border-radius:0;background:none;box-shadow:none}
+.poker-playing .opening-selection .decision-heading{display:block;text-align:center;margin:0 0 16px}
+.poker-playing .opening-selection .status{font-size:clamp(14px,3.8vw,18px);color:#fff9e9}
+.poker-playing .opening-selection .decision-detail{font-size:12px;line-height:1.5;color:#c3d5c9;margin-top:6px}
+.poker-playing .opening-selection .decision-clock{display:block;margin-top:8px;color:#eed5a0}
+.poker-playing .opening-selection .actions{display:grid;grid-template-columns:1fr;min-height:0;gap:0}
+.poker-playing .opening-selection .actions .wide{min-height:52px;font-size:15px;flex-direction:row;justify-content:center;gap:12px}
+.poker-playing .opening-selection .actions .wide small{font-size:11px}
+.poker-playing .opening-selection .waiting{padding:14px;min-height:52px}
+.is-opening-transfer .my-cards{position:relative;z-index:50}
+.is-opening-transfer .my-cards .card:disabled{opacity:1;will-change:translate,scale;transition:none}
+.is-opening-transfer .actions{opacity:.55;pointer-events:none}
+@media(max-height:500px){
+ .opening-selection{padding:8px 12px}
+ .opening-selection-panel{width:min(620px,100%);padding:12px 20px;border-radius:18px}
+ .opening-heading h2{font-size:19px;margin-top:3px}
+ .opening-step{font-size:10px}
+ .poker-playing .opening-selection .my-cards{--hand-card-width:min(15vw,19vh,94px);padding:15px 2px 22px}
+ .poker-playing .opening-selection .decision-heading{margin-bottom:8px}
+ .poker-playing .opening-selection .decision-detail{display:none}
+ .poker-playing .opening-selection .actions .wide{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.poker-playing .opening-selection .my-cards .card{transition:none}}
