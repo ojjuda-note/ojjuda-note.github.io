@@ -1,0 +1,83 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs'), path = require('node:path');
+const { randomUUID } = require('node:crypto');
+const { PGlite } = require('@electric-sql/pglite');
+(async () => {
+  const db = new PGlite();
+  const admin = '00000000-0000-4000-8000-000000000001', member = '00000000-0000-4000-8000-000000000002';
+  await db.exec(`create role anon; create role authenticated;
+    create schema auth; grant usage on schema auth to anon,authenticated;
+    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+    create table public.app_admins(user_id uuid primary key);
+    insert into public.app_admins values('${admin}');
+    create function public.is_admin() returns boolean language sql stable security definer set search_path='' as $$
+      select exists(select 1 from public.app_admins where user_id=auth.uid())$$;`);
+  const filename = fs.readdirSync(path.join(__dirname, '../supabase/migrations')).find(n => n.endsWith('_guest_visitor_statistics.sql'));
+  await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations', filename), 'utf8'));
+  const value = async (sql, args = []) => (await db.query(sql, args)).rows[0].value;
+  const headers = obj => value("select set_config('request.headers',$1,false) as value", [JSON.stringify(obj)]);
+  const record = id => value('select public.record_guest_visit($1) as value', [id]);
+  const stats = () => value('select public.admin_guest_visit_stats() as value');
+  for (const role of ['anon', 'authenticated']) {
+    for (const table of ['settings', 'daily', 'seen', 'rate_limits']) {
+      for (const permission of ['select', 'insert', 'update', 'delete']) assert.equal(await value(`select has_table_privilege('${role}','ojjuda_traffic.${table}','${permission}') as value`), false);
+    }
+    assert.equal(await value(`select has_function_privilege('${role}','ojjuda_traffic.purge_expired()','execute') as value`), false);
+  }
+  assert.equal(await value("select prosecdef as value from pg_proc where oid='public.record_guest_visit(uuid)'::regprocedure"), false);
+  await db.exec('set role anon');
+  await assert.rejects(stats, /permission denied/);
+  await assert.rejects(() => record(randomUUID()), /invalid_visit_origin/);
+  await headers({origin:'https://evil.example','x-forwarded-for':'192.0.2.1'});
+  await assert.rejects(() => record(randomUUID()), /invalid_visit_origin/);
+  await headers({origin:'https://ojjuda.kr','x-forwarded-for':'192.0.2.1','user-agent':'Mozilla/5.0'});
+  await assert.rejects(() => record(null), /invalid_visit_id/);
+  await assert.rejects(() => record('00000000-0000-0000-0000-000000000000'), /invalid_visit_id/);
+  const id = randomUUID(), first = await record(id);
+  assert.equal(first.ok, true);
+  assert.deepEqual(Object.keys(first).sort(), ['day','ok','server_now']);
+  assert.equal(first.day, new Date(Date.parse(first.server_now)+9*3600000).toISOString().slice(0,10));
+  for (let i=0;i<5;i++) assert.equal((await record(id)).ok,true);
+  await record(randomUUID());
+  await headers({origin:'https://ojjuda.kr','x-forwarded-for':'192.0.2.2','user-agent':'Googlebot'});
+  assert.equal((await record(randomUUID())).ok,true);
+  await db.exec('reset role');
+  assert.equal(await value('select sum(guest_visits)::integer as value from ojjuda_traffic.daily'),2);
+  assert.equal(await value('select count(*)::integer as value from ojjuda_traffic.seen'),2);
+  assert.equal(await value('select sum(requests)::integer as value from ojjuda_traffic.rate_limits'),2,'reloads do not consume the new-browser quota');
+  assert.equal(await value('select exists(select 1 from ojjuda_traffic.seen where octet_length(browser_hash)<>32) as value'),false);
+  // Same browser on another day is an additional daily visit; counts survive identifier cleanup.
+  await db.exec("update ojjuda_traffic.seen set visit_day=visit_day-1; update ojjuda_traffic.daily set visit_day=visit_day-1;");
+  await db.exec('set role anon');
+  await headers({origin:'https://ojjuda.com','x-forwarded-for':'192.0.2.3','user-agent':'Mozilla/5.0'});
+  await record(id);
+  await headers({origin:'https://ojjuda.kr','x-forwarded-for':'192.0.2.4'});
+  for(let i=0;i<200;i++) assert.equal((await record(randomUUID())).ok,true);
+  assert.deepEqual(await record(randomUUID()), {ok:false,reason:'rate_limited'});
+  await headers({origin:'https://ojjuda.kr','x-forwarded-for':'invalid'});
+  assert.equal((await record(randomUUID())).ok,true,'malformed network addresses are safely bucketed');
+  await db.exec('reset role; set role authenticated');
+  await assert.rejects(stats,/admin_required/);
+  await value("select set_config('request.jwt.claim.sub',$1,false) as value",[member]);
+  await assert.rejects(stats,/admin_required/);
+  await assert.rejects(()=>record(randomUUID()),/permission denied/);
+  await value("select set_config('request.jwt.claim.sub',$1,false) as value",[admin]);
+  const result = await stats();
+  assert.equal(result.today,202); assert.equal(result.total,204); assert.equal(result.daily[0].visits,202);
+  await db.exec('reset role');
+  const day = first.day;
+  await db.query("update ojjuda_traffic.settings set started_at=($1::date-interval '40 days') at time zone 'Asia/Seoul'",[day]);
+  await db.query('insert into ojjuda_traffic.daily values ($1::date-35,7)',[day]);
+  await db.query("insert into ojjuda_traffic.seen values ($1::date-3,sha256('old'::bytea))",[day]);
+  await db.exec('select ojjuda_traffic.purge_expired()');
+  assert.equal(await value("select count(*)::integer as value from ojjuda_traffic.seen where visit_day<(now() at time zone 'Asia/Seoul')::date-1"),0);
+  assert.equal(await value('select sum(guest_visits)::integer as value from ojjuda_traffic.daily'),211);
+  await db.exec('set role authenticated');
+  const historical = await stats();
+  assert.equal(historical.daily.length,30); assert.ok(historical.monthly.length>=2);
+  assert.equal(historical.total,211);
+  assert.equal(historical.month, historical.monthly[0].visits);
+  assert.equal(historical.daily.at(-1).visits,0,'zero-visit dates are shown after collection began');
+  await db.close();
+  console.log('PASS: guest-only daily deduplication, KST dates, origin validation, network quotas, aggregate totals/history, retention and anonymous/member/admin permissions');
+})().catch(e=>{console.error(e.message,e.where||'',e.stack?.split('\n').slice(0,3).join('\n'));process.exitCode=1});

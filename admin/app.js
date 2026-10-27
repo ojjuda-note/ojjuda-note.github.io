@@ -16,7 +16,7 @@
 
   function destination() {
     const allowed = new Set([
-      'overview', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
+      'overview', 'visitors', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
       'settings', 'trash-all', 'trash-accounts', 'trash-cards', 'trash-messages', 'trash-other', 'note', 'referrals', 'activity', 'note-reports', 'photo-stages', 'messages',
       'cards', 'risk', 'map', 'notice', 'spam', 'note-cards', 'note-risk', 'note-map', 'note-settings', 'note-spam'
     ]);
