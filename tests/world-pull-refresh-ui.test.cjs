@@ -11,7 +11,10 @@ const refresh=world.slice(world.indexOf('function worldRefreshKey(){'),world.ind
   await page.addScriptTag({content:fs.readFileSync(path.join(root,'world-pull-refresh.js'),'utf8')});
   await page.addScriptTag({content:`
    var D={online:true,user:{id:'member'}},g={tab:'my',place:{id:'cafe',me:{gx:3,gy:7}}},L={area:'content',tab:'posts'},worldNavigation=null,worldHouseClose=null,worldParkNotes=null;
-   window.reads=0;window.renders=0;window.waitRefresh=null;window.failRefresh=false;
+   window.reads=0;window.renders=0;window.waitRefresh=null;window.failRefresh=false;window.testOnline=true;
+   // The verifier intentionally has no external network. Test both connection
+   // states explicitly instead of depending on the runner's network adapters.
+   Object.defineProperty(navigator,'onLine',{configurable:true,get:()=>window.testOnline});
    async function _d(){reads++;if(waitRefresh)await waitRefresh;if(failRefresh)throw Error('offline');}
    async function Ls(){}async function ke(){}function H(){renders++;document.querySelector('#draft').value='server';}
    function adminCanLeave(){return true;}var sr={'adm-refresh':async()=>{reads++;}};
@@ -42,8 +45,9 @@ const refresh=world.slice(world.indexOf('function worldRefreshKey(){'),world.ind
   await page.evaluate(()=>{waitRefresh=new Promise(resolve=>window.finishRefresh=resolve);});await touch('#target');await touch('#target');assert.equal(await page.evaluate(()=>reads),2,'only one refresh at a time');
   await page.evaluate(()=>{g.tab='life';finishRefresh();waitRefresh=null;});await page.waitForFunction(()=>document.querySelector('.world-pull-indicator').hidden);assert.equal(await page.evaluate(()=>renders),1,'a late refresh cannot repaint a new route');
   await page.evaluate(()=>failRefresh=true);await touch('#target');await page.waitForFunction(()=>document.querySelector('.world-pull-indicator').textContent.includes('못했어요'));assert.equal(await page.evaluate(()=>g.tab),'life');
-  await page.evaluate(()=>{failRefresh=false;const doc=document.querySelector('iframe').contentDocument;doc.body.innerHTML='<p id="child">공원 카드</p>';attachChild();g.tab='place';g.place.id='park';worldParkNotes={refresh:async()=>{window.childRefreshes=(window.childRefreshes||0)+1;return true;}};});
+  await page.evaluate(()=>testOnline=false);await touch('#target');await page.waitForFunction(()=>document.querySelector('.world-pull-indicator').textContent.includes('인터넷 연결'));assert.equal(await page.evaluate(()=>g.tab),'life');
+  await page.evaluate(()=>{testOnline=true;failRefresh=false;const doc=document.querySelector('iframe').contentDocument;doc.body.innerHTML='<p id="child">공원 카드</p>';attachChild();g.tab='place';g.place.id='park';worldParkNotes={refresh:async()=>{window.childRefreshes=(window.childRefreshes||0)+1;return true;}};});
   await touch('#child',0,110,{child:true});await page.waitForFunction(()=>childRefreshes===1);assert.equal(await page.evaluate(()=>g.place.id),'park');
-  assert.deepEqual(errors,[]);console.log('PULL REFRESH PASS: current route/position/drafts, nested frame, ordinary scrolling, horizontal gestures, short/cancel/multirun guards, errors and route races');
+  assert.deepEqual(errors,[]);console.log('PULL REFRESH PASS: current route/position/drafts, nested frame, ordinary scrolling, horizontal gestures, short/cancel/multirun guards, online/offline errors and route races');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
