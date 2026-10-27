@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261027-matgo-face1';
+ const revision='20261027-runner-size1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -13,7 +13,7 @@
   ttang:'1.0.0',
   photo_ttang:'1.0.0',
   mole:'1.0.0',
-  runner:'1.0.0',
+  runner:'1.0.1',
   stacker:'1.0.0',
   breakout:'1.0.0',
   spot:'1.2.2',
@@ -34,7 +34,7 @@
   ttang:['/ttang-bridge.js?v=20261022-ranks2'],
   photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261023-entry1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
-  runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261006-bird1'],
+  runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],
   breakout:[...controls,'/games/breakout-game.js?v=20261007-flow1'],
   screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261025-rank1'],
   stacker:controls
