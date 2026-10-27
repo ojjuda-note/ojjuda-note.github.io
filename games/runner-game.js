@@ -2,7 +2,9 @@
   'use strict';
   const W=360,H=540,GROUND=440,TAU=Math.PI*2;
   const FONT='"Jua","Gowun Dodum","Apple SD Gothic Neo",sans-serif';
-  const BODY_LEFT=65,BODY_RIGHT=101;
+  const CHARACTER_SCALE=2/3;
+  const BODY_LEFT=83-18*CHARACTER_SCALE,BODY_RIGHT=83+18*CHARACTER_SCALE;
+  const BODY_HEIGHT=64*CHARACTER_SCALE,BODY_INSET=3*CHARACTER_SCALE;
   let previewContext=null,previewObserver=null;
   function loadArt(src){const img=new Image();let task;return{img,start(){if(!task){task=new Promise(resolve=>{img.onload=()=>{resolve(true);if(previewContext?.canvas.isConnected)paintPreview(previewContext);};img.onerror=()=>resolve(false);});img.src=src;}return task;}};}
   const scenery=loadArt('/games/assets/runner-v2-background.png?v=20261006-art2');
@@ -23,6 +25,7 @@
   }
   function sprite(c,x,base,frame,size=84){
     if(!poses.img.complete||!poses.img.naturalWidth)return false;
+    size*=CHARACTER_SCALE;
     const sw=poses.img.naturalWidth/4,sh=poses.img.naturalHeight/2;
     const col=frame%4,row=Math.floor(frame/4),cx=CENTERS[frame]/443.5,foot=FEET[frame]/443.5;
     c.drawImage(poses.img,col*sw,row*sh,sw,sh,x-cx*size,base-foot*size,size,size);return true;
@@ -119,8 +122,8 @@
     if(Math.sin(clock*4+x)>.75)star(c,x+11,y-10,3,'#FFF6C8',clock);
   }
   function bird(c,x,y,clock,reduced){
-    c.save();c.translate(x,y);
-    // Flap inside the same 38 × 28 silhouette; flight height and scale never change.
+    c.save();c.translate(x,y);c.scale(CHARACTER_SCALE,CHARACTER_SCALE);
+    // Scale the whole silhouette with its collision box, including the wing animation.
     c.fillStyle='#3D7397';c.beginPath();c.moveTo(27,14);c.lineTo(38,7);c.lineTo(35,23);c.lineTo(27,21);c.closePath();c.fill();
     oval(c,20,16,12,9,gradient(c,7,18,'#83D2D9','#4496B3'));
     oval(c,17,19,9,5,'#FFF0D2');
@@ -171,7 +174,7 @@
   function runner(c,x,base,clock,airborne,second=false,landing=0,finished=false){
     const frame=finished?7:airborne?second?5:4:landing>0?6:Math.floor(clock*12)%4;
     if(sprite(c,x,base,frame))return;
-    c.save();c.translate(x,0);c.scale(1.5,1);fallbackRunner(c,0,base,clock,airborne,second);c.restore();
+    c.save();c.translate(x,base);c.scale(1.5*CHARACTER_SCALE,CHARACTER_SCALE);fallbackRunner(c,0,0,clock,airborne,second);c.restore();
   }
   function hud(c,score,coins,jumps,height){
     round(c,12,12,131,53,16,'#21394A15');round(c,12,10,131,53,16,'#FFFCF0F2');
@@ -197,25 +200,25 @@
         clock+=dt;speed=Math.min(620,260+clock*9);distance+=speed*dt;landing=Math.max(0,landing-dt);
         const wasAir=offset<0;velocity+=1900*dt;offset+=velocity*dt;
         if(offset>0){offset=0;velocity=0;jumps=0;if(wasAir){puff(83,GROUND,'land');landing=.09;}}
-        // Keep the established physics and score rules; the body width follows the new sprite.
+        // Keep jump physics and scoring; collision bounds follow the smaller characters.
         obstacleIn-=dt;
         if(obstacleIn<=0){const cone=Math.random()<.35;obstacles.push({x:W+20,w:cone?24:30,h:cone?46:28,k:cone?'cone':'box'});obstacleIn=Math.max(.65,1.5-clock*.012)+Math.random()*.7;}
         birdIn-=dt;
-        if(birdIn<=0){obstacles.push({x:W+20,y:GROUND-122,w:38,h:28,k:'bird',vx:speed*(.8+Math.random()*.4)});birdIn=3.6+Math.random()*1.4;}
+        if(birdIn<=0){obstacles.push({x:W+20,y:GROUND-108-14*CHARACTER_SCALE,w:38*CHARACTER_SCALE,h:28*CHARACTER_SCALE,k:'bird',vx:speed*(.8+Math.random()*.4)});birdIn=3.6+Math.random()*1.4;}
         coinsIn-=dt;
         if(coinsIn<=0){const height=Math.random()<.5?30:95;for(let i=0;i<3;i++)pickups.push({x:W+20+i*34,y:GROUND-height-10,got:false});coinsIn=1.4+Math.random()*1.4;}
         for(const item of obstacles)item.x-=(item.vx??speed)*dt;
         for(const item of pickups)item.x-=speed*dt;
         obstacles=obstacles.filter(item=>item.x>-60);pickups=pickups.filter(item=>item.x>-40&&!item.got);
         for(const effect of effects){effect.life+=dt;effect.x-=speed*dt*.35;}effects=effects.filter(effect=>effect.life<.55);
-        dustIn-=dt;if(!wasAir&&dustIn<=0){puff(72,GROUND-2,'dust');dustIn=.13;}
-        const bottom=GROUND+offset,top=bottom-64;
-        for(const item of obstacles){const obstacleTop=item.y??GROUND-item.h;if(item.x<BODY_RIGHT&&item.x+item.w>BODY_LEFT&&obstacleTop<bottom-3&&obstacleTop+item.h>top+3){finished=true;api.end(score());return;}}
+        dustIn-=dt;if(!wasAir&&dustIn<=0){puff(83-11*CHARACTER_SCALE,GROUND-2,'dust');dustIn=.13;}
+        const bottom=GROUND+offset,top=bottom-BODY_HEIGHT;
+        for(const item of obstacles){const obstacleTop=item.y??GROUND-item.h;if(item.x<BODY_RIGHT&&item.x+item.w>BODY_LEFT&&obstacleTop<bottom-BODY_INSET&&obstacleTop+item.h>top+BODY_INSET){finished=true;api.end(score());return;}}
         for(const item of pickups)if(!item.got&&item.x>BODY_LEFT-12&&item.x<BODY_RIGHT+12&&item.y>top-12&&item.y<bottom){item.got=true;coins++;puff(item.x,item.y,'coin');api.sound?.hit?.();}
         api.setScore(score());
       },
       draw(c){
-        const view=viewport(c),drop=Math.max(0,83-(view.ground+(offset-76)*view.scale));
+        const view=viewport(c),drop=Math.max(0,83-(view.ground+(offset-76*CHARACTER_SCALE)*view.scale));
         c.save();scene(c,distance,clock,view,drop,reduced);
         c.save();c.translate(83-83*view.scale,view.ground-GROUND*view.scale+drop);c.scale(view.scale,view.scale);track(c,distance);c.restore();
         c.save();c.translate(0,view.ground+drop-GROUND);
@@ -223,7 +226,7 @@
         for(const item of pickups)if(!item.got)coin(c,item.x,item.y,clock+item.x*.003);
         c.restore();
         c.save();c.translate(83-83*view.scale,view.ground-GROUND*view.scale+drop);c.scale(view.scale,view.scale);
-        const shadow=16-Math.min(10,-offset/12);oval(c,83,GROUND+2,shadow,3,'#6C70502B');
+        const shadow=(16-Math.min(10,-offset/12))*CHARACTER_SCALE;oval(c,83,GROUND+2,shadow,3*CHARACTER_SCALE,'#6C70502B');
         for(const effect of effects){
           const progress=effect.life/.55;c.save();c.globalAlpha=1-progress;
           if(effect.kind==='coin'){
@@ -251,8 +254,8 @@
     if(view.height>350){
       const titleY=Math.min(159,view.height*.22),base=view.height*.62,size=Math.min(213,view.height*.34);
       c.textAlign='center';c.font=`46px ${FONT}`;c.lineWidth=7;c.strokeStyle='#365168C7';c.lineJoin='round';c.strokeText('쭈 달리기',W/2,titleY);c.fillStyle='#FFF8E7';c.fillText('쭈 달리기',W/2,titleY);
-      oval(c,178,base+9,size*.32,7,'#334D5633');
-      if(!sprite(c,180,base,0,size))fallbackRunner(c,180,base,1.1,true,false,2);
+      oval(c,178,base+9,size*.32*CHARACTER_SCALE,7*CHARACTER_SCALE,'#334D5633');
+      if(!sprite(c,180,base,0,size))fallbackRunner(c,180,base,1.1,true,false,2*CHARACTER_SCALE);
       for(let i=0;i<3;i++)coin(c,231+i*31,base-size*.57-i*15,1.1);
       star(c,89,base-size*.55,5,'#FFF3A9',.2);star(c,276,base-size*.28,5,'#FFF3A9',.4);
     }

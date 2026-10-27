@@ -5,8 +5,8 @@ const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/world-game-assets.js')||s.includes('/game-entry.js')?s:'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-// The new character has a 36-pixel torso; compare the original physics at that body width.
-world=world.replace('let v=72,B=94,j=440+i', 'let v=65,B=101,j=440+i');
+// Compare the legacy physics at the same scaled torso width as the artwork.
+world=world.replace('let v=83-11*2/3,B=83+11*2/3,j=440+i', 'let v=83-18*2/3,B=83+18*2/3,j=440+i');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
@@ -73,11 +73,11 @@ g.tab='friends';H();
   assert.equal(await page.evaluate(()=>runnerTest.audio.filter(v=>v==='tap').length),3,'landing restores the jump count');
   const camera=await page.evaluate(()=>{
    const game=OjjudaRunnerGame.create({setScore(){},end(){}}),ctx=runnerTest.current.ctx,draw=ctx.drawImage,poses=[];
-   ctx.drawImage=function(img,...args){if(img.src?.includes('runner-v2-sprites')){const m=this.getTransform(),dpr=Math.min(2,devicePixelRatio||1);poses.push({top:(m.d*args[5]+m.f)/dpr,bottom:(m.d*(args[5]+args[7])+m.f)/dpr});}return draw.call(this,img,...args)};
+   ctx.drawImage=function(img,...args){if(img.src?.includes('runner-v2-sprites')){const m=this.getTransform(),dpr=Math.min(2,devicePixelRatio||1);poses.push({top:(m.d*args[5]+m.f)/dpr,bottom:(m.d*(args[5]+args[7])+m.f)/dpr,width:m.a*args[6]/dpr,height:m.d*args[7]/dpr});}return draw.call(this,img,...args)};
    try{game.onDown();for(let n=0;n<40;n++)game.update(1/120);game.onDown();for(let n=0;n<45;n++){game.update(1/120);game.draw(ctx)}}finally{ctx.drawImage=draw;game.destroy()}
-   return{count:poses.length,visible:poses.every(p=>p.top>65&&p.bottom<ctx.canvas.height/Math.min(2,devicePixelRatio||1))};
+   return{count:poses.length,scaled:poses.every(p=>Math.abs(p.width-56)<.001&&Math.abs(p.height-56)<.001),visible:poses.every(p=>p.top>65&&p.bottom<ctx.canvas.height/Math.min(2,devicePixelRatio||1))};
   });
-  assert.equal(camera.count,45);assert.ok(camera.visible,'the camera keeps the second jump visible below the score display');
+  assert.equal(camera.count,45);assert.ok(camera.scaled,'all jump poses use two-thirds of the original sprite dimensions');assert.ok(camera.visible,'the camera keeps the second jump visible below the score display');
   const warning=await page.evaluate(()=>{
    const ctx=runnerTest.current.ctx,rect=ctx.fillRect,ellipse=ctx.ellipse,random=Math.random,frames=[],sizes=[],baseline=runnerTest.baseline;
    Math.random=()=>.7;
@@ -122,7 +122,7 @@ g.tab='friends';H();
   assert.deepEqual(birds.contact,{ends:1,stopped:true},'touching a bird in midair ends the game once');
   assert.equal(birds.both,true,'flying birds and ground obstacles appear together on separate spawn cycles');
   assert.ok(birds.sizes.length>25&&birds.sizes.some(s=>s.x<90),'birds are measured from the right edge through the player');
-  assert.ok(birds.sizes.every(s=>Math.abs(s.width-38)<.001&&Math.abs(s.height-28)<.001),'approaching birds keep their dimensions');
+  assert.ok(birds.sizes.every(s=>Math.abs(s.width-38*2/3)<.001&&Math.abs(s.height-28*2/3)<.001),'approaching birds stay at two-thirds of their original dimensions');
   assert.ok(Math.max(...birds.sizes.map(s=>s.y))-Math.min(...birds.sizes.map(s=>s.y))<.001,'birds keep a steady flight height');
   assert.ok(birds.flaps.some(y=>y<5)&&birds.flaps.some(y=>y>9),'the wings flap while the bird body stays steady');
   assert.ok(birds.slow.samples>50&&birds.fast.samples>50&&birds.fast.speed>birds.slow.speed*1.2,'each bird receives its own randomized flight speed');
