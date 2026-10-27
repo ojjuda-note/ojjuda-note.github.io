@@ -34,6 +34,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  automatic_repair:
+    name: Automatic repair deployment boundaries
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check -r ops/automatic-repair-requirements.txt
+      - run: python tests/automatic-repair.test.py
+
   matgo:
     name: Matgo pi rules and settlement regressions
     runs-on: ubuntu-latest

@@ -9,7 +9,7 @@ const COMMIT = /^[a-f0-9]{40}$/;
 export const RELEASE_REASONS = new Set(['deployed', 'token_missing', 'verification_invalid', 'runtime_identity_invalid',
   'source_changed', 'baseline_mismatch', 'github_rejected', 'ci_failed', 'ci_timeout', 'branch_update_rejected',
   'branch_update_unconfirmed', 'deployment_failed', 'deployment_timeout', 'public_content_mismatch', 'api_failure',
-  'callback_verification_unavailable']);
+  'callback_verification_unavailable', 'backend_deployment_failed', 'backend_deployment_timeout']);
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const DIGITS = /^[1-9][0-9]{0,19}$/;
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status,
@@ -123,21 +123,21 @@ export function authorizedClaims(claims, { audience, repositoryId, runId, nowSec
 export function validRelease(value, base) {
   if (!value || typeof value !== 'object' || Array.isArray(value)
     || Object.keys(value).some(key => !['version', 'run_id', 'feedback_id', 'outcome', 'source_commit',
-      'candidate_commit', 'reason', 'ci_run_id', 'deployment_run_id', 'verified_files'].includes(key))
+      'candidate_commit', 'reason', 'ci_run_id', 'deployment_run_id', 'backend_run_id', 'verified_files'].includes(key))
     || value.version !== 1 || value.run_id !== base.run_id || !validId(value.feedback_id)
     || String(value.feedback_id) !== String(base.feedback_id) || typeof value.source_commit !== 'string' || !COMMIT.test(value.source_commit)
     || !['deployed', 'published_pending', 'needs_review', 'blocked'].includes(value.outcome)
     || !RELEASE_REASONS.has(value.reason)) return false;
   if (value.candidate_commit !== undefined && (typeof value.candidate_commit !== 'string' || !COMMIT.test(value.candidate_commit)
     || value.candidate_commit === value.source_commit)) return false;
-  for (const key of ['ci_run_id', 'deployment_run_id']) {
+  for (const key of ['ci_run_id', 'deployment_run_id', 'backend_run_id']) {
     if (value[key] !== undefined && (typeof value[key] !== 'string' || !validId(value[key]))) return false;
   }
   if (value.verified_files !== undefined && (!Array.isArray(value.verified_files)
-    || value.verified_files.length < 1 || value.verified_files.length > 12
+    || value.verified_files.length < 1 || value.verified_files.length > 24
     || new Set(value.verified_files).size !== value.verified_files.length
     || value.verified_files.some(file => typeof file !== 'string' || file.length > 200
-      || !/^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.(?:js|css|html)$/.test(file)))) return false;
+      || !/^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:js|mjs|ts|css|html|json|sql)$/.test(file)))) return false;
   if (value.outcome === 'deployed') return value.reason === 'deployed' && !!value.candidate_commit
     && !!value.ci_run_id && !!value.deployment_run_id && value.ci_run_id !== value.deployment_run_id
     && Array.isArray(value.verified_files);
@@ -171,7 +171,7 @@ function completionPayload(body, base) {
 }
 
 async function boundedJson(response) {
-  const limit = 2 * 1024 * 1024;
+  const limit = 8 * 1024 * 1024;
   if (Number(response.headers.get('content-length')) > limit || !response.body) throw new Error('proof_unavailable');
   const reader = response.body.getReader();
   const decoder = new TextDecoder('utf-8', { fatal: true });
@@ -223,7 +223,7 @@ async function verifyDeployedRelease(release, githubToken, fetchImpl) {
     }) || commit?.sha !== release.candidate_commit
     || commit.html_url !== `https://github.com/${SOURCE_REPOSITORY}/commit/${release.candidate_commit}`
     || !Array.isArray(commit.parents) || commit.parents.length !== 1 || commit.parents[0].sha !== release.source_commit
-    || !Array.isArray(commit.files) || commit.files.length < 1 || commit.files.length > 12
+    || !Array.isArray(commit.files) || commit.files.length < 1 || commit.files.length > 24
     || !release.verified_files.every(file => commit.files.some(change => change.filename === file))
     || !successfulRun(ci, release.ci_run_id, '.github/workflows/regression.yml', 'Application regression checks',
       'pull_request', `codex/feedback-fix-${release.run_id}`)
@@ -231,6 +231,21 @@ async function verifyDeployedRelease(release, githubToken, fetchImpl) {
       && pr.base?.ref === 'main')
     || !successfulRun(deployment, release.deployment_run_id, 'dynamic/pages/pages-build-deployment',
       'pages build and deployment', 'dynamic', 'main')) throw new Error('proof_not_verified');
+  const applicationFiles=commit.files.filter(file=>!file.filename.startsWith('tests/')).map(file=>file.filename);
+  if(applicationFiles.length!==release.verified_files.length || applicationFiles.some(file=>!release.verified_files.includes(file))) throw new Error('proof_not_verified');
+  const backendRequired=applicationFiles.some(file=>file.startsWith('supabase/'));
+  if(backendRequired) {
+    if(!release.backend_run_id) throw new Error('proof_not_verified');
+    const backend=await get(SOURCE_REPOSITORY,`/actions/runs/${release.backend_run_id}`);
+    const backendJobs=await get(SOURCE_REPOSITORY,`/actions/runs/${release.backend_run_id}/attempts/1/jobs?per_page=100`);
+    if(String(backend.id)!==release.backend_run_id || backend.path!=='.github/workflows/automatic-repair-backend.yml'
+      || backend.name!=='Verified automatic backend repair' || backend.event!=='workflow_run'
+      || backend.display_title!==`Backend repair ${release.ci_run_id} ${release.candidate_commit}`
+      || backend.head_sha!==release.source_commit || backend.head_branch!=='main'
+      || backend.repository?.full_name!==SOURCE_REPOSITORY || backend.head_repository?.full_name!==SOURCE_REPOSITORY
+      || backend.run_attempt!==1 || backend.status!=='completed' || backend.conclusion!=='success'
+      || backendJobs.jobs?.length!==1 || backendJobs.jobs[0].name!=='deploy' || backendJobs.jobs[0].conclusion!=='success') throw new Error('proof_not_verified');
+  } else if(release.backend_run_id) throw new Error('proof_not_verified');
 }
 
 export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => Date.now(),
@@ -260,7 +275,7 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
     if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
     let body;
     try { body = await readBody(request); } catch { return json({ error: 'invalid_request' }, 400); }
-    if (!['dispatch', 'claim', 'complete'].includes(body.action)
+    if (!['dispatch', 'claim', 'renew', 'complete'].includes(body.action)
       || !validId(body.feedback_id) || !validUuid(body.dispatch_nonce)) return json({ error: 'invalid_request' }, 400);
     const base = { feedback_id: String(body.feedback_id), dispatch_nonce: body.dispatch_nonce.toLowerCase() };
     if (!configured) return json({ error: 'worker_unavailable' }, 503);
@@ -331,6 +346,11 @@ export function createHandler({ env, verifyOidc, fetchImpl = fetch, now = () => 
           screen: result.screen ?? null, app_version: result.app_version ?? null, user_agent: result.user_agent ?? null,
           diagnostics: sanitizeFeedbackDiagnostics(result.diagnostics, result.kind)
         } });
+      }
+      if (body.action === 'renew') {
+        if (!validUuid(body.lease_token)) return json({ error: 'invalid_request' }, 400);
+        const renewed = await rpc('worker_renew', {...base,lease_token:body.lease_token});
+        return renewed ? json({ok:true}) : json({error:'job_unavailable'},409);
       }
       const payload = completionPayload(body, base);
       if (!payload) return json({ error: 'invalid_request' }, 400);

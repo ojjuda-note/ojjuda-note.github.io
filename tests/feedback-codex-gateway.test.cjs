@@ -339,6 +339,31 @@ test('resolved requires independently verified same-run jobs, candidate commit, 
   assert.equal(f.calls.length, 5);
 });
 
+test('only authenticated same-run leases can renew a long repair', async () => {
+  const f=await fixture({rpc:(action,payload)=>{assert.equal(action,'worker_renew');assert.equal(payload.lease_token,LEASE);return true;}});
+  assert.equal((await f.handler(workerRequest({action:'renew',...worker,lease_token:LEASE}))).status,200);
+  assert.equal((await f.handler(workerRequest({action:'renew',...worker,lease_token:'invalid'}))).status,400);
+  const denied=await fixture({jwt:claims({repository:'untrusted/fork'})});
+  assert.equal((await denied.handler(workerRequest({action:'renew',...worker,lease_token:LEASE}))).status,401);
+  assert.equal(denied.calls.length,0);
+});
+
+test('database or server repair cannot resolve without its exact successful backend deployment', async()=>{
+  for(const scenario of ['valid','missing','wrong_ci','skipped','incomplete_files']) {
+    const release={...releaseProof(),backend_run_id:'400',verified_files:['note/layout.css','supabase/migrations/20261027090000_feedback_fix_42_rpc.sql']};
+    const documents=githubProofResponses(release);
+    documents[`https://api.github.com/repos/${SOURCE_REPO}/commits/${release.candidate_commit}`].files.push({filename:release.verified_files[1]});
+    documents[`https://api.github.com/repos/${SOURCE_REPO}/actions/runs/400`]={id:400,path:'.github/workflows/automatic-repair-backend.yml',name:'Verified automatic backend repair',event:'workflow_run',display_title:`Backend repair ${scenario==='wrong_ci'?'201':'200'} ${release.candidate_commit}`,head_sha:release.source_commit,head_branch:'main',repository:{full_name:SOURCE_REPO},head_repository:{full_name:SOURCE_REPO},run_attempt:1,status:'completed',conclusion:'success'};
+    documents[`https://api.github.com/repos/${SOURCE_REPO}/actions/runs/400/attempts/1/jobs?per_page=100`]={jobs:[{name:'deploy',conclusion:scenario==='skipped'?'skipped':'success'}]};
+    if(scenario==='missing') delete release.backend_run_id;
+    if(scenario==='incomplete_files') release.verified_files.pop();
+    let completed=false;
+    const f=await fixture({github:url=>Response.json(documents[url]),rpc:()=>{completed=true;return {feedback_id:'42',status:'resolved'};}});
+    assert.equal((await f.handler(workerRequest(releaseCompletion(release)))).status,scenario==='valid'?200:409,scenario);
+    assert.equal(completed,scenario==='valid');
+  }
+});
+
 test('release payload rejects cross-run data, missing deployment proof, unsafe paths and arbitrary fields', async () => {
   const f = await fixture();
   for (const changes of [{ run_id: '999' }, { feedback_id: '43' }, { version: 2 },

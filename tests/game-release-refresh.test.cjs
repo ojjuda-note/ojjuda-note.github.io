@@ -16,7 +16,9 @@ function fixture(){
 (async()=>{
  const f=fixture();assert.equal(f.api.revision,manifest.revision);
  assert.ok(world.includes('/world-game-assets.js?v='+manifest.revision),'the shell, loader and manifest release IDs match');
- assert.equal(JSON.parse(read('version.json')).version,'0.46.45-beta','a game release keeps the Agit version');
+ const appVersion=JSON.parse(read('version.json')).version;
+ assert.equal(world.match(/Go="([^"]+)"/)[1],appVersion,'shell and application release manifest agree');
+ assert.doesNotMatch(read('world-game-assets.js'),/\/version\.json/,'game refresh uses its own release manifest');
  await f.c.refreshWorldView();assert.equal(f.rankReads(),1);assert.equal(f.navigations.length,0);
  assert.equal(f.calls[0].options.cache,'no-store');assert.match(f.calls[0].url,/^\/game-release\.json\?t=\d+$/);
  f.setReply({revision:'20261026-screw-fix1'});await f.c.refreshWorldView();
