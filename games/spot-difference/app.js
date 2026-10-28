@@ -13,8 +13,7 @@
     state.current=state.order[0];
   }
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
-  let celebrationTimer=null,autoStartToken=null;
-  const timeoutRetries=new Set();
+  let autoStartToken=null;
   const celebration=$('celebration');
   let zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
@@ -85,15 +84,15 @@
   }
   function refreshControls(){
     const r=round(),playing=r.status==='playing',won=r.status==='won',lost=r.status==='lost',pending=r.status==='payment';
-    const timedOut=lost&&r.hearts>0&&r.remainingMs===0,changePicture=timedOut&&timeoutRetries.has(puzzle().id);
     $('board-shell').classList.toggle('covered',!playing&&!won&&!answerReview);$('board-curtain').hidden=playing||won||!!answerReview;
     $('board-shell').classList.toggle('reviewing',!!answerReview);$('board-curtain').dataset.entry=!playing&&!won&&!lost&&!pending&&!answerReview?'menu':'round';
     $('gate-eyebrow').textContent=pending?'ZU 사용 확인':lost?'이번 도전 종료':'오쭈다 오락실';
     $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'틀린그림찾기';
-    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?(r.hearts===0?'다시 풀기를 누르면 하트 3개로 새로 시작해요.':changePicture?'같은 그림 재도전은 1번까지예요. 다른 그림을 풀거나 1 ZU로 30초를 연장할 수 있어요.':'같은 그림으로 한 번 다시 풀 수 있어요. 1 ZU로 30초 연장도 가능해요.'):'두 그림에서 다른 곳 여섯 개를 찾아보세요. 여섯 곳을 모두 찾은 그림 장수로 순위를 정해요.';
+    $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?'이전·현재·다음 레벨 중 골라 새로 시작하세요.':'두 그림에서 다른 곳 여섯 개를 찾아보세요. 여섯 곳을 모두 찾은 그림 장수로 순위를 정해요.';
+    $('retry-level-choice').hidden=!lost||!!answerReview;
+    if(lost)updateEndChoice($('retry-level'),0);
     $('gate-entry-hint').hidden=pending||lost;$('gate-entry-hint').textContent=`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 도전`;
-    $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?(changePicture?'다른 그림 풀기':'다시 풀기'):'시작하기';
-    $('reset').textContent=changePicture?'다른 그림 풀기':'다시 풀기';$('reset').setAttribute('aria-label',changePicture?'다른 그림 풀기':'이 문제 다시 풀기');
+    $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):lost?'선택한 레벨 시작':'시작하기';
     $('start').disabled=!imagesReady||paymentBusy||!!answerReview;
     const showPreviousHint=r.hintIndex!==null&&!found().includes(r.hintIndex)&&$('hint-panel').hidden;
     const unpaidHint=puzzle().spots.some((_,i)=>!found().includes(i)&&!r.paid.includes(i));
@@ -161,34 +160,46 @@
     hideHint();refresh();speak('정답 6곳을 표시했어요. 확인하는 동안 시간은 멈춰요.');
   }
   function clearCelebration(){
-    clearTimeout(celebrationTimer);celebrationTimer=null;
     if(celebration.open)celebration.close();
   }
-  function nextUnsolved(){
-    const pos=position();
-    return [...state.order.slice(pos+1),...state.order.slice(0,pos)].find(i=>(state.found[puzzles[i].id]||[]).length<6);
+  function updateEndChoice(select,preferred){
+    const stamp=`${loadToken}:${round().status}`;
+    if(select.dataset.round===stamp)return;
+    select.dataset.round=stamp;
+    select.replaceChildren(...[-1,0,1].map((offset,i)=>{
+      const option=document.createElement('option'),pos=position()+offset;
+      option.value=offset;option.disabled=pos<0||pos>=state.order.length;
+      option.textContent=`${['이전 레벨','현재 레벨','다음 레벨'][i]} · ${option.disabled?'없음':`${pos+1} / ${puzzles.length}`}`;
+      return option;
+    }));
+    select.value=preferred===1&&position()<state.order.length-1?'1':'0';
+  }
+  function playChosenLevel(select){
+    if(paymentBusy||round().pending||!['won','lost'].includes(round().status))return;
+    const offset=Number(select.value);
+    if(![-1,0,1].includes(offset))return;
+    const index=state.order[position()+offset];
+    if(index===undefined)return;
+    const id=puzzles[index].id;
+    if(state.rounds[id]?.pending){show(index);return;}
+    state.found[id]=[];state.rounds[id]=core.freshRound();
+    show(index,{autoStart:true});window.scrollTo({top:0,behavior:'instant'});
   }
   function celebrate(){
-    clearCelebration();const completed=state.current,token=loadToken,next=nextUnsolved();
-    $('celebration-title').textContent=next===undefined?'모든 그림을 완성했어요!':'축하해요! 모두 찾았어요!';
-    $('celebration-copy').textContent=next===undefined?`${puzzles.length}개의 그림을 모두 풀었어요. 정말 대단해요!`:'여섯 곳 모두 정답! 잠시 후 다음 그림으로 넘어가요.';
-    const advance=()=>{
-      if(state.current!==completed||loadToken!==token||round().status!=='won')return;
-      clearCelebration();
-      if(next!==undefined){show(next,{autoStart:true});window.scrollTo({top:0,behavior:'instant'});}
-    };
-    const button=$('celebration-next');button.textContent=next===undefined?'완료':'다음 그림';button.onclick=advance;
+    clearCelebration();const allDone=puzzles.every(p=>(state.found[p.id]||[]).length===6);
+    $('celebration-title').textContent=allDone?'모든 그림을 완성했어요!':'축하해요! 모두 찾았어요!';
+    $('celebration-copy').textContent=allDone?`${puzzles.length}개의 그림을 모두 풀었어요. 원하는 레벨을 다시 즐겨보세요.`:'이전·현재·다음 레벨 중 골라 이어서 즐겨보세요.';
+    updateEndChoice($('celebration-level'),1);
+    const button=$('celebration-next');button.onclick=()=>playChosenLevel($('celebration-level'));
     $('celebration-confetti').replaceChildren(...Array.from({length:20},(_,i)=>{
       const piece=document.createElement('i');piece.style.setProperty('--piece',i);piece.style.setProperty('--color',['#ffb547','#8b7bd8','#ff789a','#57c6b0','#5a9de2'][i%5]);return piece;
     }));
-    celebration.showModal();button.focus({preventScroll:true});
-    if(next!==undefined)celebrationTimer=setTimeout(advance,2400);
+    celebration.showModal();$('celebration-level').focus({preventScroll:true});
   }
   function startNextWhenReady(){
     if(autoStartToken!==loadToken||!imagesReady||document.hidden)return;
     autoStartToken=null;start();surfaces[0].focus({preventScroll:true});
   }
-  celebration.addEventListener('cancel',()=>{clearTimeout(celebrationTimer);celebrationTimer=null;});
   window.addEventListener('pagehide',()=>{clearCelebration();autoStartToken=null;});
   function finish(reason){
     const r=round();if(r.status!=='playing')return;
@@ -207,7 +218,7 @@
   function tick(){if(round().status==='playing'&&core.timeLeft(round())<=0)finish('time');else renderTime();}
   function start(){
     if(!imagesReady||paymentBusy||answerReview)return;
-    const r=round();if(r.status==='payment'){purchase();return;}if(r.status==='lost'){reset();return;}
+    const r=round();if(r.status==='payment'){purchase();return;}if(r.status==='lost'){playChosenLevel($('retry-level'));return;}
     if(r.status!=='ready')return;
     r.rankOwner=wallet.getState().userId;r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
     speak('시작! 다른 곳 여섯 개를 찾아보세요.');
@@ -255,14 +266,8 @@
   function reset(){
     if(paymentBusy||round().pending||answerReview)return;
     if(round().status==='playing'&&found().length&&!confirm('찾은 표시를 지우고 하트 3개, 1분으로 다시 풀까요?'))return;
-    const r=round(),timedOut=r.status==='lost'&&r.hearts>0&&r.remainingMs===0;
-    let index=state.current;
-    if(timedOut){
-      if(timeoutRetries.has(puzzle().id))index=nextUnsolved()??state.order[(position()+1)%state.order.length];
-      else timeoutRetries.add(puzzle().id);
-    }
-    const id=puzzles[index].id;
-    state.found[id]=[];state.rounds[id]=core.freshRound();show(index);
+    const id=puzzle().id;
+    state.found[id]=[];state.rounds[id]=core.freshRound();show(state.current);
   }
   function guess(x,y,surface){
     tick();const r=round();if(r.status!=='playing'||paymentBusy||!imagesReady||answerReview)return;

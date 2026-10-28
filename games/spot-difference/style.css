@@ -195,3 +195,7 @@ dialog.spot-celebration::backdrop{background:#30234c66;backdrop-filter:blur(4px)
 
 /* Gestures resize both pictures together; single-finger movement is handled by the game. */
 .picture{touch-action:none}.zoom-scroll{touch-action:none}
+
+/* Choose where to play next only after a round ends. */
+.end-level-choice{position:relative;display:grid;gap:6px;max-width:300px;margin:16px auto 8px;text-align:left;font-size:13px;color:var(--muted)}
+.end-level-choice select{width:100%;min-width:0;min-height:46px;padding:8px 12px;font-size:16px;color:var(--navy);background:#fff;border-color:#bac5ed}
