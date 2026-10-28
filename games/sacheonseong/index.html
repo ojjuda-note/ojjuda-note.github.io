@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#214f43">
   <meta name="description" content="같은 그림은 최대 4개. 4개부터 900개까지, 15단계로 즐기는 사천성 게임. 빠른 클리어 시간으로 순위에 도전하세요.">
-  <title>오쭈다 사천성</title>
+  <title>사천성</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23214f43'/%3E%3Cpath d='M11 27C9 13 22 9 30 10c0 13-6 22-19 17' fill='%23dbe9c1'/%3E%3Cpath d='m12 28 13-13' stroke='%23214f43' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261028-sacheonseong-rank2">
-  <script src="engine.js?v=20261028-sacheonseong-rank2" defer></script>
-  <script src="faces.js?v=20261028-sacheonseong-rank2" defer></script>
-  <script src="ranking.js?v=20261028-sacheonseong-rank2" defer></script>
-  <script src="server.js?v=20261028-sacheonseong-rank2" defer></script>
-  <script src="app.js?v=20261028-sacheonseong-rank2" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261028-arcade-best1">
+  <script src="engine.js?v=20261028-arcade-best1" defer></script>
+  <script src="faces.js?v=20261028-arcade-best1" defer></script>
+  <script src="ranking.js?v=20261028-arcade-best1" defer></script>
+  <script src="server.js?v=20261028-arcade-best1" defer></script>
+  <script src="app.js?v=20261028-arcade-best1" defer></script>
 </head>
 <body>
   <svg class="svg-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -45,7 +45,7 @@
 
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/world.html?tab=arcade" id="game-home" aria-label="오락실로 돌아가기"><span class="brand-mark"><svg><use href="#i-leaf"/></svg></span><span>오쭈다<small>사천성</small></span></a>
+      <a class="brand" href="/world.html?tab=arcade" id="game-home" aria-label="오락실로 돌아가기"><span class="brand-mark"><svg><use href="#i-leaf"/></svg></span><span>사천성</span></a>
       <div class="header-actions"><button class="icon-button" id="sound" aria-label="효과음 켜기" aria-pressed="false"><svg class="icon"><use href="#i-muted"/></svg></button><button class="help-button" id="help"><svg class="icon"><use href="#i-help"/></svg><span>게임 방법</span></button></div>
     </header>
 
@@ -70,11 +70,11 @@
 
         <aside class="sidebar">
           <section class="journey"><div class="section-overline">4개에서 900개까지</div><h2>나의 정원 길</h2><p>64개 다음에도 11개의 정원!<br>한 판씩 차근차근 도전해요.</p><div class="stage-list" id="stage-list"></div><button id="all-stages" class="all-stages-button">전체 15단계 보기 <span>↗</span></button><div class="journey-bottom"><svg class="icon"><use href="#i-leaf"/></svg><span id="face-count">이번 정원: 그림 2종 · 최대 2개씩</span></div></section>
-          <section class="ranking-card"><div class="rank-heading"><span class="section-overline">빠를수록 높은 순위</span><span class="local-tag">이 기기</span></div><h2>나의 시간 순위</h2><div class="rank-stage" id="rank-stage">1단계 · 4개의 패</div><div id="rank-preview"></div><button class="rank-more" id="online-ranking">오락실 시간 순위 <span>↗</span></button><button class="rank-more" id="ranking">내 기록 보기 <span>↗</span></button></section>
+          <section class="ranking-card"><div class="rank-heading"><span class="section-overline">빠를수록 높은 순위</span><span class="local-tag">이 기기</span></div><h2>나의 시간 순위</h2><div class="rank-stage" id="rank-stage">1단계 · 4개의 패</div><div id="rank-preview"></div><button class="rank-more" id="online-ranking">오락실 게임순위 <span>↗</span></button><button class="rank-more" id="ranking">내 기록 보기 <span>↗</span></button></section>
         </aside>
       </div>
       <div class="server-status"><span id="server-note" role="status"></span><button id="retry-records" class="action-button" hidden>기록 다시 등록</button></div>
-      <footer class="page-footer"><span>오쭈다 사천성</span><span id="save-note">진행과 시간 순위는 이 기기에 저장돼요.</span></footer>
+      <footer class="page-footer"><span>사천성</span><span id="save-note">진행과 시간 순위는 이 기기에 저장돼요.</span></footer>
     </main>
   </div>
   <dialog id="modal" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="닫기">×</button><div id="modal-content"></div></dialog>

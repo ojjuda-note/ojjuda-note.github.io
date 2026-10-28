@@ -5,8 +5,7 @@ const button=(text,action,cls)=>{const n=el('button',text,cls);n.type='button';n
 let dispose=null,controller=null;
 function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
 dispose?.();dispose=null;controller=null;if(!host)return;
-let rankDispose=()=>{},rankPage=0,rankFocusGame=null,alive=true,request=0,sacheonseongStage=1;
-const rankingKey=id=>id==='sacheonseong'?window.OjjudaSacheonseongRanking.game(sacheonseongStage):id;
+let rankDispose=()=>{},rankPage=0,rankFocusGame=null,alive=true,request=0;
 const active=()=>alive&&host.isConnected&&authorized();
 const status=el('p','','board-status');status.setAttribute('role','status');
 const content=el('div');host.replaceChildren(status,content);
@@ -23,7 +22,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
     for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
     for(const [id,game] of entries.slice(start,start+3)){
      const row=el('tr','','board-leader');row.dataset.game=id;
-     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_time'?' · 선택한 단계의 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → 연승 → 먼저 달성한 순':game.rankingBasis==='picture_clears'?' · 이번 달 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · 이번 달 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
+     const name=el('th',game.name,'board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → 연승 → 먼저 달성한 순':game.rankingBasis==='picture_clears'?' · 이번 달 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · 이번 달 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · 이번 달 연승 기준':'');
      const labelGame=target=>{if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));};labelGame(name);
      if(typeof onOpenGame==='function'){
       const play=button(game.name,async()=>{
@@ -33,11 +32,6 @@ async function result(query){const {data,error}=await query;if(error)throw error
        finally{play.disabled=false;}
       },'board-game-open');
       play.setAttribute('aria-label',game.name+' 게임 열기');labelGame(play);name.replaceChildren(play);
-     }
-     if(game.rankingBasis==='stage_time'){
-      const select=el('select','','board-stage-select');select.setAttribute('aria-label','사천성 순위 단계');
-      for(let stage=1;stage<=15;stage++){const option=el('option',stage+'단계 · '+(4*stage*stage)+'개');option.value=stage;option.selected=stage===sacheonseongStage;select.append(option);}
-      select.addEventListener('change',()=>{sacheonseongStage=Number(select.value);targets.get(id)?.reload?.();});name.append(select);
      }
      const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);tbody.append(row);targets.set(id,{row,name,nick,score,hasScore:false});
     }
@@ -71,7 +65,6 @@ async function result(query){const {data,error}=await query;if(error)throw error
    window.addEventListener('ojjuda:game-record-saved',event=>{
     if(event.detail?.owner!==owner||!active()||token!==request)return;
     if(targets.has(event.detail?.game))rankFocusGame=event.detail.game;
-    if(event.detail?.game==='sacheonseong'&&window.OjjudaSacheonseongRanking.game(event.detail.stage))sacheonseongStage=event.detail.stage;
     if(!playing())void home();
    },options);
    const observer=new MutationObserver(()=>{
@@ -110,11 +103,11 @@ async function result(query){const {data,error}=await query;if(error)throw error
    }
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
-   const batch=result(client.rpc('community_game_monthly_leaders',{p_games:entries.map(([id])=>rankingKey(id))}));
+   const batch=result(client.rpc('community_game_monthly_leaders',{p_games:entries.map(([id])=>id)}));
    const loads=entries.map(async([id,game])=>{
     const target=targets.get(id),{nick,score}=target;let loadVersion=0;
     async function load(initial=false){
-     const version=++loadVersion,key=rankingKey(id);
+     const version=++loadVersion,key=id;
      nick.textContent='불러오는 중…';
      try{
       const ranking=await (initial?batch:result(client.rpc('community_game_monthly_leaders',{p_games:[key]})));
@@ -128,6 +121,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
        let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
        if(game.rankingBasis==='stage_time'){
         value=window.OjjudaSacheonseongRanking.format(Number(top.score));
+        const stage=Number(top.stage);if(window.OjjudaSacheonseongRanking.game(stage))detail=stage+'단계 · '+(4*stage*stage)+'개';
        }else if(game.rankingBasis==='difficulty_time'){
         const record=window.OjjudaMinesRules?.record(Number(top.score));
         value=record?.time||'—';detail=record?.name||'';

@@ -27,7 +27,7 @@ const root=path.resolve(__dirname,'..');
      try{return route.fulfill({contentType:'application/json',body:JSON.stringify({data:await invitation(ids[seat],route.request().postDataJSON())})});}
      catch(error){return route.fulfill({contentType:'application/json',body:JSON.stringify({error:{message:error.message}})});}
     }
-    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><link rel="stylesheet" href="/game-entry.css"><div id="app"><main class="main"><button data-act="notice-open">공지</button><div data-game-friend-invite-slot></div><button id="launch">오쭈다 마블</button></main></div><script src="/game-entry.js"></script><script src="/game-friend-invites.js"></script><script src="/world-tour-game.js"></script><script>
+    if(u.pathname==='/host.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/world-tour-game.css"><link rel="stylesheet" href="/game-entry.css"><div id="app"><main class="main"><button data-act="notice-open">공지</button><div data-game-friend-invite-slot></div><button id="launch">마블</button></main></div><script src="/game-entry.js"></script><script src="/game-friend-invites.js"></script><script src="/world-tour-game.js"></script><script>
      window.localScores=0;const owner=${JSON.stringify(ids[seat])},nickname=${JSON.stringify(seat===0?'민준':seat===1?'여행친구':'참가자3')};
      const friends=${JSON.stringify([0,1,2].filter(i=>i!==seat).map(i=>({id:ids[i],nick:i===0?'민준':i===1?'여행친구':'참가자3',online:true})))};
      window.OjjudaGameFriends={list:()=>friends};
@@ -71,7 +71,7 @@ const root=path.resolve(__dirname,'..');
   await a.page.locator('.game-friend-picker-overlay').waitFor({state:'detached'});
   assert.match(await a.frame.locator('#marbleInviteStatus').innerText(),/초대를 보냈어요/);
   await b.page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
-  await b.page.getByRole('complementary',{name:'민준님의 오쭈다 마블 초대',exact:true}).waitFor();
+  await b.page.getByRole('complementary',{name:'민준님의 마블 초대',exact:true}).waitFor();
   await b.page.screenshot({path:'/tmp/ojjuda-tour-proof/marble-friend-incoming.png'});
   assert.ok(Number(await b.page.locator('[data-seconds]').innerText())<=60);
   await b.page.getByRole('button',{name:'수락',exact:true}).click();

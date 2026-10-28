@@ -1,6 +1,6 @@
 {
   "id": "ojjuda-tour",
-  "name": "오쭈다 마블",
+  "name": "마블",
   "description": "주사위를 굴려 도시를 모으고 랜드마크를 세우는 3D 보드게임. 온라인 2~8명, 같은 기기 또는 컴퓨터와 플레이.",
   "entry": "index.html",
   "icon": "icon.png",
