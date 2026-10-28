@@ -1,0 +1,11 @@
+.sacheonseong-game-dialog{box-sizing:border-box;width:min(1320px,calc(100vw - 24px));height:min(940px,calc(100dvh - 24px));max-width:none;max-height:none;padding:0;border:1px solid #dedbd2;border-radius:22px;background:#f7f7f1;color:#243e35;overflow:hidden;box-shadow:0 24px 80px #152e3640}
+.sacheonseong-game-dialog[open]{display:flex;flex-direction:column}
+.sacheonseong-game-dialog::backdrop{background:#16291f91;backdrop-filter:blur(4px)}
+.sacheonseong-game-header{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;padding:12px 20px;border-bottom:1px solid #e4e5da;background:#fff;color:#294f41;font:600 15px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.sacheonseong-back{padding:8px 12px;border:1px solid #d6e2d8;border-radius:10px;background:#f4f7ef;color:#315044;font:inherit;font-size:13px;cursor:pointer;touch-action:manipulation}
+.sacheonseong-entry-wrap{display:grid;place-items:center;flex:1;min-height:0;overflow:auto;padding:24px}
+.sacheonseong-game-dialog .game-entry{--entry-accent:#315f4b;--entry-soft:#eff4e9;--entry-line:#e1e6db;max-width:420px}
+.sacheonseong-game-dialog .ge-icon{color:#315f4b}
+.sacheonseong-game-dialog iframe{display:block;flex:1;width:100%;min-height:0;border:0;background:#f7f7f1}
+.sacheonseong-game-dialog button:focus-visible,.sacheonseong-game-dialog summary:focus-visible{outline:3px solid #5e9272;outline-offset:3px}
+@media(max-width:640px){.sacheonseong-game-dialog{width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}.sacheonseong-game-header{padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));font-size:14px}.sacheonseong-entry-wrap{padding:18px 14px;padding-bottom:max(18px,env(safe-area-inset-bottom))}}

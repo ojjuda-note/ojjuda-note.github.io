@@ -17,6 +17,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
   w.HTMLElement.prototype.setPointerCapture=()=>{};
   w.OjjudaMatgoAccess={visible:()=>false};
   w.eval('var _r='+catalog+';'+registry);
+  w.eval(fs.readFileSync(path.join(root,'games/sacheonseong/ranking.js'),'utf8'));
   w.eval(fs.readFileSync(path.join(root,'world-game-rankings.js'),'utf8'));
   const query={select(){return this},eq(){return this},lte(){return this},order(){return this},range(){return Promise.resolve({data:[]})}};
   let wins=9,delay=false,release;
