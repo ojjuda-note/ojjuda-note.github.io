@@ -23,13 +23,13 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261028-games-check1">
+  <link rel="stylesheet" href="style.css?v=20261028-spot-level1">
   <script src="puzzles.js?v=20261003-hint1" defer></script>
   <script src="photo-puzzles.js?v=20261024-photo-car2" defer></script>
   <script src="game-core.js?v=20261006-prices1" defer></script>
   <script src="vendor/supabase.js" defer></script>
   <script src="wallet.js?v=20261024-photo1" defer></script>
-  <script src="app.js?v=20261028-games-check1" defer></script>
+  <script src="app.js?v=20261028-spot-level1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261006-zu1">
@@ -60,7 +60,7 @@
     <p class="wallet-note" id="wallet-note">힌트 1개 1 ZU · 30초 연장 1 ZU</p>
     </div>
     <div id="load-error" class="error" role="alert" hidden>그림을 불러오지 못했어요. <button id="retry">다시 불러오기</button></div>
-    <div class="board-shell" id="board-shell"><div class="board-curtain" id="board-curtain" data-entry="menu"><div class="game-entry"><div class="ge-icon" aria-hidden="true">🔎</div><span class="ge-kicker" id="gate-eyebrow">오쭈다 오락실</span><h2 id="gate-title" class="ge-title">틀린그림찾기</h2><p id="gate-copy" class="ge-copy">두 그림에서 다른 곳 여섯 개를 찾아보세요.<br>여섯 곳을 모두 찾은 그림 장수로 순위를 정해요.</p><button id="start" class="primary-button ge-primary" disabled>그림 불러오는 중</button><span class="ge-hint" id="gate-entry-hint">하트 3개 · 60초 도전</span></div></div>
+    <div class="board-shell" id="board-shell"><div class="board-curtain" id="board-curtain" data-entry="menu"><div class="game-entry"><div class="ge-icon" aria-hidden="true">🔎</div><span class="ge-kicker" id="gate-eyebrow">오쭈다 오락실</span><h2 id="gate-title" class="ge-title">틀린그림찾기</h2><p id="gate-copy" class="ge-copy">두 그림에서 다른 곳 여섯 개를 찾아보세요.<br>여섯 곳을 모두 찾은 그림 장수로 순위를 정해요.</p><label id="retry-level-choice" class="end-level-choice" for="retry-level" hidden><span>다음에 풀 레벨</span><select id="retry-level" aria-label="종료 후 레벨 선택"></select></label><button id="start" class="primary-button ge-primary" disabled>그림 불러오는 중</button><span class="ge-hint" id="gate-entry-hint">하트 3개 · 60초 도전</span></div></div>
     <section class="pair" aria-label="비교할 두 그림">
       <figure class="picture-card"><figcaption><span><b>A</b> 첫 번째 그림</span><span class="picture-status">자세히 살펴보세요</span></figcaption><div class="picture" data-side="original" tabindex="0" role="application" aria-label="첫 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="original" src="assets/01-original.webp" width="1536" height="1024" alt="첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
       <figure class="picture-card"><figcaption><span><b>B</b> 두 번째 그림</span><span class="picture-status">여섯 곳이 달라요</span></figcaption><div class="picture" data-side="difference" tabindex="0" role="application" aria-label="두 번째 그림. 다른 곳을 누르세요. 키보드는 방향키로 이동하고 Enter로 선택합니다."><img id="difference" src="assets/01-original.webp" width="1536" height="1024" alt="두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></figure>
@@ -94,8 +94,9 @@
     <div class="celebration-medal" aria-hidden="true"><span>★</span><b>6 / 6</b></div>
     <p class="celebration-eyebrow">참 잘했어요!</p>
     <h2 id="celebration-title">축하해요! 모두 찾았어요!</h2>
-    <p id="celebration-copy">잠시 후 다음 그림으로 넘어가요.</p>
-    <button id="celebration-next" class="primary-button">다음 그림</button>
+    <p id="celebration-copy">이전·현재·다음 레벨 중 골라 이어서 즐겨보세요.</p>
+    <label class="end-level-choice" for="celebration-level"><span>다음에 풀 레벨</span><select id="celebration-level" aria-label="완료 후 레벨 선택"></select></label>
+    <button id="celebration-next" class="primary-button">선택한 레벨 시작</button>
   </dialog>
   <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title"><div class="auth-heading"><h2 id="auth-title">오쭈다 로그인</h2><button id="close-auth" class="icon-button" aria-label="로그인 닫기">×</button></div><p>기존 오쭈다 계정의 ZU로 힌트와 시간 연장을 이용해요.</p><form id="login-form"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" required><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required><p id="auth-error" role="alert"></p><button class="primary-button" id="login-submit" type="submit">로그인</button></form><p class="auth-foot">로그인 없이도 기본 게임을 즐길 수 있어요.</p></dialog>
   <noscript>게임을 하려면 브라우저에서 JavaScript를 허용해 주세요.</noscript>
