@@ -28,7 +28,7 @@
     const el=$('board-canvas');el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${useGap}px`);el.style.setProperty('--pad',`${usePad}px`);el.style.setProperty('--n',n);el.classList.toggle('overview',overview);
     $('zoom-controls').hidden=n<6;
     $('zoom-fit').setAttribute('aria-pressed',String(overview));$('zoom-fit').textContent=overview?'확대':'전체';$('zoom-fit').setAttribute('aria-label',overview?'큰 패로 돌아가기':'게임판 전체 보기');
-    if(overview)$('board-caption').textContent='전체를 본 뒤 확대해서 연결하세요.';
+    if(overview)$('board-caption').textContent='전체 보기에서도 같은 패를 눌러 연결하세요.';
     else if(n*size+(n-1)*useGap+2*usePad>available+1)$('board-caption').textContent='큰 정원은 상하좌우로 밀어서 볼 수 있어요.';
     else $('board-caption').textContent=state.startedAt?'같은 그림 두 개를 연결해보세요.':'첫 패를 누르면 시간이 시작돼요.';
     $('connection').replaceChildren();
@@ -83,7 +83,7 @@
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
-    if(locked||$('modal').open||state.grid[p.r][p.c]===E.EMPTY)return;if(overview){overview=false;sizeBoard();cell(p).scrollIntoView({block:'nearest',inline:'nearest'});toast('확대했어요. 같은 패를 눌러 연결하세요.');return;}begin();
+    if(locked||$('modal').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
     if(selected&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
     if(!selected){const suggested=hints.some(q=>q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
@@ -125,13 +125,13 @@
   }
   $('board').addEventListener('click',e=>{const b=e.target.closest('.tile');if(b)select({r:Number(b.dataset.r),c:Number(b.dataset.c)});});
   $('board').addEventListener('keydown',e=>{const b=e.target.closest('.tile');if(!b||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();let r=Number(b.dataset.r),c=Number(b.dataset.c);const [dr,dc]={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];while(true){r+=dr;c+=dc;if(r<0||c<0||r>=state.grid.length||c>=state.grid.length)break;if(state.grid[r][c]!==E.EMPTY){cell({r,c}).focus();break;}}});
-  $('hint').onclick=()=>{if(locked)return;begin();if(overview){overview=false;sizeBoard();}clearSelection();ensureMove();const move=E.moves(state.grid);if(!move)return;state.hints++;save();hints=[move.a,move.b];hints.forEach(p=>cell(p).classList.add('hinted'));draw(move.path,true);cell(move.a).scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});$('status').textContent='반짝이는 두 패를 연결해보세요.';};
+  $('hint').onclick=()=>{if(locked)return;begin();clearSelection();ensureMove();const move=E.moves(state.grid);if(!move)return;state.hints++;save();hints=[move.a,move.b];hints.forEach(p=>cell(p).classList.add('hinted'));draw(move.path,true);cell(move.a).scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});$('status').textContent='반짝이는 두 패를 연결해보세요.';};
   $('shuffle').onclick=()=>{if(locked)return;begin();clearSelection();state.grid=E.reshuffle(state.grid).grid;state.shuffles++;save();renderBoard();$('board-canvas').classList.remove('shuffling');void $('board-canvas').offsetWidth;$('board-canvas').classList.add('shuffling');$('status').textContent='패를 새로 섞었어요. 다시 연결해볼까요?';};
   $('restart').onclick=()=>{if(locked)return;confirmChange('이 정원을 다시 시작할까요?','패와 시간이 새로 시작돼요. 이미 세운 순위 기록은 남아 있어요.',()=>newStage(state.stage));};
   $('next').onclick=()=>state.stage===E.MAX_STAGE?openStages():newStage(state.stage+1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">오쭈다 사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>큰 판은 상하좌우로 밀어볼 수 있어요. 전체 버튼으로 둘러본 뒤 확대해서 연결하세요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 같은 단계끼리 빠른 클리어 시간으로 순위를 매겨요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">오쭈다 사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>큰 판은 상하좌우로 밀어볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 같은 단계끼리 빠른 클리어 시간으로 순위를 매겨요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`<svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('zoom-fit').onclick=()=>{overview=!overview;sizeBoard();$('board-scroll').scrollLeft=0;$('board-scroll').scrollTop=0;};
