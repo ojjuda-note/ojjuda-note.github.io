@@ -78,7 +78,7 @@ try {
   assert.equal(w.localStorage.getItem('ojjuda-tour-save-v1:member-123'), null);
 } finally { y.dom.window.close(); }
 
-const host = new JSDOM('<button id="opener">오쭈다 마블</button>', {url:'https://fixture.test/world.html', runScripts:'outside-only'});
+const host = new JSDOM('<button id="opener">마블</button>', {url:'https://fixture.test/world.html', runScripts:'outside-only'});
 try {
   const w = host.window;
   w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
@@ -167,7 +167,7 @@ function eliminationGame() {
   } finally {resultHost.window.close();}
   const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
   const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{}});
-  assert.equal(games.tour.name,'오쭈다 마블');assert.equal(games.tour.unit,'연승');
+  assert.equal(games.tour.name,'마블');assert.equal(games.tour.unit,'연승');
   const a=eliminationGame();
   try {
     const {w,$}=a;
