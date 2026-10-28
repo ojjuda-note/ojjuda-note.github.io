@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261028-spot-level1';
+ const revision='20261028-games-touch1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   poker:'1.1.0',
   tank:'1.0.1',
   mines:'1.0.0',
-  sacheonseong:'1.1.2',
+  sacheonseong:'1.1.3',
   saetbyeol:'1.0.0',
   tour:'1.0.1',
   ttang:'1.0.0',
@@ -22,11 +22,11 @@
   janggi:'1.0.0',
   chess:'1.0.0',
   billiards:'1.0.0',
-  matgo:'1.0.5'
+  matgo:'1.0.6'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
-  sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261028-games-check1'],
+  sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261028-games-touch1'],
   poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261026-poker-opening1'],
   tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261022-ranks2'],
   mines:['/world-tour-game.css?v=20261012-marble-invite1','/games/mines/rules.js?v=20261022-ranks1','/world-mines-game.js?v=20261022-ranks1'],
