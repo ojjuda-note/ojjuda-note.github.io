@@ -23,13 +23,13 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
   <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261028-spot-hint-circle1">
+  <link rel="stylesheet" href="style.css?v=20261028-games-check1">
   <script src="puzzles.js?v=20261003-hint1" defer></script>
   <script src="photo-puzzles.js?v=20261024-photo-car2" defer></script>
   <script src="game-core.js?v=20261006-prices1" defer></script>
   <script src="vendor/supabase.js" defer></script>
   <script src="wallet.js?v=20261024-photo1" defer></script>
-  <script src="app.js?v=20261028-spot-hint-circle1" defer></script>
+  <script src="app.js?v=20261028-games-check1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261006-zu1">
@@ -74,7 +74,7 @@
     <section id="answer-review" class="found-list answer-review" hidden aria-label="전체 정답"><div class="answer-review-heading"><div><span class="eyebrow">관리자 정답 보기</span><h2>다른 곳 6개</h2><p>확인 중에는 시간이 멈추고 ZU가 차감되지 않아요.</p></div><button id="close-answers" class="soft-button">정답 닫기</button></div><ol id="review-answers"></ol></section>
   </main>
   <dialog id="zoom-dialog" aria-labelledby="zoom-title">
-    <div class="zoom-header"><div><h2 id="zoom-title">크게 비교하기</h2><p>그림을 밀어서 이동하고, 다른 곳을 눌러주세요.</p></div></div>
+    <div class="zoom-header"><div><h2 id="zoom-title">크게 비교하기</h2><p>두 손가락으로 확대하면 두 사진이 함께 커져요. 밀어서 같은 위치를 비교하세요.</p></div></div>
     <div class="zoom-pair"><section class="zoom-column"><h3>A<span class="zoom-picture-name"> · 첫 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-a"><div class="picture zoom-picture" data-side="original" tabindex="0" role="application" aria-label="확대한 첫 번째 그림"><img id="zoom-original" width="1536" height="1024" alt="확대한 첫 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section><section class="zoom-column"><h3>B<span class="zoom-picture-name"> · 두 번째 그림</span></h3><div class="zoom-scroll" id="zoom-scroll-b"><div class="picture zoom-picture" data-side="difference" tabindex="0" role="application" aria-label="확대한 두 번째 그림"><img id="zoom-difference" width="1536" height="1024" alt="확대한 두 번째 그림" draggable="false"><div class="marks" aria-hidden="true"></div></div></div></section></div>
     <div class="picture-timer time-dock zoom-picture-timer" aria-label="확대 그림 아래 남은 시간"><div class="time-progress" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><div class="time-fill"></div></div><div class="clock"><span class="clock-icon" aria-hidden="true">⏰</span><strong id="zoom-time-left">60</strong><small>초</small></div><button id="zoom-extend" class="soft-button extend-button ju-paid-action" hidden><span class="extend-title">시간 연장하기</span><small>+1분 · 1 ZU</small></button></div>
     <div class="zoom-tools" id="zoom-tools">

@@ -348,10 +348,32 @@
   $('start').onclick=start;$('reset').onclick=reset;$('extend').onclick=()=>purchase('time');$('zoom-extend').onclick=()=>purchase('time');
   $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=()=>{toggleAnswers();closeZoomSettings();};$('close-answers').onclick=()=>closeAnswers(true);
   $('continue').onclick=()=>{const pos=position(),index=pos<puzzles.length-1?state.order[pos+1]:state.order.find(i=>(state.found[puzzles[i].id]||[]).length<6);if(index!==undefined)show(index);window.scrollTo({top:0,behavior:'smooth'});};
-  const scrollA=$('zoom-scroll-a'),scrollB=$('zoom-scroll-b');let syncing=false;
-  function syncScroll(from,to){if(syncing)return;const x=from.scrollLeft/(from.scrollWidth-from.clientWidth||1),y=from.scrollTop/(from.scrollHeight-from.clientHeight||1),nextX=x*(to.scrollWidth-to.clientWidth),nextY=y*(to.scrollHeight-to.clientHeight);if(Math.abs(to.scrollLeft-nextX)<1&&Math.abs(to.scrollTop-nextY)<1)return;syncing=true;to.scrollLeft=nextX;to.scrollTop=nextY;requestAnimationFrame(()=>{syncing=false;});}
+  const scrollA=$('zoom-scroll-a'),scrollB=$('zoom-scroll-b'),zoomPanes=[scrollA,scrollB];let zoomScale=1;
+  const picturePointers=new Map();let pictureDrag=false,picturePinch=null,picturePane=null,ignorePictureClickUntil=0;
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+  const zoomBase=()=>Math.max(850,scrollA.clientWidth,scrollB.clientWidth);
+  const fitZoom=()=>Math.min(1,Math.max(...zoomPanes.map(p=>(p.clientWidth||850)/zoomBase())));
+  function syncScroll(from,to){
+    const x=from.scrollLeft/(from.scrollWidth-from.clientWidth||1),y=from.scrollTop/(from.scrollHeight-from.clientHeight||1);
+    const nextX=x*Math.max(0,to.scrollWidth-to.clientWidth),nextY=y*Math.max(0,to.scrollHeight-to.clientHeight);
+    if(Math.abs(to.scrollLeft-nextX)<1&&Math.abs(to.scrollTop-nextY)<1)return;
+    to.scrollLeft=nextX;to.scrollTop=nextY;
+  }
   scrollA.addEventListener('scroll',()=>syncScroll(scrollA,scrollB),{passive:true});scrollB.addEventListener('scroll',()=>syncScroll(scrollB,scrollA),{passive:true});
-  function resizeZoom(){const x=(scrollA.scrollLeft+scrollA.clientWidth/2)/(scrollA.scrollWidth||1),y=(scrollA.scrollTop+scrollA.clientHeight/2)/(scrollA.scrollHeight||1);for(const surface of document.querySelectorAll('.zoom-picture'))surface.style.width=`${Math.max(850,surface.parentElement.clientWidth)*Number($('zoom-level').value)}px`;for(const pane of [scrollA,scrollB]){pane.scrollLeft=x*pane.scrollWidth-pane.clientWidth/2;pane.scrollTop=y*pane.scrollHeight-pane.clientHeight/2;}}
+  function zoomAnchor(pane,x,y){
+    const rect=pane.getBoundingClientRect(),picture=pane.querySelector('.zoom-picture').getBoundingClientRect();
+    const left=Number.isFinite(x)?clamp(x-rect.left,0,pane.clientWidth):pane.clientWidth/2,top=Number.isFinite(y)?clamp(y-rect.top,0,pane.clientHeight):pane.clientHeight/2;
+    return {u:(pane.scrollLeft+left)/(picture.width||pane.scrollWidth||1),v:(pane.scrollTop+top)/(picture.height||pane.scrollHeight||1),x:left/(pane.clientWidth||1),y:top/(pane.clientHeight||1)};
+  }
+  function resizeZoom(scale=zoomScale,anchor=zoomAnchor(scrollA)){
+    zoomScale=clamp(Number.isFinite(scale)?scale:zoomScale,fitZoom(),3);
+    const width=zoomBase()*zoomScale;
+    for(const surface of document.querySelectorAll('.zoom-picture'))surface.style.width=`${width}px`;
+    for(const pane of zoomPanes){const picture=pane.querySelector('.zoom-picture').getBoundingClientRect();pane.scrollLeft=anchor.u*(picture.width||pane.scrollWidth)-anchor.x*pane.clientWidth;pane.scrollTop=anchor.v*(picture.height||pane.scrollHeight)-anchor.y*pane.clientHeight;}
+    const preset=[1,1.5,2].find(value=>Math.abs(value-zoomScale)<.001);let custom=$('zoom-custom-level');
+    if(preset!==undefined){$('zoom-level').value=String(preset);custom?.remove();}
+    else{if(!custom){custom=document.createElement('option');custom.id='zoom-custom-level';$('zoom-level').append(custom);}custom.value=String(zoomScale);custom.textContent=`${Math.round(zoomScale*100)}%`;$('zoom-level').value=custom.value;}
+  }
   function notifyZoom(open){if(window.self!==window.top)window.parent.postMessage({type:'ojjuda:spot-zoom',open},window.location.origin);}
   function goHome(event){
     if(paymentBusy){event.preventDefault();speak('ZU 사용 확인이 끝나면 홈으로 이동할 수 있어요.');return;}
@@ -360,8 +382,53 @@
   $('game-home').onclick=goHome;$('zoom-home').onclick=goHome;
   function closeZoomSettings(){zoomDialog.classList.remove('settings-open');$('zoom-more').setAttribute('aria-expanded','false');}
   $('zoom-more').onclick=()=>{const open=zoomDialog.classList.toggle('settings-open');$('zoom-more').setAttribute('aria-expanded',String(open));if(open)$('zoom-level').focus();};
-  $('zoom').onclick=()=>{if($('zoom').disabled)return;closeZoomSettings();$('zoom-tools').classList.remove('has-message');zoomDialog.showModal();document.body.style.overflow='hidden';notifyZoom(true);$('zoom-level').value='1';resizeZoom();for(const pane of [scrollA,scrollB]){pane.scrollLeft=0;pane.scrollTop=0;}refresh();};
-  $('close-zoom').onclick=()=>zoomDialog.close();zoomDialog.addEventListener('close',()=>{clearTimeout(zoomNoticeTimer);$('zoom-tools').classList.remove('has-message');closeZoomSettings();notifyZoom(false);document.body.style.overflow='';$('zoom').focus();});$('zoom-level').onchange=()=>{resizeZoom();closeZoomSettings();};window.addEventListener('resize',()=>{if(zoomDialog.open)resizeZoom();});
+  function openZoom(){
+    if($('zoom').disabled)return false;
+    closeZoomSettings();$('zoom-tools').classList.remove('has-message');zoomDialog.showModal();document.body.style.overflow='hidden';notifyZoom(true);resizeZoom(1);for(const pane of zoomPanes){pane.scrollLeft=0;pane.scrollTop=0;}refresh();return true;
+  }
+  $('zoom').onclick=openZoom;
+  function clearPictureGesture(){if(picturePointers.size)ignorePictureClickUntil=Date.now()+400;picturePointers.clear();picturePinch=null;pictureDrag=false;picturePane=null;}
+  $('close-zoom').onclick=()=>zoomDialog.close();zoomDialog.addEventListener('close',()=>{clearPictureGesture();clearTimeout(zoomNoticeTimer);$('zoom-tools').classList.remove('has-message');closeZoomSettings();notifyZoom(false);document.body.style.overflow='';$('zoom').focus();});
+  $('zoom-level').onchange=()=>{resizeZoom(Number($('zoom-level').value));closeZoomSettings();};window.addEventListener('resize',()=>{if(zoomDialog.open)resizeZoom();});
+  function pointerPair(){const [a,b]=picturePointers.values();return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))};}
+  function capturePicture(id,target){try{target.setPointerCapture(id);}catch{}}
+  function enterPairedZoom(surface,x,y){
+    const isZoom=surface.classList.contains('zoom-picture'),rect=surface.getBoundingClientRect();
+    const original={u:clamp((x-rect.left)/(rect.width||1),0,1),v:clamp((y-rect.top)/(rect.height||1),0,1)};
+    if(!isZoom&&!openZoom())return null;
+    const pane=surface.dataset.side==='original'?scrollA:scrollB;
+    if(!isZoom)resizeZoom(fitZoom(),{...original,x:.5,y:.5});
+    return {pane,anchor:zoomAnchor(pane,x,y)};
+  }
+  for(const surface of surfaces){
+    surface.addEventListener('pointerdown',event=>{
+      if(!['touch','pen'].includes(event.pointerType)||picturePointers.size>=2||surface.classList.contains('loading'))return;
+      picturePointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,surface});
+      if(picturePointers.size===1){picturePane=surface.classList.contains('zoom-picture')?surface.parentElement:null;pictureDrag=false;return;}
+      const pair=pointerPair(),first=picturePointers.values().next().value,ready=enterPairedZoom(first.surface,pair.x,pair.y);
+      if(!ready){clearPictureGesture();return;}
+      picturePane=ready.pane;picturePinch={distance:pair.distance,scale:zoomScale,anchor:ready.anchor};pictureDrag=true;
+      for(const id of picturePointers.keys())capturePicture(id,picturePane);event.preventDefault();
+    });
+    surface.addEventListener('click',event=>{if(pictureDrag||picturePinch||Date.now()<ignorePictureClickUntil){event.preventDefault();event.stopImmediatePropagation();}},true);
+  }
+  window.addEventListener('pointermove',event=>{
+    const point=picturePointers.get(event.pointerId);if(!point)return;
+    const dx=event.clientX-point.x,dy=event.clientY-point.y;point.x=event.clientX;point.y=event.clientY;
+    if(picturePointers.size===2&&picturePinch){
+      const pair=pointerPair(),rect=picturePane.getBoundingClientRect();event.preventDefault();
+      resizeZoom(picturePinch.scale*pair.distance/picturePinch.distance,{...picturePinch.anchor,x:clamp((pair.x-rect.left)/(picturePane.clientWidth||1),0,1),y:clamp((pair.y-rect.top)/(picturePane.clientHeight||1),0,1)});
+    }else{
+      if(!pictureDrag&&Math.hypot(point.x-point.startX,point.y-point.startY)>9){pictureDrag=true;capturePicture(event.pointerId,picturePane||point.surface);}
+      if(pictureDrag){event.preventDefault();if(picturePane){picturePane.scrollLeft-=dx;picturePane.scrollTop-=dy;syncScroll(picturePane,picturePane===scrollA?scrollB:scrollA);}else window.scrollBy(0,-dy);}
+    }
+  },{passive:false});
+  function endPicturePointer(event){if(!picturePointers.has(event.pointerId))return;if(pictureDrag||picturePinch)ignorePictureClickUntil=Date.now()+400;picturePointers.delete(event.pointerId);picturePinch=null;if(!picturePointers.size){pictureDrag=false;picturePane=null;}}
+  window.addEventListener('pointerup',endPicturePointer);window.addEventListener('pointercancel',endPicturePointer);window.addEventListener('blur',clearPictureGesture);
+  document.addEventListener('wheel',event=>{
+    const surface=event.target.closest?.('.picture');if(!event.ctrlKey||!surface||surface.classList.contains('loading'))return;
+    const ready=enterPairedZoom(surface,event.clientX,event.clientY);if(!ready)return;event.preventDefault();resizeZoom(zoomScale*Math.exp(-event.deltaY*.01),ready.anchor);
+  },{passive:false});
   $('wallet-login').onclick=openAuth;$('close-auth').onclick=()=>authDialog.close();
   $('login-form').onsubmit=async e=>{e.preventDefault();$('login-submit').disabled=true;$('auth-error').textContent='';try{await wallet.signIn($('email').value.trim(),$('password').value);$('password').value='';authDialog.close();speak('오쭈다 계정으로 연결했어요.');}catch(error){$('auth-error').textContent=error.message;}finally{$('password').value='';$('login-submit').disabled=false;}};
   authDialog.addEventListener('close',()=>{$('password').value='';});
