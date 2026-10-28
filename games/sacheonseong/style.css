@@ -15,3 +15,5 @@
 #retry-records[hidden],#online-retry[hidden]{display:none!important}
 
 .overview .tile.selected{outline:2px solid #bf8c42;outline-offset:1px;border-color:#bf8c42;z-index:1}
+
+.online-rank-result{display:grid;gap:3px;text-align:right}.online-rank-result small{font-size:10px;font-weight:500;color:#819471}
