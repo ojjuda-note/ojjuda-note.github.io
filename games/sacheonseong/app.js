@@ -70,6 +70,7 @@
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
   function renderRanking(){$('rank-stage').textContent=`${state.stage}단계 · ${4*state.stage*state.stage}개의 패`;$('rank-preview').innerHTML=recordRows(state.stage,3);}
   function render(){
+    window.OjjudaSacheonseongOnline?.stage(state.stage);
     $('stage-label').textContent=`STAGE ${String(state.stage).padStart(2,'0')}`;$('stage-title').textContent=titles[state.stage-1]||`${state.stage}번째 정원`;$('dimensions').textContent=`${state.stage*2} × ${state.stage*2}`;
     $('board-caption').textContent=state.startedAt?'같은 그림 두 개를 연결해보세요.':'첫 패를 누르면 시간이 시작돼요.';
     $('status').textContent='가로·세로로 연결하고, 두 번까지만 꺾어요.';
@@ -102,6 +103,7 @@
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;state.lastRecord=id;
     const record={id,duration:Math.max(1,duration),at:Date.now(),hints:state.hints,shuffles:state.shuffles,rulesVersion:E.RULES_VERSION};
     const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();renderJourney();renderRanking();updateStats();showCompletion(rank);sound('win');
+    window.OjjudaSacheonseongOnline?.record(state.stage,record);
     if(state.stage===E.MAX_STAGE&&window.parent!==window)window.parent.postMessage({type:'ojjuda:sacheonseong-finished'},location.origin);
   }
   function showCompletion(rank){
