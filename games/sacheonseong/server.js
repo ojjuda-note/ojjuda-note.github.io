@@ -4,6 +4,7 @@
  const rules=window.OjjudaSacheonseongRanking,KEY='ojjuda-sacheonseong-pending-v1',$=id=>document.getElementById(id);
  const embedded=parent!==window,uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
  function newId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,n=>n.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
+ const purchases=new Map();
  let owner,stage=1,queue=[],waiting=[],busy=null,deliveryTimer,rankingTimer,rankingId=null,rankStage=0;
  try{const saved=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(saved))queue=saved.filter(r=>r&&uuid.test(r.id)&&rules.game(r.stage)&&rules.score(r.duration)!==null&&(r.owner==='guest'||uuid.test(r.owner))).slice(-100);}catch{}
  function persist(){try{localStorage.setItem(KEY,JSON.stringify(queue));}catch{note('순위 전송 대기 기록을 저장할 수 없어요. 이 화면에서 다시 등록해 주세요.',true);}}
@@ -26,6 +27,16 @@
   if(!rules.game(nextStage)||rules.score(item.duration)===null)return;
   if(owner===undefined){waiting.push(item);return;}
   enqueue(item);
+ }
+ function buy(item){
+  if(!embedded||owner==='guest')return Promise.resolve({ok:false,reason:'sign_in'});
+  if(owner===undefined)return Promise.resolve({ok:false,reason:'connecting'});
+  if(item.owner!==owner)return Promise.resolve({ok:false,reason:'owner_changed'});
+  if(purchases.has(item.id))return purchases.get(item.id).promise;
+  let finish,timer;const promise=new Promise(resolve=>{finish=resolve;});
+  timer=setTimeout(()=>{purchases.delete(item.id);finish({ok:false,reason:'pending'});},12000);
+  purchases.set(item.id,{promise,finish:result=>{clearTimeout(timer);purchases.delete(item.id);finish(result);}});
+  send({type:'purchase',...item});return promise;
  }
  function renderRows(rows){
   const host=$('online-rows');if(!host)return;host.replaceChildren();
@@ -60,6 +71,7 @@
    note('완료 기록은 오락실의 종합 게임순위에 등록돼요.');
    const initial=waiting;waiting=[];initial.forEach(enqueue);flush();
   }
+  if(message.type==='purchase'&&message.owner===owner&&purchases.has(message.id)){purchases.get(message.id).finish(message.result||{ok:false,reason:'pending'});}
   if(message.type==='record'&&message.id===busy){
    clearTimeout(deliveryTimer);const saved=queue.find(r=>r.id===busy);busy=null;
    if(message.ok){queue=queue.filter(r=>r.id!==message.id);persist();note(`${saved?.stage||stage}단계 기록을 오락실 순위에 등록했어요.`);flush();}
@@ -71,7 +83,7 @@
  });
  $('online-ranking').onclick=open;$('retry-records').onclick=flush;
  window.addEventListener('online',flush);
- window.OjjudaSacheonseongOnline={record,stage:value=>{stage=value;}};
+ window.OjjudaSacheonseongOnline={record,buy,newId,owner:()=>embedded?owner:'guest',stage:value=>{stage=value;}};
  if(embedded){note('오락실 게임순위에 연결하고 있어요…');send({type:'ready'});}
  else note('오락실에서 시작하면 완료 기록이 게임순위에 등록돼요.');
 })();

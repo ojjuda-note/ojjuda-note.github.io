@@ -2,12 +2,13 @@
   'use strict';
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
-  const faces=window.GardenFaces;
+  const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10});
   let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,flashTimer,customSize=null,overview=true;
+  let purchaseBusy=false;
   let audioContext,saveAvailable=true,countdown=3,rankingStage=1;
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
-  function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';}}
-  function save(){write(KEY,state);}
+  function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true;}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';return false;}}
+  function save(){return write(KEY,state);}
   function count(){return state.grid.flat().filter(v=>v!==E.EMPTY).length;}
   function ms(){return state.startedAt?Math.max(0,Date.now()-state.startedAt):0;}
   function time(value){const n=Math.floor(value/10),m=Math.floor(n/6000),s=Math.floor(n/100)%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(n%100).padStart(2,'0')}`;}
@@ -50,7 +51,7 @@
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
   function updateStats(){const total=4*state.stage*state.stage,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
-  function chooseStage(s){if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
+  function chooseStage(s){if(state.pendingPurchase){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
   function openStages(){
     const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stageInfo(s);return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
     showModal(`<div class="eyebrow">같은 그림은 최대 4개</div><h2 id="modal-title">15개의 정원을 만나보세요.</h2><p>64개 이후에도 11판이 더 있어요.<br>하나를 완성하면 다음 단계가 열려요.</p><div class="all-stage-grid">${cards}</div>`);
@@ -62,15 +63,15 @@
     $('stage-label').textContent=`${state.stage}단계`;
     $('status').textContent='가로·세로로 연결하고, 두 번까지만 꺾어요.';
     $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
-    renderBoard();updateStats();
+    renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage){
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));clearTimeout(autoTimer);clearTimeout(flashTimer);clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
-    state={rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
+    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
-    if(locked||$('modal').open||$('options').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
+    if(locked||state.pendingPurchase||$('modal').open||$('options').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
     if(selected&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
     if(!selected){const suggested=hints.some(q=>q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
@@ -110,15 +111,71 @@
     if($('modal').open)$('modal-content').innerHTML=html;else showModal(html);
     $('rank-select').addEventListener('change',e=>{rankingStage=Number(e.target.value);$('rank-table').innerHTML=recordRows(rankingStage,10);});
   }
+  function newPurchaseId(){return window.OjjudaSacheonseongOnline?.newId?.()||crypto.randomUUID();}
+  function syncTools(){
+    for(const kind of ['hint','shuffle']){
+      const button=$(kind),pending=state.pendingPurchase?.kind===kind,label=kind==='hint'?'힌트':'섞기';
+      button.disabled=purchaseBusy||!!(state.pendingPurchase&&!pending);
+      button.innerHTML=`<svg class="icon"><use href="#i-${kind}"/></svg><span>${pending?(purchaseBusy?'확인 중':'다시 확인'):label}<small>${pending?'구매 확인':TOOL_PRICES[kind]+'쭈'}</small></span>`;
+      button.setAttribute('aria-label',pending?`${label} 구매 ${purchaseBusy?'확인 중':'다시 확인'}`:`${label} ${TOOL_PRICES[kind]}쭈`);
+    }
+    $('all-stages').disabled=!!state.pendingPurchase;$('restart').disabled=!!state.pendingPurchase;
+    $('board').setAttribute('aria-busy',String(purchaseBusy));
+  }
+  function restoreHint(){
+    const pair=state.hintPair;
+    if(!Array.isArray(pair)||pair.length!==2||!pair.every(p=>Number.isInteger(p?.r)&&Number.isInteger(p?.c)&&state.grid[p.r]?.[p.c]>=0))return;
+    if(state.grid[pair[0].r][pair[0].c]!==state.grid[pair[1].r][pair[1].c])return;
+    const route=E.path(state.grid,pair[0],pair[1]);if(!route)return;
+    hints=pair;hints.forEach(p=>cell(p).classList.add('hinted'));draw(route,true);
+  }
+  async function useTool(kind){
+    if(locked||purchaseBusy||!count())return;
+    const online=window.OjjudaSacheonseongOnline,owner=online?.owner?.();
+    if(!online||owner==='guest'){toast('로그인 후 힌트 3쭈, 섞기 10쭈로 이용할 수 있어요.');return;}
+    if(!owner){toast('오락실 연결을 확인하고 있어요. 잠시 뒤 다시 눌러 주세요.');return;}
+    let item=state.pendingPurchase;
+    if(item&&item.owner!==owner){toast('구매를 시작한 계정으로 로그인해 주세요.');return;}
+    if(item&&item.kind!==kind){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}
+    if(!item){
+      ensureMove();if(kind==='hint'&&!E.moves(state.grid))return;
+      state.runId ||= newPurchaseId();
+      item={id:newPurchaseId(),runId:state.runId,stage:state.stage,kind,owner};
+      state.pendingPurchase=item;
+      if(!save()){state.pendingPurchase=null;toast('구매 기록을 저장할 수 없어 실행하지 않았어요.');return;}
+    }
+    purchaseBusy=true;syncTools();
+    let result;
+    try{result=await online.buy(item);}catch{result={ok:false,reason:'pending'};}
+    purchaseBusy=false;
+    if(state.pendingPurchase?.id!==item.id||state.runId!==item.runId){syncTools();return;}
+    if(result?.ok&&result.kind===kind&&result.run_id===item.runId&&result.stage===item.stage&&result.price===TOOL_PRICES[kind]){
+      const next={...state,pendingPurchase:null,startedAt:state.startedAt||Date.now()};
+      if(kind==='hint'){const move=E.moves(state.grid);if(!move){syncTools();toast('구매 다시 확인을 눌러 주세요.');return;}next.hints=(state.hints||0)+1;next.hintPair=[move.a,move.b];}
+      else{next.grid=E.reshuffle(state.grid).grid;next.shuffles=(state.shuffles||0)+1;next.hintPair=null;}
+      // Save the consumed receipt and its effect together, so reloading cannot charge twice.
+      if(!write(KEY,next)){syncTools();toast('저장 공간을 확인한 뒤 구매 다시 확인을 눌러 주세요.');return;}
+      state=next;clearSelection();renderBoard();restoreHint();updateStats();
+      if(kind==='hint'){cell(hints[0]).scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});$('status').textContent='반짝이는 두 패를 연결해보세요.';}
+      else{$('board-canvas').classList.remove('shuffling');void $('board-canvas').offsetWidth;$('board-canvas').classList.add('shuffling');$('status').textContent='패를 새로 섞었어요.';}
+      toast(`${kind==='hint'?'힌트':'섞기'} · ${TOOL_PRICES[kind]}쭈를 사용했어요.`);
+    }else if(!result||result.ok||!['coins','sign_in','wallet_unavailable','banned','invalid','request_conflict','unavailable'].includes(result.reason)){
+      toast('결과를 확인하지 못했어요. 같은 버튼의 다시 확인을 눌러 주세요.');
+    }else{
+      state.pendingPurchase=null;save();
+      toast(result.reason==='coins'?`${TOOL_PRICES[kind]}쭈가 필요해요. 보유 쭈를 확인해 주세요.`:result.reason==='sign_in'?'로그인 후 이용해 주세요.':'이용할 수 없어요. 잠시 뒤 다시 눌러 주세요.');
+    }
+    syncTools();
+  }
   $('board').addEventListener('click',e=>{const b=e.target.closest('.tile');if(b)select({r:Number(b.dataset.r),c:Number(b.dataset.c)});});
   $('board').addEventListener('keydown',e=>{const b=e.target.closest('.tile');if(!b||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();let r=Number(b.dataset.r),c=Number(b.dataset.c);const [dr,dc]={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];while(true){r+=dr;c+=dc;if(r<0||c<0||r>=state.grid.length||c>=state.grid.length)break;if(state.grid[r][c]!==E.EMPTY){cell({r,c}).focus();break;}}});
-  $('hint').onclick=()=>{if(locked)return;begin();clearSelection();ensureMove();const move=E.moves(state.grid);if(!move)return;state.hints++;save();hints=[move.a,move.b];hints.forEach(p=>cell(p).classList.add('hinted'));draw(move.path,true);cell(move.a).scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});$('status').textContent='반짝이는 두 패를 연결해보세요.';};
-  $('shuffle').onclick=()=>{if(locked)return;begin();clearSelection();state.grid=E.reshuffle(state.grid).grid;state.shuffles++;save();renderBoard();$('board-canvas').classList.remove('shuffling');void $('board-canvas').offsetWidth;$('board-canvas').classList.add('shuffling');$('status').textContent='패를 새로 섞었어요. 다시 연결해볼까요?';};
-  $('restart').onclick=()=>{if(locked)return;confirmChange('이 정원을 다시 시작할까요?','패와 시간이 새로 시작돼요. 이미 세운 순위 기록은 남아 있어요.',()=>newStage(state.stage));};
+  $('hint').onclick=()=>useTool('hint');
+  $('shuffle').onclick=()=>useTool('shuffle');
+  $('restart').onclick=()=>{if(locked||state.pendingPurchase)return;confirmChange('이 정원을 다시 시작할까요?','패와 시간이 새로 시작돼요. 이미 세운 순위 기록은 남아 있어요.',()=>newStage(state.stage));};
   $('next').onclick=()=>state.stage===E.MAX_STAGE?openStages():newStage(state.stage+1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>처음에는 모든 패가 화면에 맞춰 보여요. +로 크게 보고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>처음에는 모든 패가 화면에 맞춰 보여요. +로 크게 보고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
@@ -133,6 +190,6 @@
   function valid(s){return s&&Number.isInteger(s.stage)&&s.stage>=1&&s.stage<=E.MAX_STAGE&&Number.isInteger(s.unlocked)&&s.unlocked>=s.stage&&Array.isArray(s.grid)&&s.grid.length===s.stage*2&&s.grid.every(row=>Array.isArray(row)&&row.length===s.stage*2&&row.every(v=>Number.isInteger(v)&&v>=-1&&v<faces.length))&&(!s.startedAt||(Number.isFinite(s.startedAt)&&s.startedAt>0));}
   const saved=read(KEY),storedRecords=read(RECORDS);
   if(storedRecords&&typeof storedRecords==='object'&&!Array.isArray(storedRecords)){for(const [k,v]of Object.entries(storedRecords))if(/^\d+$/.test(k)&&Array.isArray(v))records[k]=v.filter(r=>r&&Number.isFinite(r.duration)&&r.duration>0&&Number.isFinite(r.at)).sort((a,b)=>a.duration-b.duration).slice(0,30);}
-  if(valid(saved)){const needsRandomLayout=saved.rulesVersion!==E.RULES_VERSION;state=saved;state.unlocked=Math.min(E.MAX_STAGE,state.unlocked);state.rulesVersion=E.RULES_VERSION;if(!E.withinCopyLimit(state.grid)){newStage(state.stage);toast('같은 그림은 최대 4개! 현재 단계의 패를 새로 준비했어요.');}else if(count()===0){if(state.finishedMs!=null&&!Object.values(records).flat().some(r=>r.id===state.lastRecord)){render();finish(state.finishedMs);}else if(state.stage===E.MAX_STAGE){render();showCompletion(state.lastRank||1);}else newStage(state.stage+1);}else{if(needsRandomLayout){state.grid=E.reshuffle(state.grid).grid;toast('남은 패를 무작위로 골고루 섞었어요.');}render();ensureMove();save();}}else{if(saved&&Number.isInteger(saved.unlocked))state={unlocked:Math.min(E.MAX_STAGE,Math.max(1,saved.unlocked)),sound:!!saved.sound};newStage(saved&&Number.isInteger(saved.stage)?Math.min(E.MAX_STAGE,Math.max(1,saved.stage)):1);}
+  if(valid(saved)){const needsRandomLayout=saved.rulesVersion!==E.RULES_VERSION;state=saved;state.runId ||= newPurchaseId();state.unlocked=Math.min(E.MAX_STAGE,state.unlocked);state.rulesVersion=E.RULES_VERSION;if(!E.withinCopyLimit(state.grid)){newStage(state.stage);toast('같은 그림은 최대 4개! 현재 단계의 패를 새로 준비했어요.');}else if(count()===0){if(state.finishedMs!=null&&!Object.values(records).flat().some(r=>r.id===state.lastRecord)){render();finish(state.finishedMs);}else if(state.stage===E.MAX_STAGE){render();showCompletion(state.lastRank||1);}else newStage(state.stage+1);}else{if(needsRandomLayout){state.grid=E.reshuffle(state.grid).grid;toast('남은 패를 무작위로 골고루 섞었어요.');}render();ensureMove();save();}}else{if(saved&&Number.isInteger(saved.unlocked))state={unlocked:Math.min(E.MAX_STAGE,Math.max(1,saved.unlocked)),sound:!!saved.sound};newStage(saved&&Number.isInteger(saved.stage)?Math.min(E.MAX_STAGE,Math.max(1,saved.stage)):1);}
   setInterval(()=>{if(state.finishedMs==null)$('timer').textContent=time(ms());},70);
 })();
