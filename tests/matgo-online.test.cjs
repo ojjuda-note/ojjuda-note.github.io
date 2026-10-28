@@ -35,6 +35,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   assert.equal((await call(C,{action:'online_read',room_id:a.room.id})).error,'room_not_found');
   assert.equal((await call(A,{action:'start'})).error,'match_in_progress');
   const initial=await call(B,{action:'online_join',code:a.room.code});assert.equal(initial.room.status,'active');assert.equal(initial.room.seat,1);
+  const firstDeadline=Date.parse(initial.room.deadline)-Date.now();assert.ok(firstDeadline>18000&&firstDeadline<=20000,'the first turn also starts with 20 seconds');
   assert.equal((await call(C,{action:'online_join',code:a.room.code})).error,'room_unavailable');
   let read=await call(A,{action:'online_read',room_id:a.room.id});
   assert.equal(read.room.game.hand.length,10);assert.equal(read.room.game.otherCount,10);
@@ -65,7 +66,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
     else if(pr.type==='gostop'){sawPrompt=true;command={type:'gostop',decision:'stop'};}
     else command={type:'play',card:r.game.hand[0]?.id??null};
     const req=crypto.randomUUID(),res=await move(actor,r,command,req);assert.equal(res.status,200,JSON.stringify(res));
-    if(res.room.status==='active'&&['choose','gostop','gukjin'].includes(res.room.game.prompt?.type))assert.equal(res.room.deadline,r.deadline,'floor/go choices share the original 15-second turn');
+    if(res.room.status==='active'&&['choose','gostop','gukjin'].includes(res.room.game.prompt?.type))assert.equal(res.room.deadline,r.deadline,'floor/go choices share the original 20-second turn');
     lastRequest=actor;lastBody={action:'online_move',room_id:roomId,version:r.version,command,request_id:req};
     const duplicate=await call(actor,lastBody);assert.equal(duplicate.room.version,res.room.version);
     if(res.room.status==='active'){assert.equal(await gold(A),5000);assert.equal(await gold(B),5000);}
@@ -80,7 +81,7 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   assert.equal((await call(A,{action:'start'})).error,'match_in_progress');
   const rematch=await call(B,{action:'online_ready',room_id:roomId});assert.equal(rematch.room.status,'active');assert.equal(rematch.room.round,2);
   assert.equal(rematch.room.game.bank[0],balances[0]);
-  const deadline=Date.parse(rematch.room.deadline);assert.ok(deadline-Date.now()>13000&&deadline-Date.now()<=15000,'each turn has 15 seconds');
+  const deadline=Date.parse(rematch.room.deadline);assert.ok(deadline-Date.now()>18000&&deadline-Date.now()<=20000,'each turn has 20 seconds');
   const turnsBefore=rematch.room.version;
   await db.query("update ojjuda_matgo_internal.rooms set deadline=now()-interval '1 second' where id=$1",[roomId]);
   const timeout=await call(A,{action:'online_read',room_id:roomId});assert.ok(timeout.room.version>turnsBefore);assert.notEqual(timeout.room.status,'cancelled');
@@ -113,6 +114,6 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   const disconnected=await call(A,{action:'online_create'});await call(B,{action:'online_join',code:disconnected.room.code});
   await db.query("update ojjuda_matgo_internal.rooms set seen_host=now()-interval '31 seconds' where id=$1",[disconnected.room.id]);
   const takeover=await call(B,{action:'online_read',room_id:disconnected.room.id});assert.deepEqual(takeover.room.bots,[true,false]);
-  console.log('PASS: human matching, codes, hidden hands, server choices, stale/duplicate moves, atomic gold, rematch, 15-second automatic turns, PC takeover and no winnings after leaving');
+  console.log('PASS: human matching, codes, hidden hands, server choices, stale/duplicate moves, atomic gold, rematch, 20-second automatic turns, PC takeover and no winnings after leaving');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

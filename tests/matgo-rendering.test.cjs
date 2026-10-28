@@ -16,7 +16,7 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
    createVentControls:()=>({mount:noop,sync:noop})};
   const source=read('games/matgo-online.mjs').replace(/^import \{([^}]+)\} from '[^']+';/gm,(_,names)=>`const {${names.replace(/ as /g,':')}}=window.deps;`);
   await w.eval('(async()=>{'+source+'\nwindow.renderTest={accept,cancelPresentation,getRoom:()=>room};clearInterval(pollTimer);clearInterval(accessTimer);})()');
-  const card=id=>({...engine.CARDS[id]}),stamp=r=>({...structuredClone(r),serverTime:Date.now(),deadline:new Date(Date.now()+15000).toISOString()});
+  const card=id=>({...engine.CARDS[id]}),stamp=r=>({...structuredClone(r),serverTime:Date.now(),deadline:new Date(Date.now()+20000).toISOString()});
   const initial={id:'render-room',round:1,version:1,status:'active',seat:0,names:['나','상대'],bots:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[card(0),card(8)],otherCount:2,floor:[{cards:[card(1)]},{cards:[card(12)]}],caps:[[card(20)],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
   const t=w.renderTest;await t.accept(stamp(initial));
   const board=w.document.querySelector('.board'),hand=w.document.querySelector('#hand'),held=hand.querySelector('[data-card="8"]'),floor=w.document.querySelector('.fl [data-face="12"]').closest('.stack'),captured=w.document.querySelector('.caps-own [data-face="20"]');

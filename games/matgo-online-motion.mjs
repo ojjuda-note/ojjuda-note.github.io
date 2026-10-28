@@ -32,7 +32,9 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{
       return board.querySelectorAll(mine(p)?'.caps-own .cap':'.caps:not(.caps-own) .cap')[group];
     };
     const face=(root,c)=>root?.querySelector(`[data-face="${Number(c.id)}"]`);
-    const hide=node=>{if(node){node.style.visibility='hidden';job.hidden.add(node);}};
+    // The wrapper paints its own border/shadow; hiding only its SVG leaves an afterimage.
+    const cardNode=node=>node?.closest('.stack > .c, .hand > .c')||node;
+    const hide=node=>{node=cardNode(node);if(node){node.style.visibility='hidden';job.hidden.add(node);}};
     function floorStack(ev){
       const floor=$('.floor');
       for(const c of ev.stack||[]){if(c.id===ev.card?.id)continue;const found=face(floor,c)?.closest('.stack');if(found)return found;}
@@ -44,8 +46,9 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{
       span.innerHTML=cardSVG(c);stack.append(span);
     }
     function removeFace(node){
+      node=cardNode(node);
       if(!node)return;const stack=node.closest('.stack');
-      if(stack){node.closest('span')?.remove();if(!stack.querySelector('svg'))stack.remove();}
+      if(stack){node.remove();if(!stack.querySelector('svg'))stack.remove();}
       else node.remove();
     }
     async function fly(c,from,to,duration=FLIGHT,offset=0){
@@ -77,14 +80,14 @@ export function createOnlineMotion({cardSVG,backSVG,sound,onEvent,onLayout=()=>{
         const c=ev.card;
         if(['played','bonusPlay','flip','flipBonus'].includes(ev.type)&&c){
           const fromHand=ev.type==='played'||ev.type==='bonusPlay';
-          const source=fromHand?(mine(ev.p)?$(`#hand [data-card="${Number(c.id)}"]`):$('.op-hand svg:last-child')):$('.deck svg');
+          const source=fromHand?(mine(ev.p)?$(`#hand [data-card="${Number(c.id)}"]`):$('.op-hand .c:last-child')):$('.deck svg');
           const stack=floorStack(ev);
           const label=$('#turn-label');if(label)label.textContent=fromHand?'패를 내고 있어요':'더미에서 패를 뒤집고 있어요';
           if(fromHand)hide(source);
           await fly(c,source||hand(ev.p),stack);
           if(job.cancelled)break;
           addFloor(stack,c);sound.play('land',{onCards:(ev.stack?.length||0)>1});
-          if(fromHand&&source?.closest('.op-hand'))source.remove();
+          if(fromHand)removeFace(source);
         }else if(ev.type==='take'&&ev.cards?.length){
           const label=$('#turn-label');if(label)label.textContent='맞춘 패를 가져오고 있어요';
           const sources=ev.cards.map(c=>face($('.floor'),c));sources.forEach(hide);
