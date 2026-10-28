@@ -111,9 +111,10 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    assert.deepEqual(await zoomState(),beforePayment,'payment preserves zoom scale, picture dimensions and pan');
    if(kind==='hint'){
     assert.equal(await page.locator('.hint-mark').count(),4,'paid hint automatically appears in both views');
-    await page.waitForTimeout(3800);assert.equal(await page.locator('.hint-mark').count(),4,'starlight persists beyond the old expiry');
-    assert.equal(await page.locator('.hint-star').first().evaluate(el=>getComputedStyle(el).animationIterationCount),'infinite');
-    await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.hint-star').first().evaluate(el=>getComputedStyle(el).animationName),'none');
+    await page.waitForTimeout(3800);assert.equal(await page.locator('.hint-mark').count(),4,'hint ring persists beyond the old expiry');
+    assert.equal(await page.locator('.hint-mark').first().evaluate(el=>getComputedStyle(el).borderStyle),'dashed');
+    assert.equal(await page.locator('.hint-mark').first().evaluate(el=>{const r=el.getBoundingClientRect();return Math.abs(r.width-r.height)<1;}),true,'hint stays circular');
+    await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.hint-mark').first().evaluate(el=>getComputedStyle(el).animationName),'none');
    }
    await page.locator('#close-zoom').click();
    const completedStage=Number(await page.locator('#stage-picker').inputValue())+1;await solve(page);
