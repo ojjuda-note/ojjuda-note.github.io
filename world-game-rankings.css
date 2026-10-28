@@ -8,3 +8,5 @@
 [data-arcade-rank-root] .board-leader-nick{color:var(--ink)!important}
 :root[data-theme=dark] [data-arcade-rank-root]:before{opacity:.14}
 @media(max-width:600px){[data-arcade-rank-root]:before{background-size:auto 110%;opacity:.2}}
+
+.board-stage-select{display:block;width:100%;max-width:140px;margin:4px 0 0;padding:4px 5px;border:1px solid #dadfd4;border-radius:7px;background:#fff;color:inherit;font:inherit;font-size:11px;font-weight:500;line-height:1.4;cursor:pointer;min-height:28px}.board-stage-select:focus-visible{outline:2px solid #577c5c;outline-offset:2px}

@@ -1,7 +1,7 @@
 /* Guest scores use a separate, non-persistent API client, never a member session. */
 (() => {
   'use strict';
-  const games = new Set(['mole','runner','stacker','breakout','screw','screw_box','screw_flat','spot','ttang','tour','saetbyeol','mines']);
+  const games = new Set(['mole','runner','stacker','breakout','screw','screw_box','screw_flat','spot','ttang','tour','saetbyeol','mines',...Array.from({length:15},(_,i)=>'sacheonseong_'+(i+1))]);
   const storageKey = 'ojjuda.guest-ranking.v1';
   let client, identity;
   function token() {
