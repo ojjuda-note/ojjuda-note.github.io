@@ -192,3 +192,6 @@ dialog.spot-celebration::backdrop{background:#30234c66;backdrop-filter:blur(4px)
 @keyframes celebration-appear{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @keyframes celebration-medal{0%{transform:scale(.6) rotate(-12deg)}65%{transform:scale(1.08) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
 @media(prefers-reduced-motion:reduce){.celebration-confetti{display:none;}}
+
+/* Gestures resize both pictures together; single-finger movement is handled by the game. */
+.picture{touch-action:none}.zoom-scroll{touch-action:none}
