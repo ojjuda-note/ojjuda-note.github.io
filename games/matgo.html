@@ -35,7 +35,7 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 .round-rules-note{flex-shrink:0;margin:0 12px 3px;padding:4px 8px;border-radius:8px;background:#f2c14e18;color:#f4dc9c;font-size:11px;line-height:1.4;text-align:center}
 .round-rules-note[hidden]{display:none}
 </style>
-<link rel="stylesheet" href="./matgo-viewport.css?v=20261005-score1">
+<link rel="stylesheet" href="./matgo-viewport.css?v=20261028-games-touch1">
 <script src="./matgo-viewport.js?v=20261003-gukjin1"></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
@@ -60,7 +60,7 @@ import {shuffledFloorSlots} from "./matgo-table-flip.mjs?v=20261013-bonus-pi1";
 import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
 import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261015-basic1";
-import {floorLayout,heldPairMonths,piClaimMessage} from "./matgo-view.mjs?v=20261014-pi-audit1";
+import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo-view.mjs?v=20261028-games-touch1";
 import {createWallet} from "./matgo-wallet.mjs?v=20261022-entry2";
 import {createFlightArt} from "./matgo-flight-art.mjs?v=20261027-matgo-face1";
 (async () => {
@@ -394,7 +394,7 @@ const ui={
     let src=null; if(from==='hand'){ src=ui.lastHandRect; } else { const dk=$('.deck .back').getBoundingClientRect(); src={left:dk.left,top:dk.top,width:dk.width,height:dk.height}; }
     const hc=hold.querySelector('.hc'); if(faceReady)hc.replaceChildren(flightArt.face(card)); const hr=hc.getBoundingClientRect(); if(src&&faceReady) hc.animate([{transform:`translate(${src.left-hr.left}px,${src.top-hr.top}px) scale(${src.width/w})`},{transform:'translate(0,0) scale(1)'}],{duration:380,easing:'cubic-bezier(.25,.7,.3,1)'});
     return new Promise(res=>{ ui.resolveChoose=(i)=>{ ui.resolveChoose=null; ui.chooseStacks=null; const r=hc.getBoundingClientRect(); ui.holdRect={x:r.left,y:r.top,w:r.width,h:r.height}; hold.remove(); stackEls.forEach(el=>el.classList.remove('pick','dimmed')); res(i); }; }); },
-  async goStop(p,s){ if(p===CPU){ const d=aiGoStop(game,p,s); if(d==='stop')Sound.play('stop'); toast(d==='go'?`상대: 고! (${s}점)`:`상대: 스톱 (${s}점)`,1400); await sleep(900); return d; } render(); Sound.play('prompt'); return new Promise(res=>{ modal(`<h2>${s}점!</h2><p>고를 하면 점수가 올라가지만, 상대가 먼저 나면 고박이에요.<br>상대 ${game.pts(CPU)}점 · 남은 패 ${game.deck.length}장</p><div class="row"><button class="btn gold" id="go">고!</button><button class="btn g" id="stop">스톱</button></div>`,{go:()=>res('go'),stop:()=>{Sound.play('stop');res('stop');}}); }); },
+  async goStop(p,s){ if(p===CPU){ const d=aiGoStop(game,p,s); if(d==='stop')Sound.play('stop'); toast(d==='go'?`상대: 고! (${s}점)`:`상대: 스톱 (${s}점)`,1400); await sleep(900); return d; } render(); Sound.play('prompt'); return new Promise(res=>{ modal(`<div class="go-stop-summary"><h2 id="go-stop-title">${s}점 · 고/스톱</h2><p>상대 ${game.pts(CPU)}점 · 남은 패 ${game.deck.length}장</p></div><div class="row"><button class="btn gold" id="go">고!</button><button class="btn g" id="stop">스톱</button></div>`,{go:()=>res('go'),stop:()=>{Sound.play('stop');res('stop');}},false,true); }); },
   async event(type,d={}){ if(!['played','flip','take','bonusPlay','flipBonus'].includes(type))Sound.play(type==='ppuk'&&d.firstPpuk?'bonusPlay':type,d); const who=p=>p===ME?'나':'상대';
     if(['played','flip','take','bonusPlay','flipBonus','ppukBonus','draw','steal'].includes(type)&&!await flightArt.prepare(d.cards||[d.card])){render();return;}
     if(type==='gukjin'){render();if(d.p===CPU)toast('상대 구쌍피 → '+(d.choice==='pi'?'쌍피':'그림(열끗)'),1400);return;}
@@ -461,7 +461,7 @@ window.OjjudaMatgo={ onResult:null, getGold:()=>game.bank[ME], newRound:()=>star
 window.addEventListener('message',e=>{ if(!access.allowed()||e.origin!==location.origin||window.parent===window||e.source!==window.parent)return; const d=e.data||{}; if(d.type==='ojjuda:matgo:newRound') startRound(); });
 // Gold and refill limits are stored on the server; URL parameters cannot change them.
 if(!Bridge.standalone) try{ window.parent.postMessage({type:'ojjuda:matgo:ready'},location.origin); }catch{}
-function modal(html,handlers,result=false){ const m=document.createElement('div'); m.className='modal'; m.innerHTML=`<div class="card${result?' result-card':''}">${html}</div>`; document.body.appendChild(m); for(const k in handlers){ const b=m.querySelector('#'+k); if(b) b.onclick=()=>{ m.remove(); handlers[k](); }; } }
+function modal(html,handlers,result=false,goStop=false){ const m=document.createElement('div'); m.className='modal'; m.innerHTML=`<div class="card${result?' result-card':''}">${html}</div>`; document.body.appendChild(m); if(goStop)positionGoStopPrompt(m); for(const k in handlers){ const b=m.querySelector('#'+k); if(b) b.onclick=()=>{ m.remove(); handlers[k](); }; } }
 function cardEl(c,cls=''){ const d=document.createElement('div'); d.className='c '+cls; d.innerHTML=c?cardSVG(c):backSVG; d.dataset.id=c?c.id:''; return d; }
 function capsHTML(p){ const c=game.caps[p]; const groups=[['광',c.filter(x=>x.k==='gwang')],['열끗',c.filter(x=>x.k==='yul'&&!x.asPi)],['띠',c.filter(x=>x.k==='tti')],['피',c.filter(isPi)]]; return `<div class="caps">${groups.map(([n,arr])=>`<div class="cap"><span class="lb">${n} ${n==='피'?arr.reduce((s,x)=>s+piVal(x),0):arr.length}</span>${arr.map(x=>`<div class="c" data-id="${x.id}">${cardSVG(x)}</div>`).join('')}</div>`).join('')}</div>`; }
 function mount(){
@@ -475,7 +475,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261028-matgo-clean-turn20&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261028-games-touch1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
