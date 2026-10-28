@@ -26,7 +26,7 @@
 <script src="/world-admin-loader.js?v=20261027-visits1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261028-sacheonseong-rank2" defer></script>
+<script src="/world-game-assets.js?v=20261028-sacheonseong-best1" defer></script>
 <script src="/world-navigation.js?v=20261022-back1" defer></script>
 <script src="/world-pull-refresh.js?v=20261004-refresh1" defer></script>
 
@@ -38,11 +38,11 @@
 
 
 
-<link rel="stylesheet" href="/world-game-rankings.css?v=20261028-sacheonseong-rank2">
+<link rel="stylesheet" href="/world-game-rankings.css?v=20261028-sacheonseong-best1">
 
 <script src="/games/mines/rules.js?v=20261022-ranks1" defer></script>
-<script src="/games/sacheonseong/ranking.js?v=20261028-sacheonseong-rank2" defer></script>
-<script src="/world-game-rankings.js?v=20261028-sacheonseong-rank2" defer></script>
+<script src="/games/sacheonseong/ranking.js?v=20261028-sacheonseong-best1" defer></script>
+<script src="/world-game-rankings.js?v=20261028-sacheonseong-best1" defer></script>
 <link rel="stylesheet" href="/world-park-notes.css?v=20261004-design1">
 <script src="/world-park-notes.js?v=20261021-audit1" defer></script>
 
@@ -50,7 +50,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
 <script src="/guest-access.js?v=20261021-guest1" defer></script>
 <script src="/guest-visits.js?v=20261027-visits1" defer></script>
-<script src="/guest-game-scores.js?v=20261028-sacheonseong-rank2" defer></script>
+<script src="/guest-game-scores.js?v=20261028-sacheonseong-best1" defer></script>
 
 <link rel="stylesheet" href="note/notifications.css?v=0.45.61-beta">
 <link rel="stylesheet" href="note/support.css?v=20261004-design1">
@@ -908,7 +908,7 @@ async function vn(t){if(window.OjjudaGuestAccess?.canPlay()===false)return;Ui(["
  }
  if(!window.OjjudaGuestScores)return {ok:false,reason:'unavailable'};
  return window.OjjudaGuestScores.submit(t,e,request.guestId||(request.guestId=crypto.randomUUID()));
-}async function ef(t){if(D.online&&D.user){let{data:r,error:a}=await S.rpc("community_game_ranking",{p_game:t});if(a)throw a;return r||[]}return window.OjjudaGuestScores?.ranking(t)||[]}var _r={sacheonseong:{name:"오쭈다 사천성",emoji:"🀄",unit:"초",rankingBasis:"stage_time",bg:"#E3ECE0",how:"같은 그림의 패 두 개를 가로·세로로 연결해요. 두 번까지 꺾을 수 있어요. 4개부터 900개까지 15단계, 같은 그림은 최대 4개예요. 단계별 빠른 클리어 시간이 오락실 게임순위에 등록돼요."},poker:{name:"세븐포커",age:19,emoji:"♠️",unit:"골드",bg:"#E3ECE0",how:"2~4명이 함께하는 세븐포커. 방 코드로 참여하고, 7장 중 가장 좋은 5장으로 승부해요. 컴퓨터 연습도 가능해요."},mines:{name:"지뢰찾기",emoji:"🚩",unit:"초",rankingBasis:"difficulty_time",bg:"#EEF1FF",how:"숫자를 보고 지뢰 없는 칸을 모두 열어요. 8개 난이도와 커스텀 · 길게 눌러 깃발 · 두 손가락으로 확대"},saetbyeol:{name:"샛별키우기",emoji:"⭐",unit:"점",bg:"#F3E8FF",how:"작은 불씨를 키워 별로 진화해요. 진화·강화·기억 수집으로 성장 점수를 올려요."},ttang:{name:"월드땅따먹기",emoji:"🟣",unit:"연승",rankingBasis:"current_streak",bg:"#DDC9F5",how:"친구와 각자 폰으로 땅을 넓히며 대결해요."},photo_ttang:{name:"포토땅따먹기",age:19,emoji:"🖼️",unit:"단계",bg:"#DDC9F5",how:"혼자 땅을 넓혀 가려진 사진을 공개해요."},mole:{name:"두더지 잡기",emoji:"🔨",unit:"점",bg:"#BFE8C4",how:"30초 동안 톡톡! 금색 +3점 · 폭탄 -2점"},runner:{name:"쭈 달리기",emoji:"🏃",unit:"점",bg:"#CFE8FF",how:"장애물을 넘으며 달려요. 화면을 누르면 점프, 공중에서 한 번 더 누르면 한 번 더 뛰어요. ZU 동전은 20점!"},stacker:{name:"탑 쌓기",emoji:"🏗️",unit:"층",bg:"#F3E8FF",how:"좌우로 움직이는 블록을 눌러서 멈춰요. 아래 블록과 겹친 만큼만 남아요. 딱 맞추면 퍼펙트!"},breakout:{name:"벽돌깨기",emoji:"🎾",unit:"점",bg:"#1F2238",how:"100단계는 벽돌 1,000개 · ? 아이템을 먹으면 공 2배·10개 또는 관통! 관통은 조종하는 판에 2번 튕기면 끝. 숫자 벽돌은 2회, ∞는 무적."},spot:{name:"틀린그림찾기",emoji:"🔎",unit:"장",rankingBasis:"picture_clears",bg:"#EEF1FF",how:"하트 3개와 30초로 다른 곳 6개를 찾아요. 힌트는 1 ZU, 30초 연장은 3 ZU예요."},screw: { name: '나사 풀기', emoji: '🔩', unit: '점', bg: '#F6E9DD', how: '박스형은 물건을 돌려 분해하며 같은 색 나사 3개를 상자에 모아요. 평면형은 나사를 선택해 빈 구멍에 옮겨 끼워요. 조각난 철판은 남은 나사를 축으로 회전하고 서로 부딪히거나 걸려요. 나사를 모두 옮겨 아래로 떨어뜨리면 그림이 드러나요.' }},Z=360,he=540,R=null;function Ut(t,e,o,r,a,i){i=Math.min(i,r/2,a/2),t.beginPath(),t.moveTo(e+i,o),t.arcTo(e+r,o,e+r,o+a,i),t.arcTo(e+r,o+a,e,o+a,i),t.arcTo(e,o+a,e,o,i),t.arcTo(e,o,e+r,o,i),t.closePath()}function X(t,e,o,r,a){t.beginPath(),t.ellipse(e,o,r,a,0,0,Math.PI*2)}function af(t,e,o,r){t.fillStyle="#F2B84B",X(t,e,o+1.5,r,r),t.fill(),t.fillStyle="#FFD37A",X(t,e,o,r,r),t.fill(),t.fillStyle="#8C5A1E",t.font=`bold ${Math.round(r*1.1)}px sans-serif`,t.textAlign="center",t.textBaseline="middle",t.fillText("ZU",e,o+.5),t.textBaseline="alphabetic"}function Br(t,e,o,r="left",a="#2E3358"){t.fillStyle=a,t.font="bold 18px sans-serif",t.textAlign=r,t.fillText(e,o,38)}var worldGameAssetRequest=0;
+}async function ef(t){if(D.online&&D.user){let{data:r,error:a}=await S.rpc("community_game_ranking",{p_game:t});if(a)throw a;return r||[]}return window.OjjudaGuestScores?.ranking(t)||[]}var _r={sacheonseong:{name:"오쭈다 사천성",emoji:"🀄",unit:"초",rankingBasis:"stage_time",bg:"#E3ECE0",how:"같은 그림의 패 두 개를 가로·세로로 연결해요. 두 번까지 꺾을 수 있어요. 4개부터 900개까지 15단계, 같은 그림은 최대 4개예요. 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 순위를 정해요."},poker:{name:"세븐포커",age:19,emoji:"♠️",unit:"골드",bg:"#E3ECE0",how:"2~4명이 함께하는 세븐포커. 방 코드로 참여하고, 7장 중 가장 좋은 5장으로 승부해요. 컴퓨터 연습도 가능해요."},mines:{name:"지뢰찾기",emoji:"🚩",unit:"초",rankingBasis:"difficulty_time",bg:"#EEF1FF",how:"숫자를 보고 지뢰 없는 칸을 모두 열어요. 8개 난이도와 커스텀 · 길게 눌러 깃발 · 두 손가락으로 확대"},saetbyeol:{name:"샛별키우기",emoji:"⭐",unit:"점",bg:"#F3E8FF",how:"작은 불씨를 키워 별로 진화해요. 진화·강화·기억 수집으로 성장 점수를 올려요."},ttang:{name:"월드땅따먹기",emoji:"🟣",unit:"연승",rankingBasis:"current_streak",bg:"#DDC9F5",how:"친구와 각자 폰으로 땅을 넓히며 대결해요."},photo_ttang:{name:"포토땅따먹기",age:19,emoji:"🖼️",unit:"단계",bg:"#DDC9F5",how:"혼자 땅을 넓혀 가려진 사진을 공개해요."},mole:{name:"두더지 잡기",emoji:"🔨",unit:"점",bg:"#BFE8C4",how:"30초 동안 톡톡! 금색 +3점 · 폭탄 -2점"},runner:{name:"쭈 달리기",emoji:"🏃",unit:"점",bg:"#CFE8FF",how:"장애물을 넘으며 달려요. 화면을 누르면 점프, 공중에서 한 번 더 누르면 한 번 더 뛰어요. ZU 동전은 20점!"},stacker:{name:"탑 쌓기",emoji:"🏗️",unit:"층",bg:"#F3E8FF",how:"좌우로 움직이는 블록을 눌러서 멈춰요. 아래 블록과 겹친 만큼만 남아요. 딱 맞추면 퍼펙트!"},breakout:{name:"벽돌깨기",emoji:"🎾",unit:"점",bg:"#1F2238",how:"100단계는 벽돌 1,000개 · ? 아이템을 먹으면 공 2배·10개 또는 관통! 관통은 조종하는 판에 2번 튕기면 끝. 숫자 벽돌은 2회, ∞는 무적."},spot:{name:"틀린그림찾기",emoji:"🔎",unit:"장",rankingBasis:"picture_clears",bg:"#EEF1FF",how:"하트 3개와 30초로 다른 곳 6개를 찾아요. 힌트는 1 ZU, 30초 연장은 3 ZU예요."},screw: { name: '나사 풀기', emoji: '🔩', unit: '점', bg: '#F6E9DD', how: '박스형은 물건을 돌려 분해하며 같은 색 나사 3개를 상자에 모아요. 평면형은 나사를 선택해 빈 구멍에 옮겨 끼워요. 조각난 철판은 남은 나사를 축으로 회전하고 서로 부딪히거나 걸려요. 나사를 모두 옮겨 아래로 떨어뜨리면 그림이 드러나요.' }},Z=360,he=540,R=null;function Ut(t,e,o,r,a,i){i=Math.min(i,r/2,a/2),t.beginPath(),t.moveTo(e+i,o),t.arcTo(e+r,o,e+r,o+a,i),t.arcTo(e+r,o+a,e,o+a,i),t.arcTo(e,o+a,e,o,i),t.arcTo(e,o,e+r,o,i),t.closePath()}function X(t,e,o,r,a){t.beginPath(),t.ellipse(e,o,r,a,0,0,Math.PI*2)}function af(t,e,o,r){t.fillStyle="#F2B84B",X(t,e,o+1.5,r,r),t.fill(),t.fillStyle="#FFD37A",X(t,e,o,r,r),t.fill(),t.fillStyle="#8C5A1E",t.font=`bold ${Math.round(r*1.1)}px sans-serif`,t.textAlign="center",t.textBaseline="middle",t.fillText("ZU",e,o+.5),t.textBaseline="alphabetic"}function Br(t,e,o,r="left",a="#2E3358"){t.fillStyle=a,t.font="bold 18px sans-serif",t.textAlign=r,t.fillText(e,o,38)}var worldGameAssetRequest=0;
 function Al(t,options={}){
  if(window.OjjudaGuestAccess?.canPlay()===false)return;
  if(window.OjjudaGameAssets&&!window.OjjudaGameAssets.ready(t)){
@@ -924,7 +924,7 @@ function Al(t,options={}){
   El();if(!window.OjjudaSacheonseongGame){M("게임을 불러오지 못했어요. 다시 눌러 주세요.");return;}
   const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;
   window.OjjudaSacheonseongGame.open({owner,authorized,onRanking:async(stage)=>{
-   if(!authorized())throw Error('stale');const game=window.OjjudaSacheonseongRanking.game(stage);
+   if(!authorized())throw Error('stale');const game=stage===0?'sacheonseong':window.OjjudaSacheonseongRanking.game(stage);
    if(!owner)return window.OjjudaGuestScores?.ranking(game,'month')||[];
    const {data,error}=await S.rpc('community_game_monthly_ranking',{p_game:game});if(error)throw error;return data||[];
   },onScore:async(stage,score,runId)=>{
