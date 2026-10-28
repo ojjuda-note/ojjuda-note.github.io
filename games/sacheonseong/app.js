@@ -3,7 +3,7 @@
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10});
-  let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,flashTimer,customSize=null,overview=true;
+  let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,flashTimer,customSize=null,overview=true,fitSize=1;
   let purchaseBusy=false;
   let audioContext,saveAvailable=true,countdown=3,rankingStage=1;
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
@@ -24,10 +24,11 @@
     if(!state)return;
     const n=state.stage*2,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
     if(!available||!height)return;
-    const gap=overview?(n<=4?6:n<=10?3:2):5,pad=overview?8:16;
+    const gap=n<=4?6:n<=10?3:2,pad=8;
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(Math.min((available-2*pad-(n-1)*gap)/n,(height-2*pad-4-(n-1)*gap)/(n*1.19))*100)/100);
-    const size=overview?Math.min(n<=2?120:n<=4?100:Infinity,fit):customSize||Math.max(42,fit);
+    fitSize=Math.min(n<=2?120:n<=4?100:Infinity,fit);
+    const size=overview?fitSize:customSize||Math.max(42,fit);
     const el=$('board-canvas');el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',n);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
     $('zoom-fit').setAttribute('aria-pressed',String(overview));
     $('connection').replaceChildren();
@@ -175,14 +176,56 @@
   $('next').onclick=()=>state.stage===E.MAX_STAGE?openStages():newStage(state.stage+1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>처음에는 모든 패가 화면에 맞춰 보여요. +로 크게 보고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
   $('options-close').onclick=()=>$('options').close();
-  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();$('board-scroll').scrollLeft=0;$('board-scroll').scrollTop=0;};
-  $('zoom-in').onclick=()=>{const current=parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile'));overview=false;customSize=Math.min(160,current+Math.max(6,current*.2));sizeBoard();};
-  $('zoom-out').onclick=()=>{const current=parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile'));overview=false;customSize=Math.max(4,current-Math.max(6,current*.2));sizeBoard();};
+  const viewport=$('board-scroll'),pointers=new Map();let pinch=null,dragging=false,ignoreClickUntil=0;
+  function tileSize(){return parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile'));}
+  function zoomBoard(requested,x,y){
+    const rect=viewport.getBoundingClientRect(),canvas=$('board-canvas'),before=canvas.getBoundingClientRect();
+    x=Number.isFinite(x)?Math.max(rect.left,Math.min(rect.right,x)):rect.left+rect.width/2;
+    y=Number.isFinite(y)?Math.max(rect.top,Math.min(rect.bottom,y)):rect.top+rect.height/2;
+    const anchorX=before.width?(x-before.left)/before.width:.5,anchorY=before.height?(y-before.top)/before.height:.5;
+    customSize=Math.max(fitSize,Math.min(Math.max(160,fitSize*4),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
+    sizeBoard();const after=canvas.getBoundingClientRect();
+    viewport.scrollLeft+=after.left+anchorX*after.width-x;viewport.scrollTop+=after.top+anchorY*after.height-y;
+  }
+  function pair(){const [a,b]=[...pointers.values()];return {distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
+  function capture(id){try{viewport.setPointerCapture(id);}catch{}}
+  viewport.addEventListener('pointerdown',event=>{
+    if(!['touch','pen'].includes(event.pointerType)||pointers.size>=2)return;
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY});
+    if(pointers.size===2){pinch={...pair(),size:tileSize()};dragging=true;for(const id of pointers.keys())capture(id);event.preventDefault();}
+    else dragging=false;
+  });
+  window.addEventListener('pointermove',event=>{
+    const point=pointers.get(event.pointerId);if(!point)return;
+    const dx=event.clientX-point.x,dy=event.clientY-point.y;point.x=event.clientX;point.y=event.clientY;
+    if(pointers.size===2&&pinch){
+      const next=pair();event.preventDefault();zoomBoard(pinch.size*next.distance/pinch.distance,pinch.x,pinch.y);
+      viewport.scrollLeft+=pinch.x-next.x;viewport.scrollTop+=pinch.y-next.y;pinch.x=next.x;pinch.y=next.y;
+    }else{
+      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>6){dragging=true;capture(event.pointerId);}
+      if(dragging){event.preventDefault();viewport.scrollLeft-=dx;viewport.scrollTop-=dy;}
+    }
+  },{passive:false});
+  function endPointer(event){
+    if(!pointers.has(event.pointerId))return;
+    if(dragging||pinch)ignoreClickUntil=Date.now()+400;
+    pointers.delete(event.pointerId);pinch=null;if(!pointers.size)dragging=false;
+  }
+  window.addEventListener('pointerup',endPointer);window.addEventListener('pointercancel',endPointer);
+  // A completed drag/pinch must never become an accidental tile selection.
+  viewport.addEventListener('click',event=>{if(dragging||pinch||Date.now()<ignoreClickUntil){event.preventDefault();event.stopImmediatePropagation();}},true);
+  document.addEventListener('wheel',event=>{
+    if(!event.ctrlKey||$('modal').open||$('options').open)return;
+    event.preventDefault();zoomBoard(tileSize()*Math.exp(-event.deltaY*.01),event.clientX,event.clientY);
+  },{passive:false});
+  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
+  $('zoom-in').onclick=()=>zoomBoard(tileSize()+Math.max(6,tileSize()*.2));
+  $('zoom-out').onclick=()=>zoomBoard(tileSize()-Math.max(6,tileSize()*.2));
   window.addEventListener('resize',sizeBoard);
   if(window.ResizeObserver)new ResizeObserver(sizeBoard).observe($('board-scroll'));
   $('game-home').addEventListener('click',event=>{if(window.parent!==window){event.preventDefault();save();window.parent.postMessage({type:'ojjuda:sacheonseong-home'},location.origin);}});
