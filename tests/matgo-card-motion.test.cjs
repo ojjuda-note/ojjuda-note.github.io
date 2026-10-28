@@ -73,6 +73,26 @@ function fixture({images=false}={}){
   assert.equal(w.getComputedStyle(flight.node).backgroundColor,'rgba(0, 0, 0, 0)','online flights do not substitute a blank white face');
   flight.finish();await task;assert.equal(flight.node.isConnected,false);
  }finally{online.dom.window.close();}
+ for(const event of ['take','played']){
+  const f=fixture();try{
+   const w=f.w;w.matchMedia=()=>({matches:false});
+   w.document.body.insertAdjacentHTML('beforeend','<div class="board"><div class="op-hand hand"><div class="c"><svg data-back="a"></svg></div><div class="c"><svg data-back="b"></svg></div></div><div class="floor"><div class="fl"><button class="stack"><span class="c"><svg data-face="1"></svg></span></button></div><div class="deck"><svg></svg></div></div><div class="caps-own">'+Array(4).fill('<div class="cap"><div class="cap-cards"></div></div>').join('')+'</div></div>');
+   w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
+   const motion=w.createOnlineMotion({cardSVG:w.cardSVG,backSVG:w.backSVG,sound:w.Sound,onEvent(){}}),c={id:1,k:'pi'};
+   const source=event==='take'?w.document.querySelector('.stack .c'):w.document.querySelector('.op-hand .c:last-child');
+   const events=event==='take'?[{type:'take',p:0,cards:[c]}]:[{type:'played',p:1,card:{id:2,k:'pi'},stack:[]},{type:'flip',p:1,card:{id:3,k:'pi'},stack:[]}];
+   const task=motion.play({}, {seat:0,deadline:new Date(Date.now()+30000).toISOString(),serverTime:Date.now()},events);await tick();
+   assert.equal(source.style.visibility,'hidden',event+': hide the whole card including its border and shadow');
+   f.animations[0].finish();await tick();
+   assert.equal(source.isConnected,false,event+': remove the old card wrapper after landing');
+   if(event==='played'){
+    assert.equal(w.document.querySelectorAll('.op-hand .c').length,1,'opponent hand has no empty shadow-only cards between movements');
+    assert.ok([...w.document.querySelectorAll('.op-hand .c')].every(node=>node.querySelector('svg')));
+    f.animations[1].finish();
+   }
+   await task;assert.equal(w.document.querySelectorAll('.online-flying-card').length,0);
+  }finally{f.dom.window.close();}
+ }
  for(const back of [false,true]){
   const f=fixture({images:true});try{
    const task=f.w.throwCard({id:1},{x:0,y:0},{x:80,y:90,rot:0},{back});await tick();

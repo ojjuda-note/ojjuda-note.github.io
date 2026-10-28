@@ -3,7 +3,7 @@ import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
 import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=20261014-pi-audit1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261023-media1';
 import {createWallet} from './matgo-wallet.mjs?v=20261022-entry2';
-import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261027-matgo-face1';
+import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261028-matgo-clean-turn20';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261022-agit1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
 import {createVentControls} from './matgo-deck-tools.mjs?v=20261014-fencing1';
@@ -114,7 +114,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261027-matgo-face1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261028-matgo-clean-turn20&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -131,7 +131,7 @@ async function accept(next){
   const oldBots=room?.bots,autoCount=room?.autoCount??0;
   const events=changed?[]:(next.events||[]).filter(ev=>ev.id>=cursor);
   room=next;cursor=next.eventCount??0;clockOffset=(next.serverTime||Date.now())-Date.now();
-  if(!changed&&next.autoCount>autoCount&&next.lastAuto?.reason==='timeout')toast('15초가 지나 '+(next.lastAuto.p===next.seat?'내 패를':'상대 패를')+' 자동으로 냈어요.');
+  if(!changed&&next.autoCount>autoCount&&next.lastAuto?.reason==='timeout')toast('20초가 지나 '+(next.lastAuto.p===next.seat?'내 패를':'상대 패를')+' 자동으로 냈어요.');
   if(oldBots&&next.bots?.some((v,p)=>v&&!oldBots[p]))toast('나간 자리는 PC가 이어서 치고 있어요.');
   const version=++presentationVersion;
   if(previous?.game&&!changed&&!interrupted&&events.length&&!document.hidden){
@@ -178,7 +178,7 @@ function showLobby(){
   cancelPresentation();
   arcadeRoom=null;roomLabel();
   $('#gukjin').hidden=true;viewKey='lobby';room=null;cursor=0;promptKey='';pendingMove=null;closeDialog();clearEvents();
-  $('#content').innerHTML=`<section class="lobby game-entry" data-entry-key="matgo"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실</span><h2 class="ge-title">맞고</h2><p class="ge-copy">같은 달의 패를 모아 한 판 즐겨보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div><section data-entry-panel="computer"><button id="solo" class="btn gold ge-primary">시작하기</button></section><section data-entry-panel="opponent" hidden><button id="invite-friend" class="btn gold ge-primary">친구 초대</button><button id="quick" class="btn ge-secondary">빠른 대결</button><form id="public-room-form"><label for="public-room-title">방 제목</label><input id="public-room-title" maxlength="40" required value="맞고 같이 한 판 해요" autocomplete="off"><button id="create" class="btn ge-secondary" type="submit">방 만들기</button><p id="public-room-error" role="status"></p><p class="fine">만든 방은 오락실 대전방에 표시돼요.</p></form><details class="ge-more"><summary>방번호로 입장</summary><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" required><button class="btn" id="join">입장</button></form></details></section><span class="ge-hint">기본 점당 100G · 만 19세 이상</span><details class="ge-more"><summary>게임 방법 · 판돈 안내</summary><p>판돈은 혼자하기와 같고, 두 사람 중 낮은 금액을 적용해요.<br>차례마다 15초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></details></section>`;
+  $('#content').innerHTML=`<section class="lobby game-entry" data-entry-key="matgo"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실</span><h2 class="ge-title">맞고</h2><p class="ge-copy">같은 달의 패를 모아 한 판 즐겨보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div><section data-entry-panel="computer"><button id="solo" class="btn gold ge-primary">시작하기</button></section><section data-entry-panel="opponent" hidden><button id="invite-friend" class="btn gold ge-primary">친구 초대</button><button id="quick" class="btn ge-secondary">빠른 대결</button><form id="public-room-form"><label for="public-room-title">방 제목</label><input id="public-room-title" maxlength="40" required value="맞고 같이 한 판 해요" autocomplete="off"><button id="create" class="btn ge-secondary" type="submit">방 만들기</button><p id="public-room-error" role="status"></p><p class="fine">만든 방은 오락실 대전방에 표시돼요.</p></form><details class="ge-more"><summary>방번호로 입장</summary><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" required><button class="btn" id="join">입장</button></form></details></section><span class="ge-hint">기본 점당 100G · 만 19세 이상</span><details class="ge-more"><summary>게임 방법 · 판돈 안내</summary><p>판돈은 혼자하기와 같고, 두 사람 중 낮은 금액을 적용해요.<br>차례마다 20초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></details></section>`;
   if(savedRoomId){
     const resume=document.createElement('section');resume.className='ge-resume';
     resume.innerHTML='<p class="ge-copy">참여 중인 대전이 있어요.</p><button type="button" class="btn gold ge-primary" id="resume-room">하던 대전 이어하기</button><p class="ge-hint">온라인 대전의 차례 시간은 계속 흘러가요.</p>';
@@ -205,7 +205,7 @@ function showLobby(){
   const input=$('#room-code');input.setAttribute('aria-label','방번호 또는 초대 코드');input.placeholder='방번호 또는 초대 코드';input.maxLength=16;input.removeAttribute('pattern');
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261027-matgo-face1&open='+Date.now());};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261028-matgo-clean-turn20&open='+Date.now());};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -340,7 +340,7 @@ function renderRoom(){
   const pk=room.id+':'+room.version+':'+pr?.type;
   if(myTurn&&!showingEvent&&!eventQueue.length&&['chongtong','gostop','gukjin'].includes(pr?.type)&&promptKey!==pk){
     promptKey=pk;
-    if(pr.type==='gukjin')modal(`<h2>구쌍피를 먹었어요</h2><p>어느 쪽으로 사용할까요?<br>차례의 15초가 지나면 자동으로 선택해요.</p><div class="cards">${cardSVG(pr.card)}</div><div class="row"><button id="gukjin-yul" class="btn ghost">그림(열끗)</button><button id="gukjin-pi" class="btn gold">쌍피(피 2장)</button></div>`,{'gukjin-yul':()=>send({type:'gukjin',choice:'yul'}),'gukjin-pi':()=>send({type:'gukjin',choice:'pi'})},'turn:'+pk);
+    if(pr.type==='gukjin')modal(`<h2>구쌍피를 먹었어요</h2><p>어느 쪽으로 사용할까요?<br>차례의 20초가 지나면 자동으로 선택해요.</p><div class="cards">${cardSVG(pr.card)}</div><div class="row"><button id="gukjin-yul" class="btn ghost">그림(열끗)</button><button id="gukjin-pi" class="btn gold">쌍피(피 2장)</button></div>`,{'gukjin-yul':()=>send({type:'gukjin',choice:'yul'}),'gukjin-pi':()=>send({type:'gukjin',choice:'pi'})},'turn:'+pk);
     else if(pr.type==='chongtong')modal(`<h2>총통!</h2><p>같은 월 네 장이 모였어요.<br>7점으로 이기거나 계속할 수 있어요.</p><div class="cards">${g.hand.filter(c=>c.m===pr.months[0]).map(cardSVG).join('')}</div><div class="row"><button id="chongtong-win" class="btn gold">7점으로 승리</button><button id="chongtong-continue" class="btn ghost">계속하기</button></div>`,{'chongtong-win':()=>send({type:'chongtong',decision:'win'}),'chongtong-continue':()=>send({type:'chongtong',decision:'continue'})},'turn:'+pk);
     else modal(`<h2>${pr.points}점!</h2><p>고를 하면 점수가 올라가지만, 상대가 먼저 나면 고박이에요.<br>상대 ${score(g.caps[op]).pts}점 · 남은 패 ${g.deckCount}장</p><div class="row"><button id="go" class="btn gold">고!</button><button id="stop" class="btn ghost">스톱</button></div>`,{go:()=>send({type:'gostop',decision:'go'}),stop:()=>send({type:'gostop',decision:'stop'})},'turn:'+pk);
   }
@@ -405,7 +405,7 @@ try{
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#sound').onclick=()=>sound.toggle();$('#sound-start').onclick=()=>sound.preview();
   $('#money').onclick=()=>refill();$('#exit').onclick=()=>requestExit();
-  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p class="rules-copy">한 차례는 15초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>처음 깔린 같은 달 3장(바닥뻑)을 먹으면 상대 피 1장 · 자뻑 횟수와 첫뻑 보상에는 포함되지 않아요.<br><br>7점부터 고/스톱 · 점당 ${number(room?.rate??wallet.current?.stake_rate??100)}G · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제)예요. 광박·멍박·고박·흔들기·폭탄 배수도 중복 적용해요(두 개 ×4, 세 개 ×8).<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지되고, 올인 후 충전하면 점당 100G부터 다시 시작해요. 두 사람의 자동 판돈 중 낮은 금액으로 시작하며, 진행 중인 판의 금액은 바뀌지 않아요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>`,{'close-rules':()=>{promptKey='';renderRoom();}});
+  $('#rules').onclick=()=>modal(`<h2>맞고 규칙</h2><p class="rules-copy">한 차례는 20초예요. 시간이 지나면 패·선택·고/스톱을 자동으로 처리해요. 상대가 나가면 PC가 남은 판을 이어서 쳐요.<br><br>처음 깔린 같은 달 3장(바닥뻑)을 먹으면 상대 피 1장 · 자뻑 횟수와 첫뻑 보상에는 포함되지 않아요.<br><br>7점부터 고/스톱 · 점당 ${number(room?.rate??wallet.current?.stake_rate??100)}G · 피로 점수가 났고 상대 피가 8장 이하면 피박 ×2(9장부터 면제)예요. 광박·멍박·고박·흔들기·폭탄 배수도 중복 적용해요(두 개 ×4, 세 개 ×8).<br>자뻑을 먹으면 상대 피 2장, 상대 뻑은 1장을 가져와요. 보너스는 표시된 피 점수만 얻고 상대 피를 가져오지 않아요. 뻑에 묶인 보너스도 추가 피를 가져오지 않아요. 일반 피와 쌍피 없이 3피 보너스만 남으면 그 한 장을 통째로 가져와요.<br>손패 2장 + 바닥 2장은 두 장 폭탄으로 뒤집기 1회, 손패 3장 + 바닥 1장은 뒤집기 2회를 받아요.<br>구쌍피를 먹으면 그림(열끗) 또는 쌍피(피 2장)를 선택해요.<br>총통은 7점 승리 또는 계속 선택 · 한 판 뻑 3회는 7점 승리, 상대가 고를 했다면 고박 ×2예요.<br>첫뻑은 300G. 첫뻑을 포함한 모든 골드는 판이 끝난 뒤 한 번에 정산해요. 상대 보유 골드보다 많이 가져올 수 없어요.<br><br>중간에 나간 사람은 승리 보상을 받지 못해요. 패배 금액은 판 종료 시 정산해요.<br>판돈은 10만G부터 점당 200G, 20만G부터 500G, 30만G부터 1,000G이며, 이후 보유 골드가 10만G 늘 때마다 점당 1,000G씩 다음 판부터 자동으로 올라가요. 한 번 오른 판돈은 골드가 줄어도 유지되고, 올인 후 충전하면 점당 100G부터 다시 시작해요. 두 사람의 자동 판돈 중 낮은 금액으로 시작하며, 진행 중인 판의 금액은 바뀌지 않아요.<br>처음 5,000G · 0G일 때 하루 2회 무료 리필, 이후 5 ZU로 5,000G 충전.</p><p class="credit">화투: Marcus Richert · 원도안 Louie Mantia Jr.<br><a href="https://www.marcusrichert.com/images/hwatu/" target="_blank" rel="noopener">원본</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · 크기 조정·WebP 변환</p><button class="btn" id="close-rules">닫기</button>`,{'close-rules':()=>{promptKey='';renderRoom();}});
   access.subscribe(deny);
   accessTimer=setInterval(()=>{access.check().then(refreshToken).catch(deny);},45000);
   pollTimer=setInterval(()=>{void refresh();},1200);setInterval(tick,250);void refreshToken();

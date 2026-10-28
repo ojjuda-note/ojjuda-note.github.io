@@ -6,7 +6,7 @@ const root=path.join(__dirname,'..');
   const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
   const errors=[];
   const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','상대'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
-  const stamp=room=>({...structuredClone(room),deadline:new Date(Date.now()+15000).toISOString(),serverTime:Date.now()});
+  const stamp=room=>({...structuredClone(room),deadline:new Date(Date.now()+20000).toISOString(),serverTime:Date.now()});
   async function screen({muted=false,reduced=false,resume=initial,enter=true}={}){
     const context=await browser.newContext({viewport:{width:390,height:820},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
     await context.addInitScript(({muted,room})=>{

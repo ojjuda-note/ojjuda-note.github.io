@@ -83,10 +83,10 @@ const root=path.join(__dirname,'..');
   }
   await a.page.setViewportSize({width:390,height:820});await a.page.screenshot({path:'/tmp/matgo-online-board.png'});
   const roomId=last.get(A).id;
-  // Verify a real 15-second turn: no premature move, then both browsers advance.
+  // Verify a real 20-second turn: no premature move, then both browsers advance.
   const version=last.get(A).version;
-  await f.db.query("update ojjuda_matgo_internal.rooms set deadline=now()+interval '15 seconds' where id=$1",[roomId]);
-  await a.page.waitForTimeout(12000);assert.equal(last.get(A).version,version,'a turn does not auto-play before its deadline');
+  await f.db.query("update ojjuda_matgo_internal.rooms set deadline=now()+interval '20 seconds' where id=$1",[roomId]);
+  await a.page.waitForTimeout(17000);assert.equal(last.get(A).version,version,'a turn does not auto-play before its deadline');
   for(let i=0;i<300&&(last.get(A).version<=version||last.get(B).version<=version);i++)await a.page.waitForTimeout(20);
   assert.ok(last.get(A).autoCount>=1);assert.deepEqual(last.get(A).bots,[false,false]);
   for(let i=0;i<800&&!(last.get(A)?.status==='finished'&&last.get(B)?.status==='finished');i++){
@@ -129,6 +129,6 @@ const root=path.join(__dirname,'..');
   assert.equal(await raisedA.page.locator('#stakeRate').innerText(),'점당 500G');assert.equal(await raisedB.page.locator('#stakeRate').innerText(),'점당 500G');
   if(process.env.MATGO_PARITY_PROOF)await raisedA.page.screenshot({path:process.env.MATGO_PARITY_PROOF});
   await raisedA.context.close();await raisedB.context.close();assert.deepEqual(errors,[]);
-  console.log('PASS: two browser members join by code, private hands, mobile layouts, 15-second automatic play, synchronized result, rematch, PC takeover and automatic shared stakes without a consent dialog');
+  console.log('PASS: two browser members join by code, private hands, mobile layouts, 20-second automatic play, synchronized result, rematch, PC takeover and automatic shared stakes without a consent dialog');
  }finally{await browser.close();await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
