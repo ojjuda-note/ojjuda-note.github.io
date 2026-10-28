@@ -3,8 +3,7 @@
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces;
-  const titles=['첫 번째 연결','조금 더 넓은 정원','차근차근 피어나는','연결의 즐거움','새로운 친구들','숲속의 산책','작은 보물찾기','넓어지는 세상','꽃길을 따라서','열 번째 정원','끝없는 발견','초록빛 도전','느긋한 오후','마지막 한 걸음','가장 큰 정원'];
-  let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,flashTimer,customSize=null,overview=false;
+  let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,flashTimer,customSize=null,overview=true;
   let audioContext,saveAvailable=true,countdown=3,rankingStage=1;
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
   function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';}}
@@ -17,21 +16,21 @@
     if(!state.sound)return;
     try{audioContext ||= new(window.AudioContext||window.webkitAudioContext)();audioContext.resume();const notes=kind==='win'?[523,659,784,1047]:kind==='match'?[659,880]:[440];notes.forEach((frequency,i)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain(),at=audioContext.currentTime+i*.08;osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.055,at+.015);gain.gain.exponentialRampToValueAtTime(.001,at+.22);osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+.24);});}catch{}
   }
-  function begin(){if(!state.startedAt){state.startedAt=Date.now();$('board-caption').textContent='좋아요. 이제 같은 패를 하나씩 연결해요.';save();}}
+  function begin(){if(!state.startedAt){state.startedAt=Date.now();save();}}
   function clearSelection(){selected=null;hints=[];$('connection').replaceChildren();document.querySelectorAll('.tile.selected,.tile.hinted').forEach(b=>{b.classList.remove('selected','hinted');b.setAttribute('aria-pressed','false');});}
   function cell(p){return document.querySelector(`[data-r="${p.r}"][data-c="${p.c}"]`);}
   function sizeBoard(){
-    const n=state.stage*2,available=$('board-scroll').clientWidth,pad=n<=2?28:22,gap=n<=2?12:n<=4?9:5;
-    const useGap=overview?2:gap,usePad=overview?12:pad;
-    const fit=Math.max(5,Math.floor((available-2*usePad-(n-1)*useGap)/n));
-    const size=overview?fit:customSize||Math.max(42,Math.min(n===2?88:70,fit));
-    const el=$('board-canvas');el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${useGap}px`);el.style.setProperty('--pad',`${usePad}px`);el.style.setProperty('--n',n);el.classList.toggle('overview',overview);
-    $('zoom-controls').hidden=n<6;
-    $('zoom-fit').setAttribute('aria-pressed',String(overview));$('zoom-fit').textContent=overview?'확대':'전체';$('zoom-fit').setAttribute('aria-label',overview?'큰 패로 돌아가기':'게임판 전체 보기');
-    if(overview)$('board-caption').textContent='전체 보기에서도 같은 패를 눌러 연결하세요.';
-    else if(n*size+(n-1)*useGap+2*usePad>available+1)$('board-caption').textContent='큰 정원은 상하좌우로 밀어서 볼 수 있어요.';
-    else $('board-caption').textContent=state.startedAt?'같은 그림 두 개를 연결해보세요.':'첫 패를 누르면 시간이 시작돼요.';
+    if(!state)return;
+    const n=state.stage*2,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
+    if(!available||!height)return;
+    const gap=overview?(n<=4?6:n<=10?3:2):5,pad=overview?8:16;
+    // Fit both axes, including the outside connection lane and tile shadows.
+    const fit=Math.max(1,Math.floor(Math.min((available-2*pad-(n-1)*gap)/n,(height-2*pad-4-(n-1)*gap)/(n*1.19))*100)/100);
+    const size=overview?Math.min(n<=2?120:n<=4?100:Infinity,fit):customSize||Math.max(42,fit);
+    const el=$('board-canvas');el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',n);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
+    $('zoom-fit').setAttribute('aria-pressed',String(overview));
     $('connection').replaceChildren();
+    if(hints.length){const route=E.path(state.grid,hints[0],hints[1]);if(route)draw(route,true);}
   }
   function renderBoard(){
     const frag=document.createDocumentFragment();
@@ -43,24 +42,14 @@
     }));$('board').replaceChildren(frag);sizeBoard();
   }
   function draw(route,soft=false){
-    const first=$('board').firstElementChild,canvas=$('board-canvas'),style=getComputedStyle(canvas),pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),w=first.offsetWidth,h=first.offsetHeight;
+    const first=$('board').firstElementChild,canvas=$('board-canvas'),style=getComputedStyle(canvas),pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),rect=first.getBoundingClientRect(),w=rect.width,h=rect.height;
     const coords=route.map(p=>({x:pad+p.c*(w+gap)+w/2,y:pad+p.r*(h+gap)+h/2}));
     // The outside lane follows the board's visible padding, independent of tile size.
     coords.forEach((p,i)=>{const r=route[i].r,c=route[i].c,n=state.grid.length;if(r<0)p.y=pad/2;if(c<0)p.x=pad/2;if(r>=n)p.y=canvas.clientHeight-pad/2;if(c>=n)p.x=canvas.clientWidth-pad/2;});
     const points=coords.map(p=>`${p.x},${p.y}`).join(' '),ends=[coords[0],coords[coords.length-1]];
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
-  function updateStats(){const total=4*state.stage*state.stage,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('pairs').innerHTML=`${(total-left)/2} <small>/ ${total/2}</small>`;$('progress').style.width=`${100*(total-left)/total}%`;$('timer').textContent=time(state.finishedMs??ms());}
-  function renderJourney(){
-    const first=Math.min(E.MAX_STAGE-4,Math.max(1,state.stage-2));$('stage-list').replaceChildren();
-    for(let s=first;s<first+5;s++){
-      const b=document.createElement('button'),done=s<state.unlocked,active=s===state.stage;
-      b.className='stage-item'+(active?' active':done?' done':'');b.disabled=s>state.unlocked;b.setAttribute('aria-label',`${s}단계, ${4*s*s}개의 패${active?', 현재 단계':s>state.unlocked?', 잠김':''}`);if(active)b.setAttribute('aria-current','step');
-      b.innerHTML=`<span class="stage-dot">${active?s:done?'<svg class="icon"><use href="#i-check"/></svg>':'<svg class="icon"><use href="#i-lock"/></svg>'}</span><span class="stage-name">${4*s*s}개의 패<small>${s}단계 · ${s*2} × ${s*2}</small></span>`;
-      b.addEventListener('click',()=>chooseStage(s));$('stage-list').append(b);
-    }
-    const info=E.stageInfo(state.stage);$('face-count').textContent=`이번 정원: 그림 ${info.typeCount}종 · 최대 ${state.stage===1?2:4}개씩`;
-  }
+  function updateStats(){const total=4*state.stage*state.stage,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
   function chooseStage(s){if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
   function openStages(){
     const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stageInfo(s);return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
@@ -68,28 +57,26 @@
     $('modal-content').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>chooseStage(Number(b.dataset.stage))));
   }
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
-  function renderRanking(){$('rank-stage').textContent=`${state.stage}단계 · ${4*state.stage*state.stage}개의 패`;$('rank-preview').innerHTML=recordRows(state.stage,3);}
   function render(){
     window.OjjudaSacheonseongOnline?.stage(state.stage);
-    $('stage-label').textContent=`STAGE ${String(state.stage).padStart(2,'0')}`;$('stage-title').textContent=titles[state.stage-1]||`${state.stage}번째 정원`;$('dimensions').textContent=`${state.stage*2} × ${state.stage*2}`;
-    $('board-caption').textContent=state.startedAt?'같은 그림 두 개를 연결해보세요.':'첫 패를 누르면 시간이 시작돼요.';
+    $('stage-label').textContent=`${state.stage}단계`;
     $('status').textContent='가로·세로로 연결하고, 두 번까지만 꺾어요.';
-    $('sound').innerHTML=`<svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
-    renderBoard();updateStats();renderJourney();renderRanking();
+    $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
+    renderBoard();updateStats();
   }
   function newStage(stage){
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));clearTimeout(autoTimer);clearTimeout(flashTimer);clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=false;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));clearTimeout(autoTimer);clearTimeout(flashTimer);clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
     state={rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
-    if(locked||$('modal').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
+    if(locked||$('modal').open||$('options').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
     if(selected&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
     if(!selected){const suggested=hints.some(q=>q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
     if(state.grid[a.r][a.c]!==state.grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');$('status').textContent='같은 그림의 패를 찾아주세요.';return;}
     const route=E.path(state.grid,a,p);
-    if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');$('status').textContent='다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.';return;}
+    if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');$('status').textContent='다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.';toast('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
     locked=true;const willFinish=count()===2,finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');cell(a).classList.add('removing');cell(p).classList.add('removing');
     // Persist the move immediately, before animation, so reloads cannot undo it.
     state.grid[a.r][a.c]=E.EMPTY;state.grid[p.r][p.c]=E.EMPTY;if(willFinish)state.finishedMs=finishDuration;save();
@@ -102,7 +89,7 @@
     locked=true;state.finishedMs=duration;state.unlocked=Math.min(E.MAX_STAGE,Math.max(state.unlocked,state.stage+1));
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;state.lastRecord=id;
     const record={id,duration:Math.max(1,duration),at:Date.now(),hints:state.hints,shuffles:state.shuffles,rulesVersion:E.RULES_VERSION};
-    const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();renderJourney();renderRanking();updateStats();showCompletion(rank);sound('win');
+    const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();updateStats();showCompletion(rank);sound('win');
     window.OjjudaSacheonseongOnline?.record(state.stage,record);
     if(state.stage===E.MAX_STAGE&&window.parent!==window)window.parent.postMessage({type:'ojjuda:sacheonseong-finished'},location.origin);
   }
@@ -113,8 +100,8 @@
     $('next').innerHTML=`${final?'단계 골라 다시 도전':'다음 단계로'} <svg class="icon"><use href="#i-arrow"/></svg>`;$('completion').hidden=false;$('next').focus({preventScroll:true});
     if(final){clearTimeout(autoTimer);$('countdown').textContent='원하는 단계에서 더 빠른 기록에 도전해보세요.';}else{countdown=4;advanceCountdown();}
   }
-  function advanceCountdown(){clearTimeout(autoTimer);$('countdown').textContent=`${countdown}초 뒤에 다음 정원으로 이동해요.`;autoTimer=setTimeout(()=>{if(document.hidden||$('modal').open){advanceCountdown();return;}countdown--;if(countdown<=0)newStage(state.stage+1);else advanceCountdown();},1000);}
-  function showModal(html){$('modal-content').innerHTML=html;$('modal').showModal();}
+  function advanceCountdown(){clearTimeout(autoTimer);$('countdown').textContent=`${countdown}초 뒤에 다음 정원으로 이동해요.`;autoTimer=setTimeout(()=>{if(document.hidden||$('modal').open||$('options').open){advanceCountdown();return;}countdown--;if(countdown<=0)newStage(state.stage+1);else advanceCountdown();},1000);}
+  function showModal(html){if($('options').open)$('options').close();$('modal-content').innerHTML=html;$('modal').showModal();}
   function confirmChange(title,message,action){showModal(`<div class="eyebrow">새로운 시작</div><h2 id="modal-title">${title}</h2><p>${message}</p><div class="modal-buttons"><button class="action-button" id="cancel-action">계속하기</button><button class="next-button" id="confirm-action">새로 시작</button></div>`);$('cancel-action').onclick=()=>$('modal').close();$('confirm-action').onclick=()=>{$('modal').close();action();};}
   function openRanking(stage=state.stage){
     rankingStage=stage;
@@ -131,13 +118,16 @@
   $('next').onclick=()=>state.stage===E.MAX_STAGE?openStages():newStage(state.stage+1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>큰 판은 상하좌우로 밀어볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
-  $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`<svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>처음에는 모든 패가 화면에 맞춰 보여요. +로 크게 보고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 화면을 나가도 시간은 흘러요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
-  $('zoom-fit').onclick=()=>{overview=!overview;sizeBoard();$('board-scroll').scrollLeft=0;$('board-scroll').scrollTop=0;};
-  $('zoom-in').onclick=()=>{overview=false;customSize=Math.min(92,Math.max(42,customSize||parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile')))+8);sizeBoard();};
-  $('zoom-out').onclick=()=>{overview=false;customSize=Math.max(36,(customSize||parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile')))-8);sizeBoard();};
-  window.addEventListener('resize',()=>{sizeBoard();if(hints.length){const p=E.path(state.grid,hints[0],hints[1]);if(p)draw(p,true);}});
+  $('options-open').onclick=()=>$('options').showModal();
+  $('options-close').onclick=()=>$('options').close();
+  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();$('board-scroll').scrollLeft=0;$('board-scroll').scrollTop=0;};
+  $('zoom-in').onclick=()=>{const current=parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile'));overview=false;customSize=Math.min(160,current+Math.max(6,current*.2));sizeBoard();};
+  $('zoom-out').onclick=()=>{const current=parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile'));overview=false;customSize=Math.max(4,current-Math.max(6,current*.2));sizeBoard();};
+  window.addEventListener('resize',sizeBoard);
+  if(window.ResizeObserver)new ResizeObserver(sizeBoard).observe($('board-scroll'));
   $('game-home').addEventListener('click',event=>{if(window.parent!==window){event.preventDefault();save();window.parent.postMessage({type:'ojjuda:sacheonseong-home'},location.origin);}});
   window.addEventListener('pagehide',save);
   function valid(s){return s&&Number.isInteger(s.stage)&&s.stage>=1&&s.stage<=E.MAX_STAGE&&Number.isInteger(s.unlocked)&&s.unlocked>=s.stage&&Array.isArray(s.grid)&&s.grid.length===s.stage*2&&s.grid.every(row=>Array.isArray(row)&&row.length===s.stage*2&&row.every(v=>Number.isInteger(v)&&v>=-1&&v<faces.length))&&(!s.startedAt||(Number.isFinite(s.startedAt)&&s.startedAt>0));}

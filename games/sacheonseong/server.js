@@ -45,7 +45,7 @@
  function rankFailed(){if(!$('online-rows'))return;$('online-rows').textContent='순위를 불러오지 못했어요. 다시 눌러 주세요.';$('online-retry').hidden=false;}
  function open(){
   if(!embedded){location.assign('/world.html?game=sacheonseong');return;}
-  const modal=$('modal');rankStage=0;
+  const modal=$('modal');if($('options')?.open)$('options').close();rankStage=0;
   $('modal-content').innerHTML='<div class="eyebrow">이번 달 · 최고 완료 단계 우선</div><h2 id="modal-title">오락실 게임순위</h2><div class="rank-table" id="online-rows" role="status"></div><button class="action-button" id="online-retry" hidden>다시 불러오기</button><p class="rank-explainer">더 높은 단계를 완료할수록 높은 순위예요. 같은 단계는 가장 짧은 시간, 같은 시간은 먼저 달성한 기록이 앞서요.</p><small class="rank-local">회원과 손님의 이번 달 최고 기록 TOP 10 · 한 사람당 하나 · 힌트·섞기 시간 포함</small>';
   $('online-retry').onclick=loadRanking;
   if(!modal.open)modal.showModal();loadRanking();

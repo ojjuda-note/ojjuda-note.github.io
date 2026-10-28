@@ -7,12 +7,12 @@
   <meta name="description" content="같은 그림은 최대 4개. 4개부터 900개까지, 15단계로 즐기는 사천성 게임. 빠른 클리어 시간으로 순위에 도전하세요.">
   <title>사천성</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23214f43'/%3E%3Cpath d='M11 27C9 13 22 9 30 10c0 13-6 22-19 17' fill='%23dbe9c1'/%3E%3Cpath d='m12 28 13-13' stroke='%23214f43' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261028-arcade-best1">
-  <script src="engine.js?v=20261028-arcade-best1" defer></script>
-  <script src="faces.js?v=20261028-arcade-best1" defer></script>
-  <script src="ranking.js?v=20261028-arcade-best1" defer></script>
-  <script src="server.js?v=20261028-arcade-best1" defer></script>
-  <script src="app.js?v=20261028-arcade-best1" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261028-sacheonseong-fit1">
+  <script src="engine.js?v=20261028-sacheonseong-fit1" defer></script>
+  <script src="faces.js?v=20261028-sacheonseong-fit1" defer></script>
+  <script src="ranking.js?v=20261028-sacheonseong-fit1" defer></script>
+  <script src="server.js?v=20261028-sacheonseong-fit1" defer></script>
+  <script src="app.js?v=20261028-sacheonseong-fit1" defer></script>
 </head>
 <body>
   <svg class="svg-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -45,38 +45,43 @@
 
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/world.html?tab=arcade" id="game-home" aria-label="오락실로 돌아가기"><span class="brand-mark"><svg><use href="#i-leaf"/></svg></span><span>사천성</span></a>
-      <div class="header-actions"><button class="icon-button" id="sound" aria-label="효과음 켜기" aria-pressed="false"><svg class="icon"><use href="#i-muted"/></svg></button><button class="help-button" id="help"><svg class="icon"><use href="#i-help"/></svg><span>게임 방법</span></button></div>
+      <a class="back-link" href="/world.html?tab=arcade" id="game-home" aria-label="오락실로 돌아가기">‹ 목록</a>
+      <h1>사천성</h1>
+      <button class="icon-button" id="options-open" aria-label="게임 메뉴" aria-haspopup="dialog">•••</button>
     </header>
-
-    <main>
-      <section class="intro"><div><div class="eyebrow"><span></span> 천천히, 하나씩</div><h1>같은 패를 잇는 작은 즐거움.</h1><p>4개부터 900개까지 · 같은 그림은 최대 4개 · 총 15단계</p></div><div class="intro-note"><svg class="icon"><use href="#i-leaf"/></svg><span>시간 제한 없이<br><b>내 속도대로 즐겨요</b></span></div></section>
-
-      <div class="game-layout">
-        <section class="game-panel" aria-label="사천성 게임">
-          <div class="board-heading"><div class="stage-heading"><span class="stage-label" id="stage-label">STAGE 01</span><h2 id="stage-title">첫 번째 연결</h2></div><div class="board-size"><span id="dimensions">2 × 2</span><span>정원</span></div></div>
-          <div class="stats"><div><span>남은 패</span><strong id="remaining">4 <small>/ 4</small></strong></div><div><span>연결한 쌍</span><strong id="pairs">0 <small>/ 2</small></strong></div><div><span>플레이 시간</span><strong id="timer">00:00</strong></div></div>
-          <div class="progress-track"><div id="progress"></div></div>
-          <div class="board-area">
-            <div class="board-caption"><span id="board-caption">같은 그림 두 개를 톡, 톡 눌러보세요.</span><div class="zoom-controls" id="zoom-controls" hidden><button id="zoom-fit" aria-label="게임판 전체 보기" aria-pressed="false">전체</button><button id="zoom-out" aria-label="패 작게 보기">−</button><button id="zoom-in" aria-label="패 크게 보기">＋</button></div></div>
-            <div class="board-scroll" id="board-scroll" tabindex="0" aria-label="게임판. 큰 정원은 상하좌우로 스크롤할 수 있어요.">
-              <div class="board-canvas" id="board-canvas"><div class="board-grid" id="board" role="group" aria-label="패 선택"></div><svg id="connection" aria-hidden="true"></svg></div>
-            </div>
-            <div class="board-footer"><span class="mini-dot"></span><span id="status" role="status" aria-live="polite">가로·세로로 연결하고, 두 번까지만 꺾어요.</span></div>
-          </div>
-          <div class="game-actions"><button class="action-button primary-soft" id="hint"><svg class="icon"><use href="#i-hint"/></svg>힌트 보기</button><button class="action-button" id="shuffle"><svg class="icon"><use href="#i-shuffle"/></svg>패 섞기</button><button class="action-button restart-button" id="restart"><svg class="icon"><use href="#i-reset"/></svg><span>다시 하기</span></button></div>
-          <div class="completion" id="completion" hidden role="dialog" aria-modal="true" aria-labelledby="win-title"><div class="completion-card"><span class="win-bloom"><svg><use href="#face-0"/></svg></span><div class="eyebrow">한 뼘 더 자랐어요</div><h2 id="win-title">첫 번째 정원 완성!</h2><p id="win-desc">다음은 16개의 패가 기다려요.</p><button id="next" class="next-button">다음 단계로 <svg class="icon"><use href="#i-arrow"/></svg></button><small id="countdown">3초 뒤에 다음 정원으로 이동해요.</small></div></div>
-        </section>
-
-        <aside class="sidebar">
-          <section class="journey"><div class="section-overline">4개에서 900개까지</div><h2>나의 정원 길</h2><p>64개 다음에도 11개의 정원!<br>한 판씩 차근차근 도전해요.</p><div class="stage-list" id="stage-list"></div><button id="all-stages" class="all-stages-button">전체 15단계 보기 <span>↗</span></button><div class="journey-bottom"><svg class="icon"><use href="#i-leaf"/></svg><span id="face-count">이번 정원: 그림 2종 · 최대 2개씩</span></div></section>
-          <section class="ranking-card"><div class="rank-heading"><span class="section-overline">빠를수록 높은 순위</span><span class="local-tag">이 기기</span></div><h2>나의 시간 순위</h2><div class="rank-stage" id="rank-stage">1단계 · 4개의 패</div><div id="rank-preview"></div><button class="rank-more" id="online-ranking">오락실 게임순위 <span>↗</span></button><button class="rank-more" id="ranking">내 기록 보기 <span>↗</span></button></section>
-        </aside>
+    <main class="game-panel" aria-label="사천성 게임">
+      <div class="game-hud">
+        <button id="all-stages" aria-label="단계 선택"><span id="stage-label">1단계</span><span aria-hidden="true">⌄</span></button>
+        <div class="remaining-stat">남은 패 <strong id="remaining">4 <small>/ 4</small></strong></div>
+        <strong id="timer" aria-label="플레이 시간">00:00.00</strong>
       </div>
-      <div class="server-status"><span id="server-note" role="status"></span><button id="retry-records" class="action-button" hidden>기록 다시 등록</button></div>
-      <footer class="page-footer"><span>사천성</span><span id="save-note">진행과 시간 순위는 이 기기에 저장돼요.</span></footer>
+      <div class="board-area">
+        <div class="board-scroll" id="board-scroll" tabindex="0" aria-label="게임판. 전체 보기에서 모든 패를 선택할 수 있어요.">
+          <div class="board-canvas" id="board-canvas"><div class="board-grid" id="board" role="group" aria-label="패 선택"></div><svg id="connection" aria-hidden="true"></svg></div>
+        </div>
+      </div>
+      <div class="game-actions" aria-label="게임 조작">
+        <button class="action-button primary-soft" id="hint"><svg class="icon"><use href="#i-hint"/></svg>힌트</button>
+        <button class="action-button" id="shuffle"><svg class="icon"><use href="#i-shuffle"/></svg>섞기</button>
+        <div class="zoom-controls" id="zoom-controls"><button id="zoom-fit" aria-label="게임판 전체 보기" aria-pressed="true">전체</button><button id="zoom-out" aria-label="패 작게 보기">−</button><button id="zoom-in" aria-label="패 크게 보기">＋</button></div>
+      </div>
+      <span class="sr-only" id="status" role="status" aria-live="polite"></span>
+      <div class="completion" id="completion" hidden role="dialog" aria-modal="true" aria-labelledby="win-title"><div class="completion-card"><span class="win-bloom"><svg><use href="#face-0"/></svg></span><div class="eyebrow">단계 완료</div><h2 id="win-title">1단계 완료!</h2><p id="win-desc"></p><button id="next" class="next-button">다음 단계로 <svg class="icon"><use href="#i-arrow"/></svg></button><small id="countdown"></small></div></div>
     </main>
   </div>
+  <dialog id="options" aria-labelledby="options-title">
+    <button class="modal-close" id="options-close" aria-label="메뉴 닫기">×</button>
+    <h2 id="options-title">게임 메뉴</h2>
+    <div class="menu-actions">
+      <button class="action-button" id="online-ranking">오락실 게임순위 <span>↗</span></button>
+      <button class="action-button" id="ranking">내 기록 <span>↗</span></button>
+      <button class="action-button" id="help">게임 방법 <svg class="icon"><use href="#i-help"/></svg></button>
+      <button class="action-button" id="sound" aria-label="효과음 켜기" aria-pressed="false">효과음 끔 <svg class="icon"><use href="#i-muted"/></svg></button>
+      <button class="action-button" id="restart">다시 하기 <svg class="icon"><use href="#i-reset"/></svg></button>
+    </div>
+    <div class="server-status"><span id="server-note" role="status"></span><button id="retry-records" class="action-button" hidden>기록 다시 등록</button></div>
+    <p class="save-note" id="save-note">진행과 내 기록은 이 기기에 저장돼요.</p>
+  </dialog>
   <dialog id="modal" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="닫기">×</button><div id="modal-content"></div></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
 </body>

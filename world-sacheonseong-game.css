@@ -9,3 +9,8 @@
 .sacheonseong-game-dialog iframe{display:block;flex:1;width:100%;min-height:0;border:0;background:#f7f7f1}
 .sacheonseong-game-dialog button:focus-visible,.sacheonseong-game-dialog summary:focus-visible{outline:3px solid #5e9272;outline-offset:3px}
 @media(max-width:640px){.sacheonseong-game-dialog{width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}.sacheonseong-game-header{padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));font-size:14px}.sacheonseong-entry-wrap{padding:18px 14px;padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+
+/* Use a single toolbar once the game starts; the iframe owns back/menu actions. */
+.sacheonseong-game-dialog.sacheonseong-playing{width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}
+.sacheonseong-playing>.sacheonseong-game-header{display:none}
+.sacheonseong-playing iframe{height:100%;flex:1 1 0}
