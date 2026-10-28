@@ -7,11 +7,11 @@
   if(active){active.dialog.focus();return;}
   const previous=document.activeElement,dialog=document.createElement('dialog');
   dialog.className='tour-game-dialog sacheonseong-game-dialog';
-  dialog.setAttribute('aria-label','오쭈다 사천성');
-  dialog.innerHTML=`<div class="tour-game-header sacheonseong-game-header"><strong>오쭈다 사천성</strong><button type="button" class="sacheonseong-back">← 게임 목록</button></div>
+  dialog.setAttribute('aria-label','사천성');
+  dialog.innerHTML=`<div class="tour-game-header sacheonseong-game-header"><strong>사천성</strong><button type="button" class="sacheonseong-back">← 게임 목록</button></div>
    <div class="sacheonseong-entry-wrap"><section class="game-entry" data-entry-key="sacheonseong">
     <div class="ge-icon" aria-hidden="true">🀄</div><span class="ge-kicker">오쭈다 오락실 · 싱글 게임</span>
-    <h2 class="ge-title">오쭈다 사천성</h2><p class="ge-copy">같은 그림을 잇는 작은 즐거움.<br>4개부터 900개까지, 15단계에 도전해요.</p>
+    <h2 class="ge-title">사천성</h2><p class="ge-copy">같은 그림을 잇는 작은 즐거움.<br>4개부터 900개까지, 15단계에 도전해요.</p>
     <button type="button" class="ge-primary">시작하기</button>
     <details class="ge-more"><summary>게임 방법</summary><p>같은 그림 두 개를 가로·세로로 연결하세요. 선은 두 번까지 꺾을 수 있고, 다른 패를 통과할 수 없어요.</p><p>같은 그림은 최대 4개이며, 패는 무작위로 놓여요. 막히면 자동으로 다시 섞어요.</p><p>첫 패를 누르면 시간이 시작돼요. 최고 완료 단계가 우선이고, 같은 단계에서는 빨리 끝낼수록 높은 순위! 완료 기록은 오락실의 이번 달 게임순위에 등록되고, 진행은 이 브라우저에 저장돼요.</p></details>
    </section></div>`;
@@ -45,8 +45,8 @@
   }
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
-   frame=document.createElement('iframe');frame.title='오쭈다 사천성 게임판';
-   frame.src='/games/sacheonseong/index.html?v=20261028-sacheonseong-best1';
+   frame=document.createElement('iframe');frame.title='사천성 게임판';
+   frame.src='/games/sacheonseong/index.html?v=20261028-arcade-best1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();
