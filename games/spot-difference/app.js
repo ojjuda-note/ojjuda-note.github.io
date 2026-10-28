@@ -35,7 +35,8 @@
     const mark=document.createElement('div');mark.className='mark'+(isHint?' hint-mark':'');
     Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${spot.rx*2}%`,height:`${spot.ry*2}%`});
     if(isHint){
-      for(let i=0;i<3;i++){const star=document.createElement('i');star.className='hint-star';mark.append(star);}
+      // Pictures use a 3:2 ratio; fit the hint area inside a true circle.
+      mark.style.width=`${Math.max(spot.rx,spot.ry*2/3)*2}%`;mark.style.height='auto';
     }else{const label=document.createElement('span');label.textContent=number;mark.append(label);if(spot.x+spot.rx>94)mark.classList.add('label-left');if(spot.y-spot.ry<5)mark.classList.add('label-below');}return mark;
   }
   function answerOrder(){return [...found(),...puzzle().spots.map((_,i)=>i).filter(i=>!found().includes(i))];}
@@ -142,7 +143,7 @@
   function showHint(){
     const i=round().hintIndex;if(i===null||!round().paid.includes(i))return;
     $('hint-text').textContent=puzzle().spots[i].text;$('hint-panel').hidden=false;
-    renderHintMarks();speak(`힌트: ${puzzle().spots[i].text} · 별빛이 반짝이는 곳을 찾아보세요.`);refreshControls();
+    renderHintMarks();speak(`힌트: ${puzzle().spots[i].text} · 점선 원 안을 찾아보세요.`);refreshControls();
   }
   function closeAnswers(announce=false){
     if(!answerReview)return;
@@ -306,7 +307,7 @@
         else{if(!r.paid.includes(request.spot))r.paid.push(request.spot);r.hintIndex=request.spot;}
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;
         paymentBusy=false;refresh();
-        if(request.kind==='hint'){showHint();speak(`1 ZU를 사용했어요. 힌트: ${p.spots[request.spot].text} · 찾을 때까지 별빛이 반짝여요.`);}
+        if(request.kind==='hint'){showHint();speak(`1 ZU를 사용했어요. 힌트: ${p.spots[request.spot].text} · 찾을 때까지 점선 원이 표시돼요.`);}
         else speak(`${result.price} ZU를 사용하고 ${(result.extend_ms||60000)/1000}초를 더 받았어요!`,true);
       }else{
         r.pending=null;r.status=r.remainingMs>0?'playing':'lost';r.deadline=r.status==='playing'?Date.now()+r.remainingMs:null;

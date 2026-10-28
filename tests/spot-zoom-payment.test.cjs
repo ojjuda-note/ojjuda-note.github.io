@@ -54,10 +54,10 @@ function fixture(){
   const marks=()=>Array.from(f.w.document.querySelectorAll('.hint-mark'));
   const buyHint=async()=>{f.$('zoom-hint').click();f.succeed();await flush();};
   const p=f.w.JJUDA_PUZZLES[48],tap=i=>{const surface=f.$('zoom-original').parentElement;surface.getBoundingClientRect=()=>({left:0,top:0,width:1000,height:800});const init={bubbles:true,clientX:p.spots[i].x*10,clientY:p.spots[i].y*8};surface.dispatchEvent(new f.w.MouseEvent('pointerdown',init));surface.dispatchEvent(new f.w.MouseEvent('click',init));};
-  await buyHint();assert.equal(marks().length,4,'a purchased hint glitters on both normal and zoom pictures automatically');
-  const initial=marks();assert.ok(initial.every(mark=>mark.querySelectorAll('.hint-star').length===3));
+  await buyHint();assert.equal(marks().length,4,'a purchased hint appears on both normal and zoom pictures automatically');
+  const initial=marks();assert.ok(initial.every(mark=>mark.children.length===0),'hint rings do not cover the picture with stars or labels');
   await new Promise(resolve=>setTimeout(resolve,3900));assert.deepEqual(marks(),initial,'hint persists beyond the former 3.5-second expiry');
-  f.$('hide-hint').click();assert.deepEqual(marks(),initial,'closing hint text keeps the starlight');
+  f.$('hide-hint').click();assert.deepEqual(marks(),initial,'closing hint text keeps the hint ring');
   f.$('zoom-hint').click();assert.equal(f.requests.length,1,'showing an existing hint does not charge again');
   tap(5);assert.deepEqual(marks(),initial,'finding a different answer does not restart or remove the hint');
   await buyHint();assert.equal(marks().length,8,'two unfound purchased hints remain together');assert.ok(initial.every(mark=>mark.isConnected));
@@ -76,5 +76,5 @@ function fixture(){
   send(w.location.origin,frame.contentWindow);await flush();assert.equal(w.document.querySelector('.spot-game-dialog'),null);assert.equal(w.document.body.classList.contains('gaming'),false);assert.equal(closed,1);
   assert.match(read('index.html'),/id="game-home"[^>]+href="\/world.html\?tab=arcade"/);assert.match(read('index.html'),/id="zoom-home"[^>]+href="\/world.html\?tab=arcade"/);
  }finally{host.window.close();}
- console.log('PASS: zoom/pan retained for paid help and retry; single receipt; persistent starlight removed per found answer; safe home controls and iframe exit');
+ console.log('PASS: zoom/pan retained for paid help and retry; single receipt; persistent hint rings removed per found answer; safe home controls and iframe exit');
 })().catch(error=>{console.error(error);process.exitCode=1;});
