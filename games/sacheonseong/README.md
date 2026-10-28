@@ -13,7 +13,11 @@
 - `node tests/sacheonseong-ranking.test.cjs`
 - `node tests/sacheonseong-leaderboard.test.cjs`
 - `node tests/sacheonseong-screen.test.cjs`
+- `node tests/sacheonseong-purchases.test.cjs`
+- `node tests/sacheonseong-purchases-db.test.cjs`
 - `tests/sacheonseong-best-ranking.sql`: 최고 단계·시간·동점·사용자별 중복 제거 검증
 - `tests/sacheonseong-ranking.sql`: 기록이 없는 테스트 DB에서 트랜잭션 롤백 검증
 
 공식 순위는 기존 캐주얼 게임 기록 API를 사용합니다. 시간은 1/100초 단위로 변환하며 보상 없이 미검증 기록으로 저장합니다. 기존 단계별 저장 기록을 보존하며 게시판과 게임 안의 공식 순위는 모두 종합 순위로 표시합니다.
+
+힌트는 1회 3쭈, 직접 섞기는 1회 10쭈입니다. 로그인한 사용자의 공용 지갑에서 서버가 차감한 뒤 실행하며, 중복 클릭·통신 재시도는 같은 요청 ID로 확인합니다. 확인 대기 중인 구매는 저장된 게임판과 함께 복구합니다. 잔액 부족·비회원은 유료 기능을 실행하지 않으며, 막힌 판의 자동 재배치는 무료입니다.
