@@ -1,7 +1,7 @@
 @charset "UTF-8";
 :root{--ink:#234a3f;--muted:#879087;--forest:#285b49;--cream:#f6f5f0;--line:#e4e7dd;--font:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
 *{box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:pan-x pan-y}
 body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
 button,a{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 button{font:inherit;cursor:pointer;color:inherit}
@@ -24,7 +24,7 @@ svg{display:block}
 #remaining small{font-size:11px;color:#819077;font-weight:400}
 #timer{margin-left:auto;font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
 .board-area{flex:1;min-height:0;display:flex;background:#28594b;background-image:radial-gradient(#ffffff09 .8px,transparent .8px);background-size:13px 13px;margin:0 6px;border-radius:12px;overflow:hidden}
-.board-scroll{flex:1;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;display:flex;align-items:flex-start;position:relative}
+.board-scroll{touch-action:none;flex:1;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;display:flex;align-items:flex-start;position:relative}
 .board-scroll::-webkit-scrollbar{display:none}
 .board-scroll:focus:not(:focus-visible){outline:none}
 .board-canvas{--tile:90px;--gap:6px;--pad:8px;position:relative;margin:auto;padding:var(--pad);padding-bottom:calc(var(--pad) + 4px);width:max-content;flex-shrink:0}
