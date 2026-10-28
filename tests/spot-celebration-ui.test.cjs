@@ -62,7 +62,11 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   await p.waitForTimeout(350);
   const box=await p.locator('#celebration').boundingBox();assert.ok(box.height<500,'celebration stays compact on a phone');assert.ok(box.x>=0&&box.x+box.width<=390&&box.y>=0&&box.y+box.height<=844);
   await p.screenshot({path:'/tmp/spot-celebration-mobile.png'});
+  await p.waitForTimeout(2600);
+  assert.equal(await p.locator('#stage-picker').inputValue(),before,'completed round waits for an explicit level choice');
+  await p.locator('#celebration-level').selectOption('1');
   f.hold();
+  await p.locator('#celebration-next').click();
   await p.waitForFunction(before=>document.querySelector('#stage-picker').value!==before,before);
   assert.equal(await p.locator('#start').isDisabled(),true,'wait for the next picture to load');
   assert.equal(await p.locator('#time-left').innerText(),'60','loading does not consume the next round');
@@ -71,7 +75,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.equal(await p.locator('#hearts .empty').count(),0);
   assert.equal(await p.locator('#celebration').evaluate(d=>d.open),false);
   assert.ok(Number(await p.locator('#time-left').innerText())>=58);
-  // Cancelling a celebration must cancel its delayed navigation.
+  // Dismissing the result never navigates to another level.
   await solve(p);const current=await p.locator('#stage-picker').inputValue();
   await p.keyboard.press('Escape');await p.waitForTimeout(2600);
   assert.equal(await p.locator('#stage-picker').inputValue(),current);
@@ -133,6 +137,6 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.equal(await host.evaluate(async()=>{try{await JjudaWallet.recordClear('other-member',6);return false}catch{return true}}),true,'standalone score rejects another account');
   await host.evaluate(()=>JjudaWallet.recordClear('member-a',62));assert.deepEqual(await host.evaluate(()=>rpcScores),[{name:'record_spot_clear',p_stage:62}]);
   await host.close();
-  console.log('PASS: six matches, celebration graphics, zoom completion, automatic next image, delayed loading/timer, cancellation, 62-stage completion and reduced motion');
+  console.log('PASS: six matches, celebration graphics, zoom completion, chosen next image, delayed loading/timer, cancellation, 62-stage completion and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
