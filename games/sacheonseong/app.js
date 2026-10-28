@@ -3,7 +3,8 @@
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10});
-  let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,flashTimer,customSize=null,overview=true,fitSize=1;
+  let state,records={},selected=null,locked=false,hints=[],toastTimer,autoTimer,moveTimer,customSize=null,overview=true,fitSize=1;
+  const removalTimers=new Set(),REMOVE_MS=120;
   let purchaseBusy=false;
   let audioContext,saveAvailable=true,countdown=3,rankingStage=1;
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
@@ -34,7 +35,9 @@
     $('connection').replaceChildren();
     if(hints.length){const route=E.path(state.grid,hints[0],hints[1]);if(route)draw(route,true);}
   }
+  function cancelRemovals(){for(const timer of removalTimers)clearTimeout(timer);removalTimers.clear();clearTimeout(moveTimer);}
   function renderBoard(){
+    cancelRemovals();
     const frag=document.createDocumentFragment();
     state.grid.forEach((row,r)=>row.forEach((value,c)=>{
       const b=document.createElement('button');b.type='button';b.className='tile'+(value===E.EMPTY?' empty':'');b.dataset.r=r;b.dataset.c=c;b.disabled=value===E.EMPTY;b.setAttribute('aria-pressed','false');
@@ -67,10 +70,10 @@
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage){
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));clearTimeout(autoTimer);clearTimeout(flashTimer);clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));clearTimeout(autoTimer);cancelRemovals();clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
-  function ensureMove(){if(count()&&!E.moves(state.grid)){state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
+  function ensureMove(){if(count()&&!E.moves(state.grid)){clearSelection();state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
     if(locked||state.pendingPurchase||$('modal').open||$('options').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
     if(selected&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
@@ -79,16 +82,24 @@
     if(state.grid[a.r][a.c]!==state.grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');$('status').textContent='같은 그림의 패를 찾아주세요.';return;}
     const route=E.path(state.grid,a,p);
     if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');$('status').textContent='다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.';toast('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
-    locked=true;const willFinish=count()===2,finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');cell(a).classList.add('removing');cell(p).classList.add('removing');
+    const willFinish=count()===2,finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');
+    const buttons=[cell(a),cell(p)],line=$('connection').firstElementChild;
+    buttons.forEach(button=>{button.classList.add('removing');button.disabled=true;});
     // Save and queue completion before animation: leaving now must not lose a record.
     state.grid[a.r][a.c]=E.EMPTY;state.grid[p.r][p.c]=E.EMPTY;
-    if(willFinish)finish(finishDuration,false);else save();
-    flashTimer=setTimeout(()=>{
+    if(willFinish)finish(finishDuration,false);else{save();updateStats();$('status').textContent='잘 연결했어요! 다음 짝을 찾아보세요.';}
+    clearTimeout(moveTimer);
+    const timer=setTimeout(()=>{
+      removalTimers.delete(timer);
       // Keep the other tiles in place instead of rebuilding up to 900 buttons.
-      for(const point of [a,p]){const button=cell(point);button.className='tile empty';button.disabled=true;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
-      $('connection').replaceChildren();updateStats();if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}locked=false;if(!ensureMove())$('status').textContent='잘 연결했어요! 다음 짝을 찾아보세요.';
-      const next=$('board').querySelector('.tile:not(.empty)');if(next&&document.activeElement?.classList.contains('empty'))next.focus({preventScroll:true});
-    },280);
+      for(const button of buttons){if(!button.isConnected)continue;button.className='tile empty';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
+      if($('connection').firstElementChild===line)$('connection').replaceChildren();
+      if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}
+      const next=$('board').querySelector('.tile:not(:disabled)');if(next&&document.activeElement?.classList.contains('empty'))next.focus({preventScroll:true});
+    },REMOVE_MS);
+    removalTimers.add(timer);
+    // Visual effects never block the next pair. Check for a dead end after them.
+    if(!willFinish)moveTimer=setTimeout(()=>{if(!state.pendingPurchase)ensureMove();},REMOVE_MS);
   }
   function finish(duration,present=true){
     locked=true;state.finishedMs=duration;state.unlocked=Math.min(E.MAX_STAGE,Math.max(state.unlocked,state.stage+1));
@@ -198,11 +209,14 @@
   }
   function pair(){const [a,b]=[...pointers.values()];return {distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
   function capture(id){try{viewport.setPointerCapture(id);}catch{}}
+  function clearPressed(){for(const point of pointers.values())point.button?.classList.remove('pressed');}
   viewport.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='mouse'){ignoreClickUntil=0;return;}
     if(!['touch','pen'].includes(event.pointerType)||pointers.size>=2)return;
-    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY});
-    if(pointers.size===2){pinch={...pair(),size:tileSize()};dragging=true;for(const id of pointers.keys())capture(id);event.preventDefault();}
-    else dragging=false;
+    const button=event.target.closest('.tile:not(:disabled)');
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,button});
+    if(pointers.size===2){clearPressed();pinch={...pair(),size:tileSize()};dragging=true;for(const id of pointers.keys())capture(id);event.preventDefault();}
+    else{dragging=false;if(!locked&&!state.pendingPurchase&&!$('modal').open&&!$('options').open)button?.classList.add('pressed');}
   });
   window.addEventListener('pointermove',event=>{
     const point=pointers.get(event.pointerId);if(!point)return;
@@ -211,18 +225,21 @@
       const next=pair();event.preventDefault();zoomBoard(pinch.size*next.distance/pinch.distance,pinch.x,pinch.y);
       viewport.scrollLeft+=pinch.x-next.x;viewport.scrollTop+=pinch.y-next.y;pinch.x=next.x;pinch.y=next.y;
     }else{
-      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>6){dragging=true;capture(event.pointerId);}
+      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>6){dragging=true;clearPressed();capture(event.pointerId);}
       if(dragging){event.preventDefault();viewport.scrollLeft-=dx;viewport.scrollTop-=dy;}
     }
   },{passive:false});
   function endPointer(event){
-    if(!pointers.has(event.pointerId))return;
-    if(dragging||pinch)ignoreClickUntil=Date.now()+400;
+    const point=pointers.get(event.pointerId);if(!point)return;
+    const tap=event.type==='pointerup'&&!dragging&&!pinch&&Math.hypot(event.clientX-point.startX,event.clientY-point.startY)<=6;
+    point.button?.classList.remove('pressed');ignoreClickUntil=Date.now()+700;
     pointers.delete(event.pointerId);pinch=null;if(!pointers.size)dragging=false;
+    // Commit a tap on release, without waiting for the browser's compatibility click.
+    if(tap&&point.button?.isConnected)select({r:Number(point.button.dataset.r),c:Number(point.button.dataset.c)});
   }
   window.addEventListener('pointerup',endPointer);window.addEventListener('pointercancel',endPointer);
-  // A completed drag/pinch must never become an accidental tile selection.
-  viewport.addEventListener('click',event=>{if(dragging||pinch||Date.now()<ignoreClickUntil){event.preventDefault();event.stopImmediatePropagation();}},true);
+  // Ignore duplicate touch clicks; keyboard activation and fresh pointer taps stay immediate.
+  viewport.addEventListener('click',event=>{if(dragging||pinch||(Date.now()<ignoreClickUntil&&(event.detail>0||['touch','pen'].includes(event.pointerType)))){event.preventDefault();event.stopImmediatePropagation();}},true);
   document.addEventListener('wheel',event=>{
     if(!event.ctrlKey||$('modal').open||$('options').open)return;
     event.preventDefault();zoomBoard(tileSize()*Math.exp(-event.deltaY*.01),event.clientX,event.clientY);

@@ -1,6 +1,6 @@
 import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261013-bonus-pi1';
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
-import {floorLayout,heldPairMonths,piClaimMessage} from './matgo-view.mjs?v=20261014-pi-audit1';
+import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261028-games-touch1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261023-media1';
 import {createWallet} from './matgo-wallet.mjs?v=20261022-entry2';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261028-matgo-clean-turn20';
@@ -60,9 +60,9 @@ async function joinPublicRoom(number){
 }
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').hidden=true,3500);}
 function closeDialog(){dialog?.remove();dialog=null;dialogKey='';}
-function modal(html,handlers={},key='manual'){
+function modal(html,handlers={},key='manual',goStop=false){
   if(dialogKey===key)return;
-  closeDialog();dialog=document.createElement('div');dialog.className='dialog';dialog.role='dialog';dialog.setAttribute('aria-modal','true');dialog.innerHTML='<section class="card'+(key.startsWith('result:')?' result-card':'')+'">'+html+'</section>';dialogKey=key;document.body.appendChild(dialog);
+  closeDialog();dialog=document.createElement('div');dialog.className='dialog';dialog.role='dialog';dialog.setAttribute('aria-modal','true');dialog.innerHTML='<section class="card'+(key.startsWith('result:')?' result-card':'')+'">'+html+'</section>';dialogKey=key;document.body.appendChild(dialog);if(goStop)positionGoStopPrompt(dialog);
   for(const [id,handler] of Object.entries(handlers)){const el=dialog.querySelector('#'+id);if(el)el.onclick=()=>{if((key.startsWith('turn:')||key==='pick')&&(busy||pendingMove||animating))return;closeDialog();handler();};}
   dialog.querySelector('button,input')?.focus({preventScroll:true});
 }
@@ -114,7 +114,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261028-matgo-clean-turn20&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261028-games-touch1&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -205,7 +205,7 @@ function showLobby(){
   const input=$('#room-code');input.setAttribute('aria-label','방번호 또는 초대 코드');input.placeholder='방번호 또는 초대 코드';input.maxLength=16;input.removeAttribute('pattern');
 
   $('#join-form').onsubmit=e=>{e.preventDefault();const code=input.value.trim().replace(/^#/,'').toUpperCase();if(/^[0-9]{4,16}$/.test(code)&&Number.isSafeInteger(Number(code)))void joinPublicRoom(code);else if(/^[A-F0-9]{8}$/.test(code))void enter('join',code);else toast('방번호 또는 초대 코드 8자리를 입력해 주세요.');};
-  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261028-matgo-clean-turn20&open='+Date.now());};
+  $('#solo').onclick=()=>{closed=true;location.replace('./matgo.html?v=20261028-games-touch1&open='+Date.now());};
 }
 function caps(cards,own=false){
   const groups=[['광',cards.filter(c=>c.k==='gwang')],['열끗',cards.filter(c=>c.k==='yul'&&!c.asPi)],['띠',cards.filter(c=>c.k==='tti')],['피',cards.filter(isPi)]];
@@ -342,7 +342,7 @@ function renderRoom(){
     promptKey=pk;
     if(pr.type==='gukjin')modal(`<h2>구쌍피를 먹었어요</h2><p>어느 쪽으로 사용할까요?<br>차례의 20초가 지나면 자동으로 선택해요.</p><div class="cards">${cardSVG(pr.card)}</div><div class="row"><button id="gukjin-yul" class="btn ghost">그림(열끗)</button><button id="gukjin-pi" class="btn gold">쌍피(피 2장)</button></div>`,{'gukjin-yul':()=>send({type:'gukjin',choice:'yul'}),'gukjin-pi':()=>send({type:'gukjin',choice:'pi'})},'turn:'+pk);
     else if(pr.type==='chongtong')modal(`<h2>총통!</h2><p>같은 월 네 장이 모였어요.<br>7점으로 이기거나 계속할 수 있어요.</p><div class="cards">${g.hand.filter(c=>c.m===pr.months[0]).map(cardSVG).join('')}</div><div class="row"><button id="chongtong-win" class="btn gold">7점으로 승리</button><button id="chongtong-continue" class="btn ghost">계속하기</button></div>`,{'chongtong-win':()=>send({type:'chongtong',decision:'win'}),'chongtong-continue':()=>send({type:'chongtong',decision:'continue'})},'turn:'+pk);
-    else modal(`<h2>${pr.points}점!</h2><p>고를 하면 점수가 올라가지만, 상대가 먼저 나면 고박이에요.<br>상대 ${score(g.caps[op]).pts}점 · 남은 패 ${g.deckCount}장</p><div class="row"><button id="go" class="btn gold">고!</button><button id="stop" class="btn ghost">스톱</button></div>`,{go:()=>send({type:'gostop',decision:'go'}),stop:()=>send({type:'gostop',decision:'stop'})},'turn:'+pk);
+    else modal(`<div class="go-stop-summary"><h2 id="go-stop-title">${pr.points}점 · 고/스톱</h2><p>상대 ${score(g.caps[op]).pts}점 · 남은 패 ${g.deckCount}장</p></div><div class="row"><button id="go" class="btn gold">고!</button><button id="stop" class="btn ghost">스톱</button></div>`,{go:()=>send({type:'gostop',decision:'go'}),stop:()=>send({type:'gostop',decision:'stop'})},'turn:'+pk,true);
   }
 }
 function pick(id){
