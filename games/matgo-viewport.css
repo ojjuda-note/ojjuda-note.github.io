@@ -67,3 +67,10 @@ body{overflow-y:auto;overflow-x:hidden}
 :root .modal>.card.result-card,:root .dialog>section.result-card{display:flex;flex-direction:column;overflow:hidden}
 .result-details{min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .result-actions{flex-shrink:0;margin-top:10px;padding-top:12px;border-top:1px solid #e6def2}
+
+/* A clear table and a small felt-centered choice keep both captured piles visible. */
+.modal.go-stop-prompt,.dialog.go-stop-prompt{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+:root .go-stop-prompt>.card{position:fixed;left:50%;top:var(--go-stop-y,50%);transform:translate(-50%,-50%);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;width:calc(100% - 24px);max-width:360px;max-height:none;padding:12px;border:1px solid #d4c9ec;border-radius:16px;box-shadow:0 8px 24px #0004;overflow:visible}
+.go-stop-summary{min-width:0;text-align:left}.go-stop-prompt h2{margin:0 0 4px;font-size:17px;font-weight:700;line-height:1.3}.go-stop-prompt p{margin:0;font-size:12px;line-height:1.4;color:#625977}
+.go-stop-prompt .row{flex-wrap:nowrap;gap:6px}.go-stop-prompt .row>.btn{flex:0 0 auto;min-width:54px;min-height:44px;height:44px;padding:8px 10px;border-radius:10px;font-size:15px;white-space:nowrap}
+body:has(.go-stop-prompt) .hand.me .c,body:has(.go-stop-prompt) .hand.me .c:disabled{opacity:1;filter:none}

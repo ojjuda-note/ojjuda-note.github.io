@@ -1,5 +1,33 @@
 import './matgo-captured-zoom.mjs?v=20261010-hold1';
 
+// Keep required go/stop choices over the felt, clear of both players' cards.
+export function positionGoStopPrompt(element) {
+  const doc=element.ownerDocument,win=doc.defaultView;
+  const floor=doc.querySelector('#app .floor'),card=element.firstElementChild;
+  element.classList.add('go-stop-prompt');
+  element.setAttribute('role','dialog');element.setAttribute('aria-modal','true');
+  element.setAttribute('aria-labelledby','go-stop-title');
+  let resizeObserver,removalObserver;
+  const cleanup=()=>{
+    resizeObserver?.disconnect();removalObserver?.disconnect();
+    win.removeEventListener('resize',sync);doc.removeEventListener('scroll',sync,true);
+    win.visualViewport?.removeEventListener('resize',sync);
+  };
+  const sync=()=>{
+    if(!element.isConnected){cleanup();return;}
+    const bounds=floor?.getBoundingClientRect(),height=win.visualViewport?.height||win.innerHeight;
+    const half=(card?.getBoundingClientRect().height||80)/2;
+    const middle=bounds?.height?bounds.top+bounds.height/2:height/2;
+    element.style.setProperty('--go-stop-y',Math.max(half+8,Math.min(height-half-8,middle))+'px');
+  };
+  if(win.ResizeObserver){resizeObserver=new win.ResizeObserver(sync);if(floor)resizeObserver.observe(floor);if(card)resizeObserver.observe(card);}
+  removalObserver=new win.MutationObserver(()=>{if(!element.isConnected)cleanup();});
+  removalObserver.observe(doc.body,{childList:true});
+  win.addEventListener('resize',sync);doc.addEventListener('scroll',sync,true);
+  win.visualViewport?.addEventListener('resize',sync);
+  sync();return cleanup;
+}
+
 // This describes a claim, not a completed transfer. The steal event shows the
 // actual card/value, including a whole double/triple pi used to pay one pi.
 export function piClaimMessage({p,count=1,availablePi},viewer){
