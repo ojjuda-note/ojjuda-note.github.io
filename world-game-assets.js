@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261028-games-check1';
+ const revision='20261028-spot-level1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -17,7 +17,7 @@
   runner:'1.0.1',
   stacker:'1.0.0',
   breakout:'1.0.0',
-  spot:'1.2.4',
+  spot:'1.3.0',
   screw:'1.0.2',
   janggi:'1.0.0',
   chess:'1.0.0',
@@ -32,7 +32,7 @@
   mines:['/world-tour-game.css?v=20261012-marble-invite1','/games/mines/rules.js?v=20261022-ranks1','/world-mines-game.js?v=20261022-ranks1'],
   saetbyeol:['/world-tour-game.css?v=20261012-marble-invite1','/world-saetbyeol-game.js?v=20261021-guest1'],
   tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261028-arcade-best1'],
-  spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261028-games-check1'],
+  spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261028-spot-level1'],
   ttang:['/ttang-bridge.js?v=20261022-ranks2'],
   photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261023-entry1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
