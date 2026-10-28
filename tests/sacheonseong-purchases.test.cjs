@@ -24,11 +24,12 @@ async function fixture({stored=null,member=owner,buy}={}){
  let f=await fixture({buy:item=>new Promise(r=>{resolve=()=>r(receipt(item));})});
  try{
   assert.equal(f.$('hint').getAttribute('aria-label'),'힌트 3쭈');assert.equal(f.$('shuffle').getAttribute('aria-label'),'섞기 10쭈');
+  const requestedAt=Date.now();let now=requestedAt;f.w.Date.now=()=>now;
   f.$('hint').click();f.$('hint').click();f.$('shuffle').click();await tick();
   assert.equal(f.calls.length,1);assert(f.$('hint').disabled);assert(f.$('all-stages').disabled);assert.equal(f.$('board').querySelectorAll('.hinted').length,0);
   const before=f.state().grid;f.$('board').querySelector('button').click();assert.equal(f.$('board').querySelectorAll('.selected').length,0);assert.deepEqual(f.state().grid,before);
-  resolve();await tick();await tick();assert.equal(balance,27);assert.equal(f.state().hints,1);assert.equal(f.state().pendingPurchase,null);assert.equal(f.$('board').querySelectorAll('.hinted').length,2);
-  f.$('shuffle').click();await tick();assert.equal(f.calls.at(-1).kind,'shuffle');resolve();await tick();await tick();assert.equal(balance,17);assert.equal(f.state().shuffles,1);assert.notDeepEqual(f.state().grid,before);
+  now+=5000;resolve();await tick();await tick();assert.equal(f.state().startedAt,requestedAt,'the first hint includes the time waiting for purchase confirmation');assert.equal(balance,27);assert.equal(f.state().hints,1);assert.equal(f.state().pendingPurchase,null);assert.equal(f.$('board').querySelectorAll('.hinted').length,2);
+  f.$('shuffle').click();await tick();assert.equal(f.calls.at(-1).kind,'shuffle');resolve();await tick();await tick();assert.equal(balance,17);assert.equal(f.state().shuffles,1);assert.equal(f.state().startedAt,requestedAt,'later tools preserve the existing round start');assert.notDeepEqual(f.state().grid,before);
   assert.deepEqual(f.state().grid.flat().sort(),before.flat().sort());
  }finally{f.close();}
  f=await fixture({buy:async()=>({ok:false,reason:'coins',coins:9,price:10})});

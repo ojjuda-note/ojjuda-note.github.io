@@ -1,0 +1,42 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{test}=require('node:test'),{JSDOM}=require('jsdom');
+const E=require('../games/sacheonseong/engine.js'),read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
+const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
+function fixture({stage=2,saved=null,records={}}={}){
+ const dom=new JSDOM(read('games/sacheonseong/index.html'),{url:'https://example.test/games/sacheonseong/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
+ const timers=new Map(),sent=[];let id=0;
+ w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=()=>0;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.HTMLElement.prototype.scrollIntoView=function(){};
+ Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:348},clientHeight:{value:498}});
+ w.OjjudaSacheonseongOnline={newId:()=>w.crypto.randomUUID(),stage:()=>{},record:(stage,record)=>sent.push({stage,...record})};
+ const grid=Array.from({length:stage*2},()=>Array(stage*2).fill(-1));grid[0][0]=grid[0][1]=0;
+ w.localStorage.setItem(KEY,JSON.stringify(saved||{rulesVersion:E.RULES_VERSION,stage,unlocked:Math.min(15,stage+1),grid,startedAt:Date.now()-12000,finishedMs:null,hints:0,shuffles:0}));
+ w.localStorage.setItem(RECORDS,JSON.stringify(records));
+ for(const name of ['engine','faces','app'])w.eval(read('games/sacheonseong/'+name+'.js'));
+ return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
+}
+test('the last pair saves and queues its completion before the screen can close',()=>{
+ const f=fixture();try{f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.records()[2].length,1);assert(f.state().finishedMs>=12000);f.run(280);assert.equal(f.sent.length,1,'the animation cannot send a duplicate record');assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
+});
+test('switching stages immediately after the last pair keeps the completed record',()=>{
+ const f=fixture();try{f.match();f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();f.run(280);assert.equal(f.state().stage,3);assert.equal(f.records()[2]?.length,1);assert.equal(f.sent.length,1);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
+});
+test('reopening a completed round preserves its best time without recording twice',()=>{
+ let f=fixture(),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,3);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,0);}finally{f.close();}
+});
+test('final-stage completion never advances beyond stage 15',()=>{
+ const f=fixture({stage:15});try{f.match();f.run(280);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);f.d.getElementById('next').click();assert.equal(f.d.querySelectorAll('.stage-card').length,15);}finally{f.close();}
+});
+
+test('matching a pair keeps the other tile buttons and keyboard focus intact',()=>{
+ const grid=Array.from({length:4},()=>Array(4).fill(-1));grid[0][0]=grid[0][1]=0;grid[1][0]=grid[1][1]=1;
+ const f=fixture({saved:{rulesVersion:E.RULES_VERSION,stage:2,unlocked:2,grid,startedAt:null,finishedMs:null,hints:0,shuffles:0}});
+ try{const remaining=f.d.querySelector('[data-r="1"][data-c="1"]');remaining.focus();f.match();f.run(280);assert.equal(f.d.querySelector('[data-r="1"][data-c="1"]'),remaining);assert(remaining.isConnected);assert.equal(f.d.activeElement,remaining);assert.equal(f.d.querySelectorAll('.tile.empty').length,14);assert.equal(f.d.querySelectorAll('.tile.removing').length,0);}finally{f.close();}
+});
+
+test('a completion outside the local top 30 is not submitted again on reopening',()=>{
+ const best=Array.from({length:30},(_,i)=>({id:'best-'+i,duration:i+1,at:Date.now()}));let f=fixture({records:{2:best}}),saved,records;
+ try{f.match();saved=f.state();records=f.records();assert.equal(records[2].length,30);assert.equal(saved.lastRank,31);}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,3);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);}finally{f.close();}
+});
