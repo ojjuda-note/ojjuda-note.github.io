@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="theme-color" content="#f5f3f9"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>오쭈다 마블</title>
+<title>마블</title>
 <link rel="icon" href="/favicon.svg?v=20261022-agit-logo2" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
 <meta property="og:url" content="https://ojjuda.kr/games/ojjuda-tour/index.html">
-<meta property="og:title" content="오쭈다 마블">
+<meta property="og:title" content="마블">
 <meta property="og:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
 <meta property="og:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta property="og:image:type" content="image/png">
@@ -17,7 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="오쭈다 마블">
+<meta name="twitter:title" content="마블">
 <meta name="twitter:description" content="가볍게 한 판, 함께하면 더 즐거운 시간. 오쭈다 아지트 오락실에서 만나요.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
@@ -318,7 +318,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
   <section class="game-entry tour-entry" aria-labelledby="tourTitle">
     <div class="ge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6.5h14M5 17.5h14"/></svg></div>
     <span class="ge-kicker">오쭈다 게임 · 멀티</span>
-    <h1 id="tourTitle" class="ge-title">오쭈다 마블</h1>
+    <h1 id="tourTitle" class="ge-title">마블</h1>
     <p class="ge-copy">주사위 하나로 떠나는 세계여행.<br>도시를 모으고 나만의 랜드마크를 세워요.</p>
     <div class="tour-tags"><span>3D 보드게임</span><span>2~8명</span><span>자동 저장</span></div>
     <div class="seg tour-mode" id="tourMode" role="group" aria-label="플레이 방식">
@@ -383,7 +383,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
 
 <div id="game" class="wrap hidden">
   <div class="top">
-    <h1 class="logo">오쭈다 마블</h1>
+    <h1 class="logo">마블</h1>
     <button class="chip" id="muteBtn" aria-label="효과음">🔊</button>
     <button class="chip" id="quitBtn">끝내기</button>
     <button class="chip hidden" id="exitBtn" aria-label="오쭈다 아지트로 나가기">🏠</button>
@@ -593,7 +593,7 @@ $('#startBtn').onclick=()=>{
   $('#tourStatus').hidden=true;muted=!$('#sound').checked;
   G={runId:crypto.randomUUID(),players:setupP.slice(0,setupN).map((s,i)=>({name:cleanName(s.name)||M[i].name,m:i,color:M[i].hair,human:s.human,money:START,pos:0,laps:0,island:0,escape:0,angel:0,half:0,travel:false,par:0,bankrupt:false})),
      owner:{},level:{},fest:{},warned:[],turn:0,round:1,maxRound:setupR,log:[],fast:$('#fast').checked,over:false};
-  log(`🎉 오쭈다 마블 시작! 모두 ${fmt(START)}을 받았어요.`);
+  log(`🎉 마블 시작! 모두 ${fmt(START)}을 받았어요.`);
   sfx('win');begin();
 };
 $('#resumeBtn').onclick=()=>{const g=loadSave();if(g){G=g;begin()}};
@@ -786,7 +786,7 @@ function drawStage(){
   x.font=`64px ${EMOJI}`;[['🎵',150,H*.84],['🌸',880,H*.8],['🎀',170,H*.36],['✨',860,H*.4]].forEach(([e,a,b])=>x.fillText(e,a,b));
   x.fillStyle='#ffffff';[[150,170,1],[870,240,.8],[200,H*.94,.8],[830,H*.95,.9]].forEach(([cx,cy,s2])=>{[[0,0,46],[-46,14,34],[48,14,36],[16,-24,32]].forEach(([dx,dy,r])=>{x.beginPath();x.arc(cx+dx*s2,cy+dy*s2,r*s2,0,7);x.fill()})});
   const ly=H*.2;x.lineJoin='round';x.font='158px "Black Han Sans","Jua",sans-serif';
-  const NM='오쭈다 마블';fitFont(x,NM,S*.86,158,'"Black Han Sans","Jua",sans-serif');
+  const NM='마블';fitFont(x,NM,S*.86,158,'"Black Han Sans","Jua",sans-serif');
   x.fillStyle='rgba(160,60,140,.25)';x.fillText(NM,S/2+6,ly+12);
   x.save();x.shadowColor='rgba(255,255,255,.95)';x.shadowBlur=26;x.fillStyle='#ff5aa8';x.fillText(NM,S/2,ly);x.fillText(NM,S/2,ly);x.restore();
   x.lineJoin='round';x.lineWidth=10;x.strokeStyle='#b0105e';x.strokeText(NM,S/2,ly);
