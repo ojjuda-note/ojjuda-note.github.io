@@ -44,10 +44,10 @@
     }));$('board').replaceChildren(frag);sizeBoard();
   }
   function draw(route,soft=false){
-    const first=$('board').firstElementChild,canvas=$('board-canvas'),style=getComputedStyle(canvas),pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),rect=first.getBoundingClientRect(),w=rect.width,h=rect.height;
+    const canvas=$('board-canvas'),style=canvas.style,pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),w=parseFloat(style.getPropertyValue('--tile')),h=w*1.19,n=state.grid.length,width=n*w+(n-1)*gap+2*pad,height=n*h+(n-1)*gap+2*pad+4;
     const coords=route.map(p=>({x:pad+p.c*(w+gap)+w/2,y:pad+p.r*(h+gap)+h/2}));
     // The outside lane follows the board's visible padding, independent of tile size.
-    coords.forEach((p,i)=>{const r=route[i].r,c=route[i].c,n=state.grid.length;if(r<0)p.y=pad/2;if(c<0)p.x=pad/2;if(r>=n)p.y=canvas.clientHeight-pad/2;if(c>=n)p.x=canvas.clientWidth-pad/2;});
+    coords.forEach((p,i)=>{const r=route[i].r,c=route[i].c;if(r<0)p.y=pad/2;if(c<0)p.x=pad/2;if(r>=n)p.y=height-pad/2;if(c>=n)p.x=width-pad/2;});
     const points=coords.map(p=>`${p.x},${p.y}`).join(' '),ends=[coords[0],coords[coords.length-1]];
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
@@ -80,18 +80,21 @@
     const route=E.path(state.grid,a,p);
     if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');$('status').textContent='다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.';toast('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
     locked=true;const willFinish=count()===2,finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');cell(a).classList.add('removing');cell(p).classList.add('removing');
-    // Persist the move immediately, before animation, so reloads cannot undo it.
-    state.grid[a.r][a.c]=E.EMPTY;state.grid[p.r][p.c]=E.EMPTY;if(willFinish)state.finishedMs=finishDuration;save();
+    // Save and queue completion before animation: leaving now must not lose a record.
+    state.grid[a.r][a.c]=E.EMPTY;state.grid[p.r][p.c]=E.EMPTY;
+    if(willFinish)finish(finishDuration,false);else save();
     flashTimer=setTimeout(()=>{
-      renderBoard();updateStats();if(willFinish){finish(finishDuration);return;}locked=false;if(!ensureMove())$('status').textContent='잘 연결했어요! 다음 짝을 찾아보세요.';
-      const next=$('board').querySelector('.tile:not(.empty)');if(next&&document.activeElement?.classList.contains('tile'))next.focus({preventScroll:true});
+      // Keep the other tiles in place instead of rebuilding up to 900 buttons.
+      for(const point of [a,p]){const button=cell(point);button.className='tile empty';button.disabled=true;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
+      $('connection').replaceChildren();updateStats();if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}locked=false;if(!ensureMove())$('status').textContent='잘 연결했어요! 다음 짝을 찾아보세요.';
+      const next=$('board').querySelector('.tile:not(.empty)');if(next&&document.activeElement?.classList.contains('empty'))next.focus({preventScroll:true});
     },280);
   }
-  function finish(duration){
+  function finish(duration,present=true){
     locked=true;state.finishedMs=duration;state.unlocked=Math.min(E.MAX_STAGE,Math.max(state.unlocked,state.stage+1));
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;state.lastRecord=id;
     const record={id,duration:Math.max(1,duration),at:Date.now(),hints:state.hints,shuffles:state.shuffles,rulesVersion:E.RULES_VERSION};
-    const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();updateStats();showCompletion(rank);sound('win');
+    const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();updateStats();if(present){showCompletion(rank);sound('win');}
     window.OjjudaSacheonseongOnline?.record(state.stage,record);
     if(state.stage===E.MAX_STAGE&&window.parent!==window)window.parent.postMessage({type:'ojjuda:sacheonseong-finished'},location.origin);
   }
@@ -141,7 +144,7 @@
     if(!item){
       ensureMove();if(kind==='hint'&&!E.moves(state.grid))return;
       state.runId ||= newPurchaseId();
-      item={id:newPurchaseId(),runId:state.runId,stage:state.stage,kind,owner};
+      item={id:newPurchaseId(),runId:state.runId,stage:state.stage,kind,owner,requestedAt:Date.now()};
       state.pendingPurchase=item;
       if(!save()){state.pendingPurchase=null;toast('구매 기록을 저장할 수 없어 실행하지 않았어요.');return;}
     }
@@ -151,7 +154,8 @@
     purchaseBusy=false;
     if(state.pendingPurchase?.id!==item.id||state.runId!==item.runId){syncTools();return;}
     if(result?.ok&&result.kind===kind&&result.run_id===item.runId&&result.stage===item.stage&&result.price===TOOL_PRICES[kind]){
-      const next={...state,pendingPurchase:null,startedAt:state.startedAt||Date.now()};
+      const requestedAt=Number.isFinite(item.requestedAt)&&item.requestedAt>0?Math.min(item.requestedAt,Date.now()):Date.now();
+      const next={...state,pendingPurchase:null,startedAt:state.startedAt||requestedAt};
       if(kind==='hint'){const move=E.moves(state.grid);if(!move){syncTools();toast('구매 다시 확인을 눌러 주세요.');return;}next.hints=(state.hints||0)+1;next.hintPair=[move.a,move.b];}
       else{next.grid=E.reshuffle(state.grid).grid;next.shuffles=(state.shuffles||0)+1;next.hintPair=null;}
       // Save the consumed receipt and its effect together, so reloading cannot charge twice.
