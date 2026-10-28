@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#214f43">
+  <meta name="description" content="같은 그림은 최대 4개. 4개부터 900개까지, 15단계로 즐기는 사천성 게임. 빠른 클리어 시간으로 순위에 도전하세요.">
+  <title>오쭈다 사천성</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23214f43'/%3E%3Cpath d='M11 27C9 13 22 9 30 10c0 13-6 22-19 17' fill='%23dbe9c1'/%3E%3Cpath d='m12 28 13-13' stroke='%23214f43' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=20261028-sacheonseong-launch1">
+  <script src="engine.js?v=20261028-sacheonseong-launch1" defer></script>
+  <script src="faces.js?v=20261028-sacheonseong-launch1" defer></script>
+  <script src="app.js?v=20261028-sacheonseong-launch1" defer></script>
+</head>
+<body>
+  <svg class="svg-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19C2 8 12 3 21 3c0 10-6 19-16 16Z"/><path d="m5 19 11-11" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 17h.01"/></symbol>
+      <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5V4ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"/></symbol>
+      <symbol id="i-muted" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5V4ZM16 9l6 6m0-6-6 6"/></symbol>
+      <symbol id="i-hint" viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4M8 14a6 6 0 1 1 8 0c-1 1-1 2-1 2H9s0-1-1-2ZM12 1v1M3 5l1 1m16-1-1 1"/></symbol>
+      <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c1.5 0 3-1.5 4-3m4-6c1.5-2 2.5-3 4-3h3m-4-4 4 4-4 4"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 8M4 3v7h7"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="10" rx="3"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="face-0" viewBox="0 0 64 76"><g fill="#c96b73"><ellipse cx="32" cy="25" rx="9" ry="12"/><ellipse cx="32" cy="25" rx="9" ry="12" transform="rotate(72 32 37)"/><ellipse cx="32" cy="25" rx="9" ry="12" transform="rotate(144 32 37)"/><ellipse cx="32" cy="25" rx="9" ry="12" transform="rotate(216 32 37)"/><ellipse cx="32" cy="25" rx="9" ry="12" transform="rotate(288 32 37)"/></g><circle cx="32" cy="37" r="6" fill="#f4d987"/><circle cx="32" cy="37" r="2" fill="#a46d3c"/><path d="M26 61h12" stroke="#c96b73" stroke-width="1.5" opacity=".4"/></symbol>
+      <symbol id="face-1" viewBox="0 0 64 76"><g stroke="#3b7955" stroke-width="6" stroke-linecap="round"><path d="M22 20v33M41 17v38"/></g><g stroke="#e5edcf" stroke-width="2"><path d="M18 31h8M18 43h8M37 28h8M37 41h8"/></g><g fill="#5a9565"><path d="M22 29C11 30 9 21 9 21c9-1 13 8 13 8M41 25c1-10 10-12 10-12 1 9-10 12-10 12M41 46c8-8 14-5 14-5-2 8-14 5-14 5"/></g><path d="M26 64h12" stroke="#3b7955" stroke-width="1.5" opacity=".4"/></symbol>
+      <symbol id="face-2" viewBox="0 0 64 76"><g fill="none" stroke="#557d9d" stroke-width="4"><circle cx="21" cy="24" r="8"/><circle cx="43" cy="24" r="8"/><circle cx="21" cy="48" r="8"/><circle cx="43" cy="48" r="8"/></g><g fill="#557d9d"><circle cx="21" cy="24" r="2"/><circle cx="43" cy="24" r="2"/><circle cx="21" cy="48" r="2"/><circle cx="43" cy="48" r="2"/></g></symbol>
+      <symbol id="face-3" viewBox="0 0 64 76"><circle cx="32" cy="36" r="13" fill="#d6a34a"/><g stroke="#d6a34a" stroke-width="3" stroke-linecap="round"><path d="M32 13v4m0 38v4M9 36h4m38 0h4M16 20l3 3m26 26 3 3M16 52l3-3m26-26 3-3"/></g><circle cx="28" cy="32" r="4" fill="#f4dda0" opacity=".7"/></symbol>
+      <symbol id="face-4" viewBox="0 0 64 76"><path d="m32 12 5 15 11-6-4 13 12 4-18 11-6 11-6-11L8 38l12-4-4-13 11 6Z" fill="#bb6d4e"/><path d="M32 27v35m0-18 12-9m-12 9-12-9" stroke="#f1d3b1" fill="none" stroke-width="2"/></symbol>
+      <symbol id="face-5" viewBox="0 0 64 76"><path d="M32 17C12 23 9 45 32 55c23-10 20-32 0-38Z" fill="#9e83ab"/><path d="M32 55C8 53 5 35 8 29c14 0 24 16 24 26m0 0c24-2 27-20 24-26-14 0-24 16-24 26" fill="#bd9cc5"/><path d="M18 59h28" stroke="#718b65" stroke-width="3" stroke-linecap="round"/></symbol>
+      <symbol id="face-6" viewBox="0 0 64 76"><path d="M18 53C5 29 24 15 49 15c3 25-8 42-31 38Z" fill="#4b9586"/><path d="m16 57 26-33M25 46l-3-12m9 7 11-1" stroke="#d6e4c0" stroke-width="2.5" fill="none" stroke-linecap="round"/></symbol>
+      <symbol id="face-7" viewBox="0 0 64 76"><path d="m32 13 7 15 17 3-12 12 3 17-15-8-15 8 3-17L8 31l17-3Z" fill="#c39a3c"/><path d="m32 24 4 9 10 2-7 7 2 10-9-5-9 5 2-10-7-7 10-2Z" fill="#e7cc77"/></symbol>
+      <symbol id="face-8" viewBox="0 0 64 76"><path d="m5 55 19-34 12 18 8-13 16 29Z" fill="#648c96"/><path d="m15 37 9-16 10 15-9-4Z" fill="#e6eee2"/><path d="M10 60h45" stroke="#648c96" stroke-width="2"/></symbol>
+      <symbol id="face-9" viewBox="0 0 64 76"><path d="M39 15a22 22 0 1 0 15 34A23 23 0 0 1 39 15Z" fill="#9190b1"/><path d="m47 19 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#d7b958"/></symbol>
+      <symbol id="face-10" viewBox="0 0 64 76"><path d="M24 43c2-11 9-19 17-23m-2 2c-1 13-1 17 6 25" stroke="#658653" stroke-width="3" fill="none"/><path d="M40 23C27 23 26 13 26 13c10-3 14 10 14 10" fill="#7d9b5c"/><circle cx="21" cy="47" r="11" fill="#b85b5e"/><circle cx="44" cy="50" r="11" fill="#d57b74"/><path d="M16 43h3m20 3h3" stroke="#f2bcb2" stroke-width="3" stroke-linecap="round"/></symbol>
+      <symbol id="face-11" viewBox="0 0 64 76"><path d="M7 31a29 29 0 0 1 50 0L32 58Z" fill="#769275"/><path d="m13 27 19 31m-7-39 7 39m10-37-10 37m21-29-21 29" stroke="#dce2bd" stroke-width="2"/><circle cx="32" cy="57" r="3" fill="#b29867"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/world.html?tab=arcade" id="game-home" aria-label="오락실로 돌아가기"><span class="brand-mark"><svg><use href="#i-leaf"/></svg></span><span>오쭈다<small>사천성</small></span></a>
+      <div class="header-actions"><button class="icon-button" id="sound" aria-label="효과음 켜기" aria-pressed="false"><svg class="icon"><use href="#i-muted"/></svg></button><button class="help-button" id="help"><svg class="icon"><use href="#i-help"/></svg><span>게임 방법</span></button></div>
+    </header>
+
+    <main>
+      <section class="intro"><div><div class="eyebrow"><span></span> 천천히, 하나씩</div><h1>같은 패를 잇는 작은 즐거움.</h1><p>4개부터 900개까지 · 같은 그림은 최대 4개 · 총 15단계</p></div><div class="intro-note"><svg class="icon"><use href="#i-leaf"/></svg><span>시간 제한 없이<br><b>내 속도대로 즐겨요</b></span></div></section>
+
+      <div class="game-layout">
+        <section class="game-panel" aria-label="사천성 게임">
+          <div class="board-heading"><div class="stage-heading"><span class="stage-label" id="stage-label">STAGE 01</span><h2 id="stage-title">첫 번째 연결</h2></div><div class="board-size"><span id="dimensions">2 × 2</span><span>정원</span></div></div>
+          <div class="stats"><div><span>남은 패</span><strong id="remaining">4 <small>/ 4</small></strong></div><div><span>연결한 쌍</span><strong id="pairs">0 <small>/ 2</small></strong></div><div><span>플레이 시간</span><strong id="timer">00:00</strong></div></div>
+          <div class="progress-track"><div id="progress"></div></div>
+          <div class="board-area">
+            <div class="board-caption"><span id="board-caption">같은 그림 두 개를 톡, 톡 눌러보세요.</span><div class="zoom-controls" id="zoom-controls" hidden><button id="zoom-fit" aria-label="게임판 전체 보기" aria-pressed="false">전체</button><button id="zoom-out" aria-label="패 작게 보기">−</button><button id="zoom-in" aria-label="패 크게 보기">＋</button></div></div>
+            <div class="board-scroll" id="board-scroll" tabindex="0" aria-label="게임판. 큰 정원은 상하좌우로 스크롤할 수 있어요.">
+              <div class="board-canvas" id="board-canvas"><div class="board-grid" id="board" role="group" aria-label="패 선택"></div><svg id="connection" aria-hidden="true"></svg></div>
+            </div>
+            <div class="board-footer"><span class="mini-dot"></span><span id="status" role="status" aria-live="polite">가로·세로로 연결하고, 두 번까지만 꺾어요.</span></div>
+          </div>
+          <div class="game-actions"><button class="action-button primary-soft" id="hint"><svg class="icon"><use href="#i-hint"/></svg>힌트 보기</button><button class="action-button" id="shuffle"><svg class="icon"><use href="#i-shuffle"/></svg>패 섞기</button><button class="action-button restart-button" id="restart"><svg class="icon"><use href="#i-reset"/></svg><span>다시 하기</span></button></div>
+          <div class="completion" id="completion" hidden role="dialog" aria-modal="true" aria-labelledby="win-title"><div class="completion-card"><span class="win-bloom"><svg><use href="#face-0"/></svg></span><div class="eyebrow">한 뼘 더 자랐어요</div><h2 id="win-title">첫 번째 정원 완성!</h2><p id="win-desc">다음은 16개의 패가 기다려요.</p><button id="next" class="next-button">다음 단계로 <svg class="icon"><use href="#i-arrow"/></svg></button><small id="countdown">3초 뒤에 다음 정원으로 이동해요.</small></div></div>
+        </section>
+
+        <aside class="sidebar">
+          <section class="journey"><div class="section-overline">4개에서 900개까지</div><h2>나의 정원 길</h2><p>64개 다음에도 11개의 정원!<br>한 판씩 차근차근 도전해요.</p><div class="stage-list" id="stage-list"></div><button id="all-stages" class="all-stages-button">전체 15단계 보기 <span>↗</span></button><div class="journey-bottom"><svg class="icon"><use href="#i-leaf"/></svg><span id="face-count">이번 정원: 그림 2종 · 최대 2개씩</span></div></section>
+          <section class="ranking-card"><div class="rank-heading"><span class="section-overline">빠를수록 높은 순위</span><span class="local-tag">이 기기</span></div><h2>나의 시간 순위</h2><div class="rank-stage" id="rank-stage">1단계 · 4개의 패</div><div id="rank-preview"></div><button class="rank-more" id="ranking">단계별 기록 보기 <span>↗</span></button></section>
+        </aside>
+      </div>
+      <footer class="page-footer"><span>오쭈다 사천성</span><span id="save-note">진행과 시간 순위는 이 기기에 저장돼요.</span></footer>
+    </main>
+  </div>
+  <dialog id="modal" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="닫기">×</button><div id="modal-content"></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
