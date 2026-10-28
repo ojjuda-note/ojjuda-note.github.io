@@ -43,7 +43,8 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
   assert.match(poker.textContent,/최대 4명/,'the menu displays the maximum player count');
   const gameButtons=[...w.document.querySelectorAll('[data-arcade-games] .gbtn')];
-  assert.equal(gameButtons.length,17,'every game remains in one arcade category');
+  assert.equal(gameButtons.length,18,'every game remains in one arcade category');
+  assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=sacheonseong]'),'Sacheonseong is available in solo games');
   for(const button of gameButtons){
    const id=button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
    assert.equal(button.querySelectorAll('.game-version').length,0,id+' does not expose release metadata in the menu');
