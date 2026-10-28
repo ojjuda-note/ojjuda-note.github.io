@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
   const noop=()=>{},flights=[];let cancels=0;
   w.matchMedia=()=>({matches:false});
   w.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:noop,getClient:()=>({auth:{getSession:async()=>({})}})};
-  w.eval(read('games/matgo-view.mjs').replace(/^import .*;\n/,'').replaceAll('export function','function')+'\nwindow.view={floorLayout,heldPairMonths,piClaimMessage};');
+  w.eval(read('games/matgo-view.mjs').replace(/^import .*;\n/,'').replaceAll('export function','function')+'\nwindow.view={floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt};');
   w.deps={...engine,...art,...w.view,shuffledFloorSlots:noop,floorStackIds:stack=>[...stack.querySelectorAll('[data-face]')].map(n=>Number(n.dataset.face)),
    createWallet:()=>({status:async()=>({gold:5000,free_left:2})}),
    createOnlineMotion:()=>({play:(previous,next,events)=>new Promise(resolve=>flights.push({previous,next,events,resolve})),cancel:()=>{cancels++;}}),
@@ -45,6 +45,10 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
   await t.accept(stamp({...initial,round:2,version:25}));flights[2].resolve();await old;
   assert.equal(t.getRoom().round,2,'new rounds discard queued old snapshots');assert.equal(t.getRoom().version,25);
   assert.notEqual(w.document.querySelector('.board'),board,'new rounds initialize a clean board');
+  const decision={...structuredClone(initial),round:2,version:26,game:{...structuredClone(initial.game),prompt:{type:'gostop',p:0,points:7}}};
+  await t.accept(stamp(decision));
+  const prompt=w.document.querySelector('.go-stop-prompt');assert(prompt,'go/stop uses the clear compact prompt');assert.equal(prompt.getAttribute('aria-modal'),'true');assert(w.document.querySelector('.caps-own [data-face="20"]'));assert(w.document.querySelector('[data-card="8"]'));assert(w.document.querySelector('.go-stop-prompt #go'));assert(w.document.querySelector('.go-stop-prompt #stop'));
+  await t.accept(stamp({...initial,round:2,version:27}));assert.equal(w.document.querySelector('.go-stop-prompt'),null,'decision prompt is removed when the turn advances');
   console.log('PASS: persistent Matgo board/cards/focus/scroll, decoded artwork, deck controls, ordered concurrent snapshots and old-round cancellation');
  }finally{w.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
