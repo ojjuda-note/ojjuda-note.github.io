@@ -1,0 +1,6 @@
+[data-arcade-games] .gbtn .ge{position:relative}
+[data-arcade-games] .arcade-badges{position:absolute;z-index:1;right:6px;top:7px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none}
+[data-arcade-games] .arcade-badge{display:block;padding:3px 7px;border-radius:6px;font:700 10px/1.4 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.025em;box-shadow:0 1px 4px #0000000a;white-space:nowrap}
+[data-arcade-games] .arcade-badge.popular{background:#fff0d8;color:#925113;border:1px solid #f1ce9d}
+[data-arcade-games] .arcade-badge.new{background:#edf7ef;color:#38734b;border:1px solid #c4dfcc}
+@media(max-width:380px){[data-arcade-games] .arcade-badges{right:4px;top:5px}[data-arcade-games] .arcade-badge{font-size:9px;padding:2px 5px}}

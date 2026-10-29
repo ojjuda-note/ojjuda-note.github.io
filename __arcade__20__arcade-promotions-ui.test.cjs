@@ -1,0 +1,42 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {JSDOM}=require('jsdom');
+const script=fs.readFileSync(path.join(__dirname,'../arcade-promotions.js'),'utf8');
+const month=30*86400000,delay=()=>new Promise(resolve=>setTimeout(resolve,45));
+const button=(game)=>`<button class="gbtn" ${game==='matgo'?'data-act="matgo-open"':`data-v="${game}"`} aria-label="${game}"><span class="ge">★</span>${game}</button>`;
+(async()=>{
+ const dom=new JSDOM(`<div data-arcade-games="solo">${['mole','runner','stacker','screw','spot','sacheonseong','saetbyeol'].map(button).join('')}</div><div data-arcade-games="multi">${['janggi','chess','billiards','bang','tank','tour','ttang'].map(button).join('')}</div>`,{url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
+ const w=dom.window,observers=[],Base=w.MutationObserver;w.MutationObserver=class extends Base{constructor(fn){super(fn);observers.push(this);}};
+ let clock=Date.parse('2026-11-02T00:00:00Z'),calls=0;
+ const games=[['saetbyeol',100],['runner',90],['screw',80],['mole',70],['bang',90],['billiards',80],['janggi',70],['chess',1],['matgo',1000]].map(([game,plays])=>({game,plays}));
+ w.Date.now=()=>clock;w.AbortSignal=AbortSignal;w.OJJUDA_CONFIG={supabaseUrl:'https://example.invalid',supabaseKey:'test'};
+ w.supabase={createClient:(_url,_key,options)=>{assert.equal(options.auth.persistSession,false);return {rpc:name=>{assert.equal(name,'arcade_popularity');calls++;return {abortSignal:async()=>({data:{generated_at:new Date(clock).toISOString(),games},error:null})};}};}};
+ const list=kind=>w.document.querySelector(`[data-arcade-games="${kind}"]`),keys=kind=>[...list(kind).children].map(b=>b.dataset.v||'matgo');
+ const card=key=>w.document.querySelector(`[data-v="${key}"]`),badge=key=>card(key).querySelector('.arcade-badge')?.textContent;
+ try{
+  w.eval(script);await delay();await delay();
+  assert.deepEqual(keys('solo'),['runner','screw','mole','sacheonseong','saetbyeol','stacker','spot']);
+  assert.deepEqual(keys('multi'),['billiards','janggi','chess','bang','tank','tour','ttang']);
+  assert.equal(badge('saetbyeol'),'신규');assert.equal(badge('bang'),'신규');
+  assert.equal(card('bang').querySelectorAll('.arcade-badge').length,1,'new games never overlap with popularity');
+  assert.equal(badge('runner'),'인기');assert.equal(badge('screw'),'인기');assert.equal(badge('mole'),'인기');
+  assert.equal(list('solo').querySelectorAll('.arcade-badge.popular').length,3,'new games do not consume popularity slots');
+  assert.equal(list('multi').querySelectorAll('.arcade-badge.popular').length,3);
+  assert.equal(badge('spot'),undefined,'new expires exactly 30 days after release');
+  assert.equal(w.document.querySelector('[data-act="matgo-open"]'),null,'hidden adult games are never inserted');
+  assert.equal(card('runner').getAttribute('aria-label'),'runner','accessible name remains unchanged');
+  card('screw').focus();games.find(r=>r.game==='screw').plays=110;await w.OjjudaArcadePromotions.refresh(true);await delay();
+  assert.equal(keys('solo')[0],'screw');assert.equal(w.document.activeElement,card('screw'),'DOM sorting retains keyboard focus');
+  list('multi').insertAdjacentHTML('beforeend',button('matgo'));await delay();
+  assert.deepEqual(keys('multi').slice(0,3),['matgo','billiards','janggi'],'adult games count only when visible');
+  assert.equal(badge('chess'),undefined,'only top three count as popular');
+  clock=Date.parse('2026-10-29T12:51:03+09:00')+month-1;await w.OjjudaArcadePromotions.refresh(true);assert.equal(badge('bang'),'신규');
+  clock++;await w.OjjudaArcadePromotions.refresh(true);assert.equal(badge('bang'),'인기','new becomes popular at exact expiry');
+  games.splice(0);await w.OjjudaArcadePromotions.refresh(true);assert.equal(w.document.querySelectorAll('.arcade-badge').length,0,'zero records never invent popularity');
+  clock=Date.parse('2026-10-01T00:00:00Z');await w.OjjudaArcadePromotions.refresh(true);assert.equal(badge('bang'),undefined,'future releases are not marked new');
+  clock=Date.parse('2026-12-01T00:00:00Z');games.push({game:'runner',plays:1},{game:'mole',plays:1},{game:'screw',plays:1});await w.OjjudaArcadePromotions.refresh(true);
+  assert.deepEqual(keys('solo').slice(0,3),['mole','runner','screw'],'ties keep the original catalog order');
+  const before=calls;w.document.body.append(w.document.createElement('aside'));await delay();assert.equal(calls,before,'DOM changes do not refetch fresh data');
+  assert.ok([...w.document.querySelectorAll('.gbtn')].every(b=>b.querySelectorAll('.arcade-badge').length<=1));
+  console.log('PASS: separate top threes excluding new games, popular/new/rest DOM ordering, exact expiry, adult visibility, focus, stable ties and cache');
+ }finally{observers.forEach(o=>o.disconnect());await delay();w.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
