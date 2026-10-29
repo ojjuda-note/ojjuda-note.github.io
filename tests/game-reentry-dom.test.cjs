@@ -8,13 +8,27 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
   const dom=new JSDOM('<html data-viewport-page="matgo-solo"><body></body></html>',{url:'https://fixture.test',runScripts:'outside-only'}),w=dom.window;
   try{
    w.localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');
-   w.eval(read('games/matgo-start.mjs').replace('export function','function')+'\nwindow.entry=waitForMatgoStart;');
+   w.eval(read('games/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;window.openSolo=openMatgoSolo;');
+   assert.equal(w.openSolo({isTrusted:false}),false,'synthetic clicks cannot hand off a start');
+   assert.equal(w.sessionStorage.getItem('ojjuda-matgo-entry-handoff'),null);
    let started=false;const pending=w.entry();pending.then(()=>{started=true;});await Promise.resolve();
    assert.equal(started,false);assert.ok(w.document.querySelector('#matgo-start-play'));
    assert.equal(w.entry(),pending,'repeated initialization shares one entrance');
    assert.equal(w.document.querySelectorAll('#matgo-start').length,1);
    w.document.querySelector('#matgo-start-play').click();await Promise.resolve();
    assert.equal(started,false,'synthetic clicks cannot start a round');
+  }finally{w.close();}
+ }
+ for(const kind of ['valid','reloaded','expired','future','mismatch','query-only']){
+  const dom=new JSDOM('<html data-viewport-page="matgo-solo"><body></body></html>',{url:'https://fixture.test/games/matgo.html?entry=once',runScripts:'outside-only'}),w=dom.window;
+  try{
+   if(!['reloaded','query-only'].includes(kind))w.sessionStorage.setItem('ojjuda-matgo-entry-handoff',JSON.stringify({id:kind==='mismatch'?'other':'once',at:Date.now()+(kind==='expired'?-61000:kind==='future'?60000:0)}));
+   w.eval(read('games/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;');
+   let started=false;const pending=w.entry();pending.then(()=>started=true);await Promise.resolve();
+   assert.equal(started,kind==='valid',kind+' handoff');
+   assert.equal(!!w.document.querySelector('#matgo-start-play'),kind!=='valid',kind+' entrance');
+   assert.equal(w.sessionStorage.getItem('ojjuda-matgo-entry-handoff'),null,'handoff is always consumed once');
+   assert.equal(w.entry(),pending,'repeated starts reuse the same gate');
   }finally{w.close();}
  }
  const f=await fixture();

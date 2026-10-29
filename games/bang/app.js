@@ -1,7 +1,7 @@
 import {Game} from './engine.js';
 import {CARDS,CHARACTERS,ROLES,art,rankName,suitSymbol} from './data.js';
 import {Tutorial,CHAPTERS,STEPS} from './tutorial.js';
-import {online} from './online.js?v=20261029-arcade-entry1';
+import {online} from './online.js?v=20261029-entry-fix1';
 import {recommend} from './hints.js?v=20261029-bang-hints1';
 
 const $=s=>document.querySelector(s);
@@ -32,7 +32,7 @@ function lobby(){
  if(online.room?.status==='waiting')return `${header()}${online.waiting()}`;
  if(!soloLobby)return `${header()}${online.lobby()}${credits()}`;
  return `${header()}<main class="online-lobby game-entry"><div class="ge-icon" aria-hidden="true">☆</div><span class="ge-kicker">오쭈다 오락실 · 멀티게임</span><h1 class="ge-title">뱅!</h1><p class="ge-copy">정체를 숨기고, 동료를 찾아 살아남아요.</p>
- <div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button class="on" aria-pressed="true" data-action="solo-lobby">컴퓨터 대전</button><button aria-pressed="false" data-action="home">온라인 대전</button></div>
+ ${online.resumeEntry?.()||''}<div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button class="on" aria-pressed="true" data-action="solo-lobby">컴퓨터 대전</button><button aria-pressed="false" data-action="home">온라인 대전</button></div>
  <span class="ge-label">참가 인원 · 나 포함</span><div class="seg" role="group" aria-label="참가 인원">${[4,5,6,7].map(n=>`<button data-action="count" data-value="${n}" class="${settings.count===n?'on':''}" aria-pressed="${settings.count===n}">${n}명</button>`).join('')}</div>
  <button class="ge-primary" data-action="start">${online.available?'컴퓨터 대전 · 순위 반영':'컴퓨터 연습 · 순위 제외'}</button>${saved&&!saved.winner?'<button class="ge-secondary" data-action="resume">이전 연습 이어하기 · 순위 제외</button>':''}
  <p class="ge-hint">${online.available?'승패 자동 저장 · 승리 +1 · 패배·기권 0연승':'로그인 전 연습은 순위에 포함되지 않아요.'}</p><button class="ge-secondary" data-action="tutorial-start">${tutorialDone?'튜토리얼 다시 해보기':'처음이라면, 눌러서 배우기'}</button>
@@ -219,6 +219,7 @@ document.addEventListener('click',e=>{
  if(action==='online-create'){const title=$('#online-title')?.value.trim(),capacity=Number($('#online-capacity')?.value);void online.run('create',{options:{title,capacity}});return;}
  if(action==='online-join'){const code=$('#online-code')?.value.trim().toUpperCase();void online.run('join',{code});return;}
  if(action==='online-mine'){void online.run('mine');return;}
+ if(action==='online-resume'){void online.resume();return;}
  if(action==='online-start'){void online.run('start');return;}
  if(action==='online-leave'){modal=null;void online.run('leave');return;}
  if(action==='online-copy'){navigator.clipboard?.writeText(online.room.code).then(()=>toast('방 코드를 복사했어요.')).catch(()=>toast('방 코드를 직접 복사해 주세요.'));return;}

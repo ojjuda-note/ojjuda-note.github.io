@@ -1,9 +1,32 @@
 // Re-entry always starts at the game entrance, including muted devices.
 // The same explicit click also unlocks audio when sound is enabled.
 let firstStart=null;
+const handoffKey='ojjuda-matgo-entry-handoff';
+export function openMatgoSolo(event){
+  if(!event?.isTrusted)return false;
+  const url=new URL('./matgo.html',location.href);
+  url.searchParams.set('v','20261029-entry-fix1');url.searchParams.set('open',String(Date.now()));
+  try{
+    const id=crypto.randomUUID();
+    sessionStorage.setItem(handoffKey,JSON.stringify({id,at:Date.now()}));
+    url.searchParams.set('entry',id);
+  }catch{} // Restricted storage falls back to the ordinary start button.
+  location.replace(url.href);return true;
+}
+function takeHandoff(){
+  try{
+    const saved=JSON.parse(sessionStorage.getItem(handoffKey));
+    sessionStorage.removeItem(handoffKey);
+    const id=new URLSearchParams(location.search).get('entry'),age=Date.now()-saved?.at;
+    return !!id&&saved?.id===id&&age>=0&&age<60000;
+  }catch{return false;}
+}
 export function waitForMatgoStart(){
   if(firstStart)return firstStart;
   if(document.documentElement.dataset.viewportPage!=='matgo-solo')return Promise.resolve();
+  // One trusted click in the shared entrance continues through navigation.
+  // Consume it once; direct entry and reload still require a fresh click.
+  if(takeHandoff())return firstStart=Promise.resolve();
   firstStart=new Promise(resolve=>{
     const panel=document.createElement('div');
     panel.className='modal';panel.id='matgo-start';panel.setAttribute('role','dialog');
