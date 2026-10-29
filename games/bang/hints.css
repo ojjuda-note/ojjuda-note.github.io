@@ -1,5 +1,28 @@
 .hint-toggle{border-color:#bda169;color:#ead49c;white-space:nowrap}
-.hint-toggle[aria-pressed=true]{background:#e3c77f;color:#182c23;border-color:#e3c77f}
+.hint-toggle:disabled{opacity:.55;cursor:default}
+.guide-free{color:#e7c47c!important;font-size:11px!important;margin:0 0 12px!important}
+.card-guide{margin:0;text-align:left}
+.card-guide dt{font-size:11px;color:#e7c47c;font-weight:800;margin-top:13px}
+.card-guide dd{font-size:13px;line-height:1.65;margin:4px 0 0;color:#e9e5d8}
+.practice-help{margin-top:12px}
+.game-screen.training .modal:has(.card-guide),.game-screen.training .modal:has(.catalog){max-height:calc(100dvh - 36px)}
+@media(max-width:620px){
+ .modal:has(.card-guide){padding:20px 18px}
+ .modal:has(.card-guide) .inspect{display:grid;grid-template-columns:74px minmax(0,1fr);gap:14px;align-items:start;text-align:left}
+ .modal:has(.card-guide) .inspector-face{width:100%}
+ .modal:has(.card-guide) .rank-overlay{font-size:13px}
+ .modal:has(.card-guide) h2{font-size:22px;margin:6px 0}
+ .card-guide dd{font-size:12px;line-height:1.6}
+}
+@media(max-height:500px){
+ .modal:has(.card-guide){padding:14px 18px}
+ .modal:has(.card-guide) .inspect{display:grid;grid-template-columns:92px minmax(0,1fr);gap:20px;align-items:start;text-align:left}
+ .modal:has(.card-guide) .inspector-face{width:100%}
+ .modal:has(.card-guide) h2{font-size:20px;margin:3px 0}
+ .modal:has(.card-guide) .source-note{margin:7px 0 0}
+ .card-guide dt{margin-top:8px}
+ .card-guide dd{font-size:11px;line-height:1.45}
+}
 .hand-card.hint-card{opacity:1!important}
 .hand-card.hint-card .card-face{outline:2px solid #f4d78c;outline-offset:2px;box-shadow:0 0 13px #e8bf6050}
 .hint-badge{position:absolute;right:-3px;top:-8px;z-index:2;border-radius:4px;background:#f4d78c;color:#192d23;padding:2px 5px;font-size:9px;font-weight:800;line-height:1.3}

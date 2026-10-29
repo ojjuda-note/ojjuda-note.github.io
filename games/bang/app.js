@@ -3,17 +3,25 @@ import {CARDS,CHARACTERS,ROLES,art,rankName,suitSymbol} from './data.js';
 import {Tutorial,CHAPTERS,STEPS} from './tutorial.js';
 import {online} from './online.js?v=20261029-entry-fix1';
 import {recommend} from './hints.js?v=20261029-bang-hints1';
+import {createHintPurchase} from './hint-purchase.js?v=20261030-bang-help1';
+import {CARD_GUIDES} from './card-guides.js?v=20261030-bang-help1';
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SAVE='ojjuda-bang-practice-v1';
-let soloLobby=true,hintsEnabled=false,currentHint=null;
-function hintToggle(){return tutorial?'':`<button class="hand-log-button hint-toggle" data-action="hint" aria-pressed="${hintsEnabled}" aria-label="${hintsEnabled?'카드 추천 끄기':'카드 추천 보기'}">${hintsEnabled?'추천 켜짐':'추천'}</button>`;}
-function hintResponse(){return tutorial?'':`<aside class="hint-response">${hintToggle()}<span class="hint-caption">내 패와 공개 정보 기준</span>${currentHint?`<div role="status"><strong>${esc(currentHint.title)}</strong><p>${esc(currentHint.reason)}</p></div>`:''}</aside>`;}
+let soloLobby=true,currentHint=null,currentHintContext=null,hintBusy=false;
+const hintPurchase=createHintPurchase({storage:()=>localStorage,request:body=>online.request(body)});
+const hintContext=()=>online.playing?`${online.owner}:${online.room.id}:${online.room.version}`:null;
+function hintToggle(){
+ if(tutorial||!online.playing)return '';
+ const pending=hintPurchase.read(online.owner),label=hintBusy?'확인 중…':currentHint?'추천 확인함':pending?.status==='ready'?'추천 보기':pending?'구매 확인':'추천 1쭈';
+ return `<button class="hand-log-button hint-toggle" data-action="hint" ${hintBusy||currentHint||online.busy?'disabled':''} aria-label="${label}">${label}</button>`;
+}
+function hintResponse(){return tutorial||!online.playing?'<div class="practice-help"><button class="secondary" data-action="catalog">카드별 안내 · 무료</button></div>':`<aside class="hint-response">${hintToggle()}<span class="hint-caption">내 패와 공개 정보 기준</span>${currentHint?`<div role="status"><strong>${esc(currentHint.title)}</strong><p>${esc(currentHint.reason)}</p></div>`:''}</aside>`;}
 const me=()=>online.playing&&!tutorial?online.room.seat:0;
 let game=new Game(),page='lobby',selected=null,targeting=false,modal=null,botTimer=null,toastTimer=null;
 let sound=false,fast=false,eliminationSeen=false,resultSeen=false,sidSelected=[];
-let settings={count:5,role:'sheriff',character:'random'},saved=null;
+let settings={count:5,role:'random',character:'random'},saved=null;
 let tutorial=null,tutorialOrigin=null,tutorialDone=false,tutorialFocusStep=-1;
 try{tutorialDone=localStorage.getItem('bang-tutorial-complete')==='1';}catch{}
 try{saved=JSON.parse(localStorage.getItem(SAVE));sound=localStorage.getItem('bang-sound')==='1';fast=localStorage.getItem('bang-fast')==='1';if(saved?.version!==1)saved=null;}catch{}
@@ -26,7 +34,7 @@ function sfx(kind='tap'){
  try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();audioCtx.resume();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type=kind==='shot'?'sawtooth':'sine';o.frequency.setValueAtTime(kind==='shot'?120:650,t);o.frequency.exponentialRampToValueAtTime(kind==='shot'?30:300,t+.11);g.gain.setValueAtTime(.055,t);g.gain.exponentialRampToValueAtTime(.001,t+.14);o.start(t);o.stop(t+.15);}catch{}
 }
 function mutate(fn){const before=game.s.serial;const ok=fn();if(ok===false){toast('지금은 사용할 수 없어요.');return;}if(game.s.serial!==before)sfx(game.s.visual?.kind==='damage'?'shot':'tap');save();render();}
-function header(){return `<header class="topbar ${page==='game'?'in-game':''}"><button class="brand" data-action="${tutorial?'tutorial-exit':'home'}" aria-label="뱅 살롱 홈"><img src="assets/logo.png" alt="BANG!"><span>SALOON</span></button><nav class="nav" aria-label="게임 메뉴">${tutorial?'<span class="practice-label">연습 테이블</span>':'<span class="small-meta">THE WILD WEST CARD GAME</span>'}<button class="iconbtn" data-action="sound" aria-label="${sound?'소리 끄기':'소리 켜기'}" title="${sound?'소리 끄기':'소리 켜기'}">${sound?'♪':'♩'}</button>${tutorial?'<button class="textbtn" data-action="tutorial-restart">처음부터</button><button class="textbtn" data-action="tutorial-exit">나가기</button>':`${page==='game'&&!online.playing?`<button class="textbtn" data-action="speed" aria-label="진행 속도 변경">${fast?'빠르게':'보통 속도'}</button><span class="practice-label">연습 · 순위 제외</span>`:(online.playing?`<span class="practice-label">${online.room.mode==='solo'?'컴퓨터 대전 · 순위 반영':'방 '+online.room.code}</span>`:'<button class="textbtn tutorial-nav" data-action="tutorial-start">따라 배우기</button>')}<button class="textbtn" data-action="rules">게임 방법</button>${page==='game'?`<button class="textbtn" data-action="new">${online.playing?'대전 나가기':'새 게임'}</button>`:''}`}</nav></header>`;}
+function header(){return `<header class="topbar ${page==='game'?'in-game':''}"><button class="brand" data-action="${tutorial?'tutorial-exit':'home'}" aria-label="뱅 살롱 홈"><img src="assets/logo.png" alt="BANG!"><span>SALOON</span></button><nav class="nav" aria-label="게임 메뉴">${tutorial?'<span class="practice-label">연습 테이블</span><button class="textbtn" data-action="catalog">카드 안내</button>':'<span class="small-meta">THE WILD WEST CARD GAME</span>'}<button class="iconbtn" data-action="sound" aria-label="${sound?'소리 끄기':'소리 켜기'}" title="${sound?'소리 끄기':'소리 켜기'}">${sound?'♪':'♩'}</button>${tutorial?'<button class="textbtn" data-action="tutorial-restart">처음부터</button><button class="textbtn" data-action="tutorial-exit">나가기</button>':`${page==='game'&&!online.playing?`<button class="textbtn" data-action="speed" aria-label="진행 속도 변경">${fast?'빠르게':'보통 속도'}</button><span class="practice-label">연습 · 순위 제외</span>`:(online.playing?`<span class="practice-label">${online.room.mode==='solo'?'컴퓨터 대전 · 순위 반영':'방 '+online.room.code}</span>`:'<button class="textbtn tutorial-nav" data-action="tutorial-start">따라 배우기</button>')}<button class="textbtn" data-action="rules">게임 방법</button>${page==='game'?`<button class="textbtn" data-action="new">${online.playing?'대전 나가기':'새 게임'}</button>`:''}`}</nav></header>`;}
 function credits(){return `<footer class="credits">비공식 팬 게임 · BANG!® &amp; 카드 그림 © daVinci Editrice S.r.l.<br><a href="https://bang.dvgiochi.com/cardslist.php?id=1&lang=en" target="_blank" rel="noopener">공식 카드 자료</a> · 그림 Alessandro Pierangelini · 게임 Emiliano Sciarra</footer>`;}
 function lobby(){
  if(online.room?.status==='waiting')return `${header()}${online.waiting()}`;
@@ -36,7 +44,7 @@ function lobby(){
  <span class="ge-label">참가 인원 · 나 포함</span><div class="seg" role="group" aria-label="참가 인원">${[4,5,6,7].map(n=>`<button data-action="count" data-value="${n}" class="${settings.count===n?'on':''}" aria-pressed="${settings.count===n}">${n}명</button>`).join('')}</div>
  <button class="ge-primary" data-action="start">${online.available?'컴퓨터 대전 · 순위 반영':'컴퓨터 연습 · 순위 제외'}</button>${saved&&!saved.winner?'<button class="ge-secondary" data-action="resume">이전 연습 이어하기 · 순위 제외</button>':''}
  <p class="ge-hint">${online.available?'승패 자동 저장 · 승리 +1 · 패배·기권 0연승':'로그인 전 연습은 순위에 포함되지 않아요.'}</p><button class="ge-secondary" data-action="tutorial-start">${tutorialDone?'튜토리얼 다시 해보기':'처음이라면, 눌러서 배우기'}</button>
- <details class="ge-more"><summary>역할 · 캐릭터 설정</summary><span class="ge-label">나의 역할</span><div class="seg" role="group" aria-label="역할 선택"><button data-action="role" data-value="sheriff" class="${settings.role==='sheriff'?'on':''}" aria-pressed="${settings.role==='sheriff'}">보안관</button><button data-action="role" data-value="random" class="${settings.role==='random'?'on':''}" aria-pressed="${settings.role==='random'}">무작위</button></div><label class="ge-label" for="character">나의 캐릭터</label><select id="character"><option value="random">무작위로 만나기</option>${CHARACTERS.map(c=>`<option value="${c.id}" ${settings.character===c.id?'selected':''}>${c.name}</option>`).join('')}</select></details>
+ <p class="ge-hint">역할은 매 판 무작위로 배정돼요.</p><details class="ge-more"><summary>캐릭터 설정</summary><label class="ge-label" for="character">나의 캐릭터</label><select id="character"><option value="random">무작위로 만나기</option>${CHARACTERS.map(c=>`<option value="${c.id}" ${settings.character===c.id?'selected':''}>${c.name}</option>`).join('')}</select></details>
  <details class="ge-more"><summary>게임 방법 · 소리</summary><p>원작 카드 80장과 캐릭터 16명으로 즐기는 서부 카드게임. 카드를 누르면 한국어 설명이 보여요.</p><button class="ge-secondary" data-action="rules">게임 방법</button><button class="ge-secondary" data-action="sound">${sound?'소리 끄기':'소리 켜기'}</button></details></main>${credits()}`;
 }
 function hearts(p){return `<div class="hearts" aria-label="생명 ${Math.max(0,p.hp)} / ${p.maxHp}">${Array.from({length:p.maxHp},(_,i)=>`<span aria-hidden="true" class="bullet ${i>=p.hp?'empty':''}"></span>`).join('')}<span class="hp-number">${Math.max(0,p.hp)}/${p.maxHp}</span></div>`;}
@@ -61,7 +69,7 @@ function controls(){
  else if(s.phase==='discard'&&s.current===me()&&!s.pending){title=`카드 ${p.hand.length-p.hp}장을 버려주세요`;desc=`턴을 마칠 때 생명 ${p.hp}개만큼의 카드를 보유할 수 있어요.`;if(c)buttons='<button class="primary" data-action="discard">선택한 카드 버리기</button>';}
  else if(targeting&&c){title=`${CARDS[c.type].name} · 대상 선택`;desc='빛나는 상대를 누르세요. 선택 가능한 거리만 표시됩니다.';buttons='<button class="secondary" data-action="cancelTarget">취소</button>';}
  else{
-  if(c){title=CARDS[c.type].name;desc=CARDS[c.type].desc;const reason=game.canPlay(me(),c);if(!reason)buttons=`<button class="primary" data-action="use">${CARDS[c.type].target||game.bangType(me(),c)?'상대 선택':'카드 사용'}</button>`;else desc+=` <span style="color:#d4bd86">${reason}</span>`;buttons+='<button class="secondary" data-action="zoom">크게 보기</button>';}
+  if(c){title=CARDS[c.type].name;desc=CARDS[c.type].desc;const reason=game.canPlay(me(),c);if(!reason)buttons=`<button class="primary" data-action="use">${CARDS[c.type].target||game.bangType(me(),c)?'상대 선택':'카드 사용'}</button>`;else desc+=` <span style="color:#d4bd86">${reason}</span>`;buttons+='<button class="secondary" data-action="zoom">카드 안내</button>';}
   if(s.current===me()&&s.phase==='play'&&!s.pending)buttons+='<button class="secondary" data-action="end">턴 종료 →</button>';
   if(s.current!==me()||s.pending){if(!c){title='상대의 움직임을 살펴보세요';desc='내 손패는 언제든 눌러 확인할 수 있어요.';}}
  }
@@ -75,9 +83,9 @@ function renderGame(){
 }
 function logsHTML(){return [...game.s.logs].reverse().map(l=>`<div class="log-item ${l.kind}">${esc(l.text)}</div>`).join('');}
 function wrap(content,{close=true,cls=''}={}){return `<section class="modal ${cls}" role="dialog" aria-modal="true" aria-labelledby="dialog-title">${close?'<button class="modal-close" data-action="close" aria-label="닫기">×</button>':''}${content}</section>`;}
-function rules(){return wrap(`<div class="eyebrow">HOW TO PLAY</div><h2 id="dialog-title">한 판을 시작하는 방법</h2><p>내 역할의 목적을 달성하면 승리합니다.<br>보안관을 제외한 상대의 정체는 탈락할 때 드러나요.</p><div class="rule-steps"><span><b>01</b> 카드 2장 받기</span><span>→</span><span><b>02</b> 카드 사용하기</span><span>→</span><span><b>03</b> 남는 카드 버리기</span></div><div class="rules-grid">${Object.values(ROLES).map(r=>`<div class="rule-box"><h3>${r.name}</h3><p>${r.goal}</p></div>`).join('')}<div class="rule-box"><h3>거리와 총</h3><p>옆 사람은 거리 1. 원을 따라 가까운 쪽으로 셉니다. 총의 사정거리 안에서만 뱅!을 쓸 수 있어요.</p></div><div class="rule-box"><h3>무늬와 A는 무슨 뜻?</h3><p>♣·♥·♠·♦는 카드의 무늬, A는 에이스예요. 특수 효과를 판정할 때 더미에서 공개한 카드의 무늬와 숫자를 봅니다. 술통·감옥은 하트면 성공, 다이너마이트는 스페이드 2~9면 폭발해요. 판정은 자동이에요.</p></div><div class="rule-box"><h3>내 턴과 대응</h3><p>카드를 누르고 사용 버튼을 누르세요. 공격받으면 방어 창이 열립니다. 턴 종료 후 생명 수보다 많은 손패는 골라 버립니다.</p></div></div><p class="helper">판정과 캐릭터의 자동 능력은 게임이 처리합니다. 선택이 필요한 능력은 직접 고를 수 있어요. 손패 옆의 추천 버튼을 누르면 내 패와 공개된 상황을 기준으로 카드와 이유를 알려줘요. 숨겨진 정체는 추측이며 승리를 보장하지 않아요. 로그인한 컴퓨터 대전과 회원 대전 모두 이번 달 연승 순위에 반영돼요. 패배·기권 시 0연승이에요. 회원 대전은 4~7명이 함께하며, 45초 동안 응답이 없으면 자동 진행합니다. 컴퓨터 대전은 내 선택을 기다려요. 24시간 동안 진행하지 않은 컴퓨터 대전은 기권으로 처리돼요. 튜토리얼과 로그인 전 연습은 순위에서 제외돼요.</p><div class="help-tabs"><button class="primary" data-action="tutorial-start">직접 눌러 배우기 · 튜토리얼</button><button class="secondary" data-action="catalog">카드 도감</button><a class="secondary" href="https://bang.dvgiochi.com/content/1/docs/01_bang_rules_EN.pdf" target="_blank" rel="noopener" style="font-size:12px;text-decoration:none">공식 규칙서 ↗</a></div><p class="source-note">BANG! 비공식 팬 구현입니다. 원작 기본판 규칙을 바탕으로 하며, AI는 자신의 역할과 공개된 행동을 바탕으로 판단합니다. 원작 이미지의 글자는 그대로 두고 한국어 설명을 덧붙였습니다.</p>`);}
-function catalog(){return wrap(`<div class="eyebrow">THE ORIGINAL DECK</div><h2 id="dialog-title">카드 도감</h2><p>카드를 누르면 한국어 효과를 읽을 수 있어요.</p><div class="catalog">${Object.entries(CARDS).map(([key,c])=>`<button data-action="catalogCard" data-value="${key}"><img src="${art(c.image)}" alt="${c.name}" loading="lazy"><span>${c.name}</span></button>`).join('')}</div>`);}
-function inspectCard(card,back=null){const c=CARDS[card.type];return wrap(`<div class="inspect"><div class="inspector-face">${card.id?face(card):`<img src="${art(c.image)}" alt="${c.name}" style="width:100%;border-radius:8px">`}</div><div><div class="eyebrow">${c.en}</div><h2 id="dialog-title">${c.name}</h2><p>${c.desc}</p><p class="source-note">${c.kind==='weapon'?'무기 카드':c.kind==='equipment'?'장착 카드':c.kind==='response'?'방어 카드':'즉시 사용 카드'}${card.rank?' · '+rankName(card.rank)+suitSymbol[card.suit]:''}</p>${back?'<button class="secondary" data-action="catalog">도감으로</button>':''}</div></div>`);}
+function rules(){return wrap(`<div class="eyebrow">HOW TO PLAY</div><h2 id="dialog-title">한 판을 시작하는 방법</h2><p>내 역할의 목적을 달성하면 승리합니다.<br>보안관을 제외한 상대의 정체는 탈락할 때 드러나요.</p><div class="rule-steps"><span><b>01</b> 카드 2장 받기</span><span>→</span><span><b>02</b> 카드 사용하기</span><span>→</span><span><b>03</b> 남는 카드 버리기</span></div><div class="rules-grid">${Object.values(ROLES).map(r=>`<div class="rule-box"><h3>${r.name}</h3><p>${r.goal}</p></div>`).join('')}<div class="rule-box"><h3>거리와 총</h3><p>옆 사람은 거리 1. 원을 따라 가까운 쪽으로 셉니다. 총의 사정거리 안에서만 뱅!을 쓸 수 있어요.</p></div><div class="rule-box"><h3>무늬와 A는 무슨 뜻?</h3><p>♣·♥·♠·♦는 카드의 무늬, A는 에이스예요. 특수 효과를 판정할 때 더미에서 공개한 카드의 무늬와 숫자를 봅니다. 술통·감옥은 하트면 성공, 다이너마이트는 스페이드 2~9면 폭발해요. 판정은 자동이에요.</p></div><div class="rule-box"><h3>내 턴과 대응</h3><p>카드를 누르고 사용 버튼을 누르세요. 공격받으면 방어 창이 열립니다. 턴 종료 후 생명 수보다 많은 손패는 골라 버립니다.</p></div></div><p class="helper">판정과 캐릭터의 자동 능력은 게임이 처리합니다. 선택이 필요한 능력은 직접 고를 수 있어요. 추천은 1회에 1쭈이며 로그인한 대전에서 사용할 수 있어요. 누른 시점의 내 패와 공개 정보로 한 번만 안내하고 다음 상황에는 자동으로 추천하지 않아요. 연습의 카드별 설명은 무료예요. 숨겨진 정체는 추측이며 승리를 보장하지 않아요. 로그인한 컴퓨터 대전과 회원 대전 모두 이번 달 연승 순위에 반영돼요. 패배·기권 시 0연승이에요. 회원 대전은 4~7명이 함께하며, 45초 동안 응답이 없으면 자동 진행합니다. 컴퓨터 대전은 내 선택을 기다려요. 24시간 동안 진행하지 않은 컴퓨터 대전은 기권으로 처리돼요. 튜토리얼과 로그인 전 연습은 순위에서 제외돼요.</p><div class="help-tabs"><button class="primary" data-action="tutorial-start">직접 눌러 배우기 · 튜토리얼</button><button class="secondary" data-action="catalog">카드 도감</button><a class="secondary" href="https://bang.dvgiochi.com/content/1/docs/01_bang_rules_EN.pdf" target="_blank" rel="noopener" style="font-size:12px;text-decoration:none">공식 규칙서 ↗</a></div><p class="source-note">BANG! 비공식 팬 구현입니다. 원작 기본판 규칙을 바탕으로 하며, AI는 자신의 역할과 공개된 행동을 바탕으로 판단합니다. 원작 이미지의 글자는 그대로 두고 한국어 설명을 덧붙였습니다.</p>`);}
+function catalog(){return wrap(`<div class="eyebrow">THE ORIGINAL DECK</div><h2 id="dialog-title">카드 도감</h2><p>카드를 누르면 효과 · 사용 방법 · 활용 팁을 무료로 볼 수 있어요.</p><div class="catalog">${Object.entries(CARDS).map(([key,c])=>`<button data-action="catalogCard" data-value="${key}"><img src="${art(c.image)}" alt="${c.name}" loading="lazy"><span>${c.name}</span></button>`).join('')}</div>`);}
+function inspectCard(card,back=null){const c=CARDS[card.type];return wrap(`<div class="inspect"><div class="inspector-face">${card.id?face(card):`<img src="${art(c.image)}" alt="${c.name}" style="width:100%;border-radius:8px">`}</div><div><div class="eyebrow">${c.en}</div><h2 id="dialog-title">${c.name}</h2><p class="guide-free">카드 안내 · 무료</p><dl class="card-guide"><dt>효과</dt><dd>${c.desc}</dd><dt>사용 방법</dt><dd>${CARD_GUIDES[card.type].use}</dd><dt>활용 팁</dt><dd>${CARD_GUIDES[card.type].tip}</dd></dl><p class="source-note">${c.kind==='weapon'?'무기 카드':c.kind==='equipment'?'장착 카드':c.kind==='response'?'방어 카드':'즉시 사용 카드'}${card.rank?' · '+rankName(card.rank)+suitSymbol[card.suit]:''}</p>${back?'<button class="secondary" data-action="catalog">도감으로</button>':''}</div></div>`);}
 function inspectPlayer(id){const p=game.p(id),c=game.char(id),known=id===me()||p.role==='sheriff'||!p.alive||game.s.winner;return wrap(`<div class="inspect"><img src="${art(c.image)}" alt="${c.name}"><div><div class="eyebrow">${c.en}</div><h2 id="dialog-title">${c.name}</h2><p>${c.ability}</p>${hearts(p)}<p>${known?ROLES[p.role].name:'정체 미공개'} · 손패 ${p.hand.length}장<br>사정거리 ${game.range(id)}</p>${known?`<p class="source-note">${ROLES[p.role].goal}</p>`:''}${p.equipment.length?`<div class="my-equip">${p.equipment.map(e=>`<button data-action="equipmentInfo" data-value="${e.id}">${CARDS[e.type].name}</button>`).join('')}</div>`:''}</div></div>`);}
 function response(q){
  const p=game.p(me());let content='';
@@ -118,7 +126,7 @@ function tutorialAction(action,value){
  if(action==='tutorial-exit'){leaveTutorial();return;}
  if(action==='tutorial-restart'){beginTutorial();return;}
  if(action==='tutorial-play'){tutorial=null;tutorialOrigin=null;start();return;}
- if(action==='tutorial-resume'&&saved){tutorial=null;tutorialOrigin=null;game=new Game(JSON.parse(JSON.stringify(saved)));settings={...game.s.options};page='game';selected=null;targeting=false;modal=null;eliminationSeen=false;resultSeen=false;render();return;}
+ if(action==='tutorial-resume'&&saved){tutorial=null;tutorialOrigin=null;game=new Game(JSON.parse(JSON.stringify(saved)));settings={...game.s.options,role:'random'};page='game';selected=null;targeting=false;modal=null;eliminationSeen=false;resultSeen=false;render();return;}
  if(!tutorial.act(action,value)){toast(tutorial.lesson.tip);return;}
  selected=tutorial.selected;targeting=tutorial.targeting;
  if(tutorial.done){tutorialDone=true;try{localStorage.setItem('bang-tutorial-complete','1');}catch{}}
@@ -127,12 +135,13 @@ function tutorialAction(action,value){
 function paintTutorial(){
  const coach=$('#tutorial-coach');document.body.classList.toggle('training',!!tutorial&&!tutorial.done);
  if(!tutorial||tutorial.done){coach.hidden=true;coach.innerHTML='';document.documentElement.style.setProperty('--coach-space','0px');return;}
+ if(['card','catalog'].includes(modal?.type)){coach.hidden=true;document.documentElement.style.setProperty('--coach-space','0px');return;}
  const l=tutorial.lesson,expected=tutorial.expected();
- coach.hidden=false;coach.innerHTML=`<div class="coach-top"><span>직접 따라 배우기 <b>${l.chapter+1} / 6</b></span><button data-action="tutorial-exit">나중에 하기 ×</button></div><div class="coach-progress" aria-label="${CHAPTERS[l.chapter]} 단계">${CHAPTERS.map((name,i)=>`<span class="${i<l.chapter?'complete':i===l.chapter?'current':''}" title="${name}"></span>`).join('')}</div><div class="coach-copy" aria-live="polite"><h2>${l.title}</h2><p>${l.body}</p></div><div class="coach-bottom"><span>${l.tip}</span>${expected.action==='tutorial-next'?`<button class="primary" data-action="tutorial-next">${l.button||'다음'} →</button>`:'<b class="coach-tap">빛나는 곳을 눌러보세요</b>'}</div>`;
+ coach.hidden=false;coach.innerHTML=`<div class="coach-top"><span>직접 따라 배우기 <b>${l.chapter+1} / 6</b></span><button data-action="catalog">카드 안내</button><button data-action="tutorial-exit">나중에 하기 ×</button></div><div class="coach-progress" aria-label="${CHAPTERS[l.chapter]} 단계">${CHAPTERS.map((name,i)=>`<span class="${i<l.chapter?'complete':i===l.chapter?'current':''}" title="${name}"></span>`).join('')}</div><div class="coach-copy" aria-live="polite"><h2>${l.title}</h2><p>${l.body}</p></div><div class="coach-bottom"><span>${l.tip}</span>${expected.action==='tutorial-next'?`<button class="primary" data-action="tutorial-next">${l.button||'다음'} →</button>`:'<b class="coach-tap">빛나는 곳을 눌러보세요</b>'}</div>`;
  // Only the current exercise action is enabled. Exit and restart remain available.
  document.querySelectorAll('#app button, #overlay button').forEach(button=>{
   const action=button.dataset.action;
-  if(!['sound','tutorial-exit','tutorial-restart'].includes(action)&&!tutorial.accepts(action,button.dataset.value)){button.disabled=true;button.classList.add('training-muted');}
+  if(!['sound','tutorial-exit','tutorial-restart','card','catalog','catalogCard','zoom','close','equipmentInfo','discardTop'].includes(action)&&!tutorial.accepts(action,button.dataset.value)){button.disabled=true;button.classList.add('training-muted');}
  });
  const target=tutorial.focus()?document.querySelector(tutorial.focus()):null;
  if(target)target.classList.add('tutorial-focus');
@@ -172,7 +181,7 @@ function renderOverlay(){
 }
 function render(){
  clearTimeout(botTimer);
- currentHint=hintsEnabled&&!tutorial&&page==='game'?recommend(game.s,me()):null;
+ if(tutorial||page!=='game'||currentHintContext!==hintContext()){currentHint=null;currentHintContext=null;}
  document.body.classList.toggle('game-screen',page==='game');
  document.body.classList.toggle('lobby-screen',page==='lobby');
  const handScroll=$('.hand')?.scrollLeft||0;
@@ -183,7 +192,7 @@ function render(){
  }
  $('#app').innerHTML=page==='lobby'?lobby():renderGame();
  if($('.hand'))$('.hand').scrollLeft=handScroll;
- renderOverlay();paintTutorial();paintHint();schedule();if(online.busy)document.querySelectorAll('[data-action]').forEach(b=>{if(['use','player','end','discard','respond','take','choose','saveBeer','giveup','drawDeck','drawDiscard','drawSteal','stealHand','stealEquip','sidConfirm','online-start','online-create','online-join','start'].includes(b.dataset.action))b.disabled=true;});
+ renderOverlay();paintTutorial();paintHint();schedule();if(online.busy||hintBusy)document.querySelectorAll('[data-action]').forEach(b=>{if(['use','player','end','discard','respond','take','choose','saveBeer','giveup','drawDeck','drawDiscard','drawSteal','stealHand','stealEquip','sidConfirm','online-start','online-create','online-join','start','online-surrender'].includes(b.dataset.action))b.disabled=true;});
 }
 function paintHint(){
  if(!currentHint)return;
@@ -202,18 +211,33 @@ function schedule(){
  if(actor===0)return;
  botTimer=setTimeout(()=>{if(modal||page!=='game')return;mutate(()=>game.aiAction());},fast?190:800);
 }
-function start(){if(online.available){modal=null;void online.run('solo',{options:{...settings}});return;}clearTimeout(botTimer);game=new Game();game.create(settings);page='game';selected=null;targeting=false;modal=null;eliminationSeen=false;resultSeen=false;save();sfx();render();window.scrollTo(0,0);}
+function start(){settings.role='random';if(online.available){modal=null;void online.run('solo',{options:{...settings}});return;}clearTimeout(botTimer);game=new Game();game.create(settings);page='game';selected=null;targeting=false;modal=null;eliminationSeen=false;resultSeen=false;save();sfx();render();window.scrollTo(0,0);}
+
+async function buyHint(){
+ if(hintBusy||currentHint||online.busy||!online.playing||!online.owner||tutorial)return;
+ const owner=online.owner,context=hintContext(),hint=recommend(game.s,me()),pending=hintPurchase.read(owner);
+ if((!hint||hint.action==='wait')&&pending?.status!=='pending'){toast('직접 선택할 차례에 추천을 볼 수 있어요.');return;}
+ hintBusy=true;render();
+ const result=await hintPurchase.buy(owner,online.room);hintBusy=false;
+ if(owner!==online.owner){render();return;}
+ if(!result.ok){
+  const notices={coins:'추천에는 1쭈가 필요해요.',pending:'결제 확인이 지연돼요. 구매 확인을 누르면 중복 차감 없이 확인해요.',storage:'구매 기록을 저장할 수 없어 차감하지 않았어요.',state_conflict:'상황이 바뀌어 차감하지 않았어요. 다시 눌러 주세요.',not_your_turn:'직접 선택할 차례에 추천을 볼 수 있어요.'};
+  render();toast(notices[result.reason]||'추천을 구매할 수 없어요. 잠시 후 다시 시도해 주세요.');return;
+ }
+ if(page==='game'&&!tutorial&&context===hintContext()&&hint&&hint.action!=='wait'&&hintPurchase.consume(owner,result.record.id)){
+  currentHint=hint;currentHintContext=context;
+  if(!game.s.pending){selected=['play','discard'].includes(hint.action)?hint.cardId:null;targeting=false;}
+  render();
+  const card=$('.hand .hint-card'),hand=$('.hand');if(card&&hand)hand.scrollLeft=Math.max(0,card.offsetLeft-(hand.clientWidth-card.clientWidth)/2);
+  toast('추천 1회 · 1쭈 사용');
+ }else{render();toast('구매한 추천이 남아 있어요. 선택할 차례에 추천 보기를 눌러 주세요.');}
+}
 
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-action]');if(!b||b.disabled)return;
  const action=b.dataset.action,value=b.dataset.value,n=Number(value);
  if(action==='hint'&&!tutorial){
-  hintsEnabled=!hintsEnabled;currentHint=hintsEnabled?recommend(game.s,me()):null;
-  if(currentHint&&!game.s.pending){selected=['play','discard'].includes(currentHint.action)?currentHint.cardId:null;targeting=false;}
-  render();
-  const card=$('.hand .hint-card'),hand=$('.hand');
-  if(card&&hand)hand.scrollLeft=Math.max(0,card.offsetLeft-(hand.clientWidth-card.clientWidth)/2);
-  document.querySelector('#overlay:not([hidden]) [data-action=hint],#app [data-action=hint]')?.focus({preventScroll:true});
+  void buyHint();
   return;
  }
  if(action==='online-create'){const title=$('#online-title')?.value.trim(),capacity=Number($('#online-capacity')?.value);void online.run('create',{options:{title,capacity}});return;}
@@ -237,15 +261,20 @@ document.addEventListener('click',e=>{
   const choices={respond:'card',take:'take',choose:'choose',saveBeer:'beer',giveup:'giveup',drawDeck:'deck',drawDiscard:'discard',drawSteal:'steal',stealHand:'hand',stealEquip:'equipment'};
   if(choices[action])move={type:'choose',action:choices[action],value:value===undefined?null:n};
   if(action==='sidConfirm'){move={type:'heal',cards:[...sidSelected]};modal=null;sidSelected=[];}
-  if(move){selected=null;targeting=false;void online.move(move);return;}
+  if(move){selected=null;targeting=false;currentHint=null;currentHintContext=null;void online.move(move);return;}
  }
  if(action==='tutorial-start'){beginTutorial();return;}
- if(tutorial&&action!=='sound'){tutorialAction(action,value);return;}
+ if(action==='card'&&(tutorial||!online.playing)){
+  const card=game.p(me()).hand.find(c=>c.id===n);if(!card)return;
+  if(tutorial){if(tutorial.accepts(action,value))tutorialAction(action,value);}
+  else{selected=n;targeting=false;}
+  modal={type:'card',card};render();return;
+ }
+ if(tutorial&&!['sound','catalog','catalogCard','close','zoom','equipmentInfo','discardTop'].includes(action)){tutorialAction(action,value);return;}
  switch(action){
   case 'count':settings.count=n;render();break;
-  case 'role':settings.role=value;render();break;
   case 'start':start();break;
-  case 'resume':if(saved){game=new Game(JSON.parse(JSON.stringify(saved)));settings={...game.s.options};page='game';modal=null;eliminationSeen=false;resultSeen=false;render();window.scrollTo(0,0);}break;
+  case 'resume':if(saved){game=new Game(JSON.parse(JSON.stringify(saved)));settings={...game.s.options,role:'random'};page='game';modal=null;eliminationSeen=false;resultSeen=false;render();window.scrollTo(0,0);}break;
   case 'sound':sound=!sound;try{localStorage.setItem('bang-sound',sound?'1':'0');}catch{}sfx();render();break;
   case 'speed':fast=!fast;try{localStorage.setItem('bang-fast',fast?'1':'0');}catch{}toast(fast?'AI가 빠르게 진행합니다.':'AI가 보통 속도로 진행합니다.');render();break;
   case 'rules':modal={type:'rules'};render();break;
@@ -290,7 +319,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{if(e.target.id==='character')settings.character=e.target.value;});
 document.addEventListener('keydown',e=>{
- if(tutorial&&e.key==='Escape'){e.preventDefault();leaveTutorial();return;}
+ if(tutorial&&e.key==='Escape'&&!modal){e.preventDefault();leaveTutorial();return;}
  if(e.key==='Escape'&&modal){modal=null;sidSelected=[];render();}
  else if(e.key==='Escape'&&targeting){targeting=false;render();}
  if(e.key==='Tab'&&!$('#overlay').hidden){const buttons=[...$('#overlay').querySelectorAll('button:not(:disabled),a[href],select'),...(tutorial&&!tutorial.done?[...$('#tutorial-coach').querySelectorAll('button:not(:disabled)')]:[])];if(!buttons.length)return;const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
