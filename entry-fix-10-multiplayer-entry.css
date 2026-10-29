@@ -1,0 +1,63 @@
+/* One full-screen entrance; all playing layouts retain their existing styles. */
+html:has(.mp-entry-host[data-mp-active="true"]),body:has(.mp-entry-host[data-mp-active="true"]){overflow:hidden!important}
+.mp-entry-host[data-mp-active="true"]{position:fixed!important;inset:0!important;width:100%!important;max-width:none!important;height:100dvh!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#f5f3f9!important;color:#302d43;overflow:hidden!important;box-sizing:border-box;display:flex;flex-direction:column}
+.mp-entry-bar{display:none;box-sizing:border-box;flex:none;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:7px max(20px,env(safe-area-inset-right)) 7px max(20px,env(safe-area-inset-left));padding-top:max(7px,env(safe-area-inset-top));border-bottom:1px solid #e9e5f0;background:#fff;color:#797487;font:12px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.02em;z-index:2}
+.mp-entry-host[data-mp-active="true"]>.mp-entry-bar,body[data-mp-entry="true"]>.mp-entry-bar{display:flex}
+.mp-entry-back{display:inline-flex;align-items:center;min-height:42px;padding:9px 12px;border:1px solid #e9e5f0;border-radius:12px;background:#f7f5fa;color:#625574;box-shadow:none;font:600 13px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;cursor:pointer;white-space:nowrap}
+.mp-entry-back:hover{background:#eee9f6}.mp-entry-back:focus-visible{outline:3px solid #ac97dc;outline-offset:2px}
+.mp-entry-host[data-mp-active="true"]>:is(.tour-game-header,#matgo-loading-bar,header:not(.mp-entry-bar)){display:none!important}
+.mp-entry-host[data-mp-active="true"]>iframe{display:block;flex:1;width:100%;height:0;min-height:0;border:0;background:#f5f3f9}
+.mp-board-host[data-mp-active="true"]{overflow-y:auto!important;align-items:center;justify-content:flex-start!important}
+.mp-board-host>.mp-entry-bar{position:sticky;top:0;width:100%}
+.mp-board-host>.modal{flex:none;width:min(100%,468px)!important;max-width:none!important;max-height:none!important;margin:0!important;padding:24px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+.mp-board-host .ge-close{display:none}
+html:has(body[data-mp-entry="true"]){background:#f5f3f9!important;min-height:100%;color-scheme:light!important}
+body[data-mp-entry="true"]{display:flow-root;min-height:100dvh!important;margin:0!important;padding:0!important;background:#f5f3f9!important;background-image:none!important;color:#302d43;color-scheme:light;overflow:auto!important;touch-action:pan-y}
+body[data-mp-entry="true"] #app{width:100%;max-width:none!important;margin:0!important;padding:0!important;min-height:0!important;height:auto!important;overflow:visible!important;background:transparent!important}
+body[data-mp-entry-pending] #app{display:none!important}
+body[data-mp-entry="true"] :is(.poker-entry-shell,#setup,#menu:has(>.game-entry)){box-sizing:border-box;position:relative!important;inset:auto!important;display:flex;flex-direction:column;justify-content:flex-start!important;align-items:center;gap:0;width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;max-height:none!important;padding:24px!important;margin:0!important;overflow:visible!important;background:transparent!important;transform:none!important}
+body[data-mp-entry="true"] #menu:has(>.game-entry){min-height:100dvh!important;background:#f5f3f9!important}
+body[data-mp-entry="true"] #content:has(>.game-entry){padding:24px!important;margin:0!important;max-width:none!important}
+body[data-mp-entry="true"] :is(.topbar,.app-header,.tour-back,.credits,#hud,#left,#right,#banner){display:none!important}
+body[data-mp-entry="true"] canvas{visibility:hidden!important}
+body[data-mp-entry="true"] .top{max-width:420px;margin:16px auto 0!important;background:transparent!important;border:0!important;color:#625574}
+body[data-mp-entry="true"] .top :is(h1,#exit){display:none!important}
+body[data-mp-entry="true"] .top .pill{background:#fff!important;color:#625574!important;border:1px solid #e9e5f0!important;box-shadow:none!important}
+body[data-mp-entry="true"] .online-lobby{margin:24px auto!important}
+.game-entry.mp-entry{--entry-ink:#302d43;--entry-muted:#797487;--entry-line:#e9e5f0;--entry-accent:#7560b5;--entry-soft:#f3f0f9;box-sizing:border-box!important;position:relative;width:100%!important;max-width:420px!important;min-width:0!important;flex:none;margin:0 auto!important;padding:24px!important;border:1px solid #e9e5f0!important;border-radius:24px!important;background:#fff!important;color:#302d43!important;box-shadow:0 14px 45px #4033570b!important;text-align:center;font:14px/1.6 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif!important;letter-spacing:-.025em;color-scheme:light;transform:none!important}
+.game-entry.mp-entry *{box-sizing:border-box}
+.game-entry.mp-entry .ge-icon{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 14px;border:1px solid #eae3f6;border-radius:18px;background:#f3f0f9;color:#7560b5;font-size:27px;line-height:1}
+.game-entry.mp-entry .ge-icon svg{width:28px;height:28px;min-width:28px;max-width:28px}
+.game-entry.mp-entry .ge-kicker{display:block;margin:0 0 6px;color:#797487;font-size:11px;font-weight:500;line-height:1.5;letter-spacing:.04em}
+.game-entry.mp-entry .ge-title{margin:0!important;padding:0;color:#302d43!important;font:700 25px/1.4 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif!important;letter-spacing:-.045em;text-shadow:none!important}
+.game-entry.mp-entry .ge-title small{font-size:11px;color:#797487;vertical-align:middle}
+.game-entry.mp-entry .ge-copy{margin:8px 0 20px!important;max-width:none;color:#797487!important;font:400 13px/1.65 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif!important;word-break:keep-all}
+.game-entry.mp-entry :is(.ge-primary,.ge-secondary,.primary,.secondary){display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin:10px 0 0;padding:11px 14px;border:1px solid transparent;border-radius:12px;background:#7560b5;color:#fff;box-shadow:none;font-family:inherit;font-size:14px;font-weight:600;line-height:1.5;letter-spacing:-.02em;text-shadow:none;transform:none;cursor:pointer}
+.game-entry.mp-entry :is(.ge-secondary,.secondary){background:#f7f5fa;color:#625574;border-color:#e9e5f0;font-weight:500}
+.game-entry.mp-entry :is(.ge-primary,.primary):hover{background:#65509f}.game-entry.mp-entry :is(.ge-secondary,.secondary):hover{background:#eee9f6}
+.game-entry.mp-entry :is(.seg,.segmented){display:flex;gap:4px;margin:16px 0 8px;padding:4px;border:0;border-radius:12px;background:#f3f0f9;box-shadow:none}
+.game-entry.mp-entry :is(.seg,.segmented) button{flex:1;min-width:0;min-height:42px;margin:0;padding:7px 5px;border:0;border-radius:9px;background:transparent;color:#797487;box-shadow:none;font:500 13px/1.4 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;text-shadow:none;transform:none}
+.game-entry.mp-entry :is(.seg,.segmented) button:is(.on,.active,[aria-pressed="true"]){background:#fff;color:#65518e;box-shadow:0 2px 5px #4933630a;font-weight:700}
+.game-entry.mp-entry :is(input:not([type="checkbox"]):not([type="radio"]),select){width:100%;min-width:0;min-height:44px;border:1px solid #e9e5f0;border-radius:12px;padding:9px 12px;background:#f7f5fa;color:#625574;font:13px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;box-shadow:none;text-shadow:none;user-select:text}
+.game-entry.mp-entry :is(.ge-label,.online-create label){display:block;margin:14px 0 6px;text-align:left;color:#797487;font-size:12px;font-weight:500}
+.game-entry.mp-entry :is(.ge-hint,.online-rule){margin:12px 0 0;color:#797487;font-size:11px;line-height:1.7}
+.game-entry.mp-entry .ge-more{margin:16px 0 0;padding:0;border:0;border-top:1px solid #e9e5f0;border-radius:0;background:none;text-align:left;color:#797487;box-shadow:none}
+.game-entry.mp-entry .ge-more>summary{display:list-item;min-height:42px;padding:12px 0 0;color:#797487;font-size:12px;cursor:pointer}
+.game-entry.mp-entry :is(button,summary,input,select):focus-visible{outline:3px solid #ac97dc;outline-offset:3px}
+.game-entry.mp-entry [hidden]{display:none!important}.game-entry.mp-entry button:disabled{opacity:.5;cursor:default}
+.game-entry.mp-entry :is(#exitEntry,[data-action="exit"]){display:none}
+.game-entry.mp-entry :is(.online-create,.online-join,.online-practice,.modal-actions){display:block;grid-template-columns:none;margin:0;padding:0;background:none;border:0}
+.game-entry.mp-entry .marble-join>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.game-entry.mp-entry .marble-join>div>button{width:auto;margin:0}
+.game-entry.mp-entry .online-error:empty{display:none}
+.game-entry.mp-entry .online-seats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;color:#625574}
+.game-entry.mp-entry .online-seats>div{min-width:0;padding:8px;border:1px solid #e9e5f0;border-radius:10px;background:#f7f5fa;color:#625574;font-size:12px;overflow-wrap:anywhere}
+.game-entry.mp-entry .online-seats :is(b,small){margin:0 5px;color:#797487}
+.game-entry.mp-entry .tour-tags{display:none}
+.game-entry.mp-entry .mp-waiting :is(h1,h2){margin:12px 0;font:700 18px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#302d43}
+.game-entry.mp-entry .mp-waiting .small-button{min-height:42px;padding:8px 12px;background:#f7f5fa;color:#625574;border:1px solid #e9e5f0;border-radius:12px;box-shadow:none}
+.game-entry.mp-entry .mp-waiting :is(.start-kicker,.start-cost,.start-room-code){color:#797487}
+body[data-mp-entry="true"] #matgo-start{position:relative!important;inset:auto!important;min-height:0!important;height:auto!important;padding:24px!important;background:transparent!important}
+body[data-mp-entry="true"]:has(#matgo-start .game-entry) #app{display:none!important}
+@media(max-width:480px){.mp-entry-bar{min-height:54px;padding-right:12px;padding-left:12px}.mp-entry-bar>span{font-size:11px}body[data-mp-entry="true"] :is(.poker-entry-shell,#setup,#menu:has(>.game-entry),#content:has(>.game-entry),#matgo-start){padding:16px 12px!important}.mp-board-host>.modal{padding:16px 12px!important}.game-entry.mp-entry{padding:22px 20px!important}body[data-mp-entry="true"] .online-lobby{width:calc(100% - 24px)!important;margin:16px auto!important}body[data-mp-entry="true"] .top{margin:12px 12px 0!important}}
+@media(max-height:720px){.game-entry.mp-entry{padding:18px 20px!important}.game-entry.mp-entry .ge-icon{width:44px;height:44px;margin-bottom:10px;border-radius:14px}.game-entry.mp-entry .ge-title{font-size:23px!important}.game-entry.mp-entry .ge-copy{margin:6px 0 14px!important}.game-entry.mp-entry :is(.seg,.segmented){margin:12px 0 6px}.game-entry.mp-entry :is(.seg,.segmented) button{min-height:38px}.game-entry.mp-entry .ge-more{margin-top:10px}.game-entry.mp-entry .ge-hint{margin-top:8px}}
