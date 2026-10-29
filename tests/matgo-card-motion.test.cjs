@@ -52,13 +52,23 @@ function fixture({images=false}={}){
   stack.className='stack';stack.innerHTML='<div class="c" data-id="1"></div><div class="c" data-id="2"></div>';w.document.body.append(stack);
   w.document.body.insertAdjacentHTML('beforeend','<div class="deck"><div class="back"></div></div>');
   w.$=selector=>w.document.querySelector(selector);w.game.floor=[cards];w.stackEls=new Map([[cards,stack]]);w.cardScreenPos=()=>({x:80,y:90,rot:0});
+  w.document.body.insertAdjacentHTML('beforeend','<div class="floor"><div id="fl"></div></div>');w.$('#fl').append(stack);
+  const frames=[];w.requestAnimationFrame=fn=>frames.push(fn);w.ui={dealing:true,chooseStacks:null};w.dealingFloorCards=new Set();w.fitFloor=()=>{};w.ensureSlot=()=>{};w.slotPos=()=>({x:80,y:90});w.cardXform=()=>({dx:0,dy:0,rot:0});
+  w.eval(part('function cardEl(', 'function mount('));w.eval(part('function syncCards(', 'function showCaptured('));
+  w.eval('window.renderFloor=function(){'+part('  // 바닥\n','  // 손패\n')+'};');
   let renders=0,resolved=false;w.render=()=>renders++;w.throwCard=()=>new Promise(resolve=>arrivals.push(resolve));
   w.eval(part('async function dealAnim(){','startRound();'));
+  let decode;w.flightArt.prepare=()=>new Promise(resolve=>decode=resolve);
   const task=w.dealAnim().then(()=>resolved=true);await tick();
-  const targets=stack.querySelectorAll('.c');assert.equal(arrivals.length,2);
+  const targets=stack.querySelectorAll('.c');assert.equal(arrivals.length,0,'dealing waits for every face to decode');
+  decode(true);await tick();assert.equal(arrivals.length,0,'decoded faces still wait for the entrance layout');
+  frames.shift()();await tick();assert.equal(arrivals.length,0);
+  frames.shift()();await tick();assert.equal(arrivals.length,2);
   assert.equal(targets[0].style.visibility,'hidden');assert.equal(targets[1].style.visibility,'hidden');assert.equal(resolved,false);
-  arrivals[0]();await tick();assert.equal(targets[0].style.visibility,'','only a landed card is revealed');assert.equal(targets[1].style.visibility,'hidden','the next card waits for its own arrival');assert.equal(renders,0);
-  arrivals[1]();await task;assert.equal(targets[1].style.visibility,'');assert.equal(renders,1,'the full board updates after every deal has arrived');
+  w.renderFloor();assert.equal(targets[0].style.visibility,'hidden','entrance resize must not reveal a card that is still flying');assert.equal(targets[1].style.visibility,'hidden','waiting cards stay hidden across a real floor render');
+  arrivals[0]();await tick();assert.equal(targets[0].style.visibility,'','only a landed card is revealed');assert.equal(targets[1].style.visibility,'hidden','the next card waits for its own arrival');assert.equal(renders,1,'the settled layout is rendered before dealing');
+  w.renderFloor();assert.equal(targets[0].style.visibility,'');assert.equal(targets[1].style.visibility,'hidden','a later resize preserves each card arrival separately');
+  arrivals[1]();await task;assert.equal(targets[1].style.visibility,'');assert.equal(renders,2,'the full board updates after every deal has arrived');
  }finally{dealt.dom.window.close();}
  const online=fixture();try{
   const w=online.w;w.matchMedia=()=>({matches:false});

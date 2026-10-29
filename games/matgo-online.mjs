@@ -2,8 +2,8 @@ import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=2026101
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261028-games-touch1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261023-media1';
-import {createWallet} from './matgo-wallet.mjs?v=20261029-matgo-entry2';
-import {openMatgoSolo} from './matgo-start.mjs?v=20261029-matgo-entry2';
+import {createWallet} from './matgo-wallet.mjs?v=20261029-matgo-deal1';
+import {openMatgoSolo} from './matgo-start.mjs?v=20261029-matgo-deal1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261028-matgo-clean-turn20';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261022-agit1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
@@ -115,7 +115,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261029-matgo-entry2&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261029-matgo-deal1&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
