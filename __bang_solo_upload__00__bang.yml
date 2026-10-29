@@ -1,0 +1,30 @@
+name: BANG multiplayer checks
+on:
+  pull_request:
+    paths: ['games/bang/**', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
+  push:
+    branches: [main]
+    paths: ['games/bang/**', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: bang-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --experimental-strip-types --test tests/bang-engine.test.mjs tests/bang-tutorial.test.mjs tests/bang-online.test.mjs tests/bang-db.test.cjs tests/bang-hints.test.mjs tests/bang-hints-ui.test.cjs tests/bang-solo.test.mjs tests/bang-solo-ui.test.cjs
+      - run: |
+          cmp games/bang/engine.js supabase/functions/bang/engine.js
+          cmp games/bang/data.js supabase/functions/bang/data.js
+          cmp games/bang/online-engine.js supabase/functions/bang/online-engine.js
