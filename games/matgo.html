@@ -44,8 +44,8 @@ body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!impor
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
 <link rel="stylesheet" href="./matgo-deck-tools.css?v=20261014-fencing1">
 <link rel="stylesheet" href="./matgo-opponent.css?v=20261014-cartoon1">
-<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-matgo-entry2">
-<script src="/multiplayer-entry.js?v=20261029-matgo-entry2" defer></script>
+<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-matgo-deal1">
+<script src="/multiplayer-entry.js?v=20261029-matgo-deal1" defer></script>
 </head>
 <body class="matgo-locked" data-mp-entry="true" data-mp-entry-pending>
 <section id="matgo-gate" aria-labelledby="matgo-gate-title" hidden>
@@ -64,7 +64,7 @@ import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
 import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261015-basic1";
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo-view.mjs?v=20261028-games-touch1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261029-matgo-entry2";
+import {createWallet} from "./matgo-wallet.mjs?v=20261029-matgo-deal1";
 import {createFlightArt} from "./matgo-flight-art.mjs?v=20261027-matgo-face1";
 (async () => {
 'use strict';
@@ -432,6 +432,7 @@ const ui={
   }
 };
 let game=new Game(ui), stackEls=new Map(), logEl=null;
+const dealingFloorCards=new Set();
 game.bank[ME]=wallet.current.gold;game.deal();game.over=true;
 let currentRound=null,pendingResult=null,settling=false,refilling=false;
 const tazza=createTazzaQueue();
@@ -479,7 +480,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261029-matgo-entry2&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261029-matgo-deal1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -520,8 +521,8 @@ function render(){
   for(const [st,el] of stackEls){ if(!live.has(st)){ el.remove(); stackEls.delete(st); } }
   game.floor.forEach((st,i)=>{ ensureSlot(st); const pos=slotPos(st.slot); let el=stackEls.get(st); if(!el){ el=document.createElement('div'); el.className='stack'; fl.appendChild(el); stackEls.set(st,el); }
     el.dataset.ppukLabel=st.ppukOwner===null?'바닥뻑':st.some(c=>c.k==='bonus')?`뻑 · 보너스 ${st.filter(c=>c.k==='bonus').length}`:'쌌다';
-    el.classList.toggle('ppuk',!!st.ppuk); el.classList.toggle('pick',!!ui.chooseStacks&&ui.chooseStacks.has(st)); el.classList.toggle('dimmed',!!ui.chooseStacks&&!ui.chooseStacks.has(st)); el.style.left=(pos.x-fb.x)+'px'; el.style.top=(pos.y-fb.y)+'px';
-    syncCards(el,st,c2=>cardEl(c2),(cel,c2)=>{ const t=cardXform(st,st.indexOf(c2)); cel.style.transform=`translate(${t.dx}px,${t.dy}px) rotate(${t.rot}deg)`; });
+    el.classList.toggle('ppuk',!!st.ppuk); el.classList.toggle('pick',!!ui.chooseStacks&&ui.chooseStacks.has(st)); el.classList.toggle('dimmed',!!ui.chooseStacks&&!ui.chooseStacks.has(st)); el.style.transition=ui.dealing?'none':'';el.style.left=(pos.x-fb.x)+'px'; el.style.top=(pos.y-fb.y)+'px';
+    syncCards(el,st,c2=>cardEl(c2),(cel,c2)=>{ cel.style.visibility=dealingFloorCards.has(c2.id)?'hidden':'';const t=cardXform(st,st.indexOf(c2)); cel.style.transform=`translate(${t.dx}px,${t.dy}px) rotate(${t.rot}deg)`; });
     el.onclick=()=>{ if(ui.resolveChoose&&el.classList.contains('pick')) ui.resolveChoose(game.floor.indexOf(st)); }; });
   // 손패
   const floorMonths=new Set(game.floor.map(st=>st[0].m));
@@ -672,16 +673,29 @@ async function startRound(){
   render();if(game.cpuMode!=='standard')toast('이전에 시작한 판을 이어갑니다. 이 판을 끝내고 다음 판을 누르면 새 난이도가 적용돼요.',6000);else if(game.tazzaMode)toast(TAZZA_MODES[game.tazzaMode]+' · '+TAZZA_DETAILS[game.tazzaMode],3500);await dealAnim();ui.dealing=false;await resolveChongtong();ui.busy=false;render();if(!game.over&&game.turn===CPU)await cpuTurn();return true;
 }
 async function dealAnim(){
-  const dk=$('.deck .back').getBoundingClientRect(),flights=[];
+  const cards=game.floor.flat(),flights=[];
+  cards.forEach(card=>dealingFloorCards.add(card.id));
   stackEls.forEach(el=>el.querySelectorAll('.c').forEach(card=>card.style.visibility='hidden'));
-  for(const st of game.floor){
-    for(let i=0;i<st.length;i++){
-      const card=st[i],target=stackEls.get(st)?.querySelector(`.c[data-id="${card.id}"]`),to=cardScreenPos(st,i);
-      flights.push(throwCard(card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:380,dealing:true,onCards:i>0}).then(()=>{if(target?.isConnected)target.style.visibility='';}));
-      await sleep(90);
+  try{
+    // Entrance removal resizes this iframe. Finish that layout and decode all
+    // faces before measuring the deck or starting staggered card flights.
+    const [ready]=await Promise.all([flightArt.prepare(cards),new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))]);
+    if(!ready)return;
+    render();
+    const dk=$('.deck .back').getBoundingClientRect();
+    for(const st of game.floor){
+      for(let i=0;i<st.length;i++){
+        const card=st[i],to=cardScreenPos(st,i);
+        flights.push(throwCard(card,{x:dk.left,y:dk.top,w:dk.width,h:dk.height,rot:0},to,{back:true,dur:380,dealing:true,onCards:i>0}).then(()=>{
+          dealingFloorCards.delete(card.id);
+          const target=stackEls.get(st)?.querySelector(`.c[data-id="${card.id}"]`);
+          if(target)target.style.visibility='';
+        }));
+        await sleep(90);
+      }
     }
-  }
-  await Promise.all(flights);render();
+    await Promise.all(flights);
+  }finally{dealingFloorCards.clear();render();}
 }
 startRound();
 })();
