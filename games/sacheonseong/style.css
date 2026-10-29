@@ -53,11 +53,13 @@ svg{display:block}
 .completion{align-items:flex-start;overflow:auto}
 .completion-card{margin:auto}
 .completion-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.level-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:66px;padding:10px 4px;border:1px solid #d8e2ce;border-radius:10px;background:#edf2e5;font-size:12px;font-weight:650}
+.level-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:66px;padding:10px 4px;border:1px solid #36754a;border-radius:10px;background:#36754a;color:#fffef7;font-size:12px;font-weight:650}
 .completion .level-choice small{margin:0;font-size:10px;font-weight:400;line-height:1.4;color:inherit}
-.level-choice-next{background:#335e47;color:#fffef7;border-color:#335e47}
-.level-choice:not(:disabled):hover{background:#dfe9d5}
-.level-choice-next:not(:disabled):hover{background:#224b36}
+#previous-level{background:#f4cb58;color:#55400b;border-color:#d7ad38}
+.level-choice-next{background:#b94343;color:#fffef7;border-color:#b94343}
+.level-choice:not(:disabled):hover{background:#285f3b}
+#previous-level:not(:disabled):hover{background:#e9bb3c}
+.level-choice-next:not(:disabled):hover{background:#9e3333}
 .completion-hint{line-height:1.7}
 @keyframes hint{50%{box-shadow:0 5px 0 #c7c89a,0 7px 0 #b2b67a,0 0 0 4px #d8bc6166;transform:translateY(-3px)}}@keyframes disappear{to{opacity:0;transform:translateY(-15px) scale(.8)}}@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}@keyframes shuffle{50%{transform:scale(.88) rotate(-4deg);opacity:.5}}@keyframes appear{from{opacity:0;margin-top:8px}to{opacity:1;margin-top:0}}
 
