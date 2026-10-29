@@ -1,7 +1,7 @@
 (function () {
   'use strict';
-  const games = { tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'] };
-  const nativeGames = new Set(['tank','tour','ttang','poker']);
+  const games = { bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'] };
+  const nativeGames = new Set(['bang','tank','tour','ttang','poker']);
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const errors = {
@@ -164,9 +164,9 @@
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        const max=value==='tank'?12:value==='tour'?8:value==='poker'?4:2;
+        const min=value==='bang'?4:2,max=value==='bang'?7:value==='tank'?12:value==='tour'?8:value==='poker'?4:2;
         form.querySelector('[data-create-capacity]').hidden=max===2;
-        form.elements.capacity.innerHTML=Array.from({length:max-1},(_,i)=>`<option value="${i+2}"${i+2===Math.min(4,max)?' selected':''}>${i+2}명</option>`).join('');
+        form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===Math.min(4,max)?' selected':''}>${i+min}명</option>`).join('');
       };
       form.elements.kind.onchange=chooseKind;chooseKind();
       form.onsubmit = async event => {
