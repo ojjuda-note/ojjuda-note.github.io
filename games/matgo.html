@@ -28,7 +28,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="../matgo-access.js?v=20261013-resume1"></script>
 <style>
-body.matgo-locked>:not(#matgo-gate){display:none!important}
+body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!important}
 #matgo-gate{min-height:100%;display:grid;place-content:center;text-align:center;padding:24px;gap:12px}
 #matgo-gate[hidden]{display:none}#matgo-gate h1{font-size:24px;margin:0}#matgo-gate p{max-width:360px;line-height:1.7;margin:0}
 #matgo-gate a,#matgo-gate button{display:inline-block;color:#2e2748;background:#f2c14e;padding:12px 20px;border-radius:999px;text-decoration:none;font:inherit}
@@ -44,16 +44,17 @@ body.matgo-locked>:not(#matgo-gate){display:none!important}
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
 <link rel="stylesheet" href="./matgo-deck-tools.css?v=20261014-fencing1">
 <link rel="stylesheet" href="./matgo-opponent.css?v=20261014-cartoon1">
-<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-entry-fix1">
-<script src="/multiplayer-entry.js?v=20261029-entry-fix1" defer></script>
+<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-matgo-entry2">
+<script src="/multiplayer-entry.js?v=20261029-matgo-entry2" defer></script>
 </head>
 <body class="matgo-locked" data-mp-entry="true" data-mp-entry-pending>
-<section id="matgo-gate" aria-labelledby="matgo-gate-title">
+<section id="matgo-gate" aria-labelledby="matgo-gate-title" hidden>
 <h1 id="matgo-gate-title">🎴 맞고 · 만 19세 이상</h1>
 <p id="matgo-gate-message" role="status">회원 나이를 확인하고 있어요.</p>
 <button type="button" id="matgo-retry" hidden>다시 확인</button>
 <a href="../world.html" target="_top">아지트로 돌아가기</a>
 </section>
+<p id="matgo-entry-loading" role="status" style="padding:24px;text-align:center;color:#797487;font-size:13px">게임을 준비하고 있어요.</p>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
@@ -63,13 +64,14 @@ import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
 import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261015-basic1";
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo-view.mjs?v=20261028-games-touch1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261029-entry-fix1";
+import {createWallet} from "./matgo-wallet.mjs?v=20261029-matgo-entry2";
 import {createFlightArt} from "./matgo-flight-art.mjs?v=20261027-matgo-face1";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false;
 function denyAccess(error){
   stopAccess();
+  document.getElementById('matgo-entry-loading').hidden=true;
   document.body.classList.add('matgo-locked');
   document.getElementById('matgo-gate').hidden=false;
   document.getElementById('matgo-gate-message').textContent=error?.message||'나이를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
@@ -477,7 +479,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261029-entry-fix1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261029-matgo-entry2&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -654,7 +656,7 @@ async function startRound(){
   try{await access.check();state=await wallet.start({tazza:assisted});}
   catch(error){
     roundCheck=false;tazza.finish(false);syncTazza();vent.sync();
-    document.body.removeAttribute('data-mp-entry-pending');
+    document.getElementById('matgo-entry-loading').hidden=true;document.body.removeAttribute('data-mp-entry-pending');
     if(error.code==='gold_empty'){render();await showRefill();}
     else if(error.code==='client_update_required'){
       modal('<h2>맞고 업데이트</h2><p>맞고가 업데이트됐어요. 최신 화면으로 다시 열어 주세요.</p><div class="row"><button class="btn gold" id="refresh-start">업데이트하고 시작</button></div>',{'refresh-start':()=>{const url=new URL(location.href);url.searchParams.set('update',String(Date.now()));location.replace(url.href);}});
@@ -663,7 +665,7 @@ async function startRound(){
   }
   finally{roundCheck=false;}
   if(document.body.classList.contains('matgo-locked')){tazza.finish(false);syncTazza();return false;}
-  document.body.removeAttribute('data-mp-entry-pending');Sound.unlock();
+  document.getElementById('matgo-entry-loading').hidden=true;document.body.removeAttribute('data-mp-entry-pending');Sound.unlock();
   currentRound=state.round.id;game.roundCpuLevel=state.round.cpu_level;game.rate=state.round.rate??100;game.bank=[state.gold,5000];game.first=state.round.first;game.carry=state.round.carry;
   Sound.cancel();ui.chooseStacks=null;ui.resolveChoose=null;ui.holdRect=null;ui.lastHandRect=null;ui.dealing=true;ui.busy=true;ui.warned={};LAYOUT_N=-1;dealSoloRound(game,state.round,{Game,seededRandom});tazza.finish(true);stackEls.forEach(el=>el.remove());stackEls=new Map();
   if($('#fl'))document.querySelectorAll('#capsOp .cap .c,#capsMe .cap .c,#handMe .c,#handOp .c').forEach(e=>e.remove());

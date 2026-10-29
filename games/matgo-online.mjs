@@ -2,8 +2,8 @@ import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=2026101
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261028-games-touch1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261023-media1';
-import {createWallet} from './matgo-wallet.mjs?v=20261029-entry-fix1';
-import {openMatgoSolo} from './matgo-start.mjs?v=20261029-entry-fix1';
+import {createWallet} from './matgo-wallet.mjs?v=20261029-matgo-entry2';
+import {openMatgoSolo} from './matgo-start.mjs?v=20261029-matgo-entry2';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261028-matgo-clean-turn20';
 import {createOnlineSound} from './matgo-online-sound.mjs?v=20261022-agit1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
@@ -115,7 +115,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261029-entry-fix1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261029-matgo-entry2&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -175,11 +175,13 @@ async function enter(action,code){
   catch(error){toast(error.message);if(error.code==='gold_empty')await refill();else showLobby();}
   finally{busy=false;}
 }
+const lobbyTemplate=$('#content .game-entry').cloneNode(true);lobbyTemplate.removeAttribute('data-entry-ready');
+const lobbyHTML=lobbyTemplate.outerHTML;
 function showLobby(){
   cancelPresentation();
   arcadeRoom=null;roomLabel();
   $('#gukjin').hidden=true;viewKey='lobby';room=null;cursor=0;promptKey='';pendingMove=null;closeDialog();clearEvents();
-  $('#content').innerHTML=`<section class="lobby game-entry" data-entry-key="matgo"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실</span><h2 class="ge-title">맞고</h2><p class="ge-copy">같은 달의 패를 모아 한 판 즐겨보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div><section data-entry-panel="computer"><button id="solo" class="btn gold ge-primary">시작하기</button></section><section data-entry-panel="opponent" hidden><button id="invite-friend" class="btn gold ge-primary">친구 초대</button><button id="quick" class="btn ge-secondary">빠른 대결</button><form id="public-room-form"><label for="public-room-title">방 제목</label><input id="public-room-title" maxlength="40" required value="맞고 같이 한 판 해요" autocomplete="off"><button id="create" class="btn ge-secondary" type="submit">방 만들기</button><p id="public-room-error" role="status"></p><p class="fine">만든 방은 오락실 대전방에 표시돼요.</p></form><details class="ge-more"><summary>방번호로 입장</summary><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" required><button class="btn" id="join">입장</button></form></details></section><span class="ge-hint">기본 점당 100G · 만 19세 이상</span><details class="ge-more"><summary>게임 방법 · 판돈 안내</summary><p>판돈은 혼자하기와 같고, 두 사람 중 낮은 금액을 적용해요.<br>차례마다 20초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></details></section>`;
+  $('#content').innerHTML=lobbyHTML;
   if(savedRoomId){
     const resume=document.createElement('section');resume.className='ge-resume';
     resume.innerHTML='<p class="ge-copy">참여 중인 대전이 있어요.</p><button type="button" class="btn gold ge-primary" id="resume-room">하던 대전 이어하기</button><p class="ge-hint">온라인 대전의 차례 시간은 계속 흘러가요.</p>';
@@ -387,7 +389,7 @@ async function refill(){
     modal(`<h2>골드 충전</h2><p>보유 ${number(state.gold)}G · ${state.coins} ZU<br>오늘 무료 리필 ${state.free_left}회 남음<br>${state.gold<1000?(paid?'5 ZU로 남은 골드에 5,000G를 더해요.':'무료로 남은 골드에 5,000G를 더해요.'):'골드가 1,000G 미만일 때 충전할 수 있어요.'}</p><div class="row">${state.gold<1000?'<button id="refill" class="btn '+(paid?'ju-paid-action':'gold')+'">'+(paid?'5 ZU 사용 · 5,000G':'무료 5,000G 리필')+'</button>':''}<button id="close-refill" class="btn ghost">닫기</button></div>`,{refill:async()=>{try{const s=await wallet.refill(paid);setGold(s.gold);toast('5,000G를 충전했어요.');}catch(e){toast(e.message);}},'close-refill':()=>{}});
   }catch(e){toast(e.message);}
 }
-function deny(error){closed=true;cancelPresentation();clearInterval(pollTimer);clearInterval(accessTimer);closeDialog();clearEvents();$('#app').hidden=true;$('#gate').hidden=false;$('#gate-message').textContent=error.message;$('#retry').hidden=false;}
+function deny(error){closed=true;cancelPresentation();clearInterval(pollTimer);clearInterval(accessTimer);closeDialog();clearEvents();$('#app').hidden=true;$('#content').replaceChildren();document.body.setAttribute('data-mp-entry-pending','');$('#gate').hidden=false;$('#gate-message').textContent=error.message;$('#retry').hidden=false;}
 // Cache only the current session token for a best-effort authenticated pagehide
 // notification. A dropped connection is also detected by server heartbeats.
 async function refreshToken(){try{token=(await access.getClient().auth.getSession()).data?.session?.access_token||null;}catch{}}
@@ -403,7 +405,7 @@ try{
   await access.check();wallet=createWallet(access,{stakes:true});const state=await wallet.status();
   savedRoomId=state.online_room||null;
   $('#gate').hidden=true;$('#app').hidden=false;setGold(state.gold);showLobby();
-  document.body.removeAttribute('data-mp-entry-pending');
+  $('#content').removeAttribute('inert');$('#content').setAttribute('aria-busy','false');$('#entry-loading').hidden=true;
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#sound').onclick=()=>sound.toggle();$('#sound-start').onclick=()=>sound.preview();
   $('#money').onclick=()=>refill();$('#exit').onclick=()=>requestExit();

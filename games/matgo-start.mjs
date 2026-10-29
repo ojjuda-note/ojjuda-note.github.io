@@ -5,21 +5,22 @@ const handoffKey='ojjuda-matgo-entry-handoff';
 export function openMatgoSolo(event){
   if(!event?.isTrusted)return false;
   const url=new URL('./matgo.html',location.href);
-  url.searchParams.set('v','20261029-entry-fix1');url.searchParams.set('open',String(Date.now()));
-  try{
-    const id=crypto.randomUUID();
-    sessionStorage.setItem(handoffKey,JSON.stringify({id,at:Date.now()}));
-    url.searchParams.set('entry',id);
-  }catch{} // Restricted storage falls back to the ordinary start button.
+  url.searchParams.set('v','20261029-matgo-entry2');url.searchParams.set('open',String(Date.now()));
+  const id=crypto.randomUUID?.()||Array.from(crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(16).padStart(8,'0')).join('');
+  const handoff=JSON.stringify({id,at:Date.now()});
+  // The same-origin iframe survives navigation even when a mobile webview
+  // blocks sessionStorage. This is start intent only, never authorization.
+  try{window.frameElement?.setAttribute('data-matgo-start-handoff',handoff);}catch{}
+  try{sessionStorage.setItem(handoffKey,handoff);}catch{}
+  url.searchParams.set('entry',id);
   location.replace(url.href);return true;
 }
 function takeHandoff(){
-  try{
-    const saved=JSON.parse(sessionStorage.getItem(handoffKey));
-    sessionStorage.removeItem(handoffKey);
-    const id=new URLSearchParams(location.search).get('entry'),age=Date.now()-saved?.at;
-    return !!id&&saved?.id===id&&age>=0&&age<60000;
-  }catch{return false;}
+  const candidates=[];
+  try{const saved=sessionStorage.getItem(handoffKey);sessionStorage.removeItem(handoffKey);candidates.push(saved);}catch{}
+  try{const frame=window.frameElement,saved=frame?.getAttribute('data-matgo-start-handoff');frame?.removeAttribute('data-matgo-start-handoff');candidates.push(saved);}catch{}
+  const id=new URLSearchParams(location.search).get('entry');
+  return candidates.some(raw=>{try{const saved=JSON.parse(raw),age=Date.now()-saved?.at;return !!id&&saved?.id===id&&age>=0&&age<60000;}catch{return false;}});
 }
 export function waitForMatgoStart(){
   if(firstStart)return firstStart;
@@ -46,6 +47,7 @@ export function waitForMatgoStart(){
         event.preventDefault();(document.activeElement===play?exit:play).focus();
       }
     });
+    const loading=document.getElementById('matgo-entry-loading');if(loading)loading.hidden=true;
     document.body.append(panel);play.focus({preventScroll:true});
   });
   return firstStart;
