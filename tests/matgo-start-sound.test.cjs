@@ -6,7 +6,7 @@ const root=path.join(__dirname,'..');
  try{
   for(const mode of ['touch','keyboard','muted','rich']){
    const context=await browser.newContext({viewport:{width:390,height:820},hasTouch:true});
-   const errors=[],gold=mode==='rich'?900001:5000;let starts=0;
+   const errors=[],gold=mode==='rich'?900001:5000;let starts=0,delayedArtwork=0;
    await context.exposeBinding('soundFixture',async(_,{action})=>{
     if(action==='start')starts++;
     return {data:{ok:true,gold,coins:20,free_left:2,round:action==='start'?{id:'test-round',seed:10,gold,first:0,carry:1}:null}};
@@ -19,7 +19,8 @@ const root=path.join(__dirname,'..');
     const start=AudioBufferSourceNode.prototype.start;
     AudioBufferSourceNode.prototype.start=function(...args){audioStarts.push({state:this.context.state,length:this.buffer?.length});return start.apply(this,args);};
     window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>()=>{},getClient:()=>({functions:{invoke:(_,{body})=>soundFixture(body)}})};
-    const timeout=setTimeout;window.setTimeout=(fn,delay,...args)=>timeout(fn,delay<5000?Math.min(delay,30):delay,...args);
+    // Keep real timers: shortening the 2500ms artwork decode deadline to 30ms
+    // skips the initial deal (and its sound) on otherwise healthy browsers.
     const animate=Element.prototype.animate;Element.prototype.animate=function(frames,options){return animate.call(this,frames,typeof options==='object'?{...options,duration:5,delay:0}:5);};
    },{mode});
    await context.route('**/*',async route=>{
@@ -31,6 +32,11 @@ const root=path.join(__dirname,'..');
      const html=fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.matgoSoundTest={startRound,finishRound,ui,game};\nstartRound();\n})();');
      return route.fulfill({contentType:'text/html',body:html});
     }
+    // Exercise cold artwork loading beyond the old fixture's 30ms deadline.
+    // This delay runs in Node, independently of any browser timer overrides.
+    if(mode==='touch'&&/^\/assets\/game-media\/hwatu-.*\.webp$/.test(url.pathname)){
+     delayedArtwork++;await new Promise(resolve=>setTimeout(resolve,100));
+    }
     return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':undefined});
    });
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
@@ -39,6 +45,7 @@ const root=path.join(__dirname,'..');
     await page.locator('#matgo-start-play').waitFor();assert.equal(starts,0,'muted re-entry still waits at the entrance');
     await page.locator('#matgo-start-play').tap();
     await page.waitForSelector('#handMe');assert.equal(await page.locator('#matgo-start').count(),0);
+    await page.waitForFunction(()=>!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
     assert.equal(await page.evaluate(()=>audioStarts.length),0,'saved mute preference remains silent');
    }else{
     await page.locator('#matgo-start-play').waitFor();assert.equal(starts,0,'no round starts before the audio gesture');
@@ -47,19 +54,26 @@ const root=path.join(__dirname,'..');
     if(mode==='touch')await page.locator('#matgo-start-play').tap();
     else await page.keyboard.press('Enter');
     await page.waitForFunction(()=>audioStarts.length>=3);
+    if(mode==='touch')assert.ok(delayedArtwork>0,'cold-start test actually loads delayed card artwork');
     assert.equal(starts,1);assert.ok(await page.evaluate(()=>audioStarts.every(s=>s.state==='running'&&s.length>0)),'initial deal samples actually start in a running AudioContext');
     await page.waitForFunction(()=>!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
     assert.equal(await page.locator('#matgo-start').count(),0);
     await page.evaluate(()=>matgoSoundTest.startRound());assert.equal(starts,1,'the current hand cannot be restarted');
     await page.evaluate(async()=>{matgoSoundTest.game.over=true;await matgoSoundTest.finishRound('nagari',{});});
+    const previousSamples=await page.evaluate(()=>audioStarts.length);
     await page.locator('#next').click();
+    await page.waitForFunction(previous=>audioStarts.length>=previous+3,previousSamples);
     await page.waitForFunction(()=>!matgoSoundTest.ui.busy&&!matgoSoundTest.ui.dealing);
+    assert.ok(await page.evaluate(previous=>audioStarts.slice(previous).every(s=>s.state==='running'&&s.length>0),previousSamples),'the next deal also starts real audio samples');
     assert.equal(starts,2,'a settled next round needs no extra start prompt');
     assert.equal(await page.evaluate(()=>matgoSoundTest.game.cpuLevel),mode==='rich'?10:1,'solo browser uses the server balance for the next CPU tier');
     await page.reload();await page.locator('#matgo-start-play').waitFor();assert.equal(starts,2,'re-entry gets a new audio gesture before dealing');
+    await page.locator('#matgo-start-play').tap();await page.waitForFunction(()=>audioStarts.length>=3);
+    assert.equal(starts,3,'re-entry starts one round after the new gesture');
+    assert.ok(await page.evaluate(()=>audioStarts.every(s=>s.state==='running'&&s.length>0)),'re-entry audio runs with non-empty samples');
    }
    assert.deepEqual(errors,[]);await context.close();
   }
-  console.log('PASS: cold-start touch/keyboard enables real audio before deal; mute, replay, reload and synthetic-click protection');
+  console.log('PASS: cold-start touch/keyboard and delayed artwork enable real audio; completed muted deal, replay/re-entry samples and synthetic-click protection');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
