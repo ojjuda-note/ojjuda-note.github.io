@@ -7,12 +7,12 @@
   <meta name="description" content="같은 그림은 최대 4개. 4개부터 900개까지, 15단계로 즐기는 사천성 게임. 빠른 클리어 시간으로 순위에 도전하세요.">
   <title>사천성</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23214f43'/%3E%3Cpath d='M11 27C9 13 22 9 30 10c0 13-6 22-19 17' fill='%23dbe9c1'/%3E%3Cpath d='m12 28 13-13' stroke='%23214f43' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261028-games-touch1">
+  <link rel="stylesheet" href="style.css?v=20261029-sacheonseong-level1">
   <script src="engine.js?v=20261028-games-check1" defer></script>
   <script src="faces.js?v=20261028-games-check1" defer></script>
   <script src="ranking.js?v=20261028-games-check1" defer></script>
   <script src="server.js?v=20261028-games-check1" defer></script>
-  <script src="app.js?v=20261028-games-touch1" defer></script>
+  <script src="app.js?v=20261029-sacheonseong-level1" defer></script>
 </head>
 <body>
   <svg class="svg-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -66,7 +66,11 @@
         <div class="zoom-controls" id="zoom-controls"><button id="zoom-fit" aria-label="게임판 전체 보기" aria-pressed="true">전체</button><button id="zoom-out" aria-label="패 작게 보기">−</button><button id="zoom-in" aria-label="패 크게 보기">＋</button></div>
       </div>
       <span class="sr-only" id="status" role="status" aria-live="polite"></span>
-      <div class="completion" id="completion" hidden role="dialog" aria-modal="true" aria-labelledby="win-title"><div class="completion-card"><span class="win-bloom"><svg><use href="#face-0"/></svg></span><div class="eyebrow">단계 완료</div><h2 id="win-title">1단계 완료!</h2><p id="win-desc"></p><button id="next" class="next-button">다음 단계로 <svg class="icon"><use href="#i-arrow"/></svg></button><small id="countdown"></small></div></div>
+      <div class="completion" id="completion" hidden role="dialog" aria-modal="true" aria-labelledby="win-title"><div class="completion-card"><span class="win-bloom"><svg><use href="#face-0"/></svg></span><div class="eyebrow">단계 완료</div><h2 id="win-title">1단계 완료!</h2><p id="win-desc"></p><div class="completion-levels" role="group" aria-label="다음에 할 레벨 선택">
+        <button id="previous-level" class="level-choice" type="button"><span>이전 레벨</span><small id="previous-level-detail"></small></button>
+        <button id="current-level" class="level-choice" type="button"><span>지금 레벨</span><small id="current-level-detail"></small></button>
+        <button id="next" class="level-choice level-choice-next" type="button"><span>다음 레벨</span><small id="next-level-detail"></small></button>
+      </div><small class="completion-hint">원하는 레벨을 골라 주세요.<br>선택할 때까지 이 화면에서 기다려요.</small></div></div>
     </main>
   </div>
   <dialog id="options" aria-labelledby="options-title">
