@@ -1,13 +1,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
 async function fixture(available){
- const [{Game},data,tutorial,{recommend},{createHintPurchase},{CARD_GUIDES}]=await Promise.all([import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js')]);
+ const [{Game},data,tutorial,{recommend},{createHintPurchase},{CARD_GUIDES},{CHARACTER_GUIDES}]=await Promise.all([import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js'),import('../games/bang/character-guides.js')]);
  const dom=new JSDOM('<div id="app"></div><div id="overlay" hidden></div><aside id="tutorial-coach" hidden></aside><div id="toast"></div>',{url:'https://ojjuda.kr/games/bang/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
  w.scrollTo=()=>{};w.structuredClone=structuredClone;
  const online={embedded:false,available,busy:false,room:null,get playing(){return !!this.room?.state;},run:async(...args)=>{calls.push(args);return null;}};
- Object.assign(w,{Game,...data,...tutorial,recommend,createHintPurchase,CARD_GUIDES,online});
+ Object.assign(w,{Game,...data,...tutorial,recommend,createHintPurchase,CARD_GUIDES,CHARACTER_GUIDES,online});
  let source=fs.readFileSync(path.join(__dirname,'../games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
- source+='\nwindow.qa={result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();}}';w.eval(source);
+ source+='\nwindow.qa={result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();},snapshot(){return JSON.stringify({state:game.s,step:tutorial?.step,selected,targeting,settings});},stepTo(step){while(tutorial.step<step&&!tutorial.done){const e=tutorial.expected();tutorialAction(e.action,e.value);}}}';w.eval(source);
  return {dom,w,calls};
 }
 test('signed-in computer start uses the server and never creates an unranked local game',async()=>{
@@ -57,6 +57,69 @@ test('practice cards and all 22 catalog entries offer free lessons without playi
    w.document.querySelector('#overlay [data-action=catalog]').click();
   }
   assert.equal(calls.length,0,'free guidance never calls a purchase or game RPC');
+ }finally{dom.window.close();}
+});
+
+test('all 16 character lessons are free, explain activation and preserve the current practice',async()=>{
+ const {dom,w,calls}=await fixture(false);try{
+  w.qa.tutorial();const before=w.qa.snapshot();
+  assert.equal(w.document.querySelector('.own-char').disabled,false);
+  w.document.querySelector('#tutorial-coach [data-action=characterCatalog]').click();
+  const ids=[...w.document.querySelectorAll('[data-action=characterGuide]')].map(x=>x.dataset.value);
+  assert.equal(new Set(ids).size,16);
+  for(const id of ids){
+   w.document.querySelector(`[data-action=characterGuide][data-value=${id}]`).click();
+   assert.deepEqual([...w.document.querySelectorAll('.character-guide dt')].map(x=>x.textContent),['능력','발동 조건','사용 방법','예시']);
+   assert.ok([...w.document.querySelectorAll('.character-guide dd')].every(x=>x.textContent.length>10));
+   assert.equal(w.document.querySelector('#tutorial-coach').hidden,true);
+   w.document.querySelector('[data-action=characterCatalog]').click();
+  }
+  w.document.querySelector('[data-action=close]').click();
+  assert.equal(w.qa.snapshot(),before);assert.equal(calls.length,0);
+  assert.equal(w.localStorage.getItem('ojjuda-bang-practice-v1'),null);
+ }finally{dom.window.close();}
+});
+function pointer(w,target,type,x,y){
+ const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});
+ Object.defineProperties(e,{pointerId:{value:1},pointerType:{value:'touch'},isPrimary:{value:true}});target.dispatchEvent(e);
+}
+function swipe(w,dx,dy=0,cancel=false){
+ const content=w.document.querySelector('.guide-content'),overlay=w.document.querySelector('#overlay');
+ pointer(w,content,'pointerdown',180,100);
+ if(cancel)pointer(w,overlay,'pointercancel',180+dx,100+dy);
+ pointer(w,overlay,'pointerup',180+dx,100+dy);
+}
+test('card and character guides swipe both ways and wrap; scrolling, short drags and cancelled gestures do not turn a page',async()=>{
+ const {dom,w,calls}=await fixture(false);try{
+  w.qa.tutorial();const before=w.qa.snapshot();
+  w.document.querySelector('.topbar [data-action=catalog]').click();w.document.querySelector('[data-action=catalogCard][data-value=bang]').click();
+  const title=()=>w.document.querySelector('#dialog-title').textContent;
+  swipe(w,-110);assert.equal(title(),'빗나감!');assert.equal(w.document.querySelector('.guide-position b').textContent,'2 / 22');
+  swipe(w,110);assert.equal(title(),'뱅!');swipe(w,110);assert.equal(title(),'윈체스터');
+  w.document.querySelector('[data-action=guideNext]').click();assert.equal(title(),'뱅!');
+  swipe(w,-20);swipe(w,-100,150);swipe(w,-100,0,true);assert.equal(title(),'뱅!');
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert.equal(title(),'빗나감!');
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));assert.equal(title(),'뱅!');
+  w.document.querySelector('[data-action=close]').click();w.document.querySelector('#tutorial-coach [data-action=characterCatalog]').click();
+  w.document.querySelector('[data-action=characterGuide][data-value=bart]').click();swipe(w,-100);assert.equal(title(),'블랙 잭');
+  swipe(w,100);assert.equal(title(),'바트 캐시디');swipe(w,100);assert.equal(title(),'윌리 더 키드');
+  w.document.querySelector('[data-action=close]').click();assert.equal(w.qa.snapshot(),before);assert.equal(calls.length,0);
+ }finally{dom.window.close();}
+});
+test('own character help leaves target selection, defence and completed practice intact',async()=>{
+ const {dom,w,calls}=await fixture(false);try{
+  w.qa.tutorial();w.qa.stepTo(3);const targeting=w.qa.snapshot();
+  w.document.querySelector('.own-char').click();assert.equal(w.document.querySelector('#dialog-title').textContent,'럭키 듀크');
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert.equal(w.qa.snapshot(),targeting);assert.equal(w.document.querySelector('[data-action=player][data-value="1"]').disabled,false);
+  w.document.querySelector('[data-action=player][data-value="1"]').click();assert.notEqual(w.qa.snapshot(),targeting,'the target still executes the exercise');
+  w.qa.stepTo(8);const defending=w.qa.snapshot();
+  w.document.querySelector('#overlay [data-action=catalog]').click();w.document.querySelector('[data-action=characterCatalog]').click();
+  w.document.querySelector('[data-action=characterGuide][data-value=kit]').click();assert.match(w.document.querySelector('.character-guide').textContent,/돌려놓을 1장/);
+  w.document.querySelector('[data-action=close]').click();assert.ok(w.document.querySelector('#overlay [data-action=respond]'));assert.equal(w.qa.snapshot(),defending);
+  w.qa.stepTo(99);const completed=w.qa.snapshot();
+  w.document.querySelector('[data-action=characterCatalog]').click();w.document.querySelector('[data-action=characterGuide][data-value=sid]').click();
+  w.document.querySelector('[data-action=close]').click();assert.match(w.document.querySelector('#overlay').textContent,/연습, 완료/);assert.equal(w.qa.snapshot(),completed);assert.equal(calls.length,0);
  }finally{dom.window.close();}
 });
 
