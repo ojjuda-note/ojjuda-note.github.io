@@ -59,7 +59,10 @@
   function report(force = false) {
     const cards = [...document.querySelectorAll('.game-entry')]; cards.forEach(decorate);
     const active = cards.some(visible); if (!force && previous === active) return;
-    previous = active; document.body.dataset.mpEntry = String(active);
+    const wasEntry = previous; previous = active; document.body.dataset.mpEntry = String(active);
+    // Games measure their boards while rendering. Refit after entrance styles
+    // are removed, including standalone Matgo where the iframe never resizes.
+    if (wasEntry && !active) window.dispatchEvent(new Event('resize'));
     if (embedded) parent.postMessage({type:'ojjuda:entry:view',active},location.origin);
     else if (!document.querySelector('body > .mp-entry-bar')) document.body.prepend(toolbar(() => location.assign('/world.html')));
   }
