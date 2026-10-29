@@ -1,11 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261029-bang-hints1';
+ const revision='20261029-bang-solo1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  bang:'1.1.0',
+  bang:'1.2.0',
   poker:'1.1.0',
   tank:'1.0.1',
   mines:'1.0.0',
@@ -27,7 +27,7 @@
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
-  bang:['/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261029-bang-hints1'],
+  bang:['/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261029-bang-solo1'],
   sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261028-games-touch1'],
   poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261026-poker-opening1'],
   tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261022-ranks2'],

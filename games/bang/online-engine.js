@@ -1,4 +1,25 @@
 import {Game} from './engine.js';
+import {CHARACTERS} from './data.js';
+
+export function soloOptions(options){
+ if(!options||!Number.isInteger(options.count)||options.count<4||options.count>7||!['sheriff','random'].includes(options.role)||!['random',...CHARACTERS.map(c=>c.id)].includes(options.character))throw Error('invalid_options');
+ return {count:options.count,role:options.role,character:options.character};
+}
+export function createSolo(name,runId,options,random=Math.random){
+ const game=onlineGame(null,random);
+ game.create(soloOptions(options));
+ game.p(0).name=String(name).slice(0,12);
+ game.s.runId=runId;game.s.online=true;game.s.forfeited=[];
+ game.s.logs=[];game.log('컴퓨터 대전 · 승패가 연승 순위에 반영됩니다.','system');
+ return advanceSolo(game.s,random);
+}
+export function soloNeedsMove(state){return !!state&&!state.winner&&(state.pending?.player??state.current)!==0;}
+export function advanceSolo(state,random=Math.random){
+ const game=onlineGame(structuredClone(state),random);
+ // Bound work per request, and stop at every human decision (including defense).
+ for(let n=0;n<48&&soloNeedsMove(game.s);n++)if(!game.aiAction())throw Error('invalid_action');
+ return game.s;
+}
 
 export function onlineGame(state, random=Math.random){
  const game=new Game(state,random);

@@ -1,10 +1,10 @@
 name: BANG multiplayer checks
 on:
   pull_request:
-    paths: ['games/bang/**', 'supabase/functions/bang/**', 'tests/bang-*', '.github/workflows/bang.yml']
+    paths: ['games/bang/**', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
   push:
     branches: [main]
-    paths: ['games/bang/**', 'supabase/functions/bang/**', 'tests/bang-*', '.github/workflows/bang.yml']
+    paths: ['games/bang/**', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
-      - run: node --test tests/bang-engine.test.mjs tests/bang-tutorial.test.mjs tests/bang-online.test.mjs tests/bang-db.test.cjs tests/bang-hints.test.mjs tests/bang-hints-ui.test.cjs
+      - run: node --experimental-strip-types --test tests/bang-engine.test.mjs tests/bang-tutorial.test.mjs tests/bang-online.test.mjs tests/bang-db.test.cjs tests/bang-hints.test.mjs tests/bang-hints-ui.test.cjs tests/bang-solo.test.mjs tests/bang-solo-ui.test.cjs
       - run: |
           cmp games/bang/engine.js supabase/functions/bang/engine.js
           cmp games/bang/data.js supabase/functions/bang/data.js
