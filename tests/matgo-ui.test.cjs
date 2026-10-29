@@ -6,7 +6,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
  const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.MATGO_CHROMIUM?{executablePath:process.env.MATGO_CHROMIUM}:{})});
  async function fixture(options={}){
   const state={age:19,gold:5000,freeUsed:0,coins:20,user:member,requests:[],...options};
-  const context=await browser.newContext({viewport:{width:390,height:820}});const errors=[];
+  const context=await browser.newContext({viewport:options.viewport||{width:390,height:820},hasTouch:!!options.mobile});const errors=[];
+  if(options.native)await context.addInitScript(()=>{
+    window.Capacitor={isNativePlatform:()=>true,Plugins:{App:{
+      addListener:async(type,fn)=>{if(type==='backButton')window.nativeBack=fn;},
+      exitApp:()=>{window.nativeExits=(window.nativeExits||0)+1;}
+    }}};
+  });
   context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));
   await context.exposeBinding('matgoFixture',async(_,body)=>{
     state.requests.push(body);
@@ -50,9 +56,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     let file=path.join(root,decodeURIComponent(url.pathname));
     if(url.pathname==='/world.html'){
       let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-      html=html.replace('<script type="module">',`<script>${['matgo-access.js','matgo-bridge.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
+      html=html.replace('<script type="module">',`<script>${['matgo-access.js','matgo-bridge.js','multiplayer-entry.js','mobile-viewport.js','world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
       const boot=html.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='home';H();`+html.slice(html.indexOf('</script>',boot));
+      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/games/matgo.html'){
@@ -447,22 +453,93 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     }else{assert.equal(await f.page.locator('#refill-gold').count(),0);assert.match(await f.page.locator('.modal').textContent(),/1,000G 미만/);}
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  for(const age of [18,19]){
-    const f=await fixture({age});await f.page.goto('https://fixture.test/world.html');await f.page.waitForFunction(()=>window.placeTest);
+  // Keep the real parent entrance/viewport/navigation scripts: omitting them
+  // leaves the host stuck in entrance mode and misses its actual transitions.
+  for(const options of [{age:18},...[false,true].flatMap(native=>[
+    {age:19,mobile:true,native,viewport:{width:320,height:568}},
+    {age:19,mobile:true,native,viewport:{width:390,height:820}}
+  ])]){
+    const {age,native,viewport}=options;
+    const f=await fixture(options);await f.page.goto('https://fixture.test/world.html');await f.page.waitForFunction(()=>window.placeTest);
     await f.page.evaluate(async()=>{try{await OjjudaMatgoAccess.check();}catch{}placeTest.enter('arcade',1);placeTest.freeze();});
     assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),age>=19?1:0);
     if(age<19){await f.page.evaluate(()=>openMatgo());assert.equal(await f.page.locator('#matgo-overlay').count(),0);}
     else{
-      await f.page.locator('[data-act="matgo-open"]').click();await f.page.waitForSelector('#matgo-overlay iframe');
-      await f.page.frameLocator('#matgo-overlay iframe').locator('#money').waitFor();
+      const {width,height}=viewport;
       await f.page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}'});
-      const embedded=await f.page.locator('#matgo-overlay iframe').boundingBox();
-      assert.ok(embedded.y>=24&&embedded.y+embedded.height<=820-47,'Matgo shares the app system-navigation safe area');
+      const child=f.page.frameLocator('#matgo-overlay iframe');
+      async function inside(locator,label,top=24,bottom=height-48){
+        const box=await locator.boundingBox();
+        assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1&&box.y>=top-1&&box.y+box.height<=bottom+1,`${width}px ${label}: ${JSON.stringify(box)} inside ${top}..${bottom}`);
+      }
+      async function open(){
+        await f.page.locator('[data-act="matgo-open"]').tap();
+        await child.locator('#content:not([inert]) #solo').waitFor();
+        await f.page.waitForFunction(()=>document.querySelector('#matgo-overlay')?.dataset.mpActive==='true'&&history.state?.ojjudaWorld==='menu');
+        await inside(f.page.locator('#matgo-overlay iframe'),'entrance frame');
+        await inside(f.page.locator('#matgo-overlay .mp-entry-back'),'entrance back');
+        await inside(child.locator('#solo'),'start button');
+      }
+      async function closed(){
+        await f.page.waitForFunction(()=>!document.querySelector('#matgo-overlay')&&history.state?.ojjudaWorld==='main');
+        assert.equal(await f.page.locator('.arcade-home').isVisible(),true);
+        assert.equal(await f.page.evaluate(()=>window.nativeExits||0),0,'game exit stays in the app');
+      }
+      async function back(){
+        if(native)await f.page.evaluate(()=>nativeBack({canGoBack:false}));else await f.page.goBack();
+        await closed();
+      }
+      await open();
+      fs.mkdirSync('/tmp/matgo-safe-area-proof',{recursive:true});
+      await f.page.screenshot({path:`/tmp/matgo-safe-area-proof/entrance-${width}-${native?'native':'browser'}.png`});
+      const starts=f.state.requests.filter(r=>r.action==='start').length;
+      await child.locator('[data-entry-mode="opponent"]').tap();
+      await child.locator('details:has(#join-form)>summary').tap();
+      await child.locator('#join').scrollIntoViewIfNeeded();
+      await inside(child.locator('#join'),'scrolled online join button');
+      // Browser controls/keyboard can shrink and offset the visible viewport.
+      await f.page.evaluate(()=>{
+        const vv=window.visualViewport;
+        Object.defineProperties(vv,{height:{configurable:true,value:420},offsetTop:{configurable:true,value:12}});
+        vv.dispatchEvent(new Event('resize'));vv.dispatchEvent(new Event('scroll'));
+      });
+      await f.page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--app-viewport-height')==='420px');
+      await inside(f.page.locator('#matgo-overlay iframe'),'resized entrance frame',36,384);
+      await inside(f.page.locator('#matgo-overlay .mp-entry-back'),'resized back',36,384);
+      await child.locator('#join').scrollIntoViewIfNeeded();await inside(child.locator('#join'),'resized join',36,384);
+      await f.page.evaluate(()=>{const vv=window.visualViewport;delete vv.height;delete vv.offsetTop;vv.dispatchEvent(new Event('resize'));vv.dispatchEvent(new Event('scroll'));});
+      await child.locator('[data-entry-mode="computer"]').tap();
+      assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts,'mode changes never start or charge a round');
+      await f.page.locator('#matgo-overlay .mp-entry-back').tap();await closed();
+      await open();await back();
+      await open();await child.locator('#solo').tap();
+      await child.locator('#handMe').waitFor();
+      await f.page.waitForFunction(()=>document.querySelector('#matgo-overlay')?.dataset.mpActive==='false');
+      const solo=f.page.frames().find(frame=>frame.url().includes('/games/matgo.html'));
+      await solo.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.ui.dealing);
+      assert.equal(await child.locator('#matgo-start').count(),0,'one entrance click starts the game');
+      assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts+1);
+      await inside(f.page.locator('#matgo-overlay iframe'),'playing frame');
+      for(const selector of ['#exit','#menu','#handMe'])await inside(child.locator(selector),selector);
+      await child.locator('#menu').tap();await child.locator('#rules').tap();
+      await child.locator('.modal .card .btn').last().scrollIntoViewIfNeeded();
+      await inside(child.locator('.modal .card .btn').last(),'rules close');
+      await child.locator('.modal .card .btn').last().tap();
+      await f.page.screenshot({path:`/tmp/matgo-safe-area-proof/${width}-${native?'native':'browser'}.png`});
+      await child.locator('#exit').tap();await closed();
+      // Re-entry retains the fixture's round and wallet; Back must still close.
+      const savedRound=JSON.stringify(f.state.round),savedGold=f.state.gold,savedCoins=f.state.coins;
+      await open();await child.locator('#solo').tap();await child.locator('#handMe').waitFor();
+      await f.page.waitForFunction(()=>document.querySelector('#matgo-overlay')?.dataset.mpActive==='false');
+      await inside(child.locator('#exit'),'reopened exit');await back();
+      assert.equal(JSON.stringify(f.state.round),savedRound);assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
+      assert.equal(f.state.requests.some(r=>['settle','refill','tazza_start','vent'].includes(r.action)),false,'navigation never settles, refills or purchases');
+      await open();
       assert.equal(await f.page.locator('#matgo-loading-bar').count(),0,'no duplicate game header after loading');
       await f.page.evaluate(()=>authCallback('SIGNED_OUT',null));assert.equal(await f.page.locator('#matgo-overlay').count(),0);assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),0);
     }
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  console.log('PASS: opening-ppuk event, pending-only gold, exit without payment, one final settlement, existing special rules, age gate, refills and logout');
+  console.log('PASS: opening-ppuk event, pending-only gold, exit without payment, one final settlement, existing special rules, age gate, refills and logout; 320/390px safe entrances, gameplay, resized viewports, browser/native Back and exit without wallet changes');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});
