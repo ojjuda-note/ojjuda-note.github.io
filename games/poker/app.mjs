@@ -122,7 +122,7 @@ function entryCard(content,{waiting=false}={}){
     <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span><h1 class="ge-title" id="poker-title">세븐포커 <small>19+</small></h1>
     <p class="ge-copy">일곱 장의 카드로 나만의 승부를 즐겨보세요.</p>
     <div class="poker-entry-wallet"><span>보유 골드</span><strong>${wallet?fmt(wallet.gold)+' <small>G</small>':'확인 중…'}</strong></div>
-    ${waiting?'':`<div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button type="button" data-action="online-back" class="${onlineLobby?'':'on'}" aria-pressed="${!onlineLobby}">혼자 하기</button><button type="button" data-action="online" class="${onlineLobby?'on':''}" aria-pressed="${onlineLobby}" ${!wallet?'disabled':''}>온라인 대전</button></div>`}
+    ${waiting?'':`<div class="seg ge-play-modes" role="group" aria-label="게임 모드"><button type="button" data-action="online-back" class="${onlineLobby?'':'on'}" aria-pressed="${!onlineLobby}">컴퓨터 대전</button><button type="button" data-action="online" class="${onlineLobby?'on':''}" aria-pressed="${onlineLobby}" ${!wallet?'disabled':''}>온라인 대전</button></div>`}
     ${content}${refillButton()}
     <p class="ge-hint online-connection" role="status">${esc(onlineError)}</p>
     <button class="ge-secondary" type="button" data-action="exit">게임 목록으로</button>
@@ -130,8 +130,8 @@ function entryCard(content,{waiting=false}={}){
   </div></section>`;
 }
 function renderLobby(){
-  const canResume=game&&game.phase!=='finished';
-  app.innerHTML=waitingTable(`<span class="start-kicker">SEVEN POKER · 19+</span><h1 id="table-start-title">한 판 시작할까요?</h1><p>나와 컴퓨터 3명이 함께해요.</p><div class="seg start-modes" role="group" aria-label="게임 모드"><button class="on" aria-pressed="true" data-action="online-back">혼자 하기</button><button aria-pressed="false" data-action="online" ${!wallet?'disabled':''}>온라인 대전</button></div><span class="start-label" id="difficulty-label">컴퓨터 난이도</span><div class="seg" role="group" aria-labelledby="difficulty-label">${[['easy','편하게'],['normal','보통']].map(([id,label])=>`<button type="button" data-difficulty="${id}" class="${record.difficulty===id?'on':''}" aria-pressed="${record.difficulty===id}" ${canResume?'disabled':''}>${label}</button>`).join('')}</div><button class="primary table-start-button" type="button" data-action="${canResume?'resume':'start'}" ${(!wallet||record.bank<50)&&!canResume?'disabled':''}>${canResume?'이어서 하기':'게임 시작'}</button><small class="start-cost">기본 참가비 50 G</small>${refillButton()}`);
+ const canResume=game&&game.phase!=='finished';
+ app.innerHTML=entryCard(`<span class="ge-label" id="difficulty-label">컴퓨터 난이도</span><div class="seg" role="group" aria-labelledby="difficulty-label">${[['easy','편하게'],['normal','보통']].map(([id,label])=>`<button type="button" data-difficulty="${id}" class="${record.difficulty===id?'on':''}" aria-pressed="${record.difficulty===id}" ${canResume?'disabled':''}>${label}</button>`).join('')}</div><button class="ge-primary" type="button" data-action="${canResume?'resume':'start'}" ${(!wallet||record.bank<50)&&!canResume?'disabled':''}>${canResume?'이어서 하기':'컴퓨터 대전 시작'}</button><p class="ge-hint">나 + 컴퓨터 3명 · 기본 참가비 50 G</p>`);
 }
 function renderResumeLobby(){
  const solo=online.room.mode==='solo',finished=game.phase==='finished';
@@ -140,11 +140,8 @@ function renderResumeLobby(){
 function startPopup(content){
  return `<section class="table-start-overlay" role="dialog" aria-labelledby="table-start-title"><div class="table-start-card">${content}<p class="online-connection" role="status">${esc(onlineError)}</p></div></section>`;
 }
-function waitingTable(content){
- const r=online?.room,names=r?r.names:['나','하루','두리','보리'],capacity=r?.capacity||4;
- const seats=Array.from({length:capacity},(_,i)=>`<div class="waiting-seat waiting-seat-${i} ${names[i]?'occupied':''}"><span aria-hidden="true">${['♠','♣','♦','♥'][i]}</span><strong>${esc(names[i]||'빈자리')}</strong><small>${r?(names[i]?(i===r.hostSeat?'방장':'참여 완료'):'참여 대기'):i?'컴퓨터':'내 자리'}</small></div>`).join('');
- return header()+`<section class="game waiting-game"><div class="round-strip"><span class="table-id">${r&&r.mode!=='solo'?'온라인 대전':'컴퓨터 대전'}</span><span class="waiting-table-label">SEVEN CARD STUD</span></div><div class="table-scene"><div class="felt waiting-felt"><div class="felt-inlay" aria-hidden="true"></div><div class="waiting-seats" aria-hidden="true">${seats}</div>${startPopup(content)}</div></div></section>`;
-}
+function waitingTable(content){return entryCard(`<div class="mp-waiting">${content}</div>`,{waiting:true});}
+
 const roundKey=()=>game?`${game._roomId}:${game._round}`:null;
 function nextHandPopup(){
  const r=online.room,waiting=r.ready[r.seat],departed=r.departed.some(Boolean),net=game.result.net[0];
@@ -386,7 +383,7 @@ function render({animateDeal=true}={}){
     }
   }
   dealMotion.cancel();openingSelection.cancel();
-  const tableView=!lobby||!onlineLobby||!!online?.room;
+  const tableView=!lobby;
   document.body.classList.toggle('poker-entry-active',!tableView);
   document.body.classList.toggle('poker-playing',tableView);
   if(playingView!==tableView){playingView=tableView;send('table-view',{playing:playingView});}

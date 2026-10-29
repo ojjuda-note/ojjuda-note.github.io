@@ -1,18 +1,18 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261029-bang-solo1';
+ const revision='20261029-arcade-entry1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  bang:'1.2.0',
-  poker:'1.1.0',
-  tank:'1.0.1',
+  bang:'1.2.1',
+  poker:'1.1.1',
+  tank:'1.0.2',
   mines:'1.0.0',
   sacheonseong:'1.1.3',
   saetbyeol:'1.0.0',
-  tour:'1.0.1',
-  ttang:'1.0.0',
+  tour:'1.0.2',
+  ttang:'1.0.1',
   photo_ttang:'1.0.0',
   mole:'1.0.0',
   runner:'1.0.1',
@@ -20,22 +20,22 @@
   breakout:'1.0.0',
   spot:'1.3.0',
   screw:'1.0.2',
-  janggi:'1.0.0',
-  chess:'1.0.0',
-  billiards:'1.0.0',
-  matgo:'1.0.6'
+  janggi:'1.0.1',
+  chess:'1.0.1',
+  billiards:'1.0.1',
+  matgo:'1.0.7'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
-  bang:['/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261029-bang-solo1'],
+  bang:['/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261029-arcade-entry1'],
   sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261028-games-touch1'],
-  poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261026-poker-opening1'],
-  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261022-ranks2'],
+  poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261029-arcade-entry1'],
+  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261029-arcade-entry1'],
   mines:['/world-tour-game.css?v=20261012-marble-invite1','/games/mines/rules.js?v=20261022-ranks1','/world-mines-game.js?v=20261022-ranks1'],
   saetbyeol:['/world-tour-game.css?v=20261012-marble-invite1','/world-saetbyeol-game.js?v=20261021-guest1'],
-  tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261028-arcade-best1'],
+  tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261029-arcade-entry1'],
   spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261028-spot-level1'],
-  ttang:['/ttang-bridge.js?v=20261022-ranks2'],
+  ttang:['/ttang-bridge.js?v=20261029-arcade-entry1'],
   photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261023-entry1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],

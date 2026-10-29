@@ -41,7 +41,7 @@ const root=path.resolve(__dirname,'..');
    });
    await page.goto('https://fixture.test/host.html');await page.locator('#launch').click();
    const frame=page.frameLocator('iframe');await frame.locator('#tourTitle').waitFor();
-   await frame.getByRole('button',{name:'온라인으로',exact:true}).click();
+   await frame.getByRole('button',{name:'온라인 대전',exact:true}).click();
    await frame.locator('#marbleCreate button').waitFor({state:'visible'});
    await page.frames().find(x=>x.url().includes('/games/ojjuda-tour/')).waitForFunction(()=>!document.querySelector('#marbleCreate button').disabled);
    return {page,frame,context,embedded:()=>page.frames().find(x=>x.url().includes('/games/ojjuda-tour/'))};
@@ -101,7 +101,7 @@ const root=path.resolve(__dirname,'..');
   await a.frame.getByRole('button',{name:'시점 초기화',exact:true}).click();
   await a.frame.locator('#game').screenshot({path:'/tmp/ojjuda-tour-proof/online-game.png'});
   // A different browser session reloads and rejoins its reserved seat, without creating a new game.
-  await b.page.reload();await b.page.locator('#launch').click();await b.frame.locator('#tourTitle').waitFor();await b.frame.getByRole('button',{name:'온라인으로',exact:true}).click();
+  await b.page.reload();await b.page.locator('#launch').click();await b.frame.locator('#tourTitle').waitFor();await b.frame.getByRole('button',{name:'온라인 대전',exact:true}).click();
   await b.frame.locator('#game').waitFor({state:'visible',timeout:60000});await b.embedded().waitForFunction(()=>G.owner[3]===0&&G.level[3]===2);
   assert.match(await b.frame.locator('#marbleGameRoom').innerText(),new RegExp(code));
   await a.embedded().waitForFunction(()=>MarbleOnline.canAct(),{},{timeout:60000});
