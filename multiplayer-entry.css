@@ -46,6 +46,8 @@ body[data-mp-entry="true"] .online-lobby{margin:24px auto!important}
 .game-entry.mp-entry [hidden]{display:none!important}.game-entry.mp-entry button:disabled{opacity:.5;cursor:default}
 .game-entry.mp-entry :is(#exitEntry,[data-action="exit"]){display:none}
 .game-entry.mp-entry :is(.online-create,.online-join,.online-practice,.modal-actions){display:block;grid-template-columns:none;margin:0;padding:0;background:none;border:0}
+.game-entry.mp-entry .marble-join>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.game-entry.mp-entry .marble-join>div>button{width:auto;margin:0}
 .game-entry.mp-entry .online-error:empty{display:none}
 .game-entry.mp-entry .online-seats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;color:#625574}
 .game-entry.mp-entry .online-seats>div{min-width:0;padding:8px;border:1px solid #e9e5f0;border-radius:10px;background:#f7f5fa;color:#625574;font-size:12px;overflow-wrap:anywhere}
