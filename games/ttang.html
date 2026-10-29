@@ -112,6 +112,8 @@ button:active:not(:disabled){transform:translateY(3px)}
 <script src="/game-controls.js?v=20261007-flow1" defer></script>
 <link rel="stylesheet" href="/game-entry.css?v=20261009-entry1">
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
+<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-arcade-entry1">
+<script src="/multiplayer-entry.js?v=20261029-arcade-entry1" defer></script>
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -369,7 +371,7 @@ function handleEvents(){ for(const ev of world.events){
     if(p===me){ sfx.capture(ev.gained); if(pct>1.5) toast(pct>=4?'대박!':'좋아요!',PAL[p.color].c); try{ navigator.vibrate&&navigator.vibrate(15); }catch{} } }
   if(ev.t==='death'){ const p=ev.p; burst(ev.x??p.x,ev.y??p.y,PAL[p.color].c,40,8); if(ev.why==='wall'){ burst(p.x,p.y,'#E53935',30,11); burst(p.x,p.y,'#FFD54F',20,7); if(p===me) toast('펑! 벽에 너무 오래 있었어요','#E53935'); }
     if(p===me){ shake=.5; sfx.death(); try{ navigator.vibrate&&navigator.vibrate([60,40,60]); }catch{} }
-    const k=ev.by&&ev.by!==p.id?world.players[ev.by-1]:null; if(k===me){ sfx.kill(); toast(`${p.name} 처치!`,PAL[k.color].c); }
+    const k=ev.by&&ev.by!==p.id?world.players[ev.by-1]:null; if(k&&k===me){ sfx.kill(); toast(`${p.name} 처치!`,PAL[k.color].c); }
     if(mode==='solo'&&p===me&&!over){ over=true; setTimeout(()=>showEnd(),900); }
     if(mode==='net'&&p===me&&ev.why!=='wall') toast('탈락! 2초 뒤 다시',PAL[p.color].d); }
   } world.events.length=0; }
