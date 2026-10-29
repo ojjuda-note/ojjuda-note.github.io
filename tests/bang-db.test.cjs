@@ -17,7 +17,7 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
  return '[{"nick":"unchanged","score":7}]'::json;end$$;`);
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029033602_bang_multiplayer_streaks.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029072338_bang_solo_streaks.sql'),'utf8'));
- await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029161540_bang_paid_hints_random_roles.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029162439_bang_paid_hints_random_roles.sql'),'utf8'));
  const users=Array.from({length:5},()=>randomUUID());for(let i=0;i<5;i++){await db.query('insert into auth.users(id) values($1)',[users[i]]);await db.query('insert into public.profiles values($1,$2)',[users[i],'P'+i]);await db.query('insert into public.user_private(user_id) values($1)',[users[i]]);}
  const rpc=async(actor,action,room=null,code=null,request=null,options={},version=null,next=null)=>(await db.query('select public.bang_online_service($1,$2,$3,$4,$5,$6,$7,$8) v',[actor,action,room,code,request,options,version,next])).rows[0].v;
  const request=randomUUID();let c=await rpc(users[0],'create',null,null,request,{capacity:4,title:'TEST'});const room=c.room.id;
