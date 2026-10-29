@@ -15,6 +15,7 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
  create function public.community_game_monthly_ranking(p_game text) returns json language plpgsql as $$begin
  return '[{"nick":"unchanged","score":7}]'::json;end$$;`);
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029033602_bang_multiplayer_streaks.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029072338_bang_solo_streaks.sql'),'utf8'));
  const users=Array.from({length:5},()=>randomUUID());for(let i=0;i<5;i++){await db.query('insert into auth.users(id) values($1)',[users[i]]);await db.query('insert into public.profiles values($1,$2)',[users[i],'P'+i]);}
  const rpc=async(actor,action,room=null,code=null,request=null,options={},version=null,next=null)=>(await db.query('select public.bang_online_service($1,$2,$3,$4,$5,$6,$7,$8) v',[actor,action,room,code,request,options,version,next])).rows[0].v;
  const request=randomUUID();let c=await rpc(users[0],'create',null,null,request,{capacity:4,title:'TEST'});const room=c.room.id;
@@ -56,6 +57,72 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
    live=await call(users[0],{action:'read',room_id:liveId});assert.equal(live.ok,true,live.error);
   }
   assert.equal(live.room.status,'finished');assert.equal((await db.query('select count(*)::int n from ojjuda_bang_internal.results where room_id=$1',[liveId])).rows[0].n,4);
+
+  // Real HTTP -> Edge -> SQL path for ranked solo games. No production data is used.
+  await db.exec('delete from ojjuda_bang_internal.results');
+  const soloOptions={count:4,role:'sheriff',character:'bart'};
+  const startSolo=async()=>{
+   const request=randomUUID();const result=await call(users[0],{action:'solo',request_id:request,options:soloOptions});
+   assert.equal(result.ok,true,JSON.stringify(result));assert.equal(result.room.mode,'solo');assert.equal(result.room.status,'active');
+   const retry=await call(users[0],{action:'solo',request_id:request,options:soloOptions});assert.equal(retry.room.id,result.room.id);
+   assert.equal((await call(users[1],{action:'join',code:result.room.code})).error,'room_unavailable');
+   assert.equal((await call(users[1],{action:'read',room_id:result.room.id})).error,'room_not_found');
+   assert.equal((await db.query('select public.arcade_extra_rooms() v')).rows[0].v.rooms.some(x=>x.match_id===result.room.id),false);
+   return result;
+  };
+  const {Game}=await import('../games/bang/engine.js');
+  const {makeDeck}=await import('../games/bang/data.js');
+  const nearWin=async(room)=>{
+   const game=new Game(null,()=>.42);game.create(soloOptions);const state=game.s;
+   Object.assign(state,{runId:room.id,online:true,forfeited:[],current:0,phase:'play',pending:null,queue:[],bangs:0});
+   state.players.forEach((p,i)=>Object.assign(p,{name:'P'+i,char:'bart',role:['sheriff','renegade','outlaw','outlaw'][i],hp:i===0?5:i===1?1:0,maxHp:i===0?5:4,alive:i<2,equipment:[],hand:[]}));
+   const bang=makeDeck().find(c=>c.type==='bang');state.players[0].hand=[bang];state.deck=makeDeck().filter(c=>c.id!==bang.id);state.discard=[];
+   await db.query('update ojjuda_bang_internal.rooms set state=$2 where id=$1',[room.id,JSON.stringify(state)]);
+   return bang.id;
+  };
+  for(let expected=1;expected<=2;expected++){
+   let solo=await startSolo();const card=await nearWin(solo.room),request=randomUUID();
+   // Even after 45 seconds, a solo game waits for the human instead of auto-playing.
+   await db.query("update ojjuda_bang_internal.rooms set deadline=now()-interval '1 minute' where id=$1",[solo.room.id]);
+   const read=await call(users[0],{action:'read',room_id:solo.room.id});assert.equal(read.room.version,solo.room.version);
+   const body={action:'move',room_id:solo.room.id,version:solo.room.version,request_id:request,move:{type:'play',card,target:1}};
+   solo=await call(users[0],body);assert.equal(solo.ok,true);assert.equal(solo.room.status,'finished');
+   assert.equal(solo.room.record.saved,true);assert.equal(solo.room.record.won,true);assert.equal(solo.room.record.streak,expected);
+   assert.equal((await call(users[0],body)).room.record.streak,expected);
+   assert.equal((await db.query('select count(*)::int n from ojjuda_bang_internal.results where room_id=$1',[solo.room.id])).rows[0].n,1);
+   const board=(await db.query("select public.community_game_monthly_ranking('bang') v")).rows[0].v;
+   assert.equal(board[0].score,expected);assert.equal(board[0].me,true);
+  }
+  let solo=await startSolo();
+  assert.equal((await call(users[0],{action:'solo',request_id:randomUUID(),options:soloOptions})).error,'room_in_progress');
+  assert.equal((await call(users[0],{action:'leave',room_id:solo.room.id})).error,'use_surrender');
+  assert.equal((await call(users[0],{action:'move',room_id:solo.room.id,version:solo.room.version,request_id:randomUUID(),move:{type:'win',winner:'sheriff'}})).error,'invalid_action');
+  assert.equal((await call(users[0],{action:'mine'})).room.id,solo.room.id);
+  solo=await call(users[0],{action:'surrender',room_id:solo.room.id,version:solo.room.version,request_id:randomUUID()});
+  assert.equal(solo.room.record.won,false);assert.equal(solo.room.record.streak,0);
+  assert.deepEqual((await db.query("select public.community_game_monthly_ranking('bang') v")).rows[0].v,[]);
+  await db.exec("update ojjuda_bang_internal.rooms set created_at=now()-interval '2 minutes'");
+  solo=await startSolo();await db.query("update ojjuda_bang_internal.rooms set expires_at=now()-interval '1 minute' where id=$1",[solo.room.id]);
+  assert.equal((await call(users[0],{action:'mine'})).room,null);
+  assert.equal((await db.query('select won from ojjuda_bang_internal.results where room_id=$1',[solo.room.id])).rows[0].won,false);
+  // Complete a full game through HTTP: bots run only on the server; the fixture chooses human moves.
+  solo=await startSolo();
+  for(let step=0;step<1000&&solo.room.status==='active';step++){
+   const raw=(await db.query('select state from ojjuda_bang_internal.rooms where id=$1',[solo.room.id])).rows[0].state;
+   if((raw.pending?.player??raw.current)!==0){solo=await call(users[0],{action:'read',room_id:solo.room.id});continue;}
+   const chooser=new Game(raw);let move;
+   chooser.play=(seat,card,target)=>{move={type:'play',card,target};return true;};
+   chooser.choose=(action,value)=>{move={type:'choose',action,value};return true;};
+   chooser.endTurn=()=>{move={type:'end'};return true;};
+   chooser.discardCard=(seat,card)=>{move={type:'discard',card};return true;};
+   chooser.healSid=(seat,cards)=>{move={type:'heal',cards};return true;};
+   assert.equal(chooser.aiAction(true),true);assert.ok(move);
+   solo=await call(users[0],{action:'move',room_id:solo.room.id,version:solo.room.version,request_id:randomUUID(),move});assert.equal(solo.ok,true,JSON.stringify(solo));
+  }
+  assert.equal(solo.room.status,'finished');assert.equal(solo.room.record.saved,true);
+  assert.equal((await db.query('select count(*)::int n from ojjuda_bang_internal.results where room_id=$1',[solo.room.id])).rows[0].n,1);
+  assert.equal((await call(users[0],{action:'solo',request_id:randomUUID(),options:{...soloOptions,count:3}})).error,'invalid_options');
+  assert.equal((await call('invalid',{action:'solo',request_id:randomUUID(),options:soloOptions})).status,401);
  }finally{globalThis.fetch=previousFetch;globalThis.Deno=previousDeno;}
  // Isolate streak fixtures: synthetic records are only in this disposable local DB.
  await db.exec('delete from ojjuda_bang_internal.results');
