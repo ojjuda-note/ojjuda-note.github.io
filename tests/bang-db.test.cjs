@@ -5,7 +5,8 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
  await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create schema ojjuda_poker_internal;
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  create table auth.users(id uuid primary key,is_anonymous boolean default false);
- create table public.profiles(id uuid primary key,nickname text);create table public.user_private(user_id uuid,banned_until timestamptz);
+ create table public.profiles(id uuid primary key,nickname text);create table public.user_private(user_id uuid primary key,coins integer default 3,banned_until timestamptz);
+ create schema ojjuda_note_internal;create table ojjuda_note_internal.spend_requests(request_id uuid primary key,user_id uuid,kind text,target_id uuid,coins integer,result jsonb,created_at timestamptz default now());
  create function public.is_banned(uuid) returns boolean language sql as $$select false$$;
  create function public.blocked_between(uuid,uuid) returns boolean language sql as $$select false$$;
  create function ojjuda_poker_internal.arcade_rooms() returns jsonb language sql as $$select '{"ok":true,"rooms":[]}'::jsonb$$;
@@ -16,7 +17,8 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
  return '[{"nick":"unchanged","score":7}]'::json;end$$;`);
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029033602_bang_multiplayer_streaks.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029072338_bang_solo_streaks.sql'),'utf8'));
- const users=Array.from({length:5},()=>randomUUID());for(let i=0;i<5;i++){await db.query('insert into auth.users(id) values($1)',[users[i]]);await db.query('insert into public.profiles values($1,$2)',[users[i],'P'+i]);}
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029161540_bang_paid_hints_random_roles.sql'),'utf8'));
+ const users=Array.from({length:5},()=>randomUUID());for(let i=0;i<5;i++){await db.query('insert into auth.users(id) values($1)',[users[i]]);await db.query('insert into public.profiles values($1,$2)',[users[i],'P'+i]);await db.query('insert into public.user_private(user_id) values($1)',[users[i]]);}
  const rpc=async(actor,action,room=null,code=null,request=null,options={},version=null,next=null)=>(await db.query('select public.bang_online_service($1,$2,$3,$4,$5,$6,$7,$8) v',[actor,action,room,code,request,options,version,next])).rows[0].v;
  const request=randomUUID();let c=await rpc(users[0],'create',null,null,request,{capacity:4,title:'TEST'});const room=c.room.id;
  assert.equal((await rpc(users[0],'create',null,null,request,{capacity:4})).room.id,room);
@@ -25,6 +27,38 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
  await assert.rejects(rpc(users[4],'join',null,c.room.code),/room_full/);
  const {createOnline}=await import('../games/bang/online-engine.js');let state=createOnline(c.room.names,room,()=>0.51);
  c=await rpc(users[0],'start',room,null,randomUUID(),{},c.room.version,{state});
+ // Real PostgreSQL verifies price, receipts and eligibility without spending real wallets.
+ const hintId=randomUUID(),hintVersion=c.room.version;
+ const hint=async(request=hintId,version=hintVersion,verify=false)=>(await db.query('select public.bang_hint_buy($1,$2,$3,$4) v',[request,room,version,verify])).rows[0].v;
+ const balance=async user=>(await db.query('select coins from public.user_private where user_id=$1',[user])).rows[0].coins;
+ const asUser=async user=>db.query('select set_config($1,$2,false)',['request.jwt.claim.sub',user]);
+ await db.query("update ojjuda_bang_internal.rooms set state=jsonb_set(state,'{current}','0') where id=$1",[room]);
+ await asUser(users[0]);await db.exec('set role authenticated');
+ assert.equal((await hint(hintId,hintVersion,true)).reason,'not_found');
+ const bought=await hint();assert.equal(bought.ok,true);assert.equal(bought.price,1);assert.equal(bought.coins,2);
+ assert.equal((await hint()).coins,2);assert.equal((await hint(hintId,hintVersion+1)).reason,'request_conflict');
+ assert.equal((await hint(randomUUID(),hintVersion-1)).reason,'state_conflict');
+ await db.exec('reset role');assert.equal(await balance(users[0]),2);
+ await asUser(users[1]);assert.equal((await hint()).reason,'request_conflict');assert.equal((await hint(randomUUID())).reason,'not_your_turn');
+ await asUser(users[4]);assert.equal((await hint(randomUUID())).reason,'room_unavailable');
+ await asUser(users[0]);await db.query('update public.user_private set coins=0 where user_id=$1',[users[0]]);
+ assert.equal((await hint(randomUUID())).reason,'coins');
+ await db.query('update public.user_private set coins=1 where user_id=$1',[users[0]]);
+ const last=randomUUID(),retries=await Promise.all([hint(last),hint(last)]);assert.ok(retries.every(r=>r.ok&&r.coins===0));
+ assert.equal(await balance(users[0]),0);assert.equal((await db.query("select count(*)::int n from ojjuda_note_internal.spend_requests where kind='bang_hint'")).rows[0].n,2);
+ await db.query('update public.user_private set coins=3 where user_id=$1',[users[0]]);
+ await db.query("update ojjuda_bang_internal.rooms set state=jsonb_set(state,'{players,0,alive}','false') where id=$1",[room]);
+ assert.equal((await hint(randomUUID())).reason,'not_your_turn');
+ await db.query("update ojjuda_bang_internal.rooms set state=jsonb_set(state,'{players,0,alive}','true'),deadline=clock_timestamp()-interval '1 second' where id=$1",[room]);
+ assert.equal((await hint(randomUUID())).reason,'state_conflict');
+ await db.query("update ojjuda_bang_internal.rooms set status='finished' where id=$1",[room]);
+ assert.equal((await hint(randomUUID())).reason,'room_unavailable');assert.equal((await hint()).ok,true,'paid receipts recover even after the room ends');
+ await db.query("update ojjuda_bang_internal.rooms set status='active',state=$2,deadline=clock_timestamp()+interval '45 seconds' where id=$1",[room,JSON.stringify(state)]);
+ await db.query('update auth.users set is_anonymous=true where id=$1',[users[0]]);assert.equal((await hint(randomUUID())).reason,'not_signed_in');
+ await db.query('update auth.users set is_anonymous=false where id=$1',[users[0]]);
+ await db.exec('set role anon');await assert.rejects(hint(),/permission denied/);await db.exec('reset role');
+ assert.equal(await balance(users[0]),3,'rejected purchases never debit');
+
  await assert.rejects(rpc(users[1],'commit',room,null,randomUUID(),{},c.room.version-1,{state}),/state_conflict/);
  state.forfeited=[1];c=await rpc(users[1],'commit',room,null,randomUUID(),{},c.room.version,{state});
  assert.equal((await db.query('select won from ojjuda_bang_internal.results where user_id=$1',[users[1]])).rows[0].won,false);
@@ -63,7 +97,7 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
   const soloOptions={count:4,role:'sheriff',character:'bart'};
   const startSolo=async()=>{
    const request=randomUUID();const result=await call(users[0],{action:'solo',request_id:request,options:soloOptions});
-   assert.equal(result.ok,true,JSON.stringify(result));assert.equal(result.room.mode,'solo');assert.equal(result.room.status,'active');
+   assert.equal(result.ok,true,JSON.stringify(result));assert.equal(result.room.mode,'solo');assert.equal(result.room.status,'active');assert.equal((await db.query('select options from ojjuda_bang_internal.rooms where id=$1',[result.room.id])).rows[0].options.role,'random');
    const retry=await call(users[0],{action:'solo',request_id:request,options:soloOptions});assert.equal(retry.room.id,result.room.id);
    assert.equal((await call(users[1],{action:'join',code:result.room.code})).error,'room_unavailable');
    assert.equal((await call(users[1],{action:'read',room_id:result.room.id})).error,'room_not_found');

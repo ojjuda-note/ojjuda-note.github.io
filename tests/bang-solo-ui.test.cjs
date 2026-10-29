@@ -1,11 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
 async function fixture(available){
- const [{Game},data,tutorial,{recommend}]=await Promise.all([import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js')]);
+ const [{Game},data,tutorial,{recommend},{createHintPurchase},{CARD_GUIDES}]=await Promise.all([import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js')]);
  const dom=new JSDOM('<div id="app"></div><div id="overlay" hidden></div><aside id="tutorial-coach" hidden></aside><div id="toast"></div>',{url:'https://ojjuda.kr/games/bang/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
  w.scrollTo=()=>{};w.structuredClone=structuredClone;
  const online={embedded:false,available,busy:false,room:null,get playing(){return !!this.room?.state;},run:async(...args)=>{calls.push(args);return null;}};
- Object.assign(w,{Game,...data,...tutorial,recommend,online});
+ Object.assign(w,{Game,...data,...tutorial,recommend,createHintPurchase,CARD_GUIDES,online});
  let source=fs.readFileSync(path.join(__dirname,'../games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
  source+='\nwindow.qa={result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();}}';w.eval(source);
  return {dom,w,calls};
@@ -14,7 +14,7 @@ test('signed-in computer start uses the server and never creates an unranked loc
  const {dom,w,calls}=await fixture(true);try{
   assert.match(w.document.querySelector('[data-action=start]').textContent,/컴퓨터 대전 · 순위 반영/);
   w.document.querySelector('[data-action=start]').click();assert.equal(calls.length,1);assert.equal(calls[0][0],'solo');
-  assert.equal(calls[0][1].options.count,5);assert.equal(w.localStorage.getItem('ojjuda-bang-practice-v1'),null);
+  assert.equal(calls[0][1].options.count,5);assert.equal(calls[0][1].options.role,'random');assert.equal(w.document.querySelector('[data-action=role]'),null);assert.equal(w.localStorage.getItem('ojjuda-bang-practice-v1'),null);
  }finally{dom.window.close();}
 });
 test('a saved result displays the server-confirmed streak; unsaved and legacy results cannot claim ranking credit',async()=>{
@@ -31,6 +31,32 @@ test('guest play and tutorial clearly remain unranked and do not submit results'
   assert.match(w.document.querySelector('.topbar').textContent,/연습 · 순위 제외/);
   w.qa.result(false);assert.match(w.document.querySelector('#overlay').textContent,/로그인한 뒤 새 대전/);
   w.qa.tutorial();assert.equal(calls.length,0);assert.match(w.document.querySelector('#tutorial-coach').textContent,/직접 따라 배우기/);
+ }finally{dom.window.close();}
+});
+test('practice cards and all 22 catalog entries offer free lessons without playing a card',async()=>{
+ const {dom,w,calls}=await fixture(false);try{
+  w.document.querySelector('[data-action=start]').click();
+  const saved=JSON.parse(w.localStorage.getItem('ojjuda-bang-practice-v1'));
+  assert.equal(saved.options.role,'random');
+  w.document.querySelector('.hand [data-action=card]').click();
+  assert.match(w.document.querySelector('#overlay').textContent,/카드 안내 · 무료/);
+  assert.deepEqual([...w.document.querySelectorAll('.card-guide dt')].map(x=>x.textContent),['효과','사용 방법','활용 팁']);
+  assert.deepEqual(JSON.parse(w.localStorage.getItem('ojjuda-bang-practice-v1')),saved);
+  w.document.querySelector('[data-action=close]').click();
+  w.qa.tutorial();const before=w.document.querySelector('#tutorial-coach h2').textContent;
+  w.document.querySelector('.hand [data-action=card]').click();
+  assert.ok(w.document.querySelector('.card-guide'));assert.equal(w.document.querySelector('#tutorial-coach').hidden,true);
+  w.document.querySelector('[data-action=close]').click();
+  assert.equal(w.document.querySelector('#tutorial-coach h2').textContent,before,'browsing a card does not skip a lesson');
+  w.document.querySelector('.topbar [data-action=catalog]').click();
+  const types=[...w.document.querySelectorAll('[data-action=catalogCard]')].map(x=>x.dataset.value);assert.equal(types.length,22);
+  for(const type of types){
+   w.document.querySelector(`[data-action=catalogCard][data-value=${type}]`).click();
+   assert.equal(w.document.querySelectorAll('.card-guide dd').length,3);
+   assert.ok([...w.document.querySelectorAll('.card-guide dd')].every(x=>x.textContent.length>10));
+   w.document.querySelector('#overlay [data-action=catalog]').click();
+  }
+  assert.equal(calls.length,0,'free guidance never calls a purchase or game RPC');
  }finally{dom.window.close();}
 });
 
