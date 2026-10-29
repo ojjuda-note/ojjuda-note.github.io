@@ -2,14 +2,14 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..');
 async function fixture(seat=0){
- const [{Game},data,{Tutorial,CHAPTERS,STEPS},{recommend},{visibleState},{createHintPurchase},{CARD_GUIDES}]=await Promise.all([
-  import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/online-engine.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js')
+ const [{Game},data,{Tutorial,CHAPTERS,STEPS},{recommend},{visibleState},{createHintPurchase},{CARD_GUIDES},{CHARACTER_GUIDES}]=await Promise.all([
+  import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/online-engine.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js'),import('../games/bang/character-guides.js')
  ]);
  const dom=new JSDOM('<div id="app"></div><div id="overlay" hidden></div><aside id="tutorial-coach" hidden></aside><div id="toast"></div>',{url:'https://ojjuda.kr/games/bang/',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,moves=[],purchases=[];
  w.scrollTo=()=>{};w.structuredClone=structuredClone;
  const online={embedded:false,room:null,busy:false,owner:"11111111-1111-4111-8111-111111111111",request:async b=>{purchases.push(b);return {ok:true,kind:"bang_hint",price:1,request_id:b.request_id,room_id:b.room_id,version:b.version};},get playing(){return !!this.room?.state;},move:m=>moves.push(m)};
- Object.assign(w,{Game,...data,Tutorial,CHAPTERS,STEPS,recommend,createHintPurchase,CARD_GUIDES,online});
+ Object.assign(w,{Game,...data,Tutorial,CHAPTERS,STEPS,recommend,createHintPurchase,CARD_GUIDES,CHARACTER_GUIDES,online});
  let source=fs.readFileSync(path.join(root,'games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
  source+='\nwindow.qa={set(s){clearTimeout(botTimer);online.room={id:"22222222-2222-4222-8222-222222222222",version:(online.room?.version||0)+1,seat:'+seat+',state:s,code:"A1B2C3D4",status:"active"};online.onChange();},snapshot(){return JSON.stringify(game.s)},get selected(){return selected},startTutorial(){online.room=null;page="lobby";beginTutorial();}};';
  w.eval(source);

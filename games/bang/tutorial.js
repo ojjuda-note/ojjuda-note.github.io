@@ -58,7 +58,7 @@ export class Tutorial {
 
 export const CHAPTERS=['목표','공격','턴 종료','방어','회복','무기'];
 export const STEPS=[
- {chapter:0,title:'당신은 마을을 지키는 보안관!',body:'무법자와 배신자를 모두 쓰러뜨리면 이겨요. 총알 모양 5개는 내 체력이에요. 연습에서는 상대의 정체를 미리 보여드릴게요.',action:'tutorial-next',button:'좋아요, 해볼게요',focus:'.player-strip',tip:'실전에서는 보안관만 정체를 공개해요.'},
+ {chapter:0,title:'당신은 마을을 지키는 보안관!',body:'보안관의 목표는 무법자와 배신자 제거예요. 역할은 승리 조건, 캐릭터는 특수 능력을 정해요. 「캐릭터 안내」에서 16명의 능력을 살펴볼 수 있어요.',action:'tutorial-next',button:'좋아요, 해볼게요',focus:'.player-strip',tip:'내 캐릭터 그림을 눌러도 능력 안내가 열려요.'},
  {chapter:1,title:'① 뱅! 카드를 눌러보세요',body:'화면에 보이는 카드가 내 손패예요. 뱅!은 상대의 체력을 1 줄이는 공격 카드예요.',action:'card',card:'bang',tip:'금색으로 빛나는 뱅! 카드를 누르세요.'},
  {chapter:1,title:'② 이제 공격할 상대를 정해요',body:'카드를 고르면 아래에 사용 버튼이 나타나요. 「상대 선택」을 눌러보세요.',action:'use',tip:'카드 선택 → 상대 선택 → 상대 누르기'},
  {chapter:1,title:'③ 윌리 더 키드를 누르세요',body:'윌리는 거리 1에 있어요. 기본 총의 사정거리도 1이라 공격할 수 있어요.',action:'player',value:1,tip:'윌리 더 키드의 테두리가 빛나고 있어요.'},
