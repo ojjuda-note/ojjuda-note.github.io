@@ -41,6 +41,8 @@
       previousFocus = document.activeElement;
       overlay = document.createElement('div');
       overlay.id = 'matgo-overlay';
+      // Apply the shared entrance before the first frame can paint.
+      overlay.classList.add('mp-entry-host');overlay.dataset.mpActive='true';
       overlay.setAttribute('role', 'dialog');
       overlay.setAttribute('aria-modal', 'true');
       overlay.setAttribute('aria-label', '맞고 · 만 19세 이상');
@@ -61,7 +63,7 @@
       bar.append(close);
       frame = document.createElement('iframe');
       // Reopening must fetch current HTML; round rules still come from the server.
-      const params = new URLSearchParams({ v: '20261029-entry-fix1', open: String(Date.now()) });
+      const params = new URLSearchParams({ v: '20261029-matgo-entry2', open: String(Date.now()) });
       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);

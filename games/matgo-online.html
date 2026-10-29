@@ -37,20 +37,21 @@
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
 <link rel="stylesheet" href="./matgo-deck-tools.css?v=20261014-fencing1">
 <link rel="stylesheet" href="./matgo-opponent.css?v=20261014-cartoon1">
-<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-entry-fix1">
-<script src="/multiplayer-entry.js?v=20261029-entry-fix1" defer></script>
+<link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-matgo-entry2">
+<script src="/multiplayer-entry.js?v=20261029-matgo-entry2" defer></script>
 </head>
-<body data-mp-entry="true" data-mp-entry-pending>
-<div id="gate" class="gate"><h1>오쭈다 맞고</h1><p id="gate-message">입장 정보를 확인하고 있어요.</p><button id="retry" class="btn" hidden>다시 확인</button></div>
-<div id="app" hidden>
+<body data-mp-entry="true">
+<div id="gate" class="gate" hidden><h1>오쭈다 맞고</h1><p id="gate-message">입장 정보를 확인하고 있어요.</p><button id="retry" class="btn" hidden>다시 확인</button></div>
+<div id="app">
   <header class="top"><h1><em>맞고</em></h1><button id="money" class="pill money" aria-label="골드 잔액과 충전"></button><details class="game-menu"><summary id="menu" class="pill" aria-label="게임 메뉴">⋯</summary><div class="menu-options"><p class="pending" id="goldPending"></p><button id="sound" class="pill" type="button" aria-label="효과음 끄기" aria-pressed="true">🔊</button><button id="rules" class="pill">규칙</button><button id="gukjin" class="pill" hidden></button></div></details><button id="exit" class="pill">나가기</button></header>
   <p id="room-label" class="room-label" hidden></p>
   <button id="sound-start" class="pill sound-start" type="button" hidden>🔊 소리 켜기</button>
-  <main id="content"></main>
+  <p id="entry-loading" role="status" style="text-align:center;color:#797487;font-size:12px">입장 정보를 확인하고 있어요.</p>
+  <main id="content" inert aria-busy="true"><section class="lobby game-entry mp-entry" data-entry-key="matgo"><div class="ge-icon" aria-hidden="true">🎴</div><span class="ge-kicker">오쭈다 오락실 · 멀티게임</span><h2 class="ge-title">맞고</h2><p class="ge-copy">같은 달의 패를 모아 한 판 즐겨보세요.</p><div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터 대전</button><button type="button" data-entry-mode="opponent" aria-pressed="false">온라인 대전</button></div><section data-entry-panel="computer"><button id="solo" class="btn gold ge-primary">시작하기</button></section><section data-entry-panel="opponent" hidden><button id="invite-friend" class="btn gold ge-primary">친구 초대</button><button id="quick" class="btn ge-secondary">빠른 대결</button><form id="public-room-form"><label for="public-room-title">방 제목</label><input id="public-room-title" maxlength="40" required value="맞고 같이 한 판 해요" autocomplete="off"><button id="create" class="btn ge-secondary" type="submit">방 만들기</button><p id="public-room-error" role="status"></p><p class="fine">만든 방은 오락실 대전방에 표시돼요.</p></form><details class="ge-more"><summary>방번호로 입장</summary><form class="join" id="join-form"><input id="room-code" aria-label="방 코드" placeholder="방 코드 8자리" autocomplete="off" maxlength="8" required><button class="btn" id="join">입장</button></form></details></section><span class="ge-hint">기본 점당 100G · 만 19세 이상</span><details class="ge-more"><summary>게임 방법 · 판돈 안내</summary><p>판돈은 혼자하기와 같고, 두 사람 중 낮은 금액을 적용해요.<br>차례마다 20초, 시간이 지나면 자동으로 쳐요.<br>상대가 나가면 PC가 이어서 진행해요.</p></details></section></main>
   <p id="connection" role="status" hidden></p>
 </div>
 <div id="toast" role="status" hidden></div>
 <div id="event" class="event" aria-live="polite" hidden></div>
-<script type="module" src="./matgo-online.mjs?v=20261029-entry-fix1"></script>
+<script type="module" src="./matgo-online.mjs?v=20261029-matgo-entry2"></script>
 </body>
 </html>
