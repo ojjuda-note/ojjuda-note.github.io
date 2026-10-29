@@ -23,10 +23,10 @@ test('switching stages immediately after the last pair keeps the completed recor
 });
 test('reopening a completed round preserves its best time without recording twice',()=>{
  let f=fixture(),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
- f=fixture({saved,records});try{assert.equal(f.state().stage,3);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,0);}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,2);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
 });
 test('final-stage completion never advances beyond stage 15',()=>{
- const f=fixture({stage:15});try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);f.d.getElementById('next').click();assert.equal(f.d.querySelectorAll('.stage-card').length,15);}finally{f.close();}
+ const f=fixture({stage:15});try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);}finally{f.close();}
 });
 
 test('matching a pair keeps the other tile buttons and keyboard focus intact',()=>{
@@ -38,7 +38,44 @@ test('matching a pair keeps the other tile buttons and keyboard focus intact',()
 test('a completion outside the local top 30 is not submitted again on reopening',()=>{
  const best=Array.from({length:30},(_,i)=>({id:'best-'+i,duration:i+1,at:Date.now()}));let f=fixture({records:{2:best}}),saved,records;
  try{f.match();saved=f.state();records=f.records();assert.equal(records[2].length,30);assert.equal(saved.lastRank,31);}finally{f.close();}
- f=fixture({saved,records});try{assert.equal(f.state().stage,3);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,2);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
+});
+
+test('completion waits for a choice instead of advancing after four seconds',()=>{
+ const f=fixture();try{
+  assert.equal(f.d.getElementById('completion').hidden,true);
+  f.match();f.run(120);const completed=f.state();
+  for(let i=0;i<60;i++)f.run(1000);
+  assert.deepEqual(f.state(),completed);assert.equal(f.d.getElementById('completion').hidden,false);
+  assert.deepEqual([...f.d.querySelectorAll('.completion-levels button span')].map(b=>b.textContent),['이전 레벨','지금 레벨','다음 레벨']);
+ }finally{f.close();}
+});
+
+for(const [button,stage]of [['previous-level',1],['current-level',2],['next',3]])test(`${button} starts only the chosen level and keeps the completed record`,()=>{
+ const f=fixture();try{
+  f.match();f.run(120);f.d.getElementById(button).click();const selected=f.state();
+  assert.equal(selected.stage,stage);assert.equal(selected.grid.flat().filter(v=>v!==-1).length,4*stage*stage);
+  assert.equal(selected.startedAt,null);assert.equal(selected.finishedMs,null);assert.equal(selected.unlocked,3);
+  assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,1);
+  f.d.getElementById(button).click();f.run(1000);assert.deepEqual(f.state(),selected,'a second queued click cannot start another round');
+ }finally{f.close();}
+});
+
+test('first-stage completion disables only the previous level',()=>{
+ const f=fixture({stage:1});try{
+  f.match();f.run(120);assert.equal(f.d.getElementById('previous-level').disabled,true);
+  f.d.getElementById('previous-level').click();assert.equal(f.state().stage,1);assert.equal(f.d.getElementById('completion').hidden,false);
+  assert.equal(f.d.getElementById('current-level').disabled,false);assert.equal(f.d.getElementById('next').disabled,false);
+ }finally{f.close();}
+});
+
+test('a saved result still waits after reopening and supports replaying the same level',()=>{
+ let f=fixture(),saved,records;try{f.match();f.run(120);saved=f.state();records=f.records();}finally{f.close();}
+ f=fixture({saved,records});try{
+  for(let i=0;i<10;i++)f.run(1000);
+  assert.equal(f.state().stage,2);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,false);
+  f.d.getElementById('current-level').click();assert.equal(f.state().stage,2);assert.equal(f.state().finishedMs,null);assert.equal(f.records()[2].length,1);
+ }finally{f.close();}
 });
 
 test('rapid consecutive pairs are accepted while earlier removal effects are running',()=>{
