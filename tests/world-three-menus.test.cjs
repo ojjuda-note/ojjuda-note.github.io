@@ -43,7 +43,10 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
   assert.match(poker.textContent,/최대 4명/,'the menu displays the maximum player count');
   const gameButtons=[...w.document.querySelectorAll('[data-arcade-games] .gbtn')];
-  assert.equal(gameButtons.length,18,'every game remains in one arcade category');
+  assert.equal(gameButtons.length,19,'every game remains in one arcade category');
+  assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=bang]').length,1,'BANG has a single arcade entry');
+  assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=bang]'),null,'BANG is not duplicated in solo games');
+  assert.match(w.document.querySelector('[data-arcade-games=multi] [data-v=bang]').textContent,/최대 7명/,'BANG is available for up to seven members');
   assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=sacheonseong]'),'Sacheonseong is available in solo games');
   for(const button of gameButtons){
    const id=button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
