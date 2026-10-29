@@ -64,7 +64,7 @@
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
    frame=document.createElement('iframe');frame.title='사천성 게임판';
-   frame.src='/games/sacheonseong/index.html?v=20261029-sacheonseong-level1';
+   frame.src='/games/sacheonseong/index.html?v=20261030-sacheonseong-color1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();
