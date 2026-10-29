@@ -33,3 +33,44 @@ test('guest play and tutorial clearly remain unranked and do not submit results'
   w.qa.tutorial();assert.equal(calls.length,0);assert.match(w.document.querySelector('#tutorial-coach').textContent,/직접 따라 배우기/);
  }finally{dom.window.close();}
 });
+
+async function reentryFixture(room,{joinCode=''}={}){
+ const f=await fixture(false),{w}=f,calls=[],old=w.online;
+ const host={postMessage(message){
+  if(message.type!=='ojjuda-bang-request')return;
+  calls.push(message.body);
+  queueMicrotask(()=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:host,data:{source:'ojjuda-world',type:'ojjuda-bang-response',replyTo:message.requestId,result:{ok:true,room}}})));
+ }};
+ Object.defineProperty(w,'parent',{value:host,configurable:true});
+ w.eval(fs.readFileSync(path.join(__dirname,'../games/bang/online.js'),'utf8').replace('export const online=','const online=')+'\nwindow.online=online;');
+ w.online.onChange=old.onChange;w.online.onNotice=old.onNotice;
+ w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:host,data:{source:'ojjuda-world',type:'ojjuda-bang-init',owner:'member',onlineAvailable:true,joinCode}}));
+ for(let i=0;i<10;i++)await new Promise(r=>setTimeout(r,5));
+ return {...f,calls};
+}
+test('reopening a signed-in solo game stays at the entrance until explicit resume',async()=>{
+ const {Game}=await import('../games/bang/engine.js'),g=new Game(null,()=>.42);g.create({count:4,role:'sheriff',character:'bart'});
+ const room={id:'saved-solo',version:4,mode:'solo',seat:0,status:'active',state:g.s};
+ const {dom,w,calls}=await reentryFixture(room);try{
+  assert.ok(w.document.querySelector('.game-entry [data-action=online-resume]'));
+  assert.equal(w.document.querySelector('.game-layout'),null,'saved state does not bypass the entrance');
+  assert.equal(w.online.room,null);assert.equal(w.online.timer,null,'discovery does not start active-game polling');
+  assert.deepEqual(calls.map(x=>x.action),['mine']);
+  w.document.querySelector('[data-action=home]').click();
+  assert.ok(w.document.querySelector('.game-entry [data-action=online-resume]'),'both mode tabs offer resume');
+  w.document.querySelector('[data-action=online-resume]').click();
+  for(let i=0;i<10&&!w.document.querySelector('.game-layout');i++)await new Promise(r=>setTimeout(r,5));
+  assert.ok(w.document.querySelector('.game-layout'));
+  assert.deepEqual(calls.map(x=>x.action),['mine','read']);assert.equal(calls[1].room_id,room.id);
+ }finally{dom.window.close();}
+});
+test('saved waiting rooms require resume while explicit invitations still join directly',async()=>{
+ const room={id:'waiting',version:1,mode:'multi',seat:0,hostSeat:0,status:'waiting',title:'친구 방',code:'ABCDEF12',capacity:4,names:['친구']};
+ for(const joinCode of ['',room.code]){
+  const {dom,w,calls}=await reentryFixture(room,{joinCode});try{
+   assert.deepEqual(calls.map(x=>x.action),[joinCode?'join':'mine']);
+   assert.equal(!!w.document.querySelector('.room-code'),!!joinCode);
+   assert.equal(!!w.document.querySelector('[data-action=online-resume]'),!joinCode);
+  }finally{dom.window.close();}
+ }
+});

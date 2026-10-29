@@ -58,7 +58,7 @@
   }
   function report(force = false) {
     const cards = [...document.querySelectorAll('.game-entry')]; cards.forEach(decorate);
-    const active = cards.some(visible); if (!force && previous === active) return;
+    const active = document.body.hasAttribute('data-mp-entry-pending') || cards.some(visible); if (!force && previous === active) return;
     const wasEntry = previous; previous = active; document.body.dataset.mpEntry = String(active);
     // Games measure their boards while rendering. Refit after entrance styles
     // are removed, including standalone Matgo where the iframe never resizes.
@@ -67,7 +67,9 @@
     else if (!document.querySelector('body > .mp-entry-bar')) document.body.prepend(toolbar(() => location.assign('/world.html')));
   }
   function update() { queued = false; if (game) report(); else mount(); }
-  function schedule() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+  // Matgo screens must adopt entrance styles before the browser paints the
+  // newly rendered card. A later animation frame briefly exposes the board.
+  function schedule() { if (!queued) { queued = true; if (game && location.pathname.startsWith('/games/matgo')) queueMicrotask(update); else requestAnimationFrame(update); } }
   addEventListener('message',event => {
     if (event.origin !== location.origin) return;
     if (game) { if (event.source === parent && event.data?.type === 'ojjuda:entry:query') report(true); return; }
@@ -75,7 +77,7 @@
     for (const [frame,{host}] of frames) if (event.source === frame.contentWindow) { setView(host,event.data.active); break; }
   });
   function start() {
-    new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden']}); update();
+    new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden','data-mp-entry-pending']}); update();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();

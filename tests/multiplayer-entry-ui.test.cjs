@@ -20,12 +20,17 @@ const {JSDOM}=require('jsdom');const delay=()=>new Promise(resolve=>setTimeout(r
   frame.remove();await delay();assert.equal(host.querySelector('.mp-entry-bar'),null,'removed iframes release toolbar');
   console.log('PASS: common fullscreen lifecycle, close forwarding, origin/source validation, board rerenders and gameplay restoration');
  }finally{observers.forEach(o=>o.disconnect());await delay();w.close();}
- const child=new JSDOM('<main id="app"></main><section class="game-entry"></section>',{url:'https://ojjuda.kr/games/matgo.html',runScripts:'outside-only',pretendToBeVisual:true});
+ const child=new JSDOM('<body data-mp-entry="true" data-mp-entry-pending><main id="app"></main></body>',{url:'https://ojjuda.kr/games/matgo.html',runScripts:'outside-only',pretendToBeVisual:true});
  const cw=child.window,childObservers=[],ChildBase=cw.MutationObserver;cw.MutationObserver=class extends ChildBase{constructor(fn){super(fn);childObservers.push(this);}};
  cw.HTMLElement.prototype.getClientRects=function(){return this.hidden?[]:[{width:300,height:300}];};
  let fits=0;cw.addEventListener('resize',()=>{assert.equal(cw.document.body.dataset.mpEntry,'false','refit runs after entrance styles are removed');fits++;});
  try{
   cw.eval(fs.readFileSync(path.join(__dirname,'../multiplayer-entry.js'),'utf8'));await delay();assert.equal(cw.document.body.dataset.mpEntry,'true');
+  assert.equal(fits,0,'async authentication keeps the entrance active without rendering a board');
+  const card=cw.document.createElement('section');card.className='game-entry';cw.document.body.append(card);cw.document.body.removeAttribute('data-mp-entry-pending');
+  await Promise.resolve();await Promise.resolve();
+  assert.equal(card.classList.contains('mp-entry'),true,'Matgo entrance is decorated before the next paint');
+  assert.equal(cw.document.body.dataset.mpEntry,'true','loading-to-entrance does not flip to gameplay');
   cw.document.querySelector('.game-entry').hidden=true;await delay();assert.equal(fits,1,'entry-to-game transition refits the game board once');
   cw.document.querySelector('#app').append(cw.document.createElement('div'));await delay();assert.equal(fits,1,'ordinary game rendering does not refit repeatedly');
   console.log('PASS: standalone entry-to-game transition restores measured board geometry');
