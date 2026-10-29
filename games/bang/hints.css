@@ -5,11 +5,11 @@
 .card-guide dt{font-size:11px;color:#e7c47c;font-weight:800;margin-top:13px}
 .card-guide dd{font-size:13px;line-height:1.65;margin:4px 0 0;color:#e9e5d8}
 .practice-help{margin-top:12px}
+.guide-links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.guide-links .secondary{padding:10px 12px;font-size:11px}
+.tips .guide-links{justify-content:flex-start}
 .guide-content{touch-action:pan-y pinch-zoom}
 .guide-content img{user-select:none;-webkit-user-drag:none}
-.guide-tabs{display:flex;gap:6px;margin:0 28px 18px 0}
-.guide-tabs button{border:1px solid #bfa97970;border-radius:5px;padding:9px 14px;background:transparent;font-size:12px}
-.guide-tabs button[aria-pressed=true]{color:#203326;background:#e3c77f;font-weight:800}
 .guide-navigation{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);margin-top:20px;padding-top:14px}
 .guide-navigation .secondary{padding:9px 15px;min-height:40px;font-size:12px;white-space:nowrap}
 .guide-position{text-align:center;white-space:nowrap;font-size:12px;color:#e7c47c}
@@ -27,11 +27,11 @@
 .character-guide-modal .eyebrow{letter-spacing:2px}
 .game-screen.training .modal:has(.card-guide),.game-screen.training .modal:has(.catalog){max-height:calc(100dvh - 36px)}
 @media(max-width:620px){
+ .training .nav .practice-label{display:none}
  .character-catalog{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
  .character-catalog button{padding:7px;gap:7px}
  .character-catalog img{width:32px;height:50px}
  .character-catalog strong{font-size:10px}
- .guide-tabs button{padding:8px 12px;font-size:11px}
  .guide-navigation{gap:7px;margin-top:14px;padding-top:11px}
  .guide-navigation .secondary{padding:8px 10px;min-height:38px;font-size:11px}
  .guide-position small{font-size:9px}
@@ -84,4 +84,21 @@
  .game-screen .hand-tools>span{display:none}
  .game-screen .controls.has-hint .selection-info p{font-size:10px;line-height:1.4}
  .hint-badge{font-size:8px;padding:2px 4px}
+}
+
+@media(max-width:370px){
+ .game-screen.training .brand img{width:42px}
+ .game-screen.training .topbar{gap:4px}
+ .game-screen.training .nav{gap:3px}
+}
+
+/* Keep card selection on the table; detailed lessons require the guide button. */
+.game-screen.training .controls.has-card{display:flex;padding:6px 9px;min-height:0;background:#172a20;border:1px solid var(--line)}
+.game-screen.training .controls.has-card .selection-info{display:block}
+.game-screen.training .controls.has-card .selection-info p{display:block;font-size:10px;line-height:1.45}
+.game-screen.training .controls.has-card .action-buttons{width:auto}
+.brief-card-modal{max-width:410px}
+@media(max-width:620px){
+ .game-screen.training .controls.has-card .selection-info{flex-basis:100%}
+ .game-screen.training .controls.has-card .action-buttons{width:100%}
 }

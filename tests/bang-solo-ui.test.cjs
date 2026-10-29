@@ -33,22 +33,30 @@ test('guest play and tutorial clearly remain unranked and do not submit results'
   w.qa.tutorial();assert.equal(calls.length,0);assert.match(w.document.querySelector('#tutorial-coach').textContent,/직접 따라 배우기/);
  }finally{dom.window.close();}
 });
-test('practice cards and all 22 catalog entries offer free lessons without playing a card',async()=>{
+test('selecting a card stays on the table; only the card guide opens detailed lessons',async()=>{
  const {dom,w,calls}=await fixture(false);try{
   w.document.querySelector('[data-action=start]').click();
   const saved=JSON.parse(w.localStorage.getItem('ojjuda-bang-practice-v1'));
   assert.equal(saved.options.role,'random');
   w.document.querySelector('.hand [data-action=card]').click();
+  assert.equal(w.document.querySelector('#overlay').hidden,true);
+  assert.ok(w.document.querySelector('.controls.has-card .selection-info p').textContent.length>10);
+  w.document.querySelector('.controls [data-action=zoom]').click();
   assert.match(w.document.querySelector('#overlay').textContent,/카드 안내 · 무료/);
   assert.deepEqual([...w.document.querySelectorAll('.card-guide dt')].map(x=>x.textContent),['효과','사용 방법','활용 팁']);
   assert.deepEqual(JSON.parse(w.localStorage.getItem('ojjuda-bang-practice-v1')),saved);
   w.document.querySelector('[data-action=close]').click();
   w.qa.tutorial();const before=w.document.querySelector('#tutorial-coach h2').textContent;
   w.document.querySelector('.hand [data-action=card]').click();
+  assert.equal(w.document.querySelector('#overlay').hidden,true);
+  assert.equal(w.document.querySelector('#tutorial-coach').hidden,false);
+  assert.match(w.document.querySelector('.selection-info strong').textContent,/뱅!/);
+  w.document.querySelector('.controls [data-action=zoom]').click();
   assert.ok(w.document.querySelector('.card-guide'));assert.equal(w.document.querySelector('#tutorial-coach').hidden,true);
   w.document.querySelector('[data-action=close]').click();
   assert.equal(w.document.querySelector('#tutorial-coach h2').textContent,before,'browsing a card does not skip a lesson');
   w.document.querySelector('.topbar [data-action=catalog]').click();
+  assert.equal(w.document.querySelector('#overlay [data-action=characterCatalog]'),null,'card guide has no character tab');
   const types=[...w.document.querySelectorAll('[data-action=catalogCard]')].map(x=>x.dataset.value);assert.equal(types.length,22);
   for(const type of types){
    w.document.querySelector(`[data-action=catalogCard][data-value=${type}]`).click();
@@ -64,7 +72,8 @@ test('all 16 character lessons are free, explain activation and preserve the cur
  const {dom,w,calls}=await fixture(false);try{
   w.qa.tutorial();const before=w.qa.snapshot();
   assert.equal(w.document.querySelector('.own-char').disabled,false);
-  w.document.querySelector('#tutorial-coach [data-action=characterCatalog]').click();
+  w.document.querySelector('.topbar [data-action=characterCatalog]').click();
+  assert.equal(w.document.querySelector('#overlay [data-action=catalog]'),null,'character guide has no card tab');
   const ids=[...w.document.querySelectorAll('[data-action=characterGuide]')].map(x=>x.dataset.value);
   assert.equal(new Set(ids).size,16);
   for(const id of ids){
@@ -72,7 +81,7 @@ test('all 16 character lessons are free, explain activation and preserve the cur
    assert.deepEqual([...w.document.querySelectorAll('.character-guide dt')].map(x=>x.textContent),['능력','발동 조건','사용 방법','예시']);
    assert.ok([...w.document.querySelectorAll('.character-guide dd')].every(x=>x.textContent.length>10));
    assert.equal(w.document.querySelector('#tutorial-coach').hidden,true);
-   w.document.querySelector('[data-action=characterCatalog]').click();
+   w.document.querySelector('#overlay [data-action=characterCatalog]').click();
   }
   w.document.querySelector('[data-action=close]').click();
   assert.equal(w.qa.snapshot(),before);assert.equal(calls.length,0);
@@ -100,7 +109,7 @@ test('card and character guides swipe both ways and wrap; scrolling, short drags
   swipe(w,-20);swipe(w,-100,150);swipe(w,-100,0,true);assert.equal(title(),'뱅!');
   w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert.equal(title(),'빗나감!');
   w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));assert.equal(title(),'뱅!');
-  w.document.querySelector('[data-action=close]').click();w.document.querySelector('#tutorial-coach [data-action=characterCatalog]').click();
+  w.document.querySelector('[data-action=close]').click();w.document.querySelector('.topbar [data-action=characterCatalog]').click();
   w.document.querySelector('[data-action=characterGuide][data-value=bart]').click();swipe(w,-100);assert.equal(title(),'블랙 잭');
   swipe(w,100);assert.equal(title(),'바트 캐시디');swipe(w,100);assert.equal(title(),'윌리 더 키드');
   w.document.querySelector('[data-action=close]').click();assert.equal(w.qa.snapshot(),before);assert.equal(calls.length,0);
@@ -108,17 +117,26 @@ test('card and character guides swipe both ways and wrap; scrolling, short drags
 });
 test('own character help leaves target selection, defence and completed practice intact',async()=>{
  const {dom,w,calls}=await fixture(false);try{
-  w.qa.tutorial();w.qa.stepTo(3);const targeting=w.qa.snapshot();
+  w.qa.tutorial();w.qa.stepTo(1);
+  w.document.querySelector('.hand [aria-label="뱅! 카드"]').click();
+  assert.equal(w.document.querySelector('#overlay').hidden,true,'the lesson card is selected without a popup');
+  assert.equal(w.document.querySelector('.controls [data-action=use]').disabled,false);
+  w.qa.stepTo(3);const targeting=w.qa.snapshot();
+  w.document.querySelector('.hand [aria-label="맥주 카드"]').click();
+  assert.equal(w.document.querySelector('#overlay').hidden,true);
+  assert.match(w.document.querySelector('.selection-info strong').textContent,/맥주/);
+  assert.equal(w.qa.snapshot(),targeting,'a brief preview keeps the exercise target and card');
+  w.document.querySelector('[data-action=previewClose]').click();
   w.document.querySelector('.own-char').click();assert.equal(w.document.querySelector('#dialog-title').textContent,'럭키 듀크');
   w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   assert.equal(w.qa.snapshot(),targeting);assert.equal(w.document.querySelector('[data-action=player][data-value="1"]').disabled,false);
   w.document.querySelector('[data-action=player][data-value="1"]').click();assert.notEqual(w.qa.snapshot(),targeting,'the target still executes the exercise');
   w.qa.stepTo(8);const defending=w.qa.snapshot();
-  w.document.querySelector('#overlay [data-action=catalog]').click();w.document.querySelector('[data-action=characterCatalog]').click();
+  w.document.querySelector('#overlay [data-action=characterCatalog]').click();
   w.document.querySelector('[data-action=characterGuide][data-value=kit]').click();assert.match(w.document.querySelector('.character-guide').textContent,/돌려놓을 1장/);
   w.document.querySelector('[data-action=close]').click();assert.ok(w.document.querySelector('#overlay [data-action=respond]'));assert.equal(w.qa.snapshot(),defending);
   w.qa.stepTo(99);const completed=w.qa.snapshot();
-  w.document.querySelector('[data-action=characterCatalog]').click();w.document.querySelector('[data-action=characterGuide][data-value=sid]').click();
+  w.document.querySelector('#overlay [data-action=characterCatalog]').click();w.document.querySelector('[data-action=characterGuide][data-value=sid]').click();
   w.document.querySelector('[data-action=close]').click();assert.match(w.document.querySelector('#overlay').textContent,/연습, 완료/);assert.equal(w.qa.snapshot(),completed);assert.equal(calls.length,0);
  }finally{dom.window.close();}
 });
