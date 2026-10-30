@@ -102,3 +102,26 @@
  .game-screen.training .controls.has-card .selection-info{flex-basis:100%}
  .game-screen.training .controls.has-card .action-buttons{width:100%}
 }
+
+/* Select once, then tap the target or the same card to act. */
+.selection-step{display:block;margin-top:4px;font-size:11px;line-height:1.45;color:#f0d48e;font-weight:700}
+.game-screen .hand-card.selected .card-label{color:#ffe2a1;font-weight:800}
+.game-screen .defense-modal .defense-cards{flex-wrap:nowrap;justify-content:safe center;overflow-x:auto;padding:10px 5px;gap:12px;scrollbar-width:thin}
+.game-screen .defense-modal .defense-cards .hand-card{flex:0 0 clamp(108px,30vw,136px);width:clamp(108px,30vw,136px);max-width:none;opacity:1}
+.game-screen .defense-modal .defense-cards .card-label{font-size:12px;font-weight:700;color:#f0d48e}
+.game-screen .defense-modal .danger-icon{display:none}
+.game-screen .defense-modal h2{font-size:21px;margin:5px 0 9px}
+.game-screen .defense-modal .helper{font-size:11px;margin:4px 0}
+.game-screen .defense-modal .modal-actions{margin-top:12px}
+@media(max-width:620px),(max-height:700px){
+ .game-screen .defense-modal{padding:14px 16px}
+ .game-screen .defense-modal>p{font-size:11px;line-height:1.5;margin:6px 0}
+ .game-screen .defense-modal .defense-cards{margin-top:8px}
+ .game-screen .defense-modal .modal-actions button{padding:8px 12px;min-height:36px;font-size:11px}
+ .game-screen .defense-modal .practice-help{margin-top:9px}
+ .game-screen .defense-modal .guide-links .secondary{padding:7px 10px}
+ .selection-step{font-size:10px}
+}
+@media(max-height:500px){
+ .game-screen .defense-modal .defense-cards .hand-card{flex-basis:92px;width:92px}
+}

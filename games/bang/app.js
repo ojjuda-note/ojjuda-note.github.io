@@ -1,10 +1,10 @@
 import {Game} from './engine.js';
 import {CARDS,CHARACTERS,ROLES,art,rankName,suitSymbol} from './data.js';
-import {Tutorial,CHAPTERS,STEPS} from './tutorial.js?v=20261030-bang-characters1';
+import {Tutorial,CHAPTERS,STEPS} from './tutorial.js?v=20261030-bang-easy-controls1';
 import {online} from './online.js?v=20261029-entry-fix1';
 import {recommend} from './hints.js?v=20261029-bang-hints1';
 import {createHintPurchase} from './hint-purchase.js?v=20261030-bang-help1';
-import {CARD_GUIDES} from './card-guides.js?v=20261030-bang-help1';
+import {CARD_GUIDES} from './card-guides.js?v=20261030-bang-easy-controls1';
 import {CHARACTER_GUIDES} from './character-guides.js?v=20261030-bang-characters1';
 
 const $=s=>document.querySelector(s);
@@ -62,22 +62,22 @@ function seat(p,idx,count){
  return `<button class="seat ${currentHint?.targetId===p.id?'hint-target':''} ${active?'active':''} ${!p.alive?'dead':''} ${valid?'targetable':''}" style="left:${pos[0]}%;top:${pos[1]}%" data-action="player" data-value="${p.id}" aria-label="${online.playing?esc(p.name):c.name}${known?', '+r.name:', 정체 미공개'}${valid?', 선택 가능한 대상':''}">${active?'<span class="turn-indicator">진행 중</span>':''}<div class="seat-top"><div class="portrait"><img src="${art(c.image)}" alt=""></div><div class="seat-name">${online.playing?esc(p.name):c.name}<span class="role-tag ${p.role==='sheriff'?'sheriff':''}">${known?(p.role==='sheriff'?'★ ':'')+r.name:'? 정체 미공개'}${!p.alive?' · 탈락':''}</span></div></div>${hearts(p)}<div class="seat-bottom"><span>▱ ${p.hand.length}장</span><span class="distance">${p.alive?`거리 ${game.distance(me(),p.id)===Infinity?'—':game.distance(me(),p.id)}`:'OUT'}</span></div>${p.equipment.length?`<div class="equipment-dots">${p.equipment.map(e=>`<span class="equipment-tag">${CARDS[e.type].name}</span>`).join('')}</div>`:''}</button>`;
 }
 function selectedCard(){return game.s?.players[me()].hand.find(c=>c.id===selected);}
+function needsTarget(card){return !!(CARDS[card.type].target||game.bangType(me(),card));}
 function statusText(){const s=game.s,q=s.pending;if(tutorial)return `따라 배우기 · ${CHAPTERS[tutorial.lesson.chapter]}`;if(s.winner)return '마지막 총성이 울렸습니다';if(!game.p(me()).alive)return `${game.label(q?.player??s.current)} · 관전 중`;if(q?.player===me())return q.kind==='dying'?'마지막 생명을 지키세요':q.kind==='defend'||q.kind==='duel'?'공격에 대응하세요':'카드를 선택하세요';if(q)return `${game.label(q.player)}의 대응을 기다립니다`;if(s.current!==me())return `${game.label(s.current)}의 턴`;if(s.phase==='discard')return `손패 ${game.p(me()).hand.length-game.p(me()).hp}장을 버리세요`;return targeting?'대상 플레이어를 선택하세요':'당신의 턴입니다';}
 function controls(){
- const s=game.s,p=game.p(me()),c=selectedCard();let title='카드를 선택하세요',desc='원하는 카드를 누르면 설명과 사용 방법이 표시됩니다.',buttons='';
+ const s=game.s,p=game.p(me()),c=selectedCard();let title='카드를 선택하세요',desc='카드를 누르면 짧은 설명과 다음 행동이 보여요.',buttons='',cue='';
  if(s.winner){title='게임 종료';desc=`${ROLES[s.winner].name}${s.winner==='sheriff'?'과 부관':''}의 승리`;buttons='<button class="primary" data-action="result">결과 보기</button><button class="secondary" data-action="new">다시 플레이</button>';}
  else if(!p.alive){title='관전 중입니다';desc='남은 플레이어들의 결말을 지켜보세요.';buttons='<button class="secondary" data-action="new">새 게임</button>';}
- else if(s.phase==='discard'&&s.current===me()&&!s.pending){title=`카드 ${p.hand.length-p.hp}장을 버려주세요`;desc=`턴을 마칠 때 생명 ${p.hp}개만큼의 카드를 보유할 수 있어요.`;if(c)buttons='<button class="primary" data-action="discard">선택한 카드 버리기</button>';}
- else if(targeting&&c){title=`${CARDS[c.type].name} · 대상 선택`;desc='빛나는 상대를 누르세요. 선택 가능한 거리만 표시됩니다.';buttons='<button class="secondary" data-action="cancelTarget">취소</button>';}
+ else if(s.phase==='discard'&&s.current===me()&&!s.pending){title=c?`${CARDS[c.type].name} · 버릴 카드`:`카드 ${p.hand.length-p.hp}장을 버려주세요`;desc=c?CARDS[c.type].desc:`손패는 생명 ${p.hp}개만큼 남길 수 있어요.`;if(c){cue='선택한 카드를 한 번 더 누르면 버려요.';buttons='<button class="secondary" data-action="zoom">카드 안내</button>';}}
  else{
-  if(c){title=CARDS[c.type].name;desc=CARDS[c.type].desc;const reason=game.canPlay(me(),c);if(!reason)buttons=`<button class="primary" data-action="use">${CARDS[c.type].target||game.bangType(me(),c)?'상대 선택':'카드 사용'}</button>`;else desc+=` <span style="color:#d4bd86">${reason}</span>`;buttons+='<button class="secondary" data-action="zoom">카드 안내</button>';}
+  if(c){title=CARDS[c.type].name;desc=CARDS[c.type].desc;const reason=game.canPlay(me(),c);cue=reason||(targeting?'빛나는 상대를 누르세요.':'선택한 카드를 한 번 더 누르면 사용해요.');buttons='<button class="secondary" data-action="zoom">카드 안내</button>';if(targeting)buttons+='<button class="secondary" data-action="cancelTarget">선택 취소</button>';}
   if(s.current===me()&&s.phase==='play'&&!s.pending)buttons+='<button class="secondary" data-action="end">턴 종료 →</button>';
   if(s.current!==me()||s.pending){if(!c){title='상대의 움직임을 살펴보세요';desc='내 손패는 언제든 눌러 확인할 수 있어요.';}}
  }
- if(tutorial&&practicePreview){title=CARDS[practicePreview.type].name;desc=CARDS[practicePreview.type].desc;buttons='<button class="secondary" data-action="zoom">카드 안내</button><button class="secondary" data-action="previewClose">선택 해제</button>';}
+ if(tutorial&&practicePreview){title=CARDS[practicePreview.type].name;desc=CARDS[practicePreview.type].desc;cue='';buttons='<button class="secondary" data-action="zoom">카드 안내</button><button class="secondary" data-action="previewClose">선택 해제</button>';}
  const showHint=currentHint&&(!c||c.id===currentHint.cardId);
  if(showHint){title=esc(currentHint.title);desc=esc(currentHint.reason);}
- return `<div class="controls ${c||tutorial&&practicePreview?'has-card':''} ${showHint?'has-hint':''} ${targeting?'target-mode':''}" ${showHint?'role="status"':''}><div class="selection-info"><strong>${title}</strong><p>${desc}</p></div><div class="action-buttons">${buttons}</div></div>`;
+ return `<div class="controls ${c||tutorial&&practicePreview?'has-card':''} ${showHint?'has-hint':''} ${targeting?'target-mode':''}" ${showHint?'role="status"':''}><div class="selection-info"><strong>${title}</strong><p>${desc}</p>${cue?`<small class="selection-step">${cue}</small>`:''}</div><div class="action-buttons">${buttons}</div></div>`;
 }
 function renderGame(){
  const s=game.s,p=game.p(me()),c=game.char(me()),role=ROLES[p.role],others=s.players.slice(me()+1).concat(s.players.slice(0,me())),top=s.discard.at(-1);
@@ -85,7 +85,7 @@ function renderGame(){
 }
 function logsHTML(){return [...game.s.logs].reverse().map(l=>`<div class="log-item ${l.kind}">${esc(l.text)}</div>`).join('');}
 function wrap(content,{close=true,cls=''}={}){return `<section class="modal ${cls}" role="dialog" aria-modal="true" aria-labelledby="dialog-title">${close?'<button class="modal-close" data-action="close" aria-label="닫기">×</button>':''}${content}</section>`;}
-function rules(){return wrap(`<div class="eyebrow">HOW TO PLAY</div><h2 id="dialog-title">한 판을 시작하는 방법</h2><p>내 역할의 목적을 달성하면 승리합니다.<br>보안관을 제외한 상대의 정체는 탈락할 때 드러나요.</p><div class="rule-steps"><span><b>01</b> 카드 2장 받기</span><span>→</span><span><b>02</b> 카드 사용하기</span><span>→</span><span><b>03</b> 남는 카드 버리기</span></div><div class="rules-grid">${Object.values(ROLES).map(r=>`<div class="rule-box"><h3>${r.name}</h3><p>${r.goal}</p></div>`).join('')}<div class="rule-box"><h3>거리와 총</h3><p>옆 사람은 거리 1. 원을 따라 가까운 쪽으로 셉니다. 총의 사정거리 안에서만 뱅!을 쓸 수 있어요.</p></div><div class="rule-box"><h3>무늬와 A는 무슨 뜻?</h3><p>♣·♥·♠·♦는 카드의 무늬, A는 에이스예요. 특수 효과를 판정할 때 더미에서 공개한 카드의 무늬와 숫자를 봅니다. 술통·감옥은 하트면 성공, 다이너마이트는 스페이드 2~9면 폭발해요. 판정은 자동이에요.</p></div><div class="rule-box"><h3>내 턴과 대응</h3><p>카드를 누르고 사용 버튼을 누르세요. 공격받으면 방어 창이 열립니다. 턴 종료 후 생명 수보다 많은 손패는 골라 버립니다.</p></div></div><p class="helper">판정과 캐릭터의 자동 능력은 게임이 처리합니다. 선택이 필요한 능력은 직접 고를 수 있어요. 추천은 1회에 1쭈이며 로그인한 대전에서 사용할 수 있어요. 누른 시점의 내 패와 공개 정보로 한 번만 안내하고 다음 상황에는 자동으로 추천하지 않아요. 연습의 카드별 설명은 무료예요. 숨겨진 정체는 추측이며 승리를 보장하지 않아요. 로그인한 컴퓨터 대전과 회원 대전 모두 이번 달 연승 순위에 반영돼요. 패배·기권 시 0연승이에요. 회원 대전은 4~7명이 함께하며, 45초 동안 응답이 없으면 자동 진행합니다. 컴퓨터 대전은 내 선택을 기다려요. 24시간 동안 진행하지 않은 컴퓨터 대전은 기권으로 처리돼요. 튜토리얼과 로그인 전 연습은 순위에서 제외돼요.</p><div class="help-tabs"><button class="primary" data-action="tutorial-start">직접 눌러 배우기 · 튜토리얼</button><button class="secondary" data-action="catalog">카드 안내</button><button class="secondary" data-action="characterCatalog">캐릭터 안내</button><a class="secondary" href="https://bang.dvgiochi.com/content/1/docs/01_bang_rules_EN.pdf" target="_blank" rel="noopener" style="font-size:12px;text-decoration:none">공식 규칙서 ↗</a></div><p class="source-note">BANG! 비공식 팬 구현입니다. 원작 기본판 규칙을 바탕으로 하며, AI는 자신의 역할과 공개된 행동을 바탕으로 판단합니다. 원작 이미지의 글자는 그대로 두고 한국어 설명을 덧붙였습니다.</p>`);}
+function rules(){return wrap(`<div class="eyebrow">HOW TO PLAY</div><h2 id="dialog-title">한 판을 시작하는 방법</h2><p>내 역할의 목적을 달성하면 승리합니다.<br>보안관을 제외한 상대의 정체는 탈락할 때 드러나요.</p><div class="rule-steps"><span><b>01</b> 카드 2장 받기</span><span>→</span><span><b>02</b> 카드 사용하기</span><span>→</span><span><b>03</b> 남는 카드 버리기</span></div><div class="rules-grid">${Object.values(ROLES).map(r=>`<div class="rule-box"><h3>${r.name}</h3><p>${r.goal}</p></div>`).join('')}<div class="rule-box"><h3>거리와 총</h3><p>옆 사람은 거리 1. 원을 따라 가까운 쪽으로 셉니다. 총의 사정거리 안에서만 뱅!을 쓸 수 있어요.</p></div><div class="rule-box"><h3>무늬와 A는 무슨 뜻?</h3><p>♣·♥·♠·♦는 카드의 무늬, A는 에이스예요. 특수 효과를 판정할 때 더미에서 공개한 카드의 무늬와 숫자를 봅니다. 술통·감옥은 하트면 성공, 다이너마이트는 스페이드 2~9면 폭발해요. 판정은 자동이에요.</p></div><div class="rule-box"><h3>내 턴과 대응</h3><p>공격 카드는 고른 뒤 빛나는 상대를 누르세요. 맥주·장비는 선택한 카드를 한 번 더 누르면 사용합니다. 공격받으면 쓸 수 있는 방어 카드가 크게 보여요. 턴 종료 후 생명 수보다 많은 손패는 골라 버립니다.</p></div></div><p class="helper">판정과 캐릭터의 자동 능력은 게임이 처리합니다. 선택이 필요한 능력은 직접 고를 수 있어요. 추천은 1회에 1쭈이며 로그인한 대전에서 사용할 수 있어요. 누른 시점의 내 패와 공개 정보로 한 번만 안내하고 다음 상황에는 자동으로 추천하지 않아요. 연습의 카드별 설명은 무료예요. 숨겨진 정체는 추측이며 승리를 보장하지 않아요. 로그인한 컴퓨터 대전과 회원 대전 모두 이번 달 연승 순위에 반영돼요. 패배·기권 시 0연승이에요. 회원 대전은 4~7명이 함께하며, 45초 동안 응답이 없으면 자동 진행합니다. 컴퓨터 대전은 내 선택을 기다려요. 24시간 동안 진행하지 않은 컴퓨터 대전은 기권으로 처리돼요. 튜토리얼과 로그인 전 연습은 순위에서 제외돼요.</p><div class="help-tabs"><button class="primary" data-action="tutorial-start">직접 눌러 배우기 · 튜토리얼</button><button class="secondary" data-action="catalog">카드 안내</button><button class="secondary" data-action="characterCatalog">캐릭터 안내</button><a class="secondary" href="https://bang.dvgiochi.com/content/1/docs/01_bang_rules_EN.pdf" target="_blank" rel="noopener" style="font-size:12px;text-decoration:none">공식 규칙서 ↗</a></div><p class="source-note">BANG! 비공식 팬 구현입니다. 원작 기본판 규칙을 바탕으로 하며, AI는 자신의 역할과 공개된 행동을 바탕으로 판단합니다. 원작 이미지의 글자는 그대로 두고 한국어 설명을 덧붙였습니다.</p>`);}
 function catalog(){return wrap(`<div class="eyebrow">THE ORIGINAL DECK</div><h2 id="dialog-title">카드 안내</h2><p>카드를 누르면 효과 · 사용 방법 · 활용 팁을 무료로 볼 수 있어요.</p><div class="catalog">${Object.entries(CARDS).map(([key,c])=>`<button data-action="catalogCard" data-value="${key}"><img src="${art(c.image)}" alt="${c.name}" loading="lazy"><span>${c.name}</span></button>`).join('')}</div>`);}
 function guideOpen(){return ['card','catalog','characters','character'].includes(modal?.type);}
 function guideKeys(){return modal?.type==='card'?Object.keys(CARDS):modal?.type==='character'?CHARACTERS.map(c=>c.id):[];}
@@ -111,7 +111,7 @@ function response(q){
  const p=game.p(me());let content='';
  if(q.kind==='defend'||q.kind==='duel'){
   const cards=game.defenseCards(me(),q.required),name=q.required==='bang'?'뱅!':'빗나감!';
-  content=`<div class="danger-icon">${q.kind==='duel'?'⚔':'!'}</div><div class="eyebrow">${q.kind==='duel'?'DUEL':'UNDER ATTACK'}</div><h2 id="dialog-title">${q.cause}${q.kind==='duel'?'이 시작됐습니다':' 공격!'}</h2><p>${game.label(q.source)}의 공격입니다.<br><b>${name} ${q.need}장</b>으로 대응하거나 생명 1을 잃습니다.</p><div class="modal-cards">${cards.map(c=>cardButton(c,'respond')).join('')}</div>${!cards.length?'<p class="helper">사용할 수 있는 방어 카드가 없습니다.</p>':''}<div class="modal-actions"><button class="secondary" data-action="take">${cards.length?'방어하지 않고':'확인하고'} 생명 1 잃기</button></div>`;
+  content=`<div class="danger-icon">${q.kind==='duel'?'⚔':'!'}</div><div class="eyebrow">${q.kind==='duel'?'DUEL':'UNDER ATTACK'}</div><h2 id="dialog-title">${cards.length?'카드를 눌러 방어하세요':'방어 카드가 없어요'}</h2><p>${game.label(q.source)}의 ${q.cause} 공격 · <b>${name} ${q.need}장 필요</b></p><div class="modal-cards defense-cards" aria-label="지금 사용할 수 있는 방어 카드">${cards.map(c=>cardButton(c,'respond')).join('')}</div>${cards.length?'<p class="helper">쓸 수 있는 카드만 보여요. 한 장씩 누르세요.</p>':'<p class="helper">확인하면 생명 1을 잃어요.</p>'}<div class="modal-actions"><button class="secondary" data-action="take">${cards.length?'방어하지 않고':'확인하고'} 생명 1 잃기</button></div>`;
  }else if(q.kind==='dying'){
   const beer=p.hand.filter(c=>c.type==='beer').length;
   content=`<div class="danger-icon">!</div><div class="eyebrow">LAST CHANCE</div><h2 id="dialog-title">마지막 생명을 지키세요</h2><p>생명을 ${1-p.hp} 회복해야 살아남을 수 있어요.</p><div class="modal-actions">${beer&&game.alive().length>2?`<button class="primary" data-action="saveBeer">맥주 마시기 · ${beer}장 보유</button>`:''}${p.char==='sid'&&p.hand.length>=2?'<button class="primary" data-action="sid">시드 능력 사용</button>':''}<button class="secondary" data-action="giveup">탈락 인정</button></div>${game.alive().length<=2?'<p class="helper">둘만 남은 결투에서는 맥주를 쓸 수 없습니다.</p>':''}`;
@@ -125,11 +125,11 @@ function response(q){
   const t=game.p(q.target);
   content=`<div class="eyebrow">${q.steal?'PANIC!':'CAT BALOU'}</div><h2 id="dialog-title">${q.steal?'가져올':'버릴'} 카드를 고르세요</h2><p>${game.label(t.id)}의 손패는 무작위로, 장비는 직접 고를 수 있어요.</p>${t.hand.length?`<div class="modal-actions"><button class="primary" data-action="stealHand">무작위 손패 1장 · ${t.hand.length}장 보유</button></div>`:''}<div class="modal-cards">${t.equipment.map(c=>cardButton(c,'stealEquip')).join('')}</div>`;
  }
- return wrap(content+hintResponse(),{close:false,cls:'response-modal'});
+ return wrap(content+hintResponse(),{close:false,cls:`response-modal ${['defend','duel'].includes(q.kind)?'defense-modal':''}`});
 }
 function sidModal(){return wrap(`<div class="eyebrow">SID KETCHUM</div><h2 id="dialog-title">생명 1을 회복합니다</h2><p>버릴 카드 2장을 고르세요. ${sidSelected.length}/2 선택</p><div class="modal-cards">${game.p(me()).hand.map(c=>cardButton(c,'sidCard')).join('')}</div><div class="modal-actions"><button class="primary" data-action="sidConfirm" ${sidSelected.length===2?'':'disabled'}>2장 버리고 회복</button></div>${currentHint?.action==='sid'?hintResponse():''}`);}
 function result(){const s=game.s,p=game.p(me()),won=!(s.forfeited||[]).includes(me())&&(s.winner===p.role||(s.winner==='sheriff'&&p.role==='deputy'));return wrap(`<div class="result-star">${won?'★':'♠'}</div><div class="eyebrow">THE LAST SHOT</div><h2 id="dialog-title">${won?'당신의 승리입니다!':'다음 총성을 기다리며.'}</h2><p>${ROLES[s.winner].name}${s.winner==='sheriff'?'과 부관':''}의 승리 · ${s.turn}턴<br>${won?'당신의 임무를 완수했습니다.':'이번 살롱의 승자는 다른 편이었습니다.'}${online.playing?online.room.record?.saved?`<br><strong>현재 ${online.room.record.streak}연승 · 순위 저장 완료</strong>`:'<br>순위 저장을 확인하고 있어요.':`<br><strong>연습 결과 · 순위에는 반영되지 않아요.</strong><br>${online.available?'새 컴퓨터 대전을 시작하면 순위에 반영돼요.':'로그인한 뒤 새 대전을 시작하면 순위에 반영돼요.'}`}</p><div class="result-roles">${s.players.map(p=>`<div class="result-person"><img src="${art(ROLES[p.role].image)}" alt="${ROLES[p.role].name}"><strong>${p.id===me()?'나':online.playing?esc(p.name):game.char(p.id).name}</strong><span>${ROLES[p.role].name}${p.alive?' · 생존':''}</span></div>`).join('')}</div><div class="modal-actions"><button class="primary" data-action="${online.playing?'online-leave':'start'}">${online.playing?'대기 화면으로':'한 판 더'}</button><button class="secondary" data-action="close">테이블 살펴보기</button></div>`,{cls:'response-modal result-modal'});}
-function tutorialComplete(){return wrap(`<div class="result-star">★</div><div class="eyebrow">PRACTICE COMPLETE</div><h2 id="dialog-title">첫 총격전 연습, 완료!</h2><p>이제 한 판을 시작할 준비가 됐어요.</p><div class="lesson-recap"><div><img src="${art('bang')}" alt="뱅!"><strong>공격</strong><span>카드 → 상대 선택 → 상대</span></div><div><img src="${art('mancato')}" alt="빗나감!"><strong>방어</strong><span>공격받으면 빗나감!</span></div><div><img src="${art('birra')}" alt="맥주"><strong>회복</strong><span>내 턴에 맥주 사용</span></div></div><p class="recap-turn"><b>내 턴 순서</b><br>2장 자동 받기 → 카드 사용 → 턴 종료<br><small>남은 손패는 현재 체력 수까지만 보유해요.</small></p><div class="modal-actions"><button class="primary" data-action="tutorial-play">새 실전 시작</button><button class="secondary" data-action="catalog">카드 안내</button><button class="secondary" data-action="characterCatalog">캐릭터 안내</button>${saved&&!saved.winner?'<button class="secondary" data-action="tutorial-resume">저장된 게임 이어하기</button>':'<button class="secondary" data-action="tutorial-exit">처음 화면으로</button>'}<button class="secondary" data-action="tutorial-restart">한 번 더 연습</button></div><p class="source-note">연습은 여기서 끝나요. 실전은 새로운 카드로 시작합니다.</p>`,{close:false,cls:'response-modal tutorial-complete'});}
+function tutorialComplete(){return wrap(`<div class="result-star">★</div><div class="eyebrow">PRACTICE COMPLETE</div><h2 id="dialog-title">첫 총격전 연습, 완료!</h2><p>이제 한 판을 시작할 준비가 됐어요.</p><div class="lesson-recap"><div><img src="${art('bang')}" alt="뱅!"><strong>공격</strong><span>카드 선택 → 빛나는 상대</span></div><div><img src="${art('mancato')}" alt="빗나감!"><strong>방어</strong><span>공격받으면 빗나감!</span></div><div><img src="${art('birra')}" alt="맥주"><strong>회복</strong><span>맥주 선택 → 한 번 더 누르기</span></div></div><p class="recap-turn"><b>내 턴 순서</b><br>2장 자동 받기 → 카드 사용 → 턴 종료<br><small>남은 손패는 현재 체력 수까지만 보유해요.</small></p><div class="modal-actions"><button class="primary" data-action="tutorial-play">새 실전 시작</button><button class="secondary" data-action="catalog">카드 안내</button><button class="secondary" data-action="characterCatalog">캐릭터 안내</button>${saved&&!saved.winner?'<button class="secondary" data-action="tutorial-resume">저장된 게임 이어하기</button>':'<button class="secondary" data-action="tutorial-exit">처음 화면으로</button>'}<button class="secondary" data-action="tutorial-restart">한 번 더 연습</button></div><p class="source-note">연습은 여기서 끝나요. 실전은 새로운 카드로 시작합니다.</p>`,{close:false,cls:'response-modal tutorial-complete'});}
 
 function beginTutorial(){
  if(online.playing){toast('대전을 마친 뒤 연습할 수 있어요.');return;}
@@ -210,21 +210,22 @@ function render(){
  const handScroll=$('.hand')?.scrollLeft||0;
  if(page==='game'){
   if(selected&&!selectedCard()){selected=null;targeting=false;}
+  if(targeting&&selectedCard()&&game.canPlay(me(),selectedCard()))targeting=false;
   if(game.s.winner&&!resultSeen){modal={type:'result'};resultSeen=true;}
   else if(!game.p(me()).alive&&!eliminationSeen&&!game.s.winner){modal={type:'eliminated'};eliminationSeen=true;}
  }
  $('#app').innerHTML=page==='lobby'?lobby():renderGame();
  if($('.hand'))$('.hand').scrollLeft=handScroll;
- renderOverlay();paintTutorial();paintHint();schedule();if(online.busy||hintBusy)document.querySelectorAll('[data-action]').forEach(b=>{if(['use','player','end','discard','respond','take','choose','saveBeer','giveup','drawDeck','drawDiscard','drawSteal','stealHand','stealEquip','sidConfirm','online-start','online-create','online-join','start','online-surrender'].includes(b.dataset.action))b.disabled=true;});
+ renderOverlay();paintTutorial();paintHint();schedule();if(online.busy||hintBusy)document.querySelectorAll('[data-action]').forEach(b=>{if(['card','use','player','end','discard','respond','take','choose','saveBeer','giveup','drawDeck','drawDiscard','drawSteal','stealHand','stealEquip','sidConfirm','online-start','online-create','online-join','start','online-surrender'].includes(b.dataset.action))b.disabled=true;});
 }
 function paintHint(){
  if(!currentHint)return;
- const action=currentHint.action==='play'?'use':currentHint.action;
+ const action=currentHint.action==='play'?(targeting?'player':'card'):currentHint.action==='discard'?'card':currentHint.action;
  document.querySelectorAll('[data-action]').forEach(b=>{
   if(b.dataset.action!==action||b.disabled)return;
-  const value=currentHint.action==='drawSteal'?currentHint.targetId:currentHint.cardId;
+  const value=['drawSteal','player'].includes(action)?currentHint.targetId:currentHint.cardId;
   if(b.dataset.value!==undefined&&Number(b.dataset.value)!==value)return;
-  if(['use','discard'].includes(action)&&selected!==currentHint.cardId)return;
+  if(['play','discard'].includes(currentHint.action)&&selected!==currentHint.cardId)return;
   b.classList.add('hint-action');
  });
 }
@@ -249,7 +250,7 @@ async function buyHint(){
  }
  if(page==='game'&&!tutorial&&context===hintContext()&&hint&&hint.action!=='wait'&&hintPurchase.consume(owner,result.record.id)){
   currentHint=hint;currentHintContext=context;
-  if(!game.s.pending){selected=['play','discard'].includes(hint.action)?hint.cardId:null;targeting=false;}
+  if(!game.s.pending){selected=['play','discard'].includes(hint.action)?hint.cardId:null;const card=selectedCard();targeting=!!(card&&hint.action==='play'&&!game.canPlay(me(),card)&&needsTarget(card));}
   render();
   const card=$('.hand .hint-card'),hand=$('.hand');if(card&&hand)hand.scrollLeft=Math.max(0,card.offsetLeft-(hand.clientWidth-card.clientWidth)/2);
   toast('추천 1회 · 1쭈 사용');
@@ -258,7 +259,7 @@ async function buyHint(){
 
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-action]');if(!b||b.disabled)return;
- const action=b.dataset.action,value=b.dataset.value,n=Number(value);
+ let action=b.dataset.action;const value=b.dataset.value,n=Number(value);
  if(action==='hint'&&!tutorial){
   void buyHint();
   return;
@@ -272,13 +273,21 @@ document.addEventListener('click',e=>{
  if(action==='online-copy'){navigator.clipboard?.writeText(online.room.code).then(()=>toast('방 코드를 복사했어요.')).catch(()=>toast('방 코드를 직접 복사해 주세요.'));return;}
  if(action==='online-surrender'){modal=null;void online.run('surrender').then(r=>{if(r?.ok){online.accept(null);page='lobby';soloLobby=false;render();}});return;}
  if(action==='solo-lobby'){soloLobby=true;render();return;}
+ if(action==='card'&&!tutorial){
+  if(page!=='game'||online.busy||hintBusy)return;
+  const card=game.p(me()).hand.find(c=>c.id===n);if(!card)return;
+  const canDiscard=game.p(me()).alive&&!game.s.winner&&game.s.current===me()&&game.s.phase==='discard'&&!game.s.pending;
+  if(selected===n&&canDiscard)action='discard';
+  else if(selected===n&&!game.canPlay(me(),card)&&!needsTarget(card))action='use';
+  else{selected=selected===n?null:n;targeting=selected!==null&&!game.canPlay(me(),card)&&needsTarget(card);sfx();render();return;}
+ }
  if(online.playing&&!tutorial){
   if(['new','home','goLobby','start'].includes(action)){
    if(online.room.status==='finished'){modal=null;void online.run('leave');}else{modal={type:'online-exit'};render();}return;
   }
   let move=null;
   if(action==='use'){const card=selectedCard();if(card&&!game.canPlay(me(),card)&&!CARDS[card.type].target&&!game.bangType(me(),card))move={type:'play',card:card.id};}
-  if(action==='player'&&targeting){const card=selectedCard();if(card&&game.targets(me(),card).includes(n))move={type:'play',card:card.id,target:n};}
+  if(action==='player'&&targeting){const card=selectedCard();if(card&&!game.canPlay(me(),card)&&game.targets(me(),card).includes(n))move={type:'play',card:card.id,target:n};}
   if(action==='end')move={type:'end'};
   if(action==='discard'&&selectedCard())move={type:'discard',card:selectedCard().id};
   const choices={respond:'card',take:'take',choose:'choose',saveBeer:'beer',giveup:'giveup',drawDeck:'deck',drawDiscard:'discard',drawSteal:'steal',stealHand:'hand',stealEquip:'equipment'};
@@ -312,13 +321,12 @@ document.addEventListener('click',e=>{
   case 'home':if(page==='lobby'&&soloLobby){soloLobby=false;render();break;}if(page==='game'&&!game.s.winner){modal={type:'new'};render();}else{page='lobby';modal=null;render();}break;
   case 'new':if(!game.s.winner)modal={type:'new'};else{page='lobby';modal=null;}render();break;
   case 'goLobby':modal=null;page='lobby';render();window.scrollTo(0,0);break;
-  case 'card':selected=selected===n?null:n;targeting=false;sfx();render();break;
   case 'use':{
    const c=selectedCard();if(!c)break;const reason=game.canPlay(me(),c);if(reason){toast(reason);break;}
    if(CARDS[c.type].target||game.bangType(me(),c)){targeting=true;render();}
    else{selected=null;mutate(()=>game.play(me(),c.id));}break;
   }
-  case 'cancelTarget':targeting=false;render();break;
+  case 'cancelTarget':selected=null;targeting=false;render();break;
   case 'player':{
    if(targeting){const c=selectedCard();if(c&&game.targets(me(),c).includes(n)){selected=null;targeting=false;mutate(()=>game.play(me(),c.id,n));}else toast('이 상대에게는 사용할 수 없어요.');}
    else{modal={type:'player',id:n};render();}break;
