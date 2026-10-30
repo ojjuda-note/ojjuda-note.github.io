@@ -30,8 +30,8 @@ test('recommendation selects and explains a card without playing or submitting i
   assert.match(w.document.querySelector('.controls').textContent,/맥주.*추천/s);
   assert.match(w.document.querySelector('.controls').textContent,/생명 1/);
   assert.equal(w.document.querySelector('.own-char').dataset.value,'2');
-  assert.ok(w.document.querySelector('.hand [data-action=card].hint-action'));
-  w.document.querySelector('.hand [data-action=card].hint-action').click();assert.equal(moves.length,1);assert.equal(moves[0].card,beer.id);
+  assert.ok(w.document.querySelector('.controls [data-action=use].hint-action'));
+  w.document.querySelector('.controls [data-action=use].hint-action').click();assert.equal(moves.length,1);assert.equal(moves[0].card,beer.id);
  }finally{dom.window.close();}
 });
 test('paid advice ends on the next state and stays out of tutorial',async()=>{
