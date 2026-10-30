@@ -4,10 +4,10 @@ async function fixture(available){
  const [{Game},data,tutorial,{recommend},{createHintPurchase},{CARD_GUIDES},{CHARACTER_GUIDES}]=await Promise.all([import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js'),import('../games/bang/character-guides.js')]);
  const dom=new JSDOM('<div id="app"></div><div id="overlay" hidden></div><aside id="tutorial-coach" hidden></aside><div id="toast"></div>',{url:'https://ojjuda.kr/games/bang/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
  w.scrollTo=()=>{};w.structuredClone=structuredClone;
- const online={embedded:false,available,busy:false,room:null,get playing(){return !!this.room?.state;},run:async(...args)=>{calls.push(args);return null;}};
+ const online={embedded:false,available,busy:false,room:null,get playing(){return !!this.room?.state;},run:async(...args)=>{calls.push(args);return null;},move:async move=>{calls.push(['move',move]);online.busy=true;online.onChange();return null;}};
  Object.assign(w,{Game,...data,...tutorial,recommend,createHintPurchase,CARD_GUIDES,CHARACTER_GUIDES,online});
  let source=fs.readFileSync(path.join(__dirname,'../games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
- source+='\nwindow.qa={result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();},snapshot(){return JSON.stringify({state:game.s,step:tutorial?.step,selected,targeting,settings});},stepTo(step){while(tutorial.step<step&&!tutorial.done){const e=tutorial.expected();tutorialAction(e.action,e.value);}}}';w.eval(source);
+ source+='\nwindow.qa={expected(){return {...tutorial.expected(),step:tutorial.step,done:tutorial.done};},table(s,remote=false){clearTimeout(botTimer);tutorial=null;practicePreview=null;game=new Game(structuredClone(s));page="game";selected=null;targeting=false;modal=null;resultSeen=false;eliminationSeen=false;online.busy=false;online.room=remote?{id:"test",version:1,seat:0,mode:"solo",status:"active",state:game.s}:null;render();},result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();},snapshot(){return JSON.stringify({state:game.s,step:tutorial?.step,selected,targeting,settings});},stepTo(step){while(tutorial.step<step&&!tutorial.done){const e=tutorial.expected();tutorialAction(e.action,e.value);}}}';w.eval(source);
  return {dom,w,calls};
 }
 test('signed-in computer start uses the server and never creates an unranked local game',async()=>{
@@ -92,6 +92,80 @@ function pointer(w,target,type,x,y){
  const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});
  Object.defineProperties(e,{pointerId:{value:1},pointerType:{value:'touch'},isPrimary:{value:true}});target.dispatchEvent(e);
 }
+function gameState(w){return JSON.parse(w.qa.snapshot()).state;}
+function pressCard(w,id){w.document.querySelector(`.hand [data-action=card][data-value="${id}"]`).click();}
+test('an attack is selected once and plays only when a valid target is tapped',async()=>{
+ const {dom,w,calls}=await fixture(false);try{
+  const t=new w.Tutorial();w.qa.table(t.game.s);const before=JSON.stringify(gameState(w));
+  pressCard(w,t.cards.bang);
+  assert.equal(JSON.stringify(gameState(w)),before);assert.equal(w.document.querySelector('#overlay').hidden,true);
+  assert.deepEqual([...w.document.querySelectorAll('.seat.targetable')].map(x=>x.dataset.value),['1','3']);
+  assert.equal(w.document.querySelector('[data-action=use]'),null);
+  w.document.querySelector('[data-action=player][data-value="2"]').click();assert.equal(JSON.stringify(gameState(w)),before);
+  pressCard(w,t.cards.bang);assert.equal(w.document.querySelector('.seat.targetable'),null,'repeat attack-card tap cancels selection');
+  pressCard(w,t.cards.bang);w.document.querySelector('[data-action=player][data-value="1"]').click();
+  assert.equal(gameState(w).bangs,1);assert.equal(gameState(w).pending.player,1);assert.equal(calls.length,0);
+ }finally{dom.window.close();}
+});
+test('self-use cards require a second tap; illegal cards and another player turn never play',async()=>{
+ const {dom,w}=await fixture(false);try{
+  const t=new w.Tutorial();t.game.p(0).hp=4;w.qa.table(t.game.s);
+  pressCard(w,t.cards.beer);assert.equal(gameState(w).players[0].hp,4);
+  pressCard(w,t.cards.weapon);assert.equal(gameState(w).players[0].equipment.length,0,'changing selection does not play');
+  pressCard(w,t.cards.weapon);assert.equal(gameState(w).players[0].equipment[0].type,'schofield');
+  pressCard(w,t.cards.beer);pressCard(w,t.cards.beer);assert.equal(gameState(w).players[0].hp,5);
+  const full=new w.Tutorial();w.qa.table(full.game.s);const before=JSON.stringify(gameState(w));
+  pressCard(w,full.cards.beer);assert.match(w.document.querySelector('.selection-step').textContent,/가득/);
+  pressCard(w,full.cards.beer);assert.equal(JSON.stringify(gameState(w)),before);
+  full.game.s.current=1;w.qa.table(full.game.s);const waiting=JSON.stringify(gameState(w));
+  pressCard(w,full.cards.weapon);pressCard(w,full.cards.weapon);assert.equal(JSON.stringify(gameState(w)),waiting);
+ }finally{dom.window.close();}
+});
+test('discard taps and Janet attacks use the correct card behavior',async()=>{
+ const {dom,w}=await fixture(false);try{
+  const t=new w.Tutorial();t.game.s.phase='discard';w.qa.table(t.game.s);
+  pressCard(w,t.cards.cat);assert.equal(gameState(w).players[0].hand.length,7);assert.match(w.document.querySelector('.selection-step').textContent,/버려요/);
+  pressCard(w,t.cards.cat);assert.equal(gameState(w).players[0].hand.length,6);assert.equal(gameState(w).discard.at(-1).id,t.cards.cat);
+  t.game.s.phase='play';t.game.p(0).char='janet';w.qa.table(t.game.s);
+  pressCard(w,t.cards.missed);assert.ok(w.document.querySelector('.seat.targetable'));
+  w.document.querySelector('[data-action=player][data-value="1"]').click();assert.equal(gameState(w).bangs,1);
+ }finally{dom.window.close();}
+});
+test('online two-tap actions submit exactly once and wait for the server',async()=>{
+ const {dom,w,calls}=await fixture(true);try{
+  const t=new w.Tutorial();t.game.p(0).hp=4;w.qa.table(t.game.s,true);const before=JSON.stringify(gameState(w));
+  pressCard(w,t.cards.beer);assert.equal(calls.length,0);pressCard(w,t.cards.beer);pressCard(w,t.cards.beer);
+  assert.deepEqual(calls.map(c=>JSON.parse(JSON.stringify(c))),[['move',{type:'play',card:t.cards.beer}]]);
+  assert.equal(JSON.stringify(gameState(w)),before,'the server owns the actual effect');
+  w.qa.table(t.game.s,true);pressCard(w,t.cards.bang);assert.equal(calls.length,1);
+  w.document.querySelector('[data-action=player][data-value="1"]').click();
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[1])),['move',{type:'play',card:t.cards.bang,target:1}]);
+  assert.ok(w.document.querySelector('.hand [data-action=card]').disabled);
+ }finally{dom.window.close();}
+});
+test('defence shows only legal cards and each tap supplies just one required defence',async()=>{
+ const {dom,w}=await fixture(false);try{
+  const t=new w.Tutorial(),extra=t.game.s.deck.find(c=>c.type==='missed');
+  t.game.s.deck=t.game.s.deck.filter(c=>c.id!==extra.id);t.game.p(0).hand.push(extra);
+  t.game.s.pending={kind:'defend',player:0,source:1,required:'missed',need:2,cause:'뱅!'};w.qa.table(t.game.s);
+  assert.equal(w.document.querySelectorAll('.defense-cards [data-action=respond]').length,2);
+  assert.equal(w.document.querySelector('.defense-cards [aria-label="맥주 카드"]'),null);
+  w.document.querySelector('.defense-cards [data-action=respond]').click();
+  assert.equal(gameState(w).pending.need,1);assert.equal(w.document.querySelectorAll('.defense-cards [data-action=respond]').length,1);
+  w.document.querySelector('.defense-cards [data-action=respond]').click();assert.equal(gameState(w).pending,null);assert.equal(gameState(w).players[0].hp,5);
+ }finally{dom.window.close();}
+});
+test('every tutorial step is possible using the displayed two-tap controls',async()=>{
+ const {dom,w,calls}=await fixture(false);try{
+  w.qa.tutorial();let count=0;
+  while(!w.qa.expected().done){
+   const e=w.qa.expected(),selector=`[data-action="${e.action}"]${e.value===undefined?'':`[data-value="${e.value}"]`}`;
+   const button=[...w.document.querySelectorAll(selector)].find(b=>!b.disabled);assert.ok(button,`step ${e.step} has an enabled ${e.action}`);
+   button.click();assert.equal(w.qa.expected().step,e.step+1);assert.ok(++count<30);
+  }
+  assert.match(w.document.querySelector('#overlay').textContent,/연습, 완료/);assert.equal(calls.length,0);
+ }finally{dom.window.close();}
+});
 function swipe(w,dx,dy=0,cancel=false){
  const content=w.document.querySelector('.guide-content'),overlay=w.document.querySelector('#overlay');
  pointer(w,content,'pointerdown',180,100);
@@ -120,8 +194,9 @@ test('own character help leaves target selection, defence and completed practice
   w.qa.tutorial();w.qa.stepTo(1);
   w.document.querySelector('.hand [aria-label="뱅! 카드"]').click();
   assert.equal(w.document.querySelector('#overlay').hidden,true,'the lesson card is selected without a popup');
-  assert.equal(w.document.querySelector('.controls [data-action=use]').disabled,false);
-  w.qa.stepTo(3);const targeting=w.qa.snapshot();
+  assert.equal(w.document.querySelector('.controls [data-action=use]'),null);
+  assert.ok(w.document.querySelector('[data-action=player][data-value="1"]').classList.contains('targetable'));
+  w.qa.stepTo(2);const targeting=w.qa.snapshot();
   w.document.querySelector('.hand [aria-label="맥주 카드"]').click();
   assert.equal(w.document.querySelector('#overlay').hidden,true);
   assert.match(w.document.querySelector('.selection-info strong').textContent,/맥주/);
@@ -131,7 +206,7 @@ test('own character help leaves target selection, defence and completed practice
   w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   assert.equal(w.qa.snapshot(),targeting);assert.equal(w.document.querySelector('[data-action=player][data-value="1"]').disabled,false);
   w.document.querySelector('[data-action=player][data-value="1"]').click();assert.notEqual(w.qa.snapshot(),targeting,'the target still executes the exercise');
-  w.qa.stepTo(8);const defending=w.qa.snapshot();
+  w.qa.stepTo(7);const defending=w.qa.snapshot();
   w.document.querySelector('#overlay [data-action=characterCatalog]').click();
   w.document.querySelector('[data-action=characterGuide][data-value=kit]').click();assert.match(w.document.querySelector('.character-guide').textContent,/돌려놓을 1장/);
   w.document.querySelector('[data-action=close]').click();assert.ok(w.document.querySelector('#overlay [data-action=respond]'));assert.equal(w.qa.snapshot(),defending);
