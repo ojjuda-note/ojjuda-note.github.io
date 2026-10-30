@@ -29,10 +29,31 @@ try{saved=JSON.parse(localStorage.getItem(SAVE));sound=localStorage.getItem('ban
 
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2600);}
 function save(){if(tutorial||online.playing)return;try{localStorage.setItem(SAVE,JSON.stringify(game.s));saved=game.s;}catch{toast('이 브라우저에서는 자동 저장을 사용할 수 없어요.');}}
-let audioCtx;
+let audioCtx,audioNoise;
 function sfx(kind='tap'){
  if(!sound)return;
- try{audioCtx??=new(window.AudioContext||window.webkitAudioContext)();audioCtx.resume();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type=kind==='shot'?'sawtooth':'sine';o.frequency.setValueAtTime(kind==='shot'?120:650,t);o.frequency.exponentialRampToValueAtTime(kind==='shot'?30:300,t+.11);g.gain.setValueAtTime(.055,t);g.gain.exponentialRampToValueAtTime(.001,t+.14);o.start(t);o.stop(t+.15);}catch{}
+ try{
+  audioCtx??=new(window.AudioContext||window.webkitAudioContext)();
+  void audioCtx.resume().catch(()=>{});
+  if(!audioNoise){
+   audioNoise=audioCtx.createBuffer(1,Math.ceil(audioCtx.sampleRate*.6),audioCtx.sampleRate);
+   const samples=audioNoise.getChannelData(0);let previous=0;
+   for(let i=0;i<samples.length;i++){previous=previous*.4+(Math.random()*2-1)*.6;samples[i]=previous;}
+  }
+  const now=audioCtx.currentTime+.005;
+  const brush=(delay,duration,hz,level)=>{
+   const source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain(),at=now+delay;
+   source.buffer=audioNoise;source.playbackRate.value=.96+Math.random()*.08;
+   filter.type='bandpass';filter.frequency.value=hz;filter.Q.value=.55;
+   source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);
+   gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(level,at+.004);
+   gain.gain.exponentialRampToValueAtTime(.0001,at+duration);gain.gain.linearRampToValueAtTime(0,at+duration+.005);
+   source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+   source.start(at,Math.random()*.35);source.stop(at+duration+.006);
+  };
+  if(kind==='shot'){brush(0,.035,1500,.17);brush(.008,.09,240,.24);}
+  else{brush(0,.065,2200,.13);brush(.025,.028,650,.12);}
+ }catch{}
 }
 function mutate(fn){const before=game.s.serial;const ok=fn();if(ok===false){toast('지금은 사용할 수 없어요.');return;}if(game.s.serial!==before)sfx(game.s.visual?.kind==='damage'?'shot':'tap');save();render();}
 function header(){return `<header class="topbar ${page==='game'?'in-game':''}"><button class="brand" data-action="${tutorial?'tutorial-exit':'home'}" aria-label="뱅 살롱 홈"><img src="assets/logo.png" alt="BANG!"><span>SALOON</span></button><nav class="nav" aria-label="게임 메뉴">${tutorial?'<span class="practice-label">연습 테이블</span><button class="textbtn" data-action="catalog">카드 안내</button><button class="textbtn" data-action="characterCatalog">캐릭터 안내</button>':'<span class="small-meta">THE WILD WEST CARD GAME</span>'}<button class="iconbtn" data-action="sound" aria-label="${sound?'소리 끄기':'소리 켜기'}" title="${sound?'소리 끄기':'소리 켜기'}">${sound?'♪':'♩'}</button>${tutorial?'<button class="textbtn" data-action="tutorial-restart">처음부터</button><button class="textbtn" data-action="tutorial-exit">나가기</button>':`${page==='game'&&!online.playing?`<button class="textbtn" data-action="speed" aria-label="진행 속도 변경">${fast?'빠르게':'보통 속도'}</button><span class="practice-label">연습 · 순위 제외</span>`:(online.playing?`<span class="practice-label">${online.room.mode==='solo'?'컴퓨터 대전 · 순위 반영':'방 '+online.room.code}</span>`:'<button class="textbtn tutorial-nav" data-action="tutorial-start">따라 배우기</button>')}<button class="textbtn" data-action="rules">게임 방법</button>${page==='game'?`<button class="textbtn" data-action="new">${online.playing?'대전 나가기':'새 게임'}</button>`:''}`}</nav></header>`;}
