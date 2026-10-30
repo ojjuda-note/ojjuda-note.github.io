@@ -103,8 +103,11 @@
  .game-screen.training .controls.has-card .action-buttons{width:100%}
 }
 
-/* Select once, then tap the target or the same card to act. */
+/* Card inspection and card use have separate, visible controls. */
 .selection-step{display:block;margin-top:4px;font-size:11px;line-height:1.45;color:#f0d48e;font-weight:700}
+.game-screen .controls .primary.card-use-button{min-height:44px;min-width:92px;font-size:14px;font-weight:800;padding:10px 16px;flex:1.25;background:#e8c579;color:#263a29;border-color:#f3d898}
+.game-screen .controls .primary.card-use-button:disabled{opacity:.45;cursor:default}
+.game-screen .seat.targetable .distance{background:#f1cf81;color:#243629;border-radius:4px;padding:2px 5px;font-weight:800;white-space:nowrap}
 .game-screen .hand-card.selected .card-label{color:#ffe2a1;font-weight:800}
 .game-screen .defense-modal .defense-cards{flex-wrap:nowrap;justify-content:safe center;overflow-x:auto;padding:10px 5px;gap:12px;scrollbar-width:thin}
 .game-screen .defense-modal .defense-cards .hand-card{flex:0 0 clamp(108px,30vw,136px);width:clamp(108px,30vw,136px);max-width:none;opacity:1}
@@ -123,5 +126,6 @@
  .selection-step{font-size:10px}
 }
 @media(max-height:500px){
+ .game-screen .controls .primary.card-use-button{min-height:38px;padding:7px 12px;font-size:12px}
  .game-screen .defense-modal .defense-cards .hand-card{flex-basis:92px;width:92px}
 }
