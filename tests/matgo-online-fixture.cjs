@@ -52,9 +52,9 @@ async function fixture(fixtureOptions={}){
       create trigger ranking_matgo_online after update of status on ojjuda_matgo_internal.rooms for each row execute function ojjuda_game_internal.capture_ranked_round();`);
     // Integrate the other games' scoped update of the shared trigger first, in
     // the same migration order used by deployment. Its other SQL is unrelated.
-    const shared=fs.readFileSync(path.join(dir,'20261031055816_fresh_multiplayer_entries.sql'),'utf8');
+    const shared=fs.readFileSync(path.join(dir,'20261031074614_fresh_multiplayer_entries.sql'),'utf8');
     await db.exec(shared.match(/do \$handoff_ranking_capture\$[\s\S]*?end;\$handoff_ranking_capture\$;/)[0]);
-    await db.exec(fs.readFileSync(path.join(dir,'20261031061820_matgo_computer_takeover_settlement.sql'),'utf8'));
+    await db.exec(fs.readFileSync(path.join(dir,'20261031074829_matgo_computer_takeover_settlement.sql'),'utf8'));
   }
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
