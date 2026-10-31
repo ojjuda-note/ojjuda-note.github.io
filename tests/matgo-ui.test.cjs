@@ -20,6 +20,11 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='identity')return{data:state.age===null?null:{age:state.age,locked:true}};
     const snapshot=()=>({ok:true,gold:state.gold,coins:state.coins,free_left:2-state.freeUsed,round:state.round||null});
     if(body.action==='status')return{data:snapshot()};
+    if(body.action==='abandon'){
+      const abandoned=!!state.round&&state.round.id===body.round_id;
+      if(abandoned)state.round=null;
+      return{data:{...snapshot(),abandoned}};
+    }
     if(body.action==='tazza_start'){
       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
       state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
@@ -28,7 +33,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='start'){
       if(state.updateRequired)return{data:{error:'client_update_required'}};
       if(!state.gold)return{data:{error:'gold_empty'}};
-      state.round ||= {id:'00000000-0000-4000-9000-000000000001',rules_version:state.rulesVersion??13,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+      state.round ||= {id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
       if(state.round)return{data:{error:'round_in_progress'}};
@@ -329,38 +334,31 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('#capsOp .c').count(),3,'two pi are paid with one double; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  // Reloading an old round must visibly remain old until its valid settlement.
+  // A new visit retires an old unfinished round without gold or rank settlement.
   {
     const old={id:crypto.randomUUID(),rules_version:11,seed:5,gold:5000,first:0,carry:1,cpu_level:1};
     const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),false);
-    assert.match(await f.page.locator('#round-rules-note').textContent(),/이전 판 이어하기.*다음 판부터/);
-    assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
+    assert.notEqual(f.state.round.id,old.id);assert.equal(f.state.round.rules_version,13);
+    assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
+    assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
+    assert.equal(f.state.gold,5000);assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
+    assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id]);
     for(const [width,height] of [[320,568],[390,820]]){
       await f.page.setViewportSize({width,height});
       await f.page.waitForFunction(height=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--matgo-viewport-height'))===height,height);
       assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({message:'legacy notice leaves the hand on screen',width,height,hand}));
+      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({width,height,hand}));
     }
-    fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/legacy.png'});
+    const firstRound=f.state.round.id;
     await f.page.reload();await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.id,old.id);assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
-    for(let i=0;i<1500&&!f.state.settled;i++){
-      await f.page.evaluate(()=>{
-        const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#chongtong-continue')||modal.querySelector('#stop')||modal.querySelector('#n')||modal.querySelector('button'))?.click();return;}
-        const t=matgoTest;if(t.ui.resolveChoose){document.querySelector('.stack.pick')?.click();return;}
-        if(!t.ui.busy&&!t.game.over&&t.game.turn===0){if(t.game.hand[0][0])void t.pick(t.game.hand[0][0].id);else document.querySelector('#bombFlip')?.click();}
-      });
-      await f.page.waitForTimeout(20);
-    }
-    assert.equal(f.state.settled,true);assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,11);
-    await f.page.locator('#next').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.rules_version,13);assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
+    assert.notEqual(f.state.round.id,firstRound);assert.equal(f.state.gold,5000);
+    assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
+    assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id,firstRound]);
     assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
     assert.equal(await f.page.locator('#cpuLevel').textContent(),'기본');
     assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
-    await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
+    fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   // An update response has a real refresh action, not an endless start retry.
