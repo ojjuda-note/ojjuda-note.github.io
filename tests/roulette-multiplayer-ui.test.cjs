@@ -17,13 +17,16 @@ const roomFixture=patch=>({id:'room-one',code:'ABCDEF12',hostId:other,mode:'onli
 async function fixture(t,initial=roomFixture(),options={}){
  const engine=await import(pathToFileURL(path.join(root,'games/roulette/engine.js')).href);
  const dom=new JSDOM(read('games/roulette/index.html'),{url:'https://roulette.test/games/roulette/index.html',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,calls=[],sent=[],gates=new Map(),storageFailures=[];let current=clone(initial),gold=10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
+ const w=dom.window,calls=[],sent=[],gates=new Map(),storageFailures=[],animations=[];let current=clone(initial),gold=options.gold??10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
  const motionListeners=new Set(),motionMedia={matches:options.systemReduced===true,addEventListener(type,listener){if(type==='change')motionListeners.add(listener)},removeEventListener(type,listener){motionListeners.delete(listener)}};
  w.matchMedia=query=>query==='(prefers-reduced-motion: reduce)'?motionMedia:{matches:false,addEventListener(){},removeEventListener(){}};
  w.performance.now=()=>clock;
  w.ResizeObserver=class{observe(){}disconnect(){}};w.requestAnimationFrame=()=>0;w.scrollTo=()=>{};
  w.HTMLElement.prototype.scrollIntoView=function(){};
- w.HTMLElement.prototype.animate=function(){return {finished:Promise.resolve()}};
+ w.HTMLElement.prototype.animate=function(frames,settings){
+  const done=deferred(),animation={element:this,settings,finished:done.promise,finish:done.resolve,cancel:done.resolve};
+  animations.push(animation);if(!options.holdAnimations)animation.finish();return animation;
+ };
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
  Object.defineProperty(w.document,'hidden',{get:()=>hidden});
@@ -93,7 +96,7 @@ async function fixture(t,initial=roomFixture(),options={}){
  const message=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',...data}}));
  message({type:'roulette-init',owner:options.owner??me,joinCode:options.joinCode});await tick();await tick();
  t.after(()=>{closed=true;w.close()});
- return {w,calls,sent,gates,message,storageFailures,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
+ return {w,calls,sent,gates,message,storageFailures,animations,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
 }
 
 function beginHistoryRound(f,id,number=7){
@@ -130,6 +133,128 @@ test('opponent drafts are visible separately while the own chip remains solid an
  assert.equal(cell.querySelectorAll('.opponent-stack').length,2);
  assert.equal(cell.querySelectorAll('.bet-stack').length,1);
  assert.equal(cell.disabled,false);
+});
+
+test('a clicked bet paints its real chip and total before its decorative animation finishes',async t=>{
+ const f=await fixture(t,roomFixture(),{preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+ const cell=d.querySelector('[data-bet="n7"]');cell.click();await tick();
+ assert.equal(f.animations.length,1,'the normal-motion chip animation is still awaiting its deferred finish');
+ assert.equal(d.getElementById('totalBet').textContent,'100 G');
+ assert.equal(d.getElementById('balance').textContent,'9,900');
+ assert.equal(cell.querySelector('.bet-stack .stack-face')?.textContent,'100','the real table chip is visible before the flight finishes');
+ cell.click();cell.click();await tick();
+ assert.equal(cell.querySelector('.bet-stack .stack-face')?.textContent,'300','rapid clicks accumulate without waiting for earlier flights');
+ assert.equal(d.getElementById('totalBet').textContent,'300 G');
+ assert.equal(d.getElementById('balance').textContent,'9,700');
+ assert.deepEqual(clone(f.ui.state.betChips.n7),[100,100,100]);
+ for(const animation of f.animations)animation.finish();await tick();
+ assert.equal(cell.querySelector('.bet-stack .stack-face')?.textContent,'300');
+});
+
+test('local chips remain responsive while a draft response and decorative animations are both pending',async t=>{
+ const f=await fixture(t,roomFixture(),{preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+ const gate=deferred();f.gates.set('bet',gate);
+ const seven=d.querySelector('[data-bet="n7"]'),eight=d.querySelector('[data-bet="n8"]');
+ seven.click();await tick();await wait(150);
+ assert.equal(f.calls.filter(call=>call.action==='bet').length,1,'the first draft has reached the deliberately delayed server');
+ assert.deepEqual(f.calls.find(call=>call.action==='bet').bets,{n7:100});
+ eight.click();seven.click();await tick();
+ assert.equal(seven.querySelector('.bet-stack .stack-face')?.textContent,'200');
+ assert.equal(eight.querySelector('.bet-stack .stack-face')?.textContent,'100');
+ assert.equal(d.getElementById('totalBet').textContent,'300 G');assert.equal(d.getElementById('balance').textContent,'9,700');
+ assert.equal(f.calls.filter(call=>call.action==='bet').length,1,'local input does not wait for or multiply the in-flight draft');
+ gate.resolve();await tick();await tick();f.gates.delete('bet');
+ assert.deepEqual(clone(f.ui.state.bets),{n7:200,n8:100},'the older draft response does not replace more recent local input');
+ assert.equal(seven.querySelector('.bet-stack .stack-face')?.textContent,'200');
+ await wait(150);await tick();
+ assert.deepEqual(f.calls.filter(call=>call.action==='bet').at(-1).bets,{n7:200,n8:100},'the next draft publishes the latest combined input');
+ for(const animation of f.animations)animation.finish();await tick();
+ assert.equal(d.getElementById('totalBet').textContent,'300 G');
+});
+
+test('repeating the previous round paints every copied bet before any placement flight finishes',async t=>{
+ const bets={n7:100,n8:500},r=roomFixture({status:'spinning',round:1});
+ r.me={...r.me,ready:true,bets,stake:600};
+ r.spin={id:'previous-repeat-round',number:0,duration:20000,startedAt:Date.now()-20000,variation:.5,bets};
+ const f=await fixture(t,r,{preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+ f.room().status='betting';f.room().round++;f.room().spin=null;f.room().me={...f.room().me,ready:false,bets:{},stake:0};
+ f.ui.applySnapshot(f.snapshot());
+ assert.deepEqual(clone(f.ui.state.lastBets),bets,'the previous server round supplies the repeat selection');
+ assert.equal(d.querySelectorAll('.bet-stack').length,0);assert.equal(d.getElementById('repeatButton').disabled,false);
+ d.getElementById('repeatButton').click();await tick();
+ assert.equal(f.animations.length,2,'both copied bets still have unfinished decorative flights');
+ assert.equal(d.querySelector('[data-bet="n7"] .bet-stack .stack-face')?.textContent,'100');
+ assert.equal(d.querySelector('[data-bet="n8"] .bet-stack .stack-face')?.textContent,'500');
+ assert.equal(d.getElementById('totalBet').textContent,'600 G');assert.equal(d.getElementById('balance').textContent,'9,400');
+ for(const animation of f.animations)animation.finish();await tick();
+ assert.deepEqual(clone(f.ui.state.bets),bets);assert.equal(d.querySelectorAll('.bet-stack').length,2);
+ assert.equal(d.getElementById('totalBet').textContent,'600 G');
+});
+
+test('late chip animations cannot restore an undone or cleared bet over newer input',async t=>{
+ const f=await fixture(t,roomFixture(),{preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+ const seven=d.querySelector('[data-bet="n7"]'),eight=d.querySelector('[data-bet="n8"]'),nine=d.querySelector('[data-bet="n9"]');
+ seven.click();eight.click();await tick();
+ const [firstFlight,secondFlight]=f.animations;
+ assert.equal(d.getElementById('totalBet').textContent,'200 G');
+ d.getElementById('undoButton').click();await tick();
+ assert.deepEqual(clone(f.ui.state.bets),{n7:100});assert.equal(eight.querySelector('.bet-stack'),null);
+ secondFlight.finish();await tick();
+ assert.equal(eight.querySelector('.bet-stack'),null,'the undone second chip does not reappear when its old flight finishes');
+ assert.equal(d.getElementById('totalBet').textContent,'100 G');
+ d.getElementById('clearButton').click();await tick();
+ assert.deepEqual(clone(f.ui.state.bets),{});assert.equal(d.querySelectorAll('.bet-stack').length,0);
+ assert.equal(d.getElementById('totalBet').textContent,'0 G');assert.equal(d.getElementById('balance').textContent,'10,000');
+ const oldAnimations=[...f.animations];nine.click();await tick();
+ firstFlight.finish();for(const animation of oldAnimations)animation.finish();await tick();
+ assert.deepEqual(clone(f.ui.state.bets),{n9:100});assert.equal(d.querySelectorAll('.bet-stack').length,1);
+ assert.equal(nine.querySelector('.bet-stack .stack-face')?.textContent,'100');
+ assert.equal(seven.querySelector('.bet-stack'),null);assert.equal(eight.querySelector('.bet-stack'),null);
+ assert.equal(d.getElementById('totalBet').textContent,'100 G');assert.equal(d.getElementById('balance').textContent,'9,900');
+});
+
+test('starting a round and changing rooms remain correct when old placement animations finish later',async t=>{
+ const r=roomFixture();r.players[1].ready=true;
+ const f=await fixture(t,r,{preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+ const seven=d.querySelector('[data-bet="n7"]'),eight=d.querySelector('[data-bet="n8"]'),nine=d.querySelector('[data-bet="n9"]');
+ seven.click();eight.click();await tick();const [firstFlight,secondFlight]=f.animations;
+ d.getElementById('spinButton').click();await tick();await tick();
+ assert.equal(f.room().status,'spinning');assert.deepEqual(clone(f.ui.state.pending.bets),{n7:100,n8:100});
+ assert.equal(f.ui.state.balance,9800);assert.equal(d.getElementById('wheelDialog').open,true);
+ nine.click();firstFlight.finish();await tick();
+ assert.deepEqual(clone(f.ui.state.bets),{});assert.deepEqual(clone(f.ui.state.pending.bets),{n7:100,n8:100});
+ assert.equal(d.querySelectorAll('.bet-stack').length,2);assert.equal(nine.querySelector('.bet-stack'),null);
+ assert.equal(d.getElementById('totalBet').textContent,'200 G');
+ d.getElementById('brandButton').click();await tick();await tick();
+ assert.equal(f.ui.getRoom(),null);assert.equal(d.getElementById('wheelDialog').open,false);
+ d.getElementById('joinCode').value='CCDD0011';
+ d.getElementById('joinForm').dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();await tick();
+ assert.equal(f.ui.getRoom().code,'CCDD0011');
+ assert.equal(f.ui.state.pending,null);assert.equal(d.querySelectorAll('.bet-stack').length,0);
+ nine.click();await tick();secondFlight.finish();await tick();
+ assert.deepEqual(clone(f.ui.state.bets),{n9:100});assert.equal(d.querySelectorAll('.bet-stack').length,1);
+ assert.equal(nine.querySelector('.bet-stack .stack-face')?.textContent,'100');
+ assert.equal(seven.querySelector('.bet-stack'),null);assert.equal(eight.querySelector('.bet-stack'),null);
+ assert.equal(d.getElementById('totalBet').textContent,'100 G');
+ assert.equal(f.calls.filter(call=>call.action==='ready').length,1,'late flights never start or charge another round');
+});
+
+test('rapid chip input cannot exceed available gold or the per-round limit while animations remain pending',async t=>{
+ for(const scenario of [{name:'available gold',gold:250,chip:100,clicks:3,accepted:2,total:'200 G',balance:'50',face:'200'},
+  {name:'round limit',gold:60000,chip:5000,clicks:11,accepted:10,total:'50,000 G',balance:'10,000',face:'50K'}]){
+  await t.test(scenario.name,async t=>{
+   const f=await fixture(t,roomFixture(),{gold:scenario.gold,preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+   d.querySelector(`[data-chip="${scenario.chip}"]`).click();await tick();
+   const cell=d.querySelector('[data-bet="n7"]');for(let i=0;i<scenario.clicks;i++)cell.click();await tick();
+   assert.equal(f.ui.state.bets.n7,scenario.accepted*scenario.chip);
+   assert.equal(f.ui.state.betChips.n7.length,scenario.accepted);assert.equal(f.animations.length,scenario.accepted,'rejected chips do not launch decorative flights');
+   assert.equal(d.getElementById('totalBet').textContent,scenario.total);assert.equal(d.getElementById('balance').textContent,scenario.balance);
+   assert.equal(cell.querySelector('.bet-stack .stack-face')?.textContent,scenario.face);
+   assert.equal(f.ui.state.balance,scenario.gold,'placing chips reserves the display amount without locally changing authoritative gold');
+   for(const animation of f.animations)animation.finish();await tick();
+   assert.equal(f.ui.state.bets.n7,scenario.accepted*scenario.chip);assert.equal(d.getElementById('totalBet').textContent,scenario.total);
+  });
+ }
 });
 
 test('cancelling start republishes retained own chips so opponents see the same draft',async t=>{

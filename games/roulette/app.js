@@ -18,6 +18,7 @@ let computerOutcome=null;
 let reducedPreference=null;
 let walletInfo=null,refillBusy=false,refillRequest=null,refillError='';
 const requests=new Map();
+const betFlights=new Set();
 try{
   const prefs=JSON.parse(localStorage.getItem(KEY));state.sound=prefs?.sound!==false;
   if(typeof prefs?.reducedOverride==='boolean')reducedPreference=prefs.reducedOverride;
@@ -169,7 +170,7 @@ async function shareDraft(){
   catch(error){if(/round_in_progress/.test(error?.message||'')||bettingExpired())schedulePoll(0);else if(version===draftVersion&&!commandBusy&&!ownReady()&&!state.pending&&room?.code===code)notice(errorText(error))}
   finally{draftRequest=null;if(draftVersion!==version&&!closed)draftTimer=setTimeout(shareDraft,120)}
 }
-function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else if($('historyDialog').open)$('historyDialog').close();$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
+function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else{cancelBetFlights();if($('historyDialog').open)$('historyDialog').close()}$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
 function renderRoom(){
   const solo=room?.mode==='solo';
   $('historyButton').hidden=!room;
@@ -231,7 +232,7 @@ function applySnapshot(data){
       state.pending=null;state.bets={};state.betChips={};undo=[];animating=false;resultReadyId=null;sound.stopRoll();closeWheelPopup(null,{instant:true});setScreen('lobby');
     }else{
       lobbyMode=room.mode==='solo'?'solo':'online';
-      if(previous?.id!==room.id){state.bets={};state.betChips={};state.pending=null;state.lastBets={};state.lastChips={};state.lastSettled=null;undo=[];clearResult()}
+      if(previous?.id!==room.id){cancelBetFlights();state.bets={};state.betChips={};state.pending=null;state.lastBets={};state.lastChips={};state.lastSettled=null;undo=[];clearResult()}
       setScreen('game');
       if(room.status==='betting'){
         if(previous?.id===room.id&&(previous.status!=='betting'||previous.round!==room.round)){state.bets={};state.betChips={};undo=[];if(!settling)acknowledgeRemoteResult()}
@@ -284,7 +285,8 @@ const center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y
 function notice(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),2800)}
 function animateCounter(el,from,to,duration=650){return new Promise(resolve=>{if(reduced()){el.textContent=fmt(to);resolve();return}const start=performance.now();function frame(now){const p=Math.min(1,(now-start)/duration),t=1-(1-p)**3;el.textContent=fmt(from+(to-from)*t);if(p<1)requestAnimationFrame(frame);else resolve()}requestAnimationFrame(frame)})}
 
-function fly(from,to,{amount=100,delay=0,duration=530,kind='bet',fade=false,owner='me'}={}){
+function cancelBetFlights(){for(const {chip,animation} of betFlights){animation.cancel?.();chip.remove()}betFlights.clear()}
+function fly(from,to,{amount=100,delay=0,duration=180,kind='bet',fade=false,owner='me'}={}){
   if(reduced())return Promise.resolve();
   const a=from instanceof Element?center(from):from,b=to instanceof Element?center(to):to;
   if(!a||!b||!Number.isFinite(a.x)||!Number.isFinite(b.x))return Promise.resolve();
@@ -294,7 +296,8 @@ function fly(from,to,{amount=100,delay=0,duration=530,kind='bet',fade=false,owne
   const finalScale=kind==='bet'?.83:kind==='bank'?.65:.86;
   const frames=[{transform:'translate3d(0,0,0) perspective(600px) rotateX(28deg) rotateZ(-12deg) scale(1)',opacity:1,offset:0},{transform:`translate3d(${dx*.52}px,${dy*.42-arc}px,0) perspective(600px) rotateX(48deg) rotateZ(22deg) scale(1.08)`,opacity:1,offset:.46},{transform:`translate3d(${dx}px,${dy}px,0) perspective(600px) rotateX(24deg) rotateZ(42deg) scale(${finalScale})`,opacity:fade?0:1,offset:1}];
   const animation=chip.animate(frames,{duration,delay,easing:'cubic-bezier(.25,.65,.3,1)',fill:'both'});
-  return animation.finished.catch(()=>{}).then(()=>chip.remove());
+  const flight={chip,animation};if(kind==='bet')betFlights.add(flight);
+  return animation.finished.catch(()=>{}).then(()=>{betFlights.delete(flight);chip.remove()});
 }
 
 function makeBet(id,content,cls){const b=document.createElement('button');b.className=`bet-cell ${cls||''}`;b.dataset.bet=id;b.setAttribute('aria-label',`${BETS[id].label} 베팅, 당첨 시 원금 포함 ${BETS[id].multiplier}배`);b.innerHTML=content;b.addEventListener('click',()=>placeBet(id));b.addEventListener('pointerenter',()=>highlight(id));b.addEventListener('pointerleave',clearHighlight);b.addEventListener('focus',()=>highlight(id));b.addEventListener('blur',clearHighlight);return b}
@@ -413,31 +416,41 @@ function placeBet(id){
   const amount=state.selectedChip,origin=document.querySelector(`[data-chip="${amount}"]`);
   clearHighlight();commitBet(id,amount,origin||$('chipAnchor'));
 }
-async function commitBet(id,chipAmount,origin){
+function commitBet(id,chipAmount,origin){
   if(betsClosed())return;sound.unlock().catch(()=>{});
-  let amount,accepted=false;
-  await mutate(()=>{if(state.pending)return;amount=chipAmount;const sum=totalBets(state.bets);if(sum+amount>MAX_BET){notice('한 판에는 최대 50,000 G까지 베팅할 수 있어요.');return}if(sum+amount>state.balance){notice('베팅할 골드가 부족해요. 칩 금액을 낮춰주세요.');return}state.selectedChip=amount;state.bets[id]=(state.bets[id]||0)+amount;(state.betChips[id]??=[]).push(amount);undo.push({id,amount});accepted=true});
-  if(!accepted){render();return}queueDraft();if(lastResult)clearResult();render({bets:false});
+  const amount=chipAmount,sum=totalBets(state.bets);
+  if(sum+amount>MAX_BET){notice('한 판에는 최대 50,000 G까지 베팅할 수 있어요.');return}
+  if(sum+amount>state.balance){notice('베팅할 골드가 부족해요. 칩 금액을 낮춰주세요.');return}
+  state.selectedChip=amount;state.bets[id]=(state.bets[id]||0)+amount;(state.betChips[id]??=[]).push(amount);undo.push({id,amount});
+  // The accepted chip and totals are visible before animation or network work.
+  // Only sound/motion preferences need persist(); bets stay server-authoritative.
+  queueDraft();if(lastResult)clearResult();render();
   const source=origin||$('chipAnchor'),target=betPoint(id);sound.chip();
-  await fly(source,target,{amount});if(!busy())renderBets(state.bets,id);
+  void fly(source,target,{amount});
 }
 async function removeBets(all){
-  if(betsClosed())return;let outgoing={};await mutate(()=>{if(state.pending)return;if(all){outgoing={...state.bets};state.bets={};state.betChips={};undo=[]}else{let action;while(undo.length){action=undo.pop();if((state.bets[action.id]||0)>=action.amount)break;action=null}if(!action)return;outgoing[action.id]=action.amount;state.bets[action.id]-=action.amount;const chips=state.betChips[action.id]||[],index=chips.lastIndexOf(action.amount);if(index>=0)chips.splice(index,1);if(!state.bets[action.id])delete state.bets[action.id]}});
+  if(betsClosed())return;let outgoing={};cancelBetFlights();
+  if(all){outgoing={...state.bets};state.bets={};state.betChips={};undo=[]}
+  else{let action;while(undo.length){action=undo.pop();if((state.bets[action.id]||0)>=action.amount)break;action=null}if(!action)return;outgoing[action.id]=action.amount;state.bets[action.id]-=action.amount;const chips=state.betChips[action.id]||[],index=chips.lastIndexOf(action.amount);if(index>=0)chips.splice(index,1);if(!state.bets[action.id])delete state.bets[action.id]}
   queueDraft();render();const tray=$('chipAnchor');sound.chip();await Promise.all(Object.entries(outgoing).map(([id,amount],i)=>fly(betPoint(id),tray,{amount,duration:460,delay:i*28,fade:true})));
 }
-async function repeatBets(){
-  if(betsClosed())return;let copied=false;await mutate(()=>{if(state.pending)return;const total=totalBets(state.lastBets);if(!total)return;if(total>state.balance){notice('이전과 똑같이 베팅하기에는 골드가 부족해요.');return}state.bets={...state.lastBets};state.betChips=cleanChips(state.lastChips,state.bets);undo=Object.entries(state.betChips).flatMap(([id,chips])=>chips.map(amount=>({id,amount})));copied=true});
-  if(!copied){render();return}queueDraft();clearResult();render({bets:false});const source=$('chipAnchor');await Promise.all(Object.entries(state.bets).map(([id,amount],i)=>fly(source,betPoint(id),{amount,delay:Math.min(i*34,500)})));if(!busy())renderBets();sound.chip();
+function repeatBets(){
+  if(betsClosed())return;const total=totalBets(state.lastBets);if(!total)return;
+  if(total>state.balance){notice('이전과 똑같이 베팅하기에는 골드가 부족해요.');return}
+  cancelBetFlights();state.bets={...state.lastBets};state.betChips=cleanChips(state.lastChips,state.bets);undo=Object.entries(state.betChips).flatMap(([id,chips])=>chips.map(amount=>({id,amount})));
+  queueDraft();clearResult();render();sound.chip();const source=$('chipAnchor');
+  for(const [index,[id,amount]] of Object.entries(state.bets).entries())void fly(source,betPoint(id),{amount,delay:Math.min(index*12,60)});
 }
 async function startSpin(){
   if(commandBusy||busy()||!room||room.status!=='betting'||bettingExpired())return;
   sound.unlock().catch(()=>{});
   if(ownReady())return;
   if(!totalBets(state.bets)&&bettingRemaining()===null)return;
-  clearTimeout(draftTimer);
+  clearTimeout(draftTimer);cancelBetFlights();
   await command('ready',{ready:true,bets:{...state.bets}});
 }
 function openWheelPopup(spin){
+  cancelBetFlights();
   $('wheel').setAttribute('aria-label','룰렛 공이 돌고 있습니다. 원판이 완전히 멈춘 뒤 공이 들어간 칸과 숫자를 확대해 보여줍니다.');
   const modal=$('wheelDialog');resultReadyId=null;$('confirmResultButton').hidden=true;$('confirmResultButton').disabled=true;modal.dataset.spin=spin.id;modal.dataset.phase='spinning';modal.classList.remove('closing');
   $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=totalBets(spin.bets)?`베팅 마감 · ${fmt(totalBets(spin.bets))} G`:'관람 · 베팅 없음';
@@ -547,9 +560,9 @@ $('brandButton').addEventListener('click',()=>{if(room)void leaveRoom();else sen
 for(const id of ['soundButton','wheelSoundButton'])$(id).addEventListener('click',async()=>{sound.unlock().catch(()=>{});await mutate(()=>state.sound=!state.sound);render({bets:false})});
 $('motionButton').addEventListener('click',async()=>{await mutate(()=>{reducedPreference=!reduced();state.reduced=reducedPreference});render({bets:false})});
 media.addEventListener('change',()=>render({bets:false}));
-for(const el of document.querySelectorAll('[data-chip]'))el.addEventListener('click',async()=>{
+for(const el of document.querySelectorAll('[data-chip]'))el.addEventListener('click',()=>{
   if(betsClosed())return;
-  await mutate(()=>{if(!state.pending)state.selectedChip=Number(el.dataset.chip)});
+  state.selectedChip=Number(el.dataset.chip);
   render({bets:false});sound.unlock().catch(()=>{});
 });
 $('undoButton').addEventListener('click',()=>removeBets(false));$('clearButton').addEventListener('click',()=>removeBets(true));$('repeatButton').addEventListener('click',repeatBets);
@@ -561,6 +574,6 @@ historyDialog.addEventListener('click',event=>{if(event.target===historyDialog){
 $('wheelDialog').addEventListener('cancel',event=>{if(busy())event.preventDefault()});
 $('wheelDialog').addEventListener('close',()=>{document.body.classList.remove('wheel-open');wheel.setVisible(false)});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)sound.stopRoll();else if(state.pending&&animating)sound.beginRoll(state.pending);renderBettingClock();schedulePoll(document.hidden?undefined:100)});
-window.addEventListener('pagehide',()=>{closed=true;clearTimeout(pollTimer);clearTimeout(draftTimer);clearTimeout(bettingClockTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
+window.addEventListener('pagehide',()=>{closed=true;cancelBetFlights();clearTimeout(pollTimer);clearTimeout(draftTimer);clearTimeout(bettingClockTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
 render();send({type:'ready'});
 setTimeout(()=>{if(!initialized){$('connectionStatus').replaceChildren();const link=document.createElement('a');link.href='/world.html?game=roulette';link.target='_top';link.textContent='오쭈다 오락실에서 시작하기';$('connectionStatus').append(link)}},7000);
