@@ -1,4 +1,4 @@
-import {BETS,COLOR,MAX_BET,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261031-roulette-modes1';
+import {BETS,COLOR,MAX_BET,HISTORY_LIMIT,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261101-arcade-auto1';
 import {RouletteWheel} from './wheel.js?v=20261031-roulette-stopzoom1';
 import {Sound} from './sound.js?v=20261031-roulette-modes1';
 import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
@@ -184,7 +184,7 @@ function displaySpin(serverSpin,serverTime){
 }
 function acknowledgeRemoteResult(){
   const spin=state.pending;
-  if(spin&&state.lastSettled!==spin.id){const result=payout(spin.bets,spin.number);state.lastSettled=spin.id;state.history.unshift(spin.number);state.history=state.history.slice(0,30);revealResult({...result,number:spin.number,net:result.total-result.stake,bets:spin.bets})}
+  if(spin&&state.lastSettled!==spin.id){const result=payout(spin.bets,spin.number);state.lastSettled=spin.id;state.history.unshift(spin.number);state.history=state.history.slice(0,HISTORY_LIMIT);revealResult({...result,number:spin.number,net:result.total-result.stake,bets:spin.bets})}
   state.pending=null;animating=false;resultReadyId=null;sound.stopRoll();void closeWheelPopup(null,{instant:true});
 }
 function applySnapshot(data){
@@ -324,19 +324,37 @@ function renderOpponentBets(){
   }
 }
 function renderHistory(){
-  const numbers=state.history.slice(0,30),list=$('historyList'),key=numbers.join(',');
+  const numbers=state.history.slice(0,HISTORY_LIMIT),list=$('historyList'),key=numbers.join(',');
   if(list.dataset.results===key)return;
   list.dataset.results=key;list.replaceChildren();
   const h=$('history');h.replaceChildren();
   $('historyEmpty').hidden=numbers.length>0;
-  $('historyCount').textContent=numbers.length?`최근 ${numbers.length}회 · 최신순`:'아직 기록 없음';
+  $('historyCount').textContent=numbers.length?`최근 ${numbers.length}회 · 최근 나온 번호순`:'아직 기록 없음';
   if(!numbers.length){const e=document.createElement('span');e.className='history-empty';e.textContent='첫 번째 공을 기다리는 중';h.append(e);return}
+  const frequencies=new Map();
   for(const [index,n] of numbers.entries()){
+    const existing=frequencies.get(n);
+    if(existing)existing.count++;else frequencies.set(n,{number:n,count:1,latest:index});
+  }
+  const maximum=Math.max(...[...frequencies.values()].map(item=>item.count));
+  const badge=n=>{
     const color=COLOR(n),colorName={red:'빨강',black:'검정',green:'초록'}[color];
     const number=document.createElement('span');number.className=`history-number ${color}`;number.textContent=n;number.setAttribute('aria-label',`${n}번 · ${colorName}`);
-    const order=document.createElement('span');order.className='history-order';order.textContent=index===0?'최신':`${index}회 전`;
-    const item=document.createElement('li');item.append(number,order);list.append(item);
-    if(index<15){const recent=number.cloneNode(true);recent.title=`${index+1}번째 최근 결과: ${n}`;h.append(recent)}
+    return number;
+  };
+  // The first occurrence in newest-first history sets the row order, while all
+  // occurrences contribute to its bar. Consecutive equal results count separately.
+  for(const {number:n,count,latest} of frequencies.values()){
+    const label=document.createElement('span');label.className='history-number-label';
+    const order=document.createElement('span');order.className='history-order';order.textContent=latest===0?'최신':`${latest}회 전`;
+    label.append(badge(n),order);
+    const track=document.createElement('span');track.className='history-bar-track';track.setAttribute('aria-hidden','true');
+    const bar=document.createElement('span');bar.className=`history-bar ${COLOR(n)}`;bar.style.width=`${count/maximum*100}%`;track.append(bar);
+    const frequency=document.createElement('span');frequency.className='history-frequency';frequency.textContent=`${count}회`;
+    const item=document.createElement('li');item.append(label,track,frequency);list.append(item);
+  }
+  for(const [index,n] of numbers.slice(0,15).entries()){
+    const recent=badge(n);recent.title=`${index+1}번째 최근 결과: ${n}`;h.append(recent);
   }
 }
 function render({bets=true,balance=true}={}){
@@ -440,7 +458,7 @@ async function confirmResult(){
   const calculated=payout(spin.bets,spin.number);result={...calculated,number:spin.number,net:calculated.total-calculated.stake,bets:{...spin.bets}};oldBalance=state.balance;
   try{
     if(room?.mode==='solo'&&computerOutcome?.id!==id)applySnapshot(await rpc('read',{code:room.code}));
-    const data=await rpc('confirm',{code:room.code,roundId:id});state.lastSettled=id;state.history.unshift(spin.number);state.history=state.history.slice(0,30);state.pending=null;state.bets={};state.betChips={};undo=[];applySnapshot(data);
+    const data=await rpc('confirm',{code:room.code,roundId:id});state.lastSettled=id;state.history.unshift(spin.number);state.history=state.history.slice(0,HISTORY_LIMIT);state.pending=null;state.bets={};state.betChips={};undo=[];applySnapshot(data);
   }
   catch(error){settling=false;resultReadyId=id;$('confirmResultButton').disabled=false;$('confirmResultButton').textContent='확인';notice(errorText(error));render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);return}
 

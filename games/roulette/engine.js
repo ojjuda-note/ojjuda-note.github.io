@@ -1,6 +1,7 @@
 export const WHEEL_ORDER = Object.freeze([0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26]);
 export const REDS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 export const MAX_BET = 50000;
+export const HISTORY_LIMIT = 500;
 export const START_BALANCE = 10000;
 export const MIN_SPIN_MS = 20000;
 export const MAX_SPIN_MS = 30000;
@@ -63,7 +64,7 @@ export function normalizeState(raw){
   s.bets=cleanBets(raw.bets);if(totalBets(s.bets)>s.balance)s.bets={};
   s.lastBets=cleanBets(raw.lastBets);
   s.betChips=cleanChips(raw.betChips,s.bets);s.lastChips=cleanChips(raw.lastChips,s.lastBets);
-  s.history=Array.isArray(raw.history)?raw.history.filter(n=>Number.isInteger(n)&&n>=0&&n<=36).slice(0,30):[];
+  s.history=Array.isArray(raw.history)?raw.history.filter(n=>Number.isInteger(n)&&n>=0&&n<=36).slice(0,HISTORY_LIMIT):[];
   s.rounds=Number.isSafeInteger(raw.rounds)&&raw.rounds>=0?raw.rounds:0;
   s.lastSettled=typeof raw.lastSettled==='string'?raw.lastSettled:null;
   s.lastDuration=Number.isInteger(raw.lastDuration)&&raw.lastDuration>=MIN_SPIN_MS&&raw.lastDuration<=MAX_SPIN_MS?raw.lastDuration:null;
@@ -82,7 +83,7 @@ export function settleState(state,spinId){
   if(!state.pending||state.pending.id!==spinId||state.lastSettled===spinId)return null;
   const spin=state.pending,result=payout(spin.bets,spin.number);
   state.balance=Math.min(1e12,state.balance+result.total);
-  state.lastSettled=spin.id;state.history.unshift(spin.number);state.history=state.history.slice(0,30);state.rounds++;state.pending=null;state.bets={};state.betChips={};
+  state.lastSettled=spin.id;state.history.unshift(spin.number);state.history=state.history.slice(0,HISTORY_LIMIT);state.rounds++;state.pending=null;state.bets={};state.betChips={};
   return {...result,number:spin.number,net:result.total-result.stake,bets:spin.bets};
 }
 

@@ -7,7 +7,7 @@
   <meta name="description" content="정교한 원판과 자연스러운 공의 움직임. 가상 골드로 즐기는 오쭈다 룰렛.">
   <title>룰렛 · 오쭈다 오락실</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23091d18'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c7a364' stroke-width='3'/%3E%3Cpath d='M32 13v38M13 32h38M18 18l28 28M18 46l28-28' stroke='%23c7a364'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23c7a364'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261101-roulette-history1">
+  <link rel="stylesheet" href="styles.css?v=20261101-arcade-auto1">
   <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
   <link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-arcade-entry1">
   <script src="/multiplayer-entry.js?v=20261031-roulette-modes1" defer></script>
@@ -127,10 +127,10 @@
   <dialog id="historyDialog" class="help-dialog history-dialog" aria-labelledby="historyTitle" aria-describedby="historyHint">
     <div class="dialog-heading"><span class="eyebrow">RECENT NUMBERS</span><button id="closeHistory" class="icon-button" type="button" aria-label="지난 번호 닫기"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
     <h2 id="historyTitle">지난 번호</h2>
-    <p id="historyHint" class="history-hint">이 테이블에서 확인한 최근 30회 결과를 최신순으로 보여드려요.</p>
+    <p id="historyHint" class="history-hint">이 테이블에서 확인한 최근 500회를 기록해요. 가장 최근 나온 번호가 위에 있고, 막대 길이는 번호별 나온 횟수예요.</p>
     <p id="historyCount" class="history-count"></p>
     <p id="historyEmpty" class="history-dialog-empty">아직 확인한 결과가 없어요.<br>한 판을 마치면 여기에 표시돼요.</p>
-    <ol id="historyList" class="history-list" aria-label="최근 결과, 최신순"></ol>
+    <ol id="historyList" class="history-list" aria-label="번호별 나온 횟수, 최근 나온 번호순"></ol>
     <p class="history-note">테이블을 바꾸거나 게임을 다시 열면 기록이 초기화돼요.</p>
   </dialog>
   <dialog id="helpDialog" class="help-dialog">
@@ -155,6 +155,6 @@
     <p id="refillCoins" class="refill-coins">보유 0쭈</p><p id="refillMessage" class="refill-message" role="status"></p>
     <div class="refill-dialog-actions"><button id="cancelRefillButton" type="button">취소</button><button id="confirmRefillButton" type="button" disabled>충전</button></div>
   </dialog>
-  <script type="module" src="app.js?v=20261101-roulette-history1"></script>
+  <script type="module" src="app.js?v=20261101-arcade-auto1"></script>
 </body>
 </html>

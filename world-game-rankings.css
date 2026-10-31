@@ -29,4 +29,5 @@ html:not([data-ojjuda-adult="true"]) [data-rank-group="adult"]{display:none!impo
 
 .board-rank-head{flex-wrap:wrap}.board-rank-groups .board-rank-viewport{touch-action:pan-x pan-y pinch-zoom}.board-rank-category-controls{flex:none;gap:4px}.board-rank-category-controls button{min-width:24px;min-height:28px}.board-rank-category-controls .board-rank-position{min-width:22px}
 .board-rank-page-columns{display:grid;grid-template-columns:repeat(var(--board-rank-columns,1),minmax(0,1fr));gap:18px;align-items:start}.board-rank-page-columns>table{min-width:0}
+.board-rank-controls .board-rank-autoplay{font-size:11px;font-weight:700}.board-rank-autoplay[hidden],.board-rank-auto-controls[hidden]{display:none}@media(max-width:400px){.board-leaders .board-rank-caption{display:none}}
 .board-rank-groups .board-rank-history-table{overscroll-behavior-x:auto}.board-rank-history-reserve[hidden]{display:none}

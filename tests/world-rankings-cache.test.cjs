@@ -11,15 +11,19 @@ const adultGames = {
   roulette: { name: '룰렛', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' }
 };
 
-function fixture(t) {
+function fixture(t, options = {}) {
   const dom = new JSDOM('<main></main>', { url: 'https://fixture.test/world.html', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window, requests = [], timers = new Map(), observers = new Set();
   let now = Date.parse('2026-10-20T00:00:00Z'), actor = 'member-a';
-  let timerId = 0, rankingWidth = 360;
+  let timerId = 0, rankingWidth = 360, hidden = false;
   w.Date.now = () => now;
   w.setTimeout = (fn, delay) => { const id = ++timerId; timers.set(id, { fn, at: now + delay }); return id; };
   w.clearTimeout = id => timers.delete(id);
-  w.matchMedia = () => ({ matches: true, addEventListener() {}, removeEventListener() {} });
+  const motionListeners = new Set(), motion = { matches: options.reduced ?? true,
+    addEventListener(type, listener) { if (type === 'change') motionListeners.add(listener); },
+    removeEventListener(type, listener) { if (type === 'change') motionListeners.delete(listener); } };
+  w.matchMedia = () => motion;
+  Object.defineProperty(w.document, 'hidden', { configurable: true, get: () => hidden });
   w.ResizeObserver = class {
     constructor(callback) { this.callback = callback; this.targets = new Set(); observers.add(this); }
     observe(target) { this.targets.add(target); }
@@ -78,6 +82,8 @@ function fixture(t) {
   return { w, client, requests, mount, reply, historyReply, pickMonth, category, selectCategory, scrollCategory, resize,
     score: () => host.querySelector('[data-game=tank] .board-leader-score')?.textContent,
     clock: value => { now = value; }, advance: value => { now += value; }, actor: value => { actor = value; },
+    reduced: value => { motion.matches = value; for (const listener of motionListeners) listener({ matches: value }); },
+    visibility: value => { hidden = value; w.document.dispatchEvent(new w.Event('visibilitychange')); },
     fireTimers: () => { for (const [id, timer] of [...timers]) if (timer.at <= now) { timers.delete(id); timer.fn(); } },
     host: () => host
   };
@@ -216,9 +222,8 @@ test('three ranking cards share one read, page independently and keep their page
   assert.equal(f.w.document.activeElement, f.host().querySelector('.board-rank-history-open'));
 });
 
-test('automatic game paging pauses hidden categories and respects hover or focus in the selected category', async t => {
-  const f = fixture(t);
-  f.w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+test('automatic traversal respects reading, pointer, visibility and gameplay pauses without extra reads', async t => {
+  const f = fixture(t, { reduced: false });
   const catalog = {
     runner: { name: '쭈 달리기', unit: '점' }, mines: { name: '지뢰찾기', unit: '점' },
     mole: { name: '두더지잡기', unit: '점' }, stacker: { name: '탑 쌓기', unit: '층' },
@@ -226,13 +231,13 @@ test('automatic game paging pauses hidden categories and respects hover or focus
   };
   const records = Object.fromEntries(Object.keys(catalog).map(id => [id, { nick: '회원', score: 1 }]));
   f.mount({ games: catalog, onOpenGame() {} }); await f.reply(0, null, { data: records });
-  const solo = f.host().querySelector('[data-rank-group=solo]'), multi = f.host().querySelector('[data-rank-group=multi]');
+  const solo = f.host().querySelector('[data-rank-group=solo]'), multi = f.host().querySelector('[data-rank-group=multi]'), section = f.host().querySelector('.board-leaders');
   for (const panel of [solo, multi]) panel.getBoundingClientRect = () => ({ top: 10, bottom: 200 });
-  const hover = new f.w.Event('pointerenter'); hover.pointerType = 'mouse'; solo.dispatchEvent(hover);
+  const hover = new f.w.Event('pointerenter'); hover.pointerType = 'mouse'; section.dispatchEvent(hover);
   f.advance(5000); f.fireTimers();
   assert.equal(solo.dataset.rankPage, '0', 'hover pauses the solo card');
   assert.equal(multi.dataset.rankPage, '0', 'the hidden multiplayer category never advances');
-  solo.dispatchEvent(new f.w.Event('pointerleave'));
+  section.dispatchEvent(new f.w.Event('pointerleave'));
   f.advance(5280); f.fireTimers();
   assert.equal(solo.dataset.rankPage, '1', 'the selected category resumes after hover');
   assert.equal(multi.dataset.rankPage, '0');
@@ -244,8 +249,112 @@ test('automatic game paging pauses hidden categories and respects hover or focus
   focused.blur(); f.advance(5280); f.fireTimers();
   assert.equal(solo.dataset.rankPage, '1'); assert.equal(multi.dataset.rankPage, '1');
   f.selectCategory('solo'); f.advance(5280); f.fireTimers();
-  assert.equal(solo.dataset.rankPage, '0'); assert.equal(multi.dataset.rankPage, '1');
+  assert.equal(f.category(), 'multi', 'the last solo page advances to the next category');
+  assert.equal(solo.dataset.rankPage, '1'); assert.equal(multi.dataset.rankPage, '0', 'entering another category starts at its first page');
+  const position = () => [f.category(), solo.dataset.rankPage, multi.dataset.rankPage];
+  const step = () => { f.advance(5280); f.fireTimers(); };
+  let before = position();
+  f.visibility(true); step(); assert.deepEqual(position(), before, 'a hidden tab does not advance');
+  f.visibility(false); step(); assert.notDeepEqual(position(), before, 'a visible tab resumes');
+  for (const release of ['pointerup', 'pointercancel']) {
+    before = position(); section.dispatchEvent(new f.w.Event('pointerdown')); step();
+    assert.deepEqual(position(), before, 'holding a pointer pauses traversal');
+    f.w.document.dispatchEvent(new f.w.Event(release)); step();
+    assert.notDeepEqual(position(), before, release + ' outside the section resumes traversal');
+  }
+  before = position();
+  for (const panel of [solo, multi]) panel.getBoundingClientRect = () => ({ top: -200, bottom: -10 });
+  step(); assert.deepEqual(position(), before, 'offscreen rankings do not advance');
+  for (const panel of [solo, multi]) panel.getBoundingClientRect = () => ({ top: 10, bottom: 200 });
+  step(); assert.notDeepEqual(position(), before, 'onscreen rankings resume');
+  const dialog = f.w.document.createElement('dialog'); f.w.document.body.append(dialog); dialog.showModal();
+  before = position(); step(); assert.deepEqual(position(), before, 'an open dialog pauses background movement');
+  dialog.close(); step(); assert.notDeepEqual(position(), before);
+  before = position(); f.w.document.body.classList.add('gaming'); await tick(); step();
+  assert.deepEqual(position(), before, 'playing a game pauses ranking traversal');
   assert.equal(f.requests.length, 1, 'automatic paging makes no ranking requests');
+});
+
+test('automatic traversal visits all twenty-one games once across categories at 3, 6 and 9 capacity; monthly history stays manual', async t => {
+  const expected = {
+    solo: ['sacheonseong', 'saetbyeol', 'mines', 'screw_box', 'screw_flat', 'spot', 'mole', 'runner', 'stacker', 'breakout'],
+    multi: ['bang', 'tank', 'tour', 'billiards', 'janggi', 'chess', 'ttang'], adult: Object.keys(adultGames)
+  };
+  const ids = Object.values(expected).flat(), catalog = Object.fromEntries(ids.map(id => [id, { name: id, unit: '점' }]));
+  const records = Object.fromEntries(ids.map((id, index) => [id, { nick: '회원', score: index + 1 }]));
+  for (const [width, capacity] of [[390, 3], [768, 6], [1200, 9]]) {
+    const f = fixture(t, { reduced: false }); f.mount({ games: catalog }); await f.reply(0, null, { data: records }); await f.resize(width);
+    const group = key => f.host().querySelector(`[data-rank-group=${key}]`);
+    for (const key of Object.keys(expected)) group(key).getBoundingClientRect = () => ({ top: 10, bottom: 200 });
+    const traversal = Object.entries(expected).flatMap(([key, games]) => Array.from({ length: Math.ceil(games.length / capacity) }, (_, page) => ({ key, page, games: games.slice(page * capacity, (page + 1) * capacity) })));
+    const seen = [];
+    assert.equal(f.host().querySelector('.board-rank-autoplay').getAttribute('aria-pressed'), 'true');
+    assert.equal(f.host().querySelector('.board-rank-category-controls .board-rank-position').getAttribute('aria-live'), 'off');
+    for (const expectedPage of traversal) {
+      assert.equal(f.category(), expectedPage.key, 'category order at width ' + width);
+      assert.equal(Number(group(expectedPage.key).dataset.rankPage), expectedPage.page);
+      const active = [...group(expectedPage.key).querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]')].map(row => row.dataset.game);
+      assert.deepEqual(active, expectedPage.games, 'the next automatic page never skips or repeats a game'); seen.push(...active);
+      f.advance(5280); f.fireTimers(); await tick();
+    }
+    assert.deepEqual(seen, ids); assert.equal(new Set(seen).size, 21);
+    assert.equal(f.category(), 'solo'); assert.equal(group('solo').dataset.rankPage, '0', 'the final category wraps to the first page of the first category');
+    assert.equal(f.requests.length, 1, 'a full automatic cycle has no additional RPCs');
+    if (capacity === 3) {
+      f.host().querySelector('.board-rank-history-open').click(); await f.historyReply(1, { leaders: records });
+      f.selectCategory('multi'); group('multi').querySelector('.board-rank-controls button:last-child').click();
+      const pages = () => [f.category(), ...Object.keys(expected).map(key => group(key).dataset.rankPage)];
+      const before = pages();
+      for (let i = 0; i < traversal.length; i++) { f.advance(5280); f.fireTimers(); await tick(); }
+      assert.deepEqual(pages(), before, 'an enabled current-ranking autoplay never advances monthly history');
+      assert.equal(f.host().querySelector('.board-rank-autoplay'), null);
+      assert.equal(f.requests.length, 2, 'monthly history reads once and its idle timer makes no requests');
+    }
+  }
+});
+
+test('automatic traversal handles allowed categories with one page, a single multi-page category and a single total page', async t => {
+  const solo = { runner: { name: '달리기', unit: '점' }, mines: { name: '지뢰찾기', unit: '점' }, mole: { name: '두더지잡기', unit: '점' }, stacker: { name: '쌓기', unit: '층' } };
+  for (const [catalog, expected] of [
+    [{ ...solo, ...games }, [['solo', '0'], ['solo', '1'], ['multi', '0']]],
+    [solo, [['solo', '0'], ['solo', '1']]],
+    [games, [['multi', '0']]]
+  ]) {
+    const f = fixture(t, { reduced: false }); f.mount({ games: catalog }); await f.reply(0, 1);
+    for (const panel of f.host().querySelectorAll('[data-rank-group]')) panel.getBoundingClientRect = () => ({ top: 10, bottom: 200 });
+    assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'unavailable adult games never enter the traversal');
+    const autoplay = f.host().querySelector('.board-rank-autoplay');
+    assert.equal(autoplay.hidden, expected.length === 1, 'one total page has no autoplay control');
+    for (const [category, page] of expected) {
+      assert.equal(f.category(), category);
+      assert.equal(f.host().querySelector(`[data-rank-group=${category}]`).dataset.rankPage, page);
+      f.advance(5280); f.fireTimers(); await tick();
+    }
+    assert.equal(f.category(), expected[0][0]);
+    assert.equal(f.host().querySelector(`[data-rank-group=${f.category()}]`).dataset.rankPage, '0');
+    assert.equal(f.requests.length, 1);
+  }
+});
+
+test('autoplay starts paused for reduced motion, honors an explicit override and remains operable with keyboard focus', async t => {
+  const f = fixture(t), catalog = { runner: { name: '달리기', unit: '점' }, tank: games.tank };
+  f.mount({ games: catalog }); await f.reply(0, 1);
+  for (const panel of f.host().querySelectorAll('[data-rank-group]')) panel.getBoundingClientRect = () => ({ top: 10, bottom: 200 });
+  const autoplay = f.host().querySelector('.board-rank-autoplay');
+  assert.equal(autoplay.getAttribute('aria-label'), '자동 넘김'); assert.equal(autoplay.getAttribute('aria-pressed'), 'false');
+  assert.equal(autoplay.title, '자동 넘김 시작'); assert.equal(autoplay.textContent, '▶');
+  f.advance(6000); f.fireTimers(); assert.equal(f.category(), 'solo');
+  autoplay.focus(); autoplay.click();
+  assert.equal(autoplay.getAttribute('aria-pressed'), 'true'); assert.equal(autoplay.title, '자동 넘김 일시정지'); assert.equal(autoplay.textContent, 'Ⅱ');
+  assert.equal(f.w.document.activeElement, autoplay);
+  f.advance(5280); f.fireTimers(); assert.equal(f.category(), 'multi', 'focus on the play control does not immediately pause it');
+  f.reduced(false); f.reduced(true); f.advance(5280); f.fireTimers();
+  assert.equal(f.category(), 'solo', 'an explicit play choice survives OS motion preference changes');
+  autoplay.click(); const before = f.category();
+  assert.equal(autoplay.getAttribute('aria-pressed'), 'false'); assert.equal(autoplay.getAttribute('aria-label'), '자동 넘김');
+  assert.equal(f.host().querySelector('.board-rank-category-controls .board-rank-position').getAttribute('aria-live'), 'polite');
+  f.advance(20000); f.fireTimers(); assert.equal(f.category(), before, 'explicit pause cancels further traversal');
+  assert.equal(f.requests.length, 1);
 });
 
 test('ranking widths retain 3, 6 or 9 capacity and show each game once per cycle, including shared winners', async t => {

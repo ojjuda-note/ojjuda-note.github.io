@@ -306,21 +306,38 @@ test('legacy reduced true remains enabled until the player explicitly turns it o
  assert.equal(saved.reducedOverride,false);assert.equal(saved.sound,false,'changing motion preserves the sound preference');
 });
 
-test('past-number dialog shows all thirty settled results in order without changing bets or requesting the server',async t=>{
+test('past-number chart counts the latest five hundred results and orders numbers by their last appearance',async t=>{
  const f=await fixture(t),d=f.w.document;
- const history=[7,7,0,...Array.from({length:27},(_,i)=>i+1)];
- f.ui.state.history=[...history];f.ui.applySnapshot(f.snapshot());
+ const history=[7,7,0,8,0,...Array.from({length:495},(_,i)=>i%2?8:36),...Array(100).fill(1)];
+ const retained=history.slice(0,500);
+ f.ui.state.history=f.w.normalizeState({version:1,history}).history;
+ assert.deepEqual(clone(f.ui.state.history),retained,'six hundred input results retain only the latest five hundred');
+ f.ui.applySnapshot(f.snapshot());
  const before={balance:f.ui.state.balance,bets:clone(f.ui.state.bets),calls:f.calls.length};
  assert.equal(d.getElementById('historyButton').hidden,false);
  d.getElementById('historyButton').click();
  assert.equal(d.getElementById('historyDialog').open,true);
- assert.deepEqual([...d.querySelectorAll('#historyList li .history-number')].map(node=>Number(node.textContent)),history,
-  'the full list preserves zero, repeated values, and newest-first order beyond the fifteen-number strip');
- assert.equal(d.getElementById('historyCount').textContent,'최근 30회 · 최신순');
+ const rows=[...d.querySelectorAll('#historyList li')];
+ assert.deepEqual(rows.map(row=>Number(row.querySelector('.history-number').textContent)),[7,0,8,36],
+  'newest appearances determine row order, not numeric order or the largest frequency');
+ const counts=rows.map(row=>parseInt(row.querySelector('.history-frequency').textContent,10));
+ assert.deepEqual(counts,[2,2,248,248],'discarded older occurrences never contribute to the chart');
+ assert.equal(counts.reduce((sum,count)=>sum+count,0),500,'frequencies add up to the retained result count');
+ assert.deepEqual(rows.map(row=>row.querySelector('.history-order').textContent),['최신','2회 전','3회 전','5회 전']);
+ assert.equal(rows[1].querySelector('.history-number').classList.contains('green'),true,'zero keeps its green color');
+ assert.equal(rows[1].querySelector('.history-bar').classList.contains('green'),true);
+ assert.equal(rows[2].querySelector('.history-bar').classList.contains('black'),true);
+ const widths=rows.map(row=>parseFloat(row.querySelector('.history-bar').style.width));
+ assert.equal(widths[0],widths[1]);assert.equal(widths[2],100);assert.equal(widths[3],100);
+ assert.ok(Math.abs(widths[0]*124-100)<1e-8,'bar length scales with count even when the newest number is uncommon');
+ assert.equal(rows.every(row=>row.querySelector('.history-bar-track').getAttribute('aria-hidden')==='true'),true,
+  'decorative bars do not repeat the visible number, recency and count for assistive technology');
+ assert.deepEqual([...d.querySelectorAll('#history .history-number')].map(node=>Number(node.textContent)),retained.slice(0,15));
+ assert.equal(d.getElementById('historyCount').textContent,'최근 500회 · 최근 나온 번호순');
  assert.equal(d.getElementById('historyEmpty').hidden,true);
  d.getElementById('closeHistory').click();
  assert.equal(d.getElementById('historyDialog').open,false);
- assert.deepEqual(clone(f.ui.state.history),history);
+ assert.deepEqual(clone(f.ui.state.history),retained);
  assert.deepEqual({balance:f.ui.state.balance,bets:clone(f.ui.state.bets),calls:f.calls.length},before,
   'viewing past numbers never settles, bets, or fetches a new outcome');
 });
@@ -345,13 +362,36 @@ test('past-number history excludes pending and unacknowledged results but keeps 
  assert.deepEqual(clone(f.ui.state.history),[],'an unanswered confirmation does not publish history');
  gate.resolve();await tick();await tick();await tick();f.gates.delete('confirm');
  assert.deepEqual(clone(f.ui.state.history),[7]);
+ assert.equal(d.querySelector('#historyList .history-frequency').textContent,'1회');
  beginRound('history-spin-two');w.testWheel.callbacks.onDone('history-spin-two');
  d.getElementById('confirmResultButton').click();await tick();await tick();await tick();
  f.ui.applySnapshot(f.snapshot());
  assert.deepEqual(clone(f.ui.state.history),[7,7],'two settled round IDs remain two entries even with equal numbers');
  d.getElementById('historyButton').click();
- assert.deepEqual([...d.querySelectorAll('#historyList li .history-number')].map(node=>Number(node.textContent)),[7,7]);
- assert.equal(d.getElementById('historyCount').textContent,'최근 2회 · 최신순');
+ assert.deepEqual([...d.querySelectorAll('#historyList li .history-number')].map(node=>Number(node.textContent)),[7]);
+ assert.equal(d.querySelector('#historyList .history-frequency').textContent,'2회','consecutive identical outcomes increment the same number bar');
+ assert.equal(d.getElementById('historyCount').textContent,'최근 2회 · 최근 나온 번호순');
+});
+
+test('local and remote confirmations both cap past-number history at five hundred without counting a round twice',async t=>{
+ const f=await fixture(t),w=f.w,d=w.document;
+ f.ui.state.history=[...Array(499).fill(8),36];f.ui.applySnapshot(f.snapshot());
+ const beginRound=(id,number)=>{
+  const r=f.room();r.status='spinning';r.round++;r.me={...r.me,ready:true,confirmed:false,bets:{},stake:0};
+  r.spin={id,number,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{}};r.result=null;
+  f.ui.applySnapshot(f.snapshot());
+ };
+ beginRound('history-cap-local',7);w.testWheel.callbacks.onDone('history-cap-local');
+ d.getElementById('confirmResultButton').click();await tick();await tick();await tick();
+ assert.deepEqual(clone(f.ui.state.history),[7,...Array(499).fill(8)],'local confirmation removes exactly the oldest retained result');
+ beginRound('history-cap-remote',0);
+ assert.equal(f.ui.state.history[0],7,'an unacknowledged new result does not appear in the chart');
+ f.room().status='finished';f.room().me.confirmed=true;f.ui.applySnapshot(f.snapshot());
+ const expected=[0,7,...Array(498).fill(8)];
+ assert.deepEqual(clone(f.ui.state.history),expected,'remote acknowledgement uses the same five-hundred-result window');
+ f.ui.applySnapshot(f.snapshot());
+ assert.deepEqual(clone(f.ui.state.history),expected,'a repeated confirmed snapshot cannot increment the count again');
+ assert.deepEqual([...d.querySelectorAll('#historyList .history-frequency')].map(node=>node.textContent),['1회','1회','498회']);
 });
 
 test('past-number history resets across room IDs and closes when leaving the table',async t=>{

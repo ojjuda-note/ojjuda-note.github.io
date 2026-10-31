@@ -80,7 +80,7 @@ function mount(host,{client,owner,games={},getGames=null,onOpenGame=null,authori
 dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
 let rankDispose=()=>{},releaseAccess=null,alive=true,request=0,catalogKey=null;
 const rankStates=new Map();
-let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0,help=null,rankCategory=null;
+let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0,help=null,rankCategory=null,automaticOverride=null;
 const lifecycle=new AbortController(),lifecycleOptions={signal:lifecycle.signal};
 const active=()=>alive&&host.isConnected&&authorized();
 function updateGames(){
@@ -250,7 +250,12 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
   });
  });resize.observe(groups);
  onResize();select(index,true);
- return {dispose(){cancelAnimationFrame(resizeFrame);events.abort();resize.disconnect();}};
+ return {
+  controls,
+  show(id){const next=ids.indexOf(id);if(next>=0)select(next,true);},
+  setAutomatic(value){position.setAttribute('aria-live',value?'off':'polite');},
+  dispose(){cancelAnimationFrame(resizeFrame);events.abort();resize.disconnect();}
+ };
 }
   function leaders(token,fresh){
    const entries=Object.entries(games);if(!entries.length)return [];
@@ -258,6 +263,39 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
    const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
    openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
    const groups=el('div','','board-rank-groups'),targets=new Set(),panels=new Map();section.append(groups);content.append(section);
+   let timer=0,hover=false,touching=false,loaded=false,categories=null,soloControls=null;
+   const motion=matchMedia('(prefers-reduced-motion: reduce)'),events=new AbortController(),options={signal:events.signal};
+   const automatic=()=>automaticOverride??!motion.matches;
+   const hasNext=()=>panels.size>1||[...panels.values()].some(panel=>panel.count()>1);
+   const autoplay=button('Ⅱ',()=>{automaticOverride=!automatic();paintAutomatic();schedule();},'board-rank-autoplay');
+   autoplay.setAttribute('aria-label','자동 넘김');
+   function paintAutomatic(){
+    const running=automatic()&&hasNext();autoplay.hidden=!hasNext();if(soloControls)soloControls.hidden=!hasNext();autoplay.textContent=running?'Ⅱ':'▶';
+    autoplay.setAttribute('aria-pressed',String(running));autoplay.title=running?'자동 넘김 일시정지':'자동 넘김 시작';categories?.setAutomatic(running);
+   }
+   function schedule(delay=5000){
+    clearTimeout(timer);
+    if(!loaded||!automatic()||!hasNext()||!active()||token!==request)return;
+    timer=setTimeout(()=>{
+     if(!active()||token!==request)return;
+     const panel=panels.get(rankCategory),rect=panel?.node.getBoundingClientRect(),focus=document.activeElement;
+     const reading=focus!==autoplay&&section.contains(focus)&&focus.matches(':focus-visible');
+     if(!panel||document.hidden||hover||touching||reading||playing()||document.querySelector('dialog[open]')||!rect||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}
+     if(!panel.advance()){
+      const ids=[...panels.keys()],next=ids[(ids.indexOf(rankCategory)+1)%ids.length];
+      panels.get(next).first();categories.show(next);
+     }
+     schedule(motion.matches?5000:5280);
+    },delay);
+   }
+   section.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'){hover=true;clearTimeout(timer);}},options);
+   section.addEventListener('pointerleave',()=>{hover=false;schedule();},options);
+   section.addEventListener('pointerdown',()=>{touching=true;clearTimeout(timer);},options);
+   const releasePointer=()=>{if(touching){touching=false;schedule();}};
+   document.addEventListener('pointerup',releasePointer,options);document.addEventListener('pointercancel',releasePointer,options);
+   section.addEventListener('focusin',()=>schedule(),options);section.addEventListener('focusout',()=>schedule(),options);
+   document.addEventListener('visibilitychange',()=>{clearTimeout(timer);touching=false;if(!document.hidden)schedule();},options);
+   motion.addEventListener('change',()=>{paintAutomatic();schedule();},options);
    const records=new Map(entries.map(([id,game])=>[id,{game,record:null,status:'loading',target:null,opening:{busy:false,buttons:new Set()}}]));
    function paintTarget(id){
     const record=records.get(id),target=record.target;if(!target)return;paintRecord(target,id,record.game,record.record);
@@ -273,8 +311,11 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
    }
    for(const group of groupedEntries(entries))panels.set(group.id,makeGroup(group));
    const fitting=fitRecords(targets,token),fitScores=fitting.fit;
-   const categories=categoryCarousel(groups,head,token,()=>{for(const panel of panels.values())panel.schedule();fitScores();},()=>{for(const panel of panels.values())panel.resize();fitScores();});
-   rankDispose=()=>{categories.dispose();fitting.dispose();for(const panel of panels.values())panel.dispose();};
+   categories=categoryCarousel(groups,head,token,()=>{schedule();fitScores();},()=>{for(const panel of panels.values())panel.resize();paintAutomatic();schedule();fitScores();});
+   if(panels.size>1)categories.controls.prepend(autoplay);
+   else{soloControls=el('div','','board-rank-controls board-rank-auto-controls');soloControls.append(autoplay);head.append(soloControls);}
+   paintAutomatic();
+   rankDispose=()=>{clearTimeout(timer);events.abort();categories.dispose();fitting.dispose();};
    function makeGroup(group){
     const panel=el('section','','board-rank-group');panel.dataset.rankGroup=group.id;panel.setAttribute('aria-label',group.name);
     const groupHead=el('header','','board-rank-group-head');groupHead.append(el('h4',group.name));panel.append(groupHead);
@@ -282,27 +323,16 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
     const pages=[];
     if(!rankStates.has(group.id))rankStates.set(group.id,{page:0,focus:null});
     const state=rankStates.get(group.id);
-    let index=state.page,columns=0,capacity=3,timer=0,hover=false,initialLoading=true,pendingAnchor=state.anchor||null;
+    let index=state.page,columns=0,capacity=3,initialLoading=true,pendingAnchor=state.anchor||null;
     const controls=el('div','','board-rank-controls'),position=el('span','','board-rank-position');position.setAttribute('aria-live','off');
     const prev=button('‹',()=>go(index-1)),next=button('›',()=>go(index+1));prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);if(pages.length>1)groupHead.append(controls);
-    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
     function paint(){
      position.textContent=(index+1)+' / '+pages.length;state.page=index;track.style.transform=`translateX(-${index*100}%)`;
      state.anchor=pages[index]?.querySelector('[data-game]')?.dataset.game||null;
      panel.dataset.rankPage=String(index);
      pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
     }
-    function schedule(delay=5000){
-     clearTimeout(timer);if(initialLoading||paused||pages.length<2||rankCategory!==group.id||!active()||token!==request||!panel.isConnected)return;
-     timer=setTimeout(()=>{if(rankCategory!==group.id)return;const rect=panel.getBoundingClientRect();if(document.hidden||hover||panel.contains(document.activeElement)||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}go(index+1);},delay);
-    }
     function go(value){if(!active()||token!==request)return;index=(value+pages.length)%pages.length;paint();if(initialLoading)pendingAnchor=state.anchor;schedule(motion.matches?5000:5280);}
-    const events=new AbortController(),options={signal:events.signal};
-    panel.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')hover=true;},options);
-    panel.addEventListener('pointerleave',()=>{hover=false;},options);
-    panel.addEventListener('focusout',()=>schedule(),options);
-    document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
-    motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
     function orderByRecords(){
      if(!active()||token!==request)return;
      const ordered=[...group.entries].sort(([a],[b])=>Number(!!records.get(b).target?.hasScore)-Number(!!records.get(a).target?.hasScore));
@@ -336,7 +366,7 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
      paint();schedule();
     }
     resize();
-    return {orderByRecords,schedule,resize,loaded(){
+    return {node:panel,count:()=>pages.length,advance(){if(index+1>=pages.length)return false;go(index+1);return true;},first:()=>go(0),orderByRecords,resize,loaded(){
      initialLoading=false;orderByRecords();
      const focus=state.focus||pendingAnchor;
      if(focus&&records.has(focus)){
@@ -344,7 +374,7 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
       if(indexForGame>=0)index=indexForGame;
      }
      state.focus=null;pendingAnchor=null;paint();schedule();
-    },dispose(){clearTimeout(timer);events.abort();}};
+    }};
    }
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
@@ -369,6 +399,7 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
    return [Promise.all(loads).then(()=>{
     if(!active()||token!==request)return;
     for(const panel of panels.values())panel.loaded();
+    loaded=true;paintAutomatic();schedule();
    })];
   }
 
