@@ -22,9 +22,9 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
  const categories={solo:['sacheonseong','saetbyeol','mines','screw_box','screw_flat','spot','mole','runner','stacker','breakout'],multi:['bang','tank','tour','billiards','janggi','chess','ttang'],adult:['matgo','poker','roulette','photo_ttang']};
  const historyPages={
-  solo:[['sacheonseong','saetbyeol','mines'],['screw_box','screw_flat','spot'],['mole','runner','stacker'],['breakout','sacheonseong','saetbyeol']],
-  multi:[['bang','tank','tour'],['billiards','janggi','chess'],['ttang','bang','tank']],
-  adult:[['matgo','poker','roulette'],['photo_ttang','matgo','poker']]
+  solo:[['sacheonseong','saetbyeol','mines'],['screw_box','screw_flat','spot'],['mole','runner','stacker'],['breakout']],
+  multi:[['bang','tank','tour'],['billiards','janggi','chess'],['ttang']],
+  adult:[['matgo','poker','roulette'],['photo_ttang']]
  };
  const groupIds=key=>[...host.querySelectorAll(`[data-rank-group=${key}] [data-game]`)].map(item=>item.dataset.game);
  const selectCategory=key=>{
@@ -38,25 +38,35 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   assert.equal(host.querySelectorAll('[data-rank-group][aria-hidden=false]').length,1,'only the selected category is exposed');
   for(const group of host.querySelectorAll('[data-rank-group]'))assert.equal(group.inert,group.getAttribute('aria-hidden')==='true');
   for(const [key,ids]of Object.entries(categories)){
-   assert.deepEqual((history?groupIds(key):[...new Set(groupIds(key))]).sort(),[...ids].sort(),key+' contains only its own games');
+   assert.deepEqual(groupIds(key).sort(),[...ids].sort(),key+' contains each of its own games exactly once');
    if(history){
     const group=host.querySelector(`[data-rank-group=${key}]`),visible=[...group.querySelectorAll('[data-game]:not([hidden])')].map(row=>row.dataset.game);
-    assert.deepEqual(visible,historyPages[key][Number(group.dataset.rankPage)],key+' displays the selected three archived games');
-    assert.equal(new Set(visible).size,3);assert.deepEqual(groupIds(key).slice(0,3),visible,'selected rows keep their visible page order');
-   }else for(const page of host.querySelectorAll(`[data-rank-group=${key}] .board-rank-page`)){
-    const visible=[...page.querySelectorAll('[data-game]')].map(row=>row.dataset.game);
-    assert.equal(visible.length,3,'every home page is full, including the last');assert.equal(new Set(visible).size,3,'each page contains three different games');
+    assert.deepEqual(visible,historyPages[key][Number(group.dataset.rankPage)],key+' displays only the archived games remaining on its selected page');
+    assert.equal(new Set(visible).size,visible.length);assert.deepEqual(groupIds(key).slice(0,visible.length),visible,'selected rows keep their visible page order');
+   }else for(const [index,page]of [...host.querySelectorAll(`[data-rank-group=${key}] .board-rank-page`)].entries()){
+    const visible=[...page.querySelectorAll('[data-game]')].map(row=>row.dataset.game),count=Math.min(3,ids.length-index*3);
+    assert.equal(visible.length,count,'the last home page contains only the remaining games');assert.equal(new Set(visible).size,count,'each page contains different games');
    }
   }
   const ids=[...host.querySelectorAll('[data-game]')].map(item=>item.dataset.game);
   assert.equal(new Set(ids).size,Object.keys(games).length,'every allowed game remains reachable');
-  if(history)assert.equal(ids.length,Object.keys(games).length,'history has one row per game');
-  for(const id of Object.keys(games)){
-   const copies=[...host.querySelectorAll(`[data-game=${id}]`)].map(row=>[row.textContent,row.querySelector('th').title,row.querySelector('.board-leader-nick').title,row.querySelector('.board-leader-score').title]);
-   assert.ok(copies.every(copy=>JSON.stringify(copy)===JSON.stringify(copies[0])),id+' copies share nickname, record and condition formatting');
-  }
+  assert.equal(ids.length,Object.keys(games).length,'current and archived rankings have one row per game');
  };
  checkGroups();assert.equal(reads.length,1,'all three cards share one initial read');assert.deepEqual(Array.from(reads[0].args.p_games),Object.keys(games));
+ for(const [key,ids]of Object.entries(categories)){
+  selectCategory(key);
+  const group=host.querySelector(`[data-rank-group=${key}]`),seen=new Set(),pageCount=Math.ceil(ids.length/3);
+  for(let page=0;page<pageCount;page++){
+   assert.equal(group.dataset.rankPage,String(page));checkGroups();
+   for(const visible of group.querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]')){
+    assert.equal(seen.has(visible.dataset.game),false,'a current game appears only once in a full paging round');seen.add(visible.dataset.game);
+   }
+   group.querySelector('.board-rank-controls button:last-child').click();
+  }
+  assert.deepEqual([...seen].sort(),[...ids].sort(),'every '+key+' current game appears exactly once');
+  assert.equal(group.dataset.rankPage,'0','the home pager wraps only after all games have appeared');
+ }
+ selectCategory('solo');assert.equal(reads.length,1,'paging every current game requires no additional RPC');
  const row=id=>host.querySelector(`[data-game="${id}"]`),value=id=>row(id).querySelector('.board-leader-score').textContent;
  assert.equal(value('mines'),'1분 0초');assert.match(row('mines').textContent,/고급/);
  assert.equal(value('billiards'),'3연승');assert.match(row('billiards').textContent,/포켓볼 · 어려움/);
@@ -71,7 +81,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   assert.equal(row('billiards').querySelector('.board-leader-nick').textContent,'이번 달 기록 없음');
   assert.equal(row('billiards').querySelector('.board-leader-nick').hasAttribute('title'),false);
   assert.equal(row('billiards').querySelector('.board-game-difficulty'),null,'empty records hide old variant and difficulty labels');
-  assert.equal([...new Set(groupIds('multi'))].at(-1),'billiards','empty records follow positive records before the page sequence wraps');
+  assert.equal(groupIds('multi').at(-1),'billiards','empty records follow positive records without repeating earlier games');
   checkGroups();
  }
  rows.billiards.score='3';await w.OjjudaGameRankings.refresh();assert.equal(value('billiards'),'3연승','positive numeric strings remain valid');
@@ -93,7 +103,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   for(let page=0;page<pages.length;page++){
    assert.equal(group.dataset.rankPage,String(page));checkGroups();
    for(const visible of group.querySelectorAll('[data-game]:not([hidden])')){
-    const id=visible.dataset.game;seen.add(id);assert.equal(visible,historyRows.get(id).node,'paging reuses each unique history row');
+    const id=visible.dataset.game;assert.equal(seen.has(id),false,'an archived game appears only once in a full paging round');seen.add(id);assert.equal(visible,historyRows.get(id).node,'paging reuses each unique history row');
     assert.equal(visible.textContent,historyRows.get(id).text,'paging preserves the visible record and condition');
    }
    group.querySelector('.board-rank-controls button:last-child').click();
@@ -101,7 +111,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   assert.deepEqual([...seen].sort(),[...categories[key]].sort(),'every '+key+' archived game is reachable');
   assert.equal(group.dataset.rankPage,'0','the history pager wraps to its first page');
   group.querySelector('.board-rank-controls button:first-child').click();checkGroups();
-  assert.equal(group.dataset.rankPage,String(pages.length-1),'previous from the first page opens the full last page');
+  assert.equal(group.dataset.rankPage,String(pages.length-1),'previous from the first page opens the remaining games on the last page');
   group.querySelector('.board-rank-controls button:last-child').click();
  }
  assert.equal(reads.length,readsBeforePaging,'paging all 21 archived games requires no additional RPC');
@@ -111,5 +121,5 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(row('billiards').querySelector('.board-game-difficulty'),null);
  checkGroups();
  for(const [key,ids]of Object.entries(categories))assert.deepEqual(groupIds(key),ids,'the archive keeps catalog order within '+key);
- console.log('PASS: real catalog in three current/archive cards, one initial RPC, per-group empty records, Mines and Sacheonseong time, variants, opponents, peak gold and safe text rendering');
+ console.log('PASS: unique games in every current/archive paging round, bounded last pages, real catalog, one initial RPC, per-group empty records, Mines and Sacheonseong time, variants, opponents, peak gold and safe text rendering');
 }finally{dom.window.OjjudaGameRankings?.mount(null);dom.window.close();}})().catch(e=>{console.error(e);process.exitCode=1});

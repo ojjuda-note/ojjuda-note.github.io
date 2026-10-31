@@ -258,18 +258,18 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
    const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
    openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
    const groups=el('div','','board-rank-groups'),targets=new Set(),panels=new Map();section.append(groups);content.append(section);
-   const records=new Map(entries.map(([id,game])=>[id,{game,record:null,status:'loading',copies:[],opening:{busy:false,buttons:new Set()}}]));
-   function paintCopy(id,target){
-    const record=records.get(id);paintRecord(target,id,record.game,record.record);
+   const records=new Map(entries.map(([id,game])=>[id,{game,record:null,status:'loading',target:null,opening:{busy:false,buttons:new Set()}}]));
+   function paintTarget(id){
+    const record=records.get(id),target=record.target;if(!target)return;paintRecord(target,id,record.game,record.record);
     if(record.status==='loading')target.nick.textContent='불러오는 중…';
     else if(record.status==='error')target.nick.replaceChildren(button('다시 불러오기',()=>record.reload(),'board-leader-retry'));
    }
-   function rowCopy(id,index){
+   function rowFor(id){
     const record=records.get(id);
-    if(!record.copies[index]){
-     const target=makeRow(id,record.game,token,true,record.opening);record.copies[index]=target;targets.add(target);paintCopy(id,target);
+    if(!record.target){
+     record.target=makeRow(id,record.game,token,true,record.opening);targets.add(record.target);paintTarget(id);
     }
-    return record.copies[index].row;
+    return record.target.row;
    }
    for(const group of groupedEntries(entries))panels.set(group.id,makeGroup(group));
    const fitting=fitRecords(targets,token),fitScores=fitting.fit;
@@ -305,11 +305,10 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
     motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
     function orderByRecords(){
      if(!active()||token!==request)return;
-     const ordered=[...group.entries].sort(([a],[b])=>Number(!!records.get(b).copies[0]?.hasScore)-Number(!!records.get(a).copies[0]?.hasScore)),used=new Map();
+     const ordered=[...group.entries].sort(([a],[b])=>Number(!!records.get(b).target?.hasScore)-Number(!!records.get(a).target?.hasScore));
      pages.forEach((page,i)=>{
-      const rows=Array.from({length:Math.min(capacity,ordered.length)},(_,offset)=>{
-       const [id]=ordered[(i*capacity+offset)%ordered.length],copy=used.get(id)||0;used.set(id,copy+1);return rowCopy(id,copy);
-      });
+      // The last page contains only the remaining games, never earlier rows.
+      const rows=ordered.slice(i*capacity,(i+1)*capacity).map(([id])=>rowFor(id));
       [...page.querySelectorAll('tbody')].forEach((body,column)=>{
        const selected=rows.slice(column*3,column*3+3);
        if(selected.length!==body.children.length||selected.some((row,j)=>body.children[j]!==row))body.replaceChildren(...selected);
@@ -321,15 +320,16 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
      const next=rankColumnCount(groups.clientWidth);if(next===columns)return;
      const anchor=(initialLoading&&pendingAnchor)||pages[index]?.querySelector('[data-game]')?.dataset.game||state.anchor;
      columns=next;capacity=columns*3;panel.dataset.rankColumns=String(columns);panel.dataset.rankCapacity=String(capacity);
-     const count=Math.ceil(group.entries.length/capacity),tableCount=Math.ceil(Math.min(capacity,group.entries.length)/3);
+     const count=Math.ceil(group.entries.length/capacity);
      pages.length=0;
      for(let i=0;i<count;i++){
+      const tableCount=Math.ceil(Math.min(capacity,group.entries.length-i*capacity)/3);
       const page=el('div','','board-rank-page board-rank-page-columns');page.style.setProperty('--board-rank-columns',String(tableCount));
       for(let column=0;column<tableCount;column++)page.append(rankTable(`${group.name} 게임순위 ${i+1}쪽 ${column+1}열`).table);
       pages.push(page);
      }
      track.replaceChildren(...pages);orderByRecords();
-     const anchorRow=records.get(anchor)?.copies[0]?.row,anchorIndex=anchorRow?pages.findIndex(page=>page.contains(anchorRow)):-1;
+     const anchorRow=records.get(anchor)?.target?.row,anchorIndex=anchorRow?pages.findIndex(page=>page.contains(anchorRow)):-1;
      index=anchorIndex>=0?anchorIndex:Math.max(0,Math.min(index,pages.length-1));
      if(initialLoading)pendingAnchor=anchor||null;
      if(pages.length>1)groupHead.append(controls);else controls.remove();
@@ -340,7 +340,7 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
      initialLoading=false;orderByRecords();
      const focus=state.focus||pendingAnchor;
      if(focus&&records.has(focus)){
-      const indexForGame=pages.findIndex(page=>page.contains(records.get(focus).copies[0]?.row));
+      const indexForGame=pages.findIndex(page=>page.contains(records.get(focus).target?.row));
       if(indexForGame>=0)index=indexForGame;
      }
      state.focus=null;pendingAnchor=null;paint();schedule();
@@ -355,12 +355,12 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
      if(loading||!active()||token!==request)return;
      loading=true;
      const version=++loadVersion,key=id;
-     record.status='loading';for(const target of record.copies)paintCopy(id,target);
+     record.status='loading';paintTarget(id);
      try{
       const ranking=await (initial?batch:result(readLeaders(client,owner,[key],true)));
       if(!active()||token!==request||version!==loadVersion)return;
-      record.record=ranking?.[key]||null;record.status='ready';for(const target of record.copies)paintCopy(id,target);
-     }catch{if(active()&&token===request&&version===loadVersion){record.status='error';for(const target of record.copies)paintCopy(id,target);}}
+      record.record=ranking?.[key]||null;record.status='ready';paintTarget(id);
+     }catch{if(active()&&token===request&&version===loadVersion){record.status='error';paintTarget(id);}}
      finally{loading=false;panels.get(rankGroupFor(id)).orderByRecords();fitScores();}
     }
     record.reload=()=>load();
@@ -395,7 +395,10 @@ async function showHistory(month=null,fresh=false,focus=false){
   const controls=el('div','','board-rank-controls'),position=el('span','','board-rank-position');
   let index=0,columns=0,capacity=3,pageCount=1,tables=[],tableLabel=group.name+' 게임별 월 1등 기록';position.setAttribute('aria-live','off');
   function paintPage(){
-   const visible=Array.from({length:Math.min(capacity,rows.length)},(_,offset)=>rows[(index*capacity+offset)%rows.length]),selected=new Set(visible);
+   const visible=rows.slice(index*capacity,(index+1)*capacity),selected=new Set(visible);
+   const count=Math.ceil(visible.length/3);
+   if(tables.length!==count){tables=Array.from({length:count},()=>rankTable(tableLabel,true));page.replaceChildren(...tables.map(({table})=>table));}
+   page.style.setProperty('--board-rank-columns',String(count));
    for(const row of rows)row.hidden=!selected.has(row);
    tables.forEach(({body},column)=>body.replaceChildren(...visible.slice(column*3,column*3+3)));
    reserveBody.replaceChildren(...rows.filter(row=>row.hidden));
@@ -408,8 +411,6 @@ async function showHistory(month=null,fresh=false,focus=false){
    const next=rankColumnCount(groups.clientWidth);if(next===columns)return;
    const anchor=page.querySelector('[data-game]:not([hidden])');
    columns=next;capacity=columns*3;pageCount=Math.ceil(rows.length/capacity);panel.dataset.rankColumns=String(columns);panel.dataset.rankCapacity=String(capacity);
-   const count=Math.ceil(Math.min(capacity,rows.length)/3);page.style.setProperty('--board-rank-columns',String(count));
-   tables=Array.from({length:count},()=>rankTable(tableLabel,true));page.replaceChildren(...tables.map(({table})=>table));
    const anchorIndex=anchor?rows.indexOf(anchor):-1;index=anchorIndex>=0?Math.floor(anchorIndex/capacity):Math.min(index,pageCount-1);
    if(pageCount>1)groupHead.append(controls);else controls.remove();paintPage();
   }

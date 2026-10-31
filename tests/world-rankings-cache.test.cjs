@@ -124,12 +124,12 @@ test('three ranking cards share one read, page independently and keep their page
       assert.equal(group(key).inert, key !== f.category());
       assert.equal(group(key).getAttribute('aria-hidden'), String(key !== f.category()));
       const rendered = [...group(key).querySelectorAll('[data-game]')].map(row => row.dataset.game);
-      assert.deepEqual(history ? [...rendered].sort() : [...new Set(rendered)], history ? [...ids].sort() : ids, key + ' keeps exactly its own games');
+      assert.deepEqual(history ? [...rendered].sort() : rendered, history ? [...ids].sort() : ids, key + ' keeps exactly one row per game');
       if (history) {
         const visible = [...group(key).querySelectorAll('[data-game]:not([hidden])')];
-        const expectedPage = Number(group(key).dataset.rankPage) === 0 ? ids.slice(0, 3) : [ids[3], ids[0], ids[1]];
-        assert.deepEqual(visible.map(row => row.dataset.game), expectedPage, key + ' history shows three games in page order');
-        assert.deepEqual(rendered.slice(0, 3), expectedPage, 'visible rows precede hidden rows');
+        const start = Number(group(key).dataset.rankPage) * 3, expectedPage = ids.slice(start, start + 3);
+        assert.deepEqual(visible.map(row => row.dataset.game), expectedPage, key + ' history shows only its remaining games in page order');
+        assert.deepEqual(rendered.slice(0, expectedPage.length), expectedPage, 'visible rows precede hidden rows');
         for (const row of visible) {
           const id = row.dataset.game;
           assert.equal(row.querySelector('.board-leader-nick').textContent, records[id].nick);
@@ -137,12 +137,12 @@ test('three ranking cards share one read, page independently and keep their page
         }
       } else {
         const cardPages = [...group(key).querySelectorAll('.board-rank-page')];
-        assert.deepEqual(cardPages.map(page => [...page.querySelectorAll('[data-game]')].map(row => row.dataset.game)), [ids.slice(0, 3), [ids[3], ids[0], ids[1]]], key + ' wraps its last page to fill three unique games');
+        assert.deepEqual(cardPages.map(page => [...page.querySelectorAll('[data-game]')].map(row => row.dataset.game)), [ids.slice(0, 3), ids.slice(3)], key + ' never fills the last page with repeated games');
       }
     }
     const rows = [...f.host().querySelectorAll('[data-game]')].map(row => row.dataset.game);
     assert.equal(new Set(rows).size, Object.keys(catalog).length);
-    if (history) assert.equal(rows.length, Object.keys(catalog).length, 'history lists every game exactly once');
+    assert.equal(rows.length, Object.keys(catalog).length, 'both views retain exactly one row per game');
   };
   f.mount({ games: catalog }); await f.reply(0, null, { data: records });
   assert.equal(f.requests.length, 1, 'all three cards use one RPC');
@@ -152,7 +152,7 @@ test('three ranking cards share one read, page independently and keep their page
   assert.equal(f.category(), 'solo');
   for (const key of Object.keys(expected)) {
     const cardPages = [...group(key).querySelectorAll('.board-rank-page')];
-    assert.equal(cardPages.length, 2); assert.ok(cardPages.every(page => page.querySelectorAll('[data-game]').length === 3));
+    assert.equal(cardPages.length, 2); assert.deepEqual(cardPages.map(page => page.querySelectorAll('[data-game]').length), [3, 1]);
   }
   group('solo').querySelector('.board-rank-controls button:last-child').click();
   assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '0' });
@@ -248,7 +248,7 @@ test('automatic game paging pauses hidden categories and respects hover or focus
   assert.equal(f.requests.length, 1, 'automatic paging makes no ranking requests');
 });
 
-test('ranking width changes show 3, 6 or 9 games in three-row tables without rereads or duplicate visible games', async t => {
+test('ranking widths retain 3, 6 or 9 capacity and show each game once per cycle, including shared winners', async t => {
   const f = fixture(t);
   const expected = {
     solo: ['sacheonseong', 'saetbyeol', 'mines', 'screw_box', 'screw_flat', 'spot', 'mole', 'runner', 'stacker', 'breakout'],
@@ -256,7 +256,7 @@ test('ranking width changes show 3, 6 or 9 games in three-row tables without rer
     adult: Object.keys(adultGames)
   };
   const ids = Object.values(expected).flat(), catalog = Object.fromEntries(ids.map(id => [id, { name: id, unit: '점' }]));
-  const records = Object.fromEntries(ids.map((id, index) => [id, { nick: '회원 ' + id, score: index + 1 }]));
+  const records = Object.fromEntries(ids.map((id, index) => [id, { nick: '여러 게임 우승자', score: index + 1 }]));
   const group = key => f.host().querySelector(`[data-rank-group=${key}]`);
   const page = key => group(key).querySelector(f.w.OjjudaGameRankings.isHistoryOpen() ? '.board-rank-history-table' : '.board-rank-page[aria-hidden=false]');
   const rows = key => [...page(key).querySelectorAll('[data-game]:not([hidden])')];
@@ -269,10 +269,10 @@ test('ranking width changes show 3, 6 or 9 games in three-row tables without rer
       assert.ok(rows('solo').some(row => row.dataset.game === anchor), 'resizing keeps the first visible game in view');
       for (const [key, categoryIds] of Object.entries(expected)) {
         f.selectCategory(key);
-        const count = Math.min(capacity, categoryIds.length), pageCount = Math.ceil(categoryIds.length / capacity), seen = new Set();
+        const pageCount = Math.ceil(categoryIds.length / capacity), seen = [];
         for (let turn = 0; turn < pageCount; turn++) {
           const index = Number(group(key).dataset.rankPage), activeRows = rows(key), activeIds = activeRows.map(row => row.dataset.game);
-          const expectedIds = [...categoryIds.slice(index * capacity), ...categoryIds].slice(0, count);
+          const expectedIds = categoryIds.slice(index * capacity, (index + 1) * capacity), count = expectedIds.length;
           assert.deepEqual(activeIds, expectedIds, key + ' keeps page order at width ' + width);
           assert.equal(activeRows.length, count); assert.equal(new Set(activeIds).size, count, 'one page never repeats a game');
           const tables = [...page(key).querySelectorAll('table')].filter(table => table.querySelector('[data-game]:not([hidden])'));
@@ -281,16 +281,17 @@ test('ranking width changes show 3, 6 or 9 games in three-row tables without rer
           assert.equal(page(key).style.getPropertyValue('--board-rank-columns'), String(tables.length), 'the CSS grid receives the actual number of adjacent tables');
           assert.ok(tables.every(table => table.querySelectorAll('[data-game]:not([hidden])').length <= 3), 'no table grows taller than three visible games');
           for (const row of activeRows) {
-            const id = row.dataset.game; seen.add(id);
+            const id = row.dataset.game; seen.push(id);
             assert.equal(row.querySelector('.board-leader-nick').textContent, records[id].nick);
             assert.equal(row.querySelector('.board-leader-score').textContent, records[id].score + '점');
           }
           if (pageCount > 1) group(key).querySelector('.board-rank-controls button:last-child').click();
         }
-        assert.deepEqual([...seen].sort(), [...categoryIds].sort(), 'every game stays reachable at width ' + width);
+        assert.deepEqual([...seen].sort(), [...categoryIds].sort(), 'a complete cycle shows every game exactly once at width ' + width);
+        assert.equal(new Set(seen).size, seen.length, 'later pages never repeat an earlier game');
         const all = [...f.host().querySelectorAll('[data-game]')].map(row => row.dataset.game);
         assert.equal(new Set(all).size, 21);
-        if (f.w.OjjudaGameRankings.isHistoryOpen()) assert.equal(all.length, 21, 'responsive history retains one unique row per game');
+        assert.equal(all.length, 21, 'both responsive views retain one unique row per game');
       }
       assert.equal(f.requests.length, requestCount, 'resizing and paging do not reread the rankings');
       f.selectCategory('solo');
@@ -380,7 +381,7 @@ test('failed reads are not cached and the visible retry button still loads an in
   await f.reply(2, 12); assert.equal(f.score(), '12연승');
 });
 
-test('wrapped copies share retry, score details and game actions without duplicate ranking requests', async t => {
+test('unique rows keep retry, score details and game actions across paging and resizing', async t => {
   const f = fixture(t), opened = [];
   const catalog = {
     tank: { ...games.tank, rankingBasis: 'opponents_streak' }, chess: games.chess,
@@ -389,31 +390,32 @@ test('wrapped copies share retry, score details and game actions without duplica
   f.mount({ games: catalog, onOpenGame: id => opened.push(id) });
   await f.reply(0, null, { data: null, error: { message: 'offline' } });
   assert.deepEqual(Array.from(f.requests[0].args.p_games), Object.keys(catalog));
-  const copies = () => [...f.host().querySelectorAll('[data-game=tank]')];
-  assert.equal(copies().length, 2, 'Tank appears in both distinct pages');
-  assert.ok(copies().every(row => row.querySelector('.board-leader-retry')));
-  copies()[1].querySelector('.board-leader-retry').click(); await tick();
+  const tank = f.host().querySelector('[data-game=tank]');
+  assert.equal(f.host().querySelectorAll('[data-game=tank]').length, 1, 'Tank has one row across every page');
+  tank.querySelector('.board-leader-retry').click(); await tick();
   assert.equal(f.requests.length, 2); assert.deepEqual(Array.from(f.requests[1].args.p_games), ['tank']);
-  assert.ok(copies().every(row => !row.querySelector('.board-leader-retry')), 'all copies show one shared pending retry');
+  assert.equal(tank.querySelector('.board-leader-retry'), null, 'retry cannot be submitted twice while pending');
   await f.reply(1, null, { data: null, error: { message: 'still offline' } });
-  assert.ok(copies().every(row => row.querySelector('.board-leader-retry')), 'retry failure appears in every copy');
-  copies()[0].querySelector('.board-leader-retry').click(); await tick();
+  assert.ok(tank.querySelector('.board-leader-retry'), 'a failed retry remains available');
+  tank.querySelector('.board-leader-retry').click(); await tick();
   assert.equal(f.requests.length, 3); assert.deepEqual(Array.from(f.requests[2].args.p_games), ['tank']);
   await f.reply(2, null, { data: { tank: { nick: '새 우승자', score: 12, opponents: 7 } } });
-  for (const row of copies()) {
-    assert.equal(row.querySelector('.board-leader-nick').textContent, '새 우승자');
-    assert.equal(row.querySelector('.board-leader-score').textContent, '12연승');
-    assert.match(row.querySelector('.board-leader-game').textContent, /7명 상대/);
-    assert.equal(row.querySelector('.board-leader-retry'), null);
-  }
+  assert.equal(tank.querySelector('.board-leader-nick').textContent, '새 우승자');
+  assert.equal(tank.querySelector('.board-leader-score').textContent, '12연승');
+  assert.match(tank.querySelector('.board-leader-game').textContent, /7명 상대/);
+  assert.equal(tank.querySelector('.board-leader-retry'), null);
   const panel = f.host().querySelector('[data-rank-group=multi]');
   panel.querySelector('.board-rank-page[aria-hidden=false] [data-game=tank] .board-game-open').click(); await tick();
   panel.querySelector('.board-rank-controls button:last-child').click();
   const activeRows = [...panel.querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]')];
-  assert.deepEqual(activeRows.map(row => row.dataset.game), ['billiards', 'tank', 'chess']);
-  activeRows.find(row => row.dataset.game === 'tank').querySelector('.board-game-open').click(); await tick();
-  assert.deepEqual(opened, ['tank', 'tank'], 'either visible copy opens the same game');
-  assert.equal(f.requests.length, 3, 'paging and opening do not duplicate reads');
+  assert.deepEqual(activeRows.map(row => row.dataset.game), ['billiards']);
+  activeRows[0].querySelector('.board-game-open').click(); await tick();
+  await f.resize(960);
+  assert.equal(f.host().querySelector('[data-game=tank]'), tank, 'resizing moves the original row instead of cloning it');
+  assert.equal(f.host().querySelectorAll('[data-game=tank]').length, 1);
+  tank.querySelector('.board-game-open').click(); await tick();
+  assert.deepEqual(opened, ['tank', 'billiards', 'tank'], 'both the last page and the resized row still open the right game');
+  assert.equal(f.requests.length, 3, 'paging, resizing and opening do not duplicate reads');
 });
 
 test('a saved result and return from gameplay bypass the passive cache', async t => {
