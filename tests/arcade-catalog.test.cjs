@@ -43,7 +43,7 @@ const root=path.join(__dirname,'..');
   await db.query('insert into public.blocks values($1,$2)',[B,A]);assert.equal((await rpc(B,"select public.community_game_monthly_ranking('tank') as value")).length,1);
   console.log('PASS: full native room directory, actual schemas, privacy, solo exclusion, ttang admission/capacity/expiry, and authoritative monthly win rankings');
  }finally{await db.close();}
- const dom=new JSDOM('<div data-arcade-rooms></div><div data-arcade-room-feed></div><div id="modal"></div>',{url:'https://ojjuda.kr',runScripts:'outside-only'}),w=dom.window;
+ const dom=new JSDOM('<div data-arcade-rooms></div><div data-arcade-room-feed></div><div id="modal"></div>',{url:'https://ojjuda.kr',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  const opened=[],created=[],cancelled=[];
  w.eval(fs.readFileSync(path.join(root,'arcade-rooms.js'),'utf8'));
  const cards=['tank','tour','ttang'].map((kind,i)=>({kind,native:true,room_no:kind+'-ABCD',match_id:randomUUID(),code:'ABCD0001',title:'같이 <script>',host_name:'친구',status:'waiting',players:1,capacity:kind==='tank'?12:kind==='tour'?8:2,is_host:false,is_member:false}));

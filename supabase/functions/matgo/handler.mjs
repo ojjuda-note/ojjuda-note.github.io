@@ -8,7 +8,7 @@ import { verifyRound as verifyV4Round } from './verify-v4.mjs';
 import { verifyRound as verifyLegacyRound } from './verify-v1.mjs';
 import { verifyRound as verifyV2Round } from './verify-v2.mjs';
 import { verifyRound as verifyV3Round } from './verify-v3.mjs';
-import {advanceOnline,automaticOnline,replayOnline,onlineView} from './online.mjs';
+import {advanceOnline,automaticOnline,createRequestReplay,onlineView} from './online.mjs';
 const origins = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const publicErrors = new Set(['adult_required', 'member_identity_required', 'not_signed_in', 'banned', 'no_account', 'gold_not_empty', 'gold_empty', 'insufficient_zzu', 'paid_confirmation_required', 'round_mismatch','client_update_required','round_in_progress','invalid_stake','stake_offer_pending','stake_offer_changed','match_in_progress','room_not_found','room_unavailable','state_conflict','not_your_turn','invalid_move','invalid_choice','invalid_card','invalid_bomb','invalid_decision','invalid_play','invalid_shake','invalid_gukjin','invalid_chongtong']);
@@ -60,6 +60,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
       const user = await auth.json();
       if (!uuid.test(user.id) || user.is_anonymous) return reply({ error: 'not_signed_in' }, 401);
       if(onlineActions.has(body.action)){
+        const replay=createRequestReplay();
         const onlineRpc=async(action,values={})=>{
           const response=await get('/rest/v1/rpc/'+(action==='fallback'?'matgo_online_fallback':'matgo_online_service'),{method:'POST',
             headers:{apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'},
@@ -71,7 +72,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
         const catchUp=async state=>{
           for(let i=0;i<6&&state.room.status==='active';i++){
             if((state.room.round_rate??100)>100&&body.stakes_version!==1&&body.action!=='online_leave')throw Error('client_update_required');
-            const replay=await replayOnline(state.room),p=replay.prompt?.p;
+            const current=await replay(state.room),p=current.prompt?.p;
             if(p===undefined||(!state.room.bots[p]&&Date.parse(state.room.deadline)>Date.now()))break;
             const next=await automaticOnline(state.room);
             next.auto={p,reason:state.room.bots[p]?'left':'timeout'};
@@ -86,7 +87,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
           if(!state.room.requests.includes(body.request_id)){
             if(state.room.version!==body.version)throw Error('state_conflict');
             if(state.room.bots[state.seat])throw Error('not_your_turn');
-            const next=await advanceOnline(state.room,state.seat,body.command);
+            const next=await advanceOnline(state.room,state.seat,body.command,replay);
             state=await onlineRpc('commit',{p_room:body.room_id,p_expected:body.version,p_request:body.request_id,p_next:next});
           }
         }else{
@@ -95,7 +96,7 @@ export function createHandler({ env, fetchImpl = fetch }) {
             p_next:{stakes_version:body.stakes_version??0}});
         }
         state=await catchUp(state);
-        return reply({ok:true,room:await onlineView(state.room,state.seat,body.cursor??0)});
+        return reply({ok:true,room:await onlineView(state.room,state.seat,body.cursor??0,replay)});
       }
       const rpc = async (action, values = {}) => {
         const response = await get('/rest/v1/rpc/'+(action==='ranked_settle'?'matgo_ranked_settle':action==='stake'?'matgo_stake_service':['tazza','vent'].includes(action)?'matgo_fun_service':'matgo_wallet_service'), { method: 'POST',

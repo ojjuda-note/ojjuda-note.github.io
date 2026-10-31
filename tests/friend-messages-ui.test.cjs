@@ -14,6 +14,7 @@ function fixtureBoot(){
  const notes=()=>state.items.filter(m=>m.recipient_id===D.user?.id).map(m=>({id:'world:message:'+m.id,kind:'world_message',source:'world',target_type:'message',target_id:m.id,created_at:m.created_at,read_at:state.seen.has(m.id)?m.created_at:null}));
  S={schema(){return this;},auth:{onAuthStateChange(cb){authListeners.push(cb);return {data:{subscription:{unsubscribe(){const index=authListeners.indexOf(cb);if(index>=0)authListeners.splice(index,1);}}}};}},async rpc(name,args={}){
   state.calls.push({name,args});
+  if(name==='app_notification_summary')return {data:{notifications:notes().filter(m=>!m.read_at).length,retention:0}};
   if(name==='app_notification_unread_count')return {data:notes().filter(m=>!m.read_at).length};
   if(name==='list_retention_alerts')return {data:[]};
   if(name==='list_app_notifications')return {data:{items:notes(),unread_count:notes().filter(m=>!m.read_at).length,has_more:false,next_cursor:null,as_of:new Date().toISOString()}};

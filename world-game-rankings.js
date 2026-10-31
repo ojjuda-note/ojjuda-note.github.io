@@ -3,14 +3,43 @@
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(text,action,cls)=>{const n=el('button',text,cls);n.type='button';n.onclick=action;return n;};
 let dispose=null,controller=null;
+// Shell redraws should share the same read. Explicit refreshes and saved game
+// results bypass this short-lived cache; data never crosses account/client scope.
+let rankingScope=null;
+function scopeFor(client,owner){
+ if(!client||!owner){rankingScope=null;return null;}
+ if(rankingScope?.client!==client||rankingScope.owner!==owner)rankingScope={client,owner,reads:new Map()};
+ return rankingScope;
+}
+function invalidate(client,owner){if(rankingScope?.client===client&&rankingScope.owner===owner)rankingScope.reads.clear();}
+function readLeaders(client,owner,ids,fresh=false){
+ const scope=scopeFor(client,owner),now=Date.now();
+ const month=new Date(now+9*60*60*1000).toISOString().slice(0,7);
+ const key=JSON.stringify([month,[...ids].sort()]);
+ if(fresh)scope.reads.clear();
+ const cached=scope.reads.get(key);
+ if(cached?.promise)return cached.promise;
+ if(cached&&now-cached.at<15000)return Promise.resolve(cached.response);
+ for(const [oldKey,entry] of scope.reads)if(!entry.promise&&now-entry.at>=15000)scope.reads.delete(oldKey);
+ const entry={promise:null,response:null,at:0};scope.reads.set(key,entry);
+ entry.promise=Promise.resolve().then(()=>client.rpc('community_game_monthly_leaders',{p_games:ids})).then(response=>{
+  if(response.error)throw response.error;
+  if(rankingScope===scope&&scope.reads.get(key)===entry){entry.response=response;entry.at=Date.now();entry.promise=null;}
+  return response;
+ }).catch(error=>{
+  if(scope.reads.get(key)===entry)scope.reads.delete(key);
+  throw error;
+ });
+ return entry.promise;
+}
 function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
-dispose?.();dispose=null;controller=null;if(!host)return;
+dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
 let rankDispose=()=>{},rankPage=0,rankFocusGame=null,alive=true,request=0;
 const active=()=>alive&&host.isConnected&&authorized();
 const status=el('p','','board-status');status.setAttribute('role','status');
 const content=el('div');host.replaceChildren(status,content);
 async function result(query){const {data,error}=await query;if(error)throw error;if(!active())throw Error('stale');return data||[];}
-  function leaders(token){
+  function leaders(token,fresh){
    const entries=Object.entries(games);if(!entries.length)return [];
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
    const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','이번 달','board-rank-caption'));section.append(head);
@@ -65,11 +94,12 @@ async function result(query){const {data,error}=await query;if(error)throw error
    window.addEventListener('ojjuda:game-record-saved',event=>{
     if(event.detail?.owner!==owner||!active()||token!==request)return;
     if(targets.has(event.detail?.game))rankFocusGame=event.detail.game;
-    if(!playing())void home();
+    invalidate(client,owner);
+    if(!playing())void home(true);
    },options);
    const observer=new MutationObserver(()=>{
     const next=playing();
-    if(gaming&&!next&&active()&&token===request)void home();
+    if(gaming&&!next&&active()&&token===request)void home(true);
     gaming=next;
    });
    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
@@ -103,14 +133,14 @@ async function result(query){const {data,error}=await query;if(error)throw error
    }
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
-   const batch=result(client.rpc('community_game_monthly_leaders',{p_games:entries.map(([id])=>id)}));
+   const batch=result(readLeaders(client,owner,entries.map(([id])=>id),fresh));
    const loads=entries.map(async([id,game])=>{
     const target=targets.get(id),{nick,score}=target;let loadVersion=0;
     async function load(initial=false){
      const version=++loadVersion,key=id;
      nick.textContent='불러오는 중…';
      try{
-      const ranking=await (initial?batch:result(client.rpc('community_game_monthly_leaders',{p_games:[key]})));
+      const ranking=await (initial?batch:result(readLeaders(client,owner,[key],true)));
       if(!active()||token!==request||version!==loadVersion)return;
       const valid=row=>row&&row.score!==null&&row.score!==''&&Number.isFinite(Number(row.score));
       const top=ranking?.[key]||null;
@@ -155,9 +185,9 @@ async function result(query){const {data,error}=await query;if(error)throw error
    })];
   }
 
-async function home(){rankDispose();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token));return active()&&token===request;}
+async function home(fresh=false){if(!client||!owner||!active())return false;rankDispose();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
 dispose=()=>{rankDispose();alive=false;request++;};
-controller={refresh:home};
+controller={refresh:()=>home(true)};
 if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div');copy.append(el('h3','이번 달 게임순위'),el('p','로그인하면 게임 순위를 볼 수 있어요. 나의 기록으로 함께 도전해 보세요.'),Object.assign(el('a','로그인하고 참여하기','btn'),{href:'/?auth=login&next=world'}));empty.append(art,copy);content.append(empty);return;}
 void home();
   const matgoAccess=window.OjjudaMatgoAccess;

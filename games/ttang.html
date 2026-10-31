@@ -592,6 +592,8 @@ addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDe
 // ---------- 루프 ----------
 let last=performance.now(), netAcc=0;
 function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+  // The entrance hides this preview; playing creates a fresh world.
+  if(mode==='attract'){ requestAnimationFrame(loop); return; }
   if(world&&!paused){
     if(mode==='net'&&role==='guest'){ guestPredict(dt); if(pendingAng!==null&&now-lastSent>50){ lastSent=now; Net.send({t:'in',a:+pendingAng.toFixed(3)}); pendingAng=null; }
       if(!over&&now-Net.lastRx>6000){ abandonRound();over=true; panel(`<h2>연결이 끊겼어요</h2><button class="big g" id="home">처음으로</button>`,{home:()=>toMenu()}); } }

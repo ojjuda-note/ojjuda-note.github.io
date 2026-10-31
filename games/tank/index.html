@@ -970,9 +970,16 @@ addEventListener('resize',()=>{if(state==='menu'){layout(true);genWorld();}else 
 if(window.ResizeObserver){const observer=new ResizeObserver(()=>{if(window.TankOnline?.hasGame())window.TankView.resize();});observer.observe(stage);observer.observe($('hud'));}
 layout(true);genWorld();syncUI();
 let last=0,acc=0;
-function loop(ts){const dt=Math.min(100,ts-(last||ts));last=ts;acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();requestAnimationFrame(loop);}
+function loop(ts){
+ const dt=Math.min(100,ts-(last||ts));last=ts;
+ // The entrance covers the battlefield, including a saved game awaiting resume.
+ if(document.body.classList.contains('in-match')){
+  acc+=dt;while(acc>=1000/60){step();acc-=1000/60;}draw();
+ }else acc=0;
+ requestAnimationFrame(loop);
+}
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261031-arcade-recovery1"></script>
+<script type="module" src="./online.mjs?v=20261031-performance1"></script>
 </body>
 </html>

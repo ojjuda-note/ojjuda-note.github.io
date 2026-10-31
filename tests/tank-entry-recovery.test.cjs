@@ -9,7 +9,7 @@ const flush = async () => { for (let i = 0; i < 60; i++) await Promise.resolve()
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return {promise, resolve}; };
 
 async function fixture({listError=null, mineError=null} = {}) {
-  const dom = new JSDOM(fs.readFileSync(path.join(root, 'games/tank/index.html'), 'utf8'), {url:'https://fixture.test/games/tank/index.html', runScripts:'outside-only'});
+  const dom = new JSDOM(fs.readFileSync(path.join(root, 'games/tank/index.html'), 'utf8'), {url:'https://fixture.test/games/tank/index.html', runScripts:'outside-only', pretendToBeVisual:true});
   const w = dom.window, context = dom.getInternalVMContext(), calls = [];
   const transport = {listError, mineError, listPending:null, minePending:null};
   w.TankView = {resetInput() {}, resetHistory() {}, refresh() {}, use() {}, hasEffects:() => false, fullscreen:async () => {}};

@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const refresh=world.slice(world.indexOf('function worldRefreshKey(){'),world.indexOf('async function gm(t){'));
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -15,8 +15,8 @@ const refresh=world.slice(world.indexOf('function worldRefreshKey(){'),world.ind
    // The verifier intentionally has no external network. Test both connection
    // states explicitly instead of depending on the runner's network adapters.
    Object.defineProperty(navigator,'onLine',{configurable:true,get:()=>window.testOnline});
-   async function _d(){reads++;if(waitRefresh)await waitRefresh;if(failRefresh)throw Error('offline');}
-   async function Ls(){}async function ke(){}function H(){renders++;document.querySelector('#draft').value='server';}
+   async function Ls(){reads++;if(waitRefresh)await waitRefresh;if(failRefresh)throw Error('offline');}
+   async function ke(){}function H(){renders++;document.querySelector('#draft').value='server';}
    function adminCanLeave(){return true;}var sr={'adm-refresh':async()=>{reads++;}};
    ${refresh}
    var worldPullRefresh=OjjudaWorldPullRefresh.install({key:worldRefreshKey,refresh:refreshWorldView});
