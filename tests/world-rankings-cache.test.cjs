@@ -73,7 +73,7 @@ function fixture(t) {
       const entries = [...observer.targets].filter(target => target.isConnected).map(target => ({ target, contentRect: { width: target.clientWidth } }));
       if (entries.length) observer.callback(entries, observer);
     }
-    await tick(); await tick();
+    await new Promise(resolve => w.requestAnimationFrame(resolve)); await tick();
   };
   return { w, client, requests, mount, reply, historyReply, pickMonth, category, selectCategory, scrollCategory, resize,
     score: () => host.querySelector('[data-game=tank] .board-leader-score')?.textContent,

@@ -242,9 +242,15 @@ function categoryCarousel(groups,head,token,onChange=()=>{},onResize=()=>{}){
   panels.forEach((panel,i)=>{const delta=Math.abs(groups.scrollLeft-offset(i));if(delta<distance){nearest=i;distance=delta;}});
   if(nearest!==index)select(nearest);
  },{signal:events.signal,passive:true});
- const resize=new ResizeObserver(()=>{if(active()&&token===request&&width!==groups.clientWidth)align();});resize.observe(groups);
+ let resizeFrame=0;
+ const resize=new ResizeObserver(()=>{
+  if(!active()||token!==request||width===groups.clientWidth)return;
+  cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{
+   if(active()&&token===request&&width!==groups.clientWidth)align();
+  });
+ });resize.observe(groups);
  onResize();select(index,true);
- return {dispose(){events.abort();resize.disconnect();}};
+ return {dispose(){cancelAnimationFrame(resizeFrame);events.abort();resize.disconnect();}};
 }
   function leaders(token,fresh){
    const entries=Object.entries(games);if(!entries.length)return [];
