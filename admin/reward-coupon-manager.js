@@ -66,7 +66,8 @@
   function render(){
    const check=validation(),used=new Map(items.filter(item=>item.awardId).map(item=>[item.awardId,item.id]));
    const allowed=pending.filter(award=>!award.blocked_reason),active=items.filter(item=>item.status!=='sent'),done=items.length-active.length;
-   form.hidden=!owner||(!pending.length&&!items.length);$('coupon-empty').hidden=!!pending.length||!!items.length;
+   form.hidden=!owner||(!pending.length&&!active.length);$('coupon-empty').hidden=!!pending.length||!!active.length;
+   for(const copy of document.querySelectorAll('[data-coupon-registration-copy]'))copy.hidden=form.hidden;
    files.disabled=sending||!owner||items.length>=20||!allowed.length;$('coupon-title').disabled=sending;
    clear.disabled=sending||!items.length||items.some(item=>item.attempt&&item.status!=='sent');
    send.disabled=sending||!owner||!check.valid;
@@ -76,7 +77,7 @@
    for(const [id,node]of nodes)if(!items.some(item=>item.id===id)){node.row.remove();nodes.delete(id);}
    items.forEach((item,index)=>{
     let node=nodes.get(item.id);if(!node){node=buildRow(item);nodes.set(item.id,node);host.append(node.row);}
-    node.row.dataset.status=item.status;node.heading.textContent=`${index+1}. ${item.file.name}`;
+    node.row.dataset.status=item.status;node.row.hidden=item.status==='sent';node.heading.textContent=`${index+1}. ${item.file.name}`;
     node.state.textContent=({queued:'인식 대기',reading:'읽는 중',ready:'배정 확인',sending:'발송 중',sent:'발송 완료',failed:item.attempt?'발송 결과 확인 필요':'확인 필요'})[item.status]||'확인 필요';
     const options=[...pending];if(item.awardId&&!options.some(award=>award.id===item.awardId)&&item.award)options.push(item.award);
     const optionKey=JSON.stringify([options.map(award=>[award.id,label(award),!!award.blocked_reason,used.get(award.id)]),item.awardId]);

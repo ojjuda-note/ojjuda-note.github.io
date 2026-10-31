@@ -70,8 +70,10 @@ test('Admin retries use the same uploaded coupon and award; mobile form fits',as
  await page.waitForFunction(()=>document.querySelector('.coupon-item[data-status="sent"] .coupon-item-note')?.textContent.includes('당첨자님에게 기프티콘 쪽지를 보냈어요')&&document.querySelector('#coupon-sent').textContent.includes('당첨자'));
  const state=await page.evaluate(()=>({uploads:couponTest.uploads,calls:couponTest.calls,delivered:couponTest.delivered,overflow:document.documentElement.scrollWidth>innerWidth}));
  assert.equal(state.uploads.length,1);assert.equal(state.calls.length,2);assert.deepEqual(state.calls[0],state.calls[1]);assert.equal(state.calls[0].p_path,state.uploads[0].name);assert.equal(state.calls[0].p_award,AWARD);assert.equal(Object.hasOwn(state.calls[0],'p_recipient'),false);assert.equal(state.delivered,true);assert.equal(state.overflow,false);
- assert.equal(await page.locator('#coupon-form').isVisible(),true);
+ assert.equal(await page.locator('#coupon-form').isVisible(),false);
  assert.equal(await page.locator('.coupon-item[data-status="sent"]').count(),1);
+ await page.getByRole('tab',{name:/지급 완료/}).click();
+ assert.equal(await page.locator('#coupon-sent-panel').isVisible(),true);
  assert.equal(await page.locator('#coupon-send').isDisabled(),true);
  assert.match(await page.locator('#coupon-sent').innerText(),/당첨자/);
 });
