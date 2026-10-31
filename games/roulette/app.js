@@ -2,6 +2,7 @@ import {BETS,COLOR,MAX_BET,HISTORY_LIMIT,totalBets,cleanChips,initialState,payou
 import {RouletteWheel} from './wheel.js?v=20261031-roulette-stopzoom1';
 import {Sound} from './sound.js?v=20261031-roulette-modes1';
 import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
+import {WinEffects} from './effects.js?v=20261101-roulette-wins1';
 
 const $=id=>document.getElementById(id),fmt=n=>Math.round(n).toLocaleString('ko-KR'),short=n=>n>=1000?(n/1000).toLocaleString('en-US',{maximumFractionDigits:1})+'K':String(n);
 const KEY='ojjuda.roulette.preferences.v1';
@@ -19,6 +20,10 @@ let reducedPreference=null;
 let walletInfo=null,refillBusy=false,refillRequest=null,refillError='';
 const requests=new Map();
 const betFlights=new Set();
+const betCells=new Map(),chipPools=new WeakMap();
+const chipButtons=[...document.querySelectorAll('[data-chip]')];
+const totalBetText=$('totalBet').firstChild;
+let controlsLocked=null,controlsMode=null,renderedSound=null,renderedReduced=null;
 try{
   const prefs=JSON.parse(localStorage.getItem(KEY));state.sound=prefs?.sound!==false;
   if(typeof prefs?.reducedOverride==='boolean')reducedPreference=prefs.reducedOverride;
@@ -170,7 +175,7 @@ async function shareDraft(){
   catch(error){if(/round_in_progress/.test(error?.message||'')||bettingExpired())schedulePoll(0);else if(version===draftVersion&&!commandBusy&&!ownReady()&&!state.pending&&room?.code===code)notice(errorText(error))}
   finally{draftRequest=null;if(draftVersion!==version&&!closed)draftTimer=setTimeout(shareDraft,120)}
 }
-function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else{cancelBetFlights();if($('historyDialog').open)$('historyDialog').close()}$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
+function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else{winEffects.clear();cancelBetFlights();if($('historyDialog').open)$('historyDialog').close()}$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
 function renderRoom(){
   const solo=room?.mode==='solo';
   $('historyButton').hidden=!room;
@@ -215,9 +220,10 @@ function displaySpin(serverSpin,serverTime){
   wheel.rotation=0;wheel.ballAngle=-Math.PI/2;sound.beginRoll(spin);wheel.start(spin);
 }
 function acknowledgeRemoteResult(){
-  const spin=state.pending;
-  if(spin&&state.lastSettled!==spin.id){const result=payout(spin.bets,spin.number);state.lastSettled=spin.id;recordHistory(spin);revealResult({...result,number:spin.number,net:result.total-result.stake,bets:spin.bets})}
-  state.pending=null;animating=false;resultReadyId=null;sound.stopRoll();void closeWheelPopup(null,{instant:true});
+  const spin=state.pending,roomId=room?.id;let result=null;
+  if(spin&&state.lastSettled!==spin.id){const paid=payout(spin.bets,spin.number);result={...paid,number:spin.number,net:paid.total-paid.stake,bets:spin.bets};state.lastSettled=spin.id;recordHistory(spin);revealResult(result)}
+  state.pending=null;animating=false;resultReadyId=null;sound.stopRoll();
+  void closeWheelPopup(null,{instant:true}).then(()=>{if(result&&!closed&&screen==='game'&&room?.id===roomId&&state.lastSettled===spin.id)winEffects.show(spin.id,result)});
 }
 function applySnapshot(data){
   if(!data||closed)return;
@@ -286,21 +292,25 @@ function notice(message){$('toast').textContent=message;$('toast').classList.add
 function animateCounter(el,from,to,duration=650){return new Promise(resolve=>{if(reduced()){el.textContent=fmt(to);resolve();return}const start=performance.now();function frame(now){const p=Math.min(1,(now-start)/duration),t=1-(1-p)**3;el.textContent=fmt(from+(to-from)*t);if(p<1)requestAnimationFrame(frame);else resolve()}requestAnimationFrame(frame)})}
 
 function cancelBetFlights(){for(const {chip,animation} of betFlights){animation.cancel?.();chip.remove()}betFlights.clear()}
-function fly(from,to,{amount=100,delay=0,duration=180,kind='bet',fade=false,owner='me'}={}){
+function fly(from,to,{amount=100,delay=0,duration=300,kind='bet',fade=false,owner='me'}={}){
   if(reduced())return Promise.resolve();
   const a=from instanceof Element?center(from):from,b=to instanceof Element?center(to):to;
   if(!a||!b||!Number.isFinite(a.x)||!Number.isFinite(b.x))return Promise.resolve();
-  const chip=document.createElement('i');chip.className=`flight-chip ${owner} chip-${amount>=5000?5000:amount>=1000?1000:amount>=500?500:100}`;const label=document.createElement('span');label.textContent=short(amount);chip.append(label);addChipDepth(chip);$('flightLayer').append(chip);
+  const light=kind==='bet';
+  if(light)while(betFlights.size>=8){const oldest=betFlights.values().next().value;oldest.animation.cancel?.();oldest.chip.remove();betFlights.delete(oldest)}
+  const chip=document.createElement('i');chip.className=`flight-chip ${light?'bet-flight ':''}${owner} chip-${amount>=5000?5000:amount>=1000?1000:amount>=500?500:100}`;const label=document.createElement('span');label.textContent=short(amount);chip.append(label);if(!light)addChipDepth(chip);$('flightLayer').append(chip);
   const dx=b.x-a.x,dy=b.y-a.y,arc=Math.min(95,Math.max(28,Math.abs(dx)*.11+Math.abs(dy)*.12));
   chip.style.left=`${a.x-17}px`;chip.style.top=`${a.y-17}px`;
   const finalScale=kind==='bet'?.83:kind==='bank'?.65:.86;
-  const frames=[{transform:'translate3d(0,0,0) perspective(600px) rotateX(28deg) rotateZ(-12deg) scale(1)',opacity:1,offset:0},{transform:`translate3d(${dx*.52}px,${dy*.42-arc}px,0) perspective(600px) rotateX(48deg) rotateZ(22deg) scale(1.08)`,opacity:1,offset:.46},{transform:`translate3d(${dx}px,${dy}px,0) perspective(600px) rotateX(24deg) rotateZ(42deg) scale(${finalScale})`,opacity:fade?0:1,offset:1}];
+  const frames=light?
+    [{transform:'translate3d(0,0,0) rotate(-10deg) scale(1)',opacity:1,offset:0},{transform:`translate3d(${dx*.5}px,${dy*.44-arc*.55}px,0) rotate(5deg) scale(1.03)`,opacity:1,offset:.45},{transform:`translate3d(${dx}px,${dy}px,0) rotate(16deg) scale(.83)`,opacity:fade?0:1,offset:1}]:
+    [{transform:'translate3d(0,0,0) perspective(600px) rotateX(28deg) rotateZ(-12deg) scale(1)',opacity:1,offset:0},{transform:`translate3d(${dx*.52}px,${dy*.42-arc}px,0) perspective(600px) rotateX(48deg) rotateZ(22deg) scale(1.08)`,opacity:1,offset:.46},{transform:`translate3d(${dx}px,${dy}px,0) perspective(600px) rotateX(24deg) rotateZ(42deg) scale(${finalScale})`,opacity:fade?0:1,offset:1}];
   const animation=chip.animate(frames,{duration,delay,easing:'cubic-bezier(.25,.65,.3,1)',fill:'both'});
   const flight={chip,animation};if(kind==='bet')betFlights.add(flight);
   return animation.finished.catch(()=>{}).then(()=>{betFlights.delete(flight);chip.remove()});
 }
 
-function makeBet(id,content,cls){const b=document.createElement('button');b.className=`bet-cell ${cls||''}`;b.dataset.bet=id;b.setAttribute('aria-label',`${BETS[id].label} 베팅, 당첨 시 원금 포함 ${BETS[id].multiplier}배`);b.innerHTML=content;b.addEventListener('click',()=>placeBet(id));b.addEventListener('pointerenter',()=>highlight(id));b.addEventListener('pointerleave',clearHighlight);b.addEventListener('focus',()=>highlight(id));b.addEventListener('blur',clearHighlight);return b}
+function makeBet(id,content,cls){const b=document.createElement('button');b.className=`bet-cell ${cls||''}`;b.dataset.bet=id;b.setAttribute('aria-label',`${BETS[id].label} 베팅, 당첨 시 원금 포함 ${BETS[id].multiplier}배`);b.innerHTML=content;b.addEventListener('click',()=>placeBet(id));b.addEventListener('pointerenter',()=>highlight(id));b.addEventListener('pointerleave',clearHighlight);b.addEventListener('focus',()=>highlight(id));b.addEventListener('blur',clearHighlight);betCells.set(id,b);return b}
 function buildTable(){
   for(let n=0;n<=36;n++){const b=makeBet(`n${n}`,`<span>${n}</span>`,`number-cell ${COLOR(n)} ${n===0?'zero':''}`);if(n){b.style.setProperty('--col',Math.floor((n-1)/3)+2);b.style.setProperty('--row',3-((n-1)%3))}$('numberGrid').append(b)}
   for(const [id,bet]of Object.entries(BETS))if(bet.type)$('numberGrid').append(makeBet(id,'<span class="seam-target" aria-hidden="true">+</span>',`seam-bet ${bet.type}`));
@@ -309,7 +319,8 @@ function buildTable(){
   for(let i=1;i<=3;i++)$('dozenGrid').append(makeBet(`dozen${i}`,`${(i-1)*12+1} – ${i*12}`));
   for(const [id,label]of [['low','1–18'],['even','짝수'],['red','<span class="color-diamond" aria-hidden="true"></span><span>빨강</span>'],['black','<span class="color-diamond black" aria-hidden="true"></span><span>검정</span>'],['odd','홀수'],['high','19–36']])$('outsideGrid').append(makeBet(id,label));
 }
-const cell=id=>document.querySelector(`[data-bet="${id}"]`);
+const cell=id=>betCells.get(id);
+const winEffects=new WinEffects({cell,reduced,hidden:()=>document.hidden});
 function betPoint(id){return center(cell(id))}
 
 function positionSeams(){
@@ -323,19 +334,32 @@ function positionSeams(){
 }
 function clearHighlight(){document.querySelectorAll('.coverage').forEach(el=>el.classList.remove('coverage'))}
 function highlight(id){clearHighlight();if(busy()||id.startsWith('n')||matchMedia('(hover: none)').matches)return;for(const n of BETS[id].numbers)cell(`n${n}`).classList.add('coverage')}
+function renderBetCell(id,amount,chips,landed=false){
+  const el=cell(id);let stack=el.querySelector('.bet-stack');
+  if(el.classList.contains('has-bet')!==(amount>0))el.classList.toggle('has-bet',amount>0);
+  const label=`${BETS[id].label} 베팅, ${BETS[id].multiplier}배${amount?`, ${fmt(amount)} 골드, 칩 ${chips.length}개`:''}`;
+  if(el.getAttribute('aria-label')!==label)el.setAttribute('aria-label',label);
+  if(BETS[id].type){const hidden=String(BETS[id].type!==betMode&&!amount);if(el.getAttribute('aria-hidden')!==hidden)el.setAttribute('aria-hidden',hidden)}
+  if(!amount){stack?.remove();return}
+  if(!stack){stack=document.createElement('span');stack.className='bet-stack';stack.setAttribute('aria-hidden','true');el.append(stack)}
+  const visible=chips.slice(-6),signature=visible.join(',')+':'+amount;
+  if(stack.dataset.signature!==signature){
+    let pool=chipPools.get(stack);
+    if(!pool){const face=document.createElement('span');face.className='stack-face';pool={discs:[],face};chipPools.set(stack,pool)}
+    while(pool.discs.length<visible.length){const disc=document.createElement('i');disc.className='stack-disc';disc.style.setProperty('--level',pool.discs.length);addChipDepth(disc);stack.append(disc);pool.discs.push({disc,chip:null})}
+    for(const [index,item] of pool.discs.entries()){
+      const show=index<visible.length;if(item.disc.hidden===show)item.disc.hidden=!show;
+      if(show&&item.chip!==visible[index]){item.disc.className=`stack-disc physical-chip chip-${visible[index]}`;item.chip=visible[index]}
+    }
+    const top=pool.discs[visible.length-1].disc;if(pool.face.parentNode!==top)top.prepend(pool.face);
+    const total=short(amount);if(pool.face.textContent!==total)pool.face.textContent=total;
+    stack.dataset.signature=signature;
+  }
+  if(stack.classList.contains('landed')!==landed)stack.classList.toggle('landed',landed);
+}
 function renderBets(bets=state.bets,landedId=null){
   const stacks=cleanChips(state.pending?.chips||state.betChips,bets);
-  for(const el of document.querySelectorAll('[data-bet]')){
-    const id=el.dataset.bet,amount=bets[id]||0;let stack=el.querySelector('.bet-stack');
-    el.classList.toggle('has-bet',amount>0);el.setAttribute('aria-label',`${BETS[id].label} 베팅, ${BETS[id].multiplier}배${amount?`, ${fmt(amount)} 골드, 칩 ${stacks[id].length}개`:''}`);
-    if(!amount){stack?.remove();continue}
-    if(!stack){stack=document.createElement('span');stack.className='bet-stack';stack.setAttribute('aria-hidden','true');el.append(stack)}
-    const chips=stacks[id].slice(-6),signature=chips.join(',')+':'+amount;
-    if(stack.dataset.signature!==signature){
-      stack.replaceChildren();chips.forEach((chip,index)=>{const disc=document.createElement('i');disc.className=`stack-disc chip-${chip}`;disc.style.setProperty('--level',index);if(index===chips.length-1){const face=document.createElement('span');face.className='stack-face';face.textContent=short(amount);disc.append(face)}addChipDepth(disc);stack.append(disc)});stack.dataset.signature=signature;
-    }
-    stack.classList.toggle('landed',id===landedId);
-  }
+  for(const [id] of betCells)renderBetCell(id,bets[id]||0,stacks[id]||[],id===landedId);
   renderOpponentBets();
 }
 function renderOpponentBets(){
@@ -391,55 +415,98 @@ function renderHistory(){
     const recent=badge(n);recent.title=`${index+1}번째 최근 결과: ${n}`;h.append(recent);
   }
 }
-function render({bets=true,balance=true}={}){
-  const locked=betsClosed(),sum=totalBets(state.pending?.bets||state.bets);
-  if(balance)$('balance').textContent=fmt(Math.max(0,state.balance-(ownReady()?0:totalBets(state.bets))));
-  $('totalBet').innerHTML=`${fmt(sum)} <small>G</small>`;
+function renderBettingControls({balance=true,cells=true}={}){
+  const locked=betsClosed(),sum=totalBets(state.pending?.bets||state.bets),ownSum=totalBets(state.bets);
+  if(balance){const value=fmt(Math.max(0,state.balance-(ownReady()?0:ownSum)));if($('balance').textContent!==value)$('balance').textContent=value}
+  const total=`${fmt(sum)} `;if(totalBetText.nodeValue!==total)totalBetText.nodeValue=total;
   $('spinButton').disabled=commandBusy||busy()||!room||room.status!=='betting'||ownReady()||(sum===0&&bettingRemaining()===null)||bettingExpired();
-  $('spinLabel').textContent=settling?'정산하는 중':resultReadyId?'결과 확인 중':state.pending||animating?'공이 도는 중':commandBusy?'확인하는 중':room?.status==='finished'?'다른 회원 확인 중':bettingExpired()?'마감 확인 중':ownReady()?(activePlayers().length===1?'마감 기다리는 중':`시작 대기 ${activePlayers().filter(player=>player.ready).length}/${activePlayers().length}`):sum?'시작':bettingRemaining()!==null?'시작 · 관람':'칩을 올려주세요';
-  $('undoButton').disabled=locked||!undo.length||!totalBets(state.bets);
-  $('clearButton').disabled=locked||!totalBets(state.bets);
+  const spinLabel=settling?'정산하는 중':resultReadyId?'결과 확인 중':state.pending||animating?'공이 도는 중':commandBusy?'확인하는 중':room?.status==='finished'?'다른 회원 확인 중':bettingExpired()?'마감 확인 중':ownReady()?(activePlayers().length===1?'마감 기다리는 중':`시작 대기 ${activePlayers().filter(player=>player.ready).length}/${activePlayers().length}`):sum?'시작':bettingRemaining()!==null?'시작 · 관람':'칩을 올려주세요';
+  if($('spinLabel').textContent!==spinLabel)$('spinLabel').textContent=spinLabel;
+  $('undoButton').disabled=locked||!undo.length||!ownSum;
+  $('clearButton').disabled=locked||!ownSum;
   $('repeatButton').disabled=locked||totalBets(state.lastBets)===0;
-  for(const el of document.querySelectorAll('[data-chip]')){const chip=Number(el.dataset.chip);el.disabled=locked||chip>state.balance-totalBets(state.bets)||chip+totalBets(state.bets)>MAX_BET;const selected=chip===state.selectedChip;el.classList.toggle('selected',selected);el.setAttribute('aria-pressed',String(selected))}
-  for(const el of document.querySelectorAll('[data-bet]')){const type=BETS[el.dataset.bet].type;el.disabled=locked||(type&&type!==betMode)||(el.classList.contains('number-cell')&&betMode!=='straight');if(type){el.tabIndex=type===betMode?0:-1;el.setAttribute('aria-hidden',String(type!==betMode&&!el.querySelector('.bet-stack')))}}
-  for(const el of document.querySelectorAll('[data-bet-mode]')){el.disabled=locked;el.setAttribute('aria-pressed',String(el.dataset.betMode===betMode))}
-  $('chipHint').textContent=`선택한 칩 ${fmt(state.selectedChip)} G`;
+  for(const el of chipButtons){
+    const chip=Number(el.dataset.chip),disabled=locked||chip>state.balance-ownSum||chip+ownSum>MAX_BET;
+    if(el.disabled!==disabled)el.disabled=disabled;
+    const selected=chip===state.selectedChip;
+    if(el.classList.contains('selected')!==selected)el.classList.toggle('selected',selected);
+    if(el.getAttribute('aria-pressed')!==String(selected))el.setAttribute('aria-pressed',String(selected));
+  }
+  // Local chip input does not change the table's enabled state. Update the whole
+  // table only for server transitions, mode changes, or the betting deadline.
+  if(cells||controlsLocked!==locked||controlsMode!==betMode){
+    for(const [id,el] of betCells){
+      const type=BETS[id].type,disabled=!!(locked||(type&&type!==betMode)||(el.classList.contains('number-cell')&&betMode!=='straight'));
+      if(el.disabled!==disabled)el.disabled=disabled;
+      if(type){
+        const tabIndex=type===betMode?0:-1,hidden=String(type!==betMode&&!(state.pending?.bets||state.bets)[id]);
+        if(el.tabIndex!==tabIndex)el.tabIndex=tabIndex;
+        if(el.getAttribute('aria-hidden')!==hidden)el.setAttribute('aria-hidden',hidden);
+      }
+    }
+    for(const el of document.querySelectorAll('[data-bet-mode]')){
+      if(el.disabled!==locked)el.disabled=locked;
+      const selected=String(el.dataset.betMode===betMode);if(el.getAttribute('aria-pressed')!==selected)el.setAttribute('aria-pressed',selected);
+    }
+    controlsLocked=locked;controlsMode=betMode;
+  }
+  const hint=`선택한 칩 ${fmt(state.selectedChip)} G`;if($('chipHint').textContent!==hint)$('chipHint').textContent=hint;
+}
+function renderBetInput(ids){
+  const bets={};for(const id of ids)if(state.bets[id])bets[id]=state.bets[id];
+  const stacks=cleanChips(state.betChips,bets);
+  for(const id of ids)renderBetCell(id,bets[id]||0,stacks[id]||[]);
+  renderBettingControls({cells:false});
+}
+function render({bets=true,balance=true}={}){
+  renderBettingControls({balance});
   for(const id of ['soundButton','wheelSoundButton']){$(id).setAttribute('aria-label',state.sound?'소리 끄기':'소리 켜기');$(id).title=state.sound?'소리 끄기':'소리 켜기';$(id).querySelector('use').setAttribute('href',state.sound?'#i-sound':'#i-mute')}
-  $('motionButton').setAttribute('aria-pressed',String(reduced()));$('motionButton').textContent=reduced()?'모션 줄임 켜짐':'모션 줄이기';document.body.classList.toggle('reduced-motion',reduced());document.body.classList.toggle('is-spinning',animating);
-  sound.setEnabled(state.sound);wheel.setReduced(reduced());
+  const motion=reduced();$('motionButton').setAttribute('aria-pressed',String(motion));$('motionButton').textContent=motion?'모션 줄임 켜짐':'모션 줄이기';document.body.classList.toggle('reduced-motion',motion);document.body.classList.toggle('is-spinning',animating);
+  if(renderedSound!==state.sound){sound.setEnabled(state.sound);renderedSound=state.sound}
+  if(renderedReduced!==motion){wheel.setReduced(motion);renderedReduced=motion}
   if(bets)renderBets(state.pending?.bets||state.bets);renderHistory();renderRoom();renderRefill();
 }
 function setStatus(text){$('statusText').textContent=text}
-function clearResult(){document.querySelectorAll('.hit').forEach(e=>e.classList.remove('hit'));$('resultBanner').classList.remove('won');$('resultNumber').className='result-number';$('resultNumber').textContent='✦';$('resultTitle').textContent='행운을 놓을 자리를 골라주세요';$('resultDetail').textContent='칩을 고른 뒤 숫자를 누르면 바로 놓여요.';lastResult=null;computerOutcome=null;renderComputerResult()}
+function clearResult(){winEffects.clear();document.querySelectorAll('.hit').forEach(e=>e.classList.remove('hit'));$('resultBanner').classList.remove('won');$('resultNumber').className='result-number';$('resultNumber').textContent='✦';$('resultTitle').textContent='행운을 놓을 자리를 골라주세요';$('resultDetail').textContent='칩을 고른 뒤 숫자를 누르면 바로 놓여요.';lastResult=null;computerOutcome=null;renderComputerResult()}
 function placeBet(id){
   if(betsClosed())return;
-  const amount=state.selectedChip,origin=document.querySelector(`[data-chip="${amount}"]`);
-  clearHighlight();commitBet(id,amount,origin||$('chipAnchor'));
+  const amount=state.selectedChip,origin=chipButtons.find(el=>Number(el.dataset.chip)===amount);
+  commitBet(id,amount,origin||$('chipAnchor'));
 }
 function commitBet(id,chipAmount,origin){
   if(betsClosed())return;sound.unlock().catch(()=>{});
   const amount=chipAmount,sum=totalBets(state.bets);
   if(sum+amount>MAX_BET){notice('한 판에는 최대 50,000 G까지 베팅할 수 있어요.');return}
   if(sum+amount>state.balance){notice('베팅할 골드가 부족해요. 칩 금액을 낮춰주세요.');return}
+  // Read the flight endpoints together before changing layout. The flight is
+  // decorative; neither the next input nor the accepted bet waits for it.
+  const source=reduced()?null:center(origin||$('chipAnchor')),target=source?betPoint(id):null;
   state.selectedChip=amount;state.bets[id]=(state.bets[id]||0)+amount;(state.betChips[id]??=[]).push(amount);undo.push({id,amount});
   // The accepted chip and totals are visible before animation or network work.
   // Only sound/motion preferences need persist(); bets stay server-authoritative.
-  queueDraft();if(lastResult)clearResult();render();
-  const source=origin||$('chipAnchor'),target=betPoint(id);sound.chip();
+  queueDraft();if(lastResult)clearResult();clearHighlight();renderBetInput([id]);sound.chip();
   void fly(source,target,{amount});
 }
-async function removeBets(all){
-  if(betsClosed())return;let outgoing={};cancelBetFlights();
-  if(all){outgoing={...state.bets};state.bets={};state.betChips={};undo=[]}
-  else{let action;while(undo.length){action=undo.pop();if((state.bets[action.id]||0)>=action.amount)break;action=null}if(!action)return;outgoing[action.id]=action.amount;state.bets[action.id]-=action.amount;const chips=state.betChips[action.id]||[],index=chips.lastIndexOf(action.amount);if(index>=0)chips.splice(index,1);if(!state.bets[action.id])delete state.bets[action.id]}
-  queueDraft();render();const tray=$('chipAnchor');sound.chip();await Promise.all(Object.entries(outgoing).map(([id,amount],i)=>fly(betPoint(id),tray,{amount,duration:460,delay:i*28,fade:true})));
+function removeBets(all){
+  if(betsClosed())return;let outgoing={},action;
+  if(all)outgoing={...state.bets};
+  else{while(undo.length){action=undo.pop();if((state.bets[action.id]||0)>=action.amount)break;action=null}if(!action)return;outgoing[action.id]=action.amount}
+  const tray=reduced()?null:center($('chipAnchor'));
+  const flights=tray?Object.entries(outgoing).slice(0,8).map(([id,amount])=>({source:betPoint(id),amount})):[];
+  cancelBetFlights();
+  if(all){state.bets={};state.betChips={};undo=[]}
+  else{state.bets[action.id]-=action.amount;const chips=state.betChips[action.id]||[],index=chips.lastIndexOf(action.amount);if(index>=0)chips.splice(index,1);if(!state.bets[action.id])delete state.bets[action.id]}
+  queueDraft();renderBetInput(Object.keys(outgoing));sound.chip();
+  for(const [index,{source,amount}] of flights.entries())void fly(source,tray,{amount,delay:Math.min(index*12,60),fade:true});
 }
 function repeatBets(){
   if(betsClosed())return;const total=totalBets(state.lastBets);if(!total)return;
   if(total>state.balance){notice('이전과 똑같이 베팅하기에는 골드가 부족해요.');return}
+  const ids=new Set([...Object.keys(state.bets),...Object.keys(state.lastBets)]),source=reduced()?null:center($('chipAnchor'));
+  const flights=source?Object.entries(state.lastBets).slice(0,8).map(([id,amount])=>({target:betPoint(id),amount})):[];
   cancelBetFlights();state.bets={...state.lastBets};state.betChips=cleanChips(state.lastChips,state.bets);undo=Object.entries(state.betChips).flatMap(([id,chips])=>chips.map(amount=>({id,amount})));
-  queueDraft();clearResult();render();sound.chip();const source=$('chipAnchor');
-  for(const [index,[id,amount]] of Object.entries(state.bets).entries())void fly(source,betPoint(id),{amount,delay:Math.min(index*12,60)});
+  queueDraft();clearResult();renderBetInput(ids);sound.chip();
+  for(const [index,{target,amount}] of flights.entries())void fly(source,target,{amount,delay:Math.min(index*12,60)});
 }
 async function startSpin(){
   if(commandBusy||busy()||!room||room.status!=='betting'||bettingExpired())return;
@@ -451,6 +518,7 @@ async function startSpin(){
 }
 function openWheelPopup(spin){
   cancelBetFlights();
+  winEffects.clear();
   $('wheel').setAttribute('aria-label','룰렛 공이 돌고 있습니다. 원판이 완전히 멈춘 뒤 공이 들어간 칸과 숫자를 확대해 보여줍니다.');
   const modal=$('wheelDialog');resultReadyId=null;$('confirmResultButton').hidden=true;$('confirmResultButton').disabled=true;modal.dataset.spin=spin.id;modal.dataset.phase='spinning';modal.classList.remove('closing');
   $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=totalBets(spin.bets)?`베팅 마감 · ${fmt(totalBets(spin.bets))} G`:'관람 · 베팅 없음';
@@ -495,7 +563,7 @@ function showSpinResult(id){
   $('confirmResultButton').textContent='확인';$('confirmResultButton').focus({preventScroll:true});
 }
 async function confirmResult(){
-  const id=resultReadyId;if(!id||settling)return;
+  const id=resultReadyId,roomId=room?.id;if(!id||settling)return;
   settling=true;resultReadyId=null;$('confirmResultButton').disabled=true;
   $('confirmResultButton').textContent='정산하는 중';let result,oldBalance;
   const spin=state.pending;if(!spin||spin.id!==id){settling=false;render();return}
@@ -512,6 +580,7 @@ async function confirmResult(){
   await closeWheelPopup(id,{instant:document.hidden});
   if(document.hidden){settling=false;render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);return}
   if(matchMedia('(max-width:940px)').matches){$('playSection').scrollIntoView({behavior:reduced()?'instant':'smooth',block:'start'});await sleep(reduced()?0:650)}
+  if(!closed&&screen==='game'&&room?.id===roomId&&state.lastSettled===id)winEffects.show(id,result);
   const tableRect=$('feltTable').getBoundingClientRect(),bank={x:tableRect.left+tableRect.width/2,y:tableRect.top-12};
   const winners=new Set(result.wins.map(w=>w.id));
   const loseFlights=Object.entries(result.bets).filter(([bet])=>!winners.has(bet)).map(([bet,amount],i)=>{
@@ -560,10 +629,10 @@ $('brandButton').addEventListener('click',()=>{if(room)void leaveRoom();else sen
 for(const id of ['soundButton','wheelSoundButton'])$(id).addEventListener('click',async()=>{sound.unlock().catch(()=>{});await mutate(()=>state.sound=!state.sound);render({bets:false})});
 $('motionButton').addEventListener('click',async()=>{await mutate(()=>{reducedPreference=!reduced();state.reduced=reducedPreference});render({bets:false})});
 media.addEventListener('change',()=>render({bets:false}));
-for(const el of document.querySelectorAll('[data-chip]'))el.addEventListener('click',()=>{
+for(const el of chipButtons)el.addEventListener('click',()=>{
   if(betsClosed())return;
   state.selectedChip=Number(el.dataset.chip);
-  render({bets:false});sound.unlock().catch(()=>{});
+  renderBettingControls({balance:false,cells:false});sound.unlock().catch(()=>{});
 });
 $('undoButton').addEventListener('click',()=>removeBets(false));$('clearButton').addEventListener('click',()=>removeBets(true));$('repeatButton').addEventListener('click',repeatBets);
 const dialog=$('helpDialog');$('helpButton').addEventListener('click',()=>dialog.showModal());$('closeHelp').addEventListener('click',()=>dialog.close());$('helpDone').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
@@ -573,7 +642,7 @@ $('closeHistory').addEventListener('click',()=>historyDialog.close());
 historyDialog.addEventListener('click',event=>{if(event.target===historyDialog){const r=historyDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)historyDialog.close()}});
 $('wheelDialog').addEventListener('cancel',event=>{if(busy())event.preventDefault()});
 $('wheelDialog').addEventListener('close',()=>{document.body.classList.remove('wheel-open');wheel.setVisible(false)});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)sound.stopRoll();else if(state.pending&&animating)sound.beginRoll(state.pending);renderBettingClock();schedulePoll(document.hidden?undefined:100)});
-window.addEventListener('pagehide',()=>{closed=true;cancelBetFlights();clearTimeout(pollTimer);clearTimeout(draftTimer);clearTimeout(bettingClockTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){sound.stopRoll();winEffects.clear()}else if(state.pending&&animating)sound.beginRoll(state.pending);renderBettingClock();schedulePoll(document.hidden?undefined:100)});
+window.addEventListener('pagehide',()=>{closed=true;winEffects.clear();cancelBetFlights();clearTimeout(pollTimer);clearTimeout(draftTimer);clearTimeout(bettingClockTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
 render();send({type:'ready'});
 setTimeout(()=>{if(!initialized){$('connectionStatus').replaceChildren();const link=document.createElement('a');link.href='/world.html?game=roulette';link.target='_top';link.textContent='오쭈다 오락실에서 시작하기';$('connectionStatus').append(link)}},7000);

@@ -17,6 +17,7 @@ const room=patch=>({id:'room-one',code:'ABCDEF12',hostId:me,mode:'online',status
 // of the SQL economy. Exercise the real app's requests, rendering and controls.
 async function fixture(t,options={}){
   const engine=await import(pathToFileURL(path.join(root,'games/roulette/engine.js')).href);
+  const effects=await import(pathToFileURL(path.join(root,'games/roulette/effects.js')).href);
   const dom=new JSDOM(read('games/roulette/index.html'),{url:'https://roulette.test/games/roulette/index.html',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,calls=[],queued=[];let serverWallet=wallet(options.wallet),current=clone(options.room??null),time=Date.now()+10000,closed=false,timerId=-1;
   w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
@@ -30,7 +31,7 @@ async function fixture(t,options={}){
   w.clearTimeout=id=>{if(id>=0)nativeClear(id)};
   class Wheel{constructor(canvas,callbacks){this.callbacks=callbacks;w.testWheel=this}resize(){}setReduced(){}setVisible(){}start(spin){this.last=spin}showResult(){}}
   class Sound{unlock(){return Promise.resolve()}setEnabled(){}chip(){}beginRoll(){}stopRoll(){}win(){}roll(){}updateRoll(){}}
-  Object.assign(w,engine,{RouletteWheel:Wheel,Sound,addChipDepth(){}});
+  Object.assign(w,engine,effects,{RouletteWheel:Wheel,Sound,addChipDepth(){}});
   w.localStorage.setItem('ojjuda.roulette.preferences.v1',JSON.stringify({sound:false,reducedOverride:true}));
   const snapshot=()=>({ok:true,serverTime:++time,wallet:clone(serverWallet),room:clone(current)});
   const server=async body=>{

@@ -15,9 +15,9 @@ const storageSnapshot=w=>Object.fromEntries(Array.from({length:w.localStorage.le
 const roomFixture=patch=>({id:'room-one',code:'ABCDEF12',hostId:other,mode:'online',status:'betting',round:0,capacity:3,players:[{userId:me,name:'나',computer:false,ready:false,connected:true,bets:{}},{userId:other,name:'친구',computer:false,ready:false,connected:true,bets:{n7:500}}],me:{userId:me,ready:false,confirmed:false,bets:{},stake:0},spin:null,result:null,...patch});
 
 async function fixture(t,initial=roomFixture(),options={}){
- const engine=await import(pathToFileURL(path.join(root,'games/roulette/engine.js')).href);
+ const [engine,effects]=await Promise.all(['engine.js','effects.js'].map(file=>import(pathToFileURL(path.join(root,'games/roulette',file)).href)));
  const dom=new JSDOM(read('games/roulette/index.html'),{url:'https://roulette.test/games/roulette/index.html',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,calls=[],sent=[],gates=new Map(),storageFailures=[],animations=[];let current=clone(initial),gold=options.gold??10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
+ const w=dom.window,calls=[],sent=[],gates=new Map(),storageFailures=[],animations=[],chipDepthCalls=[];let current=clone(initial),gold=options.gold??10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
  const motionListeners=new Set(),motionMedia={matches:options.systemReduced===true,addEventListener(type,listener){if(type==='change')motionListeners.add(listener)},removeEventListener(type,listener){motionListeners.delete(listener)}};
  w.matchMedia=query=>query==='(prefers-reduced-motion: reduce)'?motionMedia:{matches:false,addEventListener(){},removeEventListener(){}};
  w.performance.now=()=>clock;
@@ -30,9 +30,11 @@ async function fixture(t,initial=roomFixture(),options={}){
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
  Object.defineProperty(w.document,'hidden',{get:()=>hidden});
- class Wheel{constructor(canvas,callbacks){this.callbacks=callbacks;w.testWheel=this;}resize(){}setReduced(value){this.reduced=value;}setVisible(){}start(spin){this.last=spin;}showResult(){}}
- class Sound{unlock(){return Promise.resolve()}setEnabled(){}chip(){}beginRoll(){}stopRoll(){}win(){}roll(){}updateRoll(){}}
- Object.assign(w,engine,{RouletteWheel:Wheel,Sound,addChipDepth(){}});
+ class Wheel{constructor(canvas,callbacks){this.callbacks=callbacks;this.reducedUpdates=0;w.testWheel=this;}resize(){}setReduced(value){this.reduced=value;this.reducedUpdates++;}setVisible(){}start(spin){this.last=spin;}showResult(){}}
+ class Sound{constructor(){this.enabledUpdates=0;w.testSound=this;}unlock(){return Promise.resolve()}setEnabled(){this.enabledUpdates++;}chip(){}beginRoll(){}stopRoll(){}win(){}roll(){}updateRoll(){}}
+ let decorateChip=element=>element;
+ if(options.realChipDepth){w.eval(read('games/roulette/chips.js').replace(/^export /gm,''));decorateChip=w.addChipDepth;}
+ Object.assign(w,engine,effects,{RouletteWheel:Wheel,Sound,addChipDepth(element){chipDepthCalls.push(element);return decorateChip(element)}});
  const preferences='preferences' in options?options.preferences:{sound:false,reduced:true};
  if(preferences!==null)w.localStorage.setItem('ojjuda.roulette.preferences.v1',JSON.stringify(preferences));
  for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
@@ -96,7 +98,7 @@ async function fixture(t,initial=roomFixture(),options={}){
  const message=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',...data}}));
  message({type:'roulette-init',owner:options.owner??me,joinCode:options.joinCode});await tick();await tick();
  t.after(()=>{closed=true;w.close()});
- return {w,calls,sent,gates,message,storageFailures,animations,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
+ return {w,calls,sent,gates,message,storageFailures,animations,chipDepthCalls,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
 }
 
 function beginHistoryRound(f,id,number=7){
@@ -149,6 +151,43 @@ test('a clicked bet paints its real chip and total before its decorative animati
  assert.deepEqual(clone(f.ui.state.betChips.n7),[100,100,100]);
  for(const animation of f.animations)animation.finish();await tick();
  assert.equal(cell.querySelector('.bet-stack .stack-face')?.textContent,'300');
+});
+
+test('repeated local bets reuse decorated discs without rebuilding unrelated cells, opponent chips or participants',async t=>{
+ const f=await fixture(t,roomFixture(),{realChipDepth:true,preferences:{sound:false,reducedOverride:false},holdAnimations:true}),d=f.w.document;
+ const gate=deferred();f.gates.set('bet',gate);
+ const target=d.querySelector('[data-bet="n7"]'),untouched=d.querySelector('[data-bet="n8"]');
+ untouched.click();target.click();await tick();
+ const firstDisc=target.querySelector('.bet-stack .stack-disc'),firstEdges=[...firstDisc.querySelectorAll('.chip-side')];
+ assert.equal(firstEdges.length,20,'the fixture uses the real chip decoration rather than an empty depth stub');
+ const untouchedNodes=[...untouched.querySelectorAll('*')],opponentNodes=[...target.querySelector('.opponent-chips').querySelectorAll('*')],players=[...d.getElementById('playersStrip').children];
+ const mutations=[],observer=new f.w.MutationObserver(records=>mutations.push(...records));
+ observer.observe(untouched,{childList:true,subtree:true});observer.observe(target.querySelector('.opponent-chips'),{childList:true,subtree:true});observer.observe(d.getElementById('playersStrip'),{childList:true,subtree:true});
+ const soundUpdates=f.w.testSound.enabledUpdates,wheelUpdates=f.w.testWheel.reducedUpdates;
+ target.click();
+ assert.equal(target.querySelector('.bet-stack .stack-disc')===firstDisc,true,'adding a second chip preserves the first physical disc');
+ assert.equal(firstEdges.every((edge,index)=>firstDisc.querySelectorAll('.chip-side')[index]===edge),true,'all twenty existing edge panels are reused');
+ for(let i=0;i<4;i++)target.click();
+ const visibleDiscs=[...target.querySelectorAll('.bet-stack .stack-disc')],depthCount=f.chipDepthCalls.filter(node=>node.classList.contains('stack-disc')).length;
+ assert.equal(visibleDiscs.length,6);
+ for(let i=0;i<20;i++)target.click();
+ assert.equal(visibleDiscs.every((disc,index)=>target.querySelectorAll('.bet-stack .stack-disc')[index]===disc),true,'the six visible discs stay allocated as the bet grows');
+ assert.equal(f.chipDepthCalls.filter(node=>node.classList.contains('stack-disc')).length,depthCount,'repeated input does not rebuild chip depth once the visible stack is full');
+ const flights=[...d.querySelectorAll('#flightLayer .flight-chip')];
+ assert.ok(flights.length>0&&flights.length<=8,'natural chip movement keeps only a bounded number of active decorations');
+ assert.equal(flights.every(flight=>!flight.classList.contains('physical-chip')&&!flight.querySelector('.chip-side,.chip-bottom')),true,'placement flights use lightweight faces instead of twenty-sided depth');
+ assert.equal(f.chipDepthCalls.filter(node=>node.classList.contains('flight-chip')).length,0,'local placement never extrudes a flying chip');
+ assert.equal(mutations.length+observer.takeRecords().length,0,'local bet input leaves unrelated and opponent subtrees and participants untouched');observer.disconnect();
+ assert.equal(untouchedNodes.every((node,index)=>untouched.querySelectorAll('*')[index]===node),true);
+ assert.equal(opponentNodes.every((node,index)=>target.querySelector('.opponent-chips').querySelectorAll('*')[index]===node),true);
+ assert.equal(players.every((node,index)=>d.getElementById('playersStrip').children[index]===node),true);
+ assert.equal(f.w.testSound.enabledUpdates,soundUpdates,'a chip click does not reconfigure sound');
+ assert.equal(f.w.testWheel.reducedUpdates,wheelUpdates,'a chip click does not reconfigure wheel motion');
+ assert.deepEqual(clone(f.ui.state.bets),{n8:100,n7:2600});assert.equal(f.ui.state.betChips.n7.length,26);
+ assert.equal(target.querySelector('.bet-stack .stack-face').textContent,'2.6K');
+ assert.equal(target.querySelectorAll('.bet-stack .stack-face').length,1,'only the top disc labels the accumulated amount');
+ assert.equal(d.getElementById('totalBet').textContent,'2,700 G');assert.equal(d.getElementById('balance').textContent,'7,300');
+ gate.resolve();f.gates.delete('bet');for(const animation of f.animations)animation.finish();await tick();
 });
 
 test('local chips remain responsive while a draft response and decorative animations are both pending',async t=>{
@@ -419,13 +458,19 @@ test('computer play starts immediately, shows server bot bets, and preserves the
 test('the motion button can override OS reduction in either direction and remembers an explicit off choice',async t=>{
  const f=await fixture(t,roomFixture(),{preferences:null,systemReduced:true}),button=f.w.document.getElementById('motionButton');
  assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(f.w.testWheel.reduced,true);
+ const wheelUpdates=f.w.testWheel.reducedUpdates,soundUpdates=f.w.testSound.enabledUpdates;
+ f.ui.applySnapshot(f.snapshot());f.ui.applySnapshot(f.snapshot());
+ assert.equal(f.w.testWheel.reducedUpdates,wheelUpdates,'unchanged snapshots do not redraw the wheel through its motion setter');
+ assert.equal(f.w.testSound.enabledUpdates,soundUpdates,'unchanged snapshots do not repeat audio gain updates');
  button.click();await tick();
  assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(f.w.testWheel.reduced,false,'OS reduction cannot force an explicitly disabled setting back on');
+ assert.equal(f.w.testWheel.reducedUpdates,wheelUpdates+1);assert.equal(f.w.testSound.enabledUpdates,soundUpdates);
  const saved=JSON.parse(f.w.localStorage.getItem('ojjuda.roulette.preferences.v1'));
  assert.equal(saved.reducedOverride,false);
  f.setSystemReduced(false);f.setSystemReduced(true);assert.equal(f.w.testWheel.reduced,false);
  button.click();await tick();f.setSystemReduced(false);
  assert.equal(f.w.testWheel.reduced,true,'an explicit on choice also takes precedence over OS off');
+ assert.equal(f.w.testWheel.reducedUpdates,wheelUpdates+2,'each explicit change reaches the renderer exactly once');
  const restored=await fixture(t,roomFixture(),{preferences:saved,systemReduced:true});
  assert.equal(restored.w.testWheel.reduced,false,'explicit off survives a fresh load');
 });
@@ -434,7 +479,9 @@ test('an inherited motion preference follows OS changes even after unrelated pre
  const f=await fixture(t,roomFixture(),{preferences:{sound:false,reduced:false},systemReduced:false});
  assert.equal(f.w.testWheel.reduced,false);
  f.setSystemReduced(true);assert.equal(f.w.testWheel.reduced,true,'legacy default false still inherits the operating system');
+ const soundUpdates=f.w.testSound.enabledUpdates,wheelUpdates=f.w.testWheel.reducedUpdates;
  f.w.document.getElementById('soundButton').click();await tick();
+ assert.equal(f.w.testSound.enabledUpdates,soundUpdates+1);assert.equal(f.w.testWheel.reducedUpdates,wheelUpdates,'a sound change does not reconfigure unchanged wheel motion');
  const saved=JSON.parse(f.w.localStorage.getItem('ojjuda.roulette.preferences.v1'));
  assert.equal(saved.sound,true);assert.equal(saved.reducedOverride,null,'saving sound does not silently make motion explicit');
  f.setSystemReduced(false);assert.equal(f.w.testWheel.reduced,false);
@@ -653,5 +700,95 @@ test('unavailable or full local storage never prevents a paid game from settling
    'the formerly unsaved result stays ahead of old stored entries when the next write succeeds');
   assert.deepEqual(clone(f.ui.state.history),[7,0,...Array(498).fill(8)]);
   assert.equal(f.ui.state.balance,10000);
+ });
+});
+
+test('win effects attach only to paid betting cells and keep their decoration outside pointer and accessibility interaction',async t=>{
+ const f=await fixture(t),d=f.w.document,effects=new f.w.WinEffects({cell:id=>d.querySelector(`[data-bet="${id}"]`)});
+ t.after(()=>effects.clear());
+ const before={balance:f.ui.state.balance,bets:clone(f.ui.state.bets),calls:f.calls.length};
+ const result=f.w.payout({n7:100,red:100,odd:100,n8:100},7);
+ assert.equal(effects.show('winning-cells',result),true);
+ const bursts=[...d.querySelectorAll('.roulette-win-burst')];
+ assert.deepEqual(bursts.map(burst=>burst.closest('[data-bet]').dataset.bet).sort(),['n7','odd','red']);
+ assert.equal(d.querySelector('[data-bet="n8"] .roulette-win-burst'),null,'a losing bet never receives a celebration');
+ for(const burst of bursts){
+  assert.equal(burst.dataset.round,'winning-cells');assert.equal(burst.getAttribute('aria-hidden'),'true');
+  assert.equal(burst.querySelectorAll('.roulette-win-ring').length,1);assert.equal(burst.querySelectorAll('.roulette-win-spark').length,12);
+ }
+ const styles=read('games/roulette/styles.css');
+ assert.match(styles,/\.roulette-win-burst\s*\{[^}]*pointer-events\s*:\s*none/);
+ assert.match(styles,/\.roulette-win-burst\s+\*\s*\{[^}]*pointer-events\s*:\s*none/);
+ assert.deepEqual({balance:f.ui.state.balance,bets:clone(f.ui.state.bets),calls:f.calls.length},before,'decorations never settle, bet, or request the server');
+});
+
+test('losses and spectators have no win effects while hidden and reduced-motion views avoid moving sparks',async t=>{
+ const f=await fixture(t),d=f.w.document;let hidden=false,reduced=false;
+ const effects=new f.w.WinEffects({cell:id=>d.querySelector(`[data-bet="${id}"]`),hidden:()=>hidden,reduced:()=>reduced});t.after(()=>effects.clear());
+ assert.equal(effects.show('loss',f.w.payout({n8:100},7)),false);
+ assert.equal(effects.show('spectator',f.w.payout({},7)),false);
+ assert.equal(d.querySelectorAll('.roulette-win-burst').length,0);
+ hidden=true;assert.equal(effects.show('hidden-win',f.w.payout({n7:100},7)),false);
+ assert.equal(d.querySelectorAll('.roulette-win-burst').length,0,'background tabs create no decoration');
+ hidden=false;reduced=true;assert.equal(effects.show('reduced-win',f.w.payout({n7:100},7)),true);
+ const burst=d.querySelector('[data-bet="n7"] .roulette-win-burst');
+ assert.equal(burst.classList.contains('is-still'),true);assert.equal(burst.querySelectorAll('.roulette-win-ring').length,1);
+ assert.equal(burst.querySelectorAll('.roulette-win-spark').length,0,'reduced motion uses a static ring without moving sparks');
+});
+
+test('win effects bound their node count, deduplicate each round and remove themselves without a game event',async t=>{
+ const f=await fixture(t),d=f.w.document,effects=new f.w.WinEffects({cell:id=>d.querySelector(`[data-bet="${id}"]`)});t.after(()=>effects.clear());
+ const result={wins:Array.from({length:37},(_,number)=>({id:`n${number}`,return:100}))};
+ assert.equal(effects.show('bounded-round',result),true);
+ const bursts=[...d.querySelectorAll('.roulette-win-burst')];
+ assert.equal(bursts.length,16);assert.equal(d.querySelectorAll('.roulette-win-spark').length,16*12);
+ assert.equal(effects.show('bounded-round',result),false);
+ assert.equal(bursts.every((burst,index)=>d.querySelectorAll('.roulette-win-burst')[index]===burst),true,'a duplicate result neither restarts nor duplicates the effect');
+ await wait(900);
+ assert.equal(d.querySelectorAll('.roulette-win-burst').length,0,'normal cleanup does not require another snapshot or input');
+ assert.equal(effects.show('bounded-round',result),false,'an already displayed round stays deduplicated after cleanup');
+ assert.equal(effects.show('next-round',f.w.payout({n7:100},7)),true);effects.clear();
+ assert.equal(d.querySelectorAll('.roulette-win-burst').length,0,'leaving or starting another interaction can clear immediately');
+});
+
+test('confirmed win effects never expose a pending payout or block settlement and subsequent input',async t=>{
+ await t.test('local confirmation waits for the server and returns to an immediately editable table',async t=>{
+  const f=await fixture(t,null),w=f.w,d=w.document;
+  d.getElementById('startSoloButton').click();await tick();await tick();
+  for(const id of ['n7','red','n8'])d.querySelector(`[data-bet="${id}"]`).click();
+  d.getElementById('spinButton').click();await tick();await tick();
+  assert.equal(f.ui.state.balance,9700);assert.equal(d.querySelectorAll('.roulette-win-burst').length,0);
+  f.advance(20000);w.testWheel.callbacks.onDone('spin-one');
+  assert.equal(d.querySelectorAll('.roulette-win-burst').length,0,'the visible but unconfirmed outcome is not celebrated');
+  const gate=deferred();f.gates.set('confirm',gate);
+  d.getElementById('confirmResultButton').click();await tick();await tick();
+  assert.equal(d.querySelectorAll('.roulette-win-burst').length,0,'a delayed server confirmation still has no win decoration');
+  gate.resolve();await tick();await tick();await wait(30);f.gates.delete('confirm');
+  assert.equal(d.getElementById('wheelDialog').open,false);assert.equal(f.ui.state.pending,null);
+  assert.equal(f.ui.state.balance,13462,'the original gross payout and one-percent fee settle independently of the effect');
+  assert.deepEqual([...d.querySelectorAll('.roulette-win-burst')].map(burst=>burst.closest('[data-bet]').dataset.bet).sort(),['n7','red']);
+  assert.equal(f.room().status,'betting');assert.equal(d.querySelector('[data-bet="n9"]').disabled,false);
+  d.querySelector('[data-bet="n9"]').click();
+  assert.deepEqual(clone(f.ui.state.bets),{n9:100});assert.equal(d.getElementById('totalBet').textContent,'100 G');
+  assert.equal(f.ui.state.balance,13462);assert.deepEqual(clone(f.ui.state.history),[7]);
+  assert.equal(f.calls.filter(call=>call.action==='confirm').length,1);
+ });
+ await t.test('remote acknowledgement shows a win once and the following round remains editable',async t=>{
+  const r=roomFixture({status:'spinning',round:1});r.me={...r.me,ready:true,bets:{n7:100},stake:100};
+  r.spin={id:'remote-effect-round',number:7,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{n7:100}};
+  const f=await fixture(t,r,{gold:9900}),d=f.w.document;
+  assert.equal(d.querySelectorAll('.roulette-win-burst').length,0);
+  f.room().status='finished';f.room().me.confirmed=true;
+  const confirmed={...f.snapshot(),wallet:{coins:777,gold:13464}};f.ui.applySnapshot(confirmed);await tick();await tick();
+  assert.equal(f.ui.state.balance,13464);assert.deepEqual(clone(f.ui.state.history),[7]);
+  assert.equal(d.getElementById('wheelDialog').open,false);
+  assert.equal(d.querySelectorAll('[data-bet="n7"] .roulette-win-burst').length,1);
+  f.ui.applySnapshot({...confirmed,serverTime:confirmed.serverTime+1});await tick();
+  assert.equal(d.querySelectorAll('.roulette-win-burst').length,1);assert.deepEqual(clone(f.ui.state.history),[7]);
+  f.room().status='betting';f.room().round++;f.room().spin=null;f.room().me={...f.room().me,ready:false,confirmed:false,bets:{},stake:0};
+  f.ui.applySnapshot({...f.snapshot(),wallet:{coins:777,gold:13464}});
+  d.querySelector('[data-bet="n9"]').click();
+  assert.deepEqual(clone(f.ui.state.bets),{n9:100});assert.equal(f.ui.state.balance,13464);
+  assert.equal(f.calls.some(call=>call.action==='confirm'),false,'a remote acknowledgement never requests an extra payout for its celebration');
  });
 });
