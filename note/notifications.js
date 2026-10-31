@@ -28,8 +28,11 @@
     body.append(rows, footer); panel.append(heading, toolbar, body, status); layer.append(panel); document.body.append(layer);
     attach();
 
-    const appRpcs={list_notifications:'list_app_notifications',notification_unread_count:'app_notification_unread_count',mark_notifications_read:'mark_app_notifications_read'};
+    const appRpcs={list_notifications:'list_app_notifications',notification_unread_count:'app_notification_unread_count',notification_summary:'app_notification_summary',mark_notifications_read:'mark_app_notifications_read'};
     async function rpc(name, args = {}) { const { data, error } = await (appRpcs[name] ? client.rpc(appRpcs[name],args) : client.schema('ojjuda_note').rpc(name,args)); if (error) throw error; return data; }
+    const validCount=value=>Number.isSafeInteger(value)&&value>=0;
+    const missingSummary=error=>['PGRST202','42883'].includes(error?.code)
+      && /\b(?:public\.)?app_notification_summary\b/.test(String(error.message||''));
     const validNoticeId=value=>typeof value==='string'&&value.length>0&&value.length<=512;
     let channel;
     try { channel=new BroadcastChannel('ojjuda-notifications'); } catch { /* Focus and polling remain available. */ }
@@ -183,15 +186,30 @@
       const request = ++countRun, holder = { user, run, promise: null }; countRequest = holder;
       holder.promise = (async () => {
         try {
+          try {
+            const counts = await rpc('notification_summary');
+            if (current(run, user) && request === countRun && counts
+              && validCount(counts.notifications) && validCount(counts.retention)) {
+              setUnread(counts.notifications, counts.retention); lastRefresh = Date.now();
+            }
+            return;
+          } catch (error) {
+            // Older deployments may not have the summary RPC yet. Other errors
+            // retain the last good counts and must not multiply failed requests.
+            if (!missingSummary(error)) return;
+          }
+          if (!current(run, user) || request !== countRun) return;
           const [normal, retention] = await Promise.allSettled([
             rpc('notification_unread_count'), rpc('list_retention_alerts')
           ]);
           if (current(run, user) && request === countRun) {
-            if (normal.status === 'fulfilled') setUnread(normal.value);
-            if (retention.status === 'fulfilled' && Array.isArray(retention.value)) {
+            const normalOk = normal.status === 'fulfilled' && validCount(normal.value);
+            const retentionOk = retention.status === 'fulfilled' && Array.isArray(retention.value);
+            if (normalOk) setUnread(normal.value);
+            if (retentionOk) {
               setUnread(notificationUnread, retentionCount(retention.value.filter(validRetention)));
             }
-            if (normal.status === 'fulfilled' || retention.status === 'fulfilled') lastRefresh = Date.now();
+            if (normalOk || retentionOk) lastRefresh = Date.now();
           }
         }
         finally { if (countRequest === holder) countRequest = null; }

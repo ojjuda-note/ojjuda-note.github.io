@@ -17,6 +17,19 @@ async function secretRandom(secret) {
 class InputNeeded extends Error { constructor(prompt){super('input_needed');this.prompt=prompt;} }
 const copy=v=>JSON.parse(JSON.stringify(v));
 
+// Only a single request may reuse a replay. Key every input to the deterministic
+// game, including the server-pinned rules in actions, so a committed/refetched
+// snapshot is reused only when its replay inputs still match exactly.
+export function createRequestReplay() {
+  let signature, pending;
+  return room=>{
+    const next=JSON.stringify({id:room.id,round:room.round_no,seed:room.seed,actions:room.actions||[],
+      start_gold:room.start_gold,first:room.first,carry:room.carry,rate:room.round_rate??100});
+    if(next!==signature){signature=next;pending=replayOnline(room);}
+    return pending;
+  };
+}
+
 export async function replayOnline(room) {
   const actions=room.actions||[];
   if(!Array.isArray(actions)||actions.length>256)throw Error('invalid_actions');
@@ -93,9 +106,9 @@ export async function replayOnline(room) {
   return {game,prompt,result,events};
 }
 
-export async function advanceOnline(room,p,command) {
+export async function advanceOnline(room,p,command,replay=replayOnline) {
   if(room.status!=='active'||!command||typeof command!=='object')throw Error('invalid_move');
-  const before=await replayOnline(room),prompt=before.prompt;
+  const before=await replay(room),prompt=before.prompt;
   if(!prompt||prompt.p!==p)throw Error('not_your_turn');
   const actions=copy(room.actions),last=actions.at(-1);
   if(prompt.type==='choose'&&command.type==='choose'){
@@ -125,7 +138,7 @@ export async function advanceOnline(room,p,command) {
     actions.push({type:'gukjin',p});
   }else throw Error('invalid_move');
   if(!room.actions.length)actions[0].rules_version=9;
-  const next=await replayOnline({...room,actions});
+  const next=await replay({...room,actions});
   if(next.result&&(!next.game.over||next.result.goldDelta.some(n=>!Number.isSafeInteger(n))))throw Error('invalid_result');
   const completed=s=>s.game.normalPlays.reduce((a,b)=>a+b,0)-(['choose','gostop','gukjin'].includes(s.prompt?.type)?1:0);
   return {actions,result:next.result,first:next.game.first,carry:next.game.carry,
@@ -134,6 +147,7 @@ export async function advanceOnline(room,p,command) {
 
 // Finish one timed-out / departed player's turn, including bonus exchanges,
 // floor selections and go/stop. No client supplies an AI move or result.
+// Keep fresh replays here: choosing an AI command consumes game.random().
 export async function automaticOnline(room) {
   const initial=await replayOnline(room),p=initial.prompt?.p;
   if(p===undefined)return null;
@@ -148,7 +162,7 @@ export async function automaticOnline(room) {
     else if(pr.type==='gostop')command={type:'gostop',decision:aiGoStop(g,p,pr.points)};
     else if(pr.type==='chongtong')command={type:'chongtong',decision:'win'};
     else{
-      const card=aiChooseCard(g,p),same=card?g.hand[p].filter(c=>c.m===card.m):[],matches=card?g.matches(card.m):[];
+      const card=aiChooseCard(g,p),same=card?g.hand[p].filter(c=>c.m===card.m):[];
       const bomb=g.bombOption(p,card)?.map(c=>c.id)??null;
       command=same.length>=3&&!bomb&&!g.shake[p]?{type:'shake',month:card.m}:{type:'play',card:card?.id??null,bomb};
     }
@@ -158,14 +172,14 @@ export async function automaticOnline(room) {
   return {...next,reset_clock:true};
 }
 
-export async function onlineView(room,seat,cursor=0) {
+export async function onlineView(room,seat,cursor=0,replay=replayOnline) {
   const base={id:room.id,code:room.code,status:room.status,version:room.version,seat,mode:room.mode,
     quickDeadline:room.mode==='quick'?Date.parse(room.created_at)+5000:null,
     rate:room.round_rate??100,names:room.names,round:room.round_no,deadline:room.deadline,reason:room.reason||null,
     ready:room.ready||[false,false],gold:room.gold,bots:room.bots||[false,false],departed:room.departed||[false,false],
     autoCount:room.auto_count||0,lastAuto:room.last_auto,serverTime:Date.now()};
   if(room.status==='waiting'||room.status==='cancelled')return base;
-  const {game:g,prompt,result,events}=await replayOnline(room);
+  const {game:g,prompt,result,events}=await replay(room);
   base.game={hand:copy(g.hand[seat]),otherCount:g.hand[1-seat].length,
     floor:g.floor.map(st=>({cards:copy(st),ppuk:!!st.ppuk,owner:st.ppukOwner??null})),
     caps:copy(g.caps),deckCount:g.deck.length,turn:g.turn,go:g.go,bomb:g.bomb,

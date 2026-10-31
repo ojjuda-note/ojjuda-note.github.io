@@ -22,7 +22,7 @@ function rpc(body){
 async function request(body){
  for(let attempt=0;attempt<2;attempt++){
   try{const result=await rpc(body);if(!result?.ok)throw Error(result?.error||'unavailable');return result;}
-  catch(e){if(e.message!=='unavailable'||attempt)throw e;}
+  catch(e){if(e.message!=='unavailable'||attempt||(document.hidden&&['mine','read','list'].includes(body.action)))throw e;}
  }
 }
 function playerSeat(){return current?.mode==='local'?(engine?.view().turn??current.game?.turn??0):current?.seat??-1;}
@@ -120,8 +120,10 @@ async function list(revision){
  if(Number.isInteger(result.coins))coins=result.coins;
  $('rooms').innerHTML=result.rooms?.length?result.rooms.map(r=>`<div class="roomRow"><div class="roomInfo">${esc(r.title)}<small>${esc(r.code)} · ${r.players}/${r.capacity}명</small></div><button class="ge-secondary" data-code="${esc(r.code)}"${r.players>=r.capacity?' disabled':''}>참여</button></div>`).join(''):'<p>아직 열린 방이 없어요. 첫 방을 만들어 보세요.</p>';
 }
-function schedule(){clearTimeout(timer);if(ready&&available)timer=setTimeout(refresh,current?2000:6000);}
+// Returning to a hidden game fetches the current server state immediately.
+function schedule(){clearTimeout(timer);if(ready&&available&&!document.hidden)timer=setTimeout(refresh,current?2000:6000);}
 async function refresh(){
+ if(document.hidden)return;
  if(busy||polling){schedule();return;}
  polling=true;const revision=epoch;
  try{
@@ -131,7 +133,7 @@ async function refresh(){
   uncertain=false;accept(result);
   // A public-room listing is optional for solo/same-device play. Its failure
   // must not invalidate the successfully loaded state of the player's match.
-  if(!current&&selectedMode==='online'){
+  if(!document.hidden&&!current&&selectedMode==='online'){
    try{await list(revision);}
    catch(e){
     if(revision!==epoch)return;
@@ -244,11 +246,11 @@ addEventListener('message',e=>{
  }
 });
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden){view.resetInput();queueComputer();return;}
+ if(document.hidden){clearTimeout(timer);view.resetInput();queueComputer();return;}
  if(animation&&current?.game){animation=false;engine=createEngine(current.game);view.use(engine,false);}
  uncertain=true;void refresh();
 });
 addEventListener('online',()=>void refresh());
-setInterval(()=>{if(current)render();},1000);
+setInterval(()=>{if(current&&!document.hidden)render();},1000);
 parent.postMessage({source:'ojjuda-tank',type:'ready'},origin);
 if(parent===window){notify('오쭈다 오락실에서 탱크게임을 열어 주세요.');const link=document.createElement('a');link.href='/world.html?game=tank';link.textContent='오쭈다 탱크게임으로 이동';link.style.color='#f6c27a';$('menu').append(link);}

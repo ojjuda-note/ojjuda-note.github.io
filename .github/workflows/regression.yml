@@ -34,6 +34,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  performance:
+    name: Shared reads, idle games and server replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify read reduction, visibility and account isolation
+        run: npm --prefix tests run test:performance
+
   automatic_repair:
     name: Automatic repair deployment boundaries
     runs-on: ubuntu-24.04
@@ -81,6 +100,7 @@ jobs:
           node tests/matgo-stakes.test.cjs
           node tests/matgo-parity.test.cjs
           node tests/matgo-online.test.cjs
+          node tests/matgo-replay-reuse.test.mjs
       - name: Check solo and online game screens
         run: |
           node tests/matgo-ui.test.cjs

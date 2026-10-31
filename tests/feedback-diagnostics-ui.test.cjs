@@ -77,7 +77,7 @@ async function verifyCollector() {
   assert.doesNotMatch(JSON.stringify(snapshot()), /private|password|@|token|Authorization|Bearer|uploads|https?:|\?/i);
   assert.equal(calls.length, 14, 'collector makes no extra network calls');
   // These are the unified endpoints used by the real notifications module.
-  for (const operation of ['list_app_notifications', 'app_notification_unread_count', 'mark_app_notifications_read']) {
+  for (const operation of ['list_app_notifications', 'app_notification_unread_count', 'app_notification_summary', 'mark_app_notifications_read']) {
     const path = '/rest/v1/rpc/' + operation;
     const before = snapshot().events.length;
     nextFetch = () => Promise.resolve(new Response('private response', { status: 503 }));

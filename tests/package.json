@@ -14,7 +14,8 @@
     "test:photo": "node photo-ttang-collision.test.cjs && node photo-ttang-db.test.cjs && node photo-ttang-ui.test.cjs && node photo-ttang-capture-ui.test.cjs && node photo-ttang-trial-ui.test.cjs && node photo-ttang-upload-ui.test.cjs && node ttang-corners.test.cjs && node photo-ttang-community-ui.test.cjs && node photo-stages-admin-ui.test.cjs",
     "test:poker": "node poker-engine.test.mjs && node poker-sound.test.mjs && node poker-dom.test.cjs && node poker-opening-selection.test.cjs && node poker-online.test.cjs && node poker-pace.test.cjs && node poker-wallet.test.cjs && node poker-online-ui.test.cjs && node poker-arcade-dom.test.cjs",
     "test:visitors": "node guest-visitors-db.test.cjs && node guest-visitors-ui.test.cjs",
-    "test:recovery-ui-state": "node --test service-notice-refresh.test.cjs board-menu-async.test.cjs board-availability.test.cjs game-friend-invites-recovery.test.cjs matgo-bridge-recovery.test.cjs world-friend-invites-routing.test.cjs billiards-menu-async.test.cjs"
+    "test:recovery-ui-state": "node --test service-notice-refresh.test.cjs board-menu-async.test.cjs board-availability.test.cjs game-friend-invites-recovery.test.cjs matgo-bridge-recovery.test.cjs world-friend-invites-routing.test.cjs billiards-menu-async.test.cjs",
+    "test:performance": "node world-read-efficiency.test.cjs && node world-rankings-cache.test.cjs && node arcade-rooms-polling.test.cjs && node notification-summary-db.test.cjs && node notification-summary-ui.test.cjs && node matgo-replay-reuse.test.mjs && node --experimental-vm-modules tank-performance.test.cjs && node game-idle-ui.test.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
