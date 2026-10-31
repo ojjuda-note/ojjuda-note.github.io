@@ -1,7 +1,7 @@
 (function () {
   'use strict';
-  const games = { bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'] };
-  const nativeGames = new Set(['bang','tank','tour','ttang','poker']);
+  const games = { bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
+  const nativeGames = new Set(['bang','tank','tour','ttang','poker','roulette']);
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const errors = {
@@ -27,7 +27,7 @@
     let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null, waitingRoom = null;
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
-    const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,#bd-root');
+    const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
     const needsUpdates = () => !disposed && owner && !paused() && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing');
     async function call(action, params = {}) {
       const { data, error } = await options.client.rpc('arcade_room_service', { p_action: action, ...params });
@@ -75,7 +75,7 @@
       if (!nextList) { nextList = document.createElement('div'); nextList.dataset.roomList = ''; root.append(nextList); }
       if (list !== nextList) { list = nextList; signature = ''; }
       const select = root.querySelector('[data-room-filter]');
-      const choices = Object.entries(games).filter(([kind]) => !['matgo','poker'].includes(kind) || canMatgo);
+      const choices = Object.entries(games).filter(([kind]) => !['matgo','poker','roulette'].includes(kind) || canMatgo);
       if (select.options.length !== choices.length + 1) {
         select.innerHTML = '<option value="">모든 게임</option>' + choices.map(([kind, [, name]]) => `<option value="${kind}">${name}</option>`).join('');
         if (!choices.some(([kind]) => kind === filter)) filter = '';
@@ -173,7 +173,7 @@
       sync();
       if (!owner) { options.notify(errors.not_signed_in); return; }
       if (mine) { options.goArcade(); options.closeModal(); options.notify(errors.room_in_progress); return; }
-      const allowed = Object.entries(games).filter(([id]) => !['matgo','poker'].includes(id) || canMatgo || options.matgoAllowed?.());
+      const allowed = Object.entries(games).filter(([id]) => !['matgo','poker','roulette'].includes(id) || canMatgo || options.matgoAllowed?.());
       if (!allowed.some(([id]) => id === kind)) kind = allowed[0][0];
       const actor = owner, initial = games[kind][1] + ' 같이 한 판 해요';
       options.renderModal(`<div class="mhead"><h3>대전방 만들기</h3><button class="btn sm ghost" data-act="close">닫기</button></div>
@@ -190,7 +190,7 @@
         if (form.elements.title.value === previousTitle) form.elements.title.value = games[value][1] + ' 같이 한 판 해요';
         previousTitle = games[value][1] + ' 같이 한 판 해요';
         form.querySelector('[data-create-layout]').hidden = value !== 'janggi';
-        const min=value==='bang'?4:2,max=value==='bang'?7:value==='tank'?12:value==='tour'?8:value==='poker'?4:2;
+        const min=value==='bang'?4:2,max=value==='bang'?7:value==='tank'?12:value==='tour'?8:['poker','roulette'].includes(value)?4:2;
         form.querySelector('[data-create-capacity]').hidden=max===2;
         form.elements.capacity.innerHTML=Array.from({length:max-min+1},(_,i)=>`<option value="${i+min}"${i+min===Math.min(4,max)?' selected':''}>${i+min}명</option>`).join('');
       };

@@ -1,0 +1,399 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;450;500;600;700;800&family=Noto+Serif+KR:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{color-scheme:dark;--ink:#f5efe0;--muted:#8daba0;--gold:#cfaf75;--gold-light:#eed7a8;--line:rgba(203,177,120,.22);--red:#9e3438;--felt:#123e30;--ease:cubic-bezier(.22,1,.36,1);font-family:'DM Sans','Noto Sans KR',sans-serif;background:#091b16;color:var(--ink)}
+*{box-sizing:border-box}body{margin:0;min-width:320px;min-height:100svh;background:radial-gradient(ellipse at 73% 40%,#19433450,transparent 50%),radial-gradient(ellipse at 10% 95%,#19433435,transparent 60%),#091b16;overflow-x:hidden}button{font:inherit;cursor:pointer;color:inherit;border:0;background:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:disabled{cursor:default}button:focus-visible{outline:2px solid var(--gold-light);outline-offset:5px}button,svg{flex-shrink:0}svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5}h1,h2,p{margin:0}button:active:not(:disabled){transition-duration:.12s}::selection{background:#b6985b;color:#081c15}.icon-defs{position:absolute;width:0;height:0;overflow:hidden}.room-grain{position:fixed;z-index:8;inset:0;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.6' filter='url(%23n)'/%3E%3C/svg%3E")}
+.topbar{height:105px;display:flex;align-items:center;justify-content:space-between;max-width:1504px;margin:auto;padding:0 56px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:13px;text-align:left;padding:0}.brand-mark{font-size:37px;font-weight:400;color:var(--gold);line-height:1}.brand strong{font-size:18px;font-weight:600;letter-spacing:5px}.brand small{display:block;font-size:8px;letter-spacing:2.35px;color:var(--gold);margin-top:4px}.table-label{display:flex;align-items:center;gap:13px;font-size:9px;letter-spacing:2.1px;color:#809a8b}.table-label>span{width:5px;height:5px;background:#bb9b64;border-radius:50%}.table-label i{font-style:normal;font-size:10px;border:1px solid #6c77534d;padding:5px 7px;color:var(--gold)}.top-actions{display:flex;gap:12px}.icon-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid transparent;border-radius:50%;color:#c8c5b2;transition:background .2s,border-color .2s}.icon-button:hover{background:#ffffff08;border-color:var(--line)}.icon-button svg{width:21px;height:21px}
+.room{max-width:1480px;margin:auto;padding:35px 48px 20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.06fr);gap:55px;align-items:center;min-height:calc(100svh - 170px)}.introduction{grid-column:1;grid-row:1;padding-left:38px;padding-bottom:30px;position:relative;z-index:2}.eyebrow{font-size:10px;font-weight:600;letter-spacing:3px;color:var(--gold);display:inline-flex;align-items:center;gap:12px}.eyebrow>span{height:1px;width:27px;background:var(--gold)}h1{font-family:'Noto Serif KR',Georgia,serif;font-size:clamp(44px,4.3vw,69px);letter-spacing:-3px;font-weight:400;line-height:1.5;margin:24px 0}h1 em{font-style:normal;color:var(--gold-light)}.intro-copy{font-size:14px;line-height:2.05;color:#9cae9e;font-weight:400;letter-spacing:-.3px}.enter-button,.dialog-done{display:flex;align-items:center;justify-content:space-between;gap:60px;background:linear-gradient(110deg,#e2c994,#bea16a);color:#213427;font-weight:600;font-size:14px;letter-spacing:.2px;min-height:59px;padding:0 24px;border:1px solid #ead5a1;border-radius:3px;box-shadow:0 7px 24px #0002,inset 0 1px 0 #fff4;transition:transform .3s var(--ease),box-shadow .3s,filter .3s}.enter-button{width:278px;margin-top:39px}.enter-button:hover,.dialog-done:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 10px 35px #0004}.intro-details{display:flex;gap:20px;margin-top:23px;font-size:10px;color:#819184}.intro-details span+span{border-left:1px solid var(--line);padding-left:20px}.intro-details b{color:#b6beaa;font-weight:500;margin-left:5px}.play-note{font-size:10px;color:#677d6e;margin-top:15px}.wheel-section{position:relative;min-width:0;grid-row:1;grid-column:2;align-self:center;transition:opacity .6s}.wheel-heading{display:flex;justify-content:space-between;align-items:center;padding:0 25px;margin:0 auto 0;max-width:560px}.wheel-heading .eyebrow{font-size:8px;letter-spacing:2.8px}.wheel-edition{font-size:8px;letter-spacing:2px;color:#789481;display:flex;align-items:center;gap:12px}.wheel-edition b{color:var(--gold);font-size:12px;font-weight:400}.wheel-stage{position:relative;width:112%;margin-left:-6%;aspect-ratio:1;perspective:1400px;isolation:isolate}.wheel-ground{position:absolute;width:77%;height:70%;left:11.5%;top:22%;border-radius:50%;box-shadow:0 35px 42px #000b,0 15px 19px #000b;background:#0005;transform:rotateX(12deg);filter:blur(6px)}#wheel{display:block;width:100%;height:100%;position:relative;transform:rotateX(12deg);transform-origin:center;filter:drop-shadow(0 2px 1px #ae78482e)}.wheel-caption{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:#a58b58;letter-spacing:3px;opacity:.6;pointer-events:none}.wheel-caption span{display:block;letter-spacing:2px;font-size:6px;margin-top:6px}.wheel-footer{margin:19px 24px 0}.round-status{font-size:12px;letter-spacing:.2px;display:flex;justify-content:center;align-items:center;gap:8px;color:#b9c3ac;height:25px}.status-dot{height:5px;width:5px;border-radius:50%;background:#baa16a}.recent-row{display:flex;gap:14px;align-items:center;border-top:1px solid var(--line);margin-top:24px;padding-top:18px;min-height:48px}.recent-label{font-size:9px;color:#78907b;white-space:nowrap}.history{display:flex;gap:5px;min-width:0;overflow:hidden;align-items:center;height:30px;mask-image:linear-gradient(to right,#000 90%,transparent)}.history-number{display:grid;place-items:center;border-radius:50%;width:27px;height:27px;min-width:27px;font-size:10px;color:#f0e9d9;background:#15251f;border:1px solid #b6a77b33}.history-number.red{background:#8c3036;border-color:#ad4c4f}.history-number.green{background:#267358;border-color:#6c9b70}.history-number:first-child{box-shadow:0 0 0 2px #c9ac7733;margin-left:3px}.history-empty{font-size:10px;color:#6b8272}
+.play-section{display:none;grid-column:2;grid-row:1;min-width:0}.play-topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:21px}.play-topline .eyebrow{font-size:8px;letter-spacing:2px}.play-topline h2{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:400;letter-spacing:-.7px;margin-top:7px}.wallet{text-align:right}.wallet>span{color:#889e8a;font-size:10px}.wallet>div{display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:4px}.wallet strong{font-size:24px;font-weight:500;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.wallet b{color:var(--gold);font-size:11px;font-weight:400}.mini-plus{border:1px solid #71836780;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;color:#a9bc99;margin-left:3px}.mini-plus svg{width:13px;height:13px}.result-banner{min-height:66px;display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid #85997426;border-radius:4px;background:#ffffff03;margin-bottom:18px;transition:border-color .6s,background .6s}.result-number{width:39px;height:39px;flex-shrink:0;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-family:Georgia,serif;font-size:23px}.result-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.result-copy strong{font-weight:500;font-size:12px;color:#d4dbc7;letter-spacing:-.2px}.result-copy span{font-size:10px;color:#849b86;line-height:1.5}.result-banner.won{border-color:#c3a66775;background:#bd9f4d09}.result-banner.won .result-copy strong{color:#e8cd91}.result-number.red{background:#96393f;color:#f4e9cf;border-color:#b65d59}.result-number.black{background:#10221a;color:#f4e9cf;border-color:#61745c}.result-number.green{background:#286749;color:#f4e9cf;border-color:#7a9e6a}.felt-table{padding:16px 18px 12px;background:radial-gradient(ellipse at 50% 60%,#1d554138,#153c2c00),#113929;border:1px solid #53734d8c;border-radius:8px;box-shadow:inset 0 0 35px #0002,inset 0 0 0 4px #0b291d44,0 10px 20px #0001;position:relative}.table-ornament{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;color:#79906a}.table-ornament b{font-size:7px;letter-spacing:2.3px;font-weight:500}.table-ornament span{width:32px;height:1px;background:#79906a4a}.number-grid{display:grid;grid-template-columns:.8fr repeat(12,1fr);grid-template-rows:repeat(3,42px);border-top:1px solid #b9c09969;border-left:1px solid #b9c09969;border-radius:4px 4px 0 0;overflow:visible}.bet-cell{display:flex;align-items:center;justify-content:center;position:relative;border-right:1px solid #b9c09969;border-bottom:1px solid #b9c09969;isolation:isolate;transition:background .18s,box-shadow .18s;color:#ede7d0;min-width:0;padding:0}.number-cell{font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;font-variant-numeric:tabular-nums;grid-column:var(--col);grid-row:var(--row);background:#14261d}.number-cell.red{background:#96383d}.number-cell.zero{grid-column:1;grid-row:1 / 4;background:#1c6245;color:#e6e6c5;font-size:23px}.bet-cell:hover:not(:disabled){box-shadow:inset 0 0 0 2px #e7ce8c88;background-color:#68855a}.number-cell.red:hover:not(:disabled){background-color:#b64f50}.number-cell.black:hover:not(:disabled){background-color:#38503a}.bet-cell.has-bet{box-shadow:inset 0 0 0 1px #e1c88a88}.bet-cell.coverage{box-shadow:inset 0 0 0 2px #e5d6aa88}.bet-cell.hit{box-shadow:inset 0 0 0 2px #e8d398,0 0 15px #f3d59020;z-index:1}.number-cell.hit::after{content:'';position:absolute;inset:5px;border-radius:50%;border:1px solid #f6e5ba;box-shadow:0 0 11px #fce1a280;animation:hit-in .65s var(--ease)}.column-grid,.dozen-grid{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid #b9c09969}.column-grid .bet-cell{min-height:28px;font-size:9px;color:#a5b39a;gap:5px}.column-grid .bet-cell small{font-size:7px;color:#7b967a}.dozen-grid .bet-cell{min-height:40px;font-size:12px;letter-spacing:.5px;color:#d9dbbd}.outside-grid{display:grid;grid-template-columns:repeat(6,1fr);border-left:1px solid #b9c09969}.outside-grid .bet-cell{min-height:41px;font-size:11px;letter-spacing:.2px}.color-diamond{width:23px;height:15px;display:block;transform:rotate(-1deg);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:#ad4047}.color-diamond.black{background:#0b2018;outline:1px solid #7e916a;box-shadow:inset 0 0 0 2px #9baa7a22}.table-footnote{display:flex;justify-content:space-between;gap:8px;color:#789b7d;font-size:8px;margin-top:12px;letter-spacing:-.2px}.table-footnote b{font-weight:500;color:#a2b291}.table-footnote>span:last-child{white-space:nowrap;color:#6b8b6d}.chip-controls{padding:19px 8px 15px}.chip-control-title{display:flex;justify-content:space-between;color:#98a78c;font-size:10px}.chip-control-title span:last-child{font-size:9px;color:#6f8772}.chip-tray{display:flex;align-items:center;justify-content:space-between;gap:13px;margin-top:14px}.casino-chip{--chip:#d3ccb7;--chip-edge:#e2dbc2;--chip-ink:#2b4232;width:51px;height:51px;border-radius:50%;padding:6px;background:repeating-conic-gradient(var(--chip-edge) 0deg 10deg,var(--chip) 10deg 50deg,var(--chip-edge) 50deg 60deg);border:1px solid #d3c79a95;box-shadow:0 2px 0 #3a3d2b,0 4px 0 #1a251b,0 6px 9px #0005,inset 0 0 0 2px #0002;position:relative;transform:translateY(0);transition:transform .35s var(--ease),filter .3s,outline-color .3s}.casino-chip:after{position:absolute;content:'';inset:3px;border-radius:50%;border:1px solid #f1e2b844;pointer-events:none}.casino-chip>span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;font-size:12px;font-weight:700;border:1px dashed #342f2738;background:var(--chip);color:var(--chip-ink);text-shadow:0 1px 0 #fff1;box-shadow:inset 0 0 5px #0002}.chip-100{--chip:#c9c8b0;--chip-edge:#eeebd3;--chip-ink:#354737}.chip-500{--chip:#8d3a3d;--chip-edge:#dbbf91;--chip-ink:#eed6b3}.chip-1000{--chip:#2d5c70;--chip-edge:#a7c4bf;--chip-ink:#deece1}.chip-5000{--chip:#252c27;--chip-edge:#b59762;--chip-ink:#e4c68b}.casino-chip.selected{transform:translateY(-5px);outline:1px solid #c0a367;outline-offset:6px;box-shadow:0 2px 0 #5f6146,0 4px 0 #1a251b,0 9px 14px #0008}.casino-chip:hover{transform:translateY(-6px)}.chip-tray-divider{width:1px;height:33px;background:var(--line);margin:0 2px}.utility-button{display:flex;flex-direction:column;align-items:center;gap:6px;color:#93a58c;padding:7px 3px}.utility-button svg{width:18px;height:18px}.utility-button span{font-size:8px}.utility-button:disabled{opacity:.25}.utility-button:not(:disabled):hover{color:var(--gold-light)}.play-bottom{display:flex;gap:15px;align-items:center;border-top:1px solid var(--line);padding-top:17px}.bet-total{display:flex;flex-direction:column;gap:4px;min-width:88px}.bet-total>span{font-size:10px;color:#91a18a}.bet-total>strong{font-size:22px;font-weight:500;line-height:1.1;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.bet-total small{font-size:10px;color:var(--gold);margin-left:3px}.repeat-button{height:42px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;color:#a8b69b;min-width:78px;padding:0 4px}.repeat-button svg{width:15px;height:15px}.repeat-button:disabled{opacity:.28}.spin-button{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:55px;border-radius:4px;background:linear-gradient(115deg,#d9c18b,#bda06a);border:1px solid #d4ba80;box-shadow:inset 0 1px 0 #fff3,0 4px 14px #0002;padding:0 20px;color:#203a28;flex:1;font-size:13px;font-weight:600;transition:filter .2s,transform .3s var(--ease),background .3s}.spin-button:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-1px)}.spin-button:not(:disabled):active{transform:translateY(1px)}.spin-button:disabled{background:#324b37;border-color:#536d454d;box-shadow:inset 0 1px 0 #fff05;color:#869a77}.spin-symbol{font-size:25px;font-weight:400}.play-smallprint{display:flex;justify-content:space-between;margin-top:17px;font-size:8px;color:#627d69}.play-smallprint button{font-size:8px;color:#6b8370;padding:0}.play-smallprint button[aria-pressed=true]{color:var(--gold)}.room-footer{display:flex;justify-content:space-between;max-width:1392px;margin:14px auto 0;padding:21px 0 23px;border-top:1px solid var(--line);color:#536d58;font-size:8px;letter-spacing:2px}.room-footer span:nth-child(2){font-size:9px;letter-spacing:.4px;color:#728371}.room-footer i{font-style:normal;padding:0 3px}
+body[data-screen=game] .introduction{display:none}body[data-screen=game] .play-section{display:block;animation:reveal-in .8s var(--ease)}body[data-screen=game] .wheel-section{grid-column:1}body[data-screen=game] .room{gap:42px;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}body[data-screen=lobby] .wheel-footer{visibility:hidden;height:0;margin:0;overflow:hidden}body[data-screen=lobby] .wheel-heading{opacity:.55}body[data-screen=lobby] .wheel-stage{width:122%;margin-left:-12%}body[data-screen=lobby] .room-footer{margin-top:0}body.is-spinning .status-dot{animation:status-pulse 1.2s ease-in-out infinite}body.is-spinning .spin-symbol{animation:slow-rotate 2.5s linear infinite}body.is-spinning .bet-cell{cursor:default}body.is-spinning .chip-tray{opacity:.6}
+.bet-stack{position:absolute;pointer-events:none;width:28px;height:28px;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;filter:drop-shadow(0 3px 2px #0007)}.bet-stack::before,.bet-stack::after{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid #bba677;background:repeating-conic-gradient(#baac7e 0deg 12deg,#e5dbbe 12deg 48deg,#baac7e 48deg 60deg);transform:translate(1px,3px)}.bet-stack::before{transform:translate(2px,6px)}.bet-stack b{position:absolute;z-index:2;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#dfd5b5 0 62%,transparent 63%),repeating-conic-gradient(#918256 0 12deg,#e8ddc0 12deg 48deg,#918256 48deg 60deg);border-radius:50%;border:1px solid #e5d6ab;color:#263b28;font:600 8px 'DM Sans',sans-serif;box-shadow:inset 0 0 0 2px #f8eacd66,0 1px 1px #0005}.bet-stack.landed{animation:chip-land .45s var(--ease)}.flight-layer{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}.flight-chip{position:absolute;pointer-events:none;will-change:transform;display:block;width:34px;height:34px;border-radius:50%;background:repeating-conic-gradient(#aa955e 0deg 12deg,#e4d4a9 12deg 48deg,#aa955e 48deg 60deg);border:1px solid #e3d1a3;box-shadow:0 2px 0 #7f704e,0 4px 6px #0005;transform-origin:center}.flight-chip>span{position:absolute;inset:5px;border-radius:50%;border:1px dashed #98845a;background:#d8cba4;display:grid;place-items:center;color:#35452d;font-size:8px;font-weight:700}.flight-chip.chip-500{background:repeating-conic-gradient(#dbbf91 0deg 12deg,#8d3a3d 12deg 48deg,#dbbf91 48deg 60deg)}.flight-chip.chip-500>span{background:#8d3a3d;color:#eed6b3}.flight-chip.chip-1000{background:repeating-conic-gradient(#a7c4bf 0deg 12deg,#2d5c70 12deg 48deg,#a7c4bf 48deg 60deg)}.flight-chip.chip-1000>span{background:#2d5c70;color:#deece1}.flight-chip.chip-5000{background:repeating-conic-gradient(#b59762 0deg 12deg,#252c27 12deg 48deg,#b59762 48deg 60deg)}.flight-chip.chip-5000>span{background:#252c27;color:#e4c68b}.toast{position:fixed;bottom:30px;left:50%;transform:translate(-50%,15px);opacity:0;max-width:calc(100vw - 36px);padding:12px 20px;background:#d9c89f;border:1px solid #e5d6b7;border-radius:5px;color:#233926;font-size:12px;line-height:1.6;pointer-events:none;z-index:80;box-shadow:0 10px 40px #0005;transition:opacity .2s,transform .3s var(--ease);white-space:nowrap}.toast.visible{opacity:1;transform:translate(-50%,0)}.help-dialog{background:#102b20;color:var(--ink);border:1px solid #8f875b77;border-radius:10px;width:min(470px,calc(100vw - 32px));padding:26px 28px;max-height:90svh;overflow:auto;box-shadow:0 40px 100px #0008}.help-dialog::backdrop{background:#04100ccd;backdrop-filter:blur(8px)}.dialog-heading{display:flex;justify-content:space-between;align-items:center;margin-top:-8px}.dialog-heading .eyebrow{font-size:8px;letter-spacing:2px}.help-dialog h2{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:400;margin-top:10px;letter-spacing:-.5px}.how-steps{list-style:none;margin:27px 0;padding:0;display:grid;gap:23px}.how-steps li{display:flex;gap:16px;align-items:baseline}.how-steps li>b{font-size:11px;color:var(--gold);font-weight:400;letter-spacing:1px}.how-steps li>div{display:flex;flex-direction:column;gap:7px}.how-steps strong{font-size:12px;font-weight:500}.how-steps span{font-size:11px;line-height:1.7;color:#91a38b}.payouts{border-top:1px solid var(--line);padding-top:8px}.payouts>div{display:flex;justify-content:space-between;font-size:10px;gap:10px;border-bottom:1px solid #afab7520;padding:12px 0}.payouts strong{color:var(--gold-light);font-size:12px;white-space:nowrap}.help-note{font-size:10px;line-height:1.9;color:#8fa58b;margin-top:16px}.help-note b{color:#b6c3a0;font-weight:500}.dialog-done{width:100%;margin-top:24px;min-height:48px;font-size:12px}
+@keyframes reveal-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes chip-land{0%{transform:translate(-50%,-50%) scale(.85)}45%{transform:translate(-50%,-50%) scale(1.08)}100%{transform:translate(-50%,-50%) scale(1)}}@keyframes hit-in{from{transform:scale(1.3);opacity:0}to{transform:scale(1);opacity:1}}@keyframes status-pulse{50%{opacity:.3}}@keyframes slow-rotate{to{transform:rotate(360deg)}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(min-width:1600px){.room{padding-top:55px;padding-bottom:55px}.wheel-stage{width:116%;margin-left:-8%}.play-section{max-width:650px}}
+@media(max-width:1200px){.topbar{padding:0 32px;height:88px}.room{padding:30px 30px 20px;gap:24px}body[data-screen=game] .room{gap:20px;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}.introduction{padding-left:15px}.room-footer{margin-left:32px;margin-right:32px}.felt-table{padding:13px 12px 10px}.number-grid{grid-template-rows:repeat(3,39px)}.chip-tray{gap:10px}.casino-chip{width:45px;height:45px}.chip-controls{padding-left:4px;padding-right:4px}.play-bottom{gap:9px}.repeat-button{min-width:70px;font-size:9px}.spin-button{padding:0 14px;font-size:12px}.wheel-footer{margin-left:10px;margin-right:10px}.wheel-heading{padding:0 12px}.wheel-heading .eyebrow{font-size:7px;letter-spacing:1.5px}.wheel-edition{font-size:7px;letter-spacing:1px}.number-cell{font-size:13px}}
+@media(max-width:940px){.room{min-height:calc(100svh - 160px);gap:15px}.introduction{padding-left:0}h1{font-size:45px}.intro-copy{font-size:12px}.enter-button{width:250px}.intro-details{gap:12px;font-size:9px}.intro-details span+span{padding-left:12px}.table-label{display:none}body[data-screen=game] .room{max-width:760px;grid-template-columns:1fr;padding-top:21px;gap:20px}body[data-screen=game] .wheel-section{grid-column:1;grid-row:1;max-width:460px;justify-self:center;width:100%}body[data-screen=game] .wheel-stage{max-width:460px;width:100%;margin:0 auto}body[data-screen=game] .wheel-heading{display:none}body[data-screen=game] .wheel-caption{display:none}body[data-screen=game] .play-section{grid-column:1;grid-row:2;width:100%}body[data-screen=game] .wheel-footer{margin:-4px -40px 0}body[data-screen=game] .recent-row{margin-top:10px;padding-top:12px}.play-topline{margin-top:0}.number-grid{grid-template-rows:repeat(3,44px)}.casino-chip{width:52px;height:52px}.chip-tray{justify-content:flex-start;gap:25px}.chip-tray-divider{margin-left:auto}.utility-button{min-width:43px}.play-bottom{gap:20px}.bet-total{min-width:110px}.spin-button{font-size:14px}.wheel-ground{box-shadow:0 18px 35px #0008,0 8px 18px #0009}}
+@media(max-width:620px){.topbar{height:76px;padding:0 22px}.brand strong{font-size:15px;letter-spacing:4px}.brand small{font-size:6px;letter-spacing:1.9px}.brand-mark{font-size:30px}.brand{gap:9px}.top-actions{gap:2px}.icon-button{width:36px;height:36px}.room{display:flex;flex-direction:column-reverse;gap:0;padding:17px 22px 28px;min-height:calc(100svh - 140px)}.introduction{padding:0;text-align:center;align-self:stretch;margin-top:-5px}.introduction .eyebrow{font-size:8px;letter-spacing:2.3px}.introduction .eyebrow span{width:20px}h1{font-size:39px;line-height:1.47;letter-spacing:-2px;margin:14px 0 15px}h1 br{display:none}h1 em{display:block}.intro-copy{font-size:12px;line-height:1.9}.enter-button{width:100%;max-width:350px;min-height:54px;margin:25px auto 0;font-size:13px;padding:0 22px}.intro-details{justify-content:center;gap:18px;margin-top:17px;font-size:9px}.intro-details span+span{padding-left:18px}.play-note{font-size:8px;margin-top:10px}.wheel-section{width:100%;max-width:430px}.wheel-heading{display:none}body[data-screen=lobby] .wheel-stage{width:108%;margin:-20px 0 -7px -4%;max-height:45svh;aspect-ratio:1}body[data-screen=lobby] #wheel{max-height:45svh;object-fit:contain}body[data-screen=lobby] .wheel-ground{height:68%;width:68%;left:16%;top:25%}.wheel-caption{display:none}.room-footer{margin:0 22px;padding:17px 0 20px;gap:10px;font-size:6px;letter-spacing:1.3px}.room-footer span:nth-child(2){font-size:7px;letter-spacing:0}.room-footer span:last-child{display:none}body[data-screen=game] .room{display:flex;flex-direction:column;padding:8px 16px 22px;gap:17px}body[data-screen=game] .wheel-section{max-width:360px;width:100%;align-self:center}body[data-screen=game] .wheel-stage{width:100%;margin:-8px auto -5px;max-width:360px}body[data-screen=game] .wheel-footer{margin:-7px 0 0}.round-status{font-size:11px}.recent-row{gap:10px}.recent-label{font-size:8px}.history-number{width:25px;height:25px;min-width:25px}.history{gap:5px}body[data-screen=game] .recent-row{margin-top:8px;padding-top:9px}.play-topline{margin-bottom:14px}.play-topline .eyebrow{font-size:7px;letter-spacing:1.8px}.play-topline h2{font-size:22px;margin-top:6px}.wallet>span{font-size:9px}.wallet strong{font-size:23px}.result-banner{min-height:60px;margin-bottom:14px;padding:9px 12px;gap:12px}.result-number{width:35px;height:35px;font-size:21px}.result-copy strong{font-size:11px}.result-copy span{font-size:9px}.felt-table{padding:12px 12px 10px}.table-ornament{margin-bottom:10px}.table-ornament b{font-size:6px}.number-grid{grid-template-columns:repeat(6,1fr);grid-template-rows:32px repeat(6,40px)}.number-cell{grid-column:auto;grid-row:auto;font-size:16px}.number-cell.zero{grid-row:1;grid-column:1 / -1;font-size:18px}.column-grid .bet-cell{min-height:29px;font-size:9px}.column-grid .bet-cell small{font-size:7px}.dozen-grid .bet-cell{min-height:41px;font-size:12px}.outside-grid{grid-template-columns:repeat(3,1fr)}.outside-grid .bet-cell{min-height:40px;font-size:12px}.outside-grid .bet-cell[data-bet=red]{grid-column:1;grid-row:1}.outside-grid .bet-cell[data-bet=black]{grid-column:2;grid-row:1}.outside-grid .bet-cell[data-bet=odd]{grid-column:1;grid-row:2}.outside-grid .bet-cell[data-bet=even]{grid-column:2;grid-row:2}.outside-grid .bet-cell[data-bet=low]{grid-column:3;grid-row:1}.outside-grid .bet-cell[data-bet=high]{grid-column:3;grid-row:2}.table-footnote{font-size:7px;margin-top:10px;gap:4px}.chip-controls{padding-top:17px;padding-bottom:15px}.chip-tray{gap:16px;justify-content:space-between}.casino-chip{width:44px;height:44px;padding:5px}.casino-chip>span{font-size:11px}.casino-chip.selected{outline-offset:4px}.chip-tray-divider{margin:0;height:30px}.utility-button{min-width:0;padding:5px 0;gap:5px}.utility-button span{font-size:7px}.utility-button svg{height:16px;width:16px}.chip-tray{gap:12px;margin-top:15px}.play-bottom{position:sticky;bottom:0;z-index:9;background:#0c2119f5;backdrop-filter:blur(18px);padding:13px 0 max(13px,env(safe-area-inset-bottom));margin:0 -2px;gap:12px;border-bottom:1px solid #cfaf7520;box-shadow:0 -9px 20px #091d1855}.bet-total{min-width:70px}.bet-total>strong{font-size:21px}.bet-total>span{font-size:9px}.repeat-button{min-width:50px;flex-direction:column;gap:3px;font-size:8px;padding:0}.repeat-button svg{width:16px;height:16px}.spin-button{min-height:51px;font-size:12px;padding:0 15px}.spin-symbol{font-size:23px}.play-smallprint{margin-top:12px;font-size:7px}.play-smallprint button{font-size:8px;padding:4px}.help-dialog{padding:24px}.help-dialog h2{font-size:22px}.toast{bottom:92px;font-size:11px;white-space:normal;text-align:center;min-width:240px}.bet-stack{width:29px;height:29px}.bet-stack b{font-size:8px}}
+@media(max-width:360px){.chip-tray{gap:8px}.casino-chip{width:40px;height:40px}.table-footnote{font-size:6px}.play-bottom{gap:8px}.bet-total{min-width:61px}.spin-button{padding:0 11px}.room-footer{font-size:5px}.number-grid{grid-template-rows:30px repeat(6,38px)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+body.reduced-motion *,body.reduced-motion *::before,body.reduced-motion *::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+
+/* One shared camera angle for the playing surface and its physical chip stacks. */
+[hidden]{display:none!important}
+body[data-screen=lobby] .room{display:flex;align-items:center;justify-content:center;min-height:calc(100svh - 175px)}
+body[data-screen=lobby] .introduction{text-align:center;padding:20px 0 48px}
+body[data-screen=lobby] .enter-button{margin-left:auto;margin-right:auto}
+body[data-screen=lobby] .intro-details{justify-content:center}
+body[data-screen=game] .room{display:block;max-width:960px;padding:32px 40px 22px;min-height:0}
+body[data-screen=game] .play-section{max-width:none;width:100%;animation:reveal-in .65s var(--ease)}
+.table-recent{margin:0 0 7px;padding:9px 4px 0;border:0;min-height:35px}
+.betting-scene{perspective:1500px;padding:3px 5px 17px}
+.betting-surface{display:flex;flex-direction:column;transform:rotateX(15deg) rotateZ(-2deg);transform-origin:center 65%;transform-style:preserve-3d}
+.betting-surface .felt-table{order:1;border:2px solid #997c4c;border-radius:11px;box-shadow:inset 0 0 0 3px #0a261b66,inset 0 0 50px #0003,0 2px 0 #cfab71,0 5px 0 #5e422b,0 9px 0 #3a291c,0 14px 0 #201b14,0 27px 35px #0007;padding:18px 20px 15px}
+.betting-surface .chip-controls{order:0;padding:14px 22px 19px;margin:2px 10px 17px;border:1px solid #8c765f4d;border-radius:8px;background:linear-gradient(135deg,#293e2e,#142c20);box-shadow:inset 0 1px 0 #c5c99a16,0 3px 0 #2a241a,0 5px 10px #0004}
+.betting-surface .chip-tray{max-width:610px;gap:25px;margin:18px auto 3px;justify-content:space-between}
+.betting-surface .casino-chip{box-shadow:0 1px 0 #dccba27a,0 3px 0 #787151,0 4px 0 #322d21,0 6px 0 #8b8160,0 8px 0 #282c21,0 12px 11px #0007}
+.betting-surface .casino-chip.selected{box-shadow:0 1px 0 #dccba299,0 3px 0 #787151,0 4px 0 #322d21,0 6px 0 #8b8160,0 8px 0 #282c21,0 15px 15px #0008}
+.bet-stack{width:28px;height:28px;filter:drop-shadow(3px 7px 3px #0007);z-index:7;transform:translate(-50%,-45%)}
+.bet-stack::before,.bet-stack::after{display:none}
+.stack-disc{--chip:#c9c8b0;--chip-edge:#eeebd3;--chip-ink:#354737;position:absolute;inset:0;display:block;border-radius:50%;border:1px solid #e6d19b88;background:repeating-conic-gradient(var(--chip-edge) 0deg 10deg,var(--chip) 10deg 50deg,var(--chip-edge) 50deg 60deg);box-shadow:0 1px 0 #e9dab57a,0 2px 0 #766944,0 3px 0 #1b251bd9;transform:translate(calc(var(--level)*.25px),calc(var(--level)*-2.7px));z-index:calc(var(--level) + 1);font-style:normal}
+.stack-disc:after{content:'';position:absolute;inset:3px;border:1px solid #dcd5b27a;border-radius:50%}
+.stack-disc.chip-500{--chip:#8d3a3d;--chip-edge:#dbbf91;--chip-ink:#eed6b3}
+.stack-disc.chip-1000{--chip:#2d5c70;--chip-edge:#a7c4bf;--chip-ink:#deece1}
+.stack-disc.chip-5000{--chip:#252c27;--chip-edge:#b59762;--chip-ink:#e4c68b}
+.stack-face{position:absolute;inset:4px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font:700 8px 'DM Sans',sans-serif;color:var(--chip-ink);z-index:2}
+.seats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 18px}
+.seat{--seat:#c8ac73;min-width:0;display:flex;gap:10px;align-items:center;background:#ffffff03;border:1px solid #82937030;border-radius:6px;padding:13px 10px;box-shadow:inset 0 1px 0 #ffffff03}
+.seat-avatar{display:grid;place-items:center;flex:none;width:30px;height:30px;border:1px solid var(--seat);border-radius:50%;font:600 13px Georgia,serif;color:var(--seat);box-shadow:0 2px 0 #0006,0 4px 6px #0002}
+.seat>div{min-width:0;display:flex;flex-direction:column;gap:4px}.seat strong{font-size:11px;font-weight:500;color:#dfdfc8;white-space:nowrap}.seat strong small{font-size:7px;color:#728f78;margin-left:5px;letter-spacing:.3px}.seat-balance{font-size:11px;color:#bac9ac;font-variant-numeric:tabular-nums}.seat-status,#mySeatStatus{font-size:8px;color:#7f967d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seat-status.positive{color:#cfb77f}
+.seat-ai1,.ai1{--seat:#82b5cf}.seat-ai2,.ai2{--seat:#cc9395}.seat-ai3,.ai3{--seat:#9bbf8b}.seat-me{border-color:#b79d6655}
+.ai-stack{--seat:#82b5cf;position:absolute;left:var(--seat-x);top:73%;width:18px;height:18px;z-index:6;transform:translate(-50%,-50%);pointer-events:none;border-radius:50%;border:1px solid #d2cab285;background:repeating-conic-gradient(var(--seat) 0 13deg,#203729 13deg 47deg,var(--seat) 47deg 60deg);box-shadow:0 2px 0 #122c22,0 3px 0 var(--seat),0 5px 0 #152b20,2px 7px 3px #0005;display:grid;place-items:center}
+.ai-stack>span{background:#172c22;color:var(--seat);width:12px;height:12px;display:grid;place-items:center;border-radius:50%;font:600 6px 'DM Sans',sans-serif}
+.flight-chip.ai1,.flight-chip.ai2,.flight-chip.ai3{background:repeating-conic-gradient(var(--seat) 0 13deg,#203729 13deg 47deg,var(--seat) 47deg 60deg);border-color:var(--seat)}.flight-chip.ai1>span,.flight-chip.ai2>span,.flight-chip.ai3>span{background:#203729;color:var(--seat);border-color:var(--seat)}
+.bet-modes{display:flex;gap:5px;padding:3px;border:1px solid #a7aa7240;border-radius:5px;background:#071d164d;margin-bottom:8px}
+.bet-modes button{flex:1;border-radius:3px;min-height:34px;font-size:11px;color:#9fb093;transition:background .2s,color .2s}.bet-modes button small{font-size:8px;margin-left:7px;color:#889f7c}.bet-modes button[aria-pressed=true]{color:#efdab0;background:#9b87562b;box-shadow:inset 0 0 0 1px #bba36955}.bet-modes button[aria-pressed=true] small{color:#c5b380}.bet-mode-hint{font-size:9px;text-align:center;color:#98ae88;margin:0 0 13px;min-height:14px}
+.number-grid{position:relative;grid-template-rows:repeat(3,52px)}
+.seam-bet{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:24px;height:24px;border:0;background:none!important;box-shadow:none!important;z-index:8;pointer-events:none;overflow:visible}
+.seam-target{display:grid;place-items:center;width:13px;height:13px;border:1px solid #e6ce87;background:#172e1e;color:#edd8a5;border-radius:50%;font-size:12px;box-shadow:0 2px 5px #0008;opacity:0;transition:opacity .2s,transform .2s}
+.number-grid[data-mode=split] .seam-bet.split,.number-grid[data-mode=corner] .seam-bet.corner{pointer-events:auto;z-index:10}
+.number-grid[data-mode=split] .seam-bet.split .seam-target,.number-grid[data-mode=corner] .seam-bet.corner .seam-target{opacity:1}
+.seam-bet:hover .seam-target{transform:scale(1.2)}
+.number-grid:not([data-mode=straight]) .number-cell{color:#bfc9ae}
+.seam-bet .bet-stack{transform:translate(-50%,-45%);z-index:12}.seam-bet.hit .seam-target{box-shadow:0 0 0 3px #efd9a144}
+.seam-bet .ai-stack{width:14px;height:14px;top:75%}.seam-bet .ai-stack>span{font-size:5px;width:10px;height:10px}
+
+/* The roulette exists only in this modal; the table remains in place behind it. */
+body.wheel-open{overflow:hidden}
+.wheel-dialog{color:var(--ink);padding:19px 24px 17px;width:min(720px,calc(100vw - 24px),calc(105svh - 210px));max-width:none;max-height:calc(100svh - 28px);border:1px solid #b39b665c;border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#1b3d2a88,transparent 70%),#0a1e17;box-shadow:0 45px 110px #000b,inset 0 1px 0 #dfcb9122;animation:wheel-reveal .48s var(--ease);outline:none}
+.wheel-dialog::backdrop{background:#020a07d9;backdrop-filter:blur(12px);animation:backdrop-reveal .35s ease}
+.wheel-dialog.closing{animation:wheel-dismiss .28s ease forwards}.wheel-dialog.closing::backdrop{animation:backdrop-dismiss .28s ease forwards}
+.spin-popup-header{display:flex;justify-content:space-between;align-items:center;height:27px}.spin-popup-header .eyebrow{font-size:8px;letter-spacing:2.5px}.spin-popup-header .icon-button{height:29px;width:29px}.spin-popup-header svg{width:17px;height:17px}
+#wheelDialogTitle{text-align:center;font-family:'Noto Serif KR',Georgia,serif;font-size:27px;font-weight:400;letter-spacing:-1px;margin:9px 0 7px;outline:none}#wheelDialogHint{text-align:center;font-size:10px;color:#91a189;letter-spacing:.2px}
+body .wheel-dialog .wheel-section{display:block;position:relative;width:100%;max-width:none;grid-column:auto;grid-row:auto;margin:0}
+body .wheel-dialog .wheel-stage{width:100%;max-width:none;max-height:none;aspect-ratio:1/.94;margin:0;perspective:1500px}
+body .wheel-dialog #wheel{position:absolute;width:100%;height:auto;max-height:none;aspect-ratio:1;left:0;top:-6%;transform:rotateX(28deg) rotateZ(-9deg);transform-origin:center;filter:drop-shadow(0 7px 1px #33251b)}
+body .wheel-dialog .wheel-ground{width:78%;height:71%;left:11%;top:17%;transform:rotateX(28deg) rotateZ(-9deg);box-shadow:0 25px 35px #000a,0 8px 13px #0009}
+body .wheel-dialog .wheel-footer{height:auto;visibility:visible;overflow:visible;margin:0 0 4px}
+.wheel-dialog .round-status{height:27px;font-size:11px}.wheel-dialog[data-phase=resolved] .status-dot{animation:none;background:#cfaf75}
+.wheel-outcome{display:flex;align-items:center;justify-content:center;gap:12px;min-height:62px;padding:7px 0}.wheel-outcome .result-number{width:40px;height:40px}.wheel-outcome>div{display:flex;flex-direction:column;gap:6px}.wheel-outcome strong{font-size:14px;font-weight:500;color:#e6c58b}.wheel-outcome>div>span{font-size:9px;color:#95a88c}
+.spin-popup-footnote{min-height:62px;display:flex;align-items:center;justify-content:space-between;font-size:8px;letter-spacing:1px;color:#627a60;border-top:1px solid #9e956424;margin-top:4px}.spin-popup-footnote>span{color:#9e946b;font-size:7px;letter-spacing:2.1px}
+.wheel-players{display:flex;gap:8px;border-top:1px solid #9e956424;padding-top:10px;justify-content:center;flex-wrap:wrap}.wheel-players>span{display:flex;align-items:center;gap:7px;font-size:9px;color:#94a58d}.wheel-players i{width:7px;height:7px;border-radius:50%;background:var(--seat);display:block}.wheel-players b{font-size:9px;color:#c4cfb0;font-weight:400;margin-right:8px}
+@keyframes wheel-reveal{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes wheel-dismiss{to{opacity:0;transform:translateY(10px) scale(.98)}}@keyframes backdrop-reveal{from{opacity:0}to{opacity:1}}@keyframes backdrop-dismiss{to{opacity:0}}
+@media(max-width:620px){body[data-screen=game] .room{display:block;padding:22px 14px 20px;max-width:520px}.seats{gap:7px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:14px}.seat{padding:10px;gap:9px;min-height:69px}.seat-avatar{width:29px;height:29px}.seat strong{font-size:11px}.seat strong small{font-size:7px}.seat-balance{font-size:10px}.seat-status,#mySeatStatus{font-size:8px}.betting-scene{perspective:1600px;padding:0 3px 14px}.betting-surface{transform:rotateX(12deg) rotateZ(-1.4deg);transform-origin:center 60%}.betting-surface .felt-table{padding:13px 11px 12px;border-radius:9px}.betting-surface .chip-controls{margin:3px 3px 14px;padding:12px 12px 16px}.betting-surface .chip-tray{gap:12px;margin-top:16px}.betting-surface .casino-chip{width:42px;height:42px}.number-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:36px repeat(12,44px)}.number-cell{font-size:18px}.number-cell.zero{grid-column:1/-1}.bet-modes{gap:1px}.bet-modes button{font-size:10px;min-height:35px}.bet-modes button small{display:block;margin:3px 0 0;font-size:8px}.bet-mode-hint{font-size:8px;margin-bottom:10px}.seam-bet{width:30px;height:30px}.seam-target{width:15px;height:15px}.table-footnote{font-size:6px;letter-spacing:-.25px}.stack-disc{transform:translate(calc(var(--level)*.3px),calc(var(--level)*-3px))}.ai-stack{width:20px;height:20px;top:71%}.ai-stack>span{width:13px;height:13px;font-size:6px}.play-bottom{margin-top:10px}.wheel-dialog{border-radius:12px;padding:14px 12px 13px}#wheelDialogTitle{font-size:23px;margin-top:11px}#wheelDialogHint{font-size:9px}.spin-popup-header .eyebrow{font-size:7px;letter-spacing:2px}.wheel-dialog .round-status{font-size:10px}.spin-popup-footnote{min-height:54px;font-size:6px}.spin-popup-footnote>span{font-size:6px;letter-spacing:1.1px}.wheel-outcome{min-height:54px}.wheel-outcome strong{font-size:13px}.wheel-outcome>div>span{font-size:8px}.wheel-players{gap:5px;padding-top:8px}.wheel-players>span{gap:4px;font-size:8px}.wheel-players b{font-size:8px;margin-right:5px}}
+@media(max-width:360px){.betting-surface .chip-tray{gap:8px}.betting-surface .casino-chip{width:37px;height:37px}.seat{padding:8px;gap:7px}.betting-surface .felt-table{padding-left:9px;padding-right:9px}.wheel-dialog .round-status{font-size:9px}}
+.betting-surface .chip-controls{padding:12px 18px;margin-bottom:16px}
+.betting-toolbar{display:flex;align-items:center;gap:13px}.chip-anchor{display:grid;place-items:center;width:31px;height:31px;border:3px double #d6bd80;border-radius:50%;color:#d6bd80;font:600 11px Georgia,serif;box-shadow:0 2px 0 #6a5c3a,0 5px 6px #0005}.betting-toolbar-copy{display:flex;flex-direction:column;gap:6px}.betting-toolbar-copy strong{font-size:11px;font-weight:500;color:#cdd8b9}.betting-toolbar-copy span{font-size:8px;color:#819875}.betting-toolbar-actions{display:flex;gap:22px;margin-left:auto}.betting-toolbar-actions .utility-button{min-width:28px;padding:3px 0}
+.chip-dialog{width:min(440px,calc(100vw - 28px));max-height:90svh;overflow:auto;padding:22px 25px 24px;border:1px solid #b69d6766;border-radius:14px;background:radial-gradient(ellipse at 50% 50%,#25483255,transparent 80%),#10291e;color:var(--ink);box-shadow:0 30px 80px #000a;animation:wheel-reveal .3s var(--ease)}
+.chip-dialog::backdrop{background:#03110cc4;backdrop-filter:blur(5px)}.chip-dialog .eyebrow{font-size:8px;letter-spacing:2px}.chip-dialog h2{font-family:'Noto Serif KR',serif;font-size:25px;font-weight:400;margin:15px 0 10px;letter-spacing:-.5px}.chip-dialog>p{color:#95ab8e;font-size:11px}.chip-dialog .chip-tray{transform:perspective(650px) rotateX(19deg) rotateZ(-2deg);padding:16px 5px 11px;margin-top:25px;gap:18px;justify-content:space-between}.chip-dialog .casino-chip{width:61px;height:61px;box-shadow:0 1px 0 #dccba27a,0 3px 0 #787151,0 4px 0 #322d21,0 6px 0 #8b8160,0 8px 0 #282c21,0 14px 13px #0007}.chip-dialog .casino-chip>span{font-size:14px}.chip-dialog .casino-chip:disabled{opacity:.25;filter:grayscale(.6);outline:none;transform:none}.chip-labels{display:flex;justify-content:space-between;gap:18px;padding:7px 5px 0}.chip-labels span{width:61px;text-align:center;font-size:9px;color:#a9ba99}.chip-dialog .chip-dialog-balance{font-size:11px;border-top:1px solid var(--line);margin-top:24px;padding-top:18px;color:#bdc8a9}.chip-dialog .chip-dialog-note{font-size:9px;margin-top:10px;color:#819c7d}
+@media(max-width:620px){.betting-surface .chip-controls{padding:10px 11px}.betting-toolbar{gap:10px}.betting-toolbar-copy strong{font-size:10px}.betting-toolbar-copy span{font-size:8px}.betting-toolbar-actions{gap:17px}.chip-anchor{width:27px;height:27px;font-size:10px}.chip-dialog{position:fixed;inset:auto 12px max(12px,env(safe-area-inset-bottom));margin:0;width:calc(100vw - 24px);padding:18px 21px 24px;border-radius:16px}.chip-dialog h2{font-size:24px}.chip-dialog .chip-tray{gap:13px;padding-left:0;padding-right:0}.chip-dialog .casino-chip{width:56px;height:56px}.chip-labels{gap:13px;padding-left:0;padding-right:0}.chip-labels span{width:56px}.chip-dialog .chip-dialog-note{font-size:9px}}
+@media(max-width:360px){.chip-dialog .casino-chip{width:49px;height:49px}.chip-labels span{width:49px}.chip-dialog .chip-tray{gap:10px}.chip-labels{gap:10px}}
+.round-clock{display:flex;align-items:center;gap:12px;padding:13px 15px 17px;margin:0 0 16px;border:1px solid #8c9b6840;border-radius:6px;position:relative;background:#7b94600b;overflow:hidden}.clock-label{font-size:10px;color:#9cb08e}.round-clock strong{font-size:23px;font-weight:500;letter-spacing:1px;font-variant-numeric:tabular-nums;color:#e1c58b}.clock-note{margin-left:auto;font-size:9px;color:#7c9675}.clock-track{position:absolute;height:2px;left:0;right:0;bottom:0;background:#152e20}.clock-track i{display:block;height:100%;width:100%;background:#b8a163;transition:width .25s linear}.round-clock.urgent{border-color:#ba765b88}.round-clock.urgent strong{color:#e5a07a}.round-clock.urgent .clock-track i{background:#d49674}@media(max-width:620px){.round-clock{gap:9px;padding:10px 11px 14px;margin-bottom:13px}.round-clock strong{font-size:22px}.clock-label{font-size:9px}.clock-note{font-size:8px;max-width:108px;text-align:right;line-height:1.6}}
+
+/* Fixed-camera 3D: WebGL owns the wheel perspective, CSS owns table elevation. */
+body .wheel-dialog .wheel-stage.is-3d{aspect-ratio:1/.84;perspective:none;isolation:isolate;margin:7px 0 0}
+body .wheel-dialog .is-3d #wheel{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;transform:none;filter:none;border-radius:10px}
+body .wheel-dialog .is-3d .wheel-ground{display:none}
+.betting-scene{perspective:1800px;padding-bottom:27px}
+.betting-surface{transform:rotateX(23deg) rotateZ(-2deg)}
+.felt-table,.number-grid,.column-grid,.dozen-grid,.outside-grid,.bet-cell,.bet-stack,.ai-stack,.chip-tray,.physical-chip{transform-style:preserve-3d}
+.bet-cell{isolation:auto}
+.betting-surface .felt-table{border:5px solid #6f4d2e;border-top-color:#a08051;border-bottom-color:#39281e;box-shadow:inset 0 0 0 1px #c6ae70,inset 0 0 0 5px #0c2c20,inset 0 0 65px #0004,0 1px 0 #d0b273,0 5px 0 #6c462b,0 10px 0 #4a3021,0 15px 0 #34271f,0 21px 0 #191e17,0 38px 36px #0008}
+.betting-surface .felt-table::before{content:'';position:absolute;inset:-5px;border-radius:10px;background:#39281b;transform:translateZ(-17px);pointer-events:none}
+.physical-chip{--chip-size:28px;--chip-depth:4.8px;overflow:visible}
+.chip-side{position:absolute;display:block;left:50%;top:50%;width:calc(var(--chip-size)*.163);height:var(--chip-depth);border-top:1px solid #e9ddb577;border-bottom:1px solid #0006;background:linear-gradient(#c2ae7b88,#141c1677),var(--chip,#b3a075);transform:translate(-50%,-50%) rotateZ(calc(var(--side)*18deg)) translateY(calc(var(--chip-size)*-.5 + .5px)) translateZ(calc(var(--chip-depth)*-.5)) rotateX(90deg);pointer-events:none;backface-visibility:hidden}
+.chip-side:nth-of-type(3n){background:linear-gradient(#fff4,#0004),var(--chip-edge,#d9c591)}
+.chip-bottom{position:absolute;inset:0;border-radius:50%;background:var(--chip,#ac9a70);transform:translateZ(calc(var(--chip-depth)*-1));box-shadow:2px 5px 6px #0007;pointer-events:none}
+.bet-stack{filter:none;transform:translate(-50%,-45%) translateZ(1px)}
+.stack-disc{box-shadow:inset 0 0 0 1px #eee2ba22;transform:translate3d(calc(var(--level)*.22px),0,calc((var(--level) + 1)*4.8px));z-index:auto}
+.stack-face{transform:translateZ(.2px)}
+.ai-stack{border:0;background:none;box-shadow:none;--chip-size:18px}
+.ai-stack .npc-disc{--chip:var(--seat);--chip-edge:#e1cf9f;--chip-ink:#183324;--chip-size:18px;--chip-depth:3.8px;transform:translateZ(calc((var(--level) + 1)*3.8px))}
+.npc-disc .stack-face{inset:3px;font-size:5px}
+.seam-bet .ai-stack,.seam-bet .npc-disc{--chip-size:14px}
+.chip-dialog .chip-tray{transform:perspective(700px) rotateX(33deg) rotateZ(-2deg);transform-style:preserve-3d;padding-top:19px;padding-bottom:20px}
+.chip-dialog .casino-chip{--chip-size:61px;--chip-depth:7px;box-shadow:inset 0 1px 1px #fff4;transform:translateZ(7px);transition:transform .3s var(--ease),outline-color .3s}
+.chip-dialog .casino-chip.selected,.chip-dialog .casino-chip:hover:not(:disabled){transform:translateZ(15px);box-shadow:inset 0 1px 1px #fff4}
+.flight-chip{--chip-size:34px;--chip-depth:5px;--chip:#b9ad8d;--chip-edge:#eadcba;box-shadow:none}
+.flight-chip.chip-500{--chip:#8d3a3d;--chip-edge:#dbbf91}.flight-chip.chip-1000{--chip:#2d5c70;--chip-edge:#a7c4bf}.flight-chip.chip-5000{--chip:#252c27;--chip-edge:#b59762}.flight-chip.ai1,.flight-chip.ai2,.flight-chip.ai3{--chip:var(--seat);--chip-edge:#e1cf9f}
+@media(max-width:620px){.betting-surface{transform:rotateX(16deg) rotateZ(-1.4deg)}.betting-scene{perspective:2000px}.chip-dialog .casino-chip{--chip-size:56px}.ai-stack,.ai-stack .npc-disc{--chip-size:20px}.seam-bet .ai-stack,.seam-bet .npc-disc{--chip-size:14px}.betting-surface .felt-table{border-width:3px}}
+@media(max-width:360px){.chip-dialog .casino-chip{--chip-size:49px}}
+
+/* A quiet, aligned solo table. Controls stay level and outside the felt. */
+body[data-screen=game] .room{max-width:1000px;padding-top:27px}
+.play-topline{margin-bottom:18px}.play-topline h2{font-size:29px;letter-spacing:-1px}
+.result-banner{min-height:58px;margin-bottom:8px;background:#ffffff03;border-color:#c3b47d24}
+.table-recent{padding:8px 0 17px;margin:0;min-height:44px}
+.table-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;margin-top:6px}
+.table-toolbar .bet-modes{margin:0;padding:4px;background:#081c16;border-color:#c8b27b30;border-radius:7px}
+.table-toolbar .bet-modes button{min-height:42px;font-size:12px;border-radius:4px;letter-spacing:-.2px}
+.table-toolbar .bet-modes button small{font-size:9px}
+.table-toolbar .betting-toolbar-actions{margin:0;gap:20px;padding:0 5px}
+.table-toolbar .utility-button{padding:6px 0;min-width:33px;color:#a3b7a4;gap:5px}
+.table-toolbar .utility-button span{font-size:8px}
+.table-instruction{display:flex;align-items:center;justify-content:center;gap:9px;min-height:45px;padding:4px 0 6px}
+.table-instruction .chip-anchor{width:19px;height:19px;border-width:2px;font-size:8px;box-shadow:0 2px 0 #4d422d;opacity:.8}
+.table-instruction .bet-mode-hint{margin:0;font-size:10px;color:#a5b69c;text-align:left}
+.betting-scene{perspective:2200px;padding:0 1px 22px}
+.betting-surface{transform:rotateX(12deg);transform-origin:center 45%}
+.betting-surface .felt-table{padding:18px 20px 12px;border:2px solid #89754e;border-top-color:#c2a86f;border-bottom-color:#695338;border-radius:12px;background:radial-gradient(ellipse at 40% 10%,#1b5140,#123b2e 70%);box-shadow:inset 0 0 0 3px #092c22,inset 0 0 50px #031a1233,0 2px 0 #b09661,0 5px 0 #5c402a,0 10px 0 #30251d,0 17px 25px #0006}
+.betting-surface .felt-table::before{inset:-2px;border-radius:12px;transform:translateZ(-10px);background:#443020}
+.table-ornament{margin-bottom:13px;gap:15px}.table-ornament b{letter-spacing:3px;font-size:7px;color:#b4b98c}
+.number-grid{grid-template-rows:repeat(3,60px);border-color:#d2c99d70;border-radius:5px 5px 0 0}
+.bet-cell{border-color:#d2c99d70;transition:background .18s,box-shadow .18s}
+.number-cell{font:500 23px Georgia,'Noto Serif KR',serif}.number-cell>span:first-child{transition:transform .2s,font-size .2s}
+.number-cell.red{background:#843440}.number-cell.black{background:#102b24}.number-cell.zero{background:#1c6245}
+.bet-cell:hover:not(:disabled){background-color:#5e785545;box-shadow:inset 0 0 0 2px #e6d49b90}
+.number-cell.has-bet>span:first-child{transform:none}
+.number-cell .bet-stack{left:50%;top:50%}
+.column-grid .bet-cell{min-height:37px;font-size:10px;gap:7px;background:#0e3026}
+.column-grid .bet-cell small{font-size:8px;color:#8fa992}
+.dozen-grid .bet-cell{min-height:48px;font-size:14px;background:#174434}
+.outside-grid .bet-cell{min-height:47px;font-size:12px;gap:9px;background:#123a2c}
+.outside-grid .color-diamond{width:12px;height:12px;flex:none}.outside-grid .color-diamond.black{background:#0b1b15;border:1px solid #78977c}
+.outside-grid .has-bet .bet-stack,.dozen-grid .has-bet .bet-stack{left:50%;top:50%}
+.table-footnote{font-size:8px;margin-top:13px;color:#9cac89;letter-spacing:.3px}
+.play-bottom{margin-top:1px;gap:22px}.spin-button{min-height:56px;font-size:14px;border-radius:7px}
+.spin-button:disabled{opacity:.45}.spin-button:not(:disabled){box-shadow:0 4px 14px #030d0744,inset 0 1px 0 #fff4}
+@media(max-width:620px){
+  .topbar{height:64px;padding:0 19px}body[data-screen=game] .room{padding:18px 14px 20px}
+  .play-topline{margin-bottom:14px}.play-topline h2{font-size:23px}.wallet strong{font-size:24px}
+  .result-banner{min-height:53px;padding:9px 11px;margin-bottom:4px}.result-copy strong{font-size:11px}.result-copy span{font-size:9px}
+  .table-recent{padding:7px 0 14px;gap:10px;overflow:hidden}.history{gap:4px}.history-number{width:24px;height:24px;min-width:24px;font-size:11px}
+  .table-toolbar{gap:11px;margin-top:0}.table-toolbar .bet-modes{padding:3px;gap:2px}.table-toolbar .bet-modes button{font-size:10px;min-height:43px}.table-toolbar .bet-modes button small{font-size:8px;display:block;margin:3px 0 0}
+  .table-toolbar .betting-toolbar-actions{gap:13px;padding:0 1px}.table-toolbar .utility-button{min-width:24px}.table-toolbar .utility-button span{font-size:7px}.table-toolbar .utility-button svg{width:16px;height:16px}
+  .table-instruction{min-height:39px;gap:7px}.table-instruction .bet-mode-hint{font-size:9px}
+  .betting-scene{perspective:2500px;padding:0 1px 17px}.betting-surface{transform:rotateX(8deg);transform-origin:center 45%}
+  .betting-surface .felt-table{padding:12px 10px 10px;border-width:2px;border-radius:10px}
+  .table-ornament{margin-bottom:10px}.table-ornament b{font-size:6px;letter-spacing:2.5px}
+  .number-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:39px repeat(12,45px)}
+  .number-cell{font-size:21px}.number-cell.zero{font-size:21px}.number-cell.has-bet>span:first-child{font-size:21px;transform:none}
+  .column-grid .bet-cell{min-height:35px;font-size:9px;gap:4px}.column-grid .bet-cell small{font-size:7px}
+  .dozen-grid .bet-cell{min-height:45px;font-size:13px}.outside-grid .bet-cell{min-height:43px;font-size:11px;gap:6px}
+  .table-footnote{font-size:7px;margin-top:11px}
+  .play-bottom{margin:0 -1px;gap:15px;padding:12px 1px max(12px,env(safe-area-inset-bottom));background:#0b2019f5;border-top:1px solid #b29f6338;border-bottom:0;box-shadow:0 -5px 17px #061b1255}
+  .spin-button{min-height:52px;padding:0 16px;font-size:13px}.bet-total>strong{font-size:22px}.repeat-button{font-size:9px;min-width:49px}
+}
+@media(max-width:360px){.table-toolbar{gap:8px}.table-toolbar .betting-toolbar-actions{gap:9px}.table-toolbar .bet-modes button{font-size:9px}.play-bottom{gap:10px}.betting-surface .felt-table{padding-left:8px;padding-right:8px}}
+
+/* The chip tray sits directly above the spin controls. */
+.chip-selection{position:relative;top:auto;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:15px 24px 19px;margin:0 0 18px;border:1px solid #bda56e45;border-radius:10px;background:#102b21f5;backdrop-filter:blur(16px);box-shadow:0 6px 20px #03110c50}
+.chip-selection-copy{display:flex;flex-direction:column;gap:7px;white-space:nowrap}
+.chip-selection-copy>span{font-size:11px;color:#b6c5ac}.chip-selection-copy strong{font-size:10px;font-weight:500;color:#d5b978}
+.chip-selection .chip-tray{gap:30px;margin:0;padding:0 8px;transform:perspective(650px) rotateX(20deg);transform-style:preserve-3d}
+.chip-selection .casino-chip{--chip-size:49px;--chip-depth:6px;width:49px;height:49px;box-shadow:inset 0 1px 1px #fff4;transform:translateZ(6px);transition:transform .22s var(--ease),outline-color .22s,opacity .22s}
+.chip-selection .casino-chip.selected{transform:translateZ(12px);outline:1px solid #e2ca8b;outline-offset:5px;box-shadow:inset 0 1px 1px #fff4,0 0 19px #d3b97421}
+.chip-selection .casino-chip:disabled{opacity:.3;filter:grayscale(.4);cursor:not-allowed}.chip-selection .casino-chip>span{font-size:12px}
+@media(max-width:620px){
+  .table-instruction{min-height:29px;padding:2px 0 4px}
+  .chip-selection{padding:11px 15px 15px;margin-bottom:13px;gap:12px;flex-direction:column;align-items:stretch;top:0;border-radius:8px}
+  .chip-selection-copy{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}.chip-selection-copy>span{font-size:10px}.chip-selection-copy strong{font-size:9px}
+  .chip-selection .chip-tray{justify-content:space-between;padding:0 13px;gap:20px}
+  .chip-selection .casino-chip{--chip-size:43px;width:43px;height:43px}.chip-selection .casino-chip>span{font-size:11px}
+}
+@media(max-width:360px){.chip-selection{padding:10px 11px 14px}.chip-selection .chip-tray{padding:0 9px;gap:16px}.chip-selection .casino-chip{--chip-size:40px;width:40px;height:40px}}
+
+/* A complete portrait table, with the space assigned to the numbers first. */
+@media(max-width:620px){
+  body[data-screen=game]{min-height:100dvh}
+  body[data-screen=game] .topbar{height:40px;padding:0 13px}
+  body[data-screen=game] .brand{gap:7px}.brand-mark{line-height:1}
+  body[data-screen=game] .brand-mark{font-size:22px}
+  body[data-screen=game] .brand strong{font-size:12px;letter-spacing:3px}
+  body[data-screen=game] .brand small{display:none}
+  body[data-screen=game] .icon-button{width:34px;height:34px}
+  body[data-screen=game] .room{height:calc(100dvh - 40px);min-height:590px;padding:4px 10px max(4px,env(safe-area-inset-bottom));max-width:520px}
+  body[data-screen=game] .play-section{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:30px 34px minmax(0,1fr)49px 46px 14px;gap:5px;animation:none}
+  body[data-screen=game] .play-topline{grid-area:1/1;margin:0;min-width:0;justify-content:flex-end}
+  body[data-screen=game] .play-topline>div:first-child{display:none}
+  body[data-screen=game] .wallet{display:flex;align-items:center;gap:6px}
+  body[data-screen=game] .wallet>span{font-size:8px}.wallet strong{line-height:1.15}
+  body[data-screen=game] .wallet strong{font-size:21px}
+  body[data-screen=game] .wallet b{font-size:8px}
+  body[data-screen=game] .mini-plus{width:22px;height:22px;margin-left:4px}
+  body[data-screen=game] .result-banner{grid-area:1/1;width:calc(100% - 154px);min-height:0;margin:0;padding:0;border:0;background:none;gap:6px}
+  body[data-screen=game] .result-number{width:24px;height:24px;flex:0 0 24px;font-size:16px}
+  body[data-screen=game] .result-copy{min-width:0;gap:2px}
+  body[data-screen=game] .result-copy strong{font-size:9px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body[data-screen=game] .result-copy span{font-size:6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body[data-screen=game] .table-recent,body[data-screen=game] .table-instruction,body[data-screen=game] .table-ornament,body[data-screen=game] .room-footer{display:none}
+  body[data-screen=game] .table-toolbar{grid-area:2/1;margin:0;gap:9px;min-height:0}
+  body[data-screen=game] .table-toolbar .bet-modes{padding:2px;border-radius:5px;gap:2px}
+  body[data-screen=game] .table-toolbar .bet-modes button{min-height:28px;font-size:9px;line-height:1.2}
+  body[data-screen=game] .table-toolbar .bet-modes button small{font-size:7px;margin:0 0 0 4px;display:inline}
+  body[data-screen=game] .table-toolbar .betting-toolbar-actions{gap:10px}
+  body[data-screen=game] .table-toolbar .utility-button{gap:2px;padding:0;min-width:26px}
+  body[data-screen=game] .table-toolbar .utility-button svg{width:14px;height:14px}
+  body[data-screen=game] .table-toolbar .utility-button span{font-size:6px}
+  body[data-screen=game] .chip-selection{grid-area:4/1;position:relative;top:auto;z-index:3;flex-direction:row;align-items:center;padding:5px 12px 7px;margin:0;gap:8px;border-radius:6px;box-shadow:none}
+  body[data-screen=game] .chip-selection-copy{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:69px}
+  body[data-screen=game] .chip-selection-copy>span{font-size:7px}
+  body[data-screen=game] .chip-selection-copy strong{font-size:8px}
+  body[data-screen=game] .chip-selection .chip-tray{flex:1;gap:12px;padding:0 4px;justify-content:space-between;transform:perspective(650px) rotateX(14deg)}
+  body[data-screen=game] .chip-selection .casino-chip{--chip-size:32px;--chip-depth:4px;width:32px;height:32px;padding:4px;transform:translateZ(4px)}
+  body[data-screen=game] .chip-selection .casino-chip.selected{transform:translateZ(8px);outline-offset:3px}
+  body[data-screen=game] .chip-selection .casino-chip>span{font-size:9px}
+  body[data-screen=game] .betting-scene{grid-area:3/1;min-height:0;padding:0 1px 5px;perspective:3000px}
+  body[data-screen=game] .betting-surface{height:100%;transform:rotateX(4deg);transform-origin:center}
+  body[data-screen=game] .betting-surface .felt-table{height:100%;display:grid;grid-template-rows:minmax(0,1fr)25px 28px 52px 9px;gap:4px;padding:6px;border-radius:7px;border-width:1px;box-shadow:inset 0 0 0 2px #092c22,0 2px 0 #987747,0 4px 0 #39291c,0 7px 10px #0004}
+  body[data-screen=game] .betting-surface .felt-table::before{inset:-1px;border-radius:7px;transform:translateZ(-4px)}
+  body[data-screen=game] .number-grid{min-height:0;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(13,minmax(0,1fr));border:1px solid #cbbf8a;border-right:0;border-bottom:0;border-radius:3px 3px 0 0}
+  body[data-screen=game] .number-cell{min-height:0;font-size:18px;border-color:#d4cca394}
+  body[data-screen=game] .number-cell.zero{font-size:18px}
+  body[data-screen=game] .number-cell.has-bet>span:first-child{font-size:18px}
+  body[data-screen=game] .number-cell:is([data-bet=n13],[data-bet=n14],[data-bet=n15],[data-bet=n25],[data-bet=n26],[data-bet=n27]){border-top:2px solid #d1bc79}
+  body[data-screen=game] .column-grid,body[data-screen=game] .dozen-grid,body[data-screen=game] .outside-grid{border:1px solid #b3aa79;border-right:0;border-bottom:0;border-radius:2px;min-height:0}
+  body[data-screen=game] .column-grid .bet-cell{min-height:0;font-size:9px;gap:4px;border-color:#b3aa7999;background:#163c30}
+  body[data-screen=game] .column-grid .bet-cell small{font-size:7px}
+  body[data-screen=game] .dozen-grid .bet-cell{min-height:0;font-size:11px;border-color:#b3aa7999;background:#254a38}
+  body[data-screen=game] .outside-grid{grid-template-rows:repeat(2,minmax(0,1fr))}
+  body[data-screen=game] .outside-grid .bet-cell{min-height:0;font-size:10px;gap:5px;border-color:#b3aa7999;background:#14372b}
+  body[data-screen=game] .outside-grid .color-diamond{width:9px;height:9px}
+  body[data-screen=game] .table-footnote{font-size:6px;line-height:9px;margin:0;letter-spacing:0;align-items:center}
+  body[data-screen=game] .bet-stack{width:23px;height:23px}
+  body[data-screen=game] .stack-disc{--chip-size:23px;--chip-depth:3.4px;transform:translate3d(calc(var(--level)*.15px),0,calc((var(--level) + 1)*3.4px))}
+  body[data-screen=game] .stack-face{font-size:7px;inset:3px}
+  body[data-screen=game] .seam-bet{width:26px;height:26px}
+  body[data-screen=game] .seam-target{width:13px;height:13px;font-size:11px}
+  body[data-screen=game] .play-bottom{grid-area:5/1;position:relative;bottom:auto;margin:0;padding:3px 0 0;gap:12px;min-height:0;border-top:1px solid #baa47145;box-shadow:none;background:none;backdrop-filter:none}
+  body[data-screen=game] .bet-total{min-width:68px}
+  body[data-screen=game] .bet-total>span{font-size:8px}
+  body[data-screen=game] .bet-total>strong{font-size:20px;line-height:1.2}
+  body[data-screen=game] .repeat-button{font-size:7px;min-width:42px;gap:2px}
+  body[data-screen=game] .repeat-button svg{width:13px;height:13px}
+  body[data-screen=game] .spin-button{min-height:40px;height:40px;font-size:12px;padding:0 13px;border-radius:5px}
+  body[data-screen=game] .play-smallprint{grid-area:6/1;margin:0;font-size:6px;line-height:14px;align-items:center}
+  body[data-screen=game] .play-smallprint button{padding:0;font-size:7px;line-height:14px}
+  body[data-screen=game] .toast{bottom:60px}
+}
+
+@media(min-width:621px) and (max-height:1000px){
+  body[data-screen=game] .topbar{height:54px;padding:0 32px}
+  body[data-screen=game] .brand-mark{font-size:27px}
+  body[data-screen=game] .brand strong{font-size:15px}
+  body[data-screen=game] .brand small{font-size:6px}
+  body[data-screen=game] .room{max-width:1030px;min-height:0;padding:14px 32px 12px}
+  body[data-screen=game] .play-topline{margin:0 0 10px}
+  body[data-screen=game] .play-topline .eyebrow{display:none}
+  body[data-screen=game] .play-topline h2{font-size:24px;margin:0}
+  body[data-screen=game] .wallet{display:flex;align-items:center;gap:10px}
+  body[data-screen=game] .wallet strong{font-size:26px}
+  body[data-screen=game] .result-banner{min-height:43px;margin:0 0 11px;padding:6px 13px;gap:11px}
+  body[data-screen=game] .result-number{width:30px;height:30px;font-size:21px}
+  body[data-screen=game] .result-copy strong{font-size:11px}
+  body[data-screen=game] .result-copy span{font-size:9px}
+  body[data-screen=game] .table-recent,body[data-screen=game] .room-footer{display:none}
+  body[data-screen=game] .table-toolbar{margin:0;gap:20px}
+  body[data-screen=game] .table-toolbar .bet-modes button{min-height:31px;font-size:11px}
+  body[data-screen=game] .table-toolbar .bet-modes button small{font-size:8px}
+  body[data-screen=game] .table-instruction{min-height:25px;padding:3px 0}
+  body[data-screen=game] .chip-selection{position:relative;top:auto;padding:8px 20px 12px;margin:0 0 12px}
+  body[data-screen=game] .chip-selection .casino-chip{--chip-size:40px;width:40px;height:40px;padding:5px}
+  body[data-screen=game] .chip-selection .casino-chip>span{font-size:11px}
+  body[data-screen=game] .chip-selection .chip-tray{gap:30px}
+  body[data-screen=game] .betting-scene{padding-bottom:15px}
+  body[data-screen=game] .betting-surface{transform:rotateX(7deg)}
+  body[data-screen=game] .betting-surface .felt-table{padding:11px 15px 9px}
+  body[data-screen=game] .table-ornament{margin-bottom:9px}
+  body[data-screen=game] .number-grid{grid-template-rows:repeat(3,clamp(39px,6.2dvh,52px))}
+  body[data-screen=game] .number-cell{font-size:21px}
+  body[data-screen=game] .column-grid .bet-cell{min-height:28px}
+  body[data-screen=game] .dozen-grid .bet-cell{min-height:36px;font-size:13px}
+  body[data-screen=game] .outside-grid .bet-cell{min-height:36px;font-size:11px}
+  body[data-screen=game] .table-footnote{margin-top:9px;font-size:7px}
+  body[data-screen=game] .play-bottom{position:relative;bottom:auto;min-height:48px;padding:6px 0 0;margin:0;gap:20px;box-shadow:none;background:none;backdrop-filter:none}
+  body[data-screen=game] .spin-button{min-height:44px;font-size:13px}
+  body[data-screen=game] .bet-total>strong{font-size:23px}
+  body[data-screen=game] .play-smallprint{margin-top:7px}
+}
+
+/* Portrait side bets share the number rows, like a physical roulette layout. */
+@media(max-width:620px){
+  body[data-screen=game] .betting-surface .felt-table{
+    grid-template-columns:minmax(0,1fr)42px 44px;
+    grid-template-rows:repeat(14,minmax(0,1fr))13px;
+    gap:0 4px;
+  }
+  body[data-screen=game] .felt-table::after{content:'3배    ·    2배';white-space:pre;grid-column:2/4;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:8px;letter-spacing:1px;color:#c5bc8c}
+  body[data-screen=game] .number-grid{grid-column:1;grid-row:1/14;border-radius:3px 3px 0 0}
+  body[data-screen=game] .column-grid{grid-column:1;grid-row:14;border-top:0;border-radius:0 0 3px 3px}
+  body[data-screen=game] .column-grid .bet-cell{font-size:9px;gap:3px}
+  body[data-screen=game] .column-grid .bet-cell small{font-size:6px}
+  body[data-screen=game] .dozen-grid{grid-column:2;grid-row:2/14;grid-template-columns:1fr;grid-template-rows:repeat(3,minmax(0,1fr));border-color:#d2bd7c}
+  body[data-screen=game] .dozen-grid .bet-cell{font-size:10px;letter-spacing:-.3px;white-space:nowrap;background:#244c38;border-color:#d2bd7c}
+  body[data-screen=game] .outside-grid{grid-column:3;grid-row:2/14;grid-template-columns:1fr;grid-template-rows:repeat(6,minmax(0,1fr));border-color:#b3aa79}
+  body[data-screen=game] .outside-grid .bet-cell{grid-column:1;grid-row:auto;flex-direction:column;font-size:10px;letter-spacing:0;gap:6px}
+  body[data-screen=game] .outside-grid .bet-cell[data-bet=red]{background:#68333a}
+  body[data-screen=game] .outside-grid .bet-cell[data-bet=black]{background:#102820}
+  body[data-screen=game] .outside-grid .color-diamond{width:11px;height:11px}
+  body[data-screen=game] .table-footnote{grid-column:1/4;grid-row:15;align-self:end;font-size:6px;line-height:9px}
+}
+@media(max-width:360px){
+  body[data-screen=game] .betting-surface .felt-table{grid-template-columns:minmax(0,1fr)38px 40px;column-gap:3px}
+  body[data-screen=game] .dozen-grid .bet-cell,body[data-screen=game] .outside-grid .bet-cell{font-size:9px}
+  body[data-screen=game] .column-grid .bet-cell small{display:none}
+}
+
+/* Results stay visible until the player acknowledges them. */
+.wheel-dialog{width:min(720px,calc(100vw - 24px),calc(100svh - 290px));overflow-y:auto}
+.confirm-result-button{display:block;width:100%;min-height:46px;margin:5px 0 0;border:1px solid #e4c993;border-radius:7px;background:linear-gradient(115deg,#dfc591,#bea16a);color:#183329;font-size:14px;font-weight:600;letter-spacing:.4px;box-shadow:inset 0 1px 0 #fff4,0 4px 12px #0003;touch-action:manipulation}
+.confirm-result-button:hover{filter:brightness(1.06)}
+.confirm-result-button:focus-visible{outline:2px solid #f7e5b9;outline-offset:3px}
+.confirm-result-button:disabled{opacity:.6;cursor:wait}
+
+/* Multiplayer status occupies one compact row; the original table stays intact. */
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body[data-screen=lobby] .room{display:block;min-height:0;padding:48px 24px 20px}
+body[data-screen=lobby] .introduction{max-width:540px;margin:auto;text-align:center}
+body[data-screen=lobby] .introduction h1{font-size:clamp(40px,7vw,64px)}
+body[data-screen=lobby] .eyebrow{justify-content:center}
+.lobby-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:26px}
+.lobby-actions .enter-button{margin:0;padding:0 24px;min-height:48px}
+.join-form{display:flex;border:1px solid #bda47555;border-radius:6px;overflow:hidden;background:#081c16}
+.join-form input{width:157px;background:none;border:0;outline:0;color:#f0dab0;font:500 15px monospace;letter-spacing:1px;padding:11px 12px;text-transform:uppercase}
+.join-form input::placeholder{font:12px sans-serif;letter-spacing:0;text-transform:none;color:#95a68e}
+.join-form button{padding:0 17px;color:#e0c58e;border-left:1px solid #bda47533;font-size:12px}
+.lobby-room-heading{display:flex;justify-content:space-between;align-items:center;margin:28px 0 6px;padding:0 1px;font-size:12px;color:#acbba1}
+.lobby-room-heading button{min-width:38px;min-height:34px;color:#c8b17c;font-size:24px}
+.room-list{display:grid;gap:8px;max-height:230px;overflow:auto}
+.room-row{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:14px 15px;border:1px solid #bda47544;border-radius:7px;background:#16352755;color:#c9d0ba}
+.room-row strong{font-size:12px;max-width:54%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room-row>span{font-size:11px;color:#bba472;white-space:nowrap;font-variant-numeric:tabular-nums}
+.room-row:disabled{opacity:.45}.empty-rooms{font-size:12px;color:#8d9f89;padding:15px 0}
+.connection-status{min-height:18px;font-size:11px;color:#bdad83;margin-top:12px}.connection-status a{color:#e2c78f;text-decoration:underline}
+.multiplayer-bar{height:34px;display:flex;align-items:center;gap:14px;max-width:1000px;margin:0 auto;padding:0 16px;border-bottom:1px solid #9b8b6033}
+.multiplayer-bar>button{white-space:nowrap;min-height:32px;font:11px monospace;color:#d5bc83}
+.multiplayer-bar>button>span{font:10px sans-serif;color:#8c9f89;margin-right:3px}
+.players-strip{display:flex;gap:10px;overflow:auto;scrollbar-width:none;align-items:center;min-width:0}
+.online-player{font-size:10px;color:#9dad93;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.online-player::before{content:'';width:5px;height:5px;border-radius:50%;background:#71876b;display:inline-block;margin-right:5px;vertical-align:middle}
+.online-player.is-ready{color:#e1c894}.online-player.is-ready::before{background:#cfb575}
+#cancelReady{color:#dbc18b!important;text-decoration:underline}
+/* Other players' chips remain visible beneath the player's solid chip stacks. */
+.opponent-chips{position:absolute;inset:0;pointer-events:none;z-index:2;transform-style:preserve-3d}
+.opponent-stack{position:absolute;width:24px;height:24px;left:calc(50% + (var(--opponent) - 1)*11px);top:calc(50% - 9px);transform:translate(-50%,-50%) translateZ(1px);transform-style:preserve-3d;opacity:.42;filter:saturate(.75)}
+.opponent-stack .stack-disc{--chip-size:24px;--chip-depth:3px}
+.opponent-stack .stack-face{font-size:8px}
+/* Match the standard Ojjuda entrance while preserving the table's green felt. */
+body[data-screen=lobby] .room-grain,body[data-screen=lobby] .room-footer{display:none}
+body[data-screen=lobby] .room{padding:24px!important;min-height:0!important;background:none}
+.game-entry.mp-entry .ge-icon img{border-radius:12px}
+.game-entry.mp-entry .join-form{display:grid;grid-template-columns:minmax(0,1fr)78px;gap:8px;margin-top:12px;border:0;background:none;overflow:visible}
+.game-entry.mp-entry .join-form button{width:auto;margin:0!important}
+.game-entry.mp-entry .lobby-room-heading{margin:20px 0 7px;color:#797487}
+.game-entry.mp-entry .lobby-room-heading button{color:#7560b5}
+.game-entry.mp-entry .room-row{background:#f7f5fa;border-color:#e9e5f0;color:#625574;padding:11px}
+.game-entry.mp-entry .room-row>span{color:#797487;font-size:10px}
+.game-entry.mp-entry .empty-rooms,.game-entry.mp-entry .connection-status{color:#797487}
+.game-entry.mp-entry .connection-status a{color:#7560b5}
+@media(min-width:621px){
+ .column-grid,.dozen-grid,.outside-grid{margin-left:6.25%;width:93.75%;box-sizing:border-box}
+}
+button:disabled{cursor:not-allowed}.join-form input:focus-visible{box-shadow:inset 0 0 0 2px #d0b680}
+@media(max-width:620px){
+ body[data-screen=lobby] .room{padding:32px 20px 16px}.lobby-actions{gap:10px;margin-top:24px}.lobby-actions .enter-button{min-height:44px;font-size:12px;flex:1;padding:0 17px;white-space:nowrap}.join-form{flex:1.3}.join-form input{width:100%;min-width:0;font-size:12px;padding:10px}.join-form button{padding:0 12px;font-size:11px}
+ .multiplayer-bar{gap:10px;padding:0 11px;height:31px}.players-strip{gap:8px}.online-player{font-size:9px;max-width:95px}.multiplayer-bar>button{font-size:10px;min-height:30px}
+ body[data-screen=game] .room{height:calc(100dvh - 71px);min-height:0}
+ body[data-screen=lobby] .room{padding:16px 12px!important}
+ .opponent-stack{width:20px;height:20px;left:calc(50% + (var(--opponent) - 1)*8px);top:calc(50% - 6px)}
+ .opponent-stack .stack-disc{--chip-size:20px;--chip-depth:2.5px}
+ .play-smallprint{gap:8px}.play-smallprint>span{margin-right:auto}
+}

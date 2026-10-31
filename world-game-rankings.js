@@ -27,6 +27,7 @@ const rankingConditions={
  stacker:'해당 월에 가장 높이 쌓은 층수로 정해요.',breakout:scoreCondition,
  matgo:'해당 월 한 판에서 실제로 늘어난 골드의 최댓값으로 정해요.',
  poker:'해당 월 한 판에서 실제로 늘어난 골드의 최댓값으로 정해요.',
+ roulette:'해당 월 한 판에서 받은 당첨 골드의 최댓값으로 정해요.',
  photo_ttang:'해당 월에 완료한 서로 다른 사진의 장수로 정해요. 같은 사진은 한 번만 세요.'
 };
 const readKey=(kind,month,ids)=>JSON.stringify([kind,month,[...ids].sort()]);
@@ -352,11 +353,11 @@ void home();
   // Existing access checks notify revocation immediately. Successful checks
   // sync through the World refresh hook; unchanged catalogs need no new read.
   if(typeof getGames==='function'&&typeof matgoAccess?.subscribe==='function')releaseAccess=matgoAccess.subscribe(()=>{void syncCatalog();});
-  if((!games.matgo||!games.poker||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
+  if((!games.matgo||!games.poker||!games.roulette||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
    void matgoAccess.check().then(member=>{
     if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
     if(typeof getGames==='function'){void syncCatalog();return;}
-    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'best_round_gain'},poker:{name:'세븐포커',unit:'G',rankingBasis:'best_round_gain'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
+    games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'best_round_gain'},poker:{name:'세븐포커',unit:'G',rankingBasis:'best_round_gain'},roulette:{name:'룰렛',unit:'G',rankingBasis:'best_round_gain'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
     void home();
    }).catch(()=>{});
   }

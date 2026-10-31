@@ -1,0 +1,7 @@
+.roulette-game-dialog{position:fixed;inset:0;width:100%;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#073b30;color:#f3e6c8;overflow:hidden;color-scheme:dark}
+.roulette-game-dialog[open]{display:flex;flex-direction:column}
+.roulette-game-dialog::backdrop{background:#021b16e8}
+.roulette-game-dialog>header:not(.mp-entry-bar){display:flex;align-items:center;justify-content:space-between;flex:none;gap:12px;min-height:42px;padding:0 max(14px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left));padding-top:env(safe-area-inset-top,0px);background:#062d25;border-bottom:1px solid #c9aa6740;font:12px "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.roulette-game-dialog>header:not(.mp-entry-bar) button{min-height:42px;padding:8px;border:0;border-radius:8px;background:transparent;color:#f3e6c8;font:inherit;font-size:13px;cursor:pointer;touch-action:manipulation}
+.roulette-game-dialog>header:not(.mp-entry-bar) button:focus-visible{outline:2px solid #e4c27a;outline-offset:-2px}
+.roulette-game-dialog>iframe{display:block;flex:1;min-height:0;width:100%;height:100%;border:0;background:#073b30}

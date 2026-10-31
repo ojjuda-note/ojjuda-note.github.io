@@ -1,7 +1,7 @@
 /* Shared entrance presentation. Existing game handlers own starts, joins and exits. */
 (() => {
   'use strict';
-  const paths = new Set(['/games/bang/index.html','/games/poker/index.html','/games/tank/index.html','/games/ojjuda-tour/index.html','/games/ttang.html','/games/matgo-online.html','/games/matgo.html']);
+  const paths = new Set(['/games/roulette/index.html','/games/bang/index.html','/games/poker/index.html','/games/tank/index.html','/games/ojjuda-tour/index.html','/games/ttang.html','/games/matgo-online.html','/games/matgo.html']);
   const game = paths.has(location.pathname), embedded = parent !== window, frames = new Map();
   let queued = false, previous;
   const visible = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
@@ -30,11 +30,11 @@
       host.querySelector(':scope > .mp-entry-bar')?.remove();
       host.classList.remove('mp-entry-host','mp-board-host'); delete host.dataset.mpActive;
     });
-    document.querySelectorAll('.tour-game-dialog iframe,#ttang-overlay iframe,#matgo-overlay iframe').forEach(frame => {
+    document.querySelectorAll('.tour-game-dialog iframe,.roulette-game-dialog iframe,#ttang-overlay iframe,#matgo-overlay iframe').forEach(frame => {
       if (frames.has(frame)) return;
       const url = new URL(frame.getAttribute('src'), location.href);
       if (url.origin !== location.origin || !paths.has(url.pathname)) return;
-      const host = frame.closest('.tour-game-dialog,#ttang-overlay,#matgo-overlay');
+      const host = frame.closest('.tour-game-dialog,.roulette-game-dialog,#ttang-overlay,#matgo-overlay');
       const original = host.querySelector('.tour-game-header button,#matgo-loading-bar button,header button');
       const bar = toolbar(() => {
         if (host.id === 'matgo-overlay') window.requestMatgoClose?.();
