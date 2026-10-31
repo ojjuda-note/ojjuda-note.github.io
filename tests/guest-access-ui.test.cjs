@@ -34,15 +34,15 @@ const cardId='00000000-0000-4000-8000-000000000001';
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const enter=async()=>{await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>sessionStorage.removeItem('ojjuda.guest-round-completed.v1'));};
-  const signup=async next=>{await page.locator('#auth-dialog[open]').waitFor();assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'true');assert.equal(new URL(page.url()).searchParams.get('next'),next);};
+  const login=async next=>{await page.locator('#auth-dialog[open]').waitFor();assert.equal(await page.locator('#login-tab').getAttribute('aria-selected'),'true');assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'false');assert.equal(await page.locator('.password-confirm-field').isVisible(),false);assert.equal(new URL(page.url()).searchParams.get('next'),next);};
   await enter();await page.evaluate(()=>guestFixture.open('stacker'));await page.locator('[data-g=start]').click();
   assert.equal(new URL(page.url()).pathname,'/world.html','a guest gets the first round');
-  await page.evaluate(()=>guestFixture.finish(0));await signup('world');
+  await page.evaluate(()=>guestFixture.finish(0));await login('world');
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1','zero-score loss consumes the round even when save fails');
-  await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>guestFixture.open('mole'));await signup('world');
+  await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>guestFixture.open('mole'));await login('world');
   // Closing an unplayed game must not consume the trial.
   await enter();await page.evaluate(()=>{guestFixture.open('stacker');guestFixture.close();});assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null);
-  for(const kind of ['chess','janggi','carom4','carom3','pool8']){await enter();await page.evaluate(kind=>guestFixture.board(kind),kind);await signup('world');}
+  for(const kind of ['chess','janggi','carom4','carom3','pool8']){await enter();await page.evaluate(kind=>guestFixture.board(kind),kind);await login('world');}
   const uuid='10000000-0000-4000-8000-000000000001';
   for(const [kind,data] of [
    ['mines',{source:'ojjuda-mines',type:'ojjuda-game-finished',runId:uuid}],
@@ -59,7 +59,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
    await page.evaluate(data=>{dispatchEvent(new MessageEvent('message',{origin:'https://foreign.invalid',source:document.querySelector('iframe').contentWindow,data}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source:window,data}));},data);
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,kind+' ignores forged sources');
    await page.evaluate(data=>{const source=document.querySelector('iframe').contentWindow;if(data.round)dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data:{type:'ojjuda:ttang:start',round:data.round,mode:'solo'}}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data}));},data);
-   await signup('world').catch(error=>{error.message=kind+' completion: '+error.message;throw error;});
+   await login('world').catch(error=>{error.message=kind+' completion: '+error.message;throw error;});
   }
   await enter();await page.evaluate(()=>{guestFixture.member();guestFixture.open('stacker');});await page.locator('[data-g=start]').click();await page.evaluate(()=>guestFixture.finish(0));
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,'members never consume a trial');
@@ -72,12 +72,20 @@ const cardId='00000000-0000-4000-8000-000000000001';
   };
   await enter();await page.evaluate(()=>guestFixture.park());await page.locator('[data-park-app] iframe').waitFor();
   const frame=page.frames().find(f=>f.url().includes('/park/'));await preparePark(frame);
-  await page.locator('[data-park-action=compose]').click();await signup('note');
-  if(process.env.GUEST_PROOF_DIR){fs.mkdirSync(process.env.GUEST_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'guest-signup.png')});}
+  await page.locator('[data-park-action=compose]').click();await login('note');
+  if(process.env.GUEST_PROOF_DIR){fs.mkdirSync(process.env.GUEST_PROOF_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GUEST_PROOF_DIR,'guest-login.png')});}
   await page.goto(origin+'/park/?card='+cardId);await preparePark(page);
-  await page.evaluate(id=>openComposer('reply',null,id),cardId);await signup('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  await page.evaluate(id=>openComposer('reply',null,id),cardId);await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  // Login is the automatic entry; a guest can still deliberately select signup
+  // or password recovery without losing the card they were replying to.
+  await page.locator('#signup-tab').click();assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'true');
+  assert.equal(await page.locator('#nickname').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  await page.locator('#login-tab').click();await login('note');
+  await page.locator('#forgot-trigger').click();assert.equal(await page.locator('#auth-title').textContent(),'비밀번호 찾기');
+  assert.equal(await page.locator('#recovery-identity-slot').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
+  await page.locator('#forgot-trigger').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   assert.deepEqual(errors,[]);
-  console.log('PASS: guest card/reply opens real signup; first game allowed, completion redirects even at zero/save failure, no repeat trial, six iframe sources and five board games, member replay unaffected');
+  console.log('PASS: guest card/reply opens real login; first game allowed, completion redirects even at zero/save failure, no repeat trial, six iframe sources and five board games, member replay unaffected; explicit signup/recovery and card return destination preserved');
   await context.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

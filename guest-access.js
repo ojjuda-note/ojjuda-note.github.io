@@ -11,7 +11,7 @@
     if (!isGuest() || leaving) return;
     leaving = true;
     clearTimeout(timer);
-    location.assign('/?auth=signup&next=world');
+    location.assign('/?auth=login&next=world');
   }
   function canPlay() {
     if (!isGuest() || !used()) return true;
