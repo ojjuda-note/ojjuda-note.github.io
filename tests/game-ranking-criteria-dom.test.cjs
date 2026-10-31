@@ -23,11 +23,23 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  const categories={solo:['sacheonseong','saetbyeol','mines','screw_box','screw_flat','spot','mole','runner','stacker','breakout'],multi:['bang','tank','tour','billiards','janggi','chess','ttang'],adult:['matgo','poker','roulette','photo_ttang']};
  const groupIds=key=>[...host.querySelectorAll(`[data-rank-group=${key}] [data-game]`)].map(item=>item.dataset.game);
  const checkGroups=()=>{
+  const history=!!host.querySelector('.board-rank-history');
   assert.deepEqual([...host.querySelectorAll('[data-rank-group]')].map(group=>group.dataset.rankGroup),Object.keys(categories),'all ranking groups keep the requested order');
   assert.deepEqual([...host.querySelectorAll('.board-rank-group-head h4')].map(heading=>heading.textContent),['혼자하는 플레이','함께하는 플레이','어른들 플레이']);
-  for(const [key,ids]of Object.entries(categories))assert.deepEqual(groupIds(key).sort(),[...ids].sort(),key+' contains only its own games');
+  for(const [key,ids]of Object.entries(categories)){
+   assert.deepEqual((history?groupIds(key):[...new Set(groupIds(key))]).sort(),[...ids].sort(),key+' contains only its own games');
+   if(!history)for(const page of host.querySelectorAll(`[data-rank-group=${key}] .board-rank-page`)){
+    const visible=[...page.querySelectorAll('[data-game]')].map(row=>row.dataset.game);
+    assert.equal(visible.length,3,'every home page is full, including the last');assert.equal(new Set(visible).size,3,'each page contains three different games');
+   }
+  }
   const ids=[...host.querySelectorAll('[data-game]')].map(item=>item.dataset.game);
-  assert.equal(ids.length,Object.keys(games).length);assert.equal(new Set(ids).size,ids.length,'a game appears in exactly one ranking card');
+  assert.equal(new Set(ids).size,Object.keys(games).length,'every allowed game remains reachable');
+  if(history)assert.equal(ids.length,Object.keys(games).length,'history has one row per game');
+  for(const id of Object.keys(games)){
+   const copies=[...host.querySelectorAll(`[data-game=${id}]`)].map(row=>[row.textContent,row.querySelector('th').title,row.querySelector('.board-leader-nick').title,row.querySelector('.board-leader-score').title]);
+   assert.ok(copies.every(copy=>JSON.stringify(copy)===JSON.stringify(copies[0])),id+' copies share nickname, record and condition formatting');
+  }
  };
  checkGroups();assert.equal(reads.length,1,'all three cards share one initial read');assert.deepEqual(Array.from(reads[0].args.p_games),Object.keys(games));
  const row=id=>host.querySelector(`[data-game="${id}"]`),value=id=>row(id).querySelector('.board-leader-score').textContent;
@@ -44,7 +56,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   assert.equal(row('billiards').querySelector('.board-leader-nick').textContent,'이번 달 기록 없음');
   assert.equal(row('billiards').querySelector('.board-leader-nick').hasAttribute('title'),false);
   assert.equal(row('billiards').querySelector('.board-game-difficulty'),null,'empty records hide old variant and difficulty labels');
-  assert.equal(groupIds('multi').at(-1),'billiards','empty records follow positive records within their own category');
+  assert.equal([...new Set(groupIds('multi'))].at(-1),'billiards','empty records follow positive records before the page sequence wraps');
   checkGroups();
  }
  rows.billiards.score='3';await w.OjjudaGameRankings.refresh();assert.equal(value('billiards'),'3연승','positive numeric strings remain valid');

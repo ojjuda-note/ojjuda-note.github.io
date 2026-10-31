@@ -144,18 +144,20 @@ function labelGame(target,game,detail=''){
  else if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));
  else target.textContent=game.name;
 }
-function makeRow(id,game,token,playable=true){
+function makeRow(id,game,token,playable=true,openState=null){
  const row=el('tr','','board-leader');row.dataset.game=id;
  const period=playable?'이번 달':'해당 월';
  const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
  labelGame(name,game);
  if(playable&&typeof onOpenGame==='function'){
+  const opening=openState||{busy:false,buttons:new Set()};
   const play=button(game.name,async()=>{
-   if(!active()||token!==request||play.disabled)return;
-   play.disabled=true;status.textContent='';
+   if(!active()||token!==request||opening.busy)return;
+   opening.busy=true;for(const copy of opening.buttons)copy.disabled=true;status.textContent='';
    try{await onOpenGame(id);}catch{if(active()&&token===request)status.textContent='게임을 열지 못했어요. 다시 눌러 주세요.';}
-   finally{play.disabled=false;}
+   finally{opening.busy=false;for(const copy of opening.buttons)copy.disabled=false;}
   },'board-game-open');
+  opening.buttons.add(play);play.disabled=opening.busy;
   play.setAttribute('aria-label',game.name+' 게임 열기');labelGame(play,game);name.replaceChildren(play);
  }
  const nick=el('td','불러오는 중…','board-leader-nick'),score=el('td','—','board-leader-score');row.append(name,nick,score);
@@ -209,7 +211,20 @@ function fitRecords(targets,token){
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
    const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
    openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
-   const groups=el('div','','board-rank-groups'),targets=new Map(),panels=new Map();section.append(groups);content.append(section);
+   const groups=el('div','','board-rank-groups'),targets=new Set(),panels=new Map();section.append(groups);content.append(section);
+   const records=new Map(entries.map(([id,game])=>[id,{game,record:null,status:'loading',copies:[],opening:{busy:false,buttons:new Set()}}]));
+   function paintCopy(id,target){
+    const record=records.get(id);paintRecord(target,id,record.game,record.record);
+    if(record.status==='loading')target.nick.textContent='불러오는 중…';
+    else if(record.status==='error')target.nick.replaceChildren(button('다시 불러오기',()=>record.reload(),'board-leader-retry'));
+   }
+   function rowCopy(id,index){
+    const record=records.get(id);
+    if(!record.copies[index]){
+     const target=makeRow(id,record.game,token,true,record.opening);record.copies[index]=target;targets.add(target);paintCopy(id,target);
+    }
+    return record.copies[index].row;
+   }
    for(const group of groupedEntries(entries))panels.set(group.id,makeGroup(group));
    const fitting=fitRecords(targets,token),fitScores=fitting.fit;
    rankDispose=()=>{fitting.dispose();for(const panel of panels.values())panel.dispose();};
@@ -222,9 +237,6 @@ function fitRecords(targets,token){
      const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
      table.setAttribute('aria-label',`${group.name} 게임순위 ${pages.length+1}쪽`);
      for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
-     for(const [id,game] of group.entries.slice(start,start+3)){
-      const target=makeRow(id,game,token);tbody.append(target.row);targets.set(id,target);
-     }
     }
     if(!rankStates.has(group.id))rankStates.set(group.id,{page:0,focus:null});
     const state=rankStates.get(group.id);
@@ -253,17 +265,19 @@ function fitRecords(targets,token){
     motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
     function orderByRecords(){
      if(!active()||token!==request)return;
-     const ordered=[...group.entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
+     const ordered=[...group.entries].sort(([a],[b])=>Number(!!records.get(b).copies[0]?.hasScore)-Number(!!records.get(a).copies[0]?.hasScore)),used=new Map();
      pages.forEach((page,i)=>{
-      const body=page.querySelector('tbody'),rows=ordered.slice(i*3,i*3+3).map(([id])=>targets.get(id).row);
-      if(rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
+      const body=page.querySelector('tbody'),rows=Array.from({length:Math.min(3,ordered.length)},(_,offset)=>{
+       const [id]=ordered[(i*3+offset)%ordered.length],copy=used.get(id)||0;used.set(id,copy+1);return rowCopy(id,copy);
+      });
+      if(rows.length!==body.children.length||rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
      });
     }
-    paint();
+    orderByRecords();paint();
     return {orderByRecords,loaded(){
      initialLoading=false;orderByRecords();
-     if(state.focus&&targets.has(state.focus)){
-      const indexForGame=pages.findIndex(page=>page.contains(targets.get(state.focus).row));
+     if(state.focus&&records.has(state.focus)){
+      const indexForGame=pages.findIndex(page=>page.contains(records.get(state.focus).copies[0]?.row));
       if(indexForGame>=0){index=indexForGame;paint();}state.focus=null;
      }
      schedule();
@@ -272,19 +286,21 @@ function fitRecords(targets,token){
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
    const batch=result(readLeaders(client,owner,entries.map(([id])=>id),fresh));
-   const loads=entries.map(async([id,game])=>{
-    const target=targets.get(id),{nick,score}=target;let loadVersion=0;
+   const loads=entries.map(async([id])=>{
+    const record=records.get(id);let loadVersion=0,loading=false;
     async function load(initial=false){
+     if(loading||!active()||token!==request)return;
+     loading=true;
      const version=++loadVersion,key=id;
-     nick.textContent='불러오는 중…';
+     record.status='loading';for(const target of record.copies)paintCopy(id,target);
      try{
       const ranking=await (initial?batch:result(readLeaders(client,owner,[key],true)));
       if(!active()||token!==request||version!==loadVersion)return;
-      paintRecord(target,id,game,ranking?.[key]||null);
-     }catch{if(active()&&token===request&&version===loadVersion)nick.replaceChildren(button('다시 불러오기',()=>load(),'board-leader-retry'));}
-     finally{panels.get(rankGroupFor(id)).orderByRecords();fitScores();}
+      record.record=ranking?.[key]||null;record.status='ready';for(const target of record.copies)paintCopy(id,target);
+     }catch{if(active()&&token===request&&version===loadVersion){record.status='error';for(const target of record.copies)paintCopy(id,target);}}
+     finally{loading=false;panels.get(rankGroupFor(id)).orderByRecords();fitScores();}
     }
-    target.reload=()=>load();
+    record.reload=()=>load();
     await load(true);
    });
    return [Promise.all(loads).then(()=>{

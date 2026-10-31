@@ -39,7 +39,9 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
    viewport.dispatchEvent(new w.MouseEvent('pointerdown',{bubbles:true,button:0,clientX:200,clientY:20}));
    viewport.dispatchEvent(new w.MouseEvent('pointerup',{bubbles:true,button:0,clientX:20,clientY:20}));
   }
-  assert.equal(host.querySelectorAll('[data-game=tank]').length,1,'the real game catalog includes Tank exactly once');
+  assert.ok(host.querySelectorAll('[data-game=tank]').length>=1,'the real game catalog includes Tank');
+  assert.equal(host.querySelector('[data-rank-group=solo] [data-game=tank]'),null,'Tank stays in multiplayer even when pages wrap');
+  for(const page of multi().querySelectorAll('.board-rank-page'))assert.ok(page.querySelectorAll('[data-game=tank]').length<=1,'Tank never appears twice on the same page');
   assert.equal(tank().querySelector('.board-leader-score').textContent,'9연승');
   assert.ok(visibleTank(),'Tank wins appear on the first ranking page');
   tank().querySelector('button').click();await tick();assert.deepEqual(opened,['tank']);

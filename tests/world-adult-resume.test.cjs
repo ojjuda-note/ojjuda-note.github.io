@@ -47,7 +47,7 @@ async function until(test, message, timeout = 2600) {
     const getGames = () => ({ ...ordinaryGames, ...(access.visible() ? adultGames : {}) });
     const rankClient = { rpc: async (_name, args) => { rankingReads.push([...args.p_games]); return { data: { tank: { nick: '회원', score: 3 } } }; } };
     w.eval(fs.readFileSync(path.join(root, 'world-game-rankings.js'), 'utf8'));
-    const rankRows = () => [...rankHost.querySelectorAll('[data-game]')].map(row => row.dataset.game);
+    const rankRows = () => [...new Set([...rankHost.querySelectorAll('[data-game]')].map(row => row.dataset.game))];
     const rankAdultSection = () => rankHost.querySelector('[data-rank-group=adult]');
     const mountRankings = () => { const owner = w.D.user?.id; w.OjjudaGameRankings.mount(rankHost, { client: rankClient, owner, games: getGames(), getGames, authorized: () => w.D.online && w.D.user?.id === owner }); };
     w.eval(world.slice(start, end));
@@ -93,7 +93,7 @@ async function until(test, message, timeout = 2600) {
     assert.ok(matgo() && photoVisible());
     assert.equal(matgo().nextElementSibling?.dataset.v,'poker','poker refreshes beside Matgo');
     completeAdultMenu();
-    assert.deepEqual([...rankAdultSection().querySelectorAll('[data-game]')].map(row => row.dataset.game),Object.keys(adultGames),'restored adult rankings share their own card');
+    assert.deepEqual([...new Set([...rankAdultSection().querySelectorAll('[data-game]')].map(row => row.dataset.game))],Object.keys(adultGames),'restored adult rankings share their own card');
     // A cached age grant alone cannot render an offline or missing-user entry.
     const adultUser = w.D.user;
     for (const auth of [{ online: false, user: adultUser }, { online: true, user: null }]) {

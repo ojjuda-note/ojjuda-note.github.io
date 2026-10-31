@@ -37,6 +37,7 @@ world=world.slice(0,boot)+`
  const soloRanks=page.locator('.board-leaders [data-rank-group=solo]'),multiRanks=page.locator('.board-leaders [data-rank-group=multi]');
  assert.equal(await page.locator('.board-leaders [data-rank-group]').count(),2);assert.equal(await page.locator('[data-rank-group=adult]').count(),0);
  await soloRanks.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await soloRanks.getAttribute('data-rank-page'),'1');
+ assert.deepEqual(await soloRanks.locator('.board-rank-page[aria-hidden=false] [data-game]').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole','mines','runner'],'the last solo page stays full with three distinct games');
  assert.equal(await multiRanks.getAttribute('data-rank-page'),'0','paging solo rankings leaves multiplayer unchanged');
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
  const historyButton=page.getByRole('button',{name:'월별 게임순위 보기',exact:true});await historyButton.focus();await page.keyboard.press('Enter');
