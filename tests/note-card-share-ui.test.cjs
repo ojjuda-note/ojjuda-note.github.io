@@ -44,14 +44,29 @@ fs.mkdirSync(proof,{recursive:true});
    const query={select:()=>query,eq:()=>query,not:()=>query,order:()=>query,contains:()=>query,lte:()=>query,gte:()=>query,or:()=>query,limit:()=>query,
     maybeSingle:async()=>({data:null}),then:resolve=>Promise.resolve({data:[]}).then(resolve)};
    window.supabase={createClient:()=>({schema:()=>({from:()=>query,rpc:async()=>({data:[]})}),from:()=>query,rpc:async()=>({data:[]})})};
-   window.sharedPayloads=[];window.copiedLinks=[];window.captureScopes=[];window.filesSupported=true;window.shareOutcome='success';
-   Object.defineProperty(navigator,'canShare',{configurable:true,value:data=>!!(window.filesSupported&&data.files?.length&&data.files[0] instanceof File)});
-   Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{
-    window.sharedPayloads.push(data);
-    if(window.shareOutcome==='cancel')throw new DOMException('Canceled','AbortError');
-    if(window.shareOutcome==='denied')throw new DOMException('Activation expired','NotAllowedError');
+   window.sharedPayloads=[];window.copiedLinks=[];window.copyAttempts=[];window.captureScopes=[];window.nativeCalls=[];window.canSharePayloads=[];
+   window.filesSupported=true;window.combinedSupported=true;window.shareOutcome='success';window.clipboardOutcome='success';
+   Object.defineProperty(navigator,'canShare',{configurable:true,value:data=>{
+    window.canSharePayloads.push(data);
+    return !!(window.filesSupported&&data.files?.length&&data.files[0] instanceof File
+     &&(window.combinedSupported||!data.url&&!data.text&&!data.title));
    }});
-   Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>window.copiedLinks.push(text)}});
+   Object.defineProperty(navigator,'share',{configurable:true,value:data=>{
+    window.nativeCalls.push('share');window.sharedPayloads.push(data);
+    if(window.shareOutcome==='sync-denied')throw new DOMException('Activation expired','NotAllowedError');
+    if(window.shareOutcome==='cancel')return Promise.reject(new DOMException('Canceled','AbortError'));
+    if(window.shareOutcome==='denied')return Promise.reject(new DOMException('Activation expired','NotAllowedError'));
+    return Promise.resolve();
+   }});
+   Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:text=>{
+    window.nativeCalls.push('copy');window.copyAttempts.push(text);
+    if(window.clipboardOutcome==='throw')throw new DOMException('Clipboard unavailable','NotAllowedError');
+    if(window.clipboardOutcome==='denied')return Promise.reject(new DOMException('Clipboard denied','NotAllowedError'));
+    if(window.clipboardOutcome==='pending')return new Promise(resolve=>{
+     window.releaseClipboard=()=>{window.copiedLinks.push(text);resolve();};
+    });
+    window.copiedLinks.push(text);return Promise.resolve();
+   }}});
   });
   await page.addScriptTag({content:read('note/share-image.js')});
   await page.addScriptTag({content:source.slice(0,boot)});
@@ -88,7 +103,13 @@ fs.mkdirSync(proof,{recursive:true});
   assert.equal(vendorLoads,0,'opening the Park does not load the image renderer');
 
   for(const width of [320,390]){
+   const copiesBeforeOpen=await page.evaluate(()=>copyAttempts.length);
    await page.setViewportSize({width,height:844});await open(1);await ready();
+   assert.equal(await action('share').textContent(),'카드와 링크 공유');
+   assert.equal(await page.locator('#management-backdrop .management-footer .primary').count(),1,'one main share action is emphasized');
+   assert.equal(await action('share').evaluate(button=>button.classList.contains('primary')),true);
+   assert.equal(await page.evaluate(()=>copyAttempts.length),copiesBeforeOpen,'opening the menu alone does not change the clipboard');
+   await page.evaluate(()=>{nativeCalls=[];});
    const before=await count();await action('share').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,before);
    const payload=await page.evaluate(async()=>{
     const data=sharedPayloads.at(-1),file=data.files?.[0];
@@ -96,12 +117,17 @@ fs.mkdirSync(proof,{recursive:true});
     const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0);
     const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data,colors=new Set();
     for(let i=0;i<pixels.length;i+=64)colors.add([pixels[i]>>3,pixels[i+1]>>3,pixels[i+2]>>3].join(','));
-    return {name:file.name,type:file.type,size:file.size,isFile:file instanceof File,count:data.files.length,title:data.title,url:data.url,
+    return {name:file.name,type:file.type,size:file.size,isFile:file instanceof File,count:data.files.length,title:data.title,url:data.url,text:data.text,
      width:bitmap.width,height:bitmap.height,colors:colors.size,signature:Array.from(new Uint8Array(await file.slice(0,8).arrayBuffer())),scope:captureScopes.at(-1)};
    });
    assert.equal(payload.isFile,true);assert.equal(payload.count,1);assert.equal(payload.type,'image/png');assert.match(payload.name,/\.png$/);
    assert.deepEqual(payload.signature,[137,80,78,71,13,10,26,10]);assert.ok(payload.width>=256&&payload.height>=128&&payload.size>3000&&payload.colors>60,'a decoded PNG contains the actual photo and drawn card');
-   assert.match(payload.url,new RegExp('^'+origin.replaceAll('.','\\.')+'/world.html\\?place=park&card='+id(1)+'$'));
+   const expectedCardUrl=origin+'/world.html?place=park&card='+id(1);
+   assert.equal(payload.url,undefined,'the image payload carries its link in the caption without a duplicate URL field');
+   assert.deepEqual(payload.text.split('\n'),[expectedCardUrl,'https://ojjuda.com'],'the caption starts with the actual card link and retains the requested website');
+   assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),expectedCardUrl,'the combined share also copies this exact card link');
+   assert.deepEqual(await page.evaluate(()=>nativeCalls),['copy','share'],'copy and native share start within the same click');
+   await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('링크도 복사했어요'));
    assert.match(payload.title,/미소 바보/);assert.equal(payload.scope.privateNodes,0);assert.doesNotMatch(payload.scope.text,/PRIVATE/);
    assert.match(payload.scope.text,/미소 바보/);assert.match(payload.scope.text,/#미소/);assert.match(payload.scope.text,/#일상/);
    const bytes=await page.evaluate(async()=>Array.from(new Uint8Array(await sharedPayloads.at(-1).files[0].arrayBuffer())));
@@ -112,11 +138,54 @@ fs.mkdirSync(proof,{recursive:true});
   }
   assert.equal(vendorLoads,1,'all image shares reuse the one lazily loaded vendor');
 
-  // Link copy remains a separate action, using the original per-card route.
+  // Manual link copy and link-only sharing remain available as secondary actions.
   await open(2);await ready();await action('copy').click();
   assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),origin+'/world.html?place=park&card='+id(2));
+  const beforeLink=await count();await action('link').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,beforeLink);
+  assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files),undefined);
+  assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).url),origin+'/world.html?place=park&card='+id(2));
   await action('share').click();assert.match(await page.evaluate(()=>sharedPayloads.at(-1).title),/다른 카드/);
   assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files.length),1,'a reply also shares its own image');await close();
+
+  // Clipboard permissions or a stalled write must never consume the share gesture by being awaited.
+  for(const outcome of ['pending','denied','throw']){
+   await page.evaluate(value=>{clipboardOutcome=value;releaseClipboard=null;nativeCalls=[];},outcome);
+   await open(1);await ready();const before=await count(),copies=await page.evaluate(()=>copiedLinks.length);
+   await action('share').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,before);
+   assert.deepEqual(await page.evaluate(()=>nativeCalls),['copy','share'],outcome+' clipboard still starts exactly one native share');
+   assert.equal(await page.evaluate(()=>copiedLinks.length),copies,'unresolved or rejected clipboard work is not reported as success');
+   if(outcome==='pending'){
+    assert.equal(await page.evaluate(()=>typeof releaseClipboard),'function');
+    await page.evaluate(()=>releaseClipboard());
+    await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('링크도 복사했어요'));
+   }else{
+    await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('링크 복사'));
+    assert.doesNotMatch(await page.locator('.management-message').textContent(),/링크도 복사했어요/);
+   }
+   assert.equal(await action('share').isEnabled(),true);await close();
+  }
+  await page.evaluate(()=>{clipboardOutcome='success';});
+
+  // A native-share exception is recoverable, including the synchronous browser API path.
+  for(const outcome of ['denied','sync-denied']){
+   await page.evaluate(value=>{shareOutcome=value;},outcome);
+   await open(1);await ready();const before=await count();await action('share').click();
+   await page.waitForFunction(n=>sharedPayloads.length===n+1,before);
+   await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('공유하지 못했어요'));
+   assert.equal(await action('share').isEnabled(),true);await close();
+  }
+  await page.evaluate(()=>{shareOutcome='success';});
+
+  // Some browsers accept a file alone but reject the same file with a caption.
+  await page.evaluate(()=>{combinedSupported=false;canSharePayloads=[];});
+  await open(1);await ready();const beforeFileOnly=await count();
+  await action('share').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,beforeFileOnly);
+  assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files.length),1);
+  assert.deepEqual(await page.evaluate(()=>Object.keys(sharedPayloads.at(-1))),['files'],'a caption-incompatible browser receives a validated file-only payload');
+  assert.equal(await page.evaluate(()=>copiedLinks.at(-1)),origin+'/world.html?place=park&card='+id(1),'the fallback still preserves the card link for pasting');
+  assert.equal(await page.evaluate(()=>canSharePayloads.some(data=>data.files?.length&&typeof data.text==='string'&&data.text.includes('card='))),true,'support is checked for the full intended payload');
+  assert.equal(await page.evaluate(()=>canSharePayloads.some(data=>Object.keys(data).length===1&&data.files?.length)),true,'a file-only fallback is also checked before sharing');
+  await close();await page.evaluate(()=>{combinedSupported=true;});
 
   await page.evaluate(()=>{filesSupported=false;});await open(3);await ready();
   const beforeSave=await count(),downloadEvent=page.waitForEvent('download');await action('save').click();
@@ -127,7 +196,9 @@ fs.mkdirSync(proof,{recursive:true});
   await page.evaluate(()=>{filesSupported=true;shareOutcome='cancel';});await open(1);await ready();
   const canceledBefore=await count(),copiesBefore=await page.evaluate(()=>copiedLinks.length),downloadsBefore=downloads;
   await action('share').click();await page.waitForFunction(n=>sharedPayloads.length===n+1,canceledBefore);await settle();
-  assert.equal(await page.evaluate(()=>copiedLinks.length),copiesBefore);assert.equal(downloads,downloadsBefore,'cancel does not save or copy anything');
+  assert.equal(await page.evaluate(()=>copiedLinks.length),copiesBefore+1,'cancel leaves the link already copied by the requested share action');
+  assert.equal(await count(),canceledBefore+1,'cancel never launches another share');
+  assert.equal(downloads,downloadsBefore,'cancel never downloads a file');
   assert.equal(await action('share').isEnabled(),true);await close();await page.evaluate(()=>{shareOutcome='success';});
 
   failBackground=true;await open(5);await action('retry').waitFor({state:'visible'});
@@ -153,13 +224,44 @@ fs.mkdirSync(proof,{recursive:true});
     assert.equal(await count(),before,transition+' cannot share late prior-account/card content');
    }
   }
+
+  // A clipboard write can settle after its share dialog or signed-in account changed.
+  for(const transition of ['close','other-card','logout','account']){
+   await page.evaluate(()=>{session={user:{id:'share-owner'}};seedShareCards();clipboardOutcome='pending';releaseClipboard=null;});
+   await open(1);await ready();const before=await count();await action('share').click();
+   await page.waitForFunction(n=>sharedPayloads.length===n+1&&typeof releaseClipboard==='function',before);
+   if(transition==='other-card'){await open(2);await ready();}
+   else if(transition==='close')await close();
+   else await page.evaluate(mode=>receiveAuth(mode==='logout'?null:{user:{id:'replacement-owner'}}),transition);
+   await page.evaluate(()=>releaseClipboard());await settle();
+   assert.equal(await count(),before+1,transition+' does not cause a delayed second share');
+   if(transition==='other-card'){
+    assert.equal(await page.locator('#note-share-url').inputValue(),origin+'/world.html?place=park&card='+id(2));
+    assert.doesNotMatch(await page.locator('.management-message').textContent(),/링크도 복사했어요/,'the former card cannot overwrite the new dialog');await close();
+   }else assert.equal(await page.locator('#management-backdrop').isVisible(),false,transition+' is not reopened by late clipboard completion');
+  }
+  await page.evaluate(()=>{clipboardOutcome='success';});
   await page.evaluate(()=>{session={user:{id:'share-owner'}};seedShareCards();});
-  const captureBeforeEvent=await page.evaluate(()=>captureScopes.length);await open(4);
+  const captureBeforeEvent=await page.evaluate(()=>captureScopes.length),copiesBeforeEvent=await page.evaluate(()=>copyAttempts.length);await open(4);
   await page.getByRole('button',{name:'다른 앱으로 공유',exact:true}).click();
   assert.equal(await page.evaluate(()=>sharedPayloads.at(-1).files===undefined),true,'events retain link-only sharing');
   assert.equal(await page.evaluate(()=>captureScopes.length),captureBeforeEvent,'event images are never exported');
+  assert.equal(await page.evaluate(()=>copyAttempts.length),copiesBeforeEvent,'location-restricted events retain their original link-only behavior');
   assert.match(await page.evaluate(()=>sharedPayloads.at(-1).url),new RegExp('card='+id(4)+'$'));
+  await close();
+
+  // Exercise Chromium's real Clipboard API as well as the failure/race fixtures.
+  // Only the OS share destination stays mocked, so no message leaves the test.
+  await context.grantPermissions(['clipboard-read','clipboard-write'],{origin});
+  await page.evaluate(()=>{delete navigator.clipboard;});
+  await page.bringToFront();
+  await page.evaluate(()=>navigator.clipboard.writeText('before-card-share'));
+  await open(1);await ready();const beforeRealClipboard=await count();await action('share').click();
+  await page.waitForFunction(n=>sharedPayloads.length===n+1,beforeRealClipboard);
+  await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('링크도 복사했어요'));
+  assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),origin+'/world.html?place=park&card='+id(1),'the actual browser clipboard receives the per-card URL');
+  assert.equal(await count(),beforeRealClipboard+1,'real clipboard permission still opens exactly one native share');
   await close();assert.deepEqual(errors,[]);await context.close();
-  console.log('PASS: real PNG photo/body/tag sharing at 320/390px; private attachments, metadata and actions excluded; card links/replies and event-link behavior preserved; unsupported save, cancel, image/CORS failure and close/card/logout/account races handled without external sharing.');
+  console.log('PASS: combined card/caption share and automatic link copy at 320/390px; real public-card PNGs exclude private data; slow/failed clipboard and synchronous native errors recover; validated file-only and PNG-save fallbacks; cancel never resends; stale render/clipboard results stay scoped to their card and account; events retain link-only sharing.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

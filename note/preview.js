@@ -1346,70 +1346,100 @@ function shareCard(cardId) {
   const url = new URL('/world.html?place=park', location.origin); url.searchParams.set('card', cardId);
   const shareText = 'https://ojjuda.com';
   const run = showManagement('카드 공유'), epoch = identityEpoch, userId = session?.user?.id || null;
+  let sharing = false, feedbackRun = 0;
   const current = () => run === managementRun && epoch === identityEpoch && !management.hidden
     && (session?.user?.id || null) === userId && cache.get(cardId)?.id === cardId;
-  managementBody.append(node('p', 'management-help', '이 링크로 카드를 열 수 있어요. 삭제되거나 숨김 처리된 카드는 보이지 않습니다.'));
+  const card = cache.get(cardId);
+  managementBody.append(node('p', 'management-help', card?.kind === 'event'
+    ? '이 링크로 카드를 열 수 있어요.' : '공유할 때 카드 링크도 복사해요.'));
   const label = node('label', 'field-label', '카드 링크'); label.htmlFor = 'note-share-url';
   const input = node('input', 'note-share-url'); input.id = 'note-share-url'; input.type = 'url';
   input.value = url.href; input.readOnly = true; input.addEventListener('focus', () => input.select());
   managementBody.append(label, input);
   const copy = managementButton('링크 복사', async () => {
-    if (!current()) return;
-    try { await navigator.clipboard.writeText(url.href); if (current()) managementMessage.textContent = '링크를 복사했어요.'; }
-    catch { if (current()) { input.focus(); input.select(); managementMessage.textContent = '선택된 링크를 복사해 주세요.'; } }
-  }, true); copy.dataset.cardShareAction = 'copy'; managementFooter.append(copy);
-  const card = cache.get(cardId);
+    if (!current() || sharing) return;
+    const feedback = ++feedbackRun;
+    try { await navigator.clipboard.writeText(url.href); if (current() && feedback === feedbackRun) managementMessage.textContent = '링크를 복사했어요.'; }
+    catch { if (current() && feedback === feedbackRun) { input.focus(); input.select(); managementMessage.textContent = '선택된 링크를 복사해 주세요.'; } }
+  }); copy.dataset.cardShareAction = 'copy'; managementFooter.append(copy);
   // Event visibility depends on location. Keep its existing gated link share.
   if (card?.kind === 'event') {
     if (navigator.share) {
       const share = managementButton('다른 앱으로 공유', async () => {
-        if (!current()) return;
+        if (!current() || sharing) return;
+        sharing = true; share.disabled = true; ++feedbackRun;
         try { await navigator.share({ title: '오쭈다 아지트 · 공원', text: shareText, url: url.href }); }
         catch (error) { if (current() && error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
-      });
+        finally { if (current()) { sharing = false; share.disabled = false; } }
+      }, true);
       share.dataset.cardShareAction = 'share'; managementFooter.append(share);
     }
     return;
   }
-  let file = null, attempt = 0, sharing = false;
+  let file = null, attempt = 0;
   if (navigator.share) {
-    const link = managementButton('링크 공유', async () => {
+    const link = managementButton('링크만 공유', async () => {
       if (!current() || sharing) return;
-      sharing = true; link.disabled = true; managementMessage.textContent = '';
+      sharing = true; link.disabled = true; ++feedbackRun; managementMessage.textContent = '';
       try { await navigator.share({ title: '오쭈다 아지트 · 공원', text: shareText, url: url.href }); }
       catch (error) { if (current() && error.name !== 'AbortError') managementMessage.textContent = '링크 복사를 이용해 주세요.'; }
       finally { if (current()) { sharing = false; link.disabled = false; } }
     });
     link.dataset.cardShareAction = 'link'; managementFooter.append(link);
   }
-  const canShareFile = value => {
-    try { return typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [value] }); }
-    catch { return false; }
+  const fileShareData = value => {
+    if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return null;
+    const title = Array.from(String(cache.get(cardId)?.body || '').replace(/\s+/g, ' ').trim()).slice(0, 80).join('') || '공원 카드';
+    // Put the card link in the caption itself: some file-sharing apps drop the
+    // separate URL field. Do not send it twice in both text and url.
+    const combined = { files: [value], title, text: `${url.href}\n${shareText}` };
+    try { if (navigator.canShare(combined)) return combined; } catch {}
+    const imageOnly = { files: [value] };
+    try { if (navigator.canShare(imageOnly)) return imageOnly; } catch {}
+    return null;
   };
-  const action = managementButton('이미지 공유', () => {
+  const action = managementButton('카드와 링크 공유', () => {
     if (!current() || sharing || action.disabled) return;
     if (!file) { void prepareImage(); return; }
-    if (!canShareFile(file)) {
+    const payload = fileShareData(file), feedback = ++feedbackRun;
+    let shareFailed = false;
+    managementMessage.textContent = '';
+    // Start copying inside the same click, before share() consumes activation.
+    // Never await clipboard access: a prompt, denial or slow clipboard must not
+    // prevent the native share sheet from opening immediately.
+    let copied;
+    try { copied = navigator.clipboard.writeText(url.href); }
+    catch (error) { copied = Promise.reject(error); }
+    Promise.resolve(copied).then(() => {
+      if (current() && feedback === feedbackRun && !shareFailed)
+        managementMessage.textContent = '링크도 복사했어요. 사진만 전달되면 붙여넣어 주세요.';
+    }, () => {
+      if (current() && feedback === feedbackRun && !shareFailed)
+        managementMessage.textContent = '링크가 빠지면 링크 복사를 눌러 주세요.';
+    });
+    if (!payload) {
       const download = node('a'), objectUrl = URL.createObjectURL(file);
       download.href = objectUrl; download.download = file.name; download.hidden = true;
       document.body.append(download); download.click(); download.remove();
       setTimeout(() => URL.revokeObjectURL(objectUrl), 10000); return;
     }
-    sharing = true; action.disabled = true; managementMessage.textContent = '';
-    const title = Array.from(String(cache.get(cardId)?.body || '').replace(/\s+/g, ' ').trim()).slice(0, 80).join('') || '공원 카드';
+    sharing = true; action.disabled = true;
     let shared;
     // No asynchronous preparation here: preserve the button's user activation.
-    try { shared = navigator.share({ files: [file], text: shareText, url: url.href, title }); }
+    try { shared = navigator.share(payload); }
     catch (error) { shared = Promise.reject(error); }
     Promise.resolve(shared).catch(error => {
-      if (current() && error.name !== 'AbortError') managementMessage.textContent = '공유하지 못했어요. 다시 시도해 주세요.';
+      if (current() && feedback === feedbackRun && error.name !== 'AbortError') {
+        shareFailed = true;
+        managementMessage.textContent = '공유하지 못했어요. 다시 시도하거나 링크만 공유해 주세요.';
+      }
     }).finally(() => { if (current()) { sharing = false; action.disabled = false; } });
-  });
+  }, true);
   action.dataset.cardShareAction = 'share'; action.disabled = true; managementFooter.append(action);
   async function prepareImage() {
     const preparing = ++attempt;
-    file = null; action.disabled = true; action.dataset.cardShareAction = 'share';
-    action.textContent = '이미지 공유'; managementMessage.textContent = '';
+    file = null; action.disabled = true; action.dataset.cardShareAction = 'share'; ++feedbackRun;
+    action.textContent = '카드 준비 중…'; managementMessage.textContent = '';
     const active = () => current() && preparing === attempt;
     try {
       if (!active() || !['memo', 'comment'].includes(cache.get(cardId)?.kind)) throw new Error('card_image_unavailable');
@@ -1423,9 +1453,9 @@ function shareCard(cardId) {
       });
       if (!active()) return;
       file = prepared;
-      const supported = canShareFile(file);
+      const supported = !!fileShareData(file);
       action.dataset.cardShareAction = supported ? 'share' : 'save';
-      action.textContent = supported ? '이미지 공유' : '카드 이미지 저장'; action.disabled = false;
+      action.textContent = supported ? '카드와 링크 공유' : '카드 이미지 저장'; action.disabled = false;
     } catch (error) {
       if (!active()) return;
       console.warn('Card image preparation:', error);

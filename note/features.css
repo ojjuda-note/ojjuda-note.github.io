@@ -11,6 +11,7 @@ select{font:inherit;color:inherit}
 .card-actions button[aria-pressed="true"] svg{fill:var(--accent-soft)}
 .card-actions .card-share{font-size:12px}.card-actions .save{margin-left:auto}
 .note-share-url{display:block;width:100%;min-width:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);font-size:13px}
+.management-footer:has([data-card-share-action]){flex-wrap:wrap}.management-footer [data-card-share-action].primary{flex:1 0 100%;order:-1}
 .composer-footer:has(.note-draft-alert:not([hidden])){flex-wrap:wrap}.composer-footer .note-draft-alert{flex-basis:100%;order:3;color:#b53350;font-size:11px;overflow-wrap:anywhere}
 @media(max-width:520px){.card-actions{gap:11px}}
 /* Preserve a usable writing area when the viewport is shortened. */
