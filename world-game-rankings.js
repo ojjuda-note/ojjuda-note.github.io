@@ -138,7 +138,6 @@ function fitRecords(targets,token){
    const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
    openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
    const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);section.append(paper);
-   section.append(el('p','중간 퇴장으로 컴퓨터가 대신한 사용자의 그 판 기록은 순위·연승에서 제외돼요.','note board-rank-rule'));
    const pages=[],targets=new Map();
    for(let start=0;start<entries.length;start+=3){
     const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
@@ -225,7 +224,6 @@ async function showHistory(month=null,fresh=false,focus=false){
  page.tabIndex=0;page.setAttribute('role','region');page.setAttribute('aria-label','게임별 월 1등 기록');
  for(const title of ['게임','1등 닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);section.append(page);
  for(const [id,game] of entries){const target=makeRow(id,game,token,false);targets.set(id,target);tbody.append(target.row);}
- section.append(el('p','중간 퇴장으로 컴퓨터가 대신한 사용자의 그 판 기록은 순위·연승에서 제외돼요.','note board-rank-rule'));
  content.append(section);const fitting=fitRecords(targets,token);rankDispose=fitting.dispose;
  function setMonths(info,selected){
   const current=validMonth(info?.currentMonth)?info.currentMonth:rankingMonth();
