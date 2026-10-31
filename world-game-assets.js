@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261101-roulette-wins1';
+ const revision='20261101-matgo-pi-order1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -24,7 +24,7 @@
   janggi:'1.3.2',
   chess:'1.3.2',
   billiards:'1.3.2',
-  matgo:'1.3.3'
+  matgo:'1.3.4'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';

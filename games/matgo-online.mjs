@@ -2,10 +2,10 @@ import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=2026101
 import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261014-streak1';
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261028-games-touch1';
 import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261023-media1';
-import {createWallet,invokeMatgo} from './matgo-wallet.mjs?v=20261031-fresh-games1';
-import {openMatgoSolo} from './matgo-start.mjs?v=20261031-fresh-games1';
+import {createWallet,invokeMatgo} from './matgo-wallet.mjs?v=20261101-matgo-pi-order1';
+import {openMatgoSolo} from './matgo-start.mjs?v=20261101-matgo-pi-order1';
 import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261028-matgo-clean-turn20';
-import {createOnlineSound} from './matgo-online-sound.mjs?v=20261031-fresh-games1';
+import {createOnlineSound} from './matgo-online-sound.mjs?v=20261101-matgo-pi-order1';
 import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261014-cartoon1';
 import {createVentControls} from './matgo-deck-tools.mjs?v=20261014-fencing1';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
@@ -120,7 +120,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261031-fresh-games1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261101-matgo-pi-order1&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}

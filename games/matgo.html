@@ -64,7 +64,7 @@ import {cpuPortraitHTML} from "./matgo-opponent.mjs?v=20261014-cartoon1";
 import {createVentControls} from "./matgo-deck-tools.mjs?v=20261014-fencing1";
 import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo-engine.mjs?v=20261015-basic1";
 import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo-view.mjs?v=20261028-games-touch1";
-import {createWallet} from "./matgo-wallet.mjs?v=20261031-fresh-games1";
+import {createWallet} from "./matgo-wallet.mjs?v=20261101-matgo-pi-order1";
 import {createFlightArt} from "./matgo-flight-art.mjs?v=20261027-matgo-face1";
 (async () => {
 'use strict';
@@ -484,7 +484,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261031-fresh-games1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261101-matgo-pi-order1&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
@@ -495,7 +495,14 @@ function mount(){
 }
 function syncCards(container, cards, make, after){ // id 기준으로 필요한 것만 추가/제거 (깜박임 없이)
   const want=new Set(cards.map(c=>String(c.id))); container.querySelectorAll(':scope > .c').forEach(el=>{ if(!want.has(el.dataset.id)) el.remove(); });
-  cards.forEach(c=>{ let el=container.querySelector(`:scope > .c[data-id="${c.id}"]`); if(!el){ el=make(c); container.appendChild(el); } else el.style.visibility=''; after&&after(el,c); });
+  let next=container.querySelector(':scope > .c');
+  cards.forEach(c=>{
+    let el=container.querySelector(`:scope > .c[data-id="${c.id}"]`);if(!el)el=make(c);else if(el.style.visibility)el.style.visibility='';
+    // 겹침 순서도 데이터 순서를 따르되 기존 패와 분류 라벨은 재사용한다.
+    if(el!==next)container.insertBefore(el,next);
+    after&&after(el,c);next=el.nextElementSibling;
+    while(next&&!next.classList.contains('c'))next=next.nextElementSibling;
+  });
 }
 function showCaptured(name,cards){if(ui.busy||!cards.length)return;modal(`<h2>내가 먹은 패</h2><div class="captured-expanded">${cards.map(cardSVG).join('')}</div><button class="btn" id="captured-close">닫기</button>`,{'captured-close':()=>{}});}
 function hot(m,on){ for(const [st,el] of stackEls) if(st[0].m===m) el.classList.toggle('hot2',on); }
