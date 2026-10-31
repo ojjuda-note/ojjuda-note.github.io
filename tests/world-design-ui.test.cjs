@@ -9,7 +9,7 @@ world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
  g.tab='place';g.place={id:'arcade',ch:1,count:8,log:[]};H();clearInterval(g.placeT);g.placeT=null;
  const rankReads=[],rankClient={rpc:async(name,args)=>{rankReads.push({name,args});const rows=Object.fromEntries(args.p_games.map((id,i)=>[id,{nick:['초록산책','작은별','오쭈다'][i%3],score:1200+i*60}]));return {data:name==='community_game_monthly_history'?{month:args.p_month?.slice(0,7)||'2026-10',currentMonth:'2026-10',closed:!!args.p_month,months:[{month:'2026-10',hasRecords:true},{month:'2026-09',hasRecords:true}],leaders:args.p_month?{...rows,tank:{nick:'지난달우승자',score:25}}:rows}:rows};}};
- window.designFixture={render:H,state:g,auth:D,model:$,actions:sr,rankReads,rank(){OjjudaGameRankings.mount(document.querySelector('[data-arcade-rank-root]'),{client:rankClient,owner:'fixture',games:{mines:{name:'지뢰찾기',unit:'점'},runner:{name:'쭈 달리기',unit:'점'},stacker:{name:'탑 쌓기',unit:'층'},tank:{name:'탱크게임',unit:'승'}},onOpenGame:id=>window.openedGame=id});}};
+ window.designFixture={render:H,state:g,auth:D,model:$,actions:sr,rankReads,rank(){OjjudaGameRankings.mount(document.querySelector('[data-arcade-rank-root]'),{client:rankClient,owner:'fixture',games:{mines:{name:'지뢰찾기',unit:'점'},runner:{name:'쭈 달리기',unit:'점'},stacker:{name:'탑 쌓기',unit:'층'},mole:{name:'두더지잡기',unit:'점'},tank:{name:'탱크게임',unit:'승'}},onOpenGame:id=>window.openedGame=id});}};
  designFixture.rank();gm(()=>{});designFixture.navigation=worldNavigation;
  `+world.slice(world.indexOf('</script>',boot));
 (async()=>{
@@ -34,26 +34,32 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('#plog,#pmsg,[data-act=pl-send],[data-act=pl-react],.arcade-welcome [data-tab=park]').count(),0);
  const brand=await page.locator('.side>.brand').boundingBox(),nav=await page.locator('.sidenav').boundingBox();assert.ok(Math.abs((brand.y+brand.height/2)-(nav.y+nav.height/2))<3,'brand and desktop menu share one row');
  await page.screenshot({path:path.join(proof,'arcade-desktop.png'),fullPage:true});
- await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
+ const soloRanks=page.locator('.board-leaders [data-rank-group=solo]'),multiRanks=page.locator('.board-leaders [data-rank-group=multi]');
+ assert.equal(await page.locator('.board-leaders [data-rank-group]').count(),2);assert.equal(await page.locator('[data-rank-group=adult]').count(),0);
+ await soloRanks.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await soloRanks.getAttribute('data-rank-page'),'1');
+ assert.equal(await multiRanks.getAttribute('data-rank-page'),'0','paging solo rankings leaves multiplayer unchanged');
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
  const historyButton=page.getByRole('button',{name:'월별 게임순위 보기',exact:true});await historyButton.focus();await page.keyboard.press('Enter');
  await page.locator('.board-rank-history[aria-busy=false]').waitFor();
- assert.equal(await page.locator('.board-rank-history [data-game]').count(),4,'monthly history keeps every allowed game');
+ assert.equal(await page.locator('.board-rank-history [data-game]').count(),5,'monthly history keeps every allowed game');
+ assert.equal(await page.locator('.board-rank-history [data-rank-group=solo] [data-game]').count(),4);
+ assert.equal(await page.locator('.board-rank-history [data-rank-group=multi] [data-game]').count(),1);
  assert.equal(await page.locator('.board-rank-month').evaluate(n=>n===document.activeElement),true,'keyboard opening focuses the month selector');
  await page.getByLabel('월 선택',{exact:true}).selectOption('2026-09');await page.locator('.board-rank-history[aria-busy=false]').waitFor();
  assert.equal(await page.locator('.board-rank-history [data-game=tank] .board-leader-score').textContent(),'25승');
  assert.equal(await page.locator('.board-rank-history [data-game=tank] .board-leader-nick').textContent(),'지난달우승자');
  for(const width of [320,390]){await page.setViewportSize({width,height:850});await fits('monthly history '+width);assert.equal(await page.locator('.board-rank-month').inputValue(),'2026-09');}
  await page.screenshot({path:path.join(proof,'monthly-rankings-mobile.png'),fullPage:true});
- const readsBeforeBack=await page.evaluate(()=>designFixture.rankReads.length);await page.goBack();await page.locator('.board-rank-track').waitFor();
+ const readsBeforeBack=await page.evaluate(()=>designFixture.rankReads.length);await page.goBack();await soloRanks.locator('.board-rank-track').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true,'browser Back closes monthly history without leaving the Arcade');
- assert.equal(await page.locator('.board-rank-track').count(),1);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1','back restores the carousel page');
+ assert.equal(await page.locator('.board-rank-track').count(),2);assert.equal(await soloRanks.getAttribute('data-rank-page'),'1','back restores the solo carousel page');
+ assert.equal(await multiRanks.getAttribute('data-rank-page'),'0','back restores the multiplayer carousel page independently');
  assert.equal(await historyButton.evaluate(n=>n===document.activeElement),true,'back returns focus to the ranking title');
  assert.equal(await page.evaluate(()=>designFixture.rankReads.length),readsBeforeBack,'returning reuses recent current-month leaders');
  await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();
- assert.equal(await page.evaluate(()=>designFixture.navigation.back()),true,'native Back consumes the monthly-history view');await page.locator('.board-rank-track').waitFor();
+ assert.equal(await page.evaluate(()=>designFixture.navigation.back()),true,'native Back consumes the monthly-history view');await soloRanks.locator('.board-rank-track').waitFor();
  assert.equal(await page.evaluate(()=>designFixture.state.place?.id),'arcade');
- await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();await page.getByRole('button',{name:'이번 달 순위로 돌아가기',exact:true}).click();await page.locator('.board-rank-track').waitFor();
+ await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();await page.getByRole('button',{name:'이번 달 순위로 돌아가기',exact:true}).click();await soloRanks.locator('.board-rank-track').waitFor();
  for(const width of [320,390,768,900,1280]){
   await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
   assert.equal(await page.locator('[data-arcade-games] .game-version').count(),0,'release metadata stays out of the menu at '+width);

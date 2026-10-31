@@ -48,6 +48,7 @@ async function until(test, message, timeout = 2600) {
     const rankClient = { rpc: async (_name, args) => { rankingReads.push([...args.p_games]); return { data: { tank: { nick: '회원', score: 3 } } }; } };
     w.eval(fs.readFileSync(path.join(root, 'world-game-rankings.js'), 'utf8'));
     const rankRows = () => [...rankHost.querySelectorAll('[data-game]')].map(row => row.dataset.game);
+    const rankAdultSection = () => rankHost.querySelector('[data-rank-group=adult]');
     const mountRankings = () => { const owner = w.D.user?.id; w.OjjudaGameRankings.mount(rankHost, { client: rankClient, owner, games: getGames(), getGames, authorized: () => w.D.online && w.D.user?.id === owner }); };
     w.eval(world.slice(start, end));
     w.eval(world.slice(catalogStart, catalogEnd) + ';');
@@ -86,11 +87,13 @@ async function until(test, message, timeout = 2600) {
     identityError = true; mountRankings();
     await until(() => reads > 0, 'the initial ranking age check runs');
     await wait(0); assert.deepEqual(rankRows(), Object.keys(ordinaryGames));
+    assert.equal(rankAdultSection(), null, 'an unresolved age check has no adult ranking card');
     identityError = false; await w.refreshWorldMatgoAccess();
     await until(() => Object.keys(adultGames).every(id => rankRows().includes(id)), 'successful retry restores all restricted ranking rows without navigation');
     assert.ok(matgo() && photoVisible());
     assert.equal(matgo().nextElementSibling?.dataset.v,'poker','poker refreshes beside Matgo');
     completeAdultMenu();
+    assert.deepEqual([...rankAdultSection().querySelectorAll('[data-game]')].map(row => row.dataset.game),Object.keys(adultGames),'restored adult rankings share their own card');
     // A cached age grant alone cannot render an offline or missing-user entry.
     const adultUser = w.D.user;
     for (const auth of [{ online: false, user: adultUser }, { online: true, user: null }]) {
@@ -115,6 +118,7 @@ async function until(test, message, timeout = 2600) {
     assert.ok(!matgo() && !photoVisible());
     noAdultMenu();
     assert.deepEqual(rankRows(), Object.keys(ordinaryGames), 'access loss removes only restricted ranking rows');
+    assert.equal(rankAdultSection(), null, 'age revocation removes the adult ranking heading and card');
     identityError = false; hidden = false;
     const beforeResume = reads;
     w.document.dispatchEvent(new w.Event('visibilitychange'));
@@ -124,6 +128,7 @@ async function until(test, message, timeout = 2600) {
     await until(() => Object.keys(adultGames).every(id => rankRows().includes(id)), 'resume restores all restricted ranking rows in the same mount');
     assert.equal(reads, beforeResume + 1, 'resume events share one check');
     completeAdultMenu();
+    assert.ok(rankAdultSection(), 'resume restores the adult ranking card');
     assert.equal(matgo().nextElementSibling?.dataset.v,'poker','resume preserves the card game order');
     assert.equal(w.document.querySelectorAll('[data-v=poker]').length,1,'refresh cannot duplicate poker');
     assert.equal(draft.value, '작성 중인 대화');
@@ -147,6 +152,7 @@ async function until(test, message, timeout = 2600) {
     age = 18; w.D.user = { id: 'minor' }; callback('SIGNED_IN', { user: w.D.user });
     assert.ok(!matgo() && !photoVisible(), 'account changes immediately hide adult games');
     noAdultMenu();
+    assert.equal(rankAdultSection(), null, 'switching accounts immediately removes adult rankings');
     w.dispatchEvent(new w.Event('focus'));
     const beforeMinor = reads;
     await until(() => reads > beforeMinor, 'minor is checked');
@@ -154,6 +160,7 @@ async function until(test, message, timeout = 2600) {
     assert.equal(reads, beforeMinor + 1, 'underage results are not retried');
     assert.ok(!matgo() && !photoVisible());
     noAdultMenu();
+    assert.equal(rankAdultSection(), null, 'underage members have no adult ranking card');
     const minor = w.document.createElement('div'); minor.innerHTML = w.Df();
     noAdultMenu(minor);
 

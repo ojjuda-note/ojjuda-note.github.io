@@ -8,6 +8,11 @@ const rankingMonth=(now=Date.now())=>new Date(now+8*60*60*1000).toISOString().sl
 const nextReset=month=>Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)-8*60*60*1000;
 const validMonth=month=>typeof month==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const monthName=month=>Number(month.slice(0,4))+'년 '+Number(month.slice(5,7))+'월';
+const rankGroups=[{id:'solo',name:'혼자하는 플레이'},{id:'multi',name:'함께하는 플레이'},{id:'adult',name:'어른들 플레이'}];
+const multiGames=new Set(['bang','tank','tour','ttang','janggi','chess','billiards']);
+const adultGames=new Set(['matgo','poker','roulette','photo_ttang']);
+const rankGroupFor=id=>adultGames.has(id)?'adult':multiGames.has(id)?'multi':'solo';
+const groupedEntries=entries=>rankGroups.map(group=>({...group,entries:entries.filter(([id])=>rankGroupFor(id)===group.id)})).filter(group=>group.entries.length);
 const streakCondition='해당 월에 연속으로 이긴 횟수 중 가장 높은 기록으로 정해요.';
 const boardCondition='회원 대결 → 어려움 → 보통 → 쉬움 순으로 우선하고, 같은 조건에서는 해당 월 최고 연승으로 정해요.';
 const scoreCondition='해당 월에 기록한 가장 높은 점수로 정해요.';
@@ -73,16 +78,24 @@ function shareCurrentLeaders(client,owner,ids,data){
 }
 function mount(host,{client,owner,games={},getGames=null,onOpenGame=null,authorized=()=>true}={}){
 dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
-let rankDispose=()=>{},releaseAccess=null,rankPage=0,rankFocusGame=null,alive=true,request=0,catalogKey=null;
+let rankDispose=()=>{},releaseAccess=null,alive=true,request=0,catalogKey=null;
+const rankStates=new Map();
 let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0,help=null;
 const lifecycle=new AbortController(),lifecycleOptions={signal:lifecycle.signal};
 const active=()=>alive&&host.isConnected&&authorized();
 function updateGames(){
  const next=typeof getGames==='function'?getGames():games;
  const key=JSON.stringify(Object.entries(next).map(([id,game])=>[id,game.name,game.unit,game.rankingBasis,game.baseName,game.difficultyName]));
- const changed=key!==catalogKey;games=next;catalogKey=key;return changed;
+ const changed=key!==catalogKey;games=next;catalogKey=key;
+ const groups=new Set(Object.keys(games).map(rankGroupFor));
+ for(const [id,state] of rankStates){if(!groups.has(id))rankStates.delete(id);else if(state.focus&&!games[state.focus])state.focus=null;}
+ return changed;
 }
 async function syncCatalog(){
+ if(alive&&host.isConnected&&!authorized()){
+  request++;closeHelp(false);rankDispose();clearTimeout(rolloverTimer);rankStates.clear();catalogKey=null;content.replaceChildren();status.textContent='';
+  return false;
+ }
  if(!client||!owner||!active()||!updateGames())return false;
  return refreshView();
 }
@@ -196,49 +209,65 @@ function fitRecords(targets,token){
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
    const head=el('header','','board-rank-head'),heading=el('h3'),openHistory=button('게임순위',()=>{if(active()&&token===request)void showHistory(null,false,true);},'board-rank-history-open');
    openHistory.setAttribute('aria-label','월별 게임순위 보기');openHistory.append(Object.assign(el('span','›'),{ariaHidden:'true'}));heading.append(openHistory);head.append(heading,el('span','이번 달','board-rank-caption'));section.append(head);
-   const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);section.append(paper);
-   const pages=[],targets=new Map();
-   for(let start=0;start<entries.length;start+=3){
-    const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
-    table.setAttribute('aria-label',`게임순위 ${pages.length+1}쪽`);
-    for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
-    for(const [id,game] of entries.slice(start,start+3)){
-     const target=makeRow(id,game,token);tbody.append(target.row);targets.set(id,target);
-    }
-   }
-   let index=Math.min(rankPage,pages.length-1),timer=0,hover=false,touch=null,dragging=false,initialLoading=true;
-   const controls=el('div','','board-rank-controls'),position=el('span','','board-rank-position');position.setAttribute('aria-live','off');
-   const prev=button('‹',()=>go(index-1)),next=button('›',()=>go(index+1));prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);if(pages.length>1)head.append(controls);
-   const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
-   content.append(section);
-   function paint(){
-    position.textContent=(index+1)+' / '+pages.length;rankPage=index;track.style.transform=`translateX(-${index*100}%)`;
-    section.dataset.rankPage=String(index);
-    pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
-   }
-   function schedule(delay=5000){
-    clearTimeout(timer);if(initialLoading||paused||pages.length<2||!active()||!section.isConnected)return;
-    timer=setTimeout(()=>{const rect=section.getBoundingClientRect();if(document.hidden||hover||dragging||section.contains(document.activeElement)||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}go(index+1);},delay);
-   }
-   function go(value){index=(value+pages.length)%pages.length;track.style.transform=`translateX(-${index*100}%)`;paint();schedule(motion.matches?5000:5280);}
-   const controller=new AbortController(),options={signal:controller.signal};
-   section.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')hover=true;},options);
-   section.addEventListener('pointerleave',()=>{hover=false;},options);
-   viewport.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;touch={x:e.clientX,y:e.clientY};dragging=true;viewport.setPointerCapture(e.pointerId);},options);
-   viewport.addEventListener('pointerup',e=>{if(!touch)return;const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch=null;dragging=false;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)*1.3)go(index+(dx<0?1:-1));else schedule();},options);
-   viewport.addEventListener('pointercancel',()=>{touch=null;dragging=false;schedule();},options);
-   section.addEventListener('focusout',()=>schedule(),options);
-   document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
-   motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
+   const groups=el('div','','board-rank-groups'),targets=new Map(),panels=new Map();section.append(groups);content.append(section);
+   for(const group of groupedEntries(entries))panels.set(group.id,makeGroup(group));
    const fitting=fitRecords(targets,token),fitScores=fitting.fit;
-   rankDispose=()=>{clearTimeout(timer);fitting.dispose();controller.abort();};paint();schedule();
-   function orderByRecords(){
-    if(!active()||token!==request)return;
-    const ordered=[...entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
-    pages.forEach((page,i)=>{
-     const body=page.querySelector('tbody'),rows=ordered.slice(i*3,i*3+3).map(([id])=>targets.get(id).row);
-     if(rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
-    });
+   rankDispose=()=>{fitting.dispose();for(const panel of panels.values())panel.dispose();};
+   function makeGroup(group){
+    const panel=el('section','','board-rank-group');panel.dataset.rankGroup=group.id;panel.setAttribute('aria-label',group.name);
+    const groupHead=el('header','','board-rank-group-head');groupHead.append(el('h4',group.name));panel.append(groupHead);
+    const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);panel.append(paper);groups.append(panel);
+    const pages=[];
+    for(let start=0;start<group.entries.length;start+=3){
+     const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
+     table.setAttribute('aria-label',`${group.name} 게임순위 ${pages.length+1}쪽`);
+     for(const title of ['게임','닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);track.append(page);pages.push(page);
+     for(const [id,game] of group.entries.slice(start,start+3)){
+      const target=makeRow(id,game,token);tbody.append(target.row);targets.set(id,target);
+     }
+    }
+    if(!rankStates.has(group.id))rankStates.set(group.id,{page:0,focus:null});
+    const state=rankStates.get(group.id);
+    let index=Math.min(state.page,pages.length-1),timer=0,hover=false,touch=null,dragging=false,initialLoading=true;
+    const controls=el('div','','board-rank-controls'),position=el('span','','board-rank-position');position.setAttribute('aria-live','off');
+    const prev=button('‹',()=>go(index-1)),next=button('›',()=>go(index+1));prev.setAttribute('aria-label','이전 게임 순위');next.setAttribute('aria-label','다음 게임 순위');controls.append(prev,position,next);if(pages.length>1)groupHead.append(controls);
+    const motion=matchMedia('(prefers-reduced-motion: reduce)');let paused=motion.matches;
+    function paint(){
+     position.textContent=(index+1)+' / '+pages.length;state.page=index;track.style.transform=`translateX(-${index*100}%)`;
+     panel.dataset.rankPage=String(index);
+     pages.forEach((page,i)=>{page.inert=i!==index;page.setAttribute('aria-hidden',String(i!==index));});
+    }
+    function schedule(delay=5000){
+     clearTimeout(timer);if(initialLoading||paused||pages.length<2||!active()||token!==request||!panel.isConnected)return;
+     timer=setTimeout(()=>{const rect=panel.getBoundingClientRect();if(document.hidden||hover||dragging||panel.contains(document.activeElement)||rect.bottom<=0||rect.top>=innerHeight){schedule();return;}go(index+1);},delay);
+    }
+    function go(value){if(!active()||token!==request)return;index=(value+pages.length)%pages.length;paint();schedule(motion.matches?5000:5280);}
+    const events=new AbortController(),options={signal:events.signal};
+    panel.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')hover=true;},options);
+    panel.addEventListener('pointerleave',()=>{hover=false;},options);
+    viewport.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button!==0)return;touch={x:e.clientX,y:e.clientY};dragging=true;viewport.setPointerCapture(e.pointerId);},options);
+    viewport.addEventListener('pointerup',e=>{if(!touch)return;const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch=null;dragging=false;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)*1.3)go(index+(dx<0?1:-1));else schedule();},options);
+    viewport.addEventListener('pointercancel',()=>{touch=null;dragging=false;schedule();},options);
+    panel.addEventListener('focusout',()=>schedule(),options);
+    document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)schedule();},options);
+    motion.addEventListener('change',()=>{paused=motion.matches;paint();schedule();},options);
+    function orderByRecords(){
+     if(!active()||token!==request)return;
+     const ordered=[...group.entries].sort(([a],[b])=>Number(targets.get(b).hasScore)-Number(targets.get(a).hasScore));
+     pages.forEach((page,i)=>{
+      const body=page.querySelector('tbody'),rows=ordered.slice(i*3,i*3+3).map(([id])=>targets.get(id).row);
+      if(rows.some((row,j)=>body.children[j]!==row))body.replaceChildren(...rows);
+     });
+    }
+    paint();
+    return {orderByRecords,loaded(){
+     initialLoading=false;orderByRecords();
+     if(state.focus&&targets.has(state.focus)){
+      const indexForGame=pages.findIndex(page=>page.contains(targets.get(state.focus).row));
+      if(indexForGame>=0){index=indexForGame;paint();}state.focus=null;
+     }
+     schedule();
+    },dispose(){clearTimeout(timer);events.abort();}};
    }
    // Fetch the visible games in one request instead of competing with the feed
    // for thirty separate HTTP/database connections.
@@ -253,19 +282,14 @@ function fitRecords(targets,token){
       if(!active()||token!==request||version!==loadVersion)return;
       paintRecord(target,id,game,ranking?.[key]||null);
      }catch{if(active()&&token===request&&version===loadVersion)nick.replaceChildren(button('다시 불러오기',()=>load(),'board-leader-retry'));}
-     finally{orderByRecords();fitScores();}
+     finally{panels.get(rankGroupFor(id)).orderByRecords();fitScores();}
     }
     target.reload=()=>load();
     await load(true);
    });
    return [Promise.all(loads).then(()=>{
     if(!active()||token!==request)return;
-    initialLoading=false;orderByRecords();
-    if(rankFocusGame&&targets.has(rankFocusGame)){
-     const row=targets.get(rankFocusGame).row;
-     index=pages.findIndex(page=>page.contains(row));rankFocusGame=null;paint();
-    }
-    schedule();
+    for(const panel of panels.values())panel.loaded();
    })];
   }
 
@@ -281,10 +305,16 @@ async function showHistory(month=null,fresh=false,focus=false){
  title.append(el('h3','월별 게임순위'),helpButton);head.append(title,close);section.append(head);
  const field=el('label','','board-rank-month-field'),select=el('select','','board-rank-month');select.setAttribute('aria-label','월 선택');field.append(el('span','월 선택'),select);section.append(field);
  const message=el('p','월별 순위를 불러오는 중…','board-rank-history-status');message.setAttribute('role','status');section.append(message);
- const page=el('div','','board-rank-page board-rank-history-table'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
- page.tabIndex=0;page.setAttribute('role','region');page.setAttribute('aria-label','게임별 월 1등 기록');
- for(const title of ['게임','1등 닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);section.append(page);
- for(const [id,game] of entries){const target=makeRow(id,game,token,false);targets.set(id,target);tbody.append(target.row);}
+ const groups=el('div','','board-rank-groups'),panels=[];section.append(groups);
+ for(const group of groupedEntries(entries)){
+  const panel=el('section','','board-rank-group'),groupHead=el('header','','board-rank-group-head');
+  panel.dataset.rankGroup=group.id;panel.setAttribute('aria-label',group.name);groupHead.append(el('h4',group.name));panel.append(groupHead);
+  const page=el('div','','board-rank-page board-rank-history-table'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
+  page.tabIndex=0;page.setAttribute('role','region');page.setAttribute('aria-label',group.name+' 게임별 월 1등 기록');
+  for(const title of ['게임','1등 닉네임','기록']){const th=el('th',title);th.scope='col';tr.append(th);}thead.append(tr);table.append(thead,tbody);page.append(table);panel.append(page);groups.append(panel);
+  for(const [id,game] of group.entries){const target=makeRow(id,game,token,false);targets.set(id,target);tbody.append(target.row);}
+  panels.push({name:group.name,page,table});
+ }
  content.append(section);const fitting=fitRecords(targets,token);rankDispose=fitting.dispose;
  function setMonths(info,selected){
   const current=validMonth(info?.currentMonth)?info.currentMonth:rankingMonth();
@@ -304,14 +334,15 @@ async function showHistory(month=null,fresh=false,focus=false){
   if(!validMonth(data.month)||!validMonth(data.currentMonth)||!data.leaders||!Array.isArray(data.months))throw Error('invalid_history');
   historyInfo=data;if(historyMonth!==null)historyMonth=data.month;
   setMonths(data,data.month);if(data.pending===true)throw Error('history_pending');
-  table.setAttribute('aria-label',monthName(data.month)+' 게임별 1등');
+  for(const panel of panels)panel.table.setAttribute('aria-label',monthName(data.month)+' '+panel.name+' 게임별 1등');
   for(const [id,game] of entries)paintRecord(targets.get(id),id,game,data.leaders[id],data.closed?monthName(data.month):'이번 달');
   const hasRecords=[...targets.values()].some(target=>target.hasScore);
   message.textContent=hasRecords?'':data.closed?'이 달에는 등록된 기록이 없어요.':'이번 달에는 아직 등록된 기록이 없어요.';
   shareCurrentLeaders(client,owner,ids,data);fitting.fit();return true;
  }catch(error){
   if(!active()||token!==request)return false;
-  page.hidden=true;message.replaceChildren(el('span',error?.message==='history_pending'?'이 달의 순위를 보관하고 있어요. 잠시 후 다시 불러와 주세요. ':'월별 순위를 불러오지 못했어요. '));
+  for(const panel of panels)panel.page.hidden=true;
+  message.replaceChildren(el('span',error?.message==='history_pending'?'이 달의 순위를 보관하고 있어요. 잠시 후 다시 불러와 주세요. ':'월별 순위를 불러오지 못했어요. '));
   const retry=button('다시 불러오기',()=>{if(active()&&token===request&&!retry.disabled){retry.disabled=true;void showHistory(historyMonth,true,true);}},'board-leader-retry');message.append(retry);return false;
  }finally{if(active()&&token===request)section.setAttribute('aria-busy','false');}
 }
@@ -341,7 +372,11 @@ const playing=()=>document.body.classList.contains('gaming')||document.body.clas
 let gaming=playing();
 window.addEventListener('ojjuda:game-record-saved',event=>{
  if(event.detail?.owner!==owner||!active())return;
- if(games[event.detail?.game])rankFocusGame=event.detail.game;
+ if(games[event.detail?.game]){
+  const id=rankGroupFor(event.detail.game);
+  if(!rankStates.has(id))rankStates.set(id,{page:0,focus:null});
+  rankStates.get(id).focus=event.detail.game;
+ }
  invalidate(client,owner);if(!playing())void refreshView(true);
 },lifecycleOptions);
 gameplayObserver=new MutationObserver(()=>{const next=playing();if(gaming&&!next&&active())void refreshView(true);gaming=next;});

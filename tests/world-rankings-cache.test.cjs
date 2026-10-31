@@ -6,6 +6,10 @@ const { JSDOM } = require('jsdom');
 const source = fs.readFileSync(process.env.OJJUDA_RANKINGS_JS || path.join(__dirname, '../world-game-rankings.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const games = { tank: { name: '탱크게임', unit: '연승' }, chess: { name: '체스', unit: '연승' } };
+const adultGames = {
+  matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' },
+  roulette: { name: '룰렛', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' }
+};
 
 function fixture(t) {
   const dom = new JSDOM('<main></main>', { url: 'https://fixture.test/world.html', runScripts: 'outside-only', pretendToBeVisual: true });
@@ -17,6 +21,8 @@ function fixture(t) {
   w.clearTimeout = id => timers.delete(id);
   w.matchMedia = () => ({ matches: true, addEventListener() {}, removeEventListener() {} });
   w.ResizeObserver = class { observe() {} disconnect() {} };
+  w.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  w.HTMLDialogElement.prototype.close = function () { this.open = false; this.dispatchEvent(new w.Event('close')); };
   const client = { rpc(name, args) {
     assert.ok(['community_game_monthly_leaders', 'community_game_monthly_history'].includes(name));
     return new Promise((resolve, reject) => requests.push({ name, args, resolve, reject }));
@@ -72,6 +78,101 @@ test('passive remounts briefly reuse successful data; explicit refresh and expir
   await f.reply(2, 11); assert.equal(f.score(), '11연승');
 });
 
+test('three ranking cards share one read, page independently and keep their pages through history and Back', async t => {
+  const f = fixture(t);
+  const catalog = {
+    runner: { name: '쭈 달리기', unit: '점' }, tank: games.tank, matgo: adultGames.matgo,
+    mines: { name: '지뢰찾기', unit: '점' }, chess: games.chess, poker: adultGames.poker,
+    screw_box: { name: '나사풀기 · 박스형', unit: '점' }, tour: { name: '마블', unit: '연승' }, roulette: adultGames.roulette,
+    screw_flat: { name: '나사풀기 · 평면형', unit: '점' }, billiards: { name: '당구', unit: '연승' }, photo_ttang: adultGames.photo_ttang
+  };
+  const expected = { solo: ['runner', 'mines', 'screw_box', 'screw_flat'], multi: ['tank', 'chess', 'tour', 'billiards'], adult: Object.keys(adultGames) };
+  const records = Object.fromEntries(Object.keys(catalog).map((id, i) => [id, { nick: '회원 ' + id, score: i + 1 }]));
+  const group = key => f.host().querySelector(`[data-rank-group=${key}]`);
+  const pages = () => Object.fromEntries(Object.keys(expected).map(key => [key, group(key).dataset.rankPage]));
+  const checkGroups = () => {
+    assert.deepEqual([...f.host().querySelectorAll('[data-rank-group]')].map(card => card.dataset.rankGroup), Object.keys(expected));
+    for (const [key, ids] of Object.entries(expected)) {
+      assert.deepEqual([...group(key).querySelectorAll('[data-game]')].map(row => row.dataset.game), ids, key + ' keeps exactly its own games');
+    }
+    const rows = [...f.host().querySelectorAll('[data-game]')].map(row => row.dataset.game);
+    assert.equal(rows.length, Object.keys(catalog).length); assert.equal(new Set(rows).size, rows.length);
+  };
+  f.mount({ games: catalog }); await f.reply(0, null, { data: records });
+  assert.equal(f.requests.length, 1, 'all three cards use one RPC');
+  assert.deepEqual(Array.from(f.requests[0].args.p_games), Object.keys(catalog));
+  assert.equal(f.host().querySelectorAll('.board-leaders > .board-rank-head').length, 1, 'the cards share one ranking header');
+  checkGroups(); assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '0' });
+  for (const key of Object.keys(expected)) {
+    const cardPages = [...group(key).querySelectorAll('.board-rank-page')];
+    assert.equal(cardPages.length, 2); assert.ok(cardPages.every(page => page.querySelectorAll('[data-game]').length <= 3));
+  }
+  group('solo').querySelector('.board-rank-controls button:last-child').click();
+  assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '0' });
+  group('multi').querySelector('.board-rank-controls button:last-child').click();
+  group('adult').querySelector('.board-rank-controls button:last-child').click();
+  assert.deepEqual(pages(), { solo: '1', multi: '1', adult: '1' });
+  group('multi').querySelector('.board-rank-controls button:first-child').click();
+  assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '1' });
+  for (const key of Object.keys(expected)) {
+    const cardPages = [...group(key).querySelectorAll('.board-rank-page')], selected = Number(group(key).dataset.rankPage);
+    assert.equal(group(key).querySelector('.board-rank-track').style.transform, `translateX(-${selected * 100}%)`);
+    assert.equal(cardPages.filter(page => page.getAttribute('aria-hidden') === 'false').length, 1);
+    cardPages.forEach((page, i) => assert.equal(page.inert, i !== selected, 'only the selected page is interactive in ' + key));
+  }
+  assert.equal(f.requests.length, 1, 'paging never reads ranking data again');
+
+  f.w.dispatchEvent(new f.w.CustomEvent('ojjuda:game-record-saved', { detail: { owner: 'member-a', game: 'runner' } }));
+  await f.reply(1, null, { data: records });
+  assert.equal(f.requests.length, 2, 'a saved record refreshes the combined catalog once');
+  assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '1' }, 'record focus changes only the recorded game category');
+  const historyButton = f.host().querySelector('.board-rank-history-open'); historyButton.click();
+  await f.historyReply(2, { leaders: records });
+  assert.equal(f.requests.length, 3); assert.deepEqual(Array.from(f.requests[2].args.p_games), Object.keys(catalog));
+  checkGroups(); assert.equal(f.host().querySelectorAll('.board-rank-controls').length, 0, 'monthly cards show all their records');
+  await f.pickMonth('2026-09'); await f.historyReply(3, { month: '2026-09', closed: true, leaders: records });
+  checkGroups(); assert.equal(f.host().querySelector('.board-rank-month').value, '2026-09');
+  const helpButton = f.host().querySelector('.board-rank-help-button'); helpButton.click();
+  const help = f.w.document.querySelector('.board-rank-help-dialog');
+  assert.ok(help.open); assert.equal(helpButton.getAttribute('aria-expanded'), 'true');
+  assert.deepEqual([...help.querySelectorAll('[data-ranking-game]')].map(row => row.dataset.rankingGame), Object.keys(catalog));
+  assert.match(help.textContent, /그달 최고 연승은 남아요/); assert.match(help.textContent, /0점·0연승/);
+  assert.equal(f.w.OjjudaGameRankings.back(), true, 'Back closes the criteria dialog first');
+  assert.equal(f.w.document.querySelector('.board-rank-help-dialog'), null); assert.equal(f.w.document.activeElement, helpButton);
+  assert.equal(f.w.OjjudaGameRankings.isHistoryOpen(), true); assert.equal(f.host().querySelector('.board-rank-month').value, '2026-09');
+  assert.equal(f.w.OjjudaGameRankings.back(), true); await tick(); await tick();
+  assert.equal(f.w.OjjudaGameRankings.isHistoryOpen(), false); checkGroups();
+  assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '1' }, 'Back restores every category page');
+  assert.equal(f.requests.length, 4, 'returning to the current ranking reuses the shared current-month response');
+  assert.equal(f.w.document.activeElement, f.host().querySelector('.board-rank-history-open'));
+});
+
+test('hovering or focusing one ranking card pauses only that card\'s automatic paging', async t => {
+  const f = fixture(t);
+  f.w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+  const catalog = {
+    runner: { name: '쭈 달리기', unit: '점' }, mines: { name: '지뢰찾기', unit: '점' },
+    mole: { name: '두더지잡기', unit: '점' }, stacker: { name: '탑 쌓기', unit: '층' },
+    ...games, tour: { name: '마블', unit: '연승' }, billiards: { name: '당구', unit: '연승' }
+  };
+  const records = Object.fromEntries(Object.keys(catalog).map(id => [id, { nick: '회원', score: 1 }]));
+  f.mount({ games: catalog, onOpenGame() {} }); await f.reply(0, null, { data: records });
+  const solo = f.host().querySelector('[data-rank-group=solo]'), multi = f.host().querySelector('[data-rank-group=multi]');
+  for (const panel of [solo, multi]) panel.getBoundingClientRect = () => ({ top: 10, bottom: 200 });
+  const hover = new f.w.Event('pointerenter'); hover.pointerType = 'mouse'; solo.dispatchEvent(hover);
+  f.advance(5000); f.fireTimers();
+  assert.equal(solo.dataset.rankPage, '0', 'hover pauses the solo card');
+  assert.equal(multi.dataset.rankPage, '1', 'multiplayer continues automatically');
+  solo.dispatchEvent(new f.w.Event('pointerleave'));
+  const focused = multi.querySelector('.board-rank-page[aria-hidden=false] button'); focused.focus();
+  f.advance(5280); f.fireTimers();
+  assert.equal(solo.dataset.rankPage, '1', 'solo resumes independently');
+  assert.equal(multi.dataset.rankPage, '1', 'keyboard focus pauses only multiplayer');
+  focused.blur(); f.advance(5280); f.fireTimers();
+  assert.equal(solo.dataset.rankPage, '0'); assert.equal(multi.dataset.rankPage, '0');
+  assert.equal(f.requests.length, 1, 'automatic paging makes no ranking requests');
+});
+
 test('a forced refresh invalidates an older pending response and its cached result', async t => {
   const f = fixture(t); f.mount();
   const refresh = f.w.OjjudaGameRankings.refresh(); await tick(); assert.equal(f.requests.length, 2);
@@ -101,9 +202,10 @@ test('account, sign-out and client transitions never reuse an older session cach
 });
 
 test('refresh keeps the guest login prompt and does no work for an unauthorized old view', async t => {
-  const f = fixture(t); f.mount({ owner: null });
+  const f = fixture(t); f.mount({ owner: null, games: { ...games, ...adultGames } });
   assert.equal(await f.w.OjjudaGameRankings.refresh(), false);
   assert.equal(f.requests.length, 0); assert.match(f.host().textContent, /로그인하면/);
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'guests have no adult ranking card');
   f.mount(); await f.reply(0, 4);
   const row = f.host().querySelector('[data-game=tank]'); f.actor('member-b');
   assert.equal(await f.w.OjjudaGameRankings.refresh(), false);
@@ -151,22 +253,26 @@ test('a delayed adult-access result cannot add restricted rows to a different me
   f.actor('member-b'); f.mount();
   oldAllow({ userId: 'member-a' }); await tick();
   assert.equal(f.requests.length, 2); assert.equal(f.host().querySelector('[data-game=matgo]'), null);
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'late access cannot create another member\'s adult card');
   await f.reply(1, 6); await f.reply(0, 1); assert.equal(f.score(), '6연승');
 });
 
 test('explicit refresh reads the current catalog after adult access recovers or is revoked', async t => {
   const f = fixture(t); let allowed = false;
-  const adult = { matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' } };
+  const adult = adultGames;
   f.w.OjjudaMatgoAccess = { visible: () => allowed, check: async () => { throw Error('offline'); } };
   const getGames = () => ({ ...games, ...(allowed ? adult : {}) });
   f.mount({ getGames }); await f.reply(0, 5);
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null);
   allowed = true;
   const recovered = f.w.OjjudaGameRankings.refresh(); await tick();
   assert.deepEqual(Array.from(f.requests[1].args.p_games), Object.keys(getGames()));
   await f.reply(1, 6); await recovered;
   for (const id of Object.keys(getGames())) assert.ok(f.host().querySelector(`[data-game="${id}"]`), id + ' remains in the current catalog');
+  assert.deepEqual([...f.host().querySelectorAll('[data-rank-group=adult] [data-game]')].map(row => row.dataset.game), Object.keys(adult));
   allowed = false;
   const revoked = f.w.OjjudaGameRankings.refresh(); await tick();
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'revocation removes the heading before its read completes');
   assert.deepEqual(Array.from(f.requests[2].args.p_games), Object.keys(games));
   await f.reply(2, 7); await revoked;
   for (const id of Object.keys(adult)) assert.equal(f.host().querySelector(`[data-game="${id}"]`), null);
@@ -175,15 +281,18 @@ test('explicit refresh reads the current catalog after adult access recovers or 
 
 test('access invalidation removes restricted rows and ignores their pending response', async t => {
   const f = fixture(t), listeners = new Set(); let allowed = true;
-  const adult = { matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' } };
+  const adult = adultGames;
   const getGames = () => ({ ...games, ...(allowed ? adult : {}) });
   f.w.OjjudaMatgoAccess = { visible: () => allowed, subscribe: fn => { listeners.add(fn); return () => listeners.delete(fn); } };
   f.mount({ games: getGames(), getGames }); await tick();
-  allowed = false; for (const fn of listeners) fn(Error('unavailable')); await tick();
+  allowed = false; for (const fn of listeners) fn(Error('unavailable'));
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'access loss synchronously removes the complete adult card');
+  await tick();
   assert.equal(f.host().querySelector('[data-game=matgo]'), null, 'revocation removes the row before either read finishes');
   assert.equal(f.requests.length, 2);
   await f.reply(1, 8); await f.reply(0, 99, { data: { tank: { nick: 'old account data', score: 99 }, matgo: { nick: 'old winner', score: 1000 } } });
   assert.equal(f.score(), '8연승'); assert.equal(f.host().querySelector('[data-game=matgo]'), null);
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'a late response never restores the adult card');
   f.w.OjjudaGameRankings.mount(null); assert.equal(listeners.size, 0, 'disposing releases the access listener');
 });
 
@@ -207,11 +316,16 @@ test('catalog synchronization ignores the wrong owner and callbacks from a dispo
   checks[1]({ userId: 'member-a' }); await tick();
   assert.equal(f.requests.length, 2); await f.reply(1, 5);
   assert.ok(f.host().querySelector('[data-game=matgo]'));
-  const saved = f.host().innerHTML; f.actor('member-b'); allowed = false;
+  f.actor('member-b'); allowed = false;
   assert.equal(await f.w.OjjudaGameRankings.syncCatalog('member-a'), false);
   for (const fn of listeners) fn(Error('signed_out')); await tick();
-  assert.equal(f.host().innerHTML, saved, 'an unauthorized old view ignores access events');
+  assert.equal(f.host().querySelector('[data-game]'), null, 'account changes remove the previous owner\'s ranking rows');
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'the previous owner\'s adult card and heading are removed');
   assert.equal(f.requests.length, 2);
+  f.actor('member-a'); allowed = true;
+  await f.w.OjjudaGameRankings.syncCatalog('member-a');
+  assert.ok(f.host().querySelector('[data-rank-group=adult]'), 'reauthorizing the same owner restores even an unchanged catalog');
+  assert.equal(f.requests.length, 2, 'restoration reuses the allowed owner\'s recent ranking result');
 });
 
 test('the ranking title opens monthly winners and cached month changes preserve empty games and the carousel', async t => {
@@ -302,7 +416,7 @@ test('history retries failed reads and keeps its archived month on refresh and g
 
 test('historical rows follow access changes without losing their month or accepting an old account response', async t => {
   const f = fixture(t), listeners = new Set(); let allowed = true;
-  const adult = { matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' } };
+  const adult = adultGames;
   const getGames = () => ({ ...games, ...(allowed ? adult : {}) });
   f.w.OjjudaMatgoAccess = { visible: () => allowed, subscribe: fn => { listeners.add(fn); return () => listeners.delete(fn); } };
   f.mount({ getGames }); await f.reply(0, 4);
@@ -310,14 +424,17 @@ test('historical rows follow access changes without losing their month or accept
   await f.pickMonth('2026-09');
   allowed = false; for (const fn of listeners) fn(); await tick();
   assert.equal(f.host().querySelectorAll('[data-game]').length, 2, 'restricted rows disappear immediately');
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'the historical adult card and heading disappear together');
   assert.equal(f.requests[3].args.p_month, '2026-09-01');
   assert.deepEqual(Array.from(f.requests[3].args.p_games), Object.keys(games));
   await f.historyReply(3, { month: '2026-09', closed: true });
   await f.historyReply(2, { month: '2026-09', closed: true, leaders: { tank: { nick: '9월 우승', score: 9 }, matgo: { nick: '맞고 우승', score: 100 } } });
   assert.equal(f.score(), '9연승'); assert.equal(f.host().querySelector('[data-game=matgo]'), null);
+  assert.equal(f.host().querySelector('[data-rank-group=adult]'), null, 'a revoked archive response cannot restore the card');
   allowed = true; await f.w.OjjudaGameRankings.syncCatalog('member-a'); await tick();
   assert.equal(f.requests.length, 4, 'restored access can reuse the same recently archived month for the same account and allowed catalog');
   assert.ok(f.host().querySelector('[data-game=matgo]')); assert.equal(f.host().querySelector('.board-rank-month').value, '2026-09');
+  assert.deepEqual([...f.host().querySelectorAll('[data-rank-group=adult] [data-game]')].map(row => row.dataset.game), Object.keys(adult));
   const oldHost = f.host(), late = f.w.OjjudaGameRankings.refresh(); await tick();
   const markup = oldHost.innerHTML; f.actor('member-b'); f.mount({ getGames }); await f.reply(5, 2);
   await f.historyReply(4, { month: '2026-09', closed: true, leaders: { tank: { nick: 'old account', score: 999 } } }); await late;

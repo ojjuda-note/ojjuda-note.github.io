@@ -42,7 +42,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   assert.ok(!catalog.includes('carom4')&&!catalog.includes('pool8'));
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
   const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
-  const visibleIds=vm.runInNewContext(registry+';Object.keys(worldRankGames())',{_r:{},window:{OjjudaMatgoAccess:{visible:()=>true}}});
+  const visibleIds=vm.runInNewContext(registry+';Object.keys(worldRankGames())',{_r:{},D:{online:true,user:{id:'member'}},window:{OjjudaMatgoAccess:{visible:()=>true}}});
   assert.deepEqual(catalog.toSorted(),Array.from(visibleIds).toSorted(),'the database archive catalog tracks every launched UI category');
 
   // Fixed Korea-time half-open periods, independent of server/session timezone.
