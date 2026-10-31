@@ -1,4 +1,5 @@
-/* Popularity uses saved play records; release dates never change with patch versions. */
+/* General popularity uses saved play records; adult picks are explicitly designated.
+ * Release dates never change with patch versions. */
 (() => {
  'use strict';
  const releases = Object.freeze({
@@ -9,6 +10,7 @@
   tour:'2026-10-11T20:26:33+09:00',saetbyeol:'2026-10-13T00:41:20+09:00',mines:'2026-10-13T01:25:19+09:00',
   tank:'2026-10-18T15:21:54+09:00',poker:'2026-10-21T09:05:39+09:00',sacheonseong:'2026-10-28T18:44:38+09:00',bang:'2026-10-29T12:51:03+09:00'
  });
+ const adultPopular = Object.freeze(['matgo','poker']);
  const canonical = key => ['carom4','carom3','pool8'].includes(key)?'billiards':key;
  const keyOf = button => canonical(button.dataset.act === 'matgo-open'?'matgo':button.dataset.v);
  const month = 30*24*60*60*1000, ttl = 5*60*1000;
@@ -23,20 +25,23 @@
    const original = button => Number(button.dataset.arcadeOrder);
    const current = now();
    const fresh = key => { const date=Date.parse(releases[key]);return Number.isFinite(date)&&date<=current&&current-date<month; };
-   const popular = buttons.filter(b => !fresh(keyOf(b))&&(counts.get(keyOf(b))||0)>0).sort((a,b)=>(counts.get(keyOf(b))||0)-(counts.get(keyOf(a))||0)||original(a)-original(b)).slice(0,3);
+   const designated = list.dataset.arcadeGames === 'adult';
+   const popular = designated
+    ? adultPopular.map(key=>buttons.find(button=>keyOf(button)===key)).filter(Boolean)
+    : buttons.filter(b => !fresh(keyOf(b))&&(counts.get(keyOf(b))||0)>0).sort((a,b)=>(counts.get(keyOf(b))||0)-(counts.get(keyOf(a))||0)||original(a)-original(b)).slice(0,3);
    const rank = new Map(popular.map((button,i)=>[keyOf(button),i+1]));
    for (const button of allButtons) {
-    const key=keyOf(button), place=rank.get(key), isNew=fresh(key), signature=`${place||0}:${isNew}`;
+    const key=keyOf(button), place=rank.get(key), isNew=!place&&fresh(key), signature=`${designated?'adult':'records'}:${place||0}:${isNew}`;
     if (button.dataset.arcadeBadge === signature) continue;
     button.dataset.arcadeBadge=signature;
     button.querySelector('.arcade-badges')?.remove();
     const labels=[];
     if (place || isNew) {
      const badges=document.createElement('span');badges.className='arcade-badges';badges.setAttribute('aria-hidden','true');
-     // New releases are excluded from popularity until the 30-day period ends.
+     // A designated adult pick keeps its single popular badge during its new period.
      const badge=document.createElement('span');
      badge.className=`arcade-badge ${isNew?'new':'popular'}`;badge.textContent=isNew?'신규':'인기';badges.append(badge);
-     labels.push(isNew?'출시 후 30일 이내 신규 게임':`최근 30일 인기 ${place}위 · 저장된 플레이 기록 기준`);
+     labels.push(isNew?'출시 후 30일 이내 신규 게임':designated?'어른들 플레이 인기 지정 게임':`최근 30일 인기 ${place}위 · 저장된 플레이 기록 기준`);
      button.querySelector('.ge')?.append(badges);
     }
     if (labels.length) button.setAttribute('aria-description',labels.join('. ')); else button.removeAttribute('aria-description');

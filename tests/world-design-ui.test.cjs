@@ -22,7 +22,8 @@ world=world.slice(0,boot)+`
  const fits=async(label)=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,label+' fits viewport');
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='classic');await fits('desktop arcade');
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
- assert.equal(await page.locator('[data-arcade-games=solo] .ge img').count(),10);
+ assert.equal(await page.locator('[data-arcade-games=solo] .ge img').count(),9,'19+ games belong to the adult section');
+ assert.equal(await page.locator('[data-arcade-adult]').count(),0,'guests have no adult section');
  assert.equal(await page.getByRole('button',{name:'사천성',exact:true}).count(),1);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);
  assert.equal(await page.locator('.arcade-welcome').count(),0,'theme artwork belongs to the rankings background');

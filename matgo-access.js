@@ -12,7 +12,7 @@
   // Hide restricted games before eligibility resolves, including newly rendered buttons.
   if(root.document?.head&&!root.document.getElementById('ojjuda-adult-visibility')){
     const style=root.document.createElement('style');style.id='ojjuda-adult-visibility';
-    style.textContent='html:not([data-ojjuda-adult="true"]) [data-act="game-open"][data-v="photo_ttang"]{display:none!important}';
+    style.textContent='html:not([data-ojjuda-adult="true"]) [data-arcade-adult],html:not([data-ojjuda-adult="true"]) [data-act="game-open"][data-v="photo_ttang"]{display:none!important}';
     root.document.head.append(style);
   }
   let client = null, subscription = null, pending = null, revision = 0;
@@ -36,7 +36,7 @@
     checkedAt = 0;
     root.document?.documentElement?.removeAttribute('data-ojjuda-adult');
     root.document?.documentElement?.removeAttribute('data-ojjuda-poker');
-    root.document?.querySelectorAll('[data-act="matgo-open"],.board-comics').forEach(button => button.remove());
+    root.document?.querySelectorAll('[data-arcade-adult],[data-act="matgo-open"],.board-comics').forEach(button => button.remove());
     for (const listener of listeners) { try { listener(reject(code)); } catch (_) {} }
   }
   function configure(value) {
