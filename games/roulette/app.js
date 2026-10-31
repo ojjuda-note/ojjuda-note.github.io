@@ -1,5 +1,5 @@
 import {BETS,COLOR,MAX_BET,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261031-roulette-modes1';
-import {RouletteWheel} from './wheel.js?v=20261031-roulette-roll1';
+import {RouletteWheel} from './wheel.js?v=20261031-roulette-smooth1';
 import {Sound} from './sound.js?v=20261031-roulette-modes1';
 import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
 

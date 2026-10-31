@@ -30,7 +30,7 @@ test('ball rolls continuously, never reverses in air and has one modest outward 
 test('angular velocity stays continuous at former docking point and all curve joins',()=>{
   for(const duration of [20000,30000])for(const reduced of [false,true]){
     const plan=planSpinMotion({number:9,variation:.63,duration},0,-Math.PI/2,{reduced}),epsilon=.00001;
-    const joins=[...plan.orbit.points.slice(1,-1).map(p=>p[0]),...plan.angular.points.slice(1,-1).map(p=>p[0]),plan.orbitEnd,plan.dockAt*plan.duration];
+    const joins=[...plan.orbit.points.slice(1,-1).map(p=>p[0]),...plan.angular.points.slice(1,-1).map(p=>p[0]),plan.orbitEnd,plan.blendEnd,plan.dockAt*plan.duration];
     for(const time of new Set(joins)){
       const before=poseAt(plan,time-epsilon),at=poseAt(plan,time),after=poseAt(plan,time+epsilon);
       assert.ok(Math.abs((at.angle-before.angle)/epsilon-(after.angle-at.angle)/epsilon)<.001);
@@ -195,5 +195,54 @@ test('normal launch completes a visible lap within a second and reduced motion s
     assert.ok(reducedLaps>=.25&&reducedLaps<=.6,`reduced motion must still visibly roll: ${reducedLaps.toFixed(3)} laps/s; ${context}`);
     assert.ok(reducedLaps<normalLaps*.6,`reduced motion must be substantially gentler; ${context}`);
     assert.equal(normal.duration*1000,duration);assert.equal(reduced.duration*1000,duration,'accessibility mode never changes server settlement time');
+  }
+});
+
+test('entering the rotor slows over visible time without a speed cliff or premature reversal',()=>{
+  // C1 continuity and a nonzero speed do not prevent a visible speed cliff.
+  // Compare average angular travel in adjacent real 100/200ms windows while
+  // the ball crosses the bowl lip and first descends toward the pockets.
+  // Both world and rotor-relative motion may change by at most 0.1 turn/s
+  // per 100ms. Physical rebounds occur later and are deliberately excluded.
+  for(let number=0;number<=36;number++)for(const variation of [0,.25,.5,.75,1])for(const duration of [20000,25000,30000])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number,variation,duration},0,-Math.PI/2,{reduced});
+    for(const fps of [30,120])for(const span of [.1,.2]){
+      let measured=0;
+      for(let frame=Math.ceil(span*fps);frame/fps+span<plan.pocketTime;frame++){
+        const time=frame/fps,a=poseAt(plan,time-span),b=poseAt(plan,time),c=poseAt(plan,time+span);
+        if(c.impact>0)break;
+        if(a.radius>380||c.radius<330||a.radius<b.radius||b.radius<c.radius)continue;
+        measured++;
+        const worldBefore=(b.angle-a.angle)/span/TAU,worldAfter=(c.angle-b.angle)/span/TAU;
+        const relativeBefore=((b.angle-b.rotation)-(a.angle-a.rotation))/span/TAU;
+        const relativeAfter=((c.angle-c.rotation)-(b.angle-b.rotation))/span/TAU;
+        const context=`number=${number} variation=${variation} duration=${duration} reduced=${reduced} fps=${fps} window=${span}s t=${time.toFixed(4)} radius=${b.radius.toFixed(2)}`;
+        for(const [frameName,before,after]of [['world',worldBefore,worldAfter],['rotor-relative',relativeBefore,relativeAfter]]){
+          const acceleration=Math.abs(after-before)/span;
+          assert.ok(acceleration<=1+1e-6,`${frameName} motion changes too suddenly: ${before.toFixed(3)} to ${after.toFixed(3)} turns/s (${acceleration.toFixed(3)} turns/s²); ${context}`);
+        }
+        assert.ok(worldBefore<0&&worldAfter<0,`ball reverses before its first physical rebound; ${context}`);
+      }
+      assert.ok(measured>0,'each plan must exercise the first r380–330 descent before a physical rebound');
+    }
+  }
+});
+
+test('ball and rotor acceleration join smoothly at both ends of the long descent transition',()=>{
+  // One-sided second derivatives of sampled positions, independent of the
+  // planner's coefficients. Four-point estimates avoid treating ordinary
+  // jerk during gradual braking as an acceleration discontinuity.
+  const h=.0005;
+  for(let number=0;number<=36;number++)for(const variation of [0,.25,.5,.75,1])for(const duration of [20000,25000,30000])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number,variation,duration},0,-Math.PI/2,{reduced});
+    for(const time of [plan.orbitEnd,plan.blendEnd]){
+      assert.ok(Number.isFinite(time)&&time>3*h&&time+3*h<plan.duration,'both transition seams must be measured');
+      const at=poseAt(plan,time),before=[1,2,3].map(n=>poseAt(plan,time-n*h)),after=[1,2,3].map(n=>poseAt(plan,time+n*h));
+      for(const property of ['angle','rotation']){
+        const left=(2*at[property]-5*before[0][property]+4*before[1][property]-before[2][property])/(h*h);
+        const right=(2*at[property]-5*after[0][property]+4*after[1][property]-after[2][property])/(h*h);
+        assert.ok(Math.abs(left-right)<.01,`${property} acceleration jumps: ${left.toFixed(4)} to ${right.toFixed(4)} rad/s²; number=${number} variation=${variation} duration=${duration} reduced=${reduced} t=${time.toFixed(6)}`);
+      }
+    }
   }
 });

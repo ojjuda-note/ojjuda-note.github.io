@@ -24,18 +24,39 @@ function curve(points,endSlope=0){
   });
   return {points,tangents};
 }
-function sampleCurve({points,tangents},time){
+function polynomial(coefficients,t){
+  let value=0;for(let i=coefficients.length-1;i>=0;i--)value=value*t+coefficients[i];return value;
+}
+// Endpoint position, velocity and acceleration define a C2 quintic. The
+// contact curve below integrates a cubic velocity, so its fifth term is zero.
+function smoothCurve(points,tangents,accelerations){
+  const dt=points[1][0]-points[0][0],c0=points[0][1],c1=tangents[0]*dt,c2=accelerations[0]*dt*dt/2;
+  const position=points[1][1]-c0-c1-c2,velocity=tangents[1]*dt-c1-2*c2,acceleration=accelerations[1]*dt*dt-2*c2;
+  const coefficients=[c0,c1,c2,10*position-4*velocity+acceleration/2,-15*position+7*velocity-acceleration,6*position-3*velocity+acceleration/2];
+  const velocityCoefficients=coefficients.slice(1).map((value,i)=>value*(i+1));
+  const accelerationCoefficients=velocityCoefficients.slice(1).map((value,i)=>value*(i+1));
+  return {points,tangents,accelerations,coefficients,velocityCoefficients,accelerationCoefficients};
+}
+function sampleCurve({points,tangents,coefficients},time){
   if(time<=points[0][0])return points[0][1];
   if(time>=points.at(-1)[0])return points.at(-1)[1];
+  if(coefficients)return polynomial(coefficients,(time-points[0][0])/(points[1][0]-points[0][0]));
   const i=points.findIndex(point=>point[0]>=time),a=points[i-1],b=points[i],dt=b[0]-a[0],t=(time-a[0])/dt,t2=t*t,t3=t2*t;
   return (2*t3-3*t2+1)*a[1]+(t3-2*t2+t)*dt*tangents[i-1]+(-2*t3+3*t2)*b[1]+(t3-t2)*dt*tangents[i];
 }
 // Exact Hermite derivative in units per second, independent of render cadence.
-function curveVelocity({points,tangents},time){
+function curveVelocity({points,tangents,velocityCoefficients},time){
   if(time<=points[0][0])return tangents[0];
   if(time>=points.at(-1)[0])return tangents.at(-1);
+  if(velocityCoefficients){const dt=points[1][0]-points[0][0];return polynomial(velocityCoefficients,(time-points[0][0])/dt)/dt}
   const i=points.findIndex(point=>point[0]>=time),a=points[i-1],b=points[i],dt=b[0]-a[0],t=(time-a[0])/dt,t2=t*t;
   return (6*t2-6*t)*(a[1]-b[1])/dt+(3*t2-4*t+1)*tangents[i-1]+(3*t2-2*t)*tangents[i];
+}
+function curveAcceleration({points,tangents,accelerationCoefficients},time){
+  if(accelerationCoefficients){const dt=points[1][0]-points[0][0];return polynomial(accelerationCoefficients,clamp((time-points[0][0])/dt))/(dt*dt)}
+  const i=time<=points[0][0]?1:time>=points.at(-1)[0]?points.length-1:points.findIndex(point=>point[0]>=time);
+  const a=points[i-1],b=points[i],dt=b[0]-a[0],t=clamp((time-a[0])/dt);
+  return (12*t-6)*(a[1]-b[1])/(dt*dt)+(6*t-4)*tangents[i-1]/dt+(6*t-2)*tangents[i]/dt;
 }
 function timeAt(curve,value,lo,hi){
   for(let i=0;i<45;i++){const mid=(lo+hi)/2;if(sampleCurve(curve,mid)>value)lo=mid;else hi=mid}
@@ -44,17 +65,18 @@ function timeAt(curve,value,lo,hi){
 function rotorPose(plan,time){
   if(time<=plan.pocketTime){
     const u=time/plan.pocketTime,delta=plan.initialWheelVelocity-plan.pocketWheelVelocity;
-    return {rotation:plan.startRotation+plan.initialWheelVelocity*time-delta*plan.pocketTime*(u**3-.5*u**4),wheelVelocity:plan.initialWheelVelocity-delta*(3*u*u-2*u**3)};
+    return {rotation:plan.startRotation+plan.initialWheelVelocity*time-delta*plan.pocketTime*(u**3-.5*u**4),wheelVelocity:plan.initialWheelVelocity-delta*(3*u*u-2*u**3),wheelAcceleration:-delta*(6*u-6*u*u)/plan.pocketTime};
   }
   // Integral of smoothstep deceleration, with zero acceleration at both ends.
   const u=clamp((time-plan.pocketTime)/plan.coastDuration);
-  return {rotation:plan.startRotation+plan.preWheelAngle+plan.coastAngle*(2*u-2*u**3+u**4),wheelVelocity:plan.coastAngle/plan.coastDuration*(2-6*u*u+4*u**3)};
+  return {rotation:plan.startRotation+plan.preWheelAngle+plan.coastAngle*(2*u-2*u**3+u**4),wheelVelocity:plan.coastAngle/plan.coastDuration*(2-6*u*u+4*u**3),wheelAcceleration:plan.coastAngle/(plan.coastDuration*plan.coastDuration)*(-12*u+12*u*u)};
 }
 
 // The fixed bowl uses world-space ball motion: adding the rotor's rotation
 // there would cancel the ball's roll and make it pause before touching it.
-// Only the inner descent is rotor-relative. Its gravity and settling speed
-// use elapsed seconds, independent of the server's 20–30 second duration.
+// The inner approach slows in the same world frame; only the final pocket
+// settling is rotor-relative. Gravity and settling use elapsed seconds,
+// independent of the server's 20–30 second duration.
 export function planSpinMotion(spin,startRotation=0,ballStart=-HALF,options={}){
   const duration=Number.isFinite(spin.duration)?Math.max(20,Math.min(30,spin.duration/1000)):25;
   const variation=clamp(spin.variation),sector=WHEEL_ORDER.indexOf(spin.number)*STEP-HALF,reduced=options?.reduced===true;
@@ -70,21 +92,30 @@ export function planSpinMotion(spin,startRotation=0,ballStart=-HALF,options={}){
   const rebound=settlingEnd-4,returnAt=settlingEnd-2.85;
   const radial=curve([[0,396],[dropAt-.5,395],[dropAt,393],[dropAt+.65,383],[settlingEnd-5.4,365],[rebound,322],[rebound+.38,341+variation*5],[returnAt,323.5],[settlingEnd-2.35,306],[settlingEnd-1.4,291],[duration,291]]);
   const tail=curve([[dropAt,8.1],[settlingEnd-5.4,4.1],[rebound,1.7],[settlingEnd-2.8,.30],[settlingEnd-2.1,.09],[settlingEnd-1.7,.02],[pocketTime,0],[duration,0]]);
-  // Join just inside the rotor, after the contact blend has finished. Keep
-  // every later tail value/tangent so its flights and divider clearance do
-  // not change. The short bridge integrates a linear relative velocity.
+  // Spread contact deceleration across the numbered band and first rebound,
+  // ending at the return flight. Keeping the following tail exactly intact
+  // preserves the final divider crossings and fixed-gravity landings.
   const orbitEnd=timeAt(radial,368,dropAt,tail.points[1][0]);
-  const rotor=rotorPose({startRotation,initialWheelVelocity,pocketWheelVelocity,pocketTime,preWheelAngle,coastAngle,coastDuration},orbitEnd);
+  const blendEnd=returnAt,blendDuration=blendEnd-orbitEnd;
+  const rotor=rotorPose({startRotation,initialWheelVelocity,pocketWheelVelocity,pocketTime,preWheelAngle,coastAngle,coastDuration},blendEnd);
   const orbitVelocity=-TAU*(reduced ? .35+variation*.1 : 1.2+variation*.3);
   const joinVelocity=-TAU*(reduced ? .25+variation*.025 : .45+variation*.1);
-  const relativeJoinVelocity=joinVelocity-rotor.wheelVelocity;
-  const joinRemaining=tail.points[1][1]-(relativeJoinVelocity+tail.tangents[1])*(tail.points[1][0]-orbitEnd)/2;
+  const orbitAcceleration=(joinVelocity-orbitVelocity)/orbitEnd;
+  const remaining=sampleCurve(tail,blendEnd),relativeVelocity=curveVelocity(tail,blendEnd);
+  const endVelocity=rotor.wheelVelocity+relativeVelocity,endAcceleration=rotor.wheelAcceleration+curveAcceleration(tail,blendEnd);
+  // Integrate a cubic Hermite velocity with the actual endpoint accelerations.
+  // This makes both joins C2 without a short braking impulse or speed kick.
+  const blendTravel=blendDuration*((joinVelocity+endVelocity)/2+blendDuration*(orbitAcceleration-endAcceleration)/12);
   const desiredJoin=ballStart+(orbitVelocity+joinVelocity)*orbitEnd/2;
   // An integer number of turns aligns the announced pocket without changing
-  // either endpoint speed. The small rounding correction stays in the orbit.
-  const target=sector-TAU*Math.round((rotor.rotation+sector+joinRemaining-desiredJoin)/TAU);
-  const orbit={points:[[0,ballStart],[orbitEnd,rotor.rotation+target+joinRemaining]],tangents:[orbitVelocity,joinVelocity]};
-  const angular={points:[[orbitEnd,joinRemaining],...tail.points.slice(1)],tangents:[relativeJoinVelocity,...tail.tangents.slice(1)]};
+  // endpoint speed/acceleration. The small rounding correction stays in the
+  // outer orbit, with zero first and second derivatives at both ends.
+  const target=sector-TAU*Math.round((rotor.rotation+sector+remaining-blendTravel-desiredJoin)/TAU);
+  const endAngle=rotor.rotation+target+remaining,joinAngle=endAngle-blendTravel;
+  const orbit=smoothCurve([[0,ballStart],[orbitEnd,joinAngle]],[orbitVelocity,joinVelocity],[orbitAcceleration,orbitAcceleration]);
+  const blend=smoothCurve([[orbitEnd,joinAngle],[blendEnd,endAngle]],[joinVelocity,endVelocity],[orbitAcceleration,endAcceleration]);
+  const tailIndex=tail.points.findIndex(point=>point[0]>blendEnd);
+  const angular={points:[[blendEnd,remaining],...tail.points.slice(tailIndex)],tangents:[relativeVelocity,...tail.tangents.slice(tailIndex)]};
   // Fixed-gravity flights leave the surface at actual contacts. Elevation is
   // world-space during flight; the ball no longer follows the slope in midair.
   const flights=[];
@@ -105,14 +136,14 @@ export function planSpinMotion(spin,startRotation=0,ballStart=-HALF,options={}){
   for(const span of [.18,.10]){addFlight(landed,landed+span,.2);landed+=span}
   const impacts=flights.map(f=>({at:f.start/duration,strength:f.strength}));
   impacts.push({at:landed/duration,strength:.12});
-  return {duration,variation,reduced,startRotation,wheelDelta,initialWheelVelocity,pocketWheelVelocity,preWheelAngle,pocketTime,coastDuration,coastAngle,coastTurns,coastAt:pocketTime/duration,ballStart,sector,target,orbitEnd,orbit,angular,radial,flights,impacts,dropAt:dropAt/duration,reboundAt:rebound/duration,returnAt:returnAt/duration,dockAt:(settlingEnd-1.4)/duration};
+  return {duration,variation,reduced,startRotation,wheelDelta,initialWheelVelocity,pocketWheelVelocity,preWheelAngle,pocketTime,coastDuration,coastAngle,coastTurns,coastAt:pocketTime/duration,ballStart,sector,target,orbitEnd,blendEnd,orbit,blend,angular,radial,flights,impacts,dropAt:dropAt/duration,reboundAt:rebound/duration,returnAt:returnAt/duration,dockAt:(settlingEnd-1.4)/duration};
 }
 
 export function sampleSpinMotion(plan,progress){
   const p=clamp(progress),time=p*plan.duration,coasting=p>=plan.coastAt;
-  const {rotation,wheelVelocity}=rotorPose(plan,time),orbiting=time<plan.orbitEnd;
-  const radius=coasting?291:sampleCurve(plan.radial,time),angle=orbiting?sampleCurve(plan.orbit,time):rotation+plan.target+(coasting?0:sampleCurve(plan.angular,time)),ground=wheelSurface(radius);
-  const radialVelocity=coasting?0:curveVelocity(plan.radial,time),relativeAngularVelocity=coasting?0:orbiting?curveVelocity(plan.orbit,time)-wheelVelocity:curveVelocity(plan.angular,time);
+  const {rotation,wheelVelocity}=rotorPose(plan,time),worldCurve=time<plan.orbitEnd?plan.orbit:time<plan.blendEnd?plan.blend:null;
+  const radius=coasting?291:sampleCurve(plan.radial,time),angle=worldCurve?sampleCurve(worldCurve,time):rotation+plan.target+(coasting?0:sampleCurve(plan.angular,time)),ground=wheelSurface(radius);
+  const radialVelocity=coasting?0:curveVelocity(plan.radial,time),relativeAngularVelocity=coasting?0:worldCurve?curveVelocity(worldCurve,time)-wheelVelocity:curveVelocity(plan.angular,time);
   // The numbered rotor ends at r370, with a raised lip out to r372.3.
   // Blend across that narrow contact area into the stationary outer bowl.
   // A ball carried by the rotor has zero rolling speed, even as it revolves.
