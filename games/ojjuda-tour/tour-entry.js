@@ -45,7 +45,7 @@ function tourShowError() {
     const status = document.getElementById('tourRecordStatus');
     if (!status || !pendingResult || !G?.over || G.runId !== pendingResult.runId) return;
     clearTimeout(recordTimer);
-    status.textContent = ok ? '게임 순위에 기록했어요. 우승은 연승으로 집계돼요.' : '순위 기록을 저장하지 못했어요. ';
+    status.textContent = ok ? '게임 순위에 기록했어요. 이번 달 최고 연승이 표시돼요.' : '순위 기록을 저장하지 못했어요. ';
     if (!ok) {
       const retry = document.createElement('button');
       retry.type = 'button'; retry.className = 'btn sec'; retry.textContent = '다시 저장';

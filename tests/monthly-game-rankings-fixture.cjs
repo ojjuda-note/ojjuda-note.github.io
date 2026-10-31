@@ -3,6 +3,8 @@ const { PGlite } = require('@electric-sql/pglite');
 const root = path.join(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, 'supabase/migrations', name), 'utf8');
 const migrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_monthly_game_rankings_archive.sql'));
+const participantsMigrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_show_zero_streak_participants.sql'));
+const bestStreakMigrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_monthly_best_win_streaks.sql'));
 function definition(source, name) {
   const start = source.search(new RegExp('create(?: or replace)? function ' + name.replaceAll('.', '\\.') + '\\(', 'i'));
   if (start < 0) throw Error('missing function ' + name);
@@ -11,7 +13,7 @@ function definition(source, name) {
   const body = text.indexOf(tag), end = text.indexOf(tag, body + tag.length);
   return text.slice(0, end + tag.length + 1);
 }
-async function createFixture(existingDb) {
+async function createFixture(existingDb, { participants = true, latestBest = participants } = {}) {
   const db = existingDb || new PGlite();
   await db.exec(`
     create role anon; create role authenticated; create role service_role;
@@ -54,9 +56,18 @@ async function createFixture(existingDb) {
   await install('20261006164811_guest_game_rankings.sql','ojjuda_guest_internal.submit_score');
   await install('20261006164811_guest_game_rankings.sql','public.submit_guest_game_score');
   await install('20261028100203_sacheonseong_best_stage_ranking.sql','ojjuda_guest_internal.ranking');
-  await install('20261022121120_game_ranking_criteria.sql','ojjuda_guest_internal.round_leaders', sql => sql.replaceAll("'tour','tank'", "'tour','tank','ttang'"));
+  await install('20261022121120_game_ranking_criteria.sql','ojjuda_guest_internal.round_leaders');
   await install('20261022121120_game_ranking_criteria.sql','ojjuda_guest_internal.criteria_ranking');
   await install('20261022130306_multiplayer_ranking_details.sql','ojjuda_guest_internal.tank_candidates');
+  await install('20261022130306_multiplayer_ranking_details.sql','ojjuda_guest_internal.spot_candidates');
+  // Use the shipped current daily/all-time branches as well as the monthly
+  // dispatcher. The original criteria fixture predates tank opponent fields.
+  const details = read('20261022130306_multiplayer_ranking_details.sql');
+  const criteriaStart = details.indexOf('do $patch$');
+  const criteriaEnd = details.indexOf(' foreach signature in array', criteriaStart);
+  if (criteriaStart < 0 || criteriaEnd <= criteriaStart) throw Error('missing current criteria patch');
+  await db.exec(details.slice(criteriaStart, criteriaEnd) + 'end;$patch$;');
+  await db.exec(read('20261024090740_ranking_member_visibility.sql'));
   await install('20261022130306_multiplayer_ranking_details.sql','ojjuda_guest_internal.record_spot_clear', sql => sql.replace('not between 1 and 48','not between 1 and 62'));
   await install('20261022130306_multiplayer_ranking_details.sql','public.record_spot_clear');
   await install('20261031074908_board_computer_takeover.sql','ojjuda_guest_internal.streak_candidates');
@@ -73,6 +84,8 @@ async function createFixture(existingDb) {
   await db.exec(read(migrationName));
   const memberIndex = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_monthly_game_rankings_member_index.sql'));
   await db.exec(read(memberIndex));
+  if (participants) await db.exec(read(participantsMigrationName));
+  if (latestBest) await db.exec(read(bestStreakMigrationName));
   await db.exec("update ojjuda_ranking_internal.settings set first_month='2026-10-01'");
   const funcs = await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     where n.nspname in('ojjuda_guest_internal','ojjuda_ranking_internal','ojjuda_photo_internal','ojjuda_poker_internal','ojjuda_bang_internal')
@@ -90,4 +103,4 @@ async function createFixture(existingDb) {
   };
   return {db,clock,claim,actor,migrationName};
 }
-module.exports = {createFixture,definition,read,migrationName};
+module.exports = {createFixture,definition,read,migrationName,participantsMigrationName,bestStreakMigrationName};

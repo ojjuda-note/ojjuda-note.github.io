@@ -341,7 +341,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     </div>
     <p id="tourStatus" role="status" class="ge-hint" hidden></p>
     <small id="tourSaveHint" class="ge-hint tour-save-hint">나갔다 들어오면 새 게임을 시작해요. 완료한 순위 기록은 유지돼요.</small>
-    <p class="ge-hint tour-save-hint">게임 순위는 첫 번째 사람 참가자의 최종 자산으로 기록돼요. 이번 달 최고 기록을 표시해요.</p>
+    <p class="ge-hint tour-save-hint">게임 순위에는 첫 번째 사람 참가자의 이번 달 최고 연승이 표시돼요. 패배하면 현재 연승은 0부터 다시 세지만, 이번 달 최고 연승은 남아요.</p>
     <details class="ge-more">
       <summary>참가자 설정 <span id="tourRosterCount" class="tour-roster-count">나 + 컴퓨터 3명</span></summary>
       <div id="rows"></div>
@@ -1672,7 +1672,7 @@ function endScreen(winner,reason){
   $('#sheet').classList.add('hidden');R.pickSet=null;
   $('#s2Title').textContent=winner?`${winner.name} 우승!`:'게임 종료';
   $('#s2Bust').innerHTML=winner?ga(winner,{bust:true,expr:'happy'}):'';
-  $('#s2Body').innerHTML=`<p>${reason?'🏆 '+reason+' · ':''}최종 순위예요. 우승 기록은 연승으로 집계돼요.</p>`+rankingHTML(winner)+'<p id="tourRecordStatus" role="status"></p>';
+  $('#s2Body').innerHTML=`<p>${reason?'🏆 '+reason+' · ':''}최종 순위예요. 게임순위에는 이번 달 최고 연승이 남아요.</p>`+rankingHTML(winner)+'<p id="tourRecordStatus" role="status"></p>';
   $('#s2Btns').innerHTML=`<button class="btn" data-k="new">새 게임 시작</button>`;
   $('#sheet2').classList.remove('hidden');
   window.tourSubmitResult?.(result);
@@ -1697,7 +1697,7 @@ $('#exitBtn').onclick=()=>{if(window.parent!==window)ojjudaPost({type:'ojjuda-ga
 clearSave();
 renderSetup();
 </script>
-<script src="tour-entry.js?v=20261031-fresh-games1"></script>
+<script src="tour-entry.js?v=20261031-best-streak-rankings1"></script>
 <script src="marble-online.js?v=20261031-fresh-games1"></script>
 </body>
 </html>

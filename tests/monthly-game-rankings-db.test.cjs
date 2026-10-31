@@ -114,11 +114,14 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   response=await history(catalog);assert.equal(Object.keys(response.leaders).length,20);assert.ok(Object.values(response.leaders).every(Boolean));
   const leaders=response.leaders;
   assert.equal(leaders.sacheonseong.nick,'Alpha');assert.equal(leaders.sacheonseong.stage,15);
-  assert.equal(leaders.chess.nick,'Beta');assert.equal(leaders.chess.difficulty,'hard','computer-assisted online win is excluded');
+  assert.equal(leaders.chess.nick,'Beta');assert.equal(leaders.chess.difficulty,'hard',
+   'the earlier hard win remains a monthly best; the computer-assisted online win is excluded');
   assert.equal(leaders.janggi.difficulty,'online','remaining human seat retains its result');
   assert.equal(leaders.billiards.variant,'pool8');assert.equal(leaders.billiards.difficulty,'online');
   assert.equal(leaders.tank.opponents,5);assert.equal(leaders.tank.score,1);
-  assert.equal(leaders.tour.nick,'Beta');assert.equal(leaders.ttang.nick,'Beta');assert.equal(leaders.bang.nick,'Beta');
+  for(const game of ['tour','ttang','bang']){
+   assert.equal(leaders[game].nick,'Alpha');assert.equal(leaders[game].score,2,'a later loss preserves the monthly best in '+game);
+  }
   assert.equal(leaders.matgo.nick,'Alpha');assert.equal(leaders.matgo.score,1000);assert.equal(leaders.poker.score,101);
   assert.equal(leaders.spot.nick,'Alpha');assert.equal(leaders.photo_ttang.nick,'Alpha');
   for(const game of catalog)assert.deepEqual(leaders[game],(await ranks(game))[0],game+' uses the same individual monthly board');
