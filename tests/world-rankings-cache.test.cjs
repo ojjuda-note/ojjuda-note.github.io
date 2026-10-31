@@ -139,3 +139,63 @@ test('a delayed adult-access result cannot add restricted rows to a different me
   assert.equal(f.requests.length, 2); assert.equal(f.host().querySelector('[data-game=matgo]'), null);
   await f.reply(1, 6); await f.reply(0, 1); assert.equal(f.score(), '6연승');
 });
+
+test('explicit refresh reads the current catalog after adult access recovers or is revoked', async t => {
+  const f = fixture(t); let allowed = false;
+  const adult = { matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' } };
+  f.w.OjjudaMatgoAccess = { visible: () => allowed, check: async () => { throw Error('offline'); } };
+  const getGames = () => ({ ...games, ...(allowed ? adult : {}) });
+  f.mount({ getGames }); await f.reply(0, 5);
+  allowed = true;
+  const recovered = f.w.OjjudaGameRankings.refresh(); await tick();
+  assert.deepEqual(Array.from(f.requests[1].args.p_games), Object.keys(getGames()));
+  await f.reply(1, 6); await recovered;
+  for (const id of Object.keys(getGames())) assert.ok(f.host().querySelector(`[data-game="${id}"]`), id + ' remains in the current catalog');
+  allowed = false;
+  const revoked = f.w.OjjudaGameRankings.refresh(); await tick();
+  assert.deepEqual(Array.from(f.requests[2].args.p_games), Object.keys(games));
+  await f.reply(2, 7); await revoked;
+  for (const id of Object.keys(adult)) assert.equal(f.host().querySelector(`[data-game="${id}"]`), null);
+  assert.equal(f.score(), '7연승');
+});
+
+test('access invalidation removes restricted rows and ignores their pending response', async t => {
+  const f = fixture(t), listeners = new Set(); let allowed = true;
+  const adult = { matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' } };
+  const getGames = () => ({ ...games, ...(allowed ? adult : {}) });
+  f.w.OjjudaMatgoAccess = { visible: () => allowed, subscribe: fn => { listeners.add(fn); return () => listeners.delete(fn); } };
+  f.mount({ games: getGames(), getGames }); await tick();
+  allowed = false; for (const fn of listeners) fn(Error('unavailable')); await tick();
+  assert.equal(f.host().querySelector('[data-game=matgo]'), null, 'revocation removes the row before either read finishes');
+  assert.equal(f.requests.length, 2);
+  await f.reply(1, 8); await f.reply(0, 99, { data: { tank: { nick: 'old account data', score: 99 }, matgo: { nick: 'old winner', score: 1000 } } });
+  assert.equal(f.score(), '8연승'); assert.equal(f.host().querySelector('[data-game=matgo]'), null);
+  f.w.OjjudaGameRankings.mount(null); assert.equal(listeners.size, 0, 'disposing releases the access listener');
+});
+
+test('catalog synchronization ignores the wrong owner and callbacks from a disposed mount', async t => {
+  const f = fixture(t), listeners = new Set(), checks = []; let allowed = false;
+  const getGames = () => ({ ...games, ...(allowed ? { matgo: { name: '맞고', unit: 'G' } } : {}) });
+  f.w.OjjudaMatgoAccess = {
+    visible: () => allowed,
+    check: () => new Promise(resolve => checks.push(resolve)),
+    subscribe: fn => { listeners.add(fn); return () => listeners.delete(fn); }
+  };
+  const oldHost = f.mount({ getGames }), oldListener = [...listeners][0];
+  f.mount({ getGames }); await f.reply(0, 4);
+  assert.equal(listeners.size, 1, 'remount replaces the old access subscription');
+  const oldMarkup = oldHost.innerHTML;
+  allowed = true; checks[0]({ userId: 'member-a' }); oldListener(); await tick();
+  assert.equal(oldHost.innerHTML, oldMarkup, 'the disposed ranking remains untouched');
+  assert.equal(f.host().querySelector('[data-game=matgo]'), null, 'old callbacks cannot change the replacement mount');
+  assert.equal(await f.w.OjjudaGameRankings.syncCatalog('member-b'), false);
+  assert.equal(f.requests.length, 1, 'wrong-owner synchronization makes no request');
+  checks[1]({ userId: 'member-a' }); await tick();
+  assert.equal(f.requests.length, 2); await f.reply(1, 5);
+  assert.ok(f.host().querySelector('[data-game=matgo]'));
+  const saved = f.host().innerHTML; f.actor('member-b'); allowed = false;
+  assert.equal(await f.w.OjjudaGameRankings.syncCatalog('member-a'), false);
+  for (const fn of listeners) fn(Error('signed_out')); await tick();
+  assert.equal(f.host().innerHTML, saved, 'an unauthorized old view ignores access events');
+  assert.equal(f.requests.length, 2);
+});
