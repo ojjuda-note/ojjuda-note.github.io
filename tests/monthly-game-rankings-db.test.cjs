@@ -88,7 +88,8 @@ const hash = token => createHash('sha256').update(token).digest('hex');
    await score(a,game,0);await score(b,game,10);await score(banned,game,99);
    await score(a,game,100,'2026-09-30T15:59:59.999999Z');await score(a,game,100,'2026-10-31T16:00:00Z');
   }
-  assert.ok((await ranks('runner')).some(x=>x.nick==='Alpha'&&x.score===0),'zero is a valid ordinary score');
+  assert.ok(!(await ranks('runner')).some(x=>x.nick==='Alpha'),'a stored zero score does not qualify for ranking');
+  assert.equal((await ranks('runner'))[0].score,10,'positive records still qualify');
   await score(a,'sacheonseong_15',1);await score(b,'sacheonseong_14',1999999999);
   await score(b,'sacheonseong',9999); // Legacy unsuffixed key must not be cast to an integer stage.
   await db.query("insert into ojjuda_ranking_internal.guest_peaks values('2026-10-01','sacheonseong',$1,1,'2026-10-15Z')",[hash(dayToken)]);

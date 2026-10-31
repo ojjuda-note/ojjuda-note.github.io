@@ -25,6 +25,16 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(value('matgo'),'900G');assert.equal(value('poker'),'800G');
  assert.match(row('poker').querySelector('th').title,/한 판 최대 획득 골드/);
  assert.equal(host.querySelectorAll('img').length,0,'nicknames remain text');
+ for(const score of [0,'0',-1,'-1',NaN,Infinity,'Infinity']){
+  rows.billiards.score=score;await w.OjjudaGameRankings.refresh();
+  assert.equal(value('billiards'),'—','only positive finite scores are ranked: '+score);
+  assert.equal(row('billiards').querySelector('.board-leader-nick').textContent,'이번 달 기록 없음');
+  assert.equal(row('billiards').querySelector('.board-leader-nick').hasAttribute('title'),false);
+  assert.equal(row('billiards').querySelector('.board-game-difficulty'),null,'empty records hide old variant and difficulty labels');
+  assert.equal([...host.querySelectorAll('[data-game]')].at(-1).dataset.game,'billiards','empty records follow all positive records');
+  assert.equal(host.querySelectorAll('[data-game]').length,Object.keys(rows).length,'the game row remains visible');
+ }
+ rows.billiards.score='3';await w.OjjudaGameRankings.refresh();assert.equal(value('billiards'),'3연승','positive numeric strings remain valid');
  host.querySelector('.board-rank-history-open').click();await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
  const month=host.querySelector('.board-rank-month');month.value='2026-09';month.dispatchEvent(new w.Event('change'));await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
  assert.equal(host.querySelector('.board-rank-month').value,'2026-09','the response month, rather than the local clock, controls the archive');
@@ -35,5 +45,11 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(value('matgo'),'900G');assert.equal(value('poker'),'800G');assert.equal(value('spot'),'12장');
  assert.match(row('poker').querySelector('.board-leader-nick').title,/2026년 9월/);
  assert.equal(host.querySelectorAll('img').length,0,'historical nicknames remain text');
+ rows.billiards.score='0';await w.OjjudaGameRankings.refresh();
+ assert.equal(host.querySelector('.board-rank-month').value,'2026-09','hiding a zero archive record preserves the selected month');
+ assert.equal(value('billiards'),'—');assert.equal(row('billiards').querySelector('.board-leader-nick').textContent,'기록 없음');
+ assert.equal(row('billiards').querySelector('.board-game-difficulty'),null);
+ assert.deepEqual([...host.querySelectorAll('[data-game]')].map(item=>item.dataset.game),Object.keys(rows),'the archive keeps its existing game order');
+ assert.equal(host.querySelectorAll('[data-game]').length,Object.keys(rows).length);
  console.log('PASS: current and archived game rows, Mines difficulty/time, Sacheonseong stage/time, billiards variant/difficulty, opponents, peak gold labels and safe text rendering');
 }finally{dom.window.OjjudaGameRankings?.mount(null);dom.window.close();}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,29 +1,29 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261031-ranking-clean1';
+ const revision='20261031-positive-rankings1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  bang:'1.7.2',
-  poker:'1.3.1',
-  tank:'1.2.2',
-  mines:'1.1.1',
-  sacheonseong:'1.4.1',
-  saetbyeol:'1.1.1',
-  tour:'1.2.2',
-  ttang:'1.2.2',
-  photo_ttang:'1.1.1',
-  mole:'1.1.1',
-  runner:'1.1.1',
-  stacker:'1.1.1',
-  breakout:'1.1.1',
-  spot:'1.5.1',
-  screw:'1.2.1',
-  janggi:'1.2.2',
-  chess:'1.2.2',
-  billiards:'1.2.2',
-  matgo:'1.2.1'
+  bang:'1.7.3',
+  poker:'1.3.2',
+  tank:'1.2.3',
+  mines:'1.1.2',
+  sacheonseong:'1.4.2',
+  saetbyeol:'1.1.2',
+  tour:'1.2.3',
+  ttang:'1.2.3',
+  photo_ttang:'1.1.2',
+  mole:'1.1.2',
+  runner:'1.1.2',
+  stacker:'1.1.2',
+  breakout:'1.1.2',
+  spot:'1.5.2',
+  screw:'1.2.2',
+  janggi:'1.2.3',
+  chess:'1.2.3',
+  billiards:'1.2.3',
+  matgo:'1.2.2'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';

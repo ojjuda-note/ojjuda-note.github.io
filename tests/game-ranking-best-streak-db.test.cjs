@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict');
 const {randomUUID}=require('node:crypto');
-const {createFixture,read,bestStreakMigrationName}=require('./monthly-game-rankings-fixture.cjs');
+const {createFixture,read,bestStreakMigrationName,excludeZeroMigrationName}=require('./monthly-game-rankings-fixture.cjs');
 
 (async()=>{
- const {db,clock,claim,actor}=await createFixture(undefined,{latestBest:false});
+ const {db,clock,claim,actor}=await createFixture(undefined,{latestBest:false,excludeZero:false});
  try{
   await clock('2026-10-31T12:00:00Z');
   const boards=['billiards','janggi','chess'],games=['bang','tank','tour','ttang',...boards];
@@ -79,6 +79,8 @@ const {createFixture,read,bestStreakMigrationName}=require('./monthly-game-ranki
    assert.deepEqual(afterSecurity,security,row.signature+' preserves its grants and execution security');
   }
   assert.deepEqual(await raw(),beforeRows,'calculating best streaks does not rewrite outcomes or balances');
+  await db.exec(read(excludeZeroMigrationName));
+  assert.deepEqual(await raw(),beforeRows,'excluding zero display rows does not rewrite outcomes or balances');
 
   for(const game of games){
    const id=main.get(game),row=await own(game,id);
@@ -129,7 +131,7 @@ const {createFixture,read,bestStreakMigrationName}=require('./monthly-game-ranki
   await record('billiards',billiards);await record('billiards',billiards);
   await record('billiards',billiards,'loss',{variant:'pool8'});await record('billiards',billiards);
   assert.equal((await own('billiards',billiards)).score,2);assert.equal((await own('carom4',billiards)).score,2);
-  assert.equal((await own('pool8',billiards)).score,0);assert.equal(await own('carom3',billiards),null);
+  assert.equal(await own('pool8',billiards),null,'a variant with only a loss has no positive ranking record');assert.equal(await own('carom3',billiards),null);
   await record('billiards',billiards);await record('billiards',billiards);assert.equal((await own('carom4',billiards)).score,3);
   await record('billiards',billiards,'draw',{variant:'carom3'});await record('billiards',billiards);
   assert.equal((await own('carom4',billiards)).score,3,'individual billiards requests share the cross-variant loss/draw boundary');
@@ -143,7 +145,7 @@ const {createFixture,read,bestStreakMigrationName}=require('./monthly-game-ranki
    assert.equal(Date.parse((await candidate(game,early)).achieved_at),Date.parse('2026-10-31T00:12:00Z'),'an equal later run never replaces the first attainment');
    const rows=await list(game),earlyIndex=rows.findIndex(row=>row.nick==='먼저달성-'+game),lateIndex=rows.findIndex(row=>row.nick==='나중달성-'+game);
    assert.ok(earlyIndex>=0&&lateIndex>earlyIndex,game+' ties use completion of the best, not first play or last activity');
-   const zero=await member('첫판패배-'+game);await record(game,zero,'loss');assert.equal((await own(game,zero)).score,0);
+   const zero=await member('첫판패배-'+game);await record(game,zero,'loss');assert.equal(await own(game,zero),null,'zero streaks never qualify');
    assert.equal(await own(game,never),null);
   }
 
@@ -153,7 +155,7 @@ const {createFixture,read,bestStreakMigrationName}=require('./monthly-game-ranki
    await record(game,id,'loss',{online:true,excluded:true});await record(game,id,'win',{online:true});
    assert.equal((await own(game,id)).score,3,'AI-excluded loss neither divides nor increases the eligible run');
    const excluded=await member('대행판만-'+game);await record(game,excluded,'win',{online:true,excluded:true});
-   assert.equal(await own(game,excluded),null,'zero fallback cannot resurrect an excluded seat');
+   assert.equal(await own(game,excluded),null,'an excluded seat has no qualifying record');
   }
   await claim(never);await db.exec('set role authenticated');
   for(const query of [
@@ -178,6 +180,6 @@ const {createFixture,read,bestStreakMigrationName}=require('./monthly-game-ranki
   assert.equal(await value("select ojjuda_ranking_internal.close_month('2026-10-01') value"),false);
   assert.deepEqual(await value("select winners value from ojjuda_ranking_internal.archives where month_start='2026-10-01'"),frozen,'later activity and nickname changes never rewrite a closed best');
   assert.deepEqual((await db.query('select * from fixture.economy')).rows,[{wallet_gold:12345,coupon_count:7}]);
-  console.log('PASS: all seven games keep best 5/current 2 for 3-L-1-L-5-L-2; losses/lower runs preserve the best and larger runs improve it; cross-condition loss/draw splits, unchanged condition priority, earliest-best ties, AI exclusion, zero participants, private helpers, new-month reset and immutable best archives.');
+  console.log('PASS: all seven games keep best 5/current 2 for 3-L-1-L-5-L-2; losses/lower runs preserve the best and larger runs improve it; cross-condition loss/draw splits, unchanged condition priority, earliest-best ties, AI exclusion, zero exclusion, private helpers, new-month reset and immutable best archives.');
  }finally{await db.close();}
 })().catch(error=>{delete error.query;console.error(error.message,error.where||'',error.stack);process.exitCode=1;});

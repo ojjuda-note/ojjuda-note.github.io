@@ -91,7 +91,7 @@ function makeRow(id,game,token,playable=true){
 }
 function paintRecord(target,id,game,top,period='이번 달'){
  const {name,nick,score}=target;
- target.hasScore=!!(top&&top.score!==null&&top.score!==''&&Number.isFinite(Number(top.score)));
+ target.hasScore=!!(top&&top.score!==null&&top.score!==''&&Number.isFinite(Number(top.score))&&Number(top.score)>0);
  labelGame(name.querySelector('button')||name,game);
  if(!target.hasScore){
   score.textContent='—';score.removeAttribute('title');nick.removeAttribute('title');
