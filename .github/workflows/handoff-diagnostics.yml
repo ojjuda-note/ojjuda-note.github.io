@@ -1,0 +1,57 @@
+name: Handoff candidate diagnostics
+on:
+  push:
+    branches: [maintenance/handoff-repair-candidates-20261031]
+    paths: [.github/workflows/handoff-diagnostics.yml]
+permissions:
+  contents: read
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 14ea97fd6bafd5069e8041a95810a92bd08fcfbd
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests
+      - name: Check every regression command without hiding later failures
+        shell: python
+        run: |
+          import concurrent.futures, json, subprocess, time
+          scripts=json.load(open('tests/package.json'))['scripts']
+          commands=[]
+          for name in ['test:unit','test:ui','test:screw']:
+            commands.extend(scripts[name].split(' && '))
+          commands=list(dict.fromkeys(commands))
+          def run(command):
+            started=time.monotonic()
+            try:
+              result=subprocess.run(command,cwd='tests',shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=240)
+              return command,result.returncode,result.stdout,round(time.monotonic()-started,1)
+            except subprocess.TimeoutExpired as error:
+              output=error.stdout or b''
+              return command,124,output.decode(errors='replace') if isinstance(output,bytes) else output,240
+          failures=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+            for command,code,output,seconds in pool.map(run,commands):
+              print(('PASS' if code==0 else 'FAIL'),seconds,command,flush=True)
+              if code:
+                failures.append(command)
+                print('::group::'+command,flush=True)
+                print('\n'.join(output.splitlines()[-120:]),flush=True)
+                print('::endgroup::',flush=True)
+          print('FAILED_COMMANDS='+json.dumps(failures),flush=True)
+          if failures:raise SystemExit(1)
+      - name: Repeat independent host and guest handoffs
+        if: always()
+        run: |
+          for iteration in 1 2 3 4 5; do
+            echo "Takeover repetition $iteration"
+            node tests/ttang-takeover-ui.test.cjs || exit 1
+          done
