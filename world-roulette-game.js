@@ -23,7 +23,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'roulette-game-dialog';
       dialog.setAttribute('aria-label', '룰렛');
-      dialog.innerHTML = '<header><button type="button">← 게임 목록</button><span>룰렛</span></header><iframe title="룰렛" src="/games/roulette/index.html?v=20261031-roulette-refill1" allow="autoplay"></iframe>';
+      dialog.innerHTML = '<header><button type="button">← 게임 목록</button><span>룰렛</span></header><iframe title="룰렛" src="/games/roulette/index.html?v=20261031-roulette-columns1" allow="autoplay"></iframe>';
       const frame = dialog.querySelector('iframe');
       let connected = false, unsubscribe = null, inflight = 0, lastResult = '', exitTimer = null;
       const pendingIds = new Set();

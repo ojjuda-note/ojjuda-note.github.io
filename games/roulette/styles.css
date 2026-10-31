@@ -385,7 +385,17 @@ body[data-screen=lobby] .room{padding:24px!important;min-height:0!important;back
 .game-entry.mp-entry .empty-rooms,.game-entry.mp-entry .connection-status{color:#797487}
 .game-entry.mp-entry .connection-status a{color:#7560b5}
 @media(min-width:621px){
- .column-grid,.dozen-grid,.outside-grid{margin-left:6.25%;width:93.75%;box-sizing:border-box}
+ .betting-surface .felt-table{display:grid;grid-template-columns:minmax(0,1fr) clamp(54px,7vw,72px)}
+ .table-ornament{grid-column:1/-1;grid-row:1}
+ .number-grid{grid-column:1;grid-row:2;border-top-right-radius:0}
+ .column-grid{grid-column:2;grid-row:2;grid-template-columns:1fr;grid-template-rows:repeat(3,minmax(0,1fr));margin:0;width:auto;box-sizing:border-box;border-left:0;border-top:1px solid #d2c99d70}
+ .column-grid .bet-cell{grid-column:1;flex-direction:column;gap:2px}
+ .column-grid .bet-cell[data-bet=col3]{grid-row:1}
+ .column-grid .bet-cell[data-bet=col2]{grid-row:2}
+ .column-grid .bet-cell[data-bet=col1]{grid-row:3}
+ .dozen-grid,.outside-grid{grid-column:1;margin-left:6.25%;width:93.75%;box-sizing:border-box}
+ .dozen-grid{grid-row:3}.outside-grid{grid-row:4}
+ .table-footnote{grid-column:1/-1;grid-row:5}
 }
 button:disabled{cursor:not-allowed}.join-form input:focus-visible{box-shadow:inset 0 0 0 2px #d0b680}
 @media(max-width:620px){
