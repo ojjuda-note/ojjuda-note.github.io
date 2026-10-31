@@ -443,3 +443,17 @@ button:disabled{cursor:not-allowed}.join-form input:focus-visible{box-shadow:ins
 .refill-dialog-actions{display:flex;gap:9px}.refill-dialog-actions button{flex:1;min-height:44px;padding:10px;border:1px solid #bba37166;border-radius:6px;font-size:12px;color:#c6cdb9}
 .refill-dialog-actions #confirmRefillButton{background:#bca36b;color:#12261b;border-color:#bca36b;font-weight:600}.refill-dialog-actions button:disabled{opacity:.45}
 @media(max-width:620px){body[data-screen=game] .wallet.has-refill{gap:6px}.refill-mini{min-height:26px;padding:4px 6px;font-size:8px}.refill-dialog{padding:22px}}
+
+/* A history button remains available when the compact table hides recent results. */
+.top-actions{align-items:center}
+.history-button{display:flex;align-items:center;gap:6px;min-height:38px;padding:6px 11px;border:1px solid var(--line);border-radius:7px;color:var(--gold-light);font-size:12px;white-space:nowrap}
+.history-button:hover{background:#ffffff08;border-color:#cfaf7580}.history-button svg{width:17px;height:17px}
+.history-dialog{width:min(470px,calc(100vw - 28px));max-height:calc(100svh - 28px);overscroll-behavior:contain}
+.history-hint{margin-top:12px;font-size:12px;line-height:1.7;color:#a6b7a6}.history-count{margin-top:18px;font-size:11px;color:var(--gold-light)}
+.history-dialog-empty{padding:28px 6px;text-align:center;font-size:13px;line-height:1.9;color:#a6b7a6}
+.history-list{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.history-list:empty{display:none}.history-list li{min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px;padding:9px 2px;border:1px solid transparent;border-radius:8px}
+.history-list li:first-child{border-color:#cfaf7580;background:#cfaf750c}.history-list .history-number{width:42px;height:42px;min-width:42px;margin:0;box-shadow:none;font-size:18px;font-weight:600}
+.history-order{color:#a6b7a6;font-size:10px;white-space:nowrap}.history-list li:first-child .history-order{color:var(--gold-light)}
+.history-note{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:10px;line-height:1.7;color:#8daba0}
+@media(max-width:620px){.history-button{min-height:34px;padding:5px 8px;gap:4px;font-size:11px}.history-button svg{width:15px;height:15px}.history-dialog{padding:20px}.history-list{gap:6px}.history-list .history-number{width:36px;height:36px;min-width:36px;font-size:16px}}

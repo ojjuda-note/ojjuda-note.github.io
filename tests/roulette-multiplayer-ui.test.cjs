@@ -305,3 +305,67 @@ test('legacy reduced true remains enabled until the player explicitly turns it o
  const saved=JSON.parse(f.w.localStorage.getItem('ojjuda.roulette.preferences.v1'));
  assert.equal(saved.reducedOverride,false);assert.equal(saved.sound,false,'changing motion preserves the sound preference');
 });
+
+test('past-number dialog shows all thirty settled results in order without changing bets or requesting the server',async t=>{
+ const f=await fixture(t),d=f.w.document;
+ const history=[7,7,0,...Array.from({length:27},(_,i)=>i+1)];
+ f.ui.state.history=[...history];f.ui.applySnapshot(f.snapshot());
+ const before={balance:f.ui.state.balance,bets:clone(f.ui.state.bets),calls:f.calls.length};
+ assert.equal(d.getElementById('historyButton').hidden,false);
+ d.getElementById('historyButton').click();
+ assert.equal(d.getElementById('historyDialog').open,true);
+ assert.deepEqual([...d.querySelectorAll('#historyList li .history-number')].map(node=>Number(node.textContent)),history,
+  'the full list preserves zero, repeated values, and newest-first order beyond the fifteen-number strip');
+ assert.equal(d.getElementById('historyCount').textContent,'최근 30회 · 최신순');
+ assert.equal(d.getElementById('historyEmpty').hidden,true);
+ d.getElementById('closeHistory').click();
+ assert.equal(d.getElementById('historyDialog').open,false);
+ assert.deepEqual(clone(f.ui.state.history),history);
+ assert.deepEqual({balance:f.ui.state.balance,bets:clone(f.ui.state.bets),calls:f.calls.length},before,
+  'viewing past numbers never settles, bets, or fetches a new outcome');
+});
+
+test('past-number history excludes pending and unacknowledged results but keeps consecutive equal outcomes from distinct rounds',async t=>{
+ const f=await fixture(t),w=f.w,d=w.document;
+ const beginRound=id=>{
+  const r=f.room();r.status='spinning';r.round++;r.me={...r.me,ready:true,confirmed:false,bets:{},stake:0};
+  r.spin={id,number:7,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{}};r.result=null;
+  f.ui.applySnapshot(f.snapshot());
+ };
+ d.getElementById('historyButton').click();
+ assert.equal(d.getElementById('historyEmpty').hidden,false);
+ beginRound('history-spin-one');
+ assert.equal(d.getElementById('historyDialog').open,false,'a new spin closes history before showing the wheel');
+ assert.deepEqual(clone(f.ui.state.history),[],'an in-progress server outcome is not past history');
+ assert.equal(d.querySelectorAll('#historyList li').length,0);
+ w.testWheel.callbacks.onDone('history-spin-one');
+ assert.deepEqual(clone(f.ui.state.history),[],'the animation ending does not count as settlement');
+ const gate=deferred();f.gates.set('confirm',gate);
+ d.getElementById('confirmResultButton').click();await tick();
+ assert.deepEqual(clone(f.ui.state.history),[],'an unanswered confirmation does not publish history');
+ gate.resolve();await tick();await tick();await tick();f.gates.delete('confirm');
+ assert.deepEqual(clone(f.ui.state.history),[7]);
+ beginRound('history-spin-two');w.testWheel.callbacks.onDone('history-spin-two');
+ d.getElementById('confirmResultButton').click();await tick();await tick();await tick();
+ f.ui.applySnapshot(f.snapshot());
+ assert.deepEqual(clone(f.ui.state.history),[7,7],'two settled round IDs remain two entries even with equal numbers');
+ d.getElementById('historyButton').click();
+ assert.deepEqual([...d.querySelectorAll('#historyList li .history-number')].map(node=>Number(node.textContent)),[7,7]);
+ assert.equal(d.getElementById('historyCount').textContent,'최근 2회 · 최신순');
+});
+
+test('past-number history resets across room IDs and closes when leaving the table',async t=>{
+ const f=await fixture(t),d=f.w.document;
+ f.ui.state.history=[7,0];f.ui.applySnapshot(f.snapshot());d.getElementById('historyButton').click();
+ assert.equal(d.getElementById('historyDialog').open,true);
+ f.ui.applySnapshot({...f.snapshot(),room:roomFixture({id:'room-two',code:'BBCCDD22'})});
+ assert.deepEqual(clone(f.ui.state.history),[]);
+ assert.equal(d.querySelectorAll('#historyList li').length,0,'numbers from another table cannot leak into the new room');
+ assert.equal(d.getElementById('historyEmpty').hidden,false);
+ d.getElementById('historyButton').click();
+ assert.equal(d.getElementById('historyDialog').open,true);
+ f.message({type:'roulette-exit-request'});await tick();await tick();await tick();
+ assert.equal(f.ui.getRoom(),null);
+ assert.equal(d.getElementById('historyDialog').open,false);
+ assert.equal(d.getElementById('historyButton').hidden,true);
+});

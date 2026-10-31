@@ -138,9 +138,10 @@ async function shareDraft(){
   catch(error){if(/round_in_progress/.test(error?.message||'')||bettingExpired())schedulePoll(0);else if(version===draftVersion&&!commandBusy&&!ownReady()&&!state.pending&&room?.code===code)notice(errorText(error))}
   finally{draftRequest=null;if(draftVersion!==version&&!closed)draftTimer=setTimeout(shareDraft,120)}
 }
-function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
+function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else if($('historyDialog').open)$('historyDialog').close();$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
 function renderRoom(){
   const solo=room?.mode==='solo';
+  $('historyButton').hidden=!room;
   $('roomCode').textContent=solo?'':room?.code||'';$('copyCode').hidden=solo;$('soloRoomLabel').hidden=!solo;
   $('tableModeLabel').textContent=solo?'COMPUTER':'ONLINE · 1–4 PLAYERS';
   const strip=$('playersStrip');strip.replaceChildren();
@@ -322,7 +323,22 @@ function renderOpponentBets(){
     }
   }
 }
-function renderHistory(){const h=$('history');h.replaceChildren();if(!state.history.length){const e=document.createElement('span');e.className='history-empty';e.textContent='첫 번째 공을 기다리는 중';h.append(e);return}for(const [index,n] of state.history.slice(0,15).entries()){const e=document.createElement('span');e.className=`history-number ${COLOR(n)}`;e.textContent=n;e.title=`${index+1}번째 최근 결과: ${n}`;h.append(e)}}
+function renderHistory(){
+  const numbers=state.history.slice(0,30),list=$('historyList'),key=numbers.join(',');
+  if(list.dataset.results===key)return;
+  list.dataset.results=key;list.replaceChildren();
+  const h=$('history');h.replaceChildren();
+  $('historyEmpty').hidden=numbers.length>0;
+  $('historyCount').textContent=numbers.length?`최근 ${numbers.length}회 · 최신순`:'아직 기록 없음';
+  if(!numbers.length){const e=document.createElement('span');e.className='history-empty';e.textContent='첫 번째 공을 기다리는 중';h.append(e);return}
+  for(const [index,n] of numbers.entries()){
+    const color=COLOR(n),colorName={red:'빨강',black:'검정',green:'초록'}[color];
+    const number=document.createElement('span');number.className=`history-number ${color}`;number.textContent=n;number.setAttribute('aria-label',`${n}번 · ${colorName}`);
+    const order=document.createElement('span');order.className='history-order';order.textContent=index===0?'최신':`${index}회 전`;
+    const item=document.createElement('li');item.append(number,order);list.append(item);
+    if(index<15){const recent=number.cloneNode(true);recent.title=`${index+1}번째 최근 결과: ${n}`;h.append(recent)}
+  }
+}
 function render({bets=true,balance=true}={}){
   const locked=betsClosed(),sum=totalBets(state.pending?.bets||state.bets);
   if(balance)$('balance').textContent=fmt(Math.max(0,state.balance-(ownReady()?0:totalBets(state.bets))));
@@ -378,6 +394,7 @@ function openWheelPopup(spin){
   $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=totalBets(spin.bets)?`베팅 마감 · ${fmt(totalBets(spin.bets))} G`:'관람 · 베팅 없음';
   if($('helpDialog').open)$('helpDialog').close();
   if($('refillDialog').open)$('refillDialog').close();
+  if($('historyDialog').open)$('historyDialog').close();
   document.body.classList.add('wheel-open');if(!modal.open)modal.showModal();wheel.setVisible(true);$('wheelDialogTitle').focus({preventScroll:true});
 }
 async function closeWheelPopup(spinId,{instant=false}={}){
@@ -488,6 +505,10 @@ for(const el of document.querySelectorAll('[data-chip]'))el.addEventListener('cl
 });
 $('undoButton').addEventListener('click',()=>removeBets(false));$('clearButton').addEventListener('click',()=>removeBets(true));$('repeatButton').addEventListener('click',repeatBets);
 const dialog=$('helpDialog');$('helpButton').addEventListener('click',()=>dialog.showModal());$('closeHelp').addEventListener('click',()=>dialog.close());$('helpDone').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
+const historyDialog=$('historyDialog');
+$('historyButton').addEventListener('click',()=>{if(!room)return;renderHistory();if(!historyDialog.open)historyDialog.showModal()});
+$('closeHistory').addEventListener('click',()=>historyDialog.close());
+historyDialog.addEventListener('click',event=>{if(event.target===historyDialog){const r=historyDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)historyDialog.close()}});
 $('wheelDialog').addEventListener('cancel',event=>{if(busy())event.preventDefault()});
 $('wheelDialog').addEventListener('close',()=>{document.body.classList.remove('wheel-open');wheel.setVisible(false)});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)sound.stopRoll();else if(state.pending&&animating)sound.beginRoll(state.pending);renderBettingClock();schedulePoll(document.hidden?undefined:100)});
