@@ -80,6 +80,7 @@ async function createFixture(existingDb, { participants = true, latestBest = par
   await install('20261029033602_bang_multiplayer_streaks.sql','ojjuda_bang_internal.ranking');
   await install('20261029072338_bang_solo_streaks.sql','ojjuda_bang_internal.player_record');
   await install('20261028100203_sacheonseong_best_stage_ranking.sql','public.community_game_monthly_ranking', sql => sql.replace('begin\n', "begin\n if p_game='bang' then return ojjuda_bang_internal.ranking();end if;\n if p_game='photo_ttang' then return ojjuda_photo_internal.game_monthly_ranking();end if;\n"));
+  await install('20261021015125_poker_wallet_ranking_lobby.sql','public.community_game_ranking', sql => sql.replace('begin\n', "begin\n if p_game='bang' then return ojjuda_bang_internal.ranking();end if;\n   if p_game in ('tour','tank','ttang','spot','matgo','poker','billiards','carom4','carom3','pool8','janggi','chess') then\n    return ojjuda_guest_internal.criteria_ranking(p_game,case when p_game='tour' then 'day' else 'all' end,null);end if;\n"));
   await db.exec('grant execute on all functions in schema ojjuda_guest_internal to anon,authenticated;');
   // Apply the shipped migration verbatim before adding a deterministic test clock.
   await db.exec(read(migrationName));

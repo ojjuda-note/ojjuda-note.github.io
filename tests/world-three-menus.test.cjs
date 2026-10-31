@@ -42,20 +42,34 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.ok(poker,'eligible members see poker in the requested group');
   assert.equal(poker.previousElementSibling.dataset.act,'matgo-open','poker stays immediately after Matgo');
   assert.match(poker.textContent,/최대 4명/,'the menu displays the maximum player count');
+  const roulette=w.document.querySelector('[data-arcade-games=multi] [data-v=roulette]');
+  assert.ok(roulette,'eligible members see roulette in multiplayer games');
+  assert.equal(roulette.previousElementSibling,poker,'roulette follows poker');
+  assert.match(roulette.textContent,/최대 4명/,'roulette displays its four-player capacity');
+  const gameId=button=>button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
+  const categories={
+   solo:['sacheonseong','mines','saetbyeol','photo_ttang','mole','runner','stacker','breakout','spot','screw'],
+   multi:['bang','tank','tour','ttang','janggi','chess','billiards','matgo','poker','roulette']
+  };
+  for(const [category,expected]of Object.entries(categories)){
+   const actual=[...w.document.querySelectorAll(`[data-arcade-games=${category}] .gbtn`)].map(gameId);
+   assert.deepEqual(actual,expected,category+' contains exactly its intended games in display order');
+  }
   const gameButtons=[...w.document.querySelectorAll('[data-arcade-games] .gbtn')];
-  assert.equal(gameButtons.length,19,'every game remains in one arcade category');
+  assert.equal(new Set(gameButtons.map(gameId)).size,gameButtons.length,'every game appears in exactly one arcade category');
   assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=bang]').length,1,'BANG has a single arcade entry');
   assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=bang]'),null,'BANG is not duplicated in solo games');
   assert.match(w.document.querySelector('[data-arcade-games=multi] [data-v=bang]').textContent,/최대 7명/,'BANG is available for up to seven members');
   assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=sacheonseong]'),'Sacheonseong is available in solo games');
   for(const button of gameButtons){
-   const id=button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
+   const id=gameId(button);
    assert.equal(button.querySelectorAll('.game-version').length,0,id+' does not expose release metadata in the menu');
    assert.doesNotMatch(button.textContent,/v\d+\.\d+\.\d+/);
    assert.match(w.OjjudaGameAssets.version(id),/^\d+\.\d+\.\d+$/,id+' retains its internal release version');
   }
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=18};t.render();
   assert.equal(w.document.querySelector('[data-v=poker]'),null,'18-year-olds cannot see poker');
+  assert.equal(w.document.querySelector('[data-v=roulette]'),null,'18-year-olds cannot see roulette');
   assert.equal(w.document.querySelector('[data-act=matgo-open]'),null,'Matgo uses the same age threshold');
   delete w.OjjudaMatgoAccess;t.render();
   assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');

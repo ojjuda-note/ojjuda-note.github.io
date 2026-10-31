@@ -397,3 +397,21 @@ button:disabled{cursor:not-allowed}.join-form input:focus-visible{box-shadow:ins
  .opponent-stack .stack-disc{--chip-size:20px;--chip-depth:2.5px}
  .play-smallprint{gap:8px}.play-smallprint>span{margin-right:auto}
 }
+
+/* A shared server deadline stays visible without taking another table row. */
+.multiplayer-bar .players-strip{flex:1}
+.betting-countdown{display:flex;align-items:center;gap:6px;flex:none;padding:4px 8px;border:1px solid #c2aa6e65;border-radius:5px;color:#e9d09a;background:#b4934b14;white-space:nowrap}
+.betting-countdown>span{font-size:9px;color:#b6be9c}
+.betting-countdown>strong{min-width:27px;text-align:right;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.betting-countdown.urgent{border-color:#d69d7766;background:#bd673b16;color:#f0bc8d}
+.betting-countdown.expired>strong{color:#d9c399}
+@media(max-width:620px){
+ .multiplayer-bar{gap:7px}.betting-countdown{gap:4px;padding:3px 6px}.betting-countdown>span{font-size:8px}.betting-countdown>strong{font-size:11px;min-width:25px}
+}
+
+/* Computer and online play use the shared arcade mode selector. */
+#computerEntry,#onlineEntry{width:100%}
+.solo-room-label{flex:none;white-space:nowrap;font-size:11px;font-weight:500;letter-spacing:-.2px;color:#d6bf8b}
+.online-player.is-computer{color:#c5c9bb}
+.result-copy .computer-result,.wheel-outcome>div>.computer-result{color:#c3bd94}
+@media(max-width:620px){.solo-room-label{font-size:10px}}

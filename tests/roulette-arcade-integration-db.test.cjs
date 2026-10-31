@@ -19,7 +19,9 @@ const root=path.join(__dirname,'..'),migration='20261031123640_roulette_arcade_i
   await db.exec(read('20261018081035_tank_friend_invites.sql'));
   await db.exec(read('20261031123556_roulette_multiplayer_core.sql'));
   await db.exec(read(migration));
-  const funcs=await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal')`);
+  await db.exec(read('20261031130841_roulette_betting_countdown.sql'));
+  await db.exec(read('20261031130843_roulette_ranking_dispatch.sql'));
+  const funcs=await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal','ojjuda_guest_internal')`);
   for(const {definition}of funcs.rows){const patched=definition.replace(/\b(?:clock_timestamp|statement_timestamp|now)\(\)/g,'fixture.clock()');if(patched!==definition)await db.exec(patched)}
   const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',C='00000000-0000-4000-8000-000000000003',MINOR='00000000-0000-4000-8000-000000000004',BANNED='00000000-0000-4000-8000-000000000005';
   for(const [id,nick,birth]of [[A,'첫 회원'],[B,'둘째 회원'],[C,'다른 회원'],[MINOR,'미성년','2010-01-01'],[BANNED,'정지 회원']]){await actor(id,nick,birth);await db.query('insert into public.user_private(user_id) values($1)',[id])}
@@ -39,10 +41,21 @@ const root=path.join(__dirname,'..'),migration='20261031123640_roulette_arcade_i
   async function run(id,sql,args=[]){await claim(id);await db.exec('set role authenticated');try{return (await db.query(sql,args)).rows}finally{await db.exec('reset role')}}
   const leaders=async id=>(await run(id,"select public.community_game_monthly_leaders(array['roulette','poker','bang','mole']) value"))[0].value;
   const first=await leaders(A);assert.equal(first.roulette.score,3000);assert.equal(first.roulette.nick,'첫 회원');assert.equal(first.roulette.source,'best_round_gain');
+  const monthly=(await run(A,"select public.community_game_monthly_ranking('roulette') value"))[0].value;
+  assert.equal(monthly[0].score,3000);assert.equal(monthly[0].nick,'첫 회원');assert.equal(monthly[0].me,true);
+  const lifetime=(await run(A,"select public.community_game_ranking('roulette') value"))[0].value;
+  assert.equal(lifetime[0].score,888888);assert.equal(lifetime[0].nick,'다른 회원','the existing all-time API retains its period semantics');
+  const daily=(await run(A,"select ojjuda_guest_internal.criteria_ranking('roulette','day') value"))[0].value;
+  assert.equal(daily[0].score,3000,'day excludes the previous-month payout');
+  await assert.rejects(()=>run(MINOR,"select public.community_game_monthly_ranking('roulette')"),/adult_required/);
+  await assert.rejects(()=>run(BANNED,"select public.community_game_ranking('roulette')"),/banned/);
+  await assert.rejects(()=>run(null,"select public.community_game_monthly_ranking('roulette')"),/not_signed_in/);
   assert.ok(Object.hasOwn(first,'poker')&&Object.hasOwn(first,'bang'),'other game batch still works');
   assert.equal(Object.hasOwn(await leaders(MINOR),'roulette'),false,'minor cannot request roulette ranking');
   await assert.rejects(()=>run(MINOR,"select ojjuda_ranking_internal.current_rows('roulette')"),/permission denied|adult_required/);
-  await db.query('insert into fixture.blocks values($1,$2)',[B,A]);assert.equal((await leaders(B)).roulette.score,2500);await db.exec('delete from fixture.blocks');
+  await db.query('insert into fixture.blocks values($1,$2)',[B,A]);assert.equal((await leaders(B)).roulette.score,2500);
+  assert.equal((await run(B,"select public.community_game_monthly_ranking('roulette') value"))[0].value[0].score,2500,'individual rankings enforce the same block filter');
+  await db.exec('delete from fixture.blocks');
   const archived=(await db.query("select ojjuda_ranking_internal.visible_winners($1::jsonb,array['roulette'],$2) value",[JSON.stringify({roulette:{score:3000,nick:'첫 회원',_userId:A}}),B])).rows[0].value;assert.equal(archived.roulette.score,3000);
   await db.query('insert into fixture.blocks values($1,$2)',[B,A]);assert.equal((await db.query("select ojjuda_ranking_internal.visible_winners($1::jsonb,array['roulette'],$2) value",[JSON.stringify({roulette:{score:3000,_userId:A}}),B])).rows[0].value.roulette,null);await db.exec('delete from fixture.blocks');
   const feed=async id=>(await run(id,'select public.arcade_extra_rooms() value'))[0].value.rooms;

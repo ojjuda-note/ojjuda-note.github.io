@@ -1,5 +1,5 @@
-import {Wheel3D} from './wheel-3d.js?v=20261031-roulette-multi2';
-import {RouletteWheel2D} from './wheel-2d.js?v=20261031-roulette-multi2';
+import {Wheel3D} from './wheel-3d.js?v=20261031-roulette-modes1';
+import {RouletteWheel2D} from './wheel-2d.js?v=20261031-roulette-modes1';
 
 export class RouletteWheel{
   constructor(canvas,callbacks){

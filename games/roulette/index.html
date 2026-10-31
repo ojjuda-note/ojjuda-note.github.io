@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#091d18">
   <meta name="description" content="정교한 원판과 자연스러운 공의 움직임. 가상 골드로 즐기는 오쭈다 룰렛.">
-  <title>룰렛 멀티 · 오쭈다 오락실</title>
+  <title>룰렛 · 오쭈다 오락실</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23091d18'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c7a364' stroke-width='3'/%3E%3Cpath d='M32 13v38M13 32h38M18 18l28 28M18 46l28-28' stroke='%23c7a364'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23c7a364'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261031-roulette-multi2">
+  <link rel="stylesheet" href="styles.css?v=20261031-roulette-modes1">
   <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
   <link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-arcade-entry1">
-  <script src="/multiplayer-entry.js?v=20261031-roulette-multi2" defer></script>
+  <script src="/multiplayer-entry.js?v=20261031-roulette-modes1" defer></script>
 </head>
 <body data-screen="lobby">
   <svg class="icon-defs" aria-hidden="true"><defs>
@@ -31,26 +31,30 @@
       <span class="brand-mark" aria-hidden="true">✦</span>
       <span><strong>OJJUDA</strong><small>THE EMERALD ROOM</small></span>
     </button>
-    <div class="table-label"><span></span> ROULETTE <i>2–4 PLAYERS</i></div>
+    <div class="table-label"><span></span> ROULETTE <i id="tableModeLabel">COMPUTER</i></div>
     <div class="top-actions">
       <button id="soundButton" class="icon-button" aria-label="소리 끄기" title="소리 끄기"><svg><use href="#i-sound"/></svg></button>
       <button id="helpButton" class="icon-button" aria-label="게임 방법" title="게임 방법"><svg><use href="#i-help"/></svg></button>
     </div>
   </header>
 
-  <div class="multiplayer-bar" id="multiplayerBar" hidden><button id="copyCode" title="방 코드 복사"><span>방</span> <strong id="roomCode"></strong></button><div id="playersStrip" class="players-strip" aria-label="참가자"></div></div>
+  <div class="multiplayer-bar" id="multiplayerBar" hidden><button id="copyCode" title="방 코드 복사"><span>방</span> <strong id="roomCode"></strong></button><strong id="soloRoomLabel" class="solo-room-label" hidden>컴퓨터 대전</strong><div id="playersStrip" class="players-strip" aria-label="참가자"></div><div id="bettingCountdown" class="betting-countdown" role="timer" aria-live="off" hidden><span>베팅 마감</span><strong id="bettingSeconds">30초</strong></div></div>
   <main class="room" id="room">
     <section class="introduction game-entry mp-entry" id="introduction">
       <div class="ge-icon" aria-hidden="true"><img src="/assets/design/games/roulette.svg" width="40" height="40" alt=""></div>
       <span class="ge-kicker">오쭈다 오락실 · 멀티게임</span>
       <h1 class="ge-title">룰렛 <small>19+</small></h1>
-      <p class="ge-copy">각자 베팅하고, 모두 시작을 누르면 돌아가요.</p>
+      <div class="segmented" role="group" aria-label="대전 방식"><button type="button" id="soloMode" data-roulette-mode="solo" class="on" aria-pressed="true">컴퓨터 대전</button><button type="button" id="onlineMode" data-roulette-mode="online" aria-pressed="false">온라인 대전</button></div>
+      <p class="ge-copy" id="modeDescription">컴퓨터와 베팅하고, 시작을 누르면 바로 돌아가요.</p>
+      <div id="computerEntry"><button class="ge-primary" id="startSoloButton" disabled>컴퓨터 대전 시작</button></div>
+      <div id="onlineEntry" hidden>
       <button class="ge-primary" id="createRoomButton" disabled>방 만들기</button>
       <form class="join-form" id="joinForm"><label class="sr-only" for="joinCode">방 코드</label><input id="joinCode" name="code" maxlength="8" minlength="8" pattern="[a-fA-F0-9]{8}" placeholder="8자리 방 코드" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="ge-secondary" id="joinRoomButton" type="submit" disabled>참가</button></form>
       <div class="lobby-room-heading"><span>함께할 테이블</span><button id="refreshRooms" disabled aria-label="방 목록 새로고침">↻</button></div>
       <div class="room-list" id="roomList"></div><p id="emptyRooms" class="empty-rooms">첫 테이블을 열어보세요.</p>
+      </div>
       <p class="connection-status" id="connectionStatus" role="status">오락실에 연결하고 있어요.</p>
-      <p class="ge-hint">2–4명 · 가상 골드 · 만 19세 이상</p>
+      <p class="ge-hint" id="entryHint">컴퓨터와 1:1 · 가상 골드 · 만 19세 이상</p>
     </section>
 
     <section class="play-section" id="playSection" aria-label="베팅 테이블" inert>
@@ -60,7 +64,7 @@
       </div>
       <div class="result-banner" id="resultBanner" role="status" aria-live="polite">
         <div class="result-number" id="resultNumber">✦</div>
-        <div class="result-copy"><strong id="resultTitle">행운을 놓을 자리를 골라주세요</strong><span id="resultDetail">칩을 고른 뒤 숫자를 누르면 바로 놓여요.</span></div>
+        <div class="result-copy"><strong id="resultTitle">행운을 놓을 자리를 골라주세요</strong><span id="resultDetail">칩을 고른 뒤 숫자를 누르면 바로 놓여요.</span><span id="computerResult" class="computer-result" hidden></span></div>
       </div>
       <div class="recent-row table-recent"><span class="recent-label">최근 결과</span><div id="history" class="history" aria-label="최근 결과"><span class="history-empty">첫 번째 공을 기다리는 중</span></div></div>
       <div class="table-toolbar">
@@ -95,7 +99,7 @@
         <button class="repeat-button" id="repeatButton"><svg><use href="#i-replay"/></svg><span>이전 베팅</span></button>
         <button class="spin-button" id="spinButton" disabled><span id="spinLabel">칩을 올려주세요</span><span class="spin-symbol" aria-hidden="true">↗</span></button>
       </div>
-      <div class="play-smallprint"><span>가상 골드 · 현금 전환 없음</span><button id="cancelReady" hidden>시작 취소</button><button id="motionButton" aria-pressed="false">모션 줄이기</button></div>
+      <div class="play-smallprint"><span>가상 골드 · 현금 전환 없음</span><button id="cancelReady" hidden>베팅 수정</button><button id="motionButton" aria-pressed="false">모션 줄이기</button></div>
     </section>
   </main>
 
@@ -113,22 +117,24 @@
       </div>
       <div class="wheel-footer"><div class="round-status" id="roundStatus" role="status" aria-live="polite"><span class="status-dot"></span><span id="statusText">공이 출발합니다</span></div></div>
     </section>
-    <div id="wheelOutcome" class="wheel-outcome" hidden aria-live="polite"><span id="wheelOutcomeNumber" class="result-number">0</span><div><strong id="wheelOutcomeTitle"></strong><span id="wheelOutcomeDetail">확인을 누르면 테이블로 돌아가요</span></div></div>
+    <div id="wheelOutcome" class="wheel-outcome" hidden aria-live="polite"><span id="wheelOutcomeNumber" class="result-number">0</span><div><strong id="wheelOutcomeTitle"></strong><span id="wheelOutcomeDetail">확인을 누르면 테이블로 돌아가요</span><span id="wheelComputerResult" class="computer-result" hidden></span></div></div>
     <button id="confirmResultButton" class="confirm-result-button" hidden disabled>확인</button>
     <div class="spin-popup-footnote" id="wheelFootnote">0–36 <span>EUROPEAN ROULETTE</span> SINGLE ZERO</div>
   </dialog>
   <dialog id="helpDialog" class="help-dialog">
     <div class="dialog-heading"><span class="eyebrow">HOW TO PLAY</span><button class="icon-button" id="closeHelp" aria-label="설명 닫기"><svg><use href="#i-close"/></svg></button></div>
     <h2>한 판, 어렵지 않아요.</h2>
-    <ol class="how-steps"><li><b>01</b><div><strong>먼저 칩을 골라요</strong><span>100 · 500 · 1,000 · 5,000 G 중 원하는 칩을 선택해요.</span></div></li><li><b>02</b><div><strong>숫자를 눌러 칩을 올려요</strong><span>숫자나 색·홀짝 칸을 누르면 선택한 칩이 바로 놓여요. 다시 누르면 더 쌓여요. 두 숫자·네 숫자 사이는 위에서 베팅 방식을 선택해요.</span></div></li><li><b>03</b><div><strong>모두 시작을 눌러요</strong><span>베팅을 마치고 시작을 누르세요. 두 명 이상 모든 참가자가 시작을 누르면 함께 공이 돌아요. 같은 결과를 보고 확인을 누르면 골드를 정산해요.</span></div></li></ol>
+    <ol class="how-steps"><li><b>01</b><div><strong>먼저 칩을 골라요</strong><span>100 · 500 · 1,000 · 5,000 G 중 원하는 칩을 선택해요.</span></div></li><li><b>02</b><div><strong>숫자를 눌러 칩을 올려요</strong><span>숫자나 색·홀짝 칸을 누르면 선택한 칩이 바로 놓여요. 다시 누르면 더 쌓여요. 두 숫자·네 숫자 사이는 위에서 베팅 방식을 선택해요.</span></div></li><li><b>03</b><div><strong>대전 방식을 골라 시작해요</strong><span>컴퓨터 대전은 시작을 누르면 바로 돌아요. 온라인 대전은 첫 시작 후 30초에 마감하고, 모두 시작을 누르면 더 일찍 돌아요. 공이 멈추면 확인을 눌러 정산해요.</span></div></li></ol>
     <div class="payouts"><div><span>숫자 하나</span><strong>36배</strong></div><div><span>두 숫자 사이 · 스플릿</span><strong>18배</strong></div><div><span>네 숫자 사이 · 코너</span><strong>9배</strong></div><div><span>1–12 · 13–24 · 25–36 / 세로열</span><strong>3배</strong></div><div><span>빨강·검정 / 홀·짝 / 1–18·19–36</span><strong>2배</strong></div></div>
     <p class="help-note">배당은 베팅한 원금을 포함해요. <b>당첨금 합계의 1%를 반올림해 수수료로 빼고 지급</b>해요. 예: 100 G 숫자 베팅 당첨 → 3,600 G − 36 G = 3,564 G 지급.</p>
     <p class="help-note"><b>2개 사이 / 4개 사이</b>를 고르면 칩을 놓을 금색 점이 나타나요. 스플릿은 맞닿은 두 숫자, 코너는 모서리를 공유하는 네 숫자에 함께 베팅해요. 0은 1·2·3과 각각 스플릿으로 베팅할 수 있어요.</p>
-    <p class="help-note"><b>0은 초록색</b>이며 홀짝·빨강·검정·숫자 묶음에 포함되지 않아요. 총 131곳에 나눠 베팅할 수 있고, 한 판 총 베팅은 50,000 G까지예요. 모두 시작을 누르면 원판이 나타나 매번 <b>20~30초</b> 동안 돌아요. 공이 자리를 잡은 뒤 원판이 반 바퀴에서 한 바퀴 더 돌고 멈추면, 확인을 누를 때까지 결과를 보여줘요.</p>
-    <p class="help-note">룰렛 전용 골드를 사용해요. 시작을 누르면 베팅 금액을 맡기고, 공이 출발하기 전에는 시작 취소로 돌려받을 수 있어요.</p>
-    <p class="help-note">모든 참가자가 시작을 눌러야 공이 돌아요. 공이 출발한 뒤 나가도 베팅은 정산되며, 중간에 나간 판은 순위에 기록되지 않아요.</p>
+    <p class="help-note"><b>0은 초록색</b>이며 홀짝·빨강·검정·숫자 묶음에 포함되지 않아요. 총 131곳에 나눠 베팅할 수 있고, 한 판 총 베팅은 50,000 G까지예요. 베팅이 마감되면 원판이 나타나 매번 <b>20~30초</b> 동안 돌아요. 공이 자리를 잡은 뒤 원판이 반 바퀴에서 한 바퀴 더 돌고 멈추면, 확인을 누를 때까지 결과를 보여줘요.</p>
+    <p class="help-note"><b>컴퓨터 대전</b>에서는 컴퓨터의 베팅을 반투명 칩으로 볼 수 있어요. 내 베팅을 마치고 시작을 누르면 함께 돌아요. 다음 판은 직접 시작해요.</p>
+    <p class="help-note"><b>온라인 대전</b>은 방을 만들거나 방 코드로 참가해요. 첫 시작 후 남은 30초 동안 <b>베팅 수정</b>으로 골드를 돌려받아 칩을 바꿀 수 있어요. 수정해도 마감 시간은 그대로예요.</p>
+    <p class="help-note">온라인에서는 시작을 누르지 않아도 마감 때 올려둔 칩으로 함께 진행해요. 칩이 없어도 카운트다운 중 시작을 눌러 골드 차감 없이 관람할 수 있어요. 혼자 남아도 30초 뒤 시작하며, 모든 칩을 회수하면 이번 시작은 취소돼요.</p>
+    <p class="help-note">두 대전 모두 룰렛 전용 골드를 사용해요. 공이 출발한 뒤 나가도 베팅은 정산되며, 중간에 나간 판은 순위에 기록되지 않아요.</p>
     <button id="helpDone" class="dialog-done">좋아요, 시작할게요 <svg><use href="#i-arrow"/></svg></button>
   </dialog>
-  <script type="module" src="app.js?v=20261031-roulette-multi2"></script>
+  <script type="module" src="app.js?v=20261031-roulette-modes1"></script>
 </body>
 </html>

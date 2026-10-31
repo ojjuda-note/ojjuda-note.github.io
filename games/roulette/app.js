@@ -1,15 +1,18 @@
-import {BETS,COLOR,MAX_BET,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261031-roulette-multi2';
-import {RouletteWheel} from './wheel.js?v=20261031-roulette-multi2';
-import {Sound} from './sound.js?v=20261031-roulette-multi2';
-import {addChipDepth} from './chips.js?v=20261031-roulette-multi2';
+import {BETS,COLOR,MAX_BET,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261031-roulette-modes1';
+import {RouletteWheel} from './wheel.js?v=20261031-roulette-modes1';
+import {Sound} from './sound.js?v=20261031-roulette-modes1';
+import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
 
 const $=id=>document.getElementById(id),fmt=n=>Math.round(n).toLocaleString('ko-KR'),short=n=>n>=1000?(n/1000).toLocaleString('en-US',{maximumFractionDigits:1})+'K':String(n);
 const KEY='ojjuda.roulette.preferences.v1';
 const sound=new Sound();
 const state=initialState();state.balance=0;
+let lobbyMode='solo';
 let room=null,owner=null,initialized=false,screen='lobby',animating=false,settling=false,startingSpin=false,undo=[],lastResult=null,toastTimer,resultReadyId=null,betMode='straight';
 let commandBusy=false,pollTimer=null,reading=false,requestCounter=0,lastServerTime=0,closed=false,connecting=false,exitRequested=false;
 let draftTimer=null,draftRequest=null,draftVersion=0;
+let bettingClockKey='',bettingClockAt=0,bettingClockTimer=null,bettingClockFired=false;
+let computerOutcome=null;
 const requests=new Map();
 try{const prefs=JSON.parse(localStorage.getItem(KEY));state.sound=prefs?.sound!==false;state.reduced=prefs?.reduced===true}catch{}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify({sound:state.sound,reduced:state.reduced}))}catch{}}
@@ -23,37 +26,81 @@ function rpc(action,payload={}){
     requests.set(id,{resolve,reject,timer});send({type:'rpc',id,body:{action,...payload}});
   });
 }
-const ERRORS={login:'로그인한 뒤 다시 들어와 주세요.',underage:'만 19세 이상 회원만 이용할 수 있어요.',insufficient_gold:'베팅할 골드가 부족해요.',invalid_bet:'베팅 금액을 확인해 주세요.',not_host:'방장이 공을 굴릴 수 있어요.',not_ready:'두 명 이상 모두 준비해야 시작할 수 있어요.',room_full:'이미 네 명이 참여하고 있어요.',room_not_found:'방을 찾지 못했어요.',room_closed:'종료된 방이에요.',round_active:'아직 공이 돌고 있어요.',not_finished:'아직 공이 돌고 있어요.',room_busy:'진행 중인 방은 다음 판에 참여해 주세요.',round_not_finished:'아직 공이 돌고 있어요.',timeout:'응답이 늦어지고 있어요. 방 상태를 다시 확인할게요.',unavailable:'잠시 연결이 끊겼어요. 다시 시도해 주세요.'};
+const ERRORS={login:'로그인한 뒤 다시 들어와 주세요.',underage:'만 19세 이상 회원만 이용할 수 있어요.',insufficient_gold:'베팅할 골드가 부족해요.',invalid_bet:'베팅 금액을 확인해 주세요.',not_host:'방장이 공을 굴릴 수 있어요.',not_ready:'다른 회원의 시작을 기다리고 있어요.',room_full:'이미 네 명이 참여하고 있어요.',room_not_found:'방을 찾지 못했어요.',room_closed:'종료된 방이에요.',round_active:'아직 공이 돌고 있어요.',round_in_progress:'베팅이 마감됐어요. 결과를 확인할게요.',not_finished:'아직 공이 돌고 있어요.',room_busy:'진행 중인 방은 다음 판에 참여해 주세요.',round_not_finished:'아직 공이 돌고 있어요.',timeout:'응답이 늦어지고 있어요. 방 상태를 다시 확인할게요.',unavailable:'잠시 연결이 끊겼어요. 다시 시도해 주세요.'};
 function errorText(error){const code=String(error?.message||error||'unavailable');return ERRORS[code]||Object.entries(ERRORS).find(([key])=>code.includes(key))?.[1]||'처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.'}
+function renderLobbyMode(){
+  const solo=lobbyMode==='solo';
+  $('computerEntry').hidden=!solo;$('onlineEntry').hidden=solo;
+  $('modeDescription').textContent=solo?'컴퓨터와 베팅하고, 시작을 누르면 바로 돌아가요.':'첫 시작 후 30초에 마감해요. 모두 시작을 누르면 바로 돌아가요.';
+  $('entryHint').textContent=solo?'컴퓨터와 1:1 · 가상 골드 · 만 19세 이상':'1–4명 · 가상 골드 · 만 19세 이상';
+  for(const button of document.querySelectorAll('[data-roulette-mode]')){
+    const selected=button.dataset.rouletteMode===lobbyMode;button.classList.toggle('on',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=commandBusy||connecting;
+  }
+}
+function selectMode(mode,{refresh=true}={}){lobbyMode=mode==='online'?'online':'solo';renderLobbyMode();if(refresh&&initialized&&!room&&!commandBusy&&!connecting)schedulePoll(0)}
+function renderComputerResult(){
+  const visible=room?.mode==='solo'&&lastResult&&computerOutcome?.id===(state.pending?.id||state.lastSettled);
+  const result=visible?computerOutcome.result:null;
+  const text=result?`컴퓨터 · 당첨금 ${fmt(result.total)} G · ${result.net>0?'순이익 +'+fmt(result.net):result.net<0?'손실 '+fmt(-result.net):'손익 0'} G`:'';
+  for(const id of ['computerResult','wheelComputerResult']){const el=$(id);el.hidden=!visible;el.textContent=text;el.title=text}
+}
 function ownReady(){return room?.me?.ready===true}
 function activePlayers(){return (room?.players||[]).filter(player=>player.connected!==false)}
-function queueDraft(){draftVersion++;clearTimeout(draftTimer);draftTimer=setTimeout(shareDraft,120)}
+function bettingRemaining(){return room?.mode!=='solo'&&room?.status==='betting'&&bettingClockKey?Math.max(0,bettingClockAt-performance.now()):null}
+function bettingExpired(){return bettingRemaining()===0}
+function syncBettingClock(serverTime){
+  const deadline=Number(room?.bettingDeadline);
+  if(!room||room.mode==='solo'||room.status!=='betting'||!Number.isFinite(deadline)||deadline<=0){
+    clearTimeout(bettingClockTimer);bettingClockTimer=null;bettingClockKey='';bettingClockAt=0;bettingClockFired=false;return;
+  }
+  const key=room.id+':'+deadline,at=performance.now()+Math.max(0,deadline-serverTime);
+  if(key!==bettingClockKey){bettingClockKey=key;bettingClockAt=at;bettingClockFired=false}
+  else bettingClockAt=Math.min(bettingClockAt,at);
+}
+function renderBettingClock(){
+  clearTimeout(bettingClockTimer);bettingClockTimer=null;
+  const remaining=bettingRemaining(),badge=$('bettingCountdown');badge.hidden=remaining===null;
+  if(remaining===null)return;
+  const seconds=Math.ceil(remaining/1000);
+  $('bettingSeconds').textContent=seconds+'초';badge.classList.toggle('urgent',seconds<=10);badge.classList.toggle('expired',seconds===0);
+  badge.setAttribute('aria-label',seconds?'베팅 마감까지 '+seconds+'초':'베팅 마감, 서버 결과 확인 중');
+  if(remaining>0){bettingClockTimer=setTimeout(renderBettingClock,Math.min(250,remaining));return}
+  if(!bettingClockFired){
+    bettingClockFired=true;clearTimeout(draftTimer);render();schedulePoll(0);
+  }
+}
+function queueDraft(){draftVersion++;clearTimeout(draftTimer);const remaining=bettingRemaining();draftTimer=setTimeout(shareDraft,remaining!==null&&remaining<1000?0:120)}
 async function shareDraft(){
   clearTimeout(draftTimer);
-  if(draftRequest||!room||room.status!=='betting'||ownReady()||commandBusy||closed)return;
+  if(draftRequest||!room||room.status!=='betting'||ownReady()||commandBusy||closed||bettingExpired())return;
   const version=draftVersion,code=room.code;
   draftRequest=rpc('bet',{code,bets:{...state.bets}});
   try{const data=await draftRequest;if(room?.code===code)applySnapshot(data)}
-  catch(error){if(version===draftVersion&&!commandBusy&&!ownReady()&&!state.pending&&room?.code===code)notice(errorText(error))}
+  catch(error){if(/round_in_progress/.test(error?.message||'')||bettingExpired())schedulePoll(0);else if(version===draftVersion&&!commandBusy&&!ownReady()&&!state.pending&&room?.code===code)notice(errorText(error))}
   finally{draftRequest=null;if(draftVersion!==version&&!closed)draftTimer=setTimeout(shareDraft,120)}
 }
 function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
 function renderRoom(){
-  $('roomCode').textContent=room?.code||'';
+  const solo=room?.mode==='solo';
+  $('roomCode').textContent=solo?'':room?.code||'';$('copyCode').hidden=solo;$('soloRoomLabel').hidden=!solo;
+  $('tableModeLabel').textContent=solo?'COMPUTER':'ONLINE · 1–4 PLAYERS';
   const strip=$('playersStrip');strip.replaceChildren();
   for(const player of activePlayers()){
     const el=document.createElement('span');el.className='online-player'+(player.ready?' is-ready':'');
-    el.textContent=(player.userId===room?.hostId?'♛ ':'')+(player.name||'회원')+(player.userId===owner?' · 나':'');
-    el.title=(player.name||'회원')+' · '+(player.confirmed&&room?.status!=='betting'?'확인 완료':player.ready?'시작 누름':'베팅 중');strip.append(el);
+    const name=player.computer?'컴퓨터':player.name||'회원';el.classList.toggle('is-computer',player.computer===true);
+    el.textContent=(!solo&&player.userId===room?.hostId?'♛ ':'')+name+(player.userId===owner?' · 나':'')+(player.ready?' ✓':'');
+    el.title=name+' · '+(player.computer?'베팅 완료':player.confirmed&&room?.status!=='betting'?'확인 완료':player.ready?'시작 누름':'베팅 중');strip.append(el);
   }
-  $('cancelReady').hidden=!ownReady()||room?.status!=='betting';$('cancelReady').disabled=commandBusy;
+  $('cancelReady').hidden=solo||!ownReady()||room?.status!=='betting';$('cancelReady').disabled=commandBusy||bettingExpired();
+  $('startSoloButton').disabled=!initialized||commandBusy||connecting;
   $('createRoomButton').disabled=!initialized||commandBusy||connecting;
   $('joinRoomButton').disabled=!initialized||commandBusy||connecting;
-  $('refreshRooms').disabled=!initialized||commandBusy||connecting;
+  $('refreshRooms').disabled=!initialized||commandBusy||connecting;renderLobbyMode();renderBettingClock();renderComputerResult();
 }
 function renderRooms(rooms){
   const list=$('roomList');list.replaceChildren();
   for(const entry of rooms||[]){
+    if(entry.mode==='solo')continue;
     const code=String(entry.code||'');if(!/^[a-f0-9]{8}$/i.test(code))continue;
     const count=Array.isArray(entry.players)?entry.players.length:Number(entry.players??entry.playerCount??entry.player_count??entry.count??entry.seats??0);
     const capacity=[2,3,4].includes(Number(entry.capacity))?Number(entry.capacity):4;
@@ -90,35 +137,38 @@ function applySnapshot(data){
     if(!room){
       state.pending=null;state.bets={};state.betChips={};undo=[];animating=false;resultReadyId=null;sound.stopRoll();closeWheelPopup(null,{instant:true});setScreen('lobby');
     }else{
+      lobbyMode=room.mode==='solo'?'solo':'online';
       if(previous?.id!==room.id){state.bets={};state.betChips={};state.pending=null;state.history=[];state.lastBets={};state.lastChips={};state.lastSettled=null;undo=[];clearResult()}
       setScreen('game');
       if(room.status==='betting'){
         if(previous?.id===room.id&&(previous.status!=='betting'||previous.round!==room.round)){state.bets={};state.betChips={};undo=[];if(!settling)acknowledgeRemoteResult()}
         if(room.me?.ready){state.bets={...(room.me.bets||{})};state.betChips=cleanChips(state.betChips,state.bets)}
-        if(!lastResult){$('resultTitle').textContent='함께 베팅하고 있어요';$('resultDetail').textContent=`${activePlayers().length}/${[2,3,4].includes(Number(room.capacity))?Number(room.capacity):4}명 · ${activePlayers().filter(player=>player.ready).length}명 시작`}
+        if(!lastResult){$('resultTitle').textContent=room.mode==='solo'?'컴퓨터와 한 판':'함께 베팅하고 있어요';$('resultDetail').textContent=room.mode==='solo'?'베팅을 마치고 시작을 누르세요':`${activePlayers().length}/${[2,3,4].includes(Number(room.capacity))?Number(room.capacity):4}명 · ${activePlayers().filter(player=>player.ready).length}명 시작`}
       }else if(!room.me?.confirmed&&!settling){displaySpin(room.spin,serverTime)}
       else if(room.me?.confirmed&&!settling){acknowledgeRemoteResult()}
+      const computer=room.mode==='solo'&&room.players?.find(player=>player.computer===true);
+      if(room.spin?.id&&computer?.result)computerOutcome={id:room.spin.id,result:{...computer.result}};
     }
   }
-  render();
+  syncBettingClock(serverTime);render();
 }
 async function command(action,payload={}){
   if(commandBusy||closed)return null;commandBusy=true;render();
   try{const data=await rpc(action,{...(room?{code:room.code}:{}),...payload});applySnapshot(data);return data}
   catch(error){notice(errorText(error));return null}
-  finally{commandBusy=false;render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(250)}
+  finally{commandBusy=false;render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(bettingExpired()?0:250)}
 }
-function schedulePoll(delay){clearTimeout(pollTimer);if(!initialized||closed)return;pollTimer=setTimeout(poll,delay??(document.hidden?8000:room?1400:4500))}
+function schedulePoll(delay){clearTimeout(pollTimer);if(!initialized||closed)return;const remaining=bettingRemaining(),usual=document.hidden?8000:room?1400:4500;const next=remaining===null?usual:remaining===0?500:Math.min(usual,remaining);pollTimer=setTimeout(poll,delay??next)}
 async function poll(){
   if(reading||commandBusy||closed){schedulePoll();return}reading=true;
-  try{const data=await rpc(room?'read':'list',room?{code:room.code}:{});applySnapshot(data);$('connectionStatus').textContent=''}
+  try{const data=await rpc(room?'read':lobbyMode==='online'?'list':'status',room?{code:room.code}:{});applySnapshot(data);$('connectionStatus').textContent=''}
   catch(error){if(!document.hidden)$('connectionStatus').textContent='연결을 다시 확인하고 있어요';if(room&&/room_not_found|room_closed/.test(error?.message||'')){room=null;state.pending=null;state.bets={};state.betChips={};animating=false;resultReadyId=null;closeWheelPopup(null,{instant:true});setScreen('lobby');render();notice(errorText(error))}}
   finally{reading=false;schedulePoll()}
 }
-async function joinRoom(code){const value=String(code||'').trim().toUpperCase();if(!/^[A-F0-9]{8}$/.test(value)){notice('8자리 방 코드를 입력해 주세요.');$('joinCode').focus();return}sound.unlock().catch(()=>{});await command('join',{code:value})}
+async function joinRoom(code){selectMode('online',{refresh:false});const value=String(code||'').trim().toUpperCase();if(!/^[A-F0-9]{8}$/.test(value)){notice('8자리 방 코드를 입력해 주세요.');$('joinCode').focus();return}sound.unlock().catch(()=>{});await command('join',{code:value})}
 async function leaveRoom({exit=false}={}){
   if(commandBusy)return;const data=room?await command('leave',{roundId:room.spin?.id}):{};
-  if(data){room=null;state.pending=null;state.bets={};state.betChips={};undo=[];animating=false;resultReadyId=null;settling=false;sound.stopRoll();await closeWheelPopup(null,{instant:true});setScreen('lobby');render();if(exit){closed=true;clearTimeout(pollTimer);send({type:'exit'})}}
+  if(data){room=null;state.pending=null;state.bets={};state.betChips={};undo=[];animating=false;resultReadyId=null;settling=false;sound.stopRoll();await closeWheelPopup(null,{instant:true});setScreen('lobby');render();if(exit){closed=true;clearTimeout(pollTimer);clearTimeout(bettingClockTimer);clearTimeout(draftTimer);send({type:'exit'})}}
 }
 window.addEventListener('message',async event=>{
   if(event.origin!==location.origin||event.source!==window.parent||event.data?.source!=='ojjuda-world')return;
@@ -129,14 +179,14 @@ window.addEventListener('message',async event=>{
   }
   if(message.type==='roulette-exit-request'){if(commandBusy||settling)exitRequested=true;else void leaveRoom({exit:true});return}
   if(message.type!=='roulette-init'||initialized||!message.owner)return;
-  initialized=true;owner=message.owner;connecting=true;render();
-  try{applySnapshot(await rpc('status'));if(message.joinCode)applySnapshot(await rpc('join',{code:String(message.joinCode).toUpperCase()}));else applySnapshot(await rpc('list'));$('connectionStatus').textContent=''}catch(error){notice(errorText(error));$('connectionStatus').textContent=errorText(error)}finally{connecting=false;render();schedulePoll()}
+  initialized=true;owner=message.owner;connecting=true;if(message.joinCode)selectMode('online',{refresh:false});render();
+  try{applySnapshot(await rpc('status'));if(message.joinCode)applySnapshot(await rpc('join',{code:String(message.joinCode).toUpperCase()}));else if(lobbyMode==='online')applySnapshot(await rpc('list'));$('connectionStatus').textContent=''}catch(error){notice(errorText(error));$('connectionStatus').textContent=errorText(error)}finally{connecting=false;render();schedulePoll()}
 });
 const media=matchMedia('(prefers-reduced-motion: reduce)');
 const reduced=()=>state.reduced||media.matches;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const busy=()=>animating||settling||!!state.pending;
-const betsClosed=()=>busy()||startingSpin||commandBusy||!room||room.status!=='betting'||ownReady();
+const betsClosed=()=>busy()||startingSpin||commandBusy||!room||room.status!=='betting'||ownReady()||bettingExpired();
 const center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
 function notice(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),2800)}
 function animateCounter(el,from,to,duration=650){return new Promise(resolve=>{if(reduced()){el.textContent=fmt(to);resolve();return}const start=performance.now();function frame(now){const p=Math.min(1,(now-start)/duration),t=1-(1-p)**3;el.textContent=fmt(from+(to-from)*t);if(p<1)requestAnimationFrame(frame);else resolve()}requestAnimationFrame(frame)})}
@@ -204,7 +254,7 @@ function renderOpponentBets(){
     layer.replaceChildren();layer.dataset.signature=signature;
     for(const {player,index,amount} of visible){
       const stack=document.createElement('span');stack.className='opponent-stack';stack.style.setProperty('--opponent',String(index));
-      stack.title=(player.name||'상대')+' · '+fmt(amount)+' G';
+      stack.title=(player.computer?'컴퓨터':player.name||'상대')+' · '+fmt(amount)+' G';
       const chip=amount>=5000?5000:amount>=1000?1000:amount>=500?500:100;
       const disc=document.createElement('i');disc.className='stack-disc chip-'+chip;disc.style.setProperty('--level','0');
       const face=document.createElement('span');face.className='stack-face';face.textContent=short(amount);disc.append(face);addChipDepth(disc);stack.append(disc);layer.append(stack);
@@ -216,8 +266,8 @@ function render({bets=true,balance=true}={}){
   const locked=betsClosed(),sum=totalBets(state.pending?.bets||state.bets);
   if(balance)$('balance').textContent=fmt(Math.max(0,state.balance-(ownReady()?0:totalBets(state.bets))));
   $('totalBet').innerHTML=`${fmt(sum)} <small>G</small>`;
-  $('spinButton').disabled=commandBusy||busy()||!room||room.status!=='betting'||ownReady()||sum===0;
-  $('spinLabel').textContent=settling?'정산하는 중':resultReadyId?'결과 확인 중':state.pending||animating?'공이 도는 중':commandBusy?'확인하는 중':room?.status==='finished'?'다른 회원 확인 중':ownReady()?`시작 대기 ${activePlayers().filter(player=>player.ready).length}/${activePlayers().length}`:sum?'시작':'칩을 올려주세요';
+  $('spinButton').disabled=commandBusy||busy()||!room||room.status!=='betting'||ownReady()||(sum===0&&bettingRemaining()===null)||bettingExpired();
+  $('spinLabel').textContent=settling?'정산하는 중':resultReadyId?'결과 확인 중':state.pending||animating?'공이 도는 중':commandBusy?'확인하는 중':room?.status==='finished'?'다른 회원 확인 중':bettingExpired()?'마감 확인 중':ownReady()?(activePlayers().length===1?'마감 기다리는 중':`시작 대기 ${activePlayers().filter(player=>player.ready).length}/${activePlayers().length}`):sum?'시작':bettingRemaining()!==null?'시작 · 관람':'칩을 올려주세요';
   $('undoButton').disabled=locked||!undo.length||!totalBets(state.bets);
   $('clearButton').disabled=locked||!totalBets(state.bets);
   $('repeatButton').disabled=locked||totalBets(state.lastBets)===0;
@@ -231,7 +281,7 @@ function render({bets=true,balance=true}={}){
   if(bets)renderBets(state.pending?.bets||state.bets);renderHistory();renderRoom();
 }
 function setStatus(text){$('statusText').textContent=text}
-function clearResult(){document.querySelectorAll('.hit').forEach(e=>e.classList.remove('hit'));$('resultBanner').classList.remove('won');$('resultNumber').className='result-number';$('resultNumber').textContent='✦';$('resultTitle').textContent='행운을 놓을 자리를 골라주세요';$('resultDetail').textContent='칩을 고른 뒤 숫자를 누르면 바로 놓여요.';lastResult=null}
+function clearResult(){document.querySelectorAll('.hit').forEach(e=>e.classList.remove('hit'));$('resultBanner').classList.remove('won');$('resultNumber').className='result-number';$('resultNumber').textContent='✦';$('resultTitle').textContent='행운을 놓을 자리를 골라주세요';$('resultDetail').textContent='칩을 고른 뒤 숫자를 누르면 바로 놓여요.';lastResult=null;computerOutcome=null;renderComputerResult()}
 function placeBet(id){
   if(betsClosed())return;
   const amount=state.selectedChip,origin=document.querySelector(`[data-chip="${amount}"]`);
@@ -254,16 +304,16 @@ async function repeatBets(){
   if(!copied){render();return}queueDraft();clearResult();render({bets:false});const source=$('chipAnchor');await Promise.all(Object.entries(state.bets).map(([id,amount],i)=>fly(source,betPoint(id),{amount,delay:Math.min(i*34,500)})));if(!busy())renderBets();sound.chip();
 }
 async function startSpin(){
-  if(commandBusy||busy()||!room||room.status!=='betting')return;
+  if(commandBusy||busy()||!room||room.status!=='betting'||bettingExpired())return;
   sound.unlock().catch(()=>{});
   if(ownReady())return;
-  if(!totalBets(state.bets))return;
+  if(!totalBets(state.bets)&&bettingRemaining()===null)return;
   clearTimeout(draftTimer);
   await command('ready',{ready:true,bets:{...state.bets}});
 }
 function openWheelPopup(spin){
   const modal=$('wheelDialog');resultReadyId=null;$('confirmResultButton').hidden=true;$('confirmResultButton').disabled=true;modal.dataset.spin=spin.id;modal.dataset.phase='spinning';modal.classList.remove('closing');
-  $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=`베팅 마감 · ${fmt(totalBets(spin.bets))} G`;
+  $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=totalBets(spin.bets)?`베팅 마감 · ${fmt(totalBets(spin.bets))} G`:'관람 · 베팅 없음';
   if($('helpDialog').open)$('helpDialog').close();
   document.body.classList.add('wheel-open');if(!modal.open)modal.showModal();wheel.setVisible(true);$('wheelDialogTitle').focus({preventScroll:true});
 }
@@ -287,6 +337,8 @@ function revealResult(result,{pending=false}={}){
   $('wheelOutcomeNumber').className=`result-number ${color}`;$('wheelOutcomeNumber').textContent=number;
   $('wheelOutcomeTitle').textContent=total?`${fmt(total)} G ${pending?'지급 예정':'지급'}`:`${number} · ${colorName}`;
   $('wheelOutcomeDetail').textContent=total?`당첨 ${fmt(gross)} G − 수수료 ${fmt(fee)} G`:pending?'확인을 눌러 테이블로 돌아가요':'테이블로 돌아가요';
+  if(!result.stake){$('resultTitle').textContent='베팅 없이 함께 관람했어요';$('resultDetail').textContent=`${number} · ${colorName}`;$('wheelOutcomeDetail').textContent='확인을 누르면 테이블로 돌아가요'}
+  renderComputerResult();
   $('wheelOutcome').hidden=false;$('wheelFootnote').hidden=true;
 }
 function showSpinResult(id){
@@ -296,6 +348,7 @@ function showSpinResult(id){
   if(!result){animating=false;closeWheelPopup(id,{instant:true});render();return}
   animating=false;resultReadyId=id;wheel.showResult(result.number);
   render();revealResult(result,{pending:true});
+  if(room?.mode==='solo'&&computerOutcome?.id!==id)schedulePoll(0);
   $('confirmResultButton').hidden=false;$('confirmResultButton').disabled=false;
   $('confirmResultButton').textContent='확인';$('confirmResultButton').focus({preventScroll:true});
 }
@@ -305,7 +358,10 @@ async function confirmResult(){
   $('confirmResultButton').textContent='정산하는 중';let result,oldBalance;
   const spin=state.pending;if(!spin||spin.id!==id){settling=false;render();return}
   const calculated=payout(spin.bets,spin.number);result={...calculated,number:spin.number,net:calculated.total-calculated.stake,bets:{...spin.bets}};oldBalance=state.balance;
-  try{const data=await rpc('confirm',{code:room.code,roundId:id});state.lastSettled=id;state.history.unshift(spin.number);state.history=state.history.slice(0,30);state.pending=null;state.bets={};state.betChips={};undo=[];applySnapshot(data)}
+  try{
+    if(room?.mode==='solo'&&computerOutcome?.id!==id)applySnapshot(await rpc('read',{code:room.code}));
+    const data=await rpc('confirm',{code:room.code,roundId:id});state.lastSettled=id;state.history.unshift(spin.number);state.history=state.history.slice(0,30);state.pending=null;state.bets={};state.betChips={};undo=[];applySnapshot(data);
+  }
   catch(error){settling=false;resultReadyId=id;$('confirmResultButton').disabled=false;$('confirmResultButton').textContent='확인';notice(errorText(error));render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);return}
 
   if(!result){await closeWheelPopup(id,{instant:true});settling=false;render();return}
@@ -335,7 +391,7 @@ async function confirmResult(){
   }
   settling=false;render({balance:!result.total});
 
-  if(state.balance<100)notice('베팅할 골드가 부족해요.');if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);
+  if(state.balance<100&&result.stake>0)notice('베팅할 골드가 부족해요.');if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);
 }
 const wheel=new RouletteWheel($('wheel'),{
   onTick:(p,b)=>{if(b)sound.roll(p,b)},
@@ -344,11 +400,13 @@ const wheel=new RouletteWheel($('wheel'),{
   onDone:id=>showSpinResult(id)
 });
 buildTable();document.querySelectorAll('.casino-chip').forEach(addChipDepth);const gridObserver=new ResizeObserver(positionSeams);gridObserver.observe($('numberGrid'));
-for(const button of document.querySelectorAll('[data-bet-mode]'))button.addEventListener('click',()=>{if(busy())return;betMode=button.dataset.betMode;$('numberGrid').dataset.mode=betMode;$('betModeHint').textContent=betMode==='straight'?'숫자에 칩을 올려주세요':betMode==='split'?'두 숫자 사이의 금색 점에 칩을 올려주세요':'네 숫자가 만나는 금색 점에 칩을 올려주세요';clearHighlight();positionSeams();render({bets:false})});
-$('createRoomButton').addEventListener('click',()=>{sound.unlock().catch(()=>{});void command('create')});
+for(const button of document.querySelectorAll('[data-bet-mode]'))button.addEventListener('click',()=>{if(betsClosed())return;betMode=button.dataset.betMode;$('numberGrid').dataset.mode=betMode;$('betModeHint').textContent=betMode==='straight'?'숫자에 칩을 올려주세요':betMode==='split'?'두 숫자 사이의 금색 점에 칩을 올려주세요':'네 숫자가 만나는 금색 점에 칩을 올려주세요';clearHighlight();positionSeams();render({bets:false})});
+for(const button of document.querySelectorAll('[data-roulette-mode]'))button.addEventListener('click',()=>{if(commandBusy||connecting||room)return;selectMode(button.dataset.rouletteMode)});
+$('startSoloButton').addEventListener('click',()=>{sound.unlock().catch(()=>{});selectMode('solo',{refresh:false});void command('create',{mode:'solo'})});
+$('createRoomButton').addEventListener('click',()=>{sound.unlock().catch(()=>{});selectMode('online',{refresh:false});void command('create',{mode:'online'})});
 $('joinForm').addEventListener('submit',event=>{event.preventDefault();void joinRoom($('joinCode').value)});
 $('refreshRooms').addEventListener('click',()=>void poll());
-$('cancelReady').addEventListener('click',async()=>{const data=await command('ready',{ready:false});if(data&&room?.status==='betting'&&!ownReady())queueDraft()});
+$('cancelReady').addEventListener('click',async()=>{if(bettingExpired())return;const data=await command('ready',{ready:false});if(data&&room?.status==='betting'&&!ownReady())queueDraft()});
 $('copyCode').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(room.code);notice('방 코드를 복사했어요.')}catch{notice('방 코드: '+(room?.code||''))}});
 $('spinButton').addEventListener('click',startSpin);
 $('confirmResultButton').addEventListener('click',confirmResult);
@@ -365,7 +423,7 @@ $('undoButton').addEventListener('click',()=>removeBets(false));$('clearButton')
 const dialog=$('helpDialog');$('helpButton').addEventListener('click',()=>dialog.showModal());$('closeHelp').addEventListener('click',()=>dialog.close());$('helpDone').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
 $('wheelDialog').addEventListener('cancel',event=>{if(busy())event.preventDefault()});
 $('wheelDialog').addEventListener('close',()=>{document.body.classList.remove('wheel-open');wheel.setVisible(false)});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)sound.stopRoll();else if(state.pending&&animating)sound.beginRoll(state.pending);schedulePoll(document.hidden?8000:100)});
-window.addEventListener('pagehide',()=>{closed=true;clearTimeout(pollTimer);clearTimeout(draftTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)sound.stopRoll();else if(state.pending&&animating)sound.beginRoll(state.pending);renderBettingClock();schedulePoll(document.hidden?undefined:100)});
+window.addEventListener('pagehide',()=>{closed=true;clearTimeout(pollTimer);clearTimeout(draftTimer);clearTimeout(bettingClockTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
 render();send({type:'ready'});
 setTimeout(()=>{if(!initialized){$('connectionStatus').replaceChildren();const link=document.createElement('a');link.href='/world.html?game=roulette';link.target='_top';link.textContent='오쭈다 오락실에서 시작하기';$('connectionStatus').append(link)}},7000);

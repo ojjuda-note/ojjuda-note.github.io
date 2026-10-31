@@ -1,5 +1,5 @@
 import {WHEEL_ORDER,COLOR} from './engine.js';
-import {planSpinMotion,sampleSpinMotion} from './motion.js?v=20261031-roulette-multi2';
+import {planSpinMotion,sampleSpinMotion} from './motion.js?v=20261031-roulette-modes1';
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 function ring(ctx,r1,r2,stops){const g=ctx.createRadialGradient(500,500,r1,500,500,r2);stops.forEach(([p,c])=>g.addColorStop(p,c));ctx.fillStyle=g;ctx.beginPath();ctx.arc(500,500,r2,0,TAU);ctx.arc(500,500,r1,0,TAU,true);ctx.fill()}

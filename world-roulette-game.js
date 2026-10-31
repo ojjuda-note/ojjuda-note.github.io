@@ -15,15 +15,15 @@
           onError('룰렛은 만 19세 이상 회원만 이용할 수 있어요.'); return;
         }
       } catch (error) {
-        onError((error?.message || '나이를 확인하지 못했어요.').replaceAll('맞고', '룰렛')); return;
+        onError((error?.message || '나이를 확인하지 못했어요.').replaceAll('맞고는', '룰렛은').replaceAll('맞고', '룰렛')); return;
       }
       if (request !== opening || !authorized()) return;
       const service = client || access.getClient();
       const previous = document.activeElement, wasGaming = document.body.classList.contains('gaming');
       const dialog = document.createElement('dialog');
       dialog.className = 'roulette-game-dialog';
-      dialog.setAttribute('aria-label', '룰렛 멀티게임');
-      dialog.innerHTML = '<header><button type="button">← 게임 목록</button><span>룰렛</span></header><iframe title="룰렛 멀티게임" src="/games/roulette/index.html?v=20261031-roulette-multi2" allow="autoplay"></iframe>';
+      dialog.setAttribute('aria-label', '룰렛');
+      dialog.innerHTML = '<header><button type="button">← 게임 목록</button><span>룰렛</span></header><iframe title="룰렛" src="/games/roulette/index.html?v=20261031-roulette-modes1" allow="autoplay"></iframe>';
       const frame = dialog.querySelector('iframe');
       let connected = false, unsubscribe = null, inflight = 0, lastResult = '', exitTimer = null;
       const pendingIds = new Set();

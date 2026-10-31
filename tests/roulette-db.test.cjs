@@ -23,6 +23,7 @@ async function fixture(){
  }
  const dir=path.join(__dirname,'../supabase/migrations');
  await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(f=>f.endsWith('_roulette_multiplayer_core.sql'))),'utf8'));
+ await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(f=>f.endsWith('_roulette_betting_countdown.sql'))),'utf8'));
  const call=async(actor,action,payload={})=>db.transaction(async tx=>{
   await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);
   await tx.exec('set local role authenticated');
@@ -102,4 +103,5 @@ async function main(){
   console.log(`PASS: ${checks} roulette database checks, all 4,847 original bet/outcome combinations, permissions, adult access, blocked users, draft chips, atomic escrow, unanimous start, confirmations, duplicate actions, departures, timeout recovery, ZU isolation.`);
  }finally{await db.close();}
 }
-main().catch(e=>{console.error(e);process.exitCode=1;});
+module.exports={fixture,ids};
+if(require.main===module)main().catch(e=>{console.error(e);process.exitCode=1;});

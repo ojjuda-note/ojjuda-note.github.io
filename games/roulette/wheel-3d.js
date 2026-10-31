@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.min.js';
 import {RoomEnvironment} from './vendor/RoomEnvironment.js';
 import {WHEEL_ORDER,COLOR} from './engine.js';
-import {planSpinMotion,sampleSpinMotion,wheelSurface} from './motion.js?v=20261031-roulette-multi2';
+import {planSpinMotion,sampleSpinMotion,wheelSurface} from './motion.js?v=20261031-roulette-modes1';
 
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=v=>Math.min(1,Math.max(0,v));
