@@ -11,9 +11,11 @@ fs.mkdirSync(proof,{recursive:true});
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',acceptDownloads:true});
-  let vendorLoads=0,failBackground=false,downloads=0;
+  let vendorLoads=0,failBackground=false,downloads=0,kakaoSdkRequests=0;
   await context.route('**/*',route=>{
-   const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();
+   const url=new URL(route.request().url());
+   if(url.hostname==='t1.kakaocdn.net')kakaoSdkRequests++;
+   if(url.origin!==origin)return route.abort();
    if(url.pathname==='/park/')return route.fulfill({contentType:'text/html',body:html});
    if(url.pathname==='/note/assets/189.jpg'&&failBackground)return route.fulfill({status:404,body:'missing test image'});
    if(url.pathname==='/vendor/html2canvas-1.4.1.min.js'){
@@ -67,8 +69,18 @@ fs.mkdirSync(proof,{recursive:true});
     });
     window.copiedLinks.push(text);return Promise.resolve();
    }}});
+   const addListener=EventTarget.prototype.addEventListener;
+   EventTarget.prototype.addEventListener=function(type,listener,...rest){
+    if(type!=='click'||typeof listener!=='function')return addListener.call(this,type,listener,...rest);
+    return addListener.call(this,type,function(event){
+     const kakao=this.dataset?.cardShareAction==='kakao';
+     if(kakao)window.insideKakaoClick=true;
+     try{return listener.call(this,event);}finally{if(kakao)window.insideKakaoClick=false;}
+    },...rest);
+   };
   });
   await page.addScriptTag({content:read('note/share-image.js')});
+  await page.addScriptTag({content:read('note/share-kakao.js')});
   await page.addScriptTag({content:source.slice(0,boot)});
   await page.evaluate(()=>{
    const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
@@ -105,7 +117,8 @@ fs.mkdirSync(proof,{recursive:true});
   for(const width of [320,390]){
    const copiesBeforeOpen=await page.evaluate(()=>copyAttempts.length);
    await page.setViewportSize({width,height:844});await open(1);await ready();
-   assert.equal(await action('share').textContent(),'카드와 링크 공유');
+   assert.equal(await action('share').textContent(),'다른 앱으로 공유');
+   assert.equal(await action('kakao').count(),0,'an unconfigured Kakao integration is not advertised');
    assert.equal(await page.locator('#management-backdrop .management-footer .primary').count(),1,'one main share action is emphasized');
    assert.equal(await action('share').evaluate(button=>button.classList.contains('primary')),true);
    assert.equal(await page.evaluate(()=>copyAttempts.length),copiesBeforeOpen,'opening the menu alone does not change the clipboard');
@@ -137,6 +150,12 @@ fs.mkdirSync(proof,{recursive:true});
    await close();
   }
   assert.equal(vendorLoads,1,'all image shares reuse the one lazily loaded vendor');
+  assert.equal(kakaoSdkRequests,0,'opening an unconfigured share dialog never loads the Kakao SDK');
+  assert.match(await page.evaluate(async()=>{
+   try{await OjjudaKakaoShare.prepare(new File(['fixture'],'fixture.png',{type:'image/png'}),{cardUrl:location.origin+'/world.html'});return '';}
+   catch(error){return error.message;}
+  }),/not_configured/,'an unconfigured adapter fails before loading the SDK or uploading');
+  assert.equal(kakaoSdkRequests,0);
 
   // Manual link copy and link-only sharing remain available as secondary actions.
   await open(2);await ready();await action('copy').click();
@@ -261,7 +280,128 @@ fs.mkdirSync(proof,{recursive:true});
   await page.waitForFunction(()=>document.querySelector('.management-message').textContent.includes('링크도 복사했어요'));
   assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),origin+'/world.html?place=park&card='+id(1),'the actual browser clipboard receives the per-card URL');
   assert.equal(await count(),beforeRealClipboard+1,'real clipboard permission still opens exactly one native share');
-  await close();assert.deepEqual(errors,[]);await context.close();
-  console.log('PASS: combined card/caption share and automatic link copy at 320/390px; real public-card PNGs exclude private data; slow/failed clipboard and synchronous native errors recover; validated file-only and PNG-save fallbacks; cancel never resends; stale render/clipboard results stay scoped to their card and account; events retain link-only sharing.');
+  await close();
+
+  // The provider SDK is simulated; no app key, image or message is sent externally.
+  // Keep the real PNG renderer and production Kakao adapter/preview code in use.
+  await page.evaluate(()=>{
+   window.OJJUDA_CONFIG.kakaoJavaScriptKey='0123456789abcdef0123456789abcdef';
+   window.kakaoUploads=[];window.kakaoSends=[];window.kakaoDeletes=[];
+   window.kakaoUploadOutcome='success';window.kakaoSendOutcome='success';
+   let appKey=null;
+   window.Kakao={
+    isInitialized:()=>!!appKey,init:key=>{appKey=key;},Auth:{getAppKey:()=>appKey},
+    Share:{
+     uploadImage:({file})=>{
+      const imageUrl='https://k.kakaocdn.net/dn/ojjuda-test-'+(kakaoUploads.length+1)+'/img.png';
+      kakaoUploads.push({file,imageUrl});
+      const result={infos:{original:{url:imageUrl,width:780,height:500}}};
+      if(kakaoUploadOutcome==='reject')return Promise.reject(new Error('Kakao upload failed'));
+      if(kakaoUploadOutcome==='pending')return new Promise(resolve=>{window.releaseKakaoUpload=()=>resolve(result);});
+      return Promise.resolve(result);
+     },
+     sendDefault:payload=>{
+      kakaoSends.push({payload,inClick:window.insideKakaoClick===true});
+      if(kakaoSendOutcome==='error')throw new Error('Kakao share unavailable');
+     },
+     deleteImage:({imageUrl})=>{kakaoDeletes.push(imageUrl);return Promise.resolve({});}
+    }
+   };
+  });
+  const readyKakao=()=>page.waitForFunction(()=>{
+   const button=document.querySelector('[data-card-share-action="kakao"]');
+   return button&&!button.disabled&&button.textContent==='카카오톡으로 보내기';
+  });
+  const uploadCount=()=>page.evaluate(()=>kakaoUploads.length);
+  const sendCount=()=>page.evaluate(()=>kakaoSends.length);
+  const deleteCount=()=>page.evaluate(()=>kakaoDeletes.length);
+
+  await open(1);await ready();
+  assert.equal(await action('kakao').isEnabled(),true);
+  assert.equal(await action('kakao').evaluate(button=>button.classList.contains('primary')),true);
+  assert.equal(await page.locator('#management-backdrop .management-footer .primary').count(),1,'Kakao is the only primary action when configured');
+  assert.equal(await uploadCount(),0,'simply opening the share dialog does not upload to Kakao');
+  await action('kakao').click();await readyKakao();
+  assert.equal(await sendCount(),0,'upload completion never opens a share window without another click');
+  for(const width of [320,390]){
+   await page.setViewportSize({width,height:844});
+   await page.screenshot({path:path.join(proof,`kakao-share-menu-${width}.png`)});
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'the configured Kakao share menu fits a narrow mobile screen');
+  }
+  const upload=await page.evaluate(async()=>{
+   const uploaded=kakaoUploads.at(-1),file=uploaded.file[0];
+   return {isFileList:uploaded.file instanceof FileList,isFile:file instanceof File,type:file.type,size:file.size,
+    signature:Array.from(new Uint8Array(await file.slice(0,8).arrayBuffer())),imageUrl:uploaded.imageUrl};
+  });
+  assert.equal(upload.isFileList,true);assert.equal(upload.isFile,true);assert.equal(upload.type,'image/png');
+  assert.ok(upload.size>3000);assert.deepEqual(upload.signature,[137,80,78,71,13,10,26,10]);
+  await action('kakao').click();await page.waitForFunction(()=>kakaoSends.length===1);
+  const sent=await page.evaluate(()=>kakaoSends.at(-1));
+  assert.equal(sent.inClick,true,'sendDefault runs synchronously inside the fresh send-button click');
+  assert.equal(sent.payload.objectType,'feed');
+  assert.equal(sent.payload.content.imageUrl,upload.imageUrl);
+  const cardButton=sent.payload.buttons.find(button=>button.title==='카드 보기');assert.ok(cardButton);
+  for(const link of [sent.payload.content.link,cardButton.link]){
+   assert.equal(link.webUrl,origin+'/world.html?place=park&card='+id(1));
+   assert.equal(link.mobileWebUrl,link.webUrl);
+  }
+  assert.doesNotMatch(await page.locator('.management-message').textContent(),/전송[이 ]*완료|보냈어요/,'opening the picker is never reported as delivery');
+  const deletesAfterSend=await deleteCount();await close();await settle();
+  assert.equal(await deleteCount(),deletesAfterSend,'an image handed to Kakao remains available for its message');
+
+  // Kakao is also usable on a browser with no native Web Share API.
+  await page.evaluate(()=>{
+   window.savedNativeShare=navigator.share;window.savedCanShare=navigator.canShare;
+   Object.defineProperty(navigator,'share',{configurable:true,value:undefined});
+   Object.defineProperty(navigator,'canShare',{configurable:true,value:undefined});
+  });
+  await open(2);await ready();assert.equal(await action('kakao').isEnabled(),true);
+  const beforeDesktop=await sendCount();await action('kakao').click();await readyKakao();await action('kakao').click();
+  assert.equal(await sendCount(),beforeDesktop+1);await close();
+  await page.evaluate(()=>{Object.defineProperty(navigator,'share',{configurable:true,value:savedNativeShare});Object.defineProperty(navigator,'canShare',{configurable:true,value:savedCanShare});});
+
+  // A prepared but unsent image is cleaned up when the user closes the dialog.
+  await open(1);await ready();await action('kakao').click();await readyKakao();
+  const unsentImage=await page.evaluate(()=>kakaoUploads.at(-1).imageUrl),beforeCancelSend=await sendCount();
+  await close();await page.waitForFunction(url=>kakaoDeletes.includes(url),unsentImage);
+  assert.equal(await sendCount(),beforeCancelSend,'canceling the prepared share does not send');
+
+  await page.evaluate(()=>{kakaoUploadOutcome='reject';});
+  await open(1);await ready();const beforeFailedUpload=await sendCount();await action('kakao').click();
+  await page.waitForFunction(()=>{const b=document.querySelector('[data-card-share-action="kakao"]');return b&&!b.disabled;});
+  assert.equal(await sendCount(),beforeFailedUpload);assert.ok(await page.locator('.management-message').textContent());
+  await page.evaluate(()=>{kakaoUploadOutcome='success';});
+  await action('kakao').click();await readyKakao();await close();
+
+  await open(1);await ready();await action('kakao').click();await readyKakao();
+  await page.evaluate(()=>{kakaoSendOutcome='error';});
+  const beforeSendFailure=await sendCount();await action('kakao').click();await settle();
+  assert.equal(await sendCount(),beforeSendFailure+1,'a synchronous SDK error is not automatically retried');
+  assert.equal(await action('kakao').isEnabled(),true,'the send error leaves a usable recovery action');
+  assert.ok(await page.locator('.management-message').textContent());
+  await close();await page.evaluate(()=>{kakaoSendOutcome='success';});
+
+  for(const transition of ['close','other-card','logout','account']){
+   await page.evaluate(()=>{session={user:{id:'share-owner'}};seedShareCards();kakaoUploadOutcome='pending';releaseKakaoUpload=null;});
+   await open(1);await ready();const uploadsBefore=await uploadCount(),sendsBefore=await sendCount();
+   await action('kakao').click();await page.waitForFunction(n=>kakaoUploads.length===n+1&&typeof releaseKakaoUpload==='function',uploadsBefore);
+   const imageUrl=await page.evaluate(()=>kakaoUploads.at(-1).imageUrl);
+   if(transition==='other-card'){await open(2);await ready();}
+   else if(transition==='close')await close();
+   else await page.evaluate(mode=>receiveAuth(mode==='logout'?null:{user:{id:'replacement-owner'}}),transition);
+   await page.evaluate(()=>releaseKakaoUpload());await page.waitForFunction(url=>kakaoDeletes.includes(url),imageUrl);
+   assert.equal(await sendCount(),sendsBefore,transition+' cannot send late content from the previous card/account');
+   if(transition==='other-card'){
+    assert.equal(await page.locator('#note-share-url').inputValue(),origin+'/world.html?place=park&card='+id(2));
+    assert.notEqual(await action('kakao').textContent(),'카카오톡으로 보내기','the old upload cannot prepare the new card');await close();
+   }else assert.equal(await page.locator('#management-backdrop').isVisible(),false,transition+' never reopens the old dialog');
+  }
+  await page.evaluate(()=>{session={user:{id:'share-owner'}};seedShareCards();kakaoUploadOutcome='success';});
+  const eventUploadCount=await uploadCount();await open(4);
+  assert.equal(await action('kakao').count(),0,'event cards never offer image uploads to Kakao');
+  await close();assert.equal(await uploadCount(),eventUploadCount);
+  assert.equal(kakaoSdkRequests,0,'the fixture never sent a request to Kakao');
+  assert.deepEqual(errors,[]);await context.close();
+  console.log('PASS: real card PNGs and clipboard at 320/390px; native share failures and races; configured Kakao template with image and exact clickable card links; explicit upload/send clicks, actual PNG upload input, no-native-share support, failed upload retry, unsent image cleanup and stale card/account isolation. Kakao SDK delivery is simulated, not an actual message sent.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

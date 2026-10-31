@@ -1350,8 +1350,11 @@ function shareCard(cardId) {
   const current = () => run === managementRun && epoch === identityEpoch && !management.hidden
     && (session?.user?.id || null) === userId && cache.get(cardId)?.id === cardId;
   const card = cache.get(cardId);
+  const kakaoConfigured = card?.kind !== 'event' && !!window.OjjudaKakaoShare?.isConfigured();
   managementBody.append(node('p', 'management-help', card?.kind === 'event'
-    ? '이 링크로 카드를 열 수 있어요.' : '공유할 때 카드 링크도 복사해요.'));
+    ? '이 링크로 카드를 열 수 있어요.' : kakaoConfigured
+      ? '카카오톡에서는 카드 이미지와 ‘카드 보기’ 버튼을 함께 보내요.'
+      : '앱에 따라 사진만 전달될 수 있어요. 카드 링크도 함께 복사해요.'));
   const label = node('label', 'field-label', '카드 링크'); label.htmlFor = 'note-share-url';
   const input = node('input', 'note-share-url'); input.id = 'note-share-url'; input.type = 'url';
   input.value = url.href; input.readOnly = true; input.addEventListener('focus', () => input.select());
@@ -1377,6 +1380,51 @@ function shareCard(cardId) {
     return;
   }
   let file = null, attempt = 0;
+  let kakao = null, preparedKakao = null, kakaoRun = 0;
+  if (kakaoConfigured) {
+    pendingCardShareCleanup = () => {
+      ++kakaoRun;
+      preparedKakao?.dispose(); preparedKakao = null;
+    };
+    kakao = managementButton('카카오톡 공유', () => {
+      if (!current() || sharing || kakao.disabled || !file) return;
+      const feedback = ++feedbackRun;
+      if (preparedKakao) {
+        // Reach the SDK in this fresh click; awaiting the image upload here
+        // would lose the activation needed for Kakao's popup or app handoff.
+        try {
+          preparedKakao.send();
+          preparedKakao.dispose(); preparedKakao = null;
+          kakao.textContent = '다시 카카오톡 공유';
+          managementMessage.textContent = '카카오톡에서 받는 사람을 선택해 주세요.';
+        } catch (error) {
+          console.warn('Kakao card share:', error);
+          preparedKakao?.dispose(); preparedKakao = null;
+          kakao.textContent = '카카오톡 공유';
+          managementMessage.textContent = '카카오톡을 열지 못했어요. 다시 시도해 주세요.';
+        }
+        return;
+      }
+      const preparing = ++kakaoRun;
+      const active = () => current() && preparing === kakaoRun;
+      sharing = true; kakao.disabled = true; kakao.textContent = '카카오톡 준비 중…';
+      managementMessage.textContent = '보낼 카드를 준비하고 있어요.';
+      const title = Array.from(String(cache.get(cardId)?.body || '').replace(/\s+/g, ' ').trim()).slice(0, 80).join('') || '공원 카드';
+      window.OjjudaKakaoShare.prepare(file, { cardUrl: url.href, title, isCurrent: active }).then(prepared => {
+        if (!active()) { prepared.dispose(); return; }
+        preparedKakao = prepared; kakao.textContent = '카카오톡으로 보내기';
+        if (feedback === feedbackRun) managementMessage.textContent = '준비됐어요. ‘카카오톡으로 보내기’를 눌러 주세요.';
+      }).catch(error => {
+        if (!active()) return;
+        console.warn('Kakao card preparation:', error);
+        kakao.textContent = '카카오톡 공유';
+        if (feedback === feedbackRun) managementMessage.textContent = /kakao_(not_configured|key_conflict)/.test(error.message)
+          ? '카카오톡 공유 설정을 확인해야 해요. 지금은 링크 복사를 이용해 주세요.'
+          : '카카오톡 공유를 준비하지 못했어요. 다시 시도하거나 링크를 복사해 주세요.';
+      }).finally(() => { if (active()) { sharing = false; kakao.disabled = false; } });
+    }, true);
+    kakao.dataset.cardShareAction = 'kakao'; kakao.disabled = true; managementFooter.append(kakao);
+  }
   if (navigator.share) {
     const link = managementButton('링크만 공유', async () => {
       if (!current() || sharing) return;
@@ -1398,7 +1446,7 @@ function shareCard(cardId) {
     try { if (navigator.canShare(imageOnly)) return imageOnly; } catch {}
     return null;
   };
-  const action = managementButton('카드와 링크 공유', () => {
+  const action = managementButton('다른 앱으로 공유', () => {
     if (!current() || sharing || action.disabled) return;
     if (!file) { void prepareImage(); return; }
     const payload = fileShareData(file), feedback = ++feedbackRun;
@@ -1434,11 +1482,12 @@ function shareCard(cardId) {
         managementMessage.textContent = '공유하지 못했어요. 다시 시도하거나 링크만 공유해 주세요.';
       }
     }).finally(() => { if (current()) { sharing = false; action.disabled = false; } });
-  }, true);
+  }, !kakaoConfigured);
   action.dataset.cardShareAction = 'share'; action.disabled = true; managementFooter.append(action);
   async function prepareImage() {
     const preparing = ++attempt;
     file = null; action.disabled = true; action.dataset.cardShareAction = 'share'; ++feedbackRun;
+    if (kakao) kakao.disabled = true;
     action.textContent = '카드 준비 중…'; managementMessage.textContent = '';
     const active = () => current() && preparing === attempt;
     try {
@@ -1455,7 +1504,8 @@ function shareCard(cardId) {
       file = prepared;
       const supported = !!fileShareData(file);
       action.dataset.cardShareAction = supported ? 'share' : 'save';
-      action.textContent = supported ? '카드와 링크 공유' : '카드 이미지 저장'; action.disabled = false;
+      action.textContent = supported ? '다른 앱으로 공유' : '카드 이미지 저장'; action.disabled = false;
+      if (kakao) kakao.disabled = false;
     } catch (error) {
       if (!active()) return;
       console.warn('Card image preparation:', error);
@@ -2809,6 +2859,7 @@ managementPanel.append(managementHeader, managementBody, managementMessage, mana
 management.append(managementPanel); document.body.append(management);
 let managementFocus = null, managementBusy = false, managementRun = 0;
 let pendingCardPhotoCleanup = null;
+let pendingCardShareCleanup = null;
 
 function lockPage(locked) {
   $('.shell').inert = locked;
@@ -2819,6 +2870,7 @@ function managementButton(label, action, primary = false, paid = false) {
   button.type = 'button'; button.addEventListener('click', action); return button;
 }
 function showManagement(title) {
+  const shareCleanup = pendingCardShareCleanup; pendingCardShareCleanup = null; shareCleanup?.();
   if (management.hidden) managementFocus = document.activeElement;
   managementRun++; managementBusy = false; managementClose.disabled = false;
   managementTitle.textContent = title; managementBody.replaceChildren();
@@ -2829,6 +2881,7 @@ function showManagement(title) {
 }
 function closeManagement(force = false) {
   if (managementBusy && !force) return;
+  const shareCleanup = pendingCardShareCleanup; pendingCardShareCleanup = null; shareCleanup?.();
   const cleanup = pendingCardPhotoCleanup; pendingCardPhotoCleanup = null;
   if (cleanup && session?.user?.id === cleanup.userId) {
     // 카드에 실제로 붙어 있다면 저장소 정책이 삭제를 거부합니다.
