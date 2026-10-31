@@ -75,7 +75,7 @@ function labelGame(target,game,detail=''){
 function makeRow(id,game,token,playable=true){
  const row=el('tr','','board-leader');row.dataset.game=id;
  const period=playable?'이번 달':'해당 월';
- const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · '+period+' 연승 기준':'');
+ const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
  labelGame(name,game);
  if(playable&&typeof onOpenGame==='function'){
   const play=button(game.name,async()=>{
@@ -98,7 +98,7 @@ function paintRecord(target,id,game,top,period='이번 달'){
   nick.replaceChildren(el('span',period==='이번 달'?'이번 달 기록 없음':'기록 없음','board-leader-empty'));return;
  }
  nick.textContent=top.nick||'익명';
- nick.title=period+(['picture_clears','photo_clears'].includes(game.rankingBasis)?' 완료 장수 1등 · ':game.rankingBasis==='best_round_gain'?' 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak','opponents_streak'].includes(game.rankingBasis)?' 연승 1등 · ':' 1등 · ')+(top.nick||'익명');
+ nick.title=period+(['picture_clears','photo_clears'].includes(game.rankingBasis)?' 완료 장수 1등 · ':game.rankingBasis==='best_round_gain'?' 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak','opponents_streak'].includes(game.rankingBasis)?' 최고 연승 1등 · ':' 1등 · ')+(top.nick||'익명');
  let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
  if(game.rankingBasis==='stage_time'){
   value=window.OjjudaSacheonseongRanking.format(Number(top.score));
