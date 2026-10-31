@@ -1,5 +1,6 @@
 import {WHEEL_ORDER,COLOR} from './engine.js';
 import {planSpinMotion,sampleSpinMotion} from './motion.js?v=20261031-roulette-smooth1';
+import {sampleCloseup} from './closeup.js?v=20261031-roulette-closeup1';
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 function ring(ctx,r1,r2,stops){const g=ctx.createRadialGradient(500,500,r1,500,500,r2);stops.forEach(([p,c])=>g.addColorStop(p,c));ctx.fillStyle=g;ctx.beginPath();ctx.arc(500,500,r2,0,TAU);ctx.arc(500,500,r1,0,TAU,true);ctx.fill()}
@@ -8,7 +9,7 @@ function createLayer(draw){const c=document.createElement('canvas');c.width=1500
 function sector(ctx,r1,r2,a1,a2,fill){ctx.beginPath();ctx.arc(500,500,r2,a1,a2);ctx.arc(500,500,r1,a2,a1,true);ctx.closePath();ctx.fillStyle=fill;ctx.fill()}
 export class RouletteWheel2D{
   constructor(canvas,{onTick=()=>{},onPhase=()=>{},onDone=()=>{},onFrame=()=>{}}={}){
-    this.canvas=canvas;this.ctx=canvas.getContext('2d');this.rotation=.2;this.ballAngle=-1.3;this.ballRadius=396;this.ballHeight=0;this.state='idle';this.active=null;this.reduced=false;this.onTick=onTick;this.onPhase=onPhase;this.onDone=onDone;this.onFrame=onFrame;this.lastTime=0;this.lastTick=0;this.lastImpact=0;this.lastPhase='';this.visible=false;
+    this.canvas=canvas;this.ctx=canvas.getContext('2d');this.rotation=.2;this.ballAngle=-1.3;this.ballRadius=396;this.ballHeight=0;this.state='idle';this.active=null;this.reduced=false;this.onTick=onTick;this.onPhase=onPhase;this.onDone=onDone;this.onFrame=onFrame;this.lastTime=0;this.lastTick=0;this.lastImpact=0;this.lastPhase='';this.visible=false;this.closeup=sampleCloseup(null,0,null);
     this.base=createLayer(ctx=>this.drawBase(ctx));this.rotor=createLayer(ctx=>this.drawRotor(ctx));this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize();this.raf=requestAnimationFrame(t=>this.frame(t));
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(this.visible||this.active)){this.lastTime=0;if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t));}});
   }
@@ -51,11 +52,13 @@ export class RouletteWheel2D{
     c.save();c.translate(500,500);c.font='8px sans-serif';c.textAlign='center';c.fillStyle='#e7d3a16a';c.fillText('O J J U D A',0,181);c.font='6px sans-serif';c.fillStyle='#d1b77b66';c.fillText('THE EMERALD ROOM',0,195);c.restore();
   }
   setReduced(value){this.reduced=value;this.draw()}
-  setVisible(value){this.visible=value;if(value){this.resize();if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t))}}
+  setVisible(value){this.visible=value;if(value){this.resize();if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t))}else{this.closeup=sampleCloseup(null,0,null);this.draw()}}
   start(spin){
+    this.closeup=sampleCloseup(null,0,null);
     const plan=planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced});
     this.active={...spin,plan,startTime:performance.now()-(Date.now()-spin.startedAt)};
     this.state='spinning';this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();
+    this.draw();
     if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t));
     return this.active;
   }
@@ -65,6 +68,7 @@ export class RouletteWheel2D{
     if(this.active){
       const a=this.active,p=clamp((now-a.startTime)/a.duration);
       const pose=sampleSpinMotion(a.plan,p);
+      this.closeup=this.visible?sampleCloseup(a.plan,p,pose):sampleCloseup(null,0,null);
       this.onFrame(p,pose);this.rotation=pose.rotation;this.ballAngle=pose.angle;this.ballRadius=pose.radius;this.ballHeight=pose.height;
       if(pose.phase!==this.lastPhase){this.onPhase(pose.phase);this.lastPhase=pose.phase}
       if(pose.impact>this.lastImpact){this.onTick(p,pose.impactStrength);this.lastImpact=pose.impact;this.lastTick=now}
@@ -76,7 +80,10 @@ export class RouletteWheel2D{
     if(!document.hidden&&(this.visible||this.active))this.raf=requestAnimationFrame(t=>this.frame(t));
   }
   draw(){
-    const c=this.ctx,s=this.canvas.width/1000;c.setTransform(s,0,0,s,0,0);c.clearRect(0,0,1000,1000);c.drawImage(this.base,0,0,1000,1000);
+    const c=this.ctx,s=this.canvas.width/1000,view=this.closeup||sampleCloseup(null,0,null);
+    c.setTransform(s,0,0,s,0,0);c.clearRect(0,0,1000,1000);
+    const xFocus=500+view.focus.x*view.amount,yFocus=500+view.focus.z*view.amount,zoom=s*view.zoom;
+    c.setTransform(zoom,0,0,zoom,s*500-zoom*xFocus,s*500-zoom*yFocus);c.drawImage(this.base,0,0,1000,1000);
     c.save();c.translate(500,500);c.rotate(this.rotation);c.drawImage(this.rotor,-500,-500,1000,1000);c.restore();
     const x=500+Math.cos(this.ballAngle)*this.ballRadius,groundY=500+Math.sin(this.ballAngle)*this.ballRadius,y=groundY-this.ballHeight;
     c.save();c.fillStyle=`rgba(0,0,0,${Math.max(.12,.48-this.ballHeight*.005)})`;c.filter=`blur(${2+this.ballHeight*.12}px)`;c.beginPath();c.ellipse(x+4+this.ballHeight*.25,groundY+5,9+this.ballHeight*.16,6+this.ballHeight*.1,0,0,TAU);c.fill();c.filter='none';

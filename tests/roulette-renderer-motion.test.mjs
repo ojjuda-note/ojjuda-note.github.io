@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {WHEEL_ORDER,COLOR} from '../games/roulette/engine.js';
 import {planSpinMotion,sampleSpinMotion,wheelSurface} from '../games/roulette/motion.js';
+import {sampleCloseup} from '../games/roulette/closeup.js';
 
 const TAU=Math.PI*2,epoch=1800000000000;
 const angleDistance=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
@@ -14,7 +15,7 @@ const spin={id:'renderer-round',number:17,duration:25000,variation:.43,startedAt
 function renderer(file,name,reduced){
   let now=0;
   const done=[],drawn=[];
-  const scope={WHEEL_ORDER,COLOR,planSpinMotion,sampleSpinMotion,wheelSurface,document:{hidden:false},requestAnimationFrame:()=>1,performance:{now:()=>now},Date:{now:()=>epoch+now}};
+  const scope={WHEEL_ORDER,COLOR,planSpinMotion,sampleSpinMotion,wheelSurface,sampleCloseup,document:{hidden:false},requestAnimationFrame:()=>1,performance:{now:()=>now},Date:{now:()=>epoch+now}};
   vm.createContext(scope);
   const source=fs.readFileSync(new URL('../games/roulette/'+file,import.meta.url),'utf8').replace(/^import .*\n/gm,'').replace('export class '+name,'class '+name)+'\nglobalThis.Renderer='+name+';';
   vm.runInContext(source,scope,{filename:file});

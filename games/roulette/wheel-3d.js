@@ -2,6 +2,7 @@ import * as THREE from './vendor/three.module.min.js';
 import {RoomEnvironment} from './vendor/RoomEnvironment.js';
 import {WHEEL_ORDER,COLOR} from './engine.js';
 import {planSpinMotion,sampleSpinMotion,wheelSurface} from './motion.js?v=20261031-roulette-smooth1';
+import {sampleCloseup} from './closeup.js?v=20261031-roulette-closeup1';
 
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=v=>Math.min(1,Math.max(0,v));
@@ -41,12 +42,12 @@ export class Wheel3D{
   constructor(canvas,{onTick=()=>{},onPhase=()=>{},onDone=()=>{},onFrame=()=>{},context=null}={}){
     this.canvas=canvas;this.onTick=onTick;this.onPhase=onPhase;this.onDone=onDone;this.onFrame=onFrame;
     this.rotation=.2;this.ballAngle=-1.3;this.ballRadius=396;this.ballHeight=0;
-    this.visible=false;this.active=null;this.reduced=false;this.raf=0;this.lastPhase='';this.lastImpact=0;
+    this.visible=false;this.active=null;this.reduced=false;this.raf=0;this.lastPhase='';this.lastImpact=0;this.closeup=sampleCloseup(null,0,null);
     this.renderer=new THREE.WebGLRenderer({canvas,context,alpha:true,antialias:true,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.1;
     this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.scene=new THREE.Scene();
-    // Fixed oblique camera. No controls, automatic orbit, zoom, shake or parallax.
+    // Keep this oblique angle while the final pocket gently pans and enlarges.
     this.camera=new THREE.PerspectiveCamera(36,1,.1,60);this.camera.position.set(0,8.5,10.8);this.camera.lookAt(0,.1,0);
     const environment=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(this.renderer);
     this.environment=pmrem.fromScene(environment,.04);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.75;environment.dispose();pmrem.dispose();
@@ -102,14 +103,15 @@ export class Wheel3D{
   }
   resize(){const width=this.canvas.clientWidth,height=this.canvas.clientHeight;if(!width||!height)return;this.renderer.setSize(width,height,false);this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.draw()}
   setReduced(value){this.reduced=value;if(this.visible)this.draw()}
-  setVisible(value){this.visible=value;if(value){this.resize();this.schedule()}}
+  setVisible(value){this.visible=value;if(value){this.resize();this.schedule()}else{this.closeup=sampleCloseup(null,0,null);this.draw()}}
   schedule(){if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t))}
-  start(spin){this.active={...spin,plan:planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced}),startTime:performance.now()-(Date.now()-spin.startedAt)};this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();this.schedule();return this.active}
+  start(spin){this.closeup=sampleCloseup(null,0,null);this.active={...spin,plan:planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced}),startTime:performance.now()-(Date.now()-spin.startedAt)};this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();this.draw();this.schedule();return this.active}
   showResult(n){this.active=null;this.ballRadius=291;this.ballHeight=0;this.ballAngle=this.rotation+WHEEL_ORDER.indexOf(n)*STEP-HALF;this.draw()}
   frame(now){
     this.raf=0;
     if(this.active){
       const a=this.active,p=clamp((now-a.startTime)/a.duration),pose=sampleSpinMotion(a.plan,p);
+      this.closeup=this.visible?sampleCloseup(a.plan,p,pose):sampleCloseup(null,0,null);
       this.onFrame(p,pose);this.rotation=pose.rotation;this.ballAngle=pose.angle;this.ballRadius=pose.radius;this.ballHeight=pose.height;
       if(pose.phase!==this.lastPhase){this.lastPhase=pose.phase;this.onPhase(pose.phase)}
       if(pose.impact>this.lastImpact){this.onTick(p,pose.impactStrength);this.lastImpact=pose.impact;this.lastTick=now}
@@ -118,8 +120,18 @@ export class Wheel3D{
     }
     if(this.active&&!document.hidden)this.schedule();
   }
+  updateCamera(){
+    const view=this.closeup||sampleCloseup(null,0,null),amount=view.amount;
+    const x=view.focus.x*amount/100,y=.1+(view.focus.y/100-.1)*amount,z=view.focus.z*amount/100;
+    // Translating both eye and target preserves the original viewing angle.
+    this.camera.position.set(x,y+8.4,z+10.8);this.camera.lookAt(x,y,z);
+    const zoom=view.zoom*Math.min(1,this.camera.aspect);
+    if(this.camera.zoom!==zoom){this.camera.zoom=zoom;this.camera.updateProjectionMatrix()}
+    this.camera.updateMatrixWorld();
+  }
   draw(){
     if(!this.rotor||this.contextLost)return;this.rotor.rotation.y=-this.rotation;
+    this.updateCamera();
     const r=this.ballRadius/100,a=this.ballAngle,ground=wheelSurface(this.ballRadius)/100,lift=this.ballHeight/100;
     this.ball.position.set(Math.cos(a)*r,ground+.10+lift,Math.sin(a)*r);this.ball.rotation.set(a*2,0,-a*3);
     this.contactShadow.position.set(this.ball.position.x+lift*.18,ground+.004,this.ball.position.z+lift*.12);this.contactShadow.scale.setScalar(1+lift*1.4);this.contactShadow.material.opacity=Math.max(.12,.8-lift*.8);
