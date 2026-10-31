@@ -32,10 +32,19 @@ function readLeaders(client,owner,ids,fresh=false){
  });
  return entry.promise;
 }
-function mount(host,{client,owner,games={},onOpenGame=null,authorized=()=>true}={}){
+function mount(host,{client,owner,games={},getGames=null,onOpenGame=null,authorized=()=>true}={}){
 dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
-let rankDispose=()=>{},rankPage=0,rankFocusGame=null,alive=true,request=0;
+let rankDispose=()=>{},releaseAccess=null,rankPage=0,rankFocusGame=null,alive=true,request=0,catalogKey=null;
 const active=()=>alive&&host.isConnected&&authorized();
+function updateGames(){
+ const next=typeof getGames==='function'?getGames():games;
+ const key=JSON.stringify(Object.entries(next).map(([id,game])=>[id,game.name,game.unit,game.rankingBasis,game.baseName,game.difficultyName]));
+ const changed=key!==catalogKey;games=next;catalogKey=key;return changed;
+}
+async function syncCatalog(){
+ if(!client||!owner||!active()||!updateGames())return false;
+ return home();
+}
 const status=el('p','','board-status');status.setAttribute('role','status');
 const content=el('div');host.replaceChildren(status,content);
 async function result(query){const {data,error}=await query;if(error)throw error;if(!active())throw Error('stale');return data||[];}
@@ -186,19 +195,23 @@ async function result(query){const {data,error}=await query;if(error)throw error
    })];
   }
 
-async function home(fresh=false){if(!client||!owner||!active())return false;rankDispose();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
-dispose=()=>{rankDispose();alive=false;request++;};
-controller={refresh:()=>home(true)};
+async function home(fresh=false){if(!client||!owner||!active())return false;updateGames();rankDispose();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
+dispose=()=>{rankDispose();releaseAccess?.();alive=false;request++;};
+controller={refresh:()=>home(true),syncCatalog:viewer=>viewer===owner?syncCatalog():Promise.resolve(false)};
 if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div');copy.append(el('h3','이번 달 게임순위'),el('p','로그인하면 게임 순위를 볼 수 있어요. 나의 기록으로 함께 도전해 보세요.'),Object.assign(el('a','로그인하고 참여하기','btn'),{href:'/?auth=login&next=world'}));empty.append(art,copy);content.append(empty);return;}
 void home();
   const matgoAccess=window.OjjudaMatgoAccess;
+  // Existing access checks notify revocation immediately. Successful checks
+  // sync through the World refresh hook; unchanged catalogs need no new read.
+  if(typeof getGames==='function'&&typeof matgoAccess?.subscribe==='function')releaseAccess=matgoAccess.subscribe(()=>{void syncCatalog();});
   if((!games.matgo||!games.poker||!games.photo_ttang)&&typeof matgoAccess?.check==='function'){
    void matgoAccess.check().then(member=>{
     if(!active()||member?.userId!==owner||!matgoAccess.visible())return;
+    if(typeof getGames==='function'){void syncCatalog();return;}
     games={...games,matgo:{name:'맞고',unit:'G',rankingBasis:'best_round_gain'},poker:{name:'세븐포커',unit:'G',rankingBasis:'best_round_gain'},photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}};
     void home();
    }).catch(()=>{});
   }
 }
-window.OjjudaGameRankings={mount,back:()=>false,refresh:()=>controller?.refresh()??Promise.resolve(false)};
+window.OjjudaGameRankings={mount,back:()=>false,refresh:()=>controller?.refresh()??Promise.resolve(false),syncCatalog:owner=>controller?.syncCatalog(owner)??Promise.resolve(false)};
 })();
