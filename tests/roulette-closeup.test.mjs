@@ -63,17 +63,17 @@ class GPUlessEnvironment extends THREE.Scene{dispose(){}}
 class GPUlessPMREM{fromScene(){return{texture:new THREE.Texture()}}dispose(){}}
 
 function fixture(kind){
-  let now=0,startTime=0;
-  const done=[],poses=[],canvas=new TraceCanvas();
+  let now=0,startTime=0,frameId=0,onComplete=()=>{};
+  const done=[],doneTimes=[],poses=[],frames=new Map(),canvas=new TraceCanvas();
   const scope={WHEEL_ORDER,COLOR,planSpinMotion,sampleSpinMotion,wheelSurface,sampleCloseup,
     THREE:{...THREE,WebGLRenderer:GPUlessRenderer,PMREMGenerator:GPUlessPMREM},RoomEnvironment:GPUlessEnvironment,
     document:{hidden:false,createElement:()=>new TraceCanvas(),addEventListener(){}},devicePixelRatio:1,
-    ResizeObserver:class{observe(){}},requestAnimationFrame:()=>1,performance:{now:()=>now},Date:{now:()=>epoch+now}};
+    ResizeObserver:class{observe(){}},requestAnimationFrame:callback=>{frames.set(++frameId,callback);return frameId},cancelAnimationFrame:id=>frames.delete(id),performance:{now:()=>now},Date:{now:()=>epoch+now}};
   vm.createContext(scope);
   const file=kind==='2D'?'wheel-2d.js':'wheel-3d.js',name=kind==='2D'?'RouletteWheel2D':'Wheel3D';
   const source=fs.readFileSync(new URL('../games/roulette/'+file,import.meta.url),'utf8').replace(/^import .*\n/gm,'').replace('export class '+name,'class '+name)+'\nglobalThis.Renderer='+name+';';
   vm.runInContext(source,scope,{filename:file});
-  const wheel=new scope.Renderer(canvas,{onDone:id=>done.push(id),onFrame:(progress,pose)=>poses.push({progress,pose})});
+  const wheel=new scope.Renderer(canvas,{onDone:id=>{done.push(id);doneTimes.push((now-startTime)/1000);onComplete(id)},onFrame:(progress,pose)=>poses.push({progress,pose})});
   wheel.setVisible(true);
   let numberMesh,numberPoints;
   if(kind==='3D'){
@@ -94,12 +94,23 @@ function fixture(kind){
     wheel.ball.geometry.computeBoundingSphere();
   }
   const state=()=>kind==='2D'?canvas.context.matrix.map(value=>value/(canvas.width/1000)):[...wheel.camera.position.toArray(),...wheel.camera.quaternion.toArray(),wheel.camera.zoom];
-  return{wheel,canvas,done,poses,state,
+  const deliver=(seconds,callbacks)=>{
+    now=startTime+seconds*1000;
+    for(const callback of callbacks){for(const [id,pending] of frames)if(pending===callback)frames.delete(id);callback(now)}
+    return poses.at(-1)?.pose;
+  };
+  return{wheel,canvas,done,doneTimes,poses,state,
+    onComplete(callback){onComplete=callback},
     start(number=17,reduced=false,duration=25000,variation=.43){
-      startTime=now;done.length=0;poses.length=0;wheel.setVisible(true);wheel.setReduced(reduced);
+      startTime=now;done.length=0;doneTimes.length=0;poses.length=0;wheel.setVisible(true);wheel.setReduced(reduced);
       return wheel.start({id:`${kind}-${number}-${reduced}-${now}`,number,duration,variation,startedAt:epoch+now}).plan;
     },
-    at(seconds){now=startTime+seconds*1000;wheel.frame(now);return poses.at(-1)?.pose},
+    // Deliver only RAFs the real renderer requested, so a post-stop animation
+    // that forgets to schedule its next frame cannot pass by manual frame calls.
+    at(seconds){return deliver(seconds,[...frames.values()])},
+    pendingFrame(){return frames.values().next().value},
+    deliver(callback,seconds){assert.equal(typeof callback,'function','a scheduled frame is available');return deliver(seconds,[callback])},
+    physical(){return[wheel.rotation,Math.cos(wheel.ballAngle)*wheel.ballRadius,Math.sin(wheel.ballAngle)*wheel.ballRadius,wheel.ballHeight]},
     resize(width,height){canvas.clientWidth=width;canvas.clientHeight=height;wheel.resize()},
     zoom(){return kind==='2D'?canvas.context.matrix[0]/(canvas.width/1000):wheel.camera.zoom/Math.min(1,wheel.camera.aspect)},
     bounds(number){
@@ -116,87 +127,139 @@ function fixture(kind){
   };
 }
 
-test('closeup waits for in-pocket landing, eases in and out, and remains gentler when reduced',()=>{
+test('closeup stays at overview for the entire spin and only eases in after a full stop',()=>{
   for(const number of WHEEL_ORDER)for(const duration of [20000,25000,30000])for(const variation of [0,.5,1])for(const reduced of [false,true]){
-    const plan=planSpinMotion({number,duration,variation},.2,-1.3,{reduced}),landing=plan.flights[2].end,span=reduced?1.6:1.2,maxZoom=reduced?1.55:2.4;
-    for(const t of [0,plan.orbitEnd,plan.flights[2].start,landing-.0001,landing]){
-      const view=viewAt(plan,t);near(view.amount,0,'no pan before the ball reaches the pocket');near(view.zoom,1,'no early zoom');
+    const plan=planSpinMotion({number,duration,variation},.2,-1.3,{reduced}),stop=plan.duration,span=reduced?1.6:1.2,maxZoom=reduced?1.55:2.4;
+    const movingTimes=[...Array.from({length:121},(_,i)=>stop*i/120),plan.flights[2].end,plan.pocketTime,stop-.0001,stop];
+    for(const t of movingTimes){
+      const view=viewAt(plan,t);near(view.amount,0,'no pan while the ball or rotor can still move');near(view.zoom,1,'the entire spin and coast stay at overview');
     }
-    let previous=viewAt(plan,landing);
+    let previous=viewAt(plan,stop),fixedFocus;
     for(let frame=1;frame<=Math.ceil(span*60);frame++){
-      const view=viewAt(plan,landing+frame/60);
-      assert.ok(view.amount>=previous.amount&&view.zoom>=previous.zoom,'the late zoom cannot reverse or jump back');
+      const view=viewAt(plan,stop+frame/60);
+      assert.ok(view.amount>=previous.amount&&view.zoom>=previous.zoom,'the stopped-result zoom cannot reverse or jump back');
       assert.ok(view.zoom-previous.zoom<.04,'a single 60 Hz frame cannot add more than 4% overview magnification');
-      near(view.focus.y,39,'landing bounces do not shake camera height');previous=view;
+      near(view.focus.y,39,'the frozen focus has a stable height');
+      if(fixedFocus)for(const axis of ['x','y','z'])near(view.focus[axis],fixedFocus[axis],'the target cannot orbit during the zoom');
+      fixedFocus=view.focus;previous=view;
     }
-    near(viewAt(plan,landing+span).zoom,maxZoom,'the enlargement completes within its intended late interval');
-    near(viewAt(plan,plan.duration).zoom,maxZoom,'the final coast retains its closeup');
-    assert.ok(viewAt(plan,landing+.001).zoom-1<1e-6,'zoom has no velocity jump at landing');
-    assert.ok(maxZoom-viewAt(plan,landing+span-.001).zoom<1e-6,'zoom eases to rest');
-    const normal=sampleCloseup(plan,(landing+.6)/plan.duration,poseAt(plan,landing+.6),{reduced:false}),gentle=sampleCloseup(plan,(landing+.6)/plan.duration,poseAt(plan,landing+.6),{reduced:true});
+    near(viewAt(plan,stop+span).zoom,maxZoom,'the post-stop enlargement completes in its intended interval');
+    near(viewAt(plan,stop+20).zoom,maxZoom,'the stopped result retains its closeup');
+    assert.ok(viewAt(plan,stop+.001).zoom-1<1e-6,'zoom has no velocity jump at a full stop');
+    assert.ok(maxZoom-viewAt(plan,stop+span-.001).zoom<1e-6,'zoom eases to rest');
+    const normal=sampleCloseup(plan,(stop+.6)/stop,poseAt(plan,stop),{reduced:false}),gentle=sampleCloseup(plan,(stop+.6)/stop,poseAt(plan,stop),{reduced:true});
     assert.ok(gentle.amount<normal.amount&&gentle.zoom<normal.zoom,'reduction both slows the pan and limits enlargement');
   }
 });
 
-test('closeup follows the current ball without changing the physical plan, pose, or announced outcome',()=>{
-  assert.deepEqual(sampleCloseup(null,.9,null),{amount:0,zoom:1,focus:{x:0,y:10,z:0}});
+test('the post-stop camera samples a frozen final ball without changing the physical plan or outcome',()=>{
+  const overview={amount:0,zoom:1,focus:{x:0,y:10,z:0}};
+  assert.deepEqual(sampleCloseup(null,.9,null),overview);
   const plan=planSpinMotion({number:36,duration:25000,variation:.6}),savedPlan=JSON.stringify(plan);
-  for(const time of [0,plan.flights[2].end-.1,plan.flights[2].end+.5,plan.pocketTime,plan.duration]){
+  for(const time of [0,plan.flights[2].end,plan.pocketTime,plan.duration,plan.duration+.6,plan.duration+2,plan.duration+50]){
     const pose=poseAt(plan,time),savedPose=JSON.stringify(pose),view=sampleCloseup(plan,time/plan.duration,pose);
-    const radial=Math.hypot(view.focus.x,view.focus.z);
-    near(view.focus.x/radial,Math.cos(pose.angle),'focus follows current ball x');
-    near(view.focus.z/radial,Math.sin(pose.angle),'focus follows current ball z');
+    if(time<=plan.duration)assert.deepEqual(view,overview,'even an already-pocketed ball uses overview while the rotor coasts');
+    else{
+      const radial=Math.hypot(view.focus.x,view.focus.z);
+      near(view.focus.x/radial,Math.cos(pose.angle),'focus uses final ball x');
+      near(view.focus.z/radial,Math.sin(pose.angle),'focus uses final ball z');
+    }
     assert.equal(JSON.stringify(pose),savedPose);assert.equal(JSON.stringify(plan),savedPlan);
-    assert.deepEqual(poseAt(plan,time),pose,'sampling a camera cannot alter subsequent physical sampling');
+    assert.deepEqual(poseAt(plan,time),pose,'sampling a camera cannot alter physical sampling');
   }
 });
 
+const sameState=(actual,expected,message)=>actual.forEach((value,i)=>near(value,expected[i],message,1e-7));
+const physicalPose=pose=>[pose.rotation,Math.cos(pose.angle)*pose.radius,Math.sin(pose.angle)*pose.radius,pose.height];
+function assertInFrame(f,kind,number,details=''){
+  for(const [item,points] of Object.entries(f.bounds(number)))for(const p of points){
+    assert.ok(Math.abs(p[0])<.985&&Math.abs(p[1])<.985,`${kind} ${item} clipped: number=${number}, ${details}, point=${p}`);
+    if(kind==='3D')assert.ok(p[2]>-1&&p[2]<1,'both subjects remain between the camera clipping planes');
+  }
+}
+
 for(const kind of ['2D','3D']){
-  test(kind+' keeps the drawn ball and the whole printed result in frame during zoom and coast for every pocket',()=>{
-    const f=fixture(kind);
-    // Include narrower-than-current-CSS portrait surfaces, square and landscape.
-    const sizes=[[360,720],[360,480],[600,600],[714,600],[900,500]];
+  test(kind+' keeps every spin and coast at overview, then enlarges the stationary ball and result inside every viewport',()=>{
+    const f=fixture(kind),sizes=[[360,720],[360,480],[600,600],[714,600],[900,500]];
     for(const [width,height] of sizes)for(const reduced of [false,true])for(const number of WHEEL_ORDER){
       f.resize(width,height);
-      const plan=f.start(number,reduced,[20000,25000,30000][number%3],(number%5)/4),landing=plan.flights[2].end;
-      const baseline=f.state();f.at(landing-.001);f.state().forEach((value,i)=>near(value,baseline[i],'camera is unchanged while the ball is still flying into its pocket'));
-      const times=[landing,...Array.from({length:49},(_,i)=>landing+(plan.duration-landing)*(i+1)/49)];
-      for(const time of times){
-        const pose=f.at(time),expected=poseAt(plan,time);
-        for(const key of ['rotation','angle','radius','height'])near(pose[key],expected[key],`${kind} physical ${key} remains unchanged`,1e-7);
-        const bounds=f.bounds(number);
-        for(const [item,points] of Object.entries(bounds))for(const p of points){
-          assert.ok(Math.abs(p[0])<.985&&Math.abs(p[1])<.985,`${kind} ${item} clipped: number=${number}, reduced=${reduced}, viewport=${width}x${height}, t=${time.toFixed(3)}, point=${p}`);
-          if(kind==='3D')assert.ok(p[2]>-1&&p[2]<1,'both objects remain between the camera clipping planes');
-        }
+      // The real app immediately calls showResult from its completion handler.
+      // It must not cancel or restart the renderer's separate post-stop zoom.
+      f.onComplete(()=>f.wheel.showResult(number));
+      const plan=f.start(number,reduced,[20000,25000,30000][number%3],(number%5)/4),baseline=f.state(),stop=plan.duration,span=reduced?1.6:1.2;
+      for(let frame=0;frame<120;frame++){
+        const time=stop*frame/120,pose=f.at(time),expected=poseAt(plan,time);
+        assert.ok(pose,'the renderer schedules and displays the moving frame');
+        sameState(f.state(),baseline,'the actual camera/canvas stays at overview for the entire spin and coast');
+        sameState(f.physical(),physicalPose(expected),'physical motion remains unchanged');
+        assert.equal(f.done.length,0,'camera work cannot finish the round early');
       }
-      near(f.zoom(),reduced?1.55:2.4,'actual drawing reaches its intended enlargement');
-      assert.equal(f.done.length,1,'camera follow does not finish the round twice');
+      f.at(stop-.001);assert.equal(f.done.length,0);
+      f.at(stop);assert.equal(f.done.length,1);near(f.doneTimes[0],stop,'completion keeps the original server duration');
+      sameState(f.state(),baseline,'the exact completion frame is still overview');
+      const frozen=physicalPose(poseAt(plan,stop));
+      for(let frame=0;frame<=49;frame++){
+        const time=stop+(span+.4)*frame/49;f.at(time);
+        sameState(f.physical(),frozen,'the rotor and ball remain frozen throughout and after zoom');
+        assertInFrame(f,kind,number,`reduced=${reduced}, viewport=${width}x${height}, t=${time.toFixed(3)}`);
+      }
+      near(f.zoom(),reduced?1.55:2.4,'requested RAFs finish the enlargement after the result callback');
+      assert.equal(f.done.length,1,'visual completion cannot repeat game completion');
+      const held=f.state();f.at(stop+5);sameState(f.state(),held,'the finished enlargement stays fixed');sameState(f.physical(),frozen,'no idle rotation resumes');
     }
   });
 
-  test(kind+' holds the result, survives resize, and resets on a new spin or hidden view',()=>{
-    const f=fixture(kind);f.resize(360,720);
-    const plan=f.start(17),landing=plan.flights[2].end,duration=plan.duration;
-    f.at(landing+.6);
-    const activeView=JSON.stringify(f.wheel.closeup),activeState=f.state();
-    f.wheel.setReduced(true);f.at(landing+.6);
-    assert.equal(JSON.stringify(f.wheel.closeup),activeView,'a preference toggle applies to the next spin');assert.deepEqual(f.state(),activeState);
+  test(kind+' preserves the post-stop zoom through showResult, preference changes and resize',()=>{
+    const f=fixture(kind);f.resize(360,720);f.onComplete(()=>f.wheel.showResult(17));
+    const plan=f.start(17),stop=plan.duration;
+    f.at(stop);f.at(stop+.6);
+    assert.ok(f.zoom()>1&&f.zoom()<2.4,'the result callback leaves a gradual post-stop enlargement running');
+    const activeView=JSON.stringify(f.wheel.closeup),activeState=f.state(),frozen=f.physical();
+    f.wheel.setReduced(true);f.at(stop+.6);
+    assert.equal(JSON.stringify(f.wheel.closeup),activeView,'a preference toggle applies to the next spin');sameState(f.state(),activeState,'active zoom preference is frozen');
     for(const [width,height] of [[900,500],[360,480],[714,600]]){
-      f.resize(width,height);
-      for(const points of Object.values(f.bounds(17)))for(const p of points)assert.ok(Math.abs(p[0])<.985&&Math.abs(p[1])<.985,'resizing during pan keeps both subjects visible');
+      f.resize(width,height);assertInFrame(f,kind,17,'resize during stationary zoom');sameState(f.physical(),frozen,'resize does not move the wheel or ball');
     }
-    f.at(duration-.001);assert.equal(f.done.length,0,'the closeup cannot reveal completion early');
-    f.at(duration);assert.equal(f.done.length,1);
+    f.at(stop+1.2);near(f.zoom(),2.4,'the original zoom preference completes');
     const heldView=JSON.stringify(f.wheel.closeup),heldState=f.state();
-    f.wheel.showResult(17);f.at(duration+.5);
-    assert.equal(JSON.stringify(f.wheel.closeup),heldView);assert.deepEqual(f.state(),heldState,'showResult keeps the final crop instead of snapping to the overview');
-    const next=f.start(9,true);near(f.zoom(),1,'the next start immediately restores overview');near(f.wheel.closeup.amount,0,'no stale pan survives start');
-    f.at(next.flights[2].end+1);assert.ok(f.zoom()>1);
-    f.wheel.setVisible(false);near(f.zoom(),1,'hiding immediately restores overview');near(f.wheel.closeup.amount,0,'hiding discards the follow target');
-    f.at(next.flights[2].end+1.1);near(f.zoom(),1,'an in-flight callback cannot restore the zoom in a hidden view');
-    f.wheel.setVisible(true);f.at(next.duration);near(f.zoom(),1.55,'a reduced next spin uses the gentler closeup');
-    const final=f.poses.at(-1).pose,sector=WHEEL_ORDER.indexOf(9)*TAU/37-Math.PI/2;
-    near(Math.atan2(Math.sin(final.angle-final.rotation-sector),Math.cos(final.angle-final.rotation-sector)),0,'camera changes preserve the server-selected pocket');
+    f.wheel.showResult(17);f.at(stop+3);
+    assert.equal(JSON.stringify(f.wheel.closeup),heldView);sameState(f.state(),heldState,'repeated showResult retains the final crop');sameState(f.physical(),frozen,'result delivery cannot resume rotation');
+    assert.equal(f.done.length,1);
+  });
+
+  test(kind+' cancels pending zoom on hide or next start, including hide inside the completion callback',()=>{
+    const f=fixture(kind);f.onComplete(()=>f.wheel.showResult(9));
+    const first=f.start(9,true);f.at(first.duration);f.at(first.duration+.8);
+    assert.ok(f.zoom()>1&&f.zoom()<1.55);
+    const hiddenFrame=f.pendingFrame();f.wheel.setVisible(false);
+    near(f.zoom(),1,'hiding immediately restores overview');near(f.wheel.closeup.amount,0,'hiding discards the pan');
+    f.deliver(hiddenFrame,first.duration+1);near(f.zoom(),1,'an already-dispatched frame cannot restore hidden zoom');
+    f.wheel.setVisible(true);f.at(first.duration+3);near(f.zoom(),1,'reopening cannot resurrect canceled zoom');
+
+    f.onComplete(()=>f.wheel.showResult(27));
+    const second=f.start(27);f.at(second.duration);f.at(second.duration+.3);
+    assert.ok(f.zoom()>1);const oldFrame=f.pendingFrame();
+    f.onComplete(()=>f.wheel.showResult(2));
+    const next=f.start(2,true);near(f.zoom(),1,'the next start immediately restores overview');
+    f.deliver(oldFrame,.2);near(f.zoom(),1,'the preceding round cannot zoom into the new round');
+    sameState(f.physical(),physicalPose(poseAt(next,.2)),'a queued frame follows only the new physical plan');assert.equal(f.done.length,0);
+    f.at(next.duration);f.at(next.duration+1.6);near(f.zoom(),1.55,'the next reduced round uses its own post-stop zoom');
+    const final=f.poses.at(-1).pose,sector=WHEEL_ORDER.indexOf(2)*TAU/37-Math.PI/2;
+    near(Math.atan2(Math.sin(final.angle-final.rotation-sector),Math.cos(final.angle-final.rotation-sector)),0,'camera lifecycle preserves the server-selected number');
+
+    f.onComplete(()=>{f.wheel.showResult(4);f.wheel.setVisible(false)});
+    const closing=f.start(4),completionFrame=f.pendingFrame();f.at(closing.duration);
+    assert.equal(f.done.length,1);near(f.zoom(),1,'closing from onDone cancels post-stop zoom immediately');
+    f.deliver(completionFrame,closing.duration+.6);near(f.zoom(),1,'an old completion callback cannot revive it');
+    f.wheel.setVisible(true);f.at(closing.duration+2);near(f.zoom(),1,'no saved closeup survives closing during onDone');assert.equal(f.done.length,1);
+  });
+
+  test(kind+' starts gradual zoom at the first observed completed frame when returning late',()=>{
+    const f=fixture(kind);f.onComplete(()=>f.wheel.showResult(31));
+    const plan=f.start(31),late=plan.duration+4;
+    f.at(late);assert.equal(f.done.length,1);near(f.zoom(),1,'a late frame first displays the stopped overview');
+    const frozen=f.physical();f.at(late+.6);
+    assert.ok(f.zoom()>1&&f.zoom()<2.4,'late delivery does not jump straight to full magnification');sameState(f.physical(),frozen,'the observed final pose stays fixed');
+    f.at(late+1.2);near(f.zoom(),2.4,'the late view still gets a full gentle transition');assert.equal(f.done.length,1);
   });
 }

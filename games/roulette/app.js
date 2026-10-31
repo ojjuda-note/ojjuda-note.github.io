@@ -1,5 +1,5 @@
 import {BETS,COLOR,MAX_BET,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261031-roulette-modes1';
-import {RouletteWheel} from './wheel.js?v=20261031-roulette-closeup1';
+import {RouletteWheel} from './wheel.js?v=20261031-roulette-stopzoom1';
 import {Sound} from './sound.js?v=20261031-roulette-modes1';
 import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
 
@@ -318,7 +318,7 @@ async function startSpin(){
   await command('ready',{ready:true,bets:{...state.bets}});
 }
 function openWheelPopup(spin){
-  $('wheel').setAttribute('aria-label','룰렛 공이 돌고 있습니다. 마지막에 공이 들어간 칸과 숫자를 확대해 보여줍니다.');
+  $('wheel').setAttribute('aria-label','룰렛 공이 돌고 있습니다. 원판이 완전히 멈춘 뒤 공이 들어간 칸과 숫자를 확대해 보여줍니다.');
   const modal=$('wheelDialog');resultReadyId=null;$('confirmResultButton').hidden=true;$('confirmResultButton').disabled=true;modal.dataset.spin=spin.id;modal.dataset.phase='spinning';modal.classList.remove('closing');
   $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=totalBets(spin.bets)?`베팅 마감 · ${fmt(totalBets(spin.bets))} G`:'관람 · 베팅 없음';
   if($('helpDialog').open)$('helpDialog').close();

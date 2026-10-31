@@ -2,7 +2,7 @@ import * as THREE from './vendor/three.module.min.js';
 import {RoomEnvironment} from './vendor/RoomEnvironment.js';
 import {WHEEL_ORDER,COLOR} from './engine.js';
 import {planSpinMotion,sampleSpinMotion,wheelSurface} from './motion.js?v=20261031-roulette-smooth1';
-import {sampleCloseup} from './closeup.js?v=20261031-roulette-closeup1';
+import {sampleCloseup} from './closeup.js?v=20261031-roulette-stopzoom1';
 
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=v=>Math.min(1,Math.max(0,v));
@@ -42,7 +42,7 @@ export class Wheel3D{
   constructor(canvas,{onTick=()=>{},onPhase=()=>{},onDone=()=>{},onFrame=()=>{},context=null}={}){
     this.canvas=canvas;this.onTick=onTick;this.onPhase=onPhase;this.onDone=onDone;this.onFrame=onFrame;
     this.rotation=.2;this.ballAngle=-1.3;this.ballRadius=396;this.ballHeight=0;
-    this.visible=false;this.active=null;this.reduced=false;this.raf=0;this.lastPhase='';this.lastImpact=0;this.closeup=sampleCloseup(null,0,null);
+    this.visible=false;this.active=null;this.reduced=false;this.raf=0;this.lastPhase='';this.lastImpact=0;this.closeup=sampleCloseup(null,0,null);this.postCloseup=null;
     this.renderer=new THREE.WebGLRenderer({canvas,context,alpha:true,antialias:true,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.1;
@@ -103,22 +103,26 @@ export class Wheel3D{
   }
   resize(){const width=this.canvas.clientWidth,height=this.canvas.clientHeight;if(!width||!height)return;this.renderer.setSize(width,height,false);this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.draw()}
   setReduced(value){this.reduced=value;if(this.visible)this.draw()}
-  setVisible(value){this.visible=value;if(value){this.resize();this.schedule()}else{this.closeup=sampleCloseup(null,0,null);this.draw()}}
+  setVisible(value){this.visible=value;if(value){this.resize();this.schedule()}else{this.postCloseup=null;this.closeup=sampleCloseup(null,0,null);this.draw()}}
   schedule(){if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t))}
-  start(spin){this.closeup=sampleCloseup(null,0,null);this.active={...spin,plan:planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced}),startTime:performance.now()-(Date.now()-spin.startedAt)};this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();this.draw();this.schedule();return this.active}
+  start(spin){this.postCloseup=null;this.closeup=sampleCloseup(null,0,null);this.active={...spin,plan:planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced}),startTime:performance.now()-(Date.now()-spin.startedAt)};this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();this.draw();this.schedule();return this.active}
   showResult(n){this.active=null;this.ballRadius=291;this.ballHeight=0;this.ballAngle=this.rotation+WHEEL_ORDER.indexOf(n)*STEP-HALF;this.draw()}
   frame(now){
     this.raf=0;
     if(this.active){
       const a=this.active,p=clamp((now-a.startTime)/a.duration),pose=sampleSpinMotion(a.plan,p);
-      this.closeup=this.visible?sampleCloseup(a.plan,p,pose):sampleCloseup(null,0,null);
+      this.closeup=sampleCloseup(null,0,null);
       this.onFrame(p,pose);this.rotation=pose.rotation;this.ballAngle=pose.angle;this.ballRadius=pose.radius;this.ballHeight=pose.height;
       if(pose.phase!==this.lastPhase){this.lastPhase=pose.phase;this.onPhase(pose.phase)}
       if(pose.impact>this.lastImpact){this.onTick(p,pose.impactStrength);this.lastImpact=pose.impact;this.lastTick=now}
       if(p>.02&&p<.94&&now-this.lastTick>45+280*p*p){this.onTick(p,false);this.lastTick=now}
-      this.draw();if(p>=1){this.active=null;this.onDone(a.id)}
+      this.draw();if(p>=1){this.active=null;this.postCloseup=this.visible?{plan:a.plan,pose:{...pose},startTime:now}:null;this.onDone(a.id)}
+    }else if(this.postCloseup&&this.visible){
+      const post=this.postCloseup;
+      this.closeup=sampleCloseup(post.plan,1+(now-post.startTime)/(post.plan.duration*1000),post.pose);
+      this.draw();if(this.closeup.amount>=1)this.postCloseup=null;
     }
-    if(this.active&&!document.hidden)this.schedule();
+    if((this.active||(this.postCloseup&&this.visible))&&!document.hidden)this.schedule();
   }
   updateCamera(){
     const view=this.closeup||sampleCloseup(null,0,null),amount=view.amount;
