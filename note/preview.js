@@ -2047,7 +2047,7 @@ async function openComposer(mode, card = null, replyTo = null) {
   if (busy || draftLoading) return;
   if (!authKnown && client) { message('계정을 확인하고 있어요. 잠시 후 다시 눌러 주세요.'); return; }
   if (!session?.user) {
-    const href = noteLoginHref(replyTo || undefined).replace('auth=login', 'auth=signup');
+    const href = noteLoginHref(replyTo || undefined);
     let target = window;
     try { if (parkEmbedded && parent.location.origin === location.origin) target = parent; } catch {}
     target.location.assign(href); return;
