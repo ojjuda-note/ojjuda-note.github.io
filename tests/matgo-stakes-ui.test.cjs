@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const {fixture,A}=require('./matgo-online-fixture.cjs');
 const root=path.join(__dirname,'..');
 (async()=>{
- const f=await fixture({basic:true}),{db,call}=f;
+ const f=await fixture({basic:true,fresh:true}),{db,call}=f;
  const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox']});
  try{
   await call(A,{action:'status'});
@@ -37,7 +37,9 @@ const root=path.join(__dirname,'..');
   fs.mkdirSync('/tmp/matgo-basic-proof',{recursive:true});await page.screenshot({path:'/tmp/matgo-basic-proof/middle.png'});
   const fits=await page.locator('.cpu-opponent').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height<55;});
   assert.equal(fits,true,'compact level display fits a 320px mobile screen');
+  const previousRound=(await call(A,{action:'status'})).round.id;
   await page.reload();await page.locator('#matgo-start-play').click();await ready();assert.equal(await page.evaluate(()=>stakesTest.game.rate),2000);
+  assert.notEqual((await call(A,{action:'status'})).round.id,previousRound,'reload starts a new hand while preserving the earned stake rate');
   const end=async(gold)=>{const s=await call(A,{action:'status'});await db.query("select public.matgo_wallet_service($1,'settle',null,false,$2,$3,0::smallint,1)",[A,s.round.id,gold]);};
   // Win/loss streaks never alter the tier while gold stays the same.
   for(let i=0;i<5;i++){
