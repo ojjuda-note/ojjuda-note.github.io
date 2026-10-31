@@ -17,9 +17,15 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   await context.exposeBinding('matgoFixture',async(_,body)=>{
     state.requests.push(body);
     if(body.action==='auth')return{data:{user:state.user?{id:state.user}:null}};
+    if(body.action==='session')return{data:{session:state.user?{user:{id:state.user},access_token:'fixture-token'}:null}};
     if(body.action==='identity')return{data:state.age===null?null:{age:state.age,locked:true}};
     const snapshot=()=>({ok:true,gold:state.gold,coins:state.coins,free_left:2-state.freeUsed,round:state.round||null});
     if(body.action==='status')return{data:snapshot()};
+    if(body.action==='abandon'){
+      const abandoned=!!state.round&&state.round.id===body.round_id;
+      if(abandoned)state.round=null;
+      return{data:{...snapshot(),abandoned}};
+    }
     if(body.action==='tazza_start'){
       if(state.coins<5)return{data:{error:'insufficient_zzu'}};
       state.coins-=5;state.round={id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.purchaseSeed??10,gold:state.gold,first:0,carry:1,tazza_mode:state.purchaseMode??'peek'};return{data:snapshot()};
@@ -28,7 +34,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(body.action==='start'){
       if(state.updateRequired)return{data:{error:'client_update_required'}};
       if(!state.gold)return{data:{error:'gold_empty'}};
-      state.round ||= {id:'00000000-0000-4000-9000-000000000001',rules_version:state.rulesVersion??13,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
+      state.round ||= {id:crypto.randomUUID(),rules_version:state.rulesVersion??13,seed:state.seed??10,gold:state.gold,first:0,carry:1};return{data:snapshot()};
     }
     if(body.action==='refill'){
       if(state.round)return{data:{error:'round_in_progress'}};
@@ -44,7 +50,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   await context.addInitScript(()=>{
     try{localStorage.setItem('ojjuda-matgo-sound','off');}catch{}
     window.OJJUDA_CONFIG={supabaseUrl:'https://mock.invalid',supabaseKey:'test-public'};
-    const client={auth:{getUser:()=>matgoFixture({action:'auth'}),onAuthStateChange:cb=>{window.authCallback=cb;return{data:{subscription:{unsubscribe(){}}}};}},
+    const client={auth:{getUser:()=>matgoFixture({action:'auth'}),getSession:()=>matgoFixture({action:'session'}),onAuthStateChange:cb=>{window.authCallback=cb;return{data:{subscription:{unsubscribe(){}}}};}},
       rpc:()=>matgoFixture({action:'identity'}),functions:{invoke:(_name,{body})=>matgoFixture(body)}};
     window.supabase={createClient:()=>client};
     const timeout=window.setTimeout.bind(window);window.setTimeout=(fn,delay,...args)=>timeout(fn,delay<5000?Math.min(delay,15):delay,...args);
@@ -329,38 +335,31 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('#capsOp .c').count(),3,'two pi are paid with one double; tied bonus adds no steal');
     assert.equal(await f.page.locator('.fly.tmp').count(),0);assert.deepEqual(f.errors,[]);await f.context.close();
   }
-  // Reloading an old round must visibly remain old until its valid settlement.
+  // A new visit retires an old unfinished round without gold or rank settlement.
   {
     const old={id:crypto.randomUUID(),rules_version:11,seed:5,gold:5000,first:0,carry:1,cpu_level:1};
     const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),false);
-    assert.match(await f.page.locator('#round-rules-note').textContent(),/이전 판 이어하기.*다음 판부터/);
-    assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
+    assert.notEqual(f.state.round.id,old.id);assert.equal(f.state.round.rules_version,13);
+    assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
+    assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
+    assert.equal(f.state.gold,5000);assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
+    assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id]);
     for(const [width,height] of [[320,568],[390,820]]){
       await f.page.setViewportSize({width,height});
       await f.page.waitForFunction(height=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--matgo-viewport-height'))===height,height);
       assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({message:'legacy notice leaves the hand on screen',width,height,hand}));
+      const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({width,height,hand}));
     }
-    fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/legacy.png'});
+    const firstRound=f.state.round.id;
     await f.page.reload();await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.id,old.id);assert.equal(await f.page.locator('#round-rules-note').isVisible(),true);
-    for(let i=0;i<1500&&!f.state.settled;i++){
-      await f.page.evaluate(()=>{
-        const modal=document.querySelector('.modal');if(modal){(modal.querySelector('#chongtong-continue')||modal.querySelector('#stop')||modal.querySelector('#n')||modal.querySelector('button'))?.click();return;}
-        const t=matgoTest;if(t.ui.resolveChoose){document.querySelector('.stack.pick')?.click();return;}
-        if(!t.ui.busy&&!t.game.over&&t.game.turn===0){if(t.game.hand[0][0])void t.pick(t.game.hand[0][0].id);else document.querySelector('#bombFlip')?.click();}
-      });
-      await f.page.waitForTimeout(20);
-    }
-    assert.equal(f.state.settled,true);assert.equal(f.state.requests.find(r=>r.action==='settle').rules_version,11);
-    await f.page.locator('#next').click();await f.page.waitForFunction(()=>!matgoTest.ui.busy&&!matgoTest.game.over);
-    assert.equal(f.state.round.rules_version,13);assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
+    assert.notEqual(f.state.round.id,firstRound);assert.equal(f.state.gold,5000);
+    assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
+    assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id,firstRound]);
     assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
     assert.equal(await f.page.locator('#cpuLevel').textContent(),'기본');
     assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
-    await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
+    fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
     assert.deepEqual(f.errors,[]);await f.context.close();
   }
   // An update response has a real refresh action, not an endless start retry.
@@ -526,15 +525,23 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       await inside(child.locator('.modal .card .btn').last(),'rules close');
       await child.locator('.modal .card .btn').last().tap();
       await f.page.screenshot({path:`/tmp/matgo-safe-area-proof/${width}-${native?'native':'browser'}.png`});
+      const savedRound=f.state.round.id,savedGold=f.state.gold,savedCoins=f.state.coins;
       await child.locator('#exit').tap();await closed();
-      // Re-entry retains the fixture's round and wallet; Back must still close.
-      const savedRound=JSON.stringify(f.state.round),savedGold=f.state.gold,savedCoins=f.state.coins;
-      await open();await child.locator('#solo').tap();await child.locator('#handMe').waitFor();
+      // Re-entry waits for old-round cleanup, then starts a new hand only on tap.
+      await open();assert.equal(f.state.round,null);
+      assert.equal(f.state.requests.filter(r=>r.action==='abandon'&&r.round_id===savedRound).length,1);
+      assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts+1,'opening the entrance does not start another hand');
+      await child.locator('#solo').tap();await child.locator('#handMe').waitFor();
       await f.page.waitForFunction(()=>document.querySelector('#matgo-overlay')?.dataset.mpActive==='false');
+      const reopened=f.page.frames().find(frame=>frame.url().includes('/games/matgo.html'));
+      await reopened.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.ui.dealing&&!matgoTest.game.over);
+      const nextRound=f.state.round.id;assert.notEqual(nextRound,savedRound,'the previous solo hand cannot resume');
+      assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts+2);
       await inside(child.locator('#exit'),'reopened exit');await back();
-      assert.equal(JSON.stringify(f.state.round),savedRound);assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
+      await open();assert.equal(f.state.round,null);
+      assert.equal(f.state.requests.filter(r=>r.action==='abandon'&&r.round_id===nextRound).length,1,'browser/native Back also retires its hand');
+      assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
       assert.equal(f.state.requests.some(r=>['settle','refill','tazza_start','vent'].includes(r.action)),false,'navigation never settles, refills or purchases');
-      await open();
       assert.equal(await f.page.locator('#matgo-loading-bar').count(),0,'no duplicate game header after loading');
       await f.page.evaluate(()=>authCallback('SIGNED_OUT',null));assert.equal(await f.page.locator('#matgo-overlay').count(),0);assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),0);
     }

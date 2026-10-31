@@ -69,7 +69,7 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
   const result=await rpc(owner,kind,id,stage,verify);if(typeof result.coins==='number')balance=result.coins;
   if(!verify&&loseResponse){loseResponse=false;throw Error('response lost after commit');}return result;
  }};
- storage.set(G.STAGE_KEY,'12');let game=G.flat(api);await settled(game);
+ storage.set(G.STAGE_KEY,'12');let game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);
  assert.equal(game.state.extraHoles,0);assert.equal(buyCalls,0,'opening verifies without charging');
  let resolve;release={promise:new Promise(r=>resolve=r)};
  press(game,106,514);press(game,106,514);assert.equal(buyCalls,1,'double taps start one payment');resolve();release=null;await settled(game);
@@ -83,17 +83,17 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  const spares=game.state.level.holes.filter(h=>h.owner===null);assert.equal(spares.length,6);
  for(const a of spares)for(const b of spares)if(a!==b)assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=42,'all top holes have distinct tap areas');
  press(game,297,514);await settled(game);assert.equal(game.state.extraHoles,3);assert.equal(balance,7,'retry keeps paid holes');
- game.destroy();storage.clear();storage.set(G.STAGE_KEY,'12');game=G.flat(api);await settled(game);assert.equal(game.state.extraHoles,3,'reopening restores server purchases even without local receipts');
+ game.destroy();storage.clear();storage.set(G.STAGE_KEY,'12');game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);assert.equal(game.state.extraHoles,3,'reopening restores server purchases even without local receipts');
  game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);press(game,267,514);await settled(game);assert.equal(game.state.L,13);assert.equal(game.state.extraHoles,0,'the next stage starts with three basic holes');
  loseResponse=true;press(game,106,514);await settled(game);assert.equal(balance,6);assert.equal(game.state.extraHoles,0);
  press(game,106,514);await settled(game);assert.equal(game.state.extraHoles,1);assert.equal(balance,6,'recovery checks the original receipt instead of charging again');
  const before=buyCalls;user=poor;press(game,106,514);assert.equal(buyCalls,before,'switching wallets cannot buy through the previous game');game.destroy();
- storage.set(G.STAGE_KEY,'14');balance=0;game=G.flat(api);await settled(game);press(game,106,514);await settled(game);assert.equal(game.state.extraHoles,0);assert.equal(buyCalls,before,'zero balance never adds a hole');game.destroy();
- user=other;balance=6;storage.set(G.STAGE_KEY,'15');game=G.flat(api);await settled(game);
+ storage.set(G.STAGE_KEY,'14');balance=0;game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);press(game,106,514);await settled(game);assert.equal(game.state.extraHoles,0);assert.equal(buyCalls,before,'zero balance never adds a hole');game.destroy();
+ user=other;balance=6;storage.set(G.STAGE_KEY,'15');game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);
  release={promise:new Promise(r=>resolve=r)};press(game,106,514);game.destroy();resolve();release=null;await settled(game);assert.equal(game.state.extraHoles,0,'a late response never changes a closed game');
- game=G.flat(api);await settled(game);assert.equal(game.state.extraHoles,1,'a paid hole is recovered after closing during checkout');game.destroy();
+ game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);assert.equal(game.state.extraHoles,1,'a paid hole is recovered after closing during checkout');game.destroy();
  // Exhaust the real move budget, purchase three more, and continue on the same board.
- storage.set(G.STAGE_KEY,'16');game=G.flat(api);await settled(game);
+ storage.set(G.STAGE_KEY,'16');game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);
  assert.equal(game.state.extraMoves,0);game.state.moves=game.state.moveLimit;
  const moving=game.state.level.screws[game.state.level.order[0]],from=moving.hole,destination=game.state.level.holes[0];
  press(game,from.x,from.y);press(game,destination.x,destination.y);
@@ -107,14 +107,14 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  for(const target of [game.state.level.holes[1],game.state.level.holes[0]]){press(game,moving.hole.x,moving.hole.y);press(game,target.x,target.y);for(let i=0;i<60;i++)game.update(.05);assert.equal(moving.hole,target);}
  assert.equal(game.state.moves,game.state.moveLimit+3);press(game,moving.hole.x,moving.hole.y);press(game,270,100);assert.equal(game.state.pending,null,'a three-move pack permits exactly three moves');
  press(game,297,514);await settled(game);assert.equal(game.state.moves,0);assert.equal(game.state.extraMoves,3,'retry retains the purchased stage allowance');
- game.destroy();storage.clear();storage.set(G.STAGE_KEY,'16');game=G.flat(api);await settled(game);assert.equal(game.state.extraMoves,3,'reopening recovers moves from the server');
+ game.destroy();storage.clear();storage.set(G.STAGE_KEY,'16');game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);assert.equal(game.state.extraMoves,3,'reopening recovers moves from the server');
  loseResponse=true;press(game,206,514);await settled(game);assert.equal(game.state.extraMoves,3);assert.equal(balance,oldBalance-2);
  press(game,206,514);await settled(game);assert.equal(game.state.extraMoves,6);assert.equal(balance,oldBalance-2,'lost response recovery adds the paid pack exactly once');
  assert.equal(game.state.extraHoles,0,'buying moves never adds a hole');
  const recoveredBuys=buyCalls;press(game,297,514);await settled(game);assert.equal(game.state.extraMoves,6);assert.equal(buyCalls,recoveredBuys);
  game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);press(game,267,514);await settled(game);assert.equal(game.state.extraMoves,0,'move packs belong to their stage');
  user=poor;press(game,206,514);assert.equal(buyCalls,recoveredBuys,'wallet switching blocks extra-move purchases');game.destroy();
- game=G.flat(api);await settled(game);press(game,206,514);await settled(game);assert.equal(buyCalls,recoveredBuys,'zero balance does not buy moves');game.destroy();
+ game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);press(game,206,514);await settled(game);assert.equal(buyCalls,recoveredBuys,'zero balance does not buy moves');game.destroy();
  storage.set(G.STAGE_KEY,'1');game=G.flat({setScore(){},end(){}});game.state.moves=game.state.moveLimit-2;
  for(let i=0;i<2;i++){const screw=game.state.level.screws[i],target=game.state.level.holes[i];press(game,screw.hole.x,screw.hole.y);press(game,target.x,target.y);for(let n=0;n<100;n++)game.update(.05);}
  assert.equal(game.state.moves,game.state.moveLimit);assert.equal(game.state.complete,true,'the final allowed move may finish the picture under gravity');game.destroy();

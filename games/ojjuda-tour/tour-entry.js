@@ -80,15 +80,14 @@ function tourShowError() {
     initialized = true;
     window.ojjudaMarbleAccess = {owner:message.owner,available:message.onlineAvailable === true,joinCode:message.joinCode};
     document.dispatchEvent(new Event('ojjuda-marble:ready'));
-    // Keep different members' progress separate on a shared device.
+    // Clear only this member's previous round, keeping settings and records intact.
     const owner = typeof message.owner === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(message.owner) ? message.owner : 'guest';
     KEY = 'ojjuda-tour-save-v1:' + owner;
+    clearSave();
     const nickname = cleanName(message.nickname);
     if (nickname) setupP[0].name = nickname;
     renderSetup();
   });
-  try { localStorage.getItem(KEY); }
-  catch { document.getElementById('tourSaveHint').textContent = '이 브라우저에서는 자동 저장을 사용할 수 없어요.'; }
   refresh();
   ojjudaPost({type:'ojjuda-game-ready', game:'ojjuda-tour'});
 })();

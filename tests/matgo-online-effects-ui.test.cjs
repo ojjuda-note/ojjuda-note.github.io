@@ -7,9 +7,9 @@ const root=path.join(__dirname,'..');
   const errors=[];
   const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','상대'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
   const stamp=room=>({...structuredClone(room),deadline:new Date(Date.now()+20000).toISOString(),serverTime:Date.now()});
-  async function screen({muted=false,reduced=false,resume=initial,enter=true}={}){
+  async function screen({muted=false,reduced=false,roomState=initial,enter=true}={}){
     const context=await browser.newContext({viewport:{width:390,height:820},hasTouch:true,reducedMotion:reduced?'reduce':'no-preference'});
-    await context.addInitScript(({muted,room})=>{
+    await context.addInitScript(({muted,room,enter})=>{
       localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');window.fixtureRoom=room;
       window.audioStarts=[];window.audioContexts=[];window.flights=[];window.eventScreens=[];
       const NativeAudio=window.AudioContext;
@@ -22,8 +22,8 @@ const root=path.join(__dirname,'..');
         if(this.classList.contains('online-flying-card')){const entry={at:performance.now(),duration:options.duration,back:!!this.querySelector('[aria-label="화투 뒷면"]')};flights.push(entry);animation.finished.then(()=>entry.elapsed=performance.now()-entry.at).catch(()=>entry.cancelled=true);}
         return animation;
       };
-      window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>{},getClient:()=>({auth:{getSession:async()=>({})},functions:{invoke:async(_,{body})=>({data:body.action==='status'?{ok:true,gold:5000,coins:0,free_left:2,online_room:room.id}:{ok:true,room:fixtureRoom}})}})};
-    },{muted,room:stamp(resume)});
+      window.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:()=>{},getClient:()=>({auth:{getSession:async()=>({})},functions:{invoke:async(_,{body})=>({data:body.action==='status'?{ok:true,gold:5000,coins:0,free_left:2,online_room:enter?room.id:null}:{ok:true,room:fixtureRoom}})}})};
+    },{muted,room:stamp(roomState),enter});
     await context.route('**/*',async route=>{
       const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
       if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
@@ -32,7 +32,7 @@ const root=path.join(__dirname,'..');
       return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
     });
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-    await page.goto('https://fixture.test/games/matgo-online.html');if(enter){await page.locator('#resume-room').click();await page.locator('#hand').waitFor();}
+    await page.goto('https://fixture.test/games/matgo-online.html'+(enter?'?room_id='+roomState.id:''));if(enter)await page.locator('#hand').waitFor();
     await page.evaluate(()=>new MutationObserver(()=>{const event=document.querySelector('#event');if(!event.hidden)eventScreens.push({kind:event.dataset.kind,text:event.textContent,at:performance.now()});}).observe(document.querySelector('#event'),{attributes:true,childList:true}));
     return {page,context};
   }
@@ -44,7 +44,7 @@ const root=path.join(__dirname,'..');
     await page.locator('#sound-start').tap();
     await page.waitForFunction(()=>audioStarts.some(s=>s.state==='running'&&s.energy),null,{timeout:10000}).catch(async error=>{console.error(await page.evaluate(()=>({contexts:audioContexts.map(c=>c.state),starts:audioStarts})));throw error;});
     assert.equal(await page.locator('#sound-start').isVisible(),false);
-    await page.locator('#resume-room').click();await page.locator('#hand').waitFor();
+    await page.locator('[data-entry-mode=opponent]').click();await page.locator('#quick').click();await page.locator('#hand').waitFor();
     await page.evaluate(()=>{window.beforeBoard=document.querySelector('.board');window.beforeHand=document.querySelector('#hand [data-card="8"]');});
     await present(page,played);
     await page.waitForSelector('.online-flying-card');
@@ -75,8 +75,8 @@ const root=path.join(__dirname,'..');
     await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
     await page.evaluate(()=>presenting);assert.equal(await page.locator('.online-flying-card').count(),0);assert.equal(await page.locator('#event').isVisible(),false);
     await context.close();
-    const restored=await screen({resume:played});
-    assert.equal(await restored.page.evaluate(()=>flights.length+audioStarts.length),0,'resume renders latest board without replaying old events');
+    const restored=await screen({roomState:played});
+    assert.equal(await restored.page.evaluate(()=>flights.length+audioStarts.length),0,'explicit room entry renders the latest board without replaying old events');
     assert.equal(await restored.page.locator('#event').isVisible(),false);await restored.context.close();
     const reduced=await screen({muted:true,reduced:true});
     await present(reduced.page,played);await reduced.page.evaluate(()=>presenting);
@@ -134,6 +134,6 @@ const root=path.join(__dirname,'..');
     assert.equal(await queued.page.locator('.op-hand>.c').count(),3);
     await queued.context.close();
     assert.deepEqual(errors,[]);
-    console.log('PASS: measured card flights, real recorded audio after touch, mute, readable events, idempotent polling, private replacement, visibility cancellation, resume and reduced motion');
+    console.log('PASS: measured card flights, real recorded audio after touch, mute, readable events, idempotent polling, private replacement, visibility cancellation, explicit room entry and reduced motion');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -10,15 +10,16 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog';
       dialog.setAttribute('aria-label', '마블');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261029-arcade-entry1" allow="fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261031-fresh-games1" allow="fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
-      const invitation = new AbortController();
+      let invitation = new AbortController();
       const invitedCode = typeof joinCode === 'string' && /^[A-F0-9]{8}$/i.test(joinCode) ? joinCode.toUpperCase() : '';
       let onlineRequests = 0;
       async function invoke(body) {
         const {data,error} = await client.functions.invoke('marble', {body});
         if (error) { try { return await error.context.json(); } catch { return {error:'unavailable'}; } }
+        if(active?.dialog!==dialog||!authorized())return data||{error:'unavailable'};
         if (data?.ok && body.action === 'create' && data.room?.status === 'waiting') {
           const published = await client.rpc('arcade_publish_marble', {p_room:data.room.id});
           if (published.error || !published.data?.ok) return {error:'unavailable'};
@@ -84,29 +85,33 @@
           source:'ojjuda-world', type:'ojjuda-tour-record', runId, ok:result?.ok === true
         }, location.origin);
       }
-      function close() {
+      function dispose() {
         if (active?.dialog !== dialog) return;
         active = null;
         invitation.abort();
+        clearInterval(authTimer);
         window.removeEventListener('message', receive);
         dialog.close();
         dialog.remove();
         if (!wasGaming) document.body.classList.remove('gaming');
         if (previous?.isConnected) previous.focus({preventScroll:true});
       }
+      function close() { invitation.abort(); const result=session.close(); if(result?.then)result.then(closed=>{if(!closed&&active?.dialog===dialog)invitation=new AbortController();}); return result; }
       function receive(event) {
         if (event.origin !== location.origin || event.source !== frame.contentWindow) return;
         const message = event.data;
         if (message?.source !== 'ojjuda-tour' || !authorized()) return;
         if (message.type === 'ojjuda-game-ready') {
-          frame.contentWindow.postMessage({source:'ojjuda-world', type:'ojjuda-tour-init',
-            nickname:String(nickname).slice(0, 12), owner:owner || 'guest', onlineAvailable:!!(owner && client?.functions),joinCode:invitedCode}, location.origin);
+          void session.enter(()=>frame.contentWindow.postMessage({source:'ojjuda-world', type:'ojjuda-tour-init',
+            nickname:String(nickname).slice(0, 12), owner:owner || 'guest', onlineAvailable:!!(owner && client?.functions),joinCode:invitedCode}, location.origin));
         }
-        if (message.type === 'ojjuda-marble-request') void online(message);
+        if (message.type === 'ojjuda-marble-request') void session.run(()=>online(message));
         if (message.type === 'ojjuda-game-exit') close();
         // Casual records share the existing unverified, zero-reward score path.
-        if (message.type === 'ojjuda-game-result') void record(message);
+        if (message.type === 'ojjuda-game-result') void session.run(()=>record(message));
       }
+      const session = window.OjjudaGameSession.create({kind:'marble',dialog,frame,authorized:()=>active?.dialog===dialog&&authorized(),available:()=>!!(owner&&client?.functions),invoke,dispose,keepCode:invitedCode});
+      const authTimer = setInterval(()=>{if(!authorized())close();},1000);
       active = {dialog, close};
       window.addEventListener('message', receive);
       dialog.querySelector('button').addEventListener('click', close);
@@ -116,6 +121,6 @@
       dialog.showModal();
       dialog.querySelector('button').focus({preventScroll:true});
     },
-    close() { active?.close(); }
+    close() { return active?.close()??true; }
   };
 })();

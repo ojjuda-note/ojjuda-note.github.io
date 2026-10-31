@@ -1,19 +1,25 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{test}=require('node:test'),{JSDOM}=require('jsdom');
 const E=require('../games/sacheonseong/engine.js'),read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
-function fixture({stage=2,saved=null,records={}}={}){
+function fixture({stage=2,grid=null,saved=null,records={}}={}){
  const dom=new JSDOM(read('games/sacheonseong/index.html'),{url:'https://example.test/games/sacheonseong/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
- const timers=new Map(),sent=[];let id=0;
+ const timers=new Map(),sent=[];let id=0,now=Date.now();w.Date.now=()=>now;
  w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=()=>0;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.HTMLElement.prototype.scrollIntoView=function(){};
  Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:348},clientHeight:{value:498}});
  w.OjjudaSacheonseongOnline={newId:()=>w.crypto.randomUUID(),stage:()=>{},record:(stage,record)=>sent.push({stage,...record})};
- const grid=Array.from({length:stage*2},()=>Array(stage*2).fill(-1));grid[0][0]=grid[0][1]=0;
- w.localStorage.setItem(KEY,JSON.stringify(saved||{rulesVersion:E.RULES_VERSION,stage,unlocked:Math.min(15,stage+1),grid,startedAt:Date.now()-12000,finishedMs:null,hints:0,shuffles:0}));
+ const lateGrid=grid||Array.from({length:stage*2},()=>Array(stage*2).fill(-1));if(!grid)lateGrid[0][0]=lateGrid[0][1]=0;
+ w.localStorage.setItem(KEY,JSON.stringify(saved||{unlocked:Math.min(15,stage+1),sound:false}));
  w.localStorage.setItem(RECORDS,JSON.stringify(records));
- for(const name of ['engine','faces','app'])w.eval(read('games/sacheonseong/'+name+'.js'));
- return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
+ for(const name of ['engine','faces'])w.eval(read('games/sacheonseong/'+name+'.js'));
+ // Arrange a late round directly; storage now keeps achievements, not an active board to resume.
+ if(!saved){const generate=w.TileGarden.generate;let arranged=false;w.TileGarden.generate=n=>{
+  const result=generate(n);if(!arranged&&n===stage){arranged=true;result.grid=lateGrid.map(row=>row.slice());}return result;
+ };}
+ w.eval(read('games/sacheonseong/app.js'));
+ if(!saved&&stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
+ return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
 }
 test('the last pair saves and queues its completion before the screen can close',()=>{
  const f=fixture();try{f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.records()[2].length,1);assert(f.state().finishedMs>=12000);f.run(120);assert.equal(f.sent.length,1,'the animation cannot send a duplicate record');assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
@@ -23,7 +29,7 @@ test('switching stages immediately after the last pair keeps the completed recor
 });
 test('reopening a completed round preserves its best time without recording twice',()=>{
  let f=fixture(),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
- f=fixture({saved,records});try{assert.equal(f.state().stage,2);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,1);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,4);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
 });
 test('final-stage completion never advances beyond stage 15',()=>{
  const f=fixture({stage:15});try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);}finally{f.close();}
@@ -31,14 +37,14 @@ test('final-stage completion never advances beyond stage 15',()=>{
 
 test('matching a pair keeps the other tile buttons and keyboard focus intact',()=>{
  const grid=Array.from({length:4},()=>Array(4).fill(-1));grid[0][0]=grid[0][1]=0;grid[1][0]=grid[1][1]=1;
- const f=fixture({saved:{rulesVersion:E.RULES_VERSION,stage:2,unlocked:2,grid,startedAt:null,finishedMs:null,hints:0,shuffles:0}});
+ const f=fixture({stage:2,grid});
  try{const remaining=f.d.querySelector('[data-r="1"][data-c="1"]');remaining.focus();f.match();f.run(120);assert.equal(f.d.querySelector('[data-r="1"][data-c="1"]'),remaining);assert(remaining.isConnected);assert.equal(f.d.activeElement,remaining);assert.equal(f.d.querySelectorAll('.tile.empty').length,14);assert.equal(f.d.querySelectorAll('.tile.removing').length,0);}finally{f.close();}
 });
 
 test('a completion outside the local top 30 is not submitted again on reopening',()=>{
  const best=Array.from({length:30},(_,i)=>({id:'best-'+i,duration:i+1,at:Date.now()}));let f=fixture({records:{2:best}}),saved,records;
  try{f.match();saved=f.state();records=f.records();assert.equal(records[2].length,30);assert.equal(saved.lastRank,31);}finally{f.close();}
- f=fixture({saved,records});try{assert.equal(f.state().stage,2);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,1);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
 });
 
 test('completion waits for a choice instead of advancing after four seconds',()=>{
@@ -69,18 +75,18 @@ test('first-stage completion disables only the previous level',()=>{
  }finally{f.close();}
 });
 
-test('a saved result still waits after reopening and supports replaying the same level',()=>{
+test('reopening a saved result starts fresh and still permits choosing its unlocked level',()=>{
  let f=fixture(),saved,records;try{f.match();f.run(120);saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
   for(let i=0;i<10;i++)f.run(1000);
-  assert.equal(f.state().stage,2);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,false);
-  f.d.getElementById('current-level').click();assert.equal(f.state().stage,2);assert.equal(f.state().finishedMs,null);assert.equal(f.records()[2].length,1);
+  assert.equal(f.state().stage,1);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
+  f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="2"]').click();assert.equal(f.state().stage,2);assert.equal(f.state().finishedMs,null);assert.equal(f.records()[2].length,1);
  }finally{f.close();}
 });
 
 test('rapid consecutive pairs are accepted while earlier removal effects are running',()=>{
  const grid=Array.from({length:4},()=>Array(4).fill(-1));for(let r=0;r<3;r++)grid[r][0]=grid[r][1]=r;
- const f=fixture({saved:{rulesVersion:E.RULES_VERSION,stage:2,unlocked:3,grid,startedAt:null,finishedMs:null,hints:0,shuffles:0}});
+ const f=fixture({stage:2,grid});
  try{
   const tile=(r,c)=>f.d.querySelector(`[data-r="${r}"][data-c="${c}"]`);
   f.match();assert.equal(f.d.querySelectorAll('.removing').length,2);assert.match(f.d.getElementById('remaining').textContent,/4/);
@@ -93,7 +99,7 @@ test('rapid consecutive pairs are accepted while earlier removal effects are run
 
 test('an older pair effect does not clear a newer selection or touch a restarted board',()=>{
  const grid=Array.from({length:4},()=>Array(4).fill(-1));for(let r=0;r<3;r++)grid[r][0]=grid[r][1]=r;
- const f=fixture({saved:{rulesVersion:E.RULES_VERSION,stage:2,unlocked:3,grid,startedAt:null,finishedMs:null,hints:0,shuffles:0}});
+ const f=fixture({stage:2,grid});
  try{
   f.match();const next=f.d.querySelector('[data-r="1"][data-c="0"]');next.click();f.run(120);assert.equal(next.getAttribute('aria-pressed'),'true');
   f.d.querySelector('[data-r="1"][data-c="1"]').click();f.d.getElementById('restart').click();f.d.getElementById('confirm-action').click();

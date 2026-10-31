@@ -40,11 +40,11 @@ export function createHandler({env,fetchImpl=fetch,random=()=>crypto.getRandomVa
     const response=await get('/rest/v1/rpc/poker_online_service',{method:'POST',headers:{apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'},body:JSON.stringify({p_actor:user.id,p_action:action,...values})});
     const data=await response.json();if(!response.ok)throw Error(errors.has(data.message)?data.message:'unavailable');return data;
    };
-   const catchUp=async result=>{
+   const catchUp=async(result,settling=false)=>{
     if(!result.room||result.room.status!=='active'||Date.parse(result.room.deadline)>Date.now())return result;
-    const r=result.room,ai=r.mode==='solo'&&r.state.phase==='betting'&&r.state.turn>0,state=move(r.state,r.state.turn,{type:ai?'ai':'timeout'},random,r.difficulty);
-    try{return await rpc('commit',{p_room:r.id,p_expected:r.version,p_request:crypto.randomUUID(),p_next:{state,kind:'timeout'}});}
-    catch(e){if(e.message!=='state_conflict')throw e;return rpc('read',{p_room:r.id});}
+    const r=result.room,computer=r.mode==='online'&&['discard','open','betting'].includes(r.state.phase),ai=r.state.phase==='betting'&&(computer||r.mode==='solo'&&r.state.turn>0),state=move(r.state,r.state.turn,{type:ai?'ai':'timeout'},random,r.difficulty,computer);
+    try{return await rpc('commit',{p_room:r.id,p_expected:r.version,p_request:crypto.randomUUID(),p_next:{state,kind:'timeout',...(computer?{automaticSeat:r.state.turn}:{})}});}
+    catch(e){if(e.message!=='state_conflict')throw e;return settling?rpc('mine'):rpc('read',{p_room:r.id});}
    };
    let result;
    if(['start','move','ready','leave'].includes(body.action)){
@@ -59,7 +59,15 @@ export function createHandler({env,fetchImpl=fetch,random=()=>crypto.getRandomVa
       if(r.mode!=='solo'&&r.members.length<2)throw Error('need_players');state=newGame(r.names,null,random,{mode:r.mode,stacks:result.stacks});
      }else if(body.action==='move'){
       if(r.status!=='active')throw Error('room_unavailable');state=move(r.state,result.seat,body.command);
-     }else if(body.action==='leave'&&r.status==='active'){state=move(r.state,result.seat,{type:'leave'});if(r.mode==='solo'){for(let i=0;state.phase!=='finished'&&i<200;i++)state=move(state,state.turn,{type:state.phase==='betting'?'ai':'timeout'},random,r.difficulty);if(state.phase!=='finished')throw Error('invalid_move');}}
+     }else if(body.action==='leave'&&r.status==='active'){
+      // The seat's cards, stack and turn stay at the table. Its escrow is only
+      // released by the existing final settlement, never refunded twice.
+      state=r.mode==='solo'?move(r.state,result.seat,{type:'leave'}):structuredClone(r.state);
+      if(r.mode==='solo'||r.departed.every((left,i)=>left||i===result.seat)){
+       for(let i=0;state.phase!=='finished'&&i<200;i++)state=move(state,state.turn,{type:state.phase==='betting'?'ai':'timeout'},random,r.difficulty,true);
+       if(state.phase!=='finished')throw Error('invalid_move');
+      }
+     }
      else if(body.action==='ready'){
       if(r.status!=='finished'||r.departed.some(Boolean))throw Error('room_unavailable');
       if(r.ready.every((ready,i)=>ready||i===result.seat))state=newGame(r.names,r.state,random,{mode:r.mode,stacks:result.stacks});
@@ -73,7 +81,11 @@ export function createHandler({env,fetchImpl=fetch,random=()=>crypto.getRandomVa
     result=await rpc('start',{p_room:r.id,p_expected:r.version,p_request:body.request_id,p_next:{state,kind:'start'}});
    }
    if(body.action==='leave')return reply({ok:true,room:null,wallet:result.wallet});
-   result=await catchUp(result);
+   if(!result.room&&result.settlement&&Date.parse(result.settlement.deadline)<=Date.now()){
+    // A waiting wallet may be the only connected client. Advance at most one
+    // expired server decision; the departed account still receives no room.
+    await catchUp({room:result.settlement},true);result=await rpc('mine');
+   }else result=await catchUp(result);
    return reply({ok:true,room:project(result),rooms:result.rooms,wallet:result.wallet});
   }catch(e){const error=errors.has(e.message)?e.message:'unavailable';return reply({error},error==='unavailable'?503:409);}
  };

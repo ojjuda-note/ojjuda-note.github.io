@@ -5,9 +5,10 @@ const errors=new Set(['not_signed_in','banned','room_in_progress','room_rate_lim
 const actions=new Set(['mine','create','join','read','start','move','surrender','leave']);
 function view({room:r,seat}){
  if(!r)return null;
+ const computerSeats=r.computer_seats||[],game=r.state&&computerSeats.length?{...r.state,players:r.state.players.map((player,i)=>({...player,name:player.name+(computerSeats.includes(i)?' (컴퓨터)':'')}))}:r.state;
  return {id:r.id,code:r.code,title:r.title,capacity:r.capacity,maxRound:r.max_round,names:r.names,
   seat,hostSeat:r.members.indexOf(r.host_id),status:r.status,version:r.version,deadline:r.deadline,
-  serverTime:Date.now(),game:r.state,prompt:r.state?prompt(r.state):null,ranked:!!r.ranked_at};
+  serverTime:Date.now(),game,prompt:r.state?prompt(r.state):null,computerSeats,rankExcluded:r.rank_excluded||[],ranked:!!r.ranked_at};
 }
 const next=g=>({state:g,scores:g.over?g.players.map((_,i)=>Math.max(0,Math.min(1000000,assets(g,i)))):null});
 export function createHandler({env,fetchImpl=fetch,random}){
@@ -51,8 +52,8 @@ export function createHandler({env,fetchImpl=fetch,random}){
    };
    const catchUp=async state=>{
     if(!state.room||state.room.status!=='active'||Date.parse(state.room.deadline)>Date.now())return state;
-    const g=automaticTurn(state.room.state,random);
-    try{return await rpc('commit',{p_room:state.room.id,p_expected:state.room.version,p_request:crypto.randomUUID(),p_next:next(g)});}
+    const g=automaticTurn(state.room.state,random,(state.room.computer_seats||[]).includes(state.room.state.turn));
+    try{return await rpc('commit',{p_room:state.room.id,p_expected:state.room.version,p_request:crypto.randomUUID(),p_next:{...next(g),automaticSeat:state.room.state.turn}});}
     catch(e){if(e.message!=='state_conflict'&&e.message!=='room_unavailable')throw e;return rpc('read',{p_room:state.room.id});}
    };
    let state;

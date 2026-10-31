@@ -50,13 +50,16 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
  const f=await fixture();
  try{
   const existing=await f.call(A,{action:'online_create'});assert.ok(existing.room);
-  const dom=new JSDOM(read('games/matgo-online.html'),{url:'https://fixture.test/games/matgo-online.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
-  try{
+  for(const explicit of [false,true]){
+   const fresh=explicit?await f.call(A,{action:'online_create'}):null;
+   if(fresh)assert.notEqual(fresh.room.id,existing.room.id,'a new invitation identifies a different waiting room');
+   const dom=new JSDOM(read('games/matgo-online.html'),{url:'https://fixture.test/games/matgo-online.html'+(explicit?'?room_id='+fresh.room.id:''),runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
+   try{
    const invoke=async(_,{body})=>{calls.push(body);return {data:await f.call(A,body)};};
    let grantAccess;const accessReady=new Promise(resolve=>grantAccess=resolve);
    w.OjjudaMatgoAccess={check:()=>accessReady,allowed:()=>true,subscribe:()=>()=>{},getClient:()=>({functions:{invoke},auth:{getSession:async()=>({data:{session:null}})}})};
    const noop=()=>{},wallet={status:async()=>(await invoke('matgo',{body:{action:'status'}})).data};
-   w.__entryDeps={shuffledFloorSlots:noop,floorStackIds:noop,CARDS:[],isPi:noop,piVal:noop,score:noop,floorLayout:noop,heldPairMonths:noop,piClaimMessage:noop,cardSVG:noop,backSVG:noop,createWallet:()=>wallet,createOnlineMotion:()=>({cancel:noop}),createOnlineSound:()=>({cancel:noop}),cpuPortraitHTML:noop,createVentControls:()=>({sync:noop})};
+   w.__entryDeps={shuffledFloorSlots:noop,floorStackIds:noop,CARDS:[],isPi:noop,piVal:noop,score:noop,floorLayout:noop,heldPairMonths:noop,piClaimMessage:noop,cardSVG:noop,backSVG:noop,createWallet:()=>wallet,invokeMatgo:(_access,body)=>invoke('matgo',{body}),createOnlineMotion:()=>({cancel:noop}),createOnlineSound:()=>({cancel:noop}),cpuPortraitHTML:noop,createVentControls:()=>({sync:noop})};
    const source=read('games/matgo-online.mjs').replace(/^import \{([^}]+)\} from '[^']+';/gm,(_,names)=>`const {${names.replace(/ as /g,':')}}=window.__entryDeps;`);
    const boot=w.eval('(async()=>{'+source+'\n})()');
    assert.equal(w.document.querySelector('#gate').hidden,true,'the old loading screen never precedes the entrance');
@@ -65,15 +68,19 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
    grantAccess();await boot;
    assert.equal(w.document.querySelector('#content').hasAttribute('inert'),false);
    assert.equal(w.document.querySelector('#gate').hidden,true);
-   assert.equal(w.document.querySelectorAll('.game-entry').length,1);
-   assert.ok(w.document.querySelector('.game-entry #resume-room'));
-   assert.equal(w.document.querySelector('.waiting'),null);
-   assert.deepEqual(calls.map(b=>b.action),['status'],'reopening does not automatically enter the saved match');
-   w.document.querySelector('#resume-room').click();
-   await wait(()=>w.document.querySelector('#invite-code'));
-   assert.equal(w.document.querySelector('#invite-code').textContent,existing.room.code);
-   assert.deepEqual(calls.map(b=>b.action),['status','online_read'],'resume reads the same room without creating a match or charging gold');
-  }finally{w.close();}
+   assert.equal(w.document.querySelector('#resume-room'),null,'old matches are never offered as a normal re-entry');
+   if(explicit){
+    await wait(()=>w.document.querySelector('#invite-code'));
+    assert.equal(w.document.querySelector('#invite-code').textContent,fresh.room.code);
+    assert.deepEqual(calls.map(b=>b.action),['status','online_read'],'an explicit new-room handoff reads only its intended room');
+    assert.equal((await f.call(A,{action:'online_read',room_id:fresh.room.id})).room.status,'waiting');
+   }else{
+    assert.equal(w.document.querySelectorAll('.game-entry').length,1);assert.equal(w.document.querySelector('.waiting'),null);
+    assert.deepEqual(calls.map(b=>b.action),['status','online_leave','status'],'normal re-entry retires the old room and leaves fresh setup without creating or charging a round');
+    assert.equal((await f.call(A,{action:'online_read',room_id:existing.room.id})).room.status,'cancelled');
+   }
+   }finally{w.close();}
+  }
  }finally{await f.db.close();}
- console.log('PASS: muted/no-audio solo entrance, one start gate, and explicit multiplayer resume through real server rules');
+ console.log('PASS: muted/no-audio solo entrance, one start gate, normal fresh multiplayer setup and explicit new-room handoff through real server rules');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -12,8 +12,10 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
  });
  try{
   const migrations=fs.readdirSync(path.join(root,'supabase/migrations'));
-  for(const suffix of ['_tank_online_rooms.sql','_tank_solo_mode.sql','_tank_healing_shell.sql','_marble_online_rooms.sql','_arcade_complete_game_catalog.sql'])await db.exec(read('supabase/migrations/'+migrations.find(n=>n.endsWith(suffix))));
+  for(const suffix of ['_tank_online_rooms.sql','_tank_solo_mode.sql','_tank_healing_shell.sql','_tank_same_device_mode.sql','_tank_homing_shell.sql','_tank_steel_rain.sql','_tank_nuclear_restore_price.sql','_marble_online_rooms.sql','_arcade_complete_game_catalog.sql'])await db.exec(read('supabase/migrations/'+migrations.find(n=>n.endsWith(suffix))));
+  for(const kind of ['tank','marble'])await require('./game-handoff-migration.cjs')(db,kind);
   await db.exec(`alter table public.user_private add column if not exists coins integer default 100;
+   create table public.game_scores(id bigint generated always as identity primary key,user_id uuid,nick text,game text,score integer,reward integer,verified boolean,created_at timestamptz default now());
    create table public.friendships(a uuid,b uuid);
    create function public.is_friend(a uuid,b uuid) returns boolean language sql security definer set search_path='' as $$select exists(select 1 from public.friendships f where(f.a=$1 and f.b=$2)or(f.b=$1 and f.a=$2))$$;`);
   await db.query('insert into public.friendships values($1,$2),($1,$3),($2,$3)',[A,B,C]);
@@ -41,27 +43,29 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
   function host(script,actor){
    const dom=new JSDOM('<body><button>오락실</button></body>',{url:'https://ojjuda.kr/world.html',runScripts:'outside-only'}),w=dom.window;windows.push(w);
    w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-   w.eval(read(script));return w;
+   w.eval(read('game-session.js'));w.eval(read(script));return w;
   }
-  function messenger(w,source,type){
+  async function messenger(w,source,type){
    const child=w.document.querySelector('iframe').contentWindow,received=[];child.postMessage=data=>received.push(data);
+   w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:child,data:{source,type:source==='ojjuda-tank'?'ready':'ojjuda-game-ready'}}));
+   await wait(()=>received.some(r=>r.type===(source==='ojjuda-tank'?'tank-init':'ojjuda-tour-init')));
    return async body=>{const requestId=randomUUID();w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:child,data:{source,type,requestId,body}}));await wait(()=>received.some(r=>r.replyTo===requestId));return received.find(r=>r.replyTo===requestId).result;};
   }
   // In-game Marble creation publishes the actual room, including retries after a lost publish response.
   const marble=host('world-tour-game.js',A),mc=client(A);let publishAttempts=0;
   const realRpc=mc.rpc;mc.rpc=async(name,args)=>name==='arcade_publish_marble'&&publishAttempts++===0?{error:{message:'offline'}}:realRpc(name,args);
-  marble.OjjudaTourGame.open({owner:A,client:mc});const sendMarble=messenger(marble,'ojjuda-tour','ojjuda-marble-request');
+  marble.OjjudaTourGame.open({owner:A,client:mc});const sendMarble=await messenger(marble,'ojjuda-tour','ojjuda-marble-request');
   const createMarble={action:'create',request_id:randomUUID(),options:{capacity:3,title:'게임에서 만든 마블',maxRound:25}};
   assert.equal((await sendMarble(createMarble)).error,'unavailable');assert.equal((await directory(B)).rooms.some(r=>r.kind==='tour'),false);
   const mr=await sendMarble(createMarble);assert.equal(mr.ok,true);assert.ok((await directory(B)).rooms.some(r=>r.match_id===mr.room.id));
   assert.equal(Number((await db.query('select count(*) as n from ojjuda_marble_internal.rooms')).rows[0].n),1);
   assert.equal((await native('marble',B,{action:'join',code:mr.room.code})).ok,true);
   assert.equal((await sendMarble({action:'start',room_id:mr.room.id,version:1,request_id:randomUUID()})).ok,true);
-  marble.OjjudaTourGame.close();
+  assert.equal(await marble.OjjudaTourGame.close(),true);
   // Tank's host picker, server invitation and acceptance all refer to the same real public room.
   const tank=host('world-tank-game.js',A);let picker;
   tank.OjjudaFriendInvites={available:()=>true,pick:async options=>{picker=options;return true;}};
-  tank.OjjudaTankGame.open({owner:A,client:client(A)});const sendTank=messenger(tank,'ojjuda-tank','request');
+  tank.OjjudaTankGame.open({owner:A,client:client(A)});const sendTank=await messenger(tank,'ojjuda-tank','request');
   const created=await sendTank({action:'create',request_id:randomUUID(),options:{capacity:3,title:'게임에서 만든 탱크'}});assert.equal(created.ok,true);
   assert.ok((await directory(B)).rooms.some(r=>r.match_id===created.room.id));
   assert.equal((await sendTank({action:'invite',room_id:created.room.id})).ok,true);assert.equal(picker.kind,'tank');
@@ -81,7 +85,7 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
   const beforeStart=await send(A,C),latest=await native('tank',A,{action:'read',room_id:created.room.id});
   assert.equal((await sendTank({action:'start',room_id:created.room.id,version:latest.room.version,request_id:randomUUID()})).ok,true);
   assert.match((await invite(C,{p_action:'accept',p_id:beforeStart.data.id})).error.message,/room_unavailable/);
-  tank.OjjudaTankGame.close();assert.equal(picker.signal.aborted,true);
+  const tankClosing=tank.OjjudaTankGame.close();assert.equal(picker.signal.aborted,true);assert.equal(await tankClosing,true);
   const solo=await native('tank',C,{action:'create',request_id:randomUUID(),options:{mode:'solo',capacity:2,title:'혼자'}});
   assert.match((await send(C,B,solo.room.code)).error.message,/room_unavailable/);assert.ok(!(await directory(B)).rooms.some(r=>r.match_id===solo.room.id));
   // Two real territory game documents communicate over a deterministic realtime channel fixture.

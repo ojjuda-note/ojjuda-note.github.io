@@ -772,9 +772,9 @@ const missionOk = ms => (ms.id === 'find' ? ms.found.size >= ms.need : ms.id ===
 const STAGE_KEY = 'ojjuda-screw-stage';
 const PURCHASE_KEY = 'ojjuda-screw-purchases-v1';
 function loadStage() { try { const v = parseInt(localStorage.getItem(STAGE_KEY), 10); return v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
-function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
-function screw3d(api) {
-  const st = { L: loadStage(), score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
+function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(Math.max(loadStage(),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
+function screw3d(api,startStage=1) {
+  const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?startStage:1, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false;
   let restoreBlocked = false, retryAt = 0;

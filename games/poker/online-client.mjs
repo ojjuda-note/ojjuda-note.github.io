@@ -2,7 +2,7 @@ const messages={gold_empty:'포커 골드를 먼저 충전해 주세요.',gold_n
 export function rotateView(room){
  if(!room.game)return null;
  const g=structuredClone(room.game),n=g.players.length,seat=room.seat,at=i=>i<0?i:(i-seat+n)%n;
- g.players=Array.from({length:n},(_,i)=>g.players[(seat+i)%n]);
+ g.players=Array.from({length:n},(_,i)=>({...g.players[(seat+i)%n],computer:room.computerSeats?.includes((seat+i)%n)||false}));
  g.turn=at(g.turn);g.dealer=at(g.dealer);
  if(g.result){g.result.payouts=Array.from({length:n},(_,i)=>g.result.payouts[(seat+i)%n]);g.result.net=Array.from({length:n},(_,i)=>g.result.net[(seat+i)%n]);g.result.pots.forEach(p=>p.winners=p.winners.map(at));}
  const legal=g.legal;g.legal=()=>legal;return g;
@@ -11,7 +11,7 @@ export function rotateView(room){
 export function pollDelay(room,{hidden=false,now=Date.now(),failures=0}={}){
  if(hidden)return 5000;
  if(failures)return Math.min(10000,1200*2**Math.min(failures,3));
- const g=room?.game,automatic=room?.status==='active'&&g&&(['between','runout'].includes(g.phase)||room.mode==='solo'&&g.turn>0);
+ const g=room?.game,automatic=room?.status==='active'&&g&&(['between','runout'].includes(g.phase)||room.mode==='solo'&&g.turn>0||room.computerSeats?.includes(g.turn));
  if(automatic){
   const remaining=Date.parse(room.deadline)-(room.serverTime+now-room.receivedAt);
   if(Number.isFinite(remaining))return Math.max(80,Math.min(1200,remaining+50));
@@ -19,7 +19,7 @@ export function pollDelay(room,{hidden=false,now=Date.now(),failures=0}={}){
  return 1200;
 }
 export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()=>{},onWallet=()=>{},isPaused=()=>false}={}){
- let room=null,closed=false,pollTimer=null,busy=false,reading=false,readTask=null,retry=null,walletKey='',failures=0;
+ let room=null,closed=false,pollTimer=null,busy=false,reading=false,readTask=null,retry=null,walletKey='',walletLocked=false,failures=0;
  const pending=new Map();
  function rpc(body){
   if(closed)return Promise.reject(Error('closed'));
@@ -39,13 +39,13 @@ export function createOnlineClient({onRoom=()=>{},onError=()=>{},onConnection=()
   const changed=force||!room||!next||room.id!==next.id||room.version!==next.version;
   if(next)next.receivedAt=Date.now();room=next;if(changed)onRoom(room);onConnection('');
  }
- function acceptData(data){let changed=false;if(data.wallet){const key=JSON.stringify(data.wallet);changed=!!walletKey&&key!==walletKey;walletKey=key;onWallet(data.wallet);}if(Object.hasOwn(data,'room'))accept(data.room,changed);}
- function schedule(){clearTimeout(pollTimer);if(!closed&&room&&!isPaused())pollTimer=setTimeout(read,pollDelay(room,{hidden:document.hidden,failures}));}
+ function acceptData(data){let changed=false;if(data.wallet){const key=JSON.stringify(data.wallet);changed=!!walletKey&&key!==walletKey;walletKey=key;walletLocked=data.wallet.locked===true;onWallet(data.wallet);}if(Object.hasOwn(data,'room'))accept(data.room,changed);}
+ function schedule(){clearTimeout(pollTimer);if(!closed&&(room||walletLocked)&&!isPaused())pollTimer=setTimeout(read,room?pollDelay(room,{hidden:document.hidden,failures}):document.hidden?8000:4000);}
  async function read(){
-  if(closed||reading||busy||!room||isPaused()){schedule();return;}
+  if(closed||reading||busy||!room&&!walletLocked||isPaused()){schedule();return;}
   reading=true;
   readTask=(async()=>{
-   try{const data=await rpc({action:'read',room_id:room.id});if(closed)return;failures=0;acceptData(data);}
+   try{const data=await rpc(room?{action:'read',room_id:room.id}:{action:'mine'});if(closed)return;failures=0;acceptData(data);}
    catch(error){if(closed)return;failures++;onConnection(error.message);if(['room_not_found','room_unavailable','adult_required','not_signed_in'].includes(error.code)){accept(null);onError(error.message);}}
    finally{reading=false;schedule();}
   })();

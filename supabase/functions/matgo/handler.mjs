@@ -8,7 +8,7 @@ import { verifyRound as verifyV4Round } from './verify-v4.mjs';
 import { verifyRound as verifyLegacyRound } from './verify-v1.mjs';
 import { verifyRound as verifyV2Round } from './verify-v2.mjs';
 import { verifyRound as verifyV3Round } from './verify-v3.mjs';
-import {advanceOnline,automaticOnline,createRequestReplay,onlineView} from './online.mjs';
+import {advanceOnline,automaticOnline,finishAutomaticOnline,createRequestReplay,onlineView} from './online.mjs';
 const origins = new Set(['https://ojjuda.kr', 'https://www.ojjuda.kr', 'https://ojjuda-note.github.io']);
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const publicErrors = new Set(['adult_required', 'member_identity_required', 'not_signed_in', 'banned', 'no_account', 'gold_not_empty', 'gold_empty', 'insufficient_zzu', 'paid_confirmation_required', 'round_mismatch','client_update_required','round_in_progress','invalid_stake','stake_offer_pending','stake_offer_changed','match_in_progress','room_not_found','room_unavailable','state_conflict','not_your_turn','invalid_move','invalid_choice','invalid_card','invalid_bomb','invalid_decision','invalid_play','invalid_shake','invalid_gukjin','invalid_chongtong']);
@@ -37,7 +37,8 @@ export function createHandler({ env, fetchImpl = fetch }) {
       const bytes = new Uint8Array(size); let offset = 0;
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
       body = JSON.parse(new TextDecoder().decode(bytes));
-      if (!['status', 'start', 'refill', 'settle', 'stake', 'tazza_start', 'vent'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
+      if (!['status', 'start', 'refill', 'settle', 'abandon', 'stake', 'tazza_start', 'vent'].includes(body.action)&&!onlineActions.has(body.action)) throw Error();
+      if (body.action==='abandon'&&!uuid.test(body.round_id))throw Error();
       if (['tazza_start','vent'].includes(body.action) && !uuid.test(body.request_id)) throw Error();
       if (body.action==='tazza_start' && (![9,10,11,12,13].includes(body.rules_version) || body.stakes_version!==1)) throw Error();
       if (body.action==='vent' && (!uuid.test(body.reference_id) || !['gun','hammer','glove','bomb','lightning','table','burst','slash','tomato','bat'].includes(body.effect))) throw Error();
@@ -59,9 +60,8 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (!auth.ok) return reply({ error: 'not_signed_in' }, 401);
       const user = await auth.json();
       if (!uuid.test(user.id) || user.is_anonymous) return reply({ error: 'not_signed_in' }, 401);
-      if(onlineActions.has(body.action)){
-        const replay=createRequestReplay();
-        const onlineRpc=async(action,values={})=>{
+      const replay=createRequestReplay();
+      const onlineRpc=async(action,values={})=>{
           const response=await get('/rest/v1/rpc/'+(action==='fallback'?'matgo_online_fallback':'matgo_online_service'),{method:'POST',
             headers:{apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'},
             body:JSON.stringify(action==='fallback'?{p_actor:user.id,p_room:values.p_room}:{p_actor:user.id,p_action:action,...values})});
@@ -69,18 +69,20 @@ export function createHandler({ env, fetchImpl = fetch }) {
           if(!response.ok)throw Error(publicErrors.has(data.message)?data.message:'unavailable');
           return data;
         };
-        const catchUp=async state=>{
+      const catchUp=async state=>{
           for(let i=0;i<6&&state.room.status==='active';i++){
-            if((state.room.round_rate??100)>100&&body.stakes_version!==1&&body.action!=='online_leave')throw Error('client_update_required');
+            const autonomous=state.room.bots?.every(Boolean);
+            if(!autonomous&&(state.room.round_rate??100)>100&&body.stakes_version!==1&&!['online_leave','status'].includes(body.action))throw Error('client_update_required');
             const current=await replay(state.room),p=current.prompt?.p;
             if(p===undefined||(!state.room.bots[p]&&Date.parse(state.room.deadline)>Date.now()))break;
-            const next=await automaticOnline(state.room);
+            const next=await (autonomous?finishAutomaticOnline(state.room):automaticOnline(state.room));
             next.auto={p,reason:state.room.bots[p]?'left':'timeout'};
             try{state=await onlineRpc('commit',{p_room:state.room.id,p_expected:state.room.version,p_request:crypto.randomUUID(),p_next:next});}
             catch(error){if(error.message!=='state_conflict'&&error.message!=='room_unavailable')throw error;state=await onlineRpc('read',{p_room:state.room.id});}
           }
           return state;
         };
+      if(onlineActions.has(body.action)){
         let state;
         if(body.action==='online_move'){
           state=await catchUp(await onlineRpc('read',{p_room:body.room_id}));
@@ -99,13 +101,14 @@ export function createHandler({ env, fetchImpl = fetch }) {
         return reply({ok:true,room:await onlineView(state.room,state.seat,body.cursor??0,replay)});
       }
       const rpc = async (action, values = {}) => {
-        const response = await get('/rest/v1/rpc/'+(action==='ranked_settle'?'matgo_ranked_settle':action==='stake'?'matgo_stake_service':['tazza','vent'].includes(action)?'matgo_fun_service':'matgo_wallet_service'), { method: 'POST',
+        const response = await get('/rest/v1/rpc/'+(action==='abandon'?'matgo_abandon_round':action==='ranked_settle'?'matgo_ranked_settle':action==='stake'?'matgo_stake_service':['tazza','vent'].includes(action)?'matgo_fun_service':'matgo_wallet_service'), { method: 'POST',
           headers: { apikey: service, Authorization: `Bearer ${service}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ p_actor: user.id, ...(['stake','ranked_settle'].includes(action)?{}:{p_action:action}), ...values }) });
+          body: JSON.stringify({ p_actor: user.id, ...(['abandon','stake','ranked_settle'].includes(action)?{}:{p_action:action}), ...values }) });
         const data = await response.json();
         if (!response.ok) throw Error(publicErrors.has(data.message) ? data.message : 'unavailable');
         return data;
       };
+      if (body.action === 'abandon')return reply(await rpc('abandon',{p_round:body.round_id}));
       if (body.action === 'settle') {
         const snapshot = await rpc('round', { p_round: body.round_id });
         if (snapshot.settled) return reply(snapshot);
@@ -133,7 +136,15 @@ export function createHandler({ env, fetchImpl = fetch }) {
       if (body.action === 'tazza_start') return reply(await rpc('tazza',{p_request:body.request_id}));
       if (body.action === 'vent') return reply(await rpc('vent',{p_request:body.request_id,p_reference:body.reference_id,p_effect:body.effect}));
       if(body.action==='stake')return reply(await rpc('stake',{p_rate:body.rate,p_accept:body.accept}));
-      const state=await rpc(body.action==='start'&&body.stakes_version===1?'start_stakes':body.action);
+      let state=await rpc(body.action==='start'&&body.stakes_version===1?'start_stakes':body.action);
+      // A later wallet/re-entry request also drains a game abandoned without a
+      // final leave message. Never clear the wallet lock before real settlement.
+      if(body.action==='status'&&state.online_room){
+        const online=await onlineRpc('read',{p_room:state.online_room});
+        if(online.room.status==='active'&&online.room.bots?.every(Boolean)){
+          await catchUp(online);state=await rpc('status');
+        }
+      }
       if(body.action==='start'&&state.round?.tazza_mode&&![9,10,11,12,13].includes(body.rules_version))return reply({error:'client_update_required'},409);
       return reply(state);
     } catch (error) {

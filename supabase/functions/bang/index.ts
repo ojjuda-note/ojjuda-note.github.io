@@ -12,7 +12,7 @@ async function rpc(body:Record<string,unknown>){
 function publicRoom(raw:any,seat:number,record:any=null){
  if(!raw)return null;
  return {id:raw.id,code:raw.code,title:raw.title,names:raw.names,capacity:raw.capacity,status:raw.status,version:raw.version,
-  mode:raw.mode||'multiplayer',record,seat,hostSeat:raw.members.indexOf(raw.host_id),deadline:raw.mode==='solo'?null:raw.deadline,state:visibleState(raw.state,seat)};
+  mode:raw.mode||'multiplayer',record,seat,hostSeat:raw.members.indexOf(raw.host_id),deadline:raw.mode==='solo'?null:raw.deadline,computerSeats:raw.computer_seats||[],rankExcluded:raw.rank_excluded||[],state:visibleState(raw.state,seat)};
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
@@ -63,7 +63,8 @@ Deno.serve(async(req:Request)=>{
   }
   if(current.room?.status==='active'&&(current.room.mode==='solo'?soloNeedsMove(current.room.state):Date.parse(current.room.deadline)<=Date.now())){
    const r=current.room;
-   try{current=await rpc({...base,p_room:r.id,p_action:'commit',p_request:crypto.randomUUID(),p_expected:r.version,p_next:{state:r.mode==='solo'?advanceSolo(r.state,random):automaticOnline(r.state,random)}});}
+   const computer=(r.computer_seats||[]).includes(r.state.pending?.player??r.state.current);
+   try{current=await rpc({...base,p_room:r.id,p_action:'commit',p_request:crypto.randomUUID(),p_expected:r.version,p_next:{state:r.mode==='solo'?advanceSolo(r.state,random):automaticOnline(r.state,random,computer),...(r.mode==='solo'?{}:{automaticSeat:r.state.pending?.player??r.state.current})}});}
    catch(error){if(error.message!=='state_conflict')throw error;current=await rpc({...base,p_room:r.id,p_action:'read'});}
   }
   return response({ok:true,room:publicRoom(current.room,current.seat,current.record)});

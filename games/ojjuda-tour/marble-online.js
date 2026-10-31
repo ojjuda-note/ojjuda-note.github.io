@@ -24,7 +24,6 @@
   const canAct = () => active() && room.status === 'active' && room.seat === room.game.turn && !spectating() && !busy && !pending && !animating && connected;
   const issue = text => { $('#marbleIssue').textContent = text; $('#marbleConnection').textContent = text; };
   function remember(value) { try { if (value) localStorage.setItem(storageKey(), value); else localStorage.removeItem(storageKey()); } catch {} }
-  function remembered() { try { return localStorage.getItem(storageKey()); } catch { return null; } }
   function rpc(body) {
     if (!available()) return Promise.reject(Object.assign(Error(messages.not_signed_in), {code:'not_signed_in'}));
     const requestId = crypto.randomUUID();
@@ -76,7 +75,7 @@
   function tick() {
     if (!active()) return;
     const seconds = Math.max(0, Math.ceil((Date.parse(room.deadline) - Date.now() - offset) / 1000));
-    $('#marbleClock').textContent = room.status === 'active' ? (spectating() ? '관전 중 · ' : room.seat === room.game.turn ? '내 차례 · ' : '상대 차례 · ') + seconds+'초' : '게임 종료';
+    $('#marbleClock').textContent = room.status === 'active' ? (room.computerSeats?.includes(room.game.turn) ? '컴퓨터가 이어서 진행 · ' : spectating() ? '관전 중 · ' : room.seat === room.game.turn ? '내 차례 · ' : '상대 차례 · ') + seconds+'초' : '게임 종료';
   }
   function controls() {
     if (!active()) return;
@@ -92,7 +91,7 @@
     const el = $('#marbleControls'); el.classList.toggle('waiting', !own);
     if (room.status === 'finished') { el.innerHTML = '<p>게임이 끝났어요. 결과를 확인해 주세요.</p>'; return; }
     if (!own) {
-      const text = spectating() ? '탈락 · 남은 참가자의 경기를 지켜보세요.' : busy || pending ? '선택을 전달하고 있어요…' : animating ? '게임이 진행되고 있어요…' : !connected ? messages.unavailable : `${room.game.players[room.game.turn].name}님이 선택하고 있어요.`;
+      const text = spectating() ? '탈락 · 남은 참가자의 경기를 지켜보세요.' : busy || pending ? '선택을 전달하고 있어요…' : animating ? '게임이 진행되고 있어요…' : !connected ? messages.unavailable : room.computerSeats?.includes(room.game.turn) ? `${room.game.players[room.game.turn].name}님의 자리를 컴퓨터가 이어서 진행해요.` : `${room.game.players[room.game.turn].name}님이 선택하고 있어요.`;
       el.innerHTML = `<p>${escape(text)}</p>`; say(text); return;
     }
     say(pr.title);
@@ -113,7 +112,7 @@
     const winner = room.game.players[room.game.winner];
     $('#sheet').classList.add('hidden'); $('#s2Title').textContent = winner ? winner.name+' 우승!' : '게임 종료';
     $('#s2Bust').innerHTML = winner ? ga(winner,{bust:true,expr:'happy'}) : '';
-    $('#s2Body').innerHTML = `<p>${escape(room.game.reason)} · 최종 자산 순위</p>${rankingHTML()}<p role="status">참가자 모두의 기록을 게임 순위에 저장했어요.</p>`;
+    $('#s2Body').innerHTML = `<p>${escape(room.game.reason)} · 최종 자산 순위</p>${rankingHTML()}<p role="status">${room.rankExcluded?.length?'컴퓨터 대행 없이 끝까지 참여한 회원의 기록을 게임 순위에 저장했어요.':'참가자 모두의 기록을 게임 순위에 저장했어요.'}</p>`;
     $('#s2Btns').innerHTML = '<button class="btn" type="button" data-marble-lobby>온라인 로비로</button>';
     $('#sheet2').classList.remove('hidden'); sfx('win');
   }
@@ -187,8 +186,8 @@
     selected = true; epoch++; busy = false; connected = true; room = null; activeId = null;
     renderLobby(); if (!available()) return;
     if (/^[A-F0-9]{8}$/.test(joinCode)) { await mutate({action:'join',code:joinCode}); return; }
-    const at = epoch, stored = remembered(); busy = true; renderLobby();
-    try { const data = await rpc(stored ? {action:'read',room_id:stored} : {action:'mine'}); await accept(data.room,at); }
+    const at = epoch; busy = true; renderLobby();
+    try { const data = await rpc({action:'mine'}); await accept(data.room,at); }
     catch(e) { if (at === epoch) { if (e.code === 'room_not_found' || e.code === 'room_unavailable') remember(null); else issue(e.message); } }
     finally { if (at === epoch) { busy = false; if (active()) controls(); else renderLobby(); schedule(); } }
   }

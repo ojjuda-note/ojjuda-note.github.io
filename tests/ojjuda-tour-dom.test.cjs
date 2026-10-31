@@ -6,9 +6,10 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const source = read('games/ojjuda-tour/index.html');
 
-function game(embedded = false) {
+function game(embedded = false, storage = {}) {
   const dom = new JSDOM(source, {url:'https://fixture.test/games/ojjuda-tour/', runScripts:'outside-only'});
   const w = dom.window;
+  for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,value);
   const messages = [];
   if (embedded) Object.defineProperty(w, 'parent', {value:{postMessage:(...args) => messages.push(args)}});
   w.confirm = () => true;
@@ -51,6 +52,15 @@ try {
   assert.equal($('#resumeBtn').classList.contains('hidden'), false);
   w.confirm = () => false;
   const checkpoint = w.localStorage.getItem('ojjuda-tour-save-v1:guest');
+  const fresh=game(true,{'ojjuda-tour-save-v1:guest':checkpoint,'ojjuda-tour-save-v1:member-123':checkpoint,'ojjuda-tour-save-v1:other-member':checkpoint});
+  try{
+    assert.equal(fresh.w.localStorage.getItem('ojjuda-tour-save-v1:guest'),null);
+    fresh.w.dispatchEvent(new fresh.w.MessageEvent('message',{origin:'https://fixture.test',source:fresh.w.parent,data:{source:'ojjuda-world',type:'ojjuda-tour-init',owner:'member-123',nickname:'새 방문'}}));
+    assert.equal(fresh.w.localStorage.getItem('ojjuda-tour-save-v1:member-123'),null);
+    assert.equal(fresh.w.localStorage.getItem('ojjuda-tour-save-v1:other-member'),checkpoint,'another member’s state is not touched');
+    assert.equal(fresh.$('#resumeBtn').classList.contains('hidden'),true,'a new iframe never restores the previous local round');
+    fresh.w.eval('begin=()=>{}');fresh.$('#startBtn').click();assert.equal(fresh.w.eval('G.players[0].name'),'새 방문');
+  }finally{fresh.dom.window.close();}
   $('#startBtn').click();
   assert.equal(w.localStorage.getItem('ojjuda-tour-save-v1:guest'), checkpoint);
   $('#resumeBtn').click();
@@ -83,7 +93,7 @@ try {
   const w = host.window;
   w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
   w.HTMLDialogElement.prototype.close = function() { this.open = false; };
-  w.eval(read('world-tour-game.js'));
+  w.eval(read('game-session.js'));w.eval(read('world-tour-game.js'));
   const opener = w.document.getElementById('opener');
   opener.focus();
   w.OjjudaTourGame.open({nickname:'민준', owner:'member-123'});
@@ -151,15 +161,16 @@ function eliminationGame() {
   try {
     const w=resultHost.window,calls=[],receipts=[];let allowed=true,finish;
     w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
-    w.eval(read('world-tour-game.js'));
+    w.eval(read('game-session.js'));w.eval(read('world-tour-game.js'));
     w.OjjudaTourGame.open({authorized:()=>allowed,onScore:(score,id)=>{calls.push([score,id]);return new Promise(resolve=>{finish=resolve})}});
     const child=w.document.querySelector('iframe').contentWindow;child.postMessage=data=>receipts.push(data);
     const payload={source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:'10000000-0000-4000-8000-000000000001',players:2,myRank:2,ranking:[{human:false,assets:4000,bankrupt:false},{human:true,assets:0,bankrupt:true}]};
     const send=(data=payload,origin='https://fixture.test',source=child)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data}));
+    send({source:'ojjuda-tour',type:'ojjuda-game-ready'});await new Promise(resolve=>setTimeout(resolve,0));
     send(payload,'https://other.test');send(payload,'https://fixture.test',w);
     send({...payload,myRank:1});send({...payload,ranking:payload.ranking.map(p=>({...p,assets:-1}))});
     await Promise.resolve();assert.equal(calls.length,0);
-    send();send();await Promise.resolve();assert.deepEqual(calls,[[false,payload.runId]],'duplicate messages make one score request');
+    send();send();await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(calls,[[false,payload.runId]],'duplicate messages make one score request');
     finish({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
     send();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(calls.length,1,'successful retries reuse the receipt');
     assert.equal(receipts.at(-1).ok,true);

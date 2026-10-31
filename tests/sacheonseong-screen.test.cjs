@@ -16,11 +16,14 @@ const sizes=[[308,426],[348,498],[378,702],[832,268],[1156,598]];
    w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
    w.HTMLDialogElement.prototype.close=function(){this.open=false;};
    w.HTMLElement.prototype.scrollIntoView=function(){};
-   const grid=E.generate(stage).grid;
+   let grid=E.generate(stage).grid;
    const stored={rulesVersion:E.RULES_VERSION,stage,unlocked:15,grid,startedAt:null,finishedMs:null,sound:false,hints:0,shuffles:0,lastRecord:null};
    w.localStorage.setItem(KEY,JSON.stringify(stored));
    w.eval(read('games/sacheonseong/engine.js'));w.eval(read('games/sacheonseong/faces.js'));w.eval(read('games/sacheonseong/app.js'));
-   assert.deepEqual(JSON.parse(w.localStorage.getItem(KEY)).grid,grid,'opening a compact layout preserves the saved board');
+   assert.equal(JSON.parse(w.localStorage.getItem(KEY)).stage,1,'normal entry starts a fresh first stage');
+   assert.equal(JSON.parse(w.localStorage.getItem(KEY)).unlocked,15,'earned stages stay selectable');
+   if(stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
+   grid=JSON.parse(w.localStorage.getItem(KEY)).grid;
    assert.equal(d.querySelectorAll('.tile').length,4*stage*stage);
    for([width,height] of sizes){
     w.dispatchEvent(new w.Event('resize'));
@@ -46,5 +49,5 @@ const sizes=[[308,426],[348,498],[378,702],[832,268],[1156,598]];
    d.getElementById('all-stages').click();assert.equal(d.querySelectorAll('.stage-card').length,15);
   }finally{w.close();}
  }
- console.log('PASS: all 15 stages fit both axes at five viewport sizes, saved progress stays intact, full-board matching and menu controls work.');
+ console.log('PASS: all 15 stages fit both axes at five viewport sizes, unlocked stages stay selectable after fresh entry, full-board matching and menu controls work.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

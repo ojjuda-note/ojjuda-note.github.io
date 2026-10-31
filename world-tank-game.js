@@ -7,8 +7,19 @@
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');dialog.className='tour-game-dialog tank-game-dialog';dialog.setAttribute('aria-label','탱크게임');
    dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 / 같은 기기 / 온라인</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261031-performance1" allow="fullscreen; clipboard-write"></iframe>';
-   const frame=dialog.querySelector('iframe'),invitation=new AbortController();let requests=0,rankedRoom=null;
-   function close(){if(active?.dialog!==dialog)return;active=null;invitation.abort();window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
+   const frame=dialog.querySelector('iframe');let invitation=new AbortController(),requests=0,rankedRoom=null;
+   function dispose(){if(active?.dialog!==dialog)return;active=null;invitation.abort();window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
+   function close(){invitation.abort();const result=session.close();if(result?.then)result.then(closed=>{if(!closed&&active?.dialog===dialog)invitation=new AbortController();});return result;}
+   async function invoke(body){
+    const {data,error}=await client.functions.invoke('tank',{body});let result;
+    if(error){try{result=await error.context.json();}catch{result={error:'unavailable'};}}else result=data||{error:'unavailable'};
+    if(active?.dialog===dialog&&authorized()){
+     if(result?.ok&&['create','join','start','leave','surrender'].includes(body.action))window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
+     const amount=result?.room?.coins??result?.coins;if(Number.isInteger(amount)&&amount>=0)onCoins(amount);
+     if(result?.room?.status==='finished'&&result.room.mode!=='local'&&rankedRoom!==result.room.id){rankedRoom=result.room.id;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{game:'tank',owner}}));}
+    }
+    return result;
+   }
    async function invite(body){
     if(!window.OjjudaFriendInvites?.available())return {error:'invites_unavailable'};
     async function prepare(){
@@ -31,13 +42,7 @@
     try{
      if(owner&&client?.functions&&authorized()){
       if(m.body.action==='invite')result=await invite(m.body);
-      else{
-       const {data,error}=await client.functions.invoke('tank',{body:m.body});
-       if(error){try{result=await error.context.json();}catch{result={error:'unavailable'};}}else result=data||{error:'unavailable'};
-       if(result?.ok&&['create','join','start','leave','surrender'].includes(m.body.action))window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
-      }
-      const amount=result?.room?.coins??result?.coins;if(Number.isInteger(amount)&&amount>=0&&authorized())onCoins(amount);
-      if(authorized()&&result?.room?.status==='finished'&&result.room.mode!=='local'&&rankedRoom!==result.room.id){rankedRoom=result.room.id;window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{game:'tank',owner}}));}
+      else result=await invoke(m.body);
      }
     }catch{result={error:'unavailable'};}
     finally{requests--;}
@@ -45,14 +50,15 @@
    }
    function receive(e){
     if(e.origin!==location.origin||e.source!==frame.contentWindow||e.data?.source!=='ojjuda-tank'||!authorized())return;
-    if(e.data.type==='ready')frame.contentWindow.postMessage({source:'ojjuda-world',type:'tank-init',available:!!(owner&&client?.functions),joinCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode.toUpperCase():''},location.origin);
-    else if(e.data.type==='request')void online(e.data);
+    if(e.data.type==='ready')void session.enter(()=>frame.contentWindow.postMessage({source:'ojjuda-world',type:'tank-init',available:!!(owner&&client?.functions),joinCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode.toUpperCase():''},location.origin));
+    else if(e.data.type==='request')void session.run(()=>online(e.data));
     else if(e.data.type==='exit')close();
     else if(e.data.type==='finished')window.OjjudaGuestAccess?.finished();
    }
+   const session=window.OjjudaGameSession.create({kind:'tank',dialog,frame,authorized:()=>active?.dialog===dialog&&authorized(),available:()=>!!(owner&&client?.functions),invoke,dispose,keepCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode:''});
    const authTimer=setInterval(()=>{if(!authorized())close();},1000);
    active={dialog,close};window.addEventListener('message',receive);dialog.querySelector('button').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
    document.body.append(dialog);document.body.classList.add('gaming');dialog.showModal();dialog.querySelector('button').focus({preventScroll:true});
-  },close(){active?.close();}
+  },close(){return active?.close()??true;}
  };
 })();

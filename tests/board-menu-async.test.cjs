@@ -20,7 +20,7 @@ function fixture() {
     var Xe={chess:{name:'체스',emoji:'♟️',first:'w',second:'b',side:{w:'백',b:'흑'}},janggi:{name:'장기',emoji:'🀄',first:'c',second:'h',side:{c:'초',h:'한'}}};
     var Rp=[['normal','보통']];
     var z=selector=>document.querySelector(selector),Pr=(selector,root)=>[...root.querySelectorAll(selector)],w=value=>String(value);
-    function Sa(){} function Ui(){} function Uo(){} function dn(){} function jgChooser(){return '';}
+    function worldGameEntryGate(){return true;} function Sa(){} function Ui(){} function Uo(){} function dn(){} function jgChooser(){return '';}
     ${modalSource}
     ${menuSource}
   `);

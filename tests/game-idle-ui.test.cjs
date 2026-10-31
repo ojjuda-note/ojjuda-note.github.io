@@ -58,10 +58,11 @@ async function playing(target,label){
   await content.locator('#startSolo').click();await playing(frame,'tank play');
   assert.equal(await frame.evaluate(()=>TankOnline.canAim()),true);
   await tank.evaluate(async()=>{if(document.fullscreenElement)await document.exitFullscreen();});
-  await tank.locator('.tank-game-dialog .tour-game-header button').click();await tank.locator('#open').click();
-  await content.locator('#resumeMatch:not([disabled])').waitFor();frame=tank.frames().find(f=>f.url().includes('/games/tank/index.html'));
-  await instrument(frame,'tank');await idle(frame,'tank saved-game entry');
-  await content.locator('#resumeMatch').click();await playing(frame,'tank resumed play');
+  await tank.locator('.tank-game-dialog .tour-game-header button').click();await tank.locator('.tank-game-dialog').waitFor({state:'detached'});await tank.locator('#open').click();
+  await content.locator('#startSolo:not([disabled])').waitFor();frame=tank.frames().find(f=>f.url().includes('/games/tank/index.html'));
+  assert.equal(await content.locator('#resumeMatch').isVisible(),false,'leaving does not offer the previous match again');
+  await instrument(frame,'tank');await idle(frame,'tank fresh reentry');
+  await content.locator('#startSolo').click();await playing(frame,'tank new play');
   await content.locator('#surrender').click();await idle(frame,'tank returned entry');await tank.close();
 
   const ttang=await context.newPage();await ttang.goto(origin+'/games/ttang.html');
@@ -70,6 +71,6 @@ async function playing(target,label){
   await ttang.evaluate(()=>OjjudaTtang.menu());await idle(ttang,'ttang returned entry');
   await ttang.locator('#soloBtn').click();await playing(ttang,'ttang restarted play');
   assert.deepEqual(errors,[]);await context.close();
-  console.log('PASS: concealed Tank/Ttang entrances perform no drawing or simulation; play, resume and reentry keep running.');
+  console.log('PASS: concealed Tank/Ttang entrances perform no drawing or simulation; fresh reentry and new play keep running.');
  }finally{await browser.close();await service.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

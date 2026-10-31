@@ -1,6 +1,8 @@
 const assert=require('node:assert/strict');
 const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
 (async()=>{
+ // Keep the original migration contract covered for a rolling Edge rollout.
+ // The new settlement/ranking policy uses real latest SQL in matgo-takeover-settlement.test.cjs.
  const f=await fixture(),{db,call}=f;
  const gold=async id=>(await call(id,{action:'status'})).gold;
  const move=(id,r,command,request_id=crypto.randomUUID())=>call(id,{action:'online_move',room_id:r.id,version:r.version,request_id,command});
@@ -114,6 +116,6 @@ const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
   const disconnected=await call(A,{action:'online_create'});await call(B,{action:'online_join',code:disconnected.room.code});
   await db.query("update ojjuda_matgo_internal.rooms set seen_host=now()-interval '31 seconds' where id=$1",[disconnected.room.id]);
   const takeover=await call(B,{action:'online_read',room_id:disconnected.room.id});assert.deepEqual(takeover.room.bots,[true,false]);
-  console.log('PASS: human matching, codes, hidden hands, server choices, stale/duplicate moves, atomic gold, rematch, 20-second automatic turns, PC takeover and no winnings after leaving');
+  console.log('PASS: legacy-schema compatibility for human matching, codes, hidden hands, server choices, stale/duplicate moves, atomic gold, rematch, 20-second automatic turns and PC takeover');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

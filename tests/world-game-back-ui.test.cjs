@@ -11,7 +11,7 @@ const origin = 'https://back.test';
 let world = read('world.html')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
-const scripts = ['world-navigation.js', 'world-mines-game.js', 'world-saetbyeol-game.js',
+const scripts = ['game-session.js', 'world-navigation.js', 'world-mines-game.js', 'world-saetbyeol-game.js',
   'world-tour-game.js', 'world-tank-game.js', 'world-spot-game.js', 'ttang-bridge.js',
   'photo-ttang-bridge.js', 'matgo-bridge.js'].map(read).join('\n');
 world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);

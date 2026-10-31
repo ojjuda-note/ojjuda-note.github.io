@@ -5,7 +5,10 @@ const root=path.resolve(__dirname,'..');
 const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Promise(r=>setTimeout(r,10));}throw Error('UI condition timed out');};
 (async()=>{
  const f=await fixture(),windows=[];
- async function client(actor,expectSaved=false,viewport={width:1536,height:626},joinCode='',savedSpeed=null){
+ async function client(actor,attachExisting=false,viewport={width:1536,height:626},joinCode='',savedSpeed=null){
+  // Physics/reconnect cases explicitly attach a live target; normal new visits
+  // run the real bridge's leave-before-init flow in tank-entry-ui.test.cjs.
+  if(attachExisting&&!joinCode){const existing=await f.call(actor,{action:'mine'});assert.ok(existing.room);joinCode=existing.room.code;}
   const html=fs.readFileSync(path.join(root,'games/tank/index.html'),'utf8');
   const dom=new JSDOM(html,{url:'https://ojjuda.kr/games/tank/index.html',runScripts:'outside-only',pretendToBeVisual:true});windows.push(dom.window);
   const w=dom.window,context=dom.getInternalVMContext(),draw=()=>{};
@@ -28,7 +31,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const engine=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/engine.mjs'),'utf8'),{context});
   const online=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/online.mjs'),'utf8'),{context});
   await engine.link(()=>{throw Error('unexpected import');});await online.link(()=>engine);await online.evaluate();
-  await wait(()=>expectSaved?(!w.document.getElementById('resumeHome').hidden&&!w.document.getElementById('resumeMatch').disabled):!w.document.getElementById('startSolo').disabled);
+  await wait(()=>attachExisting?w.document.body.classList.contains('in-match'):!w.document.getElementById('startSolo').disabled);
   return w;
  }
  try{
@@ -231,14 +234,11 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.equal(b.TankView.input().power,42,'portrait players can set power');
   assert.equal(a.eval('tanks[0].hp'),b.eval('tanks[0].hp'));
   assert.equal(a.eval('tanks[1].hp'),b.eval('tanks[1].hp'));
-  // Reopening a third session for the same member restores the saved match without another debit.
+  // An explicit live target synchronizes the same visit without another debit.
   const reconnected=await client(ids[0],true);
-  assert.equal(reconnected.document.body.classList.contains('in-match'),false);
-  assert.equal(get(reconnected,'newMatch').hidden,true,'an active online room cannot be silently abandoned');
-  get(reconnected,'resumeMatch').click();
-  await wait(()=>reconnected.document.body.classList.contains('in-match'));
-  await wait(()=>reconnected.orientationUnlocks===1);
-  assert.equal(reconnected.orientationLocks.length,0,'resuming also allows either orientation');
+  assert.equal(reconnected.document.body.classList.contains('in-match'),true);
+  assert.equal(get(reconnected,'resumeHome').hidden,true,'an intentional target opens directly');
+  assert.equal(reconnected.orientationLocks.length,0,'an explicit target allows either orientation');
   assert.equal(get(reconnected,'netCoins').textContent,'보유 97쭈');
   let deathSounds=0;a.sfx=type=>{if(type==='boom')deathSounds++;};
   get(a,'surrender').click();
@@ -334,9 +334,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   let localRoom=(await f.call(ids[3],{action:'mine'})).room;
   assert.equal(localRoom.event.command.weapon,8);
   const restored=await client(ids[3],true);
-  assert.equal(restored.TankOnline.canAim(),false,'saved matches wait for the resume button');
-  assert.match(get(restored,'resumeInfo').textContent,/같은 기기 · 3명/);
-  get(restored,'resumeMatch').click();restored.TankOnline.tick();
+  assert.equal(get(restored,'resumeHome').hidden,true);restored.TankOnline.tick();
   assert.equal(get(restored,'netCoins').textContent,'보유 91쭈');
   assert.equal(restored.TankOnline.canAim(),true);assert.equal(restored.TankOnline.seat(),localRoom.game.turn);
   assert.deepEqual(Array.from(restored.eval('tanks.map(t=>t.basicWeapon)')),[1,2,0],'same-device players keep independent basic selections after reconnecting');
@@ -407,7 +405,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   const quakeGame=quakeRoom.game;quakeGame.wind=0;quakeGame.terrain.fill(150);quakeGame.terrain.fill(350,370,620);
   quakeGame.tanks.forEach((t,i)=>Object.assign(t,{x:[730,710,1400][i],y:300,vy:0}));
   await f.db.query('update ojjuda_tank_internal.rooms set state=$2::jsonb where id=$1',[quakeRoom.id,JSON.stringify(quakeGame)]);
-  const earthquake=await client(ids[8],true,undefined,'','8');get(earthquake,'resumeMatch').click();earthquake.TankOnline.tick();
+  const earthquake=await client(ids[8],true,undefined,'','8');earthquake.TankOnline.tick();
   let quakeSounds=0;earthquake.sfx=type=>{if(type==='quake')quakeSounds++;};
   earthquake.eval('setAngle(0);setPower(20);fireSelected();');
   await wait(()=>get(earthquake,'netTurn').textContent==='일반탄 비행 중');
@@ -434,31 +432,32 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   assert.ok(shownQuake.tanks.every(t=>t.hp<100),'the distant high ground also collapses and damages its tank');
   assert.ok(Math.abs(Math.max(...shownQuake.terrain)-Math.min(...shownQuake.terrain)-104)<=1,'eightfold playback retains half the battlefield relief');
   assert.ok(shownQuake.tanks.every(t=>t.y===shownQuake.terrain[Math.floor(t.x/2)]*2&&t.vy===0),'all tanks land before playback hands over the turn');
-  // Opening the entrance must not run a saved computer turn or spend coins.
+  // Hiding the current visit must pause its computer turn without spending coins.
   let savedSolo=(await f.call(ids[5],{action:'create',request_id:require('node:crypto').randomUUID(),options:{mode:'solo',capacity:2,title:'저장된 판'}})).room;
   savedSolo=(await f.start(ids[5],savedSolo)).room;
   savedSolo=(await f.move(ids[5],savedSolo,{weapon:0,angle:0,power:50,moves:[]})).room;
   assert.equal(savedSolo.game.turn,1);
   const paused=await client(ids[5],true,{width:390,height:844},'',solo.localStorage.getItem('ojjuda.tank.solo.speed'));
-  assert.equal(paused.document.body.classList.contains('in-match'),false);
-  assert.equal(get(paused,'newMatch').hidden,false);
+  Object.defineProperty(paused.document,'hidden',{value:true,configurable:true});paused.document.dispatchEvent(new paused.Event('visibilitychange'));
+  assert.equal(paused.document.body.classList.contains('in-match'),true);
   await new Promise(r=>setTimeout(r,1100));
   const unchanged=(await f.call(ids[5],{action:'read',room_id:savedSolo.id})).room;
-  assert.equal(unchanged.version,savedSolo.version,'CPU waits on the entrance');
+  assert.equal(unchanged.version,savedSolo.version,'CPU waits while the current visit is hidden');
   assert.deepEqual(unchanged.game,savedSolo.game);assert.equal(unchanged.coins,100);
-  paused.confirm=()=>false;get(paused,'newMatch').click();
-  assert.equal((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id,'cancelling a new game preserves the save');
-  get(paused,'resumeMatch').click();
-  assert.equal(get(paused,'soloSpeed').textContent,'속도 ×8','reopening restores the saved speed');
+  paused.confirm=()=>false;get(paused,'surrender').click();
+  assert.equal((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id,'cancelling exit preserves the current visit');
+  delete paused.document.hidden;paused.document.dispatchEvent(new paused.Event('visibilitychange'));
+  assert.equal(get(paused,'soloSpeed').textContent,'속도 ×8','saved playback preferences survive an explicit attachment');
   assert.ok(paused.scheduledDelays.includes(112.5));
   assert.equal(paused.document.body.classList.contains('in-match'),true);
   await wait(async()=>(await f.call(ids[5],{action:'read',room_id:savedSolo.id})).room.version>savedSolo.version);
+  for(let i=0;i<8000;i++)paused.TankOnline.tick();
+  paused.confirm=()=>true;get(paused,'surrender').click();await wait(()=>!paused.document.body.classList.contains('in-match'));
   paused.close();
-  const replace=await client(ids[5],true,undefined,'','99');
-  get(replace,'newMatch').click();
+  const replace=await client(ids[5],false,undefined,'','99');
   await wait(()=>!get(replace,'entryHome').hidden);
   assert.equal((await f.call(ids[5],{action:'mine'})).room,null);
-  assert.equal(get(replace,'soloOpponents').value,'1');
+  assert.equal(get(replace,'resumeHome').hidden,true);
   get(replace,'startSolo').click();
   await wait(()=>replace.document.body.classList.contains('in-match'));
   assert.notEqual((await f.call(ids[5],{action:'mine'})).room.id,savedSolo.id);

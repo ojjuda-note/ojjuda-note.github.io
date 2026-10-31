@@ -22,7 +22,7 @@ async function fixture({mode='local',empty=false,hidden=false}={}){
  const transport={next:null,error:null};
  const response=()=>({ok:true,coins:100,room:room?JSON.parse(JSON.stringify({...room,serverTime:now,deadline:new Date(now+45000).toISOString()})):null});
  const parent={postMessage(message){
-  if(message.type==='ready')queueMicrotask(()=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',type:'tank-init',available:true}})));
+  if(message.type==='ready')queueMicrotask(()=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',type:'tank-init',available:true,...(room?{joinCode:room.code}:{})}})));
   if(message.type!=='request')return;
   calls.push(message.body.action);
   const waiting=transport.next;transport.next=null;
@@ -44,7 +44,6 @@ async function fixture({mode='local',empty=false,hidden=false}={}){
 for(const mode of ['solo','local','online'])test(mode+' stops hidden polling and redraws, then immediately reconciles the current turn',async()=>{
  const f=await fixture({mode});
  try{
-  await f.click('resumeMatch');
   const visibleCalls=f.calls.length;await f.advance(60000);
   assert.equal(f.calls.length-visibleCalls,30,'visible room synchronization retains its two-second interval');
   await f.visible(false);const calls=f.calls.length,renders=f.renders();
@@ -82,7 +81,7 @@ test('private entry keeps cross-device discovery while visible, and refreshes im
 test('an already in-flight read can settle while hidden without scheduling another request',async()=>{
  const f=await fixture();
  try{
-  await f.click('resumeMatch');const pending=deferred();f.transport.next=pending;
+  const pending=deferred();f.transport.next=pending;
   await f.advance(2000);await f.visible(false);const calls=f.calls.length;
   pending.resolve(f.response());await flush();await f.advance(60000);
   assert.equal(f.calls.length,calls);await f.visible(true);assert.equal(f.calls.length,calls+1);
@@ -95,7 +94,7 @@ test('a failed read does not retry in a hidden tab and recovers on return',async
   const pending=deferred();f.transport.next=pending;await f.advance(2000);await f.visible(false);
   const calls=f.calls.length;pending.resolve({error:'unavailable'});await flush();await f.advance(60000);
   assert.equal(f.calls.length,calls,'a late transport error cannot start a hidden retry');
-  await f.visible(true);assert.equal(f.calls.length,calls+1);assert.equal(f.el('resumeMatch').disabled,false);
+  await f.visible(true);assert.equal(f.calls.length,calls+1);assert.equal(f.w.TankOnline.canAim(),true);
  }finally{f.close();}
 });
 
@@ -114,7 +113,7 @@ test('authentication failure remains blocked through hide/show transitions',asyn
  try{
   f.transport.error='not_signed_in';await f.advance(2000);const calls=f.calls.length;
   await f.visible(false);await f.advance(60000);await f.visible(true);await f.advance(60000);
-  assert.equal(f.calls.length,calls);assert.equal(f.el('resumeMatch').disabled,true);
+  assert.equal(f.calls.length,calls);assert.equal(f.w.TankOnline.canAim(),false);
   assert.match(f.el('netMessage').textContent,/로그인/);
  }finally{f.close();}
 });

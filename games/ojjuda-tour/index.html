@@ -322,7 +322,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
     <span class="ge-kicker">오쭈다 게임 · 멀티</span>
     <h1 id="tourTitle" class="ge-title">마블</h1>
     <p class="ge-copy">주사위 하나로 떠나는 세계여행.<br>도시를 모으고 나만의 랜드마크를 세워요.</p>
-    <div class="tour-tags"><span>3D 보드게임</span><span>2~8명</span><span>자동 저장</span></div>
+    <div class="tour-tags"><span>3D 보드게임</span><span>2~8명</span><span>새 판 시작</span></div>
     <div class="seg tour-mode" id="tourMode" role="group" aria-label="플레이 방식">
       <button type="button" data-tour-mode="computer" class="on" aria-pressed="true">컴퓨터와</button>
       <button type="button" data-tour-mode="together" aria-pressed="false">같은 기기에서</button>
@@ -340,7 +340,7 @@ details p{margin:8px 0;font-size:15.5px;line-height:1.5;color:#3d2b5c}
       <button type="button" class="ge-primary" id="startBtn">게임 시작하기</button>
     </div>
     <p id="tourStatus" role="status" class="ge-hint" hidden></p>
-    <small id="tourSaveHint" class="ge-hint tour-save-hint">차례 시작 기준으로 이 기기에 자동 저장돼요.</small>
+    <small id="tourSaveHint" class="ge-hint tour-save-hint">나갔다 들어오면 새 게임을 시작해요. 완료한 순위 기록은 유지돼요.</small>
     <p class="ge-hint tour-save-hint">게임 순위는 첫 번째 사람 참가자의 최종 자산으로 기록돼요. 이번 달 최고 기록을 표시해요.</p>
     <details class="ge-more">
       <summary>참가자 설정 <span id="tourRosterCount" class="tour-roster-count">나 + 컴퓨터 3명</span></summary>
@@ -1694,10 +1694,10 @@ $('#s2Btns').addEventListener('click',e=>{
 
 $('#exitBtn').classList.remove('hidden');
 $('#exitBtn').onclick=()=>{if(window.parent!==window)ojjudaPost({type:'ojjuda-game-exit',game:'ojjuda-tour'});else location.assign('/world.html')};
+clearSave();
 renderSetup();
-if(loadSave())$('#resumeBtn').classList.remove('hidden');
 </script>
-<script src="tour-entry.js?v=20261022-ranks1"></script>
-<script src="marble-online.js?v=20261022-agit1"></script>
+<script src="tour-entry.js?v=20261031-fresh-games1"></script>
+<script src="marble-online.js?v=20261031-fresh-games1"></script>
 </body>
 </html>

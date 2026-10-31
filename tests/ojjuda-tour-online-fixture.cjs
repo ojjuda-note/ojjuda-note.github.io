@@ -17,6 +17,7 @@ async function fixture(){
   await db.query('insert into public.profiles values($1,$2)',[ids[i],i===0?'민준':i===1?'여행친구':'참가자'+(i+1)]);
  }
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261012024936_marble_online_rooms.sql'),'utf8'));
+ await require('./game-handoff-migration.cjs')(db,'marble');
  const {createHandler}=await import(path.join(root,'supabase/functions/marble/handler.mjs'));
  let roll=[],holdDeadlines=false;
  const fetchImpl=async(url,options)=>{

@@ -30,11 +30,11 @@ const {fixture,ids}=require('./ojjuda-tour-online-fixture.cjs');
   room=ok(await call(a,{action:'read',room_id:room.id}));
   await db.query("update ojjuda_marble_internal.rooms set deadline=now()-interval '1 second' where id=$1",[room.id]);
   const oldTurn=room.game.turn;room=ok(await call(a,{action:'read',room_id:room.id}));assert.ok(room.game.over||room.game.turn!==oldTurn,'timeout advances without the host or active player');
-  // Finishing from either device persists both scores in the same transaction.
+  // Finishing persists the eligible human score, excluding the AI-assisted turn.
   const quitter=ids[room.seat],surrender={action:'surrender',room_id:room.id,version:room.version,request_id:randomUUID()};
   room=ok(await call(quitter,surrender));assert.equal(room.status,'finished');assert.equal(room.ranked,true);assert.equal(room.game.players[room.seat].bankrupt,true);
-  const scores=(await db.query('select * from public.game_scores order by id')).rows;assert.equal(scores.length,2);assert.ok(scores.every(r=>r.reward===0&&!r.verified&&r.game==='tour'));assert.equal(scores.find(r=>r.user_id===quitter).score,0);
-  ok(await call(quitter,surrender));assert.equal((await db.query('select count(*)::integer as n from public.game_scores')).rows[0].n,2,'finish retry cannot duplicate rankings');
+  const scores=(await db.query('select * from public.game_scores order by id')).rows;assert.equal(scores.length,1);assert.ok(scores.every(r=>r.reward===0&&!r.verified&&r.game==='tour'));assert.equal(scores.some(r=>r.user_id===(oldTurn===0?a:guest)),false,'deadline assistance excludes only that player from this result');if(oldTurn!==room.seat)assert.equal(scores.find(r=>r.user_id===quitter).score,0);
+  ok(await call(quitter,surrender));assert.equal((await db.query('select count(*)::integer as n from public.game_scores')).rows[0].n,1,'finish retry cannot duplicate rankings');
   assert.ok(!JSON.stringify(room).includes(a));assert.ok(!JSON.stringify(room).includes('requests'),'private membership and idempotency data are omitted');
   // Waiting hosts can leave; a remaining participant becomes the host.
   let waiting=ok(await create(a,8));waiting=ok(await join(guest,waiting));ok(await call(a,{action:'leave',room_id:waiting.id}));waiting=ok(await call(guest,{action:'read',room_id:waiting.id}));assert.equal(waiting.hostSeat,0);assert.equal(waiting.seat,0);assert.equal(waiting.names.length,1);
@@ -46,6 +46,6 @@ const {fixture,ids}=require('./ojjuda-tour-online-fixture.cjs');
   }
   const cors=await f.handler(f.request(a,{action:'mine'},{origin:'https://evil.test'}));assert.equal(cors.status,403);
   const malformed=await f.handler(new Request('https://edge.test',{method:'POST',headers:{authorization:'Bearer fixture-'+a,origin:'https://ojjuda.kr'},body:'a'.repeat(4097)}));assert.equal(malformed.status,400);
-  console.log('PASS: online rooms, real membership/capacity races, host transfer, move authorization, CAS, retries, timeout, reconnect snapshots, all-player rankings and private SQL access');
+  console.log('PASS: online rooms, real membership/capacity races, host transfer, move authorization, CAS, retries, timeout, reconnect snapshots, eligible-human rankings and private SQL access');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
