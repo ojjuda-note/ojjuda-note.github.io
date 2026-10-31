@@ -116,6 +116,8 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(host.querySelectorAll('.board-best,.board-latest,.board-comics').length,0);
   assert.equal(host.querySelector('h2'),null,'no board heading remains');
   assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'9승');
+  host.querySelector('[aria-label="다음 분류 순위"]').click();
+  assert.equal(host.querySelector('.board-rank-groups').dataset.rankCategory,'multi');
   host.querySelector('[data-game=tank] button').click();await tick();assert.deepEqual(opened,['tank']);
   score=10;await w.OjjudaGameRankings.refresh();assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'10승');
   allowed=false;host.querySelector('[data-game=tank] button').click();await tick();assert.equal(opened.length,1,'stale access cannot launch games');
