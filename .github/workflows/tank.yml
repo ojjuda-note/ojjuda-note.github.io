@@ -1,9 +1,9 @@
 name: Tank solo and multiplayer
 on:
   push:
-    paths: ['games/tank/**', 'world-tank-game.*', 'world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', '.github/workflows/tank.yml']
+    paths: ['games/tank/**', 'world-tank-game.*', 'multiplayer-entry.*', 'world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', '.github/workflows/tank.yml']
   pull_request:
-    paths: ['games/tank/**', 'world-tank-game.*', 'world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', '.github/workflows/tank.yml']
+    paths: ['games/tank/**', 'world-tank-game.*', 'multiplayer-entry.*', 'world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', '.github/workflows/tank.yml']
 permissions:
   contents: read
 jobs:
@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: '22'
       - run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
       - run: node tests/tank-engine.test.mjs
       - run: node tests/tank-online-db.test.cjs
       - run: node tests/tank-solo.test.cjs
@@ -25,5 +28,6 @@ jobs:
       - run: node tests/tank-local.test.cjs
       - run: node --experimental-vm-modules tests/tank-client.test.cjs
       - run: node --experimental-vm-modules tests/tank-entry-recovery.test.cjs
+      - run: node tests/tank-entry-ui.test.cjs
       - run: node tests/arcade-catalog.test.cjs
       - run: node tests/arcade-entry-flows.test.cjs
