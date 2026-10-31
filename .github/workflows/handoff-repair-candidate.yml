@@ -1,0 +1,87 @@
+name: Build handoff repair candidate
+on:
+  push:
+    branches: [maintenance/handoff-repair-candidates-20261031]
+    paths: [.github/workflows/handoff-repair-candidate.yml]
+permissions:
+  contents: write
+jobs:
+  candidate:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: b61cf18db3c0af04723cef130e8cac74c956e925
+          persist-credentials: false
+      - name: Create review-only candidate objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import hashlib, json, os, pathlib, urllib.request
+          base = 'b61cf18db3c0af04723cef130e8cac74c956e925'
+          path = 'tests/matgo-ui.test.cjs'
+          original = pathlib.Path(path).read_bytes()
+          assert hashlib.sha1(b'blob '+str(len(original)).encode()+b'\0'+original).hexdigest() == '25d1f568bf59e46478c85b9000bf674c263d5ccc'
+          source = original.decode()
+          old = "    if(body.action==='status')return{data:snapshot()};"
+          new = old + "\n    if(body.action==='abandon'){\n      const abandoned=!!state.round&&state.round.id===body.round_id;\n      if(abandoned)state.round=null;\n      return{data:{...snapshot(),abandoned}};\n    }"
+          assert source.count(old) == 1
+          source = source.replace(old, new)
+          old = "state.round ||= {id:'00000000-0000-4000-9000-000000000001',"
+          assert source.count(old) == 1
+          source = source.replace(old, 'state.round ||= {id:crypto.randomUUID(),')
+          begin = '  // Reloading an old round must visibly remain old until its valid settlement.\n'
+          end = '  // An update response has a real refresh action, not an endless start retry.\n'
+          assert source.count(begin) == source.count(end) == 1
+          first, rest = source.split(begin)
+          discarded, last = rest.split(end)
+          assert "rules_version,11" in discarded and 'old.id' in discarded
+          replacement = '''  // A new visit retires an old unfinished round without gold or rank settlement.
+            {
+              const old={id:crypto.randomUUID(),rules_version:11,seed:5,gold:5000,first:0,carry:1,cpu_level:1};
+              const f=await fixture({round:old,seed:5});await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
+              await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+              assert.notEqual(f.state.round.id,old.id);assert.equal(f.state.round.rules_version,13);
+              assert.equal(await f.page.evaluate(()=>matgoTest.game.openingPpuk),true);
+              assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
+              assert.equal(f.state.gold,5000);assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
+              assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id]);
+              for(const [width,height] of [[320,568],[390,820]]){
+                await f.page.setViewportSize({width,height});
+                await f.page.waitForFunction(height=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--matgo-viewport-height'))===height,height);
+                assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+                const hand=await f.page.locator('#handMe').boundingBox();assert.ok(hand.y+hand.height<=height,JSON.stringify({width,height,hand}));
+              }
+              const firstRound=f.state.round.id;
+              await f.page.reload();await f.page.locator('#matgo-start-play').click();await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
+              assert.notEqual(f.state.round.id,firstRound);assert.equal(f.state.gold,5000);
+              assert.equal(f.state.requests.some(r=>r.action==='settle'),false);
+              assert.deepEqual(f.state.requests.filter(r=>r.action==='abandon').map(r=>r.round_id),[old.id,firstRound]);
+              assert.equal(await f.page.locator('#round-rules-note').isHidden(),true);
+              assert.equal(await f.page.locator('#cpuLevel').textContent(),'기본');
+              assert.equal(await f.page.locator('.stack.ppuk').getAttribute('data-ppuk-label'),'바닥뻑');
+              fs.mkdirSync('/tmp/matgo-round-refresh-proof',{recursive:true});await f.page.screenshot({path:'/tmp/matgo-round-refresh-proof/current.png'});
+              assert.deepEqual(f.errors,[]);await f.context.close();
+            }
+          '''
+          source = first + replacement + end + last
+          pathlib.Path(path).write_text(source)
+          import subprocess
+          subprocess.run(['node','--check',path],check=True)
+          subprocess.run(['git','diff','--check'],check=True)
+          subprocess.run(['git','diff','--stat'],check=True)
+          api='https://api.github.com/repos/ojjuda-note/ojjuda-note.github.io'
+          def call(endpoint,payload=None):
+            request=urllib.request.Request(api+endpoint,data=None if payload is None else json.dumps(payload).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},method='GET' if payload is None else 'POST')
+            with urllib.request.urlopen(request,timeout=30) as response:return json.load(response)
+          parent=call('/git/commits/'+base)
+          blob=call('/git/blobs',{'content':source,'encoding':'utf-8'})
+          tree=call('/git/trees',{'base_tree':parent['tree']['sha'],'tree':[{'path':path,'mode':'100644','type':'blob','sha':blob['sha']}]})
+          commit=call('/git/commits',{'message':'Align Matgo UI fixtures with explicit abandon and fresh-entry policy','tree':tree['sha'],'parents':[base]})
+          print('REVIEW_ONLY_CANDIDATE='+commit['sha'])
+          print('TREE='+tree['sha'])
+          print('BLOB='+blob['sha'])
+          # Deliberately do not update a ref, merge a PR or deploy anything here.
