@@ -1,4 +1,5 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 const fixture=`<meta charset="utf-8"><script src="/ttang-bridge.js"></script><script>
 window.scores=[];window.openGame=options=>OjjudaTtangBridge.open({owner:'member',authorized:()=>true,onResult:async(won,round)=>{scores.push({won,round});return {ok:true};},...options});
@@ -20,7 +21,7 @@ function state(){
   });
   const game=async page=>{const frame=await(await page.locator('iframe').elementHandle()).contentFrame();await frame.waitForFunction(()=>!!window.OjjudaTtang);return frame;};
   async function pair(code){
-   const host=await context.newPage(),guest=await context.newPage();for(const page of [host,guest])page.on('pageerror',error=>errors.push(error.message));
+   const host=await context.newPage(),guest=await context.newPage();for(const page of [host,guest])page.on('pageerror',error=>{errors.push(error.message);console.error('Territory browser error:',error.stack||error.message);});
    await host.goto('https://takeover.test/');await guest.goto('https://takeover.test/');
    await host.evaluate(code=>openGame({hostCode:code}),code);const h=await game(host);await h.waitForFunction(()=>Net.kind==='local');
    await guest.evaluate(code=>openGame({joinCode:code}),code);const g=await game(guest);
@@ -28,12 +29,12 @@ function state(){
    assert.equal(await h.evaluate(()=>roundId),await g.evaluate(()=>roundId));return {host,guest,h,g};
   }
   async function finish(page,frame,round){
-   await frame.evaluate(()=>{paused=false;world.time=endAt-.01;});await frame.waitForFunction(()=>over);
+   assert.deepEqual(errors,[],'the inherited world must still have a live animation loop');
+   await frame.evaluate(()=>{paused=false;world.time=endAt-.01;});
+   try{await frame.waitForFunction(()=>over);}catch(error){console.error('Territory completion state:',await frame.evaluate(()=>({mode,role,over,paused,time:world?.time,endAt,last,now:performance.now(),bot:p2?.bot})));throw error;}
    await page.waitForFunction(()=>scores.length===1);assert.equal((await page.evaluate(()=>scores))[0].round,round);
    await page.evaluate(()=>OjjudaTtangBridge.close());assert.equal((await page.evaluate(()=>scores)).length,1,'final outcome is recorded once');
   }
-
-  // The host keeps the original live world when a guest closes their iframe.
   {
    const {host,guest,h,g}=await pair('a'.repeat(24));
    await h.evaluate(()=>{paused=true;world.time=17;endAt=120;me.boostT=3.2;p2.shieldT=2.7;world.sameWorld='host';});
@@ -47,9 +48,6 @@ function state(){
    assert.equal(await h.evaluate(()=>Number.isFinite(p2.x)&&Number.isFinite(p2.y)&&Number.isFinite(p2.target)),true,'the inherited player has valid AI steering');
    await finish(host,h,before.round);await host.close();await guest.close();
   }
-
-  // The remaining guest becomes the host of the exact final snapshot, including
-  // collision trails and effect/respawn timers, rather than starting a new game.
   {
    const {host,guest,h,g}=await pair('b'.repeat(24));
    await g.evaluate(()=>{paused=true;world.sameWorld='guest';});
@@ -60,8 +58,6 @@ function state(){
     me.pts=[{x:22,y:22,t:22.25},{x:22.1,y:22,t:22.5}];me.tc.set(22*world.U+22,22.25);
     world.items=[{id:19,type:'shield',x:20,y:21,born:17.5}];world.itemSeq=19;world.nextItem=24.5;
    });
-   // A missed incremental packet requests a full snapshot before accepting any
-   // later diffs, so the continuation does not silently lose old collision cells.
    await h.evaluate(()=>{Net.sequence++;Net.send(snapshot());});
    await g.waitForFunction(()=>world.netTime===23.125&&Net.backup?.itemSeq===19);
    const before=await h.evaluate(state);await host.evaluate(()=>OjjudaTtangBridge.close());
@@ -71,9 +67,6 @@ function state(){
    assert.deepEqual(await host.evaluate(()=>scores),[]);
    await finish(guest,g,before.round);await host.close();await guest.close();
   }
-
-  // A silent peer timeout uses the same takeover and never completes the game
-  // early. A suspended former participant cannot later submit a stale result.
   {
    const {host,guest,h,g}=await pair('c'.repeat(24));
    await h.evaluate(()=>{paused=true;world.time=31;endAt=120;});const round=await h.evaluate(()=>roundId);

@@ -66,10 +66,10 @@ export function moveOnline(state,seat,move,random=Math.random){
  if(!ok)throw Error('invalid_action');
  return s;
 }
-export function automaticOnline(state,random=Math.random){
+export function automaticOnline(state,random=Math.random,computer=false){
  const game=onlineGame(structuredClone(state),random);
  const actor=game.s.pending?.player??game.s.current;
- game.log(`${game.label(actor)} · 제한 시간이 지나 자동으로 진행합니다.`,'system');
+ game.log(`${game.label(actor)} · ${computer?'컴퓨터가 이어서 진행합니다.':'제한 시간이 지나 자동으로 진행합니다.'}`,'system');
  if(!game.aiAction(true))throw Error('invalid_action');
  return game.s;
 }

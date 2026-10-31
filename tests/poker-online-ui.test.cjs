@@ -11,6 +11,7 @@ const {screen,until,pause}=require('./poker-ui-fixture.cjs');
   await until(()=>a.find('.online-seat.occupied'),'created');const code=a.last.room.code;
   b.find('#poker-join [name=code]').value=code;b.find('#poker-join').dispatchEvent(new b.w.Event('submit',{bubbles:true,cancelable:true}));
   await until(()=>b.find('.online-seat.occupied'),'joined');await a.poll();
+  const startingGold=[a.last.wallet.gold,b.last.wallet.gold];
   await until(()=>!a.find('[data-action=online-start]').disabled,'host start');
   assert.ok(a.find('.game-entry [data-action=online-start]'));
   assert.equal(b.find('[data-action=online-start]').disabled,true,'guests cannot start the hand');
@@ -41,10 +42,21 @@ const {screen,until,pause}=require('./poker-ui-fixture.cjs');
   await active.poll();assert.equal(active.sounds.filter(c=>c==='half').length,1,'opponent hears the same exact call');
   assert.equal(active.soundCalls.findLast(c=>c.kind==='half').seat,1,'the same action uses an opponent voice on the other client');
   await active.poll();assert.equal(active.sounds.filter(c=>c==='half').length,1,'polling never repeats the call');
-  const bankBefore=a.last.room.game.players[a.last.room.seat].stack;
-  a.click('[data-action=online-leave]');assert.match(a.find('#exit-dialog p').textContent,/다이/);a.click('#confirm-exit');await until(()=>a.last.room===null,'leave');
-  assert.equal(a.last.wallet.gold,bankBefore,'remaining multiplayer gold is returned to the account');
+  const roomId=a.last.room.id;
+  a.click('[data-action=online-leave]');assert.match(a.find('#exit-dialog p').textContent,/컴퓨터.*골드.*순위/);a.click('#confirm-exit');await until(()=>a.last.room===null,'leave');
+  assert.equal(a.last.wallet.locked,true,'a delegated hand keeps its gold escrow until final settlement');
+  await b.poll();assert.equal(b.last.room.id,roomId);assert.equal(b.last.room.status,'active');
+  assert.deepEqual(b.last.room.computerSeats,[0]);
+  assert.equal(b.last.room.game.players[0].folded,false,'leaving delegates the original hand instead of folding it');
+  b.click('[data-action=online-leave]');b.click('#confirm-exit');await until(()=>b.messages.at(-1)?.type==='exit','the last departure completes the original hand');
+  const settled=(await f.db.query('select state,status,round,settled_round from ojjuda_poker_internal.rooms where id=$1',[roomId])).rows[0];
+  assert.equal(settled.status,'closed');assert.equal(settled.state.phase,'finished');assert.equal(settled.settled_round,settled.round);
+  for(let seat=0;seat<2;seat++){
+   const final=await f.call(f.users[seat],{action:'status'});
+   assert.equal(final.wallet.locked,false);
+   assert.equal(final.wallet.gold,startingGold[seat]+settled.state.result.net[seat],'the original member receives the exact final AI gain or loss');
+  }
   assert.equal(a.w.localStorage.getItem('ojjuda.poker.practice.v1.'+f.users[0]),null,'client storage never controls gold');
-  console.log('PASS: two independent browser DOMs create/join/start, see private hands, choose/open, rotate turns, bet and leave through real server rules');
+  console.log('PASS: two independent browser DOMs create/join/start, see private hands, choose/open, rotate turns, bet, delegate seats and settle the original gold through real server rules');
  }finally{screens.forEach(d=>d.close());await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
