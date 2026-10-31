@@ -225,7 +225,7 @@ test('the ranking title opens monthly winners and cached month changes preserve 
   assert.deepEqual(Array.from(f.requests[1].args.p_games), Object.keys(games));
   await f.historyReply(1);
   assert.equal(f.w.OjjudaGameRankings.isHistoryOpen(), true);
-  assert.match(f.host().textContent, /매월 1일 오전 1시 갱신 · 한국시간/);
+  assert.equal(f.host().querySelector('.board-rank-help-button')?.getAttribute('aria-expanded'), 'false');
   assert.equal(f.host().querySelectorAll('[data-game]').length, 2);
   assert.match(f.host().querySelector('[data-game=chess]').textContent, /이번 달 기록 없음/);
   await f.pickMonth('2026-09');

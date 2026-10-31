@@ -8,6 +8,27 @@ const rankingMonth=(now=Date.now())=>new Date(now+8*60*60*1000).toISOString().sl
 const nextReset=month=>Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7)),1)-8*60*60*1000;
 const validMonth=month=>typeof month==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 const monthName=month=>Number(month.slice(0,4))+'년 '+Number(month.slice(5,7))+'월';
+const streakCondition='해당 월에 연속으로 이긴 횟수 중 가장 높은 기록으로 정해요.';
+const boardCondition='회원 대결 → 어려움 → 보통 → 쉬움 순으로 우선하고, 같은 조건에서는 해당 월 최고 연승으로 정해요.';
+const scoreCondition='해당 월에 기록한 가장 높은 점수로 정해요.';
+const rankingConditions={
+ bang:streakCondition,
+ sacheonseong:'완료한 단계가 높은 순, 같은 단계에서는 완료 시간이 짧은 순으로 정해요.',
+ tank:'상대 수가 많은 대전 기록을 우선하고, 같은 상대 수에서는 해당 월 최고 연승으로 정해요.',
+ saetbyeol:'해당 월에 기록한 가장 높은 성장 점수로 정해요.',
+ mines:'난이도가 높은 순, 같은 난이도에서는 완료 시간이 짧은 순으로 정해요. 기본 8개 난이도만 집계해요.',
+ tour:streakCondition,
+ billiards:boardCondition+' 4구·3쿠션·포켓볼을 통합 표시하며, 종목별 연승은 합산하지 않아요.',
+ janggi:boardCondition,chess:boardCondition,
+ screw_box:'박스형에서 해당 월에 기록한 가장 높은 점수로 정해요.',
+ screw_flat:'평면형에서 해당 월에 기록한 가장 높은 점수로 정해요.',
+ spot:'해당 월에 완료한 서로 다른 그림의 장수로 정해요. 같은 그림은 한 번만 세요.',
+ ttang:streakCondition,mole:scoreCondition,runner:scoreCondition,
+ stacker:'해당 월에 가장 높이 쌓은 층수로 정해요.',breakout:scoreCondition,
+ matgo:'해당 월 한 판에서 실제로 늘어난 골드의 최댓값으로 정해요.',
+ poker:'해당 월 한 판에서 실제로 늘어난 골드의 최댓값으로 정해요.',
+ photo_ttang:'해당 월에 완료한 서로 다른 사진의 장수로 정해요. 같은 사진은 한 번만 세요.'
+};
 const readKey=(kind,month,ids)=>JSON.stringify([kind,month,[...ids].sort()]);
 // Shell redraws should share the same read. Explicit refreshes and saved game
 // results bypass this short-lived cache; data never crosses account/client scope.
@@ -52,7 +73,7 @@ function shareCurrentLeaders(client,owner,ids,data){
 function mount(host,{client,owner,games={},getGames=null,onOpenGame=null,authorized=()=>true}={}){
 dispose?.();dispose=null;controller=null;scopeFor(client,owner);if(!host)return;
 let rankDispose=()=>{},releaseAccess=null,rankPage=0,rankFocusGame=null,alive=true,request=0,catalogKey=null;
-let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0;
+let view='home',historyMonth=null,historyInfo=null,observedMonth=rankingMonth(),rolloverTimer=0,help=null;
 const lifecycle=new AbortController(),lifecycleOptions={signal:lifecycle.signal};
 const active=()=>alive&&host.isConnected&&authorized();
 function updateGames(){
@@ -67,6 +88,43 @@ async function syncCatalog(){
 const status=el('p','','board-status');status.setAttribute('role','status');
 const content=el('div');host.replaceChildren(status,content);
 async function result(query){const {data,error}=await query;if(error)throw error;if(!active())throw Error('stale');return data||[];}
+function closeHelp(restoreFocus=true){
+ if(!help)return false;
+ const current=help;help=null;current.trigger.setAttribute('aria-expanded','false');
+ if(current.dialog.open)current.dialog.close();current.dialog.remove();
+ if(restoreFocus&&active()&&current.trigger.isConnected)current.trigger.focus({preventScroll:true});
+ return true;
+}
+function openHelp(trigger,token){
+ if(!active()||view!=='history'||token!==request)return;
+ if(help){help.close.focus({preventScroll:true});return;}
+ const dialog=el('dialog','','board-rank-help-dialog'),heading=el('h2','게임별 순위 조건');heading.id='board-rank-help-title';
+ dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-labelledby',heading.id);dialog.dataset.worldSwipe='off';
+ const header=el('header','','board-rank-help-header'),close=button('닫기',()=>closeHelp(),'board-rank-help-close');close.setAttribute('aria-label','순위 조건 닫기');header.append(heading,close);
+ const body=el('div','','board-rank-help-body');body.tabIndex=0;body.setAttribute('role','region');body.setAttribute('aria-label','게임별 순위 조건');
+ const rules=el('ul','','board-rank-help-rules');
+ for(const text of [
+  '선택한 월의 기록을 집계하며, 매월 1일 오전 1시(한국시간)에 새로 시작해요.',
+  '0점·0연승 등 0 이하의 기록은 순위에서 제외돼요.',
+  '연승은 패배·무승부 때 다시 세지만, 그달 최고 연승은 남아요.',
+  '게임을 나가 컴퓨터가 대신한 판은 나간 사람의 순위·연승에서 제외돼요.',
+  '조건과 기록이 같으면 먼저 달성한 순으로 정해요.'
+ ])rules.append(el('li',text));
+ const list=el('dl','','board-rank-help-games');
+ for(const [id,game] of Object.entries(games)){
+  const item=el('div');item.dataset.rankingGame=id;
+  item.append(el('dt',game.name),el('dd',rankingConditions[id]||'해당 월에 달성한 최고 기록으로 정해요.'));list.append(item);
+ }
+ body.append(rules,list);dialog.append(header,body);help={dialog,trigger,close};trigger.setAttribute('aria-expanded','true');document.body.append(dialog);
+ dialog.addEventListener('cancel',event=>{event.preventDefault();if(help?.dialog===dialog)closeHelp();});
+ dialog.addEventListener('close',()=>{if(help?.dialog===dialog)closeHelp();});
+ dialog.addEventListener('click',event=>{
+  if(event.target!==dialog||help?.dialog!==dialog)return;
+  const rect=dialog.getBoundingClientRect();
+  if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeHelp();
+ });
+ dialog.showModal();close.focus({preventScroll:true});
+}
 function labelGame(target,game,detail=''){
  if(detail)target.replaceChildren(el('span',game.name,'board-game-name'),el('small',detail,'board-game-difficulty'));
  else if(game.difficultyName)target.replaceChildren(el('span',game.baseName,'board-game-name'),el('small',game.difficultyName,'board-game-difficulty'));
@@ -212,12 +270,14 @@ function fitRecords(targets,token){
 
 async function showHistory(month=null,fresh=false,focus=false){
  if(!client||!owner||!active()||(month!==null&&!validMonth(month)))return false;
- updateGames();rankDispose();view='history';historyMonth=month;const token=++request;
+ closeHelp(false);updateGames();rankDispose();view='history';historyMonth=month;const token=++request;
  observedMonth=rankingMonth();scheduleRollover();content.replaceChildren();status.textContent='';
  const entries=Object.entries(games),ids=entries.map(([id])=>id),targets=new Map();
  const section=el('section','','board-rank-history');section.setAttribute('aria-label','월별 게임순위');section.setAttribute('aria-busy','true');section.dataset.worldSwipe='off';
  const head=el('header','','board-rank-head'),close=button('돌아가기',back,'board-rank-back');close.setAttribute('aria-label','이번 달 순위로 돌아가기');
- head.append(el('h3','월별 게임순위'),close);section.append(head,el('p','매월 1일 오전 1시 갱신 · 한국시간','board-rank-reset'));
+ const title=el('div','','board-rank-history-title'),helpButton=button('!',()=>openHelp(helpButton,token),'board-rank-help-button');
+ helpButton.setAttribute('aria-label','게임별 순위 조건 보기');helpButton.setAttribute('aria-haspopup','dialog');helpButton.setAttribute('aria-expanded','false');helpButton.title='게임별 순위 조건';
+ title.append(el('h3','월별 게임순위'),helpButton);head.append(title,close);section.append(head);
  const field=el('label','','board-rank-month-field'),select=el('select','','board-rank-month');select.setAttribute('aria-label','월 선택');field.append(el('span','월 선택'),select);section.append(field);
  const message=el('p','월별 순위를 불러오는 중…','board-rank-history-status');message.setAttribute('role','status');section.append(message);
  const page=el('div','','board-rank-page board-rank-history-table'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');
@@ -255,7 +315,9 @@ async function showHistory(month=null,fresh=false,focus=false){
  }finally{if(active()&&token===request)section.setAttribute('aria-busy','false');}
 }
 function back(){
- if(!active()||view!=='history')return false;
+ if(!active())return false;
+ if(closeHelp())return true;
+ if(view!=='history')return false;
  void home();content.querySelector('.board-rank-history-open')?.focus({preventScroll:true});return true;
 }
 function refreshView(fresh=false){return view==='history'?showHistory(historyMonth,fresh):home(fresh);}
@@ -269,9 +331,9 @@ function checkRollover(){
  if(month!==observedMonth){observedMonth=month;void refreshView(true);}
  scheduleRollover();
 }
-async function home(fresh=false){if(!client||!owner||!active())return false;updateGames();rankDispose();view='home';observedMonth=rankingMonth();scheduleRollover();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
+async function home(fresh=false){if(!client||!owner||!active())return false;closeHelp(false);updateGames();rankDispose();view='home';observedMonth=rankingMonth();scheduleRollover();const token=++request;content.replaceChildren();status.textContent='';await Promise.all(leaders(token,fresh));return active()&&token===request;}
 let gameplayObserver=null;
-dispose=()=>{alive=false;request++;rankDispose();releaseAccess?.();clearTimeout(rolloverTimer);lifecycle.abort();gameplayObserver?.disconnect();};
+dispose=()=>{alive=false;request++;closeHelp(false);rankDispose();releaseAccess?.();clearTimeout(rolloverTimer);lifecycle.abort();gameplayObserver?.disconnect();};
 controller={refresh:()=>refreshView(true),back,isHistoryOpen:()=>active()&&view==='history',syncCatalog:viewer=>viewer===owner?syncCatalog():Promise.resolve(false)};
 if(!client||!owner){const empty=el('div','','board-rank-empty'),art=el('img');art.src='/assets/design/games/stacker.svg';art.alt='';const copy=el('div');copy.append(el('h3','이번 달 게임순위'),el('p','로그인하면 게임 순위를 볼 수 있어요. 나의 기록으로 함께 도전해 보세요.'),Object.assign(el('a','로그인하고 참여하기','btn'),{href:'/?auth=login&next=world'}));empty.append(art,copy);content.append(empty);return;}
 const playing=()=>document.body.classList.contains('gaming')||document.body.classList.contains('matgo-open');
