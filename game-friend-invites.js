@@ -31,7 +31,7 @@
     clearTimeout(expiryTimer);clearInterval(countdownTimer);
     expiryTimer=countdownTimer=null;
     if(!popup)return;
-    const node=popup;popup=null;
+    const node=popup;popup=null;node._joinController?.abort();
     node.close?.();node.remove();
     if(node._focus?.isConnected)node._focus.focus({preventScroll:true});
   }
@@ -45,7 +45,7 @@
   }
   function mountIncoming() {
     if(popup?.dataset.type!=='invite')return;
-    if(deadlines.get(popup.dataset.invite)<=Date.now()){render();return;}
+    if(!popup._accepted&&!popup._busy&&deadlines.get(popup.dataset.invite)<=Date.now()){render();return;}
     const slot=document.querySelector('[data-game-friend-invite-slot]');
     if(slot){if(popup.parentNode!==slot)slot.append(popup);return;}
     // Cached app shells may not contain the slot yet.
@@ -56,6 +56,9 @@
   }
   function render() {
     if(!current())return;
+    // The server removes accepted invitations before game files finish loading.
+    // Keep their payload available for a local retry or cancellation.
+    if(popup?._accepted||popup?._busy){mountIncoming();return;}
     incoming=incoming.filter(invite=>!handled.has(invite.id)&&deadlines.get(invite.id)>Date.now());
     responses=responses.filter(invite=>!handled.has(invite.id));
     // Keep the current request stable while another friend sends an invitation.
@@ -80,30 +83,52 @@
       node.innerHTML=`<section class="game-entry"><div class="ge-icon" aria-hidden="true">💬</div><span class="ge-kicker">${names[item.kind]||'게임'}</span><h2 class="ge-title" id="game-friend-popup-title">초대 거절</h2><p class="ge-copy" id="game-friend-popup-copy"><strong>${escape(item.recipient_name)}</strong>님이 ${names[item.kind]||'게임'} 초대를 거절했어요.</p><button type="button" class="ge-primary" data-answer="ack">확인</button><p class="ge-invite-status" role="status" data-invite-status hidden></p></section>`;
     }
     const expire=()=>{
-      if(popup!==node)return;
+      if(popup!==node||node._accepted||(node._busy&&!node._accepting))return;
       closePopup();render();void refresh();
     };
     node.onclick=async event=>{
-      const button=event.target.closest('[data-answer]');if(!button||node._busy||!current())return;
-      if(invite&&deadlines.get(item.id)<=Date.now()){expire();return;}
+      const button=event.target.closest('[data-answer]');if(!button||!current()||popup!==node)return;
+      if((node._accepted||node._accepting)&&button.dataset.answer==='decline'){
+        handled.add(item.id);refreshSequence++;closePopup();render();void refresh();return;
+      }
+      if(node._busy)return;
+      if(invite&&!node._accepted&&deadlines.get(item.id)<=Date.now()){expire();return;}
       node._busy=true;refreshSequence++;
       node.querySelectorAll('button').forEach(b=>b.disabled=true);
+      if(button.dataset.answer==='accept'){
+        node._accepting=true;
+        const dismiss=node.querySelector('[data-answer=decline]');dismiss.textContent='닫기';dismiss.disabled=false;
+      }
       try {
-        const data=await rpc({p_action:button.dataset.answer,p_id:item.id});
-        if(version!==generation)return;
+        const data=node._accepted||await rpc({p_action:button.dataset.answer,p_id:item.id});
+        if(version!==generation||popup!==node)return;
         handled.add(item.id);refreshSequence++;
+        if(button.dataset.answer==='accept'){
+          node._accepted=data;clearTimeout(expiryTimer);clearInterval(countdownTimer);
+          expiryTimer=countdownTimer=null;
+          node.querySelector('[data-seconds]').parentElement.hidden=true;
+          const status=node.querySelector('[data-invite-status]');status.textContent='게임을 여는 중이에요…';
+          const controller=new AbortController();node._joinController=controller;
+          await options.onJoin(data,{signal:controller.signal});
+          if(version!==generation||popup!==node||controller.signal.aborted)return;
+          // Removing a successfully opened invitation must not cancel its game.
+          node._joinController=null;
+        }
         if(popup===node)closePopup();
-        if(button.dataset.answer==='accept')await options.onJoin(data);
         render();void refresh();
       } catch(error) {
-        if(version!==generation)return;
+        if(version!==generation||popup!==node||node._joinController?.signal.aborted)return;
         if(/invite_expired|invite_unavailable|room_unavailable/.test(String(error?.message||error))){
           handled.add(item.id);if(popup===node)closePopup();render();void refresh();
           options.notice?.(message(error));
         } else {
           const status=node.querySelector('[data-invite-status]');status.hidden=false;status.textContent=message(error);
+          if(node._accepted){node.querySelector('[data-answer=accept]').textContent='다시 시도';node.querySelector('[data-answer=decline]').textContent='닫기';}
         }
-      } finally {node._busy=false;node.querySelectorAll('button').forEach(b=>b.disabled=false);}
+      } finally {
+        node._busy=false;node._accepting=false;node.querySelectorAll('button').forEach(b=>b.disabled=false);
+        if(popup===node&&!node._accepted&&invite)node.querySelector('[data-answer=decline]').textContent='거부';
+      }
     };
     if(invite)mountIncoming();
     else {

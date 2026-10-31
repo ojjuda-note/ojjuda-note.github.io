@@ -1,18 +1,18 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261030-bang-clear-actions1';
+ const revision='20261031-arcade-recovery1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   bang:'1.5.2',
   poker:'1.1.1',
-  tank:'1.0.2',
+  tank:'1.0.3',
   mines:'1.0.0',
   sacheonseong:'1.2.1',
   saetbyeol:'1.0.0',
-  tour:'1.0.2',
-  ttang:'1.0.1',
+  tour:'1.0.3',
+  ttang:'1.0.2',
   photo_ttang:'1.0.0',
   mole:'1.0.0',
   runner:'1.0.1',
@@ -20,17 +20,17 @@
   breakout:'1.0.0',
   spot:'1.3.0',
   screw:'1.0.2',
-  janggi:'1.0.1',
-  chess:'1.0.1',
-  billiards:'1.0.1',
-  matgo:'1.0.11'
+  janggi:'1.0.2',
+  chess:'1.0.2',
+  billiards:'1.0.2',
+  matgo:'1.0.12'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const groups={
   bang:['/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261030-bang-clear-actions1'],
   sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261030-sacheonseong-color1'],
   poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261029-arcade-entry1'],
-  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261029-arcade-entry1'],
+  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261031-arcade-recovery1'],
   mines:['/world-tour-game.css?v=20261012-marble-invite1','/games/mines/rules.js?v=20261022-ranks1','/world-mines-game.js?v=20261022-ranks1'],
   saetbyeol:['/world-tour-game.css?v=20261012-marble-invite1','/world-saetbyeol-game.js?v=20261021-guest1'],
   tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261029-arcade-entry1'],

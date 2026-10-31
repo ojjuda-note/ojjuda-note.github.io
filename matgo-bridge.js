@@ -1,7 +1,7 @@
 /* Ojjuda Agit arcade → member-only Matgo. Gold balances and refills are server-managed. */
 (function () {
   'use strict';
-  let overlay = null, frame = null, opening = false, unsubscribe = null, previousFocus = null;
+  let overlay = null, frame = null, opening = null, unsubscribe = null, previousFocus = null;
   let generation = 0, onlineReady=false;
   let releaseViewport=null;
   function requestClose(){
@@ -19,6 +19,7 @@
   }
   function closeMatgo() {
     generation++;
+    opening = null;
     if (unsubscribe) unsubscribe();
     unsubscribe = null;
     if (overlay) overlay.remove();
@@ -30,14 +31,21 @@
     previousFocus = null;
   }
   async function openMatgo(options = {}) {
-    if (opening || overlay) return;
-    opening = true;
+    if (options.signal?.aborted) return false;
+    if (opening || overlay) {
+      if (options.propagateError) throw new Error('맞고를 준비 중이에요. 잠시 후 다시 시도해 주세요.');
+      return false;
+    }
+    const request = {};
+    opening = request;
     const attempt = generation;
+    const cancel = () => { if (opening === request || attempt === generation) closeMatgo(); };
+    options.signal?.addEventListener('abort', cancel, {once:true});
     try {
       const access = window.OjjudaMatgoAccess;
       if (!access) throw new Error('맞고를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.');
       await access.check();
-      if (attempt !== generation) return;
+      if (attempt !== generation || options.signal?.aborted) return false;
       previousFocus = document.activeElement;
       overlay = document.createElement('div');
       overlay.id = 'matgo-overlay';
@@ -82,8 +90,17 @@
       document.body.classList.add('matgo-open');
       unsubscribe = access.subscribe(error => { closeMatgo(); showMessage(error.message); });
       close.focus();
-    } catch (error) { showMessage(error.message); }
-    finally { opening = false; }
+      return true;
+    } catch (error) {
+      if (attempt !== generation || options.signal?.aborted) return false;
+      closeMatgo();
+      if (options.propagateError) throw error;
+      showMessage(error.message);
+      return false;
+    } finally {
+      options.signal?.removeEventListener('abort', cancel);
+      if (opening === request) opening = null;
+    }
   }
   window.openMatgo = openMatgo;
   window.closeMatgo = closeMatgo;
