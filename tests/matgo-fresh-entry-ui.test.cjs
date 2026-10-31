@@ -42,7 +42,7 @@ const fixture=`<meta charset="utf-8"><div id="toast"></div><script>
   await page.evaluate(()=>openMatgo());frame=await currentFrame();await frame.waitForSelector('#entry-loading',{state:'hidden'});assert.equal(await frame.locator('#solo').isEnabled(),true);
   assert.equal(await page.evaluate(()=>calls.filter(call=>call.action==='start').length),1);await page.evaluate(()=>closeMatgo());
 
-  await page.evaluate(()=>{onlineRoom=makeRoom(20);return openMatgo();});frame=await currentFrame();await frame.waitForFunction(()=>!document.querySelector('#solo').disabled);
+  await page.evaluate(()=>{onlineRoom=makeRoom(20);return openMatgo();});frame=await currentFrame();await frame.waitForFunction(()=>document.querySelector('#content:not([inert]) #solo:not(:disabled)'));
   assert.equal(await frame.locator('.waiting').count(),0,'old waiting room never renders');assert.equal(await page.evaluate(()=>onlineRoom),null);await page.evaluate(()=>closeMatgo());
 
   await page.evaluate(()=>{onlineRoom=makeRoom(30,'active');return openMatgo();});frame=await currentFrame();await frame.locator('#fresh-entry-state').waitFor();

@@ -17,6 +17,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   await context.exposeBinding('matgoFixture',async(_,body)=>{
     state.requests.push(body);
     if(body.action==='auth')return{data:{user:state.user?{id:state.user}:null}};
+    if(body.action==='session')return{data:{session:state.user?{user:{id:state.user},access_token:'fixture-token'}:null}};
     if(body.action==='identity')return{data:state.age===null?null:{age:state.age,locked:true}};
     const snapshot=()=>({ok:true,gold:state.gold,coins:state.coins,free_left:2-state.freeUsed,round:state.round||null});
     if(body.action==='status')return{data:snapshot()};
@@ -49,7 +50,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   await context.addInitScript(()=>{
     try{localStorage.setItem('ojjuda-matgo-sound','off');}catch{}
     window.OJJUDA_CONFIG={supabaseUrl:'https://mock.invalid',supabaseKey:'test-public'};
-    const client={auth:{getUser:()=>matgoFixture({action:'auth'}),onAuthStateChange:cb=>{window.authCallback=cb;return{data:{subscription:{unsubscribe(){}}}};}},
+    const client={auth:{getUser:()=>matgoFixture({action:'auth'}),getSession:()=>matgoFixture({action:'session'}),onAuthStateChange:cb=>{window.authCallback=cb;return{data:{subscription:{unsubscribe(){}}}};}},
       rpc:()=>matgoFixture({action:'identity'}),functions:{invoke:(_name,{body})=>matgoFixture(body)}};
     window.supabase={createClient:()=>client};
     const timeout=window.setTimeout.bind(window);window.setTimeout=(fn,delay,...args)=>timeout(fn,delay<5000?Math.min(delay,15):delay,...args);
@@ -524,15 +525,23 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       await inside(child.locator('.modal .card .btn').last(),'rules close');
       await child.locator('.modal .card .btn').last().tap();
       await f.page.screenshot({path:`/tmp/matgo-safe-area-proof/${width}-${native?'native':'browser'}.png`});
+      const savedRound=f.state.round.id,savedGold=f.state.gold,savedCoins=f.state.coins;
       await child.locator('#exit').tap();await closed();
-      // Re-entry retains the fixture's round and wallet; Back must still close.
-      const savedRound=JSON.stringify(f.state.round),savedGold=f.state.gold,savedCoins=f.state.coins;
-      await open();await child.locator('#solo').tap();await child.locator('#handMe').waitFor();
+      // Re-entry waits for old-round cleanup, then starts a new hand only on tap.
+      await open();assert.equal(f.state.round,null);
+      assert.equal(f.state.requests.filter(r=>r.action==='abandon'&&r.round_id===savedRound).length,1);
+      assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts+1,'opening the entrance does not start another hand');
+      await child.locator('#solo').tap();await child.locator('#handMe').waitFor();
       await f.page.waitForFunction(()=>document.querySelector('#matgo-overlay')?.dataset.mpActive==='false');
+      const reopened=f.page.frames().find(frame=>frame.url().includes('/games/matgo.html'));
+      await reopened.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.ui.dealing&&!matgoTest.game.over);
+      const nextRound=f.state.round.id;assert.notEqual(nextRound,savedRound,'the previous solo hand cannot resume');
+      assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts+2);
       await inside(child.locator('#exit'),'reopened exit');await back();
-      assert.equal(JSON.stringify(f.state.round),savedRound);assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
+      await open();assert.equal(f.state.round,null);
+      assert.equal(f.state.requests.filter(r=>r.action==='abandon'&&r.round_id===nextRound).length,1,'browser/native Back also retires its hand');
+      assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
       assert.equal(f.state.requests.some(r=>['settle','refill','tazza_start','vent'].includes(r.action)),false,'navigation never settles, refills or purchases');
-      await open();
       assert.equal(await f.page.locator('#matgo-loading-bar').count(),0,'no duplicate game header after loading');
       await f.page.evaluate(()=>authCallback('SIGNED_OUT',null));assert.equal(await f.page.locator('#matgo-overlay').count(),0);assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),0);
     }
