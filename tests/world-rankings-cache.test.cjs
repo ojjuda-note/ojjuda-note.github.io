@@ -116,6 +116,8 @@ test('the game catalog and ranking month at 01:00 Korean time are part of the ca
   f.mount({ games: { chess: games.chess, tank: games.tank } }); await tick(); assert.equal(f.requests.length, 1, 'catalog order is not a different query');
   f.clock(Date.parse('2026-10-31T16:00:00.001Z')); f.mount(); await tick(); assert.equal(f.requests.length, 2, '01:00 starts a new ranking month');
   await f.reply(1, 0);
+  assert.equal(f.score(), '—'); assert.equal(f.host().querySelector('[data-game=tank] .board-leader-nick').textContent, '이번 달 기록 없음');
+  f.mount(); await tick(); assert.equal(f.requests.length, 2, 'cached zero results stay empty without an extra read'); assert.equal(f.score(), '—');
   f.mount({ games: { ...games, matgo: { name: '맞고', unit: 'G' } } }); await tick(); assert.equal(f.requests.length, 3);
   assert.ok(f.requests[2].args.p_games.includes('matgo')); await f.reply(2, 1);
   assert.equal(f.host().querySelectorAll('.board-leader').length, 3);

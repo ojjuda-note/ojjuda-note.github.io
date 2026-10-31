@@ -3,7 +3,8 @@ const { randomUUID, createHash } = require('node:crypto');
 const { createFixture, read, participantsMigrationName } = require('./monthly-game-rankings-fixture.cjs');
 
 async function displayedParticipants() {
- const {db,clock,claim,actor} = await createFixture(undefined, {participants:false,latestBest:false});
+ // Keep this intermediate migration contract separate from the latest display policy.
+ const {db,clock,claim,actor} = await createFixture(undefined, {participants:false,latestBest:false,excludeZero:false});
  try {
   const a=randomUUID(),b=randomUUID(),never=randomUUID(),missingField=randomUUID();
   await actor(a,'완주회원');await actor(b,'다른회원');await actor(never,'미참여');await actor(missingField,'필드없는기록');

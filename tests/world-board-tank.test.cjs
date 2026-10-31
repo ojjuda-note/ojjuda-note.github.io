@@ -56,7 +56,10 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
   assert.equal(currentPage(),retained,'ordinary refresh preserves the selected page');
   w.dispatchEvent(new w.CustomEvent('ojjuda:game-record-saved',{detail:{owner:'another-member',game:'tank'}}));await tick();
   assert.equal(currentPage(),retained,'another member cannot change the selected page');
-  wins=0;await w.OjjudaGameRankings.refresh();assert.equal(tank().querySelector('.board-leader-score').textContent,'0연승');
+  wins=0;await w.OjjudaGameRankings.refresh();assert.equal(tank().querySelector('.board-leader-score').textContent,'—');
+  assert.equal(tank().querySelector('.board-leader-nick').textContent,'이번 달 기록 없음');
+  assert.equal(tank().querySelector('.board-score-value'),null,'zero wins do not create a ranked record');
+  assert.equal(currentPage(),retained,'hiding a zero record preserves the selected page');
   console.log('PASS: real Tank catalog, wins, game opening, return-page selection, delayed response, ordinary refresh and account isolation');
  }finally{w.OjjudaGameRankings?.mount(null);w.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

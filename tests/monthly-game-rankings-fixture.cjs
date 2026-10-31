@@ -5,6 +5,7 @@ const read = name => fs.readFileSync(path.join(root, 'supabase/migrations', name
 const migrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_monthly_game_rankings_archive.sql'));
 const participantsMigrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_show_zero_streak_participants.sql'));
 const bestStreakMigrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_monthly_best_win_streaks.sql'));
+const excludeZeroMigrationName = fs.readdirSync(path.join(root, 'supabase/migrations')).find(name => name.endsWith('_exclude_zero_ranking_records.sql'));
 function definition(source, name) {
   const start = source.search(new RegExp('create(?: or replace)? function ' + name.replaceAll('.', '\\.') + '\\(', 'i'));
   if (start < 0) throw Error('missing function ' + name);
@@ -13,7 +14,7 @@ function definition(source, name) {
   const body = text.indexOf(tag), end = text.indexOf(tag, body + tag.length);
   return text.slice(0, end + tag.length + 1);
 }
-async function createFixture(existingDb, { participants = true, latestBest = participants } = {}) {
+async function createFixture(existingDb, { participants = true, latestBest = participants, excludeZero = latestBest } = {}) {
   const db = existingDb || new PGlite();
   await db.exec(`
     create role anon; create role authenticated; create role service_role;
@@ -86,6 +87,7 @@ async function createFixture(existingDb, { participants = true, latestBest = par
   await db.exec(read(memberIndex));
   if (participants) await db.exec(read(participantsMigrationName));
   if (latestBest) await db.exec(read(bestStreakMigrationName));
+  if (excludeZero) await db.exec(read(excludeZeroMigrationName));
   await db.exec("update ojjuda_ranking_internal.settings set first_month='2026-10-01'");
   const funcs = await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     where n.nspname in('ojjuda_guest_internal','ojjuda_ranking_internal','ojjuda_photo_internal','ojjuda_poker_internal','ojjuda_bang_internal')
@@ -103,4 +105,4 @@ async function createFixture(existingDb, { participants = true, latestBest = par
   };
   return {db,clock,claim,actor,migrationName};
 }
-module.exports = {createFixture,definition,read,migrationName,participantsMigrationName,bestStreakMigrationName};
+module.exports = {createFixture,definition,read,migrationName,participantsMigrationName,bestStreakMigrationName,excludeZeroMigrationName};
