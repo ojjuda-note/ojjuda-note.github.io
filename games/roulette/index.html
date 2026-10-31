@@ -7,7 +7,7 @@
   <meta name="description" content="정교한 원판과 자연스러운 공의 움직임. 가상 골드로 즐기는 오쭈다 룰렛.">
   <title>룰렛 · 오쭈다 오락실</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23091d18'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23c7a364' stroke-width='3'/%3E%3Cpath d='M32 13v38M13 32h38M18 18l28 28M18 46l28-28' stroke='%23c7a364'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23c7a364'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261031-roulette-modes1">
+  <link rel="stylesheet" href="styles.css?v=20261031-roulette-refill1">
   <link rel="stylesheet" href="/game-entry.css?v=20261010-invite2">
   <link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-arcade-entry1">
   <script src="/multiplayer-entry.js?v=20261031-roulette-modes1" defer></script>
@@ -53,6 +53,7 @@
       <div class="lobby-room-heading"><span>함께할 테이블</span><button id="refreshRooms" disabled aria-label="방 목록 새로고침">↻</button></div>
       <div class="room-list" id="roomList"></div><p id="emptyRooms" class="empty-rooms">첫 테이블을 열어보세요.</p>
       </div>
+      <div class="lobby-wallet"><p>보유 골드 <strong id="lobbyBalance">—</strong> G</p><button id="lobbyRefillButton" class="lobby-refill-button" type="button" hidden disabled>골드 충전</button><p id="lobbyRefillHint" class="refill-hint">골드를 확인하고 있어요.</p></div>
       <p class="connection-status" id="connectionStatus" role="status">오락실에 연결하고 있어요.</p>
       <p class="ge-hint" id="entryHint">컴퓨터와 1:1 · 가상 골드 · 만 19세 이상</p>
     </section>
@@ -60,7 +61,7 @@
     <section class="play-section" id="playSection" aria-label="베팅 테이블" inert>
       <div class="play-topline">
         <div><span class="eyebrow">PLACE YOUR BETS</span><h2>당신의 한 수.</h2></div>
-        <div class="wallet"><span>보유 골드</span><div><strong id="balance">0</strong><b>G</b></div></div>
+        <div class="wallet" id="wallet"><span>보유 골드</span><div><strong id="balance">0</strong><b>G</b></div><button id="refillButton" class="refill-mini" type="button" aria-haspopup="dialog" hidden disabled>골드 충전</button></div>
       </div>
       <div class="result-banner" id="resultBanner" role="status" aria-live="polite">
         <div class="result-number" id="resultNumber">✦</div>
@@ -133,8 +134,16 @@
     <p class="help-note"><b>온라인 대전</b>은 방을 만들거나 방 코드로 참가해요. 첫 시작 후 남은 30초 동안 <b>베팅 수정</b>으로 골드를 돌려받아 칩을 바꿀 수 있어요. 수정해도 마감 시간은 그대로예요.</p>
     <p class="help-note">온라인에서는 시작을 누르지 않아도 마감 때 올려둔 칩으로 함께 진행해요. 칩이 없어도 카운트다운 중 시작을 눌러 골드 차감 없이 관람할 수 있어요. 혼자 남아도 30초 뒤 시작하며, 모든 칩을 회수하면 이번 시작은 취소돼요.</p>
     <p class="help-note">두 대전 모두 룰렛 전용 골드를 사용해요. 공이 출발한 뒤 나가도 베팅은 정산되며, 중간에 나간 판은 순위에 기록되지 않아요.</p>
+    <p class="help-note"><b>골드 충전</b>은 보유 골드가 1,000 G 미만일 때 사용할 수 있어요. 처음 두 번은 각각 10,000 G를 무료로 충전하고, 이후에는 충전 버튼에 표시된 쭈를 사용해요. 시작을 눌렀다면 베팅 수정을 누르거나, 이번 판을 정산한 뒤 충전해요.</p>
     <button id="helpDone" class="dialog-done">좋아요, 시작할게요 <svg><use href="#i-arrow"/></svg></button>
   </dialog>
-  <script type="module" src="app.js?v=20261031-roulette-stopzoom1"></script>
+  <dialog id="refillDialog" class="help-dialog refill-dialog" aria-labelledby="refillTitle">
+    <div class="dialog-heading"><span class="eyebrow">GOLD</span><button id="closeRefillButton" class="icon-button" aria-label="충전 닫기"><svg><use href="#i-close"/></svg></button></div>
+    <h2 id="refillTitle">룰렛 골드 충전</h2>
+    <div class="refill-summary"><p><span>충전 금액</span><strong id="refillAmount">— G</strong></p><p><span>사용할 쭈</span><strong id="refillCost">—쭈</strong></p></div>
+    <p id="refillCoins" class="refill-coins">보유 0쭈</p><p id="refillMessage" class="refill-message" role="status"></p>
+    <div class="refill-dialog-actions"><button id="cancelRefillButton" type="button">취소</button><button id="confirmRefillButton" type="button" disabled>충전</button></div>
+  </dialog>
+  <script type="module" src="app.js?v=20261031-roulette-refill1"></script>
 </body>
 </html>

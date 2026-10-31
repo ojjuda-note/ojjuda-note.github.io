@@ -415,3 +415,21 @@ button:disabled{cursor:not-allowed}.join-form input:focus-visible{box-shadow:ins
 .online-player.is-computer{color:#c5c9bb}
 .result-copy .computer-result,.wheel-outcome>div>.computer-result{color:#c3bd94}
 @media(max-width:620px){.solo-room-label{font-size:10px}}
+
+/* Refill uses the server wallet, separate from the chips on the table. */
+.wallet.has-refill{display:flex;align-items:center;gap:10px}.wallet.has-refill>span{display:none}
+.refill-mini{flex:none;min-height:30px;padding:5px 8px;border:1px solid #c6ad735e;border-radius:5px;background:#b6944b14;color:#e8ce95;font-size:10px;white-space:nowrap}
+.refill-mini:disabled{opacity:.55}.refill-mini:hover:enabled{background:#b6944b2b}
+.lobby-wallet{margin-top:18px;padding-top:14px;border-top:1px solid #e9e5f0;color:#797487;font-size:11px}
+.lobby-wallet>p:first-child{margin:0 0 8px}.lobby-wallet strong{font-size:15px;font-weight:650;color:#65518e;font-variant-numeric:tabular-nums}
+.lobby-refill-button{display:block;width:100%;min-height:40px;padding:9px 12px;border:1px solid #e2dbee;border-radius:10px;background:#f3f0f9;color:#65518e;font-family:inherit;font-size:12px;font-weight:600;line-height:1.5}
+.lobby-refill-button:disabled{opacity:.55}.lobby-refill-button:hover:enabled{background:#ece6f5}
+.refill-hint{margin:7px 0 0;font-size:10px;line-height:1.55;word-break:keep-all}
+.refill-dialog{width:min(380px,calc(100vw - 28px));padding:26px}.refill-dialog h2{font-size:23px;margin:15px 0 23px}
+.refill-summary{padding:14px 0;border-top:1px solid #c6ad7333;border-bottom:1px solid #c6ad7333}
+.refill-summary p{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:0;font-size:12px;color:#a9b39e}.refill-summary p+p{margin-top:12px}
+.refill-summary strong{font-size:17px;font-weight:500;color:#e6ce98;font-variant-numeric:tabular-nums}
+.refill-coins{margin:12px 0 0;text-align:right;font-size:11px;color:#b4bca5}.refill-message{min-height:32px;margin:12px 0;font-size:11px;line-height:1.5;color:#d9bb8d;word-break:keep-all}
+.refill-dialog-actions{display:flex;gap:9px}.refill-dialog-actions button{flex:1;min-height:44px;padding:10px;border:1px solid #bba37166;border-radius:6px;font-size:12px;color:#c6cdb9}
+.refill-dialog-actions #confirmRefillButton{background:#bca36b;color:#12261b;border-color:#bca36b;font-weight:600}.refill-dialog-actions button:disabled{opacity:.45}
+@media(max-width:620px){body[data-screen=game] .wallet.has-refill{gap:6px}.refill-mini{min-height:26px;padding:4px 6px;font-size:8px}.refill-dialog{padding:22px}}

@@ -14,6 +14,7 @@ let draftTimer=null,draftRequest=null,draftVersion=0;
 let bettingClockKey='',bettingClockAt=0,bettingClockTimer=null,bettingClockFired=false;
 let computerOutcome=null;
 let reducedPreference=null;
+let walletInfo=null,refillBusy=false,refillRequest=null,refillError='';
 const requests=new Map();
 try{
   const prefs=JSON.parse(localStorage.getItem(KEY));state.sound=prefs?.sound!==false;
@@ -32,8 +33,60 @@ function rpc(action,payload={}){
     requests.set(id,{resolve,reject,timer});send({type:'rpc',id,body:{action,...payload}});
   });
 }
-const ERRORS={login:'로그인한 뒤 다시 들어와 주세요.',underage:'만 19세 이상 회원만 이용할 수 있어요.',insufficient_gold:'베팅할 골드가 부족해요.',invalid_bet:'베팅 금액을 확인해 주세요.',not_host:'방장이 공을 굴릴 수 있어요.',not_ready:'다른 회원의 시작을 기다리고 있어요.',room_full:'이미 네 명이 참여하고 있어요.',room_not_found:'방을 찾지 못했어요.',room_closed:'종료된 방이에요.',round_active:'아직 공이 돌고 있어요.',round_in_progress:'베팅이 마감됐어요. 결과를 확인할게요.',not_finished:'아직 공이 돌고 있어요.',room_busy:'진행 중인 방은 다음 판에 참여해 주세요.',round_not_finished:'아직 공이 돌고 있어요.',timeout:'응답이 늦어지고 있어요. 방 상태를 다시 확인할게요.',unavailable:'잠시 연결이 끊겼어요. 다시 시도해 주세요.'};
+const ERRORS={login:'로그인한 뒤 다시 들어와 주세요.',underage:'만 19세 이상 회원만 이용할 수 있어요.',insufficient_gold:'베팅할 골드가 부족해요.',invalid_bet:'베팅 금액을 확인해 주세요.',not_host:'방장이 공을 굴릴 수 있어요.',not_ready:'다른 회원의 시작을 기다리고 있어요.',room_full:'이미 네 명이 참여하고 있어요.',room_not_found:'방을 찾지 못했어요.',room_closed:'종료된 방이에요.',round_active:'아직 공이 돌고 있어요.',round_in_progress:'베팅이 마감됐어요. 결과를 확인할게요.',not_finished:'아직 공이 돌고 있어요.',room_busy:'진행 중인 방은 다음 판에 참여해 주세요.',round_not_finished:'아직 공이 돌고 있어요.',gold_not_empty:'골드가 1,000 G 미만일 때 충전할 수 있어요.',paid_confirmation_required:'무료 충전을 모두 사용했어요. 쭈 결제를 확인해 주세요.',insufficient_zzu:'충전할 쭈가 부족해요.',invalid_request:'요청을 확인하지 못했어요. 다시 시도해 주세요.',timeout:'응답이 늦어지고 있어요. 방 상태를 다시 확인할게요.',unavailable:'잠시 연결이 끊겼어요. 다시 시도해 주세요.'};
 function errorText(error){const code=String(error?.message||error||'unavailable');return ERRORS[code]||Object.entries(ERRORS).find(([key])=>code.includes(key))?.[1]||'처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.'}
+function refillKnown(){return Number.isSafeInteger(walletInfo?.free_left)&&Number.isSafeInteger(walletInfo?.refill_cost)&&Number.isSafeInteger(walletInfo?.refill_amount)&&walletInfo.refill_amount>0&&typeof walletInfo.can_refill==='boolean'&&typeof walletInfo.refill_locked==='boolean'}
+function refillRoundLocked(){return !!(walletInfo?.refill_locked||ownReady()||state.pending||animating||settling||startingSpin||(room&&room.status!=='betting')||bettingExpired())}
+function canRefill(){return initialized&&!connecting&&!closed&&!commandBusy&&!refillBusy&&refillKnown()&&state.balance<1000&&walletInfo.can_refill&&!refillRoundLocked()}
+function refillReason(){
+  if(!refillKnown())return '충전 정보를 확인하고 있어요.';
+  if(refillBusy)return '골드를 충전하고 있어요.';
+  if(state.balance>=1000)return '1,000 G 미만일 때 충전할 수 있어요.';
+  if(refillRoundLocked())return '베팅 준비를 풀거나 이번 판을 마친 뒤 충전해 주세요.';
+  if(walletInfo.refill_cost>0&&(!Number.isSafeInteger(walletInfo.coins)||walletInfo.coins<walletInfo.refill_cost))return `보유 ${fmt(walletInfo.coins||0)}쭈 · 충전에는 ${fmt(walletInfo.refill_cost)}쭈가 필요해요.`;
+  if(!walletInfo.can_refill)return '지금은 충전할 수 없어요. 잠시 뒤 다시 확인해 주세요.';
+  return walletInfo.free_left>0?`무료 충전 ${walletInfo.free_left}회 남음 · 이후 쭈로 충전`:'무료 충전 2회를 모두 사용했어요.';
+}
+function renderRefill(){
+  const known=refillKnown(),available=canRefill(),free=known&&walletInfo.refill_cost===0,amount=known?fmt(walletInfo.refill_amount):'—',cost=known?fmt(walletInfo.refill_cost):'—';
+  const show=known&&state.balance<1000,button=$('refillButton');
+  button.hidden=!show;$('wallet').classList.toggle('has-refill',show);
+  button.textContent=refillBusy?'충전 중':free?`무료 충전 · ${walletInfo.free_left}회`:`${cost}쭈 충전`;button.disabled=!available;
+  button.title=`+${amount} G · ${refillReason()}`;button.setAttribute('aria-label',`골드 충전 +${amount} G · ${free?'무료 '+walletInfo.free_left+'회 남음':cost+'쭈'} · ${refillReason()}`);
+  $('lobbyBalance').textContent=walletInfo?fmt(state.balance):'—';
+  const lobbyButton=$('lobbyRefillButton');lobbyButton.hidden=!known;lobbyButton.disabled=!available;lobbyButton.textContent=refillBusy?'충전 중…':`+${amount} G 충전 · ${free?'무료 '+walletInfo.free_left+'회 남음':cost+'쭈'}`;
+  $('lobbyRefillHint').textContent=known?refillReason():'골드를 확인하고 있어요.';
+  $('refillAmount').textContent=amount+' G';$('refillCost').textContent=free?'무료':cost+'쭈';$('refillCoins').textContent=`보유 ${fmt(walletInfo?.coins||0)}쭈`;
+  $('refillMessage').textContent=refillError||(!available&&!refillBusy?refillReason():'');
+  $('confirmRefillButton').disabled=!available;$('confirmRefillButton').textContent=refillBusy?'충전 중…':free?'무료로 충전':cost+'쭈로 충전';
+  $('closeRefillButton').disabled=refillBusy;$('cancelRefillButton').disabled=refillBusy;
+  const dialog=$('refillDialog');if(dialog.open&&(state.balance>=1000||refillRoundLocked()))dialog.close();
+}
+async function openRefill(){
+  if(!canRefill())return;refillError='';
+  if(walletInfo.refill_cost===0){await submitRefill(false);return}
+  renderRefill();$('refillDialog').showModal();$('confirmRefillButton').focus({preventScroll:true});
+}
+async function submitRefill(paid){
+  if(!canRefill())return;
+  if(!refillRequest||refillRequest.paid!==paid)refillRequest={request_id:crypto.randomUUID(),paid};
+  commandBusy=true;refillBusy=true;refillError='';render();
+  try{
+    const data=await rpc('refill',{...refillRequest,...(room?{code:room.code}:{})});applySnapshot(data);refillRequest=null;
+    if($('refillDialog').open)$('refillDialog').close();
+    notice(data.wallet?.duplicate?'이미 처리된 충전을 확인했어요.':`${fmt(data.wallet?.refill_amount||walletInfo.refill_amount)} G를 충전했어요.`);
+  }catch(error){
+    const code=String(error?.message||'');
+    const uncertain=!['gold_not_empty','round_in_progress','paid_confirmation_required','insufficient_zzu','invalid_request','login','underage'].some(reason=>code.includes(reason));
+    if(!uncertain)refillRequest=null;
+    refillError=/round_in_progress/.test(code)?'이번 판을 마친 뒤 충전해 주세요.':uncertain?'충전 결과를 확인하지 못했어요. 다시 누르면 같은 충전을 확인해요.':errorText(error);
+    notice(refillError);
+  }finally{
+    commandBusy=false;refillBusy=false;render();
+    if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}
+    else{if(room?.status==='betting'&&!ownReady()&&!bettingExpired())queueDraft();schedulePoll(200)}
+  }
+}
 function renderLobbyMode(){
   const solo=lobbyMode==='solo';
   $('computerEntry').hidden=!solo;$('onlineEntry').hidden=solo;
@@ -137,6 +190,8 @@ function applySnapshot(data){
   if(!data||closed)return;
   const serverTime=Number(data.serverTime)||Date.now();if(serverTime<lastServerTime)return;lastServerTime=serverTime;
   if(Number.isSafeInteger(data.wallet?.gold)&&data.wallet.gold>=0)state.balance=data.wallet.gold;
+  if(data.wallet&&typeof data.wallet==='object')walletInfo={...(walletInfo||{}),...data.wallet};
+  if(!refillBusy&&state.balance>=1000){refillRequest=null;refillError=''}
   if(Array.isArray(data.rooms))renderRooms(data.rooms);
   if(Object.prototype.hasOwnProperty.call(data,'room')){
     const previous=room;room=data.room;
@@ -284,7 +339,7 @@ function render({bets=true,balance=true}={}){
   for(const id of ['soundButton','wheelSoundButton']){$(id).setAttribute('aria-label',state.sound?'소리 끄기':'소리 켜기');$(id).title=state.sound?'소리 끄기':'소리 켜기';$(id).querySelector('use').setAttribute('href',state.sound?'#i-sound':'#i-mute')}
   $('motionButton').setAttribute('aria-pressed',String(reduced()));$('motionButton').textContent=reduced()?'모션 줄임 켜짐':'모션 줄이기';document.body.classList.toggle('reduced-motion',reduced());document.body.classList.toggle('is-spinning',animating);
   sound.setEnabled(state.sound);wheel.setReduced(reduced());
-  if(bets)renderBets(state.pending?.bets||state.bets);renderHistory();renderRoom();
+  if(bets)renderBets(state.pending?.bets||state.bets);renderHistory();renderRoom();renderRefill();
 }
 function setStatus(text){$('statusText').textContent=text}
 function clearResult(){document.querySelectorAll('.hit').forEach(e=>e.classList.remove('hit'));$('resultBanner').classList.remove('won');$('resultNumber').className='result-number';$('resultNumber').textContent='✦';$('resultTitle').textContent='행운을 놓을 자리를 골라주세요';$('resultDetail').textContent='칩을 고른 뒤 숫자를 누르면 바로 놓여요.';lastResult=null;computerOutcome=null;renderComputerResult()}
@@ -322,6 +377,7 @@ function openWheelPopup(spin){
   const modal=$('wheelDialog');resultReadyId=null;$('confirmResultButton').hidden=true;$('confirmResultButton').disabled=true;modal.dataset.spin=spin.id;modal.dataset.phase='spinning';modal.classList.remove('closing');
   $('wheelOutcome').hidden=true;$('wheelFootnote').hidden=false;$('wheelDialogTitle').textContent='공이 멈추는 순간.';$('wheelDialogHint').textContent=totalBets(spin.bets)?`베팅 마감 · ${fmt(totalBets(spin.bets))} G`:'관람 · 베팅 없음';
   if($('helpDialog').open)$('helpDialog').close();
+  if($('refillDialog').open)$('refillDialog').close();
   document.body.classList.add('wheel-open');if(!modal.open)modal.showModal();wheel.setVisible(true);$('wheelDialogTitle').focus({preventScroll:true});
 }
 async function closeWheelPopup(spinId,{instant=false}={}){
@@ -417,6 +473,10 @@ $('cancelReady').addEventListener('click',async()=>{if(bettingExpired())return;c
 $('copyCode').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(room.code);notice('방 코드를 복사했어요.')}catch{notice('방 코드: '+(room?.code||''))}});
 $('spinButton').addEventListener('click',startSpin);
 $('confirmResultButton').addEventListener('click',confirmResult);
+$('refillButton').addEventListener('click',openRefill);$('lobbyRefillButton').addEventListener('click',openRefill);
+$('confirmRefillButton').addEventListener('click',()=>{if($('refillDialog').open)void submitRefill(true)});
+for(const id of ['closeRefillButton','cancelRefillButton'])$(id).addEventListener('click',()=>{if(!refillBusy)$('refillDialog').close()});
+$('refillDialog').addEventListener('cancel',event=>{if(refillBusy)event.preventDefault()});
 $('brandButton').addEventListener('click',()=>{if(room)void leaveRoom();else send({type:'exit'})});
 for(const id of ['soundButton','wheelSoundButton'])$(id).addEventListener('click',async()=>{sound.unlock().catch(()=>{});await mutate(()=>state.sound=!state.sound);render({bets:false})});
 $('motionButton').addEventListener('click',async()=>{await mutate(()=>{reducedPreference=!reduced();state.reduced=reducedPreference});render({bets:false})});
