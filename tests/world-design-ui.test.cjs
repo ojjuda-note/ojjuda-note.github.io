@@ -3,17 +3,17 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('world-themes.js')+'\n'+read('world-game-rankings.js')+'\n'+read('world-game-assets.js')+'\n'+read('arcade-rooms.js')+'</script></head>');
+world=world.replace('</head>','<script>'+read('world-themes.js')+'\n'+read('world-game-rankings.js')+'\n'+read('world-game-assets.js')+'\n'+read('arcade-rooms.js')+'\n'+read('world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
  g.tab='place';g.place={id:'arcade',ch:1,count:8,log:[]};H();clearInterval(g.placeT);g.placeT=null;
- const rankClient={rpc:async(_,args)=>({data:Object.fromEntries(args.p_games.map((id,i)=>[id,{nick:['초록산책','작은별','오쭈다'][i%3],score:1200+i*60}]))})};
- window.designFixture={render:H,state:g,auth:D,model:$,actions:sr,rank(){OjjudaGameRankings.mount(document.querySelector('[data-arcade-rank-root]'),{client:rankClient,owner:'fixture',games:{mines:{name:'지뢰찾기',unit:'점'},runner:{name:'쭈 달리기',unit:'점'},stacker:{name:'탑 쌓기',unit:'층'},tank:{name:'탱크게임',unit:'승'}},onOpenGame:id=>window.openedGame=id});}};
- designFixture.rank();
+ const rankReads=[],rankClient={rpc:async(name,args)=>{rankReads.push({name,args});const rows=Object.fromEntries(args.p_games.map((id,i)=>[id,{nick:['초록산책','작은별','오쭈다'][i%3],score:1200+i*60}]));return {data:name==='community_game_monthly_history'?{month:args.p_month?.slice(0,7)||'2026-10',currentMonth:'2026-10',closed:!!args.p_month,months:[{month:'2026-10',hasRecords:true},{month:'2026-09',hasRecords:true}],leaders:args.p_month?{...rows,tank:{nick:'지난달우승자',score:25}}:rows}:rows};}};
+ window.designFixture={render:H,state:g,auth:D,model:$,actions:sr,rankReads,rank(){OjjudaGameRankings.mount(document.querySelector('[data-arcade-rank-root]'),{client:rankClient,owner:'fixture',games:{mines:{name:'지뢰찾기',unit:'점'},runner:{name:'쭈 달리기',unit:'점'},stacker:{name:'탑 쌓기',unit:'층'},tank:{name:'탱크게임',unit:'승'}},onOpenGame:id=>window.openedGame=id});}};
+ designFixture.rank();gm(()=>{});designFixture.navigation=worldNavigation;
  `+world.slice(world.indexOf('</script>',boot));
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{})});
  try{
  const context=await browser.newContext({viewport:{width:1440,height:1050},reducedMotion:'reduce',timezoneId:'America/Los_Angeles'});
  await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});
@@ -35,6 +35,24 @@ world=world.slice(0,boot)+`
  await page.screenshot({path:path.join(proof,'arcade-desktop.png'),fullPage:true});
  await page.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1');
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
+ const historyButton=page.getByRole('button',{name:'월별 게임순위 보기',exact:true});await historyButton.focus();await page.keyboard.press('Enter');
+ await page.locator('.board-rank-history[aria-busy=false]').waitFor();
+ assert.equal(await page.locator('.board-rank-history [data-game]').count(),4,'monthly history keeps every allowed game');
+ assert.equal(await page.locator('.board-rank-month').evaluate(n=>n===document.activeElement),true,'keyboard opening focuses the month selector');
+ await page.getByLabel('월 선택',{exact:true}).selectOption('2026-09');await page.locator('.board-rank-history[aria-busy=false]').waitFor();
+ assert.equal(await page.locator('.board-rank-history [data-game=tank] .board-leader-score').textContent(),'25승');
+ assert.equal(await page.locator('.board-rank-history [data-game=tank] .board-leader-nick').textContent(),'지난달우승자');
+ for(const width of [320,390]){await page.setViewportSize({width,height:850});await fits('monthly history '+width);assert.equal(await page.locator('.board-rank-month').inputValue(),'2026-09');}
+ await page.screenshot({path:path.join(proof,'monthly-rankings-mobile.png'),fullPage:true});
+ const readsBeforeBack=await page.evaluate(()=>designFixture.rankReads.length);await page.goBack();await page.locator('.board-rank-track').waitFor();
+ assert.equal(await page.evaluate(()=>designFixture.state.tab==='place'&&designFixture.state.place?.id==='arcade'),true,'browser Back closes monthly history without leaving the Arcade');
+ assert.equal(await page.locator('.board-rank-track').count(),1);assert.equal(await page.locator('.board-leaders').getAttribute('data-rank-page'),'1','back restores the carousel page');
+ assert.equal(await historyButton.evaluate(n=>n===document.activeElement),true,'back returns focus to the ranking title');
+ assert.equal(await page.evaluate(()=>designFixture.rankReads.length),readsBeforeBack,'returning reuses recent current-month leaders');
+ await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();
+ assert.equal(await page.evaluate(()=>designFixture.navigation.back()),true,'native Back consumes the monthly-history view');await page.locator('.board-rank-track').waitFor();
+ assert.equal(await page.evaluate(()=>designFixture.state.place?.id),'arcade');
+ await historyButton.click();await page.locator('.board-rank-history[aria-busy=false]').waitFor();await page.getByRole('button',{name:'이번 달 순위로 돌아가기',exact:true}).click();await page.locator('.board-rank-track').waitFor();
  for(const width of [320,390,768,900,1280]){
   await page.setViewportSize({width,height:900});await fits('arcade '+width);assert.equal(await page.locator(width<900?'.bottomnav':'.sidenav').isVisible(),true);
   assert.equal(await page.locator('[data-arcade-games] .game-version').count(),0,'release metadata stays out of the menu at '+width);
@@ -71,6 +89,6 @@ world=world.slice(0,boot)+`
  for(const key of keys){await page.evaluate(k=>document.documentElement.dataset.worldTheme=k,key);await fits(key);assert.equal(await page.locator('.side .ojjuda-theme-logo').evaluate(n=>getComputedStyle(n).color===getComputedStyle(n.querySelector('path')).fill),true,'logo fill follows the theme');assert.ok(await page.locator('[data-arcade-rank-root]').evaluate(n=>getComputedStyle(n,':before').backgroundImage.includes('/assets/design/')));}
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='christmas');await page.screenshot({path:path.join(proof,'christmas-desktop.png'),fullPage:true});
  await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');await fits('dark theme');await page.screenshot({path:path.join(proof,'dark-desktop.png'),fullPage:true});
- assert.deepEqual(errors,[]);await context.close();console.log('PASS: real redesigned renderer, responsive menus, artwork, all theme palettes, keyboard-safe controls, automatic-only themes, draft preservation and ranking pagination');
+ assert.deepEqual(errors,[]);await context.close();console.log('PASS: real redesigned renderer, responsive menus, artwork, all theme palettes, keyboard-safe monthly rankings, browser/native history back, automatic-only themes, draft preservation and ranking pagination');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
