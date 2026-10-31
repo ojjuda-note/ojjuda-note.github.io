@@ -1,46 +1,47 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261031-performance1';
+ const revision='20261031-fresh-games1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  bang:'1.5.3',
-  poker:'1.1.2',
-  tank:'1.0.5',
-  mines:'1.0.1',
-  sacheonseong:'1.2.2',
+  bang:'1.6.0',
+  poker:'1.2.0',
+  tank:'1.1.0',
+  mines:'1.0.2',
+  sacheonseong:'1.3.0',
   saetbyeol:'1.0.1',
-  tour:'1.0.4',
-  ttang:'1.0.3',
-  photo_ttang:'1.0.1',
-  mole:'1.0.1',
-  runner:'1.0.2',
-  stacker:'1.0.1',
-  breakout:'1.0.1',
-  spot:'1.3.1',
-  screw:'1.0.3',
-  janggi:'1.0.3',
-  chess:'1.0.3',
-  billiards:'1.0.3',
-  matgo:'1.0.13'
+  tour:'1.1.0',
+  ttang:'1.1.0',
+  photo_ttang:'1.0.2',
+  mole:'1.0.2',
+  runner:'1.0.3',
+  stacker:'1.0.2',
+  breakout:'1.0.2',
+  spot:'1.4.0',
+  screw:'1.1.0',
+  janggi:'1.1.0',
+  chess:'1.1.0',
+  billiards:'1.1.0',
+  matgo:'1.1.0'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
+ const session='/game-session.js?v=20261031-fresh-games1';
  const groups={
-  bang:['/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261030-bang-clear-actions1'],
-  sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261030-sacheonseong-color1'],
-  poker:['/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261029-arcade-entry1'],
-  tank:['/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261031-performance1'],
+  bang:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261031-fresh-games1'],
+  sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261031-fresh-games1'],
+  poker:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261031-fresh-games1'],
+  tank:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261031-fresh-games1'],
   mines:['/world-tour-game.css?v=20261012-marble-invite1','/games/mines/rules.js?v=20261022-ranks1','/world-mines-game.js?v=20261022-ranks1'],
   saetbyeol:['/world-tour-game.css?v=20261012-marble-invite1','/world-saetbyeol-game.js?v=20261021-guest1'],
-  tour:['/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261029-arcade-entry1'],
-  spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261028-spot-level1'],
-  ttang:['/ttang-bridge.js?v=20261031-performance1'],
-  photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261023-entry1'],
+  tour:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-tour-game.js?v=20261031-fresh-games1'],
+  spot:['/world-spot-game.css?v=20261003-mobile2','/world-spot-game.js?v=20261031-fresh-games1'],
+  ttang:['/ttang-bridge.js?v=20261031-fresh-games1'],
+  photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261031-fresh-games1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],
   breakout:[...controls,'/games/breakout-game.js?v=20261007-flow1'],
-  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261025-rank1'],
+  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261031-fresh-games1'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();

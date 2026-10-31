@@ -11,6 +11,7 @@ try{
  viewport.getBoundingClientRect=()=>({left:6,top:86,right:354,bottom:584,width:348,height:498});
  canvas.getBoundingClientRect=()=>{const size=parseFloat(canvas.style.getPropertyValue('--tile'))||30,gap=parseFloat(canvas.style.getPropertyValue('--gap'))||3,pad=8,width=size*10+gap*9+pad*2,height=size*11.9+gap*9+pad*2+4;return {width,height,left:6+Math.max(0,(348-width)/2)-viewport.scrollLeft,top:86+Math.max(0,(498-height)/2)-viewport.scrollTop};};
  w.eval(read('games/sacheonseong/app.js'));
+ d.getElementById('all-stages').click();d.querySelector('[data-stage="5"]').click();
  const size=()=>parseFloat(canvas.style.getPropertyValue('--tile')),initial=size();
  function pointer(type,id,x,y,target=viewport){const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y});Object.defineProperties(e,{pointerId:{value:id},pointerType:{value:'touch'}});target.dispatchEvent(e);return e;}
  const click=target=>target.dispatchEvent(new w.MouseEvent('click',{bubbles:true,cancelable:true,detail:1}));

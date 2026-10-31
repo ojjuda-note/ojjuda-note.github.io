@@ -2,6 +2,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {PGlite}=require('@electric-sql/pglite');
 const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',C='00000000-0000-4000-8000-000000000003',MINOR='00000000-0000-4000-8000-000000000004';
 async function fixture(fixtureOptions={}){
+  if(fixtureOptions.takeover)fixtureOptions={...fixtureOptions,stakes:true};
   if(fixtureOptions.basic)fixtureOptions={...fixtureOptions,adaptive:true};
   if(fixtureOptions.adaptive)fixtureOptions={...fixtureOptions,stakes:true,refill:true,fun:true};
   const db=new PGlite();
@@ -39,6 +40,22 @@ async function fixture(fixtureOptions={}){
   if(fixtureOptions.adaptive&&fixtureOptions.openingPpuk!==false){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_opening_ppuk.sql'))),'utf8'));}
   if(fixtureOptions.basic){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_basic_difficulty.sql'))),'utf8'));}
   {const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_twenty_second_turns.sql'))),'utf8'));}
+  if(fixtureOptions.fresh){const dir=path.join(__dirname,'../supabase/migrations');await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_matgo_abandon_unfinished_round.sql'))),'utf8'));}
+  if(fixtureOptions.takeover){
+    const dir=path.join(__dirname,'../supabase/migrations');
+    const rankings=fs.readFileSync(path.join(dir,'20261022121120_game_ranking_criteria.sql'),'utf8');
+    await db.exec('create schema ojjuda_guest_internal;create schema ojjuda_game_internal;');
+    await db.exec(rankings.match(/create table ojjuda_guest_internal\.round_records \([\s\S]*?\n\);/)[0]);
+    await db.exec(rankings.match(/create function ojjuda_game_internal\.capture_ranked_round\(\)[\s\S]*?end;\$\$;/)[0]);
+    await db.exec('revoke all on function ojjuda_game_internal.capture_ranked_round() from public,anon,authenticated;');
+    await db.exec(`create trigger ranking_matgo_solo after update of last_round on ojjuda_matgo_internal.wallets for each row execute function ojjuda_game_internal.capture_ranked_round();
+      create trigger ranking_matgo_online after update of status on ojjuda_matgo_internal.rooms for each row execute function ojjuda_game_internal.capture_ranked_round();`);
+    // Integrate the other games' scoped update of the shared trigger first, in
+    // the same migration order used by deployment. Its other SQL is unrelated.
+    const shared=fs.readFileSync(path.join(dir,'20261031055816_fresh_multiplayer_entries.sql'),'utf8');
+    await db.exec(shared.match(/do \$handoff_ranking_capture\$[\s\S]*?end;\$handoff_ranking_capture\$;/)[0]);
+    await db.exec(fs.readFileSync(path.join(dir,'20261031061820_matgo_computer_takeover_settlement.sql'),'utf8'));
+  }
   const {createHandler}=await import('../supabase/functions/matgo/handler.mjs');
   const calls=[];
   const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],fetchImpl:async(url,options)=>{
@@ -54,6 +71,7 @@ async function fixture(fixtureOptions={}){
       else if(url.endsWith('/matgo_stake_service'))result=await db.query('select public.matgo_stake_service($1,$2,$3) value',[p.p_actor,p.p_rate,p.p_accept]);
       else if(url.endsWith('/matgo_fun_service'))result=await db.query('select public.matgo_fun_service($1,$2,$3,$4,$5) value',[p.p_actor,p.p_action,p.p_request,p.p_reference??null,p.p_effect??null]);
       else if(url.endsWith('/matgo_ranked_settle'))result=await db.query('select public.matgo_ranked_settle($1,$2,$3,$4::smallint,$5,$6) value',[p.p_actor,p.p_round,p.p_gold,p.p_first,p.p_carry,p.p_outcome]);
+      else if(url.endsWith('/matgo_abandon_round'))result=await db.query('select public.matgo_abandon_round($1,$2) value',[p.p_actor,p.p_round]);
       else if(url.endsWith('/matgo_wallet_service'))result=await db.query('select public.matgo_wallet_service($1,$2,$3,$4,$5,$6,$7::smallint,$8) value',[p.p_actor,p.p_action,p.p_request??null,p.p_paid??false,p.p_round??null,p.p_gold??null,p.p_first??null,p.p_carry??null]);
       else throw Error('unexpected RPC');
       return new Response(JSON.stringify(result.rows[0].value));

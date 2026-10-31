@@ -9,9 +9,9 @@ const room = (patch = {}) => ({ room_no: 17, kind: 'chess', title: '친구와 �
 
 function fixture(t) {
   const dom = new JSDOM('<main><section data-arcade-rooms></section></main><div id="modal-root"></div>', { url: 'https://fixture.test/world.html', runScripts: 'outside-only', pretendToBeVisual: true });
-  const w = dom.window, calls = [], opened = [], notifications = [], timers = new Map();
+  const w = dom.window, calls = [], opened = [], freshOpened = [], notifications = [], timers = new Map();
   let now = 100000, nextTimer = 0, hidden = false, actor = 'member-a';
-  const state = { data: { ok: true, rooms: [], mine: null, can_matgo: false }, extra: [], delayed: false, pending: [], error: null, openOverlay: false };
+  const state = { data: { ok: true, rooms: [], mine: null, can_matgo: false }, extra: [], delayed: false, pending: [], error: null, openOverlay: false, freshPending: null };
   Object.defineProperty(w.document, 'hidden', { configurable: true, get: () => hidden });
   w.Date.now = () => now;
   w.setTimeout = (callback, delay) => { const id = ++nextTimer; timers.set(id, { callback, at: now + delay }); return id; };
@@ -28,6 +28,7 @@ function fixture(t) {
     extraRooms: async () => { calls.push({ name: 'arcade_extra_rooms', actor }); return state.extra; },
     canOpen: () => !w.document.querySelector('#modal-root .modal,#gov,#matgo-overlay'),
     onOpen: async (value, owner) => { opened.push({ value, owner }); if (state.openOverlay) w.document.body.classList.add('gaming'); },
+    onFreshGame: async (value, owner) => { freshOpened.push({ value, owner }); if (state.freshPending) await state.freshPending; },
     goArcade() {}, closeModal() { w.document.querySelector('#modal-root').replaceChildren(); }, renderModal() {}
   });
   t.after(() => { app.dispose(); w.close(); });
@@ -45,7 +46,7 @@ function fixture(t) {
     w.document.querySelector('main').innerHTML = '<section data-arcade-rooms></section>';
     app.sync(); await tick(); await tick();
   };
-  return { w, app, calls, opened, notifications, state, advance, visibility, mount, timers, actor: value => { actor = value; },
+  return { w, app, calls, opened, freshOpened, notifications, state, advance, visibility, mount, timers, actor: value => { actor = value; },
     list: () => w.document.querySelector('[data-arcade-rooms]'),
     async start() { app.sync(); await tick(); await tick(); },
     async reply(index, data) { state.pending[index]({ data, error: null }); await tick(); await tick(); }
@@ -125,9 +126,11 @@ for (const interruption of ['visibility', 'game']) {
     assert.equal(f.list().querySelector('.arcade-room-state.playing'), null, 'superseded room metadata is not rendered');
     await f.reply(1, { ...f.state.data, rooms: [], mine: null });
     assert.equal(f.list().querySelector('.arcade-room-card'), null);
-    const fresh = f.app.refresh(), playing = room({ status: 'playing', match_id: 'current-match', players: 2 });
-    await f.reply(2, { ...f.state.data, rooms: [playing], mine: playing }); await fresh;
-    assert.deepEqual(f.opened.map(entry => entry.value.match_id), ['current-match'], 'a current opponent match still starts normally');
+    const waitingRead = f.app.refresh(), waiting = room({ room_no: 18 });
+    await f.reply(2, { ...f.state.data, rooms: [waiting], mine: waiting }); await waitingRead;
+    const fresh = f.app.refresh(), playing = room({ room_no: 18, status: 'playing', match_id: 'current-match', players: 2 });
+    await f.reply(3, { ...f.state.data, rooms: [playing], mine: playing }); await fresh;
+    assert.deepEqual(f.opened.map(entry => entry.value.match_id), ['current-match'], 'a newly observed waiting room still starts when its opponent joins');
   });
 }
 
@@ -149,4 +152,29 @@ test('failed list reads remain retryable and dispose removes wakeup listeners an
   assert.equal(f.list().querySelector('[data-room-issue]').hidden, true); assert.ok(f.list().querySelector('.arcade-room-card'));
   const before = f.calls.length; f.app.dispose(); await f.visibility(true); await f.visibility(false); await f.advance(12000);
   assert.equal(f.calls.length, before); assert.equal(f.timers.size, 0);
+});
+
+
+test('an old playing room is never resumed on initial load or shell redraw, and its card requests a fresh game once', async t => {
+  const f = fixture(t), playing = room({ status: 'playing', match_id: 'old-match', players: 2 });
+  f.state.data = { ...f.state.data, rooms: [playing], mine: playing };
+  await f.start(); await f.mount(); await f.advance(8000);
+  assert.equal(f.opened.length, 0, 'previous-visit games never open automatically');
+  let finish; f.state.freshPending = new Promise(resolve => { finish = resolve; });
+  const button = f.list().querySelector('[data-arcade-action=join]');
+  assert.equal(button.textContent, '새 게임');
+  button.click(); button.click(); await tick();
+  assert.equal(f.freshOpened.length, 1, 'double clicks share one cleanup and new-entry request');
+  assert.equal(f.freshOpened[0].value.match_id, 'old-match');
+  assert.equal(f.list().querySelector('[data-arcade-action=join]').disabled, true);
+  finish(); await tick(); await tick();
+  assert.equal(f.opened.length, 0, 'refresh after cleanup cannot resume the old match either');
+});
+
+test('a waiting room that disappears cannot arm a later unrelated playing room', async t => {
+  const f = fixture(t); f.state.data = { ...f.state.data, rooms: [room()], mine: room() }; await f.start();
+  f.state.data = { ...f.state.data, rooms: [], mine: null }; await f.app.refresh();
+  const playing = room({ status: 'playing', match_id: 'old-match', players: 2 });
+  f.state.data = { ...f.state.data, rooms: [playing], mine: playing }; await f.app.refresh();
+  assert.equal(f.opened.length, 0);
 });

@@ -232,8 +232,8 @@ export function automaticCommand(g){
  return {type:'choose',value};
 }
 const valueOf=value,valueOfTakeover=(g,i)=>value(g,i)*2;
-export function automaticTurn(state,random=secureRandom){
+export function automaticTurn(state,random=secureRandom,computer=false){
  let g=state;const p=g.turn,events=[];
  for(let n=0;n<24&&!g.over&&g.turn===p;n++){g=advance(g,p,automaticCommand(g),random);events.push(...g.events);}
- g.events=events.slice(-40);log(g,`${g.players[p].name} 시간 초과 · 자동 진행`);return g;
+ g.events=events.slice(-40);log(g,`${g.players[p].name} ${computer?'컴퓨터가 이어서 진행':'시간 초과 · 자동 진행'}`);return g;
 }

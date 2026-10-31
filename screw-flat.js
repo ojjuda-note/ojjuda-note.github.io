@@ -15,7 +15,7 @@
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
     catch (_) { return 1; }
   }
-  function saveStage(n) { try { localStorage.setItem(STAGE_KEY, String(n)); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
+  function saveStage(n) { try { localStorage.setItem(STAGE_KEY, String(Math.max(readStage(),n))); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   function makeFlatLevel(stage) {
     const level=Physics.makeFlatLevel(stage);level.picture=(level.stage-1)%PICTURES.length;level.name=PICTURES[level.picture].name;return level;
   }
@@ -46,8 +46,8 @@
     for(const v of p.mounts){const r=(p.screwRadius||13)/13;c.save();c.translate(v.x,v.y);c.scale(r,r);oval(c,0,0,13,13,'#718397');oval(c,0,0,10,10,'#506176');oval(c,0,2,7,7,'#65798B');c.restore();}
     c.restore();
   }
-  function flat(api) {
-    const st={view:{zoom:1,x:180,y:316},L:readStage(),score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
+  function flat(api,startStage=1) {
+    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
     const tell=text=>{st.message=text;st.messageTime=1.7;};

@@ -29,6 +29,7 @@ async function fixture(){
  await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_poker_online_rooms.sql'))),'utf8'));
  await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_poker_wallet_ranking_lobby.sql'))),'utf8'));
  await db.exec(fs.readFileSync(path.join(dir,fs.readdirSync(dir).find(n=>n.endsWith('_poker_faster_turns.sql'))),'utf8'));
+ await require('./game-handoff-migration.cjs')(db,'poker');
  const {createHandler}=await import('../supabase/functions/poker/handler.mjs');let seed=123456;
  const handler=createHandler({env:n=>({SUPABASE_URL:'https://fixture.invalid',SUPABASE_ANON_KEY:'public',SUPABASE_SERVICE_ROLE_KEY:'server-only'})[n],random:()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296),fetchImpl:async(url,options)=>{
   if(url.endsWith('/auth/v1/user')){const id=options.headers.authorization.slice(7);return new Response(JSON.stringify({id}),{status:users.includes(id)?200:401});}

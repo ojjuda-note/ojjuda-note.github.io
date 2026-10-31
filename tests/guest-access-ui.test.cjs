@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8'),origin='https://guest-access.test';
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-const helpers=['guest-access.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
+const helpers=['game-session.js', 'guest-access.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};
@@ -20,7 +20,11 @@ const cardId='00000000-0000-4000-8000-000000000001';
    if(u.pathname==='/world.html')return route.fulfill({body:world,contentType:'text/html'});
    if(u.pathname==='/')return route.fulfill({body:portal,contentType:'text/html'});
    if(u.pathname==='/park/')return route.fulfill({body:strip(read('park/index.html')),contentType:'text/html'});
-   if(u.pathname.startsWith('/games/'))return route.fulfill({body:'<!doctype html><p>Game transport fixture</p>',contentType:'text/html'});
+   if(u.pathname.startsWith('/games/'))return route.fulfill({body:`<!doctype html><p>Game transport fixture</p><script>
+    const kind=location.pathname.includes('/tank/')?'tank':location.pathname.includes('/ojjuda-tour/')?'tour':null;
+    window.transportReady=!kind;
+    if(kind){addEventListener('message',event=>{if(event.data?.type===(kind==='tank'?'tank-init':'ojjuda-tour-init'))window.transportReady=true;});parent.postMessage({source:'ojjuda-'+kind,type:kind==='tank'?'ready':'ojjuda-game-ready'},location.origin);}
+   </script>`,contentType:'text/html'});
    const file=path.resolve(root,'.'+u.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)?route.fulfill({path:file}):route.abort();
   });
   await context.addInitScript(()=>{
@@ -49,11 +53,13 @@ const cardId='00000000-0000-4000-8000-000000000001';
    ['tour',{source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:uuid,players:2,myRank:2,ranking:[{}, {human:true,assets:0,bankrupt:true}]}]
   ]){
    await enter();await page.evaluate(kind=>guestFixture.open(kind),kind);await page.locator('iframe').waitFor();
+   await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.transportReady===true);
+   console.log('CHECK guest completion:',kind);
    // Unrelated windows and foreign origins cannot trigger the gate.
    await page.evaluate(data=>{dispatchEvent(new MessageEvent('message',{origin:'https://foreign.invalid',source:document.querySelector('iframe').contentWindow,data}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source:window,data}));},data);
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,kind+' ignores forged sources');
    await page.evaluate(data=>{const source=document.querySelector('iframe').contentWindow;if(data.round)dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data:{type:'ojjuda:ttang:start',round:data.round,mode:'solo'}}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data}));},data);
-   await signup('world');
+   await signup('world').catch(error=>{error.message=kind+' completion: '+error.message;throw error;});
   }
   await enter();await page.evaluate(()=>{guestFixture.member();guestFixture.open('stacker');});await page.locator('[data-g=start]').click();await page.evaluate(()=>guestFixture.finish(0));
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,'members never consume a trial');

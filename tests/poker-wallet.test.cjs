@@ -57,11 +57,15 @@ const {fixture}=require('./poker-online-fixture.cjs');
   await call(B,{action:'join',code:r.code});r=(await call(A,{action:'read',room_id:r.id})).room;
   const started=await act(A,r,'start');assert.equal(started.status,200,JSON.stringify(started));r=started.room;assert.equal(r.game.players[0].initial,700);
   assert.equal((await publicRpc(C,'arcade_extra_rooms')).rooms.find(x=>x.kind==='poker').status,'playing');
-  const left=await act(A,r,'leave');assert.equal(left.status,200);assert.equal(left.wallet.locked,false);assert.equal(left.wallet.gold,650);
+  const left=await act(A,r,'leave');assert.equal(left.status,200);assert.equal(left.wallet.locked,true);assert.equal(left.wallet.available,0);assert.equal(left.wallet.gold,650,'the displayed stack remains in escrow while AI inherits the hand');
   assert.equal((await status(A)).free_left,0,'room changes never restore free refills');
   const other=(await call(B,{action:'read',room_id:r.id})).room;await act(B,other,'leave');
+  const settled=(await db.query('select state,settled_round,round from ojjuda_poker_internal.rooms where id=$1',[r.id])).rows[0],finishedWallet=await status(A),otherWallet=await status(B);
+  assert.equal(settled.state.phase,'finished');assert.equal(settled.settled_round,settled.round);assert.equal(finishedWallet.locked,false);
+  assert.equal(finishedWallet.gold,700+settled.state.result.net[0],'the inherited hand’s actual profit/loss belongs to its original owner');
+  assert.equal(finishedWallet.gold+otherWallet.gold,5700,'leaving cannot duplicate the table bankroll');assert.equal(finishedWallet.rounds,1,'AI takeover does not count as another human round');
   assert.equal((await publicRpc(C,'arcade_extra_rooms')).rooms.some(x=>x.kind==='poker'),false,'closed room leaves the shared feed');
-  const resumed=await call(A,{action:'create',request_id:crypto.randomUUID(),options:{capacity:2,title:'다음 방'}});assert.equal(resumed.wallet.gold,650);
+  const resumed=await call(A,{action:'create',request_id:crypto.randomUUID(),options:{capacity:2,title:'다음 방'}});assert.equal(resumed.wallet.gold,finishedWallet.gold);
   console.log('PASS: 2 lifetime free refills, additive 5,000 G, paid confirmation, 5 ZU atomic debit, duplicate/racing/insufficient refills, server solo, persistent multiplayer gold, ranking and age-filtered public rooms');
  }finally{await f.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

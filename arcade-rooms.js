@@ -7,9 +7,9 @@
   const errors = {
     not_signed_in: '로그인한 회원만 대전방을 이용할 수 있어요.', banned: '지금은 대전방을 이용할 수 없어요.',
     invalid_title: '방 제목을 1~40자로 입력해 주세요.', room_full: '다른 사람이 먼저 참여했어요. 다른 방을 골라 주세요.',
-    room_unavailable: '이미 닫혔거나 참여할 수 없는 방이에요.', room_in_progress: '참여 중인 방이 있어요. 내 방에서 이어서 하거나 대기를 취소해 주세요.',
+    room_unavailable: '이미 닫혔거나 참여할 수 없는 방이에요.', room_in_progress: '참여 중인 방이 있어요. 내 방의 새 게임을 누르거나 대기를 취소해 주세요.',
     match_in_progress: '진행 중인 맞고를 먼저 마무리해 주세요.', room_rate_limit: '방을 너무 빠르게 만들었어요. 잠시 후 다시 시도해 주세요.',
-    room_already_started: '상대가 참여해 대전이 시작됐어요. 내 방에서 이어서 해 주세요.',
+    room_already_started: '상대가 참여해 대전이 시작됐어요. 나가려면 내 방의 새 게임을 눌러 주세요.',
     adult_required: '이 게임은 생년월일을 등록한 만 19세 이상 회원만 이용할 수 있어요.',
     gold_empty: '맞고 골드를 먼저 충전해 주세요.', not_room_owner: '방장만 대기를 취소할 수 있어요.'
   };
@@ -24,7 +24,7 @@
   function feedMarkup() { return '<div class="arcade-room-feed" data-arcade-room-feed data-room-list aria-label="열린 대전방"></div>'; }
   function create(options) {
     let root = null, list = null, owner = null, epoch = 0, timer = null, polling = false, pollAgain = false, lastRead = null, busy = false, disposed = false;
-    let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null;
+    let rooms = [], mine = null, canMatgo = false, issue = '', signature = '', openedMatch = null, waitingRoom = null;
     let filter = '', query = '';
     const current = id => !disposed && id && options.getUserId() === id;
     const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,#bd-root');
@@ -52,7 +52,7 @@
       const [, name] = games[room.kind] || ['', '게임'];
       const artwork = /^(carom|pool)/.test(room.kind) ? 'carom4' : Object.hasOwn(games, room.kind) ? room.kind : 'tank';
       const playing = room.status === 'playing';
-      const action = room.is_member ? (playing ? '이어서 하기' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
+      const action = room.is_member ? (playing ? '새 게임' : room.native ? '대기실 열기' : '대기 중') : playing ? '대전 중' : '참여';
       return `<article class="arcade-room-card${room.is_member ? ' mine' : ''}">
         <div class="arcade-room-game"><img src="/assets/design/games/${artwork}.svg" alt="" width="36" height="28"><b>${name}</b></div>
         <div class="arcade-room-copy"><span class="arcade-room-number">방 #${escape(room.room_no)}${room.is_host ? ' · 내 방' : room.is_member ? ' · 참여한 방' : ''}</span><h4>${escape(room.title)}</h4><p>${escape(room.host_name)} <span>· ${room.players}/${room.capacity}명</span></p></div>
@@ -119,7 +119,13 @@
         if (!current(actor) || revision !== epoch || pollAgain) return;
         rooms = [...(data.rooms || []),...extra]; mine = data.mine || extra.find(r=>r.is_member) || null; canMatgo = data.can_matgo === true; issue = '';
         lastRead = Date.now();
-        render(); if(!mine?.native)await openMatch(mine, true);
+        if (mine?.status === 'waiting') waitingRoom = mine.room_no;
+        else if (!mine) waitingRoom = null;
+        // Only a waiting room observed in this visit may enter automatically.
+        // A saved playing room from a previous visit is never resumed.
+        const justStarted = mine?.status === 'playing' && waitingRoom === mine.room_no;
+        render();
+        if (!mine?.native && justStarted) { await openMatch(mine, true); if (openedMatch === mine.match_id) waitingRoom = null; }
       } catch (error) { if (current(actor) && revision === epoch && !pollAgain) { issue = message(error); render(); } }
       finally { polling = false; if (pollAgain) { pollAgain = false; void poll(); } else schedule(); }
     }
@@ -128,7 +134,7 @@
       const actor = options.getUserId();
       const changedOwner = actor !== owner;
       if (changedOwner) {
-        epoch++; owner = actor; rooms = []; mine = null; openedMatch = null; issue = ''; signature = '';
+        epoch++; owner = actor; rooms = []; mine = null; openedMatch = null; waitingRoom = null; issue = ''; signature = '';
         lastRead = null; canMatgo = options.matgoAllowed?.() === true; clearTimeout(timer); timer = null;
       }
       const node = document.querySelector('[data-arcade-rooms]');
@@ -147,7 +153,7 @@
       sync();
       if (!owner || !room?.is_host || !room.is_member || !Number.isSafeInteger(room.room_no) || !games[room.kind] || typeof room.title !== 'string' || room.status !== 'waiting') { void poll(true); return; }
       // The same-origin game sends the server's safe room card; joining still requires the RPC.
-      epoch++; mine = room; rooms = rooms.filter(r => r.room_no !== room.room_no); rooms.push(room);
+      epoch++; mine = room; waitingRoom = room.room_no; rooms = rooms.filter(r => r.room_no !== room.room_no); rooms.push(room);
       issue = ''; render(); revealMine(); void poll(true);
     }
     async function perform(action, params, actor) {
@@ -156,6 +162,8 @@
         const data = await call(action, params);
         if (!current(actor)) return null;
         mine = data.room.status === 'closed' ? null : data.room;
+        if (mine?.status === 'waiting') waitingRoom = mine.room_no;
+        else if (!mine) waitingRoom = null;
         rooms = rooms.filter(r => r.room_no !== data.room.room_no);
         if (mine) rooms.unshift(mine);
         issue = ''; render(); return data.room;
@@ -225,6 +233,15 @@
       } catch (error) { if (current(actor)) { options.notify(message(error)); void poll(true); } }
     }
     function chooseRoom(room) {
+      if (room.is_member && room.status === 'playing') {
+        const actor = owner;
+        if (busy || !current(actor) || typeof options.onFreshGame !== 'function') return;
+        busy = true; epoch++; render();
+        Promise.resolve().then(() => { if (current(actor)) return options.onFreshGame(room, actor); })
+          .catch(error => { if (current(actor)) options.notify(message(error)); })
+          .finally(() => { busy = false; render(); if (current(actor)) void poll(true); else schedule(); });
+        return;
+      }
       if(room.native){void options.onOpen(room,owner).catch(error=>options.notify(message(error)));return;}
       if (room.kind !== 'janggi' || room.is_member) { void join(room); return; }
       options.renderModal(`<div class="mhead"><h3>방 #${room.room_no} 참여</h3><button class="btn sm ghost" data-act="close">닫기</button></div><form id="arcade-join-form"><p>${escape(room.title)}</p>${layoutSelect('hehe')}<div class="mfoot"><button type="submit" class="btn pri">이 배치로 참여</button></div></form>`, '장기방 참여');

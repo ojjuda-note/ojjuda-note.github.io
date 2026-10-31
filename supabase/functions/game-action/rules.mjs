@@ -2,8 +2,15 @@ import { boards, billiards } from './engines.mjs';
 
 const fail = code => { throw new Error(code); };
 const side = (game, user) => user === game.p1 ? 'p1' : user === game.p2 ? 'p2' : fail('not_a_player');
+export const currentSeat = game => boards[game.kind] ? (game.moves.length % 2 ? 'p2' : 'p1') : game.turn;
+export function activePlayer(game,user) {
+  const seat=side(game,user);
+  if (game.computer_seats?.includes(seat)) fail('player_left');
+  return seat;
+}
+
 export function verifyAction(game, user, body) {
-  const player = side(game, user);
+  const player = activePlayer(game, user);
   if (game.status !== 'playing') fail('not_playing');
   if (!Number.isInteger(body.p_ply) || body.p_ply !== game.moves.length) fail('out_of_sync');
   if (game.undo_requested_by) fail('undo_pending');
@@ -54,4 +61,37 @@ export function verifyAction(game, user, body) {
       sc:[next.score.p1,next.score.p2],g:[group(next.groups.p1),group(next.groups.p2)],
       ih:next.inHand?1:0,o:next.over?.winner || null,m:judged.msg.slice(0,40)},
     turn:next.turn,state:next,result:next.over?.winner || null,reason:next.over?'win':null };
+}
+
+// The member requests a tick, never supplies the computer's move or identity.
+export function verifyComputerAction(game,user) {
+  activePlayer(game,user);
+  if (game.status !== 'playing' || !game.computer_seats?.includes(currentSeat(game))) return null;
+  if (game.undo_requested_by) fail('undo_pending');
+  const player=currentSeat(game),actor=game[player],engine=boards[game.kind];
+  let action,input;
+  if (engine) {
+    if (game.kind === 'janggi' && !['c','h'].every(s=>['eheh','hehe','ehhe','heeh'].includes(game.janggi_layout?.[s]))) return null;
+    let state=engine.init(game.janggi_layout||{});
+    for (const stored of game.moves) {
+      const move=engine.find(state,stored);if(!move)fail('invalid_history');state=engine.apply(state,move);
+    }
+    const move=engine.best(state,'normal',250);if(!move)fail('game_already_over');
+    action='game_move';input=move.pass?{pass:1}:{f:move.f,t:move.t,...(move.p?{p:move.p}:{})};
+  } else {
+    if (!['carom4','carom3','pool8'].includes(game.kind)) fail('bad_kind');
+    const state=game.moves.length?structuredClone(game.verified_state):billiards.init(game.kind);
+    if (!state||state.mode!==game.kind||state.shots!==game.moves.length||state.turn!==player)fail('invalid_history');
+    if(state.over)fail('game_already_over');
+    const shot=billiards.best(state,'normal');
+    if (state.inHand && (shot.cx===undefined || !billiards.canPlace(state,shot.cx,shot.cy))) {
+      let placement;
+      for(let y=state.breakShot?780:30;y<980&&!placement;y+=30)for(let x=30;x<480;x+=30)if(billiards.canPlace(state,x,y)){placement={x,y};break;}
+      if(!placement)fail('illegal_placement');
+      Object.assign(shot,{dx:0,dy:-1,v:600,top:0,side:0,cx:placement.x,cy:placement.y});
+    }
+    action='game_shot';input={s:[shot.dx,shot.dy,shot.v,shot.top,shot.side,...(shot.cx===undefined?[]:[shot.cx,shot.cy])]};
+  }
+  // Reuse the exact human rule validation and canonical result generation.
+  return verifyAction({...game,computer_seats:[]},actor,{action,p_ply:game.moves.length,p_move:input});
 }

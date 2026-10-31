@@ -1,15 +1,27 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
-async function fixture(available){
+async function fixture(available,storage={}){
  const [{Game},data,tutorial,{recommend},{createHintPurchase},{CARD_GUIDES},{CHARACTER_GUIDES}]=await Promise.all([import('../games/bang/engine.js'),import('../games/bang/data.js'),import('../games/bang/tutorial.js'),import('../games/bang/hints.js'),import('../games/bang/hint-purchase.js'),import('../games/bang/card-guides.js'),import('../games/bang/character-guides.js')]);
  const dom=new JSDOM('<div id="app"></div><div id="overlay" hidden></div><aside id="tutorial-coach" hidden></aside><div id="toast"></div>',{url:'https://ojjuda.kr/games/bang/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
  w.scrollTo=()=>{};w.structuredClone=structuredClone;
+ for(const [key,value] of Object.entries(storage))w.localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value));
  const online={embedded:false,available,busy:false,room:null,get playing(){return !!this.room?.state;},run:async(...args)=>{calls.push(args);return null;},move:async move=>{calls.push(['move',move]);online.busy=true;online.onChange();return null;}};
  Object.assign(w,{Game,...data,...tutorial,recommend,createHintPurchase,CARD_GUIDES,CHARACTER_GUIDES,online});
  let source=fs.readFileSync(path.join(__dirname,'../games/bang/app.js'),'utf8').replace(/^import .*;\n/gm,'');
  source+='\nwindow.qa={expected(){return {...tutorial.expected(),step:tutorial.step,done:tutorial.done};},table(s,remote=false){clearTimeout(botTimer);tutorial=null;practicePreview=null;game=new Game(structuredClone(s));page="game";selected=null;targeting=false;modal=null;resultSeen=false;eliminationSeen=false;online.busy=false;online.room=remote?{id:"test",version:1,seat:0,mode:"solo",status:"active",state:game.s}:null;render();},result(record){clearTimeout(botTimer);const g=new Game(null,()=>.42);g.create({count:4,role:"sheriff",character:"bart"});g.s.winner="sheriff";game=g;page="game";resultSeen=false;online.room=record===false?null:{id:"qa",mode:"solo",seat:0,code:"TEST",status:"finished",state:g.s,record};render();},tutorial(){online.room=null;beginTutorial();},snapshot(){return JSON.stringify({state:game.s,step:tutorial?.step,selected,targeting,settings});},stepTo(step){while(tutorial.step<step&&!tutorial.done){const e=tutorial.expected();tutorialAction(e.action,e.value);}}}';w.eval(source);
  return {dom,w,calls};
 }
+test('new practice visits discard the old round while keeping sound, speed and purchase receipts',async()=>{
+ const {Game}=await import('../games/bang/engine.js'),g=new Game(null,()=>.42);g.create({count:4,role:'sheriff',character:'bart'});
+ const receipt='{"id":"pending-purchase","owner":"member","roomId":"previous-room","version":3,"status":"pending"}',storage={'ojjuda-bang-practice-v1':g.s,'bang-sound':'1','bang-fast':'1','ojjuda-bang-hint-v1:member':receipt};
+ const {dom,w}=await fixture(false,storage);try{
+  assert.equal(w.document.querySelector('[data-action=resume]'),null);assert.equal(w.localStorage.getItem('ojjuda-bang-practice-v1'),null);
+  assert.equal(w.localStorage.getItem('bang-sound'),'1');assert.equal(w.localStorage.getItem('bang-fast'),'1');assert.equal(w.localStorage.getItem('ojjuda-bang-hint-v1:member'),receipt);
+  w.document.querySelector('[data-action=start]').click();assert.ok(w.document.querySelector('.game-layout'));
+  w.document.querySelector('[data-action=home]').click();w.document.querySelector('[data-action=goLobby]').click();
+  assert.equal(w.document.querySelector('[data-action=resume]'),null,'returning to setup also leaves the old practice round');assert.equal(w.localStorage.getItem('ojjuda-bang-practice-v1'),null);
+ }finally{dom.window.close();}
+});
 test('signed-in computer start uses the server and never creates an unranked local game',async()=>{
  const {dom,w,calls}=await fixture(true);try{
   assert.match(w.document.querySelector('[data-action=start]').textContent,/컴퓨터 대전 · 순위 반영/);

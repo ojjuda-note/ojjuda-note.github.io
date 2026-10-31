@@ -2,7 +2,7 @@ const {PGlite}=require('@electric-sql/pglite');
 const {randomUUID}=require('node:crypto'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const ids=Array.from({length:14},(_,i)=>`a0000000-0000-0000-0000-${String(i+1).padStart(12,'0')}`);
-async function fixture(){
+async function fixture({handoff=true}={}){
  const db=new PGlite();
  await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;
   create table auth.users(id uuid primary key,is_anonymous boolean default false);
@@ -23,6 +23,7 @@ async function fixture(){
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018090311_tank_homing_shell.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018141945_tank_steel_rain.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/20261018163208_tank_nuclear_restore_price.sql'),'utf8'));
+ if(handoff)await require('./game-handoff-migration.cjs')(db,'tank');
  const {createHandler}=await import(path.join(root,'supabase/functions/tank/handler.mjs'));
  let roll=[],holdDeadlines=false;
  const fetchImpl=async(url,options)=>{

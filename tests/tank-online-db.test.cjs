@@ -56,10 +56,11 @@ const {fixture,ids}=require('./tank-online-fixture.cjs');
   assert.equal((await db.query('select count(*)::integer n from ojjuda_note_internal.spend_requests')).rows[0].n,2);
   // A missing player cannot hold the room forever.
   await db.query("update ojjuda_tank_internal.rooms set deadline=now()-interval '1 second' where id=$1",[room.id]);
-  const timedOut=room;room=ok(await call(a,{action:'read',room_id:room.id}));assert.equal(room.version,timedOut.version+1);assert.equal(room.event.type,'timeout');assert.notDeepEqual(room.game.turnOrder,timedOut.game.turnOrder);
+  const timedOut=room;room=ok(await call(a,{action:'read',room_id:room.id}));assert.equal(room.version,timedOut.version+1);assert.equal(room.event.type,'fire');assert.equal(room.event.timeout,true);assert.equal(room.event.computer,true);assert.equal(room.game.shotNo,timedOut.game.shotNo+1);assert.ok(room.rankExcluded.includes(timedOut.game.turn));assert.deepEqual(room.computerSeats,[],'deadline assistance does not evict the returning human');
   room=ok(await call(a,{action:'surrender',room_id:room.id,version:room.version,request_id:randomUUID()}));assert.equal(room.status,'finished');
   const wins=(await db.query('select * from ojjuda_tank_internal.wins')).rows;
-  assert.equal(wins.length,1);assert.equal(wins[0].user_id,guest,'only the authoritative surviving player receives a win');
+  if(timedOut.game.turn===1)assert.equal(wins.length,0,'an AI-assisted survivor cannot receive a ranked win');
+  else{assert.equal(wins.length,1);assert.equal(wins[0].user_id,guest,'only the authoritative surviving human receives a win');}
   assert.ok(!JSON.stringify(room).includes(a));assert.ok(!JSON.stringify(room).includes('requests'));
   // Full 12-person admission, membership and reconnect; a 13th cannot enter.
   let large=ok(await create(a,12));for(const id of ids.slice(1,12))large=ok(await join(id,large));

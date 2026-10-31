@@ -4,10 +4,17 @@
   const $=id=>document.getElementById(id),puzzles=window.JJUDA_PUZZLES,core=window.JjudaGame,wallet=window.JjudaWallet;
   const storageKey='jjuda-spot-six-v1';let stored=null,storageWorks=true;
   try{stored=JSON.parse(localStorage.getItem(storageKey));}catch{storageWorks=false;}
-  // Preserve an unresolved payment across reloads so its receipt can be recovered.
-  const pendingStored=stored?.rounds?.[puzzles[stored.current]?.id]?.pending;
-  const state=core.cleanProgress(pendingStored?stored:null,puzzles);
-  if(!pendingStored&&puzzles.length>1&&state.current===stored?.current){
+  // Recover only the receipt. A return always starts with a clean round and a
+  // newly shuffled order, including when an earlier payment response was lost.
+  const pendingIndex=Number.isInteger(stored?.current)&&stored.current>=0&&stored.current<puzzles.length?stored.current:null,pendingId=pendingIndex===null?null:puzzles[pendingIndex].id;
+  const pendingStored=stored?.rounds?.[pendingId]?.pending;
+  const pending=pendingStored?core.cleanProgress(stored,puzzles).rounds[pendingId]?.pending:null;
+  const state=core.cleanProgress(null,puzzles);
+  if(pending){
+    state.current=pendingIndex;state.order=[pendingIndex,...state.order.filter(index=>index!==pendingIndex)];
+    state.rounds[pendingId]={...core.freshRound(),status:'payment',pending,rankOwner:pending.userId};
+  }
+  if(!pending&&puzzles.length>1&&state.current===stored?.current){
     const next=1+Math.floor(Math.random()*(state.order.length-1));
     [state.order[0],state.order[next]]=[state.order[next],state.order[0]];
     state.current=state.order[0];

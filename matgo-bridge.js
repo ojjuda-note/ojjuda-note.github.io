@@ -4,6 +4,53 @@
   let overlay = null, frame = null, opening = null, unsubscribe = null, previousFocus = null;
   let generation = 0, onlineReady=false;
   let releaseViewport=null;
+  let session=null,cleanup=null;const retired=[];
+  function noteResponse(current,result,body,arcade=false){
+    const data=result?.data;if(!data?.ok)return;
+    if(arcade){if(data.room?.match_id)current.rooms.add(data.room.match_id);return;}
+    if(['settle','abandon'].includes(body.action)){current.rounds.delete(body.round_id);current.finishedRounds.add(body.round_id);}
+    else if(data.round?.id&&!current.finishedRounds.has(data.round.id))current.rounds.add(data.round.id);
+    if(body.action==='online_leave'){current.rooms.delete(body.room_id);current.leftRooms.add(body.room_id);}
+    else if(data.room?.id){
+      if(['online_create','online_join','online_quick','online_ready'].includes(body.action))current.leftRooms.delete(data.room.id);
+      if(['waiting','active'].includes(data.room.status)&&!current.leftRooms.has(data.room.id))current.rooms.add(data.room.id);
+      else current.rooms.delete(data.room.id);
+    }else if(data.online_room&&!current.leftRooms.has(data.online_room))current.rooms.add(data.online_room);
+  }
+  function track(source,body,arcade=false){
+    const current=session;
+    if(!current||current.closed||source!==frame?.contentWindow)return Promise.reject(Error('맞고를 다시 열어 주세요.'));
+    current.client ||= window.OjjudaMatgoAccess.getClient();
+    const request=Promise.resolve().then(()=>{
+      if(current.closed)throw Error('맞고를 다시 열어 주세요.');
+      return arcade?current.client.rpc('arcade_room_service',body):current.client.functions.invoke('matgo',{body});
+    }).then(result=>{noteResponse(current,result,body,arcade);return result;}).finally(()=>current.pending.delete(request));
+    current.pending.add(request);return request;
+  }
+  async function finishRetired(){
+    if(cleanup)return cleanup;
+    cleanup=(async()=>{
+      while(retired.length){
+        const previous=retired[0];
+        await Promise.allSettled([...previous.pending]);
+        for(const [ids,action,key] of [[previous.rooms,'online_leave','room_id'],[previous.rounds,'abandon','round_id']]){
+          for(const id of ids){
+            const auth=await previous.client.auth.getSession();
+            if(auth.error)throw Error('이전 판의 나가기를 확인하지 못했어요. 다시 열어 주세요.');
+            const member=auth.data?.session;
+            if(!previous.owner||member?.user?.id!==previous.owner){previous.rooms.clear();previous.rounds.clear();break;}
+            if(!member.access_token)throw Error('로그인을 확인한 뒤 맞고를 다시 열어 주세요.');
+            const result=await previous.client.functions.invoke('matgo',{body:{action,[key]:id,stakes_version:1},headers:{Authorization:'Bearer '+member.access_token}});
+            if(result.error||!result.data?.ok)throw Error('이전 판의 나가기를 확인하지 못했어요. 다시 열어 주세요.');
+            ids.delete(id);
+          }
+        }
+        retired.shift();
+      }
+    })().finally(()=>{cleanup=null;});
+    return cleanup;
+  }
+  window.OjjudaMatgoBridge={invoke:(source,body)=>track(source,body),arcade:(source,body)=>track(source,body,true)};
   function requestClose(){
     if(onlineReady&&frame)frame.contentWindow.postMessage({type:'ojjuda:matgo:request-close'},location.origin);
     else closeMatgo();
@@ -17,9 +64,15 @@
       showMessage.timer = setTimeout(() => target.classList.remove('show'), 4500);
     } else window.alert(message);
   }
-  function closeMatgo() {
+  function closeMatgo(preserveRoom=false) {
     generation++;
     opening = null;
+    const previous=session;session=null;
+    if(previous)previous.closed=true;
+    try{frame?.contentWindow?.OjjudaMatgoSession?.dispose();}catch{}
+    if(previous&&preserveRoom!==true&&(previous.pending.size||previous.rooms.size||previous.rounds.size)){
+      retired.push(previous);void finishRetired().catch(()=>{});
+    }
     if (unsubscribe) unsubscribe();
     unsubscribe = null;
     if (overlay) overlay.remove();
@@ -42,10 +95,13 @@
     const cancel = () => { if (opening === request || attempt === generation) closeMatgo(); };
     options.signal?.addEventListener('abort', cancel, {once:true});
     try {
+      if(retired.length)await finishRetired();
+      if(attempt!==generation||options.signal?.aborted)return false;
       const access = window.OjjudaMatgoAccess;
       if (!access) throw new Error('맞고를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.');
-      await access.check();
+      const member=await access.check();
       if (attempt !== generation || options.signal?.aborted) return false;
+      session={owner:member?.userId,client:null,closed:false,pending:new Set(),rooms:new Set(),rounds:new Set(),leftRooms:new Set(),finishedRounds:new Set()};
       previousFocus = document.activeElement;
       overlay = document.createElement('div');
       overlay.id = 'matgo-overlay';
@@ -71,7 +127,7 @@
       bar.append(close);
       frame = document.createElement('iframe');
       // Reopening must fetch current HTML; round rules still come from the server.
-      const params = new URLSearchParams({ v: '20261029-matgo-deal1', open: String(Date.now()) });
+      const params = new URLSearchParams({ v: '20261031-fresh-games1', open: String(Date.now()) });
       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
@@ -115,7 +171,7 @@
     }
     if (event.data?.type === 'ojjuda:matgo:room-created' && typeof window.OjjudaArcadeRoomCreated==='function') {
       const room=event.data.room;
-      closeMatgo();window.OjjudaArcadeRoomCreated(room);return;
+      closeMatgo(true);window.OjjudaArcadeRoomCreated(room);return;
     }
     if (event.data?.type === 'ojjuda:matgo:ready') onlineReady=false;
     if (['ojjuda:matgo:online-ready','ojjuda:matgo:ready'].includes(event.data?.type))document.getElementById('matgo-loading-bar')?.remove();

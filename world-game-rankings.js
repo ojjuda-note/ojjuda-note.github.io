@@ -44,6 +44,7 @@ async function result(query){const {data,error}=await query;if(error)throw error
    const section=el('section','','board-leaders');section.setAttribute('aria-label','게임순위');section.dataset.worldSwipe='off';
    const head=el('header','','board-rank-head');head.append(el('h3','게임순위'),el('span','이번 달','board-rank-caption'));section.append(head);
    const viewport=el('div','','board-rank-viewport'),track=el('div','','board-rank-track');viewport.append(track);const paper=el('div','','board-rank-paper');paper.append(viewport);section.append(paper);
+   section.append(el('p','중간 퇴장으로 컴퓨터가 대신한 사용자의 그 판 기록은 순위·연승에서 제외돼요.','note board-rank-rule'));
    const pages=[],targets=new Map();
    for(let start=0;start<entries.length;start+=3){
     const page=el('div','','board-rank-page'),table=el('table'),thead=el('thead'),tr=el('tr'),tbody=el('tbody');

@@ -101,9 +101,9 @@ world=world.replace('</head>','<script src="/game-entry.js" defer></script><scri
     assert.equal(await b.page.locator('.arcade-room-copy h4').textContent(),title,'untrusted title is rendered as text');
     const room=(await f.arcade(A,'list')).mine;
     if(kind==='matgo'){
-      // Returning to the room list must keep the waiting match, including after resuming it.
-      await a.page.locator('[data-act=matgo-open]').click();
-      await a.page.frameLocator('#matgo-overlay iframe').locator('#resume-room').click();
+      // An explicit transfer of this newly created room preserves its waiting match.
+      await a.page.evaluate(room=>window.openMatgo({roomId:room.match_id,roomNo:room.room_no,title:room.title}),room);
+      assert.equal(await a.page.frameLocator('#matgo-overlay iframe').locator('#resume-room').count(),0);
       await a.page.frameLocator('#matgo-overlay iframe').locator('#wait-in-chat').click();
       await a.page.locator('#matgo-overlay').waitFor({state:'detached'});
       assert.equal((await f.db.query('select status from ojjuda_matgo_internal.rooms where id=$1',[room.match_id])).rows[0].status,'waiting');

@@ -16,7 +16,7 @@ const source = fs.readFileSync(path.join(__dirname, '../screw3d.js'), 'utf8');
       let game, state, testScrew, obstacle, purchases = 0;
       function boot(L = 1) {
         localStorage.setItem(STAGE_KEY, String(L));
-        game = screw3d({ setScore() {}, getCoins: () => 0, buyScrew() { purchases++; }, end() {} });
+        game = screw3d({ setScore() {}, getCoins: () => 0, buyScrew() { purchases++; }, end() {} }, L);
         state = window.__ojjScrew3d; state.touched = true;
       }
       function fixture(big = false) {

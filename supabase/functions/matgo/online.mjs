@@ -172,11 +172,26 @@ export async function automaticOnline(room) {
   return {...next,reset_clock:true};
 }
 
+// When nobody remains, finish the existing deal in memory and commit one CAS.
+// This uses the same CPU choices and transcript verifier as normal takeover,
+// without a network round trip after every computer turn.
+export async function finishAutomaticOnline(room) {
+  if(!room.bots?.every(Boolean))throw Error('invalid_move');
+  for(let turns=0;turns<256;turns++){
+    const next=await automaticOnline(room);
+    if(!next)throw Error('invalid_move');
+    if(next.result)return next;
+    room={...room,actions:next.actions};
+  }
+  throw Error('invalid_move');
+}
+
 export async function onlineView(room,seat,cursor=0,replay=replayOnline) {
   const base={id:room.id,code:room.code,status:room.status,version:room.version,seat,mode:room.mode,
     quickDeadline:room.mode==='quick'?Date.parse(room.created_at)+5000:null,
     rate:room.round_rate??100,names:room.names,round:room.round_no,deadline:room.deadline,reason:room.reason||null,
     ready:room.ready||[false,false],gold:room.gold,bots:room.bots||[false,false],departed:room.departed||[false,false],
+    rankExcluded:room.rank_excluded||[false,false],
     autoCount:room.auto_count||0,lastAuto:room.last_auto,serverTime:Date.now()};
   if(room.status==='waiting'||room.status==='cancelled')return base;
   const {game:g,prompt,result,events}=await replay(room);

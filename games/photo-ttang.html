@@ -816,16 +816,18 @@ $('pause').onclick=()=>{ if(over||mode!=='play') return; paused=true; panel(`<h2
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&mode==='play'&&!paused&&!over) $('pause').click(); });
 // ---------- 루프 ----------
 let last=performance.now(), hudT=0;
-function loop(now){ if(mode==='play'&&!photoAllowed())lockPhotoGame();const dt=Math.min(.05,(now-last)/1000); last=now;
+function loop(now){ if(mode==='closed')return;if(mode==='play'&&!photoAllowed())lockPhotoGame();const dt=Math.min(.05,(now-last)/1000); last=now;
   if(world) world.setViewScale(view().S);
   if(world&&mode==='play'&&!paused&&photoImg?.naturalWidth>0){ if(startWait>0){ startWait-=dt; const n=Math.ceil(startWait); if(n!==cdLast&&n>0){ cdLast=n; tone(660,.12,'triangle',.07); } if(startWait<=0){ startWait=0; tone(990,.25,'triangle',.08); toast('시작!','#F2C14E'); } } else if(revealT>=0) revealT+=dt; else { world.step(dt); if(me&&me.freezeT>0){ const n=Math.ceil(me.freezeT); if(n!==frzLast){ frzLast=n; tone(660,.1,'triangle',.06); } } updateMobs(dt); handleEvents(); if(!over&&me.alive&&mySil/silTotal>=GOAL){ win(); }
       if(!over){ const left=endAt-world.time; if(left<=10&&Math.ceil(left)!==tick){ tick=Math.ceil(left); if(tick>0){ tone(tick<=3?990:740,.08,'square',.05); try{ navigator.vibrate&&navigator.vibrate(15); }catch{} } }
         if(left<=0) timeUp(); } } }
   draw(paused?0:dt); if(now-hudT>120){ hudT=now; hud(); } requestAnimationFrame(loop); }
-window.OjjudaPhotoTtang={menu:toMenu,demo:()=>{if(!PUBLIC_DEMO)return false;resize();renderGrid();lives=LIVES;return startStage(0);}};
+function disposePhotoGame(){ ++gridEpoch;mode='closed';over=true;paused=true;world=me=null;uploadTrial=null;photoImg=fullImg=blurredPhoto=null;joys.clear();document.querySelectorAll('.joy').forEach(e=>e.remove());releasePhotoAccess?.(); }
+window.OjjudaPhotoTtang={menu:toMenu,dispose:disposePhotoGame,demo:()=>{if(!PUBLIC_DEMO)return false;resize();renderGrid();lives=LIVES;return startStage(0);}};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&parent!==window){e.preventDefault();parent.postMessage({type:'ojjuda:photottang:close'},location.origin);}});
 const releasePhotoAccess=PUBLIC_DEMO?null:photoAccess?.subscribe(lockPhotoGame);
-addEventListener('pagehide',()=>releasePhotoAccess?.(),{once:true});
+addEventListener('pagehide',disposePhotoGame,{once:true});
+addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 if(PUBLIC_DEMO){mode='demo-ready';$('menu').style.display='none';}else if(photoAllowed())toMenu();else Promise.resolve(photoAccess?.check()).then(()=>photoAllowed()?toMenu():lockPhotoGame()).catch(lockPhotoGame);
 requestAnimationFrame(loop);
 

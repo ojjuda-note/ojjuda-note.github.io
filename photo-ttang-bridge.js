@@ -1,7 +1,7 @@
 /* World's Photo Ttang entry uses the same 19+ member gate as Matgo. */
 (() => {
  'use strict';
- let overlay=null,frame=null,watcher=null,refreshTimer=null,unsubscribe=null,previousFocus=null,opening=false,generation=0,rankDispose=null;
+ let overlay=null,frame=null,watcher=null,refreshTimer=null,unsubscribe=null,previousFocus=null,opening=null,generation=0,rankDispose=null;
  const bridge={client:null,nick:'',open,close};window.OjjudaPhotoTtangBridge=bridge;
  window.openPhotoTtang=options=>open(options);
  function message(error){
@@ -11,16 +11,16 @@
  }
  function close(force=false){
   if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){message(new Error('구매 결과를 확인 중이에요. 잠시만 기다려 주세요.'));return false;}
-  generation++;rankDispose?.();rankDispose=null;unsubscribe?.();unsubscribe=null;clearInterval(watcher);clearInterval(refreshTimer);
+  generation++;opening=null;rankDispose?.();rankDispose=null;unsubscribe?.();unsubscribe=null;clearInterval(watcher);clearInterval(refreshTimer);
   if(!overlay)return;
-  try{frame?.contentWindow?.OjjudaPhotoTtang?.menu();}catch{}
+  try{const game=frame?.contentWindow?.OjjudaPhotoTtang;if(game?.dispose)game.dispose();else game?.menu();}catch{}
   overlay.remove();overlay=frame=null;bridge.client=null;bridge.nick='';
   document.body.classList.remove('gaming','photo-ttang-open');
   if(previousFocus?.isConnected)previousFocus.focus();previousFocus=null;
  }
  async function open({client,owner,nick='',authorized=()=>true}={}){
   if(opening||overlay||!authorized())return;
-  opening=true;const attempt=generation,access=window.OjjudaPhotoTtangAccess;
+  const request={};opening=request;const attempt=generation,access=window.OjjudaPhotoTtangAccess;
   try{
    if(!access)throw Error('나이를 확인하지 못했어요. 다시 시도해 주세요.');
    if(client)access.configure(client);
@@ -35,14 +35,14 @@
    const title=document.createElement('span');title.textContent='포토땅따먹기 · 솔로 · 19+';
    const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','포토땅따먹기 닫기');done.onclick=close;
    done.style.cssText='font:inherit;color:inherit;border:1px solid #ffffff40;background:#ffffff22;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';
-   frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261023-entry1';frame.allow='vibrate';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+   frame=document.createElement('iframe');frame.title='포토땅따먹기';frame.src='/games/photo-ttang.html?v=20261031-fresh-games1';frame.allow='vibrate';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
    const rank=document.createElement('button');rank.type='button';rank.disabled=true;rank.textContent='이번 달 완료 사진 수로 순위 집계';rank.style.cssText='font:inherit;color:inherit;background:none;border:0';
    rankDispose=window.OjjudaPhotoRanking?.bind({frame,client,owner,authorized:()=>authorized()&&access.allowed(),status:rank});
    bar.append(title,rank,done);overlay.append(bar,frame);document.body.append(overlay);document.body.classList.add('gaming','photo-ttang-open');done.focus();
    unsubscribe=access.subscribe(error=>{close(true);message(error);});
    watcher=setInterval(()=>{if(!authorized()||!access.allowed())close(true);},500);
    refreshTimer=setInterval(()=>{void access.refresh().catch(()=>{});},30000);
-  }catch(error){message(error);}finally{opening=false;}
+  }catch(error){if(attempt===generation)message(error);}finally{if(opening===request)opening=null;}
  }
  addEventListener('keydown',e=>{if(overlay&&e.key==='Escape'){e.preventDefault();close();}});
  addEventListener('message',e=>{if(overlay&&e.origin===location.origin&&e.source===frame?.contentWindow&&e.data?.type==='ojjuda:photottang:close')close();});

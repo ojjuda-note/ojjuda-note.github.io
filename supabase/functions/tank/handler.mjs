@@ -6,9 +6,11 @@ const errors=new Set(['not_signed_in','banned','room_in_progress','room_rate_lim
 const actions=new Set(['list','mine','create','join','read','start','fire','cpu','surrender','leave']);
 function view({room:r,seat,coins}){
  if(!r)return null;
+ const computerSeats=r.computer_seats||[],label=(name,i)=>computerSeats.includes(i)?name+' (컴퓨터)':name;
+ const game=r.state&&computerSeats.length?{...r.state,names:r.state.names.map(label),tanks:r.state.tanks.map((tank,i)=>({...tank,name:label(tank.name,i)}))}:r.state;
  return {id:r.id,code:r.code,title:r.title,capacity:r.capacity,mode:r.mode||'online',names:r.names,seat,
   hostSeat:r.members.indexOf(r.host_id),status:r.status,version:r.version,deadline:r.deadline,
-  serverTime:Date.now(),game:r.state,event:r.last_event,coins};
+  serverTime:Date.now(),game,event:r.last_event,computerSeats,rankExcluded:r.rank_excluded||[],coins};
 }
 export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValues(new Uint32Array(1))[0]}){
  const url=env('SUPABASE_URL'),service=env('SUPABASE_SERVICE_ROLE_KEY'),anon=env('SUPABASE_ANON_KEY');
@@ -51,8 +53,9 @@ export function createHandler({env,fetchImpl=fetch,seed=()=>crypto.getRandomValu
    };
    const catchUp=async result=>{
     if(!result.room||result.room.mode!=='online'||result.room.status!=='active'||Date.parse(result.room.deadline)>Date.now())return result;
-    const command={type:'timeout'},next=advance(result.room.state,result.room.state.turn,command);
-    try{return await rpc('commit',{p_room:result.room.id,p_expected:result.room.version,p_request:crypto.randomUUID(),p_next:{...next,event:{type:'timeout',fromVersion:result.room.version,actor:result.room.state.turn}}});}
+    const command=computerCommand(result.room.state,Date.now()),next=advance(result.room.state,result.room.state.turn,command);
+    const event={type:'fire',fromVersion:result.room.version,actor:result.room.state.turn,computer:true,timeout:true,command};
+    try{return await rpc('commit',{p_room:result.room.id,p_expected:result.room.version,p_request:crypto.randomUUID(),p_next:{...next,event}});}
     catch(e){if(e.message!=='state_conflict'&&e.message!=='room_unavailable')throw e;return rpc('read',{p_room:result.room.id});}
    };
    let result;

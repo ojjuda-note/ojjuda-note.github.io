@@ -3,14 +3,11 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {PGlite}=require('@electric-sql/pglite');
 (async()=>{
-  const {verifyAction}=await import('../supabase/functions/game-action/rules.mjs');
+  const {verifyAction,currentSeat}=await import('../supabase/functions/game-action/rules.mjs');
   const {createHandler}=await import('../supabase/functions/game-action/handler.mjs');
-  const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
-  const lobbySource=world.match(/,f=u=>([^;]+?),m=[^;]*;c\.length/)[1];
-  const myTurn=new Function('u','i',`return ${lobbySource}`);
-  assert.equal(myTurn({kind:'janggi',p1:'me',moves:[],turn:'p2'},'me'),true,'accepted undo must restore the lobby turn indicator');
-  assert.equal(myTurn({kind:'chess',p1:'me',moves:[{}],turn:'p1'},'me'),false);
-  assert.equal(myTurn({kind:'carom4',p1:'me',moves:[{}],turn:'p1'},'me'),true,'billiards may keep the same turn after scoring');
+  assert.equal(currentSeat({kind:'janggi',moves:[],turn:'p2'}),'p1','board turns follow the canonical move history after an undo');
+  assert.equal(currentSeat({kind:'chess',moves:[{}],turn:'p1'}),'p2');
+  assert.equal(currentSeat({kind:'carom4',moves:[{}],turn:'p1'}),'p1','billiards may keep the same turn after scoring');
   const a='00000000-0000-4000-8000-000000000001',b='00000000-0000-4000-8000-000000000002',id='00000000-0000-4000-8000-000000000010';
   const fresh=kind=>({id,kind,p1:a,p2:b,status:'playing',moves:[],turn:'p1',updated_at:'2026-09-29T00:00:00Z',janggi_layout:{c:'eheh',h:'hehe'}});
   const move=(game,user,p_move)=>verifyAction(game,user,{action:'game_move',p_ply:game.moves.length,p_move});

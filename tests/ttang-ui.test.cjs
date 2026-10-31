@@ -71,6 +71,9 @@ const capture=await host.evaluate(()=>{
 });
 assert.deepEqual(capture,{alive:false,why:'capture',kills:1});
 await guest.waitForFunction(()=>world.players[0].kills===1&&!world.players[1].alive&&world.own[world.si(12,12)]===world.players[0].id);
-await host.evaluate(()=>OjjudaTtang.menu());await guest.getByText('친구가 나갔어요').waitFor();assert.deepEqual(errors,[]);
-console.log('PASS: mobile/landscape layout, practice without UUID API, small touch drags in practice and multiplayer, pause/resume, result save, duplicate and invalid results, account change cleanup, close');
+const activeRound=await guest.evaluate(()=>roundId);
+await host.evaluate(()=>OjjudaTtang.menu());await guest.waitForFunction(()=>mode==='net'&&role==='host'&&p2.bot&&!over);
+assert.equal(await guest.evaluate(()=>roundId),activeRound,'the remaining guest continues the same captured board against AI');
+assert.equal(await guest.getByText('친구가 나갔어요').count(),0,'a peer exit does not end the remaining game');assert.deepEqual(errors,[]);
+console.log('PASS: mobile/landscape layout, practice without UUID API, small touch drags in practice and multiplayer, pause/resume, result save, duplicate and invalid results, account change cleanup, close and same-round AI takeover');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

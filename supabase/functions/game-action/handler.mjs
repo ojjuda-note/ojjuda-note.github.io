@@ -1,4 +1,4 @@
-import { verifyAction } from './rules.mjs';
+import { verifyAction,verifyComputerAction,activePlayer } from './rules.mjs';
 const origins = new Set(['https://ojjuda.kr','https://www.ojjuda.kr','https://ojjuda-note.github.io']);
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 export function createHandler({env,fetchImpl=fetch}) {
@@ -22,7 +22,7 @@ export function createHandler({env,fetchImpl=fetch}) {
       while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>4096){await reader.cancel();throw Error();}chunks.push(value);}
       const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
       body=JSON.parse(new TextDecoder().decode(bytes));
-      if(!uuid.test(body.p_id)||!['game_move','game_shot'].includes(body.action))throw Error();
+      if(!uuid.test(body.p_id)||!['game_move','game_shot','game_tick'].includes(body.action))throw Error();
     } catch {return reply({error:'bad_request'},400);}
     const get=(path,options={})=>fetchImpl(url+path,{signal:AbortSignal.timeout(10000),...options});
     try {
@@ -34,12 +34,30 @@ export function createHandler({env,fetchImpl=fetch}) {
       const response=await get(`/rest/v1/board_games?id=eq.${body.p_id}&select=*`,{headers:{apikey:anon,authorization}});
       if(!response.ok)return reply({error:'game_unavailable'},503);
       const game=(await response.json())[0];
+      const computer=body.action==='game_tick';
       if(!game||![game.p1,game.p2].includes(user.id))return reply({error:'not_a_player'},403);
-      let checked;try{checked=verifyAction(game,user.id,body);}catch(error){return reply({error:error.message},409);}
-      const saved=await get('/rest/v1/rpc/game_verified_commit',{method:'POST',
+      let checked;
+      try {
+        activePlayer(game,user.id);
+        if (computer && body.p_ply !== undefined && (!Number.isInteger(body.p_ply)||body.p_ply!==game.moves.length)) return reply({ok:true,game});
+        checked=computer?verifyComputerAction(game,user.id):verifyAction(game,user.id,body);
+      } catch(error){return reply({error:error.message},409);}
+      if (!checked) return reply({ok:true,game});
+      const saved=await get('/rest/v1/rpc/'+(computer?'game_computer_commit':'game_verified_commit'),{method:'POST',
         headers:{apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'},
-        body:JSON.stringify({p_id:game.id,p_actor:user.id,p_ply:body.p_ply,p_updated_at:game.updated_at,
+        body:JSON.stringify({p_id:game.id,p_actor:user.id,p_ply:game.moves.length,p_updated_at:game.updated_at,
           p_move:checked.move,p_turn:checked.turn,p_result:checked.result,p_reason:checked.reason,p_state:checked.state})});
+      if (computer) {
+        // Concurrent ticks or a leave may win the revision lock. Always return
+        // the authoritative latest row; a duplicate tick cannot append twice.
+        const latest=await get(`/rest/v1/board_games?id=eq.${body.p_id}&select=*`,{headers:{apikey:anon,authorization}});
+        if(!latest.ok)return reply({error:'game_unavailable'},503);
+        const updated=(await latest.json())[0];
+        if(!updated)return reply({error:'not_a_player'},403);
+        try{activePlayer(updated,user.id);}catch(error){return reply({error:error.message},409);}
+        if(!saved.ok && updated.updated_at===game.updated_at)return reply({error:'out_of_sync'},409);
+        return reply({ok:true,game:updated});
+      }
       if(!saved.ok)return reply({error:'out_of_sync'},409);
       return reply({ok:true,move:checked.move,result:checked.result});
     }catch{return reply({error:'game_unavailable'},503);}

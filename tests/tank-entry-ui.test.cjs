@@ -89,7 +89,7 @@ window.tankEntryFixture={completed:[],coins:()=>$.coins};
     await page.locator('.tank-game-dialog').waitFor({state:'detached'});
    }
    await frame.locator('#startSolo:not([disabled])').waitFor();await entry();
-   if(mode==='online'){
+   async function start(){if(mode==='online'){
     await frame.locator('#onlineMode').click();
     await frame.locator('#roomTitle').fill('로컬 테스트 대전');
     await frame.locator('#createRoom button[type="submit"]').click();
@@ -103,12 +103,21 @@ window.tankEntryFixture={completed:[],coins:()=>$.coins};
     if(mode==='local')await frame.locator('#localPlayers').selectOption('2');
     else assert.equal(await frame.locator('#soloOpponents').inputValue(),'3','the reported default three-computer setup is preserved');
     await frame.locator(mode==='local'?'#startLocal':'#startSolo').click();
-   }
+   }}
+   await start();
    await playing();
    assert.equal(await page.evaluate(()=>tankEntryFixture.coins()),100,'the real World wallet callback accepts the service response');
+   const previous=(await service.call(actor,{action:'mine'})).room.id;
    await close();await card.click();
-   await frame.locator('#resumeMatch:not([disabled])').waitFor();await entry();
-   await frame.locator('#resumeMatch').click();await playing();
+   await frame.locator('#startSolo:not([disabled])').waitFor();await entry();
+   assert.equal(await frame.locator('#resumeMatch').isVisible(),false,'returning starts at a fresh entrance');
+   assert.equal((await service.call(actor,{action:'mine'})).room,null,'the previous game was left through the server');
+   if(mode==='online'){
+    const continuing=await service.call(friend,{action:'read',room_id:previous});assert.equal(continuing.room.status,'active');assert.ok(continuing.room.computerSeats.includes(0),'the other person keeps the inherited match');
+    assert.equal((await service.call(friend,{action:'leave',room_id:previous,version:continuing.room.version,request_id:crypto.randomUUID()})).room,null);
+   }
+   await start();await playing();
+   assert.notEqual((await service.call(actor,{action:'mine'})).room.id,previous,'reentry creates a different game');
    if(mode!=='online'){
     await frame.locator('#surrender').click();
     const start=frame.locator(mode==='local'?'#startLocal':'#startSolo');
@@ -125,7 +134,7 @@ window.tankEntryFixture={completed:[],coins:()=>$.coins};
    assert.ok(calls.includes('mine')&&calls.includes('create')&&calls.includes('start')&&calls.includes('fire'));
    assert.deepEqual(errors,[],'no World/bridge/iframe errors');
    await context.close();
-   console.log(`PASS: ${mode} ${viewport.width}x${viewport.height}, real World entry, visible start/resume${mode!=='online'?'/return/new game':''}, aim/fire and service response.`);
+   console.log(`PASS: ${mode} ${viewport.width}x${viewport.height}, real World entry, fresh reentry${mode!=='online'?'/return/new game':''}, aim/fire and service response.`);
   }
  }finally{await browser.close();await service.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

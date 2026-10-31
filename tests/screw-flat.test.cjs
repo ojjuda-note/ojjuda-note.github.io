@@ -47,7 +47,7 @@ let last=0,maxScrews=0;const shapes=new Set(),cornerCounts=new Set(),firstShape=
 assert.equal(LAST_STAGE,1000);assert.equal(P.LAST_STAGE,LAST_STAGE);
 // All layouts use only three spare holes above the picture, never beside it.
 for(let stage=1;stage<=LAST_STAGE;stage++){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
  assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
  if(stage>=11){assert.ok(P.SHAPE_NAMES.includes(st.level.shape));shapes.add(st.level.shape);if(!firstShape.has(st.level.shape))firstShape.set(st.level.shape,stage);}
  assert.equal(st.level.holes.length-st.level.screws.length,3);
@@ -82,8 +82,8 @@ assert.equal(new Set([11,18,25,32,39,46].map(n=>G.makeFlatLevel(n).picture)).siz
 assert.deepEqual(Array.from({length:10},(_,i)=>G.makeFlatLevel(i+1).plates.length),[1,2,2,3,3,4,4,5,5,6],'the first ten stages introduce one piece at a time');
 assert.ok(cornerCounts.has(4)&&cornerCounts.has(5)&&cornerCounts.has(6),'cuts create different polygon pieces');
 for(const [stage,pieces] of [[19,7],[20,8],[34,8],[35,9],[54,9],[55,10],[80,11],[115,12],[160,13],[220,15],[310,19],[430,24],[501,28],[600,32],[800,41],[1000,50]]){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
- assert.equal(st.L,stage,'saved advanced progress remains available');assert.equal(st.level.plates.length,pieces);
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
+ assert.equal(st.L,stage,'an explicitly selected advanced stage remains available');assert.equal(st.level.plates.length,pieces);
  const [a,b]=st.level.order,plate=st.level.plates[st.level.screws[a].hole.owner];
  relocate(game,a,st.level.holes[0]);assert.equal(plate.state,'hinged');
  relocate(game,b,st.level.holes[1]);assert.equal(plate.state,'gone','advanced pieces release through real input and collision physics');
@@ -93,7 +93,7 @@ for(const [stage,pieces] of [[19,7],[20,8],[34,8],[35,9],[54,9],[55,10],[80,11],
 // Clear the petals, then move the screws that physically support the remaining centre and top petal.
 const flowerSolution=[[0,0],[1,1],[0,3],[1,4],[2,0],[3,1],[2,6],[3,5],[4,0],[5,1],[4,7],[5,8],[6,0],[7,1],[8,2],[9,9],[0,12],[11,11],[10,10],[3,3],[11,13],[2,5],[13,11],[12,14],[0,6],[11,15],[4,16],[1,13]];
 for(let stage=1;stage<=11;stage++){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api),st=game.state;
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
  if(stage===11){
   for(const [id,target] of flowerSolution)relocate(game,id,st.level.holes[target]);
  }else{
@@ -120,10 +120,10 @@ for(let stage=1;stage<=11;stage++){
 }
 // The previous final stage now continues; the new final stage exits only once.
 for(const stage of [500,999]){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api);game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY)));game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
  assert.equal(storage.get(STAGE_KEY),String(stage+1));press(game,{x:267,y:514});assert.equal(game.state.L,stage+1);assert.equal(ends,0);game.destroy();
 }
-storage.set(STAGE_KEY,'1000');const finalGame=G.flat(api);finalGame.state.level.plates.forEach(p=>p.state='gone');finalGame.update(.05);
+storage.set(STAGE_KEY,'1000');const finalGame=G.flat(api,Number(storage.get(G.STAGE_KEY)));finalGame.state.level.plates.forEach(p=>p.state='gone');finalGame.update(.05);
 assert.equal(storage.get(STAGE_KEY),'1000');press(finalGame,{x:267,y:514});press(finalGame,{x:267,y:514});assert.equal(ends,1);finalGame.destroy();
 assert.equal(purchases,0);
 // A physical fixture with spare holes and two independent metal rectangles.
@@ -193,7 +193,7 @@ sim=P.createPhysics(level);upper=level.plates[0];
 assert.ok(sim.move(level.screws[0],level.holes[0]));assert.ok(sim.move(level.screws[1],level.holes[1]));step(sim,8);
 assert.ok(Math.abs(upper.y+15-(330-P.SCREW_RADIUS))<1,'plate 0 rests on screws belonging to plate 32 instead of passing through them');sim.destroy();
 
-storage.set(STAGE_KEY,'4');const game=G.flat(api),st=game.state,first=st.level.order[0],second=st.level.order[1],initial=st.level.screws[first].hole;
+storage.set(STAGE_KEY,'4');const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state,first=st.level.order[0],second=st.level.order[1],initial=st.level.screws[first].hole;
 press(game,st.level.holes[0]);assert.equal(st.pending,null,'select a screw before its empty destination');
 game.onDown(initial.x,initial.y,1);game.onCancel(1);game.onUp(initial.x,initial.y,1);assert.equal(st.selected,null);
 game.onDown(initial.x,initial.y,1);game.onDown(initial.x+10,initial.y,2);game.onUp(initial.x,initial.y,1);game.onUp(initial.x+10,initial.y,2);assert.equal(st.selected,null);
@@ -210,4 +210,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 layouts with thirteen progressive metal outlines and a flower playthrough and varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced piece release, saved progress beyond 500, final-stage boundaries, three spare holes, eleven free introductory playthroughs and existing physics/input regressions.');
+console.log('PASS: 1000 layouts with thirteen progressive metal outlines and a flower playthrough and varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced piece release, explicit stage selection beyond 500, final-stage boundaries, three spare holes, eleven free introductory playthroughs and existing physics/input regressions.');
