@@ -15,7 +15,8 @@ async function fixture(t,initial=roomFixture(),options={}){
  const engine=await import(pathToFileURL(path.join(root,'games/roulette/engine.js')).href);
  const dom=new JSDOM(read('games/roulette/index.html'),{url:'https://roulette.test/games/roulette/index.html',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,calls=[],sent=[],gates=new Map();let current=clone(initial),gold=10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
- w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
+ const motionListeners=new Set(),motionMedia={matches:options.systemReduced===true,addEventListener(type,listener){if(type==='change')motionListeners.add(listener)},removeEventListener(type,listener){motionListeners.delete(listener)}};
+ w.matchMedia=query=>query==='(prefers-reduced-motion: reduce)'?motionMedia:{matches:false,addEventListener(){},removeEventListener(){}};
  w.performance.now=()=>clock;
  w.ResizeObserver=class{observe(){}disconnect(){}};w.requestAnimationFrame=()=>0;w.scrollTo=()=>{};
  w.HTMLElement.prototype.scrollIntoView=function(){};
@@ -23,10 +24,11 @@ async function fixture(t,initial=roomFixture(),options={}){
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
  Object.defineProperty(w.document,'hidden',{get:()=>hidden});
- class Wheel{constructor(canvas,callbacks){this.callbacks=callbacks;w.testWheel=this;}resize(){}setReduced(){}setVisible(){}start(spin){this.last=spin;}showResult(){}}
+ class Wheel{constructor(canvas,callbacks){this.callbacks=callbacks;w.testWheel=this;}resize(){}setReduced(value){this.reduced=value;}setVisible(){}start(spin){this.last=spin;}showResult(){}}
  class Sound{unlock(){return Promise.resolve()}setEnabled(){}chip(){}beginRoll(){}stopRoll(){}win(){}roll(){}updateRoll(){}}
  Object.assign(w,engine,{RouletteWheel:Wheel,Sound,addChipDepth(){}});
- w.localStorage.setItem('ojjuda.roulette.preferences.v1',JSON.stringify({sound:false,reduced:true}));
+ const preferences='preferences' in options?options.preferences:{sound:false,reduced:true};
+ if(preferences!==null)w.localStorage.setItem('ojjuda.roulette.preferences.v1',JSON.stringify(preferences));
  const snapshot=()=>({ok:true,serverTime:++time,wallet:{coins:777,gold},room:clone(current)});
  const begin=(startedAt=time)=>{
   current.status='spinning';current.round++;current.bettingDeadline=null;
@@ -84,7 +86,7 @@ async function fixture(t,initial=roomFixture(),options={}){
  const message=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',...data}}));
  message({type:'roulette-init',owner:me,joinCode:options.joinCode});await tick();await tick();
  t.after(()=>{closed=true;w.close()});
- return {w,calls,sent,gates,message,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},snapshot,ui:w.__roulette};
+ return {w,calls,sent,gates,message,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
 }
 
 test('a non-host starts with one button; every participant-ready response opens the shared spin',async t=>{
@@ -269,4 +271,37 @@ test('computer play starts immediately, shows server bot bets, and preserves the
  assert.equal(d.getElementById('wheelDialog').open,false);assert.equal(f.ui.state.pending,null);assert.deepEqual(clone(f.ui.state.bets),{});
  assert.equal(d.getElementById('spinButton').disabled,true,'the next solo round requires another manual bet and start');
  d.querySelector('[data-bet="n8"]').click();await tick();assert.equal(d.getElementById('computerResult').hidden,true,'new betting clears the previous computer result');
+});
+
+test('the motion button can override OS reduction in either direction and remembers an explicit off choice',async t=>{
+ const f=await fixture(t,roomFixture(),{preferences:null,systemReduced:true}),button=f.w.document.getElementById('motionButton');
+ assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(f.w.testWheel.reduced,true);
+ button.click();await tick();
+ assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(f.w.testWheel.reduced,false,'OS reduction cannot force an explicitly disabled setting back on');
+ const saved=JSON.parse(f.w.localStorage.getItem('ojjuda.roulette.preferences.v1'));
+ assert.equal(saved.reducedOverride,false);
+ f.setSystemReduced(false);f.setSystemReduced(true);assert.equal(f.w.testWheel.reduced,false);
+ button.click();await tick();f.setSystemReduced(false);
+ assert.equal(f.w.testWheel.reduced,true,'an explicit on choice also takes precedence over OS off');
+ const restored=await fixture(t,roomFixture(),{preferences:saved,systemReduced:true});
+ assert.equal(restored.w.testWheel.reduced,false,'explicit off survives a fresh load');
+});
+
+test('an inherited motion preference follows OS changes even after unrelated preferences are saved',async t=>{
+ const f=await fixture(t,roomFixture(),{preferences:{sound:false,reduced:false},systemReduced:false});
+ assert.equal(f.w.testWheel.reduced,false);
+ f.setSystemReduced(true);assert.equal(f.w.testWheel.reduced,true,'legacy default false still inherits the operating system');
+ f.w.document.getElementById('soundButton').click();await tick();
+ const saved=JSON.parse(f.w.localStorage.getItem('ojjuda.roulette.preferences.v1'));
+ assert.equal(saved.sound,true);assert.equal(saved.reducedOverride,null,'saving sound does not silently make motion explicit');
+ f.setSystemReduced(false);assert.equal(f.w.testWheel.reduced,false);
+});
+
+test('legacy reduced true remains enabled until the player explicitly turns it off',async t=>{
+ const f=await fixture(t,roomFixture(),{preferences:{sound:false,reduced:true},systemReduced:false});
+ assert.equal(f.w.testWheel.reduced,true);assert.equal(f.ui.state.sound,false);
+ f.setSystemReduced(true);f.setSystemReduced(false);assert.equal(f.w.testWheel.reduced,true);
+ f.w.document.getElementById('motionButton').click();await tick();
+ const saved=JSON.parse(f.w.localStorage.getItem('ojjuda.roulette.preferences.v1'));
+ assert.equal(saved.reducedOverride,false);assert.equal(saved.sound,false,'changing motion preserves the sound preference');
 });

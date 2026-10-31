@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.min.js';
 import {RoomEnvironment} from './vendor/RoomEnvironment.js';
 import {WHEEL_ORDER,COLOR} from './engine.js';
-import {planSpinMotion,sampleSpinMotion,wheelSurface} from './motion.js?v=20261031-roulette-modes1';
+import {planSpinMotion,sampleSpinMotion,wheelSurface} from './motion.js?v=20261031-roulette-roll1';
 
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=v=>Math.min(1,Math.max(0,v));
@@ -104,7 +104,7 @@ export class Wheel3D{
   setReduced(value){this.reduced=value;if(this.visible)this.draw()}
   setVisible(value){this.visible=value;if(value){this.resize();this.schedule()}}
   schedule(){if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t))}
-  start(spin){this.active={...spin,plan:planSpinMotion(spin,this.rotation,this.ballAngle),startTime:performance.now()-(Date.now()-spin.startedAt)};this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();this.schedule();return this.active}
+  start(spin){this.active={...spin,plan:planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced}),startTime:performance.now()-(Date.now()-spin.startedAt)};this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();this.schedule();return this.active}
   showResult(n){this.active=null;this.ballRadius=291;this.ballHeight=0;this.ballAngle=this.rotation+WHEEL_ORDER.indexOf(n)*STEP-HALF;this.draw()}
   frame(now){
     this.raf=0;
@@ -114,7 +114,6 @@ export class Wheel3D{
       if(pose.phase!==this.lastPhase){this.lastPhase=pose.phase;this.onPhase(pose.phase)}
       if(pose.impact>this.lastImpact){this.onTick(p,pose.impactStrength);this.lastImpact=pose.impact;this.lastTick=now}
       if(p>.02&&p<.94&&now-this.lastTick>45+280*p*p){this.onTick(p,false);this.lastTick=now}
-      if(this.reduced){this.rotation=a.plan.startRotation;this.ballAngle=this.rotation+(p<1?-HALF:a.plan.sector);this.ballRadius=p<1?396:291;this.ballHeight=0}
       this.draw();if(p>=1){this.active=null;this.onDone(a.id)}
     }
     if(this.active&&!document.hidden)this.schedule();

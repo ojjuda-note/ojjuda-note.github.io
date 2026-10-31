@@ -1,5 +1,5 @@
 import {BETS,COLOR,MAX_BET,totalBets,cleanChips,initialState,payout} from './engine.js?v=20261031-roulette-modes1';
-import {RouletteWheel} from './wheel.js?v=20261031-roulette-modes1';
+import {RouletteWheel} from './wheel.js?v=20261031-roulette-roll1';
 import {Sound} from './sound.js?v=20261031-roulette-modes1';
 import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
 
@@ -13,9 +13,15 @@ let commandBusy=false,pollTimer=null,reading=false,requestCounter=0,lastServerTi
 let draftTimer=null,draftRequest=null,draftVersion=0;
 let bettingClockKey='',bettingClockAt=0,bettingClockTimer=null,bettingClockFired=false;
 let computerOutcome=null;
+let reducedPreference=null;
 const requests=new Map();
-try{const prefs=JSON.parse(localStorage.getItem(KEY));state.sound=prefs?.sound!==false;state.reduced=prefs?.reduced===true}catch{}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify({sound:state.sound,reduced:state.reduced}))}catch{}}
+try{
+  const prefs=JSON.parse(localStorage.getItem(KEY));state.sound=prefs?.sound!==false;
+  if(typeof prefs?.reducedOverride==='boolean')reducedPreference=prefs.reducedOverride;
+  else if(prefs?.reducedOverride!==null&&prefs?.reduced===true)reducedPreference=true;
+  state.reduced=reducedPreference===true;
+}catch{}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({sound:state.sound,reduced:state.reduced,reducedOverride:reducedPreference}))}catch{}}
 async function mutate(callback){const result=await callback();persist();return result}
 function send(message){if(window.parent!==window)window.parent.postMessage({source:'ojjuda-roulette',...message},location.origin)}
 function rpc(action,payload={}){
@@ -183,7 +189,7 @@ window.addEventListener('message',async event=>{
   try{applySnapshot(await rpc('status'));if(message.joinCode)applySnapshot(await rpc('join',{code:String(message.joinCode).toUpperCase()}));else if(lobbyMode==='online')applySnapshot(await rpc('list'));$('connectionStatus').textContent=''}catch(error){notice(errorText(error));$('connectionStatus').textContent=errorText(error)}finally{connecting=false;render();schedulePoll()}
 });
 const media=matchMedia('(prefers-reduced-motion: reduce)');
-const reduced=()=>state.reduced||media.matches;
+const reduced=()=>reducedPreference??media.matches;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const busy=()=>animating||settling||!!state.pending;
 const betsClosed=()=>busy()||startingSpin||commandBusy||!room||room.status!=='betting'||ownReady()||bettingExpired();
@@ -412,7 +418,7 @@ $('spinButton').addEventListener('click',startSpin);
 $('confirmResultButton').addEventListener('click',confirmResult);
 $('brandButton').addEventListener('click',()=>{if(room)void leaveRoom();else send({type:'exit'})});
 for(const id of ['soundButton','wheelSoundButton'])$(id).addEventListener('click',async()=>{sound.unlock().catch(()=>{});await mutate(()=>state.sound=!state.sound);render({bets:false})});
-$('motionButton').addEventListener('click',async()=>{await mutate(()=>state.reduced=!state.reduced);render({bets:false})});
+$('motionButton').addEventListener('click',async()=>{await mutate(()=>{reducedPreference=!reduced();state.reduced=reducedPreference});render({bets:false})});
 media.addEventListener('change',()=>render({bets:false}));
 for(const el of document.querySelectorAll('[data-chip]'))el.addEventListener('click',async()=>{
   if(betsClosed())return;

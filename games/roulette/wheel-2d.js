@@ -1,5 +1,5 @@
 import {WHEEL_ORDER,COLOR} from './engine.js';
-import {planSpinMotion,sampleSpinMotion} from './motion.js?v=20261031-roulette-modes1';
+import {planSpinMotion,sampleSpinMotion} from './motion.js?v=20261031-roulette-roll1';
 const TAU=Math.PI*2,STEP=TAU/37,HALF=Math.PI/2;
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 function ring(ctx,r1,r2,stops){const g=ctx.createRadialGradient(500,500,r1,500,500,r2);stops.forEach(([p,c])=>g.addColorStop(p,c));ctx.fillStyle=g;ctx.beginPath();ctx.arc(500,500,r2,0,TAU);ctx.arc(500,500,r1,0,TAU,true);ctx.fill()}
@@ -53,7 +53,7 @@ export class RouletteWheel2D{
   setReduced(value){this.reduced=value;this.draw()}
   setVisible(value){this.visible=value;if(value){this.resize();if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t))}}
   start(spin){
-    const plan=planSpinMotion(spin,this.rotation,this.ballAngle);
+    const plan=planSpinMotion(spin,this.rotation,this.ballAngle,{reduced:this.reduced});
     this.active={...spin,plan,startTime:performance.now()-(Date.now()-spin.startedAt)};
     this.state='spinning';this.lastPhase='';this.lastImpact=0;this.lastTick=performance.now();
     if(!this.raf)this.raf=requestAnimationFrame(t=>this.frame(t));
@@ -70,7 +70,6 @@ export class RouletteWheel2D{
       if(pose.impact>this.lastImpact){this.onTick(p,pose.impactStrength);this.lastImpact=pose.impact;this.lastTick=now}
       const interval=45+280*p*p;
       if(p>.02&&p<.94&&now-this.lastTick>interval){this.onTick(p,false);this.lastTick=now}
-      if(this.reduced){this.rotation=a.plan.startRotation;this.ballAngle=this.rotation+(p<1?-HALF:a.plan.sector);this.ballRadius=p<1?396:291;this.ballHeight=0}
       if(p>=1){const done=this.active;this.active=null;this.state='settled';this.onDone(done.id)}
       this.draw();
     }else if(this.visible&&this.state==='idle'&&!this.reduced){this.rotation+=dt*.000022;this.ballAngle-=dt*.000045;this.ballRadius=396;this.draw()}

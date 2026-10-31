@@ -5,8 +5,8 @@ import {planSpinMotion,sampleSpinMotion,wheelSurface} from '../games/roulette/mo
 const TAU=Math.PI*2;
 const poseAt=(plan,t)=>sampleSpinMotion(plan,t/plan.duration);
 test('every pocket ends on the announced number without a positional snap',()=>{
-  for(let number=0;number<=36;number++)for(const variation of [0,.1,.4,.75,1])for(const duration of [20000,25000,30000]){
-    const plan=planSpinMotion({number,variation,duration},1.387,-4.4),start=sampleSpinMotion(plan,0),end=sampleSpinMotion(plan,1);
+  for(let number=0;number<=36;number++)for(const variation of [0,.1,.4,.75,1])for(const duration of [20000,25000,30000])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number,variation,duration},1.387,-4.4,{reduced}),start=sampleSpinMotion(plan,0),end=sampleSpinMotion(plan,1);
     const expected=end.rotation+WHEEL_ORDER.indexOf(number)*TAU/37-Math.PI/2;
     assert.ok(Math.abs(start.angle+4.4)<1e-10);
     assert.ok(Math.abs(Math.atan2(Math.sin(end.angle-expected),Math.cos(end.angle-expected)))<1e-10);
@@ -28,9 +28,10 @@ test('ball rolls continuously, never reverses in air and has one modest outward 
   }
 });
 test('angular velocity stays continuous at former docking point and all curve joins',()=>{
-  for(const duration of [20000,30000]){
-    const plan=planSpinMotion({number:9,variation:.63,duration}),epsilon=.00001;
-    for(const time of [...plan.angular.points.slice(1,-1).map(p=>p[0]),plan.dockAt*plan.duration]){
+  for(const duration of [20000,30000])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number:9,variation:.63,duration},0,-Math.PI/2,{reduced}),epsilon=.00001;
+    const joins=[...plan.orbit.points.slice(1,-1).map(p=>p[0]),...plan.angular.points.slice(1,-1).map(p=>p[0]),plan.orbitEnd,plan.dockAt*plan.duration];
+    for(const time of new Set(joins)){
       const before=poseAt(plan,time-epsilon),at=poseAt(plan,time),after=poseAt(plan,time+epsilon);
       assert.ok(Math.abs((at.angle-before.angle)/epsilon-(after.angle-at.angle)/epsilon)<.001);
     }
@@ -76,8 +77,8 @@ test('the full ball clears each 3D divider throughout descent and settling',()=>
 
 test('surface speed matches measured travel on the fixed bowl and rotating rotor',()=>{
   const h=.00001;
-  for(const duration of [20000,25000,30000])for(const variation of [0,.5,1]){
-    const plan=planSpinMotion({number:17,variation,duration},.7,-2.2);
+  for(let number=0;number<=36;number++)for(const duration of [20000,25000,30000])for(const variation of [0,.5,1])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number,variation,duration},.7,-2.2,{reduced});
     for(let p=.005;p<.995;p+=.013){
       const time=p*plan.duration,pose=poseAt(plan,time),before=poseAt(plan,time-h),after=poseAt(plan,time+h);
       assert.ok(Number.isFinite(pose.surfaceSpeed)&&pose.surfaceSpeed>=0);
@@ -115,8 +116,8 @@ test('surface contact transition is smooth and speed does not depend on frame hi
 
 
 test('the quiet ball and rotor coast together for exactly half to one extra revolution',()=>{
-  for(let number=0;number<=36;number++)for(const variation of [0,.25,.5,.75,1])for(const duration of [20000,25000,30000]){
-    const plan=planSpinMotion({number,variation,duration},.72,-1.9),at=poseAt(plan,plan.pocketTime),end=sampleSpinMotion(plan,1);
+  for(let number=0;number<=36;number++)for(const variation of [0,.25,.5,.75,1])for(const duration of [20000,25000,30000])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number,variation,duration},.72,-1.9,{reduced}),at=poseAt(plan,plan.pocketTime),end=sampleSpinMotion(plan,1);
     assert.equal(plan.duration*1000,duration,'server duration stays unchanged');
     assert.ok(plan.coastDuration>=4&&plan.coastDuration<=6);
     const turns=(end.rotation-at.rotation)/TAU;
@@ -149,5 +150,50 @@ test('rotor velocity and acceleration remain continuous when the ball stops',()=
     assert.ok(beforeEnd.wheelVelocity<1e-8);assert.equal(end.wheelVelocity,0);
     let previous=sampleSpinMotion(plan,0).wheelVelocity;
     for(let i=1;i<=1000;i++){const current=sampleSpinMotion(plan,i/1000).wheelVelocity;assert.ok(current<=previous+1e-10);previous=current;}
+  }
+});
+
+test('the visible ball never stalls before pocketing or reverses on the fixed outer bowl',()=>{
+  // Measure rendered world-space centers, not wheel-relative progress or the
+  // planner's speed fields. A stationary-looking ball can pass both of those.
+  // The ball diameter is about 20 trajectory units. Require at least one
+  // diameter per second averaged over a quarter-second window, allowing a
+  // brief direction change at rotor contact. The stationary bowl needs five.
+  for(let number=0;number<=36;number++)for(const variation of [0,.25,.5,.75,1])for(const duration of [20000,25000,30000])for(const reduced of [false,true]){
+    const plan=planSpinMotion({number,variation,duration},0,-Math.PI/2,{reduced});
+    for(const fps of [30,120]){
+      const dt=1/fps,windowFrames=Math.ceil(fps*.25),recent=[];
+      let before=poseAt(plan,0),outerFrames=0,path=0;
+      for(let frame=1;frame*dt<=plan.pocketTime;frame++){
+        const time=frame*dt,after=poseAt(plan,time);
+        const dx=after.radius*Math.cos(after.angle)-before.radius*Math.cos(before.angle);
+        const dz=after.radius*Math.sin(after.angle)-before.radius*Math.sin(before.angle);
+        const horizontal=Math.hypot(dx,dz),distance=Math.hypot(horizontal,after.elevation-before.elevation);
+        recent.push(distance);path+=distance;if(recent.length>windowFrames)path-=recent.shift();
+        const context=`number=${number} variation=${variation} duration=${duration} reduced=${reduced} fps=${fps} t=${time.toFixed(4)}`;
+        if(recent.length===windowFrames)assert.ok(path/(windowFrames*dt)>=20,`visible ball stalls before pocketing: ${path.toFixed(3)} units in ${(windowFrames*dt).toFixed(3)}s; ${context}`);
+        if(before.radius>=374&&after.radius>=374){
+          outerFrames++;
+          assert.ok(after.angle<before.angle,`ball reverses in the stationary outer bowl; ${context}`);
+          assert.ok(horizontal/dt>=100,`outer bowl ball barely moves: ${(horizontal/dt).toFixed(3)} units/s; ${context}`);
+        }
+        before=after;
+      }
+      assert.ok(outerFrames>=fps,'each case exercises at least one full second on the outer bowl');
+    }
+  }
+});
+
+test('normal launch completes a visible lap within a second and reduced motion stays slower but moving',()=>{
+  for(let number=0;number<=36;number++)for(const variation of [0,.25,.5,.75,1])for(const duration of [20000,25000,30000]){
+    const spin={number,variation,duration};
+    const normal=planSpinMotion(spin),reduced=planSpinMotion(spin,0,-Math.PI/2,{reduced:true});
+    const travel=plan=>(poseAt(plan,0).angle-poseAt(plan,1).angle)/TAU;
+    const normalLaps=travel(normal),reducedLaps=travel(reduced);
+    const context=`number=${number} variation=${variation} duration=${duration}`;
+    assert.ok(normalLaps>=1&&normalLaps<=1.75,`normal launch is not a fast, readable orbit: ${normalLaps.toFixed(3)} laps/s; ${context}`);
+    assert.ok(reducedLaps>=.25&&reducedLaps<=.6,`reduced motion must still visibly roll: ${reducedLaps.toFixed(3)} laps/s; ${context}`);
+    assert.ok(reducedLaps<normalLaps*.6,`reduced motion must be substantially gentler; ${context}`);
+    assert.equal(normal.duration*1000,duration);assert.equal(reduced.duration*1000,duration,'accessibility mode never changes server settlement time');
   }
 });

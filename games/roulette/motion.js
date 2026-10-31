@@ -41,13 +41,23 @@ function timeAt(curve,value,lo,hi){
   for(let i=0;i<45;i++){const mid=(lo+hi)/2;if(sampleCurve(curve,mid)>value)lo=mid;else hi=mid}
   return (lo+hi)/2;
 }
+function rotorPose(plan,time){
+  if(time<=plan.pocketTime){
+    const u=time/plan.pocketTime,delta=plan.initialWheelVelocity-plan.pocketWheelVelocity;
+    return {rotation:plan.startRotation+plan.initialWheelVelocity*time-delta*plan.pocketTime*(u**3-.5*u**4),wheelVelocity:plan.initialWheelVelocity-delta*(3*u*u-2*u**3)};
+  }
+  // Integral of smoothstep deceleration, with zero acceleration at both ends.
+  const u=clamp((time-plan.pocketTime)/plan.coastDuration);
+  return {rotation:plan.startRotation+plan.preWheelAngle+plan.coastAngle*(2*u-2*u**3+u**4),wheelVelocity:plan.coastAngle/plan.coastDuration*(2-6*u*u+4*u**3)};
+}
 
-// A continuous wheel-relative roll replaces independent angular kicks. The
-// final few seconds use real elapsed time, so a 30s round has the same gravity
-// and settling speed as a 20s round. Outcomes never depend on player wagers.
-export function planSpinMotion(spin,startRotation=0,ballStart=-HALF){
+// The fixed bowl uses world-space ball motion: adding the rotor's rotation
+// there would cancel the ball's roll and make it pause before touching it.
+// Only the inner descent is rotor-relative. Its gravity and settling speed
+// use elapsed seconds, independent of the server's 20–30 second duration.
+export function planSpinMotion(spin,startRotation=0,ballStart=-HALF,options={}){
   const duration=Number.isFinite(spin.duration)?Math.max(20,Math.min(30,spin.duration/1000)):25;
-  const variation=clamp(spin.variation),sector=WHEEL_ORDER.indexOf(spin.number)*STEP-HALF;
+  const variation=clamp(spin.variation),sector=WHEEL_ORDER.indexOf(spin.number)*STEP-HALF,reduced=options?.reduced===true;
   // Reserve the final 4–6 seconds for the rotor carrying the quiet ball.
   // The pocket-relative ball motion reaches zero exactly at pocketTime.
   const coastDuration=4+variation*2,pocketTime=duration-coastDuration;
@@ -57,15 +67,24 @@ export function planSpinMotion(spin,startRotation=0,ballStart=-HALF){
   const pocketWheelVelocity=2*coastAngle/coastDuration;
   const preWheelAngle=pocketTime*(initialWheelVelocity+pocketWheelVelocity)/2;
   const wheelDelta=preWheelAngle+coastAngle;
-  const relativeStart=ballStart-startRotation;
-  // Shorter free-ball time uses fewer rim turns, retaining its original speed.
-  const originalDrop=duration-(7.5+variation*.4);
-  const rimTurns=Math.max(6,Math.round((15+Math.floor(variation*4))*dropAt/originalDrop));
-  const target=sector-TAU*(Math.ceil((sector-relativeStart)/TAU)+rimTurns);
-  const travel=relativeStart-target;
-  const angular=curve([[0,travel],[dropAt*.52,travel*.32+5.3],[dropAt,8.1],[settlingEnd-5.4,4.1],[settlingEnd-4,1.7],[settlingEnd-2.8,.30],[settlingEnd-2.1,.09],[settlingEnd-1.7,.02],[pocketTime,0],[duration,0]]);
   const rebound=settlingEnd-4,returnAt=settlingEnd-2.85;
   const radial=curve([[0,396],[dropAt-.5,395],[dropAt,393],[dropAt+.65,383],[settlingEnd-5.4,365],[rebound,322],[rebound+.38,341+variation*5],[returnAt,323.5],[settlingEnd-2.35,306],[settlingEnd-1.4,291],[duration,291]]);
+  const tail=curve([[dropAt,8.1],[settlingEnd-5.4,4.1],[rebound,1.7],[settlingEnd-2.8,.30],[settlingEnd-2.1,.09],[settlingEnd-1.7,.02],[pocketTime,0],[duration,0]]);
+  // Join just inside the rotor, after the contact blend has finished. Keep
+  // every later tail value/tangent so its flights and divider clearance do
+  // not change. The short bridge integrates a linear relative velocity.
+  const orbitEnd=timeAt(radial,368,dropAt,tail.points[1][0]);
+  const rotor=rotorPose({startRotation,initialWheelVelocity,pocketWheelVelocity,pocketTime,preWheelAngle,coastAngle,coastDuration},orbitEnd);
+  const orbitVelocity=-TAU*(reduced ? .35+variation*.1 : 1.2+variation*.3);
+  const joinVelocity=-TAU*(reduced ? .25+variation*.025 : .45+variation*.1);
+  const relativeJoinVelocity=joinVelocity-rotor.wheelVelocity;
+  const joinRemaining=tail.points[1][1]-(relativeJoinVelocity+tail.tangents[1])*(tail.points[1][0]-orbitEnd)/2;
+  const desiredJoin=ballStart+(orbitVelocity+joinVelocity)*orbitEnd/2;
+  // An integer number of turns aligns the announced pocket without changing
+  // either endpoint speed. The small rounding correction stays in the orbit.
+  const target=sector-TAU*Math.round((rotor.rotation+sector+joinRemaining-desiredJoin)/TAU);
+  const orbit={points:[[0,ballStart],[orbitEnd,rotor.rotation+target+joinRemaining]],tangents:[orbitVelocity,joinVelocity]};
+  const angular={points:[[orbitEnd,joinRemaining],...tail.points.slice(1)],tangents:[relativeJoinVelocity,...tail.tangents.slice(1)]};
   // Fixed-gravity flights leave the surface at actual contacts. Elevation is
   // world-space during flight; the ball no longer follows the slope in midair.
   const flights=[];
@@ -86,25 +105,14 @@ export function planSpinMotion(spin,startRotation=0,ballStart=-HALF){
   for(const span of [.18,.10]){addFlight(landed,landed+span,.2);landed+=span}
   const impacts=flights.map(f=>({at:f.start/duration,strength:f.strength}));
   impacts.push({at:landed/duration,strength:.12});
-  return {duration,variation,startRotation,wheelDelta,initialWheelVelocity,pocketWheelVelocity,preWheelAngle,pocketTime,coastDuration,coastAngle,coastTurns,coastAt:pocketTime/duration,ballStart,sector,target,angular,radial,flights,impacts,dropAt:dropAt/duration,reboundAt:rebound/duration,returnAt:returnAt/duration,dockAt:(settlingEnd-1.4)/duration};
+  return {duration,variation,reduced,startRotation,wheelDelta,initialWheelVelocity,pocketWheelVelocity,preWheelAngle,pocketTime,coastDuration,coastAngle,coastTurns,coastAt:pocketTime/duration,ballStart,sector,target,orbitEnd,orbit,angular,radial,flights,impacts,dropAt:dropAt/duration,reboundAt:rebound/duration,returnAt:returnAt/duration,dockAt:(settlingEnd-1.4)/duration};
 }
 
 export function sampleSpinMotion(plan,progress){
   const p=clamp(progress),time=p*plan.duration,coasting=p>=plan.coastAt;
-  let rotation,wheelVelocity;
-  if(time<=plan.pocketTime){
-    const u=time/plan.pocketTime,delta=plan.initialWheelVelocity-plan.pocketWheelVelocity;
-    rotation=plan.startRotation+plan.initialWheelVelocity*time-delta*plan.pocketTime*(u**3-.5*u**4);
-    wheelVelocity=plan.initialWheelVelocity-delta*(3*u*u-2*u**3);
-  }else{
-    // Integral of smoothstep deceleration: same velocity and zero acceleration
-    // at entry, then zero velocity and acceleration at the final stop.
-    const u=clamp((time-plan.pocketTime)/plan.coastDuration);
-    rotation=plan.startRotation+plan.preWheelAngle+plan.coastAngle*(2*u-2*u**3+u**4);
-    wheelVelocity=plan.coastAngle/plan.coastDuration*(2-6*u*u+4*u**3);
-  }
-  const radius=coasting?291:sampleCurve(plan.radial,time),angle=rotation+plan.target+(coasting?0:sampleCurve(plan.angular,time)),ground=wheelSurface(radius);
-  const radialVelocity=coasting?0:curveVelocity(plan.radial,time),relativeAngularVelocity=coasting?0:curveVelocity(plan.angular,time);
+  const {rotation,wheelVelocity}=rotorPose(plan,time),orbiting=time<plan.orbitEnd;
+  const radius=coasting?291:sampleCurve(plan.radial,time),angle=orbiting?sampleCurve(plan.orbit,time):rotation+plan.target+(coasting?0:sampleCurve(plan.angular,time)),ground=wheelSurface(radius);
+  const radialVelocity=coasting?0:curveVelocity(plan.radial,time),relativeAngularVelocity=coasting?0:orbiting?curveVelocity(plan.orbit,time)-wheelVelocity:curveVelocity(plan.angular,time);
   // The numbered rotor ends at r370, with a raised lip out to r372.3.
   // Blend across that narrow contact area into the stationary outer bowl.
   // A ball carried by the rotor has zero rolling speed, even as it revolves.
