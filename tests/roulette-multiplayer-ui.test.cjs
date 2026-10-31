@@ -9,12 +9,15 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const deferred=()=>{let resolve;const promise=new Promise(done=>resolve=done);return {promise,resolve};};
 const clone=value=>JSON.parse(JSON.stringify(value));
 const me='member-a',other='member-b';
+const historyKey=owner=>`ojjuda.roulette.history.v1:${owner}`;
+const historyStorage=(entries,owner=me)=>({[historyKey(owner)]:JSON.stringify({version:1,owner,entries})});
+const storageSnapshot=w=>Object.fromEntries(Array.from({length:w.localStorage.length},(_,index)=>{const key=w.localStorage.key(index);return [key,w.localStorage.getItem(key)]}));
 const roomFixture=patch=>({id:'room-one',code:'ABCDEF12',hostId:other,mode:'online',status:'betting',round:0,capacity:3,players:[{userId:me,name:'나',computer:false,ready:false,connected:true,bets:{}},{userId:other,name:'친구',computer:false,ready:false,connected:true,bets:{n7:500}}],me:{userId:me,ready:false,confirmed:false,bets:{},stake:0},spin:null,result:null,...patch});
 
 async function fixture(t,initial=roomFixture(),options={}){
  const engine=await import(pathToFileURL(path.join(root,'games/roulette/engine.js')).href);
  const dom=new JSDOM(read('games/roulette/index.html'),{url:'https://roulette.test/games/roulette/index.html',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,calls=[],sent=[],gates=new Map();let current=clone(initial),gold=10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
+ const w=dom.window,calls=[],sent=[],gates=new Map(),storageFailures=[];let current=clone(initial),gold=10000,time=options.serverTime||Date.now(),clock=0,closed=false,hidden=false;
  const motionListeners=new Set(),motionMedia={matches:options.systemReduced===true,addEventListener(type,listener){if(type==='change')motionListeners.add(listener)},removeEventListener(type,listener){motionListeners.delete(listener)}};
  w.matchMedia=query=>query==='(prefers-reduced-motion: reduce)'?motionMedia:{matches:false,addEventListener(){},removeEventListener(){}};
  w.performance.now=()=>clock;
@@ -29,6 +32,10 @@ async function fixture(t,initial=roomFixture(),options={}){
  Object.assign(w,engine,{RouletteWheel:Wheel,Sound,addChipDepth(){}});
  const preferences='preferences' in options?options.preferences:{sound:false,reduced:true};
  if(preferences!==null)w.localStorage.setItem('ojjuda.roulette.preferences.v1',JSON.stringify(preferences));
+ for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
+ for(const method of options.storageThrows||[]){
+  w.Storage.prototype[method]=function(key){storageFailures.push({method,key});throw new w.DOMException('Synthetic storage failure',method==='setItem'?'QuotaExceededError':'SecurityError')};
+ }
  const snapshot=()=>({ok:true,serverTime:++time,wallet:{coins:777,gold},room:clone(current)});
  const begin=(startedAt=time)=>{
   current.status='spinning';current.round++;current.bettingDeadline=null;
@@ -84,9 +91,20 @@ async function fixture(t,initial=roomFixture(),options={}){
  const source=read('games/roulette/app.js').replace(/^import .*;\n/gm,'')+'\nwindow.__roulette={state,applySnapshot,getRoom:()=>room,readyId:()=>resultReadyId,hasExit:()=>exitRequested};';
  w.eval(source);
  const message=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',...data}}));
- message({type:'roulette-init',owner:me,joinCode:options.joinCode});await tick();await tick();
+ message({type:'roulette-init',owner:options.owner??me,joinCode:options.joinCode});await tick();await tick();
  t.after(()=>{closed=true;w.close()});
- return {w,calls,sent,gates,message,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
+ return {w,calls,sent,gates,message,storageFailures,room:()=>current,hide:()=>{hidden=true},advance:ms=>{clock+=ms;time+=ms},setSystemReduced:value=>{motionMedia.matches=value;for(const listener of motionListeners)listener({matches:value})},snapshot,ui:w.__roulette};
+}
+
+function beginHistoryRound(f,id,number=7){
+ const r=f.room();r.status='spinning';r.round++;r.me={...r.me,ready:true,confirmed:false,bets:{},stake:0};
+ r.spin={id,number,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{}};r.result=null;
+ f.ui.applySnapshot(f.snapshot());
+}
+
+async function confirmHistoryRound(f,id,number=7){
+ beginHistoryRound(f,id,number);f.w.testWheel.callbacks.onDone(id);
+ f.w.document.getElementById('confirmResultButton').click();await tick();await tick();await tick();
 }
 
 test('a non-host starts with one button; every participant-ready response opens the shared spin',async t=>{
@@ -344,14 +362,9 @@ test('past-number chart counts the latest five hundred results and orders number
 
 test('past-number history excludes pending and unacknowledged results but keeps consecutive equal outcomes from distinct rounds',async t=>{
  const f=await fixture(t),w=f.w,d=w.document;
- const beginRound=id=>{
-  const r=f.room();r.status='spinning';r.round++;r.me={...r.me,ready:true,confirmed:false,bets:{},stake:0};
-  r.spin={id,number:7,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{}};r.result=null;
-  f.ui.applySnapshot(f.snapshot());
- };
  d.getElementById('historyButton').click();
  assert.equal(d.getElementById('historyEmpty').hidden,false);
- beginRound('history-spin-one');
+ beginHistoryRound(f,'history-spin-one');
  assert.equal(d.getElementById('historyDialog').open,false,'a new spin closes history before showing the wheel');
  assert.deepEqual(clone(f.ui.state.history),[],'an in-progress server outcome is not past history');
  assert.equal(d.querySelectorAll('#historyList li').length,0);
@@ -360,31 +373,33 @@ test('past-number history excludes pending and unacknowledged results but keeps 
  const gate=deferred();f.gates.set('confirm',gate);
  d.getElementById('confirmResultButton').click();await tick();
  assert.deepEqual(clone(f.ui.state.history),[],'an unanswered confirmation does not publish history');
+ assert.equal(w.localStorage.getItem(historyKey(me)),null,'neither a pending result nor its unanswered confirmation is persisted');
  gate.resolve();await tick();await tick();await tick();f.gates.delete('confirm');
  assert.deepEqual(clone(f.ui.state.history),[7]);
  assert.equal(d.querySelector('#historyList .history-frequency').textContent,'1회');
- beginRound('history-spin-two');w.testWheel.callbacks.onDone('history-spin-two');
- d.getElementById('confirmResultButton').click();await tick();await tick();await tick();
+ await confirmHistoryRound(f,'history-spin-two');
  f.ui.applySnapshot(f.snapshot());
  assert.deepEqual(clone(f.ui.state.history),[7,7],'two settled round IDs remain two entries even with equal numbers');
  d.getElementById('historyButton').click();
  assert.deepEqual([...d.querySelectorAll('#historyList li .history-number')].map(node=>Number(node.textContent)),[7]);
  assert.equal(d.querySelector('#historyList .history-frequency').textContent,'2회','consecutive identical outcomes increment the same number bar');
  assert.equal(d.getElementById('historyCount').textContent,'최근 2회 · 최근 나온 번호순');
+ assert.deepEqual(JSON.parse(w.localStorage.getItem(historyKey(me))),{version:1,owner:me,entries:[{id:'history-spin-two',number:7},{id:'history-spin-one',number:7}]},
+  'only round IDs and confirmed numbers are stored, without wallet, bet or pending state');
+ const reopened=await fixture(t,roomFixture({id:'room-reopened'}),{storage:storageSnapshot(w)});
+ assert.deepEqual(clone(reopened.ui.state.history),[7,7],'a fresh app instance restores both equal confirmed outcomes');
+ assert.equal(reopened.w.document.querySelector('#historyList .history-frequency').textContent,'2회');
+ assert.equal(reopened.ui.state.balance,10000,'history restoration keeps the authoritative server wallet');
 });
 
-test('local and remote confirmations both cap past-number history at five hundred without counting a round twice',async t=>{
- const f=await fixture(t),w=f.w,d=w.document;
- f.ui.state.history=[...Array(499).fill(8),36];f.ui.applySnapshot(f.snapshot());
- const beginRound=(id,number)=>{
-  const r=f.room();r.status='spinning';r.round++;r.me={...r.me,ready:true,confirmed:false,bets:{},stake:0};
-  r.spin={id,number,duration:20000,startedAt:Date.now()-20000,variation:.5,bets:{}};r.result=null;
-  f.ui.applySnapshot(f.snapshot());
- };
- beginRound('history-cap-local',7);w.testWheel.callbacks.onDone('history-cap-local');
- d.getElementById('confirmResultButton').click();await tick();await tick();await tick();
+test('local and remote confirmations retain five hundred results across reentry without counting a saved round twice',async t=>{
+ const entries=Array.from({length:500},(_,index)=>({id:`history-seed-${index}`,number:index===499?36:8}));
+ const f=await fixture(t,roomFixture(),{storage:historyStorage(entries)}),w=f.w,d=w.document;
+ await confirmHistoryRound(f,'history-cap-local',7);
  assert.deepEqual(clone(f.ui.state.history),[7,...Array(499).fill(8)],'local confirmation removes exactly the oldest retained result');
- beginRound('history-cap-remote',0);
+ const localSaved=JSON.parse(w.localStorage.getItem(historyKey(me))).entries;
+ assert.equal(localSaved.length,500);assert.deepEqual(localSaved[0],{id:'history-cap-local',number:7});
+ beginHistoryRound(f,'history-cap-remote',0);
  assert.equal(f.ui.state.history[0],7,'an unacknowledged new result does not appear in the chart');
  f.room().status='finished';f.room().me.confirmed=true;f.ui.applySnapshot(f.snapshot());
  const expected=[0,7,...Array(498).fill(8)];
@@ -392,20 +407,126 @@ test('local and remote confirmations both cap past-number history at five hundre
  f.ui.applySnapshot(f.snapshot());
  assert.deepEqual(clone(f.ui.state.history),expected,'a repeated confirmed snapshot cannot increment the count again');
  assert.deepEqual([...d.querySelectorAll('#historyList .history-frequency')].map(node=>node.textContent),['1회','1회','498회']);
+ const remoteSaved=JSON.parse(w.localStorage.getItem(historyKey(me))).entries;
+ assert.equal(remoteSaved.length,500);assert.deepEqual(remoteSaved[0],{id:'history-cap-remote',number:0});
+ const reopened=await fixture(t,roomFixture({id:'room-reentry'}),{storage:storageSnapshot(w)});
+ assert.deepEqual(clone(reopened.ui.state.history),expected,'remote confirmation and zero survive a new app instance');
+ const before=storageSnapshot(reopened.w);
+ beginHistoryRound(reopened,'history-cap-local',7);
+ reopened.room().status='finished';reopened.room().me.confirmed=true;reopened.ui.applySnapshot(reopened.snapshot());
+ assert.deepEqual(clone(reopened.ui.state.history),expected,'an older saved round is not recounted or moved to the front after reentry');
+ assert.deepEqual(storageSnapshot(reopened.w),before);
+ assert.equal(reopened.calls.some(call=>call.action==='confirm'),false,'history replay never requests another payout');
+ assert.equal(reopened.ui.state.balance,10000);
 });
 
-test('past-number history resets across room IDs and closes when leaving the table',async t=>{
- const f=await fixture(t),d=f.w.document;
- f.ui.state.history=[7,0];f.ui.applySnapshot(f.snapshot());d.getElementById('historyButton').click();
+test('past-number history survives room changes and leaving the table while the dialog closes on exit',async t=>{
+ const saved=historyStorage([{id:'history-room-seven',number:7},{id:'history-room-zero',number:0}]);
+ const f=await fixture(t,roomFixture(),{storage:saved}),d=f.w.document;
+ d.getElementById('historyButton').click();
  assert.equal(d.getElementById('historyDialog').open,true);
  f.ui.applySnapshot({...f.snapshot(),room:roomFixture({id:'room-two',code:'BBCCDD22'})});
- assert.deepEqual(clone(f.ui.state.history),[]);
- assert.equal(d.querySelectorAll('#historyList li').length,0,'numbers from another table cannot leak into the new room');
- assert.equal(d.getElementById('historyEmpty').hidden,false);
+ assert.deepEqual(clone(f.ui.state.history),[7,0]);
+ assert.deepEqual([...d.querySelectorAll('#historyList .history-number')].map(node=>Number(node.textContent)),[7,0],
+  'the same account keeps its confirmed numbers across tables');
+ assert.equal(d.getElementById('historyEmpty').hidden,true);
  d.getElementById('historyButton').click();
  assert.equal(d.getElementById('historyDialog').open,true);
  f.message({type:'roulette-exit-request'});await tick();await tick();await tick();
  assert.equal(f.ui.getRoom(),null);
  assert.equal(d.getElementById('historyDialog').open,false);
  assert.equal(d.getElementById('historyButton').hidden,true);
+ assert.deepEqual(clone(f.ui.state.history),[7,0]);
+ assert.equal(f.w.localStorage.getItem(historyKey(me)),saved[historyKey(me)],'leaving does not erase the saved history');
+});
+
+test('different accounts have separate saved histories and the original account restores its own results on login',async t=>{
+ const first=await fixture(t);await confirmHistoryRound(first,'account-a-round',7);
+ const storage=storageSnapshot(first.w),accountB=roomFixture();accountB.me.userId=other;
+ const second=await fixture(t,accountB,{owner:other,storage});
+ assert.deepEqual(clone(second.ui.state.history),[],'a new account never displays the previous account history');
+ assert.equal(second.w.document.getElementById('historyEmpty').hidden,false);
+ await confirmHistoryRound(second,'account-b-round',0);
+ assert.deepEqual(clone(second.ui.state.history),[0]);
+ assert.equal(second.w.localStorage.getItem(historyKey(me)),storage[historyKey(me)],'saving account B does not overwrite account A');
+ assert.deepEqual(JSON.parse(second.w.localStorage.getItem(historyKey(other))),{version:1,owner:other,entries:[{id:'account-b-round',number:0}]});
+ const returned=await fixture(t,roomFixture(),{storage:storageSnapshot(second.w)});
+ assert.deepEqual(clone(returned.ui.state.history),[7],'logging back in as account A restores only its own confirmed round');
+ assert.equal(returned.ui.state.balance,10000);
+ assert.deepEqual(clone(returned.ui.state.bets),{});
+});
+
+test('history restoration rejects corrupt documents and validates entries before enforcing the five hundred result limit',async t=>{
+ const invalidDocuments=[['broken JSON','{'],['wrong version',JSON.stringify({version:2,owner:me,entries:[{id:'invalid-version',number:7}]})],
+  ['wrong owner',JSON.stringify({version:1,owner:other,entries:[{id:'another-owner',number:7}]})],
+  ['non-array entries',JSON.stringify({version:1,owner:me,entries:{id:'invalid-shape',number:7}})]];
+ for(const [label,value] of invalidDocuments){
+  await t.test(label,async t=>{
+   const f=await fixture(t,roomFixture(),{storage:{[historyKey(me)]:value}});
+   assert.deepEqual(clone(f.ui.state.history),[]);assert.equal(f.ui.state.balance,10000);
+   assert.equal(f.w.document.getElementById('historyEmpty').hidden,false);
+   await confirmHistoryRound(f,`recovered-${label.replaceAll(' ','-')}`,0);
+   assert.deepEqual(clone(f.ui.state.history),[0],'a bad stored document does not block later confirmation or saving');
+   assert.equal(JSON.parse(f.w.localStorage.getItem(historyKey(me))).entries.length,1);
+  });
+ }
+ const valid=Array.from({length:505},(_,index)=>({id:`validated-${index}`,number:index%37}));
+ const mixed=[{id:'zero',number:0},{id:'seven',number:7},{id:'seven',number:36},{id:'another-seven',number:7},null,{},
+  {id:'',number:8},{id:' padded ',number:8},{id:'x'.repeat(129),number:8},{id:5,number:8},
+  {id:'fraction',number:2.5},{id:'negative',number:-1},{id:'outside-wheel',number:37},{id:'number-string',number:'8'},...valid];
+ const f=await fixture(t,roomFixture(),{storage:historyStorage(mixed)});
+ const expected=[0,7,7,...valid.map(entry=>entry.number)].slice(0,500);
+ assert.deepEqual(clone(f.ui.state.history),expected,'invalid entries and duplicate IDs are removed before taking the newest five hundred');
+ assert.equal(f.w.document.getElementById('historyCount').textContent,'최근 500회 · 최근 나온 번호순');
+ assert.equal(f.ui.state.balance,10000);assert.equal(f.ui.state.pending,null);assert.deepEqual(clone(f.ui.state.bets),{});
+});
+
+test('a confirmation merges newer same-account storage without losing another app instance result',async t=>{
+ const original={id:'already-saved',number:7},external={id:'other-instance-confirmed',number:0};
+ const f=await fixture(t,roomFixture(),{storage:historyStorage([original])});
+ f.w.localStorage.setItem(historyKey(me),historyStorage([external,original])[historyKey(me)]);
+ assert.deepEqual(clone(f.ui.state.history),[7],'the running instance still has its previous in-memory snapshot');
+ await confirmHistoryRound(f,'this-instance-confirmed',36);
+ const expected=[{id:'this-instance-confirmed',number:36},external,original];
+ assert.deepEqual(JSON.parse(f.w.localStorage.getItem(historyKey(me))).entries,expected,
+  'reading the current stored record before writing preserves another instance confirmation');
+ assert.deepEqual(clone(f.ui.state.history),[36,0,7]);
+ assert.equal(f.calls.filter(call=>call.action==='confirm').length,1);
+});
+
+test('unavailable or full local storage never prevents a paid game from settling or changes the authoritative gold',async t=>{
+ for(const storageThrows of [['getItem','setItem'],['setItem']]){
+  await t.test(storageThrows.length===2?'storage access denied':'storage quota exceeded',async t=>{
+   const r=roomFixture();r.players[1].ready=true;
+   const f=await fixture(t,r,{storageThrows,systemReduced:true}),d=f.w.document;
+   d.querySelector('[data-bet="n7"]').click();await tick();
+   d.getElementById('spinButton').click();await tick();await tick();
+   assert.equal(f.ui.state.balance,9900,'the synthetic server escrows exactly one 100 G bet');
+   f.w.testWheel.callbacks.onDone('spin-one');d.getElementById('confirmResultButton').click();await tick();await tick();await wait(30);
+   assert.deepEqual(clone(f.ui.state.history),[7],'the current session keeps its result even if persistence fails');
+   assert.equal(f.ui.state.balance,13464,'the server payout, including its existing fee, still reaches the wallet');
+   assert.equal(f.ui.state.pending,null);assert.equal(d.getElementById('wheelDialog').open,false);
+   assert.equal(f.calls.filter(call=>call.action==='confirm').length,1);
+   assert.ok(f.storageFailures.some(failure=>failure.method==='setItem'&&failure.key===historyKey(me)),'the save failure was actually exercised');
+   if(storageThrows.includes('getItem'))assert.ok(f.storageFailures.some(failure=>failure.method==='getItem'&&failure.key===historyKey(me)));
+   f.message({type:'roulette-exit-request'});await tick();await tick();await tick();
+   assert.equal(f.ui.getRoom(),null,'failed storage does not block leaving the game');
+  });
+ }
+ await t.test('a later successful save includes a result confirmed while storage was full',async t=>{
+  const entries=Array.from({length:500},(_,index)=>({id:`quota-seed-${index}`,number:8}));
+  const f=await fixture(t,roomFixture(),{storage:historyStorage(entries)}),w=f.w;
+  const stored=w.localStorage.getItem(historyKey(me)),setItem=w.Storage.prototype.setItem;
+  w.Storage.prototype.setItem=function(key,value){if(key===historyKey(me))throw new w.DOMException('Synthetic full storage','QuotaExceededError');return setItem.call(this,key,value)};
+  await confirmHistoryRound(f,'confirmed-during-quota-error',0);
+  assert.equal(w.localStorage.getItem(historyKey(me)),stored,'a failed write leaves the previous stored record intact');
+  assert.deepEqual(clone(f.ui.state.history),[0,...Array(499).fill(8)]);
+  w.Storage.prototype.setItem=setItem;
+  await confirmHistoryRound(f,'confirmed-after-quota-recovery',7);
+  const expected=[{id:'confirmed-after-quota-recovery',number:7},{id:'confirmed-during-quota-error',number:0},...entries.slice(0,498)];
+  assert.deepEqual(JSON.parse(w.localStorage.getItem(historyKey(me))).entries,expected,
+   'the formerly unsaved result stays ahead of old stored entries when the next write succeeds');
+  assert.deepEqual(clone(f.ui.state.history),[7,0,...Array(498).fill(8)]);
+  assert.equal(f.ui.state.balance,10000);
+ });
 });

@@ -127,11 +127,11 @@
   <dialog id="historyDialog" class="help-dialog history-dialog" aria-labelledby="historyTitle" aria-describedby="historyHint">
     <div class="dialog-heading"><span class="eyebrow">RECENT NUMBERS</span><button id="closeHistory" class="icon-button" type="button" aria-label="지난 번호 닫기"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
     <h2 id="historyTitle">지난 번호</h2>
-    <p id="historyHint" class="history-hint">이 테이블에서 확인한 최근 500회를 기록해요. 가장 최근 나온 번호가 위에 있고, 막대 길이는 번호별 나온 횟수예요.</p>
+    <p id="historyHint" class="history-hint">이 계정으로 같은 브라우저에서 확인한 최근 500회를 기록해요. 가장 최근 나온 번호가 위에 있고, 막대 길이는 번호별 나온 횟수예요.</p>
     <p id="historyCount" class="history-count"></p>
     <p id="historyEmpty" class="history-dialog-empty">아직 확인한 결과가 없어요.<br>한 판을 마치면 여기에 표시돼요.</p>
     <ol id="historyList" class="history-list" aria-label="번호별 나온 횟수, 최근 나온 번호순"></ol>
-    <p class="history-note">테이블을 바꾸거나 게임을 다시 열면 기록이 초기화돼요.</p>
+    <p class="history-note">테이블을 바꾸거나 게임을 다시 열어도 같은 브라우저에 기록이 남아요. 브라우저 데이터를 지우면 기록도 삭제돼요.</p>
   </dialog>
   <dialog id="helpDialog" class="help-dialog">
     <div class="dialog-heading"><span class="eyebrow">HOW TO PLAY</span><button class="icon-button" id="closeHelp" aria-label="설명 닫기"><svg><use href="#i-close"/></svg></button></div>
@@ -155,6 +155,6 @@
     <p id="refillCoins" class="refill-coins">보유 0쭈</p><p id="refillMessage" class="refill-message" role="status"></p>
     <div class="refill-dialog-actions"><button id="cancelRefillButton" type="button">취소</button><button id="confirmRefillButton" type="button" disabled>충전</button></div>
   </dialog>
-  <script type="module" src="app.js?v=20261101-arcade-auto1"></script>
+  <script type="module" src="app.js?v=20261101-roulette-persist1"></script>
 </body>
 </html>

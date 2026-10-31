@@ -5,8 +5,10 @@ import {addChipDepth} from './chips.js?v=20261031-roulette-modes1';
 
 const $=id=>document.getElementById(id),fmt=n=>Math.round(n).toLocaleString('ko-KR'),short=n=>n>=1000?(n/1000).toLocaleString('en-US',{maximumFractionDigits:1})+'K':String(n);
 const KEY='ojjuda.roulette.preferences.v1';
+const HISTORY_KEY='ojjuda.roulette.history.v1:';
 const sound=new Sound();
 const state=initialState();state.balance=0;
+let historyEntries=[],unsavedHistory=[];
 let lobbyMode='solo';
 let room=null,owner=null,initialized=false,screen='lobby',animating=false,settling=false,startingSpin=false,undo=[],lastResult=null,toastTimer,resultReadyId=null,betMode='straight';
 let commandBusy=false,pollTimer=null,reading=false,requestCounter=0,lastServerTime=0,closed=false,connecting=false,exitRequested=false;
@@ -23,6 +25,35 @@ try{
   state.reduced=reducedPreference===true;
 }catch{}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify({sound:state.sound,reduced:state.reduced,reducedOverride:reducedPreference}))}catch{}}
+function validHistoryEntry(entry){return entry&&typeof entry.id==='string'&&entry.id.length>0&&entry.id.length<=128&&entry.id.trim()===entry.id&&Number.isInteger(entry.number)&&entry.number>=0&&entry.number<=36}
+function cleanHistory(entries){
+  const kept=[],seen=new Set();
+  for(const entry of entries){
+    if(!validHistoryEntry(entry)||seen.has(entry.id))continue;
+    seen.add(entry.id);kept.push({id:entry.id,number:entry.number});
+    if(kept.length===HISTORY_LIMIT)break;
+  }
+  return kept;
+}
+function readHistory(){
+  if(!owner)return [];
+  try{
+    const saved=JSON.parse(localStorage.getItem(HISTORY_KEY+owner));
+    if(saved?.version===1&&saved.owner===owner&&Array.isArray(saved.entries))return cleanHistory(saved.entries);
+  }catch{}
+  return [];
+}
+function restoreHistory(){historyEntries=readHistory();unsavedHistory=[];state.history=historyEntries.map(entry=>entry.number)}
+function recordHistory(spin){
+  if(!owner||!validHistoryEntry(spin))return;
+  // Merge other instances' saved rounds, keeping any failed writes ahead of the
+  // older stored window until they have been successfully saved themselves.
+  const saved=readHistory(),known=saved.some(entry=>entry.id===spin.id)||historyEntries.some(entry=>entry.id===spin.id);
+  if(!known)unsavedHistory=cleanHistory([{id:spin.id,number:spin.number},...unsavedHistory]);
+  historyEntries=cleanHistory([...unsavedHistory,...saved,...historyEntries]);
+  state.history=historyEntries.map(entry=>entry.number);
+  try{localStorage.setItem(HISTORY_KEY+owner,JSON.stringify({version:1,owner,entries:historyEntries}));unsavedHistory=[]}catch{}
+}
 async function mutate(callback){const result=await callback();persist();return result}
 function send(message){if(window.parent!==window)window.parent.postMessage({source:'ojjuda-roulette',...message},location.origin)}
 function rpc(action,payload={}){
@@ -184,7 +215,7 @@ function displaySpin(serverSpin,serverTime){
 }
 function acknowledgeRemoteResult(){
   const spin=state.pending;
-  if(spin&&state.lastSettled!==spin.id){const result=payout(spin.bets,spin.number);state.lastSettled=spin.id;state.history.unshift(spin.number);state.history=state.history.slice(0,HISTORY_LIMIT);revealResult({...result,number:spin.number,net:result.total-result.stake,bets:spin.bets})}
+  if(spin&&state.lastSettled!==spin.id){const result=payout(spin.bets,spin.number);state.lastSettled=spin.id;recordHistory(spin);revealResult({...result,number:spin.number,net:result.total-result.stake,bets:spin.bets})}
   state.pending=null;animating=false;resultReadyId=null;sound.stopRoll();void closeWheelPopup(null,{instant:true});
 }
 function applySnapshot(data){
@@ -200,7 +231,7 @@ function applySnapshot(data){
       state.pending=null;state.bets={};state.betChips={};undo=[];animating=false;resultReadyId=null;sound.stopRoll();closeWheelPopup(null,{instant:true});setScreen('lobby');
     }else{
       lobbyMode=room.mode==='solo'?'solo':'online';
-      if(previous?.id!==room.id){state.bets={};state.betChips={};state.pending=null;state.history=[];state.lastBets={};state.lastChips={};state.lastSettled=null;undo=[];clearResult()}
+      if(previous?.id!==room.id){state.bets={};state.betChips={};state.pending=null;state.lastBets={};state.lastChips={};state.lastSettled=null;undo=[];clearResult()}
       setScreen('game');
       if(room.status==='betting'){
         if(previous?.id===room.id&&(previous.status!=='betting'||previous.round!==room.round)){state.bets={};state.betChips={};undo=[];if(!settling)acknowledgeRemoteResult()}
@@ -240,8 +271,8 @@ window.addEventListener('message',async event=>{
     if(message.error||message.data?.error||message.data?.ok===false)pending.reject(new Error(message.error||message.data?.error||'unavailable'));else pending.resolve(message.data);return;
   }
   if(message.type==='roulette-exit-request'){if(commandBusy||settling)exitRequested=true;else void leaveRoom({exit:true});return}
-  if(message.type!=='roulette-init'||initialized||!message.owner)return;
-  initialized=true;owner=message.owner;connecting=true;if(message.joinCode)selectMode('online',{refresh:false});render();
+  if(message.type!=='roulette-init'||initialized||typeof message.owner!=='string'||!message.owner||message.owner.length>128||message.owner.trim()!==message.owner)return;
+  initialized=true;owner=message.owner;restoreHistory();connecting=true;if(message.joinCode)selectMode('online',{refresh:false});render();
   try{applySnapshot(await rpc('status'));if(message.joinCode)applySnapshot(await rpc('join',{code:String(message.joinCode).toUpperCase()}));else if(lobbyMode==='online')applySnapshot(await rpc('list'));$('connectionStatus').textContent=''}catch(error){notice(errorText(error));$('connectionStatus').textContent=errorText(error)}finally{connecting=false;render();schedulePoll()}
 });
 const media=matchMedia('(prefers-reduced-motion: reduce)');
@@ -458,7 +489,7 @@ async function confirmResult(){
   const calculated=payout(spin.bets,spin.number);result={...calculated,number:spin.number,net:calculated.total-calculated.stake,bets:{...spin.bets}};oldBalance=state.balance;
   try{
     if(room?.mode==='solo'&&computerOutcome?.id!==id)applySnapshot(await rpc('read',{code:room.code}));
-    const data=await rpc('confirm',{code:room.code,roundId:id});state.lastSettled=id;state.history.unshift(spin.number);state.history=state.history.slice(0,HISTORY_LIMIT);state.pending=null;state.bets={};state.betChips={};undo=[];applySnapshot(data);
+    const data=await rpc('confirm',{code:room.code,roundId:id});state.lastSettled=id;recordHistory(spin);state.pending=null;state.bets={};state.betChips={};undo=[];applySnapshot(data);
   }
   catch(error){settling=false;resultReadyId=id;$('confirmResultButton').disabled=false;$('confirmResultButton').textContent='확인';notice(errorText(error));render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);return}
 
