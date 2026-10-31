@@ -30,6 +30,7 @@ function canAim(){const seat=playerSeat();return !!(!resumeOnEntry&&current?.sta
 function chooseMode(mode){
  selectedMode=mode;
  lobby();
+ if(mode==='online'&&!current)void refresh();
 }
 function lobby(){
  clearTimeout(cpuTimer);cpuTimer=0;cpuVersion='';
@@ -114,8 +115,8 @@ function accept(result,animate=true){
  else{engine=createEngine(next.game);animation=false;}
  view.use(engine,canAim());render();
 }
-async function list(){
- const result=await request({action:'list'});if(current)return;
+async function list(revision){
+ const result=await request({action:'list'});if(revision!==epoch||current||selectedMode!=='online')return;
  if(Number.isInteger(result.coins))coins=result.coins;
  $('rooms').innerHTML=result.rooms?.length?result.rooms.map(r=>`<div class="roomRow"><div class="roomInfo">${esc(r.title)}<small>${esc(r.code)} · ${r.players}/${r.capacity}명</small></div><button class="ge-secondary" data-code="${esc(r.code)}"${r.players>=r.capacity?' disabled':''}>참여</button></div>`).join(''):'<p>아직 열린 방이 없어요. 첫 방을 만들어 보세요.</p>';
 }
@@ -127,9 +128,21 @@ async function refresh(){
   const result=await request(current?{action:'read',room_id:current.id}:{action:'mine'});
   if(revision!==epoch)return;
   if(restoreCheck){restoreCheck=false;resumeOnEntry=!!result.room?.game;}
-  uncertain=false;accept(result);if(!current)await list();
+  uncertain=false;accept(result);
+  // A public-room listing is optional for solo/same-device play. Its failure
+  // must not invalidate the successfully loaded state of the player's match.
+  if(!current&&selectedMode==='online'){
+   try{await list(revision);}
+   catch(e){
+    if(revision!==epoch)return;
+    if(['not_signed_in','banned'].includes(e.message))throw e;
+    if(!current&&selectedMode==='online')$('rooms').textContent='대전방 목록을 불러오지 못했어요. 새로고침을 눌러 다시 확인해 주세요.';
+   }
+  }
+  if(revision!==epoch)return;
   if(!$('netNotice').textContent)$('netMessage').textContent=current?.status==='waiting'?(current.mode==='solo'?'준비되면 전투를 시작하세요.':'방 번호를 알려 주고 친구를 기다려 주세요.'):current?'':`보유 ${coins}쭈 · 기본탄 3종은 무료예요`;
  }catch(e){
+  if(revision!==epoch)return;
   if(['room_not_found','room_unavailable'].includes(e.message)){accept({room:null});}
   else if(e.message==='not_signed_in'){available=false;uncertain=true;}
   else uncertain=true;

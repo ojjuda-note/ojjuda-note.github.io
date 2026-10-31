@@ -24,5 +24,6 @@ jobs:
       - run: node tests/world-board-tank.test.cjs
       - run: node tests/tank-local.test.cjs
       - run: node --experimental-vm-modules tests/tank-client.test.cjs
+      - run: node --experimental-vm-modules tests/tank-entry-recovery.test.cjs
       - run: node tests/arcade-catalog.test.cjs
       - run: node tests/arcade-entry-flows.test.cjs

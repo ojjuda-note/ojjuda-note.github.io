@@ -14,7 +14,8 @@ let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,
 world=world.replace('<script type="module">',`<script>${['world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
- window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt,tick:Ts,render:H};
+ window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt,tick:Ts,render:H,
+ async load(value){const previous=S;S={from:()=>({select:async()=>({data:[{key:'notice',value}],error:null})})};try{return await Ls()}finally{S=previous}}};
  D.isAdmin=false;g.tab='friends';H();worldParkNotes.route();D.online=true;wt.notice=${JSON.stringify(notice)};H();
  `+world.slice(world.indexOf('</script>',boot));
 const identity=`authKnown=ready=true;session={user:{id:'fixture-member'}};myIdentity={gender:'male'};myIdentityReady=true;myGender='male';updateAuth();
@@ -65,6 +66,24 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   }
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.nb-flow').evaluate(n=>getComputedStyle(n).animationName),'none');
   await page.emulateMedia({reducedMotion:'no-preference'});
+  // A late network response must update just the announcement, preserving the
+  // live Park iframe, invitation controls, and an in-progress form selection.
+  await page.evaluate(()=>{
+   window.noticeLiveFrame=document.querySelector('[data-park-app] iframe');
+   window.noticeLiveInvite=document.querySelector('.game-friend-inline');
+   const input=document.createElement('input');input.id='notice-draft';input.value='작성 중인 글';
+   document.querySelector('#app .main').append(input);input.focus();input.setSelectionRange(1,4);
+  });
+  await page.evaluate(()=>noticeFixture.load('늦게 도착한 새 공지'));
+  assert.equal(await page.locator('.nb-text').textContent(),'늦게 도착한 새 공지');
+  assert.ok(await page.evaluate(()=>document.querySelector('[data-park-app] iframe')===noticeLiveFrame),'config refresh preserves the Park frame');
+  assert.ok(await page.evaluate(()=>document.querySelector('.game-friend-inline')===noticeLiveInvite),'config refresh preserves the incoming invitation row');
+  assert.deepEqual(await page.locator('#notice-draft').evaluate(n=>[n===document.activeElement,n.value,n.selectionStart,n.selectionEnd]),[true,'작성 중인 글',1,4]);
+  await page.evaluate(()=>noticeFixture.load(''));
+  assert.equal(await page.locator('[data-act="notice-open"]').count(),0,'network clearing removes only the announcement');
+  await page.evaluate(()=>noticeFixture.load('복구된 공지'));
+  assert.equal(await page.locator('[data-act="notice-open"]').count(),1,'network delivery inserts the announcement without a shell redraw');
+  assert.equal(await page.locator('.game-friend-inline').evaluate(n=>n.parentElement.previousElementSibling.dataset.act),'notice-open');
   await page.evaluate(()=>noticeFixture.set('공지 <script>window.noticeInjection=true</script>'));
   assert.equal(await page.locator('.nb-text').textContent(),'공지 <script>window.noticeInjection=true</script>');assert.equal(await page.evaluate(()=>window.noticeInjection),undefined);
   await page.evaluate(()=>noticeFixture.set(''));assert.equal(await page.locator('[data-act="notice-open"]').count(),0,'clearing notice removes the banner');
