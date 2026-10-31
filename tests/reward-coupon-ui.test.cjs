@@ -20,7 +20,8 @@ async function pageFor(t,route,options={}){
   if(url.hostname==='cdn.jsdelivr.net')return request.fulfill({contentType:'application/javascript',body:''});
   if(name==='/config.js')return request.fulfill({contentType:'application/javascript',body:'window.OJJUDA_CONFIG={supabaseUrl:"https://mock.invalid",supabaseKey:"test"};'});
   if(name==='/message-fixture')return request.fulfill({contentType:'text/html',body:'<!doctype html><meta charset="utf-8"><body><script src="/friend-messages.js"></script></body>'});
-  const allowed=['/gift.html','/reward-coupon.js','/admin/rewards.html','/admin/rewards.js','/admin/rewards.css','/admin/style.css','/friend-messages.js'];
+  if(name==='/admin/reward-coupon-reader.js')return request.fulfill({contentType:'application/javascript',body:'window.OjjudaCouponReader={async read(){return {code:"TESTCOUPON1234",expires:"2099-01-01",warnings:[]};}};'});
+  const allowed=['/gift.html','/reward-coupon.js','/admin/rewards.html','/admin/rewards.js','/admin/rewards.css','/admin/style.css','/admin/reward-coupon-parser.js','/admin/reward-coupon-batch.js','/admin/reward-coupon-manager.js','/friend-messages.js'];
   if(!allowed.includes(name))return request.fulfill({status:404,body:''});
   const type=name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'application/javascript';
   return request.fulfill({contentType:type,body:await fs.readFile(path.join(ROOT,name))});
@@ -56,17 +57,22 @@ async function pageFor(t,route,options={}){
 test('Admin retries use the same uploaded coupon and award; mobile form fits',async t=>{
  const page=await pageFor(t,'/admin/rewards.html',{failOnce:true});
  await page.locator('#coupon-form').waitFor({state:'visible'});
- await page.selectOption('#coupon-winner',AWARD);
- await page.fill('#coupon-title','테스트 상품');await page.fill('#coupon-code','TEST-COUPON-1234');await page.fill('#coupon-expires','2099-01-01');
+ await page.fill('#coupon-title','테스트 상품');
  const bytes=await page.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=1;const blob=await new Promise(resolve=>c.toBlob(resolve,'image/png'));return [...new Uint8Array(await blob.arrayBuffer())];});
  await page.setInputFiles('#coupon-file',{name:'test-pixel.png',mimeType:'image/png',buffer:Buffer.from(bytes)});
+ await page.locator('.coupon-item[data-status="ready"]').waitFor({state:'visible'});
+ assert.equal(await page.getByLabel('당첨자 배정 (1)',{exact:true}).inputValue(),AWARD);
+ assert.equal(await page.getByLabel('쿠폰번호 (1)',{exact:true}).inputValue(),'TESTCOUPON1234');
+ assert.equal(await page.getByLabel('사용기한 (1)',{exact:true}).inputValue(),'2099-01-01');
  await page.click('#coupon-send');
- await page.waitForFunction(()=>document.querySelector('#coupon-status').textContent.includes('발송을 확인하지 못했어요')&&!document.querySelector('#coupon-send').disabled);
+ await page.waitForFunction(()=>document.querySelector('.coupon-item[data-status="failed"] .coupon-item-error')?.textContent.includes('발송을 확인하지 못했어요')&&!document.querySelector('#coupon-send').disabled);
  await page.click('#coupon-send');
- await page.waitForFunction(()=>document.querySelector('#coupon-status').textContent.includes('당첨자님에게 기프티콘 쪽지를 보냈어요'));
+ await page.waitForFunction(()=>document.querySelector('.coupon-item[data-status="sent"] .coupon-item-note')?.textContent.includes('당첨자님에게 기프티콘 쪽지를 보냈어요')&&document.querySelector('#coupon-sent').textContent.includes('당첨자'));
  const state=await page.evaluate(()=>({uploads:couponTest.uploads,calls:couponTest.calls,delivered:couponTest.delivered,overflow:document.documentElement.scrollWidth>innerWidth}));
- assert.equal(state.uploads.length,1);assert.equal(state.calls.length,2);assert.deepEqual(state.calls[0],state.calls[1]);assert.equal(state.calls[0].p_award,AWARD);assert.equal(Object.hasOwn(state.calls[0],'p_recipient'),false);assert.equal(state.delivered,true);assert.equal(state.overflow,false);
- assert.equal(await page.locator('#coupon-form').isVisible(),false);
+ assert.equal(state.uploads.length,1);assert.equal(state.calls.length,2);assert.deepEqual(state.calls[0],state.calls[1]);assert.equal(state.calls[0].p_path,state.uploads[0].name);assert.equal(state.calls[0].p_award,AWARD);assert.equal(Object.hasOwn(state.calls[0],'p_recipient'),false);assert.equal(state.delivered,true);assert.equal(state.overflow,false);
+ assert.equal(await page.locator('#coupon-form').isVisible(),true);
+ assert.equal(await page.locator('.coupon-item[data-status="sent"]').count(),1);
+ assert.equal(await page.locator('#coupon-send').isDisabled(),true);
  assert.match(await page.locator('#coupon-sent').innerText(),/당첨자/);
 });
 test('Recipient can view/download an image and logout removes it',async t=>{
