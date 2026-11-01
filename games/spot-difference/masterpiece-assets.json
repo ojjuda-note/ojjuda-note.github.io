@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": "masterpieces-1",
-  "reviewStatus": "approved-for-very-hard-integration",
+  "revision": "masterpieces-colors-1",
+  "reviewStatus": "color-clarity-preview-ready",
   "stageRange": [
     63,
     82
@@ -26,6 +26,13 @@
           "sha256": "15ed01fc4decacbaaa6f257d164db89e7b187162f42823c01b6e0f8c27983dc5",
           "width": 1461,
           "height": 1076
+        },
+        {
+          "path": "masterpieces/changes/bruegel-harvesters-colors1.png",
+          "bytes": 2775127,
+          "sha256": "dc065c312ed3bb54c423a53265ac64324a11b393f0810ad97ed862b53622de20",
+          "width": 1460,
+          "height": 1077
         }
       ]
     },
@@ -46,6 +53,13 @@
           "path": "masterpieces/changes/david-death-of-socrates.png",
           "bytes": 1809560,
           "sha256": "4a7a46517abc06ad9cbddb66724f032659535e56c699c3f6f75a41f6ed8b7006",
+          "width": 1537,
+          "height": 1023
+        },
+        {
+          "path": "masterpieces/changes/david-death-of-socrates-colors1.png",
+          "bytes": 1923644,
+          "sha256": "c012315adbc4478986adb43a62d47e38046ffac9f076ec16b7be60eef90f8653",
           "width": 1537,
           "height": 1023
         }
@@ -92,6 +106,13 @@
           "sha256": "728a158f3f773f9968e95374cf58f8b87374e0d549cb6ce6430ada3fa29e2763",
           "width": 1405,
           "height": 1119
+        },
+        {
+          "path": "masterpieces/changes/van-gogh-wheat-field-cypresses-colors1.png",
+          "bytes": 2887830,
+          "sha256": "04f7accddfc22ed7241235817a27e6b7af60215b9ac6de3d31cd5cea0688551d",
+          "width": 1405,
+          "height": 1119
         }
       ]
     },
@@ -136,6 +157,13 @@
           "sha256": "7a6f52e54730b90f680e9fec049e931541e49b9230f29fb111c3311befb797ae",
           "width": 1451,
           "height": 1084
+        },
+        {
+          "path": "masterpieces/changes/degas-dancing-class-colors1.png",
+          "bytes": 2009217,
+          "sha256": "9fc4f2b2ed0d123dd19f6d31ab96e5aceba482098527e2933abb15d9bc7fff00",
+          "width": 1451,
+          "height": 1084
         }
       ]
     },
@@ -156,6 +184,13 @@
           "path": "masterpieces/changes/vermeer-water-pitcher.png",
           "bytes": 2307523,
           "sha256": "1d732a4a1f9bb8b83d26d58562c8211fbbb1d3fbc38961a2887dafe08bac0b34",
+          "width": 1182,
+          "height": 1330
+        },
+        {
+          "path": "masterpieces/changes/vermeer-water-pitcher-colors1.png",
+          "bytes": 2209786,
+          "sha256": "06d98e7c57ba15aa5756ad872569f427556cc6e9ea838dc1b3b776eeac9d0b45",
           "width": 1182,
           "height": 1330
         }
@@ -202,6 +237,20 @@
           "sha256": "8d6d9a021cc8cd2c8d06924b45f132cc70d4c348fd8aabe8c83a7e6165b93a12",
           "width": 1406,
           "height": 1119
+        },
+        {
+          "path": "masterpieces/changes/cezanne-card-players-colors1.png",
+          "bytes": 2318359,
+          "sha256": "31fbe2081f2df84721f2d65957be432ff6a9d9531ced8f734ac1a51679752771",
+          "width": 1407,
+          "height": 1118
+        },
+        {
+          "path": "masterpieces/changes/cezanne-card-players-colors-detail1.png",
+          "bytes": 2301837,
+          "sha256": "a1bbd185be0ca37270ba4dd04f781961ee89bb9d20cefb51c33a30430caf2871",
+          "width": 1407,
+          "height": 1118
         }
       ]
     },
@@ -224,6 +273,20 @@
           "sha256": "c8fcc93e37c5e9da5a4b6ecb07f33255897b5f6149b759e21e2a89989f795949",
           "width": 1390,
           "height": 1132
+        },
+        {
+          "path": "masterpieces/changes/renoir-charpentier-family-colors-tassel1.png",
+          "bytes": 2224150,
+          "sha256": "a2d2046340741d638cca07f00b5652a449c9b8a08bfa2616f16aa2a2d3b340f8",
+          "width": 1391,
+          "height": 1131
+        },
+        {
+          "path": "masterpieces/changes/renoir-charpentier-family-colors1.png",
+          "bytes": 2271493,
+          "sha256": "7a119582940cd97fa1d8c6bda3181d867ad67dd29bc7078c68bbee0859127470",
+          "width": 1391,
+          "height": 1131
         }
       ]
     },
@@ -268,6 +331,13 @@
           "sha256": "28687627ae9806904ff48eb1f82a0b53b88c706413fc139b9309e715f5e5101c",
           "width": 1221,
           "height": 1288
+        },
+        {
+          "path": "masterpieces/changes/rembrandt-aristotle-homer-colors1.png",
+          "bytes": 1782688,
+          "sha256": "b1ee4f025ed2e4f3f5b46bfcf94adea4ddacc619ae827e41a7a00acfff4210a6",
+          "width": 1221,
+          "height": 1289
         }
       ]
     },
@@ -289,6 +359,20 @@
           "bytes": 2180291,
           "sha256": "1a7f21529220f9a8c38b697a5056e7f2482303d62fc6b507fe8c3ff80e7ef8f6",
           "width": 1638,
+          "height": 960
+        },
+        {
+          "path": "masterpieces/changes/leutze-washington-delaware-colors1.png",
+          "bytes": 2245442,
+          "sha256": "84ed332226a7edb96e2cea51ed7756f823c99963cdbae8f05cf59d14abe373c7",
+          "width": 1638,
+          "height": 960
+        },
+        {
+          "path": "masterpieces/changes/leutze-washington-delaware-colors-detail1.png",
+          "bytes": 2304548,
+          "sha256": "e3c0d72c589cd1e94f203dc03204961a6808bcc1da96dcbc3227290136bca12c",
+          "width": 1639,
           "height": 960
         }
       ]
@@ -334,6 +418,13 @@
           "sha256": "6b14b50d722a858b0bc5a0ad979a5e24e6cc8a5f62f549bc2a0942df7b1b69c7",
           "width": 1518,
           "height": 1036
+        },
+        {
+          "path": "masterpieces/changes/cole-the-oxbow-colors1.png",
+          "bytes": 2331767,
+          "sha256": "a485ed7a7e36b715c1dd449a0f16ade1534f7a344ff71a664e08dadfd49ea526",
+          "width": 1517,
+          "height": 1037
         }
       ]
     },
@@ -356,6 +447,13 @@
           "sha256": "80426a559ec4648f13de2b63a2ca6258c060bf31e7d6fd35bdf3999c23822d26",
           "width": 1596,
           "height": 985
+        },
+        {
+          "path": "masterpieces/changes/homer-gulf-stream-colors1.png",
+          "bytes": 2270481,
+          "sha256": "2bfb630b7ad747175f2d200f3852fc29bf70c6ab774d2099aeb54ded4c1bc28b",
+          "width": 1596,
+          "height": 986
         }
       ]
     },
@@ -385,6 +483,27 @@
           "sha256": "f803effe4e71f8ad324974e7d6d1d7fe3d146319e11e7ab4e90c89fd40d7e7d3",
           "width": 1755,
           "height": 896
+        },
+        {
+          "path": "masterpieces/changes/bonheur-horse-fair-colors1.png",
+          "bytes": 2568030,
+          "sha256": "6188a79884565ca329a0c02b01e61053bd3b75716afad7d28553db50b0242b03",
+          "width": 1755,
+          "height": 896
+        },
+        {
+          "path": "masterpieces/changes/bonheur-horse-fair-colors-detail1.png",
+          "bytes": 2504188,
+          "sha256": "afb3be512225c44841b0adb3848bd0debeb9345caf7e5e2abef58fe09159bdcc",
+          "width": 1755,
+          "height": 896
+        },
+        {
+          "path": "masterpieces/changes/bonheur-horse-fair-colors-detail2.png",
+          "bytes": 2382022,
+          "sha256": "7546a6658b93a770c850cc67a243a94cdf6ce58fc28ceaf270417ed7d64dad5c",
+          "width": 1754,
+          "height": 896
         }
       ]
     },
@@ -405,6 +524,20 @@
           "path": "masterpieces/changes/cezanne-apples-primroses.png",
           "bytes": 2338295,
           "sha256": "9c8b856adea48acbbfd39bc8d21f496738cd6eb4b6d1be3799f5651a53ab62c4",
+          "width": 1408,
+          "height": 1117
+        },
+        {
+          "path": "masterpieces/changes/cezanne-apples-primroses-colors1.png",
+          "bytes": 2273130,
+          "sha256": "3a9d855be67b1ac0bc7613fcaf693b9178987f659f2a1d56a27e854d38546790",
+          "width": 1408,
+          "height": 1117
+        },
+        {
+          "path": "masterpieces/changes/cezanne-apples-primroses-colors-detail1.png",
+          "bytes": 2368976,
+          "sha256": "0d5271e791a476543e95c836d0a8416b0a0b996e9eda9f5dd28d0317f24b6c7e",
           "width": 1408,
           "height": 1117
         }
@@ -451,11 +584,18 @@
           "sha256": "c70dc81ec69bfda504c6126077df3acfe941b1dfeeab5b0a5808351532088921",
           "width": 1839,
           "height": 855
+        },
+        {
+          "path": "masterpieces/changes/monet-water-lilies-colors1.png",
+          "bytes": 2309152,
+          "sha256": "688bb369cf309fd2ad98c6e8b29e82add54cb299de9bc58e141c1b1046b47d0b",
+          "width": 1838,
+          "height": 856
         }
       ]
     }
   ],
-  "puzzleDataSha256": "b2eed3768528dbf51c3abe71fb45a5b3bbba8ae7ec42c13c30385ce4a505f4ac",
-  "reviewPdfSha256": "53f48ea5020738ffd4f922bdeb506cae7c00c9b2d606e095eea0732b39542c45",
-  "difficulty": "very-hard"
+  "puzzleDataSha256": "313d0258bfee9f604bd8d6a3c8cec8f38439c88c602aa04573c8c9b8e02cdc2c",
+  "difficulty": "very-hard",
+  "originalReviewPdfSha256": "53f48ea5020738ffd4f922bdeb506cae7c00c9b2d606e095eea0732b39542c45"
 }

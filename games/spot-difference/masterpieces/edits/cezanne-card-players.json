@@ -29,9 +29,14 @@
         37.1,
         21.4
       ],
-      "descriptionKo": "뒤에 서 있는 사람의 붉은 목수건이 황토색으로 바뀌었어요.",
-      "instructionEn": "Change only the red neckerchief of the standing man to warm golden ochre; preserve its folds, his face, exposed skin and blue coat.",
-      "kind": "color"
+      "descriptionKo": "뒤에 서 있는 사람의 붉은 목수건이 선명한 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the standing man's red neckerchief to bright yellow. Preserve every fabric fold, his face, exposed skin, blue coat and original silhouette.",
+      "kind": "color",
+      "image": "masterpieces/changes/cezanne-card-players-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "id": 3,
@@ -67,10 +72,15 @@
         54.7,
         65.7
       ],
-      "descriptionKo": "탁자에 펼친 카드의 붉은 무늬가 초록색으로 바뀌었어요.",
-      "instructionEn": "Change only the red marks on the single face-up card near the center of the table to dark green; preserve the card border, blue marks, other cards and all hands.",
+      "descriptionKo": "탁자에 펼친 카드의 붉은 무늬가 선명한 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the red marks on the single face-up card near the center of the table to bright yellow. Preserve its blue marks, white card background, border, other cards and all hands.",
       "kind": "color",
-      "feather": 0.06
+      "feather": 0.06,
+      "image": "masterpieces/changes/cezanne-card-players-colors-detail1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "id": 6,

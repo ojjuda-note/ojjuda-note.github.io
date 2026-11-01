@@ -6,14 +6,19 @@
     {
       "id": 1,
       "bounds": [
-        2,
-        10,
-        11.6,
-        23.6
+        0.6,
+        8.4,
+        15.0,
+        33.2
       ],
       "kind": "color",
-      "descriptionKo": "왼쪽 위 나뭇잎이 가을빛으로 바뀌었어요.",
-      "instructionEn": "Turn only the small upper-left crown of green leaves to golden orange, keeping branches and leaf shapes."
+      "descriptionKo": "왼쪽 위 나뭇잎이 초록색에서 선명한 빨간색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small upper-left crown of originally green leaves to vivid scarlet red. Preserve each leaf shape, every branch and the surrounding storm sky.",
+      "image": "masterpieces/changes/cole-the-oxbow-colors1.png",
+      "colorMapping": {
+        "from": "green",
+        "to": "red"
+      }
     },
     {
       "id": 2,
@@ -109,8 +114,13 @@
         74.3
       ],
       "kind": "color",
-      "descriptionKo": "강 안쪽 밭 한 구역이 초록색으로 바뀌었어요.",
-      "instructionEn": "Recolor just the rectangular golden tilled field inside the river bend near x62 y72 to deep green while preserving field rows and trees."
+      "descriptionKo": "강 안쪽 밭 한 구역이 노란색에서 선명한 초록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the rectangular golden-yellow tilled field inside the river bend to vivid emerald green. Preserve the original field boundary, rows, trees, river and every neighboring field.",
+      "image": "masterpieces/changes/cole-the-oxbow-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "id": 10,

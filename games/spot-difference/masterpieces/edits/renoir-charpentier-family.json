@@ -3,7 +3,7 @@
   "input": "sources/renoir-charpentier-family.jpg",
   "edits": [
     {
-      "text": "벽 위쪽의 푸른 술 장식이 붉은색으로 바뀌었어요.",
+      "text": "벽 위쪽 술 장식의 초록 부분이 선명한 빨간색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         70.5,
@@ -11,10 +11,15 @@
         73.3,
         15.5
       ],
-      "instruction": "Recolor only the small blue-green hanging tassel on the wallpaper high above the empty chair to muted crimson. Preserve its exact shape, cord, painted wall pattern, and surrounding brushwork."
+      "instruction": "Recolor only the originally green and green-teal upper and middle threads of the small hanging tassel to vivid scarlet red. Preserve its originally blue lower threads as blue, and keep the cord, silhouette and wallpaper unchanged.",
+      "image": "masterpieces/changes/renoir-charpentier-family-colors-tassel1.png",
+      "colorMapping": {
+        "from": "green",
+        "to": "red"
+      }
     },
     {
-      "text": "위쪽 벽의 붉은 나뭇가지 무늬가 파란색으로 바뀌었어요.",
+      "text": "위쪽 벽의 붉은 나뭇가지 무늬가 선명한 노란색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         30.8,
@@ -22,10 +27,15 @@
         37.5,
         16.6
       ],
-      "instruction": "Change the small red twig-and-leaf motif high on the wallpaper, above and left of the mother's head, to cobalt blue. Preserve its exact shape and the surrounding wallpaper."
+      "instruction": "Recolor only the small red twig-and-leaf wallpaper motif above and left of the mother's head to bright yellow. Preserve the motif's exact shape and every surrounding wallpaper mark.",
+      "image": "masterpieces/changes/renoir-charpentier-family-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
-      "text": "빈 의자 등받이 가운데 가로띠가 청록색으로 바뀌었어요.",
+      "text": "빈 의자 등받이 가운데의 노란 가로띠가 선명한 초록색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         66.3,
@@ -33,7 +43,12 @@
         73.8,
         30.5
       ],
-      "instruction": "Recolor only one horizontal woven band across the middle of the empty chair backrest to muted turquoise. Preserve its weave, the rest of the yellow backrest, wooden frame, chair shape, and all adjacent objects."
+      "instruction": "Recolor only the one yellow woven horizontal band across the middle of the empty chair backrest to vivid emerald green. Preserve its weave, the rest of the yellow backrest, wooden frame, chair shape and adjacent objects.",
+      "image": "masterpieces/changes/renoir-charpentier-family-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "text": "꽃다발 가운데의 분홍 장미가 노란색으로 바뀌었어요.",
@@ -69,7 +84,7 @@
       "instruction": "Remove the clear glass carafe with a narrow upright neck at the far-right end of the table. Reconstruct the existing dark blue wall and tabletop behind it in Renoir's brushwork; leave the neighboring vase, glasses, and tray unchanged."
     },
     {
-      "text": "소파의 작은 붉은 꽃무늬가 파란색으로 바뀌었어요.",
+      "text": "소파의 작은 붉은 꽃무늬가 선명한 노란색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         25.4,
@@ -77,7 +92,12 @@
         28.6,
         47.4
       ],
-      "instruction": "Recolor the small round red flower in the sofa upholstery, immediately left of the seated child's white shoulder bow, to deep blue. Change only that embroidered flower and preserve the upholstery texture and the child."
+      "instruction": "Recolor only the small round red flower in the sofa upholstery immediately left of the seated child's white shoulder bow to bright yellow. Preserve the embroidered shape and texture, upholstery and the child.",
+      "image": "masterpieces/changes/renoir-charpentier-family-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "text": "가운데 아이의 오른쪽 구두가 금빛으로 바뀌었어요.",
