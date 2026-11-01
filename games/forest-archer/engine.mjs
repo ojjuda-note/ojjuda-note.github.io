@@ -1,20 +1,21 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
+export const WIND_RESPONSE = 2.5;
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 export const BOWS = Object.freeze([
-  { id: 0, name: '숲길 목궁', tag: '입문', description: '크고 불규칙한 흔들림. 첫 한 발을 배워요.', price: 0, sway: 0.075, speed: 44, color: '#a9784e' },
-  { id: 1, name: '단풍나무 활', tag: '균형', description: '흔들림이 줄고, 시위를 조금 더 단단히 당겨요.', price: 100, sway: 0.050, speed: 48, color: '#76875a' },
-  { id: 2, name: '바람결 활', tag: '정밀', description: '작아진 흔들림으로 먼 과녁을 차분히 겨눠요.', price: 280, sway: 0.032, speed: 52, color: '#598b8a' },
-  { id: 3, name: '달빛 명궁', tag: '명궁', description: '가장 안정적인 조준과 힘찬 시위.', price: 650, sway: 0.017, speed: 57, color: '#c49b50' }
+  { id: 0, name: '숲길 목궁', tag: '입문', description: '불규칙한 흔들림 속에서 첫 한 발을 배워요.', price: 0, sway: 0.075 * 2 / 3, speed: 44, color: '#a9784e' },
+  { id: 1, name: '단풍나무 활', tag: '균형', description: '흔들림이 줄고, 시위를 조금 더 단단히 당겨요.', price: 100, sway: 0.050 * 2 / 3, speed: 48, color: '#76875a' },
+  { id: 2, name: '바람결 활', tag: '정밀', description: '작아진 흔들림으로 먼 과녁을 차분히 겨눠요.', price: 280, sway: 0.032 * 2 / 3, speed: 52, color: '#598b8a' },
+  { id: 3, name: '달빛 명궁', tag: '명궁', description: '가장 안정적인 조준과 힘찬 시위.', price: 650, sway: 0.017 * 2 / 3, speed: 57, color: '#c49b50' }
 ]);
 
 export const ARROWS = Object.freeze([
-  { id: 0, name: '나무 화살', tag: '입문', description: '한 발마다 속도에 차이가 있어요.', price: 0, variance: 0.13, windFactor: 1.0, color: '#b28b64' },
-  { id: 1, name: '깃털 화살', tag: '균형', description: '속도 차이를 줄여 낙하를 읽기 쉬워요.', price: 75, variance: 0.08, windFactor: 0.88, color: '#8b9c78' },
-  { id: 2, name: '탄소 화살', tag: '정밀', description: '일정한 속도와 적은 바람 영향.', price: 220, variance: 0.035, windFactor: 0.68, color: '#71999b' },
-  { id: 3, name: '은빛 화살', tag: '명궁', description: '같은 힘에는 거의 같은 비행. 낙하는 그대로예요.', price: 500, variance: 0.01, windFactor: 0.50, color: '#bfc8d0' }
+  { id: 0, name: '나무 화살', tag: '입문', description: '속도 차이가 크고, 바람을 가장 많이 타요.', price: 0, variance: 0.13, windFactor: 1.0, color: '#b28b64' },
+  { id: 1, name: '깃털 화살', tag: '균형', description: '속도 차이를 줄이고, 바람 영향을 25% 덜 받아요.', price: 75, variance: 0.08, windFactor: 0.75, color: '#8b9c78' },
+  { id: 2, name: '탄소 화살', tag: '정밀', description: '일정한 속도로 날며, 바람 영향을 절반만 받아요.', price: 220, variance: 0.035, windFactor: 0.50, color: '#71999b' },
+  { id: 3, name: '은빛 화살', tag: '명궁', description: '속도 차이가 가장 작고, 바람 영향을 70% 줄여요.', price: 500, variance: 0.01, windFactor: 0.30, color: '#bfc8d0' }
 ]);
 
 const motion = (amplitudeX = 0, amplitudeY = 0, speed = 0) => ({ amplitudeX, amplitudeY, speed });
@@ -143,7 +144,7 @@ export function stepArrow(shot, dt, stage, worldTime = 0) {
   if (!shot.active) return shot.result;
   if (!(dt > 0) || !Number.isFinite(dt)) return null;
   const position = shot.position, velocity = shot.velocity;
-  const acceleration = { x: (stage.wind || 0) * (shot.windFactor ?? 1), y: -GRAVITY, z: 0 };
+  const acceleration = { x: (stage.wind || 0) * WIND_RESPONSE * (shot.windFactor ?? 1), y: -GRAVITY, z: 0 };
   const events = [];
   const ground = roots(position.y, velocity.y, acceleration.y, 0).filter(t => t >= 0 && t <= dt && velocity.y + acceleration.y * t <= 0);
   if (ground.length) events.push({ t: Math.min(...ground), type: 'ground', score: 0, zone: '땅에 떨어졌어요' });
