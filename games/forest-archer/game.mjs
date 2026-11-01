@@ -1,5 +1,6 @@
-import {PLAYER, BOWS, ARROWS, STAGES, clamp, targetAt, getSpeed, launchArrow, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261102-archery-test1';
-import {drawScenery, drawAnimal, drawEquipmentIcon, drawFirstPersonBow} from './scenery.mjs?v=20261102-archery-test1';
+import {PLAYER, BOWS, ARROWS, STAGES, clamp, targetAt, getSpeed, launchArrow, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261102-archery-flight1';
+import {drawScenery, drawAnimal, drawEquipmentIcon, drawFirstPersonBow} from './scenery.mjs?v=20261102-archery-flight1';
+import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, lerpCamera} from './view.mjs?v=20261102-archery-flight1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -59,18 +60,48 @@ function recenter(){
   state.aim.yaw=0;
   state.aim.pitch=Math.atan2(t.y-PLAYER.y,state.stage.distance);
   state.panX=0;state.panY=state.zoom===2?h*.2:0;
-  if(camera.focal){camera.cx=w/2;camera.horizon=h*.405+state.panY;}
+  if(camera.focal)camera=aimCamera();
   state.sway=createSway();state.guide=null;
+}
+function aimCamera(){return {x:0,y:PLAYER.y,z:0,cx:w/2+state.panX,horizon:h*.405+state.panY,focal:Math.min(w*1.08,h*1.5)*state.zoom};}
+function beginTargetPreview(){
+  if(state.modal||!state.stage.obstacles.length||(state.mode!=='ready'&&state.mode!=='drawing'))return;
+  cancelDraw();state.mode='preview';state.previewElapsed=0;state.previewReturnCamera=null;
+  $('shotFeedback').classList.add('hidden');$('flightBadge').classList.remove('hidden');
+  $('flightBadge').textContent='담장 너머 과녁을 미리 확인하세요';updatePower();
+}
+function returnFromPreview(){
+  if(state.mode!=='preview')return;
+  state.previewReturnCamera={...camera};state.previewElapsed=PREVIEW_RISE+PREVIEW_HOLD;
+}
+function updateCamera(dt=0,immediate=false){
+  const base=aimCamera();
+  if(state.mode==='preview'){
+    const overview=desiredPreviewCamera(state.stage,targetAt(state.stage,state.time),base,{w,h}),elapsed=state.previewElapsed;
+    if(immediate)state.previewReturnCamera=null;
+    if(elapsed<PREVIEW_RISE){const t=clamp(elapsed/PREVIEW_RISE,0,1);camera=lerpCamera(base,overview,t*t*(3-2*t));}
+    else if(elapsed<PREVIEW_RISE+PREVIEW_HOLD)camera=overview;
+    else{const t=clamp((elapsed-PREVIEW_RISE-PREVIEW_HOLD)/PREVIEW_RETURN,0,1);camera=lerpCamera(state.previewReturnCamera||overview,base,t*t*(3-2*t));}
+    return;
+  }
+  if(!state.shot||(state.mode!=='flight'&&state.mode!=='settling')){camera=base;return;}
+  const follow=desiredFollowCamera(state.shot.position,base,{w,h});
+  if(state.mode==='settling'&&state.settle>IMPACT_HOLD){
+    if(immediate||!state.returnCamera)state.returnCamera=immediate?follow:{...camera};
+    const t=clamp((state.settle-IMPACT_HOLD)/RETURN_DURATION,0,1);
+    camera=lerpCamera(state.returnCamera,base,t*t*(3-2*t));
+  }else{
+    camera=immediate?follow:lerpCamera(camera,follow,1-Math.exp(-9*dt));
+  }
 }
 function resize(){
   const r=canvas.getBoundingClientRect();w=Math.max(1,r.width);h=Math.max(1,r.height);dpr=Math.min(2,devicePixelRatio||1);
   canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
-  camera={x:0,y:PLAYER.y,z:0,cx:w/2+state.panX,horizon:h*.405+state.panY,focal:Math.min(w*1.08,h*1.5)*state.zoom};
+  updateCamera(0,true);
   ctx.setTransform(dpr,0,0,dpr,0,0);state.guide=null;
 }
 function project(p){
-  const z=Math.max(.08,p.z-camera.z),scale=camera.focal/z;
-  return {x:camera.cx+(p.x-camera.x)*scale,y:camera.horizon-(p.y-camera.y)*scale,scale,visible:p.z>camera.z+.05};
+  return projectPoint(p,camera);
 }
 function screenAim(){const a=aimAngles();return {x:camera.cx+Math.tan(a.yaw)*camera.focal,y:camera.horizon-Math.tan(a.pitch)/Math.cos(a.yaw)*camera.focal};}
 function clampAim(){
@@ -130,10 +161,12 @@ function updateRound(){
   $('journeyCaption').textContent=progress.unlocked>=12?'마지막 사격장까지 열린 궁수의 여정':'숲길에서 시작하는 궁수의 여정';
   $('journeySteps').innerHTML=STAGES.map(s=>`<button class="journey-step ${s.id===state.stage.id?'active':''} ${progress.best[s.id]>=s.goal?'done':''}" data-stage="${s.id}" ${s.id>progress.unlocked?'disabled':''} aria-label="${s.id}단계 ${s.name}${s.id>progress.unlocked?' 잠김':''}">${s.id>progress.unlocked?icon('lock'):`<strong>${String(s.id).padStart(2,'0')}</strong>`}<small>${s.distance}m</small></button>`).join('');
   $('gameCanvas').dataset.stage=s.id;$('gameCanvas').dataset.score=state.score;$('gameCanvas').dataset.shots=state.used;
+  $('previewBtn').classList.toggle('hidden',!s.obstacles.length);
 }
 function resetRound(stage=state.stage){
-  cancelDraw();state.stage=stage;state.time=0;state.score=0;state.used=0;state.hits=0;state.earned=0;state.shotScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
+  cancelDraw();state.stage=stage;state.time=0;state.score=0;state.used=0;state.hits=0;state.earned=0;state.shotScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
   $('zoomBtn').textContent='1×';$('shotFeedback').classList.add('hidden');$('flightBadge').classList.add('hidden');recenter();resize();updateRound();updateHeader();
+  beginTargetPreview();
 }
 function startStage(id){
   if(id>progress.unlocked||id<1)return;
@@ -155,9 +188,10 @@ function releaseShot(automatic=false,now=performance.now()){
   if(document.hidden||state.modal){cancelDraw();return;}
   syncDraw(now);clearDrawTimer();
   state.shot=launchArrow(shotParams(now));state.shot.startedAt=now;state.shot.automatic=automatic||drawElapsed(now)>=DRAW_LIMIT;
-  state.mode='flight';state.used++;state.guide=null;state.shot.handled=false;state.steadyActive=false;
+  state.mode='flight';state.used++;state.guide=null;state.shot.handled=false;state.steadyActive=false;state.returnCamera=null;
   clearPointer();keys.clear();
-  $('shotFeedback').classList.add('hidden');$('flightBadge').classList.toggle('hidden',state.stage.id<4);
+  $('shotFeedback').classList.add('hidden');$('flightBadge').classList.remove('hidden');
+  $('flightBadge').textContent='슬로모션 · 화살을 따라가는 중';
   sound('shoot');if(navigator.vibrate)navigator.vibrate(12);updateRound();updatePower();
 }
 function onPointerDown(e){
@@ -181,10 +215,10 @@ for(const el of [canvas,$('drawPad')]){
 }
 function onImpact(){
   const shot=state.shot,r=shot.result;if(shot.handled)return;shot.handled=true;state.mode='settling';state.settle=0;
-  $('flightBadge').classList.add('hidden');
+  $('flightBadge').textContent='착지 확인 · 조준 화면으로 돌아가요';
   const hit=r.type==='hit';state.score+=r.score;state.shotScores.push(r.score);
-  if(hit){state.hits++;const target=r.targetCenter;state.targetMarks.push({x:r.point.x-target.x,y:r.point.y-target.y,z:target.z});}
-  else state.stuck.push({...r.point});
+  if(hit){state.hits++;const target=r.targetCenter;shot.attachment={x:r.point.x-target.x,y:r.point.y-target.y};state.targetMarks.push({...shot.attachment,z:target.z,velocity:{...shot.velocity}});}
+  else state.stuck.push({...r.point,velocity:{...shot.velocity}});
   const reward=hit?Math.ceil(r.score*.8)+2:1;
   state.earned+=reward;progress.coins+=reward;progress.shots++;if(hit)progress.hits++;save();
   state.effects.push({x:r.point.x,y:r.point.y,z:r.point.z,born:state.time,hit});
@@ -213,7 +247,7 @@ function closeModal(){
   state.lastFocus?.focus?.();state.lastFocus=null;
   if(state.mode==='finished')resetRound(state.stage);
 }
-function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>누른 채 움직여 조준</strong><p>아래 조준 영역이나 사격장 화면을 누르고 끌어보세요. 조준점은 크게 무작위로 흔들려요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>길게 당길수록 빠르게 날아요. 누른 뒤 1~10초 사이에 한 번, 무작위로 0.5초간 흔들림이 멈춰요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>화살은 날아가며 떨어져요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 단계가 높아질수록 바람이 강해져요. 날리는 나뭇잎의 방향과 속도를 읽어보세요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 흔들림을, 화살은 속도 편차를 줄여줘요. 모은 코인으로 구매하고 장착하세요.</p></div></div></div><div class="help-note">5발을 쏴 통과 점수를 넘기면 다음 사격장이 열려요.<br>장비·코인·마지막 단계는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>누른 채 움직여 조준</strong><p>아래 조준 영역이나 사격장 화면을 누르고 끌어보세요. 조준점은 크게 무작위로 흔들려요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>길게 당길수록 빠르게 날아요. 누른 뒤 1~10초 사이에 한 번, 무작위로 0.5초간 흔들림이 멈춰요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 화살은 날아가며 떨어져요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 단계가 높아질수록 바람이 강해져요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 흔들림을, 화살은 속도 편차를 줄여줘요. 모은 코인으로 구매하고 장착하세요.</p></div></div></div><div class="help-note">5발을 쏴 통과 점수를 넘기면 다음 사격장이 열려요.<br>장비·코인·마지막 단계는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow';
 function showShop(tab=shopTab){
   if(state.mode==='flight'||state.mode==='settling'){toast('이번 화살이 도착한 뒤 상점을 열 수 있어요.');return;}
@@ -254,8 +288,9 @@ document.addEventListener('click',e=>{
 $('helpBtn').addEventListener('click',showHelp);$('stagesBtn').addEventListener('click',showStages);$('modalClose').addEventListener('click',closeModal);
 $('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});
 $('soundBtn').addEventListener('click',()=>{progress.sound=!progress.sound;save();updateHeader();if(progress.sound)sound('hit');});
-$('zoomBtn').addEventListener('click',()=>{if(state.mode==='flight'||state.mode==='settling')return;cancelDraw();state.zoom=state.zoom===1?2:1;state.panX=0;state.panY=state.zoom===2?h*.2:0;$('zoomBtn').textContent=`${state.zoom}×`;resize();clampAim();$('zoomBtn').setAttribute('aria-label',state.zoom===1?'조준 화면 두 배 확대':'원래 크기로');});
-$('recenterBtn').addEventListener('click',()=>{if(state.mode==='flight'||state.mode==='settling')return;cancelDraw();recenter();});
+$('zoomBtn').addEventListener('click',()=>{if(state.mode==='flight'||state.mode==='settling'||state.mode==='preview')return;cancelDraw();state.zoom=state.zoom===1?2:1;state.panX=0;state.panY=state.zoom===2?h*.2:0;$('zoomBtn').textContent=`${state.zoom}×`;resize();clampAim();$('zoomBtn').setAttribute('aria-label',state.zoom===1?'조준 화면 두 배 확대':'원래 크기로');});
+$('recenterBtn').addEventListener('click',()=>{if(state.mode==='flight'||state.mode==='settling'||state.mode==='preview')return;cancelDraw();recenter();});
+$('previewBtn').addEventListener('click',()=>state.mode==='preview'?returnFromPreview():beginTargetPreview());
 document.addEventListener('keydown',e=>{
   if(e.code==='Escape'){if(state.modal)closeModal();else cancelDraw();return;}
   if(state.modal){
@@ -276,14 +311,10 @@ function line(x1,y1,x2,y2,color,width=1){ctx.beginPath();ctx.moveTo(x1,y1);ctx.l
 function circle(x,y,r,fill,stroke=null,width=1){ctx.beginPath();ctx.arc(x,y,Math.max(.01,r),0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}}
 function ellipse(x,y,rx,ry,fill){ctx.beginPath();ctx.ellipse(x,y,Math.max(.01,rx),Math.max(.01,ry),0,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();}
 function roundRect(x,y,width,height,r,fill,stroke=null){ctx.beginPath();ctx.roundRect(x,y,width,height,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
-function drawTarget(target,ghost=false){
+function drawTarget(target){
   const p=project(target);if(!p.visible)return;
   const r=target.radius*p.scale;
   ctx.save();
-  if(ghost){
-    ctx.strokeStyle='#fffbeaab';ctx.lineWidth=1.2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(p.x,p.y,target.rx*p.scale,target.ry*p.scale,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-    circle(p.x,p.y,2,'#fff9dfb0');ctx.font='9px "Noto Sans KR",sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff9df';ctx.fillText('과녁 위치',p.x,p.y-r-10);ctx.restore();return;
-  }
   const ground=project({x:target.x,y:0,z:target.z});
   ellipse(ground.x+3,ground.y+2,r*1.08,Math.max(2,r*.11),'#2f442a24');
   if(target.kind!=='target'){
@@ -301,13 +332,12 @@ function drawTarget(target,ghost=false){
     for(let i=0;i<5;i++){circle(p.x,p.y,r*(1-i*.2),rings[i]);circle(p.x,p.y,r*(1-i*.2),null,'#243e3124',Math.max(.3,r*.01));}
     circle(p.x,p.y,r*.10,null,'#a37e3060',.7);circle(p.x,p.y,Math.max(.7,r*.018),'#94723c');
     ctx.globalAlpha=.07;line(p.x-r*.85,p.y-r*.3,p.x+r*.85,p.y-r*.3,'#fefbe8',Math.max(1,r*.015));ctx.globalAlpha=1;
-    // Shafts remain attached to the moving target.
-    for(const mark of state.targetMarks){const mp=project({x:target.x+mark.x,y:target.y+mark.y,z:target.z});line(mp.x,mp.y,mp.x-3,mp.y+Math.max(4,r*.19),'#454d35',Math.max(.8,r*.025));circle(mp.x,mp.y,Math.max(1,r*.025),'#283828');}
   }
   ctx.restore();
 }
 function drawWall(ob){
   const z=ob.z-ob.depth/2;
+  if(z<=camera.z+NEAR_PLANE)return;
   const a=project({x:ob.x-ob.width/2,y:0,z}),b=project({x:ob.x+ob.width/2,y:0,z}),c=project({x:ob.x+ob.width/2,y:ob.height,z}),d=project({x:ob.x-ob.width/2,y:ob.height,z});
   const topBackLeft=project({x:ob.x-ob.width/2,y:ob.height,z:z+ob.depth}),topBackRight=project({x:ob.x+ob.width/2,y:ob.height,z:z+ob.depth});
   const wallShade=ctx.createLinearGradient(0,d.y,0,a.y);wallShade.addColorStop(0,'#9a997b');wallShade.addColorStop(1,'#747c62');
@@ -323,7 +353,7 @@ function drawWall(ob){
   for(let i=0;i<11;i++){const xx=d.x+(c.x-d.x)*(i+.3)/11;ellipse(xx,d.y+2+(i%3),Math.max(2,(c.x-d.x)/24),2+i%3,'#718455');}
 }
 function drawReticle(){
-  if(state.mode==='flight'||state.mode==='settling'||state.mode==='finished')return;
+  if(state.mode==='flight'||state.mode==='settling'||state.mode==='finished'||state.mode==='preview')return;
   const p=screenAim(),held=state.mode==='drawing',steady=isSteady();
   const radius=held?10:8;ctx.save();ctx.lineCap='round';
   circle(p.x,p.y,radius,null,'#23372a66',2.7);circle(p.x,p.y,radius,null,held?'#fffceb':'#fffcebcc',1.2);
@@ -343,57 +373,85 @@ function drawGuide(){
   if(result){const p=project(result.point);circle(p.x,p.y,result.type==='hit'?4:3,null,result.type==='hit'?'#fff9bd':'#fff9d77c',1.5);}
   ctx.restore();
 }
-function drawArrow(){
-  if(!state.shot)return;
-  if(state.mode!=='flight'&&state.mode!=='settling')return;
-  const shot=state.shot;ctx.save();
-  const fade=state.mode==='settling'?Math.max(0,1-state.settle/1.3):1;
-  const points=shot.trail.filter(p=>p.z>.7);
-  ctx.strokeStyle=`rgba(255,249,215,${fade*.65})`;ctx.lineWidth=1.8;ctx.beginPath();
-  points.forEach((p,i)=>{const q=project(p);if(i===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y);});ctx.stroke();
-  const p=project(shot.position),prev=project({x:shot.position.x-shot.velocity.x*.04,y:shot.position.y-shot.velocity.y*.04,z:Math.max(.1,shot.position.z-shot.velocity.z*.04)});
-  if(p.visible){
-    const dx=p.x-prev.x,dy=p.y-prev.y,l=Math.hypot(dx,dy)||1,len=clamp(12-shot.position.z*.08,5,14);
-    const tx=p.x-dx/l*len,ty=p.y-dy/l*len;
-    line(tx,ty,p.x,p.y,'#594c34',2);line(tx+1,ty,p.x+1,p.y,'#f6e7af',.8);
-    circle(p.x,p.y,1.7,'#fffbd2');
-    if(state.mode==='flight')circle(p.x,p.y,6,null,'#fff9d957',1);
+// Every shaft and trail is split at occluder planes before painter sorting.
+// The actual target silhouette hides only the parts that are behind it.
+function sceneItems(target){
+  const planes=[target.z,...state.stage.obstacles.flatMap(ob=>[ob.z-ob.depth/2,ob.z+ob.depth/2])];
+  const items=[{kind:'target',z:target.z,order:0,target},...state.stage.obstacles.map(ob=>({kind:'wall',z:ob.z-ob.depth/2,order:0,ob}))];
+  const surfaceDepth=(a,b=a)=>{
+    const z=(a.z+b.z)/2;
+    // The masonry top is part of the front-wall draw call. A shaft clearing
+    // that top (or resting on it) must be painted on its visible surface.
+    const wall=state.stage.obstacles.find(ob=>a.z>=ob.z-ob.depth/2-1e-7&&a.z<=ob.z+ob.depth/2+1e-7&&b.z>=ob.z-ob.depth/2-1e-7&&b.z<=ob.z+ob.depth/2+1e-7&&Math.min(a.y,b.y)>=ob.height-1e-7);
+    return wall?wall.z-wall.depth/2-.001:z;
+  };
+  const addLine=(a,b,kind,alpha=1)=>{
+    for(const part of depthFragments(a,b,planes,camera.z))items.push({...part,z:surfaceDepth(part.a,part.b),kind,alpha,order:kind==='trail'?1:2});
+  };
+  const addArrow=(tip,velocity,alpha=1,flying=false)=>{
+    if(tip.z-camera.z<.6)return;
+    const length=Math.hypot(velocity.x,velocity.y,velocity.z)||1;
+    const tail={x:tip.x-velocity.x/length*.85,y:tip.y-velocity.y/length*.85,z:tip.z-velocity.z/length*.85};
+    addLine(tail,tip,'shaft',alpha);
+    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha});
+    items.push({kind:'tip',z:surfaceDepth(tip),order:4,point:tip,tail,alpha,flying});
+  };
+  for(const stuck of state.stuck)addArrow(stuck,stuck.velocity||{x:0,y:-.5,z:1},.75);
+  // Keep every hit in target-local coordinates, including birds and deer.
+  // Full shafts remain at their original entry angle as the target moves.
+  for(const mark of state.targetMarks)addArrow({x:target.x+mark.x,y:target.y+mark.y,z:target.z-.002},mark.velocity||{x:0,y:-.2,z:1});
+  const shot=state.shot;
+  if(shot&&(state.mode==='flight'||state.mode==='settling')){
+    const alpha=state.mode==='settling'?Math.max(0,1-state.settle/(IMPACT_HOLD+RETURN_DURATION)):1;
+    const points=[...shot.trail,shot.position];
+    for(let i=1;i<points.length;i++)addLine(points[i-1],points[i],'trail',alpha);
+    if(state.mode==='flight')addArrow(shot.position,shot.velocity,1,true);
+  }
+  for(const effect of state.effects)items.push({kind:'effect',z:effect.z-.002,order:5,effect});
+  return items.sort((a,b)=>b.z-a.z||a.order-b.order);
+}
+function drawSceneItem(item){
+  if(item.kind==='target'){drawTarget(item.target);return;}
+  if(item.kind==='wall'){drawWall(item.ob);return;}
+  ctx.save();ctx.globalAlpha=item.alpha??1;ctx.lineCap='butt';
+  if(item.kind==='trail'||item.kind==='shaft'){
+    const a=project(item.a),b=project(item.b);
+    if(item.kind==='trail')line(a.x,a.y,b.x,b.y,'#fff9d7a6',1.7);
+    else{
+      line(a.x,a.y,b.x,b.y,'#51462f',clamp((a.scale+b.scale)*.012,1.4,3.2));
+      line(a.x,a.y,b.x,b.y,'#e5c984',.8);
+    }
+  }else if(item.kind==='tip'||item.kind==='feather'){
+    const p=project(item.point);
+    if(p.visible){
+      const q=project(item.kind==='tip'?item.tail:item.tip),dx=p.x-q.x,dy=p.y-q.y,l=Math.hypot(dx,dy)||1;
+      if(item.kind==='tip'){
+        poly([{x:p.x+dx/l*2,y:p.y+dy/l*2},{x:p.x-dx/l*3-dy/l*2.2,y:p.y-dy/l*3+dx/l*2.2},{x:p.x-dx/l*3+dy/l*2.2,y:p.y-dy/l*3-dx/l*2.2}],'#344b3b');
+        if(item.flying)circle(p.x,p.y,6,null,'#fff9d95c',1);
+      }else{
+        line(p.x-dy/l*3,p.y+dx/l*3,p.x-dx/l*4,p.y-dy/l*4,'#e4bd70',1.8);
+        line(p.x+dy/l*3,p.y-dx/l*3,p.x-dx/l*4,p.y-dy/l*4,'#f6e7ba',1.6);
+      }
+    }
+  }else if(item.kind==='effect'){
+    const effect=item.effect,age=state.time-effect.born,q=project(effect);
+    if(q.visible&&age<1.5){
+      ctx.globalAlpha=Math.max(0,1-age/1.5);
+      if(effect.hit){for(let i=0;i<12;i++){const angle=i/12*Math.PI*2,dist=8+age*42;circle(q.x+Math.cos(angle)*dist,q.y+Math.sin(angle)*dist+age*age*12,Math.max(.5,2-age),i%3?'#f5e3a2':'#fff8da');}circle(q.x,q.y,6+age*32,null,'#fff3b7',1.2);}
+      else ellipse(q.x,q.y,6+age*14,2+age*4,'#dad0a85e');
+    }
   }
   ctx.restore();
-}
-function drawFlightCam(){
-  if(!state.shot||state.mode!=='flight'||(state.stage.id<4))return;
-  const shot=state.shot,fw=Math.min(244,w*.52),fh=90,fx=w-fw-14,fy=h-fh-58;
-  ctx.save();roundRect(fx,fy,fw,fh,10,'#f6f4e5e8','#ffffff99');
-  ctx.beginPath();ctx.roundRect(fx+1,fy+1,fw-2,fh-2,9);ctx.clip();
-  ctx.fillStyle='#6c7d58';ctx.font='8px "Noto Sans KR",sans-serif';ctx.textAlign='left';ctx.fillText('화살 따라보기',fx+10,fy+15);
-  ctx.textAlign='right';ctx.fillStyle='#80906e';ctx.fillText(`${Math.round(shot.position.z)}m · ${shot.elapsed.toFixed(1)}초`,fx+fw-10,fy+15);
-  const span=Math.max(22,state.stage.distance*.65),scale=(fw-20)/span,center=Math.max(span*.42,shot.position.z),base=fy+fh-12,ys=clamp((fh-35)/Math.max(10,shot.position.y+3),1.3,5);
-  const point=q=>({x:fx+fw*.46+(q.z-center)*scale,y:base-q.y*ys});
-  ctx.fillStyle='#dde4cc';ctx.fillRect(fx,base,fw,fh);line(fx,base,fx+fw,base,'#a8b78c',1);
-  for(const ob of state.stage.obstacles){const q=point({z:ob.z,y:ob.height});ctx.fillStyle='#8e9974';ctx.fillRect(q.x-ob.depth*scale/2,q.y,Math.max(3,ob.depth*scale),ob.height*ys);}
-  const t=targetAt(state.stage,state.time),tp=point(t);circle(tp.x,tp.y,4,'#c47d59','#f5efda',1.5);
-  ctx.strokeStyle='#b29c5f99';ctx.lineWidth=1.2;ctx.beginPath();shot.trail.forEach((q,i)=>{const p=point(q);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)});ctx.stroke();
-  const p=point(shot.position),angle=Math.atan2(-shot.velocity.y*ys,shot.velocity.z*scale);
-  ctx.translate(p.x,p.y);ctx.rotate(angle);line(-11,0,4,0,'#705c39',1.4);poly([{x:4,y:0},{x:-1,y:-2.4},{x:-1,y:2.4}],'#485940');line(-9,-3,-6,0,'#c79a54',1.5);line(-9,3,-6,0,'#c79a54',1.5);ctx.restore();
 }
 function render(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
   drawScenery(ctx,w,h,{time:state.time,stage:state.stage,project,camera});
   const target=targetAt(state.stage,state.time);
-  const objects=[{z:target.z,type:'target'},...state.stage.obstacles.map(ob=>({z:ob.z,type:'wall',ob}))].sort((a,b)=>b.z-a.z);
-  for(const obj of objects)obj.type==='target'?drawTarget(target):drawWall(obj.ob);
-  const tp=project(target);
-  if(state.stage.obstacles.some(ob=>{const left=project({x:ob.x-ob.width/2,y:ob.height,z:ob.z}),right=project({x:ob.x+ob.width/2,y:0,z:ob.z});return target.z>ob.z&&tp.x>left.x&&tp.x<right.x&&tp.y>left.y&&tp.y<right.y;}))drawTarget(target,true);
-  for(const p of state.stuck){const q=project(p);if(q.visible){line(q.x,q.y,q.x-3,q.y-7,'#615536',1.2);line(q.x-4,q.y-7,q.x-3,q.y-5,'#cdbf84',1.5);}}
-  drawGuide();drawArrow();
-  for(const effect of state.effects){
-    const age=state.time-effect.born;if(age>1.5)continue;const q=project(effect);ctx.save();ctx.globalAlpha=Math.max(0,1-age/1.5);
-    if(effect.hit){for(let i=0;i<12;i++){const angle=i/12*Math.PI*2,dist=8+age*42;circle(q.x+Math.cos(angle)*dist,q.y+Math.sin(angle)*dist+age*age*12,Math.max(.5,2-age),i%3?'#f5e3a2':'#fff8da');}circle(q.x,q.y,6+age*32,null,'#fff3b7',1.2);}
-    else{ellipse(q.x,q.y,6+age*14,2+age*4,'#dad0a85e');}ctx.restore();
-  }
+  for(const item of sceneItems(target))drawSceneItem(item);
+  drawGuide();
   if(state.mode==='ready'||state.mode==='drawing'){const sway=effectiveSway();drawFirstPersonBow(ctx,w,h,{charge:state.charge,swayX:sway.x,swayY:sway.y,color:activeBow().color,drawing:state.mode==='drawing'});}
-  drawReticle();drawFlightCam();
+  drawReticle();
+  canvas.dataset.camera=state.mode==='preview'?'preview':state.mode==='flight'?'follow':state.mode==='settling'?(state.settle>IMPACT_HOLD?'return':'impact'):'aim';
 }
 let hudMode='',hudPercent=-1;
 function updatePower(){
@@ -403,15 +461,20 @@ function updatePower(){
   $('drawTiming').classList.toggle('steady',steady);$('drawPad').classList.toggle('steady',steady);
   $('steadyLabel').textContent=steady?'지금! 0.5초 조준 안정':drawing&&drawElapsed()>=state.steadyStart+STEADY_DURATION?'안정 구간 끝 · 타이밍을 잡으세요':'1~10초 사이, 한 번은 0.5초 안정';
   $('autoReleaseLabel').textContent=drawing?`자동발사까지 ${(Math.ceil(Math.max(0,DRAW_LIMIT-drawElapsed())*10)/10).toFixed(1)}초`:state.mode==='flight'&&state.shot?.automatic?'10초 · 자동발사':'최대 10초';
+  if(state.mode==='flight')$('flightBadge').textContent=`슬로모션 · ${Math.max(0,Math.round(state.shot.position.z))} m 비행 중`;
+  $('previewBtn').textContent=state.mode==='preview'?'조준하기':'과녁 보기';
+  $('previewBtn').disabled=state.mode==='flight'||state.mode==='settling'||state.mode==='finished';
   const fatigue=state.mode==='drawing'&&state.held>2.6;
   $('powerFill').style.background=steady?'#5f9a70':fatigue?'#c58f66':'#a4b374';
   const mode=state.mode+(steady?'steady':fatigue?'tired':'');
   if(mode===hudMode)return;hudMode=mode;
-  $('drawPad').classList.toggle('drawing',state.mode==='drawing');$('drawPad').classList.toggle('flying',state.mode==='flight'||state.mode==='settling');
+  $('drawPad').classList.toggle('drawing',state.mode==='drawing');$('drawPad').classList.toggle('flying',state.mode==='flight'||state.mode==='settling'||state.mode==='preview');
   if(state.mode==='drawing'){
     $('powerLabel').textContent=steady?'조준 안정 · 흔들림 없음':fatigue?'팔이 떨리고 있어요':'시위를 당기는 중';$('controlTitle').textContent=steady?'지금은 흔들리지 않아요':'손을 떼는 순간, 발사';$('controlHint').textContent=steady?'방향을 조절하고 원하는 순간에 쏘세요':fatigue?'10초가 되면 자동으로 발사돼요':'움직여 조준하고 안정되는 순간을 잡아보세요';
+  }else if(state.mode==='preview'){
+    $('powerLabel').textContent='과녁 위치를 확인해요';$('controlTitle').textContent='담장 너머 과녁을 기억하세요';$('controlHint').textContent='곧 사격 위치로 돌아가요 · 과녁 보기로 다시 확인할 수 있어요';
   }else if(state.mode==='flight'){
-    $('powerLabel').textContent='화살이 날아가요';$('controlTitle').textContent='화살이 어디로 향하는지 보세요';$('controlHint').textContent='떨어지는 위치를 보고 다음 한 발을 준비해요';
+    $('powerLabel').textContent='슬로모션으로 날아가요';$('controlTitle').textContent='화살을 따라가고 있어요';$('controlHint').textContent='궤적과 떨어지는 위치를 보고 다음 한 발을 준비해요';
   }else if(state.mode==='settling'){
     $('powerLabel').textContent='다음 한 발을 준비해요';$('controlTitle').textContent='호흡을 가다듬고, 다시 한 발';$('controlHint').textContent='곧 다음 화살을 쏠 수 있어요';
   }else{
@@ -422,8 +485,6 @@ function updatePower(){
 function tick(now){
   const dt=Math.min(.25,Math.max(0,(now-lastFrame)/1000));lastFrame=now;
   if(!document.hidden&&!state.modal){
-    const sceneDt=state.mode==='flight'&&state.stage.id>=4?.8*dt:dt;
-    const start=state.time;
     if(state.mode==='ready'||state.mode==='drawing'){
       const move=dt*.20/state.zoom;
       if(keys.has('ArrowLeft'))state.aim.yaw-=move;if(keys.has('ArrowRight'))state.aim.yaw+=move;
@@ -434,15 +495,26 @@ function tick(now){
       // The deadline uses real elapsed time, independently of capped simulation frames.
       if(state.mode==='drawing'&&drawElapsed(now)>=DRAW_LIMIT)releaseShot(true,now);
     }
-    if(state.mode==='flight'){
-      const flightDt=Math.min(sceneDt,Math.max(0,(now-state.shot.startedAt)/1000)*(state.stage.id>=4?.8:1));
-      const result=stepArrow(state.shot,flightDt,state.stage,start);
+    if(state.mode==='preview'){
+      state.time+=dt;state.previewElapsed+=dt;
+      if(state.previewElapsed>=PREVIEW_RISE+PREVIEW_HOLD+PREVIEW_RETURN){state.mode='ready';state.previewReturnCamera=null;keys.clear();$('flightBadge').classList.add('hidden');}
+    }else if(state.mode==='flight'){
+      // Targets, wind leaves and the arrow share one slowed simulation clock.
+      // Work out this delta AFTER a possible real-time ten-second auto release.
+      const flightDt=Math.min(dt,Math.max(0,(now-state.shot.startedAt)/1000))*FLIGHT_TIME_SCALE;
+      const before=state.shot.elapsed,result=stepArrow(state.shot,flightDt,state.stage,state.time);
+      state.time+=state.shot.elapsed-before;
       if(result)onImpact();
     }else if(state.mode==='settling'){
+      state.time+=dt*FLIGHT_TIME_SCALE;
       state.settle+=dt;
-      if(state.settle>1.25){if(state.used>=shotLimit())finishRound();else{state.mode='ready';state.held=0;state.charge=0;}}
-    }
-    state.time+=sceneDt;
+      if(state.shot.attachment){const target=targetAt(state.stage,state.time);state.shot.position={x:target.x+state.shot.attachment.x,y:target.y+state.shot.attachment.y,z:target.z};}
+      if(state.settle>=IMPACT_HOLD+RETURN_DURATION){
+        $('flightBadge').classList.add('hidden');state.returnCamera=null;camera=aimCamera();
+        if(state.used>=shotLimit())finishRound();else{state.mode='ready';state.held=0;state.charge=0;}
+      }
+    }else state.time+=dt;
+    updateCamera(dt);
     if(state.feedbackUntil&&state.time>state.feedbackUntil){$('shotFeedback').classList.add('hidden');state.feedbackUntil=0;}
     state.effects=state.effects.filter(e=>state.time-e.born<1.6);
   }
