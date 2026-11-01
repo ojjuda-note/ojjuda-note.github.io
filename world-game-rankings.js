@@ -177,7 +177,7 @@ function paintRecord(target,id,game,top,period='이번 달'){
  let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
  if(game.rankingBasis==='stage_time'){
   value=window.OjjudaSacheonseongRanking.format(Number(top.score));
-  const stage=Number(top.stage);if(window.OjjudaSacheonseongRanking.game(stage))detail=stage+'단계 · '+(4*stage*stage)+'개';
+  const stage=Number(top.stage);if(window.OjjudaSacheonseongRanking.game(stage))detail=stage+'단계';
  }else if(game.rankingBasis==='difficulty_time'){
   const record=window.OjjudaMinesRules?.record(Number(top.score));value=record?.time||'—';detail=record?.name||'';
  }else if(game.rankingBasis==='opponents_streak'){
