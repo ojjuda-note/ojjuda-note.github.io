@@ -39,3 +39,40 @@
   opacity:.45;
   cursor:default;
 }
+#gov[data-game="breakout"]:has(.breakout-result) .gbox{
+  height:100%;
+}
+#gov[data-game="breakout"]:has(.breakout-result) .gcan{
+  flex:1 1 0;
+  min-height:0;
+  max-height:none;
+  aspect-ratio:auto;
+}
+#gov[data-game="breakout"]:has(.breakout-result) .gscreen{
+  align-items:safe center;
+  padding:8px;
+}
+#gov[data-game="breakout"] .breakout-result{
+  display:flex;
+  flex-direction:column;
+  flex-shrink:0;
+}
+#gov[data-game="breakout"] .breakout-result>.breakout-stage-picker,
+#gov[data-game="breakout"] .breakout-result>.row{
+  flex-shrink:0;
+}
+#gov[data-game="breakout"] .breakout-result #gres{
+  order:1;
+  margin:10px 0 0;
+}
+#gov[data-game="breakout"] .breakout-result .grank{
+  order:2;
+}
+@media (max-height:500px){
+  #gov[data-game="breakout"] .breakout-result{padding:12px}
+  #gov[data-game="breakout"] .breakout-result .ge,
+  #gov[data-game="breakout"] .breakout-result .note{display:none}
+  #gov[data-game="breakout"] .breakout-result .gbigscore{font-size:24px;margin:0 0 4px}
+  #gov[data-game="breakout"] .breakout-result>p{margin-bottom:4px}
+  #gov[data-game="breakout"] .breakout-result .breakout-stage-picker{margin:6px 0}
+}

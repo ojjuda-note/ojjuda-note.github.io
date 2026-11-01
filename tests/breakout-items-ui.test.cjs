@@ -69,7 +69,7 @@ g.tab='friends';H();
      assert.equal(value.disabled,(i===0&&level===1)||(i===2&&level===100));
      if(!value.disabled)assert.equal(value.stage,level+i-1);
      assert.equal(value.pressed,i===selected-level+1?'true':'false');
-     assert.ok(value.x>=-1&&value.right<=width+1&&value.y>=-1&&value.bottom<=height+1,'all three level choices fit inside the viewport');
+     assert.ok(value.x>=-1&&value.right<=width+1&&value.y>=-1&&value.bottom<=height+1,'all three level choices fit inside the viewport: '+JSON.stringify({width,height,level,selected,value}));
      assert.ok(value.bottom-value.y>=44,'each level choice provides a finger-sized touch target');
      assert.ok(Math.abs(value.y-values[0].y)<1,'the choices stay together in one row');
     }
