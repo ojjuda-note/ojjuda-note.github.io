@@ -50,7 +50,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.match(roulette.textContent,/최대 4명/,'roulette displays its four-player capacity');
   const gameId=button=>button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
   const categories={
-   solo:['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
+   solo:['archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
    adult:['matgo','poker','roulette','photo_ttang']
   };

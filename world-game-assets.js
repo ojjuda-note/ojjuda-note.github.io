@@ -5,6 +5,7 @@
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
+  archery:'1.0.0',
   roulette:'1.7.0',
   bang:'1.8.2',
   poker:'1.4.3',
@@ -29,6 +30,7 @@
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';
  const groups={
+  archery:['/world-tour-game.css?v=20261012-marble-invite1','/world-archery-game.css?v=20261102-archery-test1','/world-archery-game.js?v=20261102-archery-test1'],
   roulette:[session,'/world-roulette-game.css?v=20261031-roulette-multi2','/world-roulette-game.js?v=20261101-roulette-wins1'],
   bang:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261031-best-streak-rankings1'],
   sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261101-sacheonseong-resume1'],
