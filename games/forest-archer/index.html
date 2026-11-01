@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f5f4ed">
-  <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 실제 화살 탄도와 12개 사격장, 활과 화살을 성장시키는 숲속 활쏘기 게임.">
+  <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 바람과 낙하를 계산하는 50개 사격장, 활 10종·석궁 10종·총기 5종과 화살 12종을 조합하는 숲속 활쏘기 게임.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261102-archery-test1">
+  <link rel="stylesheet" href="style.css?v=20261102-archery-expansion1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -34,10 +34,10 @@
     </header>
 
     <main>
-      <div class="page-heading"><div><p class="eyebrow">A LITTLE FOCUS. A PERFECT SHOT.</p><h1>손끝에서 시작되는 한 발.</h1></div><button class="text-button" id="stagesBtn"><svg><use href="#i-grid"/></svg>사격장 선택<svg class="small-icon"><use href="#i-chevron"/></svg></button></div>
+      <div class="page-heading"><div><p class="eyebrow">A LITTLE FOCUS. A PERFECT SHOT.</p><h1>손끝에서 시작되는 한 발.</h1></div><div class="heading-actions"><button class="text-button" id="eventBtn">접시 사격</button><button class="text-button" id="stagesBtn"><svg><use href="#i-grid"/></svg>사격장 선택<svg class="small-icon"><use href="#i-chevron"/></svg></button></div></div>
       <div class="game-layout">
         <section class="game-card" aria-label="활쏘기 게임">
-          <div class="round-heading"><div class="round-label"><span class="level-number" id="levelNumber">01</span><div><span class="small-label" id="stageChapter">숲길의 시작</span><h2 id="stageName">첫 번째 한 발</h2></div></div><div class="round-score"><strong id="scoreCount">0</strong><span>/ <span id="goalCount">16</span>점</span><small>통과 점수</small></div></div>
+          <div class="round-heading"><div class="round-label"><span class="level-number" id="levelNumber">01</span><div><span class="small-label" id="stageChapter">숲길의 시작</span><h2 id="stageName">첫 번째 한 발</h2></div></div><div class="round-score"><strong id="scoreCount">0</strong><span>/ <span id="goalCount">16</span><span id="scoreUnit">점</span></span><small id="goalLabel">현재 점수 / 참고 목표</small></div></div>
           <div class="field" id="field">
             <canvas id="gameCanvas" tabindex="0" aria-label="숲속 활쏘기 사격장. 누른 채 움직여 조준하고 손을 떼면 발사합니다."></canvas>
             <div class="field-top"><span class="field-pill"><span class="tiny-dot"></span><strong id="distanceLabel">14 m</strong></span><span class="field-pill wind-pill"><svg><use href="#i-wind"/></svg><span id="windLabel">고요한 바람</span></span><button class="field-pill zoom-button" id="zoomBtn" aria-label="조준 화면 두 배 확대">1×</button></div>
@@ -50,16 +50,23 @@
             <div class="draw-timing" id="drawTiming"><span id="steadyLabel" role="status">1~10초 사이, 한 번은 0.5초 안정</span><strong id="autoReleaseLabel">최대 10초</strong></div>
             <div class="draw-pad" id="drawPad" role="button" tabindex="0" aria-label="누른 채 끌어서 조준, 손을 떼면 발사. 1초에서 10초 사이에 한 번 0.5초간 흔들림이 멈추고, 10초가 되면 자동발사합니다. 키보드는 화살표로 조준, 스페이스를 누른 후 떼어 발사."><span class="pad-lines">‹ ‹</span><div class="draw-pad-content"><svg><use href="#i-hand"/></svg><span><strong id="controlTitle">누른 채 조준 · 손을 떼면 발사</strong><small id="controlHint">0.5초 안정 기회 · 10초 후 자동발사</small></span></div><span class="pad-lines">› ›</span></div>
             <p class="mobile-hint" id="mobileHint"></p>
+            <section id="ammoPanel" class="event-ammo hidden" aria-label="이벤트 총알">
+              <div class="ammo-balance"><span>보유 총알</span><strong id="ammoRemaining">—</strong><span>발</span></div>
+              <button id="ammoShopBtn" type="button">총알 충전</button>
+              <p id="ammoStatus" role="status">계정의 총알을 확인하고 있어요.</p>
+              <button id="ammoRetryBtn" type="button" class="hidden">다시 확인</button>
+            </section>
+            <nav class="stage-navigation" aria-label="이전 현재 다음 단계 선택"><button id="previousStageBtn" type="button">이전 단계</button><button id="currentStageBtn" type="button">지금 1단계 다시</button><button id="nextStageBtn" type="button">다음 단계</button></nav>
           </div>
         </section>
 
         <aside class="side-panel">
-          <section class="mission-panel"><div class="section-heading"><svg><use href="#i-target"/></svg><span>이번 한 발의 목표</span></div><p id="stageHint">과녁을 겨눈 뒤, 조준점이 중앙에 왔을 때 손을 떼세요.</p><div class="score-legend"><span><i class="gold"></i>10</span><span><i class="red"></i>8</span><span><i class="blue"></i>6</span><span><i class="black"></i>4</span><span><i class="white"></i>2점</span></div><div class="mission-progress"><span id="missionFill"></span></div><div class="mission-caption"><span id="missionState">차분하게 시작해요</span><span id="roundProgress">0 / 5발</span></div></section>
-          <section class="loadout-panel"><div class="section-heading"><svg><use href="#i-bow"/></svg><span>지금의 장비</span><button class="text-button shop-open">변경</button></div><div class="equipped-item"><canvas id="equippedBow" width="100" height="80" aria-hidden="true"></canvas><div><span class="small-label">BOW</span><strong id="bowName">숲가지 활</strong><small id="bowStat">흔들림이 큰 기본 활</small></div></div><div class="equipped-item"><canvas id="equippedArrow" width="100" height="80" aria-hidden="true"></canvas><div><span class="small-label">ARROW</span><strong id="arrowName">나무 화살</strong><small id="arrowStat">속도 편차가 큰 기본 화살</small></div></div><button class="button soft-button shop-open"><svg><use href="#i-bag"/></svg>새 장비 만나보기<svg class="small-icon"><use href="#i-chevron"/></svg></button></section>
+          <section class="mission-panel"><div class="section-heading"><svg><use href="#i-target"/></svg><span id="missionTitle">이번 한 발의 목표</span></div><p id="stageHint">과녁을 겨눈 뒤, 조준점이 중앙에 왔을 때 손을 떼세요.</p><div class="score-legend" id="scoreLegend"><span><i class="gold"></i>10</span><span><i class="red"></i>8</span><span><i class="blue"></i>6</span><span><i class="black"></i>4</span><span><i class="white"></i>2점</span></div><div class="mission-progress"><span id="missionFill"></span></div><div class="mission-caption"><span id="missionState">차분하게 시작해요</span><span id="roundProgress">0 / 5발</span></div></section>
+          <section class="loadout-panel"><div class="section-heading"><svg><use href="#i-bow"/></svg><span>지금의 장비</span><button class="text-button shop-open">변경</button></div><div class="equipped-item"><canvas id="equippedBow" width="100" height="80" aria-hidden="true"></canvas><div><span class="small-label">WEAPON</span><strong id="bowName">숲가지 활</strong><small id="bowStat">흔들림이 큰 기본 활</small></div></div><div class="equipped-item"><canvas id="equippedArrow" width="100" height="80" aria-hidden="true"></canvas><div><span class="small-label" id="projectileLabel">ARROW</span><strong id="arrowName">나무 화살</strong><small id="arrowStat">속도 편차가 큰 기본 화살</small></div></div><p class="loadout-speed" id="loadoutSpeed">기준 발사속도 44.0 m/s</p><button class="button soft-button shop-open"><svg><use href="#i-bag"/></svg>새 장비 만나보기<svg class="small-icon"><use href="#i-chevron"/></svg></button></section>
           <div class="field-note"><span>FIELD NOTE</span><p>멀수록 조금 더 위로.<br>움직인다면 한 발 앞을 향해.</p><svg><use href="#i-arrow"/></svg></div>
         </aside>
       </div>
-      <section class="journey"><div class="journey-heading"><span class="eyebrow">YOUR JOURNEY</span><span id="journeyCaption">숲길에서 시작하는 궁수의 여정</span><span id="journeyCount">1 / 12</span></div><div id="journeySteps" class="journey-steps"></div></section>
+      <section class="journey"><div class="journey-heading"><span class="eyebrow">YOUR JOURNEY</span><span id="journeyCaption">숲길에서 시작하는 궁수의 여정</span><span id="journeyCount">1 / 50</span></div><div id="journeySteps" class="journey-steps"></div></section>
     </main>
     <footer><span><span class="status-dot"></span><span id="saveStatus">진행 상황은 이 기기에 자동 저장됩니다</span></span><button class="text-button" id="soundBtn" aria-label="소리 끄기"><svg><use href="#i-sound"/></svg><span>소리 켜짐</span></button><span class="keyboard-note">방향키 조준 · SPACE 당기고 놓기</span></footer>
   </div>
@@ -67,6 +74,6 @@
     <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="modalClose" aria-label="닫기"><svg><use href="#i-close"/></svg></button><div id="modalContent"></div></section>
   </div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script type="module" src="game.mjs?v=20261102-archery-wind1"></script>
+  <script type="module" src="game.mjs?v=20261102-archery-expansion1"></script>
 </body>
 </html>
