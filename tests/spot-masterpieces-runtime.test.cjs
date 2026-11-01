@@ -55,9 +55,7 @@ function domFixture(stored){
  w.JjudaWallet={getState:()=>account,subscribe:fn=>fn(account),refresh:async()=>{},recordClear:async(owner,stage)=>{scores.push({owner,stage});return {ok:true};},buy:async(request,stage)=>{requests.push({...request,stage});return {ok:true,kind:request.kind,stage,spot:request.spot,price:1};}};
  w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(fixtures));
  w.eval(read('game-core.js'));
- const clean=w.JjudaGame.cleanProgress;
- w.JjudaGame.cleanProgress=(raw,puzzles)=>({...clean(raw,puzzles),current:1,order:[1,0]});
- if(stored)w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify(stored));
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:1,order:[1,0],...stored}));
  w.eval(read('app.js'));
  const load=()=>{for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();};
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1'));
@@ -74,6 +72,8 @@ function domFixture(stored){
 
 async function checkRuntime(){
  const f=domFixture();try{
+  assert.equal(f.state().current,1,'entry retains the original index of the last masterpiece');
+  assert.deepEqual(f.state().order,[0,1],'an old shuffled order becomes the fixed difficulty order');
   assert.equal(f.$('found-total').textContent,'10');assert.equal(f.$('dots').children.length,10);assert.match(f.$('gate-copy').textContent,/10개/);
   assert.equal(f.$('stage-picker').querySelector('optgroup[label="세계 명화 · 매우 어려움 · 10곳 찾기"]').children.length,1);
   assert.match(f.$('stage-label').textContent,/ · 매우 어려움$/);
@@ -117,11 +117,14 @@ async function checkRuntime(){
   review.$('close-answers').click();assert.equal(review.round().status,'playing');
  }finally{review.w.close();}
  const pending={kind:'hint',spot:9,requestId,userId};
- const recovery=domFixture({version:2,current:1,found:{82:[...Array(9).keys()]},rounds:{82:{...core.freshRound(),status:'payment',remainingMs:1000,pending}}});
+ const recovery=domFixture({version:2,current:1,found:{82:[...Array(9).keys()]},rounds:{82:{...core.freshRound(),status:'payment',hearts:1,remainingMs:1000,totalMs:120000,paid:[0,8],hintIndex:8,timeBought:true,assisted:true,rankOwner:userId,pending}}});
  try{
   assert.equal(recovery.round().status,'payment');assert.deepEqual(recovery.round().pending,pending);
+  assert.equal(recovery.state().current,1);assert.deepEqual(recovery.state().order,[0,1],'receipt recovery does not move its picture to the first position');
   assert.deepEqual(recovery.state().found[82],[],'returning keeps only the unresolved receipt, not previous finds');
-  assert.equal(recovery.round().remainingMs,60000);
+  assert.equal(recovery.round().remainingMs,60000);assert.equal(recovery.round().totalMs,60000);assert.equal(recovery.round().hearts,3);
+  assert.deepEqual(recovery.round().paid,[]);assert.equal(recovery.round().hintIndex,null);assert.equal(recovery.round().timeBought,false);assert.equal(recovery.round().assisted,false,'confirmed help belongs to the previous round');
+  assert.equal(recovery.round().rankOwner,userId,'the unresolved receipt keeps its original owner');
   recovery.$('start').click();await flush();
   assert.equal(recovery.requests.length,1);assert.deepEqual(recovery.requests[0],{...pending,stage:82});
   assert.equal(recovery.round().pending,null);assert.deepEqual(recovery.round().paid,[9]);assert.equal(recovery.round().status,'playing');
