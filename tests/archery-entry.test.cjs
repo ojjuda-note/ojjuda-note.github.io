@@ -65,7 +65,7 @@ const rankStart=world.indexOf('function worldRankGames(');
 vm.runInContext(world.slice(rankStart,world.indexOf('function openWorldBoardGame(',rankStart)),ctx);
 ctx.D.online=false;assert.equal(ctx.worldRankGames().archery,undefined,'test scores are absent from production rankings');
 assert.match(world,/for\(const bridge of \[window\.OjjudaArcheryGame,/,'global teardown closes the new game');
-assert.ok(world.includes("if(entryGame==='archery')Al('archery');"));
+assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct entry must wait for account and arcade initialization');
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
@@ -75,4 +75,26 @@ const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
 assert.ok(world.includes('/world-game-assets.js?v='+revision));
 assert.ok(bridge.includes('/games/forest-archer/index.html?v='+revision));
-console.log('PASS: single-player test registration, same-origin launch, no ranked/wallet hooks, close/re-entry/account cleanup and game-only cache revision');
+
+// A cold direct link must load against the initialized arcade route. Starting
+// before my() changes g.tab/place causes Al() to discard its own pending load.
+(async()=>{
+ let assetsReady=false,completeLoad,opened=0,rendered=0;
+ const boot=vm.createContext({URL,Promise,console,
+  window:{OjjudaGameAssets:{ready:()=>assetsReady,load:()=>new Promise(resolve=>{completeLoad=()=>{assetsReady=true;resolve();};})},
+   OjjudaArcheryGame:{open:()=>{opened++;assert.equal(boot.g.tab,'place');assert.equal(boot.g.place.id,'arcade');}}},
+  location:{href:'https://ojjuda.kr/world.html?game=archery'},D:{online:false},g:{tab:'arcade',place:null},
+  worldGameAssetRequest:0,worldEntryRouted:false,worldGameEntryGate:()=>true,M:()=>{},
+  py:()=>{},H:()=>{rendered++;},sr:{tab:({tab})=>{boot.g.tab='place';boot.g.place={id:tab};}},
+  worldParkNotes:null,resolveWorldProfilePhoto:()=>{},m1:()=>{},x1:()=>Promise.resolve(),bm:true});
+ const start=world.indexOf('function my(){');
+ vm.runInContext(world.slice(start,world.indexOf('// Member rooms use their own account;',start)),boot);
+ vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),boot);
+ boot.my();
+ assert.equal(typeof completeLoad,'function','initialized direct entry starts the asset load');
+ assert.equal(opened,0);completeLoad();await Promise.resolve();await Promise.resolve();
+ assert.equal(opened,1,'a cold direct link survives the route guards and opens once');
+ boot.my();assert.equal(opened,1,'ordinary shell refresh does not reopen a dismissed direct-link game');
+ assert.equal(rendered,1);
+ console.log('PASS: single-player test registration, same-origin launch, no ranked/wallet hooks, lifecycle cleanup, game-only revision and initialized cold direct entry');
+})().catch(error=>{console.error(error);process.exitCode=1;});
