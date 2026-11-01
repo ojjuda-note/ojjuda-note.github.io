@@ -36,6 +36,8 @@ body{padding-bottom:112px}.clock{min-width:110px;gap:7px}.clock-icon{font-size:3
 @media(max-width:640px){.answer-review ol{columns:1}.answer-review-heading{align-items:flex-start;flex-wrap:wrap}.actions .admin-button{flex-basis:100%}}
 
 .picture img.contrast-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:transparent;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat}
+.picture.is-brightened::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;backdrop-filter:brightness(var(--picture-brightness));-webkit-backdrop-filter:brightness(var(--picture-brightness))}
+.picture.is-brightened>.marks{z-index:2}
 .picture{isolation:isolate}
 
 body.embedded .topbar{display:none}body.embedded main{padding-top:18px}
