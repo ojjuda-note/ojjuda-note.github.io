@@ -21,22 +21,25 @@ function sacheon(t,saved,buy){
  t.after(()=>w.close());
  return {w,enter,calls,state:()=>JSON.parse(w.localStorage.getItem(KEY)),child:()=>child,records:()=>JSON.parse(w.localStorage.getItem('ojjuda-sacheonseong-records-v1'))};
 }
-function oldGarden(pendingPurchase,stage=5){const grid=E.generate(stage).grid;grid[0][0]=grid[0][1]=-1;return {rulesVersion:3,runId:randomUUID(),stage,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,penaltyMs:20000,sound:true,hints:2,shuffles:1,pendingPurchase};}
+function oldGarden(pendingPurchase,stage=5,columns=stage*2){const tiles=E.generate(stage).grid.flat(),grid=Array.from({length:Math.ceil(tiles.length/columns)},(_,r)=>Array.from({length:columns},(_,c)=>tiles[r*columns+c]??E.EMPTY));grid[0][0]=grid[0][1]=E.EMPTY;return {rulesVersion:3,runId:randomUUID(),stage,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,penaltyMs:20000,sound:true,hints:2,shuffles:1,pendingPurchase};}
 function assertGarden(state,stage){
- assert.equal(state.stage,stage);assert.equal(state.rulesVersion,3);assert.equal(state.grid.flat().filter(value=>value!==E.EMPTY).length,4*stage*stage);
+ assert.equal(state.stage,stage);assert.equal(state.rulesVersion,3);assert.equal(state.grid.flat().filter(value=>value!==E.EMPTY).length,stage===7?198:100);
  const [rows,columns]=stage===7?[18,11]:[10,10];assert.equal(state.grid.length,rows);assert.ok(state.grid.every(row=>row.length===columns));
- if(stage===7)assert.deepEqual(state.grid.at(-1).slice(-2),[E.EMPTY,E.EMPTY],'the last two portrait cells are padding, not additional tiles');
+ assert.ok(state.grid.flat().every(value=>value!==E.EMPTY),'every cell, including the last row, contains a real tile');assert.ok(E.withinCopyLimit(state.grid),'the filled rectangle still consists of pairs with at most four copies per face');
 }
 
-for(const stage of [5,7])test(`Sacheonseong stage ${stage} exit/reentry replaces its legacy square with a full new board and run, keeping unlocks and records`,async t=>{
- const saved=oldGarden(undefined,stage),f=sacheon(t,saved),records=f.records();assert.equal(saved.grid.length,stage*2);assert.ok(saved.grid.every(row=>row.length===stage*2));
+for(const [stage,columns]of [[5,10],[7,14],[7,11]])test(`Sacheonseong stage ${stage} exit/reentry replaces its old ${columns}-column board with a full new board and run, keeping unlocks and records`,async t=>{
+ const saved=oldGarden(undefined,stage,columns),f=sacheon(t,saved),records=f.records();assert.equal(saved.grid.length,Math.ceil(4*stage*stage/columns));assert.ok(saved.grid.every(row=>row.length===columns));
+ if(columns===11)assert.deepEqual(saved.grid.at(-1).slice(-2),[E.EMPTY,E.EMPTY],'the old portrait save contains the two former padding cells');
  const child=await f.enter(),first=f.state();
  assertGarden(first,stage);assert.notEqual(first.runId,saved.runId);
+ assert.equal(child.document.querySelectorAll('.tile.empty').length,0);assert.equal(child.document.querySelectorAll('.tile:not(:disabled)').length,stage===7?198:100);
  assert.equal(first.startedAt,null);assert.equal(first.finishedMs,null);assert.equal(first.penaltyMs,0);assert.equal(first.unlocked,8);assert.equal(first.sound,true);assert.equal(first.hints,0);assert.equal(first.shuffles,0);
  assert.deepEqual(f.records(),records,'records from both square and portrait stages survive the new visit');
- child.document.querySelector('.tile').click();const active=f.state();assert.ok(active.startedAt);
+ child.document.querySelector('.tile').click();let active=f.state();assert.ok(active.startedAt);
  child.document.dispatchEvent(new child.Event('visibilitychange'));child.dispatchEvent(new child.Event('resize'));
  f.w.OjjudaSacheonseongGame.open({owner});assert.equal(f.w.document.querySelector('iframe').contentWindow,child);assert.deepEqual(f.state(),active,'focus/visibility changes do not restart an active visit');
+ if(columns===11){child.document.getElementById('restart').click();child.document.getElementById('confirm-action').click();const restarted=f.state();assertGarden(restarted,stage);assert.notEqual(restarted.runId,active.runId);assert.equal(restarted.startedAt,null);assert.equal(child.document.querySelectorAll('.tile.empty').length,0);active=restarted;}
  child.document.getElementById('game-home').click();assert.equal(f.w.document.querySelector('iframe'),null);await f.enter();
  assert.notEqual(f.state().runId,active.runId);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assertGarden(f.state(),stage);assert.equal(f.state().unlocked,8);assert.deepEqual(f.records(),records);
 });
@@ -44,7 +47,7 @@ for(const stage of [5,7])test(`Sacheonseong stage ${stage} exit/reentry replaces
 for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolved Sacheonseong stage ${stage} ${kind} purchase applies its original paid receipt once to the fresh board`,async t=>{
  const price=kind==='hint'?3:10,pending={id:randomUUID(),runId:randomUUID(),stage,kind,owner,requestedAt:Date.now()-90000};
  const receipts=new Map([[pending.id,{ok:true,kind:pending.kind,run_id:pending.runId,stage:pending.stage,price}]]);let balance=17;
- const saved=oldGarden(pending,stage),f=sacheon(t,saved,item=>{
+ const saved=oldGarden(pending,stage,stage===7?11:stage*2),f=sacheon(t,saved,item=>{
   if(!receipts.has(item.id)){balance-=price;receipts.set(item.id,{ok:true,kind:item.kind,run_id:item.runId,stage:item.stage,price});}
   return receipts.get(item.id);
  }),records=f.records();await f.enter();
@@ -56,7 +59,7 @@ for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolv
  const recovered=f.state();assertGarden(recovered,stage);assert.equal(recovered.runId,fresh.runId);assert.equal(recovered.pendingPurchase,null);assert.equal(recovered.hints,kind==='hint'?1:0);assert.equal(recovered.shuffles,kind==='shuffle'?1:0);
  assert.equal(f.child().document.querySelectorAll('.tile.hinted').length,kind==='hint'?2:0);assert.ok(recovered.startedAt>=before,'recovery does not carry the previous visit timer into a new run');
  if(kind==='hint')assert.deepEqual(recovered.grid,fresh.grid,'a paid hint does not rearrange the portrait board');
- else{assert.notDeepEqual(recovered.grid,fresh.grid);assert.deepEqual(recovered.grid.flat().sort((a,b)=>a-b),fresh.grid.flat().sort((a,b)=>a-b),'a paid shuffle keeps the same tiles and empty padding');}
+ else{assert.notDeepEqual(recovered.grid,fresh.grid);assert.deepEqual(recovered.grid.flat().sort((a,b)=>a-b),fresh.grid.flat().sort((a,b)=>a-b),'a paid shuffle keeps all paired tiles and the full last row');}
  assert.equal(recovered.unlocked,8);assert.deepEqual(f.records(),records);
  f.w.OjjudaSacheonseongGame.close();await f.enter();assertGarden(f.state(),stage);assert.equal(f.state().hints,0);assert.equal(f.state().shuffles,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);assert.deepEqual(f.records(),records);
 });

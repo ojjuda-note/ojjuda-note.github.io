@@ -29,14 +29,14 @@
     if(size<12||width<=20||height<=24)return size;
     const choices=[];
     for(let cols=Math.ceil(size/2);cols<=size;cols++){
-      const rows=Math.ceil(total/cols);
-      choices.push({cols,empty:rows*cols-total,tile:fittingTile(rows,cols,width,height,2)});
+      const info=E.boardInfo(stage,cols);
+      choices.push({cols,extra:info.total-total,tile:fittingTile(info.rows,cols,width,height,2)});
     }
     const largest=Math.max(...choices.map(choice=>choice.tile));
     if(!(largest>0))return size;
-    // Prefer fewer spare cells when the visible tile size is practically equal.
+    // Fill every row with paired tiles; prefer fewer extra tiles at equal sizes.
     // A wide or short screen can retain the square board instead of shrinking it.
-    return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.empty-b.empty||b.tile-a.tile||b.cols-a.cols)[0].cols;
+    return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.extra-b.extra||b.tile-a.tile||b.cols-a.cols)[0].cols;
   }
   function sizeBoard(){
     if(!state)return;
@@ -71,15 +71,15 @@
     const points=coords.map(p=>`${p.x},${p.y}`).join(' '),ends=[coords[0],coords[coords.length-1]];
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
-  function updateStats(){const total=4*state.stage*state.stage,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
+  function updateStats(){const total=state.grid.length*state.grid[0].length,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
   function wrongPair(message){
     state.penaltyMs=(state.penaltyMs||0)+WRONG_PAIR_MS;save();updateStats();
     const notice=message+' (+10초)';$('status').textContent=notice;toast(notice);
   }
   function chooseStage(s){if(state.pendingPurchase){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
   function openStages(){
-    const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stageInfo(s);return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
-    showModal(`<div class="eyebrow">같은 그림은 최대 4개</div><h2 id="modal-title">15개의 정원을 만나보세요.</h2><p>64개 이후에도 11판이 더 있어요.<br>하나를 완성하면 다음 단계가 열려요.</p><div class="all-stage-grid">${cards}</div>`);
+    const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.boardInfo(s,s===state.stage?state.grid[0].length:boardColumns(s));return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
+    showModal(`<div class="eyebrow">같은 그림은 최대 4개</div><h2 id="modal-title">15개의 정원을 만나보세요.</h2><p>화면에 맞춰 마지막 줄까지 패를 채워요.<br>하나를 완성하면 다음 단계가 열려요.</p><div class="all-stage-grid">${cards}</div>`);
     $('modal-content').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>chooseStage(Number(b.dataset.stage))));
   }
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
@@ -113,7 +113,7 @@
     clearTimeout(moveTimer);
     const timer=setTimeout(()=>{
       removalTimers.delete(timer);
-      // Keep the other tiles in place instead of rebuilding up to 900 buttons.
+      // Keep the other tiles in place instead of rebuilding the whole board.
       for(const button of buttons){if(!button.isConnected)continue;button.className='tile empty';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
       if($('connection').firstElementChild===line)$('connection').replaceChildren();
       if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}
@@ -134,7 +134,7 @@
   function showCompletion(rank){
     locked=true;const final=state.stage===E.MAX_STAGE;
     $('win-title').textContent=final?'15개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
-    $('win-desc').innerHTML=`<strong class="win-time">${time(state.finishedMs)}</strong><span class="win-rank">이 기기 ${state.stage}단계 ${rank}위${rank===1?' · 최고 기록!':''}</span>${final?'4개에서 900개까지, 멋진 도전이었어요.':`다음은 ${4*(state.stage+1)**2}개의 패가 기다려요.`}`;
+    $('win-desc').innerHTML=`<strong class="win-time">${time(state.finishedMs)}</strong><span class="win-rank">이 기기 ${state.stage}단계 ${rank}위${rank===1?' · 최고 기록!':''}</span>${final?'15단계까지, 멋진 도전이었어요.':`다음은 ${state.stage+1}단계 정원이에요.`}`;
     $('previous-level').disabled=state.stage===1;
     $('previous-level-detail').textContent=state.stage===1?'첫 레벨':`${state.stage-1}단계`;
     $('current-level-detail').textContent=`${state.stage}단계 다시 하기`;
@@ -152,7 +152,7 @@
   function openRanking(stage=state.stage){
     rankingStage=stage;
     const stages=[...new Set([state.stage,...Object.keys(records).map(Number)])].sort((a,b)=>a-b);
-    const html=`<div class="eyebrow">빠른 클리어 순서</div><h2 id="modal-title">나의 시간 순위</h2><label class="rank-select-label" for="rank-select">단계 선택</label><select id="rank-select">${stages.map(s=>`<option value="${s}"${s===stage?' selected':''}>${s}단계 · ${4*s*s}개의 패</option>`).join('')}</select><div class="rank-table" id="rank-table">${recordRows(stage,10)}</div><p class="rank-explainer">같은 단계에서 더 빨리 끝낼수록 높은 순위예요. 첫 패를 누른 순간부터 시간을 재며, 힌트·섞기 시간도 포함해요. 오답마다 10초가 추가돼요.</p><small class="rank-local">이 브라우저에 저장된 내 기록 TOP 10</small>`;
+    const html=`<div class="eyebrow">빠른 클리어 순서</div><h2 id="modal-title">나의 시간 순위</h2><label class="rank-select-label" for="rank-select">단계 선택</label><select id="rank-select">${stages.map(s=>`<option value="${s}"${s===stage?' selected':''}>${s}단계</option>`).join('')}</select><div class="rank-table" id="rank-table">${recordRows(stage,10)}</div><p class="rank-explainer">같은 단계에서 더 빨리 끝낼수록 높은 순위예요. 첫 패를 누른 순간부터 시간을 재며, 힌트·섞기 시간도 포함해요. 오답마다 10초가 추가돼요.</p><small class="rank-local">이 브라우저에 저장된 내 기록 TOP 10</small>`;
     if($('modal').open)$('modal-content').innerHTML=html;else showModal(html);
     $('rank-select').addEventListener('change',e=>{rankingStage=Number(e.target.value);$('rank-table').innerHTML=recordRows(rankingStage,10);});
   }
@@ -224,7 +224,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개의 패로 시작해, 총 15단계예요.<small>6단계부터 화면에 맞춰 가로·세로 칸 수를 정하고 마지막 줄까지 채워요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();

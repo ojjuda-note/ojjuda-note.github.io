@@ -1,9 +1,10 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{test}=require('node:test'),{JSDOM}=require('jsdom');
 const E=require('../games/sacheonseong/engine.js'),read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
-function fixture({stage=2,grid=null,saved=null,records={}}={}){
+function fixture({stage=2,grid=null,saved=null,records={},seed=null}={}){
  const dom=new JSDOM(read('games/sacheonseong/index.html'),{url:'https://example.test/games/sacheonseong/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
  const timers=new Map(),intervals=[],sent=[];let id=0,now=Date.now();w.Date.now=()=>now;
+ if(seed!==null){let value=seed>>>0;w.Math.random=()=>((value=(Math.imul(value,1664525)+1013904223)>>>0)/4294967296);}
  w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=fn=>intervals.push(fn);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.HTMLElement.prototype.scrollIntoView=function(){};
@@ -34,7 +35,8 @@ test('switching stages immediately after the last pair keeps the completed recor
 for(const stage of [2,7])test(`reopening completed stage ${stage} preserves its best time without recording twice`,()=>{
  let f=fixture({stage}),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
-  assert.equal(f.state().stage,stage);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,4*stage*stage);assert.notEqual(f.state().runId,saved.runId);assert.equal(f.state().rulesVersion,3);
+  assert.equal(f.state().stage,stage);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,stage===7?198:16);assert.notEqual(f.state().runId,saved.runId);assert.equal(f.state().rulesVersion,3);
+  assert.ok(f.state().grid.flat().every(v=>v!==E.EMPTY),'reopening fills every cell, including the bottom row');
   assert.equal(f.state().grid.length,saved.grid.length);assert.ok(f.state().grid.every(row=>row.length===saved.grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.state().penaltyMs,0);
   assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
@@ -43,10 +45,32 @@ for(const stage of [2,7])test(`reopening completed stage ${stage} preserves its 
 test('final-stage completion never advances beyond stage 15',()=>{
  let f=fixture({stage:15}),saved,records;try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
-  assert.equal(f.state().stage,15);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,900);
+  assert.equal(f.state().stage,15);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,912);assert.ok(f.state().grid.flat().every(v=>v!==E.EMPTY));
   assert.ok(f.state().grid.length>f.state().grid[0].length);assert.equal(f.state().grid.length,saved.grid.length);assert.ok(f.state().grid.every(row=>row.length===saved.grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);
   assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
+ }finally{f.close();}
+});
+
+test('a full 198-tile portrait round finishes only after its 99th pair and advances to another full board',()=>{
+ const previous={id:'old-196-tile-record',duration:5000,at:1700000000000,rulesVersion:3};
+ const f=fixture({saved:{rulesVersion:3,stage:7,unlocked:7,grid:E.generate(7).grid},records:{7:[previous]},seed:37});
+ const remaining=()=>f.state().grid.flat().filter(value=>value!==E.EMPTY).length;
+ const matchNext=()=>{
+  const move=E.moves(f.state().grid);assert.ok(move,'the live board has a legal pair after the automatic dead-end check');
+  f.d.querySelector(`[data-r="${move.a.r}"][data-c="${move.a.c}"]`).click();f.advance(25);
+  f.d.querySelector(`[data-r="${move.b.r}"][data-c="${move.b.c}"]`).click();f.run(120);
+ };
+ try{
+  assert.equal(remaining(),198);assert.equal(f.state().grid.length,18);assert.ok(f.state().grid.every(row=>row.length===11&&row.every(value=>value!==E.EMPTY)));
+  assert.equal(f.d.getElementById('remaining').textContent,'198 / 198');
+  for(let pair=1;pair<=98;pair++){matchNext();assert.equal(remaining(),198-2*pair);assert.equal(f.sent.length,0,'clearing the old 196-tile count cannot finish the expanded board');}
+  assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.d.getElementById('remaining').textContent,'2 / 198');
+  matchNext();assert.equal(remaining(),0);assert.equal(f.d.getElementById('remaining').textContent,'0 / 198');assert.equal(f.d.getElementById('completion').hidden,false);
+  assert.equal(f.sent.length,1);assert.equal(f.sent[0].stage,7);assert.equal(f.sent[0].rulesVersion,3);assert.equal(f.records()[7].length,2);assert.deepEqual(f.records()[7].find(record=>record.id===previous.id),previous);assert.equal(f.state().unlocked,8);
+  f.d.getElementById('next').click();const next=f.state(),total=next.grid.length*next.grid[0].length;
+  assert.equal(next.stage,8);assert.ok(total>=256);assert.equal(remaining(),total);assert.ok(next.grid.flat().every(value=>value!==E.EMPTY));assert.ok(E.withinCopyLimit(next.grid));
+  assert.equal(f.d.getElementById('remaining').textContent,`${total} / ${total}`);assert.equal(next.startedAt,null);assert.equal(next.finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.sent.length,1);assert.equal(f.records()[7].length,2);
  }finally{f.close();}
 });
 

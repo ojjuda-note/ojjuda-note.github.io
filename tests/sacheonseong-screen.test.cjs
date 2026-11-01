@@ -16,6 +16,9 @@ const sizes=[
  {name:'1280 desktop',width:1256,height:758}
 ];
 const occupied=grid=>grid.flat().filter(value=>value!==E.EMPTY).length;
+// Calculate expected capacity independently of boardInfo, including the extra
+// row needed when an odd number of columns would otherwise leave an odd total.
+const fullRows=(stage,cols)=>{const rows=Math.ceil(4*stage*stage/cols);return rows+(rows*cols%2);};
 const fit=(width,height,rows,cols,gap=2,pad=8)=>Math.min((width-2*pad-(cols-1)*gap)/cols,(height-2*pad-4-(rows-1)*gap)/(rows*1.19));
 let cases=0;
 for(let stage=1;stage<=15;stage++)for(const initial of sizes){
@@ -34,25 +37,44 @@ for(let stage=1;stage<=15;stage++)for(const initial of sizes){
   w.localStorage.setItem(RECORDS,JSON.stringify(previousRecords));
   w.localStorage.setItem(KEY,JSON.stringify({rulesVersion:E.RULES_VERSION,stage,unlocked:15,grid:E.generate(stage).grid,startedAt:1600000000000,finishedMs:null,sound:false,hints:0,shuffles:0,lastRecord:null}));
   scripts.forEach(script=>w.eval(script));
-  const saved=()=>JSON.parse(w.localStorage.getItem(KEY)),initialState=saved(),grid=initialState.grid,rows=grid.length,cols=grid[0].length,total=4*stage*stage;
+  const saved=()=>JSON.parse(w.localStorage.getItem(KEY)),initialState=saved(),grid=initialState.grid,rows=grid.length,cols=grid[0].length,baseTotal=4*stage*stage,total=fullRows(stage,cols)*cols;
+  const remaining=()=>d.getElementById('remaining').textContent.match(/\d+/g).map(Number);
+  const counts=new Map();
+  for(const face of grid.flat()){
+   assert(Number.isInteger(face)&&w.GardenFaces[face],`${label}: every position contains a valid playable face`);
+   counts.set(face,(counts.get(face)||0)+1);
+  }
   assert.equal(initialState.stage,stage,`${label}: reentry keeps the last level`);
   assert.equal(initialState.unlocked,15,`${label}: earned stages stay selectable`);
   assert.equal(initialState.startedAt,null,`${label}: reentry starts a fresh clock`);
-  assert.equal(occupied(grid),total,`${label}: portrait padding cannot add or remove tiles`);
+  assert.equal(rows,fullRows(stage,cols),`${label}: capacity includes complete, paired rows`);
+  assert.equal(occupied(grid),total,`${label}: every position is filled with a real tile`);
+  assert.equal(total%2,0,`${label}: the full rectangle contains complete pairs`);
+  assert([...counts.values()].every(count=>count===2||count===4),`${label}: each picture has two or four copies`);
+  assert.equal(counts.size,stage===1?2:Math.ceil(total/4),`${label}: additional tiles have enough distinct faces`);
   assert(grid.every(row=>row.length===cols),`${label}: all rows share a width`);
   assert.equal(d.querySelectorAll('.tile').length,rows*cols,`${label}: every grid cell has a position`);
-  assert.equal(d.querySelectorAll('.tile:not(.empty)').length,total,`${label}: only actual tiles are visible`);
+  assert.equal(d.querySelectorAll('.tile.empty,.tile:disabled').length,0,`${label}: the initial board has no empty or disabled padding`);
+  assert.equal(d.querySelectorAll('.tile:not(.empty)').length,total,`${label}: every tile is visible`);
+  assert.deepEqual(remaining(),[total,total],`${label}: the HUD uses the complete rectangle's actual count`);
   assert.equal(Number(canvas.style.getPropertyValue('--n')),cols,`${label}: CSS columns match the playable grid`);
   if(stage<=5){assert.equal(rows,stage*2,`${label}: early rows are unchanged`);assert.equal(cols,stage*2,`${label}: early columns are unchanged`);}
   else{
    assert(cols>=stage&&cols<=stage*2&&rows>=stage*2,`${label}: later boards narrow without losing capacity`);
-   assert(rows*cols-total<cols,`${label}: padding fits at the end of one row`);
+   assert(total>=baseTotal&&total-baseTotal<cols*2,`${label}: only the cells needed for complete paired rows are added`);
    assert(fit(width,height,rows,cols)>=fit(width,height,stage*2,stage*2)*.99-.02,`${label}: responsive layout does not shrink tiles compared with the square board`);
    if(initial.name==='390 phone'&&stage===6){
     assert.equal(cols,9,'390px phone uses nine columns for 144 tiles');
     assert.equal(rows,16,'390px phone uses sixteen rows for 144 tiles');
     assert(fit(width,height,rows,cols)>fit(width,height,12,12)*1.20,'the first portrait board makes tiles at least 20% wider');
+    d.getElementById('all-stages').click();
+    const nextCard=d.querySelector('[data-stage="7"]');
+    assert.equal(parseInt(nextCard.querySelector('strong').textContent,10),198,'the next stage card includes the two newly filled cells');
+    assert.match(nextCard.querySelector(':scope > small').textContent,/^50종/,'the next stage card includes the extra picture pair');
+    assert.match(nextCard.getAttribute('aria-label'),/198개의 패/,'the accessible stage preview uses the actual count');
+    d.getElementById('modal-close').click();
    }
+   if(initial.name==='390 phone'&&stage===7){assert.equal(cols,11);assert.equal(rows,18);assert.equal(total,198,'all 198 cells of the 11 by 18 board are playable');}
    if(['844 landscape','open foldable','1280 desktop'].includes(initial.name))assert.equal(cols,stage*2,`${label}: wide screens keep the square layout`);
   }
   const assertFit=()=>{
@@ -77,10 +99,12 @@ for(let stage=1;stage<=15;stage++)for(const initial of sizes){
    assert.equal(at(move.a),a,`${label}: a selected tile keeps its DOM identity`);
    assert.equal(a.getAttribute('aria-pressed'),'true',`${label}: selection survives rotation`);
    assert.equal(d.getElementById('timer').textContent,'00:12.50',`${label}: rotation cannot restart the timer`);
+   assert.deepEqual(remaining(),[total,total],`${label}: rotation cannot change the target tile total`);
   }
   b.click();
   const after=saved();
   assert.equal(occupied(after.grid),total-2,`${label}: the original selected pair still matches after rotation`);
+  assert.deepEqual(remaining(),[total-2,total],`${label}: matching decreases the numerator while keeping the full-board total`);
   assert.equal(after.runId,beforeRotation.runId,`${label}: matching stays in the same run`);
   assert.equal(after.startedAt,beforeRotation.startedAt,`${label}: matching keeps the initial start time`);
   assert.deepEqual(JSON.parse(w.localStorage.getItem(RECORDS)),previousRecords,`${label}: old records survive layout changes`);
@@ -91,7 +115,15 @@ for(let stage=1;stage<=15;stage++)for(const initial of sizes){
   d.getElementById('ranking').click();assert(!d.getElementById('options').open);assert(d.getElementById('modal').open);assert(d.getElementById('rank-select'));
   d.getElementById('modal-close').click();
   d.getElementById('all-stages').click();assert.equal(d.querySelectorAll('.stage-card').length,15);
+  // Rotation ended on the wide desktop viewport: future stages use square
+  // boards, while the current card must retain the active run's original shape.
+  for(let target=1;target<=15;target++){
+   const card=d.querySelector(`[data-stage="${target}"]`),expected=target===stage?total:4*target*target,types=target===1?2:Math.ceil(expected/4);
+   assert.equal(parseInt(card.querySelector('strong').textContent,10),expected,`${label}: stage ${target} card reports the board it will show`);
+   assert.match(card.querySelector(':scope > small').textContent,new RegExp(`^${types}종`),`${label}: stage ${target} card reports the actual picture count`);
+   assert(card.getAttribute('aria-label').includes(`${expected}개의 패`),`${label}: stage ${target} accessible label agrees`);
+  }
   cases++;
  }finally{w.close();}
 }
-console.log(`PASS: ${cases} fresh-stage layouts preserve tile totals, fit both axes, improve phone tiles and keep the active run, selection, timer and records across rotation.`);
+console.log(`PASS: ${cases} fresh-stage layouts fill every cell with paired tiles, show actual HUD/stage counts, fit both axes, improve phone tiles and keep the active run, selection, timer and records across rotation.`);
