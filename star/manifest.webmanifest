@@ -1,0 +1,25 @@
+{
+  "id": "/star/",
+  "name": "한우산 별천지 빈자리 알림",
+  "short_name": "별천지 알림",
+  "lang": "ko",
+  "start_url": "/star/",
+  "scope": "/star/",
+  "display": "standalone",
+  "background_color": "#0d1725",
+  "theme_color": "#0d1725",
+  "icons": [
+    {
+      "src": "https://hanusan-booking-helper.mj830417686850.chatgpt.site/icons/star-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://hanusan-booking-helper.mj830417686850.chatgpt.site/icons/star-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
