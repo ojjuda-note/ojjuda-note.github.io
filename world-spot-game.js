@@ -7,14 +7,14 @@
       const previous=document.activeElement;
       const dialog=document.createElement('dialog');
       dialog.className='spot-game-dialog';dialog.setAttribute('aria-label','틀린그림찾기');
-      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">아지트 홈</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261101-spot-markers1" allow="fullscreen"></iframe>';
+      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">아지트 홈</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261101-masterpieces1" allow="fullscreen"></iframe>';
       const frame=dialog.querySelector('iframe');
       let scoreQueue=Promise.resolve();
       function onZoom(event){
         if(event.origin!==window.location.origin||event.source!==frame.contentWindow)return;
         if(event.data?.type==='ojjuda:spot-home'){close();return;}
         if(event.data?.type==='ojjuda:spot-finished'){window.OjjudaGuestAccess?.finished();return;}
-        if(event.data?.type==='ojjuda:spot-clear'&&Number.isInteger(event.data.stage)&&event.data.stage>=1&&event.data.stage<=62&&(typeof event.data.owner==='string'||event.data.owner===null)){
+        if(event.data?.type==='ojjuda:spot-clear'&&Number.isInteger(event.data.stage)&&event.data.stage>=1&&event.data.stage<=82&&(typeof event.data.owner==='string'||event.data.owner===null)){
           const {stage,owner}=event.data;
           const save=()=>Promise.resolve(onClear?.(stage,owner)).catch(error=>{
             console.warn('게임 기록 저장 실패',error);

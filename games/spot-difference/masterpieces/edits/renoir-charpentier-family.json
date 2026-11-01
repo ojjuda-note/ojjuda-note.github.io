@@ -1,0 +1,116 @@
+{
+  "slug": "renoir-charpentier-family",
+  "input": "sources/renoir-charpentier-family.jpg",
+  "edits": [
+    {
+      "text": "벽 위쪽의 푸른 술 장식이 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        70.5,
+        8.7,
+        73.3,
+        15.5
+      ],
+      "instruction": "Recolor only the small blue-green hanging tassel on the wallpaper high above the empty chair to muted crimson. Preserve its exact shape, cord, painted wall pattern, and surrounding brushwork."
+    },
+    {
+      "text": "위쪽 벽의 붉은 나뭇가지 무늬가 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        30.8,
+        8.7,
+        37.5,
+        16.6
+      ],
+      "instruction": "Change the small red twig-and-leaf motif high on the wallpaper, above and left of the mother's head, to cobalt blue. Preserve its exact shape and the surrounding wallpaper."
+    },
+    {
+      "text": "빈 의자 등받이 가운데 가로띠가 청록색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        66.3,
+        26.2,
+        73.8,
+        30.5
+      ],
+      "instruction": "Recolor only one horizontal woven band across the middle of the empty chair backrest to muted turquoise. Preserve its weave, the rest of the yellow backrest, wooden frame, chair shape, and all adjacent objects."
+    },
+    {
+      "text": "꽃다발 가운데의 분홍 장미가 노란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        78.6,
+        16.7,
+        82.9,
+        20.8
+      ],
+      "instruction": "Change the single large pink rose near the middle of the bouquet above the vase to warm yellow. Preserve the flower's petals, size, and position; do not change neighboring flowers or leaves."
+    },
+    {
+      "text": "탁자 위 파란 꽃병이 초록색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        78.5,
+        23.6,
+        85.2,
+        31.8
+      ],
+      "instruction": "Recolor the blue ceramic body of the flower vase on the right-hand table to emerald green. Keep its painted ornament, highlights, silhouette, flowers, and supporting tray unchanged."
+    },
+    {
+      "text": "탁자 오른쪽의 유리병이 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        87.7,
+        20.6,
+        94.0,
+        32.6
+      ],
+      "instruction": "Remove the clear glass carafe with a narrow upright neck at the far-right end of the table. Reconstruct the existing dark blue wall and tabletop behind it in Renoir's brushwork; leave the neighboring vase, glasses, and tray unchanged."
+    },
+    {
+      "text": "소파의 작은 붉은 꽃무늬가 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        25.4,
+        42.4,
+        28.6,
+        47.4
+      ],
+      "instruction": "Recolor the small round red flower in the sofa upholstery, immediately left of the seated child's white shoulder bow, to deep blue. Change only that embroidered flower and preserve the upholstery texture and the child."
+    },
+    {
+      "text": "가운데 아이의 오른쪽 구두가 금빛으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        44.4,
+        69.4,
+        49.0,
+        74.1
+      ],
+      "instruction": "Recolor only the dark leather of the seated center child's rightmost shoe in the picture to warm gold. Preserve the shoe shape, white sock, legs, the other shoe, and the couch."
+    },
+    {
+      "text": "아래쪽 카펫의 작은 붉은 무늬가 파란 고리로 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        55.6,
+        86.1,
+        59.4,
+        89.5
+      ],
+      "instruction": "Replace the small reddish diamond-shaped carpet ornament below and slightly left of the mother's dress with one dark blue circular ring of the same overall size. Preserve the surrounding yellow carpet and its woven texture."
+    },
+    {
+      "text": "오른쪽 카펫의 작은 꽃무늬가 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        73.2,
+        81.3,
+        78.0,
+        85.1
+      ],
+      "instruction": "Remove the isolated small reddish flower-like medallion on the yellow carpet in the lower-right open floor area. Fill its place with matching plain yellow woven carpet; preserve the adjacent purple border and every other carpet ornament."
+    }
+  ]
+}

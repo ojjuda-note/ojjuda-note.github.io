@@ -41,20 +41,28 @@ const tick=()=>new Promise(r=>setImmediate(r));
   assert.match(w.document.querySelector('#ttang-save-status').textContent,/다시 저장/);allowed=false;w.OjjudaTtangBridge.close();
   // Exercise the actual picture completion function with a paid hint/time result.
   const app=read('games/spot-difference/app.js'),finish=app.slice(app.indexOf('  function finish(reason){'),app.indexOf('  function tick(){'));
-  const messages=[],r0={status:'playing',rankOwner:'a',assisted:true,paid:[0],timeBought:true};
-  const context={round:()=>r0,core:{timeLeft:()=>12000},zoomDialog:{open:false},hideHint(){},refresh(){},speak(){},celebrate(){},
-   found:()=>[0,1,2,3,4,5],puzzle:()=>({id:17}),window:{location:{origin:'https://fixture.test'},parent:{postMessage:m=>messages.push(m)}},wallet:{}};
-  vm.runInNewContext(finish+'finish("won");',context);
-  assert.equal(messages.find(m=>m.type==='ojjuda:spot-clear').stage,17,'paid completion records a picture ID');
-  messages.length=0;r0.status='playing';context.found=()=>[0,1,2];vm.runInNewContext(finish+'finish("time");',context);
-  assert.ok(messages.some(m=>m.type==='ojjuda:spot-finished'));assert.ok(!messages.some(m=>m.type==='ojjuda:spot-clear'),'partial finds are not completed pictures');
+  for(const [stage,total] of [[17,6],[82,10]]){
+   const messages=[],r0={status:'playing',rankOwner:'a',assisted:true,paid:[0],timeBought:true},p={id:stage,spots:Array.from({length:total},()=>({}))};
+   const context={round:()=>r0,core:{timeLeft:()=>12000},zoomDialog:{open:false},hideHint(){},refresh(){},speak(){},celebrate(){},
+    found:()=>Array.from({length:total},(_,i)=>i),puzzle:()=>p,targetCount:()=>p.spots.length,window:{location:{origin:'https://fixture.test'},parent:{postMessage:m=>messages.push(m)}},wallet:{}};
+   vm.runInNewContext(finish+'finish("won");',context);
+   assert.deepEqual(messages.filter(m=>m.type==='ojjuda:spot-clear').map(m=>[m.stage,m.owner]),[[stage,'a']],'paid completion records the actual picture ID and owner');
+   vm.runInNewContext(finish+'finish("won");',context);
+   assert.equal(messages.filter(m=>m.type==='ojjuda:spot-clear').length,1,'a finished round cannot record twice');
+   messages.length=0;r0.status='playing';context.found=()=>[0,1,2];vm.runInNewContext(finish+'finish("time");',context);
+   assert.ok(messages.some(m=>m.type==='ojjuda:spot-finished'));assert.ok(!messages.some(m=>m.type==='ojjuda:spot-clear'),'partial finds are not completed pictures');
+   if(total===10){
+    messages.length=0;r0.status='playing';context.found=()=>[0,1,2,3,4,5];vm.runInNewContext(finish+'finish("won");',context);
+    assert.ok(!messages.some(m=>m.type==='ojjuda:spot-clear'),'six finds cannot record a ten-answer masterpiece');
+   }
+  }
   // Validate actual parent callback isolation and invalid stage rejection.
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
   w.eval(read('world-spot-game.js'));const pictures=[];w.OjjudaSpotGame.open({onClear:async(stage,owner)=>pictures.push([stage,owner])});
   const sf=w.document.querySelector('iframe');
   const spot=(stage,source=sf.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{type:'ojjuda:spot-clear',stage,owner:'a'}}));
-  spot(0);spot(63);spot(1,w);spot(1,sf.contentWindow,'https://other.test');spot(17);spot(49);spot(62);await tick();
-  assert.deepEqual(pictures,[[17,'a'],[49,'a'],[62,'a']]);
-  console.log('PASS: territory win/loss/solo quit, multiplayer handoff and ranking exclusion, remaining-human results, stale results, duplicates/retries, paid picture completion, partial finds and cross-origin isolation');
+  spot(0);spot(83);spot(1,w);spot(1,sf.contentWindow,'https://other.test');spot(17);spot(49);spot(62);spot(63);spot(82);await tick();
+  assert.deepEqual(pictures,[[17,'a'],[49,'a'],[62,'a'],[63,'a'],[82,'a']]);
+  console.log('PASS: territory win/loss/solo quit, multiplayer handoff and ranking exclusion, remaining-human results, stale results, duplicates/retries, paid six/ten-answer picture completion, partial finds, 82-stage bounds and cross-origin isolation');
  }finally{w.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

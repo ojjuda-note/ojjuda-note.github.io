@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "van-gogh-wheat-field-cypresses",
+  "title": "사이프러스가 있는 밀밭",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/van-gogh-wheat-field-cypresses.jpg",
+  "sourceWidth": 4000,
+  "sourceHeight": 3184,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        29.8,
+        9.3,
+        35.5,
+        16.0
+      ],
+      "descriptionKo": "하늘 왼쪽 위의 작은 흰 구름 고리가 연분홍색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the isolated small cream crescent-shaped cloud curl in the upper-left sky to a pale warm peach, preserving its impasto brush ridges and exact shape.",
+      "kind": "color"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        23.0,
+        10.0,
+        28.8,
+        14.4
+      ],
+      "descriptionKo": "노란 구름 밑의 짧고 짙은 파란 곡선이 없어졌어요.",
+      "instructionEn": "Remove only the short dark blue crescent brushstroke immediately below the small yellow cloud near the upper left, filling with the surrounding mid-blue sky texture.",
+      "kind": "remove"
+    },
+    {
+      "id": 3,
+      "bounds": [
+        40.0,
+        22.5,
+        48.0,
+        34.2
+      ],
+      "descriptionKo": "가운데 구름의 나선형 끝이 둥근 구름 덩어리로 바뀌었어요.",
+      "instructionEn": "Reshape only the distinct curled spiral at the right end of the central white cloud into a simple rounded white puff, using the same thick cream and pale-blue paint strokes.",
+      "kind": "shape"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        81.0,
+        6.0,
+        86.8,
+        19.0
+      ],
+      "descriptionKo": "가장 높은 사이프러스의 갈라진 꼭대기가 짧아졌어요.",
+      "instructionEn": "Shorten only the forked uppermost tip of the tallest cypress into a single lower rounded point, restoring sky behind the removed tips; keep the rest of the tree unchanged.",
+      "kind": "shape",
+      "feather": 0.04
+    },
+    {
+      "id": 5,
+      "bounds": [
+        76.0,
+        37.4,
+        80.7,
+        47.0
+      ],
+      "descriptionKo": "큰 사이프러스 왼편 작은 나무의 뾰족한 끝이 없어졌어요.",
+      "instructionEn": "Remove only the narrow pointed tip of the smaller cypress immediately left of the tallest tree; blend the removed tip into the adjoining pale cloud without changing lower foliage.",
+      "kind": "shape"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        43.6,
+        55.1,
+        49.0,
+        60.7
+      ],
+      "descriptionKo": "먼 산의 작은 밝은 삼각형 봉우리가 황토색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small pale triangular rocky peak in the distant blue ridge just left of center to warm ochre, preserving its triangular shape and painted ridges.",
+      "kind": "color"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        51.5,
+        59.1,
+        56.9,
+        64.4
+      ],
+      "descriptionKo": "가운데 먼 들판의 작고 둥근 나무가 없어졌어요.",
+      "instructionEn": "Remove the small isolated rounded dark-green bush on the distant field near the center; continue the existing green and yellow horizontal field strokes behind it.",
+      "kind": "remove"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        28.3,
+        69.4,
+        38.2,
+        78.3
+      ],
+      "descriptionKo": "왼쪽 올리브나무에서 오른쪽 아래로 처진 잔가지가 짧아졌어요.",
+      "instructionEn": "Remove only the short curled leafy branch protruding down and right from the foreground olive tree; restore the surrounding golden wheat, leaving the main tree intact.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 9,
+      "bounds": [
+        30.8,
+        90.8,
+        35.2,
+        95.9
+      ],
+      "descriptionKo": "아래쪽 왼편의 붉은 꽃송이들이 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the compact cluster of red poppy flower heads near the lower-left-of-center edge to golden yellow, retaining every stem and the exact petal shapes.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        65.1,
+        86.2,
+        69.4,
+        90.6
+      ],
+      "descriptionKo": "아래쪽 가운데 오른편의 붉은 꽃송이들이 보라색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small red poppy cluster near the lower center-right to muted violet-blue; preserve the stems, white nearby flowers and surrounding grasses.",
+      "kind": "color"
+    }
+  ]
+}

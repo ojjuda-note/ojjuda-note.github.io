@@ -1,0 +1,461 @@
+{
+  "schemaVersion": 1,
+  "revision": "masterpieces-1",
+  "reviewStatus": "approved-for-very-hard-integration",
+  "stageRange": [
+    63,
+    82
+  ],
+  "artworks": [
+    {
+      "id": "bruegel-harvesters",
+      "stageId": 63,
+      "title": "추수하는 사람들",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/bruegel-harvesters.jpg",
+          "bytes": 3030733,
+          "sha256": "3d2a611f7787bee1a38ba1e9976535ea5497c2e4a26cd52ae2142c5f74dc6a49",
+          "width": 3811,
+          "height": 2809
+        },
+        {
+          "path": "masterpieces/changes/bruegel-harvesters.png",
+          "bytes": 2876113,
+          "sha256": "15ed01fc4decacbaaa6f257d164db89e7b187162f42823c01b6e0f8c27983dc5",
+          "width": 1461,
+          "height": 1076
+        }
+      ]
+    },
+    {
+      "id": "david-death-of-socrates",
+      "stageId": 64,
+      "title": "소크라테스의 죽음",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/david-death-of-socrates.jpg",
+          "bytes": 1793830,
+          "sha256": "eaff5a04103361fed9fba6f10ea7bed80ccdc595d664b6997c6bd32f0eee06a6",
+          "width": 4000,
+          "height": 2663
+        },
+        {
+          "path": "masterpieces/changes/david-death-of-socrates.png",
+          "bytes": 1809560,
+          "sha256": "4a7a46517abc06ad9cbddb66724f032659535e56c699c3f6f75a41f6ed8b7006",
+          "width": 1537,
+          "height": 1023
+        }
+      ]
+    },
+    {
+      "id": "hokusai-great-wave",
+      "stageId": 65,
+      "title": "가나가와 해변의 높은 파도",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/hokusai-great-wave.jpg",
+          "bytes": 2342637,
+          "sha256": "cbb9988f2f18b9180a1cc0cf5dbb0e3bbf8f2e85d17930cf6ca9ab36fac36303",
+          "width": 3859,
+          "height": 2594
+        },
+        {
+          "path": "masterpieces/changes/hokusai-great-wave.png",
+          "bytes": 2885664,
+          "sha256": "68ea92f522fd13cef093243b68a4c86282ed2704079b44ec46bc307723f0b879",
+          "width": 1530,
+          "height": 1028
+        }
+      ]
+    },
+    {
+      "id": "van-gogh-wheat-field-cypresses",
+      "stageId": 66,
+      "title": "사이프러스가 있는 밀밭",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/van-gogh-wheat-field-cypresses.jpg",
+          "bytes": 8291194,
+          "sha256": "b46d02a42fd3bb13b022cefc5beaa997b1d7a28cd7b53e4413d940aa0dc4014d",
+          "width": 4000,
+          "height": 3184
+        },
+        {
+          "path": "masterpieces/changes/van-gogh-wheat-field-cypresses.png",
+          "bytes": 3009477,
+          "sha256": "728a158f3f773f9968e95374cf58f8b87374e0d549cb6ce6430ada3fa29e2763",
+          "width": 1405,
+          "height": 1119
+        }
+      ]
+    },
+    {
+      "id": "van-gogh-roses",
+      "stageId": 67,
+      "title": "장미",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/van-gogh-roses.jpg",
+          "bytes": 5219625,
+          "sha256": "4680a3bd8eed94d21200f9d7d6410865873fac387dba5b6cd65bee75a1fe59a4",
+          "width": 3167,
+          "height": 4000
+        },
+        {
+          "path": "masterpieces/changes/van-gogh-roses.png",
+          "bytes": 2993251,
+          "sha256": "a7bcdc6dc94334936e669842335cf8a17823531f462f146a4894efd2c65084a1",
+          "width": 1116,
+          "height": 1409
+        }
+      ]
+    },
+    {
+      "id": "degas-dancing-class",
+      "stageId": 68,
+      "title": "무용 수업",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/degas-dancing-class.jpg",
+          "bytes": 3632363,
+          "sha256": "f14772e6458a2756badde8045d0e42a733be51257f9c2e30df6fa4a85592c7df",
+          "width": 4000,
+          "height": 2988
+        },
+        {
+          "path": "masterpieces/changes/degas-dancing-class.png",
+          "bytes": 2098072,
+          "sha256": "7a6f52e54730b90f680e9fec049e931541e49b9230f29fb111c3311befb797ae",
+          "width": 1451,
+          "height": 1084
+        }
+      ]
+    },
+    {
+      "id": "vermeer-water-pitcher",
+      "stageId": 69,
+      "title": "물주전자를 든 여인",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/vermeer-water-pitcher.jpg",
+          "bytes": 2638182,
+          "sha256": "d14901b9c2124bd767cc1a4ca6286092eeedc3067a627449bd94869489bcefce",
+          "width": 3437,
+          "height": 3866
+        },
+        {
+          "path": "masterpieces/changes/vermeer-water-pitcher.png",
+          "bytes": 2307523,
+          "sha256": "1d732a4a1f9bb8b83d26d58562c8211fbbb1d3fbc38961a2887dafe08bac0b34",
+          "width": 1182,
+          "height": 1330
+        }
+      ]
+    },
+    {
+      "id": "el-greco-view-toledo",
+      "stageId": 70,
+      "title": "톨레도 풍경",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/el-greco-view-toledo.jpg",
+          "bytes": 3763217,
+          "sha256": "c3c374cf56e99bfbe16c45c9b152f8fc3821d2bbc1cd30655fc966e6771cc35a",
+          "width": 3496,
+          "height": 3934
+        },
+        {
+          "path": "masterpieces/changes/el-greco-view-toledo.png",
+          "bytes": 2158368,
+          "sha256": "69e9b3091b4ab27005ec97d99e3a4c2adb13064b9cf35017cdf68f9615761b2e",
+          "width": 1182,
+          "height": 1330
+        }
+      ]
+    },
+    {
+      "id": "cezanne-card-players",
+      "stageId": 71,
+      "title": "카드놀이하는 사람들",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/cezanne-card-players.jpg",
+          "bytes": 3041782,
+          "sha256": "839b88c12f5d86f716fa30933335fde3bd4681c6e0f3727ccdaeb185d2dac7fb",
+          "width": 3909,
+          "height": 3112
+        },
+        {
+          "path": "masterpieces/changes/cezanne-card-players.png",
+          "bytes": 2423015,
+          "sha256": "8d6d9a021cc8cd2c8d06924b45f132cc70d4c348fd8aabe8c83a7e6165b93a12",
+          "width": 1406,
+          "height": 1119
+        }
+      ]
+    },
+    {
+      "id": "renoir-charpentier-family",
+      "stageId": 72,
+      "title": "샤르팡티에 부인과 자녀들",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/renoir-charpentier-family.jpg",
+          "bytes": 4206585,
+          "sha256": "8ac32539a3c7a6a78f31963c2e04e7f11952fffed9002d6cc21158fb64f18317",
+          "width": 4000,
+          "height": 3254
+        },
+        {
+          "path": "masterpieces/changes/renoir-charpentier-family.png",
+          "bytes": 2310817,
+          "sha256": "c8fcc93e37c5e9da5a4b6ecb07f33255897b5f6149b759e21e2a89989f795949",
+          "width": 1390,
+          "height": 1132
+        }
+      ]
+    },
+    {
+      "id": "seurat-circus-sideshow",
+      "stageId": 73,
+      "title": "서커스 퍼레이드",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/seurat-circus-sideshow.jpg",
+          "bytes": 15403158,
+          "sha256": "8453f4fa9f01ad532c045807aae99a39edfd137629bace3cb4c1f65b00b9af42",
+          "width": 3920,
+          "height": 2621
+        },
+        {
+          "path": "masterpieces/changes/seurat-circus-sideshow.png",
+          "bytes": 3124197,
+          "sha256": "a5a0553af59e2e984edae6f0665c430036f6e7d933e92df4036d79c92f564c3b",
+          "width": 1534,
+          "height": 1025
+        }
+      ]
+    },
+    {
+      "id": "rembrandt-aristotle-homer",
+      "stageId": 74,
+      "title": "호메로스의 흉상을 바라보는 아리스토텔레스",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/rembrandt-aristotle-homer.jpg",
+          "bytes": 3486903,
+          "sha256": "55dc9232dd6b412cea4964f19e98a56f6bd1fa7213e4e947834413cf65d8776a",
+          "width": 3792,
+          "height": 4000
+        },
+        {
+          "path": "masterpieces/changes/rembrandt-aristotle-homer.png",
+          "bytes": 1868554,
+          "sha256": "28687627ae9806904ff48eb1f82a0b53b88c706413fc139b9309e715f5e5101c",
+          "width": 1221,
+          "height": 1288
+        }
+      ]
+    },
+    {
+      "id": "leutze-washington-delaware",
+      "stageId": 75,
+      "title": "델라웨어강을 건너는 워싱턴",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/leutze-washington-delaware.jpg",
+          "bytes": 1495013,
+          "sha256": "f421242b2362d204ea8718d8eff36e04fb1cba04f7b0e32cc077b2b5a4dbfc46",
+          "width": 1937,
+          "height": 1135
+        },
+        {
+          "path": "masterpieces/changes/leutze-washington-delaware.png",
+          "bytes": 2180291,
+          "sha256": "1a7f21529220f9a8c38b697a5056e7f2482303d62fc6b507fe8c3ff80e7ef8f6",
+          "width": 1638,
+          "height": 960
+        }
+      ]
+    },
+    {
+      "id": "manet-boating",
+      "stageId": 76,
+      "title": "뱃놀이",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/manet-boating.jpg",
+          "bytes": 5619793,
+          "sha256": "3d9bc5daa64d9e6bd183cc076b4365cd361a150c3e43abfcfbbbfe17907b6dd1",
+          "width": 4000,
+          "height": 3052
+        },
+        {
+          "path": "masterpieces/changes/manet-boating.png",
+          "bytes": 2356087,
+          "sha256": "3d00799607e5d7432193fca16c845e17af3d9c7b30a5a027c40bf29bcaa7b49f",
+          "width": 1436,
+          "height": 1096
+        }
+      ]
+    },
+    {
+      "id": "cole-the-oxbow",
+      "stageId": 77,
+      "title": "옥스보",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/cole-the-oxbow.jpg",
+          "bytes": 3053431,
+          "sha256": "40c454b6cf712c6ef70cca067fbe551c069d4b9130d06716db05452d16d515c4",
+          "width": 4000,
+          "height": 2733
+        },
+        {
+          "path": "masterpieces/changes/cole-the-oxbow.png",
+          "bytes": 2228625,
+          "sha256": "6b14b50d722a858b0bc5a0ad979a5e24e6cc8a5f62f549bc2a0942df7b1b69c7",
+          "width": 1518,
+          "height": 1036
+        }
+      ]
+    },
+    {
+      "id": "homer-gulf-stream",
+      "stageId": 78,
+      "title": "걸프 스트림",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/homer-gulf-stream.jpg",
+          "bytes": 3879918,
+          "sha256": "67fd3b2bb4e07f41dc1991c0e538981ba187ab6e3c08722636f6c347f0611b70",
+          "width": 4000,
+          "height": 2468
+        },
+        {
+          "path": "masterpieces/changes/homer-gulf-stream.png",
+          "bytes": 2370497,
+          "sha256": "80426a559ec4648f13de2b63a2ca6258c060bf31e7d6fd35bdf3999c23822d26",
+          "width": 1596,
+          "height": 985
+        }
+      ]
+    },
+    {
+      "id": "bonheur-horse-fair",
+      "stageId": 79,
+      "title": "말 시장",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/bonheur-horse-fair.jpg",
+          "bytes": 2692523,
+          "sha256": "c905acf8e02c24c5b30f90ad040a8afe43b7b8d2c65faf75b81ac3c53b535be2",
+          "width": 4000,
+          "height": 2043
+        },
+        {
+          "path": "masterpieces/changes/bonheur-horse-fair.png",
+          "bytes": 2413516,
+          "sha256": "72aeb5c51a60fe21299dbcc8e3e3f637b4db4b0560dc6129325d8141847f25a5",
+          "width": 1755,
+          "height": 896
+        },
+        {
+          "path": "masterpieces/changes/bonheur-horse-fair-hat.png",
+          "bytes": 2385105,
+          "sha256": "f803effe4e71f8ad324974e7d6d1d7fe3d146319e11e7ab4e90c89fd40d7e7d3",
+          "width": 1755,
+          "height": 896
+        }
+      ]
+    },
+    {
+      "id": "cezanne-apples-primroses",
+      "stageId": 80,
+      "title": "사과와 앵초 화분이 있는 정물",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/cezanne-apples-primroses.jpg",
+          "bytes": 2989655,
+          "sha256": "8336c5eab1aa753a7a6c7ad2f713d1e19802236833943b22a8cc4d9fddd404bc",
+          "width": 3807,
+          "height": 3021
+        },
+        {
+          "path": "masterpieces/changes/cezanne-apples-primroses.png",
+          "bytes": 2338295,
+          "sha256": "9c8b856adea48acbbfd39bc8d21f496738cd6eb4b6d1be3799f5651a53ab62c4",
+          "width": 1408,
+          "height": 1117
+        }
+      ]
+    },
+    {
+      "id": "van-gogh-irises",
+      "stageId": 81,
+      "title": "아이리스",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/van-gogh-irises.jpg",
+          "bytes": 5228776,
+          "sha256": "6b851d821d565e61817250b272417c79721724f8dba2deaffe9b4c9ca4c35685",
+          "width": 4000,
+          "height": 3172
+        },
+        {
+          "path": "masterpieces/changes/van-gogh-irises.png",
+          "bytes": 2707496,
+          "sha256": "28171bc4b42eb4862a74524af6de26dfae2bd9d249e274e23c45b28bf260c92e",
+          "width": 1408,
+          "height": 1117
+        }
+      ]
+    },
+    {
+      "id": "monet-water-lilies",
+      "stageId": 82,
+      "title": "수련 (아가판투스)",
+      "differenceCount": 10,
+      "assets": [
+        {
+          "path": "masterpieces/sources/monet-water-lilies.jpg",
+          "bytes": 1719394,
+          "sha256": "a43abfac21743591b3ac4f0a6045f54f05964fefa01697c8fe5fb91b55e2e292",
+          "width": 3400,
+          "height": 1581
+        },
+        {
+          "path": "masterpieces/changes/monet-water-lilies.png",
+          "bytes": 2436601,
+          "sha256": "c70dc81ec69bfda504c6126077df3acfe941b1dfeeab5b0a5808351532088921",
+          "width": 1839,
+          "height": 855
+        }
+      ]
+    }
+  ],
+  "puzzleDataSha256": "b2eed3768528dbf51c3abe71fb45a5b3bbba8ae7ec42c13c30385ce4a505f4ac",
+  "reviewPdfSha256": "53f48ea5020738ffd4f922bdeb506cae7c00c9b2d606e095eea0732b39542c45",
+  "difficulty": "very-hard"
+}

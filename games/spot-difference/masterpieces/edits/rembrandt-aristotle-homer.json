@@ -1,0 +1,116 @@
+{
+  "slug": "rembrandt-aristotle-homer",
+  "input": "sources/rembrandt-aristotle-homer.jpg",
+  "edits": [
+    {
+      "text": "모자 오른쪽의 천 장식이 짙은 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        61.0,
+        20.5,
+        68.9,
+        27.5
+      ],
+      "instruction": "Recolor only the small gold-brown decorative fabric patch on the upper-right part of the broad dark hat to deep burgundy. Preserve the hat silhouette, all other hat fabric, shadows, hair, face, and background."
+    },
+    {
+      "text": "오른쪽 어깨의 둥근 장식이 파란 마름모로 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        62.7,
+        42.0,
+        66.6,
+        45.9
+      ],
+      "instruction": "Replace the small round jeweled clasp on the viewer-right shoulder of the black garment with a blue diamond-shaped clasp of the same overall size. Keep the surrounding collar, beard, and clothing unchanged."
+    },
+    {
+      "text": "왼쪽 어깨의 금빛 장식이 초록색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        46.7,
+        42.4,
+        49.8,
+        46.5
+      ],
+      "instruction": "Recolor the small rounded gold fitting at the upper end of the chain on the viewer-left shoulder to emerald green. Preserve its shape and the neighboring beard, collar, and chain links."
+    },
+    {
+      "text": "흉상 위 손목의 밝은 소매 끝이 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        25.5,
+        44.3,
+        33.6,
+        53.8
+      ],
+      "instruction": "Recolor only the visible ivory wrist cuff immediately beside the hand resting on the bust to muted blue. Preserve every cuff fold, the hand, all skin, the statue, the rest of the sleeve, and the pose."
+    },
+    {
+      "text": "오른쪽 소매의 주름진 부분이 연초록색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        74.0,
+        64.4,
+        82.9,
+        73.2
+      ],
+      "instruction": "Recolor only the compact ivory ruffled cuff directly above the hand resting at the waist to pale sage green. Preserve the cuff folds, the hand and fingers, the rest of the sleeve, jewelry, and body silhouette."
+    },
+    {
+      "text": "가슴 왼쪽 아래에 늘어진 작은 금빛 메달이 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        44.2,
+        66.7,
+        48.0,
+        72.2
+      ],
+      "instruction": "Remove the small oval gold pendant hanging at the lower end of the short vertical chain near the viewer-left waist. Fill its place with the existing dark fabric; leave the neighboring long necklace and sleeve unchanged."
+    },
+    {
+      "text": "목걸이 맨 아래의 고리 부분이 은빛으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        56.8,
+        72.0,
+        68.7,
+        77.9
+      ],
+      "instruction": "Change only the lowest curved section of the heavy gold chain, immediately left of the hand at the waist, to silver. Preserve each link, the curve, shadows, black garment, and every finger; leave all other chain sections gold."
+    },
+    {
+      "text": "왼쪽 책더미 위쪽 책의 등이 짙은 녹색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        0.7,
+        27.0,
+        12.0,
+        30.1
+      ],
+      "instruction": "Recolor the visible horizontal spine of the upper book in the dark stack at the far-left edge to muted olive green. Preserve its gilded horizontal lines, book shape, aged texture, and neighboring books."
+    },
+    {
+      "text": "왼쪽 책더미 가운데의 얇은 책이 짙은 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        0.7,
+        30.5,
+        12.2,
+        33.5
+      ],
+      "instruction": "Recolor the visible spine of the thin middle book in the far-left stack to muted navy blue. Preserve its horizontal gilded lines, rectangular shape, aged texture, and every neighboring book."
+    },
+    {
+      "text": "탁자 왼쪽의 가느다란 금빛 선이 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        0.4,
+        80.3,
+        10.7,
+        83.2
+      ],
+      "instruction": "Remove only the slim horizontal dark-and-gold object resting at the far-left edge of the tabletop. Reconstruct matching reddish-brown wood behind it; preserve the bust, its base, the table rim, and the original signature."
+    }
+  ]
+}

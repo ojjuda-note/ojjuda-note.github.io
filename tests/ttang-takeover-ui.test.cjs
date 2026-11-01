@@ -50,7 +50,9 @@ function state(){
   }
   {
    const {host,guest,h,g}=await pair('b'.repeat(24));
-   await g.evaluate(()=>{paused=true;world.sameWorld='guest';});
+   // A paused guest still draws snapshots, so its clock must be past the item birth.
+   // Keep it behind the host clock so takeover still has to restore that clock.
+   await g.evaluate(()=>{paused=true;world.time=20;world.sameWorld='guest';});
    await h.evaluate(()=>{
     paused=true;world.time=23.125;endAt=121;me.boostT=3.25;me.shieldT=1.75;p2.kills=3;p2.best=12.5;
     me.trail=[];me.pts=[];me.tc=new Map();
@@ -60,7 +62,9 @@ function state(){
    });
    await h.evaluate(()=>{Net.sequence++;Net.send(snapshot());});
    await g.waitForFunction(()=>world.netTime===23.125&&Net.backup?.itemSeq===19);
-   const before=await h.evaluate(state);await host.evaluate(()=>OjjudaTtangBridge.close());
+   const before=await h.evaluate(state);
+   assert.notEqual(await g.evaluate(()=>world.time),before.time,'takeover must restore the host clock');
+   await host.evaluate(()=>OjjudaTtangBridge.close());
    await g.waitForFunction(()=>role==='host'&&p2.bot);assert.deepEqual(await g.evaluate(state),before);
    assert.equal(await g.evaluate(()=>world.sameWorld),'guest');assert.equal(await g.evaluate(()=>me.id),2,'the remaining guest retains its own seat');
    assert.equal(await g.evaluate(()=>p2.id),1);assert.equal(await g.evaluate(()=>world.trail[p2.trail[0]]),1);

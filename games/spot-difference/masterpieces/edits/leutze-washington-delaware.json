@@ -1,0 +1,116 @@
+{
+  "slug": "leutze-washington-delaware",
+  "input": "sources/leutze-washington-delaware.jpg",
+  "edits": [
+    {
+      "text": "깃대 꼭대기의 뾰족한 장식이 둥근 장식으로 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        64.0,
+        11.1,
+        67.8,
+        17.4
+      ],
+      "instruction": "Replace the pointed spear-shaped finial at the very top of the flagpole with one round golden ball of comparable size. Preserve the pole, the small tied cords below it, the flag, and the sky."
+    },
+    {
+      "text": "깃발의 별무늬가 둥근 무늬로 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        57.0,
+        18.2,
+        64.3,
+        29.2
+      ],
+      "instruction": "Change only the visible pale stars in the flag's dark blue canton into small pale circular dots at the same positions and approximate sizes. Preserve the blue fabric, its folds, the flag outline, and all other flag sections."
+    },
+    {
+      "text": "깃발 오른쪽 끝의 붉은 줄무늬가 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        60.0,
+        39.2,
+        66.2,
+        43.8
+      ],
+      "instruction": "Recolor the single dark red stripe along the lower trailing tip on the far-right side of the flag to muted blue. Preserve the pale stripes, cloth folds, flag edge, and background."
+    },
+    {
+      "text": "강 왼쪽 얼음 위의 마른 나뭇가지가 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        5.5,
+        47.5,
+        13.5,
+        55.4
+      ],
+      "instruction": "Remove the isolated forked brown branch resting among the ice on the left side of the river. Reconstruct the existing pale ice and water behind it, without changing the shoreline, oars, people, or neighboring ice shapes."
+    },
+    {
+      "text": "왼쪽 노 젓는 사람의 붉은 목도리 끝이 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        29.0,
+        49.0,
+        32.7,
+        52.7
+      ],
+      "instruction": "Recolor only the two red scarf tails fluttering behind the leftmost standing rower's shoulder to cobalt blue. Preserve their folds, the person's head and face, clothing, raised arm, and the surrounding water."
+    },
+    {
+      "text": "워싱턴의 검은 모자가 밝은 갈색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        40.2,
+        29.5,
+        45.0,
+        35.3
+      ],
+      "instruction": "Recolor George Washington's black tricorn hat to warm light brown, maintaining its exact silhouette, trim, and shading. Keep his face, hair, forehead, coat, and posture unchanged."
+    },
+    {
+      "text": "아래쪽 가운데 긴 얼음 조각이 연보라색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        31.5,
+        82.0,
+        43.4,
+        90.5
+      ],
+      "instruction": "Give the long slanting pale-green ice slab in the lower center foreground a clearly visible pale lavender tint. Preserve its edges, cracks, translucency, waterline, and all neighboring ice pieces."
+    },
+    {
+      "text": "오른쪽 아래 얼음의 뾰족한 봉우리가 둥글게 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        87.0,
+        84.5,
+        95.2,
+        89.6
+      ],
+      "instruction": "Change only the tallest sharp peak above the signature on the isolated lower-right ice floe into a lower rounded dome of ice. Preserve the rest of the floe, its footprint, colors, the artist signature below, and surrounding water."
+    },
+    {
+      "text": "배 오른쪽 끝 노의 넓은 날이 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        92.2,
+        72.0,
+        95.2,
+        83.5
+      ],
+      "instruction": "Recolor only the broad wooden blade of the near-vertical oar at the far-right end of the main boat to muted brick red. Preserve its shape, the shaft above, the rower hand, the boat, and the water."
+    },
+    {
+      "text": "배 오른쪽 옆에 늘어진 밧줄 고리가 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        80.4,
+        73.7,
+        91.8,
+        79.9
+      ],
+      "instruction": "Remove the visible pale rope loop draped along the outside of the main boat near its right-hand end. Reconstruct the original dark wooden gunwale and hull behind the rope, keeping the people, boat shape, and adjacent oar unchanged."
+    }
+  ]
+}

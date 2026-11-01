@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "cezanne-card-players",
+  "title": "카드놀이하는 사람들",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/cezanne-card-players.jpg",
+  "sourceWidth": 3909,
+  "sourceHeight": 3112,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        28.6,
+        1.4,
+        38.8,
+        5.3
+      ],
+      "descriptionKo": "뒤에 서 있는 사람의 모자 윗부분이 짙은 초록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the crown of the dark brown hat worn by the standing man at the back to muted forest green; keep the brim below, face, forehead and hair completely unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        32.1,
+        14.1,
+        37.1,
+        21.4
+      ],
+      "descriptionKo": "뒤에 서 있는 사람의 붉은 목수건이 황토색으로 바뀌었어요.",
+      "instructionEn": "Change only the red neckerchief of the standing man to warm golden ochre; preserve its folds, his face, exposed skin and blue coat.",
+      "kind": "color"
+    },
+    {
+      "id": 3,
+      "bounds": [
+        56.8,
+        9,
+        61,
+        19.7
+      ],
+      "descriptionKo": "벽에 걸린 파이프 중 맨 왼쪽 파이프가 없어졌어요.",
+      "instructionEn": "Remove only the leftmost of the four small pipes hanging on the upper wall; fill with the same blue-gray wall brushwork and keep the other three pipes and rack.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 4,
+      "bounds": [
+        50.3,
+        66,
+        56,
+        71.7
+      ],
+      "descriptionKo": "탁자 앞쪽의 흰 파이프가 없어졌어요.",
+      "instructionEn": "Remove only the loose white pipe lying on the near edge of the tabletop, reconstructing the same pale blue tabletop brushwork and keeping nearby cards untouched.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 5,
+      "bounds": [
+        49,
+        62.5,
+        54.7,
+        65.7
+      ],
+      "descriptionKo": "탁자에 펼친 카드의 붉은 무늬가 초록색으로 바뀌었어요.",
+      "instructionEn": "Change only the red marks on the single face-up card near the center of the table to dark green; preserve the card border, blue marks, other cards and all hands.",
+      "kind": "color",
+      "feather": 0.06
+    },
+    {
+      "id": 6,
+      "bounds": [
+        44.8,
+        65.8,
+        50.2,
+        71
+      ],
+      "descriptionKo": "탁자 위의 작게 접힌 회색 종이가 없어졌어요.",
+      "instructionEn": "Remove only the small folded gray paper packet on the tabletop immediately left of the loose white pipe, filling naturally with the pale tabletop surface.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 7,
+      "bounds": [
+        46.4,
+        75.5,
+        50.2,
+        78.8
+      ],
+      "descriptionKo": "탁자 서랍의 둥근 손잡이가 짧은 가로 손잡이로 바뀌었어요.",
+      "instructionEn": "Replace only the small round drawer knob on the table front with a short horizontal oval metal pull of similar dark gray color, leaving the drawer panel unchanged.",
+      "kind": "shape"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        24,
+        27.7,
+        35.8,
+        31.6
+      ],
+      "descriptionKo": "왼쪽 사람의 갈색 모자 띠가 푸른색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the existing dark ribbon band around the seated left player brown hat to muted blue; preserve the rest of the hat, its brim and the face underneath.",
+      "kind": "color"
+    },
+    {
+      "id": 9,
+      "bounds": [
+        71.2,
+        25.4,
+        80.3,
+        32.8
+      ],
+      "descriptionKo": "오른쪽 사람의 검은 모자 윗부분이 자주색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the tall crown of the right player black hat to muted burgundy; keep the broad black brim, its outline and all facial features unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        9.4,
+        86.4,
+        22.6,
+        92.3
+      ],
+      "descriptionKo": "왼쪽 의자 아래의 위쪽 가로대가 없어졌어요.",
+      "instructionEn": "Remove only the upper horizontal wooden rung between the visible legs of the left chair near the floor; preserve both chair legs and the lower rung, restoring the floor behind it.",
+      "kind": "remove",
+      "feather": 0.06
+    }
+  ]
+}

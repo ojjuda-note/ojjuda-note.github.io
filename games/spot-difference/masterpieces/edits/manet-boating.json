@@ -1,0 +1,119 @@
+{
+  "slug": "manet-boating",
+  "input": "sources/manet-boating.jpg",
+  "edits": [
+    {
+      "text": "남자의 밀짚모자 띠가 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        44.1,
+        12.1,
+        54.5,
+        16.8
+      ],
+      "instruction": "Recolor only the turquoise ribbon around the man's straw hat to deep red. Preserve the ribbon width, the straw crown and brim, his hair, and every facial feature."
+    },
+    {
+      "text": "여자 모자 위쪽의 검은 장식이 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        19.5,
+        36.7,
+        22.6,
+        41.1
+      ],
+      "instruction": "Recolor the small black ribbon patch near the top center of the woman's cream hat to muted crimson. Preserve its shape and the cream hat material; leave all other ribbons, the veil, and the woman's face unchanged."
+    },
+    {
+      "text": "여자 모자 왼쪽의 검은 리본이 노란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        12.3,
+        43.9,
+        18,
+        48.5
+      ],
+      "instruction": "Recolor only the black bow-like ribbon section at the left edge of the woman's hat brim to warm yellow. Keep the bow shape, surrounding cream fabric, trailing ribbons, hair, veil, and head unchanged."
+    },
+    {
+      "text": "오른쪽 위 돛에 작은 파란 네모 덧댐이 생겼어요.",
+      "kind": "shape",
+      "bounds": [
+        89.2,
+        9.1,
+        94.8,
+        16.5
+      ],
+      "instruction": "Add exactly one small square navy-blue sewn repair patch on the otherwise plain gray sail in the upper-right corner, confined to this box. Give it subtle stitched edges and matching brushwork; preserve all other sail fabric, the spar, lashings, rope, and water."
+    },
+    {
+      "text": "오른쪽 위 돛대의 짧게 튀어나온 끝이 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        78.1,
+        4.5,
+        81.8,
+        8.9
+      ],
+      "instruction": "Remove only the short rounded wooden spar tip protruding above and to the left of the uppermost lashing in the upper-right area. Fill its place with matching turquoise water, keeping the lashing, main spar, and sail unchanged."
+    },
+    {
+      "text": "오른쪽 아래 묶인 밧줄 매듭이 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        75,
+        73,
+        79.4,
+        80.2
+      ],
+      "instruction": "Recolor only the compact gray rope knot wrapped around the small peg inside the boat at lower right to muted red. Preserve the knot's loops, the peg, the long rope above, the wooden bench, and the boat structure."
+    },
+    {
+      "text": "의자 위 천의 오른쪽 부분이 짙은 파랑으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        88,
+        72.8,
+        98.1,
+        84.3
+      ],
+      "instruction": "Recolor the crumpled white cloth lying on the far-right wooden bench to dark navy blue. Preserve all cloth folds, its outline, the bench, boat planks, and the surrounding rope.",
+      "blend": "normal",
+      "feather": 0.06
+    },
+    {
+      "text": "배 오른쪽 안쪽의 세로 나무대 하나가 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        81.5,
+        63.2,
+        86.6,
+        75.2
+      ],
+      "instruction": "Remove the single narrow upright wooden reinforcing rib on the inner right side of the boat, just right of the rope. Reconstruct continuous horizontal brown planking behind it, while preserving the other ribs, the gunwale, rope, and bench.",
+      "feather": 0.1
+    },
+    {
+      "text": "왼쪽 아래 U자 고리가 둥근 고리로 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        11.4,
+        86.7,
+        15.4,
+        94
+      ],
+      "instruction": "Change the small brass U-shaped fitting on the inside of the boat at the lower-left edge into one closed circular brass ring of comparable size. Preserve the fitting's location, the dark wood, and the woman's dress."
+    },
+    {
+      "text": "남자의 소매 끝 테두리가 연분홍색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        39,
+        42.3,
+        44.1,
+        46
+      ],
+      "instruction": "Recolor only the narrow curved hem at the bottom of the man left short sleeve in the picture to pale pink. Preserve the sleeve shape, the rest of the white fabric, every skin area, and the man body shape and pose."
+    }
+  ]
+}

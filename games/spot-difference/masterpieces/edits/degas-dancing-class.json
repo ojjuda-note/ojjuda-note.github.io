@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "degas-dancing-class",
+  "title": "무용 수업",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/degas-dancing-class.jpg",
+  "sourceWidth": 4000,
+  "sourceHeight": 2988,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        8.1,
+        86.2,
+        17.5,
+        95.0
+      ],
+      "descriptionKo": "왼쪽 아래 물뿌리개가 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small green watering can at bottom left to muted brick red, preserving its spout, handle, highlights and surrounding floor.",
+      "kind": "color"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        34.0,
+        82.5,
+        53.2,
+        93.8
+      ],
+      "descriptionKo": "바닥에 놓인 긴 악기함이 없어졌어요.",
+      "instructionEn": "Remove the long closed dark violin case lying on the floor near the lower center, continuing the warm wooden floor and its existing shadows naturally.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 3,
+      "bounds": [
+        25.0,
+        86.1,
+        29.3,
+        90.8
+      ],
+      "descriptionKo": "말린 악보 아래 검은 모자의 몸통이 자주색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the exposed lower cylindrical body of the black top hat beneath the rolled sheet music to muted burgundy, keeping the brim, paper and nearby shoes unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        25.0,
+        78.4,
+        30.2,
+        85.9
+      ],
+      "descriptionKo": "검은 모자에 꽂힌 말린 흰 악보가 없어졌어요.",
+      "instructionEn": "Remove only the rolled cream sheet music protruding from the black top hat on the floor; reveal a natural dark hat opening and preserve the hat and musician behind it.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 5,
+      "bounds": [
+        10.1,
+        54.8,
+        20.1,
+        58.4
+      ],
+      "descriptionKo": "피아노 위 펼친 악보의 밝은 페이지가 옅은 파란색으로 바뀌었어요.",
+      "instructionEn": "Change only the exposed pale yellow pages of the open music booklet on top of the piano to pale blue; preserve all page edges, the piano and every nearby finger.",
+      "kind": "color"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        10.8,
+        25.9,
+        15.6,
+        37.0
+      ],
+      "descriptionKo": "왼쪽 벽의 작은 안내문 액자 테두리가 금색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the narrow dark frame around the small vertical notice on the left wall to muted gold, preserving the paper and all existing text-like marks.",
+      "kind": "color"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        45.5,
+        60.0,
+        52.4,
+        67.2
+      ],
+      "descriptionKo": "큰 거울의 오른쪽 아래 받침발이 없어졌어요.",
+      "instructionEn": "Remove only the curved wooden right foot projecting from the bottom of the freestanding mirror; continue the floor underneath and preserve the mirror frame and dancer skirt.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 8,
+      "bounds": [
+        32.8,
+        25.9,
+        35.7,
+        31.5
+      ],
+      "descriptionKo": "큰 거울 왼쪽 기둥의 금빛 꼭지가 은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the decorative gold finial at the top of the mirror left support to a cool silver-gray, maintaining its shape, surrounding wall and dancer behind it.",
+      "kind": "color"
+    },
+    {
+      "id": 9,
+      "bounds": [
+        84.7,
+        38.4,
+        90.4,
+        44.2
+      ],
+      "descriptionKo": "맨 오른쪽 무용수의 분홍 리본이 파란색으로 바뀌었어요.",
+      "instructionEn": "Change only the pink waist bow and ribbon tails on the dancer at the far right to muted blue; preserve the dress, pose, skin and all body contours.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        25.4,
+        43.5,
+        30.2,
+        46.1
+      ],
+      "descriptionKo": "거울 왼편 무용수의 분홍 허리띠가 청록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the narrow pink waistband of the dancer immediately left of the mirror to muted turquoise; preserve her skin, dress folds and every surrounding figure.",
+      "kind": "color"
+    }
+  ]
+}

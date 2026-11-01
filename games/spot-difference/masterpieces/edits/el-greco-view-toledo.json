@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "el-greco-view-toledo",
+  "title": "톨레도 풍경",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/el-greco-view-toledo.jpg",
+  "sourceWidth": 3496,
+  "sourceHeight": 3934,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        66.0,
+        29.3,
+        70.2,
+        38.7
+      ],
+      "descriptionKo": "도시 가운데의 높은 첨탑 끝이 짧고 평평하게 바뀌었어요.",
+      "instructionEn": "Shorten only the pointed upper tip of the central cathedral spire to a lower flat cap, restoring the dark storm sky behind the removed point and preserving the tower below.",
+      "kind": "shape",
+      "feather": 0.06
+    },
+    {
+      "id": 2,
+      "bounds": [
+        79.5,
+        29.9,
+        88.4,
+        32.2
+      ],
+      "descriptionKo": "오른쪽 위 큰 성채의 지붕이 붉은 기와색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the roof ridge of the large high palace at upper right to muted terracotta red; preserve all windows, stone walls and clouds.",
+      "kind": "color"
+    },
+    {
+      "id": 3,
+      "bounds": [
+        76.9,
+        34.5,
+        84.7,
+        37.3
+      ],
+      "descriptionKo": "성채 아래 건물의 삼각형 지붕이 황토색으로 바뀌었어요.",
+      "instructionEn": "Change only the distinct triangular roof of the building directly below and left of the high palace to warm ochre, keeping its outline and the facade below intact.",
+      "kind": "color"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        18.7,
+        47.8,
+        20.9,
+        51.9
+      ],
+      "descriptionKo": "왼쪽 언덕 폐허의 맨 오른쪽 탑이 없어졌어요.",
+      "instructionEn": "Remove only the isolated narrow rightmost tower in the ruined castle on the left hill; fill with the existing green-brown hillside and preserve the remaining ruins.",
+      "kind": "remove"
+    },
+    {
+      "id": 5,
+      "bounds": [
+        26.0,
+        54.3,
+        29.7,
+        59.8
+      ],
+      "descriptionKo": "돌다리 왼쪽 입구의 탑이 황토색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the pale vertical gate tower at the left end of the stone bridge to warm ochre, retaining its dark doorway, stone divisions and surrounding hill.",
+      "kind": "color"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        31.9,
+        59.0,
+        38.8,
+        64.8
+      ],
+      "descriptionKo": "돌다리의 큰 둥근 아치가 뾰족한 아치로 바뀌었어요.",
+      "instructionEn": "Reshape only the top curve of the large left bridge arch opening into a shallow pointed Gothic arch; preserve the bridge deck, adjacent pier and riverbank.",
+      "kind": "shape"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        3.2,
+        62.3,
+        13.3,
+        65.1
+      ],
+      "descriptionKo": "왼쪽 강가 작은 건물의 지붕이 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the low roof of the small riverside building at the far left to muted brick red, retaining the gray facade, roof outline and adjoining bank.",
+      "kind": "color"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        36.4,
+        78.5,
+        48.2,
+        83.7
+      ],
+      "descriptionKo": "아래쪽 강물 가운데의 큰 둥근 바위가 없어졌어요.",
+      "instructionEn": "Remove the large pale rounded boulder in the foreground river, filling its position with the same dark blue-green flowing water and matching reflections.",
+      "kind": "remove"
+    },
+    {
+      "id": 9,
+      "bounds": [
+        48.6,
+        80.7,
+        51.3,
+        83.5
+      ],
+      "descriptionKo": "아래쪽 물가의 작은 탑 지붕이 붉은색으로 바뀌었어요.",
+      "instructionEn": "Change only the pointed pale roof of the left tiny riverside turret near the bottom center to muted red, keeping its walls and the neighboring turret unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        68.0,
+        65.3,
+        80.7,
+        69.1
+      ],
+      "descriptionKo": "오른쪽 중간 둔덕의 가느다란 나무 울타리가 없어졌어요.",
+      "instructionEn": "Remove only the pale horizontal wooden rail and its slender supports on the mid-right grassy bank above the river bend; reconstruct the matching dark green vegetation.",
+      "kind": "remove"
+    }
+  ]
+}

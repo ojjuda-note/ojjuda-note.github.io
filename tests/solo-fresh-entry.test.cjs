@@ -124,7 +124,7 @@ async function pendingSpot(t,buy){
   }})
  })};
  w.eval(read('games/spot-difference/wallet.js'));await tick();
- for(const file of ['puzzles','photo-puzzles','game-core'])w.eval(read('games/spot-difference/'+file+'.js'));
+ for(const file of ['puzzles','photo-puzzles','masterpiece-puzzles','game-core'])w.eval(read('games/spot-difference/'+file+'.js'));
  const puzzles=w.JJUDA_PUZZLES,id=puzzles[48].id;
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,order:puzzles.map((_,i)=>i),found:{[id]:[0,1]},rounds:{[id]:{...w.JjudaGame.freshRound(),status:'payment',hearts:1,remainingMs:5000,pending:request}},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original']))}));
  w.eval(read('games/spot-difference/app.js'));for(const image of w.document.querySelectorAll('img'))if(image.onload)image.onload();
