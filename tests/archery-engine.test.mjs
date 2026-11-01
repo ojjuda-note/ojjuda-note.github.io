@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAYER, GRAVITY, WIND_RESPONSE, REFERENCE_ARROW_MASS, getArrowMass, getWindResponse, prepareStage, passersAt, BOWS, ARROWS, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, targetAt, getSpeed, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway } from '../games/forest-archer/engine.mjs';
+import { PLAYER, GRAVITY, WIND_RESPONSE, REFERENCE_ARROW_MASS, MAX_MAIN_PROJECTILE_SPEED, BULLET_SPEED, getArrowMass, getWindResponse, prepareStage, passersAt, BOWS, ARROWS, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, targetAt, getSpeed, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway, sortEquipment } from '../games/forest-archer/engine.mjs';
 import { windLeafAt, windLeafCount } from '../games/forest-archer/scenery.mjs';
 
 const close = (actual, expected, tolerance = 1e-8) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
 const dragFree = { ...ARROWS[0], fletching: { ...ARROWS[0].fletching, drag: 0 } };
 const emptyRange = { distance: 10000, radius: 1, height: 2, kind: 'target', motion: {}, wind: 0, obstacles: [] };
 const seed = initial => () => { initial = (Math.imul(initial, 1664525) + 1013904223) >>> 0; return initial / 4294967296; };
+const legacyStage = id => STAGES.find(stage => stage.legacyId === id);
 
 // Independent exact linear-drag aim solver; no game renderer or input helpers.
 function crossing(params, stage, worldTime = 0, forcedPassId) {
@@ -96,16 +97,15 @@ test('wind leaves stay honest at rest, reverse direction and lean with strength 
 });
 
 test('rabbits run nearby while deer remain distant animal encounters', () => {
-  const rabbit = STAGES.find(stage => stage.kind === 'rabbit');
-  const deer = STAGES.find(stage => stage.kind === 'deer');
-  assert.equal(rabbit.id, 7); assert.equal(rabbit.distance, 24);
-  assert.equal(deer.id, 11); assert.equal(deer.distance, 58);
+  const rabbit = legacyStage(7), deer = legacyStage(11);
+  assert.equal(rabbit.kind, 'rabbit'); assert.equal(rabbit.distance, 24);
+  assert.equal(deer.kind, 'deer'); assert.equal(deer.distance, 58);
   assert.ok(rabbit.distance < deer.distance && rabbit.radius < deer.radius);
   assert.equal(targetAt(rabbit, 0).kind, 'rabbit');
 });
 
 test('seeded animal passes enter from both sides and vary speed without reversing', () => {
-  for (const template of [STAGES[5], STAGES[6], STAGES[10]]) {
+  for (const template of [6, 7, 11].map(legacyStage)) {
     const directions = new Set();
     for (let seedValue = 0; seedValue < 16; seedValue++) {
       const stage = { ...template, encounterSeed: seedValue };
@@ -133,7 +133,7 @@ test('seeded animal passes enter from both sides and vary speed without reversin
 });
 
 test('animal entries and exits are outside normal mobile and desktop views; birds undulate', () => {
-  for (const stage of [STAGES[5], STAGES[6], STAGES[8], STAGES[10]]) {
+  for (const stage of [6, 7, 9, 11].map(legacyStage)) {
     const first = targetAt(stage, 0), last = targetAt(stage, first.passDuration, first.passId);
     for (const [width, height] of [[390, 600], [1000, 600], [1200, 390], [1600, 900]]) {
       const focal = Math.min(width * 1.08, height * 1.5);
@@ -151,7 +151,7 @@ test('animal entries and exits are outside normal mobile and desktop views; bird
 });
 
 test('a forced hit animal keeps its pass and position continuity after the next encounter starts', () => {
-  for (const template of [STAGES[5], STAGES[6], STAGES[10]]) {
+  for (const template of [6, 7, 11].map(legacyStage)) {
     const stage = { ...template, encounterSeed: 41 }, first = targetAt(stage, 0), period = first.passDuration;
     const before = targetAt(stage, period - .001, 0), after = targetAt(stage, period + .001, 0);
     assert.equal(after.passId, 0); assert.equal(after.direction, before.direction);
@@ -165,7 +165,7 @@ test('a forced hit animal keeps its pass and position continuity after the next 
 });
 
 test('an arrow samples the active animal pass at the exact crossing time', () => {
-  const stage = { ...STAGES[5], distance: 10, radius: .25, encounterSeed: 93, wind: 0, obstacles: [] };
+  const stage = { ...legacyStage(6), distance: 10, radius: .25, encounterSeed: 93, wind: 0, obstacles: [] };
   const period = targetAt(stage, 0).passDuration, crossingTime = .5, worldTime = period - .2;
   const target = targetAt(stage, worldTime + crossingTime);
   assert.equal(target.passId, 1);
@@ -267,17 +267,92 @@ test('twenty-five weapons and twelve arrows preserve old identities and independ
   assert.equal(BOWS.length, 25); assert.equal(ARROWS.length, 12);
   assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 25 }, (_, id) => id));
   assert.deepEqual(ARROWS.map(item => item.id), Array.from({ length: 12 }, (_, id) => id));
-  assert.deepEqual(BOWS.slice(0, 4).map(item => item.price), [0, 100, 280, 650]);
-  assert.deepEqual(ARROWS.slice(0, 4).map(item => item.price), [0, 75, 220, 500]);
+  assert.deepEqual(BOWS.slice(0, 4).map(item => item.name), ['숲길 목궁', '단풍나무 활', '바람결 활', '달빛 명궁']);
+  assert.deepEqual(ARROWS.slice(0, 4).map(item => item.name), ['나무 화살', '깃털 화살', '탄소 화살', '은빛 화살']);
   assert.equal(new Set(BOWS.map(item => item.name)).size, 25);
   assert.equal(new Set(ARROWS.map(item => item.fletching.name)).size, 12);
   assert.ok(BOWS[1].grip > BOWS[2].grip && BOWS[1].elasticity < BOWS[2].elasticity);
   assert.ok(ARROWS[1].tipMass > ARROWS[2].tipMass && ARROWS[1].fletching.windArea > ARROWS[2].fletching.windArea);
   for (const bow of BOWS) for (const arrow of ARROWS) {
     const shot = launchArrow({ bow, arrow, charge: 1 });
-    assert.ok(Number.isFinite(shot.speed) && shot.speed > 30 && shot.speed < 160);
+    assert.ok(Number.isFinite(shot.speed) && shot.speed > 30);
+    if (bow.weaponType === 'gun') assert.equal(shot.speed, BULLET_SPEED);
+    else assert.ok(shot.speed <= MAX_MAIN_PROJECTILE_SPEED);
     assert.ok(Number.isFinite(shot.dragRate) && shot.dragRate > 0);
   }
+});
+
+test('shop progression follows equipment strengths and makes every next price gap larger', () => {
+  const weapons = sortEquipment(BOWS.filter(item => item.weaponType !== 'gun'));
+  const arrows = sortEquipment(ARROWS);
+  assert.deepEqual(weapons.slice(0, 10).map(item => item.id), [0, 4, 5, 6, 1, 2, 8, 7, 9, 3]);
+  assert.deepEqual(weapons.slice(10).map(item => item.id), [13, 12, 10, 14, 11, 15, 16, 17, 18, 19]);
+  assert.ok(weapons.slice(0, 10).every(item => item.weaponType === 'bow'));
+  assert.ok(weapons.slice(10).every(item => item.weaponType === 'crossbow'));
+  for (let index = 1; index < 10; index++) {
+    const before = weapons[index - 1], after = weapons[index];
+    assert.ok(after.grip + after.elasticity > before.grip + before.elasticity, 'bow order reflects the combined grip and elasticity rather than the old IDs');
+  }
+  for (const items of [weapons, arrows]) {
+    assert.equal(items[0].id, 0);
+    assert.equal(items[0].price, 0, 'the original starter remains free');
+    assert.deepEqual(items.map(item => item.shopRank), Array.from({ length: items.length }, (_, index) => index + 1));
+    let previousGap = 0;
+    for (let index = 1; index < items.length; index++) {
+      const gap = items[index].price - items[index - 1].price;
+      assert.ok(Number.isInteger(items[index].price));
+      assert.ok(gap > previousGap, `rank ${index + 1} must widen the upgrade price gap`);
+      assert.ok(items[index].price > 75, 'a perfect first round cannot buy a paid upgrade');
+      previousGap = gap;
+    }
+  }
+  assert.deepEqual([weapons[1].price, weapons[9].price, weapons[10].price, weapons.at(-1).price], [500, 8100, 9500, 26600]);
+  assert.deepEqual([arrows[1].price, arrows.at(-1).price], [300, 6050]);
+  assert.ok(arrows.at(-1).fletching.stability > arrows[0].fletching.stability);
+  assert.ok(getWindResponse(arrows.at(-1)) < getWindResponse(arrows[0]));
+  assert.ok(arrows.at(-1).fletching.drag < arrows[0].fletching.drag);
+  for (const weapon of weapons.filter(item => item.scopeCompatible)) {
+    assert.ok(weapon.scopePrice >= 500 && weapon.scopePrice >= weapon.price * .2, 'a permanent scope also requires meaningful savings');
+  }
+  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [0, 950, 1250, 1750, 2200], 'event weapon prices remain outside this main-gear change');
+});
+
+test('ability sorting uses the selected actual stat without mutating saved equipment identities', () => {
+  const weapons = BOWS.filter(item => item.weaponType !== 'gun'), weaponIds = weapons.map(item => item.id), arrowIds = ARROWS.map(item => item.id);
+  const assertOrder = (items, key, value, direction) => {
+    const sorted = sortEquipment(items, key);
+    assert.notEqual(sorted, items, 'sorting returns a new view');
+    assert.equal(sorted.length, items.length);
+    assert.equal(new Set(sorted.map(item => item.id)).size, items.length);
+    assert.ok(sorted.every(item => items.includes(item)), 'cards retain the original equipment objects and IDs');
+    for (let index = 1; index < sorted.length; index++) assert.ok(direction * (value(sorted[index]) - value(sorted[index - 1])) >= -1e-12, `${key} order at ${index}`);
+    return sorted;
+  };
+  assert.equal(assertOrder(weapons, 'grip', item => item.grip, -1)[0].id, 10);
+  assertOrder(weapons, 'elasticity', item => item.elasticity, -1);
+  assertOrder(BOWS.filter(item => item.weaponType === 'gun'), 'elasticity', item => item.power, -1);
+  assert.equal(assertOrder(ARROWS, 'wind', getWindResponse, 1)[0].id, 11);
+  assert.equal(assertOrder(ARROWS, 'stability', item => item.fletching.stability, -1)[0].id, 10);
+  assert.equal(assertOrder(ARROWS, 'tip-light', item => item.tipMass, 1)[0].id, 4);
+  assert.equal(assertOrder(ARROWS, 'tip-heavy', item => item.tipMass, -1)[0].id, 8);
+  assert.deepEqual(sortEquipment(weapons, 'unknown').map(item => item.id), sortEquipment(weapons).map(item => item.id));
+  assert.deepEqual(weapons.map(item => item.id), weaponIds);
+  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 25 }, (_, id) => id));
+  assert.deepEqual(ARROWS.map(item => item.id), arrowIds);
+});
+
+test('all twenty main weapon tiers progressively extend the steady opportunity from half a second to two seconds', () => {
+  const weapons = sortEquipment(BOWS.filter(item => item.weaponType !== 'gun'));
+  assert.equal(weapons[0].steadyDuration, .5);
+  assert.equal(weapons[9].steadyDuration, 1.21, 'the strongest bow sits between entry bows and crossbows');
+  assert.equal(weapons[10].steadyDuration, 1.29);
+  assert.equal(weapons.at(-1).id, 19);
+  assert.equal(weapons.at(-1).steadyDuration, 2);
+  for (let index = 1; index < weapons.length; index++) {
+    assert.ok(weapons[index].steadyDuration > weapons[index - 1].steadyDuration);
+    assert.ok(weapons[index].steadyDuration <= 2);
+  }
+  assert.ok(BOWS.filter(item => item.weaponType === 'gun').every(item => item.steadyDuration === .5), 'the event guns retain their separate aiming rules');
 });
 
 test('ten crossbows launch faster but travel less far than bows and upper weapons accept bound scopes', () => {
@@ -333,19 +408,25 @@ test('only rare crossbows launch three distinct arrows and better tiers tighten 
   }
 });
 
-test('five guns use their fixed bullets independently of arrows and draw charge', () => {
+test('five guns fire at exactly twice the actual maximum archery speed regardless of arrows, charge or random bias', () => {
   const guns = BOWS.filter(weapon => weapon.weaponType === 'gun');
+  const mainSpeeds = BOWS.filter(weapon => weapon.weaponType !== 'gun').flatMap(bow => ARROWS.map(arrow =>
+    getSpeed({ bow, arrow, charge: 1, velocityBias: 1 })));
+  assert.equal(mainSpeeds.length, 20 * 12);
+  assert.equal(MAX_MAIN_PROJECTILE_SPEED, Math.max(...mainSpeeds));
+  assert.equal(BULLET_SPEED, Math.max(...mainSpeeds) * 2);
   assert.equal(guns.length, 5);
   assert.deepEqual(guns.map(gun => gun.magazineSize), [2, 2, 4, 4, 10]);
   assert.deepEqual(guns.map(gun => gun.reloadSeconds), [3, 1.3, 3.2, 1.5, 2.8]);
   assert.deepEqual(guns.map(gun => gun.reloadLabel), ['느림', '빠름', '느림', '빠름', '보통']);
   for (const gun of guns) {
     assert.ok(gun.power > 0 && !Object.hasOwn(gun, 'elasticity'));
+    assert.equal(gun.muzzleSpeed, BULLET_SPEED);assert.equal(gun.speed, BULLET_SPEED);assert.equal(gun.ammo.variance, 0);
     const reference = launchArrow({ bow: gun, arrow: ARROWS[0], charge: 0, pitch: .1 });
-    for (const arrow of ARROWS) for (const charge of [0, .5, 1]) {
-      const shot = launchArrow({ bow: gun, arrow, charge, pitch: .1 });
+    for (const arrow of ARROWS) for (const charge of [0, .5, 1]) for (const velocityBias of [-1, 0, 1]) {
+      const shot = launchArrow({ bow: gun, arrow, charge, velocityBias, pitch: .1 });
       assert.deepEqual(shot.velocity, reference.velocity);
-      close(getSpeed({ bow: gun, arrow, charge }), gun.muzzleSpeed);
+      assert.equal(getSpeed({ bow: gun, arrow, charge, velocityBias }), BULLET_SPEED);
       assert.equal(shot.projectileType, 'bullet'); assert.equal(shot.shaftLength, .12);
       close(shot.mass, gun.ammo.mass); close(shot.windFactor, gun.ammo.windFactor); close(shot.dragRate, gun.ammo.dragRate);
     }
@@ -358,6 +439,30 @@ test('five guns use their fixed bullets independently of arrows and draw charge'
     assert.equal(result.type, 'obstacle'); close(result.point.z, 9.995);
   }
   assert.equal(launchArrow({ bow: BOWS[0] }).projectileType, 'arrow');
+});
+
+test('double-speed event bullets finish misses at the target plane while arrows keep falling', () => {
+  const stage = prepareStage(createClayEvent(10), 17), time = stage.flightSeconds * 1.04 + .2;
+  assert.equal(eventTargetsAt(stage, time).length, 0, 'the fixture fires in a gap between target waves');
+  for (const gun of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
+    const straight = launchArrow({ bow: gun, charge: 0 });
+    const result = stepArrow(straight, .25, stage, time);
+    assert.equal(result.type, 'miss');
+    assert.ok(result.flightTime < .2, 'a straight event shot reaches the target distance in a fraction of a second');
+    for (const yaw of [-.48, 0, .48]) for (const pitch of [0, .58]) for (const velocityBias of [-1, 1]) {
+      const shot = launchArrow({ bow: gun, charge: 0, yaw, pitch, velocityBias });
+      const missed = stepArrow(shot, .25, stage, time);
+      assert.equal(missed.type, 'miss');assert.equal(missed.score, 0);
+      assert.ok(missed.flightTime > 0 && missed.flightTime < .25, `${gun.name} took ${missed.flightTime}s at the aiming limits`);
+      close(missed.point.z, stage.distance);
+      assert.equal(shot.active, false, 'missed event bullets do not linger until an eight-second timeout');
+    }
+  }
+  const arrow = launchArrow({ bow: BOWS[0], pitch: .3 });
+  stepArrow(arrow, 1.2, stage, time);
+  assert.equal(arrow.targetPassed, true);assert.equal(arrow.active, true);
+  assert.ok(arrow.position.z > stage.distance, 'arrows still fly beyond a missed target');
+  assert.equal(stepArrow(arrow, 8, stage, time + 1.2).type, 'ground', 'arrow fall and ground collisions remain unchanged');
 });
 
 test('ten timed event levels progress from two to ten simultaneous targets in three finite waves', () => {
@@ -453,6 +558,11 @@ test('every gun can reach individual plates or UFOs across all ten event levels'
       assert.ok(params && Math.abs(params.yaw) < .48 && params.pitch < .58);
       const result = predictTrajectory(params, stage, time).result;
       assert.equal(result.type, 'hit'); assert.equal(result.score, 10); assert.equal(result.targetCenter.passId, passId);
+      assert.ok(result.flightTime < .2, 'both plates and UFOs are reached promptly');
+      const coarse = stepArrow(launchArrow(params), .25, stage, time);
+      assert.equal(coarse.type, 'hit');assert.equal(coarse.targetCenter.passId, passId);assert.equal(coarse.score, 10);
+      close(coarse.flightTime, result.flightTime);
+      for (const axis of ['x', 'y', 'z']) close(coarse.point[axis], result.point[axis]);
     }
   }
 });
@@ -572,7 +682,7 @@ test('drag trajectories and continuous collisions agree across frame sizes', () 
   for (const stage of [
     { ...emptyRange, wind: -.7 },
     { ...emptyRange, wind: -.7, obstacles: [{ x: 0, z: 10, width: 20, height: 15, depth: .02 }] },
-    { ...STAGES[5], radius: 50, obstacles: [] }
+    { ...legacyStage(6), radius: 50, obstacles: [] }
   ]) {
     const big = launchArrow(params), small = launchArrow(params);
     const result = stepArrow(big, 8, stage, 1.2);
@@ -605,6 +715,31 @@ test('seeded sway is continuous, irregular, bounded and reduced by upgraded bows
   close(Math.sqrt(rmsB / rmsA), BOWS[3].sway / BOWS[0].sway, 1e-8);
 });
 
+test('later encounters keep shrinking sight sizes and increasing movement without resetting pillar difficulty', () => {
+  const tenth = legacyStage(10);
+  const positions = Array.from({ length: 31 }, (_, index) => targetAt(tenth, index * .2));
+  assert.ok(Math.max(...positions.map(p => p.x)) - Math.min(...positions.map(p => p.x)) > 3,
+    'the distant moving encounter must require leading its target');
+  assert.ok(tenth.id > legacyStage(5).id, 'distant movement follows the first moving-target lesson');
+  assert.ok(tenth.radius / tenth.distance < legacyStage(9).radius / legacyStage(9).distance,
+    'the distant moving board presents a smaller aiming area than the wall bird');
+  let previousPillars = 0;
+  for (const stage of STAGES.filter(s => s.obstacles.some(o => o.type === 'pillar'))) {
+    const pillars = stage.obstacles.filter(o => o.type === 'pillar').length;
+    assert.ok(pillars >= previousPillars, `stage ${stage.id} must not remove the later-stage pillar challenge`);
+    previousPillars = pillars;
+  }
+  for (const kind of ['bird', 'rabbit', 'deer']) for (const covered of [false, true]) {
+    const encounters = STAGES.filter(s => s.legacyId >= 13 && s.kind === kind && Boolean(s.obstacles.length) === covered);
+    for (let index = 1; index < encounters.length; index++) {
+      const previous = encounters[index - 1], next = encounters[index];
+      assert.ok(next.distance >= previous.distance, `${kind} encounters grow more distant`);
+      assert.ok(next.radius / next.distance < previous.radius / previous.distance, `${kind} angular hit area shrinks`);
+      assert.ok(next.passDuration < previous.passDuration, `${kind} crosses the field faster`);
+    }
+  }
+});
+
 test('fifty stages mix near rabbits, distant deer, pillars, solid walls and people gaps', () => {
   assert.deepEqual(STAGES.map(stage => stage.id), Array.from({ length: 50 }, (_, index) => index + 1));
   assert.equal(new Set(STAGES.map(stage => stage.name)).size, 50);
@@ -624,7 +759,7 @@ test('fifty stages mix near rabbits, distant deer, pillars, solid walls and peop
     }
   }
   const people = STAGES.filter(stage => stage.passers.length);
-  assert.deepEqual(people.map(stage => stage.id), [17, 25, 33, 41, 49]);
+  assert.deepEqual(people.map(stage => stage.legacyId), [17, 25, 33, 41, 49]);
   assert.ok(people.every(stage => stage.kind === 'target' && stage.distance >= 55 && stage.distance <= 90));
   assert.equal(STAGES[49].distance, 104); assert.equal(STAGES[49].wind, 4);
 });
@@ -701,7 +836,7 @@ test('pillar gaps let arrows pass while the adjoining column stops the same low 
 });
 
 test('passing people are seeded offscreen arrivals with independent directions and walking speeds', () => {
-  const base = STAGES[16], config = { ...base.passers[0], phase: 0 }, directions = new Set(), speeds = new Set();
+  const base = legacyStage(17), config = { ...base.passers[0], phase: 0 }, directions = new Set(), speeds = new Set();
   for (let seedValue = 0; seedValue < 20; seedValue++) {
     const stage = prepareStage({ ...base, passers: [config] }, seedValue);
     for (let pass = 0; pass < 3; pass++) {
@@ -769,15 +904,20 @@ test('every stage has a reachable bullseye with both basic and upgraded arrows',
   assert.equal(STAGES.length, 50);
   for (const arrow of ARROWS) for (const stage of STAGES) {
     let feasible = null;
-    for (const bow of [BOWS[0], BOWS[2], BOWS[3]]) {
-      for (let charge = 1; charge >= 0.4; charge -= 0.04) {
-        const params = centeredAim(stage, charge, bow, arrow, 2.0);
-        if (!params || params.pitch > 0.55 || params.pitch < -0.15 || Math.abs(params.yaw) > .38) continue;
-        const result = predictTrajectory(params, stage, 2.0).result;
-        if (result?.type === 'hit' && result.score === 10) { feasible = { charge, pitch: params.pitch, bow: bow.id }; break; }
+    // Crossing animals and blockers do not promise a clear shot at exactly 2s.
+    // Search ordinary release moments without disabling real cover or wind.
+    for (const time of [2, 3.5, 1, 4.5, 0, 5.5]) {
+      for (const bow of [BOWS[0], BOWS[2], BOWS[3]]) {
+        for (let charge = 1; charge >= 0.4; charge -= 0.04) {
+          const params = centeredAim(stage, charge, bow, arrow, time);
+          if (!params || params.pitch > 0.55 || params.pitch < -0.15 || Math.abs(params.yaw) > .38) continue;
+          const result = predictTrajectory(params, stage, time).result;
+          if (result?.type === 'hit' && result.score === 10) { feasible = { charge, pitch: params.pitch, bow: bow.id, time }; break; }
+        }
+        if (feasible) break;
       }
       if (feasible) break;
     }
-    assert.ok(feasible, `Stage ${stage.id} must have a reachable target with ${arrow.name}`);
+    assert.ok(feasible, `Stage ${stage.id} (original ${stage.legacyId}) must have a reachable target with ${arrow.name}`);
   }
 });
