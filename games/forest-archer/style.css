@@ -105,7 +105,7 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .app-shell{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;padding:6px 8px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .app-header{flex:0 0 44px;height:44px;min-width:0;border:0;gap:12px}
 .brand{flex:none;gap:8px}.brand-mark{width:32px;height:32px;border-radius:10px}.brand-mark svg{width:24px;height:24px}.brand strong{font-size:16px}.brand small{display:none}
-.header-actions{min-width:0;gap:6px}.coin-balance{gap:4px;margin:0 5px 0 0}.coin-balance strong{font-size:14px}.coin-balance small{font-size:10px}
+.header-actions{min-width:0;gap:6px}.coin-balance{min-width:0;gap:4px;margin:0 5px 0 0}.coin-balance strong{min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.coin-balance small{font-size:10px}
 .header-actions>.button,.header-actions>.text-button,.header-actions>.icon-button{min-height:40px;height:40px;padding:7px 10px;font-size:11px;white-space:nowrap;flex-shrink:0}
 .header-actions>.icon-button{width:40px;padding:7px}.header-actions>.button svg,.header-actions>.text-button svg{width:19px;height:19px}
 .header-actions #eventBtn{border:1px solid #d7dfc6;border-radius:9px;background:#e8ecd9;color:#567244;font-weight:600}
@@ -160,3 +160,21 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
   .app-shell>footer{position:absolute;right:280px;left:8px;bottom:5px;z-index:3;pointer-events:none;color:#385443;background:#f5f4ede6;border-radius:3px;padding:1px 4px}
   .draw-pad{min-height:44px}.controls{padding:4px;gap:3px}.draw-timing,.draw-timing strong{font-size:8px}.event-ammo>p{font-size:8px}.stage-navigation button{min-height:32px;font-size:9px}
 }
+
+/* A round-long consumable, exchanged only for targets broken in gun events. */
+.header-actions>.stabilizer-open{gap:4px;padding-inline:8px;background:#edf3e4;border-color:#cbdcbc;color:#416339}
+.header-actions #stabilizerCount{display:inline;font-variant-numeric:tabular-nums;min-width:8px;font-size:11px}
+.header-actions>.stabilizer-open.active{background:#dceccb;border-color:#82a86b;color:#2b572e}
+.stabilizer-badge{position:absolute;top:50px;left:10px;display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #dceac9;border-radius:7px;background:#eff6e5eb;color:#345c35;font-size:10px;font-weight:600;pointer-events:none}
+.stabilizer-badge svg{width:15px;height:15px}
+.stabilizer-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:20px 0 16px}
+.stabilizer-summary>div{padding:15px 12px;background:#eef3e7;border:1px solid #dce5d0;border-radius:12px;min-width:0}
+.stabilizer-summary small{display:block;font-size:11px;color:#76896a;margin-bottom:7px}
+.stabilizer-summary strong{font-size:25px;font-weight:600;font-variant-numeric:tabular-nums;color:#315945;overflow-wrap:anywhere}
+.stabilizer-summary em{font-size:11px;font-style:normal;color:#76896a;margin-left:4px}
+.stabilizer-rules{padding:13px 15px;border-radius:11px;background:#f4f5eb;color:#6c805c;font-size:11px;line-height:1.85;word-break:keep-all}
+.stabilizer-rules p{margin:0 0 6px}.stabilizer-rules p:last-child{margin-bottom:0}.stabilizer-rules strong{color:#3f6539}
+.stabilizer-actions{display:grid;gap:9px;margin-top:16px}.stabilizer-actions .button{width:100%;min-height:44px;font-size:12px;white-space:normal;line-height:1.5}
+.stabilizer-message{font-size:11px;line-height:1.75;color:#678159;word-break:keep-all;margin:12px 0 0}
+@media(max-width:780px){.header-actions>.stabilizer-open{padding-inline:6px;gap:3px}.header-actions>.stabilizer-open svg{width:18px;height:18px}}
+@media(max-width:360px){.app-header>.brand{display:none}.header-actions{justify-content:space-between;gap:3px}.stabilizer-badge{font-size:9px;padding:4px 6px}.stabilizer-summary>div{padding:12px 10px}.stabilizer-summary strong{font-size:22px}}
