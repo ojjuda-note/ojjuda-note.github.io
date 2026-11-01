@@ -115,7 +115,7 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);press(game,267,514);await settled(game);assert.equal(game.state.extraMoves,0,'move packs belong to their stage');
  user=poor;press(game,206,514);assert.equal(buyCalls,recoveredBuys,'wallet switching blocks extra-move purchases');game.destroy();
  game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);press(game,206,514);await settled(game);assert.equal(buyCalls,recoveredBuys,'zero balance does not buy moves');game.destroy();
- storage.set(G.STAGE_KEY,'1');game=G.flat({setScore(){},end(){}});game.state.moves=game.state.moveLimit-2;
+ storage.set(G.STAGE_KEY,'1');game=G.flat({setScore(){},end(){}},1);game.state.moves=game.state.moveLimit-2;
  for(let i=0;i<2;i++){const screw=game.state.level.screws[i],target=game.state.level.holes[i];press(game,screw.hole.x,screw.hole.y);press(game,target.x,target.y);for(let n=0;n<100;n++)game.update(.05);}
  assert.equal(game.state.moves,game.state.moveLimit);assert.equal(game.state.complete,true,'the final allowed move may finish the picture under gravity');game.destroy();
  await db.close();console.log('PASS: stage move limits, three-move packs for one ju, uncapped repeat packs, receipt recovery and existing hole/box purchase regressions.');

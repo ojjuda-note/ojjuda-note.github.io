@@ -3,6 +3,7 @@
   'use strict';
   const WIDTH = 360, HEIGHT = 540;
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
+  const RESUME_KEY = 'ojjuda-screw-flat-last-stage-v1';
   const EXTRA_HOLE_X=[45,315,135],PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
   const moveLimit=level=>Math.max(6,level.plates.length*4+(level.stage<=10?4:0));
   const SCREW_COLOR = '#A3B6C7';
@@ -16,6 +17,9 @@
     catch (_) { return 1; }
   }
   function saveStage(n) { try { localStorage.setItem(STAGE_KEY, String(Math.max(readStage(),n))); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
+  // A completed level stays current until the player actually starts the next one.
+  function readResumeStage() { try { const n = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(n) && n >= 1 && n <= LAST_STAGE) return n; } catch (_) {} return readStage(); }
+  function saveResumeStage(n) { try { localStorage.setItem(RESUME_KEY, String(n)); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   function makeFlatLevel(stage) {
     const level=Physics.makeFlatLevel(stage);level.picture=(level.stage-1)%PICTURES.length;level.name=PICTURES[level.picture].name;return level;
   }
@@ -46,7 +50,7 @@
     for(const v of p.mounts){const r=(p.screwRadius||13)/13;c.save();c.translate(v.x,v.y);c.scale(r,r);oval(c,0,0,13,13,'#718397');oval(c,0,0,10,10,'#506176');oval(c,0,2,7,7,'#65798B');c.restore();}
     c.restore();
   }
-  function flat(api,startStage=1) {
+  function flat(api,startStage=readResumeStage()) {
     const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
@@ -104,7 +108,7 @@
     }
     function start(L) {
       const keep=L===st.L&&sameWallet(),paid=keep?st.extraHoles:0,extraMoves=keep?st.extraMoves:0;st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=extraMoves;
-      st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;
+      st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;saveResumeStage(L);
       addHoles(paid);
       resetView();st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
