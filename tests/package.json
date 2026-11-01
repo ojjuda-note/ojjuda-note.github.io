@@ -20,7 +20,7 @@
     "test:monthly-rankings": "node monthly-game-rankings-db.test.cjs && node game-ranking-zero-streak-db.test.cjs && node game-ranking-best-streak-db.test.cjs && node game-ranking-positive-records-db.test.cjs && node world-rankings-cache.test.cjs && node game-ranking-criteria-dom.test.cjs && node world-adult-resume.test.cjs && node game-release-refresh.test.cjs && node inline-scripts.test.cjs && node world-design-ui.test.cjs",
     "test:roulette": "node roulette-db.test.cjs && node roulette-refill-db.test.cjs && node roulette-countdown-db.test.cjs && node roulette-ready-membership-db.test.cjs && node roulette-computer-db.test.cjs && node roulette-arcade-integration-db.test.cjs && node roulette-computer-arcade-db.test.cjs && node roulette-motion.test.mjs && node roulette-renderer-motion.test.mjs && node roulette-closeup.test.mjs && node roulette-refill-ui.test.cjs && node roulette-multiplayer-ui.test.cjs",
     "test:spot-masterpieces": "node spot-masterpieces-assets.test.cjs && node spot-masterpieces-runtime.test.cjs && node spot-masterpiece-stages-db.test.cjs && node spot-photo-stages-db.test.cjs && node spot-photo-puzzles.test.cjs && node spot-zoom-payment.test.cjs && node spot-paired-zoom.test.cjs && node spot-end-levels.test.cjs && node spot-celebration-ui.test.cjs && node solo-fresh-entry.test.cjs && node game-release-refresh.test.cjs",
-    "test:archery": "node archery-entry.test.cjs && node archery-engine.test.mjs && node --experimental-vm-modules archery-game-flow.test.mjs"
+    "test:archery": "node archery-entry.test.cjs && node archery-engine.test.mjs && node archery-view.test.mjs && node --experimental-vm-modules archery-game-flow.test.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
