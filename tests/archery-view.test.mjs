@@ -6,11 +6,79 @@ import {
   projectPoint, clipSegmentNear, splitSegmentAtDepths, depthFragments,
   desiredFollowCamera, desiredPreviewCamera, lerpCamera
 } from '../games/forest-archer/view.mjs';
-import {STAGES, targetAt} from '../games/forest-archer/engine.mjs';
+import {ARROWS, BOWS, STAGES, prepareStage, targetAt, launchArrow, stepArrow} from '../games/forest-archer/engine.mjs';
 
 const near = (actual, expected, epsilon = 1e-9) => assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
 const length = (a, b) => Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
 const base = (w = 1000, h = 600) => ({x: 0, y: 1.65, z: 0, cx: w / 2, horizon: h * .405, focal: Math.min(w * 1.08, h * 1.5)});
+const legacyStage = id => STAGES.find(stage => stage.legacyId === id);
+
+function birdCover(stage, time, camera) {
+  const target = targetAt(stage, time), obstacle = stage.obstacles[0];
+  const z = obstacle.z - obstacle.depth / 2;
+  return {
+    target,
+    bird: {
+      left: projectPoint({...target, x: target.x - target.rx}, camera).x,
+      right: projectPoint({...target, x: target.x + target.rx}, camera).x,
+      top: projectPoint({...target, y: target.y + target.ry}, camera).y,
+      bottom: projectPoint({...target, y: target.y - target.ry}, camera).y
+    },
+    wall: {
+      left: projectPoint({x: obstacle.x - obstacle.width / 2, y: 0, z}, camera).x,
+      right: projectPoint({x: obstacle.x + obstacle.width / 2, y: 0, z}, camera).x,
+      top: projectPoint({x: obstacle.x, y: obstacle.height, z}, camera).y,
+      bottom: projectPoint({x: obstacle.x, y: 0, z}, camera).y
+    }
+  };
+}
+
+test('the original wall-bird encounter hides and reveals its bird in either direction at its new difficulty', () => {
+  for (const {seed, hiddenAt, aboveAt, direction} of [
+    {seed: 2, hiddenAt: 3.84, aboveAt: 5.76, direction: -1},
+    {seed: 3, hiddenAt: 16.56, aboveAt: 17.8, direction: 1}
+  ]) {
+    const stage = prepareStage(legacyStage(9), seed), obstacle = stage.obstacles[0];
+    for (const {w, h} of [{w: 1000, h: 600}, {w: 390, h: 410}, {w: 844, h: 280}]) {
+      const hidden = birdCover(stage, hiddenAt, base(w, h)), above = birdCover(stage, aboveAt, base(w, h));
+      for (const {target, bird, wall} of [hidden, above]) {
+        assert.ok(target.z > obstacle.z + obstacle.depth / 2, 'the whole pass stays behind the wall');
+        assert.ok(bird.left > 0 && bird.right < w && bird.top > 0 && bird.bottom < h, 'the bird is inside the aiming viewport');
+        assert.ok(bird.left > wall.left && bird.right < wall.right, 'exposure comes from flying above the wall, not around an edge');
+        assert.equal(target.direction, direction);
+      }
+      assert.ok(hidden.bird.top > hidden.wall.top && hidden.bird.bottom < hidden.wall.bottom, 'the front face covers the entire bird');
+      assert.ok(above.bird.bottom < above.wall.top, 'the entire bird clears the wall silhouette');
+      assert.equal(hidden.target.passId, above.target.passId);
+      assert.ok(above.target.y > hidden.target.y);
+      assert.ok(direction * (above.target.x - hidden.target.x) > 0, 'the bird keeps travelling in its original direction');
+    }
+  }
+});
+
+test('starter equipment can hit the relocated wall bird in its stronger wind from either direction', () => {
+  // These are normal full-charge aiming inputs, with gravity, drag and stage wind enabled.
+  for (const {seed, time, yaw, pitch, direction} of [
+    {seed: 0, time: 5.36, yaw: -.106966, pitch: .259706, direction: -1},
+    {seed: 0, time: 17, yaw: -.181823, pitch: .286257, direction: 1}
+  ]) {
+    const stage = prepareStage(legacyStage(9), seed);
+    assert.ok(stage.id > 9 && stage.wind > .96, 'verify the real later-stage wind instead of the old template conditions');
+    const shot = launchArrow({bow: BOWS[0], arrow: ARROWS[0], charge: 1, yaw, pitch});
+    const result = stepArrow(shot, 8, stage, time);
+    assert.equal(result.type, 'hit', 'the real trajectory must clear the solid wall');
+    assert.equal(result.score, 10);
+    assert.equal(result.targetCenter.direction, direction);
+    for (const [w, h] of [[1000, 600], [390, 410], [844, 280]]) for (const moment of [time, time + result.flightTime]) {
+      const {bird, wall} = birdCover(stage, moment, base(w, h));
+      assert.ok(bird.bottom < wall.top, 'the bird is exposed at both release and impact');
+      assert.ok(bird.left > 0 && bird.right < w && bird.top > 0 && bird.bottom < h);
+      assert.ok(bird.left > wall.left && bird.right < wall.right);
+    }
+    const lowShot = launchArrow({bow: BOWS[0], arrow: ARROWS[0], charge: 1, pitch: .1});
+    assert.equal(stepArrow(lowShot, 8, stage, time).type, 'obstacle', 'low shots still strike the wall');
+  }
+});
 
 test('projection respects camera translation and hides points before the near plane', () => {
   const camera = {...base(), x: 2, y: 4, z: 10};
@@ -148,7 +216,7 @@ test('elevated preview reveals the full target above every wall in all obstacle 
 });
 
 test('preview centers moving targets independently of the saved zoom and pan', () => {
-  const stage = STAGES[10], target = targetAt(stage, 2.4);
+  const stage = legacyStage(11), target = targetAt(stage, 2.4);
   const normal = base(390, 410);
   const zoomed = {...normal, cx: normal.cx + 90, horizon: normal.horizon + 130, focal: normal.focal * 2};
   const camera = desiredPreviewCamera(stage, target, normal, {w: 390, h: 410});
