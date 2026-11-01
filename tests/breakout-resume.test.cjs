@@ -15,9 +15,9 @@ function fixture({storage=new Map(),readThrows=false,writeThrows=false,speed='no
     setItem(key,value){if(writeThrows)throw Error('storage full');storage.set(key,String(value));}
   };
   vm.runInNewContext(source,context);
-  function open(){
+  function open(startStage){
     const scores=[],ends=[];
-    const game=context.window.OjjudaBreakoutGame.create({setScore:n=>scores.push(n),end:n=>ends.push(n)});
+    const game=context.window.OjjudaBreakoutGame.create({setScore:n=>scores.push(n),end:n=>ends.push(n)},startStage);
     const state=()=>game.inspect();
     function hit(brick){
       if(state().waiting)game.onKey(' ');
@@ -37,11 +37,12 @@ function fixture({storage=new Map(),readThrows=false,writeThrows=false,speed='no
     }
     return {game,state,scores,ends,finishStage,loseLife,hit};
   }
-  return {open,storage};
+  return {open,storage,readStage:()=>context.window.OjjudaBreakoutGame.readStage(),levels:context.window.OjjudaBreakoutGame.levels};
 }
 
 function assertFresh(run,level,bricks){
   const s=run.state();
+  assert.equal(run.game.stage,level,'the public stage reflects the currently played level');
   assert.deepEqual([s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting,s.finished,s.completed],[level,bricks,0,3,1,true,false,false]);
   assert.ok(s.bricks.every(b=>b.on&&b.hp===b.maxHp),'reentry rebuilds every brick with its full strength');
   assert.equal(s.drops.length,0);assert.equal(s.balls[0].piercing,false);
@@ -74,6 +75,26 @@ test('breakout retries the same level after losing all three lives',()=>{
   assert.equal(run.ends.length,1);assert.equal(engine.storage.get(KEY),'3');
   run.game.update(.05);assert.equal(run.ends.length,1);run.game.destroy();
   const retry=engine.open();assertFresh(retry,3,34);retry.game.destroy();
+});
+
+test('breakout honors an explicit selected level and remembers a lower selection as the last played level',()=>{
+  const storage=new Map([[KEY,'37']]),engine=fixture({storage});
+  assert.equal(engine.levels,100);assert.equal(engine.readStage(),37);assert.equal(storage.get(KEY),'37','reading the menu level does not change progress');
+  const lower=engine.open(2);assertFresh(lower,2,24);assert.equal(storage.get(KEY),'2');
+  lower.finishStage();assert.equal(lower.game.stage,3);assert.equal(engine.readStage(),3);lower.game.destroy();
+  const returned=engine.open();assertFresh(returned,3,34);returned.game.destroy();
+  const final=engine.open(100);assertFresh(final,100,1000);assert.equal(engine.readStage(),100);final.game.destroy();
+  const first=engine.open(1);assertFresh(first,1,14);assert.equal(engine.readStage(),1);first.game.destroy();
+  const reloaded=fixture({storage:new Map(storage)}).open();assertFresh(reloaded,1,14);reloaded.game.destroy();
+});
+
+test('breakout validates explicit level selections while undefined uses the saved level',()=>{
+  for(const value of [null,false,true,0,-1,101,1.5,NaN,Infinity,'3',{},[]]){
+    const storage=new Map([[KEY,'37']]),run=fixture({storage}).open(value);
+    assertFresh(run,1,14);assert.equal(storage.get(KEY),'1');run.game.destroy();
+  }
+  const engine=fixture({storage:new Map([[KEY,'37']])}),run=engine.open(undefined);
+  assertFresh(run,37,373);assert.equal(engine.readStage(),37);run.game.destroy();
 });
 
 test('breakout keeps level 100 after a complete run and never stores level 101',()=>{

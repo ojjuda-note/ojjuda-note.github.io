@@ -1,0 +1,41 @@
+#gov[data-game="breakout"] .breakout-stage-picker{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin:14px 0;
+}
+#gov[data-game="breakout"] .breakout-stage-choice{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:64px;
+  padding:8px 3px;
+  border:1px solid #d8cfe6;
+  border-radius:12px;
+  background:#faf9fc;
+  color:#655976;
+  font:inherit;
+  font-size:12px;
+  line-height:1.4;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+#gov[data-game="breakout"] .breakout-stage-choice strong{
+  color:#40334f;
+  font-size:16px;
+}
+#gov[data-game="breakout"] .breakout-stage-choice[aria-pressed="true"]{
+  border-color:#7560b5;
+  background:#eee8f8;
+  box-shadow:inset 0 0 0 1px #7560b5;
+}
+#gov[data-game="breakout"] .breakout-stage-choice:focus-visible{
+  outline:2px solid #7560b5;
+  outline-offset:2px;
+}
+#gov[data-game="breakout"] .breakout-stage-choice:disabled{
+  opacity:.45;
+  cursor:default;
+}

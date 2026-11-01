@@ -49,10 +49,10 @@
     if(brick.solid||brick.hp===2){c.fillStyle='#FFFFFF';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(brick.solid?'∞':'2',brick.x+brick.w/2,brick.y+10);}
     else if(brick.maxHp===2){c.strokeStyle='#FFFFFFC9';c.lineWidth=1.3;c.beginPath();c.moveTo(brick.x+brick.w*.55,brick.y+3);c.lineTo(brick.x+brick.w*.45,brick.y+6);c.lineTo(brick.x+brick.w*.63,brick.y+9);c.stroke();}
   }
-  function create(api){
+  function create(api,startStage=readStage()){
     const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
     const paddle={x:140,y:490,w:80,h:12};
-    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=readStage(),speed=280*pace;
+    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
     let nextBallId=1,notice='',noticeTime=0;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
@@ -217,10 +217,11 @@
         if(key===' '||key==='Enter'){launch();return true;}
         return false;
       },
+      get stage(){return level;},
       get resultTitle(){return completed?'100단계 클리어!':'';},
       destroy(){finished=true;balls=[];drops=[];}
     };
     return game;
   }
-  window.OjjudaBreakoutGame={create};
+  window.OjjudaBreakoutGame={create,readStage,levels:LEVELS};
 })();
