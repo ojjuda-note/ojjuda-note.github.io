@@ -1,6 +1,6 @@
 /** Authenticated parent bridge. This module never calculates grants or wallet prices. */
 const CHILD = 'ojjuda-archery-game', PARENT = 'ojjuda-archery-world';
-const STORAGE_PREFIX = 'forest-archer-ammo-pending-v1:';
+const STORAGE_PREFIX = 'forest-archer-ammo-pending-v2:';
 const TIMEOUT = 12000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy']);
@@ -53,7 +53,7 @@ export function createAmmoClient({ onChange } = {}) {
   }
   function archiveSpend(operation, confirmed) {
     try {
-      const target = storage(), key = 'forest-archer-ammo-recovery-v1:' + encodeURIComponent(operation.owner);
+      const target = storage(), key = 'forest-archer-ammo-recovery-v2:' + encodeURIComponent(operation.owner);
       const previous = JSON.parse(target.getItem(key) || '[]');
       const history = Array.isArray(previous) ? previous.filter(item => item?.requestId !== operation.requestId) : [];
       target.setItem(key, JSON.stringify([...history, { requestId: operation.requestId, action: 'spend', confirmed }].slice(-8)));

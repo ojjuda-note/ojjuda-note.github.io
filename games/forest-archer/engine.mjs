@@ -8,86 +8,140 @@ export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const bowSway = grip => 0.008 + 0.0006 * (100 - clamp(grip, 0, 100));
 const bowSpeed = elasticity => 32 + 0.30 * clamp(elasticity, 0, 100);
 export const REFERENCE_ARROW_MASS = 24; // grams, used for bow speed comparisons
-const bow = (id, name, tag, description, price, grip, elasticity, color) => {
+const bow = (id, name, tag, description, grip, elasticity, color) => {
   const weaponType = id >= 10 && id < 20 ? 'crossbow' : 'bow';
   const launchBoost = weaponType === 'crossbow' ? 1.55 : 1;
   const scopeCompatible = [3, 7, 8, 9].includes(id) || id >= 10;
   const burstTier = id >= 15 && id < 20 ? id - 15 : -1;
   return {
-    id, name, tag, description, price, grip, elasticity, color, weaponType,
+    id, name, tag, description, grip, elasticity, color, weaponType,
     launchBoost, extraDragRate: [1.0, 1.35, 1.05, 1.25, 1.15, 1.25, 1.30, 1.20, 1.28, 1.30][id - 10] || 0,
     burstCount: burstTier >= 0 ? 3 : 1,
     burstInterval: burstTier >= 0 ? [.14, .125, .11, .095, .08][burstTier] : 0,
     burstSpread: burstTier >= 0 ? [.024, .018, .012, .008, .0045][burstTier] : 0,
     grouping: burstTier >= 0 ? [35, 50, 70, 84, 96][burstTier] : 100,
     rarity: burstTier >= 0 ? '레어' : '일반',
-    scopeCompatible, scopePrice: scopeCompatible ? (weaponType === 'crossbow' ? 220 : 160) : 0,
+    scopeCompatible, scopePrice: 0,
     sway: bowSway(grip), speed: bowSpeed(elasticity) * launchBoost
   };
 };
-const arrow = (id, name, tag, description, price, tipMass, wingName, windArea, drag, stability, color) => ({
-  id, name, tag, description, price, tipMass, shaftMass: 20, color,
+const arrow = (id, name, tag, description, tipMass, wingName, windArea, drag, stability, color) => ({
+  id, name, tag, description, tipMass, shaftMass: 20, color,
   fletching: { name: wingName, windArea, drag, stability },
   variance: 0.20 * (1 - stability / 100),
   windFactor: windArea * REFERENCE_ARROW_MASS / (20 + tipMass)
 });
-const gun = (id, name, tag, description, price, grip, power, muzzleSpeed, mass, windFactor, dragRate, variance, color) => ({
-  id, name, tag, description, price, grip, power, muzzleSpeed, color, weaponType: 'gun',
-  speed: muzzleSpeed, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
+const gun = (id, name, tag, description, price, grip, power, mass, windFactor, dragRate, color) => ({
+  id, name, tag, description, price, grip, power, muzzleSpeed: 0, color, weaponType: 'gun',
+  speed: 0, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
   grouping: 100, rarity: '일반', scopeCompatible: id >= 22, scopePrice: id >= 22 ? 240 : 0,
   magazineSize: [2, 2, 4, 4, 10][id - 20],
   reloadSeconds: [3, 1.3, 3.2, 1.5, 2.8][id - 20],
   reloadLabel: ['느림', '빠름', '느림', '빠름', '보통'][id - 20],
-  ammo: { name: '기본 탄환', mass, windFactor, dragRate, variance }
+  ammo: { name: '기본 탄환', mass, windFactor, dragRate, variance: 0 }
 });
 
-export const BOWS = Object.freeze([
-  bow(0, '숲길 목궁', '입문', '기본 그립과 탄성으로 첫 한 발을 배워요.', 0, 30, 40, '#a9784e'),
-  bow(1, '단풍나무 활', '안정형', '높은 그립감으로 차분하게. 탄성은 낮아 속도가 느려요.', 100, 85, 35, '#76875a'),
-  bow(2, '바람결 활', '탄성형', '탄성이 강해 빠르게 날지만, 조준은 더 흔들려요.', 280, 48, 80, '#598b8a'),
-  bow(3, '달빛 명궁', '균형형', '높은 그립감과 강한 탄성을 함께 갖췄어요.', 650, 95, 95, '#c49b50'),
-  bow(4, '가죽그립 활', '그립형', '부드러운 가죽 손잡이. 약한 탄성으로 가까운 곳을 겨눠요.', 75, 70, 38, '#ad795b'),
-  bow(5, '참나무 강궁', '강궁', '힘찬 탄성 대신 거친 그립을 다뤄야 해요.', 170, 38, 75, '#82613f'),
-  bow(6, '여행자 단궁', '균형형', '그립과 탄성을 고르게 갖춘 가벼운 선택.', 140, 62, 55, '#849167'),
-  bow(7, '수련용 정밀궁', '정밀형', '아주 안정적인 그립. 낮은 탄성만큼 낙차를 읽어보세요.', 240, 96, 45, '#668c83'),
-  bow(8, '폭풍 장궁', '강궁', '매우 강한 탄성. 크게 흔들리는 조준을 잡아야 해요.', 360, 35, 98, '#687588'),
-  bow(9, '대나무 복합궁', '균형형', '좋은 그립과 강한 대나무 탄성을 조합했어요.', 430, 76, 83, '#9aab70'),
-  bow(10, '장인의 석궁', '정밀 석궁', '정교한 그립과 빠른 출발. 비행 중 빠르게 감속하는 근거리 석궁.', 780, 98, 72, '#b39467'),
-  bow(11, '천둥 석궁', '고속 석궁', '한 발을 빠르게 쏘는 일반 석궁. 탄성은 높지만 감속이 커 먼 거리에는 불리해요.', 900, 82, 100, '#7c889e'),
-  bow(12, '가죽그립 석궁', '안정 석궁', '부드러운 그립으로 한 발을 차분하게. 탄성은 조금 낮아요.', 840, 96, 68, '#709e95'),
-  bow(13, '사냥꾼 석궁', '강성 석궁', '강한 탄성으로 한 발을 빠르게 보내요. 낮은 그립감을 다뤄야 해요.', 980, 64, 94, '#a79679'),
-  bow(14, '은빛 정밀석궁', '정밀 석궁', '좋은 그립과 탄성을 갖춘 일반 단발 석궁.', 1100, 93, 87, '#bcafcf'),
-  bow(15, '레어 연발석궁', '레어 3연발', '3발이 넓게 흩어지는 첫 연발석궁. 3발 중 최고점으로 기록해요.', 1150, 74, 91, '#718ea2'),
-  bow(16, '레어 속사석궁', '레어 속사 3연발', '강한 탄성과 개량 레일. 3발이 조금 더 가깝게 모이지만 그립은 낮아요.', 1300, 68, 98, '#598f83'),
-  bow(17, '레어 정밀석궁', '레어 정밀 3연발', '높은 그립과 정밀한 레일로 3발을 가깝게 모아요. 탄성은 조금 낮아요.', 1450, 94, 84, '#a79679'),
-  bow(18, '레어 매눈석궁', '레어 고급 3연발', '강한 탄성과 좁은 탄착군. 빠른 3발이 작은 범위에 모여요.', 1620, 88, 96, '#b1a471'),
-  bow(19, '레어 명인석궁', '레어 명품 3연발', '안정적인 그립과 가장 좁은 탄착군. 3발은 서로 다른 가까운 지점에 꽂혀요.', 1800, 96, 100, '#bcafcf'),
-  gun(20, '훈련용 공기총', '입문 사격총', '접시 사격용 기본 총. 당기는 시간이나 화살 장비와 관계없이 전용 탄환을 발사해요.', 0, 60, 40, 85, 4, .28, .130, .025, '#7c9a83'),
-  gun(21, '숲길 카빈', '경량 사격총', '빠른 기본 탄환을 쓰는 가벼운 총. 그립이 낮아 조준이 더 흔들려요.', 950, 48, 60, 100, 5, .22, .110, .022, '#9a8467'),
-  gun(22, '안정형 소총', '안정 사격총', '높은 그립감으로 안정적으로 겨눠요. 전용 탄환과 고정 스코프를 사용해요.', 1250, 92, 68, 110, 6, .16, .090, .012, '#7b949b'),
-  gun(23, '장거리 소총', '장거리 사격총', '발사력이 높은 전용 탄환. 안정형보다 그립은 낮지만 빠르게 멀리 가요.', 1750, 70, 90, 130, 7, .12, .065, .010, '#9c8e73'),
-  gun(24, '정밀 사격총', '정밀 사격총', '높은 그립과 일정한 탄속. 전용 탄환으로 먼 과녁을 정밀하게 겨눠요.', 2200, 98, 100, 145, 8, .08, .050, .004, '#a8b1bf')
-]);
+// Shop rank is independent of permanent save IDs. Keep the physical trade-offs:
+// grip and elasticity matter for bows; bursts also gain value from grouping.
+// Arrow mass is not a quality score: compare stability, side drift and drag.
+function equipmentScore(item) {
+  if (item.fletching) {
+    const wind = item.fletching.windArea * REFERENCE_ARROW_MASS / (item.shaftMass + item.tipMass);
+    return .4 * item.fletching.stability +
+      40 * (1 - clamp(wind / 1.3, 0, 1)) +
+      20 * (1 - clamp(item.fletching.drag / .2, 0, 1));
+  }
+  if (item.weaponType === 'crossbow') {
+    return .4 * item.grip + .4 * item.elasticity + (item.burstCount > 1 ? .2 * item.grouping : 0);
+  }
+  return .5 * item.grip + .5 * (item.elasticity ?? item.power);
+}
+function equipmentCatalog(items, kind) {
+  const ranked = items.filter(item => item.weaponType !== 'gun').slice().sort((a, b) =>
+    Number(a.weaponType === 'crossbow') - Number(b.weaponType === 'crossbow') ||
+    equipmentScore(a) - equipmentScore(b) || a.id - b.id);
+  ranked.forEach((item, rank) => {
+    item.shopRank = rank + 1;
+    // Increasing marginal costs keep early choices reachable and later gear a goal.
+    item.price = kind === 'arrow' ? 300 * rank + 25 * rank * (rank - 1) : 500 * rank + 50 * rank * (rank - 1);
+    if (kind === 'weapon') {
+      item.steadyDuration = Math.round((.5 + 1.5 * rank / (ranked.length - 1)) * 100) / 100;
+      item.scopePrice = item.scopeCompatible ? Math.max(500, Math.ceil(item.price * .2 / 50) * 50) : 0;
+    }
+  });
+  // Event guns have their own shop and retain their separate economy and timing.
+  items.filter(item => item.weaponType === 'gun').forEach((item, rank) => {
+    item.shopRank = rank + 1;item.steadyDuration = .5;
+  });
+  return Object.freeze(items);
+}
 
-export const ARROWS = Object.freeze([
-  arrow(0, '나무 화살', '입문', '가벼운 촉과 넓은 깃. 빠르게 출발하지만 바람을 많이 타요.', 0, 4, '넓은 깃', 1.00, 0.140, 35, '#b28b64'),
-  arrow(1, '깃털 화살', '안정형', '무거운 촉과 큰 안정깃. 출발은 느리고, 넓은 깃은 바람을 받아요.', 75, 8, '큰 안정깃', 1.10, 0.180, 80, '#8b9c78'),
-  arrow(2, '탄소 화살', '경량형', '가벼운 촉과 좁은 날개로 빠르게. 안정깃보다 속도 편차가 있어요.', 220, 4, '좁은 날개', 0.50, 0.060, 65, '#71999b'),
-  arrow(3, '은빛 화살', '유선형', '무거운 촉은 천천히 출발하고, 유선형 날개는 감속과 바람 영향을 줄여요.', 500, 10, '유선형 날개', 0.35, 0.055, 94, '#bfc8d0'),
-  arrow(4, '가벼운 연습 화살', '초경량', '가장 가벼운 촉으로 빠르게 출발해요. 가벼운 만큼 쉽게 밀려요.', 60, 2, '작은 깃', 0.85, 0.110, 45, '#c3a474'),
-  arrow(5, '황동촉 화살', '중량형', '무거운 황동촉과 직선 깃. 출발은 느리지만 속도를 오래 유지해요.', 120, 12, '직선 깃', 0.78, 0.100, 70, '#b99c52'),
-  arrow(6, '긴깃 화살', '안정형', '긴 깃으로 발사 속도가 일정해요. 대신 공기와 옆바람을 많이 받아요.', 160, 6, '긴 안정깃', 1.25, 0.200, 96, '#9a9c77'),
-  arrow(7, '돌풍 화살', '저항형', '낮은 날개가 바람을 덜 받고, 비행 중 감속도 적어요.', 260, 5, '낮은 날개', 0.40, 0.050, 73, '#709ba0'),
-  arrow(8, '철갑촉 화살', '중량형', '가장 무거운 촉. 천천히 출발하며, 삼각 깃의 저항도 고려하세요.', 330, 14, '삼각 깃', 0.95, 0.140, 86, '#89909b'),
-  arrow(9, '비연 화살', '속도형', '작은 날개로 저항을 줄였어요. 발사 속도 편차는 가장 커요.', 210, 3, '초소형 날개', 0.22, 0.025, 30, '#93a8b3'),
-  arrow(10, '금빛 화살', '정밀형', '정교한 곡면 날개로 일정하게 출발해요. 촉은 조금 무거워요.', 620, 9, '곡면 날개', 0.48, 0.075, 98, '#ceb36c'),
-  arrow(11, '바람깃 화살', '저항형', '쐐기 날개가 옆바람을 가장 적게 받아요. 정밀형보다 속도 편차가 있어요.', 820, 7, '쐐기 날개', 0.18, 0.035, 88, '#82a7a5')
-]);
+/** Display-only sorting; stable IDs continue to address inventory and bound scopes. */
+export function sortEquipment(items, key = 'progression') {
+  const rank = item => item.shopRank ?? item.id + 1;
+  const value = item => {
+    if (key === 'grip') return -(item.grip ?? 0);
+    if (key === 'elasticity') return -(item.elasticity ?? item.power ?? 0);
+    if (key === 'steady') return -(item.steadyDuration ?? .5);
+    if (key === 'grouping') return item.burstCount > 1 ? -(item.grouping ?? 0) : 1;
+    if (key === 'magazine') return -(item.magazineSize ?? 0);
+    if (key === 'reload') return item.reloadSeconds ?? Infinity;
+    if (key === 'wind') return getWindResponse(item);
+    if (key === 'stability') return -(item.fletching?.stability ?? 0);
+    if (key === 'tip-light') return item.tipMass ?? 0;
+    if (key === 'tip-heavy') return -(item.tipMass ?? 0);
+    return rank(item);
+  };
+  return [...items].sort((a, b) => value(a) - value(b) || rank(a) - rank(b) || a.id - b.id);
+}
+
+export const BOWS = equipmentCatalog([
+  bow(0, '숲길 목궁', '입문', '기본 그립과 탄성으로 첫 한 발을 배워요.', 30, 40, '#a9784e'),
+  bow(1, '단풍나무 활', '안정형', '높은 그립감으로 차분하게. 탄성은 낮아 속도가 느려요.', 85, 35, '#76875a'),
+  bow(2, '바람결 활', '탄성형', '탄성이 강해 빠르게 날지만, 조준은 더 흔들려요.', 48, 80, '#598b8a'),
+  bow(3, '달빛 명궁', '균형형', '높은 그립감과 강한 탄성을 함께 갖췄어요.', 95, 95, '#c49b50'),
+  bow(4, '가죽그립 활', '그립형', '부드러운 가죽 손잡이. 약한 탄성으로 가까운 곳을 겨눠요.', 70, 38, '#ad795b'),
+  bow(5, '참나무 강궁', '강궁', '힘찬 탄성 대신 거친 그립을 다뤄야 해요.', 38, 75, '#82613f'),
+  bow(6, '여행자 단궁', '균형형', '그립과 탄성을 고르게 갖춘 가벼운 선택.', 62, 55, '#849167'),
+  bow(7, '수련용 정밀궁', '정밀형', '아주 안정적인 그립. 낮은 탄성만큼 낙차를 읽어보세요.', 96, 45, '#668c83'),
+  bow(8, '폭풍 장궁', '강궁', '매우 강한 탄성. 크게 흔들리는 조준을 잡아야 해요.', 35, 98, '#687588'),
+  bow(9, '대나무 복합궁', '균형형', '좋은 그립과 강한 대나무 탄성을 조합했어요.', 76, 83, '#9aab70'),
+  bow(10, '장인의 석궁', '정밀 석궁', '정교한 그립과 빠른 출발. 비행 중 빠르게 감속하는 근거리 석궁.', 98, 72, '#b39467'),
+  bow(11, '천둥 석궁', '고속 석궁', '한 발을 빠르게 쏘는 일반 석궁. 탄성은 높지만 감속이 커 먼 거리에는 불리해요.', 82, 100, '#7c889e'),
+  bow(12, '가죽그립 석궁', '안정 석궁', '부드러운 그립으로 한 발을 차분하게. 탄성은 조금 낮아요.', 96, 68, '#709e95'),
+  bow(13, '사냥꾼 석궁', '강성 석궁', '강한 탄성으로 한 발을 빠르게 보내요. 낮은 그립감을 다뤄야 해요.', 64, 94, '#a79679'),
+  bow(14, '은빛 정밀석궁', '정밀 석궁', '좋은 그립과 탄성을 갖춘 일반 단발 석궁.', 93, 87, '#bcafcf'),
+  bow(15, '레어 연발석궁', '레어 3연발', '3발이 넓게 흩어지는 첫 연발석궁. 3발 중 최고점으로 기록해요.', 74, 91, '#718ea2'),
+  bow(16, '레어 속사석궁', '레어 속사 3연발', '강한 탄성과 개량 레일. 3발이 조금 더 가깝게 모이지만 그립은 낮아요.', 68, 98, '#598f83'),
+  bow(17, '레어 정밀석궁', '레어 정밀 3연발', '높은 그립과 정밀한 레일로 3발을 가깝게 모아요. 탄성은 조금 낮아요.', 94, 84, '#a79679'),
+  bow(18, '레어 매눈석궁', '레어 고급 3연발', '강한 탄성과 좁은 탄착군. 빠른 3발이 작은 범위에 모여요.', 88, 96, '#b1a471'),
+  bow(19, '레어 명인석궁', '레어 명품 3연발', '안정적인 그립과 가장 좁은 탄착군. 3발은 서로 다른 가까운 지점에 꽂혀요.', 96, 100, '#bcafcf'),
+  gun(20, '훈련용 공기총', '입문 사격총', '접시 사격용 기본 총. 본편 최고 탄속의 2배로 전용 탄환을 발사해요.', 0, 60, 40, 4, .28, .130, '#7c9a83'),
+  gun(21, '숲길 카빈', '경량 사격총', '가벼운 총과 빠른 장전. 그립이 낮아 조준이 더 흔들려요.', 950, 48, 60, 5, .22, .110, '#9a8467'),
+  gun(22, '안정형 소총', '안정 사격총', '높은 그립감으로 안정적으로 겨눠요. 전용 탄환과 고정 스코프를 사용해요.', 1250, 92, 68, 6, .16, .090, '#7b949b'),
+  gun(23, '장거리 소총', '장거리 사격총', '공기 저항이 낮은 전용 탄환. 안정형보다 그립은 낮지만 빠르게 재장전해요.', 1750, 70, 90, 7, .12, .065, '#9c8e73'),
+  gun(24, '정밀 사격총', '정밀 사격총', '높은 그립과 10발 탄창. 전용 탄환으로 먼 과녁을 정밀하게 겨눠요.', 2200, 98, 100, 8, .08, .050, '#a8b1bf')
+], 'weapon');
+
+export const ARROWS = equipmentCatalog([
+  arrow(0, '나무 화살', '입문', '가벼운 촉과 넓은 깃. 빠르게 출발하지만 바람을 많이 타요.', 4, '넓은 깃', 1.00, 0.140, 35, '#b28b64'),
+  arrow(1, '깃털 화살', '안정형', '무거운 촉과 큰 안정깃. 출발은 느리고, 넓은 깃은 바람을 받아요.', 8, '큰 안정깃', 1.10, 0.180, 80, '#8b9c78'),
+  arrow(2, '탄소 화살', '경량형', '가벼운 촉과 좁은 날개로 빠르게. 안정깃보다 속도 편차가 있어요.', 4, '좁은 날개', 0.50, 0.060, 65, '#71999b'),
+  arrow(3, '은빛 화살', '유선형', '무거운 촉은 천천히 출발하고, 유선형 날개는 감속과 바람 영향을 줄여요.', 10, '유선형 날개', 0.35, 0.055, 94, '#bfc8d0'),
+  arrow(4, '가벼운 연습 화살', '초경량', '가장 가벼운 촉으로 빠르게 출발해요. 가벼운 만큼 쉽게 밀려요.', 2, '작은 깃', 0.85, 0.110, 45, '#c3a474'),
+  arrow(5, '황동촉 화살', '중량형', '무거운 황동촉과 직선 깃. 출발은 느리지만 속도를 오래 유지해요.', 12, '직선 깃', 0.78, 0.100, 70, '#b99c52'),
+  arrow(6, '긴깃 화살', '안정형', '긴 깃으로 발사 속도가 일정해요. 대신 공기와 옆바람을 많이 받아요.', 6, '긴 안정깃', 1.25, 0.200, 96, '#9a9c77'),
+  arrow(7, '돌풍 화살', '저항형', '낮은 날개가 바람을 덜 받고, 비행 중 감속도 적어요.', 5, '낮은 날개', 0.40, 0.050, 73, '#709ba0'),
+  arrow(8, '철갑촉 화살', '중량형', '가장 무거운 촉. 천천히 출발하며, 삼각 깃의 저항도 고려하세요.', 14, '삼각 깃', 0.95, 0.140, 86, '#89909b'),
+  arrow(9, '비연 화살', '속도형', '작은 날개로 저항을 줄였어요. 발사 속도 편차는 가장 커요.', 3, '초소형 날개', 0.22, 0.025, 30, '#93a8b3'),
+  arrow(10, '금빛 화살', '정밀형', '정교한 곡면 날개로 일정하게 출발해요. 촉은 조금 무거워요.', 9, '곡면 날개', 0.48, 0.075, 98, '#ceb36c'),
+  arrow(11, '바람깃 화살', '저항형', '쐐기 날개가 옆바람을 가장 적게 받아요. 정밀형보다 속도 편차가 있어요.', 7, '쐐기 날개', 0.18, 0.035, 88, '#82a7a5')
+], 'arrow');
 
 const motion = (amplitudeX = 0, amplitudeY = 0, speed = 0) => ({ amplitudeX, amplitudeY, speed, irregular: speed > 0 });
 const wall = (z, height, width = 7, x = 0, type = 'stone') => ({ x, z, width, height, depth: 0.65, type, material: type === 'timber' ? 'wood' : 'stone' });
 const stage = (id, name, subtitle, hint, distance, extra = {}) => ({
-  id, name, subtitle, hint, distance, radius: 1.25, height: 2.3,
+  id, legacyId: id, name, subtitle, hint, distance, radius: 1.25, height: 2.3,
   kind: 'target', motion: motion(), wind: 0, obstacles: [], passers: [], shots: 5, goal: 20,
   ...extra
 });
@@ -111,7 +165,7 @@ function laterStage(id) {
   const movement = kind === 'bird' ? motion(0, .7 + progress * .35, 0) : moving ? motion(3.5 + progress * 2.4, .1 + progress * .15, .45 + progress * .3) : motion();
   let obstacles = [];
   if (moving) {
-    const count = 3 + Math.floor((id - 13) / 8) % 3, spacing = 3.4 + progress * .2;
+    const count = Math.min(5, 3 + Math.floor((id - 13) / 8)), spacing = 3.4 + progress * .2;
     obstacles = Array.from({ length: count }, (_, index) => ({
       ...wall(Math.round(distance * .46), 3.2 + progress, 1.45 + progress * .2, (index - (count - 1) / 2) * spacing, 'pillar'),
       depth: .9, material: Math.floor(id / 8) % 2 ? 'wood' : 'stone'
@@ -134,7 +188,76 @@ function laterStage(id) {
   });
 }
 
-export const STAGES = Object.freeze([
+// Preserve the encounter templates independently from their playable order.
+// Difficulty is a balancing estimate, not a promise that every player will find
+// every adjacent encounter harder. Precision, lead and cover each teach a skill.
+const stageShapes = Object.freeze({ rabbit: [1.10, .72, 7], deer: [1.23, .73, 10], bird: [1.38, .88, 8] });
+function stageCover(template, rx, ry, animal) {
+  if (!template.obstacles.length) return 0;
+  let hidden = 0, samples = 0;
+  // Sample several real randomized layouts and points across the target face.
+  // Animal samples stay in the normal aiming field; offscreen travel is not cover.
+  for (const seed of [0, 5, 19, 31, 47, 61]) {
+    const layout = prepareStage(template, seed);
+    for (let index = 0; index < 48; index++) {
+      const fraction = (index + .5) / 48, angle = fraction * Math.PI * 2;
+      const x = (layout.targetX || 0) + (animal ? .38 * template.distance * (2 * fraction - 1) : template.motion.amplitudeX * Math.sin(angle));
+      for (let phase = 0; phase < (animal ? 8 : 1); phase++) {
+        const y = template.height + template.motion.amplitudeY * Math.sin(template.kind === 'bird' ? phase * Math.PI / 4 + angle * 1.83 : angle * 1.37);
+        for (const dy of [-.7, 0, .7]) for (const dx of [-.7, 0, .7]) {
+          hidden += Number(layout.obstacles.some(obstacle => {
+            const ratio = obstacle.z / template.distance;
+            return Math.abs((x + dx * rx) * ratio - obstacle.x) <= obstacle.width / 2 &&
+              PLAYER.y + (y + dy * ry - PLAYER.y) * ratio <= obstacle.height;
+          }));
+          samples++;
+        }
+      }
+    }
+  }
+  return hidden / samples;
+}
+function stageDifficulty(template) {
+  const shape = stageShapes[template.kind], animal = !!shape;
+  const rx = template.radius * (shape?.[0] || 1), ry = template.radius * (shape?.[1] || 1);
+  const radius = Math.sqrt(rx * ry), angularRadius = Math.atan2(radius, template.distance);
+  // One animal pass travels the entire span once. Unlike an oscillating target,
+  // its amplitudeX/speed fields do not control the actual crossing speed.
+  const movementSpeed = animal ? 2 * (template.distance * 1.25 + template.radius * 3) / (template.passDuration || shape[2]) :
+    2 / Math.PI * Math.hypot(template.motion.amplitudeX * template.motion.speed, template.motion.amplitudeY * template.motion.speed * 1.37);
+  const basicArrow = ARROWS[0], mass = basicArrow.shaftMass + basicArrow.tipMass;
+  const speed = BOWS[0].speed * Math.sqrt(REFERENCE_ARROW_MASS / mass), drag = basicArrow.fletching.drag * REFERENCE_ARROW_MASS / mass;
+  // Horizontal flight time with the starter loadout; elevation adds flight time.
+  const flightSeconds = -Math.log1p(-drag * template.distance / speed) / drag;
+  const windDriftPerUnit = WIND_RESPONSE * basicArrow.windFactor * (flightSeconds - template.distance / speed) / drag;
+  const cover = stageCover(template, rx, ry, animal);
+  const pillars = template.obstacles.filter(obstacle => obstacle.type === 'pillar').length;
+  const walls = template.obstacles.length - pillars, people = template.passers.length;
+  const components = {
+    precision: 8 * Math.log2(1 + .05 / angularRadius),
+    flight: 2 * Math.log2(1 + flightSeconds),
+    lead: (animal ? 4 : 3.5) * Math.log2(1 + movementSpeed * flightSeconds / radius),
+    cover: 10 * cover,
+    obstacles: pillars * 1.4 + walls * 2 + Math.max(0, walls - 1) * 3 + (people ? 8 + people * 1.5 : 0),
+    vertical: template.kind === 'bird' ? 1.8 * Math.log2(1 + template.motion.amplitudeY / radius) : 0
+  };
+  return { baseScore: Object.values(components).reduce((sum, value) => sum + value, 0),
+    angularRadius, movementSpeed, flightSeconds, windDriftPerUnit, cover, pillars, walls, people,
+    components: Object.freeze(components) };
+}
+function stageProgression(templates) {
+  const ranked = templates.map(template => ({ template, difficulty: stageDifficulty(template) }))
+    .sort((a, b) => a.difficulty.baseScore - b.difficulty.baseScore || a.template.legacyId - b.template.legacyId);
+  return Object.freeze(ranked.map(({ template, difficulty }, index) => {
+    const strength = Number((.12 + 3.88 * index / (ranked.length - 1)).toFixed(3));
+    return { ...template, id: index + 1, wind: (Math.sign(template.wind) || 1) * strength,
+      goal: 16 + Math.round(24 * index / (ranked.length - 1)),
+      difficulty: Object.freeze({ ...difficulty, score: difficulty.baseScore + strength * 2.5,
+        windStrength: strength, windDrift: difficulty.windDriftPerUnit * strength }) };
+  }));
+}
+
+export const STAGES = stageProgression([
   stage(1, '첫 번째 시위', '햇살 드는 숲길', '누른 채 방향을 조절하고, 조준점이 과녁을 지날 때 손을 떼세요.', 14, { goal: 16, radius: 1.35, wind: 0.12 }),
   stage(2, '조금 더 멀리', '낙하를 읽는 연습', '화살이 아래로 떨어져요. 과녁 중심보다 조금 위를 겨눠보세요.', 18, { radius: 1.30, wind: -0.20 }),
   stage(3, '숲의 끝자락', '거리 감각 익히기', '충분히 당긴 화살은 빠르게 날아요. 점선으로 낙하를 살펴보세요.', 24, { goal: 22, radius: 1.30, height: 2.5, wind: 0.30 }),
@@ -143,8 +266,8 @@ export const STAGES = Object.freeze([
   stage(6, '하늘의 날갯짓', '숲을 가로지르는 새', '들어오는 방향을 읽고, 위아래로 나는 새의 앞쪽을 겨눠요.', 36, { kind: 'bird', height: 4.8, radius: 1.3, motion: motion(5.0, 0.65, 0.88), goal: 20, wind: -0.60 }),
   stage(7, '풀숲의 토끼', '가까이 달려가는 토끼', '풀숲에서 들어오는 토끼가 속도를 바꿔 달려요. 진행 방향 앞을 겨눠보세요.', 24, { kind: 'rabbit', height: 0.7, radius: 0.85, goal: 22, wind: 0.72 }),
   stage(8, '담장 너머', '곡선으로 넘어서기', '힘을 조금 줄이고 더 위로 조준해, 큰 포물선으로 담장을 넘겨보세요.', 42, { radius: 1.35, obstacles: [wall(22, 2.8)], goal: 20, wind: -0.84 }),
-  stage(9, '나뭇가지 사이', '바람 속 날갯짓', '빠르게 날리는 나뭇잎으로 바람을 읽고, 새의 앞쪽을 겨눠보세요.', 44, { kind: 'bird', height: 5.2, radius: 1.4, motion: motion(5.2, 0.8, 0.72), wind: 0.96, obstacles: [wall(24, 2.8, 5.5)], goal: 22 }),
-  stage(10, '바람의 들판', '먼 곳의 작은 중심', '바람 반대쪽으로 조준을 보정하세요. 좋은 화살은 바람을 덜 타요.', 55, { radius: 1.45, wind: 1.08, goal: 26 }),
+  stage(9, '벽 너머 날갯짓', '숨었다 나타나는 새', '새가 벽 위로 떠오르는 순간을 노리세요. 나뭇잎으로 바람을 읽고 날아갈 앞쪽을 겨눠보세요.', 44, { kind: 'bird', height: 5.8, radius: 1.4, motion: motion(5.2, 3.6, 0.72), passDuration: 12, wind: 0.96, obstacles: [wall(24, 3.8, 24)], goal: 22 }),
+  stage(10, '바람의 들판', '멀리 움직이는 작은 중심', '바람 반대쪽으로 보정하면서, 작게 보이는 과녁이 이동할 앞쪽을 겨누세요.', 55, { radius: 1.15, motion: motion(4.5, 0.15, 0.95), wind: 1.08, goal: 26 }),
   stage(11, '숨은 숲길', '멀리 달리는 사슴', '멀리서 숲을 가로지르는 사슴의 속도를 읽고, 담장을 넘겨 쏘세요.', 58, { kind: 'deer', height: 1.65, radius: 1.65, motion: motion(6.0, 0, 0.58), wind: -1.20, obstacles: [wall(31, 3.5, 7, 0, 'timber')], goal: 26 }),
   stage(12, '바람의 궁수', '첫 복합 사격장', '거리·움직임·바람·담장. 익힌 감각을 모아 더 깊은 숲으로 나아가세요.', 70, { radius: 1.55, motion: motion(2.5, 0.2, 0.45), wind: 1.35, obstacles: [wall(26, 3.4, 5.4), wall(46, 3.2, 5, -1.6)], goal: 30 }),
   ...Array.from({ length: 38 }, (_, index) => laterStage(index + 13))
@@ -171,6 +294,15 @@ export const CLAY_EVENT = Object.freeze(createClayEvent(1));
 
 const getBow = bow => typeof bow === 'number' ? BOWS[bow] || BOWS[0] : bow || BOWS[0];
 const getArrow = arrow => typeof arrow === 'number' ? ARROWS[arrow] || ARROWS[0] : arrow || ARROWS[0];
+
+// Evaluate the same launch formula only after both catalogs and their lookups
+// exist. Excluding guns avoids a circular dependency on their derived speed.
+export const MAX_MAIN_PROJECTILE_SPEED = Math.max(...BOWS.filter(weapon => weapon.weaponType !== 'gun')
+  .flatMap(bow => ARROWS.map(arrow => getSpeed({ bow, arrow, charge: 1, velocityBias: 1 }))));
+export const BULLET_SPEED = MAX_MAIN_PROJECTILE_SPEED * 2;
+for (const weapon of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
+  weapon.muzzleSpeed = BULLET_SPEED;weapon.speed = BULLET_SPEED;
+}
 
 const animalPassDuration = Object.freeze({ bird: 8, rabbit: 7, deer: 10 });
 function hashUnit(value) {
@@ -546,6 +678,9 @@ export function stepArrow(shot, dt, stage, worldTime = 0) {
       if (!closest || distance < closest.distance) closest = { hit, target, distance };
     }
     if (closest) events.push({ t, type: 'hit', ...closest.hit, targetCenter: closest.target });
+    // All event targets share this plane. A missed bullet is finished here;
+    // arrows retain their full falling trajectory beyond the target.
+    else if (shot.projectileType === 'bullet' && stage.kind === 'clay') events.push({ t, type: 'miss', score: 0, zone: '표적을 지나쳤어요' });
     shot.targetPassed = true;
   }
   if (shot.elapsed + dt >= 8) events.push({ t: Math.max(0, 8 - shot.elapsed), type: 'miss', score: 0, zone: '멀리 날아갔어요' });
