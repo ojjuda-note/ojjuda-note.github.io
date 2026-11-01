@@ -206,7 +206,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 게임을 나갔다 다시 열면 1단계부터 새로 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
@@ -269,10 +269,11 @@
   function validPurchase(item){const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(value);return item&&uuid(item.id)&&uuid(item.runId)&&uuid(item.owner)&&Number.isInteger(item.stage)&&item.stage>=1&&item.stage<=E.MAX_STAGE&&['hint','shuffle'].includes(item.kind);}
   const saved=read(KEY),storedRecords=read(RECORDS);
   if(storedRecords&&typeof storedRecords==='object'&&!Array.isArray(storedRecords)){for(const [k,v]of Object.entries(storedRecords))if(/^\d+$/.test(k)&&Array.isArray(v))records[k]=v.filter(r=>r&&Number.isFinite(r.duration)&&r.duration>0&&Number.isFinite(r.at)).sort((a,b)=>a.duration-b.duration).slice(0,30);}
-  // A document is one visit: keep achievements and unresolved receipts, never
-  // restore its previous board, completion screen or running clock.
+  // Start a fresh visit at the last played level, keeping achievements and
+  // unresolved receipts without restoring the old board, result or clock.
   const pending=validPurchase(saved?.pendingPurchase)?saved.pendingPurchase:null;
+  const lastStage=Number.isInteger(saved?.stage)&&saved.stage>=1&&saved.stage<=E.MAX_STAGE?saved.stage:1;
   state={unlocked:Number.isInteger(saved?.unlocked)?Math.min(E.MAX_STAGE,Math.max(1,saved.unlocked)):1,sound:!!saved?.sound};
-  newStage(1,pending);
+  newStage(lastStage,pending);
   setInterval(()=>{if(state.finishedMs==null)$('timer').textContent=time(ms());},70);
 })();
