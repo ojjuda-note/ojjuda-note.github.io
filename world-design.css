@@ -85,3 +85,7 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
  .world-redesign .coinpill{padding-inline:6px;gap:4px;font-size:11px}
 }
 .world-redesign .arcade-adult{margin-top:34px}
+
+/* New single-player games can carry a release label without a version number. */
+.world-redesign .gbtn .game-test-badge{display:block;width:fit-content;margin:5px auto 0;padding:2px 7px;border-radius:6px;background:#e1eadc;color:#4b6548;font-size:10px!important;letter-spacing:0}
+:root[data-theme=dark] .world-redesign .gbtn .game-test-badge{background:#304b3c;color:#d4e5cd}
