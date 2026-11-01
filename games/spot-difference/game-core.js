@@ -20,12 +20,18 @@
     for(let i=order.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
     return order;
   }
+  function puzzleDifficulty(puzzle){return ['hard','very-hard'].includes(puzzle.difficulty)?puzzle.difficulty:'normal';}
+  function difficultyOrder(puzzles){
+    const rank={normal:0,hard:1,'very-hard':2};
+    return puzzles.map((_,i)=>i).sort((a,b)=>rank[puzzleDifficulty(puzzles[a])]-rank[puzzleDifficulty(puzzles[b])]||puzzles[a].id-puzzles[b].id||a-b);
+  }
   function cleanProgress(raw,puzzles){
-    const result={current:0,found:{},rounds:{},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original'])),order:shuffleOrder(puzzles.length)};
+    const result={current:0,found:{},rounds:{},completed:[],revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original'])),order:difficultyOrder(puzzles)};
     result.current=result.order[0];
     if(!raw||![1,2].includes(raw.version))return result;
-    if(Array.isArray(raw.order)&&raw.order.length===puzzles.length&&new Set(raw.order).size===puzzles.length&&raw.order.every(i=>Number.isInteger(i)&&i>=0&&i<puzzles.length))result.order=[...raw.order];
-    result.current=result.order[0];
+    // Stored indices keep their picture identity while old random orders migrate.
+    const puzzleIds=new Set(puzzles.map(p=>p.id));
+    const completed=new Set(Array.isArray(raw.completed)?raw.completed.filter(id=>Number.isInteger(id)&&puzzleIds.has(id)):[]);
     if(Number.isInteger(raw.current)&&raw.current>=0&&raw.current<puzzles.length)result.current=raw.current;
     for(const puzzle of puzzles){
       const total=puzzle.spots.length;
@@ -49,17 +55,18 @@
         }else if(round.status==='payment')round.status='ready';
         if(round.status==='playing'&&!round.deadline)round.status='ready';
       }
-      if(found.length===total){round.status='won';round.deadline=null;round.pending=null;}
+      if(found.length===total){round.status='won';round.deadline=null;round.pending=null;completed.add(puzzle.id);}
       else if(!round.pending&&(!round.hearts||round.remainingMs===0)){round.status='lost';round.deadline=null;}
       result.rounds[puzzle.id]=round;
     }
+    result.completed=[...completed].sort((a,b)=>a-b);
     return result;
   }
   function timeLeft(round,now=Date.now()){
     return round.status==='playing'?Math.max(0,Math.min(round.totalMs,round.deadline-now)):round.remainingMs;
   }
   function normalizedPoint(rect,clientX,clientY){return {x:(clientX-rect.left)/rect.width*100,y:(clientY-rect.top)/rect.height*100};}
-  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,ROUND_MS,EXTEND_MS,HEARTS};
+  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,puzzleDifficulty,difficultyOrder,ROUND_MS,EXTEND_MS,HEARTS};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JjudaGame=api;
 })(typeof window!=='undefined'?window:globalThis);

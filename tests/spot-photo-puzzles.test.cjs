@@ -40,7 +40,7 @@ try{
  w.eval(read('app.js'));
  const $=id=>w.document.getElementById(id);
  const groups=Array.from($('stage-picker').children,g=>[g.label,g.children.length]);
- assert.deepEqual(groups,[['세계 명화 · 매우 어려움 · 10곳 찾기',20],['도시 풍경 · 어려움',10],['사계절 산 · 어려움',4],['쭈다의 일상',48]]);
+ assert.deepEqual(groups,[['쭈다의 일상 · 보통',48],['도시와 사계절 산 · 어려움',14],['세계 명화 · 매우 어려움 · 10곳 찾기',20]]);
  assert.equal($('stage-total').textContent,'82');
  const loadImages=()=>{for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();};
  const tap=(surface,x,y)=>{const point={bubbles:true,clientX:x*8,clientY:y*5.33};surface.dispatchEvent(new w.MouseEvent('pointerdown',point));surface.dispatchEvent(new w.MouseEvent('click',point));};
