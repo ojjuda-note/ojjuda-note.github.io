@@ -37,13 +37,11 @@
     clearTimeout(zoomNoticeTimer);
     if(zoomDialog.open){$('zoom-tools').classList.add('has-message');zoomNoticeTimer=setTimeout(()=>$('zoom-tools').classList.remove('has-message'),6500);}
   }
-  function makeMark(spot,number,isHint=false){
+  function makeMark(spot,isHint=false){
     const mark=document.createElement('div');mark.className='mark'+(isHint?' hint-mark':'');
-    Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${spot.rx*2}%`,height:`${spot.ry*2}%`});
-    if(isHint){
-      // Pictures use a 3:2 ratio; fit the hint area inside a true circle.
-      mark.style.width=`${Math.max(spot.rx,spot.ry*2/3)*2}%`;mark.style.height='auto';
-    }else{const label=document.createElement('span');label.textContent=number;mark.append(label);if(spot.x+spot.rx>94)mark.classList.add('label-left');if(spot.y-spot.ry<5)mark.classList.add('label-below');}return mark;
+    // Pictures use a 3:2 ratio; enclose the answer area in an unnumbered circle.
+    Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${Math.max(spot.rx,spot.ry*2/3)*2}%`,height:'auto'});
+    return mark;
   }
   function answerOrder(){return [...found(),...puzzle().spots.map((_,i)=>i).filter(i=>!found().includes(i))];}
   function renderMarks(){
@@ -51,8 +49,8 @@
     for(const surface of surfaces){
       const layer=surface.querySelector('.marks');
       for(const mark of [...layer.children])if(!mark.classList.contains('hint-mark'))mark.remove();
-      layer.append(...order.map((spotIndex,index)=>{
-        const mark=makeMark(puzzle().spots[spotIndex],index+1);
+      layer.append(...order.map(spotIndex=>{
+        const mark=makeMark(puzzle().spots[spotIndex]);
         if(answerReview&&!found().includes(spotIndex))mark.classList.add('answer-mark');
         return mark;
       }));
@@ -70,7 +68,7 @@
       }
       for(const i of remaining){
         const key=`${puzzle().id}:${i}`;if(existing.has(key))continue;
-        const mark=makeMark(puzzle().spots[i],0,true);mark.dataset.hintKey=key;layer.append(mark);
+        const mark=makeMark(puzzle().spots[i],true);mark.dataset.hintKey=key;layer.append(mark);
       }
     }
   }
