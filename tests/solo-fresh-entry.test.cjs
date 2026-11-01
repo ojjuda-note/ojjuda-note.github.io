@@ -126,7 +126,7 @@ async function pendingSpot(t,buy){
  w.eval(read('games/spot-difference/wallet.js'));await tick();
  for(const file of ['puzzles','photo-puzzles','masterpiece-puzzles','game-core'])w.eval(read('games/spot-difference/'+file+'.js'));
  const puzzles=w.JJUDA_PUZZLES,id=puzzles[48].id;
- w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,order:puzzles.map((_,i)=>i),found:{[id]:[0,1]},rounds:{[id]:{...w.JjudaGame.freshRound(),status:'payment',hearts:1,remainingMs:5000,pending:request}},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original']))}));
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,order:[48,...puzzles.map((_,i)=>i).filter(i=>i!==48)],found:{[id]:[0,1]},rounds:{[id]:{...w.JjudaGame.freshRound(),status:'payment',hearts:1,remainingMs:5000,totalMs:90000,paid:[0],hintIndex:0,timeBought:true,assisted:true,rankOwner:owner,pending:request}},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original']))}));
  w.eval(read('games/spot-difference/app.js'));for(const image of w.document.querySelectorAll('img'))if(image.onload)image.onload();
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1')),round=()=>state().rounds[id];
  const surface=w.document.getElementById('original').parentElement;surface.getBoundingClientRect=()=>({left:0,top:0,width:1000,height:800});
@@ -142,8 +142,9 @@ async function pendingSpot(t,buy){
 
 test('Spot payment recovery uses a fresh round and the same receipt, then records completion for its original owner',async t=>{
  const {w,id,request,calls,state,round,start,complete}=await pendingSpot(t);
- assert.equal(state().current,48,'the receipt is confirmed against its original picture');assert.equal(state().order[0],48,'the recovered picture is a fresh first round');assert.deepEqual(state().found[id],[]);
- assert.equal(round().hearts,3);assert.equal(round().remainingMs,60000);assert.equal(round().totalMs,60000);assert.equal(round().pending.requestId,request.requestId);assert.equal(w.document.getElementById('found-count').textContent,'0');
+ assert.equal(state().current,48,'the receipt is confirmed against its original picture');assert.deepEqual(state().order,Array.from({length:82},(_,i)=>i),'receipt recovery preserves the fixed difficulty order');assert.deepEqual(state().found[id],[]);
+ assert.equal(round().hearts,3);assert.equal(round().remainingMs,60000);assert.equal(round().totalMs,60000);assert.deepEqual(round().pending,request);assert.equal(round().rankOwner,owner);assert.equal(w.document.getElementById('found-count').textContent,'0');
+ assert.deepEqual(round().paid,[]);assert.equal(round().hintIndex,null);assert.equal(round().timeBought,false);assert.equal(round().assisted,false,'confirmed hints and time are consumed by the old round');
  await start();assert.deepEqual(calls,[{name:'spot_game_buy_v2',args:{p_kind:'hint',p_request_id:request.requestId,p_stage:id,p_spot:2,p_verify_only:false},actor:owner}]);assert.equal(round().pending,null);assert.deepEqual(round().paid,[2]);
  const active=state();w.document.dispatchEvent(new w.Event('visibilitychange'));assert.deepEqual(state(),active,'returning to the same tab does not restart the round');
  await complete();assert.deepEqual(calls.filter(call=>call.name==='record_spot_clear'),[{name:'record_spot_clear',args:{p_stage:id},actor:owner}],'a recovered round still submits its completion');
