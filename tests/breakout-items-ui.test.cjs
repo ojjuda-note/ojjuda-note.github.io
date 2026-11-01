@@ -10,7 +10,8 @@ world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:u
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 window.breakoutTest={
- open(){Al('breakout')},close:El,get current(){return R},audio:[],
+ open(){Al('breakout')},close:El,get current(){return R},audio:[],records:[],pendingRecords:[],holdRecords:false,
+ settleRecords(){for(const resolve of this.pendingRecords.splice(0))resolve()},
  freeze(){cancelAnimationFrame(R.raf)},
  step(seconds){const n=Math.ceil(seconds*240);for(let i=0;i<n&&R.running;i++)R.game.update(seconds/n);R.game.draw(R.ctx)},
  hit(kind){
@@ -27,15 +28,30 @@ window.breakoutTest={
   const state=game.inspect(),last=state.bricks.filter(b=>b.on&&!b.solid).at(-1);for(const b of state.bricks)if(!b.solid)b.on=b===last;last.hp=1;
   Object.assign(state.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-state.speed});game.update(1/240);game.draw(R.ctx);
  },
- loseRun(){
-  for(let i=0;i<3&&R.running;i++){
-   const game=R.game;if(game.inspect().waiting)game.onKey(' ');
-   for(const ball of game.inspect().balls)ball.y=565;
-   game.update(1/240);
+ loseLife(){
+  const game=R.game;if(game.inspect().waiting)game.onKey(' ');
+  for(const ball of game.inspect().balls)ball.y=565;
+  game.update(1/240);
+ },
+ loseRun(){for(let i=0;i<3&&R.running;i++)this.loseLife()},
+ async reachStage(target){
+  while(R.game.stage<target){
+   const current=R.game.stage;this.finishStage();
+   if(R.running||!R.game.stageCleared)throw Error('a cleared stage must wait for its next choice');
+   const next=R.ov.querySelector('[data-g="breakout-stage"][data-stage="'+(current+1)+'"]');
+   if(!next||next.disabled)throw Error('the next-stage action is unavailable');
+   next.click();await Promise.resolve();this.freeze();R.game.draw(R.ctx);
+   if(!R.running||R.game.stage!==current+1)throw Error('the next-stage action did not resume the game');
   }
  }
 };
 for(const [method,kind] of [['arcadeTap','tap'],['arcadeHit','hit'],['arcadeBonus','bonus'],['arcadeBad','bad']])gt[method]=()=>breakoutTest.audio.push(kind);
+// Keep the real World lifecycle; only the score transport is held for race checks.
+tf=async(game,score)=>{
+ breakoutTest.records.push({game,score});
+ if(breakoutTest.holdRecords)await new Promise(resolve=>breakoutTest.pendingRecords.push(resolve));
+ return {ok:true,best:score};
+};
 g.tab='friends';H();
 `+world.slice(world.indexOf('</script>',boot));
 
@@ -59,7 +75,8 @@ g.tab='friends';H();
    await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.breakoutTest);
    const choices=page.locator('#gscreen [data-g="breakout-stage"]');
    const savedStage=()=>page.evaluate(()=>localStorage.getItem('ojjuda-breakout-last-stage-v1'));
-   async function assertChoices(level,selected=level){
+   const snapshot=()=>page.evaluate(()=>{const r=breakoutTest.current,g=r.game,s=g.inspect();return{stage:g.stage,level:s.level,running:r.running,score:s.score,lives:s.lives,balls:s.balls.length,waiting:s.waiting,finished:s.finished,completed:s.completed,cleared:g.stageCleared,speed:s.speed,bricks:s.bricks.length,drops:s.drops.length,piercing:s.balls.some(b=>b.piercing),fullBoard:s.bricks.every(b=>b.on&&b.hp===b.maxHp)}});
+   async function assertChoices(level){
     await choices.first().waitFor();assert.equal(await choices.count(),3);
     const values=await choices.evaluateAll(buttons=>buttons.map(button=>{
      const box=button.getBoundingClientRect();return{label:button.textContent,stage:Number(button.dataset.stage),pressed:button.getAttribute('aria-pressed'),disabled:button.disabled,x:box.x,y:box.y,right:box.right,bottom:box.bottom};
@@ -68,21 +85,32 @@ g.tab='friends';H();
      assert.ok(value.label.includes(['이전 단계','지금 단계','다음 단계'][i]));
      assert.equal(value.disabled,(i===0&&level===1)||(i===2&&level===100));
      if(!value.disabled)assert.equal(value.stage,level+i-1);
-     assert.equal(value.pressed,i===selected-level+1?'true':'false');
-     assert.ok(value.x>=-1&&value.right<=width+1&&value.y>=-1&&value.bottom<=height+1,'all three level choices fit inside the viewport: '+JSON.stringify({width,height,level,selected,value}));
+     assert.equal(value.pressed,null,'level buttons are direct actions, not a selection followed by Start');
+     assert.ok(value.x>=-1&&value.right<=width+1&&value.y>=-1&&value.bottom<=height+1,'all three level choices fit inside the viewport: '+JSON.stringify({width,height,level,value}));
      assert.ok(value.bottom-value.y>=44,'each level choice provides a finger-sized touch target');
      assert.ok(Math.abs(value.y-values[0].y)<1,'the choices stay together in one row');
     }
-    assert.match(await page.locator('#gscreen [data-g="start"]').innerText(),new RegExp(selected+'단계 시작'));
+    assert.equal(await page.locator('#gscreen [data-g="start"]').count(),0,'a completed board has no second Start confirmation');
+    assert.equal(await page.evaluate(()=>breakoutTest.current.running),false,'the board waits until a level action is chosen');
+    assert.equal((await snapshot()).stage,level);
    }
-   async function startSelected(level,bricks){
-    await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>breakoutTest.freeze());
-    assert.deepEqual(await page.evaluate(()=>{const g=breakoutTest.current.game,s=g.inspect();return[g.stage,s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[level,level,bricks,0,3,1,true]);
+   async function assertFresh(level,bricks){
+    const s=await snapshot();
+    assert.deepEqual([s.stage,s.level,s.bricks,s.score,s.lives,s.balls,s.waiting,s.running,s.cleared,s.finished,s.completed,s.drops,s.piercing,s.fullBoard],[level,level,bricks,0,3,1,true,true,false,false,false,0,false,true]);
+    assert.equal(await choices.count(),0,'playing begins immediately without another level question');
     assert.equal(await savedStage(),String(level),'starting commits the selected level');
    }
-   await page.evaluate(()=>breakoutTest.open());await assertChoices(1);
-   assert.equal(await savedStage(),null,'opening the selector alone does not save a level');
-   await startSelected(1,14);
+   async function assertEntry(){
+    await page.locator('#gov [data-g="start"]').waitFor();
+    assert.equal(await choices.count(),0,'opening the game never asks which level to play');
+   }
+   async function startEntry(level,bricks){
+    await assertEntry();await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>breakoutTest.freeze());
+    await assertFresh(level,bricks);
+   }
+   await page.evaluate(()=>breakoutTest.open());await assertEntry();
+   assert.equal(await savedStage(),null,'opening the entry alone does not save a level');
+   await startEntry(1,14);
    const canvas=page.locator('#gcv'),box=await canvas.boundingBox(),close=await page.locator('#gov [data-g="close"]').boundingBox();
    assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width+1&&box.y+box.height<=height+1);
    assert.ok(close.y>=0&&close.y+close.height<=height,'the exit control stays visible');
@@ -130,8 +158,23 @@ g.tab='friends';H();
    assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus')),['bonus','bonus','bonus','bonus']);checks++;
    const speed=await page.evaluate(()=>breakoutTest.current.game.inspect().speed);await page.evaluate(()=>breakoutTest.step(2));
    assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().speed)-speed-4)<.01);checks++;
-   await page.evaluate(()=>{breakoutTest.finishStage();breakoutTest.finishStage()});
-   assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().level),3);
+   await page.evaluate(()=>{window.firstBreakoutRun=breakoutTest.current.game;breakoutTest.loseLife();breakoutTest.finishStage()});
+   await assertChoices(1);const clearedFirst=await snapshot();
+   assert.equal(clearedFirst.cleared,true);assert.equal(clearedFirst.finished,false);assert.equal(clearedFirst.lives,2);
+   assert.equal(await savedStage(),'1','clearing the board does not enter or save the next stage');
+   assert.equal(await page.evaluate(()=>breakoutTest.records.length),0,'an intermediate clear does not finish or submit the run');
+   await page.evaluate(()=>{for(let i=0;i<12;i++)breakoutTest.current.game.update(.1)});
+   assert.deepEqual(await snapshot(),clearedFirst,'the cleared board stays frozen while choosing');
+   await choices.filter({hasText:'다음 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());
+   const continuedSecond=await snapshot();
+   assert.deepEqual([continuedSecond.stage,continuedSecond.bricks,continuedSecond.score,continuedSecond.lives,continuedSecond.balls,continuedSecond.waiting,continuedSecond.cleared,continuedSecond.running,continuedSecond.drops,continuedSecond.piercing],[2,24,clearedFirst.score,2,1,true,false,true,0,false]);
+   assert.ok(Math.abs(continuedSecond.speed-Math.min(460,clearedFirst.speed+20))<.001,'next stage preserves the run speed and its normal stage acceleration');
+   assert.equal(await page.evaluate(()=>breakoutTest.current.game===window.firstBreakoutRun),true,'next uses the same run');
+   assert.equal(await savedStage(),'2');assert.equal(await choices.count(),0);checks++;
+   await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(2);const clearedSecond=await snapshot();
+   assert.equal(await savedStage(),'2');await choices.filter({hasText:'다음 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());
+   assert.equal((await snapshot()).score,clearedSecond.score);assert.equal((await snapshot()).lives,2);
+   assert.equal(await savedStage(),'3');assert.equal(await page.evaluate(()=>breakoutTest.records.length),0);
    const types=await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.bricks.length,s.bricks.some(b=>b.hp===2),s.bricks.some(b=>b.solid),s.balls[0].piercing]});
    assert.deepEqual(types,[34,true,true,false]);checks++;
    if(width===390){
@@ -140,27 +183,34 @@ g.tab='friends';H();
     // Capture the real renderer after actual item drops and paddle catches.
     await page.locator('#gov .gbox').screenshot({path:process.env.BREAKOUT_SCREENSHOT||path.join(require('node:os').tmpdir(),'ojjuda-breakout-items-20261006.png')});
    }
-   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();
-   await assertChoices(3);assert.equal(await savedStage(),'3','the result choices use the actual stage reached from level 1');
-   await choices.filter({hasText:'이전 단계'}).click();await assertChoices(3,2);
-   assert.equal(await savedStage(),'3','selecting a previous level does not save until Start');
-   await startSelected(2,24);checks++;
-   await page.evaluate(()=>breakoutTest.close());await page.evaluate(()=>breakoutTest.open());await assertChoices(2);
-   await choices.filter({hasText:'다음 단계'}).click();await assertChoices(2,3);
-   assert.equal(await savedStage(),'2','selecting a next level does not save until Start');
-   await startSelected(3,34);checks++;
-   await page.evaluate(()=>breakoutTest.close());await page.evaluate(()=>breakoutTest.open());await assertChoices(3);
-   await choices.filter({hasText:'다음 단계'}).click();await assertChoices(3,4);
+   await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(3);const clearedThird=await snapshot();
+   assert.equal(await savedStage(),'3','the choices refer to the actual cleared stage reached from level 1');
+   await page.evaluate(()=>{breakoutTest.holdRecords=true;window.finishedBreakoutRun=breakoutTest.current.game});
+   await choices.filter({hasText:'지금 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(3,34);
+   assert.deepEqual(await page.evaluate(()=>breakoutTest.records),[{game:'breakout',score:clearedThird.score}],'replaying records the previous run once');
+   assert.equal(await page.evaluate(()=>window.finishedBreakoutRun.finishRun()),false,'an old completed run cannot finish twice');
+   await page.evaluate(async()=>{window.restartedBreakoutRun=breakoutTest.current.game;breakoutTest.holdRecords=false;breakoutTest.settleRecords();await new Promise(requestAnimationFrame);breakoutTest.freeze()});
+   await assertFresh(3,34);assert.equal(await page.evaluate(()=>breakoutTest.current.game===window.restartedBreakoutRun),true,'a late score response cannot replace the restarted game');
+   assert.equal(await page.evaluate(()=>breakoutTest.records.length),1);checks++;
+   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();await assertChoices(3);
+   const recordsAfterLoss=await page.evaluate(()=>breakoutTest.records.length);
+   await choices.filter({hasText:'이전 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(2,24);
+   assert.equal(await page.evaluate(()=>breakoutTest.records.length),recordsAfterLoss,'choosing after game over does not submit the ended run again');checks++;
+   await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(2);
+   await choices.filter({hasText:'다음 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());
+   assert.deepEqual([(await snapshot()).stage,(await snapshot()).score,(await snapshot()).lives],[3,10,3]);
+   await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(3);const clearedBeforeClose=await snapshot();
+   const recordsBeforeClose=await page.evaluate(()=>breakoutTest.records.length);
    await page.evaluate(()=>breakoutTest.close());assert.equal(await page.locator('#gov').count(),0);
-   assert.equal(await savedStage(),'3','closing the menu cancels an unstarted selection');
-   await page.evaluate(()=>breakoutTest.open());await assertChoices(3);
-   await choices.filter({hasText:'지금 단계'}).click();await startSelected(3,34);
-   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[3,34,0,3,1,true],'closing and reopening World starts a fresh board at the last entered level');checks++;
+   assert.equal(await savedStage(),'3','closing a clear prompt remembers the cleared stage, not the next stage');
+   assert.equal(await page.evaluate(()=>breakoutTest.records.length),recordsBeforeClose+1,'leaving a cleared run records it once');
+   assert.deepEqual(await page.evaluate(()=>breakoutTest.records.at(-1)),{game:'breakout',score:clearedBeforeClose.score});
+   await page.evaluate(()=>breakoutTest.open());await startEntry(3,34);checks++;
    await page.reload();await page.waitForFunction(()=>window.breakoutTest);
-   await page.evaluate(()=>breakoutTest.open());await assertChoices(3);await startSelected(3,34);
-   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[3,34,0,3,1,true],'a full page reload also restores the saved level');checks++;
+   await page.evaluate(()=>breakoutTest.open());await startEntry(3,34);checks++;
+   await page.evaluate(()=>breakoutTest.reachStage(100));
+   assert.equal(await page.evaluate(()=>breakoutTest.records.length),0,'continuing through the levels does not submit intermediate runs');
    if(width===390){
-    await page.evaluate(()=>{while(breakoutTest.current.game.inspect().level<100)breakoutTest.finishStage();});
     assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().bricks.length),1000);
     await page.locator('#gov .gbox').screenshot({path:path.join(require('node:os').tmpdir(),'ojjuda-breakout-stage100-20261006.png')});
     const metrics=await page.evaluate(()=>{
@@ -181,12 +231,13 @@ g.tab='friends';H();
    }
    await page.evaluate(()=>{while(breakoutTest.current.running)breakoutTest.finishStage()});
    await page.locator('#gres').waitFor();assert.match(await page.locator('#gscreen').innerText(),/100단계 클리어/);
-   await assertChoices(100);await startSelected(100,1000);
-   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[100,1000,0,3,1,true]);
+   await assertChoices(100);assert.equal(await page.evaluate(()=>breakoutTest.records.length),1,'the final run submits one terminal result');
+   await choices.filter({hasText:'지금 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(100,1000);
+   assert.equal(await page.evaluate(()=>breakoutTest.records.length),1,'restarting the final stage does not duplicate its old result');
    await page.evaluate(()=>breakoutTest.close());assert.equal(await page.locator('#gov').count(),0);
    assert.deepEqual(errors,[],'no application errors while playing, finishing and restarting');checks++;
    await context.close();
   }
-  console.log('PASS: '+checks+' World breakout integration checks; touch/pointer/keyboard, three falling pickups, sound hooks, elapsed-time acceleration, stage growth, steel/tough bricks, previous/current/next selection and cancellation, saved-level reentry/page reload/final restart, and four viewport sizes');
+  console.log('PASS: '+checks+' World breakout integration checks; touch/pointer/keyboard, falling pickups, elapsed-time acceleration, stage growth, clear-only direct level actions, preserved next-stage runs, replay/exit score settlement, stale-response isolation, saved-level reentry/reload, final-stage boundaries and four viewport sizes');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
