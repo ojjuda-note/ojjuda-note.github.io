@@ -33,14 +33,20 @@
       ]
     },
     {
-      "text": "계단 뒤 작은 인물의 붉은 옷이 파란색으로 바뀌었어요.",
+      "text": "계단 뒤 작은 인물의 붉은 옷이 선명한 노란색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         20.0,
         40.3,
         24.7,
         49.2
-      ]
+      ],
+      "instruction": "Recolor only the visible red robe of the small distant person behind the left stairs inside this target to bright yellow. Preserve every fold, the exact body silhouette, face, hands, stone stairs and surrounding figures.",
+      "image": "masterpieces/changes/david-death-of-socrates-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "text": "침대 위 악기의 테두리가 파란색으로 바뀌었어요.",

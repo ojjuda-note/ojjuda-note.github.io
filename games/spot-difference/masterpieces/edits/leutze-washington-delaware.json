@@ -25,7 +25,7 @@
       "instruction": "Change only the visible pale stars in the flag's dark blue canton into small pale circular dots at the same positions and approximate sizes. Preserve the blue fabric, its folds, the flag outline, and all other flag sections."
     },
     {
-      "text": "깃발 오른쪽 끝의 붉은 줄무늬가 파란색으로 바뀌었어요.",
+      "text": "깃발 오른쪽 끝의 붉은 줄무늬가 선명한 노란색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         60.0,
@@ -33,7 +33,102 @@
         66.2,
         43.8
       ],
-      "instruction": "Recolor the single dark red stripe along the lower trailing tip on the far-right side of the flag to muted blue. Preserve the pale stripes, cloth folds, flag edge, and background."
+      "instruction": "Recolor only the single dark red stripe along the lower trailing tip at the far-right side of the flag to bright yellow. Preserve the pale stripes, cloth folds, flag edge and background.",
+      "image": "masterpieces/changes/leutze-washington-delaware-colors-detail1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      },
+      "clipPolygon": [
+        [
+          61.45,
+          41.92
+        ],
+        [
+          61.9,
+          41.43
+        ],
+        [
+          62.51,
+          40.9
+        ],
+        [
+          63.21,
+          40.34
+        ],
+        [
+          63.9,
+          39.72
+        ],
+        [
+          64.59,
+          39.25
+        ],
+        [
+          64.84,
+          39.2
+        ],
+        [
+          65.3,
+          39.35
+        ],
+        [
+          65.73,
+          39.54
+        ],
+        [
+          65.86,
+          39.76
+        ],
+        [
+          65.46,
+          40.07
+        ],
+        [
+          65.12,
+          40.41
+        ],
+        [
+          64.67,
+          40.64
+        ],
+        [
+          64.32,
+          40.71
+        ],
+        [
+          64.0,
+          41.04
+        ],
+        [
+          63.67,
+          41.11
+        ],
+        [
+          63.37,
+          41.48
+        ],
+        [
+          63.1,
+          41.73
+        ],
+        [
+          62.77,
+          41.99
+        ],
+        [
+          62.35,
+          42.18
+        ],
+        [
+          61.94,
+          42.13
+        ],
+        [
+          61.62,
+          42.08
+        ]
+      ]
     },
     {
       "text": "강 왼쪽 얼음 위의 마른 나뭇가지가 없어졌어요.",
@@ -47,7 +142,7 @@
       "instruction": "Remove the isolated forked brown branch resting among the ice on the left side of the river. Reconstruct the existing pale ice and water behind it, without changing the shoreline, oars, people, or neighboring ice shapes."
     },
     {
-      "text": "왼쪽 노 젓는 사람의 붉은 목도리 끝이 파란색으로 바뀌었어요.",
+      "text": "왼쪽 노 젓는 사람의 붉은 목도리 끝이 선명한 노란색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         29.0,
@@ -55,7 +150,12 @@
         32.7,
         52.7
       ],
-      "instruction": "Recolor only the two red scarf tails fluttering behind the leftmost standing rower's shoulder to cobalt blue. Preserve their folds, the person's head and face, clothing, raised arm, and the surrounding water."
+      "instruction": "Recolor only the two red scarf tails fluttering behind the leftmost standing rower's shoulder to bright yellow. Preserve their folds, the person's face, head, clothing, raised arm and surrounding water.",
+      "image": "masterpieces/changes/leutze-washington-delaware-colors-detail1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "text": "워싱턴의 검은 모자가 밝은 갈색으로 바뀌었어요.",
@@ -69,7 +169,7 @@
       "instruction": "Recolor George Washington's black tricorn hat to warm light brown, maintaining its exact silhouette, trim, and shading. Keep his face, hair, forehead, coat, and posture unchanged."
     },
     {
-      "text": "아래쪽 가운데 긴 얼음 조각이 연보라색으로 바뀌었어요.",
+      "text": "아래쪽 가운데의 연초록 얼음 조각이 선명한 빨간색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         31.5,
@@ -77,7 +177,12 @@
         43.4,
         90.5
       ],
-      "instruction": "Give the long slanting pale-green ice slab in the lower center foreground a clearly visible pale lavender tint. Preserve its edges, cracks, translucency, waterline, and all neighboring ice pieces."
+      "instruction": "Recolor only the long pale-green ice slab in this target to vivid scarlet red. Preserve its exact edges, cracks, translucent texture and light reflected highlights; keep adjacent ice and water unchanged.",
+      "image": "masterpieces/changes/leutze-washington-delaware-colors1.png",
+      "colorMapping": {
+        "from": "green",
+        "to": "red"
+      }
     },
     {
       "text": "오른쪽 아래 얼음의 뾰족한 봉우리가 둥글게 바뀌었어요.",

@@ -84,8 +84,29 @@
         66.1
       ],
       "kind": "color",
-      "descriptionKo": "배 안 사탕수수 줄기가 자주색으로 바뀌었어요.",
-      "instructionEn": "Recolor only the green/yellow sugar-cane stalks near x48 y62 to purple, leaving the man and his legs unchanged."
+      "descriptionKo": "배 안 사탕수수의 초록 줄기는 빨강, 노란 부분은 초록으로 바뀌었어요.",
+      "instructionEn": "Inside only this existing sugar-cane target, change the originally green stalk portions to vivid scarlet red and the originally yellow portions to vivid emerald green. Preserve orange or brown joints, dark outlines, stalk shapes, ropes, boat and every skin area. Do not flatten the whole bundle to one color.",
+      "image": "masterpieces/changes/homer-gulf-stream-colors1.png",
+      "colorMapping": {
+        "from": [
+          "green",
+          "yellow"
+        ],
+        "to": [
+          "red",
+          "green"
+        ],
+        "mappings": [
+          {
+            "from": "green",
+            "to": "red"
+          },
+          {
+            "from": "yellow",
+            "to": "green"
+          }
+        ]
+      }
     },
     {
       "id": 8,

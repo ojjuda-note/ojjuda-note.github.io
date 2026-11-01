@@ -41,9 +41,14 @@
         34.0,
         75.6
       ],
-      "descriptionKo": "서 있는 사람이 든 붉은 물병이 파란색으로 바뀌었어요.",
-      "instructionEn": "Change the red round jug carried by the standing man near the lower-left center to deep blue; preserve his hand, clothing, body and the jug shape.",
-      "kind": "color"
+      "descriptionKo": "서 있는 사람이 든 붉은 물병이 선명한 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the red round earthenware jug carried by the standing man to bright yellow. Preserve its shape, handle, highlights, his hand, clothing, body and the background.",
+      "kind": "color",
+      "image": "masterpieces/changes/bruegel-harvesters-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "id": 4,
@@ -101,9 +106,14 @@
         15.7,
         43.4
       ],
-      "descriptionKo": "왼쪽 먼 마을의 작은 붉은 지붕이 청회색으로 바뀌었어요.",
-      "instructionEn": "Change only the small reddish conical tower roof in the distant village at the left to slate blue. Keep the tower walls and nearby trees unchanged.",
-      "kind": "color"
+      "descriptionKo": "왼쪽 먼 마을의 작은 붉은 지붕이 선명한 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small reddish conical tower roof in the distant village at the left to bright yellow. Preserve the exact roof outline, the tower walls and nearby trees.",
+      "kind": "color",
+      "image": "masterpieces/changes/bruegel-harvesters-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "id": 9,

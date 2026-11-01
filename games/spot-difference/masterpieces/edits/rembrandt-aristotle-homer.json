@@ -25,7 +25,7 @@
       "instruction": "Replace the small round jeweled clasp on the viewer-right shoulder of the black garment with a blue diamond-shaped clasp of the same overall size. Keep the surrounding collar, beard, and clothing unchanged."
     },
     {
-      "text": "왼쪽 어깨의 금빛 장식이 초록색으로 바뀌었어요.",
+      "text": "왼쪽 어깨의 금빛 장식이 선명한 초록색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         46.7,
@@ -33,7 +33,12 @@
         49.8,
         46.5
       ],
-      "instruction": "Recolor the small rounded gold fitting at the upper end of the chain on the viewer-left shoulder to emerald green. Preserve its shape and the neighboring beard, collar, and chain links."
+      "instruction": "Recolor only the small golden-yellow rounded chain fitting on the viewer-left shoulder to vivid emerald green. Preserve the metal highlights, exact silhouette, surrounding chain, beard, skin and dark garment.",
+      "image": "masterpieces/changes/rembrandt-aristotle-homer-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "text": "흉상 위 손목의 밝은 소매 끝이 파란색으로 바뀌었어요.",
@@ -69,7 +74,7 @@
       "instruction": "Remove the small oval gold pendant hanging at the lower end of the short vertical chain near the viewer-left waist. Fill its place with the existing dark fabric; leave the neighboring long necklace and sleeve unchanged."
     },
     {
-      "text": "목걸이 맨 아래의 고리 부분이 은빛으로 바뀌었어요.",
+      "text": "목걸이 맨 아래의 금빛 고리 부분이 선명한 초록색으로 바뀌었어요.",
       "kind": "color",
       "bounds": [
         56.8,
@@ -77,7 +82,12 @@
         68.7,
         77.9
       ],
-      "instruction": "Change only the lowest curved section of the heavy gold chain, immediately left of the hand at the waist, to silver. Preserve each link, the curve, shadows, black garment, and every finger; leave all other chain sections gold."
+      "instruction": "Recolor only the lowest curved golden-yellow section of the heavy chain inside this target to vivid emerald green. Preserve every link, shadow, the exact curve, every finger and all other chain sections.",
+      "image": "masterpieces/changes/rembrandt-aristotle-homer-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "text": "왼쪽 책더미 위쪽 책의 등이 짙은 녹색으로 바뀌었어요.",

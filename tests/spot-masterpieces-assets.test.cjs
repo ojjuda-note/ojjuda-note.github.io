@@ -12,6 +12,7 @@ const root = path.join(__dirname, '..');
 const game = path.join(root, 'games', 'spot-difference');
 const core = require(path.join(game, 'game-core.js'));
 const catalog = JSON.parse(fs.readFileSync(path.join(game, 'masterpiece-sources.json'), 'utf8'));
+const manifest = JSON.parse(fs.readFileSync(path.join(game, 'masterpiece-assets.json'), 'utf8'));
 const context = vm.createContext({ window: {} });
 const load = file => vm.runInContext(fs.readFileSync(path.join(game, file), 'utf8'), context, { filename: file, timeout: 5000 });
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -84,9 +85,14 @@ assert.equal(catalog.artworks.length, 20, 'twenty verified museum originals');
 assert.equal(new Set(catalog.artworks.map(source => source.id)).size, 20);
 assert.equal(new Set(catalog.artworks.map(source => source.sourceUrl)).size, 20);
 assert.equal(new Set(puzzles.slice(62).map(puzzle => puzzle.original)).size, 20, 'each masterpiece uses its own verified source');
+assert.equal(manifest.schemaVersion, 1, 'supported publish manifest');
+assert.equal(manifest.puzzleDataSha256, crypto.createHash('sha256').update(fs.readFileSync(path.join(game, 'masterpiece-puzzles.js'))).digest('hex'), 'publish manifest identifies the actual puzzle data');
+assert.deepEqual(manifest.artworks.map(artwork => artwork.stageId), puzzles.slice(62).map(puzzle => puzzle.id), 'publish manifest covers every masterpiece exactly once');
+const publishedStages = new Map(manifest.artworks.map(artwork => [artwork.stageId, artwork]));
 
 const sources = new Map(catalog.artworks.map(source => [source.localPath, source]));
 const verifiedPngs = new Map();
+const verifiedPublishedAssets = new Set();
 const hitFailures = [];
 let hitChecks = 0;
 
@@ -129,11 +135,35 @@ for (const puzzle of puzzles.slice(62)) {
     assert.ok(Math.abs((width / height) / puzzle.aspectRatio - 1) <= 0.01, `${label}: generated PNG keeps the full source aspect ratio within 1%`);
     assert.ok(layer.blend === undefined || ['color', 'normal'].includes(layer.blend), `${label}: supported blend mode`);
     assert.ok(layer.brightness === undefined || (Number.isFinite(layer.brightness) && layer.brightness > 0), `${label}: valid brightness adjustment`);
+    if (layer.clipPolygon !== undefined) {
+      assert.ok(Array.isArray(layer.clipPolygon) && layer.clipPolygon.length >= 3, `${label}: an explicit color clip needs at least three vertices`);
+      assert.ok(layer.clipPolygon.every(point => Array.isArray(point) && point.length === 2 && point.every(value => Number.isFinite(value) && value >= 0 && value <= 100)), `${label}: clip vertices stay inside the original image`);
+      const area = layer.clipPolygon.reduce((sum, point, i, points) => { const next = points[(i + 1) % points.length]; return sum + point[0] * next[1] - next[0] * point[1]; }, 0);
+      assert.ok(Math.abs(area) > 1e-8, `${label}: clip polygon must reveal a nonempty color region`);
+    }
     assert.ok(Array.isArray(layer.regions) && layer.regions.length, `${label}: layer has an explicit mask`);
     return layer.regions;
   });
   assert.equal(regions.length, 10, `${label}: exactly ten local masks`);
   assert.deepEqual(regions.map(region => region.spotIndex).sort((a, b) => a - b), Array.from({ length: 10 }, (_, index) => index), `${label}: one mask per answer`);
+
+  // Uploads use this list. A missing plate or stale digest must fail before a
+  // release, even when its filename and PNG dimensions still look correct.
+  const published = publishedStages.get(puzzle.id);
+  assert.equal(published.id, source.id, `${label}: publish artwork identity`);
+  assert.equal(published.differenceCount, puzzle.spots.length, `${label}: published answer count`);
+  const runtimePaths = [...new Set([puzzle.original, ...puzzle.layers.map(layer => layer.image)])].sort();
+  assert.deepEqual(published.assets.map(asset => asset.path).sort(), runtimePaths, `${label}: publish list includes exactly the referenced image files`);
+  for (const asset of published.assets) {
+    const file = localAsset(asset.path, `${label}: published image`);
+    if (verifiedPublishedAssets.has(file)) continue;
+    const bytes = file === originalFile ? originalBytes : fs.readFileSync(file);
+    const dimensions = file === originalFile ? { width: source.width, height: source.height } : verifiedPngs.get(file);
+    assert.equal(asset.bytes, bytes.length, `${asset.path}: publish byte size`);
+    assert.equal(asset.sha256, crypto.createHash('sha256').update(bytes).digest('hex'), `${asset.path}: published image hash`);
+    assert.deepEqual({ width: asset.width, height: asset.height }, dimensions, `${asset.path}: published dimensions`);
+    verifiedPublishedAssets.add(file);
+  }
 
   for (const [index, spot] of puzzle.spots.entries()) {
     const answer = `${label} answer ${index + 1}`;
@@ -144,7 +174,7 @@ for (const puzzle of puzzles.slice(62)) {
     near(spot.x, (box.left + box.right) / 2, `${answer}: center x`);
     near(spot.y, (box.top + box.bottom) / 2, `${answer}: center y`);
     const region = regions.find(region => region.spotIndex === index);
-    assert.equal(region.shape, 'rect', `${answer}: rectangular edit mask`);
+    assert.ok(['rect', 'ellipse'].includes(region.shape), `${answer}: supported explicit edit mask`);
     assert.ok(Number.isFinite(region.feather) && region.feather >= 0 && region.feather <= 0.5, `${answer}: bounded feather`);
     near(region.x - region.rx, box.left, `${answer}: mask left`);
     near(region.x + region.rx, box.right, `${answer}: mask right`);
@@ -173,4 +203,4 @@ for (const puzzle of puzzles.slice(62)) {
 
 assert.equal(hitFailures.length, 0, `${hitFailures.length} registered answer points are not clickable as the correct answer:\n${hitFailures.slice(0, 30).join('\n')}`);
 assert.equal(sources.size, 20);
-console.log(`PASS: 82 stages, 62 unchanged six-answer puzzles, 20 original JPEG hashes, ${verifiedPngs.size} aligned PNG assets, 200 separate edit masks, ${hitChecks} center/corner hits, and HTTPS museum attribution; repository files only`);
+console.log(`PASS: 82 stages, 62 unchanged six-answer puzzles, 20 original JPEG hashes, ${verifiedPngs.size} aligned PNG assets, ${verifiedPublishedAssets.size} publish-manifest hashes, 200 separate edit masks, ${hitChecks} center/corner hits, and HTTPS museum attribution; repository files only`);

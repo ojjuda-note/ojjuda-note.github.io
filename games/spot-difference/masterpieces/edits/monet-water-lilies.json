@@ -72,8 +72,13 @@
         8.4
       ],
       "kind": "color",
-      "descriptionKo": "위쪽 가운데의 작은 수련이 주황색으로 바뀌었어요.",
-      "instructionEn": "Recolor the small light yellow lily at x46 y7 to orange, retaining the horizontal brushstroke shape."
+      "descriptionKo": "위쪽 가운데의 작은 노란 수련이 선명한 초록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small pale-yellow lily near the upper center inside this target to vivid emerald green. Preserve the exact horizontal brushstroke shape, loose painterly edges, location and surrounding water.",
+      "image": "masterpieces/changes/monet-water-lilies-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "id": 7,
@@ -84,8 +89,13 @@
         8.1
       ],
       "kind": "color",
-      "descriptionKo": "위쪽 가운데 오른편 수련이 붉게 바뀌었어요.",
-      "instructionEn": "Recolor the pale green-white lily near x56 y6 to muted red, same loose soft edges."
+      "descriptionKo": "위쪽 가운데 오른편 수련의 연초록 부분이 선명한 빨간색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the pale-green painted strokes of this upper-center-right green-white lily to vivid scarlet red. Preserve its white highlights as white, loose brushstroke shapes, exact placement and surrounding water.",
+      "image": "masterpieces/changes/monet-water-lilies-colors1.png",
+      "colorMapping": {
+        "from": "green",
+        "to": "red"
+      }
     },
     {
       "id": 8,

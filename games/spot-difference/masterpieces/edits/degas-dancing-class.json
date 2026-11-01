@@ -17,9 +17,14 @@
         17.5,
         95.0
       ],
-      "descriptionKo": "왼쪽 아래 물뿌리개가 붉은색으로 바뀌었어요.",
-      "instructionEn": "Recolor only the small green watering can at bottom left to muted brick red, preserving its spout, handle, highlights and surrounding floor.",
-      "kind": "color"
+      "descriptionKo": "왼쪽 아래 초록 물뿌리개가 선명한 빨간색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small green watering can at bottom left to vivid scarlet red. Preserve its spout, handle, shape, highlights and the surrounding floor.",
+      "kind": "color",
+      "image": "masterpieces/changes/degas-dancing-class-colors1.png",
+      "colorMapping": {
+        "from": "green",
+        "to": "red"
+      }
     },
     {
       "id": 2,
@@ -67,9 +72,14 @@
         20.1,
         58.4
       ],
-      "descriptionKo": "피아노 위 펼친 악보의 밝은 페이지가 옅은 파란색으로 바뀌었어요.",
-      "instructionEn": "Change only the exposed pale yellow pages of the open music booklet on top of the piano to pale blue; preserve all page edges, the piano and every nearby finger.",
-      "kind": "color"
+      "descriptionKo": "피아노 위 악보의 노란 페이지가 선명한 초록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the exposed pale-yellow pages of the open music booklet on top of the piano to vivid emerald green. Preserve all existing page edges, marks, the piano and every nearby finger.",
+      "kind": "color",
+      "image": "masterpieces/changes/degas-dancing-class-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "id": 6,

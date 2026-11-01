@@ -5,7 +5,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "추수하는 사람들",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.3567105731577074,
     "artwork": {
@@ -52,7 +52,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 72.94999999999999,
         "rx": 2.0725,
         "ry": 3.8274999999999983,
-        "text": "서 있는 사람이 든 붉은 물병이 파란색으로 바뀌었어요.",
+        "text": "서 있는 사람이 든 붉은 물병이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -127,7 +127,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 41.599999999999994,
         "rx": 2.0725,
         "ry": 2.680000000000001,
-        "text": "왼쪽 먼 마을의 작은 붉은 지붕이 청회색으로 바뀌었어요.",
+        "text": "왼쪽 먼 마을의 작은 붉은 지붕이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -200,7 +200,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.972
       },
       {
-        "image": "masterpieces/changes/bruegel-harvesters.png",
+        "image": "masterpieces/changes/bruegel-harvesters-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -275,7 +275,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/bruegel-harvesters.png",
+        "image": "masterpieces/changes/bruegel-harvesters-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -326,7 +326,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "소크라테스의 죽음",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.5020653398422832,
     "artwork": {
@@ -388,7 +388,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 44.75,
         "rx": 3.4225,
         "ry": 6.257500000000004,
-        "text": "계단 뒤 작은 인물의 붉은 옷이 파란색으로 바뀌었어요.",
+        "text": "계단 뒤 작은 인물의 붉은 옷이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -536,7 +536,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.97
       },
       {
-        "image": "masterpieces/changes/david-death-of-socrates.png",
+        "image": "masterpieces/changes/david-death-of-socrates-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -968,7 +968,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "사이프러스가 있는 밀밭",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.256281407035176,
     "artwork": {
@@ -1105,7 +1105,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 93.35,
         "rx": 3.2200000000000015,
         "ry": 3.692500000000006,
-        "text": "아래쪽 왼편의 붉은 꽃송이들이 노란색으로 바뀌었어요.",
+        "text": "아래쪽 왼편의 붉은 꽃송이들이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -1120,7 +1120,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 88.4,
         "rx": 3.152500000000008,
         "ry": 3.2199999999999944,
-        "text": "아래쪽 가운데 오른편의 붉은 꽃송이들이 보라색으로 바뀌었어요.",
+        "text": "아래쪽 가운데 오른편의 붉은 꽃송이들이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -1253,7 +1253,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.933
       },
       {
-        "image": "masterpieces/changes/van-gogh-wheat-field-cypresses.png",
+        "image": "masterpieces/changes/van-gogh-wheat-field-cypresses-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -1268,7 +1268,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/van-gogh-wheat-field-cypresses.png",
+        "image": "masterpieces/changes/van-gogh-wheat-field-cypresses-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -1610,7 +1610,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "무용 수업",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.3386880856760375,
     "artwork": {
@@ -1627,7 +1627,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 90.6,
         "rx": 6.595000000000001,
         "ry": 6.189999999999999,
-        "text": "왼쪽 아래 물뿌리개가 붉은색으로 바뀌었어요.",
+        "text": "왼쪽 아래 초록 물뿌리개가 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -1687,7 +1687,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 56.599999999999994,
         "rx": 7.000000000000002,
         "ry": 2.680000000000001,
-        "text": "피아노 위 펼친 악보의 밝은 페이지가 옅은 파란색으로 바뀌었어요.",
+        "text": "피아노 위 악보의 노란 페이지가 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -1775,7 +1775,7 @@ window.JJUDA_PUZZLES.push(...[
     ],
     "layers": [
       {
-        "image": "masterpieces/changes/degas-dancing-class.png",
+        "image": "masterpieces/changes/degas-dancing-class-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -1835,7 +1835,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.946
       },
       {
-        "image": "masterpieces/changes/degas-dancing-class.png",
+        "image": "masterpieces/changes/degas-dancing-class-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -1931,7 +1931,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "물주전자를 든 여인",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 0.8890325918261769,
     "artwork": {
@@ -2068,7 +2068,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 89.7,
         "rx": 3.557500000000004,
         "ry": 6.325,
-        "text": "양탄자 오른쪽 가장자리의 금빛 잎무늬가 초록색으로 바뀌었어요.",
+        "text": "양탄자 오른쪽 가장자리의 금빛 잎무늬가 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -2218,7 +2218,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/vermeer-water-pitcher.png",
+        "image": "masterpieces/changes/vermeer-water-pitcher-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -2575,7 +2575,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "카드놀이하는 사람들",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.2561053984575836,
     "artwork": {
@@ -2607,7 +2607,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 17.75,
         "rx": 3.625,
         "ry": 5.177499999999999,
-        "text": "뒤에 서 있는 사람의 붉은 목수건이 황토색으로 바뀌었어요.",
+        "text": "뒤에 서 있는 사람의 붉은 목수건이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -2652,7 +2652,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 64.1,
         "rx": 4.097500000000002,
         "ry": 2.410000000000002,
-        "text": "탁자에 펼친 카드의 붉은 무늬가 초록색으로 바뀌었어요.",
+        "text": "탁자에 펼친 카드의 붉은 무늬가 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -2755,7 +2755,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/cezanne-card-players.png",
+        "image": "masterpieces/changes/cezanne-card-players-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -2800,7 +2800,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.994
       },
       {
-        "image": "masterpieces/changes/cezanne-card-players.png",
+        "image": "masterpieces/changes/cezanne-card-players-colors-detail1.png",
         "regions": [
           {
             "shape": "rect",
@@ -2896,7 +2896,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "샤르팡티에 부인과 자녀들",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.2292562999385372,
     "artwork": {
@@ -2913,7 +2913,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 12.1,
         "rx": 2.139999999999998,
         "ry": 4.840000000000001,
-        "text": "벽 위쪽의 푸른 술 장식이 붉은색으로 바뀌었어요.",
+        "text": "벽 위쪽 술 장식의 초록 부분이 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -2928,7 +2928,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 12.65,
         "rx": 4.7725,
         "ry": 5.582500000000001,
-        "text": "위쪽 벽의 붉은 나뭇가지 무늬가 파란색으로 바뀌었어요.",
+        "text": "위쪽 벽의 붉은 나뭇가지 무늬가 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -2943,7 +2943,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 28.35,
         "rx": 5.3125,
         "ry": 3.1525000000000007,
-        "text": "빈 의자 등받이 가운데 가로띠가 청록색으로 바뀌었어요.",
+        "text": "빈 의자 등받이 가운데의 노란 가로띠가 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -3003,7 +3003,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 44.9,
         "rx": 2.410000000000002,
         "ry": 3.625,
-        "text": "소파의 작은 붉은 꽃무늬가 파란색으로 바뀌었어요.",
+        "text": "소파의 작은 붉은 꽃무늬가 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -3061,7 +3061,7 @@ window.JJUDA_PUZZLES.push(...[
     ],
     "layers": [
       {
-        "image": "masterpieces/changes/renoir-charpentier-family.png",
+        "image": "masterpieces/changes/renoir-charpentier-family-colors-tassel1.png",
         "regions": [
           {
             "shape": "rect",
@@ -3076,7 +3076,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/renoir-charpentier-family.png",
+        "image": "masterpieces/changes/renoir-charpentier-family-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -3091,7 +3091,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/renoir-charpentier-family.png",
+        "image": "masterpieces/changes/renoir-charpentier-family-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -3151,7 +3151,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 1.005
       },
       {
-        "image": "masterpieces/changes/renoir-charpentier-family.png",
+        "image": "masterpieces/changes/renoir-charpentier-family-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -3538,7 +3538,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "호메로스의 흉상을 바라보는 아리스토텔레스",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 0.948,
     "artwork": {
@@ -3585,7 +3585,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 44.45,
         "rx": 2.3424999999999963,
         "ry": 3.017500000000001,
-        "text": "왼쪽 어깨의 금빛 장식이 초록색으로 바뀌었어요.",
+        "text": "왼쪽 어깨의 금빛 장식이 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -3645,7 +3645,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 74.95,
         "rx": 8.282500000000004,
         "ry": 4.2325000000000035,
-        "text": "목걸이 맨 아래의 고리 부분이 은빛으로 바뀌었어요.",
+        "text": "목걸이 맨 아래의 금빛 고리 부분이 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -3733,7 +3733,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 1.131
       },
       {
-        "image": "masterpieces/changes/rembrandt-aristotle-homer.png",
+        "image": "masterpieces/changes/rembrandt-aristotle-homer-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -3793,7 +3793,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 1.051
       },
       {
-        "image": "masterpieces/changes/rembrandt-aristotle-homer.png",
+        "image": "masterpieces/changes/rembrandt-aristotle-homer-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -3859,7 +3859,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "델라웨어강을 건너는 워싱턴",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.7066079295154184,
     "artwork": {
@@ -3906,7 +3906,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 41.5,
         "rx": 4.435000000000002,
         "ry": 3.3549999999999964,
-        "text": "깃발 오른쪽 끝의 붉은 줄무늬가 파란색으로 바뀌었어요.",
+        "text": "깃발 오른쪽 끝의 붉은 줄무늬가 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -3936,7 +3936,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 50.85,
         "rx": 2.7475000000000023,
         "ry": 2.7475000000000023,
-        "text": "왼쪽 노 젓는 사람의 붉은 목도리 끝이 파란색으로 바뀌었어요.",
+        "text": "왼쪽 노 젓는 사람의 붉은 목도리 끝이 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -3966,7 +3966,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 86.25,
         "rx": 8.282499999999999,
         "ry": 5.987500000000001,
-        "text": "아래쪽 가운데 긴 얼음 조각이 연보라색으로 바뀌었어요.",
+        "text": "아래쪽 가운데의 연초록 얼음 조각이 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -4054,7 +4054,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.975
       },
       {
-        "image": "masterpieces/changes/leutze-washington-delaware.png",
+        "image": "masterpieces/changes/leutze-washington-delaware-colors-detail1.png",
         "regions": [
           {
             "shape": "rect",
@@ -4066,7 +4066,97 @@ window.JJUDA_PUZZLES.push(...[
             "feather": 0.12
           }
         ],
-        "blend": "color"
+        "blend": "color",
+        "clipPolygon": [
+          [
+            61.45,
+            41.92
+          ],
+          [
+            61.9,
+            41.43
+          ],
+          [
+            62.51,
+            40.9
+          ],
+          [
+            63.21,
+            40.34
+          ],
+          [
+            63.9,
+            39.72
+          ],
+          [
+            64.59,
+            39.25
+          ],
+          [
+            64.84,
+            39.2
+          ],
+          [
+            65.3,
+            39.35
+          ],
+          [
+            65.73,
+            39.54
+          ],
+          [
+            65.86,
+            39.76
+          ],
+          [
+            65.46,
+            40.07
+          ],
+          [
+            65.12,
+            40.41
+          ],
+          [
+            64.67,
+            40.64
+          ],
+          [
+            64.32,
+            40.71
+          ],
+          [
+            64.0,
+            41.04
+          ],
+          [
+            63.67,
+            41.11
+          ],
+          [
+            63.37,
+            41.48
+          ],
+          [
+            63.1,
+            41.73
+          ],
+          [
+            62.77,
+            41.99
+          ],
+          [
+            62.35,
+            42.18
+          ],
+          [
+            61.94,
+            42.13
+          ],
+          [
+            61.62,
+            42.08
+          ]
+        ]
       },
       {
         "image": "masterpieces/changes/leutze-washington-delaware.png",
@@ -4084,7 +4174,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.981
       },
       {
-        "image": "masterpieces/changes/leutze-washington-delaware.png",
+        "image": "masterpieces/changes/leutze-washington-delaware-colors-detail1.png",
         "regions": [
           {
             "shape": "rect",
@@ -4114,7 +4204,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/leutze-washington-delaware.png",
+        "image": "masterpieces/changes/leutze-washington-delaware-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -4502,7 +4592,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "옥스보",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.4635931211123308,
     "artwork": {
@@ -4515,18 +4605,18 @@ window.JJUDA_PUZZLES.push(...[
     "difference": "masterpieces/sources/cole-the-oxbow.jpg",
     "spots": [
       {
-        "x": 6.8,
-        "y": 16.8,
-        "rx": 6.73,
-        "ry": 9.430000000000001,
-        "text": "왼쪽 위 나뭇잎이 가을빛으로 바뀌었어요.",
+        "x": 7.8,
+        "y": 20.8,
+        "rx": 9.97,
+        "ry": 16.990000000000006,
+        "text": "왼쪽 위 나뭇잎이 초록색에서 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
-          "left": 2,
-          "top": 10,
-          "right": 11.6,
-          "bottom": 23.6
+          "left": 0.6,
+          "top": 8.4,
+          "right": 15.0,
+          "bottom": 33.2
         }
       },
       {
@@ -4639,7 +4729,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 72.5,
         "rx": 4.570000000000004,
         "ry": 2.679999999999996,
-        "text": "강 안쪽 밭 한 구역이 초록색으로 바뀌었어요.",
+        "text": "강 안쪽 밭 한 구역이 노란색에서 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -4667,14 +4757,14 @@ window.JJUDA_PUZZLES.push(...[
     ],
     "layers": [
       {
-        "image": "masterpieces/changes/cole-the-oxbow.png",
+        "image": "masterpieces/changes/cole-the-oxbow-colors1.png",
         "regions": [
           {
             "shape": "rect",
-            "x": 6.8,
-            "y": 16.8,
-            "rx": 4.8,
-            "ry": 6.800000000000001,
+            "x": 7.8,
+            "y": 20.8,
+            "rx": 7.2,
+            "ry": 12.400000000000002,
             "spotIndex": 0,
             "feather": 0.12
           }
@@ -4787,7 +4877,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.984
       },
       {
-        "image": "masterpieces/changes/cole-the-oxbow.png",
+        "image": "masterpieces/changes/cole-the-oxbow-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -4823,7 +4913,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "걸프 스트림",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.6207455429497568,
     "artwork": {
@@ -4930,7 +5020,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 62.15,
         "rx": 3.4899999999999984,
         "ry": 5.582499999999994,
-        "text": "배 안 사탕수수 줄기가 자주색으로 바뀌었어요.",
+        "text": "배 안 사탕수수의 초록 줄기는 빨강, 노란 부분은 초록으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -5078,7 +5168,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/homer-gulf-stream.png",
+        "image": "masterpieces/changes/homer-gulf-stream-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -5144,7 +5234,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "말 시장",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.9579050416054822,
     "artwork": {
@@ -5176,7 +5266,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 54.900000000000006,
         "rx": 3.1525000000000007,
         "ry": 4.030000000000001,
-        "text": "가운데 왼쪽 말의 안장 천이 파란색으로 바뀌었어요.",
+        "text": "안장 천의 노란 바탕은 초록, 붉은 격자는 노랑으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -5202,18 +5292,18 @@ window.JJUDA_PUZZLES.push(...[
         }
       },
       {
-        "x": 52.4,
+        "x": 52.15,
         "y": 46.25,
-        "rx": 2.410000000000002,
-        "ry": 5.042499999999997,
-        "text": "흰 말 뒤 사람의 저고리가 보라색으로 바뀌었어요.",
+        "rx": 3.422500000000002,
+        "ry": 7.3375,
+        "text": "흰 말 뒤 사람의 초록 저고리가 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
-          "left": 50.8,
-          "top": 42.7,
-          "right": 54.0,
-          "bottom": 49.8
+          "left": 49.8,
+          "top": 41.0,
+          "right": 54.5,
+          "bottom": 51.5
         }
       },
       {
@@ -5232,33 +5322,33 @@ window.JJUDA_PUZZLES.push(...[
         }
       },
       {
-        "x": 91.44999999999999,
+        "x": 90.35,
         "y": 51.3,
-        "rx": 3.8274999999999983,
-        "ry": 5.7849999999999975,
-        "text": "오른쪽 끝 사람의 겉옷이 붉은색으로 바뀌었어요.",
+        "rx": 5.852499999999998,
+        "ry": 7.27,
+        "text": "오른쪽 끝 사람의 초록 겉옷이 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
-          "left": 88.8,
-          "top": 47.2,
-          "right": 94.1,
-          "bottom": 55.4
+          "left": 86.2,
+          "top": 46.1,
+          "right": 94.5,
+          "bottom": 56.5
         }
       },
       {
-        "x": 23.799999999999997,
-        "y": 70.1,
-        "rx": 2.4099999999999997,
-        "ry": 7.944999999999995,
-        "text": "앞쪽 사람의 바지가 파란색으로 바뀌었어요.",
+        "x": 22.75,
+        "y": 72.9,
+        "rx": 3.9625000000000004,
+        "ry": 13.075000000000006,
+        "text": "앞쪽 사람의 짙은 초록 바지가 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
-          "left": 22.2,
-          "top": 64.4,
-          "right": 25.4,
-          "bottom": 75.8
+          "left": 20.0,
+          "top": 63.4,
+          "right": 25.5,
+          "bottom": 82.4
         }
       },
       {
@@ -5266,7 +5356,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 23.95,
         "rx": 5.4475000000000025,
         "ry": 7.067500000000002,
-        "text": "오른쪽 나무의 작은 잎 무리가 노란색으로 바뀌었어요.",
+        "text": "오른쪽 나무의 작은 초록 잎 무리가 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -5324,7 +5414,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.871
       },
       {
-        "image": "masterpieces/changes/bonheur-horse-fair.png",
+        "image": "masterpieces/changes/bonheur-horse-fair-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -5354,14 +5444,14 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/bonheur-horse-fair.png",
+        "image": "masterpieces/changes/bonheur-horse-fair-colors1.png",
         "regions": [
           {
             "shape": "rect",
-            "x": 52.4,
+            "x": 52.15,
             "y": 46.25,
-            "rx": 1.6000000000000014,
-            "ry": 3.549999999999997,
+            "rx": 2.3500000000000014,
+            "ry": 5.25,
             "spotIndex": 3,
             "feather": 0.12
           }
@@ -5384,14 +5474,14 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/bonheur-horse-fair.png",
+        "image": "masterpieces/changes/bonheur-horse-fair-colors1.png",
         "regions": [
           {
             "shape": "rect",
-            "x": 91.44999999999999,
+            "x": 90.35,
             "y": 51.3,
-            "rx": 2.6499999999999986,
-            "ry": 4.099999999999998,
+            "rx": 4.149999999999999,
+            "ry": 5.199999999999999,
             "spotIndex": 5,
             "feather": 0.12
           }
@@ -5399,14 +5489,14 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/bonheur-horse-fair.png",
+        "image": "masterpieces/changes/bonheur-horse-fair-colors-detail1.png",
         "regions": [
           {
             "shape": "rect",
-            "x": 23.799999999999997,
-            "y": 70.1,
-            "rx": 1.5999999999999996,
-            "ry": 5.699999999999996,
+            "x": 22.75,
+            "y": 72.9,
+            "rx": 2.75,
+            "ry": 9.500000000000004,
             "spotIndex": 6,
             "feather": 0.12
           }
@@ -5414,10 +5504,10 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/bonheur-horse-fair.png",
+        "image": "masterpieces/changes/bonheur-horse-fair-colors-detail2.png",
         "regions": [
           {
-            "shape": "rect",
+            "shape": "ellipse",
             "x": 74.94999999999999,
             "y": 23.95,
             "rx": 3.8500000000000014,
@@ -5465,7 +5555,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "사과와 앵초 화분이 있는 정물",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 1.260178748758689,
     "artwork": {
@@ -5527,7 +5617,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 46.150000000000006,
         "rx": 11.927500000000004,
         "ry": 11.6575,
-        "text": "화분 왼쪽의 큰 잎이 노란색으로 바뀌었어요.",
+        "text": "화분 왼쪽의 큰 초록 잎이 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -5557,7 +5647,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 71.0,
         "rx": 5.177499999999999,
         "ry": 6.595000000000004,
-        "text": "맨 왼쪽 앞의 붉은 사과가 초록색으로 바뀌었어요.",
+        "text": "맨 왼쪽 앞의 붉은 사과가 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -5602,7 +5692,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 79.6,
         "rx": 6.392500000000001,
         "ry": 7.1350000000000025,
-        "text": "아래쪽 가운데의 큰 붉은 사과가 초록색으로 바뀌었어요.",
+        "text": "아래쪽 가운데의 큰 붉은 사과가 선명한 노란색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -5675,7 +5765,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 0.98
       },
       {
-        "image": "masterpieces/changes/cezanne-apples-primroses.png",
+        "image": "masterpieces/changes/cezanne-apples-primroses-colors-detail1.png",
         "regions": [
           {
             "shape": "rect",
@@ -5687,7 +5777,145 @@ window.JJUDA_PUZZLES.push(...[
             "feather": 0.06
           }
         ],
-        "blend": "color"
+        "blend": "color",
+        "clipPolygon": [
+          [
+            53.06,
+            37.77
+          ],
+          [
+            56.92,
+            40.42
+          ],
+          [
+            57.82,
+            42.8
+          ],
+          [
+            59.76,
+            40.6
+          ],
+          [
+            62.06,
+            42.76
+          ],
+          [
+            63.1,
+            45.17
+          ],
+          [
+            62.79,
+            47.12
+          ],
+          [
+            61.61,
+            48.07
+          ],
+          [
+            61.78,
+            49.81
+          ],
+          [
+            60.68,
+            51.5
+          ],
+          [
+            59.39,
+            51.58
+          ],
+          [
+            58.27,
+            50.9
+          ],
+          [
+            57.7,
+            52.39
+          ],
+          [
+            56.27,
+            52.99
+          ],
+          [
+            55.09,
+            52.14
+          ],
+          [
+            54.98,
+            53.84
+          ],
+          [
+            53.91,
+            54.6
+          ],
+          [
+            52.44,
+            54.6
+          ],
+          [
+            51.23,
+            53.88
+          ],
+          [
+            50.64,
+            52.32
+          ],
+          [
+            49.6,
+            51.43
+          ],
+          [
+            48.42,
+            51.58
+          ],
+          [
+            47.1,
+            50.58
+          ],
+          [
+            46.31,
+            49.06
+          ],
+          [
+            46.37,
+            47.01
+          ],
+          [
+            47.1,
+            45.84
+          ],
+          [
+            47.89,
+            44.28
+          ],
+          [
+            47.49,
+            42.76
+          ],
+          [
+            48.0,
+            41.45
+          ],
+          [
+            48.84,
+            40.67
+          ],
+          [
+            49.77,
+            41.2
+          ],
+          [
+            50.25,
+            39.86
+          ],
+          [
+            51.07,
+            38.62
+          ],
+          [
+            52.05,
+            38.09
+          ]
+        ]
       },
       {
         "image": "masterpieces/changes/cezanne-apples-primroses.png",
@@ -5705,7 +5933,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/cezanne-apples-primroses.png",
+        "image": "masterpieces/changes/cezanne-apples-primroses-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -5750,7 +5978,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 1.015
       },
       {
-        "image": "masterpieces/changes/cezanne-apples-primroses.png",
+        "image": "masterpieces/changes/cezanne-apples-primroses-colors-detail1.png",
         "regions": [
           {
             "shape": "rect",
@@ -6107,7 +6335,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "수련 (아가판투스)",
     "category": "masterpiece",
     "difficulty": "very-hard",
-    "revision": "masterpieces-1",
+    "revision": "colors1",
     "hitMode": "target-bounds",
     "aspectRatio": 2.150537634408602,
     "artwork": {
@@ -6199,7 +6427,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 6.550000000000001,
         "rx": 3.625,
         "ry": 2.7475000000000005,
-        "text": "위쪽 가운데의 작은 수련이 주황색으로 바뀌었어요.",
+        "text": "위쪽 가운데의 작은 노란 수련이 선명한 초록색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -6214,7 +6442,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 6.25,
         "rx": 3.625,
         "ry": 2.7474999999999996,
-        "text": "위쪽 가운데 오른편 수련이 붉게 바뀌었어요.",
+        "text": "위쪽 가운데 오른편 수련의 연초록 부분이 선명한 빨간색으로 바뀌었어요.",
         "kind": "color",
         "size": "small",
         "targetBounds": {
@@ -6347,7 +6575,7 @@ window.JJUDA_PUZZLES.push(...[
         "brightness": 1.074
       },
       {
-        "image": "masterpieces/changes/monet-water-lilies.png",
+        "image": "masterpieces/changes/monet-water-lilies-colors1.png",
         "regions": [
           {
             "shape": "rect",
@@ -6362,7 +6590,7 @@ window.JJUDA_PUZZLES.push(...[
         "blend": "color"
       },
       {
-        "image": "masterpieces/changes/monet-water-lilies.png",
+        "image": "masterpieces/changes/monet-water-lilies-colors1.png",
         "regions": [
           {
             "shape": "rect",

@@ -129,6 +129,25 @@ async function checkRuntime(){
  }finally{recovery.w.close();}
 }
 
+function checkLayerClipping(){
+ const f=domFixture();try{
+  const polygon=[[10,10],[30,10],[20,25]];
+  const invalid=[null,[],[[10,10],[30,10]],[[10,10],[30,10],[101,25]],[[10,10],[30,10],[-1,25]],[[10,10],[30,10],[NaN,25]],[[10,10],[30,10],[Infinity,25]],[[10,10],[30,10],['20%; url(x)',25]],[[10,10],[30,10],[20,25,40]]];
+  const layer=clipPolygon=>({image:'/landscape.svg',blend:'color',regions:[{shape:'rect',x:20,y:20,rx:12,ry:12,spotIndex:0,feather:.12}],...(clipPolygon===undefined?{}:{clipPolygon})});
+  f.w.JJUDA_PUZZLES[1].layers=[layer(polygon),layer(),...invalid.map(layer)];f.select(1);
+  for(const id of ['difference','zoom-difference']){
+   const overlays=[...f.$(id).parentElement.querySelectorAll('.contrast-overlay')];
+   assert.equal(overlays.length,invalid.length+2);
+   assert.equal(overlays[0].style.clipPath,'polygon(10% 10%,30% 10%,20% 25%)','valid explicit color clips apply in both normal and zoom views');
+   assert.match(overlays[0].style.maskImage,/linear-gradient/,'polygon clipping keeps the existing feathered mask');
+   assert.equal(overlays[0].style.mixBlendMode,'color');
+   assert.ok(overlays.slice(1).every(image=>image.style.clipPath===''),'absent or malformed polygons preserve the previous un-clipped layer behavior');
+  }
+  assert.equal(f.$('original').parentElement.querySelectorAll('.contrast-overlay').length,0,'the original picture is never clipped');
+  assert.equal(f.$('found-total').textContent,'10','visual clipping does not alter answer counts');
+ }finally{f.w.close();}
+}
+
 async function checkRenderedCircles(){
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
@@ -176,6 +195,6 @@ async function checkRenderedCircles(){
 }
 
 (async()=>{
- checkPreciseTargetBounds();checkProgressNormalization();await checkRuntime();await checkRenderedCircles();
- console.log('PASS: precise masterpiece edit hits without changing legacy ellipses, six/ten-answer completion, stage82 single recording, spot9 hint/receipt recovery, safe artwork credits, ten-answer review, portrait/landscape circles in normal and zoom views');
+ checkPreciseTargetBounds();checkProgressNormalization();checkLayerClipping();await checkRuntime();await checkRenderedCircles();
+ console.log('PASS: precise masterpiece edit hits without changing legacy ellipses, safe optional layer clipping, six/ten-answer completion, stage82 single recording, spot9 hint/receipt recovery, safe artwork credits, ten-answer review, portrait/landscape circles in normal and zoom views');
 })().catch(error=>{console.error(error);process.exitCode=1;});

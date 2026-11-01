@@ -116,9 +116,14 @@
         96.0,
         94.2
       ],
-      "descriptionKo": "양탄자 오른쪽 가장자리의 금빛 잎무늬가 초록색으로 바뀌었어요.",
-      "instructionEn": "Change only the tall golden leaf-shaped motif along the right edge of the hanging carpet to dark green, retaining its shape, woven texture and surrounding red fabric.",
-      "kind": "color"
+      "descriptionKo": "양탄자 오른쪽 가장자리의 금빛 잎무늬가 선명한 초록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the existing golden-yellow leaf-shaped carpet motif along the right edge to vivid emerald green. Preserve its woven outline, shading, texture and every surrounding red and blue carpet mark.",
+      "kind": "color",
+      "image": "masterpieces/changes/vermeer-water-pitcher-colors1.png",
+      "colorMapping": {
+        "from": "yellow",
+        "to": "green"
+      }
     },
     {
       "id": 10,

@@ -115,9 +115,14 @@
         35.2,
         95.9
       ],
-      "descriptionKo": "아래쪽 왼편의 붉은 꽃송이들이 노란색으로 바뀌었어요.",
-      "instructionEn": "Recolor only the compact cluster of red poppy flower heads near the lower-left-of-center edge to golden yellow, retaining every stem and the exact petal shapes.",
-      "kind": "color"
+      "descriptionKo": "아래쪽 왼편의 붉은 꽃송이들이 선명한 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the compact red poppy flower heads near the lower-left-of-center edge to bright yellow. Preserve the stems, exact petal shapes, brush ridges and surrounding grasses.",
+      "kind": "color",
+      "image": "masterpieces/changes/van-gogh-wheat-field-cypresses-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     },
     {
       "id": 10,
@@ -127,9 +132,14 @@
         69.4,
         90.6
       ],
-      "descriptionKo": "아래쪽 가운데 오른편의 붉은 꽃송이들이 보라색으로 바뀌었어요.",
-      "instructionEn": "Recolor only the small red poppy cluster near the lower center-right to muted violet-blue; preserve the stems, white nearby flowers and surrounding grasses.",
-      "kind": "color"
+      "descriptionKo": "아래쪽 가운데 오른편의 붉은 꽃송이들이 선명한 노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small red poppy cluster near the lower center-right to bright yellow. Preserve the original flower silhouettes, stems, nearby white flowers and surrounding grasses.",
+      "kind": "color",
+      "image": "masterpieces/changes/van-gogh-wheat-field-cypresses-colors1.png",
+      "colorMapping": {
+        "from": "red",
+        "to": "yellow"
+      }
     }
   ]
 }
