@@ -83,12 +83,26 @@ for(const kind of Object.keys(kinds)){
 
 test('roulette rejects foreign frames, foreign origins and unsupported wallet commands',async t=>{
  const f=await fixture(t,'roulette',null);await f.ready();const before=f.calls.length,child=f.w.document.querySelector('iframe').contentWindow;
- for(const [origin,source] of [['https://foreign.test',child],[f.w.location.origin,f.w]]){
-  f.w.dispatchEvent(new f.w.MessageEvent('message',{origin,source,data:{source:'ojjuda-roulette',type:'rpc',id:randomUUID(),body:{action:'create'}}}));
+ for(const action of ['create','refill'])for(const [origin,source] of [['https://foreign.test',child],[f.w.location.origin,f.w]]){
+  f.w.dispatchEvent(new f.w.MessageEvent('message',{origin,source,data:{source:'ojjuda-roulette',type:'rpc',id:randomUUID(),body:{action,request_id:randomUUID(),paid:true}}}));
  }
- f.request({action:'refill',coins:999999});await tick();await tick();
+ // Refill is a supported server-validated purchase, not an arbitrary wallet credit.
+ f.request({action:'credit',coins:999999});await tick();await tick();
  assert.equal(f.calls.length,before);assert.ok(f.messages.every(message=>!('access_token' in message)&&!('session' in message)));
  f.request({action:'create'});await tick();await tick();assert.equal(f.calls.at(-1).action,'create');
+});
+
+for(const paid of [false,true])test(`roulette forwards a supported ${paid?'paid':'free'} refill and waits for the server wallet`,async t=>{
+ const f=await fixture(t,'roulette',null);await f.ready();const before=f.calls.length,gate=deferred(),request_id=randomUUID();
+ f.gates.set('refill',gate);f.coins.length=0;
+ const id=f.request({action:'refill',request_id,paid});await tick();await tick();
+ assert.deepEqual(f.calls.slice(before),[{action:'refill',request_id,paid}],'the authorized request reaches the server once with its receipt ID and consent');
+ assert.deepEqual(f.coins,[],'the bridge cannot credit a wallet before the server replies');
+ assert.equal(f.messages.some(message=>message.id===id),false);
+ gate.resolve();await tick();await tick();
+ const response=f.messages.find(message=>message.id===id);
+ assert.equal(response?.type,'roulette-rpc');assert.equal(response.error,null);assert.equal(response.data.wallet.coins,77);
+ assert.deepEqual(f.coins,[77],'the account display uses the confirmed server balance');
 });
 
 test('roulette account change cannot receive or settle a late previous-account response',async t=>{

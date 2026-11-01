@@ -50,7 +50,8 @@ function state(){
   }
   {
    const {host,guest,h,g}=await pair('b'.repeat(24));
-   await g.evaluate(()=>{paused=true;world.sameWorld='guest';});
+   // A frozen guest skips clock prediction, so align it with the snapshot before receiving items.
+   await g.evaluate(()=>{paused=true;world.time=23.125;world.sameWorld='guest';});
    await h.evaluate(()=>{
     paused=true;world.time=23.125;endAt=121;me.boostT=3.25;me.shieldT=1.75;p2.kills=3;p2.best=12.5;
     me.trail=[];me.pts=[];me.tc=new Map();
