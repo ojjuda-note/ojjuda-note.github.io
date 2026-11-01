@@ -335,6 +335,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/436105"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/david-death-of-socrates.jpg",
     "difference": "masterpieces/sources/david-death-of-socrates.jpg",
     "spots": [
@@ -1619,6 +1620,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/436141"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/degas-dancing-class.jpg",
     "difference": "masterpieces/sources/degas-dancing-class.jpg",
     "spots": [
@@ -1940,6 +1942,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/437881"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/vermeer-water-pitcher.jpg",
     "difference": "masterpieces/sources/vermeer-water-pitcher.jpg",
     "spots": [
@@ -2263,6 +2266,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/436575"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/el-greco-view-toledo.jpg",
     "difference": "masterpieces/sources/el-greco-view-toledo.jpg",
     "spots": [
@@ -3226,6 +3230,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/437654"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/seurat-circus-sideshow.jpg",
     "difference": "masterpieces/sources/seurat-circus-sideshow.jpg",
     "spots": [
@@ -3547,6 +3552,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/437394"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/rembrandt-aristotle-homer.jpg",
     "difference": "masterpieces/sources/rembrandt-aristotle-homer.jpg",
     "spots": [
@@ -4922,6 +4928,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/11122"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/homer-gulf-stream.jpg",
     "difference": "masterpieces/sources/homer-gulf-stream.jpg",
     "spots": [
@@ -5243,6 +5250,7 @@ window.JJUDA_PUZZLES.push(...[
       "museum": "메트로폴리탄 미술관",
       "sourceUrl": "https://www.metmuseum.org/art/collection/search/435702"
     },
+    "displayBrightness": 1.12,
     "original": "masterpieces/sources/bonheur-horse-fair.jpg",
     "difference": "masterpieces/sources/bonheur-horse-fair.jpg",
     "spots": [

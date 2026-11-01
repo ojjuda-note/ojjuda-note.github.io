@@ -74,7 +74,10 @@ assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is l
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
 assert.ok(world.includes('/world-game-assets.js?v='+revision));
-assert.ok(bridge.includes('/games/forest-archer/index.html?v='+revision));
+// Another game may advance the shared release without changing archery assets.
+const archeryRevision=read('world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
+assert.ok(archeryRevision,'the archery bridge has its own cache revision');
+assert.equal(bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/)?.[1],archeryRevision);
 
 // A cold direct link must load against the initialized arcade route. Starting
 // before my() changes g.tab/place causes Al() to discard its own pending load.

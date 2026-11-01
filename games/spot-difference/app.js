@@ -41,10 +41,11 @@
     clearTimeout(zoomNoticeTimer);
     if(zoomDialog.open){$('zoom-tools').classList.add('has-message');zoomNoticeTimer=setTimeout(()=>$('zoom-tools').classList.remove('has-message'),6500);}
   }
-  function makeMark(spot,isHint=false){
+  function makeMark(spot,isHint=false,isAnswer=false){
     const mark=document.createElement('div');mark.className='mark'+(isHint?' hint-mark':'');
     // Convert vertical percent to picture-width units, preserving a round marker.
-    Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${Math.max(spot.rx,spot.ry/pictureRatio())*2}%`,height:'auto'});
+    const sizeScale=isHint||isAnswer?1:0.7;
+    Object.assign(mark.style,{left:`${spot.x}%`,top:`${spot.y}%`,width:`${Math.max(spot.rx,spot.ry/pictureRatio())*2*sizeScale}%`,height:'auto'});
     return mark;
   }
   function answerOrder(){return [...found(),...puzzle().spots.map((_,i)=>i).filter(i=>!found().includes(i))];}
@@ -54,8 +55,9 @@
       const layer=surface.querySelector('.marks');
       for(const mark of [...layer.children])if(!mark.classList.contains('hint-mark'))mark.remove();
       layer.append(...order.map(spotIndex=>{
-        const mark=makeMark(puzzle().spots[spotIndex]);
-        if(answerReview&&!found().includes(spotIndex))mark.classList.add('answer-mark');
+        const isAnswer=!!answerReview&&!found().includes(spotIndex);
+        const mark=makeMark(puzzle().spots[spotIndex],false,isAnswer);
+        if(isAnswer)mark.classList.add('answer-mark');
         return mark;
       }));
     }
@@ -257,7 +259,12 @@
     const p=puzzle(),difficulty=difficultyLabels[p.difficulty]||'';$('scene-title').textContent=p.title;$('stage-label').textContent=`문제 ${String(position()+1).padStart(2,'0')} / ${puzzles.length} · 무작위 순서${difficulty?' · '+difficulty:''}`;
     $('scene-instructions').textContent=`1분 안에 ${targetCount()}곳을 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.`;
     $('difference-status').textContent=`${targetCount()}곳이 달라요`;$('answer-count').textContent=`다른 곳 ${targetCount()}개`;
-    for(const surface of surfaces)surface.style.setProperty('--picture-ratio',String(pictureRatio()));
+    const brightness=Number.isFinite(p.displayBrightness)?Math.max(1,Math.min(1.15,p.displayBrightness)):1;
+    for(const surface of surfaces){
+      surface.style.setProperty('--picture-ratio',String(pictureRatio()));
+      surface.style.setProperty('--picture-brightness',String(brightness));
+      surface.classList.toggle('is-brightened',brightness>1);
+    }
     renderArtwork();
     const layers=p.layers||(p.contrast?[p.contrast]:[]);
     $('stage-picker').value=index;$('load-error').hidden=true;const token=++loadToken,loaded=new Set(),required=2+layers.length;autoStartToken=autoStart?token:null;
