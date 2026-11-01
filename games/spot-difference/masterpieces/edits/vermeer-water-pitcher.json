@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "vermeer-water-pitcher",
+  "title": "물주전자를 든 여인",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/vermeer-water-pitcher.jpg",
+  "sourceWidth": 3437,
+  "sourceHeight": 3866,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        60.3,
+        62.4,
+        68.4,
+        70.8
+      ],
+      "descriptionKo": "손에 든 금빛 주전자의 몸통이 은색으로 바뀌었어요.",
+      "instructionEn": "Change only the visible golden metal body of the pitcher to cool silver, retaining the original form, reflections and handle while leaving the woman hand and basin untouched.",
+      "kind": "color",
+      "blend": "normal"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        84.8,
+        72.1,
+        89.4,
+        77.6
+      ],
+      "descriptionKo": "오른쪽 장식 상자의 어두운 잠금판이 은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the dark rectangular lock plate on the front of the small decorative box at the right to muted silver-gray; preserve all surrounding gold panels and blue cords.",
+      "kind": "color",
+      "blend": "normal"
+    },
+    {
+      "id": 3,
+      "bounds": [
+        89.8,
+        69.6,
+        95.1,
+        77.2
+      ],
+      "descriptionKo": "오른쪽 상자에 걸린 파란 고리와 술이 없어졌어요.",
+      "instructionEn": "Remove only the blue cord loop and dangling blue tassel hanging over the right side of the decorative box; reconstruct the existing box and cloth surfaces behind it.",
+      "kind": "remove"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        72.7,
+        56.2,
+        79.0,
+        63.0
+      ],
+      "descriptionKo": "오른쪽 의자 기둥 위의 갈색 장식 꼭지가 없어졌어요.",
+      "instructionEn": "Remove the brown carved finial on top of the chair back at right of the pitcher, leaving the chair post below and restoring the pale wall behind it.",
+      "kind": "remove",
+      "feather": 0.06
+    },
+    {
+      "id": 5,
+      "bounds": [
+        59.4,
+        33.9,
+        66.3,
+        37.3
+      ],
+      "descriptionKo": "지도 아래 막대 왼쪽의 푸른 둥근 꼭지가 구릿빛으로 바뀌었어요.",
+      "instructionEn": "Recolor only the round blue finial at the left end of the wall-map lower rod to muted copper; keep the rod, map, wall and woman headdress unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        3.0,
+        16.3,
+        9.3,
+        23.6
+      ],
+      "descriptionKo": "왼쪽 창문 위쪽 가운데 유리 조각이 옅은 분홍색으로 바뀌었어요.",
+      "instructionEn": "Tint only the central pale polygonal glass pane in the upper leaded-window motif a faint dusty pink; preserve every dark lead line and all neighboring glass panes.",
+      "kind": "color"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        2.9,
+        49.8,
+        10.3,
+        56.6
+      ],
+      "descriptionKo": "왼쪽 창문 아래쪽 무늬의 가로 납선 하나가 없어졌어요.",
+      "instructionEn": "Remove only the short horizontal lead strip crossing the center of the lower decorative window polygon; join the two adjacent glass areas naturally and keep the outer lead pattern.",
+      "kind": "shape"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        59.1,
+        88.8,
+        65.8,
+        94.6
+      ],
+      "descriptionKo": "양탄자 아래쪽 가운데의 작은 파란 꽃무늬가 금색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small blue flower rosette near the lower center of the hanging carpet to muted gold, preserving the motif outline, weave and red ground.",
+      "kind": "color"
+    },
+    {
+      "id": 9,
+      "bounds": [
+        91.1,
+        85.2,
+        96.0,
+        94.2
+      ],
+      "descriptionKo": "양탄자 오른쪽 가장자리의 금빛 잎무늬가 초록색으로 바뀌었어요.",
+      "instructionEn": "Change only the tall golden leaf-shaped motif along the right edge of the hanging carpet to dark green, retaining its shape, woven texture and surrounding red fabric.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        69.0,
+        28.4,
+        78.5,
+        33.6
+      ],
+      "descriptionKo": "지도 왼쪽 아래의 작은 장식 상자가 없어졌어요.",
+      "instructionEn": "Remove only the dark ornamental rectangular cartouche in the lower-left portion of the wall map; replace it with the surrounding aged ochre map surface without changing the border.",
+      "kind": "remove"
+    }
+  ]
+}

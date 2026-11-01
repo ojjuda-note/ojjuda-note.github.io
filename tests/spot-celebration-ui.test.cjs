@@ -14,7 +14,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
     if(url.pathname==='/korean.ttf'&&fs.existsSync('/tmp/ojjuda-visitor-proof.ttf'))return route.fulfill({path:'/tmp/ojjuda-visitor-proof.ttf'});
     const file=path.join(root,decodeURIComponent(url.pathname));
     if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
-    if(last&&url.pathname.endsWith('/game-core.js'))return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+`;{const clean=JjudaGame.cleanProgress;JjudaGame.cleanProgress=(raw,puzzles)=>{const s=clean(raw,puzzles);s.current=s.order.at(-1);for(const i of s.order.slice(0,-1)){s.found[puzzles[i].id]=[0,1,2,3,4,5];s.rounds[puzzles[i].id]={...JjudaGame.freshRound(),status:'won'};}return s;};}`});
+    if(last&&url.pathname.endsWith('/game-core.js'))return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+`;{const clean=JjudaGame.cleanProgress;JjudaGame.cleanProgress=(raw,puzzles)=>{const s=clean(raw,puzzles);s.current=s.order.at(-1);for(const i of s.order.slice(0,-1)){s.found[puzzles[i].id]=puzzles[i].spots.map((_,index)=>index);s.rounds[puzzles[i].id]={...JjudaGame.freshRound(),status:'won'};}return s;};}`});
     if(hold&&/\.(webp|jpg|png)$/.test(url.pathname))await waiting;
     return route.fulfill({path:file,contentType:/\.js$/.test(file)?'text/javascript':undefined});
    });
@@ -35,14 +35,14 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    }
    await page.locator('#celebration[open]').waitFor();
   }
-  const photos=await fixture();
+  const photos=await fixture(),totalStages=await photos.page.evaluate(()=>JJUDA_PUZZLES.length);
   for(let id=49;id<=62;id++){
    // Enter the round before using the HUD behind the full-screen start menu.
    if(await photos.page.locator('#start').isVisible())await photos.page.locator('#start').click();
    await photos.page.locator('#wallet-menu > summary').click();
    await photos.page.locator('#stage-picker').selectOption(String(id-1));
    await photos.page.waitForFunction(()=>!document.querySelector('#start').disabled);
-   assert.match(await photos.page.locator('#stage-label').innerText(),/62.*어려움/);
+   assert.match(await photos.page.locator('#stage-label').innerText(),new RegExp(`${totalStages}.*어려움`));
    // Stage 53 also has a separate car-color layer in both normal and zoom views.
    const layers=id===53?2:1;
    assert.equal(await photos.page.locator('.picture:not(.zoom-picture) .contrast-overlay').count(),layers);
@@ -52,12 +52,14 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.deepEqual(photos.errors,[]);await photos.context.close();
   const f=await fixture(),p=f.page;
   const before=await p.locator('#stage-picker').inputValue();
+  const targetCount=await p.evaluate(()=>JJUDA_PUZZLES[Number(document.querySelector('#stage-picker').value)].spots.length);
   await solve(p,true);
   assert.match(await p.locator('#celebration-title').innerText(),/축하/);
   assert.equal(await p.locator('#celebration-confetti i').count(),20);
   assert.equal(await p.locator('#zoom-dialog').evaluate(d=>d.open),false);
   assert.equal(await p.locator('#solved-total').innerText(),'1');
-  assert.equal(await p.locator('#found-count').innerText(),'6');
+  assert.equal(await p.locator('#found-count').innerText(),String(targetCount));
+  assert.equal(await p.locator('#celebration-count').innerText(),`${targetCount} / ${targetCount}`);
   assert.deepEqual(await p.evaluate(()=>spotScores),[{owner:'member-a',stage:Number(before)+1}],'completed puzzle saves its score for the starting member');
   await p.waitForTimeout(350);
   const box=await p.locator('#celebration').boundingBox();assert.ok(box.height<500,'celebration stays compact on a phone');assert.ok(box.x>=0&&box.x+box.width<=390&&box.y>=0&&box.y+box.height<=844);
@@ -82,7 +84,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.deepEqual(f.errors,[]);await f.context.close();
   const final=await fixture(true);await final.page.emulateMedia({reducedMotion:'reduce'});await solve(final.page);
   assert.match(await final.page.locator('#celebration-title').innerText(),/모든 그림/);
-  assert.equal(await final.page.locator('#solved-total').innerText(),'62');
+  assert.equal(await final.page.locator('#solved-total').innerText(),String(totalStages));
   assert.equal(await final.page.locator('#celebration-confetti').isVisible(),false);
   const last=await final.page.locator('#stage-picker').inputValue();await final.page.waitForTimeout(2600);
   assert.equal(await final.page.locator('#stage-picker').inputValue(),last,'last stage has no invalid or repeated next stage');
@@ -103,9 +105,9 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    await page.locator('#zoom').click();await page.locator('#zoom-more').click();await page.locator('#zoom-level').selectOption('2');
    // Let resize scroll events finish before panning, then observe both panes.
    if(kind==='time')await page.clock.runFor(100);else await page.waitForTimeout(100);
-   await page.locator('#zoom-scroll-a').evaluate(el=>{el.scrollLeft=213;el.scrollTop=167;});
+   const pan=await page.locator('#zoom-scroll-a').evaluate(el=>{const panes=[...document.querySelectorAll('.zoom-scroll')],x=Math.min(213,...panes.map(p=>p.scrollWidth-p.clientWidth)),y=Math.min(167,...panes.map(p=>p.scrollHeight-p.clientHeight));el.scrollLeft=x;el.scrollTop=y;return {x,y};});
    if(kind==='time')await page.clock.runFor(100);
-   await page.waitForFunction(()=>[...document.querySelectorAll('.zoom-scroll')].every(el=>el.scrollLeft===213&&el.scrollTop===167));
+   await page.waitForFunction(({x,y})=>[...document.querySelectorAll('.zoom-scroll')].every(el=>el.scrollLeft===x&&el.scrollTop===y),pan);
    const zoomState=()=>page.evaluate(()=>({level:document.querySelector('#zoom-level').value,panes:[...document.querySelectorAll('.zoom-scroll')].map(el=>[el.scrollLeft,el.scrollTop,el.clientWidth,el.clientHeight]),pictures:[...document.querySelectorAll('.zoom-picture')].map(el=>[el.getBoundingClientRect().width,el.getBoundingClientRect().height])}));
    const beforePayment=await zoomState();
    await page.locator(kind==='hint'?'#zoom-hint':'#zoom-extend').click();
@@ -129,14 +131,15 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   const host=await browser.newPage();await host.route('**/*',route=>route.fulfill({body:'<!doctype html><body></body>',contentType:'text/html'}));await host.goto('https://fixture.test/');
   await host.addScriptTag({path:path.join(root,'world-spot-game.js')});
-  await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));scoreMessage(63);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);scoreMessage(62);});
-  await host.waitForFunction(()=>recorded.length===1);assert.deepEqual(await host.evaluate(()=>recorded),[{stage:62,owner:'member-a'}],'only valid scores from the same-origin game frame are accepted');
-  await host.evaluate(()=>{hostFail=true;scoreMessage(6)});await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).waitFor();await host.evaluate(()=>hostFail=false);await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).click();await host.waitForFunction(()=>recorded.length===2);assert.equal(await host.evaluate(()=>recorded[1].stage),6);
+  await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));for(const invalid of [0,83,82.5,'82'])scoreMessage(invalid);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);for(const stage of [62,63,82])scoreMessage(stage);});
+  await host.waitForFunction(()=>recorded.length===3);assert.deepEqual(await host.evaluate(()=>recorded),[62,63,82].map(stage=>({stage,owner:'member-a'})),'only valid old/new scores from the same-origin game frame are accepted');
+  await host.evaluate(()=>{hostFail=true;scoreMessage(6)});await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).waitFor();await host.evaluate(()=>hostFail=false);await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).click();await host.waitForFunction(()=>recorded.length===4);assert.equal(await host.evaluate(()=>recorded[3].stage),6);
   await host.evaluate(()=>{window.rpcScores=[];window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'member-a'}}}}),onAuthStateChange(fn){window.walletAuth=fn}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{coins:0}})})})}),rpc:(name,args)=>({abortSignal:async()=>{rpcScores.push({name,...args});return{data:{ok:true}}}})})};});
   await host.addScriptTag({path:path.join(root,'games/spot-difference/wallet.js')});await host.waitForFunction(()=>JjudaWallet.getState().coins===0);
   assert.equal(await host.evaluate(async()=>{try{await JjudaWallet.recordClear('other-member',6);return false}catch{return true}}),true,'standalone score rejects another account');
-  await host.evaluate(()=>JjudaWallet.recordClear('member-a',62));assert.deepEqual(await host.evaluate(()=>rpcScores),[{name:'record_spot_clear',p_stage:62}]);
+  for(const stage of [0,83,82.5,'82'])assert.equal(await host.evaluate(async stage=>{try{await JjudaWallet.recordClear('member-a',stage);return false}catch{return true}},stage),true,'standalone score rejects invalid stage bounds');
+  await host.evaluate(async()=>{for(const stage of [62,63,82])await JjudaWallet.recordClear('member-a',stage);});assert.deepEqual(await host.evaluate(()=>rpcScores),[62,63,82].map(stage=>({name:'record_spot_clear',p_stage:stage})));
   await host.close();
-  console.log('PASS: six matches, celebration graphics, zoom completion, chosen next image, delayed loading/timer, cancellation, 62-stage completion and reduced motion');
+  console.log('PASS: per-puzzle completion, celebration graphics, zoom completion, chosen next image, delayed loading/timer, cancellation, all-stage completion and reduced motion');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

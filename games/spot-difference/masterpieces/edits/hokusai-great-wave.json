@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "hokusai-great-wave",
+  "title": "가나가와 해변의 높은 파도",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/hokusai-great-wave.jpg",
+  "sourceWidth": 3859,
+  "sourceHeight": 2594,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        38.2,
+        10.1,
+        42.8,
+        15.5
+      ],
+      "descriptionKo": "큰 파도 꼭대기의 갈라진 거품 끝이 둥근 고리로 바뀌었어요.",
+      "instructionEn": "Reshape only the small forked foam claw at the very top of the great wave near 40 percent width into one rounded curling hook, preserving the surrounding crest outline.",
+      "kind": "shape"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        52.4,
+        34.8,
+        58.4,
+        45.2
+      ],
+      "descriptionKo": "큰 파도에서 오른쪽 아래로 뻗은 거품 끝이 없어졌어요.",
+      "instructionEn": "Remove only the lowest dangling white-and-blue foam finger at the far right tip of the great wave; fill its former position with the adjacent warm beige sky.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 3,
+      "bounds": [
+        27.8,
+        20.8,
+        31.3,
+        25.1
+      ],
+      "descriptionKo": "큰 파도 위쪽의 작은 짙은 물결 면이 청록색으로 바뀌었어요.",
+      "instructionEn": "Recolor the small rounded dark navy water pocket directly under the upper-left foam curls of the great wave to pale turquoise; keep all its dark contour lines.",
+      "kind": "color"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        23.3,
+        38.3,
+        26.5,
+        42.4
+      ],
+      "descriptionKo": "왼쪽 중간의 하얀 거품 속 작은 파란 고리가 없어졌어요.",
+      "instructionEn": "Remove the single small dark blue curled inner loop enclosed by the white foam just left of the central wave; replace it with matching off-white foam without changing the outer shape.",
+      "kind": "remove"
+    },
+    {
+      "id": 5,
+      "bounds": [
+        10.2,
+        61.3,
+        17.2,
+        67.8
+      ],
+      "descriptionKo": "왼쪽 배의 드러난 나무 갑판이 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the exposed pale wood deck compartment of the left boat inside this region to muted red ochre, keeping every dark plank line and all crew members unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        53.0,
+        89.6,
+        64.0,
+        94.1
+      ],
+      "descriptionKo": "앞쪽 배 가운데의 긴 나무 옆판이 올리브색으로 바뀌었어요.",
+      "instructionEn": "Change only the long exposed tan hull panel in the middle of the nearest foreground boat to muted olive green; preserve its border, tiny rivets and the wave below.",
+      "kind": "color"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        85.9,
+        52.2,
+        89.4,
+        57.7
+      ],
+      "descriptionKo": "오른쪽 배 끝의 작은 삼각형 나무틀이 없어졌어요.",
+      "instructionEn": "Remove the small empty triangular wooden frame projecting above the far-right boat bow; fill with the same pale sky. Do not alter the boat hull or people.",
+      "kind": "remove"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        61.0,
+        63.8,
+        65.3,
+        68.7
+      ],
+      "descriptionKo": "후지산의 뾰족한 정상에 작은 평평한 부분이 생겼어요.",
+      "instructionEn": "Reshape only the very top snowy summit of distant Mount Fuji into a slightly flat-topped peak with a shallow notch, retaining the mountain sides and woodblock outlines.",
+      "kind": "shape"
+    },
+    {
+      "id": 9,
+      "bounds": [
+        17.6,
+        75.2,
+        21.8,
+        82.1
+      ],
+      "descriptionKo": "앞쪽 왼편 파도의 위로 굽은 거품 끝이 없어졌어요.",
+      "instructionEn": "Remove the single thin upward-curling foam finger at the upper edge of the lower-left foreground wave, blending its tip into the pale adjoining water.",
+      "kind": "remove"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        77.0,
+        91.4,
+        86.2,
+        96.0
+      ],
+      "descriptionKo": "오른쪽 아래 물결 사이의 짙은 파란 면이 청록색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the elongated dark navy pocket between the two pale foam ridges at lower right to muted turquoise, keeping both white ridges and their contours intact.",
+      "kind": "color"
+    }
+  ]
+}

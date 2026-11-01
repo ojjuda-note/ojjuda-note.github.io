@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "bruegel-harvesters",
+  "title": "추수하는 사람들",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/bruegel-harvesters.jpg",
+  "sourceWidth": 3811,
+  "sourceHeight": 2809,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        8.8,
+        86.5,
+        12.8,
+        97.6
+      ],
+      "descriptionKo": "왼쪽 아래 물병이 짙은 파란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the tall brown earthenware jug at the very bottom left to a muted cobalt blue, retaining its handle, rim, highlights and old paint texture.",
+      "kind": "color"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        14.3,
+        90.2,
+        22.9,
+        95.3
+      ],
+      "descriptionKo": "왼쪽 아래 땅 위의 굽은 낫날이 없어졌어요.",
+      "instructionEn": "Remove only the curved dark sickle blade lying on the pale ground below the leftmost standing harvester; continue the surrounding cut-straw ground naturally.",
+      "kind": "remove"
+    },
+    {
+      "id": 3,
+      "bounds": [
+        31.3,
+        70.3,
+        34.0,
+        75.6
+      ],
+      "descriptionKo": "서 있는 사람이 든 붉은 물병이 파란색으로 바뀌었어요.",
+      "instructionEn": "Change the red round jug carried by the standing man near the lower-left center to deep blue; preserve his hand, clothing, body and the jug shape.",
+      "kind": "color"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        84.8,
+        74.5,
+        91.2,
+        78.2
+      ],
+      "descriptionKo": "오른쪽 식사하는 사람의 검은 모자가 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the broad black triangular hat of the seated figure in the right foreground to a subdued brick red. Do not alter the face beneath it.",
+      "kind": "color"
+    },
+    {
+      "id": 5,
+      "bounds": [
+        81.6,
+        86.6,
+        84.8,
+        89.8
+      ],
+      "descriptionKo": "흰 식사 천 위의 타원형 빵이 없어졌어요.",
+      "instructionEn": "Remove the small golden oval loaf resting on the white meal cloth near the right foreground; reconstruct only the cloth and its natural folds.",
+      "kind": "remove"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        6.7,
+        48.3,
+        11.2,
+        53.5
+      ],
+      "descriptionKo": "왼쪽 중간 길가의 노란 건초 더미가 없어졌어요.",
+      "instructionEn": "Remove the isolated golden hay load beside the winding road in the left middle distance, including its tiny cart directly underneath; fill with matching green meadow and road-edge texture.",
+      "kind": "remove"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        69.7,
+        26.8,
+        72.8,
+        31.9
+      ],
+      "descriptionKo": "큰 나무 뒤 교회의 푸른 지붕이 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the visible blue pointed church roof behind the large tree at upper right of center to muted terracotta; preserve tree branches in front.",
+      "kind": "color"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        13.0,
+        39.8,
+        15.7,
+        43.4
+      ],
+      "descriptionKo": "왼쪽 먼 마을의 작은 붉은 지붕이 청회색으로 바뀌었어요.",
+      "instructionEn": "Change only the small reddish conical tower roof in the distant village at the left to slate blue. Keep the tower walls and nearby trees unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 9,
+      "bounds": [
+        9.7,
+        62.6,
+        11.5,
+        65.1
+      ],
+      "descriptionKo": "왼쪽 밀밭 위의 두 새 중 왼쪽 새가 없어졌어요.",
+      "instructionEn": "Remove only the left bird of the two dark flying birds above the left foreground wheat field; restore the golden wheat behind it and keep the right bird.",
+      "kind": "remove"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        88.0,
+        52.4,
+        93.0,
+        61.4
+      ],
+      "descriptionKo": "오른쪽 밀밭 뒤편의 뾰족한 짚단 하나가 없어졌어요.",
+      "instructionEn": "Remove the isolated upright conical wheat sheaf near the right edge in the middle distance, behind and slightly right of the larger nearer sheaf; restore the cut field.",
+      "kind": "remove"
+    }
+  ]
+}

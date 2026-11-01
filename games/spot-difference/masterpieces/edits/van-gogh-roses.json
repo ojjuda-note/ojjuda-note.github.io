@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "van-gogh-roses",
+  "title": "장미",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/van-gogh-roses.jpg",
+  "sourceWidth": 3167,
+  "sourceHeight": 4000,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change faces, anatomy, poses or any unrelated pixels. Clothing edits affect fabric only. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        3.6,
+        2.5,
+        13.5,
+        11.0
+      ],
+      "descriptionKo": "맨 위 왼쪽의 장미가 연분홍색으로 바뀌었어요.",
+      "instructionEn": "Tint only the petals of the uppermost left rose a soft blush pink, preserving the blue contours, thick paint texture, stem and surrounding green leaves.",
+      "kind": "color"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        45.5,
+        7.5,
+        53.1,
+        14.7
+      ],
+      "descriptionKo": "맨 위 가운데 장미의 안쪽 꽃잎이 연노란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the central cup-shaped inner petals of the top-center white rose to pale golden yellow; leave its outer flared white petals and blue outlines untouched.",
+      "kind": "color"
+    },
+    {
+      "id": 3,
+      "bounds": [
+        16.7,
+        21.5,
+        23.0,
+        29.9
+      ],
+      "descriptionKo": "왼쪽 위에서 아래로 늘어진 짙은 잎이 없어졌어요.",
+      "instructionEn": "Remove the single long dark leaf hanging downward along the left side of the upper bouquet, filling with the same green background while keeping its neighboring rose and stems.",
+      "kind": "remove"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        81.2,
+        21.9,
+        89.5,
+        28.7
+      ],
+      "descriptionKo": "오른쪽 위 꽃 무리의 맨 오른쪽 장미가 살구색으로 바뀌었어요.",
+      "instructionEn": "Tint only the rightmost round white rose head in the upper-right flower cluster a soft apricot, preserving all existing dark-blue petal contours and neighboring flowers.",
+      "kind": "color"
+    },
+    {
+      "id": 5,
+      "bounds": [
+        76.0,
+        29.2,
+        86.7,
+        36.6
+      ],
+      "descriptionKo": "오른쪽 중간의 파란 윤곽 장미가 연분홍색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the isolated blue-outlined white rose immediately below the upper-right flower cluster to pale pink; preserve its shape, contours, leaves and stems.",
+      "kind": "color"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        1.4,
+        43.8,
+        11.9,
+        51.5
+      ],
+      "descriptionKo": "왼쪽 바깥으로 처진 작은 흰 꽃봉오리가 없어졌어요.",
+      "instructionEn": "Remove only the small white drooping bud at the far-left edge halfway down the bouquet; reconstruct the green background and retain the nearby green round bud.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 7,
+      "bounds": [
+        43.2,
+        58.1,
+        54.3,
+        67.0
+      ],
+      "descriptionKo": "꽃다발 아래쪽 가운데의 둥근 장미가 연노란색으로 바뀌었어요.",
+      "instructionEn": "Tint only the large round spiral-centered white rose near the lower middle of the bouquet pale yellow, retaining its textured spiral petals and the surrounding flowers.",
+      "kind": "color"
+    },
+    {
+      "id": 8,
+      "bounds": [
+        77.3,
+        56.6,
+        90.0,
+        66.5
+      ],
+      "descriptionKo": "꽃다발 오른쪽 아래 끝의 작은 흰 장미가 없어졌어요.",
+      "instructionEn": "Remove only the small outward-facing white rose at the lower-right perimeter of the bouquet; fill its position with the same green background, preserving adjacent stems.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 9,
+      "bounds": [
+        74.2,
+        89.8,
+        86.2,
+        98.1
+      ],
+      "descriptionKo": "탁자 오른쪽에 떨어진 장미가 연분홍색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the petals of the fallen white rose on the tabletop at bottom right to soft pink; keep the green stem, leaves, table shadows and loose brushwork unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        31.6,
+        89.5,
+        43.4,
+        98.3
+      ],
+      "descriptionKo": "꽃병 왼쪽 탁자 위의 떨어진 잎 가지가 없어졌어요.",
+      "instructionEn": "Remove the loose green leafy sprig on the tabletop immediately left of the vase base, filling naturally with the existing pale gray tabletop and its brush texture.",
+      "kind": "remove"
+    }
+  ]
+}

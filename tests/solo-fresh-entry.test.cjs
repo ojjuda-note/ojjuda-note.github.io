@@ -21,28 +21,33 @@ function sacheon(t,saved,buy){
  t.after(()=>w.close());
  return {w,enter,calls,state:()=>JSON.parse(w.localStorage.getItem(KEY)),child:()=>child,records:()=>JSON.parse(w.localStorage.getItem('ojjuda-sacheonseong-records-v1'))};
 }
-function oldGarden(pendingPurchase){const grid=E.generate(5).grid;grid[0][0]=grid[0][1]=-1;return {rulesVersion:E.RULES_VERSION,runId:randomUUID(),stage:5,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,sound:true,hints:2,shuffles:1,pendingPurchase};}
+function oldGarden(pendingPurchase){const grid=E.generate(5).grid;grid[0][0]=grid[0][1]=-1;return {rulesVersion:E.RULES_VERSION,runId:randomUUID(),stage:5,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,penaltyMs:20000,sound:true,hints:2,shuffles:1,pendingPurchase};}
 
-test('Sacheonseong exit/reentry starts stage one with a new full board and run, keeping unlocks and records',async t=>{
+test('Sacheonseong exit/reentry starts the last played stage with a new full board and run, keeping unlocks and records',async t=>{
  const saved=oldGarden(),f=sacheon(t,saved);const child=await f.enter(),first=f.state();
- assert.equal(first.stage,1);assert.equal(first.grid.flat().filter(value=>value!==-1).length,4);assert.notEqual(first.runId,saved.runId);
- assert.equal(first.startedAt,null);assert.equal(first.finishedMs,null);assert.equal(first.unlocked,8);assert.equal(first.sound,true);assert.equal(first.hints,0);
+ assert.equal(first.stage,5,'resume the last stage, not the highest unlocked stage');assert.equal(first.grid.flat().filter(value=>value!==-1).length,100);assert.notEqual(first.runId,saved.runId);
+ assert.equal(first.startedAt,null);assert.equal(first.finishedMs,null);assert.equal(first.penaltyMs,0);assert.equal(first.unlocked,8);assert.equal(first.sound,true);assert.equal(first.hints,0);assert.equal(first.shuffles,0);
  assert.equal(f.records()[5][0].id,'best');
  child.document.querySelector('.tile').click();const active=f.state();assert.ok(active.startedAt);
  child.document.dispatchEvent(new child.Event('visibilitychange'));child.dispatchEvent(new child.Event('resize'));
  f.w.OjjudaSacheonseongGame.open({owner});assert.equal(f.w.document.querySelector('iframe').contentWindow,child);assert.deepEqual(f.state(),active,'focus/visibility changes do not restart an active visit');
- f.w.OjjudaSacheonseongGame.close();await f.enter();
- assert.notEqual(f.state().runId,active.runId);assert.equal(f.state().startedAt,null);assert.equal(f.state().stage,1);assert.equal(f.records()[5][0].id,'best');
+ child.document.getElementById('game-home').click();assert.equal(f.w.document.querySelector('iframe'),null);await f.enter();
+ assert.notEqual(f.state().runId,active.runId);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assert.equal(f.state().stage,5);assert.equal(f.state().grid.flat().filter(value=>value!==-1).length,100);assert.equal(f.records()[5][0].id,'best');
 });
 
-test('an unresolved Sacheonseong purchase keeps its receipt without restoring the old board or timer',async t=>{
+test('an unresolved Sacheonseong purchase resumes the last stage and applies its paid receipt once to the fresh board',async t=>{
  const pending={id:randomUUID(),runId:randomUUID(),stage:5,kind:'hint',owner,requestedAt:Date.now()-90000};
- const f=sacheon(t,oldGarden(pending),item=>({ok:true,kind:item.kind,run_id:item.runId,stage:item.stage,price:3}));await f.enter();
- assert.equal(f.state().stage,1);assert.equal(f.state().startedAt,null);assert.notEqual(f.state().runId,pending.runId);assert.equal(f.state().pendingPurchase.id,pending.id);
+ const receipts=new Map([[pending.id,{ok:true,kind:pending.kind,run_id:pending.runId,stage:pending.stage,price:3}]]);let balance=17;
+ const f=sacheon(t,oldGarden(pending),item=>{
+  if(!receipts.has(item.id)){balance-=3;receipts.set(item.id,{ok:true,kind:item.kind,run_id:item.runId,stage:item.stage,price:3});}
+  return receipts.get(item.id);
+ });await f.enter();
+ assert.equal(f.state().stage,5);assert.equal(f.state().grid.flat().filter(value=>value!==-1).length,100);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assert.notEqual(f.state().runId,pending.runId);assert.deepEqual(f.state().pendingPurchase,pending);
  const before=Date.now();f.child().document.getElementById('hint').click();await tick();await tick();
  assert.deepEqual(f.calls,[{kind:'hint',id:pending.id,runId:pending.runId,stage:5}]);
- assert.equal(f.state().pendingPurchase,null);assert.equal(f.state().hints,1);assert.ok(f.state().startedAt>=before,'recovery does not carry the previous visit timer into a new run');
- f.w.OjjudaSacheonseongGame.close();await f.enter();assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');
+ assert.equal(balance,17,'recovering an already paid request does not charge again');assert.equal(receipts.size,1);
+ assert.equal(f.state().pendingPurchase,null);assert.equal(f.state().hints,1);assert.equal(f.child().document.querySelectorAll('.tile.hinted').length,2);assert.ok(f.state().startedAt>=before,'recovery does not carry the previous visit timer into a new run');
+ f.w.OjjudaSacheonseongGame.close();await f.enter();assert.equal(f.state().stage,5);assert.equal(f.state().hints,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);
 });
 
 test('both screw modes default to a fresh first stage while preserving milestones and purchased records',()=>{
@@ -74,7 +79,7 @@ async function pendingSpot(t,buy){
   }})
  })};
  w.eval(read('games/spot-difference/wallet.js'));await tick();
- for(const file of ['puzzles','photo-puzzles','game-core'])w.eval(read('games/spot-difference/'+file+'.js'));
+ for(const file of ['puzzles','photo-puzzles','masterpiece-puzzles','game-core'])w.eval(read('games/spot-difference/'+file+'.js'));
  const puzzles=w.JJUDA_PUZZLES,id=puzzles[48].id;
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,order:puzzles.map((_,i)=>i),found:{[id]:[0,1]},rounds:{[id]:{...w.JjudaGame.freshRound(),status:'payment',hearts:1,remainingMs:5000,pending:request}},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original']))}));
  w.eval(read('games/spot-difference/app.js'));for(const image of w.document.querySelectorAll('img'))if(image.onload)image.onload();

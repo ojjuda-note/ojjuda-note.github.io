@@ -13,7 +13,7 @@ function fixture({stage=2,grid=null,saved=null,records={}}={}){
  w.localStorage.setItem(KEY,JSON.stringify(saved||{unlocked:Math.min(15,stage+1),sound:false}));
  w.localStorage.setItem(RECORDS,JSON.stringify(records));
  for(const name of ['engine','faces'])w.eval(read('games/sacheonseong/'+name+'.js'));
- // Arrange a late round directly; storage now keeps achievements, not an active board to resume.
+ // Arrange a late round directly; a later visit starts a fresh board at the saved level.
  if(!saved){const generate=w.TileGarden.generate;let arranged=false;w.TileGarden.generate=n=>{
   const result=generate(n);if(!arranged&&n===stage){arranged=true;result.grid=lateGrid.map(row=>row.slice());}return result;
  };}
@@ -29,10 +29,29 @@ test('switching stages immediately after the last pair keeps the completed recor
 });
 test('reopening a completed round preserves its best time without recording twice',()=>{
  let f=fixture(),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
- f=fixture({saved,records});try{assert.equal(f.state().stage,1);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,4);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
+ f=fixture({saved,records});try{
+  assert.equal(f.state().stage,2);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,16);assert.notEqual(f.state().runId,saved.runId);
+  assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.state().penaltyMs,0);
+  assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
+ }finally{f.close();}
 });
 test('final-stage completion never advances beyond stage 15',()=>{
- const f=fixture({stage:15});try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);}finally{f.close();}
+ let f=fixture({stage:15}),saved,records;try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);saved=f.state();records=f.records();}finally{f.close();}
+ f=fixture({saved,records});try{
+  assert.equal(f.state().stage,15);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,900);
+  assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);
+  assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
+ }finally{f.close();}
+});
+
+test('a missing or invalid saved level starts at level one without discarding unlocked stages',()=>{
+ for(const stage of [undefined,null,'5',2.5,0,-1,E.MAX_STAGE+1,{}]){
+  const f=fixture({saved:{stage,unlocked:8,sound:true}});try{
+   assert.equal(f.state().stage,1,`invalid saved level ${JSON.stringify(stage)}`);
+   assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,4);assert.equal(f.state().unlocked,8);assert.equal(f.state().sound,true);
+   assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assert.equal(f.sent.length,0);
+  }finally{f.close();}
+ }
 });
 
 test('matching a pair keeps the other tile buttons and keyboard focus intact',()=>{
@@ -44,7 +63,7 @@ test('matching a pair keeps the other tile buttons and keyboard focus intact',()
 test('a completion outside the local top 30 is not submitted again on reopening',()=>{
  const best=Array.from({length:30},(_,i)=>({id:'best-'+i,duration:i+1,at:Date.now()}));let f=fixture({records:{2:best}}),saved,records;
  try{f.match();saved=f.state();records=f.records();assert.equal(records[2].length,30);assert.equal(saved.lastRank,31);}finally{f.close();}
- f=fixture({saved,records});try{assert.equal(f.state().stage,1);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
+ f=fixture({saved,records});try{assert.equal(f.state().stage,2);assert.equal(f.sent.length,0);assert.equal(f.records()[2].length,30);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
 });
 
 test('completion waits for a choice instead of advancing after four seconds',()=>{
@@ -57,13 +76,19 @@ test('completion waits for a choice instead of advancing after four seconds',()=
  }finally{f.close();}
 });
 
-for(const [button,stage]of [['previous-level',1],['current-level',2],['next',3]])test(`${button} starts only the chosen level and keeps the completed record`,()=>{
- const f=fixture();try{
-  f.match();f.run(120);f.d.getElementById(button).click();const selected=f.state();
+for(const [button,stage]of [['previous-level',1],['current-level',2],['next',3]])test(`${button} remembers the chosen level on reentry and keeps the completed record`,()=>{
+ let f=fixture(),selected,records;try{
+  f.match();f.run(120);f.d.getElementById(button).click();selected=f.state();records=f.records();
   assert.equal(selected.stage,stage);assert.equal(selected.grid.flat().filter(v=>v!==-1).length,4*stage*stage);
   assert.equal(selected.startedAt,null);assert.equal(selected.finishedMs,null);assert.equal(selected.unlocked,3);
   assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.records()[2].length,1);assert.equal(f.sent.length,1);
   f.d.getElementById(button).click();f.run(1000);assert.deepEqual(f.state(),selected,'a second queued click cannot start another round');
+ }finally{f.close();}
+ f=fixture({saved:selected,records});try{
+  assert.equal(f.state().stage,stage,'the chosen level is restored instead of the highest unlocked level');
+  assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,4*stage*stage);assert.notEqual(f.state().runId,selected.runId);
+  assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.state().penaltyMs,0);assert.equal(f.state().unlocked,3);
+  assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
  }finally{f.close();}
 });
 
@@ -79,8 +104,8 @@ test('reopening a saved result starts fresh and still permits choosing its unloc
  let f=fixture(),saved,records;try{f.match();f.run(120);saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
   for(let i=0;i<10;i++)f.run(1000);
-  assert.equal(f.state().stage,1);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
-  f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="2"]').click();assert.equal(f.state().stage,2);assert.equal(f.state().finishedMs,null);assert.equal(f.records()[2].length,1);
+  assert.equal(f.state().stage,2);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
+  f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();assert.equal(f.state().stage,3);assert.equal(f.state().finishedMs,null);assert.equal(f.records()[2].length,1);
  }finally{f.close();}
 });
 

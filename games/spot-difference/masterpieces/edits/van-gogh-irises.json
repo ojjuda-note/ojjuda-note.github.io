@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "artworkId": "van-gogh-irises",
+  "title": "아이리스",
+  "status": "planned",
+  "coordinateSpace": "percent of the complete original source image; origin at top-left; [x1,y1,x2,y2]",
+  "sourceImage": "games/spot-difference/masterpieces/sources/van-gogh-irises.jpg",
+  "sourceWidth": 4000,
+  "sourceHeight": 3172,
+  "globalInstructions": "Preserve the exact full-image alignment, original aspect ratio, borders, colors, lighting, aged surface and brush texture. Make exactly the ten specified local edits only inside their bounds. Do not enhance, restyle, crop, add text, numbers, circles or markers. Do not change any unrelated pixels. Bounds are proposed edit regions and must be checked against the generated result before becoming answer hit areas.",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        26.0,
+        6.2,
+        36.5,
+        14.3
+      ],
+      "descriptionKo": "맨 위 아이리스의 윗 꽃잎이 연분홍색으로 바뀌었어요.",
+      "instructionEn": "Tint only the upper flared petals of the highest iris at upper left of center a muted pale pink. Keep the existing dark contours, impasto ridges and all lower petals unchanged.",
+      "kind": "color"
+    },
+    {
+      "id": 2,
+      "bounds": [
+        27.0,
+        14.4,
+        37.2,
+        24.3
+      ],
+      "descriptionKo": "맨 위 꽃 아래로 늘어진 파란 꽃송이가 없어졌어요.",
+      "instructionEn": "Remove the entire distinct downward-hanging blue bell-shaped iris bloom immediately below the highest flower, centered near x=32 percent and y=19 percent. Fill with the same pale background and retain the adjacent upright green stems, leaves, highest flower and separate flower to its right.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 3,
+      "bounds": [
+        11.5,
+        23.4,
+        22.0,
+        32.0
+      ],
+      "descriptionKo": "왼쪽 위로 펼쳐진 큰 아이리스 꽃잎이 황토색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the broad blue petal fan pointing left near the upper-left side of the bouquet to warm cream. Preserve its blue outlines, original brush texture and green stem.",
+      "kind": "color"
+    },
+    {
+      "id": 4,
+      "bounds": [
+        3.0,
+        26.2,
+        11.4,
+        40.5
+      ],
+      "descriptionKo": "맨 왼쪽 위 끝의 아래로 처진 꽃송이가 없어졌어요.",
+      "instructionEn": "Remove only the isolated drooping blue-and-white iris head at the far upper-left perimeter. Reconstruct the pale textured background and preserve the green branch connecting to the rest of the bouquet.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 5,
+      "bounds": [
+        49.4,
+        18.8,
+        54.6,
+        27.2
+      ],
+      "descriptionKo": "가운데 위쪽의 곧게 선 작은 꽃봉오리가 자주색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the narrow upright blue flower bud above the central bouquet to muted burgundy-purple, retaining its pale highlights, dark outline and surrounding off-white background.",
+      "kind": "color"
+    },
+    {
+      "id": 6,
+      "bounds": [
+        64.3,
+        24.3,
+        71.0,
+        30.2
+      ],
+      "descriptionKo": "오른쪽 위의 작고 둥근 파란 꽃잎이 노란색으로 바뀌었어요.",
+      "instructionEn": "Change only the small rounded upturned blue iris lobe near the upper-right of the bouquet to pale golden yellow, preserving its precise outline and adjacent lower blue petals.",
+      "kind": "color"
+    },
+    {
+      "id": 7,
+      "bounds": [
+        89.7,
+        23.5,
+        99.8,
+        30.4
+      ],
+      "descriptionKo": "맨 오른쪽 끝의 뾰족한 꽃봉오리가 없어졌어요.",
+      "instructionEn": "Remove only the pointed blue-green closed flower bud projecting toward the far upper-right edge. Continue the pale background behind it and leave the supporting green stem below intact.",
+      "kind": "remove",
+      "feather": 0.04
+    },
+    {
+      "id": 8,
+      "bounds": [
+        81.5,
+        47.3,
+        90.2,
+        56.6
+      ],
+      "descriptionKo": "오른쪽 중간으로 길게 뻗은 잎의 뾰족한 끝이 짧아졌어요.",
+      "instructionEn": "Shorten only the curved pointed end of the long green leaf extending to the right at mid-height, making a lower rounded leaf tip and restoring the pale background behind the removed tip.",
+      "kind": "shape",
+      "feather": 0.04
+    },
+    {
+      "id": 9,
+      "bounds": [
+        51.4,
+        81.3,
+        60.7,
+        88.5
+      ],
+      "descriptionKo": "꽃병 앞에 가장 낮게 늘어진 꽃잎이 황토색으로 바뀌었어요.",
+      "instructionEn": "Tint only the lowest drooping blue iris petals in front of the vase near the lower center to warm cream, preserving dark outlines, vase contours and the green tabletop.",
+      "kind": "color"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        25.0,
+        55.4,
+        34.9,
+        63.1
+      ],
+      "descriptionKo": "왼쪽 아래로 처진 종 모양 꽃잎이 자주색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the bell-shaped blue iris bloom hanging at the lower-left edge of the bouquet to soft pink, maintaining its folds, dark contours, adjoining green leaves and pale background.",
+      "kind": "color"
+    }
+  ]
+}

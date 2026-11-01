@@ -1,0 +1,127 @@
+{
+  "slug": "monet-water-lilies",
+  "input": "sources/monet-water-lilies.jpg",
+  "status": "planned",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        1.0,
+        4.6,
+        5.4,
+        9.3
+      ],
+      "kind": "color",
+      "descriptionKo": "왼쪽 위의 밝은 수련이 분홍색으로 바뀌었어요.",
+      "instructionEn": "Recolor the pale lily flower near the upper-left edge at x3 y7 to rose pink, preserving Monet brushstrokes."
+    },
+    {
+      "id": 2,
+      "bounds": [
+        15.7,
+        3.4,
+        20.1,
+        6.8
+      ],
+      "kind": "color",
+      "descriptionKo": "위쪽 왼편의 작은 수련이 붉게 바뀌었어요.",
+      "instructionEn": "Recolor the isolated pale horizontal lily blossom near x18 y5 to muted red, same loose painterly edges."
+    },
+    {
+      "id": 3,
+      "bounds": [
+        19.4,
+        32.1,
+        25.0,
+        36.7
+      ],
+      "kind": "remove",
+      "descriptionKo": "왼쪽 중간의 연두색 수련 잎이 없어졌어요.",
+      "instructionEn": "Remove the isolated pale green oval lily pad near x22 y34 and fill with matching lavender pond reflections."
+    },
+    {
+      "id": 4,
+      "bounds": [
+        25.5,
+        38.5,
+        30.7,
+        43.9
+      ],
+      "kind": "color",
+      "descriptionKo": "왼쪽 꽃 무리의 오른쪽 꽃이 진분홍색으로 바뀌었어요.",
+      "instructionEn": "Recolor the pale peach lily blossom near x28 y41 to deep rose pink while retaining the same paint marks."
+    },
+    {
+      "id": 5,
+      "bounds": [
+        16.3,
+        51.0,
+        21.7,
+        57.5
+      ],
+      "kind": "remove",
+      "descriptionKo": "왼쪽 아래 꽃 무리의 밝은 수련이 없어졌어요.",
+      "instructionEn": "Remove the small bright cream lily around x19 y54, restoring the green and purple water behind it."
+    },
+    {
+      "id": 6,
+      "bounds": [
+        43.8,
+        4.7,
+        48.8,
+        8.4
+      ],
+      "kind": "color",
+      "descriptionKo": "위쪽 가운데의 작은 수련이 주황색으로 바뀌었어요.",
+      "instructionEn": "Recolor the small light yellow lily at x46 y7 to orange, retaining the horizontal brushstroke shape."
+    },
+    {
+      "id": 7,
+      "bounds": [
+        53.4,
+        4.4,
+        58.4,
+        8.1
+      ],
+      "kind": "color",
+      "descriptionKo": "위쪽 가운데 오른편 수련이 붉게 바뀌었어요.",
+      "instructionEn": "Recolor the pale green-white lily near x56 y6 to muted red, same loose soft edges."
+    },
+    {
+      "id": 8,
+      "bounds": [
+        65.1,
+        26.0,
+        71.3,
+        31.3
+      ],
+      "kind": "color",
+      "descriptionKo": "오른쪽 위 꽃 무리의 아래 꽃이 붉게 바뀌었어요.",
+      "instructionEn": "Recolor the isolated pale cream flower below the upper-center-right lily group around x68 y29 to red, matching original brushwork."
+    },
+    {
+      "id": 9,
+      "bounds": [
+        83.3,
+        86.5,
+        87.0,
+        93.2
+      ],
+      "kind": "color",
+      "descriptionKo": "오른쪽 아래의 밝은 수련이 분홍색으로 바뀌었어요.",
+      "instructionEn": "Recolor the large pale white lily in the lower-right group around x85 y90 to bright pink, preserving its round painted form."
+    },
+    {
+      "id": 10,
+      "bounds": [
+        93.3,
+        84.0,
+        98.5,
+        90.8
+      ],
+      "kind": "remove",
+      "descriptionKo": "오른쪽 끝 아래의 밝은 수련이 없어졌어요.",
+      "instructionEn": "Remove the pale oval lily at the far-right lower edge around x96 y88 and fill with the surrounding dark green pond brushstrokes."
+    }
+  ]
+}

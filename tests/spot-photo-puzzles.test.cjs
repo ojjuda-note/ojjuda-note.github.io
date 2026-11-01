@@ -10,9 +10,9 @@ try{
  w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});
  w.document.modelContext={registerTool:tool=>registered.push(tool)};
  w.JjudaWallet={getState:()=>({ready:true,userId:'fixture-member',coins:0}),subscribe:fn=>fn({ready:true,userId:'fixture-member',coins:0}),recordClear:async(owner,stage)=>{scores.push(stage);return {ok:true};},refresh:async()=>{},buy:()=>{throw Error('unexpected payment');}};
- for(const f of ['puzzles.js','photo-puzzles.js','game-core.js'])w.eval(read(f));
- const puzzles=w.JJUDA_PUZZLES,photos=puzzles.slice(48),core=w.JjudaGame;
- assert.equal(puzzles.length,62);assert.equal(new Set(puzzles.map(p=>p.id)).size,62);
+ for(const f of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(f));
+ const puzzles=w.JJUDA_PUZZLES,photos=puzzles.filter(p=>['city','mountain'].includes(p.category)),core=w.JjudaGame;
+ assert.equal(puzzles.length,82);assert.equal(new Set(puzzles.map(p=>p.id)).size,82);
  assert.deepEqual(Array.from(photos,p=>p.id),Array.from({length:14},(_,i)=>49+i));
  assert.equal(photos.filter(p=>p.category==='city').length,10);assert.equal(photos.filter(p=>p.category==='mountain').length,4);
  assert.deepEqual(Array.from(photos.slice(10),p=>p.title.split(' · ')[0]),['봄','여름','가을','겨울']);
@@ -40,14 +40,22 @@ try{
  w.eval(read('app.js'));
  const $=id=>w.document.getElementById(id);
  const groups=Array.from($('stage-picker').children,g=>[g.label,g.children.length]);
- assert.deepEqual(groups,[['도시 풍경 · 어려움',10],['사계절 산 · 어려움',4],['쭈다의 일상',48]]);
- assert.equal($('stage-total').textContent,'62');
+ assert.deepEqual(groups,[['세계 명화 · 매우 어려움 · 10곳 찾기',20],['도시 풍경 · 어려움',10],['사계절 산 · 어려움',4],['쭈다의 일상',48]]);
+ assert.equal($('stage-total').textContent,'82');
  const loadImages=()=>{for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();};
  const tap=(surface,x,y)=>{const point={bubbles:true,clientX:x*8,clientY:y*5.33};surface.dispatchEvent(new w.MouseEvent('pointerdown',point));surface.dispatchEvent(new w.MouseEvent('click',point));};
  for(const surface of w.document.querySelectorAll('.picture'))surface.getBoundingClientRect=()=>({left:0,top:0,width:800,height:533});
+ for(const p of puzzles.filter(p=>p.category==='masterpiece')){
+  assert.equal(p.difficulty,'very-hard');
+  $('stage-picker').value=p.id-1;$('stage-picker').dispatchEvent(new w.Event('change'));loadImages();
+  assert.equal($('start').disabled,false);assert.match($('stage-label').textContent,/82.* · 매우 어려움$/);
+  assert.equal($('stage-picker').selectedOptions[0].parentElement.label,'세계 명화 · 매우 어려움 · 10곳 찾기');
+  assert.equal($('scene-title').textContent,p.title);assert.equal($('found-total').textContent,'10');
+ }
  for(const p of photos){
   $('stage-picker').value=p.id-1;$('stage-picker').dispatchEvent(new w.Event('change'));loadImages();
-  assert.equal($('start').disabled,false);assert.match($('stage-label').textContent,/62.*어려움/);
+  assert.equal($('start').disabled,false);assert.match($('stage-label').textContent,/82.*어려움/);
+  assert.doesNotMatch($('stage-label').textContent,/매우 어려움/,'existing photo stages keep the hard tier');
   assert.equal(w.document.querySelectorAll('.contrast-overlay').length,p.layers.length*2,'every mask layer appears in both main and zoom views');
   for(const id of ['difference','zoom-difference']){
    const overlays=Array.from($(id).parentElement.querySelectorAll('.contrast-overlay'));
@@ -65,7 +73,7 @@ try{
  assert.deepEqual(scores,Array.from({length:14},(_,i)=>49+i));
  assert.equal($('solved-total').textContent,'14');
  const progress=registered.find(t=>t.name==='read_game_progress'),open=registered.find(t=>t.name==='open_game_stage');
- assert.equal(progress.execute().totalStages,62);assert.equal(open.inputSchema.properties.stage.maximum,62);
- assert.equal(open.execute({stage:62}).stage,62);assert.throws(()=>open.execute({stage:63}),/1~62/);
- console.log('PASS: 14 hard photo pairs, 84 independent masks, all target corners clickable, all photo asset hashes, grouping, duplicate/miss handling, completion recording and stage-62 WebMCP');
+ assert.equal(progress.execute().totalStages,82);assert.equal(open.inputSchema.properties.stage.maximum,82);
+ assert.equal(open.execute({stage:82}).stage,82);assert.throws(()=>open.execute({stage:83}),/1~82/);
+ console.log('PASS: 20 selectable very-hard masterpieces, 14 unchanged hard photo pairs, 84 independent photo masks, all target corners clickable, photo asset hashes, grouping, duplicate/miss handling, completion recording and stage-82 WebMCP');
 }finally{w.close();}

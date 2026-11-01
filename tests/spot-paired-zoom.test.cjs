@@ -15,7 +15,7 @@ try{
   surface.getBoundingClientRect=()=>({left:-left,top:i*260-top,width:width(),height:width()*2/3});
   $(i?'difference':'original').parentElement.getBoundingClientRect=()=>({left:0,top:i*260,width:360,height:240});
  }
- for(const file of ['puzzles.js','photo-puzzles.js','game-core.js'])w.eval(read(file));
+ for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const clean=w.JjudaGame.cleanProgress;w.JjudaGame.cleanProgress=(raw,puzzles)=>({...clean(raw,puzzles),current:48});w.eval(read('app.js'));
  for(const im of d.querySelectorAll('img'))if(im.onload)im.onload();$('start').click();
  const round=()=>{const s=JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1'));return s.rounds[w.JJUDA_PUZZLES[s.current].id];};

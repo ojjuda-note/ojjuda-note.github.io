@@ -1,0 +1,129 @@
+{
+  "slug": "bonheur-horse-fair",
+  "input": "sources/bonheur-horse-fair.jpg",
+  "status": "planned",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        9.8,
+        34.8,
+        14.7,
+        45.9
+      ],
+      "kind": "remove",
+      "descriptionKo": "왼쪽 멀리 둥근 건물의 탑이 없어졌어요.",
+      "instructionEn": "Remove the small distant domed building silhouette on the left and restore the hazy sky."
+    },
+    {
+      "id": 2,
+      "bounds": [
+        27.0,
+        52.1,
+        31.3,
+        57.7
+      ],
+      "kind": "color",
+      "descriptionKo": "가운데 왼쪽 말의 안장 천이 파란색으로 바뀌었어요.",
+      "instructionEn": "Recolor the small patterned saddle blanket on the brown horse near x29 y55 to blue, retaining its pattern and edges."
+    },
+    {
+      "id": 3,
+      "bounds": [
+        35.2,
+        34.5,
+        38.4,
+        45.9
+      ],
+      "kind": "color",
+      "descriptionKo": "말을 잡은 사람의 올린 소매가 붉게 바뀌었어요.",
+      "instructionEn": "Recolor only the raised turquoise sleeve of the central-left horse handler near x37 y40 to burgundy; preserve hands and face."
+    },
+    {
+      "id": 4,
+      "bounds": [
+        50.8,
+        42.7,
+        54.0,
+        49.8
+      ],
+      "kind": "color",
+      "descriptionKo": "흰 말 뒤 사람의 저고리가 보라색으로 바뀌었어요.",
+      "instructionEn": "Recolor the visible green jacket of the man behind the central white horse around x52 y47 to purple."
+    },
+    {
+      "id": 5,
+      "bounds": [
+        60.0,
+        42.5,
+        65.4,
+        51.8
+      ],
+      "kind": "color",
+      "descriptionKo": "오른쪽 기수의 흰 셔츠가 파란색으로 바뀌었어요.",
+      "instructionEn": "Recolor the white shirt of the rider facing away near x63 y47 to blue, keeping arms, pose, horses and all folds."
+    },
+    {
+      "id": 6,
+      "bounds": [
+        88.8,
+        47.2,
+        94.1,
+        55.4
+      ],
+      "kind": "color",
+      "descriptionKo": "오른쪽 끝 사람의 겉옷이 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the green jacket of the far-right foreground rider near x92 y52 to muted red."
+    },
+    {
+      "id": 7,
+      "bounds": [
+        22.2,
+        64.4,
+        25.4,
+        75.8
+      ],
+      "kind": "color",
+      "descriptionKo": "앞쪽 사람의 바지가 파란색으로 바뀌었어요.",
+      "instructionEn": "Recolor the dark trousers of the foreground handler at x24 y70 to blue, preserving silhouette and folds."
+    },
+    {
+      "id": 8,
+      "bounds": [
+        71.1,
+        18.9,
+        78.8,
+        29.0
+      ],
+      "kind": "color",
+      "descriptionKo": "오른쪽 나무의 작은 잎 무리가 노란색으로 바뀌었어요.",
+      "instructionEn": "Turn one discrete cluster of green leaves near x75 y24 to golden yellow; keep tree branches unchanged."
+    },
+    {
+      "id": 9,
+      "bounds": [
+        82.9,
+        45.4,
+        85.4,
+        49.1
+      ],
+      "kind": "color",
+      "descriptionKo": "오른쪽 뒤 관객의 작은 챙모자가 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor the small light brimmed hat of a background spectator near x84 y47 to red, preserving their face.",
+      "feather": 0.06,
+      "image": "masterpieces/changes/bonheur-horse-fair-hat.png"
+    },
+    {
+      "id": 10,
+      "bounds": [
+        6.5,
+        47.1,
+        9.2,
+        51.9
+      ],
+      "kind": "color",
+      "descriptionKo": "왼쪽 끝 사람의 모자가 파란색으로 바뀌었어요.",
+      "instructionEn": "Recolor the dark round hat of the left foreground person near x8 y49 to blue; preserve head and posture."
+    }
+  ]
+}

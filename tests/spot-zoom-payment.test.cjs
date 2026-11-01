@@ -9,7 +9,7 @@ function fixture(){
  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
  w.confirm=()=>accepted;w.scrollTo=()=>{};
  w.JjudaWallet={getState:()=>({userId:'member-a',coins}),subscribe:fn=>fn({userId:'member-a',coins}),refresh:async()=>{},recordClear:async()=>({ok:true}),buy:(request,stage)=>{requests.push({...request,stage});return new Promise((yes,no)=>{resolve=yes;reject=no;});}};
- for(const file of ['puzzles.js','photo-puzzles.js','game-core.js'])w.eval(read(file));
+ for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const fresh=w.JjudaGame.freshRound;w.JjudaGame.freshRound=()=>({...fresh(),remainingMs:9000});
  const clean=w.JjudaGame.cleanProgress;w.JjudaGame.cleanProgress=(raw,puzzles)=>({...clean(raw,puzzles),current:48});
  w.eval(read('app.js'));

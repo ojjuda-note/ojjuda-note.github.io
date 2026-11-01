@@ -1,0 +1,128 @@
+{
+  "slug": "cole-the-oxbow",
+  "input": "sources/cole-the-oxbow.jpg",
+  "status": "planned",
+  "edits": [
+    {
+      "id": 1,
+      "bounds": [
+        2,
+        10,
+        11.6,
+        23.6
+      ],
+      "kind": "color",
+      "descriptionKo": "왼쪽 위 나뭇잎이 가을빛으로 바뀌었어요.",
+      "instructionEn": "Turn only the small upper-left crown of green leaves to golden orange, keeping branches and leaf shapes."
+    },
+    {
+      "id": 2,
+      "bounds": [
+        18.1,
+        45.3,
+        25.1,
+        51.3
+      ],
+      "kind": "remove",
+      "descriptionKo": "왼쪽 나무의 오른쪽 가는 가지가 없어졌어요.",
+      "instructionEn": "Remove the thin bare twig that extends right from the large foreground tree around x22 y48 and restore the storm sky."
+    },
+    {
+      "id": 3,
+      "bounds": [
+        29.7,
+        70.3,
+        36.4,
+        82.0
+      ],
+      "kind": "remove",
+      "descriptionKo": "아래쪽 부러진 나무의 뾰족한 가지가 없어졌어요.",
+      "instructionEn": "Remove just the upward-pointing broken fork on the foreground dead tree stump near x33 y76, restoring the foliage behind it."
+    },
+    {
+      "id": 4,
+      "bounds": [
+        47.3,
+        85.8,
+        54.2,
+        92.3
+      ],
+      "kind": "color",
+      "descriptionKo": "앞쪽 큰 바위의 색이 붉게 바뀌었어요.",
+      "instructionEn": "Recolor the exposed face of the small foreground boulder near x51 y89 to rusty red, keeping its cracks and shading."
+    },
+    {
+      "id": 5,
+      "bounds": [
+        54.21,
+        88.6,
+        58.3,
+        92.4
+      ],
+      "kind": "color",
+      "descriptionKo": "화가 곁의 작은 상자가 파란색으로 바뀌었어요.",
+      "instructionEn": "Recolor only the small painting equipment box near the tiny painter around x56 y91 to cobalt blue; preserve the painter."
+    },
+    {
+      "id": 6,
+      "bounds": [
+        71.5,
+        79.1,
+        75.5,
+        86.6
+      ],
+      "kind": "color",
+      "descriptionKo": "접힌 양산 천이 붉은색으로 바뀌었어요.",
+      "instructionEn": "Recolor the light fabric of the folded umbrella on the right foreground rock to muted red; preserve its long pole."
+    },
+    {
+      "id": 7,
+      "bounds": [
+        90.9,
+        92.2,
+        94.8,
+        95.2
+      ],
+      "kind": "remove",
+      "descriptionKo": "강 오른쪽 아래의 작은 배가 없어졌어요.",
+      "instructionEn": "Remove the tiny dark rowing boat at the lower-right river around x93 y94 and restore matching blue-gray water.",
+      "feather": 0.06
+    },
+    {
+      "id": 8,
+      "bounds": [
+        66.6,
+        74.7,
+        70.3,
+        78.3
+      ],
+      "kind": "shape",
+      "descriptionKo": "강 굽이의 작은 배에 붉은 돛이 생겼어요.",
+      "instructionEn": "Give the tiny boat in the middle river bend near x68 y76 a small triangular red sail, painted in the same distant scale."
+    },
+    {
+      "id": 9,
+      "bounds": [
+        59.3,
+        70.7,
+        65.7,
+        74.3
+      ],
+      "kind": "color",
+      "descriptionKo": "강 안쪽 밭 한 구역이 초록색으로 바뀌었어요.",
+      "instructionEn": "Recolor just the rectangular golden tilled field inside the river bend near x62 y72 to deep green while preserving field rows and trees."
+    },
+    {
+      "id": 10,
+      "bounds": [
+        83.1,
+        18.5,
+        89.5,
+        25.0
+      ],
+      "kind": "shape",
+      "descriptionKo": "오른쪽 하늘에 작은 새 두 마리가 생겼어요.",
+      "instructionEn": "Add two small dark birds in flight to the otherwise empty pale sky near x86 y24; subtle painted V-shaped silhouettes, no other sky changes."
+    }
+  ]
+}

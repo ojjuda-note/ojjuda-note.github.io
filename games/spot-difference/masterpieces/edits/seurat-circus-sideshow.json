@@ -1,0 +1,116 @@
+{
+  "slug": "seurat-circus-sideshow",
+  "input": "sources/seurat-circus-sideshow.jpg",
+  "edits": [
+    {
+      "text": "맨 위 왼쪽 첫 번째 불빛이 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        1.7,
+        2.0,
+        6.8,
+        8.0
+      ],
+      "instruction": "Remove only the first large flame-shaped light at the far-left end of the top row. Reconstruct the surrounding dark blue dotted canopy without changing the top border or any other light."
+    },
+    {
+      "text": "맨 위 가운데 오른쪽 불빛이 둥근 전구로 바뀌었어요.",
+      "kind": "shape",
+      "bounds": [
+        56.7,
+        2.0,
+        62.4,
+        8.2
+      ],
+      "instruction": "Turn the large flame-shaped light slightly right of center in the top row into a single round glowing amber bulb of comparable size. Preserve Seurat's pointillist dots and leave every other top-row light unchanged."
+    },
+    {
+      "text": "오른쪽에 매달린 작은 전구 중 맨 오른쪽 전구가 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        95.5,
+        18.0,
+        98.7,
+        24.6
+      ],
+      "instruction": "Remove the far-right small suspended glowing bulb in the lower row of lights on the right. Fill with the existing reddish-brown dotted background, keeping adjacent bulbs and the canvas edge unchanged."
+    },
+    {
+      "text": "왼쪽 나무의 위쪽 짧은 가지가 없어졌어요.",
+      "kind": "remove",
+      "bounds": [
+        23.0,
+        16.8,
+        29.4,
+        21.0
+      ],
+      "instruction": "Remove only the short upward twig near the right tip of the upper branch of the leafless tree on the left. Preserve the long lower branch and reconstruct the original orange-blue pointillist background behind the removed twig."
+    },
+    {
+      "text": "무대 앞 왼쪽 밝은 사각판이 파란색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        15.1,
+        63.2,
+        21.0,
+        75.2
+      ],
+      "instruction": "Recolor the pale rectangular stage-front panel below the left musicians, between the dark vertical supports, to muted cobalt blue. Keep the panel dimensions, the railing, tree trunk, and all people unchanged."
+    },
+    {
+      "text": "무대 앞 가운데 세로판이 초록색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        34.4,
+        63.0,
+        41.7,
+        75.0
+      ],
+      "instruction": "Recolor the pale rectangular stage-front panel below the third seated background musician to light green. Preserve the panel dimensions, pointillist texture, dark supports, railing, and every person."
+    },
+    {
+      "text": "왼쪽 첫 번째 연주자의 모자가 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        7.8,
+        35.2,
+        14.3,
+        40.6
+      ],
+      "instruction": "Recolor the dark hat worn by the leftmost seated background musician to muted brick red. Keep the hat shape and all facial features, hair, clothing, and surrounding tree branches unchanged."
+    },
+    {
+      "text": "아래쪽 관객 모자의 윗부분이 갈색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        29.8,
+        79.8,
+        36.1,
+        88.1
+      ],
+      "instruction": "Recolor the tall top hat on the foreground spectator just left of center to warm ochre gold. Preserve its silhouette, dark brim, the spectator's head, and all other audience members."
+    },
+    {
+      "text": "무대 앞 작은 인물의 밝은 목장식이 붉은색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        67.3,
+        61.2,
+        71.5,
+        67.6
+      ],
+      "instruction": "Recolor only the pale ruffled neckcloth directly beneath the chin of the small standing center-right performer to muted red. Preserve the ruffles, dark jacket, waistcoat, face, neck, hands, body shape, and stance."
+    },
+    {
+      "text": "오른쪽 연주자의 모자 윗부분이 황갈색으로 바뀌었어요.",
+      "kind": "color",
+      "bounds": [
+        84.7,
+        35.7,
+        90.4,
+        40.9
+      ],
+      "instruction": "Recolor the dark hat worn by the tall right-side musician to a light warm cream, maintaining its existing shape and pointillist texture. Keep the person's face, hair, body, instrument, and every surrounding element unchanged."
+    }
+  ]
+}
