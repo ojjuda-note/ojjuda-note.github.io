@@ -89,7 +89,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  checkGroups();assert.equal(reads.at(-1).name,'community_game_monthly_history');assert.deepEqual(Array.from(reads.at(-1).args.p_games),Object.keys(games));
  const month=host.querySelector('.board-rank-month');month.value='2026-09';month.dispatchEvent(new w.Event('change'));await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
  assert.equal(host.querySelector('.board-rank-month').value,'2026-09','the response month, rather than the local clock, controls the archive');
- assert.equal(value('sacheonseong'),'01:00.00');assert.match(row('sacheonseong').textContent,/3단계 · 36개/);
+ assert.equal(value('sacheonseong'),'01:00.00');assert.equal(row('sacheonseong').querySelector('.board-game-difficulty').textContent,'3단계');
  assert.equal(value('mines'),'1분 0초');assert.match(row('mines').textContent,/고급/);
  assert.equal(value('billiards'),'3연승');assert.match(row('billiards').textContent,/포켓볼 · 어려움/);
  assert.match(row('chess').textContent,/회원대결/);assert.match(row('tank').textContent,/11명 상대/);

@@ -6,6 +6,15 @@
     if(!Number.isInteger(stage)||stage<1||stage>MAX_STAGE)throw new RangeError('Stage must be 1–15');
     return {stage,size:stage*2,total:4*stage*stage,typeCount:stage===1?2:stage*stage};
   };
+  function boardInfo(stage, columns = stageInfo(stage).size) {
+    const base=stageInfo(stage);
+    if(!Number.isInteger(columns)||columns<1||columns>base.total)throw new RangeError('Columns must be an integer between 1 and the stage tile count');
+    let rows=Math.ceil(base.total/columns);
+    if(rows*columns%2)rows++;
+    const total=rows*columns,typeCount=Math.max(base.typeCount,Math.ceil(total/MAX_COPIES));
+    if(typeCount>FACE_COUNT)throw new RangeError('Board requires more pictures than are available');
+    return {...base,rows,cols:columns,total,typeCount};
+  }
   const same = (a, b) => a.r === b.r && a.c === b.c;
   const copy = grid => grid.map(row => row.slice());
 
@@ -109,11 +118,11 @@
   }
 
   function generate(stage, random = Math.random, columns = stageInfo(stage).size) {
-    const {total,typeCount}=stageInfo(stage);
-    if(!Number.isInteger(columns)||columns<1||columns>total)throw new RangeError('Columns must be an integer between 1 and the stage tile count');
+    const {rows,cols,total,typeCount}=boardInfo(stage,columns);
     const palette=stage<=3?Array.from({length:typeCount},(_,i)=>i):shuffle(Array.from({length:FACE_COUNT},(_,i)=>i),random).slice(0,typeCount);
-    const types=Array.from({length:total},(_,i)=>palette[i%typeCount]);
-    const grid=Array.from({length:Math.ceil(total/columns)},(_,r)=>Array.from({length:columns},(_,c)=>r*columns+c<total?0:EMPTY));
+    // Allocate whole pairs before shuffling individual tiles into every cell.
+    const types=Array.from({length:total},(_,i)=>palette[Math.floor(i/2)%typeCount]);
+    const grid=Array.from({length:rows},()=>Array(cols).fill(0));
     return arrange(grid,types,random);
   }
   function reshuffle(grid, random = Math.random) {
@@ -127,7 +136,7 @@
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,stageInfo,withinCopyLimit,path,moves,generate,reshuffle,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,stageInfo,boardInfo,withinCopyLimit,path,moves,generate,reshuffle,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

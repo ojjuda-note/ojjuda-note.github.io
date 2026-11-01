@@ -6,7 +6,18 @@ assert.equal(new Set(faces.map(f=>f.symbol||f.emoji)).size,faces.length,'Each pi
 assert.equal(new Set(faces.map(f=>f.name)).size,faces.length,'Each picture needs a distinct name');
 assert(E.MAX_STAGE-4>=10,'At least 10 stages must follow the 64-tile stage');
 assert.throws(()=>E.generate(E.MAX_STAGE+1),RangeError);
-for(const columns of [0,-1,1.5,17,'4',null,NaN,Infinity])assert.throws(()=>E.generate(2,Math.random,columns),RangeError);
+assert.throws(()=>E.boardInfo(E.MAX_STAGE+1),RangeError);
+for(const columns of [0,-1,1.5,17,'4',null,NaN,Infinity]){
+  assert.throws(()=>E.boardInfo(2,columns),RangeError);assert.throws(()=>E.generate(2,Math.random,columns),RangeError);
+}
+for(let stage=1;stage<=E.MAX_STAGE;stage++)assert.deepEqual(E.boardInfo(stage),{...E.stageInfo(stage),rows:stage*2,cols:stage*2},'Default square metadata stays compatible');
+for(const [stage,cols,rows,total,typeCount]of [[1,3,2,6,2],[6,11,14,154,39],[7,11,18,198,50],[2,7,4,28,7],[15,21,44,924,231],[15,700,2,1400,350]]){
+  assert.deepEqual(E.boardInfo(stage,cols),{stage,size:stage*2,rows,cols,total,typeCount},'Fill spare cells and add a whole row when odd-by-odd dimensions would leave an unpaired tile');
+}
+for(const columns of [351,701,899]){
+  assert.throws(()=>E.boardInfo(15,columns),RangeError,'Shapes cannot exceed the available picture inventory');
+  assert.throws(()=>E.generate(15,Math.random,columns),RangeError);
+}
 assert(!E.withinCopyLimit([[0,0,0],[0,0,0]]),'Six copies must be rejected');
 assert(!E.withinCopyLimit([[0,0],[0,-1]]),'Odd counts must be rejected');
 assert(E.withinCopyLimit([[0,0],[0,0]]));
@@ -27,7 +38,7 @@ function oracle(grid,a,b){
   }
   return false;
 }
-let paths=0,boards=0,recoveries=0;
+let paths=0,boards=0,filledBoards=0,recoveries=0;
 function checkPath(grid,a,b){const route=E.path(grid,a,b);assert.equal(!!route,oracle(grid,a,b),JSON.stringify({grid,a,b}));paths++;return route;}
 function histogram(grid){return grid.flat().slice().sort((a,b)=>a-b);}
 function adjacentPairs(grid){let total=0;for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++){const v=grid[r][c];if(v===-1)continue;if(c+1<grid[r].length&&grid[r][c+1]===v)total++;if(r+1<grid.length&&grid[r+1][c]===v)total++;}return total;}
@@ -39,7 +50,7 @@ for(const [rows,columns]of [[2,2],[4,4],[6,6],[8,8],[10,10],[2,7],[7,2],[3,8],[8
   if(a.r===b.r&&a.c===b.c)continue;grid[a.r][a.c]=0;grid[b.r][b.c]=0;
   checkPath(grid,a,b);
 }
-// Outside routes use each axis's own boundary; padding remains traversable.
+// Outside routes use each axis's own boundary; removed cells remain traversable.
 assert.deepEqual(checkPath([[1,0],[2,3],[4,0],[5,6]],{r:0,c:1},{r:2,c:1}),[{r:0,c:1},{r:0,c:2},{r:2,c:2},{r:2,c:1}]);
 assert.deepEqual(checkPath([[1,2,4,5],[0,3,0,6]],{r:1,c:0},{r:1,c:2}),[{r:1,c:0},{r:2,c:0},{r:2,c:2},{r:1,c:2}]);
 assert.deepEqual(checkPath([[1,2,0],[0,-1,-1]],{r:0,c:2},{r:1,c:0}),[{r:0,c:2},{r:1,c:2},{r:1,c:0}]);
@@ -55,21 +66,26 @@ assert.equal(E.path(boundsGrid,origin,origin),null);
 assert.equal(E.path([[0,-1]],origin,{r:0,c:1}),null);
 assert.equal(E.path([],origin,{r:0,c:1}),null);
 for(let stage=1;stage<=E.MAX_STAGE;stage++){
- const total=4*stage*stage,layouts=[...Array(5).fill(undefined),Math.max(1,Math.floor(stage*1.6)),Math.min(total,Math.ceil(stage*2.6))];
- if(stage===2)layouts.push(1,total);
+ const baseTotal=4*stage*stage,layouts=[...Array(5).fill(undefined),Math.max(1,Math.floor(stage*1.6)),Math.min(baseTotal,Math.ceil(stage*2.6))];
+ if(stage===2)layouts.push(1,baseTotal,7);
+ if(stage===6)layouts.push(11);
  for(const columns of layouts){
-  const width=columns??stage*2,made=E.generate(stage,random,columns),occupied=made.grid.flat().filter(v=>v!==-1);
-  assert.equal(made.grid.length,Math.ceil(total/width));assert(made.grid.every(row=>row.length===width));
-  assert.equal(occupied.length,total);
-  made.grid.flat().forEach((value,i)=>{if(i<total)assert.notEqual(value,-1);else assert.equal(value,-1,'Only trailing padding is empty in a fresh board');});
+  const width=columns??stage*2,info=E.boardInfo(stage,columns),made=E.generate(stage,random,columns),occupied=made.grid.flat().filter(v=>v!==-1);
+  assert.equal(made.grid.length,info.rows);assert(made.grid.every(row=>row.length===width));
+  assert.equal(made.grid.flat().length,info.total);assert.equal(occupied.length,info.total,'Every cell of every row contains a real tile');
+  assert.equal(info.total%2,0,'Full rectangles contain complete pairs');assert(info.total>=baseTotal);
+  assert(info.rows<=Math.ceil(baseTotal/width)+1,'At most one extra row is needed to keep the tile count even');
+  if(columns===undefined){assert.equal(info.total,baseTotal);assert.equal(info.typeCount,E.stageInfo(stage).typeCount);}
+  if(info.total>baseTotal)filledBoards++;
   assert(E.withinCopyLimit(made.grid),`Stage ${stage}: more than four copies`);
   const counts=new Map();occupied.forEach(v=>{assert(faces[v]);counts.set(v,(counts.get(v)||0)+1);});
-  assert.equal(counts.size,E.stageInfo(stage).typeCount);
-  assert([...counts.values()].every(n=>n===(stage===1?2:4)));
+  assert.equal(counts.size,info.typeCount);assert(info.typeCount<=E.FACE_COUNT);
+  assert([...counts.values()].every(n=>n===2||n===4),'Additional tiles are whole pairs with no more than four copies per picture');
+  if(columns===undefined)assert([...counts.values()].every(n=>n===(stage===1?2:4)),'Default squares retain their original picture counts');
   assert(E.moves(made.grid),'Every fresh random board must have an opening move');
   playToEnd(made.grid);
   // Remove some legal pairs and verify a mid-game shuffle preserves holes and faces.
-  const partial=E.copy(made.grid);for(let i=0;i<Math.floor(total/6);i++){const move=E.moves(partial);if(!move)break;removeMove(partial,move);}
+  const partial=E.copy(made.grid);for(let i=0;i<Math.floor(info.total/6);i++){const move=E.moves(partial);if(!move)break;removeMove(partial,move);}
   const remade=E.reshuffle(partial,random),remaining=E.copy(remade.grid);
   assert(E.withinCopyLimit(remaining),`Stage ${stage} reshuffle broke the copy limit`);
   assert.deepEqual(partial.flat().slice().sort(),remaining.flat().slice().sort());
@@ -78,6 +94,10 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
   playToEnd(remaining);boards++;
  }
 }
+assert(filledBoards>0,'Full playthroughs include newly added bottom-row pairs');
+const inventory=E.generate(15,random,700).grid;
+assert.equal(inventory.flat().length,1400);assert(inventory.flat().every(value=>faces[value]));
+assert.equal(new Set(inventory.flat()).size,E.FACE_COUNT);assert(E.withinCopyLimit(inventory),'The largest supported picture inventory still respects the copy limit');
 // This catches the old layout's neighbor pairing rather than mirroring the shuffle.
 // A random 16x16 board has about six touching pairs, versus ~100 in the old layout.
 let generatedAdjacency=0,shuffledAdjacency=0;const layouts=new Set(),samples=60;
@@ -88,4 +108,4 @@ const blocked=[[0,1],[1,0]];assert.equal(E.moves(blocked),null);
 const repaired=E.reshuffle(blocked,stuckRng).grid;assert(E.moves(repaired));assert.deepEqual(histogram(blocked),histogram(repaired));assert(calls>=96,'Exercise bounded fallback after repeated unplayable rolls');
 assert.deepEqual(E.reshuffle([[-1,-1],[-1,-1]],random).grid,[[-1,-1],[-1,-1]]);
 assert.throws(()=>E.reshuffle([[0,-1],[-1,-1]],random),/Unpaired/);
-console.log(`PASS: ${E.MAX_STAGE} stages, ${paths} independent path checks, ${boards} square/rectangular complete games plus mid-game reshuffles, ${recoveries} deadlock recoveries, copy limits, padding, holes, bounds, and RNG fallback. Mean touching pairs on 256-tile boards: new ${(generatedAdjacency/samples).toFixed(2)}, shuffle ${(shuffledAdjacency/samples).toFixed(2)} (${samples} samples each).`);
+console.log(`PASS: ${E.MAX_STAGE} stages, ${paths} independent path checks, ${boards} full/even square/rectangular complete games (${filledBoards} with added pairs) plus mid-game reshuffles, ${recoveries} deadlock recoveries, copy limits, picture inventory, holes, bounds, and RNG fallback. Mean touching pairs on 256-tile boards: new ${(generatedAdjacency/samples).toFixed(2)}, shuffle ${(shuffledAdjacency/samples).toFixed(2)} (${samples} samples each).`);

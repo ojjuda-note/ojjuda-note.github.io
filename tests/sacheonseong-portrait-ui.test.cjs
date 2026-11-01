@@ -3,6 +3,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://fixture.test';
 const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
+const fullRows=(stage,cols)=>{const rows=Math.ceil(4*stage*stage/cols);return rows+(rows*cols%2);};
 const viewports=[
  {width:320,height:568},{width:390,height:844},{width:430,height:932},
  {width:844,height:390},{width:344,height:882},{width:673,height:841},
@@ -60,13 +61,14 @@ async function openPage(context,stage,boundary=false){
 }
 async function settle(page){await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
 async function snapshot(page){
- return page.evaluate(({KEY,RECORDS})=>({state:JSON.parse(localStorage.getItem(KEY)),records:JSON.parse(localStorage.getItem(RECORDS)),selected:[...document.querySelectorAll('.tile[aria-pressed="true"]')].map(el=>({r:Number(el.dataset.r),c:Number(el.dataset.c)})),timer:document.getElementById('timer').textContent}),{KEY,RECORDS});
+ return page.evaluate(({KEY,RECORDS})=>({state:JSON.parse(localStorage.getItem(KEY)),records:JSON.parse(localStorage.getItem(RECORDS)),selected:[...document.querySelectorAll('.tile[aria-pressed="true"]')].map(el=>({r:Number(el.dataset.r),c:Number(el.dataset.c)})),timer:document.getElementById('timer').textContent,remaining:document.getElementById('remaining').textContent}),{KEY,RECORDS});
 }
 async function layout(page){
  return page.evaluate(KEY=>{
   const grid=JSON.parse(localStorage.getItem(KEY)).grid,canvas=document.getElementById('board-canvas'),viewport=document.getElementById('board-scroll');
   const rect=element=>{const b=element.getBoundingClientRect();return{x:b.x,y:b.y,width:b.width,height:b.height};};
-  return {rows:grid.length,cols:grid[0].length,total:grid.flat().filter(value=>value!==-1).length,canvas:rect(canvas),viewport:rect(viewport),tile:rect(document.querySelector('.tile:not(.empty)')),gap:parseFloat(canvas.style.getPropertyValue('--gap')),pad:parseFloat(canvas.style.getPropertyValue('--pad')),controls:[...document.querySelectorAll('.topbar,.game-hud,.game-actions,.game-actions button')].map(rect),width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,scrollHeight:document.documentElement.scrollHeight,fit:document.getElementById('zoom-fit').getAttribute('aria-pressed')};
+  const tiles=grid.flat(),counts=new Map();for(const face of tiles)if(face!==-1)counts.set(face,(counts.get(face)||0)+1);
+  return {rows:grid.length,cols:grid[0].length,total:tiles.filter(value=>value!==-1).length,empty:tiles.filter(value=>value===-1).length,disabled:document.querySelectorAll('.tile:disabled').length,validFaces:tiles.every(value=>value===-1||(Number.isInteger(value)&&!!window.GardenFaces[value])),faceCounts:[...counts.values()],remaining:document.getElementById('remaining').textContent.match(/\d+/g).map(Number),canvas:rect(canvas),viewport:rect(viewport),tile:rect(document.querySelector('.tile:not(.empty)')),gap:parseFloat(canvas.style.getPropertyValue('--gap')),pad:parseFloat(canvas.style.getPropertyValue('--pad')),controls:[...document.querySelectorAll('.topbar,.game-hud,.game-actions,.game-actions button')].map(rect),width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,scrollHeight:document.documentElement.scrollHeight,fit:document.getElementById('zoom-fit').getAttribute('aria-pressed')};
  },KEY);
 }
 function assertFits(value,label){
@@ -94,19 +96,37 @@ async function screenshot(page,name){
      const {page,errors}=await openPage(context,stage);
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
-      assertFits(value,label);assert.equal(value.total,4*stage*stage,`${label}: original tile total`);
+      const total=fullRows(stage,value.cols)*value.cols;
+      assertFits(value,label);assert.equal(value.rows,fullRows(stage,value.cols),`${label}: enough complete paired rows`);
+      assert.equal(value.total,total,`${label}: every cell is filled`);
+      assert.equal(value.empty,0,`${label}: no initial blank cells`);assert.equal(value.disabled,0,`${label}: all initial tiles are playable`);
+      assert(value.validFaces&&value.faceCounts.every(count=>count===2||count===4),`${label}: all faces form complete pairs with at most four copies`);
+      assert.equal(value.faceCounts.length,Math.ceil(total/4),`${label}: extra cells have additional picture pairs`);
+      assert.deepEqual(value.remaining,[total,total],`${label}: remaining counter includes all added tiles`);
       assert(value.cols<=stage*2&&value.rows>=stage*2,`${label}: portrait layout uses fewer columns without losing tiles`);
       if(viewport.width===390&&stage===6){
        assert.equal(value.cols,9);assert.equal(value.rows,16);
        const squareFit=Math.min((value.viewport.width-16-22)/12,(value.viewport.height-20-22)/(12*1.19));
        assert(value.tile.width>squareFit*1.20,`${label}: tiles are at least 20% wider`);
       }
+      if(viewport.width===390&&stage===7){assert.equal(value.cols,11);assert.equal(value.rows,18);assert.equal(value.total,198,'the former two empty positions now contain playable tiles');}
       if([844,673,1280].includes(viewport.width))assert.equal(value.cols,stage*2,`${label}: wide screens retain the square shape`);
-      // The last occupied cell must not focus a nonexistent column or padded
-      // cell; rectangular grids previously used their row count as this bound.
+      // The bottom-right cell must not focus a nonexistent column; rectangular
+      // grids previously used their row count as this bound.
       const last=await page.evaluate(()=>{const el=[...document.querySelectorAll('.tile:not(.empty)')].at(-1);return{r:Number(el.dataset.r),c:Number(el.dataset.c)};});
       const lastTile=page.locator(tileSelector(last));await lastTile.focus();await page.keyboard.press('ArrowRight');
       assert.equal(await lastTile.evaluate(el=>el===document.activeElement),true,`${label}: keyboard stops at the last real column`);
+      if(viewport.width===390&&stage===7){
+       assert.deepEqual(last,{r:17,c:10},'the full bottom row reaches the right edge');
+       await lastTile.tap();assert.equal(await lastTile.getAttribute('aria-pressed'),'true','a real tap selects the newly filled bottom-right tile');
+       await lastTile.tap();assert.equal(await lastTile.getAttribute('aria-pressed'),'false','the filled tile uses the normal deselection behavior');
+      }
+      await page.locator('#all-stages').click();
+      const currentCard=page.locator(`.stage-card[data-stage="${stage}"]`);
+      assert.equal(parseInt(await currentCard.locator('strong').innerText(),10),total,`${label}: stage card uses the same complete-board total`);
+      assert.equal(parseInt(await currentCard.locator(':scope > small').innerText(),10),Math.ceil(total/4),`${label}: stage card includes added picture pairs`);
+      if(viewport.width===390&&stage===6)assert.equal(parseInt(await page.locator('.stage-card[data-stage="7"] strong').innerText(),10),198,'next-stage card previews the filled 198-tile board');
+      await page.locator('#modal-close').click();
       assert.deepEqual(errors,[],`${label}: no runtime errors`);
       await screenshot(page,`stage-${stage}-${viewport.width}x${viewport.height}`);
      }finally{await page.close();}
@@ -141,6 +161,7 @@ async function screenshot(page,name){
     await page.waitForFunction(({a,b})=>[a,b].every(p=>document.querySelector(`.tile[data-r="${p.r}"][data-c="${p.c}"]`).classList.contains('empty')),pair);
    }
    assert.equal((await layout(page)).total,140,'real touch matches remove exactly four tiles');
+   assert.deepEqual((await layout(page)).remaining,[140,144],'matching keeps the complete-board target in the denominator');
    const selected={r:3,c:0};await page.locator(tileSelector(selected)).tap();
    await page.evaluate(()=>window.__sacheonseongNow+=12500);
    await page.waitForFunction(()=>document.getElementById('timer').textContent==='00:12.50');
@@ -165,6 +186,6 @@ async function screenshot(page,name){
    await screenshot(page,'stage-6-after-rotation');
    assert.deepEqual(errors,[],'matching, zoom, pan and rotation produce no runtime errors');
   }finally{await context.close();}
-  console.log('PASS: Chromium fits 6/7/15 stages on seven phone, landscape, foldable and desktop viewports; larger phone tiles, last-column keyboard access, both outside lanes, touch matching, zoom/pan and rotation preserve progress and records.');
+  console.log('PASS: Chromium fills every cell of 6/7/15 stages on seven phone, landscape, foldable and desktop viewports; actual HUD/stage counts, bottom-right touch input, larger phone tiles, last-column keyboard access, both outside lanes, touch matching, zoom/pan and rotation preserve progress and records.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
