@@ -2,7 +2,6 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
-    game.testStage=n=>{level=n;fillBricks();newTurn();};
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/world-game-assets.js')||s.includes('/game-entry.js'))?s:'')
@@ -109,8 +108,14 @@ g.tab='friends';H();
     // Capture the real renderer after actual item drops and paddle catches.
     await page.locator('#gov .gbox').screenshot({path:process.env.BREAKOUT_SCREENSHOT||path.join(require('node:os').tmpdir(),'ojjuda-breakout-items-20261006.png')});
    }
+   await page.evaluate(()=>breakoutTest.close());assert.equal(await page.locator('#gov').count(),0);
+   await page.evaluate(()=>breakoutTest.open());await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>breakoutTest.freeze());
+   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[3,34,0,3,1,true],'closing and reopening World starts a fresh board at the last entered level');checks++;
+   await page.reload();await page.waitForFunction(()=>window.breakoutTest);
+   await page.evaluate(()=>breakoutTest.open());await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>breakoutTest.freeze());
+   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[3,34,0,3,1,true],'a full page reload also restores the saved level');checks++;
    if(width===390){
-    await page.evaluate(()=>{const r=breakoutTest.current;r.game.testStage(100);r.game.draw(r.ctx);});
+    await page.evaluate(()=>{while(breakoutTest.current.game.inspect().level<100)breakoutTest.finishStage();});
     assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().bricks.length),1000);
     await page.locator('#gov .gbox').screenshot({path:path.join(require('node:os').tmpdir(),'ojjuda-breakout-stage100-20261006.png')});
     const metrics=await page.evaluate(()=>{
@@ -132,11 +137,11 @@ g.tab='friends';H();
    await page.evaluate(()=>{while(breakoutTest.current.running)breakoutTest.finishStage()});
    await page.locator('#gres').waitFor();assert.match(await page.locator('#gscreen').innerText(),/100단계 클리어/);
    await page.locator('#gscreen [data-g="start"]').click();await page.evaluate(()=>breakoutTest.freeze());
-   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[1,14,0,3,1,true]);
+   assert.deepEqual(await page.evaluate(()=>{const s=breakoutTest.current.game.inspect();return[s.level,s.bricks.length,s.score,s.lives,s.balls.length,s.waiting]}),[100,1000,0,3,1,true]);
    await page.evaluate(()=>breakoutTest.close());assert.equal(await page.locator('#gov').count(),0);
    assert.deepEqual(errors,[],'no application errors while playing, finishing and restarting');checks++;
    await context.close();
   }
-  console.log('PASS: '+checks+' World breakout integration checks; touch/pointer/keyboard, three falling pickups, sound hooks, elapsed-time acceleration, stage growth, steel/tough bricks, completion/restart, and four viewport sizes');
+  console.log('PASS: '+checks+' World breakout integration checks; touch/pointer/keyboard, three falling pickups, sound hooks, elapsed-time acceleration, stage growth, steel/tough bricks, saved-level reentry/page reload/final restart, and four viewport sizes');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

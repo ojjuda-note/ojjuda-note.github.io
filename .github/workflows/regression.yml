@@ -36,6 +36,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  breakout:
+    name: Breakout saved levels and mobile controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify saved levels, gameplay, mobile reentry and release cache
+        run: |
+          node tests/breakout-resume.test.cjs
+          node tests/breakout-items.test.cjs
+          node tests/breakout-items-ui.test.cjs
+          node tests/game-controls-ui.test.cjs
+          node tests/game-release-refresh.test.cjs
+
   spot_masterpieces:
     name: Masterpiece differences and preserved game records
     runs-on: ubuntu-latest

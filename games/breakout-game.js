@@ -1,6 +1,9 @@
 (function () {
   'use strict';
   const W=360,H=540,MAX_BALLS=10,MAX_SPEED=460,LEVELS=100;
+  const STAGE_KEY='ojjuda-breakout-last-stage-v1';
+  function readStage(){try{const n=Number(localStorage.getItem(STAGE_KEY));return Number.isInteger(n)&&n>=1&&n<=LEVELS?n:1;}catch(_){return 1;}}
+  function saveStage(stage){try{localStorage.setItem(STAGE_KEY,String(stage));}catch(_){/* Storage restrictions must not interrupt play. */}}
   const COLORS=['#F0679A','#F4A66B','#FFD37A','#7FD1A1','#8FB3F7','#B69CF0'];
   const ITEMS={two:{text:'공 2배'},ten:{text:'공 10개'},pierce:{text:'관통 · 판 2회'}};
   function rounded(c,x,y,w,h,r,color){
@@ -49,7 +52,7 @@
   function create(api){
     const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
     const paddle={x:140,y:490,w:80,h:12};
-    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=1,speed=280*pace;
+    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=readStage(),speed=280*pace;
     let nextBallId=1,notice='',noticeTime=0;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
@@ -68,6 +71,7 @@
         for(let x=Math.floor(brick.x/32);x<=Math.floor((brick.x+brick.w)/32);x++){
           const key=x+','+y;if(!brickBuckets.has(key))brickBuckets.set(key,[]);brickBuckets.get(key).push(brick);
         }
+      saveStage(level);
     }
     function newTurn(){
       balls=[ballAt(paddle.x+paddle.w/2,paddle.y-8)];drops=[];waiting=true;
