@@ -289,6 +289,10 @@
         image.style.maskImage=mask;image.style.webkitMaskImage=mask;
         image.style.maskSize=maskSize;image.style.webkitMaskSize=maskSize;image.style.maskPosition=maskPosition;image.style.webkitMaskPosition=maskPosition;
         if(soft){image.style.maskComposite='intersect';image.style.webkitMaskComposite='source-in';}
+        const polygon=layer.clipPolygon;
+        if(Array.isArray(polygon)&&polygon.length>=3&&polygon.every(point=>Array.isArray(point)&&point.length===2&&point.every(value=>Number.isFinite(value)&&value>=0&&value<=100))){
+          image.style.clipPath=`polygon(${polygon.map(([x,y])=>`${x}% ${y}%`).join(',')})`;
+        }
         // A color-only edit retains the museum scan's original light and texture.
         if(layer.blend==='color')image.style.mixBlendMode='color';
         if(Number.isFinite(layer.brightness)&&layer.brightness>0)image.style.filter=`brightness(${Math.min(2,layer.brightness)})`;
