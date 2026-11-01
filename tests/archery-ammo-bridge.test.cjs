@@ -1,0 +1,161 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
+const {randomUUID}=require('node:crypto');
+
+const root=path.resolve(__dirname,'..');
+const bridge=fs.readFileSync(path.join(root,'world-archery-game.js'),'utf8');
+const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
+const origin='https://ojjuda.test',owner='11111111-1111-4111-8111-111111111111';
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+const snapshot=(extra={})=>({ok:true,remaining:20,free_remaining:20,paid_remaining:0,coins:100,revision:1,main_rounds:5,milestones_granted:1,daily_eligible:true,day:'2026-11-02',daily_checked:true,pack_ammo:20,pack_price:1,...extra});
+
+// Only the bridge and parent callback wiring run here. There is no network client.
+function fixture(options={},fakeTimers=false){
+ const listeners=new Map(),nodes=[],classes=new Set(),timers=new Map();let authorized=true,timerId=0;
+ class Element extends EventTarget{
+  constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.sent=[];if(tag==='iframe')this.contentWindow={postMessage:(data,targetOrigin)=>this.sent.push({data:JSON.parse(JSON.stringify(data)),targetOrigin})};}
+  setAttribute(){}
+  set innerHTML(html){this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
+  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:null;}
+  showModal(){this.open=true;}
+  close(){this.open=false;}
+  remove(){this.isConnected=false;}
+  focus(){}
+ }
+ const previous=new Element('button');previous.isConnected=true;
+ const document={activeElement:previous,createElement:tag=>new Element(tag),body:{classList:{contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)},append:node=>{node.isConnected=true;nodes.push(node);}}};
+ const window={addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
+ vm.runInNewContext(bridge,{window,document,location:{origin},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
+ const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
+ const api={
+  open(overrides={}){window.OjjudaArcheryGame.open({...defaults,...options,...overrides});return nodes.at(-1).frame;},
+  close(){window.OjjudaArcheryGame.close();},
+  expireRequests(){for(const callback of [...timers.values()])callback();timers.clear();},
+  setAuthorized(value){authorized=value;},
+  get dialog(){return nodes.at(-1);},
+  emit(data,{frame=nodes.at(-1).frame,source=frame.contentWindow,messageOrigin=origin}={}){for(const receive of [...(listeners.get('message')||[])])receive({data,source,origin:messageOrigin});},
+  ready(frame=nodes.at(-1).frame){api.emit({source:'ojjuda-archery-game',type:'ready'},{frame});return frame.sent.at(-1)?.data;},
+  async request(action,fields={},overrides={}){
+   const frame=overrides.frame||nodes.at(-1).frame,init=frame.sent.find(entry=>entry.data.type==='init')?.data;
+   const data={source:'ojjuda-archery-game',type:'ammo-request',owner:init?.owner,sessionId:init?.sessionId,requestId:randomUUID(),action,...fields};
+   api.emit(data,{frame,...overrides});await tick();return data;
+  },
+  responses(frame=nodes.at(-1).frame){return frame.sent.filter(entry=>entry.data.type==='ammo-response').map(entry=>entry.data);}
+ };
+ api.open();api.ready();return api;
+}
+
+test('initialization reveals no auth client and only the live same-origin owner/session can request ammo',async()=>{
+ let calls=0;const f=fixture({onAmmoStatus:async()=>{calls++;return snapshot();}});
+ try{
+  const frame=f.dialog.frame,init=frame.sent[0].data;
+  assert.equal(init.source,'ojjuda-archery-world');assert.equal(init.owner,owner);assert.equal(init.available,true);
+  assert.match(init.sessionId,/^[0-9a-f-]{36}$/);assert.equal(calls,0,'ready does not spend, buy, or claim');
+  assert.ok(frame.sent.every(entry=>entry.targetOrigin===origin));
+  assert.ok(!('client' in init)&&!('token' in init)&&!('access_token' in init));
+  await f.request('status',{}, {messageOrigin:'https://wrong.test'});
+  await f.request('status',{}, {source:{}});
+  await f.request('status',{owner:'another-owner'});
+  await f.request('status',{sessionId:randomUUID()});
+  await f.request('status',{source:'another-game'});
+  assert.equal(calls,0);assert.equal(f.responses().length,0);
+  await f.request('status');assert.equal(calls,1);assert.equal(f.responses().at(-1).result.remaining,20);
+  f.setAuthorized(false);await f.request('status');assert.equal(calls,1);assert.equal(f.dialog.isConnected,false);
+ }finally{f.close();}
+});
+
+test('only allowlisted argument shapes reach callbacks, with no client price/count or arbitrary RPC',async()=>{
+ const calls=[];const f=fixture({onRoundStart:async(...args)=>{calls.push(['start',...args]);return snapshot({run_id:owner});},onRoundComplete:async(...args)=>{calls.push(['complete',...args]);return snapshot();},onAmmoBuy:async(...args)=>{calls.push(['buy',...args]);return snapshot();}});
+ try{
+  for(const [action,fields]of [['round-start',{stage:0}],['round-start',{stage:51}],['round-start',{stage:'5'}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
+   await f.request(action,fields);assert.equal(f.responses().at(-1).result.reason,'invalid');
+  }
+  assert.equal(calls.length,0);
+  const start=await f.request('round-start',{stage:50});
+  const complete=await f.request('round-complete',{stage:50,runId:owner});
+  const buy=await f.request('buy');
+  assert.deepEqual(calls,[['start',start.requestId,50],['complete',complete.requestId,owner,50],['buy',buy.requestId]]);
+ }finally{f.close();}
+});
+
+test('duplicate purchases share one operation; parallel actions and conflicting UUID reuse cannot mutate twice',async()=>{
+ let resolve,calls=0,spends=0;const f=fixture({onAmmoBuy:()=>{calls++;return new Promise(done=>{resolve=done;});},onAmmoSpend:async()=>{spends++;return snapshot();}});
+ try{
+  const id=randomUUID();await f.request('buy',{requestId:id});await f.request('buy',{requestId:id});
+  assert.equal(calls,1);assert.equal(f.responses().length,0);
+  await f.request('spend');assert.equal(f.responses().at(-1).result.reason,'busy');assert.equal(spends,0);
+  await f.request('spend',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'request_conflict');
+  resolve(snapshot({remaining:40,coins:99,revision:2}));await tick();
+  assert.equal(f.responses().filter(reply=>reply.requestId===id&&reply.result.ok).length,2);
+  await f.request('buy',{requestId:id});assert.equal(calls,1,'successful replay uses the same receipt');
+ }finally{f.close();}
+});
+
+test('unknown payment outcomes retry the same UUID, while receipt recovery performs no purchase or spend',async()=>{
+ const receipts=new Map();let balance=100,buys=0,spends=0,lookups=0;
+ const f=fixture({
+  onAmmoBuy:async id=>{buys++;if(!receipts.has(id)){balance--;receipts.set(id,snapshot({coins:balance,remaining:40,revision:2}));throw Error('lost response after commit');}return receipts.get(id);},
+  onAmmoSpend:async()=>{spends++;throw Error('unreachable in receipt recovery');},
+  onAmmoReceipt:async(id,action)=>{lookups++;return snapshot({coins:balance,remaining:40,revision:2,found:receipts.has(id),receipt:receipts.has(id)?{action,request_id:id}:null});}
+ });
+ try{
+  const id=randomUUID();await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'pending');assert.equal(balance,99);
+  await f.request('buy',{requestId:id});assert.equal(buys,2);assert.equal(balance,99,'mock server idempotency prevents a second debit');
+  const oldFrame=f.dialog.frame,oldNonce=oldFrame.sent[0].data.sessionId;f.close();const newFrame=f.open();const init=f.ready();
+  assert.notEqual(init.sessionId,oldNonce);assert.equal(buys,2,'opening has no financial side effect');
+  await f.request('receipt',{receiptId:id,originalAction:'buy'});assert.equal(lookups,1);assert.equal(f.responses().at(-1).result.found,true);assert.equal(buys,2);assert.equal(spends,0);
+  await f.request('receipt',{receiptId:randomUUID(),originalAction:'spend'});assert.equal(lookups,2);assert.equal(f.responses().at(-1).result.found,false);assert.equal(spends,0,'missing receipt cannot create a deduction');
+  await f.request('buy',{}, {frame:oldFrame});assert.equal(buys,2,'closed iframe cannot use its prior session');
+  assert.equal(newFrame.src.startsWith('/games/forest-archer/'),true);
+ }finally{f.close();}
+});
+
+test('a transport timeout stays pending and its original UUID can reconcile an already committed purchase',async()=>{
+ let calls=0,charged=0,resolveOriginal;const receipts=new Map();
+ const f=fixture({onAmmoBuy:id=>{
+  calls++;if(!receipts.has(id)){charged++;receipts.set(id,snapshot({coins:99,remaining:40,revision:2}));return new Promise(resolve=>{resolveOriginal=resolve;});}
+  return Promise.resolve(receipts.get(id));
+ }},true);
+ try{
+  const id=randomUUID();await f.request('buy',{requestId:id});assert.equal(f.responses().length,0);
+  f.expireRequests();await tick();assert.equal(f.responses().at(-1).result.reason,'pending');assert.equal(charged,1);
+  await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.ok,true);assert.equal(calls,2);assert.equal(charged,1);
+  const replies=f.responses().length;resolveOriginal(receipts.get(id));await tick();
+  assert.equal(f.responses().length,replies,'the late timed-out transport cannot emit a second receipt');
+ }finally{f.close();}
+});
+
+test('guest requests, late replies after close/account changes, and insufficient balance stay isolated',async()=>{
+ let resolve,calls=0;const f=fixture({onAmmoBuy:()=>{calls++;return new Promise(done=>{resolve=done;});}});
+ try{
+  const oldFrame=f.dialog.frame;await f.request('buy');assert.equal(calls,1);f.close();
+  const other='22222222-2222-4222-8222-222222222222';f.open({owner:other});f.ready();
+  resolve(snapshot({coins:0}));await tick();assert.equal(f.responses(oldFrame).length,0);assert.equal(f.responses().length,0);
+  f.close();f.open({owner:null});const guest=f.ready();assert.equal(guest.available,false);
+  await f.request('buy');assert.equal(f.responses().at(-1).result.reason,'sign_in');assert.equal(calls,1);
+  f.close();let funded=false;
+  f.open({onAmmoBuy:async()=>funded?snapshot({coins:0,remaining:40}):{ok:false,reason:'coins',coins:0,pack_ammo:20,pack_price:1}});f.ready();
+  const id=randomUUID();await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'coins');
+  funded=true;await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.ok,true,'a definitive declined receipt is not cached as a purchase');
+ }finally{f.close();}
+});
+
+test('the real archery launch branch routes all six RPCs through the existing account-bound wallet wrapper',async()=>{
+ const start=world.indexOf(' if(t==="archery"){'),end=world.indexOf('\n if(t==="saetbyeol")',start);
+ assert.ok(start>=0&&end>start);const calls=[];let opened,version=0;
+ const D={online:true,user:{id:owner}};
+ const context=vm.createContext({D,Promise,M:()=>{},window:{OjjudaArcheryGame:{open:options=>{opened=options;}}},worldRewardRequest:()=>({owner:D.online?D.user?.id:null,version:++version}),vl:async(rpc,args,request)=>{calls.push({rpc,args:JSON.parse(JSON.stringify(args)),request});return snapshot();}});
+ const launch=()=>vm.runInContext(`(function(t){${world.slice(start,end)}})('archery');`,context);
+ launch();assert.equal(opened.owner,owner);assert.ok(!('client' in opened));
+ const requestId=randomUUID(),runId=randomUUID();
+ await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onAmmoReceipt(requestId,'spend');
+ assert.deepEqual(calls.map(call=>[call.rpc,call.args]),[
+  ['archery_ammo_status',{}],['archery_round_start',{p_request_id:requestId,p_stage:7}],['archery_round_complete',{p_request_id:requestId,p_run_id:runId,p_stage:7}],['archery_ammo_spend',{p_request_id:requestId}],['archery_ammo_buy',{p_request_id:requestId}],['archery_ammo_receipt',{p_request_id:requestId,p_action:'spend'}]
+ ]);
+ assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6]);
+ D.user={id:'another-owner'};assert.equal((await opened.onAmmoBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,6);
+ D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,6);
+});
