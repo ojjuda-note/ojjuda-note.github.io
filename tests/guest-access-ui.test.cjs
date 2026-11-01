@@ -35,10 +35,15 @@ const cardId='00000000-0000-4000-8000-000000000001';
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const enter=async()=>{await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>sessionStorage.removeItem('ojjuda.guest-round-completed.v1'));};
   const login=async next=>{await page.locator('#auth-dialog[open]').waitFor();assert.equal(await page.locator('#login-tab').getAttribute('aria-selected'),'true');assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'),'false');assert.equal(await page.locator('.password-confirm-field').isVisible(),false);assert.equal(new URL(page.url()).searchParams.get('next'),next);};
-  await enter();await page.evaluate(()=>guestFixture.open('stacker'));await page.locator('[data-g=start]').click();
-  assert.equal(new URL(page.url()).pathname,'/world.html','a guest gets the first round');
-  await page.evaluate(()=>guestFixture.finish(0));await login('world');
-  assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1','zero-score loss consumes the round even when save fails');
+  for(const game of ['stacker','mole']){
+   await enter();await page.evaluate(game=>guestFixture.open(game),game);await page.locator('[data-g=start]').click();
+   assert.equal(new URL(page.url()).pathname,'/world.html','a guest gets the first round');
+   await page.evaluate(()=>guestFixture.finish(0));
+   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1','zero-score loss immediately consumes the round even when save fails');
+   await page.waitForTimeout(1750);
+   assert.equal(new URL(page.url()).pathname,'/world.html',game+' keeps the completed result available for sharing');
+   await page.locator('[data-g=start]').click();await login('world');
+  }
   await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>guestFixture.open('mole'));await login('world');
   // Closing an unplayed game must not consume the trial.
   await enter();await page.evaluate(()=>{guestFixture.open('stacker');guestFixture.close();});assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null);
@@ -85,7 +90,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#recovery-identity-slot').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   await page.locator('#forgot-trigger').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   assert.deepEqual(errors,[]);
-  console.log('PASS: guest card/reply opens real login; first game allowed, completion redirects even at zero/save failure, no repeat trial, six iframe sources and five board games, member replay unaffected; explicit signup/recovery and card return destination preserved');
+  console.log('PASS: guest card/reply opens real login; first game allowed, shareable results stay open with the trial consumed, replay and other completions open login, six iframe sources and five board games, member replay unaffected; explicit signup/recovery and card return destination preserved');
   await context.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

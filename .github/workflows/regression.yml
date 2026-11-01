@@ -34,6 +34,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  game_challenges:
+    name: Game challenge sharing and private usage counts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Verify sharing, guest gates, daily counts and administrator access
+        run: npm --prefix tests run test:visitors
+
   fresh_games:
     name: Fresh entries, computer handoff and preserved purchases
     runs-on: ubuntu-latest

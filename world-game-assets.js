@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261101-matgo-pi-order1';
+ const revision='20261101-game-challenges1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -15,9 +15,9 @@
   tour:'1.3.2',
   ttang:'1.3.2',
   photo_ttang:'1.2.3',
-  mole:'1.2.2',
+  mole:'1.3.0',
   runner:'1.2.2',
-  stacker:'1.2.2',
+  stacker:'1.3.0',
   breakout:'1.2.2',
   spot:'1.6.2',
   screw:'1.3.2',
