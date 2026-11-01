@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-const SAVE_KEY = 'forest-archer-progress-v1';
+const SAVE_KEY = 'forest-archer-progress-v2';
 const engineSource = await readFile(new URL('../games/forest-archer/engine.mjs', import.meta.url), 'utf8');
 const viewSource = await readFile(new URL('../games/forest-archer/view.mjs', import.meta.url), 'utf8');
 const gameSource = await readFile(new URL('../games/forest-archer/game.mjs', import.meta.url), 'utf8');
@@ -28,14 +28,15 @@ async function appHarness(saved = null, ammoOptions = {}) {
   }, set(target, key, value) { target[key] = value; return true; } });
   let document;
   const makeElement = id => {
-    const classes = new Set(), listeners = new Map();
+    const classes = new Set(), listeners = new Map(), attributes = new Map();
     const el = {
       id, tagName: 'DIV', textContent: '', innerHTML: '', style: {}, dataset: {}, width: 420, height: 180,
       classList: { add: (...values) => values.forEach(v => classes.add(v)), remove: (...values) => values.forEach(v => classes.delete(v)), contains: v => classes.has(v), toggle(v, force) { const add = force ?? !classes.has(v); add ? classes.add(v) : classes.delete(v); return add; } },
       addEventListener(type, fn) { (listeners.get(type) || listeners.set(type, []).get(type)).push(fn); },
       emit(type, properties = {}) { const event = { button: 0, pointerId: 1, clientX: 300, clientY: 400, currentTarget: el, target: el, preventDefault: noop, ...properties }; for (const fn of listeners.get(type) || []) fn(event); },
       getContext: () => drawing, getBoundingClientRect: () => ({ ...viewport, left: 0, top: 0 }),
-      setPointerCapture: noop, releasePointerCapture: noop, setAttribute: noop,
+      setPointerCapture: noop, releasePointerCapture: noop,
+      setAttribute(name, value) { attributes.set(name, String(value)); }, getAttribute(name) { return attributes.get(name) ?? null; },
       querySelectorAll: () => [], focus() { document.activeElement = el; }, closest() { return el.tagName === 'BUTTON' ? el : null; }
     };
     return el;
@@ -134,6 +135,13 @@ function startCenteredDraw(app) {
   return { pad, coords };
 }
 
+async function enterLegacyScene(app, legacyId) {
+  const stage = app.engine.STAGES.find(entry => entry.legacyId === legacyId);
+  assert.ok(stage, `scene ${legacyId} remains available after reordering`);
+  app.api.startStage(stage.id);
+  await app.flush();
+}
+
 async function centeredShot(app) {
   const { pad, coords } = startCenteredDraw(app);
   const before = app.api.state.used;
@@ -145,6 +153,38 @@ async function centeredShot(app) {
   app.until(() => ['ready', 'finished'].includes(app.api.state.mode));
   await app.flush();
 }
+
+test('the reordered game starts fresh once and never restores the previous journey or pending shot', async () => {
+  const old = { version: 1, coins: 99999, ownedBows: [0, 3, 19, 24], ownedArrows: [0, 11],
+    bow: 19, arrow: 11, eventGun: 24, scopedBows: [19, 24], lastStage: 50,
+    best: { 1: 50, 50: 50 }, eventBest: 300, eventBestByLevel: { 10: 300 },
+    eventPlays: 8, mainRounds: 50, shots: 250, hits: 230 };
+  const owner = '11111111-1111-4111-8111-111111111111';
+  const store = new Map([
+    ['forest-archer-progress-v1', JSON.stringify(old)],
+    ['forest-archer-ammo-pending-v1:' + owner, JSON.stringify({ version: 1, owner, action: 'spend',
+      requestId: '33333333-3333-4333-8333-333333333333', payload: {} })]
+  ]);
+  const app = await appHarness(null, { store, remaining: 0 });
+  const progress = app.api.progress;
+  assert.deepEqual([progress.coins, progress.bow, progress.arrow, progress.eventGun, progress.lastStage], [0, 0, 0, 20, 1]);
+  assert.deepEqual([...progress.ownedBows], [0, 20]);
+  assert.deepEqual([...progress.ownedArrows], [0]);
+  assert.deepEqual([...progress.scopedBows], []);
+  assert.deepEqual([progress.mainRounds, progress.eventPlays, progress.eventBest, progress.shots, progress.hits], [0, 0, 0, 0, 0]);
+  assert.equal(Object.keys(progress.best).length, 0);
+  assert.equal(Object.keys(progress.eventBestByLevel).length, 0);
+  assert.equal(app.api.ammo.pending, null);
+  assert.equal(app.ammo.requests.some(request => request.action === 'spend' || request.action === 'receipt'), false,
+    'an old journey request must not spend a new journey bullet');
+  progress.coins = 600;
+  const upgrade = app.engine.BOWS.find(item => item.shopRank === 2 && item.weaponType === 'bow');
+  app.api.showShop('bow');app.api.equipItem(upgrade.id);
+  const resumed = await appHarness(null, { store, remaining: 0 });
+  assert.equal(resumed.api.progress.coins, 600 - upgrade.price);
+  assert.equal(resumed.api.progress.bow, upgrade.id, 'only the release transition resets progress, not every visit');
+  assert.deepEqual(JSON.parse(store.get('forest-archer-progress-v1')), old);
+});
 
 test('pointer hold waits for release and pointer cancellation never consumes an arrow', async () => {
   const app = await appHarness();
@@ -185,25 +225,124 @@ test('five actual shots complete the stage, award coins and restore the next sel
 });
 
 test('purchase charges once, equips permanently and survives reload', async () => {
-  const app = await appHarness({ version: 1, coins: 220, ownedBows: [0], ownedArrows: [0], unlocked: 1, lastStage: 1, sound: false });
+  const initialCoins = 10000;
+  const app = await appHarness({ version: 1, coins: initialCoins, ownedBows: [0], ownedArrows: [0], unlocked: 1, lastStage: 1, sound: false });
+  const afterBow = initialCoins - app.engine.BOWS[1].price;
   app.api.showShop('bow');
   app.api.equipItem(1);
-  assert.equal(app.api.progress.coins, 120);
+  assert.equal(app.api.progress.coins, afterBow);
   assert.equal(app.api.progress.bow, 1);
   assert.equal(app.api.progress.ownedBows.filter(id => id === 1).length, 1);
   app.api.equipItem(0);
   app.api.equipItem(1);
-  assert.equal(app.api.progress.coins, 120);
+  assert.equal(app.api.progress.coins, afterBow);
   app.api.showShop('arrow');
   app.api.equipItem(1);
-  assert.equal(app.api.progress.coins, 45);
+  const afterArrow = afterBow - app.engine.ARROWS[1].price;
+  assert.equal(app.api.progress.coins, afterArrow);
   const reloaded = await appHarness(app.snapshot());
   assert.equal(reloaded.api.progress.bow, 1);
   assert.equal(reloaded.api.progress.arrow, 1);
-  assert.equal(reloaded.api.progress.coins, 45);
+  assert.equal(reloaded.api.progress.coins, afterArrow);
 });
 
-test('new equipment purchases survive reload without changing legacy ownership or stage progress', async () => {
+test('shop stat choices reorder actual cards while purchases still use stable equipment IDs', async () => {
+  const app = await appHarness({ version: 1, coins: 60000, ownedBows: [0], ownedArrows: [0], bow: 0, arrow: 0, sound: false });
+  const displayedIds = () => Array.from(app.getElement('modalContent').innerHTML.matchAll(/data-equip="(\d+)"/g), match => Number(match[1]));
+  const sort = value => { const select = app.getElement('shopSort');select.tagName = 'SELECT';select.value = value;app.document.emit('change', { target: select }); };
+  const filter = value => { const button = app.getElement('weaponFilter');button.tagName = 'BUTTON';button.dataset.weaponFilter = value;app.document.emit('click', { target: button }); };
+  const clickBuy = id => { const button = app.getElement('sortedPurchase');button.tagName = 'BUTTON';button.dataset.equip = String(id);app.document.emit('click', { target: button }); };
+  const main = app.engine.BOWS.filter(item => item.weaponType !== 'gun');
+  app.api.showShop('bow');
+  assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main), item => item.id));
+  assert.match(app.getElement('modalContent').innerHTML, /id="shopSort"/);
+  assert.match(app.getElement('modalContent').innerHTML, /활 10종 → 일반 단발 석궁 5종 → 레어 3연발 석궁 5종/);
+  assert.ok(displayedIds().slice(0, 10).every(id => app.engine.BOWS[id].weaponType === 'bow'));
+  assert.ok(displayedIds().slice(10, 15).every(id => app.engine.BOWS[id].weaponType === 'crossbow' && app.engine.BOWS[id].burstCount === 1));
+  assert.ok(displayedIds().slice(15).every(id => app.engine.BOWS[id].burstCount === 3));
+  filter('crossbow-single');
+  assert.equal(displayedIds().length, 5);
+  assert.ok(displayedIds().every(id => app.engine.BOWS[id].weaponType === 'crossbow' && app.engine.BOWS[id].burstCount === 1));
+  filter('crossbow-burst');
+  assert.equal(displayedIds().length, 5);
+  assert.ok(displayedIds().every(id => app.engine.BOWS[id].rarity === '레어' && app.engine.BOWS[id].burstCount === 3));
+  filter('all');
+  sort('steady');
+  const durations = displayedIds().map(id => app.engine.BOWS[id].steadyDuration);
+  assert.equal(durations[0], 2);assert.equal(durations.at(-1), .5);
+  assert.ok(durations.every((duration, index) => index === 0 || duration <= durations[index - 1]));
+  assert.match(app.getElement('modalContent').innerHTML, /조준 안정 시간이 긴 순서/);
+  sort('grouping');
+  assert.deepEqual(displayedIds().slice(0, 5), [19, 18, 17, 16, 15], 'only three-arrow bursts have a grouping comparison; single-shot internal values never outrank them');
+  assert.ok(displayedIds().slice(5).every(id => app.engine.BOWS[id].burstCount === 1));
+  sort('grip');
+  assert.equal(displayedIds()[0], 10);
+  assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main, 'grip'), item => item.id));
+  assert.equal(app.api.progress.bow, 0, 'browsing a stat order does not equip or spend');
+  assert.equal(app.api.progress.coins, 60000);
+  const chosenBow = displayedIds()[0], afterBow = 60000 - app.engine.BOWS[chosenBow].price;
+  const chosenCard = Array.from(app.getElement('modalContent').innerHTML.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(`data-equipment-id="${chosenBow}"`));
+  assert.ok(chosenCard.includes(app.engine.BOWS[chosenBow].price.toLocaleString('ko-KR')), 'large prices stay readable in the card for that ID');
+  clickBuy(chosenBow);
+  assert.equal(app.api.progress.bow, chosenBow);
+  assert.equal(app.api.progress.coins, afterBow);
+  assert.ok(app.api.progress.ownedBows.includes(chosenBow));
+  assert.ok(!app.api.progress.ownedBows.includes(1), 'the first rendered position is not mistaken for a legacy array index');
+  sort('elasticity');
+  assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main, 'elasticity'), item => item.id));
+  assert.equal(app.api.progress.coins, afterBow);
+  app.api.showShop('arrow');
+  assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(app.engine.ARROWS), item => item.id), 'an incompatible weapon sort resets when viewing arrows');
+  for (const key of ['wind', 'stability', 'tip-light', 'tip-heavy']) {
+    sort(key);
+    assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(app.engine.ARROWS, key), item => item.id));
+    const explanations = {wind: '나무 화살을 100%', stability: '속도 편차가 작아요', 'tip-light': '촉이 가벼운 순서', 'tip-heavy': '촉이 무거운 순서'};
+    assert.ok(app.getElement('modalContent').innerHTML.includes(explanations[key]), 'the selected stat explains what the order means');
+    assert.equal(app.api.progress.arrow, 0);
+    assert.equal(app.api.progress.coins, afterBow);
+  }
+  sort('wind');
+  assert.equal(displayedIds()[0], 11);
+  clickBuy(11);
+  const afterArrow = afterBow - app.engine.ARROWS[11].price;
+  assert.equal(app.api.progress.arrow, 11);
+  assert.equal(app.api.progress.coins, afterArrow);
+  clickBuy(11);assert.equal(app.api.progress.coins, afterArrow, 're-equipping a bought arrow never charges again');
+  app.api.showShop('bow');
+  assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main), item => item.id));
+  const reloaded = await appHarness(app.snapshot());
+  assert.equal(reloaded.api.progress.bow, chosenBow);assert.equal(reloaded.api.progress.arrow, 11);
+  assert.equal(reloaded.api.progress.coins, afterArrow);
+  app.api.closeModal();app.api.enterEvent(1);await app.flush();app.api.showShop('bow');sort('progression');
+  assert.deepEqual(displayedIds(), [20, 21, 22, 23, 24], 'event guns follow the requested magazine and reload sequence');
+  const gunHtml = app.getElement('modalContent').innerHTML;
+  assert.doesNotMatch(gunHtml, /출력/);
+  assert.doesNotMatch(gunHtml, /value="elasticity"/);
+  for (const label of ['2발 · 느림', '2발 · 빠름', '4발 · 느림', '4발 · 빠름', '10발 탄창']) assert.ok(gunHtml.includes(label), `${label} is visible on its functional tag`);
+  sort('magazine');assert.deepEqual(displayedIds(), [24, 22, 23, 20, 21]);
+  sort('reload');assert.deepEqual(displayedIds(), [21, 23, 24, 20, 22]);
+  sort('grip');assert.deepEqual(displayedIds(), [24, 22, 23, 20, 21]);
+  assert.equal(app.api.progress.eventGun, 20, 'sorting gun functions never changes the selected gun');
+  assert.equal(app.api.progress.bow, chosenBow);assert.equal(app.api.progress.arrow, 11);
+  assert.equal(app.api.progress.coins, afterArrow, 'all new filters and function sorts only change the shop view');
+});
+
+test('current-journey saves retain bought gear, selected IDs and bound scopes', async () => {
+  const app = await appHarness({ version: 1, coins: 5, ownedBows: [0, 3, 19], ownedArrows: [0, 11], bow: 19, arrow: 11, scopedBows: [19], lastStage: 23, best: { 12: 41 }, sound: false });
+  assert.equal(app.api.activeBow().id, 19);assert.equal(app.api.activeArrow().id, 11);
+  assert.deepEqual(Array.from(app.api.progress.scopedBows), [19]);
+  assert.equal(app.api.progress.coins, 5);
+  app.api.showShop('bow');app.api.equipItem(3);app.api.equipItem(19);
+  app.api.showShop('arrow');app.api.equipItem(0);app.api.equipItem(11);
+  assert.equal(app.api.progress.coins, 5, 'owned equipment does not require the newly increased price');
+  const reloaded = await appHarness(app.snapshot());
+  assert.equal(reloaded.api.activeBow().id, 19);assert.equal(reloaded.api.activeArrow().id, 11);
+  assert.deepEqual(Array.from(reloaded.api.progress.scopedBows), [19]);
+  assert.equal(reloaded.api.progress.coins, 5);assert.equal(reloaded.api.progress.lastStage, 23);
+  assert.deepEqual({ ...reloaded.api.progress.best }, { 12: 41 });
+});
+
+test('new equipment purchases survive reload within the fresh journey', async () => {
   const app = await appHarness({
     version: 1, coins: 100000, ownedBows: [0, 1, 3], ownedArrows: [0, 2, 3], bow: 3, arrow: 2,
     unlocked: 7, lastStage: 5, best: { 1: 50, 4: 38 }, shots: 29, hits: 20, sound: false
@@ -260,7 +399,7 @@ test('expanded save validation accepts real catalog IDs and rejects invalid or u
   assert.equal(app.api.progress.unlocked, 50);assert.equal(app.api.state.stage.id, 2);
 });
 
-test('all fifty stages are freely selectable while legacy coins, records and selected stages survive', async () => {
+test('all fifty stages are freely selectable while current-journey coins and records survive', async () => {
   const app = await appHarness({ version: 1, coins: 375, unlocked: 12, lastStage: 12, best: { 1: 50, 12: 42 }, shots: 80, hits: 63 });
   assert.equal(app.engine.STAGES.length, 50);
   const ids = html => Array.from(html.matchAll(/data-stage="(\d+)"/g), match => Number(match[1]));
@@ -414,13 +553,13 @@ test('both equipment shops show independent traits and speeds for the currently 
 });
 
 test('scope purchases charge once for each owned compatible bow and stay bound across reload', async () => {
-  const app = await appHarness({ version: 1, coins: 1000, ownedBows: [0, 3, 7, 10], ownedArrows: [0], bow: 3, arrow: 0 });
+  const app = await appHarness({ version: 1, coins: 10000, ownedBows: [0, 3, 7, 10], ownedArrows: [0], bow: 3, arrow: 0 });
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [], 'legacy saves have no scopes installed');
   app.api.showShop('bow');
   for (const id of [0, 9, -1, 12, '3']) app.api.installScope(id);
-  assert.equal(app.api.progress.coins, 1000, 'incompatible, unowned and invalid bows cannot receive a scope');
+  assert.equal(app.api.progress.coins, 10000, 'incompatible, unowned and invalid bows cannot receive a scope');
   assert.deepEqual(Array.from(app.api.progress.scopedBows), []);
-  let coins = 1000;
+  let coins = 10000;
   for (const id of [3, 7, 10]) {
     app.api.equipItem(id);
     assert.ok(!app.api.progress.scopedBows.includes(id), 'another bow must purchase its own scope');
@@ -428,6 +567,8 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
     app.api.installScope(id);coins -= app.engine.BOWS[id].scopePrice;
     assert.equal(app.api.progress.coins, coins);
     assert.equal(app.api.progress.bow, id, 'mounting a scope keeps the selected bow');
+    assert.equal(app.api.state.zoom, 3, 'buying a scope immediately activates its threefold view');
+    assert.equal(app.getElement('zoomBtn').textContent, '조준경 3×');
     const html = app.getElement('modalContent').innerHTML;
     const card = Array.from(html.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(app.engine.BOWS[id].name));
     assert.match(card, /이 장비에 장착됨/);
@@ -439,6 +580,7 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
   const saved = app.snapshot(), reloaded = await appHarness(saved);
   assert.deepEqual(Array.from(reloaded.api.progress.scopedBows), [3, 7, 10]);
   assert.equal(reloaded.api.progress.coins, coins);assert.equal(reloaded.api.activeBow().id, 10);
+  assert.equal(reloaded.api.state.zoom, 3, 'a saved scoped weapon starts with the scope active');
   const sanitized = await appHarness({ ...saved, scopedBows: [0, 3, 7, 10, 10, 9, 11, -1, 12, '3', null] });
   assert.deepEqual(Array.from(sanitized.api.progress.scopedBows), [3, 7, 10], 'invalid and unowned scope bindings are discarded');
   const poor = await appHarness({ version: 1, coins: app.engine.BOWS[10].scopePrice - 1, ownedBows: [0, 10], bow: 10 });
@@ -449,14 +591,14 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
 
 test('mounted scopes provide real threefold zoom only on the bow that owns them', async () => {
   const app = await appHarness({ version: 1, coins: 0, ownedBows: [0, 3, 7, 10], ownedArrows: [0], bow: 3, scopedBows: [3, 10] });
-  const zoom = app.getElement('zoomBtn'), baseFocal = app.api.camera.focal;
+  const zoom = app.getElement('zoomBtn'), baseFocal = Math.min(app.viewport.width * 1.08, app.viewport.height * 1.5);
   const clickZoom = expected => {
     zoom.emit('click');app.frames();
     assert.equal(app.api.state.zoom, expected);
     assert.equal(app.api.camera.focal, baseFocal * expected, 'zoom changes the actual perspective focal length');
   };
-  app.frames();assert.equal(app.getElement('gameCanvas').dataset.scope, 'mounted');
-  clickZoom(2);clickZoom(3);
+  app.frames();assert.equal(app.api.state.zoom, 3);
+  assert.equal(app.api.camera.focal, baseFocal * 3);
   assert.equal(zoom.textContent, '조준경 3×');
   assert.equal(app.getElement('gameCanvas').dataset.scope, 'active');
   clickZoom(1);clickZoom(2);clickZoom(3);
@@ -469,11 +611,90 @@ test('mounted scopes provide real threefold zoom only on the bow that owns them'
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [3, 10], 'the scope does not move with equipment selection');
   app.api.closeModal();await app.flush();clickZoom(1);clickZoom(2);clickZoom(1);
   app.api.showShop('bow');app.api.equipItem(10);app.api.closeModal();await app.flush();
-  clickZoom(2);clickZoom(3);
+  app.frames();assert.equal(app.api.state.zoom, 3);
+  assert.equal(app.api.camera.focal, baseFocal * 3);
   assert.equal(app.getElement('gameCanvas').dataset.scope, 'active', 'a separately scoped crossbow restores its own 3× view');
   app.api.showShop('bow');app.api.equipItem(0);app.api.closeModal();await app.flush();
   assert.equal(app.api.state.zoom, 2);
   clickZoom(1);clickZoom(2);clickZoom(1);
+});
+
+for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
+  test(`scope purchase triples the visible target radius and preserves aim and controls in a ${width}×${height} view`, async () => {
+    const app = await appHarness({ version: 1, coins: 10000, ownedBows: [0, 3], ownedArrows: [0, 1], bow: 3 });
+    const staticStage = app.engine.STAGES.find(stage => stage.kind === 'target' && !stage.motion?.amplitudeX && !stage.motion?.amplitudeY && !stage.obstacles.length && stage.distance >= 28);
+    assert.ok(staticStage, 'the range includes an unobstructed static target for checking magnification');
+    app.resize(width, height);app.api.startStage(staticStage.id);await app.flush();
+    const {state} = app.api, originalAim = {...state.aim};
+    const target = app.engine.targetAt(state.stage, state.time);
+    const dimensions = () => {
+      const center = app.api.project(target);
+      return {
+        ...center,
+        rx: app.api.project({...target, x: target.x + target.radius}).x - center.x,
+        ry: center.y - app.api.project({...target, y: target.y + target.radius}).y
+      };
+    };
+    const close = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} versus ${expected}`);
+    const original = dimensions();
+    app.api.showShop('bow');app.api.installScope(3);
+    const enlarged = dimensions();
+    assert.equal(state.zoom, 3);
+    close(enlarged.rx, original.rx * 3, 'the target is three times wider on the screen');
+    close(enlarged.ry, original.ry * 3, 'the target is three times taller on the screen');
+    close(enlarged.x, original.x, 'the aimed target stays at the same horizontal point');
+    close(enlarged.y, original.y, 'the aimed target stays at the same vertical point');
+    assert.deepEqual({...state.aim}, originalAim, 'magnification never changes the physical firing direction');
+    assert.ok(enlarged.x - enlarged.rx > 0 && enlarged.x + enlarged.rx < width);
+    assert.ok(enlarged.y - enlarged.ry > 0 && enlarged.y + enlarged.ry < height);
+    app.api.closeModal();await app.flush();
+    const pad = app.getElement('drawPad'), sensitivity = (width < 500 ? 1.35 : 1.05) / app.api.camera.focal;
+    pad.emit('pointerdown', {clientX: 150, clientY: 180});
+    pad.emit('pointermove', {clientX: 174, clientY: 168});
+    pad.emit('pointercancel');
+    close(state.aim.yaw, originalAim.yaw + 24 * sensitivity, 'dragging respects the magnified horizontal sensitivity');
+    close(state.aim.pitch, originalAim.pitch + 12 * sensitivity, 'dragging respects the magnified vertical sensitivity');
+    const aimPoint = {x: Math.tan(state.aim.yaw) * target.z, y: app.engine.PLAYER.y + Math.tan(state.aim.pitch) / Math.cos(state.aim.yaw) * target.z, z: target.z};
+    const anchor = app.api.project(aimPoint), zoom = app.getElement('zoomBtn');
+    for (const value of [1, 2, 3]) {
+      zoom.emit('click');
+      assert.equal(state.zoom, value, 'manual onefold, twofold and threefold views remain available');
+      const point = app.api.project(aimPoint);
+      close(point.x, anchor.x, 'zoom keeps the current aim at its horizontal screen position');
+      close(point.y, anchor.y, 'zoom keeps the current aim at its vertical screen position');
+    }
+    app.getElement('recenterBtn').emit('click');
+    close(dimensions().x, original.x, 'recentring restores the target horizontally at threefold zoom');
+    close(dimensions().y, original.y, 'recentring restores the target vertically at threefold zoom');
+    zoom.emit('click');app.api.showShop('arrow');app.api.equipItem(1);
+    assert.equal(state.zoom, 1, 'changing an arrow preserves a manually selected zoom');
+    app.api.showShop('bow');app.api.equipItem(3);
+    assert.equal(state.zoom, 3, 'selecting the scoped weapon again activates its scope');
+    assert.equal(state.used, 0, 'scope and drag-cancel interactions never consume a shot');
+  });
+}
+
+test('installing a scope on an unequipped weapon leaves the current weapon and view unchanged', async () => {
+  const app = await appHarness({ version: 1, coins: 10000, ownedBows: [0, 3, 7], ownedArrows: [0], bow: 0 });
+  const originalCamera = {...app.api.camera};
+  app.api.showShop('bow');app.api.installScope(3);
+  assert.equal(app.api.activeBow().id, 0);assert.equal(app.api.state.zoom, 1);
+  assert.deepEqual({...app.api.camera}, originalCamera);
+  app.api.equipItem(7);assert.equal(app.api.state.zoom, 1, 'an unscoped weapon cannot borrow another weapon’s scope');
+  app.api.equipItem(3);assert.equal(app.api.state.zoom, 3);
+  assert.deepEqual(Array.from(app.api.progress.scopedBows), [3]);
+});
+
+test('new main rounds and event rounds automatically activate only their equipped weapon’s bound scope', async () => {
+  const app = await appHarness({ version: 1, coins: 0, ownedBows: [0, 3, 22], ownedArrows: [0], bow: 3, eventGun: 22, scopedBows: [3, 22] });
+  app.getElement('zoomBtn').emit('click');assert.equal(app.api.state.zoom, 1);
+  app.api.startStage(3);await app.flush();assert.equal(app.api.state.zoom, 3);
+  app.api.enterEvent(1);await app.flush();assert.equal(app.api.state.zoom, 3);
+  app.getElement('zoomBtn').emit('click');assert.equal(app.api.state.zoom, 1);
+  app.api.enterEvent(2);await app.flush();assert.equal(app.api.state.zoom, 3);
+  app.api.exitEvent();await app.flush();assert.equal(app.api.state.zoom, 3);
+  assert.equal(app.api.activeBow().id, 3);
+  assert.deepEqual(Array.from(app.api.progress.scopedBows), [3, 22], 'round changes never transfer or duplicate a scope');
 });
 
 test('only rare crossbows burst, with delayed arrows and one score, reward and round slot per trigger', async () => {
@@ -601,21 +822,64 @@ test('the separate clay event keeps guns, bullets and records independent of the
   assert.equal(reloaded.api.state.stage.brokenPasses.length, 0, 'a new event has fresh clay targets');
 });
 
+test('all event guns hit promptly after authorization without slow motion or duplicate ammo consumption', async () => {
+  for (const gunId of [20, 21, 22, 23, 24]) {
+    const app = await appHarness({ version: 1, ownedBows: [0, 20, 21, 22, 23, 24], eventGun: gunId, sound: false }, { remaining: 20, hold: ['spend'] });
+    app.api.enterEvent(10);await app.flush();
+    const state = app.api.state, engine = app.engine, pad = app.getElement('drawPad'), gun = app.api.activeBow();
+    state.stage = engine.prepareStage(engine.createClayEvent(10), 42);state.time = 1;
+    const target = engine.targetAt(state.stage, state.time + state.stage.distance / gun.muzzleSpeed, 0);
+    state.aim.yaw = Math.atan2(target.x, target.z);
+    state.aim.pitch = Math.atan2(target.y - engine.PLAYER.y, Math.hypot(target.x, target.z));
+    pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
+    const request = app.ammo.requests.filter(item => item.action === 'spend').at(-1);
+    assert.equal(state.mode, 'ammo-pending');assert.equal(state.eventShots.length, 0);assert.equal(state.used, 0);
+    app.advanceTo(app.now + 750);
+    assert.equal(state.time, 1);assert.equal(state.magazine, gun.magazineSize);
+    app.ammo.reply(request);await app.flush();
+    const shot = state.shot, firedAt = app.now;
+    assert.equal(shot.elapsed, 0);assert.equal(shot.position.z, 0);
+    assert.equal(shot.speed, engine.MAX_MAIN_PROJECTILE_SPEED * 2);
+    assert.equal(state.mode, 'ready');assert.equal(state.used, 1);assert.equal(state.magazine, gun.magazineSize - 1);
+    app.until(() => !shot.active, 12);
+    assert.equal(shot.result.type, 'hit');assert.equal(shot.result.targetCenter.passId, 0);
+    assert.equal(shot.result.targetCenter.kind, 'ufo');assert.equal(state.score, 10);
+    const shownFlightTime = (app.now - firedAt) / 1000;
+    assert.ok(shownFlightTime <= .2, `${gun.name} was shown flying for ${shownFlightTime}s`);
+    assert.ok(Math.abs(shownFlightTime - shot.elapsed) < 1 / 60 + 1e-9, 'event bullets use real time, without the archery slow-motion multiplier');
+    app.ammo.reply(request, app.ammo.snapshot());pad.emit('pointerup');await app.flush();
+    assert.equal(state.used, 1);assert.equal(app.ammo.account.remaining, 19);
+    assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 1);
+    assert.equal(new Set(state.stage.brokenPasses).size, 1);
+
+    app.until(() => state.fireCooldown === 0);app.ammo.held.delete('spend');
+    state.aim.yaw = .48;state.aim.pitch = .58;
+    pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
+    const missed = state.shot, missedAt = app.now;
+    app.until(() => !missed.active, 15);
+    assert.equal(missed.result.type, 'miss');assert.ok((app.now - missedAt) / 1000 <= .25);
+    assert.equal(state.stuck.length, 0, 'a missed bullet does not become a permanent mark floating at the target plane');
+    assert.equal(state.used, 2);assert.equal(app.ammo.account.remaining, 18);assert.equal(state.hits, 1);
+    assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 2);
+  }
+});
+
 test('concurrent event bullets resolve by arrival time and trajectory probes do not mutate their trails', async () => {
   for (const reverse of [false, true]) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 24], eventGun: 20, sound: false });
     app.api.enterEvent(1);await app.flush();
     const state = app.api.state, engine = app.engine;
     state.stage = engine.prepareStage(engine.createClayEvent(1), 42);state.time = 1;
-    const slower = engine.launchArrow({ bow: engine.BOWS[20], charge: 1, velocityBias: 0, yaw: .15545257747099633, pitch: .11299538975202572 });
-    const faster = engine.launchArrow({ bow: engine.BOWS[24], charge: 1, velocityBias: 0, yaw: .16182850755625094, pitch: .09322436430728608 });
-    engine.stepArrow(slower, .3, state.stage, .7);engine.stepArrow(faster, .15, state.stage, .85);
+    const slower = engine.launchArrow({ bow: engine.BOWS[20], charge: 1, velocityBias: 0, yaw: .16462808852539185, pitch: .08702375344862975 });
+    const faster = engine.launchArrow({ bow: engine.BOWS[24], charge: 1, velocityBias: 0, yaw: .1647624914719859, pitch: .08695233774951504 });
+    engine.stepArrow(slower, .08, state.stage, .92);engine.stepArrow(faster, .0795, state.stage, .9205);
     for (const shot of [slower, faster]) { assert.equal(shot.active, true);shot.startedAt = app.now - 1000;shot.handled = false;shot.launched = true; }
     state.eventShots = reverse ? [faster, slower] : [slower, faster];state.shot = faster;state.used = 2;
     app.advanceTo(app.now + 250);
-    assert.equal(faster.result?.type, 'hit', 'the later-fired faster bullet reaches this plate first');
-    assert.ok(Math.abs(faster.resolvedAt - 1.104269304945) < 1e-8);
-    assert.equal(slower.result, null, 'the later arrival cannot also hit the already broken plate');
+    assert.equal(faster.result?.type, 'hit', 'the later bullet with less drag reaches this plate first');
+    assert.ok(Math.abs(faster.resolvedAt - 1.0848430054397302) < 1e-8);
+    assert.equal(slower.result.type, 'miss', 'the later arrival cannot also hit the already broken plate');
+    assert.equal(slower.result.score, 0);
     assert.equal(state.score, 10);assert.equal(state.hits, 1);assert.equal(app.api.progress.coins, 10);
     assert.deepEqual(Array.from(state.stage.brokenPasses), [0]);
     assert.equal(slower.trail.length, 3);assert.equal(faster.trail.length, 3, 'collision probes must not append to the actual projectile trails');
@@ -665,6 +929,7 @@ test('pending shot authorization freezes the event and commits a single bullet o
   const app = await appHarness({ version: 1, ownedBows: [0, 20, 21], sound: false }, { remaining: 5, hold: ['spend'] });
   app.api.enterEvent();await app.flush();
   const state = app.api.state, pad = app.getElement('drawPad');
+  state.aim.yaw = .48;state.aim.pitch = .58; // Keep the first real bullet airborne past the .14-second firing interval.
   pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
   const first = app.ammo.requests.filter(request => request.action === 'spend').at(-1);
   assert.equal(state.mode, 'ammo-pending');assert.equal(state.used, 0);assert.equal(state.magazine, 2);assert.equal(state.eventShots.length, 0);
@@ -842,6 +1107,16 @@ test('unowned equipment cannot be used without purchase and normal rounds remain
   assert.equal(app.api.progress.coins, 75);
   assert.equal(app.api.progress.bow, 0);
   assert.equal(app.api.progress.arrow, 0);
+  for (const kind of ['bow', 'arrow']) {
+    const catalog = kind === 'bow' ? app.engine.BOWS.filter(item => item.weaponType !== 'gun') : app.engine.ARROWS;
+    const firstPaid = app.engine.sortEquipment(catalog).find(item => item.price > 0);
+    app.api.showShop(kind);app.api.equipItem(firstPaid.id);
+    assert.equal(app.api.progress[kind], 0, 'even a perfect first game must save for a paid upgrade');
+    assert.equal(app.api.progress.coins, 75);
+    const card = Array.from(app.getElement('modalContent').innerHTML.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(`data-equipment-id="${firstPaid.id}"`));
+    assert.match(card, new RegExp(`data-equip="${firstPaid.id}" disabled`));
+    assert.ok(card.includes((firstPaid.price - 75).toLocaleString('ko-KR')), 'the unaffordable card shows how many more coins are needed');
+  }
   const saved = app.snapshot();
   saved.bow = 3; saved.arrow = 3;
   const reloaded = await appHarness(saved);
@@ -918,6 +1193,75 @@ test('a fresh random steady window lasts exactly 0.5 seconds while normal sway c
   sequence = [0.5, 0.8];pad.emit('pointerdown');
   assert.equal(app.api.state.steadyStart, 7.800000000000001);
   assert.ok(app.api.state.steadyStart >= 1 && app.api.state.steadyStart + 0.5 <= 10);
+});
+
+for (const { id, duration, input } of [{ id: 3, duration: 1.21, input: 'pointer' }, { id: 19, duration: 2, input: 'keyboard' }]) {
+  test(`${input} aiming uses the equipped ${duration}-second steady interval and still auto-fires once at ten seconds`, async () => {
+    const app = await appHarness({ version: 1, ownedBows: [0, id], ownedArrows: [0], bow: id, sound: false });
+    const pad = app.getElement('drawPad'), sequence = [.5, .4];
+    app.setRandom(() => sequence.length ? sequence.shift() : .9);
+    assert.ok(app.getElement('loadoutSteady').textContent.includes(`${duration}초`));
+    if (input === 'pointer') pad.emit('pointerdown');
+    else app.document.emit('keydown', { code: 'Space', repeat: false });
+    assert.equal(app.api.state.mode, 'drawing');
+    assert.equal(app.api.state.steadyDuration, duration);
+    assert.ok(pad.getAttribute('aria-label').includes(`${duration}초간`), 'accessible aiming instructions describe the equipped weapon');
+    const start = app.api.state.steadyStart * 1000, end = start + duration * 1000;
+    assert.ok(start >= 1000 && end <= 10000);
+    app.advanceTo(start - 1);
+    assert.equal(app.api.isSteady(), false);
+    assert.ok(Math.hypot(app.api.effectiveSway().x, app.api.effectiveSway().y) > 0);
+    app.advanceTo(start + .001);
+    assert.equal(app.api.isSteady(), true);
+    assert.equal(app.api.effectiveSway().x, 0);assert.equal(app.api.effectiveSway().y, 0);
+    assert.ok(app.getElement('steadyLabel').textContent.includes(`${duration}초 조준 안정`));
+    app.advanceTo(end - 1);
+    assert.equal(app.api.isSteady(), true, 'the upgraded opportunity remains stable beyond the old half-second limit');
+    assert.equal(app.api.aimAngles().yaw, app.api.state.aim.yaw);
+    assert.equal(app.api.aimAngles().pitch, app.api.state.aim.pitch);
+    app.advanceTo(end + .001);
+    assert.equal(app.api.isSteady(), false);
+    assert.ok(Math.hypot(app.api.effectiveSway().x, app.api.effectiveSway().y) > 0);
+    assert.equal(app.getElement('drawTiming').classList.contains('steady'), false);
+    assert.match(app.getElement('steadyLabel').textContent, /안정 구간 끝/);
+    app.advanceTo(9999);
+    assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
+    app.advanceTo(10000, { frame: false });
+    const shot = app.api.state.shot;
+    assert.equal(app.api.state.mode, 'flight');assert.equal(app.api.state.used, 1);
+    assert.equal(shot.startedAt, 10000);assert.equal(shot.automatic, true);
+    if (id === 19) {
+      assert.equal(app.api.state.volley.shots.length, 3, 'the top rare crossbow still consumes one trigger for its volley');
+      assert.ok(app.api.state.volley.shots.every(projectile => projectile.automatic && projectile.startedAt === 10000));
+    }
+    if (input === 'pointer') pad.emit('pointerup');
+    else app.document.emit('keyup', { code: 'Space' });
+    await app.flush();
+    assert.equal(app.api.state.used, 1);assert.equal(app.api.state.shot, shot, 'a late release never fires a second time');
+  });
+}
+
+test('the longest steady opportunity starts randomly between one and eight seconds and survives equipment reselection', async () => {
+  const app = await appHarness({ version: 1, coins: 0, ownedBows: [0, 19], ownedArrows: [0], bow: 19, sound: false });
+  const pad = app.getElement('drawPad'), starts = [];
+  for (const fraction of [0, .5, 1 - Number.EPSILON]) {
+    const sequence = [.5, fraction];app.setRandom(() => sequence.length ? sequence.shift() : .9);
+    pad.emit('pointerdown');
+    starts.push(app.api.state.steadyStart);
+    assert.equal(app.api.state.steadyDuration, 2);
+    assert.ok(app.api.state.steadyStart >= 1 && app.api.state.steadyStart <= 8);
+    assert.ok(app.api.state.steadyStart + app.api.state.steadyDuration <= 10, 'the full two seconds fit before mandatory release');
+    pad.emit('pointercancel');
+  }
+  assert.equal(starts[0], 1);assert.equal(starts[1], 4.5);assert.ok(starts[2] > 7.99);
+  assert.equal(new Set(starts).size, 3, 'each new hold chooses another random opportunity');
+  app.api.showShop('bow');app.api.equipItem(0);app.api.closeModal();
+  pad.emit('pointerdown');assert.equal(app.api.state.steadyDuration, .5);pad.emit('pointercancel');
+  app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();
+  pad.emit('pointerdown');assert.equal(app.api.state.steadyDuration, 2);pad.emit('pointercancel');
+  app.advanceTo(10000);
+  assert.equal(app.api.state.used, 0, 'cancelling or changing equipment clears every old automatic timer');
+  assert.equal(app.api.progress.coins, 0);
 });
 
 test('manual aiming still moves during stability and release uses the exact stable direction', async () => {
@@ -1051,8 +1395,8 @@ test('resizing between desktop and mobile during flight preserves a visible arro
 
 test('scene composition hides only rear shaft/trail pieces and also depth-orders landed arrows', async () => {
   const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-  for (const [stageId, blockerKind] of [[1, 'target'], [8, 'wall']]) {
-    app.api.startStage(stageId);await app.flush();
+  for (const [legacyId, blockerKind] of [[1, 'target'], [8, 'wall']]) {
+    await enterLegacyScene(app, legacyId);
     app.until(() => app.api.state.mode === 'ready');
     const state = app.api.state, target = app.engine.targetAt(state.stage, state.time);
     const plane = blockerKind === 'target' ? target.z : state.stage.obstacles[0].z - state.stage.obstacles[0].depth / 2;
@@ -1084,7 +1428,8 @@ test('scene composition hides only rear shaft/trail pieces and also depth-orders
 });
 
 test('a shaft clearing the masonry top stays visible while trail behind its back plane remains occluded', async () => {
-  const app = await appHarness({ version: 1, unlocked: 50, lastStage: 8, sound: false });
+  const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
+  await enterLegacyScene(app, 8);
   app.until(() => app.api.state.mode === 'ready');
   const state = app.api.state, wall = state.stage.obstacles[0], target = app.engine.targetAt(state.stage, state.time);
   const front = wall.z - wall.depth / 2, back = wall.z + wall.depth / 2, height = wall.height + .12;
@@ -1149,8 +1494,9 @@ function assertAttachedArrows(app, offsets, velocities) {
 }
 
 test('static targets, moving targets, birds, rabbits and deer carry their arrows at the impact spot through hold and ready', async () => {
-  for (const stageId of [1, 5, 6, 7, 11]) {
-    const app = await appHarness({ version: 1, unlocked: 50, lastStage: stageId, sound: false });
+  for (const legacyId of [1, 5, 6, 7, 11]) {
+    const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
+    await enterLegacyScene(app, legacyId);
     app.api.state.time = 1.7;
     const offset = { x: .27, y: -.18 }, velocity = { x: 2, y: -3, z: 38 };
     const originalTarget = resolveTestHit(app, offset, velocity);
@@ -1163,14 +1509,15 @@ test('static targets, moving targets, birds, rabbits and deer carry their arrows
     assert.equal(app.getElement('gameCanvas').dataset.camera, 'impact');
     app.until(() => app.api.state.mode === 'ready');app.frames(120);
     const movedTarget = assertAttachedArrows(app, [offset], [velocity]);
-    if (stageId !== 1) assert.ok(Math.abs(movedTarget.x - originalTarget.x) > .1, 'the target has actually moved after impact');
+    if (legacyId !== 1) assert.ok(Math.abs(movedTarget.x - originalTarget.x) > .1, 'the target has actually moved after impact');
     assert.equal(app.api.state.targetMarks.length, 1, 'returning the camera does not erase the attachment');
   }
 });
 
 test('arrows remain on the animal they hit when a new pass enters during the impact hold', async () => {
-  for (const stageId of [6, 7, 11]) {
-    const app = await appHarness({ version: 1, unlocked: 50, lastStage: stageId, sound: false });
+  for (const legacyId of [6, 7, 11]) {
+    const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
+    await enterLegacyScene(app, legacyId);
     const state = app.api.state, duration = app.engine.targetAt(state.stage, 0).passDuration;
     state.time = duration - .02;
     const offset = { x: .27, y: -.18 }, original = resolveTestHit(app, offset);
@@ -1238,8 +1585,9 @@ test('multiple arrows on a moving target preserve separate impact offsets and en
 
 test('obstacle stages automatically reveal the real target above every wall, ignore shots, then restore aim', async () => {
   const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-  for (const stageId of [8, 9, 11, 12]) {
-    app.api.startStage(stageId);await app.flush();
+  for (const legacyId of [8, 9, 11, 12]) {
+    await enterLegacyScene(app, legacyId);
+    const stageId = app.api.state.stage.id;
     const { state } = app.api, baseCamera = { ...app.api.camera }, originalAim = { ...state.aim }, previewStart = app.now;
     const preview = app.getElement('previewBtn'), pad = app.getElement('drawPad');
     assert.equal(state.mode, 'preview', `stage ${stageId} starts with its overview`);
@@ -1292,7 +1640,8 @@ test('stages without obstacles stay immediately playable and do not expose an ov
 });
 
 test('manual overview cancels a drawn arrow, allows an early return, preserves pan/zoom and is disabled in flight', async () => {
-  const app = await appHarness({ version: 1, unlocked: 50, lastStage: 8, sound: false });
+  const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
+  await enterLegacyScene(app, 8);
   app.until(() => app.api.state.mode === 'ready');
   app.getElement('zoomBtn').emit('click');
   const pad = app.getElement('drawPad'), preview = app.getElement('previewBtn');
