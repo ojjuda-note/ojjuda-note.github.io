@@ -3,8 +3,8 @@ const E=require('../games/sacheonseong/engine.js'),read=f=>fs.readFileSync(path.
 const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
 function fixture({stage=2,grid=null,saved=null,records={}}={}){
  const dom=new JSDOM(read('games/sacheonseong/index.html'),{url:'https://example.test/games/sacheonseong/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
- const timers=new Map(),sent=[];let id=0,now=Date.now();w.Date.now=()=>now;
- w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=()=>0;
+ const timers=new Map(),intervals=[],sent=[];let id=0,now=Date.now();w.Date.now=()=>now;
+ w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=fn=>intervals.push(fn);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.HTMLElement.prototype.scrollIntoView=function(){};
  Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:348},clientHeight:{value:498}});
@@ -19,7 +19,7 @@ function fixture({stage=2,grid=null,saved=null,records={}}={}){
  };}
  w.eval(read('games/sacheonseong/app.js'));
  if(!saved&&stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
- return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
+ return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
 }
 test('the last pair saves and queues its completion before the screen can close',()=>{
  const f=fixture();try{f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.records()[2].length,1);assert(f.state().finishedMs>=12000);f.run(120);assert.equal(f.sent.length,1,'the animation cannot send a duplicate record');assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
@@ -104,5 +104,61 @@ test('an older pair effect does not clear a newer selection or touch a restarted
   f.match();const next=f.d.querySelector('[data-r="1"][data-c="0"]');next.click();f.run(120);assert.equal(next.getAttribute('aria-pressed'),'true');
   f.d.querySelector('[data-r="1"][data-c="1"]').click();f.d.getElementById('restart').click();f.d.getElementById('confirm-action').click();
   const fresh=[...f.d.querySelectorAll('.tile')];f.run(120);assert.equal(f.d.querySelectorAll('.tile:not(:disabled)').length,16);assert.equal(f.d.querySelector('.tile'),fresh[0]);assert.equal(f.sent.length,0);
+ }finally{f.close();}
+});
+
+test('each wrong face pair adds ten seconds to the clock and the completed local and online record',()=>{
+ const grid=Array.from({length:4},()=>Array(4).fill(-1));for(let r=0;r<3;r++)grid[r][0]=grid[r][1]=r;
+ const previous={id:'existing-best',duration:1234,at:1600000000000};
+ const f=fixture({grid,records:{2:[previous]}}),tile=(r,c)=>f.d.querySelector(`[data-r="${r}"][data-c="${c}"]`),clock=()=>f.d.getElementById('timer').textContent;
+ try{
+  tile(0,2).click();tile(0,0).click();tile(0,0).click();f.advance(0);
+  assert.equal(clock(),'00:00.00','empty cells, first selection and deselection are not mistakes');
+  tile(0,0).click();tile(1,0).click();assert.equal(clock(),'00:10.00');
+  tile(2,0).click();assert.equal(clock(),'00:20.00','a second wrong pair adds another ten seconds immediately');
+  assert.deepEqual(f.state().grid,grid,'wrong pairs do not remove tiles');
+  tile(2,1).click();tile(0,0).click();tile(0,1).click();assert.equal(clock(),'00:20.00','legal pairs do not add penalties');
+  f.advance(1250);assert.equal(clock(),'00:21.25','the running clock retains penalties as real time advances');
+  tile(1,0).click();tile(1,1).click();
+  assert.equal(f.sent.length,1);assert.equal(f.sent[0].duration,21250,'online delivery includes wall time and both penalties');
+  assert.equal(f.records()[2].find(r=>r.id!==previous.id).duration,21250);
+  assert.deepEqual(f.records()[2].find(r=>r.id===previous.id),previous,'an existing personal record is preserved');
+  f.run(120);assert.equal(clock(),'00:21.25');assert.match(f.d.getElementById('win-desc').textContent,/00:21\.25/);
+  assert.equal(f.sent.length,1,'removal effects do not submit the penalized record twice');
+ }finally{f.close();}
+});
+
+test('repeated blocked same-face pairs add ten seconds each without charging cancellation or modal clicks',()=>{
+ const grid=[[2,2,3,3],[4,0,5,4],[6,5,0,6],[7,7,8,8]],a={r:1,c:1},b={r:2,c:2};
+ assert.equal(E.path(grid,a,b),null);assert.ok(E.moves(grid),'the board still has legal alternatives');
+ const f=fixture({grid}),tile=p=>f.d.querySelector(`[data-r="${p.r}"][data-c="${p.c}"]`),clock=()=>f.d.getElementById('timer').textContent;
+ try{
+  tile(a).click();f.advance(2500);tile(b).click();assert.equal(clock(),'00:12.50');
+  assert.equal(tile(a).getAttribute('aria-pressed'),'true','a blocked route keeps the original selection');
+  tile(b).click();assert.equal(clock(),'00:22.50');assert.deepEqual(f.state().grid,grid);
+  tile(a).click();assert.equal(clock(),'00:22.50','deselecting does not add another penalty');
+  f.d.getElementById('options-open').click();tile(a).click();tile(b).click();
+  assert.equal(clock(),'00:22.50','tiles cannot be played behind the open menu');
+  f.d.getElementById('options-close').click();f.d.getElementById('all-stages').click();tile(a).click();tile(b).click();
+  assert.equal(clock(),'00:22.50','tiles cannot be played behind a modal');assert.equal(f.sent.length,0);
+ }finally{f.close();}
+});
+
+for(const action of ['restart','another stage','new visit'])test(`wrong-pair time resets on ${action} while earlier records survive`,()=>{
+ const grid=Array.from({length:4},()=>Array(4).fill(-1));grid[0][0]=grid[0][1]=0;grid[1][0]=grid[1][1]=1;
+ const records={2:[{id:'old-record',duration:5000,at:1600000000000}]};let f=fixture({grid,records});
+ try{
+  f.d.querySelector('[data-r="0"][data-c="0"]').click();f.d.querySelector('[data-r="1"][data-c="0"]').click();
+  assert.equal(f.d.getElementById('timer').textContent,'00:10.00');
+  if(action==='new visit'){const saved=f.state();f.close();f=fixture({saved,records});}
+  else{
+   if(action==='restart')f.d.getElementById('restart').click();
+   else{f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();}
+   f.d.getElementById('confirm-action').click();
+  }
+  assert.equal(f.d.getElementById('timer').textContent,'00:00.00');
+  f.d.querySelector('.tile:not(:disabled)').click();f.advance(1000);
+  assert.equal(f.d.getElementById('timer').textContent,'00:01.00','a fresh clock does not inherit the old penalty');
+  assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
  }finally{f.close();}
 });

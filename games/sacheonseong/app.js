@@ -2,7 +2,7 @@
   'use strict';
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
-  const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10});
+  const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1;
   const removalTimers=new Set(),REMOVE_MS=120;
   let purchaseBusy=false;
@@ -11,7 +11,7 @@
   function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true;}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';return false;}}
   function save(){return write(KEY,state);}
   function count(){return state.grid.flat().filter(v=>v!==E.EMPTY).length;}
-  function ms(){return state.startedAt?Math.max(0,Date.now()-state.startedAt):0;}
+  function ms(){return state.startedAt?Math.max(0,Date.now()-state.startedAt)+(state.penaltyMs||0):0;}
   function time(value){const n=Math.floor(value/10),m=Math.floor(n/6000),s=Math.floor(n/100)%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(n%100).padStart(2,'0')}`;}
   function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2800);}
   function sound(kind){
@@ -55,6 +55,10 @@
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
   function updateStats(){const total=4*state.stage*state.stage,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
+  function wrongPair(message){
+    state.penaltyMs=(state.penaltyMs||0)+WRONG_PAIR_MS;save();updateStats();
+    const notice=message+' (+10초)';$('status').textContent=notice;toast(notice);
+  }
   function chooseStage(s){if(state.pendingPurchase){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
   function openStages(){
     const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stageInfo(s);return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
@@ -71,7 +75,7 @@
   }
   function newStage(stage,pendingPurchase=null){
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
-    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
+    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){clearSelection();state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
@@ -79,9 +83,9 @@
     if(selected&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
     if(!selected){const suggested=hints.some(q=>q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
-    if(state.grid[a.r][a.c]!==state.grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');$('status').textContent='같은 그림의 패를 찾아주세요.';return;}
+    if(state.grid[a.r][a.c]!==state.grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');wrongPair('같은 그림의 패를 찾아주세요.');return;}
     const route=E.path(state.grid,a,p);
-    if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');$('status').textContent='다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.';toast('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
+    if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');wrongPair('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
     const willFinish=count()===2,finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');
     const buttons=[cell(a),cell(p)],line=$('connection').firstElementChild;
     buttons.forEach(button=>{button.classList.add('removing');button.disabled=true;});
@@ -130,7 +134,7 @@
   function openRanking(stage=state.stage){
     rankingStage=stage;
     const stages=[...new Set([state.stage,...Object.keys(records).map(Number)])].sort((a,b)=>a-b);
-    const html=`<div class="eyebrow">빠른 클리어 순서</div><h2 id="modal-title">나의 시간 순위</h2><label class="rank-select-label" for="rank-select">단계 선택</label><select id="rank-select">${stages.map(s=>`<option value="${s}"${s===stage?' selected':''}>${s}단계 · ${4*s*s}개의 패</option>`).join('')}</select><div class="rank-table" id="rank-table">${recordRows(stage,10)}</div><p class="rank-explainer">같은 단계에서 더 빨리 끝낼수록 높은 순위예요. 첫 패를 누른 순간부터 시간을 재며, 힌트·섞기 시간도 포함해요.</p><small class="rank-local">이 브라우저에 저장된 내 기록 TOP 10</small>`;
+    const html=`<div class="eyebrow">빠른 클리어 순서</div><h2 id="modal-title">나의 시간 순위</h2><label class="rank-select-label" for="rank-select">단계 선택</label><select id="rank-select">${stages.map(s=>`<option value="${s}"${s===stage?' selected':''}>${s}단계 · ${4*s*s}개의 패</option>`).join('')}</select><div class="rank-table" id="rank-table">${recordRows(stage,10)}</div><p class="rank-explainer">같은 단계에서 더 빨리 끝낼수록 높은 순위예요. 첫 패를 누른 순간부터 시간을 재며, 힌트·섞기 시간도 포함해요. 오답마다 10초가 추가돼요.</p><small class="rank-local">이 브라우저에 저장된 내 기록 TOP 10</small>`;
     if($('modal').open)$('modal-content').innerHTML=html;else showModal(html);
     $('rank-select').addEventListener('change',e=>{rankingStage=Number(e.target.value);$('rank-table').innerHTML=recordRows(rankingStage,10);});
   }
@@ -202,7 +206,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 게임을 나갔다 다시 열면 1단계부터 새로 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개부터 900개까지, 총 15단계예요.<small>64개 이후에도 100·144·196개… 11판을 더 즐겨요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 게임을 나갔다 다시 열면 1단계부터 새로 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
