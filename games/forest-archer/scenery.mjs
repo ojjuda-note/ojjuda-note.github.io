@@ -1,5 +1,5 @@
 // Procedural artwork for 바람의 궁수. All coordinates are CSS pixels.
-// Static layers are cached; only the drifting leaves are painted each frame.
+// Distant art and tree sprites are cached; world scenery follows the camera.
 const layers = new Map();
 const TAU = Math.PI * 2;
 
@@ -91,166 +91,169 @@ const forestPalettes = [
   {trunk:'#514e35', dark:'#294d3b', mid:'#385b41', light:'#63845a', bark:'#958661'}
 ];
 
-function buildLayer(w, h, opts) {
-  const pixelRatio = Math.min(1.5, typeof devicePixelRatio === 'number' ? devicePixelRatio : 1);
+function makeLayer(width, height, ratio = 1) {
   const canvas = typeof OffscreenCanvas === 'function'
-    ? new OffscreenCanvas(Math.ceil(w * pixelRatio), Math.ceil(h * pixelRatio))
-    : Object.assign(document.createElement('canvas'), {width:Math.ceil(w * pixelRatio), height:Math.ceil(h * pixelRatio)});
-  const ctx = canvas.getContext('2d'); ctx.scale(pixelRatio, pixelRatio);
-  const rand = rng(7321), camera = opts.camera || {};
-  const horizon = camera.horizon > 1 ? camera.horizon : h * (camera.horizon || .43);
-  const focal = camera.focal || Math.min(w * 1.15, h * 1.4);
-  const project = opts.project || ((p) => ({x:w / 2 + p.x * focal / p.z, y:horizon - (p.y - 1.65) * focal / p.z, scale:focal / p.z, visible:p.z > 0}));
-  const sky = ctx.createLinearGradient(0, 0, 0, horizon + h * .18);
-  sky.addColorStop(0, '#c5e3dd'); sky.addColorStop(.65, '#e2ecdc'); sky.addColorStop(1, '#f0edcf');
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
-
-  // Sun and wide soft shafts of light, baked into the background.
-  const sunx = w * .735, suny = Math.max(28, horizon * .21);
-  const sun = ctx.createRadialGradient(sunx, suny, 2, sunx, suny, Math.min(w, h) * .29);
-  sun.addColorStop(0, 'rgba(255,252,215,.8)'); sun.addColorStop(.23, 'rgba(255,250,220,.25)'); sun.addColorStop(1, 'rgba(255,250,220,0)');
-  ctx.fillStyle = sun; ctx.fillRect(0, 0, w, h);
-  ellipse(ctx, sunx, suny, Math.min(w, h) * .034, Math.min(w, h) * .034, 'rgba(255,252,227,.88)');
-  for (let i = 0; i < 3; i++) {
-    shape(ctx, [{x:sunx - 5 + i * 12, y:suny}, {x:w * (.12 + i * .16), y:h}, {x:w * (.23 + i * .19), y:h}, {x:sunx + 5 + i * 12, y:suny}], 'rgba(255,250,220,.045)');
-  }
-
-  // Smooth mountain contours sit behind the forest.
-  for (let layer = 0; layer < 3; layer++) {
-    const y = horizon - h * (.115 - layer * .035);
-    ctx.beginPath(); ctx.moveTo(-w * .1, horizon + 45);
-    ctx.lineTo(-w * .1, y + 24);
-    ctx.bezierCurveTo(w * .08, y - 38 + layer * 9, w * .17, y - 45, w * .32, y + 3);
-    ctx.bezierCurveTo(w * .45, y - 50 + layer * 13, w * .62, y - 18, w * .71, y + 6);
-    ctx.bezierCurveTo(w * .85, y - 43, w * 1.05, y - 26, w * 1.1, y + 27);
-    ctx.lineTo(w * 1.1, horizon + 60); ctx.closePath();
-    ctx.fillStyle = ['#b7cfbb', '#a5c5ad', '#94b8a0'][layer]; ctx.fill();
-  }
-
-  // A distant, finely articulated tree line; central trees stay low.
-  for (let i = 0; i < 55; i++) {
-    const x = (i / 54) * (w + 40) - 20;
-    const edge = Math.abs(x / w - .5) * 2;
-    const height = h * (.037 + rand() * .045 + edge * .055);
-    pine(ctx, x, horizon + h * .028 + rand() * 10, height, height * .55, forestPalettes[0], i + 20);
-  }
-  const mist = ctx.createLinearGradient(0, horizon - 45, 0, horizon + 35);
-  mist.addColorStop(0, 'rgba(224,235,212,0)'); mist.addColorStop(.6, 'rgba(224,235,212,.28)'); mist.addColorStop(1, 'rgba(224,235,212,0)');
-  ctx.fillStyle = mist; ctx.fillRect(0, horizon - 45, w, 80);
-
-  const grass = ctx.createLinearGradient(0, horizon, 0, h);
-  grass.addColorStop(0, '#a2b78a'); grass.addColorStop(.35, '#87a275'); grass.addColorStop(1, '#668957');
-  ctx.fillStyle = grass; ctx.fillRect(0, horizon + 3, w, h - horizon);
-  ctx.fillStyle = 'rgba(199,206,148,.22)';
-  ctx.beginPath(); ctx.moveTo(0,horizon+15); ctx.bezierCurveTo(w*.3,horizon-5,w*.62,horizon+28,w,horizon+8);
-  ctx.lineTo(w,horizon+35); ctx.bezierCurveTo(w*.5,horizon+49,w*.2,horizon+19,0,horizon+38); ctx.closePath(); ctx.fill();
-
-  // World-aligned path and thin shoulders make distance readable.
-  const pathDepths = [120, 80, 55, 38, 26, 18, 12, 8, 5, 3, 1.7];
-  for (let i = 0; i < pathDepths.length - 1; i++) {
-    const far = pathDepths[i], near = pathDepths[i + 1];
-    const points = [project({x:-1.8,y:0,z:far}),project({x:1.8,y:0,z:far}),project({x:1.8,y:0,z:near}),project({x:-1.8,y:0,z:near})];
-    shape(ctx, points, i % 2 ? '#c9bd97' : '#cec19c');
-    for (const side of [-1,1]) {
-      shape(ctx, [project({x:side*1.8,y:.015,z:far}), project({x:side*2.05,y:.015,z:far}), project({x:side*2.05,y:.015,z:near}), project({x:side*1.8,y:.015,z:near})], 'rgba(88,112,61,.22)');
-    }
-  }
-  // Sparse gravel, grass tufts and sun patches follow the same perspective.
-  for (let i = 0; i < 190; i++) {
-    const z = 3 + rand() * 75, x = (rand() - .5) * 3.2;
-    const p = project({x,y:.012,z}); if (p.y > h || p.y < horizon) continue;
-    const size = Math.min(2.2, p.scale * (.015 + rand() * .022));
-    ellipse(ctx,p.x,p.y,size*1.7,size*.38,i % 3 ? 'rgba(119,111,82,.22)' : 'rgba(245,231,187,.56)',rand());
-  }
-
-  // World trees are deliberately outside the clear shooting corridor.
-  const treeRows = [
-    {z:65,x:18,height:13,width:7,palette:0},
-    {z:47,x:12,height:12,width:6,palette:1},
-    {z:34,x:9.7,height:12.5,width:6.4,palette:1},
-    {z:25,x:8.2,height:10,width:4.6,palette:2},
-    {z:16,x:6.8,height:9,width:4.5,palette:2}
-  ];
-  for (let j = 0; j < treeRows.length; j++) {
-    const t = treeRows[j];
-    for (const side of [-1,1]) {
-      const p = project({x:side*t.x,y:0,z:t.z});
-      const treeH = t.height*p.scale, treeW = t.width*p.scale;
-      const palette = forestPalettes[t.palette];
-      ellipse(ctx,p.x,p.y+2,treeW*.58,Math.max(2,treeW*.08),'rgba(43,73,43,.14)');
-      if ((j + (side === 1 ? 1 : 0)) % 3 === 0) broadleaf(ctx,p.x,p.y,treeH,treeW,palette,50+j*3+side);
-      else pine(ctx,p.x,p.y,treeH,treeW,palette,70+j*4+side);
-    }
-  }
-
-  // The close canopy frames the scene without covering the center.
-  broadleaf(ctx,-w*.115,h*.82,h*1.03,w*.48,forestPalettes[3],444);
-  pine(ctx,w*1.065,h*.77,h*.98,w*.38,forestPalettes[2],666);
-  // Low shrubs at the sides soften the range boundary.
-  for (const side of [-1,1]) {
-    for (let i = 0; i < 12; i++) {
-      const x = side === -1 ? -w*.05 + i*w*.019 : w*1.05 - i*w*.019;
-      const y = h*(.68 + i*.014);
-      ellipse(ctx,x,y,w*(.045+rand()*.025),h*(.027+rand()*.025),i%2?'#668b58':'#759461',-.2*side);
-    }
-  }
-
-  // Meter pegs let the player read increasing range at a glance.
-  const maxDistance = Math.max(20, Number(opts.stage?.distance) || 40);
-  const markerDepths = [10,20,30,40,50,60,70,80].filter(z => z <= maxDistance + 5);
-  for (let i = markerDepths.length-1; i >= 0; i--) {
-    const z = markerDepths[i], p = project({x:-2.52,y:0,z});
-    const markerH = Math.min(58,p.scale*.48), markerW = Math.min(44,p.scale*.6);
-    if (p.x < 8 || p.x > w-8 || p.y > h - 10 || markerW < 9) continue;
-    line(ctx,p.x,p.y,p.x,p.y-markerH,'#77714c',Math.max(1.5,p.scale*.034));
-    ctx.fillStyle = '#ece3c4'; ctx.fillRect(p.x-markerW/2,p.y-markerH,markerW,markerH*.48);
-    ctx.fillStyle = '#4f674b'; ctx.font = `600 ${Math.max(6,markerW*.25)}px system-ui,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(`${z}m`,p.x,p.y-markerH*.76);
-  }
-
-  // Fine foreground blades and warm little meadow flowers.
-  for (let i = 0; i < 190; i++) {
-    const x = rand()*w, y = horizon+20+rand()*(h-horizon-20);
-    const pathHalfWidth = Math.max(0,(y-horizon)*1.8/1.65);
-    if (Math.abs(x-w/2)<pathHalfWidth+12) continue;
-    const depth = (y-horizon)/(h-horizon), length = 2+depth*11;
-    ctx.strokeStyle = i%3 ? 'rgba(55,92,49,.43)' : 'rgba(194,205,131,.55)';
-    ctx.lineWidth = .6+depth*.6; ctx.beginPath(); ctx.moveTo(x,y);
-    ctx.quadraticCurveTo(x+length*.2,y-length*.6,x+(rand()-.5)*length,y-length); ctx.stroke();
-    if (i%13===0&&depth>.3) ellipse(ctx,x,y-length,1.8,1.3,'#f0e7b5');
-  }
-  const vignette = ctx.createRadialGradient(w*.5,h*.47,Math.min(w,h)*.25,w*.5,h*.47,Math.max(w,h)*.8);
-  vignette.addColorStop(0,'rgba(16,47,34,0)'); vignette.addColorStop(1,'rgba(16,47,34,.13)');
-  ctx.fillStyle=vignette; ctx.fillRect(0,0,w,h);
-  return canvas;
+    ? new OffscreenCanvas(Math.ceil(width * ratio), Math.ceil(height * ratio))
+    : Object.assign(document.createElement('canvas'), {width:Math.ceil(width * ratio), height:Math.ceil(height * ratio)});
+  const ctx = canvas.getContext('2d'); ctx.scale(ratio, ratio);
+  return {canvas,ctx};
 }
 
-/** Draw the sunlit range. camera.horizon is a CSS-pixel y coordinate. */
-export function drawScenery(ctx, w, h, options = {}) {
-  if (!(w > 0 && h > 0)) return;
-  const camera=options.camera||{};
-  const key=[Math.round(w),Math.round(h),Math.round((camera.focal||0)/2),Math.round(camera.horizon||0),Math.round(camera.cx||0),options.stage?.distance||0].join(':');
-  let layer=layers.get(key);
-  if (!layer) {
-    layer=buildLayer(w,h,options); layers.set(key,layer);
-    if (layers.size>3) layers.delete(layers.keys().next().value);
+// The distant forest is a fixed image with generous overscan. Moving a camera
+// translates/scales that image; it never allocates a new forest every frame.
+function buildBackdrop(w, h) {
+  const ratio = Math.min(1.5, typeof devicePixelRatio === 'number' ? devicePixelRatio : 1);
+  const {canvas,ctx} = makeLayer(w * 2, h * 1.6, ratio);
+  const ox = w * .5, oy = h * .3, horizon = h * .405, rand = rng(7321);
+  ctx.translate(ox,oy);
+  const sky = ctx.createLinearGradient(0,-oy,0,horizon+h*.18);
+  sky.addColorStop(0,'#c5e3dd'); sky.addColorStop(.65,'#e2ecdc'); sky.addColorStop(1,'#f0edcf');
+  ctx.fillStyle=sky;ctx.fillRect(-ox,-oy,w*2,h*1.6);
+  const sunx=w*.735,suny=Math.max(28,horizon*.21);
+  const sun=ctx.createRadialGradient(sunx,suny,2,sunx,suny,Math.min(w,h)*.29);
+  sun.addColorStop(0,'rgba(255,252,215,.8)');sun.addColorStop(.23,'rgba(255,250,220,.25)');sun.addColorStop(1,'rgba(255,250,220,0)');
+  ctx.fillStyle=sun;ctx.fillRect(-ox,-oy,w*2,h*1.6);
+  ellipse(ctx,sunx,suny,Math.min(w,h)*.034,Math.min(w,h)*.034,'rgba(255,252,227,.88)');
+  for(let i=0;i<3;i++)shape(ctx,[{x:sunx-5+i*12,y:suny},{x:w*(.12+i*.16),y:h},{x:w*(.23+i*.19),y:h},{x:sunx+5+i*12,y:suny}],'rgba(255,250,220,.045)');
+  for(let layer=0;layer<3;layer++){
+    const y=horizon-h*(.115-layer*.035);
+    ctx.beginPath();ctx.moveTo(-ox,horizon+60);ctx.lineTo(-ox,y+20);
+    ctx.bezierCurveTo(-w*.28,y-35,-w*.12,y-12,w*.08,y+6);
+    ctx.bezierCurveTo(w*.17,y-45,w*.22,y-12,w*.32,y+3);
+    ctx.bezierCurveTo(w*.45,y-50+layer*13,w*.62,y-18,w*.71,y+6);
+    ctx.bezierCurveTo(w*.85,y-43,w*1.05,y-26,w*1.1,y+27);
+    ctx.bezierCurveTo(w*1.22,y-40,w*1.37,y-15,w*1.5,y+20);
+    ctx.lineTo(w*1.5,horizon+60);ctx.closePath();ctx.fillStyle=['#b7cfbb','#a5c5ad','#94b8a0'][layer];ctx.fill();
   }
-  ctx.save(); ctx.drawImage(layer,0,0,w,h);
-  const time=Number(options.time)||0, wind=Number(options.stage?.wind)||0;
-  // Faster, more numerous, more horizontal leaves signal stronger crosswind.
-  // This layer is behind the targets and reticle, so it never hides the aim.
-  for(let i=0;i<windLeafCount(wind);i++) {
-    const leaf=windLeafAt(i,time,w,h,wind), r=leaf.radius;
-    ctx.save(); ctx.translate(leaf.x,leaf.y); ctx.rotate(leaf.rotation);
-    ctx.globalAlpha=.40+leaf.depth*.22;
-    ctx.beginPath(); ctx.moveTo(-r,0);
-    ctx.quadraticCurveTo(-r*.12,-r*.88,r,0);
-    ctx.quadraticCurveTo(-r*.12,r*.72,-r,0);
-    ctx.fillStyle=i%3?'#d8d698':'#b8c18a'; ctx.fill();
-    line(ctx,-r*1.45,0,r*.68,0,'#7a8b59',.7);
-    ctx.restore();
+  for(let i=0;i<100;i++){
+    const x=i/99*w*2-ox,edge=Math.min(1,Math.abs(x/w-.5)*2);
+    const height=h*(.037+rand()*.045+edge*.055);
+    pine(ctx,x,horizon+h*.028+rand()*10,height,height*.55,forestPalettes[0],i+20);
   }
+  const mist=ctx.createLinearGradient(0,horizon-45,0,horizon+35);
+  mist.addColorStop(0,'rgba(224,235,212,0)');mist.addColorStop(.6,'rgba(224,235,212,.28)');mist.addColorStop(1,'rgba(224,235,212,0)');
+  ctx.fillStyle=mist;ctx.fillRect(-ox,horizon-45,w*2,80);
+  return {canvas,ox,oy,horizon};
+}
+
+const worldTrees = [
+  {z:245,x:20,height:15,width:8,palette:0},
+  {z:180,x:17,height:14,width:7,palette:0},
+  {z:125,x:15,height:13,width:7,palette:0},
+  {z:90,x:14,height:13,width:7,palette:0},
+  {z:65,x:18,height:13,width:7,palette:0},
+  {z:47,x:12,height:12,width:6,palette:1},
+  {z:34,x:9.7,height:12.5,width:6.4,palette:1},
+  {z:25,x:8.2,height:10,width:4.6,palette:2},
+  {z:16,x:6.8,height:9,width:4.5,palette:2},
+  {z:7,x:4.8,height:5,width:3.7,palette:3}
+];
+const treeSprites = new Map();
+function getTreeSprite(index,side) {
+  const key=index*2+(side===1?1:0);
+  if(treeSprites.has(key))return treeSprites.get(key);
+  const tree=worldTrees[index], unit=360/tree.height;
+  const sw=Math.ceil(tree.width*unit*1.45+12),sh=396,base=382;
+  const {canvas,ctx}=makeLayer(sw,sh);
+  if((index+(side===1?1:0))%3===0) broadleaf(ctx,sw/2,base,360,tree.width*unit,forestPalettes[tree.palette],50+index*3+side);
+  else pine(ctx,sw/2,base,360,tree.width*unit,forestPalettes[tree.palette],70+index*4+side);
+  const sprite={canvas,sw,sh,base,unit};treeSprites.set(key,sprite);return sprite;
+}
+
+// Generated once in world coordinates, so grass/gravel move with the camera.
+const meadow=(()=>{
+  const random=rng(24891),gravel=[],grass=[];
+  for(let i=0;i<360;i++)gravel.push({x:(random()-.5)*3.2,z:2+random()*285,size:.015+random()*.022,rotation:random(),light:i%3===0});
+  for(let i=0;i<460;i++){
+    const sign=i%2?-1:1;
+    grass.push({x:sign*(2.18+random()*28),z:2+random()*285,height:.05+random()*.12,bend:(random()-.5)*.07,flower:i%13===0,light:i%3===0});
+  }
+  return {gravel,grass};
+})();
+
+function drawGround(ctx,w,h,camera,project) {
+  const horizon=camera.horizon, near=camera.z+.2;
+  const groundTop=Math.max(0,Math.min(h,horizon));
+  const grass=ctx.createLinearGradient(0,groundTop,0,Math.max(groundTop+1,h));
+  grass.addColorStop(0,'#a2b78a');grass.addColorStop(.35,'#87a275');grass.addColorStop(1,'#668957');
+  ctx.fillStyle=grass;ctx.fillRect(0,groundTop,w,h-groundTop);
+  // Clip each strip in world space before perspective division. This also lets
+  // the range continue under the camera when an arrow overshoots the target.
+  const depths=[600,400,285,200,145,105,80,55,38,26,18,12,8,5,3,1.7,0];
+  for(let i=0;i<depths.length-1;i++){
+    const far=depths[i],close=Math.max(depths[i+1],near);
+    if(far<=close)continue;
+    shape(ctx,[project({x:-1.8,y:0,z:far}),project({x:1.8,y:0,z:far}),project({x:1.8,y:0,z:close}),project({x:-1.8,y:0,z:close})],i%2?'#c9bd97':'#cec19c');
+    for(const side of[-1,1])shape(ctx,[project({x:side*1.8,y:.015,z:far}),project({x:side*2.05,y:.015,z:far}),project({x:side*2.05,y:.015,z:close}),project({x:side*1.8,y:.015,z:close})],'rgba(88,112,61,.22)');
+  }
+  for(const stone of meadow.gravel){
+    if(stone.z<=near)continue;
+    const p=project({x:stone.x,y:.012,z:stone.z});
+    if(!p.visible||p.x<-5||p.x>w+5||p.y>h+5||p.y<0)continue;
+    const size=Math.min(3.3,p.scale*stone.size);
+    ellipse(ctx,p.x,p.y,size*1.7,size*.38,stone.light?'rgba(245,231,187,.56)':'rgba(119,111,82,.22)',stone.rotation);
+  }
+  for(const blade of meadow.grass){
+    if(blade.z<=near)continue;
+    const p=project({x:blade.x,y:0,z:blade.z});
+    if(!p.visible||p.x<-8||p.x>w+8||p.y<0||p.y>h+14)continue;
+    const length=Math.min(24,blade.height*p.scale);if(length<.8)continue;
+    const bend=blade.bend*p.scale;
+    ctx.strokeStyle=blade.light?'rgba(194,205,131,.55)':'rgba(55,92,49,.43)';ctx.lineWidth=Math.min(1.6,.6+p.scale*.002);
+    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.quadraticCurveTo(p.x+length*.2,p.y-length*.6,p.x+bend,p.y-length);ctx.stroke();
+    if(blade.flower)ellipse(ctx,p.x+bend,p.y-length,Math.min(2,length*.16),Math.min(1.5,length*.12),'#f0e7b5');
+  }
+}
+
+function drawWorldTrees(ctx,w,h,camera,project) {
+  for(let index=0;index<worldTrees.length;index++){
+    const tree=worldTrees[index];if(tree.z<=camera.z+.2)continue;
+    for(const side of[-1,1]){
+      const p=project({x:side*tree.x,y:0,z:tree.z});
+      if(!p.visible)continue;
+      const treeW=tree.width*p.scale,treeH=tree.height*p.scale;
+      if(p.x+treeW*.8<0||p.x-treeW*.8>w||p.y<0||p.y-treeH>h)continue;
+      const sprite=getTreeSprite(index,side),scale=p.scale/sprite.unit;
+      ellipse(ctx,p.x,p.y+2,treeW*.58,Math.max(2,treeW*.08),'rgba(43,73,43,.14)');
+      ctx.drawImage(sprite.canvas,p.x-sprite.sw*.5*scale,p.y-sprite.base*scale,sprite.sw*scale,sprite.sh*scale);
+    }
+  }
+}
+
+/** Draw the sunlit range. camera.horizon is always a CSS-pixel coordinate. */
+export function drawScenery(ctx,w,h,options={}) {
+  if(!(w>0&&h>0))return;
+  const baseFocal=Math.min(w*1.08,h*1.5),input=options.camera||{};
+  const camera={x:0,y:1.65,z:0,cx:w/2,horizon:h*.405,focal:baseFocal,...input};
+  const project=options.project||((p)=>{const depth=Math.max(.2,p.z-camera.z),scale=camera.focal/depth;return {x:camera.cx+(p.x-camera.x)*scale,y:camera.horizon-(p.y-camera.y)*scale,scale,visible:p.z>camera.z+.2};});
+  const key=[Math.round(w),Math.round(h)].join(':');let backdrop=layers.get(key);
+  if(!backdrop){backdrop=buildBackdrop(w,h);layers.set(key,backdrop);if(layers.size>2)layers.delete(layers.keys().next().value);}
+  ctx.save();ctx.fillStyle='#c5e3dd';ctx.fillRect(0,0,w,h);
+  const zoom=Math.max(.4,Math.min(2.5,camera.focal/baseFocal));
+  // Distant scenery has small parallax, while nearby objects use full world
+  // projection. Overscan covers normal aiming pans and the eased chase view.
+  const dx=camera.cx-w*.5*zoom-camera.x*camera.focal/350;
+  const dy=camera.horizon-backdrop.horizon*zoom-(camera.y-1.65)*camera.focal/350;
+  ctx.drawImage(backdrop.canvas,dx-backdrop.ox*zoom,dy-backdrop.oy*zoom,w*2*zoom,h*1.6*zoom);
+  drawGround(ctx,w,h,camera,project);drawWorldTrees(ctx,w,h,camera,project);
+  const maxDistance=Math.max(20,Number(options.stage?.distance)||40);
+  for(let z=80;z>=10;z-=10){
+    if(z>maxDistance+5||z<=camera.z+.2)continue;
+    const p=project({x:-2.52,y:0,z}),markerH=Math.min(58,p.scale*.48),markerW=Math.min(44,p.scale*.6);
+    if(!p.visible||p.x<8||p.x>w-8||p.y>h-10||p.y<0||markerW<9)continue;
+    line(ctx,p.x,p.y,p.x,p.y-markerH,'#77714c',Math.min(4,Math.max(1.5,p.scale*.034)));
+    ctx.fillStyle='#ece3c4';ctx.fillRect(p.x-markerW/2,p.y-markerH,markerW,markerH*.48);
+    ctx.fillStyle='#4f674b';ctx.font=`600 ${Math.max(6,markerW*.25)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${z}m`,p.x,p.y-markerH*.76);
+  }
+  const time=Number(options.time)||0,wind=Number(options.stage?.wind)||0;
+  for(let i=0;i<windLeafCount(wind);i++){
+    const leaf=windLeafAt(i,time,w,h,wind),r=leaf.radius;
+    ctx.save();ctx.translate(leaf.x,leaf.y);ctx.rotate(leaf.rotation);ctx.globalAlpha=.40+leaf.depth*.22;
+    ctx.beginPath();ctx.moveTo(-r,0);ctx.quadraticCurveTo(-r*.12,-r*.88,r,0);ctx.quadraticCurveTo(-r*.12,r*.72,-r,0);
+    ctx.fillStyle=i%3?'#d8d698':'#b8c18a';ctx.fill();line(ctx,-r*1.45,0,r*.68,0,'#7a8b59',.7);ctx.restore();
+  }
+  const vignette=ctx.createRadialGradient(w*.5,h*.47,Math.min(w,h)*.25,w*.5,h*.47,Math.max(w,h)*.8);
+  vignette.addColorStop(0,'rgba(16,47,34,0)');vignette.addColorStop(1,'rgba(16,47,34,.13)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
   ctx.restore();
 }
 
