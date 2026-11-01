@@ -21,16 +21,33 @@
   function begin(){if(!state.startedAt){state.startedAt=Date.now();save();}}
   function clearSelection(){selected=null;hints=[];$('connection').replaceChildren();document.querySelectorAll('.tile.selected,.tile.hinted').forEach(b=>{b.classList.remove('selected','hinted');b.setAttribute('aria-pressed','false');});}
   function cell(p){return document.querySelector(`[data-r="${p.r}"][data-c="${p.c}"]`);}
+  function fittingTile(rows,cols,width,height,gap,pad=8){
+    return Math.min((width-2*pad-(cols-1)*gap)/cols,(height-2*pad-4-(rows-1)*gap)/(rows*1.19));
+  }
+  function boardColumns(stage){
+    const {size,total}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
+    if(size<12||width<=20||height<=24)return size;
+    const choices=[];
+    for(let cols=Math.ceil(size/2);cols<=size;cols++){
+      const rows=Math.ceil(total/cols);
+      choices.push({cols,empty:rows*cols-total,tile:fittingTile(rows,cols,width,height,2)});
+    }
+    const largest=Math.max(...choices.map(choice=>choice.tile));
+    if(!(largest>0))return size;
+    // Prefer fewer spare cells when the visible tile size is practically equal.
+    // A wide or short screen can retain the square board instead of shrinking it.
+    return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.empty-b.empty||b.tile-a.tile||b.cols-a.cols)[0].cols;
+  }
   function sizeBoard(){
     if(!state)return;
-    const n=state.stage*2,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
+    const n=state.stage*2,rows=state.grid.length,cols=state.grid[0].length,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
     if(!available||!height)return;
     const gap=n<=4?6:n<=10?3:2,pad=8;
     // Fit both axes, including the outside connection lane and tile shadows.
-    const fit=Math.max(1,Math.floor(Math.min((available-2*pad-(n-1)*gap)/n,(height-2*pad-4-(n-1)*gap)/(n*1.19))*100)/100);
+    const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad)*100)/100);
     fitSize=Math.min(n<=2?120:n<=4?100:Infinity,fit);
     const size=overview?fitSize:customSize||Math.max(42,fit);
-    const el=$('board-canvas');el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',n);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
+    const el=$('board-canvas');el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
     $('zoom-fit').setAttribute('aria-pressed',String(overview));
     $('connection').replaceChildren();
     if(hints.length){const route=E.path(state.grid,hints[0],hints[1]);if(route)draw(route,true);}
@@ -47,10 +64,10 @@
     }));$('board').replaceChildren(frag);sizeBoard();
   }
   function draw(route,soft=false){
-    const canvas=$('board-canvas'),style=canvas.style,pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),w=parseFloat(style.getPropertyValue('--tile')),h=w*1.19,n=state.grid.length,width=n*w+(n-1)*gap+2*pad,height=n*h+(n-1)*gap+2*pad+4;
+    const canvas=$('board-canvas'),style=canvas.style,pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),w=parseFloat(style.getPropertyValue('--tile')),h=w*1.19,rows=state.grid.length,cols=state.grid[0].length,width=cols*w+(cols-1)*gap+2*pad,height=rows*h+(rows-1)*gap+2*pad+4;
     const coords=route.map(p=>({x:pad+p.c*(w+gap)+w/2,y:pad+p.r*(h+gap)+h/2}));
     // The outside lane follows the board's visible padding, independent of tile size.
-    coords.forEach((p,i)=>{const r=route[i].r,c=route[i].c;if(r<0)p.y=pad/2;if(c<0)p.x=pad/2;if(r>=n)p.y=height-pad/2;if(c>=n)p.x=width-pad/2;});
+    coords.forEach((p,i)=>{const r=route[i].r,c=route[i].c;if(r<0)p.y=pad/2;if(c<0)p.x=pad/2;if(r>=rows)p.y=height-pad/2;if(c>=cols)p.x=width-pad/2;});
     const points=coords.map(p=>`${p.x},${p.y}`).join(' '),ends=[coords[0],coords[coords.length-1]];
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
@@ -75,7 +92,8 @@
   }
   function newStage(stage,pendingPurchase=null){
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
-    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
+    // Fix the shape for this attempt; rotation only changes the drawing size.
+    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage,Math.random,boardColumns(stage)).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){clearSelection();state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
@@ -197,7 +215,7 @@
     syncTools();
   }
   $('board').addEventListener('click',e=>{const b=e.target.closest('.tile');if(b)select({r:Number(b.dataset.r),c:Number(b.dataset.c)});});
-  $('board').addEventListener('keydown',e=>{const b=e.target.closest('.tile');if(!b||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();let r=Number(b.dataset.r),c=Number(b.dataset.c);const [dr,dc]={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];while(true){r+=dr;c+=dc;if(r<0||c<0||r>=state.grid.length||c>=state.grid.length)break;if(state.grid[r][c]!==E.EMPTY){cell({r,c}).focus();break;}}});
+  $('board').addEventListener('keydown',e=>{const b=e.target.closest('.tile');if(!b||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();let r=Number(b.dataset.r),c=Number(b.dataset.c);const [dr,dc]={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];while(true){r+=dr;c+=dc;if(r<0||c<0||r>=state.grid.length||c>=state.grid[0].length)break;if(state.grid[r][c]!==E.EMPTY){cell({r,c}).focus();break;}}});
   $('hint').onclick=()=>useTool('hint');
   $('shuffle').onclick=()=>useTool('shuffle');
   $('restart').onclick=()=>{if(locked||state.pendingPurchase)return;confirmChange('이 정원을 다시 시작할까요?','패와 시간이 새로 시작돼요. 이미 세운 순위 기록은 남아 있어요.',()=>newStage(state.stage));};
