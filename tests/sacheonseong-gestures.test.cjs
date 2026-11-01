@@ -28,5 +28,27 @@ try{
  d.getElementById('zoom-fit').click();assert.equal(size(),initial);assert.equal(viewport.scrollLeft,0);assert.equal(viewport.scrollTop,0);
  pointer('pointerdown',4,100,200);pointer('pointerdown',5,200,200);pointer('pointermove',5,120,200);assert.equal(size(),initial,'pinch-out stops at full-board fit');pointer('pointercancel',4,100,200);pointer('pointercancel',5,120,200);
  assert.equal(d.querySelector('.topbar').style.transform,'');assert.equal(d.querySelector('.game-actions').style.transform,'');
- console.log('PASS: touch pinch zoom, pan, trackpad zoom prevention, normal taps, no gesture-end selection, cancellation and full-board reset.');
+ // A blocked same-face pair keeps the first selection, so a duplicate touch
+ // click would incorrectly apply a second penalty rather than just deselecting.
+ const blocked=[[2,2,3,3],[4,0,5,4],[6,5,0,6],[7,7,8,8]],generate=w.TileGarden.generate;
+ w.TileGarden.generate=stage=>{
+  const made=generate(stage);made.grid=Array.from({length:stage*2},()=>Array(stage*2).fill(-1));
+  blocked.forEach((row,r)=>row.forEach((value,c)=>made.grid[r][c]=value));return made;
+ };
+ d.getElementById('restart').click();d.getElementById('confirm-action').click();
+ const a=d.querySelector('[data-r="1"][data-c="1"]'),b=d.querySelector('[data-r="2"][data-c="2"]'),clock=()=>d.getElementById('timer').textContent;
+ assert.equal(w.TileGarden.path(blocked,{r:1,c:1},{r:2,c:2}),null);
+ pointer('pointerdown',21,100,200,a);pointer('pointerup',21,100,200,a);click(a);assert.equal(clock(),'00:00.00');
+ pointer('pointerdown',22,200,300,b);pointer('pointerup',22,200,300,b);assert.equal(clock(),'00:10.00');
+ click(b);assert.equal(clock(),'00:10.00','the compatibility click cannot charge the same touch twice');assert.equal(a.getAttribute('aria-pressed'),'true');
+ pointer('pointerdown',23,200,300,b);pointer('pointerup',23,200,300,b);click(b);
+ assert.equal(clock(),'00:20.00','a fresh wrong touch immediately after the previous one is charged once');
+ pointer('pointerdown',24,200,300,b);pointer('pointermove',24,240,340,b);pointer('pointerup',24,240,340,b);click(b);
+ assert.equal(clock(),'00:20.00','dragging over a wrong tile is not a pairing attempt');
+ pointer('pointerdown',25,200,300,b);pointer('pointercancel',25,200,300,b);click(b);
+ assert.equal(clock(),'00:20.00','a cancelled touch is not a pairing attempt');
+ pointer('pointerdown',26,100,200,a);pointer('pointerdown',27,200,200,b);pointer('pointermove',27,240,200,b);
+ pointer('pointerup',27,240,200,b);pointer('pointerup',26,100,200,a);click(b);
+ assert.equal(clock(),'00:20.00','pinching over selected and wrong tiles does not add time');
+ console.log('PASS: touch pinch zoom, pan, trackpad zoom prevention, taps, cancellation, full-board reset and one ten-second penalty per wrong touch.');
 }finally{w.close();}
