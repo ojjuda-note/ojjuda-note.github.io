@@ -86,7 +86,7 @@ test('roulette rejects foreign frames, foreign origins and unsupported wallet co
  for(const [origin,source] of [['https://foreign.test',child],[f.w.location.origin,f.w]]){
   f.w.dispatchEvent(new f.w.MessageEvent('message',{origin,source,data:{source:'ojjuda-roulette',type:'rpc',id:randomUUID(),body:{action:'create'}}}));
  }
- f.request({action:'refill',coins:999999});await tick();await tick();
+ f.request({action:'set_balance',coins:999999});await tick();await tick();
  assert.equal(f.calls.length,before);assert.ok(f.messages.every(message=>!('access_token' in message)&&!('session' in message)));
  f.request({action:'create'});await tick();await tick();assert.equal(f.calls.at(-1).action,'create');
 });

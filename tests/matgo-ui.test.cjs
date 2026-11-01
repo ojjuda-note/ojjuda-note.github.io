@@ -64,7 +64,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
       html=html.replace('<script type="module">',`<script>${['matgo-access.js','matgo-bridge.js','multiplayer-entry.js','mobile-viewport.js','world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
       const boot=html.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
+      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,auth:D,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/games/matgo.html'){
@@ -460,7 +460,13 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   ])]){
     const {age,native,viewport}=options;
     const f=await fixture(options);await f.page.goto('https://fixture.test/world.html');await f.page.waitForFunction(()=>window.placeTest);
-    await f.page.evaluate(async()=>{try{await OjjudaMatgoAccess.check();}catch{}placeTest.enter('arcade',1);placeTest.freeze();});
+    await f.page.evaluate(async()=>{
+      try{await OjjudaMatgoAccess.check();}catch{}
+      placeTest.enter('arcade',1);placeTest.freeze();
+      // The fixture skips the real auth boot; mirror its signed-in member before rendering adult entries.
+      const {data}=await OjjudaMatgoAccess.getClient().auth.getUser();
+      Object.assign(placeTest.auth,{online:!!data?.user,user:data?.user||null});placeTest.render();
+    });
     assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),age>=19?1:0);
     if(age<19){await f.page.evaluate(()=>openMatgo());assert.equal(await f.page.locator('#matgo-overlay').count(),0);}
     else{
