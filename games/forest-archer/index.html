@@ -7,7 +7,7 @@
   <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 바람과 낙하를 계산하는 50개 사격장, 활 10종·석궁 10종·총기 5종과 화살 12종을 조합하는 숲속 활쏘기 게임.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261102-archery-progression1">
+  <link rel="stylesheet" href="style.css?v=20261102-archery-fit-screen1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -30,11 +30,11 @@
   <div class="app-shell">
     <header class="app-header">
       <a class="brand" href="./" aria-label="바람의 궁수 홈"><span class="brand-mark"><svg><use href="#i-target"/></svg></span><span><strong>바람의 궁수</strong><small>THE FOREST RANGE</small></span></a>
-      <div class="header-actions"><div class="coin-balance" title="게임에서 모은 코인"><svg><use href="#i-coin"/></svg><strong id="coinCount">0</strong><small>코인</small></div><button class="button shop-open" aria-label="장비 상점"><svg><use href="#i-bag"/></svg><span>장비 상점</span></button><button class="icon-button" id="helpBtn" aria-label="게임 방법"><svg><use href="#i-help"/></svg></button></div>
+      <div class="header-actions"><div class="coin-balance" title="게임에서 모은 코인"><svg><use href="#i-coin"/></svg><strong id="coinCount">0</strong><small>코인</small></div><button class="button shop-open" aria-label="장비 상점"><svg><use href="#i-bag"/></svg><span>장비 상점</span></button><button class="text-button" id="eventBtn">접시 사격</button><button class="text-button" id="stagesBtn" aria-label="사격장 선택"><svg><use href="#i-grid"/></svg><span>단계 선택</span></button><button class="icon-button" id="soundBtn" aria-label="소리 끄기"><svg><use href="#i-sound"/></svg><span>소리 켜짐</span></button><button class="icon-button" id="helpBtn" aria-label="게임 방법"><svg><use href="#i-help"/></svg></button></div>
     </header>
 
     <main>
-      <div class="page-heading"><div><p class="eyebrow">A LITTLE FOCUS. A PERFECT SHOT.</p><h1>손끝에서 시작되는 한 발.</h1></div><div class="heading-actions"><button class="text-button" id="eventBtn">접시 사격</button><button class="text-button" id="stagesBtn"><svg><use href="#i-grid"/></svg>사격장 선택<svg class="small-icon"><use href="#i-chevron"/></svg></button></div></div>
+      <div class="page-heading"><div><p class="eyebrow">A LITTLE FOCUS. A PERFECT SHOT.</p><h1>손끝에서 시작되는 한 발.</h1></div></div>
       <div class="game-layout">
         <section class="game-card" aria-label="활쏘기 게임">
           <div class="round-heading"><div class="round-label"><span class="level-number" id="levelNumber">01</span><div><span class="small-label" id="stageChapter">숲길의 시작</span><h2 id="stageName">첫 번째 한 발</h2></div></div><div class="round-score"><strong id="scoreCount">0</strong><span>/ <span id="goalCount">16</span><span id="scoreUnit">점</span></span><small id="goalLabel">현재 점수 / 참고 목표</small></div></div>
@@ -68,7 +68,7 @@
       </div>
       <section class="journey"><div class="journey-heading"><span class="eyebrow">YOUR JOURNEY</span><span id="journeyCaption">숲길에서 시작하는 궁수의 여정</span><span id="journeyCount">1 / 50</span></div><div id="journeySteps" class="journey-steps"></div></section>
     </main>
-    <footer><span><span class="status-dot"></span><span id="saveStatus">진행 상황은 이 기기에 자동 저장됩니다</span></span><button class="text-button" id="soundBtn" aria-label="소리 끄기"><svg><use href="#i-sound"/></svg><span>소리 켜짐</span></button><span class="keyboard-note">방향키 조준 · SPACE 당기고 놓기</span></footer>
+    <footer><span><span class="status-dot"></span><span id="saveStatus">진행 상황은 이 기기에 자동 저장됩니다</span></span><span class="keyboard-note">방향키 조준 · SPACE 당기고 놓기</span></footer>
   </div>
   <div class="modal-backdrop hidden" id="modalBackdrop">
     <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="modalClose" aria-label="닫기"><svg><use href="#i-close"/></svg></button><div id="modalContent"></div></section>
