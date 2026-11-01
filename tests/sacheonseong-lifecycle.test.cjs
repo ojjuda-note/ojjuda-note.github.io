@@ -7,30 +7,35 @@ function fixture({stage=2,grid=null,saved=null,records={}}={}){
  w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=fn=>intervals.push(fn);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.HTMLElement.prototype.scrollIntoView=function(){};
- Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:348},clientHeight:{value:498}});
+ Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:378},clientHeight:{value:702}});
  w.OjjudaSacheonseongOnline={newId:()=>w.crypto.randomUUID(),stage:()=>{},record:(stage,record)=>sent.push({stage,...record})};
- const lateGrid=grid||Array.from({length:stage*2},()=>Array(stage*2).fill(-1));if(!grid)lateGrid[0][0]=lateGrid[0][1]=0;
  w.localStorage.setItem(KEY,JSON.stringify(saved||{unlocked:Math.min(15,stage+1),sound:false}));
  w.localStorage.setItem(RECORDS,JSON.stringify(records));
  for(const name of ['engine','faces'])w.eval(read('games/sacheonseong/'+name+'.js'));
  // Arrange a late round directly; a later visit starts a fresh board at the saved level.
- if(!saved){const generate=w.TileGarden.generate;let arranged=false;w.TileGarden.generate=n=>{
-  const result=generate(n);if(!arranged&&n===stage){arranged=true;result.grid=lateGrid.map(row=>row.slice());}return result;
+ if(!saved){const generate=w.TileGarden.generate;let arranged=false;w.TileGarden.generate=(n,...args)=>{
+  const result=generate(n,...args);if(!arranged&&n===stage){arranged=true;result.grid=grid?grid.map(row=>row.slice()):result.grid.map(row=>row.map(()=>E.EMPTY));if(!grid)result.grid[0][0]=result.grid[0][1]=0;}return result;
  };}
  w.eval(read('games/sacheonseong/app.js'));
  if(!saved&&stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
  return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
 }
-test('the last pair saves and queues its completion before the screen can close',()=>{
- const f=fixture();try{f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.records()[2].length,1);assert(f.state().finishedMs>=12000);f.run(120);assert.equal(f.sent.length,1,'the animation cannot send a duplicate record');assert.equal(f.d.getElementById('completion').hidden,false);}finally{f.close();}
+for(const stage of [2,7])test(`stage ${stage} saves and queues its last pair completion before the screen can close`,()=>{
+ const f=fixture({stage});try{
+  const before=f.state();if(stage===7)assert.ok(before.grid.length>before.grid[0].length,'the late-round fixture retains the generated portrait shape');
+  f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.sent[0].stage,stage);assert.equal(f.sent[0].rulesVersion,3);assert.equal(f.records()[stage].length,1);assert(f.state().finishedMs>=12000);
+  assert.equal(f.state().grid.length,before.grid.length);assert.ok(f.state().grid.every(row=>row.length===before.grid[0].length));assert.ok(f.state().grid.flat().every(value=>value===E.EMPTY));
+  f.run(120);assert.equal(f.sent.length,1,'the animation cannot send a duplicate record');assert.equal(f.d.getElementById('completion').hidden,false);
+ }finally{f.close();}
 });
 test('switching stages immediately after the last pair keeps the completed record',()=>{
  const f=fixture();try{f.match();f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();f.run(120);assert.equal(f.state().stage,3);assert.equal(f.records()[2]?.length,1);assert.equal(f.sent.length,1);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
 });
-test('reopening a completed round preserves its best time without recording twice',()=>{
- let f=fixture(),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
+for(const stage of [2,7])test(`reopening completed stage ${stage} preserves its best time without recording twice`,()=>{
+ let f=fixture({stage}),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
-  assert.equal(f.state().stage,2);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,16);assert.notEqual(f.state().runId,saved.runId);
+  assert.equal(f.state().stage,stage);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,4*stage*stage);assert.notEqual(f.state().runId,saved.runId);assert.equal(f.state().rulesVersion,3);
+  assert.equal(f.state().grid.length,saved.grid.length);assert.ok(f.state().grid.every(row=>row.length===saved.grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.state().penaltyMs,0);
   assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
  }finally{f.close();}
@@ -39,6 +44,7 @@ test('final-stage completion never advances beyond stage 15',()=>{
  let f=fixture({stage:15}),saved,records;try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
   assert.equal(f.state().stage,15);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,900);
+  assert.ok(f.state().grid.length>f.state().grid[0].length);assert.equal(f.state().grid.length,saved.grid.length);assert.ok(f.state().grid.every(row=>row.length===saved.grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);
   assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
  }finally{f.close();}

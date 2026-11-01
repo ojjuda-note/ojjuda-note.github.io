@@ -5,14 +5,14 @@ const E=require('../games/sacheonseong/engine.js'),KEY='ojjuda-sacheonseong-v1',
 function dialogs(w){w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.HTMLElement.prototype.scrollIntoView=()=>{};}
 function sacheon(t,saved,buy){
  const dom=new JSDOM('<body><button>오락실</button></body>',{url:'https://fixture.test/world.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;dialogs(w);
- w.localStorage.setItem(KEY,JSON.stringify(saved));w.localStorage.setItem('ojjuda-sacheonseong-records-v1',JSON.stringify({5:[{id:'best',duration:1234,at:Date.now()}]}));
+ w.localStorage.setItem(KEY,JSON.stringify(saved));w.localStorage.setItem('ojjuda-sacheonseong-records-v1',JSON.stringify({5:[{id:'best',duration:1234,at:1700000000000,rulesVersion:3}],7:[{id:'best-seven',duration:5678,at:1700000000001,rulesVersion:3,hints:1,shuffles:0}]}));
  for(const file of ['games/sacheonseong/ranking.js','world-sacheonseong-game.js'])w.eval(read(file));
  const calls=[];let child;
  async function enter(){
-  w.OjjudaSacheonseongGame.open({owner,onBuy:async(kind,id,runId,stage)=>{const item={kind,id,runId,stage};calls.push(item);return buy?.(item);}});
+  w.OjjudaSacheonseongGame.open({owner,onBuy:async(kind,id,runId,stage)=>{const item={kind,id,runId,stage,owner};calls.push(item);return buy?.(item);}});
   w.document.querySelector('.ge-primary').click();child=w.document.querySelector('iframe').contentWindow;
   child.document.write(read('games/sacheonseong/index.html'));child.document.close();dialogs(child);
-  Object.defineProperties(child.document.getElementById('board-scroll'),{clientWidth:{value:348},clientHeight:{value:498}});
+  Object.defineProperties(child.document.getElementById('board-scroll'),{clientWidth:{value:378},clientHeight:{value:702}});
   child.postMessage=data=>child.dispatchEvent(new child.MessageEvent('message',{data,origin:w.location.origin,source:w}));
   w.postMessage=data=>w.dispatchEvent(new w.MessageEvent('message',{data,origin:w.location.origin,source:child}));
   for(const file of ['engine','faces','ranking','server','app'])child.eval(read('games/sacheonseong/'+file+'.js'));
@@ -21,33 +21,44 @@ function sacheon(t,saved,buy){
  t.after(()=>w.close());
  return {w,enter,calls,state:()=>JSON.parse(w.localStorage.getItem(KEY)),child:()=>child,records:()=>JSON.parse(w.localStorage.getItem('ojjuda-sacheonseong-records-v1'))};
 }
-function oldGarden(pendingPurchase){const grid=E.generate(5).grid;grid[0][0]=grid[0][1]=-1;return {rulesVersion:E.RULES_VERSION,runId:randomUUID(),stage:5,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,penaltyMs:20000,sound:true,hints:2,shuffles:1,pendingPurchase};}
+function oldGarden(pendingPurchase,stage=5){const grid=E.generate(stage).grid;grid[0][0]=grid[0][1]=-1;return {rulesVersion:3,runId:randomUUID(),stage,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,penaltyMs:20000,sound:true,hints:2,shuffles:1,pendingPurchase};}
+function assertGarden(state,stage){
+ assert.equal(state.stage,stage);assert.equal(state.rulesVersion,3);assert.equal(state.grid.flat().filter(value=>value!==E.EMPTY).length,4*stage*stage);
+ const [rows,columns]=stage===7?[18,11]:[10,10];assert.equal(state.grid.length,rows);assert.ok(state.grid.every(row=>row.length===columns));
+ if(stage===7)assert.deepEqual(state.grid.at(-1).slice(-2),[E.EMPTY,E.EMPTY],'the last two portrait cells are padding, not additional tiles');
+}
 
-test('Sacheonseong exit/reentry starts the last played stage with a new full board and run, keeping unlocks and records',async t=>{
- const saved=oldGarden(),f=sacheon(t,saved);const child=await f.enter(),first=f.state();
- assert.equal(first.stage,5,'resume the last stage, not the highest unlocked stage');assert.equal(first.grid.flat().filter(value=>value!==-1).length,100);assert.notEqual(first.runId,saved.runId);
+for(const stage of [5,7])test(`Sacheonseong stage ${stage} exit/reentry replaces its legacy square with a full new board and run, keeping unlocks and records`,async t=>{
+ const saved=oldGarden(undefined,stage),f=sacheon(t,saved),records=f.records();assert.equal(saved.grid.length,stage*2);assert.ok(saved.grid.every(row=>row.length===stage*2));
+ const child=await f.enter(),first=f.state();
+ assertGarden(first,stage);assert.notEqual(first.runId,saved.runId);
  assert.equal(first.startedAt,null);assert.equal(first.finishedMs,null);assert.equal(first.penaltyMs,0);assert.equal(first.unlocked,8);assert.equal(first.sound,true);assert.equal(first.hints,0);assert.equal(first.shuffles,0);
- assert.equal(f.records()[5][0].id,'best');
+ assert.deepEqual(f.records(),records,'records from both square and portrait stages survive the new visit');
  child.document.querySelector('.tile').click();const active=f.state();assert.ok(active.startedAt);
  child.document.dispatchEvent(new child.Event('visibilitychange'));child.dispatchEvent(new child.Event('resize'));
  f.w.OjjudaSacheonseongGame.open({owner});assert.equal(f.w.document.querySelector('iframe').contentWindow,child);assert.deepEqual(f.state(),active,'focus/visibility changes do not restart an active visit');
  child.document.getElementById('game-home').click();assert.equal(f.w.document.querySelector('iframe'),null);await f.enter();
- assert.notEqual(f.state().runId,active.runId);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assert.equal(f.state().stage,5);assert.equal(f.state().grid.flat().filter(value=>value!==-1).length,100);assert.equal(f.records()[5][0].id,'best');
+ assert.notEqual(f.state().runId,active.runId);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assertGarden(f.state(),stage);assert.equal(f.state().unlocked,8);assert.deepEqual(f.records(),records);
 });
 
-test('an unresolved Sacheonseong purchase resumes the last stage and applies its paid receipt once to the fresh board',async t=>{
- const pending={id:randomUUID(),runId:randomUUID(),stage:5,kind:'hint',owner,requestedAt:Date.now()-90000};
- const receipts=new Map([[pending.id,{ok:true,kind:pending.kind,run_id:pending.runId,stage:pending.stage,price:3}]]);let balance=17;
- const f=sacheon(t,oldGarden(pending),item=>{
-  if(!receipts.has(item.id)){balance-=3;receipts.set(item.id,{ok:true,kind:item.kind,run_id:item.runId,stage:item.stage,price:3});}
+for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolved Sacheonseong stage ${stage} ${kind} purchase applies its original paid receipt once to the fresh board`,async t=>{
+ const price=kind==='hint'?3:10,pending={id:randomUUID(),runId:randomUUID(),stage,kind,owner,requestedAt:Date.now()-90000};
+ const receipts=new Map([[pending.id,{ok:true,kind:pending.kind,run_id:pending.runId,stage:pending.stage,price}]]);let balance=17;
+ const saved=oldGarden(pending,stage),f=sacheon(t,saved,item=>{
+  if(!receipts.has(item.id)){balance-=price;receipts.set(item.id,{ok:true,kind:item.kind,run_id:item.runId,stage:item.stage,price});}
   return receipts.get(item.id);
- });await f.enter();
- assert.equal(f.state().stage,5);assert.equal(f.state().grid.flat().filter(value=>value!==-1).length,100);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assert.notEqual(f.state().runId,pending.runId);assert.deepEqual(f.state().pendingPurchase,pending);
- const before=Date.now();f.child().document.getElementById('hint').click();await tick();await tick();
- assert.deepEqual(f.calls,[{kind:'hint',id:pending.id,runId:pending.runId,stage:5}]);
+ }),records=f.records();await f.enter();
+ const fresh=f.state();assertGarden(fresh,stage);assert.equal(fresh.startedAt,null);assert.equal(fresh.penaltyMs,0);assert.notEqual(fresh.runId,saved.runId);assert.notEqual(fresh.runId,pending.runId);assert.deepEqual(fresh.pendingPurchase,pending);
+ assert.equal(f.calls.length,0,'entering does not automatically issue another purchase');
+ const before=Date.now(),button=f.child().document.getElementById(kind);button.click();button.click();await tick();await tick();
+ assert.deepEqual(f.calls,[{kind,id:pending.id,runId:pending.runId,stage,owner}]);
  assert.equal(balance,17,'recovering an already paid request does not charge again');assert.equal(receipts.size,1);
- assert.equal(f.state().pendingPurchase,null);assert.equal(f.state().hints,1);assert.equal(f.child().document.querySelectorAll('.tile.hinted').length,2);assert.ok(f.state().startedAt>=before,'recovery does not carry the previous visit timer into a new run');
- f.w.OjjudaSacheonseongGame.close();await f.enter();assert.equal(f.state().stage,5);assert.equal(f.state().hints,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);
+ const recovered=f.state();assertGarden(recovered,stage);assert.equal(recovered.runId,fresh.runId);assert.equal(recovered.pendingPurchase,null);assert.equal(recovered.hints,kind==='hint'?1:0);assert.equal(recovered.shuffles,kind==='shuffle'?1:0);
+ assert.equal(f.child().document.querySelectorAll('.tile.hinted').length,kind==='hint'?2:0);assert.ok(recovered.startedAt>=before,'recovery does not carry the previous visit timer into a new run');
+ if(kind==='hint')assert.deepEqual(recovered.grid,fresh.grid,'a paid hint does not rearrange the portrait board');
+ else{assert.notDeepEqual(recovered.grid,fresh.grid);assert.deepEqual(recovered.grid.flat().sort((a,b)=>a-b),fresh.grid.flat().sort((a,b)=>a-b),'a paid shuffle keeps the same tiles and empty padding');}
+ assert.equal(recovered.unlocked,8);assert.deepEqual(f.records(),records);
+ f.w.OjjudaSacheonseongGame.close();await f.enter();assertGarden(f.state(),stage);assert.equal(f.state().hints,0);assert.equal(f.state().shuffles,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);assert.deepEqual(f.records(),records);
 });
 
 const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:500},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};

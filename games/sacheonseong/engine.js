@@ -10,9 +10,10 @@
   const copy = grid => grid.map(row => row.slice());
 
   function path(grid, a, b) {
-    const n = grid.length;
-    if (!a || !b || same(a, b) || !grid[a.r] || !grid[b.r] || grid[a.r][a.c] === EMPTY || grid[b.r][b.c] === EMPTY) return null;
-    const open = p => same(p, a) || same(p, b) || p.r < 0 || p.c < 0 || p.r >= n || p.c >= n || grid[p.r][p.c] === EMPTY;
+    const rows = grid.length, columns = grid[0]?.length || 0;
+    const inside = p => p && Number.isInteger(p.r) && Number.isInteger(p.c) && p.r >= 0 && p.r < rows && p.c >= 0 && p.c < columns && p.c < grid[p.r].length;
+    if (!inside(a) || !inside(b) || same(a, b) || grid[a.r][a.c] === EMPTY || grid[b.r][b.c] === EMPTY) return null;
+    const open = p => same(p, a) || same(p, b) || p.r < 0 || p.c < 0 || p.r >= rows || p.c >= columns || grid[p.r][p.c] === EMPTY;
     function line(p, q) {
       if (p.r !== q.r && p.c !== q.c) return false;
       const dr = Math.sign(q.r - p.r), dc = Math.sign(q.c - p.c);
@@ -37,14 +38,14 @@
       return out;
     }
     const options = [[a,b], [a,{r:a.r,c:b.c},b], [a,{r:b.r,c:a.c},b]];
-    for (let r = -1; r <= n; r++) options.push([a,{r,c:a.c},{r,c:b.c},b]);
-    for (let c = -1; c <= n; c++) options.push([a,{r:a.r,c},{r:b.r,c},b]);
+    for (let r = -1; r <= rows; r++) options.push([a,{r,c:a.c},{r,c:b.c},b]);
+    for (let c = -1; c <= columns; c++) options.push([a,{r:a.r,c},{r:b.r,c},b]);
     let best = null, bestScore = Infinity;
     for (const candidate of options) {
       if (!candidate.slice(1).every((p,i) => line(candidate[i],p))) continue;
       const p = clean(candidate);
       const length = p.slice(1).reduce((sum,x,i) => sum + Math.abs(x.r-p[i].r) + Math.abs(x.c-p[i].c),0);
-      const score = p.length * (n * 4 + 4) + length;
+      const score = p.length * (2 * (rows + columns) + 4) + length;
       if (score < bestScore) { best = p; bestScore = score; }
     }
     return best;
@@ -52,7 +53,7 @@
 
   function moves(grid) {
     const groups = new Map();
-    for (let r=0;r<grid.length;r++) for (let c=0;c<grid.length;c++) {
+    for (let r=0;r<grid.length;r++) for (let c=0;c<grid[r].length;c++) {
       const value = grid[r][c];
       if (value !== EMPTY) { if (!groups.has(value)) groups.set(value,[]); groups.get(value).push({r,c}); }
     }
@@ -69,8 +70,7 @@
   }
 
   function hasClump(grid) {
-    const n=grid.length;
-    for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+    for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++){
       const v=grid[r][c];if(v===EMPTY)continue;
       let neighbors=0;
       for(const[dr,dc]of[[1,0],[-1,0],[0,1],[0,-1]])if(grid[r+dr]?.[c+dc]===v)neighbors++;
@@ -83,7 +83,7 @@
   // Retry dead starts and conspicuous three-tile clumps, not individual pairs.
   function arrange(input, values, random = Math.random) {
     const result=copy(input),cells=[];
-    for(let r=0;r<input.length;r++)for(let c=0;c<input.length;c++)if(input[r][c]!==EMPTY)cells.push({r,c});
+    for(let r=0;r<input.length;r++)for(let c=0;c<input[r].length;c++)if(input[r][c]!==EMPTY)cells.push({r,c});
     if(cells.length!==values.length)throw new Error('Tile count mismatch');
     if(!cells.length)return {grid:result};
     const canChange=new Set(values).size>1;
@@ -108,11 +108,13 @@
     throw new Error('No connectable positions');
   }
 
-  function generate(stage, random = Math.random) {
-    const {size:n,typeCount}=stageInfo(stage);
+  function generate(stage, random = Math.random, columns = stageInfo(stage).size) {
+    const {total,typeCount}=stageInfo(stage);
+    if(!Number.isInteger(columns)||columns<1||columns>total)throw new RangeError('Columns must be an integer between 1 and the stage tile count');
     const palette=stage<=3?Array.from({length:typeCount},(_,i)=>i):shuffle(Array.from({length:FACE_COUNT},(_,i)=>i),random).slice(0,typeCount);
-    const types=Array.from({length:n*n},(_,i)=>palette[i%typeCount]);
-    return arrange(Array.from({length:n},()=>Array(n).fill(0)),types,random);
+    const types=Array.from({length:total},(_,i)=>palette[i%typeCount]);
+    const grid=Array.from({length:Math.ceil(total/columns)},(_,r)=>Array.from({length:columns},(_,c)=>r*columns+c<total?0:EMPTY));
+    return arrange(grid,types,random);
   }
   function reshuffle(grid, random = Math.random) {
     const counts=new Map();grid.flat().forEach(v=>{if(v!==EMPTY) counts.set(v,(counts.get(v)||0)+1);});
