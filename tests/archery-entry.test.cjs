@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const {randomUUID}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const world=read('world.html'),bridge=read('world-archery-game.js');
 
@@ -7,7 +8,7 @@ const world=read('world.html'),bridge=read('world-archery-game.js');
 function fixture(){
  const nodes=[],classes=new Set();let focused=null;
  class Element extends EventTarget{
-  constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};}
+  constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};if(tag==='iframe')this.contentWindow={postMessage(){}};}
   setAttribute(name,value){this.attributes[name]=value;}
   set innerHTML(html){this.html=html;if(this.tagName==='dialog'){
    this.button=new Element('button');this.frame=new Element('iframe');
@@ -24,7 +25,8 @@ function fixture(){
  const document={activeElement:previous,createElement:tag=>new Element(tag),
   body:{classList:{contains:name=>classes.has(name),add:name=>classes.add(name),remove:name=>classes.delete(name)},
    append:node=>{node.isConnected=true;nodes.push(node);}}};
- const c=vm.createContext({window:{},document});vm.runInContext(bridge,c);
+ const listeners=new Map(),window={addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
+ const c=vm.createContext({window,document,location:{origin:'https://ojjuda.kr'},crypto:{randomUUID},setTimeout,clearTimeout});vm.runInContext(bridge,c);
  return{api:c.window.OjjudaArcheryGame,document,nodes,previous,focused:()=>focused};
 }
 const f=fixture();
@@ -59,7 +61,8 @@ assert.match(world,/<small class="game-test-badge">테스트게임<\/small>/);
 let opened;
 ctx.window.OjjudaArcheryGame={open:options=>{opened=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
-ctx.Al('archery');assert.deepEqual(Object.keys(opened),['authorized'],'test play has no ranking, score or wallet hooks');
+ctx.Al('archery');assert.deepEqual(Object.keys(opened),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onAmmoReceipt'],'event ammo uses explicit parent callbacks without adding ranked score hooks');
+assert.equal(opened.owner,null);assert.ok(!('client' in opened),'the authenticated client stays in the arcade');
 assert.equal(opened.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(opened.authorized(),false);
 const rankStart=world.indexOf('function worldRankGames(');
 vm.runInContext(world.slice(rankStart,world.indexOf('function openWorldBoardGame(',rankStart)),ctx);
@@ -69,7 +72,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.1.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.2.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -99,5 +102,5 @@ assert.equal(bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/
  assert.equal(opened,1,'a cold direct link survives the route guards and opens once');
  boot.my();assert.equal(opened,1,'ordinary shell refresh does not reopen a dismissed direct-link game');
  assert.equal(rendered,1);
- console.log('PASS: single-player test registration, same-origin launch, no ranked/wallet hooks, lifecycle cleanup, game-only revision and initialized cold direct entry');
+ console.log('PASS: single-player test registration, same-origin launch, isolated ammo callbacks, no ranked score hooks, lifecycle cleanup, game-only revision and initialized cold direct entry');
 })().catch(error=>{console.error(error);process.exitCode=1;});
