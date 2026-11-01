@@ -1,0 +1,59 @@
+name: Screw game checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'screw*.js'
+      - 'screw-games.css'
+      - 'world.html'
+      - 'world-game-assets.js'
+      - 'game-release.json'
+      - 'assets/screw-flat/**'
+      - 'tests/screw*.cjs'
+      - 'tests/solo-fresh-entry.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/screw.yml'
+  pull_request:
+    paths:
+      - 'screw*.js'
+      - 'screw-games.css'
+      - 'world.html'
+      - 'world-game-assets.js'
+      - 'game-release.json'
+      - 'assets/screw-flat/**'
+      - 'tests/screw*.cjs'
+      - 'tests/solo-fresh-entry.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/screw.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screw-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screw:
+    name: Saved levels, purchases and mobile controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check both modes resume their last played level
+        run: node --test --test-name-pattern='screw' tests/solo-fresh-entry.test.cjs
+      - name: Check physics, purchases, ranking and mobile reentry
+        run: npm --prefix tests run test:screw
+      - name: Check game release cache links
+        run: node tests/game-release-refresh.test.cjs

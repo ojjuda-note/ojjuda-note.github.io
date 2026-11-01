@@ -5,9 +5,9 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 world=world.replace('<script type="module">','<script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script type="module">');
-// Advanced physics fixtures choose a stage explicitly. Normal entry leaves this unset and must start at 1.
+// Advanced physics fixtures choose a stage explicitly. Normal entry uses saved progress.
 assert.equal(world.split('R.game=factory({').length,2);
-world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage||1))({');
+world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
 const qa=process.env.SCREW_MODES_QA_DIR;if(qa)fs.mkdirSync(qa,{recursive:true});
@@ -28,7 +28,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.screwWorld);
   assert.deepEqual(engineRequests,[],'the World does not request game engines before play');
   if(font)await page.evaluate(()=>document.fonts.ready);
-  await page.evaluate(()=>{localStorage.setItem('ojjuda-screw-stage','5');localStorage.removeItem('ojjuda-screw-flat-stage-v1');localStorage.removeItem('ojjuda-screw-flat-pictures-v1')});
+  await page.evaluate(()=>{localStorage.setItem('ojjuda-screw-stage','5');localStorage.removeItem('ojjuda-screw-last-stage-v1');localStorage.removeItem('ojjuda-screw-flat-stage-v1');localStorage.removeItem('ojjuda-screw-flat-last-stage-v1');localStorage.removeItem('ojjuda-screw-flat-pictures-v1')});
   for(const size of [{width:320,height:568},{width:390,height:844},{width:1280,height:900}]){
    await page.setViewportSize(size);await page.evaluate(()=>screwWorld.open('screw'));
    assert.equal(await page.locator('[data-g=screw-start]').count(),2,'the existing game opens exactly two version choices');
@@ -67,7 +67,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    if(size.width===320)assert.equal(engineRequests.includes('/screw3d.js'),false,'flat play does not download the box engine');
    await page.locator('[data-mode=box]').click();
    await page.waitForFunction(()=>screwWorld.current()?.running&&window.__ojjScrew3d);
-   assert.equal(await page.evaluate(()=>window.__ojjScrew3d.L),1,'normal box entry starts at stage 1 despite a saved milestone');
+   assert.equal(await page.evaluate(()=>window.__ojjScrew3d.L),5,'normal box entry resumes the saved level');
    assert.equal(await page.evaluate(()=>localStorage.getItem('ojjuda-screw-stage')),'5','the unlocked milestone is retained');
    assert.match(await page.locator('.ghead .gt').innerText(),/박스형/);
    assert.equal(await page.locator('.ghead').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
@@ -150,7 +150,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),5);
   await page.evaluate(()=>{delete window.screwFixtureStage;});
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),1,'reopening starts the flat version from its first stage');
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),5,'reopening resumes the last flat level entered');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.has('puppy-beach')),true,'the earned artwork survives reopening');
   const outlines=[];
   for(let stage=11;stage<=17;stage++){
@@ -286,13 +286,13 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   // Missing artwork must never block screw input or scoring.
   const broken=await context.newPage();await broken.route('**/assets/screw-flat/*.webp',route=>route.abort());
   await broken.goto('https://fixture.test/world.html');await broken.waitForFunction(()=>window.screwWorld);
-  await broken.evaluate(()=>{localStorage.setItem('ojjuda-screw-flat-stage-v1','1');screwWorld.open('screw');});await broken.locator('[data-mode=flat]').click();
+  await broken.evaluate(()=>{localStorage.setItem('ojjuda-screw-flat-stage-v1','1');localStorage.setItem('ojjuda-screw-flat-last-stage-v1','1');screwWorld.open('screw');});await broken.locator('[data-mode=flat]').click();
   await broken.waitForFunction(()=>window.OjjudaFlatPictures?.preload(0).failed&&screwWorld.current()?.running);
   assert.equal(await broken.evaluate(()=>{
    const g=screwWorld.current().game,s=g.state.level.screws[g.state.level.order[0]],h=g.state.level.holes[0];
    for(const q of [s.hole,h]){g.onDown(q.x,q.y);g.onUp(q.x,q.y);}for(let i=0;i<20;i++)g.update(.05);return g.state.moves;
   }),1,'image failure leaves the game playable');await broken.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, thirteen outlines, 100-screw phone input and zoom/pan, fresh first-stage reentry, retained milestones, screw collisions, retry and removed undo.');
+  console.log('PASS: six decoded illustrations, earned album and 320px controls, image failure fallback, thirteen outlines, 100-screw phone input and zoom/pan, independent last-level reentry, retained milestones, screw collisions, retry and removed undo.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

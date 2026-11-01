@@ -24,7 +24,7 @@ finish(game);assert.equal(st.complete,true);assert.deepEqual([...st.collection],
 const earnedScore=score;game.update(.05);assert.equal(score,earnedScore,'completion is awarded once');
 game.onKey('A');game.onKey('ArrowRight');game.onKey('Enter');assert.equal(st.albumPicture,0);
 game.onKey('Escape');assert.equal(st.albumOpen,true);assert.equal(st.albumPicture,null);game.onKey('Escape');assert.equal(st.albumOpen,false);
-game.destroy();const reopened=G.flat(api);assert.equal(reopened.state.L,1,'normal reentry starts from the first stage');assert.ok(reopened.state.collection.has('window-cat'));reopened.destroy();
+game.destroy();const reopened=G.flat(api);assert.equal(reopened.state.L,1,'completion without choosing next reopens the same level');assert.ok(reopened.state.collection.has('window-cat'));reopened.destroy();
 // Persist stable picture IDs, merge another tab's collection, and avoid duplicates.
 storage.set(A.COLLECTION_KEY,JSON.stringify(['puppy-beach','unknown','puppy-beach']));
 const merged=A.collect(0,new Set(['rabbit-tea']));assert.deepEqual([...merged].sort(),['puppy-beach','rabbit-tea','window-cat']);
