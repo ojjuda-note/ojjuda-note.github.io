@@ -206,7 +206,7 @@
   function finish(reason){
     const r=round();if(r.status!=='playing')return;
     r.remainingMs=core.timeLeft(r);r.deadline=null;r.status=reason==='won'?'won':'lost';
-    if(reason==='won'&&!state.completed.includes(puzzle().id))state.completed.push(puzzle().id);
+    if(reason==='won'&&found().length===targetCount()&&!state.completed.includes(puzzle().id))state.completed.push(puzzle().id);
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
     speak(reason==='won'?`${targetCount()}곳을 모두 찾았어요!`:reason==='time'?'시간이 다 됐어요. 1 ZU로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
