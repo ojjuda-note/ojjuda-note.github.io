@@ -24,12 +24,20 @@
 }
 #gov[data-game="breakout"] .breakout-stage-choice strong{
   color:#40334f;
-  font-size:16px;
+  font-size:12px;
 }
-#gov[data-game="breakout"] .breakout-stage-choice[aria-pressed="true"]{
+#gov[data-game="breakout"] .breakout-stage-next{
   border-color:#7560b5;
-  background:#eee8f8;
-  box-shadow:inset 0 0 0 1px #7560b5;
+  background:#7560b5;
+  color:#fff;
+}
+#gov[data-game="breakout"] .breakout-stage-next strong{
+  color:inherit;
+}
+#gov[data-game="breakout"] .breakout-choice-hint{
+  margin:2px 0 10px;
+  font-size:12px;
+  line-height:1.45;
 }
 #gov[data-game="breakout"] .breakout-stage-choice:focus-visible{
   outline:2px solid #7560b5;
