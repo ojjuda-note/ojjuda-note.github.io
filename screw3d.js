@@ -770,10 +770,14 @@ function missionText(ms) {
 }
 const missionOk = ms => (ms.id === 'find' ? ms.found.size >= ms.need : ms.id === 'time' ? ms.t <= ms.need : ms.id === 'turns' ? ms.turns <= ms.need : !ms.bad);
 const STAGE_KEY = 'ojjuda-screw-stage';
+const RESUME_KEY = 'ojjuda-screw-last-stage-v1';
 const PURCHASE_KEY = 'ojjuda-screw-purchases-v1';
-function loadStage() { try { const v = parseInt(localStorage.getItem(STAGE_KEY), 10); return v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
+function loadStage() { try { const v = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(v) && v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
 function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(Math.max(loadStage(),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
-function screw3d(api,startStage=1) {
+// Keep the last played level separate from the highest unlocked milestone.
+function loadResumeStage() { try { const v = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return v; } catch (_) {} return loadStage(); }
+function saveResumeStage(L) { try { localStorage.setItem(RESUME_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
+function screw3d(api,startStage=loadResumeStage()) {
   const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?startStage:1, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false;
@@ -804,7 +808,7 @@ function screw3d(api,startStage=1) {
   if (typeof window !== 'undefined') { window.__ojjScrew3d = st; window.__ojjS3d = { rayHit, pose, F, sepFront, LENS_R }; }   // 시험용
   const newBox = () => (st.qi < st.lvl.queue.length ? { c: st.lvl.queue[st.qi++], n: 0, res: 0, close: 0 } : null);
   function say(m, t) { st.msg = m; st.msgT = t; }
-  function start(L) { st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl);
+  function start(L) { st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
     let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
   }

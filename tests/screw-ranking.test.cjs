@@ -10,8 +10,8 @@ function fixture(){
   worldRewardOwner:()=>owner,worldRewardRequest:()=>({owner}),worldRewardCurrent:r=>r.owner===owner,
   tf:async(game,score,request)=>{calls.push({game,score,request});return submit(game,score,request);},
   setTimeout:(resolve,delay)=>timers.push({resolve,delay}),M:message=>messages.push(message),
-  window:{removeEventListener:noop},document:{body:{classList:{remove:noop}}},cancelAnimationFrame:noop,
-  worldGameAssetRequest:0,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
+  window:{addEventListener:noop,removeEventListener:noop},document:{getElementById:()=>null,querySelector:()=>null,body:{classList:{remove:noop}}},cancelAnimationFrame:noop,
+  worldGameAssetRequest:0,worldClosingGames:null,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
   gt:{arcadeEnd:noop},_r:{screw:{unit:'점'}},w:String,nf:noop,B2:noop});
  vm.runInContext(part('function pendingScrewScore(', 'async function _2(')+
   part('async function _2(', 'function sf(')+part('async function S2(', 'function z2(')+

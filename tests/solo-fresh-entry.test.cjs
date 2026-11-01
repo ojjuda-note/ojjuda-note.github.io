@@ -50,18 +50,63 @@ test('an unresolved Sacheonseong purchase resumes the last stage and applies its
  f.w.OjjudaSacheonseongGame.close();await f.enter();assert.equal(f.state().stage,5);assert.equal(f.state().hints,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);
 });
 
-test('both screw modes default to a fresh first stage while preserving milestones and purchased records',()=>{
- const storage=new Map([['ojjuda-screw-stage','37'],['ojjuda-screw-flat-stage-v1','14'],['ojjuda-screw-flat-pictures-v1','["puppy-beach"]'],['ojjuda-screw-upgrades-v1:'+owner+':37','receipt']]);
- const localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
+const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:500},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
+function withScrews(run,entries=[],blocked=false){
+ const storage=new Map(entries),localStorage=blocked?{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
  const context=vm.createContext({console,localStorage,window:{}});vm.runInContext(read('screw3d.js').replace(/export \{[^}]*\};/,''),context);
- const api={setScore(){},end(){}};context.screw3d(api);const old=context.window.__ojjScrew3d;assert.equal(old.L,1);old.score=20;old.buf[0]={used:true};
- const box=context.screw3d(api),fresh=context.window.__ojjScrew3d;assert.equal(fresh.L,1);assert.equal(fresh.score,0);assert.ok(fresh.buf.every(value=>value===null));assert.notEqual(fresh.lvl,old.lvl);
- fresh.lvl.screws.forEach(screw=>screw.state='done');for(let i=0;i<30;i++)box.update(.1);assert.equal(storage.get('ojjuda-screw-stage'),'37','completing an earlier stage never lowers the saved milestone');
- const previous=global.localStorage;global.localStorage=localStorage;
- try{const G=require('../screw-flat.js');let game=G.flat(api);assert.equal(game.state.L,1);game.state.moves=4;game.destroy();game=G.flat(api);assert.equal(game.state.L,1);assert.equal(game.state.moves,0);assert.equal(game.state.score,0);assert.ok(game.state.collection.has('puppy-beach'));
-  game.state.level.plates.forEach(plate=>plate.state='gone');game.update(.05);assert.equal(storage.get(G.STAGE_KEY),'14');game.destroy();
- }finally{global.localStorage=previous;}
- assert.equal(storage.get('ojjuda-screw-upgrades-v1:'+owner+':37'),'receipt');
+ const previous=global.localStorage,games=[],records=[];global.localStorage=localStorage;
+ const api={setScore(){},end(){},saveScore:score=>records.push(score)};
+ try{
+  const G=require('../screw-flat.js');
+  run({storage,records,box(stage){const game=context.screw3d(api,stage);game.state=context.window.__ojjScrew3d;return game;},flat(stage){const game=G.flat(api,stage);games.push(game);return game;}});
+ }finally{for(const game of games)game.destroy();global.localStorage=previous;}
+}
+function completeScrew(game){
+ if(game.state.lvl){game.state.lvl.screws.forEach(screw=>screw.state='done');game.state.lvl.els.forEach(piece=>piece.state='gone');}
+ else game.state.level.plates.forEach(plate=>plate.state='gone');
+ game.update(.05);
+}
+function nextScrew(game){if(game.state.lvl)for(let i=0;i<30;i++)game.update(.1);else game.onKey('Enter');}
+
+test('both screw modes migrate old progress and reopen independent last levels with fresh boards and preserved purchases',()=>{
+ const boxPurchase='ojjuda-screw-purchases-v1:'+owner+':37',flatPurchase='ojjuda-screw-flat-hole-pending-v1:'+owner+':14';
+ const receipt=JSON.stringify({paid:[{kind:'buffer',id:randomUUID()}],pending:{box:randomUUID()}}),pending=randomUUID();
+ withScrews(f=>{
+  const old=f.box();assert.equal(old.state.L,37);old.state.score=20;old.state.buf[0]={used:true};old.state.lvl.screws[0].state='done';
+  const fresh=f.box();assert.equal(fresh.state.L,37);assert.equal(fresh.state.score,0);assert.equal(fresh.state.t,0);assert.ok(fresh.state.buf.every(value=>value===null));assert.notEqual(fresh.state.lvl,old.state.lvl);assert.ok(fresh.state.lvl.screws.every(s=>s.state==='in'));
+  const oldFlat=f.flat();assert.equal(oldFlat.state.L,14);oldFlat.state.moves=4;oldFlat.state.score=40;oldFlat.state.level.plates[0].state='gone';
+  const freshFlat=f.flat();assert.equal(freshFlat.state.L,14);assert.equal(freshFlat.state.moves,0);assert.equal(freshFlat.state.score,0);assert.equal(freshFlat.state.t,0);assert.notEqual(freshFlat.state.level,oldFlat.state.level);assert.ok(freshFlat.state.level.plates.every(p=>p.state==='fixed'));assert.ok(freshFlat.state.collection.has('puppy-beach'));
+  assert.equal(f.storage.get(screwKeys.box.resume),'37');assert.equal(f.storage.get(screwKeys.flat.resume),'14');assert.equal(f.box().state.L,37,'switching modes does not replace the other saved level');
+  assert.equal(f.storage.get(boxPurchase),receipt);assert.equal(f.storage.get(flatPurchase),pending);assert.deepEqual(f.records,[],'reentry does not resubmit a completed score');
+ },[[screwKeys.box.stage,'37'],[screwKeys.flat.stage,'14'],['ojjuda-screw-flat-pictures-v1','["puppy-beach"]'],[boxPurchase,receipt],[flatPurchase,pending]]);
+});
+
+for(const mode of ['box','flat'])test(`${mode} screw remembers a lower selected level and advances its resume point only when the next level starts`,()=>{
+ const keys=screwKeys[mode];
+ withScrews(f=>{
+  const chosen=f[mode](3);assert.equal(chosen.state.L,3);assert.equal(f.storage.get(keys.resume),'3');assert.equal(f.storage.get(keys.stage),'37');
+  const reopened=f[mode]();assert.equal(reopened.state.L,3,'last selected level takes priority over the highest unlocked level');completeScrew(reopened);
+  assert.equal(f.records.length,1);assert.equal(f.storage.get(keys.resume),'3','completion alone keeps the current level');assert.equal(f.storage.get(keys.stage),'37');
+  const beforeNext=f[mode]();assert.equal(beforeNext.state.L,3);assert.equal(beforeNext.state.score,0);assert.equal(f.records.length,1,'reopening a completed level does not submit it again');
+  completeScrew(beforeNext);nextScrew(beforeNext);assert.equal(beforeNext.state.L,4);assert.equal(f.storage.get(keys.resume),'4');assert.equal(f.storage.get(keys.stage),'37','replaying earlier stages does not lower the milestone');
+  const nextVisit=f[mode]();assert.equal(nextVisit.state.L,4);assert.equal(nextVisit.state.score,0);assert.equal(f.records.length,2);
+ },[[keys.stage,'37'],[keys.resume,'12']]);
+});
+
+for(const mode of ['box','flat'])test(`${mode} screw validates saved and explicit levels and safely reopens its final level`,()=>{
+ const keys=screwKeys[mode];
+ for(const [resume,milestone,expected] of [[undefined,undefined,1],[undefined,'7',7],['bad','7',7],['2.5','7',7],['0','7',7],[String(keys.max+1),'7',7],['bad','7junk',1],['bad','2.5',1]]){
+  const entries=[];if(resume!==undefined)entries.push([keys.resume,resume]);if(milestone!==undefined)entries.push([keys.stage,milestone]);
+  withScrews(f=>{assert.equal(f[mode]().state.L,expected,`resume ${resume}, legacy ${milestone}`);assert.equal(f.storage.get(keys.resume),String(expected));},entries);
+ }
+ withScrews(f=>{
+  for(const invalid of [0,-1,1.5,keys.max+1,'5',null]){f.storage.set(keys.resume,'7');assert.equal(f[mode](invalid).state.L,1,'an invalid explicit level falls back to the first level');assert.equal(f.storage.get(keys.stage),'8');}
+ },[[keys.stage,'8']]);
+ withScrews(f=>{const game=f[mode]();assert.equal(game.state.L,keys.max);completeScrew(game);nextScrew(game);assert.equal(game.state.L,keys.max);assert.equal(f.storage.get(keys.resume),String(keys.max));assert.equal(f[mode]().state.L,keys.max);},[[keys.resume,String(keys.max)],[keys.stage,String(keys.max)]]);
+});
+
+test('both screw modes remain playable and can advance when browser storage is unavailable',()=>{
+ withScrews(f=>{for(const mode of ['box','flat']){const game=f[mode]();assert.equal(game.state.L,1);completeScrew(game);nextScrew(game);assert.equal(game.state.L,2);assert.equal(f[mode]().state.L,1,'without storage a later visit safely starts at one');}},[],true);
 });
 
 async function pendingSpot(t,buy){
