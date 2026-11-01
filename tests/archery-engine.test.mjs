@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAYER, GRAVITY, BOWS, ARROWS, STAGES, targetAt, getSpeed, launchArrow, stepArrow, predictTrajectory, createSway, stepSway } from '../games/forest-archer/engine.mjs';
+import { PLAYER, GRAVITY, WIND_RESPONSE, BOWS, ARROWS, STAGES, targetAt, getSpeed, launchArrow, stepArrow, predictTrajectory, createSway, stepSway } from '../games/forest-archer/engine.mjs';
 import { windLeafAt, windLeafCount } from '../games/forest-archer/scenery.mjs';
 
 const close = (actual, expected, tolerance = 1e-8) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
@@ -12,7 +12,7 @@ function centeredAim(stage, charge, bow, arrow, worldTime = 0) {
   let target = targetAt(stage, worldTime), yaw = 0, pitch = 0, flight = stage.distance / speed;
   for (let i = 0; i < 24; i++) {
     target = targetAt(stage, worldTime + flight);
-    const compensatedX = target.x - stage.wind * arrow.windFactor * flight * flight / 2;
+    const compensatedX = target.x - stage.wind * WIND_RESPONSE * arrow.windFactor * flight * flight / 2;
     const distance = Math.hypot(compensatedX, target.z);
     const height = target.y - PLAYER.y;
     const discriminant = speed ** 4 - GRAVITY * (GRAVITY * distance * distance + 2 * height * speed * speed);
@@ -28,7 +28,7 @@ test('gravity and wind use exact constant-acceleration trajectories', () => {
   const shot = launchArrow({ pitch: 0.35, yaw: 0.12, charge: 0.8 });
   const startVelocity = { ...shot.velocity };
   stepArrow(shot, 0.3, { ...emptyRange, wind: 1.2 }, 0);
-  close(shot.position.x, startVelocity.x * 0.3 + 1.2 * 0.3 ** 2 / 2);
+  close(shot.position.x, startVelocity.x * 0.3 + 1.2 * WIND_RESPONSE * 0.3 ** 2 / 2);
   close(shot.position.y, PLAYER.y + startVelocity.y * 0.3 - GRAVITY * 0.3 ** 2 / 2);
   close(shot.position.z, startVelocity.z * 0.3);
   close(shot.velocity.y, startVelocity.y - GRAVITY * 0.3);
@@ -161,6 +161,61 @@ test('better arrows reduce speed spread without cancelling gravity', () => {
   close(shot.velocity.y, vy - GRAVITY * 0.2);
 });
 
+test('stronger crosswinds reward every arrow upgrade without changing gravity or flight time', () => {
+  const land = (arrow, wind) => {
+    const shot = launchArrow({ arrow, pitch: 0.3, charge: 1, velocityBias: 0 });
+    const result = stepArrow(shot, 4, { ...emptyRange, wind });
+    assert.equal(result.type, 'ground');
+    return result;
+  };
+  const calm = land(ARROWS[0], 0);
+  const legacyBasic = land(ARROWS[0], 1.2 / WIND_RESPONSE);
+  const basic = land(ARROWS[0], 1.2);
+  close(basic.point.x, legacyBasic.point.x * 2.5);
+  for (const direction of [-1, 1]) {
+    let previousDrift = Infinity;
+    for (const arrow of ARROWS) {
+      const result = land(arrow, direction * 1.2);
+      const drift = Math.abs(result.point.x);
+      assert.equal(Math.sign(result.point.x), direction);
+      assert.ok(drift > 0 && drift < previousDrift, 'each upgrade must reduce, not remove, wind drift');
+      close(drift, basic.point.x * [1, 0.75, 0.50, 0.30][arrow.id]);
+      close(result.flightTime, calm.flightTime);
+      close(result.point.y, calm.point.y);
+      close(result.point.z, calm.point.z);
+      close(land(arrow, 0).point.x, 0);
+      previousDrift = drift;
+    }
+  }
+});
+
+test('wind resistance visibly changes the outcome of the same uncompensated long shot', () => {
+  const stage = STAGES[9];
+  const params = centeredAim({ ...stage, wind: 0 }, 1, BOWS[0], ARROWS[0]);
+  const crossingTime = stage.distance / (BOWS[0].speed * Math.cos(params.pitch));
+  const basic = launchArrow(params);
+  const silver = launchArrow({ ...params, arrow: ARROWS[3] });
+  assert.equal(stepArrow(basic, crossingTime, stage), null);
+  assert.ok(basic.targetPassed && Math.abs(basic.position.x) > stage.radius, 'wood arrow drifts past the side of the target');
+  const result = stepArrow(silver, crossingTime, stage);
+  assert.equal(result.type, 'hit', 'silver arrow stays within the target at the same aim');
+  close(result.point.x, basic.position.x * 0.30);
+});
+
+test('every bow has exactly two thirds of its previous sway throughout the draw', () => {
+  const oldAmplitudes = [0.075, 0.050, 0.032, 0.017];
+  for (const bow of BOWS) {
+    const current = createSway(), previous = createSway();
+    const currentRandom = seed(144 + bow.id), previousRandom = seed(144 + bow.id);
+    for (let frame = 0; frame < 600; frame++) {
+      const held = frame / 60;
+      stepSway(current, 1 / 60, bow, held, currentRandom);
+      stepSway(previous, 1 / 60, { ...bow, sway: oldAmplitudes[bow.id] }, held, previousRandom);
+      for (const component of ['x', 'y', 'vx', 'vy']) close(current[component], previous[component] * 2 / 3);
+    }
+  }
+});
+
 test('seeded sway is continuous, irregular, bounded and reduced by upgraded bows', () => {
   const basic = createSway(), advanced = createSway();
   const randomA = seed(621), randomB = seed(621);
@@ -178,19 +233,19 @@ test('seeded sway is continuous, irregular, bounded and reduced by upgraded bows
   close(Math.sqrt(rmsB / rmsA), BOWS[3].sway / BOWS[0].sway, 1e-8);
 });
 
-test('every stage has a reachable bullseye with normal aiming angles', () => {
+test('every stage has a reachable bullseye with both basic and upgraded arrows', () => {
   assert.equal(STAGES.length, 12);
-  for (const stage of STAGES) {
+  for (const arrow of [ARROWS[0], ARROWS[2], ARROWS[3]]) for (const stage of STAGES) {
     let feasible = null;
     for (const bow of [BOWS[0], BOWS[2], BOWS[3]]) {
       for (let charge = 1; charge >= 0.4; charge -= 0.04) {
-        const params = centeredAim(stage, charge, bow, ARROWS[2], 2.0);
+        const params = centeredAim(stage, charge, bow, arrow, 2.0);
         if (!params || params.pitch > 0.55 || params.pitch < -0.15) continue;
         const result = predictTrajectory(params, stage, 2.0).result;
         if (result?.type === 'hit' && result.score === 10) { feasible = { charge, pitch: params.pitch, bow: bow.id }; break; }
       }
       if (feasible) break;
     }
-    assert.ok(feasible, `Stage ${stage.id} must have a reachable target`);
+    assert.ok(feasible, `Stage ${stage.id} must have a reachable target with ${arrow.name}`);
   }
 });
