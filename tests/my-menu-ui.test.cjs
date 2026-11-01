@@ -145,8 +145,15 @@ async function worldFixture(context, mobile, errors) {
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, notification, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
-  for (const href of ['/guide.html', 'terms.html', 'privacy.html']) {
-    assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
+  // Cache revisions may change the query string; each help link must still be
+  // visible and lead to the same page on this site.
+  for (const [name, pathname] of [['사용법 보기', '/guide.html'], ['이용약관', '/terms.html'], ['개인정보처리방침', '/privacy.html']]) {
+    const link = page.locator('[data-my-group="help"]').getByRole('link', { name, exact: true });
+    assert.equal(await link.count(), 1, `existing link ${pathname} appears once`);
+    assert.equal(await link.isVisible(), true, `existing link ${pathname} stays reachable`);
+    const target = new URL(await link.getAttribute('href'), 'https://ojjuda.test/');
+    assert.equal(target.origin, 'https://ojjuda.test', `${name} stays on this site`);
+    assert.equal(target.pathname, pathname, `${name} keeps its destination`);
   }
   assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');
   await uniqueIds(page);

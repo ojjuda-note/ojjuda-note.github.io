@@ -6,12 +6,14 @@ const noop=()=>{};
 function fixture(){
  const calls=[],timers=[],messages=[],storage=new Map();let owner='member-a',submit=async(game,score)=>({ok:true,best:score});
  const node={innerHTML:'',textContent:'',hidden:false};
+ // The shared exit handler registers pagehide and checks for other open games.
+ const window=new EventTarget();
  const context=vm.createContext({console,Promise,Number,Math,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},performance:{now:()=>1},
   worldRewardOwner:()=>owner,worldRewardRequest:()=>({owner}),worldRewardCurrent:r=>r.owner===owner,
   tf:async(game,score,request)=>{calls.push({game,score,request});return submit(game,score,request);},
   setTimeout:(resolve,delay)=>timers.push({resolve,delay}),M:message=>messages.push(message),
-  window:{removeEventListener:noop},document:{body:{classList:{remove:noop}}},cancelAnimationFrame:noop,
-  worldGameAssetRequest:0,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
+  window,document:{body:{classList:{remove:noop}},getElementById:()=>null,querySelector:()=>null},cancelAnimationFrame:noop,
+  worldGameAssetRequest:0,worldClosingGames:null,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
   gt:{arcadeEnd:noop},_r:{screw:{unit:'점'}},w:String,nf:noop,B2:noop});
  vm.runInContext(part('function pendingScrewScore(', 'async function _2(')+
   part('async function _2(', 'function sf(')+part('async function S2(', 'function z2(')+
@@ -68,7 +70,7 @@ function fixture(){
 
  // Exercise actual World start/score/exit/mode/result handlers with only transport replaced.
  const lifecycle=fixture();const firstRun=lifecycle.session();await lifecycle.context._2();
- firstRun.api.setScore(27);lifecycle.context.El();await tick();
+ firstRun.api.setScore(27);lifecycle.context.window.dispatchEvent(new Event('pagehide'));await tick();
  assert.equal(lifecycle.context.R,null);assert.deepEqual(lifecycle.calls.map(c=>[c.game,c.score]),[['screw_flat',27]],'leaving saves positive progress under the selected mode');
  const secondRun=lifecycle.session('box');await lifecycle.context._2();secondRun.api.setScore(45);
  lifecycle.context.M2({target:{closest:()=>({dataset:{g:'screw-modes'}})}});await tick();

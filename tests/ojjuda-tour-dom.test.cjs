@@ -177,8 +177,12 @@ function eliminationGame() {
     allowed=false;send({...payload,runId:'10000000-0000-4000-8000-000000000002'});await Promise.resolve();assert.equal(calls.length,1,'changed account cannot submit');
   } finally {resultHost.window.close();}
   const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
-  const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{}});
-  assert.equal(games.tour.name,'마블');assert.equal(games.tour.unit,'연승');
+  // The shared ranking registry reads host auth even for unrestricted games.
+  for(const D of [{online:false,user:null},{online:true,user:{id:'member-123'}}]){
+    const games=runInNewContext(registry+';worldRankGames()',{D,window:{OjjudaMatgoAccess:{visible:()=>true}},_r:{}});
+    assert.equal(games.tour.name,'마블');assert.equal(games.tour.unit,'연승');
+    assert.equal(games.tour.rankingBasis,'current_streak','guest and member marble rankings retain the existing streak rule');
+  }
   const a=eliminationGame();
   try {
     const {w,$}=a;

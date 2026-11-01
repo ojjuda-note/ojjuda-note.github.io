@@ -64,7 +64,10 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
       html=html.replace('<script type="module">',`<script>${['matgo-access.js','matgo-bridge.js','multiplayer-entry.js','mobile-viewport.js','world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
       const boot=html.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
+      // Replacing the World boot also replaces its login initialization. Keep
+      // parent membership in sync with the mocked Auth used by the real age gate.
+      // Room presence is outside this UI fixture and must stay offline.
+      html=html.slice(0,boot)+`const fixtureAuth=await S.auth.getUser();D.user=fixtureAuth.data.user;D.online=!!D.user;D.parkGuest=!D.user;Pa=async()=>{};window.placeTest={enter:xf,render:H,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/games/matgo.html'){
@@ -454,15 +457,20 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
   }
   // Keep the real parent entrance/viewport/navigation scripts: omitting them
   // leaves the host stuck in entrance mode and misses its actual transitions.
-  for(const options of [{age:18},...[false,true].flatMap(native=>[
+  for(const options of [{age:18},{age:null},{user:null},...[false,true].flatMap(native=>[
     {age:19,mobile:true,native,viewport:{width:320,height:568}},
     {age:19,mobile:true,native,viewport:{width:390,height:820}}
   ])]){
-    const {age,native,viewport}=options;
+    const {native,viewport}=options;
     const f=await fixture(options);await f.page.goto('https://fixture.test/world.html');await f.page.waitForFunction(()=>window.placeTest);
+    const eligible=!!f.state.user&&Number.isInteger(f.state.age)&&f.state.age>=19;
     await f.page.evaluate(async()=>{try{await OjjudaMatgoAccess.check();}catch{}placeTest.enter('arcade',1);placeTest.freeze();});
-    assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),age>=19?1:0);
-    if(age<19){await f.page.evaluate(()=>openMatgo());assert.equal(await f.page.locator('#matgo-overlay').count(),0);}
+    assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),eligible?1:0);
+    assert.equal(await f.page.locator('[data-arcade-adult]').count(),eligible?1:0);
+    if(!eligible){
+      await f.page.evaluate(()=>openMatgo());assert.equal(await f.page.locator('#matgo-overlay').count(),0);
+      assert.equal(f.state.requests.some(r=>['status','start','refill'].includes(r.action)),false,'ineligible visitors never reach the game or wallet');
+    }
     else{
       const {width,height}=viewport;
       await f.page.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}'});
@@ -543,6 +551,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
       assert.equal(f.state.requests.some(r=>['settle','refill','tazza_start','vent'].includes(r.action)),false,'navigation never settles, refills or purchases');
       assert.equal(await f.page.locator('#matgo-loading-bar').count(),0,'no duplicate game header after loading');
+      f.state.user=null;
       await f.page.evaluate(()=>authCallback('SIGNED_OUT',null));assert.equal(await f.page.locator('#matgo-overlay').count(),0);assert.equal(await f.page.locator('[data-act="matgo-open"]').count(),0);
     }
     assert.deepEqual(f.errors,[]);await f.context.close();
