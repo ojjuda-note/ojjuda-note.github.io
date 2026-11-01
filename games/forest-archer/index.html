@@ -7,7 +7,7 @@
   <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 바람과 낙하를 계산하는 50개 사격장, 활 10종·석궁 10종·총기 5종과 화살 12종을 조합하는 숲속 활쏘기 게임.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261102-archery-fit-screen1">
+  <link rel="stylesheet" href="style.css?v=20261102-archery-stabilizer1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -25,12 +25,13 @@
     <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5a2 2 0 0 1 4 0v6-3a2 2 0 0 1 4 0v4-1a2 2 0 0 1 4 0v5c0 4-3 6-6 6-3 0-5-2-7-5l-3-4c-1-2 1-4 3-2l1 2Z"/></symbol>
     <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
     <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m12 7 4 5-4 5-4-5 4-5Z"/></symbol>
+    <symbol id="i-tonic" viewBox="0 0 24 24"><path d="M9 3h6m-5 0v5l-5 8a3 3 0 0 0 2.5 5h9A3 3 0 0 0 19 16l-5-8V3M7 14h10"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></symbol>
   </defs></svg>
   <div class="app-shell">
     <header class="app-header">
       <a class="brand" href="./" aria-label="바람의 궁수 홈"><span class="brand-mark"><svg><use href="#i-target"/></svg></span><span><strong>바람의 궁수</strong><small>THE FOREST RANGE</small></span></a>
-      <div class="header-actions"><div class="coin-balance" title="게임에서 모은 코인"><svg><use href="#i-coin"/></svg><strong id="coinCount">0</strong><small>코인</small></div><button class="button shop-open" aria-label="장비 상점"><svg><use href="#i-bag"/></svg><span>장비 상점</span></button><button class="text-button" id="eventBtn">접시 사격</button><button class="text-button" id="stagesBtn" aria-label="사격장 선택"><svg><use href="#i-grid"/></svg><span>단계 선택</span></button><button class="icon-button" id="soundBtn" aria-label="소리 끄기"><svg><use href="#i-sound"/></svg><span>소리 켜짐</span></button><button class="icon-button" id="helpBtn" aria-label="게임 방법"><svg><use href="#i-help"/></svg></button></div>
+      <div class="header-actions"><div class="coin-balance" title="게임에서 모은 코인"><svg><use href="#i-coin"/></svg><strong id="coinCount">0</strong><small>코인</small></div><button class="button shop-open" aria-label="장비 상점"><svg><use href="#i-bag"/></svg><span>장비 상점</span></button><button class="button stabilizer-open" id="stabilizerBtn" aria-label="안정제"><svg><use href="#i-tonic"/></svg><span id="stabilizerCount">0</span></button><button class="text-button" id="eventBtn">접시 사격</button><button class="text-button" id="stagesBtn" aria-label="사격장 선택"><svg><use href="#i-grid"/></svg><span>단계 선택</span></button><button class="icon-button" id="soundBtn" aria-label="소리 끄기"><svg><use href="#i-sound"/></svg><span>소리 켜짐</span></button><button class="icon-button" id="helpBtn" aria-label="게임 방법"><svg><use href="#i-help"/></svg></button></div>
     </header>
 
     <main>
@@ -41,6 +42,7 @@
           <div class="field" id="field">
             <canvas id="gameCanvas" tabindex="0" aria-label="숲속 활쏘기 사격장. 누른 채 움직여 조준하고 손을 떼면 발사합니다."></canvas>
             <div class="field-top"><span class="field-pill"><span class="tiny-dot"></span><strong id="distanceLabel">14 m</strong></span><span class="field-pill wind-pill"><svg><use href="#i-wind"/></svg><span id="windLabel">고요한 바람</span></span><button class="field-pill zoom-button" id="zoomBtn" aria-label="조준 화면 두 배 확대">1×</button></div>
+            <div id="stabilizerBadge" class="stabilizer-badge hidden" role="status"><svg><use href="#i-tonic"/></svg><span>안정제 · 떨림 50%</span></div>
             <div class="shot-feedback hidden" id="shotFeedback" aria-live="polite"><strong id="feedbackTitle"></strong><span id="feedbackDetail"></span></div>
             <div class="field-bottom"><div class="shot-counter"><span id="shotDots"></span><span id="shotCountLabel">5발 남음</span></div><button class="field-pill hidden" id="previewBtn">과녁 보기</button><button class="field-pill" id="recenterBtn" aria-label="조준을 가운데로"><svg><use href="#i-target"/></svg><span>가운데</span></button></div>
             <span class="flight-badge hidden" id="flightBadge">슬로모션 · 화살을 따라가는 중</span>
@@ -74,6 +76,6 @@
     <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="modalClose" aria-label="닫기"><svg><use href="#i-close"/></svg></button><div id="modalContent"></div></section>
   </div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script type="module" src="game.mjs?v=20261102-archery-progression1"></script>
+  <script type="module" src="game.mjs?v=20261102-archery-stabilizer1"></script>
 </body>
 </html>
