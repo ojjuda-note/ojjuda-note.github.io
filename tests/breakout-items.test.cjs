@@ -7,10 +7,10 @@ const source=original.replace('    return game;',`    game.inspect=()=>({balls,b
     return game;`);
 assert.notEqual(source,original);
 function fixture(){
-  const randomValues=[],math=Object.create(Math),scores=[],ends=[],sounds=[];
+  const randomValues=[],math=Object.create(Math),scores=[],ends=[],clears=[],sounds=[];
   math.random=()=>randomValues.shift()??.99;
   const context={window:{},Math:math};vm.runInNewContext(source,context);
-  const game=context.window.OjjudaBreakoutGame.create({setScore:v=>scores.push(v),end:v=>ends.push(v),sound:Object.fromEntries(['tap','hit','bonus','bad'].map(kind=>[kind,()=>sounds.push(kind)]))});
+  const game=context.window.OjjudaBreakoutGame.create({setScore:v=>scores.push(v),end:v=>ends.push(v),stageClear:v=>clears.push(v),sound:Object.fromEntries(['tap','hit','bonus','bad'].map(kind=>[kind,()=>sounds.push(kind)]))});
   const state=()=>game.inspect();
   function advance(seconds){const n=Math.ceil(seconds*240);for(let i=0;i<n;i++)game.update(seconds/n);}
   function launch(){randomValues.push(.5);game.onKey(' ');}
@@ -24,7 +24,7 @@ function fixture(){
   }
   function catchItem(item){park();game.onMove(item.x);item.y=state().paddle.y-10;game.update(1/240);assert.ok(!state().drops.includes(item));}
   function missAll(){for(const ball of state().balls)ball.y=565;game.update(1/240);}
-  return{game,state,advance,launch,park,hit,catchItem,missAll,scores,ends,sounds,randomValues};
+  return{game,state,advance,launch,park,hit,catchItem,missAll,scores,ends,clears,sounds,randomValues};
 }
 {
   const f=fixture(),item=f.hit('two'),startY=item.y;
@@ -67,7 +67,8 @@ for(const piercing of [false,true]){
   const f=fixture();f.catchItem(f.hit('pierce'));
   const s=f.state(),last=s.bricks.filter(b=>b.on&&!b.solid).at(-1);for(const b of s.bricks)b.on=b===last;
   Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});
-  f.game.update(1/240);assert.equal(f.state().level,2);assert.equal(f.state().lives,3);
+  f.game.update(1/240);assert.equal(f.state().level,1);assert.equal(f.game.stageCleared,true);
+  assert.equal(f.game.continueStage(2),true);assert.equal(f.state().level,2);assert.equal(f.state().lives,3);
   assert.equal(f.state().balls.length,1);assert.equal(f.state().balls[0].piercing,false);
   assert.equal(f.state().drops.length,0,'starting a new board ends this turn’s effects');
 }
@@ -78,6 +79,7 @@ for(const piercing of [false,true]){
     if(f.state().waiting)f.launch();const s=f.state(),last=s.bricks.filter(b=>!b.solid).at(-1);
     for(const b of s.bricks)if(!b.solid)b.on=b===last;last.hp=1;
     Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
+    assert.equal(f.game.continueStage(f.state().level+1),true);
   }
   assert.ok(f.state().speed>initial&&f.state().speed<=460,'later stages stay within the reduced speed limit');
   f.launch();const s=f.state();Object.assign(s.balls[0],{x:180,y:468,vx:0,vy:s.speed});f.game.update(.05);
@@ -126,10 +128,11 @@ for(const piercing of [false,true]){
     assert.equal(f.state().level,stage);f.launch();const s=f.state(),last=s.bricks.filter(b=>!b.solid).at(-1);
     for(const b of s.bricks)if(!b.solid)b.on=b===last;last.hp=1;
     Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
-    if(stage<100)assert.equal(f.ends.length,0);
+    if(stage<100){assert.equal(f.ends.length,0);assert.equal(f.game.stageCleared,true);assert.equal(f.game.continueStage(stage+1),true);}
   }
   assert.equal(f.state().level,100);assert.equal(f.state().completed,true);assert.equal(f.ends.length,1);
   assert.equal(f.game.resultTitle,'100단계 클리어!');f.game.update(.05);assert.equal(f.ends.length,1);
+  assert.equal(f.clears.length,99,'each intermediate board emits one clear event before explicit continuation');
 }
 {
   const f=fixture(),initial=f.state().speed;f.advance(5);

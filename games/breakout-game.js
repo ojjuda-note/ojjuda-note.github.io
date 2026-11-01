@@ -52,7 +52,7 @@
   function create(api,startStage=readStage()){
     const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
     const paddle={x:140,y:490,w:80,h:12};
-    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
+    let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,stageCleared=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
     let nextBallId=1,notice='',noticeTime=0;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
@@ -82,7 +82,7 @@
       for(const ball of balls){const magnitude=Math.hypot(ball.vx,ball.vy);if(magnitude){ball.vx=ball.vx/magnitude*speed;ball.vy=ball.vy/magnitude*speed;}}
     }
     function launch(){
-      if(finished||!waiting)return;
+      if(finished||stageCleared||!waiting)return;
       waiting=false;const angle=-Math.PI/2+(Math.random()-.5)*.8;
       balls[0].vx=Math.cos(angle)*speed;balls[0].vy=Math.sin(angle)*speed;api.sound?.tap?.();
     }
@@ -155,7 +155,7 @@
       }
       if(bricks.every(brick=>brick.solid||!brick.on)){
         if(level===LEVELS){completed=true;finished=true;drops=[];setNotice('100단계 클리어!');api.end(score);return;}
-        level++;faster(20);fillBricks();newTurn();setNotice(level+'단계');return;
+        stageCleared=true;drops=[];api.stageClear?.(score);return;
       }
       balls=balls.filter(ball=>ball.y<=H+20);
       // One missed ball in a group does not cost a life.
@@ -173,10 +173,10 @@
     fillBricks();newTurn();
     const game={
       update(dt){
-        if(finished||!Number.isFinite(dt)||dt<=0)return;
+        if(finished||stageCleared||!Number.isFinite(dt)||dt<=0)return;
         const elapsed=Math.min(.1,dt),steps=Math.ceil(elapsed*240);noticeTime=Math.max(0,noticeTime-elapsed);
         // Small physics steps prevent fast balls skipping a brick or paddle.
-        for(let i=0;i<steps&&!finished;i++)step(elapsed/steps);
+        for(let i=0;i<steps&&!finished&&!stageCleared;i++)step(elapsed/steps);
       },
       draw(c){
         c.fillStyle='#1F2238';c.fillRect(0,0,W,H);
@@ -208,16 +208,25 @@
         if(noticeTime>0){rounded(c,108,426,144,29,10,'#343B58');c.fillStyle='#FFF2CA';c.font='bold 14px sans-serif';c.fillText(notice,W/2,446);}
         if(waiting&&!finished){c.fillStyle='#FFFFFF';c.font='bold 16px sans-serif';c.fillText('탭하면 출발',W/2,407);}
       },
-      onDown(x){if(finished)return;movePaddle(x);launch();},
-      onMove(x){if(!finished)movePaddle(x);},
+      onDown(x){if(finished||stageCleared)return;movePaddle(x);launch();},
+      onMove(x){if(!finished&&!stageCleared)movePaddle(x);},
       onKey(key){
-        if(finished)return false;
+        if(finished||stageCleared)return false;
         if(key==='ArrowLeft'){movePaddle(paddle.x+paddle.w/2-30);return true;}
         if(key==='ArrowRight'){movePaddle(paddle.x+paddle.w/2+30);return true;}
         if(key===' '||key==='Enter'){launch();return true;}
         return false;
       },
+      continueStage(next){
+        if(!stageCleared||finished||next!==level+1||next>LEVELS)return false;
+        level=next;stageCleared=false;faster(20);fillBricks();newTurn();setNotice(level+'단계');return true;
+      },
+      finishRun(){
+        if(!stageCleared||finished)return false;
+        finished=true;api.end(score);return true;
+      },
       get stage(){return level;},
+      get stageCleared(){return stageCleared;},
       get resultTitle(){return completed?'100단계 클리어!':'';},
       destroy(){finished=true;balls=[];drops=[];}
     };
