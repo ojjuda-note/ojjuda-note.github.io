@@ -177,7 +177,7 @@ function eliminationGame() {
     allowed=false;send({...payload,runId:'10000000-0000-4000-8000-000000000002'});await Promise.resolve();assert.equal(calls.length,1,'changed account cannot submit');
   } finally {resultHost.window.close();}
   const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
-  const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{}});
+  const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{},D:{online:false,user:null}});
   assert.equal(games.tour.name,'마블');assert.equal(games.tour.unit,'연승');
   const a=eliminationGame();
   try {
