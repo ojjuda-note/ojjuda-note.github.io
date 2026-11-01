@@ -145,7 +145,13 @@ async function worldFixture(context, mobile, errors) {
   assert.deepEqual(await page.locator('.my-hub [data-act]').evaluateAll(nodes => [...new Set(nodes.map(node => node.dataset.act))].sort()), expectedActions,
     'every existing account, notification, privacy and support action keeps its dispatch key');
   for (const action of expectedActions) assert.equal(await page.locator(`[data-act="${action}"]`).first().isVisible(), true, `${action} remains reachable`);
-  for (const href of ['/guide.html', 'terms.html', 'privacy.html']) {
+  // The guide uses a cache-version query; its visible, same-origin destination stays the contract.
+  const guideLink = page.locator('[data-my-group="help"] .ojjuda-guide-entry a');
+  assert.equal(await guideLink.isVisible(), true, 'the guide link stays reachable');
+  const guideUrl = new URL(await guideLink.getAttribute('href'), 'https://ojjuda.test/');
+  assert.equal(guideUrl.origin, 'https://ojjuda.test', 'the guide stays on the same site');
+  assert.equal(guideUrl.pathname, '/guide.html', 'the guide keeps its exact destination path');
+  for (const href of ['terms.html', 'privacy.html']) {
     assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
   }
   assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');

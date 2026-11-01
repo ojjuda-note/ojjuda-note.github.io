@@ -48,7 +48,8 @@ world=world.slice(0,boot)+`
  await page.setViewportSize({width:390,height:850});
  await page.waitForFunction(()=>document.querySelectorAll('.board-leaders [data-rank-group=solo] .board-rank-page[aria-hidden=false] [data-game]').length===3);
  await soloRanks.getByRole('button',{name:'다음 게임 순위',exact:true}).click();assert.equal(await soloRanks.getAttribute('data-rank-page'),'1');
- assert.deepEqual(await soloRanks.locator('.board-rank-page[aria-hidden=false] [data-game]').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole','mines','runner'],'the last solo page stays full with three distinct games');
+ assert.deepEqual(await soloRanks.locator('.board-rank-page[aria-hidden=false] [data-game]').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole'],'the last solo page shows only its remaining game');
+ assert.deepEqual(await soloRanks.locator('.board-rank-page').evaluateAll(pages=>pages.map(page=>[...page.querySelectorAll('[data-game]')].map(row=>row.dataset.game))),[['mines','runner','stacker'],['mole']],'current rankings keep every solo game exactly once across pages');
  assert.equal(await multiRanks.getAttribute('data-rank-page'),'0','paging solo rankings leaves multiplayer unchanged');
  await selectRankCategory('multi');
  await page.getByRole('button',{name:'탱크게임 게임 열기',exact:true}).click();assert.equal(await page.evaluate(()=>window.openedGame),'tank');
@@ -63,7 +64,8 @@ world=world.slice(0,boot)+`
  const historySolo=page.locator('.board-rank-history [data-rank-group=solo]'),readsBeforeHistoryPage=await page.evaluate(()=>designFixture.rankReads.length);
  assert.equal(await historySolo.locator('[data-game]:not([hidden])').count(),3,'monthly history also shows three games at a time');
  await historySolo.getByRole('button',{name:'다음 게임 순위',exact:true}).click();
- assert.deepEqual(await historySolo.locator('[data-game]:not([hidden])').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole','mines','runner']);
+ assert.deepEqual(await historySolo.locator('[data-game]:not([hidden])').evaluateAll(rows=>rows.map(row=>row.dataset.game)),['mole'],'monthly history shows only its remaining game');
+ assert.deepEqual(await historySolo.locator('[data-game]').evaluateAll(rows=>rows.map(row=>row.dataset.game).sort()),['mines','mole','runner','stacker'],'monthly history keeps every solo game exactly once while paging');
  assert.equal(await page.evaluate(()=>designFixture.rankReads.length),readsBeforeHistoryPage,'monthly paging reuses its data');
  await page.getByLabel('월 선택',{exact:true}).selectOption('2026-09');await page.locator('.board-rank-history[aria-busy=false]').waitFor();
  assert.equal(await historySolo.getAttribute('data-rank-page'),'0','a month change returns to the first history page');
