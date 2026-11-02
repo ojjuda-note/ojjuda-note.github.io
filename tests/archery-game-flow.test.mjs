@@ -1807,7 +1807,7 @@ test('one stabilizer can cover the remaining shots, cannot stack and expires on 
   assert.equal(app.snapshot().stabilizers, 1);assert.equal(app.snapshot().clayCredits, 3);
 });
 
-test('bows, crossbows and guns use 68 percent sway, stabilizers halve it again and steady windows remain exactly still', async () => {
+test('bows, crossbows and guns ease into stillness, retain half sway with stabilizers and immediately resume full sway', async () => {
   for (const id of [0, 10, 20]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 10, 20], bow: id === 20 ? 0 : id, eventGun: 20, stabilizers: 1, sound: false });
     if (id === 20) { app.api.enterEvent();await app.flush(); }
@@ -1825,6 +1825,26 @@ test('bows, crossbows and guns use 68 percent sway, stabilizers halve it again a
     app.advanceTo(state.drawStarted + 300);
     assert.equal(app.api.isSteady(), false);
     assert.equal(app.firstPersonFrame.swayX, state.sway.x * .34);assert.equal(app.firstPersonFrame.swayY, state.sway.y * .34);
+    // Inspect the envelope against one unchanged random-motion vector. Its
+    // shape must ease continuously; it must not rewrite the motion process.
+    const raw = {x: state.sway.x, y: state.sway.y}, full = Math.hypot(raw.x, raw.y) * .34;
+    const ratioAt = time => { const sway = app.api.effectiveSway(time);return Math.hypot(sway.x, sway.y) / full; };
+    const settleStart = start - 600;
+    assert.ok(Math.abs(ratioAt(settleStart - .001) - 1) < 1e-12);
+    assert.ok(Math.abs(ratioAt(settleStart + .001) - 1) < 1e-8, 'settling begins without an amplitude jump');
+    const ratios = [0, 150, 300, 450, 599, 600].map(elapsed => ratioAt(settleStart + elapsed));
+    assert.ok(Math.abs(ratios[2] - .5) < 1e-12, 'halfway through settling the remaining sway is half strength');
+    for (let i = 1; i < ratios.length; i++) assert.ok(ratios[i] < ratios[i - 1], 'the sway envelope decreases smoothly before stillness');
+    assert.ok(ratioAt(start - .001) < 1e-8, 'the final approach is already imperceptibly close to stillness');
+    assert.equal(ratioAt(start), 0);assert.equal(ratioAt(end - .001), 0);
+    assert.ok(Math.abs(ratioAt(end) - 1) < 1e-12, 'the exact end of the steady window restores normal half-strength sway immediately');
+    assert.deepEqual({x: state.sway.x, y: state.sway.y}, raw);
+    app.advanceTo(start - 300);
+    assert.equal(app.api.isSteady(), false, 'settling does not start the timed stillness interval early');
+    assert.equal(app.getElement('drawTiming').classList.contains('steady'), false);
+    assert.match(app.getElement('steadyLabel').textContent, /서서히 안정/);
+    assert.ok(Math.abs(app.firstPersonFrame.swayX - state.sway.x * .17) < 1e-12);
+    assert.ok(Math.abs(app.firstPersonFrame.swayY - state.sway.y * .17) < 1e-12);
     app.advanceTo(start + 1);
     assert.equal(app.api.isSteady(), true);assert.ok(Math.hypot(state.sway.x, state.sway.y) > 0);
     assert.equal(app.api.effectiveSway().x, 0);assert.equal(app.api.effectiveSway().y, 0);
@@ -1840,6 +1860,46 @@ test('bows, crossbows and guns use 68 percent sway, stabilizers halve it again a
     assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - expectedYaw) < 1e-12, `weapon ${id} launches with the displayed horizontal half sway`);
     assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - expectedPitch) < 1e-12, `weapon ${id} launches with the displayed vertical half sway`);
     assert.equal(state.used, 1);assert.equal(app.api.progress.stabilizers, 0);
+  }
+});
+
+test('manual touch remains direct while settling and every weapon fires along the same damped ray that was rendered', async () => {
+  for (const id of [0, 10, 20]) for (const stabilized of [false, true]) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 10, 20],
+      bow: id === 20 ? 0 : id, eventGun: 20, stabilizers: 1, sound: false});
+    if (id === 20) { app.api.enterEvent();await app.flush(); }
+    if (stabilized) { app.api.showStabilizers();assert.equal(app.api.useStabilizer(), true); }
+    const sequence = [.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : .8);
+    const pad = app.getElement('aimTouchpad'), {state} = app.api;
+    pad.emit('pointerdown');
+    const midpoint = state.drawStarted + state.steadyStart * 1000 - 300;
+    app.advanceTo(midpoint - 20);
+    const beforeScreen = baseAimScreen(app), beforePointer = {...app.api.pointer};
+    const coordinates = moveHeldAim(app, state.aim.yaw + .06, state.aim.pitch + .02);
+    const afterScreen = baseAimScreen(app), heldAim = {...state.aim};
+    assert.ok(Math.abs(afterScreen.x - beforeScreen.x - (coordinates.clientX - beforePointer.x)) < 1e-9);
+    assert.ok(Math.abs(afterScreen.y - beforeScreen.y - (coordinates.clientY - beforePointer.y)) < 1e-9,
+      'settling reduces random sway without slowing or multiplying a deliberate touch movement');
+    app.canvasArcs.length = 0;app.advanceTo(midpoint);
+    assert.deepEqual({...state.aim}, heldAim, 'holding a finger still never alters the chosen base aim');
+    assert.equal(app.api.isSteady(), false);
+    const sway = app.api.effectiveSway(), factor = stabilized ? .17 : .34;
+    assert.ok(Math.hypot(state.sway.x, state.sway.y) > 0);
+    assert.ok(Math.abs(sway.x - state.sway.x * factor) < 1e-12);
+    assert.ok(Math.abs(sway.y - state.sway.y * factor) < 1e-12);
+    assert.equal(app.firstPersonFrame.swayX, sway.x);assert.equal(app.firstPersonFrame.swayY, sway.y);
+    const aim = {...app.api.aimAngles()}, reticle = app.canvasArcs.filter(arc => arc.radius === 1.7).at(-1);
+    assert.ok(reticle, 'the rendered aiming centre is present during settling');
+    assert.equal(aim.yaw, state.aim.yaw + sway.x);assert.equal(aim.pitch, state.aim.pitch + sway.y);
+    pad.emit('pointerup', coordinates);await app.flush();
+    const {velocity} = state.shot;
+    assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - aim.yaw) < 1e-12);
+    assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - aim.pitch) < 1e-12);
+    const ray = app.api.project({x: velocity.x, y: app.engine.PLAYER.y + velocity.y, z: velocity.z});
+    assert.ok(Math.abs(ray.x - reticle.x) < 1e-9 && Math.abs(ray.y - reticle.y) < 1e-9,
+      `weapon ${id} keeps its reticle and actual release direction aligned during settling`);
+    assert.equal(state.used, 1);assert.equal(state.shot.automatic, false);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, id === 20 ? 1 : 0);
   }
 });
 
@@ -2265,7 +2325,7 @@ test('frame fallback uses elapsed time when timer delivery is delayed', async ()
   assert.equal(app.api.state.used, 1);
 });
 
-test('a fresh random steady window lasts exactly 0.5 seconds while normal sway continues outside it', async () => {
+test('a fresh random steady window settles gradually, stays still for exactly 0.5 seconds and then resumes immediately', async () => {
   const app = await appHarness(), pad = app.getElement('aimTouchpad');
   let sequence = [0.5, 0.4];app.setRandom(() => sequence.length ? sequence.shift() : 0.9);
   pad.emit('pointerdown');
@@ -2273,7 +2333,9 @@ test('a fresh random steady window lasts exactly 0.5 seconds while normal sway c
   const start = app.api.state.steadyStart * 1000, end = start + 500;
   app.advanceTo(start - 1);
   assert.equal(app.api.isSteady(), false);
-  assert.ok(Math.hypot(app.api.effectiveSway().x, app.api.effectiveSway().y) > 0);
+  const approaching = Math.hypot(app.api.effectiveSway().x, app.api.effectiveSway().y);
+  assert.ok(approaching > 0 && approaching < Math.hypot(app.api.state.sway.x, app.api.state.sway.y) * .68 * 1e-4,
+    'one millisecond before stillness the sway has already eased almost completely away');
   app.advanceTo(start);
   assert.equal(app.api.isSteady(), true);
   assert.equal(app.api.effectiveSway().x, 0);assert.equal(app.api.effectiveSway().y, 0);
@@ -2308,7 +2370,9 @@ for (const { id, duration, input } of [{ id: 3, duration: 1.21, input: 'pointer'
     assert.ok(start >= 1000 && end <= 10000);
     app.advanceTo(start - 1);
     assert.equal(app.api.isSteady(), false);
-    assert.ok(Math.hypot(app.api.effectiveSway().x, app.api.effectiveSway().y) > 0);
+    const approaching = Math.hypot(app.api.effectiveSway().x, app.api.effectiveSway().y);
+    assert.ok(approaching > 0 && approaching < Math.hypot(app.api.state.sway.x, app.api.state.sway.y) * .68 * 1e-4,
+      'longer equipment-specific windows have the same gradual approach before their full duration begins');
     app.advanceTo(start + .001);
     assert.equal(app.api.isSteady(), true);
     assert.equal(app.api.effectiveSway().x, 0);assert.equal(app.api.effectiveSway().y, 0);
