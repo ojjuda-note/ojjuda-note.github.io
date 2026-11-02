@@ -1,8 +1,8 @@
-import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261102-archery-wind-arrow-balance1';
+import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261102-archery-event-exchange1';
 import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261102-archery-wind-arrow-balance1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, lerpCamera} from './view.mjs?v=20261102-archery-120-missions1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261102-archery-120-missions1';
-import {evaluateCoachShot} from './coach.mjs?v=20261102-archery-wind-arrow-balance1';
+import {evaluateCoachShot} from './coach.mjs?v=20261102-archery-event-exchange1';
 import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261102-archery-basic-coach1';
 
 const $ = id => document.getElementById(id);
@@ -627,7 +627,11 @@ function finishRound(){
   const previous=state.isEvent?progress.eventBestByLevel[state.stage.eventLevel]||0:progress.best[state.stage.id]||0;
   if(state.isEvent){
     progress.eventBestByLevel[state.stage.eventLevel]=Math.max(previous,state.score);progress.eventBest=Math.max(progress.eventBest,state.score);progress.eventPlays++;
-    save();updateHeader();updateRound();showResult(passed,0);return;
+    // Preserve the result before the exchange screen so every close path can
+    // continue to stage choices without settling the event a second time.
+    save();updateHeader();updateRound();showResult(passed,0);
+    if(canExchangeStabilizer())showStabilizers();
+    return;
   }
   progress.best[state.stage.id]=Math.max(previous,state.score);
   let bonus=0;
@@ -678,13 +682,26 @@ function stabilizerUseReason(){
   return '';
 }
 let stabilizerModalHtml='';
+function canExchangeStabilizer(){
+  return progress.clayCredits>=STABILIZER_COST&&progress.stabilizers<CONSUMABLE_LIMIT;
+}
+function eventStabilizerExchange(){
+  return state.isEvent&&state.mode==='finished'&&!!state.resultSummary;
+}
 function stabilizerMarkup(){
-  const useReason=stabilizerUseReason();
+  const exchange=eventStabilizerExchange(),useReason=stabilizerUseReason();
   const buyReason=progress.stabilizers>=CONSUMABLE_LIMIT?'안정제 보유 한도에 도달했어요.':progress.clayCredits<STABILIZER_COST?`구매하려면 접시 점수 ${STABILIZER_COST-progress.clayCredits}개가 더 필요해요.`:'';
-  return `<p class="eyebrow">STEADY YOUR NEXT SHOT</p><h2 id="modalTitle">안정제</h2><p class="modal-subtitle">접시 사격에서 모은 점수로, 한 판의 떨림을 절반으로 줄여요.</p><div class="stabilizer-summary"><div><small>접시 점수</small><strong>${progress.clayCredits.toLocaleString('ko-KR')}개</strong></div><div><small>보유 안정제</small><strong>${progress.stabilizers.toLocaleString('ko-KR')}개</strong></div></div><div class="stabilizer-rules"><p><strong>접시 점수 5개 = 안정제 1개</strong><br>이벤트에서 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요.</p><p><strong>이번 판 남은 발사에 적용</strong><br>활·석궁·총기의 떨림이 50%로 줄어요. 한 판에 한 번만 사용하며, 다시 시작하거나 다른 판으로 이동하거나 새로고침하면 효과가 끝나요.</p><p>사용하지 않은 안정제와 남은 접시 점수는 이 기기에 저장돼요.</p></div><div class="stabilizer-actions"><button class="button primary-button" data-action="buy-stabilizer" ${buyReason?'disabled':''}>안정제 1개 구매 · 접시 점수 5개</button>${buyReason?`<p class="stabilizer-message">${buyReason}</p>`:''}<button class="button soft-button" data-action="use-stabilizer" ${useReason?'disabled':''}>${icon('tonic')}${state.stabilizerActive?'이번 판에 사용한 안정제':'안정제 1개 사용 · 떨림 50%'}</button><p class="stabilizer-message" role="status">${state.stabilizerNotice||useReason||'사용하면 이번 판 남은 발사에 바로 적용돼요.'}</p><button class="button soft-button" data-action="close">게임으로 돌아가기</button></div>`;
+  const useButton=exchange?'':`<button class="button soft-button" data-action="use-stabilizer" ${useReason?'disabled':''}>${icon('tonic')}${state.stabilizerActive?'이번 판에 사용한 안정제':'안정제 1개 사용 · 떨림 50%'}</button>`;
+  const notice=state.stabilizerNotice||(exchange?'교환한 안정제는 다음 판에서 직접 사용할 수 있어요.':useReason||'사용하면 이번 판 남은 발사에 바로 적용돼요.');
+  return `<p class="eyebrow">STEADY YOUR NEXT SHOT</p><h2 id="modalTitle">${exchange?'안정제 교환':'안정제'}</h2>
+    <p class="modal-subtitle">${exchange?'접시 사격을 마쳤어요. 모은 점수로 다음 판에 쓸 안정제를 준비하세요.':'접시 사격에서 모은 점수로, 한 판의 떨림을 절반으로 줄여요.'}</p>
+    <div class="stabilizer-summary"><div><small>접시 점수</small><strong>${progress.clayCredits.toLocaleString('ko-KR')}개</strong></div><div><small>보유 안정제</small><strong>${progress.stabilizers.toLocaleString('ko-KR')}개</strong></div></div>
+    <div class="stabilizer-rules"><p><strong>접시 점수 5개 = 안정제 1개</strong><br>이벤트에서 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요.</p><p><strong>${exchange?'사용할 판에서 한 번씩':'이번 판 남은 발사에 적용'}</strong><br>활·석궁·총기의 떨림이 50%로 줄어요. 한 판에 한 번만 사용하며, 다시 시작하거나 다른 판으로 이동하거나 새로고침하면 효과가 끝나요.</p><p>사용하지 않은 안정제와 남은 접시 점수는 이 기기에 저장돼요.</p></div>
+    <div class="stabilizer-actions"><button class="button primary-button" data-action="buy-stabilizer" ${buyReason?'disabled':''}>안정제 1개 ${exchange?'교환':'구매'} · 접시 점수 5개</button>${buyReason?`<p class="stabilizer-message">${buyReason}</p>`:''}${useButton}<p class="stabilizer-message" role="status">${notice}</p><button class="button soft-button" data-action="close">${exchange?'다음으로':'게임으로 돌아가기'}</button></div>`;
 }
 function renderStabilizers(){
   if(state.modal!=='stabilizer')return;
+  if(eventStabilizerExchange()&&!canExchangeStabilizer()){closeModal();return;}
   const html=stabilizerMarkup();if(html===stabilizerModalHtml)return;
   const focusedAction=document.activeElement?.dataset?.action;
   $('modalContent').innerHTML=html;stabilizerModalHtml=html;
@@ -694,20 +711,22 @@ function renderStabilizers(){
   }
 }
 function showStabilizers(){
+  if(eventStabilizerExchange()&&!canExchangeStabilizer()){closeModal();return;}
   cancelDraw();state.stabilizerNotice='';
   stabilizerModalHtml=stabilizerMarkup();openModal('stabilizer',stabilizerModalHtml,true);
 }
 function buyStabilizer(){
-  if(state.modal!=='stabilizer'||progress.clayCredits<STABILIZER_COST||progress.stabilizers>=CONSUMABLE_LIMIT)return false;
+  if(state.modal!=='stabilizer'||!canExchangeStabilizer())return false;
+  const exchange=eventStabilizerExchange();
   const credits=progress.clayCredits,inventory=progress.stabilizers;
   progress.clayCredits-=STABILIZER_COST;progress.stabilizers++;
   if(!save()){
     progress.clayCredits=credits;progress.stabilizers=inventory;
-    state.stabilizerNotice='저장하지 못해 구매를 취소했어요. 접시 점수는 차감되지 않았어요.';
+    state.stabilizerNotice=`저장하지 못해 ${exchange?'교환':'구매'}를 취소했어요. 접시 점수는 차감되지 않았어요.`;
     renderStabilizers();toast(state.stabilizerNotice);return false;
   }
-  state.stabilizerNotice='안정제 1개를 구매했어요. 사용할 판에서 직접 사용해 주세요.';
-  updateHeader();renderStabilizers();sound('buy');return true;
+  state.stabilizerNotice=`안정제 1개를 ${exchange?'교환':'구매'}했어요. 사용할 판에서 직접 사용해 주세요.`;
+  updateHeader();renderStabilizers();sound('buy');if(exchange)toast(state.stabilizerNotice);return true;
 }
 function useStabilizer(){
   if(state.modal!=='stabilizer')return false;
@@ -759,7 +778,7 @@ async function retryAmmo(){
   if(result?.ok&&!state.isEvent&&!state.serverRunId&&!state.registering&&state.mode!=='finished'&&!ammo.pending){registerMainRound();await state.roundStart;}
   onAmmoChange();toast(state.ammoNotice);
 }
-function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 서서히 줄어들어 멈춰요. 안정 시간이 끝나면 바로 다시 흔들려요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 고정 과녁, 이동 과녁, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 네 단계는 바람이 없어요. 9~12단계의 바람 읽기에서는 멈춘 과녁을 겨누며 옆으로 밀리는 화살을 느껴보세요. 나뭇잎이 흐르는 쪽으로 화살도 밀리니 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요. 상단의 화살표와 수치로 바람 방향과 세기를 확인할 수 있어요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 실제 포물선으로 넘길 수 있도록 30·35·40·50m에서 연습해요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 낮게 뛰고 사슴은 크게 달리며, 비둘기는 날갯짓하고 독수리는 완만하게 오르내려요. 살쾡이의 짧은 걸음과 치타의 빠른 질주도 구분돼요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉·몸통·깃의 조합으로 성능이 정해져요. 총 무게가 가벼우면 같은 활에서 더 빠르게 출발하고, 가는 몸통은 바람과 공기 저항을 줄여요. 큰 깃은 자세를 빨리 잡지만 저항도 늘어요. 상위 화살은 부품을 함께 개선해 기준 속도와 일관성이 좋아지고, 바람과 감속의 영향은 줄어요. 상점에서 재질·굵기와 전체 성능을 비교해보세요. 화살은 일반 12종에 특수 2종이 있어요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~16단계는 기본 활, 17~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 마지막 15판인 106~120단계는 상위 활·석궁을 기준으로 맞췄어요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 활부터 레어 석궁까지 성장 순서로 배치돼 있어요. 그립감과 탄성이 번갈아 조금씩 높아지고, 이전 단계의 능력치는 떨어지지 않아요. 능력치별 정렬로도 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발의 첫 화살은 조준한 방향으로, 나머지 두 발은 그 주변으로 나가요. 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁도 활과 같은 탄도 규칙을 써요. 상위 장비로 바꿔도 그립감이나 탄성이 줄지 않아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 자동으로 열려요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 서서히 줄어들어 멈춰요. 안정 시간이 끝나면 바로 다시 흔들려요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 고정 과녁, 이동 과녁, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 네 단계는 바람이 없어요. 9~12단계의 바람 읽기에서는 멈춘 과녁을 겨누며 옆으로 밀리는 화살을 느껴보세요. 나뭇잎이 흐르는 쪽으로 화살도 밀리니 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요. 상단의 화살표와 수치로 바람 방향과 세기를 확인할 수 있어요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 실제 포물선으로 넘길 수 있도록 30·35·40·50m에서 연습해요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 낮게 뛰고 사슴은 크게 달리며, 비둘기는 날갯짓하고 독수리는 완만하게 오르내려요. 살쾡이의 짧은 걸음과 치타의 빠른 질주도 구분돼요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉·몸통·깃의 조합으로 성능이 정해져요. 총 무게가 가벼우면 같은 활에서 더 빠르게 출발하고, 가는 몸통은 바람과 공기 저항을 줄여요. 큰 깃은 자세를 빨리 잡지만 저항도 늘어요. 상위 화살은 부품을 함께 개선해 기준 속도와 일관성이 좋아지고, 바람과 감속의 영향은 줄어요. 상점에서 재질·굵기와 전체 성능을 비교해보세요. 화살은 일반 12종에 특수 2종이 있어요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~16단계는 기본 활, 17~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 마지막 15판인 106~120단계는 상위 활·석궁을 기준으로 맞췄어요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 활부터 레어 석궁까지 성장 순서로 배치돼 있어요. 그립감과 탄성이 번갈아 조금씩 높아지고, 이전 단계의 능력치는 떨어지지 않아요. 능력치별 정렬로도 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발의 첫 화살은 조준한 방향으로, 나머지 두 발은 그 주변으로 나가요. 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁도 활과 같은 탄도 규칙을 써요. 상위 장비로 바꿔도 그립감이나 탄성이 줄지 않아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 자동으로 열려요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 이벤트가 끝나면 모아 둔 접시 점수가 5개 이상일 때 안정제 교환창이 자동으로 열려요. 접시 점수 5개로 안정제 1개를 교환하고, 5개 미만이면 이어 할 단계 선택으로 넘어가요. 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow',shopWeaponFilter='all',shopSort='progression';
 const formatCoins=value=>value.toLocaleString('ko-KR');
 const formatStat=value=>String(Number(value.toFixed(2)));
