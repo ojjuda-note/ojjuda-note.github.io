@@ -171,9 +171,10 @@ function startCenteredDraw(app) {
   return { pad, coords };
 }
 
-async function enterLegacyScene(app, legacyId) {
-  const stage = app.engine.STAGES.find(entry => entry.legacyId === legacyId);
-  assert.ok(stage, `scene ${legacyId} remains available after reordering`);
+async function enterScene(app, scene) {
+  const chapters = { static: 1, moving: 2, wall: 3, pillar: 6 };
+  const stage = app.engine.STAGES.find(entry => chapters[scene] ? entry.chapterId === chapters[scene] : entry.kind === scene);
+  assert.ok(stage, `${scene} scene is available in the learning progression`);
   app.api.startStage(stage.id);
   await app.flush();
 }
@@ -499,6 +500,65 @@ test('purchase charges once, equips permanently and survives reload', async () =
   assert.equal(reloaded.api.progress.coins, afterArrow);
 });
 
+test('both special arrows can be compared, bought once and equipped again after reload', async () => {
+  const app = await appHarness({ version: 1, coins: 20000, ownedArrows: [0, 11], arrow: 11, sound: false });
+  let balance = 20000;
+  for (const id of [12, 13]) {
+    const item = app.engine.ARROWS[id];
+    app.api.showShop('arrow');
+    const card = Array.from(app.getElement('modalContent').innerHTML.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0])
+      .find(html => html.includes(`data-equipment-id="${id}"`));
+    assert.ok(card.includes(item.name) && card.includes(item.ability.label));
+    assert.match(card, id === 12 ? /과녁 앞 · 1회/ : /중심 5m 이내/);
+    app.api.equipItem(id);balance -= item.price;
+    assert.equal(app.api.progress.coins, balance);
+    assert.equal(app.api.activeArrow().id, id);
+    app.api.equipItem(11);app.api.equipItem(id);
+    assert.equal(app.api.progress.coins, balance, 'owned special arrows have no repeat purchase cost');
+  }
+  const reloaded = await appHarness(app.snapshot());
+  assert.equal(reloaded.api.progress.coins, balance);
+  assert.equal(reloaded.api.activeArrow().id, 13);
+  assert.deepEqual(Array.from(reloaded.api.progress.ownedArrows), [0, 11, 12, 13]);
+  reloaded.api.showShop('arrow');reloaded.api.equipItem(12);
+  assert.equal(reloaded.api.activeArrow().id, 12);
+  assert.match(reloaded.getElement('arrowStat').textContent, /한 번 튕김/);
+});
+
+for (const fixture of [
+  { id: 12, stage: 3, charge: .30, yaw: 0, pitch: .13, effect: '1회 튕김' },
+  { id: 13, stage: 2, charge: 1, yaw: .07, pitch: .04, effect: '근접 유도' }
+]) test(`special arrow ${fixture.id} keeps one touch, one flight and one reward through its physical effect`, async () => {
+  const app = await appHarness({ version: 1, coins: 100, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false });
+  const { state } = app.api, pad = app.getElement('aimTouchpad');
+  pad.emit('pointerdown');holdFor(app, fixture.charge * 1250);
+  const sway = app.api.effectiveSway();
+  const coords = moveHeldAim(app, fixture.yaw - sway.x, fixture.pitch - sway.y);
+  pad.emit('pointerup', coords);await app.flush();
+  assert.equal(state.mode, 'flight');assert.equal(state.used, 1);
+  const shot = state.shot;
+  app.until(() => fixture.id === 12 ? shot.bounceCount === 1 : shot.magnetActive);
+  assert.equal(state.mode, 'flight');assert.equal(shot.active, true);
+  assert.equal(shot.result, null, 'the special effect does not terminate the shot');
+  assert.equal(state.used, 1);assert.equal(state.score, 0);assert.equal(state.stuck.length, 0);
+  assert.equal(app.api.progress.shots, 0);assert.equal(app.api.progress.coins, 100);
+  assert.match(app.getElement('flightBadge').textContent, new RegExp(fixture.effect));
+  assert.ok(app.api.camera.z > 0, 'the slow-motion camera keeps following the actual arrow');
+  if (fixture.id === 12) {
+    assert.ok(shot.trail.some(point => Math.abs(point.y) < 1e-9 && Math.abs(point.z - shot.bouncePoint.z) < 1e-9), 'the visible trail includes the actual ground contact');
+    assert.ok(shot.velocity.y > 0);
+  }
+  app.until(() => state.mode === 'settling');
+  assert.equal(shot.result.type, 'hit');assert.equal(shot.result.score, 2);
+  assert.equal(state.score, 2);assert.equal(state.hits, 1);assert.equal(state.used, 1);
+  assert.equal(app.api.progress.shots, 1);assert.equal(app.api.progress.coins, 104);
+  assert.equal(state.targetMarks.length, 1);assert.ok(shot.attachment);
+  app.api.onImpact();
+  assert.equal(app.api.progress.shots, 1);assert.equal(app.api.progress.coins, 104, 'a repeated final impact cannot award a second reward');
+  app.until(() => state.mode === 'ready');
+  assert.equal(state.used, 1);assert.equal(app.api.progress.shots, 1);
+});
+
 test('shop stat choices reorder actual cards while purchases still use stable equipment IDs', async () => {
   const app = await appHarness({ version: 1, coins: 60000, ownedBows: [0], ownedArrows: [0], bow: 0, arrow: 0, sound: false });
   const displayedIds = () => Array.from(app.getElement('modalContent').innerHTML.matchAll(/data-equip="(\d+)"/g), match => Number(match[1]));
@@ -609,7 +669,7 @@ test('new equipment purchases survive reload within the fresh journey', async ()
   for (const [kind, catalog, ownedKey] of [
     ['bow', mainWeapons, 'ownedBows'], ['arrow', app.engine.ARROWS, 'ownedArrows']
   ]) {
-    assert.equal(catalog.length, kind === 'bow' ? 20 : 12, `all ${kind} choices must be available`);
+    assert.equal(catalog.length, kind === 'bow' ? 20 : 14, `all ${kind} choices must be available`);
     app.api.showShop(kind);
     for (const id of [...new Set([4, 11, catalog.at(-1).id])]) {
       const item = catalog.find(item => item.id === id);
@@ -624,8 +684,8 @@ test('new equipment purchases survive reload within the fresh journey', async ()
   }
   const reloaded = await appHarness(app.snapshot());
   assert.deepEqual(Array.from(reloaded.api.progress.ownedBows).sort((a,b) => a-b), [0, 1, 3, 4, 11, mainWeapons.at(-1).id, 20]);
-  assert.deepEqual(Array.from(reloaded.api.progress.ownedArrows), [0, 2, 3, 4, 11]);
-  assert.equal(reloaded.api.activeBow().id, mainWeapons.at(-1).id);assert.equal(reloaded.api.activeArrow().id, 11);
+  assert.deepEqual(Array.from(reloaded.api.progress.ownedArrows), [0, 2, 3, 4, 11, 13]);
+  assert.equal(reloaded.api.activeBow().id, mainWeapons.at(-1).id);assert.equal(reloaded.api.activeArrow().id, 13);
   assert.equal(reloaded.api.progress.coins, expectedCoins);
   assert.equal(reloaded.api.progress.unlocked, 50);assert.equal(reloaded.api.state.stage.id, 5);
   assert.deepEqual({ ...reloaded.api.progress.best }, { 1: 50, 4: 38 });
@@ -635,10 +695,10 @@ test('new equipment purchases survive reload within the fresh journey', async ()
 test('expanded save validation accepts real catalog IDs and rejects invalid or unowned equipment', async () => {
   const app = await appHarness({
     version: 1, coins: 456, ownedBows: [0, 4, 11, 14, 14, -1, 999, 1.5, '14', null],
-    ownedArrows: [0, 5, 10, -1, 12, '10'], bow: 14, arrow: 11, unlocked: 3, lastStage: 2
+    ownedArrows: [0, 5, 10, 12, 13, -1, 14, '10'], bow: 14, arrow: 11, unlocked: 3, lastStage: 2
   });
   assert.deepEqual(Array.from(app.api.progress.ownedBows), [0, 4, 11, 14, 20]);
-  assert.deepEqual(Array.from(app.api.progress.ownedArrows), [0, 5, 10]);
+  assert.deepEqual(Array.from(app.api.progress.ownedArrows), [0, 5, 10, 12, 13]);
   assert.equal(app.api.activeBow().id, 14);
   assert.equal(app.api.activeArrow().id, 0, 'a real but unowned arrow cannot be restored');
   for (const kind of ['bow', 'arrow']) {
@@ -663,6 +723,10 @@ test('all fifty stages are freely selectable while current-journey coins and rec
   assert.equal(app.api.state.modal, 'stages');
   const html = app.getElement('modalContent').innerHTML;
   assert.deepEqual(ids(html), expected);
+  const expectedChapters = ['고정', '움직이는', '벽', '기둥', '토끼', '살쾡이', '사슴', '비둘기', '독수리', '치타'];
+  for (const label of expectedChapters) assert.ok(html.includes(label), `${label} practice is recognizable in the stage picker`);
+  assert.equal((html.match(/class="stage-section-title"/g) || []).length, 13, 'each learned type has its own section plus advanced practice');
+  assert.deepEqual(Array.from(html.matchAll(/data-stage-range="(\d+)"/g), match => Number(match[1])), [1, 5, 9, 21, 25, 49]);
   for (const match of html.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>/g)) {
     assert.equal(/\bdisabled\b/.test(match[0]), false, `stage ${match[1]} is available without a passing score`);
   }
@@ -1887,9 +1951,9 @@ test('resizing between desktop and mobile during flight preserves a visible arro
 });
 
 test('scene composition hides only rear shaft/trail pieces and also depth-orders landed arrows', async () => {
-  for (const [legacyId, blockerKind] of [[1, 'target'], [8, 'wall']]) {
+  for (const [scene, blockerKind] of [['static', 'target'], ['wall', 'wall']]) {
     const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-    await enterLegacyScene(app, legacyId);
+    await enterScene(app, scene);
     app.until(() => app.api.state.mode === 'ready');
     const state = app.api.state, target = app.engine.targetAt(state.stage, state.time);
     const plane = blockerKind === 'target' ? target.z : state.stage.obstacles[0].z - state.stage.obstacles[0].depth / 2;
@@ -1922,7 +1986,7 @@ test('scene composition hides only rear shaft/trail pieces and also depth-orders
 
 test('a shaft clearing the masonry top stays visible while trail behind its back plane remains occluded', async () => {
   const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-  await enterLegacyScene(app, 8);
+  await enterScene(app, 'wall');
   app.until(() => app.api.state.mode === 'ready');
   const state = app.api.state, wall = state.stage.obstacles[0], target = app.engine.targetAt(state.stage, state.time);
   const front = wall.z - wall.depth / 2, back = wall.z + wall.depth / 2, height = wall.height + .12;
@@ -1986,10 +2050,10 @@ function assertAttachedArrows(app, offsets, velocities) {
   return target;
 }
 
-test('static targets, moving targets, birds, rabbits and deer carry their arrows at the impact spot through hold and ready', async () => {
-  for (const legacyId of [1, 5, 6, 7, 11]) {
+test('static and moving targets plus all six animal species carry arrows at the impact spot through hold and ready', async () => {
+  for (const scene of ['static', 'moving', 'rabbit', 'wildcat', 'deer', 'pigeon', 'eagle', 'cheetah']) {
     const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-    await enterLegacyScene(app, legacyId);
+    await enterScene(app, scene);
     app.api.state.time = 1.7;
     const offset = { x: .27, y: -.18 }, velocity = { x: 2, y: -3, z: 38 };
     const originalTarget = resolveTestHit(app, offset, velocity);
@@ -2002,15 +2066,15 @@ test('static targets, moving targets, birds, rabbits and deer carry their arrows
     assert.equal(app.getElement('gameCanvas').dataset.camera, 'impact');
     app.until(() => app.api.state.mode === 'ready');app.frames(120);
     const movedTarget = assertAttachedArrows(app, [offset], [velocity]);
-    if (legacyId !== 1) assert.ok(Math.abs(movedTarget.x - originalTarget.x) > .1, 'the target has actually moved after impact');
+    if (scene !== 'static') assert.ok(Math.abs(movedTarget.x - originalTarget.x) > .1, 'the target has actually moved after impact');
     assert.equal(app.api.state.targetMarks.length, 1, 'returning the camera does not erase the attachment');
   }
 });
 
 test('arrows remain on the animal they hit when a new pass enters during the impact hold', async () => {
-  for (const legacyId of [6, 7, 11]) {
+  for (const scene of ['rabbit', 'wildcat', 'deer', 'pigeon', 'eagle', 'cheetah']) {
     const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-    await enterLegacyScene(app, legacyId);
+    await enterScene(app, scene);
     const state = app.api.state, duration = app.engine.targetAt(state.stage, 0).passDuration;
     state.time = duration - .02;
     const offset = { x: .27, y: -.18 }, original = resolveTestHit(app, offset);
@@ -2078,8 +2142,8 @@ test('multiple arrows on a moving target preserve separate impact offsets and en
 
 test('obstacle stages automatically reveal the real target above every wall, ignore shots, then restore aim', async () => {
   const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-  for (const legacyId of [8, 9, 11, 12]) {
-    await enterLegacyScene(app, legacyId);
+  for (const template of app.engine.STAGES.filter(stage => stage.obstacles.length)) {
+    app.api.startStage(template.id);await app.flush();
     const stageId = app.api.state.stage.id;
     const { state } = app.api, baseCamera = { ...app.api.camera }, originalAim = { ...state.aim }, previewStart = app.now;
     const preview = app.getElement('previewBtn'), pad = app.getElement('aimTouchpad');
@@ -2134,7 +2198,7 @@ test('stages without obstacles stay immediately playable and do not expose an ov
 
 test('manual overview cancels a drawn arrow, allows an early return, preserves pan/zoom and is disabled in flight', async () => {
   const app = await appHarness({ version: 1, unlocked: 50, lastStage: 1, sound: false });
-  await enterLegacyScene(app, 8);
+  await enterScene(app, 'wall');
   app.until(() => app.api.state.mode === 'ready');
   app.getElement('zoomBtn').emit('click');
   const pad = app.getElement('aimTouchpad'), preview = app.getElement('previewBtn');
