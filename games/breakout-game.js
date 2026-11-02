@@ -13,7 +13,8 @@
     wide:{text:'받침대 길어짐',box:'yellow'},
     slow:{text:'공 속도 -10%',box:'yellow'},
     shrink:{text:'받침대 짧아짐',box:'black',bad:true},
-    fast:{text:'공 속도 +10%',box:'black',bad:true}
+    fast:{text:'공 속도 +10%',box:'black',bad:true},
+    single:{text:'공 1개만 남았어요',box:'black',bad:true}
   };
   const BOXES={
     white:{fill:'#FFFFFF',edge:'#D5DDEC',ink:'#253047'},
@@ -67,7 +68,7 @@
     const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
     const paddle={x:140,y:490,w:80,h:12};
     let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,stageCleared=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
-    let nextBallId=1,notice='',noticeTime=0,noticeBad=false;
+    let nextBallId=1,paddleTouchOrder=0,notice='',noticeTime=0,noticeBad=false;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
     brickContext?.scale(2,2);
@@ -78,7 +79,7 @@
           for(const brick of brickBuckets.get(x+','+y)||[])found.add(brick);
       return found;
     }
-    function ballAt(x,y,vx=0,vy=0){return{id:nextBallId++,x,y,vx,vy,r:5,piercing:false,pierceBounces:0,contacts:new Set()};}
+    function ballAt(x,y,vx=0,vy=0){return{id:nextBallId++,x,y,vx,vy,r:5,piercing:false,pierceBounces:0,contacts:new Set(),lastPaddleTouch:0};}
     function fillBricks(){
       bricks=stageBricks(level);brickBuckets=new Map();brickPaint=[];brickContext?.clearRect(0,0,W,H);
       for(const brick of bricks)for(let y=Math.floor(brick.y/32);y<=Math.floor((brick.y+brick.h)/32);y++)
@@ -109,7 +110,7 @@
     function dropFrom(brick){
       // White : yellow : black = 1 : 1 : 2; each group's effects remain hidden.
       if(drops.length>=2||Math.random()>=.08)return;
-      const roll=Math.random(),kind=roll<1/12?'two':roll<1/6?'ten':roll<.25?'pierce':roll<.375?'wide':roll<.5?'slow':roll<.75?'shrink':'fast';
+      const roll=Math.random(),kind=roll<1/12?'two':roll<1/6?'ten':roll<.25?'pierce':roll<.375?'wide':roll<.5?'slow':roll<2/3?'shrink':roll<5/6?'fast':'single';
       drops.push({x:Math.max(DROP_W/2,Math.min(W-DROP_W/2,brick.x+brick.w/2)),y:brick.y+brick.h/2,kind});
     }
     function breakBrick(brick){
@@ -121,6 +122,10 @@
       if(item.kind==='pierce'){
         const chosen=balls.find(ball=>ball.piercing)||balls[0];
         for(const ball of balls){ball.piercing=ball===chosen;ball.pierceBounces=ball===chosen?2:0;}
+      }else if(item.kind==='single'){
+        // Keep the exact surviving ball, including its direction and piercing.
+        // If none has touched the paddle, equal zero orders preserve the first.
+        balls=[balls.reduce((latest,ball)=>ball.lastPaddleTouch>latest.lastPaddleTouch?ball:latest)];
       }else if(item.kind==='wide'||item.kind==='shrink'){
         resizePaddle(item.kind==='wide'?PADDLE_STEP:-PADDLE_STEP);
         if(paddle.w===MAX_PADDLE&&item.kind==='wide')message='받침대 최대 길이';
@@ -167,6 +172,7 @@
         if(ball.vy>0&&beforeY+ball.r<=paddle.y+1&&ball.y+ball.r>=paddle.y&&ball.x>paddle.x-ball.r&&ball.x<paddle.x+paddle.w+ball.r){
           const offset=Math.max(-1,Math.min(1,(ball.x-paddle.x-paddle.w/2)/(paddle.w/2))),angle=-Math.PI/2+offset*1.05;
           ball.vx=Math.cos(angle)*speed;ball.vy=Math.sin(angle)*speed;ball.y=paddle.y-ball.r;countPiercingPaddleBounce(ball);api.sound?.tap?.();
+          ball.lastPaddleTouch=++paddleTouchOrder;
         }
         const touching=new Set();let bounced=false;
         for(const brick of nearbyBricks(ball))if(brick.on&&touchBrick(ball,brick)){
@@ -197,7 +203,8 @@
         newTurn();setNotice('한 번 더!');return;
       }
       drops=drops.filter(item=>{
-        item.y+=125*dt;
+        // Black boxes fall 30% slower, giving the player time to avoid them.
+        item.y+=125*(ITEMS[item.kind].box==='black'?.7:1)*dt;
         if(item.y+DROP_H/2>=paddle.y&&item.y-DROP_H/2<=paddle.y+paddle.h&&item.x+DROP_W/2>paddle.x&&item.x-DROP_W/2<paddle.x+paddle.w){collect(item);return false;}
         return item.y<H+DROP_H/2;
       });
