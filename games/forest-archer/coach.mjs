@@ -1,5 +1,5 @@
 /** A conservative release cue. It never changes aim, fires, or spends anything. */
-import {BOWS, clamp, targetAt, launchArrow, stepArrow} from './engine.mjs?v=20261102-archery-120-missions1';
+import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow} from './engine.mjs?v=20261102-archery-gradual-equipment1';
 
 export const COACH_REACTION_SECONDS = .10;
 const CHARGE_SECONDS = 1.25;
@@ -7,8 +7,7 @@ const DRAW_LIMIT = 10;
 const identity = target => `${target?.kind || 'target'}:${target?.passId ?? 'fixed'}`;
 const finitePoint = point => point && ['x','y','z'].every(axis => Number.isFinite(point[axis]));
 
-function forecastShot(input,stage,worldTime) {
-  const shot = launchArrow({...input});
+function forecastShot(input,stage,worldTime,shot = launchArrow({...input})) {
   if (shot.ability?.type === 'magnetic') {
     // Guidance cannot reach a target while its plane is farther than the
     // activation radius. Skip only that provably unguided prefix, using the
@@ -79,34 +78,17 @@ export function evaluateCoachShot(params = {}, stage = {}, worldTime = 0, {held,
     checks.push({...check,input,time});
   }
 
-  const burst = Math.max(1,weapon.burstCount || 1), spread = Math.max(0,weapon.burstSpread || 0);
-  if (burst > 1 && spread > 0) {
-    const delay = (burst-1)*Math.max(0,weapon.burstInterval || 0);
+  if ((weapon.burstCount || 1) > 1 && stage.passers?.length) {
+    // The centered first bolt establishes best-of-three quality. Extra bolts
+    // may miss or hit a wall, but hitting a person invalidates the whole volley.
+    // A draw keeps one burst seed, so these are the actual extra trajectories,
+    // including their launch delays, at release now and after reaction time.
     for (const check of checks) {
-      const target = check.result.targetCenter, point = check.result.point;
-      const rx = Math.max(.001,target.rx), ry = Math.max(.001,target.ry), radius = Math.min(rx,ry);
-      const hitRadius = target.kind === 'target' ? .4 : 1;
-      const aimError = Math.hypot((point.x-target.x)/rx,(point.y-target.y)/ry);
-      // Use the full spread envelope, not one lucky random volley rotation.
-      // Extra allowance covers the greater pitch sensitivity of slow, arcing bolts.
-      const sensitivity = 1+Math.min(2,check.shot.dragRate*check.shot.elapsed)+Math.abs(Math.tan(check.input.pitch || 0));
-      const spreadMargin = Math.tan(spread)*stage.distance*sensitivity/radius;
-      let movementMargin = 0;
-      for (const elapsed of [delay/2,delay]) {
-        const moved = targetAt(stage,check.time+check.shot.elapsed+elapsed);
-        if (moved.active === false || identity(moved) !== currentIdentity) return answer(false,'target-change',{targetPassId:current.passId ?? null});
-        movementMargin = Math.max(movementMargin,Math.hypot((moved.x-target.x)/rx,(moved.y-target.y)/ry));
+      for (const shot of launchVolley(check.input).slice(1)) {
+        probes++;
+        const {result} = forecastShot(check.input,stage,check.time+(shot.launchDelay || 0),shot);
+        if (result?.type === 'person') return answer(false,'person',{targetPassId:current.passId ?? null});
       }
-      if (aimError+spreadMargin+movementMargin >= hitRadius) return answer(false,'grouping',{targetPassId:current.passId ?? null});
-    }
-    // Representative outer directions also use real swept collision, including
-    // the last bolt's launch delay. A clear central shot alone cannot cue a
-    // wide burst through a narrow wall opening.
-    const outer = [[spread,0],[0,spread],[-spread,0],[0,-spread]];
-    for (let index = 0; index < outer.length; index++) {
-      const check = checks[index%2], [yaw,pitch] = outer[index];
-      const result = probe({...check.input,yaw:(check.input.yaw || 0)+yaw,pitch:(check.input.pitch || 0)+pitch},check.time+delay);
-      if (!result.ok) return answer(false,result.reason === 'quality' ? 'grouping' : result.reason,{targetPassId:current.passId ?? null});
     }
   }
   return answer(true,'ready',{targetPassId:current.passId ?? null});

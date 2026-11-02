@@ -25,6 +25,26 @@ const compareMotion = (left, right, tolerance = 1e-8) => {
   near(left.elapsed, right.elapsed, tolerance);
 };
 
+// Aim the unguided, damped trajectory at a chosen point. The magnetic fixture
+// can then start just outside the real target instead of relying on old speeds.
+function aimAtPoint(point, params) {
+  const probe = launchArrow(params), drag = probe.dragRate;
+  const velocity = time => {
+    const a = drag ? -Math.expm1(-drag * time) / drag : time;
+    const b = drag ? (time - a) / drag : time * time / 2;
+    return {x: (point.x - probe.position.x) / a,
+      y: (point.y - probe.position.y + GRAVITY * b) / a, z: (point.z - probe.position.z) / a};
+  };
+  let lo = .001, hi = 3;
+  assert.ok(Math.hypot(...Object.values(velocity(hi))) < probe.speed, 'the fixture has a reachable low arc');
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (Math.hypot(...Object.values(velocity(mid))) > probe.speed) lo = mid;else hi = mid;
+  }
+  const v = velocity((lo + hi) / 2);
+  return {...params, yaw: Math.atan2(v.x, v.z), pitch: Math.atan2(v.y, Math.hypot(v.x, v.z))};
+}
+
 test('two distinct special arrows append their own abilities after the ordinary inventory', () => {
   assert.equal(ARROWS.length, 14);
   assert.equal(ARROWS[12].id, 12); assert.equal(ARROWS[13].id, 13);
@@ -60,7 +80,7 @@ test('a short ground impact bounces once, loses energy and continues to a real l
 test('normal bow launches can rescue short shots on the actual 30m and 50m stages', () => {
   for (const {stage, charge, pitch} of [
     {stage: STAGES[2], charge: .30, pitch: .13},
-    {stage: STAGES[3], charge: .35, pitch: .33}
+    {stage: STAGES[3], charge: .35, pitch: .265}
   ]) {
     const params = {bow: BOWS[0], charge, pitch};
     const shot = launchArrow({...params, arrow: ARROWS[12]});
@@ -151,7 +171,8 @@ test('magnetic guidance can improve a near miss but cannot turn a far error into
 });
 
 test('a normal magnetic-arrow launch improves a real 20m-stage near miss into an edge hit', () => {
-  const stage = STAGES[1], params = {bow: BOWS[0], charge: 1, yaw: .07, pitch: .04};
+  const stage = STAGES[1], target = targetAt(stage, 0);
+  const params = aimAtPoint({...target, x: target.x + target.rx + .05}, {bow: BOWS[0], arrow: ARROWS[13], charge: 1});
   const shot = launchArrow({...params, arrow: ARROWS[13]});
   const plain = launchArrow({...params, arrow: ordinaryCopy(13)});
   const result = finishInSteps(shot, stage, 1 / 120);

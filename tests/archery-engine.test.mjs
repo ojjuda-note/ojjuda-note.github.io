@@ -65,9 +65,9 @@ function volleyResult(params, stage, time, trial=0, steady=false) {
   const inSteady=steady&&params.charge>=1;
   const shots=launchVolley({...params,charge:Math.min(1,held/1.25),velocityBias,burstSeed:Math.max(0,trial),
     yaw:params.yaw+(trial<0||inSteady?0:sway.x*.68),pitch:params.pitch+(trial<0||inSteady?0:sway.y*.68)});
-  let score=0,hit=false;
-  for(const shot of shots){const r=stepArrow(shot,8,stage,time+jitter+shot.launchDelay);hit ||= r?.type==='hit';score=Math.max(score,r?.score||0);}
-  return {hit,score,swayX:sway.x*.68,swayY:sway.y*.68};
+  let score=0,hit=false,personHit=false;
+  for(const shot of shots){const r=stepArrow(shot,8,stage,time+jitter+shot.launchDelay);hit ||= r?.type==='hit';personHit ||= r?.type==='person';score=Math.max(score,r?.score||0);}
+  return {hit:hit&&!personHit,score:personHit?0:score,swayX:sway.x*.68,swayY:sway.y*.68};
 }
 function wallClearance(params, stage) {
   const shot=launchArrow(params),v=shot.velocity,k=shot.dragRate;let margin=Infinity;
@@ -81,7 +81,10 @@ function wallClearance(params, stage) {
 }
 function feasibleAim(stage,bow,arrow) {
   let fallback=null;
-  for(let charge=1;charge>=.4;charge-=.04)for(const time of releaseMoments(stage)) {
+  // The actual draw supports the whole 0..1 range; low-power lobs can clear
+  // close walls even when a stronger weapon's full-power trajectory cannot.
+  for(let chargeStep=25;chargeStep>=0;chargeStep--)for(const time of releaseMoments(stage)) {
+    const charge=chargeStep/25;
     const held=charge>=1?2.5:charge*1.25;
     if(time<held+.08)continue;
     const params=centeredAim(stage,charge,bow,arrow,time);
@@ -308,7 +311,7 @@ test('a missed high shot stays active beyond the old distance limit and falls to
 
 test('better arrows reduce speed spread without cancelling gravity', () => {
   const spread = arrow => getSpeed({ arrow, velocityBias: 1 }) - getSpeed({ arrow, velocityBias: -1 });
-  assert.ok(spread(ARROWS[10]) < spread(ARROWS[0]) / 10);
+  assert.ok(spread(sortEquipment(ARROWS).at(-1)) < spread(ARROWS[0]) / 10);
   const shot = launchArrow({ arrow: { ...ARROWS[3], fletching: { ...ARROWS[3].fletching, drag: 0 } }, pitch: 0.3 });
   const vy = shot.velocity.y;
   stepArrow(shot, 0.2, emptyRange, 0);
@@ -323,8 +326,7 @@ test('twenty-five weapons and fourteen arrows preserve old identities and indepe
   assert.deepEqual(ARROWS.slice(0, 4).map(item => item.name), ['나무 화살', '깃털 화살', '탄소 화살', '은빛 화살']);
   assert.equal(new Set(BOWS.map(item => item.name)).size, 25);
   assert.equal(new Set(ARROWS.slice(0, 12).map(item => item.fletching.name)).size, 12);
-  assert.ok(BOWS[1].grip > BOWS[2].grip && BOWS[1].elasticity < BOWS[2].elasticity);
-  assert.ok(ARROWS[1].tipMass > ARROWS[2].tipMass && ARROWS[1].fletching.windArea > ARROWS[2].fletching.windArea);
+  assert.ok(ARROWS[1].tipMass > ARROWS[2].tipMass, 'different arrow points remain independently selectable');
   for (const bow of BOWS) for (const arrow of ARROWS) {
     const shot = launchArrow({ bow, arrow, charge: 1 });
     assert.ok(Number.isFinite(shot.speed) && shot.speed > 30);
@@ -335,36 +337,44 @@ test('twenty-five weapons and fourteen arrows preserve old identities and indepe
 });
 
 
-const originalArrowCatalog = [
-  {"id":0,"name":"나무 화살","price":0,"shopRank":1,"tipMass":4,"shaftMass":20,"fletching":{"name":"넓은 깃","windArea":1,"drag":0.14,"stability":35},"variance":0.13,"windFactor":1,"color":"#b28b64"},
-  {"id":1,"name":"깃털 화살","price":1050,"shopRank":4,"tipMass":8,"shaftMass":20,"fletching":{"name":"큰 안정깃","windArea":1.1,"drag":0.18,"stability":80},"variance":0.039999999999999994,"windFactor":0.942857142857143,"color":"#8b9c78"},
-  {"id":2,"name":"탄소 화살","price":3150,"shopRank":8,"tipMass":4,"shaftMass":20,"fletching":{"name":"좁은 날개","windArea":0.5,"drag":0.06,"stability":65},"variance":0.06999999999999999,"windFactor":0.5,"color":"#71999b"},
-  {"id":3,"name":"은빛 화살","price":5250,"shopRank":11,"tipMass":10,"shaftMass":20,"fletching":{"name":"유선형 날개","windArea":0.35,"drag":0.055,"stability":94},"variance":0.01200000000000001,"windFactor":0.27999999999999997,"color":"#bfc8d0"},
-  {"id":4,"name":"가벼운 연습 화살","price":300,"shopRank":2,"tipMass":2,"shaftMass":20,"fletching":{"name":"작은 깃","windArea":0.85,"drag":0.11,"stability":45},"variance":0.11000000000000001,"windFactor":0.9272727272727272,"color":"#c3a474"},
-  {"id":5,"name":"황동촉 화살","price":2000,"shopRank":6,"tipMass":12,"shaftMass":20,"fletching":{"name":"직선 깃","windArea":0.78,"drag":0.1,"stability":70},"variance":0.06000000000000001,"windFactor":0.585,"color":"#b99c52"},
-  {"id":6,"name":"긴깃 화살","price":650,"shopRank":3,"tipMass":6,"shaftMass":20,"fletching":{"name":"긴 안정깃","windArea":1.25,"drag":0.2,"stability":96},"variance":0.008000000000000007,"windFactor":1.1538461538461537,"color":"#9a9c77"},
-  {"id":7,"name":"돌풍 화살","price":3800,"shopRank":9,"tipMass":5,"shaftMass":20,"fletching":{"name":"낮은 날개","windArea":0.4,"drag":0.05,"stability":73},"variance":0.054000000000000006,"windFactor":0.38400000000000006,"color":"#709ba0"},
-  {"id":8,"name":"철갑촉 화살","price":1500,"shopRank":5,"tipMass":14,"shaftMass":20,"fletching":{"name":"삼각 깃","windArea":0.95,"drag":0.14,"stability":86},"variance":0.028000000000000004,"windFactor":0.6705882352941176,"color":"#89909b"},
-  {"id":9,"name":"비연 화살","price":2550,"shopRank":7,"tipMass":3,"shaftMass":20,"fletching":{"name":"초소형 날개","windArea":0.22,"drag":0.025,"stability":30},"variance":0.13999999999999999,"windFactor":0.22956521739130437,"color":"#93a8b3"},
-  {"id":10,"name":"금빛 화살","price":4500,"shopRank":10,"tipMass":9,"shaftMass":20,"fletching":{"name":"곡면 날개","windArea":0.48,"drag":0.075,"stability":98},"variance":0.0040000000000000036,"windFactor":0.3972413793103448,"color":"#ceb36c"},
-  {"id":11,"name":"바람깃 화살","price":6050,"shopRank":12,"tipMass":7,"shaftMass":20,"fletching":{"name":"쐐기 날개","windArea":0.18,"drag":0.035,"stability":88},"variance":0.024,"windFactor":0.16,"color":"#82a7a5"}
+const originalArrowIdentities = [
+  [0, '나무 화살', 0, 1, 4, '넓은 깃', '#b28b64'],
+  [1, '깃털 화살', 1050, 4, 8, '큰 안정깃', '#8b9c78'],
+  [2, '탄소 화살', 3150, 8, 4, '좁은 날개', '#71999b'],
+  [3, '은빛 화살', 5250, 11, 10, '유선형 날개', '#bfc8d0'],
+  [4, '가벼운 연습 화살', 300, 2, 2, '작은 깃', '#c3a474'],
+  [5, '황동촉 화살', 2000, 6, 12, '직선 깃', '#b99c52'],
+  [6, '긴깃 화살', 650, 3, 6, '긴 안정깃', '#9a9c77'],
+  [7, '돌풍 화살', 3800, 9, 5, '낮은 날개', '#709ba0'],
+  [8, '철갑촉 화살', 1500, 5, 14, '삼각 깃', '#89909b'],
+  [9, '비연 화살', 2550, 7, 3, '초소형 날개', '#93a8b3'],
+  [10, '금빛 화살', 4500, 10, 9, '곡면 날개', '#ceb36c'],
+  [11, '바람깃 화살', 6050, 12, 7, '쐐기 날개', '#82a7a5'],
+  [12, '탄성 화살', 6900, 13, 8, '탄성 안정깃', '#be9a69'],
+  [13, '자석 화살', 7800, 14, 10, '유도 안정깃', '#629d98']
 ];
-test('special additions preserve every original arrow identity, price and physical attribute', () => {
-  const fields = ["id", "name", "price", "shopRank", "tipMass", "shaftMass", "fletching", "variance", "windFactor", "color"];
-  assert.deepEqual(ARROWS.slice(0, 12).map(item => Object.fromEntries(fields.map(key => [key, item[key]]))), originalArrowCatalog);
+test('equipment rebalancing preserves arrow identities, prices, points and appearances', () => {
+  assert.deepEqual(ARROWS.map(item => [item.id, item.name, item.price, item.shopRank, item.tipMass, item.fletching.name, item.color]), originalArrowIdentities);
   assert.ok(ARROWS.slice(0, 12).every(item => !item.ability));
+  assert.equal(ARROWS[12].ability.type, 'bounce');
+  assert.equal(ARROWS[13].ability.type, 'magnetic');
 });
 
-test('shop progression follows equipment strengths and makes every next price gap larger', () => {
+test('shop progression keeps released ranks and prices while adding small stat improvements', () => {
   const weapons = sortEquipment(BOWS.filter(item => item.weaponType !== 'gun'));
   const arrows = sortEquipment(ARROWS);
   assert.deepEqual(weapons.slice(0, 10).map(item => item.id), [0, 4, 5, 6, 1, 2, 8, 7, 9, 3]);
   assert.deepEqual(weapons.slice(10).map(item => item.id), [13, 12, 10, 14, 11, 15, 16, 17, 18, 19]);
+  assert.deepEqual(arrows.map(item => item.id), [0, 4, 6, 1, 8, 5, 9, 2, 7, 10, 3, 11, 12, 13]);
   assert.ok(weapons.slice(0, 10).every(item => item.weaponType === 'bow'));
   assert.ok(weapons.slice(10).every(item => item.weaponType === 'crossbow'));
-  for (let index = 1; index < 10; index++) {
+  assert.deepEqual([weapons[0].grip, weapons[0].elasticity], [30, 40], 'the starter retains its familiar strength');
+  assert.deepEqual([weapons.at(-1).grip, weapons.at(-1).elasticity], [100, 100]);
+  for (let index = 1; index < weapons.length; index++) {
     const before = weapons[index - 1], after = weapons[index];
-    assert.ok(after.grip + after.elasticity > before.grip + before.elasticity, 'bow order reflects the combined grip and elasticity rather than the old IDs');
+    const changes = ['grip', 'elasticity'].map(key => after[key] - before[key]);
+    assert.ok(changes.every(change => change >= 0 && change <= 10), `weapon rank ${after.shopRank} retains both stats without a large jump`);
+    assert.equal(changes.filter(change => change > 0).length, 1, 'each upgrade adds to one stat while preserving the other');
   }
   for (const items of [weapons, arrows]) {
     assert.equal(items[0].id, 0);
@@ -379,8 +389,8 @@ test('shop progression follows equipment strengths and makes every next price ga
       previousGap = gap;
     }
   }
-  assert.deepEqual([weapons[1].price, weapons[9].price, weapons[10].price, weapons.at(-1).price], [500, 8100, 9500, 26600]);
-  assert.deepEqual([arrows[1].price, arrows[11].price, arrows[12].price, arrows[13].price], [300, 6050, 6900, 7800]);
+  assert.deepEqual(weapons.map(item => item.price), [0, 500, 1100, 1800, 2600, 3500, 4500, 5600, 6800, 8100, 9500, 11000, 12600, 14300, 16100, 18000, 20000, 22100, 24300, 26600]);
+  assert.deepEqual(arrows.map(item => item.price), [0, 300, 650, 1050, 1500, 2000, 2550, 3150, 3800, 4500, 5250, 6050, 6900, 7800]);
   assert.ok(arrows.at(-1).fletching.stability > arrows[0].fletching.stability);
   assert.ok(getWindResponse(arrows.at(-1)) < getWindResponse(arrows[0]));
   assert.ok(arrows.at(-1).fletching.drag < arrows[0].fletching.drag);
@@ -398,16 +408,20 @@ test('ability sorting uses the selected actual stat without mutating saved equip
     assert.equal(sorted.length, items.length);
     assert.equal(new Set(sorted.map(item => item.id)).size, items.length);
     assert.ok(sorted.every(item => items.includes(item)), 'cards retain the original equipment objects and IDs');
-    for (let index = 1; index < sorted.length; index++) assert.ok(direction * (value(sorted[index]) - value(sorted[index - 1])) >= -1e-12, `${key} order at ${index}`);
+    for (let index = 1; index < sorted.length; index++) {
+      const difference = value(sorted[index]) - value(sorted[index - 1]);
+      assert.ok(direction * difference >= -1e-12, `${key} order at ${index}`);
+      if (difference === 0) assert.ok(sorted[index].shopRank > sorted[index - 1].shopRank, 'equal stats retain progression order');
+    }
     return sorted;
   };
-  assert.equal(assertOrder(weapons, 'grip', item => item.grip, -1)[0].id, 10);
+  assertOrder(weapons, 'grip', item => item.grip, -1);
   assertOrder(weapons, 'elasticity', item => item.elasticity, -1);
   assertOrder(BOWS.filter(item => item.weaponType === 'gun'), 'elasticity', item => item.power, -1);
-  assert.equal(assertOrder(ARROWS, 'wind', getWindResponse, 1)[0].id, 11);
-  assert.equal(assertOrder(ARROWS, 'stability', item => item.fletching.stability, -1)[0].id, 10);
-  assert.equal(assertOrder(ARROWS, 'tip-light', item => item.tipMass, 1)[0].id, 4);
-  assert.equal(assertOrder(ARROWS, 'tip-heavy', item => item.tipMass, -1)[0].id, 8);
+  assertOrder(ARROWS, 'wind', getWindResponse, 1);
+  assertOrder(ARROWS, 'stability', item => item.fletching.stability, -1);
+  assertOrder(ARROWS, 'tip-light', item => item.tipMass, 1);
+  assertOrder(ARROWS, 'tip-heavy', item => item.tipMass, -1);
   assert.deepEqual(sortEquipment(weapons, 'unknown').map(item => item.id), sortEquipment(weapons).map(item => item.id));
   assert.deepEqual(weapons.map(item => item.id), weaponIds);
   assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 25 }, (_, id) => id));
@@ -428,22 +442,109 @@ test('all twenty main weapon tiers progressively extend the steady opportunity f
   assert.ok(BOWS.filter(item => item.weaponType === 'gun').every(item => item.steadyDuration === .5), 'the event guns retain their separate aiming rules');
 });
 
-test('ten crossbows launch faster but travel less far than bows and upper weapons accept bound scopes', () => {
+test('all main weapon upgrades preserve speed and range with bounded gains, including the first crossbow', () => {
   assert.equal(BOWS.filter(bow => bow.weaponType === 'bow').length, 10);
   const crossbows = BOWS.filter(bow => bow.weaponType === 'crossbow');
   assert.equal(crossbows.length, 10);
   assert.ok(crossbows.every(bow => bow.name.includes('석궁')));
   assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), [3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24]);
   assert.ok(BOWS.filter(bow => bow.scopeCompatible).every(bow => bow.scopePrice > 0));
-  for (const arrow of ARROWS) for (const pitch of [.15, .30, .55]) {
-    const normal = launchArrow({ bow: BOWS[9], arrow, pitch });
-    const normalRange = stepArrow(normal, 8, emptyRange).point.z;
-    for (const bow of crossbows) {
-      const bolt = launchArrow({ bow, arrow, pitch });
-      const result = stepArrow(bolt, 8, emptyRange);
-      assert.ok(bolt.speed > normal.speed, 'crossbow leaves the weapon faster with the same arrow');
+  const weapons = sortEquipment(BOWS.filter(bow => bow.weaponType !== 'gun'));
+  for (const item of ARROWS) for (const charge of [.5, 1]) for (const pitch of [.15, .30, .55]) {
+    // Compare the shared flight model; bounce and guidance have separate tests.
+    const arrow = { ...item, ability: null };
+    let previous = null;
+    for (const bow of weapons) {
+      const shot = launchArrow({ bow, arrow, pitch, charge, velocityBias: 0 });
+      const result = stepArrow(shot, 8, emptyRange);
       assert.equal(result.type, 'ground');
-      assert.ok(result.point.z < normalRange, 'extra crossbow drag limits range at normal arc angles');
+      if (previous) {
+        const label = `weapon ${previous.id} → ${bow.id}, arrow ${item.id}, charge ${charge}, pitch ${pitch}`;
+        assert.ok(shot.speed >= previous.speed - 1e-8, `${label} keeps launch speed`);
+        assert.ok(shot.speed <= previous.speed * 1.07, `${label} adds at most 7% launch speed`);
+        assert.ok(result.point.z >= previous.range - 1e-8, `${label} keeps actual ground range`);
+        assert.ok(result.point.z <= previous.range * 1.15, `${label} adds at most 15% ground range`);
+        close(shot.dragRate, previous.dragRate);
+      }
+      previous = { id: bow.id, speed: shot.speed, range: result.point.z, dragRate: shot.dragRate };
+    }
+  }
+});
+
+test('main weapon upgrades reduce actual sway and wind drift without losing forward speed', () => {
+  const weapons = sortEquipment(BOWS.filter(bow => bow.weaponType !== 'gun'));
+  let previousSway = Infinity;
+  for (const bow of weapons) {
+    const sway = createSway(), random = seed(137);
+    let sum = 0;
+    for (let frame = 0; frame < 360; frame++) {
+      stepSway(sway, 1 / 60, bow, frame / 60, random);
+      sum += sway.x ** 2 + sway.y ** 2;
+    }
+    assert.ok(sum <= previousSway + 1e-12, `${bow.name} must not reintroduce aim motion`);
+    previousSway = sum;
+  }
+  const range = { ...emptyRange, distance: 20, radius: 100, wind: 1.3 };
+  for (const item of ARROWS) for (const charge of [.5, 1]) {
+    let previous = null;
+    for (const bow of weapons) {
+      const shot = launchArrow({ bow, arrow: { ...item, ability: null }, pitch: .3, charge, velocityBias: 0 });
+      const result = stepArrow(shot, 8, range);
+      assert.equal(result.type, 'hit');
+      assert.ok(result.point.x > 0, 'wind remains part of every trajectory');
+      if (previous) {
+        assert.ok(result.flightTime <= previous.flightTime + 1e-8, `${bow.name} reaches the same plane no later`);
+        assert.ok(result.point.x <= previous.drift + 1e-8, `${bow.name} never increases wind drift`);
+        assert.ok(shot.velocity.z >= previous.forwardSpeed - 1e-8, `${bow.name} retains downrange speed`);
+      }
+      previous = { flightTime: result.flightTime, drift: result.point.x, forwardSpeed: shot.velocity.z };
+    }
+  }
+});
+
+test('arrow ranks balance point mass and gradually retain or improve all base flight stats', () => {
+  const arrows = sortEquipment(ARROWS);
+  for (const arrow of arrows) {
+    assert.equal(getArrowMass(arrow), REFERENCE_ARROW_MASS, `${arrow.name} balances its point with its shaft`);
+    assert.ok(arrow.shaftMass > 0);
+  }
+  for (let index = 1; index < arrows.length; index++) {
+    const before = arrows[index - 1].fletching, after = arrows[index].fletching;
+    const stabilityGain = after.stability - before.stability;
+    const windGain = before.windArea - after.windArea, dragGain = before.drag - after.drag;
+    assert.ok(stabilityGain >= 0 && stabilityGain <= 10);
+    assert.ok(windGain >= -1e-12 && windGain <= .15 + 1e-12);
+    assert.ok(dragGain >= -1e-12 && dragGain <= .02 + 1e-12);
+    if (!arrows[index].ability) assert.ok(stabilityGain > 0 || windGain > 0 || dragGain > 0, 'each ordinary upgrade improves at least one stat');
+    else assert.deepEqual([after.stability, after.windArea, after.drag], [before.stability, before.windArea, before.drag], 'special abilities retain the strongest ordinary base flight');
+  }
+});
+
+test('arrow upgrades narrow native speed spread and retain actual range while reducing wind drift', () => {
+  const arrows = sortEquipment(ARROWS), bows = [BOWS[0], BOWS[3], BOWS[13], BOWS[15], BOWS[19]];
+  for (const bow of bows) for (const charge of [.5, 1]) for (const pitch of [.15, .30, .55]) {
+    let previous = null;
+    for (const item of arrows) {
+      const arrow = { ...item, ability: null }, params = { bow, arrow, charge, pitch, velocityBias: 0 };
+      const shot = launchArrow(params), low = getSpeed({ ...params, velocityBias: -1 }), high = getSpeed({ ...params, velocityBias: 1 });
+      const result = stepArrow(shot, 8, emptyRange);
+      assert.equal(result.type, 'ground');
+      const windShot = launchArrow({ ...params, pitch: .3 });
+      const windy = stepArrow(windShot, 8, { ...emptyRange, distance: 20, radius: 100, wind: 1.3 });
+      assert.equal(windy.type, 'hit');
+      if (previous) {
+        const label = `arrow ${previous.id} → ${item.id} with ${bow.name}, charge ${charge}, pitch ${pitch}`;
+        close(shot.speed, previous.speed);
+        assert.ok(low >= previous.low - 1e-8 && high <= previous.high + 1e-8, `${label} narrows the random speed envelope`);
+        assert.ok(previous.high - previous.low - (high - low) <= shot.speed * .04 + 1e-8, `${label} improves spread by at most four percent of nominal speed`);
+        assert.ok(result.point.z >= previous.range - 1e-8, `${label} retains ground range`);
+        assert.ok(result.point.z <= previous.range * 1.15, `${label} adds at most 15% ground range`);
+        assert.ok(windy.point.x <= previous.drift + 1e-8, `${label} retains wind resistance`);
+        assert.ok(windy.flightTime <= previous.flightTime + 1e-8, `${label} reaches the same plane no later`);
+        assert.ok(windShot.velocity.z >= previous.forwardSpeed - 1e-8, `${label} retains downrange speed`);
+      }
+      previous = { id: item.id, speed: shot.speed, low, high, range: result.point.z, drift: windy.point.x,
+        flightTime: windy.flightTime, forwardSpeed: windShot.velocity.z };
     }
   }
 });
@@ -461,6 +562,7 @@ test('only rare crossbows launch three distinct arrows and better tiers tighten 
   for (const bow of rare) {
     const shots = launchVolley({ ...params, bow });
     assert.equal(shots.length, 3);
+    assert.deepEqual(shots[0].velocity, launchArrow({ ...params, bow }).velocity, 'adding a burst preserves the aimed central shot');
     assert.deepEqual(shots.map(shot => shot.launchDelay), [0, bow.burstInterval, bow.burstInterval * 2]);
     assert.deepEqual(shots.map(shot => shot.velocity), launchVolley({ ...params, bow }).map(shot => shot.velocity));
     const offsets = shots.map(shot => ({
@@ -489,9 +591,9 @@ test('five guns fire at exactly twice the actual maximum archery speed regardles
   assert.equal(MAX_MAIN_PROJECTILE_SPEED, Math.max(...mainSpeeds));
   assert.equal(BULLET_SPEED, Math.max(...mainSpeeds) * 2);
   assert.equal(guns.length, 5);
-  assert.deepEqual(guns.map(gun => gun.magazineSize), [2, 2, 4, 4, 10]);
-  assert.deepEqual(guns.map(gun => gun.reloadSeconds), [3, 1.3, 3.2, 1.5, 2.8]);
-  assert.deepEqual(guns.map(gun => gun.reloadLabel), ['느림', '빠름', '느림', '빠름', '보통']);
+  assert.deepEqual(guns.map(gun => gun.magazineSize), [2, 4, 6, 8, 10]);
+  assert.deepEqual(guns.map(gun => gun.reloadSeconds), [3, 2.5, 2, 1.5, 1]);
+  assert.deepEqual(guns.map(gun => gun.reloadLabel), ['느림', '보통', '보통', '빠름', '빠름']);
   for (const gun of guns) {
     assert.ok(gun.power > 0 && !Object.hasOwn(gun, 'elasticity'));
     assert.equal(gun.muzzleSpeed, BULLET_SPEED);assert.equal(gun.speed, BULLET_SPEED);assert.equal(gun.ammo.variance, 0);
@@ -514,19 +616,47 @@ test('five guns fire at exactly twice the actual maximum archery speed regardles
   assert.equal(launchArrow({ bow: BOWS[0] }).projectileType, 'arrow');
 });
 
+test('event gun upgrades retain aiming, ammunition and reload performance with gradually better ballistics', () => {
+  const guns = sortEquipment(BOWS.filter(weapon => weapon.weaponType === 'gun'));
+  for (let index = 1; index < guns.length; index++) {
+    const before = guns[index - 1], after = guns[index];
+    for (const key of ['grip', 'power']) assert.ok(after[key] >= before[key] && after[key] <= before[key] + 10, `${after.name} gradually improves ${key}`);
+    assert.ok(after.magazineSize >= before.magazineSize && after.magazineSize <= before.magazineSize + 2, 'an upgrade adds at most two magazine rounds');
+    assert.ok(after.reloadSeconds < before.reloadSeconds && after.reloadSeconds >= before.reloadSeconds - .5, 'each step shortens the reload by at most half a second');
+    assert.ok(after.sway <= before.sway);
+  }
+  for (const distance of [10, 30, 50]) {
+    let previous = null;
+    for (const bow of guns) {
+      const shot = launchArrow({ bow, pitch: .15 });
+      const result = stepArrow(shot, 8, { ...emptyRange, distance, radius: 100, wind: 1.3 });
+      assert.equal(result.type, 'hit');
+      if (previous) {
+        assert.ok(result.flightTime <= previous.flightTime + 1e-8, `${bow.name} keeps travel time at ${distance}m`);
+        assert.ok(result.point.x <= previous.drift + 1e-8, `${bow.name} keeps wind resistance at ${distance}m`);
+        assert.ok(shot.velocity.z >= previous.forwardSpeed - 1e-8, `${bow.name} keeps downrange speed at ${distance}m`);
+        assert.ok(shot.velocity.z <= previous.forwardSpeed * 1.02, `${bow.name} adds at most 2% downrange speed at ${distance}m`);
+      }
+      previous = { flightTime: result.flightTime, drift: result.point.x, forwardSpeed: shot.velocity.z };
+    }
+  }
+});
+
 test('double-speed event bullets finish misses at the target plane while arrows keep falling', () => {
   const stage = prepareStage(createClayEvent(10), 17), time = stage.flightSeconds * 1.04 + .2;
   assert.equal(eventTargetsAt(stage, time).length, 0, 'the fixture fires in a gap between target waves');
   for (const gun of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
     const straight = launchArrow({ bow: gun, charge: 0 });
-    const result = stepArrow(straight, .25, stage, time);
+    const straightBudget = stage.distance / straight.velocity.z * 1.05;
+    const result = stepArrow(straight, straightBudget, stage, time);
     assert.equal(result.type, 'miss');
-    assert.ok(result.flightTime < .2, 'a straight event shot reaches the target distance in a fraction of a second');
+    assert.ok(result.flightTime < straightBudget && result.flightTime < .3, 'a straight event shot remains prompt with the current double-speed ammunition');
     for (const yaw of [-.48, 0, .48]) for (const pitch of [0, .58]) for (const velocityBias of [-1, 1]) {
       const shot = launchArrow({ bow: gun, charge: 0, yaw, pitch, velocityBias });
-      const missed = stepArrow(shot, .25, stage, time);
+      const budget = stage.distance / shot.velocity.z * 1.05;
+      const missed = stepArrow(shot, budget, stage, time);
       assert.equal(missed.type, 'miss');assert.equal(missed.score, 0);
-      assert.ok(missed.flightTime > 0 && missed.flightTime < .25, `${gun.name} took ${missed.flightTime}s at the aiming limits`);
+      assert.ok(missed.flightTime > 0 && missed.flightTime < budget && missed.flightTime < .4, `${gun.name} took ${missed.flightTime}s at the aiming limits`);
       close(missed.point.z, stage.distance);
       assert.equal(shot.active, false, 'missed event bullets do not linger until an eight-second timeout');
     }
@@ -631,8 +761,9 @@ test('every gun can reach individual plates or UFOs across all ten event levels'
       assert.ok(params && Math.abs(params.yaw) < .48 && params.pitch < .58);
       const result = predictTrajectory(params, stage, time).result;
       assert.equal(result.type, 'hit'); assert.equal(result.score, 10); assert.equal(result.targetCenter.passId, passId);
-      assert.ok(result.flightTime < .2, 'both plates and UFOs are reached promptly');
-      const coarse = stepArrow(launchArrow(params), .25, stage, time);
+      const shot = launchArrow(params), budget = stage.distance / shot.velocity.z * 1.05;
+      assert.ok(result.flightTime < budget && result.flightTime < .4, 'both plates and UFOs are reached within the current ammunition flight budget');
+      const coarse = stepArrow(shot, budget, stage, time);
       assert.equal(coarse.type, 'hit');assert.equal(coarse.targetCenter.passId, passId);assert.equal(coarse.score, 10);
       close(coarse.flightTime, result.flightTime);
       for (const axis of ['x', 'y', 'z']) close(coarse.point[axis], result.point[axis]);
@@ -960,15 +1091,19 @@ test('every recommended bow and crossbow can complete its assigned stage with th
       assert.ok(found.params.pitch >= -.15 && found.params.pitch <= .55 && Math.abs(found.params.yaw) <= .38);
       const shots = launchVolley({...found.params, burstSeed: seedValue});
       const results = shots.map(shot => stepArrow(shot, 8, stage, found.time + shot.launchDelay));
+      assert.ok(results.every(result => result?.type !== 'person'), 'a person blocking any burst shot invalidates the entire trigger');
       assert.ok(results.some(result => result?.type === 'hit'), 'changing the burst orientation must retain a feasible aimed hit');
     }
   }
 });
 
-test('reference grades retain usable five-shot score margins with sway, release timing and native arrow variance', () => {
-  // Distance, narrow gaps, pillars, fast tracking and fully hidden final targets
-  // exercise different failure modes without treating ideal aim as human play.
-  const examples = STAGES.filter(stage => [4, 8, 28, 36, 52, 92, 100, 104, 108, 112, 116, 120].includes(stage.id));
+test('all 120 reference goals retain real five-shot margins with sway, timing, variance and person collisions', () => {
+  // The full curriculum catches narrow moving gaps and shorter combined
+  // obstacles that a few long-distance examples would miss.
+  const adjustedGoals = new Set([52, 56, 72, 80, 84, 88, 92, 95, 96, 103, 110, 111, 112, 120]);
+  // Retain the established +10-point comparison at 50m. Near targets can
+  // already give the starter over 40 points, leaving less than 10 to improve.
+  const upgradeComparisons = new Set([108, 112, 116, 120]);
   const sample = (stage, found) => {
     let normal = 0, steady = 0;
     for (let trial = 0; trial < 96; trial++) {
@@ -980,10 +1115,11 @@ test('reference grades retain usable five-shot score margins with sway, release 
     return {normal: normal / 96, steady: steady / 96,
       fiveShots: found.params.charge >= 1 ? (normal * 4 + steady) / 96 : normal * 5 / 96};
   };
-  for (const template of examples) {
+  for (const template of STAGES) {
     const stage = prepareStage(template, 19);
-    let baseline = null;
-    if (stage.gearTier === 'upper') {
+    let baseline = null, minimumMargin = Infinity;
+    if (upgradeComparisons.has(stage.id)) {
+      assert.equal(stage.gearTier, 'upper'); assert.equal(stage.distance, 50);
       const basic = feasibleAim(stage, BOWS[0], ARROWS[0]);
       assert.ok(basic, 'equipment recommendations must not impose an artificial purchase lock');
       baseline = sample(stage, basic);
@@ -992,6 +1128,7 @@ test('reference grades retain usable five-shot score margins with sway, release 
       const found = feasibleAim(stage, BOWS[loadout.bow], ARROWS[loadout.arrow]);
       assert.ok(found);
       const result = sample(stage, found);
+      minimumMargin = Math.min(minimumMargin, result.fiveShots - stage.goal);
       assert.ok(result.fiveShots >= stage.goal,
         `${stage.id} ${loadout.family}: ${result.fiveShots.toFixed(2)} expected points supports the ${stage.goal}-point reference goal`);
       if (baseline) {
@@ -1000,5 +1137,7 @@ test('reference grades retain usable five-shot score margins with sway, release 
         assert.ok(BOWS[loadout.bow].steadyDuration > BOWS[0].steadyDuration);
       }
     }
+    if (adjustedGoals.has(stage.id)) assert.ok(minimumMargin >= 1,
+      `${stage.id}: the calibrated goal keeps at least one expected point of margin for its weaker reference (${minimumMargin.toFixed(2)} actual)`);
   }
 });

@@ -10,57 +10,48 @@ const bowSpeed = elasticity => 32 + 0.30 * clamp(elasticity, 0, 100);
 export const REFERENCE_ARROW_MASS = 24; // grams, used for bow speed comparisons
 const bow = (id, name, tag, description, grip, elasticity, color) => {
   const weaponType = id >= 10 && id < 20 ? 'crossbow' : 'bow';
-  const launchBoost = weaponType === 'crossbow' ? 1.55 : 1;
   const scopeCompatible = [3, 7, 8, 9].includes(id) || id >= 10;
   const burstTier = id >= 15 && id < 20 ? id - 15 : -1;
   return {
     id, name, tag, description, grip, elasticity, color, weaponType,
-    launchBoost, extraDragRate: [1.0, 1.35, 1.05, 1.25, 1.15, 1.25, 1.30, 1.20, 1.28, 1.30][id - 10] || 0,
+    // A new weapon family must not introduce a hidden speed or range cliff.
+    launchBoost: 1, extraDragRate: 0,
     burstCount: burstTier >= 0 ? 3 : 1,
     burstInterval: burstTier >= 0 ? [.14, .125, .11, .095, .08][burstTier] : 0,
     burstSpread: burstTier >= 0 ? [.024, .018, .012, .008, .0045][burstTier] : 0,
     grouping: burstTier >= 0 ? [35, 50, 70, 84, 96][burstTier] : 100,
     rarity: burstTier >= 0 ? '레어' : '일반',
     scopeCompatible, scopePrice: 0,
-    sway: bowSway(grip), speed: bowSpeed(elasticity) * launchBoost
+    sway: bowSway(grip), speed: bowSpeed(elasticity)
   };
 };
 const arrow = (id, name, tag, description, tipMass, wingName, windArea, drag, stability, color) => ({
-  id, name, tag, description, tipMass, shaftMass: 20, color,
+  // Balance the shaft against the point: upgrades keep the same launch mass.
+  id, name, tag, description, tipMass, shaftMass: REFERENCE_ARROW_MASS - tipMass, color,
   fletching: { name: wingName, windArea, drag, stability },
   variance: 0.20 * (1 - stability / 100),
-  windFactor: windArea * REFERENCE_ARROW_MASS / (20 + tipMass)
+  windFactor: windArea
 });
 const gun = (id, name, tag, description, price, grip, power, mass, windFactor, dragRate, color) => ({
   id, name, tag, description, price, grip, power, muzzleSpeed: 0, color, weaponType: 'gun',
   speed: 0, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
   grouping: 100, rarity: '일반', scopeCompatible: id >= 22, scopePrice: id >= 22 ? 240 : 0,
-  magazineSize: [2, 2, 4, 4, 10][id - 20],
-  reloadSeconds: [3, 1.3, 3.2, 1.5, 2.8][id - 20],
-  reloadLabel: ['느림', '빠름', '느림', '빠름', '보통'][id - 20],
+  magazineSize: [2, 4, 6, 8, 10][id - 20],
+  reloadSeconds: [3, 2.5, 2, 1.5, 1][id - 20],
+  reloadLabel: ['느림', '보통', '보통', '빠름', '빠름'][id - 20],
   ammo: { name: '기본 탄환', mass, windFactor, dragRate, variance: 0 }
 });
 
-// Shop rank is independent of permanent save IDs. Keep the physical trade-offs:
-// grip and elasticity matter for bows; bursts also gain value from grouping.
-// Arrow mass is not a quality score: compare stability, side drift and drag.
-function equipmentScore(item) {
-  if (item.fletching) {
-    const wind = item.fletching.windArea * REFERENCE_ARROW_MASS / (item.shaftMass + item.tipMass);
-    return .4 * item.fletching.stability +
-      40 * (1 - clamp(wind / 1.3, 0, 1)) +
-      20 * (1 - clamp(item.fletching.drag / .2, 0, 1));
-  }
-  if (item.weaponType === 'crossbow') {
-    return .4 * item.grip + .4 * item.elasticity + (item.burstCount > 1 ? .2 * item.grouping : 0);
-  }
-  return .5 * item.grip + .5 * (item.elasticity ?? item.power);
-}
+// Released ranks are stable: rebalancing stats must not move saved items to a
+// different price, equipment band, scope cost or steady-window duration.
+const EQUIPMENT_ORDER = Object.freeze({
+  weapon: Object.freeze([0, 4, 5, 6, 1, 2, 8, 7, 9, 3, 13, 12, 10, 14, 11, 15, 16, 17, 18, 19]),
+  arrow: Object.freeze([0, 4, 6, 1, 8, 5, 9, 2, 7, 10, 3, 11, 12, 13])
+});
 function equipmentCatalog(items, kind) {
+  const ranks = new Map(EQUIPMENT_ORDER[kind].map((id, rank) => [id, rank]));
   const ranked = items.filter(item => item.weaponType !== 'gun').slice().sort((a, b) =>
-    (kind === 'arrow' ? Number(!!a.ability) - Number(!!b.ability) || (a.ability && b.ability ? a.id - b.id : 0) : 0) ||
-    Number(a.weaponType === 'crossbow') - Number(b.weaponType === 'crossbow') ||
-    equipmentScore(a) - equipmentScore(b) || a.id - b.id);
+    (ranks.get(a.id) ?? Infinity) - (ranks.get(b.id) ?? Infinity) || a.id - b.id);
   const familyRanks = new Map();
   ranked.forEach((item, rank) => {
     item.shopRank = rank + 1;
@@ -105,48 +96,48 @@ export function sortEquipment(items, key = 'progression') {
 
 export const BOWS = equipmentCatalog([
   bow(0, '숲길 목궁', '입문', '기본 그립과 탄성으로 첫 한 발을 배워요.', 30, 40, '#a9784e'),
-  bow(1, '단풍나무 활', '안정형', '높은 그립감으로 차분하게. 탄성은 낮아 속도가 느려요.', 85, 35, '#76875a'),
-  bow(2, '바람결 활', '탄성형', '탄성이 강해 빠르게 날지만, 조준은 더 흔들려요.', 48, 80, '#598b8a'),
-  bow(3, '달빛 명궁', '균형형', '높은 그립감과 강한 탄성을 함께 갖췄어요.', 95, 95, '#c49b50'),
-  bow(4, '가죽그립 활', '그립형', '부드러운 가죽 손잡이. 약한 탄성으로 가까운 곳을 겨눠요.', 70, 38, '#ad795b'),
-  bow(5, '참나무 강궁', '강궁', '힘찬 탄성 대신 거친 그립을 다뤄야 해요.', 38, 75, '#82613f'),
-  bow(6, '여행자 단궁', '균형형', '그립과 탄성을 고르게 갖춘 가벼운 선택.', 62, 55, '#849167'),
-  bow(7, '수련용 정밀궁', '정밀형', '아주 안정적인 그립. 낮은 탄성만큼 낙차를 읽어보세요.', 96, 45, '#668c83'),
-  bow(8, '폭풍 장궁', '강궁', '매우 강한 탄성. 크게 흔들리는 조준을 잡아야 해요.', 35, 98, '#687588'),
-  bow(9, '대나무 복합궁', '균형형', '좋은 그립과 강한 대나무 탄성을 조합했어요.', 76, 83, '#9aab70'),
-  bow(10, '장인의 석궁', '정밀 석궁', '정교한 그립과 빠른 출발. 비행 중 빠르게 감속하는 근거리 석궁.', 98, 72, '#b39467'),
-  bow(11, '천둥 석궁', '고속 석궁', '한 발을 빠르게 쏘는 일반 석궁. 탄성은 높지만 감속이 커 먼 거리에는 불리해요.', 82, 100, '#7c889e'),
-  bow(12, '가죽그립 석궁', '안정 석궁', '부드러운 그립으로 한 발을 차분하게. 탄성은 조금 낮아요.', 96, 68, '#709e95'),
-  bow(13, '사냥꾼 석궁', '강성 석궁', '강한 탄성으로 한 발을 빠르게 보내요. 낮은 그립감을 다뤄야 해요.', 64, 94, '#a79679'),
-  bow(14, '은빛 정밀석궁', '정밀 석궁', '좋은 그립과 탄성을 갖춘 일반 단발 석궁.', 93, 87, '#bcafcf'),
-  bow(15, '레어 연발석궁', '레어 3연발', '3발이 넓게 흩어지는 첫 연발석궁. 3발 중 최고점으로 기록해요.', 74, 91, '#718ea2'),
-  bow(16, '레어 속사석궁', '레어 속사 3연발', '강한 탄성과 개량 레일. 3발이 조금 더 가깝게 모이지만 그립은 낮아요.', 68, 98, '#598f83'),
-  bow(17, '레어 정밀석궁', '레어 정밀 3연발', '높은 그립과 정밀한 레일로 3발을 가깝게 모아요. 탄성은 조금 낮아요.', 94, 84, '#a79679'),
-  bow(18, '레어 매눈석궁', '레어 고급 3연발', '강한 탄성과 좁은 탄착군. 빠른 3발이 작은 범위에 모여요.', 88, 96, '#b1a471'),
-  bow(19, '레어 명인석궁', '레어 명품 3연발', '안정적인 그립과 가장 좁은 탄착군. 3발은 서로 다른 가까운 지점에 꽂혀요.', 96, 100, '#bcafcf'),
+  bow(1, '단풍나무 활', '탄성형', '여행자 단궁의 그립을 유지하고 탄성을 한 단계 높였어요.', 50, 60, '#76875a'),
+  bow(2, '바람결 활', '안정형', '단풍나무 활의 탄성을 유지하고 그립을 개선했어요.', 60, 60, '#598b8a'),
+  bow(3, '달빛 명궁', '균형형', '대나무 복합궁의 탄성에 더 안정적인 그립을 더했어요.', 75, 75, '#c49b50'),
+  bow(4, '가죽그립 활', '그립형', '기본 활의 탄성은 그대로, 가죽 손잡이로 조준을 안정시켜요.', 40, 40, '#ad795b'),
+  bow(5, '참나무 강궁', '강궁', '가죽그립 활의 그립을 유지하고 탄성을 높였어요.', 40, 50, '#82613f'),
+  bow(6, '여행자 단궁', '균형형', '참나무 강궁의 탄성에 더 편안한 그립을 더했어요.', 50, 50, '#849167'),
+  bow(7, '수련용 정밀궁', '정밀형', '폭풍 장궁의 탄성을 유지하고 조준 흔들림을 줄였어요.', 70, 70, '#668c83'),
+  bow(8, '폭풍 장궁', '강궁', '바람결 활의 그립을 유지하면서 한 단계 빠르게 쏴요.', 60, 70, '#687588'),
+  bow(9, '대나무 복합궁', '탄성형', '수련용 정밀궁의 그립에 탄성을 조금 더했어요.', 70, 75, '#9aab70'),
+  bow(10, '장인의 석궁', '정밀 석궁', '가죽그립 석궁의 안정감을 유지하고 탄성을 높였어요.', 80, 85, '#b39467'),
+  bow(11, '천둥 석궁', '고속 석궁', '은빛 정밀석궁의 그립에 더 강한 탄성을 더한 단발 석궁.', 85, 90, '#7c889e'),
+  bow(12, '가죽그립 석궁', '안정 석궁', '사냥꾼 석궁의 탄성을 유지하고 그립을 한 단계 높였어요.', 80, 80, '#709e95'),
+  bow(13, '사냥꾼 석궁', '강성 석궁', '달빛 명궁의 그립을 이어받고 탄성을 조금 높인 첫 석궁.', 75, 80, '#a79679'),
+  bow(14, '은빛 정밀석궁', '정밀 석궁', '장인의 석궁보다 그립이 좋아져 더 차분하게 겨눠요.', 85, 85, '#bcafcf'),
+  bow(15, '레어 연발석궁', '레어 3연발', '천둥 석궁보다 안정적인 그립. 첫 발은 조준한 방향, 두 발은 주변으로 쏘고 최고점을 기록해요.', 90, 90, '#718ea2'),
+  bow(16, '레어 속사석궁', '레어 속사 3연발', '첫 연발석궁의 그립을 유지하고 탄성과 집탄성을 높였어요.', 90, 95, '#598f83'),
+  bow(17, '레어 정밀석궁', '레어 정밀 3연발', '속사석궁의 탄성에 더 좋은 그립과 정밀한 레일을 더했어요.', 95, 95, '#a79679'),
+  bow(18, '레어 매눈석궁', '레어 고급 3연발', '정밀석궁의 그립을 유지하고 탄성과 집탄성을 높였어요.', 95, 100, '#b1a471'),
+  bow(19, '레어 명인석궁', '레어 명품 3연발', '최고 그립과 탄성, 가장 좁은 탄착군을 갖춘 마지막 석궁.', 100, 100, '#bcafcf'),
   gun(20, '훈련용 공기총', '입문 사격총', '접시 사격용 기본 총. 본편 최고 탄속의 2배로 전용 탄환을 발사해요.', 0, 60, 40, 4, .28, .130, '#7c9a83'),
-  gun(21, '숲길 카빈', '경량 사격총', '가벼운 총과 빠른 장전. 그립이 낮아 조준이 더 흔들려요.', 950, 48, 60, 5, .22, .110, '#9a8467'),
-  gun(22, '안정형 소총', '안정 사격총', '높은 그립감으로 안정적으로 겨눠요. 전용 탄환과 고정 스코프를 사용해요.', 1250, 92, 68, 6, .16, .090, '#7b949b'),
-  gun(23, '장거리 소총', '장거리 사격총', '공기 저항이 낮은 전용 탄환. 안정형보다 그립은 낮지만 빠르게 재장전해요.', 1750, 70, 90, 7, .12, .065, '#9c8e73'),
-  gun(24, '정밀 사격총', '정밀 사격총', '높은 그립과 10발 탄창. 전용 탄환으로 먼 과녁을 정밀하게 겨눠요.', 2200, 98, 100, 8, .08, .050, '#a8b1bf')
+  gun(21, '숲길 카빈', '경량 사격총', '기본 총보다 좋은 그립과 빠른 장전. 4발 탄창으로 두 발 더 쏴요.', 950, 70, 50, 5, .22, .110, '#9a8467'),
+  gun(22, '안정형 소총', '안정 사격총', '카빈보다 안정적인 그립과 빠른 장전. 6발 탄창과 고정 스코프를 사용해요.', 1250, 80, 60, 6, .16, .090, '#7b949b'),
+  gun(23, '장거리 소총', '장거리 사격총', '안정형 소총보다 그립과 장전이 좋아지고, 탄환의 공기 저항도 줄었어요.', 1750, 90, 70, 7, .12, .065, '#9c8e73'),
+  gun(24, '정밀 사격총', '정밀 사격총', '최고 그립과 가장 빠른 장전, 10발 탄창으로 정밀하게 겨눠요.', 2200, 100, 80, 8, .08, .050, '#a8b1bf')
 ], 'weapon');
 
 export const ARROWS = equipmentCatalog([
-  arrow(0, '나무 화살', '입문', '가벼운 촉과 넓은 깃. 빠르게 출발하지만 바람을 많이 타요.', 4, '넓은 깃', 1.00, 0.140, 35, '#b28b64'),
-  arrow(1, '깃털 화살', '안정형', '무거운 촉과 큰 안정깃. 출발은 느리고, 넓은 깃은 바람을 받아요.', 8, '큰 안정깃', 1.10, 0.180, 80, '#8b9c78'),
-  arrow(2, '탄소 화살', '경량형', '가벼운 촉과 좁은 날개로 빠르게. 안정깃보다 속도 편차가 있어요.', 4, '좁은 날개', 0.50, 0.060, 65, '#71999b'),
-  arrow(3, '은빛 화살', '유선형', '무거운 촉은 천천히 출발하고, 유선형 날개는 감속과 바람 영향을 줄여요.', 10, '유선형 날개', 0.35, 0.055, 94, '#bfc8d0'),
-  arrow(4, '가벼운 연습 화살', '초경량', '가장 가벼운 촉으로 빠르게 출발해요. 가벼운 만큼 쉽게 밀려요.', 2, '작은 깃', 0.85, 0.110, 45, '#c3a474'),
-  arrow(5, '황동촉 화살', '중량형', '무거운 황동촉과 직선 깃. 출발은 느리지만 속도를 오래 유지해요.', 12, '직선 깃', 0.78, 0.100, 70, '#b99c52'),
-  arrow(6, '긴깃 화살', '안정형', '긴 깃으로 발사 속도가 일정해요. 대신 공기와 옆바람을 많이 받아요.', 6, '긴 안정깃', 1.25, 0.200, 96, '#9a9c77'),
-  arrow(7, '돌풍 화살', '저항형', '낮은 날개가 바람을 덜 받고, 비행 중 감속도 적어요.', 5, '낮은 날개', 0.40, 0.050, 73, '#709ba0'),
-  arrow(8, '철갑촉 화살', '중량형', '가장 무거운 촉. 천천히 출발하며, 삼각 깃의 저항도 고려하세요.', 14, '삼각 깃', 0.95, 0.140, 86, '#89909b'),
-  arrow(9, '비연 화살', '속도형', '작은 날개로 저항을 줄였어요. 발사 속도 편차는 가장 커요.', 3, '초소형 날개', 0.22, 0.025, 30, '#93a8b3'),
-  arrow(10, '금빛 화살', '정밀형', '정교한 곡면 날개로 일정하게 출발해요. 촉은 조금 무거워요.', 9, '곡면 날개', 0.48, 0.075, 98, '#ceb36c'),
-  arrow(11, '바람깃 화살', '저항형', '쐐기 날개가 옆바람을 가장 적게 받아요. 정밀형보다 속도 편차가 있어요.', 7, '쐐기 날개', 0.18, 0.035, 88, '#82a7a5'),
-  {...arrow(12, '탄성 화살', '특수 · 한 번 튕김', '과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 다시 날아요. 속도가 줄고, 벽에 닿거나 과녁을 지나친 뒤에는 튕기지 않아요.', 8, '탄성 안정깃', .55, .095, 85, '#be9a69'),
+  arrow(0, '나무 화살', '입문', '기본 촉과 넓은 깃. 바람과 발사 속도 편차를 익히는 첫 화살.', 4, '넓은 깃', 1.00, 0.140, 35, '#b28b64'),
+  arrow(1, '깃털 화살', '안정형', '긴깃 화살의 바람 저항을 유지하고 속도 편차를 줄였어요.', 8, '큰 안정깃', .85, .120, 55, '#8b9c78'),
+  arrow(2, '탄소 화살', '경량형', '비연 화살의 낮은 저항에 더 일정한 발사 속도를 더했어요.', 4, '좁은 날개', .55, .080, 75, '#71999b'),
+  arrow(3, '은빛 화살', '유선형', '금빛 화살의 안정성을 유지하고 바람과 감속을 더 줄였어요.', 10, '유선형 날개', .25, .040, 85, '#bfc8d0'),
+  arrow(4, '가벼운 연습 화살', '가벼운 촉', '가벼운 촉과 균형 잡힌 몸체. 기본 화살보다 속도가 일정해요.', 2, '작은 깃', 1.00, .140, 45, '#c3a474'),
+  arrow(5, '황동촉 화살', '황동촉', '철갑촉 화살의 바람 저항을 유지하고 속도를 더 일정하게 만들었어요.', 12, '직선 깃', .70, .100, 65, '#b99c52'),
+  arrow(6, '긴깃 화살', '저항형', '연습 화살의 안정성을 유지하고 바람과 공기 저항을 줄였어요.', 6, '긴 안정깃', .85, .120, 45, '#9a9c77'),
+  arrow(7, '돌풍 화살', '저항형', '탄소 화살의 안정성을 유지하며 바람과 감속을 더 줄였어요.', 5, '낮은 날개', .40, .060, 75, '#709ba0'),
+  arrow(8, '철갑촉 화살', '철갑촉', '무거운 촉에 가벼운 몸체를 맞췄어요. 깃털 화살보다 바람과 감속이 적어요.', 14, '삼각 깃', .70, .100, 55, '#89909b'),
+  arrow(9, '비연 화살', '저항형', '황동촉 화살의 안정성을 이어받고 바람과 공기 저항을 줄였어요.', 3, '초소형 날개', .55, .080, 65, '#93a8b3'),
+  arrow(10, '금빛 화살', '정밀형', '돌풍 화살의 낮은 저항에 더 정밀한 발사 속도를 더했어요.', 9, '곡면 날개', .40, .060, 85, '#ceb36c'),
+  arrow(11, '바람깃 화살', '정밀형', '은빛 화살의 낮은 바람 영향을 유지하고 속도를 가장 일정하게 만들었어요.', 7, '쐐기 날개', .25, .040, 95, '#82a7a5'),
+  {...arrow(12, '탄성 화살', '특수 · 한 번 튕김', '바람깃 화살과 같은 기본 성능. 과녁 앞 땅에서 한 번 튕기며 속도가 줄어요. 벽에 닿거나 과녁을 지나친 뒤에는 튕기지 않아요.', 8, '탄성 안정깃', .25, .040, 95, '#be9a69'),
     ability:Object.freeze({type:'bounce',label:'한 번 튕김',description:'과녁 앞 지면에서 1회 튕김 · 전진 속도 75% · 수직 반발 55%',maxBounces:1,horizontalRetention:.75,restitution:.55})},
-  {...arrow(13, '자석 화살', '특수 · 근접 유도', '실제 과녁 5m 안에서 중심 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽을 통과하지 않아요.', 10, '유도 안정깃', .40, .080, 90, '#629d98'),
+  {...arrow(13, '자석 화살', '특수 · 근접 유도', '바람깃 화살과 같은 기본 성능. 실제 과녁 5m 안에서 중심 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽을 통과하지 않아요.', 10, '유도 안정깃', .25, .040, 95, '#629d98'),
     ability:Object.freeze({type:'magnetic',label:'근접 유도',description:'실제 표적 5m 안에서 약하게 유도 · 최대 약 10° 보정 · 명중 보장 없음',radius:5,maxAcceleration:24,maxTurnRate:1,maxTurnAngle:.18,maxCorrectionSpeed:4})}
 ], 'arrow');
 
@@ -433,15 +424,25 @@ export const STAGE_GEAR_BANDS = Object.freeze([
   gearBand('starter','기본 활',1,16,{bow:[0],crossbow:[]},
     [{family:'bow',bow:0,arrow:0}],{radiusScale:1,speedScale:1}),
   gearBand('lower','하위 활·석궁',17,48,{bow:[4,5,6],crossbow:[13,12,10]},
-    [{family:'bow',bow:4,arrow:6},{family:'crossbow',bow:13,arrow:6}],
+    [{family:'bow',bow:6,arrow:5},{family:'crossbow',bow:13,arrow:5}],
     {radiusScale:1,speedScale:1,windStart:.10,windEnd:.32,goalStart:18,goalEnd:26}),
   gearBand('middle','중간 활·석궁',49,105,{bow:[1,2,8],crossbow:[14,11,15,16]},
-    [{family:'bow',bow:1,arrow:6},{family:'crossbow',bow:14,arrow:6}],
+    [{family:'bow',bow:8,arrow:2},{family:'crossbow',bow:14,arrow:2}],
     {radiusScale:.94,speedScale:1.03,windStart:.35,windEnd:.65,goalStart:26,goalEnd:30}),
   gearBand('upper','상위 활·석궁',106,120,{bow:[7,9,3],crossbow:[17,18,19]},
-    [{family:'bow',bow:3,arrow:3},{family:'crossbow',bow:19,arrow:3}],
+    [{family:'bow',bow:3,arrow:11},{family:'crossbow',bow:19,arrow:11}],
     {radiusScale:.82,speedScale:1.08,windStart:.75,windEnd:1.30,goalStart:32,goalEnd:36})
 ]);
+
+// The old score curve assumed large early grip/stability jumps. Keep difficult
+// lanes achievable with the gradual ladder, using real sway, release timing,
+// arrow variance and person collisions. Other mission goals keep their curve.
+const EQUIPMENT_GOAL_CAPS = Object.freeze({
+  52:18, 56:22, 72:26, // Small or fast animals at 50m.
+  80:24, 84:23, 88:23, 92:23, // Long moving targets behind pillars or people.
+  95:23, 96:21, 103:28, // Moving gaps and hidden targets.
+  110:30, 111:30, 112:24, 120:34 // Combined upper-grade obstacles.
+});
 
 function applyEquipmentLesson(template) {
   const band = STAGE_GEAR_BANDS.find(entry => template.id >= entry.first && template.id <= entry.last);
@@ -452,7 +453,8 @@ function applyEquipmentLesson(template) {
     ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale} : {})};
   if (band.gearTier !== 'starter') {
     adjusted.wind = signedWind(template.id,balance.windStart + (balance.windEnd - balance.windStart) * fraction);
-    adjusted.goal = Math.round(balance.goalStart + (balance.goalEnd - balance.goalStart) * fraction);
+    const baseGoal = Math.round(balance.goalStart + (balance.goalEnd - balance.goalStart) * fraction);
+    adjusted.goal = Math.min(baseGoal,EQUIPMENT_GOAL_CAPS[template.id] ?? baseGoal);
   }
   // Keep promised circular face fractions after any balance change to size.
   if (adjusted.coverageMode) adjusted.obstacles = partialCover(adjusted);
@@ -724,7 +726,6 @@ export function launchArrow(params = {}) {
     elapsed: 0, active: true, result: null, trail: [{ ...PLAYER }],
     speed, mass: bullet ? weapon.ammo.mass : getArrowMass(arrow), windFactor: bullet ? weapon.ammo.windFactor : getWindResponse(arrow),
     projectileType: bullet ? 'bullet' : 'arrow', shaftLength: bullet ? .12 : .85,
-    // Crossbow drag is an explicit short-range game balance, not a real-weapon claim.
     dragRate: bullet ? weapon.ammo.dragRate : (Math.max(0, getArrow(arrow).fletching?.drag ?? 0) + Math.max(0, weapon.extraDragRate ?? 0)) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
     lastTrailTime: 0, targetPassed: false, ability,
     bounceCount:0,bouncesRemaining:ability?.type === 'bounce' ? ability.maxBounces : 0,
@@ -739,7 +740,8 @@ export function launchVolley(params = {}) {
   const random = salt => hashUnit(mixed ^ salt);
   const rotation = random(0x243f6a88) * Math.PI * 2;
   return Array.from({ length: count }, (_, index) => {
-    const radius = count > 1 ? weapon.burstSpread * (.75 + random(Math.imul(index + 1, 0x9e3779b1)) * .25) : 0;
+    // The added burst preserves the aimed first shot; later shots add coverage.
+    const radius = index > 0 ? weapon.burstSpread * (.75 + random(Math.imul(index + 1, 0x9e3779b1)) * .25) : 0;
     const angle = rotation + index * Math.PI * 2 / 3 + (random(Math.imul(index + 1, 0x85ebca6b)) - .5) * .20;
     return {
       ...launchArrow({ ...params, yaw: (params.yaw || 0) + Math.cos(angle) * radius, pitch: (params.pitch || 0) + Math.sin(angle) * radius }),

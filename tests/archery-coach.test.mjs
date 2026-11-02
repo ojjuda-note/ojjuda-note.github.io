@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BOWS, ARROWS, STAGES, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, stepArrow, targetAt} from '../games/forest-archer/engine.mjs';
+import {BOWS, ARROWS, STAGES, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, launchVolley, stepArrow, targetAt, passersAt} from '../games/forest-archer/engine.mjs';
 import {evaluateCoachShot} from '../games/forest-archer/coach.mjs';
 
 const timing = {held: 2, steadyStart: 5, steadyDuration: .5};
@@ -75,13 +75,13 @@ test('release limits and transitions into or out of steadiness cannot give a mis
 
 test('genuine elastic and magnetic trajectories inform the cue instead of ordinary-arrow approximations', () => {
   const low = {id: 1, kind: 'target', distance: 30, radius: .55, height: .5, wind: 0, motion: {}, obstacles: [], passers: []};
-  const bouncing = {bow: 0, arrow: 12, charge: 1, yaw: 0, pitch: -.158};
+  const bouncing = {bow: 0, arrow: 12, charge: 1, yaw: 0, pitch: -.0445};
   const actual = launchArrow(bouncing);stepArrow(actual, 8, low);
-  assert.equal(actual.bounceCount, 1);assert.equal(actual.result.score, 8);
+  assert.equal(actual.bounceCount, 1);assert.equal(actual.result.score, 10);
   assert.equal(evaluateCoachShot(bouncing, low, 0, timing).ready, true);
   const withoutBounce = {...bouncing, arrow: {...ARROWS[12], ability: null}};
   assert.equal(evaluateCoachShot(withoutBounce, low, 0, timing).ready, false);
-  const magnetic = {bow: 0, arrow: 13, charge: 1, yaw: 0, pitch: .066};
+  const magnetic = centreAim(STAGES[1], 0, 0, 13);
   assert.equal(evaluateCoachShot(magnetic, STAGES[1], 0, timing).ready, true);
   const distantPillars = STAGES.find(stage => stage.coverageMode === 'pillars' && stage.distance === 50);
   const hiddenMoving = STAGES.find(stage => stage.visibleFraction === 0 && stage.motion.speed && stage.distance === 50);
@@ -93,22 +93,60 @@ test('genuine elastic and magnetic trajectories inform the cue instead of ordina
     assert.equal(predicted.nowScore, actual.result?.type === 'hit' ? actual.result.score : 0,
       'a fast prediction of the distant unguided prefix must retain the full magnetic trajectory and swept obstruction result');
   }
-  const partial = evaluateCoachShot({bow: 0, arrow: 12, charge: .225, yaw: 0, pitch: .558}, STAGES[3], 0,
-    {...timing, held: .225 * 1.25});
-  assert.equal(partial.nowScore, 10);assert.equal(partial.ready, false, 'a further tenth-second draw changes this narrow bounce opportunity');
+  const narrow = {...low, radius: .1}, partialParams = {bow: 0, arrow: 12, charge: .4, yaw: 0, pitch: .094};
+  const partialShot = launchArrow(partialParams);stepArrow(partialShot, 8, narrow);
+  assert.equal(partialShot.bounceCount, 1);assert.equal(partialShot.result.score, 10);
+  const partial = evaluateCoachShot(partialParams, narrow, 0, {...timing, held: .4 * 1.25});
+  assert.equal(partial.nowScore, 10);assert.equal(partial.laterScore, 0);
+  assert.equal(partial.ready, false, 'a further tenth-second draw changes this narrow bounce opportunity');
 });
 
-test('rare burst guidance rejects an opening that only its central trajectory can clear', () => {
+test('rare burst guidance retains a central hit when only its additional arrows strike the wall', () => {
   const stage = {...STAGES[1], radius: 3, obstacles: [
     {x: -2.03, z: 12, width: 4, height: 10, depth: .2}, {x: 2.03, z: 12, width: 4, height: 10, depth: .2}
   ]};
-  const params = centreAim(stage, 0, 15);
+  const params = {...centreAim(stage, 0, 15), burstSeed: 2468};
   assert.equal(evaluateCoachShot({...params, bow: {...BOWS[15], burstCount: 1}}, stage, 0, timing).ready, true);
+  const results = launchVolley(params).map(shot => stepArrow(shot, 8, stage, shot.launchDelay));
+  assert.deepEqual(results.map(result => [result.type, result.score]), [['hit', 10], ['obstacle', 0], ['obstacle', 0]],
+    'the real centered first arrow keeps its score when the two added arrows hit masonry');
   const burst = evaluateCoachShot(params, stage, 0, timing);
-  assert.equal(burst.ready, false);assert.equal(burst.reason, 'obstacle');assert.ok(burst.probes <= 6);
+  assert.equal(burst.ready, true);assert.equal(burst.nowScore, 10);assert.equal(burst.laterScore, 10);assert.equal(burst.probes, 2);
   const open = {...stage, obstacles: []};
   const clearBurst = evaluateCoachShot(centreAim(open, 0, 19), open, 0, timing);
   assert.equal(clearBurst.ready, true);assert.ok(clearBurst.probes <= 6);
+});
+
+test('rare burst coaching checks the actual seeded side arrows before allowing a shot past people', () => {
+  const stage = {...STAGES[1], radius: 3, obstacles: [], passers: []};
+  const params = {...centreAim(stage, 0, 15), burstSeed: 2468};
+  const side = launchVolley(params)[1], z = 12;
+  const flightTime = -Math.log1p(-side.dragRate * z / side.velocity.z) / side.dragRate;
+  const sideX = side.velocity.x * -Math.expm1(-side.dragRate * flightTime) / side.dragRate;
+  const config = {id: 0, z, width: .04, height: 10, depth: .1, passDuration: 1e6, phase: .5};
+  const person = passersAt({...stage, passers: [config]}, side.launchDelay + flightTime)[0];
+  const phaseAt = x => config.phase + (x - person.x) / (person.velocityX * config.passDuration);
+  const blocked = {...stage, passers: [{...config, phase: phaseAt(sideX)}]};
+  const results = launchVolley(params).map(shot => stepArrow(shot, 8, blocked, shot.launchDelay));
+  assert.deepEqual(results.map(result => [result.type, result.score]), [['hit', 10], ['person', 0], ['hit', 10]],
+    'a real side-arrow person collision cancels a volley whose central arrow is perfect');
+  const answer = evaluateCoachShot(params, blocked, 0, timing);
+  assert.equal(answer.ready, false);assert.equal(answer.reason, 'person');assert.equal(answer.nowScore, 10);assert.equal(answer.laterScore, 10);
+  assert.ok(answer.probes <= 6);
+  const betweenRays = {...stage, passers: [{...config, phase: phaseAt(sideX / 2)}]};
+  assert.ok(launchVolley(params).every(shot => stepArrow(shot, 8, betweenRays, shot.launchDelay).type === 'hit'));
+  const safe = evaluateCoachShot(params, betweenRays, 0, timing);
+  assert.equal(safe.ready, true);assert.equal(safe.probes, 6, 'a person between the actual rays does not suppress a valid cue');
+
+  const movingConfig = {...config, width: .01, depth: .01, passDuration: 20, phase: .5};
+  const laterPerson = passersAt({...stage, passers: [movingConfig]}, .1 + side.launchDelay + flightTime)[0];
+  movingConfig.phase += (sideX - laterPerson.x) / (laterPerson.velocityX * movingConfig.passDuration);
+  const laterBlocked = {...stage, passers: [movingConfig]};
+  const arrivals = [0, .1].map(time => launchVolley(params).map(shot => stepArrow(shot, 8, laterBlocked, time + shot.launchDelay).type));
+  assert.deepEqual(arrivals, [['hit', 'hit', 'hit'], ['hit', 'person', 'hit']],
+    'the moving person intercepts only a delayed side arrow after the reaction interval');
+  const later = evaluateCoachShot(params, laterBlocked, 0, timing);
+  assert.equal(later.ready, false);assert.equal(later.reason, 'person');assert.equal(later.probes, 5);
 });
 
 test('event targets and all five guns are excluded from coaching', () => {
