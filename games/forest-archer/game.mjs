@@ -9,7 +9,7 @@ const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), to
 // The reordered test game starts a fresh journey; old saves cannot reappear.
 const SAVE_KEY = 'forest-archer-progress-v2';
 const DRAW_LIMIT = 10;
-const AIM_SWAY_SCALE = .85;
+const AIM_SWAY_SCALE = .68;
 const STABILIZER_COST = 5;
 const CONSUMABLE_LIMIT = 1e8;
 const defaults = () => ({version:1,coins:0,clayCredits:0,stabilizers:0,bow:0,arrow:0,eventGun:20,eventBest:0,eventBestByLevel:{},eventPlays:0,mainRounds:0,ownedBows:[0,20],ownedArrows:[0],scopedBows:[],unlocked:STAGES.length,lastStage:1,best:{},sound:true,shots:0,hits:0});
