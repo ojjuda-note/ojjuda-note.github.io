@@ -114,20 +114,42 @@ export function desiredPreviewCamera(stage = {}, target = {}, baseCamera = {}, v
   const w = Math.max(1, finite(viewport.w, 1)), h = Math.max(1, finite(viewport.h, 1));
   const targetZ = Math.max(NEAR_PLANE * 2, finite(target.z, finite(stage.distance, 14)));
   const targetX = finite(target.x), targetY = finite(target.y, finite(stage.height, 2.3));
-  const radiusY = Math.max(0, finite(target.ry, finite(target.radius, finite(stage.radius, 1.25))));
+  const rim = target.kind === 'target' ? 1.055 : 1;
+  const radiusX = Math.max(0, finite(target.rx, finite(target.radius, finite(stage.radius, 1.25)))) * rim;
+  const radiusY = Math.max(0, finite(target.ry, finite(target.radius, finite(stage.radius, 1.25)))) * rim;
   const bottomY = targetY - radiusY;
-  const focal = .9 * Math.min(w * 1.08, h * 1.5);
+  let focal = .9 * Math.min(w * 1.08, h * 1.5);
+  const visibleWalls = [];
   let cameraY = 5;
   for (const wall of stage.obstacles || []) {
     if (!Number.isFinite(wall.z) || !Number.isFinite(wall.height)) continue;
     const halfDepth = Math.max(0, finite(wall.depth, .65)) / 2;
     for (const wallZ of [wall.z - halfDepth, wall.z + halfDepth]) {
       if (!(wallZ > 0 && wallZ < targetZ)) continue;
+      visibleWalls.push({z: wallZ, height: wall.height, x: finite(wall.x), halfWidth: Math.max(0, finite(wall.width)) / 2});
       const fraction = wallZ / targetZ;
       const required = (wall.height + .5 - bottomY * fraction) / (1 - fraction);
       if (Number.isFinite(required)) cameraY = Math.max(cameraY, required);
     }
   }
+  // Close cover requires a much higher camera to see its far edge. Fit the
+  // actual projected target and wall corners after raising it; otherwise the
+  // wall bases can fall below a short landscape viewport during the overview.
+  const fitPoint = (x, y, z) => {
+    const dx = x / z - targetX / targetZ;
+    const dy = (cameraY - y) / z - (cameraY - targetY) / targetZ;
+    if (Math.abs(dx) > 1e-10) focal = Math.min(focal, w * .46 / Math.abs(dx));
+    if (dy > 1e-10) focal = Math.min(focal, h * .56 / dy);
+    else if (dy < -1e-10) focal = Math.min(focal, h * .36 / -dy);
+  };
+  fitPoint(targetX - radiusX, targetY, targetZ);
+  fitPoint(targetX + radiusX, targetY, targetZ);
+  fitPoint(targetX, targetY - radiusY, targetZ);
+  fitPoint(targetX, targetY + radiusY, targetZ);
+  for (const wall of visibleWalls) for (const x of [wall.x - wall.halfWidth, wall.x + wall.halfWidth]) {
+    fitPoint(x, 0, wall.z); fitPoint(x, wall.height, wall.z);
+  }
+  focal = Math.max(.01, focal);
   return {
     ...baseCamera,
     x: 0, y: cameraY, z: 0,
