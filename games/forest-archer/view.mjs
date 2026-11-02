@@ -105,6 +105,120 @@ export function desiredFollowCamera(position, baseCamera, viewport = {}) {
   }, approach);
 }
 
+// The horizontal/depth part of a sightline through an actual wall slab. Its
+// endpoints are also where the required height over that slab is greatest.
+function wallSightInterval(camera, point, wall, margin = 0) {
+  let enter = 0, leave = 1;
+  for (const [axis, low, high] of [
+    ['x', wall.x - wall.width / 2 - margin, wall.x + wall.width / 2 + margin],
+    ['z', wall.z - wall.depth / 2, wall.z + wall.depth / 2]
+  ]) {
+    const delta = point[axis] - camera[axis];
+    if (Math.abs(delta) < 1e-10) {
+      if (camera[axis] < low || camera[axis] > high) return null;
+    } else {
+      const a = (low - camera[axis]) / delta, b = (high - camera[axis]) / delta;
+      enter = Math.max(enter, Math.min(a, b));
+      leave = Math.min(leave, Math.max(a, b));
+    }
+    if (enter > leave) return null;
+  }
+  return leave > 1e-9 && enter < 1 ? [enter, leave] : null;
+}
+
+const insideWall = (point, wall) => point.x >= wall.x - wall.width / 2 && point.x <= wall.x + wall.width / 2 &&
+  point.z >= wall.z - wall.depth / 2 && point.z <= wall.z + wall.depth / 2 && point.y >= 0 && point.y <= wall.height;
+
+/**
+ * Clear a real post-release sightline without changing any scene geometry.
+ * Usually a small rise is enough; a view through the arrow's flight line is
+ * also considered when close side cover would demand an excessive height.
+ * Apply after follow/entry interpolation, never to the player's aiming view.
+ */
+export function clearShotCamera(camera = {}, stage = {}, shot = {}, viewport = {}) {
+  const point = shot.position, velocity = shot.velocity;
+  if (!pointIsFinite(point) || !pointIsFinite(velocity) ||
+      !cameraFields.every(key => Number.isFinite(camera[key])) || point.z < 5) return camera;
+  const speed = Math.hypot(velocity.x, velocity.y, velocity.z) || 1;
+  const shaftLength = Math.max(0, finite(shot.shaftLength, .85));
+  const tail = {
+    x: point.x - velocity.x / speed * shaftLength,
+    y: point.y - velocity.y / speed * shaftLength,
+    z: point.z - velocity.z / speed * shaftLength
+  };
+  const points = [point, tail];
+  const walls = (stage.obstacles || []).filter(wall =>
+    ['x', 'z', 'width', 'height', 'depth'].every(key => Number.isFinite(wall[key])) &&
+    wall.width > 0 && wall.height > 0 && wall.depth > 0 && wall.z + wall.depth / 2 > camera.z);
+  if (!walls.length || points.some(p => p.z - camera.z < NEAR_PLANE)) return camera;
+  // The impact shaft flexes by less than .1m. Leave room for that motion, but
+  // taper the margin at a wall crossing so an almost touching point cannot
+  // demand an unbounded camera height. Embedded shaft remains truly hidden.
+  const clearance = (p, wall) => Math.min(.12, Math.max(0, p.z - wall.z - wall.depth / 2) * .25);
+  const blocked = (view, p, wall, margin = 0) => {
+    if (insideWall(p, wall)) return false;
+    const interval = wallSightInterval(view, p, wall, margin);
+    if (!interval) return false;
+    const heights = interval.map(t => view.y + (p.y - view.y) * t);
+    return Math.min(...heights) <= wall.height + margin && Math.max(...heights) >= 0;
+  };
+  if (!points.some(p => walls.some(wall => blocked(camera, p, wall, clearance(p, wall))))) return camera;
+
+  const origin = {...camera, z: Math.min(camera.z, tail.z - NEAR_PLANE - .25)};
+  const candidates = [origin.x, point.x, tail.x];
+  if (Math.abs(velocity.z) > 1e-8) candidates.push(point.x - velocity.x / velocity.z * (point.z - origin.z));
+  for (const p of points) for (const wall of walls) {
+    const margin = clearance(p, wall);
+    for (const z of [wall.z - wall.depth / 2, wall.z + wall.depth / 2]) {
+      const t = (z - origin.z) / (p.z - origin.z);
+      if (!(t > 0 && t < 1 - 1e-8)) continue;
+      for (const side of [-1, 1]) candidates.push((wall.x + side * (wall.width / 2 + margin + .02) - t * p.x) / (1 - t));
+    }
+  }
+  let best = null, cost = Infinity;
+  for (const x of candidates) {
+    if (!Number.isFinite(x) || Math.abs(x - origin.x) > 4.5) continue;
+    const candidate = {...origin, x};
+    for (const p of points) for (const wall of walls) {
+      if (insideWall(p, wall)) continue;
+      const margin = clearance(p, wall), interval = wallSightInterval(candidate, p, wall, margin);
+      if (!interval) continue;
+      for (const t of interval) {
+        const required = t < 1 - 1e-10 ? (wall.height + margin - p.y * t) / (1 - t) + .01 :
+          p.y > wall.height + margin ? -Infinity : Infinity;
+        candidate.y = Math.max(candidate.y, required);
+      }
+    }
+    // A pathological focus immediately behind/inside masonry must not throw
+    // the view into the sky. Keep the physical occlusion if no nearby view can
+    // reveal it; ordinary, unobstructed shots retain their original camera.
+    if (!Number.isFinite(candidate.y) || candidate.y - origin.y > 6 ||
+        points.some(p => walls.some(wall => blocked(candidate, p, wall)))) continue;
+    const distance = (candidate.y - origin.y) ** 2 + (candidate.x - origin.x) ** 2 * 2.25;
+    if (distance < cost) {best = candidate; cost = distance;}
+  }
+  if (!best) return camera;
+
+  // Raising a forward-facing camera alone would push the contact below the
+  // canvas. Fit the real shaft and a small area around its tip after moving it.
+  const w = Math.max(1, finite(viewport.w, 1)), h = Math.max(1, finite(viewport.h, 1));
+  const radius = Math.min(.5, Math.max(.25, finite(stage.radius, 1.25) * .2));
+  const framed = [...points,
+    {...point, x: point.x - radius}, {...point, x: point.x + radius},
+    {...point, y: point.y - radius}, {...point, y: point.y + radius}];
+  const unit = {...best, cx: 0, horizon: 0, focal: 1};
+  const projected = framed.map(p => projectPoint(p, unit));
+  const minX = Math.min(...projected.map(p => p.x)), maxX = Math.max(...projected.map(p => p.x));
+  const minY = Math.min(...projected.map(p => p.y)), maxY = Math.max(...projected.map(p => p.y));
+  const marginX = w * .10, marginY = h * .12;
+  if (maxX - minX > 1e-10) best.focal = Math.min(best.focal, (w - marginX * 2) / (maxX - minX));
+  if (maxY - minY > 1e-10) best.focal = Math.min(best.focal, (h - marginY * 2) / (maxY - minY));
+  best.focal = Math.max(.01, best.focal);
+  best.cx = Math.min(w - marginX - maxX * best.focal, Math.max(marginX - minX * best.focal, best.cx));
+  best.horizon = Math.min(h - marginY - maxY * best.focal, Math.max(marginY - minY * best.focal, best.horizon));
+  return best;
+}
+
 /**
  * Raise the real camera above the range so the entire target clears every wall.
  * The sightline to the target's bottom must clear both ends of each wall top by

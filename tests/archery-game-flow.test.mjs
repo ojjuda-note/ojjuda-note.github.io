@@ -2742,6 +2742,192 @@ function assertVisibleFlight(app) {
   assert.ok(projected.y >= 0 && projected.y <= height, `arrow y ${projected.y} is inside ${height}`);
 }
 
+// Independent slab intersection: a point being on-screen does not establish
+// that a solid wall is absent between the camera and the displayed shaft.
+function sightlineCrossesWall(camera, point, wall) {
+  let near = 0, far = 1;
+  const bounds = [
+    ['x', wall.x - wall.width / 2, wall.x + wall.width / 2],
+    ['y', wall.y || 0, (wall.y || 0) + wall.height],
+    ['z', wall.z - wall.depth / 2, wall.z + wall.depth / 2]
+  ];
+  for (const [axis, low, high] of bounds) {
+    const delta = point[axis] - camera[axis];
+    if (Math.abs(delta) < 1e-12) {
+      if (camera[axis] < low || camera[axis] > high) return false;
+    } else {
+      const first = (low - camera[axis]) / delta, last = (high - camera[axis]) / delta;
+      near = Math.max(near, Math.min(first, last));far = Math.min(far, Math.max(first, last));
+      if (near > far) return false;
+    }
+  }
+  return far >= 0 && near <= 1;
+}
+
+function assertClearDisplayedArrow(app) {
+  const { state } = app.api, replay = app.api.cinematicFrame(), shot = state.shot;
+  const time = app.api.renderTime(), target = app.engine.targetAt(state.stage, time, shot.attachment?.passId);
+  const expected = replay?.phase === 'flight' ? replay.point : shot.attachment
+    ? { x: target.x + shot.attachment.x, y: target.y + shot.attachment.y, z: target.z - .002 }
+    : shot.position;
+  const tip = app.api.sceneItems(target).find(item => item.kind === 'tip' &&
+    Math.hypot(item.point.x - expected.x, item.point.y - expected.y, item.point.z - expected.z) < 1e-8);
+  assert.ok(tip?.tail, 'the followed arrow is actually rendered with its shaft');
+  assert.ok(Object.values(app.api.camera).every(Number.isFinite));
+  for (const [name, point] of [['tip', tip.point], ['tail', tip.tail]]) {
+    const screen = app.api.project(point), { width, height } = app.viewport;
+    assert.equal(screen.visible, true, `stage ${state.stage.id} ${name} stays in front of the near plane`);
+    assert.ok(screen.x >= 0 && screen.x <= width && screen.y >= 0 && screen.y <= height,
+      `stage ${state.stage.id} ${name} (${screen.x}, ${screen.y}) fits ${width}×${height}`);
+    for (const wall of state.stage.obstacles) assert.equal(sightlineCrossesWall(app.api.camera, point, wall), false,
+      `stage ${state.stage.id} ${replay?.phase || state.mode} ${name} is hidden by the wall at ${wall.z}m`);
+  }
+  return tip;
+}
+
+function inspectFinalApproach(app, baseCamera) {
+  const { state } = app.api;
+  let checked = 0, formerlyBlocked = 0;
+  for (let frame = 0; frame < 1500 && state.mode === 'flight'; frame++) {
+    if (state.shot.position.z >= state.stage.distance - 4) {
+      const tip = assertClearDisplayedArrow(app), { width: w, height: h } = app.viewport;
+      const oldView = app.view.desiredFollowCamera(state.shot.position, baseCamera, { w, h });
+      if ([tip.point, tip.tail].some(point => state.stage.obstacles.some(wall => sightlineCrossesWall(oldView, point, wall)))) formerlyBlocked++;
+      checked++;
+    }
+    app.frames();
+  }
+  assert.equal(state.mode, 'settling');assert.ok(checked > 0, 'the real final four metres were inspected');
+  return formerlyBlocked;
+}
+
+for (const fixture of [
+  { stage: 19, bow: 6, arrow: 5 },
+  { stage: 21, bow: 6, arrow: 5, resize: true },
+  { stage: 23, bow: 6, arrow: 5 },
+  { stage: 25, bow: 6, arrow: 5, offset: { x: -.1, y: .3 }, resize: true },
+  { stage: 94, bow: 8, arrow: 2, time: 8, resize: true },
+  { stage: 23, bow: 19, arrow: 2 }
+]) test(`a real eight-point ${fixture.bow === 19 ? 'burst' : 'hit'} on wall stage ${fixture.stage} stays visible through approach and impact without changing its award`, async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, lastStage: fixture.stage,
+    ownedBows: [0, fixture.bow], bow: fixture.bow, ownedArrows: [0, fixture.arrow], arrow: fixture.arrow, sound: false });
+  const { state } = app.api;
+  app.until(() => state.mode === 'ready');
+  if (fixture.time !== undefined) state.time = fixture.time;
+  app.getElement('zoomBtn').emit('click');assert.equal(state.zoom, 2);
+  const walls = JSON.stringify(state.stage.obstacles), { pad, coords } = preciseMainDraw(app, fixture.offset || { x: -.3, y: 0 });
+  const originalCamera = { ...app.api.camera }, originalAim = { ...state.aim }, originalPan = [state.panX, state.panY];
+  pad.emit('pointerup', coords);await app.flush();
+  const formerlyBlocked = inspectFinalApproach(app, originalCamera), shot = state.shot;
+  assert.equal(shot.result.type, 'hit');assert.equal(shot.result.score, 8);assert.equal(state.cinematic, null);
+  assert.ok(formerlyBlocked > 0, 'the fixture genuinely exposes the old wall-obstructed follow view');
+  const arrows = state.volley?.shots || [shot], count = fixture.bow === 19 ? 3 : 1;
+  assert.equal(arrows.length, count);assert.ok(arrows.every(arrow => arrow.result.type === 'hit' && arrow.result.score === 8));
+  assert.equal(state.targetMarks.length, count);
+  const accounting = shotAccounting(app), physics = arrows.map(arrow => JSON.stringify({ velocity: arrow.velocity, elapsed: arrow.elapsed, result: arrow.result }));
+  const marks = JSON.stringify(state.targetMarks), firstTarget = app.engine.targetAt(state.stage, state.time);
+  assert.deepEqual(accounting, [1, 8, 1, 1, 1, 109, 10000]);
+  let heldFrames = 0;
+  while (state.mode === 'settling' && state.settle <= app.view.IMPACT_HOLD) {
+    assertClearDisplayedArrow(app);
+    if (fixture.resize && heldFrames === 4) {
+      const beforeResize = JSON.stringify({ position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result });
+      for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {
+        app.resize(width, height);assertClearDisplayedArrow(app);
+        assert.equal(JSON.stringify({ position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result }), beforeResize,
+          'resizing and camera clearance never move the resolved arrow');
+      }
+    }
+    app.frames();heldFrames++;
+  }
+  assert.ok(heldFrames >= 30, 'the whole ordinary impact hold remains visible');
+  assert.equal(JSON.stringify(state.targetMarks), marks);
+  for (const [index, arrow] of arrows.entries()) assert.equal(JSON.stringify({ velocity: arrow.velocity, elapsed: arrow.elapsed, result: arrow.result }), physics[index]);
+  assertAttachedArrows(app, arrows.map(arrow => ({ x: arrow.attachment.x, y: arrow.attachment.y })), arrows.map(arrow => arrow.velocity));
+  if (fixture.stage === 94) {
+    const movedTarget = app.engine.targetAt(state.stage, state.time);
+    assert.ok(Math.abs(movedTarget.x - firstTarget.x) > 1e-4, 'the obscured target actually moved during the hold');
+    assert.ok(Math.abs(shot.position.x - movedTarget.x - shot.attachment.x) < 1e-9);
+  }
+  if (fixture.resize) {
+    assert.equal(app.getElement('gameCanvas').dataset.camera, 'return');
+    const beforeResize = JSON.stringify({ position: shot.position, elapsed: shot.elapsed, settle: state.settle });
+    for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {
+      app.resize(width, height);
+      assert.ok(Object.values(app.api.camera).every(Number.isFinite));
+      assert.equal(JSON.stringify({ position: shot.position, elapsed: shot.elapsed, settle: state.settle }), beforeResize,
+        'resizing the return view preserves its physics and presentation clocks');
+    }
+  }
+  app.api.onImpact();app.api.onImpact();app.until(() => state.mode === 'ready');
+  assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.targetMarks.length, count);
+  assert.deepEqual({ ...app.api.camera }, originalCamera);assert.deepEqual({ ...state.aim }, originalAim);
+  assert.deepEqual([state.panX, state.panY], originalPan);assert.equal(state.zoom, 2);
+  assert.equal(JSON.stringify(state.stage.obstacles), walls, 'the walls retain their real positions and dimensions');
+  assert.equal(app.getElement('flightBadge').classList.contains('hidden'), true);
+});
+
+for (const reducedMotion of [false, true]) test(`a wall-stage bullseye keeps its real shaft visible with reduced motion ${reducedMotion} and restores the exact aim`, async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, lastStage: 26,
+    ownedBows: [0, 8], bow: 8, ownedArrows: [0, 2], arrow: 2, sound: false }, { reducedMotion });
+  const { state } = app.api;
+  app.until(() => state.mode === 'ready');app.getElement('zoomBtn').emit('click');
+  const { pad, coords } = preciseMainDraw(app), originalCamera = { ...app.api.camera }, originalAim = { ...state.aim };
+  const originalPan = [state.panX, state.panY], walls = JSON.stringify(state.stage.obstacles);
+  pad.emit('pointerup', coords);await app.flush();inspectFinalApproach(app, originalCamera);
+  const shot = state.shot, replay = state.cinematic, accounting = shotAccounting(app);
+  assert.equal(shot.result.score, 10);assert.ok(replay);assert.equal(replay.reducedMotion, reducedMotion);
+  assert.equal(replay.flightDuration === 0, reducedMotion);
+  assert.deepEqual(accounting, [1, 10, 1, 1, 1, 110, 10000]);
+  const worldTime = state.time, physics = JSON.stringify({ position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result });
+  const phases = new Set();let shownFrames = 0;
+  while (state.mode === 'settling' && app.api.cinematicFrame()?.phase !== 'return') {
+    const frame = app.api.cinematicFrame();phases.add(frame.phase);assertClearDisplayedArrow(app);
+    if (shownFrames === 8) {
+      for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {
+        app.resize(width, height);assertClearDisplayedArrow(app);
+        assert.equal(JSON.stringify({ position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result }), physics);
+      }
+    }
+    app.frames();shownFrames++;
+  }
+  assert.ok(shownFrames >= (reducedMotion ? 20 : 70));
+  assert.equal(phases.has('flight'), !reducedMotion);assert.ok(phases.has('impact'));
+  assert.equal(state.time, worldTime);assert.equal(JSON.stringify({ position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result }), physics);
+  for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {
+    app.resize(width, height);assert.ok(Object.values(app.api.camera).every(Number.isFinite));
+    assert.equal(state.time, worldTime);assert.equal(JSON.stringify({ position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result }), physics);
+  }
+  app.api.onImpact();assert.equal(state.cinematic, replay);app.until(() => state.mode === 'ready');
+  assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.targetMarks.length, 1);assert.equal(state.cinematic, null);
+  assert.deepEqual({ ...app.api.camera }, originalCamera);assert.deepEqual({ ...state.aim }, originalAim);
+  assert.deepEqual([state.panX, state.panY], originalPan);assert.equal(state.zoom, 2);
+  assert.equal(JSON.stringify(state.stage.obstacles), walls);
+});
+
+test('real wall and person collisions keep the ordinary failure camera and never reveal or award a target hit', async () => {
+  for (const fixture of [{ stage: 95, result: 'obstacle' }, { stage: 110, time: 5, result: 'person' }]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, lastStage: fixture.stage,
+      ownedBows: [0, 8], bow: 8, ownedArrows: [0, 2], arrow: 2, sound: false });
+    const { state } = app.api;
+    app.until(() => state.mode === 'ready');if (fixture.time !== undefined) state.time = fixture.time;
+    const { pad, coords } = preciseMainDraw(app), baseCamera = { ...app.api.camera }, aim = { ...state.aim };
+    pad.emit('pointerup', coords);await app.flush();app.until(() => state.mode === 'settling');
+    assert.equal(state.shot.result.type, fixture.result);assert.equal(state.cinematic, null);
+    assert.equal(state.targetMarks.length, 0);assert.equal(state.shot.attachment, undefined);
+    assert.equal(state.stuck.length, fixture.result === 'obstacle' ? 1 : 0);
+    assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 10000]);
+    app.resize(1000, 600);
+    assert.deepEqual({ ...app.api.camera }, { ...app.view.desiredFollowCamera(state.shot.position, baseCamera, { w: 1000, h: 600 }) },
+      'a blocked shot retains the actual failure location instead of a camera intended to expose a successful hit');
+    const physics = JSON.stringify({ position: state.shot.position, velocity: state.shot.velocity, elapsed: state.shot.elapsed, result: state.shot.result });
+    app.api.onImpact();app.api.onImpact();app.until(() => state.mode === 'ready');
+    assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 10000]);assert.equal(state.targetMarks.length, 0);
+    assert.equal(JSON.stringify({ position: state.shot.position, velocity: state.shot.velocity, elapsed: state.shot.elapsed, result: state.shot.result }), physics);
+    assert.deepEqual({ ...app.api.camera }, baseCamera);assert.deepEqual({ ...state.aim }, aim);
+  }
+});
+
 for (const outcome of ['hit', 'ground']) {
   test(`main view follows a ${outcome}, holds its landing, then restores the saved aim and zoom`, async () => {
     const app = await appHarness();
