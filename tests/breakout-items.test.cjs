@@ -6,15 +6,17 @@ const source=original.replace('    return game;',`    game.inspect=()=>({balls,b
     game.previewStage=stageBricks;game.testStage=n=>{level=n;fillBricks();newTurn();};
     return game;`);
 assert.notEqual(source,original);
-const ROLLS={two:.04,ten:.125,pierce:.21,wide:.3,slow:.44,shrink:.6,fast:.9};
-const BOX_GROUP={two:'white',ten:'white',pierce:'white',wide:'yellow',slow:'yellow',shrink:'black',fast:'black'};
+const ROLLS={two:.04,ten:.125,pierce:.21,wide:.3,slow:.44,shrink:.6,fast:.75,single:.95};
+const BOX_GROUP={two:'white',ten:'white',pierce:'white',wide:'yellow',slow:'yellow',shrink:'black',fast:'black',single:'black'};
+const fallSpeed=kind=>BOX_GROUP[kind]==='black'?87.5:125;
 const STEP=1/240;
 const near=(actual,expected,message,tolerance=.0001)=>assert.ok(Math.abs(actual-expected)<tolerance,`${message}: ${actual} vs ${expected}`);
 function fixture({speed='normal'}={}){
   const randomValues=[],math=Object.create(Math),scores=[],ends=[],clears=[],sounds=[];
   math.random=()=>randomValues.shift()??.99;
   const context={window:{OjjudaGameControls:{get:()=>({speed})}},Math:math};vm.runInNewContext(source,context);
-  const game=context.window.OjjudaBreakoutGame.create({setScore:v=>scores.push(v),end:v=>ends.push(v),stageClear:v=>clears.push(v),sound:Object.fromEntries(['tap','hit','bonus','bad'].map(kind=>[kind,()=>sounds.push(kind)]))});
+  const api={setScore:v=>scores.push(v),end:v=>ends.push(v),stageClear:v=>clears.push(v),sound:Object.fromEntries(['tap','hit','bonus','bad'].map(kind=>[kind,()=>sounds.push(kind)]))};
+  let game=context.window.OjjudaBreakoutGame.create(api);
   const state=()=>game.inspect();
   function advance(seconds){const n=Math.ceil(seconds*240);for(let i=0;i<n;i++)game.update(seconds/n);}
   function launch(){randomValues.push(.5);game.onKey(' ');}
@@ -28,7 +30,9 @@ function fixture({speed='normal'}={}){
   }
   function catchItem(item){park();game.onMove(item.x);item.y=state().paddle.y-10;game.update(1/240);assert.ok(!state().drops.includes(item));}
   function missAll(){for(const ball of state().balls)ball.y=565;game.update(1/240);}
-  return{game,state,advance,launch,park,hit,catchItem,missAll,scores,ends,clears,sounds,randomValues};
+  function bounce(ball){park();game.onMove(180);const s=state();Object.assign(ball,{x:190,y:s.paddle.y-ball.r-.1,vx:0,vy:s.speed});game.update(STEP);assert.ok(ball.vy<0,'the selected ball really rebounds from the paddle');}
+  function restart(){game.destroy();game=context.window.OjjudaBreakoutGame.create(api);}
+  return{get game(){return game;},state,advance,launch,park,hit,catchItem,missAll,bounce,restart,scores,ends,clears,sounds,randomValues};
 }
 {
   const f=fixture(),item=f.hit('two'),startY=item.y;
@@ -76,6 +80,62 @@ function fixture({speed='normal'}={}){
   }
   const labels=[];f.game.draw(new Proxy({},{get:(_,name)=>(...args)=>{if(name==='fillText')labels.push(args[0]);},set:()=>true}));
   assert.ok(labels.includes('공 10배 · 최대 100개'),'the capped tenfold result is explained after collection');
+}
+{
+  const f=fixture();f.catchItem(f.hit('pierce'));f.catchItem(f.hit('two'));f.catchItem(f.hit('two'));
+  const [chosen,first,second,last]=f.state().balls;
+  f.state().balls.splice(0,4,first,chosen,second,last);
+  f.bounce(second);f.bounce(last);f.bounce(chosen);
+  assert.equal(chosen.pierceBounces,1,'one real paddle contact leaves one piercing bounce');
+  const item=f.hit('single'),s=f.state();
+  assert.equal(s.balls.length,4,'a falling single-ball box cannot remove balls before collection');
+  Object.assign(chosen,{x:210,y:340,vx:-.6*s.speed,vy:-.8*s.speed});
+  const before={x:chosen.x,y:chosen.y,vx:chosen.vx,vy:chosen.vy,speed:s.speed,lives:s.lives,score:s.score};
+  f.game.onMove(item.x);item.y=s.paddle.y-10;f.game.update(STEP);
+  const after=f.state(),ratio=(before.speed+2*STEP)/before.speed;
+  assert.equal(after.balls.length,1);assert.strictEqual(after.balls[0],chosen,'single keeps the latest paddle contact, independent of array position');
+  near(chosen.vx,before.vx*ratio,'single preserves horizontal motion with only normal frame acceleration');
+  near(chosen.vy,before.vy*ratio,'single preserves vertical motion with only normal frame acceleration');
+  near(chosen.x,before.x+chosen.vx*STEP,'single does not teleport the surviving ball');
+  near(chosen.y,before.y+chosen.vy*STEP,'single preserves the surviving ball’s progress');
+  assert.equal(chosen.piercing,true);assert.equal(chosen.pierceBounces,1,'single retains the selected ball’s piercing duration');
+  assert.equal(after.lives,before.lives);assert.equal(after.score,before.score);assert.equal(after.waiting,false);
+  assert.equal(f.sounds.at(-1),'bad','the black single-ball pickup has the harmful sound');
+}
+{
+  const f=fixture();f.catchItem(f.hit('two'));f.catchItem(f.hit('two'));
+  const [,latest,previous,older]=f.state().balls;f.bounce(older);f.bounce(previous);f.bounce(latest);
+  f.park();latest.y=565;f.game.update(STEP);
+  assert.equal(f.state().balls.includes(latest),false);assert.equal(f.state().lives,3);
+  f.catchItem(f.hit('single'));
+  assert.equal(f.state().balls.length,1);assert.strictEqual(f.state().balls[0],previous,'when the latest ball is lost, the most recent living paddle contact survives');
+}
+{
+  const f=fixture();f.catchItem(f.hit('ten'));f.catchItem(f.hit('ten'));
+  const originalBalls=f.state().balls.slice();assert.equal(originalBalls.length,100);
+  f.catchItem(f.hit('single'));
+  assert.equal(f.state().balls.length,1);assert.ok(originalBalls.includes(f.state().balls[0]),'before any paddle bounce single preserves an existing ball, including at the hundred-ball cap');
+  const only=f.state().balls[0];f.catchItem(f.hit('single'));
+  assert.equal(f.state().balls.length,1);assert.strictEqual(f.state().balls[0],only,'collecting single with one ball keeps that ball');
+  assert.equal(f.state().lives,3);assert.equal(f.state().waiting,false);
+}
+{
+  const f=fixture();f.catchItem(f.hit('two'));f.catchItem(f.hit('two'));
+  const item=f.hit('single'),originalBalls=f.state().balls.slice();f.game.onMove(340);item.x=12;
+  for(const ball of originalBalls)Object.assign(ball,{x:180,y:380,vx:f.state().speed,vy:0});
+  f.advance((565-item.y)/87.5+.1);
+  assert.equal(f.state().drops.length,0);assert.equal(f.state().balls.length,4,'missing the single-ball box never deletes active balls');
+  assert.ok(f.state().balls.every(ball=>originalBalls.includes(ball)));assert.equal(f.state().lives,3);
+  assert.equal(f.sounds.includes('bad'),false);
+}
+{
+  const f=fixture();f.catchItem(f.hit('two'));f.catchItem(f.hit('two'));
+  const oldLatest=f.state().balls[3];f.bounce(f.state().balls[1]);f.bounce(oldLatest);
+  f.restart();assert.equal(f.state().balls[0].lastPaddleTouch,0,'a new run starts without a previous paddle contact');
+  f.catchItem(f.hit('two'));const freshLatest=f.state().balls[1];
+  f.bounce(freshLatest);assert.equal(freshLatest.lastPaddleTouch,1,'the first real paddle contact of a fresh run starts a new history in the same loaded module');
+  f.catchItem(f.hit('single'));
+  assert.equal(f.state().balls.length,1);assert.strictEqual(f.state().balls[0],freshLatest);assert.notStrictEqual(f.state().balls[0],oldLatest);
 }
 for(const piercing of [false,true]){
   const f=fixture();if(piercing)f.catchItem(f.hit('pierce'));else f.launch();
@@ -214,18 +274,18 @@ for(const piercing of [false,true]){
     return f.state().drops[0].kind;
   }
   for(let i=0;i<2400;i++)counts[dropAt(i/2400)]++;
-  assert.deepEqual(counts,{two:200,ten:200,pierce:200,wide:300,slow:300,shrink:600,fast:600},'a deterministic grid divides effects evenly inside each color group');
+  assert.deepEqual(counts,{two:200,ten:200,pierce:200,wide:300,slow:300,shrink:400,fast:400,single:400},'a deterministic grid divides effects evenly inside each color group');
   const colors={white:0,yellow:0,black:0};for(const [kind,count] of Object.entries(counts))colors[BOX_GROUP[kind]]+=count;
   assert.deepEqual(colors,{white:600,yellow:600,black:1200},'black occurs twice as often as either white or yellow');
-  for(const [boundary,before,after] of [[1/12,'two','ten'],[1/6,'ten','pierce'],[.25,'pierce','wide'],[.375,'wide','slow'],[.5,'slow','shrink'],[.75,'shrink','fast']]){
+  for(const [boundary,before,after] of [[1/12,'two','ten'],[1/6,'ten','pierce'],[.25,'pierce','wide'],[.375,'wide','slow'],[.5,'slow','shrink'],[2/3,'shrink','fast'],[5/6,'fast','single']]){
     assert.equal(dropAt(boundary-Number.EPSILON),before,'the lower side of each probability boundary selects its preceding effect');
     assert.equal(dropAt(boundary),after,'the exact probability boundary selects its next effect');
     assert.equal(dropAt(boundary+Number.EPSILON),after,'the upper side of each probability boundary selects its next effect');
   }
-  assert.equal(dropAt(0),'two');assert.equal(dropAt(1-Number.EPSILON),'fast');
+  assert.equal(dropAt(0),'two');assert.equal(dropAt(1-Number.EPSILON),'single');
 }
 
-for(const [kind,notice]of Object.entries({two:'공 2배 · 2개',ten:'공 10배 · 10개',pierce:'관통 · 판 2회',wide:'받침대 길어짐',slow:'공 속도 -10%',shrink:'받침대 짧아짐',fast:'공 속도 +10%'})){
+for(const [kind,notice]of Object.entries({two:'공 2배 · 2개',ten:'공 10배 · 10개',pierce:'관통 · 판 2회',wide:'받침대 길어짐',slow:'공 속도 -10%',shrink:'받침대 짧아짐',fast:'공 속도 +10%',single:'공 1개만 남았어요'})){
   const f=fixture(),item=f.hit(kind);
   assert.equal(f.state().balls.length,1,`${kind} cannot multiply balls before collection`);
   assert.equal(f.state().balls.some(ball=>ball.piercing),false,`${kind} cannot activate piercing before collection`);
@@ -240,11 +300,16 @@ for(const [kind,notice]of Object.entries({two:'공 2배 · 2개',ten:'공 10배 
 // These checks trigger a real brick collision and collect the resulting drop.
 // Observation stays in the fixture; the production module gains no test API.
 for(const kind of Object.keys(ROLLS)){
+  const f=fixture(),item=f.hit(kind),startY=item.y;f.park();f.advance(.1);
+  near(item.y-startY,BOX_GROUP[kind]==='black'?8.75:12.5,`${kind}: black boxes fall thirty percent slower while other colors keep their speed`);
+  assert.ok(f.state().drops.includes(item),'the measured box remains in flight before it reaches the paddle');
+}
+for(const kind of Object.keys(ROLLS)){
   const f=fixture(),item=f.hit(kind),before={width:f.state().paddle.w,speed:f.state().speed},y=item.y;
   assert.equal(before.width,80,`${kind} does not resize the catcher when the box appears`);
   f.game.onMove(340);item.x=12;
   for(const ball of f.state().balls)Object.assign(ball,{x:180,y:380,vx:before.speed,vy:0});
-  const elapsed=(565-y)/125+.1;f.advance(elapsed);
+  const elapsed=(565-y)/fallSpeed(kind)+.1;f.advance(elapsed);
   assert.equal(f.state().drops.length,0,`${kind} can be avoided by letting it fall`);
   assert.equal(f.state().balls.length,1,`${kind} cannot multiply balls when missed`);
   assert.equal(f.state().balls.some(ball=>ball.piercing),false,`${kind} cannot activate piercing when missed`);
@@ -336,4 +401,4 @@ for(const [setting,pace]of [['slow',.8],['normal',1],['fast',1.15]]){
   f.catchItem(f.hit('two'));assert.equal(f.state().balls.filter(b=>b.piercing).length,1,'new balls do not inherit the effect');
   assert.equal(f.state().balls.filter(b=>!b.piercing).every(b=>b.pierceBounces===0),true);
 }
-console.log('PASS: 100 stages; seven real falling mystery pickups; white/yellow/black boxes at exact 1:1:2 odds with hidden effects; current-count doubling and tenfold up to 100 balls; bounded center-preserving paddle sizes; ten-percent speed changes for all balls/settings; skipped pickups, run reset and stage continuity; piercing, multiball lives, acceleration, collision and teardown');
+console.log('PASS: 100 stages; eight real falling mystery pickups; white/yellow/black boxes at exact 1:1:2 odds with hidden effects and black boxes falling 30% slower; current-count doubling and tenfold up to 100 balls; single preserves the latest living paddle contact and its motion/piercing; bounded center-preserving paddle sizes; ten-percent speed changes for all balls/settings; skipped pickups, run reset and stage continuity; piercing, multiball lives, acceleration, collision and teardown');

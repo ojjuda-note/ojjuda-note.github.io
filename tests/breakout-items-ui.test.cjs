@@ -19,7 +19,7 @@ window.breakoutTest={
   const state=game.inspect(),brick=state.bricks.filter(b=>b.on&&!b.solid&&b.hp===1).at(-1),ball=state.balls[0];
   for(const b of state.balls)Object.assign(b,{x:180,y:380,vx:0,vy:-state.speed});
   Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h+5.1,vx:0,vy:-state.speed});
-  const original=Math.random,roll={two:.04,ten:.125,pierce:.21,wide:.3,slow:.44,shrink:.6,fast:.9}[kind],queue=[0,roll];
+  const original=Math.random,roll={two:.04,ten:.125,pierce:.21,wide:.3,slow:.44,shrink:.6,fast:.75,single:.95}[kind],queue=[0,roll];
   Math.random=()=>queue.shift()??.99;try{game.update(1/240)}finally{Math.random=original}
   return game.inspect().drops.at(-1);
  },
@@ -146,13 +146,17 @@ g.tab='friends';H();
    async function catchItem(kind){
     const x=await page.evaluate(kind=>breakoutTest.hit(kind).x,kind);
     await page.mouse.move(logicalX(x),logicalY(450));
-    return page.evaluate(()=>{
+    const result=await page.evaluate(()=>{
      const s=breakoutTest.current.game.inspect();for(const b of s.balls)Object.assign(b,{x:180,y:360,vx:s.speed,vy:0});
-     const item=s.drops.at(-1);breakoutTest.step(Math.max(0,(s.paddle.y-14-item.y)/125));
+     const item=s.drops.at(-1),startY=item.y,fallSpeed=['shrink','fast','single'].includes(item.kind)?87.5:125;
+     breakoutTest.step(.1);const fallDistance=item.y-startY;
+     breakoutTest.step(Math.max(0,(s.paddle.y-14-item.y)/fallSpeed));
      const before={width:s.paddle.w,speed:breakoutTest.current.game.inspect().speed};
      breakoutTest.step(1/60);const after=breakoutTest.current.game.inspect();
-     return{before,after:{width:after.paddle.w,speed:after.speed,drops:after.drops.length}};
+     return{fallDistance,before,after:{width:after.paddle.w,speed:after.speed,drops:after.drops.length}};
     });
+    assert.ok(Math.abs(result.fallDistance-(['shrink','fast','single'].includes(kind)?8.75:12.5))<.0001,`${kind}: actual falling distance matches its box color`);
+    return result;
    }
    await catchItem('two');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),2);
    await catchItem('two');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),4);
@@ -164,6 +168,18 @@ g.tab='friends';H();
    const fast=await catchItem('fast');assert.ok(Math.abs(fast.after.speed-fast.before.speed*1.1)<.05,'catching the black speed box raises the actual speed by ten percent');
    const slow=await catchItem('slow');assert.ok(Math.abs(slow.after.speed-slow.before.speed*.9)<.05,'catching a slowdown box lowers the actual speed by ten percent');
    assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus'||k==='bad').slice(-4)),['bonus','bad','bad','bonus']);checks++;
+   const survivorId=await page.evaluate(()=>{
+    const g=breakoutTest.current.game,s=g.inspect();g.onMove(180);
+    for(const index of [s.balls.length-1,2,1]){
+     for(const ball of s.balls)Object.assign(ball,{x:180,y:380,vx:0,vy:-g.inspect().speed});
+     Object.assign(s.balls[index],{x:190,y:s.paddle.y-s.balls[index].r-.1,vx:0,vy:g.inspect().speed});
+     g.update(1/240);if(s.balls[index].vy>=0)throw Error('the intended survivor did not bounce on the paddle');
+    }
+    return s.balls[1].id;
+   });
+   await catchItem('single');
+   assert.deepEqual(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.map(ball=>ball.id)),[survivorId],'the black single-ball pickup retains the latest actual paddle contact');
+   assert.equal(await page.evaluate(()=>breakoutTest.audio.at(-1)),'bad');checks++;
    const speed=await page.evaluate(()=>breakoutTest.current.game.inspect().speed);await page.evaluate(()=>breakoutTest.step(2));
    assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().speed)-speed-4)<.01);checks++;
    await page.evaluate(()=>{window.firstBreakoutRun=breakoutTest.current.game;breakoutTest.loseLife();breakoutTest.finishStage()});
