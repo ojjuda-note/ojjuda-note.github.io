@@ -197,8 +197,9 @@ function project(p){
   return projectPoint(p,camera);
 }
 function screenAim(){const a=aimAngles();return {x:camera.cx+Math.tan(a.yaw)*camera.focal,y:camera.horizon-Math.tan(a.pitch)/Math.cos(a.yaw)*camera.focal};}
-function clampAim(){
+function clampAim(pan=true){
   state.aim.yaw=clamp(state.aim.yaw,-.48,.48);state.aim.pitch=clamp(state.aim.pitch,-.22,.58);
+  if(!pan)return;
   const x=camera.cx+Math.tan(state.aim.yaw)*camera.focal,y=camera.horizon-Math.tan(state.aim.pitch)/Math.cos(state.aim.yaw)*camera.focal;
   // Keep the same world-angle range at every zoom. The view pans near an edge.
   if(x<42)state.panX+=Math.ceil((42-x)/24)*24;else if(x>w-42)state.panX-=Math.ceil((x-w+42)/24)*24;
@@ -353,22 +354,35 @@ async function submitPendingShot(retry=false){
   }else{state.ammoNotice=ammoError(result);toast(state.ammoNotice);}
   updateRound();updatePower();
 }
+function aimAtPointer(e){
+  if(!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY))return;
+  if(pointer&&pointer.x===e.clientX&&pointer.y===e.clientY)return;
+  const rect=canvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;
+  // Invert the same projection used by the reticle and launch direction. A tap
+  // starts at the touched position; it must not reuse the previous shot's aim.
+  state.aim.yaw=Math.atan((x-camera.cx)/camera.focal);
+  state.aim.pitch=Math.atan((camera.horizon-y)*Math.cos(state.aim.yaw)/camera.focal);
+  // Keep visible taps fixed in screen space. Captured drags beyond the field
+  // can still pan the view to reach the same world-angle limits at every zoom.
+  clampAim(x<0||x>w||y<0||y>h);
+  if(pointer){pointer.x=e.clientX;pointer.y=e.clientY;}
+  state.guide=null;
+}
 function onPointerDown(e){
-  if(e.button!==0||pointer)return;
-  if(!beginDraw())return;e.preventDefault();e.currentTarget.focus({preventScroll:true});pointer={id:e.pointerId,el:e.currentTarget,x:e.clientX,y:e.clientY,yaw:state.aim.yaw,pitch:state.aim.pitch};
+  if(e.button!==0||pointer||!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY))return;
+  if(!beginDraw())return;e.preventDefault();e.currentTarget.focus({preventScroll:true});
+  pointer={id:e.pointerId,el:e.currentTarget,x:NaN,y:NaN};aimAtPointer(e);
   e.currentTarget.setPointerCapture(e.pointerId);
 }
 function onPointerMove(e){
   if(!pointer||pointer.id!==e.pointerId||state.mode!=='drawing')return;
-  e.preventDefault();const sensitivity=(w<500?1.35:1.05)/camera.focal;
-  state.aim.yaw=pointer.yaw+(e.clientX-pointer.x)*sensitivity;
-  state.aim.pitch=pointer.pitch-(e.clientY-pointer.y)*sensitivity;clampAim();
+  e.preventDefault();aimAtPointer(e);
 }
 function onPointerUp(e){
   if(!pointer||pointer.id!==e.pointerId)return;
   onPointerMove(e);e.preventDefault();releaseShot();
 }
-for(const el of [canvas,$('drawPad')]){
+for(const el of [canvas]){
   el.addEventListener('pointerdown',onPointerDown);el.addEventListener('pointermove',onPointerMove);el.addEventListener('pointerup',onPointerUp);
   el.addEventListener('pointercancel',()=>cancelDraw());el.addEventListener('lostpointercapture',()=>{if(pointer)cancelDraw();});el.addEventListener('contextmenu',e=>e.preventDefault());
 }
@@ -595,7 +609,7 @@ async function retryAmmo(){
   if(result?.ok&&!state.isEvent&&!state.serverRunId&&!state.registering&&state.mode!=='finished'&&!ammo.pending){registerMainRound();await state.roundStart;}
   onAmmoChange();toast(state.ammoNotice);
 }
-function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>누른 채 움직여 조준</strong><p>아래 조준 영역이나 사격장 화면을 누르고 끌어보세요. 조준점은 크게 무작위로 흔들려요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 멈춰요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 화살은 날아가며 떨어져요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 단계가 높아질수록 바람이 강해져요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 벽 뒤 과녁은 매번 왼쪽·가운데·오른쪽의 다른 위치에 놓여요. 돌담·나무 울타리·여러 기둥이 있고, 기둥 사이에서는 과녁이 보였다 가려져요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 사람이 지나는 단계는 사이가 열릴 때 뒤의 과녁을 맞혀야 해요. 사람에게 닿으면 그 발은 실패해요. 토끼는 가까이, 사슴은 멀리 지나가고, 새는 위아래로 날아요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꿔요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉이 가벼우면 빠르게 출발하고, 무거우면 감속과 바람에 덜 밀려요. 넓은 날개는 바람을 더 받고, 좁은 날개는 덜 받아요. 활과 화살을 조합해 내 사격에 맞춰보세요. 상점은 기본 장비부터 상위 장비 순으로 배치돼 있고, 능력치별 정렬로 특성을 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발은 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁은 빠르게 출발하지만 감속이 커 사거리가 짧아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 50단계에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 열려요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 20발에 1쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알과 쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>누른 채 움직여 조준</strong><p>사격장 화면의 원하는 곳을 직접 누르고 끌어보세요. 누른 위치를 기준으로 조준점이 무작위로 흔들리고, 손을 뗄 때 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 멈춰요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 화살은 날아가며 떨어져요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 단계가 높아질수록 바람이 강해져요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 벽 뒤 과녁은 매번 왼쪽·가운데·오른쪽의 다른 위치에 놓여요. 돌담·나무 울타리·여러 기둥이 있고, 기둥 사이에서는 과녁이 보였다 가려져요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 사람이 지나는 단계는 사이가 열릴 때 뒤의 과녁을 맞혀야 해요. 사람에게 닿으면 그 발은 실패해요. 토끼는 가까이, 사슴은 멀리 지나가고, 새는 위아래로 날아요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꿔요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉이 가벼우면 빠르게 출발하고, 무거우면 감속과 바람에 덜 밀려요. 넓은 날개는 바람을 더 받고, 좁은 날개는 덜 받아요. 활과 화살을 조합해 내 사격에 맞춰보세요. 상점은 기본 장비부터 상위 장비 순으로 배치돼 있고, 능력치별 정렬로 특성을 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발은 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁은 빠르게 출발하지만 감속이 커 사거리가 짧아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 50단계에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 열려요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 20발에 1쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알과 쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow',shopWeaponFilter='all',shopSort='progression';
 const formatCoins=value=>value.toLocaleString('ko-KR');
 const statRow=(label,value)=>`<div class="item-stat"><span>${label}</span><strong>${value}</strong></div>`;
@@ -789,7 +803,6 @@ function drawReticle(){
   for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){line(p.x+dx*(radius+4),p.y+dy*(radius+4),p.x+dx*(radius+9),p.y+dy*(radius+9),'#263b2a77',2.5);line(p.x+dx*(radius+4),p.y+dy*(radius+4),p.x+dx*(radius+9),p.y+dy*(radius+9),'#fffce3e6',1.1);}
   circle(p.x,p.y,1.7,'#fffbe6','#34483188',.7);
   if(held){ctx.beginPath();ctx.arc(p.x,p.y,16,-Math.PI/2,-Math.PI/2+Math.PI*2*state.charge);ctx.strokeStyle=steady?'#caffbc':state.held>2.6?'#e8a776':'#e2c276';ctx.lineWidth=steady?3:2;ctx.stroke();}
-  if(steady){ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#294b38';ctx.strokeText('안정',p.x,p.y-25);ctx.fillStyle='#d8ffcb';ctx.fillText('안정',p.x,p.y-25);}
   ctx.restore();
 }
 function drawGuide(){
@@ -902,7 +915,7 @@ function updatePower(){
   const preparing=preparingMainRound();
   const percent=reloading?Math.round(100*(1-state.reloadRemaining/activeBow().reloadSeconds)):drawing?Math.round(state.charge*100):0;
   if(percent!==hudPercent){$('powerFill').style.width=`${percent}%`;$('powerValue').textContent=`${percent}%`;hudPercent=percent;}
-  $('drawTiming').classList.toggle('steady',steady);$('drawPad').classList.toggle('steady',steady);
+  $('drawTiming').classList.toggle('steady',steady);canvas.classList.toggle('steady',steady);
   $('steadyLabel').textContent=reloading?'탄창을 채우고 있어요':steady?`지금! ${steadySeconds}초 조준 안정`:drawing&&drawElapsed()>=state.steadyStart+state.steadyDuration?'안정 구간 끝 · 타이밍을 잡으세요':`1~10초 사이, 한 번은 ${steadySeconds}초 안정`;
   $('autoReleaseLabel').textContent=reloading?`장전 ${state.reloadRemaining.toFixed(1)}초`:drawing?`자동발사까지 ${(Math.ceil(Math.max(0,DRAW_LIMIT-drawElapsed())*10)/10).toFixed(1)}초`:state.isEvent?`탄창 ${state.magazine}/${activeBow().magazineSize}`:state.mode==='flight'&&state.shot?.automatic?'10초 · 자동발사':'최대 10초';
   if(state.isEvent){
@@ -917,14 +930,14 @@ function updatePower(){
   $('eventBtn').disabled=ammoLocked()||state.mode==='flight'||state.mode==='settling';
   const level=state.isEvent?state.stage.eventLevel:state.stage.id,limit=state.isEvent?10:STAGES.length;
   $('previousStageBtn').disabled=ammoLocked()||level<=1;$('nextStageBtn').disabled=ammoLocked()||level>=limit;$('currentStageBtn').disabled=ammoLocked();
-  $('drawPad').setAttribute('aria-disabled',reloading||ammoWait||empty||preparing||state.roundSaving?'true':'false');
+  canvas.setAttribute('aria-disabled',reloading||ammoWait||empty||preparing||state.roundSaving||!['ready','drawing'].includes(state.mode)?'true':'false');
   const fatigue=drawing&&state.held>2.6;
   $('powerFill').style.background=reloading?'#829b9d':steady?'#5f9a70':fatigue?'#c58f66':'#a4b374';
   const mode=state.mode+activeBow().id+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
   canvas.dataset.mode=state.mode;
   if(mode===hudMode)return;hudMode=mode;
-  $('drawPad').setAttribute('aria-label',`누른 채 끌어서 조준, 손을 떼면 발사. 1초에서 10초 사이에 한 번 ${steadySeconds}초간 흔들림이 멈추고, 10초가 되면 자동발사합니다. 키보드는 화살표로 조준, 스페이스를 누른 후 떼어 발사.`);
-  $('drawPad').classList.toggle('drawing',drawing);$('drawPad').classList.toggle('flying',reloading||state.mode==='flight'||state.mode==='settling'||state.mode==='preview');
+  canvas.setAttribute('aria-label',`사격장. 누른 곳을 조준하고 손을 떼면 발사. 1초에서 10초 사이에 한 번 ${steadySeconds}초간 흔들림이 멈추고, 10초가 되면 자동발사합니다. 키보드는 화살표로 조준, 스페이스를 누른 후 떼어 발사.`);
+  canvas.classList.toggle('drawing',drawing);canvas.classList.toggle('flying',reloading||state.mode==='flight'||state.mode==='settling'||state.mode==='preview');
   if(state.roundSaving){
     $('powerLabel').textContent='완료 기록 저장 중';$('controlTitle').textContent='이번 판을 계정에 기록해요';$('controlHint').textContent='5판마다 첫 달성 총알 20발을 확인합니다';
   }else if(preparing){
@@ -944,7 +957,7 @@ function updatePower(){
   }else if(state.mode==='settling'){
     $('powerLabel').textContent='다음 한 발을 준비해요';$('controlTitle').textContent='호흡을 가다듬고, 다시 한 발';$('controlHint').textContent='곧 다음 화살을 쏠 수 있어요';
   }else{
-    $('powerLabel').textContent=usingGun()?'움직이는 표적의 앞을 겨눠요':'활을 당겨보세요';$('controlTitle').textContent='누른 채 조준 · 손을 떼면 발사';$('controlHint').textContent=state.isEvent?'탄창을 비우면 자동 장전 · 접시와 UFO를 노려요':state.practiceOnly?'저장 없이 연습 중 · 계정 총알 보상 제외':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
+    $('powerLabel').textContent=usingGun()?'움직이는 표적의 앞을 겨눠요':'활을 당겨보세요';$('controlTitle').textContent='화면에서 직접 조준 · 손을 떼면 발사';$('controlHint').textContent=state.isEvent?'탄창을 비우면 자동 장전 · 접시와 UFO를 노려요':state.practiceOnly?'저장 없이 연습 중 · 계정 총알 보상 제외':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
   }
 }
 function tick(now){

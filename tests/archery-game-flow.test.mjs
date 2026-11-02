@@ -14,8 +14,8 @@ let harnessSequence = 0;
 
 async function appHarness(saved = null, ammoOptions = {}) {
   let now = 0, nextFrame = null, frameId = 0, timerId = 0;
-  let viewport = { width: 1000, height: 600 }, sceneryFrame, firstPersonFrame;
-  const timers = new Map(), canvasText = [];
+  let viewport = { width: 1000, height: 600 }, canvasOrigin = { left: 0, top: 0 }, sceneryFrame, firstPersonFrame;
+  const timers = new Map(), canvasText = [], canvasArcs = [];
   const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify(saved)]] : []);
   const noop = () => {};
   const gradient = { addColorStop: noop };
@@ -24,17 +24,27 @@ async function appHarness(saved = null, ammoOptions = {}) {
     if (key === 'createLinearGradient' || key === 'createRadialGradient') return () => gradient;
     if (key === 'measureText') return () => ({ width: 20 });
     if (key === 'fillText' || key === 'strokeText') return value => canvasText.push(String(value));
+    if (key === 'arc') return (x, y, radius) => canvasArcs.push({x, y, radius});
     return noop;
   }, set(target, key, value) { target[key] = value; return true; } });
-  let document;
+  let document, api;
   const makeElement = id => {
     const classes = new Set(), listeners = new Map(), attributes = new Map();
     const el = {
       id, tagName: 'DIV', textContent: '', innerHTML: '', style: {}, dataset: {}, width: 420, height: 180,
       classList: { add: (...values) => values.forEach(v => classes.add(v)), remove: (...values) => values.forEach(v => classes.delete(v)), contains: v => classes.has(v), toggle(v, force) { const add = force ?? !classes.has(v); add ? classes.add(v) : classes.delete(v); return add; } },
       addEventListener(type, fn) { (listeners.get(type) || listeners.set(type, []).get(type)).push(fn); },
-      emit(type, properties = {}) { const event = { button: 0, pointerId: 1, clientX: 300, clientY: 400, currentTarget: el, target: el, preventDefault: noop, ...properties }; for (const fn of listeners.get(type) || []) fn(event); },
-      getContext: () => drawing, getBoundingClientRect: () => ({ ...viewport, left: 0, top: 0 }),
+      emit(type, properties = {}) {
+        // Omitted coordinates mean a tap at the existing base aim; explicit
+        // coordinates exercise real canvas hit testing, including its offset.
+        const point = api && id === 'gameCanvas' ? {
+          clientX: canvasOrigin.left + api.camera.cx + Math.tan(api.state.aim.yaw) * api.camera.focal,
+          clientY: canvasOrigin.top + api.camera.horizon - Math.tan(api.state.aim.pitch) / Math.cos(api.state.aim.yaw) * api.camera.focal
+        } : { clientX: 300, clientY: 400 };
+        const event = { button: 0, pointerId: 1, ...point, currentTarget: el, target: el, preventDefault: noop, ...properties };
+        for (const fn of listeners.get(type) || []) fn(event);
+      },
+      getContext: () => drawing, getBoundingClientRect: () => ({ ...viewport, ...canvasOrigin }),
       setPointerCapture: noop, releasePointerCapture: noop,
       setAttribute(name, value) { attributes.set(name, String(value)); }, getAttribute(name) { return attributes.get(name) ?? null; },
       querySelectorAll: () => [], focus() { document.activeElement = el; }, closest() { return el.tagName === 'BUTTON' ? el : null; }
@@ -96,14 +106,14 @@ async function appHarness(saved = null, ammoOptions = {}) {
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
-  const api = game.namespace.testApi;
+  api = game.namespace.testApi;
   return {
-    api, engine: engine.namespace, view: view.namespace, getElement, store, document, window, canvasText, flush,
+    api, engine: engine.namespace, view: view.namespace, getElement, store, document, window, canvasText, canvasArcs, flush,
     ammo: { account, receipts, runs, requests: ammoRequests, held: heldActions, reply: replyAmmo, execute: executeAmmo, snapshot: accountSnapshot },
     get viewport() { return { ...viewport }; },
     get sceneryFrame() { return sceneryFrame; },
     get firstPersonFrame() { return firstPersonFrame; },
-    resize(width, height) { viewport = { width, height }; api.resize(); },
+    resize(width, height, origin = { left: 0, top: 0 }) { viewport = { width, height }; canvasOrigin = origin;api.resize(); },
     get now() { return now; },
     setRandom(fn) { fakeMath.random = fn; },
     advanceTo(target, { frame = true, runTimers = true } = {}) {
@@ -124,14 +134,21 @@ async function appHarness(saved = null, ammoOptions = {}) {
   };
 }
 
+function aimCoordinates(app, yaw, pitch) {
+  const camera = app.api.camera, rect = app.getElement('gameCanvas').getBoundingClientRect();
+  return {
+    clientX: rect.left + camera.cx + Math.tan(yaw) * camera.focal,
+    clientY: rect.top + camera.horizon - Math.tan(pitch) / Math.cos(yaw) * camera.focal
+  };
+}
+
 function startCenteredDraw(app) {
   const { api, engine } = app, state = api.state;
   const speed = engine.getSpeed({ charge: 1, bow: api.activeBow(), arrow: api.activeArrow(), velocityBias: 0 });
   const target = engine.targetAt(state.stage, state.time), d = target.z, dy = target.y - engine.PLAYER.y;
   const pitch = Math.atan((speed ** 2 - Math.sqrt(speed ** 4 - engine.GRAVITY * (engine.GRAVITY * d ** 2 + 2 * dy * speed ** 2))) / (engine.GRAVITY * d));
-  const sensitivity = 1.05 / api.camera.focal;
-  const coords = { clientX: 300 - state.aim.yaw / sensitivity, clientY: 400 - (pitch - state.aim.pitch) / sensitivity };
-  const pad = app.getElement('drawPad');
+  const coords = aimCoordinates(app, 0, pitch);
+  const pad = app.getElement('gameCanvas');
   pad.emit('pointerdown');
   pad.emit('pointermove', coords);
   app.frames(78);
@@ -164,7 +181,7 @@ function modalAction(app, action) {
 }
 
 async function resolvedEventShot(app, kind = 'clay') {
-  const { state } = app.api, pad = app.getElement('drawPad');
+  const { state } = app.api, pad = app.getElement('gameCanvas');
   app.until(() => state.fireCooldown === 0 && state.reloadRemaining === 0);
   const target = kind === 'miss' ? null : app.engine.eventTargetsAt(state.stage, state.time).find(item => item.kind === kind && item.active);
   if (kind !== 'miss') assert.ok(target, `an active ${kind} is available`);
@@ -225,6 +242,79 @@ test('pointer hold waits for release and pointer cancellation never consumes an 
   assert.equal(app.api.state.score, 10);
   assert.equal(app.api.progress.shots, 1);
   assert.equal(Number(app.getElement('scoreCount').textContent), 10);
+});
+
+test('canvas taps align the drawn reticle and real bullet ray at every zoom and embedded viewport offset', async () => {
+  for (const [width, height] of [[1000, 600], [390, 480], [844, 235]]) for (const zoom of [1, 2, 3]) {
+    const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
+    const origin = { left: 17, top: 83 };
+    app.resize(width, height, origin);app.api.enterEvent(1);await app.flush();
+    for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
+    assert.equal(app.api.state.zoom, zoom);
+    const canvas = app.getElement('gameCanvas'), state = app.api.state;
+    // The zoomed edge case used to shift the view again on an unmoved release.
+    const local = { x: zoom === 3 ? width - 2 : width * .61, y: height * .27 };
+    const tap = { clientX: origin.left + local.x, clientY: origin.top + local.y };
+    const beforePan = [state.panX, state.panY];
+    canvas.emit('pointerdown', tap);
+    assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);
+    app.canvasArcs.length = 0;app.frames();
+    const reticle = app.canvasArcs.filter(arc => arc.radius === 1.7).at(-1);
+    assert.ok(reticle, 'the actual canvas renderer draws its centre dot');
+    assert.ok(Math.abs(reticle.x - local.x) < 1e-9 && Math.abs(reticle.y - local.y) < 1e-9,
+      `${width}×${height} at ${zoom}×: the reticle follows the touched canvas pixel`);
+    assert.deepEqual([state.panX, state.panY], beforePan, 'a visible tap never pans away from its target');
+    canvas.emit('pointerup', tap);await app.flush();
+    const velocity = state.shot.velocity;
+    const ray = app.api.project({ x: velocity.x, y: app.engine.PLAYER.y + velocity.y, z: velocity.z });
+    assert.ok(Math.abs(ray.x - local.x) < 1e-9 && Math.abs(ray.y - local.y) < 1e-9,
+      'the real bullet leaves along the same screen ray as the rendered reticle');
+    assert.deepEqual([state.panX, state.panY], beforePan, 'an unchanged release cannot move the view');
+    assert.equal(state.shot.projectileType, 'bullet');assert.equal(state.used, 1);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, 1);
+  }
+});
+
+test('a final release coordinate is applied even without a matching pointermove and preserves sway', async () => {
+  const app = await appHarness({ version: 1, ownedBows: [0, 20], eventGun: 20, sound: false }, { hold: ['spend'] });
+  app.resize(390, 480, { left: 9, top: 74 });app.api.enterEvent(1);await app.flush();
+  const canvas = app.getElement('gameCanvas'), state = app.api.state, camera = { ...app.api.camera };
+  const down = { clientX: 9 + 180, clientY: 74 + 160 }, release = { clientX: 9 + 245, clientY: 74 + 120 };
+  canvas.emit('pointerdown', down);
+  state.sway.x = .012;state.sway.y = -.009;
+  const yaw = Math.atan((245 - camera.cx) / camera.focal);
+  const pitch = Math.atan((camera.horizon - 120) * Math.cos(yaw) / camera.focal);
+  canvas.emit('pointerup', release);await app.flush();
+  const pending = state.pendingAmmoShot.shot, velocity = pending.velocity;
+  assert.ok(Math.abs(state.aim.yaw - yaw) < 1e-12 && Math.abs(state.aim.pitch - pitch) < 1e-12);
+  assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - yaw - .012) < 1e-12);
+  assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - pitch + .009) < 1e-12,
+    'absolute touch positioning keeps the equipment sway in the real launch direction');
+  const request = app.ammo.requests.filter(item => item.action === 'spend').at(-1);
+  app.advanceTo(app.now + 500);app.ammo.reply(request);await app.flush();
+  assert.equal(state.shot, pending, 'waiting for ammo preserves the release direction');
+  canvas.emit('pointerup', release);await app.flush();
+  assert.equal(state.used, 1);assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 1);
+});
+
+test('captured canvas drags may pan but releasing at the same outside pixel does not pan or fire twice', async () => {
+  const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
+  app.resize(390, 480, { left: 11, top: 68 });app.api.enterEvent(1);await app.flush();
+  const state = app.api.state, canvas = app.getElement('gameCanvas');
+  const down = { clientX: 11 + 195, clientY: 68 + 150 }, outside = { clientX: 11 + 440, clientY: 68 + 150 };
+  canvas.emit('pointerdown', down);canvas.emit('pointermove', outside);
+  const aim = { ...state.aim }, pan = [state.panX, state.panY], camera = { ...app.api.camera };
+  assert.ok(state.panX !== 0, 'a captured drag beyond the field still reaches farther viewing angles');
+  canvas.emit('pointerup', { ...outside, pointerId: 2 });
+  assert.equal(state.mode, 'drawing');assert.equal(state.used, 0, 'another pointer cannot release this shot');
+  canvas.emit('pointerup', outside);await app.flush();
+  assert.deepEqual({ ...state.aim }, aim);assert.deepEqual([state.panX, state.panY], pan);
+  assert.deepEqual({ ...app.api.camera }, camera, 'the unchanged release does not reapply the edge pan');
+  const velocity = state.shot.velocity;
+  assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - aim.yaw) < 1e-12);
+  assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - aim.pitch) < 1e-12);
+  canvas.emit('pointerup', outside);canvas.emit('lostpointercapture');await app.flush();
+  assert.equal(state.used, 1);assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, 1);
 });
 
 test('five actual shots complete the stage, award coins and restore the next selected stage', async () => {
@@ -572,7 +662,7 @@ test('both equipment shops show independent traits and speeds for the currently 
   assert.equal(app.getElement('bowStat').textContent, `그립감 ${app.api.activeBow().grip} · 탄성 ${app.api.activeBow().elasticity}`);
   assert.equal(app.getElement('arrowStat').textContent, `촉 ${app.api.activeArrow().tipMass}g · ${app.api.activeArrow().fletching.name}`);
   app.api.closeModal();await app.flush();
-  const pad = app.getElement('drawPad');pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
+  const pad = app.getElement('gameCanvas');pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
   assert.equal(app.api.state.shot.speed.toFixed(1) + ' m/s', speed(app.api.activeBow(), app.api.activeArrow()), 'the released arrow uses the same selected equipment as the displayed speed');
 });
 
@@ -672,12 +762,14 @@ for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
     assert.ok(enlarged.x - enlarged.rx > 0 && enlarged.x + enlarged.rx < width);
     assert.ok(enlarged.y - enlarged.ry > 0 && enlarged.y + enlarged.ry < height);
     app.api.closeModal();await app.flush();
-    const pad = app.getElement('drawPad'), sensitivity = (width < 500 ? 1.35 : 1.05) / app.api.camera.focal;
-    pad.emit('pointerdown', {clientX: 150, clientY: 180});
-    pad.emit('pointermove', {clientX: 174, clientY: 168});
+    const pad = app.getElement('gameCanvas'), dragEnd = { clientX: width * .57, clientY: height * .35 };
+    const beforeDrag = { ...app.api.camera }, expectedYaw = Math.atan((dragEnd.clientX - beforeDrag.cx) / beforeDrag.focal);
+    const expectedPitch = Math.atan((beforeDrag.horizon - dragEnd.clientY) * Math.cos(expectedYaw) / beforeDrag.focal);
+    pad.emit('pointerdown', { clientX: width * .51, clientY: height * .38 });
+    pad.emit('pointermove', dragEnd);
     pad.emit('pointercancel');
-    close(state.aim.yaw, originalAim.yaw + 24 * sensitivity, 'dragging respects the magnified horizontal sensitivity');
-    close(state.aim.pitch, originalAim.pitch + 12 * sensitivity, 'dragging respects the magnified vertical sensitivity');
+    close(state.aim.yaw, expectedYaw, 'the magnified horizontal aim follows the actual canvas coordinate');
+    close(state.aim.pitch, expectedPitch, 'the magnified vertical aim follows the actual canvas coordinate');
     const aimPoint = {x: Math.tan(state.aim.yaw) * target.z, y: app.engine.PLAYER.y + Math.tan(state.aim.pitch) / Math.cos(state.aim.yaw) * target.z, z: target.z};
     const anchor = app.api.project(aimPoint), zoom = app.getElement('zoomBtn');
     for (const value of [1, 2, 3]) {
@@ -794,7 +886,7 @@ test('the separate clay event keeps guns, bullets and records independent of the
   assert.deepEqual(Array.from(app.api.progress.ownedArrows), [0, 2]);assert.deepEqual(mainProgress(), before);
   assert.equal(app.getElement('arrowStat').textContent, `탄창 ${top.magazineSize}발 · 장전 ${top.reloadSeconds}초`);
   app.api.closeModal();await app.flush();
-  const state = app.api.state, pad = app.getElement('drawPad');
+  const state = app.api.state, pad = app.getElement('gameCanvas');
   state.time = .2;pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
   assert.equal(state.shot.projectileType, 'bullet');assert.equal(state.volley, null);
   assert.equal(state.mode, 'ready', 'event shooting stays interactive while bullets fly');
@@ -945,7 +1037,7 @@ test('stabilizers halve real visual and launch sway for bows, crossbows and guns
     app.api.showStabilizers();assert.equal(app.api.useStabilizer(), true);
     assert.equal(app.api.state.sway.x, original.x);assert.equal(app.api.state.sway.y, original.y, 'consumption must not mutate the underlying random-motion process');
     assert.equal(app.api.effectiveSway().x, original.x / 2);assert.equal(app.api.effectiveSway().y, original.y / 2);
-    const pad = app.getElement('drawPad'), sequence = [.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : .8);
+    const pad = app.getElement('gameCanvas'), sequence = [.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : .8);
     pad.emit('pointerdown');
     const { state } = app.api, start = state.drawStarted + state.steadyStart * 1000, end = start + state.steadyDuration * 1000;
     app.advanceTo(state.drawStarted + 300);
@@ -971,13 +1063,13 @@ test('stabilizers halve real visual and launch sway for bows, crossbows and guns
 
 test('stabilizers never consume stock while flight, preview, results, account actions or an earlier event bullet are unresolved', async () => {
   const cases = [
-    { name: 'main arrow flight', prepare: async app => { app.getElement('drawPad').emit('pointerdown');app.getElement('drawPad').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'flight'); } },
+    { name: 'main arrow flight', prepare: async app => { app.getElement('gameCanvas').emit('pointerdown');app.getElement('gameCanvas').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'flight'); } },
     { name: 'target preview', prepare: async app => { app.api.startStage(app.engine.STAGES.find(stage => stage.obstacles.length).id);await app.flush();assert.equal(app.api.state.mode, 'preview'); } },
     { name: 'finished round', prepare: async app => { app.api.state.used = 5;app.api.finishRound();await app.flush();assert.equal(app.api.state.mode, 'finished'); } },
     { name: 'round save', hold: ['round-complete'], prepare: async app => { app.api.state.used = 5;app.api.finishRound();await app.flush();assert.equal(app.api.state.roundSaving, true); } },
     { name: 'round registration', hold: ['round-start'], prepare: async app => { assert.equal(app.api.state.registering, true); } },
-    { name: 'pending bullet debit', hold: ['spend'], prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('drawPad').emit('pointerdown');app.getElement('drawPad').emit('pointerup');await app.flush();assert.ok(app.api.state.pendingAmmoShot); } },
-    { name: 'live event bullet', prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('drawPad').emit('pointerdown');app.getElement('drawPad').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'ready');assert.ok(app.api.state.eventShots.some(shot => shot.active)); } }
+    { name: 'pending bullet debit', hold: ['spend'], prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('gameCanvas').emit('pointerdown');app.getElement('gameCanvas').emit('pointerup');await app.flush();assert.ok(app.api.state.pendingAmmoShot); } },
+    { name: 'live event bullet', prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('gameCanvas').emit('pointerdown');app.getElement('gameCanvas').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'ready');assert.ok(app.api.state.eventShots.some(shot => shot.active)); } }
   ];
   for (const { name, hold, prepare } of cases) {
     const app = await appHarness({ version: 1, stabilizers: 1, sound: false }, { hold });
@@ -1012,12 +1104,12 @@ test('all event guns hit promptly after authorization without slow motion or dup
   for (const gunId of [20, 21, 22, 23, 24]) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 21, 22, 23, 24], eventGun: gunId, sound: false }, { remaining: 20, hold: ['spend'] });
     app.api.enterEvent(10);await app.flush();
-    const state = app.api.state, engine = app.engine, pad = app.getElement('drawPad'), gun = app.api.activeBow();
+    const state = app.api.state, engine = app.engine, pad = app.getElement('gameCanvas'), gun = app.api.activeBow();
     state.stage = engine.prepareStage(engine.createClayEvent(10), 42);state.time = 1;
     const target = engine.targetAt(state.stage, state.time + state.stage.distance / gun.muzzleSpeed, 0);
-    state.aim.yaw = Math.atan2(target.x, target.z);
-    state.aim.pitch = Math.atan2(target.y - engine.PLAYER.y, Math.hypot(target.x, target.z));
-    pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
+    const screen = app.api.project(target), rect = pad.getBoundingClientRect();
+    const tap = { clientX: rect.left + screen.x, clientY: rect.top + screen.y };
+    pad.emit('pointerdown', tap);pad.emit('pointerup', tap);await app.flush();
     const request = app.ammo.requests.filter(item => item.action === 'spend').at(-1);
     assert.equal(state.mode, 'ammo-pending');assert.equal(state.eventShots.length, 0);assert.equal(state.used, 0);
     app.advanceTo(app.now + 750);
@@ -1077,7 +1169,7 @@ test('all five event guns consume their magazines, reload automatically and paus
   for (let index = 0; index < capacities.length; index++) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 21, 22, 23, 24], eventGun: 20 + index, sound: false });
     app.api.enterEvent();await app.flush();
-    const state = app.api.state, gun = app.api.activeBow(), pad = app.getElement('drawPad');
+    const state = app.api.state, gun = app.api.activeBow(), pad = app.getElement('gameCanvas');
     assert.equal(gun.magazineSize, capacities[index]);assert.equal(state.magazine, capacities[index]);
     for (let fired = 0; fired < capacities[index]; fired++) {
       app.until(() => state.fireCooldown === 0);
@@ -1114,7 +1206,7 @@ test('all five event guns consume their magazines, reload automatically and paus
 test('pending shot authorization freezes the event and commits a single bullet only after the server agrees', async () => {
   const app = await appHarness({ version: 1, ownedBows: [0, 20, 21], sound: false }, { remaining: 5, hold: ['spend'] });
   app.api.enterEvent();await app.flush();
-  const state = app.api.state, pad = app.getElement('drawPad');
+  const state = app.api.state, pad = app.getElement('gameCanvas');
   state.aim.yaw = .48;state.aim.pitch = .58; // Keep the first real bullet airborne past the .14-second firing interval.
   pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
   const first = app.ammo.requests.filter(request => request.action === 'spend').at(-1);
@@ -1139,7 +1231,7 @@ test('pending shot authorization freezes the event and commits a single bullet o
 
 test('a lost spend response retries the same receipt and an exhausted server balance never creates a projectile', async () => {
   const app = await appHarness({ version: 1, sound: false }, { remaining: 2, hold: ['spend'] });
-  app.api.enterEvent();await app.flush();const state = app.api.state, pad = app.getElement('drawPad');
+  app.api.enterEvent();await app.flush();const state = app.api.state, pad = app.getElement('gameCanvas');
   pad.emit('pointerdown');pad.emit('pointerup');await app.flush();const request = app.ammo.requests.at(-1);
   app.ammo.execute(request);app.ammo.reply(request, { ok: false, reason: 'pending' });await app.flush();
   assert.equal(state.used, 0);assert.equal(state.eventShots.length, 0);assert.equal(state.magazine, 2);assert.equal(app.ammo.account.remaining, 1);
@@ -1209,7 +1301,7 @@ test('an unknown round registration can be retried before completing that same s
 
 test('connected main play waits for its server run and recovered intents cannot strand the next registration', async () => {
   const waiting = await appHarness({ version: 1, sound: false }, { hold: ['round-start'] });
-  const pad = waiting.getElement('drawPad');pad.emit('pointerdown');waiting.frames(12);pad.emit('pointerup');await waiting.flush();
+  const pad = waiting.getElement('gameCanvas');pad.emit('pointerdown');waiting.frames(12);pad.emit('pointerup');await waiting.flush();
   assert.equal(waiting.api.state.mode, 'ready');assert.equal(waiting.api.state.used, 0);assert.equal(waiting.api.state.shot, null);
   const registration = waiting.ammo.requests.find(request => request.action === 'round-start');waiting.ammo.reply(registration);await waiting.flush();
   assert.ok(waiting.api.state.serverRunId);
@@ -1220,7 +1312,7 @@ test('connected main play waits for its server run and recovered intents cannot 
     const original = await appHarness({ version: 1, sound: false }, { remaining: 2, hold: [action] });
     let request;
     if (action === 'spend') {
-      original.api.enterEvent();await original.flush();const firing = original.getElement('drawPad');firing.emit('pointerdown');firing.emit('pointerup');await original.flush();request = original.ammo.requests.at(-1);
+      original.api.enterEvent();await original.flush();const firing = original.getElement('gameCanvas');firing.emit('pointerdown');firing.emit('pointerup');await original.flush();request = original.ammo.requests.at(-1);
     } else {
       original.api.showAmmoShop();original.api.buyAmmo();await original.flush();request = original.ammo.requests.at(-1);original.ammo.execute(request);
     }
@@ -1247,7 +1339,7 @@ test('every fifth completed main round opens a timed event and event play never 
   assert.equal(state.isEvent, true);assert.equal(state.stage.eventLevel, 1);assert.equal(state.stage.targetsPerWave, 2);
   assert.equal(app.api.progress.lastStage, 2);assert.equal(app.api.progress.unlocked, 50, 'a fifth round resumes at the next freely available stage');
   assert.equal(app.snapshot().mainRounds, 5);assert.equal(app.snapshot().lastStage, 2);
-  const pad = app.getElement('drawPad');
+  const pad = app.getElement('gameCanvas');
   state.time = state.stage.eventDuration - .001;pad.emit('pointerdown');pad.emit('pointerup');await app.flush();app.frames();
   assert.ok(state.time >= state.stage.eventDuration && state.eventShots.some(shot => shot.active));
   assert.equal(state.mode, 'ready', 'the event waits for a bullet already in flight when time expires');
@@ -1312,7 +1404,7 @@ test('unowned equipment cannot be used without purchase and normal rounds remain
 });
 
 test('real-time deadline waits through 9.9 seconds, auto-fires once at ten and ignores later releases', async () => {
-  const app = await appHarness(), pad = app.getElement('drawPad');
+  const app = await appHarness(), pad = app.getElement('gameCanvas');
   pad.emit('pointerdown');
   app.advanceTo(9900);
   assert.equal(app.api.state.mode, 'drawing');
@@ -1337,7 +1429,7 @@ test('real-time deadline waits through 9.9 seconds, auto-fires once at ten and i
 });
 
 test('frame fallback uses elapsed time when timer delivery is delayed', async () => {
-  const app = await appHarness(), pad = app.getElement('drawPad');
+  const app = await appHarness(), pad = app.getElement('gameCanvas');
   pad.emit('pointerdown');
   app.advanceTo(9900, { runTimers: false });
   assert.equal(app.api.state.used, 0);
@@ -1354,7 +1446,7 @@ test('frame fallback uses elapsed time when timer delivery is delayed', async ()
 });
 
 test('a fresh random steady window lasts exactly 0.5 seconds while normal sway continues outside it', async () => {
-  const app = await appHarness(), pad = app.getElement('drawPad');
+  const app = await appHarness(), pad = app.getElement('gameCanvas');
   let sequence = [0.5, 0.4];app.setRandom(() => sequence.length ? sequence.shift() : 0.9);
   pad.emit('pointerdown');
   assert.equal(app.api.state.steadyStart, 4.4);
@@ -1384,7 +1476,7 @@ test('a fresh random steady window lasts exactly 0.5 seconds while normal sway c
 for (const { id, duration, input } of [{ id: 3, duration: 1.21, input: 'pointer' }, { id: 19, duration: 2, input: 'keyboard' }]) {
   test(`${input} aiming uses the equipped ${duration}-second steady interval and still auto-fires once at ten seconds`, async () => {
     const app = await appHarness({ version: 1, ownedBows: [0, id], ownedArrows: [0], bow: id, sound: false });
-    const pad = app.getElement('drawPad'), sequence = [.5, .4];
+    const pad = app.getElement('gameCanvas'), sequence = [.5, .4];
     app.setRandom(() => sequence.length ? sequence.shift() : .9);
     assert.ok(app.getElement('loadoutSteady').textContent.includes(`${duration}초`));
     if (input === 'pointer') pad.emit('pointerdown');
@@ -1429,7 +1521,7 @@ for (const { id, duration, input } of [{ id: 3, duration: 1.21, input: 'pointer'
 
 test('the longest steady opportunity starts randomly between one and eight seconds and survives equipment reselection', async () => {
   const app = await appHarness({ version: 1, coins: 0, ownedBows: [0, 19], ownedArrows: [0], bow: 19, sound: false });
-  const pad = app.getElement('drawPad'), starts = [];
+  const pad = app.getElement('gameCanvas'), starts = [];
   for (const fraction of [0, .5, 1 - Number.EPSILON]) {
     const sequence = [.5, fraction];app.setRandom(() => sequence.length ? sequence.shift() : .9);
     pad.emit('pointerdown');
@@ -1451,13 +1543,13 @@ test('the longest steady opportunity starts randomly between one and eight secon
 });
 
 test('manual aiming still moves during stability and release uses the exact stable direction', async () => {
-  const app = await appHarness(), pad = app.getElement('drawPad');
+  const app = await appHarness(), pad = app.getElement('gameCanvas');
   const sequence = [0.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : 0.8);
   pad.emit('pointerdown');app.advanceTo(1200);
   assert.equal(app.api.isSteady(), true);
   assert.ok(Math.hypot(app.api.state.sway.x, app.api.state.sway.y) > 0, 'underlying random motion is present');
   const originalYaw = app.api.state.aim.yaw;
-  const coordinates = { clientX: 360, clientY: 380 };
+  const coordinates = aimCoordinates(app, originalYaw + .06, app.api.state.aim.pitch + .02);
   pad.emit('pointermove', coordinates);
   assert.ok(app.api.state.aim.yaw > originalYaw);
   const aim = { ...app.api.aimAngles() };
@@ -1472,7 +1564,7 @@ test('manual aiming still moves during stability and release uses the exact stab
 
 test('cancel, blur and a hidden document clear the ten-second deadline safely', async () => {
   for (const reason of ['pointercancel', 'blur', 'hidden']) {
-    const app = await appHarness(), pad = app.getElement('drawPad');
+    const app = await appHarness(), pad = app.getElement('gameCanvas');
     pad.emit('pointerdown');app.advanceTo(9900);
     if (reason === 'pointercancel') pad.emit('pointercancel');
     if (reason === 'blur') app.window.emit('blur');
@@ -1489,7 +1581,7 @@ test('every stage shares 0.32-speed arrow, target and scenery time from the firs
   for (const stage of app.engine.STAGES) {
     app.api.startStage(stage.id);await app.flush();
     app.until(() => app.api.state.mode === 'ready');
-    const pad = app.getElement('drawPad');
+    const pad = app.getElement('gameCanvas');
     pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
     const before = app.api.state.time, realStart = app.now;
     app.advanceTo(realStart + 100);
@@ -1506,9 +1598,8 @@ test('every stage shares 0.32-speed arrow, target and scenery time from the firs
 });
 
 function startHighMiss(app) {
-  const { api } = app, state = api.state, pad = app.getElement('drawPad');
-  const sensitivity = (app.viewport.width < 500 ? 1.35 : 1.05) / api.camera.focal;
-  const coords = { clientX: 300 + (.18 - state.aim.yaw) / sensitivity, clientY: 400 - (.44 - state.aim.pitch) / sensitivity };
+  const { api } = app, state = api.state, pad = app.getElement('gameCanvas');
+  const coords = aimCoordinates(app, .18, .44);
   pad.emit('pointerdown');pad.emit('pointermove', coords);app.frames(78);
   return { pad, coords };
 }
@@ -1775,7 +1866,7 @@ test('obstacle stages automatically reveal the real target above every wall, ign
     await enterLegacyScene(app, legacyId);
     const stageId = app.api.state.stage.id;
     const { state } = app.api, baseCamera = { ...app.api.camera }, originalAim = { ...state.aim }, previewStart = app.now;
-    const preview = app.getElement('previewBtn'), pad = app.getElement('drawPad');
+    const preview = app.getElement('previewBtn'), pad = app.getElement('gameCanvas');
     assert.equal(state.mode, 'preview', `stage ${stageId} starts with its overview`);
     assert.equal(preview.classList.contains('hidden'), false);
     assert.equal(preview.textContent, '조준하기');
@@ -1819,7 +1910,7 @@ test('stages without obstacles stay immediately playable and do not expose an ov
     assert.equal(app.getElement('previewBtn').classList.contains('hidden'), true);
     app.getElement('previewBtn').emit('click');
     assert.equal(app.api.state.mode, 'ready', 'a hidden control cannot start an irrelevant preview');
-    const pad = app.getElement('drawPad');pad.emit('pointerdown');
+    const pad = app.getElement('gameCanvas');pad.emit('pointerdown');
     assert.equal(app.api.state.mode, 'drawing');pad.emit('pointercancel');
     assert.equal(app.api.state.used, 0);
   }
@@ -1830,8 +1921,8 @@ test('manual overview cancels a drawn arrow, allows an early return, preserves p
   await enterLegacyScene(app, 8);
   app.until(() => app.api.state.mode === 'ready');
   app.getElement('zoomBtn').emit('click');
-  const pad = app.getElement('drawPad'), preview = app.getElement('previewBtn');
-  pad.emit('pointerdown');pad.emit('pointermove', { clientX: 850, clientY: 50 });app.frames(18);
+  const pad = app.getElement('gameCanvas'), preview = app.getElement('previewBtn');
+  pad.emit('pointerdown');pad.emit('pointermove', { clientX: 1050, clientY: -50 });app.frames(18);
   assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.zoom, 2);
   assert.ok(app.api.state.panX !== 0 || app.api.state.panY !== 0, 'the saved view includes actual aiming pan');
   const baseCamera = { ...app.api.camera }, originalAim = { ...app.api.state.aim };
