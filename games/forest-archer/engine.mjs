@@ -1,6 +1,6 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261103-archery-targets-events1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261103-archery-targets-events1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261103-archery-wall-clearance1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261103-archery-wall-clearance1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -439,15 +439,15 @@ function lessonStages() {
     (index,distance,radius) => cover(.5,index,distance,{variableExposure:true,motion:motion(radius*.42,0,.28+index*.02)}),
     {key:'moving-half-gap'});
 
-  // Short fully hidden ranges would require an unfairly tiny target for fast
-  // crossbows. These arc lessons therefore progress through 30/35/40/50 metres.
+  // Keep these authored distances as the scale reference for the appended
+  // long-range lessons. Runtime hidden targets are moved back after expansion.
   const hiddenDistances = [30,35,40,50];
   const hidden = (index,distance,radius,profile,extra = {}) => ({
     radius:[1.45,1.6,1.8,2.1][index],height:[2,2.15,2.3,2.6][index],visibleFraction:0,
     fullCover:profile,...extra
   });
   addChapter('완전히 숨은 고정 과녁','미리 보고 포물선으로 넘겨요.',
-    '시작할 때 벽 뒤 과녁을 먼저 보여줘요. 과녁 보기로 다시 살피고, 조금 높게 겨눠 벽 위로 쏘세요.',
+    '과녁 보기로 벽 뒤의 위치를 확인하세요. 충분히 당긴 뒤 벽 위를 넘겨 과녁으로 내려오는 궤적을 겨누세요.',
     (index,distance,radius) => hidden(index,distance,radius,'single',index===3?{legacyStageId:49}:{}),
     {distances:hiddenDistances,key:'hidden-fixed'});
   addChapter('벽 뒤에서 움직이는 과녁','미리 본 움직임을 이어서 읽어요.',
@@ -483,7 +483,7 @@ function lessonStages() {
 
 function hiddenCover(template) {
   const {distance,radius,height,motion:movement} = template;
-  const positions=template.fullCover==='double'?[.34,.58]:[.5];
+  const positions=template.fullCover==='double'?[.14,.26]:[.22];
   const halfWidth=Math.max(5,radius+Math.abs(movement.amplitudeX||0)+3.5);
   return positions.map((fraction,index) => {
     const z=distance*fraction,depth=.36,near=z-depth/2;
@@ -525,9 +525,11 @@ const EQUIPMENT_GOAL_CAPS = Object.freeze({
   58:23, 59:18, 60:11, 62:19, 63:14, 64:7,
   66:22, 67:15, 68:12, 70:16, 71:17, 72:5,
   80:24, 84:23, 88:23, 92:23, // Long moving targets behind pillars or people.
-  95:23, 96:21, 103:28, // Moving gaps and hidden targets.
+  95:23, 96:21, // Moving gaps.
+  97:20, 98:20, 99:20, 100:20, 101:20, 102:20, 103:20, 104:20, 105:20,
+  106:26, 107:28, 108:28, // Recessed hidden targets use full-draw reference shots.
   109:31, 110:30, 111:28, 112:21, // Time the real openings in the faster pedestrian groups.
-  113:28, 114:22, 115:16, 116:15, 120:30
+  113:28, 114:22, 115:16, 116:15, 117:26, 118:26, 119:28, 120:28
 });
 
 function applyEquipmentLesson(template) {
@@ -594,11 +596,22 @@ function longRangeStages(baseStages) {
   });
 }
 const introductoryStages=lessonStages().map(applyEquipmentLesson);
+function arrangeHiddenRange(template) {
+  if(!template.fullCover)return template;
+  // A fully hidden face needs room for a real arc. At the old 30–50m ranges,
+  // fast equipment could only clear the wall at an impractically short draw.
+  // Move these targets back without changing saved IDs or using their new
+  // distances to rescale the separately authored 60–150m extension.
+  const distance=template.longRange?template.distance:({30:60,35:65,40:70,50:80}[template.distance]??template.distance);
+  const adjusted={...template,distance,name:`${template.chapterName} · ${distance}m`};
+  adjusted.obstacles=hiddenCover(adjusted);
+  return {...adjusted,difficulty:stageDifficulty(adjusted)};
+}
 // These fast crossings need a readable middle before the arrow arrives. Keep
 // their total crossing time and vertical motion; the entry/exit stays fast.
 // Apply after long-range expansion so a repair never spreads to other ranges.
 const animalApproachEase=Object.freeze({68:.35,72:.25,196:.30});
-export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)].map(template=>
+export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)].map(arrangeHiddenRange).map(template=>
   Object.hasOwn(animalApproachEase,template.id)?{...template,approachEase:animalApproachEase[template.id]}:template));
 /** The first 120-mission catalog keeps its records after the teaching reorder. */
 export const CATALOG_V1_STAGE_MAP = Object.freeze(Object.fromEntries(introductoryStages.map(stage => [stage.catalogV1Id,stage.id])));

@@ -48,14 +48,16 @@ test('the original 120 missions retain thirty skills with four increasing distan
   assert.equal(MISSION_GROUPS.slice(0,30).length, 30);
   for (let chapter = 1; chapter <= 30; chapter++) {
     const stages = STAGES.filter(stage => stage.chapterId === chapter);
-    const expectedDistances = [25, 26, 27, 30].includes(chapter) ? [30, 35, 40, 50] : distances;
+    const expectedDistances = [25, 26, 27, 30].includes(chapter) ? [60, 65, 70, 80] : distances;
     assert.deepEqual(stages.map(stage => stage.distance), expectedDistances, `chapter ${chapter} teaches distance in order`);
     const group = MISSION_GROUPS[chapter - 1];
     assert.deepEqual([group.chapterId, group.first, group.last, group.distances], [chapter, chapter * 4 - 3, chapter * 4, expectedDistances]);
     assert.equal(group.chapterName, stages[0].chapterName);
     assert.equal(new Set(stages.map(stage => stage.chapterName)).size, 1);
     for (let index = 1; index < stages.length; index++) {
-      assert.ok(stages[index].difficulty.angularRadius < stages[index - 1].difficulty.angularRadius);
+      // Hidden targets retain their faces when moved back to leave room for
+      // the arc; their longer flight, wind and motion provide the progression.
+      if(!stages[index].fullCover)assert.ok(stages[index].difficulty.angularRadius < stages[index - 1].difficulty.angularRadius);
       assert.ok(stages[index].difficulty.flightSeconds > stages[index - 1].difficulty.flightSeconds);
     }
   }
@@ -80,7 +82,7 @@ test('the original 120 missions retain thirty skills with four increasing distan
   assert.ok(STAGES.slice(108, 112).every(stage => stage.coverageMode === 'pillars' && stage.passers.length > 0));
   assert.deepEqual(STAGES.slice(112, 116).map(stage => stage.kind), ['pigeon', 'eagle', 'pigeon', 'eagle']);
   assert.ok(originalStages.slice(116).every(stage => stage.visibleFraction === 0 && stage.motion.speed > 0 && stage.obstacles.length === 2));
-  assert.ok(originalStages.every(stage => stage.distance <= 50));
+  assert.ok(originalStages.every(stage => stage.distance <= (stage.fullCover?80:50)));
 });
 
 test('one hundred long-range missions extend twenty familiar lessons through five distances in order',()=>{
@@ -98,12 +100,14 @@ test('one hundred long-range missions extend twenty familiar lessons through fiv
   ]);
   let previousSource=0;
   for(const [index,key]of LONG_RANGE_LESSONS.entries()){
-    const source=originalStages.find(stage=>stage.lessonKey===key&&stage.distance===50);
+    const source=originalStages.filter(stage=>stage.lessonKey===key).at(-1);
     assert.ok(source.id>previousSource,'familiar lessons retain their relative teaching order');previousSource=source.id;
     const chapter=longStages.slice(index*5,index*5+5),group=MISSION_GROUPS[index+30];
     assert.deepEqual(chapter.map(stage=>stage.distance),[60,80,100,120,150]);
     assert.deepEqual([group.chapterId,group.first,group.last,group.distances],[index+31,121+index*5,125+index*5,[60,80,100,120,150]]);
-    let angle=source.difficulty.angularRadius,flight=source.difficulty.flightSeconds;
+    // The appended bands still restart at 60m even after the original hidden
+    // targets have been recessed to 80m; each five-distance band must progress.
+    let angle=source.fullCover?Infinity:source.difficulty.angularRadius,flight=source.fullCover?0:source.difficulty.flightSeconds;
     for(const stage of chapter){
       assert.equal(stage.longRange,true);assert.equal(stage.sourceLessonKey,key);assert.equal(stage.lessonKey,`long-${key}`);
       assert.equal(stage.kind,source.kind);assert.equal(stage.chapterId,index+31);assert.equal(stage.chapterName,group.chapterName);
@@ -471,8 +475,9 @@ test('measured anatomy and tracking caps leave every other original lesson goal 
     [50,19],[51,13],[52,7],[54,23],[55,16],[56,8],
     [58,23],[59,18],[60,11],[62,19],[63,14],[64,7],
     [66,22],[67,15],[68,12],[70,16],[71,17],[72,5],
-    [80,24],[84,23],[88,23],[92,23],[95,23],[96,21],[103,28],
-    [109,31],[110,30],[111,28],[112,21],[113,28],[114,22],[115,16],[116,15],[120,30]
+    [80,24],[84,23],[88,23],[92,23],[95,23],[96,21],
+    [97,20],[98,20],[99,20],[100,20],[101,20],[102,20],[103,20],[104,20],[105,20],[106,26],[107,28],[108,28],
+    [109,31],[110,30],[111,28],[112,21],[113,28],[114,22],[115,16],[116,15],[117,26],[118,26],[119,28],[120,28]
   ]);
   const originalCurves = {lower:[17,48,18,26], middle:[49,105,26,30], upper:[106,120,32,36]};
   assert.deepEqual(STAGES.slice(0, 20).map(stage => stage.goal),
