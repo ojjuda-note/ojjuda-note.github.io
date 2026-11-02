@@ -79,8 +79,8 @@ test('a short ground impact bounces once, loses energy and continues to a real l
 
 test('normal bow launches can rescue short shots on the actual 30m and 50m stages', () => {
   for (const {stage, charge, pitch} of [
-    {stage: STAGES[2], charge: .30, pitch: .13},
-    {stage: STAGES[3], charge: .35, pitch: .265}
+    {stage: STAGES[2], charge: .30, pitch: .083},
+    {stage: STAGES[3], charge: .35, pitch: .222}
   ]) {
     const params = {bow: BOWS[0], charge, pitch};
     const shot = launchArrow({...params, arrow: ARROWS[12]});

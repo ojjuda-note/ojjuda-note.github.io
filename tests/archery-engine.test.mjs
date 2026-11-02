@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAYER, GRAVITY, WIND_RESPONSE, REFERENCE_ARROW_MASS, MAX_MAIN_PROJECTILE_SPEED, BULLET_SPEED, getArrowMass, getWindResponse, prepareStage, passersAt, BOWS, ARROWS, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, targetAt, getSpeed, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway, sortEquipment } from '../games/forest-archer/engine.mjs';
+import { PLAYER, GRAVITY, WIND_RESPONSE, REFERENCE_ARROW_MASS, MAX_MAIN_PROJECTILE_SPEED, BULLET_SPEED, getArrowMass, getWindResponse, getArrowDragRate, getArrowConsistency, getArrowVariance, prepareStage, passersAt, BOWS, ARROWS, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, targetAt, getSpeed, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway, sortEquipment } from '../games/forest-archer/engine.mjs';
 import { windLeafAt, windLeafCount } from '../games/forest-archer/scenery.mjs';
 
 const close = (actual, expected, tolerance = 1e-8) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
-const dragFree = { ...ARROWS[0], fletching: { ...ARROWS[0].fletching, drag: 0 } };
+const withoutDrag = arrow => ({ ...arrow, tip: { ...arrow.tip, drag: 0 }, shaft: { ...arrow.shaft, drag: 0 }, fletching: { ...arrow.fletching, drag: 0 } });
+const dragFree = withoutDrag(ARROWS[0]);
 const emptyRange = { distance: 10000, radius: 1, height: 2, kind: 'target', motion: {}, wind: 0, obstacles: [] };
 const seed = initial => () => { initial = (Math.imul(initial, 1664525) + 1013904223) >>> 0; return initial / 4294967296; };
 const animalKinds = ['rabbit', 'wildcat', 'deer', 'pigeon', 'eagle', 'cheetah'];
@@ -143,6 +144,37 @@ test('wind leaves stay honest at rest, reverse direction and lean with strength 
       assert.ok(leaf.y >= -12 && leaf.y <= h * .78 + 12);
       assert.ok(leaf.vx < 0);
     }
+  }
+});
+
+test('wind-intro lessons visibly move leaves and really deflect basic arrows before correction', () => {
+  const lessons = STAGES.filter(stage => stage.lessonKey === 'wind-intro');
+  assert.deepEqual(lessons.map(stage => stage.id), [9, 10, 11, 12]);
+  assert.deepEqual(lessons.map(stage => stage.wind), [1, -1.1, -1.2, 1.3]);
+  let previousDrift = 0;
+  for (const stage of lessons) {
+    const calm = { ...stage, wind: 0 };
+    const calmAim = centeredAim(calm, 1, BOWS[0], ARROWS[0]);
+    assert.ok(calmAim);
+    assert.equal(predictTrajectory(calmAim, calm).result.score, 10);
+    // A wide measurement plane records the displacement even when an
+    // uncorrected arrow would miss the actual face and keep flying.
+    const uncorrected = stepArrow(launchArrow(calmAim), 8, { ...stage, radius: 100 });
+    const drift = Math.abs(uncorrected.point.x);
+    assert.equal(Math.sign(uncorrected.point.x), Math.sign(stage.wind));
+    assert.ok(drift >= .05 && drift > previousDrift * 2, `${stage.id} has measurable, increasing lateral displacement`);
+    if (stage.distance === 50) assert.ok(drift > stage.radius, 'the long wind lesson actually requires aiming into the wind');
+    previousDrift = drift;
+    const corrected = centeredAim(stage, 1, BOWS[0], ARROWS[0]);
+    assert.ok(corrected && Math.abs(corrected.yaw) <= .38 && corrected.pitch >= -.15 && corrected.pitch <= .55);
+    assert.equal(Math.sign(corrected.yaw), -Math.sign(stage.wind));
+    const hit = predictTrajectory(corrected, stage).result;
+    assert.equal(hit.type, 'hit'); assert.equal(hit.score, 10, 'wind compensation works with the free starter loadout');
+    const leaf = windLeafAt(0, 0, 390, 300, stage.wind), next = windLeafAt(0, 1, 390, 300, stage.wind);
+    assert.ok(Math.abs(leaf.vx) >= 15, 'leaves visibly cross even a 300px-high mobile canvas');
+    assert.equal(Math.sign(leaf.vx), Math.sign(stage.wind));
+    close(next.x - leaf.x, leaf.vx);
+    assert.ok(windLeafCount(stage.wind) >= 16 && windLeafCount(stage.wind) <= 20);
   }
 });
 
@@ -312,7 +344,7 @@ test('a missed high shot stays active beyond the old distance limit and falls to
 test('better arrows reduce speed spread without cancelling gravity', () => {
   const spread = arrow => getSpeed({ arrow, velocityBias: 1 }) - getSpeed({ arrow, velocityBias: -1 });
   assert.ok(spread(sortEquipment(ARROWS).at(-1)) < spread(ARROWS[0]) / 10);
-  const shot = launchArrow({ arrow: { ...ARROWS[3], fletching: { ...ARROWS[3].fletching, drag: 0 } }, pitch: 0.3 });
+  const shot = launchArrow({ arrow: withoutDrag(ARROWS[3]), pitch: 0.3 });
   const vy = shot.velocity.y;
   stepArrow(shot, 0.2, emptyRange, 0);
   close(shot.velocity.y, vy - GRAVITY * 0.2);
@@ -338,23 +370,23 @@ test('twenty-five weapons and fourteen arrows preserve old identities and indepe
 
 
 const originalArrowIdentities = [
-  [0, '나무 화살', 0, 1, 4, '넓은 깃', '#b28b64'],
-  [1, '깃털 화살', 1050, 4, 8, '큰 안정깃', '#8b9c78'],
-  [2, '탄소 화살', 3150, 8, 4, '좁은 날개', '#71999b'],
-  [3, '은빛 화살', 5250, 11, 10, '유선형 날개', '#bfc8d0'],
-  [4, '가벼운 연습 화살', 300, 2, 2, '작은 깃', '#c3a474'],
-  [5, '황동촉 화살', 2000, 6, 12, '직선 깃', '#b99c52'],
-  [6, '긴깃 화살', 650, 3, 6, '긴 안정깃', '#9a9c77'],
-  [7, '돌풍 화살', 3800, 9, 5, '낮은 날개', '#709ba0'],
-  [8, '철갑촉 화살', 1500, 5, 14, '삼각 깃', '#89909b'],
-  [9, '비연 화살', 2550, 7, 3, '초소형 날개', '#93a8b3'],
-  [10, '금빛 화살', 4500, 10, 9, '곡면 날개', '#ceb36c'],
-  [11, '바람깃 화살', 6050, 12, 7, '쐐기 날개', '#82a7a5'],
-  [12, '탄성 화살', 6900, 13, 8, '탄성 안정깃', '#be9a69'],
-  [13, '자석 화살', 7800, 14, 10, '유도 안정깃', '#629d98']
+  [0, '나무 화살', 0, 1, '넓은 깃', '#b28b64'],
+  [1, '깃털 화살', 1050, 4, '큰 안정깃', '#8b9c78'],
+  [2, '탄소 화살', 3150, 8, '좁은 날개', '#71999b'],
+  [3, '은빛 화살', 5250, 11, '유선형 날개', '#bfc8d0'],
+  [4, '가벼운 연습 화살', 300, 2, '작은 깃', '#c3a474'],
+  [5, '황동촉 화살', 2000, 6, '직선 깃', '#b99c52'],
+  [6, '긴깃 화살', 650, 3, '긴 안정깃', '#9a9c77'],
+  [7, '돌풍 화살', 3800, 9, '낮은 날개', '#709ba0'],
+  [8, '철갑촉 화살', 1500, 5, '삼각 깃', '#89909b'],
+  [9, '비연 화살', 2550, 7, '초소형 날개', '#93a8b3'],
+  [10, '금빛 화살', 4500, 10, '곡면 날개', '#ceb36c'],
+  [11, '바람깃 화살', 6050, 12, '쐐기 날개', '#82a7a5'],
+  [12, '탄성 화살', 6900, 13, '탄성 안정깃', '#be9a69'],
+  [13, '자석 화살', 7800, 14, '유도 안정깃', '#629d98']
 ];
-test('equipment rebalancing preserves arrow identities, prices, points and appearances', () => {
-  assert.deepEqual(ARROWS.map(item => [item.id, item.name, item.price, item.shopRank, item.tipMass, item.fletching.name, item.color]), originalArrowIdentities);
+test('component rebalancing preserves arrow identities, prices and appearances', () => {
+  assert.deepEqual(ARROWS.map(item => [item.id, item.name, item.price, item.shopRank, item.fletching.name, item.color]), originalArrowIdentities);
   assert.ok(ARROWS.slice(0, 12).every(item => !item.ability));
   assert.equal(ARROWS[12].ability.type, 'bounce');
   assert.equal(ARROWS[13].ability.type, 'magnetic');
@@ -391,9 +423,9 @@ test('shop progression keeps released ranks and prices while adding small stat i
   }
   assert.deepEqual(weapons.map(item => item.price), [0, 500, 1100, 1800, 2600, 3500, 4500, 5600, 6800, 8100, 9500, 11000, 12600, 14300, 16100, 18000, 20000, 22100, 24300, 26600]);
   assert.deepEqual(arrows.map(item => item.price), [0, 300, 650, 1050, 1500, 2000, 2550, 3150, 3800, 4500, 5250, 6050, 6900, 7800]);
-  assert.ok(arrows.at(-1).fletching.stability > arrows[0].fletching.stability);
+  assert.ok(getArrowConsistency(arrows.at(-1)) > getArrowConsistency(arrows[0]));
   assert.ok(getWindResponse(arrows.at(-1)) < getWindResponse(arrows[0]));
-  assert.ok(arrows.at(-1).fletching.drag < arrows[0].fletching.drag);
+  assert.ok(getArrowDragRate(arrows.at(-1)) < getArrowDragRate(arrows[0]));
   for (const weapon of weapons.filter(item => item.scopeCompatible)) {
     assert.ok(weapon.scopePrice >= 500 && weapon.scopePrice >= weapon.price * .2, 'a permanent scope also requires meaningful savings');
   }
@@ -419,7 +451,7 @@ test('ability sorting uses the selected actual stat without mutating saved equip
   assertOrder(weapons, 'elasticity', item => item.elasticity, -1);
   assertOrder(BOWS.filter(item => item.weaponType === 'gun'), 'elasticity', item => item.power, -1);
   assertOrder(ARROWS, 'wind', getWindResponse, 1);
-  assertOrder(ARROWS, 'stability', item => item.fletching.stability, -1);
+  assertOrder(ARROWS, 'stability', getArrowConsistency, -1);
   assertOrder(ARROWS, 'tip-light', item => item.tipMass, 1);
   assertOrder(ARROWS, 'tip-heavy', item => item.tipMass, -1);
   assert.deepEqual(sortEquipment(weapons, 'unknown').map(item => item.id), sortEquipment(weapons).map(item => item.id));
@@ -502,31 +534,74 @@ test('main weapon upgrades reduce actual sway and wind drift without losing forw
   }
 });
 
-test('arrow ranks balance point mass and gradually retain or improve all base flight stats', () => {
-  const arrows = sortEquipment(ARROWS);
-  for (const arrow of arrows) {
-    assert.equal(getArrowMass(arrow), REFERENCE_ARROW_MASS, `${arrow.name} balances its point with its shaft`);
-    assert.ok(arrow.shaftMass > 0);
+test('arrows expose separate point, shaft and fletching properties used by the actual launch', () => {
+  for (const arrow of ARROWS) {
+    for (const key of ['tip', 'shaft', 'fletching']) {
+      const component = arrow[key];
+      assert.ok(component && typeof component.name === 'string' && component.name.length > 0);
+      assert.ok(typeof component.material === 'string' && component.material.length > 0);
+      assert.ok(Number.isFinite(component.drag) && component.drag >= 0);
+    }
+    assert.ok(typeof arrow.tip.shape === 'string' && arrow.tip.shape.length > 0);
+    assert.ok(Number.isFinite(arrow.shaft.diameter) && arrow.shaft.diameter > 0);
+    for (const mass of [arrow.tipMass, arrow.shaftMass, arrow.fletching.mass]) assert.ok(Number.isFinite(mass) && mass > 0);
+    for (const rating of [arrow.tip.precision, arrow.shaft.precision, arrow.fletching.stability]) assert.ok(rating >= 0 && rating <= 100);
+    for (const area of [arrow.shaft.windArea, arrow.fletching.windArea]) assert.ok(Number.isFinite(area) && area >= 0);
+    close(getArrowMass(arrow), arrow.tipMass + arrow.shaftMass + arrow.fletching.mass);
+    const shot = launchArrow({ arrow });
+    close(shot.mass, getArrowMass(arrow));
+    close(shot.dragRate, getArrowDragRate(arrow));
+    close(shot.windFactor, getWindResponse(arrow));
+    close(arrow.variance, getArrowVariance(arrow));
+    close(arrow.windFactor, getWindResponse(arrow));
   }
+  // Component decomposition preserves the familiar starter trajectory.
+  close(getArrowMass(ARROWS[0]), 24); close(getSpeed({ bow: BOWS[0], arrow: ARROWS[0] }), 44);
+  close(getArrowDragRate(ARROWS[0]), .14); close(getWindResponse(ARROWS[0]), 1);
+  close(getArrowConsistency(ARROWS[0]), 35); close(getArrowVariance(ARROWS[0]), .13);
+});
+
+test('arrow ranks gradually improve total mass, combined drag, wind response and consistency', () => {
+  const arrows = sortEquipment(ARROWS);
+  close(getArrowMass(arrows[0]), 24); close(getArrowMass(arrows.at(-1)), 20);
+  close(getWindResponse(arrows[0]), 1); close(getWindResponse(arrows.at(-1)), .6);
+  close(getArrowDragRate(arrows[0]), .14); close(getArrowDragRate(arrows.at(-1)), .0828);
+  close(getArrowConsistency(arrows[0]), 35); close(getArrowConsistency(arrows.at(-1)), 95);
   for (let index = 1; index < arrows.length; index++) {
-    const before = arrows[index - 1].fletching, after = arrows[index].fletching;
-    const stabilityGain = after.stability - before.stability;
-    const windGain = before.windArea - after.windArea, dragGain = before.drag - after.drag;
-    assert.ok(stabilityGain >= 0 && stabilityGain <= 10);
-    assert.ok(windGain >= -1e-12 && windGain <= .15 + 1e-12);
-    assert.ok(dragGain >= -1e-12 && dragGain <= .02 + 1e-12);
-    if (!arrows[index].ability) assert.ok(stabilityGain > 0 || windGain > 0 || dragGain > 0, 'each ordinary upgrade improves at least one stat');
-    else assert.deepEqual([after.stability, after.windArea, after.drag], [before.stability, before.windArea, before.drag], 'special abilities retain the strongest ordinary base flight');
+    const before = arrows[index - 1], after = arrows[index];
+    const massGain = getArrowMass(before) - getArrowMass(after);
+    const consistencyGain = getArrowConsistency(after) - getArrowConsistency(before);
+    const windGain = getWindResponse(before) - getWindResponse(after), dragGain = getArrowDragRate(before) - getArrowDragRate(after);
+    assert.ok(massGain >= -1e-12 && massGain <= .4 + 1e-12);
+    assert.ok(consistencyGain >= -1e-12 && consistencyGain <= 10);
+    assert.ok(windGain >= -1e-12 && windGain <= .08);
+    assert.ok(dragGain >= -1e-12 && dragGain <= .01);
+    if (!after.ability) assert.ok(massGain > 0 && consistencyGain > 0 && windGain > 0 && dragGain > 0, 'ordinary upgrades improve complete-arrow performance');
+    else for (const property of [getArrowMass, getArrowConsistency, getArrowVariance, getWindResponse, getArrowDragRate])
+      close(property(after), property(ARROWS[11]));
   }
 });
 
-test('arrow upgrades narrow native speed spread and retain actual range while reducing wind drift', () => {
+test('long fletching improves its own control while its larger resistance is offset by a better shaft and point', () => {
+  const small = ARROWS[4], long = ARROWS[6];
+  assert.ok(long.fletching.stability > small.fletching.stability);
+  assert.ok(long.fletching.mass > small.fletching.mass);
+  assert.ok(long.fletching.windArea > small.fletching.windArea && long.fletching.drag > small.fletching.drag);
+  assert.ok(long.shaft.windArea < small.shaft.windArea && long.shaft.drag < small.shaft.drag);
+  assert.ok(getArrowMass(long) < getArrowMass(small));
+  assert.ok(getArrowConsistency(long) > getArrowConsistency(small));
+  assert.ok(getWindResponse(long) < getWindResponse(small) && getArrowDragRate(long) < getArrowDragRate(small),
+    'more effective fletching does not falsely claim to produce less drag on its own');
+});
+
+test('arrow upgrades improve mean and worst-case speed, narrow spread and retain actual range and wind resistance', () => {
   const arrows = sortEquipment(ARROWS), bows = [BOWS[0], BOWS[3], BOWS[13], BOWS[15], BOWS[19]];
   for (const bow of bows) for (const charge of [.5, 1]) for (const pitch of [.15, .30, .55]) {
     let previous = null;
     for (const item of arrows) {
       const arrow = { ...item, ability: null }, params = { bow, arrow, charge, pitch, velocityBias: 0 };
       const shot = launchArrow(params), low = getSpeed({ ...params, velocityBias: -1 }), high = getSpeed({ ...params, velocityBias: 1 });
+      close((low + high) / 2, shot.speed);
       const result = stepArrow(shot, 8, emptyRange);
       assert.equal(result.type, 'ground');
       const windShot = launchArrow({ ...params, pitch: .3 });
@@ -534,9 +609,13 @@ test('arrow upgrades narrow native speed spread and retain actual range while re
       assert.equal(windy.type, 'hit');
       if (previous) {
         const label = `arrow ${previous.id} → ${item.id} with ${bow.name}, charge ${charge}, pitch ${pitch}`;
-        close(shot.speed, previous.speed);
-        assert.ok(low >= previous.low - 1e-8 && high <= previous.high + 1e-8, `${label} narrows the random speed envelope`);
-        assert.ok(previous.high - previous.low - (high - low) <= shot.speed * .04 + 1e-8, `${label} improves spread by at most four percent of nominal speed`);
+        assert.ok(shot.speed >= previous.speed - 1e-8 && shot.speed <= previous.speed * 1.02, `${label} gradually improves nominal speed`);
+        assert.ok(low >= previous.low - 1e-8, `${label} retains worst-case launch speed`);
+        // A tighter distribution can lower the lucky maximum while improving
+        // both its mean and minimum; compare dispersion rather than that peak.
+        assert.ok(high - low <= previous.high - previous.low + 1e-8, `${label} narrows absolute speed spread`);
+        const relativeGain = (previous.high - previous.low) / previous.speed - (high - low) / shot.speed;
+        assert.ok(relativeGain >= -1e-8 && relativeGain <= .04 + 1e-8, `${label} gradually narrows the relative speed envelope`);
         assert.ok(result.point.z >= previous.range - 1e-8, `${label} retains ground range`);
         assert.ok(result.point.z <= previous.range * 1.15, `${label} adds at most 15% ground range`);
         assert.ok(windy.point.x <= previous.drift + 1e-8, `${label} retains wind resistance`);
@@ -825,45 +904,82 @@ test('grip changes only sway while elasticity changes only launch energy', () =>
   assert.ok(gripPower < basePower / 4);
 });
 
-test('a heavier point lowers launch speed at equal bow energy and slows drag loss', () => {
-  const light = ARROWS[0], heavy = { ...light, tipMass: light.tipMass + 10 };
-  const lightShot = launchArrow({ arrow: light, pitch: .4 });
-  const heavyShot = launchArrow({ arrow: heavy, pitch: .4 });
-  const kinetic = shot => getArrowMass(shot === lightShot ? light : heavy) * shot.speed ** 2 / 2;
-  close(kinetic(lightShot), kinetic(heavyShot));
-  assert.ok(heavyShot.speed < lightShot.speed);
-  assert.ok(heavyShot.dragRate < lightShot.dragRate);
-  assert.ok(heavyShot.windFactor < lightShot.windFactor);
-  const lightStart = lightShot.velocity.z, heavyStart = heavyShot.velocity.z;
-  stepArrow(lightShot, .7, { ...emptyRange, wind: 1.2 });
-  stepArrow(heavyShot, .7, { ...emptyRange, wind: 1.2 });
-  assert.ok(heavyShot.velocity.z / heavyStart > lightShot.velocity.z / lightStart, 'heavy arrow retains a larger fraction of speed');
-  assert.ok(heavyShot.position.x < lightShot.position.x, 'equal wing area gives less side acceleration to more mass');
-  // All arrows have the same gravitational acceleration: mass does not alter g.
-  const vacuumHeavy = launchArrow({ arrow: { ...heavy, fletching: { ...heavy.fletching, drag: 0 } } });
-  const vacuumLight = launchArrow({ arrow: dragFree });
-  stepArrow(vacuumHeavy, .3, emptyRange); stepArrow(vacuumLight, .3, emptyRange);
-  close(vacuumHeavy.position.y, vacuumLight.position.y);
+test('adding mass to the point, shaft or fletching changes flight without silently compensating another component', () => {
+  const light = ARROWS[0], addedMass = 2;
+  const alternatives = [
+    ['point', { ...light, tipMass: light.tipMass + addedMass }],
+    ['shaft', { ...light, shaftMass: light.shaftMass + addedMass }],
+    ['fletching', { ...light, fletching: { ...light.fletching, mass: light.fletching.mass + addedMass } }]
+  ];
+  for (const [component, heavy] of alternatives) {
+    close(getArrowMass(heavy), getArrowMass(light) + addedMass);
+    const lightShot = launchArrow({ arrow: light, pitch: .4 });
+    const heavyShot = launchArrow({ arrow: heavy, pitch: .4 });
+    close(getArrowMass(light) * lightShot.speed ** 2 / 2, getArrowMass(heavy) * heavyShot.speed ** 2 / 2);
+    assert.ok(heavyShot.speed < lightShot.speed, `extra ${component} mass consumes the same launch energy`);
+    assert.ok(heavyShot.dragRate < lightShot.dragRate && heavyShot.windFactor < lightShot.windFactor);
+    const lightStart = lightShot.velocity.z, heavyStart = heavyShot.velocity.z;
+    stepArrow(lightShot, .7, { ...emptyRange, wind: 1.2 });
+    stepArrow(heavyShot, .7, { ...emptyRange, wind: 1.2 });
+    assert.ok(heavyShot.velocity.z / heavyStart > lightShot.velocity.z / lightStart, 'more mass retains a larger fraction of speed');
+    assert.ok(heavyShot.position.x < lightShot.position.x, 'the same exposed area accelerates more mass less strongly');
+    // Mass does not change gravitational acceleration.
+    const vacuumHeavy = launchArrow({ arrow: withoutDrag(heavy) });
+    const vacuumLight = launchArrow({ arrow: dragFree });
+    stepArrow(vacuumHeavy, .3, emptyRange); stepArrow(vacuumLight, .3, emptyRange);
+    close(vacuumHeavy.position.y, vacuumLight.position.y);
+  }
 });
 
-test('wing area, air drag and stability each affect their own flight property', () => {
+test('shaft and fletching areas independently change crosswind response without changing launch energy or drag', () => {
   const base = ARROWS[0];
-  const narrow = { ...base, fletching: { ...base.fletching, windArea: .3 } };
-  const streamlined = { ...base, fletching: { ...base.fletching, drag: .025 } };
-  const stable = { ...base, fletching: { ...base.fletching, stability: 98 } };
-  close(getSpeed({ arrow: narrow }), getSpeed({ arrow: base }));
-  close(getSpeed({ arrow: streamlined }), getSpeed({ arrow: base }));
+  for (const component of ['shaft', 'fletching']) {
+    const narrow = { ...base, [component]: { ...base[component], windArea: base[component].windArea / 2 } };
+    close(getArrowMass(narrow), getArrowMass(base));
+    close(getSpeed({ arrow: narrow }), getSpeed({ arrow: base }));
+    close(getArrowDragRate(narrow), getArrowDragRate(base));
+    close(getArrowConsistency(narrow), getArrowConsistency(base));
+    assert.ok(getWindResponse(narrow) < getWindResponse(base), `${component} area contributes to crosswind acceleration`);
+    const responseRatio = getWindResponse(narrow) / getWindResponse(base);
+    for (const direction of [-1, 0, 1]) {
+      const shots = [base, narrow].map(arrow => launchArrow({ arrow, pitch: .3 }));
+      for (const shot of shots) stepArrow(shot, .5, { ...emptyRange, wind: direction * 1.2 });
+      close(shots[1].position.x, shots[0].position.x * responseRatio);
+      close(shots[1].position.z, shots[0].position.z);
+      close(shots[1].position.y, shots[0].position.y);
+      if (direction) assert.equal(Math.sign(shots[0].position.x), direction);
+      else close(shots[0].position.x, 0);
+    }
+  }
+});
+
+test('point, shaft and fletching drag each slow the actual projectile independently', () => {
+  const base = ARROWS[0];
+  for (const component of ['tip', 'shaft', 'fletching']) {
+    const rough = { ...base, [component]: { ...base[component], drag: base[component].drag + .03 } };
+    close(getArrowMass(rough), getArrowMass(base));
+    close(getSpeed({ arrow: rough }), getSpeed({ arrow: base }));
+    close(getWindResponse(rough), getWindResponse(base));
+    close(getArrowConsistency(rough), getArrowConsistency(base));
+    assert.ok(getArrowDragRate(rough) > getArrowDragRate(base), `${component} drag contributes to total drag`);
+    const ordinary = launchArrow({ arrow: base, pitch: .3 }), resisted = launchArrow({ arrow: rough, pitch: .3 });
+    stepArrow(ordinary, .5, emptyRange); stepArrow(resisted, .5, emptyRange);
+    assert.ok(resisted.position.z < ordinary.position.z && resisted.velocity.z < ordinary.velocity.z);
+  }
+});
+
+test('shaft and point precision and fletching control each reduce actual shot dispersion without adding energy', () => {
+  const base = ARROWS[0];
   const spread = arrow => getSpeed({ arrow, velocityBias: 1 }) - getSpeed({ arrow, velocityBias: -1 });
-  assert.ok(spread(stable) < spread(base) / 10);
-  for (const direction of [-1, 0, 1]) {
-    const shots = [base, narrow, streamlined].map(arrow => launchArrow({ arrow, pitch: .3 }));
-    for (const shot of shots) stepArrow(shot, .5, { ...emptyRange, wind: direction * 1.2 });
-    close(shots[1].position.x, shots[0].position.x * .3);
-    close(shots[1].position.z, shots[0].position.z);
-    close(shots[1].position.y, shots[0].position.y);
-    assert.ok(shots[2].velocity.z > shots[0].velocity.z);
-    if (direction) assert.equal(Math.sign(shots[0].position.x), direction);
-    else close(shots[0].position.x, 0);
+  for (const [component, rating, weight] of [['shaft', 'precision', .5], ['tip', 'precision', .2], ['fletching', 'stability', .3]]) {
+    const precise = { ...base, [component]: { ...base[component], [rating]: base[component][rating] + 10 } };
+    close(getArrowConsistency(precise) - getArrowConsistency(base), 10 * weight);
+    assert.ok(getArrowVariance(precise) < getArrowVariance(base));
+    assert.ok(spread(precise) < spread(base), `${component} quality reduces the observed speed envelope`);
+    close(getSpeed({ arrow: precise, velocityBias: 0 }), getSpeed({ arrow: base, velocityBias: 0 }));
+    close(getArrowMass(precise), getArrowMass(base));
+    close(getArrowDragRate(precise), getArrowDragRate(base));
+    close(getWindResponse(precise), getWindResponse(base));
   }
 });
 

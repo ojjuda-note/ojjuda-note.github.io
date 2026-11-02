@@ -366,6 +366,37 @@ test('new shots, scores and selected stage survive the second visit after the on
   assert.equal(resumed.api.state.stage.id, 2);assert.equal(store.get(LEGACY_SAVE_KEY), backup);
 });
 
+test('the wind HUD distinguishes calm, either direction and tiny nonzero wind without rounding to zero', async () => {
+  const app = await appHarness();
+  for (const [wind, label] of [
+    [0, '바람 없음'], [1, '→ 오른쪽 바람 1'], [-1.2, '← 왼쪽 바람 1.2'],
+    [.038, '→ 오른쪽 바람 0.038'], [-.038, '← 왼쪽 바람 0.038'],
+    [.0004, '→ 오른쪽 바람 0.0004'], [-.0004, '← 왼쪽 바람 0.0004']
+  ]) {
+    app.api.resetRound({...app.engine.STAGES[0], wind});await app.flush();
+    assert.equal(app.api.state.stage.wind, wind, 'formatting never changes the real wind');
+    assert.equal(app.getElement('windLabel').textContent, label);
+    if (wind) assert.doesNotMatch(label, /바람 0(?:\.0+)?$/, 'a real breeze must never appear as zero');
+  }
+});
+
+test('all four wind lessons retain their real wind and readable direction through retry, next stage and reload', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, lastStage: 9, sound: false});
+  const lessons = [[9, 1, '→ 오른쪽 바람 1'], [10, -1.1, '← 왼쪽 바람 1.1'],
+    [11, -1.2, '← 왼쪽 바람 1.2'], [12, 1.3, '→ 오른쪽 바람 1.3']];
+  for (const [id, wind, label] of lessons) {
+    assert.equal(app.api.state.stage.id, id);assert.equal(app.api.state.stage.wind, wind);
+    assert.equal(app.getElement('windLabel').textContent, label);
+    app.getElement('menuBtn').emit('click');modalAction(app, 'retry');await app.flush();
+    assert.equal(app.api.state.stage.id, id);assert.equal(app.api.state.stage.wind, wind);
+    assert.equal(app.getElement('windLabel').textContent, label, 'a new layout keeps the same lesson wind');
+    if (id < 12) {app.getElement('menuBtn').emit('click');modalAction(app, 'next-stage');await app.flush();}
+  }
+  const resumed = await appHarness(app.snapshot());
+  assert.equal(resumed.api.state.stage.id, 12);assert.equal(resumed.api.state.stage.wind, 1.3);
+  assert.equal(resumed.getElement('windLabel').textContent, '→ 오른쪽 바람 1.3');
+});
+
 test('writes from an old v2 tab cannot resurrect old records or erase the current v3 journey', async () => {
   const store = new Map([[LEGACY_SAVE_KEY, JSON.stringify(preResetProgress())]]);
   const app = await appHarness(null, {store});
@@ -672,7 +703,7 @@ test('both special arrows can be compared, bought once and equipped again after 
 });
 
 for (const fixture of [
-  { id: 12, stage: 3, charge: .30, yaw: 0, pitch: .13, effect: '1회 튕김' },
+  { id: 12, stage: 3, charge: .30, yaw: 0, pitch: .08, effect: '1회 튕김' },
   { id: 13, stage: 2, charge: 1, yaw: .07, pitch: .04, effect: '근접 유도' }
 ]) test(`special arrow ${fixture.id} keeps one touch, one flight and one reward through its physical effect`, async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false });
@@ -1154,16 +1185,16 @@ test('shop stat choices reorder actual cards while purchases still use stable eq
     assert.equal(app.api.progress.coins, afterBow);
   }
   sort('wind');
-  assert.equal(displayedIds()[0], 3);
-  clickBuy(3);
-  const afterArrow = afterBow - app.engine.ARROWS[3].price;
-  assert.equal(app.api.progress.arrow, 3);
+  assert.equal(displayedIds()[0], 11);
+  clickBuy(11);
+  const afterArrow = afterBow - app.engine.ARROWS[11].price;
+  assert.equal(app.api.progress.arrow, 11);
   assert.equal(app.api.progress.coins, afterArrow);
-  clickBuy(3);assert.equal(app.api.progress.coins, afterArrow, 're-equipping a bought arrow never charges again');
+  clickBuy(11);assert.equal(app.api.progress.coins, afterArrow, 're-equipping a bought arrow never charges again');
   app.api.showShop('bow');
   assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main), item => item.id));
   const reloaded = await appHarness(app.snapshot());
-  assert.equal(reloaded.api.progress.bow, chosenBow);assert.equal(reloaded.api.progress.arrow, 3);
+  assert.equal(reloaded.api.progress.bow, chosenBow);assert.equal(reloaded.api.progress.arrow, 11);
   assert.equal(reloaded.api.progress.coins, afterArrow);
   app.api.closeModal();app.api.enterEvent(1);await app.flush();app.api.showShop('bow');sort('progression');
   assert.deepEqual(displayedIds(), [20, 21, 22, 23, 24], 'event guns follow the requested magazine and reload sequence');
@@ -1175,7 +1206,7 @@ test('shop stat choices reorder actual cards while purchases still use stable eq
   sort('reload');assert.deepEqual(displayedIds(), [24, 23, 22, 21, 20]);
   sort('grip');assert.deepEqual(displayedIds(), [24, 23, 22, 21, 20]);
   assert.equal(app.api.progress.eventGun, 20, 'sorting gun functions never changes the selected gun');
-  assert.equal(app.api.progress.bow, chosenBow);assert.equal(app.api.progress.arrow, 3);
+  assert.equal(app.api.progress.bow, chosenBow);assert.equal(app.api.progress.arrow, 11);
   assert.equal(app.api.progress.coins, afterArrow, 'all new filters and function sorts only change the shop view');
 });
 
@@ -1458,9 +1489,16 @@ test('both equipment shops show progressive traits and speeds for the currently 
         assert.ok(card.includes(speed(item, app.api.activeArrow())), 'bow speed uses the equipped arrow mass');
       } else {
         assert.match(card, new RegExp(`촉\\s*무게\\s*${item.tipMass}\\s*g`));
-        assert.match(card, /총 무게\s*24\s*g/, 'every arrow shows the complete mass used for its launch speed');
-        assert.ok(card.includes(item.fletching.name));
-        assert.ok(card.includes(`바람 영향 ${Math.round(app.engine.getWindResponse(item) * 100)}%`), 'wind comparison reflects the feather resistance at the common total mass');
+        assert.ok(card.includes(`촉 ${item.tip.material} · ${item.tip.shape}`));
+        assert.ok(card.includes(`몸통 ${item.shaft.material} · ${Number(item.shaft.diameter.toFixed(2))} mm`));
+        assert.ok(card.includes(`몸통 무게 ${Number(item.shaftMass.toFixed(2))} g`));
+        assert.ok(card.includes(`깃 ${item.fletching.material} · ${item.fletching.name}`));
+        assert.ok(card.includes(`깃 무게 ${Number(item.fletching.mass.toFixed(2))} g`));
+        const totalMass = item.tipMass + item.shaftMass + item.fletching.mass;
+        assert.ok(card.includes(`총 무게 ${Number(totalMass.toFixed(2))} g`), 'the card includes all three component masses without floating-point noise');
+        assert.ok(card.includes(`일관성 ${Number(app.engine.getArrowConsistency(item).toFixed(2))} / 100`), 'consistency includes the point and shaft precision as well as fletching control');
+        assert.ok(card.includes(`바람 영향 ${Math.round(app.engine.getWindResponse(item) * 100)}%`), 'wind comparison reflects shaft and fletching resistance at the complete mass');
+        assert.ok(card.includes(`감속 영향 ${Math.round(app.engine.getArrowDragRate(item) / app.engine.getArrowDragRate(app.engine.ARROWS[0]) * 100)}%`));
         const nominal = app.engine.getSpeed({ bow: app.api.activeBow(), arrow: item, charge: 1, velocityBias: 0 });
         const high = app.engine.getSpeed({ bow: app.api.activeBow(), arrow: item, charge: 1, velocityBias: 1 });
         const variancePercent = Math.round((high / nominal - 1) * 1000) / 10;
@@ -1470,14 +1508,21 @@ test('both equipment shops show progressive traits and speeds for the currently 
     }
   }
   const firstSpeed = app.getElement('loadoutSpeed').textContent;
+  const firstMass = app.engine.getArrowMass(app.api.activeArrow());
+  const firstNominal = app.engine.getSpeed({bow: app.api.activeBow(), arrow: app.api.activeArrow(), charge: 1, velocityBias: 0});
   app.api.equipItem(1);
-  assert.equal(app.getElement('loadoutSpeed').textContent, firstSpeed, 'changing arrow tips preserves the displayed speed because every complete arrow weighs 24g');
+  const selectedMass = app.engine.getArrowMass(app.api.activeArrow());
+  const selectedNominal = app.engine.getSpeed({bow: app.api.activeBow(), arrow: app.api.activeArrow(), charge: 1, velocityBias: 0});
+  assert.ok(selectedMass < firstMass);assert.ok(selectedNominal > firstNominal);
+  assert.ok(Math.abs(selectedNominal / firstNominal - Math.sqrt(firstMass / selectedMass)) < 1e-10, 'the same bow gains nominal speed from the selected complete arrow mass');
+  assert.notEqual(app.getElement('loadoutSpeed').textContent, firstSpeed, 'equipping the lighter completed arrow updates the displayed combination speed');
   assert.ok(app.getElement('loadoutSpeed').textContent.includes(speed(app.api.activeBow(), app.api.activeArrow())));
   assert.equal(app.getElement('bowStat').textContent, `그립감 ${app.api.activeBow().grip} · 탄성 ${app.api.activeBow().elasticity}`);
   assert.equal(app.getElement('arrowStat').textContent, `촉 ${app.api.activeArrow().tipMass}g · ${app.api.activeArrow().fletching.name}`);
   app.api.closeModal();await app.flush();
   const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
   assert.equal(app.api.state.shot.speed.toFixed(1) + ' m/s', speed(app.api.activeBow(), app.api.activeArrow()), 'the released arrow uses the same selected equipment as the displayed speed');
+  assert.equal(app.api.state.shot.mass, selectedMass, 'the real shot uses the complete selected arrow mass');
 });
 
 test('scope purchases charge once for each owned compatible bow and stay bound across reload', async () => {
