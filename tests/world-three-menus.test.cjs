@@ -27,6 +27,13 @@ function fixture(url='https://ojjuda.kr/world.html'){
  try{
   const w=dom.window,t=w.worldTest;t.render();
   const active=()=>t.state.tab==='place'?t.state.place.id:t.state.tab;
+  const assertTestGamesLast=()=>{
+   const grids=[...w.document.querySelectorAll('[data-arcade-games]')];
+   assert.equal(grids.at(-1).dataset.arcadeGames,'test','test games follow every regular game category');
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['archery']);
+   assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=archery]').length,1,'the test game appears exactly once');
+   assert.match(grids.at(-1).querySelector('[data-v=archery] .game-test-badge').textContent,/테스트게임/);
+  };
   assert.equal(active(),'arcade','the initial page opens the arcade');
   for(const selector of ['.bottomnav','.sidenav']){
    assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['오락실','공원','설정']);
@@ -37,6 +44,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.ok(w.document.querySelector('[data-arcade-games=solo]'));
   assert.ok(w.document.querySelector('[data-arcade-games=multi]'));
   assert.equal(w.document.querySelector('[data-arcade-adult]'),null,'guests have no adult section');
+  assertTestGamesLast();
   assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=poker]'),null,'poker is not duplicated in the solo list');
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=19};
   t.auth.online=true;t.auth.user={id:'adult-menu-fixture'};t.render();
@@ -50,11 +58,13 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.match(roulette.textContent,/최대 4명/,'roulette displays its four-player capacity');
   const gameId=button=>button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
   const categories={
-   solo:['archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
+   solo:['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
-   adult:['matgo','poker','roulette','photo_ttang']
+   adult:['matgo','poker','roulette','photo_ttang'],
+   test:['archery']
   };
-  assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'adult games follow solo and multiplayer');
+  assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'test games follow solo, multiplayer and adult games');
+  assertTestGamesLast();
   for(const [category,expected]of Object.entries(categories)){
    const actual=[...w.document.querySelectorAll(`[data-arcade-games=${category}] .gbtn`)].map(gameId);
    assert.deepEqual(actual,expected,category+' contains exactly its intended games in display order');
@@ -77,7 +87,9 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(w.document.querySelector('[data-act=matgo-open]'),null,'Matgo uses the same age threshold');
   assert.equal(w.document.querySelector('[data-v=photo_ttang]'),null,'photo games use the same age threshold');
   assert.equal(w.document.querySelector('[data-arcade-adult]'),null,'underage members have no adult section');
+  assertTestGamesLast();
   delete w.OjjudaMatgoAccess;t.auth.online=false;t.auth.user=null;t.render();
+  assertTestGamesLast();
   assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');
   assert.ok(t.state.placeT,'presence keeps its update timer without the image stage');
   assert.equal(w.document.querySelector('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"],.arcade-welcome [data-tab="park"]'),null,'Arcade contains no public chat or Park shortcut');
